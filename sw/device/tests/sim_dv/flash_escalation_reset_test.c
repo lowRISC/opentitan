@@ -16,7 +16,9 @@
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
+#include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
@@ -36,16 +38,21 @@ OTTF_DEFINE_TEST_CONFIG();
 
 enum {
   kPlicTarget = kTopEarlgreyPlicTargetIbex0,
-  kWdogBarkMicros = 200,          // 200 us
-  kWdogBiteMicros = 600,          // 600 us
-  kEscalationStartMicros = 100,   // 100 us
-  kEscalationPhase0Micros = 100,  // 100 us
-  kEscalationPhase1Micros = 100,  // 100 us
-  kMaxInterrupts = 30,
+  kWdogBarkMicros = 200,  // 200 us
+  kWdogBiteMicros = 600,  // 600 us
+  // handlers have time to execute.
+  kEscalationPhase0Micros = 100,
+  // @200 us -> in this phase we will raise an NMI
+  kEscalationPhase1Micros = 100,
+  // @400 us -> in this phase we will assert lc_escalate_en
+  kEscalationPhase2Micros = 100,
+  // @600 us -> in this phase we will reset the chip
+  kEscalationPhase3Micros = 100,
+
   kRegionBaseBank1Page0Addr = FLASH_CTRL_PARAM_BYTES_PER_BANK,
   kNumTestWords = 16,
   kNumTestBytes = kNumTestWords * sizeof(uint32_t),
-  kExpectedAlertNumber = 0,
+  kExpectedAlertNumber = kTopEarlgreyAlertIdFlashCtrlFatalErr,
 };
 
 static_assert(kWdogBarkMicros < kWdogBiteMicros &&
@@ -57,6 +64,7 @@ static dif_alert_handler_t alert_handler;
 static dif_aon_timer_t aon_timer;
 static dif_rstmgr_t rstmgr;
 static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_rv_core_ibex_t rv_core_ibex;
 
 /**
  * External ISR.
@@ -93,15 +101,78 @@ void ottf_external_isr(void) {
     CHECK(irq == 0, "ClassA('d0) was expected but got %d", irq);
   }
 
+  // Disable these interrupts from alert_handler so they don't keep happening
+  // until NMI.
+  irq =
+      (irq_id - (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+  CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(&alert_handler, irq,
+                                                 kDifToggleDisabled));
+
+  // Disable this interrupt to prevent it from continuously firing. This
+  // should not prevent escalation from continuing.
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&plic, irq_id, kPlicTarget,
+                                           kDifToggleDisabled));
+
+  uint16_t accum_count;
+  CHECK_DIF_OK(dif_alert_handler_get_accumulator(
+      &alert_handler, kDifAlertHandlerClassA, &accum_count));
+  LOG_INFO("Accumulator count %d", accum_count);
+
+  // Complete the IRQ by writing the IRQ source to the Ibex specific CC
+  // register.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
 
   LOG_INFO("Regular external ISR exiting");
 }
 
 /**
+ * External NMI ISR.
+ *
+ * Handles NMI interrupts on Ibex for either escalation or watchdog.
+ */
+void ottf_external_nmi_handler(void) {
+  dif_rv_core_ibex_nmi_state_t nmi_state = (dif_rv_core_ibex_nmi_state_t){0};
+  LOG_INFO("At NMI handler");
+
+  // Check that this NMI was due to an alert handler escalation, and not due
+  // to a watchdog bark, since escalation suppresses the watchdog.
+  CHECK_DIF_OK(dif_rv_core_ibex_get_nmi_state(
+      &rv_core_ibex, (dif_rv_core_ibex_nmi_state_t *)&nmi_state));
+  CHECK(nmi_state.alert_enabled && nmi_state.alert_raised,
+        "Alert handler NMI state not expected:\n\t"
+        "alert_enable:%x\n\talert_raised:%x\n",
+        nmi_state.alert_enabled, nmi_state.alert_raised);
+  CHECK(nmi_state.wdog_enabled && !nmi_state.wdog_barked,
+        "Watchdog NMI state not expected:\n\t"
+        "wdog_enabled:%x\n\twdog_barked:%x\n",
+        nmi_state.wdog_enabled, nmi_state.wdog_barked);
+
+  // Check the class.
+  dif_alert_handler_class_state_t state;
+  CHECK_DIF_OK(dif_alert_handler_get_class_state(
+      &alert_handler, kDifAlertHandlerClassA, &state));
+  CHECK(state == kDifAlertHandlerClassStatePhase1, "Wrong phase %d", state);
+
+  // Check this gets the expected alert.
+  bool is_cause = false;
+  CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+      &alert_handler, kExpectedAlertNumber, &is_cause));
+  CHECK(is_cause);
+
+  // Acknowledge the cause, which doesn't affect escalation.
+  CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler,
+                                                   kExpectedAlertNumber));
+  LOG_INFO("NMI handler exiting");
+}
+
+/**
  * Initialize the peripherals used in this test.
  */
 static void init_peripherals(void) {
+  CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
 
@@ -131,24 +202,31 @@ static void alert_handler_config(void) {
 
   dif_alert_handler_escalation_phase_t esc_phases[] = {
       {.phase = kDifAlertHandlerClassStatePhase0,
-       .signal = 0,
+       .signal = UINT32_MAX,  // do not trigger any signal, just wait.
        .duration_cycles =
-           alert_handler_testutils_get_cycles_from_us(kEscalationPhase0Micros) *
-           alert_handler_testutils_cycle_rescaling_factor()},
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase0Micros)},
       {.phase = kDifAlertHandlerClassStatePhase1,
-       .signal = 3,
+       .signal = 0,  // NMI
        .duration_cycles =
-           alert_handler_testutils_get_cycles_from_us(kEscalationPhase1Micros) *
-           alert_handler_testutils_cycle_rescaling_factor()}};
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase1Micros)},
+      {.phase = kDifAlertHandlerClassStatePhase2,
+       .signal = 1,  // lc_escalate_en
+       .duration_cycles =
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase2Micros)},
+      {.phase = kDifAlertHandlerClassStatePhase3,
+       .signal = 3,  // reset
+       .duration_cycles = alert_handler_testutils_get_cycles_from_us(
+           kEscalationPhase3Micros)}};
 
-  uint32_t deadline_cycles =
-      alert_handler_testutils_get_cycles_from_us(kEscalationStartMicros) *
-      alert_handler_testutils_cycle_rescaling_factor();
-  LOG_INFO("Configuring class A with %d cycles and %d occurrences",
-           deadline_cycles, UINT16_MAX);
+  // This test does not leverage the IRQ timeout feature of the alert
+  // handler, hence deadline_cycles is set to zero. Rather, it triggers
+  // escalation right away if an alert event is seen, hence threshold = 0;
+  uint32_t deadline_cycles = 0;
+  uint32_t threshold = 0;
+
   dif_alert_handler_class_config_t class_config[] = {{
       .auto_lock_accumulation_counter = kDifToggleDisabled,
-      .accumulator_threshold = UINT16_MAX,
+      .accumulator_threshold = threshold,
       .irq_deadline_cycles = deadline_cycles,
       .escalation_phases = esc_phases,
       .escalation_phases_len = ARRAYSIZE(esc_phases),
@@ -222,6 +300,12 @@ bool test_main(void) {
 
   if (rst_info == kDifRstmgrResetInfoPor) {
     alert_handler_config();
+    // Make sure we can receive both the watchdog and alert NMIs.
+    CHECK_DIF_OK(dif_rv_core_ibex_enable_nmi(&rv_core_ibex,
+                                             kDifRvCoreIbexNmiSourceAlert));
+    CHECK_DIF_OK(dif_rv_core_ibex_enable_nmi(&rv_core_ibex,
+                                             kDifRvCoreIbexNmiSourceWdog));
+
     LOG_INFO("host read start from 0x%x",
              TOP_EARLGREY_EFLASH_BASE_ADDR + kRegionBaseBank1Page0Addr);
     read_host_if(kRegionBaseBank1Page0Addr);
