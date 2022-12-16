@@ -1,0 +1,147 @@
+diff --git a/Makefile.build b/Makefile.build
+new file mode 100644
+index 000000000..bb6e2bc3b
+--- /dev/null
++++ b/Makefile.build
+@@ -0,0 +1,59 @@
++<?xml version="1.0"?>
++<!--
++The eXtended Keccak Code Package (XKCP)
++https://github.com/XKCP/XKCP
++
++Implementation by Gilles Van Assche and Ronny Van Keer, hereby denoted as "the implementer".
++
++For more information, feedback or questions, please refer to the Keccak Team website:
++https://keccak.team/
++
++To the extent possible under law, the implementer has waived all copyright
++and related or neighboring rights to the source code in this file.
++http://creativecommons.org/publicdomain/zero/1.0/
++-->
++<build all="all" xmlns:xi="http://www.w3.org/2001/XInclude">
++
++    <target name="kmac" inherits="FIPS202 SP800-185 K1600-ref-64bits">
++        <c>kmac_vectors/main.c</c>
++        <h>lib/common/align.h</h>
++        <h>other_commons/brg_endian.h</h>
++        <c>kmac_vectors/displayIntermediateValues.c</c>
++        <h>kmac_vectors/displayIntermediateValues.h</h>
++        <gcc>-O</gcc>
++    </target>
++
++    <fragment name="FIPS202" inherits="KeccakSponge">
++        <config>XKCP_has_FIPS202</config>
++        <c>lib/high/Keccak/FIPS202/SimpleFIPS202.c</c>
++        <h>lib/high/Keccak/FIPS202/SimpleFIPS202.h</h>
++        <c>lib/high/Keccak/FIPS202/KeccakHash.c</c>
++        <h>lib/high/Keccak/FIPS202/KeccakHash.h</h>
++    </fragment>
++
++    <fragment name="SP800-185" inherits="KeccakSponge">
++        <config>XKCP_has_SP800_185</config>
++        <c>lib/high/Keccak/SP800-185/SP800-185.c</c>
++        <inc>lib/high/Keccak/SP800-185/SP800-185.inc</inc>
++        <h>lib/high/Keccak/SP800-185/SP800-185.h</h>
++        <h>lib/high/common/Phases.h</h>
++    </fragment>
++
++    <fragment name="KeccakSponge">
++        <config>XKCP_has_Sponge_Keccak</config>
++        <h>lib/high/Keccak/KeccakSponge.h</h>
++        <inc>lib/high/Keccak/KeccakSponge.inc</inc>
++        <c>lib/high/Keccak/KeccakSponge.c</c>
++    </fragment>
++
++    <fragment name="K1600">
++        <config>XKCP_has_KeccakP1600</config>
++    </fragment>
++
++    <fragment name="K1600-ref-64bits" inherits="K1600">
++        <c>lib/low/KeccakP-1600/ref-64bits/KeccakP-1600-reference.c</c>
++        <h>lib/low/KeccakP-1600/ref-64bits/KeccakP-1600-reference.h</h>
++        <h>lib/low/KeccakP-1600/ref-64bits/KeccakP-1600-SnP.h</h>
++    </fragment>
++
++</build>
+diff --git a/kmac_vectors/main.c b/kmac_vectors/main.c
+new file mode 100644
+index 000000000..dbceeebfa
+--- /dev/null
++++ b/kmac_vectors/main.c
+@@ -0,0 +1,63 @@
++#include "config.h"
++#include <stdint.h>
++#include <stdlib.h>
++#include <stdio.h>
++#include "SP800-185.h"
++#include "KeccakHash.h"
++
++/**
++ * Exit if `condition` is false.
++ *
++ * @param condition Condition to be checked.
++ */
++static void assert(int condition)
++{
++    if (!condition) {
++      printf("Condition not satisfied.\n");
++      exit(1);
++    }
++}
++
++/**
++ * Print given long byte array with hex characters.
++ *
++ * @param ptr Byte array pointer.
++ * @param len Number of bytes to be printed.
++ */
++void print_long_array(uint8_t *ptr, size_t len) {
++  for (size_t i = 0; i < len; ++i)
++    printf("%02x", ptr[i]);
++  printf("\n");
++}
++
++/**
++ * Simple example for XKCP for KMAC test vector generation.
++ */
++int main(void)
++{
++    unsigned char output[512 / 8];
++    int err_status;
++
++    {
++        const BitSequence *key = (const  BitSequence *)
++            "\x40\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4A\x4B\x4C\x4D\x4E\x4F\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5A\x5B\x5C\x5D\x5E\x5F";
++        const BitSequence *input = (const  BitSequence *)"\x00\x01\x02\x03";
++        const BitSequence *customization = (const  BitSequence *)"";
++        const BitSequence *expected_output = (const  BitSequence *)
++            "\xE5\x78\x0B\x0D\x3E\xA6\xF7\xD3\xA4\x29\xC5\x70\x6A\xA4\x3A\x00\xFA\xDB\xD7\xD4\x96\x28\x83\x9E\x31\x87\x24\x3F\x45\x6E\xE1\x4E";
++
++        // The KMAC128 function's signature:
++        // int KMAC128(const BitSequence *key, BitLength keyBitLen,
++        //             const BitSequence *input, BitLength inputBitLen,
++        //             BitSequence *output, BitLength outputBitLen,
++        //             const BitSequence *customization, BitLength customBitLen);
++        //
++
++        err_status = KMAC128(key, /*keyBitLen=*/256, input, /*inputBitLen=*/32,
++                             output, /*outputBitLen=*/256, customization, /*customBitLen=*/0);
++        assert(err_status == 0);
++        assert(memcmp(expected_output, output, sizeof(expected_output)) == 0);
++        print_long_array(output, sizeof(output));
++    }
++    return 0;
++}
+diff --git a/README.md b/README.md
+new file mode 100644
+index 000000000..83c1efa50
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,7 @@
++An example code is given in `kmac_vectors/main.c` for KMAC.
++It can be compiled and run with:
++
++```
++make kmac
++./bin/kmac
++```

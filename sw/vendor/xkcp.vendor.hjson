@@ -1,0 +1,44 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "xkcp",
+  target_dir: "xkcp",
+
+  upstream: {
+    url: "https://github.com/XKCP/XKCP",
+    // The last commit on master at the time of vendoring-in
+    rev: "56ae09923153c3e801a6891eb19e4a3b5bb6f6e2",
+  },
+
+  // All files here in the list are licensed with
+  // http://creativecommons.org/publicdomain/zero/1.0/
+  // expect the last one
+  mapping: [
+    // Bring Keccak permutation, Sponge, FIPS202 and NIST 800-185
+    {from: 'lib/common/align.h', to: 'lib/common/align.h'},
+    {from: 'lib/high/common', to: 'lib/high/common'},
+    {from: 'lib/high/Keccak', to: 'lib/high/Keccak'},
+    {from: 'lib/low/common', to: 'lib/low/common'},
+    {from: 'lib/low/KeccakP-1600/ref-64bits', to: 'lib/low/KeccakP-1600/ref-64bits'},
+
+    // Some printing utils for debugging
+    {from: 'tests/UnitTests/displayIntermediateValues.c', to: 'kmac_vectors/displayIntermediateValues.c'},
+    {from: 'tests/UnitTests/displayIntermediateValues.h', to: 'kmac_vectors/displayIntermediateValues.h'},
+
+    // Build related
+    {from: 'support/Build', to: 'support/Build'},
+    {from: 'Makefile', to: 'Makefile'},
+
+    {from: '.gitignore', to: '.gitignore'},
+    {from: 'LICENSE', to: 'LICENSE'},
+
+    // Different license goes to different folder
+    {from: 'lib/common/brg_endian.h', to: 'other_commons/brg_endian.h'},
+  ]
+  // The following patching won't work with vendoring tool
+  // and we need to run the following patch manually after vendoring
+  // git apply --directory sw/vendor/xkcp -p1 sw/vendor/patches/xkcp/add_example_build.patch
+
+  // patch_dir: "patches/xkcp"
+}
