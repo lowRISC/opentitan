@@ -5,7 +5,7 @@
 // sim cfg file for the retention SRAM variant
 {
   // Name of the sim cfg variant
-  variant: sram_ctrl_ret
+  variant: ret
 
   // Import the base sram_ctrl sim_cfg file
   import_cfgs: ["{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_base_sim_cfg.hjson"]

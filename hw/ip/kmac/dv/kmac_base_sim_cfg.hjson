@@ -18,7 +18,7 @@
   fusesoc_core: lowrisc:dv:kmac_sim:0.1
 
   // Testplan hjson file
-  testplan: "{proj_root}/hw/ip/kmac/data/{variant}_testplan.hjson"
+  testplan: "{proj_root}/hw/ip/kmac/data/kmac_testplan.hjson"
 
   // RAL spec - used to generate the RAL model.
   ral_spec: "{proj_root}/hw/ip/kmac/data/kmac.hjson"
@@ -85,113 +85,113 @@
   // List of test specifications.
   tests: [
     {
-      name: "{variant}_smoke"
+      name: "{name}_smoke"
       uvm_test_seq: kmac_smoke_vseq
     }
     {
-      name: "{variant}_long_msg_and_output"
+      name: "{name}_long_msg_and_output"
       uvm_test_seq: kmac_long_msg_and_output_vseq
       run_opts: ["+test_timeout_ns=10_000_000_000"]
     }
     {
-      name: "{variant}_sideload"
+      name: "{name}_sideload"
       uvm_test_seq: kmac_sideload_vseq
     }
     {
-      name: "{variant}_burst_write"
+      name: "{name}_burst_write"
       uvm_test_seq: kmac_burst_write_vseq
     }
     {
-      name: "{variant}_test_vectors_sha3_224"
+      name: "{name}_test_vectors_sha3_224"
       uvm_test_seq: kmac_test_vectors_sha3_vseq
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
                  "+test_vectors_sha3_variant=224"]
     }
     {
-      name: "{variant}_test_vectors_sha3_256"
+      name: "{name}_test_vectors_sha3_256"
       uvm_test_seq: kmac_test_vectors_sha3_vseq
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
                  "+test_vectors_sha3_variant=256"]
     }
     {
-      name: "{variant}_test_vectors_sha3_384"
+      name: "{name}_test_vectors_sha3_384"
       uvm_test_seq: kmac_test_vectors_sha3_vseq
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
                  "+test_vectors_sha3_variant=384"]
     }
     {
-      name: "{variant}_test_vectors_sha3_512"
+      name: "{name}_test_vectors_sha3_512"
       uvm_test_seq: kmac_test_vectors_sha3_vseq
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
                  "+test_vectors_sha3_variant=512"]
     }
     {
-      name: "{variant}_test_vectors_shake_128"
+      name: "{name}_test_vectors_shake_128"
       uvm_test_seq: kmac_test_vectors_shake_vseq
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
                  "+test_vectors_shake_variant=128"]
       run_timeout_mins: 120
     }
     {
-      name: "{variant}_test_vectors_shake_256"
+      name: "{name}_test_vectors_shake_256"
       uvm_test_seq: kmac_test_vectors_shake_vseq
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
                  "+test_vectors_shake_variant=256"]
       run_timeout_mins: 120
     }
     {
-      name: "{variant}_test_vectors_kmac"
+      name: "{name}_test_vectors_kmac"
       uvm_test_seq: kmac_test_vectors_kmac_vseq
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
     }
     {
-      name: "{variant}_test_vectors_kmac_xof"
+      name: "{name}_test_vectors_kmac_xof"
       uvm_test_seq: kmac_test_vectors_kmac_xof_vseq
       run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
     }
     {
-      name: "{variant}_app"
+      name: "{name}_app"
       uvm_test_seq: kmac_app_vseq
     }
     {
-      name: "{variant}_app_with_partial_data"
+      name: "{name}_app_with_partial_data"
       uvm_test_seq: kmac_app_with_partial_data_vseq
       reseed: 10
     }
     {
-      name: "{variant}_entropy_refresh"
+      name: "{name}_entropy_refresh"
       uvm_test_seq: kmac_entropy_refresh_vseq
     }
     {
-      name: "{variant}_mubi"
+      name: "{name}_mubi"
       uvm_test_seq: kmac_mubi_vseq
       reseed: 10
     }
     {
-      name: "{variant}_error"
+      name: "{name}_error"
       uvm_test_seq: kmac_error_vseq
     }
     {
-      name: "{variant}_key_error"
+      name: "{name}_key_error"
       uvm_test_seq: kmac_key_error_vseq
     }
     {
-      name: "{variant}_edn_timeout_error"
+      name: "{name}_edn_timeout_error"
       uvm_test_seq: kmac_edn_timeout_error_vseq
       reseed: 20
     }
     {
-      name: "{variant}_entropy_mode_error"
+      name: "{name}_entropy_mode_error"
       uvm_test_seq: kmac_entropy_mode_error_vseq
       reseed: 20
     }
     {
-      name: "{variant}_entropy_ready_error"
+      name: "{name}_entropy_ready_error"
       uvm_test_seq: kmac_entropy_ready_error_vseq
       reseed: 10
     }
     {
-      name: "{variant}_lc_escalation"
+      name: "{name}_lc_escalation"
       uvm_test_seq: kmac_lc_escalation_vseq
     }
     {
@@ -209,7 +209,7 @@
   regressions: [
     {
       name: smoke
-      tests: ["{variant}_smoke"]
+      tests: ["{name}_smoke"]
     }
   ]
 }

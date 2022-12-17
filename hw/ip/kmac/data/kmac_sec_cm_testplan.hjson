@@ -33,19 +33,19 @@
       name: sec_cm_lc_escalate_en_intersig_mubi
       desc: "Verify global LC_ESCALATE_EN mubi"
       stage: V2S
-      tests: ["{variant}_lc_escalation"]
+      tests: ["{name}_lc_escalation"]
     }
     {
       name: sec_cm_sw_key_key_masking
       desc: "Verify the countermeasure(s) SW_KEY.KEY.MASKING."
       stage: V2S
-      tests: ["{variant}_smoke"]
+      tests: ["{name}_smoke"]
     }
     {
       name: sec_cm_key_sideload
       desc: "Verify the key from KeyMgr is sideloaded."
       stage: V2S
-      tests: ["{variant}_sideload"]
+      tests: ["{name}_sideload"]
     }
     {
       name: sec_cm_cfg_shadowed_config_shadow
@@ -75,13 +75,13 @@
       name: sec_cm_cfg_shadowed_config_regwen
       desc: "Verify the countermeasure(s) CFG_SHADOWED.CONFIG.REGWEN."
       stage: V2S
-      tests: ["{variant}_smoke"]
+      tests: ["{name}_smoke"]
     }
     {
       name: sec_cm_fsm_global_esc
       desc: "Verify the countermeasure(s) FSM.GLOBAL_ESC."
       stage: V2S
-      tests: ["{variant}_lc_escalation"]
+      tests: ["{name}_lc_escalation"]
     }
     {
       name: sec_cm_fsm_local_esc
@@ -99,13 +99,13 @@
       name: sec_cm_absorbed_ctrl_mubi
       desc: "Verify the countermeasure(s) ABSORBED.CTRL.INTEGRITY"
       stage: V2S
-      tests: ["{variant}_mubi"]
+      tests: ["{name}_mubi"]
     }
     {
       name: sec_cm_sw_cmd_ctrl_sparse
       desc: "Verify the countermeasure(s) SW_CMD.CTRL.INTEGRITY"
       stage: V2S
-      tests: ["{variant}_smoke"]
+      tests: ["{name}_smoke"]
     }
   ]
 }
