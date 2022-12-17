@@ -104,6 +104,7 @@ class SimCfg(FlowCfg):
         self.pass_patterns = []
         self.fail_patterns = []
         self.name = ""
+        self.variant = ""
         self.dut = ""
         self.tb = ""
         self.testplan = ""
@@ -122,6 +123,7 @@ class SimCfg(FlowCfg):
         self.run_cmd = ""
 
         # Generated data structures
+        self.variant_name = ""
         self.links = {}
         self.build_list = []
         self.run_list = []
@@ -151,8 +153,13 @@ class SimCfg(FlowCfg):
 
         super()._expand()
 
+        if self.variant:
+            self.variant_name = self.name + "/" + self.variant
+        else:
+            self.variant_name = self.name
+
         # Set the title for simulation results.
-        self.results_title = self.name.upper() + " Simulation Results"
+        self.results_title = self.variant_name.upper() + " Simulation Results"
 
         # Stuff below only pertains to individual cfg (not primary cfg)
         # or individual selected cfgs (if select_cfgs is configured via command line)
@@ -274,7 +281,7 @@ class SimCfg(FlowCfg):
         # Parse testplan if provided.
         if self.testplan != "":
             self.testplan = Testplan(self.testplan,
-                                     repo_top=Path(self.proj_root))
+                                     repo_top=Path(self.proj_root), name=self.variant_name)
             # Extract tests in each stage and add them as regression target.
             self.regressions.extend(self.testplan.get_stage_regressions())
         else:
@@ -287,7 +294,7 @@ class SimCfg(FlowCfg):
 
     def _print_list(self):
         for list_item in self.list_items:
-            log.info("---- List of %s in %s ----", list_item, self.name)
+            log.info("---- List of %s in %s ----", list_item, self.variant_name)
             if hasattr(self, list_item):
                 items = getattr(self, list_item)
                 for item in items:

@@ -44,7 +44,7 @@
                 correctly
             '''
       stage: V1
-      tests: ["{variant}_smoke"]
+      tests: ["{name}_smoke"]
     }
     {
       name: long_msg_and_output
@@ -62,7 +62,7 @@
             applicable).
             '''
       stage: V2
-      tests: ["{variant}_long_msg_and_output"]
+      tests: ["{name}_long_msg_and_output"]
     }
     {
       name: burst_write
@@ -71,7 +71,7 @@
             into the msg_fifo, and disable intermediate status/CSR checks.
             '''
       stage: V2
-      tests: ["{variant}_burst_write"]
+      tests: ["{name}_burst_write"]
     }
     {
       name: test_vectors
@@ -80,10 +80,10 @@
             the output against the expected digest values.
             '''
       stage: V2
-      tests: ["{variant}_test_vectors_sha3_224", "{variant}_test_vectors_sha3_256",
-              "{variant}_test_vectors_sha3_384", "{variant}_test_vectors_sha3_512",
-              "{variant}_test_vectors_shake_128", "{variant}_test_vectors_shake_256",
-              "{variant}_test_vectors_kmac", "{variant}_test_vectors_kmac_xof"]
+      tests: ["{name}_test_vectors_sha3_224", "{name}_test_vectors_sha3_256",
+              "{name}_test_vectors_sha3_384", "{name}_test_vectors_sha3_512",
+              "{name}_test_vectors_shake_128", "{name}_test_vectors_shake_256",
+              "{name}_test_vectors_kmac", "{name}_test_vectors_kmac_xof"]
     }
     {
       name: sideload
@@ -94,7 +94,7 @@
             value.
             '''
       stage: V2
-      tests: ["{variant}_sideload"]
+      tests: ["{name}_sideload"]
     }
     {
       name: app
@@ -109,7 +109,7 @@
             blocked and will return 0.
             '''
       stage: V2
-      tests: ["{variant}_app"]
+      tests: ["{name}_app"]
     }
     {
       name: app_with_partial_data
@@ -121,7 +121,7 @@
             all interface data including digest.
             '''
       stage: V2
-      tests: ["{variant}_app_with_partial_data"]
+      tests: ["{name}_app_with_partial_data"]
    }
    {
       name: entropy_refresh
@@ -144,7 +144,7 @@
             - Register `entropy_refresh_hash_cnt` always returns 0
             '''
       stage: V2
-      tests: ["{variant}_entropy_refresh"]
+      tests: ["{name}_entropy_refresh"]
    }
    {
       name: error
@@ -167,7 +167,7 @@
             //       So this might be split into several error tests later on.
             '''
       stage: V2
-      tests: ["{variant}_error"]
+      tests: ["{name}_error"]
     }
     {
       name: key_error
@@ -186,7 +186,7 @@
             - Check kmac can resume normal functionalities after processing this error case.
             '''
       stage: V2
-      tests: ["{variant}_key_error"]
+      tests: ["{name}_key_error"]
     }
     {
       name: edn_timeout_error
@@ -201,7 +201,7 @@
               is disabled.
             '''
       stage: V2
-      tests: ["{variant}_edn_timeout_error"]
+      tests: ["{name}_edn_timeout_error"]
     }
     {
       name: entropy_mode_error
@@ -215,7 +215,7 @@
             - Check timeout error will not trigger if masking is disabled.
             '''
       stage: V2
-      tests: ["{variant}_entropy_mode_error"]
+      tests: ["{name}_entropy_mode_error"]
    }
     {
       name: entropy_ready_error
@@ -232,7 +232,7 @@
               - Check no error triggered.
             '''
       stage: V2
-      tests: ["{variant}_entropy_ready_error"]
+      tests: ["{name}_entropy_ready_error"]
    }
    {
       name: lc_escalation
@@ -246,7 +246,7 @@
             - Digest window always output all 0s.
             '''
       stage: V2
-      tests: ["{variant}_lc_escalation"]
+      tests: ["{name}_lc_escalation"]
     }
     {
       name: stress_all
@@ -264,7 +264,7 @@
             to the expected throughput range for the design.
             '''
       stage: V3
-      tests: ["{variant}_throughput"]
+      tests: ["{name}_throughput"]
     }
   ]
 

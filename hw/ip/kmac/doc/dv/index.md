@@ -150,4 +150,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/kmac/dv/kmac_sim_cfg.hjson -i km
 ```
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/kmac_base_testplan.hjson" "testplan" >}}
+{{< incGenFromIpDesc "../../data/kmac_testplan.hjson" "testplan" >}}
