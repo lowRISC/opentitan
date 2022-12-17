@@ -15,6 +15,8 @@ ARG RUST_VERSION=1.60.0
 ARG BAZELISK_VERSION=v1.11.0
 # This should match the version in ci/install-package-dependencies.sh
 ARG GCC_VERSION=9
+# This should match the version of the lowRISC RISC-V toolchain.
+ARG CLANG_VERSION=13
 
 # Main container image.
 FROM ubuntu:20.04 AS opentitan
@@ -24,6 +26,7 @@ ARG RISCV_TOOLCHAIN_TAR_VERSION
 ARG RUST_VERSION
 ARG BAZELISK_VERSION
 ARG GCC_VERSION
+ARG CLANG_VERSION
 
 LABEL version="1.0"
 LABEL description="OpenTitan development container."
@@ -95,6 +98,54 @@ RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
 COPY util/get-toolchain.py /tmp/get-toolchain.py
 RUN /tmp/get-toolchain.py -r ${RISCV_TOOLCHAIN_TAR_VERSION} \
     && rm -f /tmp/get-toolchain.py
+
+# Install and configure clang and llvm tools for coverage measurements.
+# Note: Some commands listed below are missing in 13.0.1 and cause warnings during
+# build. These are kept intentionally since we plan to use them in the future, e.g.
+# `llvm-remark-size-diff` and `llvm-tli-checker`.
+RUN curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add \
+    && add-apt-repository "deb https://apt.llvm.org/focal/ llvm-toolchain-focal-${CLANG_VERSION} main" \
+    && apt update \
+    && apt install -y clang-${CLANG_VERSION} lldb-${CLANG_VERSION} lld-${CLANG_VERSION} \
+        clangd-${CLANG_VERSION} clang-tidy-${CLANG_VERSION} clang-format-${CLANG_VERSION} \
+        clang-tools-${CLANG_VERSION} llvm-${CLANG_VERSION} lld-${CLANG_VERSION} \
+        llvm-${CLANG_VERSION}-tools \
+    && ( \
+        primary="llvm-config"; \
+        secondary="llvm-addr2line llvm-ar llvm-as llvm-bcanalyzer llvm-bitcode-strip \
+            llvm-cat llvm-cfi-verify llvm-cov llvm-c-test llvm-cvtres llvm-cxxdump llvm-cxxfilt \
+            llvm-cxxmap llvm-debuginfod llvm-debuginfod-find llvm-diff llvm-dis llvm-dlltool \
+            llvm-dwarfdump llvm-dwarfutil llvm-dwp llvm-exegesis llvm-extract llvm-gsymutil llvm-ifs \
+            llvm-install-name-tool llvm-jitlink llvm-jitlink-executor llvm-lib llvm-libtool-darwin \
+            llvm-link llvm-lipo llvm-lto llvm-lto2 llvm-mc llvm-mca llvm-ml llvm-modextract llvm-mt \
+            llvm-nm llvm-objcopy llvm-objdump llvm-omp-device-info llvm-opt-report llvm-otool \
+            llvm-pdbutil llvm-PerfectShuffle llvm-profdata llvm-profgen llvm-ranlib llvm-rc \
+            llvm-readelf llvm-readobj llvm-reduce llvm-remark-size-diff llvm-rtdyld llvm-sim \
+            llvm-size llvm-split llvm-stress llvm-strings llvm-strip llvm-symbolizer llvm-tapi-diff \
+            llvm-tblgen llvm-tli-checker llvm-undname llvm-windres llvm-xray"; \
+        cmd="update-alternatives --verbose --install /usr/bin/${primary} ${primary} /usr/bin/${primary}-${CLANG_VERSION} 90";\
+        for s in ${secondary}; do \
+            cmd="${cmd} --slave /usr/bin/${s} ${s} /usr/bin/${s}-${CLANG_VERSION}"; \
+        done; \
+        ${cmd} ; \
+        primary="clang"; \
+        secondary="analyze-build asan_symbolize bugpoint c-index-test clang++ \
+            clang-apply-replacements clang-change-namespace clang-check clang-cl clang-cpp clangd \
+            clang-doc clang-extdef-mapping clang-format clang-format-diff clang-include-fixer \
+            clang-linker-wrapper clang-move clang-nvlink-wrapper clang-offload-bundler \
+            clang-offload-packager clang-offload-wrapper clang-pseudo clang-query clang-refactor \
+            clang-rename clang-reorder-fields clang-repl clang-scan-deps clang-tidy count diagtool \
+            dsymutil FileCheck find-all-symbols git-clang-format hmaptool hwasan_symbolize \
+            intercept-build ld64.lld ld.lld llc lld lldb lldb-argdumper lldb-instr lldb-server \
+            lldb-vscode lld-link lli lli-child-target modularize not obj2yaml opt pp-trace \
+            run-clang-tidy sancov sanstats scan-build scan-build-py scan-view split-file \
+            UnicodeNameMappingGenerator verify-uselistorder wasm-ld yaml2obj yaml-bench"; \
+        cmd="update-alternatives --verbose --install /usr/bin/${primary} ${primary} /usr/bin/${primary}-${CLANG_VERSION} 90";\
+        for s in ${secondary}; do \
+            cmd="${cmd} --slave /usr/bin/${s} ${s} /usr/bin/${s}-${CLANG_VERSION}"; \
+        done; \
+        ${cmd} ; \
+    )
 
 # Install Verible
 RUN curl -f -Ls -o verible.tar.gz \
