@@ -11,6 +11,7 @@
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
+#include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
@@ -38,6 +39,7 @@ static dif_edn_t edn_0;
 static dif_edn_t edn_1;
 static dif_aes_t aes;
 static dif_hmac_t hmac;
+static dif_kmac_t kmac;
 
 /**
  * Test configuration parameters.
@@ -56,6 +58,14 @@ enum {
    */
   kEdn0ReseedInterval = 32,
   kEdn1ReseedInterval = 4,
+  /**
+   * KMAC parameters.
+   */
+  kKmacEntropyReseedInterval = 1,
+  kKmacEntropyHashThreshold = 1,  // KMAC operations between entropy requests
+  kKmacEntropyWaitTimer = 0xffff,
+  kKmacEntropyPrescaler = 0x3ff,
+  kKmacDigestLength = 16,
 };
 
 /**
@@ -69,6 +79,13 @@ static const uint8_t kAesKeyShare1[] = {
 
 static const uint8_t kHmacKey[] = {
     0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f,
+};
+
+static const dif_kmac_key_t kKmacKey = {
+    .share0 = {0x43424140, 0x47464544, 0x4b4a4948, 0x4f4e4f4c, 0x53525150,
+               0x57565554, 0x5b5a5958, 0x5f5e5d5c},
+    .share1 = {0},
+    .length = kDifKmacKeyLen256,
 };
 
 /**
@@ -91,6 +108,8 @@ static void init_peripheral_handles() {
       dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(
+      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
 }
@@ -278,6 +297,30 @@ static void configure_hmac() {
   CHECK_DIF_OK(dif_hmac_mode_hmac_start(&hmac, kHmacKey, hmac_transaction_cfg));
 }
 
+static void configure_kmac() {
+  dif_kmac_config_t kmac_cfg = (dif_kmac_config_t){
+      .entropy_mode = kDifKmacEntropyModeEdn,
+      .entropy_fast_process = kDifToggleDisabled,
+      .entropy_hash_threshold = kKmacEntropyHashThreshold,
+      .entropy_wait_timer = kKmacEntropyWaitTimer,
+      .entropy_prescaler = kKmacEntropyPrescaler,
+      .message_big_endian = false,
+      .output_big_endian = false,
+      .sideload = false,
+      .msg_mask = false,
+  };
+  CHECK_DIF_OK(dif_kmac_configure(&kmac, kmac_cfg));
+
+  dif_kmac_customization_string_t kmac_customization_string;
+  CHECK_DIF_OK(dif_kmac_customization_string_init("Power Virus Test", 16,
+                                                  &kmac_customization_string));
+
+  dif_kmac_operation_state_t kmac_operation_state;
+  CHECK_DIF_OK(dif_kmac_mode_kmac_start(
+      &kmac, &kmac_operation_state, kDifKmacModeKmacLen256, kKmacDigestLength,
+      &kKmacKey, &kmac_customization_string));
+}
+
 bool test_main(void) {
   init_peripheral_handles();
   configure_gpio_indicator_pin();
@@ -285,5 +328,6 @@ bool test_main(void) {
   configure_entropy_complex();
   configure_aes();
   configure_hmac();
+  configure_kmac();
   return true;
 }
