@@ -2030,6 +2030,7 @@ opentitan_functest(
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:hmac",
+        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
