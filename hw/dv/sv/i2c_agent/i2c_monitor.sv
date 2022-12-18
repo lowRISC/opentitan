@@ -39,7 +39,7 @@ class i2c_monitor extends dv_base_monitor #(
     if (cfg.if_mode == Host) begin
       bit r_bit = 1'b0;
       i2c_item full_item;
-      fork begin
+      fork
         forever begin
           wait(cfg.en_monitor);
           if (mon_dut_item.stop ||
@@ -83,7 +83,7 @@ class i2c_monitor extends dv_base_monitor #(
           mon_dut_item.clear_data();
         end // forever begin
         ack_stop_mon();
-      end join_none
+      join_none
     end else begin
       forever begin
         fork
@@ -279,7 +279,6 @@ class i2c_monitor extends dv_base_monitor #(
     mon_dut_item.nack   = 1'b0;
     mon_rstart = 0;
     target_read_phase = 1;
-
     // Previous data collecting thread replied on nack / stop
     // For ack / stop test, this thread need to be forked with
     // separate ack_stop_monitor
