@@ -32,7 +32,7 @@ class i2c_host_stress_all_vseq extends i2c_rx_tx_vseq;
     // otherwise it is excluded for stress_all_with_rand_reset test
     if (common_seq_type != "stress_all_with_rand_reset") begin
       uint size = seq_names.size();
-      seq_names.push_back("i2c_error_intr_vseq");
+      seq_names.push_back("i2c_host_error_intr_vseq");
     end
   endtask : pre_start
 

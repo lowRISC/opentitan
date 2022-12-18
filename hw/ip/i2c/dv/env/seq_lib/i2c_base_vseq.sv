@@ -579,7 +579,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       if (myq[i].rstart) begin
         if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
           if (read) begin
-            `uvm_info("seq", $sformatf("xeos: %s", (read_ack_nack_q[rd_idx++]) ?
+            `uvm_info("seq", $sformatf("eos: %s", (read_ack_nack_q[rd_idx++]) ?
                                        "NACK" : "ACK"), UVM_MEDIUM)
           end
         end
