@@ -15,6 +15,21 @@
 namespace memory_unittest {
 namespace {
 
+// Wrappers for builtins because they must be called directly when building with
+// clang.
+
+void *builtin_memcpy_wrapper(void *dest, const void *src, size_t count) {
+  return __builtin_memcpy(dest, src, count);
+}
+
+int builtin_memcmp_wrapper(const void *lhs, const void *rhs, size_t count) {
+  return __builtin_memcmp(lhs, rhs, count);
+}
+
+void *builtin_memset_wrapper(void *dest, int ch, size_t count) {
+  return __builtin_memset(dest, ch, count);
+}
+
 // Reference implementations of memory functions.
 
 enum {
@@ -71,12 +86,12 @@ class MemSetTest : public ::testing::TestWithParam<decltype(&ot_memset)> {};
 class MemChrTest : public ::testing::TestWithParam<decltype(&ot_memchr)> {};
 
 INSTANTIATE_TEST_SUITE_P(MemCpy, MemCpyTest,
-                         ::testing::Values(ot_memcpy, __builtin_memcpy));
+                         ::testing::Values(ot_memcpy, builtin_memcpy_wrapper));
 INSTANTIATE_TEST_SUITE_P(MemCmp, MemCmpTest,
-                         ::testing::Values(ot_memcmp, __builtin_memcmp, memrcmp,
-                                           ref_memrcmp));
+                         ::testing::Values(ot_memcmp, builtin_memcmp_wrapper,
+                                           memrcmp, ref_memrcmp));
 INSTANTIATE_TEST_SUITE_P(MemSet, MemSetTest,
-                         ::testing::Values(ot_memset, __builtin_memset));
+                         ::testing::Values(ot_memset, builtin_memset_wrapper));
 INSTANTIATE_TEST_SUITE_P(MemChr, MemChrTest,
                          ::testing::Values(ot_memchr, ref_memchr, ot_memrchr,
                                            ref_memrchr));
