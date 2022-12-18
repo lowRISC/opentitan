@@ -274,7 +274,6 @@ TEST_P(MemChrTest, NonNullButEmpty) {
   auto memchr_func = GetParam();
 
   const uint8_t kEmpty[] = {};
-  static_assert(kEmpty != nullptr, "kEmpty should have an address");
   static_assert(sizeof(kEmpty) == 0, "kEmpty should contain zero bytes");
 
   EXPECT_EQ(memchr_func(kEmpty, 0, sizeof(kEmpty)), nullptr);
