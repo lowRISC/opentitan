@@ -24,9 +24,9 @@ def _bitstreams_repo_impl(rctx):
     if result.return_code != 0:
         fail("Bitstream cache not initialized properly.")
 
-# The bitstream repo is evaluated on every invocation of bazel.
-# Once the cache is initialized, a typical invocation will find the latest
-# cached bitstream and configure it for use as a test artifact.
+# The bitstream repo should be evaluated with `bazel sync --configure` after
+# every Git checkout. Once the cache is initialized, a typical invocation will
+# find the latest cached artifacts and map them to Bazel targets.
 #
 # The `refresh_time` sets the interval at which the cache manager will
 # check for new bitstreams.
@@ -75,5 +75,10 @@ bitstreams_repo = repository_rule(
         ),
     },
     environ = ["BAZEL_BITSTREAMS_CACHE", "BITSTREAM"],
-    local = True,
+    # This rule depends on the Git repository, but there's no ergonomic way to
+    # encode the dependency in Bazel. Instead, indicate that the rule depends on
+    # something outside of Bazel's dependency graph and rely on the user calling
+    # `bazel sync --configure` when checking out new revisions. For historical
+    # context, see <https://github.com/lowRISC/opentitan/issues/16832>.
+    configure = True,
 )

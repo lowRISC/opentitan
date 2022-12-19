@@ -45,6 +45,16 @@ This can be spliced into the bitstream to overwrite the testing boot ROM as desc
 However, if you do not want to do the splicing yourself, both versions of the bitstream are available in the download as `*.bit.orig` and `*.bit.splice` (containing the test ROM and the ROM respectively).
 The metadata for the latest bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be [downloaded separately](https://storage.googleapis.com/opentitan-bitstreams/master/latest.txt).
 
+### Using the `@bitstreams` repository
+
+OpenTitan's build system automatically fetches pre-built bitstreams via the `@bitstreams` repository.
+
+To keep the `@bitstreams` repository in sync with the current Git revision, install the Git post-checkout hook:
+
+```sh
+cp util/git/hooks/post-checkout .git/hooks/
+```
+
 ### Build an FPGA bitstream
 
 Synthesizing a design for an FPGA board is simple with Bazel.
