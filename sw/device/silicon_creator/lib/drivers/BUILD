@@ -293,6 +293,19 @@ opentitan_functest(
     ],
 )
 
+cc_library(
+    name = "kmac",
+    srcs = ["kmac.c"],
+    hdrs = ["kmac.h"],
+    deps = [
+        "//hw/ip/kmac/data:kmac_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
 dual_cc_library(
     name = "lifecycle",
     srcs = dual_inputs(

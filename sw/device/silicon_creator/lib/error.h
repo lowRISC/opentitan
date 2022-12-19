@@ -33,6 +33,7 @@ enum module_ {
   kModuleRom =          MODULE_CODE('M', 'R'),
   kModuleInterrupt =    MODULE_CODE('I', 'R'),
   kModuleEpmp =         MODULE_CODE('E', 'P'),
+  kModuleKmac =         MODULE_CODE('K', 'C'),
   kModuleOtbn =         MODULE_CODE('B', 'N'),
   kModuleFlashCtrl =    MODULE_CODE('F', 'C'),
   kModuleBootPolicy =   MODULE_CODE('B', 'P'),
@@ -93,6 +94,8 @@ enum module_ {
   X(kErrorInterrupt,                  ERROR_(0, kModuleInterrupt, kUnknown)), \
   \
   X(kErrorEpmpBadCheck,               ERROR_(1, kModuleEpmp, kInternal)), \
+  \
+  X(kErrorKmacInvalidStatus,          ERROR_(1, kModuleKmac, kInternal)), \
   \
   X(kErrorOtbnInvalidArgument,        ERROR_(1, kModuleOtbn, kInvalidArgument)), \
   X(kErrorOtbnBadOffsetLen,           ERROR_(2, kModuleOtbn, kInvalidArgument)), \
