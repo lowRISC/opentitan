@@ -23,10 +23,10 @@ dual_cc_library(
     name = "mod_exp_ibex",
     srcs = dual_inputs(
         device = ["mod_exp_ibex.c"],
-        host = ["mod_exp_ibex_mock.cc"],
+        host = ["mock_mod_exp_ibex.cc"],
     ),
     hdrs = dual_inputs(
-        host = ["mod_exp_ibex_mock.h"],
+        host = ["mock_mod_exp_ibex.h"],
         shared = ["mod_exp_ibex.h"],
     ),
     deps = dual_inputs(
@@ -93,10 +93,10 @@ dual_cc_library(
     name = "mod_exp_otbn",
     srcs = dual_inputs(
         device = ["mod_exp_otbn.c"],
-        host = ["mod_exp_otbn_mock.cc"],
+        host = ["mock_mod_exp_otbn.cc"],
     ),
     hdrs = dual_inputs(
-        host = ["mod_exp_otbn_mock.h"],
+        host = ["mock_mod_exp_otbn.h"],
         shared = ["mod_exp_otbn.h"],
     ),
     target_compatible_with = dual_inputs(
@@ -223,7 +223,7 @@ cc_library(
 )
 
 cc_library(
-    name = "sigverify_without_mod_exp_ibex_mock",
+    name = "sigverify_without_mock_mod_exp_ibex",
     visibility = ["//sw/device/silicon_creator/rom:__pkg__"],
     deps = [
         dual_cc_device_library_of(":mod_exp_ibex"),
