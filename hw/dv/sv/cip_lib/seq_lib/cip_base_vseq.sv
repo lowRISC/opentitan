@@ -29,10 +29,6 @@ class cip_base_vseq #(
 
   bit expect_fatal_alerts = 1'b0;
 
-  // knobs to enable alert auto reponse, once disabled it won't be able to enable again unless
-  // reset is issued
-  bit en_auto_alerts_response = 1'b1;
-
   // knob to enable/disable running csr_vseq with passthru_mem_tl_intg_err
   bit en_csr_vseq_w_passthru_mem_intg = 1;
 
@@ -100,8 +96,6 @@ class cip_base_vseq #(
         `DV_WAIT(cfg.m_alert_agent_cfgs[cfg.list_of_alerts[i]].alert_init_done == 1)
       end
     end
-
-    if (en_auto_alerts_response && cfg.list_of_alerts.size()) run_alert_rsp_seq_nonblocking();
   endtask
 
   function void pre_randomize();
@@ -115,7 +109,12 @@ class cip_base_vseq #(
 
   task pre_start();
     if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
-    if (common_seq_type == "alert_test") en_auto_alerts_response = 0;
+    if (common_seq_type == "alert_test") begin
+      // The sequence will wait until alert checked then drive response manually.
+      foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
+        cfg.m_alert_agent_cfgs[alert_name].start_default_rsp_seq = 0;
+      end
+    end
 
     csr_utils_pkg::max_outstanding_accesses = 1 << BUS_AIW;
     super.pre_start();
@@ -947,32 +946,6 @@ class cip_base_vseq #(
     // there's no need to wait longer than 1000 cycles (which would be ~100 TL transactions).
     run_seq_with_rand_reset_vseq(.seq(cip_seq), .num_times(num_times), .do_tl_err(1),
                                  .reset_delay_bound(1000));
-  endtask
-
-  virtual task run_alert_rsp_seq_nonblocking();
-    foreach (cfg.list_of_alerts[i]) begin
-      if (cfg.m_alert_agent_cfgs[cfg.list_of_alerts[i]].is_active) begin
-        automatic string alert_name = cfg.list_of_alerts[i];
-        fork
-          begin
-            fork
-              forever begin
-                alert_receiver_alert_rsp_seq ack_seq =
-                    alert_receiver_alert_rsp_seq::type_id::create("ack_seq");
-                `DV_CHECK_RANDOMIZE_FATAL(ack_seq);
-                ack_seq.start(p_sequencer.alert_esc_sequencer_h[alert_name]);
-              end
-              begin
-                // TODO: issue #16374.
-                wait(!en_auto_alerts_response || cfg.m_alert_agent_cfgs[alert_name].under_reset);
-                cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();
-              end
-            join_any
-            disable fork;
-          end
-        join_none
-      end
-    end
   endtask
 
   // TLUL mask must be contiguous, e.g. 'b1001, 'b1010 aren't allowed

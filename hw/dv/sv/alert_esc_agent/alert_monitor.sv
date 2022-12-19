@@ -156,13 +156,16 @@ class alert_monitor extends alert_esc_base_monitor;
         if (cfg.en_lpg_cov && cfg.en_cov) begin
           cov.m_alert_lpg_cg.sample(cfg.en_alert_lpg);
         end
-        if (!cfg.en_alert_lpg) begin
+
+        if (!cfg.en_alert_lpg && !cfg.under_reset) begin
           req = alert_esc_seq_item::type_id::create("req");
           req.alert_esc_type = AlertEscSigTrans;
           req.alert_handshake_sta = AlertReceived;
 
           // Write alert packet to scb when receiving alert signal
           alert_esc_port.write(req);
+          // Write alert packet to sequence for auto alert responses.
+          req_analysis_port.write(req);
 
           // Duplicate req for writing alert packet at the end of alert handshake
           `downcast(req, req.clone())
@@ -225,8 +228,9 @@ class alert_monitor extends alert_esc_base_monitor;
 
   virtual task wait_ping_thread();
     alert_esc_seq_item req = alert_esc_seq_item::type_id::create("req");
+    req.alert_esc_type = AlertEscPingTrans;
     forever begin
-      logic              ping_p_value;
+      logic ping_p_value;
       wait (!under_reset && !cfg.en_alert_lpg);
 
       `DV_SPINWAIT_EXIT(
