@@ -27,7 +27,7 @@ class alert_sender_ping_rsp_seq extends alert_sender_base_seq;
     fork
       forever begin : get_req
         p_sequencer.req_analysis_fifo.get(req);
-        req_q.push_back(req);
+        if (req.alert_esc_type == AlertEscPingTrans) req_q.push_back(req);
       end : get_req
       forever begin : send_rsp
         if (cfg.in_reset) begin
