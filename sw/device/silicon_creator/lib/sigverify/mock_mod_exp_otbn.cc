@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/sigverify/mod_exp_otbn_mock.h"
+#include "sw/device/silicon_creator/lib/sigverify/mock_mod_exp_otbn.h"
 
 namespace rom_test {
 extern "C" {

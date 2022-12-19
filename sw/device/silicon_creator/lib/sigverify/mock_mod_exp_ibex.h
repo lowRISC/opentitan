@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOD_EXP_IBEX_MOCK_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOD_EXP_IBEX_MOCK_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOCK_MOD_EXP_IBEX_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOCK_MOD_EXP_IBEX_H_
 
 #include "sw/device/lib/base/global_mock.h"
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_ibex.h"
@@ -29,4 +29,4 @@ using MockSigverifyModExpIbex =
     testing::StrictMock<internal::MockSigverifyModExpIbex>;
 }  // namespace rom_test
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOD_EXP_IBEX_MOCK_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOCK_MOD_EXP_IBEX_H_
