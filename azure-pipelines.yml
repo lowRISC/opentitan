@@ -469,6 +469,7 @@ jobs:
       echo "Implementation log"
       cat $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/build.fpga_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/impl_1/runme.log || true
     displayName: Display synthesis & implementation logs
+    condition: succeededOrFailed()
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
