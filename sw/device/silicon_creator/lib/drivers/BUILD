@@ -306,6 +306,32 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "kmac_unittest",
+    srcs = ["kmac_unittest.cc"],
+    deps = [
+        ":kmac",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_functest(
+    name = "kmac_functest",
+    srcs = ["kmac_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":kmac",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:test_main",
+    ],
+)
+
 dual_cc_library(
     name = "lifecycle",
     srcs = dual_inputs(
