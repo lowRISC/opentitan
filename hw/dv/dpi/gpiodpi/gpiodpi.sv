@@ -14,7 +14,7 @@ module gpiodpi
   input  logic [N_GPIO-1:0] gpio_d2p,
   input  logic [N_GPIO-1:0] gpio_en_d2p,
   input  logic [N_GPIO-1:0] gpio_pull_en,
-  input  logic [N_GPIO-1:0] gpio_pull_sel,
+  input  logic [N_GPIO-1:0] gpio_pull_sel
 );
    import "DPI-C" function
      chandle gpiodpi_create(input string name, input int n_bits);
