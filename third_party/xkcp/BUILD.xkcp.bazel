@@ -1,0 +1,51 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "nist_fips_202",
+    srcs = [
+        "common/align.h",
+        "common/brg_endian.h",
+        "config.h",
+        "high/Keccak/FIPS202/KeccakHash.c",
+        "high/Keccak/FIPS202/KeccakHash.h",
+        "high/Keccak/FIPS202/SimpleFIPS202.c",
+        "high/Keccak/KeccakSponge.c",
+        "high/Keccak/KeccakSponge.h",
+        "high/Keccak/KeccakSponge.inc",
+        "low/KeccakP-1600/ref-64bits/KeccakP-1600-SnP.h",
+        "low/KeccakP-1600/ref-64bits/KeccakP-1600-reference.c",
+        "low/KeccakP-1600/ref-64bits/KeccakP-1600-reference.h",
+    ],
+    hdrs = [
+        "high/Keccak/FIPS202/SimpleFIPS202.h",
+    ],
+    includes = [
+        "common",
+        "high/Keccak",
+        "high/Keccak/FIPS202",
+        "low/KeccakP-1600/ref-64bits",
+    ],
+)
+
+cc_library(
+    name = "nist_sp_800_185",
+    srcs = [
+        "high/Keccak/SP800-185/SP800-185.c",
+        "high/Keccak/SP800-185/SP800-185.inc",
+        "high/common/Phases.h",
+    ],
+    hdrs = [
+        "high/Keccak/SP800-185/SP800-185.h",
+    ],
+    includes = [
+        "high/Keccak/SP800-185",
+        "high/common",
+    ],
+    deps = [
+        "nist_fips_202",
+    ],
+)

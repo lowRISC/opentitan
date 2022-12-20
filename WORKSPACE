@@ -92,6 +92,10 @@ riscv_compliance_repos()
 load("//third_party/coremark:repos.bzl", "coremark_repos")
 coremark_repos()
 
+# The standard Keccak algorithms
+load("//third_party/xkcp:repos.bzl", "xkcp_repos")
+xkcp_repos()
+
 # Bitstreams from https://storage.googleapis.com/opentitan-bitstreams/
 load("//rules:bitstreams.bzl", "bitstreams_repo")
 bitstreams_repo(name = "bitstreams")
