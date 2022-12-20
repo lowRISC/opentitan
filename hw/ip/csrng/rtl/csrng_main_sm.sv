@@ -7,29 +7,29 @@
 //  - handles all app cmd requests from all requesting interfaces
 
 module csrng_main_sm import csrng_pkg::*; #() (
-  input logic                   clk_i,
-  input logic                   rst_ni,
+  input logic                         clk_i,
+  input logic                         rst_ni,
 
-  input logic                   enable_i,
-  input logic                   acmd_avail_i,
-  output logic                  acmd_accept_o,
-  input logic [2:0]             acmd_i,
-  input logic                   acmd_eop_i,
-  input logic                   ctr_drbg_cmd_req_rdy_i,
-  input logic                   flag0_i,
-  output logic                  cmd_entropy_req_o,
-  input logic                   cmd_entropy_avail_i,
-  output logic                  instant_req_o,
-  output logic                  reseed_req_o,
-  output logic                  generate_req_o,
-  output logic                  update_req_o,
-  output logic                  uninstant_req_o,
-  output logic                  clr_adata_packer_o,
-  input logic                   cmd_complete_i,
-  input logic                   local_escalate_i,
+  input logic                         enable_i,
+  input logic                         acmd_avail_i,
+  output logic                        acmd_accept_o,
+  input logic [2:0]                   acmd_i,
+  input logic                         acmd_eop_i,
+  input logic                         ctr_drbg_cmd_req_rdy_i,
+  input logic                         flag0_i,
+  output logic                        cmd_entropy_req_o,
+  input logic                         cmd_entropy_avail_i,
+  output logic                        instant_req_o,
+  output logic                        reseed_req_o,
+  output logic                        generate_req_o,
+  output logic                        update_req_o,
+  output logic                        uninstant_req_o,
+  output logic                        clr_adata_packer_o,
+  input logic                         cmd_complete_i,
+  input logic                         local_escalate_i,
   output logic [MainSmStateWidth-1:0] main_sm_state_o,
-  output logic                  main_sm_alert_o,
-  output logic                  main_sm_err_o
+  output logic                        main_sm_alert_o,
+  output logic                        main_sm_err_o
 );
 
   main_sm_state_e state_d, state_q;
@@ -38,17 +38,17 @@ module csrng_main_sm import csrng_pkg::*; #() (
   assign main_sm_state_o = {state_q};
 
   always_comb begin
-    state_d = state_q;
-    acmd_accept_o = 1'b0;
-    cmd_entropy_req_o = 1'b0;
-    instant_req_o = 1'b0;
-    reseed_req_o = 1'b0;
-    generate_req_o = 1'b0;
-    update_req_o = 1'b0;
-    uninstant_req_o = 1'b0;
+    state_d            = state_q;
+    acmd_accept_o      = 1'b0;
+    cmd_entropy_req_o  = 1'b0;
+    instant_req_o      = 1'b0;
+    reseed_req_o       = 1'b0;
+    generate_req_o     = 1'b0;
+    update_req_o       = 1'b0;
+    uninstant_req_o    = 1'b0;
     clr_adata_packer_o = 1'b0;
-    main_sm_alert_o = 1'b0;
-    main_sm_err_o = 1'b0;
+    main_sm_alert_o    = 1'b0;
+    main_sm_err_o      = 1'b0;
 
     if (state_q == MainSmError) begin
       // In case we are in the Error state we must ignore the local escalate and enable signals.

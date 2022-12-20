@@ -12,41 +12,41 @@ module csrng_core import csrng_pkg::*; #(
   parameter cs_keymgr_div_t RndCnstCsKeymgrDivNonProduction = CsKeymgrDivWidth'(0),
   parameter cs_keymgr_div_t RndCnstCsKeymgrDivProduction = CsKeymgrDivWidth'(0)
 ) (
-  input logic        clk_i,
-  input logic        rst_ni,
+  input logic                                     clk_i,
+  input logic                                     rst_ni,
 
-  input  csrng_reg_pkg::csrng_reg2hw_t reg2hw,
-  output csrng_reg_pkg::csrng_hw2reg_t hw2reg,
+  input  csrng_reg_pkg::csrng_reg2hw_t            reg2hw,
+  output csrng_reg_pkg::csrng_hw2reg_t            hw2reg,
 
   // Efuse Interface
-  input  prim_mubi_pkg::mubi8_t otp_en_csrng_sw_app_read_i,
+  input  prim_mubi_pkg::mubi8_t                   otp_en_csrng_sw_app_read_i,
 
   // Lifecycle broadcast inputs
-  input  lc_ctrl_pkg::lc_tx_t  lc_hw_debug_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                     lc_hw_debug_en_i,
 
   // Entropy Interface
   output entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_o,
   input  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_i,
 
   // Entropy Interface
-  input  entropy_src_pkg::cs_aes_halt_req_t cs_aes_halt_i,
-  output entropy_src_pkg::cs_aes_halt_rsp_t cs_aes_halt_o,
+  input  entropy_src_pkg::cs_aes_halt_req_t       cs_aes_halt_i,
+  output entropy_src_pkg::cs_aes_halt_rsp_t       cs_aes_halt_o,
 
   // Application Interfaces
-  input  csrng_req_t  [NHwApps-1:0] csrng_cmd_i,
-  output csrng_rsp_t  [NHwApps-1:0] csrng_cmd_o,
+  input  csrng_req_t [NHwApps-1:0]                csrng_cmd_i,
+  output csrng_rsp_t [NHwApps-1:0]                csrng_cmd_o,
 
   // Alerts
 
-  output logic           recov_alert_test_o,
-  output logic           fatal_alert_test_o,
-  output logic           recov_alert_o,
-  output logic           fatal_alert_o,
+  output logic                                    recov_alert_test_o,
+  output logic                                    fatal_alert_test_o,
+  output logic                                    recov_alert_o,
+  output logic                                    fatal_alert_o,
 
-  output logic           intr_cs_cmd_req_done_o,
-  output logic           intr_cs_entropy_req_o,
-  output logic           intr_cs_hw_inst_exc_o,
-  output logic           intr_cs_fatal_err_o
+  output logic                                    intr_cs_cmd_req_done_o,
+  output logic                                    intr_cs_entropy_req_o,
+  output logic                                    intr_cs_hw_inst_exc_o,
+  output logic                                    intr_cs_fatal_err_o
 );
 
   import csrng_reg_pkg::*;
@@ -78,334 +78,334 @@ module csrng_core import csrng_pkg::*; #(
 
   // signals
   // interrupt signals
-  logic       event_cs_cmd_req_done;
-  logic       event_cs_entropy_req;
-  logic       event_cs_hw_inst_exc;
-  logic       event_cs_fatal_err;
-  logic [CsEnableCopies-1:1] cs_enable_fo;
-  logic [Flag0Copies-1:0]    flag0_fo;
-  logic       acmd_flag0_pfa;
-  logic       cs_enable_pfa;
-  logic       sw_app_enable;
-  logic       sw_app_enable_pfe;
-  logic       sw_app_enable_pfa;
-  logic       read_int_state;
-  logic       read_int_state_pfe;
-  logic       read_int_state_pfa;
-  logic       recov_alert_event;
-  logic       acmd_avail;
-  logic       acmd_sop;
-  logic       acmd_mop;
-  logic       acmd_eop;
+  logic                        event_cs_cmd_req_done;
+  logic                        event_cs_entropy_req;
+  logic                        event_cs_hw_inst_exc;
+  logic                        event_cs_fatal_err;
+  logic [CsEnableCopies-1:1]   cs_enable_fo;
+  logic [Flag0Copies-1:0]      flag0_fo;
+  logic                        acmd_flag0_pfa;
+  logic                        cs_enable_pfa;
+  logic                        sw_app_enable;
+  logic                        sw_app_enable_pfe;
+  logic                        sw_app_enable_pfa;
+  logic                        read_int_state;
+  logic                        read_int_state_pfe;
+  logic                        read_int_state_pfa;
+  logic                        recov_alert_event;
+  logic                        acmd_avail;
+  logic                        acmd_sop;
+  logic                        acmd_mop;
+  logic                        acmd_eop;
 
-  logic       cmd_blk_select;
-  logic       gen_blk_select;
-  logic       state_db_wr_req_rdy;
-  logic       state_db_wr_req;
-  logic [StateId-1:0] state_db_wr_inst_id;
-  logic [KeyLen-1:0]  state_db_wr_key;
-  logic [BlkLen-1:0]  state_db_wr_v;
-  logic [CtrLen-1:0]  state_db_wr_rc;
-  logic               state_db_wr_sts;
-  logic               state_db_wr_fips;
-  logic [Cmd-1:0]     state_db_wr_ccmd;
+  logic                        cmd_blk_select;
+  logic                        gen_blk_select;
+  logic                        state_db_wr_req_rdy;
+  logic                        state_db_wr_req;
+  logic [StateId-1:0]          state_db_wr_inst_id;
+  logic [KeyLen-1:0]           state_db_wr_key;
+  logic [BlkLen-1:0]           state_db_wr_v;
+  logic [CtrLen-1:0]           state_db_wr_rc;
+  logic                        state_db_wr_sts;
+  logic                        state_db_wr_fips;
+  logic [Cmd-1:0]              state_db_wr_ccmd;
 
-  logic [AppCmdWidth-1:0] acmd_bus;
+  logic [AppCmdWidth-1:0]      acmd_bus;
 
-  logic [SeedLen-1:0]     packer_adata;
-  logic [ADataDepthClog-1:0] packer_adata_depth;
-  logic                   packer_adata_pop;
-  logic                   packer_adata_clr;
-  logic [SeedLen-1:0]     seed_diversification;
+  logic [SeedLen-1:0]          packer_adata;
+  logic [ADataDepthClog-1:0]   packer_adata_depth;
+  logic                        packer_adata_pop;
+  logic                        packer_adata_clr;
+  logic [SeedLen-1:0]          seed_diversification;
 
-  logic                   cmd_entropy_req;
-  logic                   cmd_entropy_avail;
-  logic                   cmd_entropy_fips;
-  logic [SeedLen-1:0]     cmd_entropy;
+  logic                        cmd_entropy_req;
+  logic                        cmd_entropy_avail;
+  logic                        cmd_entropy_fips;
+  logic [SeedLen-1:0]          cmd_entropy;
 
-  logic                   cmd_result_wr_req;
-  logic                   cmd_result_ack;
-  logic                   cmd_result_ack_sts;
-  logic [Cmd-1:0]         cmd_result_ccmd;
-  logic                   cmd_result_ack_rdy;
-  logic [StateId-1:0]     cmd_result_inst_id;
-  logic                   cmd_result_glast;
-  logic                   cmd_result_fips;
-  logic [SeedLen-1:0]     cmd_result_adata;
-  logic [KeyLen-1:0]      cmd_result_key;
-  logic [BlkLen-1:0]      cmd_result_v;
-  logic [CtrLen-1:0]      cmd_result_rc;
+  logic                        cmd_result_wr_req;
+  logic                        cmd_result_ack;
+  logic                        cmd_result_ack_sts;
+  logic [Cmd-1:0]              cmd_result_ccmd;
+  logic                        cmd_result_ack_rdy;
+  logic [StateId-1:0]          cmd_result_inst_id;
+  logic                        cmd_result_glast;
+  logic                        cmd_result_fips;
+  logic [SeedLen-1:0]          cmd_result_adata;
+  logic [KeyLen-1:0]           cmd_result_key;
+  logic [BlkLen-1:0]           cmd_result_v;
+  logic [CtrLen-1:0]           cmd_result_rc;
 
-  logic                   state_db_sts_ack;
-  logic                   state_db_sts_sts;
-  logic [StateId-1:0]     state_db_sts_id;
+  logic                        state_db_sts_ack;
+  logic                        state_db_sts_sts;
+  logic [StateId-1:0]          state_db_sts_id;
 
-  logic                   gen_result_wr_req;
-  logic                   gen_result_ack_sts;
-  logic                   gen_result_ack_rdy;
-  logic [Cmd-1:0]         gen_result_ccmd;
-  logic [StateId-1:0]     gen_result_inst_id;
-  logic                   gen_result_fips;
-  logic [KeyLen-1:0]      gen_result_key;
-  logic [BlkLen-1:0]      gen_result_v;
-  logic [CtrLen-1:0]      gen_result_rc;
-  logic [BlkLen-1:0]      gen_result_bits;
+  logic                        gen_result_wr_req;
+  logic                        gen_result_ack_sts;
+  logic                        gen_result_ack_rdy;
+  logic [Cmd-1:0]              gen_result_ccmd;
+  logic [StateId-1:0]          gen_result_inst_id;
+  logic                        gen_result_fips;
+  logic [KeyLen-1:0]           gen_result_key;
+  logic [BlkLen-1:0]           gen_result_v;
+  logic [CtrLen-1:0]           gen_result_rc;
+  logic [BlkLen-1:0]           gen_result_bits;
 
-  logic                   acmd_accept;
-  logic                   instant_req;
-  logic                   reseed_req;
-  logic                   generate_req;
-  logic                   update_req;
-  logic                   uninstant_req;
-  logic                   clr_adata_packer;
-  logic [Cmd-1:0]         ctr_drbg_cmd_ccmd;
-  logic                   ctr_drbg_cmd_req;
-  logic                   ctr_drbg_gen_req;
-  logic                   ctr_drbg_gen_req_rdy;
-  logic                   ctr_drbg_cmd_req_rdy;
-  logic                   ctr_drbg_cmd_sfifo_cmdreq_err_sum;
-  logic [2:0]             ctr_drbg_cmd_sfifo_cmdreq_err;
-  logic                   ctr_drbg_cmd_sfifo_rcstage_err_sum;
-  logic [2:0]             ctr_drbg_cmd_sfifo_rcstage_err;
-  logic                   ctr_drbg_cmd_sfifo_keyvrc_err_sum;
-  logic [2:0]             ctr_drbg_cmd_sfifo_keyvrc_err;
-  logic                   ctr_drbg_upd_sfifo_updreq_err_sum;
-  logic [2:0]             ctr_drbg_upd_sfifo_updreq_err;
-  logic                   ctr_drbg_upd_sfifo_bencreq_err_sum;
-  logic [2:0]             ctr_drbg_upd_sfifo_bencreq_err;
-  logic                   ctr_drbg_upd_sfifo_bencack_err_sum;
-  logic [2:0]             ctr_drbg_upd_sfifo_bencack_err;
-  logic                   ctr_drbg_upd_sfifo_pdata_err_sum;
-  logic [2:0]             ctr_drbg_upd_sfifo_pdata_err;
-  logic                   ctr_drbg_upd_sfifo_final_err_sum;
-  logic [2:0]             ctr_drbg_upd_sfifo_final_err;
-  logic                   ctr_drbg_gen_sfifo_gbencack_err_sum;
-  logic [2:0]             ctr_drbg_gen_sfifo_gbencack_err;
-  logic                   ctr_drbg_gen_sfifo_grcstage_err_sum;
-  logic [2:0]             ctr_drbg_gen_sfifo_grcstage_err;
-  logic                   ctr_drbg_gen_sfifo_ggenreq_err_sum;
-  logic [2:0]             ctr_drbg_gen_sfifo_ggenreq_err;
-  logic                   ctr_drbg_gen_sfifo_gadstage_err_sum;
-  logic [2:0]             ctr_drbg_gen_sfifo_gadstage_err;
-  logic                   ctr_drbg_gen_sfifo_ggenbits_err_sum;
-  logic [2:0]             ctr_drbg_gen_sfifo_ggenbits_err;
-  logic                   block_encrypt_sfifo_blkenc_err_sum;
-  logic [2:0]             block_encrypt_sfifo_blkenc_err;
-  logic                   cmd_gen_cnt_err_sum;
-  logic                   cmd_stage_sm_err_sum;
-  logic                   main_sm_err_sum;
-  logic                   cs_main_sm_alert;
-  logic                   cs_main_sm_err;
+  logic                        acmd_accept;
+  logic                        instant_req;
+  logic                        reseed_req;
+  logic                        generate_req;
+  logic                        update_req;
+  logic                        uninstant_req;
+  logic                        clr_adata_packer;
+  logic [Cmd-1:0]              ctr_drbg_cmd_ccmd;
+  logic                        ctr_drbg_cmd_req;
+  logic                        ctr_drbg_gen_req;
+  logic                        ctr_drbg_gen_req_rdy;
+  logic                        ctr_drbg_cmd_req_rdy;
+  logic                        ctr_drbg_cmd_sfifo_cmdreq_err_sum;
+  logic [2:0]                  ctr_drbg_cmd_sfifo_cmdreq_err;
+  logic                        ctr_drbg_cmd_sfifo_rcstage_err_sum;
+  logic [2:0]                  ctr_drbg_cmd_sfifo_rcstage_err;
+  logic                        ctr_drbg_cmd_sfifo_keyvrc_err_sum;
+  logic [2:0]                  ctr_drbg_cmd_sfifo_keyvrc_err;
+  logic                        ctr_drbg_upd_sfifo_updreq_err_sum;
+  logic [2:0]                  ctr_drbg_upd_sfifo_updreq_err;
+  logic                        ctr_drbg_upd_sfifo_bencreq_err_sum;
+  logic [2:0]                  ctr_drbg_upd_sfifo_bencreq_err;
+  logic                        ctr_drbg_upd_sfifo_bencack_err_sum;
+  logic [2:0]                  ctr_drbg_upd_sfifo_bencack_err;
+  logic                        ctr_drbg_upd_sfifo_pdata_err_sum;
+  logic [2:0]                  ctr_drbg_upd_sfifo_pdata_err;
+  logic                        ctr_drbg_upd_sfifo_final_err_sum;
+  logic [2:0]                  ctr_drbg_upd_sfifo_final_err;
+  logic                        ctr_drbg_gen_sfifo_gbencack_err_sum;
+  logic [2:0]                  ctr_drbg_gen_sfifo_gbencack_err;
+  logic                        ctr_drbg_gen_sfifo_grcstage_err_sum;
+  logic [2:0]                  ctr_drbg_gen_sfifo_grcstage_err;
+  logic                        ctr_drbg_gen_sfifo_ggenreq_err_sum;
+  logic [2:0]                  ctr_drbg_gen_sfifo_ggenreq_err;
+  logic                        ctr_drbg_gen_sfifo_gadstage_err_sum;
+  logic [2:0]                  ctr_drbg_gen_sfifo_gadstage_err;
+  logic                        ctr_drbg_gen_sfifo_ggenbits_err_sum;
+  logic [2:0]                  ctr_drbg_gen_sfifo_ggenbits_err;
+  logic                        block_encrypt_sfifo_blkenc_err_sum;
+  logic [2:0]                  block_encrypt_sfifo_blkenc_err;
+  logic                        cmd_gen_cnt_err_sum;
+  logic                        cmd_stage_sm_err_sum;
+  logic                        main_sm_err_sum;
+  logic                        cs_main_sm_alert;
+  logic                        cs_main_sm_err;
   logic [MainSmStateWidth-1:0] cs_main_sm_state;
-  logic                   drbg_gen_sm_err_sum;
-  logic                   drbg_gen_sm_err;
-  logic                   drbg_updbe_sm_err_sum;
-  logic                   drbg_updbe_sm_err;
-  logic                   drbg_updob_sm_err_sum;
-  logic                   drbg_updob_sm_err;
-  logic                   aes_cipher_sm_err_sum;
-  logic                   aes_cipher_sm_err;
-  logic                   fifo_write_err_sum;
-  logic                   fifo_read_err_sum;
-  logic                   fifo_status_err_sum;
+  logic                        drbg_gen_sm_err_sum;
+  logic                        drbg_gen_sm_err;
+  logic                        drbg_updbe_sm_err_sum;
+  logic                        drbg_updbe_sm_err;
+  logic                        drbg_updob_sm_err_sum;
+  logic                        drbg_updob_sm_err;
+  logic                        aes_cipher_sm_err_sum;
+  logic                        aes_cipher_sm_err;
+  logic                        fifo_write_err_sum;
+  logic                        fifo_read_err_sum;
+  logic                        fifo_status_err_sum;
 
-  logic [KeyLen-1:0]      state_db_rd_key;
-  logic [BlkLen-1:0]      state_db_rd_v;
-  logic [CtrLen-1:0]      state_db_rd_rc;
-  logic                   state_db_rd_fips;
-  logic [2:0]             acmd_hold;
-  logic [3:0]             shid;
-  logic                   gen_last;
-  mubi4_t                 flag0;
+  logic [KeyLen-1:0]           state_db_rd_key;
+  logic [BlkLen-1:0]           state_db_rd_v;
+  logic [CtrLen-1:0]           state_db_rd_rc;
+  logic                        state_db_rd_fips;
+  logic [2:0]                  acmd_hold;
+  logic [3:0]                  shid;
+  logic                        gen_last;
+  mubi4_t                      flag0;
 
   // blk encrypt arbiter
-  logic [Cmd-1:0]         updblk_benblk_cmd_arb_din;
-  logic [StateId-1:0]     updblk_benblk_id_arb_din;
-  logic [BlkLen-1:0]      updblk_benblk_v_arb_din;
-  logic [KeyLen-1:0]      updblk_benblk_key_arb_din;
-  logic                   updblk_benblk_arb_req;
-  logic                   updblk_benblk_arb_req_rdy;
-  logic                   benblk_updblk_ack;
-  logic                   updblk_benblk_ack_rdy;
+  logic [Cmd-1:0]              updblk_benblk_cmd_arb_din;
+  logic [StateId-1:0]          updblk_benblk_id_arb_din;
+  logic [BlkLen-1:0]           updblk_benblk_v_arb_din;
+  logic [KeyLen-1:0]           updblk_benblk_key_arb_din;
+  logic                        updblk_benblk_arb_req;
+  logic                        updblk_benblk_arb_req_rdy;
+  logic                        benblk_updblk_ack;
+  logic                        updblk_benblk_ack_rdy;
 
-  logic [Cmd-1:0]         genblk_benblk_cmd_arb_din;
-  logic [StateId-1:0]     genblk_benblk_id_arb_din;
-  logic [BlkLen-1:0]      genblk_benblk_v_arb_din;
-  logic [KeyLen-1:0]      genblk_benblk_key_arb_din;
-  logic                   genblk_benblk_arb_req;
-  logic                   genblk_benblk_arb_req_rdy;
-  logic                   benblk_genblk_ack;
-  logic                   genblk_benblk_ack_rdy;
+  logic [Cmd-1:0]              genblk_benblk_cmd_arb_din;
+  logic [StateId-1:0]          genblk_benblk_id_arb_din;
+  logic [BlkLen-1:0]           genblk_benblk_v_arb_din;
+  logic [KeyLen-1:0]           genblk_benblk_key_arb_din;
+  logic                        genblk_benblk_arb_req;
+  logic                        genblk_benblk_arb_req_rdy;
+  logic                        benblk_genblk_ack;
+  logic                        genblk_benblk_ack_rdy;
 
-  logic [BlkEncArbWidth-1:0] benblk_arb_din [2];
-  logic [BlkEncArbWidth-1:0] benblk_arb_data;
-  logic [KeyLen-1:0]         benblk_arb_key;
-  logic [BlkLen-1:0]         benblk_arb_v;
-  logic [StateId-1:0]        benblk_arb_inst_id;
-  logic [Cmd-1:0]            benblk_arb_cmd;
-  logic                      benblk_arb_vld;
-  logic                      benblk_ack;
-  logic                      benblk_ack_rdy;
-  logic                      benblk_arb_rdy;
-  logic [Cmd-1:0]            benblk_cmd;
-  logic [StateId-1:0]        benblk_inst_id;
-  logic [BlkLen-1:0]         benblk_v;
+  logic [BlkEncArbWidth-1:0]   benblk_arb_din [2];
+  logic [BlkEncArbWidth-1:0]   benblk_arb_data;
+  logic [KeyLen-1:0]           benblk_arb_key;
+  logic [BlkLen-1:0]           benblk_arb_v;
+  logic [StateId-1:0]          benblk_arb_inst_id;
+  logic [Cmd-1:0]              benblk_arb_cmd;
+  logic                        benblk_arb_vld;
+  logic                        benblk_ack;
+  logic                        benblk_ack_rdy;
+  logic                        benblk_arb_rdy;
+  logic [Cmd-1:0]              benblk_cmd;
+  logic [StateId-1:0]          benblk_inst_id;
+  logic [BlkLen-1:0]           benblk_v;
 
   // update arbiter
-  logic [Cmd-1:0]            cmdblk_updblk_ccmd_arb_din;
-  logic [StateId-1:0]        cmdblk_updblk_id_arb_din;
-  logic [BlkLen-1:0]         cmdblk_updblk_v_arb_din;
-  logic [KeyLen-1:0]         cmdblk_updblk_key_arb_din;
-  logic [SeedLen-1:0]        cmdblk_updblk_pdata_arb_din;
-  logic                      cmdblk_updblk_arb_req;
-  logic                      updblk_cmdblk_arb_req_rdy;
-  logic                      updblk_cmdblk_ack;
-  logic                      cmdblk_updblk_ack_rdy;
+  logic [Cmd-1:0]              cmdblk_updblk_ccmd_arb_din;
+  logic [StateId-1:0]          cmdblk_updblk_id_arb_din;
+  logic [BlkLen-1:0]           cmdblk_updblk_v_arb_din;
+  logic [KeyLen-1:0]           cmdblk_updblk_key_arb_din;
+  logic [SeedLen-1:0]          cmdblk_updblk_pdata_arb_din;
+  logic                        cmdblk_updblk_arb_req;
+  logic                        updblk_cmdblk_arb_req_rdy;
+  logic                        updblk_cmdblk_ack;
+  logic                        cmdblk_updblk_ack_rdy;
 
-  logic [Cmd-1:0]            genblk_updblk_ccmd_arb_din;
-  logic [StateId-1:0]        genblk_updblk_id_arb_din;
-  logic [BlkLen-1:0]         genblk_updblk_v_arb_din;
-  logic [KeyLen-1:0]         genblk_updblk_key_arb_din;
-  logic [SeedLen-1:0]        genblk_updblk_pdata_arb_din;
-  logic                      genblk_updblk_arb_req;
-  logic                      updblk_genblk_arb_req_rdy;
-  logic                      updblk_genblk_ack;
-  logic                      genblk_updblk_ack_rdy;
+  logic [Cmd-1:0]              genblk_updblk_ccmd_arb_din;
+  logic [StateId-1:0]          genblk_updblk_id_arb_din;
+  logic [BlkLen-1:0]           genblk_updblk_v_arb_din;
+  logic [KeyLen-1:0]           genblk_updblk_key_arb_din;
+  logic [SeedLen-1:0]          genblk_updblk_pdata_arb_din;
+  logic                        genblk_updblk_arb_req;
+  logic                        updblk_genblk_arb_req_rdy;
+  logic                        updblk_genblk_ack;
+  logic                        genblk_updblk_ack_rdy;
 
-  logic [UpdateArbWidth-1:0] updblk_arb_din [2];
-  logic [UpdateArbWidth-1:0] updblk_arb_data;
-  logic [KeyLen-1:0]         updblk_arb_key;
-  logic [BlkLen-1:0]         updblk_arb_v;
-  logic [SeedLen-1:0]        updblk_arb_pdata;
-  logic [StateId-1:0]        updblk_arb_inst_id;
-  logic [Cmd-1:0]            updblk_arb_ccmd;
-  logic                      updblk_arb_vld;
-  logic                      updblk_ack;
-  logic                      updblk_ack_rdy;
-  logic                      updblk_arb_rdy;
-  logic [Cmd-1:0]            updblk_ccmd;
-  logic [StateId-1:0]        updblk_inst_id;
-  logic [KeyLen-1:0]         updblk_key;
-  logic [BlkLen-1:0]         updblk_v;
+  logic [UpdateArbWidth-1:0]   updblk_arb_din [2];
+  logic [UpdateArbWidth-1:0]   updblk_arb_data;
+  logic [KeyLen-1:0]           updblk_arb_key;
+  logic [BlkLen-1:0]           updblk_arb_v;
+  logic [SeedLen-1:0]          updblk_arb_pdata;
+  logic [StateId-1:0]          updblk_arb_inst_id;
+  logic [Cmd-1:0]              updblk_arb_ccmd;
+  logic                        updblk_arb_vld;
+  logic                        updblk_ack;
+  logic                        updblk_ack_rdy;
+  logic                        updblk_arb_rdy;
+  logic [Cmd-1:0]              updblk_ccmd;
+  logic [StateId-1:0]          updblk_inst_id;
+  logic [KeyLen-1:0]           updblk_key;
+  logic [BlkLen-1:0]           updblk_v;
 
-  logic [2:0]                cmd_stage_sfifo_cmd_err[NApps];
-  logic [NApps-1:0]          cmd_stage_sfifo_cmd_err_sum;
-  logic [NApps-1:0]          cmd_stage_sfifo_cmd_err_wr;
-  logic [NApps-1:0]          cmd_stage_sfifo_cmd_err_rd;
-  logic [NApps-1:0]          cmd_stage_sfifo_cmd_err_st;
-  logic [2:0]                cmd_stage_sfifo_genbits_err[NApps];
-  logic [NApps-1:0]          cmd_stage_sfifo_genbits_err_sum;
-  logic [NApps-1:0]          cmd_stage_sfifo_genbits_err_wr;
-  logic [NApps-1:0]          cmd_stage_sfifo_genbits_err_rd;
-  logic [NApps-1:0]          cmd_stage_sfifo_genbits_err_st;
-  logic [NApps-1:0]          cmd_gen_cnt_err;
-  logic [NApps-1:0]          cmd_stage_sm_err;
-  logic                      ctr_drbg_upd_v_ctr_err;
-  logic                      ctr_drbg_gen_v_ctr_err;
+  logic [2:0]                  cmd_stage_sfifo_cmd_err[NApps];
+  logic [NApps-1:0]            cmd_stage_sfifo_cmd_err_sum;
+  logic [NApps-1:0]            cmd_stage_sfifo_cmd_err_wr;
+  logic [NApps-1:0]            cmd_stage_sfifo_cmd_err_rd;
+  logic [NApps-1:0]            cmd_stage_sfifo_cmd_err_st;
+  logic [2:0]                  cmd_stage_sfifo_genbits_err[NApps];
+  logic [NApps-1:0]            cmd_stage_sfifo_genbits_err_sum;
+  logic [NApps-1:0]            cmd_stage_sfifo_genbits_err_wr;
+  logic [NApps-1:0]            cmd_stage_sfifo_genbits_err_rd;
+  logic [NApps-1:0]            cmd_stage_sfifo_genbits_err_st;
+  logic [NApps-1:0]            cmd_gen_cnt_err;
+  logic [NApps-1:0]            cmd_stage_sm_err;
+  logic                        ctr_drbg_upd_v_ctr_err;
+  logic                        ctr_drbg_gen_v_ctr_err;
 
   logic [NApps-1:0]          cmd_stage_vld;
   logic [StateId-1:0]        cmd_stage_shid[NApps];
-  logic [AppCmdWidth-1:0] cmd_stage_bus[NApps];
-  logic [NApps-1:0]       cmd_stage_rdy;
-  logic [NApps-1:0]       cmd_arb_req;
-  logic [NApps-1:0]       cmd_arb_gnt;
-  logic [$clog2(NApps)-1:0] cmd_arb_idx;
-  logic [NApps-1:0]       cmd_arb_sop;
-  logic [NApps-1:0]       cmd_arb_mop;
-  logic [NApps-1:0]       cmd_arb_eop;
-  logic [AppCmdWidth-1:0] cmd_arb_bus[NApps];
-  logic [NApps-1:0]       cmd_core_ack;
-  logic [NApps-1:0]       cmd_core_ack_sts;
-  logic [NApps-1:0]       cmd_stage_ack;
-  logic [NApps-1:0]       cmd_stage_ack_sts;
-  logic [NApps-1:0]       genbits_core_vld;
-  logic [GenBitsWidth-1:0] genbits_core_bus[NApps];
-  logic [NApps-1:0]        genbits_core_fips;
-  logic [NApps-1:0]        genbits_stage_vld;
-  logic [NApps-1:0]        genbits_stage_fips;
-  logic [GenBitsWidth-1:0] genbits_stage_bus[NApps];
-  logic [NApps-1:0]        genbits_stage_rdy;
-  logic                    genbits_stage_vldo_sw;
-  logic                    genbits_stage_bus_rd_sw;
-  logic [31:0]             genbits_stage_bus_sw;
-  logic                    genbits_stage_fips_sw;
+  logic [AppCmdWidth-1:0]    cmd_stage_bus[NApps];
+  logic [NApps-1:0]          cmd_stage_rdy;
+  logic [NApps-1:0]          cmd_arb_req;
+  logic [NApps-1:0]          cmd_arb_gnt;
+  logic [$clog2(NApps)-1:0]  cmd_arb_idx;
+  logic [NApps-1:0]          cmd_arb_sop;
+  logic [NApps-1:0]          cmd_arb_mop;
+  logic [NApps-1:0]          cmd_arb_eop;
+  logic [AppCmdWidth-1:0]    cmd_arb_bus[NApps];
+  logic [NApps-1:0]          cmd_core_ack;
+  logic [NApps-1:0]          cmd_core_ack_sts;
+  logic [NApps-1:0]          cmd_stage_ack;
+  logic [NApps-1:0]          cmd_stage_ack_sts;
+  logic [NApps-1:0]          genbits_core_vld;
+  logic [GenBitsWidth-1:0]   genbits_core_bus[NApps];
+  logic [NApps-1:0]          genbits_core_fips;
+  logic [NApps-1:0]          genbits_stage_vld;
+  logic [NApps-1:0]          genbits_stage_fips;
+  logic [GenBitsWidth-1:0]   genbits_stage_bus[NApps];
+  logic [NApps-1:0]          genbits_stage_rdy;
+  logic                      genbits_stage_vldo_sw;
+  logic                      genbits_stage_bus_rd_sw;
+  logic [31:0]               genbits_stage_bus_sw;
+  logic                      genbits_stage_fips_sw;
 
-  logic [15:0]             hw_exception_sts;
-  logic [LcHwDebugCopies-1:0] lc_hw_debug_on_fo;
-  logic                    state_db_is_dump_en;
-  logic                    state_db_reg_rd_sel;
-  logic                    state_db_reg_rd_id_pulse;
-  logic [StateId-1:0]      state_db_reg_rd_id;
-  logic [31:0]             state_db_reg_rd_val;
+  logic [15:0]               hw_exception_sts;
+  logic [LcHwDebugCopies-1:0]lc_hw_debug_on_fo;
+  logic                      state_db_is_dump_en;
+  logic                      state_db_reg_rd_sel;
+  logic                      state_db_reg_rd_id_pulse;
+  logic [StateId-1:0]        state_db_reg_rd_id;
+  logic [31:0]               state_db_reg_rd_val;
 
-  logic [30:0]             err_code_test_bit;
-  logic                    ctr_drbg_upd_es_ack;
-  logic                    ctr_drbg_gen_es_ack;
-  logic                    block_encrypt_quiet;
+  logic [30:0]               err_code_test_bit;
+  logic                      ctr_drbg_upd_es_ack;
+  logic                      ctr_drbg_gen_es_ack;
+  logic                      block_encrypt_quiet;
 
-  logic                    cs_rdata_capt_vld;
-  logic                    cs_bus_cmp_alert;
-  logic                    cmd_rdy;
-  logic [1:0]              efuse_sw_app_enable;
+  logic                      cs_rdata_capt_vld;
+  logic                      cs_bus_cmp_alert;
+  logic                      cmd_rdy;
+  logic [1:0]                efuse_sw_app_enable;
 
-  logic                    unused_err_code_test_bit;
-  logic                    unused_reg2hw_genbits;
-  logic                    unused_int_state_val;
+  logic                      unused_err_code_test_bit;
+  logic                      unused_reg2hw_genbits;
+  logic                      unused_int_state_val;
 
   prim_mubi_pkg::mubi8_t [1:0] en_csrng_sw_app_read;
   prim_mubi_pkg::mubi4_t [CsEnableCopies-1:0] mubi_cs_enable_fanout;
   prim_mubi_pkg::mubi4_t [Flag0Copies-1:0] mubi_flag0_fanout;
 
   // flops
-  logic [2:0]  acmd_q, acmd_d;
-  logic [3:0]  shid_q, shid_d;
-  logic        gen_last_q, gen_last_d;
-  mubi4_t      flag0_q, flag0_d;
-  logic [$clog2(NApps)-1:0] cmd_arb_idx_q, cmd_arb_idx_d;
-  logic        statedb_wr_select_q, statedb_wr_select_d;
-  logic        genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
-  logic        cmd_req_dly_q, cmd_req_dly_d;
-  logic [Cmd-1:0] cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
-  logic           cs_aes_halt_q, cs_aes_halt_d;
-  logic [SeedLen-1:0] entropy_src_seed_q, entropy_src_seed_d;
-  logic               entropy_src_fips_q, entropy_src_fips_d;
-  logic [63:0]        cs_rdata_capt_q, cs_rdata_capt_d;
-  logic               cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
-  logic               sw_rdy_sts_q, sw_rdy_sts_d;
+  logic [2:0]                acmd_q, acmd_d;
+  logic [3:0]                shid_q, shid_d;
+  logic                      gen_last_q, gen_last_d;
+  mubi4_t                    flag0_q, flag0_d;
+  logic [$clog2(NApps)-1:0]  cmd_arb_idx_q, cmd_arb_idx_d;
+  logic                      statedb_wr_select_q, statedb_wr_select_d;
+  logic                      genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
+  logic                      cmd_req_dly_q, cmd_req_dly_d;
+  logic [Cmd-1:0]            cmd_req_ccmd_dly_q, cmd_req_ccmd_dly_d;
+  logic                      cs_aes_halt_q, cs_aes_halt_d;
+  logic [SeedLen-1:0]        entropy_src_seed_q, entropy_src_seed_d;
+  logic                      entropy_src_fips_q, entropy_src_fips_d;
+  logic [63:0]               cs_rdata_capt_q, cs_rdata_capt_d;
+  logic                      cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
+  logic                      sw_rdy_sts_q, sw_rdy_sts_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
-      acmd_q  <= '0;
-      shid_q  <= '0;
-      gen_last_q <= '0;
-      flag0_q <= prim_mubi_pkg::MuBi4False;
-      cmd_arb_idx_q <= '0;
-      statedb_wr_select_q <= '0;
+      acmd_q                  <= '0;
+      shid_q                  <= '0;
+      gen_last_q              <= '0;
+      flag0_q                 <= prim_mubi_pkg::MuBi4False;
+      cmd_arb_idx_q           <= '0;
+      statedb_wr_select_q     <= '0;
       genbits_stage_fips_sw_q <= '0;
-      cmd_req_dly_q <= '0;
-      cmd_req_ccmd_dly_q <= '0;
-      cs_aes_halt_q <= '0;
-      entropy_src_seed_q <= '0;
-      entropy_src_fips_q <= '0;
-      cs_rdata_capt_q       <= '0;
-      cs_rdata_capt_vld_q   <= '0;
-      sw_rdy_sts_q   <= '0;
+      cmd_req_dly_q           <= '0;
+      cmd_req_ccmd_dly_q      <= '0;
+      cs_aes_halt_q           <= '0;
+      entropy_src_seed_q      <= '0;
+      entropy_src_fips_q      <= '0;
+      cs_rdata_capt_q         <= '0;
+      cs_rdata_capt_vld_q     <= '0;
+      sw_rdy_sts_q            <= '0;
     end else begin
-      acmd_q  <= acmd_d;
-      shid_q  <= shid_d;
-      gen_last_q <= gen_last_d;
-      flag0_q <= flag0_d;
-      cmd_arb_idx_q <= cmd_arb_idx_d;
-      statedb_wr_select_q <= statedb_wr_select_d;
+      acmd_q                  <= acmd_d;
+      shid_q                  <= shid_d;
+      gen_last_q              <= gen_last_d;
+      flag0_q                 <= flag0_d;
+      cmd_arb_idx_q           <= cmd_arb_idx_d;
+      statedb_wr_select_q     <= statedb_wr_select_d;
       genbits_stage_fips_sw_q <= genbits_stage_fips_sw_d;
-      cmd_req_dly_q <= cmd_req_dly_d;
-      cmd_req_ccmd_dly_q <= cmd_req_ccmd_dly_d;
-      cs_aes_halt_q <= cs_aes_halt_d;
-      entropy_src_seed_q <= entropy_src_seed_d;
-      entropy_src_fips_q <= entropy_src_fips_d;
-      cs_rdata_capt_q       <= cs_rdata_capt_d;
-      cs_rdata_capt_vld_q   <= cs_rdata_capt_vld_d;
-      sw_rdy_sts_q   <= sw_rdy_sts_d;
+      cmd_req_dly_q           <= cmd_req_dly_d;
+      cmd_req_ccmd_dly_q      <= cmd_req_ccmd_dly_d;
+      cs_aes_halt_q           <= cs_aes_halt_d;
+      entropy_src_seed_q      <= entropy_src_seed_d;
+      entropy_src_fips_q      <= entropy_src_fips_d;
+      cs_rdata_capt_q         <= cs_rdata_capt_d;
+      cs_rdata_capt_vld_q     <= cs_rdata_capt_vld_d;
+      sw_rdy_sts_q            <= sw_rdy_sts_d;
     end
 
   //--------------------------------------------
@@ -829,34 +829,34 @@ module csrng_core import csrng_pkg::*; #(
       .CmdFifoDepth(AppCmdFifoDepth),
       .StateId(StateId)
     ) u_csrng_cmd_stage (
-      .clk_i               (clk_i),
-      .rst_ni              (rst_ni),
-      .cs_enable_i         (cs_enable_fo[27]),
-      .cmd_stage_vld_i     (cmd_stage_vld[ai]),
-      .cmd_stage_shid_i    (cmd_stage_shid[ai]),
-      .cmd_stage_bus_i     (cmd_stage_bus[ai]),
-      .cmd_stage_rdy_o     (cmd_stage_rdy[ai]),
-      .cmd_arb_req_o       (cmd_arb_req[ai]),
-      .cmd_arb_sop_o       (cmd_arb_sop[ai]),
-      .cmd_arb_mop_o       (cmd_arb_mop[ai]),
-      .cmd_arb_eop_o       (cmd_arb_eop[ai]),
-      .cmd_arb_gnt_i       (cmd_arb_gnt[ai]),
-      .cmd_arb_bus_o       (cmd_arb_bus[ai]),
-      .cmd_ack_i           (cmd_core_ack[ai]),
-      .cmd_ack_sts_i       (cmd_core_ack_sts[ai]),
-      .cmd_stage_ack_o     (cmd_stage_ack[ai]),
-      .cmd_stage_ack_sts_o (cmd_stage_ack_sts[ai]),
-      .genbits_vld_i       (genbits_core_vld[ai]),
-      .genbits_bus_i       (genbits_core_bus[ai]),
-      .genbits_fips_i      (genbits_core_fips[ai]),
-      .genbits_vld_o       (genbits_stage_vld[ai]),
-      .genbits_rdy_i       (genbits_stage_rdy[ai]),
-      .genbits_bus_o       (genbits_stage_bus[ai]),
-      .genbits_fips_o      (genbits_stage_fips[ai]),
-      .cmd_stage_sfifo_cmd_err_o (cmd_stage_sfifo_cmd_err[ai]),
-      .cmd_stage_sfifo_genbits_err_o (cmd_stage_sfifo_genbits_err[ai]),
-      .cmd_gen_cnt_err_o  (cmd_gen_cnt_err[ai]),
-      .cmd_stage_sm_err_o (cmd_stage_sm_err[ai])
+      .clk_i                        (clk_i),
+      .rst_ni                       (rst_ni),
+      .cs_enable_i                  (cs_enable_fo[27]),
+      .cmd_stage_vld_i              (cmd_stage_vld[ai]),
+      .cmd_stage_shid_i             (cmd_stage_shid[ai]),
+      .cmd_stage_bus_i              (cmd_stage_bus[ai]),
+      .cmd_stage_rdy_o              (cmd_stage_rdy[ai]),
+      .cmd_arb_req_o                (cmd_arb_req[ai]),
+      .cmd_arb_sop_o                (cmd_arb_sop[ai]),
+      .cmd_arb_mop_o                (cmd_arb_mop[ai]),
+      .cmd_arb_eop_o                (cmd_arb_eop[ai]),
+      .cmd_arb_gnt_i                (cmd_arb_gnt[ai]),
+      .cmd_arb_bus_o                (cmd_arb_bus[ai]),
+      .cmd_ack_i                    (cmd_core_ack[ai]),
+      .cmd_ack_sts_i                (cmd_core_ack_sts[ai]),
+      .cmd_stage_ack_o              (cmd_stage_ack[ai]),
+      .cmd_stage_ack_sts_o          (cmd_stage_ack_sts[ai]),
+      .genbits_vld_i                (genbits_core_vld[ai]),
+      .genbits_bus_i                (genbits_core_bus[ai]),
+      .genbits_fips_i               (genbits_core_fips[ai]),
+      .genbits_vld_o                (genbits_stage_vld[ai]),
+      .genbits_rdy_i                (genbits_stage_rdy[ai]),
+      .genbits_bus_o                (genbits_stage_bus[ai]),
+      .genbits_fips_o               (genbits_stage_fips[ai]),
+      .cmd_stage_sfifo_cmd_err_o    (cmd_stage_sfifo_cmd_err[ai]),
+      .cmd_stage_sfifo_genbits_err_o(cmd_stage_sfifo_genbits_err[ai]),
+      .cmd_gen_cnt_err_o            (cmd_gen_cnt_err[ai]),
+      .cmd_stage_sm_err_o           (cmd_stage_sm_err[ai])
     );
 
   end : gen_cmd_stage
@@ -904,16 +904,16 @@ module csrng_core import csrng_pkg::*; #(
     .OutW(32),
     .ClearOnRead(1'b0)
   ) u_prim_packer_fifo_sw_genbits (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
-    .clr_i      (!cs_enable_fo[29]),
-    .wvalid_i   (genbits_stage_vld[NApps-1]),
-    .wdata_i    (genbits_stage_bus[NApps-1]),
-    .wready_o   (genbits_stage_rdy[NApps-1]),
-    .rvalid_o   (genbits_stage_vldo_sw),
-    .rdata_o    (genbits_stage_bus_sw),
-    .rready_i   (genbits_stage_bus_rd_sw),
-    .depth_o    ()
+    .clk_i    (clk_i),
+    .rst_ni   (rst_ni),
+    .clr_i    (!cs_enable_fo[29]),
+    .wvalid_i (genbits_stage_vld[NApps-1]),
+    .wdata_i  (genbits_stage_bus[NApps-1]),
+    .wready_o (genbits_stage_rdy[NApps-1]),
+    .rvalid_o (genbits_stage_vldo_sw),
+    .rdata_o  (genbits_stage_bus_sw),
+    .rready_i (genbits_stage_bus_rd_sw),
+    .depth_o  ()
   );
 
   // flops for SW fips status
@@ -1016,16 +1016,16 @@ module csrng_core import csrng_pkg::*; #(
     .N(NApps),  // Number of request ports
     .DW(1) // Data width
   ) u_prim_arbiter_ppc_acmd (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
+    .clk_i    (clk_i),
+    .rst_ni   (rst_ni),
     .req_chk_i(cs_enable_fo[1]),
-    .req_i(cmd_arb_req),
-    .data_i('{default: 1'b0}),
-    .gnt_o(cmd_arb_gnt),
-    .idx_o(cmd_arb_idx),
-    .valid_o(acmd_avail), // 1 req
-    .data_o(), //NC
-    .ready_i(acmd_accept) // 1 fsm rdy
+    .req_i    (cmd_arb_req),
+    .data_i   ('{default: 1'b0}),
+    .gnt_o    (cmd_arb_gnt),
+    .idx_o    (cmd_arb_idx),
+    .valid_o  (acmd_avail), // 1 req
+    .data_o   (), //NC
+    .ready_i  (acmd_accept) // 1 fsm rdy
   );
 
   mubi4_t mubi_acmd_flag0;
