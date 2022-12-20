@@ -44,12 +44,12 @@ trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw310 
 # by clearing the bitstream.
 # FIXME: #16543 The following step sometimes has trouble reading the I2C we'll
 # log it better and continue even if it fails (the pll is mostly correctly set
-# anyway
+# anyway).
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw310 --logging debug fpga set-pll || true
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw310 fpga clear-bitstream
 
 for tag in "${cw310_tags[@]}"; do
-    ci/bazelisk.sh test //...\
+    ci/bazelisk.sh test //... @manufacturer_test_hooks//...\
         --define DISABLE_VERILATOR_BUILD=true \
         --nokeep_going \
         --test_tag_filters="${tag}",-broken,-skip_in_ci \
