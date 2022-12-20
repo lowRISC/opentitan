@@ -1,0 +1,10 @@
+diff --git a/config.h b/config.h
+new file mode 100644
+index 0000000..d5adbae
+--- /dev/null
++++ b/config.h
+@@ -0,0 +1,4 @@
++#define XKCP_has_FIPS202
++#define XKCP_has_SP800_185
++#define XKCP_has_Sponge_Keccak
++#define XKCP_has_KeccakP1600
