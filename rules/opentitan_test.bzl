@@ -248,7 +248,7 @@ def opentitan_functest(
         test_in_rom = False,
         ot_flash_binary = None,
         signed = True,
-        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        manifest = "@//sw/device/silicon_creator/rom_ext:manifest_standard",
         slot = "silicon_creator_a",
         test_harness = "@//sw/host/opentitantool",
         key = "fake_prod_key_0",
