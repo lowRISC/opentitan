@@ -6,8 +6,8 @@
 # Documentation at https://aka.ms/yaml
 
 schedules:
-# For testing purposes, run this pipeline every day at 07:21 UTC
-# Use a random minute value to avoid congestion on the hour
+# Run this pipeline every day at 07:21 UTC.
+# Use an arbitrary minute value to avoid congestion on the hour.
 - cron: "21 7 * * *"
   displayName: "OpenTitan Nightly Tests"
   branches:
@@ -17,12 +17,6 @@ schedules:
 
 trigger: none
 pr: none
-
-# TODO: the following trigger is used for testing.
-# pr:
-#   branches:
-#     include:
-#       - "*"
 
 variables:
   # If updating VERILATOR_VERSION, TOOLCHAIN_VERSION or RUST_VERSION, update
@@ -38,13 +32,15 @@ variables:
   VIVADO_VERSION: "2020.2"
 
 jobs:
-# TODO: refactor this into a template
 - job: checkout
   displayName: "Checkout repository"
   pool:
     vmImage: ubuntu-20.04
   steps:
   - checkout: self
+    # Set fetchDepth to 0 to pull the entire git tree for the bitstream cache to work
+    # https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-checkout#shallow-fetch
+    fetchDepth: 0
     path: opentitan-repo
   - bash: |
       tar -C $(Pipeline.Workspace)/opentitan-repo -czf $(Pipeline.Workspace)/opentitan-repo.tar.gz .
@@ -55,17 +51,20 @@ jobs:
 
 - job: rom_e2e
   displayName: "ROM E2E Tests"
-  timeoutInMinutes: 360 # TODO: adjust this timeout
+  timeoutInMinutes: 180
   dependsOn: checkout
-  pool: ci-public
+  pool: FPGA
   steps:
   - template: ../ci/checkout-template.yml
   - template: ../ci/install-package-dependencies.yml
   - bash: |
-      ci/bazelisk.sh test \\
-        --define DISABLE_VERILATOR_BUILD=true \\
-        --define bitstream=gcp_splice \\
-        --test_tag_filters=-verilator,-dv,-broken \\
-        --build_tests_only \\
+      set -x
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      ci/bazelisk.sh test \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --define bitstream=gcp_splice \
+        --test_tag_filters=-verilator,-dv,-broken \
+        --build_tests_only \
+        --test_output=errors \
         //sw/device/silicon_creator/rom/e2e/...
     displayName: "Run all ROM E2E tests"
