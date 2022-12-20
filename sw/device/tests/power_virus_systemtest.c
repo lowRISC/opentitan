@@ -13,6 +13,7 @@
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
+#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
@@ -40,6 +41,9 @@ static dif_edn_t edn_1;
 static dif_aes_t aes;
 static dif_hmac_t hmac;
 static dif_kmac_t kmac;
+static dif_uart_t uart_1;
+static dif_uart_t uart_2;
+static dif_uart_t uart_3;
 
 /**
  * Test configuration parameters.
@@ -112,6 +116,13 @@ static void init_peripheral_handles() {
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  // UART 0 is already configured (and used) by the OTTF.
+  CHECK_DIF_OK(dif_uart_init(
+      mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR), &uart_1));
+  CHECK_DIF_OK(dif_uart_init(
+      mmio_region_from_addr(TOP_EARLGREY_UART2_BASE_ADDR), &uart_2));
+  CHECK_DIF_OK(dif_uart_init(
+      mmio_region_from_addr(TOP_EARLGREY_UART3_BASE_ADDR), &uart_3));
 }
 
 /**
@@ -321,6 +332,18 @@ static void configure_kmac() {
       &kKmacKey, &kmac_customization_string));
 }
 
+static void configure_uart(dif_uart_t *uart) {
+  CHECK_DIF_OK(
+      dif_uart_configure(uart, (dif_uart_config_t){
+                                   .baudrate = kUartBaudrate,
+                                   .clk_freq_hz = kClockFreqPeripheralHz,
+                                   .parity_enable = kDifToggleEnabled,
+                                   .parity = kDifUartParityEven,
+                               }));
+  CHECK_DIF_OK(
+      dif_uart_loopback_set(uart, kDifUartLoopbackSystem, kDifToggleEnabled));
+}
+
 bool test_main(void) {
   init_peripheral_handles();
   configure_gpio_indicator_pin();
@@ -329,5 +352,8 @@ bool test_main(void) {
   configure_aes();
   configure_hmac();
   configure_kmac();
+  configure_uart(&uart_1);
+  configure_uart(&uart_2);
+  configure_uart(&uart_3);
   return true;
 }
