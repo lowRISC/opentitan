@@ -436,8 +436,14 @@ def parse_args():
 
     disg.add_argument("--gui",
                       action='store_true',
-                      help=('Run the flow in interactive mode instead of the '
-                            'batch mode.'))
+                      help=('Run the flow in GUI mode instead of the batch '
+                            'mode.'))
+
+    disg.add_argument("--interactive",
+                      action='store_true',
+                      help=('Run the job in non-GUI interactive mode '
+                            'accepting manual user inputs and displaying the '
+                            'tool outputs transparently.'))
 
     rung = parser.add_argument_group('Options for running')
 
@@ -624,6 +630,14 @@ def parse_args():
     if args.version:
         print(version)
         sys.exit()
+
+    # Check conflicts
+    # interactive and remote, r
+    if args.interactive and args.remote:
+        log.error("--interactive and --remote cannot be set together")
+        sys.exit()
+    if args.interactive and args.reseed != 1:
+        args.reseed = 1
 
     # We want the --list argument to default to "all categories", but allow
     # filtering. If args.list is None, then --list wasn't supplied. If it is

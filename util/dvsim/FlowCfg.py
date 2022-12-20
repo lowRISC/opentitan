@@ -53,6 +53,8 @@ class FlowCfg():
         self.job_prefix = args.job_prefix
         self.gui = args.gui
 
+        self.interactive = args.interactive
+
         # Options set from hjson cfg.
         self.project = ""
         self.scratch_path = ""
@@ -368,8 +370,8 @@ class FlowCfg():
         '''
         self.prune_selected_cfgs()
 
-        # GUI mode is allowed only for one cfg.
-        if self.gui and len(self.cfgs) > 1:
+        # GUI or Interactive mode is allowed only for one cfg.
+        if (self.gui or self.interactive) and len(self.cfgs) > 1:
             log.fatal("In GUI mode, only one cfg can be run.")
             sys.exit(1)
 
