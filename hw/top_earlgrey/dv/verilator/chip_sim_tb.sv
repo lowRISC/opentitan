@@ -74,7 +74,7 @@ module chip_sim_tb (
     .gpio_d2p   (cio_gpio_d2p),
     .gpio_en_d2p(cio_gpio_en_d2p),
     .gpio_pull_en(cio_gpio_pull_en),
-    .gpio_pull_sel(cio_gpio_pull_select),
+    .gpio_pull_sel(cio_gpio_pull_select)
   );
 
   // UART DPI
