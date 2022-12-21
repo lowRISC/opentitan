@@ -227,8 +227,8 @@ class alert_monitor extends alert_esc_base_monitor;
   endtask : int_fail_thread
 
   virtual task wait_ping_thread();
-    alert_esc_seq_item req = alert_esc_seq_item::type_id::create("req");
     forever begin
+      alert_esc_seq_item req = alert_esc_seq_item::type_id::create("req");
       logic ping_p_value;
       req.alert_esc_type = AlertEscPingTrans;
       wait (!under_reset && !cfg.en_alert_lpg);
