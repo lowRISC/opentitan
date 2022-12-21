@@ -15,7 +15,7 @@ See that document for integration overview within the broader OpenTitan top leve
 - Support 128b, 192b, 256b, 384b, 512b of the secret key length in KMAC mode
 - Support arbitrary output length for SHAKE, cSHAKE, KMAC
 - Support customization input string S, and function-name N up to 36 bytes total
-- 64b x 9 depth Message FIFO
+- 64b x 10 depth Message FIFO
 - 1600b of internal state (internally represented in two shares for 1st-order masking)
 - Performance goals of >= 72 Mb/s @ 100MHz (when entropy is available always)
     - SHA3-512: roughly 66 MB/s at most
@@ -194,9 +194,45 @@ This enables the HW to fire the interrupt even the FIFO remains empty.
 
 However, the recommended approach to write messages is:
 
-1. Check the FIFO depth {{<regref "STATUS.fifo_depth" >}}.
-2. Write the remained size.
-3. Then repeat.
+1. Check the FIFO depth {{<regref "STATUS.fifo_depth" >}}. This represents the number of entry slots currently occupied in the FIFO.
+2. Calculate the remaining size as `<max number of fifo entries> - <STATUS.fifo_depth>) * <entry size>`.
+3. Write data to fill the remaining size.
+4. Repeat until all data is written.
+
+In code, this looks something like:
+```c
+/**
+ * Absorb input data into the Keccak computation.
+ *
+ * Assumes that the KMAC block is in the "absorb" state; it is the caller's
+ * responsibility to check before calling.
+ *
+ * @param in Input buffer.
+ * @param in_len Length of input buffer (bytes).
+ * @return Number of bytes written.
+ */
+size_t kmac_absorb(const uint8_t *in, size_t in_len) {
+    // Read FIFO depth from the status register.
+    uint32_t status = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
+    uint32_t fifo_depth =
+        bitfield_field32_read(status, KMAC_STATUS_FIFO_DEPTH_FIELD);
+
+    // Calculate the remaining space in the FIFO using auto-generated KMAC
+    // parameters and take the minimum of that space and the input length.
+    size_t free_entries = (KMAC_PARAM_NUM_ENTRIES_MSG_FIFO - fifo_depth);
+    size_t max_len = free_entries * KMAC_PARAM_NUM_BYTES_MSG_FIFO_ENTRY;
+    size_t write_len = (in_len < max_len) ? in_len : max_len;
+
+    // Note: this example uses byte-writes for simplicity, but in practice it
+    // would be more efficient to use word-writes for aligned full words and
+    // byte-writes only as needed at the beginning and end of the input.
+    for (size_t i = 0; i < write_len; i++) {
+      abs_mmio_write8(kBase + KMAC_MSG_FIFO_REG_OFFSET, in[i]);
+    }
+
+    return write_len;
+}
+```
 
 #### Masking
 
