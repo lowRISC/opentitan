@@ -43,29 +43,48 @@ class LocalLauncher(Launcher):
 
         self._dump_env_vars(exports)
 
-        try:
-            f = open(self.deploy.get_log_path(),
-                     "w",
-                     encoding="UTF-8",
-                     errors="surrogateescape")
-            f.write("[Executing]:\n{}\n\n".format(self.deploy.cmd))
-            f.flush()
-            timeout_mins = self.deploy.get_timeout_mins()
-            if timeout_mins:
-                self.timeout_secs = timeout_mins * 60
-            else:
-                self.timeout_secs = None
+        if not self.deploy.sim_cfg.interactive:
+            try:
+                f = open(self.deploy.get_log_path(),
+                         "w",
+                         encoding="UTF-8",
+                         errors="surrogateescape")
+                f.write("[Executing]:\n{}\n\n".format(self.deploy.cmd))
+                f.flush()
+                timeout_mins = self.deploy.get_timeout_mins()
+                if timeout_mins:
+                    self.timeout_secs = timeout_mins * 60
+                else:
+                    self.timeout_secs = None
+                self.process = subprocess.Popen(shlex.split(self.deploy.cmd),
+                                                bufsize=4096,
+                                                universal_newlines=True,
+                                                stdout=f,
+                                                stderr=f,
+                                                env=exports)
+            except subprocess.SubprocessError as e:
+                raise LauncherError('IO Error: {}\nSee {}'.format(
+                    e, self.deploy.get_log_path()))
+            finally:
+                self._close_process()
+        else:
+            # Interactive: Set RUN_INTERACTIVE to 1
+            exports['RUN_INTERACTIVE'] = "1"
+
+            # Interactive. stdin / stdout are transparent
+            # no timeout and blocking op as user controls the flow
+            print("Interactive mode is not supported yet.")
+            print("Cmd : {}".format(self.deploy.cmd))
             self.process = subprocess.Popen(shlex.split(self.deploy.cmd),
-                                            bufsize=4096,
+                                            stdin=None,
+                                            stdout=None,
+                                            stderr=subprocess.STDOUT,
+                                            # string mode
                                             universal_newlines=True,
-                                            stdout=f,
-                                            stderr=f,
                                             env=exports)
-        except subprocess.SubprocessError as e:
-            raise LauncherError('IO Error: {}\nSee {}'.format(
-                e, self.deploy.get_log_path()))
-        finally:
-            self._close_process()
+
+            # Wait until the process exit
+            self.process.wait()
 
         self._link_odir("D")
 
