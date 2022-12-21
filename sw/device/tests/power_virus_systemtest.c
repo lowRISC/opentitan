@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/ip/aes/model/aes_modes.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_csrng.h"
@@ -11,6 +12,7 @@
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
+#include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -41,6 +43,9 @@ static dif_edn_t edn_1;
 static dif_aes_t aes;
 static dif_hmac_t hmac;
 static dif_kmac_t kmac;
+static dif_i2c_t i2c_0;
+static dif_i2c_t i2c_1;
+static dif_i2c_t i2c_2;
 static dif_uart_t uart_1;
 static dif_uart_t uart_2;
 static dif_uart_t uart_3;
@@ -70,6 +75,18 @@ enum {
   kKmacEntropyWaitTimer = 0xffff,
   kKmacEntropyPrescaler = 0x3ff,
   kKmacDigestLength = 16,
+  /**
+   * I2C parameters.
+   */
+  kI2cSdaRiseFallTimeNs = 10,
+  kI2cSclPeriodNs = 1000,
+  kI2cDeviceMask = 0x7f,
+  kI2c0DeviceAddress0 = 0x11,
+  kI2c0DeviceAddress1 = 0x22,
+  kI2c1DeviceAddress0 = 0x33,
+  kI2c1DeviceAddress1 = 0x44,
+  kI2c2DeviceAddress0 = 0x55,
+  kI2c2DeviceAddress1 = 0x66,
 };
 
 /**
@@ -123,6 +140,12 @@ static void init_peripheral_handles() {
       mmio_region_from_addr(TOP_EARLGREY_UART2_BASE_ADDR), &uart_2));
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART3_BASE_ADDR), &uart_3));
+  CHECK_DIF_OK(
+      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR), &i2c_0));
+  CHECK_DIF_OK(
+      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C1_BASE_ADDR), &i2c_1));
+  CHECK_DIF_OK(
+      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR), &i2c_2));
 }
 
 /**
@@ -344,6 +367,27 @@ static void configure_uart(dif_uart_t *uart) {
       dif_uart_loopback_set(uart, kDifUartLoopbackSystem, kDifToggleEnabled));
 }
 
+static void configure_i2c(dif_i2c_t *i2c, uint8_t device_addr_0,
+                          uint8_t device_addr_1) {
+  uint32_t peripheral_clock_period_ns =
+      udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL);
+  dif_i2c_config_t config;
+
+  CHECK_DIF_OK(dif_i2c_compute_timing(
+      (dif_i2c_timing_config_t){
+          .lowest_target_device_speed = kDifI2cSpeedFastPlus,
+          .clock_period_nanos = peripheral_clock_period_ns,
+          .sda_rise_nanos = kI2cSdaRiseFallTimeNs,
+          .sda_fall_nanos = kI2cSdaRiseFallTimeNs,
+          .scl_period_nanos = kI2cSclPeriodNs},
+      &config));
+  CHECK_DIF_OK(dif_i2c_configure(i2c, config));
+  dif_i2c_id_t id_0 = {.mask = kI2cDeviceMask, .address = device_addr_0};
+  dif_i2c_id_t id_1 = {.mask = kI2cDeviceMask, .address = device_addr_1};
+  CHECK_DIF_OK(dif_i2c_set_device_id(i2c, &id_0, &id_1));
+  CHECK_DIF_OK(dif_i2c_line_loopback_set_enabled(i2c, kDifToggleEnabled));
+}
+
 bool test_main(void) {
   init_peripheral_handles();
   configure_gpio_indicator_pin();
@@ -355,5 +399,8 @@ bool test_main(void) {
   configure_uart(&uart_1);
   configure_uart(&uart_2);
   configure_uart(&uart_3);
+  configure_i2c(&i2c_0, kI2c0DeviceAddress0, kI2c0DeviceAddress1);
+  configure_i2c(&i2c_1, kI2c1DeviceAddress0, kI2c1DeviceAddress1);
+  configure_i2c(&i2c_2, kI2c2DeviceAddress0, kI2c2DeviceAddress1);
   return true;
 }
