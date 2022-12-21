@@ -54,11 +54,18 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     foreach(cfg.list_of_alerts[i]) begin
       string alert_name = cfg.list_of_alerts[i];
       string agent_name = {"m_alert_agent_", alert_name};
+      string common_seq_type;
+      void'($value$plusargs("run_%0s", common_seq_type));
       m_alert_agent[alert_name] = alert_esc_agent::type_id::create(agent_name, this);
       uvm_config_db#(alert_esc_agent_cfg)::set(this, agent_name, "cfg",
           cfg.m_alert_agent_cfgs[alert_name]);
       cfg.m_alert_agent_cfgs[alert_name].en_cov = cfg.en_cov;
       cfg.m_alert_agent_cfgs[alert_name].clk_freq_mhz = int'(cfg.clk_freq_mhz);
+
+      // Alert_test sequence will wait until alert checked then drive response manually.
+      if (common_seq_type == "alert_test") begin
+        cfg.m_alert_agent_cfgs[alert_name].start_default_rsp_seq = 0;
+      end
     end
 
     // Create and configure the EDN agent if available.

@@ -109,13 +109,6 @@ class cip_base_vseq #(
 
   task pre_start();
     if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
-    if (common_seq_type == "alert_test") begin
-      // The sequence will wait until alert checked then drive response manually.
-      foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
-        cfg.m_alert_agent_cfgs[alert_name].start_default_rsp_seq = 0;
-      end
-    end
-
     csr_utils_pkg::max_outstanding_accesses = 1 << BUS_AIW;
     super.pre_start();
     extract_common_csrs();
