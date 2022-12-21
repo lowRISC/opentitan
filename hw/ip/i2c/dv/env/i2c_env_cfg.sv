@@ -71,6 +71,7 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
     // config target address mode of agent to the same
     m_i2c_agent_cfg.target_addr_mode = Addr7BitMode;
 
+    m_tl_agent_cfg.max_outstanding_req = 1;
     // create the seq_cfg
     seq_cfg = i2c_seq_cfg::type_id::create("seq_cfg");
 
@@ -91,6 +92,17 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
     seq_cfg.en_sda_unstable     = 1'b0;
     seq_cfg.en_scl_interference = 1'b0;
     seq_cfg.en_sda_interference = 1'b0;
+
+    // target mode cfg params.
+    slow_acq = 0;
+    use_drooling_tx = 0;
+    wr_pct = 1;
+    rd_pct = 1;
+    min_data = 1;
+    max_data = 60;
+    read_all_acq_entries = 0;
+    sent_ack_stop = 0;
+    rcvd_ack_stop = 0;
   endfunction : reset_seq_cfg
 
 endclass : i2c_env_cfg
