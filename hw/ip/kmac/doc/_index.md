@@ -234,6 +234,17 @@ size_t kmac_absorb(const uint8_t *in, size_t in_len) {
 }
 ```
 
+The method recommended above is always safe.
+However, in specific contexts, it may be okay to skip polling `STATUS.fifo_depth`.
+Normally, KMAC will process data faster than software can write it, and back pressure on the FIFO interface, should ensure that writes from software will simply block until KMAC can process messages.
+The only reason for polling, then, is to prevent a specific deadlock scenario:
+1. Software has configured KMAC to wait forever for entropy.
+2. There is a problem with the EDN, so entropy is never coming.
+3. The FIFO is full and KMAC is waiting for entropy to process it.
+
+If either the entropy wait timer is nonzero or `kmac_en` is false (so KMAC will not be refreshing entropy), it is safe to write to the FIFO without polling `STATUS.fifo_depth`.
+However, this should be done carefully, and tests should always cover the scenario in which EDN is locked up.
+
 #### Masking
 
 The message FIFO does not generate the masked message data.

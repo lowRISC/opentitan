@@ -610,12 +610,12 @@ dif_result_t dif_kmac_mode_kmac_start(
 /**
  * Absorb bytes from the message provided.
  *
- * If `kDifKmacIncomplete` is returned then the message FIFO is full and the
- * message was only partially absorbed. The message pointer and length should be
- * updated according to the number of bytes processed and the absorb operation
- * continued at a later time.
+ * If `processed` is non-NULL, then this function will write the remaining
+ * space in the FIFO and update `processed` with the number of bytes written.
+ * The caller should adjust the `msg` pointer and `len` parameters and call
+ * again as needed until all input has been written.
  *
- * If `processed` is not provided then this function will block until the entire
+ * If `processed` is NULL, then this function will block until the entire
  * message has been processed or an error occurs.
  *
  * If big-endian mode is enabled for messages (`message_big_endian`) only the
