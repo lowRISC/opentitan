@@ -9,6 +9,8 @@ package kmac_reg_pkg;
   // Param list
   parameter int NumWordsKey = 16;
   parameter int NumWordsPrefix = 11;
+  parameter int NumEntriesMsgFifo = 10;
+  parameter int NumBytesMsgFifoEntry = 8;
   parameter int unsigned HashCntW = 10;
   parameter int NumSeedsEntropyLfsr = 5;
   parameter int NumAlerts = 2;

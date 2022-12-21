@@ -718,11 +718,11 @@ TEST_F(KmacStatusTest, IdleFifoEmptySuccess) {
 TEST_F(KmacStatusTest, AbsorbingFifoPartialSuccess) {
   EXPECT_READ32(KMAC_STATUS_REG_OFFSET,
                 {{KMAC_STATUS_SHA3_ABSORB_BIT, true},
-                 {KMAC_STATUS_FIFO_DEPTH_OFFSET, KMAC_STATUS_FIFO_DEPTH_MASK}});
+                 {KMAC_STATUS_FIFO_DEPTH_OFFSET, KMAC_PARAM_NUM_ENTRIES_MSG_FIFO}});
   EXPECT_DIF_OK(dif_kmac_get_status(&kmac_, &status_));
 
   EXPECT_EQ(status_.sha3_state, kDifKmacSha3StateAbsorbing);
-  EXPECT_EQ(status_.fifo_depth, KMAC_STATUS_FIFO_DEPTH_MASK);
+  EXPECT_EQ(status_.fifo_depth, KMAC_PARAM_NUM_ENTRIES_MSG_FIFO);
   EXPECT_EQ(status_.fifo_state, kDifKmacFifoStatePartial);
   EXPECT_EQ(status_.faults, kDifKmacAlertNone);
 }
