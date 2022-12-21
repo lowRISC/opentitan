@@ -112,7 +112,7 @@ void transfer_data_end(usbdpi_transfer_t *transfer, uint8_t *dp) {
   // Check that we still have space to append the CRC16
   USBDPI_ASSERT(dp < transfer->data + sizeof(transfer->data) - 2);
 
-  // Note: histortically the datastart field has pointed to the PID rather than
+  // Note: historically the datastart field has pointed to the PID rather than
   //       the data field itself
   const uint8_t *data_field = &transfer->data[transfer->data_start + 1];
   uint32_t crc = CRC16(data_field, dp - data_field);

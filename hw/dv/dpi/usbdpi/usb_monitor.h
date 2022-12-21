@@ -32,4 +32,12 @@ void usb_monitor_log(usb_monitor_ctx_t *mon, const char *fmt, ...);
 void usb_monitor(usb_monitor_ctx_t *mon, int log, int tick, bool hdrive,
                  uint32_t p2d, uint32_t d2p, uint8_t *lastpid);
 
+/**
+ * Export diagnostic state for waveform viewing
+ */
+uint32_t usb_monitor_diags(usb_monitor_ctx_t *mon);
+
+// TODO - temporary hook; tidy and ratify
+const uint8_t *usb_monitor_get_data(usb_monitor_ctx_t *mon, size_t *plen);
+
 #endif  // OPENTITAN_HW_DV_DPI_USBDPI_USB_MONITOR_H_

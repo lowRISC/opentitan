@@ -46,7 +46,9 @@ typedef uint32_t svBitVecVal;
 #define INSERT_ERR_CRC 0
 #define INSERT_ERR_PID 0
 #define INSERT_ERR_BITSTUFF 0
-#define INSERT_ERR_DATA_TOGGLE 0
+
+// TODO - resolve this!
+#define INSERT_ERR_DATA_TOGGLE 1
 
 // Endpoints used during top-level tests
 #define ENDPOINT_ZERO 0         // Endpoint Zero (for the Default Control Pipe)
@@ -162,6 +164,12 @@ typedef uint32_t svBitVecVal;
 // Unknown device address (check USBDEV ignores traffic to other devices)
 #define UKDEV_ADDRESS 6
 
+// Maximum number of endpoints implemented by the USBDEV IP
+#define USBDEV_MAX_ENDPOINTS 12U
+
+// Maximum number of endpoints supported by the DPI model
+#define USBDPI_MAX_ENDPOINTS 16U
+
 // Special value that denotes that this transfer does not include a data stage
 #define USBDPI_NO_DATA_STAGE ((uint8_t)~0U)
 
@@ -211,6 +219,40 @@ struct usbdpi_ctx {
   int linebits;
   int bit;
   int byte;
+
+  /**
+   * Context for IN endpoints
+   */
+  struct {
+    /**
+     * Next DATAx PID (DATA0 or DATA1) expected from device
+     */
+    uint8_t next_data;
+  } ep_in[USBDPI_MAX_ENDPOINTS];
+  /**
+   * Context for OUT endpoints
+   */
+  struct {
+    /**
+     * Next DATAx (DATA0 or DATA1) to be transmitted; advanced when ACKed
+     * and reset after SETUP packet transmitted
+     */
+    uint8_t next_data;
+  } ep_out[USBDPI_MAX_ENDPOINTS];
+
+  /**
+   * Context for streaming data text (usbdev_stream_test)
+   */
+  struct {
+    /**
+     * Device-generated LFSR; predicts data expected from usbdev_stream_test
+     */
+    uint8_t tst_lfsr;
+    /**
+     * DPI-generated LFSR-generated data, to be combined with received data
+     */
+    uint8_t dpi_lfsr;
+  } stream;
 
   // Diagnostic logging and bus monitoring
   int loglevel;

@@ -46,7 +46,7 @@ module usbdpi #(
     byte usbdpi_host_to_device(input chandle ctx, input bit [10:0] d2p);
 
   import "DPI-C" function
-    void usbdpi_diags(input chandle ctx, output bit [63:0] diags);
+    void usbdpi_diags(input chandle ctx, output bit [95:0] diags);
 
   chandle ctx;
 
@@ -59,14 +59,20 @@ module usbdpi #(
     usbdpi_close(ctx);
   end
 
-  // Make C diagnostic information viewable in waveforms
-  wire  [11:0] c_bus_state;  // only 5 bits used
-  wire  [31:0] c_tickbits;
-  wire  [10:0] c_frame;
-  wire  [4:0]  c_hostSt;
-  wire  [3:0]  c_state;
+  // Make usb_monitor diagnostic information viewable in waveforms
+  bit [11:0] c_mon_state;  // only 2 bits used
+  bit [3:0]  c_mon_bits;
+  bit [7:0]  c_mon_byte;
+  bit [7:0]  c_mon_pid;
+  // Make usbdpi diagnostic information viewable in waveforms
+  bit [11:0] c_bus_state;  // only 5 bits used
+  bit [31:0] c_tickbits;
+  bit [10:0] c_frame;
+  bit [4:0]  c_hostSt;
+  bit [3:0]  c_state;
   always @(posedge clk_48MHz_i)
-    usbdpi_diags(ctx, {c_bus_state, c_tickbits, c_frame, c_hostSt, c_state});
+    usbdpi_diags(ctx, {c_mon_state, c_mon_bits, c_mon_byte, c_mon_pid,
+                       c_bus_state, c_tickbits, c_frame, c_hostSt, c_state});
 
   logic [10:0] d2p;
   logic [10:0] d2p_r;
