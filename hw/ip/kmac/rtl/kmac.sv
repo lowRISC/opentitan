@@ -189,9 +189,9 @@ module kmac
                kmac_reg_pkg::NumEntriesMsgFifo == kmac_pkg::MsgFifoDepth)
 
   // NumBytesMsgFifoEntry from kmac_reg_pkg must match the MsgWidth calculated
-  // in kmac_pkg.
+  // in kmac_pkg (although MsgWidth is in bits, so we multiply by 8).
   `ASSERT_INIT(EntrySizeRegSameToEntrySizePkg_A,
-               kmac_reg_pkg::NumBytesMsgFifoEntry == kmac_pkg::MsgWidth)
+               kmac_reg_pkg::NumBytesMsgFifoEntry * 8 == kmac_pkg::MsgWidth)
 
   // Output state: this is used to redirect the digest to KeyMgr or Software
   // depends on the configuration.

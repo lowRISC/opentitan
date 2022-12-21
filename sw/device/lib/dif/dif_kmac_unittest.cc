@@ -574,13 +574,23 @@ class AbsorbalignmentMessage : public KmacTest {
 };
 
 TEST_F(AbsorbalignmentMessage, Success) {
+  // Test assumption: message fits in the FIFO.
+  static_assert(kMsg.size() <= KMAC_PARAM_NUM_ENTRIES_MSG_FIFO *
+                                   KMAC_PARAM_NUM_BYTES_MSG_FIFO_ENTRY,
+                "Message must fit in the KMAC message FIFO.");
+
   uint8_t buffer[kMsg.size() + sizeof(uint32_t)];
 
   for (size_t i = 0; i < sizeof(uint32_t); i++) {
     uint8_t *pMsg = &buffer[i];
     std::copy(kMsg.begin(), kMsg.end(), pMsg);
 
-    EXPECT_READ32(KMAC_STATUS_REG_OFFSET, 3);
+    // First status read: checks for absorb bit.
+    EXPECT_READ32(KMAC_STATUS_REG_OFFSET, 1 << KMAC_STATUS_SHA3_ABSORB_BIT);
+
+    // Second status read: checks FIFO depth. Always return 0 (i.e. 0 entries
+    // occupied, FIFO is completely free).
+    EXPECT_READ32(KMAC_STATUS_REG_OFFSET, 1 << KMAC_STATUS_SHA3_ABSORB_BIT);
     ExpectMessageInt32(pMsg, kMsg.size());
 
     EXPECT_DIF_OK(
@@ -716,9 +726,9 @@ TEST_F(KmacStatusTest, IdleFifoEmptySuccess) {
 }
 
 TEST_F(KmacStatusTest, AbsorbingFifoPartialSuccess) {
-  EXPECT_READ32(KMAC_STATUS_REG_OFFSET,
-                {{KMAC_STATUS_SHA3_ABSORB_BIT, true},
-                 {KMAC_STATUS_FIFO_DEPTH_OFFSET, KMAC_PARAM_NUM_ENTRIES_MSG_FIFO}});
+  EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_ABSORB_BIT, true},
+                                         {KMAC_STATUS_FIFO_DEPTH_OFFSET,
+                                          KMAC_PARAM_NUM_ENTRIES_MSG_FIFO}});
   EXPECT_DIF_OK(dif_kmac_get_status(&kmac_, &status_));
 
   EXPECT_EQ(status_.sha3_state, kDifKmacSha3StateAbsorbing);

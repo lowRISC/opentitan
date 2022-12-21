@@ -101,13 +101,13 @@
     { name:    "NumEntriesMsgFifo"
       type:    "int"
       default: "10"
-      desc:    "Number of entries in the message FIFO."
+      desc:    "Number of entries in the message FIFO. Must match kmac_pkg::MsgFifoDepth."
       local:   "true"
     }
     { name:    "NumBytesMsgFifoEntry"
       type:    "int"
       default: "8"
-      desc:    "Number of bytes in a single entry of the message FIFO."
+      desc:    "Number of bytes in a single entry of the message FIFO. Must match kmac_pkg::MsgWidth."
       local:   "true"
     }
     { name:    "HashCntW"

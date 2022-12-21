@@ -602,6 +602,24 @@ dif_result_t dif_kmac_mode_kmac_start(
   return poll_state(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
 }
 
+static void msg_fifo_write(const dif_kmac_t *kmac, const unsigned char *data,
+                           size_t len) {
+  // Copy message using aligned word sized loads and stores where possible to
+  // improve performance. Note: the parts of the message copied a byte at a time
+  // will not be byte swapped in big-endian mode.
+  for (; len != 0 && ((uintptr_t)data) % sizeof(uint32_t); --len) {
+    mmio_region_write8(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET, *data++);
+  }
+  for (; len >= sizeof(uint32_t); len -= sizeof(uint32_t)) {
+    mmio_region_write32(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+                        read_32(data));
+    data += sizeof(uint32_t);
+  }
+  for (; len != 0; --len) {
+    mmio_region_write8(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET, *data++);
+  }
+}
+
 dif_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
                              dif_kmac_operation_state_t *operation_state,
                              const void *msg, size_t len, size_t *processed) {
@@ -627,22 +645,29 @@ dif_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
   // Copy message using aligned word sized loads and stores where possible to
   // improve performance. Note: the parts of the message copied a byte at a time
   // will not be byte swapped in big-endian mode.
-  const uint8_t *data = (const uint8_t *)msg;
-  for (; len != 0 && ((uintptr_t)data) % sizeof(uint32_t); --len) {
-    mmio_region_write8(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET, *data++);
-  }
-  for (; len >= sizeof(uint32_t); len -= sizeof(uint32_t)) {
-    mmio_region_write32(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET,
-                        read_32(data));
-    data += sizeof(uint32_t);
-  }
-  for (; len != 0; --len) {
-    mmio_region_write8(kmac->base_addr, KMAC_MSG_FIFO_REG_OFFSET, *data++);
+  const unsigned char *data = (const unsigned char *)msg;
+  dif_kmac_status_t status;
+  while (len > 0) {
+    // Read the status register.
+    DIF_RETURN_IF_ERROR(dif_kmac_get_status(kmac, &status));
+
+    // Calculate the remaining space in the message FIFO based on the
+    // `FIFO_DEPTH` status field.
+    size_t free_entries = (KMAC_PARAM_NUM_ENTRIES_MSG_FIFO - status.fifo_depth);
+    size_t max_len = free_entries * KMAC_PARAM_NUM_BYTES_MSG_FIFO_ENTRY;
+    size_t write_len = (len < max_len) ? len : max_len;
+    msg_fifo_write(kmac, data, write_len);
+    data += write_len;
+    len -= write_len;
+
+    // If `processed` is non-null, do not continue after the first iteration;
+    // return the number of bytes written and `kDifKmacIncomplete`.
+    if (processed != NULL) {
+      *processed = write_len;
+      break;
+    }
   }
 
-  if (processed != NULL) {
-    *processed = len;
-  }
   return kDifOk;
 }
 
