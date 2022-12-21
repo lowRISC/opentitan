@@ -285,7 +285,7 @@
               - Ensure reset is handled correctly
             '''
       stage: V2
-      tests: [""]
+      tests: ["i2c_target_stress_all"]
     }
     {
       name: target_stress_all_with_rand_reset

@@ -463,6 +463,13 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     `DV_EOT_PRINT_Q_CONTENTS(i2c_item, rd_pending_q)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(i2c_item, rd_item_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(i2c_item, wr_item_fifo)
+    num_obs_rd = 0;
+    obs_wr_id = 0;
+    target_mode_wr_exp_fifo.flush();
+    target_mode_wr_obs_fifo.flush();
+    target_mode_rd_exp_fifo.flush();
+    target_mode_rd_obs_fifo.flush();
+    mirrored_txdata.delete();
   endfunction : reset
 
   function void report_phase(uvm_phase phase);

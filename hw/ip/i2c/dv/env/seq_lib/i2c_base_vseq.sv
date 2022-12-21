@@ -211,6 +211,17 @@ class i2c_base_vseq extends cip_base_vseq #(
         cfg.en_scb ? "enable" : "disable"), UVM_DEBUG)
     num_runs.rand_mode(0);
     num_trans_c.constraint_mode(0);
+
+    // Initialize counters for stop_target_interrupt for stress_all test
+    cfg.sent_acq_cnt = 0;
+    cfg.rcvd_acq_cnt = 0;
+    sent_txn_cnt = 0;
+    cfg.m_i2c_agent_cfg.sent_rd_byte = 0;
+    cfg.m_i2c_agent_cfg.rcvd_rd_byte = 0;
+    host_timeout_ctrl = 32'hffff;
+    cfg.m_i2c_agent_cfg.allow_ack_stop = 0;
+    expected_intr.delete();
+
     super.pre_start();
   endtask : pre_start
 
@@ -318,6 +329,19 @@ class i2c_base_vseq extends cip_base_vseq #(
     end while (!fmtempty || !hostidle || !rxempty);
     `uvm_info(`gfn, $sformatf("\n  host is in idle state"), UVM_DEBUG);
   endtask : wait_host_for_idle
+
+  virtual task wait_for_target_idle();
+    bit acqempty, targetidle;
+    bit [TL_DW-1:0] reg_val;
+
+    do begin
+      if (cfg.under_reset) break;
+      csr_rd(.ptr(ral.status), .value(reg_val));
+      acqempty = bit'(get_field_val(ral.status.acqempty, reg_val));
+      targetidle = bit'(get_field_val(ral.status.targetidle, reg_val));
+    end while (!acqempty || !targetidle);
+    `uvm_info(`gfn, $sformatf("\n  target is in idle state"), UVM_DEBUG);
+  endtask : wait_for_target_idle
 
   function automatic void get_timing_values();
     // derived timing parameters
@@ -992,7 +1016,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     bit [7:0] wdata;
     int       lvl;
     uvm_reg_data_t data;
-
     if (read_rcvd.size == 0 && read_on_going == 0) begin
       `uvm_error(id, "read_rcvd size is zero and read_on_going is zero")
     end
@@ -1006,6 +1029,20 @@ class i2c_base_vseq extends cip_base_vseq #(
       drooling_exp_rd_item.tran_id = drooling_rx_cnt++;
       drooling_exp_rd_item.data_q.delete();
       read_on_going = 1;
+    end
+
+    // Previously, in tx overflow test, expected data can only be sent when
+    // tx fifo is not full, but since we hae spill_over_data_q which has
+    // 'past' expected data, this can be sent regardless of tx_fifo status.
+    if (read_on_going) begin
+      while (drooling_read_size > 0 && spill_over_data_q.size > 0) begin
+        drooling_exp_rd_item.data_q.push_back(spill_over_data_q.pop_front);
+        drooling_read_size--;
+      end
+      if (drooling_read_size == 0) begin
+        p_sequencer.target_mode_rd_exp_port.write(drooling_exp_rd_item);
+        read_on_going = 0;
+      end
     end
 
     lvl = $urandom_range(1, 200);
@@ -1026,9 +1063,6 @@ class i2c_base_vseq extends cip_base_vseq #(
           if (drooling_read_size == 0) begin
             p_sequencer.target_mode_rd_exp_port.write(drooling_exp_rd_item);
             read_on_going = 0;
-            if (spill_over_data_q.size > 0) begin
-              // TODO: Create testcase to handle partial reads here later
-            end
           end
         end
       end else begin // if (data == 0)
@@ -1103,7 +1137,8 @@ class i2c_base_vseq extends cip_base_vseq #(
 
   virtual task stop_target_interrupt_handler();
     string id = "stop_interrupt_handler";
-
+    int   acq_rd_cyc;
+    acq_rd_cyc = 9 * (thigh + tlow);
     `DV_WAIT(cfg.sent_acq_cnt > 0,, cfg.spinwait_timeout_ns, id)
     `DV_WAIT(sent_txn_cnt == num_trans,, cfg.long_spinwait_timeout_ns, id)
     cfg.read_all_acq_entries = 1;
@@ -1118,6 +1153,10 @@ class i2c_base_vseq extends cip_base_vseq #(
     if (cfg.m_i2c_agent_cfg.allow_ack_stop) send_ack_stop();
     // add drain time before stop interrupt handler
     cfg.clk_rst_vif.wait_clks(1000);
+    // Add extra draintime for tx overflow test
+    if (cfg.use_drooling_tx) begin
+       cfg.clk_rst_vif.wait_clks(256 * acq_rd_cyc);
+    end
     cfg.stop_intr_handler = 1;
     `uvm_info(id, "called stop_intr_handler", UVM_MEDIUM)
   endtask // stop_target_interrupt_handler

@@ -78,7 +78,6 @@ class i2c_target_runtime_base_vseq extends i2c_target_smoke_vseq;
     int       lvl;
     int       delay;
     uvm_reg_data_t data;
-
     delay = $urandom_range(0, 10);
     cfg.clk_rst_vif.wait_clks(delay * acq_rd_cyc);
     csr_rd(.ptr(ral.fifo_status.txlvl), .value(data));
@@ -91,7 +90,6 @@ class i2c_target_runtime_base_vseq extends i2c_target_smoke_vseq;
       wdata = $urandom();
       csr_wr(.ptr(ral.txdata), .value(wdata));
     end
-
     clear_interrupt(TxStretch, 0);
   endtask // proc_intr_txstretch
 endclass
