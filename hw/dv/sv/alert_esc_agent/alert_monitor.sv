@@ -228,9 +228,9 @@ class alert_monitor extends alert_esc_base_monitor;
 
   virtual task wait_ping_thread();
     alert_esc_seq_item req = alert_esc_seq_item::type_id::create("req");
-    req.alert_esc_type = AlertEscPingTrans;
     forever begin
       logic ping_p_value;
+      req.alert_esc_type = AlertEscPingTrans;
       wait (!under_reset && !cfg.en_alert_lpg);
 
       `DV_SPINWAIT_EXIT(
@@ -241,6 +241,7 @@ class alert_monitor extends alert_esc_base_monitor;
           end
           req_analysis_port.write(req);,
           wait (under_reset || cfg.en_alert_lpg);)
+      @(cfg.vif.monitor_cb);
     end
   endtask
 
