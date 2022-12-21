@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
@@ -79,6 +80,7 @@ rom_error_t run_otbn_rsa_3072_modexp(
 
   // Start the OTBN routine.
   HARDENED_RETURN_IF_ERROR(otbn_execute());
+  SEC_MMIO_WRITE_INCREMENT(kOtbnSecMmioExecute);
 
   // Check that the instruction count falls within the expected range. If the
   // instruction count falls outside this range, it indicates that there was a

@@ -33,11 +33,11 @@ enum {
  * Example:
  * ```
  *  otbn_execute();
- *  SEC_MMIO_WRITE_INCREMENT(kOtbnSecMMioExecute);
+ *  SEC_MMIO_WRITE_INCREMENT(kOtbnSecMmioExecute);
  * ```
  */
 enum {
-  kOtbnSecMmioExecute = 2,
+  kOtbnSecMmioExecute = 1,
 };
 
 /**
