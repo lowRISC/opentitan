@@ -35,9 +35,10 @@ pub struct Subprocess {
 impl Subprocess {
     /// Starts a verilator [`Subprocess`] based on [`Options`].
     pub fn from_options(options: Options) -> Result<Self> {
-        let mut command = Command::new(&options.executable);
+        let mut command = Command::new(String::from("nice"));
         let mut args = Vec::new();
-
+        args.push(String::from("-5"));
+        args.push(options.executable.to_string());
         if !options.rom_image.is_empty() {
             args.push(format!("--meminit=rom,{}", options.rom_image));
         }
