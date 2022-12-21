@@ -131,10 +131,10 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   prim_mubi_pkg::mubi4_t [LastIdx-1:0] hw_key_sel;
   prim_mubi4_sync #(
     .NumCopies(int'(LastIdx)),
-    .AsyncOn(0)
+    .AsyncOn(0) // clock/reset below is only used for SVAs.
   ) u_mubi_buf (
-    .clk_i('0),
-    .rst_ni('0),
+    .clk_i,
+    .rst_ni,
     .mubi_i(hw_key_sel_i),
     .mubi_o(hw_key_sel)
   );

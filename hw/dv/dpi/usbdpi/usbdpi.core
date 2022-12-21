@@ -10,11 +10,15 @@ filesets:
     files:
       - usbdpi.sv: { file_type: systemVerilogSource }
       - usbdpi.c: { file_type: cppSource }
+      - usbdpi_stream.c: { file_type: cppSource }
+      - usbdpi_test.c: { file_type: cppSource }
       - usb_crc.c: { file_type: cppSource }
       - usb_monitor.c: { file_type: cppSource }
       - usb_transfer.c: { file_type: cppSource }
       - usb_utils.c: { file_type: cppSource }
       - usbdpi.h: { file_type: cppSource, is_include_file: true }
+      - usbdpi_stream.h: { file_type: cppSource, is_include_file: true }
+      - usbdpi_test.h: { file_type: cppSource, is_include_file: true }
       - usb_monitor.h: { file_type: cppSource, is_include_file: true }
       - usb_transfer.h: { file_type: cppSource, is_include_file: true }
       - usb_utils.h: { file_type: cppSource, is_include_file: true }

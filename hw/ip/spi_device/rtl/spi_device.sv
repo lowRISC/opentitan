@@ -827,10 +827,10 @@ module spi_device
 
   prim_mubi4_sync #(
     .NumCopies(int'(ScanModeUseLast)),
-    .AsyncOn(0)
+    .AsyncOn(0) // clock/reset below is only used for SVAs.
   ) u_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
+    .clk_i,
+    .rst_ni,
     .mubi_i(scanmode_i),
     .mubi_o(scanmode)
   );

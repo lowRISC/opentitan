@@ -52,10 +52,10 @@ module edn_ack_sm (
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Disabled)
 
   always_comb begin
-    state_d = state_q;
-    ack_o = 1'b0;
-    fifo_clr_o = 1'b0;
-    fifo_pop_o = 1'b0;
+    state_d      = state_q;
+    ack_o        = 1'b0;
+    fifo_clr_o   = 1'b0;
+    fifo_pop_o   = 1'b0;
     ack_sm_err_o = 1'b0;
     unique case (state_q)
       Disabled: begin
@@ -95,21 +95,27 @@ module edn_ack_sm (
 
     // If local escalation is seen, transition directly to
     // error state.
-    // If disable is seen when not in error state,
-    // clear out everything and return to default.
     if (local_escalate_i) begin
       state_d = Error;
-    end else if (!enable_i) begin
-      state_d = Disabled;
-      ack_o = 1'b0;
-      fifo_pop_o = 1'b0;
+      // Tie off outputs, except for ack_sm_err_o.
+      ack_o      = 1'b0;
       fifo_clr_o = 1'b0;
+      fifo_pop_o = 1'b0;
+    end else if (!enable_i && state_q inside {EndPointClear, Idle, DataWait, AckPls}) begin
+      // Only disable if state is legal and not Disabled or Error.
+      // Even when disabled, illegal states must result in a transition to Error.
+      state_d = Disabled;
+      // Tie off all outputs, except for ack_sm_err_o.
+      ack_o        = 1'b0;
+      fifo_pop_o   = 1'b0;
+      fifo_clr_o   = 1'b0;
     end
   end
 
   // The `local_escalate_i` includes `ack_sm_err_o`.
   // The following assertion ensures the Error state is stable until reset.
   // With `FpvSecCm` prefix, this assertion will added to weekly FPV sec_cm regression.
-  `ASSERT(FpvSecCmErrorStStable_A, state_q == Error |-> local_escalate_i)
+  `ASSERT(FpvSecCmErrorStEscalate_A, state_q == Error |-> local_escalate_i)
+  `ASSERT(FpvSecCmErrorStStable_A,   state_q == Error |=> $stable(state_q))
 
 endmodule

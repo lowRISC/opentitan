@@ -423,4 +423,6 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   // Make sure that the state machine has a stable error state. This means that after the error
   // state is entered it will not exit it unless a reset signal is received.
   `ASSERT(CsrngCmdStageErrorStStable_A, state_q == Error |=> $stable(state_q))
+  // If in error state, the error output must be high.
+  `ASSERT(CsrngCmdStageErrorOutput_A,   state_q == Error |-> cmd_stage_sm_err_o)
 endmodule

@@ -26,3 +26,7 @@ waive -rules RESET_MUX -location {lc_ctrl.sv} \
 waive -rules RESET_USE -location {lc_ctrl.sv} \
       -msg {'rst_ni' is connected to 'prim_lc_sync' port 'rst_ni', and used as an asynchronous reset or set at lc_ctrl} \
       -comment "This message arises since the prim_lc_sync module is used in purely combinational mode."
+
+waive -rules RESET_USE -location {lc_ctrl.sv} \
+      -msg {'rst_ni' is connected to 'dmi_jtag' port 'rst_ni', and used as an asynchronous reset or set at lc_ctrl} \
+      -comment "This message arises since due to reset synchronization inside the dmi_jtag module."

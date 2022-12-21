@@ -18,6 +18,7 @@ class i2c_host_fifo_reset_fmt_vseq extends i2c_rx_tx_vseq;
   endtask : pre_start
 
   virtual task body();
+    bit [7:0] wr_data[$];
     last_tran = 1'b1;
     initialization(.mode(Host));
     fmt_item = new("fmt_item");
@@ -25,7 +26,7 @@ class i2c_host_fifo_reset_fmt_vseq extends i2c_rx_tx_vseq;
     `uvm_info(`gfn, $sformatf("number of runs is %0d ", num_runs), UVM_HIGH)
     for (int i = 1; i <= num_runs; i++) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_wr_bytes)
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wr_data)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wr_data, wr_data.size == num_wr_bytes;)
       `uvm_info(`gfn, $sformatf("write transaction length is %0d byte", num_wr_bytes), UVM_HIGH)
       for (int i = 1; i <= num_wr_bytes; i++) begin
       `uvm_info(`gfn, $sformatf("VISWA loop I %0d byte", i), UVM_HIGH)

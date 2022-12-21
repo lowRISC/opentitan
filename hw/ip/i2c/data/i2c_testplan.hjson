@@ -211,7 +211,7 @@
 
             '''
       stage: V2
-      tests: ["i2c_host_timeout"]
+      tests: ["i2c_host_stretch_timeout"]
     }
     {
       name: host_rx_oversample

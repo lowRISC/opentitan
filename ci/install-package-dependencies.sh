@@ -62,26 +62,6 @@ TMPDIR="$(mktemp -d)" || {
 }
 trap 'rm -rf "$TMPDIR"' EXIT
 
-
-# Install verilator from experimental OBS repository
-# apt-requirements.txt doesn't cover this dependency as we don't support
-# using the repository below for anything but our CI (yet).
-lsb_sr="$(lsb_release -sr)"
-OBS_URL="https://download.opensuse.org/repositories"
-OBS_PATH="/home:/phiwag:/edatools/xUbuntu_${lsb_sr}"
-REPO_URL="${OBS_URL}${OBS_PATH}"
-
-EDATOOLS_REPO_KEY="${REPO_URL}/Release.key"
-EDATOOLS_REPO="deb ${REPO_URL}/ /"
-
-curl -f -sL -o "$TMPDIR/obs.asc" "$EDATOOLS_REPO_KEY" || {
-    error "Failed to download repository key from ${REPO_URL}"
-}
-echo "$EDATOOLS_REPO" > "$TMPDIR/obs.list"
-
-sudo mv "$TMPDIR/obs.asc"  /etc/apt/trusted.gpg.d/obs.asc
-sudo mv "$TMPDIR/obs.list" /etc/apt/sources.list.d/edatools.list
-
 # Install gcc-9 and set it as the default.
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test \
   && sudo $APT_CMD update \
@@ -98,7 +78,6 @@ sudo $APT_CMD update || {
 
 ci_reqs="$TMPDIR/apt-requirements-ci.txt"
 cp apt-requirements.txt "$ci_reqs"
-echo "verilator-${VERILATOR_VERSION}" >> "$ci_reqs"
 echo rsync >> "$ci_reqs"
 
 # NOTE: We use sed to remove all comments from apt-requirements-ci.txt,
@@ -124,6 +103,7 @@ python3 -m pip install --user -U pip setuptools
 pip3 install --user -r python-requirements.txt
 
 # Install Verible
+lsb_sr="$(lsb_release -sr)"
 lsb_sc="$(lsb_release -sc)"
 VERIBLE_BASE_URL="https://github.com/google/verible/releases/download"
 VERIBLE_TARBALL="verible-${VERIBLE_VERSION}-Ubuntu-${lsb_sr}-${lsb_sc}-x86_64.tar.gz"
@@ -139,6 +119,23 @@ sudo mkdir -p /tools/verible
 sudo chmod 777 /tools/verible
 tar -C /tools/verible -xf "$verible_tar" --strip-components=1
 export PATH=/tools/verible/bin:$PATH
+
+# Install verilator
+if [ $lsb_sr = "18.04" ]; then
+  UBUNTU_SUFFIX="-u18"
+fi
+
+VERILATOR_TARBALL=verilator"$UBUNTU_SUFFIX-v$VERILATOR_VERSION".tar.gz
+VERILATOR_URL=https://storage.googleapis.com/verilator-builds/$VERILATOR_TARBALL
+echo "Fetching verilator tarball" $VERILATOR_URL
+curl -f -Ls -o "$VERILATOR_TARBALL" "$VERILATOR_URL" || {
+    error "Failed to download verilator from ${VERILATOR_URL}"
+}
+
+sudo mkdir -p /tools/verilator
+sudo chmod 777 /tools/verilator
+tar -C /tools/verilator -xvzf $VERILATOR_TARBALL
+export PATH=/tools/verilator/v$VERILATOR_VERSION/bin:$PATH
 
 # Install Rust
 sw/vendor/rustup/rustup-init.sh -y \

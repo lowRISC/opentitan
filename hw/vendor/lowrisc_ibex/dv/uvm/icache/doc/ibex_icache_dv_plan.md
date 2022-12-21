@@ -112,9 +112,61 @@ All test sequences reside in [`dv/uvm/icache/dv/env/seq_lib`](https://github.com
 
 TBD
 
-#### Functional coverage
+### Functional coverage
 
-TBD
+Coverpoints will be created at two levels, ICache top level and individual fill buffers.
+
+#### ICache top-level coverage
+
+**Coverpoints**
+* `cp_lookup_req` - Two types of lookup
+  * `straightline_req` - Looking up the PC following the current one
+  * `branch_req` - Lookup up a PC from a branch request
+* `cp_hit_miss` - Hit seen and miss seen
+* `cp_hit_way` - Hit seen in every cache way
+* `cp_fill_buffer_usage` - How many fill buffers are in use
+* `cp_data_ecc_err` - ECC error seen in data RAM
+* `cp_tag_ecc_error` - ECC error seen in each tag RAM way
+* `cp_data_src` - Sources of data for an instruction
+  * `ICDataSrcFB` - Data from fill buffer
+  * `ICDataSrcExt` - Data direct from external imem bus
+  * `ICDataSrcCache` - Data from cache memory
+* `cp_req_when_fb_full` - ICache request when fill buffers are all in use
+* `cp_branch_when_fb_full` - ICache branch request when fill buffers are all in use
+* `cp_throttle_req` - Lookup requests throttled
+
+**Crosses**
+* `tag_req_cross` - Cross of all sources of tag RAM requests
+* `data_req_cross` - Cross of all sources of data RAM requests
+* `data_src_cross` - Cross of data sources, whether the skid buffer was used and
+  whether the cache is enabled
+
+#### ICache per fill buffer coverage
+
+**Coverpoints**
+* `cp_addr_hz` - Whilst active this fill buffer has the same address as another active fill buffer
+* `cp_out_of_order_finish` - Number of older fill buffers outstanding when this fill buffer releases
+* `cp_state` - Fill buffer in various states (note there are no explicit single 'state' flops in the RTL)
+  * `FBIdle` - Idle and ready to be allocated
+  * `FBReqing` - Requesting data via the imem bus
+  * `FBReqingAndFilling` - At least one request granted but others still needed and awaiting data
+  * `FBFilling` - All requests granted and awaiting data
+  * `FBAllocating` - Waiting to or in the process of writing to data RAM
+  * `FBAwaitingOutput` - Waiting for fill buffer data to be consumed by output before releasing
+* `cp_fb_done_reason` - Why the fill buffer has finished
+  * `FBNotDone` - Fill buffer not yet done
+  * `FBDoneHitNoExtReqs` - Fill buffer hit against cache and sent no external requests 
+  * `FBDoneHitExtReqs` - Fill buffer hit against cache and sent external requests (which must be completed before fill buffer can release)
+  * `FBDoneMiss` - Fill buffer missed in cache and has fetched data to satisfy request
+  * `FBDoneBranchNoExtReqs` - Fill buffer became stale due to branch and sent no external requests and so released
+  * `FBDoneBranchExtReqs` - Fill buffer became stale due to branch and sent external requests (which must be completed before fill buffer can release)
+  * `FBDoneNoCache` - Cache is disabled so fill buffer done once it provides output from external request
+  * `FBDoneMemErr` - Instruction fetch saw a bus error
+* `cp_state_when_disabling` - State of the fill buffer when the cache is disabled
+* `cp_state_when_enabling` - State of the fill buffer when the cache is enabled
+* `cp_state_when_inval_start` - State of the fill buffer when cache invalidation begins
+* `cp_starting_beat` - Beat fill buffer started on and hence sent its first request for (which may be part way through a line)
+
 
 ### Self-checking strategy
 #### Scoreboard
@@ -122,6 +174,7 @@ The `ibex_icache_scoreboard` is used to check that instructions fetched from the
 It has two analysis ports: one for the memory agent and another for the core agent.
 
 The scoreboard can keep track of what addresses it expects from responses to the core by modelling the cache's internal address counter and following branches.
+
 
 To check correctness of the fetched data, the scoreboard will keep track of the set of seeds that have been set by the memory agent since the last cache invalidation began.
 For any given seed, the scoreboard can tell what the memory response should have been (an error, or data as a function of the seed and address).

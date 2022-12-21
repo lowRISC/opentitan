@@ -9,7 +9,15 @@ class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
 
   // set timeout field to minimum value to ensure
   // stretch_timeout irq is asserted for every target's ACK
-  constraint t_timeout_c { t_timeout == 1; }
+  // Re-write this constraint:
+  // Between scl_i / scl_o there are sync flops exist.
+  // This always creates 3 cycles of delay and increment stretch_idle_cnt up to 3.
+  // To avoid spurious interrupt, program timeout count value greater than 3.
+  // 't_timeout' is used to define upper bound of 'tStretchHostClock'
+  // see (https://cs.opensource.google/opentitan/opentitan/+/master:
+  // hw/dv/sv/i2c_agent/i2c_driver.sv;drc=95fba940c08451445fac85b1aac4a8117cee452b;
+  // l=107)
+  constraint t_timeout_c { t_timeout == 5; }
 
   // timeout is always enabled so stretch_timeout irq is aggressively asserted
   constraint e_timeout_c { e_timeout == 1; }
@@ -21,6 +29,8 @@ class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
 
   virtual task body();
     `uvm_info(`gfn, "\n--> start of i2c_host_stretch_timeout_vseq", UVM_DEBUG)
+    cfg.m_i2c_agent_cfg.host_stretch_test_mode = 1;
+
     initialization(.mode(Host));
     for (int i = 1; i <= num_trans; i++) begin
       cnt_wr_stretch = 0;
@@ -71,9 +81,12 @@ class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
       // before clearing irq otherwise stretch_timeout irq can be re-triggered
       // within clock pulses that interferes the counters
       wait(!cfg.m_i2c_agent_cfg.vif.scl_i);
+      cfg.clk_rst_vif.wait_clks(1);
+
       clear_interrupt(StretchTimeout);
-      `uvm_info(`gfn, $sformatf("\n  check_wr_st %b cnt_wr_st %0d, check_rd_st %b, cnt_rd_st %0d",
-          check_wr_stretch, cnt_wr_stretch, check_rd_stretch, cnt_rd_stretch), UVM_DEBUG)
+      `uvm_info("proc_stretch_timeout_intr",
+                $sformatf("check_wr_st %b cnt_wr_st %0d, check_rd_st %b, cnt_rd_st %0d",
+                check_wr_stretch, cnt_wr_stretch, check_rd_stretch, cnt_rd_stretch), UVM_DEBUG)
     end
   endtask : process_stretch_timeout_intr
 

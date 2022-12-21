@@ -45,7 +45,7 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
     t_timeout == 1;
     e_timeout == 1;
     tsu_sta   == 1;
-    tlow      == 4;  // min:  (t_r + tsu_dat + thd_dat + 1)
+    tlow      == 5;  // min:  (t_r + tsu_dat + thd_dat + 1) + 1 to make tClockLow > 0
     t_buf     == 1;  // min:  (tsu_sta - t_r + 1)
   }
 

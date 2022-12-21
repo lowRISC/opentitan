@@ -1,4 +1,4 @@
-From 64d8696e395c695fcd4c821bdf0416148a0c42cf Mon Sep 17 00:00:00 2001
+From 05cf125bc39f3416c5113180d4b98493812d3305 Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 25 Oct 2022 19:38:49 -0700
 Subject: [PATCH 3/4] Add access error signal to dm_mem
@@ -6,7 +6,7 @@ Subject: [PATCH 3/4] Add access error signal to dm_mem
 Signed-off-by: Michael Schaffner <msf@google.com>
 
 diff --git a/src/dm_mem.sv b/src/dm_mem.sv
-index 7d90ea5..ec2fe99 100755
+index 09fc919..889193d 100755
 --- a/src/dm_mem.sv
 +++ b/src/dm_mem.sv
 @@ -20,7 +20,8 @@ module dm_mem #(
@@ -32,8 +32,8 @@ index 7d90ea5..ec2fe99 100755
    localparam int unsigned DbgAddressBits = 12;
    localparam int unsigned HartSelLen     = (NrHarts == 1) ? 1 : $clog2(NrHarts);
 @@ -82,6 +84,11 @@ module dm_mem #(
-   localparam logic [DbgAddressBits-1:0] ResumingAddr  = 'h108;
-   localparam logic [DbgAddressBits-1:0] ExceptionAddr = 'h10C;
+   localparam logic [DbgAddressBits-1:0] ResumingAddr  = 'h110;
+   localparam logic [DbgAddressBits-1:0] ExceptionAddr = 'h118;
  
 +  localparam logic [DbgAddressBits-1:0] RomBaseAddr   = dm::HaltAddress;
 +  // The size is arbitrarily set to 0x800, so as to make the dm_space exactly 0x900 long. This is

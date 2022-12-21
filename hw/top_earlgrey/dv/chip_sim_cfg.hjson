@@ -105,15 +105,17 @@
   ]
 
   // exclusion files
-  vcs_cov_excl_files: ["{top_dv_path}/cov/conn_ast_mem_cfg.el",
-                       "{top_dv_path}/cov/edn1_unr_tied_off_ports.el",
-                       "{top_dv_path}/cov/entropy_src_tied_off_xht_port.el",
-                       "{top_dv_path}/cov/pinmux_pad_attr.el",
-                       "{top_dv_path}/cov/rom_ctrl_kmac_app_tied_off_data_strb_bits.el",
-                       "{top_dv_path}/cov/chip_top_unr_tied_off.el",
+  vcs_cov_excl_files: ["{top_dv_path}/cov/chip_top_unr_tied_off.el",
+                       "{top_dv_path}/cov/conn_ast_mem_cfg.el",
                        "{top_dv_path}/cov/conn_flash_ctrl_ast_obs_test_volt.el",
                        "{top_dv_path}/cov/conn_otp_ctrl_ast_obs_ext_volt.el",
+                       "{top_dv_path}/cov/edn1_unr_tied_off_ports.el",
+                       "{top_dv_path}/cov/entropy_src_tied_off_xht_port.el",
+                       "{top_dv_path}/cov/lc_ctrl_hw_rev_tied_off.el",
+                       "{top_dv_path}/cov/pinmux_pad_attr.el",
                        "{top_dv_path}/cov/plic_le_i_tied_off.el",
+                       "{top_dv_path}/cov/plic_ip_wr_en_tied_off.el",
+                       "{top_dv_path}/cov/rom_ctrl_kmac_app_tied_off_data_strb_bits.el",
                        "{top_dv_path}/cov/spi_host_device_unr_tied_off.el"
                        ]
 
@@ -286,7 +288,7 @@
     }
     {
       name: sw_test_mode_rom
-      sw_images: ["//sw/device/silicon_creator/rom:rom:0"]
+      sw_images: ["//sw/device/silicon_creator/rom:rom_with_fake_keys:0"]
       en_run_modes: ["sw_test_mode_common"]
     }
     {
@@ -870,7 +872,9 @@
       uvm_test_seq: chip_sw_random_power_glitch_vseq
       sw_images: ["//sw/device/tests/sim_dv:pwrmgr_random_sleep_power_glitch_reset_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+bypass_alert_ready_to_end_check=1"]
+      run_opts: ["+bypass_alert_ready_to_end_check=1",
+                 "+sw_test_timeout_ns=24_000_000"]
+      run_timeout_mins: 120
     }
     {
       name: chip_sw_pwrmgr_sleep_disabled
@@ -1226,7 +1230,7 @@
     {
       name: chip_sw_keymgr_key_derivation
       uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
-      sw_images: ["//sw/device/tests/sim_dv:keymgr_key_derivation_test:1"]
+      sw_images: ["//sw/device/tests:keymgr_key_derivation_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=20_000_000"]
     }
@@ -1247,7 +1251,7 @@
     {
       name: chip_sw_keymgr_sideload_kmac
       uvm_test_seq: chip_sw_keymgr_sideload_kmac_vseq
-      sw_images: ["//sw/device/tests/sim_dv:keymgr_sideload_kmac_test:1"]
+      sw_images: ["//sw/device/tests:keymgr_sideload_kmac_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=20_000_000"]
     }
@@ -1261,9 +1265,10 @@
     {
       name: chip_sw_keymgr_sideload_otbn
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests/sim_dv:keymgr_sideload_otbn_test:1"]
+      sw_images: ["//sw/device/tests:keymgr_sideload_otbn_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=20_000_000"]
+      run_timeout_mins: 180
     }
     {
       name: chip_sw_kmac_mode_cshake
@@ -1310,12 +1315,11 @@
       run_opts: ["+sw_test_timeout_ns=12_000_000", "+en_scb_tl_err_chk=0"]
     }
     {
-      name: chip_sw_sram_ctrl_main_scrambled_access_jitter_en
+      name: chip_sw_sram_ctrl_scrambled_access_jitter_en
       uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
       sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_scrambled_access_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+mem_sel=main",
-                 "+sw_test_timeout_ns=12_000_000",
+      run_opts: ["+sw_test_timeout_ns=12_000_000",
                  "+en_jitter=1", "+en_scb_tl_err_chk=0"]
     }
     {
@@ -1329,7 +1333,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=20_000_000"]
+      run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_scb_tl_err_chk=0"]
     }
     {
       name: chip_sw_sensor_ctrl_alert
@@ -1359,7 +1363,8 @@
       sw_images: ["//third_party/coremark/top_earlgrey:coremark_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+en_uart_logger=1",
-                 "+sw_test_timeout_ns=22_000_000"]
+                 "+sw_test_timeout_ns=100_000_000"]
+      reseed: 1
       run_timeout_mins: 180
     }
     {
@@ -1678,7 +1683,7 @@
       run_opts: ["+en_jitter=1", "+cal_sys_clk_70mhz=1"]
     }
     {
-      name: chip_sw_sram_ctrl_main_scrambled_access_jitter_en_reduced_freq
+      name: chip_sw_sram_ctrl_scrambled_access_jitter_en_reduced_freq
       uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
       sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_scrambled_access_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
@@ -1714,6 +1719,9 @@
       name: chip_sw_power_sleep_load
       uvm_test_seq: chip_sw_power_sleep_load_vseq
       sw_images: ["//sw/device/tests:chip_power_sleep_load:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      // This is to disable the ping-timeout check in cip_base_scoreboard, see OT issue #16055.
+      run_opts: ["+en_scb_ping_chk=0"]
     }
   ]
 
@@ -1751,7 +1759,7 @@
               "chip_sw_hmac_enc_jitter_en",
               "chip_sw_keymgr_key_derivation_jitter_en",
               "chip_sw_kmac_mode_kmac_jitter_en",
-              "chip_sw_sram_ctrl_main_scrambled_access_jitter_en"]
+              "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
     }
     {
       name: jitter_reduced_freq
@@ -1763,7 +1771,7 @@
               "chip_sw_hmac_enc_jitter_en_reduced_freq",
               "chip_sw_keymgr_key_derivation_jitter_en_reduced_freq",
               "chip_sw_kmac_mode_kmac_jitter_en_reduced_freq",
-              "chip_sw_sram_ctrl_main_scrambled_access_jitter_en_reduced_freq",
+              "chip_sw_sram_ctrl_scrambled_access_jitter_en_reduced_freq",
               "chip_sw_flash_init_reduced_freq",
               "chip_sw_csrng_edn_concurrency_reduced_freq"]
     }
@@ -1801,7 +1809,7 @@
               "chip_sw_plic_sw_irq",
               "chip_sw_aes_enc",
               "chip_sw_aes_enc_jitter_en",
-              "chip_sw_sram_ctrl_main_scrambled_access",
+              "chip_sw_sram_ctrl_scrambled_access",
               // TODO(#16416): uncomment when this is passing nightly.
               // "chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_all_escalation_resets",

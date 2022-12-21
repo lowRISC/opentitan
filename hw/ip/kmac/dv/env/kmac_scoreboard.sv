@@ -1441,12 +1441,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           exp_keys = (sideload_en || (in_kmac_app && app_mode == AppKeymgr)) ?
                       get_keymgr_keys : keys;
           for (int i = 0; i < key_word_len; i++) begin
-            if (sideload_en || (in_kmac_app && app_mode == AppKeymgr)) begin
-              // Sideload key from keymgr is already masked in keymgr.
-              unmasked_key.push_back(exp_keys[0][i]);
-            end else begin
-              unmasked_key.push_back(exp_keys[0][i] ^ exp_keys[1][i]);
-            end
+            unmasked_key.push_back(exp_keys[0][i] ^ exp_keys[1][i]);
             `uvm_info(`gfn, $sformatf("unmasked_key[%0d] = 0x%0x", i, unmasked_key[i]), UVM_HIGH)
           end
 

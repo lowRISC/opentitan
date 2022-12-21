@@ -16,33 +16,36 @@
 # Author: Robert Balas (balasr@iis.ee.ethz.ch)
 # Description: All in one. Uses parts of picorv32's makefile.
 
+# minimum tool versions supported
+MIN_VSIM_VERSION	= "questa-2020.1"
+MIN_VCS_VERSION		= "vcs-2020.12"
+
 MAKE			= make
 CTAGS			= ctags
 
 # vsim configuration
-VVERSION		= "10.7b"
 
-VLIB			= vlib-$(VVERSION)
+VLIB			= vlib
 VWORK			= work
 
-VLOG			= vlog-$(VVERSION)
+VLOG			= vlog
 VLOG_FLAGS		= -pedanticerrors -suppress 2577 -suppress 2583
-VLOG_LOG                = vloggy
+VLOG_LOG		= vloggy
 
-VOPT			= vopt-$(VVERSION)
+VOPT			= vopt
 VOPT_FLAGS		= -debugdb -fsmdebug -pedanticerrors #=mnprft
 
-VSIM			= vsim-$(VVERSION)
-VSIM_HOME		= /usr/pack/modelsim-$(VVERSION)-kgf/questasim
+VSIM			= vsim
+VSIM_HOME		=
 VSIM_FLAGS		=  # user defined
 ALL_VSIM_FLAGS		= $(VSIM_FLAGS) -sv_lib remote_bitbang/librbs_vsim
 VSIM_DEBUG_FLAGS	= -debugdb
 VSIM_GUI_FLAGS		= -gui -debugdb
 VSIM_SCRIPT_BATCH	= vsim_batch.tcl
-VSIM_SCRIPT_GUI	= vsim_gui.tcl
+VSIM_SCRIPT_GUI		= vsim_gui.tcl
 
-VCS			= vcs-2017.03-kgf vcs
-VCS_HOME		= /usr/pack/vcs-2017.03-kgf
+VCS			= vcs
+VCS_HOME		=
 VCS_FLAGS		=
 SIMV_FLAGS		=
 
@@ -178,7 +181,7 @@ vsim-all: .opt-rtl
 vcsify: $(RTLSRC_PKG) $(RTLSRC) $(RTLSRC_TB_PKG) $(RTLSRC_TB) remote_bitbang/librbs_vcs.so
 	$(VCS) +vc -sverilog -race=all -ignore unique_checks -full64 \
 		-timescale=1ns/1ps -assert svaext \
-		-CC "-I$(VCS_HOME)/include -O3 -march=native" $(VCS_FLAGS) \
+		-CC "$(if $(VCS_HOME),-I$(VCS_HOME)/include,) -O3 -march=native" $(VCS_FLAGS) \
 		$(RTLSRC_PKG) $(RTLSRC) $(RTLSRC_TB_PKG) $(RTLSRC_TB) \
 		$(addprefix +incdir+,$(RTLSRC_INCDIR))
 
@@ -238,19 +241,19 @@ $(RTLSRC_RISCV_PKG) $(RTLSRC_RISCV):
 	cd riscv/ && git checkout $(CV32E40P_SHA)
 
 # openocd server
-remote_bitbang/librbs_veri.so: INCLUDE_DIRS =./ $(VSIM_HOME)/include
+remote_bitbang/librbs_veri.so: INCLUDE_DIRS =./
 remote_bitbang/librbs_veri.so:
 	$(MAKE) -C remote_bitbang all
 	mv remote_bitbang/librbs.so $@
 
-remote_bitbang/librbs_vsim.so: INCLUDE_DIRS =./ $(VSIM_HOME)/include
 remote_bitbang/librbs_vsim.so:
-	$(MAKE) -C remote_bitbang all
+remote_bitbang/librbs_vsim.so:
+	$(MAKE) -C remote_bitbang all INCLUDE_DIRS="./ $(if $(VSIM_HOME),$(VSIM_HOME)/include,)"
 	mv remote_bitbang/librbs.so $@
 
-remote_bitbang/librbs_vcs.so: INCLUDE_DIRS =./ $(VCS_HOME)/include
 remote_bitbang/librbs_vcs.so:
-	$(MAKE) -C remote_bitbang all
+remote_bitbang/librbs_vcs.so:
+	$(MAKE) -C remote_bitbang all INCLUDE_DIRS="./ $(if $(VCS_HOME),$(VCS_HOME)/include,)"
 	mv remote_bitbang/librbs.so $@
 
 rbs-clean:

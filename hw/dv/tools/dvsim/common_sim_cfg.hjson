@@ -22,11 +22,6 @@
   // Default file to store build_seed value
   build_seed_file_path: "{build_dir}/build_seed.log"
 
-  // pass and fail patterns
-  build_pass_patterns: []
-  // TODO: Add back FuseSoC fail pattern after
-  // https://github.com/lowRISC/opentitan/issues/7348 is resolved.
-  build_fail_patterns: []
   run_pass_patterns:   ["^TEST PASSED (UVM_)?CHECKS$"]
   run_fail_patterns:   ["^UVM_ERROR\\s[^:].*$",
                         "^UVM_FATAL\\s[^:].*$",

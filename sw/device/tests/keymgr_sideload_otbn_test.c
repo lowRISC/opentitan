@@ -136,6 +136,11 @@ bool test_main(void) {
   dif_kmac_t kmac;
   keymgr_testutils_startup(&keymgr, &kmac);
 
+  // Advance to OwnerIntermediateKey state.
+  keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams);
+  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerIntermediateKey);
+  LOG_INFO("Keymgr entered OwnerIntKey State");
+
   // Initialize OTBN.
   otbn_t otbn_ctx;
   CHECK(otbn_init(&otbn_ctx, mmio_region_from_addr(

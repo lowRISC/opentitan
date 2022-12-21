@@ -320,8 +320,15 @@ class core_ibex_base_test extends uvm_test;
           ts = get_unix_timestamp();
           if (ts >= timeout_timestamp) break;
         end
-        `uvm_fatal(`gfn,
-                   $sformatf("Test failed due to wall-clock timeout. [%0ds]", timeout_seconds))
+
+        if (cfg.is_timeout_s_fatal) begin
+          `uvm_fatal(`gfn,
+                     $sformatf("Test failed due to wall-clock timeout. [%0ds]", timeout_seconds))
+        end else begin
+          `uvm_info(`gfn,
+                     $sformatf("Test done due to wall-clock timeout. [%0ds]", timeout_seconds),
+                     UVM_LOW)
+        end
       end
       begin
         wait_for_custom_test_done();

@@ -597,4 +597,6 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   // Make sure that the state machine has a stable error state. This means that after the error
   // state is entered it will not exit it unless a reset signal is received.
   `ASSERT(CsrngDrbgGenErrorStStable_A, state_q == ReqError |=> $stable(state_q))
+  // If in error state, the error output must be high.
+  `ASSERT(CsrngDrbgGenErrorOutput_A,   state_q == Error    |-> ctr_drbg_gen_sm_err_o)
 endmodule

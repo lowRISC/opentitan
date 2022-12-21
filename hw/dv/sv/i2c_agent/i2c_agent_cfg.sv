@@ -10,6 +10,7 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   i2c_target_addr_mode_e target_addr_mode = Addr7BitMode;
 
   timing_cfg_t    timing_cfg;
+  bit host_stretch_test_mode = 0;
 
   virtual i2c_if  vif;
 

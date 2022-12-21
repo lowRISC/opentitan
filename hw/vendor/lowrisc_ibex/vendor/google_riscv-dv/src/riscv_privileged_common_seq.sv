@@ -20,6 +20,7 @@ class riscv_privileged_common_seq extends uvm_sequence;
   riscv_instr_gen_config  cfg;
   int                     hart;
   riscv_privil_reg        mstatus;
+  rand bit                mstatus_mie;
   riscv_privil_reg        mie;
   riscv_privil_reg        sstatus;
   riscv_privil_reg        sie;
@@ -88,7 +89,12 @@ class riscv_privileged_common_seq extends uvm_sequence;
     mstatus.set_field("MPP", mode);
     mstatus.set_field("SPP", 0);
     // Enable interrupt
-    mstatus.set_field("MPIE", cfg.enable_interrupt);
+    // Only machine mode requires mstatus.MIE to be 1 for enabling interrupt
+    if (mode == MACHINE_MODE) begin
+      mstatus.set_field("MPIE", cfg.enable_interrupt);
+    end else begin
+      mstatus.set_field("MPIE", cfg.enable_interrupt & mstatus_mie);
+    end
     // MIE is set when returning with mret, avoids trapping before returning
     mstatus.set_field("MIE", 0);
     mstatus.set_field("SPIE", cfg.enable_interrupt);

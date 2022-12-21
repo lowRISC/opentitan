@@ -472,10 +472,6 @@ opentitan_functest(
 opentitan_functest(
     name = "chip_power_sleep_load",
     srcs = ["chip_power_sleep_load.c"],
-    cw310 = cw310_params(
-        # FIXME #16506 test stuck in wfi. Works in DV environment.
-        tags = ["broken"],
-    ),
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -484,7 +480,9 @@ opentitan_functest(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwm",
+        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
@@ -1128,9 +1126,27 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "keymgr_key_derivation_test",
+    srcs = ["keymgr_key_derivation_test.c"],
+    deps = [
+        "//hw/ip/keymgr/data:keymgr_regs",
+        "//hw/ip/kmac/data:kmac_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "keymgr_sideload_aes_test",
     srcs = ["keymgr_sideload_aes_test.c"],
-    targets = ["dv"],
     deps = [
         "//hw/ip/aes/data:aes_regs",
         "//hw/ip/keymgr/data:keymgr_regs",
@@ -1148,6 +1164,44 @@ opentitan_functest(
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:kmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "keymgr_sideload_kmac_test",
+    srcs = ["keymgr_sideload_kmac_test.c"],
+    deps = [
+        "//hw/ip/keymgr/data:keymgr_regs",
+        "//hw/ip/kmac/data:kmac_regs",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:kmac_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "keymgr_sideload_otbn_test",
+    srcs = ["keymgr_sideload_otbn_test.c"],
+    deps = [
+        "//hw/ip/otbn/data:otbn_regs",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:otbn",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/otbn/crypto:x25519_sideload",
     ],
 )
 
@@ -1714,8 +1768,11 @@ opentitan_functest(
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
@@ -1782,43 +1839,12 @@ opentitan_functest(
 opentitan_functest(
     name = "usbdev_test",
     srcs = ["usbdev_test.c"],
-    targets = ["verilator"],
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+    ],
     verilator = verilator_params(
         timeout = "long",
-    ),
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:usbdev",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing:usb_testutils",
-        "//sw/device/lib/testing:usb_testutils_simpleserial",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_functest(
-    name = "usbdev_stream_test_signed",
-    srcs = ["usbdev_stream_test.c"],
-    cw310 = cw310_params(
-        exit_failure = ROM_BOOT_FAILURE_MSG,
-    ),
-    dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom",
-    ),
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    signed = True,
-    targets = [
-        "cw310_rom",
-        "verilator",
-        "dv",
-    ],
-    verilator = verilator_params(
-        timeout = "eternal",
-        exit_failure = ROM_BOOT_FAILURE_MSG,
-        rom = "//sw/device/silicon_creator/rom",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1836,7 +1862,13 @@ opentitan_functest(
 opentitan_functest(
     name = "usbdev_stream_test",
     srcs = ["usbdev_stream_test.c"],
-    targets = ["verilator"],
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -1847,7 +1879,6 @@ opentitan_functest(
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:usb_testutils",
-        "//sw/device/lib/testing:usb_testutils_simpleserial",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

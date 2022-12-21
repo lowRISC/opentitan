@@ -36,7 +36,10 @@ class reset_class;
   parameter time ChildFastClkPeriod = 6_543;
   parameter time ChildSlowClkPeriod = 25_678;
 
-  parameter int ScanSweepCycles = 40;
+  parameter int ScanSweepBeforeCycles = 50;
+  parameter int ScanSweepAfterCycles = 10;
+  parameter int ScanSweepCycles = ScanSweepBeforeCycles + ScanSweepAfterCycles;
+
   parameter int IterationsPerDelta = 16;
 
   import uvm_pkg::*;
@@ -196,12 +199,11 @@ class reset_class;
                 description,
                 delta_cycles,
                 reset_vif.err_o
-                ), UVM_MEDIUM)
+                ), UVM_HIGH)
       // May get error, so reset.
       set_quiescent();
       apply_resets();
     end
-    `uvm_info(`gfn, $sformatf("error_count %0d", error_count), UVM_MEDIUM)
   endtask
 
   // Run a parent reset to child reset.
@@ -211,7 +213,7 @@ class reset_class;
     parent_rst_n = 0;
     cycles_to_parent_release = 4;
     cycles_to_child_release = 5;
-    cycles_to_child_reset = ScanSweepCycles / 2;
+    cycles_to_child_reset = ScanSweepBeforeCycles;
     for (
         cycles_to_parent_reset = 0;
         cycles_to_parent_reset < ScanSweepCycles;
@@ -223,10 +225,14 @@ class reset_class;
                 UVM_MEDIUM)
       run_iterations("parent reset", delta_cycles, error_count);
       `uvm_info(`gfn, $sformatf(
-                "Scan parent reset with cycles delta %0d error %0d", delta_cycles, error_count),
-                UVM_LOW)
+                "Scan parent reset with cycles delta %0d total errors %0d / %0d",
+                delta_cycles,
+                error_count,
+                IterationsPerDelta
+                ), UVM_LOW)
       `DV_CHECK(((delta_cycles <= -4) || (delta_cycles >= 4)) || (error_count == 0))
-      `DV_CHECK(((delta_cycles >= -5) && (delta_cycles <= 5)) || (error_count > 0))
+      `DV_CHECK(((delta_cycles >= -5) && (delta_cycles <= 5)) ||
+                (error_count == IterationsPerDelta))
     end
   endtask
 
@@ -236,7 +242,7 @@ class reset_class;
     parent_rst_n = 0;
     cycles_to_parent_reset = 5;
     cycles_to_child_reset = 5;
-    cycles_to_child_release = ScanSweepCycles / 2;
+    cycles_to_child_release = ScanSweepBeforeCycles;
     for (
         cycles_to_parent_release = 0;
         cycles_to_parent_release < ScanSweepCycles;
@@ -248,10 +254,13 @@ class reset_class;
                 UVM_MEDIUM)
       run_iterations("parent release", delta_cycles, error_count);
       `uvm_info(`gfn, $sformatf(
-                "Scan parent release with cycles delta %0d error %0d", delta_cycles, error_count),
-                UVM_LOW)
-      `DV_CHECK((delta_cycles >= 0) || (error_count == 0))
-      `DV_CHECK((delta_cycles < 1) || (error_count > 0))
+                "Scan parent release with cycles delta %0d total errors %0d / %0d",
+                delta_cycles,
+                error_count,
+                IterationsPerDelta
+                ), UVM_LOW)
+      `DV_CHECK((delta_cycles < -12) || (delta_cycles > -1) || (error_count == 0))
+      `DV_CHECK(((delta_cycles > -42) && (delta_cycles < 2)) || (error_count == IterationsPerDelta))
     end
   endtask
 
@@ -261,17 +270,20 @@ class reset_class;
     parent_rst_n = 1;
     cycles_to_sw_release = 4;
     cycles_to_child_release = 5;
-    cycles_to_child_reset = ScanSweepCycles / 2;
+    cycles_to_child_reset = ScanSweepBeforeCycles;
     for (cycles_to_sw_reset = 0; cycles_to_sw_reset < ScanSweepCycles; ++cycles_to_sw_reset) begin
       int error_count = 0;
       int delta_cycles = cycles_to_sw_reset - cycles_to_child_reset;
       `uvm_info(`gfn, $sformatf("Sending sw reset %0d cycles from child", delta_cycles), UVM_HIGH)
       run_iterations("sw reset", delta_cycles, error_count);
       `uvm_info(`gfn, $sformatf(
-                "Scan sw reset with cycles delta %0d error %0d", delta_cycles, error_count),
-                UVM_LOW)
+                "Scan sw reset with cycles delta %0d total errors %0d / %0d",
+                delta_cycles,
+                error_count,
+                IterationsPerDelta
+                ), UVM_LOW)
       `DV_CHECK((delta_cycles >= 3) || (error_count == 0))
-      `DV_CHECK((delta_cycles <= 3) || (error_count > 0))
+      `DV_CHECK((delta_cycles <= 3) || (error_count == IterationsPerDelta))
     end
   endtask
 
@@ -281,7 +293,7 @@ class reset_class;
     parent_rst_n = 1;
     cycles_to_sw_reset = 4;
     cycles_to_child_reset = 5;
-    cycles_to_child_release = ScanSweepCycles / 2;
+    cycles_to_child_release = ScanSweepBeforeCycles;
     for (
         cycles_to_sw_release = 0; cycles_to_sw_release < ScanSweepCycles; ++cycles_to_sw_release
     ) begin
@@ -290,10 +302,13 @@ class reset_class;
       `uvm_info(`gfn, $sformatf("Sending sw release %0d cycles from child", delta_cycles), UVM_HIGH)
       run_iterations("sw release", delta_cycles, error_count);
       `uvm_info(`gfn, $sformatf(
-                "Scan sw release with cycles delta %0d error %0d", delta_cycles, error_count),
-                UVM_LOW)
-      `DV_CHECK((delta_cycles >= 4) || (error_count == 0))
-      `DV_CHECK((delta_cycles <= 4) || (error_count > 0))
+                "Scan sw release with cycles delta %0d total errors %0d / %0d",
+                delta_cycles,
+                error_count,
+                IterationsPerDelta
+                ), UVM_LOW)
+      `DV_CHECK((delta_cycles < -8) || (delta_cycles > 3) || (error_count == 0))
+      `DV_CHECK(((delta_cycles > -38) && (delta_cycles < 5)) || (error_count == IterationsPerDelta))
     end
   endtask
 
@@ -417,11 +432,21 @@ module tb;
     end
   end
 
+  logic leaf_chk_rst_n;
+  prim_rst_sync u_prim_rst_sync (
+    .clk_i      (child_clk_i),
+    .d_i        (rst_ni),
+    .q_o        (leaf_chk_rst_n),
+    .scan_rst_ni(1'b1),
+    .scanmode_i(prim_mubi_pkg::MuBi4False)
+  );
+
   rstmgr_cnsty_chk dut (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .child_clk_i(child_clk_i),
     .child_rst_ni(rstmgr_cnsty_chk_if.child_rst_ni),
+    .child_chk_rst_ni(leaf_chk_rst_n),
     .parent_rst_ni(rstmgr_cnsty_chk_if.parent_rst_ni),
     .sw_rst_req_i(rstmgr_cnsty_chk_if.sw_rst_req_i | sw_rst_req_q),
     .sw_rst_req_clr_o(rstmgr_cnsty_chk_if.sw_rst_req_clr_o),

@@ -78,13 +78,13 @@ inline uint64_t ibex_mcycle_read(void) {
   uint32_t cycle_high = 0;
   uint32_t cycle_high_2 = 0;
   asm volatile(
-      "read%=:"
-      "  csrr %0, mcycleh;"     // Read `mcycleh`.
-      "  csrr %1, mcycle;"      // Read `mcycle`.
-      "  csrr %2, mcycleh;"     // Read `mcycleh` again.
-      "  bne  %0, %2, read%=;"  // Try again if `mcycle` overflowed before
-                                // reading `mcycleh`.
-      : "+r"(cycle_high), "=r"(cycle_low), "+r"(cycle_high_2)
+      "1:"
+      "  csrr %0, mcycleh;"  // Read `mcycleh`.
+      "  csrr %1, mcycle;"   // Read `mcycle`.
+      "  csrr %2, mcycleh;"  // Read `mcycleh` again.
+      "  bne  %0, %2, 1b;"   // Try again if `mcycle` overflowed before
+                             // reading `mcycleh`.
+      : "=r"(cycle_high), "=r"(cycle_low), "=r"(cycle_high_2)
       :);
   return (uint64_t)cycle_high << 32 | cycle_low;
 }

@@ -266,6 +266,8 @@ module tb_test_env #(
        .master_be_o       ( sb_be             ),
        .master_gnt_i      ( sb_gnt            ),
        .master_r_valid_i  ( sb_rvalid         ),
+       .master_r_err_i    ( 1'b0              ),
+       .master_r_other_err_i ( 1'b0           ),
        .master_r_rdata_i  ( sb_rdata          ),
 
        .dmi_rst_ni        ( rst_ni            ),

@@ -83,12 +83,17 @@ class csrng_monitor extends dv_base_monitor #(
               cs_item.genbits_q.push_back(cfg.vif.mon_cb.cmd_rsp.genbits_bus);
             end
           end
-          cfg.vif.wait_cmd_ack_or_rst_n();
+          // Illegal commands fail without getting acknowledged.
+          if (!(cs_item.acmd inside {csrng_pkg::INV, csrng_pkg::GENB,
+                                     csrng_pkg::GENU})) begin
+            cfg.vif.wait_cmd_ack_or_rst_n();
+          end
           `uvm_info(`gfn, $sformatf("Writing analysis_port: %s", cs_item.convert2string()),
                     UVM_HIGH)
           analysis_port.write(cs_item);
+          if (cfg.en_cov) cov.sample_csrng_cmds(cs_item, cfg.vif.cmd_rsp.csrng_rsp_sts);
 
-          if (cfg.en_cov) cov.sample_csrng_cmds(cs_item, cfg.vif.cmd_rsp.csrng_rsp_sts);,
+          ,
 
           // Wait reset
           wait (cfg.under_reset);)

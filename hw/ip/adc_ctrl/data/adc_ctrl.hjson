@@ -304,7 +304,7 @@
       fields: [
         { bits: "8:0",
           name: "EN",
-          desc: "0: interrupt source is enabled; 1: interrupt source not enabled",
+          desc: "0: interrupt source is not enabled; 1: interrupt source is enabled",
         }
       ]
     }

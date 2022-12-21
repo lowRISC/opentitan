@@ -428,7 +428,10 @@ class CompileOneShot(Deploy):
             "report_opts": False
         })
 
-        self.mandatory_misc_attrs.update({"build_fail_patterns": False})
+        self.mandatory_misc_attrs.update({
+            "build_fail_patterns": False,
+            "build_pass_patterns": False
+        })
 
     def _set_attrs(self):
         super()._extract_attrs(self.build_mode_obj.__dict__)
@@ -438,6 +441,7 @@ class CompileOneShot(Deploy):
         self.build_mode = self.name
         self.job_name += f"_{self.build_mode}"
         self.fail_patterns = self.build_fail_patterns
+        self.pass_patterns = self.build_pass_patterns
 
         if self.sim_cfg.args.build_timeout_mins is not None:
             self.build_timeout_mins = self.sim_cfg.args.build_timeout_mins

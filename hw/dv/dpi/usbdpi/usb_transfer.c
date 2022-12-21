@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <assert.h>
+#include <string.h>
 
+#include "usb_utils.h"
 #include "usbdpi.h"
 
 // Set up all of the available transfer descriptors
@@ -17,7 +19,7 @@ void usb_transfer_setup(usbdpi_ctx_t *ctx) {
   ctx->free = next;
 }
 
-// Allocate and initialise a transfer descriptor
+// Allocate and initialize a transfer descriptor
 usbdpi_transfer_t *transfer_alloc(usbdpi_ctx_t *ctx) {
   usbdpi_transfer_t *transfer = ctx->free;
   if (transfer) {
@@ -34,7 +36,7 @@ void transfer_release(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer) {
   ctx->free = transfer;
 }
 
-// Initialise a transfer descriptor
+// Initialize a transfer descriptor
 void transfer_init(usbdpi_transfer_t *transfer) {
   // Not within a linked list
   transfer->next = NULL;
@@ -53,15 +55,39 @@ void transfer_frame_start(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer,
   transfer_send(ctx, transfer);
 }
 
+// Construct and send the setup stage of a control transfer
+void transfer_setup(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer,
+                    uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue,
+                    uint16_t wIndex, uint16_t wLength) {
+  transfer_token(transfer, USB_PID_SETUP, ctx->dev_address, ENDPOINT_ZERO);
+
+  uint8_t *dp = transfer_data_start(transfer, USB_PID_DATA0, 8U);
+  dp[0] = bmRequestType;
+  dp[1] = bRequest;
+  dp[2] = (uint8_t)wValue;
+  dp[3] = (uint8_t)(wValue >> 8);
+  dp[4] = (uint8_t)wIndex;
+  dp[5] = (uint8_t)(wIndex >> 8);
+  dp[6] = (uint8_t)wLength;
+  dp[7] = (uint8_t)(wLength >> 8);
+  transfer_data_end(transfer, dp + 8);
+
+  // Send the transfer descriptor
+  transfer_send(ctx, transfer);
+  ctx->bus_state = kUsbControlSetup;
+  ctx->wait = USBDPI_TIMEOUT(ctx, USBDPI_INTERVAL_SETUP_STAGE);
+  ctx->hostSt = HS_WAITACK;
+}
+
 // Append a token packet to a transfer descriptor that is under construction
 void transfer_token(usbdpi_transfer_t *transfer, uint8_t pid, uint8_t device,
                     uint8_t endpoint) {
-  USBDPI_ASSERT(device < 0x80U);
-  USBDPI_ASSERT(endpoint < 0x10U);
+  assert(device < 0x80U);
+  assert(endpoint < 0x10U);
 
   transfer_init(transfer);
 
-  USBDPI_ASSERT(transfer->num_bytes <= sizeof(transfer->data) - 3);
+  assert(transfer->num_bytes <= sizeof(transfer->data) - 3);
   uint8_t *dp = &transfer->data[transfer->num_bytes];
 
   dp[0] = pid;
@@ -80,13 +106,13 @@ uint8_t *transfer_data_start(usbdpi_transfer_t *transfer, uint8_t pid,
   // TODO - we should at this point check that we are properly compliant with
   //        DATA0|DATA1 signalling too!
   //        unless of course we are deliberately being non-compliant
-  USBDPI_ASSERT(pid == USB_PID_DATA0 || pid == USB_PID_DATA1);
+  assert(pid == USB_PID_DATA0 || pid == USB_PID_DATA1);
 
   // If an estimated size has been speciifed, check whether there's sufficient
   // space
   unsigned data_start = transfer->num_bytes;
   if (est_size > sizeof(transfer->data) - 1U - data_start) {
-    USBDPI_ASSERT(!"transfer_data_start space check failed");
+    assert(!"transfer_data_start space check failed");
     return NULL;
   }
 
@@ -96,6 +122,7 @@ uint8_t *transfer_data_start(usbdpi_transfer_t *transfer, uint8_t pid,
   transfer->data_start = data_start;
   uint8_t *dp = &transfer->data[data_start];
   *dp++ = pid;
+  transfer->num_bytes++;
 
   // We return a pointer to where the data stage shall be constructed, and the
   // caller shall pass the advanced pointer to tranfer_data_end() to ensure
@@ -106,15 +133,15 @@ uint8_t *transfer_data_start(usbdpi_transfer_t *transfer, uint8_t pid,
 // Conclude a data stage within a transfer, calculating and appending the CRC16
 // of the data field
 void transfer_data_end(usbdpi_transfer_t *transfer, uint8_t *dp) {
-  USBDPI_ASSERT(transfer->data_start != USBDPI_NO_DATA_STAGE);
-  USBDPI_ASSERT(dp >= transfer->data);
+  assert(transfer->data_start != USBDPI_NO_DATA_STAGE);
+  assert(dp >= transfer->data);
 
   // Check that we still have space to append the CRC16
-  USBDPI_ASSERT(dp < transfer->data + sizeof(transfer->data) - 2);
+  assert(dp < transfer->data + sizeof(transfer->data) - 2);
 
   // Note: historically the datastart field has pointed to the PID rather than
   //       the data field itself
-  const uint8_t *data_field = &transfer->data[transfer->data_start + 1];
+  const uint8_t *data_field = &transfer->data[transfer->data_start + 1U];
   uint32_t crc = CRC16(data_field, dp - data_field);
   dp[0] = (uint8_t)crc;
   dp[1] = (uint8_t)(crc >> 8);
@@ -123,11 +150,24 @@ void transfer_data_end(usbdpi_transfer_t *transfer, uint8_t *dp) {
   transfer->num_bytes = (dp + 2) - transfer->data;
 }
 
+// Append some data to a transfer description
+bool transfer_append(usbdpi_transfer_t *transfer, const uint8_t *dp, size_t n) {
+  unsigned num_bytes = transfer->num_bytes;
+
+  // Check that we still have space to append this data
+  if (sizeof(transfer->data) - num_bytes < n) {
+    return false;
+  }
+  memcpy(&transfer->data[num_bytes], dp, n);
+  transfer->num_bytes = num_bytes + n;
+  return true;
+}
+
 // Prepare a transfer for transmission to the device, and get ready to transmit
 void transfer_send(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer) {
   // Validate the transfer properties
-  USBDPI_ASSERT(transfer->num_bytes > 0U &&
-                transfer->num_bytes <= sizeof(transfer->data));
+  assert(transfer->num_bytes > 0U &&
+         transfer->num_bytes <= sizeof(transfer->data));
 
   // Set this as the current in-progress transfer
   ctx->sending = transfer;
@@ -157,3 +197,18 @@ void transfer_status(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer,
   ctx->byte = 0;
   ctx->bit = 1;
 }
+
+// Diagnostic utility function to dump out the contents of a transfer descriptor
+void transfer_dump(usbdpi_transfer_t *transfer, FILE *out) {
+  fprintf(out, "[usbdpi] Transfer descriptor at %p\n", transfer);
+  fprintf(out, "[usbdpi] num_bytes 0x%x data_start 0x%x\n", transfer->num_bytes,
+          transfer->data_start);
+  dump_bytes(out, "[usbdpi] ", transfer->data, transfer->num_bytes, 0U);
+}
+
+// `extern` declarations to give the inline functions in the
+// corresponding header a link location.
+
+extern uint8_t *transfer_data_field(usbdpi_transfer_t *transfer);
+extern uint8_t transfer_data_pid(usbdpi_transfer_t *transfer);
+extern uint32_t transfer_length(const usbdpi_transfer_t *transfer);

@@ -38,7 +38,7 @@
                 "--cov={cov}",
                 "--dut={dut}"]
 
-  // Common fail patterns.
+  // Common pass or fail patterns.
   build_fail_patterns: [// FuseSoC build error
                         "^ERROR:.*$"]
 

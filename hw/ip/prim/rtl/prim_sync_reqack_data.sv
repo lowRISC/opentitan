@@ -22,8 +22,11 @@ module prim_sync_reqack_data #(
                                              // default.
   parameter bit          DataSrc2Dst = 1'b1, // Direction of data flow: 1'b1 = SRC to DST,
                                              //                         1'b0 = DST to SRC
-  parameter bit          DataReg     = 1'b0  // Enable optional register stage for data,
+  parameter bit          DataReg     = 1'b0, // Enable optional register stage for data,
                                              // only usable with DataSrc2Dst == 1'b0.
+  parameter bit          EnRzHs      = 1'b0  // By Default, we the faster NRZ handshake protocol
+                                             // (EnRzHs = 0) is used. Enable the RZ handshake
+                                             // protocol if the FSMs need to be partial-reset-safe.
 ) (
   input  clk_src_i,       // REQ side, SRC domain
   input  rst_src_ni,      // REQ side, SRC domain
@@ -45,7 +48,8 @@ module prim_sync_reqack_data #(
   // REQ/ACK synchronizer primitive //
   ////////////////////////////////////
   prim_sync_reqack #(
-    .EnRstChks(EnRstChks)
+    .EnRstChks(EnRstChks),
+    .EnRzHs(EnRzHs)
   ) u_prim_sync_reqack (
     .clk_src_i,
     .rst_src_ni,

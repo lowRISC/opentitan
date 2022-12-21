@@ -21,17 +21,17 @@ module clkmgr_root_ctrl
   mubi4_t scanmode;
   prim_mubi4_sync #(
     .NumCopies(1),
-    .AsyncOn(0)
+    .AsyncOn(0) // clock/reset below is only used for SVAs.
   ) u_scanmode_sync  (
-    .clk_i(1'b0),  //unused
-    .rst_ni(1'b1), //unused
+    .clk_i,
+    .rst_ni,
     .mubi_i(scanmode_i),
     .mubi_o({scanmode})
   );
 
   prim_clock_gating_sync u_cg (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
+    .clk_i,
+    .rst_ni,
     .test_en_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode)),
     .async_en_i,
     .en_o,

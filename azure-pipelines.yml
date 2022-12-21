@@ -159,11 +159,19 @@ jobs:
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
+  # Bazel test suites are a common cause of problematic tags. Check test suites
+  # before checking for other tag issues.
+  - bash:  ci/scripts/check_bazel_test_suites.py
+    displayName: Check Bazel test suites (Experimental)
+    continueOnError: True
   - bash: ci/scripts/check-bazel-tags.sh
-    displayName: Check Bazel Tags
+    displayName: Check Bazel Tags (Experimental)
     continueOnError: True
   - bash: ci/scripts/check-bazel-banned-rules.sh
     displayName: Check for banned rules
+  - bash:  ci/scripts/check_bazel_target_names.py
+    displayName: Check Bazel target names (Experimental)
+    continueOnError: True
   - bash: ci/scripts/check-generated.sh
     displayName: Check Generated
     # Ensure all generated files are clean and up-to-date

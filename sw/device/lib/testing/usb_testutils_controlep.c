@@ -8,6 +8,11 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/usb_testutils.h"
 
+// String IDentifiers defined by our device
+#define STRINGID_VENDOR 0x01U
+#define STRINGID_PRODUCT 0x02U
+#define STRINGID_SERIAL 0x03U
+
 // Device descriptor
 static uint8_t dev_dscr[] = {
     18,    // bLength
@@ -24,12 +29,12 @@ static uint8_t dev_dscr[] = {
     0x3a,  // idProduct[0] lowRISC generic FS USB
     0x50,  // idProduct[1] (allocated by Google)
 
-    0,    // bcdDevice[0]
-    0x1,  // bcdDevice[1]
-    0,    // iManufacturer
-    0,    // iProduct
-    0,    // iSerialNumber
-    1     // bNumConfigurations
+    0,                 // bcdDevice[0]
+    0x1,               // bcdDevice[1]
+    STRINGID_VENDOR,   // iManufacturer
+    STRINGID_PRODUCT,  // iProduct
+    STRINGID_SERIAL,   // iSerialNumber
+    1                  // bNumConfigurations
 };
 
 // SETUP requests
@@ -47,6 +52,12 @@ typedef enum usb_setup_req {
   kUsbSetupReqSynchFrame = 12
 } usb_setup_req_t;
 
+// Vendor-specific requests defined by our device/test framework
+typedef enum vendor_setup_req {
+  kVendorSetupReqTestConfig = 0x7C,
+  kVendorSetupReqTestStatus = 0x7E
+} vendor_setup_req_t;
+
 typedef enum usb_req_type {  // bmRequestType
   kUsbReqTypeRecipientMask = 0x1f,
   kUsbReqTypeDevice = 0,
@@ -54,14 +65,25 @@ typedef enum usb_req_type {  // bmRequestType
   kUsbReqTypeEndpoint = 2,
   kUsbReqTypeOther = 3,
   kUsbReqTypeTypeMask = 0x60,
-  KUsbReqTypeStandard = 0,
-  KUsbReqTypeClass = 0x20,
-  KUsbReqTypeVendor = 0x40,
-  KUsbReqTypeReserved = 0x60,
+  kUsbReqTypeStandard = 0,
+  kUsbReqTypeClass = 0x20,
+  kUsbReqTypeVendor = 0x40,
+  kUsbReqTypeReserved = 0x60,
   kUsbReqTypeDirMask = 0x80,
   kUsbReqTypeDirH2D = 0x00,
   kUsbReqTypeDirD2H = 0x80,
 } usb_req_type_t;
+
+typedef enum usb_desc_type {  // Descriptor type (wValue hi)
+  kUsbDescTypeDevice = 1,
+  kUsbDescTypeConfiguration,
+  kUsbDescTypeString,
+  kUsbDescTypeInterface,
+  kUsbDescTypeEndpoint,
+  kUsbDescTypeDeviceQualifier,
+  kUsbDescTypeOtherSpeedConfiguration,
+  kUsbDescTypeInterfacePower,
+} usb_desc_type_t;
 
 typedef enum usb_feature_req {
   kUsbFeatureEndpointHalt = 0,        // recipient is endpoint
@@ -78,57 +100,149 @@ typedef enum usb_status {
   kUsbStatusHalted = 1        // Endpoint status request
 } usb_status_t;
 
+#define USB_STR_DSCR(idx, string)                   \
+  {                                                 \
+    .length = (sizeof(string) + 1), .index = (idx), \
+    .text = (uint8_t *)(string)                     \
+  }
+
+typedef struct usb_string {
+  uint8_t length;
+  uint8_t index;
+  const uint8_t *text;
+} usb_string_t;
+
+// TODO - it should probably be the responsibility of the client software to
+// specify the string table; this just gives us a bit more visibility
+static const usb_string_t string_table[] = {
+    // Unicode 16-bit wide characters
+    // lowRISC C.I.C.
+    USB_STR_DSCR(STRINGID_VENDOR, "l\0o\0w\0R\0I\0S\0C\0 \0C\0.\0I\0.\0C\0.\0"),
+    // OpenTitan
+    USB_STR_DSCR(STRINGID_PRODUCT, "O\0p\0e\0n\0T\0i\0t\0a\0n\0"),
+    // CW-310
+    USB_STR_DSCR(STRINGID_SERIAL, "C\0W\0-\0\x33\0\x31\0\x30\0"),
+};
+
 static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
                                          usb_testutils_ctx_t *ctx,
                                          int bmRequestType, int bRequest,
                                          int wValue, int wIndex, int wLength) {
+  const uint8_t *dscr;
+  size_t dscr_len;
   size_t len;
   uint32_t stat;
   int zero, type;
   size_t bytes_written;
+  // Endpoint for SetFeature/ClearFeature/GetStatus requests
   dif_usbdev_endpoint_id_t endpoint = {
-      .number = bmRequestType & 0x0f,
+      .number = (uint8_t)wIndex,
       .direction = bmRequestType & 0x80,
   };
   dif_usbdev_buffer_t buffer;
   CHECK_DIF_OK(dif_usbdev_buffer_request(ctx->dev, ctx->buffer_pool, &buffer));
   switch (bRequest) {
     case kUsbSetupReqGetDescriptor:
-      if ((wValue & 0xff00) == 0x100) {
-        // Device descriptor
-        len = sizeof(dev_dscr);
-        if (wLength < len) {
-          len = wLength;
-        }
-        CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, dev_dscr, len,
-                                             &bytes_written));
-        CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
-        return kUsbTestutilsCtWaitIn;
-      } else if ((wValue & 0xff00) == 0x200) {
-        // Configuration descriptor
-        len = ctctx->cfg_dscr_len;
-        if (wLength < len) {
-          len = wLength;
-        }
-        CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, ctctx->cfg_dscr,
-                                             len, &bytes_written));
-        CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
-        return kUsbTestutilsCtWaitIn;
+      TRC_S("GD");
+      TRC_I(wValue, 16);
+      switch ((wValue & 0xff00) >> 8) {
+        case kUsbDescTypeDevice:
+          // Device descriptor
+          dscr_len = sizeof(dev_dscr);
+          dscr = dev_dscr;
+          break;
+        case kUsbDescTypeConfiguration:
+          // Configuration descriptor
+          dscr = ctctx->cfg_dscr;
+          dscr_len = ctctx->cfg_dscr_len;
+          break;
+        case kUsbDescTypeString:
+          if ((uint8_t)wValue) {
+            // String descriptor
+            switch (wIndex) {
+              case 0x409U:
+              case 0x809U: {
+                const unsigned nstrings =
+                    sizeof(string_table) / sizeof(string_table[0]);
+                unsigned idx = 0U;
+                while (idx < nstrings &&
+                       string_table[idx].index != (uint8_t)wValue) {
+                  idx++;
+                }
+                if (idx < nstrings) {
+                  uint8_t len = string_table[idx].length;
+                  uint8_t data[2];
+                  data[0] = len;
+                  data[1] = kUsbDescTypeString;
+                  CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, data,
+                                                       2U, &bytes_written));
+                  CHECK(bytes_written == 2U);
+                  CHECK_DIF_OK(dif_usbdev_buffer_write(
+                      ctx->dev, &buffer, string_table[idx].text, len - 2U,
+                      &bytes_written));
+                  CHECK(bytes_written == len - 2U);
+                  CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+                  return kUsbTestutilsCtWaitIn;
+                }
+              } break;
+            }
+          } else {
+            // List of supported LANGIDs
+            uint8_t data[4];
+            data[0] = 4;
+            data[1] = kUsbDescTypeString;
+            data[2] = 0x09;
+            data[3] = 0x08;
+            CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, data, 4,
+                                                 &bytes_written));
+            CHECK(bytes_written == 4);
+            CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+            return kUsbTestutilsCtWaitIn;
+          }
+          break;
+        // case kUsbDescTypeDeviceQualifier:
+        // no break
+        default:
+          return kUsbTestutilsCtError;  // unknown
       }
-      return kUsbTestutilsCtError;  // unknown
+
+      // Ensure that we do not send more than requested
+      if (wLength < dscr_len) {
+        dscr_len = wLength;
+      }
+
+      // Number of bytes in first buffer
+      len = dscr_len;
+      if (len >= buffer.remaining_bytes) {
+        len = buffer.remaining_bytes;
+      }
+
+      bool max_packet = (len >= buffer.remaining_bytes);
+      CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, dscr, len,
+                                           &bytes_written));
+      CHECK(bytes_written == len);
+      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+      return kUsbTestutilsCtWaitIn;
 
     case kUsbSetupReqSetAddress:
+      TRC_S("SA");
       ctctx->new_dev = wValue & 0x7f;
       // send zero length packet for status phase
       CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
       return kUsbTestutilsCtAddrStatIn;
 
     case kUsbSetupReqSetConfiguration:
+      TRC_S("SC");
       // only ever expect this to be 1 since there is one config descriptor
       ctctx->usb_config = wValue;
       // send zero length packet for status phase
       CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
-      ctctx->device_state = kUsbTestutilsDeviceConfigured;
+      if (wValue) {
+        ctctx->device_state = kUsbTestutilsDeviceConfigured;
+      } else {
+        // Device deconfigured
+        ctctx->device_state = kUsbTestutilsDeviceAddressed;
+      }
       return kUsbTestutilsCtStatIn;
 
     case kUsbSetupReqGetConfiguration:
@@ -214,6 +328,29 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
       return kUsbTestutilsCtWaitIn;
 
     default:
+      // We implement a couple of bespoke, vendor-defined Setup requests to
+      // allow the DPI model to access the test configuration (Control Read) and
+      // to report the test status (Control Write)
+      if ((bmRequestType & kUsbReqTypeTypeMask) == kUsbReqTypeVendor &&
+          ctctx->test_dscr) {
+        switch ((vendor_setup_req_t)bRequest) {
+          case kVendorSetupReqTestConfig: {
+            TRC_S("TC");
+            // Test config descriptor
+            len = ctctx->test_dscr_len;
+            if (wLength < len) {
+              len = wLength;
+            }
+            CHECK_DIF_OK(dif_usbdev_buffer_write(
+                ctx->dev, &buffer, ctctx->test_dscr, len, &bytes_written));
+            CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+            return kUsbTestutilsCtWaitIn;
+          } break;
+          case kVendorSetupReqTestStatus: {
+            // TODO - pass the received test status to the OTTF directly?
+          } break;
+        }
+      }
       return kUsbTestutilsCtError;
   }
   return kUsbTestutilsCtError;
@@ -230,9 +367,8 @@ static void ctrl_tx_done(void *ctctx_v) {
       CHECK_DIF_OK(dif_usbdev_address_set(ctx->dev, ctctx->new_dev));
       TRC_I(ctctx->new_dev, 8);
       ctctx->ctrlstate = kUsbTestutilsCtIdle;
-      // Should be kUsbTestutilsDeviceAddressed only, but test controller is
-      // borked ctctx->device_state = kUsbTestutilsDeviceAddressed;
-      ctctx->device_state = kUsbTestutilsDeviceConfigured;
+      // We now have a device address on the USB
+      ctctx->device_state = kUsbTestutilsDeviceAddressed;
       return;
     case kUsbTestutilsCtStatIn:
       ctctx->ctrlstate = kUsbTestutilsCtIdle;
@@ -240,6 +376,7 @@ static void ctrl_tx_done(void *ctctx_v) {
     case kUsbTestutilsCtWaitIn:
       ctctx->ctrlstate = kUsbTestutilsCtStatOut;
       return;
+
     default:
       break;
   }
@@ -278,6 +415,11 @@ static void ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
         if (ctctx->ctrlstate != kUsbTestutilsCtError) {
           return;
         }
+
+        TRC_C(':');
+        for (int i = 0; i < packet_info.length; i++) {
+          TRC_I(bp[i], 8);
+        }
       }
       break;
 
@@ -307,12 +449,9 @@ static void ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
   CHECK_DIF_OK(
       dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleEnabled));
   TRC_S("USB: unCT ");
-  TRC_I((ctctx->ctrlstate << 24) | setup << 16 | size, 32);
-  TRC_C(':');
-  for (int i = 0; i < packet_info.length; i++) {
-    TRC_I(bp[i], 8);
-    TRC_C(' ');
-  }
+  TRC_I((ctctx->ctrlstate << 24) | ((int)packet_info.is_setup << 16) |
+            packet_info.length,
+        32);
   if (buffer.type != kDifUsbdevBufferTypeStale) {
     // Return the unused buffer.
     CHECK_DIF_OK(dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
@@ -329,8 +468,9 @@ static void ctrl_reset(void *ctctx_v) {
 
 void usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
                                   usb_testutils_ctx_t *ctx, int ep,
-                                  const uint8_t *cfg_dscr,
-                                  size_t cfg_dscr_len) {
+                                  const uint8_t *cfg_dscr, size_t cfg_dscr_len,
+                                  const uint8_t *test_dscr,
+                                  size_t test_dscr_len) {
   ctctx->ctx = ctx;
   usb_testutils_endpoint_setup(ctx, ep, kUsbdevOutMessage, ctctx, ctrl_tx_done,
                                ctrl_rx, NULL, ctrl_reset);
@@ -338,6 +478,8 @@ void usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
   ctctx->ctrlstate = kUsbTestutilsCtIdle;
   ctctx->cfg_dscr = cfg_dscr;
   ctctx->cfg_dscr_len = cfg_dscr_len;
+  ctctx->test_dscr = test_dscr;
+  ctctx->test_dscr_len = test_dscr_len;
   CHECK_DIF_OK(dif_usbdev_interface_enable(ctx->dev, kDifToggleEnabled));
   ctctx->device_state = kUsbTestutilsDeviceDefault;
 }
