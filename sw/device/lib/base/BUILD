@@ -169,9 +169,6 @@ cc_library(
 cc_test(
     name = "hardened_status_unittest",
     srcs = ["hardened_status_unittest.cc"],
-    defines = [
-        "OT_OFF_TARGET_TEST",
-    ],
     deps = [
         ":hardened_status",
         "@googletest//:gtest_main",
