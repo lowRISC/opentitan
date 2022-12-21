@@ -98,6 +98,18 @@
       desc:    "Number of words for Encoded NsPrefix."
       local:   "true"
     }
+    { name:    "NumEntriesMsgFifo"
+      type:    "int"
+      default: "10"
+      desc:    "Number of entries in the message FIFO."
+      local:   "true"
+    }
+    { name:    "NumBytesMsgFifoEntry"
+      type:    "int"
+      default: "8"
+      desc:    "Number of bytes in a single entry of the message FIFO."
+      local:   "true"
+    }
     { name:    "HashCntW"
       type:    "int unsigned"
       default: "10"
@@ -579,7 +591,7 @@
         }
         { bits: "12:8"
           name: "fifo_depth"
-          desc: "Message FIFO entry count"
+          desc: "Count of occupied entries in the message FIFO."
         }
         { bits: "14"
           name: "fifo_empty"

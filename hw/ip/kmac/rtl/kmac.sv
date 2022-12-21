@@ -183,6 +183,16 @@ module kmac
   `ASSERT_INIT(PrefixRegSameToPrefixPkg_A,
                kmac_reg_pkg::NumWordsPrefix*4 == sha3_pkg::NSRegisterSize)
 
+  // NumEntriesMsgFifo from kmac_reg_pkg must match calculated MsgFifoDepth
+  // from kmac_pkg.
+  `ASSERT_INIT(NumEntriesRegSameToNumEntriesPkg_A,
+               kmac_reg_pkg::NumEntriesMsgFifo == kmac_pkg::MsgFifoDepth)
+
+  // NumBytesMsgFifoEntry from kmac_reg_pkg must match the MsgWidth calculated
+  // in kmac_pkg.
+  `ASSERT_INIT(EntrySizeRegSameToEntrySizePkg_A,
+               kmac_reg_pkg::NumBytesMsgFifoEntry == kmac_pkg::MsgWidth)
+
   // Output state: this is used to redirect the digest to KeyMgr or Software
   // depends on the configuration.
   logic state_valid;
