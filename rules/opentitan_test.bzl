@@ -152,7 +152,7 @@ def verilator_params(
         "@//hw:verilator",
         "@//hw:fusesoc_ignore",
     ]
-    required_tags = ["verilator", "cpu:4"]
+    required_tags = ["verilator", "cpu:5"]
     kwargs.update(
         args = default_args + args,
         data = required_data + data,

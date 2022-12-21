@@ -43,12 +43,12 @@ coverage:coverage_clang --repo_env=BAZEL_LLVM_COV=/usr/bin/llvm-cov
 # cached previously. See https://bazel.build/configure/coverage?hl=en#remote-execution
 coverage:coverage_clang --nocache_test_results
 
-# Verilator is built for 4 cores and can time out if bazel is running more
-# than 1 test per four cores.
-# Until we get the built-in tag "cpu:4" to work for verilator tests, we can run
-# 1 test per 4 cores to avoid verilator performance falloff and timeouts we'd
-# otherwise see on machines with fewer than 40 cores.
-test --local_test_jobs=HOST_CPUS*0.25
+# Configuration to override resource constrained test
+# scheduling. Enable with `--config=local_test_jobs_per_cpus`
+test:local_test_jobs_per_cpus --local_test_jobs=HOST_CPUS*0.22
+# Verilator is built for 4 cores, but requires a harness and additional overhead.
+# Empirically 72 cores can support 16 simultaneous tests, but not 17. Setting
+# this will ignore tags like "cpu:5"
 
 # We have verilator tests that take more than an hour to complete
 test --test_timeout=60,300,1500,7200
