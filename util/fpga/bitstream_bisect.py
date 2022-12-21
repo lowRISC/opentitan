@@ -181,8 +181,8 @@ class GitControllerABC(abc.ABC):
     def bisect_bad(self, rev: CommitHash):
         self._git_checked("bisect", "bad", rev)
 
-    def bisect_skip(self, rev: CommitHash):
-        self._git_checked("bisect", "skip", rev)
+    def bisect_skip(self, *revs: CommitHash):
+        self._git_checked("bisect", "skip", *revs)
 
     def bisect_run(self, *args: str) -> BisectLog:
         """Executes `git bisect run` without capturing stdout/stderr."""
@@ -293,9 +293,9 @@ class BisectSession:
         self._git.bisect_bad(bad_commit)
 
         # Skip commits that aren't in the bitstream cache.
-        for commit, _ in self._git.bisect_view():
-            if commit not in self._cache_keys:
-                self._git.bisect_skip(commit)
+        uncached_commits = [c for c, _ in self._git.bisect_view() if c not in self._cache_keys]
+        if uncached_commits != []:
+            self._git.bisect_skip(*uncached_commits)
 
         self._maybe_visualize("Only testing commits with cached bitstreams")
         bisect_log = self._git.bisect_run(*fast_command)
