@@ -23,7 +23,7 @@ extern "C" {
  * This passes `kHardenedBoolTrue` as the status code argument, for extra bits
  * of redundancy in `HARDENED_TRY` and others.
  */
-#define HARDENED_OK_STATUS OK_STATUS(kHardenedBoolTrue)
+#define HARDENED_OK_STATUS ((status_t){.value = kHardenedBoolTrue})
 
 /**
  * Hardened version of the `TRY` macro from `status.h`.
@@ -31,21 +31,21 @@ extern "C" {
  * @param expr_ An expression that evaluates to a `status_t`.
  * @return The enclosed OK value.
  */
-#define HARDENED_TRY(expr_)                                            \
-  ({                                                                   \
-    status_t status_ = expr_;                                          \
-    if (!(status_ok(status_) && status_.value == kHardenedBoolTrue)) { \
-      return status_;                                                  \
-    }                                                                  \
-    HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue);               \
-    status_.value;                                                     \
+#define HARDENED_TRY(expr_)                                 \
+  ({                                                        \
+    status_t status_ = expr_;                               \
+    if (hardened_status_ok(status_) != kHardenedBoolTrue) { \
+      return status_;                                       \
+    }                                                       \
+    HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue);    \
+    status_.value;                                          \
   })
 
 /**
  * Hardened version of `status_ok`.
  *
  * Returns `kHardenedBoolTrue` if the status is OK with an argument code of
- * `kHardenedBoolTrue` (i.e. a result of `HARDENED_OK()`), and
+ * `kHardenedBoolTrue` (i.e. equal to `HARDENED_OK_STATUS`), and
  * `kHardenedBoolFalse` otherwise.
  *
  * @param s The status code.

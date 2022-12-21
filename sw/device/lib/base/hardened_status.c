@@ -9,7 +9,7 @@
 
 hardened_bool_t hardened_status_ok(status_t s) {
   if (launder32(s.value) >= 0 && launder32(s.value) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(s.value, kHardenedBoolTrue);
+    HARDENED_CHECK_EQ((hardened_bool_t)s.value, kHardenedBoolTrue);
     return s.value;
   }
   return kHardenedBoolFalse;
