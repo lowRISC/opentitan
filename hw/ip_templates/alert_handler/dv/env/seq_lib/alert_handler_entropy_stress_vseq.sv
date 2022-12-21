@@ -35,12 +35,6 @@ class alert_handler_entropy_stress_vseq extends alert_handler_smoke_vseq;
     foreach (cfg.alert_host_cfg[i]) begin
       cfg.alert_host_cfg[i].alert_delay_max = 0;
       cfg.alert_host_cfg[i].ping_delay_max = 0;
-
-      // Bypass alert and escalation ready_to_end check.
-      // In this test, we force the alert/esc ping requests to have very short wait cycles.
-      // So alert or escalation ports might always have incoming traffic and will never end.
-      cfg.alert_host_cfg[i].bypass_alert_ready_to_end_check = 1;
-      cfg.alert_host_cfg[i].bypass_esc_ready_to_end_check = 1;
     end
     super.pre_start();
   endtask
@@ -97,6 +91,13 @@ class alert_handler_entropy_stress_vseq extends alert_handler_smoke_vseq;
     foreach (ral.loc_alert_cause[i]) begin
       csr_rd_check(.ptr(ral.loc_alert_cause[i]), .compare_value(0));
     end
+
+    // Wait some random delays, then release the force signal, issue reset.
+    // This will allow the test to pass ok_to_end check from alert/esc_monitors and
+    // push_pull_agent.
+    cfg.clk_rst_vif.wait_clks($urandom_range(0, 5));
+    cfg.alert_handler_vif.release_wait_cyc_mask();
+    dut_init();
   endtask
 
 endclass : alert_handler_entropy_stress_vseq

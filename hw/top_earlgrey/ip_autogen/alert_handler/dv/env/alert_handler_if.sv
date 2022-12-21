@@ -49,4 +49,8 @@ interface alert_handler_if(input clk, input rst_n);
       force tb.dut.u_ping_timer.wait_cyc_mask_i = val_static;
     end
   endtask
+
+  task automatic release_wait_cyc_mask();
+    release tb.dut.u_ping_timer.wait_cyc_mask_i;
+  endtask
 endinterface
