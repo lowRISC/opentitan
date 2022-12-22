@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_MAC_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_MAC_H_
 
+#include "sw/device/lib/crypto/include/datatypes.h"
+
 /**
  * @file
  * @brief Message authentication codes for the OpenTitan cryptography library.
@@ -84,7 +86,7 @@ crypto_status_t otcrypto_mac_keygen(crypto_blinded_key_t *key);
 crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
                              crypto_const_uint8_buf_t input_message,
                              mac_mode_t mac_mode,
-                             crypto_uint8_buf_t customization_string,
+                             crypto_const_uint8_buf_t customization_string,
                              size_t required_output_len,
                              crypto_uint8_buf_t *tag);
 

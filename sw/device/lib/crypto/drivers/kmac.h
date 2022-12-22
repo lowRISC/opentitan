@@ -85,6 +85,29 @@ typedef enum kmac_error {
 } kmac_error_t;
 
 /**
+ * Simplified key struct to pass blinded key internally.
+ */
+typedef struct kmac_blinded_key {
+  const uint32_t *share0;
+  const uint32_t *share1;
+  // The length of single share (in bytes)
+  size_t len;
+} kmac_blinded_key_t;
+
+/**
+ * Return the matching enum of `kmac_key_len_t` for given key length.
+ *
+ * `key_len_enum` must not be NULL pointer.
+ *
+ * @param key_len The size of the key in bytes.
+ * @param key_len_enum The corresponding enum value to be returned.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_get_key_len_bytes(size_t key_len,
+                                    kmac_key_len_t *key_len_enum);
+
+/**
  * Set the "global" config of HWIP
  *
  * For the moment, we have a number of configuation options needs to be
@@ -148,17 +171,19 @@ kmac_error_t kmac_write_prefix_block(kmac_operation_t operation,
                                      crypto_const_uint8_buf_t cust_str);
 
 /**
- * Update the key registers with given key.
+ * Update the key registers with given key shares.
  *
- * The caller must ensure that `key` is not a NULL pointer. This is not checked
- * within this function.
+ * The caller must ensure that `key` struct is properly populated (no NULL
+ * pointers and matching `len`).
  *
- * @param key The input key array.
- * @param key_len The size of key from enum type kmac_key_len_t.
+ * The accepted `key->len` values are {128 / 8, 192 / 8, 256 / 8, 384 / 8,
+ * 512 / 8}, otherwise an error will be returned.
+ *
+ * @param key The input key passed as a struct.
  * @return Error code.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_write_key_block(const uint8_t *key, kmac_key_len_t key_len);
+kmac_error_t kmac_write_key_block(kmac_blinded_key_t *key);
 
 /**
  * Common routine for feeding message blocks during SHA/SHAKE/cSHAKE/KMAC.
@@ -334,6 +359,50 @@ kmac_error_t kmac_cshake_256(crypto_const_uint8_buf_t message,
                              crypto_const_uint8_buf_t func_name,
                              crypto_const_uint8_buf_t cust_str,
                              crypto_uint8_buf_t *digest);
+
+/**
+ * Compute KMAC-128 in one-shot.
+ *
+ * Warning: The caller must ensure that `digest->len` contains the
+ * requested digest length (in bytes).
+ *
+ * The caller must ensure that `message` and `digest` have properly
+ * allocated `data` fields whose length matches their `len` fields.
+ *
+ * @param key The input key as a struct.
+ * @param message The input message.
+ * @param func_name The function name.
+ * @param cust_str The customization string.
+ * @param digest The digest buffer to return the result.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_kmac_128(kmac_blinded_key_t *key,
+                           crypto_const_uint8_buf_t message,
+                           crypto_const_uint8_buf_t cust_str,
+                           crypto_uint8_buf_t *digest);
+
+/**
+ * Compute KMAC-256 in one-shot.
+ *
+ * Warning: The caller must ensure that `digest->len` contains the
+ * requested digest length (in bytes).
+ *
+ * The caller must ensure that `message` and `digest` have properly
+ * allocated `data` fields whose length matches their `len` fields.
+ *
+ * @param key The input key as a struct.
+ * @param message The input message.
+ * @param func_name The function name.
+ * @param cust_str The customization string.
+ * @param digest The digest buffer to return the result.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_kmac_256(kmac_blinded_key_t *key,
+                           crypto_const_uint8_buf_t message,
+                           crypto_const_uint8_buf_t cust_str,
+                           crypto_uint8_buf_t *digest);
 
 #ifdef __cplusplus
 }

@@ -78,6 +78,7 @@ opentitan_functest(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:mac",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
