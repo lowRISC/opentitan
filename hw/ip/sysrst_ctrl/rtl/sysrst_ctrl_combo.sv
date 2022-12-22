@@ -20,6 +20,8 @@ module sysrst_ctrl_combo
   // CSRs synced to AON clock
   input  sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t                           ec_rst_ctl_i,
   input  sysrst_ctrl_reg2hw_key_intr_debounce_ctl_reg_t                key_intr_debounce_ctl_i,
+  input  sysrst_ctrl_reg2hw_com_pre_sel_ctl_mreg_t      [NumCombo-1:0] com_pre_sel_ctl_i,
+  input  sysrst_ctrl_reg2hw_com_pre_det_ctl_mreg_t      [NumCombo-1:0] com_pre_det_ctl_i,
   input  sysrst_ctrl_reg2hw_com_sel_ctl_mreg_t          [NumCombo-1:0] com_sel_ctl_i,
   input  sysrst_ctrl_reg2hw_com_det_ctl_mreg_t          [NumCombo-1:0] com_det_ctl_i,
   input  sysrst_ctrl_reg2hw_com_out_ctl_mreg_t          [NumCombo-1:0] com_out_ctl_i,
@@ -49,6 +51,44 @@ module sysrst_ctrl_combo
   };
 
   for (genvar k = 0; k < NumCombo; k++) begin : gen_combo_trigger
+    // Generate the pre-condition
+    logic [NumInputs-1:0] cfg_in_pre;
+    assign cfg_in_pre = {
+      com_pre_sel_ctl_i[k].pwrb_in_sel.q,
+      com_pre_sel_ctl_i[k].key0_in_sel.q,
+      com_pre_sel_ctl_i[k].key1_in_sel.q,
+      com_pre_sel_ctl_i[k].key2_in_sel.q,
+      com_pre_sel_ctl_i[k].ac_present_sel.q
+    };
+
+    // Combo pre-condition is enabled if any of the keys is selected for this
+    // pre-condition. Note that if no key is selected for this pre-condition,
+    // the precondition is automatically valid - see cfg_combo_en below.
+    logic cfg_combo_pre_en;
+    assign cfg_combo_pre_en = |cfg_in_pre;
+
+    // Config trigger is asserted if all configured keys are pressed (== 0)
+    logic precond;
+    assign precond = (in & cfg_in_pre) == '0;
+
+    logic precond_valid;
+    sysrst_ctrl_detect #(
+      .DebounceTimerWidth(TimerWidth),
+      .DetectTimerWidth(DetTimerWidth),
+      // This detects a high level.
+      .EventType(HighLevel),
+      .Sticky(0)
+    ) u_sysrst_ctrl_detect_pre (
+      .clk_i,
+      .rst_ni,
+      .trigger_i             (precond),
+      .cfg_debounce_timer_i  (key_intr_debounce_ctl_i.q),
+      .cfg_detect_timer_i    (com_pre_det_ctl_i[k].q),
+      .cfg_enable_i          (cfg_combo_pre_en),
+      .event_detected_o      (precond_valid),
+      .event_detected_pulse_o()
+    );
+
     // Generate the trigger for each combo
     logic [NumInputs-1:0] cfg_in_sel;
     assign cfg_in_sel = {
@@ -59,9 +99,14 @@ module sysrst_ctrl_combo
       com_sel_ctl_i[k].ac_present_sel.q
     };
 
-    // Combo detection is enabled if any of the keys is selected for this combo.
+    // Combo detection is enabled if
+    // - the pre-condition is valid and at least one of the keys is selected
+    //   for this combo.
+    // - the pre-condition is disabled and at least one of the keys is
+    //   selected for this combo.
     logic cfg_combo_en;
-    assign cfg_combo_en = |cfg_in_sel;
+    assign cfg_combo_en = (|cfg_in_sel) && (precond_valid && cfg_combo_pre_en ||
+                                            !cfg_combo_pre_en);
 
     // Config trigger is asserted if all configured keys are pressed (== 0)
     logic trigger;

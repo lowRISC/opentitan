@@ -678,6 +678,77 @@
       ]
     }
     { multireg: {
+        name: "COM_PRE_SEL_CTL",
+        desc: '''
+              To define the keys that define the pre-condition of the combo
+              [0]: key0_in_sel
+              [1]: key1_in_sel
+              [2]: key2_in_sel
+              [3]: pwrb_in_sel
+              [4]: ac_present_sel
+              HW will start matching the combo as defined by !!COM_SEL_CTL if this precondition is fulfilled.
+
+              If no keys are configured for the pre-condition, the pre-condition always evaluates to true.
+
+              The debounce timing is defined via !!KEY_INTR_DEBOUNCE_CTL whereas the pre-condition pressed timing is defined via !!COM_PRE_DET_CTL.
+              ''',
+        count: "NumCombo",
+        cname: "sysrst_ctrl",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen:   "REGWEN",
+        resval:   "0",
+        async: "clk_aon_i",
+        fields: [
+          { bits:   "0",
+            name:   "key0_in_sel",
+            desc:   "0: disable, 1: enable",
+            resval: "0",
+          }
+          { bits:   "1",
+            name:   "key1_in_sel",
+            desc:   "0: disable, 1: enable",
+            resval: "0",
+          }
+          { bits:   "2",
+            name:   "key2_in_sel",
+            desc:   "0: disable, 1: enable",
+            resval: "0",
+          }
+          { bits:   "3",
+            name:   "pwrb_in_sel",
+            desc:   "0: disable, 1: enable",
+            resval: "0",
+          }
+          { bits:   "4",
+            name:   "ac_present_sel",
+            desc:   "0: disable, 1: enable",
+            resval: "0",
+          }
+        ],
+      }
+    }
+    { multireg: {
+        name: "COM_PRE_DET_CTL",
+        desc: '''To define the duration that the combo pre-condition should be pressed
+              0-60s, each step is 5us(200KHz clock)
+                    ''',
+        count: "NumCombo",
+        cname: "sysrst_ctrl",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen:   "REGWEN",
+        resval:   "0",
+        async: "clk_aon_i",
+        fields: [
+          { bits: "DetTimerWidth-1:0",
+            name: "precondition_timer",
+            desc: "0-60s, each step is 5us(200KHz clock)",
+          }
+        ],
+      }
+    }
+    { multireg: {
         name: "COM_SEL_CTL",
         desc: '''
               To define the keys that trigger the combo
@@ -686,7 +757,13 @@
               [2]: key2_in_sel
               [3]: pwrb_in_sel
               [4]: ac_present_sel
-              HW will detect H2L transition in the combo use case
+              HW will detect H2L transition in the combo use case.
+
+              Optionally, a pre-condition can be configured for the combo detection via !!COM_PRE_SEL_CTL.
+
+              If no keys are configured for the combo, the combo detection is disabled.
+
+              The debounce timing is defined via !!KEY_INTR_DEBOUNCE_CTL whereas the key-pressed timing is defined via !!COM_DET_CTL.
               ''',
         count: "NumCombo",
         cname: "sysrst_ctrl",

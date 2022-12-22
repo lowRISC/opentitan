@@ -300,6 +300,28 @@ package sysrst_ctrl_reg_pkg;
     struct packed {
       logic        q;
     } ac_present_sel;
+  } sysrst_ctrl_reg2hw_com_pre_sel_ctl_mreg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } sysrst_ctrl_reg2hw_com_pre_det_ctl_mreg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } key0_in_sel;
+    struct packed {
+      logic        q;
+    } key1_in_sel;
+    struct packed {
+      logic        q;
+    } key2_in_sel;
+    struct packed {
+      logic        q;
+    } pwrb_in_sel;
+    struct packed {
+      logic        q;
+    } ac_present_sel;
   } sysrst_ctrl_reg2hw_com_sel_ctl_mreg_t;
 
   typedef struct packed {
@@ -451,24 +473,26 @@ package sysrst_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    sysrst_ctrl_reg2hw_intr_state_reg_t intr_state; // [332:332]
-    sysrst_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [331:331]
-    sysrst_ctrl_reg2hw_intr_test_reg_t intr_test; // [330:329]
-    sysrst_ctrl_reg2hw_alert_test_reg_t alert_test; // [328:327]
-    sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl; // [326:311]
-    sysrst_ctrl_reg2hw_ulp_ac_debounce_ctl_reg_t ulp_ac_debounce_ctl; // [310:295]
-    sysrst_ctrl_reg2hw_ulp_lid_debounce_ctl_reg_t ulp_lid_debounce_ctl; // [294:279]
-    sysrst_ctrl_reg2hw_ulp_pwrb_debounce_ctl_reg_t ulp_pwrb_debounce_ctl; // [278:263]
-    sysrst_ctrl_reg2hw_ulp_ctl_reg_t ulp_ctl; // [262:262]
-    sysrst_ctrl_reg2hw_wkup_status_reg_t wkup_status; // [261:261]
-    sysrst_ctrl_reg2hw_key_invert_ctl_reg_t key_invert_ctl; // [260:249]
-    sysrst_ctrl_reg2hw_pin_allowed_ctl_reg_t pin_allowed_ctl; // [248:233]
-    sysrst_ctrl_reg2hw_pin_out_ctl_reg_t pin_out_ctl; // [232:225]
-    sysrst_ctrl_reg2hw_pin_out_value_reg_t pin_out_value; // [224:217]
-    sysrst_ctrl_reg2hw_key_intr_ctl_reg_t key_intr_ctl; // [216:203]
-    sysrst_ctrl_reg2hw_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl; // [202:187]
-    sysrst_ctrl_reg2hw_auto_block_debounce_ctl_reg_t auto_block_debounce_ctl; // [186:170]
-    sysrst_ctrl_reg2hw_auto_block_out_ctl_reg_t auto_block_out_ctl; // [169:164]
+    sysrst_ctrl_reg2hw_intr_state_reg_t intr_state; // [480:480]
+    sysrst_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [479:479]
+    sysrst_ctrl_reg2hw_intr_test_reg_t intr_test; // [478:477]
+    sysrst_ctrl_reg2hw_alert_test_reg_t alert_test; // [476:475]
+    sysrst_ctrl_reg2hw_ec_rst_ctl_reg_t ec_rst_ctl; // [474:459]
+    sysrst_ctrl_reg2hw_ulp_ac_debounce_ctl_reg_t ulp_ac_debounce_ctl; // [458:443]
+    sysrst_ctrl_reg2hw_ulp_lid_debounce_ctl_reg_t ulp_lid_debounce_ctl; // [442:427]
+    sysrst_ctrl_reg2hw_ulp_pwrb_debounce_ctl_reg_t ulp_pwrb_debounce_ctl; // [426:411]
+    sysrst_ctrl_reg2hw_ulp_ctl_reg_t ulp_ctl; // [410:410]
+    sysrst_ctrl_reg2hw_wkup_status_reg_t wkup_status; // [409:409]
+    sysrst_ctrl_reg2hw_key_invert_ctl_reg_t key_invert_ctl; // [408:397]
+    sysrst_ctrl_reg2hw_pin_allowed_ctl_reg_t pin_allowed_ctl; // [396:381]
+    sysrst_ctrl_reg2hw_pin_out_ctl_reg_t pin_out_ctl; // [380:373]
+    sysrst_ctrl_reg2hw_pin_out_value_reg_t pin_out_value; // [372:365]
+    sysrst_ctrl_reg2hw_key_intr_ctl_reg_t key_intr_ctl; // [364:351]
+    sysrst_ctrl_reg2hw_key_intr_debounce_ctl_reg_t key_intr_debounce_ctl; // [350:335]
+    sysrst_ctrl_reg2hw_auto_block_debounce_ctl_reg_t auto_block_debounce_ctl; // [334:318]
+    sysrst_ctrl_reg2hw_auto_block_out_ctl_reg_t auto_block_out_ctl; // [317:312]
+    sysrst_ctrl_reg2hw_com_pre_sel_ctl_mreg_t [3:0] com_pre_sel_ctl; // [311:292]
+    sysrst_ctrl_reg2hw_com_pre_det_ctl_mreg_t [3:0] com_pre_det_ctl; // [291:164]
     sysrst_ctrl_reg2hw_com_sel_ctl_mreg_t [3:0] com_sel_ctl; // [163:144]
     sysrst_ctrl_reg2hw_com_det_ctl_mreg_t [3:0] com_det_ctl; // [143:16]
     sysrst_ctrl_reg2hw_com_out_ctl_mreg_t [3:0] com_out_ctl; // [15:0]
@@ -506,20 +530,28 @@ package sysrst_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] SYSRST_CTRL_KEY_INTR_DEBOUNCE_CTL_OFFSET = 8'h 48;
   parameter logic [BlockAw-1:0] SYSRST_CTRL_AUTO_BLOCK_DEBOUNCE_CTL_OFFSET = 8'h 4c;
   parameter logic [BlockAw-1:0] SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_OFFSET = 8'h 50;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_SEL_CTL_0_OFFSET = 8'h 54;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_SEL_CTL_1_OFFSET = 8'h 58;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_SEL_CTL_2_OFFSET = 8'h 5c;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_SEL_CTL_3_OFFSET = 8'h 60;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_DET_CTL_0_OFFSET = 8'h 64;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_DET_CTL_1_OFFSET = 8'h 68;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_DET_CTL_2_OFFSET = 8'h 6c;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_DET_CTL_3_OFFSET = 8'h 70;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_OUT_CTL_0_OFFSET = 8'h 74;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_OUT_CTL_1_OFFSET = 8'h 78;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_OUT_CTL_2_OFFSET = 8'h 7c;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_OUT_CTL_3_OFFSET = 8'h 80;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_COMBO_INTR_STATUS_OFFSET = 8'h 84;
-  parameter logic [BlockAw-1:0] SYSRST_CTRL_KEY_INTR_STATUS_OFFSET = 8'h 88;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_PRE_SEL_CTL_0_OFFSET = 8'h 54;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_PRE_SEL_CTL_1_OFFSET = 8'h 58;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_PRE_SEL_CTL_2_OFFSET = 8'h 5c;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_PRE_SEL_CTL_3_OFFSET = 8'h 60;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_PRE_DET_CTL_0_OFFSET = 8'h 64;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_PRE_DET_CTL_1_OFFSET = 8'h 68;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_PRE_DET_CTL_2_OFFSET = 8'h 6c;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_PRE_DET_CTL_3_OFFSET = 8'h 70;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_SEL_CTL_0_OFFSET = 8'h 74;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_SEL_CTL_1_OFFSET = 8'h 78;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_SEL_CTL_2_OFFSET = 8'h 7c;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_SEL_CTL_3_OFFSET = 8'h 80;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_DET_CTL_0_OFFSET = 8'h 84;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_DET_CTL_1_OFFSET = 8'h 88;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_DET_CTL_2_OFFSET = 8'h 8c;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_DET_CTL_3_OFFSET = 8'h 90;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_OUT_CTL_0_OFFSET = 8'h 94;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_OUT_CTL_1_OFFSET = 8'h 98;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_OUT_CTL_2_OFFSET = 8'h 9c;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COM_OUT_CTL_3_OFFSET = 8'h a0;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_COMBO_INTR_STATUS_OFFSET = 8'h a4;
+  parameter logic [BlockAw-1:0] SYSRST_CTRL_KEY_INTR_STATUS_OFFSET = 8'h a8;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] SYSRST_CTRL_INTR_TEST_RESVAL = 1'h 0;
@@ -550,6 +582,14 @@ package sysrst_ctrl_reg_pkg;
     SYSRST_CTRL_KEY_INTR_DEBOUNCE_CTL,
     SYSRST_CTRL_AUTO_BLOCK_DEBOUNCE_CTL,
     SYSRST_CTRL_AUTO_BLOCK_OUT_CTL,
+    SYSRST_CTRL_COM_PRE_SEL_CTL_0,
+    SYSRST_CTRL_COM_PRE_SEL_CTL_1,
+    SYSRST_CTRL_COM_PRE_SEL_CTL_2,
+    SYSRST_CTRL_COM_PRE_SEL_CTL_3,
+    SYSRST_CTRL_COM_PRE_DET_CTL_0,
+    SYSRST_CTRL_COM_PRE_DET_CTL_1,
+    SYSRST_CTRL_COM_PRE_DET_CTL_2,
+    SYSRST_CTRL_COM_PRE_DET_CTL_3,
     SYSRST_CTRL_COM_SEL_CTL_0,
     SYSRST_CTRL_COM_SEL_CTL_1,
     SYSRST_CTRL_COM_SEL_CTL_2,
@@ -567,7 +607,7 @@ package sysrst_ctrl_reg_pkg;
   } sysrst_ctrl_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] SYSRST_CTRL_PERMIT [35] = '{
+  parameter logic [3:0] SYSRST_CTRL_PERMIT [43] = '{
     4'b 0001, // index[ 0] SYSRST_CTRL_INTR_STATE
     4'b 0001, // index[ 1] SYSRST_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] SYSRST_CTRL_INTR_TEST
@@ -589,20 +629,28 @@ package sysrst_ctrl_reg_pkg;
     4'b 0011, // index[18] SYSRST_CTRL_KEY_INTR_DEBOUNCE_CTL
     4'b 0111, // index[19] SYSRST_CTRL_AUTO_BLOCK_DEBOUNCE_CTL
     4'b 0001, // index[20] SYSRST_CTRL_AUTO_BLOCK_OUT_CTL
-    4'b 0001, // index[21] SYSRST_CTRL_COM_SEL_CTL_0
-    4'b 0001, // index[22] SYSRST_CTRL_COM_SEL_CTL_1
-    4'b 0001, // index[23] SYSRST_CTRL_COM_SEL_CTL_2
-    4'b 0001, // index[24] SYSRST_CTRL_COM_SEL_CTL_3
-    4'b 1111, // index[25] SYSRST_CTRL_COM_DET_CTL_0
-    4'b 1111, // index[26] SYSRST_CTRL_COM_DET_CTL_1
-    4'b 1111, // index[27] SYSRST_CTRL_COM_DET_CTL_2
-    4'b 1111, // index[28] SYSRST_CTRL_COM_DET_CTL_3
-    4'b 0001, // index[29] SYSRST_CTRL_COM_OUT_CTL_0
-    4'b 0001, // index[30] SYSRST_CTRL_COM_OUT_CTL_1
-    4'b 0001, // index[31] SYSRST_CTRL_COM_OUT_CTL_2
-    4'b 0001, // index[32] SYSRST_CTRL_COM_OUT_CTL_3
-    4'b 0001, // index[33] SYSRST_CTRL_COMBO_INTR_STATUS
-    4'b 0011  // index[34] SYSRST_CTRL_KEY_INTR_STATUS
+    4'b 0001, // index[21] SYSRST_CTRL_COM_PRE_SEL_CTL_0
+    4'b 0001, // index[22] SYSRST_CTRL_COM_PRE_SEL_CTL_1
+    4'b 0001, // index[23] SYSRST_CTRL_COM_PRE_SEL_CTL_2
+    4'b 0001, // index[24] SYSRST_CTRL_COM_PRE_SEL_CTL_3
+    4'b 1111, // index[25] SYSRST_CTRL_COM_PRE_DET_CTL_0
+    4'b 1111, // index[26] SYSRST_CTRL_COM_PRE_DET_CTL_1
+    4'b 1111, // index[27] SYSRST_CTRL_COM_PRE_DET_CTL_2
+    4'b 1111, // index[28] SYSRST_CTRL_COM_PRE_DET_CTL_3
+    4'b 0001, // index[29] SYSRST_CTRL_COM_SEL_CTL_0
+    4'b 0001, // index[30] SYSRST_CTRL_COM_SEL_CTL_1
+    4'b 0001, // index[31] SYSRST_CTRL_COM_SEL_CTL_2
+    4'b 0001, // index[32] SYSRST_CTRL_COM_SEL_CTL_3
+    4'b 1111, // index[33] SYSRST_CTRL_COM_DET_CTL_0
+    4'b 1111, // index[34] SYSRST_CTRL_COM_DET_CTL_1
+    4'b 1111, // index[35] SYSRST_CTRL_COM_DET_CTL_2
+    4'b 1111, // index[36] SYSRST_CTRL_COM_DET_CTL_3
+    4'b 0001, // index[37] SYSRST_CTRL_COM_OUT_CTL_0
+    4'b 0001, // index[38] SYSRST_CTRL_COM_OUT_CTL_1
+    4'b 0001, // index[39] SYSRST_CTRL_COM_OUT_CTL_2
+    4'b 0001, // index[40] SYSRST_CTRL_COM_OUT_CTL_3
+    4'b 0001, // index[41] SYSRST_CTRL_COMBO_INTR_STATUS
+    4'b 0011  // index[42] SYSRST_CTRL_KEY_INTR_STATUS
   };
 
 endpackage
