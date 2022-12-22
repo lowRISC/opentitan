@@ -103,7 +103,7 @@ randomize_share:
 
 .data
 
-/* first share of nonce k (first 128 bits of k, then 128 0s, then 64 0s for redundant bits) */
+/* first share of nonce k (first 128 bits of k, then all 0s) */
 .globl k0
 .balign 32
 k0:
@@ -111,9 +111,10 @@ k0:
   .word 0x21d0a016
   .word 0xb0b2c781
   .word 0x9590ef5d
-  .zero 24
+  .zero 16
+  .zero 32
 
-/* second share of nonce k (128 0s, then last 128 bits of k, then 64 0s for redundant bits) */
+/* second share of nonce k (128 0s, then last 128 bits of k, then all 0s) */
 .globl k1
 .balign 32
 k1:
@@ -122,7 +123,7 @@ k1:
   .word 0x1b76ebe8
   .word 0x74210263
   .word 0x1420fc41
-  .zero 8
+  .zero 32
 
 /* message digest */
 .globl msg
@@ -137,7 +138,7 @@ msg:
   .word 0x6ce90fef
   .word 0x06d71207
 
-/* first share of private key d (first 128 bits of d, then 192 0s) */
+/* first share of private key d (first 128 bits of d, then all 0s) */
 .globl d0
 .balign 32
 d0:
@@ -145,9 +146,10 @@ d0:
   .word 0xfbd94efe
   .word 0xaa847f52
   .word 0x2d869bf4
-  .zero 24
+  .zero 16
+  .zero 32
 
-/* second share of private key d (128 0s, then last 128 bits of d, then 64 0s) */
+/* second share of private key d (128 0s, then last 128 bits of d, then all 0s) */
 .globl d1
 .balign 32
 d1:
@@ -156,7 +158,7 @@ d1:
   .word 0xe5f2cbee
   .word 0x9144233d
   .word 0xc0fbe256
-  .zero 8
+  .zero 32
 
 /* signature R */
 .globl r

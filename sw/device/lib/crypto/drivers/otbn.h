@@ -252,6 +252,23 @@ otbn_error_t otbn_dmem_write(size_t num_words, const uint32_t *src,
                              otbn_addr_t dest);
 
 /**
+ * Set a range of OTBN's data memory (DMEM) to a particular value.
+ *
+ * Only 32b-aligned 32b word accesses are allowed. If `dest` is not
+ * word-aligned or if the length and offset exceed the DMEM size, this function
+ * will return an error.
+ *
+ * The caller must ensure OTBN is idle before calling this function.
+ *
+ * @param num_words Length of the range to set in 32-bit words.
+ * @param src The value to set each word in DMEM to.
+ * @param dest The DMEM location to set.
+ * @return Result of the operation.
+ */
+otbn_error_t otbn_dmem_set(size_t num_words, const uint32_t src,
+                           otbn_addr_t dest);
+
+/**
  * Read from OTBN's data memory (DMEM)
  *
  * Only 32b-aligned 32b word accesses are allowed. If `src` is not word-aligned

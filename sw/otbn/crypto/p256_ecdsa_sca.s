@@ -74,7 +74,6 @@ k1:
   .word 0x00000000
   .word 0x00000000
 
-
 /* message digest */
 .globl msg
 .balign 32
