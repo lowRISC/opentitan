@@ -9,20 +9,24 @@ set -ex
 
 . util/build_consts.sh
 
-TOPLEVEL=top_earlgrey
-TOPLEVEL_BIN_DIR="${BIN_DIR}/hw/${TOPLEVEL}"
-
-BITSTREAM=HEAD ci/bazelisk.sh build --define bitstream=gcp_splice \
-  //hw/bitstream:test_rom \
-  //hw/bitstream:rom \
-  //hw/bitstream:rom_otp_dev \
-  //hw/bitstream:rom_mmi \
+readonly TOPLEVEL=top_earlgrey
+readonly TOPLEVEL_BIN_DIR="${BIN_DIR}/hw/${TOPLEVEL}"
+readonly TARGETS=(
+  //hw/bitstream:test_rom
+  //hw/bitstream:rom
+  //hw/bitstream:rom_otp_dev
+  //hw/bitstream:rom_mmi
   //hw/bitstream:otp_mmi
+)
+readonly BAZEL_OPTS=(
+  "--define"
+  "bitstream=gcp_splice"
+)
 
-mkdir -p ${TOPLEVEL_BIN_DIR}
-cp -rLvt "${TOPLEVEL_BIN_DIR}" \
-  "$(ci/scripts/target-location.sh //hw/bitstream:test_rom)" \
-  "$(ci/scripts/target-location.sh //hw/bitstream:rom)" \
-  "$(ci/scripts/target-location.sh //hw/bitstream:rom_otp_dev)"\
-  "$(ci/scripts/target-location.sh //hw/bitstream:rom_mmi)" \
-  "$(ci/scripts/target-location.sh //hw/bitstream:otp_mmi)"
+BITSTREAM=HEAD ci/bazelisk.sh build "${BAZEL_OPTS[@]}" "${TARGETS[@]}"
+mkdir -p "${TOPLEVEL_BIN_DIR}"
+for target in "${TARGETS[@]}"; do
+  src="$(ci/scripts/target-location.sh "${target}" "${BAZEL_OPTS[@]}")"
+  dst="${TOPLEVEL_BIN_DIR}/$(basename "$(ci/scripts/target-location.sh "${target}")")"
+  cp -vL "${src}" "${dst}"
+done
