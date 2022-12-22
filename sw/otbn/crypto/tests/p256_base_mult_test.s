@@ -43,10 +43,18 @@ d0:
   .word 0xe5f2cbee
   .word 0x9144233d
   .word 0xc0fbe256
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
 .globl d1
 .balign 32
 d1:
-  .zero 32
+  .zero 64
 
 /* result buffer x-coordinate */
 .globl x

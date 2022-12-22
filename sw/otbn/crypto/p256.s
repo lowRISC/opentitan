@@ -2025,12 +2025,18 @@ p256_generate_k:
        w20, w21 <= k0, k1 */
   jal  x1, p256_random_scalar
 
-  /* Write the shares to DMEM. */
+  /* Write the shares to DMEM.
+     TODO: zeroes for high bits are temporary until p256_random_scalar supports
+     extra bits; remove later. */
   la        x20, k0
   li        x2, 20
-  bn.sid    x2++, 0(x20)
+  bn.sid    x2, 0(x20++)
+  li        x3, 31
+  bn.sid    x3, 0(x20)
   la        x20, k1
-  bn.sid    x2, 0(x20)
+  li        x2, 21
+  bn.sid    x2, 0(x20++)
+  bn.sid    x3, 0(x20)
 
   ret
 
@@ -2133,11 +2139,11 @@ p256_gy:
 .balign 32
 .weak k0
 k0:
-  .zero 40
+  .zero 64
 .balign 32
 .weak k1
 k1:
-  .zero 40
+  .zero 64
 
 /* message digest */
 .balign 32
@@ -2173,11 +2179,11 @@ y:
 .balign 32
 .weak d0
 d_share0:
-  .zero 40
+  .zero 64
 .balign 32
 .weak d1
 d_share1:
-  .zero 40
+  .zero 64
 
 /* verification result x_r (aka x_1) */
 .balign 32

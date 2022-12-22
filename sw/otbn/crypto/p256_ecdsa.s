@@ -77,11 +77,11 @@ y:
 .globl d0
 .balign 32
 d0:
-  .zero 32
+  .zero 64
 .globl d1
 .balign 32
 d1:
-  .zero 32
+  .zero 64
 
 /* Verification result x_r (aka x_1). */
 .globl x_r
@@ -95,9 +95,9 @@ x_r:
 .globl k0
 .balign 32
 k0:
-  .zero 32
+  .zero 64
 
 .globl k1
 .balign 32
 k1:
-  .zero 32
+  .zero 64
