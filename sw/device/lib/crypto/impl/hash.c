@@ -101,8 +101,8 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
                              xof_mode_t xof_mode,
-                             crypto_uint8_buf_t function_name_string,
-                             crypto_uint8_buf_t customization_string,
+                             crypto_const_uint8_buf_t function_name_string,
+                             crypto_const_uint8_buf_t customization_string,
                              size_t required_output_len,
                              crypto_uint8_buf_t *digest) {
   // TODO: (#16410) Add error checks
@@ -129,8 +129,12 @@ crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
       err = kmac_shake_256(input_message, digest);
       break;
     case kXofModeSha3Cshake128:
+      err = kmac_cshake_128(input_message, function_name_string,
+                            customization_string, digest);
       break;
     case kXofModeSha3Cshake256:
+      err = kmac_cshake_256(input_message, function_name_string,
+                            customization_string, digest);
       break;
     default:
       return kCryptoStatusBadArgs;
