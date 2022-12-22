@@ -46,7 +46,7 @@ impl UsbBackend {
             let handle = match device.open() {
                 Ok(handle) => handle,
                 _ => {
-                    log::error!(
+                    log::warn!(
                         "Could not open device at bus={} address={}",
                         device.bus_number(),
                         device.address()
