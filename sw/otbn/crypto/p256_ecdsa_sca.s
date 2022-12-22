@@ -49,31 +49,11 @@ mode:
 .global k0
 .balign 32
 k0:
-  /* k0 = 0x0000000...ffffffff */
-  /* Note: Byte order in a word is little-endian */
-  .word 0xffffffff
-  .word 0xffffffff
-  .word 0xffffffff
-  .word 0xffffffff
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-
+  .zero 64
 .global k1
 .balign 32
 k1:
-  /* k1= 0x0000000...00000000 */
-  /* Note: Byte order in a word is little-endian */
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-
+  .zero 64
 
 /* message digest */
 .globl msg
@@ -137,6 +117,7 @@ y:
 .globl d0
 .balign 32
 d0:
+<<<<<<< HEAD
   /* d0= 0x5545a0b7...af57b4cd */
   /* Note: Byte order in a word is little-endian */
   .word 0xaf57b4cd
@@ -161,6 +142,13 @@ d1:
   .word 0x00000000
   .word 0x00000000
   .word 0x00000000
+=======
+  .zero 64
+.globl d1
+.balign 32
+d1:
+  .zero 64
+>>>>>>> [crypto] Update C code to use longer P-256 scalars.
 
 /* verification result x_r (aka x_1) */
 .globl x_r

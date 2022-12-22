@@ -30,8 +30,14 @@ enum {
   kP256ScalarNumBits = 256,
   /* Length of a number modulo the P-256 "n" parameter in words */
   kP256ScalarNumWords = kP256ScalarNumBits / (sizeof(uint32_t) * 8),
-  /* Length of the message digest in bits */
-  kP256MessageDigestNumBits = 256,
+  /**
+   * Length of a secret scalar share (uses extra redundant bits).
+   */
+  kP256SecretScalarNumBits = kP256ScalarNumBits + 64,
+  /* Length of secret scalar share in bytes. */
+  kP256SecretScalarNumBytes = kP256SecretScalarNumBits / 8,
+  /* Length of secret scalar share in words. */
+  kP256SecretScalarNumWords = kP256SecretScalarNumBytes / sizeof(uint32_t),
 };
 
 /**
@@ -52,8 +58,8 @@ typedef struct ecdsa_p256_signature_t {
  * shares d0 and d1 are also both computed modulo n.
  */
 typedef struct ecdsa_p256_private_key_t {
-  uint32_t d0[kP256ScalarNumWords];
-  uint32_t d1[kP256ScalarNumWords];
+  uint32_t d0[kP256SecretScalarNumWords];
+  uint32_t d1[kP256SecretScalarNumWords];
 } ecdsa_p256_private_key_t;
 
 /**

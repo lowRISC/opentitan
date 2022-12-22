@@ -233,7 +233,7 @@ static void profile_end(uint64_t t_start, const char *msg) {
 /**
  * Signs a message with ECDSA using the P-256 curve.
  *
- * @param otbn            The OTBN context object.
+ * @param otbn                The OTBN context object.
  * @param msg                 The message to sign (32B).
  * @param private_key_d       The private key (32B).
  * @param[out] signature_r    Signature component r (the x-coordinate of R).
@@ -252,9 +252,13 @@ static void p256_ecdsa_sign(dif_otbn_t *otbn, const uint8_t *msg,
   otbn_testutils_write_data(otbn, /*len_bytes=*/32, msg, kOtbnVarMsg);
   otbn_testutils_write_data(otbn, /*len_bytes=*/32, private_key_d, kOtbnVarD0);
 
+  // Write redundant upper bits of d (all-zero for this test).
+  uint8_t d0_high[32] = {0};
+  otbn_testutils_write_data(otbn, /*len_bytes=*/32, d0_high, kOtbnVarD0 + 32);
+
   // Write second share of d (all-zero for this test).
-  uint8_t d1[32] = {0};
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, d1, kOtbnVarD1);
+  uint8_t d1[64] = {0};
+  otbn_testutils_write_data(otbn, /*len_bytes=*/64, d1, kOtbnVarD1);
 
   // Call OTBN to perform operation, and wait for it to complete.
   otbn_testutils_execute(otbn);
@@ -268,7 +272,7 @@ static void p256_ecdsa_sign(dif_otbn_t *otbn, const uint8_t *msg,
 /**
  * Verifies a message with ECDSA using the P-256 curve.
  *
- * @param otbn             The OTBN context object.
+ * @param otbn                 The OTBN context object.
  * @param msg                  The message to verify (32B).
  * @param signature_r          The signature component r (the proof) (32B).
  * @param signature_s          The signature component s (the proof) (32B).

@@ -55,10 +55,19 @@ otbn_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
       otbn_dmem_write(kP256ScalarNumWords, digest->h, kOtbnVarEcdsaMsg));
 
   // Set the private key shares.
-  OTBN_RETURN_IF_ERROR(
-      otbn_dmem_write(kP256ScalarNumWords, private_key->d0, kOtbnVarEcdsaD0));
-  OTBN_RETURN_IF_ERROR(
-      otbn_dmem_write(kP256ScalarNumWords, private_key->d1, kOtbnVarEcdsaD1));
+  OTBN_RETURN_IF_ERROR(otbn_dmem_write(kP256SecretScalarNumWords,
+                                       private_key->d0, kOtbnVarEcdsaD0));
+  OTBN_RETURN_IF_ERROR(otbn_dmem_write(kP256SecretScalarNumWords,
+                                       private_key->d1, kOtbnVarEcdsaD1));
+
+  // Write trailing 0s to the upper parts of d0 and d1 so that OTBN's 256-bit
+  // read of the 64-bit second share does not cause an error.
+  size_t num_zeroes = kOtbnWideWordNumWords -
+                      (kP256SecretScalarNumWords % kOtbnWideWordNumWords);
+  OTBN_RETURN_IF_ERROR(otbn_dmem_set(
+      num_zeroes, 0, kOtbnVarEcdsaD0 + kP256SecretScalarNumBytes));
+  OTBN_RETURN_IF_ERROR(otbn_dmem_set(
+      num_zeroes, 0, kOtbnVarEcdsaD1 + kP256SecretScalarNumBytes));
 
   // Start the OTBN routine.
   OTBN_RETURN_IF_ERROR(otbn_execute());

@@ -28,7 +28,7 @@ static const ecdsa_p256_public_key_t kPublicKey = {
 // Private key (d) in two shares
 static const ecdsa_p256_private_key_t kPrivateKey = {
     .d0 = {0xaf57b4cd, 0x744c9f1c, 0x8b7e0c02, 0x283e93e9, 0x0d18f00c,
-           0xda0b6cf4, 0x8fe6bb7a, 0x5545a0b7},
+           0xda0b6cf4, 0x8fe6bb7a, 0x5545a0b7, 0x00000000, 0x00000000},
     // TODO(#15409): add real data here to ensure the second share is
     // incorporated.
     .d1 = {0},
