@@ -56,16 +56,30 @@ This output is always asserted when the `sysrst_ctrl` block is reset and remains
 ## Combo detection
 
 Software can program the `sysrst_ctrl` block to detect certain button combos and for how long they have to be asserted until they trigger a programmable action.
-Let's use the "Power button + Esc + Refresh" combo as an example:
+A combo is a combination of multiple keys that are pressed together for a programmable amount of time.
 
-1. Software can define the three key values `pwrb_in_i==0`, `key0_in_i==0` and `key1_in_i==0` as trigger combination in the {{< regref COM_SEL_CTL_0 >}} register.
-2. The combo duration for which the above combo should be pressed (e.g. 10 seconds) can be configured via the {{< regref COM_DET_CTL_0 >}} register.
-3. Actions such as asserting `ec_rst_l_o` and raising an interrupt can be configured via the {{< regref COM_OUT_CTL_0 >}} register.
-4. The pulse width of the `ec_rst_l_o` pulse can be set in the {{< regref EC_RST_CTL >}} register.
-5. The software can optionally lock the `sysrst_ctrl` configuration via {{< regref REGWEN >}}
+In order to detect a combo, the hardware first OR's the active-low key-pressed indications and debounces the combined trigger signal.
+The hardware then detects a negative edge on the combined trigger signal and checks whether it stays asserted low for the programmed amount of cycles.
+If the combined trigger signal fulfills the programmed timing constraint, a combo is detected.
 
-Once the above configuration is active, `sysrst_ctrl` will start the timer when a combo high (logic 1) to low (logic 0) transition is detected.
-Once the timing condition is met (10 seconds), `sysrst_ctrl` will assert `ec_rst_l_o`, the interrupt request and set the interrupt status register {{< regref COMBO_INTR_STATUS >}} to indicate the interrupt cause.
+Optionally, a combo detection channel may also specify a pre-condition.
+Such a pre-condition is a set of keys that must remain pressed in order to activate the combo detection circuit.
+The main difference with respect to the combo detection circuit is that the pre-condition checks for a low level of the combined key-pressed indications instead of checking for a negative edge.
+The pre-condition debounce timing is the same as for combo detection, but the key-pressed timing can be configured independently.
+
+Let's use the "Power button + Key0 + Key1" combo with pre-condition "Key2" as an example:
+
+0. Software can define the key value `key2_in_i==0` as pre-condition in the {{< regref COM_PRE_SEL_CTL_0 >}} register.
+1. The key-pressed time for the pre-condition (e.g. 2 seconds) can be configured via the {{< regref COM_DET_SEL_CTL_0 >}} register.
+2. Software can define the three key values `pwrb_in_i==0`, `key0_in_i==0` and `key1_in_i==0` as trigger combination in the {{< regref COM_SEL_CTL_0 >}} register.
+3. The combo duration for which the above combo should be pressed (e.g. 10 seconds) can be configured via the {{< regref COM_DET_CTL_0 >}} register.
+4. Actions such as asserting `ec_rst_l_o` and raising an interrupt can be configured via the {{< regref COM_OUT_CTL_0 >}} register.
+5. The pulse width of the `ec_rst_l_o` pulse can be set in the {{< regref EC_RST_CTL >}} register.
+6. The software can optionally lock the `sysrst_ctrl` configuration via {{< regref REGWEN >}}
+
+Once the above configuration is active, `sysrst_ctrl` will start the timer when the pre-condition is valid (logic 0 level on all pre-condition signals).
+If the timing condition (2 seconds) is met, `systrst_ctrl` will enable combo detection, and wait for a high (logic 1) to low (logic 0) transition of the combined trigger signal.
+If a transition is seen, and the timing condition is met (10 seconds), `sysrst_ctrl` will assert `ec_rst_l_o`, the interrupt request and set the interrupt status register {{< regref COMBO_INTR_STATUS >}} to indicate the interrupt cause.
 The software interrupt handler should then read the {{< regref COMBO_INTR_STATUS >}} register and clear the interrupt via the {{< regref INTR_STATE >}} register.
 
 Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `wkup_req_o`.

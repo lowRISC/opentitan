@@ -240,6 +240,8 @@ module sysrst_ctrl
     // CSRs synced to AON clock
     .ec_rst_ctl_i(reg2hw.ec_rst_ctl),
     .key_intr_debounce_ctl_i(reg2hw.key_intr_debounce_ctl),
+    .com_pre_sel_ctl_i(reg2hw.com_pre_sel_ctl),
+    .com_pre_det_ctl_i(reg2hw.com_pre_det_ctl),
     .com_sel_ctl_i(reg2hw.com_sel_ctl),
     .com_det_ctl_i(reg2hw.com_det_ctl),
     .com_out_ctl_i(reg2hw.com_out_ctl),

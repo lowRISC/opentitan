@@ -57,9 +57,9 @@ module sysrst_ctrl_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [34:0] reg_we_check;
+  logic [42:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(35)
+    .OneHotWidth(43)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -192,6 +192,30 @@ module sysrst_ctrl_reg_top (
   logic auto_block_out_ctl_we;
   logic [6:0] auto_block_out_ctl_qs;
   logic auto_block_out_ctl_busy;
+  logic com_pre_sel_ctl_0_we;
+  logic [4:0] com_pre_sel_ctl_0_qs;
+  logic com_pre_sel_ctl_0_busy;
+  logic com_pre_sel_ctl_1_we;
+  logic [4:0] com_pre_sel_ctl_1_qs;
+  logic com_pre_sel_ctl_1_busy;
+  logic com_pre_sel_ctl_2_we;
+  logic [4:0] com_pre_sel_ctl_2_qs;
+  logic com_pre_sel_ctl_2_busy;
+  logic com_pre_sel_ctl_3_we;
+  logic [4:0] com_pre_sel_ctl_3_qs;
+  logic com_pre_sel_ctl_3_busy;
+  logic com_pre_det_ctl_0_we;
+  logic [31:0] com_pre_det_ctl_0_qs;
+  logic com_pre_det_ctl_0_busy;
+  logic com_pre_det_ctl_1_we;
+  logic [31:0] com_pre_det_ctl_1_qs;
+  logic com_pre_det_ctl_1_busy;
+  logic com_pre_det_ctl_2_we;
+  logic [31:0] com_pre_det_ctl_2_qs;
+  logic com_pre_det_ctl_2_busy;
+  logic com_pre_det_ctl_3_we;
+  logic [31:0] com_pre_det_ctl_3_qs;
+  logic com_pre_det_ctl_3_busy;
   logic com_sel_ctl_0_we;
   logic [4:0] com_sel_ctl_0_qs;
   logic com_sel_ctl_0_busy;
@@ -944,6 +968,350 @@ module sysrst_ctrl_reg_top (
   );
   assign unused_aon_auto_block_out_ctl_wdata =
       ^aon_auto_block_out_ctl_wdata;
+
+  logic  aon_com_pre_sel_ctl_0_key0_in_sel_0_qs_int;
+  logic  aon_com_pre_sel_ctl_0_key1_in_sel_0_qs_int;
+  logic  aon_com_pre_sel_ctl_0_key2_in_sel_0_qs_int;
+  logic  aon_com_pre_sel_ctl_0_pwrb_in_sel_0_qs_int;
+  logic  aon_com_pre_sel_ctl_0_ac_present_sel_0_qs_int;
+  logic [4:0] aon_com_pre_sel_ctl_0_qs;
+  logic [4:0] aon_com_pre_sel_ctl_0_wdata;
+  logic aon_com_pre_sel_ctl_0_we;
+  logic unused_aon_com_pre_sel_ctl_0_wdata;
+  logic aon_com_pre_sel_ctl_0_regwen;
+
+  always_comb begin
+    aon_com_pre_sel_ctl_0_qs = 5'h0;
+    aon_com_pre_sel_ctl_0_qs[0] = aon_com_pre_sel_ctl_0_key0_in_sel_0_qs_int;
+    aon_com_pre_sel_ctl_0_qs[1] = aon_com_pre_sel_ctl_0_key1_in_sel_0_qs_int;
+    aon_com_pre_sel_ctl_0_qs[2] = aon_com_pre_sel_ctl_0_key2_in_sel_0_qs_int;
+    aon_com_pre_sel_ctl_0_qs[3] = aon_com_pre_sel_ctl_0_pwrb_in_sel_0_qs_int;
+    aon_com_pre_sel_ctl_0_qs[4] = aon_com_pre_sel_ctl_0_ac_present_sel_0_qs_int;
+  end
+
+  prim_reg_cdc #(
+    .DataWidth(5),
+    .ResetVal(5'h0),
+    .BitMask(5'h1f),
+    .DstWrReq(0)
+  ) u_com_pre_sel_ctl_0_cdc (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_regwen_i (regwen_qs),
+    .src_we_i     (com_pre_sel_ctl_0_we),
+    .src_re_i     ('0),
+    .src_wd_i     (reg_wdata[4:0]),
+    .src_busy_o   (com_pre_sel_ctl_0_busy),
+    .src_qs_o     (com_pre_sel_ctl_0_qs), // for software read back
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_com_pre_sel_ctl_0_qs),
+    .dst_we_o     (aon_com_pre_sel_ctl_0_we),
+    .dst_re_o     (),
+    .dst_regwen_o (aon_com_pre_sel_ctl_0_regwen),
+    .dst_wd_o     (aon_com_pre_sel_ctl_0_wdata)
+  );
+  assign unused_aon_com_pre_sel_ctl_0_wdata =
+      ^aon_com_pre_sel_ctl_0_wdata;
+
+  logic  aon_com_pre_sel_ctl_1_key0_in_sel_1_qs_int;
+  logic  aon_com_pre_sel_ctl_1_key1_in_sel_1_qs_int;
+  logic  aon_com_pre_sel_ctl_1_key2_in_sel_1_qs_int;
+  logic  aon_com_pre_sel_ctl_1_pwrb_in_sel_1_qs_int;
+  logic  aon_com_pre_sel_ctl_1_ac_present_sel_1_qs_int;
+  logic [4:0] aon_com_pre_sel_ctl_1_qs;
+  logic [4:0] aon_com_pre_sel_ctl_1_wdata;
+  logic aon_com_pre_sel_ctl_1_we;
+  logic unused_aon_com_pre_sel_ctl_1_wdata;
+  logic aon_com_pre_sel_ctl_1_regwen;
+
+  always_comb begin
+    aon_com_pre_sel_ctl_1_qs = 5'h0;
+    aon_com_pre_sel_ctl_1_qs[0] = aon_com_pre_sel_ctl_1_key0_in_sel_1_qs_int;
+    aon_com_pre_sel_ctl_1_qs[1] = aon_com_pre_sel_ctl_1_key1_in_sel_1_qs_int;
+    aon_com_pre_sel_ctl_1_qs[2] = aon_com_pre_sel_ctl_1_key2_in_sel_1_qs_int;
+    aon_com_pre_sel_ctl_1_qs[3] = aon_com_pre_sel_ctl_1_pwrb_in_sel_1_qs_int;
+    aon_com_pre_sel_ctl_1_qs[4] = aon_com_pre_sel_ctl_1_ac_present_sel_1_qs_int;
+  end
+
+  prim_reg_cdc #(
+    .DataWidth(5),
+    .ResetVal(5'h0),
+    .BitMask(5'h1f),
+    .DstWrReq(0)
+  ) u_com_pre_sel_ctl_1_cdc (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_regwen_i (regwen_qs),
+    .src_we_i     (com_pre_sel_ctl_1_we),
+    .src_re_i     ('0),
+    .src_wd_i     (reg_wdata[4:0]),
+    .src_busy_o   (com_pre_sel_ctl_1_busy),
+    .src_qs_o     (com_pre_sel_ctl_1_qs), // for software read back
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_com_pre_sel_ctl_1_qs),
+    .dst_we_o     (aon_com_pre_sel_ctl_1_we),
+    .dst_re_o     (),
+    .dst_regwen_o (aon_com_pre_sel_ctl_1_regwen),
+    .dst_wd_o     (aon_com_pre_sel_ctl_1_wdata)
+  );
+  assign unused_aon_com_pre_sel_ctl_1_wdata =
+      ^aon_com_pre_sel_ctl_1_wdata;
+
+  logic  aon_com_pre_sel_ctl_2_key0_in_sel_2_qs_int;
+  logic  aon_com_pre_sel_ctl_2_key1_in_sel_2_qs_int;
+  logic  aon_com_pre_sel_ctl_2_key2_in_sel_2_qs_int;
+  logic  aon_com_pre_sel_ctl_2_pwrb_in_sel_2_qs_int;
+  logic  aon_com_pre_sel_ctl_2_ac_present_sel_2_qs_int;
+  logic [4:0] aon_com_pre_sel_ctl_2_qs;
+  logic [4:0] aon_com_pre_sel_ctl_2_wdata;
+  logic aon_com_pre_sel_ctl_2_we;
+  logic unused_aon_com_pre_sel_ctl_2_wdata;
+  logic aon_com_pre_sel_ctl_2_regwen;
+
+  always_comb begin
+    aon_com_pre_sel_ctl_2_qs = 5'h0;
+    aon_com_pre_sel_ctl_2_qs[0] = aon_com_pre_sel_ctl_2_key0_in_sel_2_qs_int;
+    aon_com_pre_sel_ctl_2_qs[1] = aon_com_pre_sel_ctl_2_key1_in_sel_2_qs_int;
+    aon_com_pre_sel_ctl_2_qs[2] = aon_com_pre_sel_ctl_2_key2_in_sel_2_qs_int;
+    aon_com_pre_sel_ctl_2_qs[3] = aon_com_pre_sel_ctl_2_pwrb_in_sel_2_qs_int;
+    aon_com_pre_sel_ctl_2_qs[4] = aon_com_pre_sel_ctl_2_ac_present_sel_2_qs_int;
+  end
+
+  prim_reg_cdc #(
+    .DataWidth(5),
+    .ResetVal(5'h0),
+    .BitMask(5'h1f),
+    .DstWrReq(0)
+  ) u_com_pre_sel_ctl_2_cdc (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_regwen_i (regwen_qs),
+    .src_we_i     (com_pre_sel_ctl_2_we),
+    .src_re_i     ('0),
+    .src_wd_i     (reg_wdata[4:0]),
+    .src_busy_o   (com_pre_sel_ctl_2_busy),
+    .src_qs_o     (com_pre_sel_ctl_2_qs), // for software read back
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_com_pre_sel_ctl_2_qs),
+    .dst_we_o     (aon_com_pre_sel_ctl_2_we),
+    .dst_re_o     (),
+    .dst_regwen_o (aon_com_pre_sel_ctl_2_regwen),
+    .dst_wd_o     (aon_com_pre_sel_ctl_2_wdata)
+  );
+  assign unused_aon_com_pre_sel_ctl_2_wdata =
+      ^aon_com_pre_sel_ctl_2_wdata;
+
+  logic  aon_com_pre_sel_ctl_3_key0_in_sel_3_qs_int;
+  logic  aon_com_pre_sel_ctl_3_key1_in_sel_3_qs_int;
+  logic  aon_com_pre_sel_ctl_3_key2_in_sel_3_qs_int;
+  logic  aon_com_pre_sel_ctl_3_pwrb_in_sel_3_qs_int;
+  logic  aon_com_pre_sel_ctl_3_ac_present_sel_3_qs_int;
+  logic [4:0] aon_com_pre_sel_ctl_3_qs;
+  logic [4:0] aon_com_pre_sel_ctl_3_wdata;
+  logic aon_com_pre_sel_ctl_3_we;
+  logic unused_aon_com_pre_sel_ctl_3_wdata;
+  logic aon_com_pre_sel_ctl_3_regwen;
+
+  always_comb begin
+    aon_com_pre_sel_ctl_3_qs = 5'h0;
+    aon_com_pre_sel_ctl_3_qs[0] = aon_com_pre_sel_ctl_3_key0_in_sel_3_qs_int;
+    aon_com_pre_sel_ctl_3_qs[1] = aon_com_pre_sel_ctl_3_key1_in_sel_3_qs_int;
+    aon_com_pre_sel_ctl_3_qs[2] = aon_com_pre_sel_ctl_3_key2_in_sel_3_qs_int;
+    aon_com_pre_sel_ctl_3_qs[3] = aon_com_pre_sel_ctl_3_pwrb_in_sel_3_qs_int;
+    aon_com_pre_sel_ctl_3_qs[4] = aon_com_pre_sel_ctl_3_ac_present_sel_3_qs_int;
+  end
+
+  prim_reg_cdc #(
+    .DataWidth(5),
+    .ResetVal(5'h0),
+    .BitMask(5'h1f),
+    .DstWrReq(0)
+  ) u_com_pre_sel_ctl_3_cdc (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_regwen_i (regwen_qs),
+    .src_we_i     (com_pre_sel_ctl_3_we),
+    .src_re_i     ('0),
+    .src_wd_i     (reg_wdata[4:0]),
+    .src_busy_o   (com_pre_sel_ctl_3_busy),
+    .src_qs_o     (com_pre_sel_ctl_3_qs), // for software read back
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_com_pre_sel_ctl_3_qs),
+    .dst_we_o     (aon_com_pre_sel_ctl_3_we),
+    .dst_re_o     (),
+    .dst_regwen_o (aon_com_pre_sel_ctl_3_regwen),
+    .dst_wd_o     (aon_com_pre_sel_ctl_3_wdata)
+  );
+  assign unused_aon_com_pre_sel_ctl_3_wdata =
+      ^aon_com_pre_sel_ctl_3_wdata;
+
+  logic [31:0]  aon_com_pre_det_ctl_0_qs_int;
+  logic [31:0] aon_com_pre_det_ctl_0_qs;
+  logic [31:0] aon_com_pre_det_ctl_0_wdata;
+  logic aon_com_pre_det_ctl_0_we;
+  logic unused_aon_com_pre_det_ctl_0_wdata;
+  logic aon_com_pre_det_ctl_0_regwen;
+
+  always_comb begin
+    aon_com_pre_det_ctl_0_qs = 32'h0;
+    aon_com_pre_det_ctl_0_qs = aon_com_pre_det_ctl_0_qs_int;
+  end
+
+  prim_reg_cdc #(
+    .DataWidth(32),
+    .ResetVal(32'h0),
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
+  ) u_com_pre_det_ctl_0_cdc (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_regwen_i (regwen_qs),
+    .src_we_i     (com_pre_det_ctl_0_we),
+    .src_re_i     ('0),
+    .src_wd_i     (reg_wdata[31:0]),
+    .src_busy_o   (com_pre_det_ctl_0_busy),
+    .src_qs_o     (com_pre_det_ctl_0_qs), // for software read back
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_com_pre_det_ctl_0_qs),
+    .dst_we_o     (aon_com_pre_det_ctl_0_we),
+    .dst_re_o     (),
+    .dst_regwen_o (aon_com_pre_det_ctl_0_regwen),
+    .dst_wd_o     (aon_com_pre_det_ctl_0_wdata)
+  );
+  assign unused_aon_com_pre_det_ctl_0_wdata =
+      ^aon_com_pre_det_ctl_0_wdata;
+
+  logic [31:0]  aon_com_pre_det_ctl_1_qs_int;
+  logic [31:0] aon_com_pre_det_ctl_1_qs;
+  logic [31:0] aon_com_pre_det_ctl_1_wdata;
+  logic aon_com_pre_det_ctl_1_we;
+  logic unused_aon_com_pre_det_ctl_1_wdata;
+  logic aon_com_pre_det_ctl_1_regwen;
+
+  always_comb begin
+    aon_com_pre_det_ctl_1_qs = 32'h0;
+    aon_com_pre_det_ctl_1_qs = aon_com_pre_det_ctl_1_qs_int;
+  end
+
+  prim_reg_cdc #(
+    .DataWidth(32),
+    .ResetVal(32'h0),
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
+  ) u_com_pre_det_ctl_1_cdc (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_regwen_i (regwen_qs),
+    .src_we_i     (com_pre_det_ctl_1_we),
+    .src_re_i     ('0),
+    .src_wd_i     (reg_wdata[31:0]),
+    .src_busy_o   (com_pre_det_ctl_1_busy),
+    .src_qs_o     (com_pre_det_ctl_1_qs), // for software read back
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_com_pre_det_ctl_1_qs),
+    .dst_we_o     (aon_com_pre_det_ctl_1_we),
+    .dst_re_o     (),
+    .dst_regwen_o (aon_com_pre_det_ctl_1_regwen),
+    .dst_wd_o     (aon_com_pre_det_ctl_1_wdata)
+  );
+  assign unused_aon_com_pre_det_ctl_1_wdata =
+      ^aon_com_pre_det_ctl_1_wdata;
+
+  logic [31:0]  aon_com_pre_det_ctl_2_qs_int;
+  logic [31:0] aon_com_pre_det_ctl_2_qs;
+  logic [31:0] aon_com_pre_det_ctl_2_wdata;
+  logic aon_com_pre_det_ctl_2_we;
+  logic unused_aon_com_pre_det_ctl_2_wdata;
+  logic aon_com_pre_det_ctl_2_regwen;
+
+  always_comb begin
+    aon_com_pre_det_ctl_2_qs = 32'h0;
+    aon_com_pre_det_ctl_2_qs = aon_com_pre_det_ctl_2_qs_int;
+  end
+
+  prim_reg_cdc #(
+    .DataWidth(32),
+    .ResetVal(32'h0),
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
+  ) u_com_pre_det_ctl_2_cdc (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_regwen_i (regwen_qs),
+    .src_we_i     (com_pre_det_ctl_2_we),
+    .src_re_i     ('0),
+    .src_wd_i     (reg_wdata[31:0]),
+    .src_busy_o   (com_pre_det_ctl_2_busy),
+    .src_qs_o     (com_pre_det_ctl_2_qs), // for software read back
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_com_pre_det_ctl_2_qs),
+    .dst_we_o     (aon_com_pre_det_ctl_2_we),
+    .dst_re_o     (),
+    .dst_regwen_o (aon_com_pre_det_ctl_2_regwen),
+    .dst_wd_o     (aon_com_pre_det_ctl_2_wdata)
+  );
+  assign unused_aon_com_pre_det_ctl_2_wdata =
+      ^aon_com_pre_det_ctl_2_wdata;
+
+  logic [31:0]  aon_com_pre_det_ctl_3_qs_int;
+  logic [31:0] aon_com_pre_det_ctl_3_qs;
+  logic [31:0] aon_com_pre_det_ctl_3_wdata;
+  logic aon_com_pre_det_ctl_3_we;
+  logic unused_aon_com_pre_det_ctl_3_wdata;
+  logic aon_com_pre_det_ctl_3_regwen;
+
+  always_comb begin
+    aon_com_pre_det_ctl_3_qs = 32'h0;
+    aon_com_pre_det_ctl_3_qs = aon_com_pre_det_ctl_3_qs_int;
+  end
+
+  prim_reg_cdc #(
+    .DataWidth(32),
+    .ResetVal(32'h0),
+    .BitMask(32'hffffffff),
+    .DstWrReq(0)
+  ) u_com_pre_det_ctl_3_cdc (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_regwen_i (regwen_qs),
+    .src_we_i     (com_pre_det_ctl_3_we),
+    .src_re_i     ('0),
+    .src_wd_i     (reg_wdata[31:0]),
+    .src_busy_o   (com_pre_det_ctl_3_busy),
+    .src_qs_o     (com_pre_det_ctl_3_qs), // for software read back
+    .dst_update_i ('0),
+    .dst_ds_i     ('0),
+    .dst_qs_i     (aon_com_pre_det_ctl_3_qs),
+    .dst_we_o     (aon_com_pre_det_ctl_3_we),
+    .dst_re_o     (),
+    .dst_regwen_o (aon_com_pre_det_ctl_3_regwen),
+    .dst_wd_o     (aon_com_pre_det_ctl_3_wdata)
+  );
+  assign unused_aon_com_pre_det_ctl_3_wdata =
+      ^aon_com_pre_det_ctl_3_wdata;
 
   logic  aon_com_sel_ctl_0_key0_in_sel_0_qs_int;
   logic  aon_com_sel_ctl_0_key1_in_sel_0_qs_int;
@@ -3937,6 +4305,674 @@ module sysrst_ctrl_reg_top (
   );
 
 
+  // Subregister 0 of Multireg com_pre_sel_ctl
+  // R[com_pre_sel_ctl_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_pre_sel_ctl_0_gated_we;
+  assign aon_com_pre_sel_ctl_0_gated_we = aon_com_pre_sel_ctl_0_we & aon_com_pre_sel_ctl_0_regwen;
+  //   F[key0_in_sel_0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_0_key0_in_sel_0 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_0_gated_we),
+    .wd     (aon_com_pre_sel_ctl_0_wdata[0]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[0].key0_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_0_key0_in_sel_0_qs_int)
+  );
+
+  //   F[key1_in_sel_0]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_0_key1_in_sel_0 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_0_gated_we),
+    .wd     (aon_com_pre_sel_ctl_0_wdata[1]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[0].key1_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_0_key1_in_sel_0_qs_int)
+  );
+
+  //   F[key2_in_sel_0]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_0_key2_in_sel_0 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_0_gated_we),
+    .wd     (aon_com_pre_sel_ctl_0_wdata[2]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[0].key2_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_0_key2_in_sel_0_qs_int)
+  );
+
+  //   F[pwrb_in_sel_0]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_0_pwrb_in_sel_0 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_0_gated_we),
+    .wd     (aon_com_pre_sel_ctl_0_wdata[3]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[0].pwrb_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_0_pwrb_in_sel_0_qs_int)
+  );
+
+  //   F[ac_present_sel_0]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_0_ac_present_sel_0 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_0_gated_we),
+    .wd     (aon_com_pre_sel_ctl_0_wdata[4]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[0].ac_present_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_0_ac_present_sel_0_qs_int)
+  );
+
+
+  // Subregister 1 of Multireg com_pre_sel_ctl
+  // R[com_pre_sel_ctl_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_pre_sel_ctl_1_gated_we;
+  assign aon_com_pre_sel_ctl_1_gated_we = aon_com_pre_sel_ctl_1_we & aon_com_pre_sel_ctl_1_regwen;
+  //   F[key0_in_sel_1]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_1_key0_in_sel_1 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_1_gated_we),
+    .wd     (aon_com_pre_sel_ctl_1_wdata[0]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[1].key0_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_1_key0_in_sel_1_qs_int)
+  );
+
+  //   F[key1_in_sel_1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_1_key1_in_sel_1 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_1_gated_we),
+    .wd     (aon_com_pre_sel_ctl_1_wdata[1]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[1].key1_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_1_key1_in_sel_1_qs_int)
+  );
+
+  //   F[key2_in_sel_1]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_1_key2_in_sel_1 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_1_gated_we),
+    .wd     (aon_com_pre_sel_ctl_1_wdata[2]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[1].key2_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_1_key2_in_sel_1_qs_int)
+  );
+
+  //   F[pwrb_in_sel_1]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_1_pwrb_in_sel_1 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_1_gated_we),
+    .wd     (aon_com_pre_sel_ctl_1_wdata[3]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[1].pwrb_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_1_pwrb_in_sel_1_qs_int)
+  );
+
+  //   F[ac_present_sel_1]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_1_ac_present_sel_1 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_1_gated_we),
+    .wd     (aon_com_pre_sel_ctl_1_wdata[4]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[1].ac_present_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_1_ac_present_sel_1_qs_int)
+  );
+
+
+  // Subregister 2 of Multireg com_pre_sel_ctl
+  // R[com_pre_sel_ctl_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_pre_sel_ctl_2_gated_we;
+  assign aon_com_pre_sel_ctl_2_gated_we = aon_com_pre_sel_ctl_2_we & aon_com_pre_sel_ctl_2_regwen;
+  //   F[key0_in_sel_2]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_2_key0_in_sel_2 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_2_gated_we),
+    .wd     (aon_com_pre_sel_ctl_2_wdata[0]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[2].key0_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_2_key0_in_sel_2_qs_int)
+  );
+
+  //   F[key1_in_sel_2]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_2_key1_in_sel_2 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_2_gated_we),
+    .wd     (aon_com_pre_sel_ctl_2_wdata[1]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[2].key1_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_2_key1_in_sel_2_qs_int)
+  );
+
+  //   F[key2_in_sel_2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_2_key2_in_sel_2 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_2_gated_we),
+    .wd     (aon_com_pre_sel_ctl_2_wdata[2]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[2].key2_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_2_key2_in_sel_2_qs_int)
+  );
+
+  //   F[pwrb_in_sel_2]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_2_pwrb_in_sel_2 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_2_gated_we),
+    .wd     (aon_com_pre_sel_ctl_2_wdata[3]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[2].pwrb_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_2_pwrb_in_sel_2_qs_int)
+  );
+
+  //   F[ac_present_sel_2]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_2_ac_present_sel_2 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_2_gated_we),
+    .wd     (aon_com_pre_sel_ctl_2_wdata[4]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[2].ac_present_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_2_ac_present_sel_2_qs_int)
+  );
+
+
+  // Subregister 3 of Multireg com_pre_sel_ctl
+  // R[com_pre_sel_ctl_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_pre_sel_ctl_3_gated_we;
+  assign aon_com_pre_sel_ctl_3_gated_we = aon_com_pre_sel_ctl_3_we & aon_com_pre_sel_ctl_3_regwen;
+  //   F[key0_in_sel_3]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_3_key0_in_sel_3 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_3_gated_we),
+    .wd     (aon_com_pre_sel_ctl_3_wdata[0]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[3].key0_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_3_key0_in_sel_3_qs_int)
+  );
+
+  //   F[key1_in_sel_3]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_3_key1_in_sel_3 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_3_gated_we),
+    .wd     (aon_com_pre_sel_ctl_3_wdata[1]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[3].key1_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_3_key1_in_sel_3_qs_int)
+  );
+
+  //   F[key2_in_sel_3]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_3_key2_in_sel_3 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_3_gated_we),
+    .wd     (aon_com_pre_sel_ctl_3_wdata[2]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[3].key2_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_3_key2_in_sel_3_qs_int)
+  );
+
+  //   F[pwrb_in_sel_3]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_3_pwrb_in_sel_3 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_3_gated_we),
+    .wd     (aon_com_pre_sel_ctl_3_wdata[3]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[3].pwrb_in_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_3_pwrb_in_sel_3_qs_int)
+  );
+
+  //   F[ac_present_sel_3]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_com_pre_sel_ctl_3_ac_present_sel_3 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_sel_ctl_3_gated_we),
+    .wd     (aon_com_pre_sel_ctl_3_wdata[4]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_sel_ctl[3].ac_present_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_sel_ctl_3_ac_present_sel_3_qs_int)
+  );
+
+
+  // Subregister 0 of Multireg com_pre_det_ctl
+  // R[com_pre_det_ctl_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_pre_det_ctl_0_gated_we;
+  assign aon_com_pre_det_ctl_0_gated_we = aon_com_pre_det_ctl_0_we & aon_com_pre_det_ctl_0_regwen;
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_com_pre_det_ctl_0 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_det_ctl_0_gated_we),
+    .wd     (aon_com_pre_det_ctl_0_wdata[31:0]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_det_ctl[0].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_det_ctl_0_qs_int)
+  );
+
+
+  // Subregister 1 of Multireg com_pre_det_ctl
+  // R[com_pre_det_ctl_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_pre_det_ctl_1_gated_we;
+  assign aon_com_pre_det_ctl_1_gated_we = aon_com_pre_det_ctl_1_we & aon_com_pre_det_ctl_1_regwen;
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_com_pre_det_ctl_1 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_det_ctl_1_gated_we),
+    .wd     (aon_com_pre_det_ctl_1_wdata[31:0]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_det_ctl[1].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_det_ctl_1_qs_int)
+  );
+
+
+  // Subregister 2 of Multireg com_pre_det_ctl
+  // R[com_pre_det_ctl_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_pre_det_ctl_2_gated_we;
+  assign aon_com_pre_det_ctl_2_gated_we = aon_com_pre_det_ctl_2_we & aon_com_pre_det_ctl_2_regwen;
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_com_pre_det_ctl_2 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_det_ctl_2_gated_we),
+    .wd     (aon_com_pre_det_ctl_2_wdata[31:0]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_det_ctl[2].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_det_ctl_2_qs_int)
+  );
+
+
+  // Subregister 3 of Multireg com_pre_det_ctl
+  // R[com_pre_det_ctl_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic aon_com_pre_det_ctl_3_gated_we;
+  assign aon_com_pre_det_ctl_3_gated_we = aon_com_pre_det_ctl_3_we & aon_com_pre_det_ctl_3_regwen;
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_com_pre_det_ctl_3 (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_com_pre_det_ctl_3_gated_we),
+    .wd     (aon_com_pre_det_ctl_3_wdata[31:0]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.com_pre_det_ctl[3].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_com_pre_det_ctl_3_qs_int)
+  );
+
+
   // Subregister 0 of Multireg com_sel_ctl
   // R[com_sel_ctl_0]: V(False)
   // Create REGWEN-gated WE signal
@@ -5522,7 +6558,7 @@ module sysrst_ctrl_reg_top (
 
 
 
-  logic [34:0] addr_hit;
+  logic [42:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == SYSRST_CTRL_INTR_STATE_OFFSET);
@@ -5546,20 +6582,28 @@ module sysrst_ctrl_reg_top (
     addr_hit[18] = (reg_addr == SYSRST_CTRL_KEY_INTR_DEBOUNCE_CTL_OFFSET);
     addr_hit[19] = (reg_addr == SYSRST_CTRL_AUTO_BLOCK_DEBOUNCE_CTL_OFFSET);
     addr_hit[20] = (reg_addr == SYSRST_CTRL_AUTO_BLOCK_OUT_CTL_OFFSET);
-    addr_hit[21] = (reg_addr == SYSRST_CTRL_COM_SEL_CTL_0_OFFSET);
-    addr_hit[22] = (reg_addr == SYSRST_CTRL_COM_SEL_CTL_1_OFFSET);
-    addr_hit[23] = (reg_addr == SYSRST_CTRL_COM_SEL_CTL_2_OFFSET);
-    addr_hit[24] = (reg_addr == SYSRST_CTRL_COM_SEL_CTL_3_OFFSET);
-    addr_hit[25] = (reg_addr == SYSRST_CTRL_COM_DET_CTL_0_OFFSET);
-    addr_hit[26] = (reg_addr == SYSRST_CTRL_COM_DET_CTL_1_OFFSET);
-    addr_hit[27] = (reg_addr == SYSRST_CTRL_COM_DET_CTL_2_OFFSET);
-    addr_hit[28] = (reg_addr == SYSRST_CTRL_COM_DET_CTL_3_OFFSET);
-    addr_hit[29] = (reg_addr == SYSRST_CTRL_COM_OUT_CTL_0_OFFSET);
-    addr_hit[30] = (reg_addr == SYSRST_CTRL_COM_OUT_CTL_1_OFFSET);
-    addr_hit[31] = (reg_addr == SYSRST_CTRL_COM_OUT_CTL_2_OFFSET);
-    addr_hit[32] = (reg_addr == SYSRST_CTRL_COM_OUT_CTL_3_OFFSET);
-    addr_hit[33] = (reg_addr == SYSRST_CTRL_COMBO_INTR_STATUS_OFFSET);
-    addr_hit[34] = (reg_addr == SYSRST_CTRL_KEY_INTR_STATUS_OFFSET);
+    addr_hit[21] = (reg_addr == SYSRST_CTRL_COM_PRE_SEL_CTL_0_OFFSET);
+    addr_hit[22] = (reg_addr == SYSRST_CTRL_COM_PRE_SEL_CTL_1_OFFSET);
+    addr_hit[23] = (reg_addr == SYSRST_CTRL_COM_PRE_SEL_CTL_2_OFFSET);
+    addr_hit[24] = (reg_addr == SYSRST_CTRL_COM_PRE_SEL_CTL_3_OFFSET);
+    addr_hit[25] = (reg_addr == SYSRST_CTRL_COM_PRE_DET_CTL_0_OFFSET);
+    addr_hit[26] = (reg_addr == SYSRST_CTRL_COM_PRE_DET_CTL_1_OFFSET);
+    addr_hit[27] = (reg_addr == SYSRST_CTRL_COM_PRE_DET_CTL_2_OFFSET);
+    addr_hit[28] = (reg_addr == SYSRST_CTRL_COM_PRE_DET_CTL_3_OFFSET);
+    addr_hit[29] = (reg_addr == SYSRST_CTRL_COM_SEL_CTL_0_OFFSET);
+    addr_hit[30] = (reg_addr == SYSRST_CTRL_COM_SEL_CTL_1_OFFSET);
+    addr_hit[31] = (reg_addr == SYSRST_CTRL_COM_SEL_CTL_2_OFFSET);
+    addr_hit[32] = (reg_addr == SYSRST_CTRL_COM_SEL_CTL_3_OFFSET);
+    addr_hit[33] = (reg_addr == SYSRST_CTRL_COM_DET_CTL_0_OFFSET);
+    addr_hit[34] = (reg_addr == SYSRST_CTRL_COM_DET_CTL_1_OFFSET);
+    addr_hit[35] = (reg_addr == SYSRST_CTRL_COM_DET_CTL_2_OFFSET);
+    addr_hit[36] = (reg_addr == SYSRST_CTRL_COM_DET_CTL_3_OFFSET);
+    addr_hit[37] = (reg_addr == SYSRST_CTRL_COM_OUT_CTL_0_OFFSET);
+    addr_hit[38] = (reg_addr == SYSRST_CTRL_COM_OUT_CTL_1_OFFSET);
+    addr_hit[39] = (reg_addr == SYSRST_CTRL_COM_OUT_CTL_2_OFFSET);
+    addr_hit[40] = (reg_addr == SYSRST_CTRL_COM_OUT_CTL_3_OFFSET);
+    addr_hit[41] = (reg_addr == SYSRST_CTRL_COMBO_INTR_STATUS_OFFSET);
+    addr_hit[42] = (reg_addr == SYSRST_CTRL_KEY_INTR_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -5601,7 +6645,15 @@ module sysrst_ctrl_reg_top (
                (addr_hit[31] & (|(SYSRST_CTRL_PERMIT[31] & ~reg_be))) |
                (addr_hit[32] & (|(SYSRST_CTRL_PERMIT[32] & ~reg_be))) |
                (addr_hit[33] & (|(SYSRST_CTRL_PERMIT[33] & ~reg_be))) |
-               (addr_hit[34] & (|(SYSRST_CTRL_PERMIT[34] & ~reg_be)))));
+               (addr_hit[34] & (|(SYSRST_CTRL_PERMIT[34] & ~reg_be))) |
+               (addr_hit[35] & (|(SYSRST_CTRL_PERMIT[35] & ~reg_be))) |
+               (addr_hit[36] & (|(SYSRST_CTRL_PERMIT[36] & ~reg_be))) |
+               (addr_hit[37] & (|(SYSRST_CTRL_PERMIT[37] & ~reg_be))) |
+               (addr_hit[38] & (|(SYSRST_CTRL_PERMIT[38] & ~reg_be))) |
+               (addr_hit[39] & (|(SYSRST_CTRL_PERMIT[39] & ~reg_be))) |
+               (addr_hit[40] & (|(SYSRST_CTRL_PERMIT[40] & ~reg_be))) |
+               (addr_hit[41] & (|(SYSRST_CTRL_PERMIT[41] & ~reg_be))) |
+               (addr_hit[42] & (|(SYSRST_CTRL_PERMIT[42] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -5709,64 +6761,96 @@ module sysrst_ctrl_reg_top (
 
 
 
-  assign com_sel_ctl_0_we = addr_hit[21] & reg_we & !reg_error;
+  assign com_pre_sel_ctl_0_we = addr_hit[21] & reg_we & !reg_error;
 
 
 
 
 
-  assign com_sel_ctl_1_we = addr_hit[22] & reg_we & !reg_error;
+  assign com_pre_sel_ctl_1_we = addr_hit[22] & reg_we & !reg_error;
 
 
 
 
 
-  assign com_sel_ctl_2_we = addr_hit[23] & reg_we & !reg_error;
+  assign com_pre_sel_ctl_2_we = addr_hit[23] & reg_we & !reg_error;
 
 
 
 
 
-  assign com_sel_ctl_3_we = addr_hit[24] & reg_we & !reg_error;
+  assign com_pre_sel_ctl_3_we = addr_hit[24] & reg_we & !reg_error;
 
 
 
 
 
-  assign com_det_ctl_0_we = addr_hit[25] & reg_we & !reg_error;
+  assign com_pre_det_ctl_0_we = addr_hit[25] & reg_we & !reg_error;
 
-  assign com_det_ctl_1_we = addr_hit[26] & reg_we & !reg_error;
+  assign com_pre_det_ctl_1_we = addr_hit[26] & reg_we & !reg_error;
 
-  assign com_det_ctl_2_we = addr_hit[27] & reg_we & !reg_error;
+  assign com_pre_det_ctl_2_we = addr_hit[27] & reg_we & !reg_error;
 
-  assign com_det_ctl_3_we = addr_hit[28] & reg_we & !reg_error;
+  assign com_pre_det_ctl_3_we = addr_hit[28] & reg_we & !reg_error;
 
-  assign com_out_ctl_0_we = addr_hit[29] & reg_we & !reg_error;
-
-
-
-
-  assign com_out_ctl_1_we = addr_hit[30] & reg_we & !reg_error;
+  assign com_sel_ctl_0_we = addr_hit[29] & reg_we & !reg_error;
 
 
 
 
-  assign com_out_ctl_2_we = addr_hit[31] & reg_we & !reg_error;
+
+  assign com_sel_ctl_1_we = addr_hit[30] & reg_we & !reg_error;
 
 
 
 
-  assign com_out_ctl_3_we = addr_hit[32] & reg_we & !reg_error;
+
+  assign com_sel_ctl_2_we = addr_hit[31] & reg_we & !reg_error;
 
 
 
 
-  assign combo_intr_status_we = addr_hit[33] & reg_we & !reg_error;
+
+  assign com_sel_ctl_3_we = addr_hit[32] & reg_we & !reg_error;
 
 
 
 
-  assign key_intr_status_we = addr_hit[34] & reg_we & !reg_error;
+
+  assign com_det_ctl_0_we = addr_hit[33] & reg_we & !reg_error;
+
+  assign com_det_ctl_1_we = addr_hit[34] & reg_we & !reg_error;
+
+  assign com_det_ctl_2_we = addr_hit[35] & reg_we & !reg_error;
+
+  assign com_det_ctl_3_we = addr_hit[36] & reg_we & !reg_error;
+
+  assign com_out_ctl_0_we = addr_hit[37] & reg_we & !reg_error;
+
+
+
+
+  assign com_out_ctl_1_we = addr_hit[38] & reg_we & !reg_error;
+
+
+
+
+  assign com_out_ctl_2_we = addr_hit[39] & reg_we & !reg_error;
+
+
+
+
+  assign com_out_ctl_3_we = addr_hit[40] & reg_we & !reg_error;
+
+
+
+
+  assign combo_intr_status_we = addr_hit[41] & reg_we & !reg_error;
+
+
+
+
+  assign key_intr_status_we = addr_hit[42] & reg_we & !reg_error;
 
 
 
@@ -5806,20 +6890,28 @@ module sysrst_ctrl_reg_top (
     reg_we_check[18] = key_intr_debounce_ctl_we;
     reg_we_check[19] = auto_block_debounce_ctl_we;
     reg_we_check[20] = auto_block_out_ctl_we;
-    reg_we_check[21] = com_sel_ctl_0_we;
-    reg_we_check[22] = com_sel_ctl_1_we;
-    reg_we_check[23] = com_sel_ctl_2_we;
-    reg_we_check[24] = com_sel_ctl_3_we;
-    reg_we_check[25] = com_det_ctl_0_we;
-    reg_we_check[26] = com_det_ctl_1_we;
-    reg_we_check[27] = com_det_ctl_2_we;
-    reg_we_check[28] = com_det_ctl_3_we;
-    reg_we_check[29] = com_out_ctl_0_we;
-    reg_we_check[30] = com_out_ctl_1_we;
-    reg_we_check[31] = com_out_ctl_2_we;
-    reg_we_check[32] = com_out_ctl_3_we;
-    reg_we_check[33] = combo_intr_status_we;
-    reg_we_check[34] = key_intr_status_we;
+    reg_we_check[21] = com_pre_sel_ctl_0_we;
+    reg_we_check[22] = com_pre_sel_ctl_1_we;
+    reg_we_check[23] = com_pre_sel_ctl_2_we;
+    reg_we_check[24] = com_pre_sel_ctl_3_we;
+    reg_we_check[25] = com_pre_det_ctl_0_we;
+    reg_we_check[26] = com_pre_det_ctl_1_we;
+    reg_we_check[27] = com_pre_det_ctl_2_we;
+    reg_we_check[28] = com_pre_det_ctl_3_we;
+    reg_we_check[29] = com_sel_ctl_0_we;
+    reg_we_check[30] = com_sel_ctl_1_we;
+    reg_we_check[31] = com_sel_ctl_2_we;
+    reg_we_check[32] = com_sel_ctl_3_we;
+    reg_we_check[33] = com_det_ctl_0_we;
+    reg_we_check[34] = com_det_ctl_1_we;
+    reg_we_check[35] = com_det_ctl_2_we;
+    reg_we_check[36] = com_det_ctl_3_we;
+    reg_we_check[37] = com_out_ctl_0_we;
+    reg_we_check[38] = com_out_ctl_1_we;
+    reg_we_check[39] = com_out_ctl_2_we;
+    reg_we_check[40] = com_out_ctl_3_we;
+    reg_we_check[41] = combo_intr_status_we;
+    reg_we_check[42] = key_intr_status_we;
   end
 
   // Read data return
@@ -5903,45 +6995,69 @@ module sysrst_ctrl_reg_top (
         reg_rdata_next = DW'(auto_block_out_ctl_qs);
       end
       addr_hit[21]: begin
-        reg_rdata_next = DW'(com_sel_ctl_0_qs);
+        reg_rdata_next = DW'(com_pre_sel_ctl_0_qs);
       end
       addr_hit[22]: begin
-        reg_rdata_next = DW'(com_sel_ctl_1_qs);
+        reg_rdata_next = DW'(com_pre_sel_ctl_1_qs);
       end
       addr_hit[23]: begin
-        reg_rdata_next = DW'(com_sel_ctl_2_qs);
+        reg_rdata_next = DW'(com_pre_sel_ctl_2_qs);
       end
       addr_hit[24]: begin
-        reg_rdata_next = DW'(com_sel_ctl_3_qs);
+        reg_rdata_next = DW'(com_pre_sel_ctl_3_qs);
       end
       addr_hit[25]: begin
-        reg_rdata_next = DW'(com_det_ctl_0_qs);
+        reg_rdata_next = DW'(com_pre_det_ctl_0_qs);
       end
       addr_hit[26]: begin
-        reg_rdata_next = DW'(com_det_ctl_1_qs);
+        reg_rdata_next = DW'(com_pre_det_ctl_1_qs);
       end
       addr_hit[27]: begin
-        reg_rdata_next = DW'(com_det_ctl_2_qs);
+        reg_rdata_next = DW'(com_pre_det_ctl_2_qs);
       end
       addr_hit[28]: begin
-        reg_rdata_next = DW'(com_det_ctl_3_qs);
+        reg_rdata_next = DW'(com_pre_det_ctl_3_qs);
       end
       addr_hit[29]: begin
-        reg_rdata_next = DW'(com_out_ctl_0_qs);
+        reg_rdata_next = DW'(com_sel_ctl_0_qs);
       end
       addr_hit[30]: begin
-        reg_rdata_next = DW'(com_out_ctl_1_qs);
+        reg_rdata_next = DW'(com_sel_ctl_1_qs);
       end
       addr_hit[31]: begin
-        reg_rdata_next = DW'(com_out_ctl_2_qs);
+        reg_rdata_next = DW'(com_sel_ctl_2_qs);
       end
       addr_hit[32]: begin
-        reg_rdata_next = DW'(com_out_ctl_3_qs);
+        reg_rdata_next = DW'(com_sel_ctl_3_qs);
       end
       addr_hit[33]: begin
-        reg_rdata_next = DW'(combo_intr_status_qs);
+        reg_rdata_next = DW'(com_det_ctl_0_qs);
       end
       addr_hit[34]: begin
+        reg_rdata_next = DW'(com_det_ctl_1_qs);
+      end
+      addr_hit[35]: begin
+        reg_rdata_next = DW'(com_det_ctl_2_qs);
+      end
+      addr_hit[36]: begin
+        reg_rdata_next = DW'(com_det_ctl_3_qs);
+      end
+      addr_hit[37]: begin
+        reg_rdata_next = DW'(com_out_ctl_0_qs);
+      end
+      addr_hit[38]: begin
+        reg_rdata_next = DW'(com_out_ctl_1_qs);
+      end
+      addr_hit[39]: begin
+        reg_rdata_next = DW'(com_out_ctl_2_qs);
+      end
+      addr_hit[40]: begin
+        reg_rdata_next = DW'(com_out_ctl_3_qs);
+      end
+      addr_hit[41]: begin
+        reg_rdata_next = DW'(combo_intr_status_qs);
+      end
+      addr_hit[42]: begin
         reg_rdata_next = DW'(key_intr_status_qs);
       end
       default: begin
@@ -6006,45 +7122,69 @@ module sysrst_ctrl_reg_top (
         reg_busy_sel = auto_block_out_ctl_busy;
       end
       addr_hit[21]: begin
-        reg_busy_sel = com_sel_ctl_0_busy;
+        reg_busy_sel = com_pre_sel_ctl_0_busy;
       end
       addr_hit[22]: begin
-        reg_busy_sel = com_sel_ctl_1_busy;
+        reg_busy_sel = com_pre_sel_ctl_1_busy;
       end
       addr_hit[23]: begin
-        reg_busy_sel = com_sel_ctl_2_busy;
+        reg_busy_sel = com_pre_sel_ctl_2_busy;
       end
       addr_hit[24]: begin
-        reg_busy_sel = com_sel_ctl_3_busy;
+        reg_busy_sel = com_pre_sel_ctl_3_busy;
       end
       addr_hit[25]: begin
-        reg_busy_sel = com_det_ctl_0_busy;
+        reg_busy_sel = com_pre_det_ctl_0_busy;
       end
       addr_hit[26]: begin
-        reg_busy_sel = com_det_ctl_1_busy;
+        reg_busy_sel = com_pre_det_ctl_1_busy;
       end
       addr_hit[27]: begin
-        reg_busy_sel = com_det_ctl_2_busy;
+        reg_busy_sel = com_pre_det_ctl_2_busy;
       end
       addr_hit[28]: begin
-        reg_busy_sel = com_det_ctl_3_busy;
+        reg_busy_sel = com_pre_det_ctl_3_busy;
       end
       addr_hit[29]: begin
-        reg_busy_sel = com_out_ctl_0_busy;
+        reg_busy_sel = com_sel_ctl_0_busy;
       end
       addr_hit[30]: begin
-        reg_busy_sel = com_out_ctl_1_busy;
+        reg_busy_sel = com_sel_ctl_1_busy;
       end
       addr_hit[31]: begin
-        reg_busy_sel = com_out_ctl_2_busy;
+        reg_busy_sel = com_sel_ctl_2_busy;
       end
       addr_hit[32]: begin
-        reg_busy_sel = com_out_ctl_3_busy;
+        reg_busy_sel = com_sel_ctl_3_busy;
       end
       addr_hit[33]: begin
-        reg_busy_sel = combo_intr_status_busy;
+        reg_busy_sel = com_det_ctl_0_busy;
       end
       addr_hit[34]: begin
+        reg_busy_sel = com_det_ctl_1_busy;
+      end
+      addr_hit[35]: begin
+        reg_busy_sel = com_det_ctl_2_busy;
+      end
+      addr_hit[36]: begin
+        reg_busy_sel = com_det_ctl_3_busy;
+      end
+      addr_hit[37]: begin
+        reg_busy_sel = com_out_ctl_0_busy;
+      end
+      addr_hit[38]: begin
+        reg_busy_sel = com_out_ctl_1_busy;
+      end
+      addr_hit[39]: begin
+        reg_busy_sel = com_out_ctl_2_busy;
+      end
+      addr_hit[40]: begin
+        reg_busy_sel = com_out_ctl_3_busy;
+      end
+      addr_hit[41]: begin
+        reg_busy_sel = combo_intr_status_busy;
+      end
+      addr_hit[42]: begin
         reg_busy_sel = key_intr_status_busy;
       end
       default: begin
