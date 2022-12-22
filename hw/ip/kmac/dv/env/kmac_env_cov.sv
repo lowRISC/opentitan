@@ -397,12 +397,12 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
                                                     bit        entropy_edn_mode);
     prescaler_val: coverpoint prescaler {
       bins zero_val   = {0};
-      bins lower_val  = {[1             : {9{1'b1}} / 2]};
+      bins lower_val  = {[1             : {9{1'b1}} / 2 - 1]};
       bins higher_val = {[{9{1'b1}} / 2 : {9{1'b1}}]};
     }
-    wait_timer_val: coverpoint prescaler {
+    wait_timer_val: coverpoint wait_timer {
       bins zero_val   = {0};
-      bins lower_val  = {[1              : {16{1'b1}} / 2]};
+      bins lower_val  = {[1              : {16{1'b1}} / 2 -1]};
       bins higher_val = {[{16{1'b1}} / 2 : {16{1'b1}}]};
     }
     entropy_edn_mode_enabled: coverpoint entropy_edn_mode;
