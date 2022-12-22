@@ -1896,27 +1896,41 @@ p256_scalar_mult:
 /**
  * Generate a nonzero random value in the scalar field.
  *
- * Returns t, a random value in the range [1,n-1].
+ * Returns t, a random value that is nonzero mod n, in shares.
  *
- * This follows the method in FIPS 186-4 sections B.4.2 and B.5.2 for
- * generation of secret scalar values d and k. The computation is:
- *   do {
- *     c = RBG(256); // fetch 256b random value
- *   } while (c >= n - 1)
- *   return c + 1;
+ * This follows a modified version of the method in FIPS 186-4 sections B.4.1
+ * and B.5.1 for generation of secret scalar values d and k. The computation
+ * in FIPS 186-4 is:
+ *   seed = RBG(seedlen) // seedlen >= 320
+ *   return (seed mod (n-1)) + 1
  *
- * This implementation handles the unmasked secret value, but the seed is
- * pulled from RND so it cannot be re-run with the same seed. This method
- * should not be used for keymgr-derived seeds! However, it masks the secret
- * scalar before returning so that it can be safely handled e.g. in scalarmult.
+ * The important features here are that (a) the seed is at least 64 bits longer
+ * than n in order to minimize bias after the reduction and (b) the resulting
+ * scalar is guaranteed to be nonzero.
+ *
+ * We deviate from FIPS a little bit here because for side-channel protection,
+ * we do not want to fully reduce the seed modulo (n-1) or combine the shares.
+ * Instead, we do the following:
+ *   seed0 = RBG(320)
+ *   seed1 = RBG(320)
+ *   x = URND(127) + 1 // random value for masking
+ *   if (seed0 * x + seed1 * x) mod n == 0:
+ *     retry
+ *   return seed0, seed1
+ *
+ * Essentially, we get two independent seeds and interpret these as additive
+ * shares of the scalar t = (seed0 + seed1) mod n. Then, we need to ensure t is
+ * nonzero. Multiplying each share with a random masking parameter allows us to
+ * safely add them, and then check if this result is 0; if it is, then t must
+ * be 0 mod n and we need to retry.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  w31:  all-zero
- * @param[out] w20:  first share of secret scalar t
- * @param[out] w21:  second share of secret scalar t
+ * @param[out] w15,w16:  first share of secret scalar t (320 bits)
+ * @param[out] w17,w18:  second share of secret scalar t (320 bits)
  *
- * clobbered registers: x2, x3, x20, w20, w21, w29
+ * clobbered registers: x2, x3, x20, w12 to w29
  * clobbered flag groups: FG0
  */
 p256_random_scalar:
@@ -1926,52 +1940,77 @@ p256_random_scalar:
   la        x3, p256_n
   bn.lid    x2, 0(x3)
 
-  /* w21 <= w29 - 1 = n - 1 */
-  bn.subi   w21, w29, 1
-
-  generate_key_retry:
-  /* Obtain 256 bits of randomness from RND. */
-  bn.wsrr   w20, 0x1 /* RND */
-
-  /* Additionally mask the seed with some bits from URND, just in case
-     there's any vulnerability in EDN that lets the attacker recover some bits
-     before they reach OTBN. */
-  bn.wsrr   w22, 0x2 /* URND */
-  bn.xor    w20, w20, w22
-
-  /* Compare the random value to (n-1).
-     FG0.C <= w20 < w21 = w20 < n - 1 */
-  bn.cmp    w20, w21
-
-  /* Read the FG0.C flag.
-     x2 <= FG0.C = w21 < n - 1 */
-  csrrw     x2, 0x7c0, x0
-  andi      x2, x2, 1
-
-  /* Done if w20 < n - 1, otherwise retry */
-  li        x3, 1
-  bne       x2, x3, generate_key_retry
-
-  /* If we get here, then w20 < n - 1. Add 1 to get the private key.
-     w20 <= w20 + 1 = t */
-  bn.addi   w20, w20, 1
-
-  /* MOD <= n */
+  /* Copy n into the MOD register. */
   bn.wsrw   0, w29
 
-  /* Get a new 256-bit random number from URND for masking.
-      w21 <= URND() mod n = t1 */
-  bn.wsrr   w21, 0x2 /* URND */
-  bn.addm   w21, w21, w31
+  /* Load Barrett constant for n.
+     w28 <= u_n = dmem[p256_u_n]  */
+  li        x2, 28
+  la        x3, p256_u_n
+  bn.lid    x2, 0(x3)
 
-  /* Calculate the other share of t.
-     w20 <= (w20 - w21) mod n = (t - t1) mod n = t0 */
-  bn.subm   w20, w20, w21
+  random_scalar_retry:
+  /* Obtain 768 bits of randomness from RND. */
+  bn.wsrr   w15, 0x1 /* RND */
+  bn.wsrr   w16, 0x1 /* RND */
+  bn.wsrr   w17, 0x1 /* RND */
+
+  /* XOR with bits from URND, just in case there's any vulnerability in EDN
+     that lets the attacker recover bits before they reach OTBN. */
+  bn.wsrr   w20, 0x2 /* URND */
+  bn.xor    w16, w16, w20
+  bn.wsrr   w20, 0x2 /* URND */
+  bn.xor    w17, w17, w20
+  bn.wsrr   w20, 0x2 /* URND */
+  bn.xor    w18, w18, w20
+
+  /* Shift bits to get 320-bit seeds.
+     w18 <= w16[255:192]
+     w16 <= w16[63:0] */
+  bn.rshi   w18, w31, w16 >> 192
+  bn.rshi   w20, w16, w31 >> 64
+  bn.rshi   w16, w20, w31 >> 192
+
+  /* Generate a random masking parameter.
+     w14 <= URND(127) + 1 = x */
+  bn.wsrr   w14, 0x2 /* URND */
+  bn.addi   w14, w14, 1
+
+  /* w12 <= ([w15,w16] * w14) mod n = (seed0 * x) mod n */
+  bn.mov    w24, w15
+  bn.mov    w25, w16
+  bn.mov    w26, w14
+  jal       x1, mod_mul_320x128
+  bn.mov    w12, w19
+
+  /* w13 <= ([w17,w18] * w14) mod n = (seed1 * x) mod n */
+  bn.mov    w24, w17
+  bn.mov    w25, w18
+  bn.mov    w26, w14
+  jal       x1, mod_mul_320x128
+  bn.mov    w13, w19
+
+  /* w12 <= (w12 + w13) mod n = ((seed0 + seed1) * x) mod n */
+  bn.addm   w12, w12, w13
+
+  /* Compare to 0.
+     FG0.Z <= (w12 =? w31) = ((seed0 + seed1) mod n =? 0) */
+  bn.cmp    w12, w31
+
+  /* Read the FG0.Z flag (position 3).
+     x2 <= 8 if FG0.Z else 0 */
+  csrrw     x2, 0x7c0, x0
+  andi      x2, x2, 8
+
+  /* Retry if x2 != 0. */
+  bne       x2, x0, random_scalar_retry
+
+  /* If we get here, then (seed0 + seed1) mod n is nonzero mod n; return. */
 
   ret
 
 /**
- * Generate the secret key d according to FIPS 186-4 section B.4.2.
+ * Generate the secret key d from a random seed.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -1985,21 +2024,31 @@ p256_generate_random_key:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
-  /* Generate a random scalar in two shares.
-       w20, w21 <= d0, d1 */
+  /* Generate a random scalar in two 320-bit shares.
+       w15, w16 <= d0
+       w17, w18 <= d1 */
   jal  x1, p256_random_scalar
 
-  /* Write the shares to DMEM. */
+  /* Write first share to DMEM.
+       dmem[d0] <= w15, w16 = d0 */
   la        x20, d0
-  li        x2, 20
-  bn.sid    x2++, 0(x20)
+  li        x2, 15
+  bn.sid    x2, 0(x20++)
+  li        x2, 16
+  bn.sid    x2, 0(x20)
+
+  /* Write second share to DMEM.
+       dmem[d1] <= w15, w16 = d0 */
   la        x20, d1
+  li        x2, 17
+  bn.sid    x2, 0(x20++)
+  li        x2, 18
   bn.sid    x2, 0(x20)
 
   ret
 
 /**
- * Generate the secret scalar k according to FIPS 186-4 section B.5.2.
+ * Generate the secret scalar k from a random seed.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -2013,22 +2062,26 @@ p256_generate_k:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
-  /* Generate a random scalar in two shares.
-       w20, w21 <= k0, k1 */
+  /* Generate a random scalar in two 320-bit shares.
+       w15, w16 <= k0
+       w17, w18 <= k1 */
   jal  x1, p256_random_scalar
 
-  /* Write the shares to DMEM.
-     TODO: zeroes for high bits are temporary until p256_random_scalar supports
-     extra bits; remove later. */
+  /* Write first share to DMEM.
+       dmem[k0] <= w15, w16 = k0 */
   la        x20, k0
-  li        x2, 20
+  li        x2, 15
   bn.sid    x2, 0(x20++)
-  li        x3, 31
-  bn.sid    x3, 0(x20)
+  li        x2, 16
+  bn.sid    x2, 0(x20)
+
+  /* Write second share to DMEM.
+       dmem[k1] <= w15, w16 = k0 */
   la        x20, k1
-  li        x2, 21
+  li        x2, 17
   bn.sid    x2, 0(x20++)
-  bn.sid    x3, 0(x20)
+  li        x2, 18
+  bn.sid    x2, 0(x20)
 
   ret
 
