@@ -151,6 +151,8 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @python3_toolchains//... \
     @remotejdk11_linux//... \
     @riscv-compliance//... \
+    @rules_foreign_cc//toolchains/... \
+    @rust_analyzer_nightly-2022-09-21_srcs//... \
     @rust_linux_x86_64__x86_64-unknown-linux-gnu_tools//... \
     @rust_opentitan_rv32imc__riscv32imc-unknown-none-elf//... \
     @rust_opentitan_rv32imc__riscv32imc-unknown-none-elf_tools//...

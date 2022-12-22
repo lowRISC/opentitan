@@ -222,17 +222,27 @@ jobs:
       #   because //... effectively asks to build //hw:verilator_real and other
       #   targets in //hw:all that depend on it. Note that this is only a
       #   shallow exclusion; tests deeper under //hw will still be found.
+      # * It excludes targets that depend on bitstream_splice rules, since the
+      #   environment does not have access to Vivado.
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
+      TARGET_PATTERN_FILE=$(mktemp)
+      echo //... > "${TARGET_PATTERN_FILE}"
+      echo -//quality/... >> "${TARGET_PATTERN_FILE}"
+      echo -//third_party/riscv-compliance/... >> "${TARGET_PATTERN_FILE}"
+      echo -//hw:all >> "${TARGET_PATTERN_FILE}"
+      ./bazelisk.sh cquery \
+        --noinclude_aspects \
+        --output=starlark \
+        --starlark:expr='"-{}".format(target.label)' \
+        --define DISABLE_VERILATOR_BUILD=true \
+        -- "rdeps(//..., kind(bitstream_splice, //...))" \
+        >> "${TARGET_PATTERN_FILE}"
       ci/bazelisk.sh test \
-      --build_tests_only=false \
-      --test_output=errors \
-      --define DISABLE_VERILATOR_BUILD=true \
-      --build_tag_filters=-vivado \
-      --test_tag_filters=-broken,-cw310,-verilator,-dv \
-      -- //... \
-      -//quality/... \
-      -//third_party/riscv-compliance/... \
-      -//hw:all
+        --build_tests_only=false \
+        --test_output=errors \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --test_tag_filters=-broken,-cw310,-verilator,-dv \
+        --target_pattern_file="${TARGET_PATTERN_FILE}"
     displayName: Build & test SW
   - bash: |
       set -x -e
