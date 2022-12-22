@@ -24,10 +24,22 @@ sudo ip netns exec airgapped sudo -u "$USER" bash -c \
   "export BAZEL_BITSTREAMS_CACHE=$(pwd)/bazel-airgapped/bitstreams-cache;
   export BITSTREAM=\"--offline latest\";
   export BAZEL_PYTHON_WHEELS_REPO=$(pwd)/bazel-airgapped/ot_python_wheels;
+  TARGET_PATTERN_FILE=\$(mktemp)
+  echo //sw/device/silicon_creator/... > \"\${TARGET_PATTERN_FILE}\"
+  bazel-airgapped/bazel cquery \
+    --distdir=$(pwd)/bazel-airgapped/bazel-distdir \
+    --repository_cache=$(pwd)/bazel-airgapped/bazel-cache \
+    --noinclude_aspects \
+    --output=starlark \
+    --starlark:expr='\"-{}\".format(target.label)' \
+    --define DISABLE_VERILATOR_BUILD=true \
+    -- \"rdeps(//..., kind(bitstream_splice, //...))\" \
+    >> \"\${TARGET_PATTERN_FILE}\"
+  echo Building target pattern:
+  cat \"\${TARGET_PATTERN_FILE}\"
   bazel-airgapped/bazel build \
     --distdir=$(pwd)/bazel-airgapped/bazel-distdir \
     --repository_cache=$(pwd)/bazel-airgapped/bazel-cache \
     --define DISABLE_VERILATOR_BUILD=true \
-    --build_tag_filters=-vivado \
-    //sw/device/silicon_creator/..."
+    --target_pattern_file=\"\${TARGET_PATTERN_FILE}\""
 exit 0
