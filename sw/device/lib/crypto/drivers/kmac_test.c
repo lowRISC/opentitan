@@ -8,9 +8,14 @@
 #include "sw/device/lib/crypto/drivers/kmac_test_vectors.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
+#include "sw/device/lib/crypto/include/mac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+
+// Use this as the second share of the key. We need 512-bit for the max key
+// size.
+static const uint32_t kZeroVector[512 / 32] = {0};
 
 OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
@@ -48,13 +53,18 @@ bool test_main(void) {
     digest_buf.data = digest;
     digest_buf.len = current_test_vector->digest_len;
 
+    kmac_blinded_key_t kmac_key = {
+        .share0 = (uint32_t *)current_test_vector->key,
+        .share1 = kZeroVector,
+        .len = current_test_vector->key_len,
+    };
+
     err = kmac_init(current_test_vector->operation,
                     current_test_vector->security_str);
     CHECK(err == kKmacOk);
 
     if (current_test_vector->operation == kKmacOperationKMAC) {
-      err = kmac_write_key_block(current_test_vector->key,
-                                 current_test_vector->key_len);
+      err = kmac_write_key_block(&kmac_key);
       CHECK(err == kKmacOk);
     }
 
@@ -76,15 +86,38 @@ bool test_main(void) {
   // Below we repeat some of the test above, but through higher-level
   // cryptolib API. The gist is to test if glueing is done correctly.
   for (i = 0; i < nist_kmac_nr_of_vectors; i++) {
-    current_test_vector = nist_kmac_vectors[i];
-    // Skip CSHAKE and KMAC because they are not connected yet
-    if (current_test_vector->operation == kKmacOperationKMAC) {
-      continue;
-    }
-
     LOG_INFO("Testing cryptolib API (glueing) #%d", i);
+    current_test_vector = nist_kmac_vectors[i];
+
     hash_mode_t hash_mode;
     xof_mode_t xof_mode;
+    mac_mode_t mac_mode;
+
+    // Reserve keyblob large enough to accommodate:
+    // 1) Key with max size (512 bits)
+    // 2) Both shares of this key (hence, 2 * 512)
+    uint32_t keyblob[2 * 512 / 32];
+
+    for (size_t j = 0; j < current_test_vector->key_len / 2; j++) {
+      keyblob[j] =
+          j < current_test_vector->key_len / 4
+              ? read_32(current_test_vector->key + sizeof(uint32_t) * j)
+              : 0;
+    }
+
+    crypto_blinded_key_t key = {
+        .config =
+            {
+                .key_mode = current_test_vector->security_str ==
+                                    kKmacSecurityStrength128
+                                ? kKeyModeKmac128
+                                : kKeyModeKmac256,
+                .key_length = current_test_vector->key_len,
+                .hw_backed = kHardenedBoolFalse,
+            },
+        .keyblob_length = 2 * current_test_vector->key_len,
+        .keyblob = keyblob,
+    };
 
     crypto_const_uint8_buf_t input_buf = {
         .data = current_test_vector->input_str,
@@ -111,6 +144,7 @@ bool test_main(void) {
         xof_mode = (current_test_vector->operation == kKmacOperationSHAKE)
                        ? kXofModeSha3Shake128
                        : kXofModeSha3Cshake128;
+        mac_mode = kMacModeKmac128;
         break;
       case kKmacSecurityStrength224:
         hash_mode = kHashModeSha3_224;
@@ -120,6 +154,7 @@ bool test_main(void) {
                        ? kXofModeSha3Shake256
                        : kXofModeSha3Cshake256;
         hash_mode = kHashModeSha3_256;
+        mac_mode = kMacModeKmac256;
         break;
       case kKmacSecurityStrength384:
         hash_mode = kHashModeSha3_384;
@@ -141,6 +176,10 @@ bool test_main(void) {
         break;
       case kKmacOperationSHA3:
         err_status = otcrypto_hash(input_buf, hash_mode, &digest_buf);
+        break;
+      case kKmacOperationKMAC:
+        err_status = otcrypto_mac(&key, input_buf, mac_mode, cust_str,
+                                  current_test_vector->digest_len, &digest_buf);
         break;
       default:
         return false;

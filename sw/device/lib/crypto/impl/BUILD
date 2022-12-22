@@ -50,3 +50,17 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "mac",
+    srcs = ["mac.c"],
+    hdrs = [
+        "//sw/device/lib/crypto/drivers:kmac.h",
+        "//sw/device/lib/crypto/include:datatypes.h",
+        "//sw/device/lib/crypto/include:mac.h",
+    ],
+    deps = [
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/crypto/drivers:kmac",
+    ],
+)

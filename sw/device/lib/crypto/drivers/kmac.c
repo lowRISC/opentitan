@@ -62,6 +62,12 @@ static const crypto_const_uint8_buf_t kKmacFuncNameKMAC = {
     .len = 4,
 };
 
+// Empty string
+static const crypto_const_uint8_buf_t kKmacEmptyString = {
+    .data = NULL,
+    .len = 0,
+};
+
 OT_ASSERT_ENUM_VALUE(kKmacPrefixMaxSize, 4 * KMAC_PREFIX_MULTIREG_COUNT - 4);
 OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength128,
                      KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L128);
@@ -189,38 +195,26 @@ static kmac_error_t kmac_get_keccak_rate_bytes(kmac_security_str_t security_str,
   return kKmacOk;
 }
 
-/**
- * Return the key length (in bytes) for kmac_key_len_t enum value.
- *
- * The caller must ensure that `key_len_bytes` is not a NULL pointer. This is
- * not checked within this function.
- *
- * @param key_len kmac_key_len_t enum value as input.
- * @param key_len_bytes The length of the key in bytes.
- * @return Error code.
- */
-OT_WARN_UNUSED_RESULT
-static kmac_error_t kmac_get_key_len_bytes(kmac_key_len_t key_len,
-                                           size_t *key_len_bytes) {
-  // Convert key lengths to byte unit
+kmac_error_t kmac_get_key_len_bytes(size_t key_len,
+                                    kmac_key_len_t *key_len_enum) {
   switch (key_len) {
-    case kKmacKeyLength128:
-      *key_len_bytes = 128 / 8;
+    case 128 / 8:
+      *key_len_enum = kKmacKeyLength128;
       break;
-    case kKmacKeyLength192:
-      *key_len_bytes = 192 / 8;
+    case 192 / 8:
+      *key_len_enum = kKmacKeyLength192;
       break;
-    case kKmacKeyLength256:
-      *key_len_bytes = 256 / 8;
+    case 256 / 8:
+      *key_len_enum = kKmacKeyLength256;
       break;
-    case kKmacKeyLength384:
-      *key_len_bytes = 384 / 8;
+    case 384 / 8:
+      *key_len_enum = kKmacKeyLength384;
       break;
-    case kKmacKeyLength512:
-      *key_len_bytes = 512 / 8;
+    case 512 / 8:
+      *key_len_enum = kKmacKeyLength512;
       break;
     default:
-      return kKmacArgsError;
+      return kKmacUnsupportedKeySizeError;
   }
   return kKmacOk;
 }
@@ -484,22 +478,20 @@ kmac_error_t kmac_write_prefix_block(kmac_operation_t operation,
   return kKmacArgsError;
 }
 
-kmac_error_t kmac_write_key_block(const uint8_t *key, kmac_key_len_t key_len) {
-  uint32_t key_len_reg = KMAC_KEY_LEN_REG_RESVAL;
-  key_len_reg =
-      bitfield_field32_write(key_len_reg, KMAC_KEY_LEN_LEN_FIELD, key_len);
-  abs_mmio_write32(kKmacBaseAddr + KMAC_KEY_LEN_REG_OFFSET, key_len_reg);
-
-  size_t key_len_bytes;
-  kmac_error_t err = kmac_get_key_len_bytes(key_len, &key_len_bytes);
+kmac_error_t kmac_write_key_block(kmac_blinded_key_t *key) {
+  kmac_key_len_t key_len_enum;
+  kmac_error_t err = kmac_get_key_len_bytes(key->len, &key_len_enum);
   if (err != kKmacOk) {
     return err;
   }
 
-  uint32_t *word_ptr = (uint32_t *)key;
-  for (size_t i = 0; i < key_len_bytes; i += 4) {
-    abs_mmio_write32(kKmacKeyShare0Addr + i, *word_ptr++);
-    abs_mmio_write32(kKmacKeyShare1Addr + i, 0x00);
+  uint32_t key_len_reg = bitfield_field32_write(
+      KMAC_KEY_LEN_REG_RESVAL, KMAC_KEY_LEN_LEN_FIELD, key_len_enum);
+  abs_mmio_write32(kKmacBaseAddr + KMAC_KEY_LEN_REG_OFFSET, key_len_reg);
+
+  for (size_t i = 0; i < key->len; i += 4) {
+    abs_mmio_write32(kKmacKeyShare0Addr + i, key->share0[i / 4]);
+    abs_mmio_write32(kKmacKeyShare1Addr + i, key->share1[i / 4]);
   }
 
   return kKmacOk;
@@ -738,4 +730,50 @@ kmac_error_t kmac_cshake_256(crypto_const_uint8_buf_t message,
   }
 
   return kmac_process_msg_blocks(kKmacOperationCSHAKE, message, digest);
+}
+
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_kmac_128(kmac_blinded_key_t *key,
+                           crypto_const_uint8_buf_t message,
+                           crypto_const_uint8_buf_t cust_str,
+                           crypto_uint8_buf_t *digest) {
+  kmac_error_t err = kmac_init(kKmacOperationKMAC, kKmacSecurityStrength128);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  err = kmac_write_key_block(key);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  err = kmac_write_prefix_block(kKmacOperationKMAC, kKmacEmptyString, cust_str);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  return kmac_process_msg_blocks(kKmacOperationKMAC, message, digest);
+}
+
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_kmac_256(kmac_blinded_key_t *key,
+                           crypto_const_uint8_buf_t message,
+                           crypto_const_uint8_buf_t cust_str,
+                           crypto_uint8_buf_t *digest) {
+  kmac_error_t err = kmac_init(kKmacOperationKMAC, kKmacSecurityStrength256);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  err = kmac_write_key_block(key);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  err = kmac_write_prefix_block(kKmacOperationKMAC, kKmacEmptyString, cust_str);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  return kmac_process_msg_blocks(kKmacOperationKMAC, message, digest);
 }

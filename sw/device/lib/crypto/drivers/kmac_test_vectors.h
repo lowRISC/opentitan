@@ -15,7 +15,7 @@ typedef struct kmac_test_vector {
   uint8_t *custom_str;
   size_t custom_str_len;
   uint8_t *key;
-  kmac_key_len_t key_len;
+  size_t key_len;
   uint8_t *input_str;
   size_t input_str_len;
   uint8_t *digest;
