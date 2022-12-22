@@ -293,6 +293,48 @@ OT_WARN_UNUSED_RESULT
 kmac_error_t kmac_shake_256(crypto_const_uint8_buf_t message,
                             crypto_uint8_buf_t *digest);
 
+/**
+ * Compute CSHAKE-128 in one-shot.
+ *
+ * Warning: The caller must ensure that `digest->len` contains the
+ * requested digest length (in bytes).
+ *
+ * The caller must ensure that `message` and `digest` have properly
+ * allocated `data` fields whose length matches their `len` fields.
+ *
+ * @param message The input message.
+ * @param func_name The function name.
+ * @param cust_str The customization string.
+ * @param digest The digest buffer to return the result.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_cshake_128(crypto_const_uint8_buf_t message,
+                             crypto_const_uint8_buf_t func_name,
+                             crypto_const_uint8_buf_t cust_str,
+                             crypto_uint8_buf_t *digest);
+
+/**
+ * Compute CSHAKE-256 in one-shot.
+ *
+ * Warning: The caller must ensure that `digest->len` contains the
+ * requested digest length (in bytes).
+ *
+ * The caller must ensure that `message` and `digest` have properly
+ * allocated `data` fields whose length matches their `len` fields.
+ *
+ * @param message The input message.
+ * @param func_name The function name.
+ * @param cust_str The customization string.
+ * @param digest The digest buffer to return the result.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_cshake_256(crypto_const_uint8_buf_t message,
+                             crypto_const_uint8_buf_t func_name,
+                             crypto_const_uint8_buf_t cust_str,
+                             crypto_uint8_buf_t *digest);
+
 #ifdef __cplusplus
 }
 #endif

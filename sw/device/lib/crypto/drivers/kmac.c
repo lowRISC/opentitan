@@ -703,3 +703,39 @@ kmac_error_t kmac_shake_256(crypto_const_uint8_buf_t message,
 
   return kmac_process_msg_blocks(kKmacOperationSHAKE, message, digest);
 }
+
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_cshake_128(crypto_const_uint8_buf_t message,
+                             crypto_const_uint8_buf_t func_name,
+                             crypto_const_uint8_buf_t cust_str,
+                             crypto_uint8_buf_t *digest) {
+  kmac_error_t err = kmac_init(kKmacOperationCSHAKE, kKmacSecurityStrength128);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  err = kmac_write_prefix_block(kKmacOperationCSHAKE, func_name, cust_str);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  return kmac_process_msg_blocks(kKmacOperationCSHAKE, message, digest);
+}
+
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_cshake_256(crypto_const_uint8_buf_t message,
+                             crypto_const_uint8_buf_t func_name,
+                             crypto_const_uint8_buf_t cust_str,
+                             crypto_uint8_buf_t *digest) {
+  kmac_error_t err = kmac_init(kKmacOperationCSHAKE, kKmacSecurityStrength256);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  err = kmac_write_prefix_block(kKmacOperationCSHAKE, func_name, cust_str);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  return kmac_process_msg_blocks(kKmacOperationCSHAKE, message, digest);
+}

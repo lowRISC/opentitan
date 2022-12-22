@@ -78,8 +78,7 @@ bool test_main(void) {
   for (i = 0; i < nist_kmac_nr_of_vectors; i++) {
     current_test_vector = nist_kmac_vectors[i];
     // Skip CSHAKE and KMAC because they are not connected yet
-    if (current_test_vector->operation == kKmacOperationCSHAKE ||
-        current_test_vector->operation == kKmacOperationKMAC) {
+    if (current_test_vector->operation == kKmacOperationKMAC) {
       continue;
     }
 
@@ -97,25 +96,29 @@ bool test_main(void) {
         .len = current_test_vector->digest_len,
     };
 
-    crypto_uint8_buf_t func_name = {
+    crypto_const_uint8_buf_t func_name = {
         .data = current_test_vector->func_name,
         .len = current_test_vector->func_name_len,
     };
 
-    crypto_uint8_buf_t cust_str = {
+    crypto_const_uint8_buf_t cust_str = {
         .data = current_test_vector->custom_str,
         .len = current_test_vector->custom_str_len,
     };
 
     switch (current_test_vector->security_str) {
       case kKmacSecurityStrength128:
-        xof_mode = kXofModeSha3Shake128;
+        xof_mode = (current_test_vector->operation == kKmacOperationSHAKE)
+                       ? kXofModeSha3Shake128
+                       : kXofModeSha3Cshake128;
         break;
       case kKmacSecurityStrength224:
         hash_mode = kHashModeSha3_224;
         break;
       case kKmacSecurityStrength256:
-        xof_mode = kXofModeSha3Shake256;
+        xof_mode = (current_test_vector->operation == kKmacOperationSHAKE)
+                       ? kXofModeSha3Shake256
+                       : kXofModeSha3Cshake256;
         hash_mode = kHashModeSha3_256;
         break;
       case kKmacSecurityStrength384:
@@ -130,6 +133,8 @@ bool test_main(void) {
 
     crypto_status_t err_status;
     switch (current_test_vector->operation) {
+      case kKmacOperationCSHAKE:
+        OT_FALLTHROUGH_INTENDED;
       case kKmacOperationSHAKE:
         err_status = otcrypto_xof(input_buf, xof_mode, func_name, cust_str,
                                   digest_buf.len, &digest_buf);
