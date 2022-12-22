@@ -11,7 +11,7 @@ readonly REPO_TOP
 
 verbose='false'
 print_usage() {
-  printf "Usage: $0 [-v] <bazel target label>"
+  printf "Usage: $0 [-v] <bazel target label> [bazel options...]"
 }
 
 while getopts 'v' flag; do
