@@ -681,3 +681,25 @@ kmac_error_t kmac_sha3_512(crypto_const_uint8_buf_t message,
 
   return kmac_process_msg_blocks(kKmacOperationSHA3, message, digest);
 }
+
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_shake_128(crypto_const_uint8_buf_t message,
+                            crypto_uint8_buf_t *digest) {
+  kmac_error_t err = kmac_init(kKmacOperationSHAKE, kKmacSecurityStrength128);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  return kmac_process_msg_blocks(kKmacOperationSHAKE, message, digest);
+}
+
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_shake_256(crypto_const_uint8_buf_t message,
+                            crypto_uint8_buf_t *digest) {
+  kmac_error_t err = kmac_init(kKmacOperationSHAKE, kKmacSecurityStrength256);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  return kmac_process_msg_blocks(kKmacOperationSHAKE, message, digest);
+}

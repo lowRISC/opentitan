@@ -97,3 +97,49 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
 
   return kCryptoStatusOK;
 }
+
+OT_WARN_UNUSED_RESULT
+crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
+                             xof_mode_t xof_mode,
+                             crypto_uint8_buf_t function_name_string,
+                             crypto_uint8_buf_t customization_string,
+                             size_t required_output_len,
+                             crypto_uint8_buf_t *digest) {
+  // TODO: (#16410) Add error checks
+  if (required_output_len != digest->len) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // According to NIST SP 800-185 Section 3.2, cSHAKE call should use SHAKE, if
+  // both `customization_string` and `function_name_string` are empty string
+  if (customization_string.len == 0 && function_name_string.len == 0) {
+    if (xof_mode == kXofModeSha3Cshake128) {
+      xof_mode = kXofModeSha3Shake128;
+    } else if (xof_mode == kXofModeSha3Cshake256) {
+      xof_mode = kXofModeSha3Shake256;
+    }
+  }
+
+  kmac_error_t err;
+  switch (xof_mode) {
+    case kXofModeSha3Shake128:
+      err = kmac_shake_128(input_message, digest);
+      break;
+    case kXofModeSha3Shake256:
+      err = kmac_shake_256(input_message, digest);
+      break;
+    case kXofModeSha3Cshake128:
+      break;
+    case kXofModeSha3Cshake256:
+      break;
+    default:
+      return kCryptoStatusBadArgs;
+  }
+
+  // TODO: (#14549, #16410) Revisit KMAC error flow
+  if (err != kKmacOk) {
+    return kCryptoStatusBadArgs;
+  }
+
+  return kCryptoStatusOK;
+}
