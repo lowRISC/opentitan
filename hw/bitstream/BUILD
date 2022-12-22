@@ -79,6 +79,7 @@ filegroup(
 
 filegroup(
     name = "rom_mmi",
+    testonly = True,
     srcs = select({
         "bitstream_skip": ["skip.bit"],
         "bitstream_vivado": ["//hw/bitstream/vivado:rom_mmi"],
@@ -89,6 +90,7 @@ filegroup(
 
 filegroup(
     name = "otp_mmi",
+    testonly = True,
     srcs = select({
         "bitstream_skip": ["skip.bit"],
         "bitstream_vivado": ["//hw/bitstream/vivado:otp_mmi"],
