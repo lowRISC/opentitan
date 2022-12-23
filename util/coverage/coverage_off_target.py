@@ -82,6 +82,7 @@ def gather_and_build_libs() -> List[str]:
         "//sw/device/lib/crypto/...",
         "//sw/device/lib/arch/...",
         "//sw/device/lib/ujson/...",
+        "//sw/device/lib/base:hardened_status",
         "//sw/device/lib/base:status",
         "//sw/device/lib/base:mmio_on_device_do_not_use_directly",
         "//sw/device/lib/base:mmio_on_host_do_not_use_directly",
