@@ -43,7 +43,7 @@
   uvm_test: i2c_base_test
   uvm_test_seq: i2c_base_vseq
 
-  run_opts: ["+cdc_instrumentation_enabled=1"]
+  run_opts: ["+cdc_instrumentation_enabled=0"]
 
   // List of test specifications.
   tests: [
@@ -202,6 +202,11 @@
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
     }
+    {
+      name: i2c_loopback
+      uvm_test_seq: i2c_llpbk_vseq
+      run_opts: ["+en_scb=0", "+i2c_loopback=1", "+i2c_agent_mode=Host"]
+    }
   ]
 
   // List of regressions.
@@ -213,10 +218,10 @@
     {
       name : host_sanity
       tests: ["i2c_host_smoke", "i2c_host_override", "i2c_host_perf",
-              "i2c_host_fifo_watermark", "i2c_host_fifo_overflow", "i2c_host_fifo_reset_fmt",
-              "i2c_host_rx_oversample",  "i2c_host_stretch_timeout",
-              "i2c_host_fifo_fmt_empty", "i2c_host_fifo_reset_rx", "i2c_host_timeout",
-              "i2c_host_fifo_full",
+              "i2c_host_fifo_watermark", "i2c_host_fifo_overflow",
+              "i2c_host_fifo_reset_fmt", "i2c_host_fifo_full",
+              "i2c_host_rx_oversample", "i2c_host_stretch_timeout",
+              "i2c_host_fifo_fmt_empty", "i2c_host_fifo_reset_rx",
               "i2c_host_error_intr"]
     }
     {

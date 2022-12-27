@@ -36,6 +36,7 @@ class i2c_monitor extends dv_base_monitor #(
 
   virtual task run_phase(uvm_phase phase);
     wait(cfg.vif.rst_ni);
+    if (cfg.loopback_mode) proc_loopback();
     if (cfg.if_mode == Host) begin
       i2c_item full_item;
       bit skip_the_loop;
@@ -436,4 +437,74 @@ class i2c_monitor extends dv_base_monitor #(
   function bit is_target_addr(bit [6:0] addr);
     return (addr == cfg.target_addr0 || addr == cfg.target_addr1);
   endfunction
+
+  task proc_loopback;
+    int loopback_wait_timeout_ns = 1_000_000; // 1ms
+    bit [7:0] send_data;
+    `DV_WAIT(cfg.loopback_st == 1,, loopback_wait_timeout_ns, "proc_loopback")
+    `uvm_info(`gfn, "Monitor loopback mode start", UVM_MEDIUM)
+    fork
+      forever begin
+        target_loopback_address();
+        if (mon_dut_item.bus_op == BusOpRead) begin
+          while (!mon_dut_item.stop) begin
+            for (int i = 7; i >= 0; i--) begin
+              cfg.vif.sample_target_data(cfg.timing_cfg, mon_data[i]);
+              `uvm_info(`gfn, $sformatf("\nmonitor, target_read, trans %0d, byte %0d, bit[%0d] %0b",
+                      mon_dut_item.tran_id, mon_dut_item.num_data+1, i, mon_data[i]), UVM_HIGH)
+            end
+            cfg.vif.wait_for_host_ack_or_nack(cfg.timing_cfg, mon_dut_item.ack, mon_dut_item.nack);
+            `DV_CHECK_NE_FATAL({mon_dut_item.ack, mon_dut_item.nack}, 2'b11)
+            `uvm_info(`gfn, $sformatf("\nmonitor, target_read detect HOST %s",
+                                    (mon_dut_item.ack) ? "ACK" : "NO_ACK"), UVM_MEDIUM)
+            send_data = cfg.lb_data_q.pop_front();
+            `DV_CHECK_CASE_EQ(mon_data, send_data, "loopback data check")
+            if (mon_dut_item.nack) begin
+              cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
+                                                   mon_dut_item.rstart,
+                                                   mon_dut_item.stop);
+            `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
+              `uvm_info(`gfn, $sformatf("\nmonitor, target_read, detect HOST %s",
+                                        (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_MEDIUM)
+            end
+          end
+        end else begin
+          cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
+                                               mon_dut_item.rstart,
+                                               mon_dut_item.stop);
+        end
+        mon_dut_item.clear_data();
+      end
+    join_none
+  endtask
+
+  task target_loopback_address();
+    bit r_bit = 1'b0;
+    if (mon_dut_item.stop ||
+        (!mon_dut_item.stop && !mon_dut_item.start && !mon_dut_item.rstart)) begin
+      cfg.vif.wait_for_host_start(cfg.timing_cfg);
+      `uvm_info(`gfn, "\nmonitor, detect HOST START", UVM_MEDIUM)
+    end else begin
+      mon_dut_item.rstart = 1'b1;
+    end
+    mon_dut_item.tran_id = num_dut_tran;
+    mon_dut_item.start = 1'b1;
+    // collecting address
+    for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
+      cfg.vif.p_edge_scl();
+      mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
+      `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]),
+                UVM_HIGH)
+    end
+    `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_MEDIUM)
+    cfg.vif.p_edge_scl();
+    r_bit = cfg.vif.cb.sda_i;
+    `uvm_info(`gfn, $sformatf("\nmonitor, rw %d", r_bit), UVM_MEDIUM)
+    mon_dut_item.bus_op = (r_bit) ? BusOpRead : BusOpWrite;
+
+    // expect target ack
+    cfg.vif.sample_target_data(cfg.timing_cfg, r_bit);
+
+    `DV_CHECK_CASE_EQ(r_bit, 1'b0)
+  endtask
 endclass : i2c_monitor

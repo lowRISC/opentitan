@@ -28,7 +28,10 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   virtual task run_phase(uvm_phase phase);
     fork
       reset_signals();
-      get_and_drive();
+      begin
+        if (cfg.loopback_mode) proc_loopback();
+        else get_and_drive();
+      end
       begin
         if (cfg.if_mode == Host) drive_scl();
       end
@@ -37,6 +40,28 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
       end
       proc_hot_glitch();
     join_none
+  endtask
+
+  task proc_loopback;
+    int loopback_wait_timeout_ns = 1000_000_000; // 1s
+    int num_bytes;
+    int idx;
+    `uvm_info(`gfn, "LB driver loopback mode", UVM_HIGH)
+    `DV_WAIT(cfg.loopback_st == 1,, loopback_wait_timeout_ns, "proc_loopback")
+    `uvm_info(`gfn, "Driver loopback mode start", UVM_MEDIUM)
+    if (cfg.if_mode == Device) begin
+      `uvm_error(`gfn, "if_mode == Device doesn't support loopback")
+    end else begin
+      repeat (5) begin
+        `uvm_info(`gfn, $sformatf("iter:%0d", idx++), UVM_MEDIUM)
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_bytes,
+                                           num_bytes dist { [1:cfg.loopback_num_bytes] := 1,
+                                                            cfg.loopback_num_bytes := 1};)
+        loopback_write_data(cfg.loopback_num_bytes);
+        loopback_read_data(cfg.loopback_num_bytes);
+      end
+    end
+    cfg.loopback_st = 0;
   endtask
 
   virtual task get_and_drive();
@@ -302,6 +327,59 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   task add_stop();
     `uvm_info(`gfn, "proc_hot_glitch: add stop", UVM_MEDIUM)
     cfg.host_scl_force_low = 1;
+    cfg.host_scl_stop = 1;
+    cfg.vif.host_stop(cfg.timing_cfg);
+  endtask
+
+  task loopback_write_data(int num);
+    bit [7:0] send_data;
+
+    cfg.vif.host_start(cfg.timing_cfg);
+    cfg.host_scl_start = 1;
+    send_data = cfg.lb_addr;
+    for (int i = 7; i >= 0; i--) begin
+      cfg.vif.host_data(cfg.timing_cfg, send_data[i]);
+    end
+    // Wait one more cycle for ack
+    cfg.vif.wait_scl(.iter(1), .tc(cfg.timing_cfg));
+
+    repeat (num) begin
+      send_data = $urandom();
+      cfg.lb_data_q.push_back(send_data);
+      for (int i = 7; i >= 0; i--) begin
+        cfg.vif.host_data(cfg.timing_cfg, send_data[i]);
+      end
+      // Wait one more cycle for ack
+      cfg.vif.wait_scl(.iter(1), .tc(cfg.timing_cfg));
+    end
+    cfg.host_scl_stop = 1;
+    cfg.vif.host_stop(cfg.timing_cfg);
+  endtask
+
+  task loopback_read_data(int num);
+    bit [7:0] cmd;
+
+    cfg.vif.host_start(cfg.timing_cfg);
+    cfg.host_scl_start = 1;
+    cmd = cfg.lb_addr;
+    cmd[0] = 1'b1;
+
+    for (int i = 7; i >= 0; i--) begin
+      cfg.vif.host_data(cfg.timing_cfg, cmd[i]);
+    end
+    // Wait one more cycle for ack
+    cfg.vif.wait_scl(.iter(1), .tc(cfg.timing_cfg));
+
+    repeat ((num - 1)) begin
+      // Wait for read data and send ack
+      cfg.vif.wait_scl(.iter(8), .tc(cfg.timing_cfg));
+      cfg.vif.host_data(cfg.timing_cfg, 0);
+    end
+    // Wait for read data and send nack
+    cfg.vif.wait_scl(.iter(8), .tc(cfg.timing_cfg));
+    cfg.vif.host_data(cfg.timing_cfg, 1);
+
+    wait (cfg.vif.scl_i == 1);
     cfg.host_scl_stop = 1;
     cfg.vif.host_stop(cfg.timing_cfg);
   endtask

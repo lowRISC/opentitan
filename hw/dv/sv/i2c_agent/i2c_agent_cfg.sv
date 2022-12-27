@@ -59,6 +59,14 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   // reset agent only without resetting dut
   bit       agent_rst = 0;
 
+  // loopback mode enable.
+  // driver send random binary and monitor captured return data.
+  bit     loopback_mode = 0;
+  bit     loopback_st = 0;
+  int     loopback_num_bytes = 0;
+  bit [7:0] lb_data_q[$];
+  bit [7:0] lb_addr;
+
   `uvm_object_utils_begin(i2c_agent_cfg)
     `uvm_field_int(en_monitor,                                UVM_DEFAULT)
     `uvm_field_enum(i2c_target_addr_mode_e, target_addr_mode, UVM_DEFAULT)

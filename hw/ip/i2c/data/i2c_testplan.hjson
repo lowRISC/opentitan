@@ -444,5 +444,16 @@
       stage: V2
       tests: ["i2c_target_hrst"]
     }
+    {
+      name: line_loop_back
+      desc: '''
+            Test line loopback mode.
+            Set CTRL.LLPBK to 1 and disable host and target.
+            Send random binary from the driver and check retrun data
+            from the monitor.
+            '''
+      stage: V2
+      tests: ["i2c_loopback"]
+    }
   ]
 }
