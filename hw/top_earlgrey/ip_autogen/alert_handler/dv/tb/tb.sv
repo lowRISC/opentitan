@@ -46,19 +46,21 @@ module tb;
     assign alert_host_if[k].alert_rx.ack_n  = alert_rx[k].ack_n;
     assign alert_host_if[k].alert_rx.ping_p = alert_rx[k].ping_p;
     assign alert_host_if[k].alert_rx.ping_n = alert_rx[k].ping_n;
+    assign alert_handler_if.alert_ping_reqs[k] = dut.gen_alerts[k].u_alert_receiver.ping_req_i;
     initial begin
       uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.alert_host_agent[%0d]", k),
                                                 "vif", alert_host_if[k]);
     end
   end
 
+
   for (genvar k = 0; k < NUM_ESCS; k++) begin : gen_esc_if
     assign esc_rx[k].resp_p = esc_device_if[k].esc_rx.resp_p;
     assign esc_rx[k].resp_n = esc_device_if[k].esc_rx.resp_n;
     assign esc_device_if[k].esc_tx.esc_p = esc_tx[k].esc_p;
     assign esc_device_if[k].esc_tx.esc_n = esc_tx[k].esc_n;
-    // TODO: add assertions to check the probed signal
     assign probe_if[k].esc_en = dut.esc_sig_req[k];
+    assign alert_handler_if.esc_ping_reqs[k] = dut.gen_esc_sev[k].u_esc_sender.ping_req_i;
     initial begin
       uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.esc_device_agent[%0d]", k),
                                                 "vif", esc_device_if[k]);

@@ -43,7 +43,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
   bit [NUM_ALERT_CLASSES-1:0] crashdump_triggered = 0;
 
-  bit ping_triggered, ping_timer_en;
+  bit ping_timer_en;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifo[NUM_ALERTS];
@@ -99,7 +99,6 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
             `DV_CHECK(alert_en, $sformatf("alert %0s ping triggered but not enabled", index))
             `DV_CHECK((`gmv(ral.alert_regwen[index]) == 0),
                       $sformatf("alert %0s ping triggered but not locked", index))
-            ping_triggered = 1;
           end
 
           if (alert_en) begin
@@ -144,7 +143,6 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
             if (loc_alert_en) process_alert_sig(index, 1, LocalEscIntFail);
           // escalation ping timeout
           end else if (act_item.alert_esc_type == AlertEscPingTrans) begin
-            ping_triggered = 1;
             if (act_item.ping_timeout) begin
               bit loc_alert_en = ral.loc_alert_en_shadowed[LocalEscPingFail].get_mirrored_value();
               if (loc_alert_en) begin
@@ -496,7 +494,6 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           begin
             check_ping_triggered_cycles();
             num_checked_pings++;
-            ping_triggered = 0;
             if (cfg.en_cov) cov.num_checked_pings_cg.sample(num_checked_pings);
           end
         join_any
@@ -512,24 +509,24 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   // can not guarantee the random alert index is valid (exists), enabld, and locked.
   // However, esc ping timer should are always expected to trigger.
   // So the max wait time is 'hFFFF*2.
+  // This task also used the probed design signal instead of detected ping requests from monitor.
+  // Because if esc ping request and real esc request come at the same time, design will ignore the
+  // ping requests. But the probed signal will still set to 1.
   virtual task check_ping_triggered_cycles();
     int ping_wait_cycs;
-    fork begin : isolation_fork
-      fork
-        begin
-          while (ping_wait_cycs <= MAX_PING_WAIT_CYCLES * 2) begin
-            cfg.clk_rst_vif.wait_clks(1);
-            ping_wait_cycs++;
-          end
-          `uvm_error(`gfn, "Timeout occured waiting for a ping.");
-        end
-        begin
-          wait(ping_triggered);
-        end
-      join_any
-      disable fork;
-    end join
+    while (ping_wait_cycs <= MAX_PING_WAIT_CYCLES * 2) begin
+      if (cfg.alert_handler_vif.alert_ping_reqs > 0) break;
+      if (cfg.alert_handler_vif.esc_ping_reqs > 0) break;
+      cfg.clk_rst_vif.wait_clks(1);
+      ping_wait_cycs++;
+    end
+    if (ping_wait_cycs > MAX_PING_WAIT_CYCLES * 2) begin
+      `uvm_error(`gfn, "Timeout occured waiting for a ping.");
+    end
     if (cfg.en_cov) cov.cycles_between_pings_cg.sample(ping_wait_cycs);
+
+    // Wait for ping request to finish to avoid infinite loop.
+    wait (cfg.alert_handler_vif.alert_ping_reqs == 0 && cfg.alert_handler_vif.esc_ping_reqs == 0);
   endtask
 
   virtual task check_crashdump();
