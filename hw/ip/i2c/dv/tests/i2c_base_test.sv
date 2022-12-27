@@ -23,7 +23,7 @@ class i2c_base_test extends cip_base_test #(.ENV_T(i2c_env),
     cfg.m_i2c_agent_cfg.if_mode = mode;
     void'($value$plusargs("use_intr_handler=%0b", cfg.use_intr_handler));
     void'($value$plusargs("slow_acq=%0b", cfg.slow_acq));
-
+    void'($value$plusargs("i2c_loopback=%0d", cfg.m_i2c_agent_cfg.loopback_mode));
   endfunction : build_phase
 
 endclass : i2c_base_test

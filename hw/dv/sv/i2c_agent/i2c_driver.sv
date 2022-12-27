@@ -28,7 +28,10 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   virtual task run_phase(uvm_phase phase);
     fork
       reset_signals();
-      get_and_drive();
+      begin
+        if (cfg.loopback_mode) proc_loopback();
+        else get_and_drive();
+      end
       begin
         if (cfg.if_mode == Host) drive_scl();
       end
@@ -38,6 +41,13 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     join_none
   endtask
 
+  task proc_loopback;
+    int loopback_wait_timeout_ns = 1_000_000; // 1ms
+    `JDBG(("LB driver loopback mode"))
+    `DV_WAIT(cfg.loopback_st == 1,, loopback_wait_timeout_ns, "proc_loopback")
+    `uvm_info(`gfn, "Driver loopback mode start", UVM_MEDIUM)
+
+  endtask
 
   virtual task get_and_drive();
     i2c_item req;

@@ -36,6 +36,7 @@ class i2c_monitor extends dv_base_monitor #(
 
   virtual task run_phase(uvm_phase phase);
     wait(cfg.vif.rst_ni);
+    if (cfg.loopback_mode) proc_loopback();
     if (cfg.if_mode == Host) begin
       bit r_bit = 1'b0;
       i2c_item full_item;
@@ -383,4 +384,11 @@ class i2c_monitor extends dv_base_monitor #(
       end
     end
   endtask
+
+  task proc_loopback;
+    int loopback_wait_timeout_ns = 1_000_000; // 1ms
+    `DV_WAIT(cfg.loopback_st == 1,, loopback_wait_timeout_ns, "proc_loopback")
+    `uvm_info(`gfn, "Monitor loopback mode start", UVM_MEDIUM)
+  endtask
+
 endclass : i2c_monitor

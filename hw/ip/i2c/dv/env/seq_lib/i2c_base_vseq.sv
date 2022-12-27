@@ -280,7 +280,6 @@ class i2c_base_vseq extends cip_base_vseq #(
       ral.ctrl.enabletarget.set(1'b1);
       ral.ctrl.llpbk.set(1'b0);
       csr_update(ral.ctrl);
-      // TODO: more initialization for the host running Target mode
       ral.target_id.address0.set(target_addr0);
       ral.target_id.mask0.set(7'h7f);
       ral.target_id.address1.set(target_addr1);
