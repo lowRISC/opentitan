@@ -8,9 +8,13 @@ interface alert_handler_if(input clk, input rst_n);
   import alert_pkg::*;
   import prim_mubi_pkg::*;
   import cip_base_pkg::*;
+  import alert_handler_env_pkg::*;
 
   mubi4_t [NLpg-1:0] lpg_cg_en;
   mubi4_t [NLpg-1:0] lpg_rst_en;
+
+  logic [NUM_ALERTS-1:0] alert_ping_reqs;
+  logic [NUM_ESCS-1:0]   esc_ping_reqs;
 
   string msg_id = "alert_handler_if";
 
