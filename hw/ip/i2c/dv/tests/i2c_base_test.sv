@@ -26,6 +26,7 @@ class i2c_base_test extends cip_base_test #(.ENV_T(i2c_env),
     void'($value$plusargs("i2c_wr_pct=%0d", cfg.wr_pct));
     void'($value$plusargs("i2c_rd_pct=%0d", cfg.rd_pct));
     void'($value$plusargs("i2c_bad_addr_pct=%0d", cfg.bad_addr_pct));
+    void'($value$plusargs("i2c_loopback=%0d", cfg.m_i2c_agent_cfg.loopback_mode));
   endfunction : build_phase
 
 endclass : i2c_base_test

@@ -35,8 +35,8 @@ class i2c_host_rx_oversample_vseq extends i2c_rx_tx_vseq;
       // force derived timing parameters to be positive (correct DUT config)
       // This should be tied to 'get_timing_values' in i2c_base_vseq.sv
       // To avoid tClockLow 'min tlow should be greater than 5
-      tlow    inside {[(t_r + tsu_dat + thd_dat + 2) :
-                       (t_r + tsu_dat + thd_dat + 2) + cfg.seq_cfg.i2c_time_range]};
+      tlow    inside {[(t_r + tsu_dat + thd_dat + cfg.host_sync_delay) :
+                       (t_r + tsu_dat + thd_dat + cfg.host_sync_delay) + cfg.seq_cfg.i2c_time_range]};
       t_buf   inside {[(tsu_sta - t_r + 1) :
                        (tsu_sta - t_r + 1) + cfg.seq_cfg.i2c_time_range]};
       t_sda_unstable     inside {[0 : t_r + thigh + t_f - 1]};

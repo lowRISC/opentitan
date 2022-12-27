@@ -51,6 +51,9 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   int        sent_ack_stop = 0;
   int        rcvd_ack_stop = 0;
 
+  // clock path delay introduced by synchromizer.
+  int        host_sync_delay = 2;
+  int        target_sync_delay = 5;
   i2c_scoreboard scb_h;
   virtual    i2c_dv_if i2c_dv_vif;
 
