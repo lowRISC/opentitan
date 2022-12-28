@@ -104,7 +104,7 @@ def gather_and_build_libs() -> List[str]:
     log.info(f"incompatible libraries: {pformat(device_libs_incompat)}")
     device_libs = list(set(device_libs_all) - set(device_libs_incompat))
     log.info(f"instrumented libraries: {pformat(device_libs)}")
-    run(BAZEL, "build", "--config=coverage_clang", *device_libs)
+    run(BAZEL, "build", "--config=ot_coverage_off_target", *device_libs)
 
     return device_libs
 
@@ -162,7 +162,7 @@ def measure_unit_test_coverage(merged_profile: Path):
     # Gather and run all test targets.
     test_targets = run(BAZEL, "query", TEST_TARGETS_QUERY)
     log.info(f"test targets: {pformat(test_targets)}")
-    run(BAZEL, "coverage", "--config=coverage_clang", *test_targets)
+    run(BAZEL, "coverage", "--config=ot_coverage_off_target", *test_targets)
     # Merge profile data of individual tests.
     [TESTLOGS] = run(BAZEL, "info", "bazel-testlogs")
     profile_files = [
