@@ -18,7 +18,7 @@ class alert_handler_entropy_stress_vseq extends alert_handler_smoke_vseq;
   constraint valid_mask_val_c {
     forced_mask_val >= 'h7;
     $onehot(32'(forced_mask_val) + 1) == 1;
-  };
+  }
 
   constraint num_pings_c {
     if (forced_mask_val > 'hf0) {
