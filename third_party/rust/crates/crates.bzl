@@ -21,6 +21,7 @@ _DEPENDENCIES = {
         "crc": "@raze__crc__3_0_0//:crc",
         "deser-hjson": "@raze__deser_hjson__1_0_2//:deser_hjson",
         "directories": "@raze__directories__4_0_1//:directories",
+        "dotenv": "@raze__dotenv__0_15_0//:dotenv",
         "env_logger": "@raze__env_logger__0_8_4//:env_logger",
         "erased-serde": "@raze__erased_serde__0_3_23//:erased_serde",
         "hex": "@raze__hex__0_4_3//:hex",
@@ -304,6 +305,8 @@ def raze_fetch_remote_crates(
         directories__4_0_1=None,
 
         dirs_sys__0_3_7=None,
+
+        dotenv__0_15_0=None,
 
         encode_unicode__0_3_6=None,
 
@@ -1385,6 +1388,24 @@ def raze_fetch_remote_crates(
             sha256 = "1b1d1d91c932ef41c0f2663aa8b0ca0342d444d842c06914aa0a7e352d0bada6",
             strip_prefix = "dirs-sys-0.3.7",
             build_file = Label("//third_party/rust/crates/remote:BUILD.dirs-sys-0.3.7.bazel"),
+        )
+
+    if dotenv__0_15_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__dotenv__0_15_0",
+            path = dotenv__0_15_0,
+            build_file = "//third_party/rust/crates/remote:BUILD.dotenv-0.15.0.bazel",
+        )
+    else:
+        maybe(
+            http_archive,
+            name = "raze__dotenv__0_15_0",
+            url = "https://crates.io/api/v1/crates/dotenv/0.15.0/download",
+            type = "tar.gz",
+            sha256 = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f",
+            strip_prefix = "dotenv-0.15.0",
+            build_file = Label("//third_party/rust/crates/remote:BUILD.dotenv-0.15.0.bazel"),
         )
 
     if encode_unicode__0_3_6:

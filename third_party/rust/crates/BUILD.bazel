@@ -94,6 +94,15 @@ alias(
 )
 
 alias(
+    name = "dotenv",
+    actual = "@raze__dotenv__0_15_0//:dotenv",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "env_logger",
     actual = "@raze__env_logger__0_8_4//:env_logger",
     tags = [
