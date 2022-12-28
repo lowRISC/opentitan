@@ -26,20 +26,25 @@ build --workspace_status_command=util/get_workspace_status.sh
 # --config=riscv32
 build:riscv32 --platforms=@crt//platforms/riscv32:opentitan
 
-# Configuration for clang's source-based coverage instrumentation. Enable with
-# `--config=coverage_clang`. Bazel seems to support this only partially, thus we have to
-# perform some additional processing. See
+# Shared configuration for clang's source-based coverage instrumentation.
+# Bazel seems to support this only partially, thus we have to perform some
+# additional processing. See
 # https://github.com/bazelbuild/bazel/commit/21b5eb627d78c09d47c4de957e9e6b56a9ae6fad
 # and `util/coverage/coverage_off_target.py`.
-build:coverage_clang --repo_env=CC=clang
-build:coverage_clang --repo_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1
-build:coverage_clang --java_runtime_version=remotejdk_11
-build:coverage_clang --collect_code_coverage
-coverage:coverage_clang --repo_env=GCOV=/usr/bin/llvm-profdata
-coverage:coverage_clang --repo_env=BAZEL_LLVM_COV=/usr/bin/llvm-cov
-# Docs state that bazel will fail to create coverage information if tests have been
-# cached previously. See https://bazel.build/configure/coverage?hl=en#remote-execution
-coverage:coverage_clang --nocache_test_results
+build:ot_coverage --repo_env='CC=clang'
+build:ot_coverage --repo_env='BAZEL_USE_LLVM_NATIVE_COVERAGE=1'
+build:ot_coverage --java_runtime_version='remotejdk_11'
+# Docs state that bazel will fail to create coverage information if tests have
+# been cached previously. See
+# https://bazel.build/configure/coverage?hl=en#remote-execution
+coverage:ot_coverage --nocache_test_results
+
+# Configuration for measuring off-target coverage. Enable with
+# `--config=ot_coverage_off_target`.
+build:ot_coverage_off_target --config='ot_coverage'
+build:ot_coverage_off_target --collect_code_coverage
+coverage:ot_coverage_off_target --repo_env='GCOV=/usr/bin/llvm-profdata'
+coverage:ot_coverage_off_target --repo_env='BAZEL_LLVM_COV=/usr/bin/llvm-cov'
 
 # Configuration to override resource constrained test
 # scheduling. Enable with `--config=local_test_jobs_per_cpus`

@@ -75,7 +75,7 @@ class TestExtractProfileData(unittest.TestCase):
         self.assertEqual(calls[0][0][:2], (coverage_off_target.BAZEL, "query"))
         self.assertEqual(calls[1][0][:2], (coverage_off_target.BAZEL, "cquery"))
         self.assertEqual(calls[2][0], (coverage_off_target.BAZEL, "build",
-                                       "--config=coverage_clang", *libs))
+                                       "--config=ot_coverage_off_target", *libs))
 
     @patch("coverage_off_target.run")
     def test_create_merged_library(self, mock_run):
@@ -115,7 +115,7 @@ class TestExtractProfileData(unittest.TestCase):
         self.assertEqual(len(calls), 4)
         self.assertEqual(calls[0][0][:2], (coverage_off_target.BAZEL, "query"))
         self.assertEqual(calls[1][0], (coverage_off_target.BAZEL, "coverage",
-                                       "--config=coverage_clang", *tests))
+                                       "--config=ot_coverage_off_target", *tests))
         self.assertEqual(calls[2][0],
                          (coverage_off_target.BAZEL, "info", "bazel-testlogs"))
         self.assertEqual(
