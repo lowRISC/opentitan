@@ -35,8 +35,6 @@ build:coverage_clang --repo_env=CC=clang
 build:coverage_clang --repo_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1
 build:coverage_clang --java_runtime_version=remotejdk_11
 build:coverage_clang --collect_code_coverage
-build:coverage_clang --copt='-O0'
-build:coverage_clang --cxxopt='-O0'
 coverage:coverage_clang --repo_env=GCOV=/usr/bin/llvm-profdata
 coverage:coverage_clang --repo_env=BAZEL_LLVM_COV=/usr/bin/llvm-cov
 # Docs state that bazel will fail to create coverage information if tests have been
