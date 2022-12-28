@@ -50,11 +50,11 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
   }
 
   constraint regwen_c {
-    clr_regwen         dist {[0:'1-1] :/ 4, '1 :/ 6};
-    class_regwen       dist {[0:'1-1] :/ 4, '1 :/ 6};
-    alert_regwen       dist {[0:'1-1] :/ 4, '1 :/ 6};
-    local_alert_regwen dist {[0:'1-1] :/ 4, '1 :/ 6};
-    ping_timer_regwen  dist { 0 :/ 4      ,  1 :/ 6};
+    clr_regwen         dist {[0:'1-1'b1] :/ 4, '1 :/ 6};
+    class_regwen       dist {[0:'1-1'b1] :/ 4, '1 :/ 6};
+    alert_regwen       dist {[0:'1-1'b1] :/ 4, '1 :/ 6};
+    local_alert_regwen dist {[0:'1-1'b1] :/ 4, '1 :/ 6};
+    ping_timer_regwen  dist { 0 :/ 4         ,  1 :/ 6};
   }
 
   constraint enable_one_alert_c {
