@@ -46,6 +46,18 @@ build:ot_coverage_off_target --collect_code_coverage
 coverage:ot_coverage_off_target --repo_env='GCOV=/usr/bin/llvm-profdata'
 coverage:ot_coverage_off_target --repo_env='BAZEL_LLVM_COV=/usr/bin/llvm-cov'
 
+# Configuration for measuring on-target coverage. Enable with
+# `--config=ot_coverage_on_target`.
+build:ot_coverage_on_target --config='ot_coverage'
+build:ot_coverage_on_target --platforms="@crt//platforms/riscv32:opentitan"
+build:ot_coverage_on_target --define='measure_coverage_on_target=true'
+# Instrument selectively to limit size overhead when measuring on-target coverage.
+# Note: We have to disable optimizations until the corresponding item in #16761 is
+# resolved.
+build:ot_coverage_on_target --per_file_copt='//sw/device/silicon_creator[/:].*,//sw/device/lib/base:.*@-fprofile-instr-generate,-fcoverage-mapping,-O0'
+# Needed to be able to build host binaries while collecting coverage.
+coverage:ot_coverage_on_target --platforms=""
+
 # Configuration to override resource constrained test
 # scheduling. Enable with `--config=local_test_jobs_per_cpus`
 test:local_test_jobs_per_cpus --local_test_jobs=HOST_CPUS*0.22
