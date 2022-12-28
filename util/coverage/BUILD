@@ -29,6 +29,14 @@ py_test(
 )
 
 py_test(
+    name = "functest_coverage_test",
+    srcs = [
+        "functest_coverage.py",
+        "functest_coverage_test.py",
+    ],
+)
+
+py_test(
     name = "coverage_test",
     srcs = [
         "coverage.py",
