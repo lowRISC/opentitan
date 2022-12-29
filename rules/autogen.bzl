@@ -49,7 +49,7 @@ def _hjson_header(ctx):
         ),
     ]
 
-autogen_hjson_header = rule(
+_autogen_hjson_header = rule(
     implementation = _hjson_header,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
@@ -64,6 +64,12 @@ autogen_hjson_header = rule(
         ),
     },
 )
+
+def autogen_hjson_header(tags = [], **kwargs):
+    _autogen_hjson_header(
+        tags = tags + ["no-remote-exec"],
+        **kwargs
+    )
 
 def _chip_info(ctx):
     header = ctx.actions.declare_file("chip_info.h")

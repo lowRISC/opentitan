@@ -237,4 +237,5 @@ rust_test(
         "gpio": "$(location :gpio)",
         "pinmux_config": "$(location :pinmux_config)",
     },
+    tags = ["no-remote-exec"],  # File operations incompatible with remote execution API
 )
