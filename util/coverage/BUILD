@@ -27,3 +27,14 @@ py_test(
         "unittest_coverage_test.py",
     ],
 )
+
+py_test(
+    name = "coverage_test",
+    srcs = [
+        "coverage.py",
+        "coverage_test.py",
+    ],
+    deps = [
+        requirement("typer"),
+    ],
+)
