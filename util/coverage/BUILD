@@ -19,3 +19,11 @@ py_test(
         "common_test.py",
     ],
 )
+
+py_test(
+    name = "unittest_coverage_test",
+    srcs = [
+        "unittest_coverage.py",
+        "unittest_coverage_test.py",
+    ],
+)
