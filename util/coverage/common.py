@@ -52,9 +52,9 @@ class LogLevel(str, Enum):
 
 
 class CoverageType(str, Enum):
-    UNITTEST: str = "unittest"
-    FUNCTEST: str = "functest"
-    E2ETEST: str = "e2etest"
+    UNITTEST: str = "unit"
+    FUNCTEST: str = "func"
+    E2ETEST: str = "e2e"
 
 
 class BazelTestType(str, Enum):
