@@ -13,12 +13,9 @@ py_test(
 )
 
 py_test(
-    name = "coverage_off_target_test",
+    name = "common_test",
     srcs = [
-        "coverage_off_target.py",
-        "coverage_off_target_test.py",
-    ],
-    deps = [
-        requirement("typer"),
+        "common.py",
+        "common_test.py",
     ],
 )
