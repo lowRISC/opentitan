@@ -52,6 +52,15 @@ module tb;
     .sda_io(sda)
   );
 
+  i2c_dv_if i2c_dv_if(
+    .clk(clk),
+    .rst_n(rst_n)
+  );
+
+  `define I2C_HIER tb.dut.i2c_core
+
+  assign i2c_dv_if.i2c_state = `I2C_HIER.u_i2c_fsm.state_q;
+
   // Model PAD behavior
   i2c_port_conv i2c_port_conv (
     .scl_oe_i(cio_scl_en),
@@ -129,8 +138,8 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual i2c_if)::set(null, "*.env.m_i2c_agent*", "vif", i2c_if);
+    uvm_config_db#(virtual i2c_dv_if)::set(null, "*.env", "i2c_dv_vif", i2c_dv_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
-
 endmodule : tb

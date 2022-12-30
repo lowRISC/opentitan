@@ -16,13 +16,14 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   bit [7:0]  lastbyte;
 
   int        spinwait_timeout_ns = 10_000_000; // 10ms
-  int        long_spinwait_timeout_ns = 200_000_000;
+  int        long_spinwait_timeout_ns = 400_000_000;
   int        sent_acq_cnt;
   int        rcvd_acq_cnt;
 
   // Ratio between write and read
   int        wr_pct = 1;
   int        rd_pct = 1;
+  int        bad_addr_pct = 0;
 
   // re-start injection rate between 1~10
   int        rs_pct = 1;
@@ -51,6 +52,7 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   int        rcvd_ack_stop = 0;
 
   i2c_scoreboard scb_h;
+  virtual    i2c_dv_if i2c_dv_vif;
 
   `uvm_object_utils_begin(i2c_env_cfg)
     `uvm_field_object(m_i2c_agent_cfg, UVM_DEFAULT)

@@ -16,6 +16,8 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
 
   bit     host_scl_start;
   bit     host_scl_stop;
+  bit     host_scl_force_high;
+  bit     host_scl_force_low;
 
   // In i2c test, between every transaction, assuming a new timing
   // parameter is programmed. This means during a transaction,
@@ -41,6 +43,21 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   // ack followed by stop test mode
   bit     allow_ack_stop = 0;
   bit     ack_stop_det = 0;
+  bit     allow_bad_addr = 0;
+  // target address is stored when dut is programmed
+  bit [6:0] target_addr0;
+  bit [6:0] target_addr1;
+  // store history of good and bad read target address
+  // '1' good. '0' bad
+  bit       read_addr_q[$];
+  bit       valid_addr;
+  bit       is_read;
+
+  // when this is set, driver can send 's' or 'p' in the middle of txn
+  bit       hot_glitch;
+
+  // reset agent only without resetting dut
+  bit       agent_rst = 0;
 
   `uvm_object_utils_begin(i2c_agent_cfg)
     `uvm_field_int(en_monitor,                                UVM_DEFAULT)
