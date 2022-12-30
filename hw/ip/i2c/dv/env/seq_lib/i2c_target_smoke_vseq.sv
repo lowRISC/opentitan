@@ -51,6 +51,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
       expected_intr[CmdComplete] = 1;
       for (int i = 0; i < NumI2cIntr; i++) intr_q.push_back(i);
     end
+    if (cfg.bad_addr_pct > 0) cfg.m_i2c_agent_cfg.allow_bad_addr = 1;
   endtask
 
   virtual task body();
@@ -60,8 +61,9 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
     `uvm_info(`gfn, $sformatf("num_trans:%0d", num_trans), UVM_MEDIUM)
     // Intialize dut in device mode and agent in host mode
     initialization(Device);
-    `uvm_info("cfg_summary", $sformatf("target_addr0:0x%x target_addr1:0x%x num_trans:%0d",
-                             target_addr0, target_addr1, num_trans), UVM_MEDIUM)
+    `uvm_info("cfg_summary",
+              $sformatf("target_addr0:0x%x target_addr1:0x%x illegal_addr:0x%x num_trans:%0d",
+                             target_addr0, target_addr1, illegal_addr, num_trans), UVM_MEDIUM)
     print_time_property();
 
     fork

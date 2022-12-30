@@ -27,6 +27,9 @@ interface i2c_if(
 
   int scl_spinwait_timeout_ns = 10_000_000; // 10ms
 
+  // Trace drivers' status
+  drv_phase_e drv_phase;
+
   clocking cb @(posedge clk_i);
     input scl_i;
     input sda_i;
@@ -67,10 +70,14 @@ interface i2c_if(
   task automatic wait_for_host_start(ref timing_cfg_t tc);
     forever begin
       @(negedge sda_i);
+      if (scl_i) begin
       wait_for_dly(tc.tHoldStart);
+      end else continue;
       @(negedge scl_i);
+      if (!sda_i) begin
       wait_for_dly(tc.tClockStart);
       break;
+      end else continue;
     end
   endtask: wait_for_host_start
 

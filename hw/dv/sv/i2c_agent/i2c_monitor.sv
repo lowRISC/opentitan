@@ -37,11 +37,14 @@ class i2c_monitor extends dv_base_monitor #(
   virtual task run_phase(uvm_phase phase);
     wait(cfg.vif.rst_ni);
     if (cfg.if_mode == Host) begin
-      bit r_bit = 1'b0;
       i2c_item full_item;
+      bit skip_the_loop;
       fork
         forever begin
           wait(cfg.en_monitor);
+          cfg.valid_addr = 0;
+          skip_the_loop = 0;
+          cfg.vif.drv_phase = DrvIdle;
           if (mon_dut_item.stop ||
               (!mon_dut_item.stop && !mon_dut_item.start && !mon_dut_item.rstart)) begin
             cfg.vif.wait_for_host_start(cfg.timing_cfg);
@@ -51,24 +54,8 @@ class i2c_monitor extends dv_base_monitor #(
           end
           mon_dut_item.tran_id = num_dut_tran;
           mon_dut_item.start = 1'b1;
-          // collecting address
-          for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
-            cfg.vif.p_edge_scl();
-            mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
-            `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]),
-                            UVM_HIGH)
-          end
-          `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_MEDIUM)
-          cfg.vif.p_edge_scl();
-          r_bit = cfg.vif.cb.sda_i;
-          `uvm_info(`gfn, $sformatf("\nmonitor, rw %d", r_bit), UVM_MEDIUM)
-          mon_dut_item.bus_op = (r_bit) ? BusOpRead : BusOpWrite;
-
-          // expect target ack
-          cfg.vif.sample_target_data(cfg.timing_cfg, r_bit);
-
-          `DV_CHECK_CASE_EQ(r_bit, 1'b0)
-
+          target_addr(skip_the_loop);
+          if (skip_the_loop) continue;
           if (mon_dut_item.bus_op == BusOpRead) target_read();
           else target_write();
 
@@ -271,6 +258,42 @@ class i2c_monitor extends dv_base_monitor #(
     end
   endtask : monitor_ready_to_end
 
+  task target_addr(ref bit skip);
+    bit r_bit = 1'b0;
+    skip = 0;
+    cfg.vif.drv_phase = DrvAddr;
+    // collecting address
+    for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
+      cfg.vif.p_edge_scl();
+      mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
+      `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]),
+                UVM_HIGH)
+    end
+    `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_MEDIUM)
+    cfg.vif.p_edge_scl();
+    r_bit = cfg.vif.cb.sda_i;
+    `uvm_info(`gfn, $sformatf("\nmonitor, rw %d", r_bit), UVM_MEDIUM)
+    mon_dut_item.bus_op = (r_bit) ? BusOpRead : BusOpWrite;
+    cfg.valid_addr = is_target_addr(mon_dut_item.addr);
+    cfg.is_read = r_bit;
+
+    if (mon_dut_item.bus_op == BusOpRead) begin
+      cfg.read_addr_q.push_back(cfg.valid_addr);
+    end
+    `uvm_info(`gfn, $sformatf("allow_bad_addr : %0d is_target_addr:%0d",
+                              cfg.allow_bad_addr, cfg.valid_addr), UVM_MEDIUM)
+    if (cfg.allow_bad_addr & !cfg.valid_addr) begin
+      // skip rest of transaction and wait for next start
+      `uvm_info(`gfn, $sformatf("illegal address :0x%x", mon_dut_item.addr), UVM_MEDIUM)
+      mon_dut_item.clear_all();
+      skip = 1;
+    end else begin
+      // expect target addr ack
+      cfg.vif.sample_target_data(cfg.timing_cfg, r_bit);
+      `DV_CHECK_CASE_EQ(r_bit, 1'b0)
+    end
+  endtask
+
   // Rewrite read / write task using glitch free edge functions.
   task target_read();
     mon_dut_item.stop   = 1'b0;
@@ -282,10 +305,12 @@ class i2c_monitor extends dv_base_monitor #(
     // Previous data collecting thread replied on nack / stop
     // For ack / stop test, this thread need to be forked with
     // separate ack_stop_monitor
+    cfg.vif.drv_phase = DrvRd;
+
     fork begin
       fork
         // This data collecting thread is closed upon setting mon_rstart
-        // mon_rstart is set when ack_stop_mon task detect ack / stop event
+        // mon_rstart, when ack_stop_mon task detect ack / stop event
         while (!mon_dut_item.stop && !mon_dut_item.rstart) begin
           // ask driver response read data
           mon_dut_item.drv_type = RdData;
@@ -300,7 +325,6 @@ class i2c_monitor extends dv_base_monitor #(
                                     (mon_dut_item.ack) ? "ACK" : "NO_ACK"), UVM_MEDIUM)
 
           cfg.rcvd_rd_byte++;
-
           // Hold data push until send ack / nack
           mon_dut_item.data_q.push_back(mon_data);
           mon_dut_item.num_data++;
@@ -319,7 +343,17 @@ class i2c_monitor extends dv_base_monitor #(
           end
         end
         begin
-          wait(cfg.allow_ack_stop & mon_rstart);
+          // This is undeterministic event so cannot set the timeout,
+          // but this thread will be terminated by the other thread.
+          wait((cfg.allow_ack_stop & mon_rstart) | cfg.agent_rst);
+          if (cfg.agent_rst) begin
+            int wait_timeout_ns = 1_000_000; // 1 ms
+            @(cfg.vif.cb);
+            mon_dut_item.clear_all();
+            `DV_WAIT((!cfg.agent_rst),, wait_timeout_ns, "target_read:agent reset de-assert");
+            cfg.got_stop = 1;
+            `uvm_info(`gfn, "monitor forceout from target_read", UVM_MEDIUM)
+          end
         end
       join_any
       disable fork;
@@ -334,28 +368,43 @@ class i2c_monitor extends dv_base_monitor #(
     bit r_bit;
     mon_dut_item.stop   = 1'b0;
     mon_dut_item.rstart = 1'b0;
-    while (!mon_dut_item.stop && !mon_dut_item.rstart) begin
-      mon_dut_item.drv_type = WrData;
-      for (int i = 7; i >= 0; i--) begin
-        cfg.vif.p_edge_scl();
-      end
-      // check for ack
-      cfg.vif.p_edge_scl();
-      r_bit = cfg.vif.cb.sda_i;
-      `uvm_info(`gfn, $sformatf("\nmonitor, target_write detect HOST %s",
-                                (!r_bit) ? "ACK" : "NO_ACK"), UVM_MEDIUM)
-      // if nack is issued, next bit must be stop or rstart
+    cfg.vif.drv_phase = DrvWr;
+    fork begin
+      fork
+        while (!mon_dut_item.stop && !mon_dut_item.rstart) begin
+          mon_dut_item.drv_type = WrData;
+          for (int i = 7; i >= 0; i--) begin
+            cfg.vif.p_edge_scl();
+          end
+          // check for ack
+          cfg.vif.p_edge_scl();
+          r_bit = cfg.vif.cb.sda_i;
+          `uvm_info(`gfn, $sformatf("\nmonitor, target_write detect HOST %s",
+                                   (!r_bit) ? "ACK" : "NO_ACK"), UVM_MEDIUM)
+          // if nack is issued, next bit must be stop or rstart
 
-      if (!r_bit) begin
-        cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
-                                             mon_dut_item.rstart,
-                                             mon_dut_item.stop);
-        `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
-        `uvm_info(`gfn, $sformatf("\nmonitor, target_write detect HOST %s",
-                                  (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_MEDIUM)
-        if (mon_dut_item.stop) cfg.got_stop = 1;
-      end
-    end
+          if (!r_bit) begin
+            cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
+                                                 mon_dut_item.rstart,
+                                                 mon_dut_item.stop);
+            `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
+            `uvm_info(`gfn, $sformatf("\nmonitor, target_write detect HOST %s",
+                                      (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_MEDIUM)
+            if (mon_dut_item.stop) cfg.got_stop = 1;
+          end
+        end
+        begin
+          int wait_timeout_ns = 1_000_000; // 1 ms
+          wait(cfg.agent_rst);
+          @(cfg.vif.cb);
+          mon_dut_item.clear_all();
+          `DV_WAIT((!cfg.agent_rst),, wait_timeout_ns, "target_write:agent reset de-assert");
+          cfg.got_stop = 1;
+          `uvm_info(`gfn,"mon forceout from target_write", UVM_MEDIUM)
+        end
+      join_any
+      disable fork;
+    end join
   endtask // target_write
 
   task ack_stop_mon();
@@ -383,4 +432,8 @@ class i2c_monitor extends dv_base_monitor #(
       end
     end
   endtask
+
+  function bit is_target_addr(bit [6:0] addr);
+    return (addr == cfg.target_addr0 || addr == cfg.target_addr1);
+  endfunction
 endclass : i2c_monitor

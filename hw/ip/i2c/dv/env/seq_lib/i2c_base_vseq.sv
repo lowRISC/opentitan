@@ -30,6 +30,8 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand bit   [9:0]            addr;  // support both 7-bit and 10-bit target address
   rand bit   [6:0]            target_addr0;  // Target Address 0
   rand bit   [6:0]            target_addr1;  // Target Address 1
+  rand bit   [6:0]            illegal_addr;  // Illegal target address
+
   rand bit   [7:0]            txdata;
   rand bit   [2:0]            rxilvl;
   rand bit   [1:0]            fmtilvl;
@@ -90,8 +92,14 @@ class i2c_base_vseq extends cip_base_vseq #(
   bit [7:0] pre_feed_rd_data_q[$];
   int       pre_feed_cnt = 0;
   bit       read_ack_nack_q[$];
+  bit       adjust_exp_read_byte = 0;
 
   // constraints
+  constraint target_addr_c {
+    solve target_addr0 before target_addr1;
+    solve target_addr1 before illegal_addr;
+    !(illegal_addr inside {target_addr0, target_addr1});
+  }
   constraint addr_c {
     addr inside {[cfg.seq_cfg.i2c_min_addr : cfg.seq_cfg.i2c_max_addr]};
   }
@@ -601,11 +609,9 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     foreach (myq[i]) begin
       if (myq[i].rstart) begin
-        if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
-          if (read) begin
+        if (cfg.m_i2c_agent_cfg.allow_ack_stop & read) begin
             `uvm_info("seq", $sformatf("eos: %s", (read_ack_nack_q[rd_idx++]) ?
                                        "NACK" : "ACK"), UVM_MEDIUM)
-          end
         end
         read = myq[i].read;
         `uvm_info("seq", $sformatf("idx %0d RS rw:%0d", start_cnt++, myq[i].read), UVM_MEDIUM)
@@ -614,7 +620,7 @@ class i2c_base_vseq extends cip_base_vseq #(
         `uvm_info("seq", $sformatf("%2d: 0x%2x", idx++, myq[i].wdata), UVM_MEDIUM)
       end
     end
-    if (read) begin
+    if (cfg.m_i2c_agent_cfg.allow_ack_stop & read) begin
       `uvm_info("seq", $sformatf("eos: %s", (read_ack_nack_q[rd_idx]) ?
                                  "NACK" : "ACK"), UVM_MEDIUM)
     end
@@ -723,7 +729,6 @@ class i2c_base_vseq extends cip_base_vseq #(
   // For write transaction and address transaction, expected transaction mimics acq read data.
   // For read transaction, all read bytes for one transaction is accumulated to 'full_txn'
   // and compared with received transaction at the scoreboard.
-  // TODO : target address will be randomly picked between target_addr0 nad target_addr1.
   virtual function void fetch_txn(ref i2c_item src_q[$], i2c_item dst_q[$],
                                   input bit force_ack = 0);
     i2c_item txn;
@@ -732,6 +737,9 @@ class i2c_base_vseq extends cip_base_vseq #(
     i2c_item full_txn;
     int read_size;
     bit is_read = get_read_write();
+    bit [6:0] t_addr;
+    bit valid_addr;
+    bit got_valid;
 
     `uvm_info("seq", $sformatf("idx %0d:is_read:%0b size:%0d fetch_txn:%0d", start_cnt++, is_read,
                                src_q.size(), full_txn_num++), UVM_MEDIUM)
@@ -748,26 +756,32 @@ class i2c_base_vseq extends cip_base_vseq #(
     txn.drv_type = HostStart;
     dst_q.push_back(txn);
     full_txn.start = 1;
-    if (is_read) full_txn.tran_id = this.exp_rd_id++;
+    if (is_read) full_txn.tran_id = this.exp_rd_id;
     // Address
     `uvm_create_obj(i2c_item, txn)
     `uvm_create_obj(i2c_item, exp_txn)
     txn.drv_type = HostData;
     txn.start = 1;
-    txn.wdata[7:1] = target_addr0;
+    txn.wdata[7:1] = get_target_addr(); //target_addr0;
     txn.wdata[0] = is_read;
-    txn.tran_id = this.tran_id++;
+    valid_addr = is_target_addr(txn.wdata[7:1]);
+
+    txn.tran_id = this.tran_id;
     `downcast(exp_txn, txn.clone());
     dst_q.push_back(txn);
     full_txn.addr = txn.wdata[7:1];
     full_txn.read = is_read;
 
-    p_sequencer.target_mode_wr_exp_port.write(exp_txn);
-    cfg.sent_acq_cnt++;
-
+    // Start command acq entry
+    if (valid_addr) begin
+      p_sequencer.target_mode_wr_exp_port.write(exp_txn);
+      cfg.sent_acq_cnt++;
+      this.tran_id++;
+      got_valid = 1;
+      if (is_read) this.exp_rd_id++;
+    end
     read_size = get_read_data_size(src_q, is_read, read_rcvd);
     cfg.m_i2c_agent_cfg.sent_rd_byte += read_size;
-
     // Data
     while (src_q.size() > 0) begin
       `uvm_create_obj(i2c_item, txn)
@@ -782,13 +796,25 @@ class i2c_base_vseq extends cip_base_vseq #(
       // the other for a new start acq_entry with address
       if (txn.drv_type == HostRStart) begin
         bit prv_read = 0;
+        bit prv_valid = valid_addr;
+
+        t_addr = get_target_addr();
+        valid_addr = is_target_addr(t_addr);
         `uvm_create_obj(i2c_item, exp_txn)
         exp_txn.drv_type = HostRStart;
-        exp_txn.rstart = 1;
-        exp_txn.tran_id = this.tran_id++;
+        exp_txn.tran_id = this.tran_id;
 
-        p_sequencer.target_mode_wr_exp_port.write(exp_txn);
-        cfg.sent_acq_cnt++;
+        // In 'txn' boundary, only if previous segment is valid,
+        // we create current RS header.
+        if (prv_valid) begin
+           exp_txn.rstart = 1;
+           this.tran_id++;
+           // RS head
+           p_sequencer.target_mode_wr_exp_port.write(exp_txn);
+           cfg.sent_acq_cnt++;
+        end
+        got_valid = valid_addr;
+
         `uvm_create_obj(i2c_item, rs_txn)
         `downcast(rs_txn, txn.clone())
         dst_q.push_back(txn);
@@ -796,7 +822,7 @@ class i2c_base_vseq extends cip_base_vseq #(
         rs_txn.drv_type = HostData;
         rs_txn.start = 1;
         rs_txn.rstart = 0;
-        rs_txn.wdata[7:1] = target_addr1;
+        rs_txn.wdata[7:1] = t_addr;
         prv_read = is_read;
         is_read = rs_txn.read;
         rs_txn.wdata[0] = is_read;
@@ -804,21 +830,28 @@ class i2c_base_vseq extends cip_base_vseq #(
         // create a separate stat/addr entry for exp
         `uvm_create_obj(i2c_item, exp_txn)
         `downcast(exp_txn, rs_txn.clone());
-        exp_txn.tran_id = this.tran_id++;
+        exp_txn.tran_id = this.tran_id;
 
-        p_sequencer.target_mode_wr_exp_port.write(exp_txn);
-        cfg.sent_acq_cnt++;
+
+        // Restart command entry
+        if (valid_addr) begin
+           p_sequencer.target_mode_wr_exp_port.write(exp_txn);
+           cfg.sent_acq_cnt++;
+           this.tran_id++;
+        end
         // fetch previous full_txn and creat a new one
         if (prv_read) begin
           full_txn.stop = 1;
           // read data will be created on the fly if cfg.use_drooling tx is set
-          if (!cfg.use_drooling_tx) p_sequencer.target_mode_rd_exp_port.write(full_txn);
-          else read_txn_q.push_back(full_txn);
+          if (!cfg.use_drooling_tx) begin
+             if (prv_valid) p_sequencer.target_mode_rd_exp_port.write(full_txn);
+          end else read_txn_q.push_back(full_txn);
         end
         `uvm_create_obj(i2c_item, full_txn)
         `downcast(full_txn, rs_txn);
         if (is_read) begin
-          full_txn.tran_id = exp_rd_id++;
+          full_txn.tran_id = exp_rd_id;
+          if (valid_addr) exp_rd_id++;
         end
       end else begin
         if (is_read) begin
@@ -837,12 +870,13 @@ class i2c_base_vseq extends cip_base_vseq #(
           if (!cfg.use_drooling_tx) read_txn_q.push_back(read_txn);
         end else begin
           `downcast(exp_txn, txn.clone());
-          // Add RS transaction to driver only
-          // and create address transaction after
+          // Write payload
           dst_q.push_back(txn);
-          exp_txn.tran_id = this.tran_id++;
-          p_sequencer.target_mode_wr_exp_port.write(exp_txn);
-          cfg.sent_acq_cnt++;
+          if (valid_addr) begin
+            exp_txn.tran_id = this.tran_id++;
+            p_sequencer.target_mode_wr_exp_port.write(exp_txn);
+            cfg.sent_acq_cnt++;
+          end
         end
       end
     end // while (src_q.size() > 0)
@@ -850,19 +884,22 @@ class i2c_base_vseq extends cip_base_vseq #(
     // Stop
     `uvm_create_obj(i2c_item, txn)
     `uvm_create_obj(i2c_item, exp_txn)
-    txn.tran_id = this.tran_id++;
+    txn.tran_id = this.tran_id;
     txn.stop = 1;
     txn.drv_type = HostStop;
     `downcast(exp_txn, txn.clone());
     dst_q.push_back(txn);
     full_txn.stop = 1;
-
-    p_sequencer.target_mode_wr_exp_port.write(exp_txn);
-    cfg.sent_acq_cnt++;
+    if (valid_addr) begin
+       p_sequencer.target_mode_wr_exp_port.write(exp_txn);
+       cfg.sent_acq_cnt++;
+       this.tran_id++;
+    end
     if (is_read) begin
       // read data will be created on the fly if use_drooling_tx is set
-      if (!cfg.use_drooling_tx) p_sequencer.target_mode_rd_exp_port.write(full_txn);
-      else read_txn_q.push_back(full_txn);
+      if (!cfg.use_drooling_tx) begin
+         if (valid_addr) p_sequencer.target_mode_rd_exp_port.write(full_txn);
+      end else read_txn_q.push_back(full_txn);
     end
   endfunction
 
@@ -931,6 +968,20 @@ class i2c_base_vseq extends cip_base_vseq #(
         if (read_cmd_q.size > 0) dum = read_cmd_q.pop_front();
         drooling_write_tx_fifo();
       end
+      // When bad command is dropped, expected rd_byte is adjust in 'write_tx_fifo'.
+      // But for the last bad read command, we have to adjust expected rd_byte separately
+      // because we will not call 'write_tx_fifo'.
+      if (adjust_exp_read_byte == 1 &&
+          cfg.sent_acq_cnt == cfg.rcvd_acq_cnt) begin
+         int read_size;
+         while (cfg.m_i2c_agent_cfg.read_addr_q.size > 0) begin
+            read_size = read_rcvd.pop_front();
+            if (!cfg.m_i2c_agent_cfg.read_addr_q.pop_front) begin
+               repeat (read_size) void'(read_txn_q.pop_front());
+               cfg.m_i2c_agent_cfg.sent_rd_byte -= read_size;
+            end
+         end
+      end
     end
   endtask
 
@@ -941,9 +992,20 @@ class i2c_base_vseq extends cip_base_vseq #(
     int rd_txfifo_timeout_ns = 100_000;
     // indefinite time
     int tx_empty_timeout_ns = 500_000_000;
-    string id = "write_tx_fifo";
-    if (add_delay) id = {id, "_delay"};
+    bit is_valid;
 
+    string id = "write_tx_fifo";
+    if (cfg.m_i2c_agent_cfg.allow_bad_addr) begin
+       is_valid = cfg.m_i2c_agent_cfg.read_addr_q.pop_front();
+       if (!is_valid) begin
+          read_size = read_rcvd.pop_front();
+          repeat (read_size) void'(read_txn_q.pop_front());
+          cfg.m_i2c_agent_cfg.sent_rd_byte -= read_size;
+          return;
+       end
+    end
+
+    if (add_delay) id = {id, "_delay"};
     if (read_rcvd.size() > 0) begin
       read_size = read_rcvd.pop_front();
       `uvm_info(id, $sformatf("read_size :%0d", read_size), UVM_HIGH)
@@ -1144,6 +1206,8 @@ class i2c_base_vseq extends cip_base_vseq #(
     cfg.read_all_acq_entries = 1;
     if (cfg.rd_pct != 0) begin
       `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte > 0,, cfg.spinwait_timeout_ns, id)
+      if (cfg.m_i2c_agent_cfg.allow_bad_addr) adjust_exp_read_byte = 1;
+
       `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte == cfg.m_i2c_agent_cfg.rcvd_rd_byte,,
                cfg.long_spinwait_timeout_ns, id)
     end
@@ -1195,4 +1259,29 @@ class i2c_base_vseq extends cip_base_vseq #(
     // causes deadlock. Set verify_clear to 0 to avoid deadlock
     clear_interrupt(TxStretch, 0);
   endtask // proc_intr_txstretch
+
+  // return target address between, address0, address1 and illegal address
+  // illegal address can be return ony if cfg.bad_addr_pct > 0
+  // Make sure the last transaction should return good address to guarantee
+  // at least one good transaction
+  function bit [6:0] get_target_addr();
+     if (sent_txn_cnt == (num_trans - 1)) return target_addr0;
+
+     randcase
+       cfg.bad_addr_pct: begin
+         return illegal_addr;
+       end
+       (10 - cfg.bad_addr_pct): begin
+         randcase
+           1: get_target_addr = target_addr0;
+           1: get_target_addr = target_addr1;
+         endcase
+       end
+     endcase
+  endfunction
+
+  function bit is_target_addr(bit [6:0] addr);
+    return (addr == target_addr0 || addr == target_addr1);
+  endfunction
+
 endclass : i2c_base_vseq

@@ -16,6 +16,10 @@ class i2c_env extends cip_base_env #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    if (!uvm_config_db#(virtual i2c_dv_if)::get(
+      this, "", "i2c_dv_vif", cfg.i2c_dv_vif)) begin
+      `uvm_fatal(`gfn, "failed to get i2c_dv_vif from uvm_config_db")
+    end
     m_i2c_agent = i2c_agent::type_id::create("m_i2c_agent", this);
     uvm_config_db#(i2c_agent_cfg)::set(this, "m_i2c_agent*", "cfg", cfg.m_i2c_agent_cfg);
     cfg.m_i2c_agent_cfg.en_cov = cfg.en_cov;

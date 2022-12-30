@@ -3,14 +3,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 covergroup i2c_fifo_level_cg (uint fifo_depth)
-  with function sample(int lvl, bit irq, bit rst);
+  with function sample(int fmtlvl, int rxlvl, bit irq, bit rst);
 
   option.per_instance = 1;
   cp_rst: coverpoint rst;
   cp_irq: coverpoint irq;
-  cp_lvl: coverpoint lvl {bins all_levels[] = {[0:fifo_depth]};}
-
-  cr_fifo_lvl_irq_rst: cross cp_rst, cp_irq, cp_lvl;
+  cp_fmtlvl: coverpoint fmtlvl {
+    bins lvl[] = {1, 4, 8, 16};
+    bins others = {[0:fifo_depth]} with (!(item inside {1, 4, 8, 16}));
+  }
+  cp_rxlvl: coverpoint rxlvl {
+    bins lvl[] = {1, 4, 8, 16, 30};
+    bins others = {[0:fifo_depth]} with (!(item inside {1, 4, 8, 16, 30}));
+  }
 endgroup : i2c_fifo_level_cg
 
 class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));

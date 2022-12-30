@@ -13,6 +13,7 @@ filesets:
       - lowrisc:ip:i2c
     files:
       - i2c_env_pkg.sv
+      - i2c_dv_if.sv
       - i2c_seq_cfg.sv: {is_include_file: true}
       - i2c_env_cfg.sv: {is_include_file: true}
       - i2c_env_cov.sv: {is_include_file: true}
@@ -49,6 +50,7 @@ filesets:
       - seq_lib/i2c_target_fifo_reset_acq_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_fifo_reset_tx_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_stress_all_vseq.sv: {is_include_file: true}
+      - seq_lib/i2c_target_hrst_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
