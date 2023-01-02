@@ -20,6 +20,12 @@ module xbar_peri_bind;
     .h2d    (tl_pattgen_o),
     .d2h    (tl_pattgen_i)
   );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_spi_device (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_spi_device_o),
+    .d2h    (tl_spi_device_i)
+  );
   bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_gpio (
     .clk_i  (clk_peri_i),
     .rst_ni (rst_peri_ni),

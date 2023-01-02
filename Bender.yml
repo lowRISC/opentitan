@@ -403,8 +403,8 @@ sources:
 
 ##### rv_plic
         
-      - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_reg_pkg.sv
-      - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_reg_top.sv
+      - hw/top_earlgrey/ip/rv_plic/rtl/rv_plic_ot_reg_pkg.sv
+      - hw/top_earlgrey/ip/rv_plic/rtl/rv_plic_ot_reg_top.sv
       - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_gateway.sv
       - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_target.sv
       - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic.sv
@@ -826,12 +826,12 @@ sources:
       - hw/top_earlgrey/rtl/jtag_id_pkg.sv
       - hw/tb/top_earlgrey.sv
       #- hw/top_earlgrey/rtl/autogen/top_earlgrey.sv
-      #- hw/tb/opentitan_synth_wrap.sv
+      - hw/tb/opentitan_synth_wrap.sv
 
 ##### testbench
 
       #- hw/top_titangrey/tb/adapter_testbench.sv
       - hw/tb/jtag_intf.sv
-      - hw/vendor/pulp_riscv_dbg/tb/jtag_dmi/jtag_test.sv #- hw/tb/jtag_test.sv      #
+      - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv #- hw/tb/jtag_test.sv      #
       - hw/tb/testbench.sv
           

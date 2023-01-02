@@ -22,7 +22,7 @@ module top_earlgrey #(
   // parameters for pattgen
   // parameters for rv_timer
   // parameters for otp_ctrl
-  parameter OtpCtrlMemInitFile = "../hw/top_earlgrey/sw/tests/hello_test/otp-img.mem",
+  parameter OtpCtrlMemInitFile = "/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/hello_test/otp-img.mem",
   // parameters for lc_ctrl
   parameter logic [15:0] LcCtrlChipGen = 16'h 0000,
   parameter logic [15:0] LcCtrlChipRev = 16'h 0000,
@@ -75,7 +75,7 @@ module top_earlgrey #(
   // parameters for sram_ctrl_main
   parameter bit SramCtrlMainInstrExec = 1,
   // parameters for rom_ctrl
-  parameter RomCtrlBootRomInitFile = "../hw/top_earlgrey/sw/tests/hello_test/bootrom.vmem",
+  parameter RomCtrlBootRomInitFile = "/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/hello_test/bootrom.vmem",
   parameter bit SecRomCtrlDisableScrambling = 1'b0,
   // parameters for rv_core_ibex
   parameter bit RvCoreIbexPMPEnable = 1,
@@ -122,6 +122,7 @@ module top_earlgrey #(
   output lc_ctrl_pkg::lc_tx_t       ast_lc_dft_en_o,
   output tlul2axi_pkg::slv_req_t       axi_req_o,
   input  tlul2axi_pkg::slv_rsp_t       axi_rsp_i,
+  input  logic       irq_ibex_i,
   input  jtag_pkg::jtag_req_t       jtag_req_i,
   output jtag_pkg::jtag_rsp_t       jtag_rsp_o,
   input  ast_pkg::ast_obs_ctrl_t       obs_ctrl_i,
@@ -285,7 +286,7 @@ module top_earlgrey #(
   // rv_core_ibex
 
 
-  logic [87:0]  intr_vector;
+  logic [88:0]  intr_vector;
   // Interrupt source list
   logic [31:0] intr_gpio_gpio;
   logic intr_pattgen_done_ch0;
@@ -323,6 +324,7 @@ module top_earlgrey #(
   logic intr_flash_ctrl_rd_lvl;
   logic intr_flash_ctrl_op_done;
   logic intr_flash_ctrl_corr_err;
+  logic intr_tlul2axi_mbox_irq;
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_empty;
   logic intr_hmac_hmac_err;
@@ -413,6 +415,9 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
+   
+  assign lc_ctrl_lc_hw_debug_en = lc_ctrl_pkg::On;
+   
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_cpu_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_keymgr_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
@@ -491,6 +496,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       sram_ctrl_main_ram_tl_rsp;
   tlul_pkg::tl_h2d_t       pattgen_tl_req;
   tlul_pkg::tl_d2h_t       pattgen_tl_rsp;
+  tlul_pkg::tl_h2d_t       spi_device_tl_req;
+  tlul_pkg::tl_d2h_t       spi_device_tl_rsp;
   tlul_pkg::tl_h2d_t       gpio_tl_req;
   tlul_pkg::tl_d2h_t       gpio_tl_rsp;
   tlul_pkg::tl_h2d_t       rv_timer_tl_req;
@@ -962,7 +969,7 @@ module top_earlgrey #(
       .kmac_data_i(kmac_app_rsp[1]),
       .lc_dft_en_o(lc_ctrl_lc_dft_en),
       .lc_nvm_debug_en_o(lc_ctrl_lc_nvm_debug_en),
-      .lc_hw_debug_en_o(lc_ctrl_lc_hw_debug_en),
+      .lc_hw_debug_en_o(),//lc_ctrl_lc_hw_debug_en),
       .lc_cpu_en_o(lc_ctrl_lc_cpu_en),
       .lc_keymgr_en_o(lc_ctrl_lc_keymgr_en),
       .lc_escalate_en_o(lc_ctrl_lc_escalate_en),
@@ -1127,8 +1134,8 @@ module top_earlgrey #(
       .passthrough_i(spi_device_passthrough_rsp),
       .mbist_en_i('0),
       .sck_monitor_o(sck_monitor_o),
-      .tl_i(tlul_pkg::TL_H2D_DEFAULT),
-      .tl_o(),
+      .tl_i(spi_device_tl_req),
+      .tl_o(spi_device_tl_rsp),
       .scanmode_i,
       .scan_rst_ni,
 
@@ -1551,8 +1558,12 @@ module top_earlgrey #(
   );
   tlul2axi u_tlul2axi (
 
+      // Interrupt
+      .intr_mbox_irq_o (intr_tlul2axi_mbox_irq),
+
       // Inter-module signals
       .axi_req_o(axi_req_o),
+      .intr_mbox_irq_i(irq_ibex_i),
       .axi_rsp_i(axi_rsp_i),
       .tl_i(tlul2axi_tl_req),
       .tl_o(tlul2axi_tl_rsp),
@@ -1561,7 +1572,7 @@ module top_earlgrey #(
       .clk_i (clkmgr_aon_clocks.clk_main_secure),
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
-  rv_plic #(
+  rv_plic_ot #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[29:29])
   ) u_rv_plic (
       // [29]: fatal_fault
@@ -1575,7 +1586,6 @@ module top_earlgrey #(
       .tl_i(rv_plic_tl_req),
       .tl_o(rv_plic_tl_rsp),
       .intr_src_i (intr_vector),
-
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_secure),
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
@@ -2015,26 +2025,27 @@ module top_earlgrey #(
   );
   // interrupt assignments
   assign intr_vector = {
-      intr_edn1_edn_fatal_err, // IDs [87 +: 1]
-      intr_edn1_edn_cmd_req_done, // IDs [86 +: 1]
-      intr_edn0_edn_fatal_err, // IDs [85 +: 1]
-      intr_edn0_edn_cmd_req_done, // IDs [84 +: 1]
-      intr_entropy_src_es_fatal_err, // IDs [83 +: 1]
-      intr_entropy_src_es_observe_fifo_ready, // IDs [82 +: 1]
-      intr_entropy_src_es_health_test_failed, // IDs [81 +: 1]
-      intr_entropy_src_es_entropy_valid, // IDs [80 +: 1]
-      intr_csrng_cs_fatal_err, // IDs [79 +: 1]
-      intr_csrng_cs_hw_inst_exc, // IDs [78 +: 1]
-      intr_csrng_cs_entropy_req, // IDs [77 +: 1]
-      intr_csrng_cs_cmd_req_done, // IDs [76 +: 1]
-      intr_keymgr_op_done, // IDs [75 +: 1]
-      intr_otbn_done, // IDs [74 +: 1]
-      intr_kmac_kmac_err, // IDs [73 +: 1]
-      intr_kmac_fifo_empty, // IDs [72 +: 1]
-      intr_kmac_kmac_done, // IDs [71 +: 1]
-      intr_hmac_hmac_err, // IDs [70 +: 1]
-      intr_hmac_fifo_empty, // IDs [69 +: 1]
-      intr_hmac_hmac_done, // IDs [68 +: 1]
+      intr_edn1_edn_fatal_err, // IDs [88 +: 1]
+      intr_edn1_edn_cmd_req_done, // IDs [87 +: 1]
+      intr_edn0_edn_fatal_err, // IDs [86 +: 1]
+      intr_edn0_edn_cmd_req_done, // IDs [85 +: 1]
+      intr_entropy_src_es_fatal_err, // IDs [84 +: 1]
+      intr_entropy_src_es_observe_fifo_ready, // IDs [83 +: 1]
+      intr_entropy_src_es_health_test_failed, // IDs [82 +: 1]
+      intr_entropy_src_es_entropy_valid, // IDs [81 +: 1]
+      intr_csrng_cs_fatal_err, // IDs [80 +: 1]
+      intr_csrng_cs_hw_inst_exc, // IDs [79 +: 1]
+      intr_csrng_cs_entropy_req, // IDs [78 +: 1]
+      intr_csrng_cs_cmd_req_done, // IDs [77 +: 1]
+      intr_keymgr_op_done, // IDs [76 +: 1]
+      intr_otbn_done, // IDs [75 +: 1]
+      intr_kmac_kmac_err, // IDs [74 +: 1]
+      intr_kmac_fifo_empty, // IDs [73 +: 1]
+      intr_kmac_kmac_done, // IDs [72 +: 1]
+      intr_hmac_hmac_err, // IDs [71 +: 1]
+      intr_hmac_fifo_empty, // IDs [70 +: 1]
+      intr_hmac_hmac_done, // IDs [69 +: 1]
+      intr_tlul2axi_mbox_irq, // IDs [68 +: 1]
       intr_flash_ctrl_corr_err, // IDs [67 +: 1]
       intr_flash_ctrl_op_done, // IDs [66 +: 1]
       intr_flash_ctrl_rd_lvl, // IDs [65 +: 1]
@@ -2207,6 +2218,10 @@ module top_earlgrey #(
     // port: tl_pattgen
     .tl_pattgen_o(pattgen_tl_req),
     .tl_pattgen_i(pattgen_tl_rsp),
+
+    // port: tl_spi_device
+    .tl_spi_device_o(spi_device_tl_req),
+    .tl_spi_device_i(spi_device_tl_rsp),
 
     // port: tl_gpio
     .tl_gpio_o(gpio_tl_req),

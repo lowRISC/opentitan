@@ -90,7 +90,7 @@ assign clk_ext_en_o = clk_ext_sel && (clk_ext_en_q || clk_ext_aoff);
 ////////////////////////////////////////
 logic clk_osc, clk_ext;
 
-prim_clock_gating #(
+tc_clk_gating #(
   .NoFpgaGate ( 1'b1)
 ) u_clk_osc_ckgt (
   .clk_i ( clk_osc_i ),
@@ -99,7 +99,7 @@ prim_clock_gating #(
   .clk_o ( clk_osc )
 );
 
-prim_clock_gating #(
+tc_clk_gating #(
   .NoFpgaGate ( 1'b1)
 ) u_clk_byp_ckgt (
   .clk_i ( clk_ext_i ),

@@ -968,6 +968,7 @@
         'ast.lc_dft_en'                   : '',
         'tlul2axi.axi_req'                : 'axi_req',
         'tlul2axi.axi_rsp'                : 'axi_rsp',
+        'tlul2axi.intr_mbox_irq'          : 'irq_ibex',
         'rv_dm.jtag'                      : 'jtag',
         'ast.obs_ctrl'                    : 'obs_ctrl',
         'ast.ram_1p_cfg'                  : 'ram_1p_cfg',

@@ -17,21 +17,26 @@ module tlul2axi
     parameter int unsigned AXI_DATA_WIDTH    = 32,
     parameter int unsigned AXI_USER_WIDTH    = 1
    ) (
-   input logic clk_i,
-   input logic rst_ni,
+   input logic  clk_i,
+   input logic  rst_ni,
     
    //  tlul host
-   input  tl_h2d_t tl_i,
-   output tl_d2h_t tl_o,
- 
+   input        tl_h2d_t tl_i,
+   output       tl_d2h_t tl_o,
+      
+   input logic  intr_mbox_irq_i,
+   output logic intr_mbox_irq_o,
+      
    //  axi master 
-   input  tlul2axi_pkg::slv_rsp_t  axi_rsp_i,
-   output tlul2axi_pkg::slv_req_t  axi_req_o
+   input        tlul2axi_pkg::slv_rsp_t axi_rsp_i,
+   output       tlul2axi_pkg::slv_req_t axi_req_o
 
    );
    
    enum  logic [2:0] { IDLE, WAIT_B_VALID, WAIT_R_VALID, WAIT_AR_READY, WAIT_AW_READY, WAIT_W_READY } state_q, state_d;
 
+   assign intr_mbox_irq_o = intr_mbox_irq_i;
+   
    tlul_pkg::tl_d2h_t tl_o_int;
    
    tlul_rsp_intg_gen #(

@@ -1,10 +1,10 @@
 /* Copyright 2018 ETH Zurich and University of Bologna.
 * Copyright and related rights are licensed under the Solderpad Hardware
-* License, Version 0.51 (the “License”); you may not use this file except in
+* License, Version 0.51 (the License); you may not use this file except in
 * compliance with the License.  You may obtain a copy of the License at
 * http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
 * or agreed to in writing, software, hardware and materials distributed under
-* this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+* this License is distributed on an AS IS BASIS, WITHOUT WARRANTIES OR
 * CONDITIONS OF ANY KIND, either express or implied. See the License for the
 * specific language governing permissions and limitations under the License.
 *
@@ -20,14 +20,12 @@ module dm_ot_mem #(
   parameter int unsigned        NrHarts          =  1,
   parameter int unsigned        BusWidth         = 32,
   parameter logic [NrHarts-1:0] SelectableHarts  = {NrHarts{1'b1}},
-  parameter int unsigned        DmBaseAddress    = '0,
-  localparam int unsigned       BeWidth          = BusWidth/8
+  parameter int unsigned        DmBaseAddress    = '0
 ) (
   input  logic                             clk_i,       // Clock
   input  logic                             rst_ni,      // debug module reset
 
   output logic [NrHarts-1:0]               debug_req_o,
-  input  logic                             ndmreset_i,
   input  logic [19:0]                      hartsel_i,
   // from Ctrl and Status register
   input  logic [NrHarts-1:0]               haltreq_i,
@@ -56,9 +54,8 @@ module dm_ot_mem #(
   input  logic                             we_i,
   input  logic [BusWidth-1:0]              addr_i,
   input  logic [BusWidth-1:0]              wdata_i,
-  input  logic [BeWidth-1:0]               be_i,
-  output logic [BusWidth-1:0]              rdata_o,
-  output logic                             err_o
+  input  logic [BusWidth/8-1:0]            be_i,
+  output logic [BusWidth-1:0]              rdata_o
 );
   localparam int unsigned DbgAddressBits = 12;
   localparam int unsigned HartSelLen     = (NrHarts == 1) ? 1 : $clog2(NrHarts);
@@ -80,14 +77,9 @@ module dm_ot_mem #(
   localparam logic [DbgAddressBits-1:0] FlagsEndAddr  = 'h7FF;
 
   localparam logic [DbgAddressBits-1:0] HaltedAddr    = 'h100;
-  localparam logic [DbgAddressBits-1:0] GoingAddr     = 'h108;
-  localparam logic [DbgAddressBits-1:0] ResumingAddr  = 'h110;
-  localparam logic [DbgAddressBits-1:0] ExceptionAddr = 'h118;
-
-  localparam logic [DbgAddressBits-1:0] RomBaseAddr   = dm_ot::HaltAddress;
-  // The size is arbitrarily set to 0x800, so as to make the dm_space exactly 0x900 long. This is
-  // more than eough to cover the 19 x 64bit = 0x98 bytes currenty allocated in the debug ROM.
-  localparam logic [DbgAddressBits-1:0] RomEndAddr    = dm_ot::HaltAddress + 'h7FF;
+  localparam logic [DbgAddressBits-1:0] GoingAddr     = 'h104;
+  localparam logic [DbgAddressBits-1:0] ResumingAddr  = 'h108;
+  localparam logic [DbgAddressBits-1:0] ExceptionAddr = 'h10C;
 
   logic [dm_ot::ProgBufSize/2-1:0][63:0]   progbuf;
   logic [7:0][63:0]   abstract_cmd;
@@ -209,13 +201,6 @@ module dm_ot_mem #(
       cmderror_valid_o = 1'b1;
       cmderror_o = dm_ot::CmdErrorException;
     end
-
-    if (ndmreset_i) begin
-      // Clear state of hart and its control signals when it is being reset.
-      state_d = Idle;
-      go      = 1'b0;
-      resume  = 1'b0;
-    end
   end
 
   // word mux for 32bit and 64bit buses
@@ -229,16 +214,16 @@ module dm_ot_mem #(
   end
 
   // read/write logic
-  logic [dm_ot::DataCount-1:0][31:0] data_bits;
+  logic [63:0] data_bits;
   logic [7:0][7:0] rdata;
   always_comb begin : p_rw_logic
 
     halted_d_aligned   = NrHartsAligned'(halted_q);
     resuming_d_aligned = NrHartsAligned'(resuming_q);
     rdata_d        = rdata_q;
+    // convert the data in bits representation
     data_bits      = data_i;
     rdata          = '0;
-    fwd_rom_d      = 1'b0;
 
     // write data in csr register
     data_valid_o   = 1'b0;
@@ -273,24 +258,13 @@ module dm_ot_mem #(
           // core can write data registers
           [DataBaseAddr:DataEndAddr]: begin
             data_valid_o = 1'b1;
-            for (int unsigned dc = 0; dc < dm_ot::DataCount; dc++) begin
-              if ((addr_i[DbgAddressBits-1:2] - DataBaseAddr[DbgAddressBits-1:2]) == dc) begin
-                for (int unsigned i = 0; i < $bits(be_i); i++) begin
-                  if (be_i[i]) begin
-                    if (i>3) begin // for upper 32bit data write (only used for BusWidth ==  64)
-                      // ensure we write to an implemented data register
-                      if (dc < (dm_ot::DataCount - 1)) begin
-                        data_bits[dc+1][(i-4)*8+:8] = wdata_i[i*8+:8];
-                      end
-                    end else begin // for lower 32bit data write
-                      data_bits[dc][i*8+:8] = wdata_i[i*8+:8];
-                    end
-                  end
-                end
+            for (int i = 0; i < $bits(be_i); i++) begin
+              if (be_i[i]) begin
+                data_bits[i*8+:8] = wdata_i[i*8+:8];
               end
             end
           end
-          default: ;
+          default ;
         endcase
 
       // this is a read
@@ -319,11 +293,10 @@ module dm_ot_mem #(
 
           [DataBaseAddr:DataEndAddr]: begin
             rdata_d = {
-                      data_i[$clog2(dm_ot::DataCount)'(((addr_i[DbgAddressBits-1:3]
-                                                      - DataBaseAddr[DbgAddressBits-1:3]) << 1)
-                                                    + 1'b1)],
-                      data_i[$clog2(dm_ot::DataCount)'(((addr_i[DbgAddressBits-1:3]
-                                                      - DataBaseAddr[DbgAddressBits-1:3]) << 1))]
+                      data_i[$clog2(dm_ot::ProgBufSize)'(addr_i[DbgAddressBits-1:3] -
+                          DataBaseAddr[DbgAddressBits-1:3] + 1'b1)],
+                      data_i[$clog2(dm_ot::ProgBufSize)'(addr_i[DbgAddressBits-1:3] -
+                          DataBaseAddr[DbgAddressBits-1:3])]
                       };
           end
 
@@ -347,72 +320,13 @@ module dm_ot_mem #(
             end
             rdata_d = rdata;
           end
-          // Access has to be forwarded to the ROM. The ROM starts at the HaltAddress of the core
-          // e.g.: it immediately jumps to the ROM base address.
-          [RomBaseAddr:RomEndAddr]: begin
-            fwd_rom_d = 1'b1;
-          end
           default: ;
         endcase
       end
     end
 
-    if (ndmreset_i) begin
-      // When harts are reset, they are neither halted nor resuming.
-      halted_d_aligned   = '0;
-      resuming_d_aligned = '0;
-    end
-
     data_o = data_bits;
   end
-
-  // This flags subword writes that are shorter than the defined width of the register.
-  // Other writes are ignored.
-  function automatic logic gen_wr_err(logic we, logic [BeWidth-1:0] be, logic [BeWidth-1:0] mask);
-    return we && (|(~be & mask));
-  endfunction
-
-  // Relevant bus error cases
-  // - access unmapped address
-  // - write a CSR with unaligned address, e.g. `a_address[1:0] != 0`
-  // - write a CSR less than its width, e.g. when CSR is 2 bytes wide, only write 1 byte
-  // - write a RO (read-only) memory
-  localparam logic[BeWidth-1:0] FullRegMask = {BeWidth{1'b1}};
-  localparam logic[BeWidth-1:0] OneBitMask  = BeWidth'(1'b1);
-  localparam logic[BeWidth-1:0] HartSelMask = BeWidth'(2**HartSelLen-1);
-  logic err_d, err_q;
-  always_comb begin
-    err_d = 1'b0;
-    if (req_i) begin
-      unique case (addr_i[DbgAddressBits-1:0]) inside
-        WhereToAddr:                              err_d = gen_wr_err(we_i, be_i, FullRegMask);
-        HaltedAddr:                               err_d = gen_wr_err(we_i, be_i, HartSelMask);
-        GoingAddr:                                err_d = gen_wr_err(we_i, be_i, OneBitMask);
-        ResumingAddr:                             err_d = gen_wr_err(we_i, be_i, HartSelMask);
-        ExceptionAddr:                            err_d = gen_wr_err(we_i, be_i, OneBitMask);
-        [DataBaseAddr:DataEndAddr]:               err_d = gen_wr_err(we_i, be_i, FullRegMask);
-        [ProgBufBaseAddr:ProgBufEndAddr]:         err_d = gen_wr_err(we_i, be_i, FullRegMask);
-        [AbstractCmdBaseAddr:AbstractCmdEndAddr]: err_d = gen_wr_err(we_i, be_i, FullRegMask);
-        [FlagsBaseAddr:FlagsEndAddr]:             err_d = gen_wr_err(we_i, be_i, FullRegMask);
-        [RomBaseAddr:RomEndAddr]:                 err_d = we_i; // Writing ROM area always errors.
-        default: err_d = 1'b1;
-      endcase
-      // Unaligned accesses
-      if (addr_i[$clog2(BeWidth)-1:0] != '0) begin
-        err_d = 1'b1;
-      end
-    end
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_err_reg
-    if (!rst_ni) begin
-      err_q <= 1'b0;
-    end else begin
-      err_q <= err_d;
-    end
-  end
-
-  assign err_o = err_q;
 
   always_comb begin : p_abstract_cmd_rom
     // this abstract command is currently unsupported
@@ -577,6 +491,10 @@ module dm_ot_mem #(
       .rdata_o ( rom_rdata )
     );
   end
+
+  // ROM starts at the HaltAddress of the core e.g.: it immediately jumps to
+  // the ROM base address
+  assign fwd_rom_d = logic'(addr_i[DbgAddressBits-1:0] >= dm_ot::HaltAddress[DbgAddressBits-1:0]);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin

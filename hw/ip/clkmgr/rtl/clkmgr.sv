@@ -160,7 +160,7 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_fixed_peri_sw_en)
   );
 
-  prim_clock_gating i_clk_fixed_peri_cg (
+  tc_clk_gating i_clk_fixed_peri_cg (
     .clk_i(clk_fixed_i),
     .en_i(clk_fixed_peri_sw_en & clk_fixed_en),
     .test_en_i(dft_i.test_en),
@@ -176,7 +176,7 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_usb_48mhz_peri_sw_en)
   );
 
-  prim_clock_gating i_clk_usb_48mhz_peri_cg (
+  tc_clk_gating i_clk_usb_48mhz_peri_cg (
     .clk_i(clk_usb_48mhz_i),
     .en_i(clk_usb_48mhz_peri_sw_en & clk_usb_48mhz_en),
     .test_en_i(dft_i.test_en),
@@ -210,7 +210,7 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_main_aes_hint)
   );
 
-  prim_clock_gating i_clk_main_aes_cg (
+  tc_clk_gating i_clk_main_aes_cg (
     .clk_i(clk_main_i),
     .en_i(clk_main_aes_en & clk_main_en),
     .test_en_i(dft_i.test_en),
@@ -228,7 +228,7 @@ module clkmgr import clkmgr_pkg::*; (
     .q_o(clk_main_hmac_hint)
   );
 
-  prim_clock_gating i_clk_main_hmac_cg (
+  tc_clk_gating i_clk_main_hmac_cg (
     .clk_i(clk_main_i),
     .en_i(clk_main_hmac_en & clk_main_en),
     .test_en_i(dft_i.test_en),

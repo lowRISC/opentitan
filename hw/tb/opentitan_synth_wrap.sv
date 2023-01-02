@@ -16,100 +16,77 @@ module opentitan_synth_wrap
    import tlul2axi_pkg::*;
    import dm_ot::*;
    import lc_ctrl_pkg::*;
-   #(
-   parameter AW = 64,
-   parameter DW = 64,
-   parameter IW = 8,
-   parameter UW = 1,
-   parameter SW = DW/8,
-   parameter type axi_addr_t   = logic [AW-1:0],
-   parameter type axi_data_t   = logic [DW-1:0],
-   parameter type axi_strb_t   = logic [DW/8-1:0],
-   parameter type axi_id_t     = logic [IW-1:0],
-   parameter type axi_user_t   = logic [UW-1:0]
-
-)  (
+   (
    
-   input logic		 clk_i,
+   input logic                                                clk_i,
     
-   input logic		 por_n_i,
-   input logic		 irq_ibex_i,
+   input logic                                                por_n_i,
+   input logic                                                irq_ibex_i,
 
    // JTAG port
-   input logic		 jtag_tck_i,
-   input logic		 jtag_tms_i,
-   input logic		 jtag_trst_n_i,
-   input logic		 jtag_tdi_i,
-   output logic		 jtag_tdo_o,
-   output logic		 jtag_tdo_oe_o,
+   input logic                                                jtag_tck_i,
+   input logic                                                jtag_tms_i,
+   input logic                                                jtag_trst_n_i,
+   input logic                                                jtag_tdi_i,
+   output logic                                               jtag_tdo_o,
+   output logic                                               jtag_tdo_oe_o,
 
    //AXI AR channel
-   output logic [IW-1:0] ar_id_o,
-   output logic [AW-1:0] ar_addr_o,
-   output logic [7:0]	 ar_len_o,
-   output logic [2:0]	 ar_size_o,
-   output logic [1:0]	 ar_burst_o,
-   output logic		 ar_lock_o,
-   output logic [3:0]	 ar_cache_o,
-   output logic [2:0]	 ar_prot_o,
-   output logic [3:0]	 ar_qos_o,
-   output logic [3:0]	 ar_region_o,
-   output logic [UW-1:0] ar_user_o,
-   output logic		 ar_valid_o,
-   input logic		 ar_ready_i,
+   output logic [tlul2axi_pkg::AXI_ID_WIDTH-1:0]              ar_id_o,
+   output logic [tlul2axi_pkg::AXI_ADDR_WIDTH-1:0]            ar_addr_o,
+   output logic [7:0]                                         ar_len_o,
+   output logic [2:0]                                         ar_size_o,
+   output logic [1:0]                                         ar_burst_o,
+   output logic                                               ar_lock_o,
+   output logic [3:0]                                         ar_cache_o,
+   output logic [2:0]                                         ar_prot_o,
+   output logic [3:0]                                         ar_qos_o,
+   output logic [3:0]                                         ar_region_o,
+   output logic [tlul2axi_pkg::AXI_USER_WIDTH-1:0]            ar_user_o,
+   output logic                                               ar_valid_o,
+   input logic                                                ar_ready_i,
 
    //AXI AW channel
-   output logic [IW-1:0] aw_id_o,
-   output logic [AW-1:0] aw_addr_o,
-   output logic [7:0]	 aw_len_o,
-   output logic [2:0]	 aw_size_o,
-   output logic [1:0]	 aw_burst_o,
-   output logic		 aw_lock_o,
-   output logic [3:0]	 aw_cache_o,
-   output logic [2:0]	 aw_prot_o,
-   output logic [3:0]	 aw_qos_o,
-   output logic [3:0]	 aw_region_o,
-   output logic [5:0]	 aw_atop_o,
-   output logic [UW-1:0] aw_user_o,
-   output logic		 aw_valid_o,
-   input logic		 aw_ready_i,
+   output logic [tlul2axi_pkg::AXI_ID_WIDTH-1:0]              aw_id_o,
+   output logic [tlul2axi_pkg::AXI_ADDR_WIDTH-1:0]            aw_addr_o,
+   output logic [7:0]                                         aw_len_o,
+   output logic [2:0]                                         aw_size_o,
+   output logic [1:0]                                         aw_burst_o,
+   output logic                                               aw_lock_o,
+   output logic [3:0]                                         aw_cache_o,
+   output logic [2:0]                                         aw_prot_o,
+   output logic [3:0]                                         aw_qos_o,
+   output logic [3:0]                                         aw_region_o,
+   output logic [5:0]                                         aw_atop_o,
+   output logic [tlul2axi_pkg::AXI_USER_WIDTH-1:0]            aw_user_o,
+   output logic                                               aw_valid_o,
+   input logic                                                aw_ready_i,
 
    //AXI W channel
-   output logic [DW-1:0] w_data_o,
-   output logic [SW-1:0] w_strb_o,
-   output logic		 w_last_o,
-   output logic [UW-1:0] w_user_o,
-   output logic		 w_valid_o,
-   input logic		 w_ready_i,
+   output logic [tlul2axi_pkg::AXI_SLV_PORT_DATA_WIDTH-1:0]   w_data_o,
+   output logic [tlul2axi_pkg::AXI_SLV_PORT_DATA_WIDTH/8-1:0] w_strb_o,
+   output logic                                               w_last_o,
+   output logic [tlul2axi_pkg::AXI_USER_WIDTH-1:0]            w_user_o,
+   output logic                                               w_valid_o,
+   input logic                                                w_ready_i,
 
    //AXI B channel
-   input logic [IW-1:0]	 b_id_i,
-   input logic [1:0]	 b_resp_i,
-   input logic [UW-1:0]	 b_user_i,
-   input logic		 b_valid_i,
-   output logic		 b_ready_o,
+   input logic [tlul2axi_pkg::AXI_ID_WIDTH-1:0]               b_id_i,
+   input logic [1:0]                                          b_resp_i,
+   input logic [tlul2axi_pkg::AXI_USER_WIDTH-1:0]             b_user_i,
+   input logic                                                b_valid_i,
+   output logic                                               b_ready_o,
 
    //AXI R channel
-   input logic [IW-1:0]	 r_id_i,
-   input logic [DW-1:0]	 r_data_i,
-   input logic [1:0]	 r_resp_i,
-   input logic		 r_last_i,
-   input logic [UW-1:0]	 r_user_i,
-   input logic		 r_valid_i,
-   output logic		 r_ready_o
+   input logic [tlul2axi_pkg::AXI_ID_WIDTH-1:0]               r_id_i,
+   input logic [tlul2axi_pkg::AXI_SLV_PORT_DATA_WIDTH-1:0]    r_data_i,
+   input logic [1:0]                                          r_resp_i,
+   input logic                                                r_last_i,
+   input logic [tlul2axi_pkg::AXI_USER_WIDTH-1:0]             r_user_i,
+   input logic                                                r_valid_i,
+   output logic                                               r_ready_o
 );
-/*
-   `AXI_TYPEDEF_AW_CHAN_T(aw_chan_t, axi_addr_t, axi_id_t, axi_user_t)
-   `AXI_TYPEDEF_W_CHAN_T(w_chan_t, axi_data_t, axi_strb_t, axi_user_t)
-   `AXI_TYPEDEF_B_CHAN_T(b_chan_t, axi_id_t, axi_user_t)
-   `AXI_TYPEDEF_AR_CHAN_T(ar_chan_t, axi_addr_t, axi_id_t, axi_user_t)
-   `AXI_TYPEDEF_R_CHAN_T(r_chan_t, axi_data_t, axi_id_t, axi_user_t)
-   `AXI_TYPEDEF_REQ_T(axi_req_t, aw_chan_t, w_chan_t, ar_chan_t)
-   `AXI_TYPEDEF_RESP_T(axi_resp_t, b_chan_t, r_chan_t)
-   
-   axi_req_t  axi_req;
-   axi_resp_t axi_rsp;
-  */
+
 
    tlul2axi_pkg::slv_req_t axi_req;
    tlul2axi_pkg::slv_rsp_t axi_rsp;
@@ -187,57 +164,41 @@ module opentitan_synth_wrap
    
 
    top_earlgrey #(
-   ) u_RoT (/*
-                  
-    .clk_main_i(clk_i),
-    .clk_io_i(clk_i),
-    .clk_usb_i(clk_i),
-    .clk_aon_i(clk_i),
-
-    .por_n_i,
-
-    // spi_device
-    .cio_spi_device_sck_p2d (1'b0),
-    .cio_spi_device_csb_p2d (1'b0),
-    .cio_spi_device_sd_p2d  ('0),
-                  
-    // spi_host0
-    .cio_spi_host0_sd_p2d   ('0),
-                  
-    // spi_host1
-    .cio_spi_host1_sd_p2d   ('0),
- 
-    .scan_rst_ni (por_n_i),
-    .scan_en_i   (1'b0),
-    .scanmode_i (lc_ctrl_pkg::Off),
-    .ast_clk_byp_ack_i(4'b0101), 
-
-    .ast_edn_req_i ('0),
-               
-    .jtag_i,
-    .jtag_o,
-           
-    .axi_req,
-    .axi_rsp,
-    .irq_ibex_i
-	    */
-    .scan_rst_ni (rst_ni),
-    .scan_en_i (1'b0),
-    .scanmode_i (lc_ctrl_pkg::Off),
+   ) u_RoT (
     .mio_in_i('0),
     .dio_in_i('0),
- //   .ast_clk_byp_ack_i(lc_ctrl_pkg::Off), 
+    .ast_edn_req_i('0),
+    .obs_ctrl_i('0),
+    .ram_1p_cfg_i('0),
+    .ram_2p_cfg_i('0),
+    .io_clk_byp_ack_i(lc_ctrl_pkg::Off),
     .all_clk_byp_ack_i(lc_ctrl_pkg::Off),
     .div_step_down_req_i(lc_ctrl_pkg::Off),
     .calib_rdy_i(lc_ctrl_pkg::Off),
-    .io_clk_byp_ack_i(lc_ctrl_pkg::Off),
+    .flash_bist_enable_i(lc_ctrl_pkg::Off),
+    .flash_power_down_h_i('0),
+    .flash_power_ready_h_i('0),
+    .es_rng_rsp_i('0),
+    .dft_hold_tap_sel_i('0),
+    .pwrmgr_ast_rsp_i(5'b11111),
+    .otp_ctrl_otp_ast_pwr_seq_h_i('0),
+    .fpga_info_i('0),
+                 
+    .scan_rst_ni (por_n_i),
+    .scan_en_i (1'b0),
+    .scanmode_i (lc_ctrl_pkg::Off),
+                     
+
     .por_n_i ({por_n_i, por_n_i}),
+                     
     .clk_main_i (clk_i),
     .clk_io_i(clk_i),
     .clk_aon_i(clk_i),
+    .clk_usb_i(clk_i),
+            
     .axi_req_o(axi_req),
     .axi_rsp_i(axi_rsp),
-    //.irq_ibex_i,
+    .irq_ibex_i,
     .jtag_req_i(jtag_i),
     .jtag_rsp_o(jtag_o)
     );

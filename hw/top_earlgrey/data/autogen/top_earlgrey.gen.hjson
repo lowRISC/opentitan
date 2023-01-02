@@ -1934,6 +1934,9 @@
           act: rsp
           width: 1
           inst_name: spi_device
+          default: ""
+          end_idx: -1
+          top_signame: spi_device_tl
           index: -1
         }
       ]
@@ -4349,6 +4352,20 @@
           default: ""
           external: true
           top_signame: axi_req
+          conn_type: false
+          index: -1
+        }
+        {
+          name: intr_mbox_irq
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: tlul2axi
+          default: ""
+          package: ""
+          external: true
+          top_signame: irq_ibex
           conn_type: false
           index: -1
         }
@@ -7467,6 +7484,10 @@
       [
         peri.tl_pattgen
       ]
+      spi_device.tl:
+      [
+        peri.tl_spi_device
+      ]
       gpio.tl:
       [
         peri.tl_gpio
@@ -7549,6 +7570,7 @@
       ast.lc_dft_en: ""
       tlul2axi.axi_req: axi_req
       tlul2axi.axi_rsp: axi_rsp
+      tlul2axi.intr_mbox_irq: irq_ibex
       rv_dm.jtag: jtag
       ast.obs_ctrl: obs_ctrl
       ast.ram_1p_cfg: ram_1p_cfg
@@ -7746,7 +7768,7 @@
           [
             {
               base_addr: 0x10000
-              size_byte: 0x2
+              size_byte: 0x10
             }
           ]
           inst_type: tlul2axi
@@ -8564,6 +8586,7 @@
           otp_ctrl.core
           otp_ctrl.prim
           lc_ctrl
+          spi_device
           alert_handler
           sram_ctrl_ret_aon.ram
           sram_ctrl_ret_aon.regs
@@ -8597,6 +8620,24 @@
             {
               base_addr: 0xc00e0000
               size_byte: 0x40
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: spi_device
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: false
+          inst_type: spi_device
+          addr_range:
+          [
+            {
+              base_addr: 0xc0050000
+              size_byte: 0x2000
             }
           ]
           xbar: false
@@ -8882,6 +8923,18 @@
           inst_name: peri
           default: ""
           top_signame: pattgen_tl
+          index: -1
+        }
+        {
+          name: tl_spi_device
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: peri
+          default: ""
+          top_signame: spi_device_tl
           index: -1
         }
         {
@@ -10982,6 +11035,7 @@
     sysrst_ctrl_aon
     aon_timer_aon
     flash_ctrl
+    tlul2axi
     hmac
     kmac
     otbn
@@ -11208,6 +11262,12 @@
       width: 1
       type: interrupt
       module_name: flash_ctrl
+    }
+    {
+      name: tlul2axi_mbox_irq
+      width: 1
+      type: interrupt
+      module_name: tlul2axi
     }
     {
       name: hmac_hmac_done
@@ -13241,6 +13301,9 @@
         act: rsp
         width: 1
         inst_name: spi_device
+        default: ""
+        end_idx: -1
+        top_signame: spi_device_tl
         index: -1
       }
       {
@@ -14811,6 +14874,20 @@
         default: ""
         external: true
         top_signame: axi_req
+        conn_type: false
+        index: -1
+      }
+      {
+        name: intr_mbox_irq
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: tlul2axi
+        default: ""
+        package: ""
+        external: true
+        top_signame: irq_ibex
         conn_type: false
         index: -1
       }
@@ -16397,6 +16474,18 @@
         index: -1
       }
       {
+        name: tl_spi_device
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: peri
+        default: ""
+        top_signame: spi_device_tl
+        index: -1
+      }
+      {
         name: tl_gpio
         struct: tl
         package: tlul_pkg
@@ -16718,6 +16807,18 @@
         conn_type: false
         index: -1
         netname: axi_rsp
+      }
+      {
+        package: ""
+        struct: logic
+        signame: irq_ibex_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: irq_ibex
       }
       {
         package: jtag_pkg
@@ -18698,6 +18799,28 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: pattgen_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: spi_device_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: spi_device_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

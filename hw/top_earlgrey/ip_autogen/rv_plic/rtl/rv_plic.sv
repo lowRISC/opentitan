@@ -16,7 +16,7 @@
 
 `include "prim_assert.sv"
 
-module rv_plic import rv_plic_reg_pkg::*; #(
+module rv_plic_ot import rv_plic_ot_reg_pkg::*; #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn  = {NumAlerts{1'b1}},
   // OpenTitan IP standardizes on level triggered interrupts,
   // hence LevelEdgeTrig is set to all-zeroes by default.
@@ -186,11 +186,12 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   assign prio[85] = reg2hw.prio85.q;
   assign prio[86] = reg2hw.prio86.q;
   assign prio[87] = reg2hw.prio87.q;
+  assign prio[88] = reg2hw.prio88.q;
 
   //////////////////////
   // Interrupt Enable //
   //////////////////////
-  for (genvar s = 0; s < 88; s++) begin : gen_ie0
+  for (genvar s = 0; s < 89; s++) begin : gen_ie0
     assign ie[0][s] = reg2hw.ie0[s].q;
   end
 
@@ -216,7 +217,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   ////////
   // IP //
   ////////
-  for (genvar s = 0; s < 88; s++) begin : gen_ip
+  for (genvar s = 0; s < 89; s++) begin : gen_ip
     assign hw2reg.ip[s].de = 1'b1; // Always write
     assign hw2reg.ip[s].d  = ip[s];
   end
@@ -236,7 +237,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
     .q_o(intr_src_synced)
   );
 
-  rv_plic_gateway #(
+  rv_plic_ot_gateway #(
     .N_SOURCE   (NumSrc)
   ) u_gateway (
     .clk_i,
@@ -255,7 +256,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   // Target interrupt notification //
   ///////////////////////////////////
   for (genvar i = 0 ; i < NumTarget ; i++) begin : gen_target
-    rv_plic_target #(
+    rv_plic_ot_target #(
       .N_SOURCE    (NumSrc),
       .MAX_PRIO    (MAX_PRIO)
     ) u_target (
@@ -306,7 +307,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   ////////////////////////
   //  Limitation of register tool prevents the module from having flexibility to parameters
   //  So, signals are manually tied at the top.
-  rv_plic_reg_top u_reg (
+  rv_plic_ot_reg_top u_reg (
     .clk_i,
     .rst_ni,
 

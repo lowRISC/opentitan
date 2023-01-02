@@ -204,7 +204,7 @@ prim_flop_2sync #(
 assign clk_ext_sys_en  = deep_sleep_n && clk_src_sys_en;
 assign clk_ext_sys_val = clk_ext_sys_en;
 
-prim_clock_gating #(
+tc_clk_gating #(
   .NoFpgaGate ( 1'b1)
 ) u_clk_ext_sys_ckgt (
   .clk_i ( clk_ext ),
@@ -231,7 +231,7 @@ prim_flop_2sync #(
 assign clk_ext_io_en  = deep_sleep_n && clk_src_io_en;
 assign clk_ext_io_val = clk_ext_io_en;
 
-prim_clock_gating #(
+tc_clk_gating #(
   .NoFpgaGate ( 1'b1)
 ) u_clk_ext_io_ckgt (
   .clk_i ( clk_ext ),
@@ -258,7 +258,7 @@ prim_flop_2sync #(
 assign clk_ext_usb_en  = deep_sleep_n && clk_src_usb_en;
 assign clk_ext_usb_val = clk_ext_usb_en;
 
-prim_clock_gating #(
+tc_clk_gating #(
   .NoFpgaGate ( 1'b1)
 ) u_clk_ext_usb_ckgt (
   .clk_i ( clk_src_ext_usb ),

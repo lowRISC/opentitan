@@ -14,7 +14,7 @@
 
 `include "prim_assert.sv"
 
-module ${module_instance_name}_target #(
+module ${module_instance_name}_ot_target #(
   parameter int N_SOURCE = 32,
   parameter int MAX_PRIO = 7,
 

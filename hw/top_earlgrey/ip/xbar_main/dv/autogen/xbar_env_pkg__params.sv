@@ -8,7 +8,7 @@
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
     '{"tlul2axi", '{
-        '{32'h00010000, 32'h00010001}
+        '{32'h00010000, 32'h0001000f}
     }},
     '{"rv_dm__regs", '{
         '{32'hc1200000, 32'hc1200003}

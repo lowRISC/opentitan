@@ -7,6 +7,7 @@
 package tl_peri_pkg;
 
   localparam logic [31:0] ADDR_SPACE_PATTGEN                 = 32'h c00e0000;
+  localparam logic [31:0] ADDR_SPACE_SPI_DEVICE              = 32'h c0050000;
   localparam logic [31:0] ADDR_SPACE_GPIO                    = 32'h c0040000;
   localparam logic [31:0] ADDR_SPACE_RV_TIMER                = 32'h c0100000;
   localparam logic [31:0] ADDR_SPACE_PWRMGR_AON              = 32'h c0400000;
@@ -23,6 +24,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_SYSRST_CTRL_AON         = 32'h c0430000;
 
   localparam logic [31:0] ADDR_MASK_PATTGEN                 = 32'h 0000003f;
+  localparam logic [31:0] ADDR_MASK_SPI_DEVICE              = 32'h 00001fff;
   localparam logic [31:0] ADDR_MASK_GPIO                    = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_RV_TIMER                = 32'h 000001ff;
   localparam logic [31:0] ADDR_MASK_PWRMGR_AON              = 32'h 0000007f;
@@ -39,24 +41,25 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_SYSRST_CTRL_AON         = 32'h 000000ff;
 
   localparam int N_HOST   = 1;
-  localparam int N_DEVICE = 15;
+  localparam int N_DEVICE = 16;
 
   typedef enum int {
     TlPattgen = 0,
-    TlGpio = 1,
-    TlRvTimer = 2,
-    TlPwrmgrAon = 3,
-    TlRstmgrAon = 4,
-    TlClkmgrAon = 5,
-    TlPinmuxAon = 6,
-    TlOtpCtrlCore = 7,
-    TlOtpCtrlPrim = 8,
-    TlLcCtrl = 9,
-    TlAlertHandler = 10,
-    TlSramCtrlRetAonRegs = 11,
-    TlSramCtrlRetAonRam = 12,
-    TlAonTimerAon = 13,
-    TlSysrstCtrlAon = 14
+    TlSpiDevice = 1,
+    TlGpio = 2,
+    TlRvTimer = 3,
+    TlPwrmgrAon = 4,
+    TlRstmgrAon = 5,
+    TlClkmgrAon = 6,
+    TlPinmuxAon = 7,
+    TlOtpCtrlCore = 8,
+    TlOtpCtrlPrim = 9,
+    TlLcCtrl = 10,
+    TlAlertHandler = 11,
+    TlSramCtrlRetAonRegs = 12,
+    TlSramCtrlRetAonRam = 13,
+    TlAonTimerAon = 14,
+    TlSysrstCtrlAon = 15
   } tl_device_e;
 
   typedef enum int {

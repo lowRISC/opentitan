@@ -473,7 +473,7 @@ extern "C" {
  * address between #TOP_EARLGREY_TLUL2AXI_BASE_ADDR and
  * `TOP_EARLGREY_TLUL2AXI_BASE_ADDR + TOP_EARLGREY_TLUL2AXI_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_TLUL2AXI_SIZE_BYTES 0x2u
+#define TOP_EARLGREY_TLUL2AXI_SIZE_BYTES 0x10u
 
 /**
  * Peripheral base address for rv_plic in top earlgrey.
@@ -807,15 +807,16 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralSysrstCtrlAon = 10, /**< sysrst_ctrl_aon */
   kTopEarlgreyPlicPeripheralAonTimerAon = 11, /**< aon_timer_aon */
   kTopEarlgreyPlicPeripheralFlashCtrl = 12, /**< flash_ctrl */
-  kTopEarlgreyPlicPeripheralHmac = 13, /**< hmac */
-  kTopEarlgreyPlicPeripheralKmac = 14, /**< kmac */
-  kTopEarlgreyPlicPeripheralOtbn = 15, /**< otbn */
-  kTopEarlgreyPlicPeripheralKeymgr = 16, /**< keymgr */
-  kTopEarlgreyPlicPeripheralCsrng = 17, /**< csrng */
-  kTopEarlgreyPlicPeripheralEntropySrc = 18, /**< entropy_src */
-  kTopEarlgreyPlicPeripheralEdn0 = 19, /**< edn0 */
-  kTopEarlgreyPlicPeripheralEdn1 = 20, /**< edn1 */
-  kTopEarlgreyPlicPeripheralLast = 20, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralTlul2axi = 13, /**< tlul2axi */
+  kTopEarlgreyPlicPeripheralHmac = 14, /**< hmac */
+  kTopEarlgreyPlicPeripheralKmac = 15, /**< kmac */
+  kTopEarlgreyPlicPeripheralOtbn = 16, /**< otbn */
+  kTopEarlgreyPlicPeripheralKeymgr = 17, /**< keymgr */
+  kTopEarlgreyPlicPeripheralCsrng = 18, /**< csrng */
+  kTopEarlgreyPlicPeripheralEntropySrc = 19, /**< entropy_src */
+  kTopEarlgreyPlicPeripheralEdn0 = 20, /**< edn0 */
+  kTopEarlgreyPlicPeripheralEdn1 = 21, /**< edn1 */
+  kTopEarlgreyPlicPeripheralLast = 21, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -893,27 +894,28 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdFlashCtrlRdLvl = 65, /**< flash_ctrl_rd_lvl */
   kTopEarlgreyPlicIrqIdFlashCtrlOpDone = 66, /**< flash_ctrl_op_done */
   kTopEarlgreyPlicIrqIdFlashCtrlCorrErr = 67, /**< flash_ctrl_corr_err */
-  kTopEarlgreyPlicIrqIdHmacHmacDone = 68, /**< hmac_hmac_done */
-  kTopEarlgreyPlicIrqIdHmacFifoEmpty = 69, /**< hmac_fifo_empty */
-  kTopEarlgreyPlicIrqIdHmacHmacErr = 70, /**< hmac_hmac_err */
-  kTopEarlgreyPlicIrqIdKmacKmacDone = 71, /**< kmac_kmac_done */
-  kTopEarlgreyPlicIrqIdKmacFifoEmpty = 72, /**< kmac_fifo_empty */
-  kTopEarlgreyPlicIrqIdKmacKmacErr = 73, /**< kmac_kmac_err */
-  kTopEarlgreyPlicIrqIdOtbnDone = 74, /**< otbn_done */
-  kTopEarlgreyPlicIrqIdKeymgrOpDone = 75, /**< keymgr_op_done */
-  kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 76, /**< csrng_cs_cmd_req_done */
-  kTopEarlgreyPlicIrqIdCsrngCsEntropyReq = 77, /**< csrng_cs_entropy_req */
-  kTopEarlgreyPlicIrqIdCsrngCsHwInstExc = 78, /**< csrng_cs_hw_inst_exc */
-  kTopEarlgreyPlicIrqIdCsrngCsFatalErr = 79, /**< csrng_cs_fatal_err */
-  kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 80, /**< entropy_src_es_entropy_valid */
-  kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 81, /**< entropy_src_es_health_test_failed */
-  kTopEarlgreyPlicIrqIdEntropySrcEsObserveFifoReady = 82, /**< entropy_src_es_observe_fifo_ready */
-  kTopEarlgreyPlicIrqIdEntropySrcEsFatalErr = 83, /**< entropy_src_es_fatal_err */
-  kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 84, /**< edn0_edn_cmd_req_done */
-  kTopEarlgreyPlicIrqIdEdn0EdnFatalErr = 85, /**< edn0_edn_fatal_err */
-  kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 86, /**< edn1_edn_cmd_req_done */
-  kTopEarlgreyPlicIrqIdEdn1EdnFatalErr = 87, /**< edn1_edn_fatal_err */
-  kTopEarlgreyPlicIrqIdLast = 87, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdTlul2axiMboxIrq = 68, /**< tlul2axi_mbox_irq */
+  kTopEarlgreyPlicIrqIdHmacHmacDone = 69, /**< hmac_hmac_done */
+  kTopEarlgreyPlicIrqIdHmacFifoEmpty = 70, /**< hmac_fifo_empty */
+  kTopEarlgreyPlicIrqIdHmacHmacErr = 71, /**< hmac_hmac_err */
+  kTopEarlgreyPlicIrqIdKmacKmacDone = 72, /**< kmac_kmac_done */
+  kTopEarlgreyPlicIrqIdKmacFifoEmpty = 73, /**< kmac_fifo_empty */
+  kTopEarlgreyPlicIrqIdKmacKmacErr = 74, /**< kmac_kmac_err */
+  kTopEarlgreyPlicIrqIdOtbnDone = 75, /**< otbn_done */
+  kTopEarlgreyPlicIrqIdKeymgrOpDone = 76, /**< keymgr_op_done */
+  kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 77, /**< csrng_cs_cmd_req_done */
+  kTopEarlgreyPlicIrqIdCsrngCsEntropyReq = 78, /**< csrng_cs_entropy_req */
+  kTopEarlgreyPlicIrqIdCsrngCsHwInstExc = 79, /**< csrng_cs_hw_inst_exc */
+  kTopEarlgreyPlicIrqIdCsrngCsFatalErr = 80, /**< csrng_cs_fatal_err */
+  kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid = 81, /**< entropy_src_es_entropy_valid */
+  kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed = 82, /**< entropy_src_es_health_test_failed */
+  kTopEarlgreyPlicIrqIdEntropySrcEsObserveFifoReady = 83, /**< entropy_src_es_observe_fifo_ready */
+  kTopEarlgreyPlicIrqIdEntropySrcEsFatalErr = 84, /**< entropy_src_es_fatal_err */
+  kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone = 85, /**< edn0_edn_cmd_req_done */
+  kTopEarlgreyPlicIrqIdEdn0EdnFatalErr = 86, /**< edn0_edn_fatal_err */
+  kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 87, /**< edn1_edn_cmd_req_done */
+  kTopEarlgreyPlicIrqIdEdn1EdnFatalErr = 88, /**< edn1_edn_fatal_err */
+  kTopEarlgreyPlicIrqIdLast = 88, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -923,7 +925,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[88];
+    top_earlgrey_plic_interrupt_for_peripheral[89];
 
 /**
  * PLIC Interrupt Target.

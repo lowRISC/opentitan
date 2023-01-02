@@ -166,7 +166,7 @@
       [
         {
           base_addr: 0x10000
-          size_byte: 0x2
+          size_byte: 0x10
         }
       ]
       inst_type: tlul2axi

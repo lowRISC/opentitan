@@ -55,7 +55,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_CSRNG                = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_EDN0                 = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_EDN1                 = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_RV_PLIC              = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_RV_PLIC              = 32'h 07ffffff;
   localparam logic [31:0] ADDR_MASK_OTBN                 = 32'h 0000ffff;
   localparam logic [31:0] ADDR_MASK_KEYMGR               = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_RV_CORE_IBEX__CFG    = 32'h 00000fff;

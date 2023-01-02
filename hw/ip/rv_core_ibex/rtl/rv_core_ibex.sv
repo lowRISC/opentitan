@@ -10,6 +10,7 @@
  */
 
 `include "prim_assert.sv"
+`define TARGET_SYNTHESIS
 
 module rv_core_ibex
   import rv_core_ibex_pkg::*;
@@ -481,7 +482,11 @@ module rv_core_ibex
     .rvfi_mem_wdata,
 `endif
     // SEC_CM: FETCH.CTRL.LC_GATED
+`ifndef TARGET_SYNTHESIS            
     .fetch_enable_i         (fetch_enable),
+`else
+    .fetch_enable_i         (lc_ctrl_pkg::On),
+`endif    
     .alert_minor_o          (alert_minor),
     .alert_major_internal_o (alert_major_internal),
     .alert_major_bus_o      (alert_major_bus),
@@ -643,7 +648,8 @@ module rv_core_ibex
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());
 
-`ifdef RVFI
+`ifndef TARGET_SYNTHESIS
+ `ifdef RVFI
   ibex_tracer ibex_tracer_i (
     .clk_i,
     .rst_ni,
@@ -674,6 +680,7 @@ module rv_core_ibex
     .rvfi_mem_rdata,
     .rvfi_mem_wdata
   );
+ `endif
 `endif
 
   //////////////////////////////////

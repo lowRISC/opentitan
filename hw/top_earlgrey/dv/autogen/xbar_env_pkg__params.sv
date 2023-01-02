@@ -8,7 +8,7 @@
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
     '{"tlul2axi", '{
-        '{32'h00010000, 32'h00010001}
+        '{32'h00010000, 32'h0001000f}
     }},
     '{"rv_dm__regs", '{
         '{32'hc1200000, 32'hc1200003}
@@ -79,6 +79,9 @@ tl_device_t xbar_devices[$] = '{
     '{"pattgen", '{
         '{32'hc00e0000, 32'hc00e003f}
     }},
+    '{"spi_device", '{
+        '{32'hc0050000, 32'hc0051fff}
+    }},
     '{"gpio", '{
         '{32'hc0040000, 32'hc004003f}
     }},
@@ -146,6 +149,7 @@ tl_host_t xbar_hosts[$] = '{
         "otp_ctrl__core",
         "otp_ctrl__prim",
         "lc_ctrl",
+        "spi_device",
         "alert_handler",
         "sram_ctrl_ret_aon__ram",
         "sram_ctrl_ret_aon__regs",
@@ -186,6 +190,7 @@ tl_host_t xbar_hosts[$] = '{
         "otp_ctrl__core",
         "otp_ctrl__prim",
         "lc_ctrl",
+        "spi_device",
         "alert_handler",
         "sram_ctrl_ret_aon__ram",
         "sram_ctrl_ret_aon__regs",

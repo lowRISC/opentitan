@@ -63,6 +63,7 @@ tl_if rv_core_ibex__cfg_tl_if(clk_main, rst_n);
 tl_if sram_ctrl_main__regs_tl_if(clk_main, rst_n);
 tl_if sram_ctrl_main__ram_tl_if(clk_main, rst_n);
 tl_if pattgen_tl_if(clk_io_div4, rst_n);
+tl_if spi_device_tl_if(clk_io_div4, rst_n);
 tl_if gpio_tl_if(clk_io_div4, rst_n);
 tl_if rv_timer_tl_if(clk_io_div4, rst_n);
 tl_if pwrmgr_aon_tl_if(clk_io_div4, rst_n);
@@ -136,6 +137,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main__regs, sram_ctrl_main, regs_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main__ram, sram_ctrl_main, ram_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(pattgen, pattgen, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(gpio, gpio, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr_aon, pwrmgr_aon, tl)

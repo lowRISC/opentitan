@@ -45,8 +45,8 @@ generate
       end
     end
 
-    prim_clock_gating #(
-      .FpgaBufGlobal(FpgaBufGlobal)
+    tc_clk_gating #(
+      
     ) u_cg (
       .clk_i(clk_gp[i]),
       .en_i(stage_q[i]),

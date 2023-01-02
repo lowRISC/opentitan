@@ -174,8 +174,8 @@ module dm_ot_top #(
     .master_be_o,
     .master_gnt_i,
     .master_r_valid_i,
-    .master_r_err_i,
-    .master_r_other_err_i,
+   // .master_r_err_i,
+   // .master_r_other_err_i,
     .master_r_rdata_i,
 
     .sbaddress_i             ( sbaddress_csrs_sba    ),
@@ -204,7 +204,7 @@ module dm_ot_top #(
     .clk_i,
     .rst_ni,
     .debug_req_o,
-    .ndmreset_i              ( ndmreset              ),
+    //.ndmreset_i              ( ndmreset              ),
     .hartsel_i               ( hartsel               ),
     .haltreq_i               ( haltreq               ),
     .resumereq_i             ( resumereq             ),
@@ -225,8 +225,10 @@ module dm_ot_top #(
     .addr_i                  ( slave_addr_i          ),
     .wdata_i                 ( slave_wdata_i         ),
     .be_i                    ( slave_be_i            ),
-    .rdata_o                 ( slave_rdata_o         ),
-    .err_o                   ( slave_err_o           )
+    .rdata_o                 ( slave_rdata_o         )
+    //.err_o                   ( slave_err_o           )
   );
 
+  assign slave_err_o = 1'b0;
+   
 endmodule 

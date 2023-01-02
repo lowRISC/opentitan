@@ -434,7 +434,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
         % endif
       % endfor
     % endif
-    % if m["type"] == "rv_plic":
+    % if m["type"] == "rv_plic_ot":
       .intr_src_i (intr_vector),
     % endif
     % if m["type"] == "pinmux":

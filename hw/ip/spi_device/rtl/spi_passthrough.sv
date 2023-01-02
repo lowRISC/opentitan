@@ -628,9 +628,7 @@ module spi_passthrough
   end
 
   logic pt_gated_sck;
-  prim_clock_gating #(
-    .NoFpgaGate    (1'b 0),
-    .FpgaBufGlobal (1'b 1) // Going outside of chip
+  tc_clk_gating #(
   ) u_pt_sck_cg (
     .clk_i     (host_sck_i  ),
     .en_i      (sck_gate_en ),

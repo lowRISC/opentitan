@@ -16,7 +16,7 @@
 
 `include "prim_assert.sv"
 
-module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
+module ${module_instance_name}_ot import ${module_instance_name}_ot_reg_pkg::*; #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn  = {NumAlerts{1'b1}},
   // OpenTitan IP standardizes on level triggered interrupts,
   // hence LevelEdgeTrig is set to all-zeroes by default.
@@ -159,7 +159,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
     .q_o(intr_src_synced)
   );
 
-  ${module_instance_name}_gateway #(
+  ${module_instance_name}_ot_gateway #(
     .N_SOURCE   (NumSrc)
   ) u_gateway (
     .clk_i,
@@ -178,7 +178,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   // Target interrupt notification //
   ///////////////////////////////////
   for (genvar i = 0 ; i < NumTarget ; i++) begin : gen_target
-    ${module_instance_name}_target #(
+    ${module_instance_name}_ot_target #(
       .N_SOURCE    (NumSrc),
       .MAX_PRIO    (MAX_PRIO)
     ) u_target (
@@ -229,7 +229,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   ////////////////////////
   //  Limitation of register tool prevents the module from having flexibility to parameters
   //  So, signals are manually tied at the top.
-  ${module_instance_name}_reg_top u_reg (
+  ${module_instance_name}_ot_reg_top u_reg (
     .clk_i,
     .rst_ni,
 

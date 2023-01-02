@@ -1,0 +1,25 @@
+package:
+  name: pulp_dbg
+
+
+
+  
+sources:
+
+
+  include_dirs:
+ 
+
+  files:
+  
+  - ../../../ip/prim/rtl/prim_assert.sv
+  - ../debug_rom/debug_rom.sv
+  - ../debug_rom/debug_rom_one_scratch.sv
+  - dm_pkg.sv
+  - dm_obi_top.sv
+  - dm_sba.sv
+  - dmi_cdc.sv
+  - dmi_jtag.sv
+  - dmi_jtag_tap.sv
+  - dm_mem.sv
+  - dm_csrs.sv

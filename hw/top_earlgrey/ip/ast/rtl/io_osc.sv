@@ -87,7 +87,7 @@ assign en_osc_re = vcore_pok_h_i && io_en_i;
 ////////////////////////////////////////
 logic clk, en_osc;
 
-prim_clock_gating #(
+tc_clk_gating #(
   .NoFpgaGate ( 1'b1 )
 ) u_clk_ckgt (
   .clk_i ( clk_io_ext_i ),

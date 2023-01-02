@@ -13,6 +13,11 @@
   ],
   regwidth: "32",
   registers: [],
+  interrupt_list: [
+    { name: "mbox_irq",
+      desc: "raised if AlSaqr mbox"
+    },
+  ],
   inter_signal_list: [
     { name:    "axi_req",
       type:    "uni"
@@ -20,6 +25,13 @@
       struct:  "axi_req",
       package: "tlul2axi_pkg",
       struct:  "slv_req"
+    },
+    { name:    "intr_mbox_irq",
+      type:    "uni"
+      act:     "rcv",
+      struct:  "logic",
+      package: "",
+      width:   "1"
     },
     { name:    "axi_rsp",
       default: "",

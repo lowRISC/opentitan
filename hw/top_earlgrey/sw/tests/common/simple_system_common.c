@@ -337,7 +337,7 @@ int puts(const char *s)
 
 void external_irq_handler(void)  {
   
-  int mbox_id = 100;
+  int mbox_id = 68;
   int a, b, c, e, d;
   int volatile * p_reg, * p_reg1, * plic_check, * p_reg2, * p_reg3, * p_reg4, * p_reg5 ;
 
@@ -351,7 +351,7 @@ void external_irq_handler(void)  {
 
   // start of """Interrupt Service Routine"""
   
-  plic_check = (int *) 0xC800031C;
+  plic_check = (int *) 0xC8200004;
   while(*plic_check != mbox_id);   //check wether the intr is the correct one
   
   p_reg = (int *) 0x10404020;

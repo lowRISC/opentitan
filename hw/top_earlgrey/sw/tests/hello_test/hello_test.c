@@ -13,7 +13,7 @@
 #include "simple_system_common.h"
 #include <stdbool.h>
 
-//#define TARGET_SYNTHESIS
+#define TARGET_SYNTHESIS
 
 int main(int argc, char **argv) {
 
@@ -37,38 +37,40 @@ int main(int argc, char **argv) {
   
 
   printf("FPGA test with two indipendent JTAG for Ibex and Ariane\r\n");
-
+  uart_wait_tx_done();
   unsigned val_1 = 0x00001808;  // Set global interrupt enable in ibex regs
   unsigned val_2 = 0x00000800;  // Set external interrupts
 
   asm volatile("csrw  mstatus, %0\n" : : "r"(val_1)); 
   asm volatile("csrw  mie, %0\n"     : : "r"(val_2));
 
-  plic_prio  = (int *) 0xC8000000;  // Priority reg
-  plic_en    = (int *) 0xC8000008;  // Enable reg
+  plic_prio  = (int *) 0xC8000110;  // Priority reg
+  plic_en    = (int *) 0xC8002008;  // Enable reg
 
  *plic_prio  = 1;                   // Set mbox interrupt priority to 1
- *plic_en    = 1;          // Enable interrupt
+ *plic_en    = 0x00000010;          // Enable interrupt
  
   printf("Ibex: Writing and reading to the mailbox\r\n");
-  p_reg = (int *) 0x1040000C;
+  uart_wait_tx_done();
+  p_reg = (int *) 0x10404000;
  *p_reg = 0xbaadc0de;
 
   a = *p_reg;
   
-  if(a == 0xbaadc0de)
+  if(a == 0xbaadc0de){
      printf("Ibex: R & W succeeded\r\nGoing in wfi\r\n");
-  else
+     uart_wait_tx_done();
+  }
+  else{
      printf("Test failed, the mbox has not been accessed correctly\r\n");
- 
+     uart_wait_tx_done();
+  }
   /////////////////////////// Wait for shared memory test to start ///////////////////////////////
   
   
   while(1)
     asm volatile ("wfi"); // Ready to receive a command from the Agent --> Jump to the External_Irq_Handler
 
-  
-  uart_wait_tx_done();
   return 0;
   
 }

@@ -23,8 +23,7 @@ module dm_ot_csrs #(
   input  logic                              clk_i,           // Clock
   input  logic                              rst_ni,          // Asynchronous reset active low
   input  logic                              testmode_i,
-  input  logic                              dmi_rst_ni,      // sync. DTM reset,
-                                                             // active-low
+  input  logic                              dmi_rst_ni,      // Debug Module Intf reset active-low
   input  logic                              dmi_req_valid_i,
   output logic                              dmi_req_ready_o,
   input  dm_ot::dmi_req_t                      dmi_req_i,
@@ -87,6 +86,7 @@ module dm_ot_csrs #(
   dm_ot::dtm_op_e dtm_op;
   assign dtm_op = dm_ot::dtm_op_e'(dmi_req_i.op);
 
+  logic [31:0] resp_queue_data;
 
   localparam dm_ot::dm_csr_e DataEnd = dm_ot::dm_csr_e'(dm_ot::Data0 + {4'h0, dm_ot::DataCount} - 8'h1);
   localparam dm_ot::dm_csr_e ProgBufEnd = dm_ot::dm_csr_e'(dm_ot::ProgBuf0 + {4'h0, dm_ot::ProgBufSize} - 8'h1);
@@ -175,8 +175,8 @@ module dm_ot_csrs #(
 
   logic [HartSelLen-1:0] selected_hart;
 
-  dm_ot::dmi_resp_t resp_queue_inp;
-
+  // a successful response returns zero
+  assign dmi_resp_o.resp = dm_ot::DTM_SUCCESS;
   // SBA
   assign sbautoincrement_o = sbcs_q.sbautoincrement;
   assign sbreadonaddr_o    = sbcs_q.sbreadonaddr;
@@ -272,8 +272,7 @@ module dm_ot_csrs #(
     sbaddr_d            = 64'(sbaddress_i);
     sbdata_d            = sbdata_q;
 
-    resp_queue_inp.data     = 32'h0;
-    resp_queue_inp.resp     = dm_ot::DTM_SUCCESS;
+    resp_queue_data         = 32'h0;
     cmd_valid_d             = 1'b0;
     sbaddress_write_valid_o = 1'b0;
     sbdata_read_valid_o     = 1'b0;
@@ -288,70 +287,62 @@ module dm_ot_csrs #(
     if (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm_ot::DTM_READ) begin
       unique case (dm_csr_addr) inside
         [(dm_ot::Data0):DataEnd]: begin
-          resp_queue_inp.data = data_q[$clog2(dm_ot::DataCount)'(autoexecdata_idx)];
+          resp_queue_data = data_q[$clog2(dm_ot::DataCount)'(autoexecdata_idx)];
           if (!cmdbusy_i) begin
             // check whether we need to re-execute the command (just give a cmd_valid)
             cmd_valid_d = abstractauto_q.autoexecdata[autoexecdata_idx];
           // An abstract command was executing while one of the data registers was read
-          end else begin
-            resp_queue_inp.resp = dm_ot::DTM_BUSY;
-            if (cmderr_q == dm_ot::CmdErrNone) begin
-              cmderr_d = dm_ot::CmdErrBusy;
-            end
+          end else if (cmderr_q == dm_ot::CmdErrNone) begin
+            cmderr_d = dm_ot::CmdErrBusy;
           end
         end
-        dm_ot::DMControl:    resp_queue_inp.data = dmcontrol_q;
-        dm_ot::DMStatus:     resp_queue_inp.data = dmstatus;
-        dm_ot::Hartinfo:     resp_queue_inp.data = hartinfo_aligned[selected_hart];
-        dm_ot::AbstractCS:   resp_queue_inp.data = abstractcs;
-        dm_ot::AbstractAuto: resp_queue_inp.data = abstractauto_q;
+        dm_ot::DMControl:    resp_queue_data = dmcontrol_q;
+        dm_ot::DMStatus:     resp_queue_data = dmstatus;
+        dm_ot::Hartinfo:     resp_queue_data = hartinfo_aligned[selected_hart];
+        dm_ot::AbstractCS:   resp_queue_data = abstractcs;
+        dm_ot::AbstractAuto: resp_queue_data = abstractauto_q;
         // command is read-only
-        dm_ot::Command:    resp_queue_inp.data = '0;
+        dm_ot::Command:    resp_queue_data = '0;
         [(dm_ot::ProgBuf0):ProgBufEnd]: begin
-          resp_queue_inp.data = progbuf_q[dmi_req_i.addr[$clog2(dm_ot::ProgBufSize)-1:0]];
+          resp_queue_data = progbuf_q[dmi_req_i.addr[$clog2(dm_ot::ProgBufSize)-1:0]];
           if (!cmdbusy_i) begin
             // check whether we need to re-execute the command (just give a cmd_valid)
             // range of autoexecprogbuf is 31:16
             cmd_valid_d = abstractauto_q.autoexecprogbuf[{1'b1, dmi_req_i.addr[3:0]}];
 
           // An abstract command was executing while one of the progbuf registers was read
-          end else begin
-            resp_queue_inp.resp = dm_ot::DTM_BUSY;
-            if (cmderr_q == dm_ot::CmdErrNone) begin
-              cmderr_d = dm_ot::CmdErrBusy;
-            end
+          end else if (cmderr_q == dm_ot::CmdErrNone) begin
+            cmderr_d = dm_ot::CmdErrBusy;
           end
         end
-        dm_ot::HaltSum0: resp_queue_inp.data = haltsum0;
-        dm_ot::HaltSum1: resp_queue_inp.data = haltsum1;
-        dm_ot::HaltSum2: resp_queue_inp.data = haltsum2;
-        dm_ot::HaltSum3: resp_queue_inp.data = haltsum3;
+        dm_ot::HaltSum0: resp_queue_data = haltsum0;
+        dm_ot::HaltSum1: resp_queue_data = haltsum1;
+        dm_ot::HaltSum2: resp_queue_data = haltsum2;
+        dm_ot::HaltSum3: resp_queue_data = haltsum3;
         dm_ot::SBCS: begin
-          resp_queue_inp.data = sbcs_q;
+          resp_queue_data = sbcs_q;
         end
         dm_ot::SBAddress0: begin
-          resp_queue_inp.data = sbaddr_q[31:0];
+          resp_queue_data = sbaddr_q[31:0];
         end
         dm_ot::SBAddress1: begin
-          resp_queue_inp.data = sbaddr_q[63:32];
+          resp_queue_data = sbaddr_q[63:32];
         end
         dm_ot::SBData0: begin
           // access while the SBA was busy
           if (sbbusy_i || sbcs_q.sbbusyerror) begin
             sbcs_d.sbbusyerror = 1'b1;
-            resp_queue_inp.resp = dm_ot::DTM_BUSY;
           end else begin
             sbdata_read_valid_o = (sbcs_q.sberror == '0);
-            resp_queue_inp.data = sbdata_q[31:0];
+            resp_queue_data = sbdata_q[31:0];
           end
         end
         dm_ot::SBData1: begin
           // access while the SBA was busy
           if (sbbusy_i || sbcs_q.sbbusyerror) begin
             sbcs_d.sbbusyerror = 1'b1;
-            resp_queue_inp.resp = dm_ot::DTM_BUSY;
           end else begin
-            resp_queue_inp.data = sbdata_q[63:32];
+            resp_queue_data = sbdata_q[63:32];
           end
         end
         default:;
@@ -369,11 +360,8 @@ module dm_ot_csrs #(
               // check whether we need to re-execute the command (just give a cmd_valid)
               cmd_valid_d = abstractauto_q.autoexecdata[autoexecdata_idx];
             //An abstract command was executing while one of the data registers was written
-            end else begin
-              resp_queue_inp.resp = dm_ot::DTM_BUSY;
-              if (cmderr_q == dm_ot::CmdErrNone) begin
-                cmderr_d = dm_ot::CmdErrBusy;
-              end
+            end else if (cmderr_q == dm_ot::CmdErrNone) begin
+              cmderr_d = dm_ot::CmdErrBusy;
             end
           end
         end
@@ -396,11 +384,8 @@ module dm_ot_csrs #(
           // reads during abstract command execution are not allowed
           if (!cmdbusy_i) begin
             cmderr_d = dm_ot::cmderr_e'(~a_abstractcs.cmderr & cmderr_q);
-          end else begin
-            resp_queue_inp.resp = dm_ot::DTM_BUSY;
-            if (cmderr_q == dm_ot::CmdErrNone) begin
-              cmderr_d = dm_ot::CmdErrBusy;
-            end
+          end else if (cmderr_q == dm_ot::CmdErrNone) begin
+            cmderr_d = dm_ot::CmdErrBusy;
           end
         end
         dm_ot::Command: begin
@@ -410,11 +395,8 @@ module dm_ot_csrs #(
             command_d = dm_ot::command_t'(dmi_req_i.data);
           // if there was an attempted to write during a busy execution
           // and the cmderror field is zero set the busy error
-          end else begin
-            resp_queue_inp.resp = dm_ot::DTM_BUSY;
-            if (cmderr_q == dm_ot::CmdErrNone) begin
-              cmderr_d = dm_ot::CmdErrBusy;
-            end
+          end else if (cmderr_q == dm_ot::CmdErrNone) begin
+            cmderr_d = dm_ot::CmdErrBusy;
           end
         end
         dm_ot::AbstractAuto: begin
@@ -423,11 +405,8 @@ module dm_ot_csrs #(
             abstractauto_d                 = 32'h0;
             abstractauto_d.autoexecdata    = 12'(dmi_req_i.data[dm_ot::DataCount-1:0]);
             abstractauto_d.autoexecprogbuf = 16'(dmi_req_i.data[dm_ot::ProgBufSize-1+16:16]);
-          end else begin
-            resp_queue_inp.resp = dm_ot::DTM_BUSY;
-            if (cmderr_q == dm_ot::CmdErrNone) begin
-              cmderr_d = dm_ot::CmdErrBusy;
-            end
+          end else if (cmderr_q == dm_ot::CmdErrNone) begin
+            cmderr_d = dm_ot::CmdErrBusy;
           end
         end
         [(dm_ot::ProgBuf0):ProgBufEnd]: begin
@@ -440,31 +419,26 @@ module dm_ot_csrs #(
             // range of autoexecprogbuf is 31:16
             cmd_valid_d = abstractauto_q.autoexecprogbuf[{1'b1, dmi_req_i.addr[3:0]}];
           //An abstract command was executing while one of the progbuf registers was written
-          end else begin
-            resp_queue_inp.resp = dm_ot::DTM_BUSY;
-            if (cmderr_q == dm_ot::CmdErrNone) begin
-              cmderr_d = dm_ot::CmdErrBusy;
-            end
+          end else if (cmderr_q == dm_ot::CmdErrNone) begin
+            cmderr_d = dm_ot::CmdErrBusy;
           end
         end
         dm_ot::SBCS: begin
           // access while the SBA was busy
           if (sbbusy_i) begin
             sbcs_d.sbbusyerror = 1'b1;
-            resp_queue_inp.resp = dm_ot::DTM_BUSY;
           end else begin
             sbcs = dm_ot::sbcs_t'(dmi_req_i.data);
             sbcs_d = sbcs;
             // R/W1C
             sbcs_d.sbbusyerror = sbcs_q.sbbusyerror & (~sbcs.sbbusyerror);
-            sbcs_d.sberror     = sbcs_q.sberror     & {3{~(sbcs.sberror == 3'd1)}};
+            sbcs_d.sberror     = sbcs_q.sberror     & (~sbcs.sberror);
           end
         end
         dm_ot::SBAddress0: begin
           // access while the SBA was busy
           if (sbbusy_i || sbcs_q.sbbusyerror) begin
             sbcs_d.sbbusyerror = 1'b1;
-            resp_queue_inp.resp = dm_ot::DTM_BUSY;
           end else begin
             sbaddr_d[31:0] = dmi_req_i.data;
             sbaddress_write_valid_o = (sbcs_q.sberror == '0);
@@ -474,7 +448,6 @@ module dm_ot_csrs #(
           // access while the SBA was busy
           if (sbbusy_i || sbcs_q.sbbusyerror) begin
             sbcs_d.sbbusyerror = 1'b1;
-            resp_queue_inp.resp = dm_ot::DTM_BUSY;
           end else begin
             sbaddr_d[63:32] = dmi_req_i.data;
           end
@@ -483,7 +456,6 @@ module dm_ot_csrs #(
           // access while the SBA was busy
           if (sbbusy_i || sbcs_q.sbbusyerror) begin
            sbcs_d.sbbusyerror = 1'b1;
-           resp_queue_inp.resp = dm_ot::DTM_BUSY;
           end else begin
             sbdata_d[31:0] = dmi_req_i.data;
             sbdata_write_valid_o = (sbcs_q.sberror == '0);
@@ -493,7 +465,6 @@ module dm_ot_csrs #(
           // access while the SBA was busy
           if (sbbusy_i || sbcs_q.sbbusyerror) begin
            sbcs_d.sbbusyerror = 1'b1;
-           resp_queue_inp.resp = dm_ot::DTM_BUSY;
           end else begin
             sbdata_d[63:32] = dmi_req_i.data;
           end
@@ -548,11 +519,12 @@ module dm_ot_csrs #(
     sbcs_d.sbversion            = 3'd1;
     sbcs_d.sbbusy               = sbbusy_i;
     sbcs_d.sbasize              = $bits(sbcs_d.sbasize)'(BusWidth);
-    sbcs_d.sbaccess128          = logic'(BusWidth >= 32'd128);
-    sbcs_d.sbaccess64           = logic'(BusWidth >= 32'd64);
-    sbcs_d.sbaccess32           = logic'(BusWidth >= 32'd32);
-    sbcs_d.sbaccess16           = logic'(BusWidth >= 32'd16);
-    sbcs_d.sbaccess8            = logic'(BusWidth >= 32'd8);
+    sbcs_d.sbaccess128          = 1'b0;
+    sbcs_d.sbaccess64           = logic'(BusWidth == 32'd64);
+    sbcs_d.sbaccess32           = logic'(BusWidth == 32'd32);
+    sbcs_d.sbaccess16           = 1'b0;
+    sbcs_d.sbaccess8            = 1'b0;
+    sbcs_d.sbaccess             = (BusWidth == 32'd64) ? 3'd3 : 3'd2;
   end
 
   // output multiplexer
@@ -580,22 +552,21 @@ module dm_ot_csrs #(
 
   // response FIFO
   prim_fifo_sync #(
-    .Width   ($bits(dmi_resp_o)),
+    .Width   (32),
     .Pass    (1'b0),
     .Depth   (2)
   ) i_fifo (
     .clk_i   ( clk_i                ),
     .rst_ni  ( dmi_rst_ni           ), // reset only when system is re-set
     .clr_i   ( 1'b0                 ),
-    .wdata_i ( resp_queue_inp       ),
+    .wdata_i ( resp_queue_data      ),
     .wvalid_i( dmi_req_valid_i      ),
     .wready_o( dmi_req_ready_o      ),
-    .rdata_o ( dmi_resp_o           ),
+    .rdata_o ( dmi_resp_o.data      ),
     .rvalid_o( dmi_resp_valid_o     ),
     .rready_i( dmi_resp_ready_i     ),
     .full_o  (                      ), // Unused
-    .depth_o (                      ), // Unused
-    .err_o   (                      )  // Unused
+    .depth_o (                      )  // Unused
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
@@ -609,7 +580,7 @@ module dm_ot_csrs #(
       abstractauto_q <= '0;
       progbuf_q      <= '0;
       data_q         <= '0;
-      sbcs_q         <= '{default: '0,  sbaccess: 3'd2};
+      sbcs_q         <= '0;
       sbaddr_q       <= '0;
       sbdata_q       <= '0;
       havereset_q    <= '1;
@@ -637,7 +608,7 @@ module dm_ot_csrs #(
         abstractauto_q               <= '0;
         progbuf_q                    <= '0;
         data_q                       <= '0;
-        sbcs_q                       <= '{default: '0,  sbaccess: 3'd2};
+        sbcs_q                       <= '0;
         sbaddr_q                     <= '0;
         sbdata_q                     <= '0;
       end else begin
@@ -655,4 +626,4 @@ module dm_ot_csrs #(
     end
   end
 
-endmodule
+endmodule 

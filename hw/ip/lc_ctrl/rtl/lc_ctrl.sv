@@ -212,7 +212,7 @@ module lc_ctrl
     .clk_i,
     .rst_ni,
     .testmode_i       ( scanmode          ),
-    .test_rst_ni      ( scan_rst_ni       ),
+   // .test_rst_ni      ( scan_rst_ni       ),
     .dmi_rst_no       (                   ), // unused
     .dmi_req_o        ( dmi_req           ),
     .dmi_req_valid_o  ( dmi_req_valid     ),

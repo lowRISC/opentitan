@@ -18,6 +18,7 @@ initial force dut.rst_peri_ni = rst_n;
 
 // Device TileLink interface connections
 `CONNECT_TL_DEVICE_IF(pattgen, dut, clk_peri_i, rst_n)
+`CONNECT_TL_DEVICE_IF(spi_device, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(gpio, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rv_timer, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(pwrmgr_aon, dut, clk_peri_i, rst_n)

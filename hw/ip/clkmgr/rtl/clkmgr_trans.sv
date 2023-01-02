@@ -109,8 +109,8 @@ module clkmgr_trans
 
   // clk_gated_i is already controlled by en_i, so there is no need
   // to use it in the below gating function
-  prim_clock_gating #(
-    .FpgaBufGlobal(FpgaBufGlobal)
+  tc_clk_gating #(
+    
   ) u_cg (
     .clk_i(clk_gated_i),
     .en_i(local_en),

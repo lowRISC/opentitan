@@ -4,7 +4,7 @@
 //
 // RISC-V Platform-Level Interrupt Gateways module
 
-module ${module_instance_name}_gateway #(
+module ${module_instance_name}_ot_gateway #(
   parameter int N_SOURCE = 32
 ) (
   input clk_i,

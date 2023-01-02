@@ -336,7 +336,7 @@ module testbench ();
         default        : 1'b0
      };
      logic [31:0]  idcode;
-     dm_ot::dtm_op_status_e op;
+     //dm_ot::dtm_op_status_e op;
      automatic int dmi_wait_cycles = 10;
 
      $info(" JTAG Preloading start time");
@@ -359,7 +359,7 @@ module testbench ();
 
      $info(" SBA BUSY ");
      // Wait until SBA is free
-     do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles, op);
+     do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
      while (sbcs.sbbusy);
      $info(" SBA FREE");      
       
@@ -375,14 +375,14 @@ module testbench ();
         default        : 1'b0
      };
       
-     dm_ot::dtm_op_status_e op;
+     //dm_ot::dtm_op_status_e op;
      automatic int dmi_wait_cycles = 10;
 
      $display("======== Initializing the Debug Module ========");
 
      debug_module_init();
      riscv_dbg.write_dmi(dm_ot::SBCS, sbcs);
-     do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles, op);
+     do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);//, op);
      while (sbcs.sbbusy);
 
      $display("======== Preload data to SRAM ========");
@@ -391,7 +391,7 @@ module testbench ();
      foreach (sections[addr]) begin
        $display("Writing %h with %0d words", addr << 2, sections[addr]); // word = 8 bytes here
        riscv_dbg.write_dmi(dm_ot::SBAddress0, (addr << 2));
-       do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs,  dmi_wait_cycles, op);
+       do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs,  dmi_wait_cycles);//, op);
        while (sbcs.sbbusy);
        
        for (int i = 0; i < sections[addr]; i++) begin
@@ -399,7 +399,7 @@ module testbench ();
          $display(" -- Word %0d/%0d", i, sections[addr]);      
          riscv_dbg.write_dmi(dm_ot::SBData0, memory[addr + i]);
          // Wait until SBA is free to write next 32 bits
-         do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles, op);
+         do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);//, op);
          while (sbcs.sbbusy);
        end // for (int i = 0; i < sections[addr]; i++)
        
@@ -454,41 +454,41 @@ module testbench ();
         sbaccess       : 3'h2,
         default        : 1'b0
      };
-    dm_ot::dtm_op_status_e op;
+    //dm_ot::dtm_op_status_e op;
     automatic int dmi_wait_cycles = 10;
 
 
     $info("======== Waking up Ibex using JTAG ========");
     // Initialize the dm module again, otherwise it will not work
     debug_module_init();
-    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles, op);
+    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);//, op);
     while (sbcs.sbbusy);
     // Write PC to Data0 and Data1
     riscv_dbg.write_dmi(dm_ot::Data0, start_addr);
-    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles, op);
+    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
     while (sbcs.sbbusy);
     // Halt Req
     riscv_dbg.write_dmi(dm_ot::DMControl, 32'h8000_0001);
-    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles, op);
+    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
     while (sbcs.sbbusy);
     // Wait for CVA6 to be halted
-    do riscv_dbg.read_dmi(dm_ot::DMStatus, dm_status, dmi_wait_cycles, op);
+    do riscv_dbg.read_dmi(dm_ot::DMStatus, dm_status, dmi_wait_cycles);
     while (!dm_status[8]);
     // Ensure haltreq, resumereq and ackhavereset all equal to 0
     riscv_dbg.write_dmi(dm_ot::DMControl, 32'h0000_0001);
-    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles, op);
+    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
     while (sbcs.sbbusy);
     // Register Access Abstract Command  
     riscv_dbg.write_dmi(dm_ot::Command, {8'h0,1'b0,3'h2,1'b0,1'b0,1'b1,1'b1,4'h0,dm_ot::CSR_DPC});
-    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles, op);
+    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
     while (sbcs.sbbusy);
     // Resume req. Exiting from debug mode CVA6 will jump at the DPC address.
     // Ensure haltreq, resumereq and ackhavereset all equal to 0
     riscv_dbg.write_dmi(dm_ot::DMControl, 32'h4000_0001);
-    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles, op);
+    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
     while (sbcs.sbbusy);
     riscv_dbg.write_dmi(dm_ot::DMControl, 32'h0000_0001);
-    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles, op);
+    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
     while (sbcs.sbbusy);
      
     // Wait till end of computation

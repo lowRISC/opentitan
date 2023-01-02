@@ -44,6 +44,7 @@
       otp_ctrl.core
       otp_ctrl.prim
       lc_ctrl
+      spi_device
       alert_handler
       sram_ctrl_ret_aon.ram
       sram_ctrl_ret_aon.regs
@@ -77,6 +78,24 @@
         {
           base_addr: 0xc00e0000
           size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: spi_device
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: spi_device
+      addr_range:
+      [
+        {
+          base_addr: 0xc0050000
+          size_byte: 0x2000
         }
       ]
       xbar: false

@@ -453,7 +453,7 @@ from topgen.lib import Name
 
   logic ${k}_combined_en;
   assign ${k}_combined_en = ${k}_sw_en & clk_${v.src.name}_en;
-  prim_clock_gating #(
+  tc_clk_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_${k}_cg (
     .clk_i(clk_${v.src.name}_i),

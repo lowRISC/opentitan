@@ -234,7 +234,7 @@ module ibex_top import ibex_pkg::*; #(
 
   assign core_sleep_o = ~clock_en;
 
-  prim_clock_gating core_clock_gate_i (
+  tc_clk_gating core_clock_gate_i (
     .clk_i    (clk_i),
     .en_i     (clock_en),
     .test_en_i(test_en_i),
