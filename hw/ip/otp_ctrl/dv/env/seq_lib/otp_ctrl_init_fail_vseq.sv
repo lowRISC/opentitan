@@ -27,6 +27,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
 
   rand uint         num_to_lock_digests;
   bit [NumPart-1:0] init_chk_err;
+  bit               part_locked;
 
   // If num_to_lock_digests is larger than num_dai_op, that means there won't be OTP init check
   // error, so this sequence will trigger ECC error instead.
@@ -73,7 +74,10 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
         tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1), .check_rsp(0));
       end
 
-      if (i == num_to_lock_digests) cal_hw_digests('1);
+      if (i == num_to_lock_digests) begin
+        cal_hw_digests('1);
+        part_locked = 1;
+      end
 
       csr_rd(ral.status, tlul_val);
     end
@@ -146,15 +150,24 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
         csr_rd_check(.ptr(ral.status), .compare_value(exp_status));
         if (is_correctable) csr_rd_check(.ptr(ral.intr_state.otp_error), .compare_value(1));
 
-        // Create LC check failure.
-        `uvm_info(`gfn, "OTP_init LC failure", UVM_LOW)
         // Clear backdoor injected errors.
         cfg.mem_bkdr_util_h.clear_mem();
         exp_status[OtpDaiIdleIdx] = 0;
-        cfg.otp_ctrl_vif.lc_check_byp_en = 0;
-        req_lc_transition(1);
+
+        if (part_locked) begin
+          // Digest check failure because the memory is cleared.
+          // Since OtpHwCfg is the first partition with HW digest, this partition's check error
+          // will be triggered first.
+          `uvm_info(`gfn, "OTP digest check failure", UVM_LOW)
+          exp_status[OtpHwCfgErrIdx] = 1;
+        end else begin
+          // Create LC check failure.
+          `uvm_info(`gfn, "OTP_init LC failure", UVM_LOW)
+          cfg.otp_ctrl_vif.lc_check_byp_en = 0;
+          req_lc_transition(1);
+          exp_status[OtpLifeCycleErrIdx] = 1;
+        end
         trigger_checks(.val('1), .wait_done(0));
-        exp_status[OtpLifeCycleErrIdx] = 1;
         check_otp_fatal_err("fatal_check_error", exp_status);
       end
     end
