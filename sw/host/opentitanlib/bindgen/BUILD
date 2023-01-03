@@ -12,6 +12,7 @@ cc_library(
     hdrs = ["difs.h"],
     deps = [
         "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:rstmgr",
     ],
 )
 
@@ -34,6 +35,7 @@ rust_bindgen_library(
     name = "dif",
     bindgen_flags = [
         "--allowlist-type=dif_lc_ctrl_state",
+        "--allowlist-type=dif_rstmgr_reset_info",
     ],
     cc_lib = ":difs",
     header = "difs.h",

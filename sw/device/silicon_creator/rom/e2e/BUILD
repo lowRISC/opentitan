@@ -446,6 +446,66 @@ test_suite(
     tests = [":e2e_bootstrap_entry_{}".format(lc_state.lower()) for lc_state in structs.to_dict(CONST.LCV)],
 )
 
+otp_json(
+    name = "otp_json_bootstrap_rma",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_RMA_SPIN_EN": "0x739",  # HARDENED_BOOL_TRUE
+                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "10",
+            },
+        ),
+    ],
+    visibility = ["//visibility:private"],
+)
+
+# This OTP image is tightly coupled with the "rom_bootstrap_rma" testpoint.
+# Despite its name ending with "rma", it actually puts the device into the PROD
+# lifecycle state in order to test the transition from PROD to RMA.
+otp_image(
+    name = "otp_img_bootstrap_rma",
+    src = "//hw/ip/otp_ctrl/data:otp_json_prod",
+    overlays = STD_OTP_OVERLAYS + [
+        ":otp_json_bootstrap_rma",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+bitstream_splice(
+    name = "bitstream_bootstrap_rma",
+    src = "//hw/bitstream:rom",
+    data = ":otp_img_bootstrap_rma",
+    meminfo = "//hw/bitstream:otp_mmi",
+    tags = [
+        "vivado",
+    ],
+    update_usr_access = True,
+    visibility = ["//visibility:private"],
+)
+
+opentitan_functest(
+    name = "e2e_bootstrap_rma_iteration_1",
+    srcs = ["rom_e2e_bootstrap_rma_test.c"],
+    cw310 = cw310_params(
+        bitstream = ":bitstream_bootstrap_rma",
+        tags = ["vivado"],
+        test_cmds = [
+            "--rom-kind=rom",
+            "--bitstream=\"$(location {bitstream})\"",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+    ),
+    key = LC_KEY_TYPES[CONST.LCV.PROD][0],
+    targets = ["cw310_rom"],
+    test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
 opentitan_functest(
     name = "e2e_bootstrap_disabled",
     cw310 = cw310_params(

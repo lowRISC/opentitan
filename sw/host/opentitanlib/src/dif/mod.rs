@@ -3,3 +3,4 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod lc_ctrl;
+pub mod rstmgr;
