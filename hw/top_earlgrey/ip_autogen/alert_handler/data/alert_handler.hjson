@@ -47,7 +47,7 @@
       default: "5",
       local: "true"
     },
-    /*{ name: "LpgMap",
+    { name: "LpgMap",
       desc: '''
             Defines a mapping from alerts to LPGs.
             '''
@@ -110,7 +110,7 @@
                }
                ''',
       local: "true"
-    },*/
+    },
     { name: "EscCntDw",
       desc: "Width of the escalation timer.",
       type: "int",
@@ -123,7 +123,7 @@
       default: "16",
       local: "true"
     },
-    /*{ name: "AsyncOn",
+    { name: "AsyncOn",
       desc: '''
             Each bit of this parameter corresponds to an escalation channel and
             defines whether the protocol is synchronous (0) or asynchronous (1).
@@ -187,7 +187,7 @@
                }
                '''
       local: "true"
-    },*/
+    },
     { name: "N_CLASSES",
       desc: "Number of classes",
       type: "int",

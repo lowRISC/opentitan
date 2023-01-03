@@ -227,7 +227,7 @@ module testbench ();
                      
     .axi_req_o(axi_req),
     .axi_rsp_i(axi_rsp),
-    //.irq_ibex_i,
+    .irq_ibex_i('0),
     .jtag_req_i(jtag_i),
     .jtag_rsp_o(jtag_o)
    );

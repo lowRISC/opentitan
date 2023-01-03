@@ -409,6 +409,7 @@ module prim_flash_bank #(
     .DataBitsPerMask(DataWidth)
   ) u_mem (
     .clk_i,
+    .rst_ni,
     .req_i    (data_mem_req),
     .write_i  (mem_wr),
     .addr_i   (mem_addr),
@@ -433,6 +434,7 @@ module prim_flash_bank #(
       .DataBitsPerMask(DataWidth)
     ) u_info_mem (
       .clk_i,
+      .rst_ni,
       .req_i    (info_mem_req),
       .write_i  (mem_wr),
       .addr_i   (mem_addr[0 +: InfoAddrW]),

@@ -45,6 +45,7 @@ opentitan_functest(
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/dif:tlul2axi",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rv_plic_testutils",

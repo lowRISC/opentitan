@@ -30,6 +30,7 @@
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
+#include "sw/device/lib/dif/dif_tlul2axi.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -58,6 +59,7 @@ static dif_spi_device_t spi_device;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
 static dif_sysrst_ctrl_t sysrst_ctrl_aon;
+static dif_tlul2axi_t tlul2axi;
 static dif_rv_plic_t plic;
 static const top_earlgrey_plic_target_t kHart = kTopEarlgreyPlicTargetIbex0;
 
@@ -112,6 +114,8 @@ static volatile dif_spi_host_irq_t spi_host_irq_expected;
 static volatile dif_spi_host_irq_t spi_host_irq_serviced;
 static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_expected;
 static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_serviced;
+static volatile dif_tlul2axi_irq_t tlul2axi_irq_expected;
+static volatile dif_tlul2axi_irq_t tlul2axi_irq_serviced;
 
 /**
  * Provides external IRQ handling for this test.
@@ -577,6 +581,28 @@ void ottf_external_isr(void) {
       break;
     }
 
+    case kTopEarlgreyPlicPeripheralTlul2axi: {
+      dif_tlul2axi_irq_t irq = (dif_tlul2axi_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdTlul2axiMboxIrq);
+      CHECK(irq == tlul2axi_irq_expected,
+            "Incorrect tlul2axi IRQ triggered: exp = %d, obs = %d",
+            tlul2axi_irq_expected, irq);
+      tlul2axi_irq_serviced = irq;
+
+      dif_tlul2axi_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_tlul2axi_irq_get_state(&tlul2axi, &snapshot));
+      CHECK(snapshot == (dif_tlul2axi_irq_state_snapshot_t)(1 << irq),
+            "Only tlul2axi IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_tlul2axi_irq_force(&tlul2axi, irq, false));
+      CHECK_DIF_OK(dif_tlul2axi_irq_acknowledge(&tlul2axi, irq));
+      break;
+    }
+
     default:
       LOG_FATAL("ISR is not implemented!");
       test_status_set(kTestStatusFailed);
@@ -652,6 +678,9 @@ static void peripherals_init(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl_aon));
 
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_TLUL2AXI_BASE_ADDR);
+  CHECK_DIF_OK(dif_tlul2axi_init(base_addr, &tlul2axi));
+
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
 }
@@ -680,6 +709,7 @@ static void peripheral_irqs_clear(void) {
   CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host0));
   CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host1));
   CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge_all(&sysrst_ctrl_aon));
+  CHECK_DIF_OK(dif_tlul2axi_irq_acknowledge_all(&tlul2axi));
 }
 
 /**
@@ -720,6 +750,8 @@ static void peripheral_irqs_enable(void) {
       (dif_spi_host_irq_state_snapshot_t)UINT_MAX;
   dif_sysrst_ctrl_irq_state_snapshot_t sysrst_ctrl_irqs =
       (dif_sysrst_ctrl_irq_state_snapshot_t)UINT_MAX;
+  dif_tlul2axi_irq_state_snapshot_t tlul2axi_irqs =
+      (dif_tlul2axi_irq_state_snapshot_t)UINT_MAX;
 
   CHECK_DIF_OK(
       dif_alert_handler_irq_restore_all(&alert_handler, &alert_handler_irqs));
@@ -759,6 +791,8 @@ static void peripheral_irqs_enable(void) {
       dif_spi_host_irq_restore_all(&spi_host1, &spi_host_irqs));
   CHECK_DIF_OK(
       dif_sysrst_ctrl_irq_restore_all(&sysrst_ctrl_aon, &sysrst_ctrl_irqs));
+  CHECK_DIF_OK(
+      dif_tlul2axi_irq_restore_all(&tlul2axi, &tlul2axi_irqs));
 }
 
 /**
@@ -1049,6 +1083,20 @@ static void peripheral_irqs_trigger(void) {
           "Incorrect sysrst_ctrl_aon IRQ serviced: exp = %d, obs = %d", irq,
           sysrst_ctrl_irq_serviced);
     LOG_INFO("IRQ %d from sysrst_ctrl_aon is serviced.", irq);
+  }
+
+  peripheral_expected = kTopEarlgreyPlicPeripheralTlul2axi;
+  for (dif_tlul2axi_irq_t irq = kDifTlul2axiIrqMboxIrq;
+       irq <= kDifTlul2axiIrqMboxIrq; ++irq) {
+    tlul2axi_irq_expected = irq;
+    LOG_INFO("Triggering tlul2axi IRQ %d.", irq);
+    CHECK_DIF_OK(dif_tlul2axi_irq_force(&tlul2axi, irq, true));
+
+    // TODO: Make race-condition free
+    CHECK(tlul2axi_irq_serviced == irq,
+          "Incorrect tlul2axi IRQ serviced: exp = %d, obs = %d", irq,
+          tlul2axi_irq_serviced);
+    LOG_INFO("IRQ %d from tlul2axi is serviced.", irq);
   }
 }
 

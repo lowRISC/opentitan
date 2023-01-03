@@ -139,10 +139,6 @@
  */
 #define TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR 0xC0132000
 
-#define TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR 0xB0049000
-
-#define TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES 0x1000
- 
 /**
  * Peripheral size for prim device on otp_ctrl in top earlgrey.
  *

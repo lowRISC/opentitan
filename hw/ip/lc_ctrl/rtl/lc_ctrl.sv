@@ -6,6 +6,7 @@
 //
 
 `include "prim_assert.sv"
+`define TARGET_SYNTHESIS
 
 module lc_ctrl
   import lc_ctrl_pkg::*;

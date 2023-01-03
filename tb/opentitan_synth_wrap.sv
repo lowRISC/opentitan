@@ -17,16 +17,18 @@ module opentitan_synth_wrap
    import dm_ot::*;
    import lc_ctrl_pkg::*;
    #(
+   parameter RomCtrlBootRomInitFile = "/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/hello_test/bootrom.vmem",
+   parameter OtpCtrlMemInitFile = "/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/hello_test/otp-img.mem",
    parameter AW = 64,
    parameter DW = 64,
    parameter IW = 8,
    parameter UW = 1,
    parameter SW = DW/8,
-   parameter type axi_addr_t   = logic [AW-1:0],
-   parameter type axi_data_t   = logic [DW-1:0],
-   parameter type axi_strb_t   = logic [DW/8-1:0],
-   parameter type axi_id_t     = logic [IW-1:0],
-   parameter type axi_user_t   = logic [UW-1:0]
+   parameter type axi_addr_t = logic [AW-1:0],
+   parameter type axi_data_t = logic [DW-1:0],
+   parameter type axi_strb_t = logic [DW/8-1:0],
+   parameter type axi_id_t = logic [IW-1:0],
+   parameter type axi_user_t = logic [UW-1:0]
 
 )  (
    
@@ -187,40 +189,9 @@ module opentitan_synth_wrap
    
 
    top_earlgrey #(
-   ) u_RoT (/*
-                  
-    .clk_main_i(clk_i),
-    .clk_io_i(clk_i),
-    .clk_usb_i(clk_i),
-    .clk_aon_i(clk_i),
-
-    .por_n_i,
-
-    // spi_device
-    .cio_spi_device_sck_p2d (1'b0),
-    .cio_spi_device_csb_p2d (1'b0),
-    .cio_spi_device_sd_p2d  ('0),
-                  
-    // spi_host0
-    .cio_spi_host0_sd_p2d   ('0),
-                  
-    // spi_host1
-    .cio_spi_host1_sd_p2d   ('0),
- 
-    .scan_rst_ni (por_n_i),
-    .scan_en_i   (1'b0),
-    .scanmode_i (lc_ctrl_pkg::Off),
-    .ast_clk_byp_ack_i(4'b0101), 
-
-    .ast_edn_req_i ('0),
-               
-    .jtag_i,
-    .jtag_o,
-           
-    .axi_req,
-    .axi_rsp,
-    .irq_ibex_i
-	    */
+    .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
+    .RomCtrlBootRomInitFile(RomCtrlBootRomInitFile)
+   ) u_RoT (
     .scan_rst_ni (rst_ni),
     .scan_en_i (1'b0),
     .scanmode_i (lc_ctrl_pkg::Off),
