@@ -42,8 +42,8 @@ module otp_ctrl
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]  alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,
   // Observability to AST
-  input ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
-  output logic [7:0] otp_obs_o,
+  input ast_pkg::ast_obs_ctrl_t                      obs_ctrl_i,
+  output logic [7:0]                                 otp_obs_o,
   // Macro-specific power sequencing signals to/from AST.
   output otp_ast_req_t                               otp_ast_pwr_seq_o,
   input  otp_ast_rsp_t                               otp_ast_pwr_seq_h_i,
