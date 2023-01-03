@@ -391,7 +391,7 @@ class CompileSim(Deploy):
 
         Limit build jobs to 60 minutes if the timeout is not set.
         """
-        return self.build_timeout_mins if self.build_timeout_mins else 60
+        return self.build_timeout_mins if self.build_timeout_mins is not None else 60
 
 
 class CompileOneShot(Deploy):
@@ -454,7 +454,7 @@ class CompileOneShot(Deploy):
 
         Limit build jobs to 60 minutes if the timeout is not set.
         """
-        return self.build_timeout_mins if self.build_timeout_mins else 60
+        return self.build_timeout_mins if self.build_timeout_mins is not None else 60
 
 
 class RunTest(Deploy):
@@ -560,7 +560,7 @@ class RunTest(Deploy):
 
         Limit run jobs to 60 minutes if the timeout is not set.
         """
-        return self.run_timeout_mins if self.run_timeout_mins else 60
+        return self.run_timeout_mins if self.run_timeout_mins is not None else 60
 
     def extract_info_from_log(self, log_text: List):
         """Extracts the time the design was simulated for, from the log."""
