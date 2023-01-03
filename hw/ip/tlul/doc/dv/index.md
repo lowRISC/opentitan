@@ -118,7 +118,7 @@ We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/do
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/$CHIP/ip/$XBAR_IP/dv/autogen/${XBAR_IP}_sim_cfg.hjson -i ${XBAR_IP}_main_smoke
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/$CHIP/ip/$XBAR_IP/dv/autogen/${XBAR_IP}_sim_cfg.hjson -i xbar_smoke
 ```
 In this run command, $XBAR_IP can be xbar_main, xbar_peri, etc. $CHIP can be top_earlgrey, etc.
 
