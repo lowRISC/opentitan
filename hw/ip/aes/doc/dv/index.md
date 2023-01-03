@@ -144,7 +144,8 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/aes/dv/aes_sim_cfg.hjson -i aes_
 ```
 Here's how to run a basic test without DPI calls:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/aes/dv/aes_sim_cfg.hjson -i aes_wakeup
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/aes/dv/aes_${VARIANT}_sim_cfg.hjson -i aes_wakeup
 ```
+In this run command, $VARIANT can be `masking` or `no_masking`.
 ## Testplan
 {{< incGenFromIpDesc "../../data/aes_testplan.hjson" "testplan" >}}
