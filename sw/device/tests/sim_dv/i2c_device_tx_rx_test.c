@@ -44,8 +44,7 @@ static volatile const uint32_t kI2cClockPeriodNanos = 0;
 
 /**
  * This symbol is meant to be backdoor loaded by the testbench.
- * to indicate which I2c is actually under test. It is not used
- * at the moment, will connect it later.
+ * to indicate which I2c is actually under test.
  */
 static volatile const uint8_t kI2cIdx = 0;
 
@@ -72,17 +71,59 @@ static volatile bool tx_empty_irq_seen = false;
 static volatile bool cmd_complete_irq_seen = false;
 
 /**
+ * This constant indicates the number of interrupt requests.
+ */
+enum {
+  kNumI2cIrqs = 6,
+};
+
+typedef struct i2c_conf {
+  const int unsigned base_addr;
+  const uint32_t i2c_irq_fmt_threshold_id;
+  const top_earlgrey_plic_irq_id_t plic_irqs[kNumI2cIrqs];
+} i2c_conf_t;
+
+const i2c_conf_t i2c_configuration[] = {
+    {.base_addr = TOP_EARLGREY_I2C0_BASE_ADDR,
+     .i2c_irq_fmt_threshold_id = kTopEarlgreyPlicIrqIdI2c0FmtThreshold,
+     .plic_irqs = {kTopEarlgreyPlicIrqIdI2c0CmdComplete,
+                   kTopEarlgreyPlicIrqIdI2c0TxStretch,
+                   kTopEarlgreyPlicIrqIdI2c0TxOverflow,
+                   kTopEarlgreyPlicIrqIdI2c0AcqFull,
+                   kTopEarlgreyPlicIrqIdI2c0UnexpStop,
+                   kTopEarlgreyPlicIrqIdI2c0HostTimeout}},
+    {.base_addr = TOP_EARLGREY_I2C1_BASE_ADDR,
+     .i2c_irq_fmt_threshold_id = kTopEarlgreyPlicIrqIdI2c1FmtThreshold,
+     .plic_irqs = {kTopEarlgreyPlicIrqIdI2c1CmdComplete,
+                   kTopEarlgreyPlicIrqIdI2c1TxStretch,
+                   kTopEarlgreyPlicIrqIdI2c1TxOverflow,
+                   kTopEarlgreyPlicIrqIdI2c1AcqFull,
+                   kTopEarlgreyPlicIrqIdI2c1UnexpStop,
+                   kTopEarlgreyPlicIrqIdI2c1HostTimeout}},
+    {.base_addr = TOP_EARLGREY_I2C2_BASE_ADDR,
+     .i2c_irq_fmt_threshold_id = kTopEarlgreyPlicIrqIdI2c2FmtThreshold,
+     .plic_irqs = {kTopEarlgreyPlicIrqIdI2c2CmdComplete,
+                   kTopEarlgreyPlicIrqIdI2c2TxStretch,
+                   kTopEarlgreyPlicIrqIdI2c2TxOverflow,
+                   kTopEarlgreyPlicIrqIdI2c2AcqFull,
+                   kTopEarlgreyPlicIrqIdI2c2UnexpStop,
+                   kTopEarlgreyPlicIrqIdI2c2HostTimeout}}};
+
+/**
  * Provides external irq handling for this test.
  *
  * This function overrides the default OTTF external ISR.
  */
 void ottf_external_isr(void) {
+  uint32_t i2c_irq_fmt_threshold_id;
+
   plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
                              .hart_id = kTopEarlgreyPlicTargetIbex0};
 
   i2c_isr_ctx_t i2c_ctx = {
       .i2c = &i2c,
-      .plic_i2c_start_irq_id = kTopEarlgreyPlicIrqIdI2c0FmtThreshold,
+      .plic_i2c_start_irq_id =
+          i2c_configuration[kI2cIdx].i2c_irq_fmt_threshold_id,
       .expected_irq = 0,
       .is_only_irq = false};
 
@@ -111,45 +152,41 @@ void check_addr(uint8_t addr, dif_i2c_id_t id0, dif_i2c_id_t id1) {
 }
 
 bool test_main(void) {
+  LOG_INFO("Testing I2C index %d", kI2cIdx);
+
   if (kI2cByteCount > I2C_PARAM_FIFO_DEPTH - 4) {
     LOG_ERROR(
         "Test cannot fit %d bytes, 2 START records, and 2 STOP records in "
         "buffers of depth %d",
         kI2cByteCount, I2C_PARAM_FIFO_DEPTH);
   }
-  CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR), &i2c));
+
+  CHECK_DIF_OK(dif_i2c_init(
+      mmio_region_from_addr(i2c_configuration[kI2cIdx].base_addr), &i2c));
+
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, kTopEarlgreyPlicIrqIdI2c0TxStretch, kTopEarlgreyPlicTargetIbex0,
-      kDifToggleEnabled));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, kTopEarlgreyPlicIrqIdI2c0CmdComplete, kTopEarlgreyPlicTargetIbex0,
-      kDifToggleEnabled));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &plic, kTopEarlgreyPlicIrqIdI2c0TxStretch, kDifRvPlicMaxPriority));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &plic, kTopEarlgreyPlicIrqIdI2c0CmdComplete, kDifRvPlicMaxPriority));
+  i2c_testutils_connect_i2c_to_pinmux_pins(&pinmux, kI2cIdx);
+
+  // Enable functional interrupts as well as error interrupts to make sure
+  // everything is behaving as expected.
+  for (uint32_t i = 0; i < kNumI2cIrqs; ++i) {
+    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+        &plic, i2c_configuration[kI2cIdx].plic_irqs[i],
+        kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+
+    // Assign a default priority
+    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+        &plic, i2c_configuration[kI2cIdx].plic_irqs[i], kDifRvPlicMaxPriority));
+  }
 
   // Enable the external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
-
-  // Temporary hack that connects i2c to a couple of open drain pins.
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c0Scl,
-                                       kTopEarlgreyPinmuxInselIoa7));
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c0Sda,
-                                       kTopEarlgreyPinmuxInselIoa8));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa7,
-                                        kTopEarlgreyPinmuxOutselI2c0Scl));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa8,
-                                        kTopEarlgreyPinmuxOutselI2c0Sda));
 
   // I2C speed parameters.
   dif_i2c_timing_config_t timing_config = {

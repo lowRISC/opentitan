@@ -161,7 +161,9 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/i2c/data:i2c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:i2c",
+        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/testing/test_framework:check",
     ],
