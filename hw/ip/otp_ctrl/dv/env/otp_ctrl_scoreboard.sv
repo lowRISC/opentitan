@@ -115,120 +115,119 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   // 2. After reset deasserted, if power otp_init request is on, and if testbench uses backdoor to
   //    clear OTP memory to all zeros, clear all digests and re-calculate secret partitions
   virtual task process_otp_power_up();
-    if (cfg.en_scb) begin
-      forever begin
-        @(posedge cfg.otp_ctrl_vif.pwr_otp_done_o || cfg.under_reset ||
-                  cfg.otp_ctrl_vif.alert_reqs) begin
-          if (!cfg.under_reset && !cfg.otp_ctrl_vif.alert_reqs) begin
-            otp_ctrl_part_pkg::otp_hw_cfg_data_t   exp_hwcfg_data;
-            otp_ctrl_pkg::otp_keymgr_key_t         exp_keymgr_data;
-            otp_ctrl_pkg::otp_lc_data_t            exp_lc_data;
-            bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
+    forever begin
+      wait (cfg.en_scb);
+      @(posedge cfg.otp_ctrl_vif.pwr_otp_done_o || cfg.under_reset ||
+                cfg.otp_ctrl_vif.alert_reqs) begin
+        if (!cfg.under_reset && !cfg.otp_ctrl_vif.alert_reqs && cfg.en_scb) begin
+          otp_ctrl_part_pkg::otp_hw_cfg_data_t   exp_hwcfg_data;
+          otp_ctrl_pkg::otp_keymgr_key_t         exp_keymgr_data;
+          otp_ctrl_pkg::otp_lc_data_t            exp_lc_data;
+          bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
 
-            if (dai_digest_ip != LifeCycleIdx) begin
-              bit [TL_DW-1:0] otp_addr = PART_OTP_DIGEST_ADDRS[dai_digest_ip];
-              otp_a[otp_addr]   = cfg.mem_bkdr_util_h.read32(otp_addr << 2);
-              otp_a[otp_addr+1] = cfg.mem_bkdr_util_h.read32((otp_addr << 2) + 4);
-              dai_digest_ip = LifeCycleIdx;
-            end
-            predict_digest_csrs();
-
-            if (cfg.otp_ctrl_vif.under_error_states() == 0) begin
-              // Dai access is unlocked because the power init is done
-              void'(ral.direct_access_regwen.predict(1));
-
-              // Dai idle is set because the otp init is done
-              exp_status[OtpDaiIdleIdx] = 1;
-            end
-
-            // Hwcfg_o gets data from OTP HW cfg partition
-            exp_hwcfg_data = cfg.otp_ctrl_vif.under_error_states() ?
-                             otp_ctrl_part_pkg::PartInvDefault[HwCfgOffset*8 +: HwCfgSize*8] :
-                             otp_hw_cfg_data_t'({<<32 {otp_a[HwCfgOffset/4 +: HwCfgSize/4]}});
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.valid, lc_ctrl_pkg::On)
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data, exp_hwcfg_data)
-
-            if (!cfg.otp_ctrl_vif.under_error_states() && cfg.en_scb) begin
-              // ---------------------- Check lc_data_o output -----------------------------------
-              // Because initialization was succesful, the valid should be set and error should be
-              // reset.
-              exp_lc_data.valid = 1;
-              exp_lc_data.error = 0;
-
-              // Secrets and tokens valid signals are depend on whether secret partitions are
-              // locked.
-              exp_lc_data.secrets_valid = get_otp_digest_val(Secret2Idx) ? On : Off;
-              exp_lc_data.test_tokens_valid = get_otp_digest_val(Secret0Idx) ? On : Off;
-              exp_lc_data.rma_token_valid = get_otp_digest_val(Secret2Idx) ? On : Off;
-
-              // LC output is depend on LC partitions value.
-              exp_lc_data.count = otp_lc_data[0 +: LcCountWidth];
-              exp_lc_data.state = otp_lc_data[LcCountWidth +: LcStateWidth];
-
-              // Token values are depend on secret partitions value.
-              exp_lc_data.test_unlock_token =
-                      {<<32 {otp_a[TestUnlockTokenOffset/4 +: TestUnlockTokenSize/4]}};
-              exp_lc_data.test_exit_token =
-                      {<<32 {otp_a[TestExitTokenOffset/4 +: TestExitTokenSize/4]}};
-              exp_lc_data.rma_token = {<<32 {otp_a[RmaTokenOffset/4 +: RmaTokenSize/4]}};
-
-              // Check otp_lc_data_t struct by item is easier to debug.
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.valid, exp_lc_data.valid)
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.error, exp_lc_data.error)
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.state, exp_lc_data.state)
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.count, exp_lc_data.count)
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.secrets_valid, exp_lc_data.secrets_valid)
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.test_tokens_valid,
-                           exp_lc_data.test_tokens_valid)
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.test_unlock_token,
-                           exp_lc_data.test_unlock_token)
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.test_exit_token, exp_lc_data.test_exit_token)
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.rma_token_valid, exp_lc_data.rma_token_valid)
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.rma_token, exp_lc_data.rma_token)
-
-              // Check otp_lc_data_t all together in case there is any missed item.
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o, exp_lc_data)
-
-              // ---------------------- Check keymgr_key_o output ---------------------------------
-              // Otp_keymgr outputs creator root key shares from the secret2 partition.
-              // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
-              exp_keymgr_data.valid = get_otp_digest_val(Secret2Idx) != 0;
-              if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
-                exp_keymgr_data.key_share0 =
-                    {<<32 {otp_a[CreatorRootKeyShare0Offset/4 +: CreatorRootKeyShare0Size/4]}};
-                exp_keymgr_data.key_share1 =
-                    {<<32 {otp_a[CreatorRootKeyShare1Offset/4 +: CreatorRootKeyShare1Size/4]}};
-              end else begin
-                exp_keymgr_data.key_share0 =
-                    PartInvDefault[CreatorRootKeyShare0Offset*8 +: CreatorRootKeyShare0Size*8];
-                exp_keymgr_data.key_share1 =
-                    PartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
-              end
-
-              // Check otp_keymgr_key_t struct by item is easier to debug.
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.valid, exp_keymgr_data.valid)
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.key_share0, exp_keymgr_data.key_share0)
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.key_share1, exp_keymgr_data.key_share1)
-
-              // Check otp_keymgr_key_t struct all together in case there is any missed item.
-              `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
-
-              if (cfg.en_cov) begin
-                cov.keymgr_o_cg.sample(cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On,
-                                       exp_keymgr_data.valid);
-              end
-            end
-          end else if (cfg.otp_ctrl_vif.alert_reqs) begin
-            // Ignore digest CSR check when otp_ctrl initialization is interrupted by fatal errors.
-            // SCB cannot predict how many partitions already finished initialization and updated
-            // the digest value to CSRs.
-            ignore_digest_chk = 1;
+          if (dai_digest_ip != LifeCycleIdx) begin
+            bit [TL_DW-1:0] otp_addr = PART_OTP_DIGEST_ADDRS[dai_digest_ip];
+            otp_a[otp_addr]   = cfg.mem_bkdr_util_h.read32(otp_addr << 2);
+            otp_a[otp_addr+1] = cfg.mem_bkdr_util_h.read32((otp_addr << 2) + 4);
+            dai_digest_ip = LifeCycleIdx;
           end
-          if (cfg.en_cov) begin
-            bit [NumPart-2:0] parts_locked;
-            foreach (parts_locked[i]) parts_locked[i] = (get_otp_digest_val(i) != 0);
-            cov.power_on_cg.sample(cfg.otp_ctrl_vif.lc_esc_on, parts_locked);
+          predict_digest_csrs();
+
+          if (cfg.otp_ctrl_vif.under_error_states() == 0) begin
+            // Dai access is unlocked because the power init is done
+            void'(ral.direct_access_regwen.predict(1));
+
+            // Dai idle is set because the otp init is done
+            exp_status[OtpDaiIdleIdx] = 1;
           end
+
+          // Hwcfg_o gets data from OTP HW cfg partition
+          exp_hwcfg_data = cfg.otp_ctrl_vif.under_error_states() ?
+                           otp_ctrl_part_pkg::PartInvDefault[HwCfgOffset*8 +: HwCfgSize*8] :
+                           otp_hw_cfg_data_t'({<<32 {otp_a[HwCfgOffset/4 +: HwCfgSize/4]}});
+          `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.valid, lc_ctrl_pkg::On)
+          `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data, exp_hwcfg_data)
+
+          if (!cfg.otp_ctrl_vif.under_error_states()) begin
+            // ---------------------- Check lc_data_o output -----------------------------------
+            // Because initialization was succesful, the valid should be set and error should be
+            // reset.
+            exp_lc_data.valid = 1;
+            exp_lc_data.error = 0;
+
+            // Secrets and tokens valid signals are depend on whether secret partitions are
+            // locked.
+            exp_lc_data.secrets_valid = get_otp_digest_val(Secret2Idx) ? On : Off;
+            exp_lc_data.test_tokens_valid = get_otp_digest_val(Secret0Idx) ? On : Off;
+            exp_lc_data.rma_token_valid = get_otp_digest_val(Secret2Idx) ? On : Off;
+
+            // LC output is depend on LC partitions value.
+            exp_lc_data.count = otp_lc_data[0 +: LcCountWidth];
+            exp_lc_data.state = otp_lc_data[LcCountWidth +: LcStateWidth];
+
+            // Token values are depend on secret partitions value.
+            exp_lc_data.test_unlock_token =
+                    {<<32 {otp_a[TestUnlockTokenOffset/4 +: TestUnlockTokenSize/4]}};
+            exp_lc_data.test_exit_token =
+                    {<<32 {otp_a[TestExitTokenOffset/4 +: TestExitTokenSize/4]}};
+            exp_lc_data.rma_token = {<<32 {otp_a[RmaTokenOffset/4 +: RmaTokenSize/4]}};
+
+            // Check otp_lc_data_t struct by item is easier to debug.
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.valid, exp_lc_data.valid)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.error, exp_lc_data.error)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.state, exp_lc_data.state)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.count, exp_lc_data.count)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.secrets_valid, exp_lc_data.secrets_valid)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.test_tokens_valid,
+                         exp_lc_data.test_tokens_valid)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.test_unlock_token,
+                         exp_lc_data.test_unlock_token)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.test_exit_token, exp_lc_data.test_exit_token)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.rma_token_valid, exp_lc_data.rma_token_valid)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o.rma_token, exp_lc_data.rma_token)
+
+            // Check otp_lc_data_t all together in case there is any missed item.
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o, exp_lc_data)
+
+            // ---------------------- Check keymgr_key_o output ---------------------------------
+            // Otp_keymgr outputs creator root key shares from the secret2 partition.
+            // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
+            exp_keymgr_data.valid = get_otp_digest_val(Secret2Idx) != 0;
+            if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
+              exp_keymgr_data.key_share0 =
+                  {<<32 {otp_a[CreatorRootKeyShare0Offset/4 +: CreatorRootKeyShare0Size/4]}};
+              exp_keymgr_data.key_share1 =
+                  {<<32 {otp_a[CreatorRootKeyShare1Offset/4 +: CreatorRootKeyShare1Size/4]}};
+            end else begin
+              exp_keymgr_data.key_share0 =
+                  PartInvDefault[CreatorRootKeyShare0Offset*8 +: CreatorRootKeyShare0Size*8];
+              exp_keymgr_data.key_share1 =
+                  PartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
+            end
+
+            // Check otp_keymgr_key_t struct by item is easier to debug.
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.valid, exp_keymgr_data.valid)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.key_share0, exp_keymgr_data.key_share0)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.key_share1, exp_keymgr_data.key_share1)
+
+            // Check otp_keymgr_key_t struct all together in case there is any missed item.
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
+
+            if (cfg.en_cov) begin
+              cov.keymgr_o_cg.sample(cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On,
+                                     exp_keymgr_data.valid);
+            end
+          end
+        end else if (cfg.otp_ctrl_vif.alert_reqs) begin
+          // Ignore digest CSR check when otp_ctrl initialization is interrupted by fatal errors.
+          // SCB cannot predict how many partitions already finished initialization and updated
+          // the digest value to CSRs.
+          ignore_digest_chk = 1;
+        end
+        if (cfg.en_cov) begin
+          bit [NumPart-2:0] parts_locked;
+          foreach (parts_locked[i]) parts_locked[i] = (get_otp_digest_val(i) != 0);
+          cov.power_on_cg.sample(cfg.otp_ctrl_vif.lc_esc_on, parts_locked);
         end
       end
     end
