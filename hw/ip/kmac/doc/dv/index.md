@@ -146,8 +146,9 @@ We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/do
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/kmac/dv/kmac_sim_cfg.hjson -i kmac_smoke
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/kmac/dv/kmac_${VARIANT}_sim_cfg.hjson -i kmac_smoke
 ```
+In this run command, $VARIANT can be `masked` or `unmasked`.
 
 ## Testplan
 {{< incGenFromIpDesc "../../data/kmac_testplan.hjson" "testplan" >}}

@@ -54,11 +54,11 @@
   overrides: [
     {
       name: scratch_path
-      value: "{scratch_base_path}/{variant}-{flow}-{tool}"
+      value: "{scratch_base_path}/{name}_{variant}-{flow}-{tool}"
     }
     {
       name: rel_path
-      value: "hw/ip/{variant}/dv"
+      value: "hw/ip/{name}_{variant}/dv"
     }
   ]
 

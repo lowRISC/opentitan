@@ -188,8 +188,9 @@ We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/do
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/sram_ctrl/dv/sram_ctrl_sim_cfg.hjson -i sram_ctrl_smoke
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/sram_ctrl/dv/sram_ctrl_${VARIANT}_sim_cfg.hjson -i sram_ctrl_smoke
 ```
+In this run command, $VARIANT can be `main` or `ret`.
 
 ## Testplan
 {{< incGenFromIpDesc "../../data/sram_ctrl_testplan.hjson" "testplan" >}}

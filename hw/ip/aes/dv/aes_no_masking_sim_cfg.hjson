@@ -5,7 +5,7 @@
 // sim cfg file for AES without masking
 {
   // Name of the sim cfg variant
-  variant: aes_no_masking
+  variant: no_masking
 
   // Import the base sram_ctrl sim_cfg file
   import_cfgs: ["{proj_root}/hw/ip/aes/dv/aes_base_sim_cfg.hjson"]
