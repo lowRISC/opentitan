@@ -56,6 +56,7 @@ rust_library(
         "src/crypto/rsa.rs",
         "src/crypto/sha256.rs",
         "src/dif/lc_ctrl.rs",
+        "src/dif/rstmgr.rs",
         "src/dif/mod.rs",
         "src/image/image.rs",
         "src/image/manifest.rs",

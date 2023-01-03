@@ -57,6 +57,23 @@
       ]
     },
     {
+      "name": "RMA_BOOTSTRAP",
+      "pins": [
+        {
+          "name": "SW_STRAP0",
+          "level": false
+        },
+        {
+          "name": "SW_STRAP1",
+          "level": true
+        },
+        {
+          "name": "SW_STRAP2",
+          "level": true
+        }
+      ]
+    },
+    {
       "name": "RESET",
       "pins": [
         {
