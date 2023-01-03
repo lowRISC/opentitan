@@ -42,7 +42,10 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire intr_otp_operation_done, intr_otp_error;
 
+  // Output from close-source OTP, not checked in open-source env.
   wire otp_ctrl_pkg::otp_ast_req_t ast_req;
+  wire [7:0] otp_obs_o;
+
   tlul_pkg::tl_d2h_t prim_tl_o;
 
   // interfaces
@@ -107,14 +110,16 @@ module tb;
     .alert_rx_i                 (alert_rx   ),
     .alert_tx_o                 (alert_tx   ),
     // ast
+    .obs_ctrl_i                 (otp_ctrl_if.obs_ctrl_i),
+    .otp_obs_o                  (otp_obs_o),
     .otp_ast_pwr_seq_o          (ast_req),
     .otp_ast_pwr_seq_h_i        (otp_ctrl_if.otp_ast_pwr_seq_h_i),
     // pwrmgr
     .pwr_otp_i                  (otp_ctrl_if.pwr_otp_init_i),
     .pwr_otp_o                  ({otp_ctrl_if.pwr_otp_done_o, otp_ctrl_if.pwr_otp_idle_o}),
     // lc
-    .lc_otp_vendor_test_o       (otp_ctrl_if.otp_vendor_test_status_o),
     .lc_otp_vendor_test_i       (otp_ctrl_if.otp_vendor_test_ctrl_i),
+    .lc_otp_vendor_test_o       (otp_ctrl_if.otp_vendor_test_status_o),
     .lc_otp_program_i           ({lc_prog_if.req, lc_prog_if.h_data}),
     .lc_otp_program_o           ({lc_prog_if.d_data, lc_prog_if.ack}),
     .lc_creator_seed_sw_rw_en_i (otp_ctrl_if.lc_creator_seed_sw_rw_en_i),
