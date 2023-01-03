@@ -429,10 +429,8 @@ def parse_args():
 
     buildg.add_argument("--build-timeout-mins",
                         type=int,
-                        default=60,
                         help=('Wall-clock timeout for builds in minutes: if '
-                              'the build takes longer it will be killed.'
-                              'If 0, the build will not be killed by timeout.'))
+                              'the build takes longer it will be killed.'))
 
     disg.add_argument("--gui",
                       action='store_true',
@@ -490,10 +488,8 @@ def parse_args():
 
     rung.add_argument("--run-timeout-mins",
                       type=int,
-                      default=60,
                       help=('Wall-clock timeout for runs in minutes: if '
-                            'the run takes longer it will be killed.'
-                            'If 0, the run will not be killed by timeout.'))
+                            'the run takes longer it will be killed.'))
 
     rung.add_argument("--verbosity",
                       "-v",
