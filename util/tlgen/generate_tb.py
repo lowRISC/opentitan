@@ -19,7 +19,7 @@ def generate_tb(xbar: Xbar,
     tb_files = [
         "xbar_env_pkg__params.sv", "tb__xbar_connect.sv", "xbar.sim.core",
         "xbar.bind.core", "xbar.bind.sv", "xbar.sim_cfg.hjson",
-        "xbar.testplan.hjson", "xbar_cov_excl.el", "xbar_cover.cfg"
+        "xbar_cov_excl.el", "xbar_cover.cfg"
     ]
 
     for fname in tb_files:
@@ -34,8 +34,6 @@ def generate_tb(xbar: Xbar,
             fname = "xbar_%s_bind.sv" % (xbar.name)
         elif fname == "xbar.sim_cfg.hjson":
             fname = "xbar_%s_sim_cfg.hjson" % (xbar.name)
-        elif fname == "xbar.testplan.hjson":
-            fname = "xbar_%s_testplan.hjson" % (xbar.name)
 
         # save testplan at data directory
         if fname == "xbar_%s_testplan.hjson" % (xbar.name):
