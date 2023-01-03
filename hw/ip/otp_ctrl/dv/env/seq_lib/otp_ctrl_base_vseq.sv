@@ -287,7 +287,9 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // If the partition is read/write locked, there is 20% chance we will force the internal mubi
   // access signal to the values other than mubi::true or mubi::false.
   virtual task force_mubi_part_access();
-    if (cfg.otp_ctrl_vif.alert_reqs == 0) begin
+    // Stress_all_with_rand_reset seq will issue reset and wait until reset is done then kill the
+    // parallel sequence. This gating logic avoid injecting error during reset active.
+    if (cfg.otp_ctrl_vif.alert_reqs == 0 && !cfg.under_reset) begin
       otp_part_access_lock_t forced_mubi_part_access[NumPart-1];
 
       if (`gmv(ral.vendor_test_digest[0]) || `gmv(ral.vendor_test_digest[1])) begin
