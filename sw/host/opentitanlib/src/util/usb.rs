@@ -25,15 +25,16 @@ impl UsbBackend {
         usb_serial: Option<&str>,
     ) -> Result<Vec<(rusb::Device<rusb::GlobalContext>, String)>> {
         let mut devices = Vec::new();
+        let mut deferred_log_messages = Vec::new();
         for device in rusb::devices().context("USB error")?.iter() {
             let descriptor = match device.device_descriptor() {
                 Ok(desc) => desc,
                 _ => {
-                    log::error!(
+                    deferred_log_messages.push(format!(
                         "Could not read device descriptor for device at bus={} address={}",
                         device.bus_number(),
                         device.address()
-                    );
+                    ));
                     continue;
                 }
             };
@@ -46,22 +47,22 @@ impl UsbBackend {
             let handle = match device.open() {
                 Ok(handle) => handle,
                 _ => {
-                    log::error!(
+                    deferred_log_messages.push(format!(
                         "Could not open device at bus={} address={}",
                         device.bus_number(),
                         device.address()
-                    );
+                    ));
                     continue;
                 }
             };
             let serial_number = match handle.read_serial_number_string_ascii(&descriptor) {
                 Ok(sn) => sn,
                 _ => {
-                    log::error!(
+                    deferred_log_messages.push(format!(
                         "Could not read serial number from device at bus={} address={}",
                         device.bus_number(),
                         device.address()
-                    );
+                    ));
                     continue;
                 }
             };
@@ -72,6 +73,19 @@ impl UsbBackend {
             }
             devices.push((device, serial_number));
         }
+
+        // We expect to find exactly one matching device. If that happens, the
+        // deferred log messages are unimportant. Otherwise, one of the messages
+        // may yield some insight into what went wrong, so they should be logged
+        // at a higher priority.
+        let severity = match devices.len() {
+            1 => log::Level::Info,
+            _ => log::Level::Error,
+        };
+        for s in deferred_log_messages {
+            log::log!(severity, "{}", s);
+        }
+
         Ok(devices)
     }
 
