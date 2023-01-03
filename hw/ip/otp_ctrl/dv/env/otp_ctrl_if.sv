@@ -48,11 +48,12 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   logic              pwr_otp_done_o, pwr_otp_idle_o;
 
   // Inputs to DUT
-  logic                  pwr_otp_init_i, scan_en_i, scan_rst_ni, ext_voltage_h_io;
-  lc_ctrl_pkg::lc_tx_t   lc_dft_en_i, lc_escalate_en_i, lc_check_byp_en_i,
-                         lc_creator_seed_sw_rw_en_i, lc_seed_hw_rd_en_i;
-  prim_mubi_pkg::mubi4_t scanmode_i;
-  otp_ast_rsp_t          otp_ast_pwr_seq_h_i;
+  logic                   pwr_otp_init_i, scan_en_i, scan_rst_ni, ext_voltage_h_io;
+  lc_ctrl_pkg::lc_tx_t    lc_dft_en_i, lc_escalate_en_i, lc_check_byp_en_i,
+                          lc_creator_seed_sw_rw_en_i, lc_seed_hw_rd_en_i;
+  prim_mubi_pkg::mubi4_t  scanmode_i;
+  otp_ast_rsp_t           otp_ast_pwr_seq_h_i;
+  ast_pkg::ast_obs_ctrl_t obs_ctrl_i;
 
   // Unused in prim_generic_otp memory.
   logic [OtpTestCtrlWidth-1:0]   otp_vendor_test_ctrl_i;
