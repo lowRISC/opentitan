@@ -5,7 +5,7 @@
 // sim cfg file for AES with masking
 {
   // Name of the sim cfg variant
-  variant: masking
+  variant: masked
 
   // Import the base sram_ctrl sim_cfg file
   import_cfgs: ["{proj_root}/hw/ip/aes/dv/aes_base_sim_cfg.hjson"]
@@ -14,5 +14,5 @@
   xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/refines/aes_UNR.vRefine"]
 
   // Enable the appropriate build mode for all tests
-  en_build_modes: ["aes_masking"]
+  en_build_modes: ["aes_masked"]
 }
