@@ -168,6 +168,7 @@ static dif_sram_ctrl_t sram_ctrl_ret;
 
 static const char *sparse_fsm_check = "prim_sparse_fsm_flop";
 static const char *we_check = "prim_reg_we_check";
+static const char *rst_cnsty_check = "rst_cnsty_check";
 
 static void save_fault_checker(fault_checker_t *fault_checker) {
   uint32_t function_addr = (uint32_t)(fault_checker->function);
@@ -396,7 +397,10 @@ static void rstmgr_fault_checker(bool enable, const char *ip_inst,
   // Check the rstmgr integrity fatal error code.
   dif_rstmgr_fatal_err_codes_t codes;
   CHECK_DIF_OK(dif_rstmgr_fatal_err_code_get_codes(&rstmgr, &codes));
-  uint32_t expected_codes = enable ? kDifRstmgrFatalErrTypeRegfileIntegrity : 0;
+  uint32_t fault_code = (type == we_check)
+                            ? kDifRstmgrFatalErrTypeRegfileIntegrity
+                            : kDifRstmgrFatalErrTypeResetConsistency;
+  uint32_t expected_codes = enable ? fault_code : 0;
   CHECK(codes == expected_codes, "For %s got codes 0x%x, expected 0x%x",
         ip_inst, codes, expected_codes);
 }
@@ -870,8 +874,11 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
                             we_check};
       fault_checker = fc;
     } break;
-    // kTopEarlgreyAlertIdRstmgrAonFatalCnstyFault needs a specialized test
-    // since the sec_cm instrumented prims are not involved in these faults.
+    case kTopEarlgreyAlertIdRstmgrAonFatalCnstyFault: {
+      fault_checker_t fc = {rstmgr_fault_checker, rstmgr_inst_name,
+                            rst_cnsty_check};
+      fault_checker = fc;
+    } break;
     case kTopEarlgreyAlertIdRstmgrAonFatalFault: {
       fault_checker_t fc = {rstmgr_fault_checker, rstmgr_inst_name, we_check};
       fault_checker = fc;
