@@ -4,11 +4,11 @@
 
 #include <stdint.h>
 
+#include "external/llvm_compiler_rt/lib/profile/InstrProfiling.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/coverage.h"
 #include "sw/device/silicon_creator/lib/crc32.h"
-#include "sw/vendor/llvm_clang_rt_profile/compiler-rt/lib/profile/InstrProfiling.h"
 
 /**
  * When the linker finds a definition of this symbol, it knows to skip loading

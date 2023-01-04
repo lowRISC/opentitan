@@ -80,6 +80,10 @@ protobuf_deps()
 load("//third_party/freertos:repos.bzl", "freertos_repos")
 freertos_repos()
 
+# LLVM Compiler Runtime for Profiling
+load("//third_party/llvm_compiler_rt:repos.bzl", "llvm_compiler_rt_repos")
+llvm_compiler_rt_repos()
+
 # RISC-V Compliance Tests
 load("//third_party/riscv-compliance:repos.bzl", "riscv_compliance_repos")
 riscv_compliance_repos()

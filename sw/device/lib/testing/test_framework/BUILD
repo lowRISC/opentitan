@@ -24,7 +24,6 @@ cc_library(
     name = "coverage_llvm",
     srcs = [
         "coverage_llvm.c",
-        "//sw/vendor:llvm_clang_rt_profile",
     ],
     hdrs = ["coverage.h"],
     linkopts = ["-lgcc"],
@@ -33,6 +32,7 @@ cc_library(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/silicon_creator/lib:crc32",
+        "//third_party/llvm_compiler_rt",
     ],
 )
 

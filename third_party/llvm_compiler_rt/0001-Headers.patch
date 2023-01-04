@@ -1,0 +1,119 @@
+diff --git a/lib/profile/InstrProfiling.c b/lib/profile/InstrProfiling.c
+index 6df65f66d..5d20a762f 100644
+--- a/lib/profile/InstrProfiling.c
++++ b/lib/profile/InstrProfiling.c
+@@ -10,12 +10,10 @@
+ // with freestanding compilation. See `darwin_add_builtin_libraries`.
+ 
+ #include <limits.h>
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <string.h>
+ 
+ #include "InstrProfiling.h"
+ #include "InstrProfilingInternal.h"
++#include "sw/device/lib/base/memory.h"
+ 
+ #define INSTR_PROF_VALUE_PROF_DATA
+ #include "profile/InstrProfData.inc"
+diff --git a/lib/profile/InstrProfiling.h b/lib/profile/InstrProfiling.h
+index 237acb33f..9e37253b3 100644
+--- a/lib/profile/InstrProfiling.h
++++ b/lib/profile/InstrProfiling.h
+@@ -10,7 +10,6 @@
+ #define PROFILE_INSTRPROFILING_H_
+ 
+ #include "InstrProfilingPort.h"
+-#include <stdio.h>
+ 
+ #define INSTR_PROF_VISIBILITY COMPILER_RT_VISIBILITY
+ #include "profile/InstrProfData.inc"
+@@ -219,7 +218,6 @@ void __llvm_profile_set_filename(const char *Name);
+  * program initialization time. Support for transferring the mmap'd profile
+  * counts to a new file has not been implemented.
+  */
+-void __llvm_profile_set_file_object(FILE *File, int EnableMerge);
+ 
+ /*! \brief Register to write instrumentation data to file at exit. */
+ int __llvm_profile_register_write_file_atexit(void);
+diff --git a/lib/profile/InstrProfilingMerge.c b/lib/profile/InstrProfilingMerge.c
+index 16ebc2f8b..9ef47a06d 100644
+--- a/lib/profile/InstrProfilingMerge.c
++++ b/lib/profile/InstrProfilingMerge.c
+@@ -11,7 +11,6 @@
+ 
+ #include "InstrProfiling.h"
+ #include "InstrProfilingInternal.h"
+-#include "InstrProfilingUtil.h"
+ 
+ #define INSTR_PROF_VALUE_PROF_DATA
+ #include "profile/InstrProfData.inc"
+diff --git a/lib/profile/InstrProfilingPlatformOther.c b/lib/profile/InstrProfilingPlatformOther.c
+index 0e59148e2..4fd2a5170 100644
+--- a/lib/profile/InstrProfilingPlatformOther.c
++++ b/lib/profile/InstrProfilingPlatformOther.c
+@@ -10,8 +10,7 @@
+     !(defined(__sun__) && defined(__svr4__)) && !defined(__NetBSD__) &&        \
+     !defined(_WIN32)
+ 
+-#include <stdlib.h>
+-#include <stdio.h>
++#include <stddef.h>
+ 
+ #include "InstrProfiling.h"
+ #include "InstrProfilingInternal.h"
+diff --git a/lib/profile/InstrProfilingPort.h b/lib/profile/InstrProfilingPort.h
+index ed0905cc5..ddc1f408f 100644
+--- a/lib/profile/InstrProfilingPort.h
++++ b/lib/profile/InstrProfilingPort.h
+@@ -88,7 +88,6 @@
+   (DomType *)__sync_fetch_and_add((long *)&PtrVar, sizeof(DomType) * PtrIncr)
+ #endif
+ #else /* COMPILER_RT_HAS_ATOMICS != 1 */
+-#include "InstrProfilingUtil.h"
+ #define COMPILER_RT_BOOL_CMPXCHG(Ptr, OldV, NewV)                              \
+   lprofBoolCmpXchg((void **)Ptr, OldV, NewV)
+ #define COMPILER_RT_PTR_FETCH_ADD(DomType, PtrVar, PtrIncr)                    \
+@@ -117,17 +116,11 @@ static inline size_t getpagesize() {
+   return S.dwPageSize;
+ }
+ #else /* defined(_WIN32) */
+-#include <unistd.h>
+ #endif /* defined(_WIN32) */
+ 
+-#define PROF_ERR(Format, ...)                                                  \
+-  fprintf(stderr, "LLVM Profile Error: " Format, __VA_ARGS__);
+-
+-#define PROF_WARN(Format, ...)                                                 \
+-  fprintf(stderr, "LLVM Profile Warning: " Format, __VA_ARGS__);
+-
+-#define PROF_NOTE(Format, ...)                                                 \
+-  fprintf(stderr, "LLVM Profile Note: " Format, __VA_ARGS__);
++#define PROF_ERR(Format, ...)
++#define PROF_WARN(Format, ...)
++#define PROF_NOTE(Format, ...)
+ 
+ #ifndef MAP_FILE
+ #define MAP_FILE 0
+@@ -144,7 +137,7 @@ static inline size_t getpagesize() {
+ 
+ #else /* defined(__FreeBSD__) */
+ 
+-#include <inttypes.h>
++#include <stddef.h>
+ #include <stdint.h>
+ 
+ #endif /* defined(__FreeBSD__) && defined(__i386__) */
+diff --git a/lib/profile/InstrProfilingWriter.c b/lib/profile/InstrProfilingWriter.c
+index 25f630293..730262250 100644
+--- a/lib/profile/InstrProfilingWriter.c
++++ b/lib/profile/InstrProfilingWriter.c
+@@ -13,7 +13,7 @@
+ /* For _alloca */
+ #include <malloc.h>
+ #endif
+-#include <string.h>
++#include "sw/device/lib/base/memory.h"
+ 
+ #include "InstrProfiling.h"
+ #include "InstrProfilingInternal.h"
