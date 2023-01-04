@@ -392,23 +392,26 @@
     }
     {
       name: rma_write_process_error
-      desc: '''Verify error handling process duing the rma wipe process.
-      In normal rma process, inject bit error at the write path
-      (tb.dut.u_eflash.gen_flash_cores[0].u_core.gen_prog_data.u_prog.pack_data).
-      This should make debug_state to flash_ctrl_env_pkg::FlashLcIvalid and
-      fatal error (std_fault_status.lcmgr_err) should be triggered.
-      '''
+      desc: '''
+            Verify error handling process duing the rma wipe process.
+            In normal rma process, inject bit error at the write path
+            (tb.dut.u_eflash.gen_flash_cores[0].u_core.gen_prog_data.u_prog.pack_data).
+            This should make debug_state to flash_ctrl_env_pkg::FlashLcIvalid and
+            fatal error (std_fault_status.lcmgr_err) should be triggered.
+            '''
       stage: V2
       tests: ["flash_ctrl_rma_err", "flash_ctrl_hw_prog_rma_wipe_err"]
     }
     {
-      name: robustness
+      name: asymmetric_read_path
       desc: '''
-            Enable full randomization in order to fully stress DUT. Perform illegal accesses in
-            order to gain robustness.
+            Create 'fast' and 'slow' read path using scramble enable.
+            Send flash read requst over slow path followed by fast path.
+            While return data comes from fast path first but they are expected
+            to be returned in request order.
             '''
       stage: V3
-      tests: []
+      tests: ["flash_ctrl_rd_ooo"]
     }
   ]
 
