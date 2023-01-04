@@ -11,7 +11,8 @@ interface prim_sparse_fsm_flop_if #(
   parameter string CustomForceName = ""
 ) (
   input clk_i,
-  input rst_ni);
+  input rst_ni
+);
 
   `include "dv_macros.svh"
   `include "uvm_macros.svh"
@@ -32,22 +33,25 @@ interface prim_sparse_fsm_flop_if #(
   class prim_sparse_fsm_flop_if_proxy extends sec_cm_pkg::sec_cm_base_if_proxy;
     `uvm_object_new
 
-    logic[Width-1:0] orig_value;
+    logic [Width-1:0] orig_value;
 
     virtual task automatic inject_fault();
-      logic[Width-1:0] force_value;
+      logic [Width-1:0] force_value;
 
       @(negedge clk_i);
       `DV_CHECK(uvm_hdl_read(signal_forced, orig_value))
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_value,
-          $countones(force_value ^ orig_value) inside {[1: MaxFlipBits]};)
+                                         $countones(
+                                             force_value ^ orig_value
+                                         ) inside {[1 : MaxFlipBits]};)
 
-      `uvm_info(msg_id, $sformatf("Forcing %s from %0d to %0d",
-                                  signal_forced, orig_value, force_value), UVM_LOW)
+      `uvm_info(msg_id, $sformatf(
+                "Forcing %s from %0d to %0d", signal_forced, orig_value, force_value), UVM_LOW)
       `DV_CHECK(uvm_hdl_force(signal_forced, force_value))
       if (CustomForceName != "") begin
-        `uvm_info(msg_id, $sformatf("Forcing %s from %0d to %0d",
-                                    custom_signal_forced, orig_value, force_value), UVM_LOW)
+        `uvm_info(msg_id, $sformatf(
+                  "Forcing %s from %0d to %0d", custom_signal_forced, orig_value, force_value),
+                  UVM_LOW)
         `DV_CHECK(uvm_hdl_deposit(custom_signal_forced, force_value))
       end
       @(negedge clk_i);
@@ -69,8 +73,8 @@ interface prim_sparse_fsm_flop_if #(
       `uvm_info(msg_id, $sformatf("Forcing %s to original value %0d", signal_forced, orig_value),
                 UVM_LOW)
       `DV_CHECK(uvm_hdl_deposit(signal_forced, orig_value))
-      `uvm_info(msg_id, $sformatf("Forcing %s to original value %0d", custom_signal_forced,
-                orig_value), UVM_LOW)
+      `uvm_info(msg_id, $sformatf(
+                "Forcing %s to original value %0d", custom_signal_forced, orig_value), UVM_LOW)
       `DV_CHECK(uvm_hdl_deposit(custom_signal_forced, orig_value))
     endtask
   endclass
@@ -78,7 +82,7 @@ interface prim_sparse_fsm_flop_if #(
   prim_sparse_fsm_flop_if_proxy if_proxy;
 
   initial begin
-    `DV_CHECK_FATAL(uvm_hdl_check_path(signal_forced), , msg_id)
+    `DV_CHECK_FATAL(uvm_hdl_check_path(signal_forced),, msg_id)
 
     // Store the proxy object for TB to use
     if_proxy = new("if_proxy");

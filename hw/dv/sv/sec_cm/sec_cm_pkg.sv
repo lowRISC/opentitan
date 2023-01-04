@@ -42,13 +42,24 @@ package sec_cm_pkg;
       proxies = sec_cm_pkg::sec_cm_if_proxy_q.find_first() with (item.path == path);
     end
     if (proxies.size()) begin
-      `uvm_info(msg_id, $sformatf({"find_sec_cm_if_proxy: found proxy instance for path %s: ",
-                                   "type = %0d, full path = %0s"}, path, proxies[0].sec_cm_type,
-                                  proxies[0].path), UVM_MEDIUM)
+      `uvm_info(msg_id, $sformatf(
+                "find_sec_cm_if_proxy: found proxy for path %s: type = %0d, full path = %0s",
+                path,
+                proxies[0].sec_cm_type,
+                proxies[0].path
+                ), UVM_MEDIUM)
       return proxies[0];
-    end
-    else `uvm_fatal(msg_id, $sformatf("find_sec_cm_if_proxy: no proxy with path %s", path))
+    end else `uvm_fatal(msg_id, $sformatf("find_sec_cm_if_proxy: no proxy with path %s", path))
     return null;
+  endfunction
+
+  function automatic void list_if_proxies(uvm_verbosity verbosity = UVM_MEDIUM);
+    `uvm_info(msg_id, "The sec_cm proxies:", verbosity)
+    foreach (sec_cm_if_proxy_q[i]) begin
+      `uvm_info(msg_id, $sformatf(
+                "Path %0s, type %d", sec_cm_if_proxy_q[i].path, sec_cm_if_proxy_q[i].sec_cm_type),
+                verbosity)
+    end
   endfunction
 
 endpackage
