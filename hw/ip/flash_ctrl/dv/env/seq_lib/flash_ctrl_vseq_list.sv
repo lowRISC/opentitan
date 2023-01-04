@@ -63,3 +63,4 @@
 `include "flash_ctrl_lcmgr_intg_vseq.sv"
 `include "flash_ctrl_hw_read_seed_err_vseq.sv"
 `include "flash_ctrl_hw_prog_rma_wipe_err_vseq.sv"
+`include "flash_ctrl_rd_ooo_vseq.sv"

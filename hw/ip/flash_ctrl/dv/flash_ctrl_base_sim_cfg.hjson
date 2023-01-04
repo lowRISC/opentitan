@@ -446,6 +446,13 @@
                  "+en_always_all=1", "+bypass_alert_ready_to_end_check=1"]
       reseed: 20
     }
+    {
+      name: flash_ctrl_rd_ooo
+      uvm_test_seq: flash_ctrl_rd_ooo_vseq
+      run_opts: ["+scb_otf_en=1", "+otf_num_rw=10", "+otf_num_hr=100",
+                 "+ecc_mode=1"]
+      reseed: 1
+    }
  ]
 
   // List of regressions.

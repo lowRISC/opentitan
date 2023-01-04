@@ -1347,8 +1347,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     end
   endtask // flash_ctrl_default_info_cfg
 
-  task flash_otf_region_cfg(otf_cfg_mode_e scr_mode = OTFCfgFalse,
-                            otf_cfg_mode_e ecc_mode = OTFCfgFalse);
+  virtual task flash_otf_region_cfg(otf_cfg_mode_e scr_mode = OTFCfgFalse,
+                                    otf_cfg_mode_e ecc_mode = OTFCfgFalse);
     mubi4_t scr_en, ecc_en;
     // If scr/ecc mode is random,
     // follow rand_regions_c
