@@ -1,0 +1,32 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+package(default_visibility = ["//visibility:public"])
+
+# Using `filegroup()` because the actual library depends on
+# `//sw/device/lib/base:memory` and thus needs to be defined outside.
+filegroup(
+    name = "srcs",
+    srcs = [
+        "lib/profile/InstrProfiling.c",
+        "lib/profile/InstrProfilingBuffer.c",
+        "lib/profile/InstrProfilingInternal.c",
+        "lib/profile/InstrProfilingInternal.h",
+        "lib/profile/InstrProfilingMerge.c",
+        "lib/profile/InstrProfilingPlatformOther.c",
+        "lib/profile/InstrProfilingPort.h",
+        "lib/profile/InstrProfilingVersionVar.c",
+        "lib/profile/InstrProfilingWriter.c",
+    ],
+)
+
+# Using `cc_library()` to be able to specify `includes`.
+cc_library(
+    name = "hdrs",
+    srcs = [
+        "include/profile/InstrProfData.inc",
+        "lib/profile/InstrProfiling.h",
+    ],
+    includes = ["include"],
+)
