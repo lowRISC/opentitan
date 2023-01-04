@@ -33,15 +33,7 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
 
   virtual task body();
     repeat (num_trans) begin
-      // randomly set init or renew key
-      `DV_CHECK_RANDOMIZE_FATAL(ral.ctrl.init)
-
-      // without init, stored intg isn't correct
-      if (!ral.ctrl.init.get()) begin
-        cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
-      end
-      `DV_CHECK_RANDOMIZE_FATAL(ral.ctrl.renew_scr_key)
-      csr_update(.csr(ral.ctrl));
+      req_mem_init();
 
       do_rand_ops(.num_ops($urandom_range(10, 100)), .blocking(0), .abort(0),
                   .wait_complete(1));
@@ -67,10 +59,9 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
           csr_wr(.ptr(ral.status), .value(status));
 
           `uvm_info(`gfn,
-            $sformatf("Performing %0d random memory accesses after LC escalation request",
-                      num_ops_after_reset),
-            UVM_HIGH)
-          do_rand_ops(.num_ops(num_ops_after_reset), .blocking(0), .exp_err_rsp(1),
+            $sformatf("Performing random memory accesses after LC escalation request"),
+            UVM_MEDIUM)
+          do_rand_ops(.num_ops($urandom_range(10, 100)), .blocking(0), .exp_err_rsp(1),
                       .wait_complete(1));
 
           // reset to get the DUT out of terminal state
@@ -84,13 +75,6 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
           `uvm_info(`gfn, "Esc_en is off", UVM_MEDIUM);
         end
       join
-
-      req_mem_init();
-      `uvm_info(`gfn,
-                $sformatf("Performing %0d random memory accesses after reset", num_ops_after_reset),
-                UVM_HIGH)
-      do_rand_ops(.num_ops(num_ops_after_reset), .blocking(1));
     end
   endtask
-
 endclass
