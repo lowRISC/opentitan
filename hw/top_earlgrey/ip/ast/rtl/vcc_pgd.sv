@@ -31,12 +31,14 @@ initial begin
   init_start = 1'b0;
 end
 
-always @( * ) begin
+always (* xprop_off *) @( * ) begin
   if ( init_start ) begin
     vcc_pok_o <= 1'b0;
-  end else if ( !init_start && gen_supp_a ) begin
+  end
+  if ( !init_start && gen_supp_a ) begin
     vcc_pok_o <= #(ast_bhv_pkg::VCC_POK_RDLY) gen_supp_a;
-  end else if ( !init_start && !gen_supp_a ) begin
+  end
+  if ( !init_start && !gen_supp_a ) begin
     vcc_pok_o <= #(ast_bhv_pkg::VCC_POK_FDLY) gen_supp_a;
   end
 end

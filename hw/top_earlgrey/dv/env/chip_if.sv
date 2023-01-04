@@ -143,7 +143,7 @@ interface chip_if;
     assign #1ps glitch_free_io = mios[i];
 
     top_earlgrey_pkg::mio_pad_e named_io = top_earlgrey_pkg::mio_pad_e'(i);
-    always @(glitch_free_io) begin
+    always (* xprop_off *) @(glitch_free_io) begin
       if (glitch_free_io === 1'bx) begin
         `uvm_error(MsgId, $sformatf("Detected an X on %0s", named_io.name()))
       end

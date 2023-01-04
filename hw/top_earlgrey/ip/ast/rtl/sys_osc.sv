@@ -59,7 +59,7 @@ assign SysClkPeriod = (sys_osc_cal_i && init_start) ? CalSysClkPeriod : UncSysCl
 logic clk;
 
 // -20% Jitter on calibrated frequency
-always_ff @( posedge clk, negedge vcore_pok_h_i ) begin
+always_ff (* xprop_off *) @( posedge clk, negedge vcore_pok_h_i ) begin
   if ( !vcore_pok_h_i ) begin
     jitter <= 0.0;
     jrate_cnt <= '0;
