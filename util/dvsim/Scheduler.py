@@ -48,7 +48,7 @@ def get_next_item(arr, index):
 class Scheduler:
     '''An object that runs one or more Deploy items'''
 
-    def __init__(self, items, launcher_cls):
+    def __init__(self, items, launcher_cls, interactive):
         self.items = items
 
         # 'scheduled[target][cfg]' is a list of Deploy objects for the chosen
@@ -61,7 +61,7 @@ class Scheduler:
         self.add_to_scheduled(items)
 
         # Print status periodically using an external status printer.
-        self.status_printer = get_status_printer()
+        self.status_printer = get_status_printer(interactive)
         self.status_printer.print_header(
             msg="Q: queued, D: dispatched, P: passed, F: failed, K: killed, "
             "T: total")
