@@ -103,7 +103,10 @@ class alert_receiver_driver extends alert_esc_base_driver;
       @(cfg.vif.receiver_cb);
       repeat (ping_delay) @(cfg.vif.receiver_cb);
       set_ping();
-      // TODO: add ping fail and differential signal fail scenarios
+      // Ping fail and differential signal fail scenarios are not implemented now.
+      // This driver is used for IP (instantiate prim_alert_sender) to finish alert handshake.
+      // The current use-case does not test ping fail and differential signal fail scenarios.
+      // These scenarios are check in prim_alert direct sequences.
       fork
         begin : isolation_fork
           fork
@@ -119,7 +122,7 @@ class alert_receiver_driver extends alert_esc_base_driver;
         end
       join
     end else begin
-    // TODO: differential signal fail
+    // Differential signal fail is not implemented.
     end
   endtask
 
@@ -148,7 +151,7 @@ class alert_receiver_driver extends alert_esc_base_driver;
         end : isolation_fork
       join
     end else begin
-    // TODO: differential signal fail
+    // Differential signal fail is not implemented.
     end
   endtask : set_ack_pins
 
