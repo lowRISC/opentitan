@@ -33,7 +33,7 @@ class alert_esc_base_driver extends dv_base_driver#(alert_esc_seq_item, alert_es
       seq_item_port.get(req);
       `downcast(req_clone, req.clone());
       req_clone.set_id_info(req);
-      // TODO: if any of the queue size is larger than 2, need additional support
+      // receiver mode
       if (req.r_alert_ping_send) r_alert_ping_send_q.push_back(req_clone);
       if (req.r_alert_rsp)       r_alert_rsp_q.push_back(req_clone);
       if (req.r_esc_rsp)         r_esc_rsp_q.push_back(req_clone);

@@ -24,12 +24,16 @@ class esc_sender_driver extends alert_esc_base_driver;
   endtask
 
   virtual task get_and_drive();
-    // TODO
+    // LC_CTRL uses virtual interface to directly drive escalation requests.
+    // Other escalation handshakes are checked in prim_esc direct sequence.
+    // So the following task is not implemented.
     drive_esc();
   endtask : get_and_drive
 
   virtual task drive_esc();
-    // TODO
+    // LC_CTRL uses virtual interface to directly drive escalation requests.
+    // Other escalation handshakes are checked in prim_esc direct sequence.
+    // So this task is not implemented.
     wait(!under_reset);
   endtask
 
@@ -38,4 +42,3 @@ class esc_sender_driver extends alert_esc_base_driver;
     cfg.vif.esc_tx_int.esc_n <= 1'b1;
   endtask
 endclass : esc_sender_driver
-

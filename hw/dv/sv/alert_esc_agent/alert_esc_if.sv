@@ -36,7 +36,7 @@ interface alert_esc_if(input clk, input rst_n);
   assign async_clk = (is_async) ? 'z : clk ;
 
   // async interface for alert_tx has two_clock cycles delay
-  // TODO: this is not needed once the CDC module is implemented
+  // ICEBOX(#3275): this is not needed once the CDC module is implemented
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       alert_tx_sync_dly2 <= {2'b01};
