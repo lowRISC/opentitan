@@ -159,12 +159,12 @@ IP level DV testbenches are small and provide fine grained control of stimulus a
 Tests at this level run relatively quickly and development cycles are shorter.
 Coverage closure is more intensive since there are typically no pre-verified sub-modules.
 To achieve our coverage goals, we take a constrained random approach to generate the stimulus.
-The DV environment models the behavior of the DUT more closely to perform checks (typically within the scoreboard) independently of the stimulus.
-In some IPs (specifically the ones that provide cryptographic functions), we also use open source third party C libraries as reference models to check the behavior of the DUT through DPI-C calls.
+The DV environment models the behavior of the DUT more closely to perform checks (typically within the scoreboard or via SVAs) independently of the stimulus.
+In some IPs, specifically the ones that provide cryptographic functions, we also use open source third party C libraries as reference models to check the behavior of the DUT through DPI-C calls.
 
 Each of the IP level DV environments are described in further detail within their own [DV document](#dv-document).
 To find all of them, please navigate to this [landing page]({{< relref "hw" >}}).
-The [UART DV document]({{< relref "hw/ip/uart/doc/dv" >}}) documentation which can be found there can be used as an example / reference.
+The [UART DV document]({{< relref "hw/ip/uart/doc/dv" >}}) documentation can be used as a reference.
 
 ### Core Ibex Level DV
 
@@ -185,9 +185,10 @@ The chip DV document, which is currently under active development will explain t
 ## Key Test Focus Areas
 
 When progressing through the verification stages, there are key focus areas or testing activities that are perhaps common across all DUTs.
-These are as follows.
+These are described under [Hardware Verification Stages]({{< relref "doc/project/development_stages#hardware-verification-stages-v" >}}).
+The basic steps are:
 
-### Progressing towards [V1]({{< relref "doc/project/development_stages#hardware-verification-stages" >}})
+### [Progressing towards V1]({{< relref "doc/project/checklist#v1" >}})
 
 These set of tests (not exhaustive) provide the confidence that the design is ready for vertical integration.
 
@@ -204,7 +205,7 @@ This test (or set of tests) is also included as a part of the sanity regression 
 The very first set of real tests validate the SW interface laid out using the regtool.
 These prove that the SW interface is solid and all assumptions in CSRs in terms of field descriptions and their accessibility are correctly captured and there are no address decode bugs.
 
-### Progressing towards [V2]({{< relref "doc/project/development_stages#hardware-verification-stages" >}})
+### [Progressing towards V2]({{< relref "doc/project/checklist#v2" >}})
 
 Bulk of testing in this stage focus on functionally testing the DUT.
 There however are certain categories of tests that may need additional attention.
@@ -251,7 +252,7 @@ To mitigate that, they are constructed with knobs to control the level of constr
 The level of constraints are then slowly eased to allow deeper state space exploration, until all areas of the DUT are satisfactorily stressed.
 Stress tests are ideal for bug hunting and closing coverage.
 
-### Progressing towards [V3]({{< relref "doc/project/development_stages#hardware-verification-stages" >}})
+### [Progressing towards V3]({{< relref "doc/project/checklist#v3" >}})
 
 The main focus of testing at this stage is to meet our [regression](#nightly) and [coverage](#coverage-collection) goals.
 Apart from that, there are cleanup activities to resolve all pending TODO items in the DV code base and fix all compile and run time warnings (if any) thrown by the simulator tools.
@@ -261,6 +262,10 @@ Apart from that, there are cleanup activities to resolve all pending TODO items 
 In DV, we follow the same assertion methodology as indicated in the [design methodology]({{< relref "./design.md#assertion-methodology" >}}).
 Wherever possible, the assertion monitors developed for FPV are reused in UVM testbenches when running dynamic simulations.
 An example of this is the [TLUL Protocol Checker]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}).
+
+Unlike design assertions, in DV assertions are typically created within SV interfaces bound to the DUT.
+This way assertions and any collateral code don't affect the design, and can reach any internal design signal if needed.
+For an example of this see the [clkmgr assertions](https://github.com/lowRISC/opentitan/tree/master/hw/ip/clkmgr/dv/sva).
 
 ## Regressions
 
@@ -306,13 +311,13 @@ However, the use of other simulators is welcome.
 
 The common answer is to flush out bugs in the design.
 This is not accurate enough.
-Making sure there are no bugs in a design, while it is important it is not sufficient.
+Making sure there are no bugs in a design is important, but not sufficient.
 One must also make sure the design works as intended.
 That is, it must provide all the functionality specified in the design specification.
 So a more precise answer for why we need coverage is to flush out flaws in the design.
 These flaws can be either design bugs or deficiencies in the design with respect to the specification.
 
-Another reason for why we need coverage is to answer the seemingly simple but important question:
+Another reason why we need coverage is to answer the seemingly simple but important question:
 **When are we done testing?**
 Do we need 1, 10, or 100 tests and should they run 10, 100, or 1000 regressions?
 Only coverage can answer this question for you.
@@ -324,21 +329,20 @@ For this topic, we define 'pre-verified sub-modules' as IPs within the DUT that 
 ### Code Coverage
 
 Commercial simulators typically provide a way to extract coverage statistics from our regressions.
-Tools automatically analyze the design to extract key structures such as lines, branches, FSMs, conditions, and IO toggle and provide them as different metrics to measure coverage against (to what extent is our stimulus through constrained random tests covering these structures).
-These metrics are explained briefly below:
+Tools automatically analyze the design to extract key structures such as lines, branches, FSMs, conditions, and IO toggle, and provide them as different coverage metrics as follows:
 
-* **Line Coverage**: This metric measures which lines of SystemVerilog RTL code were executed during the simulation.
+* **Line Coverage** measures which lines of SystemVerilog RTL code were executed during the simulation.
   This is probably the most intuitive metric to use.
   Note that `assign` statements are always listed as covered using this metric.
-* **Toggle Coverage**: This metric measures every logic bit to see if it transitions from 1 &rarr; 0 and 0 &rarr; 1.
+* **Toggle Coverage** measures every logic bit to see if it transitions from 1 &rarr; 0 and 0 &rarr; 1.
   It is very difficult, and not particularly useful to achieve 100% toggle coverage across a design.
   Instead, we focus on closing toggle coverage only on the IO ports of the DUT and IO ports of pre-verified IPs within the DUT.
-* **FSM state Coverage**: This metric measures which finite state machine states were executed during a simulation.
-* **FSM transition Coverage**: This metric measures which arcs were simulated for each finite state machine in the design.
-* **Conditional Coverage**: This metric tracks all combinations of conditional expressions simulated.
-* **Branch Coverage**: This metric is similar to line coverage, but not quite the same.
+* **FSM state Coverage** measures which finite state machine states were executed during a simulation.
+* **FSM transition Coverage** measures which arcs were traversed for each finite state machine in the design.
+* **Conditional Coverage** tracks all combinations of conditional expressions simulated.
+* **Branch Coverage** is similar to line coverage, but not quite the same.
   It tracks the flow of simulation (e.g. if/else blocks) as well as conditional expressions.
-  Note that un-hit FSM state/transition coverage almost always shows up as un-hit branch coverage as well.
+  Note that FSM states and transitions not covered almost always shows up as branches not covered as well.
 
 Code coverage is sometimes referred to as implicit coverage as it is generated based on the code and takes no additional effort to implement.
 
@@ -372,7 +376,6 @@ A cover property cover point could be the handshaking between valid and ready.
 SVA also allows the design engineer to add cover for procedures and variables not visible on output pins.
 Note, an assertion precondition counts as a cover point.
 
-
 #### Do we need both types of coverage
 
 Reaching a 100% code coverage does not tell you the whole story.
@@ -390,7 +393,6 @@ So we need functional coverage to tell us this.
 The first thing functional coverage will tell us is if we observed all possible values on the inputs.
 And by adding a cross between the inputs and the output it will tell us which gate we are looking at.
 
-
 Reaching 100% functional coverage is not enough either.
 Remember functional coverage requires the designer to manually add coverage point into the design.
 Going back to our AND gate, let us say we take two of these and OR the outputs of the two.
@@ -405,8 +407,7 @@ While functional coverage will tell you if your design is working correctly, cod
 Coverage holes can be addressed accordingly through either updating the design specification and augmenting the testplan / written tests, or by optimizing the design to remove unreachable logic if possible.
 There may be features that cannot be tested and cannot be removed from the design either.
 These would have to be analyzed and excluded from the coverage collection as a waiver.
-This is an exercise the DV and the designer typically perform together.
-This is discussed in more detail below.
+This is an exercise the DV and the designer typically perform together, and is discussed in more detail below.
 
 ### Exclusions
 
@@ -448,13 +449,13 @@ From the code coverage collection perspective, such sub-modules can be 'black bo
 This eases our effort by allowing us to develop less complex tests and verification logic (pertaining to those pre-verified modules) since our criteria for closure reduces to only functionally exercising the IOs and their interactions with the rest of the DUT to prove that sub-modules are properly connected.
 
 Of course, the rest of the sub-modules and glue-logic within the DUT that are not pre-verified do need to undergo the full spectrum of coverage closure.
-We achieve this by patterning the compile-time code coverage model in a particular way (this is a simulator tool-specific capability; for VCS, this is same as the coverage hierarchy file that is written and passed to the simulator with the `-cm_hier` option).
+We achieve this by patterning the compile-time code coverage model in a particular way; this is a simulator tool-specific capability: for VCS, this uses the coverage hierarchy file that is written and passed to the simulator with the `-cm_hier` option.
 
 ### Coverage Collection Guidelines
 
 Coverage closure is perhaps the most time-consuming part of the whole DV effort, often with low return.
 Conservatively collecting coverage on everything might result in poor ROI of DV user's time.
-Also, excessive coverage collection slows down the simulation.
+Also, excessive coverage collection slows down simulation.
 This section aims to capture some of the best practices related to coverage closure.
 
 It is recommended to follow these guidelines when collecting coverage:
@@ -489,7 +490,7 @@ It is cumbersome to go through a coverage report to manually add exclusions, but
 However, it is not the right thing to add a coverage exclusion file to reach the 80% needed for V2 since the design isn't stable at that period.
 2. If any RTL changes happen to the design after the coverage exclusion file has been created, it needs to be redone and re-reviewed.
 3. All coverage exclusion files and coverage configuration file (if it's not using default [cover.cfg](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/vcs/cover.cfg)) should be checked during sign-off.
-4. Keep the VCS generated `CHECKSUM` along with exclusions, which is served as a crosscheck to ensure that the exclusion isn't applied when there is some change on the corresponding codes and the exclusion is outdated.
+4. Keep the VCS generated `CHECKSUM` along with exclusions, as it checks the exclusion isn't outdated by changes on the corresponding code.
 We should not use `--exclude-bypass-checks` to disable the check, otherwise, it's needed to have additional review to make sure exclusions match to the design.
 5. For IP verified in IP-level test bench, UNR should be run in IP-level to generate exclusion.
 For IP verified in top-level, UNR should be run in top-level.
@@ -500,7 +501,7 @@ Note: VCS UNR doesn't support assertion or functional coverage.
 ## X-Propagation (Xprop)
 
 Standard RTL simulations (RTL-sim) ignore the uncertainty of X-valued control signals and assign predictable output values.
-As a result, classic RTL-sim often fail to detect design problems related to the lack of Xprop, which actually can be detected in gate-level simulations (gate-sim).
+As a result, classic RTL-sim often fail to detect design problems related to the lack of propagation of unknown values, which actually can be detected in gate-level simulations (gate-sim).
 With Xprop in RTL-sim, we can detect these problems without having to run gate-sim.
 
 Synopsys VCS and Cadence Xcelium both provide the following 2 modes for Xprop.
@@ -548,12 +549,33 @@ For example, when a_valid is 0 in the TLUL interface, we drive data, address and
 
 The simulator may report that some portions of RTL / DV could not be instrumented for X-propagation due to the way they were written.
 This is typically captured in a log file during the simulator's build step.
-It is mandatory to analyze these pieces of logic to either refactor them to make them more amenable to X-prop instrumentation, or waive them if it is not possible to do so.
+It is mandatory to analyze these pieces of logic to either refactor them to be amenable to X-prop instrumentation, or waive them if it is not possible to do so.
 This is captured as the V3 checklist item `X_PROP_ANALYSIS_COMPLETED`.
+
+### Common XProp Issues
+
+Xprop instrumentation is simulator specific; this focuses on VCS, and lists some simple and common constructs that block instrumentation.
+
+    *  Some behavioral statements, like `break`, `continue`, `return`, and `disable`.
+    *  Functions that have multiple `return` statements.
+    *  Calling tasks or functions with side-effects, notably using the `uvm_info` macro.
+
+If the problematic code is in a SV process, Xprop can be disabled adding the `xprop_off` attribute to that process as follows:
+
+```systemverilog
+  always (* xprop_off *) @(posedge clk) begin
+    <some problematic constructs>
+  end
+```
+
+There are cases where the problematic constructs are not in processes, and the code cannot be rewritten to make it Xprop-friendly.
+In these cases we need to disable Xprop for the full module or interface using a custom xprop configuration file.
+This uses the `vcs_xprop_cfg_file` field in the corresponding sim_cfg hjson file.
+See the [top_earlgrey vcs xprop configuration file](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/dv/vcs_xprop.cfg) and `vcs_xprop_cfg_file` override in the [top_earlgrey sim_cfg hjson file](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/dv/chip_sim_cfg.hjson) for an example.
 
 ## FPV
 
-This section is TBD.
+Refer to the [formal verification documentation]({{< relref "hw/formal/doc" >}}).
 
 ## Security Verification
 
@@ -595,8 +617,8 @@ In the initial work stage of verification, the DV document and the completed tes
 *  Product architect
 
 The goal of this review is to achieve utmost clarity in the planning of the DV effort and resolve any queries or assumptions.
-The feedback in this review flows both ways - the language in the design specification could be made more precise, or missing items in both, the design specification as well as the testplan can be identified and added.
-This enables the development stage to progress smoothly.
+The feedback in this review flows both ways - the language in the design specification could be made more precise, and missing items in both the design specification and the testplan can be identified and added.
+This enables the development stages to progress smoothly.
 
 Subsequently, the intermediate transitions within the verification stages are reviewed within the GitHub pull-request made for updating the checklist and the [project status]({{< relref "doc/project/development_stages.md#indicating-stages-and-making-transitions" >}}).
 
