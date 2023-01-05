@@ -457,6 +457,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         check_tl_read_value_after_error(item, ral_name);
       end
 
+      // we don't have cross coverage for simultaneous errors because 1) they're not important,
+      // 2) there are so many errors and combinations, 3) if we do cross them, we need to take
+      // out many invalid combinations.
       // these errors all have the same outcome. Only sample coverages when there is just one
       // error, so that we know the error actually triggers the outcome
       if (cfg.en_tl_err_cov && $onehot({unmapped_err, mem_byte_access_err, mem_wo_err, mem_ro_err,

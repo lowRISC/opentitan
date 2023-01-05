@@ -137,9 +137,11 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     end
 
     if (a_user.instr_type == prim_mubi_pkg::MuBi4True && item.a_opcode == tlul_pkg::Get) begin
-      // 2 error cases if an InstrType transaction is seen:
-      // - if it is a write transaction (handled in cip_base_scoreboard::predict_tl_err)
-      // - if the SRAM is not configured in executable mode
+      // 2 error cases (which lead to d_error = 1) if the InstrType is True:
+      // - it is a write transaction (handled in cip_base_scoreboard::predict_tl_err, as it's a
+      // common case for all blocks and that place also samples fcov.)
+      // - the SRAM is not configured in executable mode (handled here, as it's a special case
+      // for sram only)
       is_tl_err = !allow_ifetch;
     end
 
