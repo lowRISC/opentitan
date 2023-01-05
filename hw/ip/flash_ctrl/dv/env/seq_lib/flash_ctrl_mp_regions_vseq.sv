@@ -157,6 +157,15 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
   int num_trans = 100;
   int iter = 0;
 
+  virtual task pre_start();
+    super.pre_start();
+    // Flash operations can create multiple recov_err alerts.
+    // With default ack_*_max values, sometimes, alert agent missed catching
+    // every recov_err. So reduce max value to get finer detect resolution.
+    cfg.m_alert_agent_cfgs["recov_err"].ack_delay_max = 5;
+    cfg.m_alert_agent_cfgs["recov_err"].ack_stable_max = 5;
+  endtask // pre_start
+
   virtual task body();
     cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
     cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::On;
