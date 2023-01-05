@@ -211,7 +211,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
       @(wkup_num_update_due or wdog_num_update_due);
       wait(!under_reset);
       if (wkup_num_update_due) begin
-        if (wkup_count < wkup_thold) begin
+        if (wkup_count <= wkup_thold) begin
           wkup_num = ((wkup_thold - wkup_count + 1) * (prescaler + 1));
         end
         else begin
@@ -258,11 +258,12 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
             `uvm_info(`gfn, $sformatf("WKUP Timer count: %d", count), UVM_HIGH)
           end
           `uvm_info(`gfn, $sformatf("WKUP Timer expired check for interrupts"), UVM_HIGH)
+          // Interrupt should happen N+1 clock ticks after count == wkup_num.
+          cfg.aon_clk_rst_vif.wait_clks(prescaler+1);
           intr_status_exp[WKUP] = 1'b1;
-          // Propagation delay of one cycle from aon_core to interrupt pin.
-          cfg.aon_clk_rst_vif.wait_clks(1);
           `DV_CHECK_CASE_EQ(intr_status_exp[WKUP],
                             cfg.aon_intr_vif.sample_pin(.idx(1)))
+          `uvm_info(`gfn, $sformatf("WKUP Timer check passed."), UVM_HIGH)
         end
         begin
           wait (!wkup_en);
@@ -316,6 +317,8 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
+    wkup_en = 0;
+    wdog_en = 0;
   endfunction
 
   function void check_phase(uvm_phase phase);
