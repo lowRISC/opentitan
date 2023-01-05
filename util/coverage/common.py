@@ -196,7 +196,7 @@ TEST_TARGETS_EXC = [
 
 
 def test_targets_query(test_type: BazelTestType) -> str:
-    return (f"kind({test_type}, ({' + '.join(TEST_TARGETS_INC)})"
+    return (f"kind('^{test_type} rule$', ({' + '.join(TEST_TARGETS_INC)})"
             f" - ({' + '.join(TEST_TARGETS_EXC)}))")
 
 
