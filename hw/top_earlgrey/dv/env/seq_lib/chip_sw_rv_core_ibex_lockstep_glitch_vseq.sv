@@ -330,12 +330,17 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
             wait_core_signal_value("instr_req_o", glitch_lockstep_core, 1'b1, 1);
           end
           "instr_rvalid_i": begin
+            // `instr_open_cnt` is updated on the negative edge. If it's greater than zero one delta
+            // delay later, we know `instr_rvalid_i` is being used in the next clock cycle.
             `DV_SPINWAIT(
               forever begin
+                #1step;
                 if (instr_open_cnt[glitch_lockstep_core] > 0) break;
                 @(cfg.chip_vif.cpu_clk_rst_if.cbn);
               end
             )
+            // `rvalid` gets used in the cycle after `req & gnt`, so wait one more clock cycle.
+            @(cfg.chip_vif.cpu_clk_rst_if.cbn);
           end
           "instr_rdata_i", "instr_err_i": begin
             wait_core_signal_value("instr_rvalid_i", glitch_lockstep_core, 1'b1, 1);
@@ -344,12 +349,17 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
             wait_core_signal_value("data_req_o", glitch_lockstep_core, 1'b1, 1);
           end
           "data_rvalid_i": begin
+            // `data_open_cnt` is updated on the negative edge. If it's greater than zero one delta
+            // delay later, we know `data_rvalid_i` is being used in the next clock cycle.
             `DV_SPINWAIT(
               forever begin
+                #1step;
                 if (data_open_cnt[glitch_lockstep_core] > 0) break;
                 @(cfg.chip_vif.cpu_clk_rst_if.cbn);
               end
             )
+            // `rvalid` gets used in the cycle after `req & gnt`, so wait one more clock cycle.
+            @(cfg.chip_vif.cpu_clk_rst_if.cbn);
           end
           "data_rdata_i", "data_err_i": begin
             wait_core_signal_value("data_rvalid_i", glitch_lockstep_core, 1'b1, 1);
@@ -407,7 +417,11 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
                                  1'b1);
           end
           "instr_rvalid_i": begin
+            // `instr_open_cnt` is updated on the negative edge. If it's greater than zero one delta
+            // delay later, we know `instr_rvalid_i` is being used in the next clock cycle.
+            #1step;
             glitched_inp_used = (instr_open_cnt[glitch_lockstep_core] > 0);
+            @(cfg.chip_vif.cpu_clk_rst_if.cbn);
           end
           "instr_rdata_i", "instr_err_i": begin
             glitched_inp_used = (hdl_read_core_signal("instr_rvalid_i", glitch_lockstep_core, 1) ==
@@ -418,7 +432,11 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
                                  1'b1);
           end
           "data_rvalid_i": begin
+            // `data_open_cnt` is updated on the negative edge. If it's greater than zero one delta
+            // delay later, we know `data_rvalid_i` is being used in the next clock cycle.
+            #1step;
             glitched_inp_used = (data_open_cnt[glitch_lockstep_core] > 0);
+            @(cfg.chip_vif.cpu_clk_rst_if.cbn);
           end
           "data_rdata_i", "data_err_i": begin
             glitched_inp_used = (hdl_read_core_signal("data_rvalid_i", glitch_lockstep_core, 1) ==
