@@ -52,7 +52,7 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
   // 1. drive all 0s/1s and keep reading reg for the pattern w/o any delay
   // 2. after find the pattern, flip pattern[0] and keep polling reg for 0x0001/0xfffe
   // 3. after find it, then we know we're close to the edge of the clk
-  // 4. Delay 0.4 * oversample_clk_period to get to the center of the clk
+  // 4. Delay 0.45 * oversample_clk_period to get to the center of the clk
   virtual task find_oversampled_clk_center();
     bit [TL_DW-1:0] pattern;
     `uvm_info(`gfn, "finding oversample clk center", UVM_HIGH)
@@ -68,7 +68,7 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
     cfg.m_uart_agent_cfg.vif.uart_rx = pattern[0];
     csr_spinwait(.ptr(ral.val.rx), .exp_data(pattern));
     // move 0.4 clk into the clk center, as previous reg read consume some cycles
-    #(get_oversampled_baud_clk_period_ns() *1ns * 0.4);
+    #(get_oversampled_baud_clk_period_ns() *1ns * 0.45);
   endtask
 
   // drive N bits on RX pin based on oversampled clk, then check the reg value
