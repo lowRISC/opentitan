@@ -15,10 +15,12 @@
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
+#include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
+#include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -46,6 +48,7 @@ static dif_kmac_t kmac;
 static dif_i2c_t i2c_0;
 static dif_i2c_t i2c_1;
 static dif_i2c_t i2c_2;
+static dif_spi_device_handle_t spi_device;
 static dif_uart_t uart_1;
 static dif_uart_t uart_2;
 static dif_uart_t uart_3;
@@ -146,6 +149,8 @@ static void init_peripheral_handles() {
       dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C1_BASE_ADDR), &i2c_1));
   CHECK_DIF_OK(
       dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR), &i2c_2));
+  CHECK_DIF_OK(dif_spi_device_init_handle(
+      mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi_device));
 }
 
 /**
@@ -402,5 +407,7 @@ bool test_main(void) {
   configure_i2c(&i2c_0, kI2c0DeviceAddress0, kI2c0DeviceAddress1);
   configure_i2c(&i2c_1, kI2c1DeviceAddress0, kI2c1DeviceAddress1);
   configure_i2c(&i2c_2, kI2c2DeviceAddress0, kI2c2DeviceAddress1);
+  spi_device_testutils_configure_passthrough(&spi_device, /*filters=*/0,
+                                             /*upload_write_commands=*/false);
   return true;
 }
