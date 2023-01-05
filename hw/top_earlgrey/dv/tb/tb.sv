@@ -266,6 +266,44 @@ module tb;
               top_earlgrey_pkg::TOP_EARLGREY_EFLASH_SIZE_BYTES / flash_ctrl_pkg::NumBanks));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Info], `FLASH1_INFO_MEM_HIER)
 
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for I cache way 0 tag", UVM_MEDIUM)
+      m_mem_bkdr_util[ICacheWay0Tag] = new(
+          .name  ("mem_bkdr_util[ICacheWay0Tag]"),
+          .path  (`DV_STRINGIFY(`ICACHE0_TAG_MEM_HIER)),
+          .depth ($size(`ICACHE0_TAG_MEM_HIER)),
+          .n_bits($bits(`ICACHE0_TAG_MEM_HIER)),
+          .err_detection_scheme(mem_bkdr_util_pkg::EccInv_28_22));
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[ICacheWay0Tag], `ICACHE0_TAG_MEM_HIER)
+
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for I cache way 1 tag", UVM_MEDIUM)
+      m_mem_bkdr_util[ICacheWay1Tag] = new(
+          .name  ("mem_bkdr_util[ICacheWay1Tag]"),
+          .path  (`DV_STRINGIFY(`ICACHE1_TAG_MEM_HIER)),
+          .depth ($size(`ICACHE1_TAG_MEM_HIER)),
+          .n_bits($bits(`ICACHE1_TAG_MEM_HIER)),
+          .err_detection_scheme(mem_bkdr_util_pkg::EccInv_28_22));
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[ICacheWay1Tag], `ICACHE1_TAG_MEM_HIER)
+
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for I cache way 0 data", UVM_MEDIUM)
+      m_mem_bkdr_util[ICacheWay0Data] = new(
+          .name  ("mem_bkdr_util[ICacheWay0Data]"),
+          .path  (`DV_STRINGIFY(`ICACHE0_DATA_MEM_HIER)),
+          .depth ($size(`ICACHE0_DATA_MEM_HIER)),
+          .n_bits($bits(`ICACHE0_DATA_MEM_HIER)),
+          // The line size is 2x 32 bits and ECC is applied separately at the 32-bit word level.
+          .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[ICacheWay0Data], `ICACHE0_DATA_MEM_HIER)
+
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for I cache way 1 data", UVM_MEDIUM)
+      m_mem_bkdr_util[ICacheWay1Data] = new(
+          .name  ("mem_bkdr_util[ICacheWay1Data]"),
+          .path  (`DV_STRINGIFY(`ICACHE1_DATA_MEM_HIER)),
+          .depth ($size(`ICACHE1_DATA_MEM_HIER)),
+          .n_bits($bits(`ICACHE1_DATA_MEM_HIER)),
+          // The line size is 2x 32 bits and ECC is applied separately at the 32-bit word level.
+          .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[ICacheWay1Data], `ICACHE1_DATA_MEM_HIER)
+
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTP", UVM_MEDIUM)
       m_mem_bkdr_util[Otp] = new(
           .name  ("mem_bkdr_util[Otp]"),
