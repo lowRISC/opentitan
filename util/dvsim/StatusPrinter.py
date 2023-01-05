@@ -13,6 +13,30 @@ except ImportError:
 
 
 class StatusPrinter:
+    """Dummy Status Printer class for interactive mode.
+
+    When interactive mode is set, dvsim does not print the status. By
+    instantiating this dummy class (printing nothing), outer interface stays
+    same.
+    """
+
+    def __init__(self):
+        pass
+
+    def print_header(self, msg):
+        pass
+
+    def init_target(self, target, msg):
+        pass
+
+    def update_target(self, target, hms, msg, perc, running):
+        pass
+
+    def exit(self):
+        pass
+
+
+class TtyStatusPrinter(StatusPrinter):
     '''Abstraction for printing the current target status onto the console.
 
     Targets are ASIC tool flow steps such as build, run, cov etc. These steps
@@ -40,6 +64,7 @@ class StatusPrinter:
         # just skip it. Maintaining this here provides a way to print the status
         # one last time when it reaches 100%. It is much easier to do that here
         # than in the Scheduler class.
+        super().__init__()
         self.target_done = {}
 
     def print_header(self, msg):
@@ -80,7 +105,7 @@ class StatusPrinter:
         pass
 
 
-class EnlightenStatusPrinter(StatusPrinter):
+class EnlightenStatusPrinter(TtyStatusPrinter):
     '''Abstraction for printing status using Enlighten.
 
     Enlighten is a third party progress bar tool. Documentation:
@@ -140,14 +165,17 @@ class EnlightenStatusPrinter(StatusPrinter):
             self.status_target[target].close()
 
 
-def get_status_printer():
+def get_status_printer(interactive):
     """Factory method that returns a status printer instance.
 
     If ENLIGHTEN_EXISTS (enlighten is installed) and stdout is a TTY, then
     return an instance of EnlightenStatusPrinter, else return an instance of
     StatusPrinter.
     """
+    if interactive:
+        return StatusPrinter()
+
     if ENLIGHTEN_EXISTS and sys.stdout.isatty():
         return EnlightenStatusPrinter()
-    else:
-        return StatusPrinter()
+
+    return TtyStatusPrinter()

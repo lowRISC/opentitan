@@ -390,7 +390,7 @@ class FlowCfg():
             log.error("Nothing to run!")
             sys.exit(1)
 
-        return Scheduler(deploy, get_launcher_cls()).run()
+        return Scheduler(deploy, get_launcher_cls(), self.interactive).run()
 
     def _gen_results(self, results):
         '''
