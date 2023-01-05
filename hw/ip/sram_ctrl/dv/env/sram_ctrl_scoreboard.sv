@@ -136,11 +136,11 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       allow_ifetch = 0;
     end
 
-    if (a_user.instr_type == prim_mubi_pkg::MuBi4True) begin
+    if (a_user.instr_type == prim_mubi_pkg::MuBi4True && item.a_opcode == tlul_pkg::Get) begin
       // 2 error cases if an InstrType transaction is seen:
-      // - if it is a write transaction
+      // - if it is a write transaction (handled in cip_base_scoreboard::predict_tl_err)
       // - if the SRAM is not configured in executable mode
-      is_tl_err = (allow_ifetch) ? (item.a_opcode != tlul_pkg::Get) : 1'b1;
+      is_tl_err = !allow_ifetch;
     end
 
     if (status_lc_esc) is_tl_err |= 1;

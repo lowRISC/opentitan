@@ -460,7 +460,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       // these errors all have the same outcome. Only sample coverages when there is just one
       // error, so that we know the error actually triggers the outcome
       if (cfg.en_tl_err_cov && $onehot({unmapped_err, mem_byte_access_err, mem_wo_err, mem_ro_err,
-                   bus_intg_err, byte_wr_err, csr_size_err, tl_item_err})) begin
+                   bus_intg_err, byte_wr_err, csr_size_err, tl_item_err, write_w_instr_type_err,
+                   instr_type_err})) begin
         tl_errors_cgs_wrap[ral_name].sample(.unmapped_err(unmapped_err),
                                             .csr_size_err(csr_size_err),
                                             .mem_byte_access_err(mem_byte_access_err),
