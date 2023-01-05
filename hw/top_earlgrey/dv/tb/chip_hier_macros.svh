@@ -47,6 +47,12 @@
 `define FLASH0_INFO_MEM_HIER  `FLASH_BANK0_HIER.gen_info_types[0].u_info_mem.`MEM_ARRAY_SUB
 `define FLASH1_DATA_MEM_HIER  `FLASH_BANK1_HIER.u_mem.`MEM_ARRAY_SUB
 `define FLASH1_INFO_MEM_HIER  `FLASH_BANK1_HIER.gen_info_types[0].u_info_mem.`MEM_ARRAY_SUB
+`define ICACHE_WAY0_HIER      `CPU_CORE_HIER.gen_rams.gen_rams_inner[0].gen_scramble_rams
+`define ICACHE_WAY1_HIER      `CPU_CORE_HIER.gen_rams.gen_rams_inner[1].gen_scramble_rams
+`define ICACHE0_TAG_MEM_HIER  `ICACHE_WAY0_HIER.tag_bank.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
+`define ICACHE1_TAG_MEM_HIER  `ICACHE_WAY1_HIER.tag_bank.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
+`define ICACHE0_DATA_MEM_HIER `ICACHE_WAY0_HIER.data_bank.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
+`define ICACHE1_DATA_MEM_HIER `ICACHE_WAY1_HIER.data_bank.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
 `define RAM_MAIN_MEM_HIER     `RAM_MAIN_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
 `define RAM_RET_MEM_HIER      `RAM_RET_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
 `define ROM_MEM_HIER          `ROM_CTRL_HIER.`ROM_CTRL_INT_PATH
