@@ -48,6 +48,10 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   virtual task aon_timer_shutdown();
     `uvm_info(`gfn, "Shutting down AON Timer...", UVM_LOW)
 
+    `uvm_info(`gfn, "Writing 0 to WKUP_CTRL and WDOG_CTRL to disable AON timer", UVM_HIGH)
+    csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b0);
+    csr_utils_pkg::csr_wr(ral.wdog_ctrl.enable, 1'b0);
+
     `uvm_info(`gfn, "Clearing interrupts, count registers and wakeup request.", UVM_HIGH)
     // Clear wake-up request if we have any
     csr_utils_pkg::csr_wr(ral.wkup_cause, 1'b0);
@@ -58,10 +62,6 @@ class aon_timer_base_vseq extends cip_base_vseq #(
     // Zero out the COUNT registers
     csr_utils_pkg::csr_wr(ral.wkup_count, 32'h0000_0000);
     csr_utils_pkg::csr_wr(ral.wdog_count, 32'h0000_0000);
-
-    `uvm_info(`gfn, "Disabling AON Timer. Writing 0 to WKUP_CTRL and WDOG_CTRL", UVM_HIGH)
-    csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b0);
-    csr_utils_pkg::csr_wr(ral.wdog_ctrl.enable, 1'b0);
 
     // Wait to settle registers on AON timer domain
     cfg.aon_clk_rst_vif.wait_clks(5);
