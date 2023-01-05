@@ -348,6 +348,17 @@ cc_library(
 )
 
 cc_library(
+    name = "spi_device_testutils",
+    srcs = ["spi_device_testutils.c"],
+    hdrs = ["spi_device_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "usb_testutils",
     srcs = [
         "usb_testutils.c",
