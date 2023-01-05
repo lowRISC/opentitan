@@ -25,8 +25,6 @@ class otp_ctrl_dai_errs_vseq extends otp_ctrl_dai_lock_vseq;
 
   constraint rd_check_after_wr_c {
     rand_wr == rand_rd;
-    // TODO: enable this sw read
-    rd_sw_tlul_rd == 0;
   }
 
   function void pre_randomize();
