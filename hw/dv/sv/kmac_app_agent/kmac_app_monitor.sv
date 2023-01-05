@@ -52,8 +52,8 @@ class kmac_app_monitor extends dv_base_monitor #(
         // before the full data has been sent from the connected App host (KeyMgr/ROM/LC).
         // As a result, we need to set `ok_to_end` here otherwise the monitor's corresponding
         // objection will never drop in this scenario.
-        // TODO, we can consider to handle premature ending better. Once sequence ends transaction
-        // prematurely, issue a reset to get out of this while-loop, so that we can keep
+        // Once sequence ends transaction prematurely,
+        // issue a reset to get out of this while-loop, so that we can keep
         // ok_to_end = 0 for the entire transaction.
         ok_to_end = 1;
         data_fifo.get(data_item);
