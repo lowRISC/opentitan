@@ -76,13 +76,13 @@ Internal interrupts are considered to be non-recoverable in general.
 Specific details of how an internal interrupt relates to the event that triggers it are listed below.
 Given these details it may be possible for software to recover from an internal interrupt under specific circumstances.
 
-The possible ``mcause`` values for an internal interrupt as listed below:
+The possible ``mcause`` values for an internal interrupt are listed below:
 
 +-------------+-------------------------------------------------------------------------------------------------------------+
 | ``mcause``  | Description                                                                                                 |
 +-------------+-------------------------------------------------------------------------------------------------------------+
 | 0xFFFFFFE0  | Load integrity error internal interrupt.                                                                    |
-|             | Only generated when SecureIbex == 0.                                                                        |
+|             | Only generated when SecureIbex == 1.                                                                        |
 |             | ``mtval`` gives the faulting address.                                                                       |
 |             | The interrupt will be taken at most one instruction after the faulting load.                                |
 |             | In particular a load or store immediately after a faulting load may execute before the interrupt is taken.  |
@@ -125,6 +125,9 @@ Ibex can trigger an exception due to the following exception causes:
 
 The illegal instruction exception, instruction access fault, LSU error exceptions and ECALL instruction exceptions cannot be disabled and are always active.
 
+Note that Ibex cannot generated an 'instruction address misaligned' exception as all configurations implement the 'C' extension.
+Under the RISC-V architecture it is simply not possible to branch or otherwise start executing from a PC that isn't 16-bit aligned.
+So with 'C' implemented all possible PCs are appropriately aligned.
 
 Nested Interrupt/Exception Handling
 -----------------------------------

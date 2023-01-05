@@ -126,17 +126,17 @@ module ibex_cs_registers #(
   // Is a PMP config a locked one that allows M-mode execution when MSECCFG.MML is set (either
   // M mode alone or shared M/U mode execution)?
   function automatic logic is_mml_m_exec_cfg(ibex_pkg::pmp_cfg_t pmp_cfg);
-    logic unused_cfg;
-    unused_cfg = ^{pmp_cfg.mode};
+    logic unused_cfg = ^{pmp_cfg.mode};
+    logic value = 1'b0;
 
     if (pmp_cfg.lock) begin
       unique case ({pmp_cfg.read, pmp_cfg.write, pmp_cfg.exec})
-        3'b001, 3'b010, 3'b011, 3'b101: return 1'b1;
-        default: return 1'b0;
+        3'b001, 3'b010, 3'b011, 3'b101: value = 1'b1;
+        default: value = 1'b0;
       endcase
     end
 
-    return 1'b0;
+    return value;
   endfunction
 
   localparam int unsigned RV32BExtra = (RV32B == RV32BOTEarlGrey) || (RV32B == RV32BFull) ? 1 : 0;
