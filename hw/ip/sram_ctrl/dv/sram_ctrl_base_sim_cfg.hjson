@@ -61,19 +61,6 @@
     }
   ]
 
-  build_modes: [
-    {
-      name: sram_ctrl_main
-      build_opts: ["+define+SRAM_ADDR_WIDTH=15",
-                   "+define+INSTR_EXEC=1"]
-    }
-    {
-      name: sram_ctrl_ret
-      build_opts: ["+define+SRAM_ADDR_WIDTH=10",
-                   "+define+INSTR_EXEC=0"]
-    }
-  ]
-
   // Default UVM test and seq class name.
   uvm_test: sram_ctrl_base_test
   uvm_test_seq: sram_ctrl_base_vseq
