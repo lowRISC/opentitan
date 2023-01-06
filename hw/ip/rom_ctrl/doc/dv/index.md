@@ -60,7 +60,16 @@ Some of the most commonly used tasks / functions are as follows:
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* TODO
+
+`rom_ctrl_kmac_cg`:
+  * Collect coverage on the rom_ctrl / kmac interface, specifically around stalling and back-pressure behavior.
+
+`rom_ctrl_tlul_cg`:
+  * Collect coverage on the two TLUL interfaces, specifically checking that we see requests around the same time as the rom check completes.
+  * Collect coverage to ensure that a_valid goes high when rom check is in progress. This ensures that the scenario where TL accesses are blocked until the ROM check is done is covered.
+
+`rom_ctrl_check_cg`:
+  * Collect coverage on the outputs sent to the power manager to confirm that we see pass and fail results.
 
 ### Self-checking strategy
 #### Scoreboard
