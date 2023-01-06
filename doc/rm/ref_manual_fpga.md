@@ -10,6 +10,7 @@ Refer to the [FPGA Setup]({{< relref "doc/getting_started/setup_fpga" >}}) guide
 
 The FPGA is meant for both boot ROM and general software development.
 The flow for each is different, as the boot ROM is meant to be fairly static while general software can change very frequently.
+However, for both flows, Vivado must be installed, with instructions described [here]({{< relref "doc/getting_started/install_vivado" >}}).
 
 ### Boot ROM development
 
