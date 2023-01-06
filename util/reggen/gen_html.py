@@ -174,24 +174,35 @@ def gen_html_register(outfile: TextIO,
     offset = reg.offset
     regwen_div = ''
     if reg.regwen is not None:
-        regwen_div = ('    <div>Register enable = {}</div>\n'
+        regwen_div = ('    <div>Register enable = {}</div>'
                       .format(reg.regwen))
 
     desc_paras = expand_paras(reg.desc, rnames)
     desc_head = desc_paras[0]
     desc_body = desc_paras[1:]
 
+    # If this is the first register of a multireg,
+    # we also insert a label without the index so
+    # that unnumbered links from the register table
+    # descriptions and Hugo-generated docs are possible.
+    if rname[-2:] == "_0":
+        mr_anchor = ('id="Reg_{}"'
+                     .format(rname[:-2].lower()))
+    else:
+        mr_anchor = ''
+
     genout(outfile,
            '<table class="regdef" id="Reg_{lrname}">\n'
            ' <tr>\n'
-           '  <th class="regdef" colspan=5>\n'
+           '  <th class="regdef" colspan=5 {mr_anchor}>\n'
            '   <div>{comp}.{link} @ {off:#x}</div>\n'
            '   <div>{desc}</div>\n'
            '   <div>Reset default = {resval:#x}, mask {mask:#x}</div>\n'
            '{wen}'
            '  </th>\n'
            ' </tr>\n'
-           .format(lrname=rname.lower(),
+           .format(mr_anchor=mr_anchor,
+                   lrname=rname.lower(),
                    comp=comp,
                    link=get_reg_link(rname),
                    off=offset,

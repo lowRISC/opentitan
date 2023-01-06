@@ -6,6 +6,7 @@ import logging as log
 import re
 from typing import List, Match, Optional, Set
 
+
 def get_reg_link(rname: str) -> str:
     '''Return regname with a HTML link to itself'''
     return '<a href="#Reg_{}">{}</a>'.format(rname.lower(), rname)
@@ -44,7 +45,15 @@ def _expand_paragraph(s: str, rnames: Set[str]) -> str:
     '''Expand a single paragraph, as described in _get_desc_paras'''
     def fieldsub(match: Match[str]) -> str:
         base = match.group(1).partition('.')[0].lower()
-        if base in rnames:
+        # If we do not find the register name, there is a chance that this
+        # is a multireg that spans more than one register entry.
+        # We check whether at least _0 and _1 exist (via a set intersection),
+        # and still insert the link if these names exist.
+        # Note that we do not have to modify the link name since we insert
+        # a link target without the index suffix right before the first multireg
+        # entry in the register table.
+        mr_names = set([base + "_0", base + "_1"])
+        if base in rnames or len(rnames & mr_names) == 2:
             if match.group(1)[-1] == ".":
                 return ('<a href="#Reg_' + base + '"><code class=\"reg\">' +
                         match.group(1)[:-1] + '</code></a>.')
