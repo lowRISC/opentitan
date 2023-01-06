@@ -36,7 +36,6 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
         // addr_q in the counter is corrupted with any value other than the ROM's top address.
         CheckerCtrConsistency: begin
           bit [12:0] invalid_addr;
-          $assertoff(0, "tb.dut.KeymgrValidChk_A");
           wait (mubi4_test_true_strict(cfg.rom_ctrl_vif.pwrmgr_data.done));
           wait_with_bound(10000);
           // Pick the index of a ROM word other than the top one
@@ -72,7 +71,6 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
         // signal from rom_ctrl_fsm is asserted randomly.
         CompareCtrlFlowConsistency: begin
           bit rdata;
-          $assertoff(0, "tb.dut.KeymgrValidChk_A");
           pick_err_inj_point();
           do begin
             uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.start_checker_q", rdata);
@@ -87,7 +85,6 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
         // comparison ends then a fatal alert is generated.
         CompareCtrConsistency: begin
           bit [2:0] invalid_addr;
-          $assertoff(0, "tb.dut.KeymgrValidChk_A");
           wait_with_bound(10000);
           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_addr, invalid_addr > 0;);
           force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.addr_q",
@@ -199,7 +196,6 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
       endcase
       wait_with_bound(10);
       dut_init();
-      $asserton(0, "tb.dut.KeymgrValidChk_A");
       $asserton(0, "tb.dut.BusRomIndicesMatch_A");
     end
   endtask : body
