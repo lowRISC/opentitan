@@ -60,9 +60,9 @@ typedef enum dif_entropy_src_alert {
    */
   kDifEntropySrcAlertRecovAlert = 0,
   /**
-   * This alert triggers for any condition detected in the !!ERROR_CODE
-   * register, which includes FIFO errors, COUNTER errors, FSM state errors, and
-   * also when integrity failures are detected on the TL-UL bus.
+   * This alert triggers for any condition detected in the !!ERR_CODE register,
+   * which includes FIFO errors, COUNTER errors, FSM state errors, and also when
+   * integrity failures are detected on the TL-UL bus.
    */
   kDifEntropySrcAlertFatalAlert = 1,
 } dif_entropy_src_alert_t;

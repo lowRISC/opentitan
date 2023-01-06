@@ -76,7 +76,7 @@
     }
     { name: "fatal_alert",
       desc: '''
-            This alert triggers for any condition detected in the !!ERROR_CODE register,
+            This alert triggers for any condition detected in the !!ERR_CODE register,
             which includes FIFO errors, COUNTER errors, FSM state errors,
             and also when integrity failures are detected on the TL-UL bus.
             ''',
