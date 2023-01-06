@@ -16,6 +16,7 @@
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
+#include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
@@ -49,6 +50,7 @@ static dif_i2c_t i2c_0;
 static dif_i2c_t i2c_1;
 static dif_i2c_t i2c_2;
 static dif_spi_device_handle_t spi_device;
+static dif_spi_host_t spi_host_0;
 static dif_uart_t uart_1;
 static dif_uart_t uart_2;
 static dif_uart_t uart_3;
@@ -151,6 +153,8 @@ static void init_peripheral_handles() {
       dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR), &i2c_2));
   CHECK_DIF_OK(dif_spi_device_init_handle(
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi_device));
+  CHECK_DIF_OK(dif_spi_host_init(
+      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host_0));
 }
 
 /**
@@ -393,6 +397,23 @@ static void configure_i2c(dif_i2c_t *i2c, uint8_t device_addr_0,
   CHECK_DIF_OK(dif_i2c_line_loopback_set_enabled(i2c, kDifToggleEnabled));
 }
 
+static void configure_spi_host() {
+  // These values are mostly filler as spi_host_0 will be in passthrough mode.
+  CHECK_DIF_OK(dif_spi_host_configure(
+      &spi_host_0,
+      (dif_spi_host_config_t){
+          .spi_clock = kClockFreqHiSpeedPeripheralHz / 2,
+          .peripheral_clock_freq_hz = kClockFreqHiSpeedPeripheralHz,
+          .chip_select =
+              {
+                  .idle = 2,
+                  .trail = 2,
+                  .lead = 2,
+              },
+      }));
+  CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host_0, /*enabled=*/true));
+}
+
 bool test_main(void) {
   init_peripheral_handles();
   configure_gpio_indicator_pin();
@@ -407,6 +428,7 @@ bool test_main(void) {
   configure_i2c(&i2c_0, kI2c0DeviceAddress0, kI2c0DeviceAddress1);
   configure_i2c(&i2c_1, kI2c1DeviceAddress0, kI2c1DeviceAddress1);
   configure_i2c(&i2c_2, kI2c2DeviceAddress0, kI2c2DeviceAddress1);
+  configure_spi_host();
   spi_device_testutils_configure_passthrough(&spi_device, /*filters=*/0,
                                              /*upload_write_commands=*/false);
   return true;

@@ -2072,6 +2072,7 @@ opentitan_functest(
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
