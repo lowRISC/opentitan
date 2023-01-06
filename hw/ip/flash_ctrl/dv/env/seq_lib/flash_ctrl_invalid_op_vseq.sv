@@ -93,6 +93,14 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
     };
   }
 
+  virtual task pre_start();
+    super.pre_start();
+    // This test requires fast alert hand shake to avoid overlapping
+    // multiple alert expected / completed.
+    cfg.m_alert_agent_cfgs["recov_err"].ack_delay_max = 1;
+    cfg.m_alert_agent_cfgs["recov_err"].ack_stable_max = 1;
+  endtask // pre_start
+
   virtual task body();
     cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
     cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::On;
@@ -169,7 +177,6 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
     flash_ctrl_start_op(flash_op_rd);
     flash_ctrl_read(flash_op_rd.num_words, flash_op_data, poll_fifo_status);
     wait_flash_op_done();
-
     flash_op_er.op = FlashOpErase;
     flash_ctrl_start_op(flash_op_er);
     wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
