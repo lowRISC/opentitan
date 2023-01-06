@@ -37,11 +37,4 @@ class rom_ctrl_common_vseq extends rom_ctrl_base_vseq;
     `DV_CHECK_EQ(cfg.rom_ctrl_vif.checker_fsm_state, rom_ctrl_pkg::Invalid)
   endtask : check_sec_cm_fi_resp
 
-  virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
-    if (enable) begin
-      $asserton(0, "tb.dut.KeymgrValidChk_A");
-    end else begin
-      $assertoff(0, "tb.dut.KeymgrValidChk_A");
-    end
-  endfunction: sec_cm_fi_ctrl_svas
 endclass

@@ -526,10 +526,12 @@ module rom_ctrl
 
   // Check that pwrmgr_data_o.done is never de-asserted once asserted
   `ASSERT(PwrmgrDataChk_A, $rose(pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True) |->
-          always !$fell(pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True))
+          always !$fell(pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True),
+          clk_i, !rst_ni || internal_alert)
 
   // Check that keymgr_data_o.valid is never de-asserted once asserted
-  `ASSERT(KeymgrValidChk_A, $rose(keymgr_data_o.valid) |-> always !$fell(keymgr_data_o.valid))
+  `ASSERT(KeymgrValidChk_A, $rose(keymgr_data_o.valid) |-> always !$fell(keymgr_data_o.valid),
+          clk_i, !rst_ni || internal_alert)
 
   // Check that rom_tl_o.d_valid is not asserted unless pwrmgr_data_o.done is asseterd.
   // This check ensures that all tl accesses are blocked until rom check is completed. You might
