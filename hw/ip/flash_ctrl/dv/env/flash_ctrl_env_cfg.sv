@@ -205,6 +205,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   bit                  skip_init = 0;
   bit                  skip_init_buf_en = 0;
   bit                  wr_rnd_data = 1;
+  int                  wait_rd_buf_en_timeout_ns = 100_000; // 100 us
 
   `uvm_object_utils(flash_ctrl_env_cfg)
   `uvm_object_new

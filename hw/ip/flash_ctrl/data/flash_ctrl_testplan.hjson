@@ -64,7 +64,7 @@
             the Flash.  After RMA entry, verify that the content of the flash is wiped out.
             '''
       stage: V2
-      tests: ["flash_ctrl_hw_rma", "flash_ctrl_hw_rma_reset"]
+      tests: ["flash_ctrl_hw_rma", "flash_ctrl_hw_rma_reset", "flash_ctrl_lcmgr_intg"]
     }
     {
       name: host_controller_arb
@@ -88,6 +88,15 @@
             '''
       stage: V2
       tests: ["flash_ctrl_erase_suspend"]
+    }
+    {
+      name: program_reset
+      desc: '''
+            Reset controller at every state of programming operation and check
+            if controller doesn't have any residue for the next operation.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_prog_reset"]
     }
     {
       name: full_memory_access
@@ -118,7 +127,7 @@
             including scramble and ecc enable.
             '''
       stage: V2
-      tests: ["flash_ctrl_rw_evict", "flash_ctrl_re_evict"]
+      tests: ["flash_ctrl_rw_evict", "flash_ctrl_re_evict", "flash_ctrl_rw_evict_all_en"]
     }
     {
       name: host_arb
@@ -202,6 +211,15 @@
       tests: ["flash_ctrl_error_prog_type"]
     }
     {
+      name: error_read_seed
+      desc: '''
+            Create sw read error during hw seed read process.
+            Check all errors are properly detected.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_hw_read_seed_err"]
+    }
+    {
       name: read_write_overflow
       desc: '''
             Send following error transactions with normal traffic and see
@@ -274,7 +292,8 @@
             Check behaviour of Interrupt Enable and Status Registers.
             '''
       stage: V2
-      tests: ["flash_ctrl_intr_rd", "flash_ctrl_intr_wr"]
+      tests: ["flash_ctrl_intr_rd", "flash_ctrl_intr_wr",
+              "flash_ctrl_intr_rd_slow_flash", "flash_ctrl_intr_wr_slow_flash"]
     }
     {
       name: invalid_op
@@ -380,7 +399,7 @@
       fatal error (std_fault_status.lcmgr_err) should be triggered.
       '''
       stage: V2
-      tests: ["flash_ctrl_rma_err"]
+      tests: ["flash_ctrl_rma_err", "flash_ctrl_hw_prog_rma_wipe_err"]
     }
     {
       name: robustness
