@@ -7,6 +7,10 @@ Generating a bitstream for Xilinx devices requires a
 Please note that the "WebPACK" edition __does not__ support the Xilinx Kintex 7
 XC7K410T used on the CW310 board.
 
+For software development, Vivado is still necessary for most workflows.
+However, the (free) Lab Edition is sufficient, and it has a significantly smaller installation footprint.
+For example, Vivado's `updatemem` tool is used to splice ROM images into the bitstream, and this is included in the Lab Edition.
+
 ## Install Xilinx Vivado
 
 _**Vivado Version:** The recommendation is to use Vivado {{< tool_version "vivado" >}}._
@@ -18,8 +22,9 @@ See [Download and
 Installation](https://docs.xilinx.com/r/{{< tool_version "vivado" >}}-English/ug973-vivado-release-notes-install-license/Download-and-Installation)
 for installation instructions.
 
-When asked what edition to install, choose "Vivado HL Design Edition". On the
-feature selection screen, select at least the following features:
+When asked what edition to install, choose "Vivado HL Design Edition".
+_Note: If you are only developing software, you may select the "Lab Edition" instead._
+On the feature selection screen, select at least the following features:
 
 ![Vivado features selection screen](features.png)
 
@@ -30,7 +35,7 @@ for instructions.
 
 ## Device permissions: udev rules
 
-To program an FPGAs the user using Vivado typically needs to have permissions to access USB devices connected to the PC.
+To program any FPGAs the user using Vivado typically needs to have permissions to access USB devices connected to the PC.
 Depending on your security policy you can take different steps to enable this access.
 One way of doing so is given in the udev rule outlined below.
 

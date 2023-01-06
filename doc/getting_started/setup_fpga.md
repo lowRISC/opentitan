@@ -41,8 +41,8 @@ tar -xvf bitstream-latest.tar.gz
 
 By default, the bitstream is built with a version of the boot ROM used for testing (called the _test ROM_; pulled from `sw/device/lib/testing/test_rom`).
 There is also a version of the boot ROM used in production (called the _ROM_; pulled from `sw/device/silicon_creator/rom`).
-This can be spliced into the bitstream to overwrite the testing boot ROM as described in the [FPGA Reference Manual]({{< relref "ref_manual_fpga.md#boot-rom-development" >}}).
-However, if you do not want to do the splicing yourself, both versions of the bitstream are available in the download as `*.bit.orig` and `*.bit.splice` (containing the test ROM and the ROM respectively).
+When the bitstream cache is used in bazel flows, the ROMs from the cache are not used.
+Instead, the bazel-built ROMs are spliced into the image to create new bitstreams, using the mechanism described in the [FPGA Reference Manual]({{< relref "ref_manual_fpga.md#boot-rom-development" >}}).
 The metadata for the latest bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be [downloaded separately](https://storage.googleapis.com/opentitan-bitstreams/master/latest.txt).
 
 ### Using the `@bitstreams` repository
@@ -75,6 +75,7 @@ bazel build //hw/bitstream/vivado:fpga_cw310_rom
 ```
 
 Note, building these bitstreams will require Vivado be installed on your system, with access to the proper licenses, described [here]({{< relref "doc/getting_started/install_vivado" >}}).
+For general software development on the FPGA, Vivado must still be installed, but the Lab Edition is sufficient.
 
 #### Dealing with FPGA Congestion Issues
 
