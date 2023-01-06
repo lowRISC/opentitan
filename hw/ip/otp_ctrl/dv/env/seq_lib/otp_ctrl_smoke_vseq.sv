@@ -176,6 +176,9 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         // Backdoor restore injected ECC error, but should not affect fatal alerts.
         if (ecc_otp_err != OtpNoEccErr && dai_addr < LifeCycleOffset) begin
           cfg.mem_bkdr_util_h.write32({dai_addr[TL_DW-3:2], 2'b00}, backdoor_rd_val);
+          // Wait for two lock cycles to make sure the local escalation error propogates to other
+          // patitions and err_code reg.
+          cfg.clk_rst_vif.wait_clks(2);
         end
 
         // Random lock sw partitions
