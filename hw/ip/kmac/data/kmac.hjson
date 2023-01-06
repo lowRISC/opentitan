@@ -225,9 +225,9 @@
   regwidth: "32"
   registers: [
     { name: "CFG_REGWEN"
-      desc: '''Controls the configurability of !!CFG register.
+      desc: '''Controls the configurability of !!CFG_SHADOWED register.
 
-            This register ensures the contents of !!CFG register cannot be
+            This register ensures the contents of !!CFG_SHADOWED register cannot be
             changed by the software while the KMAC/SHA3 is in operation mode.
             '''
       swaccess: "ro"
