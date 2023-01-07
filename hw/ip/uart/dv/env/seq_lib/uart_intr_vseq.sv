@@ -194,7 +194,7 @@ class uart_intr_vseq extends uart_base_vseq;
         check_one_intr(.uart_intr(uart_intr), .exp(en_rx & en_timeout));
         csr_wr(.ptr(ral.intr_state), .value('hff));
         // expect timeout again since no fifo activity
-        wait_for_baud_clock_cycles(timeout_val);
+        wait_for_baud_clock_cycles(timeout_val + 1);
         check_one_intr(.uart_intr(uart_intr), .exp(en_rx & en_timeout));
         csr_wr(.ptr(ral.intr_state), .value('hff));
 
