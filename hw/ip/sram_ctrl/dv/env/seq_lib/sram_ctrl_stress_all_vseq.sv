@@ -14,7 +14,12 @@ class sram_ctrl_stress_all_vseq extends sram_ctrl_base_vseq;
   string vseq_names[$] = {"sram_ctrl_smoke_vseq",
                          "sram_ctrl_multiple_keys_vseq",
                          "sram_ctrl_bijection_vseq",
-                         "sram_ctrl_executable_vseq"};
+                         "sram_ctrl_executable_vseq",
+                         "sram_ctrl_regwen_vseq"};
+
+  constraint num_trans_c {
+    num_trans inside {[4:8]};
+  }
 
   virtual task pre_start();
     super.pre_start();
@@ -35,7 +40,6 @@ class sram_ctrl_stress_all_vseq extends sram_ctrl_base_vseq;
       `downcast(sram_vseq, seq)
 
       sram_vseq.do_apply_reset = (do_apply_reset) ? $urandom_range(0, 1) : 0;
-
 
       sram_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(sram_vseq)
