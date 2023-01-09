@@ -21,6 +21,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
@@ -92,6 +93,37 @@ enum {
   kI2c1DeviceAddress1 = 0x44,
   kI2c2DeviceAddress0 = 0x55,
   kI2c2DeviceAddress1 = 0x66,
+};
+
+/**
+ * Pinmux pad configurations.
+ */
+static const pinmux_pad_attributes_t pinmux_pad_attributes[] = {
+    // Enable pull-ups for spi_host_0 data pins to avoid floating inputs.
+    {
+        .pad = kTopEarlgreyDirectPadsSpiHost0Sd0,
+        .kind = kDifPinmuxPadKindDio,
+        .flags = kDifPinmuxPadAttrPullResistorEnable |
+                 kDifPinmuxPadAttrPullResistorUp,
+    },
+    {
+        .pad = kTopEarlgreyDirectPadsSpiHost0Sd1,
+        .kind = kDifPinmuxPadKindDio,
+        .flags = kDifPinmuxPadAttrPullResistorEnable |
+                 kDifPinmuxPadAttrPullResistorUp,
+    },
+    {
+        .pad = kTopEarlgreyDirectPadsSpiHost0Sd2,
+        .kind = kDifPinmuxPadKindDio,
+        .flags = kDifPinmuxPadAttrPullResistorEnable |
+                 kDifPinmuxPadAttrPullResistorUp,
+    },
+    {
+        .pad = kTopEarlgreyDirectPadsSpiHost0Sd3,
+        .kind = kDifPinmuxPadKindDio,
+        .flags = kDifPinmuxPadAttrPullResistorEnable |
+                 kDifPinmuxPadAttrPullResistorUp,
+    },
 };
 
 /**
@@ -398,6 +430,11 @@ static void configure_i2c(dif_i2c_t *i2c, uint8_t device_addr_0,
 }
 
 static void configure_spi_host() {
+  // Enable pull-ups for spi_host_0 data pins to avoid floating inputs.
+  if (kDeviceType == kDeviceSimDV || kDeviceType == kDeviceSimVerilator) {
+    pinmux_testutils_configure_pads(&pinmux, pinmux_pad_attributes,
+                                    ARRAYSIZE(pinmux_pad_attributes));
+  }
   // These values are mostly filler as spi_host_0 will be in passthrough mode.
   CHECK_DIF_OK(dif_spi_host_configure(
       &spi_host_0,
@@ -416,6 +453,7 @@ static void configure_spi_host() {
 
 bool test_main(void) {
   init_peripheral_handles();
+  pinmux_testutils_init(&pinmux);
   configure_gpio_indicator_pin();
   configure_adc_ctrl_to_continuously_sample();
   configure_entropy_complex();
