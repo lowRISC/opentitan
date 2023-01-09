@@ -73,4 +73,20 @@ uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
  */
 uint32_t pinmux_testutils_read_straps(dif_pinmux_t *pinmux, dif_gpio_t *gpio);
 
+/**
+ * A convenience struct to associate pad attributes with a specific pad.
+ */
+typedef struct pinmux_pad_attributes {
+  dif_pinmux_index_t pad;
+  dif_pinmux_pad_kind_t kind;
+  dif_pinmux_pad_attr_flags_t flags;
+} pinmux_pad_attributes_t;
+
+/**
+ * Configures several pad attributes.
+ */
+void pinmux_testutils_configure_pads(const dif_pinmux_t *pinmux,
+                                     const pinmux_pad_attributes_t *attrs,
+                                     size_t num_attrs);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_PINMUX_TESTUTILS_H_
