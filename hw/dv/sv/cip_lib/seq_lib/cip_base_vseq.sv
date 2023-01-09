@@ -32,6 +32,9 @@ class cip_base_vseq #(
   // knob to enable/disable running csr_vseq with passthru_mem_tl_intg_err
   bit en_csr_vseq_w_passthru_mem_intg = 1;
 
+  // knob to enable/disable running csr_vseq with tl_intg_err
+  bit en_csr_vseq_w_tl_intg = 1;
+
   // csr queues
   dv_base_reg all_csrs[$];
   dv_base_reg intr_state_csrs[$];

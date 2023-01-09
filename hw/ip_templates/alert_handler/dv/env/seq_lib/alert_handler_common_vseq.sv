@@ -11,6 +11,18 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
 
   `uvm_object_new
 
+  virtual task pre_start();
+    super.pre_start();
+    if (common_seq_type == "tl_intg_err") begin
+      // If `en_csr_vseq_w_tl_intg = 1`, this vseq will check tl intg error won't affect any other
+      // tl transaction.
+      // If `en_csr_vseq_w_tl_intg = 0`, this vseq will check status, interrupts, and class_count
+      // registers are updated correctly by DUT.
+      en_csr_vseq_w_tl_intg = $urandom_range(0, 1);
+      `uvm_info(`gfn, $sformatf("en_csr_vseq_w_tl_intg = %0b", en_csr_vseq_w_tl_intg), UVM_MEDIUM)
+    end
+  endtask
+
   virtual task body();
     // run alert/esc ping response sequences without error or timeout to prevent triggering local
     // alert failure
@@ -18,10 +30,50 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
+  // If the tl_intg_err sequence does not run csr_rw in parallel, enable loc_alert error and enable
+  // interrupts.
+  // If the tl_intg_err sequence runs with csr_rw, do not enable loc_alert because it might trigger
+  // escalation and affect register predications.
+  virtual task run_tl_intg_err_vseq_sub(string ral_name);
+    if (en_csr_vseq_w_tl_intg == 0) begin
+      csr_wr(.ptr(ral.loc_alert_en_shadowed[LocalBusIntgFail]),
+             .value($urandom_range(0, 1)),
+             .predict(1));
+      csr_wr(.ptr(ral.loc_alert_class_shadowed[LocalBusIntgFail]),
+              .value($urandom_range(0, 3)),
+              .predict(1));
+      csr_wr(.ptr(ral.classa_ctrl_shadowed.en), .value(1));
+      csr_wr(.ptr(ral.classb_ctrl_shadowed.en), .value(1));
+      csr_wr(.ptr(ral.classc_ctrl_shadowed.en), .value(1));
+      csr_wr(.ptr(ral.classd_ctrl_shadowed.en), .value(1));
+    end
+    super.run_tl_intg_err_vseq_sub(ral_name);
+  endtask
+
   // Override the task to check corresponding CSR status is updated correctly.
   virtual task check_tl_intg_error_response();
     bit exp_val = `gmv(ral.loc_alert_en_shadowed[LocalBusIntgFail]);
     csr_rd_check(.ptr(ral.loc_alert_cause[LocalBusIntgFail]), .compare_value(exp_val));
+
+    // Only check interrupt, accumlate count, and alert_cause registers if the local alert is
+    // enabled.
+    // However, this task does not check escalation port because the common escalation path is
+    // checked in other tests that enabled scb.
+    if (exp_val == 1) begin
+      bit [TL_DW-1:0] class_i = `gmv(ral.loc_alert_class_shadowed[LocalBusIntgFail]);
+      bit [TL_DW-1:0] accum_cnt;
+      csr_rd_check(.ptr(ral.intr_state), .compare_value(1'b1 << class_i));
+      case (class_i)
+        0: csr_rd(.ptr(ral.classa_accum_cnt), .value(accum_cnt));
+        1: csr_rd(.ptr(ral.classb_accum_cnt), .value(accum_cnt));
+        2: csr_rd(.ptr(ral.classc_accum_cnt), .value(accum_cnt));
+        3: csr_rd(.ptr(ral.classd_accum_cnt), .value(accum_cnt));
+        default: `uvm_fatal(`gfn, $sformatf("Invalid class index %0d", class_i))
+      endcase
+      // Once tl_intg_err triggered, the error will be set to 1 until reset, so the counter will
+      // continuously increment.
+      `DV_CHECK_LT(0, accum_cnt, "Accumulated count should be larger than 0");
+    end
   endtask
 
   // If the common sequence is tl integrity error sequence, we override this task to disable local
