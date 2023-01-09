@@ -437,6 +437,10 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
             #1step;
             glitched_inp_used = (data_open_cnt[glitch_lockstep_core] > 0);
             @(cfg.chip_vif.cpu_clk_rst_if.cbn);
+            // Data integrity errors are always reported, even if the core isn't currently doing
+            // a load or store instruction.
+            glitched_inp_used |= (hdl_read_core_signal("load_store_unit_i.data_intg_err",
+                glitch_lockstep_core, 1) == 1'b1);
           end
           "data_rdata_i", "data_err_i": begin
             glitched_inp_used = (hdl_read_core_signal("data_rvalid_i", glitch_lockstep_core, 1) ==
