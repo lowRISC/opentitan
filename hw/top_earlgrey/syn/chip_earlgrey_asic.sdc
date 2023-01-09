@@ -418,7 +418,7 @@ set_clock_groups -name group1 -async                                  \
     -group [get_clocks USB_CLK                                      ] \
     -group [get_clocks {SPI_DEV_CLK SPI_DEV_IN_CLK SPI_DEV_OUT_CLK SPI_CSB_CLK} ] \
     -group [get_clocks {SPI_DEV_PASSTHRU_CLK SPI_HOST_PASSTHRU_CLK SPI_DEV_PASSTHRU_IN_CLK SPI_DEV_PASSTHRU_OUT_CLK SPI_DEV_PASSTHRU_CSB_CLK} ] \
-    -group [get_clocks {IO_CLK SPI_HOST_INT_CLK SPI_HOST_CLK}       ] \
+    -group [get_clocks {IO_CLK SPI_HOST_CLK}       ] \
     -group [get_clocks IO_DIV2_CLK                                  ] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
     -group [get_clocks JTAG_TCK                                     ] \
