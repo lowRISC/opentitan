@@ -60,6 +60,7 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
     m_kmac_agent_cfg.constant_share_means_error = 1'b0;
 
     m_tl_agent_cfgs["rom_ctrl_rom_reg_block"].max_outstanding_req = 2;
+    m_tl_agent_cfgs["rom_ctrl_regs_reg_block"].max_outstanding_req = 1;
 
     // Tell the CIP base code what bit gets set if we see a TL fault.
     tl_intg_alert_fields[ral.fatal_alert_cause.integrity_error] = 1;
