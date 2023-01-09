@@ -24,6 +24,14 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
     csr_rd_check(.ptr(ral.loc_alert_cause[LocalBusIntgFail]), .compare_value(exp_val));
   endtask
 
+  virtual task run_tl_intg_err_vseq_sub(string ral_name);
+    // randomly enable tl_integrity error local alert.
+    csr_wr(.ptr(ral.loc_alert_en_shadowed[LocalBusIntgFail]),
+           .value($urandom_range(0, 1)),
+           .predict(1));
+    super.run_tl_intg_err_vseq_sub(ral_name);
+  endtask
+
   // If the common sequence is tl integrity error sequence, we override this task to disable local
   // alert for tl_intg_err and lock this register. Because tl_intg_err can trigger local alert and
   // eventually triggers escalation. Then the auto predications for escalation related registers
