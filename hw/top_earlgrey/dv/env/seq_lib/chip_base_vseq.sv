@@ -37,6 +37,7 @@ class chip_base_vseq #(
 
   virtual task apply_reset(string kind = "HARD");
     lc_ctrl_state_pkg::lc_state_e lc_state;
+    callback_vseq.pre_apply_reset();
     // Note: The JTAG reset does not have a dedicated pad and is muxed with other chip IOs.
     // These IOs have pad attributes that are driven from registers, and as long as
     // the reset line of those registers is X, the registers and hence the pad outputs
@@ -55,6 +56,7 @@ class chip_base_vseq #(
     cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n();
     super.apply_reset(kind);
     if (jtag_dmi_ral != null) jtag_dmi_ral.reset(kind);
+    callback_vseq.post_apply_reset();
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
