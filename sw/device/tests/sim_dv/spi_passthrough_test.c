@@ -38,15 +38,6 @@ static dif_spi_device_handle_t spi_device;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
 
-/**
- * A convenience struct to associate pad attributes with a specific pad.
- */
-typedef struct pinmux_pad_attributes {
-  dif_pinmux_index_t pad;
-  dif_pinmux_pad_kind_t kind;
-  dif_pinmux_pad_attr_flags_t flags;
-} pinmux_pad_attributes_t;
-
 // Enable pull-ups for spi_host data pins to avoid floating inputs.
 static const pinmux_pad_attributes_t pinmux_pad_config[] = {
     {
@@ -484,16 +475,8 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
-  for (int i = 0; i < ARRAYSIZE(pinmux_pad_config); ++i) {
-    dif_pinmux_pad_attr_t attr, attr_check;
-    pinmux_pad_attributes_t config = pinmux_pad_config[i];
-    CHECK_DIF_OK(
-        dif_pinmux_pad_get_attrs(&pinmux, config.pad, config.kind, &attr));
-    attr.flags = config.flags;
-    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, config.pad, config.kind,
-                                            attr, &attr_check));
-    // Check that attributes were accepted?
-  }
+  pinmux_testutils_configure_pads(&pinmux, pinmux_pad_config,
+                                  ARRAYSIZE(pinmux_pad_config));
   for (int i = 0; i < ARRAYSIZE(pinmux_in_config); ++i) {
     pinmux_select_t setting = pinmux_in_config[i];
     CHECK_DIF_OK(
