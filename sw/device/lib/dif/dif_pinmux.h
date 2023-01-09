@@ -160,7 +160,7 @@ typedef struct dif_pinmux_pad_attr {
    */
   dif_pinmux_pad_drive_strength_t drive_strength;
   /**
-   * A bit map of single-bit attribute flags. @sa dif_pinmux_pad_attr_flags_t
+   * A bit map of single-bit attribute flags. See dif_pinmux_pad_attr_flags_t
    * for the mapping and definitions.
    */
   dif_pinmux_pad_attr_flags_t flags;
