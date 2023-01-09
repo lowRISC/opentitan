@@ -13,7 +13,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     string       name;
     int unsigned width; // >0: take this as width; 0: use width from parameter
     string       width_parameter_name;
-    string       unpacked_dim_name;
+    int unsigned unpacked_dim_width;
   } port_t;
 
   typedef logic [255:0] val_t;
@@ -203,64 +203,64 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     ports = new[45];
     ports = '{
       // `hart_id_i` and `boot_addr_i` are not glitch-protected by the lockstep core.
-      // '{"hart_id_i",               1, "", ""},
-      // '{"boot_addr_i",             1, "", ""},
-      '{"instr_req_o",             1, "", ""},
-      '{"instr_gnt_i",             1, "", ""},
-      '{"instr_rvalid_i",          1, "", ""},
-      '{"instr_addr_o",           32, "", ""},
-      '{"instr_rdata_i",           0, "MemDataWidth", ""},
-      '{"instr_err_i",             1, "", ""},
-      '{"data_req_o",              1, "", ""},
-      '{"data_gnt_i",              1, "", ""},
-      '{"data_rvalid_i",           1, "", ""},
-      '{"data_we_o",               1, "", ""},
-      '{"data_be_o",               1, "", ""},
-      '{"data_addr_o",            32, "", ""},
-      '{"data_wdata_o",            0, "MemDataWidth", ""},
-      '{"data_rdata_i",            0, "MemDataWidth", ""},
-      '{"data_err_i",              1, "", ""},
-      '{"dummy_instr_id_o",        1, "", ""},
-      '{"rf_raddr_a_o",            5, "", ""},
-      '{"rf_raddr_b_o",            5, "", ""},
-      '{"rf_waddr_wb_o",           5, "", ""},
-      '{"rf_we_wb_o",              1, "", ""},
-      '{"rf_wdata_wb_ecc_o",       0, "RegFileDataWidth", ""},
-      '{"rf_rdata_a_ecc_i",        0, "RegFileDataWidth", ""},
-      '{"rf_rdata_b_ecc_i",        0, "RegFileDataWidth", ""},
-      '{"ic_tag_req_o",            0, "IC_NUM_WAYS", ""},
-      '{"ic_tag_write_o",          1, "", ""},
-      '{"ic_tag_addr_o",           0, "IC_INDEX_W", ""},
-      '{"ic_tag_wdata_o",          0, "TagSizeECC", ""},
-      '{"ic_tag_rdata_i",          0, "TagSizeECC", "IC_NUM_WAYS"},
-      '{"ic_data_req_o",           0, "IC_NUM_WAYS", ""},
-      '{"ic_data_write_o",         1, "", ""},
-      '{"ic_data_addr_o",          0, "IC_INDEX_W", ""},
-      '{"ic_data_wdata_o",         0, "LineSizeECC", ""},
-      '{"ic_data_rdata_i",         0, "LineSizeECC", "IC_NUM_WAYS"},
-      '{"ic_scr_key_valid_i",      1, "", ""},
-      '{"ic_scr_key_req_o",        1, "", ""},
-      '{"irq_software_i",          1, "", ""},
-      '{"irq_timer_i",             1, "", ""},
-      '{"irq_external_i",          1, "", ""},
-      '{"irq_fast_i",             15, "", ""},
-      '{"irq_nm_i",                1, "", ""},
-      '{"irq_pending_o",           1, "", ""},
-      '{"debug_req_i",             1, "", ""},
-      '{"crash_dump_o",            $bits(ibex_pkg::crash_dump_t), "", ""},
-      '{"double_fault_seen_o",     1, "", ""},
+      // '{"hart_id_i",               1, "", 0},
+      // '{"boot_addr_i",             1, "", 0},
+      '{"instr_req_o",             1, "", 0},
+      '{"instr_gnt_i",             1, "", 0},
+      '{"instr_rvalid_i",          1, "", 0},
+      '{"instr_addr_o",           32, "", 0},
+      '{"instr_rdata_i",           0, "MemDataWidth", 0},
+      '{"instr_err_i",             1, "", 0},
+      '{"data_req_o",              1, "", 0},
+      '{"data_gnt_i",              1, "", 0},
+      '{"data_rvalid_i",           1, "", 0},
+      '{"data_we_o",               1, "", 0},
+      '{"data_be_o",               1, "", 0},
+      '{"data_addr_o",            32, "", 0},
+      '{"data_wdata_o",            0, "MemDataWidth", 0},
+      '{"data_rdata_i",            0, "MemDataWidth", 0},
+      '{"data_err_i",              1, "", 0},
+      '{"dummy_instr_id_o",        1, "", 0},
+      '{"rf_raddr_a_o",            5, "", 0},
+      '{"rf_raddr_b_o",            5, "", 0},
+      '{"rf_waddr_wb_o",           5, "", 0},
+      '{"rf_we_wb_o",              1, "", 0},
+      '{"rf_wdata_wb_ecc_o",       0, "RegFileDataWidth", 0},
+      '{"rf_rdata_a_ecc_i",        0, "RegFileDataWidth", 0},
+      '{"rf_rdata_b_ecc_i",        0, "RegFileDataWidth", 0},
+      '{"ic_tag_req_o",            ibex_pkg::IC_NUM_WAYS, "", 0},
+      '{"ic_tag_write_o",          1, "", 0},
+      '{"ic_tag_addr_o",           ibex_pkg::IC_INDEX_W, "", 0},
+      '{"ic_tag_wdata_o",          0, "TagSizeECC", 0},
+      '{"ic_tag_rdata_i",          0, "TagSizeECC", ibex_pkg::IC_NUM_WAYS},
+      '{"ic_data_req_o",           ibex_pkg::IC_NUM_WAYS, "", 0},
+      '{"ic_data_write_o",         1, "", 0},
+      '{"ic_data_addr_o",          ibex_pkg::IC_INDEX_W, "", 0},
+      '{"ic_data_wdata_o",         0, "LineSizeECC", 0},
+      '{"ic_data_rdata_i",         0, "LineSizeECC", ibex_pkg::IC_NUM_WAYS},
+      '{"ic_scr_key_valid_i",      1, "", 0},
+      '{"ic_scr_key_req_o",        1, "", 0},
+      '{"irq_software_i",          1, "", 0},
+      '{"irq_timer_i",             1, "", 0},
+      '{"irq_external_i",          1, "", 0},
+      '{"irq_fast_i",             15, "", 0},
+      '{"irq_nm_i",                1, "", 0},
+      '{"irq_pending_o",           1, "", 0},
+      '{"debug_req_i",             1, "", 0},
+      '{"crash_dump_o",            $bits(ibex_pkg::crash_dump_t), "", 0},
+      '{"double_fault_seen_o",     1, "", 0},
       // `fetch_enable_i` is a multi-bit signal, and multi-bit FI is outside the threat model.
-      // '{"fetch_enable_i",          1, "", ""},
+      // '{"fetch_enable_i",          1, "", 0},
       // The `alert_*` output signals are not compared between the regular core and the lockstep
       // core. Thus, those outputs are not protected against glitches.  This is intentional because
       // an alert is raised in reaction to a glitch (potentially an injected fault) inside the core.
       // To then also glitch the `alert_*` outputs, the attacker would need to be able to glitch two
       // signals at the same time, which is outside the threat model.  Thus, these signals are
       // excluded from the list of outputs in order to prevent false negative test results.
-      // '{"alert_minor_o",           1, "", ""},
-      // '{"alert_major_internal_o",  1, "", ""},
-      // '{"alert_major_bus_o",       1, "", ""},
-      '{"core_busy_o",             1, "", ""}
+      // '{"alert_minor_o",           1, "", 0},
+      // '{"alert_major_internal_o",  1, "", 0},
+      // '{"alert_major_bus_o",       1, "", 0},
+      '{"core_busy_o",             1, "", 0}
     };
 
     // Randomly pick a port (of either the lockstep core or the regular core) to glitch.
@@ -282,14 +282,8 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
 
     // If the port is an unpacked array, pick an index of the unpacked dimension to glitch and apply
     // that to the glitched signal path.
-    if (ports[port_idx].unpacked_dim_name != "") begin
-      int unsigned unpacked_dim =
-          hdl_read_int_unsigned($sformatf("%s.%s",
-                                          core_path,
-                                          ports[port_idx].unpacked_dim_name),
-                                "Could not obtain unpacked dimension from parameter value.");
-      `DV_CHECK_FATAL(unpacked_dim > 0, "Read zero unpacked dimension from parameter value.")
-      unpacked_idx = $urandom_range(unpacked_dim - 1);
+    if (ports[port_idx].unpacked_dim_width > 0) begin
+      unpacked_idx = $urandom_range(ports[port_idx].unpacked_dim_width - 1);
       glitch_path = $sformatf("%s[%0d]", glitch_path, unpacked_idx);
     end
 
