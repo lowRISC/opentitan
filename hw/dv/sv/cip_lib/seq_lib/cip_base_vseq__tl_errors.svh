@@ -301,8 +301,10 @@ virtual task run_tl_intg_err_vseq_sub(string ral_name);
   fork
     // run csr_rw seq to send some normal CSR accesses in parallel
     begin
-      `uvm_info(`gfn, "Run csr_rw seq", UVM_HIGH)
-      run_csr_vseq(.csr_test_type("rw"), .ral_name(ral_name));
+      if (en_csr_vseq_w_tl_intg) begin
+        `uvm_info(`gfn, "Run csr_rw seq", UVM_HIGH)
+        run_csr_vseq(.csr_test_type("rw"), .ral_name(ral_name));
+      end
     end
     begin
       // check integrity status before injecting fault
