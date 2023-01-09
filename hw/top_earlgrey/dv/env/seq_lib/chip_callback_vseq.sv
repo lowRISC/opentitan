@@ -12,6 +12,14 @@ class chip_callback_vseq extends cip_base_vseq #(
   `uvm_object_utils(chip_callback_vseq)
   `uvm_object_new
 
+  virtual task pre_apply_reset();
+    // Do nothing but can be overridden in closed source environment.
+  endtask
+
+  virtual task post_apply_reset(string reset_kind = "HARD");
+    // Do nothing but can be overridden in closed source environment.
+  endtask
+
   virtual task pre_dut_init();
     // Do nothing but can be overridden in closed source environment.
   endtask
