@@ -59,6 +59,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "alert_handler_regs.h"
+#include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -169,6 +170,7 @@ static dif_sram_ctrl_t sram_ctrl_ret;
 static const char *sparse_fsm_check = "prim_sparse_fsm_flop";
 static const char *we_check = "prim_reg_we_check";
 static const char *rst_cnsty_check = "rst_cnsty_check";
+static const char *flash_fatal_check = "flash_fatal_check";
 
 static void save_fault_checker(fault_checker_t *fault_checker) {
   uint32_t function_addr = (uint32_t)(fault_checker->function);
@@ -273,9 +275,11 @@ static void flash_ctrl_fault_checker(bool enable, const char *ip_inst,
                                      const char *type) {
   dif_flash_ctrl_faults_t faults;
   CHECK_DIF_OK(dif_flash_ctrl_get_faults(&flash_ctrl_state, &faults));
-  CHECK(faults.register_integrity_error == enable,
-        "For %s got codes 0x%x, expected 0x%x", ip_inst,
-        faults.register_integrity_error, enable);
+  uint32_t fault_code = (type == we_check) ? faults.register_integrity_error
+                                           : faults.host_gnt_error;
+
+  CHECK(fault_code == enable, "For %s got codes 0x%x, expected 0x%x", ip_inst,
+        fault_code, enable);
 }
 
 /*
@@ -769,10 +773,11 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
                             we_check};
       fault_checker = fc;
     } break;
-    // TODO, add mechanism to inject kTopEarlgreyAlertIdFlashCtrlFatalErr
-    // alerts, and corresponding CSR bit to check. See flash_ctrl.sv around
-    // line 1033.
-    // TODO for new fatals do as in otp, forcing submodule outputs.
+    case kTopEarlgreyAlertIdFlashCtrlFatalErr: {
+      fault_checker_t fc = {flash_ctrl_fault_checker, flash_ctrl_inst_name,
+                            flash_fatal_check};
+      fault_checker = fc;
+    } break;
     case kTopEarlgreyAlertIdFlashCtrlFatalStdErr: {
       fault_checker_t fc = {flash_ctrl_fault_checker, flash_ctrl_inst_name,
                             we_check};
@@ -978,6 +983,19 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
   // Trigger the SV side to inject fault.
   // DO NOT CHANGE THIS: it is used to notify the SV side.
   LOG_INFO("Ready for fault injection");
+
+  // FlashCtrlFatalErr test requires host read request.
+  if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalErr) {
+    enum {
+      kNumTestWords = 16,
+      kNumTestBytes = kNumTestWords * sizeof(uint32_t),
+    };
+    uint32_t host_data[kNumTestWords];
+    // Send host request to trigger host grant from flash_ctrl.
+    mmio_region_memcpy_from_mmio32(
+        mmio_region_from_addr(TOP_EARLGREY_EFLASH_BASE_ADDR),
+        FLASH_CTRL_PARAM_BYTES_PER_BANK, &host_data, kNumTestBytes);
+  }
 
   IBEX_SPIN_FOR(alert_irq_seen, kTestTimeout);
   LOG_INFO("Alert IRQ seen");

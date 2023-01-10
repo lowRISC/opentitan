@@ -975,8 +975,8 @@ typedef struct dif_flash_ctrl_faults {
   bool prog_window_error : 1;
   /** The flash hardware interface encountered a program type error. */
   bool prog_type_error : 1;
-  /** The flash hardware interface encountered a native flash error. */
-  bool flash_phy_error : 1;
+  /** A host transaction was granted with illegal properties. */
+  bool host_gnt_error : 1;
   /** The flash controller encountered a register integrity error. */
   bool register_integrity_error : 1;
   /** The flash memory encountered a register integrity error. */
