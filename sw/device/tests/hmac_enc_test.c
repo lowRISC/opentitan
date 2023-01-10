@@ -82,13 +82,13 @@ bool test_main(void) {
   // Expect the fifo empty irq after pushing data.
   hmac_ctx.expected_irq = kDifHmacIrqFifoEmpty;
   irq_serviced = UINT32_MAX;
-  // Use HMAC in SHA256 mode to generate a 256bit key from `kRefHmacLongKey`.
+  // Use HMAC in SHA256 mode to generate a 256bit key from `kHmacRefLongKey`.
   CHECK_DIF_OK(
       dif_hmac_mode_sha256_start(hmac_ctx.hmac, kHmacTransactionConfig));
-  hmac_testutils_push_message(hmac_ctx.hmac, (char *)kRefHmacLongKey,
-                              sizeof(kRefHmacLongKey));
+  hmac_testutils_push_message(hmac_ctx.hmac, (char *)kHmacRefLongKey,
+                              sizeof(kHmacRefLongKey));
   hmac_testutils_check_message_length(hmac_ctx.hmac,
-                                      sizeof(kRefHmacLongKey) * 8);
+                                      sizeof(kHmacRefLongKey) * 8);
 
   // If the irq has't fired yet, wait for the `fifoEmpty` interrupt .
   if (irq_serviced != hmac_ctx.expected_irq) {
@@ -103,20 +103,21 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_hmac_process(hmac_ctx.hmac));
   dif_hmac_digest_t key_digest;
   hmac_testutils_finish_polled(hmac_ctx.hmac, &key_digest);
-  CHECK_ARRAYS_EQ(key_digest.digest, kRefExpectedShaDigest.digest,
+  CHECK_ARRAYS_EQ(key_digest.digest, kHmacRefExpectedLongKeyDigest.digest,
                   ARRAYSIZE(key_digest.digest));
 
   CHECK(irq_serviced == hmac_ctx.expected_irq);
 
   // Generate HMAC final digest, using the resulted SHA256 digest over the
-  // `kRefHmacLongKey`.
+  // `kHmacRefLongKey`.
   CHECK_DIF_OK(dif_hmac_mode_hmac_start(
       hmac_ctx.hmac, (uint8_t *)&key_digest.digest[0], kHmacTransactionConfig));
-  hmac_testutils_push_message(hmac_ctx.hmac, kRefData, sizeof(kRefData));
-  hmac_testutils_check_message_length(hmac_ctx.hmac, sizeof(kRefData) * 8);
+  hmac_testutils_push_message(hmac_ctx.hmac, kHmacRefData,
+                              sizeof(kHmacRefData));
+  hmac_testutils_check_message_length(hmac_ctx.hmac, sizeof(kHmacRefData) * 8);
   CHECK_DIF_OK(dif_hmac_process(hmac_ctx.hmac));
   LOG_INFO("Waiting for HMAC pooling to finish");
   hmac_testutils_finish_and_check_polled(hmac_ctx.hmac,
-                                         &kRefExpectedHmacDigest);
+                                         &kHmacRefExpectedDigest);
   return true;
 }

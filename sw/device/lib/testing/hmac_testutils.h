@@ -63,23 +63,23 @@
 /**
  * This should be hashed with SHA-256 to generate the key.
  */
-extern const uint8_t kRefHmacLongKey[100];
+extern const uint8_t kHmacRefLongKey[100];
 
 /**
- * Expected SHA digest for kRefHmacLongKey data above.
+ * Expected SHA digest for kHmacRefLongKey data above.
  */
-extern const dif_hmac_digest_t kRefExpectedShaDigest;
+extern const dif_hmac_digest_t kHmacRefExpectedLongKeyDigest;
 
 /**
- * This is used as data for the MAC computation, using kRefExpectedShaDigest
- * as the key.
+ * This is used as data for the MAC computation, using
+ * kHmacRefExpectedLongKeyDigest as the key.
  */
-extern const char kRefData[34];
+extern const char kHmacRefData[34];
 
 /**
- * Expected MAC digest for kRefData data above.
+ * Expected MAC digest for kHmacRefData data above.
  */
-extern const dif_hmac_digest_t kRefExpectedHmacDigest;
+extern const dif_hmac_digest_t kHmacRefExpectedDigest;
 
 /**
  * Reads and compares the actual sent message length against expected.
