@@ -29,6 +29,9 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // Flag to indicate tl mem acess are gated due to local or global escalation.
   bit                 tl_mem_access_gated;
 
+  // Flag to indicate if it is an IP or chip level testbench.
+  bit                 is_chip;
+
   // Similar to the associative array above, if DUT has shadow registers, these two associative
   // arrays contains register fields related to shadow register's update and storage error status.
   uvm_reg_data_t      shadow_update_err_status_fields[dv_base_reg_field];
@@ -51,7 +54,6 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // TODO(#16739): enable random drive devmode once design supports
   bit  has_devmode = 1;
   bit  en_devmode = 1;
-  bit  has_shadowed_regs = 0;
 
   // If the data intg is passthru for the memory and the data intg value in mem is incorrect, it
   // won't trigger d_error in this mem block and the check is done in the processor

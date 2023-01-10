@@ -124,6 +124,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     has_devmode = 0;
     list_of_alerts = chip_common_pkg::LIST_OF_ALERTS;
+    is_chip = 1;
 
     // No need to cover all kinds of interity errors as they are tested in block-level.
     en_tl_intg_err_cov = 0;

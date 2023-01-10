@@ -271,7 +271,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     string prim_ral_name = "flash_ctrl_prim_reg_block";
 
     list_of_alerts = flash_ctrl_env_pkg::LIST_OF_ALERTS;
-    has_shadowed_regs = 1;
     tl_intg_alert_name = "fatal_std_err";
     sec_cm_alert_name = tl_intg_alert_name;
     // Set up second RAL model for Flash memory

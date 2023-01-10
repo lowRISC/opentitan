@@ -31,7 +31,6 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     num_edn = 1;
-    has_shadowed_regs = 1;
     list_of_alerts = kmac_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_fault_err";
     sec_cm_alert_name  = "fatal_fault_err";
