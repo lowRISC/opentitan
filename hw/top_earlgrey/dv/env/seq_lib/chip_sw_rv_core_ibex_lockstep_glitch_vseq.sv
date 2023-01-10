@@ -184,6 +184,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     int unsigned bit_idx;
     val_t glitch_mask;
     val_t glitched_val;
+    int unsigned lockstep_offset;
     int unsigned max_delay_clks;
     bit wait_for_inp_used;
     bit glitched_inp_used;
@@ -192,6 +193,10 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     logic enable_cmp;
     string alert_major_internal_path;
     logic alert_major_internal;
+
+    // Extract the lockstep offset.
+    lockstep_offset = hdl_read_int_unsigned($sformatf("%s.LockstepOffset", lockstep_path),
+                                            "Could not read LockstepOffset parameter.");
 
     // List of all ports and their bit widths (or the name of the parameter that defines the width
     // and/or the unpacked dimension).
@@ -583,13 +588,19 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     // An alert should be triggered, so we check for that. Depending on the glitched signal and
     // core it may take several clock cycles for a potential alert to fire. We wait for at most
     // max_delay_clks cycles.
-    max_delay_clks = 10 + hdl_read_int_unsigned($sformatf("%s.LockstepOffset", lockstep_path),
-                                                "Could not read LockstepOffset parameter.");
+    max_delay_clks = 10 + lockstep_offset;
 
-    // Assert that `enable_cmp_q` in `ibex_lockstep` is 1.  This should always be the case as soon
-    // as the lockstep core starts executing.
+    // Assert that `enable_cmp_q` in `ibex_lockstep` is 1.  When coming out of reset and
+    // starting execution, it takes `LockstepOffset` clock cycles for this to happen.
     enable_cmp_path = $sformatf("%s.enable_cmp_q", lockstep_path);
-    `DV_CHECK_FATAL(uvm_hdl_read(enable_cmp_path, enable_cmp))
+    for (int i = 0; i < lockstep_offset; i++) begin
+      `DV_CHECK_FATAL(uvm_hdl_read(enable_cmp_path, enable_cmp))
+      if (enable_cmp) begin
+        break;
+      end else begin
+        cfg.chip_vif.cpu_clk_rst_if.wait_n_clks(1);
+      end
+    end
     `DV_CHECK_EQ_FATAL(enable_cmp, 1'b1, "Lockstep comparison disabled, which is illegal.")
 
     // Calculate whether we expect a major alert.
