@@ -61,6 +61,7 @@ filesets:
       - seq_lib/chip_sw_alert_handler_shorten_ping_wait_cycle_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_alert_handler_lpg_clkoff_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_all_escalation_resets_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_fault_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rstmgr_cnsty_fault_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_data_integrity_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_full_aon_reset_vseq.sv: {is_include_file: true}
@@ -144,6 +145,7 @@ filesets:
       - ast_supply_if.sv
       - pwrmgr_low_power_if.sv
       - rstmgr_cnsty_fault_if.sv
+      - flash_ctrl_host_gnt_fault_if.sv
       - top_earlgrey_error_injection_ifs_bind.sv
     file_type: systemVerilogSource
 

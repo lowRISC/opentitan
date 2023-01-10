@@ -1165,6 +1165,8 @@ dif_result_t dif_flash_ctrl_get_faults(const dif_flash_ctrl_state_t *handle,
       bitfield_bit32_read(reg, FLASH_CTRL_FAULT_STATUS_PROG_WIN_ERR_BIT);
   faults.prog_type_error =
       bitfield_bit32_read(reg, FLASH_CTRL_FAULT_STATUS_PROG_TYPE_ERR_BIT);
+  faults.host_gnt_error =
+      bitfield_bit32_read(reg, FLASH_CTRL_FAULT_STATUS_HOST_GNT_ERR_BIT);
   reg = mmio_region_read32(handle->dev.base_addr,
                            FLASH_CTRL_STD_FAULT_STATUS_REG_OFFSET);
   faults.register_integrity_error =
