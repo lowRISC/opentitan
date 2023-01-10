@@ -21,6 +21,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
+#include "sw/device/lib/testing/hmac_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -28,8 +29,11 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "adc_ctrl_regs.h"     // Generated.
+#include "aes_regs.h"          // Generated.
 #include "entropy_src_regs.h"  // Generated.
+#include "hmac_regs.h"         // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "kmac_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
                         .can_clobber_uart = false, );
@@ -56,6 +60,8 @@ static dif_uart_t uart_1;
 static dif_uart_t uart_2;
 static dif_uart_t uart_3;
 
+static dif_kmac_operation_state_t kmac_operation_state;
+
 /**
  * Test configuration parameters.
  */
@@ -80,6 +86,7 @@ enum {
   kKmacEntropyHashThreshold = 1,  // KMAC operations between entropy requests
   kKmacEntropyWaitTimer = 0xffff,
   kKmacEntropyPrescaler = 0x3ff,
+  kKmacMessageLength = 200,
   kKmacDigestLength = 16,
   /**
    * I2C parameters.
@@ -145,6 +152,21 @@ static const dif_kmac_key_t kKmacKey = {
     .share1 = {0},
     .length = kDifKmacKeyLen256,
 };
+
+static const char *kKmacMessage =
+    "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"
+    "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f"
+    "\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x2a\x2b\x2c\x2d\x2e\x2f"
+    "\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3a\x3b\x3c\x3d\x3e\x3f"
+    "\x40\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f"
+    "\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x5b\x5c\x5d\x5e\x5f"
+    "\x60\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f"
+    "\x70\x71\x72\x73\x74\x75\x76\x77\x78\x79\x7a\x7b\x7c\x7d\x7e\x7f"
+    "\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f"
+    "\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f"
+    "\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf"
+    "\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf"
+    "\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7";
 
 /**
  * Initializes all DIF handles for each peripheral used in this test.
@@ -343,16 +365,16 @@ static void configure_aes() {
   dif_aes_iv_t aes_iv;
   memcpy(aes_iv.iv, kAesModesIvCbc, sizeof(aes_iv.iv));
 
-  // Setup AES in automatic, 256-bit SW provided key, CBC encryption mode. We
-  // need to be in automatic mode to mamimize throughput. Additionally, we want
-  // to keep the entropy complex busing by constantly reseeding PRNGs.
+  // Setup AES in automatic, 256-bit SW provided key, CBC encryption mode.
+  // Additionally, we want to keep the entropy complex busing by constantly
+  // reseeding PRNGs.
   dif_aes_transaction_t aes_transaction_cfg = {
       .operation = kDifAesOperationEncrypt,
       .mode = kDifAesModeCbc,
       .key_len = kDifAesKey256,
       .key_provider = kDifAesKeySoftwareProvided,
       .mask_reseeding = kDifAesReseedPerBlock,
-      .manual_operation = kDifAesManualOperationAuto,
+      .manual_operation = kDifAesManualOperationManual,
       .reseed_on_key_change = false,
       .ctrl_aux_lock = false,
   };
@@ -389,8 +411,6 @@ static void configure_kmac() {
   dif_kmac_customization_string_t kmac_customization_string;
   CHECK_DIF_OK(dif_kmac_customization_string_init("Power Virus Test", 16,
                                                   &kmac_customization_string));
-
-  dif_kmac_operation_state_t kmac_operation_state;
   CHECK_DIF_OK(dif_kmac_mode_kmac_start(
       &kmac, &kmac_operation_state, kDifKmacModeKmacLen256, kKmacDigestLength,
       &kKmacKey, &kmac_customization_string));
@@ -451,7 +471,83 @@ static void configure_spi_host() {
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host_0, /*enabled=*/true));
 }
 
+static void crypto_data_load_task(void *task_parameters) {
+  // Load data into AES block.
+  dif_aes_data_t aes_plain_text;
+  memcpy(aes_plain_text.data, kAesModesPlainText, sizeof(aes_plain_text.data));
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
+                                kTestTimeoutMicros);
+  CHECK_DIF_OK(dif_aes_load_data(&aes, aes_plain_text));
+
+  // Load data into HMAC block.
+  hmac_testutils_push_message(&hmac, kHmacRefData, sizeof(kHmacRefData));
+  hmac_testutils_check_message_length(&hmac, sizeof(kHmacRefData) * 8);
+
+  // Load data into KMAC block.
+  CHECK_DIF_OK(dif_kmac_absorb(&kmac, &kmac_operation_state, kKmacMessage,
+                               kKmacMessageLength, NULL));
+
+  OTTF_TASK_DELETE_SELF_OR_DIE;
+}
+
+static void max_power_task(void *task_parameters) {
+  // ***************************************************************************
+  // Trigger all crypto operations.
+  //
+  // Note: We trigger the activations of each crypto operation manually, rather
+  // than use the DIFs, so that we can maximize the time overlap between all
+  // operations.
+  // ***************************************************************************
+
+  // Prepare KMAC for squeeze command. Note, below code is derived from the KMAC
+  // DIF `dif_kmac_sqeeze()`.
+  CHECK(!kmac_operation_state.squeezing);
+  if (kmac_operation_state.append_d) {
+    // The KMAC operation requires that the output length (d) in bits be right
+    // encoded and appended to the end of the message.
+    // Note: kDifKmacMaxOutputLenWords could be reduced to make this code
+    // simpler. For example, a maximum of `(UINT16_MAX - 32) / 32` (just under
+    // 8 KiB) would mean that d is guaranteed to be less than 0xFFFF.
+    uint32_t d = kmac_operation_state.d * 32;
+    int len = 1 + (d > 0xFF) + (d > 0xFFFF) + (d > 0xFFFFFF);
+    int shift = (len - 1) * 8;
+    while (shift >= 8) {
+      mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+                         (uint8_t)(d >> shift));
+      shift -= 8;
+    }
+    mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET, (uint8_t)d);
+    mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET, (uint8_t)len);
+  }
+
+  // Prepare AES and HMAC trigger / process commands.
+  uint32_t aes_trigger_reg = bitfield_bit32_write(0, kDifAesTriggerStart, true);
+  uint32_t hmac_cmd_reg =
+      mmio_region_read32(hmac.base_addr, HMAC_CMD_REG_OFFSET);
+  hmac_cmd_reg =
+      bitfield_bit32_write(hmac_cmd_reg, HMAC_CMD_HASH_PROCESS_BIT, true);
+  uint32_t kmac_cmd_reg =
+      bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_PROCESS);
+
+  // Issue KMAC squeeze, AES trigger, and HMAC process commands.
+  kmac_operation_state.squeezing = true;
+  mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, kmac_cmd_reg);
+  mmio_region_write32(aes.base_addr, AES_TRIGGER_REG_OFFSET, aes_trigger_reg);
+  mmio_region_write32(hmac.base_addr, HMAC_CMD_REG_OFFSET, hmac_cmd_reg);
+
+  // Toggle GPIO pin to indicate we are in max power consumption.
+  CHECK_DIF_OK(dif_gpio_write(&gpio, 0, true));
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusOutputValid, true,
+                                kTestTimeoutMicros);
+  CHECK_DIF_OK(dif_gpio_write(&gpio, 0, false));
+
+  OTTF_TASK_DELETE_SELF_OR_DIE;
+}
+
 bool test_main(void) {
+  // ***************************************************************************
+  // Initialize and configure all IPs.
+  // ***************************************************************************
   init_peripheral_handles();
   pinmux_testutils_init(&pinmux);
   configure_gpio_indicator_pin();
@@ -469,5 +565,23 @@ bool test_main(void) {
   configure_spi_host();
   spi_device_testutils_configure_passthrough(&spi_device, /*filters=*/0,
                                              /*upload_write_commands=*/false);
+
+  // ***************************************************************************
+  // Kick off test tasks.
+  // ***************************************************************************
+  CHECK(ottf_task_create(crypto_data_load_task, "CryptoDataLoadTask",
+                         kOttfFreeRtosMinStackSize, 1));
+  CHECK(ottf_task_create(max_power_task, "MaxPowerTask",
+                         kOttfFreeRtosMinStackSize, 1));
+
+  // ***************************************************************************
+  // Yield control flow to the highest priority task in the run queue. Since the
+  // tasks created above all have a higher priority level than the current
+  // "test_main" task, execution will not be returned to the current task until
+  // the above tasks have been deleted.
+  // ***************************************************************************
+  LOG_INFO("Yielding execution to another task.");
+  ottf_task_yield();
+
   return true;
 }
