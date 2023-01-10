@@ -560,6 +560,11 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
                 "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_rv_core_ibex__cored.gen_device");
           end
         end
+        // There are several SVAs inside ibex_top ensuring correct behavior of crash dump. When
+        // glitching crash dump it's expected that one or multiple of these SVAs will fire.
+        "crash_dump_o": begin
+          $assertoff(0, "tb.dut.top_earlgrey.u_rv_core_ibex.u_core");
+        end
         default: ;
       endcase
     end
