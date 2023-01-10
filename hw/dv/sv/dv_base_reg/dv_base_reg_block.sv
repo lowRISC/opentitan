@@ -161,6 +161,12 @@ class dv_base_reg_block extends uvm_reg_block;
     end
   endfunction
 
+  function bit has_shadowed_regs();
+    dv_base_reg regs[$];
+    get_shadowed_regs(regs);
+    return (regs.size() > 0);
+  endfunction
+
   // Internal function, used to compute the address mask for this register block.
   //
   // This is quite an expensive computation, so we memoize the results in addr_mask[map].

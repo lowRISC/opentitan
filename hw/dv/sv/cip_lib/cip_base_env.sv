@@ -33,10 +33,18 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
                                                              cfg.devmode_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get devmode_vif from uvm_config_db")
     end
-    if (cfg.has_shadowed_regs &&
-        !uvm_config_db#(rst_shadowed_vif)::get(this, "", "rst_shadowed_vif", cfg.rst_shadowed_vif))
-        begin
-      `uvm_fatal(get_full_name(), "failed to get rst_shadowed_vif from uvm_config_db")
+
+    // Only get rst_shadowed_vif if it is an IP level testbench,
+    // and the IP contains shadowed registers.
+    if (cfg.is_chip == 0) begin
+      foreach(cfg.ral_models[i]) begin
+        if (cfg.ral_models[i].has_shadowed_regs() &&
+            !uvm_config_db#(rst_shadowed_vif)::get(this, "", "rst_shadowed_vif",
+                                                   cfg.rst_shadowed_vif)) begin
+          `uvm_fatal(get_full_name(), "failed to get rst_shadowed_vif from uvm_config_db")
+          break;
+        end
+      end
     end
 
     // Create & configure the TL agent.

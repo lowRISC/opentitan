@@ -29,7 +29,6 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = clkmgr_env_pkg::LIST_OF_ALERTS;
-    has_shadowed_regs = 1;
     super.initialize(csr_base_addr);
 
     // This is for the integrity error test.
