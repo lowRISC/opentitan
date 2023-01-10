@@ -55,6 +55,8 @@
   uvm_test: rom_ctrl_base_test
   uvm_test_seq: rom_ctrl_base_vseq
 
+  run_opts: ["+cdc_instrumentation_enabled=1"]
+
   // List of test specifications.
   tests: [
     {
