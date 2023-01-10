@@ -306,6 +306,7 @@ class RunModes(Modes):
         self.uvm_test_seq = ""
         self.build_mode = ""
         self.run_timeout_mins = None
+        self.run_timeout_multiplier = None
         self.sw_images = []
         self.sw_build_device = ""
         self.sw_build_opts = []
@@ -336,7 +337,8 @@ class Tests(RunModes):
         "sw_images": [],
         "sw_build_device": "",
         "sw_build_opts": [],
-        "run_timeout_mins": None
+        "run_timeout_mins": None,
+        "run_timeout_multiplier": None
     }
 
     def __init__(self, tdict):

@@ -429,6 +429,7 @@ def parse_args():
 
     buildg.add_argument("--build-timeout-mins",
                         type=int,
+                        metavar="MINUTES",
                         help=('Wall-clock timeout for builds in minutes: if '
                               'the build takes longer it will be killed.'))
 
@@ -488,8 +489,17 @@ def parse_args():
 
     rung.add_argument("--run-timeout-mins",
                       type=int,
+                      metavar="MINUTES",
                       help=('Wall-clock timeout for runs in minutes: if '
                             'the run takes longer it will be killed.'))
+
+    rung.add_argument("--run-timeout-multiplier",
+                      type=float,
+                      metavar="MULTIPLIER",
+                      help=('Multiplier for wall-clock run timeout as a '
+                            'floating point number: typical use is to '
+                            'uniformly magnify timeout when running '
+                            'gate-level or foundry tests.'))
 
     rung.add_argument("--verbosity",
                       "-v",
@@ -546,13 +556,12 @@ def parse_args():
 
     waveg = parser.add_argument_group('Dumping waves')
 
-    waveg.add_argument(
-        "--waves",
-        "-w",
-        choices=["fsdb", "shm", "vpd", "vcd", "evcd", "fst"],
-        help=("Enable dumping of waves. It takes an "
-              "argument to pick the desired wave format."
-              "By default, dumping waves is not enabled."))
+    waveg.add_argument("--waves",
+                       "-w",
+                       choices=["fsdb", "shm", "vpd", "vcd", "evcd", "fst"],
+                       help=("Enable dumping of waves. It takes an "
+                             "argument to pick the desired wave format."
+                             "By default, dumping waves is not enabled."))
 
     waveg.add_argument("--max-waves",
                        "-mw",
