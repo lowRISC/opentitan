@@ -167,6 +167,14 @@
       tests: ["{name}_regwen"]
     }
     {
+      name: ram_cfg
+      desc: '''Test `cfg_i` connectivity between sram_ctrl and prim_ram_1p.
+
+               Randomly set `dut.cfg_i` and check its value is propagated to `prim_mem_1p`.'''
+      stage: V2
+      tests: ["{name}_ram_cfg"]
+    }
+    {
       name: stress_all
       desc: '''
             - Combine above sequences in one test to run sequentially, except csr sequence and
