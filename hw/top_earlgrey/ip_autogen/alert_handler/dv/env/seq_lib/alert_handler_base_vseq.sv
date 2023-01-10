@@ -155,7 +155,11 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   // error: after clearing intr_state, intr_state might come back to 1 in the next cycle.
   virtual task check_alert_interrupts();
     bit [TL_DW-1:0] intr;
+    // Wait until there is no ping handshake.
+    // This will avoid the case where interrupt is set and cleared at the same cycle.
+    `DV_WAIT((cfg.alert_handler_vif.alert_ping_reqs || cfg.alert_handler_vif.esc_ping_reqs) == 0)
     csr_rd(.ptr(ral.intr_state), .value(intr));
+    `DV_WAIT((cfg.alert_handler_vif.alert_ping_reqs || cfg.alert_handler_vif.esc_ping_reqs) == 0)
     csr_wr(.ptr(ral.intr_state), .value('1));
   endtask
 

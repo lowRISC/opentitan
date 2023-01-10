@@ -11,8 +11,6 @@ class alert_monitor extends alert_esc_base_monitor;
 
   `uvm_component_utils(alert_monitor)
 
-  bit under_ping_rsp;
-
   `uvm_component_new
 
   virtual task run_phase(uvm_phase phase);
@@ -45,10 +43,6 @@ class alert_monitor extends alert_esc_base_monitor;
       wait_alert_init_done();
     end
   endtask : alert_init_thread
-
-  virtual function void reset_signals();
-    under_ping_rsp = 0;
-  endfunction : reset_signals
 
   // This task called inside forever loop in the `reset_thread` task, intended to be a nonblocking
   // process. However, it can still block alert handshake via the `cfg.alert_init_done` flag.
@@ -90,7 +84,7 @@ class alert_monitor extends alert_esc_base_monitor;
           cov.m_alert_ping_lpg_cg.sample(cfg.en_alert_lpg);
         end
         if (!cfg.en_alert_lpg) begin
-          under_ping_rsp = 1;
+          cfg.under_ping_handshake = 1;
           req = alert_esc_seq_item::type_id::create("req");
           req.alert_esc_type = AlertEscPingTrans;
 
@@ -110,7 +104,7 @@ class alert_monitor extends alert_esc_base_monitor;
                   req.alert_handshake_sta = AlertReceived;
                   wait_ack();
                   req.alert_handshake_sta = AlertAckReceived;
-                  under_ping_rsp = 0;
+                  cfg.under_ping_handshake = 0;
                 end
                 begin
                   wait (under_reset || cfg.en_alert_lpg);
@@ -137,7 +131,7 @@ class alert_monitor extends alert_esc_base_monitor;
               if (cfg.vif.alert_rx_final.ack_p == 1'b1) alert_esc_port.write(req);
             end
           end
-          under_ping_rsp = 0;
+          cfg.under_ping_handshake = 0;
         end
       end
       ping_p = cfg.vif.monitor_cb.alert_rx_final.ping_p;
@@ -151,7 +145,7 @@ class alert_monitor extends alert_esc_base_monitor;
     forever @(cfg.vif.monitor_cb) begin
       // If ping and alert are triggered at the same clock cycle, the alert is considered a ping
       // response
-      if (!alert_p && is_valid_alert() && !under_ping_rsp &&
+      if (!alert_p && is_valid_alert() && !cfg.under_ping_handshake &&
           ping_p == cfg.vif.monitor_cb.alert_rx_final.ping_p) begin
         if (cfg.en_lpg_cov && cfg.en_cov) begin
           cov.m_alert_lpg_cg.sample(cfg.en_alert_lpg);

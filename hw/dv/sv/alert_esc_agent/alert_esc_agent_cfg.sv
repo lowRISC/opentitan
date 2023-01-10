@@ -30,6 +30,9 @@ class alert_esc_agent_cfg extends dv_base_agent_cfg;
   // Control if ping response will timeout or not.
   bit ping_timeout = 0;
 
+  // Monitor will set this value to 1 when the agent is under ping handshake.
+  bit under_ping_handshake = 0;
+
   // dut clk frequency, used to generate alert async_clk frequency
   int clk_freq_mhz;
 

@@ -45,6 +45,7 @@ class alert_esc_base_monitor extends dv_base_monitor #(
 
   // this function can be used in derived classes to reset local signals/variables if needed
   virtual function void reset_signals();
+    cfg.under_ping_handshake = 0;
   endfunction
 
 endclass
