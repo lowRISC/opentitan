@@ -1138,12 +1138,6 @@ module i2c_fsm #(
       // TransmitSetup: target shifts indexed bit onto SDA while SCL is low
       TransmitSetup : begin
         if (scl_i) state_d = TransmitPulse;
-
-        // If we are actively transmitting, that must mean that there are no
-        // unhandled write commands and if there is a command present it must be
-        // a read.
-        `ASSERT(AcqDepthRdCheck_A, (acq_fifo_depth_i > '0) |->
-                (acq_fifo_depth_i == 1) && acq_fifo_rdata_i[0])
       end
       // TransmitPulse: target shifts indexed bit onto SDA while SCL is released
       TransmitPulse : begin
@@ -1348,5 +1342,11 @@ module i2c_fsm #(
 
   // Make sure we never attempt to send a single cycle glitch
   `ASSERT(SclOutputGlitch_A, $rose(scl_o) |-> ##1 scl_o)
+
+  // If we are actively transmitting, that must mean that there are no
+  // unhandled write commands and if there is a command present it must be
+  // a read.
+  `ASSERT(AcqDepthRdCheck_A, ((state_q == TransmitSetup) && (acq_fifo_depth_i > '0)) |->
+          (acq_fifo_depth_i == 1) && acq_fifo_rdata_i[0])
 
 endmodule
