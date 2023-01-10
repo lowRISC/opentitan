@@ -377,9 +377,10 @@ class CompileSim(Deploy):
 
         if self.sim_cfg.args.build_timeout_mins is not None:
             self.build_timeout_mins = self.sim_cfg.args.build_timeout_mins
+
         if self.build_timeout_mins:
-            log.debug("Timeout for job \"%s\" is %d minutes.",
-                      self.name, self.build_timeout_mins)
+            log.debug("Timeout for job \"%s\" is %d minutes.", self.name,
+                      self.build_timeout_mins)
 
     def pre_launch(self):
         # Delete old coverage database directories before building again. We
@@ -445,9 +446,10 @@ class CompileOneShot(Deploy):
 
         if self.sim_cfg.args.build_timeout_mins is not None:
             self.build_timeout_mins = self.sim_cfg.args.build_timeout_mins
+
         if self.build_timeout_mins:
-            log.debug("Timeout for job \"%s\" is %d minutes.",
-                      self.name, self.build_timeout_mins)
+            log.debug("Timeout for job \"%s\" is %d minutes.", self.name,
+                      self.build_timeout_mins)
 
     def get_timeout_mins(self):
         """Returns the timeout in minutes.
@@ -508,6 +510,7 @@ class RunTest(Deploy):
             "run_fail_patterns": False,
             "run_pass_patterns": False,
             "run_timeout_mins": False,
+            "run_timeout_multiplier": False,
         })
 
     def _set_attrs(self):
@@ -530,9 +533,22 @@ class RunTest(Deploy):
 
         if self.sim_cfg.args.run_timeout_mins is not None:
             self.run_timeout_mins = self.sim_cfg.args.run_timeout_mins
+
+        if self.sim_cfg.args.run_timeout_multiplier is not None:
+            self.run_timeout_multiplier = (
+                self.sim_cfg.args.run_timeout_multiplier)
+
+        if self.run_timeout_mins and self.run_timeout_multiplier:
+            self.run_timeout_mins = int(self.run_timeout_mins *
+                                        self.run_timeout_multiplier)
+
+        if self.run_timeout_multiplier:
+            log.debug("Timeout multiplier for job \"%s\" is %f.",
+                      self.full_name, self.run_timeout_multiplier)
+
         if self.run_timeout_mins:
-            log.debug("Timeout for job \"%s\" is %d minutes.",
-                      self.full_name, self.run_timeout_mins)
+            log.debug("Timeout for job \"%s\" is %d minutes.", self.full_name,
+                      self.run_timeout_mins)
 
     def pre_launch(self):
         self.launcher.renew_odir = True
