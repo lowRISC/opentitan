@@ -55,13 +55,13 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
 
   // Request a memory init.
   //
-  virtual task req_mem_init();
+  virtual task req_mem_init(bit wait_done = 1);
     // Use csr_wr rather than csr_update, because we change this reg type to RO in RAL when
     // ctrl_regwen is clear. csr_update won't issue a write to this CSR
     csr_wr(.ptr(ral.ctrl), .value('b11));
 
     // if ctrl_regwen is off, init won't start
-    if (`gmv(ral.ctrl_regwen)) begin
+    if (`gmv(ral.ctrl_regwen) && wait_done) begin
       csr_spinwait(.ptr(ral.status.init_done), .exp_data(1));
       cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
     end
@@ -70,13 +70,13 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
   // Request a new scrambling key from the OTP interface.
   //
   // Will trigger a request to the KDI push_pull agent.
-  virtual task req_scr_key();
+  virtual task req_scr_key(bit wait_valid = 1);
     // If we only do scrambling without re-initializing the mem, data intg will be wrong
     // since it's data intg passthru mem, it doesn't matter, just don't check it.
     cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
     ral.ctrl.renew_scr_key.set(1);
     csr_update(.csr(ral.ctrl));
-    csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1));
+    if (wait_valid) csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1));
   endtask
 
   // Task to perform a single SRAM read at the specified location

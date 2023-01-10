@@ -12,8 +12,8 @@ class sram_ctrl_regwen_vseq extends sram_ctrl_executable_vseq;
   `uvm_object_utils(sram_ctrl_regwen_vseq)
   `uvm_object_new
 
-  task req_mem_init();
-    super.req_mem_init();
+  task req_mem_init(bit wait_done);
+    super.req_mem_init(wait_done);
     `DV_CHECK_RANDOMIZE_FATAL(ral.exec_regwen)
     csr_update(ral.exec_regwen);
     `DV_CHECK_RANDOMIZE_FATAL(ral.ctrl_regwen)
