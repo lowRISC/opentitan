@@ -84,12 +84,12 @@ bool test_main(void) {
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kHmacClock, kDifToggleEnabled, kDifToggleEnabled);
 
-  // Use HMAC in SHA256 mode to generate a 256bit key from `kRefHmacLongKey`.
+  // Use HMAC in SHA256 mode to generate a 256bit key from `kHmacRefLongKey`.
   CHECK_DIF_OK(dif_hmac_mode_sha256_start(&hmac, kHmacTransactionConfig));
-  hmac_testutils_push_message(&hmac, (char *)kRefHmacLongKey,
-                              sizeof(kRefHmacLongKey));
+  hmac_testutils_push_message(&hmac, (char *)kHmacRefLongKey,
+                              sizeof(kHmacRefLongKey));
   LOG_INFO("Pushed message");
-  hmac_testutils_check_message_length(&hmac, sizeof(kRefHmacLongKey) * 8);
+  hmac_testutils_check_message_length(&hmac, sizeof(kHmacRefLongKey) * 8);
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kHmacClock, kDifToggleDisabled, kDifToggleEnabled);
   LOG_INFO("Cleared hints");
@@ -100,24 +100,24 @@ bool test_main(void) {
 
   dif_hmac_digest_t key_digest;
   hmac_testutils_finish_polled(&hmac, &key_digest);
-  CHECK_ARRAYS_EQ(key_digest.digest, kRefExpectedShaDigest.digest,
+  CHECK_ARRAYS_EQ(key_digest.digest, kHmacRefExpectedLongKeyDigest.digest,
                   ARRAYSIZE(key_digest.digest));
 
   // Generate HMAC final digest, using the resulted SHA256 digest over the
-  // `kRefHmacLongKey`.
+  // `kHmacRefLongKey`.
   CHECK_DIF_OK(dif_hmac_mode_hmac_start(&hmac, (uint8_t *)&key_digest.digest[0],
                                         kHmacTransactionConfig));
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kHmacClock, kDifToggleDisabled, kDifToggleEnabled);
   LOG_INFO("Cleared hints");
-  hmac_testutils_push_message(&hmac, kRefData, sizeof(kRefData));
-  hmac_testutils_check_message_length(&hmac, sizeof(kRefData) * 8);
+  hmac_testutils_push_message(&hmac, kHmacRefData, sizeof(kHmacRefData));
+  hmac_testutils_check_message_length(&hmac, sizeof(kHmacRefData) * 8);
   CHECK_DIF_OK(dif_hmac_process(&hmac));
   LOG_INFO("Process");
 
   handle_end_of_process(kHmacClock);
 
-  hmac_testutils_finish_and_check_polled(&hmac, &kRefExpectedHmacDigest);
+  hmac_testutils_finish_and_check_polled(&hmac, &kHmacRefExpectedDigest);
 
   return true;
 }
