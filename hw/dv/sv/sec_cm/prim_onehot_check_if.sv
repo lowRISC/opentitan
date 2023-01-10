@@ -50,14 +50,17 @@ interface prim_onehot_check_if #(
 
       cp_onehot_fault: coverpoint onehot_fault_type {
         option.weight = AddrWidth > 1;  // set to 0 to disable it if it's not supported
+        option.at_least = AddrWidth > 1; // If 0, we expect 0 hits.
         bins hit = {OnehotFault};
       }
       cp_onehot_enable_fault: coverpoint onehot_fault_type {
         option.weight = EnableCheck;  // set to 0 to disable it if it's not supported
+        option.at_least = EnableCheck; // If 0, we expect 0 hits.
         bins hit = {OnehotEnableFault};
       }
       cp_onehot_addr_fault: coverpoint onehot_fault_type {
         option.weight = AddrCheck;  // set to 0 to disable it if it's not supported
+        option.at_least = AddrCheck; // If 0, we expect 0 hits.
         bins hit = {OnehotAddrFault};
       }
     endgroup
