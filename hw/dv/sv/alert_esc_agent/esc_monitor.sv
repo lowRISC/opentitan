@@ -13,8 +13,6 @@ class esc_monitor extends alert_esc_base_monitor;
 
   `uvm_component_new
 
-  bit under_esc_ping;
-
   virtual task run_phase(uvm_phase phase);
     fork
       esc_thread();
@@ -23,10 +21,6 @@ class esc_monitor extends alert_esc_base_monitor;
       sig_int_fail_thread();
     join_none
   endtask : run_phase
-
-  virtual function void reset_signals();
-    under_esc_ping = 0;
-  endfunction
 
   virtual task esc_thread();
     alert_esc_seq_item req, req_clone;
@@ -41,7 +35,7 @@ class esc_monitor extends alert_esc_base_monitor;
         // esc_p/n only goes high for a cycle, detect it is a ping signal
         if (get_esc() === 1'b0) begin
           int ping_cnter = 1;
-          under_esc_ping = 1;
+          cfg.under_ping_handshake = 1;
           req.alert_esc_type = AlertEscPingTrans;
           alert_esc_port.write(req);
           check_esc_resp(.req(req), .is_ping(1));
@@ -70,7 +64,7 @@ class esc_monitor extends alert_esc_base_monitor;
           end
             // wait a clk cycle to enter the esc_p/n mode
           if (cfg.get_esc_en()) @(cfg.vif.monitor_cb);
-          under_esc_ping = 0;
+          cfg.under_ping_handshake = 0;
         end
 
         // when it is not a ping, there are two preconditions to reach this code:
@@ -110,7 +104,7 @@ class esc_monitor extends alert_esc_base_monitor;
   virtual task unexpected_resp_thread();
     alert_esc_seq_item req;
     forever @(cfg.vif.monitor_cb) begin
-      while (get_esc() === 1'b0 && !under_esc_ping) begin
+      while (get_esc() === 1'b0 && !cfg.under_ping_handshake) begin
         @(cfg.vif.monitor_cb);
         if (cfg.vif.monitor_cb.esc_rx.resp_p === 1'b1 &&
             cfg.vif.monitor_cb.esc_rx.resp_n === 1'b0 && !under_reset) begin
