@@ -143,7 +143,22 @@
       stage: V2
       tests: ["alert_handler_entropy_stress"]
     }
-  ]
+
+    {
+      name: alert_handler_alert_accum_saturation
+      desc: '''
+            This sequence forces all four alert classes' accumulate counters to a large value that
+            is close to the max saturation value.
+            Then the sequence triggers alerts until the count saturates.
+
+            Checks:
+            - Check `accum_cnt` register does not overflow, but stays at the max value.
+            - Check the correct interrupt fires if even the count saturates.
+            '''
+      stage: V2
+      tests: ["alert_handler_alert_accum_saturation"]
+    }
+ ]
 
   covergroups: [
     {

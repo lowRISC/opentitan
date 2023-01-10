@@ -124,6 +124,15 @@
       run_opts: ["+test_timeout_ns=500_000_000"]
       run_timeout_mins: 120
     }
+
+    {
+      name: alert_handler_alert_accum_saturation
+      uvm_test_seq: alert_handler_alert_accum_saturation_vseq
+      // This is a direct sequence that forces the accum_cnt to a large number, so does not support
+      // scb checkings.
+      run_opts: ["+en_scb=0"]
+      reseed: 20
+    }
   ]
 
   // List of regressions.
