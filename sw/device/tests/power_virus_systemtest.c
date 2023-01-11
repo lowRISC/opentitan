@@ -61,6 +61,7 @@ static dif_uart_t uart_1;
 static dif_uart_t uart_2;
 static dif_uart_t uart_3;
 
+static const dif_uart_t *uart_handles[] = {&uart_1, &uart_2, &uart_3};
 static dif_kmac_operation_state_t kmac_operation_state;
 
 /**
@@ -101,6 +102,10 @@ enum {
   kI2c1DeviceAddress1 = 0x44,
   kI2c2DeviceAddress0 = 0x55,
   kI2c2DeviceAddress1 = 0x66,
+  /**
+   * UART parameters
+   */
+  kUartFifoDepth = 32,
 };
 
 /**
@@ -504,13 +509,12 @@ static void crypto_data_load_task(void *task_parameters) {
 static void comms_data_load_task(void *task_parameters) {
   LOG_INFO("Loading communication block FIFOs with data ...");
   size_t bytes_written;
-  CHECK(ARRAYSIZE(kUartMessage) == 32);
-  dif_uart_t uart_handles[] = {uart_1, uart_2, uart_3};
+  CHECK(ARRAYSIZE(kUartMessage) == kUartFifoDepth);
 
   // Load data into UART FIFO.
   for (size_t i = 0; i < ARRAYSIZE(uart_handles); ++i) {
     bytes_written = 0;
-    CHECK_DIF_OK(dif_uart_bytes_send(&uart_handles[i], kUartMessage,
+    CHECK_DIF_OK(dif_uart_bytes_send(uart_handles[i], kUartMessage,
                                      ARRAYSIZE(kUartMessage), &bytes_written));
     CHECK(bytes_written == ARRAYSIZE(kUartMessage));
   }
@@ -578,9 +582,29 @@ static void max_power_task(void *task_parameters) {
 
   // Toggle GPIO pin to indicate we are in max power consumption.
   CHECK_DIF_OK(dif_gpio_write(&gpio, 0, true));
+  // TODO (#14814): confirm AES is the fastest throughput cryto block.
+  // Otherwise, wait for that block to finish processing instead.
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusOutputValid, true,
                                 kTestTimeoutMicros);
   CHECK_DIF_OK(dif_gpio_write(&gpio, 0, false));
+
+  // ***************************************************************************
+  // Check operation results.
+  // ***************************************************************************
+  uint8_t received_uart_data[kUartFifoDepth];
+  size_t num_uart_rx_bytes;
+  for (size_t i = 0; i < ARRAYSIZE(uart_handles); ++i) {
+    CHECK_DIF_OK(
+        dif_uart_rx_bytes_available(uart_handles[i], &num_uart_rx_bytes));
+    // Note, we don't care if all bytes have been transmitted out of the UART by
+    // the time the fastest processing crypto block (i.e., the AES) has
+    // completed. Likely, we won't have transimitted all data since the UART is
+    // quite a bit slower. We just check that what was transmitted is correct.
+    memset((void *)received_uart_data, 0, kUartFifoDepth);
+    CHECK_DIF_OK(dif_uart_bytes_receive(uart_handles[i], num_uart_rx_bytes,
+                                        received_uart_data, NULL));
+    CHECK_ARRAYS_EQ(received_uart_data, kUartMessage, num_uart_rx_bytes);
+  }
 
   OTTF_TASK_DELETE_SELF_OR_DIE;
 }
@@ -620,8 +644,8 @@ bool test_main(void) {
   // ***************************************************************************
   // Yield control flow to the highest priority task in the run queue. Since the
   // tasks created above all have a higher priority level than the current
-  // "test_main" task, execution will not be returned to the current task until
-  // the above tasks have been deleted.
+  // "test_main" task, and no tasks block, execution will not be returned to the
+  // current task until the above tasks have been deleted.
   // ***************************************************************************
   LOG_INFO("Yielding execution to another task.");
   ottf_task_yield();
