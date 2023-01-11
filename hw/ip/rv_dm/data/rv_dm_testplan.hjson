@@ -171,7 +171,7 @@
     {
       name: jtag_dmi_failed_op
       desc: '''
-            Verify that the a failed DMI op is reflected properly in dtmcs register.
+            Verify that a failed DMI op is reflected properly in dtmcs register.
 
             - Issue a random legal DMI write to a chosen DMI register.
             - Before that access completes, issue another random legal DMI access.
@@ -270,9 +270,9 @@
             - Set pinmux_hw_debug_en to non-true value.
             - Write a different value to the same DMI CSR.
             - Attempt to read that DMI CSR - it should read all 0s.
-            - Note that the above steps are rendered moot becuase the JTAG DTM itself will not
+            - Note that the above steps are rendered moot because the JTAG DTM itself will not
               receive any incoming JTAG transactions.
-            - Set pinmux_hw_debug_en to true and again, read the DMI CSR - it should reflect the
+            - Set pinmux_hw_debug_en to true and again read the DMI CSR - it should reflect the
               originally written value.
             '''
       stage: V2
