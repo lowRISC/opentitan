@@ -90,7 +90,7 @@ def _otp_json_impl(ctx):
     for partition in otp["partitions"]:
         if "items" in partition.keys():
             items = partition["items"]
-            partition["items"] = [{"name": k, "value": items[k]} for k in items.keys()]
+            partition["items"] = [{"name": k, "value": v} for k, v in items.items()]
 
     file = ctx.actions.declare_file("{}.json".format(ctx.attr.name))
     ctx.actions.write(file, json.encode_indent(otp))
