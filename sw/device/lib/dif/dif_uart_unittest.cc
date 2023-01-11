@@ -200,6 +200,97 @@ TEST_F(WatermarkTxSetTest, Success) {
   EXPECT_DIF_OK(dif_uart_watermark_tx_set(&uart_, kDifUartWatermarkByte16));
 }
 
+class SetEnableTest : public UartTest {};
+
+TEST_F(SetEnableTest, NullArg) {
+  EXPECT_DIF_BADARG(
+      dif_uart_set_enable(nullptr, kDifUartDatapathAll, kDifToggleEnabled));
+}
+
+TEST_F(SetEnableTest, BadEnabled) {
+  EXPECT_DIF_BADARG(dif_uart_set_enable(&uart_, kDifUartDatapathAll,
+                                        static_cast<dif_toggle_t>(2)));
+}
+
+TEST_F(SetEnableTest, BadDatapath) {
+  EXPECT_READ32(UART_CTRL_REG_OFFSET, 0);
+  EXPECT_DIF_BADARG(dif_uart_set_enable(
+      &uart_, static_cast<dif_uart_datapath_t>(kDifUartDatapathAll + 1),
+      kDifToggleEnabled));
+}
+
+TEST_F(SetEnableTest, SuccessRxEnabledDisabled) {
+  EXPECT_READ32(UART_CTRL_REG_OFFSET, {
+                                          {UART_CTRL_RX_BIT, 0},
+                                          {UART_CTRL_TX_BIT, 1},
+                                      });
+  EXPECT_WRITE32(UART_CTRL_REG_OFFSET, {
+                                           {UART_CTRL_RX_BIT, 1},
+                                           {UART_CTRL_TX_BIT, 1},
+                                       });
+  EXPECT_DIF_OK(
+      dif_uart_set_enable(&uart_, kDifUartDatapathRx, kDifToggleEnabled));
+
+  EXPECT_READ32(UART_CTRL_REG_OFFSET, {
+                                          {UART_CTRL_RX_BIT, 1},
+                                          {UART_CTRL_TX_BIT, 1},
+                                      });
+  EXPECT_WRITE32(UART_CTRL_REG_OFFSET, {
+                                           {UART_CTRL_RX_BIT, 0},
+                                           {UART_CTRL_TX_BIT, 1},
+                                       });
+  EXPECT_DIF_OK(
+      dif_uart_set_enable(&uart_, kDifUartDatapathRx, kDifToggleDisabled));
+}
+
+TEST_F(SetEnableTest, SuccessTxEnabledDisabled) {
+  EXPECT_READ32(UART_CTRL_REG_OFFSET, {
+                                          {UART_CTRL_RX_BIT, 1},
+                                          {UART_CTRL_TX_BIT, 0},
+                                      });
+  EXPECT_WRITE32(UART_CTRL_REG_OFFSET, {
+                                           {UART_CTRL_RX_BIT, 1},
+                                           {UART_CTRL_TX_BIT, 1},
+                                       });
+  EXPECT_DIF_OK(
+      dif_uart_set_enable(&uart_, kDifUartDatapathTx, kDifToggleEnabled));
+
+  EXPECT_READ32(UART_CTRL_REG_OFFSET, {
+                                          {UART_CTRL_RX_BIT, 1},
+                                          {UART_CTRL_TX_BIT, 1},
+                                      });
+  EXPECT_WRITE32(UART_CTRL_REG_OFFSET, {
+                                           {UART_CTRL_RX_BIT, 1},
+                                           {UART_CTRL_TX_BIT, 0},
+                                       });
+  EXPECT_DIF_OK(
+      dif_uart_set_enable(&uart_, kDifUartDatapathTx, kDifToggleDisabled));
+}
+
+TEST_F(SetEnableTest, SuccessRxTxEnabledDisabled) {
+  EXPECT_READ32(UART_CTRL_REG_OFFSET, {
+                                          {UART_CTRL_RX_BIT, 0},
+                                          {UART_CTRL_TX_BIT, 0},
+                                      });
+  EXPECT_WRITE32(UART_CTRL_REG_OFFSET, {
+                                           {UART_CTRL_RX_BIT, 1},
+                                           {UART_CTRL_TX_BIT, 1},
+                                       });
+  EXPECT_DIF_OK(
+      dif_uart_set_enable(&uart_, kDifUartDatapathAll, kDifToggleEnabled));
+
+  EXPECT_READ32(UART_CTRL_REG_OFFSET, {
+                                          {UART_CTRL_RX_BIT, 1},
+                                          {UART_CTRL_TX_BIT, 1},
+                                      });
+  EXPECT_WRITE32(UART_CTRL_REG_OFFSET, {
+                                           {UART_CTRL_RX_BIT, 0},
+                                           {UART_CTRL_TX_BIT, 0},
+                                       });
+  EXPECT_DIF_OK(
+      dif_uart_set_enable(&uart_, kDifUartDatapathAll, kDifToggleDisabled));
+}
+
 class BytesSendTest : public UartTest {
  protected:
   /**
