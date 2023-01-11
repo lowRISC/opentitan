@@ -152,7 +152,7 @@
             - Read the target DMI register to verify the write did not succeed.
             '''
       stage: V2
-      tests: []
+      tests: [] // TODO(#15670)
     }
     {
       name: jtag_dtm_idle_hint
@@ -166,7 +166,7 @@
               successfully, without dmistat reflecting an error.
             '''
       stage: V2
-      tests: []
+      tests: [] // TODO(#17033)
     }
     {
       name: jtag_dmi_failed_op
@@ -182,7 +182,7 @@
             - TBO - unclear how to generate other types of failed DMI transactions.
             '''
       stage: V2
-      tests: []
+      tests: [] // TODO(#17034)
     }
     {
       name: jtag_dmi_dm_inactive
@@ -194,7 +194,7 @@
             - Read all DMI registers back and verify they reflect POR values.
             '''
       stage: V2
-      tests: []
+      tests: [] // TODO(#17035)
     }
 
     {
@@ -276,7 +276,7 @@
               originally written value.
             '''
       stage: V2
-      tests: []
+      tests: [] // TODO(#15667)
     }
 
     {
@@ -294,7 +294,7 @@
             - Verify via assertion checks, no transactions were seen on the SBA TL interface.
             '''
       stage: V2
-      tests: []
+      tests: [] // TODO(#15668)
     }
     {
       name: debug_mem_debug_disabled
@@ -312,7 +312,7 @@
               originally written value.
             '''
       stage: V2
-      tests: []
+      tests: [] // TODO (#15669)
     }
     {
       name: ndmreset_req
@@ -336,7 +336,7 @@
               written value, proving that ndmreset assertion had no effect on them.
             '''
       stage: V2
-      tests: []
+      tests: [] // TODO(#15666)
     }
     {
       name: hart_unavail
@@ -350,7 +350,7 @@
               `unavailable` input value
             '''
       stage: V2
-      tests: []
+      tests: [] // TODO(#17036)
     }
     {
       name: tap_ctrl_transitions
@@ -360,7 +360,7 @@
             This test should verify that the standardized JTAG TAP FSM is working correctly.
             '''
       stage: V2
-      tests: []
+      tests: [] // TODO(#17032)
     }
     {
       name: stress_all
