@@ -89,6 +89,11 @@
       value: "{top_dv_path}/cov/unr.cfg"
     }
 
+    // Used for xprop config.
+    {
+      name: vcs_xprop_cfg_file
+      value: "{top_dv_path}/vcs_xprop.cfg"
+    }
     // This defaults to 'ip' in `hw/data/common_project_cfg.hjson`.
     {
       name: design_level
