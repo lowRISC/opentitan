@@ -266,6 +266,24 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
   for (size_t i = 0; i < cmd_len; ++i) {
     abs_mmio_write32(reg_address, cmd.seed_material->data[i]);
   }
+
+  // Poll the "command request done" interrupt bit. Once it is set, this
+  // signals that the command has been processed and the "status" bit is
+  // updated.
+  do {
+    reg = abs_mmio_read32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET);
+  } while (!bitfield_bit32_read(reg, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT));
+
+  // Clear the interrupt bit by writing 1.
+  reg = bitfield_bit32_write(0, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT, true);
+  abs_mmio_write32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET, reg);
+
+  // Check the "status" bit, which will be 1 only if there was an error.
+  reg = abs_mmio_read32(kBaseCsrng + CSRNG_SW_CMD_STS_REG_OFFSET);
+  if (bitfield_bit32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_BIT)) {
+    return INTERNAL();
+  }
+
   return OK_STATUS();
 }
 
