@@ -319,19 +319,26 @@ dif_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
 }
 
 dif_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
-                                 dif_uart_fifo_reset_t reset) {
+                                 dif_uart_datapath_t fifo) {
   if (uart == NULL) {
     return kDifBadArg;
   }
 
   uint32_t reg = mmio_region_read32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET);
 
-  if (reset == kDifUartFifoResetRx || reset == kDifUartFifoResetAll) {
-    reg = bitfield_bit32_write(reg, UART_FIFO_CTRL_RXRST_BIT, true);
-  }
-
-  if (reset == kDifUartFifoResetTx || reset == kDifUartFifoResetAll) {
-    reg = bitfield_bit32_write(reg, UART_FIFO_CTRL_TXRST_BIT, true);
+  switch (fifo) {
+    case kDifUartDatapathRx:
+      reg = bitfield_bit32_write(reg, UART_FIFO_CTRL_RXRST_BIT, true);
+      break;
+    case kDifUartDatapathTx:
+      reg = bitfield_bit32_write(reg, UART_FIFO_CTRL_TXRST_BIT, true);
+      break;
+    case kDifUartDatapathAll:
+      reg = bitfield_bit32_write(reg, UART_FIFO_CTRL_RXRST_BIT, true);
+      reg = bitfield_bit32_write(reg, UART_FIFO_CTRL_TXRST_BIT, true);
+      break;
+    default:
+      return kDifBadArg;
   }
 
   mmio_region_write32(uart->base_addr, UART_FIFO_CTRL_REG_OFFSET, reg);
