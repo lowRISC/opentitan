@@ -287,13 +287,14 @@ static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
   LOG_INFO("Initializing the UART.");
 
   CHECK_DIF_OK(dif_uart_init(base_addr, uart));
-  CHECK_DIF_OK(
-      dif_uart_configure(uart, (dif_uart_config_t){
-                                   .baudrate = kUartBaudrate,
-                                   .clk_freq_hz = kClockFreqPeripheralHz,
-                                   .parity_enable = kDifToggleDisabled,
-                                   .parity = kDifUartParityEven,
-                               }));
+  CHECK_DIF_OK(dif_uart_configure(uart,
+                                  (dif_uart_config_t){
+                                      .baudrate = kUartBaudrate,
+                                      .clk_freq_hz = kClockFreqPeripheralHz,
+                                      .parity_enable = kDifToggleDisabled,
+                                      .parity = kDifUartParityEven,
+                                  },
+                                  kDifToggleEnabled));
 
   // Set the TX and RX watermark to 16 bytes.
   CHECK_DIF_OK(dif_uart_watermark_tx_set(uart, kDifUartWatermarkByte16));

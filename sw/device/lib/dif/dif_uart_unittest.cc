@@ -59,21 +59,25 @@ class UartTest : public Test, public MmioTest {
 class ConfigTest : public UartTest {};
 
 TEST_F(ConfigTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_uart_configure(nullptr, config_));
+  EXPECT_DIF_BADARG(dif_uart_configure(nullptr, config_, kDifToggleEnabled));
 }
 
-TEST_F(ConfigTest, Default) {
+TEST_F(ConfigTest, DefaultEnabled) {
   ExpectDeviceReset();
-
   EXPECT_WRITE32(UART_CTRL_REG_OFFSET, {
                                            {UART_CTRL_TX_BIT, true},
                                            {UART_CTRL_RX_BIT, true},
                                            {UART_CTRL_NCO_OFFSET, 1},
                                        });
-
   EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_uart_configure(&uart_, config_, kDifToggleEnabled));
+}
 
-  EXPECT_DIF_OK(dif_uart_configure(&uart_, config_));
+TEST_F(ConfigTest, DefaultDisabled) {
+  ExpectDeviceReset();
+  EXPECT_WRITE32(UART_CTRL_REG_OFFSET, {{UART_CTRL_NCO_OFFSET, 1}});
+  EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_uart_configure(&uart_, config_, kDifToggleDisabled));
 }
 
 TEST_F(ConfigTest, ParityEven) {
@@ -91,7 +95,7 @@ TEST_F(ConfigTest, ParityEven) {
 
   EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
 
-  EXPECT_DIF_OK(dif_uart_configure(&uart_, config_));
+  EXPECT_DIF_OK(dif_uart_configure(&uart_, config_, kDifToggleEnabled));
 }
 
 TEST_F(ConfigTest, ParityOdd) {
@@ -110,7 +114,7 @@ TEST_F(ConfigTest, ParityOdd) {
 
   EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
 
-  EXPECT_DIF_OK(dif_uart_configure(&uart_, config_));
+  EXPECT_DIF_OK(dif_uart_configure(&uart_, config_, kDifToggleEnabled));
 }
 
 class WatermarkRxSetTest : public UartTest {};

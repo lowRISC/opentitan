@@ -20,15 +20,14 @@ bool test_main(void) {
   dif_uart_t uart;
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
-  CHECK(dif_uart_configure(&uart,
-                           (dif_uart_config_t){
-                               .baudrate = kUartBaudrate,
-                               .clk_freq_hz = kClockFreqPeripheralHz,
-                               .parity_enable = kDifToggleDisabled,
-                               .parity = kDifUartParityEven,
-                           }) == kDifOk,
-        "UART config failed!");
-
+  CHECK_DIF_OK(dif_uart_configure(&uart,
+                                  (dif_uart_config_t){
+                                      .baudrate = kUartBaudrate,
+                                      .clk_freq_hz = kClockFreqPeripheralHz,
+                                      .parity_enable = kDifToggleDisabled,
+                                      .parity = kDifUartParityEven,
+                                  },
+                                  kDifToggleEnabled));
   CHECK_DIF_OK(
       dif_uart_loopback_set(&uart, kDifUartLoopbackSystem, kDifToggleEnabled));
   CHECK_DIF_OK(dif_uart_fifo_reset(&uart, kDifUartFifoResetAll));
