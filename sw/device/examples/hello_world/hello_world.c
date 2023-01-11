@@ -59,14 +59,15 @@ void _ottf_main(void) {
 
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
-  CHECK_DIF_OK(dif_uart_configure(&uart,
-                                  (dif_uart_config_t){
-                                      .baudrate = kUartBaudrate,
-                                      .clk_freq_hz = kClockFreqPeripheralHz,
-                                      .parity_enable = kDifToggleDisabled,
-                                      .parity = kDifUartParityEven,
-                                  },
-                                  kDifToggleEnabled));
+  CHECK_DIF_OK(
+      dif_uart_configure(&uart, (dif_uart_config_t){
+                                    .baudrate = kUartBaudrate,
+                                    .clk_freq_hz = kClockFreqPeripheralHz,
+                                    .parity_enable = kDifToggleDisabled,
+                                    .parity = kDifUartParityEven,
+                                    .tx_enable = kDifToggleEnabled,
+                                    .rx_enable = kDifToggleEnabled,
+                                }));
   base_uart_stdout(&uart);
 
   CHECK_DIF_OK(dif_spi_device_init_handle(

@@ -88,10 +88,10 @@ static size_t uart_bytes_receive(const dif_uart_t *uart, size_t bytes_requested,
 }
 
 dif_result_t dif_uart_configure(const dif_uart_t *uart,
-                                dif_uart_config_t config,
-                                dif_toggle_t enabled) {
+                                dif_uart_config_t config) {
   if (uart == NULL || config.baudrate == 0 || config.clk_freq_hz == 0 ||
-      !dif_is_valid_toggle(enabled)) {
+      !dif_is_valid_toggle(config.tx_enable) ||
+      !dif_is_valid_toggle(config.rx_enable)) {
     return kDifBadArg;
   }
 
@@ -130,8 +130,10 @@ dif_result_t dif_uart_configure(const dif_uart_t *uart,
   // Set baudrate, enable RX and TX, configure parity.
   uint32_t reg = 0;
   reg = bitfield_field32_write(reg, UART_CTRL_NCO_FIELD, nco_masked);
-  if (dif_toggle_to_bool(enabled)) {
+  if (dif_toggle_to_bool(config.tx_enable)) {
     reg = bitfield_bit32_write(reg, UART_CTRL_TX_BIT, true);
+  }
+  if (dif_toggle_to_bool(config.rx_enable)) {
     reg = bitfield_bit32_write(reg, UART_CTRL_RX_BIT, true);
   }
   if (config.parity_enable == kDifToggleEnabled) {
