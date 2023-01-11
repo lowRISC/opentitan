@@ -297,24 +297,6 @@
       tests: [] // TODO(#15668)
     }
     {
-      name: debug_mem_debug_disabled
-      desc: '''
-            Verify that access to the debug mem via TL host interface results in error response.
-
-            - Set lc_hw_debug_en to true and activate the dm.
-            - Write a known value to a randomly picked debug mem CSR.
-            - Set lc_hw_debug_en to non-true value.
-            - Attempt to write a different value to the same CSR - verify error response.
-            - Attempt to read that CSR - verify error response.
-            - Attempt a number of legal accesses to any of the CSRs or memories in this space - they
-              all should result in error response.
-            - Set lc_hw_debug_en to true and again, read the debug mem CSR - it should reflect the
-              originally written value.
-            '''
-      stage: V2
-      tests: [] // TODO (#15669)
-    }
-    {
       name: ndmreset_req
       desc: '''
             Verify that the debugger can issue a non-debug reset to the rest of the system.
