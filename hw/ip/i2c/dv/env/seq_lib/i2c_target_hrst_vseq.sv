@@ -47,8 +47,8 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
             `DV_WAIT(cfg.m_i2c_agent_cfg.got_stop,, cfg.spinwait_timeout_ns, "target_hrst_vseq")
             cfg.m_i2c_agent_cfg.got_stop = 0;
           end
-          // exclude timing param update right after runt transaction
-          if (i != (reset_txn_num + 1)) begin
+          // exclude timing param update during and right after runt transaction
+          if (!(i inside {reset_txn_num, (reset_txn_num + 1)})) begin
             get_timing_values();
             program_registers();
           end
