@@ -419,5 +419,30 @@
       stage: V2
       tests: ["i2c_target_stretch"]
     }
+    {
+      name: bad_address
+      desc: '''
+            Test sends transactions with a randomized address including two legal (programmed) addresses.
+            Run this test with dut target mode.
+
+            Checking:
+            All transactions with illegal addresses should be dropped silently and should not disturb
+            transactions with legal address
+            '''
+      stage: V2
+      tests: ["i2c_target_bad_addr"]
+    }
+    {
+      name: runt_frame
+      desc: '''
+            Create tests to interrupt normal transaction by a new 'start' or reset.
+            Run those test with dut host and target mode if possible.
+
+            Checking:
+            Dut can accept a new transaction after discarding interrupted transaction.
+            '''
+      stage: V2
+      tests: ["i2c_target_hrst"]
+    }
   ]
 }
