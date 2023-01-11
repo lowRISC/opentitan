@@ -222,6 +222,39 @@ dif_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
   return kDifOk;
 }
 
+dif_result_t dif_uart_set_enable(const dif_uart_t *uart,
+                                 dif_uart_datapath_t datapath,
+                                 dif_toggle_t enabled) {
+  if (uart == NULL || !dif_is_valid_toggle(enabled)) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = mmio_region_read32(uart->base_addr, UART_CTRL_REG_OFFSET);
+
+  switch (datapath) {
+    case kDifUartDatapathRx:
+      reg = bitfield_bit32_write(reg, UART_CTRL_RX_BIT,
+                                 dif_toggle_to_bool(enabled));
+      break;
+    case kDifUartDatapathTx:
+      reg = bitfield_bit32_write(reg, UART_CTRL_TX_BIT,
+                                 dif_toggle_to_bool(enabled));
+      break;
+    case kDifUartDatapathAll:
+      reg = bitfield_bit32_write(reg, UART_CTRL_RX_BIT,
+                                 dif_toggle_to_bool(enabled));
+      reg = bitfield_bit32_write(reg, UART_CTRL_TX_BIT,
+                                 dif_toggle_to_bool(enabled));
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  mmio_region_write32(uart->base_addr, UART_CTRL_REG_OFFSET, reg);
+
+  return kDifOk;
+}
+
 dif_result_t dif_uart_bytes_send(const dif_uart_t *uart, const uint8_t *data,
                                  size_t bytes_requested,
                                  size_t *bytes_written) {

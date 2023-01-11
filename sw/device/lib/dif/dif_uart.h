@@ -174,6 +174,18 @@ dif_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
                                        dif_uart_watermark_t watermark);
 
 /**
+ * Sets the enablement state of one or both (TX/RX) datapaths.
+ *
+ * @param uart A UART handle.
+ * @param datapath The datapath to set the enablement state of (RX, TX or both).
+ * @param enabled The enablement state to set.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_uart_set_enable(const dif_uart_t *uart,
+                                 dif_uart_datapath_t datapath,
+                                 dif_toggle_t enabled);
+/**
  * Sends bytes over UART.
  *
  * Can be used from inside an UART ISR.
@@ -270,10 +282,8 @@ dif_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
                                          size_t *num_bytes);
 
 /**
- * UART TX reset RX/TX FIFO.
- *
- * Resets one or both FIFOs. If the byte is in transit, this function will
- * not abort the operation.
+ * Resets one or both datapath FIFOs. If the byte is in transit, this function
+ * will not abort the operation.
  *
  * @param uart A UART handle.
  * @param fifo The FIFO to reset (RX, TX or both).
