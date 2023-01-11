@@ -11,7 +11,7 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
-load("//rules:const.bzl", "CONST", "error_redact", "get_lc_items", "hex", "lcv_hw_to_sw")
+load("//rules:const.bzl", "CONST", "error_redact", "get_lc_items", "hex", "hex_digits", "lcv_hw_to_sw")
 load(
     "//rules:opentitan.bzl",
     "bin_to_vmem",
@@ -185,7 +185,7 @@ opentitan_functest(
         # Note: This test never prints a failure message so it will fail only
         # when it times out.
         exit_failure = "NO_FAILURE_MESSAGE",
-        exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
+        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
     ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
@@ -199,7 +199,7 @@ opentitan_functest(
     verilator = verilator_params(
         timeout = "eternal",
         exit_failure = "NO_FAILURE_MESSAGE",
-        exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
+        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     deps = [
@@ -290,7 +290,7 @@ rom_e2e_keymgr_init_configs = [
             otp_partition(
                 name = "OWNER_SW_CFG",
                 items = {
-                    "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": "0x{}".format(hex(config["value"])),
+                    "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": "0x{}".format(hex_digits(config["value"])),
                 },
             ),
         ],
@@ -574,7 +574,7 @@ opentitan_functest(
     name = "rom_ext_a_flash_b",
     cw310 = cw310_params(
         exit_failure = MSG_STARTING_ROM_EXT,
-        exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.STORE_ACCESS)),
+        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
     ),
     key = "multislot",
     ot_flash_binary = ":rom_ext_a_flash_b_image",
@@ -595,7 +595,7 @@ opentitan_functest(
     name = "rom_ext_b_flash_a",
     cw310 = cw310_params(
         exit_failure = MSG_STARTING_ROM_EXT,
-        exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.STORE_ACCESS)),
+        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
     ),
     key = "multislot",
     ot_flash_binary = ":rom_ext_b_flash_a_image",
@@ -637,7 +637,7 @@ opentitan_functest(
     name = "rom_ext_a_flash_a_bad_addr_trans",
     cw310 = cw310_params(
         exit_failure = MSG_STARTING_ROM_EXT,
-        exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
+        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
     ),
     ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a_bad_address_translation",
     targets = ["cw310_rom"],
@@ -661,7 +661,7 @@ opentitan_functest(
     name = "sigverify_key_auth",
     cw310 = cw310_params(
         exit_failure = MSG_PASS,
-        exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.SIGVERIFY.BAD_KEY)),
+        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_KEY)),
     ),
     key = "unauthorized_0",
     ot_flash_binary = ":empty_test_slot_a",
@@ -699,8 +699,8 @@ manifest({
         bitstream = ":bitstream_shutdown_output_{}".format(lc_state),
         exit_failure = MSG_PASS,
         exit_success = MSG_TEMPLATE_BFV_LCV.format(
-            hex(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER),
-            hex(lc_state_val),
+            hex_digits(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER),
+            hex_digits(lc_state_val),
         ),
         otp = ":otp_img_shutdown_output_{}".format(lc_state),
         tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
@@ -820,7 +820,7 @@ BOOT_POLICY_NEWER_CASES = [
     ),
     cw310 = cw310_params(
         bitstream = ":bitstream_boot_policy_newer_{}".format(lc_state.lower()),
-        exit_success = t["exit_success"].format(hex(lc_state_val)),
+        exit_success = t["exit_success"].format(hex_digits(lc_state_val)),
         tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
     ),
     key = "multislot",
@@ -845,7 +845,7 @@ BOOT_POLICY_ROLLBACK_CASES = [
     {
         "a": 0,
         "b": 0,
-        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.ROLLBACK)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
     },
     {
         "a": 0,
@@ -1153,46 +1153,46 @@ otp_json(
             name = "OWNER_SW_CFG",
             items = {
                 # Enable bootstrap.
-                "OWNER_SW_CFG_ROM_BOOTSTRAP_EN": "0x{}".format(hex(CONST.TRUE)),
+                "OWNER_SW_CFG_ROM_BOOTSTRAP_EN": hex(CONST.TRUE),
                 # Report errors without any redaction.
-                "OWNER_SW_CFG_ROM_ERROR_REPORTING": "0x{}".format(hex(CONST.SHUTDOWN.REDACT.NONE)),
+                "OWNER_SW_CFG_ROM_ERROR_REPORTING": hex(CONST.SHUTDOWN.REDACT.NONE),
                 # Enable class A alerts.
-                "OWNER_SW_CFG_ROM_ALERT_CLASS_EN": "0x{}".format(hex(
+                "OWNER_SW_CFG_ROM_ALERT_CLASS_EN": hex(
                     CONST.ALERT.NONE << 24 |
                     CONST.ALERT.NONE << 16 |
                     CONST.ALERT.NONE << 8 |
                     CONST.ALERT.ENABLE,
-                )),
+                ),
                 # Configure class A to escalate until phase 3 and disable other classes.
-                "OWNER_SW_CFG_ROM_ALERT_ESCALATION": "0x{}".format(hex(
+                "OWNER_SW_CFG_ROM_ALERT_ESCALATION": hex(
                     CONST.ALERT.ESC_NONE << 24 |
                     CONST.ALERT.ESC_NONE << 16 |
                     CONST.ALERT.ESC_NONE << 8 |
                     CONST.ALERT.ESC_PHASE_3,
-                )),
+                ),
                 # Classify UART0 alerts (alert source 0) as class A and leave others as unconfigured.
                 "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": [
-                    "0x{}".format(hex(
+                    hex(
                         CONST.ALERT.CLASS_A << 24 |
                         CONST.ALERT.CLASS_A << 16 |
                         CONST.ALERT.CLASS_A << 8 |
                         CONST.ALERT.CLASS_A,
-                    )),
+                    ),
                 ] + [
-                    "0x{}".format(hex(
+                    hex(
                         CONST.ALERT.CLASS_X << 24 |
                         CONST.ALERT.CLASS_X << 16 |
                         CONST.ALERT.CLASS_X << 8 |
                         CONST.ALERT.CLASS_X,
-                    )),
+                    ),
                 ] * 79,
                 # Leave local alert classification as unconfigured.
-                "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": ["0x{}".format(hex(
+                "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": [hex(
                     CONST.ALERT.CLASS_X << 24 |
                     CONST.ALERT.CLASS_X << 16 |
                     CONST.ALERT.CLASS_X << 8 |
                     CONST.ALERT.CLASS_X,
-                ))] * 16,
+                )] * 16,
                 # Set the alert accumulation thresholds to 0.
                 "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH": ["0x00000000"] * 4,
                 # Set the alert timeout cycles to 0.
@@ -1284,7 +1284,7 @@ SIGVERIFY_MOD_EXP_CASES = [
         "name": "invalid",
         "use_sw_rsa_verify": 0,
         "exit_success": {
-            lc_state: MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)) if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else "use_sw_rsa_verify=0x00000000"
+            lc_state: MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)) if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else "use_sw_rsa_verify=0x00000000"
             for lc_state, lc_state_val in get_lc_items()
         },
     },
@@ -1316,7 +1316,7 @@ opentitan_flash_binary(
         partitions = [
             otp_partition(
                 name = "CREATOR_SW_CFG",
-                items = {"CREATOR_SW_CFG_USE_SW_RSA_VERIFY": "0x{}".format(hex(t["use_sw_rsa_verify"]))},
+                items = {"CREATOR_SW_CFG_USE_SW_RSA_VERIFY": hex(t["use_sw_rsa_verify"])},
             ),
         ],
     )
@@ -1397,7 +1397,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         "manifest": {
             "identifier": "0",
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER)),
     },
     {
         "name": "too_small",
@@ -1405,7 +1405,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "identifier": hex(CONST.ROM_EXT),
             "length": hex(CONST.ROM_EXT_SIZE_MIN - 1),
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.BAD_LENGTH)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.BAD_LENGTH)),
     },
     {
         "name": "too_large",
@@ -1413,7 +1413,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "identifier": hex(CONST.ROM_EXT),
             "length": hex(CONST.ROM_EXT_SIZE_MAX + 1),
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.BAD_LENGTH)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.BAD_LENGTH)),
     },
     {
         "name": "empty_code",
@@ -1423,7 +1423,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_start": hex(CONST.MANIFEST_SIZE + 12),
             "code_end": hex(CONST.MANIFEST_SIZE + 12),
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "code_in_manifest",
@@ -1433,7 +1433,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": hex(CONST.MANIFEST_SIZE + 12),
             "entry_point": hex(CONST.MANIFEST_SIZE + 8),
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "code_outside_image",
@@ -1443,7 +1443,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": hex(CONST.MANIFEST_SIZE + 12),
             "entry_point": hex(CONST.MANIFEST_SIZE + 8),
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "code_start_unaligned",
@@ -1453,7 +1453,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": hex(CONST.MANIFEST_SIZE + 12),
             "entry_point": hex(CONST.MANIFEST_SIZE + 8),
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "code_end_unaligned",
@@ -1463,7 +1463,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": hex(CONST.MANIFEST_SIZE + 10),
             "entry_point": hex(CONST.MANIFEST_SIZE + 8),
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "entry_before_code_start",
@@ -1473,7 +1473,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": hex(CONST.MANIFEST_SIZE + 12),
             "entry_point": hex(CONST.MANIFEST_SIZE + 4),
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
     },
     {
         "name": "entry_at_code_end",
@@ -1483,7 +1483,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": hex(CONST.MANIFEST_SIZE + 12),
             "entry_point": hex(CONST.MANIFEST_SIZE + 12),
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
     },
     {
         "name": "entry_unaligned",
@@ -1493,7 +1493,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": hex(CONST.MANIFEST_SIZE + 12),
             "entry_point": hex(CONST.MANIFEST_SIZE + 10),
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
     },
     {
         "name": "rollback",
@@ -1504,7 +1504,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "entry_point": hex(CONST.MANIFEST_SIZE + 8),
             "security_version": "0",
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.ROLLBACK)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
         "sec_ver": 1,
     },
 ]
@@ -1723,11 +1723,11 @@ BOOT_DATA_RECOVERY_CASES = [
             name = "CREATOR_SW_CFG",
             items = {
                 # Set the min_sec version.
-                "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": "0x{}".format(hex(case["min_sec_ver"])),
+                "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": hex(case["min_sec_ver"]),
                 # Set allowing use of default boot data in PROD LC state.
-                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": "0x{}".format(hex(
+                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": hex(
                     CONST.TRUE if case["default_boot_data"] == "default" else CONST.FALSE,
-                )),
+                ),
             },
         ),
     ],
@@ -1801,7 +1801,7 @@ BOOT_DATA_RECOVERY_CASES = [
                 case["lc_state"],
                 case["default_boot_data"],
             ),
-            exit_success = MSG_TEMPLATE_BFV.format(hex(case["expected_bfv"])) if case["expected_bfv"] != None else MSG_PASS,
+            exit_success = MSG_TEMPLATE_BFV.format(hex_digits(case["expected_bfv"])) if case["expected_bfv"] != None else MSG_PASS,
             tags = ["vivado"] + maybe_skip_in_ci(getattr(
                 CONST.LCV,
                 case["lc_state"].upper(),
@@ -1871,7 +1871,7 @@ SHUTDOWN_WATCHDOG_CASES = [
         partitions = [
             otp_partition(
                 name = "OWNER_SW_CFG",
-                items = {"OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES": "0x{}".format(hex(t["bite_threshold"]))},
+                items = {"OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES": hex(t["bite_threshold"])},
             ),
         ],
     )
@@ -2082,7 +2082,7 @@ BOOT_POLICY_VALID_CASES = [
         cw310 = cw310_params(
             bitstream = "bitstream_boot_policy_valid_{}".format(lc_state),
             exit_failure = MSG_PASS if a["desc"] == b["desc"] and a["desc"] == "bad" else DEFAULT_TEST_FAILURE_MSG,
-            exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
+            exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
         key = "multislot",
@@ -2657,7 +2657,7 @@ REDACT.update({"INVALID": 0x0})
             otp_partition(
                 name = "OWNER_SW_CFG",
                 items = {
-                    "OWNER_SW_CFG_ROM_ERROR_REPORTING": "0x{}".format(hex(v)),
+                    "OWNER_SW_CFG_ROM_ERROR_REPORTING": hex(v),
                 },
             ),
         ],
@@ -2712,7 +2712,7 @@ REDACT.update({"INVALID": 0x0})
                 redact.lower(),
             ),
             exit_failure = MSG_PASS,
-            exit_success = MSG_TEMPLATE_BFV.format(hex(error_redact(
+            exit_success = MSG_TEMPLATE_BFV.format(hex_digits(error_redact(
                 CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER,
                 lc_state_val,
                 redact_val,
@@ -2854,22 +2854,22 @@ SIGVERIFY_BAD_CASES = [
     {
         "a": "nothing",
         "b": "bad",
-        "expected_bfv": hex(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG),
+        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG),
     },
     {
         "a": "bad",
         "b": "nothing",
-        "expected_bfv": hex(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG),
+        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG),
     },
     {
         "a": "bad",
         "b": "bad",
-        "expected_bfv": hex(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG),
+        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG),
     },
     {
         "a": "nothing",
         "b": "nothing",
-        "expected_bfv": hex(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER),
+        "expected_bfv": hex_digits(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER),
     },
 ]
 
@@ -2893,7 +2893,7 @@ SIGVERIFY_LCS_2_VALID_KEY = {
             exit_failure = MSG_PASS,
             exit_success = MSG_TEMPLATE_BFV_LCV.format(
                 case["expected_bfv"],
-                hex(lc_state_val),
+                hex_digits(lc_state_val),
             ),
             otp = ":otp_img_sigverify_always_{}".format(lc_state),
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
@@ -2972,12 +2972,12 @@ SIGVERIFY_KEY_TYPE_KEYS = [
         cw310 = cw310_params(
             bitstream = ":bitstream_sigverify_key_type_{}".format(lc_state),
             exit_failure = MSG_PASS if key not in LC_KEY_TYPES[lc_state_val] else MSG_TEMPLATE_BFV_LCV.format(
-                hex(CONST.BFV.SIGVERIFY.BAD_KEY),
-                hex(lc_state_val),
+                hex_digits(CONST.BFV.SIGVERIFY.BAD_KEY),
+                hex_digits(lc_state_val),
             ),
             exit_success = MSG_PASS if key in LC_KEY_TYPES[lc_state_val] else MSG_TEMPLATE_BFV_LCV.format(
-                hex(CONST.BFV.SIGVERIFY.BAD_KEY),
-                hex(lc_state_val),
+                hex_digits(CONST.BFV.SIGVERIFY.BAD_KEY),
+                hex_digits(lc_state_val),
             ),
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
@@ -3051,12 +3051,12 @@ otp_json(
         cw310 = cw310_params(
             bitstream = ":bitstream_sigverify_key_validity_{}".format(lc_state),
             exit_failure = MSG_PASS if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_TEMPLATE_BFV_LCV.format(
-                hex(CONST.BFV.SIGVERIFY.BAD_KEY),
-                hex(lc_state_val),
+                hex_digits(CONST.BFV.SIGVERIFY.BAD_KEY),
+                hex_digits(lc_state_val),
             ),
             exit_success = MSG_TEMPLATE_BFV_LCV.format(
-                hex(CONST.BFV.SIGVERIFY.BAD_KEY),
-                hex(lc_state_val),
+                hex_digits(CONST.BFV.SIGVERIFY.BAD_KEY),
+                hex_digits(lc_state_val),
             ) if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_PASS,
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
@@ -3085,29 +3085,31 @@ test_suite(
 
 # Sigverify usage constraint tests
 _test_device_id = [
-    "a0a1a2a3",  # Least-significant word
-    "12345678",
-    "00000003",
-    "abababab",
-    "cdcdcdcd",
-    "01010101",
-    "10101010",
-    "f0f1f2f3",  # Most-significant word
+    "0xa0a1a2a3",  # Least-significant word
+    "0x12345678",
+    "0x00000003",
+    "0xabababab",
+    "0xcdcdcdcd",
+    "0x01010101",
+    "0x10101010",
+    "0xf0f1f2f3",  # Most-significant word
 ]
 
 _test_manuf_states = {
-    "creator": "fedcba98",
-    "owner": "12345678",
+    "creator": "0xfedcba98",
+    "owner": "0x12345678",
 }
 
 # Generate OTP image with a specific device ID, creator manufacturing state,
 # and owner manufacturing state
+_test_device_id_joined = "0x" + "".join([word[2:] for word in reversed(_test_device_id)])
+
 otp_json(
     name = "otp_json_set_usage_constraint_params_overlay",
     partitions = [
         otp_partition(
             name = "HW_CFG",
-            items = {"DEVICE_ID": "0x" + "".join(_test_device_id[::-1])},
+            items = {"DEVICE_ID": _test_device_id_joined},
         ),
         otp_partition(
             name = "CREATOR_SW_CFG",
@@ -3138,7 +3140,7 @@ otp_json(
     visibility = ["//visibility:private"],
 ) for lc_state, lc_state_val in get_lc_items()]
 
-_SIGVERIFY_FAIL_MSG = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG))
+_SIGVERIFY_FAIL_MSG = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG))
 
 device_id_test_cases = [
     {
@@ -3517,7 +3519,7 @@ opentitan_functest(
     cw310 = cw310_params(
         # Fail if we see version 3, because the test has updated twice, FAIL, version 0 twice, or PASS
         exit_failure = "(min_security_version_rom_ext:[^01])|(FAIL)|((min_security_version_rom_ext:0(?s:.*)){2,})|(PASS)",
-        exit_success = "min_security_version_rom_ext:0(?s:.*)min_security_version_rom_ext:1(?s:.*)" + MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.ROLLBACK)),
+        exit_success = "min_security_version_rom_ext:0(?s:.*)min_security_version_rom_ext:1(?s:.*)" + MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
         test_cmds = [
             "--exec=\"fpga load-bitstream --rom-kind=rom $(rootpath {bitstream})\"",
             "--exec=\"bootstrap --clear-uart=true $(rootpath {flash})\"",
@@ -3615,7 +3617,7 @@ manifest({
     "name": "manifest_rom_ext_upgrade_interrupt",
     "address_translation": hex(CONST.FALSE),
     "identifier": hex(CONST.ROM_EXT),
-    "security_version": "0x{}".format(hex(10)),
+    "security_version": hex(10),
 })
 
 otp_json(
@@ -3624,7 +3626,7 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": "0x{}".format(hex(CONST.TRUE)),
+                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": hex(CONST.TRUE),
             },
         ),
     ],
