@@ -67,6 +67,7 @@ cpu_clk = top['clocks'].hier_paths['top'] + "clk_proc_main"
 unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(top["inter_signal"]["definitions"])
 
 %>\
+
 % if target["name"] != "asic":
 module chip_${top["name"]}_${target["name"]} #(
   // Path to a VMEM file containing the contents of the boot ROM, which will be
@@ -98,7 +99,7 @@ module chip_${top["name"]}_${target["name"]} #(
   else:
     comment = "// Manual Pad"
 %>\
-  ${port_comment}inout ${pad["name"]}, ${comment}
+  ${port_comment}${pad["port_type"]} ${pad["name"]}, ${comment}
 % endfor
 
   // Muxed Pads
@@ -110,7 +111,7 @@ module chip_${top["name"]}_${target["name"]} #(
   else:
     port_comment = ""
 %>\
-  ${port_comment}inout ${pad["name"]}${" " if loop.last else ","} // MIO Pad ${pad["idx"]}
+  ${port_comment}${pad["port_type"]} ${pad["name"]}${" " if loop.last else ","} // MIO Pad ${pad["idx"]}
 % endfor
 );
 
@@ -310,13 +311,29 @@ module chip_${top["name"]}_${target["name"]} #(
     // Chip IOs
     .dio_pad_io ({
 % for pad in list(reversed(dedicated_pads)):
+  % if re.match(r"`INOUT_A?", pad["port_type"]):
+`ifdef ANALOGSIM
+      '0,
+`else
       ${pad["name"]}${"" if loop.last else ","}
+`endif
+  % else:
+      ${pad["name"]}${"" if loop.last else ","}
+  % endif
 % endfor
     }),
 
     .mio_pad_io ({
 % for pad in list(reversed(muxed_pads)):
+  % if re.match(r"`INOUT_A?", pad["port_type"]):
+`ifdef ANALOGSIM
+      '0,
+`else
       ${pad["name"]}${"" if loop.last else ","}
+`endif
+  % else:
+      ${pad["name"]}${"" if loop.last else ","}
+  % endif
 % endfor
     }),
 

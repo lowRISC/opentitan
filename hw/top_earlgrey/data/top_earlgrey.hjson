@@ -1173,14 +1173,16 @@
     //
     //               3) 'muxed': This is a muxed IO pad that will be connected to the pinmux.
     //
-    // Optionally, each pad can also have a 'desc' field for further description.
+    // Optionally, each pad can also have a 'desc' field for further description, and a 'port_type' field
+    // to override the default 'inout wire' type (this is currently only used for simulating ADC connections
+    // where the ports have to be switched to a real type when the ANALOGSIM macro is defined).
     pads: [
       // Special manually connected pads
       { name: 'POR_N'           , type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'System reset'},
       { name: 'USB_P'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB P signal'},
       { name: 'USB_N'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB N signal'},
-      { name: 'CC1'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 1'},
-      { name: 'CC2'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 2'},
+      { name: 'CC1'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 1', port_type: '`INOUT_AI'},
+      { name: 'CC2'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 2', port_type: '`INOUT_AI'},
       { name: 'FLASH_TEST_VOLT' , type: 'AnalogIn0',    bank: 'VCC' , connection: 'manual', desc: 'Flash test voltage input'},
       { name: 'FLASH_TEST_MODE0', type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
       { name: 'FLASH_TEST_MODE1', type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
@@ -1201,8 +1203,8 @@
       // IOA
       { name: 'IOA0'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOA1'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOA2'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOA3'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA2'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad', port_type: '`INOUT_AO'},
+      { name: 'IOA3'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad', port_type: '`INOUT_AO'},
       { name: 'IOA4'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOA5'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOA6'            , type: 'BidirOd',  bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
