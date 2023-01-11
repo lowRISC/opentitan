@@ -977,4 +977,13 @@ package top_earlgrey_pkg;
   // TODO: Enumeration for PLIC Interrupt source peripheral.
   // TODO: Enumeration for PLIC Interrupt Ids.
 
+// MACROs for AST analog simulation support
+`ifdef ANALOGSIM
+  `define INOUT_AI input ast_pkg::awire_t
+  `define INOUT_AO output ast_pkg::awire_t
+`else
+  `define INOUT_AI inout
+  `define INOUT_AO inout
+`endif
+
 endpackage

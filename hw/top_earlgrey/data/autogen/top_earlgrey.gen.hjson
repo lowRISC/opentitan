@@ -10393,6 +10393,7 @@
         bank: VCC
         connection: manual
         desc: System reset
+        port_type: inout
         idx: 0
       }
       {
@@ -10401,6 +10402,7 @@
         bank: VCC
         connection: manual
         desc: USB P signal
+        port_type: inout
         idx: 1
       }
       {
@@ -10409,6 +10411,7 @@
         bank: VCC
         connection: manual
         desc: USB N signal
+        port_type: inout
         idx: 2
       }
       {
@@ -10417,6 +10420,7 @@
         bank: AVCC
         connection: manual
         desc: ADC input 1
+        port_type: `INOUT_AI
         idx: 3
       }
       {
@@ -10425,6 +10429,7 @@
         bank: AVCC
         connection: manual
         desc: ADC input 2
+        port_type: `INOUT_AI
         idx: 4
       }
       {
@@ -10433,6 +10438,7 @@
         bank: VCC
         connection: manual
         desc: Flash test voltage input
+        port_type: inout
         idx: 5
       }
       {
@@ -10441,6 +10447,7 @@
         bank: VCC
         connection: manual
         desc: Flash test mode signal
+        port_type: inout
         idx: 6
       }
       {
@@ -10449,6 +10456,7 @@
         bank: VCC
         connection: manual
         desc: Flash test mode signal
+        port_type: inout
         idx: 7
       }
       {
@@ -10457,6 +10465,7 @@
         bank: VCC
         connection: manual
         desc: OTP external voltage input
+        port_type: inout
         idx: 8
       }
       {
@@ -10465,6 +10474,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
+        port_type: inout
         idx: 9
       }
       {
@@ -10473,6 +10483,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
+        port_type: inout
         idx: 10
       }
       {
@@ -10481,6 +10492,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
+        port_type: inout
         idx: 11
       }
       {
@@ -10489,6 +10501,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
+        port_type: inout
         idx: 12
       }
       {
@@ -10497,6 +10510,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host clock
+        port_type: inout
         idx: 13
       }
       {
@@ -10505,6 +10519,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host chip select
+        port_type: inout
         idx: 14
       }
       {
@@ -10513,6 +10528,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
+        port_type: inout
         idx: 15
       }
       {
@@ -10521,6 +10537,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
+        port_type: inout
         idx: 16
       }
       {
@@ -10529,6 +10546,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
+        port_type: inout
         idx: 17
       }
       {
@@ -10537,6 +10555,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
+        port_type: inout
         idx: 18
       }
       {
@@ -10545,6 +10564,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device clock
+        port_type: inout
         idx: 19
       }
       {
@@ -10553,6 +10573,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device chip select
+        port_type: inout
         idx: 20
       }
       {
@@ -10561,6 +10582,7 @@
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 0
       }
       {
@@ -10569,6 +10591,7 @@
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 1
       }
       {
@@ -10577,6 +10600,7 @@
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
+        port_type: `INOUT_AO
         idx: 2
       }
       {
@@ -10585,6 +10609,7 @@
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
+        port_type: `INOUT_AO
         idx: 3
       }
       {
@@ -10593,6 +10618,7 @@
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 4
       }
       {
@@ -10601,6 +10627,7 @@
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 5
       }
       {
@@ -10609,6 +10636,7 @@
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 6
       }
       {
@@ -10617,6 +10645,7 @@
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 7
       }
       {
@@ -10625,6 +10654,7 @@
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 8
       }
       {
@@ -10633,6 +10663,7 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 9
       }
       {
@@ -10641,6 +10672,7 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 10
       }
       {
@@ -10649,6 +10681,7 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 11
       }
       {
@@ -10657,6 +10690,7 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 12
       }
       {
@@ -10665,6 +10699,7 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 13
       }
       {
@@ -10673,6 +10708,7 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 14
       }
       {
@@ -10681,6 +10717,7 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 15
       }
       {
@@ -10689,6 +10726,7 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 16
       }
       {
@@ -10697,6 +10735,7 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 17
       }
       {
@@ -10705,6 +10744,7 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 18
       }
       {
@@ -10713,6 +10753,7 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 19
       }
       {
@@ -10721,6 +10762,7 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 20
       }
       {
@@ -10729,6 +10771,7 @@
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 21
       }
       {
@@ -10737,6 +10780,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 22
       }
       {
@@ -10745,6 +10789,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 23
       }
       {
@@ -10753,6 +10798,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 24
       }
       {
@@ -10761,6 +10807,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 25
       }
       {
@@ -10769,6 +10816,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 26
       }
       {
@@ -10777,6 +10825,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 27
       }
       {
@@ -10785,6 +10834,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 28
       }
       {
@@ -10793,6 +10843,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 29
       }
       {
@@ -10801,6 +10852,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 30
       }
       {
@@ -10809,6 +10861,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 31
       }
       {
@@ -10817,6 +10870,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 32
       }
       {
@@ -10825,6 +10879,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 33
       }
       {
@@ -10833,6 +10888,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 34
       }
       {
@@ -10841,6 +10897,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 35
       }
       {
@@ -10849,6 +10906,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 36
       }
       {
@@ -10857,6 +10915,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 37
       }
       {
@@ -10865,6 +10924,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 38
       }
       {
@@ -10873,6 +10933,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 39
       }
       {
@@ -10881,6 +10942,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 40
       }
       {
@@ -10889,6 +10951,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 41
       }
       {
@@ -10897,6 +10960,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 42
       }
       {
@@ -10905,6 +10969,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (ec_rst_l)
+        port_type: inout
         idx: 21
       }
       {
@@ -10913,6 +10978,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (flash_wp_l))
+        port_type: inout
         idx: 22
       }
       {
@@ -10921,6 +10987,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 43
       }
       {
@@ -10929,6 +10996,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 44
       }
       {
@@ -10937,6 +11005,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 45
       }
       {
@@ -10945,6 +11014,7 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        port_type: inout
         idx: 46
       }
     ]
@@ -12511,6 +12581,7 @@
             bank: VCC
             connection: manual
             desc: Extra infrastructure pad for AST
+            port_type: inout
           }
         ]
       }
@@ -12599,6 +12670,7 @@
             bank: VCC
             connection: manual
             desc: Extra clock input for FPGA target
+            port_type: inout
           }
           {
             name: POR_BUTTON_N
@@ -12606,6 +12678,7 @@
             bank: VCC
             connection: manual
             desc: Power-on reset button input
+            port_type: inout
           }
           {
             name: JTAG_SRST_N
@@ -12613,6 +12686,7 @@
             bank: VCC
             connection: manual
             desc: JTAG header SRST, triggers POR
+            port_type: inout
           }
           {
             name: IO_USB_CONNECT
@@ -12620,6 +12694,7 @@
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
+            port_type: inout
           }
           {
             name: IO_USB_DP_TX
@@ -12627,6 +12702,7 @@
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
+            port_type: inout
           }
           {
             name: IO_USB_DN_TX
@@ -12634,6 +12710,7 @@
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
+            port_type: inout
           }
           {
             name: IO_USB_D_RX
@@ -12641,6 +12718,7 @@
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
+            port_type: inout
           }
           {
             name: IO_USB_DP_RX
@@ -12648,6 +12726,7 @@
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
+            port_type: inout
           }
           {
             name: IO_USB_DN_RX
@@ -12655,6 +12734,7 @@
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
+            port_type: inout
           }
           {
             name: IO_USB_OE_N
@@ -12662,6 +12742,7 @@
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
+            port_type: inout
           }
           {
             name: IO_USB_SPEED
@@ -12669,6 +12750,7 @@
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
+            port_type: inout
           }
           {
             name: IO_USB_SUSPEND
@@ -12676,6 +12758,7 @@
             bank: VCC
             connection: manual
             desc: Manual USB UPHY signal for FPGA target
+            port_type: inout
           }
           {
             name: IO_CLKOUT
@@ -12683,6 +12766,7 @@
             bank: VCC
             connection: manual
             desc: Manual clock output for SCA setup
+            port_type: inout
           }
           {
             name: IO_TRIGGER
@@ -12690,6 +12774,7 @@
             bank: VCC
             connection: manual
             desc: Manual trigger output for SCA setup
+            port_type: inout
           }
         ]
       }

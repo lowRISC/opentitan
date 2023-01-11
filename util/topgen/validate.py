@@ -115,6 +115,7 @@ pad_required = {
 }
 pad_optional = {
     'desc': ['s', 'Pad description'],
+    'port_type': ['s', 'Special port type other than `inout wire`']
 }
 pad_added = {}
 
@@ -400,6 +401,8 @@ def check_pad(top: Dict,
         log.warning('Connection type {} of pad {} is invalid'
                     .format(pad['connection'], pad['name']))
         error += 1
+
+    pad.setdefault('port_type', 'inout')
 
     return error
 

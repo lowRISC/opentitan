@@ -9,6 +9,7 @@
 //                -o hw/top_earlgrey/ \
 //                --rnd_cnst_seed 4881560218908238235
 
+
 module chip_earlgrey_cw310 #(
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
@@ -51,8 +52,8 @@ module chip_earlgrey_cw310 #(
   // Muxed Pads
   inout IOA0, // MIO Pad 0
   inout IOA1, // MIO Pad 1
-  inout IOA2, // MIO Pad 2
-  inout IOA3, // MIO Pad 3
+  `INOUT_AO IOA2, // MIO Pad 2
+  `INOUT_AO IOA3, // MIO Pad 3
   inout IOA4, // MIO Pad 4
   inout IOA5, // MIO Pad 5
   inout IOA6, // MIO Pad 6
@@ -432,8 +433,16 @@ module chip_earlgrey_cw310 #(
       IOA6,
       IOA5,
       IOA4,
+`ifdef ANALOGSIM
+      '0,
+`else
       IOA3,
+`endif
+`ifdef ANALOGSIM
+      '0,
+`else
       IOA2,
+`endif
       IOA1,
       IOA0
     }),

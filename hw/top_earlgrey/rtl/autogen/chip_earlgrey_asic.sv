@@ -9,6 +9,7 @@
 //                -o hw/top_earlgrey/ \
 //                --rnd_cnst_seed 4881560218908238235
 
+
 module chip_earlgrey_asic #(
   parameter bit SecRomCtrlDisableScrambling = 1'b0
 ) (
@@ -16,8 +17,8 @@ module chip_earlgrey_asic #(
   inout POR_N, // Manual Pad
   inout USB_P, // Manual Pad
   inout USB_N, // Manual Pad
-  inout CC1, // Manual Pad
-  inout CC2, // Manual Pad
+  `INOUT_AI CC1, // Manual Pad
+  `INOUT_AI CC2, // Manual Pad
   inout FLASH_TEST_VOLT, // Manual Pad
   inout FLASH_TEST_MODE0, // Manual Pad
   inout FLASH_TEST_MODE1, // Manual Pad
@@ -41,8 +42,8 @@ module chip_earlgrey_asic #(
   // Muxed Pads
   inout IOA0, // MIO Pad 0
   inout IOA1, // MIO Pad 1
-  inout IOA2, // MIO Pad 2
-  inout IOA3, // MIO Pad 3
+  `INOUT_AO IOA2, // MIO Pad 2
+  `INOUT_AO IOA3, // MIO Pad 3
   inout IOA4, // MIO Pad 4
   inout IOA5, // MIO Pad 5
   inout IOA6, // MIO Pad 6
@@ -500,8 +501,16 @@ module chip_earlgrey_asic #(
       FLASH_TEST_MODE1,
       FLASH_TEST_MODE0,
       FLASH_TEST_VOLT,
+`ifdef ANALOGSIM
+      '0,
+`else
       CC2,
+`endif
+`ifdef ANALOGSIM
+      '0,
+`else
       CC1,
+`endif
       USB_N,
       USB_P,
       POR_N
@@ -551,8 +560,16 @@ module chip_earlgrey_asic #(
       IOA6,
       IOA5,
       IOA4,
+`ifdef ANALOGSIM
+      '0,
+`else
       IOA3,
+`endif
+`ifdef ANALOGSIM
+      '0,
+`else
       IOA2,
+`endif
       IOA1,
       IOA0
     }),
