@@ -133,7 +133,7 @@ extern const uint32_t kDifUartFifoSizeBytes;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_uart_configure(const dif_uart_t *uart,
-                                dif_uart_config_t config);
+                                dif_uart_config_t config, dif_toggle_t enabled);
 
 /**
  * Sets the RX FIFO watermark.

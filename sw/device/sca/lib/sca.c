@@ -81,13 +81,13 @@ static void sca_init_uart(void) {
 
   OT_DISCARD(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
                            &uart0));
-  OT_DISCARD(dif_uart_configure(&uart0, uart_config));
+  OT_DISCARD(dif_uart_configure(&uart0, uart_config, kDifToggleEnabled));
   base_uart_stdout(&uart0);
 
 #if !OT_IS_ENGLISH_BREAKFAST
   OT_DISCARD(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR),
                            &uart1));
-  OT_DISCARD(dif_uart_configure(&uart1, uart_config));
+  OT_DISCARD(dif_uart_configure(&uart1, uart_config, kDifToggleEnabled));
 #endif
 }
 

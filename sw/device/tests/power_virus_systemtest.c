@@ -417,13 +417,14 @@ static void configure_kmac() {
 }
 
 static void configure_uart(dif_uart_t *uart) {
-  CHECK_DIF_OK(
-      dif_uart_configure(uart, (dif_uart_config_t){
-                                   .baudrate = kUartBaudrate,
-                                   .clk_freq_hz = kClockFreqPeripheralHz,
-                                   .parity_enable = kDifToggleEnabled,
-                                   .parity = kDifUartParityEven,
-                               }));
+  CHECK_DIF_OK(dif_uart_configure(uart,
+                                  (dif_uart_config_t){
+                                      .baudrate = kUartBaudrate,
+                                      .clk_freq_hz = kClockFreqPeripheralHz,
+                                      .parity_enable = kDifToggleEnabled,
+                                      .parity = kDifUartParityEven,
+                                  },
+                                  kDifToggleDisabled));
   CHECK_DIF_OK(
       dif_uart_loopback_set(uart, kDifUartLoopbackSystem, kDifToggleEnabled));
 }
