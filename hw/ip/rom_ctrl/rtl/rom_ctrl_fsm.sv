@@ -277,7 +277,8 @@ module rom_ctrl_fsm
 
   // The "last" flag is signalled when we're reading the last word in the first part of the ROM. As
   // a quick consistency check, this should only happen when the "valid" flag is also high.
-  `ASSERT(LastImpliesValid_A, kmac_rom_last_o |-> kmac_rom_vld_o)
+  `ASSERT(LastImpliesValid_A, kmac_rom_last_o |-> kmac_rom_vld_o,
+          clk_i, !rst_ni || (state_q == Invalid))
 
   // Start the checker when transitioning into the "Checking" state
   always_ff @(posedge clk_i or negedge rst_ni) begin
