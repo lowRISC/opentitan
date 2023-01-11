@@ -34,6 +34,7 @@
 #include "hmac_regs.h"         // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "kmac_regs.h"  // Generated.
+#include "uart_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
                         .can_clobber_uart = false, );
@@ -69,7 +70,7 @@ enum {
   /**
    * Test timeout parameter.
    */
-  kTestTimeoutMicros = 100000,
+  kTestTimeoutMicros = 1000000,  // 1s
   /**
    * ADC controller parameters.
    */
@@ -168,10 +169,16 @@ static const char *kKmacMessage =
     "\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf"
     "\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7";
 
+static const uint8_t kUartMessage[] = {
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+};
+
 /**
  * Initializes all DIF handles for each peripheral used in this test.
  */
-static void init_peripheral_handles() {
+static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_adc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
   CHECK_DIF_OK(
@@ -215,7 +222,7 @@ static void init_peripheral_handles() {
  * Configures GPIO 0 (mapped to pad IOA2) as an indicator pin, to go high during
  * the power state(s) of interest.
  */
-static void configure_gpio_indicator_pin() {
+static void configure_gpio_indicator_pin(void) {
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa2,
                                         kTopEarlgreyPinmuxOutselGpioGpio0));
   CHECK_DIF_OK(
@@ -227,7 +234,7 @@ static void configure_gpio_indicator_pin() {
  * both channels) in normal power mode, which is the most power intensive
  * sampling mode.
  */
-static void configure_adc_ctrl_to_continuously_sample() {
+static void configure_adc_ctrl_to_continuously_sample(void) {
   CHECK_DIF_OK(dif_adc_ctrl_configure(
       &adc_ctrl,
       (dif_adc_ctrl_config_t){
@@ -257,7 +264,7 @@ static void configure_adc_ctrl_to_continuously_sample() {
   }
 }
 
-static void configure_entropy_complex() {
+static void configure_entropy_complex(void) {
   // The (test) ROM enables the entropy complex, and to reconfigure it requires
   // temporarily disabling it.
   entropy_testutils_stop_all();
@@ -351,7 +358,7 @@ static void configure_entropy_complex() {
   CHECK_DIF_OK(dif_edn_configure(&edn_1));
 }
 
-static void configure_aes() {
+static void configure_aes(void) {
   // Prepare and load AES key shares.
   uint8_t aes_key_share0[sizeof(kAesModesKey256)];
   for (size_t i = 0; i < sizeof(kAesModesKey256); ++i) {
@@ -373,20 +380,21 @@ static void configure_aes() {
       .mode = kDifAesModeCbc,
       .key_len = kDifAesKey256,
       .key_provider = kDifAesKeySoftwareProvided,
-      .mask_reseeding = kDifAesReseedPerBlock,
+      .mask_reseeding = kDifAesReseedPer64Block,
       .manual_operation = kDifAesManualOperationManual,
       .reseed_on_key_change = false,
       .ctrl_aux_lock = false,
   };
 
-  // Start the AES operation. Since we are in auto-mode, the encryption will not
-  // start until plain text data is loaded into the appropriate CSRs.
+  // Start the AES operation. Since we are in manual-mode, the encryption will
+  // not start until plain text data is loaded into the appropriate CSRs, the
+  // encryption operation is triggered.
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
                                 kTestTimeoutMicros);
   CHECK_DIF_OK(dif_aes_start(&aes, &aes_transaction_cfg, &aes_key, &aes_iv));
 }
 
-static void configure_hmac() {
+static void configure_hmac(void) {
   dif_hmac_transaction_t hmac_transaction_cfg = {
       .digest_endianness = kDifHmacEndiannessLittle,
       .message_endianness = kDifHmacEndiannessLittle,
@@ -394,7 +402,7 @@ static void configure_hmac() {
   CHECK_DIF_OK(dif_hmac_mode_hmac_start(&hmac, kHmacKey, hmac_transaction_cfg));
 }
 
-static void configure_kmac() {
+static void configure_kmac(void) {
   dif_kmac_config_t kmac_cfg = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeEdn,
       .entropy_fast_process = kDifToggleDisabled,
@@ -450,7 +458,7 @@ static void configure_i2c(dif_i2c_t *i2c, uint8_t device_addr_0,
   CHECK_DIF_OK(dif_i2c_line_loopback_set_enabled(i2c, kDifToggleEnabled));
 }
 
-static void configure_spi_host() {
+static void configure_spi_host(void) {
   // Enable pull-ups for spi_host_0 data pins to avoid floating inputs.
   if (kDeviceType == kDeviceSimDV || kDeviceType == kDeviceSimVerilator) {
     pinmux_testutils_configure_pads(&pinmux, pinmux_pad_attributes,
@@ -473,6 +481,7 @@ static void configure_spi_host() {
 }
 
 static void crypto_data_load_task(void *task_parameters) {
+  LOG_INFO("Loading crypto block FIFOs with data ...");
   // Load data into AES block.
   dif_aes_data_t aes_plain_text;
   memcpy(aes_plain_text.data, kAesModesPlainText, sizeof(aes_plain_text.data));
@@ -491,12 +500,30 @@ static void crypto_data_load_task(void *task_parameters) {
   OTTF_TASK_DELETE_SELF_OR_DIE;
 }
 
+static void comms_data_load_task(void *task_parameters) {
+  LOG_INFO("Loading communication block FIFOs with data ...");
+  size_t bytes_written;
+  CHECK(ARRAYSIZE(kUartMessage) == 32);
+  dif_uart_t uart_handles[] = {uart_1, uart_2, uart_3};
+
+  // Load data into UART FIFO.
+  for (size_t i = 0; i < ARRAYSIZE(uart_handles); ++i) {
+    bytes_written = 0;
+    CHECK_DIF_OK(dif_uart_bytes_send(&uart_handles[i], kUartMessage,
+                                     ARRAYSIZE(kUartMessage), &bytes_written));
+    CHECK(bytes_written == ARRAYSIZE(kUartMessage));
+  }
+
+  OTTF_TASK_DELETE_SELF_OR_DIE;
+}
+
 static void max_power_task(void *task_parameters) {
+  LOG_INFO("Starting the max power task ...");
   // ***************************************************************************
-  // Trigger all crypto operations.
+  // Trigger all chip operations.
   //
-  // Note: We trigger the activations of each crypto operation manually, rather
-  // than use the DIFs, so that we can maximize the time overlap between all
+  // Note: We trigger the activations of each operation manually, rather than
+  // use the DIFs, so that we can maximize the time overlap between all
   // operations.
   // ***************************************************************************
 
@@ -530,11 +557,23 @@ static void max_power_task(void *task_parameters) {
   uint32_t kmac_cmd_reg =
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_PROCESS);
 
+  // Prepare UART and I2C enablement commands (note, all configurations between
+  // each IP instance should be configured the same).
+  uint32_t uart_ctrl_reg =
+      mmio_region_read32(uart_1.base_addr, UART_CTRL_REG_OFFSET);
+  uart_ctrl_reg = bitfield_bit32_write(uart_ctrl_reg, UART_CTRL_TX_BIT, true);
+  uart_ctrl_reg = bitfield_bit32_write(uart_ctrl_reg, UART_CTRL_RX_BIT, true);
+
   // Issue KMAC squeeze, AES trigger, and HMAC process commands.
   kmac_operation_state.squeezing = true;
   mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, kmac_cmd_reg);
   mmio_region_write32(aes.base_addr, AES_TRIGGER_REG_OFFSET, aes_trigger_reg);
   mmio_region_write32(hmac.base_addr, HMAC_CMD_REG_OFFSET, hmac_cmd_reg);
+
+  // Enable all UARTs and I2Cs.
+  mmio_region_write32(uart_1.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
+  mmio_region_write32(uart_2.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
+  mmio_region_write32(uart_3.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
 
   // Toggle GPIO pin to indicate we are in max power consumption.
   CHECK_DIF_OK(dif_gpio_write(&gpio, 0, true));
@@ -571,6 +610,8 @@ bool test_main(void) {
   // Kick off test tasks.
   // ***************************************************************************
   CHECK(ottf_task_create(crypto_data_load_task, "CryptoDataLoadTask",
+                         kOttfFreeRtosMinStackSize, 1));
+  CHECK(ottf_task_create(comms_data_load_task, "CommsDataLoadTask",
                          kOttfFreeRtosMinStackSize, 1));
   CHECK(ottf_task_create(max_power_task, "MaxPowerTask",
                          kOttfFreeRtosMinStackSize, 1));

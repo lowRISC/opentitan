@@ -2061,6 +2061,7 @@ opentitan_functest(
         "//hw/ip/entropy_src/data:entropy_src_regs",
         "//hw/ip/hmac/data:hmac_regs",
         "//hw/ip/kmac/data:kmac_regs",
+        "//hw/ip/uart/data:uart_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/dif:adc_ctrl",
