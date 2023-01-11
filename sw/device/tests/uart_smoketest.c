@@ -31,7 +31,7 @@ bool test_main(void) {
                                 }));
   CHECK_DIF_OK(
       dif_uart_loopback_set(&uart, kDifUartLoopbackSystem, kDifToggleEnabled));
-  CHECK_DIF_OK(dif_uart_fifo_reset(&uart, kDifUartFifoResetAll));
+  CHECK_DIF_OK(dif_uart_fifo_reset(&uart, kDifUartDatapathAll));
 
   // Send all bytes in `kSendData`, and check that they are received via
   // the loopback mechanism.

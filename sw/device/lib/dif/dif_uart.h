@@ -94,22 +94,22 @@ typedef enum dif_uart_watermark {
 } dif_uart_watermark_t;
 
 /**
- * A UART FIFO reset selection.
+ * A UART datapath to select various enables / FIFO resets.
  */
-typedef enum dif_uart_fifo_reset {
+typedef enum dif_uart_datapath {
   /**
-   * Indicates that the RX FIFO should be reset.
+   * Selects the RX datapath for enablement / reset.
    */
-  kDifUartFifoResetRx = 0,
+  kDifUartDatapathRx = 0,
   /**
-   * Indicates that the TX FIFO should be reset.
+   * Selects the TX datapath for enablement / reset.
    */
-  kDifUartFifoResetTx,
+  kDifUartDatapathTx,
   /**
-   * Indicates that both FIFOs should be reset.
+   * Selects both the RX and TX datapaths for enablement / reset.
    */
-  kDifUartFifoResetAll,
-} dif_uart_fifo_reset_t;
+  kDifUartDatapathAll,
+} dif_uart_datapath_t;
 
 /**
  * A UART system/line loopback configuration.
@@ -276,12 +276,12 @@ dif_result_t dif_uart_tx_bytes_available(const dif_uart_t *uart,
  * not abort the operation.
  *
  * @param uart A UART handle.
- * @param reset FIFO to reset (RX, TX or both).
+ * @param fifo The FIFO to reset (RX, TX or both).
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
-                                 dif_uart_fifo_reset_t reset);
+                                 dif_uart_datapath_t fifo);
 
 /**
  * Enables or disables a transmit/receive loopback.

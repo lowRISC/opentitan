@@ -428,18 +428,18 @@ TEST_F(TxBytesAvailableTest, FifoEmpty) {
 class FifoResetTest : public UartTest {};
 
 TEST_F(FifoResetTest, NullArgs) {
-  dif_result_t result = dif_uart_fifo_reset(nullptr, kDifUartFifoResetRx);
+  dif_result_t result = dif_uart_fifo_reset(nullptr, kDifUartDatapathRx);
   EXPECT_DIF_BADARG(result);
 }
 
 TEST_F(FifoResetTest, Success) {
   EXPECT_READ32(UART_FIFO_CTRL_REG_OFFSET, 0);
   EXPECT_WRITE32(UART_FIFO_CTRL_REG_OFFSET, {{UART_FIFO_CTRL_RXRST_BIT, true}});
-  EXPECT_DIF_OK(dif_uart_fifo_reset(&uart_, kDifUartFifoResetRx));
+  EXPECT_DIF_OK(dif_uart_fifo_reset(&uart_, kDifUartDatapathRx));
 
   EXPECT_READ32(UART_FIFO_CTRL_REG_OFFSET, 0);
   EXPECT_WRITE32(UART_FIFO_CTRL_REG_OFFSET, {{UART_FIFO_CTRL_TXRST_BIT, true}});
-  EXPECT_DIF_OK(dif_uart_fifo_reset(&uart_, kDifUartFifoResetTx));
+  EXPECT_DIF_OK(dif_uart_fifo_reset(&uart_, kDifUartDatapathTx));
 
   EXPECT_READ32(UART_FIFO_CTRL_REG_OFFSET, 0);
   EXPECT_WRITE32(UART_FIFO_CTRL_REG_OFFSET,
@@ -447,7 +447,7 @@ TEST_F(FifoResetTest, Success) {
                      {UART_FIFO_CTRL_RXRST_BIT, true},
                      {UART_FIFO_CTRL_TXRST_BIT, true},
                  });
-  EXPECT_DIF_OK(dif_uart_fifo_reset(&uart_, kDifUartFifoResetAll));
+  EXPECT_DIF_OK(dif_uart_fifo_reset(&uart_, kDifUartDatapathAll));
 }
 
 class LoopbackSetTest : public UartTest {};
