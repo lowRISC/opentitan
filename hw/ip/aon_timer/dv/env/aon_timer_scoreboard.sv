@@ -266,8 +266,9 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("WKUP Timer check passed."), UVM_HIGH)
         end
         begin
-          wait (!wkup_en);
+          wait (!wkup_en || cfg.aon_clk_rst_vif.rst_n);
           `uvm_info(`gfn, $sformatf("WKUP Timer disabled, quit scoring"), UVM_HIGH)
+          wkup_en = 0;
         end
       join_any
       disable fork;
@@ -306,8 +307,9 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
                     UVM_HIGH)
         end
         begin
-          wait (!wdog_en);
+          wait (!wdog_en || cfg.aon_clk_rst_vif.rst_n);
           `uvm_info(`gfn, $sformatf("WDOG Timer disabled, quit scoring"), UVM_HIGH)
+          wdog_en = 0;
         end
       join_any
       disable fork;
@@ -317,8 +319,6 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
-    wkup_en = 0;
-    wdog_en = 0;
   endfunction
 
   function void check_phase(uvm_phase phase);
