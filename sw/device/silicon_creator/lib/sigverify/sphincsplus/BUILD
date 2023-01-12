@@ -5,6 +5,16 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "address",
+    srcs = ["address.c"],
+    hdrs = ["address.h"],
+    deps = [
+        ":params",
+        "//sw/device/lib/base:memory",
+    ],
+)
+
+cc_library(
     name = "params",
     hdrs = ["params.h"],
 )
