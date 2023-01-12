@@ -542,6 +542,13 @@ class Register(RegBase):
 
     def check_valid_regwen(self) -> None:
         '''Check that this register is valid for use as a REGWEN'''
+        # Async REGWEN registers are currently not supported.
+        # The register write enable gating is always resolved on the
+        # bus side.
+        if self.async_clk is not None:
+            raise ValueError('Regwen {} cannot be declared as async.'
+                             .format(self.name))
+
         # A REGWEN register should have a single field that's just bit zero.
         if len(self.fields) != 1:
             raise ValueError('One or more registers use {} as a '
