@@ -251,7 +251,7 @@ module flash_phy_rd
     );
   end
 
-  // buffer enable cannot be changed unless the entire read pipeline is idle
+  // The buffer enable is allowed to change when the entire read pipeline is idle
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       buf_en_q <= 1'b0;
@@ -375,16 +375,27 @@ module flash_phy_rd
   logic rd_stages_rdy;
   assign rd_stages_rdy = rsp_fifo_rdy & scramble_stage_rdy;
 
+  // When buffer enable changes, we want to hold off new requests
+  // until the request is absorbed.  buf_en_q is allowed to change
+  // only when the entire read pipeline is idle, however, during that
+  // same cycle there could be a new incoming request.
+  //
+  // We back pressure here instead of waiting for a period of idle + no
+  // request because it potentially means a storm of accesses could
+  // prevent the buffer enable from taking effect.
+  logic no_buf_en_change;
+  assign no_buf_en_change = (buf_en_q == buf_en_i);
+
   // If no buffers matched, accept only if flash is ready and there is space
   // If buffer is matched, accept as long as there is space in the rsp fifo
   // If all buffers are currently allocated or have a dependency, wait until
   // at least 1 dependency has cleared.
   assign rdy_o = (no_match ? ack_i & flash_rdy & rd_stages_rdy : rd_stages_rdy) &
-                 ~all_buf_dependency;
+                 ~all_buf_dependency & no_buf_en_change;
 
   // issue a transaction to flash only if there is space in read stages,
   // there is no buffer match and flash is not currently busy.
-  assign req_o = req_i & flash_rdy & rd_stages_rdy & no_match;
+  assign req_o = req_i & no_buf_en_change & flash_rdy & rd_stages_rdy & no_match;
 
   /////////////////////////////////
   // Handling Reliability ECC
