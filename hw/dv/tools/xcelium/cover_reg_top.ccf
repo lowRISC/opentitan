@@ -9,6 +9,8 @@ include_ccf ${dv_root}/tools/xcelium/common.ccf
 deselect_coverage -betfs -module ${DUT_TOP}...
 select_coverage -befs -module *_reg_top...
 deselect_coverage -betfs -module prim_onehot_check...
+deselect_coverage -betfs -module prim_secded_inv_64_57_dec...
+deselect_coverage -betfs -module prim_secded_inv_39_32_dec...
 
 // Black-box DV CDC module.
 deselect_coverage -betfs -module prim_cdc_rand_delay
@@ -25,6 +27,8 @@ select_coverage -assert -module *tlul_assert
 // Include toggle coverage on `prim_alert_sender` because the `alert_test` task under
 // `cip_base_vseq` drives `alert_test_i` and verifies `alert_rx/tx` handshake in each IP.
 select_coverage -toggle -module prim_alert_sender
+select_coverage -toggle -module prim_secded_inv_64_57_dec
+select_coverage -toggle -module prim_secded_inv_39_32_dec
 
 // TODO: The intent below is to only enable coverage on the DUT's TL interfaces (tests using this
 // ccf file are meant to fully exercise the TL interfaces, but they do not verify the rest of the
