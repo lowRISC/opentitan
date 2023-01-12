@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // jtag interface with default 50MHz tck
-interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
+interface jtag_if #(parameter int unsigned JtagDefaultTckPeriodPs = 20_000) ();
 
   // interface pins
   // TODO; make these wires and add `_oe` versions to internally control the driving of these
@@ -15,8 +15,8 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
   logic tdo;
 
   // generate local tck
-  bit   tck_en;
-  time  tck_period_ns = JtagDefaultTckPeriodNs;
+  bit tck_en;
+  int unsigned tck_period_ps = JtagDefaultTckPeriodPs;
 
   // Use negedge to drive jtag inputs because design also use posedge clock edge to sample.
   clocking host_cb @(posedge tck);
@@ -43,11 +43,16 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
 
   // debug signals
 
+  // Sets the TCK frequency.
+  function automatic void set_tck_period_ps(int unsigned value);
+    tck_period_ps = value;
+  endfunction
+
   // task to wait for tck cycles
   task automatic wait_tck(int cycles);
     repeat (cycles) begin
       if (tck_en) @(posedge tck);
-      else        #(tck_period_ns * 1ns);
+      else        #(tck_period_ps * 1ps);
     end
   endtask
 
@@ -63,9 +68,9 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
     tck = 1'b1;
     forever begin
       if (tck_en) begin
-        #(tck_period_ns / 2);
+        #(tck_period_ps / 2 * 1ps);
         tck = ~tck;
-        #(tck_period_ns / 2);
+        #(tck_period_ps / 2 * 1ps);
         tck = ~tck;
       end else begin
         @(tck_en);

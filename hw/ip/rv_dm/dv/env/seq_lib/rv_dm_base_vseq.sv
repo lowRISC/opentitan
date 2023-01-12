@@ -16,6 +16,15 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   rand prim_mubi_pkg::mubi4_t scanmode;
   rand logic [NUM_HARTS-1:0]  unavailable;
 
+  rand int unsigned tck_period_ps;
+  constraint tck_period_ps_c {
+    tck_period_ps dist {
+      [10_000:20_000] :/ 1,  // 50-100MHz
+      [20_001:42_000] :/ 1,  // 24-50MHz
+      [42_001:100_000] :/ 1  // 10-24MHz
+    };
+  }
+
   // SBA TL device sequence. Class member for more controllability.
   protected cip_tl_device_seq m_tl_sba_device_seq;
 
@@ -53,6 +62,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
   // Have scan reset also applied at the start.
   virtual task apply_reset(string kind = "HARD");
+    cfg.m_jtag_agent_cfg.vif.set_tck_period_ps(tck_period_ps);
     fork
       if (kind inside {"HARD", "TRST"}) begin
         jtag_dtm_ral.reset("HARD");
@@ -78,7 +88,8 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
-    int trst_n_duration_ps = cfg.m_jtag_agent_cfg.vif.tck_period_ns * $urandom_range(5, 20) * 1000;
+    int trst_n_duration_ps = cfg.m_jtag_agent_cfg.vif.tck_period_ps * $urandom_range(5, 20) *
+        1000_000;
     cfg.rv_dm_vif.scan_rst_n <= 1'b0;
     cfg.m_jtag_agent_cfg.vif.trst_n <= 1'b0;
     super.apply_resets_concurrently(dv_utils_pkg::max2(reset_duration_ps, trst_n_duration_ps));
