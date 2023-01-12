@@ -66,8 +66,9 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
   // if the class is not enabled and we are in IDLE state,
   // neither of the two escalation mechanisms shall fire
   `ASSERT(ClassDisabledNoEscTrig_A, esc_state_o == Idle && !en_i |-> !esc_trig_o)
-  `ASSERT(ClassDisabledNoEsc_A, esc_state_o == Idle && !en_i |-> !esc_sig_req_o)
-  `ASSERT(EscDisabledNoEsc_A, !esc_en_i[esc_sel] && esc_state_o != FsmError |->
+  `ASSERT(ClassDisabledNoEsc_A, esc_state_o == Idle && !en_i && !alert_handler_esc_timer.fsm_error
+          |-> !esc_sig_req_o)
+  `ASSERT(EscDisabledNoEsc_A, !esc_en_i[esc_sel] && !alert_handler_esc_timer.fsm_error |->
       !esc_sig_req_o[esc_sel])
 
   // if timeout counter is enabled due to a pending interrupt, check escalation
@@ -92,7 +93,7 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
     alert_handler_esc_timer.Phase3St
   };
   `ASSERT(EscStateOut_A, alert_handler_esc_timer.state_q == StateEncodings[esc_state_o])
-  `ASSERT(EscCntOut_A, alert_handler_esc_timer.cnt_q[0] == esc_cnt_o)
+  `ASSERT(EscCntOut_A, alert_handler_esc_timer.u_prim_count.cnt_q[0] == esc_cnt_o)
 
   // check clr input
   // we cannot use clr to exit from the timeout state
@@ -128,7 +129,7 @@ module alert_handler_esc_timer_assert_fpv import alert_pkg::*; (
   // escalation signals can only be asserted in the escalation phase states, or
   // if we are in the terminal FsmError state
   `ASSERT(EscBkwd_A, esc_sig_req_o[esc_sel] |-> esc_en_i[esc_sel] &&
-      esc_has_triggered_q || esc_state_o == FsmError)
+      esc_has_triggered_q || alert_handler_esc_timer.fsm_error)
   `ASSERT(NoEscBkwd_A, !esc_sig_req_o[esc_sel] |-> !esc_en_i[esc_sel] ||
       esc_state_o != Phases[esc_map_i[esc_sel]] && esc_state_o != FsmError,
       clk_i, !rst_ni || clr_i)
