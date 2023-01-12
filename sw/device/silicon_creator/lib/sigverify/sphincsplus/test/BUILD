@@ -11,6 +11,24 @@ load(
 )
 
 opentitan_functest(
+    name = "fors_test",
+    srcs = ["fors_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:context",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:fors",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:hash",
+    ],
+)
+
+opentitan_functest(
     name = "wots_test",
     srcs = ["wots_test.c"],
     verilator = verilator_params(
