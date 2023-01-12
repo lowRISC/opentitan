@@ -191,7 +191,7 @@
     {
       name: i2c_loopback
       uvm_test_seq: i2c_llpbk_vseq
-      run_opts: ["+en_scb=0", "+i2c_loopback=1"]
+      run_opts: ["+en_scb=0", "+i2c_loopback=1", "+i2c_agent_mode=Host"]
     }
   ]
 

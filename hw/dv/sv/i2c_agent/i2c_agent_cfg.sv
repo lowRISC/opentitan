@@ -46,6 +46,9 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   // driver send random binary and monitor captured return data.
   bit     loopback_mode = 0;
   bit     loopback_st = 0;
+  int     loopback_num_bytes = 0;
+  bit [7:0] lb_data_q[$];
+  bit [7:0] lb_addr;
 
   `uvm_object_utils_begin(i2c_agent_cfg)
     `uvm_field_int(en_monitor,                                UVM_DEFAULT)

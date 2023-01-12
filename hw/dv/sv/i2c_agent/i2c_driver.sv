@@ -43,10 +43,38 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   task proc_loopback;
     int loopback_wait_timeout_ns = 1_000_000; // 1ms
+    bit [7:0] send_data;
+
     `JDBG(("LB driver loopback mode"))
     `DV_WAIT(cfg.loopback_st == 1,, loopback_wait_timeout_ns, "proc_loopback")
     `uvm_info(`gfn, "Driver loopback mode start", UVM_MEDIUM)
+    if (cfg.if_mode == Device) begin
+      // TBD
+    end else begin
+      cfg.vif.host_start(cfg.timing_cfg);
+      cfg.host_scl_start = 1;
+      send_data = cfg.lb_addr;
+      for (int i = 7; i >= 0; i--) begin
+        cfg.vif.host_data(cfg.timing_cfg, send_data[i]);
+      end
+      // Wait one more cycle for ack
+      cfg.vif.wait_scl(.iter(1), .tc(cfg.timing_cfg));
+      `JDBG(("LB driver send addr"))
 
+      repeat (cfg.loopback_num_bytes) begin
+        send_data = $urandom();
+        cfg.lb_data_q.push_back(send_data);
+
+        for (int i = 7; i >= 0; i--) begin
+          cfg.vif.host_data(cfg.timing_cfg, send_data[i]);
+        end
+        // Wait one more cycle for ack
+        cfg.vif.wait_scl(.iter(1), .tc(cfg.timing_cfg));
+        `JDBG(("LB driver send %x", send_data))
+      end
+      cfg.host_scl_stop = 1;
+      cfg.vif.host_stop(cfg.timing_cfg);
+    end
   endtask
 
   virtual task get_and_drive();

@@ -8,10 +8,25 @@ class i2c_llpbk_vseq extends i2c_base_vseq;
   `uvm_object_new
 
   virtual task body();
+    int loopback_wait_timeout_ns = 1_000_000; // 1ms
+    if (cfg.m_i2c_agent_cfg.if_mode == Device) begin
+       i2c_init(Host);
+    end else begin
+       i2c_init(Device);
+    end
+
+    get_timing_values();
+    program_registers();
     ral.ctrl.llpbk.set(1'b1);
     csr_update(ral.ctrl);
     `JDBG(("LB seq loopback start"))
+    cfg.m_i2c_agent_cfg.loopback_num_bytes = 8;
     cfg.m_i2c_agent_cfg.loopback_st = 1;
 
+// target mode
+    cfg.m_i2c_agent_cfg.lb_addr[7:1] = target_addr0;
+
+    // remove later
+    do_clear_all_interrupts = 0;
   endtask
 endclass
