@@ -30,6 +30,19 @@ cc_library(
 )
 
 cc_library(
+    name = "hash",
+    srcs = ["hash_shake.c"],
+    hdrs = ["hash.h"],
+    deps = [
+        ":address",
+        ":context",
+        ":params",
+        ":utils",
+        "//sw/device/silicon_creator/lib/drivers:kmac",
+    ],
+)
+
+cc_library(
     name = "params",
     hdrs = ["params.h"],
 )
@@ -44,5 +57,18 @@ cc_library(
         ":params",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/drivers:kmac",
+    ],
+)
+
+cc_library(
+    name = "utils",
+    srcs = ["utils.c"],
+    hdrs = ["utils.h"],
+    deps = [
+        ":address",
+        ":params",
+        ":thash",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:error",
     ],
 )

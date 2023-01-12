@@ -35,8 +35,8 @@ extern "C" {
  * @return Error code indicating if the operation succeeded.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t thash(const unsigned char *in, size_t inblocks,
-                  const spx_ctx_t *ctx, const spx_addr_t *addr, uint32_t *out);
+rom_error_t thash(const uint8_t *in, size_t inblocks, const spx_ctx_t *ctx,
+                  const spx_addr_t *addr, uint32_t *out);
 
 #ifdef __cplusplus
 }
