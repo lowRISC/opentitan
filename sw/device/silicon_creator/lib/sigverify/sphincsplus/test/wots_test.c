@@ -22,7 +22,7 @@ enum {
 
 // Test signature and message. Populate before running test.
 static uint8_t kTestSig[kSpxWotsBytes] = {0};
-static uint8_t kTestMsg[kSpxWotsBytes] = {0};
+static uint8_t kTestMsg[kSpxWotsMsgBytes] = {0};
 
 // Test context.
 static spx_ctx_t kTestCtx = {
