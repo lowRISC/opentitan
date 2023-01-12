@@ -4,7 +4,8 @@
 //
 // Description: I2C finite state machine
 
-module i2c_fsm #(
+module i2c_fsm import i2c_pkg::*;
+#(
   parameter int FifoDepth = 64,
   localparam int FifoDepthWidth = $clog2(FifoDepth+1)
 ) (
@@ -660,7 +661,7 @@ module i2c_fsm #(
         if (tcount_q == 20'd1) begin
           // only write to fifo if stretching conditions are not met
           acq_fifo_wvalid_o = ~stretch_addr;
-          acq_fifo_wdata_o = {1'b0, 1'b1, input_byte};
+          acq_fifo_wdata_o = {AcqStart, input_byte};
         end
       end
       // TransmitWait: Check if data is available prior to transmit
@@ -727,7 +728,7 @@ module i2c_fsm #(
         sda_d = 1'b0;
 
         if (tcount_q == 20'd1) begin
-          acq_fifo_wdata_o = {1'b0, 1'b0, input_byte}; // transfer data to acq_fifo
+          acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
           acq_fifo_wvalid_o = acq_fifo_wready;         // assert that acq_fifo has valid data
         end
       end
@@ -738,7 +739,7 @@ module i2c_fsm #(
         scl_d = 1'b0;
 
         acq_fifo_wvalid_o = ~stretch_addr;
-        acq_fifo_wdata_o = {1'b0, 1'b1, input_byte};
+        acq_fifo_wdata_o = {AcqStart, input_byte};
       end
       // StretchTx: target stretches the clock when tx_fifo is empty
       StretchTx : begin
@@ -757,8 +758,8 @@ module i2c_fsm #(
         scl_d = 1'b0;
 
         // When space becomes available, deposit entry
-        acq_fifo_wdata_o = {1'b0, 1'b0, input_byte}; // transfer data to acq_fifo
-        acq_fifo_wvalid_o = acq_fifo_wready;         // assert that acq_fifo has valid data
+        acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
+        acq_fifo_wvalid_o = acq_fifo_wready;      // assert that acq_fifo has valid data
       end
       // default
       default : begin
@@ -783,7 +784,8 @@ module i2c_fsm #(
     if (start_det || stop_det) begin
       // Only add an entry if this is a repeated start or stop.
       acq_fifo_wvalid_o = !target_idle_o;
-      acq_fifo_wdata_o = {1'b1, start_det, input_byte};
+      acq_fifo_wdata_o = start_det ? {AcqRestart, input_byte} :
+                                     {AcqStop, input_byte};
       event_cmd_complete_o = !target_idle_o;
     end
   end
