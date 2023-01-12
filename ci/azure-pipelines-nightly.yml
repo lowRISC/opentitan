@@ -68,3 +68,21 @@ jobs:
         --test_output=errors \
         //sw/device/silicon_creator/rom/e2e/...
     displayName: "Run all ROM E2E tests"
+
+- job: fpga_long_tests
+  displayName: "Long and Eternal FPGA Tests"
+  timeoutInMinutes: 30
+  dependsOn: checkout
+  pool: FPGA
+  steps:
+    - template: ../ci/checkout-template.yml
+    - template: ../ci/install-package-dependencies.yml
+    - bash: |
+        set -ex
+        ci/bazelisk.sh test \
+          --test_tag_filters=cw310,-broken \
+          --test_timeout_filters=long,eternal \
+          --test_output=errors \
+          --build_tests_only \
+          //...
+      displayName: "Run tests"
