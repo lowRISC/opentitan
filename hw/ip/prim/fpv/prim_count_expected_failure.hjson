@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// These two assertions are unreachable in the prim_count environment unless the counters are
+// forced to have different output.
+{
+  unreachable:
+  [
+    prim_count_tb.u_counter.CntErrForward_A:precondition1
+    prim_count_tb.u_counter.CntErrBackward_A:precondition1
+  ]
+}
