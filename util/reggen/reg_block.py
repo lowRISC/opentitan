@@ -92,6 +92,7 @@ class RegBlock:
             block.add_raw_registers(raw,
                                     'registers field at top-level', clocks,
                                     bus.device_async.get(None), is_alias)
+            block.validate()
             return {None: block}
 
         # This is the more complicated syntax
