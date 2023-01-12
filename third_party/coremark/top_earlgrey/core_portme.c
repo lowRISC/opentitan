@@ -166,7 +166,7 @@ portable_init(core_portable *p, int *argc, char *argv[])
                                             .clk_freq_hz = kClockFreqPeripheralHz,
                                             .parity_enable = kDifToggleDisabled,
                                             .parity = kDifUartParityEven,
-                                            }));
+                                            }, kDifToggleEnabled));
     base_uart_stdout(&uart);
 }
 
