@@ -11,6 +11,19 @@ load(
 )
 
 opentitan_functest(
+    name = "thash_test",
+    srcs = ["thash_test.c"],
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/silicon_creator/lib/drivers:kmac",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:address",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:context",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:thash",
+    ],
+)
+
+opentitan_functest(
     name = "wots_test",
     srcs = ["wots_test.c"],
     verilator = verilator_params(
