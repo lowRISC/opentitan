@@ -30,7 +30,7 @@
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

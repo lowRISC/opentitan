@@ -5,7 +5,7 @@
 // Synchronous single-port SRAM model
 
 `include "prim_assert.sv"
-`define TARGET_SYNTHESIS
+`define DUMMYBOY
 
 
 module prim_ram_1p import prim_ram_1p_pkg::*; #(

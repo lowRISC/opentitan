@@ -38,14 +38,14 @@ const uint64_t kClockFreqAonHz = 125 * 1000;  // 125kHz
 
 const uint64_t kUartBaudrate = 7200;
 
-const uint32_t kUartNCOValue =
-    CALCULATE_UART_NCO(kUartBaudrate, kClockFreqPeripheralHz);
+const uint32_t kUartNCOValue = 0xffff;
+//CALCULATE_UART_NCO(kUartBaudrate, kClockFreqPeripheralHz);
 
-const uint32_t kUartTxFifoCpuCycles =
-    CALCULATE_UART_TX_FIFO_CPU_CYCLES(kUartBaudrate, kClockFreqCpuHz);
+const uint32_t kUartTxFifoCpuCycles = 0;
+//  CALCULATE_UART_TX_FIFO_CPU_CYCLES(kUartBaudrate, kClockFreqCpuHz);
 
-const uint32_t kAstCheckPollCpuCycles =
-    CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
+const uint32_t kAstCheckPollCpuCycles = 0;
+//    CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
 
 // Defined in `hw/top_earlgrey/chip_earlgrey_verilator.core`
 const uintptr_t kDeviceTestStatusAddress = 0x411f0080;

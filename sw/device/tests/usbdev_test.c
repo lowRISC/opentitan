@@ -27,7 +27,7 @@
 #include "sw/device/lib/testing/usb_testutils_controlep.h"
 #include "sw/device/lib/testing/usb_testutils_simpleserial.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_earlgrey/sw/top_earlgrey.h"  // Generated.
 
 /**
  * Configuration values for USB.

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "prim_assert.sv"
-`define TARGET_SYNTHESIS
+`define DUMMYBOY
 
 module prim_rom import prim_rom_pkg::*; #(
   parameter  int Width       = 32,

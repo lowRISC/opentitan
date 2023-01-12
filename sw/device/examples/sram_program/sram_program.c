@@ -11,7 +11,7 @@
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 
 static dif_uart_t uart0;
 static dif_pinmux_t pinmux;

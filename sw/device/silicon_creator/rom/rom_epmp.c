@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/memory.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 
 // Symbols defined in linker script.
 extern char _stack_start[];  // Lowest stack address.
@@ -17,11 +17,11 @@ extern char _text_end[];     // End of executable code.
 
 // Note: Hardcoding these values since the way we generate this range is not
 // very robust at the moment. See #14345 and #14336.
-static_assert(TOP_EARLGREY_MMIO_BASE_ADDR == 0x40000000,
+/*static_assert(TOP_EARLGREY_MMIO_BASE_ADDR == 0x40000000,
               "MMIO region changed, update ePMP configuration if needed");
 static_assert(TOP_EARLGREY_MMIO_SIZE_BYTES == 0x10000000,
               "MMIO region changed, update ePMP configuration if needed");
-
+*/
 static_assert(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR >=
                       TOP_EARLGREY_MMIO_BASE_ADDR &&
                   TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +

@@ -28,7 +28,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "alert_handler_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 #include "i2c_regs.h"
 #include "spi_device_regs.h"
 #include "spi_host_regs.h"

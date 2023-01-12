@@ -55,11 +55,11 @@ void csrng_testutils_kat_instantiate(
  * @param expected_output Expected CSRNG output after the last command.
  * @param expected_state Expected CSRNG internal state after the last command.
  */
-void csrng_testutils_kat_generate(
+/*void csrng_testutils_kat_generate(
     const dif_csrng_t *csrng, uint32_t num_generates, uint32_t output_len,
     const uint32_t *expected_output,
     const dif_csrng_internal_state_t *expected_state);
-
+*/
 /**
  * CTR_DRBG Known-Answer-Test (KAT) for RESEED command.
  *

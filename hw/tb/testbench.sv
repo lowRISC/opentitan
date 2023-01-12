@@ -46,7 +46,9 @@ module testbench ();
    parameter int   RESP_MAX_WAIT_CYCLES = 1;
    parameter int   NUM_BEATS = 100;
    
-   localparam int unsigned RTC_CLOCK_PERIOD = 30.517us;
+   localparam int unsigned RTC_CLOCK_PERIOD = 10ns;
+   localparam int unsigned AON_PERIOD = 5us;
+   
    
    int          sections [bit [31:0]];
    logic [31:0] memory[bit [31:0]];
@@ -69,6 +71,8 @@ module testbench ();
 */
       
    logic  clk_sys = 1'b0;
+   logic  aon_clk = 1'b0;
+   
    logic  rst_sys_n;
    
    jtag_pkg::jtag_req_t jtag_i;
@@ -149,7 +153,7 @@ module testbench ();
     riscv_dbg_t riscv_dbg = new(jtag_driver);
 
 
-    assign jtag_i.tck        = clk_sys;  
+    assign jtag_i.tck        = aon_clk;  
     assign jtag_i.trst_n     = jtag_mst.trst_n;
     assign jtag_i.tms        = jtag_mst.tms;
     assign jtag_i.tdi        = jtag_mst.tdi;
@@ -219,7 +223,7 @@ module testbench ();
                      
     .clk_main_i (clk_sys),
     .clk_io_i(clk_sys),
-    .clk_aon_i(clk_sys),
+    .clk_aon_i(aon_clk),
     .clk_usb_i(clk_sys),
 
 //    .clks_ast_o(tieoff[19]),
@@ -268,6 +272,12 @@ module testbench ();
        #(RTC_CLOCK_PERIOD/2) clk_sys = ~clk_sys;
    end // block: main_clock_rst_process
 
+   initial begin  : aon_clock_process
+     aon_clk   = 1'b0;
+     forever
+       #(AON_PERIOD/2) aon_clk = ~aon_clk;
+   end 
+
  
    initial begin  : axi_slave_process
       
@@ -307,8 +317,8 @@ module testbench ();
       if ( $value$plusargs ("OT_STRING=%s", binary));
          $display("Testing %s", binary);
          
-      repeat(50000)
-          @(posedge clk_sys);
+      repeat(70000)
+          @(posedge aon_clk);
       
       debug_module_init();
       load_binary(binary);

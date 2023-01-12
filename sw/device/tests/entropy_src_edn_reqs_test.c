@@ -26,7 +26,7 @@
 #include "sw/device/tests/otbn_randomness_impl.h"
 
 #include "alert_handler_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 
 static otbn_t otbn;
 static dif_aes_t aes;

@@ -29,7 +29,7 @@
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_earlgrey/sw/top_earlgrey.h"  // Generated.
 #include "otp_ctrl_regs.h"
 
 /* These symbols are defined in

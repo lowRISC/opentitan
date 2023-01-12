@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 #include "otbn_regs.h"  // Generated.
 
 #define ASSERT_ERR_BIT_MATCH(enum_val, autogen_val) \
@@ -38,7 +38,7 @@ ASSERT_ERR_BIT_MATCH(kOtbnErrBitsFatalSoftware,
 const size_t kOtbnDMemSizeBytes = OTBN_DMEM_SIZE_BYTES;
 const size_t kOtbnIMemSizeBytes = OTBN_IMEM_SIZE_BYTES;
 
-enum { kBase = TOP_EARLGREY_OTBN_BASE_ADDR };
+enum { kBase40 = TOP_EARLGREY_OTBN_BASE_ADDR };
 
 /**
  * Ensures that `offset_bytes` and `len` are valid for a given `mem_size`.
@@ -56,11 +56,11 @@ static otbn_error_t check_offset_len(uint32_t offset_bytes, size_t num_words,
 otbn_error_t otbn_assert_idle(void) {
   uint32_t status = launder32(~kOtbnStatusIdle);
   otbn_error_t res = launder32(kOtbnErrorOk ^ status);
-  status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
+  status = abs_mmio_read32(kBase40 + OTBN_STATUS_REG_OFFSET);
   res ^= ~status;
   if (launder32(res) == kOtbnErrorOk) {
     HARDENED_CHECK_EQ(res, kOtbnErrorOk);
-    HARDENED_CHECK_EQ(abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET),
+    HARDENED_CHECK_EQ(abs_mmio_read32(kBase40 + OTBN_STATUS_REG_OFFSET),
                       kOtbnStatusIdle);
     return res;
   }
@@ -71,7 +71,7 @@ otbn_error_t otbn_busy_wait_for_done(void) {
   uint32_t status = launder32(UINT32_MAX);
   otbn_error_t res = launder32(kOtbnErrorOk ^ status);
   do {
-    status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
+    status = abs_mmio_read32(kBase40 + OTBN_STATUS_REG_OFFSET);
   } while (launder32(status) != kOtbnStatusIdle &&
            launder32(status) != kOtbnStatusLocked);
   res ^= ~status;
@@ -84,7 +84,7 @@ otbn_error_t otbn_busy_wait_for_done(void) {
     HARDENED_CHECK_EQ(res, kOtbnErrorOk);
     otbn_err_bits_get(&err_bits);
     HARDENED_CHECK_EQ(err_bits, kOtbnErrBitsNoError);
-    HARDENED_CHECK_EQ(abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET),
+    HARDENED_CHECK_EQ(abs_mmio_read32(kBase40 + OTBN_STATUS_REG_OFFSET),
                       kOtbnStatusIdle);
     return res;
   }
@@ -120,21 +120,21 @@ otbn_error_t otbn_execute(void) {
   // Ensure OTBN is idle before attempting to run a command.
   OTBN_RETURN_IF_ERROR(otbn_assert_idle());
 
-  abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, kOtbnCmdExecute);
+  abs_mmio_write32(kBase40 + OTBN_CMD_REG_OFFSET, kOtbnCmdExecute);
   return kOtbnErrorOk;
 }
 
 void otbn_err_bits_get(otbn_err_bits_t *err_bits) {
-  *err_bits = abs_mmio_read32(kBase + OTBN_ERR_BITS_REG_OFFSET);
+  *err_bits = abs_mmio_read32(kBase40 + OTBN_ERR_BITS_REG_OFFSET);
 }
 
 uint32_t otbn_instruction_count_get(void) {
-  return abs_mmio_read32(kBase + OTBN_INSN_CNT_REG_OFFSET);
+  return abs_mmio_read32(kBase40 + OTBN_INSN_CNT_REG_OFFSET);
 }
 
 otbn_error_t otbn_imem_sec_wipe(void) {
   OTBN_RETURN_IF_ERROR(otbn_assert_idle());
-  abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, kOtbnCmdSecWipeImem);
+  abs_mmio_write32(kBase40 + OTBN_CMD_REG_OFFSET, kOtbnCmdSecWipeImem);
   OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done());
   return kOtbnErrorOk;
 }
@@ -143,13 +143,13 @@ otbn_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
                              size_t num_words) {
   OTBN_RETURN_IF_ERROR(
       check_offset_len(offset_bytes, num_words, kOtbnIMemSizeBytes));
-  otbn_write(kBase + OTBN_IMEM_REG_OFFSET + offset_bytes, src, num_words);
+  otbn_write(kBase40 + OTBN_IMEM_REG_OFFSET + offset_bytes, src, num_words);
   return kOtbnErrorOk;
 }
 
 otbn_error_t otbn_dmem_sec_wipe(void) {
   OTBN_RETURN_IF_ERROR(otbn_assert_idle());
-  abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, kOtbnCmdSecWipeDmem);
+  abs_mmio_write32(kBase40 + OTBN_CMD_REG_OFFSET, kOtbnCmdSecWipeDmem);
   OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done());
   return kOtbnErrorOk;
 }
@@ -158,7 +158,7 @@ otbn_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
                              size_t num_words) {
   OTBN_RETURN_IF_ERROR(
       check_offset_len(offset_bytes, num_words, kOtbnDMemSizeBytes));
-  otbn_write(kBase + OTBN_DMEM_REG_OFFSET + offset_bytes, src, num_words);
+  otbn_write(kBase40 + OTBN_DMEM_REG_OFFSET + offset_bytes, src, num_words);
   return kOtbnErrorOk;
 }
 
@@ -169,7 +169,7 @@ otbn_error_t otbn_dmem_read(uint32_t offset_bytes, uint32_t *dest,
 
   size_t i = 0;
   for (; launder32(i) < num_words; ++i) {
-    dest[i] = abs_mmio_read32(kBase + OTBN_DMEM_REG_OFFSET + offset_bytes +
+    dest[i] = abs_mmio_read32(kBase40 + OTBN_DMEM_REG_OFFSET + offset_bytes +
                               i * sizeof(uint32_t));
   }
   HARDENED_CHECK_EQ(i, num_words);
@@ -190,7 +190,7 @@ otbn_error_t otbn_set_ctrl_software_errs_fatal(bool enable) {
     new_ctrl = 0;
   }
 
-  abs_mmio_write32(kBase + OTBN_CTRL_REG_OFFSET, new_ctrl);
+  abs_mmio_write32(kBase40 + OTBN_CTRL_REG_OFFSET, new_ctrl);
 
   return kOtbnErrorOk;
 }

@@ -28,7 +28,7 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_earlgrey/sw/top_earlgrey.h"  // Generated.
 
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = kLcStateProd;

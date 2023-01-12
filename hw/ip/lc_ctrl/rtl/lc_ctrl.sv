@@ -6,7 +6,7 @@
 //
 
 `include "prim_assert.sv"
-`define TARGET_SYNTHESIS
+`define DUMMYBOY
 
 module lc_ctrl
   import lc_ctrl_pkg::*;

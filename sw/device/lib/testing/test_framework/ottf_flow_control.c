@@ -6,7 +6,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-
+#include "dummy.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -17,7 +17,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 
 #define FLOW_CONTROL_LOW_WATERMARK 4
 #define FLOW_CONTROL_HIGH_WATERMARK 8

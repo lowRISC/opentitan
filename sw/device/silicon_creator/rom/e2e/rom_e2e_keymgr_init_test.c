@@ -17,7 +17,7 @@
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated
 
 OTTF_DEFINE_TEST_CONFIG();

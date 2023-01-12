@@ -20,7 +20,7 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 
 static dif_rstmgr_t rstmgr;

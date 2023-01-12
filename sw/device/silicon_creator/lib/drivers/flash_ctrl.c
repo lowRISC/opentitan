@@ -16,7 +16,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 
 // Values of `flash_ctrl_partition_t` constants must be distinct from each
@@ -35,7 +35,7 @@ enum {
   /**
    * Base address of the flash_ctrl registers.
    */
-  kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
+  kBase45 = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
 };
 
 /**
@@ -84,7 +84,7 @@ typedef struct transaction_params {
  */
 static void transaction_start(transaction_params_t params) {
   // Set the address.
-  abs_mmio_write32(kBase + FLASH_CTRL_ADDR_REG_OFFSET, params.addr);
+  abs_mmio_write32(kBase45 + FLASH_CTRL_ADDR_REG_OFFSET, params.addr);
   // Configure flash_ctrl and start the transaction.
   const bool is_info =
       bitfield_bit32_read(params.partition, FLASH_CTRL_PARTITION_BIT_IS_INFO);
@@ -113,7 +113,7 @@ static void transaction_start(transaction_params_t params) {
   reg = bitfield_bit32_write(reg, FLASH_CTRL_CONTROL_ERASE_SEL_BIT, bank_erase);
   reg = bitfield_field32_write(reg, FLASH_CTRL_CONTROL_NUM_FIELD,
                                params.word_count - 1);
-  abs_mmio_write32(kBase + FLASH_CTRL_CONTROL_REG_OFFSET, reg);
+  abs_mmio_write32(kBase45 + FLASH_CTRL_CONTROL_REG_OFFSET, reg);
 }
 
 /**
@@ -126,7 +126,7 @@ static void transaction_start(transaction_params_t params) {
  */
 static void fifo_read(size_t word_count, void *data) {
   for (size_t i = 0; i < word_count; ++i) {
-    write_32(abs_mmio_read32(kBase + FLASH_CTRL_RD_FIFO_REG_OFFSET), data);
+    write_32(abs_mmio_read32(kBase45 + FLASH_CTRL_RD_FIFO_REG_OFFSET), data);
     data = (char *)data + sizeof(uint32_t);
   }
 }
@@ -141,7 +141,7 @@ static void fifo_read(size_t word_count, void *data) {
  */
 static void fifo_write(size_t word_count, const void *data) {
   for (size_t i = 0; i < word_count; ++i) {
-    abs_mmio_write32(kBase + FLASH_CTRL_PROG_FIFO_REG_OFFSET, read_32(data));
+    abs_mmio_write32(kBase45 + FLASH_CTRL_PROG_FIFO_REG_OFFSET, read_32(data));
     data = (const char *)data + sizeof(uint32_t);
   }
 }
@@ -155,9 +155,9 @@ static void fifo_write(size_t word_count, const void *data) {
 static rom_error_t wait_for_done(rom_error_t error) {
   uint32_t op_status;
   do {
-    op_status = abs_mmio_read32(kBase + FLASH_CTRL_OP_STATUS_REG_OFFSET);
+    op_status = abs_mmio_read32(kBase45 + FLASH_CTRL_OP_STATUS_REG_OFFSET);
   } while (!bitfield_bit32_read(op_status, FLASH_CTRL_OP_STATUS_DONE_BIT));
-  abs_mmio_write32(kBase + FLASH_CTRL_OP_STATUS_REG_OFFSET, 0u);
+  abs_mmio_write32(kBase45 + FLASH_CTRL_OP_STATUS_REG_OFFSET, 0u);
 
   if (bitfield_bit32_read(op_status, FLASH_CTRL_OP_STATUS_ERR_BIT)) {
     return error;
@@ -262,10 +262,10 @@ static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
     HARDENED_CHECK_EQ(launder32(info_page), (name_));                     \
     return (info_cfg_regs_t){                                             \
         .cfg_wen_addr =                                                   \
-            kBase +                                                       \
+            kBase45 +                                                       \
             FLASH_CTRL_BANK##bank_##_INFO0_REGWEN_##page_##_REG_OFFSET,   \
         .cfg_addr =                                                       \
-            kBase +                                                       \
+            kBase45 +                                                       \
             FLASH_CTRL_BANK##bank_##_INFO0_PAGE_CFG_##page_##_REG_OFFSET, \
     };
 
@@ -298,7 +298,7 @@ void flash_ctrl_init(void) {
       kFlashCtrlSecMmioDataDefaultCfgSet + 2 * kFlashCtrlSecMmioInfoCfgSet);
 
   // Initialize the flash controller.
-  abs_mmio_write32(kBase + FLASH_CTRL_INIT_REG_OFFSET,
+  abs_mmio_write32(kBase45 + FLASH_CTRL_INIT_REG_OFFSET,
                    bitfield_bit32_write(0, FLASH_CTRL_INIT_VAL_BIT, true));
   // Configure default scrambling, ECC, and HE settings for the data partition.
   uint32_t otp_val =
@@ -325,7 +325,7 @@ void flash_ctrl_init(void) {
 
 void flash_ctrl_status_get(flash_ctrl_status_t *status) {
   // Read flash controller status.
-  uint32_t fc_status = abs_mmio_read32(kBase + FLASH_CTRL_STATUS_REG_OFFSET);
+  uint32_t fc_status = abs_mmio_read32(kBase45 + FLASH_CTRL_STATUS_REG_OFFSET);
 
   // Extract flash controller status bits.
   status->rd_full =
@@ -457,21 +457,21 @@ rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
 
 void flash_ctrl_exec_set(uint32_t exec_val) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioExecSet, 1);
-  sec_mmio_write32(kBase + FLASH_CTRL_EXEC_REG_OFFSET, exec_val);
+  sec_mmio_write32(kBase45 + FLASH_CTRL_EXEC_REG_OFFSET, exec_val);
 }
 
 void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataDefaultPermsSet, 1);
 
   // Read first to preserve ECC, scrambling, and high endurance bits.
-  uint32_t reg = sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
+  uint32_t reg = sec_mmio_read32(kBase45 + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_RD_EN_FIELD,
                                perms.read);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_PROG_EN_FIELD,
                                perms.write);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_ERASE_EN_FIELD,
                                perms.erase);
-  sec_mmio_write32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, reg);
+  sec_mmio_write32(kBase45 + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, reg);
 }
 
 void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
@@ -496,14 +496,14 @@ void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataDefaultCfgSet, 1);
 
   // Read first to preserve permission bits.
-  uint32_t reg = sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
+  uint32_t reg = sec_mmio_read32(kBase45 + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_SCRAMBLE_EN_FIELD,
                                cfg.scrambling);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_ECC_EN_FIELD,
                                cfg.ecc);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_HE_EN_FIELD,
                                cfg.he);
-  sec_mmio_write32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, reg);
+  sec_mmio_write32(kBase45 + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, reg);
 }
 
 void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
@@ -542,7 +542,7 @@ void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
     default:
       HARDENED_UNREACHABLE();
   }
-  sec_mmio_write32_shadowed(kBase + FLASH_CTRL_MP_BANK_CFG_SHADOWED_REG_OFFSET,
+  sec_mmio_write32_shadowed(kBase45 + FLASH_CTRL_MP_BANK_CFG_SHADOWED_REG_OFFSET,
                             reg);
 }
 

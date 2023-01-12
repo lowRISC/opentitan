@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_CHECK_H_
 
 #include <stdbool.h>
-
+#include "dummy.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_base.h"

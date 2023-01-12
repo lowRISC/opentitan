@@ -104,5 +104,5 @@
   *(.stabstr)
 
   /* COMMON Sections */
-  *(COMMON)
+ 
 }

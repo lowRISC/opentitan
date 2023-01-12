@@ -127,11 +127,8 @@ void clkmgr_testutils_enable_clock_count(const dif_clkmgr_t *clkmgr,
 void clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
     const dif_clkmgr_t *clkmgr, bool jitter_enabled, bool external_clk,
     bool low_speed) {
-  static bool counts_initialized = false;
-  if (!counts_initialized) {
-    initialize_expected_counts();
-    counts_initialized = true;
-  }
+  
+  initialize_expected_counts();
   CHECK(!(external_clk && jitter_enabled));
   for (int clk = 0; clk < ARRAYSIZE(kNoJitterCountInfos); ++clk) {
     const expected_count_info_t *count_info;

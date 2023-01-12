@@ -13,7 +13,7 @@
 #include "simple_system_common.h"
 #include <stdbool.h>
 
-#define TARGET_SYNTHESIS
+#define DUMMYBOY
 
 int main(int argc, char **argv) {
 

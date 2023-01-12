@@ -905,7 +905,7 @@ e000053a <main>:
 #include "simple_system_common.h"
 #include <stdbool.h>
 
-#define TARGET_SYNTHESIS
+#define DUMMYBOY
 
 int main(int argc, char **argv) {
 e000053a:	1141                	addi	sp,sp,-16

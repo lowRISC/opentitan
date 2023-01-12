@@ -34,7 +34,7 @@
 #include "aes_regs.h"
 #include "alert_handler_regs.h"
 #include "hmac_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 #include "i2c_regs.h"
 #include "kmac_regs.h"
 #include "otbn_regs.h"

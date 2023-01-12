@@ -16,7 +16,7 @@
 #include "sw/device/lib/testing/aes_testutils.h"
 #endif
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 
 /**
  * OpenTitan program for AES side-channel analysis.

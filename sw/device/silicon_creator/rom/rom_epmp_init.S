@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "hw/top_earlgrey/sw/top_earlgrey_memory.h"
 
 /**
  * Helper macro to move v into the correct position to set the pmp{N*4+i}cfg

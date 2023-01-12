@@ -12,7 +12,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_ibex.h"
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_otbn.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 
 /*
@@ -204,9 +204,9 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
     case kHardenedBoolTrue:
       RETURN_IF_ERROR(sigverify_mod_exp_ibex(key, signature, &enc_msg));
       break;
-    case kHardenedBoolFalse:
+      /* case kHardenedBoolFalse:
       RETURN_IF_ERROR(sigverify_mod_exp_otbn(key, signature, &enc_msg));
-      break;
+      break;*/
     default:
       HARDENED_UNREACHABLE();
   }

@@ -16,7 +16,7 @@ rom_error_t rom_printf(const char *format, ...) {
 
   while (*format != '\0') {
     if (*format != '%') {
-      uart_putchar(*format++);
+      uart_sendchar(*format++);
       continue;
     }
 
@@ -26,7 +26,7 @@ rom_error_t rom_printf(const char *format, ...) {
         // Print a null-terminated string.
         const char *str = va_arg(args, const char *);
         while (*str != '\0') {
-          uart_putchar(*str++);
+          uart_sendchar(*str++);
         }
         break;
       }
@@ -36,7 +36,7 @@ rom_error_t rom_printf(const char *format, ...) {
         unsigned int v = va_arg(args, unsigned int);
         for (int i = 0; i < sizeof(v) * 2; ++i) {
           int shift = sizeof(v) * 8 - 4;
-          uart_putchar(kHexTable[v >> shift]);
+          uart_sendchar(kHexTable[v >> shift]);
           v <<= 4;
         }
         break;

@@ -22,7 +22,7 @@
 #include "csrng_regs.h"
 #include "edn_regs.h"
 #include "entropy_src_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 #include "lc_ctrl_regs.h"  // Generated.
 #include "otp_ctrl_regs.h"
 #include "sensor_ctrl_regs.h"

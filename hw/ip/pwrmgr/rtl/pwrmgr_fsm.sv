@@ -6,7 +6,7 @@
 //
 
 `include "prim_assert.sv"
-`define TARGET_SYNTHESIS
+`define DUMMYBOY
 
 module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input clk_i,

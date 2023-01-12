@@ -10,12 +10,12 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
 #include "aon_timer_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 #include "pwrmgr_regs.h"
 
 enum {
-  kBase = TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR,
+  kBase47 = TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR,
   kPwrMgrBase = TOP_EARLGREY_PWRMGR_AON_BASE_ADDR,
 
   kCtrlEnable = 1 << AON_TIMER_WDOG_CTRL_ENABLE_BIT,
@@ -80,11 +80,11 @@ void watchdog_configure(watchdog_config_t config) {
   abs_mmio_write32(kPwrMgrBase + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 1);
 
   // Set the watchdog bite and bark thresholds.
-  sec_mmio_write32(kBase + AON_TIMER_WDOG_CTRL_REG_OFFSET, kCtrlDisable);
-  abs_mmio_write32(kBase + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
-  abs_mmio_write32(kBase + AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET,
+  sec_mmio_write32(kBase47 + AON_TIMER_WDOG_CTRL_REG_OFFSET, kCtrlDisable);
+  abs_mmio_write32(kBase47 + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
+  abs_mmio_write32(kBase47 + AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET,
                    config.bark_threshold);
-  sec_mmio_write32(kBase + AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET,
+  sec_mmio_write32(kBase47 + AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET,
                    config.bite_threshold);
 
   // Enable or disable the watchdog as requested.
@@ -101,7 +101,7 @@ void watchdog_configure(watchdog_config_t config) {
     default:
       HARDENED_UNREACHABLE();
   }
-  sec_mmio_write32(kBase + AON_TIMER_WDOG_CTRL_REG_OFFSET, ctrl);
+  sec_mmio_write32(kBase47 + AON_TIMER_WDOG_CTRL_REG_OFFSET, ctrl);
 
   // Redundantly re-request the pwrmgr configuration sync since it isn't
   // possible to use sec_mmio for it.
@@ -110,13 +110,13 @@ void watchdog_configure(watchdog_config_t config) {
 
 void watchdog_disable(void) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kWatchdogSecMmioDisable, 1);
-  sec_mmio_write32(kBase + AON_TIMER_WDOG_CTRL_REG_OFFSET, kCtrlDisable);
+  sec_mmio_write32(kBase47 + AON_TIMER_WDOG_CTRL_REG_OFFSET, kCtrlDisable);
 }
 
 void watchdog_pet(void) {
-  abs_mmio_write32(kBase + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
+  abs_mmio_write32(kBase47 + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
 }
 
 uint32_t watchdog_get(void) {
-  return abs_mmio_read32(kBase + AON_TIMER_WDOG_COUNT_REG_OFFSET);
+  return abs_mmio_read32(kBase47 + AON_TIMER_WDOG_COUNT_REG_OFFSET);
 }

@@ -11,11 +11,11 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "alert_handler_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 
 enum {
-  kBase = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR,
+  kBase5 = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR,
 };
 
 rom_error_t alert_configure(size_t index, alert_class_t cls,
@@ -28,22 +28,22 @@ rom_error_t alert_configure(size_t index, alert_class_t cls,
   switch (cls) {
     case kAlertClassA:
       abs_mmio_write32_shadowed(
-          kBase + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
+          kBase5 + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSA);
       break;
     case kAlertClassB:
       abs_mmio_write32_shadowed(
-          kBase + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
+          kBase5 + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSB);
       break;
     case kAlertClassC:
       abs_mmio_write32_shadowed(
-          kBase + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
+          kBase5 + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSC);
       break;
     case kAlertClassD:
       abs_mmio_write32_shadowed(
-          kBase + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
+          kBase5 + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSD);
       break;
     case kAlertClassX:
@@ -58,13 +58,13 @@ rom_error_t alert_configure(size_t index, alert_class_t cls,
     case kAlertEnableLocked:
       // Enable, then lock.
       abs_mmio_write32_shadowed(
-          kBase + ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + index, 1);
-      abs_mmio_write32(kBase + ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + index,
+          kBase5 + ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + index, 1);
+      abs_mmio_write32(kBase5 + ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + index,
                        0);
       break;
     case kAlertEnableEnabled:
       abs_mmio_write32_shadowed(
-          kBase + ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + index, 1);
+          kBase5 + ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + index, 1);
       break;
     default:
       return kErrorAlertBadEnable;
@@ -82,22 +82,22 @@ rom_error_t alert_local_configure(size_t index, alert_class_t cls,
   switch (cls) {
     case kAlertClassA:
       abs_mmio_write32_shadowed(
-          kBase + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
+          kBase5 + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSA);
       break;
     case kAlertClassB:
       abs_mmio_write32_shadowed(
-          kBase + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
+          kBase5 + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSB);
       break;
     case kAlertClassC:
       abs_mmio_write32_shadowed(
-          kBase + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
+          kBase5 + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSC);
       break;
     case kAlertClassD:
       abs_mmio_write32_shadowed(
-          kBase + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
+          kBase5 + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
           ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSD);
       break;
     case kAlertClassX:
@@ -112,13 +112,13 @@ rom_error_t alert_local_configure(size_t index, alert_class_t cls,
     case kAlertEnableLocked:
       // Enable, then lock.
       abs_mmio_write32_shadowed(
-          kBase + ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET + index, 1);
+          kBase5 + ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET + index, 1);
       abs_mmio_write32(
-          kBase + ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET + index, 0);
+          kBase5 + ALERT_HANDLER_LOC_ALERT_REGWEN_0_REG_OFFSET + index, 0);
       break;
     case kAlertEnableEnabled:
       abs_mmio_write32_shadowed(
-          kBase + ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET + index, 1);
+          kBase5 + ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_REG_OFFSET + index, 1);
       break;
     default:
       return kErrorAlertBadEnable;
@@ -203,23 +203,23 @@ rom_error_t alert_class_configure(alert_class_t cls,
   }
 
   abs_mmio_write32_shadowed(
-      kBase + ALERT_HANDLER_CLASSA_CTRL_SHADOWED_REG_OFFSET + offset, reg);
+      kBase5 + ALERT_HANDLER_CLASSA_CTRL_SHADOWED_REG_OFFSET + offset, reg);
   abs_mmio_write32_shadowed(
-      kBase + ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_REG_OFFSET + offset,
+      kBase5 + ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_REG_OFFSET + offset,
       config->accum_threshold);
   abs_mmio_write32_shadowed(
-      kBase + ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_REG_OFFSET + offset,
+      kBase5 + ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_REG_OFFSET + offset,
       config->timeout_cycles);
   for (size_t i = 0; i < 4; ++i) {
     abs_mmio_write32_shadowed(
-        kBase + ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_REG_OFFSET + offset +
+        kBase5 + ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_REG_OFFSET + offset +
             i * 4,
         config->phase_cycles[i]);
   }
 
   if (config->enabled == kAlertEnableLocked) {
     // Lock the alert configuration if it is configured to be locked.
-    abs_mmio_write32(kBase + ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET + offset,
+    abs_mmio_write32(kBase5 + ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET + offset,
                      0);
   }
 
@@ -229,8 +229,8 @@ rom_error_t alert_class_configure(alert_class_t cls,
 rom_error_t alert_ping_enable(void) {
   // Enable the ping timer, then lock it.
   abs_mmio_write32_shadowed(
-      kBase + ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET, 1);
-  abs_mmio_write32(kBase + ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
+      kBase5 + ALERT_HANDLER_PING_TIMER_EN_SHADOWED_REG_OFFSET, 1);
+  abs_mmio_write32(kBase5 + ALERT_HANDLER_PING_TIMER_REGWEN_REG_OFFSET, 0);
   return kErrorOk;
 }
 
@@ -238,17 +238,17 @@ rom_error_t alert_ping_enable(void) {
  * Adds an alert handler register to a CRC32.
  *
  * @param[in, out] ctx Context variable.
- * @param offset Register offset relative to `kBase`.
+ * @param offset Register offset relative to `kBase5`.
  */
 static void crc32_add_reg(uint32_t *ctx, uint32_t offset) {
-  crc32_add32(ctx, abs_mmio_read32(kBase + offset));
+  crc32_add32(ctx, abs_mmio_read32(kBase5 + offset));
 }
 
 /**
  * Adds a range of alert handler registers to a CRC32.
  *
  * @param[in, out] ctx Context variable.
- * @param offset Register offset relative to `kBase`.
+ * @param offset Register offset relative to `kBase5`.
  * @param num_regs Number of registers.
  */
 static void crc32_add_regs(uint32_t *ctx, uint32_t offset, size_t num_regs) {

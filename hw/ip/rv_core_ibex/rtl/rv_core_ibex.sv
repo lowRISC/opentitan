@@ -10,7 +10,7 @@
  */
 
 `include "prim_assert.sv"
-`define TARGET_SYNTHESIS
+`define DUMMYBOY
 
 module rv_core_ibex
   import rv_core_ibex_pkg::*;

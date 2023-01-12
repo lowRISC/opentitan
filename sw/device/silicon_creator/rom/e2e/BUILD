@@ -3246,7 +3246,7 @@ test_suite(
             {csr_restore_commands}
 
             echo :::: Read and write memory (both SRAM and device).\\n
-            # See hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h
+            # See hw/top_earlgrey/sw/top_earlgrey_memory.h
             set $sram_base = 0x10000000
             set $sram_len = 0x00008000
             x/16xb $sram_base

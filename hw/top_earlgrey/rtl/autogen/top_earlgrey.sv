@@ -75,7 +75,7 @@ module top_earlgrey #(
   // parameters for sram_ctrl_main
   parameter bit SramCtrlMainInstrExec = 1,
   // parameters for rom_ctrl
-  parameter RomCtrlBootRomInitFile = "../hw/top_earlgrey/sw/tests/hello_test/bootrom.vmem",
+  parameter RomCtrlBootRomInitFile = "../hw/top_earlgrey/sw/tests/hello_test/rom.vmem",
   parameter bit SecRomCtrlDisableScrambling = 1'b0,
   // parameters for rv_core_ibex
   parameter bit RvCoreIbexPMPEnable = 1,

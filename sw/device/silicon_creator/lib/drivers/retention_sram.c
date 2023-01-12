@@ -9,14 +9,14 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 #include "sram_ctrl_regs.h"  // Generated.
 
 enum {
   /**
    * Base address of retention SRAM controller.
    */
-  kBase = TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR,
+  kBase3 = TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR,
 };
 
 retention_sram_t *retention_sram_get(void) {
@@ -31,7 +31,7 @@ void retention_sram_clear(void) {
 
 void retention_sram_init(void) {
   uint32_t reg = bitfield_bit32_write(0, SRAM_CTRL_CTRL_INIT_BIT, true);
-  abs_mmio_write32(kBase + SRAM_CTRL_CTRL_REG_OFFSET, reg);
+  abs_mmio_write32(kBase3 + SRAM_CTRL_CTRL_REG_OFFSET, reg);
 }
 
 void retention_sram_scramble(void) {
@@ -40,5 +40,5 @@ void retention_sram_scramble(void) {
   uint32_t ctrl = 0;
   ctrl = bitfield_bit32_write(ctrl, SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT, true);
   ctrl = bitfield_bit32_write(ctrl, SRAM_CTRL_CTRL_INIT_BIT, true);
-  abs_mmio_write32(kBase + SRAM_CTRL_CTRL_REG_OFFSET, ctrl);
+  abs_mmio_write32(kBase3 + SRAM_CTRL_CTRL_REG_OFFSET, ctrl);
 }

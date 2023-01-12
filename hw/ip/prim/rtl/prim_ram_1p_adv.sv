@@ -86,7 +86,6 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
 
   prim_ram_1p #(
     .MemInitFile     (MemInitFile),
-
     .Width           (TotalWidth),
     .Depth           (Depth),
     .DataBitsPerMask (LocalDataBitsPerMask)

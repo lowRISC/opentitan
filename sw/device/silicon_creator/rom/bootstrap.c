@@ -18,7 +18,7 @@
 
 #include "flash_ctrl_regs.h"
 #include "gpio_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 
 enum {

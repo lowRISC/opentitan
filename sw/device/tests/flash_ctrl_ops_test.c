@@ -12,7 +12,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/top_earlgrey.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 #define FLASH_CTRL_NUM_IRQS 5
