@@ -19,15 +19,17 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   // this bit goes high for the duration of memory initialization
   bit in_init = 0;
 
-  // This bit goes high as soon as a LC escalation request is seen on the interface,
-  // and goes low once the scoreboard has finished all internal handling logic up to
-  // resetting the key and nonce (one cycle after `exp_status` is updated).
-  bit handling_lc_esc;
-
-  // this bit goes high immediately after waiting for
-  // LC_ESCALATION_PROPAGATION_DELAY cycles, to signal that
-  // the LC escalation has finished propagating through the design
-  bit status_lc_esc;
+  // this bit is set to EscPending after lc_esc occurs, to signal that
+  // the LC escalation may or may not be propagated to the design.
+  // During EscPending, ignore checking data and d_error.
+  // After we see d_error is set, we know LC escalation has finished propagating,
+  // so set it to `EscFinal`.
+  typedef enum {
+    EscNone    = 0,
+    EscPending = 1,
+    EscFinal   = 2
+  } lc_esc_status_type;
+  lc_esc_status_type status_lc_esc;
 
   // path for backdoor access
   string write_en_path;
@@ -145,7 +147,10 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       is_tl_err = !allow_ifetch;
     end
 
-    if (status_lc_esc) is_tl_err |= 1;
+    if (status_lc_esc == EscPending && item.d_error) begin
+      status_lc_esc = EscFinal;
+    end
+    if (status_lc_esc == EscFinal) is_tl_err |= 1;
 
     if (channel == DataChannel && is_tl_err) begin
       `DV_CHECK_EQ(item.d_error, 1,
@@ -241,7 +246,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       end
       item = write_item_q.pop_front();
 
-      while (!write_en && !status_lc_esc) begin
+      while (!write_en && status_lc_esc == EscNone) begin
         cfg.clk_rst_vif.wait_n_clks(1);
         `DV_CHECK(uvm_hdl_read(write_en_path, write_en))
       end
@@ -257,10 +262,6 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // the data should be settled after posedge. Wait for a 1ps to avoid race condition
       cfg.clk_rst_vif.wait_clks(1);
       #1ps;
-      if (handling_lc_esc) begin
-        `uvm_info(`gfn, "skip checking the write due to escalation", UVM_MEDIUM)
-        continue;
-      end
 
       mem_bkdr_scb.write_finish(decrypt_addr, item.mask);
       `uvm_info(`gfn, $sformatf("Currently num of pending write items is %0d", write_item_q.size),
@@ -323,7 +324,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       #1;
       // if we are in escalated state, scr_key_seed_valid will always stay low. otherwise
       // we can set the init done flag here.
-      exp_status[SramCtrlInitDone] = status_lc_esc ? 0 : 1;
+      exp_status[SramCtrlInitDone] = status_lc_esc != EscNone ? 0 : 1;
       in_init = 0;
       `uvm_info(`gfn, "dropped in_init", UVM_MEDIUM)
     end
@@ -335,26 +336,13 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       wait(cfg.lc_vif.lc_esc_en != lc_ctrl_pkg::Off);
       `uvm_info(`gfn, "LC escalation request detected", UVM_MEDIUM)
 
+      cfg.clk_rst_vif.wait_clks(1);
+
+      // signal that the escalation may be propagated to the design.
+      status_lc_esc = EscPending;
+
       // clear exp_mem, scramble is changed due to escalation.
       exp_mem[cfg.sram_ral_name].init();
-
-      handling_lc_esc = 1;
-
-      // escalation signal needs 3 cycles to be propagated through the DUT
-      cfg.clk_rst_vif.wait_clks(LC_ESCALATION_PROPAGATION_CYCLES);
-
-      // signal that the escalation propagation has finished.
-      //
-      // updated control signals should now be broadcast from `sram_ctrl`
-      // to the rest of the SRAM subsystem
-      status_lc_esc = 1;
-
-      // Though the updated STATUS fields, key, and nonce are available
-      // LC_ESCALATION_PROPAGATION_CYCLES after detecting an escalation request,
-      // these values only become valid on the cycle after that.
-      //
-      // We wait a cycle here so the invalid values do not corrupt scoreboard state.
-      cfg.clk_rst_vif.wait_clks(1);
 
       exp_status[SramCtrlEscalated]       = 1;
       exp_status[SramCtrlScrKeySeedValid] = 0;
@@ -364,37 +352,13 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // escalation resets the key and nonce back to defaults
       reset_key_nonce();
 
-      // insert a small delay before dropping `handling_lc_esc`.
-      //
-      // This indicates that the scoreboard is done handling the internal updates required
-      // by an escalation request.
-      //
-      // However, this also has the effect of letting us handle a particularly tricky edge
-      // case where a memory request is sent on the cycle before `status_lc_esc` goes high.
-      // (see issue lowRISC/opentitan#5590).
-      //
-      // In this scenario, the `sram_tl_d_chan_fifo` will get the valid response tl_seq_item from
-      // the SRAM's TL response channel.
-      // As per issue #5590, even though the response is perfectly valid, any read data will be
-      // corrupted/incorrect due to the key input to `PRINCE` switching mid-way through keystream
-      // generation.
-      // This means that there will be a valid `sram_trans_t` item in `addr_phase_mbox` that we need
-      // to ignore as it will be corrupted, so we use `handling_lc_esc` as an indicator of when we
-      // can safely throw an error if an unexpected `tl_seq_item` is received by the
-      // `sram_tl_d_chan_fifo`.
-      //
-      // Again as per #5590, even if a write is performed successfully in this edge case it is ok to
-      // ignore it - we technically do not care about the write as the SRAM must be reset anyways
-      // before any more valid accesses can be made.
-      #1 handling_lc_esc = 0;
-
       // lc escalation status will be dropped after reset, no further action needed
       wait(cfg.lc_vif.lc_esc_en == lc_ctrl_pkg::Off);
 
-      // there could be up to 4 transactions accepted but not compared due to escalation
-      // 2 transactions are due to outstanding, 2 transactions are finished but we skip checking
-      // due to key changed after escalation
-      `DV_CHECK_LE(mem_bkdr_scb.read_item_q.size + mem_bkdr_scb.write_item_q.size, 4)
+      // there could be up to 6 transactions accepted but not compared due to escalation
+      // 2 transactions are due to outstanding, allow another 4 pending items in the queue
+      // as we skip checking them when lc_esc happens
+      `DV_CHECK_LE(mem_bkdr_scb.read_item_q.size + mem_bkdr_scb.write_item_q.size, 6)
 
       // sample coverage
       if (cfg.en_cov) begin
@@ -407,10 +371,13 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   virtual task process_sram_tl_a_chan_item(tl_seq_item item);
     `uvm_info(`gfn, $sformatf("Received sram_tl_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
 
-    `DV_CHECK_EQ(in_key_req, 0, "No item is accepted during key req")
-    `DV_CHECK_EQ(in_init, 0, "No item is accepted during init")
-
-    if (cfg.en_cov) cov.subword_access_cg.sample(item.is_write(), item.a_mask);
+    // when esc occurs, access can be finished immediately with d_error, even if key req or
+    // init is ongoing.
+    if (status_lc_esc == EscNone) begin
+      `DV_CHECK_EQ(in_key_req, 0, "No item is accepted during key req")
+      `DV_CHECK_EQ(in_init, 0, "No item is accepted during init")
+      if (cfg.en_cov) cov.subword_access_cg.sample(item.is_write(), item.a_mask);
+    end
 
     if (item.is_write()) begin
       mem_bkdr_scb.write_start(simplify_addr(item.a_addr), item.a_data, item.a_mask);
@@ -429,17 +396,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     `DV_CHECK_EQ(in_key_req, 0, "No item is accepted during key req")
     `DV_CHECK_EQ(in_init, 0, "No item is accepted during init")
 
-    // See the explanation in `process_lc_escalation()` as to why we use `handling_lc_esc`.
-    //
-    // Excepting this edge case, detecting any other item in the `addr_phase_mbox` indicates that
-    // a TLUL response has been seen from the SRAM even though it hasn't been processed by
-    // `process_sram_tl_a_chan_item()`. This means one of two things:
-    //
-    // 1) There is a bug in the scoreboard.
-    //
-    // 2) There is a bug in the design and the SRAM is actually servicing memory requests
-    //    while in the terminal escalated state.
-    if (!status_lc_esc && !item.is_write()) begin
+    if (status_lc_esc == EscNone && !item.is_write()) begin
       mem_bkdr_scb.read_finish(item.d_data, simplify_addr(item.a_addr), item.a_mask);
     end
   endtask
@@ -469,11 +426,11 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
       // sample coverage on seed_valid
       if (cfg.en_cov) begin
-        cov.key_seed_valid_cg.sample(status_lc_esc, seed_valid);
+        cov.key_seed_valid_cg.sample(status_lc_esc == EscFinal, seed_valid);
       end
 
       // if we are in escalated state, key_valid and scr_key_seed_valid will remain low
-      if (!status_lc_esc) begin
+      if (status_lc_esc == EscNone) begin
         exp_status[SramCtrlScrKeyValid]     = 1;
         exp_status[SramCtrlScrKeySeedValid] = seed_valid;
       end
@@ -587,10 +544,13 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     mem_bkdr_scb.reset();
     mem_bkdr_scb.update_key(key, nonce);
     exp_status = '0;
-    handling_lc_esc = 0;
-    status_lc_esc = 0;
     write_item_q.delete();
     exp_mem[cfg.sram_ral_name].init();
+
+    // Once esc happens, vseq will send enough transaction to make sure d_error occurs
+    // so that scb updates to EscFinal
+    `DV_CHECK_NE(status_lc_esc, EscPending)
+    status_lc_esc = EscNone;
   endfunction
 
   function void check_phase(uvm_phase phase);
