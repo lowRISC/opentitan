@@ -10,8 +10,8 @@
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/params.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/thash.h"
 
-rom_error_t thash(const unsigned char *in, size_t inblocks,
-                  const spx_ctx_t *ctx, const spx_addr_t *addr, uint32_t *out) {
+rom_error_t thash(const uint8_t *in, size_t inblocks, const spx_ctx_t *ctx,
+                  const spx_addr_t *addr, uint32_t *out) {
   // Uses the "simple" thash construction (Construction 7 in the SPHINCS+
   // paper): H(pk_seed, addr, in).
   HARDENED_RETURN_IF_ERROR(kmac_shake256_start());
