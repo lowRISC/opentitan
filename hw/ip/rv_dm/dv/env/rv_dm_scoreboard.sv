@@ -88,7 +88,14 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
           void'(selected_dtm_csr.predict(.value(item.dr), .kind(UVM_PREDICT_WRITE)));
         end
         "dtmcs": begin
-          `DV_CHECK_EQ(item.dout, selected_dtm_csr.get_mirrored_value())
+          // DMI traffic is internal to rv_dm module. The stimulus in jtag_dmi_reg_frontdoor reads
+          // the dmistat field of dtmcs register to determine if the previous transaction completed.
+          // It is not possible to predict the value of this field, unless the internals of the
+          // design (dmi_jtag module) is probed. Instead of doing that, checking the correctness of
+          // dmistat field can be offloaded to a directed test that generates DMI busy scenarios.
+          uvm_reg_data_t mask = ~dv_base_reg_pkg::get_mask_from_fields(
+              {cfg.m_jtag_agent_cfg.jtag_dtm_ral.dtmcs.dmistat});
+          `DV_CHECK_EQ(item.dout & mask, selected_dtm_csr.get_mirrored_value() & mask)
           void'(selected_dtm_csr.predict(.value(item.dr), .kind(UVM_PREDICT_WRITE)));
         end
         default: `uvm_fatal(`gfn, $sformatf("Unknown DTM CSR: %0s", selected_dtm_csr.get_name()))

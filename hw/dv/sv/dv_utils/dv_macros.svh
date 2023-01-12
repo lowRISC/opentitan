@@ -575,7 +575,7 @@
 // Macros for constrain clk with common frequencies
 //
 // Nominal clock frequency range is 24Mhz - 100Mhz and use higher weights on 24, 25, 48, 50, 100,
-// To mimic manufacturing conditions (when clocks are uncalibrated), we need to be able to go as 
+// To mimic manufacturing conditions (when clocks are uncalibrated), we need to be able to go as
 // low as 5MHz.
 `ifndef DV_COMMON_CLK_CONSTRAINT
 `define DV_COMMON_CLK_CONSTRAINT(FREQ_) \
