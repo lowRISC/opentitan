@@ -84,7 +84,7 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
         fork
           wait(jtag_agent_cfg_h.in_reset);
           // TODO: Make timeout more configurable.
-          `DV_WAIT_TIMEOUT(jtag_agent_cfg_h.vif.tck_period_ns * 10000)
+          `DV_WAIT_TIMEOUT(jtag_agent_cfg_h.vif.tck_period_ps * 10_000_000 /*10 ms*/)
         join_any
       end
     )
