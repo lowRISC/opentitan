@@ -321,6 +321,11 @@ Error handling by that TL-UL bus is **completely under the control of the logic 
 It is recommended to follow the above error rules (including `devmode_i` for address misses on security peripherals) based on the declared number of `validbits`: for the window, but there are some cases where this might be relaxed.
 For example, if the termination of the TL-UL bus is a memory that handles byte and halfword writes via masking, errors do not need be returned for unaligned sub-word writes.
 
+#### Current Usage of devmode_i
+Note, for the current iteration of OpenTitan complexes, in order to provide maximum software debuggability within security contexts, we do not make use of `devmode_i`.
+The `devmode_i` is tied off to 1 so that software always receives an error in the event of an access to unmapped space.
+This behavior may change in the future.
+
 ## Register definitions per type
 
 The definition of what exactly is in each register type is described in this section.
