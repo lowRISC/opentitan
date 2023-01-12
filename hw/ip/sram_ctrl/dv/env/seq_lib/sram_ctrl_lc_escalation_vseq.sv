@@ -33,23 +33,35 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
 
   virtual task body();
     repeat (num_trans) begin
-      req_mem_init();
+      if ($urandom_range(0, 1)) begin
+        req_mem_init();
+      end else begin
+        // without init, design returns invalid integrity
+        cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
+      end
 
-      do_rand_ops(.num_ops($urandom_range(10, 100)), .blocking(0), .abort(0),
-                  .wait_complete(1));
+      fork
+        begin
+          // lc_esc happens in parallel, some rsp may fail, skipping check it in vseq.
+          do_rand_ops(.num_ops($urandom_range(10, 100)), .blocking(0), .abort(0),
+                      .wait_complete(1), .check_rsp(0));
+        end
+        begin
+          cfg.clk_rst_vif.wait_clks($urandom_range(1, 100));
+          // any non-off value is treated as true
+          cfg.lc_vif.drive_lc_esc_en(get_rand_lc_tx_val(.t_weight(1),
+                                                        .f_weight(0),
+                                                        .other_weight(1)));
+          // After escalation, key becomes invalid and design returns invalid integrity
+          cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
 
-      // any non-off value is treated as true
-      cfg.lc_vif.drive_lc_esc_en(get_rand_lc_tx_val(.t_weight(1),
-                                                    .f_weight(0),
-                                                    .other_weight(1)));
-      // After escalation, key becomes invalid and design returns invalid integrity
-      cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
+          `uvm_info(`gfn, "Esc_en is on", UVM_MEDIUM);
 
-      `uvm_info(`gfn, "Esc_en is on", UVM_MEDIUM);
-
-      // after escalation request is seen, it takes 3 cycles to propagate from
-      // `sram_ctrl` to the `prim_1p_ram_scr`, and 1 more cycle to update the CSRs
-      cfg.clk_rst_vif.wait_clks(LC_ESCALATION_PROPAGATION_CYCLES + 1);
+          // after escalation request is seen, it takes 3 cycles to propagate from
+          // `sram_ctrl` to the `prim_1p_ram_scr`, and 1 more cycle to update the CSRs
+          cfg.clk_rst_vif.wait_clks(LC_ESCALATION_PROPAGATION_CYCLES + 1);
+        end
+      join
 
       fork
         begin
@@ -69,16 +81,12 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
           end
           // read out STATUS csr, scoreboard will check that proper updates have been made
           csr_rd(.ptr(ral.status), .value(status));
-          csr_wr(.ptr(ral.status), .value(status));
 
           `uvm_info(`gfn,
             $sformatf("Performing random memory accesses after LC escalation request"),
             UVM_MEDIUM)
           do_rand_ops(.num_ops($urandom_range(10, 100)), .blocking(0), .exp_err_rsp(1),
                       .wait_complete(1));
-
-          // reset to get the DUT out of terminal state
-          apply_reset();
         end
         begin
           // randomly drop the escalation request, should remain latched by design
@@ -88,6 +96,11 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
           `uvm_info(`gfn, "Esc_en is off", UVM_MEDIUM);
         end
       join
+      // reset to get the DUT out of terminal state
+      apply_resets_concurrently();
+      // delay to avoid race condition when sending item and checking no item after reset occur
+      // at the same time
+      #1ps;
     end
   endtask
 endclass

@@ -31,17 +31,21 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
 
   virtual task apply_reset(string kind = "HARD");
     cfg.lc_vif.init();
-    super.apply_reset(kind);
+    fork
+      super.apply_reset(kind);
+      if (kind == "HARD") begin
+        cfg.otp_clk_rst_vif.apply_reset();
+      end
+    join
     cfg.exec_vif.init();
-    if (kind == "HARD") begin
-      cfg.otp_clk_rst_vif.apply_reset();
-    end
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    cfg.lc_vif.init();
     cfg.otp_clk_rst_vif.drive_rst_pin(0);
     super.apply_resets_concurrently(cfg.otp_clk_rst_vif.clk_period_ps);
     cfg.otp_clk_rst_vif.drive_rst_pin(1);
+    cfg.exec_vif.init();
   endtask
 
   virtual task dut_shutdown();
@@ -159,7 +163,8 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
                            bit en_ifetch = 0,
                            bit wait_complete = 1,
                            bit not_use_last_addr = 0,
-                           bit exp_err_rsp = 0);
+                           bit exp_err_rsp = 0,
+                           bit check_rsp = 1);
     bit [TL_DW-1:0] data;
     bit [TL_AW-1:0] addr;
     mubi4_t instr_type;
@@ -188,7 +193,7 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
                         .mask(get_rand_mask(write)),
                         .write(write),
                         .blocking(blocking),
-                        .check_rsp(!en_ifetch),
+                        .check_rsp(!en_ifetch & check_rsp),
                         .exp_err_rsp(exp_err_rsp),
                         .instr_type(instr_type),
                         .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.sram_ral_name]),
