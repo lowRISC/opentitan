@@ -15,5 +15,4 @@ class chip_sw_i2c_tx_rx_vseq extends chip_sw_base_vseq;
   int clock_period_cycles = ((i2c_clock_period_nanos - 1) / clock_period_nanos) + 1;
   int half_period_cycles = ((i2c_clock_period_nanos/2 - 1) / clock_period_nanos) + 1;
 
-
-  endclass : chip_sw_i2c_tx_rx_vseq
+endclass : chip_sw_i2c_tx_rx_vseq
