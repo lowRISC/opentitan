@@ -89,3 +89,49 @@ jobs:
 #           --build_tests_only \
 #           //...
 #       displayName: "Run tests"
+
+- job: short_verilator_tests
+  displayName: "Short/moderate Verilator tests"
+  timeoutInMinutes: 300 # TODO: adjust this
+  dependsOn: checkout
+  pool: ci-public
+  steps:
+    - template: ../ci/checkout-template.yml
+    - template: ../ci/install-package-dependencies.yml
+    - bash: |
+        set -ex
+        ci/bazelisk.sh test \
+          --test_timeout=2400,2400,3600,-1 \
+          --local_test_jobs=4 \
+          --local_cpu_resources=4 \
+          --//hw:verilator_options=--threads,1 \
+          --//hw:make_options=-j,4 \
+          --test_tag_filters=verilator,-broken \
+          --test_timeout_filters=short,moderate \
+          --test_output=errors \
+          --build_tests_only \
+          //...
+      displayName: "Run tests"
+
+- job: long_verilator_tests
+  displayName: "Long Verilator tests"
+  timeoutInMinutes: 300 # TODO: adjust this
+  dependsOn: checkout
+  pool: ci-public
+  steps:
+    - template: ../ci/checkout-template.yml
+    - template: ../ci/install-package-dependencies.yml
+    - bash: |
+        set -ex
+        ci/bazelisk.sh test \
+          --test_timeout=2400,2400,3600,-1 \
+          --local_test_jobs=4 \
+          --local_cpu_resources=4 \
+          --//hw:verilator_options=--threads,1 \
+          --//hw:make_options=-j,4 \
+          --test_tag_filters=verilator,-broken \
+          --test_timeout_filters=long \
+          --test_output=errors \
+          --build_tests_only \
+          //...
+      displayName: "Run tests"
