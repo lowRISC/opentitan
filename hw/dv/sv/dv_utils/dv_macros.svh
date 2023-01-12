@@ -573,10 +573,14 @@
 `endif // UVM
 
 // Macros for constrain clk with common frequencies
-// constrain clock to run at 24Mhz - 100Mhz and use higher weights on 24, 25, 48, 50, 100
+//
+// Nominal clock frequency range is 24Mhz - 100Mhz and use higher weights on 24, 25, 48, 50, 100,
+// To mimic manufacturing conditions (when clocks are uncalibrated), we need to be able to go as 
+// low as 5MHz.
 `ifndef DV_COMMON_CLK_CONSTRAINT
 `define DV_COMMON_CLK_CONSTRAINT(FREQ_) \
   FREQ_ dist { \
+    [5:23]  :/ 2, \
     [24:25] :/ 2, \
     [26:47] :/ 1, \
     [48:50] :/ 2, \
