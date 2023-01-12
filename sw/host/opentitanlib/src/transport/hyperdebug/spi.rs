@@ -368,16 +368,30 @@ impl Target for HyperdebugSpiTarget {
 
     fn get_max_speed(&self) -> Result<u32> {
         let mut buf = String::new();
-        let captures = self.inner.cmd_one_line_output_match(
-            &format!("spiget {}", &self.target_idx),
-            &super::SPI_REGEX,
-            &mut buf,
-        )?;
+        let mut buf2 = String::new();
+        let captures = self
+            .inner
+            .cmd_one_line_output_match(
+                &format!("spi info {}", &self.target_idx),
+                &super::SPI_REGEX,
+                &mut buf,
+            )
+            .or_else(|_| {
+                self.inner.cmd_one_line_output_match(
+                    &format!("spiget {}", &self.target_idx),
+                    &super::SPI_REGEX,
+                    &mut buf2,
+                )
+            })?;
         Ok(captures.get(3).unwrap().as_str().parse().unwrap())
     }
     fn set_max_speed(&self, frequency: u32) -> Result<()> {
         self.inner
-            .cmd_no_output(&format!("spisetspeed {} {}", &self.target_idx, frequency))
+            .cmd_no_output(&format!("spi set speed {} {}", &self.target_idx, frequency))
+            .or_else(|_| {
+                self.inner
+                    .cmd_no_output(&format!("spisetspeed {} {}", &self.target_idx, frequency))
+            })
     }
 
     fn get_max_transfer_count(&self) -> Result<usize> {
