@@ -30,6 +30,18 @@ cc_library(
 )
 
 cc_library(
+    name = "fors",
+    srcs = ["fors.c"],
+    hdrs = ["fors.h"],
+    deps = [
+        ":address",
+        ":hash",
+        ":thash",
+        ":utils",
+    ],
+)
+
+cc_library(
     name = "hash",
     srcs = ["hash_shake.c"],
     hdrs = ["hash.h"],
