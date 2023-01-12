@@ -273,7 +273,7 @@ impl Inner {
     pub fn cmd_no_output(&self, cmd: &str) -> Result<()> {
         let mut unexpected_output: bool = false;
         self.execute_command(cmd, |line| {
-            log::error!("Unexpected HyperDebug output: {}\n", line);
+            log::warn!("Unexpected HyperDebug output: {}\n", line);
             unexpected_output = true;
         })?;
         if unexpected_output {
@@ -292,17 +292,17 @@ impl Inner {
         self.execute_command(cmd, |line| {
             if unexpected_output {
                 // Third or subsequent line, report it.
-                log::error!("Unexpected HyperDebug output: {}\n", line);
+                log::warn!("Unexpected HyperDebug output: {}\n", line);
             } else if result.is_none() {
                 // First line, remember it.
                 result = Some(line.to_string());
             } else {
                 // Second line, report the first as well as this one.
-                log::error!(
+                log::warn!(
                     "Unexpected HyperDebug output: {}\n",
                     result.as_ref().unwrap()
                 );
-                log::error!("Unexpected HyperDebug output: {}\n", line);
+                log::warn!("Unexpected HyperDebug output: {}\n", line);
                 unexpected_output = true;
             }
         })?;
@@ -329,7 +329,7 @@ impl Inner {
     ) -> Result<regex::Captures<'a>> {
         *buf = self.cmd_one_line_output(cmd)?;
         let Some(captures) = regex.captures(buf) else {
-            log::error!("Unexpected HyperDebug output: {}\n", buf);
+            log::warn!("Unexpected HyperDebug output: {}\n", buf);
             bail!(TransportError::CommunicationError(
                 "Unexpected output".to_string()
             ));
@@ -449,12 +449,20 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
 
     // Crate SPI Target instance, or return one from a cache of previously created instances.
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
-        // Execute a "spiget" command to look up the numeric index corresponding to the given
+        // Execute a "spi info" command to look up the numeric index corresponding to the given
         // alphanumeric SPI instance name.
         let mut buf = String::new();
+        let mut buf2 = String::new();
         let captures = self
             .inner
-            .cmd_one_line_output_match(&format!("spiget {}", instance), &SPI_REGEX, &mut buf)
+            .cmd_one_line_output_match(&format!("spi info {}", instance), &SPI_REGEX, &mut buf)
+            .or_else(|_| {
+                self.inner.cmd_one_line_output_match(
+                    &format!("spiget {}", instance),
+                    &SPI_REGEX,
+                    &mut buf2,
+                )
+            })
             .map_err(|_| {
                 TransportError::InvalidInstance(TransportInterfaceType::Spi, instance.to_string())
             })?;
