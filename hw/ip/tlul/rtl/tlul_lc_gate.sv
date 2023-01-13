@@ -33,6 +33,9 @@ module tlul_lc_gate
   input flush_req_i,
   output logic flush_ack_o,
 
+  // Indicates whether there are pending responses on the device side.
+  output logic resp_pending_o,
+
   // LC control signal
   input  lc_tx_t  lc_en_i,
   output logic err_o
@@ -163,11 +166,15 @@ module tlul_lc_gate
     err_en = Off;
     err_o = '0;
     flush_ack_o = '0;
+    resp_pending_o = 1'b0;
 
     unique case (state_q)
       StActive: begin
         if (lc_tx_test_false_loose(lc_en_i) || flush_req_i) begin
           state_d = StOutstanding;
+        end
+        if (outstanding_txn != '0) begin
+          resp_pending_o = 1'b1;
         end
       end
 
@@ -175,6 +182,8 @@ module tlul_lc_gate
         block_cmd = 1'b1;
         if (outstanding_txn == '0) begin
           state_d = lc_tx_test_false_loose(lc_en_i) ? StError : StFlush;
+        end else begin
+          resp_pending_o = 1'b1;
         end
       end
 

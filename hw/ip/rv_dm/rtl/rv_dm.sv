@@ -242,7 +242,8 @@ module rv_dm
     .lc_en_i (lc_hw_debug_en[LcEnSba]),
     .err_o   (sba_gate_intg_error),
     .flush_req_i('0),
-    .flush_ack_o()
+    .flush_ack_o(),
+    .resp_pending_o()
   );
 
   tlul_adapter_host #(
@@ -374,6 +375,7 @@ module rv_dm
     .tl_d2h_i(mem_tl_win_d2h_gated),
     .flush_req_i(ndmreset_req),
     .flush_ack_o(ndmreset_req_qual),
+    .resp_pending_o(),
     .lc_en_i (lc_hw_debug_en[LcEnRom]),
     .err_o   (rom_gate_intg_error)
   );
