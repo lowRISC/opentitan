@@ -51,6 +51,8 @@ rust_binary(
         "//third_party/rust/crates:hex",
         "//third_party/rust/crates:humantime",
         "//third_party/rust/crates:log",
+        "//third_party/rust/crates:mio",
+        "//third_party/rust/crates:mio_signals",
         "//third_party/rust/crates:nix",
         "//third_party/rust/crates:raw_tty",
         "//third_party/rust/crates:regex",

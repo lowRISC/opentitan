@@ -21,7 +21,7 @@ use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
 use crate::collection;
-use crate::io::gpio::GpioPin;
+use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
@@ -297,9 +297,10 @@ impl Inner {
             unexpected_output = true;
         })?;
         if unexpected_output {
-            bail!(TransportError::CommunicationError(
-                "Unexpected output".to_string()
-            ));
+            bail!(TransportError::CommunicationError(format!(
+                "Unexpected output to {}",
+                cmd
+            )));
         }
         Ok(())
     }
@@ -329,9 +330,10 @@ impl Inner {
             ));
         }
         match result {
-            None => bail!(TransportError::CommunicationError(
-                "Unexpected output".to_string()
-            )),
+            None => bail!(TransportError::CommunicationError(format!(
+                "No response to command {}",
+                cmd
+            ))),
             Some(str) => Ok(str),
         }
     }
@@ -461,11 +463,15 @@ impl Inner {
 impl<T: Flavor> Transport for Hyperdebug<T> {
     fn capabilities(&self) -> Result<Capabilities> {
         Ok(Capabilities::new(
-            Capability::UART | Capability::GPIO | Capability::SPI | Capability::I2C,
+            Capability::UART
+                | Capability::GPIO
+                | Capability::GPIO_MONITORING
+                | Capability::SPI
+                | Capability::I2C,
         ))
     }
 
-    // Crate SPI Target instance, or return one from a cache of previously created instances.
+    // Create SPI Target instance, or return one from a cache of previously created instances.
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
         // Execute a "spi info" command to look up the numeric index corresponding to the given
         // alphanumeric SPI instance name.
@@ -501,7 +507,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         Ok(instance)
     }
 
-    // Crate I2C Target instance, or return one from a cache of previously created instances.
+    // Create I2C Target instance, or return one from a cache of previously created instances.
     fn i2c(&self, instance: &str) -> Result<Rc<dyn Bus>> {
         let &idx = self.i2c_names.get(instance).ok_or_else(|| {
             TransportError::InvalidInstance(TransportInterfaceType::I2c, instance.to_string())
@@ -521,7 +527,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         Ok(instance)
     }
 
-    // Crate Uart instance, or return one from a cache of previously created instances.
+    // Create Uart instance, or return one from a cache of previously created instances.
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
         match self.uart_ttys.get(instance) {
             Some(tty) => {
@@ -545,7 +551,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         }
     }
 
-    // Crate GpioPin instance, or return one from a cache of previously created instances.
+    // Create GpioPin instance, or return one from a cache of previously created instances.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(
             match self.inner.gpio.borrow_mut().entry(pinname.to_string()) {
@@ -556,6 +562,13 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 Entry::Occupied(o) => Rc::clone(o.get()),
             },
         )
+    }
+
+    // Create GpioMonitoring instance.
+    fn gpio_monitoring(&self) -> Result<Rc<dyn GpioMonitoring>> {
+        // GpioMonitoring does not carry any state, so returning a new instance every time is
+        // harmless (save for some memory usage).
+        Ok(Rc::new(gpio::HyperdebugGpioMonitoring::open(&self.inner)?))
     }
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {

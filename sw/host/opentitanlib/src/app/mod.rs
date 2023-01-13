@@ -7,7 +7,7 @@ pub mod command;
 pub mod config;
 
 use crate::io::emu::Emulator;
-use crate::io::gpio::{GpioPin, PinMode, PullMode};
+use crate::io::gpio::{GpioMonitoring, GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
@@ -335,6 +335,20 @@ impl TransportWrapper {
             return Ok(Rc::new(NullPin::new(name)));
         }
         self.transport.borrow().gpio_pin(resolved_pin_name.as_str())
+    }
+
+    /// Convenience method, returns a number of [`GpioPin`] implementations.
+    pub fn gpio_pins(&self, names: &[String]) -> Result<Vec<Rc<dyn GpioPin>>> {
+        let mut result = Vec::new();
+        for name in names {
+            result.push(self.gpio_pin(name)?);
+        }
+        Ok(result)
+    }
+
+    /// Returns a [`GpioMonitoring`] implementation.
+    pub fn gpio_monitoring(&self) -> Result<Rc<dyn GpioMonitoring>> {
+        self.transport.borrow().gpio_monitoring()
     }
 
     /// Returns a [`Emulator`] implementation.
