@@ -16,6 +16,7 @@ module edn_main_sm import edn_pkg::*; #(
   input logic                   boot_req_mode_i,
   input logic                   auto_req_mode_i,
   input logic                   sw_cmd_req_load_i,
+  output logic                  sw_cmd_valid_o,
   output logic                  boot_wr_cmd_reg_o,
   output logic                  boot_wr_cmd_genfifo_o,
   output logic                  auto_set_intr_gate_o,
@@ -80,6 +81,7 @@ module edn_main_sm import edn_pkg::*; #(
     send_rescmd_o          = 1'b0;
     main_sm_done_pulse_o   = 1'b0;
     main_sm_err_o          = 1'b0;
+    sw_cmd_valid_o         = 1'b1;
     unique case (state_q)
       Idle: begin
         if (boot_req_mode_i && edn_enable_i) begin
@@ -141,6 +143,7 @@ module edn_main_sm import edn_pkg::*; #(
         end
       end
       AutoAckWait: begin
+        sw_cmd_valid_o = 1'b0;
         auto_req_mode_busy_o = 1'b1;
         if (csrng_cmd_ack_i) begin
           state_d = AutoDispatch;
@@ -148,6 +151,7 @@ module edn_main_sm import edn_pkg::*; #(
       end
       AutoDispatch: begin
         auto_req_mode_busy_o = 1'b1;
+        sw_cmd_valid_o = 1'b0;
         if (!auto_req_mode_i) begin
           main_sm_done_pulse_o = 1'b1;
           state_d = Idle;
@@ -160,11 +164,13 @@ module edn_main_sm import edn_pkg::*; #(
         end
       end
       AutoCaptGenCnt: begin
+        sw_cmd_valid_o = 1'b0;
         auto_req_mode_busy_o = 1'b1;
         capt_gencmd_fifo_cnt_o = 1'b1;
         state_d = AutoSendGenCmd;
       end
       AutoSendGenCmd: begin
+        sw_cmd_valid_o = 1'b0;
         auto_req_mode_busy_o = 1'b1;
         send_gencmd_o = 1'b1;
         if (cmd_sent_i) begin
@@ -172,11 +178,13 @@ module edn_main_sm import edn_pkg::*; #(
         end
       end
       AutoCaptReseedCnt: begin
+        sw_cmd_valid_o = 1'b0;
         auto_req_mode_busy_o = 1'b1;
         capt_rescmd_fifo_cnt_o = 1'b1;
         state_d = AutoSendReseedCmd;
       end
       AutoSendReseedCmd: begin
+        sw_cmd_valid_o = 1'b0;
         auto_req_mode_busy_o = 1'b1;
         send_rescmd_o = 1'b1;
         if (cmd_sent_i) begin

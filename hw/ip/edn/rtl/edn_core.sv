@@ -109,6 +109,7 @@ module edn_core import edn_pkg::*;
   logic                    send_gencmd;
   logic                    boot_send_gencmd;
   logic                    sw_cmd_req_load;
+  logic                    sw_cmd_valid;
   logic [31:0]             sw_cmd_req_bus;
   logic                    reseed_cmd_load;
   logic [31:0]             reseed_cmd_bus;
@@ -460,7 +461,7 @@ module edn_core import edn_pkg::*;
 
   // SW interface connection
   // cmd req
-  assign sw_cmd_req_load = reg2hw.sw_cmd_req.qe;
+  assign sw_cmd_req_load = reg2hw.sw_cmd_req.qe & sw_cmd_valid;
   assign sw_cmd_req_bus = reg2hw.sw_cmd_req.q;
 
   assign max_reqs_between_reseed_load = reg2hw.max_num_reqs_between_reseeds.qe;
@@ -647,6 +648,7 @@ module edn_core import edn_pkg::*;
     .boot_req_mode_i        (boot_req_mode_fo[1]),
     .auto_req_mode_i        (auto_req_mode_pfe),
     .sw_cmd_req_load_i      (sw_cmd_req_load),
+    .sw_cmd_valid_o         (sw_cmd_valid),
     .boot_wr_cmd_reg_o      (boot_wr_cmd_reg),
     .boot_wr_cmd_genfifo_o  (boot_wr_cmd_genfifo),
     .auto_set_intr_gate_o   (auto_set_intr_gate),
