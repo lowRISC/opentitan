@@ -37,7 +37,7 @@ class RndTest : public rom_test::RomTest {
   mock_csr::MockCsr csr_;
 };
 
-TEST_F(RndTest, GetUint32Disabled) {
+TEST_F(RndTest, GetUint32Enabled) {
   EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_EN_OFFSET))
       .WillOnce(Return(kHardenedBoolTrue));
 
@@ -50,7 +50,7 @@ TEST_F(RndTest, GetUint32Disabled) {
   EXPECT_EQ(rnd_uint32(), 67894 + 12345);
 }
 
-TEST_F(RndTest, GetUint32Enabled) {
+TEST_F(RndTest, GetUint32Disabled) {
   EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_EN_OFFSET))
       .WillOnce(Return(kHardenedBoolFalse));
 
@@ -102,7 +102,10 @@ class RndtLcStateTest : public RndTest,
   }
 };
 
-TEST_P(RndtLcStateTest, HealthCfgCrc) {
+TEST_P(RndtLcStateTest, HealthCfgCrcEnabled) {
+  EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_EN_OFFSET))
+      .WillOnce(Return(kHardenedBoolTrue));
+
   enum {
     kExpectedCrcValOk = 0x8264cf75,
     kExpectedCrcValOkOtp = kExpectedCrcValOk ^ kErrorOk,
@@ -116,6 +119,13 @@ TEST_P(RndtLcStateTest, HealthCfgCrc) {
   } else {
     EXPECT_NE(got, kErrorOk);
   }
+}
+
+TEST_P(RndtLcStateTest, HealthCfgCrcDisabled) {
+  EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_EN_OFFSET))
+      .WillOnce(Return(kHardenedBoolFalse));
+
+  EXPECT_EQ(rnd_health_config_check(GetParam().lc_state), kErrorOk);
 }
 
 INSTANTIATE_TEST_SUITE_P(NonTestLcStates, RndtLcStateTest,
