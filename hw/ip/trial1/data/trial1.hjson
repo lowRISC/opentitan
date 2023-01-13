@@ -1,7 +1,17 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-{ name: "TRIAL1",
+{
+  name:               "trial1",
+  design_spec:        "",
+  dv_doc:             "",
+  hw_checklist:       "",
+  sw_checklist:       "",
+  version:            "1.0",
+  life_stage:         "L1",
+  design_stage:       "D1",
+  verification_stage: "V1",
+  dif_stage:          "S1",
   regwidth: 32,
   clocking: [{clock: "clk_fixed_i", reset: "rst_fixed_n"}],
   bus_interfaces: [

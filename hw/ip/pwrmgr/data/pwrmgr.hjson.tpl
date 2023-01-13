@@ -6,7 +6,29 @@
  int_reset_reqs = rst_reqs["int"]
  debug_reset_reqs = rst_reqs["debug"]
 %>\
-{ name: "PWRMGR",
+{
+  name:               "pwrmgr",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_pwrmgr",
+  revisions: [
+    {
+      version:            "0.1",
+      life_stage:         "L1",
+      design_stage:       "D1",
+      verification_stage: "V0", // this module is not verified at the block level
+      dif_stage:          "S0",
+      commit_id:          "b2abc989498f072d9a5530f8aab9b58c1f92c9fb"
+    }
+    {
+      version:            "1.0",
+      life_stage:         "L1",
+      design_stage:       "D2S",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+    }
+  ]
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
     {reset: "rst_main_ni"},

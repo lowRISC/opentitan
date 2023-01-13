@@ -2,7 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: "rom_ctrl"
+  name:               "rom_ctrl",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_rom_ctrl",
+  revisions: [
+      {
+          version:            "1.0",
+          life_stage:         "L1",
+          design_stage:       "D3",
+          verification_stage: "V2S",
+          dif_stage:          "S2",
+      },
+  ]
   clocking: [{clock: "clk_i", reset: "rst_ni"}],
   regwidth: "32"
   bus_interfaces: [

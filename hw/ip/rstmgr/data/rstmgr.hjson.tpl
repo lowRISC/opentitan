@@ -19,7 +19,20 @@
 # RSTMGR register template
 #
 {
-  name: "RSTMGR",
+  name:               "rstmgr",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_rstmgr",
+  revisions: [
+    {
+      version:            "1.0",
+      life_stage:         "L1",
+      design_stage:       "D2S",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+    }
+  ]
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
 % for clk in reset_obj.get_clocks():

@@ -8,7 +8,17 @@ import math
 chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 %>
 {
-  name: "ALERT_HANDLER",
+  name:               "alert_handler",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_alert_handler"
+  version:            "1.0",
+  life_stage:         "L1",
+  design_stage:       "D3",
+  verification_stage: "V2S",
+  dif_stage:          "S2",
+  notes:              "Use both FPV and DV to perform block level verification.",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
     {clock: "clk_edn_i", reset: "rst_edn_ni"}

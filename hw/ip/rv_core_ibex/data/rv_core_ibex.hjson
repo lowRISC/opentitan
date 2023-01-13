@@ -1,7 +1,18 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-{ name: "RV_CORE_IBEX",
+{
+  name:               "rv_core_ibex",
+  design_spec:        "../doc",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_rv_core_ibex",
+  dv_doc:             "../doc/dv",
+  version:            "1.0",
+  life_stage:         "L1",
+  design_stage:       "D2S",
+  verification_stage: "V2S",
+  dif_stage:          "S2",
+  notes:              "Ibex Verification is tracked in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html)."
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true},
              {clock: "clk_edn_i", reset: "rst_edn_ni"}
              {clock: "clk_esc_i", reset: "rst_esc_ni"},
