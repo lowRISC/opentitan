@@ -130,3 +130,10 @@ set_rule_status -rule E_RST_METASTABILITY -status Waived \
   -expression {(SourceReset=="POR_N") && \
     (ResetFlop=~"*.u_clkmgr_aon.*usb_peri_sw_en_sync*") && \
     (MetaStableFlop=~"*.u_clk_usb_peri_cg.*")}
+
+# SPI_HOST_CLK
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(ResetFlop=~"*u_spi_host*u_sck_flop*") && \
+    (MetaStableFlop=~"SPI_HOST_CLK")} \
+  -comment {If SPI_HOST receives a reset, CS_L will be de-asserted. \
+    Any transactions will be cancelled.}
