@@ -51,7 +51,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   virtual clk_rst_if  edn_clk_rst_vif;
 
   // en_devmode default sets to 1 because all IPs' devmode_i is tied off internally to 1
-  // TODO(#16739): enable random drive devmode once design supports
+  // ICEBOX(#16739): enable random drive devmode once design supports
   bit  has_devmode = 1;
   bit  en_devmode = 1;
 
