@@ -189,9 +189,10 @@ Transitions for Design and Verification stages are _self-nominated_ in the sense
 In this manner other reviewers can challenge the transition in the standard pull request review process.
 These transitions should be done in their own PR (i.e. not interspersed with other changes), and the PR summary and commit message should give any necessary detail on how the transition criteria have been met, as well as any other notes useful for a reviewer.
 
-The content below shows the format of the project file that contains the stage information.
-The file for a design named `name` should be placed under `hw/ip/name/data/name.prj.hjson`.
-For example, `file: gpio.prj.hjson`:
+The content below shows the format of the project related metadata, which can either be placed in the comportable IP Hjson file, or an Hjson file with the extension `.prj.hjson` if such a comportable IP Hjson file does not exist.
+Both files have to be placed under `hw/ip/name/data/name.hjson` or `hw/ip/name/data/name.prj.hjson` for a design named `name`.
+
+For example, `file: gpio.hjson`:
 
 ```hjson
 {
@@ -207,9 +208,9 @@ For example, `file: gpio.prj.hjson`:
 
 ### Commit ID
 
-When a design transitions from one stage to another, the project file can optionally provide a commit ID for the transition to be able to recreate the repository at the point of that transition.
+When a design transitions from one stage to another, the metadata can optionally provide a commit ID for the transition to be able to recreate the repository at the point of that transition.
 This is optional for all transitions except for sign-off, where it is required.
-The commit ID has its own entry in the project Hjson file, as shown below.
+The commit ID has its own entry in the comportable IP Hjson file, as shown below.
 
 ```hjson
 {
