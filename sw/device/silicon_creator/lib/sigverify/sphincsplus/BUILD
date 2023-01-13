@@ -72,3 +72,19 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
     ],
 )
+
+cc_library(
+    name = "wots",
+    srcs = ["wots.c"],
+    hdrs = ["wots.h"],
+    deps = [
+        ":address",
+        ":hash",
+        ":params",
+        ":thash",
+        ":utils",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:kmac",
+    ],
+)
