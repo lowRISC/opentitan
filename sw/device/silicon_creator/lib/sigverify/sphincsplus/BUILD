@@ -86,6 +86,24 @@ cc_library(
 )
 
 cc_library(
+    name = "verify",
+    srcs = ["verify.c"],
+    hdrs = ["verify.h"],
+    deps = [
+        ":address",
+        ":context",
+        ":fors",
+        ":hash",
+        ":params",
+        ":thash",
+        ":utils",
+        ":wots",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+cc_library(
     name = "wots",
     srcs = ["wots.c"],
     hdrs = ["wots.h"],
