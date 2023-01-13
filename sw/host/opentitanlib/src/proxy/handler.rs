@@ -64,6 +64,18 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_pull_mode(*pull)?;
                         Ok(Response::Gpio(GpioResponse::SetPullMode))
                     }
+                    GpioRequest::MonitoringStart => {
+                        let clock_nature = instance.monitoring_start()?;
+                        Ok(Response::Gpio(GpioResponse::MonitoringStart {
+                            clock_nature,
+                        }))
+                    }
+                    GpioRequest::MonitoringRead {
+                        continue_monitoring,
+                    } => {
+                        let events = instance.monitoring_read(*continue_monitoring)?;
+                        Ok(Response::Gpio(GpioResponse::MonitoringRead { events }))
+                    }
                 }
             }
             Request::Uart { id, command } => {

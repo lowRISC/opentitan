@@ -6,8 +6,9 @@ use anyhow::Result;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use crate::io::gpio::{ClockNature, GpioError, GpioPin, MonitoringEvent, PinMode, PullMode};
 use crate::transport::cw310::usb::Backend;
+use crate::transport::TransportError;
 
 pub struct CW310GpioPin {
     device: Rc<RefCell<Backend>>,
@@ -52,5 +53,13 @@ impl GpioPin for CW310GpioPin {
             PullMode::None => Ok(()),
             _ => Err(GpioError::UnsupportedPullMode(mode).into()),
         }
+    }
+
+    fn monitoring_start(&self) -> Result<ClockNature> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
+    fn monitoring_read(&self, _continue_monitoring: bool) -> Result<Vec<MonitoringEvent>> {
+        Err(TransportError::UnsupportedOperation.into())
     }
 }

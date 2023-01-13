@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 use crate::bootstrap::BootstrapOptions;
 use crate::io::emu::{EmuState, EmuValue};
-use crate::io::gpio::{PinMode, PullMode};
+use crate::io::gpio::{ClockNature, MonitoringEvent, PinMode, PullMode};
 use crate::io::spi::TransferMode;
 use crate::proxy::errors::SerializedError;
 use crate::transport::Capabilities;
@@ -47,6 +47,8 @@ pub enum GpioRequest {
     Read,
     SetMode { mode: PinMode },
     SetPullMode { pull: PullMode },
+    MonitoringStart,
+    MonitoringRead { continue_monitoring: bool },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -55,6 +57,8 @@ pub enum GpioResponse {
     Read { value: bool },
     SetMode,
     SetPullMode,
+    MonitoringStart { clock_nature: ClockNature },
+    MonitoringRead { events: Vec<MonitoringEvent> },
 }
 
 #[derive(Serialize, Deserialize)]

@@ -13,9 +13,10 @@ use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
 
 use crate::io::emu::EmuState;
-use crate::io::gpio::{self, GpioError, GpioPin, PullMode};
+use crate::io::gpio::{self, ClockNature, GpioError, GpioPin, MonitoringEvent, PullMode};
 use crate::transport::ti50emulator::Inner;
 use crate::transport::ti50emulator::Ti50Emulator;
+use crate::transport::TransportError;
 
 const GPIO_BUF_SIZE: usize = 16;
 
@@ -385,5 +386,13 @@ impl GpioPin for Ti50GpioPin {
         state.pull_mode = mode;
         self.host_state.set(state);
         Ok(())
+    }
+
+    fn monitoring_start(&self) -> Result<ClockNature> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
+    fn monitoring_read(&self, _continue_monitoring: bool) -> Result<Vec<MonitoringEvent>> {
+        Err(TransportError::UnsupportedOperation.into())
     }
 }

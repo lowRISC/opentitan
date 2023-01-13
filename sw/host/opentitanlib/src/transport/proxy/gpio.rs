@@ -6,7 +6,7 @@ use anyhow::{bail, Result};
 use std::rc::Rc;
 
 use super::ProxyError;
-use crate::io::gpio::{GpioPin, PinMode, PullMode};
+use crate::io::gpio::{ClockNature, GpioPin, MonitoringEvent, PinMode, PullMode};
 use crate::proxy::protocol::{GpioRequest, GpioResponse, Request, Response};
 use crate::transport::proxy::{Inner, Proxy};
 
@@ -63,6 +63,22 @@ impl GpioPin for ProxyGpioPin {
     fn set_pull_mode(&self, pull: PullMode) -> Result<()> {
         match self.execute_command(GpioRequest::SetPullMode { pull })? {
             GpioResponse::SetPullMode => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
+    fn monitoring_start(&self) -> Result<ClockNature> {
+        match self.execute_command(GpioRequest::MonitoringStart)? {
+            GpioResponse::MonitoringStart { clock_nature } => Ok(clock_nature),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
+    fn monitoring_read(&self, continue_monitoring: bool) -> Result<Vec<MonitoringEvent>> {
+        match self.execute_command(GpioRequest::MonitoringRead {
+            continue_monitoring,
+        })? {
+            GpioResponse::MonitoringRead { events } => Ok(events),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }

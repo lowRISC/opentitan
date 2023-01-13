@@ -58,6 +58,35 @@ arg_enum! {
     }
 }
 
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub enum Edge {
+    Rising,
+    Falling,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ClockNature {
+    /// Unix time can be computed as (t + offset) / resolution, where t is a 64-bit timestamp
+    /// value from `monitoring_read()`.
+    Wallclock {
+        /// If resolution is microseconds, `resolution` will be 1_000_000.
+        resolution: u64,
+        /// Offset relative to Unix epoch, measured according to above resolution.
+        offset: u64,
+    },
+    /// The 64-bit timestamp values could be emulator clock counts, or some other measure that
+    /// increases monotonically, but not necessarily uniformly in relation to wall clock time.
+    Unspecified,
+}
+
+/// Represents an edge detected on the GPIO pin.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+pub struct MonitoringEvent {
+    pub edge: Edge,
+    /// Timestamp of the edge, resolution and epoch is transport-specific.
+    pub timestamp: u64,
+}
+
 /// A trait which represents a single GPIO pin.
 pub trait GpioPin {
     /// Reads the value of the the GPIO pin.
@@ -92,4 +121,12 @@ pub trait GpioPin {
         }
         Ok(())
     }
+
+    /// Set up edge trigger detection on this pin, transport will buffer the list internally.
+    fn monitoring_start(&self) -> Result<ClockNature>;
+
+    /// Retrieve list of events detected thus far, optionally stopping the possibly expensive edge
+    /// detection.  Buffer overrun will be reported as an `Err`, and result in the stopping of the
+    /// edge detection irrespective of the parameter value.
+    fn monitoring_read(&self, continue_monitoring: bool) -> Result<Vec<MonitoringEvent>>;
 }

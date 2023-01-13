@@ -9,7 +9,7 @@ use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::io::gpio::{PinMode, PullMode};
+use opentitanlib::io::gpio::{ClockNature, MonitoringEvent, PinMode, PullMode};
 use opentitanlib::transport::Capability;
 
 #[derive(Debug, StructOpt)]
@@ -168,6 +168,67 @@ impl CommandDispatch for GpioApplyStrapping {
     }
 }
 
+#[derive(Debug, StructOpt, CommandDispatch)]
+pub enum GpioMonitoringCommand {
+    Start(GpioMonitoringStart),
+    Read(GpioMonitoringRead),
+}
+
+#[derive(Debug, StructOpt)]
+pub struct GpioMonitoringStart {
+    #[structopt(name = "PIN", help = "The GPIO pin to monitor")]
+    pub pin: String,
+}
+
+#[derive(serde::Serialize)]
+pub struct GpioMonitoringStartResult {
+    pub clock_nature: ClockNature,
+}
+
+impl CommandDispatch for GpioMonitoringStart {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::GPIO).ok()?;
+        let gpio_pin = transport.gpio_pin(&self.pin)?;
+        let clock_nature = gpio_pin.monitoring_start()?;
+        Ok(Some(Box::new(GpioMonitoringStartResult { clock_nature })))
+    }
+}
+
+#[derive(Debug, StructOpt)]
+pub struct GpioMonitoringRead {
+    #[structopt(name = "PIN", help = "The GPIO pin to monitor")]
+    pub pin: String,
+
+    #[structopt(long, case_insensitive = true)]
+    pub continue_monitoring: bool,
+}
+
+#[derive(serde::Serialize)]
+pub struct GpioMonitoringReadResult {
+    pub pin: String,
+    pub events: Vec<MonitoringEvent>,
+}
+
+impl CommandDispatch for GpioMonitoringRead {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::GPIO).ok()?;
+        let gpio_pin = transport.gpio_pin(&self.pin)?;
+        let events = gpio_pin.monitoring_read(self.continue_monitoring)?;
+        Ok(Some(Box::new(GpioMonitoringReadResult {
+            pin: self.pin.clone(),
+            events,
+        })))
+    }
+}
+
 #[derive(Debug, StructOpt)]
 /// Remove a configuration-named pin strapping
 pub struct GpioRemoveStrapping {
@@ -187,6 +248,22 @@ impl CommandDispatch for GpioRemoveStrapping {
     }
 }
 
+#[derive(Debug, StructOpt)]
+pub struct GpioMonitoring {
+    #[structopt(subcommand)]
+    command: GpioMonitoringCommand,
+}
+
+impl CommandDispatch for GpioMonitoring {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        self.command.run(context, transport)
+    }
+}
+
 /// Commands for manipulating GPIO pins.
 #[derive(Debug, StructOpt, CommandDispatch)]
 pub enum GpioCommand {
@@ -197,4 +274,5 @@ pub enum GpioCommand {
     SetMode(GpioSetMode),
     SetPullMode(GpioSetPullMode),
     Set(GpioSet),
+    Monitoring(GpioMonitoring),
 }

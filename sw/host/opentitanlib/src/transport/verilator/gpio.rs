@@ -10,8 +10,9 @@ use std::io::{self, ErrorKind, Read, Write};
 use std::rc::Rc;
 use std::time::Duration;
 
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use crate::io::gpio::{ClockNature, GpioError, GpioPin, MonitoringEvent, PinMode, PullMode};
 use crate::transport::verilator::transport::Inner;
+use crate::transport::TransportError;
 use crate::util::file;
 
 pub struct VerilatorGpioPin {
@@ -82,6 +83,14 @@ impl GpioPin for VerilatorGpioPin {
             self.out_value.set(value);
         }
         self.set()
+    }
+
+    fn monitoring_start(&self) -> Result<ClockNature> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
+    fn monitoring_read(&self, _continue_monitoring: bool) -> Result<Vec<MonitoringEvent>> {
+        Err(TransportError::UnsupportedOperation.into())
     }
 }
 

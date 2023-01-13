@@ -7,7 +7,7 @@ pub mod command;
 pub mod config;
 
 use crate::io::emu::Emulator;
-use crate::io::gpio::{GpioPin, PinMode, PullMode};
+use crate::io::gpio::{ClockNature, GpioPin, MonitoringEvent, PinMode, PullMode};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
@@ -374,5 +374,15 @@ impl GpioPin for NullPin {
     fn set_pull_mode(&self, _mode: PullMode) -> Result<()> {
         self.warn();
         Ok(())
+    }
+
+    fn monitoring_start(&self) -> Result<ClockNature> {
+        self.warn();
+        Ok(ClockNature::Unspecified)
+    }
+
+    fn monitoring_read(&self, _continue_monitoring: bool) -> Result<Vec<MonitoringEvent>> {
+        self.warn();
+        Ok(Vec::new())
     }
 }

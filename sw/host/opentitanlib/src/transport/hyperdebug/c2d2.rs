@@ -5,7 +5,7 @@
 use anyhow::{bail, Result};
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioPin, PinMode, PullMode};
+use crate::io::gpio::{ClockNature, GpioPin, MonitoringEvent, PinMode, PullMode};
 use crate::transport::hyperdebug::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
 use crate::transport::TransportError;
 
@@ -76,5 +76,13 @@ impl GpioPin for C2d2ResetPin {
     /// Sets the weak pull resistors of the GPIO pin.
     fn set_pull_mode(&self, _mode: PullMode) -> Result<()> {
         bail!(TransportError::UnsupportedOperation)
+    }
+
+    fn monitoring_start(&self) -> Result<ClockNature> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
+    fn monitoring_read(&self, _continue_monitoring: bool) -> Result<Vec<MonitoringEvent>> {
+        Err(TransportError::UnsupportedOperation.into())
     }
 }

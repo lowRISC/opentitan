@@ -10,9 +10,10 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::collection;
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use crate::io::gpio::{ClockNature, GpioError, GpioPin, MonitoringEvent, PinMode, PullMode};
 use crate::transport::ultradebug::mpsse;
 use crate::transport::ultradebug::Ultradebug;
+use crate::transport::TransportError;
 use crate::util::parse_int::ParseInt;
 
 /// Represents the Ultradebug GPIO pins.
@@ -103,6 +104,14 @@ impl GpioPin for UltradebugGpioPin {
 
     fn set_pull_mode(&self, mode: PullMode) -> Result<()> {
         Err(GpioError::UnsupportedPullMode(mode).into())
+    }
+
+    fn monitoring_start(&self) -> Result<ClockNature> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
+    fn monitoring_read(&self, _continue_monitoring: bool) -> Result<Vec<MonitoringEvent>> {
+        Err(TransportError::UnsupportedOperation.into())
     }
 }
 
