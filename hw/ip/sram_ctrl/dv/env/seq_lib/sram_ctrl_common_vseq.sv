@@ -15,6 +15,16 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
   string path_sram_key = {`DUT_HIER_STR, ".key_q"};
   string path_sram_nonce = {`DUT_HIER_STR, ".nonce_q"};
 
+  // adjust delay to issue reset for stress_all_with_rand_reset test,
+  // as sram_ctrl tests usually don't run very long
+  constraint rand_reset_delay_c {
+    rand_reset_delay dist {
+      [1 : 1000]             :/ 1,
+      [1001 : 10_000]        :/ 4,
+      [10_001 : 100_000]     :/ 1
+    };
+  }
+
   virtual task pre_start();
     string common_seq_type;
 
