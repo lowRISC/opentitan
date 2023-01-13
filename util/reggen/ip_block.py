@@ -56,6 +56,20 @@ REQUIRED_FIELDS = {
 }
 
 OPTIONAL_FIELDS = {
+    # Note: this revision list may be deprecated in the future.
+    'revisions': ['l', "list with revision records"],
+    'design_spec':
+    ['s', "path to the design specification, relative to repo root"],
+    'dv_doc': ['s', "path to the DV document, relative to repo root"],
+    'hw_checklist': ['s', "path to the hw_checklist, relative to repo root"],
+    'sw_checklist': ['s', "path to the sw_checklist, relative to repo root"],
+    'design_stage': ['s', "design stage of module"],
+    'dif_stage': ['s', 'DIF stage of module'],
+    'verification_stage': ['s', "verification stage of module"],
+    'notes': ['s', "random notes"],
+    'version': ['s', "module version"],
+    'life_stage': ['s', "life stage of module"],
+    'commit_id': ['s', "commit ID of last stage sign-off"],
     'alert_list': ['lnw', "list of peripheral alerts"],
     'available_inout_list': ['lnw', "list of available peripheral inouts"],
     'available_input_list': ['lnw', "list of available peripheral inputs"],
