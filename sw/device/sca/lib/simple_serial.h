@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_uart.h"
 
@@ -31,6 +32,19 @@
       simple_serial_send_status(kSimpleSerialError); \
       return;                                        \
     }                                                \
+  } while (false)
+
+/**
+ * Sends an error message over UART if the status represents an error.
+ */
+#define SS_CHECK_STATUS_OK(expr)                                  \
+  do {                                                            \
+    status_t status_ = expr;                                      \
+    if (!(status_ok(status_))) {                                  \
+      unsigned char *buf = (unsigned char *)&status_.value;       \
+      simple_serial_send_packet('z', buf, sizeof(status_.value)); \
+      return;                                                     \
+    }                                                             \
   } while (false)
 
 /**
