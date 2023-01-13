@@ -8,7 +8,21 @@
 # SENSOR_CTRL register template
 #
 {
-  name: "SENSOR_CTRL",
+  name:               "sensor_ctrl",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_sensor_ctrl",
+  revisions: [
+    {
+      version:            "1.0",
+      life_stage:         "L1",
+      design_stage:       "D3",
+      // block level verification not planned
+      verification_stage: "N/A",
+      notes:              "Verified at the top-level."
+    }
+  ]
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true},
              {clock: "clk_aon_i", reset: "rst_aon_ni"}],
   bus_interfaces: [

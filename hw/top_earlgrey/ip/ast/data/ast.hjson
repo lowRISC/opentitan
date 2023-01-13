@@ -5,7 +5,16 @@
 // *Name: ast
 // *Module Description: Analog Sensors Top Registers
 //#############################################################################
-{ name: "ast",
+{ name:               "ast",
+  design_spec:        "../doc",
+  dv_doc:             "",
+  hw_checklist:       "",
+  sw_checklist:       "",
+  version:            "1.0",
+  life_stage:         "L1",
+  design_stage:       "D2",
+  verification_stage: "V2S",
+  dif_stage:          "",
   clocking: [
     { clock: "clk_ast_tlul_i",  reset: "rst_ast_tlul_ni", primary: true },
     { clock: "clk_ast_adc_i",   reset: "rst_ast_adc_ni"},

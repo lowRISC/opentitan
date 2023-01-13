@@ -1,7 +1,22 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-{ name: "pwm",
+{
+  name:               "pwm",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_pwm",
+  revisions: [
+    {
+      version:            "1.0",
+      life_stage:         "L1",
+      design_stage:       "D2S",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+      notes:              ""
+    }
+  ]
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
     {clock: "clk_core_i", reset: "rst_core_ni"}

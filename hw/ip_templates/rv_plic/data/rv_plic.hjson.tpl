@@ -11,7 +11,22 @@
 #  - prio:   Max value of interrupt priorities
 #  - module_instance_name: Module instance name.
 {
-  name: "${(module_instance_name).upper()}",
+  name:               "${module_instance_name}",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_${module_instance_name.lower()}",
+  revisions: [
+    {
+      version:            "1.0",
+      life_stage:         "L1",
+      design_stage:       "D3",
+      verification_stage: "V2",
+      dif_stage:          "S2",
+      commit_id:          "",
+      notes:              "Use FPV to perform block level verification.",
+    }
+  ],
   clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
