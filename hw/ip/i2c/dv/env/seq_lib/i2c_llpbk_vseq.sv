@@ -23,7 +23,7 @@ class i2c_llpbk_vseq extends i2c_base_vseq;
     cfg.m_i2c_agent_cfg.lb_addr[7:1] = target_addr0;
 
     `JDBG(("LB seq loopback start addr:%x", target_addr0))
-    cfg.m_i2c_agent_cfg.loopback_num_bytes = 8;
+    cfg.m_i2c_agent_cfg.loopback_num_bytes = i2c_reg_pkg::FifoDepth*2 - 2;
     cfg.m_i2c_agent_cfg.loopback_st = 1;
 
 

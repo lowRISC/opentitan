@@ -191,8 +191,8 @@ class i2c_base_vseq extends cip_base_vseq #(
       // tlow must be at least 2 greater than the sum of t_r + tsu_dat + thd_dat
       // because the flopped clock (see #15003 below) reduces tClockLow by 1.
       thigh == (thd_sta + tsu_sta + t_r);
-      tlow    inside {[(t_r + tsu_dat + thd_dat + 2) :
-                       (t_r + tsu_dat + thd_dat + 2) + cfg.seq_cfg.i2c_time_range]};
+      tlow    inside {[(t_r + tsu_dat + thd_dat + 2 + 2) :
+                       (t_r + tsu_dat + thd_dat + 2 + 2) + cfg.seq_cfg.i2c_time_range]};
       t_buf   inside {[(tsu_sta - t_r + 1) :
                        (tsu_sta - t_r + 1) + cfg.seq_cfg.i2c_time_range]};
       t_sda_unstable     inside {[0 : t_r + thigh + t_f - 1]};
