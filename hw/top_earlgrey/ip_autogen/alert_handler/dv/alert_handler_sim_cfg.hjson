@@ -42,6 +42,13 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  overrides: [
+    {
+      name: cover_reg_top_vcs_cov_cfg_file
+      value: "-cm_hier {proj_root}/hw/top_earlgrey/ip_autogen/alert_handler/dv/cov/alert_handler_cover_reg_top.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg"
+    }
+  ]
+
   // Add ALERT_HANDLER specific exclusion files.
   vcs_cov_excl_files: ["{self_dir}/cov/alert_handler_cov_excl.el"]
 
