@@ -146,19 +146,15 @@ See that specification for generic details on this scheme.
 
 #### Chip IO Peripherals
 
-##### Pin Multiplexor and Pad Control Module (`pinmux`)
+##### Pin Multiplexor Module (`pinmux`)
 
-**TODO: this section needs to be updated to reflect the pinmux/padctrl merger**
-
-The pin multiplexor's purpose is to route between peripherals and the available multiplexable IO (`MIO_00 .. MIO_31`) of the chip.
+The pin multiplexor's purpose is to route between peripherals and the available multiplexable IO of the chip.
 At this time, the pin multiplexor is provided, but it is not used to its full potential.
-In addition, the `padctrl` device manages control or pad attributes like drive strength, technology (OD, OS, etc), pull up, pull down, etc., of the chip's external IO.
-At this time, the `padctrl` module is provided, but not yet wired up.
+In addition, the multiplexor device manages control or pad attributes like drive strength, technology (OD, OS, etc), pull up, pull down, etc., of the chip's external IO.
 It is notable that there are many differences between an FPGA implementation of Earl Grey and an ASIC version when it comes to pins and pads.
-For both, the `pinmux` and `padctrl` are expected to play the same role.
-Their effect, however, over things like drive strength and Open Drain technology are highly platform-dependent, and are not finalized at this time.
+Some pad attributes with analog characteristics like drive strength, slew rate and Open Drain technology are not supported on all platforms.
 
-Both `pinmux` and `padctrl` are themselves peripherals on the TLUL bus, with collections of registers that provide software configurability.
+The pin multiplexor is a peripheral on the TLUL bus, with collections of registers that provide software configurability.
 See the [pinmux specification]({{< relref "hw/ip/pinmux/doc" >}}) for how to connect peripheral IO to chip IO and for information on pad control features.
 
 ##### UART
