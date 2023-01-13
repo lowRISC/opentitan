@@ -79,6 +79,11 @@ uint32_t health_config_crc32(void) {
 }
 
 rom_error_t rnd_health_config_check(lifecycle_state_t lc_state) {
+  if (otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_EN_OFFSET) !=
+      kHardenedBoolTrue) {
+    return kErrorOk;
+  }
+
   uint32_t crc32 = health_config_crc32();
   rom_error_t res = crc32;
 
