@@ -752,6 +752,7 @@ module otp_ctrl
     .lc_en_i (lc_dft_en[0]),
     .flush_req_i('0),
     .flush_ack_o(),
+    .resp_pending_o(),
     .err_o   (intg_error[2])
   );
 

@@ -519,6 +519,7 @@ module flash_ctrl
     .tl_d2h_i(prog_tl_d2h),
     .flush_req_i('0),
     .flush_ack_o(),
+    .resp_pending_o(),
     .lc_en_i(lc_ctrl_pkg::mubi4_to_lc_inv(flash_disable[ProgFifoIdx])),
     .err_o(tl_prog_gate_intg_err)
   );
@@ -1308,6 +1309,7 @@ module flash_ctrl
     .tl_d2h_i(gate_tl_d2h),
     .flush_req_i('0),
     .flush_ack_o(),
+    .resp_pending_o(),
     .lc_en_i(host_enable),
     .err_o(tl_gate_intg_err)
   );

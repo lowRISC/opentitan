@@ -261,13 +261,6 @@ module sram_ctrl
   assign key_req_pending_d = (key_req) ? 1'b1 :
                              (key_ack) ? 1'b0 : key_req_pending_q;
 
-  // The SRAM scrambling wrapper will not accept any transactions while
-  // the key req is pending or if we have escalated.
-  // Note that we're not using key_valid_q here, such that the SRAM can be used
-  // right after reset, where the keys are reset to the default netlist constant.
-  logic key_valid;
-  assign key_valid = ~(key_req_pending_q | reg2hw.status.escalated.q);
-
   // Clear this bit on local escalation.
   assign hw2reg.status.scr_key_valid.d   = key_ack & ~key_req & ~local_esc;
   assign hw2reg.status.scr_key_valid.de  = key_req | key_ack | local_esc;
@@ -318,7 +311,7 @@ module sram_ctrl
                    sram_otp_key_i.seed_valid} ),
     .data_o     ( {key_d,
                    nonce_d,
-                   key_seed_valid}          )
+                   key_seed_valid} )
   );
 
   logic unused_csr_sigs;
@@ -388,6 +381,7 @@ module sram_ctrl
   // SRAM TL-UL Access Gate //
   ////////////////////////////
 
+  logic tl_gate_resp_pending;
   tlul_pkg::tl_h2d_t ram_tl_in_gated;
   tlul_pkg::tl_d2h_t ram_tl_out_gated;
 
@@ -403,6 +397,7 @@ module sram_ctrl
     .tl_d2h_i(ram_tl_out_gated),
     .flush_req_i('0),
     .flush_ack_o(),
+    .resp_pending_o(tl_gate_resp_pending),
     .lc_en_i (lc_tlul_gate_en),
     .err_o   (bus_integ_error[2])
   );
@@ -457,6 +452,19 @@ module sram_ctrl
   assign sram_addr       = (init_req) ? init_cnt          : tlul_addr;
   assign sram_wdata      = (init_req) ? lfsr_out_integ    : tlul_wdata;
   assign sram_wmask      = (init_req) ? {DataWidth{1'b1}} : tlul_wmask;
+
+  // The SRAM scrambling wrapper will not accept any transactions while the
+  // key req is pending or if we have escalated. Note that we're not using
+  // the scr_key_valid CSR here, such that the SRAM can be used right after
+  // reset, where the keys are reset to the default netlist constant.
+  //
+  // If we have escalated, but there is a pending request in the TL gate, we
+  // may have a pending read-modify-write transaction in the SRAM adapter. In
+  // that case we let a write proceed, since the TL gate won't accept any new
+  // transactions and the SRAM keys have been clobbered already.
+  logic key_valid;
+  assign key_valid = (key_req_pending_q)         ? 1'b0 :
+                     (reg2hw.status.escalated.q) ? (tl_gate_resp_pending & tlul_we) : 1'b1;
 
   // SEC_CM: MEM.SCRAMBLE, ADDR.SCRAMBLE
   prim_ram_1p_scr #(
