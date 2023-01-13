@@ -18,7 +18,7 @@ module tb;
   wire clk;
   wire rst_n;
   wire clk_otp;
-  wire rst_otp_n = rst_n;
+  wire rst_otp_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
@@ -118,7 +118,7 @@ module tb;
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
-    otp_clk_rst_if.set_active(.drive_rst_n_val(1'b0));
+    otp_clk_rst_if.set_active();
 
     // set interfaces into uvm_config_db
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
