@@ -282,12 +282,12 @@ In the first two scenarios, it is after the ACK bit sent by the target, in the l
 The I2C module has a few interrupts including general data flow interrupts and unexpected event interrupts.
 
 #### Host Mode
-If the RX FIFO exceeds the designated depth of entries, the interrupt `rx_watermark` is raised to inform firmware.
-Firmware can configure the watermark value via the register {{< regref FIFO_CTRL.RXILVL >}}.
+If the RX FIFO exceeds the designated depth of entries, the interrupt `rx_threshold` is raised to inform firmware.
+Firmware can configure the threshold value via the register {{< regref FIFO_CTRL.RXILVL >}}.
 
-Meanwhile it the FMT FIFO level falls below a designated depth of entries the `fmt_watermark` interrupt is raised.
+Meanwhile it the FMT FIFO level falls below a designated depth of entries the `fmt_threshold` interrupt is raised.
 (Note that this behavior differs from similar interrupts in other modules, such as the UART IP module.)
-Firmware can configure the watermark value via the register {{< regref FIFO_CTRL.FMTILVL >}}.
+Firmware can configure the threshold value via the register {{< regref FIFO_CTRL.FMTILVL >}}.
 
 If either FIFO receives an additional write request when its FIFO is full, the interrupt `fmt_overflow` or `rx_overflow` is asserted and the format indicator or character is dropped.
 

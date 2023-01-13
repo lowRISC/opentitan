@@ -20,10 +20,10 @@ package i2c_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } fmt_watermark;
+    } fmt_threshold;
     struct packed {
       logic        q;
-    } rx_watermark;
+    } rx_threshold;
     struct packed {
       logic        q;
     } fmt_overflow;
@@ -68,10 +68,10 @@ package i2c_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } fmt_watermark;
+    } fmt_threshold;
     struct packed {
       logic        q;
-    } rx_watermark;
+    } rx_threshold;
     struct packed {
       logic        q;
     } fmt_overflow;
@@ -117,11 +117,11 @@ package i2c_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } fmt_watermark;
+    } fmt_threshold;
     struct packed {
       logic        q;
       logic        qe;
-    } rx_watermark;
+    } rx_threshold;
     struct packed {
       logic        q;
       logic        qe;
@@ -357,11 +357,11 @@ package i2c_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } fmt_watermark;
+    } fmt_threshold;
     struct packed {
       logic        d;
       logic        de;
-    } rx_watermark;
+    } rx_threshold;
     struct packed {
       logic        d;
       logic        de;
@@ -545,8 +545,8 @@ package i2c_reg_pkg;
 
   // Reset values for hwext registers and their fields
   parameter logic [14:0] I2C_INTR_TEST_RESVAL = 15'h 0;
-  parameter logic [0:0] I2C_INTR_TEST_FMT_WATERMARK_RESVAL = 1'h 0;
-  parameter logic [0:0] I2C_INTR_TEST_RX_WATERMARK_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_FMT_THRESHOLD_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_RX_THRESHOLD_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_FMT_OVERFLOW_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_RX_OVERFLOW_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_NAK_RESVAL = 1'h 0;

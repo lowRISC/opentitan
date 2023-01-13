@@ -27,7 +27,7 @@ filesets:
       - seq_lib/i2c_host_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_host_override_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_host_rx_oversample_vseq.sv: {is_include_file: true}
-      - seq_lib/i2c_host_fifo_watermark_vseq.sv: {is_include_file: true}
+      - seq_lib/i2c_host_fifo_threshold_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_host_fifo_overflow_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_host_fifo_reset_fmt_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_host_fifo_fmt_empty_vseq.sv: {is_include_file: true}

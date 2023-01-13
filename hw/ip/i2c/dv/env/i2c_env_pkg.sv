@@ -21,8 +21,8 @@ package i2c_env_pkg;
 
   // parameters
   typedef enum int {
-    FmtWatermark   = 0,
-    RxWatermark    = 1,
+    FmtThreshold   = 0,
+    RxThreshold    = 1,
     FmtOverflow    = 2,
     RxOverflow     = 3,
     Nak            = 4,

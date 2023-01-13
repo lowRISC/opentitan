@@ -15,8 +15,8 @@ module tb;
 
   wire clk, rst_n;
   wire devmode;
-  wire intr_fmt_watermark;
-  wire intr_rx_watermark;
+  wire intr_fmt_threshold;
+  wire intr_rx_threshold;
   wire intr_fmt_overflow;
   wire intr_rx_overflow;
   wire intr_nak;
@@ -96,8 +96,8 @@ module tb;
     .cio_sda_o               (/*hardcoded to 0*/    ),
     .cio_sda_en_o            (cio_sda_en            ),
 
-    .intr_fmt_watermark_o    (intr_fmt_watermark    ),
-    .intr_rx_watermark_o     (intr_rx_watermark     ),
+    .intr_fmt_threshold_o    (intr_fmt_threshold    ),
+    .intr_rx_threshold_o     (intr_rx_threshold     ),
     .intr_fmt_overflow_o     (intr_fmt_overflow     ),
     .intr_rx_overflow_o      (intr_rx_overflow      ),
     .intr_nak_o              (intr_nak              ),
@@ -114,8 +114,8 @@ module tb;
   );
 
   // interrupt
-  assign interrupts[FmtWatermark]   = intr_fmt_watermark;
-  assign interrupts[RxWatermark]    = intr_rx_watermark;
+  assign interrupts[FmtThreshold]   = intr_fmt_threshold;
+  assign interrupts[RxThreshold]    = intr_rx_threshold;
   assign interrupts[FmtOverflow]    = intr_fmt_overflow;
   assign interrupts[RxOverflow]     = intr_rx_overflow;
   assign interrupts[Nak]            = intr_nak;

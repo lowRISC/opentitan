@@ -114,12 +114,12 @@ class i2c_base_vseq extends cip_base_vseq #(
   }
 
   // number of extra data write written to fmt to trigger interrupts
-  // i.e. overflow, watermark
+  // i.e. overflow, threshold
   constraint num_data_ovf_c {
     num_data_ovf inside {[I2C_RX_FIFO_DEPTH/4 : I2C_RX_FIFO_DEPTH/2]};
   }
 
-  // create uniform assertion distributions of rx_watermark interrupt
+  // create uniform assertion distributions of rx_threshold interrupt
   constraint rxilvl_c {
     rxilvl dist {
       [0:4] :/ 5,
@@ -462,11 +462,11 @@ class i2c_base_vseq extends cip_base_vseq #(
                                            intr_state[i] -> intr_clear[i] == 1;
                                        })
 
-    if (bit'(get_field_val(ral.intr_state.fmt_watermark, intr_clear))) begin
-      `uvm_info(`gfn, "\n  clearing fmt_watermark", UVM_DEBUG)
+    if (bit'(get_field_val(ral.intr_state.fmt_threshold, intr_clear))) begin
+      `uvm_info(`gfn, "\n  clearing fmt_threshold", UVM_DEBUG)
     end
-    if (bit'(get_field_val(ral.intr_state.rx_watermark, intr_clear))) begin
-      `uvm_info(`gfn, "\n  clearing rx_watermark", UVM_DEBUG)
+    if (bit'(get_field_val(ral.intr_state.rx_threshold, intr_clear))) begin
+      `uvm_info(`gfn, "\n  clearing rx_threshold", UVM_DEBUG)
     end
     if (bit'(get_field_val(ral.intr_state.stretch_timeout, intr_clear))) begin
       `uvm_info(`gfn, "\n  clearing stretch_timeout", UVM_DEBUG)
@@ -497,7 +497,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       str = {str, $sformatf("\n    do_apply_reset        %b", do_apply_reset)};
       str = {str, $sformatf("\n    en_fmt_overflow       %b", cfg.seq_cfg.en_fmt_overflow)};
       str = {str, $sformatf("\n    en_rx_overflow        %b", cfg.seq_cfg.en_rx_overflow)};
-      str = {str, $sformatf("\n    en_rx_watermark       %b", cfg.seq_cfg.en_rx_watermark)};
+      str = {str, $sformatf("\n    en_rx_threshold       %b", cfg.seq_cfg.en_rx_threshold)};
       str = {str, $sformatf("\n    en_sda_unstable       %b", cfg.seq_cfg.en_sda_unstable)};
       str = {str, $sformatf("\n    en_scl_interference   %b", cfg.seq_cfg.en_scl_interference)};
       str = {str, $sformatf("\n    en_sda_interference   %b", cfg.seq_cfg.en_sda_interference)};

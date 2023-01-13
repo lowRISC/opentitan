@@ -9,7 +9,7 @@ class i2c_host_fifo_reset_rx_vseq extends i2c_rx_tx_vseq;
   `uvm_object_utils(i2c_host_fifo_reset_rx_vseq)
   `uvm_object_new
 
-  // fast write data to fmt_fifo to quickly trigger fmt_watermark interrupt
+  // fast write data to fmt_fifo to quickly trigger fmt_threshold interrupt
   constraint fmt_fifo_access_dly_c { fmt_fifo_access_dly == 0;}
   // fast read data from rd_fifo after it is full in order to quickly finish simulation
   constraint rx_fifo_access_dly_c { rx_fifo_access_dly == 0;}
@@ -30,7 +30,7 @@ class i2c_host_fifo_reset_rx_vseq extends i2c_rx_tx_vseq;
   virtual task pre_start();
     // hold reading rx_fifo to ensure rx_fifo gets full
     super.pre_start();
-    cfg.seq_cfg.en_rx_watermark = 1'b1;
+    cfg.seq_cfg.en_rx_threshold = 1'b1;
     print_seq_cfg_vars("pre-start");
   endtask : pre_start
 

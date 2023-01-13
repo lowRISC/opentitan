@@ -75,14 +75,15 @@ dif_result_t dif_i2c_alert_force(const dif_i2c_t *i2c, dif_i2c_alert_t alert);
  */
 typedef enum dif_i2c_irq {
   /**
-   * Host mode interrupt: raised when the FMT FIFO depth falls below the low
-   * watermark.
+   * Host mode interrupt: raised when the FMT FIFO depth is less than the low
+   * threshold.
    */
-  kDifI2cIrqFmtWatermark = 0,
+  kDifI2cIrqFmtThreshold = 0,
   /**
-   * Host mode interrupt: raised if the RX FIFO is past the high watermark.
+   * Host mode interrupt: raised if the RX FIFO is greater than the high
+   * threshold.
    */
-  kDifI2cIrqRxWatermark = 1,
+  kDifI2cIrqRxThreshold = 1,
   /**
    * Host mode interrupt: raised if the FMT FIFO has overflowed.
    */

@@ -385,7 +385,7 @@ void ottf_external_isr(void) {
     case kTopEarlgreyPlicPeripheralI2c0: {
       dif_i2c_irq_t irq = (dif_i2c_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c0FmtWatermark);
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c0FmtThreshold);
       CHECK(irq == i2c_irq_expected,
             "Incorrect i2c0 IRQ triggered: exp = %d, obs = %d",
             i2c_irq_expected, irq);
@@ -407,7 +407,7 @@ void ottf_external_isr(void) {
     case kTopEarlgreyPlicPeripheralI2c1: {
       dif_i2c_irq_t irq = (dif_i2c_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c1FmtWatermark);
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c1FmtThreshold);
       CHECK(irq == i2c_irq_expected,
             "Incorrect i2c1 IRQ triggered: exp = %d, obs = %d",
             i2c_irq_expected, irq);
@@ -429,7 +429,7 @@ void ottf_external_isr(void) {
     case kTopEarlgreyPlicPeripheralI2c2: {
       dif_i2c_irq_t irq = (dif_i2c_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c2FmtWatermark);
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c2FmtThreshold);
       CHECK(irq == i2c_irq_expected,
             "Incorrect i2c2 IRQ triggered: exp = %d, obs = %d",
             i2c_irq_expected, irq);
@@ -1231,7 +1231,7 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralI2c0;
-  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark;
+  for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold;
        irq <= kDifI2cIrqHostTimeout; ++irq) {
     i2c_irq_expected = irq;
     LOG_INFO("Triggering i2c0 IRQ %d.", irq);
@@ -1245,7 +1245,7 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralI2c1;
-  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark;
+  for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold;
        irq <= kDifI2cIrqHostTimeout; ++irq) {
     i2c_irq_expected = irq;
     LOG_INFO("Triggering i2c1 IRQ %d.", irq);
@@ -1259,7 +1259,7 @@ static void peripheral_irqs_trigger(void) {
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralI2c2;
-  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark;
+  for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold;
        irq <= kDifI2cIrqHostTimeout; ++irq) {
     i2c_irq_expected = irq;
     LOG_INFO("Triggering i2c2 IRQ %d.", irq);

@@ -60,13 +60,13 @@ TEST_F(IrqGetTypeTest, NullArgs) {
   dif_irq_type_t type;
 
   EXPECT_DIF_BADARG(
-      dif_i2c_irq_get_type(nullptr, kDifI2cIrqFmtWatermark, &type));
+      dif_i2c_irq_get_type(nullptr, kDifI2cIrqFmtThreshold, &type));
 
   EXPECT_DIF_BADARG(
-      dif_i2c_irq_get_type(&i2c_, kDifI2cIrqFmtWatermark, nullptr));
+      dif_i2c_irq_get_type(&i2c_, kDifI2cIrqFmtThreshold, nullptr));
 
   EXPECT_DIF_BADARG(
-      dif_i2c_irq_get_type(nullptr, kDifI2cIrqFmtWatermark, nullptr));
+      dif_i2c_irq_get_type(nullptr, kDifI2cIrqFmtThreshold, nullptr));
 }
 
 TEST_F(IrqGetTypeTest, BadIrq) {
@@ -79,7 +79,7 @@ TEST_F(IrqGetTypeTest, BadIrq) {
 TEST_F(IrqGetTypeTest, Success) {
   dif_irq_type_t type;
 
-  EXPECT_DIF_OK(dif_i2c_irq_get_type(&i2c_, kDifI2cIrqFmtWatermark, &type));
+  EXPECT_DIF_OK(dif_i2c_irq_get_type(&i2c_, kDifI2cIrqFmtThreshold, &type));
   EXPECT_EQ(type, 0);
 }
 
@@ -118,13 +118,13 @@ TEST_F(IrqIsPendingTest, NullArgs) {
   bool is_pending;
 
   EXPECT_DIF_BADARG(
-      dif_i2c_irq_is_pending(nullptr, kDifI2cIrqFmtWatermark, &is_pending));
+      dif_i2c_irq_is_pending(nullptr, kDifI2cIrqFmtThreshold, &is_pending));
 
   EXPECT_DIF_BADARG(
-      dif_i2c_irq_is_pending(&i2c_, kDifI2cIrqFmtWatermark, nullptr));
+      dif_i2c_irq_is_pending(&i2c_, kDifI2cIrqFmtThreshold, nullptr));
 
   EXPECT_DIF_BADARG(
-      dif_i2c_irq_is_pending(nullptr, kDifI2cIrqFmtWatermark, nullptr));
+      dif_i2c_irq_is_pending(nullptr, kDifI2cIrqFmtThreshold, nullptr));
 }
 
 TEST_F(IrqIsPendingTest, BadIrq) {
@@ -140,9 +140,9 @@ TEST_F(IrqIsPendingTest, Success) {
   // Get the first IRQ state.
   irq_state = false;
   EXPECT_READ32(I2C_INTR_STATE_REG_OFFSET,
-                {{I2C_INTR_STATE_FMT_WATERMARK_BIT, true}});
+                {{I2C_INTR_STATE_FMT_THRESHOLD_BIT, true}});
   EXPECT_DIF_OK(
-      dif_i2c_irq_is_pending(&i2c_, kDifI2cIrqFmtWatermark, &irq_state));
+      dif_i2c_irq_is_pending(&i2c_, kDifI2cIrqFmtThreshold, &irq_state));
   EXPECT_TRUE(irq_state);
 
   // Get the last IRQ state.
@@ -170,7 +170,7 @@ TEST_F(AcknowledgeAllTest, Success) {
 class IrqAcknowledgeTest : public I2cTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_i2c_irq_acknowledge(nullptr, kDifI2cIrqFmtWatermark));
+  EXPECT_DIF_BADARG(dif_i2c_irq_acknowledge(nullptr, kDifI2cIrqFmtThreshold));
 }
 
 TEST_F(IrqAcknowledgeTest, BadIrq) {
@@ -181,8 +181,8 @@ TEST_F(IrqAcknowledgeTest, BadIrq) {
 TEST_F(IrqAcknowledgeTest, Success) {
   // Clear the first IRQ state.
   EXPECT_WRITE32(I2C_INTR_STATE_REG_OFFSET,
-                 {{I2C_INTR_STATE_FMT_WATERMARK_BIT, true}});
-  EXPECT_DIF_OK(dif_i2c_irq_acknowledge(&i2c_, kDifI2cIrqFmtWatermark));
+                 {{I2C_INTR_STATE_FMT_THRESHOLD_BIT, true}});
+  EXPECT_DIF_OK(dif_i2c_irq_acknowledge(&i2c_, kDifI2cIrqFmtThreshold));
 
   // Clear the last IRQ state.
   EXPECT_WRITE32(I2C_INTR_STATE_REG_OFFSET,
@@ -193,7 +193,7 @@ TEST_F(IrqAcknowledgeTest, Success) {
 class IrqForceTest : public I2cTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_i2c_irq_force(nullptr, kDifI2cIrqFmtWatermark, true));
+  EXPECT_DIF_BADARG(dif_i2c_irq_force(nullptr, kDifI2cIrqFmtThreshold, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
@@ -204,8 +204,8 @@ TEST_F(IrqForceTest, BadIrq) {
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(I2C_INTR_TEST_REG_OFFSET,
-                 {{I2C_INTR_TEST_FMT_WATERMARK_BIT, true}});
-  EXPECT_DIF_OK(dif_i2c_irq_force(&i2c_, kDifI2cIrqFmtWatermark, true));
+                 {{I2C_INTR_TEST_FMT_THRESHOLD_BIT, true}});
+  EXPECT_DIF_OK(dif_i2c_irq_force(&i2c_, kDifI2cIrqFmtThreshold, true));
 
   // Force last IRQ.
   EXPECT_WRITE32(I2C_INTR_TEST_REG_OFFSET,
@@ -219,13 +219,13 @@ TEST_F(IrqGetEnabledTest, NullArgs) {
   dif_toggle_t irq_state;
 
   EXPECT_DIF_BADARG(
-      dif_i2c_irq_get_enabled(nullptr, kDifI2cIrqFmtWatermark, &irq_state));
+      dif_i2c_irq_get_enabled(nullptr, kDifI2cIrqFmtThreshold, &irq_state));
 
   EXPECT_DIF_BADARG(
-      dif_i2c_irq_get_enabled(&i2c_, kDifI2cIrqFmtWatermark, nullptr));
+      dif_i2c_irq_get_enabled(&i2c_, kDifI2cIrqFmtThreshold, nullptr));
 
   EXPECT_DIF_BADARG(
-      dif_i2c_irq_get_enabled(nullptr, kDifI2cIrqFmtWatermark, nullptr));
+      dif_i2c_irq_get_enabled(nullptr, kDifI2cIrqFmtThreshold, nullptr));
 }
 
 TEST_F(IrqGetEnabledTest, BadIrq) {
@@ -241,9 +241,9 @@ TEST_F(IrqGetEnabledTest, Success) {
   // First IRQ is enabled.
   irq_state = kDifToggleDisabled;
   EXPECT_READ32(I2C_INTR_ENABLE_REG_OFFSET,
-                {{I2C_INTR_ENABLE_FMT_WATERMARK_BIT, true}});
+                {{I2C_INTR_ENABLE_FMT_THRESHOLD_BIT, true}});
   EXPECT_DIF_OK(
-      dif_i2c_irq_get_enabled(&i2c_, kDifI2cIrqFmtWatermark, &irq_state));
+      dif_i2c_irq_get_enabled(&i2c_, kDifI2cIrqFmtThreshold, &irq_state));
   EXPECT_EQ(irq_state, kDifToggleEnabled);
 
   // Last IRQ is disabled.
@@ -261,7 +261,7 @@ TEST_F(IrqSetEnabledTest, NullArgs) {
   dif_toggle_t irq_state = kDifToggleEnabled;
 
   EXPECT_DIF_BADARG(
-      dif_i2c_irq_set_enabled(nullptr, kDifI2cIrqFmtWatermark, irq_state));
+      dif_i2c_irq_set_enabled(nullptr, kDifI2cIrqFmtThreshold, irq_state));
 }
 
 TEST_F(IrqSetEnabledTest, BadIrq) {
@@ -277,9 +277,9 @@ TEST_F(IrqSetEnabledTest, Success) {
   // Enable first IRQ.
   irq_state = kDifToggleEnabled;
   EXPECT_MASK32(I2C_INTR_ENABLE_REG_OFFSET,
-                {{I2C_INTR_ENABLE_FMT_WATERMARK_BIT, 0x1, true}});
+                {{I2C_INTR_ENABLE_FMT_THRESHOLD_BIT, 0x1, true}});
   EXPECT_DIF_OK(
-      dif_i2c_irq_set_enabled(&i2c_, kDifI2cIrqFmtWatermark, irq_state));
+      dif_i2c_irq_set_enabled(&i2c_, kDifI2cIrqFmtThreshold, irq_state));
 
   // Disable last IRQ.
   irq_state = kDifToggleDisabled;

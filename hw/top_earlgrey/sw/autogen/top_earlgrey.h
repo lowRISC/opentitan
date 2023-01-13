@@ -1092,8 +1092,8 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdSpiDeviceReadbufWatermark = 74, /**< spi_device_readbuf_watermark */
   kTopEarlgreyPlicIrqIdSpiDeviceReadbufFlip = 75, /**< spi_device_readbuf_flip */
   kTopEarlgreyPlicIrqIdSpiDeviceTpmHeaderNotEmpty = 76, /**< spi_device_tpm_header_not_empty */
-  kTopEarlgreyPlicIrqIdI2c0FmtWatermark = 77, /**< i2c0_fmt_watermark */
-  kTopEarlgreyPlicIrqIdI2c0RxWatermark = 78, /**< i2c0_rx_watermark */
+  kTopEarlgreyPlicIrqIdI2c0FmtThreshold = 77, /**< i2c0_fmt_threshold */
+  kTopEarlgreyPlicIrqIdI2c0RxThreshold = 78, /**< i2c0_rx_threshold */
   kTopEarlgreyPlicIrqIdI2c0FmtOverflow = 79, /**< i2c0_fmt_overflow */
   kTopEarlgreyPlicIrqIdI2c0RxOverflow = 80, /**< i2c0_rx_overflow */
   kTopEarlgreyPlicIrqIdI2c0Nak = 81, /**< i2c0_nak */
@@ -1107,8 +1107,8 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c0AcqFull = 89, /**< i2c0_acq_full */
   kTopEarlgreyPlicIrqIdI2c0UnexpStop = 90, /**< i2c0_unexp_stop */
   kTopEarlgreyPlicIrqIdI2c0HostTimeout = 91, /**< i2c0_host_timeout */
-  kTopEarlgreyPlicIrqIdI2c1FmtWatermark = 92, /**< i2c1_fmt_watermark */
-  kTopEarlgreyPlicIrqIdI2c1RxWatermark = 93, /**< i2c1_rx_watermark */
+  kTopEarlgreyPlicIrqIdI2c1FmtThreshold = 92, /**< i2c1_fmt_threshold */
+  kTopEarlgreyPlicIrqIdI2c1RxThreshold = 93, /**< i2c1_rx_threshold */
   kTopEarlgreyPlicIrqIdI2c1FmtOverflow = 94, /**< i2c1_fmt_overflow */
   kTopEarlgreyPlicIrqIdI2c1RxOverflow = 95, /**< i2c1_rx_overflow */
   kTopEarlgreyPlicIrqIdI2c1Nak = 96, /**< i2c1_nak */
@@ -1122,8 +1122,8 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c1AcqFull = 104, /**< i2c1_acq_full */
   kTopEarlgreyPlicIrqIdI2c1UnexpStop = 105, /**< i2c1_unexp_stop */
   kTopEarlgreyPlicIrqIdI2c1HostTimeout = 106, /**< i2c1_host_timeout */
-  kTopEarlgreyPlicIrqIdI2c2FmtWatermark = 107, /**< i2c2_fmt_watermark */
-  kTopEarlgreyPlicIrqIdI2c2RxWatermark = 108, /**< i2c2_rx_watermark */
+  kTopEarlgreyPlicIrqIdI2c2FmtThreshold = 107, /**< i2c2_fmt_threshold */
+  kTopEarlgreyPlicIrqIdI2c2RxThreshold = 108, /**< i2c2_rx_threshold */
   kTopEarlgreyPlicIrqIdI2c2FmtOverflow = 109, /**< i2c2_fmt_overflow */
   kTopEarlgreyPlicIrqIdI2c2RxOverflow = 110, /**< i2c2_rx_overflow */
   kTopEarlgreyPlicIrqIdI2c2Nak = 111, /**< i2c2_nak */

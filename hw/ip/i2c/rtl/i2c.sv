@@ -31,8 +31,8 @@ module i2c
   output logic              cio_sda_en_o,
 
   // Interrupts
-  output logic              intr_fmt_watermark_o,
-  output logic              intr_rx_watermark_o,
+  output logic              intr_fmt_threshold_o,
+  output logic              intr_rx_threshold_o,
   output logic              intr_fmt_overflow_o,
   output logic              intr_rx_overflow_o,
   output logic              intr_nak_o,
@@ -100,8 +100,8 @@ module i2c
     .sda_i(cio_sda_i),
     .sda_o(sda_int),
 
-    .intr_fmt_watermark_o,
-    .intr_rx_watermark_o,
+    .intr_fmt_threshold_o,
+    .intr_rx_threshold_o,
     .intr_fmt_overflow_o,
     .intr_rx_overflow_o,
     .intr_nak_o,
@@ -134,8 +134,8 @@ module i2c
   `ASSERT_KNOWN(CioSclEnKnownO_A, cio_scl_en_o)
   `ASSERT_KNOWN(CioSdaKnownO_A, cio_sda_o)
   `ASSERT_KNOWN(CioSdaEnKnownO_A, cio_sda_en_o)
-  `ASSERT_KNOWN(IntrFmtWtmkKnownO_A, intr_fmt_watermark_o)
-  `ASSERT_KNOWN(IntrRxWtmkKnownO_A, intr_rx_watermark_o)
+  `ASSERT_KNOWN(IntrFmtWtmkKnownO_A, intr_fmt_threshold_o)
+  `ASSERT_KNOWN(IntrRxWtmkKnownO_A, intr_rx_threshold_o)
   `ASSERT_KNOWN(IntrFmtOflwKnownO_A, intr_fmt_overflow_o)
   `ASSERT_KNOWN(IntrRxOflwKnownO_A, intr_rx_overflow_o)
   `ASSERT_KNOWN(IntrNakKnownO_A, intr_nak_o)

@@ -62,7 +62,7 @@ static volatile bool done_irq_seen = false;
 /**
  * these variables store values based on kI2cIdx
  */
-static uint32_t i2c_irq_fmt_watermark_id;
+static uint32_t i2c_irq_fmt_threshold_id;
 static uint32_t i2c_base_addr;
 static top_earlgrey_plic_irq_id_t plic_irqs[9];
 
@@ -71,7 +71,7 @@ void ottf_external_isr(void) {
                              .hart_id = kTopEarlgreyPlicTargetIbex0};
 
   i2c_isr_ctx_t i2c_ctx = {.i2c = &i2c,
-                           .plic_i2c_start_irq_id = i2c_irq_fmt_watermark_id,
+                           .plic_i2c_start_irq_id = i2c_irq_fmt_threshold_id,
                            .expected_irq = 0,
                            .is_only_irq = false};
 
@@ -80,13 +80,13 @@ void ottf_external_isr(void) {
   isr_testutils_i2c_isr(plic_ctx, i2c_ctx, &peripheral, &i2c_irq);
 
   switch (i2c_irq) {
-    case kDifI2cIrqFmtWatermark:
+    case kDifI2cIrqFmtThreshold:
       fmt_irq_seen = true;
-      i2c_irq = kDifI2cIrqFmtWatermark;
+      i2c_irq = kDifI2cIrqFmtThreshold;
       break;
-    case kDifI2cIrqRxWatermark:
+    case kDifI2cIrqRxThreshold:
       rx_irq_seen = true;
-      i2c_irq = kDifI2cIrqRxWatermark;
+      i2c_irq = kDifI2cIrqRxThreshold;
       break;
     case kDifI2cIrqCmdComplete:
       done_irq_seen = true;
@@ -117,7 +117,7 @@ static void en_plic_irqs(dif_rv_plic_t *plic) {
 
 static void en_i2c_irqs(dif_i2c_t *i2c) {
   dif_i2c_irq_t i2c_irqs[] = {
-      kDifI2cIrqFmtWatermark, kDifI2cIrqRxWatermark, kDifI2cIrqFmtOverflow,
+      kDifI2cIrqFmtThreshold, kDifI2cIrqRxThreshold, kDifI2cIrqFmtOverflow,
       kDifI2cIrqRxOverflow, kDifI2cIrqNak, kDifI2cIrqSclInterference,
       kDifI2cIrqSdaInterference, kDifI2cIrqStretchTimeout,
       // Removed for now, see plic_irqs above for explanation
@@ -135,10 +135,10 @@ void config_i2c_with_index(void) {
   switch (kI2cIdx) {
     case 0:
       i2c_base_addr = TOP_EARLGREY_I2C0_BASE_ADDR;
-      i2c_irq_fmt_watermark_id = kTopEarlgreyPlicIrqIdI2c0FmtWatermark;
+      i2c_irq_fmt_threshold_id = kTopEarlgreyPlicIrqIdI2c0FmtThreshold;
 
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0FmtWatermark;
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0RxWatermark;
+      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0FmtThreshold;
+      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0RxThreshold;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0FmtOverflow;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0RxOverflow;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0Nak;
@@ -166,10 +166,10 @@ void config_i2c_with_index(void) {
       break;
     case 1:
       i2c_base_addr = TOP_EARLGREY_I2C1_BASE_ADDR;
-      i2c_irq_fmt_watermark_id = kTopEarlgreyPlicIrqIdI2c1FmtWatermark;
+      i2c_irq_fmt_threshold_id = kTopEarlgreyPlicIrqIdI2c1FmtThreshold;
 
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1FmtWatermark;
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1RxWatermark;
+      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1FmtThreshold;
+      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1RxThreshold;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1FmtOverflow;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1RxOverflow;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1Nak;
@@ -197,10 +197,10 @@ void config_i2c_with_index(void) {
       break;
     case 2:
       i2c_base_addr = TOP_EARLGREY_I2C2_BASE_ADDR;
-      i2c_irq_fmt_watermark_id = kTopEarlgreyPlicIrqIdI2c2FmtWatermark;
+      i2c_irq_fmt_threshold_id = kTopEarlgreyPlicIrqIdI2c2FmtThreshold;
 
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2FmtWatermark;
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2RxWatermark;
+      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2FmtThreshold;
+      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2RxThreshold;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2FmtOverflow;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2RxOverflow;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2Nak;

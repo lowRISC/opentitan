@@ -82,7 +82,7 @@ void ottf_external_isr(void) {
 
   i2c_isr_ctx_t i2c_ctx = {
       .i2c = &i2c,
-      .plic_i2c_start_irq_id = kTopEarlgreyPlicIrqIdI2c0FmtWatermark,
+      .plic_i2c_start_irq_id = kTopEarlgreyPlicIrqIdI2c0FmtThreshold,
       .expected_irq = 0,
       .is_only_irq = false};
 
