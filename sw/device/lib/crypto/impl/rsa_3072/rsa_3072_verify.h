@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/status.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,8 +67,8 @@ typedef struct rsa_3072_constants_t {
  * @param result Buffer in which to store output
  * @return Result of the operation (OK or error).
  */
-otbn_error_t rsa_3072_compute_rr(const rsa_3072_public_key_t *public_key,
-                                 rsa_3072_int_t *result);
+status_t rsa_3072_compute_rr(const rsa_3072_public_key_t *public_key,
+                             rsa_3072_int_t *result);
 
 /**
  * Computes Montgomery constant m0_inv for an RSA-3072 public key.
@@ -76,8 +77,8 @@ otbn_error_t rsa_3072_compute_rr(const rsa_3072_public_key_t *public_key,
  * @param result Buffer in which to store output
  * @return Result of the operation (OK or error).
  */
-otbn_error_t rsa_3072_compute_m0_inv(const rsa_3072_public_key_t *public_key,
-                                     uint32_t result[kOtbnWideWordNumWords]);
+status_t rsa_3072_compute_m0_inv(const rsa_3072_public_key_t *public_key,
+                                 uint32_t result[kOtbnWideWordNumWords]);
 
 /**
  * Computes Montgomery constants for an RSA-3072 public key.
@@ -86,8 +87,8 @@ otbn_error_t rsa_3072_compute_m0_inv(const rsa_3072_public_key_t *public_key,
  * @param result Buffer in which to store output
  * @return Result of the operation (OK or error).
  */
-otbn_error_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
-                                        rsa_3072_constants_t *result);
+status_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
+                                    rsa_3072_constants_t *result);
 
 /**
  * Encode the message according to RFC 8017, section 9.2, with a SHA2-256 hash
@@ -118,9 +119,9 @@ status_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
  * @param constants Precomputed Montgomery constants for the public_key.
  * @return Result of the operation (OK or error).
  */
-otbn_error_t rsa_3072_verify_start(const rsa_3072_int_t *signature,
-                                   const rsa_3072_public_key_t *public_key,
-                                   const rsa_3072_constants_t *constants);
+status_t rsa_3072_verify_start(const rsa_3072_int_t *signature,
+                               const rsa_3072_public_key_t *public_key,
+                               const rsa_3072_constants_t *constants);
 
 /**
  * Waits for an RSA-3072 signature verification to complete.
@@ -132,8 +133,8 @@ otbn_error_t rsa_3072_verify_start(const rsa_3072_int_t *signature,
  * @param message Encoded message representative to check the signature against.
  * @return Result of the operation (OK or error).
  */
-otbn_error_t rsa_3072_verify_finalize(const rsa_3072_int_t *message,
-                                      hardened_bool_t *result);
+status_t rsa_3072_verify_finalize(const rsa_3072_int_t *message,
+                                  hardened_bool_t *result);
 
 /**
  * Verifies an RSA-3072 signature; blocks until complete.
@@ -147,11 +148,11 @@ otbn_error_t rsa_3072_verify_finalize(const rsa_3072_int_t *message,
  * @param result Buffer in which to store output (true iff signature is valid)
  * @return Result of the operation (OK or error).
  */
-otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
-                             const rsa_3072_int_t *message,
-                             const rsa_3072_public_key_t *public_key,
-                             const rsa_3072_constants_t *constants,
-                             hardened_bool_t *result);
+status_t rsa_3072_verify(const rsa_3072_int_t *signature,
+                         const rsa_3072_int_t *message,
+                         const rsa_3072_public_key_t *public_key,
+                         const rsa_3072_constants_t *constants,
+                         hardened_bool_t *result);
 
 #ifdef __cplusplus
 }  // extern "C"

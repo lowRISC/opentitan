@@ -9,6 +9,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/crypto/impl/status.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -22,65 +24,6 @@ enum {
   /* Length of an OTBN wide word in words */
   kOtbnWideWordNumWords = kOtbnWideWordNumBits / (sizeof(uint32_t) * 8),
 };
-
-/**
- * Error codes for the OTBN driver.
- */
-typedef enum otbn_error {
-  /** No errors. */
-  kOtbnErrorOk = 0,
-  /** Invalid argument provided to OTBN interface function. */
-  kOtbnErrorInvalidArgument = 1,
-  /** Invalid offset provided. */
-  kOtbnErrorBadOffsetLen = 2,
-  /** OTBN internal error; use otbn_err_bits_get for specific error codes. */
-  kOtbnErrorExecutionFailed = 3,
-  /** Attempt to interact with OTBN while it was unavailable. */
-  kOtbnErrorUnavailable = 4,
-} otbn_error_t;
-
-typedef enum otbn_err_bits {
-  kOtbnErrBitsNoError = 0,
-  /** A BAD_DATA_ADDR error was observed. */
-  kOtbnErrBitsBadDataAddr = (1 << 0),
-  /** A BAD_INSN_ADDR error was observed. */
-  kOtbnErrBitsBadInsnAddr = (1 << 1),
-  /** A CALL_STACK error was observed. */
-  kOtbnErrBitsCallStack = (1 << 2),
-  /** An ILLEGAL_INSN error was observed. */
-  kOtbnErrBitsIllegalInsn = (1 << 3),
-  /** A LOOP error was observed. */
-  kOtbnErrBitsLoop = (1 << 4),
-  /** A IMEM_INTG_VIOLATION error was observed. */
-  kOtbnErrBitsImemIntgViolation = (1 << 16),
-  /** A DMEM_INTG_VIOLATION error was observed. */
-  kOtbnErrBitsDmemIntgViolation = (1 << 17),
-  /** A REG_INTG_VIOLATION error was observed. */
-  kOtbnErrBitsRegIntgViolation = (1 << 18),
-  /** A BUS_INTG_VIOLATION error was observed. */
-  kOtbnErrBitsBusIntgViolation = (1 << 19),
-  /** A BAD_INTERNAL_STATE error was observed. */
-  kDifOtbnErrBitsBadInternalState = (1 << 20),
-  /** An ILLEGAL_BUS_ACCESS error was observed. */
-  kOtbnErrBitsIllegalBusAccess = (1 << 21),
-  /** A LIFECYCLE_ESCALATION error was observed. */
-  kOtbnErrBitsLifecycleEscalation = (1 << 22),
-  /** A FATAL_SOFTWARE error was observed. */
-  kOtbnErrBitsFatalSoftware = (1 << 23),
-} otbn_err_bits_t;
-
-/**
- * Evaluate an expression and return if the result is an error.
- *
- * @param expr_ An expression which results in an otbn_error_t.
- */
-#define OTBN_RETURN_IF_ERROR(expr_)     \
-  do {                                  \
-    otbn_error_t local_error_ = expr_;  \
-    if (local_error_ != kOtbnErrorOk) { \
-      return local_error_;              \
-    }                                   \
-  } while (false)
 
 /**
  * The address of an OTBN symbol as seen by OTBN.
@@ -248,8 +191,8 @@ typedef struct otbn_app {
  * @param dest The DMEM location to copy to.
  * @return Result of the operation.
  */
-otbn_error_t otbn_dmem_write(size_t num_words, const uint32_t *src,
-                             otbn_addr_t dest);
+status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
+                         otbn_addr_t dest);
 
 /**
  * Set a range of OTBN's data memory (DMEM) to a particular value.
@@ -265,8 +208,7 @@ otbn_error_t otbn_dmem_write(size_t num_words, const uint32_t *src,
  * @param dest The DMEM location to set.
  * @return Result of the operation.
  */
-otbn_error_t otbn_dmem_set(size_t num_words, const uint32_t src,
-                           otbn_addr_t dest);
+status_t otbn_dmem_set(size_t num_words, const uint32_t src, otbn_addr_t dest);
 
 /**
  * Read from OTBN's data memory (DMEM)
@@ -280,8 +222,9 @@ otbn_error_t otbn_dmem_set(size_t num_words, const uint32_t src,
  * @param num_words Length of the data in 32-bit words.
  * @param src The DMEM location to copy from.
  * @param[out] dest The main memory location to copy to.
+ * @return Result of the operation.
  */
-otbn_error_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest);
+status_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest);
 
 /**
  * Start the execution of the application loaded into OTBN.
@@ -290,7 +233,7 @@ otbn_error_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest);
  *
  * @return Result of the operation.
  */
-otbn_error_t otbn_execute(void);
+status_t otbn_execute(void);
 
 /**
  * Blocks until OTBN is idle.
@@ -299,14 +242,14 @@ otbn_error_t otbn_execute(void);
  *
  * @return Result of the operation.
  */
-otbn_error_t otbn_busy_wait_for_done(void);
+status_t otbn_busy_wait_for_done(void);
 
 /**
  * Get the error bits set by the device if the operation failed.
  *
- * @param[out] err_bits The error bits returned by the hardware.
+ * @return The contents of OTBN's ERR_BITS register.
  */
-void otbn_err_bits_get(otbn_err_bits_t *err_bits);
+uint32_t otbn_err_bits_get(void);
 
 /**
  * Read OTBN's instruction count register.
@@ -332,7 +275,7 @@ uint32_t otbn_instruction_count_get(void);
  *
  * @return Result of the operation.
  */
-otbn_error_t otbn_imem_sec_wipe(void);
+status_t otbn_imem_sec_wipe(void);
 
 /**
  * Wipe DMEM securely.
@@ -342,7 +285,7 @@ otbn_error_t otbn_imem_sec_wipe(void);
  *
  * @return Result of the operation.
  */
-otbn_error_t otbn_dmem_sec_wipe(void);
+status_t otbn_dmem_sec_wipe(void);
 
 /**
  * Sets the software errors are fatal bit in the control register.
@@ -355,7 +298,7 @@ otbn_error_t otbn_dmem_sec_wipe(void);
  * @param enable Enable or disable whether software errors are fatal.
  * @return Result of the operation.
  */
-otbn_error_t otbn_set_ctrl_software_errs_fatal(bool enable);
+status_t otbn_set_ctrl_software_errs_fatal(bool enable);
 
 /**
  * (Re-)loads the provided application into OTBN.
@@ -369,7 +312,7 @@ otbn_error_t otbn_set_ctrl_software_errs_fatal(bool enable);
  * @param app The application to load into OTBN.
  * @return The result of the operation.
  */
-otbn_error_t otbn_load_app(const otbn_app_t app);
+status_t otbn_load_app(const otbn_app_t app);
 
 #ifdef __cplusplus
 }
