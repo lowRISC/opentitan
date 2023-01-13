@@ -19,6 +19,15 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
   } test_type_e;
   int          round = 0;
 
+  task hw_info_cfg_update();
+    // Randomize hw_info_cfg_override
+    cfg.ovrd_scr_dis = get_rand_mubi4_val(.t_weight(2), .f_weight(1), .other_weight(1));
+    cfg.ovrd_ecc_dis = get_rand_mubi4_val(.t_weight(2), .f_weight(1), .other_weight(1));
+    ral.hw_info_cfg_override.scramble_dis.set(cfg.ovrd_scr_dis);
+    ral.hw_info_cfg_override.ecc_dis.set(cfg.ovrd_ecc_dis);
+    csr_update(ral.hw_info_cfg_override);
+  endtask // hw_info_cfg_update
+
   virtual task body();
     // INITIALIZE FLASH REGIONS
     // All on to configure secret info_page_cfg
@@ -101,11 +110,12 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
 
     flash_op_data = '{};
     `uvm_info(`gfn, $sformatf("iter%0d:info:%s is_valid:%0b op:%p",
-                              round, part.name, is_valid, flash_op), UVM_HIGH)
+                              round, part.name, is_valid, flash_op), UVM_MEDIUM)
     if (part == FlashIsolPart) begin
       scr_en = 1;
     end else begin
-      scr_en = (flash_ctrl_pkg::CfgAllowRead.scramble_en == MuBi4True);
+      scr_en = ((flash_ctrl_pkg::CfgAllowRead.scramble_en == MuBi4True) &&
+                (mubi4_t'(~cfg.ovrd_scr_dis) == MuBi4True));
     end
     case (op)
       FlashOpErase: begin
@@ -149,8 +159,15 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
     flash_bank_mp_info_page_cfg_t info_regions = '{default: MuBi4True};
     for (int i = 1; i < 4; i++) begin
       if (i < 3) begin
-         info_regions.scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
-         info_regions.ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
+         info_regions.scramble_en = prim_mubi_pkg::mubi4_and_hi(
+                                    flash_ctrl_pkg::CfgAllowRead.scramble_en,
+                                    mubi4_t'(~cfg.ovrd_scr_dis));
+         info_regions.ecc_en = prim_mubi_pkg::mubi4_and_hi(
+                               flash_ctrl_pkg::CfgAllowRead.ecc_en,
+                               mubi4_t'(~cfg.ovrd_ecc_dis));
+      end else begin
+        info_regions.scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
+        info_regions.ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
       end
       flash_ctrl_mp_info_page_cfg(0, 0, i, info_regions);
     end
