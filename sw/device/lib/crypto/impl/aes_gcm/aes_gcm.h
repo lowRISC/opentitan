@@ -48,11 +48,10 @@ enum {
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-aes_error_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
-                            const uint8_t *iv, const size_t plaintext_len,
-                            const uint8_t *plaintext, const size_t aad_len,
-                            const uint8_t *aad, uint8_t *ciphertext,
-                            uint8_t *tag);
+status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
+                         const uint8_t *iv, const size_t plaintext_len,
+                         const uint8_t *plaintext, const size_t aad_len,
+                         const uint8_t *aad, uint8_t *ciphertext, uint8_t *tag);
 /**
  * GHASH operation as defined in NIST SP800-38D, algorithm 2.
  *
@@ -70,9 +69,8 @@ aes_error_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-aes_error_t aes_gcm_ghash(const aes_block_t *hash_subkey,
-                          const size_t input_len, const uint8_t *input,
-                          aes_block_t *output);
+status_t aes_gcm_ghash(const aes_block_t *hash_subkey, const size_t input_len,
+                       const uint8_t *input, aes_block_t *output);
 
 /**
  * AES-GCM authenticated decryption as defined in NIST SP800-38D, algorithm 5.
@@ -86,7 +84,7 @@ aes_error_t aes_gcm_ghash(const aes_block_t *hash_subkey,
  * If authentication fails, this function will return `kHardenedBoolFalse` for
  * the `success` output parameter, and the plaintext should be ignored. Note
  * the distinction between the `success` output parameter and the return value
- * (type `aes_error_t`): the return value indicates whether there was an
+ * (type `status_t`): the return value indicates whether there was an
  * internal error while processing the function, and `success` indicates
  * whether the authentication check passed. If the return value is anything
  * other than OK, all output from this function should be discarded, including
@@ -107,11 +105,11 @@ aes_error_t aes_gcm_ghash(const aes_block_t *hash_subkey,
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-aes_error_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
-                            const uint8_t *iv, const size_t ciphertext_len,
-                            const uint8_t *ciphertext, const size_t aad_len,
-                            const uint8_t *aad, const uint8_t *tag,
-                            uint8_t *plaintext, hardened_bool_t *success);
+status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
+                         const uint8_t *iv, const size_t ciphertext_len,
+                         const uint8_t *ciphertext, const size_t aad_len,
+                         const uint8_t *aad, const uint8_t *tag,
+                         uint8_t *plaintext, hardened_bool_t *success);
 
 #ifdef __cplusplus
 }  // extern "C"

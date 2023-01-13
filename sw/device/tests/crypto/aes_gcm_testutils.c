@@ -45,14 +45,14 @@ uint32_t call_aes_gcm_encrypt(aes_gcm_test_t test) {
 
   // Call encrypt() with a cycle count timing profile.
   uint64_t t_start = profile_start();
-  aes_error_t err = aes_gcm_encrypt(
+  status_t err = aes_gcm_encrypt(
       test_key, test.iv_len, test.iv, test.plaintext_len, test.plaintext,
       test.aad_len, test.aad, actual_ciphertext, actual_tag);
   uint32_t cycles = profile_end(t_start);
   LOG_INFO("aes_gcm_encrypt took %d cycles", cycles);
 
   // Check for errors and that the tag and plaintext match expected values.
-  CHECK(err == kAesOk, "AES-GCM encryption returned an error: %08x", err);
+  CHECK_STATUS_OK(err);
   CHECK_ARRAYS_EQ(actual_tag, test.tag, sizeof(test.tag));
   if (test.plaintext_len > 0) {
     int cmp = memcmp(actual_ciphertext, test.ciphertext, test.plaintext_len);
@@ -79,14 +79,14 @@ uint32_t call_aes_gcm_decrypt(aes_gcm_test_t test, bool tag_valid) {
 
   // Call decrypt() with a cycle count timing profile.
   uint64_t t_start = profile_start();
-  aes_error_t err = aes_gcm_decrypt(
+  status_t err = aes_gcm_decrypt(
       test_key, test.iv_len, test.iv, test.plaintext_len, test.ciphertext,
       test.aad_len, test.aad, test.tag, actual_plaintext, &success);
   uint32_t cycles = profile_end(t_start);
   LOG_INFO("aes_gcm_decrypt took %d cycles", cycles);
 
   // Check the results.
-  CHECK(err == kAesOk, "AES-GCM decryption returned an error: %08x", err);
+  CHECK_STATUS_OK(err);
   if (tag_valid) {
     CHECK(success == kHardenedBoolTrue,
           "AES-GCM decryption failed on valid input");

@@ -12,6 +12,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
+#include "sw/device/lib/crypto/impl/status.h"
 
 enum {
   /* Log2 of the number of bytes in an AES block. */
@@ -378,16 +379,15 @@ static void aes_gcm_ghash_update(const aes_gcm_product_table_t *tbl,
   }
 }
 
-aes_error_t aes_gcm_ghash(const aes_block_t *hash_subkey,
-                          const size_t input_len, const uint8_t *input,
-                          aes_block_t *output) {
+status_t aes_gcm_ghash(const aes_block_t *hash_subkey, const size_t input_len,
+                       const uint8_t *input, aes_block_t *output) {
   // Compute the product table for H.
   aes_gcm_product_table_t tbl;
   make_product_table(hash_subkey, &tbl);
 
   // If the input length is not a multiple of the block size, fail.
   if (get_last_block_num_bytes(input_len) != kAesBlockNumBytes) {
-    return kAesInternalError;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Initialize the GHASH state to 0.
@@ -396,32 +396,19 @@ aes_error_t aes_gcm_ghash(const aes_block_t *hash_subkey,
   // Update the GHASH state with the input.
   aes_gcm_ghash_update(&tbl, input_len, input, output);
 
-  return kAesOk;
+  return OTCRYPTO_OK;
 }
 
 /**
  * One-shot version of the AES encryption API for a single block.
  */
-static aes_error_t aes_encrypt_block(const aes_key_t key, const aes_block_t *iv,
-                                     const aes_block_t *input,
-                                     aes_block_t *output) {
-  aes_error_t err = aes_encrypt_begin(key, iv);
-  if (err != kAesOk) {
-    return err;
-  }
-  err = aes_update(/*dest*/ NULL, input);
-  if (err != kAesOk) {
-    return err;
-  }
-  err = aes_update(output, /*src*/ NULL);
-  if (err != kAesOk) {
-    return err;
-  }
-  err = aes_end();
-  if (err != kAesOk) {
-    return err;
-  }
-  return kAesOk;
+static status_t aes_encrypt_block(const aes_key_t key, const aes_block_t *iv,
+                                  const aes_block_t *input,
+                                  aes_block_t *output) {
+  HARDENED_TRY(aes_encrypt_begin(key, iv));
+  HARDENED_TRY(aes_update(/*dest*/ NULL, input));
+  HARDENED_TRY(aes_update(output, /*src*/ NULL));
+  return aes_end();
 }
 
 /**
@@ -440,28 +427,27 @@ static aes_error_t aes_encrypt_block(const aes_key_t key, const aes_block_t *iv,
  * @param[out] output Pointer to output buffer (same size as input, may be the
  * same buffer)
  */
-aes_error_t aes_gcm_gctr(const aes_key_t key, const aes_block_t *icb,
-                         const size_t len, const uint8_t *input,
-                         uint8_t *output) {
+status_t aes_gcm_gctr(const aes_key_t key, const aes_block_t *icb,
+                      const size_t len, const uint8_t *input, uint8_t *output) {
   // If the input is empty, the output must be as well. Since the output length
   // is 0, simply return.
   if (len == 0) {
-    return kAesOk;
+    return OTCRYPTO_OK;
   }
 
   // NULL pointers are not allowed for nonzero input length.
   if (input == NULL || output == NULL) {
-    return kAesInternalError;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // TODO: add support for sideloaded keys.
   if (key.sideload != kHardenedBoolFalse) {
-    return kAesInternalError;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Key must be intended for CTR mode.
   if (key.mode != kAesCipherModeCtr) {
-    return kAesInternalError;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Initial IV = ICB.
@@ -490,10 +476,7 @@ aes_error_t aes_gcm_gctr(const aes_key_t key, const aes_block_t *icb,
 
     // Run the AES-CTR encryption operation on the next block of input.
     aes_block_t block_out;
-    aes_error_t err = aes_encrypt_block(key, &iv, &block_in, &block_out);
-    if (err != kAesOk) {
-      return err;
-    }
+    HARDENED_TRY(aes_encrypt_block(key, &iv, &block_in, &block_out));
 
     // Copy the result block into the output buffer, truncating some bytes if
     // the input block was partial.
@@ -503,7 +486,7 @@ aes_error_t aes_gcm_gctr(const aes_key_t key, const aes_block_t *icb,
     block_inc32(&iv);
   }
 
-  return kAesOk;
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -516,23 +499,25 @@ aes_error_t aes_gcm_gctr(const aes_key_t key, const aes_block_t *icb,
  * @param iv_len IV length in bytes
  * @param plaintext_len Plaintext/ciphertext length in bytes
  * @param aad_len Associated data length in bytes
+ * @return `OTCRYPTO_OK` if the lengths are OK, and `OTCRYPTO_BAD_ARGS`
+ * otherwise.
  */
-static hardened_bool_t check_buffer_lengths(const size_t iv_len,
-                                            const size_t plaintext_len,
-                                            const size_t aad_len) {
+static status_t check_buffer_lengths(const size_t iv_len,
+                                     const size_t plaintext_len,
+                                     const size_t aad_len) {
   // Check IV length (must be 96 or 128 bits = 12 or 16 bytes).
   if (iv_len != 12 && iv_len != 16) {
-    return kHardenedBoolFalse;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Check plaintext/AAD length. Both must be less than 2^32 bytes long. This
   // is stricter than NIST requires, but SP800-38D also allows implementations
   // to stipulate lower length limits.
   if (plaintext_len > UINT32_MAX || aad_len > UINT32_MAX) {
-    return kHardenedBoolFalse;
+    return OTCRYPTO_BAD_ARGS;
   }
 
-  return kHardenedBoolTrue;
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -548,23 +533,20 @@ static hardened_bool_t check_buffer_lengths(const size_t iv_len,
  * @param[out] tbl Destination for the output hash subkey product table
  * @return OK or error
  */
-static aes_error_t aes_gcm_hash_subkey(const aes_key_t key,
-                                       aes_gcm_product_table_t *tbl) {
+static status_t aes_gcm_hash_subkey(const aes_key_t key,
+                                    aes_gcm_product_table_t *tbl) {
   // Compute the initial hash subkey H = AES_K(0). Note that to get this
   // result from AES_CTR, we set both the IV and plaintext to zero; this way,
   // AES-CTR's final XOR with the plaintext does nothing.
   aes_block_t zero;
   memset(zero.data, 0, kAesBlockNumBytes);
   aes_block_t hash_subkey;
-  aes_error_t err = aes_encrypt_block(key, &zero, &zero, &hash_subkey);
-  if (err != kAesOk) {
-    return err;
-  }
+  HARDENED_TRY(aes_encrypt_block(key, &zero, &zero, &hash_subkey));
 
   // Compute the product table for H.
   make_product_table(&hash_subkey, tbl);
 
-  return kAesOk;
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -579,9 +561,8 @@ static aes_error_t aes_gcm_hash_subkey(const aes_key_t key,
  * @param[out] j0 Destination for the output counter block
  * @return OK or error
  */
-static aes_error_t aes_gcm_counter(const size_t iv_len, const uint8_t *iv,
-                                   aes_gcm_product_table_t *tbl,
-                                   aes_block_t *j0) {
+static status_t aes_gcm_counter(const size_t iv_len, const uint8_t *iv,
+                                aes_gcm_product_table_t *tbl, aes_block_t *j0) {
   if (iv_len == 12) {
     // If the IV is 96 bits, then J0 = (IV || {0}^31 || 1).
     memcpy(j0->data, iv, iv_len);
@@ -598,10 +579,10 @@ static aes_error_t aes_gcm_counter(const size_t iv_len, const uint8_t *iv,
     aes_gcm_ghash_update(tbl, kAesBlockNumBytes, buffer, j0);
   } else {
     // Should not happen; invalid IV length.
-    return kAesInternalError;
+    return OTCRYPTO_BAD_ARGS;
   }
 
-  return kAesOk;
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -616,12 +597,12 @@ static aes_error_t aes_gcm_counter(const size_t iv_len, const uint8_t *iv,
  * @param j0 Counter block (J0 in the NIST specification)
  * @param[out] tag Buffer for output tag (128 bits)
  */
-static aes_error_t aes_gcm_compute_tag(const aes_key_t key,
-                                       const aes_gcm_product_table_t *tbl,
-                                       const size_t ciphertext_len,
-                                       const uint8_t *ciphertext,
-                                       const size_t aad_len, const uint8_t *aad,
-                                       const aes_block_t *j0, uint8_t *tag) {
+static status_t aes_gcm_compute_tag(const aes_key_t key,
+                                    const aes_gcm_product_table_t *tbl,
+                                    const size_t ciphertext_len,
+                                    const uint8_t *ciphertext,
+                                    const size_t aad_len, const uint8_t *aad,
+                                    const aes_block_t *j0, uint8_t *tag) {
   // Compute S = GHASH(H, expand(A) || expand(C) || len64(A) || len64(C))
   // where:
   //   * A is the aad, C is the ciphertext
@@ -643,43 +624,28 @@ static aes_error_t aes_gcm_compute_tag(const aes_key_t key,
       __builtin_bswap64(((uint64_t)ciphertext_len) * 8),
   };
 
-  // Use memcpy() to avoid violating strict aliasing when converting to bytes.
-  uint8_t last_block_bytes[sizeof(last_block)];
-  memcpy(last_block_bytes, last_block, sizeof(last_block));
-
   // Finish computing S by appending (len64(A) || len64(C)).
-  aes_gcm_ghash_update(tbl, kAesBlockNumBytes, last_block_bytes, &s);
+  aes_gcm_ghash_update(tbl, kAesBlockNumBytes, (unsigned char *)last_block, &s);
 
   // Compute the tag T = GCTR(K, J0, S).
-  uint8_t s_data_bytes[sizeof(s.data)];
-  memcpy(s_data_bytes, s.data, sizeof(s.data));
-  return aes_gcm_gctr(key, j0, kAesBlockNumBytes, s_data_bytes, tag);
+  return aes_gcm_gctr(key, j0, kAesBlockNumBytes, (unsigned char *)s.data, tag);
 }
 
-aes_error_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
-                            const uint8_t *iv, const size_t plaintext_len,
-                            const uint8_t *plaintext, const size_t aad_len,
-                            const uint8_t *aad, uint8_t *ciphertext,
-                            uint8_t *tag) {
+status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
+                         const uint8_t *iv, const size_t plaintext_len,
+                         const uint8_t *plaintext, const size_t aad_len,
+                         const uint8_t *aad, uint8_t *ciphertext,
+                         uint8_t *tag) {
   // Check that the input parameter sizes are valid.
-  if (check_buffer_lengths(iv_len, plaintext_len, aad_len) !=
-      kHardenedBoolTrue) {
-    return kAesInternalError;
-  }
+  HARDENED_TRY(check_buffer_lengths(iv_len, plaintext_len, aad_len));
 
   // Compute the hash subkey H as a product table.
   aes_gcm_product_table_t Htbl;
-  aes_error_t err = aes_gcm_hash_subkey(key, &Htbl);
-  if (err != kAesOk) {
-    return err;
-  }
+  HARDENED_TRY(aes_gcm_hash_subkey(key, &Htbl));
 
   // Compute the counter block (called J0 in the NIST specification).
   aes_block_t j0;
-  err = aes_gcm_counter(iv_len, iv, &Htbl, &j0);
-  if (err != kAesOk) {
-    return err;
-  }
+  HARDENED_TRY(aes_gcm_counter(iv_len, iv, &Htbl, &j0));
 
   // Compute inc32(J0).
   aes_block_t j0_inc;
@@ -687,63 +653,49 @@ aes_error_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
   block_inc32(&j0_inc);
 
   // Compute ciphertext C = GCTR(K, inc32(J0), plaintext).
-  err = aes_gcm_gctr(key, &j0_inc, plaintext_len, plaintext, ciphertext);
-  if (err != kAesOk) {
-    return err;
-  }
+  HARDENED_TRY(
+      aes_gcm_gctr(key, &j0_inc, plaintext_len, plaintext, ciphertext));
 
   // Compute the authentication tag T.
   return aes_gcm_compute_tag(key, &Htbl, plaintext_len, ciphertext, aad_len,
                              aad, &j0, tag);
 }
 
-aes_error_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
-                            const uint8_t *iv, const size_t ciphertext_len,
-                            const uint8_t *ciphertext, const size_t aad_len,
-                            const uint8_t *aad, const uint8_t *tag,
-                            uint8_t *plaintext, hardened_bool_t *success) {
+status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
+                         const uint8_t *iv, const size_t ciphertext_len,
+                         const uint8_t *ciphertext, const size_t aad_len,
+                         const uint8_t *aad, const uint8_t *tag,
+                         uint8_t *plaintext, hardened_bool_t *success) {
   // Check that the input parameter sizes are valid.
-  if (check_buffer_lengths(iv_len, ciphertext_len, aad_len) !=
-      kHardenedBoolTrue) {
-    return kAesInternalError;
-  }
+  HARDENED_TRY(check_buffer_lengths(iv_len, ciphertext_len, aad_len));
 
   // Compute the hash subkey H as a product table.
   aes_gcm_product_table_t Htbl;
-  aes_error_t err = aes_gcm_hash_subkey(key, &Htbl);
-  if (err != kAesOk) {
-    return err;
-  }
+  HARDENED_TRY(aes_gcm_hash_subkey(key, &Htbl));
 
   // Compute the counter block (called J0 in the NIST specification).
   aes_block_t j0;
-  err = aes_gcm_counter(iv_len, iv, &Htbl, &j0);
-  if (err != kAesOk) {
-    return err;
-  }
+  HARDENED_TRY(aes_gcm_counter(iv_len, iv, &Htbl, &j0));
 
   // Compute the expected authentication tag T.
-  uint8_t expected_tag[kAesGcmTagNumBytes];
-  err = aes_gcm_compute_tag(key, &Htbl, ciphertext_len, ciphertext, aad_len,
-                            aad, &j0, expected_tag);
-  if (err != kAesOk) {
-    return err;
-  }
+  uint32_t expected_tag[kAesGcmTagNumBytes];
+  HARDENED_TRY(aes_gcm_compute_tag(key, &Htbl, ciphertext_len, ciphertext,
+                                   aad_len, aad, &j0,
+                                   (unsigned char *)expected_tag));
 
-  // Copy expected and actual tag to word-size buffers to avoid violating
-  // strict aliasing rules.
-  uint32_t expected_tag_words[kAesGcmTagNumWords];
+  // Copy actual tag to word-size buffers to ensure it is aligned for
+  // `hardened_memeq`.
   uint32_t tag_words[kAesGcmTagNumWords];
-  memcpy(expected_tag_words, expected_tag, kAesGcmTagNumBytes);
   memcpy(tag_words, tag, kAesGcmTagNumBytes);
 
   // Compare the expected tag to the actual tag (in constant time).
-  *success = hardened_memeq(expected_tag_words, tag_words, kAesGcmTagNumWords);
+  *success = hardened_memeq(expected_tag, tag_words, kAesGcmTagNumWords);
   if (*success != kHardenedBoolTrue) {
     // If authentication fails, do not proceed to decryption; simply exit
-    // with success = False. We still use `kAesOk` because there was no
+    // with success = False. We still use `OTCRYPTO_OK` because there was no
     // internal error during the authentication check.
-    return kAesOk;
+    *success = kHardenedBoolFalse;
+    return OTCRYPTO_OK;
   }
 
   // Compute plaintext P = GCTR(K, inc32(J0), ciphertext).
