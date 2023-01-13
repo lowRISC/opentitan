@@ -42,7 +42,6 @@ util/topgen/        @msfschaffner @tjaychen @Jacob-Levy
 /hw/ip/alert_handler/   @msfschaffner
 /hw/ip/flash_ctrl/      @tjaychen
 /hw/ip/kmac/rtl/        @eunchan
-/hw/ip/padctrl/         @msfschaffner @tjaychen
 /hw/ip/pinmux/          @msfschaffner @tjaychen
 /hw/ip/prim*            @tjaychen
 /hw/ip/rv_core_ibex/    @tjaychen
