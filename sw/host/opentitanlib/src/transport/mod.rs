@@ -11,7 +11,7 @@ use std::rc::Rc;
 
 use crate::bootstrap::BootstrapOptions;
 use crate::io::emu::Emulator;
-use crate::io::gpio::GpioPin;
+use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
@@ -39,6 +39,7 @@ bitflags! {
         const I2C = 0x00000008;
         const PROXY = 0x00000010;
         const EMULATOR = 0x00000020;
+        const GPIO_MONITORING = 0x00000040; // Logic analyzer functionality
     }
 }
 
@@ -109,6 +110,10 @@ pub trait Transport {
     /// Returns a [`GpioPin`] implementation.
     fn gpio_pin(&self, _instance: &str) -> Result<Rc<dyn GpioPin>> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Gpio).into())
+    }
+    /// Returns a [`GpioMonitoring`] implementation, for logic analyzer functionality.
+    fn gpio_monitoring(&self) -> Result<Rc<dyn GpioMonitoring>> {
+        Err(TransportError::InvalidInterface(TransportInterfaceType::GpioMonitoring).into())
     }
     /// Returns a [`Emulator`] implementation.
     fn emulator(&self) -> Result<Rc<dyn Emulator>> {

@@ -71,4 +71,5 @@ pub enum TransportInterfaceType {
     I2c,
     Emulator,
     ProxyOps,
+    GpioMonitoring,
 }

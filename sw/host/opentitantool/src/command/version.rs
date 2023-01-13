@@ -19,7 +19,7 @@ use opentitanlib::app::TransportWrapper;
 ///
 /// At runtime, this string is parsed into key/value pairs, which are returned.  (It would have
 /// been desirable to perform the parsing at compile time as well.)
-fn get_volatile_status() -> BTreeMap<&'static str, &'static str> {
+pub fn get_volatile_status() -> BTreeMap<&'static str, &'static str> {
     let volatile_status = include_str!("../../../../../bazel-out/volatile-status.txt");
     let re = Regex::new(r"([A-Z_]+) ([^\n]+)\n").unwrap();
     let mut properties: BTreeMap<&'static str, &'static str> = BTreeMap::new();
