@@ -14,11 +14,11 @@
   ]
   // INTERRUPT pins
   interrupt_list: [
-    { name: "fmt_watermark"
-      desc: "host mode interrupt: raised when the FMT FIFO depth falls below the low watermark."
+    { name: "fmt_threshold"
+      desc: "host mode interrupt: raised when the FMT FIFO depth is less than the low threshold."
     }
-    { name: "rx_watermark"
-      desc: "host mode interrupt: raised if the RX FIFO is past the high watermark."
+    { name: "rx_threshold"
+      desc: "host mode interrupt: raised if the RX FIFO is greater than the high threshold."
     }
     { name: "fmt_overflow"
       desc: "host mode interrupt: raised if the FMT FIFO has overflowed."
@@ -240,7 +240,7 @@
         { bits: "4:2"
           name: "RXILVL"
           desc: '''Trigger level for RX interrupts. If the FIFO depth exceeds
-                this setting, it raises rx_watermark interrupt.
+                this setting, it raises rx_threshold interrupt.
                 '''
           enum: [
             { value: "0",
@@ -268,7 +268,7 @@
         { bits: "6:5"
           name: "FMTILVL"
           desc: '''Trigger level for FMT interrupts. If the FIFO depth falls below
-                this setting, it raises fmt_watermark interrupt.
+                this setting, it raises fmt_threshold interrupt.
                 '''
           enum: [
             { value: "0",

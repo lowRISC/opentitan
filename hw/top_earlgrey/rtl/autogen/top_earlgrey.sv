@@ -404,8 +404,8 @@ module top_earlgrey #(
   logic intr_spi_device_readbuf_watermark;
   logic intr_spi_device_readbuf_flip;
   logic intr_spi_device_tpm_header_not_empty;
-  logic intr_i2c0_fmt_watermark;
-  logic intr_i2c0_rx_watermark;
+  logic intr_i2c0_fmt_threshold;
+  logic intr_i2c0_rx_threshold;
   logic intr_i2c0_fmt_overflow;
   logic intr_i2c0_rx_overflow;
   logic intr_i2c0_nak;
@@ -419,8 +419,8 @@ module top_earlgrey #(
   logic intr_i2c0_acq_full;
   logic intr_i2c0_unexp_stop;
   logic intr_i2c0_host_timeout;
-  logic intr_i2c1_fmt_watermark;
-  logic intr_i2c1_rx_watermark;
+  logic intr_i2c1_fmt_threshold;
+  logic intr_i2c1_rx_threshold;
   logic intr_i2c1_fmt_overflow;
   logic intr_i2c1_rx_overflow;
   logic intr_i2c1_nak;
@@ -434,8 +434,8 @@ module top_earlgrey #(
   logic intr_i2c1_acq_full;
   logic intr_i2c1_unexp_stop;
   logic intr_i2c1_host_timeout;
-  logic intr_i2c2_fmt_watermark;
-  logic intr_i2c2_rx_watermark;
+  logic intr_i2c2_fmt_threshold;
+  logic intr_i2c2_rx_threshold;
   logic intr_i2c2_fmt_overflow;
   logic intr_i2c2_rx_overflow;
   logic intr_i2c2_nak;
@@ -1213,8 +1213,8 @@ module top_earlgrey #(
       .cio_scl_en_o (cio_i2c0_scl_en_d2p),
 
       // Interrupt
-      .intr_fmt_watermark_o    (intr_i2c0_fmt_watermark),
-      .intr_rx_watermark_o     (intr_i2c0_rx_watermark),
+      .intr_fmt_threshold_o    (intr_i2c0_fmt_threshold),
+      .intr_rx_threshold_o     (intr_i2c0_rx_threshold),
       .intr_fmt_overflow_o     (intr_i2c0_fmt_overflow),
       .intr_rx_overflow_o      (intr_i2c0_rx_overflow),
       .intr_nak_o              (intr_i2c0_nak),
@@ -1255,8 +1255,8 @@ module top_earlgrey #(
       .cio_scl_en_o (cio_i2c1_scl_en_d2p),
 
       // Interrupt
-      .intr_fmt_watermark_o    (intr_i2c1_fmt_watermark),
-      .intr_rx_watermark_o     (intr_i2c1_rx_watermark),
+      .intr_fmt_threshold_o    (intr_i2c1_fmt_threshold),
+      .intr_rx_threshold_o     (intr_i2c1_rx_threshold),
       .intr_fmt_overflow_o     (intr_i2c1_fmt_overflow),
       .intr_rx_overflow_o      (intr_i2c1_rx_overflow),
       .intr_nak_o              (intr_i2c1_nak),
@@ -1297,8 +1297,8 @@ module top_earlgrey #(
       .cio_scl_en_o (cio_i2c2_scl_en_d2p),
 
       // Interrupt
-      .intr_fmt_watermark_o    (intr_i2c2_fmt_watermark),
-      .intr_rx_watermark_o     (intr_i2c2_rx_watermark),
+      .intr_fmt_threshold_o    (intr_i2c2_fmt_threshold),
+      .intr_rx_threshold_o     (intr_i2c2_rx_threshold),
       .intr_fmt_overflow_o     (intr_i2c2_fmt_overflow),
       .intr_rx_overflow_o      (intr_i2c2_rx_overflow),
       .intr_nak_o              (intr_i2c2_nak),
@@ -2681,8 +2681,8 @@ module top_earlgrey #(
       intr_i2c2_nak, // IDs [111 +: 1]
       intr_i2c2_rx_overflow, // IDs [110 +: 1]
       intr_i2c2_fmt_overflow, // IDs [109 +: 1]
-      intr_i2c2_rx_watermark, // IDs [108 +: 1]
-      intr_i2c2_fmt_watermark, // IDs [107 +: 1]
+      intr_i2c2_rx_threshold, // IDs [108 +: 1]
+      intr_i2c2_fmt_threshold, // IDs [107 +: 1]
       intr_i2c1_host_timeout, // IDs [106 +: 1]
       intr_i2c1_unexp_stop, // IDs [105 +: 1]
       intr_i2c1_acq_full, // IDs [104 +: 1]
@@ -2696,8 +2696,8 @@ module top_earlgrey #(
       intr_i2c1_nak, // IDs [96 +: 1]
       intr_i2c1_rx_overflow, // IDs [95 +: 1]
       intr_i2c1_fmt_overflow, // IDs [94 +: 1]
-      intr_i2c1_rx_watermark, // IDs [93 +: 1]
-      intr_i2c1_fmt_watermark, // IDs [92 +: 1]
+      intr_i2c1_rx_threshold, // IDs [93 +: 1]
+      intr_i2c1_fmt_threshold, // IDs [92 +: 1]
       intr_i2c0_host_timeout, // IDs [91 +: 1]
       intr_i2c0_unexp_stop, // IDs [90 +: 1]
       intr_i2c0_acq_full, // IDs [89 +: 1]
@@ -2711,8 +2711,8 @@ module top_earlgrey #(
       intr_i2c0_nak, // IDs [81 +: 1]
       intr_i2c0_rx_overflow, // IDs [80 +: 1]
       intr_i2c0_fmt_overflow, // IDs [79 +: 1]
-      intr_i2c0_rx_watermark, // IDs [78 +: 1]
-      intr_i2c0_fmt_watermark, // IDs [77 +: 1]
+      intr_i2c0_rx_threshold, // IDs [78 +: 1]
+      intr_i2c0_fmt_threshold, // IDs [77 +: 1]
       intr_spi_device_tpm_header_not_empty, // IDs [76 +: 1]
       intr_spi_device_readbuf_flip, // IDs [75 +: 1]
       intr_spi_device_readbuf_watermark, // IDs [74 +: 1]

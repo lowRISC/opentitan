@@ -13219,13 +13219,13 @@
       module_name: spi_device
     }
     {
-      name: i2c0_fmt_watermark
+      name: i2c0_fmt_threshold
       width: 1
       type: interrupt
       module_name: i2c0
     }
     {
-      name: i2c0_rx_watermark
+      name: i2c0_rx_threshold
       width: 1
       type: interrupt
       module_name: i2c0
@@ -13309,13 +13309,13 @@
       module_name: i2c0
     }
     {
-      name: i2c1_fmt_watermark
+      name: i2c1_fmt_threshold
       width: 1
       type: interrupt
       module_name: i2c1
     }
     {
-      name: i2c1_rx_watermark
+      name: i2c1_rx_threshold
       width: 1
       type: interrupt
       module_name: i2c1
@@ -13399,13 +13399,13 @@
       module_name: i2c1
     }
     {
-      name: i2c2_fmt_watermark
+      name: i2c2_fmt_threshold
       width: 1
       type: interrupt
       module_name: i2c2
     }
     {
-      name: i2c2_rx_watermark
+      name: i2c2_rx_threshold
       width: 1
       type: interrupt
       module_name: i2c2

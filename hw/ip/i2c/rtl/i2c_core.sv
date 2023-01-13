@@ -18,8 +18,8 @@ module  i2c_core #(
   input                            sda_i,
   output logic                     sda_o,
 
-  output logic                     intr_fmt_watermark_o,
-  output logic                     intr_rx_watermark_o,
+  output logic                     intr_fmt_threshold_o,
+  output logic                     intr_rx_threshold_o,
   output logic                     intr_fmt_overflow_o,
   output logic                     intr_rx_overflow_o,
   output logic                     intr_nak_o,
@@ -54,8 +54,8 @@ module  i2c_core #(
   logic scl_out_fsm;
   logic sda_out_fsm;
 
-  logic event_fmt_watermark;
-  logic event_rx_watermark;
+  logic event_fmt_threshold;
+  logic event_rx_threshold;
   logic event_fmt_overflow;
   logic event_rx_overflow;
   logic event_nak;
@@ -101,10 +101,10 @@ module  i2c_core #(
   logic        rx_fifo_rready;
   logic [7:0]  rx_fifo_rdata;
 
-  logic        fmt_watermark_d;
-  logic        fmt_watermark_q;
-  logic        rx_watermark_d;
-  logic        rx_watermark_q;
+  logic        fmt_threshold_d;
+  logic        fmt_threshold_q;
+  logic        rx_threshold_d;
+  logic        rx_threshold_q;
 
   logic        tx_fifo_wvalid;
   logic        tx_fifo_wready;
@@ -214,39 +214,39 @@ module  i2c_core #(
   assign i2c_fifo_txrst   = reg2hw.fifo_ctrl.txrst.q & reg2hw.fifo_ctrl.txrst.qe;
   assign i2c_fifo_acqrst  = reg2hw.fifo_ctrl.acqrst.q & reg2hw.fifo_ctrl.acqrst.qe;
 
-  always_ff @ (posedge clk_i or negedge rst_ni) begin : watermark_transition
+  always_ff @ (posedge clk_i or negedge rst_ni) begin : threshold_transition
     if (!rst_ni) begin
-      fmt_watermark_q <= 1'b1; // true by default
-      rx_watermark_q  <= 1'b0; // false by default
+      fmt_threshold_q <= 1'b1; // true by default
+      rx_threshold_q  <= 1'b0; // false by default
     end else begin
-      fmt_watermark_q <= fmt_watermark_d;
-      rx_watermark_q  <= rx_watermark_d;
+      fmt_threshold_q <= fmt_threshold_d;
+      rx_threshold_q  <= rx_threshold_d;
     end
   end
 
   always_comb begin
     unique case(i2c_fifo_fmtilvl)
-      2'h0:    fmt_watermark_d = (fmt_fifo_depth <= 7'd1);
-      2'h1:    fmt_watermark_d = (fmt_fifo_depth <= 7'd4);
-      2'h2:    fmt_watermark_d = (fmt_fifo_depth <= 7'd8);
-      default: fmt_watermark_d = (fmt_fifo_depth <= 7'd16);
+      2'h0:    fmt_threshold_d = (fmt_fifo_depth <= 7'd1);
+      2'h1:    fmt_threshold_d = (fmt_fifo_depth <= 7'd4);
+      2'h2:    fmt_threshold_d = (fmt_fifo_depth <= 7'd8);
+      default: fmt_threshold_d = (fmt_fifo_depth <= 7'd16);
     endcase
   end
 
-  assign event_fmt_watermark = fmt_watermark_d & ~fmt_watermark_q;
+  assign event_fmt_threshold = fmt_threshold_d & ~fmt_threshold_q;
 
   always_comb begin
     unique case(i2c_fifo_rxilvl)
-      3'h0:    rx_watermark_d = (rx_fifo_depth >= 7'd1);
-      3'h1:    rx_watermark_d = (rx_fifo_depth >= 7'd4);
-      3'h2:    rx_watermark_d = (rx_fifo_depth >= 7'd8);
-      3'h3:    rx_watermark_d = (rx_fifo_depth >= 7'd16);
-      3'h4:    rx_watermark_d = (rx_fifo_depth >= 7'd30);
-      default: rx_watermark_d = 1'b0;
+      3'h0:    rx_threshold_d = (rx_fifo_depth >= 7'd1);
+      3'h1:    rx_threshold_d = (rx_fifo_depth >= 7'd4);
+      3'h2:    rx_threshold_d = (rx_fifo_depth >= 7'd8);
+      3'h3:    rx_threshold_d = (rx_fifo_depth >= 7'd16);
+      3'h4:    rx_threshold_d = (rx_fifo_depth >= 7'd30);
+      default: rx_threshold_d = 1'b0;
     endcase
   end
 
-  assign event_rx_watermark = rx_watermark_d & ~rx_watermark_q;
+  assign event_rx_threshold = rx_threshold_d & ~rx_threshold_q;
 
   assign event_fmt_overflow = fmt_fifo_wvalid & ~fmt_fifo_wready;
   assign event_rx_overflow = rx_fifo_wvalid & ~rx_fifo_wready;
@@ -463,30 +463,30 @@ module  i2c_core #(
     .event_host_timeout_o    (event_host_timeout)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_fmt_watermark (
+  prim_intr_hw #(.Width(1)) intr_hw_fmt_threshold (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_fmt_watermark),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fmt_watermark.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.fmt_watermark.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.fmt_watermark.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.fmt_watermark.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.fmt_watermark.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.fmt_watermark.d),
-    .intr_o                 (intr_fmt_watermark_o)
+    .event_intr_i           (event_fmt_threshold),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fmt_threshold.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.fmt_threshold.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.fmt_threshold.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.fmt_threshold.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.fmt_threshold.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.fmt_threshold.d),
+    .intr_o                 (intr_fmt_threshold_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_rx_watermark (
+  prim_intr_hw #(.Width(1)) intr_hw_rx_threshold (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_rx_watermark),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_watermark.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_watermark.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rx_watermark.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rx_watermark.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.rx_watermark.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rx_watermark.d),
-    .intr_o                 (intr_rx_watermark_o)
+    .event_intr_i           (event_rx_threshold),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_threshold.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_threshold.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rx_threshold.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.rx_threshold.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.rx_threshold.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.rx_threshold.d),
+    .intr_o                 (intr_rx_threshold_o)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_fmt_overflow (

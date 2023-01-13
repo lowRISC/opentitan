@@ -125,10 +125,10 @@ module i2c_reg_top (
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic intr_state_we;
-  logic intr_state_fmt_watermark_qs;
-  logic intr_state_fmt_watermark_wd;
-  logic intr_state_rx_watermark_qs;
-  logic intr_state_rx_watermark_wd;
+  logic intr_state_fmt_threshold_qs;
+  logic intr_state_fmt_threshold_wd;
+  logic intr_state_rx_threshold_qs;
+  logic intr_state_rx_threshold_wd;
   logic intr_state_fmt_overflow_qs;
   logic intr_state_fmt_overflow_wd;
   logic intr_state_rx_overflow_qs;
@@ -154,10 +154,10 @@ module i2c_reg_top (
   logic intr_state_host_timeout_qs;
   logic intr_state_host_timeout_wd;
   logic intr_enable_we;
-  logic intr_enable_fmt_watermark_qs;
-  logic intr_enable_fmt_watermark_wd;
-  logic intr_enable_rx_watermark_qs;
-  logic intr_enable_rx_watermark_wd;
+  logic intr_enable_fmt_threshold_qs;
+  logic intr_enable_fmt_threshold_wd;
+  logic intr_enable_rx_threshold_qs;
+  logic intr_enable_rx_threshold_wd;
   logic intr_enable_fmt_overflow_qs;
   logic intr_enable_fmt_overflow_wd;
   logic intr_enable_rx_overflow_qs;
@@ -185,8 +185,8 @@ module i2c_reg_top (
   logic intr_enable_host_timeout_qs;
   logic intr_enable_host_timeout_wd;
   logic intr_test_we;
-  logic intr_test_fmt_watermark_wd;
-  logic intr_test_rx_watermark_wd;
+  logic intr_test_fmt_threshold_wd;
+  logic intr_test_rx_threshold_wd;
   logic intr_test_fmt_overflow_wd;
   logic intr_test_rx_overflow_wd;
   logic intr_test_nak_wd;
@@ -303,56 +303,56 @@ module i2c_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
-  //   F[fmt_watermark]: 0:0
+  //   F[fmt_threshold]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state_fmt_watermark (
+  ) u_intr_state_fmt_threshold (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_fmt_watermark_wd),
+    .wd     (intr_state_fmt_threshold_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.fmt_watermark.de),
-    .d      (hw2reg.intr_state.fmt_watermark.d),
+    .de     (hw2reg.intr_state.fmt_threshold.de),
+    .d      (hw2reg.intr_state.fmt_threshold.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.fmt_watermark.q),
+    .q      (reg2hw.intr_state.fmt_threshold.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (intr_state_fmt_watermark_qs)
+    .qs     (intr_state_fmt_threshold_qs)
   );
 
-  //   F[rx_watermark]: 1:1
+  //   F[rx_threshold]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state_rx_watermark (
+  ) u_intr_state_rx_threshold (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_rx_watermark_wd),
+    .wd     (intr_state_rx_threshold_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.rx_watermark.de),
-    .d      (hw2reg.intr_state.rx_watermark.d),
+    .de     (hw2reg.intr_state.rx_threshold.de),
+    .d      (hw2reg.intr_state.rx_threshold.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.rx_watermark.q),
+    .q      (reg2hw.intr_state.rx_threshold.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (intr_state_rx_watermark_qs)
+    .qs     (intr_state_rx_threshold_qs)
   );
 
   //   F[fmt_overflow]: 2:2
@@ -695,18 +695,18 @@ module i2c_reg_top (
 
 
   // R[intr_enable]: V(False)
-  //   F[fmt_watermark]: 0:0
+  //   F[fmt_threshold]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_fmt_watermark (
+  ) u_intr_enable_fmt_threshold (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_fmt_watermark_wd),
+    .wd     (intr_enable_fmt_threshold_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -714,25 +714,25 @@ module i2c_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.fmt_watermark.q),
+    .q      (reg2hw.intr_enable.fmt_threshold.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (intr_enable_fmt_watermark_qs)
+    .qs     (intr_enable_fmt_threshold_qs)
   );
 
-  //   F[rx_watermark]: 1:1
+  //   F[rx_threshold]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_rx_watermark (
+  ) u_intr_enable_rx_threshold (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_rx_watermark_wd),
+    .wd     (intr_enable_rx_threshold_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -740,11 +740,11 @@ module i2c_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.rx_watermark.q),
+    .q      (reg2hw.intr_enable.rx_threshold.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (intr_enable_rx_watermark_qs)
+    .qs     (intr_enable_rx_threshold_qs)
   );
 
   //   F[fmt_overflow]: 2:2
@@ -1090,37 +1090,37 @@ module i2c_reg_top (
   logic intr_test_qe;
   logic [14:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
-  //   F[fmt_watermark]: 0:0
+  //   F[fmt_threshold]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_fmt_watermark (
+  ) u_intr_test_fmt_threshold (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_fmt_watermark_wd),
+    .wd     (intr_test_fmt_threshold_wd),
     .d      ('0),
     .qre    (),
     .qe     (intr_test_flds_we[0]),
-    .q      (reg2hw.intr_test.fmt_watermark.q),
+    .q      (reg2hw.intr_test.fmt_threshold.q),
     .ds     (),
     .qs     ()
   );
-  assign reg2hw.intr_test.fmt_watermark.qe = intr_test_qe;
+  assign reg2hw.intr_test.fmt_threshold.qe = intr_test_qe;
 
-  //   F[rx_watermark]: 1:1
+  //   F[rx_threshold]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_rx_watermark (
+  ) u_intr_test_rx_threshold (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_rx_watermark_wd),
+    .wd     (intr_test_rx_threshold_wd),
     .d      ('0),
     .qre    (),
     .qe     (intr_test_flds_we[1]),
-    .q      (reg2hw.intr_test.rx_watermark.q),
+    .q      (reg2hw.intr_test.rx_threshold.q),
     .ds     (),
     .qs     ()
   );
-  assign reg2hw.intr_test.rx_watermark.qe = intr_test_qe;
+  assign reg2hw.intr_test.rx_threshold.qe = intr_test_qe;
 
   //   F[fmt_overflow]: 2:2
   prim_subreg_ext #(
@@ -2711,9 +2711,9 @@ module i2c_reg_top (
   // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_fmt_watermark_wd = reg_wdata[0];
+  assign intr_state_fmt_threshold_wd = reg_wdata[0];
 
-  assign intr_state_rx_watermark_wd = reg_wdata[1];
+  assign intr_state_rx_threshold_wd = reg_wdata[1];
 
   assign intr_state_fmt_overflow_wd = reg_wdata[2];
 
@@ -2738,9 +2738,9 @@ module i2c_reg_top (
   assign intr_state_host_timeout_wd = reg_wdata[14];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_fmt_watermark_wd = reg_wdata[0];
+  assign intr_enable_fmt_threshold_wd = reg_wdata[0];
 
-  assign intr_enable_rx_watermark_wd = reg_wdata[1];
+  assign intr_enable_rx_threshold_wd = reg_wdata[1];
 
   assign intr_enable_fmt_overflow_wd = reg_wdata[2];
 
@@ -2769,9 +2769,9 @@ module i2c_reg_top (
   assign intr_enable_host_timeout_wd = reg_wdata[14];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_fmt_watermark_wd = reg_wdata[0];
+  assign intr_test_fmt_threshold_wd = reg_wdata[0];
 
-  assign intr_test_rx_watermark_wd = reg_wdata[1];
+  assign intr_test_rx_threshold_wd = reg_wdata[1];
 
   assign intr_test_fmt_overflow_wd = reg_wdata[2];
 
@@ -2924,8 +2924,8 @@ module i2c_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = intr_state_fmt_watermark_qs;
-        reg_rdata_next[1] = intr_state_rx_watermark_qs;
+        reg_rdata_next[0] = intr_state_fmt_threshold_qs;
+        reg_rdata_next[1] = intr_state_rx_threshold_qs;
         reg_rdata_next[2] = intr_state_fmt_overflow_qs;
         reg_rdata_next[3] = intr_state_rx_overflow_qs;
         reg_rdata_next[4] = intr_state_nak_qs;
@@ -2942,8 +2942,8 @@ module i2c_reg_top (
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = intr_enable_fmt_watermark_qs;
-        reg_rdata_next[1] = intr_enable_rx_watermark_qs;
+        reg_rdata_next[0] = intr_enable_fmt_threshold_qs;
+        reg_rdata_next[1] = intr_enable_rx_threshold_qs;
         reg_rdata_next[2] = intr_enable_fmt_overflow_qs;
         reg_rdata_next[3] = intr_enable_rx_overflow_qs;
         reg_rdata_next[4] = intr_enable_nak_qs;

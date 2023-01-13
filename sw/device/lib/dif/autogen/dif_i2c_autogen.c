@@ -51,11 +51,11 @@ dif_result_t dif_i2c_alert_force(const dif_i2c_t *i2c, dif_i2c_alert_t alert) {
 static bool i2c_get_irq_bit_index(dif_i2c_irq_t irq,
                                   bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifI2cIrqFmtWatermark:
-      *index_out = I2C_INTR_COMMON_FMT_WATERMARK_BIT;
+    case kDifI2cIrqFmtThreshold:
+      *index_out = I2C_INTR_COMMON_FMT_THRESHOLD_BIT;
       break;
-    case kDifI2cIrqRxWatermark:
-      *index_out = I2C_INTR_COMMON_RX_WATERMARK_BIT;
+    case kDifI2cIrqRxThreshold:
+      *index_out = I2C_INTR_COMMON_RX_THRESHOLD_BIT;
       break;
     case kDifI2cIrqFmtOverflow:
       *index_out = I2C_INTR_COMMON_FMT_OVERFLOW_BIT;

@@ -42,8 +42,8 @@ class i2c_seq_cfg extends uvm_object;
   bit en_fmt_overflow            = 1'b0;
   // set en_rx_overflow to ensure ensure rx_overflow irq is triggered
   bit en_rx_overflow             = 1'b0;
-  // set en_rx_watermark to ensure rx_watermark irq is triggered
-  bit en_rx_watermark            = 1'b0;
+  // set en_rx_threshold to ensure rx_threshold irq is triggered
+  bit en_rx_threshold            = 1'b0;
 
   // bits to control interference and unstable interrupts
   // set en_sda_unstable to allow sda_unstable irq is triggered
