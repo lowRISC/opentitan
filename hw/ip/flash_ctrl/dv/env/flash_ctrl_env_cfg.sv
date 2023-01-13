@@ -207,6 +207,10 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   bit                  wr_rnd_data = 1;
   int                  wait_rd_buf_en_timeout_ns = 100_000; // 100 us
 
+  // hw info cfg override
+  mubi4_t ovrd_scr_dis = MuBi4False;
+  mubi4_t ovrd_ecc_dis = MuBi4False;
+
   `uvm_object_utils(flash_ctrl_env_cfg)
   `uvm_object_new
 

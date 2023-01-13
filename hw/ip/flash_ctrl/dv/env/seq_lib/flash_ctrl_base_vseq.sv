@@ -113,6 +113,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask : pre_start
 
+  virtual task hw_info_cfg_update();
+  endtask
+
   virtual task dut_shutdown();
     // check for pending flash_ctrl operations and wait for them to complete
     // TODO
@@ -150,6 +153,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
 
     if (cfg.seq_cfg.en_init_keys_seeds == 1) begin
+      // Update hw_info_cfg if necessary
+      hw_info_cfg_update();
       csr_wr(.ptr(ral.init), .value(1));  // Enable Secret Seed Output during INIT
     end
 
@@ -668,7 +673,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     // Note 'some values' appear in both branches of this fork, this is OK because the
     // branches never run together by design.
     // The order is always 'addr' followed by 'data'.
-
     fork
       forever begin  // addr
         @(posedge cfg.clk_rst_vif.rst_n);
@@ -1420,8 +1424,17 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         item.dq.push_back(data[31:0]);
         item.dq.push_back(data[63:32]);
         // only scr/ecc enable counts.
-        item.region.scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
-        item.region.ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
+        if (page != 3) begin
+          item.region.scramble_en = prim_mubi_pkg::mubi4_and_hi(
+                                    flash_ctrl_pkg::CfgAllowRead.scramble_en,
+                                    mubi4_t'(~cfg.ovrd_scr_dis));
+          item.region.ecc_en = prim_mubi_pkg::mubi4_and_hi(
+                               flash_ctrl_pkg::CfgAllowRead.ecc_en,
+                               mubi4_t'(~cfg.ovrd_ecc_dis));
+        end else begin
+          item.region.scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
+          item.region.ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
+        end
         item.scramble(otp_addr_key, otp_data_key, addr, dis);
         cfg.mem_bkdr_util_h[FlashPartInfo][0].write(addr, item.fq[0]);
         mem_addr = addr >> 3;
