@@ -199,7 +199,10 @@
                 Any CSRNG action can be initiated by writing a CSRNG command to this
                 register. The application interface must wait for the "ack" to
                 return before issuing new commands. This interface is intended
-                to be controlled solely by software. If !!CTRL.AUTO_REQ_MODE is set, this
+                to be controlled solely by software.
+
+                If !!CTRL.AUTO_REQ_MODE is set, only the first instantiate command has any
+                effect.  After that command has been processed, writes to this register
                 register will have no effect on operation.
                 Note that CSRNG command format details can be found
                 in the CSRNG documentation.
