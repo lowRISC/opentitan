@@ -51,12 +51,17 @@ interface i2c_if(
     int su_idx;
 
     wait(cb.scl_i == 0);
+`JDBG(("assa scli 0"))     
     while (cb.scl_i == 0) begin
       @(posedge clk_i);
       sample[idx] = cb.sda_i;
       idx = (idx + 1) % 16;
     end
     su_idx = (idx + 16 - 1 - tc.tSetupBit) % 16;
+
+
+`JDBG(("assa scli 1 su_idx:%0d",su_idx))     
+
     data = sample[su_idx];
   endtask // sample_target_data
 

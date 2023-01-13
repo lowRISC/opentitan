@@ -19,14 +19,15 @@ class i2c_llpbk_vseq extends i2c_base_vseq;
     program_registers();
     ral.ctrl.llpbk.set(1'b1);
     csr_update(ral.ctrl);
-    `JDBG(("LB seq loopback start"))
-    cfg.m_i2c_agent_cfg.loopback_num_bytes = 8;
-    cfg.m_i2c_agent_cfg.loopback_st = 1;
-
 // target mode
     cfg.m_i2c_agent_cfg.lb_addr[7:1] = target_addr0;
 
-    // remove later
-    do_clear_all_interrupts = 0;
+    `JDBG(("LB seq loopback start addr:%x", target_addr0))
+    cfg.m_i2c_agent_cfg.loopback_num_bytes = 8;
+    cfg.m_i2c_agent_cfg.loopback_st = 1;
+
+
+    wait(cfg.m_i2c_agent_cfg.loopback_st == 0);
+    `JDBG(("LB seq loopback end"))
   endtask
 endclass

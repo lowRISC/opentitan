@@ -38,38 +38,12 @@ class i2c_monitor extends dv_base_monitor #(
     wait(cfg.vif.rst_ni);
     if (cfg.loopback_mode) proc_loopback();
     if (cfg.if_mode == Host) begin
-      bit r_bit = 1'b0;
       i2c_item full_item;
       fork
         forever begin
           wait(cfg.en_monitor);
-          if (mon_dut_item.stop ||
-              (!mon_dut_item.stop && !mon_dut_item.start && !mon_dut_item.rstart)) begin
-            cfg.vif.wait_for_host_start(cfg.timing_cfg);
-            `uvm_info(`gfn, "\nmonitor, detect HOST START", UVM_MEDIUM)
-          end else begin
-            mon_dut_item.rstart = 1'b1;
-          end
-          mon_dut_item.tran_id = num_dut_tran;
-          mon_dut_item.start = 1'b1;
-          // collecting address
-          for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
-            cfg.vif.p_edge_scl();
-            mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
-            `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]),
-                            UVM_HIGH)
-          end
-          `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_MEDIUM)
-          cfg.vif.p_edge_scl();
-          r_bit = cfg.vif.cb.sda_i;
-          `uvm_info(`gfn, $sformatf("\nmonitor, rw %d", r_bit), UVM_MEDIUM)
-          mon_dut_item.bus_op = (r_bit) ? BusOpRead : BusOpWrite;
-
-          // expect target ack
-          cfg.vif.sample_target_data(cfg.timing_cfg, r_bit);
-
-          `DV_CHECK_CASE_EQ(r_bit, 1'b0)
-
+	  target_address();
+	   
           if (mon_dut_item.bus_op == BusOpRead) target_read();
           else target_write();
 
@@ -389,6 +363,39 @@ class i2c_monitor extends dv_base_monitor #(
     int loopback_wait_timeout_ns = 1_000_000; // 1ms
     `DV_WAIT(cfg.loopback_st == 1,, loopback_wait_timeout_ns, "proc_loopback")
     `uvm_info(`gfn, "Monitor loopback mode start", UVM_MEDIUM)
+     target_address();
+     if (mon_dut_item.bus_op == BusOpRead) begin
+	`JDBG(("LB mon read phase start"))
+     end
   endtask
 
+   task target_address();
+      bit r_bit = 1'b0;
+          if (mon_dut_item.stop ||
+              (!mon_dut_item.stop && !mon_dut_item.start && !mon_dut_item.rstart)) begin
+            cfg.vif.wait_for_host_start(cfg.timing_cfg);
+            `uvm_info(`gfn, "\nmonitor, detect HOST START", UVM_MEDIUM)
+          end else begin
+            mon_dut_item.rstart = 1'b1;
+          end
+          mon_dut_item.tran_id = num_dut_tran;
+          mon_dut_item.start = 1'b1;
+          // collecting address
+          for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
+            cfg.vif.p_edge_scl();
+            mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
+            `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]),
+                            UVM_HIGH)
+          end
+          `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_MEDIUM)
+          cfg.vif.p_edge_scl();
+          r_bit = cfg.vif.cb.sda_i;
+          `uvm_info(`gfn, $sformatf("\nmonitor, rw %d", r_bit), UVM_MEDIUM)
+          mon_dut_item.bus_op = (r_bit) ? BusOpRead : BusOpWrite;
+
+          // expect target ack
+          cfg.vif.sample_target_data(cfg.timing_cfg, r_bit);
+
+          `DV_CHECK_CASE_EQ(r_bit, 1'b0)      
+   endtask
 endclass : i2c_monitor
