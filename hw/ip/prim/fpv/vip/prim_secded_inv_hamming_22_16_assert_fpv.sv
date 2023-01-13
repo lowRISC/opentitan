@@ -17,8 +17,6 @@ module prim_secded_inv_hamming_22_16_assert_fpv (
 
   // Inject a maximum of two errors simultaneously.
   `ASSUME_FPV(MaxTwoErrors_M, $countones(error_inject_i) <= 2)
-  // This bounds the input data state space to make sure the solver converges.
-  `ASSUME_FPV(DataLimit_M, $onehot0(data_i) || $onehot0(~data_i))
   // Single bit error detection
   `ASSERT(SingleErrorDetect_A, $countones(error_inject_i) == 1 |-> err_o[0])
   `ASSERT(SingleErrorDetectReverse_A, err_o[0] |-> $countones(error_inject_i) == 1)
