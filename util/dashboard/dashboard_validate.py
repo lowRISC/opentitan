@@ -6,22 +6,17 @@ Dashboard project JSON file validation
 """
 
 import logging as log
-import sys
+from reggen.ip_block import REQUIRED_FIELDS, OPTIONAL_FIELDS
 
 
 def check_keys(obj, required_keys, optional_keys, err_prefix):
     error = 0
     for x in required_keys:
-        if not x in obj:
+        if x not in obj:
             error += 1
             log.error(err_prefix + " missing required key " + x)
     for x in obj:
-        type = ''
-        if x in required_keys:
-            type = required_keys[x][0]
-        elif x in optional_keys:
-            type = optional_keys[x][0]
-        else:
+        if x not in required_keys and x not in optional_keys:
             log.warning(err_prefix + " contains extra key rmn " + x)
 #            log.warning('{} contains extra key {!r}'.format(err_prefix, x))
 
@@ -58,16 +53,25 @@ entry_optional = {
 }
 
 
-def validate(regs):
-    if not 'name' in regs:
+def validate(regs, is_comportable_spec):
+    if 'name' not in regs:
         log.error("Component has no name. Aborting.")
         return 1
     component = regs['name']
 
+    # If this is a comportable IP definition file, we
+    # need to use different requirements for validation.
+    if is_comportable_spec:
+        _field_required = REQUIRED_FIELDS
+        _field_optional = OPTIONAL_FIELDS
+    else:
+        _field_required = field_required
+        _field_optional = field_optional
+
     # If `revisions` is not in the object keys, the tool runs previous
     # version checker, which has only one version entry.
-    if not "revisions" in regs:
-        error = check_keys(regs, field_required, field_optional, component)
+    if "revisions" not in regs:
+        error = check_keys(regs, _field_required, _field_optional, component)
         if (error > 0):
             log.error("Component has top level errors. Aborting.")
         return error

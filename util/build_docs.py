@@ -89,7 +89,11 @@ config = {
         "hw/ip/usbdev/data/usbdev.hjson",
     ],
 
-    # Pre-generate dashboard fragments from these directories.
+    # Generate different dashboards for hwcfg's from different folders, as
+    # specified below. Note that this only generates fragments for
+    # the "hardware_definitions" registered above, or if the file has the
+    # ending ".prj.hjson" (non-comportable IPs may only have a .prj.hjson
+    # file instead of a full comportable IP hjson).
     "dashboard_definitions": {
         "comportable": [
             "hw/ip",
@@ -169,8 +173,19 @@ config = {
 def generate_dashboards():
     for dashboard_name, dirs in config["dashboard_definitions"].items():
         hjson_paths = []
+        # helper dict to avoid adding duplicate paths in case where
+        # the listed folders for a dashboard have a common prefix that
+        # would cause an item to be added multiple times.
+        known_paths = {}
         for d in dirs:
+            # Search for files with the prj.hjson prefix
+            # (typically non-comportable IPs like tlul or prims).
             hjson_paths += SRCTREE_TOP.joinpath(d).rglob('*.prj.hjson')
+            # Check for registered comportable IP definitions in this folder.
+            for k in config["hardware_definitions"]:
+                if k not in known_paths and os.path.commonprefix([d, k]) == d:
+                    hjson_paths += [SRCTREE_TOP.joinpath(k)]
+                    known_paths.update({k: 1})
 
         hjson_paths.sort(key=lambda f: f.name)
 

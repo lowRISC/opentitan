@@ -54,6 +54,7 @@ STAGE_STRINGS = {
 def convert_stage(stagestr):
     return STAGE_STRINGS.get(stagestr, "UNKNOWN")
 
+
 def get_doc_url(base, url):
     """ Produce a URL to a document.
 
@@ -211,7 +212,13 @@ def gen_dashboard_html(hjson_path, outfile):
             obj = hjson.load(prjfile)
         except ValueError:
             raise SystemExit(sys.exc_info()[1])
-    if dashboard_validate.validate(obj) == 0:
+
+    if hjson_path.suffixes == ['.prj', '.hjson']:
+        is_comportable_spec = False
+    else:
+        is_comportable_spec = True
+
+    if dashboard_validate.validate(obj, is_comportable_spec) == 0:
         log.info("Generated dashboard object for " + str(hjson_path))
     else:
         log.fail("hjson file import failed\n")
@@ -306,23 +313,33 @@ def gen_specboard_html(hjson_path, rel_hjson_path, outfile):
             obj = hjson.load(prjfile)
         except ValueError:
             raise SystemExit(sys.exc_info()[1])
-    if dashboard_validate.validate(obj) == 0:
+
+    if hjson_path.suffixes == ['.prj', '.hjson']:
+        is_comportable_spec = False
+    else:
+        is_comportable_spec = True
+
+    if dashboard_validate.validate(obj, is_comportable_spec) == 0:
         log.info("Generated dashboard object for " + str(hjson_path))
     else:
         log.error("hjson file import failed")
 
+    name = hjson_path.name.split('.')[0]
+    # get filename witout any suffixes
+    hjson_stem = hjson_path.with_name(name)
+
     # create design spec and DV doc references, check for existence below
     design_spec_md = re.sub(r'/data/', '/doc/',
-                            re.sub(r'\.prj\.hjson', '.md', str(hjson_path)))
+                            hjson_stem.with_suffix('.md'))
     dv_doc_md = re.sub(
         r'/data/', '/doc/dv',
-        re.sub(r'\.prj\.hjson', 'index.md', str(hjson_path)))
+        hjson_stem.with_name('index.md'))
     design_spec_html = re.sub(
         r'/data/', '/doc/',
-        re.sub(r'\.prj\.hjson', '.html', str(rel_hjson_path)))
+        hjson_stem.with_suffix('.html'))
     dv_doc_html = re.sub(
         r'/data/', '/doc/dv',
-        re.sub(r'\.prj\.hjson', 'index.html', str(rel_hjson_path)))
+        hjson_stem.with_name('index.html'))
 
     # yapf: disable
     genout(outfile, "      <tr>\n")
