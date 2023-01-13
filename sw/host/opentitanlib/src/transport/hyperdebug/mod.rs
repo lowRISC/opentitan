@@ -5,6 +5,7 @@
 use anyhow::{bail, ensure, Context, Result};
 use lazy_static::lazy_static;
 use regex::Regex;
+use serialport::TTYPort;
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
@@ -22,7 +23,7 @@ use crate::io::gpio::GpioPin;
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::transport::common::uart::SerialPortUart;
+use crate::transport::common::uart::{flock_serial, SerialPortExclusiveLock, SerialPortUart};
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
@@ -339,15 +340,16 @@ impl Inner {
 
     /// Send a command to HyperDebug firmware, with a callback to receive any output.
     fn execute_command(&self, cmd: &str, mut callback: impl FnMut(&str)) -> Result<()> {
-        let mut port = serialport::new(
-            self.console_tty
-                .to_str()
-                .ok_or(TransportError::UnicodePathError)?,
-            115_200,
+        let port_name = self
+            .console_tty
+            .to_str()
+            .ok_or(TransportError::UnicodePathError)?;
+        let _lock = SerialPortExclusiveLock::lock(port_name)?;
+        let mut port = TTYPort::open(
+            &serialport::new(port_name, 115_200).timeout(std::time::Duration::from_millis(10)),
         )
-        .timeout(std::time::Duration::from_millis(10))
-        .open()
         .expect("Failed to open port");
+        flock_serial(&port, port_name)?;
 
         // Ideally, we would invoke Linux flock() on the serial
         // device, to detect minicom or another instance of
