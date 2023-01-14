@@ -3,35 +3,35 @@
 // SPDX-License-Identifier: Apache-2.0
 
 CHECKSUM: "3523621980"
-ANNOTATION: "[UNR] all inputs are constrant"
+ANNOTATION: "[UNR] all inputs are constant"
 INSTANCE:tb.dut.u_seed_anchor.u_secure_anchor_buf.gen_generic.u_impl_generic
 
 CHECKSUM: "1424864498"
-ANNOTATION: "[UNR] all inputs are constrant"
+ANNOTATION: "[UNR] all inputs are constant"
 INSTANCE:tb.dut.u_tlul_adapter_sram.u_tlul_data_integ_enc_instr.u_data_gen
 
 CHECKSUM: "1424864498"
-ANNOTATION: "[UNR] all inputs are constrant"
+ANNOTATION: "[UNR] all inputs are constant"
 INSTANCE:tb.dut.u_tlul_adapter_sram.u_tlul_data_integ_enc_data.u_data_gen
 
 CHECKSUM: "2503688253 3812101441"
 INSTANCE: tb.dut.u_reg_regs.u_reg_if.u_rsp_intg_gen
-ANNOTATION: "[UNR] all inputs are constrant"
+ANNOTATION: "[UNR] all inputs are constant"
 Block 1 "461445014" "assign rsp_intg = tl_i.d_user.rsp_intg;"
-ANNOTATION: "[UNR] all inputs are constrant"
+ANNOTATION: "[UNR] all inputs are constant"
 Block 2 "2643129081" "assign data_intg = tl_i.d_user.data_intg;"
 
 CHECKSUM: "281300783 1779845869"
 INSTANCE: tb.dut.u_reg_regs.u_status_bus_integ_error.wr_en_data_arb
-ANNOTATION: "[UNR] all inputs are constrant"
+ANNOTATION: "[UNR] all inputs are constant"
 Block 2 "1620753216" "assign wr_data = d;"
 INSTANCE: tb.dut.u_reg_regs.u_status_init_error.wr_en_data_arb
-ANNOTATION: "[UNR] all inputs are constrant"
+ANNOTATION: "[UNR] all inputs are constant"
 Block 2 "1620753216" "assign wr_data = d;"
 
 CHECKSUM: "281300783 1779845869"
 INSTANCE: tb.dut.u_reg_regs.u_status_escalated.wr_en_data_arb
-ANNOTATION: "[UNR] all inputs are constrant"
+ANNOTATION: "[UNR] all inputs are constant"
 Block 2 "1620753216" "assign wr_data = d;"
 
 CHECKSUM: "1738953883 3087984712"
