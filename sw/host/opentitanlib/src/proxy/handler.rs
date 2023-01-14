@@ -64,6 +64,10 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_pull_mode(*pull)?;
                         Ok(Response::Gpio(GpioResponse::SetPullMode))
                     }
+                    GpioRequest::Set { mode, logic, pull } => {
+                        instance.set(*mode, *logic, *pull)?;
+                        Ok(Response::Gpio(GpioResponse::SetPullMode))
+                    }
                     GpioRequest::MonitoringStart => {
                         let clock_nature = instance.monitoring_start()?;
                         Ok(Response::Gpio(GpioResponse::MonitoringStart {

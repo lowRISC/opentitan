@@ -67,6 +67,18 @@ impl GpioPin for ProxyGpioPin {
         }
     }
 
+    fn set(
+        &self,
+        mode: Option<PinMode>,
+        logic: Option<bool>,
+        pull: Option<PullMode>,
+    ) -> Result<()> {
+        match self.execute_command(GpioRequest::Set { mode, logic, pull })? {
+            GpioResponse::Set => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     fn monitoring_start(&self) -> Result<ClockNature> {
         match self.execute_command(GpioRequest::MonitoringStart)? {
             GpioResponse::MonitoringStart { clock_nature } => Ok(clock_nature),

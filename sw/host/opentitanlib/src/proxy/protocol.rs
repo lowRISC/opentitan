@@ -43,12 +43,25 @@ pub enum Response {
 
 #[derive(Serialize, Deserialize)]
 pub enum GpioRequest {
-    Write { logic: bool },
+    Write {
+        logic: bool,
+    },
     Read,
-    SetMode { mode: PinMode },
-    SetPullMode { pull: PullMode },
+    SetMode {
+        mode: PinMode,
+    },
+    SetPullMode {
+        pull: PullMode,
+    },
+    Set {
+        logic: Option<bool>,
+        mode: Option<PinMode>,
+        pull: Option<PullMode>,
+    },
     MonitoringStart,
-    MonitoringRead { continue_monitoring: bool },
+    MonitoringRead {
+        continue_monitoring: bool,
+    },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -57,6 +70,7 @@ pub enum GpioResponse {
     Read { value: bool },
     SetMode,
     SetPullMode,
+    Set,
     MonitoringStart { clock_nature: ClockNature },
     MonitoringRead { events: Vec<MonitoringEvent> },
 }
