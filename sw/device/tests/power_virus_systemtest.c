@@ -94,7 +94,6 @@ enum {
    * I2C parameters.
    */
   kI2cSdaRiseFallTimeNs = 10,
-  kI2cSclPeriodNs = 1000,
   kI2cDeviceMask = 0x7f,
   kI2c0DeviceAddress0 = 0x11,
   kI2c0DeviceAddress1 = 0x22,
@@ -107,6 +106,14 @@ enum {
    */
   kUartFifoDepth = 32,
 };
+
+/**
+ * These symbols are meant to be backdoor read by the testbench. Due to current
+ * DV infrastructure limitations, these must be `volatile const` to be accessed
+ * by the testbench.
+ */
+static volatile const uint32_t kI2cSclPeriodNs = 1000;
+static volatile uint32_t peripheral_clock_period_ns;
 
 /**
  * Pinmux pad configurations.
@@ -445,8 +452,6 @@ static void configure_uart(dif_uart_t *uart) {
 
 static void configure_i2c(dif_i2c_t *i2c, uint8_t device_addr_0,
                           uint8_t device_addr_1) {
-  uint32_t peripheral_clock_period_ns =
-      udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL);
   dif_i2c_config_t config;
 
   CHECK_DIF_OK(dif_i2c_compute_timing(
@@ -610,6 +615,11 @@ static void max_power_task(void *task_parameters) {
 }
 
 bool test_main(void) {
+  peripheral_clock_period_ns =
+      udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL);
+  // Note: DO NOT change this message string without updating the DV testbench.
+  LOG_INFO("Computed peripheral clock period.");
+
   // ***************************************************************************
   // Initialize and configure all IPs.
   // ***************************************************************************
@@ -630,6 +640,7 @@ bool test_main(void) {
   configure_spi_host();
   spi_device_testutils_configure_passthrough(&spi_device, /*filters=*/0,
                                              /*upload_write_commands=*/false);
+  LOG_INFO("All IPs configured.");
 
   // ***************************************************************************
   // Kick off test tasks.
