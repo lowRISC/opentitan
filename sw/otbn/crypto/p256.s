@@ -15,8 +15,50 @@
 .globl proj_add
 .globl p256_generate_k
 .globl p256_generate_random_key
+.globl p256_key_from_seed
 
 .text
+
+/**
+ * Trigger a fault if the FG0.Z flag is 1.
+ *
+ * If the flag is 1, then this routine will trigger an `ILLEGAL_INSN` error and
+ * abort the OTBN program. If the flag is 0, the routine will essentially do
+ * nothing.
+ *
+ * NOTE: Be careful when calling this routine that the FG0.Z flag is not
+ * sensitive; since aborting the program will be quicker than completing it,
+ * the flag's value is likely clearly visible to an attacker through timing.
+ *
+ * @param[in]    w31: all-zero
+ * @param[in]  FG0.Z: boolean indicating fault condition
+ *
+ * clobbered registers: x2
+ * clobbered flag groups: none
+ */
+trigger_fault_if_fg0_z:
+  /* Read the FG0.Z flag (position 3).
+       x2 <= FG0.Z */
+  csrrw     x2, 0x7c0, x0
+  andi      x2, x2, 8
+  srli      x2, x2, 3
+
+  /* Subtract FG0.Z from 0.
+       x2 <= 0 - x2 = FG0.Z ? 2^32 - 1 : 0 */
+  sub       x2, x0, x2
+
+  /* The `bn.lid` instruction causes an `BAD_DATA_ADDR` error if the
+     memory address is out of bounds. Therefore, if FG0.Z is 1, this
+     instruction causes an error, but if FG0.Z is 0 it simply loads the word at
+     address 0 into w31. */
+  li         x3, 31
+  bn.lid     x3, 0(x2)
+
+  /* If we get here, the flag must have been 0. Restore w31 to zero and return.
+       w31 <= 0 */
+  bn.xor     w31, w31, w31
+
+  ret
 
 /**
  * Reduce a 512-bit value by a 256-bit P-256 modulus (either n or p).
@@ -1171,6 +1213,14 @@ scalar_mult_int:
     jal       x1, mod_mul_256x256
     bn.mov    w6, w19
 
+  /* Check if the z-coordinate of Q is 0. If so, fail; this represents the
+     point at infinity and means the scalar was zero mod n, which likely
+     indicates a fault attack.
+
+     FG0.Z <= if (w10 == 0) then 1 else 0 */
+  bn.cmp    w10, w31
+  jal       x1, trigger_fault_if_fg0_z
+
   /* convert back to affine coordinates
      R = (x_a, y_a) = (w11, w12) */
   jal       x1, proj_to_affine
@@ -1348,6 +1398,18 @@ p256_sign:
 
   /* w0 <= (w0+w19) mod n = (d * alpha) mod n */
   bn.addm   w0, w0, w19
+
+  /* Compare to 0.
+     FG0.Z <= (w0 =? w31) = ((d * alpha) mod n =? 0) */
+  bn.cmp    w0, w31
+
+  /* Trigger a fault if FG0.Z is set, aborting the computation.
+
+     Since alpha is nonzero mod n, (d * alpha) mod n = 0 means d is zero mod n,
+     which violates ECDSA private key requirements. This could technically be
+     triggered by an unlucky key manager seed, but the probability is so low (~1/n)
+     that it more likely indicates a fault attack. */
+  jal       x1, trigger_fault_if_fg0_z
 
   /* w24 = r <= w11  mod n */
   bn.addm   w24, w11, w31
@@ -2082,6 +2144,239 @@ p256_generate_k:
   bn.sid    x2, 0(x20++)
   li        x2, 18
   bn.sid    x2, 0(x20)
+
+  ret
+
+/**
+ * Convert boolean shares to arithmetic ones using Goubin's algorithm.
+ *
+ * Returns x0, x1 such that (s0 ^ s1) = (x0 + x1) mod 2^321.
+ *
+ * The input consists of two 320-bit shares, s0 and s1. Bits at position 320
+ * and above in the input shares will be ignored. We compute the result mod
+ * 2^321 so that the high bit of x0 will reveal the carry modulo 2^320.
+ *
+ * We then use Goubin's boolean-to-arithmetic masking algorithm to switch from
+ * this boolean masking scheme to an arithmetic one without ever unmasking the
+ * seed. See Algorithm 1 here:
+ * https://link.springer.com/content/pdf/10.1007/3-540-44709-1_2.pdf
+ *
+ * The algorithm is reproduced here for reference:
+ *   Input:
+ *     s0, s1: k-bit shares such that x = s0 ^ s1
+ *     gamma: random k-bit number
+ *   Output: x0, k-bit number such that x = (x0 + s1) mod 2^k
+ *   Pseudocode:
+ *     T := ((s0 ^ gamma) - gamma) mod 2^k
+ *     T2 := T ^ s0
+ *     G := gamma ^ s1
+ *     A := ((s0 ^ G) - G) mod 2^k
+ *     return x0 := (A ^ T2)
+ *
+ * The output x1 is always (s1 mod 2^320).
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  [w21, w20]: s0, first share of seed (320 bits)
+ * @param[in]  [w23, w22]: s1, second share of seed (320 bits)
+ * @param[in]         w31: all-zero
+ * @param[out] [w21, w20]: result x0 (321 bits)
+ * @param[out] [w23, w22]: result x1 (320 bits)
+ *
+ * clobbered registers: w1 to w5, w20 to w23
+ * clobbered flag groups: FG0
+ */
+boolean_to_arithmetic:
+  /* Mask out excess bits from seed shares.
+       [w21, w20] <= s0 mod 2^320
+       [w23, w22] <= s1 mod 2^320 = x1 */
+  bn.rshi   w21, w21, w31 >> 64
+  bn.rshi   w21, w31, w21 >> 192
+  bn.rshi   w23, w23, w31 >> 64
+  bn.rshi   w23, w31, w23 >> 192
+
+  /* Fetch 321 bits of randomness from URND.
+       [w2, w1] <= gamma */
+  bn.wsrr   w1, 2
+  bn.wsrr   w2, 2
+  bn.rshi   w2, w31, w2 >> 191
+
+  /* [w4, w3] <= [w21, w20] ^ [w2, w1] = s0 ^ gamma */
+  bn.xor    w3, w20, w1
+  bn.xor    w4, w21, w2
+
+  /* Subtract gamma. This may result in bits above 2^321, but these will be
+     stripped off in the next step.
+       [w4, w3] <= [w4, w3] - [w2, w1] = ((s0 ^ gamma) - gamma) mod 2^512 */
+  bn.sub    w3, w3, w1
+  bn.subb   w4, w4, w2
+
+  /* Truncate subtraction result to 321 bits.
+       [w4, w3] <= [w4, w3] mod 2^321 = T */
+  bn.rshi   w4, w4, w31 >> 65
+  bn.rshi   w4, w31, w4 >> 191
+
+  /* [w4, w3] <= [w4, w3] ^ [w21, w20] = T2 */
+  bn.xor    w3, w3, w20
+  bn.xor    w4, w4, w21
+
+  /* [w2, w1] <= [w2, w1] ^ [w23, w22] = gamma ^ s1 = G */
+  bn.xor    w1, w1, w22
+  bn.xor    w2, w2, w23
+
+  /* [w21, w20] <= [w21, w20] ^ [w2, w1] = s0 ^ G */
+  bn.xor    w20, w20, w1
+  bn.xor    w21, w21, w2
+
+  /* [w21, w20] <= [w21, w20] - [w2, w1] = ((s0 ^ G) - G) mod 2^512 */
+  bn.sub    w20, w20, w1
+  bn.subb   w21, w21, w2
+
+  /* [w21, w20] <= [w21, w20] mod 2^321 = A */
+  bn.rshi   w21, w21, w31 >> 65
+  bn.rshi   w21, w31, w21 >> 191
+
+  /* [w21, w20] <= [w21, w20] ^ [w4, w3] = A ^ T2 = x0 */
+  bn.xor    w20, w20, w3
+  bn.xor    w21, w21, w4
+
+  ret
+
+/**
+ * P-256 ECDSA secret key generation.
+ *
+ * Returns the secret key d in two 320-bit shares d0 and d1, such that:
+ *    d = (d0 + d1) mod n
+ * ...where n is the curve order.
+ *
+ * This implementation follows FIPS 186-4 section B.4.1, where we
+ * generate d using N+64 random bits (320 bits in this case) as a seed. But
+ * while FIPS computes d = (seed mod (n-1)) + 1 to ensure a nonzero key, we
+ * instead just compute d = seed mod n. The caller MUST ensure that if this
+ * routine is used, then other routines that use d (e.g. signing, public key
+ * generation) are checking if d is 0.
+ *
+ * Most complexity in this routine comes from masking. The input seed is
+ * provided in two 320-bit shares, seed0 and seed1, such that:
+ *   seed = seed0 ^ seed1
+ * Bits at position 320 and above in the input shares will be ignored.
+ *
+ * We then use Goubin's boolean-to-arithmetic masking algorithm to switch from
+ * this boolean masking scheme to an arithmetic one without ever unmasking the
+ * seed. See Algorithm 1 here:
+ * https://link.springer.com/content/pdf/10.1007/3-540-44709-1_2.pdf
+ *
+ * For a Coq proof of the correctness of the basic computational logic here
+ * see:
+ *   https://gist.github.com/jadephilipoom/24f44c59cbe59327e2f753867564fa28#file-masked_reduce-v-L226
+ *
+ * The proof does not cover leakage properties; it mostly just shows that this
+ * logic correctly computes (seed mod n) and the carry-handling works.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  [w21, w20]: seed0, first share of seed (320 bits)
+ * @param[in]  [w23, w22]: seed1, second share of seed (320 bits)
+ * @param[in]         w31: all-zero
+ * @param[out] [w21, w20]: d0, first share of private key d (320 bits)
+ * @param[out] [w23, w22]: d1, second share of private key d (320 bits)
+ *
+ * clobbered registers: x2, x3, w1 to w4, w20 to w29
+ * clobbered flag groups: FG0
+ */
+p256_key_from_seed:
+  /* Convert from a boolean to an arithmetic mask using Goubin's algorithm.
+       [w21, w20] <= ((seed0 ^ seed1) - seed1) mod 2^321 = x0 */
+  jal       x1, boolean_to_arithmetic
+
+  /* At this point, we have arithmetic shares modulo 2^321:
+       [w21, w20] : x0
+       [w23, w22] : x1
+
+     We know that x1=seed1, and seed and x1 are at most 320 bits. Therefore,
+     the highest bit of x0 holds a carry bit modulo 2^320:
+       x0 = (seed - x1) mod 2^321
+       x0 = (seed - x1) mod 2^320 + (if (x1 <= seed) then 0 else 2^320)
+
+     The carry bit then allows us to replace (mod 2^321) with a conditional
+     statement:
+       seed = (x0 mod 2^320) + x1 - (x0[320] << 320)
+
+     Note that the carry bit is not very sensitive from a side channel
+     perspective; x1 <= seed has some bias related to the highest bit of the
+     seed, but since the seed is 64 bits larger than n, this single-bit noisy
+     leakage should not be significant.
+
+     From here, we want to convert to shares modulo (n * 2^64) -- these shares
+     will be equivalent to the seed modulo n but still retain 64 bits of extra
+     masking. We compute the new shares as follows:
+       c = (x0[320] << 320) mod (n << 64)
+       d0 = ((x0 mod 2^320) - c) mod (n << 64))
+       d1 = x1 mod (n << 64)
+
+       d = seed mod n = (d0 + d1) mod n
+  */
+
+  /* Load curve order n from DMEM.
+       w29 <= dmem[p256_n] = n */
+  li        x2, 29
+  la        x3, p256_n
+  bn.lid    x2, 0(x3)
+
+  /* Compute (n << 64).
+       [w29,w28] <= w29 << 64 = n << 64 */
+  bn.rshi   w28, w29, w31 >> 192
+  bn.rshi   w29, w31, w29 >> 192
+
+  /* [w25,w24] <= (x1 - (n << 64)) mod 2^512 */
+  bn.sub    w24, w22, w28
+  bn.subb   w25, w23, w29
+
+  /* Compute d1. Because 2^320 < 2 * (n << 64), a conditional subtraction is
+     sufficient to reduce. Similarly to the carry bit, the conditional bit here
+     is not very sensitive because the shares are large relative to n.
+       [w23,w22] <= x1 mod (n << 64) = d1 */
+  bn.sel    w22, w22, w24, FG0.C
+  bn.sel    w23, w23, w25, FG0.C
+
+  /* Isolate the carry bit and shift it back into position.
+       w25 <= x0[320] << 64 */
+  bn.rshi   w25, w31, w21 >> 64
+  bn.rshi   w25, w25, w31 >> 192
+
+  /* Clear the carry bit from the original result.
+       [w21,w20] <= x0 mod 2^320 */
+  bn.xor    w21, w21, w25
+
+  /* Conditionally subtract (n << 64) to reduce.
+       [w21,w20] <= (x0 mod 2^320) mod (n << 64) */
+  bn.sub    w26, w20, w28
+  bn.subb   w27, w21, w29
+  bn.sel    w20, w20, w26, FG0.C
+  bn.sel    w21, w21, w27, FG0.C
+
+  /* Compute the correction factor.
+       [w25,w24] <= (x[320] << 320) mod (n << 64) = c */
+  bn.sub    w26, w31, w28
+  bn.subb   w27, w25, w29
+  bn.sel    w24, w31, w26, FG0.C
+  bn.sel    w25, w25, w27, FG0.C
+
+  /* Compute d0 with a modular subtraction. First we add (n << 64) to protect
+     against underflow, then conditionally subtract it again if needed.
+       [w21,w20] <= ([w21, w20] - [w25,w24]) mod (n << 64) = d1 */
+  bn.add    w20, w20, w28
+  bn.addc   w21, w21, w29
+  bn.sub    w20, w20, w24
+  bn.subb   w21, w21, w25
+  bn.sub    w26, w20, w28
+  bn.subb   w27, w21, w29
+  bn.sel    w20, w20, w26, FG0.C
+  bn.sel    w21, w21, w27, FG0.C
 
   ret
 
