@@ -34,7 +34,7 @@ __TOOL_REQUIREMENTS__ = {
         'as_needed': True
     },
     'vcs': {
-        'min_version': '2020.12-SP2',
+        'min_version': '2022.06-SP2',
         'as_needed': True
     },
     'rust': {
