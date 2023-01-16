@@ -15,8 +15,18 @@
 .globl proj_add
 .globl p256_generate_k
 .globl p256_generate_random_key
+.globl p256_key_from_seed
 
 .text
+
+/**
+ * Trigger a fault.
+ *
+ * P256 routines jump here if they suspect they are under fault attack and must
+ * abort the computation.
+ */
+p256_trigger_fault:
+  unimp
 
 /**
  * Reduce a 512-bit value by a 256-bit P-256 modulus (either n or p).
@@ -1171,6 +1181,18 @@ scalar_mult_int:
     jal       x1, mod_mul_256x256
     bn.mov    w6, w19
 
+  /* Check if the z-coordinate of Q is 0. If so, fail; this represents the
+     point at infinity and means the scalar was zero mod n, which likely
+     indicates a fault attack.
+  
+     FG0.Z <= if (w10 == 0) then 1 else 0 */
+  bn.cmp    w10, w31
+
+  /* Read the FG0.Z flag and fail if it is nonzero. */
+  csrrw     x2, 0x7c0, x0
+  andi      x2, x2, 8
+  bne       x2, x0, p256_trigger_fault
+
   /* convert back to affine coordinates
      R = (x_a, y_a) = (w11, w12) */
   jal       x1, proj_to_affine
@@ -1348,6 +1370,21 @@ p256_sign:
 
   /* w0 <= (w0+w19) mod n = (d * alpha) mod n */
   bn.addm   w0, w0, w19
+
+  /* Compare to 0.
+     FG0.Z <= (w0 =? w31) = ((d * alpha) mod n =? 0) */
+  bn.cmp    w0, w31
+
+  /* Read the FG0.Z flag (bit position 3) and trigger a fault if it is nonzero,
+     aborting the computation.
+
+     Since alpha is nonzero mod n, (d * alpha) mod n = 0 means d is zero mod n,
+     which violates ECDSA private key requirements. This could technically be
+     triggered by an unlucky key manager seed, but the probability is so low (~1/n)
+     that it more likely indicates a fault attack. */
+  csrrw     x2, 0x7c0, x0
+  andi      x2, x2, 8
+  bne       x2, x0, p256_trigger_fault
 
   /* w24 = r <= w11  mod n */
   bn.addm   w24, w11, w31
@@ -1894,58 +1931,6 @@ p256_scalar_mult:
   ret
 
 /**
- * Check if a masked scalar is zero modulo n.
- *
- * Returns (t0 + t1) =? 0 (mod n).
- *
- * To safely check if the scalar is zero, we generate a random, nonzero scalar
- * "alpha" for masking. We multiply each share by alpha modulo n, and add them
- * together and check if the result (t * alpha) is zero. The addition is safe
- * because of the randomness introduced by the mask.
- *
- * Flags: After this routine, FG0.Z is 1 iff the masked scalar is zero mod n.
- *
- * @param[in] w15,w16:  first share of secret scalar t (320 bits)
- * @param[in] w17,w18:  second share of secret scalar t (320 bits)
- * @param[in]     w29:  n, curve order
- * @param[in]     w28:  u, lower 256 bit of Barrett constant for n
- * @param[in]     MOD:  n, curve order
- * @param[in]     w31:  all-zero
- *
- * clobbered registers: TODO
- * clobbered flag groups: FG0
- */
-check_scalar_nonzero:
-  /* Generate a random nonzero masking parameter.
-     w14 <= URND(127) + 1 = alpha */
-  bn.wsrr   w14, 0x2 /* URND */
-  bn.rshi   w14, w31, w14 >> 129
-  bn.addi   w14, w14, 1
-
-  /* w12 <= ([w15,w16] * w14) mod n = (t0 * alpha) mod n */
-  bn.mov    w24, w15
-  bn.mov    w25, w16
-  bn.mov    w26, w14
-  jal       x1, mod_mul_320x128
-  bn.mov    w12, w19
-
-  /* w13 <= ([w17,w18] * w14) mod n = (t1 * alpha) mod n */
-  bn.mov    w24, w17
-  bn.mov    w25, w18
-  bn.mov    w26, w14
-  jal       x1, mod_mul_320x128
-  bn.mov    w13, w19
-
-  /* w12 <= (w12 + w13) mod n = ((t0 + t1) * alpha) mod n */
-  bn.addm   w12, w12, w13
-
-  /* Compare to 0.
-     FG0.Z <= (w12 =? w31) = ((t0 + t1) mod n =? 0) */
-  bn.cmp    w12, w31
-
-  ret
-
-/**
  * Generate a nonzero random value in the scalar field.
  *
  * Returns t, a random value that is nonzero mod n, in shares.
@@ -2023,7 +2008,31 @@ p256_random_scalar:
   bn.rshi   w20, w16, w31 >> 64
   bn.rshi   w16, w20, w31 >> 192
 
-  jal       x1, check_scalar_nonzero
+  /* Generate a random masking parameter.
+     w14 <= URND(127) + 1 = x */
+  bn.wsrr   w14, 0x2 /* URND */
+  bn.addi   w14, w14, 1
+
+  /* w12 <= ([w15,w16] * w14) mod n = (seed0 * x) mod n */
+  bn.mov    w24, w15
+  bn.mov    w25, w16
+  bn.mov    w26, w14
+  jal       x1, mod_mul_320x128
+  bn.mov    w12, w19
+
+  /* w13 <= ([w17,w18] * w14) mod n = (seed1 * x) mod n */
+  bn.mov    w24, w17
+  bn.mov    w25, w18
+  bn.mov    w26, w14
+  jal       x1, mod_mul_320x128
+  bn.mov    w13, w19
+
+  /* w12 <= (w12 + w13) mod n = ((seed0 + seed1) * x) mod n */
+  bn.addm   w12, w12, w13
+
+  /* Compare to 0.
+     FG0.Z <= (w12 =? w31) = ((seed0 + seed1) mod n =? 0) */
+  bn.cmp    w12, w31
 
   /* Read the FG0.Z flag (position 3).
      x2 <= 8 if FG0.Z else 0 */
@@ -2116,13 +2125,11 @@ p256_generate_k:
 /**
  * Convert boolean shares to arithmetic ones using Goubin's algorithm.
  *
- * Returns x0, x1 such that (s0 ^ s1) = (x0 + x1) mod 2^321.
+ * Returns x0 such that (s0 ^ s1) = (x0 + s1) mod 2^321.
  *
  * The input consists of two 320-bit shares, s0 and s1. Bits at position 320
  * and above in the input shares will be ignored. We compute the result mod
  * 2^321 so that the high bit of x0 will reveal the carry modulo 2^320.
- *
- * The second share x1 is always simply (s1 mod 2^320).
  *
  * We then use Goubin's boolean-to-arithmetic masking algorithm to switch from
  * this boolean masking scheme to an arithmetic one without ever unmasking the
@@ -2210,11 +2217,12 @@ boolean_to_arithmetic:
  *    d = (d0 + d1) mod n
  * ...where n is the curve order.
  *
- * This implementation is similar to FIPS 186-4 section B.4.1, where we
+ * This implementation follows FIPS 186-4 section B.4.1, where we
  * generate d using N+64 random bits (320 bits in this case) as a seed. But
  * while FIPS computes d = (seed mod (n-1)) + 1 to ensure a nonzero key, we
- * instead compute d = seed mod n and check for zero by multiplying with a
- * nonzero random scalar.
+ * instead just compute d = seed mod n. The caller MUST ensure that if this
+ * routine is used, then other routines that use d (e.g. signing, public key
+ * generation) are checking if d is 0.
  *
  * Most complexity in this routine comes from masking. The input seed is
  * provided in two 320-bit shares, seed0 and seed1, such that:
@@ -2240,13 +2248,13 @@ boolean_to_arithmetic:
  * @param[in]  [w21, w20]: seed0, first share of seed (320 bits)
  * @param[in]  [w23, w22]: seed1, second share of seed (320 bits)
  * @param[in]         w31: all-zero
- * @param[out] [w16, w15]: d0, first share of private key d (320 bits)
- * @param[out] [w18, w17]: d1, second share of private key d (320 bits)
+ * @param[out] [w21, w20]: d0, first share of private key d (320 bits)
+ * @param[out] [w23, w22]: d1, second share of private key d (320 bits)
  *
  * clobbered registers: TODO
  * clobbered flag groups: FG0
  */
-p256_secret_key_from_seed:
+p256_key_from_seed:
   /* Convert from a boolean to an arithmetic mask using Goubin's algorithm.
        [w21, w20] <= ((seed0 ^ seed1) - seed1) mod 2^321 = x0 */
   jal       x1, boolean_to_arithmetic
@@ -2297,9 +2305,9 @@ p256_secret_key_from_seed:
   /* Compute d1. Because 2^320 < 2 * (n << 64), a conditional subtraction is
      sufficient to reduce. Similarly to the carry bit, the conditional bit here
      is not very sensitive because the shares are large relative to n.
-       [w18,w17] <= x1 mod (n << 64) = d1 */
-  bn.sel    w17, w22, w24, FG0.C
-  bn.sel    w18, w23, w25, FG0.C
+       [w23,w22] <= x1 mod (n << 64) = d1 */
+  bn.sel    w22, w22, w24, FG0.C
+  bn.sel    w23, w23, w25, FG0.C
 
   /* Isolate the carry bit and shift it back into position.
        w25 <= x0[320] << 64 */
@@ -2324,95 +2332,17 @@ p256_secret_key_from_seed:
   bn.sel    w24, w24, w26, FG0.C
   bn.sel    w25, w25, w27, FG0.C
 
-  /* Compute d0 with a modular subtraction. First we add (n << 64) to protect
+  /* Compute d1 with a modular subtraction. First we add (n << 64) to protect
      against underflow, then conditionally subtract it if needed.
-       [w16,w15] <= ([w21, w20] - [w25,w24]) mod (n << 64) = d1 */
+       [w21,w20] <= ([w21, w20] - [w25,w24]) mod (n << 64) = d1 */
   bn.add    w20, w20, w28
   bn.addc   w21, w21, w29
   bn.sub    w26, w20, w24
   bn.subb   w27, w21, w25
-  bn.sel    w15, w20, w26, FG0.C
-  bn.sel    w16, w21, w27, FG0.C
-
-  /* Re-load the curve order n.
-     w29 <= dmem[p256_n] = n */
-  li        x2, 29
-  la        x3, p256_n
-  bn.lid    x2, 0(x3)
-
-  /* Copy n into the MOD register. */
-  bn.wsrw   0, w29
-
-  /* Load Barrett constant for n.
-     w28 <= u_n = dmem[p256_u_n]  */
-  li        x2, 28
-  la        x3, p256_u_n
-  bn.lid    x2, 0(x3)
-
-  /* Check if the generated key is 0 modulo n.
-       FG0.Z <= if (d0 + d1) == 0 (mod n) then 0 else 1 */
-  jal       x1, check_scalar_nonzero
-
-  /* Read the FG0.Z flag (position 3).
-     x2 <= 8 if FG0.Z else 0 */
-  csrrw     x2, 0x7c0, x0
-  andi      x2, x2, 8
-
-  /* Jump to failure case if x2 != 0. */
-  bne       x2, x0, p256_secret_key_from_seed_fail
+  bn.sel    w20, w20, w26, FG0.C
+  bn.sel    w21, w21, w27, FG0.C
 
   ret
-
-  p256_secret_key_from_seed_fail:
-    /* Trigger a fault. */
-    unimp
-
-/**
- * Top-level P-256 ECDSA key generation.
- *
- * Returns the secret key d in two 320-bit shares d0 and d1, such that:
- *    d = (d0 + d1) mod n
- * ...where n is the curve order.
- *
- * This implementation is similar to FIPS 186-4 section B.4.1, where we
- * generate d using N+64 random bits (320 bits in this case) as a seed. But
- * while FIPS computes d = (seed mod (n-1)) + 1 to ensure a nonzero key, we
- * instead compute d = seed mod n and check for zero during point-scalar
- * multiplication while we get the public key.
- *
- * Most complexity in this routine comes from masking. The input seed is
- * provided in two 320-bit shares, seed0 and seed1, such that:
- *   seed = seed0 ^ seed1
- * Bits at position 320 and above in the input shares will be ignored.
- *
- * We then use Goubin's boolean-to-arithmetic masking algorithm to switch from
- * this boolean masking scheme to an arithmetic one without ever unmasking the
- * seed. See Algorithm 1 here:
- * https://link.springer.com/content/pdf/10.1007/3-540-44709-1_2.pdf
- *
- * For a Coq proof of the correctness of the basic computational logic here
- * see:
- *   https://gist.github.com/jadephilipoom/24f44c59cbe59327e2f753867564fa28#file-masked_reduce-v-L226
- *
- * The proof does not cover leakage properties; it mostly just shows that this
- * logic correctly computes (seed mod n) and the carry-handling works.
- *
- * This routine runs in constant time.
- *
- * Flags: Flags have no meaning beyond the scope of this subroutine.
- *
- * @param[in]  [w21, w20]: seed0, first share of seed (320 bits)
- * @param[in]  [w23, w22]: seed1, second share of seed (320 bits)
- * @param[out]   dmem[d0]: d0, first share of private key d (256 bits)
- * @param[out]   dmem[d1]: d1, second share of private key d (256 bits)
- *
- * clobbered registers: TODO
- * clobbered flag groups: FG0
- */
-p256_keygen:
-  /* Init all-zero register. */
-  bn.xor    w31, w31, w31
-
 
 .section .data
 
