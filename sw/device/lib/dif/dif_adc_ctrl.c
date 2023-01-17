@@ -29,14 +29,16 @@ dif_result_t dif_adc_ctrl_configure(const dif_adc_ctrl_t *adc_ctrl,
                                     dif_adc_ctrl_config_t config) {
   if (adc_ctrl == NULL ||
       config.power_up_time_aon_cycles > ADC_CTRL_ADC_PD_CTL_PWRUP_TIME_MASK ||
-      config.wake_up_time_aon_cycles > ADC_CTRL_ADC_PD_CTL_WAKEUP_TIME_MASK) {
+      config.wake_up_time_aon_cycles > ADC_CTRL_ADC_PD_CTL_WAKEUP_TIME_MASK ||
+      config.num_low_power_samples == 0 ||
+      config.num_normal_power_samples == 0) {
     return kDifBadArg;
   }
 
-  uint32_t en_ctrl_reg = 0;
-  uint32_t pd_ctrl_reg = 0;
-  uint32_t lp_sample_ctrl_reg = 0;
-  uint32_t np_sample_ctrl_reg = 0;
+  uint32_t en_ctrl_reg = ADC_CTRL_ADC_EN_CTL_REG_RESVAL;
+  uint32_t pd_ctrl_reg = ADC_CTRL_ADC_PD_CTL_REG_RESVAL;
+  uint32_t lp_sample_ctrl_reg = ADC_CTRL_ADC_LP_SAMPLE_CTL_REG_RESVAL;
+  uint32_t np_sample_ctrl_reg = ADC_CTRL_ADC_SAMPLE_CTL_REG_RESVAL;
 
   switch (config.mode) {
     case kDifAdcCtrlLowPowerScanMode:
