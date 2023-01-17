@@ -67,7 +67,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task alert_handler_rand_wr_class_ctrl(bit [NUM_ALERT_CLASSES-1:0] lock_bit,
-                                                bit [NUM_ALERT_CLASSES-1:0] class_en = $urandom());
+                                                bit [NUM_ALERT_CLASSES-1:0] class_en);
     `RAND_WRITE_CLASS_CTRL(a, class_en[0], lock_bit[0])
     `RAND_WRITE_CLASS_CTRL(b, class_en[1], lock_bit[1])
     `RAND_WRITE_CLASS_CTRL(c, class_en[2], lock_bit[2])
