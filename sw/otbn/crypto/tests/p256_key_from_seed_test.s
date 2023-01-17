@@ -33,35 +33,34 @@ key_from_seed_test:
 .data
 
 /* Full test data for reference (randomly generated):
-
 Seed shares:
-0xa504e1c1c414883cea0f5e27cfba94f1cb4a21734c7af8085e561a3856f7bdde1e9a829fab5b7010
-0x2f2876129e3e835654cd40e4208329529bb79deec3927359daf2e50762a8c404debb1d2488dafa5c
+0x2bac5b0bd7c77320a210c4be446984ccbb6a02057843d9a2c48e8981128c13393c174a162335f23f
+0x63e2e86d4e67f1f717bcfeef551f77d199dd9f5af7d1a8736f2f939abeb67c9e2df4bec0225596d6
 
 Expected key shares:
-0x5b0421c0bbeb881469f4dddfceb69450b5461eaecc5617f7a9b21a37d1b6b5d5e16682969aa68ff0
-0x2f2876129e3e835654cd40e4208329529bb79deec3927359daf2e50762a8c404debb1d2488dafa5c
+0xe46bcaf84b3890e19def3b61bc577b4b45c0f8b23ed867e3302b5143e9e71859e3ef3615df0ace13
+0x63e2e86d4e67f1f717bcfeef551f77d199dd9f5af7d1a8736f2f939abeb67c9e2df4bec0225596d6
 
-Real seed value:
-0x8a2c97d35a2a0b6abec21ec3ef39bda350fdbc9d8fe88b5184a4ff3f345f79dac0219fbb23818a4c
+Real masked seed value:
+0x484eb36699a082d7b5ac3a511176f31d22b79d5f8f9271d1aba11a1bac3a6fa711e3f4d6016064e9
 
 Real masked value of key (seed mod n):
-0x18ec2a2e0ae31a657534e99429990b0d42bc6e1b9ab120bc1218be813585edae
+0x4f4cbd282f87bcdf35ab4783cd934744c2865e67bd8a418324fc72bdefdf454b
 */
 
 /* First share of seed (320 bits). */
 .balign 32
 seed0:
-  .word 0xab5b7010
-  .word 0x1e9a829f
-  .word 0x56f7bdde
-  .word 0x5e561a38
-  .word 0x4c7af808
-  .word 0xcb4a2173
-  .word 0xcfba94f1
-  .word 0xea0f5e27
-  .word 0xc414883c
-  .word 0xa504e1c1
+  .word 0x2335f23f
+  .word 0x3c174a16
+  .word 0x128c1339
+  .word 0xc48e8981
+  .word 0x7843d9a2
+  .word 0xbb6a0205
+  .word 0x446984cc
+  .word 0xa210c4be
+  .word 0xd7c77320
+  .word 0x2bac5b0b
   .word 0x00000000
   .word 0x00000000
   .word 0x00000000
@@ -72,16 +71,16 @@ seed0:
 /* Second share of seed (320 bits) */
 .balign 32
 seed1:
-  .word 0x88dafa5c
-  .word 0xdebb1d24
-  .word 0x62a8c404
-  .word 0xdaf2e507
-  .word 0xc3927359
-  .word 0x9bb79dee
-  .word 0x20832952
-  .word 0x54cd40e4
-  .word 0x9e3e8356
-  .word 0x2f287612
+  .word 0x225596d6
+  .word 0x2df4bec0
+  .word 0xbeb67c9e
+  .word 0x6f2f939a
+  .word 0xf7d1a873
+  .word 0x99dd9f5a
+  .word 0x551f77d1
+  .word 0x17bcfeef
+  .word 0x4e67f1f7
+  .word 0x63e2e86d
   .word 0x00000000
   .word 0x00000000
   .word 0x00000000
