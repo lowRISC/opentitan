@@ -16,6 +16,8 @@ filesets:
       - rtl/prim_subreg_ext.sv
       - rtl/prim_subreg_shadow.sv
     file_type: systemVerilogSource
+    depend:
+      - lowrisc:prim:assert
 
   files_verilator_waiver:
     depend:
