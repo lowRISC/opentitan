@@ -112,21 +112,17 @@ static void ecc256_set_seed(const uint8_t *seed, size_t seed_len) {
 }
 
 /**
- * Generates a private key from a masked seed.
+ * Runs the OTBN key generation program.
  *
- * The seed shares must be `kEcc256SeedNumWords` words long, and the caller
- * must provide pre-allocated buffers of the same length for the key shares.
+ * The seed shares must be `kEcc256SeedNumWords` words long.
  *
+ * @param[in] mode  Mode parameter (private key only or full keypair).
  * @param[in] seed  Seed for key generation.
  * @param[in] mask  Mask for seed.
- * @param[out] d0   First share of masked private key d. 
- * @param[out] d1   Second share of masked private key d.
  */
-static void p256_ecdsa_gen_secret_key(const uint32_t *seed, const uint32_t *mask,
-                              uint32_t *d0, uint32_t *d1) {
+static void p256_run_keygen(uint32_t mode, const uint32_t *seed, const uint32_t *mask) {
 
   // Write mode.
-  uint32_t mode = kEcc256ModePrivateKeyOnly;
   SS_CHECK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode) ==
            kOtbnErrorOk);
 
@@ -149,9 +145,30 @@ static void p256_ecdsa_gen_secret_key(const uint32_t *seed, const uint32_t *mask
   SS_CHECK(otbn_dmem_set(num_zeroes, 0, kOtbnVarSeed1 + kEcc256SeedNumBytes) ==
            kOtbnErrorOk);
 
+  // Execute program.
   SS_CHECK(otbn_execute() == kOtbnErrorOk);
   SS_CHECK(otbn_busy_wait_for_done() == kOtbnErrorOk);
+}
 
+/**
+ * Generates a secret key from a masked seed.
+ *
+ * The seed shares must be `kEcc256SeedNumWords` words long, and the caller
+ * must provide pre-allocated buffers of the same length for the private key
+ * shares. 
+ *
+ * @param[in] seed  Seed for key generation.
+ * @param[in] mask  Mask for seed.
+ * @param[out] d0   First share of masked private key d. 
+ * @param[out] d1   Second share of masked private key d.
+ */
+static void p256_ecdsa_gen_secret_key(const uint32_t *seed, const uint32_t *mask,
+                              uint32_t *d0, uint32_t *d1) {
+
+  // Run the key generation program.
+  p256_run_keygen(kEcc256ModePrivateKeyOnly, seed, mask);
+
+  // Read results.
   SS_CHECK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0) ==
            kOtbnErrorOk);
   SS_CHECK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD1, d1) ==
@@ -175,33 +192,10 @@ static void p256_ecdsa_gen_secret_key(const uint32_t *seed, const uint32_t *mask
 static void p256_ecdsa_gen_keypair(const uint32_t *seed, const uint32_t *mask,
                               uint32_t *d0, uint32_t *d1, uint32_t *x, uint32_t *y) {
 
-  // Write mode.
-  uint32_t mode = kEcc256ModeKeypair;
-  SS_CHECK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode) ==
-           kOtbnErrorOk);
+  // Run the key generation program.
+  p256_run_keygen(kEcc256ModeKeypair, seed, mask);
 
-  // Compute first share of seed (seed ^ mask).
-  uint32_t seed0[kEcc256SeedNumWords];
-  for (size_t i = 0; i < kEcc256SeedNumWords; i++) {
-    seed0[i] = seed[i] ^ mask[i];
-  }
-
-  // Write seed shares.
-  SS_CHECK(otbn_dmem_write(kEcc256SeedNumWords, seed0, kOtbnVarSeed0) == kOtbnErrorOk);
-  SS_CHECK(otbn_dmem_write(kEcc256SeedNumWords, mask, kOtbnVarSeed1) == kOtbnErrorOk);
-
-  // Set high bits of seed0, seed1 to all-zero. These bits are ignored in the
-  // implementation but must be written to avoid runtime errors.
-  size_t offset = kEcc256SeedNumWords % kOtbnWideWordNumWords;
-  size_t num_zeroes = (kOtbnWideWordNumWords - offset) % kOtbnWideWordNumWords;
-  SS_CHECK(otbn_dmem_set(num_zeroes, 0, kOtbnVarSeed0 + kEcc256SeedNumBytes) ==
-           kOtbnErrorOk);
-  SS_CHECK(otbn_dmem_set(num_zeroes, 0, kOtbnVarSeed1 + kEcc256SeedNumBytes) ==
-           kOtbnErrorOk);
-
-  SS_CHECK(otbn_execute() == kOtbnErrorOk);
-  SS_CHECK(otbn_busy_wait_for_done() == kOtbnErrorOk);
-
+  // Read results.
   SS_CHECK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0) ==
            kOtbnErrorOk);
   SS_CHECK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD1, d1) ==
@@ -238,6 +232,7 @@ static void ecc256_ecdsa_secret_keygen(const uint8_t *mask,
   LOG_INFO("Loading app...");
   SS_CHECK(otbn_load_app(kOtbnAppP256KeyFromSeed) == kOtbnErrorOk);
 
+  uint32_t mode = kEcc256ModePrivateKeyOnly;
   uint32_t ecc256_d0[kEcc256SeedNumWords];
   uint32_t ecc256_d1[kEcc256SeedNumWords];
 
@@ -294,6 +289,8 @@ static void ecc256_ecdsa_gen_keypair(const uint8_t *mask,
   // TODO: Remove these if they are not necessary for the side-channel analysis.
   simple_serial_send_packet('r', (unsigned char *)ecc256_d0, kEcc256SeedNumBytes);
   simple_serial_send_packet('r', (unsigned char *)ecc256_d1, kEcc256SeedNumBytes);
+  simple_serial_send_packet('r', (unsigned char *)ecc256_x, kEcc256CoordNumBytes);
+  simple_serial_send_packet('r', (unsigned char *)ecc256_y, kEcc256CoordNumBytes);
 
   LOG_INFO("Clearing OTBN memory.");
   SS_CHECK(otbn_dmem_sec_wipe() == kOtbnErrorOk);
