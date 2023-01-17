@@ -301,11 +301,11 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       if ($urandom_range(1)) begin
         // Glitch at some time at which the CPU is in Boot ROM, which currently takes up to 18k CPU
         // clock cycles to execute.
-        cfg.chip_vif.cpu_clk_rst_if.wait_n_clks($urandom_range(18000));
+        cfg.chip_vif.cpu_clk_rst_if.wait_n_clks($urandom_range(1, 18000));
       end else begin
         // Glitch after Boot ROM, when the CPU is executing program code.
         `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
-        cfg.chip_vif.cpu_clk_rst_if.wait_n_clks($urandom_range(1000));
+        cfg.chip_vif.cpu_clk_rst_if.wait_n_clks($urandom_range(1, 1000));
       end
       // Ensure we are still running.  If not, skip the test without injecting an error.
       if (!cpu_is_executing_code()) begin
