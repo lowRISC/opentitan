@@ -34,11 +34,6 @@ INSTANCE: tb.dut.u_reg_regs.u_status_escalated.wr_en_data_arb
 ANNOTATION: "[UNR] all inputs are constant"
 Block 2 "1620753216" "assign wr_data = d;"
 
-CHECKSUM: "1738953883 3087984712"
-INSTANCE: tb.dut.u_reg_regs.u_chk
-ANNOTATION: "[LOWRISK] when a_valid is low, we drive X on data, so this condition isn't covered"
-Condition 1 "899198529" "(tl_i.a_valid & (((|err)) | ((|data_err)))) 1 -1" (1 "01")
-
 CHECKSUM: "1296247128 1854270750"
 INSTANCE: tb.dut
 ANNOTATION: "[UNSUPPORTED] ACK can't come without REQ"
