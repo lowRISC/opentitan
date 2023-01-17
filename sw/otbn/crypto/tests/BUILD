@@ -100,6 +100,25 @@ otbn_consttime_test(
 )
 
 otbn_consttime_test(
+    name = "p256_key_from_seed_consttime",
+    subroutine = "p256_key_from_seed",
+    deps = [
+        "//sw/otbn/crypto:p256_ecdsa",
+    ],
+)
+
+otbn_sim_test(
+    name = "p256_key_from_seed_test",
+    srcs = [
+        "p256_key_from_seed_test.s",
+    ],
+    exp = "p256_key_from_seed_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p256",
+    ],
+)
+
+otbn_consttime_test(
     name = "p256_proj_add_consttime",
     subroutine = "proj_add",
     deps = [

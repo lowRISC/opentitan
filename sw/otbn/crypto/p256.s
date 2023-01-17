@@ -2125,7 +2125,7 @@ p256_generate_k:
 /**
  * Convert boolean shares to arithmetic ones using Goubin's algorithm.
  *
- * Returns x0 such that (s0 ^ s1) = (x0 + s1) mod 2^321.
+ * Returns x0, x1 such that (s0 ^ s1) = (x0 + x1) mod 2^321.
  *
  * The input consists of two 320-bit shares, s0 and s1. Bits at position 320
  * and above in the input shares will be ignored. We compute the result mod
@@ -2148,6 +2148,8 @@ p256_generate_k:
  *     A := ((s0 ^ G) - G) mod 2^k
  *     return x0 := (A ^ T2)
  *
+ * The output x1 is always (s1 mod 2^320).
+ *
  * This routine runs in constant time.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
@@ -2156,21 +2158,19 @@ p256_generate_k:
  * @param[in]  [w23, w22]: s1, second share of seed (320 bits)
  * @param[in]         w31: all-zero
  * @param[out] [w21, w20]: result x0 (321 bits)
+ * @param[out] [w23, w22]: result x1 (320 bits)
  *
- * clobbered registers: w1 to w4, w20 to w23
+ * clobbered registers: w1 to w5, w20 to w23
  * clobbered flag groups: FG0
  */
 boolean_to_arithmetic:
-  /* Create a 64-bit mask.
-       w1 <= 2^64 - 1 */
-  bn.subi   w1, w31, 1
-  bn.rshi   w1, w31, w1 >> 192
-
   /* Mask out excess bits from seed shares.
        [w21, w20] <= s0 mod 2^320
        [w23, w22] <= s1 mod 2^320 = x1 */
-  bn.and    w21, w21, w1
-  bn.and    w23, w23, w1
+  bn.rshi   w21, w21, w31 >> 64
+  bn.rshi   w21, w31, w21 >> 192
+  bn.rshi   w23, w23, w31 >> 64
+  bn.rshi   w23, w31, w23 >> 192
 
   /* Fetch 321 bits of randomness from URND.
        [w2, w1] <= gamma */
@@ -2188,6 +2188,11 @@ boolean_to_arithmetic:
   bn.sub    w3, w3, w1
   bn.subb   w4, w4, w2
 
+  /* Truncate subtraction result to 321 bits.
+       [w4, w3] <= [w4, w3] mod 2^321 = T */
+  bn.rshi   w4, w4, w31 >> 65
+  bn.rshi   w4, w31, w4 >> 191
+
   /* [w4, w3] <= [w4, w3] ^ [w21, w20] = T2 */
   bn.xor    w3, w3, w20
   bn.xor    w4, w4, w21
@@ -2204,9 +2209,13 @@ boolean_to_arithmetic:
   bn.sub    w20, w20, w1
   bn.subb   w21, w21, w2
 
+  /* [w21, w20] <= [w21, w20] mod 2^321 = A */
+  bn.rshi   w21, w21, w31 >> 65
+  bn.rshi   w21, w31, w21 >> 191
+
   /* [w21, w20] <= [w21, w20] ^ [w4, w3] = A ^ T2 = x0 */
-  bn.xor    w20, w20, w1
-  bn.xor    w21, w21, w2
+  bn.xor    w20, w20, w3
+  bn.xor    w21, w21, w4
 
   ret
 
@@ -2298,7 +2307,7 @@ p256_key_from_seed:
   bn.rshi   w28, w29, w31 >> 192
   bn.rshi   w29, w31, w29 >> 192
 
-  /* [w25,w24] <= (x1 - (n << 64)) mod 2^256 */
+  /* [w25,w24] <= (x1 - (n << 64)) mod 2^512 */
   bn.sub    w24, w22, w28
   bn.subb   w25, w23, w29
 
@@ -2327,18 +2336,20 @@ p256_key_from_seed:
 
   /* Compute the correction factor.
        [w25,w24] <= (x[320] << 320) mod (n << 64) = c */
-  bn.sub    w26, w24, w28
+  bn.sub    w26, w31, w28
   bn.subb   w27, w25, w29
-  bn.sel    w24, w24, w26, FG0.C
+  bn.sel    w24, w31, w26, FG0.C
   bn.sel    w25, w25, w27, FG0.C
 
-  /* Compute d1 with a modular subtraction. First we add (n << 64) to protect
-     against underflow, then conditionally subtract it if needed.
+  /* Compute d0 with a modular subtraction. First we add (n << 64) to protect
+     against underflow, then conditionally subtract it again if needed.
        [w21,w20] <= ([w21, w20] - [w25,w24]) mod (n << 64) = d1 */
   bn.add    w20, w20, w28
   bn.addc   w21, w21, w29
-  bn.sub    w26, w20, w24
-  bn.subb   w27, w21, w25
+  bn.sub    w20, w20, w24
+  bn.subb   w21, w21, w25
+  bn.sub    w26, w20, w28
+  bn.subb   w27, w21, w29
   bn.sel    w20, w20, w26, FG0.C
   bn.sel    w21, w21, w27, FG0.C
 
