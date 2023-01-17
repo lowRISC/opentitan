@@ -98,7 +98,7 @@ export PATH=$HOME/.local/bin:$PATH
 # specify that an older version of a package must be used for a certain
 # Python version. If that information is not read, pip installs the latest
 # version, which then fails to run.
-python3 -m pip install --user -U pip setuptools
+python3 -m pip install --user -U pip "setuptools<66.0.0"
 
 pip3 install --user -r python-requirements.txt
 
