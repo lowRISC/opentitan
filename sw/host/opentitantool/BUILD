@@ -35,7 +35,7 @@ rust_binary(
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
-    stamp = 1,
+    rustc_env_files = ["opentitantool.env"],
     tags = [
         # Only until we figure out how to deal with version.rs including
         # the bazel voltatile-status.txt file.
@@ -46,6 +46,7 @@ rust_binary(
         "//third_party/rust/crates:anyhow",
         "//third_party/rust/crates:atty",
         "//third_party/rust/crates:directories",
+        "//third_party/rust/crates:dotenv",
         "//third_party/rust/crates:env_logger",
         "//third_party/rust/crates:erased_serde",
         "//third_party/rust/crates:hex",

@@ -3,31 +3,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use regex::Regex;
 use serde_annotate::Annotate;
 use std::any::Any;
-use std::collections::BTreeMap;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 
-/// At compile time, the contents of `bazel-out/volatile-status.txt` is included, as if it was a
-/// string literal in this file.  Bazel will not recompile this rust_binary solely because
-/// `volatile-status.txt` has been updated, but any time this rust_binary is recompiled, it will
-/// include the newest version of `volatile-status.txt`.
-///
-/// At runtime, this string is parsed into key/value pairs, which are returned.  (It would have
+use dotenv;
+
+/// At compile time, the contents of `bazel-out/volatile-status.txt` is included in
+/// opentitantool.env, Bazel updates the fields in it if built with the --stamp flag set.
+/// Bazel will not recompile this rust_binary solely because the values in opentitantool.env have
+/// been updated, but any time this rust_binary is recompiled.
+/// the timestamp is parsed at runtime.  (It would have
 /// been desirable to perform the parsing at compile time as well.)
-fn get_volatile_status() -> BTreeMap<&'static str, &'static str> {
-    let volatile_status = include_str!("../../../../../bazel-out/volatile-status.txt");
-    let re = Regex::new(r"([A-Z_]+) ([^\n]+)\n").unwrap();
-    let mut properties: BTreeMap<&'static str, &'static str> = BTreeMap::new();
-    for cap in re.captures_iter(volatile_status) {
-        properties.insert(cap.get(1).unwrap().as_str(), cap.get(2).unwrap().as_str());
-    }
-    properties
-}
+/// This is all compatible with the unstamped version of the values which will  leave the timestamp
+/// as 0, clean = false,
+/// BUILD_GIT_VERSION = {BUILD_GIT_VERSION} and BUILD_SCM_REVISION = {BUILD_SCM_REVISION}
 
 #[derive(Debug, StructOpt)]
 pub struct Version {}
@@ -45,12 +38,16 @@ impl CommandDispatch for Version {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let properties = get_volatile_status();
+        dotenv::dotenv().ok();
+        let mut parsed_timestamp = 0;
+        if option_env!("BUILD_TIMESTAMP").unwrap() != "{BUILD_TIMESTAMP}" {
+            parsed_timestamp = option_env!("BUILD_TIMESTAMP").unwrap().parse::<i64>()?;
+        }
         Ok(Some(Box::new(VersionResponse {
-            version: properties.get("BUILD_GIT_VERSION").unwrap().to_string(),
-            revision: properties.get("BUILD_SCM_REVISION").unwrap().to_string(),
-            clean: *properties.get("BUILD_SCM_STATUS").unwrap() == "clean",
-            timestamp: properties.get("BUILD_TIMESTAMP").unwrap().parse::<i64>()?,
+            version: option_env!("BUILD_GIT_VERSION").unwrap().to_string(),
+            revision: option_env!("BUILD_SCM_REVISION").unwrap().to_string(),
+            clean: option_env!("BUILD_SCM_STATUS").unwrap() == "clean",
+            timestamp: parsed_timestamp,
         })))
     }
 }
