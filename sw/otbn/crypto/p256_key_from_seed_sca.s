@@ -76,19 +76,18 @@ p256_gen_keypair:
 
   ecall
 
-.bss
+
+/**
+ * Note: Technically this could be a .bss section, but it is convenient for
+ * software to have zeroes already set on the high bits of the seeds.
+ */
+.data
 
 /* Mode (1 = private key only, 2 = keypair) */
 .balign 4
 .globl mode
 mode:
 .zero 4
-
-/**
- * Note: Software must write the full 512 bits of the seed values to avoid
- * runtime errors when OTBN tries to load the data with two 256-bit loads. Bits
- * above position 320 will be ignored.
- */
 
 /* First share of seed (320 bits). */
 .balign 32

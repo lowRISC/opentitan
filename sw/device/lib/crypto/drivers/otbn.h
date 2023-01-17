@@ -60,7 +60,7 @@ typedef enum otbn_err_bits {
   /** A BUS_INTG_VIOLATION error was observed. */
   kOtbnErrBitsBusIntgViolation = (1 << 19),
   /** A BAD_INTERNAL_STATE error was observed. */
-  kDifOtbnErrBitsBadInternalState = (1 << 20),
+  kOtbnErrBitsBadInternalState = (1 << 20),
   /** An ILLEGAL_BUS_ACCESS error was observed. */
   kOtbnErrBitsIllegalBusAccess = (1 << 21),
   /** A LIFECYCLE_ESCALATION error was observed. */

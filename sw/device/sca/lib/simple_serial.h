@@ -28,7 +28,7 @@
 #define SS_CHECK(condition)                          \
   do {                                               \
     if (!(condition)) {                              \
-      simple_serial_send_status(kSimpleSerialError); \
+      simple_serial_send_status(__LINE__); \
       return;                                        \
     }                                                \
   } while (false)
@@ -100,7 +100,7 @@ void simple_serial_send_packet(const uint8_t cmd, const uint8_t *data,
  *
  * @param res Status code.
  */
-void simple_serial_send_status(uint8_t res);
+void simple_serial_send_status(uint32_t res);
 
 /**
  * Sends a buffer over UART as a hex encoded string.

@@ -20,9 +20,11 @@
  * OpenTitan program for OTBN ECDSA-P256 side-channel analysis.
  *
  * This program implements the following simple serial commands:
- *   - Set seed ('s')*,
- *   - Secret key generation ('k')+,
- *   - Keypair generation ('p')+,
+ *   - Set seed ('x'),
+ *   - Secret key generation ('k'),
+ *   - Keypair generation ('p'),
+ *   - Get version ('v') (implemented in simpleserial library),
+ *   - Seed PRNG ('s') (implemented in simpleserial library),
  * See https://wiki.newae.com/SimpleSerial for details on the protocol.
  */
 
@@ -98,7 +100,7 @@ uint32_t ecc256_seed[kEcc256SeedNumWords] = {
 };
 
 /**
- * Simple serial 's' (set seed) command handler.
+ * Simple serial 'x' (set seed) command handler.
  *
  * The key must be `kEcc256SeedNumBytes` bytes long.
  *
@@ -137,18 +139,17 @@ static void p256_run_keygen(uint32_t mode, const uint32_t *seed,
   SS_CHECK(otbn_dmem_write(kEcc256SeedNumWords, mask, kOtbnVarSeed1) ==
            kOtbnErrorOk);
 
-  // Set high bits of seed0, seed1 to all-zero. These bits are ignored in the
-  // implementation but must be written to avoid runtime errors.
-  size_t offset = kEcc256SeedNumWords % kOtbnWideWordNumWords;
-  size_t num_zeroes = (kOtbnWideWordNumWords - offset) % kOtbnWideWordNumWords;
-  SS_CHECK(otbn_dmem_set(num_zeroes, 0, kOtbnVarSeed0 + kEcc256SeedNumBytes) ==
-           kOtbnErrorOk);
-  SS_CHECK(otbn_dmem_set(num_zeroes, 0, kOtbnVarSeed1 + kEcc256SeedNumBytes) ==
-           kOtbnErrorOk);
-
   // Execute program.
   SS_CHECK(otbn_execute() == kOtbnErrorOk);
   SS_CHECK(otbn_busy_wait_for_done() == kOtbnErrorOk);
+  /*
+  if (otbn_busy_wait_for_done() != kOtbnErrorOk) {
+    simple_serial_send_status(otbn_instruction_count_get());
+    otbn_err_bits_t err_bits;
+    otbn_err_bits_get(&err_bits);
+    simple_serial_send_status(err_bits);
+  }
+  */
 }
 
 /**
@@ -167,7 +168,9 @@ static void p256_ecdsa_gen_secret_key(const uint32_t *seed,
                                       const uint32_t *mask, uint32_t *d0,
                                       uint32_t *d1) {
   // Run the key generation program.
+  sca_set_trigger_high();
   p256_run_keygen(kEcc256ModePrivateKeyOnly, seed, mask);
+  sca_set_trigger_low();
 
   // Read results.
   SS_CHECK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0) == kOtbnErrorOk);
@@ -192,7 +195,9 @@ static void p256_ecdsa_gen_keypair(const uint32_t *seed, const uint32_t *mask,
                                    uint32_t *d0, uint32_t *d1, uint32_t *x,
                                    uint32_t *y) {
   // Run the key generation program.
+  sca_set_trigger_high();
   p256_run_keygen(kEcc256ModeKeypair, seed, mask);
+  sca_set_trigger_low();
 
   // Read results.
   SS_CHECK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0) == kOtbnErrorOk);
@@ -231,15 +236,10 @@ static void ecc256_ecdsa_secret_keygen(const uint8_t *mask, size_t mask_len) {
   uint32_t ecc256_d1[kEcc256SeedNumWords];
 
   LOG_INFO("Running keygen...");
-  sca_set_trigger_high();
   p256_ecdsa_gen_secret_key(ecc256_seed, ecc256_mask, ecc256_d0, ecc256_d1);
-  sca_set_trigger_low();
 
-  // TODO: Remove these if they are not necessary for the side-channel analysis.
-  simple_serial_send_packet('r', (unsigned char *)ecc256_d0,
-                            kEcc256SeedNumBytes);
-  simple_serial_send_packet('r', (unsigned char *)ecc256_d1,
-                            kEcc256SeedNumBytes);
+  simple_serial_send_packet('r', (unsigned char *) ecc256_d0, kEcc256SeedNumBytes);
+  simple_serial_send_packet('r', (unsigned char *) ecc256_d1, kEcc256SeedNumBytes);
 
   LOG_INFO("Clearing OTBN memory.");
   SS_CHECK(otbn_dmem_sec_wipe() == kOtbnErrorOk);
@@ -277,10 +277,8 @@ static void ecc256_ecdsa_gen_keypair(const uint8_t *mask, size_t mask_len) {
   uint32_t ecc256_y[kEcc256CoordNumWords];
 
   LOG_INFO("Running keygen...");
-  sca_set_trigger_high();
   p256_ecdsa_gen_keypair(ecc256_seed, ecc256_mask, ecc256_d0, ecc256_d1,
                          ecc256_x, ecc256_y);
-  sca_set_trigger_low();
 
   // TODO: Remove these if they are not necessary for the side-channel analysis.
   simple_serial_send_packet('r', (unsigned char *)ecc256_d0,
@@ -316,7 +314,7 @@ static void simple_serial_main(void) {
            kSimpleSerialOk);
   SS_CHECK(simple_serial_register_handler('p', ecc256_ecdsa_gen_keypair) ==
            kSimpleSerialOk);
-  SS_CHECK(simple_serial_register_handler('s', ecc256_set_seed) ==
+  SS_CHECK(simple_serial_register_handler('x', ecc256_set_seed) ==
            kSimpleSerialOk);
 
   LOG_INFO("Starting simple serial packet handling.");
