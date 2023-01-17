@@ -13,6 +13,7 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
   rand bit [NUM_ALERT_CLASSES-1:0]                       class_regwen;
   rand bit [NUM_ALERT_CLASSES-1:0]                       clr_en;
   rand bit [NUM_ALERT_CLASSES-1:0]                       lock_bit_en;
+  rand bit [NUM_ALERT_CLASSES-1:0]                       class_en;
   rand bit [NUM_ALERTS-1:0]                              alert_regwen;
   rand bit [NUM_ALERTS-1:0]                              alert_trigger;
   rand bit [NUM_ALERTS-1:0]                              alert_int_err;
@@ -76,6 +77,7 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
   constraint enable_classa_only_c {
     alert_class_map == 0; // all the alerts assign to classa
     local_alert_class_map == 0; // all local alerts assign to classa
+    class_en dist {1 :/ 8, 0 :/ 1, [2:'1-1'b1] :/ 1};
   }
 
   // constraint to trigger escalation
@@ -98,6 +100,14 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
     esc_ping_timeout   == 0;
   }
 
+   task pre_start();
+    super.pre_start();
+    // This is the input for a nonblocking sequence. The value won't be changed until the
+    // nonblockings sequence end.
+    esc_ping_timeout.rand_mode(0);
+    esc_int_err.rand_mode(0);
+  endtask
+
   task body();
     fork
       begin : isolation_fork
@@ -109,8 +119,8 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
   endtask : body
 
   virtual task trigger_non_blocking_seqs();
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(esc_int_err)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(esc_ping_timeout)
+    `uvm_info(`gfn, $sformatf("esc_int_err %0h esc_ping_timeout %0h",
+              esc_int_err, esc_ping_timeout), UVM_LOW);
     run_esc_rsp_seq_nonblocking(esc_int_err, esc_ping_timeout);
   endtask
 
@@ -140,7 +150,7 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
                          .loc_alert_class(local_alert_class_map));
 
       // write class_ctrl
-      alert_handler_rand_wr_class_ctrl(lock_bit_en);
+      alert_handler_rand_wr_class_ctrl(lock_bit_en, class_en);
 
       // randomize crashdump triggered phases
       alert_handler_crashdump_phases();
