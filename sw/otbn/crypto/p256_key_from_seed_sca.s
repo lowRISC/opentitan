@@ -13,6 +13,20 @@
 .section .text.start
 
 start:
+  /* Read mode, then tail-call either p256_gen_secret_key or p256_gen_keypair */
+  la    x2, mode
+  lw    x2, 0(x2)
+
+  li    x3, 1
+  beq   x2, x3, p256_gen_secret_key
+
+  li    x3, 2
+  beq   x2, x3, p256_gen_keypair
+
+  /* Invalid mode; fail. */
+  unimp
+
+p256_gen_secret_key:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
@@ -49,9 +63,22 @@ start:
 
   ecall
 
+p256_gen_keypair:
+  /* First, generate the masked secret key d and write to DMEM.
+       dmem[d0] <= d0
+       dmem[d1] <= d1 */
+  jal       x1, p256_gen_secret_key
+
+  /* Generate the public key Q = d*G.
+       dmem[x] <= Q.x
+       dmem[y] <= Q.y */
+  jal       x1, p256_base_mult
+
+  ecall
+
 .bss
 
-/* Mode (1 = private key only) */
+/* Mode (1 = private key only, 2 = keypair) */
 .balign 4
 .globl mode
 mode:
@@ -86,3 +113,15 @@ d0:
 .globl d1
 d1:
 .zero 64
+
+/* x-coordinate of output public key (256 bits). */
+.balign 32
+.globl x
+x:
+.zero 32
+
+/* y-coordinate of output public key (256 bits). */
+.balign 32
+.globl y
+y:
+.zero 32

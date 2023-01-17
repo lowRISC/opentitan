@@ -1453,10 +1453,10 @@ p256_sign:
  *
  * This routine runs in constant time.
  *
- * @param[in]     dmem[d0]:  first share of scalar d (320 bits)
- * @param[in]     dmem[d1]:  second share of scalar d (320 bits)
- * @param[in,out] dmem[x]:   affine x-coordinate (256 bits)
- * @param[in,out] dmem[y]:   affine y-coordinate (256 bits)
+ * @param[in]   dmem[d0]:  first share of scalar d (320 bits)
+ * @param[in]   dmem[d1]:  second share of scalar d (320 bits)
+ * @param[out]  dmem[x]:   affine x-coordinate (256 bits)
+ * @param[out]  dmem[y]:   affine y-coordinate (256 bits)
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
