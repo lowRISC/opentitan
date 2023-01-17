@@ -10,7 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:prim_pkg
       - lowrisc:prim:primgen
-
+      - lowrisc:prim:assert
 
   files_verilator_waiver:
     depend:
