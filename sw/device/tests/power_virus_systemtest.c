@@ -71,7 +71,7 @@ enum {
   /**
    * Test timeout parameter.
    */
-  kTestTimeoutMicros = 1000000,  // 1s
+  kTestTimeoutMicros = 1000,  // 1ms
   /**
    * ADC controller parameters.
    */
@@ -230,15 +230,87 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host_0));
 }
 
-/**
- * Configures GPIO 0 (mapped to pad IOA2) as an indicator pin, to go high during
- * the power state(s) of interest.
- */
-static void configure_gpio_indicator_pin(void) {
+static void configure_pinmux(void) {
+  // Configure UART0 (console) and SW strapping pins.
+  pinmux_testutils_init(&pinmux);
+
+  // Configure GPIO max-power period indicator pin on IOA2
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa2,
                                         kTopEarlgreyPinmuxOutselGpioGpio0));
-  CHECK_DIF_OK(
-      dif_gpio_output_set_enabled(&gpio, /*pin=*/0, kDifToggleEnabled));
+  // UART1:
+  //    RX on IOA4
+  //    TX on IOA5
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInUart1Rx,
+                                       kTopEarlgreyPinmuxInselIoa4));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa4,
+                                        kTopEarlgreyPinmuxOutselConstantHighZ));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa5,
+                                        kTopEarlgreyPinmuxOutselUart1Tx));
+
+  // UART2:
+  //    RX on IOB4
+  //    TX on IOB5
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInUart2Rx,
+                                       kTopEarlgreyPinmuxInselIob4));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob4,
+                                        kTopEarlgreyPinmuxOutselConstantHighZ));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob5,
+                                        kTopEarlgreyPinmuxOutselUart2Tx));
+
+  // UART3:
+  //    RX on IOA0
+  //    TX on IOA1
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInUart3Rx,
+                                       kTopEarlgreyPinmuxInselIoa0));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa0,
+                                        kTopEarlgreyPinmuxOutselConstantHighZ));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa1,
+                                        kTopEarlgreyPinmuxOutselUart3Tx));
+
+  // I2C0:
+  //    SDA on IOA7
+  //    SCL on IOA8
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c0Sda,
+                                       kTopEarlgreyPinmuxInselIoa7));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c0Scl,
+                                       kTopEarlgreyPinmuxInselIoa8));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa7,
+                                        kTopEarlgreyPinmuxOutselI2c0Sda));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa8,
+                                        kTopEarlgreyPinmuxOutselI2c0Scl));
+
+  // I2C1:
+  //    SDA on IOB9
+  //    SCL on IOB10
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c1Sda,
+                                       kTopEarlgreyPinmuxInselIob9));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c1Scl,
+                                       kTopEarlgreyPinmuxInselIob10));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob9,
+                                        kTopEarlgreyPinmuxOutselI2c1Sda));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob10,
+                                        kTopEarlgreyPinmuxOutselI2c1Scl));
+
+  // I2C2:
+  //    SDA on IOB11
+  //    SCL on IOB12
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c2Sda,
+                                       kTopEarlgreyPinmuxInselIob11));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c2Scl,
+                                       kTopEarlgreyPinmuxInselIob12));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob11,
+                                        kTopEarlgreyPinmuxOutselI2c2Sda));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob12,
+                                        kTopEarlgreyPinmuxOutselI2c2Scl));
 }
 
 /**
@@ -443,8 +515,8 @@ static void configure_uart(dif_uart_t *uart) {
                                    .clk_freq_hz = kClockFreqPeripheralHz,
                                    .parity_enable = kDifToggleEnabled,
                                    .parity = kDifUartParityEven,
-                                   .tx_enable = kDifToggleEnabled,
-                                   .rx_enable = kDifToggleEnabled,
+                                   .tx_enable = kDifToggleDisabled,
+                                   .rx_enable = kDifToggleDisabled,
                                }));
   CHECK_DIF_OK(
       dif_uart_loopback_set(uart, kDifUartLoopbackSystem, kDifToggleEnabled));
@@ -537,8 +609,8 @@ static void max_power_task(void *task_parameters) {
   // operations.
   // ***************************************************************************
 
-  // Prepare KMAC for squeeze command. Note, below code is derived from the KMAC
-  // DIF `dif_kmac_sqeeze()`.
+  // Prepare KMAC for squeeze command. Note, below code is derived from the
+  // KMAC DIF `dif_kmac_sqeeze()`.
   CHECK(!kmac_operation_state.squeezing);
   if (kmac_operation_state.append_d) {
     // The KMAC operation requires that the output length (d) in bits be right
@@ -567,8 +639,8 @@ static void max_power_task(void *task_parameters) {
   uint32_t kmac_cmd_reg =
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_PROCESS);
 
-  // Prepare UART and I2C enablement commands (note, all configurations between
-  // each IP instance should be configured the same).
+  // Prepare UART and I2C enablement commands (note, all configurations
+  // between each IP instance should be configured the same).
   uint32_t uart_ctrl_reg =
       mmio_region_read32(uart_1.base_addr, UART_CTRL_REG_OFFSET);
   uart_ctrl_reg = bitfield_bit32_write(uart_ctrl_reg, UART_CTRL_TX_BIT, true);
@@ -601,10 +673,11 @@ static void max_power_task(void *task_parameters) {
   for (size_t i = 0; i < ARRAYSIZE(uart_handles); ++i) {
     CHECK_DIF_OK(
         dif_uart_rx_bytes_available(uart_handles[i], &num_uart_rx_bytes));
-    // Note, we don't care if all bytes have been transmitted out of the UART by
-    // the time the fastest processing crypto block (i.e., the AES) has
-    // completed. Likely, we won't have transimitted all data since the UART is
-    // quite a bit slower. We just check that what was transmitted is correct.
+    // Note, we don't care if all bytes have been transmitted out of the UART
+    // by the time the fastest processing crypto block (i.e., the AES) has
+    // completed. Likely, we won't have transimitted all data since the UART
+    // is quite a bit slower. We just check that what was transmitted is
+    // correct.
     memset((void *)received_uart_data, 0, kUartFifoDepth);
     CHECK_DIF_OK(dif_uart_bytes_receive(uart_handles[i], num_uart_rx_bytes,
                                         received_uart_data, NULL));
@@ -617,15 +690,18 @@ static void max_power_task(void *task_parameters) {
 bool test_main(void) {
   peripheral_clock_period_ns =
       udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL);
-  // Note: DO NOT change this message string without updating the DV testbench.
+  // Note: DO NOT change this message string without updating the DV
+  // testbench.
   LOG_INFO("Computed peripheral clock period.");
 
   // ***************************************************************************
   // Initialize and configure all IPs.
   // ***************************************************************************
   init_peripheral_handles();
-  pinmux_testutils_init(&pinmux);
-  configure_gpio_indicator_pin();
+  configure_pinmux();
+  // Clear GPIO pin 0 (max power indicator pin).
+  CHECK_DIF_OK(
+      dif_gpio_output_set_enabled(&gpio, /*pin=*/0, kDifToggleEnabled));
   configure_adc_ctrl_to_continuously_sample();
   configure_entropy_complex();
   configure_aes();
@@ -653,10 +729,10 @@ bool test_main(void) {
                          kOttfFreeRtosMinStackSize, 1));
 
   // ***************************************************************************
-  // Yield control flow to the highest priority task in the run queue. Since the
-  // tasks created above all have a higher priority level than the current
-  // "test_main" task, and no tasks block, execution will not be returned to the
-  // current task until the above tasks have been deleted.
+  // Yield control flow to the highest priority task in the run queue. Since
+  // the tasks created above all have a higher priority level than the current
+  // "test_main" task, and no tasks block, execution will not be returned to
+  // the current task until the above tasks have been deleted.
   // ***************************************************************************
   LOG_INFO("Yielding execution to another task.");
   ottf_task_yield();
