@@ -35,8 +35,15 @@ module tlul_cmd_intg_chk import tlul_pkg::*; (
 
   // error output is transactional, it is up to the instantiating module
   // to determine if a permanent latch is feasible
+  // [LOWRISC] err and data_err is unknown when a_valid is low, so we can't cover
+  // the condition coverage - (|err | (|data_err)) == 0/1, when a_valid = 0, which is
+  // fine as driving unknown is better. `err_o` is used as a condition in other places,
+  // which needs to be covered with 0 and 1, so it's OK to disable the entire coverage.
+  //VCS coverage off
+  // pragma coverage off
   assign err_o = tl_i.a_valid & (|err | (|data_err));
-
+  //VCS coverage on
+  // pragma coverage on
 
   logic unused_tl;
   assign unused_tl = |tl_i;
