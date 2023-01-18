@@ -22,6 +22,7 @@
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/hmac_testutils.h"
+#include "sw/device/lib/testing/i2c_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -33,6 +34,7 @@
 #include "entropy_src_regs.h"  // Generated.
 #include "hmac_regs.h"         // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "i2c_regs.h"   // Generated.
 #include "kmac_regs.h"  // Generated.
 #include "uart_regs.h"  // Generated.
 
@@ -61,6 +63,7 @@ static dif_uart_t uart_1;
 static dif_uart_t uart_2;
 static dif_uart_t uart_3;
 
+static const dif_i2c_t *i2c_handles[] = {&i2c_0, &i2c_1, &i2c_2};
 static const dif_uart_t *uart_handles[] = {&uart_1, &uart_2, &uart_3};
 static dif_kmac_operation_state_t kmac_operation_state;
 
@@ -101,6 +104,9 @@ enum {
   kI2c1DeviceAddress1 = 0x44,
   kI2c2DeviceAddress0 = 0x55,
   kI2c2DeviceAddress1 = 0x66,
+  kI2c0TargetAddress = 0x01,
+  kI2c1TargetAddress = 0x02,
+  kI2c2TargetAddress = 0x03,
   /**
    * UART parameters
    */
@@ -185,6 +191,15 @@ static const uint8_t kUartMessage[] = {
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+};
+
+static const uint8_t kI2cMessage[] = {
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
 };
 
 /**
@@ -587,13 +602,23 @@ static void comms_data_load_task(void *task_parameters) {
   LOG_INFO("Loading communication block FIFOs with data ...");
   size_t bytes_written;
   CHECK(ARRAYSIZE(kUartMessage) == kUartFifoDepth);
+  CHECK(ARRAYSIZE(kI2cMessage) == I2C_PARAM_FIFO_DEPTH);
 
-  // Load data into UART FIFO.
+  // Load data into UART FIFOs.
   for (size_t i = 0; i < ARRAYSIZE(uart_handles); ++i) {
     bytes_written = 0;
     CHECK_DIF_OK(dif_uart_bytes_send(uart_handles[i], kUartMessage,
                                      ARRAYSIZE(kUartMessage), &bytes_written));
     CHECK(bytes_written == ARRAYSIZE(kUartMessage));
+  }
+
+  // Load data into I2C FIFOs.
+  dif_i2c_status_t i2c_status;
+  for (size_t i = 0; i < ARRAYSIZE(i2c_handles); ++i) {
+    i2c_testutils_wr(i2c_handles[i], /*addr=*/i, I2C_PARAM_FIFO_DEPTH,
+                     kI2cMessage, /*skip_stop=*/false);
+    CHECK_DIF_OK(dif_i2c_get_status(i2c_handles[i], &i2c_status));
+    CHECK(i2c_status.fmt_fifo_full);
   }
 
   OTTF_TASK_DELETE_SELF_OR_DIE;
@@ -645,6 +670,10 @@ static void max_power_task(void *task_parameters) {
       mmio_region_read32(uart_1.base_addr, UART_CTRL_REG_OFFSET);
   uart_ctrl_reg = bitfield_bit32_write(uart_ctrl_reg, UART_CTRL_TX_BIT, true);
   uart_ctrl_reg = bitfield_bit32_write(uart_ctrl_reg, UART_CTRL_RX_BIT, true);
+  uint32_t i2c_ctrl_reg =
+      mmio_region_read32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET);
+  i2c_ctrl_reg =
+      bitfield_bit32_write(i2c_ctrl_reg, I2C_CTRL_ENABLEHOST_BIT, true);
 
   // Issue KMAC squeeze, AES trigger, and HMAC process commands.
   kmac_operation_state.squeezing = true;
@@ -656,6 +685,9 @@ static void max_power_task(void *task_parameters) {
   mmio_region_write32(uart_1.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
   mmio_region_write32(uart_2.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
   mmio_region_write32(uart_3.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
+  mmio_region_write32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
+  mmio_region_write32(i2c_1.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
+  mmio_region_write32(i2c_2.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
 
   // Toggle GPIO pin to indicate we are in max power consumption.
   CHECK_DIF_OK(dif_gpio_write(&gpio, 0, true));
@@ -690,8 +722,7 @@ static void max_power_task(void *task_parameters) {
 bool test_main(void) {
   peripheral_clock_period_ns =
       udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL);
-  // Note: DO NOT change this message string without updating the DV
-  // testbench.
+  // Note: DO NOT change this message string without updating the DV testbench.
   LOG_INFO("Computed peripheral clock period.");
 
   // ***************************************************************************
