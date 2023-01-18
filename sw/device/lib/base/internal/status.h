@@ -69,13 +69,12 @@ extern "C" {
  * - The kStatusModuleId can simply be ORed in when constucting a `status_t`.
  * - The value of MAKE_MODULE_ID can be used in constructing constants for
  *   types compatible with `status_t`.
+ *
+ * To declare a module-id in one of your own files:
+ * #define MODULE_ID MAKE_MODULE_ID('a', 'b', 'c')
  */
 #define MAKE_MODULE_ID(a, b, c) \
   (ASCII_5BIT(a) << 16) | (ASCII_5BIT(b) << 21) | (ASCII_5BIT(c) << 26)
-// A module that uses DECLARE_MODULE_ID shadows the global constant value with
-// its own local value.
-#define DECLARE_MODULE_ID(a, b, c) \
-  static const uint32_t kStatusModuleId = MAKE_MODULE_ID(a, b, c)
 
 #ifdef __cplusplus
 }

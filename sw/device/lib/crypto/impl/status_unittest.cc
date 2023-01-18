@@ -72,7 +72,7 @@ TEST(Status, TryInterpretErrors) {
 }
 
 constexpr char kTestModId[3] = {'X', 'Y', 'Z'};
-DECLARE_MODULE_ID(kTestModId[0], kTestModId[1], kTestModId[2]);
+#define MODULE_ID MAKE_MODULE_ID(kTestModId[0], kTestModId[1], kTestModId[2])
 
 TEST(Status, ExtractStatusFieldsBadArgs) {
   const char *code = NULL;
