@@ -87,6 +87,30 @@ autogen_cryptotest_header(
     tool = "//sw/device/tests/crypto:ecdsa_p256_verify_set_testvectors",
 )
 
+autogen_cryptotest_header(
+    name = "kmac_verify_testvectors_hardcoded_header",
+    hjson = "//sw/device/tests/crypto/testvectors:kmac_verify_testvectors_hardcoded",
+    template = ":kmac_verify_testvectors.h.tpl",
+    tool = "//sw/device/tests/crypto:kmac_verify_set_testvectors",
+)
+
+opentitan_functest(
+    name = "kmac_verify_functest_hardcoded",
+    srcs = ["kmac_verify_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":kmac_verify_testvectors_hardcoded_header",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:mac",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 opentitan_functest(
     name = "ecdsa_p256_verify_functest_hardcoded",
     srcs = ["ecdsa_p256_verify_functest.c"],
@@ -173,6 +197,17 @@ py_binary(
 py_binary(
     name = "rsa_3072_verify_set_testvectors",
     srcs = ["rsa_3072_verify_set_testvectors.py"],
+    imports = ["."],
+    deps = [
+        "//util/design/lib:common",
+        requirement("hjson"),
+        requirement("mako"),
+    ],
+)
+
+py_binary(
+    name = "kmac_verify_set_testvectors",
+    srcs = ["kmac_verify_set_testvectors.py"],
     imports = ["."],
     deps = [
         "//util/design/lib:common",
