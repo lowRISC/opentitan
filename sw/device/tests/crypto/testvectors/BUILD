@@ -16,6 +16,11 @@ filegroup(
     srcs = ["rsa_3072_verify_hardcoded.hjson"],
 )
 
+filegroup(
+    name = "kmac_verify_testvectors_hardcoded",
+    srcs = ["kmac_verify_hardcoded.hjson"],
+)
+
 autogen_cryptotest_hjson_external(
     name = "rsa_3072_verify_testvectors_wycheproof",
     src = "//sw/vendor/wycheproof/testvectors:rsa_signature_3072_sha256_test.json",
