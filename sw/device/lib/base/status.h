@@ -79,7 +79,7 @@ typedef struct status {
     } else if (__builtin_types_compatible_p(typeof(ex_), dif_result_t)) {      \
       absl_status_t code;                                                      \
       memcpy(&code, &ex_, sizeof(code));                                       \
-      status_ = status_create(code, kStatusModuleId, __FILE__,                 \
+      status_ = status_create(code, MODULE_ID, __FILE__,                       \
                               code == kOk ? 0 : __LINE__);                     \
     }                                                                          \
     status_;                                                                   \
@@ -105,7 +105,10 @@ typedef struct status {
   })
 
 // This global constant is available to all modules and is the constant zero.
-extern const uint32_t kStatusModuleId;
+// This name intentionally violates the constant naming convention of
+// `kModuleId` because users are expected to provide an override in the form
+// of a preprocessor defintion: `#define MODULE_ID MAKE_MODULE_ID(...)`.
+extern const uint32_t MODULE_ID;
 
 // Operations on status codes:
 /**
@@ -155,12 +158,11 @@ OT_ALWAYS_INLINE absl_status_t status_err(status_t s) {
 // Create a status with an optional argument.
 // TODO(cfrantz, alphan): Figure out how we want to create statuses in
 // silicon_creator code.
-#define STATUS_CREATE(s_, ...)                            \
-  ({                                                      \
-    static_assert(OT_VA_ARGS_COUNT(_, __VA_ARGS__) <= 2,  \
-                  "status macros take 0 or 1 arguments"); \
-    status_create(s_, kStatusModuleId, __FILE__,          \
-                  OT_GET_LAST_ARG(__VA_ARGS__));          \
+#define STATUS_CREATE(s_, ...)                                            \
+  ({                                                                      \
+    static_assert(OT_VA_ARGS_COUNT(_, __VA_ARGS__) <= 2,                  \
+                  "status macros take 0 or 1 arguments");                 \
+    status_create(s_, MODULE_ID, __FILE__, OT_GET_LAST_ARG(__VA_ARGS__)); \
   })
 
 // Helpers for creating statuses of various kinds.

@@ -62,5 +62,27 @@ TEST(Status, ErrorValues) {
   EXPECT_EQ(std::string(mod_id), "STA");
 }
 
+TEST(Status, ErrorValuesInModule) {
+  int32_t arg;
+  status_t status;
+  bool err;
+  const char *message;
+  char mod_id[4]{};
+
+  // Normally, MODULE_ID should be defined at the top of your file, thus
+  // causing all uses of the error creation macros to substitute in your
+  // module ID.  In this test, we're doing it here to override the
+  // value for this test.
+#define MODULE_ID MAKE_MODULE_ID('z', 'z', 'z')
+  status = UNKNOWN();
+  int32_t expected_line = __LINE__ - 1;
+  err = status_extract(status, &message, &arg, mod_id);
+  EXPECT_EQ(status_ok(status), false);
+  EXPECT_EQ(status_err(status), absl_status_t::kUnknown);
+  EXPECT_EQ(err, true);
+  EXPECT_EQ(arg, expected_line);
+  EXPECT_EQ(std::string(mod_id), "ZZZ");
+}
+
 }  // namespace
 }  // namespace status_unittest

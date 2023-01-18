@@ -9,7 +9,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 
-const uint32_t kStatusModuleId = 0;
+const uint32_t MODULE_ID = 0;
 
 static const char *basename(const char *file) {
   const char *f = file;
