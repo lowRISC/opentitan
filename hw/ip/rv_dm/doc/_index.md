@@ -121,6 +121,10 @@ Bus-attached peripherals can be accessed through the debug system, a functionali
 It is up to the interconnect fabric to decide which peripherals are actually accessible.
 The debug system wrapper provides a TL-UL host bus interface for SBA.
 
+Note, when bus errors (either address errors or integrity errors) occur on the SBA TL-UL path, alerts are not triggered.
+Instead the error status is fed into the PULP RISC-V Debug System for status indication.
+
+
 ```verilog
 // bus host, for system bus accesses
 output tlul_pkg::tl_h2d_t  tl_h_o,
