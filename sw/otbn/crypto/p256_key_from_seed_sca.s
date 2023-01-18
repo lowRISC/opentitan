@@ -87,19 +87,49 @@ p256_gen_keypair:
 .balign 4
 .globl mode
 mode:
-.zero 4
+  .word 0x00000001
 
 /* First share of seed (320 bits). */
 .balign 32
 .globl seed0
 seed0:
-.zero 64
+  .word 0x2335f23f
+  .word 0x3c174a16
+  .word 0x128c1339
+  .word 0xc48e8981
+  .word 0x7843d9a2
+  .word 0xbb6a0205
+  .word 0x446984cc
+  .word 0xa210c4be
+  .word 0xd7c77320
+  .word 0x2bac5b0b
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
 
 /* Second share of seed (320 bits). */
 .balign 32
 .globl seed1
 seed1:
-.zero 64
+  .word 0x225596d6
+  .word 0x2df4bec0
+  .word 0xbeb67c9e
+  .word 0x6f2f939a
+  .word 0xf7d1a873
+  .word 0x99dd9f5a
+  .word 0x551f77d1
+  .word 0x17bcfeef
+  .word 0x4e67f1f7
+  .word 0x63e2e86d
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
 
 /* First share of output key (320 bits). */
 .balign 32

@@ -230,13 +230,13 @@ static void ecc256_ecdsa_secret_keygen(const uint8_t *mask, size_t mask_len) {
   uint32_t ecc256_mask[kEcc256SeedNumWords];
   memcpy(ecc256_mask, mask, kEcc256SeedNumBytes);
 
-  uint32_t mode = kEcc256ModePrivateKeyOnly;
+  LOG_INFO("Running keygen...");
   uint32_t ecc256_d0[kEcc256SeedNumWords];
   uint32_t ecc256_d1[kEcc256SeedNumWords];
-
-  LOG_INFO("Running keygen...");
   p256_ecdsa_gen_secret_key(ecc256_seed, ecc256_mask, ecc256_d0, ecc256_d1);
 
+  simple_serial_send_packet('r', (unsigned char *) &kOtbnVarD0, sizeof(otbn_addr_t));
+  simple_serial_send_packet('r', (unsigned char *) &kOtbnVarD1, sizeof(otbn_addr_t));
   simple_serial_send_packet('r', (unsigned char *) ecc256_d0, kEcc256SeedNumBytes);
   simple_serial_send_packet('r', (unsigned char *) ecc256_d1, kEcc256SeedNumBytes);
 
@@ -267,16 +267,14 @@ static void ecc256_ecdsa_gen_keypair(const uint8_t *mask, size_t mask_len) {
   uint32_t ecc256_mask[kEcc256SeedNumWords];
   memcpy(ecc256_mask, mask, kEcc256SeedNumBytes);
 
+  LOG_INFO("Running keygen...");
   uint32_t ecc256_d0[kEcc256SeedNumWords];
   uint32_t ecc256_d1[kEcc256SeedNumWords];
   uint32_t ecc256_x[kEcc256CoordNumWords];
   uint32_t ecc256_y[kEcc256CoordNumWords];
-
-  LOG_INFO("Running keygen...");
   p256_ecdsa_gen_keypair(ecc256_seed, ecc256_mask, ecc256_d0, ecc256_d1,
                          ecc256_x, ecc256_y);
 
-  // TODO: Remove these if they are not necessary for the side-channel analysis.
   simple_serial_send_packet('r', (unsigned char *)ecc256_d0,
                             kEcc256SeedNumBytes);
   simple_serial_send_packet('r', (unsigned char *)ecc256_d1,
