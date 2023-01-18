@@ -10,9 +10,15 @@ class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_
     class_index_cp: coverpoint class_index {
       bins class_index[NUM_ALERT_CLASSES] = {[0:NUM_ALERT_CLASSES-1]};
     }
+    // Due to the limited simulation time, this only collect accum coverage until 2000. For the
+    // saturation case, design has assertions to cover that.
     accum_cnt_cp: coverpoint cnt {
-      bins accum_cnt[10] = {[0:'hffff]};
-      bins saturate_cnt  = {'hffff};
+      bins accum_cnt_0    = {0};
+      bins accum_cnt_10   = {[1:10]};
+      bins accum_cnt_50   = {[11:50]};
+      bins accum_cnt_100  = {[51:100]};
+      bins accum_cnt_1000 = {[101:1000]};
+      bins accum_cnt_2000 = {[1001:2000]};
     }
     class_cnt_cross: cross class_index_cp, accum_cnt_cp;
   endgroup : accum_cnt_cg
