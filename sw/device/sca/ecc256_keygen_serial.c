@@ -123,6 +123,8 @@ static void ecc256_set_seed(const uint8_t *seed, size_t seed_len) {
  */
 static void p256_run_keygen(uint32_t mode, const uint32_t *seed,
                             const uint32_t *mask) {
+  SS_CHECK(otbn_load_app(kOtbnAppP256KeyFromSeed) == kOtbnErrorOk);
+
   // Write mode.
   SS_CHECK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode) ==
            kOtbnErrorOk);
@@ -228,9 +230,6 @@ static void ecc256_ecdsa_secret_keygen(const uint8_t *mask, size_t mask_len) {
   uint32_t ecc256_mask[kEcc256SeedNumWords];
   memcpy(ecc256_mask, mask, kEcc256SeedNumBytes);
 
-  LOG_INFO("Loading app...");
-  SS_CHECK(otbn_load_app(kOtbnAppP256KeyFromSeed) == kOtbnErrorOk);
-
   uint32_t mode = kEcc256ModePrivateKeyOnly;
   uint32_t ecc256_d0[kEcc256SeedNumWords];
   uint32_t ecc256_d1[kEcc256SeedNumWords];
@@ -267,9 +266,6 @@ static void ecc256_ecdsa_gen_keypair(const uint8_t *mask, size_t mask_len) {
   // Copy mask to an aligned buffer.
   uint32_t ecc256_mask[kEcc256SeedNumWords];
   memcpy(ecc256_mask, mask, kEcc256SeedNumBytes);
-
-  LOG_INFO("Loading app...");
-  SS_CHECK(otbn_load_app(kOtbnAppP256KeyFromSeed) == kOtbnErrorOk);
 
   uint32_t ecc256_d0[kEcc256SeedNumWords];
   uint32_t ecc256_d1[kEcc256SeedNumWords];

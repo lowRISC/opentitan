@@ -55,11 +55,11 @@ p256_gen_secret_key:
   la        x3, d0
   bn.sid    x2, 0(x3++)
   li        x2, 21
-  bn.lid    x2++, 0(x3)
+  bn.sid    x2++, 0(x3)
   la        x3, d1
-  bn.lid    x2, 0(x3++)
+  bn.sid    x2, 0(x3++)
   li        x2, 23
-  bn.lid    x2, 0(x3)
+  bn.sid    x2, 0(x3)
 
   ecall
 
