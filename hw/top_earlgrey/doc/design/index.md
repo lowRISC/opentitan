@@ -21,18 +21,59 @@ This section also contains a brief overview of some of the features of the final
 
 ### Clocking and Reset
 
-In the current version of the chip, clock and reset come from outside the device.
-Eventually these will be generated internally to reduce risk of security attack, but internal clock generation is not implemented at this time.
-The clock pin is `IO_CLK` and all of the design is synchronous to this one clock.
-(Exceptions are peripheral IO that might be synchronized to a local peripheral clock like JTAG TCK or SPI device clock).
+Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast]({{< relref "hw/top_earlgrey/ip/ast/doc" >}})) from this point onwards in the document.
 
-Deassertion of the active low reset pin `IO_RST_N` causes the processor to come out of reset and begin executing code at its reset vector.
-The reset vector begins in ROM, whose job is to validate code in the emulated e-flash before jumping to it.
-The assumption is that the code has been instantiated into the e-flash before reset is released.
-This can be done with JTAG commands (see that section), through virtual assignment in verification, or through the `spi_device` peripheral.
+`ast` supplies a number of clocks into `top_earlgrey`.
+- sys: main jittery system clock used for higher performance blocks and security (processory, memory and crypto blocks).
+- io: a fixed clock used for peripheral blocks such as timers and I/O functionality, such as SPI or I2C.
+- usb: a fixed clock used specifically for usb operations.
+- aon: an always on, low frequency clock used for power management and low speed timers.
+
+These clocks are then divided down and distributed to the rest of the system.
+See [clock manager]({{< relref "hw/ip/clkmgr/doc/" >}})) for more details.
+
+`ast` also supplies a number of power-okay signals to `top_earlgrey`, and these are used as asynchronous root resets.
+- vcaon_pok: The always on domain of the system is ready.
+- vcmain_pok: The main operating domain of the system is ready.
+
+When one of these power-okay signals drop, the corresponding domain in `top_earlgrey` is reset.
+Please refer to [reset manager]({{< relref "hw/ip/rstmgr/doc/" >}})) for more details.
 Resets throughout the design are asynchronous active low as per the Comportability specification.
-Other resets may be generated internally via the alert responder, watchdog timer, etc., and other resets for subunits may be disseminated.
-These will be detailed in this section over time.
+
+Once reset, the reset vector begins in ROM, whose job is to validate code in the embedded flash before jumping to it.
+Valid code is assumed to have been instantiated into the flash, if not, the ROM shuts down the device unless prompted to bootstrap.
+
+There are multiple avenues to load valid code into the flash:
+1. JTAG initiated flash programming.
+2. ROM bootstrap
+
+#### AST Clocking and Reset Relationship
+
+While the ast supplies clocks and resets to the `top_earlgrey`, it also contains additional functions that interact with the design.
+These include the `RNG`, `ADC`, jittery clock controls and an assortment of other sensors.
+The operating clocks and resets for these interfaces are supplied by the device in order to ensure correct synchronous operations.
+The clock mapping is shown below:
+
+| AST Port         | `top_earlgrey` Clock     |
+|------------------|--------------------------|
+| clk_ast_adc_i    | aon                      |
+| clk_ast_alert_i  | io_div4                  |
+| clk_ast_es_i     | sys                      |
+| clk_ast_rng_i    | sys                      |
+| clk_ast_tlul_i   | io_div4                  |
+| clk_ast_usb_i    | usb                      |
+
+The reset clock domain is identical to the table above, and the power domain mapping is shown below
+
+
+| AST Port         | `top_earlgrey` Power Domain |
+|------------------|-----------------------------|
+| rst_ast_adc_i    | always-on                   |
+| rst_ast_alert_i  | main                        |
+| rst_ast_es_i     | main                        |
+| rst_ast_rng_i    | main                        |
+| rst_ast_tlul_i   | main                        |
+| rst_ast_usb_i    | main                        |
 
 ### System Reset Handling and Flash
 
@@ -49,7 +90,7 @@ There are three reset scenarios:
 
 Device resets due to supply dropping below a specific threshold are commonly known as "brown-out".
 When this occurs, the flash memory must go through specialized sequencing to ensure the cells are not damaged.
-This process is handled exclusively between [ast]({{< relref "hw/top_earlgrey/ip/ast/doc" >}})) and the flash.
+This process is handled exclusively between ast and the flash.
 Please see the [relevant section]({{< relref "hw/top_earlgrey/ip/ast/doc/#main-vcc-power-detection-and-flash-protection" >}}) for more details.
 
 #### Reset due to Internal Request
