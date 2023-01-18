@@ -132,6 +132,54 @@ jobs:
           --test_tag_filters=verilator,-broken \
           --test_timeout_filters=long \
           --test_output=errors \
+          --build_tests_only --\
+          //... \
+          -//sw/device/tests/crypto/... \
+          -//third_party/riscv-compliance/...
+      displayName: "Run tests"
+
+- job: long_verilator_tests_crypto
+  displayName: "Long crypto Verilator tests"
+  timeoutInMinutes: 150 # TODO: adjust this
+  dependsOn: checkout
+  pool: ci-public
+  steps:
+    - template: ../ci/checkout-template.yml
+    - template: ../ci/install-package-dependencies.yml
+    - bash: |
+        set -ex
+        ci/bazelisk.sh test \
+          --test_timeout=2400,2400,3600,-1 \
+          --local_test_jobs=4 \
+          --local_cpu_resources=4 \
+          --//hw:verilator_options=--threads,1 \
+          --//hw:make_options=-j,4 \
+          --test_tag_filters=verilator,-broken \
+          --test_timeout_filters=long \
+          --test_output=errors \
           --build_tests_only \
-          //...
+          //sw/device/tests/crypto/...
+      displayName: "Run tests"
+
+- job: rv_compliance_verilator_tests
+  displayName: "RV Compliance Verilator tests"
+  timeoutInMinutes: 180 # TODO: adjust this
+  dependsOn: checkout
+  pool: ci-public
+  steps:
+    - template: ../ci/checkout-template.yml
+    - template: ../ci/install-package-dependencies.yml
+    - bash: |
+        set -ex
+        ci/bazelisk.sh test \
+          --test_timeout=2400,2400,3600,-1 \
+          --local_test_jobs=4 \
+          --local_cpu_resources=4 \
+          --//hw:verilator_options=--threads,1 \
+          --//hw:make_options=-j,4 \
+          --test_tag_filters=verilator,-broken \
+          --test_timeout_filters=long \
+          --test_output=errors \
+          --build_tests_only \
+          //third_party/riscv-compliance/...
       displayName: "Run tests"
