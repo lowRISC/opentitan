@@ -2,8 +2,25 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+class alert_ping_with_lpg_cg_wrap;
+  covergroup alert_ping_with_lpg_cg(string name) with function sample (bit lpg_en);
+    option.per_instance = 1;
+    option.name         = name;
+    lpg_cg: coverpoint lpg_en {
+      bins lpg_en  = {1};
+      bins lpg_dis = {0};
+    }
+  endgroup
+
+  function new(string name);
+    alert_ping_with_lpg_cg = new(name);
+  endfunction
+endclass
+
 class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_cfg));
   `uvm_component_utils(alert_handler_env_cov)
+
+  alert_ping_with_lpg_cg_wrap ping_with_lpg_cg_wrap[NUM_ALERTS];
 
   // covergroups
   covergroup accum_cnt_cg with function sample(int class_index, int cnt);
@@ -161,6 +178,9 @@ class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_
     num_checked_pings_cg = new();
     cycles_between_pings_cg = new();
 
+    foreach (ping_with_lpg_cg_wrap[i]) begin
+      ping_with_lpg_cg_wrap[i] = new($sformatf("ping_with_lpg_cg_wrap[%0d]", i));
+    end
   endfunction : new
 
 endclass
