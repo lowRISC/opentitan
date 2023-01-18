@@ -207,6 +207,24 @@ TEST_F(DmemWriteTest, FailureOutOfRange) {
             kErrorOtbnBadOffsetLen);
 }
 
+TEST_F(DmemWriteTest, FailureOverflowNumWords) {
+  // Try to trigger an integer overflow with `num_words`.
+  size_t num_words = (SIZE_MAX / sizeof(uint32_t)) + 1;
+  otbn_addr_t dest_addr = 0;
+
+  EXPECT_EQ(otbn_dmem_write(num_words, NULL, dest_addr),
+            kErrorOtbnBadOffsetLen);
+}
+
+TEST_F(DmemWriteTest, FailureOverflowOffset) {
+  // Try to trigger an integer overflow with `dest_addr`.
+  std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
+  otbn_addr_t dest_addr = SIZE_MAX;
+
+  EXPECT_EQ(otbn_dmem_write(test_data.size(), test_data.data(), dest_addr),
+            kErrorOtbnBadOffsetLen);
+}
+
 class DmemReadTest : public OtbnTest {};
 
 TEST_F(DmemReadTest, SuccessWithoutOffset) {

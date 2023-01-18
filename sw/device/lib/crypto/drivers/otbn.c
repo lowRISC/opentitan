@@ -68,11 +68,20 @@ typedef enum otbn_status {
  */
 static status_t check_offset_len(uint32_t offset_bytes, size_t num_words,
                                  size_t mem_size) {
-  if (offset_bytes + num_words * sizeof(uint32_t) <
-          num_words * sizeof(uint32_t) ||
-      offset_bytes + num_words * sizeof(uint32_t) > mem_size) {
+  if (num_words > UINT32_MAX / sizeof(uint32_t)) {
     return OTCRYPTO_BAD_ARGS;
   }
+  uint32_t num_bytes = num_words * sizeof(uint32_t);
+
+  if (offset_bytes > UINT32_MAX - num_bytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  uint32_t adjusted_offset_bytes = offset_bytes + num_bytes;
+
+  if (adjusted_offset_bytes > mem_size) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   return OTCRYPTO_OK;
 }
 
