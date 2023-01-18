@@ -39,11 +39,6 @@ covergroup alert_esc_trans_cg with function sample(alert_esc_trans_type_e trans)
   }
 endgroup : alert_esc_trans_cg
 
-covergroup alert_ping_lpg_cg with function sample(bit alert_lpg_en);
-  option.per_instance = 1;
-  cp_alert_ping_lpg: coverpoint alert_lpg_en;
-endgroup
-
 covergroup alert_lpg_cg with function sample(bit alert_lpg_en);
   option.per_instance = 1;
   cp_alert_lpg: coverpoint alert_lpg_en;
@@ -57,7 +52,6 @@ class alert_esc_agent_cov extends dv_base_agent_cov #(alert_esc_agent_cfg);
   esc_handshake_complete_cg   m_esc_handshake_complete_cg;
   alert_esc_trans_cg          m_alert_trans_cg;
   alert_esc_trans_cg          m_esc_trans_cg;
-  alert_ping_lpg_cg           m_alert_ping_lpg_cg;
   alert_lpg_cg                m_alert_lpg_cg;
 
   `uvm_component_utils(alert_esc_agent_cov)
@@ -70,7 +64,6 @@ class alert_esc_agent_cov extends dv_base_agent_cov #(alert_esc_agent_cfg);
       else m_esc_trans_cg = new();
     end
     if (cfg.en_lpg_cov && cfg.is_alert) begin
-      m_alert_ping_lpg_cg = new();
       m_alert_lpg_cg = new();
     end
     if (cfg.is_alert)    m_alert_handshake_complete_cg = new();

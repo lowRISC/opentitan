@@ -515,8 +515,15 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   virtual task check_ping_triggered_cycles();
     int ping_wait_cycs;
     while (ping_wait_cycs <= MAX_PING_WAIT_CYCLES * 2) begin
-      if (cfg.alert_handler_vif.alert_ping_reqs > 0) break;
-      if (cfg.alert_handler_vif.esc_ping_reqs > 0) break;
+    if (cfg.alert_handler_vif.alert_ping_reqs > 0) begin
+      if (cfg.en_cov) begin
+        int alert_id = $clog2(cfg.alert_handler_vif.alert_ping_reqs);
+        cov.ping_with_lpg_cg_wrap[alert_id].alert_ping_with_lpg_cg.sample(
+            cfg.alert_host_cfg[alert_id].en_alert_lpg);
+      end
+      break;
+    end
+    if (cfg.alert_handler_vif.esc_ping_reqs > 0) break;
       cfg.clk_rst_vif.wait_clks(1);
       ping_wait_cycs++;
     end

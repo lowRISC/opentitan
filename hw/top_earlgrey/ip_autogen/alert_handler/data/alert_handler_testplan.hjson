@@ -276,6 +276,10 @@
       name: cycles_bwtween_pings_cg
       desc: '''Covers how many cycles are there between two ping requests.'''
     }
+    {
+      name: alert_ping_with_lpg_wrap_cg
+      desc: '''Covers ping requests are initiated with LPG enabled or disabled.'''
+    }
 
   ]
 }

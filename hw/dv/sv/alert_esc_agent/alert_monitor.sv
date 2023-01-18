@@ -80,9 +80,6 @@ class alert_monitor extends alert_esc_base_monitor;
     bit ping_p, alert_p;
     forever @(cfg.vif.monitor_cb) begin
       if (ping_p != cfg.vif.monitor_cb.alert_rx_final.ping_p) begin
-        if (cfg.en_lpg_cov && cfg.en_cov) begin
-          cov.m_alert_ping_lpg_cg.sample(cfg.en_alert_lpg);
-        end
         if (!cfg.en_alert_lpg) begin
           cfg.under_ping_handshake = 1;
           req = alert_esc_seq_item::type_id::create("req");
