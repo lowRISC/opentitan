@@ -173,15 +173,11 @@ rom_error_t test_otp_crc_check(void) {
 }
 
 rom_error_t test_rnd_health_config_check(void) {
-  // Don't care lc states should always return `kErrorOk` regardless of what
-  // values are stored in the entropy_src.
-  lifecycle_state_t lc_expect_check_skip[] = {
-      kLcStateTest,
-  };
-  configure_random_health_checks();
-  for (size_t i = 0; i < ARRAYSIZE(lc_expect_check_skip); ++i) {
-    CHECK(rnd_health_config_check(lc_expect_check_skip[i]) == kErrorOk);
-  }
+  // The default OTP image uses the default reset configuration. We test that
+  // first here because the health tests configuration cannot be reset by
+  // toggling the entropy_src enable field. The
+  // `configure_random_health_checks()` function called later reduces the health
+  // test window sizes.
 
   // Other lc states must match the expected CRC stored in OTP.
   lifecycle_state_t lc_expect_check[] = {
@@ -192,6 +188,17 @@ rom_error_t test_rnd_health_config_check(void) {
   };
   configure_health_checks_from_otp();
   for (size_t i = 0; i < ARRAYSIZE(lc_expect_check); ++i) {
+    rom_error_t res = rnd_health_config_check(lc_expect_check[i]);
+    CHECK(res == kErrorOk, "Lifecycle: %d, error: %d", lc_expect_check[i], res);
+  }
+
+  // Don't care lc states should always return `kErrorOk` regardless of what
+  // values are stored in the entropy_src.
+  lifecycle_state_t lc_expect_check_skip[] = {
+      kLcStateTest,
+  };
+  configure_random_health_checks();
+  for (size_t i = 0; i < ARRAYSIZE(lc_expect_check_skip); ++i) {
     CHECK(rnd_health_config_check(lc_expect_check_skip[i]) == kErrorOk);
   }
 
