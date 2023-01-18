@@ -109,7 +109,7 @@ module tb;
   `CONNECT_SPI_IO(spi_if, sd_in, sd_out, sd_out_en, 2)
   `CONNECT_SPI_IO(spi_if, sd_in, sd_out, sd_out_en, 3)
 
-  assign spi_if_pass.sck = pass_out.sck;
+  assign spi_if_pass.sck = pass_out.sck & pass_out.sck_en;
   // if passthrough_en is low, set csb inactive as the whole passthrough interface is off
   assign spi_if_pass.csb[0] = pass_out.csb ||  !pass_out.passthrough_en;
   assign spi_if_pass.csb[1] = 1; // only 1 passthrough CSB
