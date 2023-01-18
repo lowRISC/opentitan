@@ -31,6 +31,7 @@ variables:
     # This controls where builds happen, and gets picked up by build_consts.sh.
   BUILD_ROOT: $(Build.ArtifactStagingDirectory)
   VIVADO_VERSION: "2020.2"
+  RELEASE_DATE: $[format('{0:yyyyMMdd}', pipeline.startTime)]
 
 jobs:
 - job: checkout
@@ -97,6 +98,22 @@ jobs:
       echo "Implementation log"
       cat $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug-release/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/impl_1/runme.log || true
     displayName: "Display hyperdebug bitstream synth and impl logs"
+
+  - task: GithubRelease@1
+    displayName: "Publish release to Github"
+    inputs:
+      gitHubConnection: "opentitan-github-connection" # TODO(milesdai): create the service connection before merging this PR
+      repositoryName: "$(Build.Repository.Name)"
+      action: "create"
+      target: "$(Build.SourceVersion)"
+      tagSource: "userSpecifiedTag"
+      tag: "snapshot-$(RELEASE_DATE)"
+      releaseNotesSource: "inline"
+      releaseNotesInline: "Nightly release"
+      assets: "$(Build.SourcesDirectory)/$(pkg_path)"
+      isDraft: true
+      isPreRelease: true
+      addChangeLog: true
 
   - publish: $(pkg_path)
     artifact: opentitan-release
