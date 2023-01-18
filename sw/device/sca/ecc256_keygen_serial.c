@@ -144,14 +144,6 @@ static void p256_run_keygen(uint32_t mode, const uint32_t *seed,
   // Execute program.
   SS_CHECK(otbn_execute() == kOtbnErrorOk);
   SS_CHECK(otbn_busy_wait_for_done() == kOtbnErrorOk);
-  /*
-  if (otbn_busy_wait_for_done() != kOtbnErrorOk) {
-    simple_serial_send_status(otbn_instruction_count_get());
-    otbn_err_bits_t err_bits;
-    otbn_err_bits_get(&err_bits);
-    simple_serial_send_status(err_bits);
-  }
-  */
 }
 
 /**
@@ -230,17 +222,13 @@ static void ecc256_ecdsa_secret_keygen(const uint8_t *mask, size_t mask_len) {
   uint32_t ecc256_mask[kEcc256SeedNumWords];
   memcpy(ecc256_mask, mask, kEcc256SeedNumBytes);
 
-  LOG_INFO("Running keygen...");
   uint32_t ecc256_d0[kEcc256SeedNumWords];
   uint32_t ecc256_d1[kEcc256SeedNumWords];
   p256_ecdsa_gen_secret_key(ecc256_seed, ecc256_mask, ecc256_d0, ecc256_d1);
 
-  simple_serial_send_packet('r', (unsigned char *) &kOtbnVarD0, sizeof(otbn_addr_t));
-  simple_serial_send_packet('r', (unsigned char *) &kOtbnVarD1, sizeof(otbn_addr_t));
   simple_serial_send_packet('r', (unsigned char *) ecc256_d0, kEcc256SeedNumBytes);
   simple_serial_send_packet('r', (unsigned char *) ecc256_d1, kEcc256SeedNumBytes);
 
-  LOG_INFO("Clearing OTBN memory.");
   SS_CHECK(otbn_dmem_sec_wipe() == kOtbnErrorOk);
   SS_CHECK(otbn_imem_sec_wipe() == kOtbnErrorOk);
 }
@@ -267,7 +255,6 @@ static void ecc256_ecdsa_gen_keypair(const uint8_t *mask, size_t mask_len) {
   uint32_t ecc256_mask[kEcc256SeedNumWords];
   memcpy(ecc256_mask, mask, kEcc256SeedNumBytes);
 
-  LOG_INFO("Running keygen...");
   uint32_t ecc256_d0[kEcc256SeedNumWords];
   uint32_t ecc256_d1[kEcc256SeedNumWords];
   uint32_t ecc256_x[kEcc256CoordNumWords];
@@ -284,7 +271,6 @@ static void ecc256_ecdsa_gen_keypair(const uint8_t *mask, size_t mask_len) {
   simple_serial_send_packet('r', (unsigned char *)ecc256_y,
                             kEcc256CoordNumBytes);
 
-  LOG_INFO("Clearing OTBN memory.");
   SS_CHECK(otbn_dmem_sec_wipe() == kOtbnErrorOk);
   SS_CHECK(otbn_imem_sec_wipe() == kOtbnErrorOk);
 }
