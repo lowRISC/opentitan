@@ -24,7 +24,8 @@ static uint16_t round_up_divide(uint32_t a, uint32_t b) {
 /**
  * Reads i2c status bits from registers
  */
-dif_result_t dif_i2c_get_status(dif_i2c_t *i2c, dif_i2c_status_t *status) {
+dif_result_t dif_i2c_get_status(const dif_i2c_t *i2c,
+                                dif_i2c_status_t *status) {
   if (i2c == NULL || status == NULL) {
     return kDifBadArg;
   }

@@ -26,8 +26,8 @@ static const dif_i2c_fmt_flags_t kDefaultFlags = {.start = false,
                                                   .read_cont = false,
                                                   .suppress_nak_irq = false};
 
-void i2c_testutils_wr(dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count,
-                      uint8_t *data, bool skip_stop) {
+void i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count,
+                      const uint8_t *data, bool skip_stop) {
   dif_i2c_fmt_flags_t flags = kDefaultFlags;
   uint8_t data_frame;
 
@@ -59,7 +59,7 @@ void i2c_testutils_wr(dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count,
   // TODO: Check for errors / status.
 }
 
-void i2c_testutils_rd(dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count) {
+void i2c_testutils_rd(const dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count) {
   dif_i2c_fmt_flags_t flags = kDefaultFlags;
   uint8_t data_frame;
   uint8_t fifo_level;
@@ -82,7 +82,7 @@ void i2c_testutils_rd(dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count) {
   // TODO: Check for errors / status.
 }
 
-bool i2c_testutils_target_check_start(dif_i2c_t *i2c, uint8_t *addr) {
+bool i2c_testutils_target_check_start(const dif_i2c_t *i2c, uint8_t *addr) {
   uint8_t acq_fifo_lvl;
   CHECK_DIF_OK(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
   CHECK(acq_fifo_lvl > 1);
@@ -96,7 +96,7 @@ bool i2c_testutils_target_check_start(dif_i2c_t *i2c, uint8_t *addr) {
   return byte & kI2cRead;
 }
 
-bool i2c_testutils_target_check_end(dif_i2c_t *i2c, uint8_t *cont_byte) {
+bool i2c_testutils_target_check_end(const dif_i2c_t *i2c, uint8_t *cont_byte) {
   uint8_t acq_fifo_lvl;
   CHECK_DIF_OK(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
   CHECK(acq_fifo_lvl >= 1);
@@ -115,8 +115,8 @@ bool i2c_testutils_target_check_end(dif_i2c_t *i2c, uint8_t *cont_byte) {
   return true;
 }
 
-void i2c_testutils_target_rd(dif_i2c_t *i2c, uint8_t byte_count,
-                             uint8_t *data) {
+void i2c_testutils_target_rd(const dif_i2c_t *i2c, uint8_t byte_count,
+                             const uint8_t *data) {
   uint8_t tx_fifo_lvl, acq_fifo_lvl;
   CHECK_DIF_OK(
       dif_i2c_get_fifo_levels(i2c, NULL, NULL, &tx_fifo_lvl, &acq_fifo_lvl));
@@ -130,14 +130,14 @@ void i2c_testutils_target_rd(dif_i2c_t *i2c, uint8_t byte_count,
   // TODO: Check for errors / status.
 }
 
-bool i2c_testutils_target_check_rd(dif_i2c_t *i2c, uint8_t *addr,
+bool i2c_testutils_target_check_rd(const dif_i2c_t *i2c, uint8_t *addr,
                                    uint8_t *cont_byte) {
   CHECK(i2c_testutils_target_check_start(i2c, addr) == kI2cRead);
   // TODO: Check for errors / status.
   return i2c_testutils_target_check_end(i2c, cont_byte);
 }
 
-void i2c_testutils_target_wr(dif_i2c_t *i2c, uint8_t byte_count) {
+void i2c_testutils_target_wr(const dif_i2c_t *i2c, uint8_t byte_count) {
   uint8_t acq_fifo_lvl;
   CHECK_DIF_OK(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
   CHECK(acq_fifo_lvl + 2 + byte_count <= I2C_PARAM_FIFO_DEPTH);
@@ -145,7 +145,7 @@ void i2c_testutils_target_wr(dif_i2c_t *i2c, uint8_t byte_count) {
   // TODO: Check for errors / status.
 }
 
-bool i2c_testutils_target_check_wr(dif_i2c_t *i2c, uint8_t byte_count,
+bool i2c_testutils_target_check_wr(const dif_i2c_t *i2c, uint8_t byte_count,
                                    uint8_t *addr, uint8_t *bytes,
                                    uint8_t *cont_byte) {
   uint8_t acq_fifo_lvl;
