@@ -114,3 +114,11 @@ hooks_repo(name = "manufacturer_test_hooks")
 # The nonhermetic_repo imports environment variables needed to run vivado.
 load("//rules:nonhermetic.bzl", "nonhermetic_repo")
 nonhermetic_repo(name = "nonhermetic")
+
+# Binary firmware image for HyperDebug
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+http_file(
+    name = "hyperdebug_firmware",
+    urls = ["https://storage.googleapis.com/aoa-recovery-test-images/hyperdebug_v2.0.20224-327de32a0.bin"],
+    sha256 = "e49c30da14702b0c8d7f58db175588c5973ce9b5c263dbe49f608b10e8d9ff93",
+)

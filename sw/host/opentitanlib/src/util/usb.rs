@@ -107,6 +107,14 @@ impl UsbBackend {
         })
     }
 
+    pub fn get_vendor_id(&self) -> u16 {
+        self.device.device_descriptor().unwrap().vendor_id()
+    }
+
+    pub fn get_product_id(&self) -> u16 {
+        self.device.device_descriptor().unwrap().product_id()
+    }
+
     /// Gets the usb serial number of the device.
     pub fn get_serial_number(&self) -> &str {
         self.serial_number.as_str()

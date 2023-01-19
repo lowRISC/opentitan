@@ -6,12 +6,15 @@ use anyhow::Result;
 use regex::Regex;
 use serde_annotate::Annotate;
 use std::any::Any;
+use std::fs;
+use std::path::PathBuf;
 use std::time::Duration;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{StagedProgressBar, TransportWrapper};
 use opentitanlib::transport::verilator::transport::Watch;
+use opentitanlib::transport::UpdateFirmware;
 
 /// Initialize state of a transport debugger device to fit the device under test.  This
 /// typically involves setting pins as input/output, open drain, etc. according to configuration
@@ -29,6 +32,39 @@ impl CommandDispatch for TransportInit {
         // configuration files provided, and configures SPI port mode/speed, etc.
         transport.apply_default_configuration()?;
         Ok(None)
+    }
+}
+
+/// Updates the firmware of the debugger/transport.  If no argument is given, a suitable
+/// "official" firmware will be used, if one such was compiled into the OpenTitanTool binary.  For
+/// instructions on how to build HyperDebug firmware locally, see
+/// https://docs.google.com/document/d/1ZEH7L5j9-wMw4tkW28-xt6JU5B6hTX0RdZD4h4OZzDo .
+#[derive(Debug, StructOpt)]
+pub struct TransportUpdateFirmware {
+    #[structopt(
+        short,
+        long,
+        help = "Local firmware file to use instead of official release"
+    )]
+    filename: Option<PathBuf>,
+}
+
+impl CommandDispatch for TransportUpdateFirmware {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let firmware = match self.filename.as_ref() {
+            Some(name) => Some(fs::read(name)?),
+            None => None,
+        };
+        let progress = StagedProgressBar::new();
+        let operation = UpdateFirmware {
+            firmware,
+            progress: Some(progress.pfunc()),
+        };
+        transport.dispatch(&operation)
     }
 }
 
@@ -64,4 +100,5 @@ impl CommandDispatch for VerilatorWatch {
 pub enum TransportCommand {
     Init(TransportInit),
     VerilatorWatch(VerilatorWatch),
+    UpdateFirmware(TransportUpdateFirmware),
 }
