@@ -122,6 +122,8 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
                      $sformatf("escalation protocol_%0d is not set", i));
       end
     end
+    // Let the simulation wait a few clock cycles before reset to make sure assertions are checked.
+    cfg.clk_rst_vif.wait_clks($urandom_range(2, 10));
   endtask
 
   virtual task sec_cm_inject_fault(sec_cm_base_if_proxy if_proxy);
