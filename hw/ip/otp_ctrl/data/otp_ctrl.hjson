@@ -243,14 +243,14 @@
       default: "4",
       local: "true"
     },
-    { name: "CreatorSwCfgUseSwRsaVerifyOffset",
-      desc: "Offset of CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
+    { name: "CreatorSwCfgSigverifyRsaModExpIbexEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN",
       type: "int",
       default: "228",
       local: "true"
     },
-    { name: "CreatorSwCfgUseSwRsaVerifySize",
-      desc: "Size of CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
+    { name: "CreatorSwCfgSigverifyRsaModExpIbexEnSize",
+      desc: "Size of CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN",
       type: "int",
       default: "4",
       local: "true"
