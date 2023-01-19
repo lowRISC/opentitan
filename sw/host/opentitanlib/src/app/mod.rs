@@ -11,7 +11,7 @@ use crate::io::gpio::{GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::transport::{ProxyOps, Transport, TransportError, TransportInterfaceType};
+use crate::transport::{Progress, ProxyOps, Transport, TransportError, TransportInterfaceType};
 use anyhow::Result;
 use std::time::Duration;
 
@@ -23,15 +23,65 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::vec::Vec;
 
+const DEFAULT_TEMPLATE: &str = "[{elapsed_precise}] [{wide_bar}] {bytes}/{total_bytes} ({eta})";
+
 /// Helper function to create a progress bar in the same form for each of
 /// the commands which will use it.
 pub fn progress_bar(total: u64) -> ProgressBar {
     let progress = ProgressBar::new(total);
-    progress.set_style(
-        ProgressStyle::default_bar()
-            .template("[{elapsed_precise}] [{wide_bar}] {bytes}/{total_bytes} ({eta})"),
-    );
+    progress.set_style(ProgressStyle::default_bar().template(DEFAULT_TEMPLATE));
     progress
+}
+
+/// Helper struct for displaying progress bars for operations which may have multiple stages
+/// (e.g. erasing then writing), or whose byte size may not be known until the operation is
+/// underway.
+pub struct StagedProgressBar {
+    pub current_progress_bar: Rc<RefCell<Option<indicatif::ProgressBar>>>,
+}
+
+impl Default for StagedProgressBar {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl StagedProgressBar {
+    const STAGE_TEMPLATE: &str =
+        "{msg}: [{elapsed_precise}] [{wide_bar}] {bytes}/{total_bytes} ({eta})";
+
+    pub fn new() -> Self {
+        Self {
+            current_progress_bar: Rc::new(RefCell::new(None)),
+        }
+    }
+
+    /// Construct boxed progress function, suitable for passing to certain methods that perform
+    /// I/O or otherwise may take a long time to complete.
+    pub fn pfunc(&self) -> Box<dyn Fn(Progress)> {
+        let func_rc = self.current_progress_bar.clone();
+        Box::new(move |pos| match pos {
+            // A new stage has started (possibly the first), record the number of bytes and its
+            // name.
+            Progress::Stage { name, total } => {
+                let progress = progress_bar(total as u64);
+                if !name.is_empty() {
+                    progress.set_style(ProgressStyle::default_bar().template(Self::STAGE_TEMPLATE));
+                }
+                func_rc.borrow_mut().replace(progress.with_message(name));
+            }
+            // Progress has been made on the current state (possibly completed).
+            Progress::Progress { pos } => {
+                let bar = func_rc.as_ref().borrow();
+                let bar = bar.as_ref().unwrap();
+                if pos as u64 == bar.length() {
+                    bar.finish();
+                    return;
+                }
+                bar.set_position(pos as u64);
+            }
+        })
+    }
 }
 
 #[derive(Default, Debug)]

@@ -5,7 +5,9 @@
 use anyhow::{bail, ensure, Context, Result};
 use lazy_static::lazy_static;
 use regex::Regex;
+use serde_annotate::Annotate;
 use serialport::TTYPort;
+use std::any::Any;
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
@@ -25,14 +27,17 @@ use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::common::uart::{flock_serial, SerialPortExclusiveLock, SerialPortUart};
 use crate::transport::{
-    Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
+    Capabilities, Capability, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
 };
 use crate::util::usb::UsbBackend;
 
 pub mod c2d2;
+pub mod dfu;
 pub mod gpio;
 pub mod i2c;
 pub mod spi;
+
+pub use dfu::HyperdebugDfu;
 
 /// Implementation of the Transport trait for HyperDebug based on the
 /// Nucleo-L552ZE-Q.
@@ -94,6 +99,20 @@ impl<T: Flavor> Hyperdebug<T> {
         let mut uart_ttys: HashMap<String, PathBuf> = HashMap::new();
 
         let config_desc = device.active_config_descriptor()?;
+        if let Some(idx) = config_desc.description_string_index() {
+            if let Ok(current_firmware_version) = device.read_string_descriptor_ascii(idx) {
+                if let Some(released_firmware_version) = dfu::official_firmware_version()? {
+                    if current_firmware_version != released_firmware_version {
+                        log::warn!(
+                            "Current HyperDebug firmware version is {}, newest release is {}",
+                            current_firmware_version,
+                            released_firmware_version,
+                        );
+                        log::warn!("Consider running `opentitantool transport update-firmware`");
+                    }
+                }
+            }
+        };
         // Iterate through each USB interface, discovering e.g. supported UARTs.
         for interface in config_desc.interfaces() {
             for interface_desc in interface.descriptors() {
@@ -537,6 +556,18 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 Entry::Occupied(o) => Rc::clone(o.get()),
             },
         )
+    }
+
+    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+        if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
+            dfu::update_firmware(
+                &mut self.inner.usb_device.borrow_mut(),
+                &update_firmware_action.firmware,
+                &update_firmware_action.progress,
+            )
+        } else {
+            Err(TransportError::UnsupportedOperation.into())
+        }
     }
 }
 

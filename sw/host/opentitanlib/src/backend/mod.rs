@@ -79,6 +79,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
             hyperdebug::create::<StandardFlavor>(args)?,
             Some(Path::new("/__builtin__/hyperdebug_cw310.json")),
         ),
+        "hyperdebug_dfu" => (hyperdebug::create_dfu(args)?, None),
         "c2d2" => (
             hyperdebug::create::<C2d2Flavor>(args)?,
             Some(Path::new("/__builtin__/h1dx_devboard.json")),

@@ -140,6 +140,24 @@ pub struct Bootstrap {
     pub image_path: PathBuf,
 }
 
+pub enum Progress {
+    /// Declares that a stage of the operation is starting, giving the total number of bytes to be
+    /// processed in this stage.  If only a single stage, `name` may be the empty string.
+    Stage { name: String, total: u32 },
+    /// Informs about progress within the current state, `pos` is absolute number of bytes so far.
+    Progress { pos: u32 },
+}
+
+/// Command for Transport::dispatch().
+pub struct UpdateFirmware<'a> {
+    /// The firmware to load into the HyperDebug device, None means load an "official" newest
+    /// release of the firmware for the particular debugger device, assuming that the `Transport`
+    /// trait implementation knows how to download such.
+    pub firmware: Option<Vec<u8>>,
+    /// A progress function to provide user feedback, see details of the `Progress` struct.
+    pub progress: Option<Box<dyn Fn(Progress) + 'a>>,
+}
+
 /// An `EmptyTransport` provides no communications backend.
 pub struct EmptyTransport;
 
