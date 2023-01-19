@@ -45,6 +45,8 @@ configure_make(
     ],
     configure_in_place = True,
     configure_options = [
+        "--disable-wextra",  # Needed to build v0.11.0
+        "--disable-werror",  # Needed to build v0.11.0
         "--enable-ftdi",
         "--enable-verbose-jtag-io",
         "--disable-vsllink",
