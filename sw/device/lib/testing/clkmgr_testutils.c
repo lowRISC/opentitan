@@ -34,6 +34,9 @@ static expected_count_info_t kNoJitterCountInfos[kDifClkmgrMeasureClockUsb + 1];
 // The expected counts when jitter is enabled.
 static expected_count_info_t kJitterCountInfos[kDifClkmgrMeasureClockUsb + 1];
 
+// The expected variability with no jitter is 2 cycles due to CDC synchronizers.
+static uint32_t kNoJitterVariability = 2;
+
 static uint32_t cast_safely(uint64_t val) {
   CHECK(val <= UINT32_MAX);
   return (uint32_t)val;
@@ -63,18 +66,18 @@ void initialize_expected_counts() {
 
   // The expected counts are derived from the ratios of the frequencies of the
   // various clocks to the AON clock. For example, 48 Mhz / 200 kHz = 240, so
-  // we set count to 239 and variability to 1, meaning the max threshold is 240,
-  // and the min to 238.
-  kNoJitterCountInfos[kDifClkmgrMeasureClockIo] =
-      (expected_count_info_t){.count = kDeviceIoCount - 1, .variability = 1};
+  // we set count to 239 and variability to 2, meaning the max threshold is 241,
+  // and the min to 237.
+  kNoJitterCountInfos[kDifClkmgrMeasureClockIo] = (expected_count_info_t){
+      .count = kDeviceIoCount - 1, .variability = kNoJitterVariability};
   kNoJitterCountInfos[kDifClkmgrMeasureClockIoDiv2] = (expected_count_info_t){
-      .count = kDeviceIoDiv2Count - 1, .variability = 1};
+      .count = kDeviceIoDiv2Count - 1, .variability = kNoJitterVariability};
   kNoJitterCountInfos[kDifClkmgrMeasureClockIoDiv4] = (expected_count_info_t){
-      .count = kDeviceIoDiv4Count - 1, .variability = 1};
-  kNoJitterCountInfos[kDifClkmgrMeasureClockMain] =
-      (expected_count_info_t){.count = kDeviceCpuCount - 1, .variability = 1};
-  kNoJitterCountInfos[kDifClkmgrMeasureClockUsb] =
-      (expected_count_info_t){.count = kDeviceUsbCount - 1, .variability = 1};
+      .count = kDeviceIoDiv4Count - 1, .variability = kNoJitterVariability};
+  kNoJitterCountInfos[kDifClkmgrMeasureClockMain] = (expected_count_info_t){
+      .count = kDeviceCpuCount - 1, .variability = kNoJitterVariability};
+  kNoJitterCountInfos[kDifClkmgrMeasureClockUsb] = (expected_count_info_t){
+      .count = kDeviceUsbCount - 1, .variability = kNoJitterVariability};
 
   // If jitter is enabled the low threshold should be up to 20% lower, so
   // the variability is set to 0.1 * max_count, and count as max - 0.1 * max.
