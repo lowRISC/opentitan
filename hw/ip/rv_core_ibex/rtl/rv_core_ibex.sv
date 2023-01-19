@@ -911,7 +911,7 @@ module rv_core_ibex
       lc_ctrl_pkg::lc_tx_test_true_strict(local_fetch_enable_q) &&
       !fatal_core_err
       |=>
-      lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable))
+      ##[0:1] lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable))
   `ASSERT(FpvSecCmIbexFetchEnable3Rev_A,
       ##2 lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable)
       |->

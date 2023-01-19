@@ -221,6 +221,10 @@
                                    echo "--otp-seed $line --lc-seed $line"; \
                                  done < $file; \
                                fi ''']
+
+  // Enable cdc instrumentation.
+  run_opts: ["+cdc_instrumentation_enabled=1"]
+
   // Add run modes.
   run_modes: [
     // Generates OTP images with different LC states with canonical values,
