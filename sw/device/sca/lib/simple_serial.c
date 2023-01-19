@@ -215,8 +215,8 @@ void simple_serial_send_packet(const uint8_t cmd, const uint8_t *data,
   IGNORE_RESULT(dif_uart_byte_send_polled(uart, buf));
 }
 
-void simple_serial_send_status(uint32_t res) {
-  simple_serial_send_packet('z', (unsigned char *) &res, sizeof(res));
+void simple_serial_send_status(uint8_t res) {
+  simple_serial_send_packet('z', (uint8_t[1]){res}, 1);
 }
 
 void simple_serial_print_hex(const uint8_t *data, size_t data_len) {
