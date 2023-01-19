@@ -45,8 +45,12 @@ module rstmgr_crash_info
   assign slot_o = slots[slot_sel_i[SlotCntWidth-1:0]];
 
   if (SlotCntWidth < IdxWidth) begin : gen_tieoffs
+    //VCS coverage off
+    // pragma coverage off
     logic [IdxWidth-SlotCntWidth-1:0] unused_idx;
     assign unused_idx = slot_sel_i[IdxWidth-1:SlotCntWidth];
+    //VCS coverage on
+    // pragma coverage on
   end
 
   // Make sure the crash dump isn't excessively large

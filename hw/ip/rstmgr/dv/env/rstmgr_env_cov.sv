@@ -23,7 +23,7 @@ class rstmgr_sw_rst_cg_wrap;
     sw_rst_cg = new(name);
   endfunction
 
-  function sample (bit enable, bit rst_n);
+  function void sample (bit enable, bit rst_n);
     sw_rst_cg.sample(enable, rst_n);
   endfunction
 endclass

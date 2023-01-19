@@ -30,7 +30,7 @@ interface pwrmgr_rstmgr_sva_if
   bit disable_sva;
   bit reset_or_disable;
 
-  always_comb reset_or_disable = !rst_ni || !rst_slow_ni || disable_sva;
+  always_comb reset_or_disable = !rst_slow_ni || disable_sva;
 
   // Lc and Sys handshake: pwrmgr rst_*_req causes rstmgr rst_*_src_n
   for (genvar pd = 0; pd < PowerDomains; ++pd) begin : gen_assertions_per_power_domains
