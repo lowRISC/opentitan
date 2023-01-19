@@ -14,6 +14,7 @@
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_kmac.h"
+#include "sw/device/lib/dif/dif_pattgen.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwm.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
@@ -35,10 +36,11 @@
 #include "entropy_src_regs.h"  // Generated.
 #include "hmac_regs.h"         // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "i2c_regs.h"   // Generated.
-#include "kmac_regs.h"  // Generated.
-#include "pwm_regs.h"   // Generated.
-#include "uart_regs.h"  // Generated.
+#include "i2c_regs.h"      // Generated.
+#include "kmac_regs.h"     // Generated.
+#include "pattgen_regs.h"  // Generated.
+#include "pwm_regs.h"      // Generated.
+#include "uart_regs.h"     // Generated.
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
                         .can_clobber_uart = false, );
@@ -64,11 +66,14 @@ static dif_spi_host_t spi_host_0;
 static dif_uart_t uart_1;
 static dif_uart_t uart_2;
 static dif_uart_t uart_3;
+static dif_pattgen_t pattgen;
 static dif_pwm_t pwm;
 
 static const dif_i2c_t *i2c_handles[] = {&i2c_0, &i2c_1, &i2c_2};
 static const dif_uart_t *uart_handles[] = {&uart_1, &uart_2, &uart_3};
 static dif_kmac_operation_state_t kmac_operation_state;
+static const dif_pattgen_channel_t pattgen_channels[] = {kDifPattgenChannel0,
+                                                         kDifPattgenChannel1};
 static const dif_pwm_channel_t pwm_channels[PWM_PARAM_N_OUTPUTS] = {
     kDifPwmChannel0, kDifPwmChannel1, kDifPwmChannel2,
     kDifPwmChannel3, kDifPwmChannel4, kDifPwmChannel5,
@@ -115,11 +120,19 @@ enum {
   kI2c1TargetAddress = 0x02,
   kI2c2TargetAddress = 0x03,
   /**
-   * UART parameters
+   * UART parameters.
    */
   kUartFifoDepth = 32,
   /**
-   * PWM parameters
+   * Pattern Generator parameters.
+   */
+  kPattgenClockDivisor = 0,
+  kPattgenSeedPatternLowerWord = 0xaaaaaaaa,
+  kPattgenSeedPatternUpperWord = 0xaaaaaaaa,
+  kPattgenSeedPatternLength = 64,
+  kPattgenNumPatternRepetitions = 1024,
+  /**
+   * PWM parameters.
    */
   kPwmClockDivisor = 1,
   kPwmBeatsPerCycle = 2,
@@ -257,6 +270,8 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi_device));
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host_0));
+  CHECK_DIF_OK(dif_pattgen_init(
+      mmio_region_from_addr(TOP_EARLGREY_PATTGEN_BASE_ADDR), &pattgen));
   CHECK_DIF_OK(dif_pwm_init(
       mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR), &pwm));
 }
@@ -343,6 +358,20 @@ static void configure_pinmux(void) {
                                         kTopEarlgreyPinmuxOutselI2c2Sda));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob12,
                                         kTopEarlgreyPinmuxOutselI2c2Scl));
+
+  // PATTGEN:
+  //    Channel 0 PDA on IOR0
+  //    Channel 0 PCL on IOR1
+  //    Channel 1 PDA on IOR2
+  //    Channel 1 PCL on IOR3
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor0,
+                                        kTopEarlgreyPinmuxOutselPattgenPda0Tx));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor1,
+                                        kTopEarlgreyPinmuxOutselPattgenPcl0Tx));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor2,
+                                        kTopEarlgreyPinmuxOutselPattgenPda1Tx));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor3,
+                                        kTopEarlgreyPinmuxOutselPattgenPcl1Tx));
 
   // PWM:
   //    Channel 0 on IOR5
@@ -615,6 +644,24 @@ static void configure_spi_host(void) {
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host_0, /*enabled=*/true));
 }
 
+void configure_pattgen(void) {
+  for (size_t i = 0; i < ARRAYSIZE(pattgen_channels); ++i) {
+    CHECK_DIF_OK(dif_pattgen_channel_set_enabled(&pattgen, pattgen_channels[i],
+                                                 kDifToggleDisabled));
+    CHECK_DIF_OK(dif_pattgen_configure_channel(
+        &pattgen, pattgen_channels[i],
+        (dif_pattgen_channel_config_t){
+            .polarity = kDifPattgenPolarityHigh,
+            .clock_divisor = kPattgenClockDivisor,
+            .seed_pattern_lower_word = kPattgenSeedPatternLowerWord,
+            .seed_pattern_upper_word = kPattgenSeedPatternUpperWord,
+            .seed_pattern_length = kPattgenSeedPatternLength,
+            .num_pattern_repetitions = kPattgenNumPatternRepetitions,
+
+        }));
+  }
+}
+
 void configure_pwm(void) {
   CHECK_DIF_OK(
       dif_pwm_configure(&pwm, (dif_pwm_config_t){
@@ -737,6 +784,18 @@ static void max_power_task(void *task_parameters) {
   i2c_ctrl_reg =
       bitfield_bit32_write(i2c_ctrl_reg, I2C_CTRL_ENABLEHOST_BIT, true);
 
+  // Prepare pattgen enablement command.
+  uint32_t pattgen_ctrl_reg =
+      mmio_region_read32(pattgen.base_addr, PATTGEN_CTRL_REG_OFFSET);
+  pattgen_ctrl_reg =
+      bitfield_bit32_write(pattgen_ctrl_reg, PATTGEN_CTRL_ENABLE_CH0_BIT, true);
+  pattgen_ctrl_reg =
+      bitfield_bit32_write(pattgen_ctrl_reg, PATTGEN_CTRL_ENABLE_CH1_BIT, true);
+
+  // Enable pattgen.
+  mmio_region_write32(pattgen.base_addr, PATTGEN_CTRL_REG_OFFSET,
+                      pattgen_ctrl_reg);
+
   // Issue KMAC squeeze, AES trigger, and HMAC process commands.
   kmac_operation_state.squeezing = true;
   mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, kmac_cmd_reg);
@@ -809,6 +868,7 @@ bool test_main(void) {
   configure_spi_host();
   spi_device_testutils_configure_passthrough(&spi_device, /*filters=*/0,
                                              /*upload_write_commands=*/false);
+  configure_pattgen();
   configure_pwm();
   LOG_INFO("All IPs configured.");
 
