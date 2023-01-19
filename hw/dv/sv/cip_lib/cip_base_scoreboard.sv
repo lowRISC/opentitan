@@ -391,10 +391,13 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     mem_access_err = !is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,
                                                mem_ro_err, custom_err);
-    if (mem_access_err || cfg.tl_mem_access_gated) begin
+    if (mem_access_err) begin
       // Some memory implementations may not return an error response on invalid accesses.
-      exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err | custom_err |
-                     cfg.tl_mem_access_gated;
+      exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err | custom_err;
+    end
+
+    if (is_mem_addr(item, ral_name) && cfg.tl_mem_access_gated) begin
+      exp_d_error |= cfg.tl_mem_access_gated;
     end
 
     bus_intg_err = !item.is_a_chan_intg_ok(.throw_error(0));
