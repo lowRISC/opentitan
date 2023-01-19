@@ -46,14 +46,6 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
     end
 
     super.pre_start();
-
-    // After init, init_done is set. If scb is off, update predict value here
-    if (!cfg.en_scb && do_sram_ctrl_init) begin
-      void'(ral.status.init_done.predict(.value(1), .kind(UVM_PREDICT_READ)));
-    end
-
-    // disable running csr_vseq, as we do sram_ctrl_init which affects several CSRs' values
-    en_csr_vseq_w_passthru_mem_intg = 0;
   endtask
 
   virtual task body();
@@ -78,7 +70,7 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
   endfunction
 
   // Check internal key/nonce are reset to default
-  // Check sram access is blocked after a fault injection
+  // Check sram access returns d_error after a fault injection
   virtual task check_sram_access_blocked_after_fi();
     otp_ctrl_pkg::sram_key_t internal_key;
     otp_ctrl_pkg::sram_nonce_t internal_nonce;
@@ -105,8 +97,7 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
     end
   endfunction
 
-  // Check alert and `status.init_error` is set.
-  // After injecting faults, reading any address should return 0. #10909
+  // Check alert and the corresponding status bit is set.
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
     bit [TL_AW-1:0]  addr;
     bit [TL_DBW-1:0] mask;
