@@ -57,6 +57,9 @@
   uvm_test: alert_handler_base_test
   uvm_test_seq: alert_handler_base_vseq
 
+  // Enable cdc instrumentation.
+  run_opts: ["+cdc_instrumentation_enabled=1"]
+
   // List of test specifications.
   tests: [
     {
