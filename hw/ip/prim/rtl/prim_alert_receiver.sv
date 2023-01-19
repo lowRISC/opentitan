@@ -318,7 +318,7 @@ module prim_alert_receiver
         state_q == Idle &&
         !ping_pending_q
         |->
-        alert_o,
+        ##[0:1] alert_o,
         clk_i, !rst_ni || integ_fail_o || mubi4_test_true_strict(init_trig_i))
   end else begin : gen_sync_assert
     // signal integrity check propagation
