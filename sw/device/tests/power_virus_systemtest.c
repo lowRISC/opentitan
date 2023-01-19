@@ -15,6 +15,7 @@
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
+#include "sw/device/lib/dif/dif_pwm.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -36,6 +37,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "i2c_regs.h"   // Generated.
 #include "kmac_regs.h"  // Generated.
+#include "pwm_regs.h"   // Generated.
 #include "uart_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
@@ -62,10 +64,15 @@ static dif_spi_host_t spi_host_0;
 static dif_uart_t uart_1;
 static dif_uart_t uart_2;
 static dif_uart_t uart_3;
+static dif_pwm_t pwm;
 
 static const dif_i2c_t *i2c_handles[] = {&i2c_0, &i2c_1, &i2c_2};
 static const dif_uart_t *uart_handles[] = {&uart_1, &uart_2, &uart_3};
 static dif_kmac_operation_state_t kmac_operation_state;
+static const dif_pwm_channel_t pwm_channels[PWM_PARAM_N_OUTPUTS] = {
+    kDifPwmChannel0, kDifPwmChannel1, kDifPwmChannel2,
+    kDifPwmChannel3, kDifPwmChannel4, kDifPwmChannel5,
+};
 
 /**
  * Test configuration parameters.
@@ -111,6 +118,13 @@ enum {
    * UART parameters
    */
   kUartFifoDepth = 32,
+  /**
+   * PWM parameters
+   */
+  kPwmClockDivisor = 1,
+  kPwmBeatsPerCycle = 2,
+  kPwmOnBeats = 1,
+  kPwmPhaseDelayBeats = 0,
 };
 
 /**
@@ -243,6 +257,8 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi_device));
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host_0));
+  CHECK_DIF_OK(dif_pwm_init(
+      mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR), &pwm));
 }
 
 static void configure_pinmux(void) {
@@ -252,6 +268,7 @@ static void configure_pinmux(void) {
   // Configure GPIO max-power period indicator pin on IOA2
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa2,
                                         kTopEarlgreyPinmuxOutselGpioGpio0));
+
   // UART1:
   //    RX on IOA4
   //    TX on IOA5
@@ -326,6 +343,26 @@ static void configure_pinmux(void) {
                                         kTopEarlgreyPinmuxOutselI2c2Sda));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob12,
                                         kTopEarlgreyPinmuxOutselI2c2Scl));
+
+  // PWM:
+  //    Channel 0 on IOR5
+  //    Channel 1 on IOR6
+  //    Channel 2 on IOR7
+  //    Channel 3 on IOR10
+  //    Channel 4 on IOR11
+  //    Channel 5 on IOR12
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor5,
+                                        kTopEarlgreyPinmuxOutselPwmAonPwm0));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor6,
+                                        kTopEarlgreyPinmuxOutselPwmAonPwm1));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor7,
+                                        kTopEarlgreyPinmuxOutselPwmAonPwm2));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor10,
+                                        kTopEarlgreyPinmuxOutselPwmAonPwm3));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor11,
+                                        kTopEarlgreyPinmuxOutselPwmAonPwm4));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor12,
+                                        kTopEarlgreyPinmuxOutselPwmAonPwm5));
 }
 
 /**
@@ -578,6 +615,31 @@ static void configure_spi_host(void) {
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host_0, /*enabled=*/true));
 }
 
+void configure_pwm(void) {
+  CHECK_DIF_OK(
+      dif_pwm_configure(&pwm, (dif_pwm_config_t){
+                                  .clock_divisor = kPwmClockDivisor,
+                                  .beats_per_pulse_cycle = kPwmBeatsPerCycle,
+                              }));
+  for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
+    CHECK_DIF_OK(
+        dif_pwm_channel_set_enabled(&pwm, pwm_channels[i], kDifToggleDisabled));
+    CHECK_DIF_OK(
+        dif_pwm_configure_channel(&pwm, pwm_channels[i],
+                                  (dif_pwm_channel_config_t){
+                                      .duty_cycle_a = kPwmOnBeats,
+                                      .duty_cycle_b = 0,  // unused
+                                      .phase_delay = kPwmPhaseDelayBeats,
+                                      .mode = kDifPwmModeFirmware,
+                                      .polarity = kDifPwmPolarityActiveHigh,
+                                      .blink_parameter_x = 0,  // unused
+                                      .blink_parameter_y = 0,  // unused
+                                  }));
+    CHECK_DIF_OK(
+        dif_pwm_channel_set_enabled(&pwm, pwm_channels[i], kDifToggleEnabled));
+  }
+}
+
 static void crypto_data_load_task(void *task_parameters) {
   LOG_INFO("Loading crypto block FIFOs with data ...");
   // Load data into AES block.
@@ -747,6 +809,7 @@ bool test_main(void) {
   configure_spi_host();
   spi_device_testutils_configure_passthrough(&spi_device, /*filters=*/0,
                                              /*upload_write_commands=*/false);
+  configure_pwm();
   LOG_INFO("All IPs configured.");
 
   // ***************************************************************************
