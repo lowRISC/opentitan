@@ -12,11 +12,10 @@ set -ex
 readonly TOPLEVEL=top_earlgrey
 readonly TOPLEVEL_BIN_DIR="${BIN_DIR}/hw/${TOPLEVEL}"
 readonly TARGETS=(
-  //hw/bitstream:test_rom
-  //hw/bitstream:rom
-  //hw/bitstream:rom_otp_dev
-  //hw/bitstream:rom_mmi
-  //hw/bitstream:otp_mmi
+  @bitstreams//:bitstream_test_rom
+  @bitstreams//:bitstream_rom
+  @bitstreams//:rom_mmi
+  @bitstreams//:otp_mmi
 )
 readonly BAZEL_OPTS=(
   "--define"
