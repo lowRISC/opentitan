@@ -43,7 +43,7 @@
   uvm_test: i2c_base_test
   uvm_test_seq: i2c_base_vseq
 
-  run_opts: ["+cdc_instrumentation_enabled=0"]
+  run_opts: ["+cdc_instrumentation_enabled=1"]
 
   // List of test specifications.
   tests: [
@@ -61,7 +61,7 @@
     {
       name: i2c_host_rx_oversample
       uvm_test_seq: i2c_host_rx_oversample_vseq
-      run_opts: ["+test_timeout_ns=15_000_000"]
+      run_opts: ["+test_timeout_ns=150_000_000"]
     }
 
     {
@@ -77,19 +77,19 @@
     {
       name: i2c_host_fifo_reset_fmt
       uvm_test_seq: i2c_host_fifo_reset_fmt_vseq
-      run_opts: ["+test_timeout_ns=10_000_000"]
+      run_opts: ["+test_timeout_ns=100_000_000"]
     }
 
     {
       name: i2c_host_fifo_fmt_empty
       uvm_test_seq: i2c_host_fifo_fmt_empty_vseq
-      run_opts: ["+test_timeout_ns=10_000_000"]
+      run_opts: ["+test_timeout_ns=100_000_000"]
     }
 
     {
       name: i2c_host_fifo_reset_rx
       uvm_test_seq: i2c_host_fifo_reset_rx_vseq
-      run_opts: ["+test_timeout_ns=10_000_000"]
+      run_opts: ["+test_timeout_ns=100_000_000"]
     }
 
     {
@@ -119,7 +119,7 @@
     {
       name: i2c_target_smoke
       uvm_test_seq: i2c_target_smoke_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=100_000_000"]
+      run_opts: ["+i2c_agent_mode=Host"]
     }
     {
       name: i2c_target_stress_wr
@@ -129,7 +129,7 @@
     {
       name: i2c_target_stress_rd
       uvm_test_seq: i2c_target_stress_rd_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=100_000_000"]
+      run_opts: ["+i2c_agent_mode=Host"]
     }
     {
       name: i2c_target_stretch
@@ -145,68 +145,67 @@
     {
       name: i2c_target_intr_stress_wr
       uvm_test_seq: i2c_target_stress_wr_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=600_000_000",
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=1_000_000_000",
                  "+use_intr_handler=1", "+slow_acq=1"]
     }
     {
       name: i2c_target_tx_ovf
       uvm_test_seq: i2c_target_tx_ovf_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=100_000_000",
-                 "+use_intr_handler=1"]
+      run_opts: ["+i2c_agent_mode=Host", "+use_intr_handler=1"]
     }
     {
       name: i2c_target_timeout
       uvm_test_seq: i2c_target_timeout_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=50_000_000",
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=500_000_000",
                  "+use_intr_handler=1"]
     }
     {
       name: i2c_target_unexp_stop
       uvm_test_seq: i2c_target_ack_stop_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=50_000_000",
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=500_000_000",
                  "+use_intr_handler=1"]
     }
     {
       name: i2c_target_fifo_reset_acq
       uvm_test_seq: i2c_target_fifo_reset_acq_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=200_000_000",
                  "+use_intr_handler=1"]
     }
     {
       name: i2c_target_fifo_reset_tx
       uvm_test_seq: i2c_target_fifo_reset_tx_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=200_000_000",
                  "+use_intr_handler=1"]
     }
     {
       name: i2c_target_perf
       uvm_test_seq: i2c_target_perf_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=200_000_000",
                  "+use_intr_handler=1"]
     }
     {
       name: i2c_target_stress_all
       uvm_test_seq: i2c_target_stress_all_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=200_000_000",
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=2_000_000_000",
                  "+use_intr_handler=1"]
     }
     {
       name: i2c_target_bad_addr
       uvm_test_seq: i2c_target_smoke_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=200_000_000",
                  "+use_intr_handler=1", "+i2c_bad_addr_pct=5"]
     }
     {
       name: i2c_target_hrst
       uvm_test_seq: i2c_target_hrst_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=200_000_000",
                  "+use_intr_handler=1"]
     }
-//    {
-//      name: i2c_loopback
-//      uvm_test_seq: i2c_llpbk_vseq
-//      run_opts: ["+en_scb=0", "+i2c_loopback=1", "+i2c_agent_mode=Host"]
-//    }
+    {
+      name: i2c_loopback
+      uvm_test_seq: i2c_llpbk_vseq
+      run_opts: ["+en_scb=0", "+i2c_loopback=1", "+i2c_agent_mode=Host"]
+    }
   ]
 
   // List of regressions.

@@ -21,7 +21,7 @@ class i2c_host_stress_all_vseq extends i2c_rx_tx_vseq;
     "i2c_host_smoke_vseq",
     "i2c_host_fifo_full_vseq",
     "i2c_host_fifo_overflow_vseq",
-    "i2c_host_fifo_watermark_vseq",
+    "i2c_host_fifo_threshold_vseq",
     "i2c_host_stretch_timeout_vseq",
     "i2c_host_perf_vseq"
   };

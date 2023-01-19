@@ -13,33 +13,38 @@ class i2c_target_fifo_reset_acq_vseq extends i2c_target_runtime_base_vseq;
     super.pre_start();
 
     cfg.scb_h.read_rnd_data = 1;
-    seq_runtime = 10000;
+    seq_runtime = 10000; // 50ms
   endtask
 
   task test_event();
-    #50us;
-    repeat (5) begin
+     // 500 should be ok
+    #200us;
+    repeat (3) begin
+       `JDBG(("assa:test_event wait for stop"))
       wait(cfg.m_i2c_agent_cfg.got_stop);
+       `JDBG(("assa:test_event seq pause"))
       // stop reading acq fifo and sequence
       pause_seq = 1;
 
       // flush acq
       ral.fifo_ctrl.acqrst.set(1'b1);
       csr_update(ral.fifo_ctrl);
+       `JDBG(("assa:test_event cleaup tb"))
 
       // clean up sb
       cfg.scb_h.target_mode_wr_exp_fifo.flush();
       cfg.scb_h.target_mode_wr_obs_fifo.flush();
       cfg.scb_h.skip_acq_comp = 1;
 
-      #10us;
+      #1ms;
       tran_id = 0;
       cfg.scb_h.obs_wr_id = 0;
       cfg.scb_h.skip_acq_comp = 0;
       pause_seq = 0;
+       `JDBG(("assa:test_event end"))
 
       // random delay before the next round
-      #($urandom_range(1, 5) * 10us);
+      #($urandom_range(1, 5) * 100us);
     end
   endtask // test_event
 

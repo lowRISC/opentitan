@@ -48,18 +48,18 @@ interface i2c_if(
     wait(cb.scl_i == 1);
   endtask
 
+  // cycle : tClockPulse + tlow 
   task automatic sample_target_data(timing_cfg_t tc, output bit data);
-    bit sample[16];
+    bit sample[100];
     int idx = 0;
     int su_idx;
-
     wait(cb.scl_i == 0);
     while (cb.scl_i == 0) begin
       @(posedge clk_i);
       sample[idx] = cb.sda_i;
-      idx = (idx + 1) % 16;
+      idx = (idx + 1) % 100;
     end
-    su_idx = (idx + 16 - 1 - tc.tSetupBit) % 16;
+    su_idx = (idx + 100 - 1 - tc.tSetupBit) % 100;
     data = sample[su_idx];
   endtask // sample_target_data
 
@@ -277,8 +277,8 @@ interface i2c_if(
 
   task automatic host_data(ref timing_cfg_t tc, input bit bit_i);
     wait(scl_i === 1'b0);
-    sda_o = bit_i;
     wait_for_dly(tc.tClockLow);
+    sda_o = bit_i;
     wait_for_dly(tc.tSetupBit);
     wait(scl_i === 1'b1);
     wait_for_dly(tc.tClockPulse);
@@ -288,8 +288,8 @@ interface i2c_if(
   endtask: host_data
 
   task automatic host_stop(ref timing_cfg_t tc);
-    wait(scl_i === 1'b1);
     sda_o = 1'b0;
+    wait(scl_i === 1'b1);
     wait_for_dly(tc.tClockStop);
     scl_o = 1'b1;
     wait_for_dly(tc.tSetupStop);

@@ -20,13 +20,16 @@ class i2c_seq_cfg extends uvm_object;
   uint i2c_max_addr              = 127;
   uint i2c_min_data              = 0;
   uint i2c_max_data              = 255;
+
+  // Timing parameters of I2C are set close to Table 6 of I2C spec. Rev.03
+  // unit : 10.309 ns 
   uint i2c_min_dly               = 0;
-  uint i2c_max_dly               = 5;
-  uint i2c_min_timing            = 1; // at least 1
-  uint i2c_max_timing            = 5;
+  uint i2c_max_dly               = 50;
+  uint i2c_min_timing            = 10;
+  uint i2c_max_timing            = 20;
   uint i2c_time_range            = i2c_max_timing - i2c_min_timing;
-  uint i2c_min_timeout           = 1;
-  uint i2c_max_timeout           = 4;
+//  uint i2c_min_timeout           = 1;
+//  uint i2c_max_timeout           = 4;
   uint i2c_max_rxilvl            = 7;
   uint i2c_max_fmtilvl           = 3;
 

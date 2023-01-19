@@ -9,9 +9,10 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   rand bit [7:0] rd_data[256]; // max length of read transaction
   byte wr_data;
-  int scl_spinwait_timeout_ns = 1_000_000; // 1ms
+  int scl_spinwait_timeout_ns = 10_000_000; // 10ms
   bit scl_pause = 0;
-
+  int buf_cnt;
+   
   // get an array with unique read data
   constraint rd_data_c { unique { rd_data }; }
 
@@ -122,6 +123,8 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     end
     case (req.drv_type)
       HostStart: begin
+`JDBG(("buf wait cnt %0d", buf_cnt))	 
+	wait (buf_cnt == 0);
         cfg.vif.drv_phase = DrvAddr;
         cfg.vif.host_start(cfg.timing_cfg);
         cfg.host_scl_start = 1;
@@ -152,6 +155,8 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         cfg.host_scl_stop = 1;
         cfg.vif.host_stop(cfg.timing_cfg);
         if (cfg.allow_bad_addr & !cfg.valid_addr)cfg.got_stop = 1;
+	buf_cnt = cfg.timing_cfg.tBuf;
+	 `JDBG(("buf set cnt %0d", buf_cnt))	 
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("\n  host_driver, received invalid request"))
@@ -225,7 +230,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   task drive_scl();
     // This timeout is extremely long since read trasnactions will stretch
     // whenever there are unhanded write commands or format bytes.
-    int scl_spinwait_timeout_ns = 100_000_000; // 100ms
+    int scl_spinwait_timeout_ns = 1_000_000_000; // 1s
     forever begin
       @(cfg.vif.cb);
       wait(cfg.host_scl_start);
@@ -276,12 +281,19 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   task host_scl_pause_ctrl();
      forever begin
         @(cfg.vif.cb);
-        if (cfg.host_scl_pause_req & cfg.host_scl_start & !cfg.host_scl_stop) begin
-          cfg.host_scl_pause_ack = 1;
-          `DV_WAIT(cfg.host_scl_pause_ack == 0,,
-                   scl_spinwait_timeout_ns, "host_scl_pause_ctrl")
-          cfg.host_scl_pause_req = 0;
-        end
+	fork
+	   begin
+              if (cfg.host_scl_pause_req & cfg.host_scl_start & !cfg.host_scl_stop) begin
+		 cfg.host_scl_pause_ack = 1;
+		 `DV_WAIT(cfg.host_scl_pause_ack == 0,,
+			  scl_spinwait_timeout_ns, "host_scl_pause_ctrl")
+		 cfg.host_scl_pause_req = 0;
+              end
+	   end
+	   begin
+	      if (buf_cnt > 0) buf_cnt--;	      
+	   end
+	join_none
      end
   endtask
 
@@ -309,7 +321,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   // Task looking for data read state.
   task wait_for_read_data_state();
-    int wait_timeout_ns = 500_000_000; // 500 ms
+    int wait_timeout_ns = 1_000_000_000; // 1s
     `DV_WAIT(cfg.vif.drv_phase == DrvRd,, wait_timeout_ns, "wait_for_read_data_state");
     repeat(2) @(posedge cfg.vif.scl_i);
   endtask

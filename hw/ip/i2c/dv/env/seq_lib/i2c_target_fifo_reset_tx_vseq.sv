@@ -14,11 +14,11 @@ class i2c_target_fifo_reset_tx_vseq extends i2c_target_runtime_base_vseq;
 
     cfg.scb_h.read_rnd_data = 1;
     cfg.rd_pct = 3;
-    seq_runtime = 10000;
+    seq_runtime = 100000;
   endtask
 
   task test_event();
-    #50us;
+    #500us;
     repeat (5) begin
       wait(cfg.m_i2c_agent_cfg.got_stop);
       // stop writing tx fifo and sequence
@@ -32,11 +32,11 @@ class i2c_target_fifo_reset_tx_vseq extends i2c_target_runtime_base_vseq;
       cfg.scb_h.target_mode_rd_obs_fifo.flush();
       cfg.scb_h.mirrored_txdata = '{};
 
-     #10us;
+     #100us;
       pause_seq = 0;
 
       // random delay before the next round
-      #($urandom_range(1, 5) * 10us);
+      #($urandom_range(1, 5) * 100us);
     end
   endtask // test_event
 

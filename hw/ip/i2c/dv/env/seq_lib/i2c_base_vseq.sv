@@ -174,14 +174,21 @@ class i2c_base_vseq extends cip_base_vseq #(
   }
 
   constraint timing_val_c {
-    thigh   inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
-    t_r     inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
-    t_f     inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+//    thigh   inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+//    t_r     inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+//    t_f     inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+//    thd_sta inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+//    tsu_sto inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+//    tsu_dat inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+//    thd_dat inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
     thd_sta inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+    t_r     inside {[1 : cfg.seq_cfg.i2c_min_timing/2]};
+    t_f     inside {[1 : cfg.seq_cfg.i2c_min_timing/2]};
     tsu_sto inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
-    tsu_dat inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
-    thd_dat inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+    tsu_dat inside {[5 : cfg.seq_cfg.i2c_min_timing]};
+    thd_dat inside {[1 : cfg.seq_cfg.i2c_min_timing/2]};
 
+    solve tsu_sta, thd_sta before thigh;
     solve t_r, tsu_dat, thd_dat before tlow;
     solve t_r                   before t_buf;
     solve t_f, thigh            before t_sda_unstable, t_sda_interference;
@@ -193,6 +200,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       t_sda_unstable     == 0;
       t_sda_interference == 0;
       t_scl_interference == 0;
+      thigh   inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
     } else {
       tsu_sta inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
       // force derived timing parameters to be positive (correct DUT config)
@@ -378,6 +386,7 @@ class i2c_base_vseq extends cip_base_vseq #(
                                   prob_sda_interference * t_sda_interference : 0;
     timing_cfg.tSdaUnstable     = (cfg.seq_cfg.en_sda_unstable) ?
                                   prob_sda_unstable * t_sda_unstable : 0;
+    timing_cfg.tBuf = t_buf;     
     `uvm_info(`gfn, $sformatf("\n  tSclItf = %0d, tSdaItf = %0d, tSdaUnstable = %0d",
         timing_cfg.tSclInterference,
         timing_cfg.tSdaInterference,
@@ -667,13 +676,19 @@ class i2c_base_vseq extends cip_base_vseq #(
     bit read_one = 0;
     `DV_WAIT(cfg.sent_acq_cnt > 0,, cfg.spinwait_timeout_ns, "process_acq")
 
-    while (cfg.sent_acq_cnt != cfg.rcvd_acq_cnt) begin
-      if (cfg.slow_acq) begin
-        delay = $urandom_range(50, 100);
-        #(delay * 1us);
-        read_one = 1;
-      end
-      read_acq_fifo(read_one, acq_fifo_empty);
+    while (sent_txn_cnt < num_trans) begin
+//       `JDBG(("as begin start:%0d num_trans:%0d", sent_txn_cnt, num_trans))
+       while (cfg.sent_acq_cnt != cfg.rcvd_acq_cnt) begin
+	  if (cfg.slow_acq) begin
+             delay = $urandom_range(50, 100);
+             #(delay * 10us);
+             read_one = 1;
+	  end
+//	  `JDBG(("as before:sent_acq:%0d rcvd_acq:%0d",cfg.sent_acq_cnt,cfg.rcvd_acq_cnt))
+	  read_acq_fifo(read_one, acq_fifo_empty);
+//	  `JDBG(("as after:sent_acq:%0d rcvd_acq:%0d",cfg.sent_acq_cnt,cfg.rcvd_acq_cnt))
+       end
+       #1us;       
     end
   endtask
 
@@ -761,7 +776,8 @@ class i2c_base_vseq extends cip_base_vseq #(
     `uvm_create_obj(i2c_item, exp_txn)
     txn.drv_type = HostData;
     txn.start = 1;
-    txn.wdata[7:1] = get_target_addr(); //target_addr0;
+    txn.wdata[7:1] = get_target_addr();
+`JDBG(("addr: %x", txn.wdata[7:1]))     
     txn.wdata[0] = is_read;
     valid_addr = is_target_addr(txn.wdata[7:1]);
 
@@ -1201,14 +1217,12 @@ class i2c_base_vseq extends cip_base_vseq #(
     int   acq_rd_cyc;
     acq_rd_cyc = 9 * (thigh + tlow);
     `DV_WAIT(cfg.sent_acq_cnt > 0,, cfg.spinwait_timeout_ns, id)
-    `DV_WAIT(sent_txn_cnt == num_trans,, cfg.long_spinwait_timeout_ns, id)
+    `DV_SPINWAIT_EXIT(wait(sent_txn_cnt == num_trans);, #4s;,, id)
     cfg.read_all_acq_entries = 1;
     if (cfg.rd_pct != 0) begin
       `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte > 0,, cfg.spinwait_timeout_ns, id)
       if (cfg.m_i2c_agent_cfg.allow_bad_addr) adjust_exp_read_byte = 1;
-
-      `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte == cfg.m_i2c_agent_cfg.rcvd_rd_byte,,
-               cfg.long_spinwait_timeout_ns, id)
+       `DV_SPINWAIT_EXIT(wait(cfg.m_i2c_agent_cfg.sent_rd_byte == cfg.m_i2c_agent_cfg.rcvd_rd_byte);, #4s;,, id)
     end
     `DV_WAIT(cfg.sent_acq_cnt == cfg.rcvd_acq_cnt,, cfg.spinwait_timeout_ns, id)
     csr_spinwait(.ptr(ral.status.acqempty), .exp_data(1'b1));

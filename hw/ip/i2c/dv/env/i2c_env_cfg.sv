@@ -15,8 +15,7 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   i2c_seq_cfg seq_cfg;
   bit [7:0]  lastbyte;
 
-  int        spinwait_timeout_ns = 10_000_000; // 10ms
-  int        long_spinwait_timeout_ns = 400_000_000;
+  int        spinwait_timeout_ns = 100_000_000; // 10ms
   int        sent_acq_cnt;
   int        rcvd_acq_cnt;
 
@@ -52,8 +51,8 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   int        rcvd_ack_stop = 0;
 
   // clock path delay introduced by synchromizer.
-  int        host_sync_delay = 2;
-  int        target_sync_delay = 5;
+  int        host_sync_delay = 5; // '2' + max cdc delay(3)
+  int        target_sync_delay = 8; // '5' + max cdc delay(3)
   i2c_scoreboard scb_h;
   virtual    i2c_dv_if i2c_dv_vif;
 

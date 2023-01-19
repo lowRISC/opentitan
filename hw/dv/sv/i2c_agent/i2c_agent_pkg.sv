@@ -57,6 +57,8 @@ package i2c_agent_pkg;
     // sda_interference interrupt will be asserted if
     // tSdaInterference is set to a zero value, otherwise
     uint         tSdaInterference;
+    // min time between stop and next start 
+    uint tBuf; 
   } timing_cfg_t;
 
   typedef enum int {

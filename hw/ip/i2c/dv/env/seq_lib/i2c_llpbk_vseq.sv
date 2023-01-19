@@ -23,9 +23,7 @@ class i2c_llpbk_vseq extends i2c_target_smoke_vseq;
     cfg.m_i2c_agent_cfg.lb_addr[7:1] = target_addr0;
 
     `uvm_info("seq", $sformatf("LB seq loopback start addr:%x", target_addr0), UVM_MEDIUM)
-     // TODO try 64 later
-//    cfg.m_i2c_agent_cfg.loopback_num_bytes = i2c_reg_pkg::FifoDepth;
-    cfg.m_i2c_agent_cfg.loopback_num_bytes = 32;
+    cfg.m_i2c_agent_cfg.loopback_num_bytes = i2c_reg_pkg::FifoDepth;
     cfg.m_i2c_agent_cfg.loopback_st = 1;
     `DV_WAIT(cfg.m_i2c_agent_cfg.loopback_st == 0,, loopback_wait_timeout_ns,
              "loopback_sequence_wait")

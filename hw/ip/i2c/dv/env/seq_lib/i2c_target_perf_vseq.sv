@@ -10,19 +10,19 @@ class i2c_target_perf_vseq extends i2c_target_smoke_vseq;
   // Fast timing values programmed to registers
   // See constraint minimum in i2c_target_smoke_vseq
   constraint timing_val_c {
-    t_r       == 1;
-    t_f       == 1;
-    thd_sta   == 1;
-    tsu_sto   == 1;
-    tsu_dat   == 1;
-    thd_dat   == 1;
-    t_timeout == 1;
+    t_r       == 10;
+    t_f       == 10;
+    thd_sta   == 10;
+    tsu_sto   == 10;
+    tsu_dat   == 10;
+    thd_dat   == 10;
+    t_timeout == 10;
     e_timeout == 1;
-    tsu_sta   == 1;
+    tsu_sta   == 10;
 
-    thigh     == 3;
-    tlow      == 8;
-    t_buf     == 1;
+    thigh     == 10;
+    tlow      == (7 + cfg.target_sync_delay);
+    t_buf     == 10;
   }
 
 endclass

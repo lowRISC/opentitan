@@ -8,14 +8,14 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
   `uvm_object_new
 
   constraint timing_val_c {
-    thigh   inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
-    t_r     inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
-    t_f     inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
     thd_sta inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+    t_r     inside {[1 : cfg.seq_cfg.i2c_min_timing/2]};
+    t_f     inside {[1 : cfg.seq_cfg.i2c_min_timing/2]};
     tsu_sto inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
-    tsu_dat inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
-    thd_dat inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+    tsu_dat inside {[5 : cfg.seq_cfg.i2c_min_timing]};
+    thd_dat inside {[1 : cfg.seq_cfg.i2c_min_timing/2]};
 
+    solve tsu_sta, thd_sta before thigh;
     solve t_r, tsu_dat, thd_dat before tlow;
     solve t_r                   before t_buf;
     solve t_f, thigh            before t_sda_unstable, t_sda_interference;
@@ -27,6 +27,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
       t_sda_unstable     == 0;
       t_sda_interference == 0;
       t_scl_interference == 0;
+      thigh   inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
     } else {
       tsu_sta inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
       // force derived timing parameters to be positive (correct DUT config)

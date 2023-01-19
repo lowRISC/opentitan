@@ -215,7 +215,7 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
     int    acq_rd_cyc;
     acq_rd_cyc = 9 * (thigh + tlow);
     `DV_WAIT(cfg.sent_acq_cnt > 0,, cfg.spinwait_timeout_ns, id)
-    `DV_WAIT(sent_txn_cnt == num_trans,, cfg.long_spinwait_timeout_ns, id)
+    `DV_SPINWAIT_EXIT(wait(sent_txn_cnt == num_trans);, #4s;,, id)
     cfg.read_all_acq_entries = 1;
     if (cfg.rd_pct != 0) begin
       `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte > 0,, cfg.spinwait_timeout_ns, id)

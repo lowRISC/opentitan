@@ -61,6 +61,7 @@ class i2c_target_runtime_base_vseq extends i2c_target_smoke_vseq;
       end
       begin
         test_event();
+	 `JDBG(("seq: evend"))
       end
       begin
         process_acq();

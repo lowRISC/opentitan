@@ -128,22 +128,22 @@
       tests: ["i2c_host_override"]
     }
     {
-      name: host_fifo_watermark
+      name: host_fifo_threshold
       desc: '''
-            Test the watermark interrupt of fmt_fifo and rx_fifo.
+            Test the threshold interrupt of fmt_fifo and rx_fifo.
 
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
-              - Program random fmt_fifo and rx_fifo watermark level
-              - Write data quickly to fmt_fifo and rx_fifo for triggering watermark interrupts
+              - Program random fmt_fifo and rx_fifo threshold level
+              - Write data quickly to fmt_fifo and rx_fifo for triggering threshold interrupts
 
             Checking:
-              - Ensure the fmt_fifo and rx_fifo watermark interrupts are asserted
-              - Ensure the fmt_fifo and rx_fifo watermark interrupts stay asserted until cleared
-              - Ensure receving correct number of fmt_fifo and rx_fifo watermark interrupts
+              - Ensure the fmt_fifo and rx_fifo threshold interrupts are asserted
+              - Ensure the fmt_fifo and rx_fifo threshold interrupts stay asserted until cleared
+              - Ensure receving correct number of fmt_fifo and rx_fifo threshold interrupts
             '''
       stage: V2
-      tests: ["i2c_host_fifo_watermark"]
+      tests: ["i2c_host_fifo_threshold"]
     }
     {
       name: host_fifo_overflow

@@ -16,7 +16,7 @@ class i2c_base_test extends cip_base_test #(.ENV_T(i2c_env),
 
   virtual function void build_phase(uvm_phase phase);
     if_mode_e mode = Device;
-    test_timeout_ns = 600_000_000; // 600ms
+    test_timeout_ns = 500_000_000; // 500 ms
     super.build_phase(phase);
     `DV_GET_ENUM_PLUSARG(if_mode_e, mode, i2c_agent_mode)
     `uvm_info(`gfn, $sformatf("set i2c agent mode to %s", mode.name), UVM_MEDIUM)
