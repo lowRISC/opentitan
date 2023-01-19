@@ -142,8 +142,10 @@ static void p256_run_keygen(uint32_t mode, const uint32_t *seed,
            kOtbnErrorOk);
 
   // Execute program.
+  sca_set_trigger_high();
   SS_CHECK(otbn_execute() == kOtbnErrorOk);
   SS_CHECK(otbn_busy_wait_for_done() == kOtbnErrorOk);
+  sca_set_trigger_low();
 }
 
 /**
@@ -162,9 +164,7 @@ static void p256_ecdsa_gen_secret_key(const uint32_t *seed,
                                       const uint32_t *mask, uint32_t *d0,
                                       uint32_t *d1) {
   // Run the key generation program.
-  sca_set_trigger_high();
   p256_run_keygen(kEcc256ModePrivateKeyOnly, seed, mask);
-  sca_set_trigger_low();
 
   // Read results.
   SS_CHECK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0) == kOtbnErrorOk);
@@ -189,9 +189,7 @@ static void p256_ecdsa_gen_keypair(const uint32_t *seed, const uint32_t *mask,
                                    uint32_t *d0, uint32_t *d1, uint32_t *x,
                                    uint32_t *y) {
   // Run the key generation program.
-  sca_set_trigger_high();
   p256_run_keygen(kEcc256ModeKeypair, seed, mask);
-  sca_set_trigger_low();
 
   // Read results.
   SS_CHECK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0) == kOtbnErrorOk);
