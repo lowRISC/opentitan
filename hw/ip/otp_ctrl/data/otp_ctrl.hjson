@@ -255,14 +255,14 @@
       default: "4",
       local: "true"
     },
-    { name: "CreatorSwCfgKeyIsValidOffset",
-      desc: "Offset of CREATOR_SW_CFG_KEY_IS_VALID",
+    { name: "CreatorSwCfgSigverifyRsaKeyEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN",
       type: "int",
       default: "232",
       local: "true"
     },
-    { name: "CreatorSwCfgKeyIsValidSize",
-      desc: "Size of CREATOR_SW_CFG_KEY_IS_VALID",
+    { name: "CreatorSwCfgSigverifyRsaKeyEnSize",
+      desc: "Size of CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN",
       type: "int",
       default: "8",
       local: "true"

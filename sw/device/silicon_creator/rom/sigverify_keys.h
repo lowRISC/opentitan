@@ -57,9 +57,9 @@ enum {
    * Number of key validity entries per OTP word.
    *
    * Validity of each public key is encoded using a byte-sized
-   * `hardened_byte_bool_t` in the `CREATOR_SW_CFG_KEY_IS_VALID` OTP item. Size
-   * of a `hardened_byte_bool_t` is 1 byte, thus each 32-bit OTP word has 4
-   * entries.
+   * `hardened_byte_bool_t` in the `CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN` OTP
+   * item. Size of a `hardened_byte_bool_t` is 1 byte, thus each 32-bit OTP word
+   * has 4 entries.
    */
   kSigverifyNumEntriesPerOtpWord = sizeof(uint32_t),
 };

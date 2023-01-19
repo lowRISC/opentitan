@@ -129,7 +129,7 @@
                     size: "4"
                 }
                 {
-                    name: "CREATOR_SW_CFG_KEY_IS_VALID",
+                    name: "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN",
                     size: "8"
                 }
                 {
