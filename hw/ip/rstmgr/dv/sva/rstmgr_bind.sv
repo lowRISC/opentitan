@@ -70,4 +70,11 @@ module rstmgr_bind;
     })
   );
 
+  bind rstmgr rstmgr_en_sva_if rstmgr_en_sva_if (
+    .clk_i,
+    .rst_ni,
+    .resets(resets_o),
+    .enables(rst_en_o)
+  );
+
 endmodule

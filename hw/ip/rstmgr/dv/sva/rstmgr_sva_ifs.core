@@ -14,6 +14,7 @@ filesets:
     files:
       - rstmgr_attrs_sva_if.sv
       - rstmgr_cascading_sva_if.sv
+      - rstmgr_en_sva_if.sv
       - rstmgr_sw_rst_sva_if.sv
     file_type: systemVerilogSource
 
