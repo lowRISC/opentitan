@@ -133,6 +133,14 @@
                     size: "8"
                 }
                 {
+                    name: "CREATOR_SW_CFG_SIGVERIFY_SPX_EN",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN",
+                    size: "8"
+                }
+                {
                     name: "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
                     size: "4"
                 }
