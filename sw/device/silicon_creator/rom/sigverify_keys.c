@@ -19,14 +19,14 @@
  * Checks the validity of a key in OTP.
  *
  * Validity of each public key is encoded using a byte-sized
- * `hardened_byte_bool_t` in the `CREATOR_SW_CFG_KEY_IS_VALID` OTP item.
+ * `hardened_byte_bool_t` in the `CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN` OTP item.
  *
  * @param key_index Index of the key to check.
  * @return Whether the key is valid or not.
  */
 static rom_error_t key_is_valid_in_otp(size_t key_index) {
   const uint32_t addr =
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_OFFSET +
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN_OFFSET +
       (key_index / kSigverifyNumEntriesPerOtpWord) * sizeof(uint32_t);
   const bitfield_field32_t field = {
       .mask = UINT8_MAX,

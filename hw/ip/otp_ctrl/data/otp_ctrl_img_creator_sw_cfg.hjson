@@ -24,7 +24,7 @@
                     value: "0x739",
                 },
                 {
-                    name: "CREATOR_SW_CFG_KEY_IS_VALID",
+                    name: "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN",
                     // Mark the first three keys as valid and remaining as
                     // invalid since we currently have only three keys. See the
                     // definition of `hardened_byte_bool_t` in

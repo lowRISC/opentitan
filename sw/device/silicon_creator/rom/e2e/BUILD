@@ -3070,7 +3070,7 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_KEY_IS_VALID": "0x4b4b4b4b4bff004b",
+                "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": "0x4b4b4b4b4bff004b",
             },
         ),
     ],

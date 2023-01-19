@@ -46,7 +46,8 @@ typedef enum hardened_bool {
  * A byte-sized hardened boolean.
  *
  * This type is intended for cases where a byte-sized hardened boolean is
- * required, e.g. for the entries of the `CREATOR_SW_CFG_KEY_IS_VALID` OTP item.
+ * required, e.g. for the entries of the `CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN`
+ * OTP item.
  *
  * The values below were chosen to ensure that the hamming difference between
  * them is greater than 5 and they are not bitwise complements of each other.
