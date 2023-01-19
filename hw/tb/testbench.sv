@@ -159,23 +159,30 @@ module testbench ();
     assign jtag_i.tdi        = jtag_mst.tdi;
    
     assign jtag_mst.tdo      = jtag_o.tdo;
-/*
-    axi_scmi_mailbox #(
-      .AXI_ADDR_WIDTH(32),
-      .axi_lite_req_t(axi_lite_req_t),
-      .axi_lite_resp_t(axi_lite_resp_t)
-    ) u_dut (
-      .clk_i(clk_i),
-      .rst_ni(rst_ni),
-      .axi_mbox_req(axi_lite_req_dec),
-      .axi_mbox_rsp(axi_lite_rsp),
-      .doorbell_irq_o(irq_ibex),
-      .completion_irq_o(irq_ariane)
-    );
-   */
+    
+    entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
+    entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
+    logic es_rng_fips;
+    
+    rng #(
+     .EntropyStreams ( 4 )
+    ) u_rng (
+     .clk_i          ( clk_sys               ),
+     .rst_ni         ( rst_sys_n             ),
+     .clk_ast_rng_i  ( clk_sys               ),
+     .rst_ast_rng_ni ( rst_sys_n             ),
+     .rng_en_i       ( es_rng_req.rng_enable ),
+     .rng_fips_i     ( es_rng_fips           ),
+     .scan_mode_i    ( '0                    ),
+     .rng_b_o        ( es_rng_rsp.rng_b      ),
+     .rng_val_o      ( es_rng_rsp.rng_valid  )
+   );
+   
 /////////////////////////////// DUT ///////////////////////////////
    
    top_earlgrey #(
+    .OtpCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/otp-img.mem"),
+    .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom.vmem")
    ) dut (
     .mio_in_i('0),
     .dio_in_i('0),
@@ -199,9 +206,9 @@ module testbench ();
 //    .flash_test_mode_a_io('0),
 //    .flash_test_voltage_h_io('0),
 //    .flash_obs_o(tieoff[8]),
-//    .es_rng_req_o(tieoff[9]),
-    .es_rng_rsp_i('0),
-//    .es_rng_fips_o(tieoff[10]),
+    .es_rng_req_o(es_rng_req),
+    .es_rng_rsp_i(es_rng_rsp),
+    .es_rng_fips_o(es_rng_fips),
 //    .dft_strap_test_o(tieoff[11]),
     .dft_hold_tap_sel_i('0),
 //    .usb_dp_pullup_en_o(tieoff[13]),
@@ -288,21 +295,7 @@ module testbench ();
      axi_rand_slave.run();
    
    end
-/*
-   initial begin: reset_jtag
-      
-      jtag_mst.tdi = 0;
-      jtag_mst.tms = 0;
-      jtag_mst.trst_n = 1'b0;
-      
-      @(posedge rst_sys_n);
- 
-      repeat (20) @(posedge clk_sys);
-      
-      jtag_mst.trst_n = 1'b1;
-      
-   end
-  */ 
+
    initial  begin : local_jtag_preload
 
       automatic dm_ot::sbcs_t sbcs = '{
@@ -317,7 +310,7 @@ module testbench ();
       if ( $value$plusargs ("OT_STRING=%s", binary));
          $display("Testing %s", binary);
          
-      repeat(70000)
+      repeat(5000)
           @(posedge aon_clk);
       
       debug_module_init();
@@ -506,55 +499,7 @@ module testbench ();
     // When task completed reading the return value using JTAG
     // Mainly used for post synthesis part
     $info("======== Wait for Completion ========");
- /*
-    repeat(500) @(posedge clk_sys);
-    irq_ibex_i = 1'b1;
-    repeat(10) @(posedge clk_sys);
-    irq_ibex_i = 1'b0;
-*/
-  endtask // execute_application
-/*
-  task jtag_read_eoc;
-    input logic [31:0] start_addr;
-     
-    automatic dm_ot::sbcs_t sbcs = '{
-      sbautoincrement: 1'b1,
-      sbreadondata   : 1'b1,
-      default        : 1'b0
-    };
-
-    logic [31:0] to_host_addr;
-    to_host_addr = start_addr + 32'h1000;
  
-    // Initialize the dm module again, otherwise it will not work
-    debug_module_init();
-    sbcs.sbreadonaddr = 1;
-    sbcs.sbautoincrement = 0;
-    riscv_dbg.write_dmi(dm_ot::SBCS, sbcs);
-    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs);
-    while (sbcs.sbbusy);
+  endtask // execute_application
 
-    riscv_dbg.write_dmi(dm_ot::SBAddress0, to_host_addr); // tohost address
-    riscv_dbg.wait_idle(10);
-    do begin 
-	     do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs);
-	     while (sbcs.sbbusy);
-       riscv_dbg.write_dmi(dm_ot::SBAddress0, to_host_addr); // tohost address
-	     do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs);
-	     while (sbcs.sbbusy);
-       riscv_dbg.read_dmi(dm_ot::SBData0, retval);
-       # 100ns;
-    end while (~retval[0]);
-     
-
-    if (retval[31:1]!=0) begin
-        `uvm_error( "Core Test",  $sformatf("*** FAILED *** (tohost = %0d)",retval[31:1]))
-    end else begin
-        `uvm_info( "Core Test",  $sformatf("*** SUCCESS *** (tohost = %0d)", (retval[31:1])), UVM_LOW)
-    end
-
-     $finish;
-     
-  endtask // jtag_read_eoc
-*/
 endmodule

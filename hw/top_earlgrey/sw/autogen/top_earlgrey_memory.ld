@@ -8,7 +8,7 @@
  * address for whichever half of the flash contains the corresponding boot stage.
  */
 MEMORY {
-  ram_ret_aon(rwx) : ORIGIN = 0xB0600000, LENGTH = 0x1000
+  ram_ret_aon(rwx) : ORIGIN = 0xC0600000, LENGTH = 0x1000
   eflash(rx) : ORIGIN = 0xF0000000, LENGTH = 0x100000
   ram_main(rwx) : ORIGIN = 0xE0000000, LENGTH = 0x20000
   rom(rx) : ORIGIN = 0xd0008000, LENGTH = 0x8000

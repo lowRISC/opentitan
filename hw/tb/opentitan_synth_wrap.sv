@@ -16,7 +16,11 @@ module opentitan_synth_wrap
    import tlul2axi_pkg::*;
    import dm_ot::*;
    import lc_ctrl_pkg::*;
-   (
+#(
+   parameter SramCtrlMainMemInitFile = "",
+   parameter OtpCtrlMemInitFile = "../hw/top_earlgrey/sw/tests/hello_test/otp-img.mem",
+   parameter RomCtrlBootRomInitFile = "../hw/top_earlgrey/sw/tests/hello_test/rom.vmem"
+)  (  
    
    input logic                                                clk_i,
     
@@ -94,6 +98,10 @@ module opentitan_synth_wrap
    jtag_pkg::jtag_req_t jtag_i;
    jtag_pkg::jtag_rsp_t jtag_o;
 
+   entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
+   entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
+   logic es_rng_fips;
+
    //Unwrapping JTAG strucutres
 
    assign jtag_i.tck    = jtag_tck_i;
@@ -161,9 +169,10 @@ module opentitan_synth_wrap
    assign axi_rsp.r_valid = r_valid_i;
    assign r_ready_o = axi_req.r_ready;
 
-   
-
    top_earlgrey #(
+    .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
+    .SramCtrlMainMemInitFile(SramCtrlMainMemInitFile),
+    .RomCtrlBootRomInitFile(RomCtrlBootRomInitFile)
    ) u_RoT (
     .mio_in_i('0),
     .dio_in_i('0),
@@ -178,7 +187,7 @@ module opentitan_synth_wrap
     .flash_bist_enable_i(lc_ctrl_pkg::Off),
     .flash_power_down_h_i('0),
     .flash_power_ready_h_i('0),
-    .es_rng_rsp_i('0),
+ //   .es_rng_rsp_i('0),
     .dft_hold_tap_sel_i('0),
     .pwrmgr_ast_rsp_i(5'b11111),
     .otp_ctrl_otp_ast_pwr_seq_h_i('0),
@@ -188,7 +197,10 @@ module opentitan_synth_wrap
     .scan_en_i (1'b0),
     .scanmode_i (lc_ctrl_pkg::Off),
                      
-
+    .es_rng_fips_o(es_rng_fips),
+    .es_rng_rsp_i(es_rng_rsp),
+    .es_rng_req_o(es_rng_req),
+            
     .por_n_i ({por_n_i, por_n_i}),
                      
     .clk_main_i (clk_i),
@@ -202,7 +214,20 @@ module opentitan_synth_wrap
     .jtag_req_i(jtag_i),
     .jtag_rsp_o(jtag_o)
     );
-   
+
+   rng #(
+    .EntropyStreams ( 4 )
+   ) u_rng (
+    .clk_i          ( clk_i                 ),
+    .rst_ni         ( por_n_i               ),
+    .clk_ast_rng_i  ( clk_i                 ),
+    .rst_ast_rng_ni ( por_n_i               ),
+    .rng_en_i       ( '1 ), //es_rng_req.rng_enable ),
+    .rng_fips_i     ( es_rng_fips           ),
+    .scan_mode_i    ( '0                    ),
+    .rng_b_o        ( es_rng_rsp.rng_b      ),
+    .rng_val_o      ( es_rng_rsp.rng_valid  )
+  ); 
 
 
 endmodule

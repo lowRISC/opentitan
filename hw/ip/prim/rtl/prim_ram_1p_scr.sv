@@ -29,6 +29,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   parameter  int DataBitsPerMask     = 8, // Needs to be set to 8 in case of byte parity.
   parameter  bit EnableParity        = 1, // Enable byte parity.
 
+  parameter MemInitFile = "",
   // Scrambling parameters. Note that this needs to be low-latency, hence we have to keep the
   // amount of cipher rounds low. PRINCE has 5 half rounds in its original form, which corresponds
   // to 2*5 + 1 effective rounds. Setting this to 2 halves this to approximately 5 effective rounds.
@@ -380,6 +381,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .Width(Width),
     .DataBitsPerMask(DataBitsPerMask),
     .EnableECC(1'b0),
+    .MemInitFile(MemInitFile),
     .EnableParity(EnableParity),
     .EnableInputPipeline(1'b0),
     .EnableOutputPipeline(1'b0)

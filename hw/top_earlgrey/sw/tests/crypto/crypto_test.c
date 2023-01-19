@@ -11,16 +11,17 @@
 //
 
 #include "simple_system_common.h"
+#include "aes.c"
 #include <stdbool.h>
 
-#define DUMMYBOY
+#define TARGET_SYNTHESIS
 
 int main(int argc, char **argv) {
 
-
+  /*
   #ifdef TARGET_SYNTHESIS                
   int baud_rate = 115200;
-  int test_freq = 40000000;
+  int test_freq = 50000000;
   #else
   //set_flls();
   int baud_rate = 115200;
@@ -72,5 +73,6 @@ int main(int argc, char **argv) {
     asm volatile ("wfi"); // Ready to receive a command from the Agent --> Jump to the External_Irq_Handler
 
   return 0;
-  
+  */
+  bool test = test_main();
 }

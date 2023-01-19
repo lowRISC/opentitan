@@ -314,7 +314,11 @@ sources:
       - hw/ip/prim_generic/rtl/prim_generic_usb_diff_rx.sv
       - hw/ip/prim_generic/rtl/prim_generic_xnor2.sv
       - hw/ip/prim_generic/rtl/prim_generic_xor2.sv
-      
+#### rng
+
+      - hw/ip/rng/rtl/ast_pulse_sync.sv
+      - hw/ip/rng/rtl/rng.sv
+
 #### ibex core
 
       - hw/vendor/lowrisc_ibex/rtl/ibex_pkg.sv

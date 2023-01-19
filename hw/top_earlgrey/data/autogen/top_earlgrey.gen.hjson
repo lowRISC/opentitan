@@ -3549,6 +3549,14 @@
           randwidth: 128
         }
         {
+          name: MemInitFile
+          desc: VMEM file to initialize the SRAM.
+          type: ""
+          default: '''""'''
+          expose: "true"
+          name_top: SramCtrlRetAonMemInitFile
+        }
+        {
           name: RndCnstLfsrSeed
           desc: Compile-time random bits for initial LFSR seed
           type: sram_ctrl_pkg::lfsr_seed_t
@@ -6092,6 +6100,14 @@
           name_top: RndCnstSramCtrlMainSramNonce
           default: 0x21ad35efe85d23c884c5845d25cf9ae4
           randwidth: 128
+        }
+        {
+          name: MemInitFile
+          desc: VMEM file to initialize the SRAM.
+          type: ""
+          default: '''""'''
+          expose: "true"
+          name_top: SramCtrlMainMemInitFile
         }
         {
           name: RndCnstLfsrSeed

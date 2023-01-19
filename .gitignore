@@ -85,3 +85,12 @@ compile_commands.json
 
 # Local binaries that should not be committed to the codebase
 .bin/
+/.bender/
+/Bender.lock
+/external/
+/gen_sw_headers.sh
+/scripts/compile.tcl
+/scripts/modelsim.ini
+/scripts/transcript
+/scripts/vsim.wlf
+/scripts/work/

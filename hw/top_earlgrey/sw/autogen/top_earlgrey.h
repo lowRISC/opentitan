@@ -31,7 +31,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_GPIO_BASE_ADDR 0xB0040000u
+#define TOP_EARLGREY_GPIO_BASE_ADDR 0xC0040000u
 
 /**
  * Peripheral size for gpio in top earlgrey.
@@ -49,7 +49,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_PATTGEN_BASE_ADDR 0xB00E0000u
+#define TOP_EARLGREY_PATTGEN_BASE_ADDR 0xC00E0000u
 
 /**
  * Peripheral size for pattgen in top earlgrey.
@@ -67,7 +67,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RV_TIMER_BASE_ADDR 0xB0100000u
+#define TOP_EARLGREY_RV_TIMER_BASE_ADDR 0xC0100000u
 
 /**
  * Peripheral size for rv_timer in top earlgrey.
@@ -85,7 +85,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR 0xB0130000u
+#define TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR 0xC0130000u
 
 /**
  * Peripheral size for core device on otp_ctrl in top earlgrey.
@@ -103,7 +103,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR 0xB0132000u
+#define TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR 0xC0132000u
 
 /**
  * Peripheral size for prim device on otp_ctrl in top earlgrey.
@@ -121,7 +121,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_LC_CTRL_BASE_ADDR 0xB0140000u
+#define TOP_EARLGREY_LC_CTRL_BASE_ADDR 0xC0140000u
 
 /**
  * Peripheral size for lc_ctrl in top earlgrey.
@@ -139,7 +139,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0xB0150000u
+#define TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR 0xC0150000u
 
 /**
  * Peripheral size for alert_handler in top earlgrey.
@@ -193,7 +193,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SPI_DEVICE_BASE_ADDR 0xB0050000u
+#define TOP_EARLGREY_SPI_DEVICE_BASE_ADDR 0xC0050000u
 
 /**
  * Peripheral size for spi_device in top earlgrey.
@@ -211,7 +211,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_PWRMGR_AON_BASE_ADDR 0xB0400000u
+#define TOP_EARLGREY_PWRMGR_AON_BASE_ADDR 0xC0400000u
 
 /**
  * Peripheral size for pwrmgr_aon in top earlgrey.
@@ -229,7 +229,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RSTMGR_AON_BASE_ADDR 0xB0410000u
+#define TOP_EARLGREY_RSTMGR_AON_BASE_ADDR 0xC0410000u
 
 /**
  * Peripheral size for rstmgr_aon in top earlgrey.
@@ -247,7 +247,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_CLKMGR_AON_BASE_ADDR 0xB0420000u
+#define TOP_EARLGREY_CLKMGR_AON_BASE_ADDR 0xC0420000u
 
 /**
  * Peripheral size for clkmgr_aon in top earlgrey.
@@ -265,7 +265,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR 0xB0430000u
+#define TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR 0xC0430000u
 
 /**
  * Peripheral size for sysrst_ctrl_aon in top earlgrey.
@@ -283,7 +283,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_PINMUX_AON_BASE_ADDR 0xB0460000u
+#define TOP_EARLGREY_PINMUX_AON_BASE_ADDR 0xC0460000u
 
 /**
  * Peripheral size for pinmux_aon in top earlgrey.
@@ -301,7 +301,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR 0xB0470000u
+#define TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR 0xC0470000u
 
 /**
  * Peripheral size for aon_timer_aon in top earlgrey.
@@ -319,7 +319,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_AST_BASE_ADDR 0xB0480000u
+#define TOP_EARLGREY_AST_BASE_ADDR 0xC0480000u
 
 /**
  * Peripheral size for ast in top earlgrey.
@@ -337,7 +337,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR 0xB0500000u
+#define TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR 0xC0500000u
 
 /**
  * Peripheral size for regs device on sram_ctrl_ret_aon in top earlgrey.
@@ -355,7 +355,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR 0xB0600000u
+#define TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR 0xC0600000u
 
 /**
  * Peripheral size for ram device on sram_ctrl_ret_aon in top earlgrey.

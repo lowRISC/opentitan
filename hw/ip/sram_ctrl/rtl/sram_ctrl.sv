@@ -17,6 +17,7 @@ module sram_ctrl
   parameter logic [NumAlerts-1:0] AlertAsyncOn          = {NumAlerts{1'b1}},
   // Enables the execute from SRAM feature.
   parameter bit InstrExec                               = 1,
+  parameter MemInitFile ="",
   // Random netlist constants
   parameter otp_ctrl_pkg::sram_key_t   RndCnstSramKey   = RndCnstSramKeyDefault,
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault,
@@ -463,7 +464,8 @@ module sram_ctrl
     .Depth(Depth),
     .EnableParity(0),
     .DataBitsPerMask(DataWidth),
-    .DiffWidth(DataWidth)
+    .DiffWidth(DataWidth),
+    .MemInitFile(MemInitFile)                    
   ) u_prim_ram_1p_scr (
     .clk_i,
     .rst_ni,

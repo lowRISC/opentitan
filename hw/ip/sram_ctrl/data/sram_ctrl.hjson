@@ -41,6 +41,13 @@
       randcount: "128",
       randtype:  "data", // randomize randcount databits
     },
+    { name:      "MemInitFile",
+      desc:      "VMEM file to initialize the SRAM.",
+      type:      "",
+      default:   '""',
+      expose:    "true",
+      local:     "false"
+    }
     { name:      "RndCnstLfsrSeed",
       desc:      "Compile-time random bits for initial LFSR seed",
       type:      "sram_ctrl_pkg::lfsr_seed_t"
