@@ -792,16 +792,6 @@ static void max_power_task(void *task_parameters) {
   pattgen_ctrl_reg =
       bitfield_bit32_write(pattgen_ctrl_reg, PATTGEN_CTRL_ENABLE_CH1_BIT, true);
 
-  // Enable pattgen.
-  mmio_region_write32(pattgen.base_addr, PATTGEN_CTRL_REG_OFFSET,
-                      pattgen_ctrl_reg);
-
-  // Issue KMAC squeeze, AES trigger, and HMAC process commands.
-  kmac_operation_state.squeezing = true;
-  mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, kmac_cmd_reg);
-  mmio_region_write32(aes.base_addr, AES_TRIGGER_REG_OFFSET, aes_trigger_reg);
-  mmio_region_write32(hmac.base_addr, HMAC_CMD_REG_OFFSET, hmac_cmd_reg);
-
   // Enable all UARTs and I2Cs.
   mmio_region_write32(uart_1.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
   mmio_region_write32(uart_2.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
@@ -809,6 +799,16 @@ static void max_power_task(void *task_parameters) {
   mmio_region_write32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
   mmio_region_write32(i2c_1.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
   mmio_region_write32(i2c_2.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
+
+  // Enable pattgen.
+  mmio_region_write32(pattgen.base_addr, PATTGEN_CTRL_REG_OFFSET,
+                      pattgen_ctrl_reg);
+
+  // Issue HMAC process, KMAC squeeze, and AES trigger commands.
+  mmio_region_write32(hmac.base_addr, HMAC_CMD_REG_OFFSET, hmac_cmd_reg);
+  kmac_operation_state.squeezing = true;
+  mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, kmac_cmd_reg);
+  mmio_region_write32(aes.base_addr, AES_TRIGGER_REG_OFFSET, aes_trigger_reg);
 
   // Toggle GPIO pin to indicate we are in max power consumption.
   CHECK_DIF_OK(dif_gpio_write(&gpio, 0, true));
