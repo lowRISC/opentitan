@@ -18,6 +18,7 @@ def args(p):
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
 #include "sw/device/lib/dif/dif_${n}.h"
 % endfor
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -197,10 +198,9 @@ static void peripheral_irqs_trigger(void) {
   ${indent}  LOG_INFO("Triggering ${p.inst_name} IRQ %d.", irq);
   ${indent}  CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq, true));
 
-  ${indent}  // TODO: Make race-condition free
-  ${indent}  CHECK(${p.name}_irq_serviced == irq,
-  ${indent}        "Incorrect ${p.inst_name} IRQ serviced: exp = %d, obs = %d", irq,
-  ${indent}        ${p.name}_irq_serviced);
+  ${indent}  // This avoids a race where *irq_serviced is read before
+  ${indent}  // entering the CSR.
+  ${indent}  IBEX_SPIN_FOR(${p.name}_irq_serviced == irq, 1);
   ${indent}  LOG_INFO("IRQ %d from ${p.inst_name} is serviced.", irq);
   ${indent}}
   % if p.inst_name == "uart0":
