@@ -80,3 +80,8 @@ CHECKSUM: "835220981 2115631974"
 INSTANCE: tb.dut.u_tlul_adapter_sram.u_sramreqfifo
 ANNOTATION: "[UNR] this fifo can never be full, because transactions can drain into u_rspfifo"
 Branch 0 "1862733684" "gen_normal_fifo.full" (0) "gen_normal_fifo.full 1,-"
+
+CHECKSUM: "826810526 1029109911"
+INSTANCE: tb.dut.u_tlul_lc_gate
+ANNOTATION: "[LOWRISK] This happens in the 1st cycle after exiting reset. In order to cover it, need to drive TL items during reset, which isn't supported in the agent."
+Condition 4 "4047466955" "(outstanding_txn == '0) 1 -1"
