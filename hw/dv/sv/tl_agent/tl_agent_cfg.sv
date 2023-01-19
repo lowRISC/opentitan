@@ -134,6 +134,20 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   // Added to allow some TLUL checks to be ignored on certain scenarios.
   bit check_tl_errs = 1'b1;
 
+  // Invalidate drive option
+  // Setting these to '1', make driver send 'x' during invalidate cycle.
+  // Setting these to '0', make driver send 'random value' during invalidate cycle.
+  rand bit invalidate_a_x;
+  rand bit invalidate_d_x;
+
+  constraint invalidate_a_channel_op_c {
+    invalidate_a_x dist { 1 := 7, 0 := 3};
+  }
+  constraint invalidate_d_channel_op_c {
+    invalidate_d_x dist { 1 := 7, 0 := 3};
+  }
+
+
   `uvm_object_utils_begin(tl_agent_cfg)
     `uvm_field_int(max_outstanding_req,   UVM_DEFAULT)
     `uvm_field_enum(tl_level_e, tl_level, UVM_DEFAULT)
