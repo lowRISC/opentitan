@@ -1358,7 +1358,7 @@ opentitan_flash_binary(
         "sim_dv",
     ],
     local_defines = [
-        shell.quote("EMPTY_TEST_MSG=\"use_sw_rsa_verify=0x%08x\", otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET)"),
+        shell.quote("EMPTY_TEST_MSG=\"use_sw_rsa_verify=0x%08x\", otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET)"),
     ],
     signed = True,
     deps = [
@@ -1376,7 +1376,7 @@ opentitan_flash_binary(
         partitions = [
             otp_partition(
                 name = "CREATOR_SW_CFG",
-                items = {"CREATOR_SW_CFG_USE_SW_RSA_VERIFY": hex(t["use_sw_rsa_verify"])},
+                items = {"CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN": hex(t["use_sw_rsa_verify"])},
             ),
         ],
     )

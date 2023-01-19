@@ -124,7 +124,7 @@
                     size: "4"
                 }
                 {
-                    name: "CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
+                    name: "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN",
                     size: "4"
                 }
                 {

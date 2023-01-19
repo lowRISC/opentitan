@@ -55,7 +55,7 @@ otp_json(
                 # Use software mod_exp implementation for signature
                 # verification. See the definition of `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_USE_SW_RSA_VERIFY": "0x739",
+                "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN": "0x739",
                 # Mark the first three keys as valid and remaining as invalid
                 # since we currently have only three keys. See the definition of
                 # `hardened_byte_bool_t` in sw/device/lib/base/hardened.h.

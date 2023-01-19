@@ -17,7 +17,7 @@
                     value: "0x0",
                 },
                 {
-                    name: "CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
+                    name: "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN",
                     // Use software mod_exp implementation for signature
                     // verification. See the definition of `hardened_bool_t` in
                     // sw/device/lib/base/hardened.h.

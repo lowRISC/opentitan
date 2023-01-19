@@ -10,7 +10,7 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |    1    | CREATOR_SW_CFG |    800     |      32bit       |                CREATOR_SW_CFG_AST_CFG                 |     0x040      |    156     |
 |         |                |            |      32bit       |              CREATOR_SW_CFG_AST_INIT_EN               |     0x0DC      |     4      |
 |         |                |            |      32bit       |              CREATOR_SW_CFG_ROM_EXT_SKU               |     0x0E0      |     4      |
-|         |                |            |      32bit       |           CREATOR_SW_CFG_USE_SW_RSA_VERIFY            |     0x0E4      |     4      |
+|         |                |            |      32bit       |     CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN      |     0x0E4      |     4      |
 |         |                |            |      32bit       |              CREATOR_SW_CFG_KEY_IS_VALID              |     0x0E8      |     8      |
 |         |                |            |      32bit       |         CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG         |     0x0F0      |     4      |
 |         |                |            |      32bit       |        CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG        |     0x0F4      |     4      |

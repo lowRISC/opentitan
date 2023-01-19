@@ -273,7 +273,8 @@ class chip_base_vseq #(
     // Use otbn mod_exp implementation for signature
     // verification. See the definition of `hardened_bool_t` in
     // sw/device/lib/base/hardened.h.
-    cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgUseSwRsaVerifyOffset, 32'h1d4);
+    cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgSigverifyRsaModExpIbexEnOffset,
+                                     32'h1d4);
   endfunction : initialize_otp_sig_verify
 
   // Initialize the OTP creator SW cfg region with AST configuration data.

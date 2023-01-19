@@ -177,16 +177,20 @@ static hardened_bool_t sigverify_use_sw_rsa_verify(lifecycle_state_t lc_state) {
       return kHardenedBoolTrue;
     case kLcStateDev:
       HARDENED_CHECK_EQ(lc_state, kLcStateDev);
-      return otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET);
+      return otp_read32(
+          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET);
     case kLcStateProd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProd);
-      return otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET);
+      return otp_read32(
+          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET);
     case kLcStateProdEnd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
-      return otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET);
+      return otp_read32(
+          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET);
     case kLcStateRma:
       HARDENED_CHECK_EQ(lc_state, kLcStateRma);
-      return otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET);
+      return otp_read32(
+          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET);
     default:
       HARDENED_UNREACHABLE();
   }

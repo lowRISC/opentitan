@@ -769,7 +769,7 @@
             - Apply bootstrap pin strapping and reset the chip and load the image.
             - Verify that boot succeeeds. Repeat with the following values:
 
-            | `CREATOR_SW_CFG_USE_SW_RSA_VERIFY` | Result  |
+            | `CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN` | Result  |
             |:----------------------------------:|:-------:|
             | `kHardenedBoolTrue`                | Success |
             | `kHardenedBoolFalse`               | Success |
