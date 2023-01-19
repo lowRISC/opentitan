@@ -74,8 +74,12 @@ module rstmgr_leaf_rst
       end
     end
   end else begin : gen_no_sw_rst_req
+    //VCS coverage off
+    // pragma coverage off
     logic unused_sig;
     assign unused_sig = clr_sw_rst_req;
+    //VCS coverage on
+    // pragma coverage on
     assign sw_rst_req_q = '0;
   end
 
