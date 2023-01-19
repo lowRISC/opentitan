@@ -234,17 +234,24 @@ class tl_host_driver extends tl_base_driver;
   endfunction
 
   function void invalidate_a_channel();
-    cfg.vif.h2d_int.a_opcode <= tlul_pkg::tl_a_op_e'('x);
-    cfg.vif.h2d_int.a_param <= '{default:'x};
-    cfg.vif.h2d_int.a_size <= '{default:'x};
-    cfg.vif.h2d_int.a_source <= '{default:'x};
-    cfg.vif.h2d_int.a_address <= '{default:'x};
-    cfg.vif.h2d_int.a_mask <= '{default:'x};
-    cfg.vif.h2d_int.a_data <= '{default:'x};
-    // The assignment to tl_type must have a cast since the LRM doesn't allow enum assignment of
-    // values not belonging to the enumeration set.
-    cfg.vif.h2d_int.a_user <= '{instr_type:prim_mubi_pkg::mubi4_t'('x), default:'x};
-    cfg.vif.h2d_int.a_valid <= 1'b0;
+    if (cfg.invalidate_a_x) begin
+      cfg.vif.h2d_int.a_opcode <= tlul_pkg::tl_a_op_e'('x);
+      cfg.vif.h2d_int.a_param <= '{default:'x};
+      cfg.vif.h2d_int.a_size <= '{default:'x};
+      cfg.vif.h2d_int.a_source <= '{default:'x};
+      cfg.vif.h2d_int.a_address <= '{default:'x};
+      cfg.vif.h2d_int.a_mask <= '{default:'x};
+      cfg.vif.h2d_int.a_data <= '{default:'x};
+      // The assignment to tl_type must have a cast since the LRM doesn't allow enum assignment of
+      // values not belonging to the enumeration set.
+      cfg.vif.h2d_int.a_user <= '{instr_type:prim_mubi_pkg::mubi4_t'('x), default:'x};
+      cfg.vif.h2d_int.a_valid <= 1'b0;
+    end else begin
+      tlul_pkg::tl_h2d_t h2d;
+      `DV_CHECK_STD_RANDOMIZE_FATAL(h2d)
+      h2d.a_valid = 1'b0;
+      cfg.vif.h2d_int <= h2d;
+    end
   endfunction : invalidate_a_channel
 
 endclass : tl_host_driver
