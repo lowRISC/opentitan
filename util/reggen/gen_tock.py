@@ -277,7 +277,9 @@ def gen_const_multireg(regout: TextIO, fieldout: TextIO,
                        access_type: Set[str],
                        highest_address: Set[int]) -> None:
     reg = multireg.regs[0]
-    rname = reg.name[:-2].upper()
+    rname = reg.name.upper()
+    if rname.endswith("_0"):
+        rname = rname[:-2]
     rlen = len(multireg.regs)
     genout(regout, format_comment(first_line(reg.desc)))
     a = access(reg)
