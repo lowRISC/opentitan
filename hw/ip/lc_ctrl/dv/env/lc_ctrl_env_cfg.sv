@@ -122,15 +122,4 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
     return (this.test_phase);
   endfunction
 
-  // Use these functions to propagate in_reset to JTAG RISCV agents
-  virtual function void reset_asserted();
-    super.reset_asserted();
-    m_jtag_riscv_agent_cfg.in_reset = 1;
-  endfunction
-
-  virtual function void reset_deasserted();
-    super.reset_deasserted();
-    m_jtag_riscv_agent_cfg.in_reset = 0;
-  endfunction
-
 endclass
