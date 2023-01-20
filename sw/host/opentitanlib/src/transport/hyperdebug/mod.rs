@@ -274,7 +274,7 @@ impl Inner {
     pub fn cmd_no_output(&self, cmd: &str) -> Result<()> {
         let mut unexpected_output: bool = false;
         self.execute_command(cmd, |line| {
-            log::warn!("Unexpected HyperDebug output: {}\n", line);
+            log::warn!("Unexpected HyperDebug output: {}", line);
             unexpected_output = true;
         })?;
         if unexpected_output {
@@ -293,17 +293,14 @@ impl Inner {
         self.execute_command(cmd, |line| {
             if unexpected_output {
                 // Third or subsequent line, report it.
-                log::warn!("Unexpected HyperDebug output: {}\n", line);
+                log::warn!("Unexpected HyperDebug output: {}", line);
             } else if result.is_none() {
                 // First line, remember it.
                 result = Some(line.to_string());
             } else {
                 // Second line, report the first as well as this one.
-                log::warn!(
-                    "Unexpected HyperDebug output: {}\n",
-                    result.as_ref().unwrap()
-                );
-                log::warn!("Unexpected HyperDebug output: {}\n", line);
+                log::warn!("Unexpected HyperDebug output: {}", result.as_ref().unwrap());
+                log::warn!("Unexpected HyperDebug output: {}", line);
                 unexpected_output = true;
             }
         })?;
@@ -330,7 +327,7 @@ impl Inner {
     ) -> Result<regex::Captures<'a>> {
         *buf = self.cmd_one_line_output(cmd)?;
         let Some(captures) = regex.captures(buf) else {
-            log::warn!("Unexpected HyperDebug output: {}\n", buf);
+            log::warn!("Unexpected HyperDebug output: {}", buf);
             bail!(TransportError::CommunicationError(
                 "Unexpected output".to_string()
             ));
@@ -360,7 +357,7 @@ impl Inner {
             match port.read(&mut buf) {
                 Ok(rc) => {
                     log::info!(
-                        "Discarded {} characters: {:?}\n",
+                        "Discarded {} characters: {:?}",
                         rc,
                         &std::str::from_utf8(&buf[0..rc])
                     );
