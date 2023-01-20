@@ -580,13 +580,6 @@ static void configure_kmac(void) {
       .msg_mask = false,
   };
   CHECK_DIF_OK(dif_kmac_configure(&kmac, kmac_cfg));
-
-  dif_kmac_customization_string_t kmac_customization_string;
-  CHECK_DIF_OK(dif_kmac_customization_string_init("Power Virus Test", 16,
-                                                  &kmac_customization_string));
-  CHECK_DIF_OK(dif_kmac_mode_kmac_start(
-      &kmac, &kmac_operation_state, kDifKmacModeKmacLen256, kKmacDigestLength,
-      &kKmacKey, &kmac_customization_string));
 }
 
 static void configure_uart(dif_uart_t *uart) {
@@ -701,6 +694,12 @@ static void crypto_data_load_task(void *task_parameters) {
   hmac_testutils_check_message_length(&hmac, sizeof(kHmacRefData) * 8);
 
   // Load data into KMAC block.
+  dif_kmac_customization_string_t kmac_customization_string;
+  CHECK_DIF_OK(dif_kmac_customization_string_init("Power Virus Test", 16,
+                                                  &kmac_customization_string));
+  CHECK_DIF_OK(dif_kmac_mode_kmac_start(
+      &kmac, &kmac_operation_state, kDifKmacModeKmacLen256, kKmacDigestLength,
+      &kKmacKey, &kmac_customization_string));
   CHECK_DIF_OK(dif_kmac_absorb(&kmac, &kmac_operation_state, kKmacMessage,
                                kKmacMessageLength, NULL));
 
