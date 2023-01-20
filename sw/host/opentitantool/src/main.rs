@@ -72,7 +72,7 @@ struct Opts {
     )]
     rcfile: PathBuf,
 
-    #[structopt(long, default_value = "off")]
+    #[structopt(long, default_value = "warn")]
     logging: LevelFilter,
 
     #[structopt(
