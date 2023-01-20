@@ -58,33 +58,6 @@ cc_library(
 )
 
 cc_library(
-    name = "kmac_test_vectors",
-    srcs = ["kmac_test_vectors.c"],
-    hdrs = ["kmac_test_vectors.h"],
-    deps = [
-        ":kmac",
-    ],
-)
-
-opentitan_functest(
-    name = "kmac_test",
-    srcs = ["kmac_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        ":kmac",
-        ":kmac_test_vectors",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto/impl:hash",
-        "//sw/device/lib/crypto/impl:mac",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-cc_library(
     name = "entropy",
     srcs = ["entropy.c"],
     hdrs = ["entropy.h"],
