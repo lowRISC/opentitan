@@ -27,11 +27,8 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
     return kCryptoStatusBadArgs;
   }
 
-  // Call `kmac_get_key_len_bytes` to make sure that `key_len` is a valid key
-  // size. Then discard the returned `key_len_enum` value.
-  kmac_key_len_t key_len_enum;
-  err = kmac_get_key_len_bytes(key_len, &key_len_enum);
-  if (err != kKmacOk) {
+  // Check `key_len` is valid/supported by KMAC HWIP.
+  if (!kmac_is_valid_key_len(key_len)) {
     return kCryptoStatusBadArgs;
   }
 

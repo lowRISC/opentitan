@@ -11,42 +11,44 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "kmac_regs.h"  // Generated.
 
-OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength128,
-                     KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L128);
-OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength224,
-                     KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L224);
-OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength256,
-                     KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256);
-OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength384,
-                     KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L384);
-OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength512,
-                     KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L512);
+/**
+ * Security strength values.
+ *
+ * These values corresponds to the half of the capacity of Keccak permutation.
+ */
+typedef enum kmac_security_str {
+  kKmacSecurityStrength128 = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L128,
+  kKmacSecurityStrength224 = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L224,
+  kKmacSecurityStrength256 = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256,
+  kKmacSecurityStrength384 = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L384,
+  kKmacSecurityStrength512 = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L512,
+} kmac_security_str_t;
 
-// Assert that `kmac_en` bit of `kmac_operation_t` is mapped correctly
-static_assert((kKmacOperationSHA3 & 1) == 0,
-              "Incorrect kmac_en field of enum value kKmacOperationSHA3");
-static_assert((kKmacOperationSHAKE & 1) == 0,
-              "Incorrect kmac_en field of enum value kKmacOperationSHAKE");
-static_assert((kKmacOperationCSHAKE & 1) == 0,
-              "Incorrect kmac_en field of enum value kKmacOperationCSHAKE");
-static_assert((kKmacOperationKMAC & 1) == 1,
-              "Incorrect kmac_en field of enum value kKmacOperationKMAC");
+/**
+ * List of supported KMAC modes.
+ *
+ * Each `kmac_operation_t` enumeration constant is a bitfield with the
+ * following layout:
+ * - Bit 0: kmac_en (Whether to enable KMAC datapath).
+ * - Bit 1-2: Keccak hashing mode (e.g. SHA, SHAKE, or cSHAKE).
+ */
+typedef enum kmac_operation {
+  kKmacOperationSHA3 = KMAC_CFG_SHADOWED_MODE_VALUE_SHA3 << 1 | 0,
+  kKmacOperationSHAKE = KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE << 1 | 0,
+  kKmacOperationCSHAKE = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE << 1 | 0,
+  kKmacOperationKMAC = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE << 1 | 1,
+} kmac_operation_t;
 
-// Assert that `mode` field of `kmac_operation_t` is mapped correctly
-static_assert(kKmacOperationSHA3 >> 1 == KMAC_CFG_SHADOWED_MODE_VALUE_SHA3,
-              "Incorrect mode field of enum value kKmacOperationSHA3");
-static_assert(kKmacOperationSHAKE >> 1 == KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE,
-              "Incorrect mode field of enum value kKmacOperationSHAKE");
-static_assert(kKmacOperationCSHAKE >> 1 == KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE,
-              "Incorrect mode field of enum value kKmacOperationCSHAKE");
-static_assert(kKmacOperationKMAC >> 1 == KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE,
-              "Incorrect mode field of enum value kKmacOperationKMAC");
-
-OT_ASSERT_ENUM_VALUE(kKmacKeyLength128, KMAC_KEY_LEN_LEN_VALUE_KEY128);
-OT_ASSERT_ENUM_VALUE(kKmacKeyLength192, KMAC_KEY_LEN_LEN_VALUE_KEY192);
-OT_ASSERT_ENUM_VALUE(kKmacKeyLength256, KMAC_KEY_LEN_LEN_VALUE_KEY256);
-OT_ASSERT_ENUM_VALUE(kKmacKeyLength384, KMAC_KEY_LEN_LEN_VALUE_KEY384);
-OT_ASSERT_ENUM_VALUE(kKmacKeyLength512, KMAC_KEY_LEN_LEN_VALUE_KEY512);
+/**
+ * List of supported KMAC key sizes.
+ */
+typedef enum kmac_key_length {
+  kKmacKeyLength128 = KMAC_KEY_LEN_LEN_VALUE_KEY128,
+  kKmacKeyLength192 = KMAC_KEY_LEN_LEN_VALUE_KEY192,
+  kKmacKeyLength256 = KMAC_KEY_LEN_LEN_VALUE_KEY256,
+  kKmacKeyLength384 = KMAC_KEY_LEN_LEN_VALUE_KEY384,
+  kKmacKeyLength512 = KMAC_KEY_LEN_LEN_VALUE_KEY512,
+} kmac_key_len_t;
 
 enum {
   kKmacPrefixRegCount = 4 * KMAC_PREFIX_MULTIREG_COUNT,
@@ -69,16 +71,6 @@ static const crypto_const_uint8_buf_t kKmacEmptyString = {
 };
 
 OT_ASSERT_ENUM_VALUE(kKmacPrefixMaxSize, 4 * KMAC_PREFIX_MULTIREG_COUNT - 4);
-OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength128,
-                     KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L128);
-OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength224,
-                     KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L224);
-OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength256,
-                     KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256);
-OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength384,
-                     KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L384);
-OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength512,
-                     KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L512);
 
 static const uint32_t prefix_offsets[] = {
     KMAC_PREFIX_0_REG_OFFSET,  KMAC_PREFIX_1_REG_OFFSET,
@@ -195,8 +187,18 @@ static kmac_error_t kmac_get_keccak_rate_bytes(kmac_security_str_t security_str,
   return kKmacOk;
 }
 
-kmac_error_t kmac_get_key_len_bytes(size_t key_len,
-                                    kmac_key_len_t *key_len_enum) {
+/**
+ * Return the matching enum of `kmac_key_len_t` for given key length.
+ *
+ * `key_len_enum` must not be NULL pointer.
+ *
+ * @param key_len The size of the key in bytes.
+ * @param key_len_enum The corresponding enum value to be returned.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+static kmac_error_t kmac_get_key_len_bytes(size_t key_len,
+                                           kmac_key_len_t *key_len_enum) {
   switch (key_len) {
     case 128 / 8:
       *key_len_enum = kKmacKeyLength128;
@@ -217,6 +219,11 @@ kmac_error_t kmac_get_key_len_bytes(size_t key_len,
       return kKmacUnsupportedKeySizeError;
   }
   return kKmacOk;
+}
+
+bool kmac_is_valid_key_len(size_t key_len) {
+  kmac_key_len_t key_len_enum;
+  return kmac_get_key_len_bytes(key_len, &key_len_enum) == kKmacOk;
 }
 
 kmac_error_t kmac_hwip_default_configure(void) {
@@ -434,8 +441,22 @@ static kmac_error_t kmac_set_prefix_regs(crypto_const_uint8_buf_t func_name,
   return kKmacOk;
 }
 
-kmac_error_t kmac_init(kmac_operation_t operation,
-                       kmac_security_str_t security_str) {
+/**
+ * Initializes the KMAC configuration.
+ *
+ * In particular, this function sets the CFG register of KMAC for given
+ * `operation_type`. The struct type kmac_operation_t is defined in a way that
+ * each field inherently implies a fixed security strength (i.e. half of Keccak
+ * capacity). For instance, if we want to run SHA-3 with 224-bit digest size,
+ * then `operation_type` = kSHA3_224.
+ *
+ *
+ * @param operation The chosen operation, see kmac_operation_t struct.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+static kmac_error_t kmac_init(kmac_operation_t operation,
+                              kmac_security_str_t security_str) {
   kmac_error_t err = wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1);
   if (err != kKmacOk) {
     return err;
@@ -467,9 +488,26 @@ kmac_error_t kmac_init(kmac_operation_t operation,
   return kKmacOk;
 }
 
-kmac_error_t kmac_write_prefix_block(kmac_operation_t operation,
-                                     crypto_const_uint8_buf_t func_name,
-                                     crypto_const_uint8_buf_t cust_str) {
+/**
+ * Configure the prefix registers with customization string.
+ *
+ * For KMAC, this function ignores `func_name` and uses "KMAC" instead.
+ *
+ * The caller must ensure that `func_name` and `cust_str` have properly
+ * allocated `data` fields whose length matches their `len` fields.
+ *
+ * In total `func_name` and `cust_str` can be at most `kKmacPrefixMaxSize`
+ * bytes.
+ *
+ * @param operation The KMAC or cSHAKE operation.
+ * @param func_name The function name, used for cSHAKE.
+ * @param cust_str The customization string (both for cSHAKE and KMAC).
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+static kmac_error_t kmac_write_prefix_block(kmac_operation_t operation,
+                                            crypto_const_uint8_buf_t func_name,
+                                            crypto_const_uint8_buf_t cust_str) {
   if (operation == kKmacOperationCSHAKE) {
     return kmac_set_prefix_regs(func_name, cust_str);
   } else if (operation == kKmacOperationKMAC) {
@@ -478,7 +516,20 @@ kmac_error_t kmac_write_prefix_block(kmac_operation_t operation,
   return kKmacArgsError;
 }
 
-kmac_error_t kmac_write_key_block(kmac_blinded_key_t *key) {
+/**
+ * Update the key registers with given key shares.
+ *
+ * The caller must ensure that `key` struct is properly populated (no NULL
+ * pointers and matching `len`).
+ *
+ * The accepted `key->len` values are {128 / 8, 192 / 8, 256 / 8, 384 / 8,
+ * 512 / 8}, otherwise an error will be returned.
+ *
+ * @param key The input key passed as a struct.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+static kmac_error_t kmac_write_key_block(kmac_blinded_key_t *key) {
   kmac_key_len_t key_len_enum;
   kmac_error_t err = kmac_get_key_len_bytes(key->len, &key_len_enum);
   if (err != kKmacOk) {
@@ -497,9 +548,37 @@ kmac_error_t kmac_write_key_block(kmac_blinded_key_t *key) {
   return kKmacOk;
 }
 
-kmac_error_t kmac_process_msg_blocks(kmac_operation_t operation,
-                                     crypto_const_uint8_buf_t message,
-                                     crypto_uint8_buf_t *digest) {
+/**
+ * Common routine for feeding message blocks during SHA/SHAKE/cSHAKE/KMAC.
+ *
+ * Before running this, the operation type must be configured with kmac_init.
+ * Then, we can use this function to feed various bytes of data to the KMAC
+ * core. Note that this is a one-shot implementation, and it does not support
+ * streaming mode. This decision is in accord with OpenTitan's Crypto Library
+ * Specification. Refer to the Hash section of this specification.
+ *
+ * Current implementation has few limitiations:
+ *
+ * 1. `message.data` pointer is assumed to be word-aligned. The case where
+ * `data` field is not divisible by 4 is not yet implemented. This is about
+ * extra protection against SCA.
+ *
+ * 2. Currently, there is no error check on consisteny of the input parameters.
+ * For instance, one can invoke SHA-3_224 with digest_len=32, which will produce
+ * 256 bits of digest.
+ *
+ * The caller must ensure that `message` and `digest` have properly
+ * allocated `data` fields whose length matches their `len` fields.
+ *
+ * @param operation The operation type.
+ * @param message Input message string.
+ * @param digest The struct to which the result will be written.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+static kmac_error_t kmac_process_msg_blocks(kmac_operation_t operation,
+                                            crypto_const_uint8_buf_t message,
+                                            crypto_uint8_buf_t *digest) {
   uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
   kmac_error_t err;
 
