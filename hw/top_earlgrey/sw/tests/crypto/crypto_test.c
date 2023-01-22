@@ -10,15 +10,15 @@
 //
 //
 
-#include "simple_system_common.h"
-#include "aes.c"
+#include "../common/simple_system_common.h"
 #include <stdbool.h>
+#include "aes_test.c"
 
 #define TARGET_SYNTHESIS
 
 int main(int argc, char **argv) {
 
-  /*
+
   #ifdef TARGET_SYNTHESIS                
   int baud_rate = 115200;
   int test_freq = 50000000;
@@ -30,13 +30,28 @@ int main(int argc, char **argv) {
   uart_set_cfg(0,(test_freq/baud_rate)>>4);
   
   int volatile  * plic_prio, * plic_en;
-  int volatile * p_reg, * p_reg1;
+  int volatile * p_reg, * p_reg1, * edn_enable, * csrng_enable, * entropy_src_enable;
+  int volatile * aes;
+  
   int a = 0;
  
   unsigned val = 0xe0000001;
   asm volatile("csrw mtvec, %0\n" : : "r"(val));
-  
 
+  entropy_src_enable = (int *) 0xc1160024;
+ *entropy_src_enable = 0x00909099;
+
+  entropy_src_enable = (int *) 0xc1160020;
+ *entropy_src_enable = 0x6;
+
+  csrng_enable = (int *) 0xc1150014;
+ *csrng_enable = 0x666;
+
+  edn_enable = (int *) 0xc1170014;
+ *edn_enable = 0x9966;
+
+  bool t = crypto_test_main();
+ 
   printf("FPGA test with two indipendent JTAG for Ibex and Ariane\r\n");
   uart_wait_tx_done();
   unsigned val_1 = 0x00001808;  // Set global interrupt enable in ibex regs
@@ -73,6 +88,4 @@ int main(int argc, char **argv) {
     asm volatile ("wfi"); // Ready to receive a command from the Agent --> Jump to the External_Irq_Handler
 
   return 0;
-  */
-  bool test = test_main();
 }

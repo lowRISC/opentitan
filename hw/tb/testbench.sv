@@ -230,7 +230,7 @@ module testbench ();
                      
     .clk_main_i (clk_sys),
     .clk_io_i(clk_sys),
-    .clk_aon_i(aon_clk),
+    .clk_aon_i(clk_sys),
     .clk_usb_i(clk_sys),
 
 //    .clks_ast_o(tieoff[19]),
@@ -310,8 +310,8 @@ module testbench ();
       if ( $value$plusargs ("OT_STRING=%s", binary));
          $display("Testing %s", binary);
          
-      repeat(5000)
-          @(posedge aon_clk);
+      repeat(10000)
+          @(posedge clk_sys);
       
       debug_module_init();
       load_binary(binary);
