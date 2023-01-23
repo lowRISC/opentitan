@@ -50,7 +50,8 @@
   ]
 
   // Add ALERT_HANDLER specific exclusion files.
-  vcs_cov_excl_files: ["{self_dir}/cov/alert_handler_cov_excl.el"]
+  vcs_cov_excl_files: ["{self_dir}/cov/alert_handler_cov_excl.el",
+                       "{self_dir}/cov/alert_handler_cov_unr.el"]
 
   // Default UVM test and seq class name.
   uvm_test: alert_handler_base_test
