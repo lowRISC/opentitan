@@ -107,7 +107,7 @@ static void test_barrett384(dif_otbn_t *otbn) {
           c[i], c_expected[i]);
   }
 
-  check_otbn_insn_cnt(otbn, 171);
+  check_otbn_insn_cnt(otbn, 174);
 }
 
 /**
