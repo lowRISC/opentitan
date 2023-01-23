@@ -9,6 +9,11 @@
 
 .section .text.start
 
+/* Initialise WDRs before using them */
+bn.xor w4, w4, w4
+bn.xor w5, w5, w5
+bn.xor w6, w6, w6
+
 /* Load operands into WDRs */
 li x2, 0
 la x3, operand1
@@ -131,4 +136,3 @@ operand2:
    w4 =
    c02f9f7c1521e937 31d623426dbfa830
    c4df807f413b6763 921c8782f7f42166 */
-
