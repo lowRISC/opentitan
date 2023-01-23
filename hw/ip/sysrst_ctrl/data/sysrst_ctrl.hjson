@@ -648,7 +648,7 @@
       ],
     }
     { name: "AUTO_BLOCK_OUT_CTL",
-      desc: "confiure the key outputs to auto-override and their value",
+      desc: "configure the key outputs to auto-override and their value",
       swaccess: "rw",
       hwaccess: "hro",
       regwen: "REGWEN",
