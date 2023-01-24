@@ -1,0 +1,14 @@
+./util/regtool.py -D -o sw/device/lib/headers/rstmgr_regs.h hw/ip/rstmgr/data/rstmgr.hjson
+./util/regtool.py -D -o sw/device/lib/headers/otp_ctrl_regs.h hw/ip/otp_ctrl/data/otp_ctrl.hjson
+./util/regtool.py -D -o sw/device/lib/headers/alert_handler_regs.h hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson
+./util/regtool.py -D -o sw/device/lib/headers/flash_ctrl_regs.h hw/top_earlgrey/ip/flash_ctrl/data/rstmgr.hjson
+./util/regtool.py -D -o sw/device/lib/headers/pwrmgr_regs.h hw/ip/pwrmgr/data/pwrmgr.hjson
+./util/regtool.py -D -o sw/device/lib/headers/aon_timer_regs.h hw/ip/aon_timer/data/aon_timer.hjson
+./util/regtool.py -D -o sw/device/lib/headers/edn_regs.h hw/ip/edn/data/edn.hjson
+./util/regtool.py -D -o sw/device/lib/headers/hmac_regs.h hw/ip/hmac/data/hmac.hjson
+./util/regtool.py -D -o sw/device/lib/headers/kmac_regs.h hw/ip/kmac/data/kmac.hjson
+./util/regtool.py -D -o sw/device/lib/headers/keymgr_regs.h hw/ip/keymgr/data/keymgr.hjson
+./util/regtool.py -D -o sw/device/lib/headers/lc_ctrl_regs.h hw/ip/lc_ctrl/data/lc_ctrl.hjson
+./util/regtool.py -D -o sw/device/lib/headers/pinmux_regs.h hw/top_earlgrey/ip/pinmux/data/pinmux.hjson
+./util/regtool.py -D -o sw/device/lib/headers/sram_ctrl_regs.h hw/ip/sram_ctrl/data/sram_ctrl.hjson
+./util/regtool.py -D -o sw/device/lib/headers/uart_regs.h hw/ip/uart/data/uart.hjson
