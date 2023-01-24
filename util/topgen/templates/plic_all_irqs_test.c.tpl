@@ -199,7 +199,7 @@ static void peripheral_irqs_trigger(void) {
   ${indent}  CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq, true));
 
   ${indent}  // This avoids a race where *irq_serviced is read before
-  ${indent}  // entering the CSR.
+  ${indent}  // entering the ISR.
   ${indent}  IBEX_SPIN_FOR(${p.name}_irq_serviced == irq, 1);
   ${indent}  LOG_INFO("IRQ %d from ${p.inst_name} is serviced.", irq);
   ${indent}}
