@@ -15,7 +15,9 @@
 #include "hmac_api.c"
 
 #define HYPER
-
+#define IBEX
+#define MBOX
+#define ARIANE
 
 int main(int argc, char **argv) {
 
@@ -36,50 +38,49 @@ int main(int argc, char **argv) {
   asm volatile("csrw mtvec, %0\n" : : "r"(val));
 
   printf("Initializing entropy src and HMAC\r\n");
-  
   t = entropy_init();    // init the entropy source
-  t = hmac_write_key();  // dummy key
-  t = hmac_init();       // write the control register
   
   printf("Writing the crypto key to the HMAC\r\n");
-  
-  
+  t = hmac_write_key();  // dummy key
+  t = hmac_init();       // write the control register
 
-  #ifdef MBOX
-  printf("Preloaing the Mbox\r\n");
+  printf("Preloading MBOX, Ibex SRAM, Ariane SRAM, HyperRam\r\n");
   t = preload_mbox();
-  printf("Moving data from Mbox to HMAC\r\n");
-  t = hmac_input_mbox();
-  printf("Encrypt!\r\n");
-  t = hmac_encrypt();
-  #endif
-
-  #ifdef ARIANE
-  printf("Preloaing the Ariane SRAM\r\n");
   t = preload_ariane();
-  printf("Moving data from Ariane SRAM to HMAC\r\n");
-  t = hmac_input_ariane();
-  printf("Encrypt!\r\n");
-  t = hmac_encrypt();
-  #endif
-
-  #ifdef IBEX
-  printf("Preloaing the Ibex SRAM\r\n");
   t = preload_ibex();
-  printf("Moving data from Ibex SRAM to HMAC\r\n");
-  t = hmac_input_ibex();
-  printf("Encrypt!\n\r");
-  t = hmac_encrypt();
-  #endif
-
-  #ifdef HYPER
-  printf("Preloaing the HyperRAM\r\n");
   t = preload_hyper();
-  printf("Moving data from HyperRAM to HMAC\r\n");
-  t = hmac_input_hyper();
+   
+  printf("Moving data from Mbox to HMAC\r\n");
+  t = hmac_init(); 
+  t = hmac_input_mbox();
+
   printf("Encrypt!\r\n");
   t = hmac_encrypt();
-  #endif
+  t = hmac_read_out();
+
+  printf("Moving data from Ariane SRAM to HMAC\r\n");
+  t = hmac_init(); 
+  t = hmac_input_ariane();
+  
+  printf("Encrypt!\r\n");
+  t = hmac_encrypt();
+  t = hmac_read_out();
+  
+  printf("Moving data from Ibex SRAM to HMAC\r\n");
+  t = hmac_init(); 
+  t = hmac_input_ibex();
+
+  printf("Encrypt!\r\n");
+  t = hmac_encrypt();
+  // t = hmac_read_out();
+
+  printf("Moving data from HyperRAM to HMAC\r\n");
+  t = hmac_init(); 
+  t = hmac_input_hyper();
+  
+  printf("Encrypt!\r\n");
+  t = hmac_encrypt();
+  //t = hmac_read_out();
 
   printf("Test succeed\r\n");
 

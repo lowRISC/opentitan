@@ -34,50 +34,44 @@ int main(int argc, char **argv) {
   // move interrupt vector to SRAM base address
   unsigned val = 0xe0000001;                      
   asm volatile("csrw mtvec, %0\n" : : "r"(val));
-
+  
+  printf("Preloading MBOX, Ibex SRAM, Ariane SRAM, HyperRam\r\n");
+  t = preload_mbox();
+  t = preload_ariane();
+  t = preload_ibex();
+  t = preload_hyper();
+  
   printf("Initializing entropy src and AES\r\n");
   t = entropy_init();   // init the entropy source
   t = aes_init();       // write the control register
-
+  
   printf("Writing the crypto key to the AES\r\n");
   t = aes_write_key();  // dummy key
 
-  #ifdef MBOX
-  printf("Preloaing the Mbox\r\n");
-  t = preload_mbox();
   printf("Moving data from Mbox to AES\r\n");
   t = aes_input_mbox();
   printf("Encrypt!\r\n");
   t = aes_encrypt();
-  #endif
+  t = aes_read_out();
 
-  #ifdef ARIANE
-  printf("Preloaing the Ariane SRAM\r\n");
-  t = preload_ariane();
   printf("Moving data from Ariane SRAM to AES\r\n");
   t = aes_input_ariane();
   printf("Encrypt!\r\n");
   t = aes_encrypt();
-  #endif
-
-  #ifdef IBEX
-  printf("Preloaing the Ibex SRAM\r\n");
-  t = preload_ibex();
+  t = aes_read_out();
+  
   printf("Moving data from Ibex SRAM to AES\r\n");
   t = aes_input_ibex();
   printf("Encrypt!\n\r");
   t = aes_encrypt();
-  #endif
+  t = aes_read_out();
 
-  #ifdef HYPER
-  printf("Preloaing the HyperRAM\r\n");
-  t = preload_hyper();
   printf("Moving data from HyperRAM to AES\r\n");
   t = aes_input_hyper();
   printf("Encrypt!\r\n");
   t = aes_encrypt();
-  #endif
-
+  t = aes_read_out();
+  
   printf("Test succeed\r\n");
 
   return 0;

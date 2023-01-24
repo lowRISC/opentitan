@@ -86,27 +86,6 @@ bool aes_write_key(void) {
 
 }
 
-bool aes_input_data (void) {
-
-   int volatile * aes;
-   
-   // writing input data
-   aes = (int *) 0xc1100054;
-  *aes = 0x24893753;
-
-   aes = (int *) 0xc1100058;
-  *aes = 0x54673456;
-
-   aes = (int *) 0xc110005C;
-  *aes = 0x54356546;
-  
-   aes = (int *) 0xc1100060;
-  *aes = 0x54356546;
-  
-   ///////////////////////
-   
-   return true;
-}
 
 bool aes_input_mbox (void) {
 
@@ -313,28 +292,31 @@ bool preload_hyper(void){
 bool aes_read_out(void) {
   
    int volatile * aes;
-   int a=0;
+   int j=0;
+   int a,b,c,d;
+   
    aes = (int *) 0xc1100084;
-   while ( a != 0x11)
-     a = *aes;
-   a = 0;
+   while ( j != 0x19)
+     j = *aes;
+   j = 0;
    
    // reading output data
-   aes1 = (int *) 0xc1100064;
-  *aes1 = 0x24893753;
+   aes = (int *) 0xc1100064;
+   a = *aes;
 
-   aes2 = (int *) 0xc1100068;
-  *aes2 = 0x54673456;
+   aes = (int *) 0xc1100068;
+   b = *aes;
 
-   aes3 = (int *) 0xc110006C;
-  *aes3 = 0x54356546;
+   aes = (int *) 0xc110006C;
+   c = *aes;
   
-   aes4 = (int *) 0xc1100070;
-  *aes4 = 0x54356546;
+   aes = (int *) 0xc1100070;
+   d = *aes;
 
-   printf("Encrypted data: %d%d%d%d",*aes4, *aes2, *aes1, *aes1);
-   
-   ///////////////////////
+   aes = (int *) 0xc1100084;
+   while ( j != 0x19)
+     j = *aes;
+   j = 0;
    
    return true;
    
