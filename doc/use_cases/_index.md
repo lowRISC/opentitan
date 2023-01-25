@@ -15,5 +15,5 @@ targets are noted where use cases are backed by industry standards.
 ## Discrete Use Cases
 
 * [Platform Integrity Module]({{< relref "doc/use_cases/platform_integrity_module" >}})
-* [Universal 2nd-Factor Security Key]({{< relref "doc/use_cases/u2f" >}})
 * [Trusted Platform Module]({{< relref "doc/use_cases/tpm" >}})
+* [Universal 2nd-Factor Security Key]({{< relref "doc/use_cases/u2f" >}})
