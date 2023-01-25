@@ -1,5 +1,6 @@
-# Common interfaces
-
+---
+title: Common interfaces
+---
 
 ## Overview
 In this directory, we provide commonly used interfaces used to construct
