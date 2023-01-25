@@ -1,5 +1,5 @@
 ---
-tile: "Memory backdoor utility class"
+title: "Memory backdoor utility class"
 ---
 
 The `mem_bkdr_util` class provides a way to manipulate the memory array directly via backdoor.

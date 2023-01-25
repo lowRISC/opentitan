@@ -1,5 +1,6 @@
-# Comportable IP Testbench Architecture
-
+---
+title: Comportable IP Testbench Architecture
+---
 
 ## Overview
 Going along the lines of what it takes to design an IP that adheres to the
