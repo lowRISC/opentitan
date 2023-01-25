@@ -1,4 +1,6 @@
-# Using I2C host for SMBus commands
+---
+title: Using I2C host for SMBus commands
+---
 
 The I2C host can generate all the SMBus commands listed in the Rev 3.0 SMBus specification.
 
@@ -78,4 +80,3 @@ The most complex transaction combines a block write and a block read.
 This has the same split character as Block Read.
 
 ![Block Write Read Process Call](08-BlockWrRdPCall.svg)
-
