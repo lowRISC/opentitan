@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 
   printf("Encrypt!\r\n");
   t = hmac_encrypt();
-  // t = hmac_read_out();
+  t = hmac_read_out();
 
   printf("Moving data from HyperRAM to HMAC\r\n");
   t = hmac_init(); 
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
   
   printf("Encrypt!\r\n");
   t = hmac_encrypt();
-  //t = hmac_read_out();
+  t = hmac_read_out();
 
   printf("Test succeed\r\n");
 
