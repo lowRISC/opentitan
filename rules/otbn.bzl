@@ -147,7 +147,7 @@ def _otbn_binary(ctx):
         ),
     ]
 
-def _otbn_sim_test(ctx):
+def _otbn_sim_test_impl(ctx):
     """This rule is for standalone OTBN unit tests, which are run on the host
     via the OTBN simulator.
 
@@ -286,8 +286,8 @@ otbn_binary = rv_rule(
     incompatible_use_toolchain_transition = True,
 )
 
-otbn_sim_test = rv_rule(
-    implementation = _otbn_sim_test,
+_otbn_sim_test = rv_rule(
+    implementation = _otbn_sim_test_impl,
     test = True,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
@@ -324,7 +324,10 @@ otbn_sim_test = rv_rule(
     incompatible_use_toolchain_transition = True,
 )
 
-otbn_consttime_test = rule(
+def otbn_sim_test(tags = [], **kwargs):
+    _otbn_sim_test(tags = tags + ["no-remote-exec"], **kwargs)
+
+_otbn_consttime_test = rule(
     implementation = _otbn_consttime_test_impl,
     test = True,
     attrs = {
@@ -340,6 +343,9 @@ otbn_consttime_test = rule(
         ),
     },
 )
+
+def otbn_consttime_test(tags = [], **kwargs):
+    _otbn_consttime_test(tags = tags + ["no-remote-exec"], **kwargs)
 
 otbn_insn_count_range = rule(
     implementation = _otbn_insn_count_range,

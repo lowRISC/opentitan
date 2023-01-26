@@ -174,7 +174,6 @@ def cw310_params(
         data = _BASE_PARAMS["data"] + ["{bitstream}"],
         exit_success = _BASE_PARAMS["exit_success"],
         exit_failure = _BASE_PARAMS["exit_failure"],
-        local = _BASE_PARAMS["local"],
         otp = _BASE_PARAMS["otp"],
         tags = _BASE_PARAMS["tags"],
         test_runner = _BASE_PARAMS["test_runner"],
@@ -221,14 +220,14 @@ def cw310_params(
     ]
     required_tags = [
         "cw310",
-        "exclusive",
+        "exclusive-if-local",
     ]
+    exec_properties = {"cw310": "1"}
     kwargs.update(
         args = default_args + args,
         data = data,
         exit_success = exit_success,
         exit_failure = exit_failure,
-        local = local,
         otp = otp,
         tags = required_tags + tags,
         test_runner = test_runner,
@@ -237,6 +236,7 @@ def cw310_params(
         bitstream = bitstream,
         rom_kind = rom_kind,
         clear_bitstream = clear_bitstream,
+        exec_properties = exec_properties,
     )
     return kwargs
 

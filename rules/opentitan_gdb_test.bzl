@@ -237,12 +237,13 @@ def opentitan_gdb_fpga_cw310_test(
     _opentitan_gdb_fpga_cw310_test(
         tags = tags + [
             "cw310",
-            "exclusive",  # Prevent FPGA tests from running concurrently.
+            "exclusive-if-local",  # Prevent FPGA tests from running concurrently.
             "jtag",
         ],
         opentitantool_cw310_uarts = select({
             "@//ci:lowrisc_fpga_cw310": "--cw310-uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0",
             "//conditions:default": "",
         }),
+        exec_properties = {"cw310": "1"},
         **kwargs
     )

@@ -48,6 +48,7 @@ fusesoc_build(
     systems = ["lowrisc:dv:chip_verilator_sim"],
     tags = [
         "manual",
+        "no-remote-exec",  # Not currently hermetic or compatible with remote execution.
         "verilator",
     ],
     target = "sim",
@@ -88,7 +89,9 @@ alias(
         ":disable_verilator_build": ":verilator_stub",
         "//conditions:default": ":verilator_bin",
     }),
-    tags = ["verilator"],
+    tags = [
+        "verilator",
+    ],
     visibility = ["//visibility:public"],
 )
 
