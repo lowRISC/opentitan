@@ -106,6 +106,9 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Enable/Disable the Secret Seeds and Keys during Initialisation
   bit en_init_keys_seeds;
 
+  // States whether to wait for the flash_init to finish before starting the actual sequence.
+  bit wait_init_done;
+
   // Enable/Disable the Random Flash Inititlisation After Reset
   bit disable_flash_init;
 
@@ -203,6 +206,10 @@ class flash_ctrl_seq_cfg extends uvm_object;
     erase_timeout_ns = 120_000_000;  // 120ms
 
     en_init_keys_seeds = 1'b0;  // Off
+
+    // By default, wait for flash to finish initializing process before sending transactions
+    //  requests.
+    wait_init_done = 1'b1;
 
     disable_flash_init = 1'b0;  // Off
 

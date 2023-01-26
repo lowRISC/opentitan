@@ -134,8 +134,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     update_secret_partition();
 
     // Wait for flash_ctrl to finish initializing on every reset
-    // We probably need a parameter to skip this for certain tests
-    csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
+    if (cfg.seq_cfg.wait_init_done) csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
   endtask : reset_flash
 
   // Apply a Reset to the DUT, then do some additional required actions with callback_vseq
