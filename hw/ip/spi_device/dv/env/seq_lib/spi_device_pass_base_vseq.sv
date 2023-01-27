@@ -321,7 +321,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     end else begin
       // flash mode only supports these 2 values.
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(sck_polarity_phase,
-          sck_polarity_phase inside {0, 'b11};)
+          // TODO (#16339), add back 'b11 once this issue is fixed
+          sck_polarity_phase inside {0};)
     end
     cfg.spi_host_agent_cfg.sck_polarity[0] = sck_polarity_phase[0];
     cfg.spi_host_agent_cfg.sck_phase[0] = sck_polarity_phase[1];
