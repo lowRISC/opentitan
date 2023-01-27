@@ -1,5 +1,5 @@
 ---
-title: "Scorecard"
+title: "Scoreboard"
 ---
 
 **TODO**

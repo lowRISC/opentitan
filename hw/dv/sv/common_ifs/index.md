@@ -1,5 +1,5 @@
 ---
-title: Common interfaces
+title: Common Interfaces
 ---
 
 ## Overview
