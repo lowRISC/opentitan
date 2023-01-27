@@ -411,35 +411,51 @@ class FlowCfg():
 
         '''
         for item in self.cfgs:
+            json_str = (item._gen_json_results(results)
+                        if hasattr(item, '_gen_json_results')
+                        else None)
             result = item._gen_results(results)
             log.info("[results]: [%s]:\n%s\n", item.name, result)
             log.info("[scratch_path]: [%s] [%s]", item.name, item.scratch_path)
-            item.write_results_html(self.results_html_name, item.results_md)
+            item.write_results(self.results_html_name, item.results_md,
+                               json_str)
             log.log(VERBOSE, "[report]: [%s] [%s/report.html]", item.name,
                     item.results_dir)
             self.errors_seen |= item.errors_seen
 
         if self.is_primary_cfg:
             self.gen_results_summary()
-            self.write_results_html(self.results_html_name,
-                                    self.results_summary_md)
+            self.write_results(self.results_html_name,
+                               self.results_summary_md)
 
     def gen_results_summary(self):
         '''Public facing API to generate summary results for each IP/cfg file
         '''
         return
 
-    def write_results_html(self, filename, text_md):
-        """Converts md text to HTML and writes to results_dir area."""
+    def write_results(self, html_filename, text_md, json_str=None):
+        """Write results to files.
+
+        This function converts text_md to HTML and writes the result to a file
+        in self.results_dir with the file name given by html_filename.  If
+        json_str is not None, this function additionally writes json_str to a
+        file with the same path and base name as the HTML file but with '.json'
+        as suffix.
+        """
 
         # Prepare reports directory, keeping 90 day history.
         clean_odirs(odir=self.results_dir, max_odirs=89)
         mk_path(self.results_dir)
 
         # Write results to the report area.
-        with open(self.results_dir / filename, "w") as f:
+        with open(self.results_dir / html_filename, "w") as f:
             f.write(
                 md_results_to_html(self.results_title, self.css_file, text_md))
+
+        if json_str is not None:
+            filename = Path(html_filename).with_suffix('.json')
+            with open(self.results_dir / filename, "w") as f:
+                f.write(json_str)
 
     def _get_results_page_link(self, relative_to, link_text=''):
         """Create a relative markdown link to the results page."""
@@ -565,7 +581,7 @@ class FlowCfg():
 
         # Publish the results page.
         # First, write the results html file to the scratch area.
-        self.write_results_html("publish.html", publish_results_md)
+        self.write_results("publish.html", publish_results_md)
         results_html_file = self.results_dir / "publish.html"
 
         log.info("Publishing results to %s", self.results_server_url)
