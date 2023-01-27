@@ -4,7 +4,9 @@
 r"""An abstraction for maintaining job runtime and its units.
 """
 
+from copy import copy
 from typing import Tuple
+import unittest
 
 
 class JobTime:
@@ -26,6 +28,26 @@ class JobTime:
     def get(self) -> Tuple[float, str]:
         """Returns the time and unit as a tuple."""
         return self.__time, self.__unit
+
+    def with_unit(self, unit: str):
+        """Return a copy of this object that has a specific unit and a value
+        scaled accordingly.
+
+        Note that the scaling may not be lossless due to rounding errors and
+        limited precision.
+        """
+        target_index = self.units.index(unit)
+        index = self.units.index(self.__unit)
+        jt = copy(self)
+        while index < target_index:
+            index += 1
+            jt.__time *= self.dividers[index]
+            jt.__unit = self.units[index]
+        while index > target_index:
+            jt.__time /= self.dividers[index]
+            index -= 1
+            jt.__unit = self.units[index]
+        return jt
 
     def _normalize(self):
         """Brings the time and its units to a more meaningful magnitude.
@@ -83,3 +105,26 @@ class JobTime:
             return False
         else:
             return self.__time > other_time
+
+
+class TestJobTimeMethods(unittest.TestCase):
+
+    def test_with_unit(self):
+        # First data set
+        h = JobTime(6, 'h', normalize=False)
+        m = JobTime(360, 'm', normalize=False)
+        s = JobTime(21600, 's', normalize=False)
+        ms = JobTime(21600000, 'ms', normalize=False)
+        for src in [h, m, s, ms]:
+            for unit, dst in [('h', h), ('m', m), ('s', s), ('ms', ms)]:
+                self.assertEqual(src.with_unit(unit), dst)
+        # Second data set
+        fs = JobTime(123456000000, 'fs', normalize=False)
+        ps = JobTime(123456000, 'ps', normalize=False)
+        ns = JobTime(123456, 'ns', normalize=False)
+        us = JobTime(123.456, 'us', normalize=False)
+        ms = JobTime(0.123456, 'ms', normalize=False)
+        for src in [fs, ps, ns, us, ms]:
+            for unit, dst in [('fs', fs), ('ps', ps), ('ns', ns), ('us', us),
+                              ('ms', ms)]:
+                self.assertEqual(src.with_unit(unit), dst)
