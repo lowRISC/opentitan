@@ -12,15 +12,16 @@ class JobTime:
     units = ["h", "m", "s", "ms", "us", "ns", "ps", "fs"]
     dividers = [60.0, ] * 3 + [1000.0, ] * 5
 
-    def __init__(self, time: float = 0.0, unit: str = "s"):
-        self.set(time, unit)
+    def __init__(self, time: float = 0.0, unit: str = "s", normalize: bool = True):
+        self.set(time, unit, normalize)
 
-    def set(self, time: float, unit: str):
+    def set(self, time: float, unit: str, normalize: bool = True):
         """Public API to set the instance variables time, unit."""
         self.__time = time
         self.__unit = unit
         assert self.__unit in self.units
-        self._normalize()
+        if normalize:
+            self._normalize()
 
     def get(self) -> Tuple[float, str]:
         """Returns the time and unit as a tuple."""
