@@ -10,6 +10,7 @@ from typing import (
     List,
 )
 import logging as log
+import os
 from pathlib import Path, PurePath
 from pprint import pformat
 import subprocess
@@ -74,6 +75,7 @@ def run(*args) -> List[str]:
     log.debug(f"command: {' '.join(args)}")
     try:
         res = subprocess.run(args,
+                             env=os.environ.copy(),
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
                              encoding='ascii',
