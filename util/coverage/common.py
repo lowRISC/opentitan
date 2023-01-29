@@ -257,9 +257,14 @@ def measure_coverage(*, log_level: LogLevel, out_root_dir: Path,
         test_targets_query(bazel_test_type),
     )
     test_targets = test_targets_fn(test_targets_all)
+    # Instrumented ROM overflows the space allocated for ROM. `test_targets_fn` for
+    # functional tests programs the FPGA with the non-instrumented test ROM and we skip
+    # bitstream loading during tests.
     run(
         BAZEL,
         "coverage",
+        "--define",
+        "bitstream=skip",
         f"--config={config}",
         "--test_output=all",
         *test_targets,
