@@ -12,7 +12,7 @@ title: "OTP_CTRL DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/otp_ctrl/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/otp_ctrl/dv/latest/report.html)
 
 ## Design features
 For detailed information on OTP_CTRL design features, please see the [OTP_CTRL HW IP technical specification]({{< relref ".." >}}).

@@ -12,7 +12,7 @@ title: "EDN DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/edn/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/edn/dv/latest/report.html)
 
 ## Design features
 For detailed information on EDN design features, please see the [EDN HWIP technical specification]({{< relref ".." >}}).

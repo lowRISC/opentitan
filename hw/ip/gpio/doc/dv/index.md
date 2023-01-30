@@ -12,7 +12,7 @@ title: "GPIO DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages.md" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/gpio/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/gpio/dv/latest/report.html)
 
 ## Design features
 For detailed information on GPIO design features, please see the [GPIO design specification]({{< relref ".." >}}).

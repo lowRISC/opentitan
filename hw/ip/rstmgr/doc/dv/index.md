@@ -12,7 +12,7 @@ title: "RSTMGR DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/rstmgr/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/rstmgr/dv/latest/report.html)
 
 ## Design features
 For detailed information on RSTMGR design features, please see the [RSTMGR HWIP technical specification]({{< relref "hw/ip/rstmgr/doc" >}}).

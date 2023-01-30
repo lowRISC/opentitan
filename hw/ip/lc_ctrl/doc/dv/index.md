@@ -12,7 +12,7 @@ title: "LC_CTRL DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/lc_ctrl/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/lc_ctrl/dv/latest/report.html)
 
 ## Design features
 For detailed information on LC_CTRL design features, please see the [LC_CTRL HWIP technical specification]({{< relref ".." >}}).

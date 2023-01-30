@@ -12,7 +12,7 @@ title: "CSRNG DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
 * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/csrng/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/csrng/dv/latest/report.html)
 
 ## Design features
 For detailed information on CSRNG design features, please see the [CSRNG HWIP technical specification]({{< relref ".." >}}).

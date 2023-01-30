@@ -12,7 +12,7 @@ title: "RV_TIMER DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages.md" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/rv_timer/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/rv_timer/dv/latest/report.html)
 
 ## Design features
 For detailed information on RV_TIMER design features, please see the [RV_TIMER design specification]({{< relref ".." >}}).
