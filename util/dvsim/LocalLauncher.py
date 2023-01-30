@@ -104,7 +104,7 @@ class LocalLauncher(Launcher):
         self.job_runtime_secs = elapsed_time.total_seconds()
         if self.process.poll() is None:
             if self.timeout_secs and (self.job_runtime_secs >
-                                      self.timeout_secs):
+                                      self.timeout_secs) and not self.deploy.gui:
                 self._kill()
                 timeout_message = 'Job timed out after {} minutes'.format(
                     self.deploy.get_timeout_mins())
