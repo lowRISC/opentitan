@@ -260,7 +260,7 @@
             name: "CPOL",
             desc: '''The polarity of the sck clock signal.  When CPOL is 0,
                      sck is low when idle, and emits high pulses.   When CPOL
-                     is low, sck is high when idle, and emits a series of low
+                     is 1, sck is high when idle, and emits a series of low
                      pulses.
                      '''
             resval: "0x0"
