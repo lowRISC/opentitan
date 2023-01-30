@@ -123,10 +123,10 @@ bool aes_input_ibex (void) {
    int volatile * aes_1, * aes_2, * aes_3, * aes_4;
    int volatile * ibex_1, * ibex_2, * ibex_3, * ibex_4;
    
-   ibex_1 = (int *) 0xe0000800;
-   ibex_2 = (int *) 0xe0000804;
-   ibex_3 = (int *) 0xe0000808;
-   ibex_4 = (int *) 0xe000080C;
+   ibex_1 = (int *) 0xe000F000;
+   ibex_2 = (int *) 0xe000F004;
+   ibex_3 = (int *) 0xe000F008;
+   ibex_4 = (int *) 0xe000F00C;
 
    aes_1 = (int *) 0xc1100054;
    aes_2 = (int *) 0xc1100058;
@@ -241,16 +241,16 @@ bool preload_ibex(void){
 
   int * ibex_pointer;
 
-  ibex_pointer = (int *) 0xe0000800;
+  ibex_pointer = (int *) 0xe00F0000;
  *ibex_pointer = 0xbadcab1e;
 
-  ibex_pointer = (int *) 0xe0000804;
+  ibex_pointer = (int *) 0xe00F0804;
  *ibex_pointer = 0xbadcab1e;
 
-  ibex_pointer = (int *) 0xe0000808;
+  ibex_pointer = (int *) 0xe00F0808;
  *ibex_pointer = 0xbadcab1e;
 
-  ibex_pointer = (int *) 0xe000080C;
+  ibex_pointer = (int *) 0xe00F080C;
  *ibex_pointer = 0xbadcab1e;
 
   return true;

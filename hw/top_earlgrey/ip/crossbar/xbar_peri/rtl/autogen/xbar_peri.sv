@@ -215,8 +215,6 @@ end
   tlul_socket_1n #(
     .HReqPass  (1'b0),
     .HRspPass  (1'b0),
-    .DReqPass  (16'h0),
-    .DRspPass  (16'h0),
     .DReqDepth (64'h1111111111111111),
     .DRspDepth (64'h1111111111111111),
     .N         (16)

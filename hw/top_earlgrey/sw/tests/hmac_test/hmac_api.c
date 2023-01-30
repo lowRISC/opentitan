@@ -93,10 +93,10 @@ bool hmac_input_ibex (void) {
    int volatile * hmac_1, * hmac_2, * hmac_3, * hmac_4;
    int volatile * ibex_1, * ibex_2, * ibex_3, * ibex_4;
    
-   ibex_1 = (int *) 0xe0000800;
-   ibex_2 = (int *) 0xe0000804;
-   ibex_3 = (int *) 0xe0000808;
-   ibex_4 = (int *) 0xe000080C;
+   ibex_1 = (int *) 0xe000F000;
+   ibex_2 = (int *) 0xe000F004;
+   ibex_3 = (int *) 0xe000F008;
+   ibex_4 = (int *) 0xe000F00C;
 
    hmac_1 = (int *) 0xc1110800;
    hmac_2 = (int *) 0xc1110804;
@@ -217,16 +217,16 @@ bool preload_ibex(void){
 
   int * ibex_pointer;
 
-  ibex_pointer = (int *) 0xe0000800;
+  ibex_pointer = (int *) 0xe000F000;
  *ibex_pointer = 0xbadcab1e;
 
-  ibex_pointer = (int *) 0xe0000804;
+  ibex_pointer = (int *) 0xe000F004;
  *ibex_pointer = 0xbadcab1e;
 
-  ibex_pointer = (int *) 0xe0000808;
+  ibex_pointer = (int *) 0xe000F008;
  *ibex_pointer = 0xbadcab1e;
 
-  ibex_pointer = (int *) 0xe000080C;
+  ibex_pointer = (int *) 0xe000F00C;
  *ibex_pointer = 0xbadcab1e;
 
   return true;
