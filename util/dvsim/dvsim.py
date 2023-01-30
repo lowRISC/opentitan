@@ -431,7 +431,9 @@ def parse_args():
                         type=int,
                         metavar="MINUTES",
                         help=('Wall-clock timeout for builds in minutes: if '
-                              'the build takes longer it will be killed.'))
+                              'the build takes longer it will be killed. If '
+                              'GUI mode is enabled, this timeout mechanism will '
+                              'be disabled.'))
 
     disg.add_argument("--gui",
                       action='store_true',
@@ -491,7 +493,9 @@ def parse_args():
                       type=int,
                       metavar="MINUTES",
                       help=('Wall-clock timeout for runs in minutes: if '
-                            'the run takes longer it will be killed.'))
+                            'the run takes longer it will be killed. If '
+                            'GUI mode is enabled, this timeout mechanism will '
+                            'be disabled.'))
 
     rung.add_argument("--run-timeout-multiplier",
                       type=float,
