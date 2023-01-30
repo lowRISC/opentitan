@@ -12,7 +12,7 @@ title: "RV_DM DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/rv_dm/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/rv_dm/dv/latest/report.html)
 
 ## Design features
 

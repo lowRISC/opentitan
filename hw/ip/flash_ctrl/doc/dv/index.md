@@ -12,7 +12,7 @@ title: "FLASH_CTRL DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/flash_ctrl/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/flash_ctrl/dv/latest/report.html)
 
 ## Design features
 For detailed information on `flash_ctrl` design features, please see the [`flash_ctrl` HWIP technical specification]({{< relref ".." >}}).

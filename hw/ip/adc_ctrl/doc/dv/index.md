@@ -12,7 +12,7 @@ title: "ADC_CTRL DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/adc_ctrl/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/adc_ctrl/dv/latest/report.html)
 
 ## Design features
 For detailed information on ADC_CTRL design features, please see the [ADC_CTRL HWIP technical specification]().

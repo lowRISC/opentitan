@@ -13,7 +13,7 @@ title: "UART DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages.md" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/uart/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/uart/dv/latest/report.html)
 
 ## Design features
 For detailed information on UART design features, please see the [UART design specification]({{< relref ".." >}}).

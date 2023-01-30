@@ -14,7 +14,7 @@ title: "USBDEV DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/usbdev/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/usbdev/dv/latest/report.html)
 
 ## Design features
 For detailed information on USBDEV design features, please see the [USBDEV HWIP technical specification]({{< relref ".." >}}).

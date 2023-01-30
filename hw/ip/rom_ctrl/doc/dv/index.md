@@ -12,7 +12,7 @@ title: "ROM Controller DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/rom_ctrl/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/rom_ctrl/dv/latest/report.html)
 
 ## Design features
 For detailed information on `rom_ctrl` design features, please see the [ROM Controller HWIP technical specification]({{< relref "hw/ip/rom_ctrl/doc" >}}).

@@ -12,7 +12,7 @@ title: "AES DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages.md" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/aes/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/aes/dv/latest/report.html)
 
 ## Design features
 For detailed information on AES design features, please see the [AES HWIP Technical Specification]({{< relref ".." >}}).

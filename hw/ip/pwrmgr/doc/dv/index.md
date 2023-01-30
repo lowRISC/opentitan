@@ -12,7 +12,7 @@ title: "PWRMGR DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw/ip/pwrmgr/doc/checklist" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/pwrmgr/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/pwrmgr/dv/latest/report.html)
 
 ## Design features
 For detailed information on PWRMGR design features, please see the [PWRMGR HWIP technical specification]({{< relref "hw/ip/pwrmgr/doc" >}}).

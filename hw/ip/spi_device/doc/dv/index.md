@@ -13,7 +13,7 @@ title: "SPI Device DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages.md" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/spi_device/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/spi_device/dv/latest/report.html)
 
 ## Design features
 For detailed information on SPI Device design features, please see the [SPI_device design specification]({{< relref ".." >}}).

@@ -12,7 +12,7 @@ title: "KMAC DV document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/kmac/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/kmac/dv/latest/report.html)
 
 ## Design features
 For detailed information on KMAC design features, please see the [KMAC HWIP technical specification]({{< relref ".." >}}).

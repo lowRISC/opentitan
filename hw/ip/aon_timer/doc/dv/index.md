@@ -12,7 +12,7 @@ title: "AON Timer DV Document"
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/aon_timer/dv/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/aon_timer/dv/latest/report.html)
 
 ## Design features
 
