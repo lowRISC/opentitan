@@ -49,7 +49,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
      bit l2h_detected;
 
      fork
-       if (edge_detect_l2h.en_l2h)
+       if (edge_detect_l2h.en_l2h) begin
          forever begin
            @(posedge cfg.vif.sysrst_ctrl_inputs[index]);
              if (!edge_detect_l2h.l2h_triggered) begin
@@ -57,7 +57,8 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
                l2h_detected = 1;
              end
          end
-       if (edge_detect_h2l.en_h2l)
+       end
+       if (edge_detect_h2l.en_h2l) begin
          forever begin
            @(negedge cfg.vif.sysrst_ctrl_inputs[index]);
              if (!edge_detect_h2l.h2l_triggered) begin
@@ -65,7 +66,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
                h2l_detected = 1;
              end
          end
-
+       end
        // after h2l_detected is set, check the input stay low for enought time
        forever begin
          bit h2l_timer_reached;
@@ -145,7 +146,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
        for (int i = 0; i < NumInputs; i++) begin
          automatic int local_i = i;
          edge_detect_h2l[i].en_h2l = get_input[i];
-         edge_detect_l2h[i].en_l2h = get_input[NumInputs + i + 1];
+         edge_detect_l2h[i].en_l2h = get_input[NumInputs + i];
          fork
            monitor_input_edge(sysrst_input_idx_e'(local_i), edge_detect_h2l[local_i],
                   edge_detect_l2h[local_i]);
