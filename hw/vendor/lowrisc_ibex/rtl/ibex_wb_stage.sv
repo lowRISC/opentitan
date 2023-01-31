@@ -166,6 +166,9 @@ module ibex_wb_stage #(
     // that returns too late to be used on the forwarding path.
     assign rf_wdata_fwd_wb_o = rf_wdata_wb_q;
 
+    // For FI hardening, only forward LSU write enable if we're actually waiting for it.
+    assign rf_wdata_wb_mux_we[1] = outstanding_load_wb_o & rf_we_lsu_i;
+
     if (DummyInstructions) begin : g_dummy_instr_wb
       logic dummy_instr_wb_q;
 
@@ -197,6 +200,7 @@ module ibex_wb_stage #(
     assign rf_waddr_wb_o         = rf_waddr_id_i;
     assign rf_wdata_wb_mux[0]    = rf_wdata_id_i;
     assign rf_wdata_wb_mux_we[0] = rf_we_id_i;
+    assign rf_wdata_wb_mux_we[1] = rf_we_lsu_i;
 
     assign dummy_instr_wb_o = dummy_instr_id_i;
 
@@ -235,8 +239,7 @@ module ibex_wb_stage #(
     assign instr_done_wb_o        = 1'b0;
   end
 
-  assign rf_wdata_wb_mux[1]    = rf_wdata_lsu_i;
-  assign rf_wdata_wb_mux_we[1] = rf_we_lsu_i;
+  assign rf_wdata_wb_mux[1] = rf_wdata_lsu_i;
 
   // RF write data can come from ID results (all RF writes that aren't because of loads will come
   // from here) or the LSU (RF writes for load data)
