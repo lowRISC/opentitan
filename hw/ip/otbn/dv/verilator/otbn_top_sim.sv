@@ -68,7 +68,8 @@ module otbn_top_sim (
 
   otbn_core #(
     .ImemSizeByte ( ImemSizeByte ),
-    .DmemSizeByte ( DmemSizeByte )
+    .DmemSizeByte ( DmemSizeByte ),
+    .SecMuteUrnd  ( 1'b0         )
   ) u_otbn_core (
     .clk_i                       ( IO_CLK                     ),
     .rst_ni                      ( IO_RST_N                   ),

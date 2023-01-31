@@ -25,7 +25,10 @@
 module otbn_start_stop_control
   import otbn_pkg::*;
   import prim_mubi_pkg::*;
-(
+#(
+  // Disable URND advance when not in use. Useful for SCA only.
+  parameter bit SecMuteUrnd = 1'b0
+) (
   input  logic clk_i,
   input  logic rst_ni,
 
@@ -62,6 +65,9 @@ module otbn_start_stop_control
 );
 
   import otbn_pkg::*;
+
+  // Create a lint error to reduce the risk of accidentally enabling this feature.
+  `ASSERT_STATIC_LINT_ERROR(OtbnSecMuteUrndNonDefault, SecMuteUrnd == 0)
 
   otbn_start_stop_state_e state_q, state_d;
   logic init_sec_wipe_done_q, init_sec_wipe_done_d;
@@ -152,7 +158,7 @@ module otbn_start_stop_control
         urnd_reseed_req_o     = 1'b1;
         if (urnd_reseed_ack_i) begin
           urnd_advance_o = 1'b1;
-          state_d = OtbnStartStopSecureWipeWdrUrnd;
+          state_d        = OtbnStartStopSecureWipeWdrUrnd;
         end
       end
       OtbnStartStopStateHalt: begin
@@ -202,7 +208,7 @@ module otbn_start_stop_control
         end
       end
       OtbnStartStopStateRunning: begin
-        urnd_advance_o    = 1'b1;
+        urnd_advance_o    = ~SecMuteUrnd;
         allow_secure_wipe = 1'b1;
 
         if (stop) begin

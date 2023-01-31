@@ -5897,6 +5897,19 @@
           randwidth: 256
         }
         {
+          name: SecMuteUrnd
+          desc:
+            '''
+            If enabled (1), URND is advanced only when data is needed.
+            Disabled (0) by default.
+            Useful for SCA measurements only.
+            '''
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: SecOtbnMuteUrnd
+        }
+        {
           name: RndCnstOtbnKey
           desc: Compile-time random reset value for IMem/DMem scrambling key.
           type: otp_ctrl_pkg::otbn_key_t
