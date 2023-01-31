@@ -12,6 +12,8 @@ load(
     "verilator_params",
 )
 
+package(default_visibility = ["//visibility:public"])
+
 # TODO(lowRISC:opentitan#13180): this is a temporary solution to enable writing
 # manufacturer specific tests in the `manufacturer_test_hooks` repository that
 # use open source test code. Specifically, this enables defining an
