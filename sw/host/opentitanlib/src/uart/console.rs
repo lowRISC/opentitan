@@ -33,7 +33,7 @@ pub enum ExitStatus {
     ExitFailure,
 }
 
-// Creates a vtable for impementors of Read and AsRawFd traits.
+// Creates a vtable for implementors of Read and AsRawFd traits.
 pub trait ReadAsRawFd: Read + AsRawFd {}
 impl<T: Read + AsRawFd> ReadAsRawFd for T {}
 

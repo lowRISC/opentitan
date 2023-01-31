@@ -2054,11 +2054,19 @@ opentitan_functest(
 opentitan_functest(
     name = "power_virus_systemtest",
     srcs = ["power_virus_systemtest.c"],
+    cw310 = cw310_params(
+        test_cmds = [
+            "--rom-kind={rom_kind}",
+            "--bitstream=\"$(location {bitstream})\"",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+    ),
     targets = [
         # TODO(#14814): add more targets
         "cw310_test_rom",
         "dv",
     ],
+    test_harness = "//sw/host/tests/chip/power_virus",
     deps = [
         "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
         "//hw/ip/aes:model",
