@@ -26,6 +26,9 @@ module otbn_core
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
 
+  // Disable URND reseed and advance when not in use. Useful for SCA only.
+  parameter bit SecMuteUrnd = 1'b0,
+
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
 ) (
@@ -94,6 +97,9 @@ module otbn_core
   input logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i
 );
   import prim_mubi_pkg::*;
+
+  // Create a lint error to reduce the risk of accidentally enabling this feature.
+  `ASSERT_STATIC_LINT_ERROR(OtbnSecMuteUrndNonDefault, SecMuteUrnd == 0)
 
   // Fetch request (the next instruction)
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
@@ -270,7 +276,9 @@ module otbn_core
 
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
-  otbn_start_stop_control u_otbn_start_stop_control (
+  otbn_start_stop_control #(
+    .SecMuteUrnd(SecMuteUrnd)
+  ) u_otbn_start_stop_control (
     .clk_i,
     .rst_ni,
 
@@ -878,7 +886,11 @@ module otbn_core
 
   // Advance URND either when the start_stop_control commands it or when temporary secure wipe keys
   // are requested.
-  assign urnd_advance = urnd_advance_start_stop_control | req_sec_wipe_urnd_keys_q;
+  // When SecMuteUrnd is enabled, signal urnd_advance_start_stop_control is muted. Therefore, it is
+  // necessary to enable urnd_advance using ispr_predec_bignum.ispr_rd_en[IsprUrnd] whenever URND
+  // data are consumed by the ALU.
+  assign urnd_advance = urnd_advance_start_stop_control | req_sec_wipe_urnd_keys_q |
+                        (SecMuteUrnd & ispr_predec_bignum.ispr_rd_en[IsprUrnd]);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
