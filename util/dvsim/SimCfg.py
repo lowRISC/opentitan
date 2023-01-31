@@ -700,8 +700,11 @@ class SimCfg(FlowCfg):
                     'failing_tests': fts,
                 })
 
+        # Store the `results` dictionary in this object.
+        self.results_dict = results
+
         # Return the `results` dictionary as json string.
-        return json.dumps(results)
+        return json.dumps(self.results_dict)
 
     def _gen_results(self, run_results):
         '''

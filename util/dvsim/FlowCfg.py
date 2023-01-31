@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import datetime
+import json
 import logging as log
 import os
 import pprint
@@ -580,23 +581,34 @@ class FlowCfg():
         publish_results_md = publish_results_md + history_txt
 
         # Publish the results page.
-        # First, write the results html file to the scratch area.
-        self.write_results("publish.html", publish_results_md)
+        # First, write the results html and json files to the scratch area.
+        json_str = (json.dumps(self.results_dict)
+                    if hasattr(self, 'results_dict')
+                    else None)
+        self.write_results("publish.html", publish_results_md, json_str)
         results_html_file = self.results_dir / "publish.html"
 
+        # Second, copy the files to the server.
         log.info("Publishing results to %s", self.results_server_url)
-        cmd = (self.results_server_cmd + " cp " +
-               str(results_html_file) + " " +
-               self.results_server_page)
-        log.log(VERBOSE, cmd)
-        try:
-            cmd_output = subprocess.run(args=cmd,
-                                        shell=True,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT)
-            log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
-        except Exception as e:
-            log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
+        suffixes = ['html'] + (['json'] if json_str is not None else [])
+        for suffix in suffixes:
+            src = str(Path(results_html_file).with_suffix('.' + suffix))
+            dst = self.results_server_page
+            # results_server_page has '.html' as suffix.  If that does not match
+            # suffix, change it.
+            if suffix != 'html':
+                assert dst[-5:] == '.html'
+                dst = dst[:-5] + '.json'
+            cmd = f"{self.results_server_cmd} cp {src} {dst}"
+            log.log(VERBOSE, cmd)
+            try:
+                cmd_output = subprocess.run(args=cmd,
+                                            shell=True,
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.STDOUT)
+                log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
+            except Exception as e:
+                log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
 
     def publish_results(self):
         '''Public facing API for publishing results to the opentitan web
