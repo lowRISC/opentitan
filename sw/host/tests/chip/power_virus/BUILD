@@ -16,6 +16,7 @@ rust_binary(
         "//third_party/rust/crates:anyhow",
         "//third_party/rust/crates:humantime",
         "//third_party/rust/crates:log",
+        "//third_party/rust/crates:regex",
         "//third_party/rust/crates:structopt",
     ],
 )

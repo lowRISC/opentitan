@@ -11,6 +11,8 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
+load("//rules:splice.bzl", "bitstream_splice")
+load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image", "otp_json", "otp_partition")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -2051,10 +2053,41 @@ opentitan_functest(
     ],
 )
 
+otp_json(
+    name = "power_virus_systemtest_otp_overlay",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
+            },
+        ),
+    ],
+)
+
+otp_image(
+    name = "power_virus_systemtest_otp_img_rma",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [":power_virus_systemtest_otp_overlay"],
+    visibility = ["//visibility:private"],
+)
+
+bitstream_splice(
+    name = "power_virus_systemtest_bitstream",
+    src = "//hw/bitstream:test_rom",
+    data = ":power_virus_systemtest_otp_img_rma",
+    meminfo = "//hw/bitstream:otp_mmi",
+    tags = ["vivado"],
+    update_usr_access = True,
+    visibility = ["//visibility:private"],
+)
+
 opentitan_functest(
     name = "power_virus_systemtest",
     srcs = ["power_virus_systemtest.c"],
     cw310 = cw310_params(
+        bitstream = ":power_virus_systemtest_bitstream",
+        tags = ["vivado"],
         test_cmds = [
             "--rom-kind={rom_kind}",
             "--bitstream=\"$(location {bitstream})\"",
@@ -2080,12 +2113,14 @@ opentitan_functest(
         "//hw/ip/uart/data:uart_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
+        "//sw/device/lib/base:multibits",
         "//sw/device/lib/dif:adc_ctrl",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:csrng_shared",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:i2c",

@@ -33,7 +33,10 @@
                 },
                 {
                     name: "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
-                    // Default value for flash scramble / ecc / he_en
+                    // Default values for flash scramble / ecc / he_en. This OTP
+                    // word contains byte-aligned, packed, 4-bit mubi values.
+                    // See the flash_ctrl driver bitfield definitions in
+                    // sw/device/silicon_creator/lib/drivers/flash_ctrl.h.
                     value: "0x0",
                 },
                 {
