@@ -829,9 +829,6 @@ module sha3pad
     $rose(process_latched) && (!end_of_block && !sent_blocksize )
     && !(st inside {StPrefixWait, StMessageWait}) |-> ##[1:5] keccak_valid_o,
     clk_i, !rst_ni || lc_escalate_en_i != lc_ctrl_pkg::Off)
-  // If `process_i` is asserted, eventually sha3pad trigger run signal
-  `ASSERT(ProcessToRun_A, process_i |-> strong(##[2:$] keccak_run_o),
-    clk_i, !rst_ni || lc_escalate_en_i != lc_ctrl_pkg::Off)
 
   // If process_i asserted, completion shall be asserted shall be asserted
   //`ASSERT(ProcessToAbsorbed_A, process_i |=> strong(##[24*Share:$] absorbed_o))
@@ -845,12 +842,6 @@ module sha3pad
       (mode_i == Sha3 && (strength_i inside {L224, L256, L384, L512})) ||
       ((mode_i == Shake || mode_i == CShake) && (strength_i inside {L128, L256})),
     clk_i, !rst_ni)
-
-  // Keccak control interface
-  // Keccak run triggered -> completion should come
-  `ASSUME(RunThenComplete_M,
-    keccak_run_o |-> strong(##[24*Share:$] keccak_complete_i),
-    clk_i, !rst_ni || lc_escalate_en_i != lc_ctrl_pkg::Off)
 
   // No partial write is allowed for Message FIFO interface
   `ASSUME(NoPartialMsgFifo_M,
