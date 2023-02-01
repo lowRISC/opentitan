@@ -52,6 +52,15 @@ def _pip_wheel_impl(rctx):
     if result.return_code:
         fail("pip_wheel failed: {} ({})".format(result.stdout, result.stderr))
 
+    # Fixup packages with relative local paths before invoking `pip wheel` manually below.
+    repo_root = str(rctx.path(rctx.attr.requirements).dirname)
+    fixed_reqs = rctx.read(rctx.attr.requirements).replace("file:./", "file:" + repo_root + "/")
+    rctx.file(
+        "fixed_requirements.txt",
+        content = fixed_reqs,
+        executable = False,
+    )
+
     # Next, we download/build all the Python wheels for each requirement.
     args = [
         rctx.path(rctx.attr.python_interpreter),
@@ -59,7 +68,7 @@ def _pip_wheel_impl(rctx):
         "pip",
         "wheel",
         "-r",
-        rctx.path(rctx.attr.requirements),
+        "fixed_requirements.txt",
         "-w",
         "./",
     ]
@@ -78,7 +87,7 @@ def _pip_wheel_impl(rctx):
     # were built above. This enables us to make changes to the main
     # python_requirements.txt file without impacting this step.
     args = [rctx.path(rctx.attr._gen_requirements_script)]
-    rctx.report_progress("Generating sanitzed requirements file")
+    rctx.report_progress("Generating sanitized requirements file")
     result = rctx.execute(
         args,
         timeout = rctx.attr.timeout,
