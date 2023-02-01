@@ -20,4 +20,9 @@ ENV PATH "/root/.local/bin:${PATH}"
 # Python version. If that information is not read, pip installs the latest
 # version, which then fails to run.
 RUN python3 -m pip install --user -U pip "setuptools<66.0.0"
-RUN pip3 install --user -r python-requirements.txt
+# Copy in-tree packages
+RUN mkdir -p util/py/install
+COPY util/py/install/fix_imports util/py/install/fix_imports
+RUN pip3 install --user -r python-requirements.txt && \
+  rm -rf util/py/install/fix_imports && \
+  rm python-requirements.txt

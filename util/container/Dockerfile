@@ -186,10 +186,17 @@ RUN /tmp/rustup-init.sh -y --default-toolchain ${RUST_VERSION} \
 # version, which then fails to run.
 ENV PATH "/home/dev/.local/bin:${PATH}"
 COPY --chown=dev:dev python-requirements.txt /tmp/python-requirements.txt
+# Copy in-tree packages
+USER root
+RUN mkdir -p util/py/install
+COPY util/py/install/fix_imports util/py/install/fix_imports
+RUN chown -R dev util/py/install
+USER dev
 RUN python3 -m pip install --user -U pip "setuptools<66.0.0" \
     && python3 -m pip install --user -r /tmp/python-requirements.txt \
         --no-warn-script-location \
-    && rm -f /tmp/python-requirements.txt
+    && rm -f /tmp/python-requirements.txt \
+    && rm -rf util/py/install/fix_imports
 
 USER root:root
 
