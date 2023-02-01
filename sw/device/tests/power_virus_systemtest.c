@@ -4,12 +4,14 @@
 
 #include "hw/ip/aes/model/aes_modes.h"
 #include "sw/device/lib/base/math.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_i2c.h"
@@ -68,6 +70,7 @@ static dif_uart_t uart_2;
 static dif_uart_t uart_3;
 static dif_pattgen_t pattgen;
 static dif_pwm_t pwm;
+static dif_flash_ctrl_state_t flash_ctrl;
 
 static const dif_i2c_t *i2c_handles[] = {&i2c_0, &i2c_1, &i2c_2};
 static const dif_uart_t *uart_handles[] = {&uart_1, &uart_2, &uart_3};
@@ -274,6 +277,9 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_EARLGREY_PATTGEN_BASE_ADDR), &pattgen));
   CHECK_DIF_OK(dif_pwm_init(
       mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR), &pwm));
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      &flash_ctrl,
+      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 }
 
 static void configure_pinmux(void) {
@@ -827,9 +833,8 @@ static void max_power_task(void *task_parameters) {
         dif_uart_rx_bytes_available(uart_handles[i], &num_uart_rx_bytes));
     // Note, we don't care if all bytes have been transmitted out of the UART
     // by the time the fastest processing crypto block (i.e., the AES) has
-    // completed. Likely, we won't have transimitted all data since the UART
-    // is quite a bit slower. We just check that what was transmitted is
-    // correct.
+    // completed. Likely, we won't have transmitted all data since the UART is
+    // quite a bit slower. We just check that what was transmitted is correct.
     memset((void *)received_uart_data, 0, kUartFifoDepth);
     CHECK_DIF_OK(dif_uart_bytes_receive(uart_handles[i], num_uart_rx_bytes,
                                         received_uart_data, NULL));
@@ -837,6 +842,15 @@ static void max_power_task(void *task_parameters) {
   }
 
   OTTF_TASK_DELETE_SELF_OR_DIE;
+}
+
+static void check_otp_csr_configs(void) {
+  dif_flash_ctrl_region_properties_t default_properties;
+  CHECK_DIF_OK(dif_flash_ctrl_get_default_region_properties(
+      &flash_ctrl, &default_properties));
+  CHECK(default_properties.scramble_en == kMultiBitBool4True);
+  CHECK(default_properties.ecc_en == kMultiBitBool4True);
+  CHECK(default_properties.high_endurance_en == kMultiBitBool4False);
 }
 
 bool test_main(void) {
@@ -870,6 +884,11 @@ bool test_main(void) {
   configure_pattgen();
   configure_pwm();
   LOG_INFO("All IPs configured.");
+
+  // ***************************************************************************
+  // Check OTP configurations propagated to CSRs.
+  // ***************************************************************************
+  check_otp_csr_configs();
 
   // ***************************************************************************
   // Kick off test tasks.
