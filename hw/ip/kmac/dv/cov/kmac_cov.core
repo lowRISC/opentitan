@@ -15,6 +15,7 @@ filesets:
     files:
       - kmac_cov_if.sv
       - kmac_cov_bind.sv
+      - sha3pad_assert_if.sv
     file_type: systemVerilogSource
 
 targets:
