@@ -14,6 +14,16 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "address_unittest",
+    srcs = ["address_unittest.cc"],
+    deps = [
+        ":address",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "context",
     hdrs = ["context.h"],
