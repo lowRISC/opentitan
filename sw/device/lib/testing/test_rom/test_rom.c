@@ -24,6 +24,7 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_rom/chip_info.h"  // Generated.
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
@@ -176,16 +177,16 @@ bool rom_test_main(void) {
       TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
       OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
 
-  // TODO: This section needs to be updated based on the discussion in #15035
   if (otp_val != 0) {
-    LOG_INFO("Default flash settings have been supplied through otp 0x%x",
-             otp_val);
-
     dif_flash_ctrl_region_properties_t default_properties;
     CHECK_DIF_OK(dif_flash_ctrl_get_default_region_properties(
         &flash_ctrl, &default_properties));
-    default_properties.scramble_en = bitfield_field32_read(
-        otp_val, FLASH_CTRL_DEFAULT_REGION_SCRAMBLE_EN_FIELD);
+    default_properties.scramble_en =
+        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING);
+    default_properties.ecc_en =
+        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC);
+    default_properties.high_endurance_en =
+        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE);
     CHECK_DIF_OK(dif_flash_ctrl_set_default_region_properties(
         &flash_ctrl, default_properties));
   }
