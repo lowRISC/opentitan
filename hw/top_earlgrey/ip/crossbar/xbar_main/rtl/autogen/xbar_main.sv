@@ -868,8 +868,8 @@ end
 
   // Instantiation phase
   tlul_socket_1n #(
-    .HReqPass  (1'b0),
-    .HRspPass  (1'b0),
+    .HReqPass  (1'b1),
+    .HRspPass  (1'b1),
     .DReqDepth (16'h0),
     .DRspDepth (16'h0),
     .N         (4)
@@ -885,8 +885,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (12'h0),
     .HRspDepth (12'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (3)
   ) u_sm1_28 (
     .clk_i        (clk_main_i),
@@ -899,8 +899,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_29 (
     .clk_i        (clk_main_i),
@@ -913,8 +913,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (12'h0),
     .HRspDepth (12'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (3)
   ) u_sm1_30 (
     .clk_i        (clk_main_i),
@@ -927,8 +927,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (12'h0),
     .HRspDepth (12'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (3)
   ) u_sm1_31 (
     .clk_i        (clk_main_i),
@@ -939,8 +939,8 @@ end
     .tl_d_i       (tl_sm1_31_ds_d2h)
   );
   tlul_socket_1n #(
-    .HReqPass  (1'b0),
-    .HRspPass  (1'b0),
+    .HReqPass  (1'b1),
+    .HRspPass  (1'b1),
     .DReqDepth (96'h0),
     .DRspDepth (96'h0),
     .N         (24)
@@ -956,8 +956,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_33 (
     .clk_i        (clk_main_i),
@@ -984,8 +984,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_35 (
     .clk_i        (clk_main_i),
@@ -1025,8 +1025,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_38 (
     .clk_i        (clk_main_i),
@@ -1039,8 +1039,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_39 (
     .clk_i        (clk_main_i),
@@ -1053,8 +1053,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_40 (
     .clk_i        (clk_main_i),
@@ -1067,8 +1067,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_41 (
     .clk_i        (clk_main_i),
@@ -1081,8 +1081,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_42 (
     .clk_i        (clk_main_i),
@@ -1095,8 +1095,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_43 (
     .clk_i        (clk_main_i),
@@ -1109,8 +1109,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_44 (
     .clk_i        (clk_main_i),
@@ -1123,8 +1123,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_45 (
     .clk_i        (clk_main_i),
@@ -1137,8 +1137,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_46 (
     .clk_i        (clk_main_i),
@@ -1151,8 +1151,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_47 (
     .clk_i        (clk_main_i),
@@ -1165,8 +1165,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_48 (
     .clk_i        (clk_main_i),
@@ -1179,8 +1179,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_49 (
     .clk_i        (clk_main_i),
@@ -1193,8 +1193,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_50 (
     .clk_i        (clk_main_i),
@@ -1207,8 +1207,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_51 (
     .clk_i        (clk_main_i),
@@ -1221,8 +1221,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_52 (
     .clk_i        (clk_main_i),
@@ -1235,8 +1235,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqPass  (1'b0),
-    .DRspPass  (1'b0),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
     .M         (2)
   ) u_sm1_53 (
     .clk_i        (clk_main_i),
