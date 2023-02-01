@@ -44,7 +44,8 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
             // design.
             int dly_ps = $urandom_range(0, cfg.clk_rst_vif.clk_period_ps);
             #(dly_ps * 1ps);
-            cfg.clk_aon_rst_vif.apply_reset(.rst_n_scheme(0)); // AON reset.
+            cfg.clk_aon_rst_vif.apply_reset(.rst_n_scheme(
+                common_ifs_pkg::RstAssertSyncDeassertSync)); // AON reset.
           end
           begin
             super.apply_reset(kind); // CORE reset,

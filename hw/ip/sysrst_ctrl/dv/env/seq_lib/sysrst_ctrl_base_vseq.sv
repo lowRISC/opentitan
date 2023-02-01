@@ -87,7 +87,7 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
         cfg.clk_aon_rst_vif.apply_reset(.pre_reset_dly_clks(0),
                                         .reset_width_clks(400),
                                         .post_reset_dly_clks(0),
-                                        .rst_n_scheme(0));
+                                        .rst_n_scheme(common_ifs_pkg::RstAssertSyncDeassertSync));
       join
     end
   endtask  // apply_reset
