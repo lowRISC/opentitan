@@ -11,6 +11,7 @@
  * Functions
  */
 
+#include "adc_ctrl_regs.h"  // Generated.
 #include "sw/device/lib/dif/autogen/dif_adc_ctrl_autogen.h"
 
 #ifdef __cplusplus
@@ -98,14 +99,15 @@ typedef enum dif_adc_ctrl_irq_cause {
   /**
    * Sample ready cause in Oneshot mode.
    */
-  kDifAdcCtrlIrqCauseOneshot = 1U << 8,
+  kDifAdcCtrlIrqCauseOneshot = 1U << ADC_CTRL_ADC_INTR_STATUS_ONESHOT_BIT,
   /**
    * All IRQ causes ORed together.
    *
    * This is useful when clearing all IRQ causes at once, to initialize the ADC
    * Controller.
    */
-  kDifAdcCtrlIrqCauseAll = (1U << 9) - 1,
+  kDifAdcCtrlIrqCauseAll =
+      (1U << (ADC_CTRL_ADC_INTR_STATUS_ONESHOT_BIT + 1)) - 1,
 } dif_adc_ctrl_irq_cause_t;
 
 #undef DIF_ADC_CTRL_IRQ_CAUSE_ENUM_INIT_
