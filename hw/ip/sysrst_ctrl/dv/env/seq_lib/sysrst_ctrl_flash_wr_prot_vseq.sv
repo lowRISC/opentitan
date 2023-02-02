@@ -11,14 +11,14 @@ class sysrst_ctrl_flash_wr_prot_vseq extends sysrst_ctrl_base_vseq;
 
   `uvm_object_new
 
-   rand uvm_reg_data_t en_override_value, set_value, set_allowed;
+  rand uvm_reg_data_t en_override_value, set_value, set_allowed;
 
-   constraint num_trans_c {num_trans == 20;}
+  constraint num_trans_c {num_trans == 20;}
 
-   task body();
+  task body();
 
-   bit en_override_flash_wp_value, override_val_flash_wp, allowed_flash_wp_0,
-       allowed_flash_wp_1;
+    bit en_override_flash_wp_value, override_val_flash_wp, allowed_flash_wp_0,
+        allowed_flash_wp_1;
 
     `uvm_info(`gfn, "Starting the body from flash_wr_prot_vseq", UVM_LOW)
 
@@ -64,7 +64,7 @@ class sysrst_ctrl_flash_wr_prot_vseq extends sysrst_ctrl_base_vseq;
 
     end
 
-     cfg.clk_aon_rst_vif.wait_clks(20);
-   endtask : body
+    cfg.clk_aon_rst_vif.wait_clks(20);
+  endtask : body
 
 endclass : sysrst_ctrl_flash_wr_prot_vseq

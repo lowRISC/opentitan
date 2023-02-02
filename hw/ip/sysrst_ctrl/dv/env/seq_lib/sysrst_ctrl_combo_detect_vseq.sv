@@ -27,8 +27,8 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
   constraint set_pulse_width_c {
     set_pulse_width dist {
-      [10:100] :/ 95,
-      [101:300]   :/ 5
+      [10:100]  :/ 95,
+      [101:300] :/ 5
     };
 
    // ec_rst will trigger a pulse, we check all the action after 4 set_duration are done
@@ -43,8 +43,8 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
   constraint set_key_timer_c {
     set_key_timer dist {
-      [10:100] :/ 95,
-      [101:300]   :/ 5
+      [10:100]  :/ 95,
+      [101:300] :/ 5
     };
   }
 

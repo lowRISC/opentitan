@@ -20,7 +20,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
     solve set_timer before wait_cycles;
     set_timer dist {
       [10:100] :/ 95,
-      [101:$]   :/ 5
+      [101:$]  :/ 5
     };
    }
 
@@ -31,9 +31,9 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
    constraint wait_cycles_c {
      wait_cycles dist {
        // sysrst_ctrl_detect.state : DebounceSt -> IdleSt
-       [1 : set_timer] :/20,
+       [1 : set_timer]                 :/20,
        // sysrst_ctrl_detect.state : DetectSt -> IdleSt
-       (set_timer + 1) :/20,
+       (set_timer + 1)                 :/20,
        // sysrst_ctrl_detect.state : DetectSt -> StableSt
        [set_timer + 2 : set_timer * 2] :/60
      };
