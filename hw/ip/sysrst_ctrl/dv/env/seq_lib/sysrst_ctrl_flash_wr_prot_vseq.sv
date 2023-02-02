@@ -68,4 +68,3 @@ class sysrst_ctrl_flash_wr_prot_vseq extends sysrst_ctrl_base_vseq;
    endtask : body
 
 endclass : sysrst_ctrl_flash_wr_prot_vseq
-
