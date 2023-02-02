@@ -111,7 +111,7 @@
             * Set the override value to the output signal via PIN_OUT_VALUE register.
             '''
       stage: V2
-      tests: ["sysrst_ctrl_override_test"]
+      tests: ["sysrst_ctrl_pin_override_test"]
     }
 
     {

@@ -67,7 +67,7 @@
       uvm_test_seq: sysrst_ctrl_pin_access_vseq
     }
     {
-      name: sysrst_ctrl_override_test
+      name: sysrst_ctrl_pin_override_test
       uvm_test_seq: sysrst_ctrl_pin_override_vseq
     }
     {
