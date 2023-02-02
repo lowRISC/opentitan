@@ -999,6 +999,7 @@ module chip_earlgrey_cw310 #(
     .KeymgrKmacEnMasking(0),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
+    .SecOtbnMuteUrnd(1'b1),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .UsbdevRcvrWakeTimeUs(10000),
     .RomCtrlBootRomInitFile(BootRomInitFile),
