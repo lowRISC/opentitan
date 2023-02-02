@@ -16,7 +16,7 @@ class sysrst_ctrl_ec_pwr_on_rst_vseq extends sysrst_ctrl_base_vseq;
    constraint set_ec_rst_timer_c {
     set_ec_rst_timer dist {
       [10:100] :/ 95,
-      [101:$]   :/ 5
+      [101:$]  :/ 5
     };
     }
 
