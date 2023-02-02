@@ -12,7 +12,7 @@ Verilator 4.106 (2020-12-02 rev v4.106). Other tool versions might not be
 compatible.
 
 1. Download the Alma tool from this specific repo and check out to the
-   `coco-otbn` branch of the tool
+   `coco-otbn-latest` branch of the tool
    ```sh
    git clone git@github.com:abdullahvarici/coco-alma.git -b coco-otbn-latest
    ```
@@ -51,7 +51,7 @@ After downloading the Alma tool, installing dependencies and synthesizing OTBN,
 the masking can finally be formally verified.
 
 1. Enter the directory where you have downloaded Alma and load the virtual
-   Python environment
+   Python environment.
    ```sh
    source dev/bin/activate
    ```
@@ -64,7 +64,7 @@ the masking can finally be formally verified.
 
 1. Launch the Alma tool to parse, assemble, trace (simulate) and formally verify
    the netlist. For simplicity, a single script is provided to launch all the
-   required steps with a single command. Simply run
+   required steps with a single command. Simply run:
    ```sh
    ${REPO_TOP}/hw/ip/otbn/pre_sca/alma/verify_otbn.sh
    ```
@@ -72,10 +72,10 @@ the masking can finally be formally verified.
    ```sh
    Verifying OTBN using Alma
    Starting yosys synthesis...
-   | CircuitGraph | Total: 222852 | Linear: 22351 | Non-linear: 107350 | Registers: 17594 | Mux: 33864 |
-   parse.py successful (732.40s)
-   INSTR_LIMIT =  64
-   Using program file:  programs/st_ok_tr_ok.S
+   | CircuitGraph | Total: 234238 | Linear: 22351 | Non-linear: 107502 | Registers: 21338 | Mux: 41352 |
+   parse.py successful (755.32s)
+   INSTR_LIMIT =  128
+   Using program file:  programs/isw_and.S
    Using build directory: [build_directory]
    Using netlist path: ../../tmp/circuit.v
    Wrote verilator testbench to [build_directory]/verilator_tb.c
@@ -84,45 +84,53 @@ the masking can finally be formally verified.
    2: Compiling verilated netlist library
    3: Compiling provided verilator testbench
    4: Simulating circuit and generating VCD
-   | CircuitGraph | Total: 222852 | Linear: 22351 | Non-linear: 107350 | Registers: 17594 | Mux: 33864 |
-   tmp/circuit.vcd:53125: [WARNING] Entry for name clk_sys already exists in namemap (clk_sys -> }c2)
-   tmp/circuit.vcd:53144: [WARNING] Entry for name imem_wdata_i already exists in namemap (imem_wdata_i -> ~c2)
-   tmp/circuit.vcd:53145: [WARNING] Entry for name imem_we_i already exists in namemap (imem_we_i -> \"d2)
-   tmp/circuit.vcd:53146: [WARNING] Entry for name imem_wmask_i already exists in namemap (imem_wmask_i -> #d2)
-   tmp/circuit.vcd:53150: [WARNING] Entry for name rst_sys_n already exists in namemap (rst_sys_n -> %d2)
+   Line 0: WDR label found - u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf [7800] = secret 0
+   Line 1: WDR label found - u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf [7488] = secret 0
+   Line 2: WDR label found - u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf [7176] = secret 1
+   Line 3: WDR label found - u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf [6864] = secret 1
+   Line 4: WDR label found - u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf [6552] = static_random
+   | CircuitGraph | Total: 234238 | Linear: 22351 | Non-linear: 107502 | Registers: 21338 | Mux: 41352 |
+   0 nodes are ignored.
+   tmp/circuit.vcd:57091: [WARNING] Entry for name clk_sys already exists in namemap (clk_sys -> #33)
+   tmp/circuit.vcd:57110: [WARNING] Entry for name imem_wdata_i already exists in namemap (imem_wdata_i -> $33)
+   tmp/circuit.vcd:57111: [WARNING] Entry for name imem_we_i already exists in namemap (imem_we_i -> &33)
+   tmp/circuit.vcd:57112: [WARNING] Entry for name imem_wmask_i already exists in namemap (imem_wmask_i -> \'33)
+   tmp/circuit.vcd:57116: [WARNING] Entry for name rst_sys_n already exists in namemap (rst_sys_n -> )33)
+   Waiting for initial delay cycles:  139
    RST value:  1
    1
    Building formula for cycle 0:
    vars 0 clauses 0
    Checking cycle 0:
    Checking secret 0 [1, 2]:
+   Checking secret 1 [3, 4]:
    RST value:  1
    1
    Building formula for cycle 1:
-   vars 7 clauses 9
+   vars 16 clauses 25
    Checking cycle 1:
-   Checking secret 0 [8, 9]:
+   Checking secret 0 [17, 18]:
+   Checking secret 1 [19, 20]:
    RST value:  1
    1
    Building formula for cycle 2:
-   vars 14 clauses 18
+   vars 21103 clauses 57104
    Checking cycle 2:
-   Checking secret 0 [15, 16]:
-   ...
+   Checking secret 0 [21427, 21104]:
+   Checking secret 1 [21549, 21105]:
    RST value:  1
    1
-   Building formula for cycle 173:
-   vars 1211 clauses 1557
-   Checking cycle 173:
-   Checking secret 0 [1212, 1213]:
-   RST value:  1
-   1
-   Building formula for cycle 174:
-   vars 1218 clauses 1566
-   Checking cycle 174:
-   Checking secret 0 [1219, 1220]:
-   Finished in 65.81
-   The execution is secure
+   Building formula for cycle 3:
+   vars 566836 clauses 1692708
+   Checking cycle 3:
+   Checking secret 0 [630522, 652105]:
+   Finished in 34.31
+   Writing a trace with the found error to [build_directory]/dbg-label-trace-0.txt
+   Writing a reduced circuit to [build_directory]/tmp/dbg-circuit-0.dot
+   The execution is not secure, here are some leaks:
+   leak 0: (cycle: 3, cell: mux _10580_[0], id: 223382)
+   3 stable  mux _10580_[0] vars   : ['s0:0', 's0:1']
+   3 stable  mux _10580_[0] signals: u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[7800] ^ u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[7488]
    ```
 
 ## Individual steps in detail
@@ -150,7 +158,7 @@ tutorial](https://github.com/IAIK/coco-alma/tree/hw-verif#usage)
 1. Next, run the `assemble.py` script to generate memory initialization file for
    OTBN.
    ```sh
-   program=st_ok_tr_ok
+   program=isw_and
    cd examples/otbn
    python3 assemble.py --program programs/${program}.S \
       --netlist ../../tmp/circuit.v
@@ -170,24 +178,35 @@ tutorial](https://github.com/IAIK/coco-alma/tree/hw-verif#usage)
 
 1. Next, the automatically generated labeling file `tmp/labels.txt` needs to be
    adapted. This file tells Alma which inputs of the DUT correspond to the
-   secret shares and which ones are used to provide randomness for
-   (re-)masking. Update the labels file or use an existing one.
+   secret shares and which ones are used to provide randomness for (re-)masking.
+   It is pretty tedious to compute the actual indices for bignum register file
+   labels. Generate it with the following command:
+   ```sh
+   examples/otbn/labels/generate_bignum_rf_labels.py \
+      -i examples/otbn/labels/${program}_labels.txt \
+      -o tmp/labels_updated.txt -w 1 -s 0
+   ```
 
 1. Finally the verification of the masking implementation can be started.
    ```sh
    python3 verify.py --json tmp/circuit.json \
       --top-module otbn_top_coco \
-      --label examples/otbn/labels/${program}_labels.txt \
+      --label tmp/labels_updated.txt \
       --vcd tmp/circuit.vcd \
-      --mode stable \
       --rst-name rst_sys_n \
       --rst-phase 0 \
       --rst-cycles 2 \
-      --cycles 175 \
-      --from-cycle 140
+      --init-delay 139 \
+      --cycles 25 \
+      --mode stable
    ```
 
 Run the following command to see the waveform:
    ```sh
    gtkwave tmp/circuit.vcd
+   ```
+
+Run the following command to see the circuit diagramm if there is a leakage:
+   ```sh
+   xdot tmp/dbg-circuit-0.dot
    ```
