@@ -12,16 +12,18 @@ class sysrst_ctrl_combo_detect_ec_rst_vseq extends sysrst_ctrl_base_vseq;
   rand int wait_cycles;
   rand uvm_reg_data_t detect_timer, debounce_timer;
 
-  constraint wait_cycles_c {wait_cycles dist {
-    [15 : 25] :/5,
-    25 :/95
+  // This constraint gives 50% chance the combo will be triggered.
+  constraint wait_cycles_c {
+    wait_cycles dist {
+      [1 : debounce_timer]                :/ 1,
+      (debounce_timer + detect_timer + 5) :/ 1
     };
   }
 
-  constraint detect_timer_c {detect_timer == 'h5;}
-  constraint debounce_timer_c {debounce_timer == 'h20;}
+  constraint detect_timer_c {detect_timer == 5;}
+  constraint debounce_timer_c {debounce_timer == 20;}
 
-  task drive_input();
+  virtual task drive_input();
     // Trigger the input pins
     cfg.vif.key0_in = 1;
     cfg.vif.key1_in = 1;
@@ -66,7 +68,7 @@ class sysrst_ctrl_combo_detect_ec_rst_vseq extends sysrst_ctrl_base_vseq;
     drive_input();
 
     `uvm_info(`gfn, $sformatf("Value of wait_cycles:%0d", wait_cycles), UVM_LOW)
-    if (wait_cycles >= (debounce_timer + detect_timer)) begin
+    if (wait_cycles > (debounce_timer + detect_timer)) begin
       // It takes 2-3 clock cycles to sync the interrupt value
       // Read the combo status register
       cfg.clk_aon_rst_vif.wait_clks(2);
