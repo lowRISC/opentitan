@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // This sequence will enable the auto block feature and override
-// the key output with their override values set in auto_block_out_ctl reg
+// the key output with their override values set in auto_block_out_ctl reg.
 class sysrst_ctrl_auto_blk_key_output_vseq extends sysrst_ctrl_base_vseq;
   `uvm_object_utils(sysrst_ctrl_auto_blk_key_output_vseq)
 

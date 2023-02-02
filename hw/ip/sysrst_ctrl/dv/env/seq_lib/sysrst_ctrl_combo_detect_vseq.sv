@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // This sequence will write a random values to combo detect registers
-// and check for the combo detect interrupt
+// and check for the combo detect interrupt.
 class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
   `uvm_object_utils(sysrst_ctrl_combo_detect_vseq)
 
@@ -33,7 +33,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
    // ec_rst will trigger a pulse, we check all the action after 4 set_duration are done
    // make the set_pulse_width larger than any of the duration, so that we can still check it's
-   // value
+   // value.
    foreach (set_duration[i]) {
      if (cycles > set_duration[i] + set_key_timer) {
        set_pulse_width > cycles - (set_duration[i] + set_key_timer);
@@ -54,7 +54,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
         [1 : (set_duration[i] + set_key_timer) - 2] :/ 20,
         [(set_duration[i] + set_key_timer) + 5 : (set_duration[i] + set_key_timer) * 2]   :/ 80
       };
-      // don't fall into this uncerntain period
+      // Don't fall into this uncerntain period.
       !(cycles inside {[(set_duration[i] + set_key_timer) - 1 :
                         (set_duration[i] + set_key_timer) + 5]});
     }
@@ -170,9 +170,8 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       foreach (ral.com_out_ctl[i]) csr_rd(ral.com_out_ctl[i], get_action[i]);
       foreach (ral.com_sel_ctl[i]) csr_rd(ral.com_sel_ctl[i], get_trigger_combo[i]);
 
-      // Check if the interrupt has raised
-      // NOTE: The interrupt will only raise if the interrupt
-      // combo action is set
+      // Check if the interrupt has raised.
+      // NOTE: The interrupt will only raise if the interrupt combo action is set.
       for (int i = 0; i <= 3; i++) begin
         if (cycles > (get_duration[i] + set_key_timer) && triggered[i]) begin
           intr_actions[i] = get_field_val(ral.com_out_ctl[i].interrupt, get_action[i]);
@@ -189,21 +188,22 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
                             get_field_val(ral.com_sel_ctl[i].key1_in_sel, get_trigger_combo[i]),
                             get_field_val(ral.com_sel_ctl[i].key2_in_sel, get_trigger_combo[i]),
                             get_field_val(ral.com_sel_ctl[i].pwrb_in_sel, get_trigger_combo[i]),
-                            get_field_val(ral.com_sel_ctl[i].ac_present_sel, get_trigger_combo[i]));
+                            get_field_val(ral.com_sel_ctl[i].ac_present_sel,
+                                          get_trigger_combo[i]));
           end
 
           if (get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i])) begin
             ec_act_triggered = 1;
-            // record which cycle the ec_rst occurs, just need to know the last combo that triggers
+            // Record which cycle the ec_rst occurs, just need to know the last combo that triggers
             // the ec_rst
             ec_act_occur_cyc = max2(ec_act_occur_cyc, get_duration[i] + set_key_timer);
           end
         end
       end
       if (ec_act_triggered) begin
-        // we don't check ec_rst_pulse right after it occurs. past_cycles indicates how many
-        // cycles the pulse has been active
-        // -2 is because cross clock domaim make take ~2 cycles
+        // We don't check ec_rst_pulse right after it occurs. past_cycles indicates how many
+        // cycles the pulse has been active.
+        // -2 is because cross clock domaim make take ~2 cycles.
         int past_cycles = cycles - ec_act_occur_cyc - 2;
         monitor_ec_rst_low(set_pulse_width - past_cycles);
       end else begin
@@ -218,15 +218,15 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       if (intr_actions) begin
         check_interrupts(.interrupts(1 << IntrSysrstCtrl), .check_set(1));
 
-        // Write to clear the interrupt
+        // Write to clear the interrupt.
         csr_wr(ral.combo_intr_status, rdata);
 
         cfg.clk_aon_rst_vif.wait_clks(5);
-        // check if the interrupt is cleared
+        // Check if the interrupt is cleared.
         csr_rd_check(ral.combo_intr_status, .compare_value(0));
 
-        // Sample the combo intr status covergroup
-        // The combo_intr_status get updated only when the interrupt action is triggered
+        // Sample the combo intr status covergroup.
+        // The combo_intr_status get updated only when the interrupt action is triggered.
         if (cfg.en_cov) begin
           cov.combo_intr_status.sysrst_ctrl_combo_intr_status_cg.sample(
             get_field_val(ral.combo_intr_status.combo0_h2l, rdata),
@@ -245,7 +245,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       end
 
       // If bat_disable trigger action is set then check if there is a transition
-      // on cio_bat_disable_o signal
+      // on cio_bat_disable_o signal.
       if (bat_act_triggered) begin
         `DV_CHECK_EQ(cfg.vif.bat_disable, 1);
       end else begin
@@ -253,7 +253,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       end
 
       // If reset req trigger action is set then check if there is a event
-      // on aon_rst_req_o pin
+      // on aon_rst_req_o pin.
       if (rst_act_triggered) begin
         `DV_CHECK_EQ(cfg.vif.rst_req, 1);
       end else begin
@@ -262,11 +262,11 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
       if (bat_act_triggered || rst_act_triggered) begin
         apply_resets_concurrently();
-        // delay to avoid race condition when sending item and checking no item after reset occur
-        // at the same time
+        // Delay to avoid race condition when sending item and checking no item after reset occur
+        // at the same time.
         #1ps;
-        // apply_resets_concurrently will set the registers to their default values
-        // wait for sometime and reconfigure the registers for next iteration
+        // Apply_resets_concurrently will set the registers to their default values,
+        // wait for sometime and reconfigure the registers for next iteration.
         config_register();
         monitor_ec_rst_low(set_pulse_width);
       end

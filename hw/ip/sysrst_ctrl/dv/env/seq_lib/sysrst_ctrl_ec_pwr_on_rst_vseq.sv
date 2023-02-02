@@ -36,7 +36,7 @@ class sysrst_ctrl_ec_pwr_on_rst_vseq extends sysrst_ctrl_base_vseq;
     // Get the ec_rst timer value
     csr_rd(ral.ec_rst_ctl, get_ec_rst_timer);
 
-    // check ec_rst_l asserts for ec_rst_timer cycles after reset
+    // Check ec_rst_l asserts for ec_rst_timer cycles after reset
     monitor_ec_rst_low(get_ec_rst_timer);
 
     repeat ($urandom_range(2, 4)) begin
