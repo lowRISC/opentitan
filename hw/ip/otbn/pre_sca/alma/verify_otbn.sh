@@ -14,7 +14,7 @@ python3 parse.py --keep --top-module otbn_top_coco --log-yosys \
   ${REPO_TOP}/hw/ip/otbn/pre_sca/alma/rtl/otbn_top_coco.v
 
 # Assemble the program
-program=st_ok_tr_ok
+program=isw_and
 cd examples/otbn || exit
 python3 assemble.py --program programs/${program}.S \
   --netlist ../../tmp/circuit.v
@@ -26,14 +26,19 @@ python3 trace.py --testbench tmp/verilator_tb.c \
   --c-compiler gcc \
   --make-jobs 16
 
+# Generate bignum register file labels
+examples/otbn/labels/generate_bignum_rf_labels.py \
+  -i examples/otbn/labels/${program}_labels.txt \
+  -o tmp/labels_updated.txt -w 1 -s 0
+
 # Verify
 python3 verify.py --json tmp/circuit.json \
   --top-module otbn_top_coco \
-  --label examples/otbn/labels/${program}_labels.txt \
+  --label tmp/labels_updated.txt \
   --vcd tmp/circuit.vcd \
-  --mode stable \
   --rst-name rst_sys_n \
   --rst-phase 0 \
   --rst-cycles 2 \
-  --cycles 175 \
-  --from-cycle 140
+  --init-delay 139 \
+  --cycles 25 \
+  --mode stable
