@@ -232,9 +232,12 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       "ulp_status": begin
         do_read_check = 1'b0; // This check is done in sequence
       end
-      "regwen":begin
+      "regwen": begin
       end
-      "alert_test":begin
+      "alert_test": begin
+      end
+      // TODO: need support pre-condition
+      "com_pre_sel_ctl_0", "com_pre_det_ctl_0": begin
       end
       default: begin
        `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))

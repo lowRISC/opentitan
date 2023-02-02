@@ -164,8 +164,9 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       // Latch the trigger value before resetting the input pins
       foreach (triggered[i]) triggered[i] = get_combo_trigger(i);
 
-      foreach(intr_actions_pre_reset[i])
+      foreach (intr_actions_pre_reset[i]) begin
         intr_actions_pre_reset[i] = get_field_val(ral.com_out_ctl[i].interrupt, get_action[i]);
+      end
 
       // Sample the combo_intr_status covergroup to capture the trigger combo inputs
       // before resetting the combo inputs.

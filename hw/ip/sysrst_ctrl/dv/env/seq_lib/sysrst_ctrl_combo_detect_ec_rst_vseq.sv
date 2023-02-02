@@ -13,9 +13,10 @@ class sysrst_ctrl_combo_detect_ec_rst_vseq extends sysrst_ctrl_base_vseq;
   rand uvm_reg_data_t detect_timer, debounce_timer;
 
   // This constraint gives 50% chance the combo will be triggered.
-  constraint wait_cycles_c {wait_cycles dist {
-    [1 : debounce_timer] :/ 1,
-    (debounce_timer + detect_timer + 2) :/ 1
+  constraint wait_cycles_c {
+    wait_cycles dist {
+      [1 : debounce_timer]                :/ 1,
+      (debounce_timer + detect_timer + 5) :/ 1
     };
   }
 
