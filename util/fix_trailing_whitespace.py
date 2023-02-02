@@ -20,19 +20,15 @@ from pathlib import Path
 REPO_TOP = Path(__file__).resolve().parent.parent
 
 
-def is_ignored(path):
+def git_ignored(path):
     return subprocess.run(['git', 'check-ignore', path]).returncode == 0
 
 
 def walk_tree(paths=[REPO_TOP]):
     for path in paths:
-        if isinstance(path, str):
-            path = Path(path)
-
-        if path.is_symlink() or is_ignored(path) or 'LICENSE' in path.parts:
-            continue
-
-        if path.is_dir() and 'vendor' not in path.parts:
+        path = Path(path)
+        # Traverse unless vendored or ignored in git.
+        if path.is_dir() and 'vendor' not in path.parts and not git_ignored(path):
             yield from walk_tree(path.iterdir())
         else:
             yield path
@@ -67,10 +63,15 @@ def main():
 
     total_fixable = 0
     for path in files:
-        path = Path(path).resolve().relative_to(REPO_TOP)
-        if not path.is_file() or path.is_symlink():
+        path = Path(path)
+        # Check if symlink before calling `resolve()`.
+        if path.is_symlink():
             continue
-        if 'vendor' in path.parts or path.suffix in ['.patch', '.svg', '.tpl']:
+        path = path.resolve().relative_to(REPO_TOP)
+        if not path.is_file(
+        ) or 'vendor' in path.parts or 'LICENSE' in path.parts or path.suffix in [
+                '.patch', '.svg', '.tpl'
+        ]:
             continue
         if args.verbose:
             print(f'Checking: "{path}"')
