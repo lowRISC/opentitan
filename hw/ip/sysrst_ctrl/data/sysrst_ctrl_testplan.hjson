@@ -54,6 +54,23 @@
     }
 
     {
+      name: combo_detect_ec_rst_with_pre_cond
+      desc: '''
+            Verify the pre-condition for combo detection.
+
+            * Define `pwrb_in == 0` as a pre-condition by writing the COM_PRE_SEL_CTL_0 register
+              with value 'h8.
+            * Set the pre-condition duration time via the `COM_PRE_DET_CTL` register.
+            * Wait for the pre-condition to be satisfied.
+            * Trigger the combo_detect_ec_rst sequence.
+            * NOTE: This is a directed test with no random values for V1 stage,
+              further this test will be randomized.
+            '''
+      stage: V1
+      tests: ["sysrst_ctrl_combo_detect_ec_rst_with_pre_cond"]
+    }
+
+    {
       name: combo_detect
       desc: '''
             Verify the combo detection with random action.

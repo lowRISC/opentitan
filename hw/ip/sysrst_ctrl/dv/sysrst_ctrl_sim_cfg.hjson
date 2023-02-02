@@ -65,6 +65,12 @@
       reseed: 5
     }
     {
+      name: sysrst_ctrl_combo_detect_ec_rst_with_pre_cond
+      uvm_test_seq: sysrst_ctrl_combo_detect_ec_rst_with_pre_cond_vseq
+      // This is a directed test with very few random values.
+      reseed: 5
+    }
+    {
       name: sysrst_ctrl_pin_access_test
       uvm_test_seq: sysrst_ctrl_pin_access_vseq
     }
