@@ -70,6 +70,17 @@
       local:   "false"
       expose:  "true"
     }
+    { name:    "SecSkipUrndReseedAtStart"
+      type:    "bit"
+      default: "0"
+      desc: '''
+        If enabled (1), URND reseed is skipped at the start of an operation.
+        Disabled (0) by default.
+        Useful for SCA measurements only.
+        '''
+      local:   "false"
+      expose:  "true"
+    }
     { name: "RndCnstOtbnKey",
       type: "otp_ctrl_pkg::otbn_key_t",
       desc: '''
