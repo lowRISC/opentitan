@@ -103,6 +103,9 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Timeout for read transaction
   uint read_timeout_ns;
 
+  // Timeout for LC state transition
+  uint state_wait_timeout_ns;
+
   // Enable/Disable the Secret Seeds and Keys during Initialisation
   bit en_init_keys_seeds;
 
@@ -111,6 +114,9 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
   // Enable/Disable the Random Flash Inititlisation After Reset
   bit disable_flash_init;
+
+  // Path to flash wrapper hierarchy.
+  string flash_path_str;
 
   `uvm_object_new
 
@@ -205,6 +211,8 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
     erase_timeout_ns = 120_000_000;  // 120ms
 
+    state_wait_timeout_ns = 500_000; // 500us
+
     en_init_keys_seeds = 1'b0;  // Off
 
     // By default, wait for flash to finish initializing process before sending transactions
@@ -212,6 +220,8 @@ class flash_ctrl_seq_cfg extends uvm_object;
     wait_init_done = 1'b1;
 
     disable_flash_init = 1'b0;  // Off
+
+    flash_path_str = "tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic";
 
     set_partition_pc();
 
