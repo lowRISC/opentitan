@@ -5910,6 +5910,19 @@
           name_top: SecOtbnMuteUrnd
         }
         {
+          name: SecSkipUrndReseedAtStart
+          desc:
+            '''
+            If enabled (1), URND reseed is skipped at the start of an operation.
+            Disabled (0) by default.
+            Useful for SCA measurements only.
+            '''
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: SecOtbnSkipUrndReseedAtStart
+        }
+        {
           name: RndCnstOtbnKey
           desc: Compile-time random reset value for IMem/DMem scrambling key.
           type: otp_ctrl_pkg::otbn_key_t
