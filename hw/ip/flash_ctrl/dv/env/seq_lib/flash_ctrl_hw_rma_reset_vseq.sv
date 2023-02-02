@@ -35,7 +35,6 @@ class flash_ctrl_hw_rma_reset_vseq extends flash_ctrl_hw_rma_vseq;
 
   task body();
     logic [RmaSeedWidth-1:0] rma_seed;
-    int                      state_wait_timeout_ns = 500_000; // 500 us
     bit                      rma_done = 0;
     bit                      flash_dis = 0;
     // INITIALIZE FLASH REGIONS
@@ -58,7 +57,7 @@ class flash_ctrl_hw_rma_reset_vseq extends flash_ctrl_hw_rma_vseq;
           `uvm_info("Test", $sformatf("Reset index: %s", reset_state_index.name), UVM_LOW)
           `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rma_state == dv2rma_st(reset_state_index));,
                        $sformatf("Timed out waiting for rma_state: %s", reset_state_index.name),
-                       state_wait_timeout_ns)
+                       cfg.seq_cfg.state_wait_timeout_ns)
           // Give more cycles for long stages
           // to trigger reset in the middle of the state.
           if (reset_state_index inside {StRmaRdVerify, StRmaErase}) cfg.clk_rst_vif.wait_clks(10);

@@ -18,12 +18,11 @@ class flash_ctrl_hw_prog_rma_wipe_err_vseq extends flash_ctrl_err_base_vseq;
 
   // fatal_std_err
   task run_error_event();
-     int state_wait_timeout_ns = 500_000; // 500 us
      int event_idx = $urandom_range(0, 3);
 
     `uvm_info(`gfn, $sformatf("event_idx :%0d", event_idx), UVM_MEDIUM)
      `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rma_state == StRmaWordSel);,
-                  , state_wait_timeout_ns)
+                  , cfg.seq_cfg.state_wait_timeout_ns)
     cfg.scb_h.expected_alert["fatal_err"].expected = 1;
     cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
     cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;

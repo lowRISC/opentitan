@@ -10,7 +10,6 @@ class flash_ctrl_connect_vseq extends flash_ctrl_base_vseq;
   task body();
     jtag_pkg::jtag_req_t jtag_src_req, jtag_dst_req;
     jtag_pkg::jtag_rsp_t jtag_src_rsp, jtag_dst_rsp;
-    string   flash_path = "tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic";
     string   dut_path = "tb.dut";
     bit      lc_nvm_debug_en;
     ast_pkg::ast_obs_ctrl_t obs_src, obs_dst;
@@ -29,7 +28,7 @@ class flash_ctrl_connect_vseq extends flash_ctrl_base_vseq;
     `DV_CHECK(uvm_hdl_force(mystr, jtag_src_req.tms))
     mystr = {dut_path, ".cio_tdi_i"};
     `DV_CHECK(uvm_hdl_force(mystr, jtag_src_req.tdi))
-    mystr = {flash_path, ".tdo_o"};
+    mystr = {cfg.seq_cfg.flash_path_str, ".tdo_o"};
     `DV_CHECK(uvm_hdl_force(mystr, jtag_src_rsp.tdo))
     // tdo_oe : dut.eflash
     $assertoff(0, "prim_lc_sync");
@@ -39,11 +38,11 @@ class flash_ctrl_connect_vseq extends flash_ctrl_base_vseq;
 
     // takes dealy to propagate lc_nvm_debug_en
     cfg.clk_rst_vif.wait_clks(5);
-    mystr = {flash_path, ".tck_i"};
+    mystr = {cfg.seq_cfg.flash_path_str, ".tck_i"};
     `DV_CHECK(uvm_hdl_read(mystr, jtag_dst_req.tck))
-    mystr = {flash_path, ".tms_i"};
+    mystr = {cfg.seq_cfg.flash_path_str, ".tms_i"};
     `DV_CHECK(uvm_hdl_read(mystr, jtag_dst_req.tms))
-    mystr = {flash_path, ".tdi_i"};
+    mystr = {cfg.seq_cfg.flash_path_str, ".tdi_i"};
     `DV_CHECK(uvm_hdl_read(mystr, jtag_dst_req.tdi))
     mystr = {dut_path, ".cio_tdo_o"};
     `DV_CHECK(uvm_hdl_read(mystr, jtag_dst_rsp.tdo))
@@ -65,15 +64,15 @@ class flash_ctrl_connect_vseq extends flash_ctrl_base_vseq;
     `DV_CHECK(uvm_hdl_force(mystr, obs_src.obmsl))
     mystr = {dut_path, ".obs_ctrl_i.obmen"};
     `DV_CHECK(uvm_hdl_force(mystr, obs_src.obmen))
-    mystr = {flash_path, ".fla_obs_o"};
+    mystr = {cfg.seq_cfg.flash_path_str, ".fla_obs_o"};
     `DV_CHECK(uvm_hdl_force(mystr, fla_src))
 
     cfg.clk_rst_vif.wait_clks(1);
-    mystr = {flash_path, ".obs_ctrl_i.obgsl"};
+    mystr = {cfg.seq_cfg.flash_path_str, ".obs_ctrl_i.obgsl"};
     `DV_CHECK(uvm_hdl_read(mystr, obs_dst.obgsl))
-    mystr = {flash_path, ".obs_ctrl_i.obmsl"};
+    mystr = {cfg.seq_cfg.flash_path_str, ".obs_ctrl_i.obmsl"};
     `DV_CHECK(uvm_hdl_read(mystr, obs_dst.obmsl))
-    mystr = {flash_path, ".obs_ctrl_i.obmen"};
+    mystr = {cfg.seq_cfg.flash_path_str, ".obs_ctrl_i.obmen"};
     `DV_CHECK(uvm_hdl_read(mystr, obs_dst.obmen))
     mystr = {dut_path, ".fla_obs_o"};
     `DV_CHECK(uvm_hdl_read(mystr, fla_dst))
