@@ -110,10 +110,9 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
     if (!rst_ni) begin
       cause_q        <= Por;
       cause_toggle_q <= 1'b0;
-      // pwrmgr resets assuming main power domain is already ready
       pd_nq          <= 1'b1;
-      pwr_clamp_q    <= 1'b0;
-      pwr_clamp_env_q <= 1'b0;
+      pwr_clamp_q    <= 1'b1;
+      pwr_clamp_env_q <= 1'b1;
       core_clk_en_q  <= 1'b0;
       io_clk_en_q    <= 1'b0;
       usb_clk_en_q   <= 1'b0;
