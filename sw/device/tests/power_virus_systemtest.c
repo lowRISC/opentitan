@@ -45,6 +45,7 @@
 #include "uart_regs.h"     // Generated.
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
+                        .enable_uart_flow_control = true,
                         .can_clobber_uart = false, );
 
 /**
