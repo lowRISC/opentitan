@@ -53,7 +53,7 @@ module pwrmgr_sec_cm_checker_assert
 
   `ASYNC_ASSERT(RomIntgChkDisFalse_A,
                 rom_intg_chk_dis == prim_mubi_pkg::MuBi4False |->
-                (lc_dft_en_i != lc_ctrl_pkg::On || lc_hw_debug_en_i != lc_ctrl_pkg::On),
+                (lc_dft_en_i !== lc_ctrl_pkg::On || lc_hw_debug_en_i !== lc_ctrl_pkg::On),
                 (rom_intg_chk_dis | lc_dft_en_i | lc_hw_debug_en_i), reset_or_disable)
 
   // check rom_intg_chk_ok
