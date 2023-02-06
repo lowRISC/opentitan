@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/dif/dif_usbdev.h"
+#include "usb_testutils_diags.h"
 
 typedef struct usb_testutils_ctx usb_testutils_ctx_t;
 
@@ -17,6 +18,14 @@ struct usb_testutils_ctx {
   dif_usbdev_t *dev;
   dif_usbdev_buffer_pool_t *buffer_pool;
   int flushed;
+  /**
+   * Have we received an indication of USB activity?
+   */
+  bool got_frame;
+  /**
+   * Most recent bus frame number received from host
+   */
+  uint16_t frame;
   void *ep_ctx[USBDEV_NUM_ENDPOINTS];
   void (*tx_done_callback[USBDEV_NUM_ENDPOINTS])(void *);
   void (*rx_callback[USBDEV_NUM_ENDPOINTS])(void *, dif_usbdev_rx_packet_info_t,
@@ -76,6 +85,17 @@ void usb_testutils_endpoint_setup(usb_testutils_ctx_t *ctx, int ep,
                                   void (*flush)(void *), void (*reset)(void *));
 
 /**
+ * Returns an indication of whether an endpoint is currently halted because
+ * of the occurrence of an error.
+ *
+ * @param ctx usbdev context pointer
+ * @param ep endpoint number
+ * @return true iff the endpoint is halted as a result of an error condition
+ */
+inline bool usb_testutils_endpoint_halted(usb_testutils_ctx_t *ctx,
+                                          dif_usbdev_endpoint_id_t endpoint);
+
+/**
  * Initialize the usbdev interface
  *
  * Does not connect the device, since the default endpoint is not yet enabled.
@@ -91,19 +111,5 @@ void usb_testutils_endpoint_setup(usb_testutils_ctx_t *ctx, int ep,
  */
 void usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
                         bool en_diff_rcvr, bool tx_use_d_se0);
-
-// Used for tracing what is going on. This may impact timing which is critical
-// when simulating with the USB DPI module.
-// #define ENABLE_TRC
-#ifdef ENABLE_TRC
-#include "sw/device/lib/runtime/log.h"
-#define TRC_S(s) LOG_INFO("%s", s)
-#define TRC_I(i, b) LOG_INFO("0x%x", i)
-#define TRC_C(c) LOG_INFO("%c", c)
-#else
-#define TRC_S(s)
-#define TRC_I(i, b)
-#define TRC_C(c)
-#endif
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_H_

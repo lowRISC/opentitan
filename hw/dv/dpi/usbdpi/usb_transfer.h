@@ -4,7 +4,9 @@
 
 #ifndef OPENTITAN_HW_DV_DPI_USBDPI_USB_TRANSFER_H_
 #define OPENTITAN_HW_DV_DPI_USBDPI_USB_TRANSFER_H_
+#include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 // USBDEV IP block supports up to 64-bytes/packet
 #ifndef USBDEV_MAX_PACKET_SIZE
@@ -16,24 +18,21 @@
 // and End Of Frame all back-to-back?)
 #define USBDPI_MAX_DATA (3U + 3U + 1U + USBDEV_MAX_PACKET_SIZE + 2U + 1U)
 
+// Special value that denotes that this transfer does not include a data stage
+#define USBDPI_NO_DATA_STAGE ((uint8_t)~0U)
+
 /**
  * Forwards reference to usbpdi state context
  */
 typedef struct usbdpi_ctx usbdpi_ctx_t;
 
 /**
- * Description of data transferred over the USB by the DPI model;
+ * Description of a transfer over the USB
  *
- * NOte: this is not to be confused with a Transfer in the terminology of the
- * USB. With the current fixed behavior of the DPI model, 'usbdpi_transfer'
- * holds a single contiguous sequence of bytes to be transferred in one
- * direction without any response.
- *
- * TODO - As the functionality of the DPI model is extended, it is anticipated
- * that this container may be extended to hold multiple Stages, forming multiple
- * Transactions and perhaps ultimately an entire Transfer. It would then contain
- * also the state information recording progress through the Transfer, allowing
- * the DPI model to switch among multiple 'in progress' transfers as required.
+ * A control transfer
+ *    Setup stage - [ Data stage ] - Status stage
+ * A data transfer
+ *    Setup stage - Data stage - [ Status stage ]
  */
 typedef struct usbdpi_transfer usbdpi_transfer_t;
 
@@ -65,7 +64,7 @@ struct usbdpi_transfer {
 void usb_transfer_setup(usbdpi_ctx_t *ctx);
 
 /**
- * Allocate and initialise a transfer descriptor
+ * Allocate and initialize a transfer descriptor
  *
  * @param  ctx       USB DPI context
  */
@@ -80,9 +79,9 @@ usbdpi_transfer_t *transfer_alloc(usbdpi_ctx_t *ctx);
 void transfer_release(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer);
 
 /**
- * Initialise a transfer descriptor for use
+ * Initialize a transfer descriptor for use
  *
- * @param  transfer  Transfer descriptor to be initialised
+ * @param  transfer  Transfer descriptor to be initialized
  */
 void transfer_init(usbdpi_transfer_t *transfer);
 
@@ -95,6 +94,21 @@ void transfer_init(usbdpi_transfer_t *transfer);
  */
 void transfer_frame_start(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer,
                           unsigned frame);
+
+/**
+ * Construct and send the setup stage of a control transfer
+ *
+ * @param  ctx           USB DPI context
+ * @param  transfer      Transfer descriptor
+ * @param  bmRequestType Characteristics of USB device request
+ * @param  bRequest      Specific device request
+ * @param  wValue        Word-sized field that varies according to the request
+ * @param  WIndex        Typically used to pass an index or offset
+ * @param  wLength       Number of bytes to transfer if there is a Data stage
+ */
+void transfer_setup(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer,
+                    uint8_t bmRequestType, uint8_t bRequest, uint16_t wValue,
+                    uint16_t wIndex, uint16_t wLength);
 
 /**
  * Append a token packet to a transfer descriptor that is under construction
@@ -129,6 +143,44 @@ uint8_t *transfer_data_start(usbdpi_transfer_t *transfer, uint8_t pid,
 void transfer_data_end(usbdpi_transfer_t *transfer, uint8_t *dp);
 
 /**
+ * Return access to the data field of a transfer descriptor
+ *
+ * @param  transfer  Transfer descriptor
+ * @return           Pointer to the start of the data field or NULL
+ */
+inline uint8_t *transfer_data_field(usbdpi_transfer_t *transfer) {
+  assert(transfer);
+  if (transfer->data_start != USBDPI_NO_DATA_STAGE &&
+      transfer->data_start + 1U < transfer->num_bytes) {
+    return &transfer->data[transfer->data_start + 1U];
+  }
+  return NULL;
+}
+
+/**
+ * Return DATAx PID of the data field of a transfer descriptor
+ *
+ * @param  transfer  Transfer descriptor
+ * @return           USB_PID_DATA0|1
+ */
+inline uint8_t transfer_data_pid(usbdpi_transfer_t *transfer) {
+  assert(transfer);
+  assert(transfer->data_start != USBDPI_NO_DATA_STAGE &&
+         transfer->data_start + 1U < transfer->num_bytes);
+  return transfer->data[transfer->data_start];
+}
+
+/**
+ * Append some data to a transfer description
+ *
+ * @param  transfer  Transfer descriptor under construction
+ * @param  dp        Pointer to data bytes to be appended
+ * @param  n         Number of bytes
+ * @return           true iff appended successfully
+ */
+bool transfer_append(usbdpi_transfer_t *transfer, const uint8_t *dp, size_t n);
+
+/**
  * Prepare a transfer for transmission to the device, and get ready to transmit
  *
  * @param  ctx       USB DPI context
@@ -148,5 +200,24 @@ void transfer_send(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer);
  */
 void transfer_status(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer,
                      uint8_t pid);
+
+/**
+ * Returns the total number of bytes to be transferred
+ *
+ * @param  transfer  Transfer descriptor
+ * @return           Number of bytes
+ */
+
+inline uint32_t transfer_length(const usbdpi_transfer_t *transfer) {
+  return transfer->num_bytes;
+}
+
+/**
+ * Diagnostic utility function to dump out the contents of a transfer descriptor
+ *
+ * @param  transfer  Transfer descriptor
+ * @param  out       Stream to receive diagnostic output
+ */
+void transfer_dump(usbdpi_transfer_t *transfer, FILE *out);
 
 #endif  // OPENTITAN_HW_DV_DPI_USBDPI_USB_TRANSFER_H_

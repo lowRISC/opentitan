@@ -1900,13 +1900,20 @@ opentitan_functest(
 opentitan_functest(
     name = "usbdev_test",
     srcs = ["usbdev_test.c"],
-    targets = ["verilator"],
+    cw310 = cw310_params(
+        tags = ["skip_in_ci"],  # Requires DPI model
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+    ],
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",

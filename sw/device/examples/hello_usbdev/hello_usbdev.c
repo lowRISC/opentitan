@@ -215,7 +215,7 @@ void _ottf_main(void) {
                      differential_xcvr && !uphy);
 
   usb_testutils_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
-                               sizeof(config_descriptors));
+                               sizeof(config_descriptors), NULL, 0);
   while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured) {
     usb_testutils_poll(&usbdev);
   }
