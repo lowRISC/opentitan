@@ -109,6 +109,25 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
     cfg.vif.ac_present = 1;
   endfunction
 
+  task release_ec_rst_l_o();
+    uint16_t get_ec_rst_timer;
+
+    // Explicitly release the EC reset
+    // Disable the override function
+    ral.pin_out_ctl.ec_rst_l.set(0);
+    csr_update(ral.pin_out_ctl);
+    // Get the ec_rst timer value
+    csr_rd(ral.ec_rst_ctl, get_ec_rst_timer);
+
+    // Check ec_rst_l asserts for ec_rst_timer cycles after reset
+    monitor_ec_rst_low(get_ec_rst_timer);
+    cfg.clk_aon_rst_vif.wait_clks(10);
+
+    // ec_rst_l_o remains high
+    `DV_CHECK_EQ(cfg.vif.ec_rst_l_out, 1);
+
+  endtask
+
   task body();
     uvm_reg_data_t rdata;
     bit triggered[4];
@@ -119,10 +138,12 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
     `uvm_info(`gfn, "Starting the body from combo detect", UVM_LOW)
 
+    // post reset ec_rst_l_o remains asserted, and must be deasserted
+    // This is to make sure during test, the H->L and L->H transitions of ec_rst_l_o can be observed
+    release_ec_rst_l_o();
+
     reset_combo_inputs();
     config_register();
-
-    monitor_ec_rst_low(set_pulse_width);
 
     // It takes 2-3 clock cycles to sync the register values
     cfg.clk_aon_rst_vif.wait_clks(3);
@@ -265,10 +286,11 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
         // Delay to avoid race condition when sending item and checking no item after reset occur
         // at the same time.
         #1ps;
+        // release ec_rst_l_o after reset
+        release_ec_rst_l_o();
         // Apply_resets_concurrently will set the registers to their default values,
         // wait for sometime and reconfigure the registers for next iteration.
         config_register();
-        monitor_ec_rst_low(set_pulse_width);
       end
         cfg.clk_aon_rst_vif.wait_clks(10);
      end
