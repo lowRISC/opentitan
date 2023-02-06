@@ -369,6 +369,7 @@ cc_library(
     hdrs = [
         "usb_testutils.h",
         "usb_testutils_controlep.h",
+        "usb_testutils_diags.h",
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
