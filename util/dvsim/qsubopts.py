@@ -1800,6 +1800,15 @@ class qsubOptions():
 
         # Form execution string
 
+        import random
+        test_id = ''
+        if "build.log" in self.args.o:
+            test_id = self.args.o.split("/")[-2]
+        elif "run.log" in self.args.o:
+            test_id = self.args.o.split("/")[-3]
+        if test_id == '':
+            test_id = str(random.randint(1, 9999))
+
         import os
         program = os.path.join(path, self.prog)
         options = []
@@ -1820,12 +1829,12 @@ class qsubOptions():
         args = getattr(self.args, 'xterm_args', args)
         # ---------------- command file -------------
         cwd = os.getcwd()
-        command_file = cwd + '/command_file_' + str(os.getpid())
+        command_file = cwd + '/command_file_' + str(os.getpid()) + '_' + test_id
         try:
             with open(command_file, 'w') as f_command:
                 command_temp = str(self.args.command)
                 command_temp = command_temp.replace('"', '')
-                f_command.write(command_temp)
+                f_command.write(command_temp + "\n/bin/rm -f " + command_file)
         except IOError:
             error_msg = 'Error: problem with open File: ' + str(f_command)
             raise IOError(error_msg)
