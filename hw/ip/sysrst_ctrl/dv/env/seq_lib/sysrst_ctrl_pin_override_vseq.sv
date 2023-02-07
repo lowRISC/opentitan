@@ -138,29 +138,31 @@ class sysrst_ctrl_pin_override_vseq extends sysrst_ctrl_base_vseq;
       perform_checks(en_override_z3_wakeup, override_val_z3_wakeup,
           allowed_z3_wakeup_1, allowed_z3_wakeup_0, cfg.vif.z3_wakeup, 0);
 
-      cov.pin_cfg_cg["bat_disable"].pin_cfg_cg.sample (en_override_bat_disable,
-          override_val_bat_disable, allowed_bat_disable_0, allowed_bat_disable_1);
+      if (cfg.en_cov) begin
+        cov.pin_cfg_cg["bat_disable"].pin_cfg_cg.sample (en_override_bat_disable,
+            override_val_bat_disable, allowed_bat_disable_0, allowed_bat_disable_1);
 
-      cov.pin_cfg_cg["ec_rst_l"].pin_cfg_cg.sample (en_override_ec_rst_l_out,
-          override_val_ec_rst_l_out, allowed_ec_rst_l_out_0, allowed_ec_rst_l_out_1);
+        cov.pin_cfg_cg["ec_rst_l"].pin_cfg_cg.sample (en_override_ec_rst_l_out,
+            override_val_ec_rst_l_out, allowed_ec_rst_l_out_0, allowed_ec_rst_l_out_1);
 
-      cov.pin_cfg_cg["pwrb_out"].pin_cfg_cg.sample (en_override_pwrb_out,
-          override_val_pwrb_out, allowed_pwrb_out_0, allowed_pwrb_out_1);
+        cov.pin_cfg_cg["pwrb_out"].pin_cfg_cg.sample (en_override_pwrb_out,
+            override_val_pwrb_out, allowed_pwrb_out_0, allowed_pwrb_out_1);
 
-      cov.pin_cfg_cg["key0_out"].pin_cfg_cg.sample (en_override_key0_out,
-          override_val_key0_out, allowed_key0_out_0, allowed_key0_out_1);
+        cov.pin_cfg_cg["key0_out"].pin_cfg_cg.sample (en_override_key0_out,
+            override_val_key0_out, allowed_key0_out_0, allowed_key0_out_1);
 
-      cov.pin_cfg_cg["key1_out"].pin_cfg_cg.sample (en_override_key1_out,
-          override_val_key1_out, allowed_key1_out_0, allowed_key1_out_1);
+        cov.pin_cfg_cg["key1_out"].pin_cfg_cg.sample (en_override_key1_out,
+            override_val_key1_out, allowed_key1_out_0, allowed_key1_out_1);
 
-      cov.pin_cfg_cg["key2_out"].pin_cfg_cg.sample (en_override_key2_out,
-          override_val_key2_out, allowed_key2_out_0, allowed_key2_out_1);
+        cov.pin_cfg_cg["key2_out"].pin_cfg_cg.sample (en_override_key2_out,
+            override_val_key2_out, allowed_key2_out_0, allowed_key2_out_1);
 
-      cov.pin_cfg_cg["z3_wakeup"].pin_cfg_cg.sample (en_override_z3_wakeup,
-          override_val_z3_wakeup, allowed_z3_wakeup_0, allowed_z3_wakeup_1);
+        cov.pin_cfg_cg["z3_wakeup"].pin_cfg_cg.sample (en_override_z3_wakeup,
+            override_val_z3_wakeup, allowed_z3_wakeup_0, allowed_z3_wakeup_1);
 
-      cov.pin_cfg_cg["flash_wp_l"].pin_cfg_cg.sample (en_override_flash_wp,
-          override_val_flash_wp, allowed_flash_wp_0, allowed_flash_wp_1);
+        cov.pin_cfg_cg["flash_wp_l"].pin_cfg_cg.sample (en_override_flash_wp,
+            override_val_flash_wp, allowed_flash_wp_0, allowed_flash_wp_1);
+      end
     end
 
   endtask : body
