@@ -160,13 +160,15 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
       csr_rd_check(ral.ulp_status, .compare_value(0));
      end
      // Sample the wakeup event covergroup before clearing the status register
-     cov.wakeup_event.sysrst_ctrl_wkup_event_cg.sample(
-       get_field_val(ral.wkup_status.wakeup_sts, wkup_sts_rdata),
-       cfg.vif.pwrb_in,
-       cfg.vif.lid_open,
-       cfg.vif.ac_present,
-       cfg.intr_vif.pins
-     );
+     if (cfg.en_cov) begin
+       cov.wakeup_event.sysrst_ctrl_wkup_event_cg.sample(
+         get_field_val(ral.wkup_status.wakeup_sts, wkup_sts_rdata),
+         cfg.vif.pwrb_in,
+         cfg.vif.lid_open,
+         cfg.vif.ac_present,
+         cfg.intr_vif.pins
+       );
+     end
      cfg.clk_aon_rst_vif.wait_clks(10);
     end
    endtask : body
