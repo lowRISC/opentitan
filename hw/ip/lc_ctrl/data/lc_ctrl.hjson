@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "lc_ctrl",
+  one_line_desc:      "Manages device life cycle states and transitions, and controls key manager, flash, OTP, and debug access",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

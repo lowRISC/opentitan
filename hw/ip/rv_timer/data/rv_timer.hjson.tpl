@@ -7,6 +7,7 @@
 ##  - timers: number of timers in each hart
 {
   name:               "rv_timer",
+  one_line_desc:      "Memory-mapped timer unit implementing RISC-V mtime and mtimecmp registers",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

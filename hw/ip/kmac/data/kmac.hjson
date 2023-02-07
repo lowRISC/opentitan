@@ -4,6 +4,7 @@
 
 {
   name:               "kmac",
+  one_line_desc:      "Accelerator for Keccak-based keyed hash message authentication code and SHA-3 hash functions; with SCA and FI countermeasures",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

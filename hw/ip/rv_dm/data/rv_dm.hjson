@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "rv_dm",
+  one_line_desc:      "Enables debug support for Ibex, access protected by life cycle",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

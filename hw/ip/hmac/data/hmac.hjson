@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "hmac",
+  one_line_desc:      "Accelerator for SHA-256-based keyed hash message authentication code and the SHA-256 hash function",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

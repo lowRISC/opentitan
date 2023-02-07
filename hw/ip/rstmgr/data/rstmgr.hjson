@@ -8,6 +8,7 @@
 #
 {
   name:               "rstmgr",
+  one_line_desc:      "Controls the on-chip reset signals, records reset cause and CPU crash dump for software",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

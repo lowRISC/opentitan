@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "gpio",
+  one_line_desc:      "General-purpose I/O pin control interface for software",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

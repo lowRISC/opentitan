@@ -12,6 +12,7 @@
 #
 {
   name:               "clkmgr",
+  one_line_desc:      "Derives and monitors on-chip clock signals, handles clock gating requests from power manager and software",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

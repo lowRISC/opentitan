@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "uart",
+  one_line_desc:      "Full duplex serial communication interface, supports bit rates of up to 1 Mbit/s",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

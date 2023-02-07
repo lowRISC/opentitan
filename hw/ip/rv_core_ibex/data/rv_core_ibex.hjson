@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "rv_core_ibex",
+  one_line_desc:      "Dual-core lockstep 32-bit RISC-V processor running application and control software",
   design_spec:        "../doc",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_rv_core_ibex",

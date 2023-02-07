@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "sysrst_ctrl",
+  one_line_desc:      "Manages board-level reset sequencing, interfaces reset and power manager",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

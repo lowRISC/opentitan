@@ -8,6 +8,7 @@
 %>\
 {
   name:               "pwrmgr",
+  one_line_desc:      "Sequences on-chip power, clocks, and resets through different reset and power states",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

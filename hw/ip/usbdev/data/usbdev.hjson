@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "usbdev",
+  one_line_desc:      "USB 2.0 Full Speed device interface (12 Mbit/s)",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

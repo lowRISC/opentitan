@@ -16,6 +16,7 @@
 ##  - attr_dw:             Width of wakeup counters
 {
   name:               "pinmux",
+  one_line_desc:      "Multiplexes between on-chip hardware blocks and pins, and can be configured at runtime",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
