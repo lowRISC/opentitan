@@ -693,7 +693,7 @@ CPOL controls clock polarity and CPHA controls the clock phase.
 For further details, please refer to this diagram from Wikipedia:
 [File:SPI_timing_diagram2.svg](https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#/media/File:SPI_timing_diagram2.svg)
 
-This version of SPI_DEVICE HWIP supports mode 0 (CPHA and CPOL as 0) and mode 3 (CPHA and CPOL as 1) for Generic, Flash, and Passthrough modes.
+This version of SPI_DEVICE HWIP supports mode 0 (CPHA and CPOL as 0) for Generic, Flash, and Passthrough modes. Mode 3 (CPHA and CPOL as 1) is not supported in the current version.
 SW should configure the SPI_DEVICE to mode 0 to enable TPM mode along with other modes.
 
 ## SPI Device Firmware Operation Mode
