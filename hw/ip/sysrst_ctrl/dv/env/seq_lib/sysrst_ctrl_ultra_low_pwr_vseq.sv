@@ -88,7 +88,6 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
      `uvm_info(`gfn, "Starting the body from ultra_low_pwr_vseq", UVM_LOW)
 
      repeat (num_trans) begin
-
        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(en_ulp)
 
        // Enable ultra low power feature
@@ -121,6 +120,15 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
              drive_lid();
            end
          join
+
+         // Wait until all debounce timer expires, so the state machines will be reset to Idle.
+         begin
+           int wait_cycles[$];
+           wait_cycles.push_back(cycles_to_finish_debounce(pwrb_cycles, set_pwrb_timer));
+           wait_cycles.push_back(cycles_to_finish_debounce(lid_cycles, set_lid_timer));
+           wait_cycles.push_back(cycles_to_finish_debounce(ac_cycles, set_ac_timer));
+           cfg.clk_aon_rst_vif.wait_clks($urandom_range(2, 10) + max(wait_cycles));
+         end
        end
 
        // Enable the bus clock to read the status register
@@ -132,9 +140,11 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
        csr_rd(ral.ulp_ctl, rdata);
        enable_ulp = get_field_val(ral.ulp_ctl.ulp_enable, rdata);
 
-       `uvm_info(`gfn, $sformatf("enable_ulp=%0b, pwrb_cycles=%0d, pwrb_timer=%0d, ac_cycles=%0d,\
-                 get_ac_timer=%0d, lid_cycles=%0d, lid_timer=%0d", enable_ulp, pwrb_cycles,
-                 get_pwrb_timer, ac_cycles, get_ac_timer, lid_cycles, get_lid_timer), UVM_MEDIUM)
+       `uvm_info(`gfn, {$sformatf("enable_ulp=%0b, pwrb_cycles=%0d, pwrb_timer=%0d",
+                                  enable_ulp, pwrb_cycles, get_pwrb_timer),
+                        $sformatf("ac_cycles=%0d, get_ac_timer=%0d", ac_cycles, get_ac_timer),
+                        $sformatf("lid_cycles=%0d, lid_timer=%0d", lid_cycles, get_lid_timer)},
+                 UVM_MEDIUM)
        // (cycles == timer) => sysrst_ctrl_detect.state : DebounceSt -> IdleSt
        // (cycles == timer + 1) => sysrst_ctrl_detect.state : DetectSt -> IdleSt
        // Therefore we only need to check when cycles > timer + 1
@@ -184,8 +194,16 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
              cfg.intr_vif.pins
          );
        end
-       cfg.clk_aon_rst_vif.wait_clks(10);
+       cfg.clk_aon_rst_vif.wait_clks($urandom_range(0, 10));
      end
    endtask : body
+
+   // A helper function to determine if the set time is long enough to cover the debounce state.
+   // If the set time is longer than the debounce time, return 0.
+   // If the set time if shorter than the debounce time, return the cycles required to finish
+   // the debounce state.
+   virtual function uint cycles_to_finish_debounce(int set_cycles, int debounce_timer);
+     return (set_cycles >= debounce_timer) ? 0 : (debounce_timer - set_cycles);
+   endfunction
 
 endclass : sysrst_ctrl_ultra_low_pwr_vseq
