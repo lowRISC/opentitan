@@ -66,6 +66,7 @@ static dif_i2c_t i2c_1;
 static dif_i2c_t i2c_2;
 static dif_spi_device_handle_t spi_device;
 static dif_spi_host_t spi_host_0;
+static dif_spi_host_t spi_host_1;
 static dif_uart_t uart_1;
 static dif_uart_t uart_2;
 static dif_uart_t uart_3;
@@ -181,6 +182,31 @@ static const pinmux_pad_attributes_t pinmux_pad_attributes[] = {
         .flags = kDifPinmuxPadAttrPullResistorEnable |
                  kDifPinmuxPadAttrPullResistorUp,
     },
+    // Enable pull-ups for spi_host_1 data pins to avoid floating inputs.
+    {
+        .pad = kTopEarlgreyMuxedPadsIoa2,  // SD0
+        .kind = kDifPinmuxPadKindMio,
+        .flags = kDifPinmuxPadAttrPullResistorEnable |
+                 kDifPinmuxPadAttrPullResistorUp,
+    },
+    {
+        .pad = kTopEarlgreyMuxedPadsIor11,  // SD1
+        .kind = kDifPinmuxPadKindMio,
+        .flags = kDifPinmuxPadAttrPullResistorEnable |
+                 kDifPinmuxPadAttrPullResistorUp,
+    },
+    {
+        .pad = kTopEarlgreyMuxedPadsIor12,  // SD2
+        .kind = kDifPinmuxPadKindMio,
+        .flags = kDifPinmuxPadAttrPullResistorEnable |
+                 kDifPinmuxPadAttrPullResistorUp,
+    },
+    {
+        .pad = kTopEarlgreyMuxedPadsIor13,  // SD3
+        .kind = kDifPinmuxPadKindMio,
+        .flags = kDifPinmuxPadAttrPullResistorEnable |
+                 kDifPinmuxPadAttrPullResistorUp,
+    },
 };
 
 /**
@@ -274,6 +300,8 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi_device));
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host_0));
+  CHECK_DIF_OK(dif_spi_host_init(
+      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR), &spi_host_1));
   CHECK_DIF_OK(dif_pattgen_init(
       mmio_region_from_addr(TOP_EARLGREY_PATTGEN_BASE_ADDR), &pattgen));
   CHECK_DIF_OK(dif_pwm_init(
@@ -366,6 +394,12 @@ static void configure_pinmux(void) {
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob12,
                                         kTopEarlgreyPinmuxOutselI2c2Scl));
 
+  // Enable pull-ups for SPI_HOST_0/1 data pins to avoid floating inputs.
+  if (kDeviceType == kDeviceSimDV || kDeviceType == kDeviceSimVerilator) {
+    pinmux_testutils_configure_pads(&pinmux, pinmux_pad_attributes,
+                                    ARRAYSIZE(pinmux_pad_attributes));
+  }
+
   // PATTGEN:
   //    Channel 0 PDA on IOR0
   //    Channel 0 PCL on IOR1
@@ -381,24 +415,56 @@ static void configure_pinmux(void) {
                                         kTopEarlgreyPinmuxOutselPattgenPcl1Tx));
 
   // PWM:
-  //    Channel 0 on IOR5
-  //    Channel 1 on IOR6
-  //    Channel 2 on IOR7
-  //    Channel 3 on IOR10
-  //    Channel 4 on IOR11
-  //    Channel 5 on IOR12
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor5,
+  //    Channel 0 on IOB1
+  //    Channel 1 on IOB2
+  //    Channel 2 on IOR5
+  //    Channel 3 on IOR6
+  //    Channel 4 on IOR7
+  //    Channel 5 on IOR10
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob1,
                                         kTopEarlgreyPinmuxOutselPwmAonPwm0));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor6,
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob2,
                                         kTopEarlgreyPinmuxOutselPwmAonPwm1));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor7,
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor5,
                                         kTopEarlgreyPinmuxOutselPwmAonPwm2));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor10,
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor6,
                                         kTopEarlgreyPinmuxOutselPwmAonPwm3));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor11,
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor7,
                                         kTopEarlgreyPinmuxOutselPwmAonPwm4));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor12,
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor10,
                                         kTopEarlgreyPinmuxOutselPwmAonPwm5));
+
+  // SPI Host 1:
+  //    CSB on IOB0
+  //    SCK on IOB3
+  //    SD0 on IOA2
+  //    SD1 on IOR11
+  //    SD2 on IOR12
+  //    SD3 on IOR13
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob0,
+                                        kTopEarlgreyPinmuxOutselSpiHost1Csb));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob3,
+                                        kTopEarlgreyPinmuxOutselSpiHost1Sck));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa2,
+                                        kTopEarlgreyPinmuxOutselSpiHost1Sd0));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor11,
+                                        kTopEarlgreyPinmuxOutselSpiHost1Sd1));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor12,
+                                        kTopEarlgreyPinmuxOutselSpiHost1Sd1));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor13,
+                                        kTopEarlgreyPinmuxOutselSpiHost1Sd1));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0,
+      kTopEarlgreyPinmuxInselIoa2));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1,
+      kTopEarlgreyPinmuxInselIor11));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd2,
+      kTopEarlgreyPinmuxInselIor12));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd3,
+      kTopEarlgreyPinmuxInselIor13));
 }
 
 /**
@@ -622,26 +688,19 @@ static void configure_i2c(dif_i2c_t *i2c, uint8_t device_addr_0,
   CHECK_DIF_OK(dif_i2c_line_loopback_set_enabled(i2c, kDifToggleEnabled));
 }
 
-static void configure_spi_host(void) {
-  // Enable pull-ups for spi_host_0 data pins to avoid floating inputs.
-  if (kDeviceType == kDeviceSimDV || kDeviceType == kDeviceSimVerilator) {
-    pinmux_testutils_configure_pads(&pinmux, pinmux_pad_attributes,
-                                    ARRAYSIZE(pinmux_pad_attributes));
-  }
-  // These values are mostly filler as spi_host_0 will be in passthrough mode.
+static void configure_spi_host(const dif_spi_host_t *spi_host, bool enable) {
   CHECK_DIF_OK(dif_spi_host_configure(
-      &spi_host_0,
-      (dif_spi_host_config_t){
-          .spi_clock = kClockFreqHiSpeedPeripheralHz / 2,
-          .peripheral_clock_freq_hz = kClockFreqHiSpeedPeripheralHz,
-          .chip_select =
-              {
-                  .idle = 2,
-                  .trail = 2,
-                  .lead = 2,
-              },
-      }));
-  CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host_0, /*enabled=*/true));
+      spi_host, (dif_spi_host_config_t){
+                    .spi_clock = kClockFreqHiSpeedPeripheralHz / 2,
+                    .peripheral_clock_freq_hz = kClockFreqHiSpeedPeripheralHz,
+                    .chip_select =
+                        {
+                            .idle = 2,
+                            .trail = 2,
+                            .lead = 2,
+                        },
+                }));
+  CHECK_DIF_OK(dif_spi_host_output_set_enabled(spi_host, /*enabled=*/enable));
 }
 
 void configure_pattgen(void) {
@@ -879,7 +938,10 @@ bool test_main(void) {
   configure_i2c(&i2c_0, kI2c0DeviceAddress0, kI2c0DeviceAddress1);
   configure_i2c(&i2c_1, kI2c1DeviceAddress0, kI2c1DeviceAddress1);
   configure_i2c(&i2c_2, kI2c2DeviceAddress0, kI2c2DeviceAddress1);
-  configure_spi_host();
+  configure_spi_host(&spi_host_0, /*enable*/ = true);
+  // We don't enable SPI host 1 just yet, as we want to pre-load its FIFO with
+  // data before enabling it at the last moment, to initiate max power draw.
+  configure_spi_host(&spi_host_1, /*enable*/ = false);
   spi_device_testutils_configure_passthrough(&spi_device, /*filters=*/0,
                                              /*upload_write_commands=*/false);
   configure_pattgen();
