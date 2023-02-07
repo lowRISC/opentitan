@@ -237,7 +237,8 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       "alert_test": begin
       end
       // TODO: need support pre-condition
-      "com_pre_sel_ctl_0", "com_pre_det_ctl_0": begin
+      "com_pre_sel_ctl_0", "com_pre_sel_ctl_1", "com_pre_sel_ctl_2", "com_pre_sel_ctl_3",
+      "com_pre_det_ctl_0", "com_pre_det_ctl_1", "com_pre_det_ctl_2", "com_pre_det_ctl_3": begin
       end
       default: begin
        `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
