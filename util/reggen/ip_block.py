@@ -56,6 +56,7 @@ REQUIRED_FIELDS = {
 }
 
 OPTIONAL_FIELDS = {
+    'one_line_desc': ['s', "one-line description of the component"],
     # Note: this revision list may be deprecated in the future.
     'revisions': ['l', "list with revision records"],
     'design_spec':

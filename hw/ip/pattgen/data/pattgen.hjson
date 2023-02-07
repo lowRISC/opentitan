@@ -4,6 +4,7 @@
 
 {
   name:               "pattgen",
+  one_line_desc:      "Transmission of short time-dependent data patterns on two clock-parallel output channels",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

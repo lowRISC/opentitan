@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "pwm",
+  one_line_desc:      "Transmission of pulse-width modulated output signals with adjustable duty cycle",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

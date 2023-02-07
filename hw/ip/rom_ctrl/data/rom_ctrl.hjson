@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "rom_ctrl",
+  one_line_desc:      "Interfaces scrambled boot ROM with system bus and KMAC for initial health check after reset",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

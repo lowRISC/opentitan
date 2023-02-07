@@ -4,6 +4,7 @@
 
 {
   name:               "i2c",
+  one_line_desc:      "I2C interface for host and device mode, supporting up to 1 Mbaud data rates",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

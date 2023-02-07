@@ -4,6 +4,7 @@
 //
 {
   name:               "aon_timer",
+  one_line_desc:      "Wakeup and watchdog timers running on a low-power, always-on clock",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

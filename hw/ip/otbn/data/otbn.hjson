@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "otbn",
+  one_line_desc:      "OpenTitan Big Number accelerator, programmable coprocessor for asymmetric cryptography with SCA and FI countermeasures",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

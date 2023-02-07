@@ -17,6 +17,7 @@
 
 {
   name:               "flash_ctrl",
+  one_line_desc:      "Interfaces and manages integrated non-volatile flash memory; supports scrambling, integrity, and secure wipe",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv"
   hw_checklist:       "../doc/checklist",

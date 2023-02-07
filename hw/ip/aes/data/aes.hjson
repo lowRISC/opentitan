@@ -5,6 +5,7 @@
 # AES register template
 {
   name:               "aes",
+  one_line_desc:      "AES encryption and decryption engine with SCA and FI countermeasures",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

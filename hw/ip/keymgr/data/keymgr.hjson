@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "keymgr",
+  one_line_desc:      "Managing identities and root keys; shielding confidential assets from software; providing a key derivation interface for software",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

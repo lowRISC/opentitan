@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "sram_ctrl",
+  one_line_desc:      "Interfacing on-chip SRAM blocks with system bus, supports lightweight scrambling, integrity and secure wipe",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

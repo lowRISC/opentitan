@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "spi_host",
+  one_line_desc:      "Serial peripheral interface for host mode, suitable for interfacing external serial NOR flash devices",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
