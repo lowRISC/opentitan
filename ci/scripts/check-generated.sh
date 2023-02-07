@@ -70,4 +70,6 @@ gen_and_check_clean \
 
 gen_and_check_clean "MUBI package" util/design/gen-mubi.py || bad=1
 
+gen_and_check_clean "HW block summary" util/gen_doc_hw_summary_table.py || bad=1
+
 exit $bad
