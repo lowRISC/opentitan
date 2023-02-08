@@ -38,11 +38,12 @@
 #include "entropy_src_regs.h"  // Generated.
 #include "hmac_regs.h"         // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "i2c_regs.h"      // Generated.
-#include "kmac_regs.h"     // Generated.
-#include "pattgen_regs.h"  // Generated.
-#include "pwm_regs.h"      // Generated.
-#include "uart_regs.h"     // Generated.
+#include "i2c_regs.h"       // Generated.
+#include "kmac_regs.h"      // Generated.
+#include "pattgen_regs.h"   // Generated.
+#include "pwm_regs.h"       // Generated.
+#include "spi_host_regs.h"  // Generated.
+#include "uart_regs.h"      // Generated.
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
                         .enable_uart_flow_control = true,
@@ -143,6 +144,11 @@ enum {
   kPwmBeatsPerCycle = 2,
   kPwmOnBeats = 1,
   kPwmPhaseDelayBeats = 0,
+  /**
+   * SPI Host parameters.
+   */
+  kSpiHost1Csid = 0xaabbaabb,
+  kSpiHost1TxDataWord = 0xaaaaaaaa,
 };
 
 /**
@@ -795,6 +801,21 @@ static void comms_data_load_task(void *task_parameters) {
     CHECK(i2c_status.fmt_fifo_full);
   }
 
+  // Load data into SPI host (1; as 0 is used in passthrough mode) FIFO.
+  uint32_t spi_host_tx_data[SPI_HOST_PARAM_TX_DEPTH];
+  for (size_t i = 0; i < SPI_HOST_PARAM_TX_DEPTH; ++i) {
+    spi_host_tx_data[i] = kSpiHost1TxDataWord;
+  }
+  dif_spi_host_segment_t spi_host_tx_segment = {
+      .type = kDifSpiHostSegmentTypeTx,
+      .tx = {
+          .width = kDifSpiHostWidthQuad,
+          .buf = (void *)&spi_host_tx_data,
+          .length = ARRAYSIZE(spi_host_tx_data),
+      }};
+  CHECK_DIF_OK(dif_spi_host_transaction(&spi_host_1, kSpiHost1Csid,
+                                        &spi_host_tx_segment, 1));
+
   OTTF_TASK_DELETE_SELF_OR_DIE;
 }
 
@@ -838,7 +859,7 @@ static void max_power_task(void *task_parameters) {
   uint32_t kmac_cmd_reg =
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_PROCESS);
 
-  // Prepare UART and I2C enablement commands (note, all configurations
+  // Prepare UART, I2C, SPI host enablement commands (note, all configurations
   // between each IP instance should be configured the same).
   uint32_t uart_ctrl_reg =
       mmio_region_read32(uart_1.base_addr, UART_CTRL_REG_OFFSET);
@@ -848,6 +869,10 @@ static void max_power_task(void *task_parameters) {
       mmio_region_read32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET);
   i2c_ctrl_reg =
       bitfield_bit32_write(i2c_ctrl_reg, I2C_CTRL_ENABLEHOST_BIT, true);
+  uint32_t spi_host_1_ctrl_reg =
+      mmio_region_read32(spi_host_1.base_addr, SPI_HOST_CONTROL_REG_OFFSET);
+  spi_host_1_ctrl_reg = bitfield_bit32_write(
+      spi_host_1_ctrl_reg, SPI_HOST_CONTROL_OUTPUT_EN_BIT, true);
 
   // Prepare pattgen enablement command.
   uint32_t pattgen_ctrl_reg =
@@ -868,6 +893,10 @@ static void max_power_task(void *task_parameters) {
   // Enable pattgen.
   mmio_region_write32(pattgen.base_addr, PATTGEN_CTRL_REG_OFFSET,
                       pattgen_ctrl_reg);
+
+  // Enable SPI host (1).
+  mmio_region_write32(spi_host_1.base_addr, SPI_HOST_CONTROL_REG_OFFSET,
+                      spi_host_1_ctrl_reg);
 
   // Issue HMAC process, KMAC squeeze, and AES trigger commands.
   mmio_region_write32(hmac.base_addr, HMAC_CMD_REG_OFFSET, hmac_cmd_reg);
@@ -938,10 +967,10 @@ bool test_main(void) {
   configure_i2c(&i2c_0, kI2c0DeviceAddress0, kI2c0DeviceAddress1);
   configure_i2c(&i2c_1, kI2c1DeviceAddress0, kI2c1DeviceAddress1);
   configure_i2c(&i2c_2, kI2c2DeviceAddress0, kI2c2DeviceAddress1);
-  configure_spi_host(&spi_host_0, /*enable*/ = true);
+  configure_spi_host(&spi_host_0, /*enable=*/true);
   // We don't enable SPI host 1 just yet, as we want to pre-load its FIFO with
   // data before enabling it at the last moment, to initiate max power draw.
-  configure_spi_host(&spi_host_1, /*enable*/ = false);
+  configure_spi_host(&spi_host_1, /*enable=*/false);
   spi_device_testutils_configure_passthrough(&spi_device, /*filters=*/0,
                                              /*upload_write_commands=*/false);
   configure_pattgen();
