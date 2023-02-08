@@ -12,8 +12,6 @@ import sys
 from math import ceil as _ceil
 from math import log as _log
 
-import numpy as np
-
 
 class strong_random():
 
@@ -23,7 +21,7 @@ class strong_random():
         Entropy buffer is empty by default.
         """
 
-        self.buffer = np.array([])
+        self.buffer = []
         self.buffername = ""
 
     def load(self, input_file):
@@ -36,14 +34,21 @@ class strong_random():
             log.error("Entropy buffer " + input_file + " can't be loaded twice.")
             sys.exit(1)
 
-        self.buffer = np.loadtxt(input_file)
+        with open(input_file, 'r') as fp:
+            for line in fp:
+                x = int(line)
+                if x in range(256):
+                    self.buffer.append(x)
+                else:
+                    log.error("Read value not in range 0 - 255.")
+                    sys.exit(1)
         self.buffername = input_file
 
     def size(self):
         """Size of the buffer.
         """
 
-        return np.size(self.buffer)
+        return len(self.buffer)
 
     def printstatus(self):
         """Prints the number of remaining bytes in the buffer.
@@ -60,7 +65,7 @@ class strong_random():
         """Checks if the buffer is empty.
         """
 
-        return (self.buffer.size == 0)
+        return (not self.buffer)
 
     def fetchbyte(self):
         """Fetches the next byte from the buffer.
@@ -73,8 +78,7 @@ class strong_random():
             log.error("Entropy buffer empty.")
             sys.exit(1)
         else:
-            random_byte = self.buffer[0]
-            self.buffer = np.delete(self.buffer, 0)
+            random_byte = self.buffer.pop(0)
             return (random_byte)
 
     def getrandbits(self, n_bits):
