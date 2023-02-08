@@ -109,13 +109,41 @@ status_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
                                 rsa_3072_int_t *result);
 
 /**
- * Verifies an RSA-3072 signature.
+ * Starts an RSA-3072 signature verification; returns immediately.
+ *
+ * The key exponent must be 65537; no other exponents are supported.
+ *
+ * @param signature Signature to be verified.
+ * @param public_key Key to check the signature against.
+ * @param constants Precomputed Montgomery constants for the public_key.
+ * @return Result of the operation (OK or error).
+ */
+otbn_error_t rsa_3072_verify_start(const rsa_3072_int_t *signature,
+                                   const rsa_3072_public_key_t *public_key,
+                                   const rsa_3072_constants_t *constants);
+
+/**
+ * Waits for an RSA-3072 signature verification to complete.
+ *
+ * Should be invoked after `rsa_3072_verify_async`. The encoded `message`
+ * parameter should be related to the `signature` parameter passed to the prior
+ * invocation of `rsa_3072_verify_async`.
+ *
+ * @param message Encoded message representative to check the signature against.
+ * @return Result of the operation (OK or error).
+ */
+otbn_error_t rsa_3072_verify_finalize(const rsa_3072_int_t *message,
+                                      hardened_bool_t *result);
+
+/**
+ * Verifies an RSA-3072 signature; blocks until complete.
  *
  * The key exponent must be 65537; no other exponents are supported.
  *
  * @param signature Signature to be verified.
  * @param message Encoded message representative to check the signature against.
  * @param public_key Key to check the signature against.
+ * @param constants Precomputed Montgomery constants for the public_key.
  * @param result Buffer in which to store output (true iff signature is valid)
  * @return Result of the operation (OK or error).
  */
