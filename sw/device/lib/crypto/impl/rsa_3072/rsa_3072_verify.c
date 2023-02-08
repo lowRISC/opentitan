@@ -148,17 +148,9 @@ otbn_error_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
   return kOtbnErrorOk;
 }
 
-// TODO: This implementation waits while OTBN is processing; it should be
-// modified to be non-blocking.
-otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
-                             const rsa_3072_int_t *message,
-                             const rsa_3072_public_key_t *public_key,
-                             const rsa_3072_constants_t *constants,
-                             hardened_bool_t *result) {
-  // Initially set the result to false in case of early returns due to invalid
-  // arguments.
-  *result = kHardenedBoolFalse;
-
+otbn_error_t rsa_3072_verify_start(const rsa_3072_int_t *signature,
+                                   const rsa_3072_public_key_t *public_key,
+                                   const rsa_3072_constants_t *constants) {
   // Only the F4 modulus is supported.
   if (public_key->e != 65537) {
     return kOtbnErrorInvalidArgument;
@@ -195,6 +187,15 @@ otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
   // Start the OTBN routine.
   OTBN_RETURN_IF_ERROR(otbn_execute());
 
+  return kOtbnErrorOk;
+}
+
+otbn_error_t rsa_3072_verify_finalize(const rsa_3072_int_t *message,
+                                      hardened_bool_t *result) {
+  // Initially set the result to false in case of early returns due to invalid
+  // arguments.
+  *result = kHardenedBoolFalse;
+
   // Spin here waiting for OTBN to complete.
   OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done());
 
@@ -211,6 +212,24 @@ otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
       *result = kHardenedBoolFalse;
     }
   }
+
+  return kOtbnErrorOk;
+}
+
+otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
+                             const rsa_3072_int_t *message,
+                             const rsa_3072_public_key_t *public_key,
+                             const rsa_3072_constants_t *constants,
+                             hardened_bool_t *result) {
+  // Initially set the result to false in case of early returns due to invalid
+  // arguments.
+  *result = kHardenedBoolFalse;
+
+  // Initiate OTBN signature verification.
+  OTBN_RETURN_IF_ERROR(rsa_3072_verify_start(signature, public_key, constants));
+
+  // Wait for OTBN operations to complete and signature to be verified.
+  OTBN_RETURN_IF_ERROR(rsa_3072_verify_finalize(message, result));
 
   return kOtbnErrorOk;
 }
