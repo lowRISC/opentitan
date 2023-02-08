@@ -79,6 +79,7 @@ rust_library(
         "src/io/ioexpander.rs",
         "src/io/jtag.rs",
         "src/io/mod.rs",
+        "src/io/nonblocking_help.rs",
         "src/io/spi.rs",
         "src/io/uart.rs",
         "src/lib.rs",

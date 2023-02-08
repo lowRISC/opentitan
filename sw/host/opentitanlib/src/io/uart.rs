@@ -9,6 +9,7 @@ use std::time::Duration;
 use structopt::StructOpt;
 use thiserror::Error;
 
+use super::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
 use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::io::console::ConsoleDevice;
@@ -85,6 +86,26 @@ pub trait Uart {
         while self.read_timeout(&mut buf, TIMEOUT)? > 0 {}
         Ok(())
     }
+
+    /// Query if nonblocking mio mode is supported.
+    fn supports_nonblocking_read(&self) -> Result<bool> {
+        Ok(false)
+    }
+
+    /// Switch this `Uart` instance into nonblocking mio mode.  Going forward, `read()` should
+    /// only be called after `mio::poll()` has indicated that the given `Token` is ready.
+    fn register_nonblocking_read(
+        &self,
+        _registry: &mio::Registry,
+        _token: mio::Token,
+    ) -> Result<()> {
+        unimplemented!();
+    }
+
+    /// Get the same single `NonblockingHelp` object as from top level `Transport.nonblocking_help()`.
+    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
+        Ok(Rc::new(NoNonblockingHelp))
+    }
 }
 
 impl<'a> ConsoleDevice for dyn Uart + 'a {
@@ -94,6 +115,18 @@ impl<'a> ConsoleDevice for dyn Uart + 'a {
 
     fn console_write(&self, buf: &[u8]) -> Result<()> {
         self.write(buf)
+    }
+
+    fn supports_nonblocking_read(&self) -> Result<bool> {
+        self.supports_nonblocking_read()
+    }
+
+    fn register_nonblocking_read(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
+        self.register_nonblocking_read(registry, token)
+    }
+
+    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
+        self.nonblocking_help()
     }
 }
 

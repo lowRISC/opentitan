@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, bail, Result};
+use mio::{Events, Interest, Poll, Token};
 use regex::{Captures, Regex};
 use std::fs::File;
-use std::io::{Read, Write};
+use std::io::{ErrorKind, Read, Write};
 use std::os::unix::io::AsRawFd;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant, SystemTime};
 
 use crate::io::console::{ConsoleDevice, ConsoleError};
@@ -54,12 +56,98 @@ impl UartConsole {
         if let Some(timeout) = &self.timeout {
             self.deadline = Some(Instant::now() + *timeout);
         }
+        if device.supports_nonblocking_read()? {
+            return self.interact_mio(device, stdin, stdout);
+        }
         loop {
             match self.interact_once(device, &mut stdin, &mut stdout)? {
                 ExitStatus::None => {}
                 status => return Ok(status),
             }
         }
+    }
+
+    // Runs an interactive console until CTRL_C is received.  Uses `mio` library to simultaneously
+    // wait for data from UART or from stdin, without need for timeouts and repeated calls.
+    fn interact_mio<T>(
+        &mut self,
+        device: &T,
+        mut stdin: Option<&mut dyn ReadAsRawFd>,
+        mut stdout: Option<&mut dyn Write>,
+    ) -> Result<ExitStatus>
+    where
+        T: ConsoleDevice + ?Sized,
+    {
+        let mut poll = Poll::new()?;
+        let transport_help_token = Self::get_next_token();
+        let nonblocking_help = device.nonblocking_help()?;
+        nonblocking_help.register_nonblocking_help(poll.registry(), transport_help_token)?;
+        let stdin_token = Self::get_next_token();
+        if stdin.is_some() {
+            poll.registry().register(
+                &mut mio::unix::SourceFd(&stdin.as_mut().unwrap().as_raw_fd()),
+                stdin_token,
+                Interest::READABLE,
+            )?;
+        }
+        let uart_token = Self::get_next_token();
+        device.register_nonblocking_read(poll.registry(), uart_token)?;
+
+        let mut events = Events::with_capacity(2);
+        loop {
+            let now = Instant::now();
+            let poll_timeout = if let Some(deadline) = &self.deadline {
+                if now >= *deadline {
+                    return Ok(ExitStatus::Timeout);
+                }
+                Some(*deadline - now)
+            } else {
+                None
+            };
+            match poll.poll(&mut events, poll_timeout) {
+                Ok(()) => (),
+                Err(err) if err.kind() == ErrorKind::Interrupted => {
+                    continue;
+                }
+                Err(err) => bail!("poll: {}", err),
+            }
+            for event in events.iter() {
+                if event.token() == transport_help_token {
+                    nonblocking_help.nonblocking_help()?;
+                } else if event.token() == stdin_token {
+                    match self.process_input(device, &mut stdin)? {
+                        ExitStatus::None => {}
+                        status => return Ok(status),
+                    }
+                } else if event.token() == uart_token {
+                    // `mio` convention demands that we keep reading until a read returns zero
+                    // bytes, otherwise next `poll()` is not guaranteed to notice more data.
+                    while self.uart_read(device, Duration::from_millis(1), &mut stdout)? {
+                        if self
+                            .exit_success
+                            .as_ref()
+                            .map(|rx| rx.is_match(&self.buffer))
+                            == Some(true)
+                        {
+                            return Ok(ExitStatus::ExitSuccess);
+                        }
+                        if self
+                            .exit_failure
+                            .as_ref()
+                            .map(|rx| rx.is_match(&self.buffer))
+                            == Some(true)
+                        {
+                            return Ok(ExitStatus::ExitFailure);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fn get_next_token() -> Token {
+        static TOKEN_COUNTER: AtomicUsize = AtomicUsize::new(0);
+        Token(TOKEN_COUNTER.fetch_add(1, Ordering::Relaxed))
     }
 
     // Maintain a buffer for the exit regexes to match against.
@@ -76,14 +164,14 @@ impl UartConsole {
         device: &T,
         timeout: Duration,
         stdout: &mut Option<&mut dyn Write>,
-    ) -> Result<()>
+    ) -> Result<bool>
     where
         T: ConsoleDevice + ?Sized,
     {
         let mut buf = [0u8; 256];
         let len = device.console_read(&mut buf, timeout)?;
         if len == 0 {
-            return Ok(());
+            return Ok(false);
         }
         for i in 0..len {
             if self.timestamp && self.newline {
@@ -105,7 +193,7 @@ impl UartConsole {
             .as_mut()
             .map_or(Ok(()), |f| f.write_all(&buf[..len]))?;
         self.append_buffer(&buf[..len]);
-        Ok(())
+        Ok(true)
     }
 
     fn process_input<T>(
@@ -117,7 +205,7 @@ impl UartConsole {
         T: ConsoleDevice + ?Sized,
     {
         if let Some(ref mut input) = stdin.as_mut() {
-            if file::wait_fd_read_timeout(input.as_raw_fd(), Duration::from_millis(0)).is_ok() {
+            while file::wait_fd_read_timeout(input.as_raw_fd(), Duration::from_millis(0)).is_ok() {
                 let mut buf = [0u8; 256];
                 let len = input.read(&mut buf)?;
                 if len == 1 && buf[0] == UartConsole::CTRL_C {
@@ -125,13 +213,15 @@ impl UartConsole {
                 }
                 if len > 0 {
                     device.console_write(&buf[..len])?;
+                } else {
+                    break;
                 }
             }
         }
         Ok(ExitStatus::None)
     }
 
-    pub fn interact_once<T>(
+    fn interact_once<T>(
         &mut self,
         device: &T,
         stdin: &mut Option<&mut (dyn ReadAsRawFd)>,

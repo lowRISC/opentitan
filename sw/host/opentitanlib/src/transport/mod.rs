@@ -14,6 +14,7 @@ use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::jtag::{Jtag, JtagParams};
+use crate::io::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 
@@ -45,6 +46,7 @@ bitflags! {
         const EMULATOR = 0x01 << 5;
         const GPIO_MONITORING = 0x01 << 6; // Logic analyzer functionality
         const JTAG = 0x01 << 7;
+        const UART_NONBLOCKING = 0x01 << 8;
     }
 }
 
@@ -143,6 +145,13 @@ pub trait Transport {
     /// Invoke non-standard functionality of some Transport implementations.
     fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn serde_annotate::Annotate>>> {
         Err(TransportError::UnsupportedOperation.into())
+    }
+
+    /// Before nonblocking operations can be used on `Uart` or other traits, this
+    /// `NonblockingHelp` object must be invoked, in order to get the `Transport` implementation a
+    /// chance to register its internal event sources with the main event loop.
+    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
+        Ok(Rc::new(NoNonblockingHelp))
     }
 }
 
