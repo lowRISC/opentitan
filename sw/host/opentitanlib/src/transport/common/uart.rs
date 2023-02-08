@@ -181,6 +181,20 @@ impl Uart for SerialPortUart {
         self.port.borrow_mut().clear(ClearBuffer::Input)?;
         Ok(())
     }
+
+    fn supports_nonblocking_read(&self) -> Result<bool> {
+        Ok(true)
+    }
+
+    fn register_nonblocking_read(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
+        let port: &mut TTYPort = &mut self.port.borrow_mut();
+        registry.register(
+            &mut mio::unix::SourceFd(&port.as_raw_fd()),
+            token,
+            mio::Interest::READABLE,
+        )?;
+        Ok(())
+    }
 }
 
 const PID_FILE_LEN: usize = 11;
