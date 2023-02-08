@@ -23,6 +23,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Indicates which clock source to use for chip simulations.
   chip_clock_source_e   chip_clock_source;
 
+  // Indicates which JTAG to mux on the pads, if any
+  chip_jtag_tap_e       select_jtag = JtagTapNone;
+
   // Memory backdoor util instances for all memory instances in the chip.
   mem_bkdr_util mem_bkdr_util_h[chip_mem_e];
 
