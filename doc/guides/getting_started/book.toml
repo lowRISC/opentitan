@@ -1,0 +1,11 @@
+[book]
+authors = ["lowRISC"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Getting Started"
+
+[output.html]
+git-repository-url = "https://github.com/lowrisc/opentitan"
+edit-url-template = "https://github.com/lowrisc/opentitan/edit/master/doc/guides/getting_started/{path}"
+curly-quotes = true

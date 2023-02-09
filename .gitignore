@@ -88,3 +88,6 @@ compile_commands.json
 
 # Clangd index directory.
 .cache/clangd/
+
+# mdbook builds into `./book` directories, let's ignore them
+book
