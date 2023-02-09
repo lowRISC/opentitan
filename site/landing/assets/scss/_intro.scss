@@ -16,6 +16,10 @@
       min-height: 20em;
     }
 
+    &__body {
+      font-weight: bold;
+    }
+
     &__logo {
       transform: translateY(20em);
     }
@@ -30,6 +34,10 @@
     &__content {
       justify-content: flex-end;
       min-height: 24em;
+    }
+
+    &__body {
+      font-weight: normal;
     }
 
     &__logo {
@@ -57,7 +65,6 @@
     line-height: 1.5714;
     font-family: 'Livvic', sans-serif;
     max-width: 45ch;
-    font-weight: 300;
     position: relative;
     z-index: 2;
   }
