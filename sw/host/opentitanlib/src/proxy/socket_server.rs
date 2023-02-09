@@ -6,7 +6,7 @@ use anyhow::{bail, Result};
 use mio::event::Event;
 use mio::net::TcpListener;
 use mio::net::TcpStream;
-use mio::{Events, Interest, Poll, Token};
+use mio::{Events, Interest, Poll, Registry, Token};
 use mio_signals::{Signal, SignalSet, Signals};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -17,11 +17,12 @@ use std::marker::PhantomData;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use super::CommandHandler;
+use super::ExtraEventHandler;
 
 const BUFFER_SIZE: usize = 8192;
 const EOL_CODE: u8 = b'\n';
 
-fn get_next_token() -> Token {
+pub fn get_next_token() -> Token {
     static TOCKEN_COUNTER: AtomicUsize = AtomicUsize::new(0);
     Token(TOCKEN_COUNTER.fetch_add(1, Ordering::Relaxed))
 }
@@ -30,20 +31,32 @@ fn get_next_token() -> Token {
 /// receiving serialized JSON representations of `Msg`, passing them to the given
 /// `CommandHandler` to obtain responses to be sent as socket flow contol permits.  Note that
 /// this implementaion is not specific to (and does not refer to) any particular protocol.
-pub struct JsonSocketServer<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> {
+pub struct JsonSocketServer<
+    Msg: DeserializeOwned + Serialize,
+    T: CommandHandler<Msg, E>,
+    E: ExtraEventHandler,
+> {
     command_handler: T,
+    extra_event_handler: E,
     poll: Poll,
     socket: TcpListener,
     socket_token: Token,
     signals: Signals,
     signal_token: Token,
+    nonblocking_help_token: Token,
     connection_map: HashMap<Token, Connection>,
     exit_requested: bool,
     phantom: PhantomData<Msg>,
 }
 
-impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> JsonSocketServer<Msg, T> {
-    pub fn new(command_handler: T, mut socket: TcpListener) -> Result<Self> {
+impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg, E>, E: ExtraEventHandler>
+    JsonSocketServer<Msg, T, E>
+{
+    pub fn new(
+        command_handler: T,
+        extra_event_handler: E,
+        mut socket: TcpListener,
+    ) -> Result<Self> {
         let poll = Poll::new()?;
         let socket_token = get_next_token();
         poll.registry()
@@ -55,13 +68,17 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> JsonSocketServer
         let signal_token = get_next_token();
         poll.registry()
             .register(&mut signals, signal_token, Interest::READABLE)?;
+        let nonblocking_help_token = get_next_token();
+        command_handler.register_nonblocking_help(poll.registry(), nonblocking_help_token)?;
         Ok(Self {
             command_handler,
+            extra_event_handler,
             poll,
             socket,
             socket_token,
             signals,
             signal_token,
+            nonblocking_help_token,
             connection_map: HashMap::new(),
             exit_requested: false,
             phantom: PhantomData,
@@ -83,6 +100,12 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> JsonSocketServer
                     self.process_new_connection()?;
                 } else if event.token() == self.signal_token {
                     self.process_signals()?;
+                } else if event.token() == self.nonblocking_help_token {
+                    self.command_handler.nonblocking_help()?;
+                } else if self
+                    .extra_event_handler
+                    .handle_poll_event(event, &mut self.connection_map)?
+                {
                 } else {
                     match self.process_connection(event) {
                         Ok(shutdown) => {
@@ -159,7 +182,13 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> JsonSocketServer
                 }
                 if event.is_readable() {
                     conn.read()?;
-                    Self::process_any_requests(conn, &mut self.command_handler)?;
+                    Self::process_any_requests(
+                        conn,
+                        &mut self.command_handler,
+                        event.token(),
+                        self.poll.registry(),
+                        &mut self.extra_event_handler,
+                    )?;
                 }
                 // Return whether this connection object should be dropped.
                 Ok((conn.rx_eof && (conn.tx_buf.is_empty())) || conn.broken)
@@ -199,23 +228,25 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> JsonSocketServer
     }
 
     // Look for any completely received requests in the rx_buf, and handle them one by one.
-    fn process_any_requests(conn: &mut Connection, command_handler: &mut T) -> Result<()> {
+    fn process_any_requests(
+        conn: &mut Connection,
+        command_handler: &mut T,
+        conn_token: Token,
+        registry: &Registry,
+        extra_event_handler: &mut E,
+    ) -> Result<()> {
         while let Some(request) = Self::get_complete_request(conn)? {
             // One complete request received, execute it.
-            let resp = command_handler.execute_cmd(&request)?;
-            // Encode response into tx_buf.
-            serde_json::to_writer(&mut conn.tx_buf, &resp)?;
-            conn.tx_buf.push(EOL_CODE);
-            // Transmit as much as possible without blocking, leaving any remnant in
-            // tx_buf.  poll() will tell us when more can be written.
-            conn.write()?;
+            let resp =
+                command_handler.execute_cmd(conn_token, registry, extra_event_handler, &request)?;
+            conn.transmit_outgoing_msg(resp)?;
         }
         Ok(())
     }
 }
 
 /// Represents one connection with a remote OpenTitan tool invocation.
-struct Connection {
+pub struct Connection {
     socket: TcpStream,
     /// Outgoing data waiting to be written when the socket permits.
     tx_buf: Vec<u8>,
@@ -238,6 +269,16 @@ impl Connection {
             rx_eof: false,
             broken: false,
         }
+    }
+
+    pub fn transmit_outgoing_msg<T: Serialize>(&mut self, msg: T) -> Result<()> {
+        // Encode response into tx_buf.
+        serde_json::to_writer(&mut self.tx_buf, &msg)?;
+        self.tx_buf.push(EOL_CODE);
+        // Transmit as much as possible without blocking, leaving any remnant in
+        // tx_buf.  poll() will tell us when more can be written.
+        self.write()?;
+        Ok(())
     }
 
     // Fill rx_buf with as much data as is available on the socket.

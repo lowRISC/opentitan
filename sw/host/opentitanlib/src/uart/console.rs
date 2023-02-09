@@ -78,6 +78,14 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
+        if self.exit_success.as_ref().map(|rx| rx.is_match("")) == Some(true) {
+            // For compatibility with non-mio implementation, an `exit_success` regexp which
+            // matches the empty string will result in a single read to clear any buffered
+            // characters.
+            self.uart_read(device, Duration::from_millis(10), &mut stdout)?;
+            return Ok(ExitStatus::ExitSuccess);
+        }
+
         let mut poll = Poll::new()?;
         let transport_help_token = Self::get_next_token();
         let nonblocking_help = device.nonblocking_help()?;

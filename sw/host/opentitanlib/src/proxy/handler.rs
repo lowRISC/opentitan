@@ -4,6 +4,7 @@
 
 use anyhow::{bail, Result};
 
+use mio::{Registry, Token};
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -20,30 +21,39 @@ use super::CommandHandler;
 use crate::app::TransportWrapper;
 use crate::bootstrap::Bootstrap;
 use crate::io::gpio::GpioPin;
-use crate::io::i2c;
-use crate::io::spi;
+use crate::io::{i2c, nonblocking_help, spi};
+use crate::proxy::nonblocking_uart::NonblockingUartRegistry;
 use crate::transport::TransportError;
 
 /// Implementation of the handling of each protocol request, by means of an underlying
 /// `Transport` implementation.
 pub struct TransportCommandHandler<'a> {
     transport: &'a TransportWrapper,
+    nonblocking_help: Rc<dyn nonblocking_help::NonblockingHelp>,
     spi_chip_select: HashMap<String, Vec<spi::AssertChipSelect>>,
 }
 
 impl<'a> TransportCommandHandler<'a> {
-    pub fn new(transport: &'a TransportWrapper) -> Self {
-        Self {
+    pub fn new(transport: &'a TransportWrapper) -> Result<Self> {
+        let nonblocking_help = transport.nonblocking_help()?;
+        Ok(Self {
             transport,
+            nonblocking_help,
             spi_chip_select: HashMap::new(),
-        }
+        })
     }
 
     /// This method will perform whatever action on the underlying `Transport` that is requested
     /// by the given `Request`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be propagated to the remote client, without any server-side
     /// logging.
-    fn do_execute_cmd(&mut self, req: &Request) -> Result<Response> {
+    fn do_execute_cmd(
+        &mut self,
+        conn_token: Token,
+        registry: &Registry,
+        others: &mut NonblockingUartRegistry,
+        req: &Request,
+    ) -> Result<Response> {
         match req {
             Request::GetCapabilities => {
                 Ok(Response::GetCapabilities(self.transport.capabilities()?))
@@ -126,6 +136,19 @@ impl<'a> TransportCommandHandler<'a> {
                     UartRequest::Write { data } => {
                         instance.write(data)?;
                         Ok(Response::Uart(UartResponse::Write))
+                    }
+                    UartRequest::SupportsNonblockingRead => {
+                        let has_support = instance.supports_nonblocking_read()?;
+                        Ok(Response::Uart(UartResponse::SupportsNonblockingRead {
+                            has_support,
+                        }))
+                    }
+                    UartRequest::RegisterNonblockingRead => {
+                        let channel =
+                            others.nonblocking_uart_init(&instance, conn_token, registry)?;
+                        Ok(Response::Uart(UartResponse::RegisterNonblockingRead {
+                            channel,
+                        }))
                     }
                 }
             }
@@ -333,18 +356,34 @@ impl<'a> TransportCommandHandler<'a> {
     }
 }
 
-impl<'a> CommandHandler<Message> for TransportCommandHandler<'a> {
+impl<'a> CommandHandler<Message, NonblockingUartRegistry> for TransportCommandHandler<'a> {
     /// This method will perform whatever action on the underlying `Transport` that is requested
     /// by the given `Message`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be treated as an irrecoverable protocol error, causing an
     /// error message in the server log, and the connection to be terminated.
-    fn execute_cmd(&mut self, msg: &Message) -> Result<Message> {
+    fn execute_cmd(
+        &mut self,
+        conn_token: Token,
+        registry: &Registry,
+        others: &mut NonblockingUartRegistry,
+        msg: &Message,
+    ) -> Result<Message> {
         if let Message::Req(req) = msg {
             // Package either `Ok()` or `Err()` into a `Message`, to be sent via network.
             return Ok(Message::Res(
-                self.do_execute_cmd(req).map_err(SerializedError::from),
+                self.do_execute_cmd(conn_token, registry, others, req)
+                    .map_err(SerializedError::from),
             ));
         }
         bail!("Client sent non-Request to server!!!");
+    }
+
+    fn register_nonblocking_help(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
+        self.nonblocking_help
+            .register_nonblocking_help(registry, token)
+    }
+
+    fn nonblocking_help(&self) -> Result<()> {
+        self.nonblocking_help.nonblocking_help()
     }
 }
