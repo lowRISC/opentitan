@@ -35,6 +35,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "gcd",
+    srcs = [
+        "gcd.s",
+    ],
+)
+
+otbn_library(
     name = "modexp",
     srcs = [
         "modexp.s",
