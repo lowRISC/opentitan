@@ -88,3 +88,6 @@ compile_commands.json
 
 # Clangd index directory.
 .cache/clangd/
+
+# Hugo lock file
+.hugo_build.lock
