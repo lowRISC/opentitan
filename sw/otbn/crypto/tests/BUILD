@@ -117,6 +117,38 @@ otbn_consttime_test(
 )
 
 otbn_sim_test(
+    name = "gcd_small_test",
+    srcs = [
+        "gcd_small_test.s",
+    ],
+    exp = "gcd_small_test.exp",
+    deps = [
+        "//sw/otbn/crypto:gcd",
+    ],
+)
+
+otbn_sim_test(
+    name = "gcd_large_test",
+    srcs = [
+        "gcd_large_test.s",
+    ],
+    exp = "gcd_large_test.exp",
+    deps = [
+        "//sw/otbn/crypto:gcd",
+    ],
+)
+
+otbn_consttime_test(
+    name = "gcd_consttime",
+    # All inputs are in DMEM; no registers are secret.
+    secrets = ["dmem"],
+    subroutine = "gcd",
+    deps = [
+        ":gcd_small_test",
+    ],
+)
+
+otbn_sim_test(
     name = "p256_base_mult_test",
     srcs = [
         "p256_base_mult_test.s",
