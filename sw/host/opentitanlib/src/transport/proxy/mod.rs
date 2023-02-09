@@ -4,11 +4,14 @@
 
 use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
+use std::collections::HashMap;
 use std::io;
-use std::io::{BufReader, BufWriter, ErrorKind, Read, Write};
+use std::io::{BufWriter, ErrorKind, Read, Write};
 use std::net::{TcpStream, ToSocketAddrs};
+use std::os::unix::io::AsRawFd;
 use std::rc::Rc;
+use std::time::Duration;
 use thiserror::Error;
 
 use crate::bootstrap::BootstrapOptions;
@@ -16,9 +19,12 @@ use crate::impl_serializable_error;
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
+use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::proxy::protocol::{Message, ProxyRequest, ProxyResponse, Request, Response};
+use crate::proxy::protocol::{
+    AsyncMessage, Message, ProxyRequest, ProxyResponse, Request, Response,
+};
 use crate::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
 
 mod emu;
@@ -56,16 +62,28 @@ impl Proxy {
             .map_err(|e| TransportError::ProxyConnectError(addr.to_string(), e.to_string()))?;
         Ok(Self {
             inner: Rc::new(Inner {
-                reader: RefCell::new(BufReader::new(conn.try_clone()?)),
-                writer: RefCell::new(BufWriter::new(conn)),
+                conn: RefCell::new(conn),
+                uarts: RefCell::new(HashMap::new()),
+                uart_channel_map: RefCell::new(HashMap::new()),
+                recv_buf: RefCell::new(Vec::new()),
+                nonblocking_help_enabled: Cell::new(false),
             }),
         })
     }
 }
 
+struct UartRecord {
+    pub uart: Rc<dyn Uart>,
+    pub pipe_sender: mio::unix::pipe::Sender,
+    pub pipe_receiver: mio::unix::pipe::Receiver,
+}
+
 struct Inner {
-    reader: RefCell<BufReader<TcpStream>>,
-    writer: RefCell<BufWriter<TcpStream>>,
+    conn: RefCell<TcpStream>,
+    pub uarts: RefCell<HashMap<String, UartRecord>>,
+    uart_channel_map: RefCell<HashMap<u32, String>>,
+    recv_buf: RefCell<Vec<u8>>,
+    nonblocking_help_enabled: Cell<bool>,
 }
 
 impl Inner {
@@ -73,41 +91,139 @@ impl Inner {
     /// of the implementation of every method of the sub-traits (gpio, uart, spi, i2c).
     fn execute_command(&self, req: Request) -> Result<Response> {
         self.send_json_request(req).context("json encoding")?;
-        match self.recv_json_response().context("json decoding")? {
-            Message::Res(res) => match res {
-                Ok(value) => Ok(value),
-                Err(e) => Err(anyhow::Error::from(e)),
-            },
-            _ => bail!(ProxyError::UnexpectedReply()),
+        loop {
+            match self.recv_json_response().context("json decoding")? {
+                Message::Res(res) => match res {
+                    Ok(value) => return Ok(value),
+                    Err(e) => return Err(anyhow::Error::from(e)),
+                },
+                Message::Async { channel, msg } => self.process_async_data(channel, msg)?,
+                _ => bail!(ProxyError::UnexpectedReply()),
+            }
         }
+    }
+
+    fn poll_for_async_data(&self, timeout: Option<Duration>) -> Result<()> {
+        if timeout == Some(Duration::from_millis(0)) {
+            self.recv_nonblocking()?;
+        } else {
+            self.recv_with_timeout(timeout)?;
+        }
+        while let Some(msg) = self.dequeue_json_response()? {
+            match msg {
+                Message::Async { channel, msg } => self.process_async_data(channel, msg)?,
+                _ => bail!(ProxyError::UnexpectedReply()),
+            }
+        }
+        Ok(())
+    }
+
+    fn process_async_data(&self, channel: u32, msg: AsyncMessage) -> Result<()> {
+        match msg {
+            AsyncMessage::UartData { data } => {
+                if let Some(uart_instance) = self.uart_channel_map.borrow().get(&channel) {
+                    if let Some(uart_record) = self.uarts.borrow_mut().get_mut(uart_instance) {
+                        uart_record.pipe_sender.write_all(&data)?;
+                    }
+                }
+            }
+        }
+        Ok(())
     }
 
     /// Send a one-line JSON encoded requests, terminated with one newline.
     fn send_json_request(&self, req: Request) -> Result<()> {
-        let mut conn = self.writer.borrow_mut();
-        serde_json::to_writer(&mut *conn, &Message::Req(req))?;
-        conn.write_all(&[b'\n'])?;
-        conn.flush()?;
+        let conn: &mut std::net::TcpStream = &mut self.conn.borrow_mut();
+        let mut writer = BufWriter::new(conn);
+        serde_json::to_writer(&mut writer, &Message::Req(req))?;
+        writer.write_all(&[b'\n'])?;
+        writer.flush()?;
         Ok(())
     }
 
-    /// Receive until newline, and decode one JSON response.
+    /// Decode one JSON response, possibly waiting for more network data.
     fn recv_json_response(&self) -> Result<Message> {
-        let mut conn = self.reader.borrow_mut();
-        let mut buf = Vec::new();
-        let mut idx: usize = 0;
+        if let Some(msg) = self.dequeue_json_response()? {
+            return Ok(msg);
+        }
+        let mut conn = self.conn.borrow_mut();
+        let mut buf = self.recv_buf.borrow_mut();
+        let mut idx: usize = buf.len();
+        #[allow(clippy::never_loop)] // Clippy does not recognize the use of `continue` below.
         loop {
             buf.resize(idx + 2048, 0);
             let rc = conn.read(&mut buf[idx..])?;
             if rc == 0 {
-                anyhow::bail!(io::Error::new(ErrorKind::UnexpectedEof, "Truncated JSON"))
+                anyhow::bail!(io::Error::new(
+                    ErrorKind::UnexpectedEof,
+                    "Server unexpectedly closed connection"
+                ))
             }
             idx += rc;
-            if buf[idx - 1] == b'\n' {
-                break;
+            let Some(newline_pos) = buf[idx - rc..idx].iter().position(|b| *b == b'\n') else {
+                continue;
+            };
+            let result = serde_json::from_slice::<Message>(&buf[..idx - rc + newline_pos])?;
+            buf.resize(idx, 0u8);
+            buf.drain(..idx - rc + newline_pos + 1);
+            return Ok(result);
+        }
+    }
+
+    fn recv_with_timeout(&self, timeout: Option<Duration>) -> Result<()> {
+        let mut conn = self.conn.borrow_mut();
+        conn.set_read_timeout(timeout)?;
+        let mut buf = self.recv_buf.borrow_mut();
+        let mut idx: usize = buf.len();
+        buf.resize(idx + 2048, 0);
+        match conn.read(&mut buf[idx..]) {
+            Ok(0) => {
+                anyhow::bail!(io::Error::new(
+                    ErrorKind::UnexpectedEof,
+                    "Server unexpectedly closed connection"
+                ))
+            }
+            Ok(rc) => idx += rc,
+            Err(ref e) if e.kind() == ErrorKind::WouldBlock => (),
+            Err(e) => anyhow::bail!(e),
+        }
+        buf.resize(idx, 0);
+        conn.set_read_timeout(None)?;
+        Ok(())
+    }
+
+    fn recv_nonblocking(&self) -> Result<()> {
+        let mut conn = self.conn.borrow_mut();
+        conn.set_nonblocking(true)?;
+        let mut buf = self.recv_buf.borrow_mut();
+        let mut idx: usize = buf.len();
+        loop {
+            buf.resize(idx + 2048, 0);
+            match conn.read(&mut buf[idx..]) {
+                Ok(0) => {
+                    anyhow::bail!(io::Error::new(
+                        ErrorKind::UnexpectedEof,
+                        "Server unexpectedly closed connection"
+                    ))
+                }
+                Ok(rc) => idx += rc,
+                Err(ref e) if e.kind() == ErrorKind::WouldBlock => break,
+                Err(e) => anyhow::bail!(e),
             }
         }
-        Ok(serde_json::from_slice::<Message>(&buf[..idx - 1])?)
+        buf.resize(idx, 0);
+        conn.set_nonblocking(false)?;
+        Ok(())
+    }
+
+    fn dequeue_json_response(&self) -> Result<Option<Message>> {
+        let mut buf = self.recv_buf.borrow_mut();
+        let Some(newline_pos) = buf.iter().position(|b| *b == b'\n') else {
+            return Ok(None);
+        };
+        let result = serde_json::from_slice::<Message>(&buf[..newline_pos])?;
+        buf.drain(..newline_pos + 1);
+        Ok(Some(result))
     }
 }
 
@@ -190,8 +306,21 @@ impl Transport for Proxy {
     }
 
     // Create Uart instance, or return one from a cache of previously created instances.
-    fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
-        Ok(Rc::new(uart::ProxyUart::open(self, instance)?))
+    fn uart(&self, instance_name: &str) -> Result<Rc<dyn Uart>> {
+        if let Some(instance) = self.inner.uarts.borrow().get(instance_name) {
+            return Ok(Rc::clone(&instance.uart));
+        }
+        let instance: Rc<dyn Uart> = Rc::new(uart::ProxyUart::open(self, instance_name)?);
+        let (pipe_sender, pipe_receiver) = mio::unix::pipe::new()?;
+        self.inner.uarts.borrow_mut().insert(
+            instance_name.to_string(),
+            UartRecord {
+                uart: Rc::clone(&instance),
+                pipe_sender,
+                pipe_receiver,
+            },
+        );
+        Ok(instance)
     }
 
     // Create GpioPin instance, or return one from a cache of previously created instances.
@@ -212,5 +341,32 @@ impl Transport for Proxy {
     // Create ProxyOps instance.
     fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
         Ok(Rc::new(ProxyOpsImpl::new(self)?))
+    }
+
+    fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
+        Ok(Rc::new(ProxyNonblockingHelp {
+            inner: self.inner.clone(),
+        }))
+    }
+}
+
+pub struct ProxyNonblockingHelp {
+    inner: Rc<Inner>,
+}
+
+impl NonblockingHelp for ProxyNonblockingHelp {
+    fn register_nonblocking_help(&self, registry: &mio::Registry, token: mio::Token) -> Result<()> {
+        let conn: &mut std::net::TcpStream = &mut self.inner.conn.borrow_mut();
+        registry.register(
+            &mut mio::unix::SourceFd(&conn.as_raw_fd()),
+            token,
+            mio::Interest::READABLE,
+        )?;
+        self.inner.nonblocking_help_enabled.set(true);
+        Ok(())
+    }
+    fn nonblocking_help(&self) -> Result<()> {
+        self.inner
+            .poll_for_async_data(Some(Duration::from_millis(0)))
     }
 }

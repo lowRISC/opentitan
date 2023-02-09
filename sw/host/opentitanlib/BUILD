@@ -88,6 +88,7 @@ rust_library(
         "src/otp/lc_state.rs",
         "src/otp/mod.rs",
         "src/otp/otp_img.rs",
+        "src/proxy/nonblocking_uart.rs",
         "src/proxy/errors.rs",
         "src/proxy/handler.rs",
         "src/proxy/mod.rs",

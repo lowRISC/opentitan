@@ -17,8 +17,18 @@ use crate::util::voltage::Voltage;
 
 #[derive(Serialize, Deserialize)]
 pub enum Message {
+    // Request/response pairs.  There is no explicit identifier to link a response to a request,
+    // as requests are processed and responses generated in the order they are received.
     Req(Request),
     Res(Result<Response, SerializedError>),
+    // An "asynchronos message" is one that is not a direct response to a request, but can be sent
+    // at any time, as part of a communication "channel" previously set up.
+    Async { channel: u32, msg: AsyncMessage },
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum AsyncMessage {
+    UartData { data: Vec<u8> },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -95,6 +105,8 @@ pub enum UartRequest {
     Write {
         data: Vec<u8>,
     },
+    SupportsNonblockingRead,
+    RegisterNonblockingRead,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -103,6 +115,8 @@ pub enum UartResponse {
     SetBaudrate,
     Read { data: Vec<u8> },
     Write,
+    SupportsNonblockingRead { has_support: bool },
+    RegisterNonblockingRead { channel: u32 },
 }
 
 #[derive(Serialize, Deserialize)]
