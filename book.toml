@@ -15,3 +15,6 @@ fold = { enable = true}
 git-repository-url = "https://github.com/lowrisc/opentitan"
 edit-url-template = "https://github.com/lowrisc/opentitan/edit/master/{path}"
 curly-quotes = true
+
+[preprocessor.readme2index]
+command = "./util/mdbook_readme2index.py"
