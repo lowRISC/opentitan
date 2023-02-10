@@ -5,6 +5,8 @@
 
 from typing import List, Any, Dict, Generator
 
+LINK_PATTERN_STR = r"\[(.*?)\]\(([^#\?\)]*)(.*?)\)"
+
 
 def chapters(items: List[Dict[str, Any]]) -> Generator[Dict[str, Any], None, None]:
     """Recursively yields all chapters"""

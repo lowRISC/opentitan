@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+"""mdbook preprocessor that generates interface and register tables for ip blocks.
+
+The preprocessor finds ip configs in SUMMARY.md and converts them into a html document
+with tables for hardware interfaces and registers.
+"""
+
+import json
+import sys
+import re
+import io
+from pathlib import Path
+
+import mdbook
+from reggen.ip_block import IpBlock
+import reggen.gen_cfg_html as gen_cfg_html
+import reggen.gen_html as gen_html
+
+LINK_PATTERN = re.compile(mdbook.LINK_PATTERN_STR)
+REGREF_PATTERN = re.compile(r"\{\{#regref\s+?(.+?)\s*?\}\}")
+
+
+def main() -> None:
+    if len(sys.argv) > 2:
+        if (sys.argv[1], sys.argv[2]) == ("supports", "html"):
+            sys.exit(0)
+        else:
+            sys.exit(1)
+
+    # load both the context and the book from stdin
+    context, book = json.load(sys.stdin)
+    book_root = context["root"]
+
+    try:
+        ip_cfg_str = context["config"]["preprocessor"]["reggen"]["ip-cfg-py-regex"]
+        ip_cfg_pattern = re.compile(ip_cfg_str)
+    except KeyError:
+        sys.exit(
+            "No RegEx pattern given in book.toml to identify ip block configuration files.\n"
+            "Provide regex as preprocessor.reggen.ip-cfg-py-regex .",
+        )
+
+    name2path = {}
+    chapters_gen = mdbook.chapters(book["sections"])
+    for chapter in chapters_gen:
+        src_path = chapter["source_path"]
+        if not src_path or not ip_cfg_pattern.search(src_path):
+            continue
+
+        block = IpBlock.from_text(
+            chapter["content"],
+            [],
+            "file at {}/{}".format(context["root"], chapter["source_path"])
+        )
+        buffer = io.StringIO()
+        buffer.write("# Hardware Interfaces and Registers\n")
+        buffer.write("## Interfaces\n")
+        gen_cfg_html.gen_cfg_html(block, buffer)
+        buffer.write("\n## Registers\n")
+        gen_html.gen_html(block, buffer)
+        chapter["content"] = buffer.getvalue()
+
+        name2path[block.name] = src_path
+
+    cfg_paths = set(Path(p) for p in name2path.values())
+    chapters_gen = mdbook.chapters(book["sections"])
+    for chapter in chapters_gen:
+        if not chapter["source_path"]:
+            continue
+        src_dir = Path(chapter["source_path"]).parent
+
+        def cfg_file_swap(match: re.Match) -> str:
+            """Swaps the extension of the file being linked to if it is a ip block config."""
+            try:
+                # relative_to can fail with a value error, if it isn't a local link
+                book_relative_path = (src_dir / match.group(2)).resolve().relative_to(book_root)
+            except ValueError:
+                return match.group(0)
+
+            if book_relative_path in cfg_paths:
+                return "[{}]({}.html{})".format(
+                    match.group(1),
+                    match.group(2).removesuffix(".hjson"),
+                    match.group(3),
+                )
+            else:
+                return match.group(0)
+
+        def regref_swap(match: re.Match) -> str:
+            """Replaces regref with a link to the register."""
+            reg = match.group(1).split(".")
+            if len(reg) > 3 or len(reg) < 2:
+                sys.exit(
+                    f"{match.group(0)} is invalid. "
+                    "Should be in the form: 'ip_block.register.field', where 'field' is optional.",
+                )
+            try:
+                # Make the path to the config file absolute (to root of the site),
+                # so we don't have to worry about what page we are in.
+                # Also, do the hjson -> html conversion.
+                path = "/{}.html".format(name2path[reg[0]].removeprefix("./").removesuffix(".hjson"))
+            except KeyError:
+                sys.exit(f"Ip block with name '{reg[0]}' could not be found.")
+
+            name = reg[1] + "." + reg[2] if len(reg) == 3 else reg[1]
+
+            return "[`{}`]({}#Reg_{})".format(name, path, reg[1].lower())
+
+        chapter["content"] = LINK_PATTERN.sub(cfg_file_swap, chapter["content"])
+        chapter["content"] = REGREF_PATTERN.sub(regref_swap, chapter["content"])
+
+    # dump the book into stdout
+    print(json.dumps(book))
+
+
+if __name__ == "__main__":
+    main()
