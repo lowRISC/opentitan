@@ -6,6 +6,15 @@
 {
   name:               "aes",
   one_line_desc:      "AES encryption and decryption engine with SCA and FI countermeasures",
+  one_paragraph_desc: '''
+  [Advanced Encryption Standard (AES)][nist-aes] is the primary symmetric encryption and decryption mechanism used in OpenTitan protocols.
+  The OpenTitan AES hardware block supports encryption/decryption using AES-128/192/256 in ECB, CBC, CFB, OFB, and CTR block cipher modes.
+  The cipher core uses first-order domain-oriented masking (DOM) to deter side-channel analysis (SCA).
+  To save area, the masking can optionally be disabled using a compile-time Verilog parameter.
+  In addition, the block features several countermeasures to deter fault injection (FI) attacks on the control path.
+
+  [nist-aes]: https://www.nist.gov/publications/advanced-encryption-standard-aes
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

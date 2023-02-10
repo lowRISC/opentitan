@@ -4,6 +4,11 @@
 {
   name:               "sysrst_ctrl",
   one_line_desc:      "Manages board-level reset sequencing, interfaces reset and power manager",
+  one_paragraph_desc: '''
+  The OpenTitan System Reset Controller (sysrst_ctrl) provides basic board-level reset sequencing in response to trusted inputs.
+  It is programmable to accommodate actions triggered by presses of buttons and keyboard key combinations, to control the duration of reset pulses, and to trigger reset or wake-up requests that go to the OpenTitan reset and power manager hardware blocks.
+  sysrst_ctrl is part of the always-on power and clock domain.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

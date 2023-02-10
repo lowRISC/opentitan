@@ -4,6 +4,11 @@
 {
   name:               "pwm",
   one_line_desc:      "Transmission of pulse-width modulated output signals with adjustable duty cycle",
+  one_paragraph_desc: '''
+  This hardware block creates pulse-width modulated (PWM) signals with adjustable duty cycle.
+  It is suitable for general-purpose use, but primarily designed for control of LEDs.
+  All outputs are programmable with frequency, phase, and duty cycle.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

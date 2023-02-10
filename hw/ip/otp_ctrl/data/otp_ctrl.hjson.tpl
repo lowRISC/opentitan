@@ -24,6 +24,11 @@
 {
   name:               "otp_ctrl",
   one_line_desc:      "Interfaces integrated one-time programmable memory, supports scrambling, integrity and secure wipe",
+  one_paragraph_desc: '''
+  The OTP controller provides an open source abstraction interface for software and other hardware components such as life cycle controller and key manager to interact with an integrated, closed source, proprietary one-time-programmable (OTP) memory.
+  On top of defensive features provided by the proprietary OTP memory to deter side-channel analysis (SCA), fault injection (FI) attacks, and visual and electrical probing, the open source OTP controller features high-level logical security protection such as integrity checks and scrambling, as well as software isolation for when OTP contents are readable and programmable.
+  It features multiple individually-lockable logical partitions, periodic / persistent checking of OTP values, and a separate partition and interface for the life cycle controller.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

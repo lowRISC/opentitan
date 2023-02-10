@@ -7,6 +7,13 @@
 {
   name:               "clkmgr",
   one_line_desc:      "Derives and monitors on-chip clock signals, handles clock gating requests from power manager and software",
+  one_paragraph_desc: '''
+  The OpenTitan clock manager derives on-chip clocks from root clock signals provided by the Analog Sensor Top (AST).
+  Input and output clocks may be asynchronous to each other.
+  During clock derivation, the clock manager can divide clocks to lower frequencies and gate clocks based on control signals from the power manager and to a limited extent from software.
+  For example, the idle status of relevant hardware blocks is tracked and clock gating requests from software are ignored as long these blocks are active.
+  Further security features include switchable clock jitter, continuous monitoring of clock frequencies, and various countermeasures to deter fault injection (FI) attacks.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
