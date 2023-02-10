@@ -58,7 +58,9 @@ have a minimum of **32GiB of physical RAM** and at least **512GiB of SSD/HDD sto
 A number of software packages from the distribution's package manager are required.
 On Ubuntu 20.04, the required packages can be installed with the following command.
 
-{{< pkgmgr_cmd "apt" >}}
+```sh
+sed -e '/^$/d' -e '/^#/d' ./apt-requirements.txt | sudo apt install -y
+```
 
 Some tools in this repository are written in Python 3 and require Python dependencies to be installed through `pip`.
 We recommend installing the latest version of `pip` and `setuptools` (especially if on older systems such as Ubuntu 18.04) using:
