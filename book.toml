@@ -18,3 +18,8 @@ curly-quotes = true
 
 [preprocessor.readme2index]
 command = "./util/mdbook_readme2index.py"
+
+[preprocessor.reggen]
+command = "./util/mdbook_reggen.py"
+# Python RegEx identifying ip block config paths.
+ip-cfg-py-regex = '(ip|ip_autogen)/.+/data/.+\.hjson'
