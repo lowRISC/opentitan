@@ -10,8 +10,7 @@ device from physical attacks or manipulation.
 At a high level, AST communicates with a number of OpenTitan comportable
 modules. See diagram below.
 
-<img src="./media/image1.png"
-style="width:7.08333in;height:5.60417in" />
+![Analog Sensor Top Diagram](./doc/top_diagram.png)
 
 In the following sections, each family of connection is briefly
 described and explained. Note, the analog connections to AST are not
