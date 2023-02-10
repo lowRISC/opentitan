@@ -142,9 +142,7 @@ interface sysrst_ctrl_cov_if
     int index,
     bit [31:0] detection_timer
   );
-    foreach (combo_detect_det_cg_inst[i]) begin
-      combo_detect_det_cg_inst[index].sample(detection_timer);
-    end
+    combo_detect_det_cg_inst[index].sample(detection_timer);
   endfunction
 
   function automatic void cg_auto_block_sample (
