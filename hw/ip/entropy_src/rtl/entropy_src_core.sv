@@ -988,7 +988,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // fifo controls
-  assign sfifo_esrng_push = (es_enable_fo[5] && es_delayed_enable && es_rng_src_valid);
+  assign sfifo_esrng_push = es_enable_fo[5] && es_delayed_enable && es_rng_src_valid &&
+                            rng_enable_q;
 
   assign sfifo_esrng_clr   = ~es_delayed_enable;
   assign sfifo_esrng_wdata = es_rng_bus;
