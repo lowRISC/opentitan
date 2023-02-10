@@ -1267,6 +1267,14 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
           testUnimplEp(ctx, USB_PID_SETUP, UKDEV_ADDRESS, 1u);
           break;
 
+        case STEP_STREAM_SERVICE:
+          // After the initial testing of the (current) fixed DPI behavior,
+          // we repeatedly try IN transfers, checking and scrambling any
+          // data packets that we received before sending them straight back
+          // to the device for software to check
+          streams_service(ctx);
+          break;
+
         default:
           if (ctx->step < STEP_IDLE_START || ctx->step >= STEP_IDLE_END) {
             pollRX(ctx, ENDPOINT_SERIAL0, false, false);

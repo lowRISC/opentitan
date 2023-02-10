@@ -1924,6 +1924,30 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "usbdev_stream_test",
+    srcs = ["usbdev_stream_test.c"],
+    cw310 = cw310_params(
+        timeout = "eternal",
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:usb_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "rstmgr_alert_info_test",
     srcs = ["rstmgr_alert_info_test.c"],
     cw310 = cw310_params(
