@@ -5,6 +5,16 @@
 {
   name:               "kmac",
   one_line_desc:      "Accelerator for Keccak-based keyed hash message authentication code and SHA-3 hash functions; with SCA and FI countermeasures",
+  one_paragraph_desc: '''
+  OpenTitan protocols use [Keccak/SHA-3][nist-fips-202]-based cryptographic primitives for data authentication, integrity checking, and key derivation.
+  The OpenTitan KMAC hardware block is a hardware accelerator that supports Keccak-based Message Authentication Code (KMAC) and the SHA3-derived functions SHAKE and cSHAKE as defined in [NIST SP 800-185][nist-sp-800-185].
+  The Keccak core uses first-order domain-oriented masking (DOM) to deter side-channel analysis (SCA).
+  To save area, the masking can optionally be disabled using a compile-time Verilog parameter.
+  In addition, this block features several countermeasures to deter fault injection (FI) attacks.
+
+  [nist-fips-202]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf
+  [nist-sp-800-185]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-185.pdf
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

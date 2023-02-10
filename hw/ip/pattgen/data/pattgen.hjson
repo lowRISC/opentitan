@@ -5,6 +5,12 @@
 {
   name:               "pattgen",
   one_line_desc:      "Transmission of short time-dependent data patterns on two clock-parallel output channels",
+  one_paragraph_desc: '''
+  The pattern generator hardware block transmits short time-dependent data patterns on two clock-parallel channels.
+  Each channel consists of one clock and one data line.
+  The channels are configured using the following parameters: clock divider ratio, clock polarity, pattern length, pattern data, and repetition count.
+  Effectively, this block outputs the pattern data a specified number of times with the corresponding clock and then raises an interrupt when it is done.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

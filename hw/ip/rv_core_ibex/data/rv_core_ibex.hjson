@@ -4,6 +4,14 @@
 {
   name:               "rv_core_ibex",
   one_line_desc:      "Dual-core lockstep 32-bit RISC-V processor running application and control software",
+  one_paragraph_desc: '''
+  Ibex is a production-quality open source 32-bit RISC-V CPU core serving as main processor onto which OpenTitan application and control software is deployed.
+  The configuration used in OpenTitan implements the RV32IMCB ISA with a 3-stage pipeline and a single-cycle multiplier, user and machine execution modes, PMP+Smepmp, and a 4 KiB instruction cache with 2 ways and low-latency scrambling.
+  Further security features include dual-core lockstep operation, bus and register file integrity, PC hardening, data independent timing, and dummy instruction insertion.
+  Ibex integrates into OpenTitan through the RISC-V core wrapper wrapping its data and instruction memory interfaces to TileLink Uncached Light (TL-UL) host interfaces and providing a set of configuration and status register for supporting simple address translation and access to random numbers provided by CSRNG.
+  In addition, the wrapper handles the forwarding of crash dump data.
+  Debug support is enabled through the RISC-V debug module.
+  '''
   design_spec:        "../doc",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_rv_core_ibex",

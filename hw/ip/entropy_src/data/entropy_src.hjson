@@ -3,6 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 { name:               "entropy_src",
   one_line_desc:      "Filters and checks raw entropy bits from a random noise source and forwards them to CSRNG",
+  one_paragraph_desc: '''
+  The OpenTitan entropy source hardware block (entropy_src) takes bits from a physically random noise source (external to this block) and produces random values in a manner that is compliant both with FIPS (through [NIST SP 800-90B][nist-sp-800-90b]) and [CC (AIS31)][bsi-ais31] recommendations.
+  The random values produced by entropy_src serve as non-deterministic seeds for CSRNG.
+  Depending on the mode of operation, entropy_src can apply a secure hash function to the raw noise bits for conditioning.
+  To detect statistical defects in the raw noise bits, entropy_src performs multiple health checks.
+
+  [bsi-ais31]: https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Zertifizierung/Interpretationen/AIS_31_Functionality_classes_for_random_number_generators_e.pdf
+  [nist-sp-800-90b]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90B.pdf
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
