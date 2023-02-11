@@ -200,9 +200,17 @@ pub enum ProxyRequest {
         options: BootstrapOptions,
         payload: Vec<u8>,
     },
+    ApplyPinStrapping {
+        strapping_name: String,
+    },
+    RemovePinStrapping {
+        strapping_name: String,
+    },
 }
 
 #[derive(Serialize, Deserialize)]
 pub enum ProxyResponse {
     Bootstrap,
+    ApplyPinStrapping,
+    RemovePinStrapping,
 }

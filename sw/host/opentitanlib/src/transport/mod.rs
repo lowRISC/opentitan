@@ -140,6 +140,8 @@ pub trait Transport {
 /// Methods available only on the Proxy implementation of the Transport trait.
 pub trait ProxyOps {
     fn bootstrap(&self, options: &BootstrapOptions, payload: &[u8]) -> Result<()>;
+    fn apply_pin_strapping(&self, strapping_name: &str) -> Result<()>;
+    fn remove_pin_strapping(&self, strapping_name: &str) -> Result<()>;
 }
 
 /// Used by Transport implementations dealing with emulated OpenTitan

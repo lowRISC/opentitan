@@ -138,7 +138,25 @@ impl ProxyOps for ProxyOpsImpl {
             payload: payload.to_vec(),
         })? {
             ProxyResponse::Bootstrap => Ok(()),
-            //_ => bail!(ProxyError::UnexpectedReply()), // Enable when second option is added
+            _ => bail!(ProxyError::UnexpectedReply()), // Enable when second option is added
+        }
+    }
+
+    fn apply_pin_strapping(&self, strapping_name: &str) -> Result<()> {
+        match self.execute_command(ProxyRequest::ApplyPinStrapping {
+            strapping_name: strapping_name.to_string(),
+        })? {
+            ProxyResponse::ApplyPinStrapping => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()), // Enable when second option is added
+        }
+    }
+
+    fn remove_pin_strapping(&self, strapping_name: &str) -> Result<()> {
+        match self.execute_command(ProxyRequest::RemovePinStrapping {
+            strapping_name: strapping_name.to_string(),
+        })? {
+            ProxyResponse::RemovePinStrapping => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()), // Enable when second option is added
         }
     }
 }
