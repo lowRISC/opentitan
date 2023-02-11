@@ -22,7 +22,7 @@ Important points before getting started:
   We are always looking for ways to improve and welcome feedback on any project matter, technical or not.
 
 **Important**: Please read the next three, short sections on reporting bugs, reporting security issues, and contributing code in preparation for making your first contribution to OpenTitan.
-If you would like more details, see the [Detailed Contribution Guide]({{<relref "detailed_contribution_guide/_index.md" >}}).
+If you would like more details, see the [Detailed Contribution Guide](./detailed_contribution_guide/README.md).
 
 ## Bug reports
 
@@ -30,7 +30,7 @@ If you would like more details, see the [Detailed Contribution Guide]({{<relref 
 
 Ideally, all designs are bug free.
 Realistically, each piece of collateral in our repository is in a different state of maturity with some still under active testing and development.
-See the [Hardware Development Stages]({{< relref "development_stages" >}}) for an example of how hardware progress is tracked.
+See the [Hardware Development Stages](../project_governance/development_stages.md) for an example of how hardware progress is tracked.
 
 We are happy to receive bug reports and eager to fix them.
 Please make reports by opening a new issue in our [GitHub issue tracker](https://github.com/lowRISC/opentitan/issues).

@@ -10,44 +10,44 @@ title: "FLASH_CTRL DV document"
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
+* [Design & verification stage](../../../README.md)
+  * [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/flash_ctrl/dv/latest/report.html)
 
 ## Design features
-For detailed information on `flash_ctrl` design features, please see the [`flash_ctrl` HWIP technical specification]({{< relref ".." >}}).
+For detailed information on `flash_ctrl` design features, please see the [`flash_ctrl` HWIP technical specification](../README.md).
 The design-under-test (DUT) wraps the `flash_ctrl` IP, `flash_phy` and the TLUL SRAM adapter that converts the incoming TL accesses from the from host (CPU) interface into flash requests.
 These modules are instantiated and connected to each other and to the rest of the design at the top level.
 For the IP level DV, we replicate the instantiations and connections in `flash_ctrl_wrapper` module maintained in DV, located at `hw/ip/flash_ctrl/dv/tb/flash_ctrl_wrapper.sv`.
 In future, we will consider having the wrapper maintained in the RTL area instead.
 
 ## Testbench architecture
-The `flash_ctrl` UVM DV testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+The `flash_ctrl` UVM DV testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
-![Block diagram](tb.svg)
+![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
 Top level testbench is located at `hw/ip/flash_ctrl/dv/tb/tb.sv`.
 It instantiates the `flash_ctrl_wrapper`.
 In addition, the testbench instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface for the flash controller]({{< relref "hw/dv/sv/tl_agent/doc" >}})
-* [TileLink host interface for the eflash]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
+* [TileLink host interface for the flash controller](../../../dv/sv/tl_agent/README.md)
+* [TileLink host interface for the eflash](../../../dv/sv/tl_agent/README.md)
 * TileLink host interface for the prim registers
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* [Memory backdoor utility]({{< relref "hw/dv/sv/mem_bkdr_util/doc" >}})
+* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md)
+* [Memory backdoor utility](../../../dv/sv/mem_bkdr_util/README.md)
 * Secret key interface from the OTP
 * Interface from the life cycle manager
 * Interface to the `keymgr` and `pwrmgr`
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
+* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
+* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### TL_agent
-`flash_ctrl` UVM environment instantiates a (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into `flash_ctrl` device.
+`flash_ctrl` UVM environment instantiates a (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md) which provides the ability to drive and independently monitor random traffic via TL host interface into `flash_ctrl` device.
 There are two additional instances of the `tl_agent`.
 * Host interface to the `flash_phy`, to directly fetch the contents of the flash memory, bypassing the `flash_ctrl`.
 * Host interface to the `prim registers`.
@@ -55,9 +55,9 @@ There are two additional instances of the `tl_agent`.
 The `tl_agent` monitor supplies partial TileLink request packets as well as completed TileLink response packets over the TLM analysis port for further processing within the `flash_ctrl` scoreboard.
 
 ### UVM RAL Model
-The `flash_ctrl` RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The `flash_ctrl` RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
 
 #### Sequence cfg
 An efficient way to develop test sequences is by providing some random variables that are used to configure the DUT / drive stimulus.
@@ -142,7 +142,7 @@ The `last mile scoreboard` is added to compensate `on-the-fly` model.
 For the write transaction, `on-the-fly` model collects rtl data at the boundary of the controller and flash model.
 
 #### Assertions
-* TLUL assertions: The `hw/ip/flash_ctrl/dv/sva/flash_ctrl_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `hw/ip/flash_ctrl/dv/sva/flash_ctrl_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ### Global types and methods
@@ -201,7 +201,7 @@ typedef struct packed {
 ```
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

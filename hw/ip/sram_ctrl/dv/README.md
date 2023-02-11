@@ -17,35 +17,35 @@ The following sub-modules are pre-verified:
 Only toggle coverage on the IOs of these sub-modules is enabled for coverage collection.
 
 ## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
+* [Design & verification stage](../../../README.md)
+  * [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/sram_ctrl/dv/latest/report.html)
 
 ## Design features
-For detailed information on SRAM_CTRL design features, please see the [SRAM_CTRL HWIP technical specification]({{< relref ".." >}}).
+For detailed information on SRAM_CTRL design features, please see the [SRAM_CTRL HWIP technical specification](../README.md).
 
 ## Testbench architecture
-SRAM_CTRL testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+SRAM_CTRL testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 Note that there are 2 separate TLUL interfaces exposed to the rest of the OpenTitan system - one for CSR accesses, and one for accessing memory directly.
 This is because the "full" DUT consists of the actual SRAM memory controller (which contains the CSR file) connected to a scrambling RAM primitive, with a TLUL adapter module to convert TL requests on the memory TL interface into SRAM format for the RAM primitive.
 
 ### Block diagram
-![Block diagram](tb.svg)
+![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
 Top level testbench is located at `hw/ip/sram_ctrl/dv/tb/tb.sv`. It instantiates the SRAM_CTRL DUT module `hw/ip/sram_ctrl/rtl/sram_ctrl.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
+* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * SRAM_CTRL IOs
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
-* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}))
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
+* Alerts ([`alert_esc_if`](../../../dv/sv/alert_esc_agent/README.md))
+* Devmode ([`pins_if`](../../../dv/sv/common_ifs/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
+* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
+* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### Compile-time configurations
 Two compile-time configurations are tested:
@@ -83,11 +83,11 @@ typedef enum bit [2:0] {
 } sram_ctrl_status_e;
 ```
 ### TL_agent
-SRAM_CTRL testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+SRAM_CTRL testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
 which provides the ability to drive and independently monitor random traffic via TL host interface into SRAM_CTRL device.
 
 ### Alert agents
-The SRAM_CTRL testbench instantiates 2 [alert agents]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}) for:
+The SRAM_CTRL testbench instantiates 2 [alert agents](../../../dv/sv/alert_esc_agent/README.md) for:
 * fatal_intg_error - signals a transmission integrity error
 * fatal_parity_error - signals an internal parity error in the memory primitive
 
@@ -102,9 +102,9 @@ The SRAM_CTRL IP has an interface to enable instruction execution from SRAM - al
 This interface contains the necessary Lifecycle and OTP structs to enable and disable this functionality.
 
 ### UVM RAL Model
-The SRAM_CTRL RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The SRAM_CTRL RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
 
 Besides default RAL that provides the access to CSRs, there is another RAL for SRAM memory.
 This RAL is in `sram_ctrl_prim_ral_pkg.sv`, it is added manually and enabled with all the common CSR and memory tests, such as mem_walk, tl_errors, tl_intg_err, etc.
@@ -112,8 +112,8 @@ This RAL is in `sram_ctrl_prim_ral_pkg.sv`, it is added manually and enabled wit
 ### Reference models
 There are 3 DV reference models used in this testbench.
 - The SRAM_CTRL testbench uses a SystemVerilog golden model for its address and data scrambling to ensure that internal encryption and decryption perform correctly.
-This golden model, [`sram_scrambler_pkg`]({{<relref "hw/dv/sv/mem_bkdr_util/doc" >}}) is tightly integrated with the mem_bkdr_util for ease of use such that we can choose to enable encryption on any backdoor access.
-- The frontdoor check [`mem_model`]({{<relref "hw/dv/sv/mem_model/doc" >}}) is also enabled in cip_base_scoreboard.
+This golden model, [`sram_scrambler_pkg`](../../../dv/sv/mem_bkdr_util/README.md) is tightly integrated with the mem_bkdr_util for ease of use such that we can choose to enable encryption on any backdoor access.
+- The frontdoor check [`mem_model`](../../../dv/sv/mem_model/README.md) is also enabled in cip_base_scoreboard.
 The model is invoked at the end of the transaction as follows:
   - If it’s write, store the data on the address in the memory array.
   - If it’s read and the address has been written, compare read value with stored value.
@@ -125,8 +125,8 @@ There are some limitations in the frontdoor check as follows:
   3. Can’t check the write value if the address isn’t read after the write.
   4. Not aware of any B2B hazard (such as RAW).
 
-- The backdoor check [`mem_bkdr_scb`]({{<relref "hw/dv/sv/mem_bkdr_scb/doc" >}}) is used to ensure frontdoor access matches with the backdoor expected value.
-The [`sram_scrambler_pkg`]({{<relref "hw/dv/sv/mem_bkdr_util/doc" >}}) is invoked in [`mem_bkdr_scb`]({{<relref "hw/dv/sv/mem_bkdr_scb/doc" >}})
+- The backdoor check [`mem_bkdr_scb`](../../../dv/sv/mem_bkdr_scb/README.md) is used to ensure frontdoor access matches with the backdoor expected value.
+The [`sram_scrambler_pkg`](../../../dv/sv/mem_bkdr_util/README.md) is invoked in [`mem_bkdr_scb`](../../../dv/sv/mem_bkdr_scb/README.md)
 This backdoor check covers all the limitations of frontdoor check.
 There is a limitation as follows, which can be covered by frontdoor check.
   - Can’t check when memory is modified unintentionally after the access is completed.
@@ -161,7 +161,7 @@ It creates the following analysis ports to retrieve the data monitored by corres
 
 All CSR accesses made to the SRAM_CTRL register file are tracked and predicted by the scoreboard.
 
-Verifying memory accesses is somewhat involved, and makes heavy use of the [`mem_bkdr_util`]({{< relref "hw/dv/sv/mem_bkdr_util/doc" >}}).
+Verifying memory accesses is somewhat involved, and makes heavy use of the [`mem_bkdr_util`](../../../dv/sv/mem_bkdr_util/README.md).
 
 At a high level, whenever a TL access is made to memory, all relevant information is stored in an `sram_trans_t` struct.
 
@@ -180,11 +180,11 @@ If the scoreboard detects that an incoming transaction is tagged as `InstrType`,
 If the DUT is configured correctly the scoreboard will let the memory transaction finish being checked, otherwise the scoreboard will discard that transaction - this approach makes it easy to check whether the design is behaving correctly as well.
 
 #### Assertions
-* TLUL assertions: The `tb/sram_ctrl_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/sram_ctrl_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

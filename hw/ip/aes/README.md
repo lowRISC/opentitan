@@ -8,7 +8,7 @@ title: "AES HWIP Technical Specification"
 This document specifies the AES hardware IP functionality.
 [Advanced Encryption Standard (AES)](https://www.nist.gov/publications/advanced-encryption-standard-aes) is the primary symmetric encryption and decryption mechanism used in OpenTitan protocols.
 The AES unit is a cryptographic accelerator that accepts requests from the processor to encrypt or decrypt 16 byte blocks of data.
-It is attached to the chip interconnect bus as a peripheral module and conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}})
+It is attached to the chip interconnect bus as a peripheral module and conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 
 
 ## Features
@@ -106,7 +106,7 @@ For details on the masked implementation of the cipher core refer to [Security H
 Using an iterative architecture allows for a smaller circuit area at the cost of throughput.
 Employing a 128-bit wide data path allows to achieve the latency requirements of 12/14/16 clock cycles per 16B data block in AES-128/192/256 mode in the unmasked implementation, respectively.
 
-![AES unit block diagram (unmasked implementation) with shared data paths for encryption and decryption (using the Equivalent Inverse Cipher).](aes_block_diagram.svg)
+![AES unit block diagram (unmasked implementation) with shared data paths for encryption and decryption (using the Equivalent Inverse Cipher).](./doc/aes_block_diagram.svg)
 
 Inside the cipher core, both the data paths for the actual cipher (left) and the round key generation (right) are shared between encryption and decryption.
 Consequently, the blocks shown in the diagram always implement the forward and backward (inverse) version of the corresponding operation.
@@ -129,13 +129,13 @@ The table below lists other signals of the AES unit.
 Signal             | Direction        | Type                   | Description
 -------------------|------------------|------------------------|---------------
 `idle_o`           | `output`         | `logic`                | Idle indication signal for clock manager.
-`lc_escalate_en_i` | `input`          | `lc_ctrl_pkg::lc_tx_t` | Life cycle escalation enable coming from [life cycle controller]({{< relref "hw/ip/lc_ctrl/doc" >}}). This signal moves the main controller FSM within the AES unit into the terminal error state. The AES unit needs to be reset.
-`edn_o`            | `output`         | `edn_pkg::edn_req_t`   | Entropy request to [entropy distribution network (EDN)]({{< relref "hw/ip/edn/doc" >}}) for reseeding internal pseudo-random number generators (PRNGs) used for register clearing and masking.
-`edn_i`            | `input`          | `edn_pkg::edn_rsp_t`   | [EDN]({{< relref "hw/ip/edn/doc" >}}) acknowledgment and entropy input for reseeding internal PRNGs.
-`keymgr_key_i`     | `input`          | `keymgr_pgk::hw_key_req_t` | Key sideload request coming from [key manager]({{< relref "hw/ip/keymgr/doc" >}}).
+`lc_escalate_en_i` | `input`          | `lc_ctrl_pkg::lc_tx_t` | Life cycle escalation enable coming from [life cycle controller](../lc_ctrl/README.md). This signal moves the main controller FSM within the AES unit into the terminal error state. The AES unit needs to be reset.
+`edn_o`            | `output`         | `edn_pkg::edn_req_t`   | Entropy request to [entropy distribution network (EDN)](../edn/README.md) for reseeding internal pseudo-random number generators (PRNGs) used for register clearing and masking.
+`edn_i`            | `input`          | `edn_pkg::edn_rsp_t`   | [EDN](../edn/README.md) acknowledgment and entropy input for reseeding internal PRNGs.
+`keymgr_key_i`     | `input`          | `keymgr_pgk::hw_key_req_t` | Key sideload request coming from [key manager](../keymgr/README.md).
 
-Note that the `edn_o` and `edn_i` signals used to interface [EDN]({{< relref "hw/ip/edn/doc" >}}) follow a REQ/ACK protocol.
-The entropy distributed by EDN is obtained from the [cryptographically secure random number generator (CSRNG)]({{< relref "hw/ip/csrng/doc" >}}).
+Note that the `edn_o` and `edn_i` signals used to interface [EDN](../edn/README.md) follow a REQ/ACK protocol.
+The entropy distributed by EDN is obtained from the [cryptographically secure random number generator (CSRNG)](../csrng/README.md).
 
 ## Design Details
 
@@ -325,7 +325,7 @@ Typically, systems requiring security above AES-128 go directly for AES-256.
 By default, the AES unit is controlled entirely by the processor.
 The processor writes both input data as well as the initial key to dedicated registers via the system bus interconnect.
 
-Alternatively, the processor can configure the AES unit to use an initial key provided by the [key manager]({{< relref "hw/ip/keymgr/doc" >}}) via key sideload interface without exposing the key to the processor or other hosts attached to the system bus interconnect.
+Alternatively, the processor can configure the AES unit to use an initial key provided by the [key manager](../keymgr/README.md) via key sideload interface without exposing the key to the processor or other hosts attached to the system bus interconnect.
 To this end, the processor has to set the SIDELOAD bit in {{< regref "CTRL_SHADOWED" >}} to `1`.
 Any write operations of the processor to the Initial Key registers {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE1_7" >}} are then ignored.
 In normal/automatic mode, the AES unit only starts encryption/decryption if the sideload key is marked as valid.
@@ -347,7 +347,7 @@ The AES unit employs 1st-order masking of the AES cipher core.
 More precisely, both the cipher and the key expand data path use two shares.
 As shown in the block diagram below, the width of all registers and data paths basically doubles.
 
-![Block diagram of the masked AES cipher core.](aes_block_diagram_cipher_core_masked.svg)
+![Block diagram of the masked AES cipher core.](./doc/aes_block_diagram_cipher_core_masked.svg)
 
 The initial key is provided in two shares via the register interface.
 The input data is provided in unmasked form and masked outside of the cipher core to obtain the two shares of the initial state.
@@ -366,18 +366,18 @@ Alternatively, the two original versions of the masked Canright S-Box can be cho
 These are fully combinational (one S-Box evaluation every cycle) and have lower area footprint, but they are significantly less resistant to SCA.
 They are mainly included for reference but their usage is discouraged due to potential vulnerabilities to the correlation-enhanced collision attack as described by [Moradi et al.: "Correlation-Enhanced Power Analysis Collision Attack".](https://eprint.iacr.org/2010/297.pdf)
 
-The masking PRNG is reseeded with fresh entropy via [EDN]({{< relref "hw/ip/edn/doc" >}}) automatically 1) whenever a new key is provided (see {{< regref "CTRL_AUX_SHADOWED.KEY_TOUCH_FORCES_RESEED" >}}) and 2) based on a block counter.
+The masking PRNG is reseeded with fresh entropy via [EDN](../edn/README.md) automatically 1) whenever a new key is provided (see {{< regref "CTRL_AUX_SHADOWED.KEY_TOUCH_FORCES_RESEED" >}}) and 2) based on a block counter.
 The rate at which this block counter initiates automatic reseed operations can be configured via {{< regref "CTRL_SHADOWED.PRNG_RESEED_RATE" >}}.
 In addition software can manually initiate a reseed operation via {{< regref "TRIGGER.PRNG_RESEED" >}}.
 
 Note that the masking can be enabled/disabled via compile-time Verilog parameter.
-It may be acceptable to disable the masking when using the AES cipher core for random number generation e.g. inside [CSRNG.]({{< relref "hw/ip/csrng/doc" >}})
+It may be acceptable to disable the masking when using the AES cipher core for random number generation e.g. inside [CSRNG.](../csrng/README.md)
 When disabling the masking, also an unmasked S-Box implementation needs to be selected using the corresponding compile-time Verilog parameter.
 When disabling masking, it is recommended to use the unmasked Canright or LUT S-Box implementation for ASIC or FPGA targets, respectively.
 Both are fully combinational and allow for one S-Box evaluation every clock cycle.
 
 It's worth noting that since input/output data are provided/retrieved via register interface in unmasked form, the AES unit should not be used to form an identity ladder where the output of one AES operation is used to form the key for the next AES operation in the ladder.
-In OpenTitan, the [Keccak Message Authentication Code (KMAC) unit]({{< relref "hw/ip/kmac/doc" >}}) is used for that purpose.
+In OpenTitan, the [Keccak Message Authentication Code (KMAC) unit](../kmac/README.md) is used for that purpose.
 
 ### Fully-Parallel Data Path
 
@@ -426,7 +426,7 @@ To protect against FI attacks on the control path, the AES unit implements the f
   The main control register is implemented as a shadow register.
   This means software has to perform two subsequent write operations to perform an update.
   Internally, a shadow copy is used that is constantly compared with the actual register.
-  For further details, refer to the [Register Tool documentation.]({{< relref "doc/rm/register_tool#shadow-registers" >}})
+  For further details, refer to the [Register Tool documentation.](../../../util/reggen/README.md#shadow-registers)
 
 - Sparse encodings of FSM states:
   All FSMs inside the AES unit use sparse state encodings.
@@ -637,6 +637,6 @@ Compared to first-in, first-out (FIFO) interfaces, having separate registers has
 
 Also, using a FIFO interface for something that is not actually FIFO (internally, 16B of input/output data are consumed/produced at once) is less natural.
 
-For a detailed overview of the register tool, please refer to the [Register Tool documentation.]({{< relref "doc/rm/register_tool" >}})
+For a detailed overview of the register tool, please refer to the [Register Tool documentation.](../../../util/reggen/README.md)
 
 {{< incGenFromIpDesc "../data/aes.hjson" "registers" >}}

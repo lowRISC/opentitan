@@ -5,7 +5,7 @@ title: "AON Timer Technical Specification"
 # Overview
 
 This document specifies the Always-On ("AON") Timer IP functionality.
-This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}})
+This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 See that document for an overview of how it is integrated into the top level system.
 
 ## Features
@@ -67,7 +67,7 @@ If during escalation software configures the system to hang instead of reset, th
 
 ## Block Diagram
 
-![AON Timer Block Diagram](aon_timer_block_diagram.svg)
+![AON Timer Block Diagram](./doc/aon_timer_block_diagram.svg)
 
 See the block diagram for high level function and connectivity.
 The timer interacts with the CPU core and the power manager and reset manager to drive wakeup / reset events and interrupts.

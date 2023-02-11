@@ -74,7 +74,7 @@ cd $REPO_TOP
 bazel build //hw/bitstream/vivado:fpga_cw310_rom
 ```
 
-Note, building these bitstreams will require Vivado be installed on your system, with access to the proper licenses, described [here]({{< relref "doc/getting_started/install_vivado" >}}).
+Note, building these bitstreams will require Vivado be installed on your system, with access to the proper licenses, described [here](./install_vivado/README.md).
 For general software development on the FPGA, Vivado must still be installed, but the Lab Edition is sufficient.
 
 #### Dealing with FPGA Congestion Issues
@@ -145,7 +145,7 @@ This should show which serial ports have been assigned, or if the board is havin
 If `dmesg` reports a problem you can trigger a *USB_RST* with *SW5*.
 When properly connected, `dmesg` should identify the board, not show any errors, and the status light should flash.
 They should be named `'/dev/ttyACM*'`, e.g. `/dev/ttyACM1`.
-To ensure that you have sufficient access permissions, set up the udev rules as explained in the [Vivado installation instructions]({{< relref "install_vivado" >}}).
+To ensure that you have sufficient access permissions, set up the udev rules as explained in the [Vivado installation instructions](./install_vivado/README.md).
 
 You will then need to run this command to configure the board. You only need to run it once.
 ```console
@@ -384,7 +384,7 @@ Note that the `reset_config` command may need to be adjusted for the particular 
 TRSTn is available on the 20-pin ARM JTAG header only.
 Use `srst_only` if the adapter only supports SRSTn.
 
-See the [install instructions]({{< relref "install_openocd" >}}) for guidance on installing OpenOCD.
+See the [install instructions](./install_openocd.md) for guidance on installing OpenOCD.
 
 To actually debug through OpenOCD, it must either be connected through telnet or GDB.
 

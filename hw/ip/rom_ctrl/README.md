@@ -5,13 +5,13 @@ title: ROM Controller Technical Specification
 # Overview
 
 This document describes the ROM controller (`rom_ctrl`).
-This module attaches as a peripheral to the system bus, and thus follows the [Comportability Specification]({{< relref "doc/rm/comportability_specification" >}}).
+This module attaches as a peripheral to the system bus, and thus follows the [Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 
 The ROM controller interfaces between the system bus and the ROM.
 This ROM has scrambled contents (scrambled with a fixed key, derived from a global constant).
 The controller is responsible for descrambling these contents on memory fetches.
 
-Unlike the [SRAM controller]({{< relref "hw/ip/sram_ctrl/doc" >}}), which performs the equivalent task for SRAM, the ROM controller also contains a *ROM checker* block.
+Unlike the [SRAM controller](../sram_ctrl/README.md), which performs the equivalent task for SRAM, the ROM controller also contains a *ROM checker* block.
 This ROM checker is used to compute a cryptographic hash of the ROM contents just after boot, detecting any malicious changes that have been made to the ROM when the system was at rest.
 
 ## Features
@@ -33,7 +33,7 @@ The lower half of the diagram shows the ROM checker.
 This is triggered by the power manager early in the chip boot sequence to check validity of the ROM image.
 It runs exactly once, and releases the green multiplexer when it is done.
 
-![ROM Controller Block Diagram](rom_ctrl_blockdiag.svg)
+![ROM Controller Block Diagram](./doc/rom_ctrl_blockdiag.svg)
 
 ## ROM access when chip is in operation
 
@@ -44,7 +44,7 @@ The address is scrambled at the first substitution-permutation network (marked S
 
 In parallel with the ROM access, a reduced `prim_prince` primitive (5 rounds with latency 1; equivalent to the cipher used for SRAM) computes a 39-bit truncated keystream for the block.
 On the following cycle, the scrambled data from ROM goes through a substitution-permutation network and is then XOR'd with the keystream.
-This scheme is the same as that used by the [SRAM controller]({{< relref "hw/ip/sram_ctrl/doc" >}}), but is much simplified because the ROM doesn't have to deal with writes, byte accesses or key changes.
+This scheme is the same as that used by the [SRAM controller](../sram_ctrl/README.md), but is much simplified because the ROM doesn't have to deal with writes, byte accesses or key changes.
 
 The output from the XOR is the unscrambled 32-bit data, plus seven ECC bits.
 This data is passed straight through the TL-UL SRAM adapter; the ECC bits are used as a signal integrity check by the system bus.
@@ -78,9 +78,9 @@ The ROM checker runs immediately after reset.
 Until it is done, it controls ROM address requests (through the green multiplexer).
 The select signal for this multiplexer has a redundant encoding to protect it against fault injection attacks.
 If the select signal has an invalid value, this will trigger a fatal alert.
-Before starting to read data, it starts a cSHAKE operation on the [KMAC]({{< relref "hw/ip/kmac/doc" >}}) module using one of its application interfaces.
+Before starting to read data, it starts a cSHAKE operation on the [KMAC](../kmac/README.md) module using one of its application interfaces.
 We expect to use the `cSHAKE256` algorithm, with prefix "ROM_CTRL".
-The [Application Interface]({{< relref "hw/ip/kmac/doc#application-interface" >}}) section of the KMAC documentation details the parameters used.
+The [Application Interface](../kmac/README.md#application-interface) section of the KMAC documentation details the parameters used.
 
 The checker reads the ROM contents in address order, resulting in a scattered access pattern on the ROM itself because of the address scrambling.
 Each read produces 39 bits of data, which are padded with zeros to 64 bits to match the interface expected by the KMAC block.
@@ -91,7 +91,7 @@ The top eight words in ROM (by logical address) are interpreted as a 256-bit exp
 Unlike the rest of ROM, their data is not stored scrambled, so the expected hash can be read directly.
 This is taken by the checker FSM (ignoring ECC bits) and will be compared with the digest that is read back from the KMAC block.
 
-Once it comes back, the digest is forwarded directly to the [Key Manager]({{< relref "hw/ip/keymgr/doc" >}}).
+Once it comes back, the digest is forwarded directly to the [Key Manager](../keymgr/README.md).
 It is also compared with the hash that was read from the top eight words of ROM.
 On a match, `pwrmgr_data_o.good` is signalled as `Mubi4True`.
 In either case, `pwrmgr_data_o.done` goes high when the calculation is complete.
@@ -100,7 +100,7 @@ The diagram below shows the operation of the simple FSM.
 
 <div align="center">
 
-![ROM checker FSM Diagram](rom_check_fsm.svg)
+![ROM checker FSM Diagram](./doc/rom_check_fsm.svg)
 
 </div>
 
@@ -125,7 +125,7 @@ The ROM checker will not assert `kmac_data_o.valid` after finishing the one and 
 The KMAC module may choose to add a check for this, to detect reset glitches affecting the `rom_ctrl` block.
 
 The integration with the key manager is based on forwarding the digest data in `kmac_data_i` as `keymgr_data_o.data`.
-This 256-bit digest will be incorporated into the [`CreatorRootKey`]({{< relref "doc/security/specs/identities_and_root_keys#creator-root-key" >}}).
+This 256-bit digest will be incorporated into the [`CreatorRootKey`](../../../doc/security/specs/identities_and_root_keys/README.md#creator-root-key).
 The key manager should only allow one transaction (of 256 bits / 32 bits = 8 beats) after reset to pass this information across.
 On future messages, it should raise an alert, defeating an attacker that tries to trigger extra transactions before or after the real one.
 

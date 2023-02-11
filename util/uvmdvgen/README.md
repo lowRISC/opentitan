@@ -13,7 +13,7 @@ When starting with a new DV effort, the user typically goes through a copy-paste
 exercise to replicate an existing UVM testbench code to the current one and has
 to go through several debug cycles to get it working. This tool aims to
 eliminate that. Also, as a part of our
-[DV methodology]({{< relref "doc/ug/dv_methodology#code-reuse" >}}),
+[DV methodology](../../doc/contributing/dv/methodology/README.md#code-reuse),
 we provide utilities and base class structures that contain several
 pieces of common code which can be reused when setting up a new DV environment.
 
@@ -78,7 +78,7 @@ optional arguments:
 ### Generating UVM agent
 The boilerplate code for a UVM agent for an interface can be generated using the
 `-a` switch. This results in the generation of complete agent with classes that
-extend from the [DV library]({{< relref "hw/dv/sv/dv_lib/doc" >}}). Please see
+extend from the [DV library](../../hw/dv/sv/dv_lib/README.md). Please see
 that description for more details.
 
 The tool generates an interface, item, cfg, cov, monitor, driver and sequence
@@ -160,9 +160,9 @@ more is typically needed.
 ### Generating UVM environment & testbench
 The boilerplate code for a UVM environment and the testbench for a DUT can be
 generated using the `-e` switch. This results in the generation of classes that
-extend from [DV base library]({{< relref "hw/dv/sv/dv_lib/doc" >}}).
+extend from [DV base library](../../hw/dv/sv/dv_lib/README.md).
 If the `-c` switch is passed, it extends from
-[CIP base library]({{< relref "hw/dv/sv/cip_lib/doc" >}}). With `-ea` switch,
+[CIP base library](../../hw/dv/sv/cip_lib/README.md). With `-ea` switch,
 user can provide a list of downstream agents to create within the environment.
 Please see description for more details.
 
@@ -196,7 +196,7 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
 
     This is the UVM reg based RAL model. This is created for completeness. The
     actual RAL model needs to be generated prior to running simulations using the
-    [regtool]({{< relref "util/reggen/doc" >}}).
+    [regtool](../reggen/doc/setup_and_use.md).
 
 * `env/i2c_host_scoreboard`
 

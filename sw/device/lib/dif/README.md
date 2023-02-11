@@ -56,7 +56,7 @@ Additionally, please invoke `util/make_new_dif.py --help` for detailed usage.
 ## Checklists
 
 This directory also contains checklists for each DIF, in markdown format. They
-are linked to from the [Hardware Dashboard]({{< relref "hw" >}}), in the
+are linked to from the [Hardware Dashboard](../../../../hw/README.md), in the
 Development Stage column.
 
 ## DIF Style Guide

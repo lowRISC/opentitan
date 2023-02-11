@@ -3,15 +3,15 @@ title: "OpenTitan Earl Grey Chip Specification"
 ---
 
 This document describes the OpenTitan Earl Grey chip functionality in detail.
-For an overview, refer to the [OpenTitan Earl Grey Chip Datasheet]({{< relref "../" >}}).
+For an overview, refer to the [OpenTitan Earl Grey Chip Datasheet](../specification.md).
 
 # Theory of Operations
 
 The netlist `chip_earlgrey_asic` contains the features listed above and is intended for ASIC synthesis, whereas the netlist `chip_earlgrey_cw310` provides an emulation environment for the `cw310` FPGA board.
-The code for Ibex is developed in its own [lowRISC repo](http://github.com/lowrisc/ibex), and is [*vendored in*]({{< relref "doc/ug/vendor_hw.md" >}}) to this repository.
-Surrounding Ibex is a suite of *Comportable* peripherals that follow the [Comportability Guidelines]({{< relref "doc/rm/comportability_specification" >}}) for lowRISC peripheral IP.
+The code for Ibex is developed in its own [lowRISC repo](http://github.com/lowrisc/ibex), and is [*vendored in*](../../../../doc/contributing/hw/vendor.md) to this repository.
+Surrounding Ibex is a suite of *Comportable* peripherals that follow the [Comportability Guidelines](../../../../doc/contributing/hw/comportability/README.md) for lowRISC peripheral IP.
 Each of these IP has its own specification.
-See the table produced in the [hardware documentation page]({{< relref "hw" >}}) for links to those specifications.
+See the table produced in the [hardware documentation page](../../../README.md) for links to those specifications.
 
 ## Design Details
 
@@ -21,7 +21,7 @@ This section also contains a brief overview of some of the features of the final
 
 ### Clocking and Reset
 
-Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast]({{< relref "hw/top_earlgrey/ip/ast/doc" >}})) from this point onwards in the document.
+Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](../../ip/ast/README.md)) from this point onwards in the document.
 
 `ast` supplies a number of clocks into `top_earlgrey`.
 - sys: main jittery system clock used for higher performance blocks and security (processory, memory and crypto blocks).
@@ -30,14 +30,14 @@ Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](
 - aon: an always on, low frequency clock used for power management and low speed timers.
 
 These clocks are then divided down and distributed to the rest of the system.
-See [clock manager]({{< relref "hw/ip/clkmgr/doc/" >}})) for more details.
+See [clock manager](../../../ip/clkmgr/README.md)) for more details.
 
 `ast` also supplies a number of power-okay signals to `top_earlgrey`, and these are used as asynchronous root resets.
 - vcaon_pok: The always on domain of the system is ready.
 - vcmain_pok: The main operating domain of the system is ready.
 
 When one of these power-okay signals drop, the corresponding domain in `top_earlgrey` is reset.
-Please refer to [reset manager]({{< relref "hw/ip/rstmgr/doc/" >}})) for more details.
+Please refer to [reset manager](../../../ip/rstmgr/README.md)) for more details.
 Resets throughout the design are asynchronous active low as per the Comportability specification.
 
 Once reset, the reset vector begins in ROM, whose job is to validate code in the embedded flash before jumping to it.
@@ -91,16 +91,16 @@ There are three reset scenarios:
 Device resets due to supply dropping below a specific threshold are commonly known as "brown-out".
 When this occurs, the flash memory must go through specialized sequencing to ensure the cells are not damaged.
 This process is handled exclusively between ast and the flash.
-Please see the [relevant section]({{< relref "hw/top_earlgrey/ip/ast/doc/#main-vcc-power-detection-and-flash-protection" >}}) for more details.
+Please see the [relevant section](../../ip/ast/README.md#main-vcc-power-detection-and-flash-protection) for more details.
 
 #### Reset due to Internal Request
 
-When the device receives an internal request to reset (for example [aon_timer]({{< relref "hw/ip/aon_timer/doc/#aon-watchdog-timer" >}})), device power is kept on and the flash is directly reset.
+When the device receives an internal request to reset (for example [aon_timer](../../../ip/aon_timer/README.md#aon-watchdog-timer)), device power is kept on and the flash is directly reset.
 It is assumed that the flash device, when powered, will be able to correctly handle such a sequence and properly protect itself.
 
 #### Reset due to Low Power Entry
 
-When the device receives a low power entry request while flash activity is ongoing, the [pwrmgr]({{< relref "hw/ip/pwrmgr/doc/#abort-handling" >}})) is responsible for ensuring the entry request is aborted.
+When the device receives a low power entry request while flash activity is ongoing, the [pwrmgr](../../../ip/pwrmgr/README.md#abort-handling)) is responsible for ensuring the entry request is aborted.
 
 
 ### Main processor (`core_ibex`)
@@ -115,13 +115,13 @@ Attached to the Ibex core are a debug module (DM) and interrupt module (PLIC).
 
 One feature available for Earl Grey processor core is debug access.
 By interfacing with JTAG pins, logic in the debug module allows the core to enter debug mode (per RISC-V 0.13 debug spec), and gives the design the ability to inject code either into the device - by emulating an instruction - or into memory.
-Full details can be found in the [rv_dm specification]({{< relref "hw/ip/rv_dm/doc" >}}).
+Full details can be found in the [rv_dm specification](../../../ip/rv_dm/README.md).
 
 #### Interrupt Controller
 
 Adjacent to the Ibex core is an interrupt controller that implements the RISC-V PLIC standard.
 This accepts a vector of interrupt sources within the device, and assigns leveling and priority to them before sending to the core for handling.
-See the details in the [rv_plic specification]({{< relref "../../ip_autogen/rv_plic/doc" >}}).
+See the details in the [rv_plic specification](../../ip_autogen/rv_plic/README.md).
 
 #### Performance
 
@@ -181,7 +181,7 @@ The base address of the ROM, Flash, and SRAM are given in the address map sectio
 ### Peripherals
 
 Earl Grey contains a suite of "peripherals", or subservient execution units connected to the Ibex processor by means of a bus interconnect.
-Each of these peripherals follows an interface scheme dictated in the [Comportability Specification.]({{< relref "doc/rm/comportability_specification" >}}).
+Each of these peripherals follows an interface scheme dictated in the [Comportability Specification.](../../../../doc/contributing/hw/comportability/README.md).
 That specification details how the processor communicates with the peripheral (via TLUL interconnect); how the peripheral communicates with the chip IO (via fixed or multiplexable IO); how the peripheral communicates with the processor (interrupts); and how the peripheral communicates security events (via alerts).
 See that specification for generic details on this scheme.
 
@@ -196,21 +196,21 @@ It is notable that there are many differences between an FPGA implementation of 
 Some pad attributes with analog characteristics like drive strength, slew rate and Open Drain technology are not supported on all platforms.
 
 The pin multiplexor is a peripheral on the TLUL bus, with collections of registers that provide software configurability.
-See the [pinmux specification]({{< relref "hw/ip/pinmux/doc" >}}) for how to connect peripheral IO to chip IO and for information on pad control features.
+See the [pinmux specification](../../../ip/pinmux/README.md) for how to connect peripheral IO to chip IO and for information on pad control features.
 
 ##### UART
 
 The chip contains one UART peripheral that implement single-lane duplex UART functionality.
-The outputs and inputs can be configured to any chip IO via the [pinmux]({{< relref "hw/ip/pinmux/doc" >}}).
+The outputs and inputs can be configured to any chip IO via the [pinmux](../../../ip/pinmux/README.md).
 
-See the [UART specification]({{< relref "hw/ip/uart/doc" >}}) for more details on this peripheral.
+See the [UART specification](../../../ip/uart/README.md) for more details on this peripheral.
 
 ##### GPIO
 
 The chip contains one GPIO peripheral that creates 32 bits of bidirectional communication with the outside world via the pinmux.
 Via pinmux any of the 32 pins of GPIO can be connected to any of the 32 MIO chip pins, in any direction.
-See the [GPIO specification]({{< relref "hw/ip/gpio/doc" >}}) for more details on this peripheral.
-See the [pinmux specification]({{< relref "hw/ip/pinmux/doc" >}}) for how to connect peripheral IO to chip IO.
+See the [GPIO specification](../../../ip/gpio/README.md) for more details on this peripheral.
+See the [pinmux specification](../../../ip/pinmux/README.md) for how to connect peripheral IO to chip IO.
 
 ##### SPI device
 
@@ -232,14 +232,14 @@ Typical commands such as read status, address mode, read data and program data a
 
 Passthrough mode supports serial flash passthrough from an upstream SPI host to a downstream serial flash device.
 
-See the [SPI device specification]({{< relref "hw/ip/spi_device/doc" >}}) for more details.
+See the [SPI device specification](../../../ip/spi_device/README.md) for more details.
 
 ##### USB device
 
 The chip contains a single module that supports USB device mode at full speed.
 In addition to normal functionality, USB suspend / resume is supported alongside the chip's low power modes.
 
-See the [USB device specification]({{< relref "hw/ip/usbdev/doc" >}}) for more details.
+See the [USB device specification](../../../ip/usbdev/README.md) for more details.
 
 ##### I2C host
 
@@ -261,7 +261,7 @@ It supports [ECB mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operat
 The [GCM mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#GCM) is not implemented in hardware, but can be constructed using AES in counter mode.
 The integrity tag calculation can be implemented in Ibex and accelerated via bitmanip instructions.
 
-Details on how to write key and data material into the peripheral, how to initiate encryption and decryption, and how to read out results, are available in the [AES specification]({{< relref "hw/ip/aes/doc" >}}).
+Details on how to write key and data material into the peripheral, how to initiate encryption and decryption, and how to read out results, are available in the [AES specification](../../../ip/aes/README.md).
 
 ##### SHA-256/HMAC
 
@@ -276,11 +276,11 @@ All data transfer is processor-available, i.e. data is passed into the module vi
 [HMAC](https://en.wikipedia.org/wiki/HMAC) is a message authentication protocol layered on top of a hashing function (in this case SHA-256), mixing in a secret key for cryptographic purposes.
 HMAC is a particular application of appending the secret key in a prescribed manner, twice, around the hashing (via SHA-256) of the message.
 
-Details on how to write key and data material into the peripheral, how to initiate hashing / authentication, and how to read out results, are available in the [SHA/HMAC specification]({{< relref "hw/ip/hmac/doc" >}}).
+Details on how to write key and data material into the peripheral, how to initiate hashing / authentication, and how to read out results, are available in the [SHA/HMAC specification](../../../ip/hmac/README.md).
 
 ##### Alert Handler
 
-Alerts, as defined in the [Comportability Specification]({{< relref "doc/rm/comportability_specification" >}}), are defined as security-sensitive interrupts that need to be handled in a timely manner to respond to a security threat.
+Alerts, as defined in the [Comportability Specification](../../../../doc/contributing/hw/comportability/README.md), are defined as security-sensitive interrupts that need to be handled in a timely manner to respond to a security threat.
 Unlike standard interrupts, they are not solely handled by software.
 Alerts trigger a first-stage request to be handled by software in the standard mode as interrupts, but trigger a second-stage response by the alert handler if software is not able to respond.
 This ensures that the underlying concern is guaranteed to be addressed if the processor is busy, wedged, or itself under attack.
@@ -320,7 +320,7 @@ At this time, one timer is provided, a 64b free running timer with a guaranteed 
 A second one acting as a watchdog timer that can be used to backstop the processor in the case of it being unresponsive (usually due to development code that is wedged, rather than for instance due to security attack) will be provided in the future.
 The goal is for both of these to be satisfied with the same timer module.
 
-The specification for the timer can be found [here]({{< relref "hw/ip/rv_timer/doc" >}}).
+The specification for the timer can be found [here](../../../ip/rv_timer/README.md).
 
 ##### Flash Controller
 
@@ -348,12 +348,12 @@ The flash controller peripheral in this release approximates those expected time
 
 Security is also a concern, since secret data can be stored in the flash.
 Some memory protection is provided by the flash controller.
-For more details see the [flash controller module specification]({{< relref "hw/ip/flash_ctrl/doc" >}}).
+For more details see the [flash controller module specification](../../../ip/flash_ctrl/README.md).
 
 ### Interconnection
 
 Interconnecting the processor and peripheral and memory units is a bus network built upon the TileLink-Uncached-Light protocol.
-See the [OpenTitan bus specification]({{< relref "hw/ip/tlul/doc" >}}) for more details.
+See the [OpenTitan bus specification](../../../ip/tlul/README.md) for more details.
 
 #### Topology
 `top_earlgrey` has a two-level hierarchy for its bus network.

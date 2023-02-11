@@ -9,7 +9,7 @@ ALERT_ESC UVM Agent is extended from DV library agent classes.
 This agent implements both alert(alert_rx, alert_tx) and escalation (esc_rx,
 esc_tx) interface protocols, and can be configured to behave in both host and
 device modes. For design documentation, please refer to [alert_handler
-spec]({{< relref "hw/top_earlgrey/ip_autogen/alert_handler/doc/_index.md" >}}).
+spec](../../../top_earlgrey/ip_autogen/alert_handler/README.md).
 
 ### Alert Agent
 
@@ -19,7 +19,7 @@ Alert agent supports both synchronous and asynchronous modes.
 
 For IPs that send out alerts, it is recommended to attach alert device agents to
 the block level testbench.
-Please refer to [cip_lib documentation]({{< relref "hw/dv/sv/cip_lib/doc/index.md" >}})
+Please refer to [cip_lib documentation](../cip_lib/README.md)
 regarding instructions to configure alert device agent in DV testbenches.
 
 ### Escalation Agent

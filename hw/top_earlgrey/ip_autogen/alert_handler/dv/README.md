@@ -13,35 +13,35 @@ title: "ALERT_HANDLER DV document"
   * Verify alert_handler_esc_timer and alert_handler_ping_timer
 
 ## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
+* [Design & verification stage](../../../../README.md)
+  * [HW development stages](../../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/alert_handler/dv/latest/results.html)
 
 ## Design features
-For detailed information on ALERT_HANDLER design features, please see the [ALERT_HANDLER HWIP technical specification]({{< relref ".." >}}).
+For detailed information on ALERT_HANDLER design features, please see the [ALERT_HANDLER HWIP technical specification](../README.md).
 
 ## Testbench architecture
-ALERT_HANDLER testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+ALERT_HANDLER testbench has been constructed based on the [CIP testbench architecture](../../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
-![Block diagram](tb.svg)
+![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
 Top level testbench is located at `hw/ip/alert_handler/dv/tb/tb.sv`. It instantiates the ALERT_HANDLER DUT module `hw/ip/alert_handler/rtl/alert_handler.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+* [Clock and reset interface](../../../../dv/sv/common_ifs/README.md)
+* [TileLink host interface](../../../../dv/sv/tl_agent/README.md)
 * ALERT_HANDLER IOs
-* Alerts and escalations([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}))
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* Alerts and escalations([`alert_esc_if`](../../../../dv/sv/alert_esc_agent/README.md))
+* Interrupts ([`pins_if`](../../../../dv/sv/common_ifs/README.md))
+* Devmode ([`pins_if`](../../../../dv/sv/common_ifs/README.md))
 
 The alert_handler testbench environment can be reused in chip level testing.
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
+* [dv_utils_pkg](../../../../dv/sv/dv_utils/README.md)
+* [csr_utils_pkg](../../../../dv/sv/csr_utils/README.md)
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -51,18 +51,18 @@ All common types and methods defined at the package level can be found in
 ```
 
 ### TL_agent
-ALERT_HANDLER testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+ALERT_HANDLER testbench instantiates (already handled in CIP base env) [tl_agent](../../../../dv/sv/tl_agent/README.md)
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into ALERT_HANDLER device.
 
 ### ALERT_ESC Agent
-[ALERT_ESC agent]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}) is used to drive and monitor transmitter and receiver pairs for the alerts and escalators.
+[ALERT_ESC agent](../../../../dv/sv/alert_esc_agent/README.md) is used to drive and monitor transmitter and receiver pairs for the alerts and escalators.
 Alert_handler DUT includes alert_receivers and esc_senders, so the alert_esc agent will drive output signals of the alert_senders and esc_receivers.
 
 ### UVM RAL Model
-The ALERT_HANDLER RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The ALERT_HANDLER RAL model is created with the [`ralgen`](../../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}).
+It can be created manually by invoking [`regtool`](../../../../../util/reggen/doc/setup_and_use.md).
 
 ### Stimulus strategy
 #### Test sequences
@@ -106,11 +106,11 @@ To ensure certain alert, interrupt, or escalation signals are triggered at the e
 The alert_handler scoreboard is parameterized to support different number of classes, alert pairs, and escalation pairs.
 
 #### Assertions
-* TLUL assertions: The `tb/alert_handler_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/alert_handler_bind.sv` binds the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool](../../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

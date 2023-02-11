@@ -268,7 +268,7 @@ title: Name HWIP Technical Specification
 # Overview
 
 This document specifies Name hardware IP functionality.
-This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}})
+This module conforms to the [Comportable guideline for peripheral functionality.](../hw/comportability/README.md)
 See that document for integration overview within the broader top level system.
 
 ## Features

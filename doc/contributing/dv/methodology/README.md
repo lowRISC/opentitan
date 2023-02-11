@@ -15,7 +15,7 @@ The following are the key techniques used to perform design verification within 
 *  Formal Property Verification (FPV)
 
 For running dynamic simulations, the strategy is to use the [UVM1.2 methodology](https://www.accellera.org/downloads/standards/uvm) on top of a foundation of SystemVerilog based verification to develop constrained-random functional tests.
-Each DUT will include within the repository, a UVM testbench, a [testplan]({{< relref "doc/ug/dv_methodology/index.md#testplan" >}}), overall [DV document]({{< relref "doc/ug/dv_methodology/index.md#dv-document" >}}), a suite of tests, and a method to build, run tests and report the current status.
+Each DUT will include within the repository, a UVM testbench, a [testplan](./README.md#testplan), overall [DV document](./README.md#dv-document), a suite of tests, and a method to build, run tests and report the current status.
 For FPV, some DUTs may also include an SV testbench along with design properties captured in the SystemVerilog Assertions (SVA) language.
 As the project is still in development, the current status will not be completed for all IP, but that is the ultimate goal.
 See discussion below on tracking progress.
@@ -33,10 +33,10 @@ The discussions on how those are used within the program are carried out in a di
 Verification within the OpenTitan project comes in a variety of completion status levels.
 Some designs are "tapeout ready" while others are still a work in progress.
 Understanding the status of verification is important to gauge the confidence in the design's advertised feature set.
-To that end, we've designated a spectrum of design and verification stages in the  [OpenTitan Hardware Development Stages]({{< relref "doc/project/development_stages.md" >}}) document.
+To that end, we've designated a spectrum of design and verification stages in the  [OpenTitan Hardware Development Stages](../../../project_governance/development_stages.md) document.
 It defines the verification stages and references where one can find the current verification status of each of the designs in the repository.
 Splitting the effort in such a way enables the team to pace the development effort and allows the progress to be in lock-step with the design stages.
-The list of tasks that are required to be completed to enable the effort to transition from one stage to the next is defined in the [checklists]({{< relref "doc/project/checklist" >}}) document.
+The list of tasks that are required to be completed to enable the effort to transition from one stage to the next is defined in the [checklists](../../../project_governance/checklist/README.md) document.
 Verification is said to be complete when the checklist items for all stages are marked as done.
 We will explain some of the key items in those checklists in the remainder of this document.
 
@@ -44,7 +44,7 @@ We will explain some of the key items in those checklists in the remainder of th
 
 DV effort needs to be well documented to not only provide a detailed description of what tests are being planned and functionality covered, but also how the overall effort is strategized and implemented.
 The first is provided by the **testplan** document and the second, by the **DV document**.
-The [**project status**]({{< relref "doc/project/development_stages.md#indicating-stages-and-making-transitions" >}}) document tracks to progression of the effort through the stages.
+The [**project status**](../../../project_governance/development_stages.md#indicating-stages-and-making-transitions) document tracks to progression of the effort through the stages.
 
 In addition to these documents, a nightly **regression dashboard** tabulating the test and coverage results will provide ability to track progress towards completion of the verification stages.
 
@@ -64,13 +64,13 @@ The testplan is parsed into a data structure that serves the following purposes:
 *  Provide the ability to insert the testplan and coverage plan as tables into the DV document itself, so that all of the required information is in one place
 *  Annotate the nightly regression results to allow us to track our progress towards executing the testplan and coverage collection
 
-The [testplanner]({{< relref "util/dvsim/doc/testplanner.md" >}}) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
-The [build_docs]({{< relref "doc/ug/documentation" >}}) tool works in conjunction with the `testplanner` tool to enable its insertion into the DV document as a table.
+The [testplanner](../../../../util/dvsim/README.md) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
+The [build_docs](../../../guides/getting_started/src/build_docs.md) tool works in conjunction with the `testplanner` tool to enable its insertion into the DV document as a table.
 
 ### DV document
 
 The DV document expands the testplan inline, in addition to capturing the overall strategy, intent, the testbench block diagram, a list of interfaces / agents, VIPs, reference models, the functional coverage model, assertions and checkers. It also covers FPV goals, if applicable.
-This is written in [Markdown]({{< relref "doc/sg/markdown_usage_style" >}}) and is made available in the corresponding `doc` directory of each DUT.
+This is written in [Markdown](../../style_guides/markdown_usage_style.md) and is made available in the corresponding `doc` directory of each DUT.
 
 A [template](https://github.com/lowRISC/opentitan/blob/master/hw/dv/doc/dv_doc_template.md) for the DV documentation as well as the testbench block diagram in the OpenTitan team drive  (under the 'design verification' directory) are available to help get started.
 
@@ -89,15 +89,15 @@ These are described below.
 
 As is the case with design, we strive for conformity in our verification efforts as well.
 The motivation for this is not just aesthetics, but also to reap the advantages of [code reuse](#code-reuse), which we rely heavily on.
-To help achieve this, we provide a verification starter tool-kit called [uvmdvgen]({{< relref "util/uvmdvgen/doc" >}}).
+To help achieve this, we provide a verification starter tool-kit called [uvmdvgen](../../../../util/uvmdvgen/README.md).
 It can be used to completely auto-generate the complete initial DV environment for a new DUT, including the [documentation](#documentation) pieces (testplan as well as DV document), the complete UVM environment including the testbench, to the collaterals for building and running tests along with some common tests.
 This significantly helps reduce the development time.
 It can also be used to auto-generate the initial skeleton source code for building a new reusable verification component for an interface (a complete UVM agent).
 
 ### UVM Register Abstraction Layer (RAL) Model
 
-The UVM RAL model for DUTs containing CSRs is auto-generated using the [reggen]({{< relref "util/reggen/doc" >}}) tool.
-The specification for capturing the CSRs in the Hjson format can be found in the [Register Tool]({{< relref "doc/rm/register_tool" >}}) documentation.
+The UVM RAL model for DUTs containing CSRs is auto-generated using the [reggen](../../../../util/reggen/doc/setup_and_use.md) tool.
+The specification for capturing the CSRs in the Hjson format can be found in the [Register Tool](../../../../util/reggen/README.md) documentation.
 We currently check-in the auto-generated UVM RAL model along with our UVM testbench code and rely on CI checks for consistency.
 In the future we may move to a flow where it is not checked into the repository, but auto-generated on-the-fly as a part of the simulation.
 
@@ -106,7 +106,7 @@ In the future we may move to a flow where it is not checked into the repository,
 For a parameterized DUT that may possibly have multiple flavors instantiated in the chip, it would be prohibitively difficult to manually maintain the DV testbenches for all those flavors.
 To cater to this, we develop a generic UVM testbench and rely on custom tooling to auto-generate the specific parameter sets that are required to undergo the full verification till signoff.
 <!-- TODO: have this point to TLUL DV document -->
-An effort of this sort is planned for verifying the [TileLink XBAR]({{< relref "hw/ip/tlul/doc" >}}).
+An effort of this sort is planned for verifying the [TileLink XBAR](../../../../hw/ip/tlul/README.md).
 
 ## Code Reuse
 
@@ -115,7 +115,7 @@ To that end, several commonly used verification infrastructure pieces are provid
 
 ### DV Base Library
 
-We provide an elementary scaffolding / base layer for constructing UVM testbenches via a [DV base library]({{< relref "hw/dv/sv/dv_lib/doc" >}}) of classes to help us get off the ground quickly.
+We provide an elementary scaffolding / base layer for constructing UVM testbenches via a [DV base library](../../../../hw/dv/sv/dv_lib/README.md) of classes to help us get off the ground quickly.
 Most, if not all, testbenches in OpenTitan (whether developed for a comportable IP or not) extend from this library, which provides a common set of features.
 A UVM testbench feature (stimulus / sequence, checking logic or functional coverage element) that is generic enough to be applicable for use in all testbenches is a valid candidate to be added to the DV base library.
 By doing so, we improve synergies across our testbenches and reduce the overall development effort & time to market.
@@ -124,8 +124,8 @@ The actual UVM testbenches for some of the IPs extend from this library as the f
 
 ### Comportable IP DV Library
 
-Defining a common ground to develop all OpenTitan IPs as described in the [Comportable IP specification]({{< relref "doc/rm/comportability_specification" >}}) provides us an excellent path to maximize code reuse and shorten the testbench development time even further.
-In view of that, we provide the [Comportable IP DV library]({{< relref "hw/dv/sv/cip_lib/doc" >}}) of classes, which themselves extend from DV base library to form the second layer.
+Defining a common ground to develop all OpenTitan IPs as described in the [Comportable IP specification](../../hw/comportability/README.md) provides us an excellent path to maximize code reuse and shorten the testbench development time even further.
+In view of that, we provide the [Comportable IP DV library](../../../../hw/dv/sv/cip_lib/README.md) of classes, which themselves extend from DV base library to form the second layer.
 These provide a common set of DV features that are specific to Comportable IPs.
 The actual UVM testbenches for the Comportable IPs extend from this library as the third and the final layer.
 
@@ -134,13 +134,13 @@ The actual UVM testbenches for the Comportable IPs extend from this library as t
 In addition to the above library of classes, there are several common plug-and-play verification components (a.k.a. universal verification components or UVCs) provided for use in testbenches at `hw/dv/sv` location.
 A few examples of these are as follows:
 
-*  [Common interfaces]({{< relref "hw/dv/sv/common_ifs" >}})
-*  [DV utilities]({{< relref "hw/dv/sv/dv_utils/doc" >}})
-*  [CSR utilities]({{< relref "hw/dv/sv/csr_utils/doc" >}})
-*  [Device memory model]({{< relref "hw/dv/sv/mem_model/doc" >}})
+*  [Common interfaces](../../../../hw/dv/sv/common_ifs/README.md)
+*  [DV utilities](../../../../hw/dv/sv/dv_utils/README.md)
+*  [CSR utilities](../../../../hw/dv/sv/csr_utils/README.md)
+*  [Device memory model](../../../../hw/dv/sv/mem_model/README.md)
 *  Interface agents
-  *  [TileLink agent]({{< relref "hw/dv/sv/tl_agent/doc" >}})
-  *  [UART agent]({{< relref "hw/dv/sv/usb20_agent/doc" >}})
+  *  [TileLink agent](../../../../hw/dv/sv/tl_agent/README.md)
+  *  [UART agent](../../../../hw/dv/sv/usb20_agent/README.md)
 
 This is not an exhaustive list since we are still actively developing and adding more such components as we speak.
 Please navigate to the above code location to find more sure UVCs.
@@ -163,8 +163,8 @@ The DV environment models the behavior of the DUT more closely to perform checks
 In some IPs, specifically the ones that provide cryptographic functions, we also use open source third party C libraries as reference models to check the behavior of the DUT through DPI-C calls.
 
 Each of the IP level DV environments are described in further detail within their own [DV document](#dv-document).
-To find all of them, please navigate to this [landing page]({{< relref "hw" >}}).
-The [UART DV document]({{< relref "hw/ip/uart/doc/dv" >}}) documentation can be used as a reference.
+To find all of them, please navigate to this [landing page](../../../../hw/README.md).
+The [UART DV document](../../../../hw/ip/uart/dv/README.md) documentation can be used as a reference.
 
 ### Core Ibex Level DV
 
@@ -176,7 +176,7 @@ Please see the [Ibex DV documentation](https://ibex-core.readthedocs.io/en/lates
 The chip level DV effort is aimed at ensuring that all of the IPs are integrated correctly into the chip.
 For IPs that are pre-verified sub-modules, we perform [integration testing](#integration-testing).
 These are simple functional tests written in C which are cross-compiled and run natively on the Ibex core.
-The software compilation flow to enable this is explained in further detail in the [Building Software]({{< relref "doc/getting_started/build_sw" >}}) document.
+The software compilation flow to enable this is explained in further detail in the [Building Software](../../../guides/getting_started/src/build_sw.md) document.
 Further, there is a mechanism for the C test running on the CPU to signal the SystemVerilog testbench the test pass or fail indication based on the observed DUT behavior.
 We also provide an environment knob to 'stub' the CPU and use a TL agent to drive the traffic via the CPU's data channel instead, in cases where more intensive testing is needed.
 <!-- TODO: add link to chip DV document -->
@@ -185,10 +185,10 @@ The chip DV document, which is currently under active development will explain t
 ## Key Test Focus Areas
 
 When progressing through the verification stages, there are key focus areas or testing activities that are perhaps common across all DUTs.
-These are described under [Hardware Verification Stages]({{< relref "doc/project/development_stages#hardware-verification-stages-v" >}}).
+These are described under [Hardware Verification Stages](../../../project_governance/development_stages.md#hardware-verification-stages-v).
 The basic steps are:
 
-### [Progressing towards V1]({{< relref "doc/project/checklist#v1" >}})
+### [Progressing towards V1](../../../project_governance/checklist/README.md#v1)
 
 These set of tests (not exhaustive) provide the confidence that the design is ready for vertical integration.
 
@@ -205,7 +205,7 @@ This test (or set of tests) is also included as a part of the sanity regression 
 The very first set of real tests validate the SW interface laid out using the regtool.
 These prove that the SW interface is solid and all assumptions in CSRs in terms of field descriptions and their accessibility are correctly captured and there are no address decode bugs.
 
-### [Progressing towards V2]({{< relref "doc/project/checklist#v2" >}})
+### [Progressing towards V2](../../../project_governance/checklist/README.md#v2)
 
 Bulk of testing in this stage focus on functionally testing the DUT.
 There however are certain categories of tests that may need additional attention.
@@ -252,7 +252,7 @@ To mitigate that, they are constructed with knobs to control the level of constr
 The level of constraints are then slowly eased to allow deeper state space exploration, until all areas of the DUT are satisfactorily stressed.
 Stress tests are ideal for bug hunting and closing coverage.
 
-### [Progressing towards V3]({{< relref "doc/project/checklist#v3" >}})
+### [Progressing towards V3](../../../project_governance/checklist/README.md#v3)
 
 The main focus of testing at this stage is to meet our [regression](#nightly) and [coverage](#coverage-collection) goals.
 Apart from that, there are cleanup activities to resolve all pending TODO items in the DV code base and fix all compile and run time warnings (if any) thrown by the simulator tools.
@@ -261,7 +261,7 @@ Apart from that, there are cleanup activities to resolve all pending TODO items 
 
 In DV, we follow the same assertion methodology as indicated in the [design methodology]({{< relref "./design.md#assertion-methodology" >}}).
 Wherever possible, the assertion monitors developed for FPV are reused in UVM testbenches when running dynamic simulations.
-An example of this is the [TLUL Protocol Checker]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}).
+An example of this is the [TLUL Protocol Checker](../../../../hw/ip/tlul/doc/TlulProtocolChecker.md).
 
 Unlike design assertions, in DV assertions are typically created within SV interfaces bound to the DUT.
 This way assertions and any collateral code don't affect the design, and can reach any internal design signal if needed.
@@ -575,7 +575,7 @@ See the [top_earlgrey vcs xprop configuration file](https://github.com/lowRISC/o
 
 ## FPV
 
-Refer to the [formal verification documentation]({{< relref "hw/formal/doc" >}}).
+Refer to the [formal verification documentation](../../../../hw/formal/README.md).
 
 ## Security Verification
 
@@ -587,7 +587,7 @@ The following common countermeasures can be either automatically or semi-automat
 
 1. Countermeasures using common primitives can be verified by the [Security Countermeasure Verification Framework]({{< relref "sec_cm_dv_framework" >}}).
 2. The following common countermeasures can be verified by cip_lib.
-The steps to enabling them is described in cip_lib [document]({{< relref "hw/dv/sv/cip_lib/doc#security-verification-in-cip_lib" >}}).
+The steps to enabling them is described in cip_lib [document](../../../../hw/dv/sv/cip_lib/README.md#security-verification-in-cip_lib).
   - Bus integrity
   - Shadowed CSRs
   - REGWEN CSRs
@@ -620,7 +620,7 @@ The goal of this review is to achieve utmost clarity in the planning of the DV e
 The feedback in this review flows both ways - the language in the design specification could be made more precise, and missing items in both the design specification and the testplan can be identified and added.
 This enables the development stages to progress smoothly.
 
-Subsequently, the intermediate transitions within the verification stages are reviewed within the GitHub pull-request made for updating the checklist and the [project status]({{< relref "doc/project/development_stages.md#indicating-stages-and-making-transitions" >}}).
+Subsequently, the intermediate transitions within the verification stages are reviewed within the GitHub pull-request made for updating the checklist and the [project status](../../../project_governance/development_stages.md#indicating-stages-and-making-transitions).
 
 Finally, after the verification effort is complete, there is a final sign-off review to ensure all checklist items are completed satisfactorily without any major exceptions or open issues.
 
@@ -631,7 +631,7 @@ We use the [OpenTitan GitHub Issue tracker](https://github.com/lowRISC/opentitan
 ## Getting Started with DV
 
 The process for getting started with DV involves many steps, including getting clarity on its purpose, setting up the testbench, documentation, etc.
-These are discussed in the [Getting Started with DV]({{< relref "doc/getting_started/setup_dv.md" >}}) document.
+These are discussed in the [Getting Started with DV](../../../guides/getting_started/src/setup_dv.md) document.
 
 ## Pending Work Items
 

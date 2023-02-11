@@ -10,33 +10,33 @@ title: "RSTMGR DV document"
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
+* [Design & verification stage](../../../README.md)
+  * [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/rstmgr/dv/latest/report.html)
 
 ## Design features
-For detailed information on RSTMGR design features, please see the [RSTMGR HWIP technical specification]({{< relref "hw/ip/rstmgr/doc" >}}).
+For detailed information on RSTMGR design features, please see the [RSTMGR HWIP technical specification](../README.md).
 
 ## Testbench architecture
-RSTMGR testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+RSTMGR testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
-![Block diagram](tb.svg)
+![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
 The top level testbench is located at [`hw/ip/rstmgr/dv/tb.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/tb.sv).
 It instantiates the RSTMGR DUT module [`hw/top_earlgrey/ip/rstmgr/rtl/autogen/rstmgr.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/ip/rstmgr/rtl/autogen/rstmgr.sv).
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
+* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * RSTMGR interface [`hw/ip/rstmgr/dv/env/rstmgr_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/env/rstmgr_if.sv)
-* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}))
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* Alerts ([`alert_esc_if`](../../../dv/sv/alert_esc_agent/README.md))
+* Devmode ([`pins_if`](../../../dv/sv/common_ifs/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
+* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
+* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -47,18 +47,18 @@ All common types and methods defined at the package level can be found in
   typedef virtual pwrmgr_rstmgr_sva_if #(.CHECK_RSTREQS(0)) parameterized_pwrmgr_rstmgr_sva_vif;
 ```
 ### TL_agent
-The RSTMGR testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}).
+The RSTMGR testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md).
 This provides the ability to drive and independently monitor random traffic via the TL host interface into the RSTMGR device.
 
 ### Alert_agents
-RSTMGR testbench instantiates (already handled in CIP base env) [alert_agents]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}):
+RSTMGR testbench instantiates (already handled in CIP base env) [alert_agents](../../../dv/sv/alert_esc_agent/README.md):
 [list alert names].
 The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in RSTMGR device.
 
 ### UVM RAL Model
-The RSTMGR RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The RSTMGR RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}).
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
 
 ### Stimulus strategy
 The following test sequences and covergroups are described in more detail in the testplan at `hw/ip/pwrmgr/data/rstmgr_testplan.hjson`, and also included [below](#testplan).
@@ -106,7 +106,7 @@ Most self checking is done using SVA, and via explicit CSR reads.
 The latter are described in the testplan.
 
 #### Assertions
-* TLUL assertions: The `tb/rstmgr_bind.sv` file binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/rstmgr_bind.sv` file binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 * Response to pwrmgr's `rst_lc_req` and `rst_sys_req` inputs: these trigger transitions in `rst_lc_src_n` and `rst_sys_rst_n` outputs.
   Checked via SVAs in [`hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv).
@@ -132,7 +132,7 @@ It has its own separate dv environment and tests at `hw/ip/rstmgr/dv/rstmgr_cnst
 It is excluded from coverage for the rstmgr dv tests.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

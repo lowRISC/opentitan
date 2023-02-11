@@ -52,7 +52,7 @@ Bus primitives are provided in the lowRISC IP library. These are
 described later in this document. These primitives can be combined to form
 a flexible crossbar of any M hosts to any N devices. As of this writing,
 these crossbars are generated programmatically through usage of configuration files.
-See the [tlgen reference manual]({{< relref "doc/rm/crossbar_tool" >}}) for more details.
+See the [tlgen reference manual](../../../util/tlgen/README.md) for more details.
 
 ## Compatibility
 
@@ -135,7 +135,7 @@ Section 3.2.2 of the
 has a requirement on TL-UL hosts ("masters" in TileLink terminology) that "`valid` signals must be driven LOW for at least 100 cycles while reset is asserted."
 The TL-UL collateral within this library does **not** have this requirement on its TL-UL host drivers.
 TL-UL devices within the library can tolerate shorter reset windows.
-(See the reset section of the [Comportability Specification]({{< relref "doc/rm/comportability_specification" >}})
+(See the reset section of the [Comportability Specification](../../../doc/contributing/hw/comportability/README.md)
 for details on reset requirements.)
 
 ### Signal and Struct Definitions
@@ -363,7 +363,7 @@ In particular, the following properties are checked:
   - Inactive lanes must be marked with `'b0` in `a_mask`,
   - `PutFullData` must mark all active lanes with a `'b1` in `a_mask`,
 3. Non-contiguous mask may lead to an error, depending on the device support (see previous section),
-4. Register files always assume aligned 32bit accesses, see also [register tool manual]({{< relref "doc/rm/register_tool/index.md#error-responses" >}}),
+4. Register files always assume aligned 32bit accesses, see also [register tool manual](../../../util/reggen/README.md#error-responses),
 5. Accesses to non-existent addresses.
 
 On the host side, orphaned responses (i.e. responses that do not have a valid request counterpart) and responses with the wrong opcode will be discarded.
@@ -372,7 +372,7 @@ It is planned to raise a critical hardware error that can be detected and reacte
 Note that the above checks also cover cases which are in principle allowed by the TL-UL spec, but are not supported by the hosts and devices within this project.
 Further, devices and hosts may implement additional more restrictive checks, if needed.
 
-The remaining, basic properties as specified in the TL-UL spec are enforced at design time using assertions, and hence no additional hardware checkers are implemented to check for those properties (see also [TL-UL Protocol Checker Specification]({{< relref "./TlulProtocolChecker" >}})).
+The remaining, basic properties as specified in the TL-UL spec are enforced at design time using assertions, and hence no additional hardware checkers are implemented to check for those properties (see also [TL-UL Protocol Checker Specification](./doc/TlulProtocolChecker.md)).
 
 The interconnect does not possess additional hardware mechanisms to detect and handle interconnect deadlocks due to malicious tampering attempts.
 The reasons for this are that
@@ -556,7 +556,7 @@ desired, an `tlul_fifo_async` should be placed on the desired bus.
 The diagram below shows the dataflow of the `tlul_socket_1n` and how
 the `tlul_fifo_sync` modules are allocated.
 
-![tlul_socket_1n block diagram](tlul_socket_1n.svg)
+![tlul_socket_1n block diagram](./doc/tlul_socket_1n.svg)
 
 In this diagram, the full socket (`1:4` in this case) is shown, with
 its single host port and four device ports. Also shown is the critical
@@ -616,7 +616,7 @@ must be instantiated on any ports that run asynchronously.
 The diagram below shows the dataflow of `tlul_socket_m1` for `4:1`
 case and how the `tlul_fifo_sync` modules are allocated.
 
-![tlul_socket_m1 block diagram](tlul_socket_m1.svg)
+![tlul_socket_m1 block diagram](./doc/tlul_socket_m1.svg)
 
 Requests coming from each host ports are arbitrated in the socket based
 on round-robin scheme. `tlul_socket_m1`, unlike the `1:N` socket, doesn't
@@ -639,7 +639,7 @@ TL `typedef` definitions.
 
 ### `tlul_xbar`
 
-For details of the `tlul_xbar`, please refer to the [tlgen reference manual]({{< relref "doc/rm/crossbar_tool" >}}).
+For details of the `tlul_xbar`, please refer to the [tlgen reference manual](../../../util/tlgen/README.md).
 In general, tlgen stitches together various components described in the previous sections to create a full blown fabric switch.
 Specifically, it implements the address to `dev_sel` steering logic and ensures the right connections are made from host to device.
 
@@ -662,7 +662,7 @@ The memory interface is defined as follows:
 | rerror  | `input`   | Transaction read error from downstream |
 
 The diagram below is a block diagram that shows the construction of the adapter.
-![tlul_adapter_sram_block diagram](tlul_adapter_sram.svg)
+![tlul_adapter_sram_block diagram](./doc/tlul_adapter_sram.svg)
 
 All incoming transactions are checked for protocol errors and integrity.
 The transactions are then forwarded to the `tlul_sram_byte` module, which determines whether the incoming transaction is a write, and whether the write transaction must be transformed to a read-modified-write.

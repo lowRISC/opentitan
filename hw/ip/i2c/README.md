@@ -6,7 +6,7 @@ title: "I2C HWIP Technical Specification"
 # Overview
 
 This document specifies I2C hardware IP functionality.
-This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification/index.md" >}})
+This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader top level system.
 
 
@@ -80,7 +80,7 @@ This IP also supports clock-stretching, should that be required by target device
 
 ## Block Diagram
 
-![](I2C_block_diagram.svg)
+![](./doc/I2C_block_diagram.svg)
 
 ## Hardware Interfaces
 
@@ -185,7 +185,7 @@ If the transaction is a write operation (R/W bit = 0), the target proceeds to re
 A STOP or repeated START indicator is inserted into ACQ FIFO as the next entry following the last byte received, in which case other bits may be junk.
 The following diagram shows consecutive entries inserted into ACQ FIFO during a write operation:
 
-![](I2C_acq_fifo_write.svg)
+![](./doc/I2C_acq_fifo_write.svg)
 
 If the transaction is a read operation (R/W bit = 1), the target pulls bytes out of TX FIFO and transmits them to the bus until the host signals the end of the transfer by sending a NACK signal.
 If TX FIFO holds no data, or if the ACQ FIFO contains more than 1 entry, the target will hold SCL low to stretch the clock and give software time to write data bytes into TX FIFO or handle the available command.
@@ -196,7 +196,7 @@ An ACK/NACK signal is inserted into the ACQ FIFO as the first bit (bit 0), in th
 For ACK and NACK signals, the value of the first bit is 0 and 1, respectively.
 The following diagram shows consecutive entries inserted into ACQ FIFO during a read operation:
 
-![](I2C_acq_fifo_read.svg)
+![](./doc/I2C_acq_fifo_read.svg)
 
 The ACQ FIFO entry consists of 10 bits:
 - Address (bits 7:1) and R/W bit (bit 0) or data byte
@@ -375,11 +375,11 @@ Each sub-sequence has a terminal event--generically labeled "[completed]" which 
 
 However, all transitions which are dependent on formatting flags are shown explicitly in this figure.
 
-![](I2C_state_diagram.svg)
+![](./doc/I2C_state_diagram.svg)
 
 Similarly, the figure below shows a simplified version of the I2C_Target state machine.
 
-![](I2C_state_diagram_target.svg)
+![](./doc/I2C_state_diagram_target.svg)
 
 In this diagram, "R/W" stands for a R/W bit value. The host is reading when R/W bit is "1" and writing when R/W bit is "0".
 

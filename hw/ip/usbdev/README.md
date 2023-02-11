@@ -6,7 +6,7 @@ title: "USB 2.0 Full-Speed Device HWIP Technical Specification"
 
 This document specifies the USB device hardware IP functionality.
 This IP block implements a Full-Speed device according to the [USB 2.0 specification.](https://www.usb.org/document-library/usb-20-specification)
-It is attached to the chip interconnect bus as a peripheral module and conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}})
+It is attached to the chip interconnect bus as a peripheral module and conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 
 
 ## Features
@@ -107,7 +107,7 @@ The following table summarizes how the different output signals relate to the US
 | [Alt TX Data]  | d_o              | Data output used for encoding K and J, for interfacing with a USB transceiver. |
 |   [TX Mode]    | tx_use_d_se0_o   | Indicates the selected TX interface: use dp_o and dn_o (0) or use d_o and se0_o (1). |
 
-Note that according to the [Comportable guideline for peripheral functionality]({{< relref "doc/rm/comportability_specification" >}}), every output signal `name_o` has a dedicated output enable `name_en_o`.
+Note that according to the [Comportable guideline for peripheral functionality](../../../doc/contributing/hw/comportability/README.md), every output signal `name_o` has a dedicated output enable `name_en_o`.
 For TX data, these separate signals `dp_en_o` and `dn_en_o` all correspond to the same TX or output enable signal (`OE` in the USB spec).
 The other signals listed are of the "intersignal" variety, and they do not go directly to pads or have dedicated output enable signals.
 
@@ -381,7 +381,7 @@ The PMOD card includes two USB micro-B connectors and allows two USB interfaces 
 The D+ and D- signals have 22R series resistors (in line with the USB spec) and there is a 1.5k pullup on D+ to the pullup enable signal.
 There is a resistive divider to set the sense pin at half of the VBUS voltage which enables detection on the FPGA without overvoltage on the pin.
 
-![PMOD Schematic](dualpmod-sch.svg)
+![PMOD Schematic](./doc/dualpmod-sch.svg)
 
 The PMOD PCB is [available from OSH Park](https://oshpark.com/shared_projects/xMKhTIHn).
 

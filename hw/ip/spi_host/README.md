@@ -5,7 +5,7 @@ title: "SPI_HOST HWIP Technical Specification"
 # Overview
 
 This document specifies SPI_HOST hardware IP (HWIP) functionality.
-This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification/index.md" >}})
+This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader top-level system.
 
 ## Features
@@ -28,7 +28,7 @@ See that document for integration overview within the broader top-level system.
    - Additional support for "Full-cycle" SPI transactions, wherein data can be read a full SPI Clock cycle after the active edge (as opposed to one half cycle as is typical for SPI interfaces)
 - Single Transfer Rate (STR) only (i.e. data received on multiple lines, but only on one clock edge)
    - *No support* for Dual Transfer Rate (DTR)
-- Pass-through mode for coordination with [SPI_DEVICE IP]({{< relref "hw/ip/spi_device/doc/_index.md" >}})
+- Pass-through mode for coordination with [SPI_DEVICE IP](../spi_device/README.md)
 - Automatic control of chip select lines
 - Condensed interrupt footprint: Two lines for two distinct interrupt classes: "error" and "spi_event"
    - Fine-grain interrupt masking supplied by secondary enable registers
@@ -669,7 +669,7 @@ To use this reset, assert {{< regref "CONTROL.SW_RST" >}}, and then wait for the
 
 ## Block Diagram
 
-![](spi_host_block_diagram.svg)
+![](./doc/spi_host_block_diagram.svg)
 
 ## Hardware Interfaces
 
@@ -918,7 +918,7 @@ For this initial discussion it is assumed that every command consists of one sin
 Multi-segment commands are considered in the following sections.
 In this case the state machine can be simplified to the following figure.
 
-![](spi_host_fsm_simplified.svg)
+![](./doc/spi_host_fsm_simplified.svg)
 
 The operation of the state machine is the same regardless of the polarity (CPOL) or phase (CPHA) of the current command.
 Commands with `CPOL==0` or `CPOL==1` are processed nearly identically, since the only difference is in the polarity of the `sck` output.
@@ -1206,7 +1206,7 @@ When a command segment is received in the `IdleCSBActive` state, it transitions 
 
 The following figure shows the complete state transition diagram of for the SPI_HOST FSM.
 
-![](spi_host_fsm_complete.svg)
+![](./doc/spi_host_fsm_complete.svg)
 
 ### Skipped idle states
 
@@ -1221,7 +1221,7 @@ For clarity such transitions are left implicit in the diagram above.
 However they could also be explicitly added to the state diagram.
 For example, the implicit transitions around the `Idle` are shown in the following figure.
 
-![](spi_host_bypassable_state.svg)
+![](./doc/spi_host_bypassable_state.svg)
 
 ### Stall
 

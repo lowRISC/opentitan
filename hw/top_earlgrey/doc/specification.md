@@ -113,5 +113,5 @@ The OpenTitan Earl Grey chip provides the following features:
 
 # Detailed Specification
 
-For more detailed documentation including the pinout and system address map, see [OpenTitan Earl Grey Chip Specification]({{< relref "design" >}}).
-The [OpenTitan Earl Grey Chip DV Document]({{< relref "dv" >}}) describes the chip-level DV environment and contains the chip-level test plan.
+For more detailed documentation including the pinout and system address map, see [OpenTitan Earl Grey Chip Specification](./design/README.md).
+The [OpenTitan Earl Grey Chip DV Document](../dv/README.md) describes the chip-level DV environment and contains the chip-level test plan.

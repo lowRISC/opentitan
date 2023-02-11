@@ -47,7 +47,7 @@ The power manager performs the following functions:
 See the below high level block diagram that illustrates the connections between the power manager and various system components.
 Blocks outlined with a solid magenta line are always on; while blocks outlined with a dashed magenta line are a mix of components that are and those that are not.
 
-![Power Manager Connectivity Diagram](pwrmgr_connectivity.svg)
+![Power Manager Connectivity Diagram](./doc/pwrmgr_connectivity.svg)
 
 ## Hardware Interfaces
 
@@ -64,7 +64,7 @@ The state machines are colored based on their clock domains.
 The green state machine is clocked by the normal fixed domain, while the orange state machine is clocked by the slow domain.
 Specific request / acknowledge signals are also highlighted in this color scheme to show where the two state machines communicate.
 
-![Power Manager FSMs](pwrmgr_fsms.svg)
+![Power Manager FSMs](./doc/pwrmgr_fsms.svg)
 
 
 Note, most of the states are transitional states, and only the following state combinations are resting states.
@@ -81,7 +81,7 @@ The slow FSM `Low Power` and fast FSM `Active` states specifically are concepts 
 The slow clock domain FSM (referred to as the slow FSM from here on) resets to the Reset state.
 This state is released by `por_rst_n`, which is supplied from the reset controller.
 The `por_rst_n` signal is released when the reset controller detects the root power domains (`vcaon_pok` from AST) of the system are ready.
-Please see the [ast]({{< relref "hw/top_earlgrey/ip/ast/doc" >}}) for more details.
+Please see the [ast](../../top_earlgrey/ip/ast/README.md) for more details.
 
 The slow FSM requests the AST to power up the main domain and high speed clocks.
 Once those steps are done, it requests the [fast FSM](#fast-clock-domain-fsm) to begin operation.
@@ -107,12 +107,12 @@ Instead the system goes into a terminal non-responsive state where a user or hos
 
 The fast clock domain FSM (referred to as fast FSM from here on) resets to `Low Power` state and waits for a power-up request from the slow FSM.
 
-Once received, the fast FSM releases the life cycle reset stage (see [reset controller]({{< relref "hw/ip/rstmgr/doc" >}}) for more details).
-This allows the [OTP]({{< relref "hw/ip/otp_ctrl/doc" >}}) to begin sensing.
+Once received, the fast FSM releases the life cycle reset stage (see [reset controller](../rstmgr/README.md) for more details).
+This allows the [OTP](../otp_ctrl/README.md) to begin sensing.
 Once OTP sensing completes , the life cycle controller is initialized.
-The initialization of the life cycle controller puts the device into its allowed operating state (see [life cycle controller]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more details).
+The initialization of the life cycle controller puts the device into its allowed operating state (see [life cycle controller](../lc_ctrl/README.md) for more details).
 
-Once life cycle initialization is done, the fast FSM enables all second level clock gating (see [clock controller]({{< relref "hw/ip/clkmgr/doc" >}}) for more details) and initiates strap sampling.
+Once life cycle initialization is done, the fast FSM enables all second level clock gating (see [clock controller](../clkmgr/README.md) for more details) and initiates strap sampling.
 For more details on what exactly the strap samples, please see [here](https://docs.google.com/spreadsheets/d/1pH8T1MhQ7TXtP_bFNT85T9jSVIHlxHAfbMnPbsMdjc0/edit?usp=sharing).
 
 Once strap sampling is complete, the system is ready to begin normal operations (note `flash_ctrl` initialization is explicitly not done here, please see [sections below](#flash-handling) for more details).
@@ -143,7 +143,7 @@ The fast FSM does not recover from this state until the system is reset by POR.
 
 ### ROM Integrity Checks
 
-The power manager coordinates the [start up ROM check]({{< relref "hw/ip/rom_ctrl/doc/_index.md#the-startup-rom-check" >}}) with `rom_ctrl`.
+The power manager coordinates the [start up ROM check](../rom_ctrl/README.md#the-startup-rom-check) with `rom_ctrl`.
 
 After every reset, the power manager sends an indication to the `rom_ctrl` to begin performing integrity checks.
 When the `rom_ctrl` checks are finished, a `done` and `good` indication are sent back to the power manager.
@@ -284,7 +284,7 @@ For the section below, flash macro refers to the proprietary flash storage suppl
 
 ### Power-Up Handling
 
-The [AST]({{< relref "hw/top_earlgrey/ip/ast/doc" >}}) automatically takes the flash macro out of power down state as part of the power manager's power up request.
+The [AST](../../top_earlgrey/ip/ast/README.md) automatically takes the flash macro out of power down state as part of the power manager's power up request.
 
 Once flash macro is powered up and ready, an indication is sent to the `flash_ctrl`.
 
@@ -384,7 +384,7 @@ One is exiting from deep sleep, and the other is exiting from normal sleep.
 When exiting from deep sleep, the system begins execution in ROM.
 
 1. Complete normal preparation steps.
-2. Check reset cause in [rstmgr]({{< relref "hw/ip/rstmgr/doc" >}})
+2. Check reset cause in [rstmgr](../rstmgr/README.md)
 3. Re-enable modules that have powered down.
 4. Disable wakeup recording through {{< regref "WAKE_INFO_CAPTURE_DIS" >}}.
 5. Check which source woke up the system through {{< regref "WAKE_INFO" >}}.

@@ -5,11 +5,11 @@ aliases: [/doc/project/hw_dashboard/]
 
 This page serves as the landing spot for all hardware development within the OpenTitan project.
 
-We start off by providing links to the [results of various tool-flows](#results-of-toolflows) run on all of our [Comportable]({{< relref "doc/rm/comportability_specification" >}}) IPs.
+We start off by providing links to the [results of various tool-flows](#results-of-toolflows) run on all of our [Comportable](../doc/contributing/hw/comportability/README.md) IPs.
 This includes DV simulations, FPV and lint, all of which are run with the `dvsim` tool which serves as the common frontend.
 
 The [Comportable IPs](#comportable-ips) following it provides links to their design specifications and DV documents, and tracks their current stage of development.
-See the [Hardware Development Stages]({{< relref "/doc/project/development_stages.md" >}}) for description of the hardware stages and how they are determined.
+See the [Hardware Development Stages](../doc/project_governance/development_stages.md) for description of the hardware stages and how they are determined.
 
 Next, we focus on all available [processor cores](#processor-cores) and provide links to their design specifications, DV documents and the DV simulation results.
 
@@ -40,9 +40,9 @@ Finally, we provide the same set of information for all available [top level des
 
 ## Earl Grey chip-level results
 
-* [Datasheet]({{< relref "hw/top_earlgrey/doc" >}})
-* [Specification]({{< relref "hw/top_earlgrey/doc/design" >}})
-* [DV Document]({{< relref "hw/top_earlgrey/doc/dv" >}})
+* [Datasheet](./top_earlgrey/doc/specification.md)
+* [Specification](./top_earlgrey/doc/design/README.md)
+* [DV Document](./top_earlgrey/dv/README.md)
 * [DV simulation results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/latest/report.html)
 * [Connectivity results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/conn/jaspergold/latest/report.html)
 * [AscentLint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/ascentlint/latest/report.html)

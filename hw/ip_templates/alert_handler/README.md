@@ -6,7 +6,7 @@ title: "Alert Handler Technical Specification"
 # Overview
 
 This document specifies the functionality of the alert handler mechanism.
-The alert handler is a module that is a peripheral on the chip interconnect bus, and thus follows the [Comportability Specification]({{< relref "doc/rm/comportability_specification" >}}).
+The alert handler is a module that is a peripheral on the chip interconnect bus, and thus follows the [Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 It gathers alerts - defined as interrupt-type signals from other peripherals that are designated as potential security threats - throughout the design, and converts them to interrupts that the processor can handle.
 If the processor does not handle them, the alert handler mechanism provides hardware responses to handle the threat.
 
@@ -78,7 +78,7 @@ The figure below shows a block diagram of the alert handler module, as well as a
 In this diagram, there are seven sources of alerts: three sources from external modules (two from `periph0` and one from `periph1`), and four local sources (`alert_ping_fail`, `alert_sig_int`, `esc_ping_fail`, `esc_sig_int`).
 The local sources represent alerts that are created by this module itself. See the later section on special local alerts.
 
-![Alert Handler Block Diagram](alert_handler_block_diagram.svg)
+![Alert Handler Block Diagram](./doc/alert_handler_block_diagram.svg)
 
 Also shown are internal modules for classification, interrupt generation, accumulation, escalation, ping generation and alert-channel low-power control.
 These are described later in the document.
@@ -153,7 +153,7 @@ The latter is to ensure that all escalation receivers are always active and have
 
 #### Low-power Indication Signals
 
-The `lpg_cg_en_i` and `lpg_rst_en_i` are two arrays with multibit indication signals from the [clock]({{< relref "hw/ip/clkmgr/doc/" >}}) and [reset managers]({{< relref "hw/ip/rstmgr/doc" >}}).
+The `lpg_cg_en_i` and `lpg_rst_en_i` are two arrays with multibit indication signals from the [clock](../../ip/clkmgr/README.md) and [reset managers](../../ip/rstmgr/README.md).
 These indication signals convey whether a specific group of alert senders are either clock gated or in reset.
 As explained in [more detail below]({{< relref "#low-power-management-of-alert-channels" >}}), this information is used to temporarily halt the ping timer mechanism on channels that are in a low-power state in order to prevent false positives.
 
@@ -199,7 +199,7 @@ The differential signaling submodules may either use a synchronous or asynchrono
 
 Each alert sender is connected to the corresponding alert receiver via the 3 differential pairs `alert_tx_i/o.alert_p/n`, `alert_rx_i/o.ack_p/n` and `alert_rx_i/o.ping_p/n`, as illustrated below:
 
-![Alert Handler Alert RXTX](alert_handler_alert_rxtx.svg)
+![Alert Handler Alert RXTX](./doc/alert_handler_alert_rxtx.svg)
 
 Alerts are encoded differentially and signaled using a full handshake on the `alert_tx_i/o.alert_p/n` and `alert_rx_i/o.ack_p/n` wires.
 The use of a full handshake protocol allows this mechanism to be used with an asynchronous clocking strategy, where peripherals may reside in a different clock domain than the alert handler.
@@ -372,7 +372,7 @@ The `ping_req_i` inputs of all signaling modules (`prim_alert_receiver`, `prim_e
 Further, this ping timer also randomly selects a particular alert line to be pinged (escalation senders are always pinged in-order due to the [ping monitoring mechanism]({{< relref "#monitoring-of-pings-at-the-escalation-receiver-side" >}}) on the escalation side).
 That should make it more difficult to predict the next ping occurrence based on past observations.
 
-The ping timer is implemented using an [LFSR-based PRNG of Galois type]({{< relref "hw/ip/prim/doc/prim_lfsr.md" >}}).
+The ping timer is implemented using an [LFSR-based PRNG of Galois type](../../ip/prim/doc/prim_lfsr.md).
 This ping timer is reseeded with fresh entropy from EDN roughly every 500k cycles which corresponds to around 16 ping operations on average.
 The LFSR is 32bits wide, but only 24bits of its state are actually being used to generate the random timer count and select the alert line to be pinged.
 I.e., the 32bits first go through a fixed permutation function, and then bits `[23:16]` are used to determine which alert line to ping.
@@ -583,7 +583,7 @@ signals.
 
 As illustrated in the following block diagram, a sender-receiver pair is connected with two differential lines, one going from sender to receiver and the other going from receiver to sender.
 
-![Alert Handler Escalation RXTX](alert_handler_escalation_rxtx.svg)
+![Alert Handler Escalation RXTX](./doc/alert_handler_escalation_rxtx.svg)
 
 Upon receiving an escalation enable pulse of width N > 0 at the `esc_req_i` input, the escalation sender encodes that signal as a differential pulse of width N+1 on `esc_tx.esc_p/n`.
 The receiver decodes that message and asserts the `esc_req_o` output after one cycle of delay.
@@ -735,7 +735,7 @@ Since the FSMs associated with an alert channel may end up in an inconsistent st
 
 The following diagram shows a typical arrangement of alert sender (TX) and receiver (RX) pairs.
 
-![Alert Handler Low-Power Overview](alert_handler_lp_overview.svg)
+![Alert Handler Low-Power Overview](./doc/alert_handler_lp_overview.svg)
 
 It is assumed that:
 
@@ -782,7 +782,7 @@ In the following we will refer to such a clock / reset domain grouping as a low-
 
 The mechanism is illustrated below for a single LPG (in practice, this logic is replicated for each LPG that is identified in the system):
 
-![Alert Handler LPG Ctrl](alert_handler_lpg_ctrl.svg)
+![Alert Handler LPG Ctrl](./doc/alert_handler_lpg_ctrl.svg)
 
 The clock gating enable (`lpg_cg_en`) and reset enable (`lpg_rst_en`) indications are routed as multibit signals to the alert handler, where they are synchronized to the alert handler clock and logically combined using an OR function to form a combined low-power indication signal that is multibit encoded.
 
@@ -790,7 +790,7 @@ This multibit indication signal is then routed to all alert receivers, where it 
 
 To that end, two extra *init states* are added to the alert receiver FSMs to perform this in-band reset, as indicated in the state diagram below:
 
-![Alert Handler Receiver FSM](alert_handler_receiver_fsm.svg)
+![Alert Handler Receiver FSM](./doc/alert_handler_receiver_fsm.svg)
 
 Whenever the `init_trig` multibit signal of an LPG is asserted, all corresponding sender FSMs are moved into the `InitReq` state.
 In that state, the alert receivers immediately acknowledge ping requests from the ping mechanism, and ignore alert events from the sender side.
@@ -868,7 +868,7 @@ The low-power state management of alert channels is handled entirely by hardware
 Note however that the LPGs inherit the security properties of the associated clock groups and resets.
 This means that the low-power state of certain alerts can be controlled by SW by means of clock gating or block reset.
 For example, certain crypto blocks are located in a transactional clock group which can be clock gated by SW - and this also affects the associated alerts of these crypto blocks.
-See [clock]({{< relref "hw/ip/clkmgr/doc/" >}}) and [reset managers]({{< relref "hw/ip/rstmgr/doc" >}}) for more detail.
+See [clock](../../ip/clkmgr/README.md) and [reset managers](../../ip/rstmgr/README.md) for more detail.
 
 
 ## Initialization

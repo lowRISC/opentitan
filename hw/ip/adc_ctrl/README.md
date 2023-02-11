@@ -6,7 +6,7 @@ title: "Analog to Digital Converter Control Interface"
 
 This document specifies the ADC controller IP functionality.
 This IP block implements control and filter logic for an analog block that implements a dual ADC.
-This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}})
+This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader top level system.
 
 ## Features

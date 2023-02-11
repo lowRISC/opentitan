@@ -7,7 +7,7 @@ title: OpenTitan Big Number Accelerator (OTBN) Technical Specification
 This document specifies functionality of the OpenTitan Big Number Accelerator, or OTBN.
 OTBN is a coprocessor for asymmetric cryptographic operations like RSA or Elliptic Curve Cryptography (ECC).
 
-This module conforms to the [Comportable guideline for peripheral functionality]({{< relref "doc/rm/comportability_specification" >}}).
+This module conforms to the [Comportable guideline for peripheral functionality](../../../doc/contributing/hw/comportability/README.md).
 See that document for integration overview within the broader top level system.
 
 ## Features
@@ -40,7 +40,7 @@ which has been formally verified within the [Fiat Crypto project](http://adam.ch
 # Instruction Set
 
 OTBN is a processor with a custom instruction set.
-The full ISA description can be found in our [ISA manual]({{< relref "isa" >}}).
+The full ISA description can be found in our [ISA manual](./doc/isa.md).
 The instruction set is split into two groups:
 
 * The **base instruction subset** operates on the 32b General Purpose Registers (GPRs).
@@ -379,7 +379,7 @@ Reads never stall.
       <td>RO</td>
       <td><a name="key-s0-l">KEY_S0_L</a></td>
       <td>
-Bits [255:0] of share 0 of the 384b OTBN sideload key provided by the [Key Manager]({{< relref "/hw/ip/keymgr/doc" >}}).
+Bits [255:0] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
 
 A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a key.
       </td>
@@ -390,7 +390,7 @@ A `KEY_INVALID` software error is raised on read if the Key Manager has not prov
       <td><a name="key-s0-h">KEY_S0_H</a></td>
       <td>
 Bits [255:128] of this register are always zero.
-Bits [127:0] contain bits [383:256] of share 0 of the 384b OTBN sideload key provided by the [Key Manager]({{< relref "/hw/ip/keymgr/doc" >}}).
+Bits [127:0] contain bits [383:256] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
 
 A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
@@ -400,7 +400,7 @@ A `KEY_INVALID` software error is raised on read if the Key Manager has not prov
       <td>RO</td>
       <td><a name="key-s1-l">KEY_S1_L</a></td>
       <td>
-Bits [255:0] of share 1 of the 384b OTBN sideload key provided by the [Key Manager]({{< relref "/hw/ip/keymgr/doc" >}}).
+Bits [255:0] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
 
 A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
@@ -411,7 +411,7 @@ A `KEY_INVALID` software error is raised on read if the Key Manager has not prov
       <td><a name="key-s1-h">KEY_S1_H</a></td>
       <td>
 Bits [255:128] of this register are always zero.
-Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager]({{< relref "/hw/ip/keymgr/doc" >}}).
+Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
 
 A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
@@ -475,7 +475,7 @@ The full secure wipe mechanism is split into three parts:
 
 A secure wipe is performed automatically in certain situations, or can be requested manually by the host software.
 The full secure wipe is automatically initiated as a local reaction to a fatal error.
-In addition, it can be triggered by the [Life Cycle Controller]({{<relref "/hw/ip/lc_ctrl/doc" >}}) before RMA entry using the `lc_rma_req/ack` interface.
+In addition, it can be triggered by the [Life Cycle Controller](../lc_ctrl/README.md) before RMA entry using the `lc_rma_req/ack` interface.
 In both cases OTBN enters the locked state afterwards and needs to be reset.
 A secure wipe of only the internal state is performed after reset, whenever an OTBN operation is complete, and after a recoverable error.
 Finally, host software can manually trigger the data memory and instruction memory secure wipe operations by issuing an appropriate [command](#design-details-commands).
@@ -491,7 +491,7 @@ Write attempts while OTBN is running are ignored.
 
 ## Key Sideloading
 
-OTBN software can make use of a single 384b wide key provided by the [Key Manager]({{<relref "/hw/ip/keymgr/doc" >}}), which is made available in two shares.
+OTBN software can make use of a single 384b wide key provided by the [Key Manager](../keymgr/README.md), which is made available in two shares.
 The key is passed through a dedicated connection between the Key Manager and OTBN to avoid exposing it to other components.
 Software can access the first share of the key through the [`KEY_S0_L`](#key-s0-l) and [`KEY_S0_H`](#key-s0-h) WSRs, and the second share of the key through the [`KEY_S1_L`](#key-s1-l) and [`KEY_S1_H`](#key-s1-h) WSRs.
 
@@ -523,7 +523,7 @@ Note there is no blanking on the base side (save for the CSRs as these provide a
 
 ## Block Diagram
 
-![OTBN architecture block diagram](otbn_blockarch.svg)
+![OTBN architecture block diagram](./doc/otbn_blockarch.svg)
 
 ## Hardware Interfaces
 
@@ -594,7 +594,7 @@ Instruction bits held in the prefetch buffer are unscrambled but use the integri
 
 ### Random Numbers
 
-OTBN is connected to the [Entropy Distribution Network (EDN)]({{< relref "hw/ip/edn/doc" >}}) which can provide random numbers via the `RND` and `URND` CSRs and WSRs.
+OTBN is connected to the [Entropy Distribution Network (EDN)](../edn/README.md) which can provide random numbers via the `RND` and `URND` CSRs and WSRs.
 
 `RND` provides bits taken directly from the EDN connected via `edn_rnd`.
 The EDN interface provides 32b of entropy per transaction and comes from a different clock domain to the OTBN core.
@@ -633,7 +633,7 @@ Source: https://docs.google.com/drawings/d/1C0D4UriRk5pKGFoFtAXYLcJ1oBG1BCDd2omC
 
 Download the SVG from Google Draw, open it in Inkscape once and save it without changes to add width/height information to the image.
 -->
-![OTBN operational states](otbn_operational_states.svg)
+![OTBN operational states](./doc/otbn_operational_states.svg)
 
 OTBN can be in different operational states.
 After reset (*init*), OTBN performs a secure wipe of the internal state and then becomes *idle*.
@@ -860,7 +860,7 @@ Write attempts while OTBN is running are ignored.
 
 ### Reaction to Life Cycle Escalation Requests {#design-details-lifecycle-escalation}
 
-OTBN receives and reacts to escalation signals from the [life cycle controller]({{< relref "/hw/ip/lc_ctrl/doc#security-escalation" >}}).
+OTBN receives and reacts to escalation signals from the [life cycle controller](../lc_ctrl/README.md#security-escalation).
 An incoming life cycle escalation is a fatal error of type `lifecycle_escalation` and treated as described in the section [Fatal Errors](#design-details-fatal-errors).
 
 ### Idle
@@ -954,7 +954,7 @@ this code is not re-computed within the memory block.
 Before being stored in SRAM, the data word with the attached Integrity Protection Code, as well as the address are scrambled according to the [memory scrambling algorithm]({{< relref "#design-details-memory-scrambling">}}).
 The scrambling is reversed on a read.
 
-The ephemeral memory scrambling key and the nonce are provided by the [OTP block]({{<relref "/hw/ip/otp_ctrl/doc" >}}).
+The ephemeral memory scrambling key and the nonce are provided by the [OTP block](../otp_ctrl/README.md).
 They are set once when OTBN block is reset, and changed whenever a [secure wipe]({{<relref "#design-details-secure-wipe-dmem">}}) of the data memory is performed.
 
 
@@ -970,7 +970,7 @@ this code is not re-computed within the memory block.
 Before being stored in SRAM, the instruction word with the attached Integrity Protection Code, as well as the address are scrambled according to the [memory scrambling algorithm]({{< relref "#design-details-memory-scrambling">}}).
 The scrambling is reversed on a read.
 
-The ephemeral memory scrambling key and the nonce are provided by the [OTP block]({{<relref "/hw/ip/otp_ctrl/doc" >}}).
+The ephemeral memory scrambling key and the nonce are provided by the [OTP block](../otp_ctrl/README.md).
 They are set once when OTBN block is reset, and changed whenever a [secure wipe]({{<relref "#design-details-secure-wipe-imem">}}) of the instruction memory is performed.
 
 The Integrity Protection Code is checked on every memory read, even though the code remains attached to the data.
@@ -1019,7 +1019,7 @@ The three forms of secure wipe can be triggered in different ways.
 A secure wipe of either the instruction or the data memory can be triggered from from host software by issuing a `SEC_WIPE_DMEM` or `SEC_WIPE_IMEM` [command](#design-details-command).
 
 A secure wipe of instruction memory, data memory, and all internal state is performed automatically when handling a [fatal error](#design-details-fatal-errors).
-In addition, it can be triggered by the [Life Cycle Controller]({{<relref "/hw/ip/lc_ctrl/doc" >}}) before RMA entry using the `lc_rma_req/ack` interface.
+In addition, it can be triggered by the [Life Cycle Controller](../lc_ctrl/README.md) before RMA entry using the `lc_rma_req/ack` interface.
 In both cases OTBN enters the locked state afterwards and needs to be reset.
 
 A secure wipe of the internal state only is triggered automatically after reset and when OTBN [ends the software execution](#design-details-software-execution), either successfully, or unsuccessfully due to a [recoverable error](#design-details-recoverable-errors).
@@ -1125,9 +1125,9 @@ Another driver for OTBN is part of the silicon creator code at `sw/device/silico
 # Writing OTBN applications {#writing-otbn-applications}
 
 OTBN applications are (small) pieces of software written in OTBN assembly.
-The full instruction set is described in the [ISA manual]({{< relref "isa" >}}), and example software is available in the `sw/otbn` directory of the OpenTitan source tree.
+The full instruction set is described in the [ISA manual](./doc/isa.md), and example software is available in the `sw/otbn` directory of the OpenTitan source tree.
 
-A hands-on user guide to develop OTBN software can be found in the section [Writing and building software for OTBN]({{<relref "doc/ug/otbn_sw.md" >}}).
+A hands-on user guide to develop OTBN software can be found in the section [Writing and building software for OTBN](../../../doc/contributing/sw/otbn_sw.md).
 
 ## Toolchain support
 

@@ -170,7 +170,7 @@ echo 'h09 l31' > gpio0-write  # Pull the pin 9 high, and pin 31 low.
 The simulation includes a "virtual JTAG" port to which OpenOCD can connect using its `remote_bitbang` driver.
 All necessary configuration files are included in this repository.
 
-See the [OpenOCD install instructions]({{< relref "install_openocd.md" >}}) for guidance on installing OpenOCD.
+See the [OpenOCD install instructions](./install_openocd.md) for guidance on installing OpenOCD.
 
 Run the simulation with Bazel, making sure to build the device software with debug symbols using
 ```console

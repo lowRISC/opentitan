@@ -11,7 +11,7 @@ The flash controller is broken down into 3 major components
 * Closed source vendor flash module
 
 A breakdown of the 3 can be seen below
-![Flash High Level Boundaries](flash_boundaries.svg)
+![Flash High Level Boundaries](./doc/flash_boundaries.svg)
 
 
 This open source flash controller is divided into two partitions.
@@ -21,7 +21,7 @@ This open source flash controller is divided into two partitions.
 
 The remaining document focuses primarily on the function of these blocks.
 
-This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}})
+This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader top level system.
 
 ## Features
@@ -94,7 +94,7 @@ This includes but is not limited to:
 
 Note, there **can** be more than one information partition, and none of them are required to be the same size as the data partition.
 See the diagram below for an illustrative example.
-![Flash Example Partition](flash_partitions.svg)
+![Flash Example Partition](./doc/flash_partitions.svg)
 
 Which type of partition is accessed is controlled through the {{< regref "CONTROL.PARTITION_SEL" >}} field.
 The current flash controller implements one type of information partition and thus is controlled by 1 bit only.
@@ -175,7 +175,7 @@ The seed pages can be programmed/erased/read by software when the following are 
 The seed pages are read under the following initialization conditions:
 *  life cycle sets provision enable - `lc_seed_hw_rd_en` is set.
 
-See [life cycle]({{< relref "hw/ip/lc_ctrl/doc/_index.md#creator_seed_sw_rw_en-and-owner_seed_sw_rw_en" >}}) for more details on when this partition is allowed to be populated.
+See [life cycle](../lc_ctrl/README.md#creator_seed_sw_rw_en-and-owner_seed_sw_rw_en) for more details on when this partition is allowed to be populated.
 
 #### Isolated Information Partitions
 
@@ -188,14 +188,14 @@ During TEST states, the isolated page is only programmable.
 During production and RMA states, the isolated page is also readable.
 * Both `lc_iso_part_sw_wr_en` and `lc_iso_part_sw_rd_en` are set.
 
-See [life cycle]({{< relref "hw/ip/lc_ctrl/doc/_index.md#iso_part_sw_rd_en-and-iso_part_sw_wr_en" >}}) for more details
+See [life cycle](../lc_ctrl/README.md#iso_part_sw_rd_en-and-iso_part_sw_wr_en) for more details
 
 
 # Theory of Operation
 
 ## Block Diagram
 
-![Flash Block Diagram](flash_block_diagram.svg)
+![Flash Block Diagram](./doc/flash_block_diagram.svg)
 
 ### Flash Protocol Controller
 
@@ -232,7 +232,7 @@ It is expected that after an RMA transition, the entire system will be rebooted.
 #### Initialization
 
 The flash protocol controller is initialized through {{< regref "INIT" >}}.
-When initialization is invoked, the flash controller requests the address and data scrambling keys from an external entity, [otp_ctrl]({{< relref "hw/ip/otp_ctrl/doc/_index.md#interface-to-flash-scrambler" >}}) in this case.
+When initialization is invoked, the flash controller requests the address and data scrambling keys from an external entity, [otp_ctrl](../otp_ctrl/README.md#interface-to-flash-scrambler) in this case.
 
 After the scrambling keys are requested, the flash protocol controller reads the root seeds out of the [secret partitions]({{< relref "#secret-information-partitions" >}}) and sends them to the key manager.
 Once the above steps are completed, the read buffers in the flash physical controller are enabled for operation.
@@ -331,7 +331,7 @@ To support separate access privileges between data and code, the flash protocol 
 If software programs {{< regref "EXEC" >}} to `0xa26a38f7`, code fetch from flash is allowed.
 If software programs {{< regref "EXEC" >}} to any other value, code fetch from flash results in an error.
 
-The flash protocol controller distinguishes code / data transactions through the [instruction type attribute]({{< relref "hw/ip/lc_ctrl/doc/_index.md#usage-of-user-bits" >}}) of the TL-UL interface.
+The flash protocol controller distinguishes code / data transactions through the [instruction type attribute](../lc_ctrl/README.md#usage-of-user-bits) of the TL-UL interface.
 
 #### Flash Errors and Faults
 
@@ -494,7 +494,7 @@ Both ICV and ECC are configurable based on the various page and memory property 
 ##### Overall ICV and ECC Application
 
 The following diagram shows how the various ICV / ECC tags are applied and used through the life of a transactions.
-![Flash ECC_LIFE](flash_integrity.svg).
+![Flash ECC_LIFE](./doc/flash_integrity.svg).
 
 Note that the ICV (integrity ECC) is calculated over the descrambled data and is only 4-bits, while the reliability ECC is calculated over both the scrambled data and the ICV.
 
@@ -547,7 +547,7 @@ When a read transaction is sent to flash, the following steps are taken:
 *  When the descrambling is complete, the descrambled text is pushed to the response queue.
 
 The following diagram shows how the flash read pipeline timing works.
-![Flash Read Pipeline](flash_read_pipeline.svg)
+![Flash Read Pipeline](./doc/flash_read_pipeline.svg)
 
 
 In this example, the first two host requests trigger a full sequence.
@@ -682,7 +682,7 @@ In the case of program, the controller will stop writing to flash once all exist
 See detailed steps in theory of operation.
 The following is a diagram of the controller construction as well as its over connectivity with the flash module.
 
-![Flash Protocol Controller](flash_protocol_controller.svg)
+![Flash Protocol Controller](./doc/flash_protocol_controller.svg)
 
 
 ### Host Read

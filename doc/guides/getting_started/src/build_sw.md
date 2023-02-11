@@ -6,8 +6,8 @@ aliases:
 
 _Before following this guide, make sure you have read the_:
 * main [Getting Started]({{< relref "getting_started" >}}) instructions,
-* install Verilator section of the [Verilator guide]({{< relref "setup_verilator.md" >}}), and
-* [OpenTitan Software]({{< relref "sw/" >}}) documentation.
+* install Verilator section of the [Verilator guide](./setup_verilator.md), and
+* [OpenTitan Software](../../../../sw/README.md) documentation.
 
 All OpenTitan software is built with [Bazel](https://bazel.build/).
 Additionally, _most_ tests may be run with Bazel too.
@@ -98,12 +98,12 @@ There are two categories of OpenTitan tests Bazel can build and run:
 On-host tests are compiled and run on the host machine, while on-device tests are compiled and run on (simulated/emulated) OpenTitan hardware.
 
 Examples of on-host tests are:
-* unit tests for device software, such as [DIF]({{< relref "/sw/device/lib/dif" >}}) and [ROM]({{< relref "/sw/device/silicon_creator/rom/docs/" >}}) unit tests.
+* unit tests for device software, such as [DIF](../../../../sw/device/lib/dif/README.md) and [ROM](../../../../sw/device/silicon_creator/rom/README.md) unit tests.
 * any test for host software, such as `opentitan{lib,tool}`.
 
 Examples of on-device tests are:
-* [chip-level tests]({{< relref "/sw/device/tests/index.md" >}}).
-* [ROM functional tests]({{< relref "/sw/device/silicon_creator/rom/docs/" >}})
+* [chip-level tests](../../../../sw/device/tests/README.md).
+* [ROM functional tests](../../../../sw/device/silicon_creator/rom/README.md)
 
 Test target names normally match file names (for instance, `//sw/device/tests:uart_smoketest` corresponds to `sw/device/test/uart_smoketest.c`).
 You can see all tests available under a given directory using `bazel query`, e.g.:
@@ -161,11 +161,11 @@ For FPGA tests, just change the tag:
 bazel query 'attr(tags, cw310, tests(//sw/device/tests/...))'
 ```
 
-For more information, please refer to the [Verilator]({{< relref "setup_verilator" >}}) and/or [FPGA]({{< relref "setup_fpga" >}}) setup instructions.
+For more information, please refer to the [Verilator](./setup_verilator.md) and/or [FPGA](./setup_fpga.md) setup instructions.
 
 ### Running on-host DIF Tests
 
-The Device Interface Function or [DIF]({{< relref "/sw/device/lib/dif" >}}) libraries contain unit tests that run on the host and are built and run with Bazel.
+The Device Interface Function or [DIF](../../../../sw/device/lib/dif/README.md) libraries contain unit tests that run on the host and are built and run with Bazel.
 As shown below, you may use Bazel to query which tests are available, build and run all tests, or build and run only one test.
 
 #### Querying which tests are available
@@ -186,7 +186,7 @@ bazel test //sw/device/lib/dif:uart_unittest
 
 ### Running on-host ROM Tests
 
-Similar to the DIF libraries, you can query, build, and run all the [ROM]({{< relref "/sw/device/silicon_creator/rom/docs/" >}}) unit tests (which also run on the host) with Bazel.
+Similar to the DIF libraries, you can query, build, and run all the [ROM](../../../../sw/device/silicon_creator/rom/README.md) unit tests (which also run on the host) with Bazel.
 
 #### Querying which (on-host) tests are available
 Note, the ROM has both on-host and on-device tests.
@@ -210,7 +210,7 @@ bazel test //sw/device/silicon_creator/lib/drivers:uart_unittest
 
 ### Bazel-built Software Artifacts
 
-As described in the [OpenTitan Software]({{< relref "sw/" >}}) documentation, there are three categories of OpenTitan software, all of which are built with Bazel. These include:
+As described in the [OpenTitan Software](../../../../sw/README.md) documentation, there are three categories of OpenTitan software, all of which are built with Bazel. These include:
 1. _device_ software,
 1. _OTBN_ software,
 1. _host_ software,

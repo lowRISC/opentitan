@@ -5,7 +5,7 @@ title: "HMAC HWIP Technical Specification"
 # Overview
 
 This document specifies HMAC hardware IP functionality. This module conforms to
-the [OpenTitan guideline for peripheral device functionality.]({{< relref "doc/rm/comportability_specification" >}})
+the [OpenTitan guideline for peripheral device functionality.](../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader OpenTitan top level system.
 
 
@@ -27,7 +27,7 @@ same message if the secret key is different.
 
 This HMAC implementation is not hardened against side channel or fault injection attacks.
 It is meant purely for hashing acceleration.
-If hardened MAC operations are required, users should use either [KMAC]({{< relref "hw/ip/kmac/doc" >}}) or a software implementation.
+If hardened MAC operations are required, users should use either [KMAC](../kmac/README.md) or a software implementation.
 
 The 256-bit secret key is written in {{< regref "KEY_0" >}} to {{< regref "KEY_7" >}}.
 The message to authenticate is written to {{< regref "MSG_FIFO" >}} and the HMAC generates a 256-bit digest value which can be read from {{< regref "DIGEST_0" >}} to {{< regref "DIGEST_7" >}}.
@@ -58,7 +58,7 @@ the ability to send the digest directly to a shared internal bus.
 
 ## Block Diagram
 
-![HMAC Block Diagram](hmac_block_diagram.svg)
+![HMAC Block Diagram](./doc/hmac_block_diagram.svg)
 
 The HMAC block diagram above shows that the HMAC core converts the secret key
 registers into an inner padded key and an outer padded key which are fed to the
@@ -69,7 +69,7 @@ The message length is automatically updated to reflect the size of the outer
 padded key and first round digest result for the second round. See [Design
 Details](#design-details) for more information.
 
-![SHA-256 Block Diagram](sha2_block_diagram.svg)
+![SHA-256 Block Diagram](./doc/sha2_block_diagram.svg)
 
 The SHA-256 (SHA-2) block diagram shows the message FIFO inside SHA-256, hash
 registers, digest registers, and SHA-256 compression function. The message FIFO
@@ -118,7 +118,7 @@ Push to SHA2 #0 | 03020105h | 01020304h
 Push to SHA2 #1 | 00000004h | 00000005h
 
 
-Small writes to {{< regref "MSG_FIFO" >}} are coalesced with into 32-bit words by the [packer logic]({{< relref "hw/ip/prim/doc/prim_packer" >}}).
+Small writes to {{< regref "MSG_FIFO" >}} are coalesced with into 32-bit words by the [packer logic](../prim/doc/prim_packer.md).
 These words are fed into the internal message FIFO.
 While passing writes to the packer logic, the block also counts the number of bytes that are being passed.
 This gives the received message length, which is used in HMAC and SHA-256 as part of the hash computation.
@@ -131,7 +131,7 @@ specification][sha256-spec] describes this in more detail. An example is shown
 below. The padding logic handles this so software only needs to write the actual
 message bits into the FIFO.
 
-![SHA-256 Message Padding](message_padding.svg)
+![SHA-256 Message Padding](./doc/message_padding.svg)
 
 For instance, if the message is empty, the message length is 64-bit 0. In this
 case, the padding logic gives `0x80000000` into the SHA-256 module first. Then
@@ -162,7 +162,7 @@ software can push up to 16 entries to the FIFO for the next hash computation.
 
 ### HMAC computation
 
-![Two steps of HMAC](hmac_dataflow.svg)
+![Two steps of HMAC](./doc/hmac_dataflow.svg)
 
 HMAC can be used with any hash algorithm but this version of HMAC IP only uses
 SHA-256. The first phase of HMAC calculates the SHA-256 hash of the inner

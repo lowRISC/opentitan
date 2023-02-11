@@ -14,7 +14,7 @@ This might overlap with something like "the `overflow` signal in the ALU was tru
 
 ## Call stack
 
-The [call stack]({{< relref ".#call-stack" >}}) is exposed as a special register behind `x1`.
+The [call stack](../README.md#call-stack) is exposed as a special register behind `x1`.
 It has a bounded depth of 8 elements.
 We expect to see the following events:
 
@@ -32,7 +32,7 @@ All four of these events should be crossed with the three states of the call sta
 
 ## Loop stack
 
-The [loop stack]({{< relref ".#loop-stack" >}}) is accessed by executing `LOOP` and `LOOPI` instructions.
+The [loop stack](../README.md#loop-stack) is accessed by executing `LOOP` and `LOOPI` instructions.
 Events concerning the start of loops are tracked at those instructions, but we can't track things like loop completion there.
 
 > Coverage for these points is tracked with cover properties in the `otbn_loop_if` interface.
@@ -142,7 +142,7 @@ We don't track that explicitly, since it is covered by the `otbn_mem_walk` test.
 ## External (bus-accessible) CSRs {#ext-csrs}
 
 The OTBN block exposes functionality to a bus host through bus-accessible CSRs.
-Behavior of some CSRs depends on [OTBN's operational state]({{< relref "..#design-details-operational-states" >}}).
+Behavior of some CSRs depends on [OTBN's operational state](../../README.md#design-details-operational-states).
 
 For every CSR (no matter its access restrictions), we want to see an attempt to read it and an attempt to write it.
 The CSRs are tracked in covergroups based on the CSR name, with the format: `ext_csr_<name>_cg`.

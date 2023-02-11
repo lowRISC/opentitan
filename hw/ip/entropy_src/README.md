@@ -5,7 +5,7 @@ title: "ENTROPY_SRC HWIP Technical Specification"
 # Overview
 
 This document specifies ENTROPY_SRC hardware IP functionality.
-This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}})
+This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 
 
 ## Features
@@ -187,7 +187,7 @@ See the Programmers Guide section for more details on the ENTROPY_SRC block disa
 
 ## Block Diagram
 
-![ENTROPY_SRC Block Diagram](entsrc_blk_diag.svg)
+![ENTROPY_SRC Block Diagram](./doc/entsrc_blk_diag.svg)
 
 ## Hardware Interfaces
 
@@ -249,7 +249,7 @@ The following diagram shows how the main state machine state is constructed.
 The larger circles show the how the overall state machine transitions.
 The sub-state machines with smaller circles show more detail about how the large circles operate.
 
-![ENTROPY_SRC State Diagram](es_main_sm.svg)
+![ENTROPY_SRC State Diagram](./doc/es_main_sm.svg)
 
 
 ### Entropy Source Hardware Interface

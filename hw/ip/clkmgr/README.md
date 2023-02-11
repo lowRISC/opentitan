@@ -17,12 +17,12 @@ This document specifies the functionality of the OpenTitan clock manager.
 
 Clock management in OpenTitan is divided into groups.
 Each group has specific attributes and controls whether software is allowed to influence individual clocks during the active power state.
-For low power states, please see [power manager]({{< relref "hw/ip/pwrmgr/doc" >}}).
+For low power states, please see [power manager](../pwrmgr/README.md).
 
 The grouping is derived from the chip partition and related security properties.
 For illustrative purposes, this document uses the following assumed chip partition
 
-![Example chip partition](example_chip_partition.svg)
+![Example chip partition](./doc/example_chip_partition.svg)
 
 The actual partition may differ per design, however the general principles are assumed to be the same.
 Each group can be made up of more than 1 source clock.
@@ -152,12 +152,12 @@ There is thus a moderate design and high verification cost to supporting `wfi` g
 
 The following is a high level block diagram of the clock manager.
 
-![Clock Manager Block Diagram](clkmgr_block_diagram.svg)
+![Clock Manager Block Diagram](./doc/clkmgr_block_diagram.svg)
 
 ### Reset Domains
 
 Since the function of the clock manager is tied closely into the power-up behavior of the device, the reset domain selection must also be purposefully done.
-To ensure that default clocks are available for the [power manager to release resets and initialize memories]({{< relref "hw/ip/pwrmgr/doc/_index.md#fast-clock-domain-fsm" >}}), the clock dividers inside the clock manager directly use `por` (power-on-reset) derived resets.
+To ensure that default clocks are available for the [power manager to release resets and initialize memories](../pwrmgr/README.md#fast-clock-domain-fsm), the clock dividers inside the clock manager directly use `por` (power-on-reset) derived resets.
 This ensures that the root clocks are freely running after power-up and its status can be communicated to the `pwrmgr` regardless of any other activity in the device.
 
 The other functions inside the clock manager operate on the `life cycle reset` domain.
@@ -166,10 +166,10 @@ This ensures that other clock manager functions still release early relative to 
 The escalation reset restoration is especially important as the clock manager can generate fatal faults that lead to escalation.
 If there were not a mechanism that allows escalation to clear the original fault, the system would simply remain in a faulted state until a user initiated a `por` event.
 
-For a detailed breakdown between `por` and `life cycle` resets, please see the [reset manager]({{< relref "hw/ip/rstmgr/doc" >}}).
+For a detailed breakdown between `por` and `life cycle` resets, please see the [reset manager](../rstmgr/README.md).
 
 The following diagram enhances the block diagram to illustrate the overall reset domains of the clock manager.
-![Clock Manager Block Diagram](clkmgr_rst_domain.svg)
+![Clock Manager Block Diagram](./doc/clkmgr_rst_domain.svg)
 
 ## Hardware Interfaces
 
@@ -208,7 +208,7 @@ It may be added for future more complex systems where there is a need to tightly
 
 Clock manager supports the ability to request root clocks switch to an external clock.
 There are two occasions where this is required:
--  Life cycle transition from `Raw` / `Test_locked` to `Test_unlocked` [states]({{< relref "hw/ip/lc_ctrl/doc/_index.md#clk_byp_req" >}}).
+-  Life cycle transition from `Raw` / `Test_locked` to `Test_unlocked` [states](../lc_ctrl/README.md#clk_byp_req).
 -  Software request for external clocks during normal functional mode.
 
 
@@ -224,7 +224,7 @@ When the clock switch is complete, the clock dividers are stepped down by a fact
 
 Unlike the life cycle controller, a software request for external clocks switches all clock sources to an external source.
 Software request for external clocks is not always valid.
-Software is only able to request for external clocks when hardware debug functions are [allowed]({{< relref "hw/ip/lc_ctrl/doc/_index.md#hw_debug_en" >}}).
+Software is only able to request for external clocks when hardware debug functions are [allowed](../lc_ctrl/README.md#hw_debug_en).
 
 When software requests the external clock switch, it also provides an indication how fast the external clock is through {{< regref "EXTCLK_CTRL.HI_SPEED_SEL" >}}.
 There are two supported clock speeds:

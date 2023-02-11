@@ -6,7 +6,7 @@ title: "Timer HWIP Technical Specification"
 
 This document specifies RISC-V Timer hardware IP functionality. This module
 conforms to the
-[Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification" >}})
+[Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader top level
 system.
 
@@ -39,7 +39,7 @@ timers and harts have been added.
 
 ## Block Diagram
 
-![Timer Block Diagram](timer_block_diagram.svg)
+![Timer Block Diagram](./doc/timer_block_diagram.svg)
 
 The timer module is composed of tick generators, counters, and comparators.
 A tick generator creates a tick every time its internal counter hits the
