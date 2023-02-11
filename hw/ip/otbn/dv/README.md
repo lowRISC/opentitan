@@ -11,19 +11,19 @@ title: "OTBN DV document"
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
+* [Design & verification stage](../../../README.md)
+  * [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/otbn/dv/uvm/latest/results.html)
 
 ## Design features
 
 OTBN, the OpenTitan Big Number accelerator, is a cryptographic accelerator.
-For detailed information on OTBN design features, see the [OTBN HWIP technical specification]({{< relref ".." >}}).
+For detailed information on OTBN design features, see the [OTBN HWIP technical specification](../README.md).
 
 ## Testbench architecture
 
-The OTBN testbench is based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
-It builds on the [dv_utils]({{< relref "hw/dv/sv/dv_utils/doc" >}}) and [csr_utils]({{< relref "hw/dv/sv/csr_utils/doc" >}}) packages.
+The OTBN testbench is based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
+It builds on the [dv_utils](../../../dv/sv/dv_utils/README.md) and [csr_utils](../../../dv/sv/csr_utils/README.md) packages.
 
 ### Block diagram
 
@@ -31,7 +31,7 @@ OTBN testing makes use of a DPI-based model called `otbn_core_model`.
 This is shown in the block diagram.
 The dotted interfaces in the `otbn` block are bound in by the model to access internal signals (register file and memory contents).
 
-![Block diagram](tb.svg)
+![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
 
@@ -39,27 +39,27 @@ The top-level testbench is located at `hw/ip/otbn/dv/uvm/tb.sv`.
 This instantiates the OTBN DUT module `hw/ip/otbn/rtl/otbn.sv`.
 
 OTBN has the following interfaces:
-- A [Clock and reset interface]({{< relref "/hw/dv/sv/common_ifs#clk_rst_if" >}})
+- A [Clock and reset interface](../../../dv/sv/common_ifs/README.md#clk_rst_if)
 - A [TileLink interface]({{< relref "/hw/dv/sv/tl_agent/doc.md" >}}).
   OTBN is a TL-UL device, which expects to communicate with a TL-UL host.
   In the OpenTitan SoC, this will be the Ibex core.
 - Idle signals in each clock domain, `idle_o`, and `idle_otp_o`
 - One interrupt
-- An [alert interface]({{< relref "/hw/dv/sv/alert_esc_agent/doc" >}})
+- An [alert interface](../../../dv/sv/alert_esc_agent/README.md)
 - A life cycle escalation interface
-- An [OTP]({{< relref "/hw/ip/otp_ctrl/doc" >}}) connection
-- Two [EDN]({{< relref "/hw/ip/edn/doc" >}}) connections
+- An [OTP](../../otp_ctrl/README.md) connection
+- Two [EDN](../../edn/README.md) connections
 - A RAM configuration interface, which is passed through to the SRAM macros
 
 The idle and interrupt signals are modelled with the basic
-[`pins_if`]({{< relref "hw/dv/sv/common_ifs#pins_if" >}}) interface.
+[`pins_if`](../../../dv/sv/common_ifs/README.md#pins_if) interface.
 
 As well as instantiating OTBN, the testbench also instantiates an `otbn_core_model`.
 This module wraps an ISS (instruction set simulator) subprocess and performs checks to make sure that OTBN behaves the same as the ISS.
 The `otbn_core_model` module communicates with test sequences through an `otbn_model_if` interface, which is monitored by the `otbn_model_agent`, described below.
 The module communicates with the Python subprocess as shown in the diagram below.
 
-![Model communication](model.svg)
+![Model communication](./doc/model.svg)
 
 
 ### OTBN model agent
@@ -97,7 +97,7 @@ These are driven by specialised test sequences, described below.
 ### Functional coverage
 
 As a complicated IP block, OTBN has a lot of functional coverage points defined.
-To avoid overwhelming this document, these are described in [OTBN functional coverage]({{< relref "/hw/ip/otbn/doc/dv/fcov.md" >}}).
+To avoid overwhelming this document, these are described in [OTBN functional coverage](./doc/fcov.md).
 
 ### Test sequences
 
@@ -115,7 +115,7 @@ However, the scoreboard does have some checks, to ensure that interrupt and idle
 
 ### Assertions
 
-Core TLUL protocol assertions are checked by binding the [TL-UL protocol checker]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) into the design.
+Core TLUL protocol assertions are checked by binding the [TL-UL protocol checker](../../tlul/doc/TlulProtocolChecker.md) into the design.
 
 Outputs are also checked for `'X` values by assertions in the design RTL.
 The design RTL contains other assertions defined by the designers, which will be checked in simulation (and won't have been checked by the pre-DV Verilator simulations).
@@ -124,7 +124,7 @@ Finally, the `otbn_idle_checker` checks that the `idle_o` output correctly match
 
 ## Building and running tests
 
-Tests can be run with [`dvsim.py`]({{< relref "hw/dv/tools/doc" >}}).
+Tests can be run with [`dvsim.py`](../../../../util/dvsim/README.md).
 The link gives details of the tool's features and command line arguments.
 To run a basic smoke test, go to the top of the repository and run:
 ```console

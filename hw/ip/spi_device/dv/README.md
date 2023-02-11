@@ -11,33 +11,33 @@ title: "SPI Device DV document"
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages.md" >}})
+* [Design & verification stage](../../../README.md)
+  * [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/spi_device/dv/latest/report.html)
 
 ## Design features
-For detailed information on SPI Device design features, please see the [SPI_device design specification]({{< relref ".." >}}).
+For detailed information on SPI Device design features, please see the [SPI_device design specification](../README.md).
 
 ## Testbench architecture
 SPI Device testbench has been constructed based on the
-[CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+[CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
-![Block diagram](tb.svg)
+![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
 Top level testbench is located at `hw/ip/spi_device/dv/tb/tb.sv`. It instantiates the SPI Device DUT module `hw/ip/spi_device/rtl/spi_device.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
-* [SPI interface]({{< relref "hw/dv/sv/spi_agent/doc" >}})
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
+* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
+* [SPI interface](../../../dv/sv/spi_agent/README.md)
+* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [common_ifs]({{< relref "hw/dv/sv/common_ifs" >}})
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
+* [common_ifs](../../../dv/sv/common_ifs/README.md)
+* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
+* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -48,21 +48,21 @@ parameter uint SRAM_SIZE   = 2048;
 ```
 
 ### TL_agent
-SPI Device instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+SPI Device instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into SPI Device.
 
 ### SPI Device agent
-[spi agent]({{< relref "hw/dv/sv/spi_agent/doc" >}}) is used to drive and monitor SPI items.
+[spi agent](../../../dv/sv/spi_agent/README.md) is used to drive and monitor SPI items.
 There are 2 spi_agents in the testbench to serve as a SPI host and a SPI device.
 * The host agent is connected to the upstream port to drive stimulus for FW mode, TPM mode and flash mode.
 * The device agent is connected to the passthrough port.
 When host sends a flash transaction with passthrough enabled, the device agent receives it and provides the return data when it's a read command.
 
 ### UVM RAL Model
-The SPI Device RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The SPI Device RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
 
 ### Stimulus strategy
 #### Test sequences
@@ -93,11 +93,11 @@ It creates the following analysis fifos to retrieve the data monitored by corres
 * upstream_spi_host_fifo, upstream_spi_device_fifo: These 2 fifos provides TX/RX words of data from spi_monitor
 
 #### Assertions
-* TLUL assertions: The `tb/spi_device_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/spi_device_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

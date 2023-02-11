@@ -3,7 +3,7 @@ title: "Software"
 ---
 
 This is the landing spot for software documentation within the OpenTitan project.
-More description and information can be found within the [Reference Manual]({{< relref "doc/rm" >}}) and [User Guide]({{< relref "doc/ug" >}}) areas.
+More description and information can be found within the [Reference Manual](../util/README.md) and [User Guide]({{< relref "doc/ug" >}}) areas.
 
 There are three major parts to the OpenTitan software stack:
 
@@ -51,7 +51,7 @@ Host software must be written in C++ or Rust.
 The [OpenTitan Software API Documentation](/sw/apis/) contains automatically generated documentation for the public software APIs.
 This includes the Device Interface Functions (DIFs).
 
-All DIFs are also documented on their respective [Hardware IP Specification]({{< relref "hw" >}})
+All DIFs are also documented on their respective [Hardware IP Specification](../hw/README.md)
 
 ## Vendored in Code
 

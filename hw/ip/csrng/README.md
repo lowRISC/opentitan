@@ -8,14 +8,14 @@ This document specifies the Cryptographically Secure Random Number Generator (CS
 Due to the importance of secure random number generation (RNG), it is a topic which is extensively covered in security standards.
 This IP targets compliance with both [BSI's AIS31 recommendations for Common Criteria (CC)](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Zertifizierung/Interpretationen/AIS_31_Functionality_classes_for_random_number_generators_e.pdf), as well as [NIST's SP 800-90A](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf) and [NIST's SP 800-90C (Second Draft)](https://csrc.nist.gov/CSRC/media/Publications/sp/800-90c/draft/documents/sp800_90c_second_draft.pdf), both of which are referenced in [FIPS 140-3](https://csrc.nist.gov/publications/detail/fips/140/3/final).
 The CSRNG IP supports both of these standards for both deterministic (DRNG) and true random number generation (TRNG).
-In NIST terms, it works with the [Entropy Source IP]({{< relref "hw/ip/entropy_src/doc" >}}) to satisfy the requirements as a deterministic random bit generator (DRBG) or non-deterministic random bit generator (NRBG).
+In NIST terms, it works with the [Entropy Source IP](../entropy_src/README.md) to satisfy the requirements as a deterministic random bit generator (DRBG) or non-deterministic random bit generator (NRBG).
 In AIS31 language, this same implementation can be used to satisfy either the DRG.3 requirements for deterministic generation, or the PTG.3 requirements for cryptographically processed physical generation.
 
 In this document the terms "DRNG" and "TRNG" are used most generally to refer to deterministic or true random number generation functionalities implemented to this specification.
 However, the terms "DRBG" or "NRBG" are specifically used when respectively referring to SP 800-90A or SP 800-90C requirements.
 Meanwhile, when addressing requirements which originate from AIS31 we refer to the specific DRG.3 or PTG.3 classes of RNGs.
 
-This IP block is attached to the chip interconnect bus as a peripheral module conforming to the [comportability definition and specification]({{< relref "doc/rm/comportability_specification" >}}), but also has direct hardware links to other IPs for secure and software-inaccessible transmission of random numbers.
+This IP block is attached to the chip interconnect bus as a peripheral module conforming to the [comportability definition and specification](../../../doc/contributing/hw/comportability/README.md), but also has direct hardware links to other IPs for secure and software-inaccessible transmission of random numbers.
 The bus connections to peripheral modules are done using the CSRNG application interface.
 This interface allows peripherals to manage CSRNG instances, and request the CSRNG module to return obfuscated entropy.
 
@@ -145,7 +145,7 @@ Finally, an `ack` response and status will be returned to the application interf
 
 ## Block Diagram
 
-![CSRNG Block Diagram](csrng_blk_diag.svg)
+![CSRNG Block Diagram](./doc/csrng_blk_diag.svg)
 
 ## Hardware Interfaces
 

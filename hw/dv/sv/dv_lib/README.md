@@ -18,7 +18,7 @@ The DV library classes fall into 3 categories - UVM RAL (register abstraction
 layer), UVM agent, and UVM environment extensions.
 
 ### UVM RAL extensions
-The RAL model generated using the [reggen]({{< relref "util/reggen/doc" >}}) tool
+The RAL model generated using the [reggen](../../../../util/reggen/doc/setup_and_use.md) tool
 extend from these classes. These themselves extend from the corresponding RAL
 classes provided in UVM.
 

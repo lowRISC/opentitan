@@ -10,32 +10,32 @@ title: "KMAC DV document"
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
+* [Design & verification stage](../../../README.md)
+  * [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/kmac/dv/latest/report.html)
 
 ## Design features
-For detailed information on KMAC design features, please see the [KMAC HWIP technical specification]({{< relref ".." >}}).
+For detailed information on KMAC design features, please see the [KMAC HWIP technical specification](../README.md).
 
 ## Testbench architecture
-KMAC testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+KMAC testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
-![Block diagram](tb.svg)
+![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
 Top level testbench is located at `hw/ip/kmac/dv/tb/tb.sv`. It instantiates the KMAC DUT module `hw/ip/kmac/rtl/kmac.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
+* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * KMAC IOs
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
+* Devmode ([`pins_if`](../../../dv/sv/common_ifs/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
+* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
+* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### Compile-time configurations
 Two compile-time configurations are tested:
@@ -86,20 +86,20 @@ function automatic int get_key_size_bytes(kmac_pkg::key_len_e len);
 endfunction
 ```
 ### TL_agent
-KMAC testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into KMAC device.
+KMAC testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md) which provides the ability to drive and independently monitor random traffic via TL host interface into KMAC device.
 
 ### EDN Agent
-The KMAC testbench instantiates a `push_pull_agent` in `Pull` mode as the agent modelling the [EDN interface]({{< relref "hw/dv/sv/push_pull_agent/doc" >}}) (this is already handled in the CIP base classes).
+The KMAC testbench instantiates a `push_pull_agent` in `Pull` mode as the agent modelling the [EDN interface](../../../dv/sv/push_pull_agent/README.md) (this is already handled in the CIP base classes).
 This agent will return random data as entropy after a random delay any time the KMAC sends a request.
 
 ### KMAC_APP Agent
-The KMAC testbench instantiates an array of [`kmac_app_agent`]({{< relref "hw/dv/sv/kmac_app_agent/doc" >}}) to model the application interfaces used by other IP blocks to request a KMAC hash operation on some data.
+The KMAC testbench instantiates an array of [`kmac_app_agent`](../../../dv/sv/kmac_app_agent/README.md) to model the application interfaces used by other IP blocks to request a KMAC hash operation on some data.
 These interfaces are used to send in message data to the KMAC, and to receive an output digest.
 
 ### UVM RAL Model
-The KMAC RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The KMAC RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
 
 ### Reference models
 The KMAC testbench utilizes a [C++ reference model](https://github.com/lowRISC/opentitan/blob/master/hw/ip/kmac/dv/dpi/vendor/kerukuro_digestpp/README.md) for various hashing operations (SHA3, SHAKE, CSHAKE, KMAC) to check the DUT's digest output for correctness.
@@ -138,11 +138,11 @@ In addition to the cycle-accurate model, the scoreboard tracks the input message
 As the test sequence reads the output STATE_SHARE windows after a hash operation, the scoreboard will assemble the read digest data into the actual digest value, which can easily be compared against the output of the C++ reference model.
 
 #### Assertions
-* TLUL assertions: The `tb/kmac_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/kmac_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

@@ -72,14 +72,14 @@ countermeasures are provisioned at manufacturing time. Silicon owners have the
 option of provisioning additional secrets after taking ownership of the device.
 
 
-[attestation]: {{< relref "doc/security/specs/attestation" >}}
-[creator_identity]: {{< relref "doc/security/specs/identities_and_root_keys#creator-identity" >}}
-[device_life_cycle]: {{< relref "doc/security/specs/device_life_cycle" >}}
-[firmware_update]: {{< relref "doc/security/specs/firmware_update" >}}
-[identities_and_root_keys]: {{< relref "doc/security/specs/identities_and_root_keys" >}}
-[ownership_transfer]: {{< relref "doc/security/specs/ownership_transfer" >}}
+[attestation]: ./attestation/README.md
+[creator_identity]: ./identities_and_root_keys/README.md#creator-identity
+[device_life_cycle]: ./device_life_cycle/README.md
+[firmware_update]: ./firmware_update/README.md
+[identities_and_root_keys]: ./identities_and_root_keys/README.md
+[ownership_transfer]: ./ownership_transfer/README.md
 [pmp]: https://ibex-core.readthedocs.io/en/latest/03_reference/pmp.html
-[provisioning]: {{< relref "doc/security/specs/device_provisioning" >}}
-[secure_boot]: {{< relref "doc/security/specs/secure_boot" >}}
-[silicon_creator]: {{< relref "doc/security/logical_security_model#silicon-creator" >}}
-[silicon_owner]: {{< relref "doc/security/logical_security_model#silicon-owner" >}}
+[provisioning]: ./device_provisioning/README.md
+[secure_boot]: ./secure_boot/README.md
+[silicon_creator]: ../logical_security_model/README.md#silicon-creator
+[silicon_owner]: ../logical_security_model/README.md#silicon-owner

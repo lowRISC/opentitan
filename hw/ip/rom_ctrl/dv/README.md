@@ -10,43 +10,43 @@ title: "ROM Controller DV document"
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
+* [Design & verification stage](../../../README.md)
+  * [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/rom_ctrl/dv/latest/report.html)
 
 ## Design features
-For detailed information on `rom_ctrl` design features, please see the [ROM Controller HWIP technical specification]({{< relref "hw/ip/rom_ctrl/doc" >}}).
+For detailed information on `rom_ctrl` design features, please see the [ROM Controller HWIP technical specification](../README.md).
 
 ## Testbench architecture
-The `rom_ctrl` testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+The `rom_ctrl` testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
-![Block diagram](tb.svg)
+![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
 The top level testbench is located at `hw/ip/rom_ctrl/dv/tb/tb.sv`.
 It instantiates the `rom_ctrl` DUT module `hw/ip/rom_ctrl/rtl/rom_ctrl.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
-* [Memory backdoor utility]({{< relref "hw/dv/sv/mem_bkdr_util/doc" >}})
+* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
+* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
+* [Memory backdoor utility](../../../dv/sv/mem_bkdr_util/README.md)
 * `rom_ctrl` IOs
-* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
+* Alerts ([`pins_if`](../../../dv/sv/common_ifs/README.md)
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
+* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
+* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### Compile-time configurations
 There is only one compile-time configuration, where arbitrary values are chosen for compile-time constants.
 
 ### TL_agent
-The `rom_ctrl` testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}).
+The `rom_ctrl` testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md).
 This provides the ability to drive and independently monitor random traffic via both TL host interfaces into the DUT.
 
 ### UVM RAL Model
-The `rom_ctrl` RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The `rom_ctrl` RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
 ### Stimulus strategy
 #### Test sequences
@@ -85,11 +85,11 @@ The data received from the KMAC interface are used to update expected digest val
 Traffic from the ROM TLUL interface is monitored and compared against memory model to check for correctness.
 
 #### Assertions
-* TLUL assertions: The `tb/rom_ctrl_bind.sv` file binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/rom_ctrl_bind.sv` file binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

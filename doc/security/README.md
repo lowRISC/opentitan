@@ -111,16 +111,16 @@ security threats, converting them to processor interrupts. It also supports
 alert policy assignments to handle alerts completely in hardware depending on
 the assigned severity.
 
-[aes]: {{< relref "hw/ip/aes/doc" >}}
-[alert_handler]: {{< relref "hw/top_earlgrey/ip_autogen/alert_handler/doc" >}}
-[comportable_ip]: {{< relref "doc/rm/comportability_specification" >}}
-[csrng]: {{< relref "hw/ip/csrng/doc" >}}
-[entropy_source]: {{< relref "hw/ip/entropy_src/doc" >}}
-[hmac]: {{< relref "hw/ip/hmac/doc" >}}
-[keymgr]: {{< relref "hw/ip/keymgr/doc" >}}
-[logical_security_model]: {{< relref "logical_security_model" >}}
-[implementation_guidelines]: {{< relref "implementation_guidelines/hardware" >}}
-[otbn]: {{< relref "hw/ip/otbn/doc" >}}
-[security_model]: {{< relref "specs" >}}
-[use_cases]: {{< relref "doc/use_cases" >}}
-[threat_model]: {{< relref "threat_model" >}}
+[aes]: ../../hw/ip/aes/README.md
+[alert_handler]: ../../hw/top_earlgrey/ip_autogen/alert_handler/README.md
+[comportable_ip]: ../contributing/hw/comportability/README.md
+[csrng]: ../../hw/ip/csrng/README.md
+[entropy_source]: ../../hw/ip/entropy_src/README.md
+[hmac]: ../../hw/ip/hmac/README.md
+[keymgr]: ../../hw/ip/keymgr/README.md
+[logical_security_model]: ./logical_security_model/README.md
+[implementation_guidelines]: ./implementation_guidelines/hardware/README.md
+[otbn]: ../../hw/ip/otbn/README.md
+[security_model]: ./specs/README.md
+[use_cases]: ../use_cases/README.md
+[threat_model]: ./threat_model/README.md

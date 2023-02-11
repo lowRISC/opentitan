@@ -20,7 +20,7 @@ Above examples are using the <code>`ASSERT</code> macro defined in [prim_assert.
 whose four arguments are assertion name, property, clock, and reset (active-high reset).
 
 Assertions are usually added by the designer in the RTL file.
-Assertions can also be added in a separate module, see for example [tlul_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_assert.sv) and its [documentation]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}), which contains a generic protocol checker for the TileLink-UL standard.
+Assertions can also be added in a separate module, see for example [tlul_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_assert.sv) and its [documentation](../ip/tlul/doc/TlulProtocolChecker.md), which contains a generic protocol checker for the TileLink-UL standard.
 
 ## Types of Assertions
 There are two types of assertions:
@@ -77,7 +77,7 @@ Assert that `signal` has a known value after reset, where "known" refers to a va
 ### More Macros and Examples
 *   For more macros see file [prim_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv) and [prim_assert_standard_macros.svh](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert_standard_macros.svh).
 *   For more examples, search the repository for ASSERT by typing `grep -r ASSERT .`
-*   Also see [tlul_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_assert.sv) and its [documentation]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}).
+*   Also see [tlul_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_assert.sv) and its [documentation](../ip/tlul/doc/TlulProtocolChecker.md).
 
 ## Useful SVA System Functions
 Below table lists useful SVA (SystemVerilog assertion) functions that can be used for assertion properties.
@@ -226,7 +226,7 @@ The macro <code>`COVER(name, prop, clk, rst)</code> of [prim_assert.sv](https://
 
 ### Cadence JasperGold
 If you have access to JasperGold from Cadence, you can formally verify your assertions.
-Before running FPV, please make sure the target has been added to one of the [three batch scripts]({{< relref "doc/getting_started/setup_formal.md#formal-property-verification-fpv" >}}).
+Before running FPV, please make sure the target has been added to one of the [three batch scripts](../../doc/guides/getting_started/src/setup_formal.md#formal-property-verification-fpv).
 
 For example, to run formal property verification (FPV) using JasperGold on the prim module `prim_arbiter_fixed`, type:
 ```
@@ -270,7 +270,7 @@ You can trigger top_earlgrey's connectivity test using `dvsim`:
 Adding a `--gui` option will open the JaperGold GUI.
 
 ## Running FPV on security blocks for common countermeasure primitives
-A [security countermeasure verification framework]({{< relref "doc/ug/sec_cm_dv_framework" >}}) is implemented in design and fpv tcl script to verify common countermeasure primitives in a semi-automated way.
+A [security countermeasure verification framework](../../doc/contributing/dv/sec_cm_dv_framework/README.md) is implemented in design and fpv tcl script to verify common countermeasure primitives in a semi-automated way.
 
 ### Common security assertion macros
 OpenTitan's security IP blocks have implemented assertions to check against common fault injections.

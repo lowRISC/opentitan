@@ -10,33 +10,33 @@ title: "KEYMGR DV document"
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
+* [Design & verification stage](../../../README.md)
+  * [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/keymgr/dv/latest/report.html)
 
 ## Design features
-For detailed information on KEYMGR design features, please see the [KEYMGR HWIP technical specification]({{< relref ".." >}}).
+For detailed information on KEYMGR design features, please see the [KEYMGR HWIP technical specification](../README.md).
 
 ## Testbench architecture
-KEYMGR testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+KEYMGR testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
-![Block diagram](tb.svg)
+![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
 Top level testbench is located at `hw/ip/keymgr/dv/tb/tb.sv`. It instantiates the KEYMGR DUT module `hw/ip/keymgr/rtl/keymgr.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
+* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * KEYMGR IOs (`keymgr_if`)
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
-* Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}))
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
+* Alerts ([`alert_esc_if`](../../../dv/sv/alert_esc_agent/README.md))
+* Devmode ([`pins_if`](../../../dv/sv/common_ifs/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
+* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
+* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### Compile-time configurations
 [list compile time configurations, if any and what are they used for]
@@ -48,21 +48,21 @@ All common types and methods defined at the package level can be found in
 [list a few parameters, types & methods; no need to mention all]
 ```
 ### TL_agent
-KEYMGR testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+KEYMGR testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into KEYMGR device.
 
 ### EDN Agent
-The KEYMGR testbench instantiates a `push_pull_agent` in `Pull` mode as the agent modelling the [EDN interface]({{< relref "hw/dv/sv/push_pull_agent/doc" >}}) (this is already handled in the CIP base classes).
+The KEYMGR testbench instantiates a `push_pull_agent` in `Pull` mode as the agent modelling the [EDN interface](../../../dv/sv/push_pull_agent/README.md) (this is already handled in the CIP base classes).
 This agent will return random data as entropy when the KEYMGR sends a request.
 
 ### KMAC_APP Agent
-The KEYMGR testbench instantiates a [`kmac_app_agent`]({{< relref "hw/dv/sv/kmac_app_agent/doc" >}}) to request a KMAC hash operation on the secret data.
+The KEYMGR testbench instantiates a [`kmac_app_agent`](../../../dv/sv/kmac_app_agent/README.md) to request a KMAC hash operation on the secret data.
 
 ### UVM RAL Model
-The KEYMGR RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The KEYMGR RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
 
 ### Reference models
 [Describe reference models in use if applicable, example: SHA256/HMAC]
@@ -93,13 +93,13 @@ It creates the following analysis ports to retrieve the data monitored by corres
 * edn_fifo: An analysis FIFO to hold transactions coming from the EDN interface.
 
 #### Assertions
-* TLUL assertions: The `tb/keymgr_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/keymgr_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 * Check(Kmac|Aes|Otbn)Key: Check keys on the 3 sideload interfaces.
 * CheckEdn1stReq / CheckEdn2ndReq: Check KEYMGR sends 2 EDN request periodically based on the CSR `reseed_interval`.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

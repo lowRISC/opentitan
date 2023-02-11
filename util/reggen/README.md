@@ -22,14 +22,14 @@ Setup and examples of the tool are given in the README.md file in the `util/regg
 
 The tool input is an Hjson file containing the Comportable description of the IP block and its registers.
 
-A description of Hjson (a variant of JSON) and the recommended style is in the [Hjson Usage and Style Guide]({{< relref "doc/sg/hjson_usage_style.md" >}}).
+A description of Hjson (a variant of JSON) and the recommended style is in the [Hjson Usage and Style Guide](../../doc/contributing/style_guides/hjson_usage_style.md).
 
 The tables below describe valid keys for each context.
 It is an error if *required* keys are missing from the input JSON.
 *Optional* keys may be provided in the input file as needed, as noted in the tables the tool may insert them (with default or computed values) during validation so the output generators do not have to special case them.
 Keys marked as "inserted by tool" should not be in the input JSON (they will be silently overwritten if they are there), they are derived by the tool during validation of the input and available to the output generators.
 
-For more detail on the non-register entries of the Hjson configuration file, see [this section]({{< relref "doc/rm/comportability_specification/index.md#configuration-description-hjson" >}}) of the Comportability Specification.
+For more detail on the non-register entries of the Hjson configuration file, see [this section](../../doc/contributing/hw/comportability/README.md#configuration-description-hjson) of the Comportability Specification.
 
 {{% selfdoc "reggen" %}}
 
@@ -190,7 +190,7 @@ For example:
 Current `tags` supports:
 * CSR tests exclusions:
   Simulation based verification will run four CSR tests (if applicable to the module) through automation.
-  Detailed description of this methodology is documented in [CSR utilities]({{< relref "hw/dv/sv/csr_utils/doc" >}}).
+  Detailed description of this methodology is documented in [CSR utilities](../../hw/dv/sv/csr_utils/README.md).
   The tag name is `excl`, and items are enum values for what CSR tests to exclude from, and what type of exclusions.
   The enum types for exclusion test are:
   ```systemverilog
@@ -223,7 +223,7 @@ Current `tags` supports:
 
 This section details the register generation for hardware instantiation.
 The input to the tool for this generation is the same `.hjson` file described above.
-The output is two Verilog files that can be instantiated by a peripheral that follows the [Comportability Guidelines]({{< relref "doc/rm/comportability_specification" >}}).
+The output is two Verilog files that can be instantiated by a peripheral that follows the [Comportability Guidelines](../../doc/contributing/hw/comportability/README.md).
 
 The register generation tool will generate the RTL if it is invoked with the `-r` flag.
 The `-t <directory>` flag is used to specify the output directory where the two files will be written.
@@ -272,7 +272,7 @@ The sections below describe the hardware functionality of each register type bot
 
 The diagram below gives an overview of the register module, `name_reg_top`.
 
-![reg_top](reg_top.svg)
+![reg_top](./doc/reg_top.svg)
 
 In this diagram, the TL-UL bus is shown on the left.
 Logic then breaks down individual write requests and read requests based upon the assigned address of the bus requests.
@@ -420,7 +420,7 @@ There is a variant of this below, this is the default variant.
 This uses the `prim_subreg` with the connections shown.
 The connectivity to the hardware struct bundles are a function of the `hwaccess` and `hwqe` attributes, and will be discussed here as well.
 
-![subreg_rw](subreg_rw.svg)
+![subreg_rw](./doc/subreg_rw.svg)
 
 
 In this diagram, the maximum connection for subreg_rw is shown.
@@ -457,7 +457,7 @@ In this diagram the `q` is the `q` output to the hardware, while the `qs` is the
 The storage register is shown in the custom portion of the logic.
 Finally, note that no `de` input is required from the rest of the peripheral hardware, only the `d` is added to the struct bundle.
 
-![subreg_ext](subreg_ext.svg)
+![subreg_ext](./doc/subreg_ext.svg)
 
 Note the timing of `qe` is one cycle earlier in this model than in the non-hwext model.
 
@@ -491,11 +491,11 @@ These types are shown in the block diagrams below.
 Type `R0W1C` not shown is just a special case of `RW1C` where the q output is not sent back to the software read response mux, but the value `0` is sent instead.
 Note the `qe` is removed for readability but is available with the hwqe attribute.
 
-![subreg_rw1c](subreg_rw1c.svg)
+![subreg_rw1c](./doc/subreg_rw1c.svg)
 
-![subreg_rw0c](subreg_rw0c.svg)
+![subreg_rw0c](./doc/subreg_rw0c.svg)
 
-![subreg_rw1s](subreg_rw1s.svg)
+![subreg_rw1s](./doc/subreg_rw1s.svg)
 
 
 #### Simultaneous SW and HW access
@@ -557,7 +557,7 @@ Usage of shadow registers should be evaluated with this impact in mind.
 
 The diagram below visualizes the internals of the `prim_subreg_shadow` module used to implement shadow registers.
 
-![subreg_shadow](subreg_shadow.svg)
+![subreg_shadow](./doc/subreg_shadow.svg)
 
 When compared to a normal register, the `prim_subreg_shadow` module is comprised of two additional storage components, giving three storage flops in total.
 The **staged** register holds a written value before being committed.
@@ -565,7 +565,7 @@ The **shadow** register holds a second copy after being committed.
 And the the standard storage register holds the **committed** value.
 
 Under the hood, these registers are implemented using the `prim_subreg` module.
-This means a shadow register can implement any of the types described in [this section]({{< relref "doc/rm/register_tool/index.md#register-definitions-per-type" >}}).
+This means a shadow register can implement any of the types described in [this section](./README.md#register-definitions-per-type).
 
 The general behavior of updating a shadow register is as follows:
 1. Software performs a first write to the register.
@@ -623,7 +623,7 @@ The following aspects need to be considered when integrating shadow registers in
   It is thus **highly recommended** to use non-permissive reset values and use software for configuring more permissive values.
 
 - Error hook-ups:
-  - Storage errors signaled to the hardware in `err_storage` are fatal, and should be hooked up directly into the [alert system]({{< relref "hw/top_earlgrey/ip_autogen/alert_handler/doc" >}}).
+  - Storage errors signaled to the hardware in `err_storage` are fatal, and should be hooked up directly into the [alert system](../../hw/top_earlgrey/ip_autogen/alert_handler/README.md).
   - Update errors signaled to the hardware in `err_update` may be software errors and do not affect the current committed value; thus they can be considered informational bugs that are collected into error status or interrupts, and optionally alerts.
     They do not generate error responses on the TL-UL system bus interface.
 
@@ -680,7 +680,7 @@ The following features are currently not implemented but might be added in the f
   Depending on the design, the reset propagation **may** be multi-cycle, and thus it is possible for the shadow register and committed register to not be reset at the same time when resets are asserted.
   This may manifest as an issue if the reset skews are **not** balanced, and may cause register outputs to change on the opposite sides of a clock edge for the receiving domain.
   It is thus important to ensure the skews of the committed and shadow reset lines to be roughly balanced and/or downstream logic to correctly ignore errors when this happens.
-  Note that a module may need to be reset during operation of the system, i.e., when the [alert system]({{< relref "hw/top_earlgrey/ip_autogen/alert_handler/doc" >}}) is running.
+  Note that a module may need to be reset during operation of the system, i.e., when the [alert system](../../hw/top_earlgrey/ip_autogen/alert_handler/README.md) is running.
 
   Software-controllable resets should be avoided.
   If a single reset bit drives both normal and shadow resets, then the problem is simply moved to a different place.

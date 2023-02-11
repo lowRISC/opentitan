@@ -6,7 +6,7 @@ title: "Pinmux Technical Specification"
 # Overview
 
 This document specifies the functionality of the pin multiplexer (`pinmux`) peripheral.
-This module conforms to the [OpenTitan guideline for peripheral device functionality]({{< relref "doc/rm/comportability_specification" >}}).
+This module conforms to the [OpenTitan guideline for peripheral device functionality](../../../doc/contributing/hw/comportability/README.md).
 See that document for integration overview within the broader OpenTitan top level system.
 The module provides a mechanism to reconfigure the peripheral-to-pin mapping at runtime, which greatly enhances the system flexibility.
 In addition to that, the `pinmux` also allows the user to control pad attributes (such as pull-up, pull-down, open-drain, drive-strength, keeper and inversion), and it contains features that facilitate low-power modes of the system.
@@ -40,7 +40,7 @@ Even though the `pinmux` is referred to as one IP, it is logically split into tw
 The top-level module `pinmux` contains the CSRs accessible via the TL-UL interface, the main muxing matrix, retention registers, a set of programmable wakeup detectors, and the HW strap sampling and TAP / JTAG muxing logic.
 The chip-level module `padring` instantiates the bidirectional pads and connects the physical pad attributes.
 
-![Pinmux Block Diagram](pinmux_overview_block_diagram.svg)
+![Pinmux Block Diagram](./doc/pinmux_overview_block_diagram.svg)
 
 ### MIO and DIO Signal Categories
 
@@ -133,7 +133,7 @@ This shows the connectivity available in all directions, as well as the control 
 Two example peripherals (`uart` and `spidev`) are attached to the `pinmux` in this example, one with one input and one output, the other with three inputs and one output.
 The diagram also shows the `padring` module which instantiates the bidirectional chip pads with output enable control.
 
-![Pinmux Block Diagram](pinmux_muxing_matrix.svg)
+![Pinmux Block Diagram](./doc/pinmux_muxing_matrix.svg)
 
 Note that apart from selecting a specific input pad, the `periph_insel[*]` signals can also be used to tie the peripheral input to 0 or 1.
 Likewise, the output select signals `mio_outsel[*]` can also be used to constantly drive an output pin to 0/1 or to put it into high-Z state (default).
@@ -207,7 +207,7 @@ Note that the tool-inserted DFT controller may assert the `dft_hold_tap_sel_i` d
 Also, it should be noted that the pad attributes of all JTAG IOs will be gated to all-zero temporarily, while the JTAG is enabled (this does not affect the values in the CSRs).
 This is to ensure that any functional attributes like inversion or pull-ups / pull-downs do not interfere with the JTAG while it is in use.
 
-For more information about the life cycle states, see [Life Cycle Controller Specification]({{< relref "hw/ip/lc_ctrl/doc" >}}) and the [Life Cycle Definition Table]({{< relref "doc/security/specs/device_life_cycle/_index.md#manufacturing-states" >}}).
+For more information about the life cycle states, see [Life Cycle Controller Specification](../lc_ctrl/README.md) and the [Life Cycle Definition Table](../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
 
 
 ## Generic Pad Wrapper
@@ -360,7 +360,7 @@ A typical programming sequence for the wakeup detectors looks as follows:
 3. During sleep, the wakeup detectors will trigger a wakeup request if a matching pattern has been observed.
    A bit corresponding to the wakeup detector that has observed the pattern will be set in the {{< regref "WKUP_CAUSE" >}} register.
 
-4. When exiting sleep, SW should read the wake info register in the [power manager]({{< relref "hw/ip/pwrmgr/doc/" >}}) to determine the reason(s) for the wakeup request.
+4. When exiting sleep, SW should read the wake info register in the [power manager](../pwrmgr/README.md) to determine the reason(s) for the wakeup request.
 
 5. If the wakeup request was due to a pin wakeup pattern detector, SW should inspect the {{< regref "WKUP_CAUSE" >}} registers in order to determine the exact cause.
 
@@ -383,7 +383,7 @@ The tables below summarize the pinout and pinmux connectivity for certain top-le
 ## Register Table
 
 The register description below matches the instance in the [Earl Grey top level
-design]({{< relref "hw/top_earlgrey/doc" >}}).
+design](../../top_earlgrey/doc/specification.md).
 
 Similar register descriptions can be generated with different parameterizations.
 

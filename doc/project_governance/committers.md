@@ -29,14 +29,14 @@ When reviewing a pull request, there are a range of options in giving feedback.
 Although committers have the final say on patch approval or requiring changes, the task of reviewing is shared by all contributors, who may make similar requests.
 Options for reviewing a pull request include:
 * Approval, with no further conditions.
-  * This is appropriate when you are confident the changes are correct, sufficiently explained, in line with the project coding styles, and don't need further review by others or a companion [RFC]({{< relref "rfc_process" >}}) to be written.
+  * This is appropriate when you are confident the changes are correct, sufficiently explained, in line with the project coding styles, and don't need further review by others or a companion [RFC](./rfc_process.md) to be written.
     You should only use this for cases where you have sufficient expertise in the areas being modified.
   * Note that if the PR came from someone without commit rights, you will need to rebase and merge for them.
 * Approval, but with a request to get an additional approval from other named reviewers.
   * This is appropriate when you believe the changes are correct, but would either like a second opinion or to ensure that another contributor is aware of and approves of the changes.
 * Request for changes.
   * This is appropriate when problems or potential improvements are spotted that can be addressed by the original submitter updating the pull request.
-* Request that further design rationale be written up and shared (but a full [RFC]({{< relref "rfc_process" >}}) isn't necessary).
+* Request that further design rationale be written up and shared (but a full [RFC](./rfc_process.md) isn't necessary).
   * This is appropriate when the rationale for a change is not clear, or a lack of accompanying documentation makes reviewing the code challenging.
     This can commonly occur when further explanation would be valuable for people working in that area but no project-wide consensus is needed.
 * Request that an RFC be written up and submitted.

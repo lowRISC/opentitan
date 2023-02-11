@@ -41,7 +41,7 @@ It is expected to protect against 1st-order SCA attacks by implementing masked s
 
 ## Block Diagram
 
-![](kmac-block-diagram.svg)
+![](./doc/kmac-block-diagram.svg)
 
 The above figure shows the KMAC/SHA3 HWIP block diagram.
 The KMAC has register interfaces for SW to configure the module, initiate the hashing process, and acquire the result digest from the STATE memory region.
@@ -89,7 +89,7 @@ This module, however, supports Keccak_f which always runs `12 + 2*L` rounds, whe
 For instance, 200 bits of internal state run 18 rounds.
 KMAC/SHA3 instantiates the Keccak round module with 1600 bit.
 
-![](keccak-round.svg)
+![](./doc/keccak-round.svg)
 
 Keccak round logic has two phases inside.
 Theta, Rho, Pi functions are executed at the 1st phase.
@@ -128,7 +128,7 @@ So `prim_fifo_*` can talk to the padding logic directly.
 This module talks to Keccak round logic with a more memory-like interface.
 The interface has an additional address signal on top of the valid, ready, and data signals.
 
-![](sha3-padding.svg)
+![](./doc/sha3-padding.svg)
 
 The hashing process begins when the software issues the start command to {{< regref "CMD" >}} .
 If cSHAKE is enabled, the padding logic expands the prefix value (`N || S` above) into a block size.
@@ -145,7 +145,7 @@ After the software writes the message bitstream, it should issue the Process com
 The padding logic, after receiving the Process command, appends proper ending bits with respect to the {{< regref "CFG.mode" >}} value.
 The logic writes 0 up to the block size to the Keccak round logic then ends with 1 at the end of the block.
 
-![](sha3-padding-fsm.svg)
+![](./doc/sha3-padding-fsm.svg)
 
 After the Keccak round completes the last block, the padding logic asserts an `absorbed` signal to notify the software.
 The signal generates the `kmac_done` interrupt.
@@ -157,7 +157,7 @@ The padding logic clears internal variables and goes back to Idle state.
 
 ### Padding for KMAC
 
-![](kmac-padding.svg)
+![](./doc/kmac-padding.svg)
 
 KMAC core prepends and appends additional bitstream on top of Keccak padding logic in SHA3 core.
 The [NIST SP 800-185][] defines `KMAC[128,256](K, X, L, S)` as a cSHAKE function.
@@ -278,7 +278,7 @@ In addition to that, the KMAC/SHA3 blocks the software access to the Keccak stat
 
 ### Application Interface
 
-![](application-interface.svg)
+![](./doc/application-interface.svg)
 
 KMAC/SHA3 HWIP has an option to receive the secret key from the KeyMgr via sideload key interface.
 The software should set {{< regref "CFG.sideload" >}} to use the KeyMgr sideloaded key for the SW-initiated KMAC operation.
@@ -327,7 +327,7 @@ This section explains the entropy generator inside the KMAC HWIP.
 KMAC has an entropy generator to provide the design with pseudo-random numbers while processing the secret key block.
 The entropy is used for both remasking the DOM multipliers inside the Chi function of the Keccak core as well as for masking the message if {{<regref "CFG_SHADOWED.msg_mask" >}} is enabled.
 
-![Entropy block](kmac-entropy.svg)
+![Entropy block](./doc/kmac-entropy.svg)
 
 The entropy generator is made up of 25 32-bit linear feedback shift registers (LFSRs).
 This allows the module to generate 800 bits of fresh, pseudo-random numbers required by the 800 DOM multipliers for remasking in every clock cycle.
@@ -344,7 +344,7 @@ At the same time, the previous states of LFSRs 0/5/10/15/20 from before the rese
 Similarly, the previous states of LFSRs 1/6/11/16/21 from before the reseeding operation are permuted and then forwarded to reseed LFSRs 2/7/12/17/22.
 Software can still request a complete reseed of all 25 LFSRs from EDN by subsequently triggering five reseeding operations through {{<regref "CMD.entropy_req" >}}.
 
-[edn]: {{<relref "/hw/ip/edn/doc/_index.md">}}
+[edn]: ../edn/README.md
 
 ### Error Report
 

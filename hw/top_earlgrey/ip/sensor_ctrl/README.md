@@ -5,7 +5,7 @@ title: "Sensor Control Technical Specification"
 # Overview
 
 This document specifies the functionality of the `sensor control` module.
-The `sensor control` module is a comportable front-end to the [analog sensor top]({{< relref "hw/top_earlgrey/ip/ast/doc" >}}).
+The `sensor control` module is a comportable front-end to the [analog sensor top](../ast/README.md).
 
 It provides basic alert functionality, pad debug hook ups, and a small amount of open source visible status readback.
 Long term, this is a module that can be absorbed directly into the `analog sensor top`.

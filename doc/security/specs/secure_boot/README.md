@@ -186,15 +186,15 @@ However, these are the requirements that the manifest format is required to supp
 *   **Entrypoint.** The executable entrypoint for this `ROM_EXT` slot.
 
 <!-- TODO: Update with published documents when available. -->
-[attestation]: {{< relref "/doc/security/specs/attestation" >}}
-[attestation-command]: {{< relref "/doc/security/specs/attestation" >}}#attestation-command
+[attestation]: ../attestation/README.md
+[attestation-command]: ../attestation/README.md#attestation-command
 [ibex-epmp]: https://ibex-core.readthedocs.io/en/latest/03_reference/pmp.html
-[identities-keys]: {{< relref "/doc/security/specs/identities_and_root_keys" >}}
-[key-manager]: {{< relref "/hw/ip/keymgr/doc" >}}
-[manifest-format]: {{< relref "/sw/device/silicon_creator/rom_ext/docs/manifest" >}}
-[rom-epmp]: {{< relref "/sw/device/silicon_creator/rom/docs/memory_protection" >}}
+[identities-keys]: ../identities_and_root_keys/README.md
+[key-manager]: ../../../../hw/ip/keymgr/README.md
+[manifest-format]: ../../../../sw/device/silicon_creator/rom_ext/doc/manifest.md
+[rom-epmp]: ../../../../sw/device/silicon_creator/rom/doc/memory_protection.md
 [ot-flash]: #
 [ot-unlock-flow]: #
-[ownership-transfer]: {{< relref "/doc/security/specs/ownership_transfer" >}}
+[ownership-transfer]: ../ownership_transfer/README.md
 [rv-isa-priv]: https://riscv.org/technical/specifications/
 [silicon-creator-keys]: {{< relref "#silicon-creator-keys" >}}

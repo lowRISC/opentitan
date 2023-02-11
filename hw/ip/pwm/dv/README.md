@@ -10,36 +10,36 @@ title: "PWM DV document"
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
+* [Design & verification stage](../../../README.md)
+  * [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/pwm/dv/latest/report.html)
 
 ## Design features
 For detailed information on PWM design features, please see the
-[PWM HWIP technical specification]({{< relref "hw/ip/pwm/doc" >}}).
+[PWM HWIP technical specification](../README.md).
 
 ## Testbench architecture
 PWM testbench has been constructed based on the
-[CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+[CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
-![Block diagram](tb.svg)
+![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
 Top level testbench is located at `hw/ip/pwm/dv/tb/tb.sv`. It instantiates the PWM DUT module `hw/ip/pwm/rtl/pwm.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
+* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * PWM IOs
-* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
+* Alerts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
+* Devmode ([`pins_if`](../../../dv/sv/common_ifs/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities
 that are common across the project:
-* [common_ifs]({{< relref "hw/dv/sv/common_ifs" >}})
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
+* [common_ifs](../../../dv/sv/common_ifs/README.md)
+* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
+* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -87,7 +87,7 @@ parameter uint NUM_PWM_CHANNELS = 6;
   endfunction : get_pwm_mode
 ```
 ### TL_agent
-PWM instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+PWM instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into PWM device.
 
@@ -102,10 +102,10 @@ For each pulse a number of features are captured such as:
 * relative delay to be used for phase calculation
 
 ### UVM RAL Model
-The PWM RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}})
+The PWM RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md)
 FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}})
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md)
 
 ### Stimulus strategy
 #### Test sequences
@@ -145,12 +145,12 @@ For blink and heart beat mode after an item is compared successfully the scorebo
 If an error is found the scoreboard will throw an error.
 
 #### Assertions
-* TLUL assertions: The `tb/pwm_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/pwm_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

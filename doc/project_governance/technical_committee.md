@@ -2,11 +2,11 @@
 title: "OpenTitan Technical Committee"
 ---
 
-The OpenTitan Technical Committee is part of the [OpenTitan governance structure]({{< relref "doc/project" >}}) and the definitive description of its operations and responsibilities are stated in the [OpenTitan Technical Charter](https://static.opentitan.org/technical-charter.pdf).
+The OpenTitan Technical Committee is part of the [OpenTitan governance structure](./README.md) and the definitive description of its operations and responsibilities are stated in the [OpenTitan Technical Charter](https://static.opentitan.org/technical-charter.pdf).
 Key responsibilities defined in that document include:
-* Oversight of the [RFC process]({{< relref "rfc_process" >}}), including voting to approve, reject, postpone or revise RFCs.
-* Creating [Commit Escalation Guidelines]({{< relref "committers" >}}) setting out when Committers should escalate a particular Commit to the TC (e.g. for cross-cutting changes), and when Committers should recommend a design rationale write-up or RFC for wider feedback.
-* Maintaining the list of [committers]({{< relref "committers" >}}).
+* Oversight of the [RFC process](./rfc_process.md), including voting to approve, reject, postpone or revise RFCs.
+* Creating [Commit Escalation Guidelines](./committers.md) setting out when Committers should escalate a particular Commit to the TC (e.g. for cross-cutting changes), and when Committers should recommend a design rationale write-up or RFC for wider feedback.
+* Maintaining the list of [committers](./committers.md).
 
 Expectations of Technical Committee members include the following:
 * Be active participants in development discussions within the OpenTitan project, beyond just Technical Committee meetings.

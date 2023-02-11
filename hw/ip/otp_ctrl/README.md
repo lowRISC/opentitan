@@ -6,7 +6,7 @@ title: "OTP Controller Technical Specification"
 # Overview
 
 This document specifies the functionality of the one time programmable (OTP) memory controller.
-The OTP controller is a module that is a peripheral on the chip interconnect bus, and thus follows the [Comportability Specification]({{< relref "doc/rm/comportability_specification" >}}).
+The OTP controller is a module that is a peripheral on the chip interconnect bus, and thus follows the [Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 
 The OTP is a module that provides a device with one-time-programming functionality.
 The result of this programming is non-volatile, and unlike flash, cannot be reversed.
@@ -14,7 +14,7 @@ The OTP functionality is constructed through an open-source OTP controller and a
 
 The OTP controller provides:
 - An open-source abstraction interface that software can use to interact with a proprietary OTP block underneath.
-- An open-source abstraction interface that hardware components (for example [life cycle controller]({{< relref "hw/ip/lc_ctrl/doc" >}}) and [key manager]({{< relref "hw/ip/keymgr/doc" >}})) can use to interact with a proprietary OTP block underneath.
+- An open-source abstraction interface that hardware components (for example [life cycle controller](../lc_ctrl/README.md) and [key manager](../keymgr/README.md)) can use to interact with a proprietary OTP block underneath.
 - High level logical security protection, such as integrity checks and scrambling of sensitive content.
 - Software isolation for when OTP contents are readable and programmable.
 
@@ -45,7 +45,7 @@ Together, the OTP controller and IP provide secure one-time-programming function
 
 The functionality of OTP is split into an open-source and a closed-source part, with a clearly defined boundary in between, as illustrated in the simplified high-level block diagram below.
 
-![OTP Controller Overview](otp_ctrl_overview.svg)
+![OTP Controller Overview](./doc/otp_ctrl_overview.svg)
 
 It is the task of the open-source controller to provide a common, non-technology specific interface to OTP users with a common register interface and a clearly defined I/O interface to hardware.
 The open-source controller implements logical isolation and partitioning of OTP storage that enables users to separate different functions of the OTP into "partitions" with different properties.
@@ -55,7 +55,7 @@ The proprietary IP on the other hand translates a common access interface to the
 
 This split implies that every proprietary OTP IP must implement a translation layer from a standardized OpenTitan interface to the module underneath.
 It also implies that no matter how the OTP storage or word size may change underneath, the open-source controller must present a consistent and coherent software and hardware interface.
-This standardized interface is defined further below, and the wrapper leverages the same [technology primitive mechanism]({{< relref "hw/ip/prim/doc" >}}) that is employed in other parts of OpenTitan in order to wrap and abstract technology-specific macros (such as memories and clocking cells) that are potentially closed-source.
+This standardized interface is defined further below, and the wrapper leverages the same [technology primitive mechanism](../prim/README.md) that is employed in other parts of OpenTitan in order to wrap and abstract technology-specific macros (such as memories and clocking cells) that are potentially closed-source.
 
 In order to enable simulation and FPGA emulation of the OTP controller even without access to the proprietary OTP IP, a generalized and synthesizable model of the OTP IP is provided in the form of a [generic technology primitive](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim_generic/rtl/prim_generic_otp.sv).
 
@@ -67,7 +67,7 @@ The "front-end" contains the logical partitions that feed the hardware and softw
 The "back-end" represents the programming interface used by hardware and software components to stage the upcoming values.
 The diagram below illustrates this behavioral model.
 
-![OTP Controller Block Diagram](otp_ctrl_behavioral_model.svg)
+![OTP Controller Block Diagram](./doc/otp_ctrl_behavioral_model.svg)
 
 Note that the front-end contains both buffered and unbuffered partitions.
 Buffered partitions are sensed once per power cycle and their contents are stored in registers, whereas unbuffered partitions are read on-demand.
@@ -131,7 +131,7 @@ As part of injecting the final firmware, the stock-keeping-unit-specific hardwar
 The life cycle partition is active throughout all stages and hence it is the **ONLY** partition that cannot be locked.
 After the device finishes provisioning and goes into production, it must retain the ability to transition back to RMA in case of unexpected failures.
 
-In order to support this transition, the [life cycle state]({{< relref "hw/ip/lc_ctrl/doc" >}}) and counters must always be update-able.
+In order to support this transition, the [life cycle state](../lc_ctrl/README.md) and counters must always be update-able.
 
 ## Locking a Partition
 
@@ -184,7 +184,7 @@ These values are stored in OTP as plaintext.
 
 Secret partitions contain data that are critical to security, for example FLASH scrambling keys, device root secret and unlock tokens.
 These values are stored scrambled in OTP, and are descrambled upon read.
-The currently employed cipher is PRESENT, as it lends itself well to iterative decomposition, and it is a proven lightweight block cipher (see also [PRESENT Scrambling Primitive]({{< relref "hw/ip/prim/doc/prim_present.md" >}}).
+The currently employed cipher is PRESENT, as it lends itself well to iterative decomposition, and it is a proven lightweight block cipher (see also [PRESENT Scrambling Primitive](../prim/doc/prim_present.md).
 The usage of a block cipher however implies that the secret partitions can only be written in 64bit chunks.
 
 Further, the contents of a particular secret partition are not readable by software once locked (other than the digest which must be always readable); while non-secret partitions are always readable unless read accessibility is explicitly removed by software.
@@ -287,7 +287,7 @@ The functional interface is used to update all partitions except for life cycle.
 As mentioned previously, any updates made during the current power cycle are **NOT** reflected in the buffered partitions until the next reboot.
 
 The life cycle interface is used to update the life cycle state and transition counter only.
-The commands are issued from the [life cycle controller]({{< relref "hw/ip/lc_ctrl/doc" >}}), and similarly, successful or failed indications are also sent back to the life cycle controller.
+The commands are issued from the [life cycle controller](../lc_ctrl/README.md), and similarly, successful or failed indications are also sent back to the life cycle controller.
 Similar to the functional interface, the life cycle controller allows only one update per power cycle, and after a requested transition reverts to an inert state until reboot.
 
 For more details on how the software programs the OTP, please refer to the [Programmer's Guide]({{< relref "#programmers-guide" >}})) further below.
@@ -308,7 +308,7 @@ Parameter                   | Default (Max) | Top Earlgrey | Description
 `RndCnstKey`                | (see RTL)     | (see RTL)    | Random scrambling keys for secret partitions, to be used in the [scrambling datapath]({{< relref "#scrambling-datapath" >}}).
 `RndCnstDigestConst`        | (see RTL)     | (see RTL)    | Random digest finalization constants, to be used in the [scrambling datapath]({{< relref "#scrambling-datapath" >}}).
 `RndCnstDigestIV`           | (see RTL)     | (see RTL)    | Random digest initialization vectors, to be used in the [scrambling datapath]({{< relref "#scrambling-datapath" >}}).
-`RndCnstRawUnlockToken`     | (see RTL)     | (see RTL)    | Global RAW unlock token to be used for the first life cycle transition. See also [conditional life cycle transitions]({{< relref "hw/ip/lc_ctrl/doc/_index.md#conditional-transitions" >}}).
+`RndCnstRawUnlockToken`     | (see RTL)     | (see RTL)    | Global RAW unlock token to be used for the first life cycle transition. See also [conditional life cycle transitions](../lc_ctrl/README.md#conditional-transitions).
 
 ### Signals
 
@@ -321,7 +321,7 @@ The OTP controller contains various interfaces that connect to other comportable
 The entropy request interface that talks to EDN in order to fetch fresh entropy for ephemeral SRAM scrambling key derivation and the LFSR counters for background checks.
 It is comprised of the `otp_edn_o` and `otp_edn_i` signals and follows a req / ack protocol.
 
-See also [EDN documentation]({{< relref "hw/ip/edn/doc" >}}).
+See also [EDN documentation](../edn/README.md).
 
 #### Power Manager Interface
 
@@ -334,13 +334,13 @@ The idle indication signal `pwr_otp_o.otp_idle` indicates whether there is an on
 Since the power manager may run in a different clock domain, the `pwr_otp_i.otp_init` signal is synchronized within the OTP controller.
 The power manager is responsible for synchronizing the `pwr_otp_o.otp_done` and `pwr_otp_o.otp_idle` signals.
 
-See also [power manager documentation]({{< relref "hw/ip/pwrmgr/doc" >}}).
+See also [power manager documentation](../pwrmgr/README.md).
 
 #### Life Cycle Interfaces
 
 The interface to the life cycle controller can be split into three functional sub-interfaces (vendor test, state output, state transitions), and these are explained in more detail below.
 Note that the OTP and life cycle controllers are supposed to be in the same clock domain, hence no additional signal synchronization is required.
-See also [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more details.
+See also [life cycle controller documentation](../lc_ctrl/README.md) for more details.
 
 ##### Vendor Test Signals
 
@@ -403,7 +403,7 @@ The request must remain asserted until the life cycle controller has responded.
 An error is fatal and indicates that the OTP programming operation has failed.
 
 Note that the new state must not clear any bits that have already been programmed to OTP - i.e., the new state must be incrementally programmable on top of the previous state.
-There are hence some implications on the life cycle encoding due to the ECC employed, see [life cycle state encoding]({{< relref "hw/ip/lc_ctrl/doc/_index.md#life-cycle-manufacturing-state-encodings" >}}) for details.
+There are hence some implications on the life cycle encoding due to the ECC employed, see [life cycle state encoding](../lc_ctrl/README.md#life-cycle-manufacturing-state-encodings) for details.
 
 Note that the behavior of the `lc_otp_program_i.otp_test_ctrl` signal is vendor-specific, and hence the signal is set to `x` in the timing diagram above.
 The purpose of this signal is to control vendor-specific test mechanisms, and its value will only be forwarded to the OTP macro in RAW, TEST_* and RMA states.
@@ -440,7 +440,7 @@ If the key seeds have not yet been provisioned, the keys are derived from all-ze
 Note that the req/ack protocol runs on the OTP clock.
 It is the task of the scrambling device to synchronize the handshake protocol by instantiating the `prim_sync_reqack.sv` primitive as shown below.
 
-![OTP Key Req Ack](otp_ctrl_key_req_ack.svg)
+![OTP Key Req Ack](./doc/otp_ctrl_key_req_ack.svg)
 
 Note that the key and nonce output signals on the OTP controller side are guaranteed to remain stable for at least 62 OTP clock cycles after the `ack` signal is pulsed high, because the derivation of a 64bit half-key takes at least two passes through the 31-cycle PRESENT primitive.
 Hence, if the scrambling device clock is faster or in the same order of magnitude as the OTP clock, the data can be directly sampled upon assertion of `src_ack_o`.
@@ -491,7 +491,7 @@ Note however that partition size changes may affect V3 coverage metrics, hence i
 
 The following is a high-level block diagram that illustrates everything that has been discussed.
 
-![OTP Controller Block Diagram](otp_ctrl_blockdiag.svg)
+![OTP Controller Block Diagram](./doc/otp_ctrl_blockdiag.svg)
 
 Each of the partitions P0-P7 has its [own controller FSM]({{< relref "#partition-implementations" >}}) that interacts with the OTP wrapper and the [scrambling datapath]({{< relref "#scrambling-datapath" >}}) to fulfill its tasks.
 The partitions expose the address ranges and access control information to the Direct Access Interface (DAI) in order to block accesses that go to locked address ranges.
@@ -528,7 +528,7 @@ Since the life cycle partition is the only partition that needs live updates in-
 The life cycle state is hence encoded such that incremental updates to the state are always carried out at the granularity of a 16bit word.
 Further, the life cycle transition counter is encoded such that each stroke consumes a full 16bit word for the same reason.
 
-See [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more details on the life cycle encoding.
+See [life cycle controller documentation](../lc_ctrl/README.md) for more details on the life cycle encoding.
 
 ### Partition Controllers
 
@@ -538,7 +538,7 @@ The corresponding controller FSMs are explained in more detail below.
 
 #### Unbuffered Partition
 
-![Unbuffered Partition FSM](otp_ctrl_unbuf_part_fsm.svg)
+![Unbuffered Partition FSM](./doc/otp_ctrl_unbuf_part_fsm.svg)
 
 As shown above, the unbuffered partition module has a relatively simple controller FSM that only reads out the digest value of the partition upon initialization, and then basically waits for TL-UL read transactions to its corresponding window in the CSR space.
 
@@ -550,7 +550,7 @@ Note that unrecoverable [OTP errors]({{< relref "#generalized-open-source-interf
 
 #### Buffered Partition
 
-![Buffered Partition FSM](otp_ctrl_buf_part_fsm.svg)
+![Buffered Partition FSM](./doc/otp_ctrl_buf_part_fsm.svg)
 
 The controller FSM of the buffered partition module is more complex than the unbuffered counterpart, since it has to account for scrambling and digest calculation.
 
@@ -572,11 +572,11 @@ In case of a mismatch, the buffered values are gated to their default, and an al
 Note that in case of unrecoverable OTP errors or ECC failures in the buffer registers, the partition controller FSM is moved into a terminal error state, which locks down all access through DAI and clamps the values that are broadcast in hardware to their defaults.
 
 External escalation via the `lc_escalate_en` signal will move the partition controller FSM into the terminal error state as well.
-See [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc" >}}) for more details.
+See [life cycle controller documentation](../lc_ctrl/README.md) for more details.
 
 ### Direct Access Interface Control
 
-![Direct Access Interface FSM](otp_ctrl_dai_fsm.svg)
+![Direct Access Interface FSM](./doc/otp_ctrl_dai_fsm.svg)
 
 Upon reset release, the DAI controller first sends an initialization command to the OTP macro.
 Once the OTP macro becomes operational, an initialization request is sent to all partition controllers, which will read out and initialize the corresponding buffer registers.
@@ -591,7 +591,7 @@ Also, the DAI consumes the read and write access information provided by the par
 
 ### Life Cycle Interface Control
 
-![Life Cycle Interface FSM](otp_ctrl_lci_fsm.svg)
+![Life Cycle Interface FSM](./doc/otp_ctrl_lci_fsm.svg)
 
 Upon reset release the LCI FSM waits until the OTP controller has initialized and the LCI gets enabled.
 Once it is in the idle state, life cycle state updates can be initiated via the life cycle interface as [described here]({{< relref "#state-transitions" >}}).
@@ -600,7 +600,7 @@ In case of unrecoverable OTP errors, the FSM signals an error to the life cycle 
 
 ### Key Derivation Interface
 
-![Key Derivation Interface FSM](otp_ctrl_kdi_fsm.svg)
+![Key Derivation Interface FSM](./doc/otp_ctrl_kdi_fsm.svg)
 
 Upon reset release the KDI FSM waits until the OTP controller has initialized and the KDI gets enabled.
 Once it is in the idle state, key derivation can be requested via the [flash]({{< relref "#interface-to-flash-scrambler" >}}) and [sram]({{< relref "#interface-to-sram-and-otbn-scramblers" >}}) interfaces.
@@ -608,9 +608,9 @@ Based on which interface makes the request, the KDI controller will evaluate a v
 
 ### Scrambling Datapath
 
-![OTP Digest Mechanism](otp_ctrl_digest_mechanism.svg)
+![OTP Digest Mechanism](./doc/otp_ctrl_digest_mechanism.svg)
 
-The scrambling datapath is built around an iterative implementation of the [PRESENT lightweight cipher]({{< relref "hw/ip/prim/doc/prim_present" >}}) that performs one round per cycle.
+The scrambling datapath is built around an iterative implementation of the [PRESENT lightweight cipher](../prim/doc/prim_present.md) that performs one round per cycle.
 The datapath contains some additional multiplexing circuitry to enable the DAI, KDI and partition controllers to evaluate different functions with the same datapath.
 The algorithmic steps of these functions are explained in more detail below.
 
@@ -666,7 +666,7 @@ This is behavior illustrated in the example below.
 
 ### Primitive Wrapper and FPGA Emulation
 
-![OTP Wrapper Block Diagram](otp_ctrl_prim_otp.svg)
+![OTP Wrapper Block Diagram](./doc/otp_ctrl_prim_otp.svg)
 
 The OTP IP is wrapped up in a primitive wrapper that exposes a TL-UL interface for testing purposes, and a generalized open-source interface for functional operation (described below).
 Any OTP redundancy mechanism like per-word ECC is assumed to be handled inside the wrapper, which means that the word width exposed as part of the generalized interface is the effective word width.
@@ -807,7 +807,7 @@ Hence the OTP controller performs a blank check and returns an error if a write 
 
 It should be noted that the locked status of the partition holding the creator root key (i.e., the value of the {{< regref "SECRET2_DIGEST_0" >}}) determines the ID_STATUS of the device, which in turn determines SW accessibility of creator seed material in flash and OTP.
 That means that creator-seed-related collateral needs to be provisioned to Flash **before** the OTP digest lockdown mechanism is triggered, since otherwise accessibility to the corresponding flash region is lost.
-See the [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc/_index.md#id-state-of-the-device" >}}) for more details.
+See the [life cycle controller documentation](../lc_ctrl/README.md#id-state-of-the-device) for more details.
 
 ## Direct Access Interface
 
@@ -948,7 +948,7 @@ For the hardware partitions, hardware calculates this digest and uses it for [ba
 Digest calculation can be triggered via the DAI.
 
 Finally, it should be noted that the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 / CREATOR_ROOT_KEY_SHARE1 items can only be programmed when the device is in the DEV, PROD, PROD_END and RMA stages.
-Please consult the [life cycle controller documentation]({{< relref "hw/ip/lc_ctrl/doc" >}}) documentation for more information.
+Please consult the [life cycle controller documentation](../lc_ctrl/README.md) documentation for more information.
 
 ## Examples
 

@@ -6,13 +6,13 @@ The `sim_sram` module intercepts an outbound TL interface to carve out a chunk o
 This chunk of memory must not overlap with any device on the system address map - it must be an invalid address range from the system's perspective.
 
 It has 4 interfaces - clock, reset, input TL interface and the output TL interface.
-It instantiates a [1:2 TL socket]({{< relref "hw/ip/tlul/doc#bus-primitives" >}}) to split the incoming TL access into two.
+It instantiates a [1:2 TL socket](../../../ip/tlul/README.md#bus-primitives) to split the incoming TL access into two.
 One of the outputs of the socket is sinked within the module while the other is returned back.
 
 If the user chooses to instantiate an actual SRAM instance, the sinked TL interface is connected to TL SRAM adapter which converts the TL access into an SRAM access.
-The [technology-independent]({{< relref "hw/ip/prim/doc" >}}) `prim_ram_1p` module is used for instantiating the memory.
+The [technology-independent](../../../ip/prim/README.md) `prim_ram_1p` module is used for instantiating the memory.
 
-![Block Diagram](sim_sram.svg)
+![Block Diagram](./doc/sim_sram.svg)
 
 This module is not meant to be synthesized.
 An easy way to ensure this is to instantiate it in simulation if and only if a special macro is defined.

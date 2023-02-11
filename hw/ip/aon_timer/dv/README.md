@@ -10,20 +10,20 @@ title: "AON Timer DV Document"
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
+* [Design & verification stage](../../../README.md)
+  * [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/aon_timer/dv/latest/report.html)
 
 ## Design features
 
-The AON timer is documented in the [AON Timer HWIP technical specification]({{< relref ".." >}}).
+The AON timer is documented in the [AON Timer HWIP technical specification](../README.md).
 
 ## Testbench architecture
 
-The testbench is based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+The testbench is based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
-![Block diagram](tb.svg)
+![Block diagram](./doc/tb.svg)
 
 ### Top-level testbench
 
@@ -31,9 +31,9 @@ The block's testbench is located at `hw/ip/aon_timer/dv/tb/tb.sv`.
 It instantiates the `aon_timer` DUT module, defined at `hw/ip/aon_timer/rtl/aon_timer.sv`.
 
 In addition, it instantiates the following interfaces, connects them to the DUT and registers their handles in `uvm_config_db`:
-* A [clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}}) for the fast clock
-* A [clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}}) for the AON clock
-* A [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+* A [clock and reset interface](../../../dv/sv/common_ifs/README.md) for the fast clock
+* A [clock and reset interface](../../../dv/sv/common_ifs/README.md) for the AON clock
+* A [TileLink host interface](../../../dv/sv/tl_agent/README.md)
   The AON timer exposes a TL device.
   Here, the testbench is acting as the host CPU; in the OpenTitan SoC, this will be the Ibex core.
 * Two interrupts (wakeup timer; watchdog bark) in the fast clock domain
@@ -41,12 +41,12 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * The sleep mode input
 * The core interface (see below).
 
-The interrupts and sleep mode input are modelled with the basic [`pins_if`]({{< relref "hw/dv/sv/common_ifs#pins_if" >}}) interface.
+The interrupts and sleep mode input are modelled with the basic [`pins_if`](../../../dv/sv/common_ifs/README.md#pins_if) interface.
 
 The AON timer uses three clock domains (`async`, `clk_i` and `clk_aon_i`), with synchronisation logic between them.
 The following diagram shows the different inputs and outputs for the module and in which clock domain each resides.
 
-![Design timing domains](domains.svg)
+![Design timing domains](./doc/domains.svg)
 
 To model this accurately without having to precisely model the timing of the synchronisation logic, the testbench is split into two pieces.
 The first piece has a precise model of the AON timer core and checks that the DUT respects it.
@@ -56,13 +56,13 @@ This *core interface* is bound into the design as `u_core_if` and is used to pas
 
 ### TileLink agent
 
-In order to communicate through the register interface, the testbench uses the [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}) that is instantiated in the CIP base environment.
+In order to communicate through the register interface, the testbench uses the [tl_agent](../../../dv/sv/tl_agent/README.md) that is instantiated in the CIP base environment.
 This is also used by generic test sequences to exercise the register interface.
 
 ### UVM RAL Model
-The `aon_timer` RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The `aon_timer` RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}).
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
 Running
 ```
 util/regtool.py -s -t . hw/ip/aon_timer/data/aon_timer.hjson
@@ -133,13 +133,13 @@ Finally, outputs (in the form of configuration register updates or interrupts) w
 
 #### Assertions
 
-TLUL protocol assertions are checked by binding the [TL-UL protocol checker]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) into the design.
+TLUL protocol assertions are checked by binding the [TL-UL protocol checker](../../tlul/doc/TlulProtocolChecker.md) into the design.
 
 Outputs are also checked for `'X` values by assertions in the design RTL.
 
 ## Building and running tests
 
-Tests can be run with [`dvsim.py`]({{< relref "hw/dv/tools/doc" >}}).
+Tests can be run with [`dvsim.py`](../../../../util/dvsim/README.md).
 The link gives details of the tool's features and command line arguments.
 To run a basic smoke test, go to the top of the repository and run:
 ```console

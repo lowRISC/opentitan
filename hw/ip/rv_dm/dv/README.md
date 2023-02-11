@@ -10,22 +10,22 @@ title: "RV_DM DV document"
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
+* [Design & verification stage](../../../README.md)
+  * [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/rv_dm/dv/latest/report.html)
 
 ## Design features
 
-For detailed information on RV_DM design features, please see the [RV_DM HWIP technical specification]({{< relref "hw/ip/rv_dm/doc" >}}).
+For detailed information on RV_DM design features, please see the [RV_DM HWIP technical specification](../README.md).
 The internal debug logic is vendored-in from the external [PULP RISC-V debug repository](https://github.com/pulp-platform/riscv-dbg).
 
 ## Testbench architecture
 
-RV_DM has a standard UVM testbench, which is based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+RV_DM has a standard UVM testbench, which is based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
 
-![Block diagram](tb.svg)
+![Block diagram](./doc/tb.svg)
 
 The flow of data into the scoreboard is described [below](#scoreboard).
 
@@ -34,12 +34,12 @@ The flow of data into the scoreboard is described [below](#scoreboard).
 The top level testbench is located at `hw/ip/rv_dm/dv/tb.sv`.
 It instantiates the RV_DM DUT module `hw/ip/rv_dm/rtl/rv_dm.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}}) for the config space (which only contains the alert register).
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}}) for the debug memory space (which only contains the alert register).
-* [TileLink device interface]({{< relref "hw/dv/sv/tl_agent/doc" >}}) for the SBA interface that is used by the JTAG debugger to access the whole chip.
-* [JTAG interface]({{< relref "hw/dv/sv/jtag_agent/doc" >}}) to act as an external JTAG host.
-* [Alert and escalation interface]({{<relref "hw/dv/sv/alert_esc_agent/doc" >}}) for the alert interface.
+* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
+* [TileLink host interface](../../../dv/sv/tl_agent/README.md) for the config space (which only contains the alert register).
+* [TileLink host interface](../../../dv/sv/tl_agent/README.md) for the debug memory space (which only contains the alert register).
+* [TileLink device interface](../../../dv/sv/tl_agent/README.md) for the SBA interface that is used by the JTAG debugger to access the whole chip.
+* [JTAG interface](../../../dv/sv/jtag_agent/README.md) to act as an external JTAG host.
+* [Alert and escalation interface](../../../dv/sv/alert_esc_agent/README.md) for the alert interface.
   * The instantiation and hookup of this interface is done using the standardized common macro `` `DV_ALERT_IF_CONNECT`` defined in `hw/dv/sv/dv_utils/dv_macros.svh`.
 * RV_DM interface for driving / sampling the remaining DUT IOs
   * Inputs driven / sampled: `lc_hw_debug_en_i`, `scanmode_i`, `scan_rst_ni`, `unavailable_i`
@@ -48,20 +48,20 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 ### Common DV utility components
 
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
-* [dv_lib_pkg]({{< relref "hw/dv/sv/dv_lib/doc" >}})
-* [cip_lib_pkg]({{< relref "hw/dv/sv/cip_lib/doc" >}})
+* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
+* [dv_lib_pkg](../../../dv/sv/dv_lib/README.md)
+* [cip_lib_pkg](../../../dv/sv/cip_lib/README.md)
 * dv_base_reg_pkg
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
+* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### TL_agent
 
-The RV_DM testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}).
+The RV_DM testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md).
 This provides the ability to drive and independently monitor random traffic via the TL host interface into the RV_DM device.
 
 ### Alert_agent
 
-RV_DM testbench instantiates an [alert_agent]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}).
+RV_DM testbench instantiates an [alert_agent](../../../dv/sv/alert_esc_agent/README.md).
 This is already done in the CIP base environment.
 It uses a string array of alert names to associate each instance of an alert signal. RV_DM exposes only a single alert signal, so this array is set to ["fatal_fault"].
 This alert is wired from the bus integrity logic.
@@ -70,15 +70,15 @@ The alert_agents provide the ability to drive and independently monitor the aler
 
 ### JTAG Agent
 
-The RVDM testbench instantiates an instance of [jtag_agent]({{<relref "hw/dv/sv/jtag_agent/doc">}}).
+The RVDM testbench instantiates an instance of [jtag_agent](../../../dv/sv/jtag_agent/README.md).
 
 ### JTAG DMI Agent
 
-The RV_DM testbench instantiates the sub-components of [jtag_dmi_agent]({{<relref "hw/dv/sv/jtag_dmi_agent/doc">}}) - the `jtag_dmi_monitor`, `sba_access_monitor` and the `jtag_dmi_reg_block`.
+The RV_DM testbench instantiates the sub-components of [jtag_dmi_agent](../../../dv/sv/jtag_dmi_agent/README.md) - the `jtag_dmi_monitor`, `sba_access_monitor` and the `jtag_dmi_reg_block`.
 
 ### UVM RAL Model
 
-On OpenTitan, the DV RAL models are typically generated with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulations are run.
+On OpenTitan, the DV RAL models are typically generated with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulations are run.
 `ralgen` invokes the `reggen` tool underneath, which takes the design specification `hjson` file as input, which contains the register descriptions.
 This generator is invoked by FuseSoC when it processes the RV_DM environment
 core file located at `hw/ip/rv_dm/dv/env/rv_dm_env.core`.
@@ -101,13 +101,13 @@ The RAL models associated with each of these are created using different methods
 
 * **JTAG DTM RAL model**:
   This RAL model describes the JTAG data transport module (DTM) registers, and can be accessed only via JTAG.
-  This RAL model is hand-written and checked into our repository in the [`jtag_agent`]({{<relref "hw/dv/sv/jtag_agent/doc">}}) area.
+  This RAL model is hand-written and checked into our repository in the [`jtag_agent`](../../../dv/sv/jtag_agent/README.md) area.
 
 * **JTAG DMI RAL model**:
   The RISC-V debug specification defines registers in the DMI space, which also can be accessed only via JTAG.
   These registers facilitate CPU debug.
   The PULP RISC-V debug implementation however only implements a subset of these registers.
-  This RAL model is also checked into our repository in the [`jtag_agent`]({{<relref "hw/dv/sv/jtag_agent/doc">}}) area.
+  This RAL model is also checked into our repository in the [`jtag_agent`](../../../dv/sv/jtag_agent/README.md) area.
   It is created in the RV_DM environment configuration object.
 
 All four of these RAL models can be referenced (directly or indirectly) using the RV_DM environment configuration object.
@@ -148,14 +148,14 @@ All transactions made to or coming from the DUT flow into the scoreboard, which 
 
 #### Assertions
 
-* TLUL assertions: The `tb/rv_dm_bind.sv` file binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/rv_dm_bind.sv` file binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 * assert prop 1:
 * assert prop 2:
 
 ## Building and running tests
 
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

@@ -6,7 +6,7 @@ The crossbar tool `tlgen.py` is used to build the TL-UL crossbar RTL.
 It can be used standalone or invoked as part of top module generation process (details of top generation forthcoming).
 The RTL files found `hw/top_earlgrey/ip/xbar/rtl/autogen` are generated with the crossbar tool.
 This document does not specify the details of the internal blocks.
-See the [bus specification]({{< relref "hw/ip/tlul/doc" >}}) for details on the protocol and the components used in the crossbar.
+See the [bus specification](../../hw/ip/tlul/README.md) for details on the protocol and the components used in the crossbar.
 
 ## Standalone tlgen.py
 
@@ -35,13 +35,13 @@ Together, these describe a generic Directed Acyclic Graph (DAG) with some additi
 
 If the tool is used in the process of top generation (`topgen.py`, details forthcoming), a few fields are derived from the top Hjson configuration module structure.
 
-A description of Hjson and the recommended style is in the [Hjson Usage and Style Guide]({{< relref "doc/sg/hjson_usage_style" >}}).
+A description of Hjson and the recommended style is in the [Hjson Usage and Style Guide](../../doc/contributing/style_guides/hjson_usage_style.md).
 
 An item in the `nodes` list corresponds to a host or device interface on an instantiated IP block.
 The name of such a node should be of the form `<instance_name>.<interface_name>`, so the `my_if` interface on the instance `my_instance` would be denoted `my_instance.my_if`.
 However, many instances have a single, unnamed, device interface.
 For these devices, the node should just be named with the name of the instance (just `my_instance` in the example above).
-For details of how interfaces are defined using the register tool, see the [Bus Interfaces]({{< relref "doc/rm/comportability_specification#bus-interfaces" >}}) section of the Comportability Specification.
+For details of how interfaces are defined using the register tool, see the [Bus Interfaces](../../doc/contributing/hw/comportability/README.md#bus-interfaces) section of the Comportability Specification.
 
 Edges in the DAG are specified in the `connections` map.
 This uses an adjacency list format.
@@ -97,14 +97,14 @@ Once all Nodes are visited, the tool completes traversing then moves to RTL gene
 
 Below shows an example of 2 Hosts and 2 Devices connectivity.
 
-![Example Topology](crossbar_example_1.svg)
+![Example Topology](./doc/crossbar_example_1.svg)
 
 Each circle represents a Node and an arrow represents an Edge that has downward direction.
 The tool starts from `H0` Node.
 As the Node has two downstream Edges and not Socket `1:N`, the tool creates Socket `1:N` based on the condition #5 above.
 Then repeat the process from Socket `1:N` Node's children Nodes, `D0` and `D1`.
 
-![Socket 1:N instantiated](crossbar_example_2.svg)
+![Socket 1:N instantiated](./doc/crossbar_example_2.svg)
 
 For `D0`, the tool creates Socket `M:1` based on the condition #4.
 It then visit its downstream Node, `D0` again.
@@ -113,18 +113,18 @@ So it reached the terminal Node.
 Then it visits `D1`.
 It repeats the same step (condition #4) as `D0`, which creates another Socket `M:1`.
 
-![Socket M:1 instantiated to D0, D1](crossbar_example_3.svg)
+![Socket M:1 instantiated to D0, D1](./doc/crossbar_example_3.svg)
 
 As all Nodes from `H0` have been visited, the tool repeats all steps from `H1`.
 It applies condition #3 above as `H1` has a peripheral clock rather than main clock.
 So the tool creates an Async FIFO and moves the pointer to the Node and repeats.
 
-![Async FIFO instantiated to H1](crossbar_example_4.svg)
+![Async FIFO instantiated to H1](./doc/crossbar_example_4.svg)
 
 The tool applies rule #5 as Async FIFO has multiple downstream Nodes (Edges) and it is not Socket `1:N`.
 The tool creates a Socket `1:N` and visits every downstream Node.
 
-![Socket 1:N instantiated to `AS_a`](crossbar_example_5.svg)
+![Socket 1:N instantiated to `AS_a`](./doc/crossbar_example_5.svg)
 
 Both Nodes have been processed, so no condition is hit.
 The tool completes traversing.

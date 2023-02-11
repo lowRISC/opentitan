@@ -10,7 +10,7 @@ The templates can be customized through template parameters, which are available
 
 Ipgen is a command-line tool and a library.
 Users wishing to instantiate an IP template or query it for template parameters will find the command-line application useful.
-For use in higher-level scripting, e.g. within [topgen](topgen_tool.md) using ipgen as Python library is recommended.
+For use in higher-level scripting, e.g. within [topgen](../topgen/README.md) using ipgen as Python library is recommended.
 
 
 ## Anatomy of an IP template

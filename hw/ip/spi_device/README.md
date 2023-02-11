@@ -115,7 +115,7 @@ The TPM submodule conforms to the [TPM over SPI 2.0][] specification. The TPM op
 
 ## Block Diagram
 
-![Block Diagram](block_diagram.svg)
+![Block Diagram](./doc/block_diagram.svg)
 
 In Generic mode, the incoming data is stored byte-based into an asynchronous FIFO.
 The logic inside the generic mode then updates the DPSRAM RX space.
@@ -160,7 +160,7 @@ The gain of having write FIFO interrupt is not great.
 
 ## SPI Device Generic mode
 
-![Generic Mode Block Diagram](generic-blockdiagram.svg)
+![Generic Mode Block Diagram](./doc/generic-blockdiagram.svg)
 
 The block diagram above shows how the SPI Device generic mode converts incoming
 bit-serialized SDI data into a valid byte, where the data bit is valid when the
@@ -249,7 +249,7 @@ then a generic understanding of how firmware mode operates will follow.
 
 The following diagram shows the expected data transfer in SPI Generic mode.
 
-![data transfer in SPI Device](data_transfer.svg)
+![data transfer in SPI Device](./doc/data_transfer.svg)
 
 In this diagram, bursts of data transfer are shown as "pages" of firmware
 content being driven into the device. The size of the page is not relevant,
@@ -393,7 +393,7 @@ See [Command Upload](#command-upload) section for details.
 
 ### Command Parser
 
-![Command Parser block](cmdparse.svg)
+![Command Parser block](./doc/cmdparse.svg)
 
 Command parser (*cmdparse*) processes the first byte of the SPI and activates the processing submodules depending on the received opcode and the *cmd_info* list described in the previous section.
 
@@ -489,7 +489,7 @@ For example, if SW programs the dummy cycle for Fast Read Quad to `3h`, the modu
 
 #### Buffer Management
 
-![Read Buffer Management](buffer-management.svg)
+![Read Buffer Management](./doc/buffer-management.svg)
 
 The SPI Device IP uses the first half of the DPSRAM as a read buffer when the SPI mode is flash or passthrough mode.
 The IP returns data from the read buffer based on the given address in the received read command.
@@ -563,7 +563,7 @@ The module also manipulates the data if needed.
 
 Filtering the incoming command is the key role of the Passthrough module.
 
-![Command Filtering logic in Passthrough mode](passthrough-filter.svg)
+![Command Filtering logic in Passthrough mode](./doc/passthrough-filter.svg)
 
 {{<wavejson>}}
 { signal: [
@@ -640,7 +640,7 @@ Other than Read command accessing mailbox space, it is recommended to filter the
 
 ## TPM over SPI
 
-![TPM over SPI block diagram](tpm-blockdiagram.svg)
+![TPM over SPI block diagram](./doc/tpm-blockdiagram.svg)
 
 The TPM over SPI submodule processes the low level data only.
 The TPM submodule parses the incoming SPI MOSI line and stacks the stream up to the SW accessible registers, such as TPM_CMD_ADDR, and TPM_WRITE_FIFO.
@@ -769,7 +769,7 @@ re-commence with the next byte in the next transaction.
 
 ### RXFIFO control
 
-![RXF CTRL State Machine](rxf_ctrl_fsm.svg)
+![RXF CTRL State Machine](./doc/rxf_ctrl_fsm.svg)
 
 The RXFIFO Control module controls data flow from RXFIFO to SRAM. It connects
 two FIFOs having different data widths. RXFIFO is byte width, SRAM storing
@@ -782,7 +782,7 @@ timer expires while bytes are still in the RXFIFO, the logic writes partial
 words to SRAM. A read-modify-write operation is triggered to perform the partial
 update.
 
-![State Machine](rxf_ctrl_fsm_table.png)
+![State Machine](./doc/rxf_ctrl_fsm_table.png)
 
 ### TXFIFO control
 
@@ -791,7 +791,7 @@ there is space in TXFIFO and when the TXF wptr and rptr indicate there is data
 to transmit. Data is written into the TXF SRAM by software which also controls
 the TXF write pointer.
 
-![TXF CTRL Data Path](txf_ctrl_dp.svg)
+![TXF CTRL Data Path](./doc/txf_ctrl_dp.svg)
 
 The TXFIFO control module latches the write pointer then uses it internally.
 This prevents HW from using incorrect data from SRAM if the write pointer
@@ -809,7 +809,7 @@ So, if software wants to send specific dummy data, it should prepare the amount
 of data with that value. As shown in the Theory Of Operations figure, for
 example, internal software could prepare FFh values for first page.
 
-![State Machine](txf_ctrl_fsm_table.png)
+![State Machine](./doc/txf_ctrl_fsm_table.png)
 
 ## Data Storage Sizes
 
@@ -858,7 +858,7 @@ The figure below shows the SRAM layout in the Flash and Passthrough modes.
 In generic mode, the whole DPSRAM is used as RX/TX buffers as described in the generic mode section.
 The SRAM begins at `0x1000`, which in the figure is `0x000`.
 
-![SPI Device Dual-port SRAM Layout](spid_sram_layout.svg)
+![SPI Device Dual-port SRAM Layout](./doc/spid_sram_layout.svg)
 
 The regions starting from `0xF00` to `0xFFF` are assigned to TPM Read/Write FIFOs.
 They are not used in this version of IP.

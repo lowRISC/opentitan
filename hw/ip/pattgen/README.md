@@ -5,7 +5,7 @@ title: "Pattern Generator HWIP Technical Specification"
 # Overview
 
 This document specifies the functionality of the pattern generator hardware IP (HWIP).
-This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification/index.md" >}})
+This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader top-level system.
 
 ## Features
@@ -43,7 +43,7 @@ Changes to the configuration registers only take effect once the channel has bee
 
 ## Block Diagram
 
-![](pattgen_block_diagram.svg)
+![](./doc/pattgen_block_diagram.svg)
 
 ## Hardware Interfaces
 

@@ -269,5 +269,5 @@ Extensibility:
 
 
 <!-- Links -->
-[csm-secure-boot]: {{< relref "doc/security/specs/secure_boot" >}}
-[rom-ext-manifest]: {{< relref "sw/device/silicon_creator/rom_ext/docs/manifest" >}}
+[csm-secure-boot]: ../../../../doc/security/specs/secure_boot/README.md
+[rom-ext-manifest]: ../rom_ext/doc/manifest.md
