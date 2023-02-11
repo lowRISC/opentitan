@@ -68,6 +68,7 @@ rust_library(
         "src/image/manifest.rs",
         "src/image/manifest_def.rs",
         "src/image/mod.rs",
+        "src/io/eeprom.rs",
         "src/io/emu.rs",
         "src/io/gpio.rs",
         "src/io/i2c.rs",
