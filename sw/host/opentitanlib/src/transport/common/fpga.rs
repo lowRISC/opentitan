@@ -7,6 +7,7 @@ use std::time::Duration;
 
 use crate::io::gpio::GpioPin;
 use crate::io::uart::Uart;
+use crate::transport::ProgressIndicator;
 use crate::util::rom_detect::{RomDetect, RomKind};
 
 /// Command for Transport::dispatch().
@@ -21,7 +22,7 @@ pub struct FpgaProgram<'a> {
     pub rom_timeout: Duration,
     /// A progress function to provide user feedback.
     /// Will be called with the address and length of each chunk sent to the target device.
-    pub progress: Option<Box<dyn Fn(u32, u32) + 'a>>,
+    pub progress: Box<dyn ProgressIndicator + 'a>,
 }
 
 impl FpgaProgram<'_> {

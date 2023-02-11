@@ -13,7 +13,7 @@ use std::time::Duration;
 use crate::collection;
 use crate::io::gpio::GpioError;
 use crate::io::spi::SpiError;
-use crate::transport::{TransportError, TransportInterfaceType};
+use crate::transport::{ProgressIndicator, TransportError, TransportInterfaceType};
 use crate::util::parse_int::ParseInt;
 use crate::util::usb::UsbBackend;
 
@@ -334,7 +334,7 @@ impl Backend {
         Ok(())
     }
 
-    fn fpga_download(&self, bitstream: &[u8], progress: Option<&dyn Fn(u32, u32)>) -> Result<()> {
+    fn fpga_download(&self, bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
         // This isn't really documented well in the python implementation:
         // There appears to be a header on the bitstream which we do not
         // want to send to the board.
@@ -346,23 +346,21 @@ impl Backend {
         let newlen = stream.len() + if stream.len() % 32 != 0 { 32 } else { 33 };
         stream.resize(newlen, 0xFF);
 
+        progress.new_stage("", stream.len());
+
         // Finally, chunk the payload into 2k chunks and send it to the
         // bulk endpoint.
-        for chunk in stream.chunks(2048) {
-            if let Some(prg) = progress {
-                prg(0, chunk.len() as u32)
-            }
+        const CHUNK_LEN: usize = 2048;
+        for (chunk_no, chunk) in stream.chunks(CHUNK_LEN).enumerate() {
+            progress.progress(CHUNK_LEN * chunk_no);
             self.usb.write_bulk(Backend::BULK_OUT_EP, chunk)?;
         }
+        progress.progress(stream.len());
         Ok(())
     }
 
     /// Program a bitstream into the FPGA.
-    pub fn fpga_program(
-        &self,
-        bitstream: &[u8],
-        progress: Option<&dyn Fn(u32, u32)>,
-    ) -> Result<()> {
+    pub fn fpga_program(&self, bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
         self.fpga_prepare(Backend::FPGA_PROG_SPEED)?;
         let result = self.fpga_download(bitstream, progress);
 

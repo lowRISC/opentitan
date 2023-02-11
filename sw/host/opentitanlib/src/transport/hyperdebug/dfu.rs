@@ -12,7 +12,7 @@ use std::any::Any;
 use std::cell::RefCell;
 
 use crate::transport::{
-    Capabilities, Capability, Progress, Transport, TransportError, UpdateFirmware,
+    Capabilities, Capability, ProgressIndicator, Transport, TransportError, UpdateFirmware,
 };
 use crate::util::usb::UsbBackend;
 
@@ -56,7 +56,7 @@ impl Transport for HyperdebugDfu {
                 &mut self.usb_backend.borrow_mut(),
                 None, /* current_firmware_version */
                 &update_firmware_action.firmware,
-                &update_firmware_action.progress,
+                update_firmware_action.progress.as_ref(),
                 update_firmware_action.force,
             )
         } else {
@@ -128,7 +128,7 @@ pub fn update_firmware(
     usb_device: &mut UsbBackend,
     current_firmware_version: Option<&str>,
     firmware: &Option<Vec<u8>>,
-    progress: &Option<Box<dyn Fn(Progress)>>,
+    progress: &dyn ProgressIndicator,
     force: bool,
 ) -> Result<Option<Box<dyn Annotate>>> {
     let firmware: &[u8] = if let Some(vec) = firmware.as_ref() {
@@ -215,7 +215,7 @@ fn do_update_firmware(
     usb_device: &mut UsbBackend,
     dfu_desc: DfuDescriptor,
     firmware: &[u8],
-    progress: &Option<Box<dyn Fn(Progress)>>,
+    progress: &dyn ProgressIndicator,
 ) -> Result<()> {
     let DfuDescriptor {
         dfu_interface,
@@ -233,12 +233,7 @@ fn do_update_firmware(
 
     log::info!("Erasing flash storage...");
     let firmware_len = firmware.len() as u32;
-    if let Some(progress) = progress {
-        progress(Progress::Stage {
-            name: "Erasing".to_string(),
-            total: firmware_len,
-        });
-    }
+    progress.new_stage("Erasing", firmware_len as usize);
     let mut bytes_erased: u32 = 0;
     while bytes_erased < firmware_len {
         let mut request = [0u8; 5];
@@ -257,20 +252,11 @@ fn do_update_firmware(
         )?;
         wait_for_idle(usb_device, dfu_interface)?;
         bytes_erased += page_size;
-        if let Some(progress) = progress {
-            progress(Progress::Progress {
-                pos: bytes_erased as u32,
-            });
-        }
+        progress.progress(bytes_erased as usize);
     }
 
     log::info!("Programming flash storage...");
-    if let Some(progress) = progress {
-        progress(Progress::Stage {
-            name: "Writing".to_string(),
-            total: firmware_len,
-        });
-    }
+    progress.new_stage("Writing", firmware_len as usize);
     let mut bytes_sent: u32 = 0;
     while bytes_sent < firmware_len {
         let chunk_size = std::cmp::min(firmware_len - bytes_sent, xfer_size);
@@ -304,11 +290,7 @@ fn do_update_firmware(
         )?;
         wait_for_idle(usb_device, dfu_interface)?;
         bytes_sent += chunk_size;
-        if let Some(progress) = progress {
-            progress(Progress::Progress {
-                pos: bytes_sent as u32,
-            });
-        }
+        progress.progress(bytes_sent as usize);
     }
 
     // Request to leave DFU bootloader, and transfer control to newly flashed firmware.

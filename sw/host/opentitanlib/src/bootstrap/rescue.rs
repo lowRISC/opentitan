@@ -12,7 +12,7 @@ use crate::app::TransportWrapper;
 use crate::bootstrap::{Bootstrap, BootstrapOptions, UpdateProtocol};
 use crate::impl_serializable_error;
 use crate::io::uart::Uart;
-use crate::transport::Capability;
+use crate::transport::{Capability, ProgressIndicator};
 
 #[derive(AsBytes, Debug, Default)]
 #[repr(C)]
@@ -307,7 +307,7 @@ impl UpdateProtocol for Rescue {
         container: &Bootstrap,
         transport: &TransportWrapper,
         payload: &[u8],
-        progress: &dyn Fn(u32, u32),
+        progress: &dyn ProgressIndicator,
     ) -> Result<()> {
         let frames = Frame::from_payload(payload)?;
         let uart = container.uart_params.create(transport)?;
@@ -315,10 +315,11 @@ impl UpdateProtocol for Rescue {
         self.enter_rescue_mode(container, &*uart)?;
 
         // Send frames one at a time.
+        progress.new_stage("", frames.len() * Frame::DATA_LEN);
         'next_block: for (idx, frame) in frames.iter().enumerate() {
             for consecutive_errors in 0..Self::MAX_CONSECUTIVE_ERRORS {
                 eprint!("{}.", idx);
-                progress(frame.header.flash_offset, frame.data.len() as u32);
+                progress.progress(idx * Frame::DATA_LEN);
                 uart.write(frame.as_bytes())?;
                 let mut response = [0u8; Frame::HASH_LEN];
                 let mut index = 0;
@@ -358,6 +359,7 @@ impl UpdateProtocol for Rescue {
         container.reset_pin.write(false)?; // Low active
         std::thread::sleep(container.reset_delay);
         container.reset_pin.write(true)?; // Release reset
+        progress.progress(frames.len() * Frame::DATA_LEN);
         eprintln!("Success!");
         Ok(())
     }
