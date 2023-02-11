@@ -277,6 +277,14 @@ impl<'a> TransportCommandHandler<'a> {
                     Bootstrap::update(self.transport, options, payload)?;
                     Ok(Response::Proxy(ProxyResponse::Bootstrap))
                 }
+                ProxyRequest::ApplyPinStrapping { strapping_name } => {
+                    self.transport.apply_pin_strapping(strapping_name)?;
+                    Ok(Response::Proxy(ProxyResponse::ApplyPinStrapping))
+                }
+                ProxyRequest::RemovePinStrapping { strapping_name } => {
+                    self.transport.remove_pin_strapping(strapping_name)?;
+                    Ok(Response::Proxy(ProxyResponse::RemovePinStrapping))
+                }
             },
         }
     }

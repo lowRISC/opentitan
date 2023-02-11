@@ -11,7 +11,9 @@ use crate::io::gpio::{GpioMonitoring, GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::transport::{Progress, ProxyOps, Transport, TransportError, TransportInterfaceType};
+use crate::transport::{
+    Capability, Progress, ProxyOps, Transport, TransportError, TransportInterfaceType,
+};
 use anyhow::Result;
 use std::time::Duration;
 
@@ -417,8 +419,30 @@ impl TransportWrapper {
     /// Configure a specific set of pins as strong/weak pullup/pulldown as declared in
     /// configuration files under a given strapping name.
     pub fn apply_pin_strapping(&self, strapping_name: &str) -> Result<()> {
+        let mut success = false;
+        if self.capabilities()?.request(Capability::PROXY).ok().is_ok() {
+            // The transport happens to be connection to a remote opentitan session.  Pass
+            // request to the remote server.
+            if let Err(e) = self.proxy_ops()?.apply_pin_strapping(strapping_name) {
+                match e.downcast_ref::<TransportError>() {
+                    Some(TransportError::InvalidStrappingName(_)) => (),
+                    _ => return Err(e),
+                }
+            } else {
+                // Remote server recognized name of the strapping, based on its configuration.
+                // Make a note of that, and do not report error even if local configuration does
+                // not mention this trapping.
+                success = true;
+            }
+        }
         if let Some(strapping_conf_map) = self.strapping_conf_map.get(strapping_name) {
-            self.apply_pin_configurations(strapping_conf_map)
+            // Local configuration contains this strapping, make a note of that and do not report
+            // error even if remote server did not recognize this strapping.
+            success = true;
+            self.apply_pin_configurations(strapping_conf_map)?;
+        }
+        if success {
+            Ok(())
         } else {
             Err(TransportError::InvalidStrappingName(strapping_name.to_string()).into())
         }
@@ -428,12 +452,33 @@ impl TransportWrapper {
     /// configuration, that is, to the level declared in the "pins" section of configuration
     /// files, outside of any "strappings" section.
     pub fn remove_pin_strapping(&self, strapping_name: &str) -> Result<()> {
+        let mut success = false;
+        if self.capabilities()?.request(Capability::PROXY).ok().is_ok() {
+            // The transport happens to be connection to a remote opentitan session.  Pass
+            // request to the remote server.
+            if let Err(e) = self.proxy_ops()?.remove_pin_strapping(strapping_name) {
+                match e.downcast_ref::<TransportError>() {
+                    Some(TransportError::InvalidStrappingName(_)) => (),
+                    _ => return Err(e),
+                }
+            } else {
+                // Remote server recognized name of the strapping, based on its configuration.
+                // Make a note of that, and do not report error even if local configuration does
+                // not mention this trapping.
+                success = true;
+            }
+        }
         if let Some(strapping_conf_map) = self.strapping_conf_map.get(strapping_name) {
+            // Local configuration contains this strapping, make a note of that and do not report
+            // error even if remote server did not recognize this strapping.
+            success = true;
             for pin_name in strapping_conf_map.keys() {
                 if let Some(default_pin_conf) = self.pin_conf_map.get(pin_name) {
                     self.apply_pin_configuration(pin_name, default_pin_conf)?;
                 }
             }
+        }
+        if success {
             Ok(())
         } else {
             Err(TransportError::InvalidStrappingName(strapping_name.to_string()).into())
