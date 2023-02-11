@@ -8,11 +8,10 @@ use std::any::Any;
 use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::PathBuf;
-use std::time::Instant;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::app::{self, TransportWrapper};
+use opentitanlib::app::{StagedProgressBar, TransportWrapper};
 use opentitanlib::io::eeprom::{AddressMode, Transaction, MODE_111};
 use opentitanlib::io::spi::{SpiParams, Transfer};
 use opentitanlib::spiflash::SpiFlash;
@@ -175,13 +174,8 @@ impl CommandDispatch for SpiRead {
         flash.set_address_mode_auto(&*spi)?;
 
         let mut buffer = vec![0u8; self.length];
-        let progress = app::progress_bar(self.length as u64);
-        let t0 = Instant::now();
-        flash.read_with_progress(&*spi, self.start, &mut buffer, |_, chunk| {
-            progress.inc(chunk as u64);
-        })?;
-        progress.finish();
-        let duration = t0.elapsed().as_secs_f64();
+        let progress = StagedProgressBar::new();
+        flash.read_with_progress(&*spi, self.start, &mut buffer, &progress)?;
 
         if self.filename.to_str() == Some("-") {
             self.write_file(io::stdout(), &buffer)?;
@@ -191,7 +185,7 @@ impl CommandDispatch for SpiRead {
             self.write_file(file, &buffer)?;
             Ok(Some(Box::new(SpiReadResponse {
                 length: buffer.len(),
-                bytes_per_second: buffer.len() as f64 / duration,
+                bytes_per_second: progress.bytes_per_second(),
             })))
         }
     }
@@ -224,17 +218,12 @@ impl CommandDispatch for SpiErase {
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
 
-        let progress = app::progress_bar(self.length as u64);
-        let t0 = Instant::now();
-        flash.erase_with_progress(&*spi, self.start, self.length, |_, chunk| {
-            progress.inc(chunk as u64);
-        })?;
-        progress.finish();
-        let duration = t0.elapsed().as_secs_f64();
+        let progress = StagedProgressBar::new();
+        flash.erase_with_progress(&*spi, self.start, self.length, &progress)?;
 
         Ok(Some(Box::new(SpiEraseResponse {
             length: self.length,
-            bytes_per_second: self.length as f64 / duration,
+            bytes_per_second: progress.bytes_per_second(),
         })))
     }
 }
@@ -267,17 +256,12 @@ impl CommandDispatch for SpiProgram {
         flash.set_address_mode_auto(&*spi)?;
 
         let buffer = fs::read(&self.filename)?;
-        let progress = app::progress_bar(buffer.len() as u64);
-        let t0 = Instant::now();
-        flash.program_with_progress(&*spi, self.start, &buffer, |_, chunk| {
-            progress.inc(chunk as u64);
-        })?;
-        progress.finish();
-        let duration = t0.elapsed().as_secs_f64();
+        let progress = StagedProgressBar::new();
+        flash.program_with_progress(&*spi, self.start, &buffer, &progress)?;
 
         Ok(Some(Box::new(SpiProgramResponse {
             length: buffer.len(),
-            bytes_per_second: buffer.len() as f64 / duration,
+            bytes_per_second: progress.bytes_per_second(),
         })))
     }
 }

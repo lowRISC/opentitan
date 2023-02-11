@@ -9,7 +9,7 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::app::{self, TransportWrapper};
+use opentitanlib::app::{StagedProgressBar, TransportWrapper};
 use opentitanlib::bootstrap::{Bootstrap, BootstrapOptions, BootstrapProtocol};
 use opentitanlib::image::image::ImageAssembler;
 use opentitanlib::transport;
@@ -83,15 +83,8 @@ impl CommandDispatch for BootstrapCommand {
         }
 
         let payload = self.payload()?;
-        let progress = app::progress_bar(payload.len() as u64);
-        Bootstrap::update_with_progress(
-            transport,
-            &self.bootstrap_options,
-            &payload,
-            |_, chunk| {
-                progress.inc(chunk as u64);
-            },
-        )?;
+        let progress = StagedProgressBar::new();
+        Bootstrap::update_with_progress(transport, &self.bootstrap_options, &payload, &progress)?;
         Ok(None)
     }
 }

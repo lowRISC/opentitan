@@ -10,7 +10,7 @@ use zerocopy::AsBytes;
 use crate::app::TransportWrapper;
 use crate::bootstrap::{Bootstrap, BootstrapOptions, UpdateProtocol};
 use crate::io::spi::Transfer;
-use crate::transport::Capability;
+use crate::transport::{Capability, ProgressIndicator};
 
 #[derive(AsBytes, Debug, Default)]
 #[repr(C)]
@@ -129,12 +129,13 @@ impl UpdateProtocol for Primitive {
         container: &Bootstrap,
         transport: &TransportWrapper,
         payload: &[u8],
-        progress: &dyn Fn(u32, u32),
+        progress: &dyn ProgressIndicator,
     ) -> Result<()> {
         let spi = container.spi_params.create(transport, "BOOTSTRAP")?;
 
         let frames = Frame::from_payload(payload);
 
+        progress.new_stage("", payload.len());
         let mut i = 0;
         while i < frames.len() {
             let frame = &frames[i];
@@ -145,7 +146,7 @@ impl UpdateProtocol for Primitive {
             );
 
             // Write the frame and read back the hash of the previous frame.
-            progress(frame.header.flash_offset, frame.data.len() as u32);
+            progress.progress(frame.header.flash_offset as usize);
             let mut prev_hash = [0u8; std::mem::size_of::<Frame>()];
             spi.run_transaction(&mut [Transfer::Both(frame.as_bytes(), &mut prev_hash)])?;
 
@@ -169,6 +170,7 @@ impl UpdateProtocol for Primitive {
             }
             i += 1;
         }
+        progress.progress(payload.len());
         Ok(())
     }
 }

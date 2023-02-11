@@ -200,10 +200,7 @@ impl Transport for CW310 {
             log::info!("Programming the FPGA bitstream.");
             let usb = self.device.borrow();
             usb.spi1_enable(false)?;
-            usb.fpga_program(
-                &fpga_program.bitstream,
-                fpga_program.progress.as_ref().map(Box::as_ref),
-            )?;
+            usb.fpga_program(&fpga_program.bitstream, fpga_program.progress.as_ref())?;
             Ok(None)
         } else if action.downcast_ref::<ResetSam3x>().is_some() {
             self.device.borrow().reset_sam3x()?;

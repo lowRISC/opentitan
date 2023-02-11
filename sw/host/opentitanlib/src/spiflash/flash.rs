@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::app::NoProgressBar;
 use crate::io::eeprom::{AddressMode, Transaction, MODE_111};
 use crate::io::spi::Target;
 use crate::spiflash::sfdp::{BlockEraseSize, Sfdp, SupportedAddressModes};
+use crate::transport::ProgressIndicator;
 use anyhow::{ensure, Result};
 use std::convert::TryFrom;
 use thiserror::Error;
@@ -223,7 +225,7 @@ impl SpiFlash {
 
     /// Read into `buffer` from the SPI flash starting at `address`.
     pub fn read(&self, spi: &dyn Target, address: u32, buffer: &mut [u8]) -> Result<&Self> {
-        self.read_with_progress(spi, address, buffer, |_, _| {})
+        self.read_with_progress(spi, address, buffer, &NoProgressBar)
     }
 
     /// Read into `buffer` from the SPI flash starting at `address`.
@@ -233,17 +235,20 @@ impl SpiFlash {
         spi: &dyn Target,
         mut address: u32,
         buffer: &mut [u8],
-        progress: impl Fn(u32, u32),
+        progress: &dyn ProgressIndicator,
     ) -> Result<&Self> {
+        progress.new_stage("", buffer.len());
         // Break the read up according to the maximum chunksize the backend can handle.
-        for chunk in buffer.chunks_mut(spi.get_eeprom_max_transfer_sizes()?.read) {
+        let chunk_size = spi.get_eeprom_max_transfer_sizes()?.read;
+        for (idx, chunk) in buffer.chunks_mut(chunk_size).enumerate() {
+            progress.progress(idx * chunk_size);
             spi.run_eeprom_transactions(&mut [Transaction::Read(
                 MODE_111.cmd_addr(SpiFlash::READ, address, self.address_mode),
                 chunk,
             )])?;
             address += chunk.len() as u32;
-            progress(address, chunk.len() as u32);
         }
+        progress.progress(buffer.len());
         Ok(self)
     }
 
@@ -260,7 +265,7 @@ impl SpiFlash {
     /// Erase a segment of the SPI flash starting at `address` for `length` bytes.
     /// The address and length must be sector aligned.
     pub fn erase(&self, spi: &dyn Target, address: u32, length: u32) -> Result<&Self> {
-        self.erase_with_progress(spi, address, length, |_, _| {})
+        self.erase_with_progress(spi, address, length, &NoProgressBar)
     }
 
     /// Erase a segment of the SPI flash starting at `address` for `length` bytes.
@@ -271,7 +276,7 @@ impl SpiFlash {
         spi: &dyn Target,
         address: u32,
         length: u32,
-        progress: impl Fn(u32, u32),
+        progress: &dyn ProgressIndicator,
     ) -> Result<&Self> {
         if address % self.erase_size != 0 {
             return Err(Error::BadEraseAddress(address, self.erase_size).into());
@@ -279,8 +284,10 @@ impl SpiFlash {
         if length % self.erase_size != 0 {
             return Err(Error::BadEraseLength(length, self.erase_size).into());
         }
+        progress.new_stage("", length as usize);
         let end = address + length;
         for addr in (address..end).step_by(self.erase_size as usize) {
+            progress.progress((addr - address) as usize);
             spi.run_eeprom_transactions(&mut [
                 Transaction::Command(MODE_111.cmd(SpiFlash::WRITE_ENABLE)),
                 Transaction::Command(MODE_111.cmd_addr(
@@ -290,8 +297,8 @@ impl SpiFlash {
                 )),
                 Transaction::WaitForBusyClear,
             ])?;
-            progress(addr, self.erase_size);
         }
+        progress.progress(length as usize);
         Ok(self)
     }
 
@@ -299,7 +306,7 @@ impl SpiFlash {
     /// The address and buffer length may be arbitrary.  This function will not
     /// erase the segment first.
     pub fn program(&self, spi: &dyn Target, address: u32, buffer: &[u8]) -> Result<&Self> {
-        self.program_with_progress(spi, address, buffer, |_, _| {})
+        self.program_with_progress(spi, address, buffer, &NoProgressBar)
     }
 
     /// Program a segment of the SPI flash starting at `address` with the contents of `buffer`.
@@ -311,8 +318,9 @@ impl SpiFlash {
         spi: &dyn Target,
         mut address: u32,
         buffer: &[u8],
-        progress: impl Fn(u32, u32),
+        progress: &dyn ProgressIndicator,
     ) -> Result<&Self> {
+        progress.new_stage("", buffer.len());
         let mut remain = buffer.len();
         let mut chunk_start = 0usize;
         while remain != 0 {
@@ -339,7 +347,7 @@ impl SpiFlash {
             address += chunk_size as u32;
             chunk_start += chunk_size;
             remain -= chunk_size;
-            progress(address, chunk_size as u32);
+            progress.progress(buffer.len() - remain);
         }
         Ok(self)
     }

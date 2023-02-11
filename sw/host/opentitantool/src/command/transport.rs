@@ -68,7 +68,7 @@ impl CommandDispatch for TransportUpdateFirmware {
         let progress = StagedProgressBar::new();
         let operation = UpdateFirmware {
             firmware,
-            progress: Some(progress.pfunc()),
+            progress: Box::new(progress),
             force: self.force,
         };
         transport.dispatch(&operation)

@@ -583,7 +583,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 &mut self.inner.usb_device.borrow_mut(),
                 self.current_firmware_version.as_deref(),
                 &update_firmware_action.firmware,
-                &update_firmware_action.progress,
+                update_firmware_action.progress.as_ref(),
                 update_firmware_action.force,
             )
         } else if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
@@ -710,10 +710,7 @@ impl Flavor for CW310Flavor {
         log::info!("Programming the FPGA bitstream.");
         let usb = cw310.device.borrow();
         usb.spi1_enable(false)?;
-        usb.fpga_program(
-            &fpga_program.bitstream,
-            fpga_program.progress.as_ref().map(Box::as_ref),
-        )?;
+        usb.fpga_program(&fpga_program.bitstream, fpga_program.progress.as_ref())?;
         Ok(())
     }
     fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {

@@ -160,12 +160,13 @@ pub struct Bootstrap {
     pub image_path: PathBuf,
 }
 
-pub enum Progress {
-    /// Declares that a stage of the operation is starting, giving the total number of bytes to be
-    /// processed in this stage.  If only a single stage, `name` may be the empty string.
-    Stage { name: String, total: u32 },
-    /// Informs about progress within the current state, `pos` is absolute number of bytes so far.
-    Progress { pos: u32 },
+pub trait ProgressIndicator {
+    // Begins a new stage, indicating "size" of this stage in bytes.  `name` can be the empty
+    // string, for instance if the operation has only a single stage.
+    fn new_stage(&self, name: &str, total: usize);
+    // Indicates how far towards the previously declared `total`.  Operation will be shown as
+    // complete, once the parameter value to this method equals `total`.
+    fn progress(&self, absolute: usize);
 }
 
 /// Command for Transport::dispatch().
@@ -175,7 +176,7 @@ pub struct UpdateFirmware<'a> {
     /// trait implementation knows how to download such.
     pub firmware: Option<Vec<u8>>,
     /// A progress function to provide user feedback, see details of the `Progress` struct.
-    pub progress: Option<Box<dyn Fn(Progress) + 'a>>,
+    pub progress: Box<dyn ProgressIndicator + 'a>,
     /// Should updating be attempted, even if the current firmware version matches that of the
     /// image to be updated to.
     pub force: bool,
