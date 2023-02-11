@@ -4,7 +4,7 @@ title: "Top Earlgrey"
 
 ## Specification
 
-The specification of Earlgrey is located [here]({{< relref "doc" >}}).
+The specification of Earlgrey is located [here](./doc/specification.md).
 
 ## Tool: TopGen
 

@@ -952,12 +952,12 @@ return K, IV
     is erased after personalization is complete.
 
 
-[attestation]: {{< relref "/doc/security/specs/attestation" >}}
-[attestation_keys]: {{< relref "/doc/security/specs/attestation" >}}#asymmetric-keys
-[attestation_certificate]: {{< relref "/doc/security/specs/attestation" >}}#certificate-format
-[creator_identity]: {{< relref "/doc/security/specs/identities_and_root_keys" >}}#creator-identity
-[device_lifecycle]: {{< relref "/doc/security/specs/device_life_cycle" >}}
-[device_id]: {{< relref "/doc/security/specs/identities_and_root_keys" >}}#device-identifier
-[identities_and_root_keys]: {{< relref "/doc/security/specs/identities_and_root_keys" >}}
+[attestation]: ../attestation/README.md
+[attestation_keys]: ../attestation/README.md#asymmetric-keys
+[attestation_certificate]: ../attestation/README.md#certificate-format
+[creator_identity]: ../identities_and_root_keys/README.md#creator-identity
+[device_lifecycle]: ../device_life_cycle/README.md
+[device_id]: ../identities_and_root_keys/README.md#device-identifier
+[identities_and_root_keys]: ../identities_and_root_keys/README.md
 [nist_800_56r3]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar3.pdf
-[ownership_transfer]: {{< relref "/doc/security/specs/ownership_transfer" >}}
+[ownership_transfer]: ../ownership_transfer/README.md

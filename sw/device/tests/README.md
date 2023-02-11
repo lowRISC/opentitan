@@ -4,7 +4,7 @@ title: "Chip-Level Tests"
 
 # Overview
 
-This subtree contains three types of chip-level tests that are capable of running across all OpenTitan verification targets, using the [on-device test framework]({{< relref "sw/device/lib/testing/test_framework/index.md" >}}).
+This subtree contains three types of chip-level tests that are capable of running across all OpenTitan verification targets, using the [on-device test framework](../lib/testing/test_framework/README.md).
 These targets include: DV simulation, Verilator simulation, FPGA, and eventually silicon.
 
 # Test Types
@@ -36,13 +36,13 @@ While most of these tests are top-level agnostic, some are not.
 ### Subfoldering Target-Specific Tests
 Ideally all smoke, IP integration, and system-level tests should be target agnostic.
 However, some tests require emulation of host capabilities, such as an external SPI or I2C host, an external host to encrypt/decrypt data, or an external host that toggles GPIO pins.
-Eventually, host-side test initiation tools and the [on-device test framework]({{< relref "sw/device/lib/testing/test_framework/index.md" >}}) will make host emulation opaque to each chip-level test.
+Eventually, host-side test initiation tools and the [on-device test framework](../lib/testing/test_framework/README.md) will make host emulation opaque to each chip-level test.
 However, until then, host emulation depends on the target (e.g., DV vs. Verilator simulation).
 Therefore, chip-level tests that require external stimulation from the host, will be subfoldered by target, under the appropriate toplevel folder above.
 One example of such a test is the [`sw/device/tests/sim_dv/gpio_test.c`](https://github.com/lowRISC/opentitan/blob/master/sw/device/tests/sim_dv/gpio_test.c), which is subfoldered under `../sim_dv/` to indicate it is a target-specific test.
 
 # Writing a Chip-Level Test
-For instructions on how to write a chip-level test, refer to the [on-device test framework]({{< relref "sw/device/lib/testing/test_framework/index.md" >}}) page.
+For instructions on how to write a chip-level test, refer to the [on-device test framework](../lib/testing/test_framework/README.md) page.
 
 # List of Tests
 

@@ -6,14 +6,14 @@ title: "SRAM Controller Technical Specification"
 # Overview
 
 This document specifies the functionality of the SRAM memory controller.
-The SRAM controller is a module that is a peripheral on the chip interconnect bus, and thus follows the [Comportability Specification]({{< relref "doc/rm/comportability_specification" >}}).
+The SRAM controller is a module that is a peripheral on the chip interconnect bus, and thus follows the [Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 
 
 The SRAM controller contains the SRAM data and address scrambling device and provides CSRs for requesting the scrambling keys and triggering the hardware initialization feature.
 
 ## Features
 
-- [Lightweight scrambling mechanism]({{< relref "hw/ip/prim/doc/prim_ram_1p_scr#custom-substitution-permutation-network" >}}) based on the PRINCE prince cipher.
+- [Lightweight scrambling mechanism](../prim/doc/prim_ram_1p_scr.md#custom-substitution-permutation-network) based on the PRINCE prince cipher.
 - Key request logic for the lightweight memory and address scrambling device.
 - Alert sender and checking logic for detecting bus integrity failures.
 - LFSR-based memory initialization feature.
@@ -24,7 +24,7 @@ The SRAM controller contains the SRAM data and address scrambling device and pro
 
 ## Block Diagram
 
-![SRAM Controller Block Diagram](sram_ctrl_blockdiag.svg)
+![SRAM Controller Block Diagram](./doc/sram_ctrl_blockdiag.svg)
 
 As shown in the block diagram above, the SRAM controller contains a TL-UL adapter, an initialization LFSR, the CSR node, key request logic and an instance of `prim_ram_1p_scr` that implements the actual scrambling mechanism.
 
@@ -73,13 +73,13 @@ Signal                     | Direction        | Type                            
 `lc_escalate_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`             | Multibit life cycle escalation enable signal coming from life cycle controller, asserted if an escalation has occurred.
 `sram_otp_key_o`           | `output`         | `otp_ctrl_pkg::sram_otp_key_req_t` | Key derivation request going to the key derivation interface of the OTP controller.
 `sram_otp_key_i`           | `input`          | `otp_ctrl_pkg::sram_otp_key_rsp_t` | Ephemeral scrambling key coming back from the key derivation interface of the OTP controller.
-`otp_en_sram_ifetch_i`     | `input`          | `otp_ctrl_pkg::mubi8_t`            | Multibit value coming from the OTP HW_CFG partition ([EN_SRAM_IFETCH]({{< relref "hw/ip/otp_ctrl/doc/#direct-access-memory-map" >}})), set to kMuBi8True in order to enable the {{< regref "EXEC" >}} CSR.
+`otp_en_sram_ifetch_i`     | `input`          | `otp_ctrl_pkg::mubi8_t`            | Multibit value coming from the OTP HW_CFG partition ([EN_SRAM_IFETCH](../otp_ctrl/README.md#direct-access-memory-map)), set to kMuBi8True in order to enable the {{< regref "EXEC" >}} CSR.
 `cfg_i`                    | `input`          | `logic [CfgWidth-1:0]`             | Attributes for physical memory macro.
 
 #### Interfaces to OTP and the SRAM Scrambling Primitive
 
 The interface to the key derivation interface inside the OTP controller follows a simple req / ack protocol, where the SRAM controller first requests an updated ephemeral key by asserting the `sram_otp_key_i.req`.
-The OTP controller then fetches entropy from CSRNG and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the PRESENT scrambling data path as described in the [OTP controller spec]({{< relref "hw/ip/otp_ctrl/doc/#scrambling-datapath" >}}).
+The OTP controller then fetches entropy from CSRNG and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the PRESENT scrambling data path as described in the [OTP controller spec](../otp_ctrl/README.md#scrambling-datapath).
 Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_o[*]`, `otbn_otp_key_o`), which complete the req / ack handshake.
 The key and nonce are made available to the scrambling primitive in the subsequent cycle.
 The wave diagram below illustrates this process.
@@ -107,7 +107,7 @@ It should be noted that this mechanism requires the CSRNG and entropy distributi
 Note that the req/ack protocol runs on `clk_otp_i`.
 The SRAM controller synchronizes the data over via a req/ack handshake primitive `prim_sync_reqack.sv` primitive as shown below.
 
-![OTP Key Req Ack](../../otp_ctrl/doc/otp_ctrl_key_req_ack.svg)
+![OTP Key Req Ack](../otp_ctrl/doc/otp_ctrl_key_req_ack.svg)
 
 Note that the key and nonce output signals on the OTP controller side are guaranteed to remain stable for at least 62 OTP clock cycles after the `ack` signal is pulsed high, because the derivation of a 64bit half-key takes at least two passes through the 31-cycle PRESENT primitive.
 Hence, if the SRAM controller clock `clk_i` is faster or in the same order of magnitude as `clk_otp_i`, the data can be directly sampled upon assertion of `src_ack_o`.
@@ -117,16 +117,16 @@ If the SRAM controller runs on a significantly slower clock than OTP, an additio
 
 If `lc_escalate_en_i` is set to any different value than `lc_ctrl_pkg::Off`, the current scrambling keys are discarded and reset to `RndCnstSramKey` and `RndCnstSramNonce` in the subsequent cycle.
 Any subsequent memory request to `prim_ram_1p_scr` will then be blocked as well.
-This mechanism is part of the [life cycle]({{< relref "hw/ip/lc_ctrl/doc" >}}) state scrapping and secret wiping countermeasure triggered by the alert handler (global escalation).
+This mechanism is part of the [life cycle](../lc_ctrl/README.md) state scrapping and secret wiping countermeasure triggered by the alert handler (global escalation).
 
 Note that if any local bus integrity or counter errors are detected, the SRAM controller will locally escalate without assertion of `lc_escalate_en_i`.
 The behavior of local escalation is identical to global escalation via `lc_escalate_en_i`.
 
 ## Scrambling Primitive
 
-As explained in [`prim_ram_1p_scr`]({{< relref "hw/ip/prim/doc/prim_ram_1p_scr" >}}) the scrambling mechanism employs a reduced-round PRINCE block cipher in CTR mode to scramble the data.
+As explained in [`prim_ram_1p_scr`](../prim/doc/prim_ram_1p_scr.md) the scrambling mechanism employs a reduced-round PRINCE block cipher in CTR mode to scramble the data.
 Since plain CTR mode does not diffuse the data bits due to the bitwise XOR, the scheme is augmented by passing each word through a shallow substitution-permutation (S&P) network implemented with the `prim_subst_perm` primitive.
-The S&P network employed is similar to the one employed in PRESENT and is explained in more detail [here]({{< relref "hw/ip/prim/doc/prim_ram_1p_scr#custom-substitution-permutation-network" >}}).
+The S&P network employed is similar to the one employed in PRESENT and is explained in more detail [here](../prim/doc/prim_ram_1p_scr.md#custom-substitution-permutation-network).
 
 Another CTR mode augmentation that is aimed at breaking the linear address space is SRAM address scrambling.
 The same S&P network construction that is used for intra-word diffusion is leveraged to non-linearly remap the SRAM address as shown in the block diagram above.
@@ -157,9 +157,9 @@ Note however that the PRNG sequence does not have strong security guarantees, si
 ### Code Execution from SRAM
 
 The SRAM controller contains an access control mechanism for filtering instruction fetches from the processor.
-As illustrated below, an OTP switch EN_SRAM_IFETCH (see [OTP memory map]({{< relref "hw/ip/otp_ctrl/doc/#direct-access-memory-map" >}})) allows to either tie code execution from SRAM to the life cycle state via the HW_DEBUG_EN function (see [life cycle docs]({{< relref "hw/ip/lc_ctrl/doc/#hw_debug_en" >}})), or it can be enabled / disabled via the {{< regref "EXEC" >}} CSR.
+As illustrated below, an OTP switch EN_SRAM_IFETCH (see [OTP memory map](../otp_ctrl/README.md#direct-access-memory-map)) allows to either tie code execution from SRAM to the life cycle state via the HW_DEBUG_EN function (see [life cycle docs](../lc_ctrl/README.md#hw_debug_en)), or it can be enabled / disabled via the {{< regref "EXEC" >}} CSR.
 
-![SRAM Code Execution](../doc/sram_ctrl_sram_execution.svg)
+![SRAM Code Execution](./doc/sram_ctrl_sram_execution.svg)
 
 The different configuration options are listed in the table below:
 
@@ -188,11 +188,11 @@ The register highlighted with orange is the scrambled data holding register, whi
 
 Note that this arrangement still allows full read/write throughput as illustrated in the alternating R/W sequence below.
 
-![SRAM Controller Sequencing](sram_ctrl_sequencing.svg)
+![SRAM Controller Sequencing](./doc/sram_ctrl_sequencing.svg)
 
 However, due to the end-to-end bus integrity scheme, sub-word write accesses currently require a read-modify-write operation in order to recompute the integrity bits for the entire word, as illustrated in the diagram below.
 
-![SRAM Controller Sub-word Write](sram_ctrl_sub_word_write.svg)
+![SRAM Controller Sub-word Write](./doc/sram_ctrl_sub_word_write.svg)
 
 Sub-word write accesses are therefore 3x slower than full-word write accesses.
 Read accesses however always take 1 cycle, no matter whether the access is a full-word or sub-word read operation.

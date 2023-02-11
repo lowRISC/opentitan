@@ -57,7 +57,7 @@ All hardware interfaces of the debug system are documented in the [PULP RISC-V D
 
 ### Life Cycle Control
 
-Debug system functionality is controlled by the [HW_DEBUG_EN]({{< relref "hw/ip/lc_ctrl/doc/#hw_debug_en" >}}) function of the life cycle controller.
+Debug system functionality is controlled by the [HW_DEBUG_EN](../lc_ctrl/README.md#hw_debug_en) function of the life cycle controller.
 
 ```verilog
 input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i, // Debug module lifecycle enable/disable

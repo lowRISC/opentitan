@@ -3,7 +3,7 @@
 `OTBNSim` class represents a simulator that models the whole OTBN block.
 Therefore it includes abstract models for the the state of the core, its memory modules, and also the register modules.
 It has methods for starting the execution, cycle-accurate simulation tracing, and for injecting errors and reacting to those errors with a secure wipe.
-As explained in the overall [OTBN DV documentation](../../doc/dv/_index.md), this simulator is driven essentially from the SystemVerilog model of the OTBN module.
+As explained in the overall [OTBN DV documentation](../README.md), this simulator is driven essentially from the SystemVerilog model of the OTBN module.
 
 The simulator works in a step-by-step fashion and it has multiple methods to apply external stimuli to OTBN.
 In a typical run without errors, the ISS does the following:

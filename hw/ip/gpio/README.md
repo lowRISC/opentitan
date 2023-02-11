@@ -6,7 +6,7 @@ title: "GPIO HWIP Technical Specification"
 
 This document specifies GPIO hardware IP functionality. This
 module conforms to the [Comportable guideline for peripheral device
-functionality]({{< relref "doc/rm/comportability_specification" >}})
+functionality](../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader top
 level system.
 
@@ -54,7 +54,7 @@ interrupt control.
 
 ## Block Diagram
 
-![GPIO Block Diagram](gpio_blockdiagram.svg)
+![GPIO Block Diagram](./doc/gpio_blockdiagram.svg)
 
 The block diagram above shows the `DATA_OUT` and `DATA_OE` registers
 managed by hardware outside of the auto-generated register file.
@@ -69,7 +69,7 @@ the top level netlist.
 
 ### GPIO Output logic
 
-![GPIO Output Diagram](gpio_output.svg)
+![GPIO Output Diagram](./doc/gpio_output.svg)
 
 The GPIO module maintains one 32-bit output register `DATA_OUT` with two
 ways to write to it. Direct write access uses {{< regref "DIRECT_OUT" >}}, and
@@ -133,7 +133,7 @@ if the noise filter is enabled).
 The GPIO module provides 32 interrupt signals to the main processor.
 Each interrupt can be independently enabled, tested, and configured.
 Following the standard interrupt guidelines in the [Comportability
-Specification]({{< relref "doc/rm/comportability_specification" >}}),
+Specification](../../../doc/contributing/hw/comportability/README.md),
 the 32 bits of the {{< regref "INTR_ENABLE" >}} register determines whether the
 associated inputs are configured to detect interrupt events. If enabled
 via the various `INTR_CTRL_EN` registers, their current state can be

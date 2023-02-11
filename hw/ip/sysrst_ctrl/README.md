@@ -6,7 +6,7 @@ title: "System Reset Control Technical Specification"
 
 This document specifies the functionality of the System Reset Controller (`sysrst_ctrl`) that provides programmable hardware-level responses to trusted IOs and basic board-level reset sequencing capabilities.
 These capabilities include keyboard and button combination-triggered actions, reset stretching for system-level reset signals, and internal reset / wakeup requests that go to the OpenTitan reset and power manager blocks.
-This module conforms to the [Comportable guideline for peripheral functionality]({{< relref "doc/rm/comportability_specification" >}}).
+This module conforms to the [Comportable guideline for peripheral functionality](../../../doc/contributing/hw/comportability/README.md).
 See that document for integration overview within the broader top level system.
 
 ## Features
@@ -32,7 +32,7 @@ The configuration programming interface is not based on any existing interface.
 
 # Theory of Operations
 
-![`sysrst_ctrl` Block Diagram](sysrst_ctrl_blockdiagram.svg)
+![`sysrst_ctrl` Block Diagram](./doc/sysrst_ctrl_blockdiagram.svg)
 
 The block diagram above shows a conceptual view of the `sysrst_ctrl` block, which consists of 3 main modules:
 The first is the configuration and status registers, the second is the keyboard combo debounce and detection logic, and the third is the pinout override logic.
@@ -186,7 +186,7 @@ When OpenTitan is in reset, `ec_rst_l_o` will be asserted (active low).
 The power-on-reset value of {{< regref PIN_ALLOWED_CTL.EC_RST_L_1 >}} and {{< regref PIN_OUT_CTL.EC_RST_L >}} will guarantee that `ec_rst_l_o` remains asserted after OpenTitan reset is released.
 The software can release `ec_rst_l_o` explicitly by setting {{< regref PIN_OUT_CTL.EC_RST_L >}} to 0 during boot in order to complete the OpenTitan and EC power-on-reset sequence.
 
-Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration]({{< relref "hw/ip/pinmux/doc/" >}}) before releasing `ec_rst_l_o`.
+Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration](../pinmux/README.md) before releasing `ec_rst_l_o`.
 
 ## Flash Write Protect Output
 
@@ -195,7 +195,7 @@ The software can release `flash_wp_l_o` explicitly by setting {{< regref PIN_OUT
 The `flash_wp_l_o` signal does have a corresponding input signal `flash_wp_l_i` - but that one is mainly intended for pad observability and does not have a bypass path to `flash_wp_l_o`.
 Hence, the value of `flash_wp_l_o` defaults to logic 0 when it is not explicitly driven via the override function.
 
-Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration]({{< relref "hw/ip/pinmux/doc/" >}}) before releasing `flash_wp_l_o`.
+Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration](../pinmux/README.md) before releasing `flash_wp_l_o`.
 
 ## Device Interface Functions (DIFs)
 

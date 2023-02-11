@@ -6,7 +6,7 @@ title: "Interrupt Controller Technical Specification"
 
 This document specifies the Interrupt Controller (RV_PLIC) functionality. This
 module conforms to the
-[Comportable guideline for peripheral functionality]({{< relref "doc/rm/comportability_specification" >}}).
+[Comportable guideline for peripheral functionality](../../../doc/contributing/hw/comportability/README.md).
 See that document for integration overview within the broader top level system.
 
 
@@ -31,7 +31,7 @@ The RV_PLIC is compatible with any RISC-V core implementing the RISC-V privilege
 
 ## Block Diagram
 
-![RV_PLIC Block Diagram](block_diagram.svg)
+![RV_PLIC Block Diagram](./doc/block_diagram.svg)
 
 ## Hardware Interfaces
 

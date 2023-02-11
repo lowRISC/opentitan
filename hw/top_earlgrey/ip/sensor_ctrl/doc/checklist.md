@@ -2,8 +2,8 @@
 title: "SENSOR_CTRL Checklist"
 ---
 
-This checklist is for [Hardware Stage]({{< relref "/doc/project/development_stages.md" >}}) transitions for the [SENSOR_CTRL peripheral.](../)
-All checklist items refer to the content in the [Checklist.]({{< relref "/doc/project/checklist.md" >}})
+This checklist is for [Hardware Stage](../../../../../doc/project_governance/development_stages.md) transitions for the [SENSOR_CTRL peripheral.](../README.md)
+All checklist items refer to the content in the [Checklist.](../../../../../doc/project_governance/checklist/README.md)
 
 ## Design Checklist
 
@@ -11,7 +11,7 @@ All checklist items refer to the content in the [Checklist.]({{< relref "/doc/pr
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Done        | [SENSOR_CTRL Design Spec](../)
+Documentation | [SPEC_COMPLETE][]              | Done        | [SENSOR_CTRL Design Spec](../README.md)
 Documentation | [CSR_DEFINED][]                | Done        |
 RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | Done        |
@@ -21,15 +21,15 @@ RTL           | [FUNC_IMPLEMENTED][]           | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
 Code Quality  | [LINT_SETUP][]                 | Done        |
 
-[SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec_complete" >}}
-[CSR_DEFINED]:                {{<relref "/doc/project/checklist.md#csr_defined" >}}
-[CLKRST_CONNECTED]:           {{<relref "/doc/project/checklist.md#clkrst_connected" >}}
-[IP_TOP]:                     {{<relref "/doc/project/checklist.md#ip_top" >}}
-[IP_INSTANTIABLE]:            {{<relref "/doc/project/checklist.md#ip_instantiable" >}}
-[PHYSICAL_MACROS_DEFINED_80]: {{<relref "/doc/project/checklist.md#physical_macros_defined_80" >}}
-[FUNC_IMPLEMENTED]:           {{<relref "/doc/project/checklist.md#func_implemented" >}}
-[ASSERT_KNOWN_ADDED]:         {{<relref "/doc/project/checklist.md#assert_known_added" >}}
-[LINT_SETUP]:                 {{<relref "/doc/project/checklist.md#lint_setup" >}}
+[SPEC_COMPLETE]:              ../../../../../doc/project_governance/checklist/README.md#spec_complete
+[CSR_DEFINED]:                ../../../../../doc/project_governance/checklist/README.md#csr_defined
+[CLKRST_CONNECTED]:           ../../../../../doc/project_governance/checklist/README.md#clkrst_connected
+[IP_TOP]:                     ../../../../../doc/project_governance/checklist/README.md#ip_top
+[IP_INSTANTIABLE]:            ../../../../../doc/project_governance/checklist/README.md#ip_instantiable
+[PHYSICAL_MACROS_DEFINED_80]: ../../../../../doc/project_governance/checklist/README.md#physical_macros_defined_80
+[FUNC_IMPLEMENTED]:           ../../../../../doc/project_governance/checklist/README.md#func_implemented
+[ASSERT_KNOWN_ADDED]:         ../../../../../doc/project_governance/checklist/README.md#assert_known_added
+[LINT_SETUP]:                 ../../../../../doc/project_governance/checklist/README.md#lint_setup
 
 ### D2
 
@@ -54,24 +54,24 @@ Code Quality  | [AREA_CHECK][]            | Done        |
 Code Quality  | [TIMING_CHECK][]          | Done        |
 Security      | [SEC_CM_DOCUMENTED][]     | N/A         |
 
-[NEW_FEATURES]:          {{<relref "/doc/project/checklist.md#new_features" >}}
-[BLOCK_DIAGRAM]:         {{<relref "/doc/project/checklist.md#block_diagram" >}}
-[DOC_INTERFACE]:         {{<relref "/doc/project/checklist.md#doc_interface" >}}
-[DOC_INTEGRATION_GUIDE]: {{<relref "/doc/project/checklist.md#doc_integration_guide" >}}
-[MISSING_FUNC]:          {{<relref "/doc/project/checklist.md#missing_func" >}}
-[FEATURE_FROZEN]:        {{<relref "/doc/project/checklist.md#feature_frozen" >}}
-[FEATURE_COMPLETE]:      {{<relref "/doc/project/checklist.md#feature_complete" >}}
-[PORT_FROZEN]:           {{<relref "/doc/project/checklist.md#port_frozen" >}}
-[ARCHITECTURE_FROZEN]:   {{<relref "/doc/project/checklist.md#architecture_frozen" >}}
-[REVIEW_TODO]:           {{<relref "/doc/project/checklist.md#review_todo" >}}
-[STYLE_X]:               {{<relref "/doc/project/checklist.md#style_x" >}}
-[CDC_SYNCMACRO]:         {{<relref "/doc/project/checklist.md#cdc_syncmacro" >}}
-[LINT_PASS]:             {{<relref "/doc/project/checklist.md#lint_pass" >}}
-[CDC_SETUP]:             {{<relref "/doc/project/checklist.md#cdc_setup" >}}
-[RDC_SETUP]:             {{<relref "/doc/project/checklist.md#rdc_setup" >}}
-[AREA_CHECK]:            {{<relref "/doc/project/checklist.md#area_check" >}}
-[TIMING_CHECK]:          {{<relref "/doc/project/checklist.md#timing_check" >}}
-[SEC_CM_DOCUMENTED]:     {{<relref "/doc/project/checklist.md#sec_cm_documented" >}}
+[NEW_FEATURES]:          ../../../../../doc/project_governance/checklist/README.md#new_features
+[BLOCK_DIAGRAM]:         ../../../../../doc/project_governance/checklist/README.md#block_diagram
+[DOC_INTERFACE]:         ../../../../../doc/project_governance/checklist/README.md#doc_interface
+[DOC_INTEGRATION_GUIDE]: ../../../../../doc/project_governance/checklist/README.md#doc_integration_guide
+[MISSING_FUNC]:          ../../../../../doc/project_governance/checklist/README.md#missing_func
+[FEATURE_FROZEN]:        ../../../../../doc/project_governance/checklist/README.md#feature_frozen
+[FEATURE_COMPLETE]:      ../../../../../doc/project_governance/checklist/README.md#feature_complete
+[PORT_FROZEN]:           ../../../../../doc/project_governance/checklist/README.md#port_frozen
+[ARCHITECTURE_FROZEN]:   ../../../../../doc/project_governance/checklist/README.md#architecture_frozen
+[REVIEW_TODO]:           ../../../../../doc/project_governance/checklist/README.md#review_todo
+[STYLE_X]:               ../../../../../doc/project_governance/checklist/README.md#style_x
+[CDC_SYNCMACRO]:         ../../../../../doc/project_governance/checklist/README.md#cdc_syncmacro
+[LINT_PASS]:             ../../../../../doc/project_governance/checklist/README.md#lint_pass
+[CDC_SETUP]:             ../../../../../doc/project_governance/checklist/README.md#cdc_setup
+[RDC_SETUP]:             ../../../../../doc/project_governance/checklist/README.md#rdc_setup
+[AREA_CHECK]:            ../../../../../doc/project_governance/checklist/README.md#area_check
+[TIMING_CHECK]:          ../../../../../doc/project_governance/checklist/README.md#timing_check
+[SEC_CM_DOCUMENTED]:     ../../../../../doc/project_governance/checklist/README.md#sec_cm_documented
 
 ### D2S
 
@@ -85,13 +85,13 @@ Security      | [SEC_CM_SHADOW_REGS][]       | N/A         |
 Security      | [SEC_CM_RTL_REVIEWED][]      | N/A         |
 Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only contains the bus-integrity CM.
 
-[SEC_CM_ASSETS_LISTED]:    {{<relref "/doc/project/checklist.md#sec_cm_assets_listed" >}}
-[SEC_CM_IMPLEMENTED]:      {{<relref "/doc/project/checklist.md#sec_cm_implemented" >}}
-[SEC_CM_RND_CNST]:         {{<relref "/doc/project/checklist.md#sec_cm_rnd_cnst" >}}
-[SEC_CM_NON_RESET_FLOPS]:  {{<relref "/doc/project/checklist.md#sec_cm_non_reset_flops" >}}
-[SEC_CM_SHADOW_REGS]:      {{<relref "/doc/project/checklist.md#sec_cm_shadow_regs" >}}
-[SEC_CM_RTL_REVIEWED]:     {{<relref "/doc/project/checklist.md#sec_cm_rtl_reviewed" >}}
-[SEC_CM_COUNCIL_REVIEWED]: {{<relref "/doc/project/checklist.md#sec_cm_council_reviewed" >}}
+[SEC_CM_ASSETS_LISTED]:    ../../../../../doc/project_governance/checklist/README.md#sec_cm_assets_listed
+[SEC_CM_IMPLEMENTED]:      ../../../../../doc/project_governance/checklist/README.md#sec_cm_implemented
+[SEC_CM_RND_CNST]:         ../../../../../doc/project_governance/checklist/README.md#sec_cm_rnd_cnst
+[SEC_CM_NON_RESET_FLOPS]:  ../../../../../doc/project_governance/checklist/README.md#sec_cm_non_reset_flops
+[SEC_CM_SHADOW_REGS]:      ../../../../../doc/project_governance/checklist/README.md#sec_cm_shadow_regs
+[SEC_CM_RTL_REVIEWED]:     ../../../../../doc/project_governance/checklist/README.md#sec_cm_rtl_reviewed
+[SEC_CM_COUNCIL_REVIEWED]: ../../../../../doc/project_governance/checklist/README.md#sec_cm_council_reviewed
 
 ### D3
 
@@ -109,15 +109,15 @@ Review        | [REVIEW_SW_ERRATA][]    | Done        |
 Review        | Reviewer(s)             | Done        | msf@ sriyer@ tjaychen@ a-will@
 Review        | Signoff date            | Done        | 2022-08-18
 
-[NEW_FEATURES_D3]:      {{<relref "/doc/project/checklist.md#new_features_d3" >}}
-[TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo_complete" >}}
-[LINT_COMPLETE]:        {{<relref "/doc/project/checklist.md#lint_complete" >}}
-[CDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#cdc_complete" >}}
-[RDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#rdc_complete" >}}
-[REVIEW_RTL]:           {{<relref "/doc/project/checklist.md#review_rtl" >}}
-[REVIEW_DELETED_FF]:    {{<relref "/doc/project/checklist.md#review_deleted_ff" >}}
-[REVIEW_SW_CHANGE]:     {{<relref "/doc/project/checklist.md#review_sw_change" >}}
-[REVIEW_SW_ERRATA]:     {{<relref "/doc/project/checklist.md#review_sw_errata" >}}
+[NEW_FEATURES_D3]:      ../../../../../doc/project_governance/checklist/README.md#new_features_d3
+[TODO_COMPLETE]:        ../../../../../doc/project_governance/checklist/README.md#todo_complete
+[LINT_COMPLETE]:        ../../../../../doc/project_governance/checklist/README.md#lint_complete
+[CDC_COMPLETE]:         ../../../../../doc/project_governance/checklist/README.md#cdc_complete
+[RDC_COMPLETE]:         ../../../../../doc/project_governance/checklist/README.md#rdc_complete
+[REVIEW_RTL]:           ../../../../../doc/project_governance/checklist/README.md#review_rtl
+[REVIEW_DELETED_FF]:    ../../../../../doc/project_governance/checklist/README.md#review_deleted_ff
+[REVIEW_SW_CHANGE]:     ../../../../../doc/project_governance/checklist/README.md#review_sw_change
+[REVIEW_SW_ERRATA]:     ../../../../../doc/project_governance/checklist/README.md#review_sw_errata
 
 ## Verification Checklist
 

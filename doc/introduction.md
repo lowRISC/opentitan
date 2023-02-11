@@ -6,38 +6,38 @@ title: "OpenTitan"
 
 [OpenTitan](https://opentitan.org) is an open source silicon Root of Trust (RoT) project.
 OpenTitan will make the silicon RoT design and implementation more transparent, trustworthy, and secure for enterprises, platform providers, and chip manufacturers.
-OpenTitan is administered by lowRISC CIC as a collaborative [project]({{< relref "doc/project" >}}) to produce high quality, open IP for instantiation as a full-featured product.
+OpenTitan is administered by lowRISC CIC as a collaborative [project](./project_governance/README.md) to produce high quality, open IP for instantiation as a full-featured product.
 This repository exists to enable collaboration across partners participating in the OpenTitan project.
 
 ## Getting Started
 
-To get started with OpenTitan, see the [Getting Started]({{< relref "doc/getting_started" >}}) page.
+To get started with OpenTitan, see the [Getting Started](./guides/getting_started/src/README.md) page.
 For additional resources when working with OpenTitan, see the [list of user guides]({{< relref "doc/ug" >}}).
-For details on coding styles or how to use our project-specific tooling, see the [reference manuals]({{< relref "doc/rm" >}}).
-Lastly, the [Hardware Dashboard page]({{< relref "hw" >}}) contains technical documentation on the SoC, the Ibex processor core, and the individual IP blocks.
-For questions about how the project is organized, see the [project]({{< relref "doc/project" >}}) landing spot for more information.
+For details on coding styles or how to use our project-specific tooling, see the [reference manuals](../util/README.md).
+Lastly, the [Hardware Dashboard page](../hw/README.md) contains technical documentation on the SoC, the Ibex processor core, and the individual IP blocks.
+For questions about how the project is organized, see the [project](./project_governance/README.md) landing spot for more information.
 
 ## Understanding OpenTitan
 
-* [Use Cases]({{< relref "doc/use_cases" >}})
-* [Threat Model]({{< relref "doc/security/threat_model" >}})
-* [Security]({{< relref "doc/security" >}})
+* [Use Cases](./use_cases/README.md)
+* [Threat Model](./security/threat_model/README.md)
+* [Security](./security/README.md)
 
 ## Datasheets
 
-* [OpenTitan Earl Grey Chip Datasheet]({{< relref "hw/top_earlgrey/doc" >}})
+* [OpenTitan Earl Grey Chip Datasheet](../hw/top_earlgrey/doc/specification.md)
 
 ## Documentation
 
-* [Hardware]({{< relref "hw" >}})
-* [Software]({{< relref "sw" >}})
+* [Hardware](../hw/README.md)
+* [Software](../sw/README.md)
 
 ## Development
 
-* [Getting Started]({{< relref "doc/getting_started" >}})
+* [Getting Started](./guides/getting_started/src/README.md)
 * [User Guides]({{< relref "doc/ug" >}})
-* [Reference Manuals]({{< relref "doc/rm" >}})
-* [Style Guides]({{< relref "doc/sg" >}})
+* [Reference Manuals](../util/README.md)
+* [Style Guides](./contributing/style_guides/README.md)
 
 ## Repository Structure
 

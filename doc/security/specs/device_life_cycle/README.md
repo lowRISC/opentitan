@@ -13,11 +13,11 @@ trusted identity.
 Manufacturing refers to the process in which a device is tested and prepared for
 silicon correctness prior to production.
 
-The technical specification of the corresponding life cycle controller IP can be found [here]({{< relref "hw/ip/lc_ctrl/doc" >}}).
+The technical specification of the corresponding life cycle controller IP can be found [here](../../../../hw/ip/lc_ctrl/README.md).
 
 ## Background
 
-First see [here]({{< relref "doc/security/logical_security_model" >}}) for
+First see [here](../../logical_security_model/README.md) for
 OpenTitan's logical entity breakdowns.
 
 OpenTitan implements standard device life cycle manufacturing states which are

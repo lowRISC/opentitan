@@ -90,5 +90,5 @@ OpenTitan which may include external non-volatile memory.
 
 ## Read More
 
-*   [Use Cases]({{< relref "doc/use_cases" >}})
-*   [OpenTitan Security]({{< relref "../../security" >}})
+*   [Use Cases](../../use_cases/README.md)
+*   [OpenTitan Security](../README.md)

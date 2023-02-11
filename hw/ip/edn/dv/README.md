@@ -10,34 +10,34 @@ title: "EDN DV document"
   * Verify TileLink device protocol compliance with an SVA based testbench
 
 ## Current status
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages" >}})
+* [Design & verification stage](../../../README.md)
+  * [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/edn/dv/latest/report.html)
 
 ## Design features
-For detailed information on EDN design features, please see the [EDN HWIP technical specification]({{< relref ".." >}}).
+For detailed information on EDN design features, please see the [EDN HWIP technical specification](../README.md).
 
 ## Testbench architecture
-EDN testbench has been constructed based on the [CIP testbench architecture]({{< relref "hw/dv/sv/cip_lib/doc" >}}).
+EDN testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
-![Block diagram](edn_tb.svg)
+![Block diagram](./doc/edn_tb.svg)
 
 ### Top level testbench
 Top level testbench is located at `hw/ip/edn/dv/tb.sv`. It instantiates the EDN DUT module `hw/ip/edn/rtl/edn.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
+* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * EDN IOs
-* Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* Alerts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
+* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md)
+* Alerts ([`pins_if`](../../../dv/sv/common_ifs/README.md)
+* Devmode ([`pins_if`](../../../dv/sv/common_ifs/README.md)
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [common_ifs]({{< relref "hw/dv/sv/common_ifs" >}})
-* [dv_utils_pkg]({{< relref "hw/dv/sv/dv_utils/doc" >}})
-* [csr_utils_pkg]({{< relref "hw/dv/sv/csr_utils/doc" >}})
+* [common_ifs](../../../dv/sv/common_ifs/README.md)
+* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
+* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -48,20 +48,20 @@ parameter uint MAX_NUM_ENDPOINTS = 7;
 ```
 
 ### TL_agent
-EDN testbench instantiates (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+EDN testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
 which provides the ability to drive and independently monitor random traffic via
 TL host interface into EDN device.
 
 ###  Endpoint_agent
-EDN testbench instantiates this push_pull_agent({{< relref "hw/dv/sv/push_pull_agent/doc" >}}) which models an endpoint module.
+EDN testbench instantiates this push_pull_agent(../../../dv/sv/push_pull_agent/README.md) which models an endpoint module.
 
 ###  Csrng_agent
-EDN testbench instantiates this agent({{< relref "hw/dv/sv/csrng_agent/doc" >}}) which models the csrng module.
+EDN testbench instantiates this agent(../../../dv/sv/csrng_agent/README.md) which models the csrng module.
 
 ### UVM RAL Model
-The EDN RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
+The EDN RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
 
 ### Stimulus strategy
 #### Test sequences
@@ -87,11 +87,11 @@ It creates the following analysis ports to retrieve the data monitored by corres
 explain inputs monitored, flow of data and outputs checked -->
 
 #### Assertions
-* TLUL assertions: The `tb/edn_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/edn_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
-We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
+We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console

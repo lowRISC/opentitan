@@ -14,12 +14,12 @@ title: "Ibex RISC-V Core Wrapper DV document"
 The wrapper adapts Ibex's top-level interfaces to be suitable for use with OpenTitan.
 In addition rv_core_ibex provides some extra functionality controlled via bus accessible registers.
 
-For more information please see the [Ibex RISC-V Core Wrapper Technical Specification]({{< relref ".." >}}).
+For more information please see the [Ibex RISC-V Core Wrapper Technical Specification](../README.md).
 
 ## Current Status
 
 * Ibex Verification is tracked in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html)
-  * Verification follows the OpenTitan [HW development stages]({{< relref "doc/project/development_stages.md" >}})
+  * Verification follows the OpenTitan [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Nightly regression results](https://dev.azure.com/lowrisc/lowrisc-private/_build?definitionId=11)
   * These are from the Ibex private-ci which is restricted to OpenTitan project members
 
@@ -28,10 +28,10 @@ For more information please see the [Ibex RISC-V Core Wrapper Technical Specific
 The main Ibex testbench is not contained in the OpenTitan repository.
 Verification is primarily done by the testbench in the Ibex repository, see the [Ibex Testplan](https://ibex-core.readthedocs.io/en/latest/03_reference/testplan.html) for more details.
 
-The additional features provided by the RISC-V Core Wrapper are verified at a chip level only (See the [Earlgrey Chip DV testplan]({{< relref "hw/top_earlgrey/doc/dv" >}}).
+The additional features provided by the RISC-V Core Wrapper are verified at a chip level only (See the [Earlgrey Chip DV testplan](../../../top_earlgrey/dv/README.md).
 As they are simple features chip level only verification suffices to meet our goals.
 
-Similarly there is no specific verification for the TL-UL <-> Ibex memory protocol wrappers (provided by the separate [TLUL IP]({{< relref "hw/ip/tlul/doc" >}})).
+Similarly there is no specific verification for the TL-UL <-> Ibex memory protocol wrappers (provided by the separate [TLUL IP](../../tlul/README.md)).
 These are exercised extensively by all chip-level testing that runs software on Ibex providing comprehensive verification.
 
 ## Coverage

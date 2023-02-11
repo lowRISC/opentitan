@@ -155,4 +155,4 @@ This automation essentially relies on standardizing design countermeasure primit
 It uses the primitive types to anchor all the instances of countermeasure primitives and store all the handles that associate to the interface of the countermeasure primitive in a global location.
 The framework loops over all the handles and provides a common sequence to check common behavior as well as callback functions that allow users to test any non-standard behavior.
 
-Refer to cip_lib [document]({{< relref "hw/dv/sv/cip_lib/doc#security-verification-in-cip_lib" >}}) at the section - "Security Verification for common countermeasure primitives" for the steps to enable this test in block-level testbench.
+Refer to cip_lib [document](../../../../hw/dv/sv/cip_lib/README.md#security-verification-in-cip_lib) at the section - "Security Verification for common countermeasure primitives" for the steps to enable this test in block-level testbench.

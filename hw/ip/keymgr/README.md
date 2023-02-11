@@ -24,11 +24,11 @@ It enables the system to shield critical assets from software directly and provi
 
 Key manager behavior can be summarized by the functional model below.
 
-![Key Manager Functional Model](keymgr_functional_model.svg)
+![Key Manager Functional Model](./doc/keymgr_functional_model.svg)
 
 In the diagram, the red boxes represent the working state and the associated internal key, the black ovals represent derivation functions, the green squares represent software inputs, and the remaining green / purple shapes represent outputs to both software and hardware.
 
-In OpenTitan, the derivation method selected is [KMAC]({{< relref "hw/ip/kmac/doc" >}}).
+In OpenTitan, the derivation method selected is [KMAC](../kmac/README.md).
 Each valid operation involves a KMAC invocation using the key manager internal key and other HW / SW supplied inputs as data.
 While KMAC can generate outputs of arbitrary length, this design fixes the size to 256b.
 
@@ -160,7 +160,7 @@ If after entering `Disabled` life cycle is deactivated or a fault is encountered
 If ever multiple conditions collide (a fault is detected at the same time software issues disable command), the `Invalid` entry path always takes precedence.
 
 ## Life Cycle Connection
-The function of the key manager is directly managed by the [life cycle controller]({{< relref "hw/ip/lc_ctrl/doc/#key-manager-en" >}}).
+The function of the key manager is directly managed by the [life cycle controller](../lc_ctrl/README.md#key-manager-en).
 
 Until the life cycle controller activates the key manager, the key manager does not accept any software commands.
 Once the key manager is activated by the life cycle controller, it is then allowed to transition to the various states previously [described](#key-manager-states).
@@ -364,7 +364,7 @@ When disabling, both versions are disabled together.
 ## Block Diagram
 The following is a high level block diagram of the key manager.
 
-![Key Manager Block Diagram](keymgr_block_diagram.svg)
+![Key Manager Block Diagram](./doc/keymgr_block_diagram.svg)
 
 ## Design Details
 
@@ -377,7 +377,7 @@ Key manager is primarily composed of two components:
 The key manager control block manages the working state, sideload key updates, as well as what commands are valid in each state.
 It also handles the life cycle `keymgr_en` input, which deactivates the entire key manager function in the event of an escalation.
 
-![Key Manager Control Block Diagram](keymgr_control_diagram.svg)
+![Key Manager Control Block Diagram](./doc/keymgr_control_diagram.svg)
 
 
 ### KMAC Interface Control
@@ -385,7 +385,7 @@ It also handles the life cycle `keymgr_en` input, which deactivates the entire k
 The KMAC interface control represents the bulk of key manager logic.
 Based on input from key manager control, this module selects the inputs for each given command and sequences the data to KMAC.
 
-![Key Manager KMAC Interface Block Diagram](keymgr_kmac_if_diagram.svg)
+![Key Manager KMAC Interface Block Diagram](./doc/keymgr_kmac_if_diagram.svg)
 
 The KMAC interface works on a simple `valid / ready` protocol.
 When there is data to send, the KMAC interface sends out a `valid` and keeps it active.

@@ -9,7 +9,7 @@ This document describes development stages for hardware within the OpenTitan pro
 This includes design and verification stages meant to give a high-level view of the status of a design.
 OpenTitan being an open-source program aimed at a high quality silicon release, the intent is to find a balance between the rigor of a heavy tapeout process and the more fluid workings of an open source development.
 
-This document also serves as a guide to the [Hardware Dashboard]({{< relref "hw" >}}), which gives the status of all of the designs in the OpenTitan repository.
+This document also serves as a guide to the [Hardware Dashboard](../../hw/README.md), which gives the status of all of the designs in the OpenTitan repository.
 
 This document aims to mostly give a more defined structure to the process that is already followed.
 Proper versioning of RTL designs is a complex topic.
@@ -20,10 +20,10 @@ This document proposes a sensible path forwards, but this may be revisited as we
 
 The stages listed here are created to give insight into where a design is in its life from specification to silicon-ready sign-off.
 At the moment, this is strictly limited to a hardware design, but could be expanded to other components of development within OpenTitan.
-Transitions between these stages are decided by the Technical Committee via the [RFC process]({{< relref "doc/project/rfc_process" >}}).
+Transitions between these stages are decided by the Technical Committee via the [RFC process](./rfc_process.md).
 
 The first life stage is **Specification**.
-The proposed design is written up and submitted through the [RFC process]({{< relref "doc/project/rfc_process" >}}).
+The proposed design is written up and submitted through the [RFC process](./rfc_process.md).
 Depending on the complexity of the design and the guidance of the Technical Committee, it is possible a single design might require multiple RFCs.
 For example, a first RFC for the rationale, feature list, and a rough overview; followed by a more detailed RFC to get approval for the draft technical specification.
 As part of the specification process, the design author might reach out for feedback from a smaller group of reviewers while formulating an RFC proposal.
@@ -49,7 +49,7 @@ Signed-off fully-functioning (read: not buggy) designs stay in the "Signed-Off" 
 
 There exists a [template for IP checklists](https://github.com/lowRISC/opentitan/blob/master/util/uvmdvgen/checklist.md.tpl).
 The DIF stages use a separate, [software-specific checklist](https://github.com/lowRISC/opentitan/blob/master/doc/project/sw_checklist.md.tpl).
-All the checklist items are listed in the [Sign-off Checklist]({{< relref "doc/project/checklist.md" >}}).
+All the checklist items are listed in the [Sign-off Checklist](./checklist/README.md).
 
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
@@ -120,7 +120,7 @@ Once all coverage metrics have been met, waivers checked, the verification moves
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
 | V0 | Initial Work | Testbench being developed, not functional; testplan being written; decided which methodology to use (sim-based DV, FPV, or both). |
-| V1 | Under Test | <ul> <li> Documentation: <ul> <li> [DV document]({{< relref "doc/ug/dv_methodology#documentation" >}}) available, <li> [Testplan]({{< relref "doc/ug/dv_methodology#documentation" >}}) completed and reviewed </ul> <li> Testbench: <ul> <li> DUT instantiated with major interfaces hooked up <li> All available interface assertion monitors hooked up <li> X / unknown checks on DUT outputs added <li> Skeleton environment created with UVCs <li> TLM connections made from interface monitors to the scoreboard </ul> <li> Tests (written and passing): <ul> <li> Sanity test accessing basic functionality <li> CSR / mem test suite </ul> <li> Regressions: Sanity and nightly regression set up</ul> |
+| V1 | Under Test | <ul> <li> Documentation: <ul> <li> [DV document](../contributing/dv/methodology/README.md#documentation) available, <li> [Testplan](../contributing/dv/methodology/README.md#documentation) completed and reviewed </ul> <li> Testbench: <ul> <li> DUT instantiated with major interfaces hooked up <li> All available interface assertion monitors hooked up <li> X / unknown checks on DUT outputs added <li> Skeleton environment created with UVCs <li> TLM connections made from interface monitors to the scoreboard </ul> <li> Tests (written and passing): <ul> <li> Sanity test accessing basic functionality <li> CSR / mem test suite </ul> <li> Regressions: Sanity and nightly regression set up</ul> |
 | V2 | Testing Complete | <ul> <li> Documentation: <ul> <li> DV document completely written </ul> <li> Design Issues: <ul> <li> all high priority bugs addressed <li> low priority bugs root-caused </ul> <li> Testbench: <ul> <li> all interfaces hooked up and exercised <li> all assertions written and enabled </ul> <li> UVM environment: fully developed with end-to-end checks in scoreboard <li> Tests (written and passing): all tests planned for in the testplan  <li> Functional coverage (written): all covergroups planned for in the testplan <li> Regression: all tests passing in nightly regression with multiple seeds (> 90%)  <li> Coverage: 90% code coverage across the board and 90% functional coverage</ul></ul> |
 | V2S | Security Countermeasures Verified | <ul> <li> Tests (written and passing): all tests for security countermeasures (if any) </ul> |
 | V3 | Verification Complete | <ul> <li> Design Issues: all bugs addressed <li> Tests (written and passing): all tests including newly added post-V2 tests (if any) <li> Regression: all tests with all seeds passing <li> Coverage: 100% code and 100% functional coverage with waivers </ul> </ul> |
@@ -130,14 +130,14 @@ Once all coverage metrics have been met, waivers checked, the verification moves
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
 | V0 | Initial Work | Testbench being developed, not functional; testplan being written; decided which methodology to use (sim-based DV, FPV, or both). |
-| V1 | Under Test | <ul> <li> Documentation: <ul> <li> [DV document]({{< relref "doc/ug/dv_methodology#documentation" >}}) available, [Testplan]({{< relref "doc/ug/dv_methodology#documentation" >}}) completed and reviewed </ul> <li> Testbench: <ul> <li> Formal testbench with DUT bound to assertion module(s) <li> All available interface assertion monitors hooked up <li> X / unknown assertions on DUT outputs added </ul> <li> Assertions (written and proven): <ul> <li> All functional properties identified and described in testplan <li> Assertions for main functional path implemented and passing (smoke check)<li> Each input and each output is part of at least one assertion</ul> <li> Regressions: Sanity and nightly regression set up</ul> |
+| V1 | Under Test | <ul> <li> Documentation: <ul> <li> [DV document](../contributing/dv/methodology/README.md#documentation) available, [Testplan](../contributing/dv/methodology/README.md#documentation) completed and reviewed </ul> <li> Testbench: <ul> <li> Formal testbench with DUT bound to assertion module(s) <li> All available interface assertion monitors hooked up <li> X / unknown assertions on DUT outputs added </ul> <li> Assertions (written and proven): <ul> <li> All functional properties identified and described in testplan <li> Assertions for main functional path implemented and passing (smoke check)<li> Each input and each output is part of at least one assertion</ul> <li> Regressions: Sanity and nightly regression set up</ul> |
 | V2 | Testing Complete | <ul> <li> Documentation: <ul> <li> DV document completely written </ul> <li> Design Issues: <ul> <li> all high priority bugs addressed <li> low priority bugs root-caused </ul> <li> Testbench: <ul> <li> all interfaces have assertions checking the protocol <li> all functional assertions written and enabled <li> assumptions for FPV specified and reviewed </ul> <li> Tests (written and passing): all tests planned for in the testplan <li> Regression: 90% of properties proven in nightly regression <li> Coverage: 90% code coverage and 75% logic cone of influence (COI) coverage </ul> |
 | V2S | Security Countermeasures Verified | <ul> <li> Tests (written and passing): all tests for security countermeasures (if any) </ul> |
 | V3 | Verification Complete | <ul> <li> Design Issues: all bugs addressed <li> Assertions (written and proven): all assertions including newly added post-V2 assertions (if any) <li> Regression: 100% of properties proven (with reviewed assumptions) <li> Coverage: 100% code coverage and 100% COI coverage</ul> |
 
 ## Device Interface Function Stages (S)
 
-The following development stages are for [Device Interface Function (DIF)]({{< relref "doc/rm/device_interface_functions.md" >}}) work.
+The following development stages are for [Device Interface Function (DIF)](../contributing/sw/device_interface_functions.md) work.
 These stages have a slightly different emphasis to the hardware design and verification stages, because software is much easier to change if bugs are found.
 The metric they are trying to capture is the stability and completeness of a low-level software interface to hardware design.
 We are aiming to keep this process fairly lightweight in the early stages, and not significantly burdensome to the associated HW designer through all stages.
@@ -306,4 +306,4 @@ The subject will be revisited as we get closer to locking down the design to tak
 
 The stages are reported externally via a script-generated table exposed on the external website.
 This status is a summary of all `prj.hjson` files of all designs in the system, with multiple lines where there are multiple versions.
-The link to that table is [here]({{< relref "hw" >}}).
+The link to that table is [here](../../hw/README.md).

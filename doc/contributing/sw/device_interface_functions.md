@@ -19,8 +19,8 @@ DIFs may be illustrative for writing device drivers but should not be considered
 
 #### Language
 
-DIFs **must** be written in C, specifically [C11 (with a few allowed extensions)]({{< relref "doc/sg/c_cpp_coding_style.md#c-style-guide" >}}).
-DIFs **must** conform to the style guide in [`sw/device/lib/dif`]({{< relref "sw/device/lib/dif" >}}).
+DIFs **must** be written in C, specifically [C11 (with a few allowed extensions)](../style_guides/c_cpp_coding_style.md#c-style-guide).
+DIFs **must** conform to the style guide in [`sw/device/lib/dif`](../../../sw/device/lib/dif/README.md).
 
 DIFs **must** only depend on:
 
@@ -121,7 +121,7 @@ It is important that the DIFs are documented alongside the hardware IP that they
 Each hardware IP block also contains a "programmers' guide" section, which tells programmers how to use the hardware interfaces correctly, using prose descriptions and relevant diagrams.
 The prose descriptions should include references to relevant DIF functions.
 
-Programmers' guides **should** primarily refer to the [Software API Documentation]({{< relref "/sw#opentitan-software-api-documentation" >}}).
+Programmers' guides **should** primarily refer to the [Software API Documentation](../../../sw/README.md#opentitan-software-api-documentation).
 Programmers' guides **should not** contain standalone examples that do not match how we implement DIFs and can become out of date.
 The software API documentation includes full source code of the respective DIFs, should extra clarity be needed to explain how a hardware interface should be used.
 
@@ -153,7 +153,7 @@ These tests may not live in `sw/device/tests/dif`.
 ### DIF Development Stages
 
 As part of the DIF Standardisation process, we've decided to establish more concrete DIF lifecycle stages.
-These are documented with the [Development Stages]({{< relref "doc/project/development_stages.md" >}}).
+These are documented with the [Development Stages](../../project_governance/development_stages.md).
 
 In the hardware world, there are checklists for establishing that each stage is complete and the next stage can be moved to.
 

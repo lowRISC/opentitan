@@ -3,7 +3,7 @@ title: OpenTitan Big Number Accelerator (OTBN) Instruction Set Architecture
 ---
 
 This document describes the instruction set for OTBN.
-For more details about the processor itself, see the [OTBN Technical Specification]({{< relref "." >}}).
+For more details about the processor itself, see the [OTBN Technical Specification](../README.md).
 In particular, this document assumes knowledge of the *Processor State* section from that guide.
 
 The instruction set is split into *base* and *big number* subsets.
@@ -107,7 +107,7 @@ def extract_quarter_word(value: int, qwsel: int) -> int:
 # Errors
 
 OTBN can detect various errors when it is operating.
-For details about OTBN's approach to error handling, see the [Errors section]({{< relref ".#design-details-errors" >}}) of the Technical Specification.
+For details about OTBN's approach to error handling, see the [Errors section](../README.md#design-details-errors) of the Technical Specification.
 The instruction descriptions below describe any software errors that executing the instruction can cause.
 These errors are listed explicitly and also appear in the pseudo-code description, where the code sets a bit in the `ERR_BITS` register with a call to `state.stop_at_end_of_cycle()`.
 

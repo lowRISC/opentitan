@@ -863,12 +863,12 @@ DICE terminology.
 <!-- References -->
 [open-dice]: https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md
 
-[device-identifier]: {{< relref "/doc/security/specs/identities_and_root_keys" >}}#device-identifier
-[creator-identity]: {{< relref "/doc/security/specs/identities_and_root_keys" >}}#creator-identity
-[owner-identity]: {{< relref "/doc/security/specs/identities_and_root_keys" >}}#owner-identity
-[owner-root-secret]: {{< relref "/doc/security/specs/identities_and_root_keys" >}}#owner-root-secret
-[root-key]: {{< relref "/doc/security/specs/identities_and_root_keys" >}}#root-key
-[diversification-key]:{{< relref "/doc/security/specs/identities_and_root_keys" >}}#diversification-key
+[device-identifier]: ../identities_and_root_keys/README.md#device-identifier
+[creator-identity]: ../identities_and_root_keys/README.md#creator-identity
+[owner-identity]: ../identities_and_root_keys/README.md#owner-identity
+[owner-root-secret]: ../identities_and_root_keys/README.md#owner-root-secret
+[root-key]: ../identities_and_root_keys/README.md#root-key
+[diversification-key]:../identities_and_root_keys/README.md#diversification-key
 
-[device-provisioning]: {{< relref "/doc/security/specs/device_provisioning" >}}
-[owner-personalization]: {{< relref "/doc/security/specs/device_provisioning" >}}#owner_personalization
+[device-provisioning]: ../device_provisioning/README.md
+[owner-personalization]: ../device_provisioning/README.md#owner_personalization

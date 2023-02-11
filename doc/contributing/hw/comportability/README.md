@@ -119,7 +119,7 @@ Also shown is the mandatory clock, and the optional bus (TL-UL) host, interrupts
 Additionally an optional input `devmode` is shown which represents an indication to the peripheral what mode the SOC is operating in.
 For now this includes only two modes: development (`devmode = 1`) and production (`devmode = 0`).
 This is the beginning of a security feature that will convey the full life cycle mode status to the peripheral.
-In its current form, only the distinction of development mode vs. production mode is required in order to determine how to handle software errors (see the [Register Tooling]({{< relref "doc/rm/register_tool" >}}) documentation for details).
+In its current form, only the distinction of development mode vs. production mode is required in order to determine how to handle software errors (see the [Register Tooling](../../../../util/reggen/README.md) documentation for details).
 The full definition of life cycle modes will come upon further refinement of the security properties of the SOC.
 
 ## Peripheral Feature Details
@@ -185,7 +185,7 @@ For each entry, the `protocol` field gives the protocol that the peripheral uses
 All peripherals use TileLink-UL (TileLink-Uncached-Lite, aka TL-UL) as their interface to the framework.
 To signify this, the peripheral must have a protocol of `tlul`.
 The TileLink-UL protocol and its usage within lowRISC devices is given in the
-[TileLink-UL Bus Specification]({{< relref "hw/ip/tlul/doc" >}}).
+[TileLink-UL Bus Specification](../../../../hw/ip/tlul/README.md).
 As of this writing, there are no other options, but this field leaves an option for extension in the future.
 
 Each entry must also contain a `direction`.
@@ -212,7 +212,7 @@ Items on the inout list of the form `name` incur all three.
 
 #### Multiplexing Feature and Pad Control
 
-In the top level chip framework there is a [pin multiplexing unit (`pinmux`)]({{< relref "/hw/ip/pinmux/doc" >}}) which provides flexible assignment to/from peripheral IO and chip pin IO.
+In the top level chip framework there is a [pin multiplexing unit (`pinmux`)](../../../../hw/ip/pinmux/README.md) which provides flexible assignment to/from peripheral IO and chip pin IO.
 Comportable peripherals do not designate whether their available IO are hardwired to chip IO, or available for multiplexing.
 That is done at the top level with an Hjson configuration file.
 See the top level specification for information about that configuration file.
@@ -231,7 +231,7 @@ See the section on [Interrupt Handling](#interrupt-handling) below, which define
 
 ### Alerts
 
-Each peripheral has the option of designating output signals as security critical alerts destined for the hardware [alert handler module]({{< relref "/hw/top_earlgrey/ip_autogen/alert_handler/doc" >}}).
+Each peripheral has the option of designating output signals as security critical alerts destined for the hardware [alert handler module](../../../../hw/top_earlgrey/ip_autogen/alert_handler/README.md).
 These are differential signals (to avoid single point of failure) sent to the alert handler for it to send to the processor for first-line defense handling, or hardware security response if the processor does not act.
 The peripheral lists its collection of alerts with the `alert_list` attribute in the configuration file.
 For each alert in the full system, a corresponding set of signals will be generated in the alert handler to carry out this communication between alert sender and handler.
@@ -329,16 +329,16 @@ The following standardised countermeasures are defined:
 
 ## Register Handling
 
-The definition and handling of registers is a topic all on its own, and is specified in its [own document]({{< relref "doc/rm/register_tool" >}}).
+The definition and handling of registers is a topic all on its own, and is specified in its [own document](../../../../util/reggen/README.md).
 All lowRISC peripheral designs must conform to this register specification.
 
 ## Configuration description Hjson
 
 The description of the IP block and its registers is done in an Hjson file that is specified in the
-[Register Tool document]({{< relref "doc/rm/register_tool" >}}).
+[Register Tool document](../../../../util/reggen/README.md).
 All lowRISC peripheral designs must conform to this configuration and register specification.
 
-A description of Hjson (a variant of json) and the recommended style is in the [Hjson Usage and Style Guide]({{< relref "doc/sg/hjson_usage_style.md" >}}).
+A description of Hjson (a variant of json) and the recommended style is in the [Hjson Usage and Style Guide](../../style_guides/hjson_usage_style.md).
 
 ### Configuration information in the file
 
@@ -595,7 +595,7 @@ Specification of this control is defined in the rv_plic documentation of the cor
 
 Alerts are another critical and common implementation to standardize for all peripherals.
 Unlike interrupts, there is no software component to alerts at the peripheral, though there is at the hardware alert handler.
-See that [specification]({{< relref "/hw/top_earlgrey/ip_autogen/alert_handler/doc" >}}) for full details.
+See that [specification](../../../../hw/top_earlgrey/ip_autogen/alert_handler/README.md) for full details.
 A general description of the handling of alerts at the hardware level is given here.
 
 ### Alerts per Module
@@ -671,7 +671,7 @@ Cause registers for recoverable alerts must either be clearable by SW, or the HW
 Cause registers for fatal alerts must not be clearable in any way and must hence be read-only.
 
 The `prim_alert_sender` converts the event into a differentially encoded signal pair to be routed to the hardware alert handler, as dictated by the details in the
-[alert handler specification]({{< relref "/hw/top_earlgrey/ip_autogen/alert_handler/doc" >}}).
+[alert handler specification](../../../../hw/top_earlgrey/ip_autogen/alert_handler/README.md).
 The alert handler module is automatically generated to have enough alert ports to represent each alert declared in the different included peripheral IP configuration files.
 
 ## Inter Signal Handling
@@ -682,7 +682,7 @@ They don't need to talk with other modules other than reporting the interrupts t
 By contrast, many peripherals and the main processing unit in OpenTitan communicate between the modules.
 For example, `flash_ctrl` sends requests to the flash macro for read/ program/ erase operations.
 
-Inter-module signal aims to handle the connection by the tool [topgen]({{<relref "/doc/rm/topgen_tool" >}})
+Inter-module signal aims to handle the connection by the tool [topgen](../../../../util/topgen/README.md)
 
 ### Defining the inter-module signal
 

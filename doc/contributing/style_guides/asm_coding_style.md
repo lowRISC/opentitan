@@ -190,7 +190,7 @@ _trap_start:
 
 Every function-like label which is meant to be called like a function (*especially* `.global`s) should be given a Doxygen-style comment.
 While Doxygen is not suited for assembly, that style should be used for consistency.
-See the [C/C++ style guide]({{< relref "c_cpp_coding_style" >}}) for more information.
+See the [C/C++ style guide](./c_cpp_coding_style.md) for more information.
 
 Comments should be indented to match the line immediately after. For example:
 ```S

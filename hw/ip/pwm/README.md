@@ -5,7 +5,7 @@ title: "PWM HWIP Technical Specification"
 # Overview
 
 This document specifies PWM hardware IP (HWIP) functionality.
-This module conforms to the [Comportable guideline for peripheral functionality.]({{< relref "doc/rm/comportability_specification/index.md" >}})
+This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader top-level system.
 
 ## Features
@@ -73,7 +73,7 @@ Once the internal duty cycle reaches the target value, the internal duty cycle b
 
 ## Block Diagram
 
-![](pwm_block_diagram.svg)
+![](./doc/pwm_block_diagram.svg)
 
 ## Hardware Interfaces
 

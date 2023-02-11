@@ -19,7 +19,7 @@ a foray into what these are and how are the meant to be used.
 
 
 ## CIP environment block diagram
-![CIP environment block diagram](env.svg)
+![CIP environment block diagram](./doc/env.svg)
 
 ## CIP library classes
 The CIP library includes the base ral model, env cfg object, coverage
@@ -385,10 +385,10 @@ from this CIP library class, please follow the steps below:
 Note that if the testbench is generated from `uvmdvgen.py`, using the `-hr` switch
 will automatically generate the skeleton code listed above for alert device agent.
 Details on how to use `uvmdvgen.py` please refer to the
-[uvmdvgen document]({{< relref "util/uvmdvgen/doc" >}}).
+[uvmdvgen document](../../../../util/uvmdvgen/README.md).
 
 ## CIP Testbench
-![CIP testbench diagram](tb.svg)
+![CIP testbench diagram](./doc/tb.svg)
 The block diagram above shows the CIP testbench architecture, that puts
 together the static side `tb` which instantiates the `dut`, and the dynamic
 side, which is the UVM environment extended from CIP library. The diagram
@@ -471,7 +471,7 @@ Users should randomize the values of all the MUBI CSRs in non-CSR tests and chec
 The helper functions `cip_base_pkg::get_rand_mubi4|8|12|16_val(t_weight, f_weight, other_weight)` can be used to get the random values.
 
 ### Security Verification for MUBI/LC_TX type ports
-In OpenTitan [Design Verification Methodology]({{< relref "doc/ug/dv_methodology" >}}), it's mandatory to have 100% toggle coverage on all the ports.
+In OpenTitan [Design Verification Methodology](../../../../doc/contributing/dv/methodology/README.md), it's mandatory to have 100% toggle coverage on all the ports.
 However, the MUBI defined values (`True` and `False`) are complement numbers.
 If users only test with `True` and `False` without using other values, toggle coverage can be 100%.
 Hence, user should add a functional covergroup for each MUBI type input port, via binding the interface `cip_mubi_cov_if` which contains a covergroup for MUBI.
@@ -497,7 +497,7 @@ endmodule
 Note: The `sim_tops` in sim_cfg.hjson should be updated to include this bind file.
 
 ### Security Verification for common countermeasure primitives
-A [security countermeasure verification framework]({{< relref "doc/ug/sec_cm_dv_framework" >}}) is implemented in cip_lib to verify common countermeasure primitives in a semi-automated way.
+A [security countermeasure verification framework](../../../../doc/contributing/dv/sec_cm_dv_framework/README.md) is implemented in cip_lib to verify common countermeasure primitives in a semi-automated way.
 
 #### Design Verification
 cip_lib imports [sec_cm_pkg](https://github.com/lowRISC/opentitan/tree/master/hw/dv/sv/sec_cm), which automatically locates all the common countermeasure primitives and binds an interface to each of them.
@@ -603,4 +603,4 @@ class keymgr_common_vseq extends keymgr_base_vseq;
 ```
 
 #### Formal Verification
-Please refer to [formal document]({{< relref "hw/formal/doc" >}}) on how to create a FPV environment for common countermeasures.
+Please refer to [formal document](../../../formal/README.md) on how to create a FPV environment for common countermeasures.

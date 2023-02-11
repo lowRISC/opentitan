@@ -3,7 +3,7 @@ title: "Writing and building software for OTBN"
 ---
 
 OTBN is the OpenTitan Big Number accelerator and this document describes how to write and build software for it.
-The [OTBN reference manual]({{< relref "hw/ip/otbn/doc" >}}) describes the hardware and associated ISA.
+The [OTBN reference manual](../../../hw/ip/otbn/README.md) describes the hardware and associated ISA.
 
 Since OTBN is designed for cryptographic offload, not general computation, it has no C compiler.
 However, it does have the usual binutils programs: an assembler, linker and disassembler.
@@ -12,12 +12,12 @@ As such, we implement the toolchain as a thin wrapper around RISC-V binutils.
 
 ## Assembly format and examples
 
-The OTBN ISA and programmer model are described in the [OTBN reference manual]({{< relref "hw/ip/otbn/doc" >}}).
+The OTBN ISA and programmer model are described in the [OTBN reference manual](../../../hw/ip/otbn/README.md).
 In particular, note that the register `x1` has special stack-like behaviour.
 There are some example programs at `sw/otbn/code-snippets`.
 These range from simple examples of how to use pseudo-operations up to example cryptographic primitives.
 
-For specific formatting and secure coding guidelines, see the [OTBN style guide]({{< relref "doc/sg/otbn_style_guide" >}}).
+For specific formatting and secure coding guidelines, see the [OTBN style guide](../style_guides/otbn_style_guide.md).
 
 ## The tools
 

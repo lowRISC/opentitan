@@ -88,7 +88,7 @@ See also [References and URLs on GitHub](https://help.github.com/en/github/writi
 # Overview on Contributing Code
 
 Depending on the size and impact of your contribution, it may need to go through the OpenTitan RFC process.
-If your contribution is large, cross cutting, or potentially contentious, we will ask you to follow the procedure documented in the [Request for Comments (RFC) Process]({{< relref "doc/project/rfc_process" >}}).
+If your contribution is large, cross cutting, or potentially contentious, we will ask you to follow the procedure documented in the [Request for Comments (RFC) Process](../../project_governance/rfc_process.md).
 
 If you believe an RFC is not required, a lighter weight process will suffice.
 Note that if a core committer suggests that a contributor follow the RFC process, you will likely need to do so.
@@ -99,7 +99,7 @@ The lightweight process is:
 1. Check if an issue or PR addressing the same matter already exists.
    If so, consider contributing to the existing issue/PR instead of opening a new one.
 2. Assess whether the matter may be security sensitive.
-   If so, follow the [[Security Issues Process]({{< relref "doc/project/contributing.md#security-issues" >}}).
+   If so, follow the [[Security Issues Process](../README.md#security-issues).
 3. [Create a GitHub issue](#working-with-issues) to raise awareness, start the discussion, and build consensus that the issue needs to be addressed.
    For more information, refer to [Communication](#communication).
 4. Start discussing possible solutions in a smaller group, possibly outside of GitHub, but in a shared document (we typically use Google Docs for convenience) that is linked to the original GitHub issue.
@@ -111,14 +111,14 @@ The lightweight process is:
 6. Share the proposal with the wider team and collect feedback.
    For more information, refer to [Communication](#communication).
 7. If the feedback is negative, go back to Step 4.
-   If agreement with the wider team cannot be found even after a second or third iteration, consider starting the [Request for Comments (RFC) Process]({{< relref "doc/project/rfc_process" >}}).
+   If agreement with the wider team cannot be found even after a second or third iteration, consider starting the [Request for Comments (RFC) Process](../../project_governance/rfc_process.md).
 8. Start implementation and prepare a first PR.
    Create the PR from a fork rather than making new branches in `github.com/lowRISC/opentitan`.
    Reference the GitHub issue in your PR description and commit messages (see also [Working with Issues](#working-with-issues), [Writing Code](#writing-code)).
    To simplify and speed up code review, we expect larger contributions like new features and major changes to be broken into multiple, smaller PRs wherever possible.
    For more information refer to [Working with PRs](#working-with-pull-requests).
 
-Further information can be found in [Getting Started with a Design]({{< relref "doc/ug/hw_design" >}}) and in [Request for Comments (RFC) Process]({{< relref "doc/project/rfc_process" >}}).
+Further information can be found in [Getting Started with a Design](../hw/design.md) and in [Request for Comments (RFC) Process](../../project_governance/rfc_process.md).
 
 # Writing Code
 
@@ -205,7 +205,7 @@ It should never be modified directly in the OpenTitan repository.
 Instead, modifications should be discussed and implemented upstream and then be vendored into OpenTitan.
 However, when dealing with third-party code, please first raise awareness and discuss inside OpenTitan before creating issues and pull requests upstream.
 
-Further information regarding vendor code can be found in the [Vendor Tool User Guide]({{< relref "doc/ug/vendor_hw.md" >}})
+Further information regarding vendor code can be found in the [Vendor Tool User Guide](../hw/vendor.md)
 
 
 # Working with Pull Requests
@@ -228,7 +228,7 @@ Such changes, if small, can be in the same PR, but they should be in a separate 
 
 PRs with more, smaller commits instead of a few large commits simplifies debugging in the case of regressions.
 
-For more detailed information on how to submit a pull request, see our [GitHub notes]({{< relref "doc/ug/github_notes.md" >}}).
+For more detailed information on how to submit a pull request, see our [GitHub notes](../github_notes.md).
 
 ## What are committers?
 
@@ -306,7 +306,7 @@ This means no merge commits and no long series of "fixup" patches.
 Instead, use rebase to restructure your work as a series of logically ordered, atomic patches (`git rebase -i` helps).
 PRs should not be squashed when merging to keep the individual commits including commit messages making up the PR.
 
-Also see our [GitHub notes]({{< relref "doc/ug/github_notes.md" >}}).
+Also see our [GitHub notes](../github_notes.md).
 
 
 ## When to merge a PR after it has been approved?
