@@ -54,7 +54,7 @@ The word stored at address 21 in the ROM is denoted `w21`.
 The keystream value for address 12 is denoted `k12`.
 The unscrambled ROM data for (logical) address 12 is denoted `d12`.
 
-{{<wavejson>}}
+```wavejson
 {signal: [
   {name: 'clk', wave: 'p....', period: 2},
   {name: 'req', wave: '0.1...0...'},
@@ -65,7 +65,7 @@ The unscrambled ROM data for (logical) address 12 is denoted `d12`.
   {name: 'rdata + ecc', wave: 'x...3.4.x.', data: ['d12', 'd34']},
   {name: 'rvalid', wave: '0...1...0.'},
 ]}
-{{</wavejson>}}
+```
 
 The `prim_prince` primitive and the two substitution-permutation networks are all parameterised by "keys".
 For `rom_ctrl`, these keys are global randomised netlist constants: they are assumed to be difficult to recover, but aren't considered secret data.

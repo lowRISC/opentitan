@@ -228,7 +228,7 @@ The following waveform shows an example of how the peripheral hardware interface
 This example shows the case where the boot-time mode in the ENTROPY_SRC block is enabled.
 This example also shows the case where the next request will change the prior data by popping the data FIFO.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
    {name: 'clk'           , wave: 'p...|...........|......'},
    {name: 'edn_enable'    , wave: '01..|...........|......'},
@@ -237,7 +237,8 @@ This example also shows the case where the next request will change the prior da
    {name: 'edn_bus[31:0]' , wave: '0...|3....3.....|3.....', data: ['es0','es1','es2']},
    {name: 'edn_fips'      , wave: '0...|...........|......'},
  {},
-]}{{< /wavejson >}}
+]}
+```
 
 # Programmers Guide
 

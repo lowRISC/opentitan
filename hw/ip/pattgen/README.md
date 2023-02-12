@@ -107,7 +107,7 @@ For either channel, a zero in the polarity bit indicates that the channel clock 
 A one in the polarity bit inverts the `pcl` clock so that it starts high and `pda` transitions on the rising edge.
 The following waveform illustrates the effect of the `POLARITY` bit.
 Here both channels are configured for simultaneous pattern generation, but the two channels are configured for opposite polarity.
-{{<wavejson>}}
+```wavejson
 {signal: [
   {name: 'CTRL.ENABLE_CH0', wave: 'lh......'},
   {name: 'CTRL.POLARITY_CH0 (default: low)', wave: '0.......'},
@@ -118,7 +118,7 @@ Here both channels are configured for simultaneous pattern generation, but the t
   {name: 'pda1_tx', wave: 'x5.5.5.5', data: 'DATA[0] DATA[1] DATA[2]'},
 ],
   head: {text: 'Effect of the Polarity Registers',tick:0}}
-{{</wavejson>}}
+```
 
 1. Program the length of seed pattern using the length field, {{#regref pattgen.SIZE.LEN_CH0 }}.
 Note that since the allowed seed length ranges from 1-64, the value of this field should be one less than the pattern length.

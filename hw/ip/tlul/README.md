@@ -387,7 +387,7 @@ This section shows the timing relationship on the bus for writes with
 response, and reads with response. This shows a few transactions, see
 the TileLink specification for more examples.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'clk_i',      wave: 'p...................' },
@@ -415,9 +415,9 @@ the TileLink specification for more examples.
     text: 'six write transactions (four full, two partial) with various req/ready delays, error on I4 response',
     }
 }
-{{< /wavejson >}}
+```
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'clk_i',    wave: 'p...................' },
@@ -443,7 +443,7 @@ the TileLink specification for more examples.
     text: 'six read transactions with various req/ready delays, error on I4 response',
     }
 }
-{{< /wavejson >}}
+```
 
 ## Bus Primitives
 

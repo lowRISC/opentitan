@@ -82,7 +82,7 @@ Finally, the OTP controller returns a fresh ephemeral key via the response chann
 The key and nonce are made available to the scrambling primitive in the subsequent cycle.
 The wave diagram below illustrates this process.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk_otp_i',                 wave: 'p...........'},
   {name: 'sram_otp_key_o.req',        wave: '0.|1.|..0|..'},
@@ -97,7 +97,7 @@ The wave diagram below illustrates this process.
   {name: 'nonce_q',                   wave: '4.|..|...|3.'},
   {name: 'key_seed_valid_q',          wave: '4.|..|...|3.'},
 ]}
-{{< /wavejson >}}
+```
 
 If the key seeds have not yet been provisioned in OTP, the keys are derived from all-zero constants, and the `*.seed_valid` signal will be set to 0 in the response.
 It should be noted that this mechanism requires the CSRNG and entropy distribution network to be operational, and a key derivation request will block if they are not.

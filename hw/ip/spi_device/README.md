@@ -200,7 +200,7 @@ follow. The diagram below shows a typical transfer, here for 8 bytes (64 cycles,
 showing the beginning and end of the transfer). Configurability for active
 edges, polarities, and bit orders are described later.
 
-{{< wavejson >}}
+```wavejson
 { signal: [
   { name: 'CSB',  wave: '10.........|....1.'},
   { name: 'SCK',  wave: '0.p........|....l.'},
@@ -215,7 +215,7 @@ edges, polarities, and bit orders are described later.
     tick: ['-2 -1 0 1 2 3 4 5 6 7 8 9 60 61 62 63     ']
   }
 }
-{{< /wavejson >}}
+```
 
 
 ### Defining "Firmware Operation Mode"
@@ -563,7 +563,7 @@ Filtering the incoming command is the key role of the Passthrough module.
 
 ![Command Filtering logic in Passthrough mode](./doc/passthrough-filter.svg)
 
-{{<wavejson>}}
+```wavejson
 { signal: [
   { name: 'CSb_in',  wave: '10.........|....1.'},
   { name: 'SCK_in',  wave: '0.p........|....l.'},
@@ -582,7 +582,7 @@ Filtering the incoming command is the key role of the Passthrough module.
     tick: ['-2 -1 0 n-1 n+' ]
   }
 }
-{{</wavejson>}}
+```
 
 The passthrough logic filters the command based on the 256 bit of {{#regref spi_device.CMD_FILTER_0 }} CSR.
 Each bit corresponds to each opcode.
@@ -708,7 +708,7 @@ last byte is received, the hardware module cannot register the SDI signal. The
 module registers bits [7:1] and combines them with the SDI signal directly to
 form the input to RXFIFO. This is detailed in the waveform below.
 
-{{< wavejson >}}
+```wavejson
 { signal: [
   { name: 'CSB', wave: '10.||...|..1'},
   { name: 'SCK', wave: '0.p||...|..l', node:'......b' },
@@ -722,7 +722,7 @@ form the input to RXFIFO. This is detailed in the waveform below.
     tick: ['-2 -1 0 1 . 30 31 32 33 n-1 n n+1 n+2 '],
   },
 }
-{{< /wavejson >}}
+```
 
 As shown above, the RXFIFO write request signal (`RX_WEN`) is asserted when
 BitCount reaches 0h. Bitcount is reset by CSB asynchronously, returning to 7h
@@ -736,7 +736,7 @@ current entry of TXFIFO is popped at the negative edge of SCK. It results in a
 change of SDO value at the negative edge of SCK. SDO_OE is controlled by the
 CSB signal. If CSB goes to high, SDO is returned to High-Z state.
 
-{{< wavejson >}}
+```wavejson
 { signal: [
   { name: 'CSB',      wave:'10.||...|..1'},
   { name: 'SCK',      wave:'0...p.|.|...|l' , node:'.............a', period:0.5},
@@ -752,7 +752,7 @@ CSB signal. If CSB goes to high, SDO is returned to High-Z state.
     tick: ['-2 -1 0 1 . 30 31 32 33 n-1 n n+1 n+2 '],
   },
 }
-{{< /wavejson >}}
+```
 
 Note that in the SPI mode 3 configuration ({{#regref spi_device.CFG.CPOL }}=1, {{#regref spi_device.CFG.CPHA }}=1), the
 logic isn't able to pop the entry from the TX async FIFO after the last bit

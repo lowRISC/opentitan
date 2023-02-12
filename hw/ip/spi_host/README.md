@@ -82,7 +82,7 @@ When operating at the fastest-rated clock speeds, some flash devices (i.e. both 
 In order to support these fastest data rates, the SPI_HOST IP offers a modified "Full-cycle" (FULLCYC = 1) timing mode where data can be sampled a *full* cycle after the target device asserts data on the SD bus.
 This full cycle mode has no effect on any of the signals transmitted, only on the timing of the sampling of the incoming signals.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: "clk_i", wave: "p.................."},
   {name: "SCK (CPOL=0)", wave: "0.1010101010101010."},
@@ -107,7 +107,7 @@ This full cycle mode has no effect on any of the signals transmitted, only on th
   foot: {
   }
 }
-{{< /wavejson >}}
+```
 
 As mentioned earlier, the SD[0] and SD[1] lines are unidirectional in Standard SPI mode.
 On the other hand in the faster Dual- or Quad-modes, all data lines are bidirectional, and in Quad mode the number of data lines increases to four.
@@ -122,7 +122,7 @@ As indicated in the example figure below, input data need only be sampled during
 Likewise, software-provided data is only transmitted in the first two segments.
 The SPI_HOST command interface allows the user to specify any number of command segments to build larger, more complex transactions.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: "clk_i",        wave: "p................................"},
   {name: "SCK (CPOL=0)", wave: "0.101010101010101010101010101010."},
@@ -142,7 +142,7 @@ The SPI_HOST command interface allows the user to specify any number of command 
   text: "Example Quad SPI transaction: 1 byte TX (Single), 1 byte (Quad), 3 dummy cycles and 1 RX byte with CPHA=0"
   },
 }
-{{< /wavejson >}}
+```
 
 For even faster transfer rates, some flash chips support double transfer rate (DTR) variations to the SPI protocol wherein the device receives and transmits fresh data on *both* the leading and trailing edge.
 This IP only supports single transfer rate (STR), *not* DTR.
@@ -198,7 +198,7 @@ Likewise it is not necessary for software to specify any data to transmit while 
 Therefore such a command can be thought of as consisting of two separate segments, the first segment being TX Only and the second segment being RX only, as shown in the following figure.
 Breaking the command up this way potentially simplifies the job of writing software for this type of command.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: "clk_i",          wave: "p....................|.............."},
   {name: "SCK (CPOL=0)",   wave: "0.1010101010101010101|01010101010101"},
@@ -211,7 +211,7 @@ Breaking the command up this way potentially simplifies the job of writing softw
   ],
  foot: {text: "Standard SPI example: Flash Read command with 24-bit address, consisting of one TX and one RX segment"}
 }
-{{< /wavejson >}}
+```
 
 In addition to the TX, RX or Bidirectional modes, many SPI commands require periods where neither the host or device are transmitting data.
 For instance, many flash devices define a Fast Read command in which the host must insert a number of "dummy clocks" between the last address byte and the first data byte from the device.
@@ -221,7 +221,7 @@ A standard-mode Fast Read (with 3 byte addressing) command then requires *three*
 - 8 dummy clocks
 - N bytes RX Only for read data response
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: "clk_i",          wave: "p....................|.............................."},
   {name: "SCK (CPOL=0)",   wave: "0.1010101010101010101|010101010101010101010101010101"},
@@ -234,7 +234,7 @@ A standard-mode Fast Read (with 3 byte addressing) command then requires *three*
   ],
  foot: {text: "Standard SPI example: Fast read command (instruction code 0xb) with 24-bit address, consisting of three segments, one TX, 8 dummy clocks and one RX segment"}
 }
-{{< /wavejson >}}
+```
 
 For standard mode-commands, segments simplify the IO process by identifying which bus cycles have useful RX or TX data.
 In such cases it is not strictly necessary to the manage the impedance of the SD[0] and SD[1] lines.
@@ -321,7 +321,7 @@ This time delay is a half SCK cycle by default but can be extended to as long as
 - T<sub>TRAIL</sub>: The minimum time between the last trailing edge of SCK and the following rising edge of CSB.
 This time delay is a half SCK cycle by default but can be extended to as long as eight SCK cycles by setting the {{#regref spi_host.CONFIGOPTS.CSNTRAIL }} register.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: "SCK",  wave: "l....1010|10........"},
   {name: "CSB", wave: "10.......|.....1...0", node: ".A...B.....C...D...E"}
@@ -339,7 +339,7 @@ This time delay is a half SCK cycle by default but can be extended to as long as
           "&#xd7;(CLKDIV+1)"]
   }
 }
-{{< /wavejson >}}
+```
 
 These settings are all minimum bounds, and delays in the FSM implementation may create more margin in each of these timing constraints.
 
@@ -353,7 +353,7 @@ For example, consider a SPI_HOST attached to two devices each with different req
 Consider a configuration where total idle time (as determined by the {{#regref spi_host.CONFIGOPTS.CLKDIV }} and {{#regref spi_host.CONFIGOPTS.CSNIDLE }} multi-registers) works out to 9 idle clocks for the first device, and 4 clocks for the second device.
 In this scenario then, when swapping from the first device to the second, the SPI_HOST IP will only swap the clock polarity once the first `csb` line, `csb[0]`, has been high for at least 9 clocks, and will continue to hold the second `csb` line, `csb[1]`, high for 4 additional clocks before starting the next transaction.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk', wave: 'p..............'},
   ["Requested Config",
@@ -379,7 +379,7 @@ In this scenario then, when swapping from the first device to the second, the SP
   edge: ["A<->B min. 9 cycles", "C<->D min. 4 cycles"],
   head: {text: "Extended Idle Time During Configuration Changes", tock: 1}
 }
-{{< /wavejson >}}
+```
 
 This additional idle time applies not only when switching between devices but when making any changes to the configuration for most recently used device.
 For instance, even in a SPI_HOST configured for one device, changes to {{#regref spi_host.CONFIGOPTS }}, will trigger this extended idle time behavior to ensure that the change in configuration only occurs in the middle of a long idle period.
@@ -442,7 +442,7 @@ For Dual and Quad transactions the least significant bit in any instantaneous pa
 
 The following figure shows how data appears on the serial data bus when the hardware reads it from {{#regref spi_host.TXDATA }} or writes it to {{#regref spi_host.RXDATA }}.
 
-{{< wavejson >}}
+```wavejson
  {signal: [
   ["ByteOrder=0",
   {name: "SD[0] (host output)", wave: "x22222222222|2222|222|22x", data: ["t[31]", "t[30]", "t[29]", "t[28]", "t[27]", "t[26]", "t[25]", "t[24]", "t[23]","t[22]",
@@ -466,13 +466,13 @@ The following figure shows how data appears on the serial data bus when the hard
   text: "Standard SPI, bidirectional segment.  Bits are numbered as they appear in the DATA memory window"
   }
 }
-{{< /wavejson >}}
+```
 
 
 As shown in the following figure, a similar time-ordering scheme applies for Dual- and Quad-mode transfers.
 However many bits of similar significance are packed into multiple parallel SD data lines, with the least significant going to SD[0].
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   ["ByteOrder=0",
   {name: "SD[0]", wave: "x...22334455x...", data: ["d[28]", "d[24]", "d[20]", "d[16]", "d[12]", "d[8]", "d[4]", "d[0]"]},
@@ -494,7 +494,7 @@ However many bits of similar significance are packed into multiple parallel SD d
   text: "(Bits are numbered as they appear when loaded into DATA memory window)"
   }
 }
-{{< /wavejson >}}
+```
 
 ### Command Length and Alignment in DATA
 
@@ -508,7 +508,7 @@ The following waveform illustrates an example SPI transaction, where neither the
 In this example, the values `I[31:0]`, `A[31:0]` and `B[31:0]`, have been previously written into {{#regref spi_host.TXDATA }} via firmware, and afterwards one word, `X[31:0]`, is available for reading from {{#regref spi_host.RXDATA }}.
 All data in the waveform is transferred using 32-bit instructions.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: "Segment number", wave: "x2.......2.........2.2.x", data: "1 2 3 4"},
   {name: "Speed", wave: "x2.......2.........2.2.x", data: "Standard Quad X Quad"},
@@ -537,7 +537,7 @@ All data in the waveform is transferred using 32-bit instructions.
     text: "Command consists of 4 segments, all TX data is written to DATA using 32-bit memory instructions (all bytes enabled)"
   }
 }
-{{< /wavejson >}}
+```
 
 When packing data into the TX FIFO, there are also no restrictions on the alignment of the data written to the {{#regref spi_host.TXDATA }} memory window, as it supports byte-enable signals.
 This means that when copying bytes into {{#regref spi_host.TXDATA }} from unaligned firmware memory addresses, it is possible to use byte or half-word instructions.
@@ -720,7 +720,7 @@ For example if `word_be_i[3:0]` equals `4'b0011`, then the first two input bytes
 
 The following waveform illustrates the operation of the Byte Select module, highlighting the effect of the `flush_i` signal (in the first input word), as well as the effect of the byte enable signal (shown in the second word).
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: "clk_i", wave:           "p............."},
   {name: "word_i[31:0]", wave:    "x2..x2...x....", data: ["32'hBEADCAFE", "32'hDAD5F00D"]},
@@ -736,7 +736,7 @@ The following waveform illustrates the operation of the Byte Select module, high
   text: "Byte Select Operation"
   }
 }
-{{< /wavejson >}}
+```
 
 ## Byte Merge
 
@@ -756,7 +756,7 @@ For partially filled words, the zero padding goes into the least significant byt
 
 Any ByteOrder swapping is performed at the other end of the RX FIFO.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: "clk_i",        wave: "p.............."},
   {name: "byte_i[7:0]",  wave: "x22222.2....22x", data: ["01", "02", "03", "04", "05", "06", "07", "08"]},
@@ -772,7 +772,7 @@ Any ByteOrder swapping is performed at the other end of the RX FIFO.
   text: "Byte Merge Operation"
   }
 }
-{{< /wavejson >}}
+```
 
 ## Shift Register
 
@@ -793,7 +793,7 @@ The `sample_en_i` signal is ignored during full-cycle operation, in which case d
    - The `rd_ready_o` output informs the FSM whenever all data storage (the RX FIFO plus any intervening buffers) is full and no further data can be acquired.
 - `last_read_i`: When asserted at the same time as `rd_en_i`, this indicates that the current byte is the last of its command segment, and thus the `rx_last_o` signal should be asserted when passing this byte to the Byte Merge block.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: "clk_i",                   wave: "p.........................."},
  [ "External signals",
@@ -828,7 +828,7 @@ head: {
   text: "Shift Register During Standard SPI Transaction: Simultaneous Receipt and Transmission of Data."
 },
 }
-{{< /wavejson >}}
+```
 
 The connection from the shift register to the `sd` bus depends on the speed of the current segment.
 - In Standard-mode, only the most significant shift register bit, `sr_q[7]` is connected to the outputs using `sd_o[0]`.
@@ -883,7 +883,7 @@ As shown in the waveform below, this has the effect of limiting the FSM transiti
 
 $$T_\textrm{timeslice} = \frac{T_{\textrm{clk},\textrm{clk}}}{\texttt{clkdiv}+1}.$$
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk',        wave: 'p......................'},
   {name: 'clkdiv',     wave: '2......................', data: "3"},
@@ -896,7 +896,7 @@ $$T_\textrm{timeslice} = \frac{T_{\textrm{clk},\textrm{clk}}}{\texttt{clkdiv}+1}
  head: {text: "Use of FSM Enable Pulses to Realize Multi-Clock Timeslices", tock: 1},
  foot: { text: "The fsm_en signal is always high in idle states, to allow exit transitions at any time"}
 }
-{{< /wavejson >}}
+```
 
 #### Other Internal Counters
 
@@ -951,7 +951,7 @@ This state transitions to `WaitIdle` when `wait_cntr` is zero.
 The `wait_cntr` register resets to {{#regref spi_host.CONFIGOPTS.CSNIDLE }} upon entering this state, and is decremented once per timeslice.
 This state transitions to `Idle` when `wait_cntr` reaches zero.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk', wave: 'p...............'},
   {name: 'rst_n', wave: '01..............'},
@@ -962,7 +962,7 @@ This state transitions to `Idle` when `wait_cntr` reaches zero.
 ],
  config: {hscale: 2}
 }
-{{< /wavejson >}}
+```
 
 ### Milestone Signals, Serial Data Lines & Shift Register Control
 
@@ -982,7 +982,7 @@ These *milestone signals* mark the progress of each command segment.
 The coordination of the milestone signals and the shift register controls are shown in the following waveform.
 Since the milestone signal pulses coincide with *entering* particular FSM states, they are derived from the state register *inputs* (i.e., `state_d`), as opposed to the state register outputs (`state_q`).
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk', wave: 'p........................'},
   {name: 'rst_n', wave: '01.......................'},
@@ -1021,7 +1021,7 @@ config: {hscale: 1},
 head: {text: "Timing Relationship between FSM states, Milestone Signals, and Shift Register controls (with CPHA=0)"},
 foot: {text: "Key: WL=\"WaitLead\", Hi=\"InternalClkHigh\", Lo=\"InternalClkLow\" "}
 }
-{{< /wavejson >}}
+```
 
 When working from a CPHA=0 configuration, the milestone signals are directly controlled by transitions in the FSM state register, as described in the following table.
 
@@ -1049,7 +1049,7 @@ That said, there are two copies of each milestone signal:
 - the original FSM-driven copy, for use when operating with CPHA=0, and
 - a delayed copy, for use in CPHA=1 operation.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk', wave: 'p......................'},
   {name: 'rst_n', wave: '01.....................'},
@@ -1116,7 +1116,7 @@ config: {hscale: 1},
 head: {text: "Comparison of Milestone Signals in CPHA=0 vs. CPHA=1 configuration (for a dual speed segment)"},
 foot: {text: "Key: WL=\"WaitLead\", Hi=\"InternalClkHigh\", Lo=\"InternalClkLow\", WT=\"WaitTrail\""}
 }
-{{< /wavejson >}}
+```
 
 ### Milestone Signals and Control of the the Bit and Byte Counters
 
@@ -1152,7 +1152,7 @@ A complete state diagram, including the `ConfigSwitch` state, is shown in the fo
 
 The following waveform illustrates how a change in a single {{#regref spi_host.CONFIGOPTS }}, here {{#regref spi_host.CONFIGOPTS.CPOL }}, triggers an entry into the `ConfigSwitch` Idle state, and how the new configuration is applied at the transition from `WaitIdle` to `ConfigSwitch` thereby ensuring ample idle time both before and after the configuration update.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk',                       wave: 'p.................'},
   {name: 'command_i.csid',            wave: '2.................', data: ["0"]},
@@ -1170,7 +1170,7 @@ The following waveform illustrates how a change in a single {{#regref spi_host.C
   head: {text: "Extension of CSB Idle Pulse Due to CPOL Configuration Switch", tock: 1},
   foot: { text: "(Note: Due to the presence of a valid command, the FSM transitions directly from WaitIdle to ConfigSwitch)"}
 }
-{{< /wavejson >}}
+```
 
 ### CSAAT Support
 
@@ -1187,7 +1187,7 @@ This state serves a similar purpose to the `Idle` state since in this state the 
 It is different from the `Idle` state though in that during this state the active `csb` is held low.
 When a command segment is received in the `IdleCSBActive` state, it transitions immediately to the `InternalClkLow` state to generate the next `sck` pulse and process the next segment.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk', wave: 'p...........'},
   {name: 'command_ready_o', wave: '0.1....0....'},
@@ -1200,7 +1200,7 @@ When a command segment is received in the `IdleCSBActive` state, it transitions 
   edge: ["A<->B min. 9 cycles", "C<->D min. 4 cycles"],
   head: {text: "Idling While CS Active", tock: 1}
 }
-{{< /wavejson >}}
+```
 
 The following figure shows the complete state transition diagram of for the SPI_HOST FSM.
 
@@ -1328,7 +1328,7 @@ For example, SPI flash devices generally expect flash addresses (or any other mu
 This is illustrated in the following figure, which depicts a Fast Quad Read I/O command.
 Assuming that `ByteOrder` is set to `1` for Little-Endian devices such as Ibex, byte-swapping will be required for these addresses, otherwise the device will receive the addresses LSB first.
 
-{{< wavejson >}}
+```wavejson
 { signal: [
   {name:"csb", wave:"10........................."},
   {name:"sck", wave:"lnn........................"},
@@ -1348,7 +1348,7 @@ Assuming that `ByteOrder` is set to `1` for Little-Endian devices such as Ibex, 
          'L<->M Address', 'N<->O Data'],
 
  foot: {text: "Addresses are transmitted MSB first, and data is returned in order of increasing peripheral byte address."}}
-{{< /wavejson >}}
+```
 
 Byte ordering on the bus can also be managed by writing {{#regref spi_host.TXDATA }} as a sequence of discrete bytes using 8-bit transactions, since partially-filled data-words are always sent in the order they are received.
 
@@ -1453,7 +1453,7 @@ Thus if the last word in a given segment has only one valid byte, the total dela
 Such stalls however are a much smaller concern in the RX direction due to the buffering of the Shift Register outputs.
 As shown in the following waveform, even in Quad-mode, this buffer means the shift register can tolerate as many as six clock cycles of temporary back-pressure before creating a stall.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   [ "Shift Register Ports",
   {name: "clk_core_i",                  wave: "p..........................."},
@@ -1470,12 +1470,12 @@ As shown in the following waveform, even in Quad-mode, this buffer means the shi
   edge: ["A<->B 6 clocks: No Stall", "C<->D 7 clocks will stall FSM"],
   head: {text: "SPI_HOST Shift Register: Tolerance to Gaps in rx_ready_i", tick:1}
 }
-{{< /wavejson >}}
+```
 
 Even though such long delays are tolerable, it takes some time for shift register to catch up completely and clear the backlog.
 For example, if after a 6-clock delay the shift-register encounters another 4-clock backlog this can also introduce a stall condition, as shown in the waveform below.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   ["Shift Register Ports",
   {name: "clk_core_i", wave: "p........................"},
@@ -1492,14 +1492,14 @@ For example, if after a 6-clock delay the shift-register encounters another 4-cl
   edge: ["A<->B 1st Gap: 6 clocks", "C<->D 2nd Gap: 4 clocks"],
   head: {text: "SPI_HOST Shift Register: Back-to-back gaps in rx_ready_i", tick:1}
 }
-{{< /wavejson >}}
+```
 
 Delays of 3-clocks or less do not create any internal backlog in the system.
 However, the Byte Merge block can create a 4-clock delay each time it processes a single-byte segment.
 In practice, this is unlikely to cause a problem, as no Quad-SPI Flash transactions require even two back-to-back RX segments.
 However with enough (at least six) consecutive one-byte segments, the accumulated delay can eventually create a stall event on the RX path as well, as seen below.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
  [ "Shift Register Ports",
   {name: "clk_core_i", wave: "p..........................."},
@@ -1518,4 +1518,4 @@ However with enough (at least six) consecutive one-byte segments, the accumulate
   head: {text: "SPI_HOST Shift Register: Hypothetical RX Congestion Scenario", tick:1},
  foot: {text: "Six back-to-back quad reads 1-byte each, same CSID, CSAAT enabled"}
 }
-{{< /wavejson >}}
+```

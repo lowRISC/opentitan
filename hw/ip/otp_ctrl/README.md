@@ -353,7 +353,7 @@ The life cycle controller uses this information to determine the life cycle stat
 Some of these qualifier signals (`lc_dft_en_i`, `lc_creator_seed_sw_rw_en_i`, `lc_seed_hw_rd_en_i` and `lc_escalate_en_i`) are fed back to the OTP controller in order to ungate testing logic to the OTP macro; enable SW write access to the `SECRET2` partition; enable hardware read access to the root key in the `SECRET2` partition; or to push the OTP controller into escalation state.
 
 A possible sequence for the signals described is illustrated below.
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk_i',                           wave: 'p.................'},
   {name: 'otp_lc_data_o.valid',             wave: '0.|...|.1.|...|...'},
@@ -375,7 +375,7 @@ A possible sequence for the signals described is illustrated below.
   {},
   {name: 'lc_escalate_en_i',                wave: '0.|...|...|...|.5.'},
 ]}
-{{< /wavejson >}}
+```
 
 Note that the `otp_lc_data_o.valid` signal is only asserted after the `LIFE_CYCLE`, `SECRET0` and `SECRET2` partitions have successfully initialized, since the life cycle collateral contains information from all three partitions.
 The `otp_lc_data_o.test_tokens_valid` and `otp_lc_data_o.rma_token_valid` signals are multibit valid signals indicating whether the corresponding tokens are valid.
@@ -386,7 +386,7 @@ The ``otp_lc_data_o.secrets_valid`` signal is a multibit valid signal that is se
 
 In order to perform life cycle state transitions, the life cycle controller can present the new value of the life cycle state and counter via the programming interface as shown below:
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk_i',                          wave: 'p.......'},
   {name: 'lc_otp_program_i.req',           wave: '01.|..0.'},
@@ -395,7 +395,7 @@ In order to perform life cycle state transitions, the life cycle controller can 
   {name: 'lc_otp_program_o.ack',           wave: '0..|.10.'},
   {name: 'lc_otp_program_o.err',           wave: '0..|.40.'},
 ]}
-{{< /wavejson >}}
+```
 
 The request must remain asserted until the life cycle controller has responded.
 An error is fatal and indicates that the OTP programming operation has failed.
@@ -420,7 +420,7 @@ The interface to the FLASH scrambling device is a simple req/ack interface that 
 
 The keys can be requested as illustrated below:
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk_i',                      wave: 'p...........'},
   {name: 'flash_otp_key_i.data_req',   wave: '01.|..0.|...'},
@@ -430,7 +430,7 @@ The keys can be requested as illustrated below:
   {name: 'flash_otp_key_o.key',        wave: '0..|.30.|.40'},
   {name: 'flash_otp_key_o.seed_valid', wave: '0..|.10.|.10'},
 ]}
-{{< /wavejson >}}
+```
 
 The keys are derived from the FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED values stored in the `SECRET1` partition using the [scrambling primitive](#scrambling-datapath).
 If the key seeds have not yet been provisioned, the keys are derived from all-zero constants, and the `flash_otp_key_o.seed_valid` signal will be set to 0 in the response.
@@ -451,7 +451,7 @@ The OTP controller then fetches entropy from EDN and derives an ephemeral key us
 Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_o[*]`, `otbn_otp_key_o`), which complete the req / ack handshake.
 The wave diagram below illustrates this process for the OTBN scrambling device.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk_i',                     wave: 'p.......'},
   {name: 'otbn_otp_key_i.req',        wave: '01.|..0.'},
@@ -460,7 +460,7 @@ The wave diagram below illustrates this process for the OTBN scrambling device.
   {name: 'otbn_otp_key_o.key',        wave: '0..|.30.'},
   {name: 'otbn_otp_key_o.seed_valid', wave: '0..|.10.'},
 ]}
-{{< /wavejson >}}
+```
 
 If the key seeds have not yet been provisioned, the keys are derived from all-zero constants, and the `*.seed_valid` signal will be set to 0 in the response.
 It should be noted that this mechanism requires the EDN and entropy distribution network to be operational, and a key derivation request will block if they are not.
@@ -649,7 +649,7 @@ Access to the OTP wrapper and the scrambling datapath are both round-robin arbit
 Arbitration at transaction level is implemented similarly to cycle-based arbitration, with the difference that the grant signals remain asserted until the requestor deasserts the request (thereby releasing the arbiter, which acts as a mutex in this case).
 This is behavior illustrated in the example below.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk_i',                  wave: 'p............'},
   {name: 'part_scrmbl_mtx_req[0]', wave: '01....0.1....'},
@@ -660,7 +660,7 @@ This is behavior illustrated in the example below.
   {name: 'part_scrmbl_mtx_gnt[1]', wave: '0.....1..0...'},
   {name: 'part_scrmbl_mtx_gnt[2]', wave: '0........1.0.'},
 ]}
-{{< /wavejson >}}
+```
 
 ### Primitive Wrapper and FPGA Emulation
 
@@ -725,7 +725,7 @@ Note that both read and write commands return a response, and each command is in
 The latency from accepting a command to returning a response depends on the underlying OTP IP and is typically larger than 10 cycles.
 The returned values depend on the command type and whether an error occurred or not.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'clk_i',    wave: 'p.............' },
@@ -750,7 +750,7 @@ The returned values depend on the command type and whether an error occurred or 
     tick: 0,
   }
 }
-{{< /wavejson >}}
+```
 
 Note that the open source OTP controller allows up to two outstanding OTP commands, meaning that it is permissible to acknowledge an incoming command and start working on it while the results of the last command are still in the process of being output (e.g., due to an output register stage).
 
