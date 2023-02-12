@@ -1,0 +1,3 @@
+div[id^="WaveDrom_Display"] > svg {
+    width: 100%;
+}
