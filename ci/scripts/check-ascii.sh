@@ -23,6 +23,18 @@ allowed_suffixes=(
     md
     html
 
+    # The ECMA Script standard allows unicode:
+    # https://262.ecma-international.org/6.0/#sec-source-text
+    #
+    # There is no OpenTitan JavaScript style guide so all `js`
+    # have not been white listed.
+    #
+    # However, minified Javascript is similar to executables
+    # in that it is not edited directly
+    # but produced by a compiler/minifier for a JavaScript run-time,
+    # and so it makes sense for it to be excluded from this ascii check.
+    min.js
+
     # We don't mandate 7-bit ASCII for Python or C/C++ code. The
     # Google style guide, which we inherit suggests avoiding
     # unnecessary non-ASCII text, but doesn't forbid it entirely.
