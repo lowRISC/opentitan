@@ -13,7 +13,7 @@
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define LC_TOKEN_SIZE 16
 

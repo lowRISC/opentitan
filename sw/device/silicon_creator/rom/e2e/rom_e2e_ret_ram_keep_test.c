@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "pwrmgr_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();

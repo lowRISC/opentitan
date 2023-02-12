@@ -1,9 +1,9 @@
-// Generated on Mon, 16 Jan 2023 13:31:11 UTC with
+// Generated on Sat, 11 Feb 2023 02:27:35 UTC with
 // $ gen-otp-img.py  \
-//   --img-cfg /scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked0.hjson \
-//   --lc-state-def /scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/ip/lc_ctrl/data/lc_ctrl_state.hjson \
-//   --mmap-def /scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson \
-//   --out hw/top_earlgrey/sw/tests/hello_test/otp1-img.mem
+//   --img-cfg /scratch/mciani/test/opentitan/hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked0.hjson \
+//   --lc-state-def /scratch/mciani/test/opentitan/hw/ip/lc_ctrl/data/lc_ctrl_state.hjson \
+//   --mmap-def /scratch/mciani/test/opentitan/hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson \
+//   --out ../hw/top_earlgrey/sw/tests/otp2-img.mem
 //
 // OTP MEM file with 1024 x 24bit layout
 @000000 000000 // VENDOR_TEST: SCRATCH

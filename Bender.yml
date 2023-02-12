@@ -407,8 +407,8 @@ sources:
 
 ##### rv_plic
         
-      - hw/top_earlgrey/ip/rv_plic/rtl/rv_plic_ot_reg_pkg.sv
-      - hw/top_earlgrey/ip/rv_plic/rtl/rv_plic_ot_reg_top.sv
+      - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_reg_pkg.sv
+      - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_reg_top.sv
       - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_gateway.sv
       - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_target.sv
       - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic.sv
@@ -541,14 +541,13 @@ sources:
 
 
 ###### uart
-#
-#      - hw/ip/uart/rtl/uart_reg_pkg.sv
-#      - hw/ip/uart/rtl/uart_reg_top.sv
-#      - hw/ip/uart/rtl/uart_core.sv
-#      - hw/ip/uart/rtl/uart_rx.sv
-#      - hw/ip/uart/rtl/uart_tx.sv
-#      - hw/ip/uart/rtl/uart.sv
-#
+
+      - hw/ip/uart/rtl/uart_reg_pkg.sv
+      - hw/ip/uart/rtl/uart_reg_top.sv
+      - hw/ip/uart/rtl/uart_core.sv
+      - hw/ip/uart/rtl/uart_rx.sv
+      - hw/ip/uart/rtl/uart_tx.sv
+      - hw/ip/uart/rtl/uart.sv
 
 ##### pattgen
 
@@ -558,7 +557,50 @@ sources:
       - hw/ip/pattgen/rtl/pattgen_chan.sv
       - hw/ip/pattgen/rtl/pattgen_core.sv
       - hw/ip/pattgen/rtl/pattgen.sv
-       
+
+##### usbdev
+
+      - hw/ip/usbdev/rtl/usbdev_pkg.sv
+      - hw/ip/usbdev/rtl/usbdev_reg_pkg.sv
+      - hw/ip/usbdev/rtl/usb_consts_pkg.sv
+      - hw/ip/usbdev/rtl/usbdev_reg_top.sv
+      - hw/ip/usbdev/rtl/usbdev_iomux.sv
+      - hw/ip/usbdev/rtl/usbdev_usbif.sv
+      - hw/ip/usbdev/rtl/usb_fs_nb_out_pe.sv
+      - hw/ip/usbdev/rtl/usb_fs_rx.sv
+      - hw/ip/usbdev/rtl/usb_fs_tx.sv
+      - hw/ip/usbdev/rtl/usbdev_aon_wake.sv
+      - hw/ip/usbdev/rtl/usbdev_linkstate.sv
+      - hw/ip/usbdev/rtl/usb_fs_nb_in_pe.sv
+      - hw/ip/usbdev/rtl/usb_fs_nb_pe.sv
+      - hw/ip/usbdev/rtl/usb_fs_tx_mux.sv
+      - hw/ip/usbdev/rtl/usbdev.sv
+
+##### i2c
+
+      - hw/ip/i2c/rtl/i2c_reg_pkg.sv
+      - hw/ip/i2c/rtl/i2c_reg_top.sv
+      - hw/ip/i2c/rtl/i2c_fsm.sv
+      - hw/ip/i2c/rtl/i2c_core.sv
+      - hw/ip/i2c/rtl/i2c.sv
+
+##### sensor ctrl
+
+      - hw/top_earlgrey/ip/sensor_ctrl/rtl/sensor_ctrl_reg_pkg.sv
+      - hw/top_earlgrey/ip/sensor_ctrl/rtl/sensor_ctrl_pkg.sv
+      - hw/top_earlgrey/ip/sensor_ctrl/rtl/sensor_ctrl_reg_top.sv
+      - hw/top_earlgrey/ip/sensor_ctrl/rtl/sensor_ctrl.sv
+
+##### adc_ctrl
+
+      - hw/ip/adc_ctrl/rtl/adc_ctrl_pkg.sv
+      - hw/ip/adc_ctrl/rtl/adc_ctrl_reg_pkg.sv
+      - hw/ip/adc_ctrl/rtl/adc_ctrl_reg_top.sv
+      - hw/ip/adc_ctrl/rtl/adc_ctrl_core.sv
+      - hw/ip/adc_ctrl/rtl/adc_ctrl_fsm.sv
+      - hw/ip/adc_ctrl/rtl/adc_ctrl_intr.sv      
+      - hw/ip/adc_ctrl/rtl/adc_ctrl.sv
+
 ##### clkmgr
 
       - hw/top_earlgrey/ip/clkmgr/rtl/autogen/clkmgr_reg_pkg.sv

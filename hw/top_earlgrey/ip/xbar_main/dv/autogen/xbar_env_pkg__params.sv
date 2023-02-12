@@ -7,9 +7,6 @@
 
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
-    '{"tlul2axi", '{
-        '{32'h00010000, 32'h0001000f}
-    }},
     '{"rv_dm__regs", '{
         '{32'hc1200000, 32'hc1200003}
     }},
@@ -23,14 +20,17 @@ tl_device_t xbar_devices[$] = '{
         '{32'hc11e0000, 32'hc11e007f}
     }},
     '{"peri", '{
-        '{32'hc0040000, 32'hc01507ff},
-        '{32'hc0400000, 32'hc0600fff}
+        '{32'hc0000000, 32'hc01fffff},
+        '{32'hc0400000, 32'hc07fffff}
     }},
     '{"spi_host0", '{
         '{32'hc0300000, 32'hc030003f}
     }},
     '{"spi_host1", '{
         '{32'hc0310000, 32'hc031003f}
+    }},
+    '{"usbdev", '{
+        '{32'hc0320000, 32'hc0320fff}
     }},
     '{"flash_ctrl__core", '{
         '{32'hc1000000, 32'hc10001ff}
@@ -79,6 +79,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"sram_ctrl_main__ram", '{
         '{32'he0000000, 32'he001ffff}
+    }},
+    '{"tlul2axi", '{
+        '{32'h00010000, 32'h0001000f}
 }}};
 
   // List of Xbar hosts
@@ -98,6 +101,7 @@ tl_host_t xbar_hosts[$] = '{
         "peri",
         "spi_host0",
         "spi_host1",
+        "usbdev",
         "tlul2axi",
         "flash_ctrl__core",
         "flash_ctrl__prim",
@@ -124,6 +128,7 @@ tl_host_t xbar_hosts[$] = '{
         "peri",
         "spi_host0",
         "spi_host1",
+        "usbdev",
         "tlul2axi",
         "flash_ctrl__core",
         "flash_ctrl__prim",

@@ -10,7 +10,7 @@
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 #include "pinmux_regs.h"
 
@@ -18,7 +18,7 @@ enum {
   /**
    * Base address of the pinmux registers.
    */
-  kBase46 = TOP_EARLGREY_PINMUX_AON_BASE_ADDR,
+  kBase = TOP_EARLGREY_PINMUX_AON_BASE_ADDR,
 };
 
 /**
@@ -43,7 +43,7 @@ typedef struct pinmux_output {
  * UART RX pin.
  */
 static const pinmux_input_t kInputUart0 = {
-  //.periph = kTopEarlgreyPinmuxPeripheralInUart0Rx,
+    .periph = kTopEarlgreyPinmuxPeripheralInUart0Rx,
     .insel = kTopEarlgreyPinmuxInselIoc3,
     .pad = kTopEarlgreyMuxedPadsIoc3,
 };
@@ -53,7 +53,7 @@ static const pinmux_input_t kInputUart0 = {
  */
 static const pinmux_output_t kOutputUart0 = {
     .mio = kTopEarlgreyPinmuxMioOutIoc4,
-    //.outsel = kTopEarlgreyPinmuxOutselUart0Tx,
+    .outsel = kTopEarlgreyPinmuxOutselUart0Tx,
     .pad = kTopEarlgreyMuxedPadsIoc4,
 };
 
@@ -96,7 +96,7 @@ static const pinmux_input_t kInputSwStrap2 = {
  * @param input A peripheral input and MIO pad to link it to.
  */
 static void configure_input(pinmux_input_t input) {
-  abs_mmio_write32(kBase46 + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET +
+  abs_mmio_write32(kBase + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET +
                        input.periph * sizeof(uint32_t),
                    input.insel);
 }
@@ -110,7 +110,7 @@ static void enable_pull_down(top_earlgrey_muxed_pads_t pad) {
   uint32_t reg =
       bitfield_bit32_write(0, PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, true);
   abs_mmio_write32(
-      kBase46 + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET + pad * sizeof(uint32_t), reg);
+      kBase + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET + pad * sizeof(uint32_t), reg);
 }
 
 /**
@@ -120,7 +120,7 @@ static void enable_pull_down(top_earlgrey_muxed_pads_t pad) {
  */
 static void configure_output(pinmux_output_t output) {
   abs_mmio_write32(
-      kBase46 + PINMUX_MIO_OUTSEL_0_REG_OFFSET + output.mio * sizeof(uint32_t),
+      kBase + PINMUX_MIO_OUTSEL_0_REG_OFFSET + output.mio * sizeof(uint32_t),
       output.outsel);
 }
 

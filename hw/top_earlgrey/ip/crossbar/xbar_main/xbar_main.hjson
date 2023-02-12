@@ -12,6 +12,7 @@
   {
     clk_main_i: main
     clk_fixed_i: io_div4
+    clk_usb_i: usb
   }
   clock_group: infra
   reset: rst_main_ni
@@ -25,6 +26,11 @@
     rst_fixed_ni:
     {
       name: sys_io_div4
+      domain: "0"
+    }
+    rst_usb_ni:
+    {
+      name: sys
       domain: "0"
     }
     rst_spi_host0_ni:
@@ -41,6 +47,7 @@
   clock_connections:
   {
     clk_main_i: clkmgr_aon_clocks.clk_main_infra
+    clk_usb_i:  clkmgr_aon_clocks.clk_main_infra
     clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
     clk_spi_host0_i : clkmgr_aon_clocks.clk_io_infra
     clk_spi_host1_i : clkmgr_aon_clocks.clk_io_div2_infra
@@ -81,6 +88,7 @@
       rv_plic
       otbn
       keymgr
+      usbdev
       kmac
       sram_ctrl_main.regs
       rv_core_ibex.cfg
@@ -93,6 +101,7 @@
       peri
       tlul2axi
       spi_host0
+      usbdev
       spi_host1
       flash_ctrl.core
       flash_ctrl.prim
@@ -153,7 +162,7 @@
       [
         {
           base_addr: 0xC1200000
-          size_byte: 0x1000
+          size_byte: 0x4
         }
       ]
       xbar: false
@@ -176,6 +185,26 @@
       xbar: false
       stub: false
       pipeline: "true"
+    }
+    {
+      name: peri
+      type: device
+      clock: clk_fixed_i
+      reset: rst_fixed_ni
+      xbar: true
+      stub: false
+      pipeline: "true"
+      addr_range:
+      [
+        {
+          base_addr: 0xC0400000
+          size_byte: 0x003fffff
+        }, 
+        {
+          base_addr: 0xC0000000
+          size_byte: 0x001fffff
+        }
+      ]
     }
     {
       name: tlul2axi
@@ -274,27 +303,11 @@
       [
         {
           base_addr: 0xC11e0000
-          size_byte: 0x1000
+          size_byte: 0x80
         }
       ]
       xbar: false
       stub: false
-    }
-    {
-      name: peri
-      type: device
-      clock: clk_fixed_i
-      reset: rst_fixed_ni
-      xbar: false
-      stub: false
-      pipeline: "true"
-      addr_range:
-      [
-        {
-          base_addr: 0xB0000000
-          size_byte: 0x1000000
-        }
-      ]
     }
     {
       name: spi_host0
@@ -307,7 +320,7 @@
       [
         {
           base_addr: 0xC0300000
-          size_byte: 0x1000
+          size_byte: 0x40
         }
       ]
       xbar: false
@@ -324,7 +337,7 @@
       [
         {
           base_addr: 0xC0310000
-          size_byte: 0x1000
+          size_byte: 0x40
         }
       ]
       xbar: false
@@ -340,7 +353,7 @@
       [
         {
           base_addr: 0xC1000000
-          size_byte: 0x1000
+          size_byte: 0x200
         }
       ]
       xbar: false
@@ -357,7 +370,7 @@
       [
         {
           base_addr: 0xC1008000
-          size_byte: 0x1000
+          size_byte: 0x80
         }
       ]
       xbar: false
@@ -425,7 +438,7 @@
       [
         {
           base_addr: 0xC1100000
-          size_byte: 0x1000
+          size_byte: 0x100
         }
       ]
       xbar: false
@@ -442,7 +455,7 @@
       [
         {
           base_addr: 0xC1160000
-          size_byte: 0x1000
+          size_byte: 0x100
         }
       ]
       xbar: false
@@ -459,7 +472,7 @@
       [
         {
           base_addr: 0xC1150000
-          size_byte: 0x1000
+          size_byte: 0x80
         }
       ]
       xbar: false
@@ -476,7 +489,7 @@
       [
         {
           base_addr: 0xC1170000
-          size_byte: 0x1000
+          size_byte: 0x80
         }
       ]
       xbar: false
@@ -493,7 +506,7 @@
       [
         {
           base_addr: 0xC1180000
-          size_byte: 0x1000
+          size_byte: 0x80
         }
       ]
       xbar: false
@@ -510,7 +523,7 @@
       [
         {
           base_addr: 0xC8000000
-          size_byte: 0x10000
+          size_byte: 0x8000000
         }
       ]
       xbar: false
@@ -544,7 +557,7 @@
       [
         {
           base_addr: 0xC1140000
-          size_byte: 0x1000
+          size_byte: 0x100
         }
       ]
       xbar: false
@@ -561,7 +574,7 @@
       [
         {
           base_addr: 0xC11f0000
-          size_byte: 0x1000
+          size_byte: 0x100
         }
       ]
       xbar: false
@@ -579,12 +592,28 @@
       [
         {
           base_addr: 0xC11c0000
-          size_byte: 0x1000
+          size_byte: 0x20
         }
       ]
       xbar: false
       stub: false
     }
+    {
+      name: usbdev
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: "true"
+      addr_range:
+      [
+        {
+          base_addr: 0xC0320000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+    },
     {
       name: sram_ctrl_main.ram
       type: device

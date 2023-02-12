@@ -7,7 +7,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/entropy_src_kat_impl.h"
 
-#include "hw/top_earlgrey/sw/top_earlgrey.h"  // Generated.
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 

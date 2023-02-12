@@ -15,7 +15,7 @@ extern "C" {
 // by way of a bindgen rule and recreated as Rust datatypes with
 // appropriate aliases to be used by other `ujson` libraries.
 #ifndef RUST_PREPROCESSOR_EMIT
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #endif
 // clang-format off
 

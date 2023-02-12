@@ -13,7 +13,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "csrng_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #endif
 
 // `extern` declarations to give the inline functions in the

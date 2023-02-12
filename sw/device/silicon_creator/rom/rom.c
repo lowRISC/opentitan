@@ -38,61 +38,8 @@
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys.h"
-#include "../../silicon_creator/lib/drivers/string_lib.h"
 
-#include "../../../device/silicon_creator/lib/base/boot_measurements.c"
-#include "../../../device/silicon_creator/rom/keys/fake/sigverify_rsa_keys_fake.c"
-
-//#include "../../../device/silicon_creator/rom/sigverify_keys_unittest.cc"
-
-#include "../../lib/base/bitfield.c"
-#include "../../lib/base/memory.c"
-#include "../../lib/runtime/hart.c"
-#include "../../lib/runtime/print.c"
-#include "../../silicon_creator/lib/epmp_state.c"
-#include "../../silicon_creator/lib/base/sec_mmio.c"
-#include "../../silicon_creator/lib/drivers/keymgr.c"
-#include "../../silicon_creator/lib/drivers/lifecycle.c"
-#include "../../silicon_creator/lib/drivers/retention_sram.c"
-#include "../../silicon_creator/lib/drivers/otp.c"
-#include "../../silicon_creator/lib/drivers/rstmgr.c"
-#include "../../silicon_creator/lib/drivers/uart.c"
-#include "../../silicon_creator/lib/shutdown.c"
-#include "../../silicon_creator/rom/boot_policy.c"
-#include "../../silicon_creator/rom/rom_epmp.c"
-#include "../../silicon_creator/rom/sigverify_keys.c"
-#include "../../silicon_creator/lib/drivers/string_lib.c"
-#include "../../lib/arch/device_sim_verilator.c"
-#include "../lib/drivers/alert.h"
-#include "../lib/drivers/alert.c"
-#include "../lib/drivers/hmac.h"
-#include "../lib/drivers/hmac.c"
-#include "../lib/manifest.h"
-#include "../lib/manifest.c"
-#include "../../lib/runtime/ibex.c"
-#include "../../../device/silicon_creator/lib/sigverify/sigverify.c"
-#include "../../../device/silicon_creator/lib/sigverify/mod_exp_ibex.c"
-#include "../../../device/lib/base/math_builtins.c"
-#include "../../../device/lib/dif/dif_uart.c"
-#include "../../../device/silicon_creator/lib/crc32.c"
-#include "../../../device/lib/base/math.c"
-#include "../../../device/lib/base/status.c"
-#include "bootstrap.c"
-#include "../lib/drivers/flash_ctrl.c"
-#include "../lib/drivers/spi_device.c"
-#include "../lib/boot_data.c"
-#include "../lib/drivers/rnd.c"
-//#include "../lib/irq_asm.S"
-#include "../lib/drivers/watchdog.c"
-#include "../lib/drivers/pinmux.c"
-//#include "../../lib/base/math_builtins.c"
-//#include "../lib/sigverify/mod_exp_otbn.c"
-//#include "../lib/otbn_util.c"
-#include "../../lib/crypto/drivers/otbn.c"
-#include "../lib/drivers/ast.c"
-#include "../lib/drivers/ibex.c"
-
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 
 /**
@@ -153,7 +100,7 @@ static rom_error_t rom_irq_error(void) {
  * Prints a status message indicating that the ROM is entering bootstrap mode.
  */
 static void rom_bootstrap_message(void) {
-  /* uart_putchar('b');
+  uart_putchar('b');
   uart_putchar('o');
   uart_putchar('o');
   uart_putchar('t');
@@ -165,8 +112,7 @@ static void rom_bootstrap_message(void) {
   uart_putchar(':');
   uart_putchar('1');
   uart_putchar('\r');
-  uart_putchar('\n');*/
-  printf("banana!\r\n");
+  uart_putchar('\n');
 }
 
 /**
@@ -178,17 +124,7 @@ static rom_error_t rom_init(void) {
   // Initialize pinmux configuration so we can use the UART.
   pinmux_init();
   // Configure UART0 as stdout.
-  
-  #ifdef TARGET_SYNTHESIS                
-  int baud_rate = 115200;
-  int test_freq = 40000000;
-  #else
-  //set_flls();
-  int baud_rate = 115200;
-  int test_freq = 100000000;
-  #endif
-  
-  uart_set_cfg(0,(test_freq/baud_rate)>>4);
+  uart_init(kUartNCOValue);
 
   // There are no conditional checks before writing to this CSR because it is
   // expected that if relevant Ibex countermeasures are disabled, this will
@@ -534,11 +470,3 @@ noreturn void rom_exception_handler(void);
 
 OT_ALIAS("rom_interrupt_handler")
 noreturn void rom_nmi_handler(void);
-
-rom_error_t sigverify_mod_exp_otbn(const sigverify_rsa_key_t *key,
-                                   const sigverify_rsa_buffer_t *sig,
-                                   sigverify_rsa_buffer_t *result) {
-  // Reject the signature if it is too large (n <= sig): RFC 8017, section
-  // 5.2.2, step 1.
-  
-}

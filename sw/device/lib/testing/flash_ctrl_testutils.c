@@ -16,7 +16,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 void flash_ctrl_testutils_wait_for_init(dif_flash_ctrl_state_t *flash_state) {
   dif_flash_ctrl_status_t status;

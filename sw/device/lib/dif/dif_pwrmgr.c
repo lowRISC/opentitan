@@ -5,7 +5,7 @@
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 
 #include <assert.h>
-#include "dummy.h"
+
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -72,7 +72,7 @@ static_assert(kDifPwrmgrWakeupRequestSourceOne ==
 static_assert(kDifPwrmgrWakeupRequestSourceOne ==
                   (1u << PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX),
               "Layout of WAKE_INFO register changed.");
-/*static_assert(kDifPwrmgrWakeupRequestSourceTwo ==
+static_assert(kDifPwrmgrWakeupRequestSourceTwo ==
                   (1u << PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX),
               "Layout of WAKE_INFO register changed.");
 static_assert(kDifPwrmgrWakeupRequestSourceThree ==
@@ -80,14 +80,14 @@ static_assert(kDifPwrmgrWakeupRequestSourceThree ==
               "Layout of WAKE_INFO register changed.");
 static_assert(kDifPwrmgrWakeupRequestSourceFour ==
                   (1u << PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX),
-                  "Layout of WAKE_INFO register changed.");
+              "Layout of WAKE_INFO register changed.");
 static_assert(kDifPwrmgrWakeupRequestSourceFive ==
                   (1u << PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX),
               "Layout of WAKE_INFO register changed.");
 static_assert(kDifPwrmgrWakeupRequestSourceSix ==
                   (1u << PWRMGR_PARAM_SENSOR_CTRL_WKUP_REQ_IDX),
               "Layout of WAKE_INFO register changed.");
-*/
+
 /**
  * Relevant bits of the RESET_EN register must start at `0` and be in the same
  * order as `dif_pwrmgr_reset_request_source_t` constants.

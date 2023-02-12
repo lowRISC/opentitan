@@ -12,7 +12,7 @@
  * both slots.
  */
 
-INCLUDE hw/top_earlgrey/sw/top_earlgrey_memory.ld
+INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.

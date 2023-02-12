@@ -5,7 +5,7 @@
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 #include "sw/device/silicon_creator/lib/rom_print.h"
 
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 void bare_metal_main(void) {
   rom_printf("Bare metal PASS!\r\n");

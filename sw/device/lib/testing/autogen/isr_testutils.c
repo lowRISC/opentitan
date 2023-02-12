@@ -34,7 +34,7 @@
 #include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/top_earlgrey.h"  // Generated.
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 void isr_testutils_adc_ctrl_isr(
     plic_isr_ctx_t plic_ctx, adc_ctrl_isr_ctx_t adc_ctrl_ctx,

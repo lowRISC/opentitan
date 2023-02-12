@@ -17,7 +17,7 @@
 
 #include "adc_ctrl_regs.h"     // Generated.
 #include "entropy_src_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
                         .can_clobber_uart = false, );

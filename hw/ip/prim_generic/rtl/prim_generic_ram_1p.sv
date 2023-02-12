@@ -46,6 +46,7 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
   logic unused_cfg;
   assign unused_cfg = ^cfg_i;
 
+
   // Width of internal write mask. Note wmask_i input into the module is always assumed
   // to be the full bit mask
   localparam int MaskWidth = Width / DataBitsPerMask;
@@ -77,6 +78,14 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
         rdata_o <= mem[addr_i];
       end
     end
+  end // always @ (posedge clk_i)
+
+  
+  initial begin
+
+     for(int i; i < Depth; i++)
+        mem[i] = '0;
+     
   end
 
   `include "prim_util_memload.svh"

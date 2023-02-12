@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hmac_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 namespace hmac_unittest {
 namespace {

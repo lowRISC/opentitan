@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top_earlgrey/sw/top_earlgrey_memory.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/hardened_asm.h"
 #include "sw/device/lib/base/multibits_asm.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
@@ -20,10 +20,7 @@
 #include "rv_core_ibex_regs.h"
 #include "sensor_ctrl_regs.h"
 #include "sram_ctrl_regs.h"
-#include "../lib/irq_asm.S"
-#include "../../lib/crt/crt.S"
-#include "rom_epmp_init.S"  
-  
+
 // This macro defines convenience labels for tests that use a debugger.
 #define LABEL_FOR_TEST(kName_) .local kName_ ; kName_: ;
 
@@ -111,11 +108,10 @@ _rom_interrupt_vector_c:
   .option pop
 
   /**
-  * ROM shadow stack.
-    zingarata davide to ask beppe
+   * ROM shadow stack.
    */
   .section .bss
-  //.balignl 4, UNIMP
+  .balignl 4, UNIMP
   .global _rom_shadow_stack
   .type _rom_shadow_stack, @object
 _rom_shadow_stack:
@@ -139,10 +135,9 @@ _rom_shadow_stack:
   .option norelax
 
   /**
-  * Entry point after reset.
-  zingarata davide
+   * Entry point after reset.
    */
-  //.balignl 4, UNIMP
+  .balignl 4, UNIMP
   .global _rom_start_boot
   .type _rom_start_boot, @function
 _rom_start_boot:
@@ -338,14 +333,10 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
 
   // Scramble and initialize main memory (main SRAM).
   // Memory accesses will stall until initialization is complete.
-
-  // DEACTIVATED SRAM INIT, TO BE REACTIVATED WHEN RNG IS AVAILABLE
-  
   li a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
   li a1, (1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT) | (1 << SRAM_CTRL_CTRL_INIT_BIT)
   sw a1, SRAM_CTRL_CTRL_REG_OFFSET(a0)
-  
-  
+
   /**
    * Clean Device State Part 1 (Please refer to `boot.md` section "Cleaning Device
    * State").

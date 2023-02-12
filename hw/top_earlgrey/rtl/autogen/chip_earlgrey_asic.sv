@@ -14,24 +14,26 @@ module chip_earlgrey_asic #(
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
+  inout USB_P, // Manual Pad
+  inout USB_N, // Manual Pad
   inout CC1, // Manual Pad
   inout CC2, // Manual Pad
   inout FLASH_TEST_VOLT, // Manual Pad
   inout FLASH_TEST_MODE0, // Manual Pad
   inout FLASH_TEST_MODE1, // Manual Pad
   inout OTP_EXT_VOLT, // Manual Pad
-  inout SPI_DEV_D0, // Dedicated Pad for spi_device_sd
-  inout SPI_DEV_D1, // Dedicated Pad for spi_device_sd
-  inout SPI_DEV_D2, // Dedicated Pad for spi_device_sd
-  inout SPI_DEV_D3, // Dedicated Pad for spi_device_sd
-  inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
-  inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
   inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D1, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D2, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D3, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_CLK, // Dedicated Pad for spi_host0_sck
   inout SPI_HOST_CS_L, // Dedicated Pad for spi_host0_csb
+  inout SPI_DEV_D0, // Dedicated Pad for spi_device_sd
+  inout SPI_DEV_D1, // Dedicated Pad for spi_device_sd
+  inout SPI_DEV_D2, // Dedicated Pad for spi_device_sd
+  inout SPI_DEV_D3, // Dedicated Pad for spi_device_sd
+  inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
+  inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
   inout IOR8, // Dedicated Pad for sysrst_ctrl_aon_ec_rst_l
   inout IOR9, // Dedicated Pad for sysrst_ctrl_aon_flash_wp_l
   inout AST_MISC, // Manual Pad
@@ -133,7 +135,9 @@ module chip_earlgrey_asic #(
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
-      BidirStd  // DIO spi_host0_sd
+      BidirStd, // DIO spi_host0_sd
+      BidirStd, // DIO usbdev_usb_dn
+      BidirStd  // DIO usbdev_usb_dp
     },
     mio_pad_type: {
       BidirOd, // MIO Pad 46
@@ -206,6 +210,8 @@ module chip_earlgrey_asic #(
 
   // Manual pads
   logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
+  logic manual_in_usb_p, manual_out_usb_p, manual_oe_usb_p;
+  logic manual_in_usb_n, manual_out_usb_n, manual_oe_usb_n;
   logic manual_in_cc1, manual_out_cc1, manual_oe_cc1;
   logic manual_in_cc2, manual_out_cc2, manual_oe_cc2;
   logic manual_in_flash_test_volt, manual_out_flash_test_volt, manual_oe_flash_test_volt;
@@ -215,6 +221,8 @@ module chip_earlgrey_asic #(
   logic manual_in_ast_misc, manual_out_ast_misc, manual_oe_ast_misc;
 
   pad_attr_t manual_attr_por_n;
+  pad_attr_t manual_attr_usb_p;
+  pad_attr_t manual_attr_usb_n;
   pad_attr_t manual_attr_cc1;
   pad_attr_t manual_attr_cc2;
   pad_attr_t manual_attr_flash_test_volt;
@@ -237,7 +245,7 @@ module chip_earlgrey_asic #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(22),
+    .NDioPads(24),
     .NMioPads(47),
     .PhysicalPads(1),
     .NIoBanks(int'(IoBankCount)),
@@ -245,24 +253,26 @@ module chip_earlgrey_asic #(
       scan_role_pkg::DioPadAstMiscScanRole,
       scan_role_pkg::DioPadIor9ScanRole,
       scan_role_pkg::DioPadIor8ScanRole,
-      scan_role_pkg::DioPadSpiHostCsLScanRole,
-      scan_role_pkg::DioPadSpiHostClkScanRole,
-      scan_role_pkg::DioPadSpiHostD3ScanRole,
-      scan_role_pkg::DioPadSpiHostD2ScanRole,
-      scan_role_pkg::DioPadSpiHostD1ScanRole,
-      scan_role_pkg::DioPadSpiHostD0ScanRole,
       scan_role_pkg::DioPadSpiDevCsLScanRole,
       scan_role_pkg::DioPadSpiDevClkScanRole,
       scan_role_pkg::DioPadSpiDevD3ScanRole,
       scan_role_pkg::DioPadSpiDevD2ScanRole,
       scan_role_pkg::DioPadSpiDevD1ScanRole,
       scan_role_pkg::DioPadSpiDevD0ScanRole,
+      scan_role_pkg::DioPadSpiHostCsLScanRole,
+      scan_role_pkg::DioPadSpiHostClkScanRole,
+      scan_role_pkg::DioPadSpiHostD3ScanRole,
+      scan_role_pkg::DioPadSpiHostD2ScanRole,
+      scan_role_pkg::DioPadSpiHostD1ScanRole,
+      scan_role_pkg::DioPadSpiHostD0ScanRole,
       scan_role_pkg::DioPadOtpExtVoltScanRole,
       scan_role_pkg::DioPadFlashTestMode1ScanRole,
       scan_role_pkg::DioPadFlashTestMode0ScanRole,
       scan_role_pkg::DioPadFlashTestVoltScanRole,
       scan_role_pkg::DioPadCc2ScanRole,
       scan_role_pkg::DioPadCc1ScanRole,
+      scan_role_pkg::DioPadUsbNScanRole,
+      scan_role_pkg::DioPadUsbPScanRole,
       scan_role_pkg::DioPadPorNScanRole
     }),
     .MioScanRole ({
@@ -318,24 +328,26 @@ module chip_earlgrey_asic #(
       IoBankVcc, // AST_MISC
       IoBankVcc, // IOR9
       IoBankVcc, // IOR8
-      IoBankVioa, // SPI_HOST_CS_L
-      IoBankVioa, // SPI_HOST_CLK
-      IoBankVioa, // SPI_HOST_D3
-      IoBankVioa, // SPI_HOST_D2
-      IoBankVioa, // SPI_HOST_D1
-      IoBankVioa, // SPI_HOST_D0
       IoBankVioa, // SPI_DEV_CS_L
       IoBankVioa, // SPI_DEV_CLK
       IoBankVioa, // SPI_DEV_D3
       IoBankVioa, // SPI_DEV_D2
       IoBankVioa, // SPI_DEV_D1
       IoBankVioa, // SPI_DEV_D0
+      IoBankVioa, // SPI_HOST_CS_L
+      IoBankVioa, // SPI_HOST_CLK
+      IoBankVioa, // SPI_HOST_D3
+      IoBankVioa, // SPI_HOST_D2
+      IoBankVioa, // SPI_HOST_D1
+      IoBankVioa, // SPI_HOST_D0
       IoBankVcc, // OTP_EXT_VOLT
       IoBankVcc, // FLASH_TEST_MODE1
       IoBankVcc, // FLASH_TEST_MODE0
       IoBankVcc, // FLASH_TEST_VOLT
       IoBankAvcc, // CC2
       IoBankAvcc, // CC1
+      IoBankVcc, // USB_N
+      IoBankVcc, // USB_P
       IoBankVcc  // POR_N
     }),
     .MioPadBank ({
@@ -391,24 +403,26 @@ module chip_earlgrey_asic #(
       InputStd, // AST_MISC
       BidirOd, // IOR9
       BidirOd, // IOR8
-      BidirStd, // SPI_HOST_CS_L
-      BidirStd, // SPI_HOST_CLK
-      BidirStd, // SPI_HOST_D3
-      BidirStd, // SPI_HOST_D2
-      BidirStd, // SPI_HOST_D1
-      BidirStd, // SPI_HOST_D0
       InputStd, // SPI_DEV_CS_L
       InputStd, // SPI_DEV_CLK
       BidirStd, // SPI_DEV_D3
       BidirStd, // SPI_DEV_D2
       BidirStd, // SPI_DEV_D1
       BidirStd, // SPI_DEV_D0
+      BidirStd, // SPI_HOST_CS_L
+      BidirStd, // SPI_HOST_CLK
+      BidirStd, // SPI_HOST_D3
+      BidirStd, // SPI_HOST_D2
+      BidirStd, // SPI_HOST_D1
+      BidirStd, // SPI_HOST_D0
       AnalogIn1, // OTP_EXT_VOLT
       InputStd, // FLASH_TEST_MODE1
       InputStd, // FLASH_TEST_MODE0
       AnalogIn0, // FLASH_TEST_VOLT
       InputStd, // CC2
       InputStd, // CC1
+      DualBidirTol, // USB_N
+      DualBidirTol, // USB_P
       InputStd  // POR_N
     }),
     .MioPadType ({
@@ -470,24 +484,26 @@ module chip_earlgrey_asic #(
       AST_MISC,
       IOR9,
       IOR8,
-      SPI_HOST_CS_L,
-      SPI_HOST_CLK,
-      SPI_HOST_D3,
-      SPI_HOST_D2,
-      SPI_HOST_D1,
-      SPI_HOST_D0,
       SPI_DEV_CS_L,
       SPI_DEV_CLK,
       SPI_DEV_D3,
       SPI_DEV_D2,
       SPI_DEV_D1,
       SPI_DEV_D0,
+      SPI_HOST_CS_L,
+      SPI_HOST_CLK,
+      SPI_HOST_D3,
+      SPI_HOST_D2,
+      SPI_HOST_D1,
+      SPI_HOST_D0,
       OTP_EXT_VOLT,
       FLASH_TEST_MODE1,
       FLASH_TEST_MODE0,
       FLASH_TEST_VOLT,
       CC2,
       CC1,
+      USB_N,
+      USB_P,
       POR_N
     }),
 
@@ -546,96 +562,104 @@ module chip_earlgrey_asic #(
         manual_in_ast_misc,
         dio_in[DioSysrstCtrlAonFlashWpL],
         dio_in[DioSysrstCtrlAonEcRstL],
-        dio_in[DioSpiHost0Csb],
-        dio_in[DioSpiHost0Sck],
-        dio_in[DioSpiHost0Sd3],
-        dio_in[DioSpiHost0Sd2],
-        dio_in[DioSpiHost0Sd1],
-        dio_in[DioSpiHost0Sd0],
         dio_in[DioSpiDeviceCsb],
         dio_in[DioSpiDeviceSck],
         dio_in[DioSpiDeviceSd3],
         dio_in[DioSpiDeviceSd2],
         dio_in[DioSpiDeviceSd1],
         dio_in[DioSpiDeviceSd0],
+        dio_in[DioSpiHost0Csb],
+        dio_in[DioSpiHost0Sck],
+        dio_in[DioSpiHost0Sd3],
+        dio_in[DioSpiHost0Sd2],
+        dio_in[DioSpiHost0Sd1],
+        dio_in[DioSpiHost0Sd0],
         manual_in_otp_ext_volt,
         manual_in_flash_test_mode1,
         manual_in_flash_test_mode0,
         manual_in_flash_test_volt,
         manual_in_cc2,
         manual_in_cc1,
+        manual_in_usb_n,
+        manual_in_usb_p,
         manual_in_por_n
       }),
     .dio_out_i ({
         manual_out_ast_misc,
         dio_out[DioSysrstCtrlAonFlashWpL],
         dio_out[DioSysrstCtrlAonEcRstL],
-        dio_out[DioSpiHost0Csb],
-        dio_out[DioSpiHost0Sck],
-        dio_out[DioSpiHost0Sd3],
-        dio_out[DioSpiHost0Sd2],
-        dio_out[DioSpiHost0Sd1],
-        dio_out[DioSpiHost0Sd0],
         dio_out[DioSpiDeviceCsb],
         dio_out[DioSpiDeviceSck],
         dio_out[DioSpiDeviceSd3],
         dio_out[DioSpiDeviceSd2],
         dio_out[DioSpiDeviceSd1],
         dio_out[DioSpiDeviceSd0],
+        dio_out[DioSpiHost0Csb],
+        dio_out[DioSpiHost0Sck],
+        dio_out[DioSpiHost0Sd3],
+        dio_out[DioSpiHost0Sd2],
+        dio_out[DioSpiHost0Sd1],
+        dio_out[DioSpiHost0Sd0],
         manual_out_otp_ext_volt,
         manual_out_flash_test_mode1,
         manual_out_flash_test_mode0,
         manual_out_flash_test_volt,
         manual_out_cc2,
         manual_out_cc1,
+        manual_out_usb_n,
+        manual_out_usb_p,
         manual_out_por_n
       }),
     .dio_oe_i ({
         manual_oe_ast_misc,
         dio_oe[DioSysrstCtrlAonFlashWpL],
         dio_oe[DioSysrstCtrlAonEcRstL],
-        dio_oe[DioSpiHost0Csb],
-        dio_oe[DioSpiHost0Sck],
-        dio_oe[DioSpiHost0Sd3],
-        dio_oe[DioSpiHost0Sd2],
-        dio_oe[DioSpiHost0Sd1],
-        dio_oe[DioSpiHost0Sd0],
         dio_oe[DioSpiDeviceCsb],
         dio_oe[DioSpiDeviceSck],
         dio_oe[DioSpiDeviceSd3],
         dio_oe[DioSpiDeviceSd2],
         dio_oe[DioSpiDeviceSd1],
         dio_oe[DioSpiDeviceSd0],
+        dio_oe[DioSpiHost0Csb],
+        dio_oe[DioSpiHost0Sck],
+        dio_oe[DioSpiHost0Sd3],
+        dio_oe[DioSpiHost0Sd2],
+        dio_oe[DioSpiHost0Sd1],
+        dio_oe[DioSpiHost0Sd0],
         manual_oe_otp_ext_volt,
         manual_oe_flash_test_mode1,
         manual_oe_flash_test_mode0,
         manual_oe_flash_test_volt,
         manual_oe_cc2,
         manual_oe_cc1,
+        manual_oe_usb_n,
+        manual_oe_usb_p,
         manual_oe_por_n
       }),
     .dio_attr_i ({
         manual_attr_ast_misc,
         dio_attr[DioSysrstCtrlAonFlashWpL],
         dio_attr[DioSysrstCtrlAonEcRstL],
-        dio_attr[DioSpiHost0Csb],
-        dio_attr[DioSpiHost0Sck],
-        dio_attr[DioSpiHost0Sd3],
-        dio_attr[DioSpiHost0Sd2],
-        dio_attr[DioSpiHost0Sd1],
-        dio_attr[DioSpiHost0Sd0],
         dio_attr[DioSpiDeviceCsb],
         dio_attr[DioSpiDeviceSck],
         dio_attr[DioSpiDeviceSd3],
         dio_attr[DioSpiDeviceSd2],
         dio_attr[DioSpiDeviceSd1],
         dio_attr[DioSpiDeviceSd0],
+        dio_attr[DioSpiHost0Csb],
+        dio_attr[DioSpiHost0Sck],
+        dio_attr[DioSpiHost0Sd3],
+        dio_attr[DioSpiHost0Sd2],
+        dio_attr[DioSpiHost0Sd1],
+        dio_attr[DioSpiHost0Sd0],
         manual_attr_otp_ext_volt,
         manual_attr_flash_test_mode1,
         manual_attr_flash_test_mode0,
         manual_attr_flash_test_volt,
         manual_attr_cc2,
         manual_attr_cc1,
+        manual_attr_usb_n,
+        manual_attr_usb_p,
         manual_attr_por_n
       }),
 

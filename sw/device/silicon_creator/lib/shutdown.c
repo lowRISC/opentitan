@@ -22,7 +22,7 @@
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "keymgr_regs.h"
 #include "lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
@@ -321,7 +321,7 @@ enum {
   /**
    * Base address of UART.
    */
-  kUartBase = 0x40000000,
+  kUartBase = TOP_EARLGREY_UART0_BASE_ADDR,
   /**
    * UART TX FIFO size.
    */

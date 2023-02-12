@@ -17,7 +17,7 @@ const device_type_t kDeviceType = kDeviceFpgaCw310;
 
 const uint64_t kClockFreqCpuMhz = 10;
 
-const uint64_t kClockFreqCpuHz = 50 * 1000 * 1000;
+const uint64_t kClockFreqCpuHz = kClockFreqCpuMhz * 1000 * 1000;
 
 uint64_t to_cpu_cycles(uint64_t usec) { return usec * kClockFreqCpuMhz; }
 
@@ -31,14 +31,14 @@ const uint64_t kClockFreqAonHz = 250 * 1000;  // 250kHz
 
 const uint64_t kUartBaudrate = 115200;
 
-const uint32_t kUartNCOValue = 0xfffff;
-  //CALCULATE_UART_NCO(kUartBaudrate, kClockFreqPeripheralHz);
+const uint32_t kUartNCOValue =
+    CALCULATE_UART_NCO(kUartBaudrate, kClockFreqPeripheralHz);
 
-const uint32_t kUartTxFifoCpuCycles = 0;
-  //CALCULATE_UART_TX_FIFO_CPU_CYCLES(kUartBaudrate, kClockFreqCpuHz);
+const uint32_t kUartTxFifoCpuCycles =
+    CALCULATE_UART_TX_FIFO_CPU_CYCLES(kUartBaudrate, kClockFreqCpuHz);
 
-const uint32_t kAstCheckPollCpuCycles = 0;
-  //CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
+const uint32_t kAstCheckPollCpuCycles =
+    CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
 
 const uintptr_t kDeviceTestStatusAddress = 0;
 

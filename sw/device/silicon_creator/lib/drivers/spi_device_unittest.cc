@@ -15,7 +15,7 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "spi_device_regs.h"
 
 namespace spi_device_unittest {

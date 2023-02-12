@@ -4,6 +4,8 @@
 //
 // adc_ctrl core module
 
+`include "prim_assert.sv"
+
 module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
   input  clk_aon_i,//Always-on 200KHz clock(logic)
   input  rst_aon_ni,//power-on reset for the 200KHz clock(logic)

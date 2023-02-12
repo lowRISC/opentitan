@@ -7,14 +7,38 @@
 
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
+    '{"uart0", '{
+        '{32'hc0000000, 32'hc000003f}
+    }},
+    '{"uart1", '{
+        '{32'hc0010000, 32'hc001003f}
+    }},
+    '{"uart2", '{
+        '{32'hc0020000, 32'hc002003f}
+    }},
+    '{"uart3", '{
+        '{32'hc0030000, 32'hc003003f}
+    }},
+    '{"i2c0", '{
+        '{32'hc0080000, 32'hc008007f}
+    }},
+    '{"i2c1", '{
+        '{32'hc0090000, 32'hc009007f}
+    }},
+    '{"i2c2", '{
+        '{32'hc00a0000, 32'hc00a007f}
+    }},
     '{"pattgen", '{
         '{32'hc00e0000, 32'hc00e003f}
     }},
-    '{"spi_device", '{
-        '{32'hc0050000, 32'hc0051fff}
+    '{"pwm_aon", '{
+        '{32'hc0450000, 32'hc045007f}
     }},
     '{"gpio", '{
         '{32'hc0040000, 32'hc004003f}
+    }},
+    '{"spi_device", '{
+        '{32'hc0050000, 32'hc0051fff}
     }},
     '{"rv_timer", '{
         '{32'hc0100000, 32'hc01001ff}
@@ -40,6 +64,9 @@ tl_device_t xbar_devices[$] = '{
     '{"lc_ctrl", '{
         '{32'hc0140000, 32'hc01400ff}
     }},
+    '{"sensor_ctrl", '{
+        '{32'hc0490000, 32'hc049003f}
+    }},
     '{"alert_handler", '{
         '{32'hc0150000, 32'hc01507ff}
     }},
@@ -54,13 +81,27 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"sysrst_ctrl_aon", '{
         '{32'hc0430000, 32'hc04300ff}
+    }},
+    '{"adc_ctrl_aon", '{
+        '{32'hc0440000, 32'hc044007f}
+    }},
+    '{"ast", '{
+        '{32'hc0480000, 32'hc04803ff}
 }}};
 
   // List of Xbar hosts
 tl_host_t xbar_hosts[$] = '{
     '{"main", 0, '{
+        "uart0",
+        "uart1",
+        "uart2",
+        "uart3",
+        "i2c0",
+        "i2c1",
+        "i2c2",
         "pattgen",
         "gpio",
+        "spi_device",
         "rv_timer",
         "pwrmgr_aon",
         "rstmgr_aon",
@@ -69,10 +110,13 @@ tl_host_t xbar_hosts[$] = '{
         "otp_ctrl__core",
         "otp_ctrl__prim",
         "lc_ctrl",
-        "spi_device",
+        "sensor_ctrl",
         "alert_handler",
+        "ast",
         "sram_ctrl_ret_aon__ram",
         "sram_ctrl_ret_aon__regs",
         "aon_timer_aon",
-        "sysrst_ctrl_aon"}}
+        "adc_ctrl_aon",
+        "sysrst_ctrl_aon",
+        "pwm_aon"}}
 };

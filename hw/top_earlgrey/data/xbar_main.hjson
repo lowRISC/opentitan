@@ -4,9 +4,9 @@
 { name: "main",
   type: "xbar",
   clock_primary: "clk_main_i", // Main clock, used in sockets
-  other_clock_list: [ "clk_fixed_i", "clk_spi_host0_i", "clk_spi_host1_i"] // Secondary clocks used by specific nodes
+  other_clock_list: [ "clk_fixed_i", "clk_spi_host0_i", "clk_spi_host1_i", "clk_usb_i"] // Secondary clocks used by specific nodes
   reset_primary: "rst_main_ni", // Main reset, used in sockets
-  other_reset_list: [ "rst_fixed_ni", "rst_spi_host0_ni", "rst_spi_host1_ni"] // Secondary clocks used by specific nodes
+  other_reset_list: [ "rst_fixed_ni", "rst_spi_host0_ni", "rst_spi_host1_ni", "rst_usb_ni"] // Secondary clocks used by specific nodes
 
   // Rationale for pipeline and req/rsp_fifo_pass:
   // For host interfaces that are used during production state (corei/cored),
@@ -42,70 +42,6 @@
       reset:     "rst_main_ni",
       req_fifo_pass: false,
       rsp_fifo_pass: false,
-    },
-    { name:      "tlul2axi",
-      type:      "device",
-      clock:     "clk_main_i",
-      reset:     "rst_main_ni",
-      req_fifo_pass: false,
-      rsp_fifo_pass: false,
-      stub: false,
-      xbar: true
-      addr_range: 
-      [
-        {
-          base_addr: 0x00010000
-          size_byte: 0x10000
-        }
-        {
-          base_addr: 0x02000000
-          size_byte: 0xC0000
-        }
-        {
-          base_addr: 0x0C000000
-          size_byte: 0x3FFFFFF
-        }
-        {
-          base_addr: 0x10000000
-          size_byte: 0x400000
-        }
-        {
-          base_addr: 0x10400000
-          size_byte: 0x100000
-        }
-        {
-          base_addr: 0x1A100000
-          size_byte: 0x92000
-        }
-        {
-          base_addr: 0x1C0000000
-          size_byte: 0x100000
-        }
-        {
-          base_addr: 0x18000000
-          size_byte: 0x1000
-        }
-        {
-          base_addr: 0x20000000
-          size_byte: 0x800000
-        }
-        {
-          base_addr: 0x30000000
-          size_byte: 0x10000
-        }
-        {
-          base_addr: 0x40000000
-          size_byte: 0x1000
-        }
-        {
-          base_addr: 0x60000000
-          size_byte: 0x1000
-        }
-        {
-          base_addr: 0x80000000
-          size_byte: 0x20000000
-        }
-      ]
     },
     { name:      "rv_dm.regs",
       type:      "device",
@@ -153,6 +89,13 @@
       type:      "device",
       clock:     "clk_spi_host1_i",
       reset:     "rst_spi_host1_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "usbdev",
+      type:      "device",
+      clock:     "clk_usb_i",
+      reset:     "rst_usb_ni",
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
@@ -270,12 +213,82 @@
       reset:     "rst_main_ni",
       pipeline:  false
     },
+    {
+      name: tlul2axi
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: alsaqr
+      addr_range:
+      [
+        {
+          base_addr: 0x10000000
+          size_byte: 0xA0000000
+        }
+        
+       /* {
+          base_addr: 0x00010000
+          size_byte: 0x10000
+        }
+        {
+          base_addr: 0x02000000
+          size_byte: 0xC0000
+        }
+        {
+          base_addr: 0x0C000000
+          size_byte: 0x3FFFFFF
+        }
+        {
+          base_addr: 0x10000000
+          size_byte: 0x400000
+        }
+        {
+          base_addr: 0x10400000
+          size_byte: 0x100000
+        }
+        {
+          base_addr: 0x1A100000
+          size_byte: 0x92000
+        }
+        {
+          base_addr: 0x1C0000000
+          size_byte: 0x100000
+        }
+        {
+          base_addr: 0x18000000
+          size_byte: 0x1000
+        }
+        {
+          base_addr: 0x20000000
+          size_byte: 0x800000
+        }
+        {
+          base_addr: 0x30000000
+          size_byte: 0x10000
+        }
+        {
+          base_addr: 0x40000000
+          size_byte: 0x1000
+        }
+        {
+          base_addr: 0x60000000
+          size_byte: 0x1000
+        }
+        {
+          base_addr: 0x80000000
+          size_byte: 0x20000000
+        }*/
+      ]
+      xbar: true
+      stub: false
+      pipeline: "true"
+    }
   ],
   connections: {
     rv_core_ibex.corei:  ["rom_ctrl.rom", "rv_dm.mem", "sram_ctrl_main.ram", "flash_ctrl.mem"],
     rv_core_ibex.cored:  [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
-      "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1", "tlul2axi",
+      "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1", "usbdev", "tlul2axi",
       "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
@@ -283,7 +296,7 @@
     ],
     rv_dm.sba: [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
-      "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1", "tlul2axi",
+      "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1", "usbdev", "tlul2axi",
       "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",

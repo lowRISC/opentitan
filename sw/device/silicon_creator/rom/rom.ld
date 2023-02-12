@@ -15,7 +15,7 @@ OUTPUT_ARCH(riscv)
  */
 __DYNAMIC = 0;
 
-INCLUDE ../../../../hw/top_earlgrey/sw/top_earlgrey_memory.ld
+INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 
 /**
  * The boot address, which indicates the location of the initial interrupt
@@ -136,7 +136,7 @@ SECTIONS {
    * Critical static data that is accessible by both the ROM and the ROM
    * extension.
    */
-  INCLUDE ../lib/base/static_critical.ld
+  INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
 
   /**
    * OpenTitan ROM does not have a mutable `.data` section.
@@ -148,9 +148,9 @@ SECTIONS {
     *(.data.*)
 
     /* Tests are an exception to the rule that .data must be empty */
-   /* ASSERT(
+    ASSERT(
         (DEFINED(rom_test) ? 0 : SIZEOF(.data)) == 0,
-        "Error: .data section must be empty");*/
+        "Error: .data section must be empty");
   } > ram_main
 
   /**
@@ -189,5 +189,5 @@ SECTIONS {
     KEEP(*(.chip_info))
   } > rom
 
-  INCLUDE ../../info_sections.ld
+  INCLUDE sw/device/info_sections.ld
 }

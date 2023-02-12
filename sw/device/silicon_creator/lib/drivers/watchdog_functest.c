@@ -20,7 +20,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rstmgr_regs.h"
 
 // Tests that we can pet the watchdog and avoid a reset.

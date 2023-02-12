@@ -28,7 +28,7 @@
 
 #include "alert_handler_regs.h"
 #include "aon_timer_regs.h"
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "pwm_regs.h"
 
 // Global Variables

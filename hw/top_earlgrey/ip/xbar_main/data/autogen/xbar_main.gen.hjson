@@ -12,6 +12,7 @@
   {
     clk_main_i: main
     clk_fixed_i: io_div4
+    clk_usb_i: usb
     clk_spi_host0_i: io
     clk_spi_host1_i: io_div2
   }
@@ -29,6 +30,11 @@
       name: lc_io_div4
       domain: "0"
     }
+    rst_usb_ni:
+    {
+      name: lc_usb
+      domain: "0"
+    }
     rst_spi_host0_ni:
     {
       name: lc_io
@@ -44,6 +50,7 @@
   {
     clk_main_i: clkmgr_aon_clocks.clk_main_infra
     clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
+    clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
     clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
     clk_spi_host1_i: clkmgr_aon_clocks.clk_io_div2_infra
   }
@@ -70,6 +77,7 @@
       peri
       spi_host0
       spi_host1
+      usbdev
       tlul2axi
       flash_ctrl.core
       flash_ctrl.prim
@@ -97,6 +105,7 @@
       peri
       spi_host0
       spi_host1
+      usbdev
       tlul2axi
       flash_ctrl.core
       flash_ctrl.prim
@@ -151,25 +160,6 @@
       xbar: false
       stub: false
       inst_type: ""
-      pipeline: true
-    }
-    {
-      name: tlul2axi
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      stub: false
-      xbar: false
-      addr_range:
-      [
-        {
-          base_addr: 0x10000
-          size_byte: 0x10
-        }
-      ]
-      inst_type: tlul2axi
       pipeline: true
     }
     {
@@ -261,12 +251,12 @@
       addr_range:
       [
         {
-          base_addr: 0xc0040000
-          size_byte: 0x110800
+          base_addr: 0xc0000000
+          size_byte: 0x200000
         }
         {
           base_addr: 0xc0400000
-          size_byte: 0x201000
+          size_byte: 0x400000
         }
       ]
     }
@@ -302,6 +292,25 @@
         {
           base_addr: 0xc0310000
           size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: usbdev
+      type: device
+      clock: clk_usb_i
+      reset: rst_usb_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: usbdev
+      addr_range:
+      [
+        {
+          base_addr: 0xc0320000
+          size_byte: 0x1000
         }
       ]
       xbar: false
@@ -609,6 +618,24 @@
       ]
       xbar: false
       stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: tlul2axi
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: tlul2axi
+      addr_range:
+      [
+        {
+          base_addr: 0x10000
+          size_byte: 0x10
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
       req_fifo_pass: true
     }
   ]

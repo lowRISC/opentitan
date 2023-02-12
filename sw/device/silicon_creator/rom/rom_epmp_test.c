@@ -27,7 +27,7 @@
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
  * ROM ePMP test.
@@ -189,10 +189,10 @@ static const uint32_t kUnimpInstruction = UINT32_MAX;
 /**
  * Illegal instruction residing in .rodata.
  */
-/*static const uint32_t illegal_ins_ro[] = {
-    UINT32_MAX,
+static const uint32_t illegal_ins_ro[] = {
+    kUnimpInstruction,
 };
-*/
+
 /**
  * Illegal instruction residing in .bss.
  */
@@ -234,9 +234,9 @@ static bool passed = false;
  * Test that .rodata in the ROM is not executable.
  */
 static void test_noexec_rodata(void) {
-  /* CHECK(is_in_address_space(UINT32_MAX, TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR,
+  CHECK(is_in_address_space(illegal_ins_ro, TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR,
                             TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES));
-                            CHECK(execute(UINT32_MAX, kIbexExcInstrAccessFault));*/
+  CHECK(execute(illegal_ins_ro, kIbexExcInstrAccessFault));
 }
 
 /**
@@ -365,20 +365,10 @@ void rom_main(void) {
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit + kFlashCtrlSecMmioExecSet);
 
   // Configure UART0 as stdout.
-  #ifdef TARGET_SYNTHESIS                
-  int baud_rate = 115200;
-  int test_freq = 40000000;
-  #else
-  //set_flls();
-  int baud_rate = 115200;
-  int test_freq = 100000000;
-  #endif
-  
-  uart_set_cfg(0,(test_freq/baud_rate)>>4);
-
+  uart_init(kUartNCOValue);
   base_set_stdout((buffer_sink_t){
       .data = NULL,
-      //.sink = uart_sink,
+      .sink = uart_sink,
   });
 
   // Start the tests.
@@ -409,7 +399,7 @@ void rom_main(void) {
   // Note that it is only now, after the DV address space has been unlocked that
   // we can signal that the test has started unfortunately.
   test_status_set(kTestStatusInTest);
-  //test_status_set(passed ? kTestStatusPassed : kTestStatusFailed);
+  test_status_set(passed ? kTestStatusPassed : kTestStatusFailed);
 
   // Unreachable if reporting the test status correctly caused the
   // test to stop.

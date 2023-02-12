@@ -21,7 +21,55 @@
     // device
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_uart0"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_uart1"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_uart2"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_uart3"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_i2c0"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_i2c1"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_i2c2"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_pattgen"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_pwm_aon"
       act:    "req"
       package: "tlul_pkg"
     }
@@ -40,6 +88,12 @@
     { struct: "tl"
       type:   "req_rsp"
       name:   "tl_rv_timer"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_sensor_ctrl"
       act:    "req"
       package: "tlul_pkg"
     }
@@ -112,6 +166,18 @@
     { struct: "tl"
       type:   "req_rsp"
       name:   "tl_sysrst_ctrl_aon"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_adc_ctrl_aon"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_ast"
       act:    "req"
       package: "tlul_pkg"
     }

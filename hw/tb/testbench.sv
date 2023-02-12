@@ -46,7 +46,7 @@ module testbench ();
    parameter int   RESP_MAX_WAIT_CYCLES = 1;
    parameter int   NUM_BEATS = 100;
    
-   localparam int unsigned RTC_CLOCK_PERIOD = 10ns;
+   localparam int unsigned RTC_CLOCK_PERIOD = 80ns;
    localparam int unsigned AON_PERIOD = 5us;
    
    
@@ -153,7 +153,7 @@ module testbench ();
     riscv_dbg_t riscv_dbg = new(jtag_driver);
 
 
-    assign jtag_i.tck        = aon_clk;  
+    assign jtag_i.tck        = clk_sys;  
     assign jtag_i.trst_n     = jtag_mst.trst_n;
     assign jtag_i.tms        = jtag_mst.tms;
     assign jtag_i.tdi        = jtag_mst.tdi;
@@ -181,8 +181,8 @@ module testbench ();
 /////////////////////////////// DUT ///////////////////////////////
    
    top_earlgrey #(
-    .OtpCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/otp-img.mem"),
-    .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom.vmem")
+    .OtpCtrlMemInitFile("/scratch/mciani/test/opentitan/hw/top_earlgrey/sw/tests/otp-img.mem"),
+    .RomCtrlBootRomInitFile("/scratch/mciani/test/opentitan/hw/top_earlgrey/sw/tests/fake_rom.vmem")
    ) dut (
     .mio_in_i('0),
     .dio_in_i('0),
@@ -202,7 +202,7 @@ module testbench ();
     .calib_rdy_i(lc_ctrl_pkg::Off),
     .flash_bist_enable_i(lc_ctrl_pkg::Off),
     .flash_power_down_h_i('0),
-    .flash_power_ready_h_i('0),
+    .flash_power_ready_h_i('1),
 //    .flash_test_mode_a_io('0),
 //    .flash_test_voltage_h_io('0),
 //    .flash_obs_o(tieoff[8]),
@@ -322,8 +322,8 @@ module testbench ();
           
       #(RTC_CLOCK_PERIOD)
 ;
-      jtag_ibex_wakeup(32'h e0000080);
-      //jtag_read_eoc();
+      jtag_ibex_wakeup(32'h f0000080);
+    
       
       
    end // block: local_jtag_preload

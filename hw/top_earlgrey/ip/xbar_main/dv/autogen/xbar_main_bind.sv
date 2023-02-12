@@ -26,12 +26,6 @@ module xbar_main_bind;
   );
 
   // Device interfaces
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_tlul2axi (
-    .clk_i  (clk_main_i),
-    .rst_ni (rst_main_ni),
-    .h2d    (tl_tlul2axi_o),
-    .d2h    (tl_tlul2axi_i)
-  );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rv_dm__regs (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
@@ -73,6 +67,12 @@ module xbar_main_bind;
     .rst_ni (rst_spi_host1_ni),
     .h2d    (tl_spi_host1_o),
     .d2h    (tl_spi_host1_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_usbdev (
+    .clk_i  (clk_usb_i),
+    .rst_ni (rst_usb_ni),
+    .h2d    (tl_usbdev_o),
+    .d2h    (tl_usbdev_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_flash_ctrl__core (
     .clk_i  (clk_main_i),
@@ -169,6 +169,12 @@ module xbar_main_bind;
     .rst_ni (rst_main_ni),
     .h2d    (tl_sram_ctrl_main__ram_o),
     .d2h    (tl_sram_ctrl_main__ram_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_tlul2axi (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_tlul2axi_o),
+    .d2h    (tl_tlul2axi_i)
   );
 
 endmodule

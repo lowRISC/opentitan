@@ -34,8 +34,16 @@
   {
     main:
     [
+      uart0
+      uart1
+      uart2
+      uart3
+      i2c0
+      i2c1
+      i2c2
       pattgen
       gpio
+      spi_device
       rv_timer
       pwrmgr_aon
       rstmgr_aon
@@ -44,12 +52,15 @@
       otp_ctrl.core
       otp_ctrl.prim
       lc_ctrl
-      spi_device
+      sensor_ctrl
       alert_handler
+      ast
       sram_ctrl_ret_aon.ram
       sram_ctrl_ret_aon.regs
       aon_timer_aon
+      adc_ctrl_aon
       sysrst_ctrl_aon
+      pwm_aon
     ]
   }
   nodes:
@@ -65,6 +76,132 @@
       inst_type: ""
       req_fifo_pass: true
       rsp_fifo_pass: true
+    }
+    {
+      name: uart0
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addr: 0xc0000000
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: uart1
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addr: 0xc0010000
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: uart2
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addr: 0xc0020000
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: uart3
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: uart
+      addr_range:
+      [
+        {
+          base_addr: 0xc0030000
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: i2c0
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: i2c
+      addr_range:
+      [
+        {
+          base_addr: 0xc0080000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: i2c1
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: i2c
+      addr_range:
+      [
+        {
+          base_addr: 0xc0090000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: i2c2
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: i2c
+      addr_range:
+      [
+        {
+          base_addr: 0xc00a0000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
     }
     {
       name: pattgen
@@ -85,17 +222,17 @@
       req_fifo_pass: true
     }
     {
-      name: spi_device
+      name: pwm_aon
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
       pipeline: false
-      inst_type: spi_device
+      inst_type: pwm
       addr_range:
       [
         {
-          base_addr: 0xc0050000
-          size_byte: 0x2000
+          base_addr: 0xc0450000
+          size_byte: 0x80
         }
       ]
       xbar: false
@@ -114,6 +251,24 @@
         {
           base_addr: 0xc0040000
           size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: spi_device
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: spi_device
+      addr_range:
+      [
+        {
+          base_addr: 0xc0050000
+          size_byte: 0x2000
         }
       ]
       xbar: false
@@ -265,6 +420,24 @@
       req_fifo_pass: true
     }
     {
+      name: sensor_ctrl
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: sensor_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0xc0490000
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
       name: alert_handler
       type: device
       clock: clk_peri_i
@@ -352,6 +525,42 @@
       ]
       xbar: false
       stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: adc_ctrl_aon
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: adc_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0xc0440000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: ast
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: ast
+      addr_range:
+      [
+        {
+          base_addr: 0xc0480000
+          size_byte: 0x400
+        }
+      ]
+      xbar: false
+      stub: true
       req_fifo_pass: true
     }
   ]

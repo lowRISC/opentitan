@@ -619,7 +619,7 @@ module flash_ctrl
   // initiated a transaction, OR when flash is disabled, then it is a read that
   // can never complete, error back immediately.
   assign rd_no_op_d = adapter_req & ((~sw_rd_op & ~sw_rfifo_rvalid) |
-                      (prim_mubi_pkg::mubi4_test_true_loose(flash_disable[RdFifoIdx])));
+                     /* (prim_mubi_pkg::mubi4_test_true_loose(flash_disable[RdFifoIdx]))*/1'b1);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

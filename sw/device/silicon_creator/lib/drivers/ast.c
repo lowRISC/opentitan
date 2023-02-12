@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
-#include "hw/top_earlgrey/sw/top_earlgrey.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 #include "sensor_ctrl_regs.h"
 
@@ -20,7 +20,7 @@ const uint32_t kAstCheckPollCpuCycles = 10000;
 #endif
 
 enum {
-  kBase70 = 0xFFFFFF00,
+  kBase = TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR,
 };
 
 rom_error_t ast_check(lifecycle_state_t lc_state) {
@@ -75,7 +75,7 @@ rom_error_t ast_check(lifecycle_state_t lc_state) {
 }
 
 static bool done_bit_get(void) {
-  uint32_t reg = abs_mmio_read32(kBase70 + SENSOR_CTRL_STATUS_REG_OFFSET);
+  uint32_t reg = abs_mmio_read32(kBase + SENSOR_CTRL_STATUS_REG_OFFSET);
   return bitfield_bit32_read(reg, SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT);
 }
 

@@ -34,18 +34,18 @@
   {
     main:
     [
-      //uart0
-      //uart1
-      //uart2
-      //uart3
-      //i2c0
-      //i2c1
-      //i2c2
+      uart0
+      uart1
+      uart2
+      sensor_ctrl
+      uart3
+      i2c0
+      i2c1
+      i2c2
       pattgen
       gpio
       spi_device
       rv_timer
-      //usbdev
       pwrmgr_aon
       rstmgr_aon
       clkmgr_aon
@@ -54,13 +54,13 @@
       otp_ctrl.prim
       lc_ctrl
       alert_handler
-      //ast
+      ast
       sram_ctrl_ret_aon.ram
       sram_ctrl_ret_aon.regs
       aon_timer_aon
-      //adc_ctrl_aon
+      adc_ctrl_aon
       sysrst_ctrl_aon
-      //pwm_aon
+      pwm_aon
     ]
   }
   nodes:
@@ -74,9 +74,9 @@
       pipeline: "false"
       stub: false
       inst_type: ""
-      pipeline_byp: "true"
+      pipeline: "true"
     }
-    /*{
+    {
       name: uart0
       type: device
       clock: clk_peri_i
@@ -86,13 +86,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0000000
+          base_addr: 0xC0000000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: uart1
@@ -104,13 +104,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0010000
+          base_addr: 0xC0010000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: uart2
@@ -122,13 +122,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0020000
+          base_addr: 0xC0020000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: uart3
@@ -140,13 +140,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0030000
+          base_addr: 0xC0030000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: i2c0
@@ -158,13 +158,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0080000
+          base_addr: 0xC0080000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: i2c1
@@ -176,13 +176,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0090000
+          base_addr: 0xC0090000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: i2c2
@@ -194,14 +194,14 @@
       addr_range:
       [
         {
-          base_addr: 0xB00a0000
+          base_addr: 0xC00A0000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
-    }*/
+      pipeline: "true"
+    }
     {
       name: pattgen
       type: device
@@ -212,14 +212,14 @@
       addr_range:
       [
         {
-          base_addr: 0xB00e0000
+          base_addr: 0xC00e0000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
-    }/*
+      pipeline: "true"
+    }
     {
       name: pwm_aon
       type: device
@@ -230,14 +230,14 @@
       addr_range:
       [
         {
-          base_addr: 0xB0450000
+          base_addr: 0xC0450000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
-    }*/
+      pipeline: "true"
+    }
     {
       name: gpio
       type: device
@@ -248,13 +248,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0040000
+          base_addr: 0xC0040000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: spi_device
@@ -266,13 +266,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0050000
+          base_addr: 0xC0050000
           size_byte: 0x2000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: rv_timer
@@ -284,32 +284,29 @@
       addr_range:
       [
         {
-          base_addr: 0xB0100000
+          base_addr: 0xC0100000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
-    /*{
-      name: usbdev
+    { name: sensor_ctrl
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
-      pipeline: "false"
-      inst_type: usbdev
+      pipeline:  false
       addr_range:
       [
         {
-          base_addr: 0xB0110000
-          size_byte: 0x1000
+          base_addr: 0xC0490000
+          size_byte: 0x40
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
-    }*/
+    },
     {
       name: pwrmgr_aon
       type: device
@@ -320,13 +317,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0400000
+          base_addr: 0xC0400000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: rstmgr_aon
@@ -338,13 +335,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0410000
+          base_addr: 0xC0410000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: clkmgr_aon
@@ -356,13 +353,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0420000
+          base_addr: 0xC0420000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: pinmux_aon
@@ -374,13 +371,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0460000
+          base_addr: 0xC0460000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: otp_ctrl.core
@@ -392,13 +389,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0130000
+          base_addr: 0xC0130000
           size_byte: 0x2000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: otp_ctrl.prim
@@ -410,13 +407,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0132000
+          base_addr: 0xC0132000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: lc_ctrl
@@ -428,13 +425,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0140000
+          base_addr: 0xC0140000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: alert_handler
@@ -446,13 +443,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0150000
+          base_addr: 0xC0150000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: sram_ctrl_ret_aon.regs
@@ -464,13 +461,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0500000
+          base_addr: 0xC0500000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: sram_ctrl_ret_aon.ram
@@ -482,13 +479,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0600000
+          base_addr: 0xC0600000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: aon_timer_aon
@@ -500,13 +497,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0470000
+          base_addr: 0xC0470000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: sysrst_ctrl_aon
@@ -518,15 +515,15 @@
       addr_range:
       [
         {
-          base_addr: 0xB0430000
+          base_addr: 0xC0430000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
-   /* {
+    {
       name: adc_ctrl_aon
       type: device
       clock: clk_peri_i
@@ -536,13 +533,13 @@
       addr_range:
       [
         {
-          base_addr: 0xB0440000
+          base_addr: 0xC0440000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: false
-      pipeline_byp: "true"
+      pipeline: "true"
     }
     {
       name: ast
@@ -554,14 +551,14 @@
       addr_range:
       [
         {
-          base_addr: 0xB0480000
+          base_addr: 0xC0480000
           size_byte: 0x1000
         }
       ]
       xbar: false
       stub: true
-      pipeline_byp: "true"
-    }*/
+      pipeline: "true"
+    }
   ]
   clock: clk_peri_i
   type: xbar
