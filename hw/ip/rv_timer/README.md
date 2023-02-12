@@ -41,13 +41,13 @@ timers and harts have been added.
 
 The timer module is composed of tick generators, counters, and comparators.
 A tick generator creates a tick every time its internal counter hits the
-{{< regref "CFG0.prescaler" >}} value. The tick is used to increment `mtime` by the {{< regref "CFG0.step" >}}
+{{#regref spi_device.CFG0.prescaler }} value. The tick is used to increment `mtime` by the {{#regref spi_device.CFG0.step }}
 value. The 64-bit `mtime` value is compared with the 64-bit `mtimecmp`. If
 `mtime` is greater than or equal to `mtimecmp`, the timer raises an interrupt.
 
 ## Hardware Interfaces
 
-{{< incGenFromIpDesc "../data/rv_timer.hjson" "hwcfg" >}}
+* [Interface Tables](data/rv_timer.hjson#interfaces)
 
 ## Design Details
 
@@ -57,13 +57,13 @@ The tick module inside the timer IP is used to generate a fixed period of pulse
 signal. This allows creation of a call-clock timer tick such as 1us or 10us
 regardless of the system clock period. It is useful if the system has more than
 one clock as a clock source. The firmware just needs to adjust the
-{{< regref "CFG0.prescaler" >}} value and the actual timer interrupt handling routine does not
+{{#regref spi_device.CFG0.prescaler }} value and the actual timer interrupt handling routine does not
 need a variable clock period to update `mtimecmp`.
 
 For instance, if a system switches between 48MHz and 200MHz clocks, a prescaler
 value of **47** for 48MHz and **199** for 200MHz will generate a 1us tick.
 In this version, the timer only supports a single fixed clock, so the firmware
-should change {{< regref "CFG0.prescaler" >}} appropriately.
+should change {{#regref spi_device.CFG0.prescaler }} appropriately.
 
 ### Configurable number of timers and harts
 
@@ -234,9 +234,9 @@ between `mtime` and `mtimecmp` care is needed. A couple of cases are:
 
 If `mtime` is greater than or equal to the value of `mtimecmp`, the interrupt is generated from the RV_TIMER module.
 If the core enables the timer interrupt in `MIE` CSR, it jumps into the timer interrupt service routine.
-Clearing the interrupt can be done by writing 1 into the Interrupt Status register {{<regref "INTR_STATE0">}}.
+Clearing the interrupt can be done by writing 1 into the Interrupt Status register {{#regref spi_device.INTR_STATE0 }}.
 The RV_TIMER module also follows RISC-V Privileged spec that requires the interrupt to be cleared by updating `mtimecmp` memory-mapped CSRs.
-In this case both {{<regref "COMPARE_LOWER0_0">}} and {{<regref "COMPARE_UPPER0_0">}} can clear the interrupt source.
+In this case both {{#regref spi_device.COMPARE_LOWER0_0 }} and {{#regref spi_device.COMPARE_UPPER0_0 }} can clear the interrupt source.
 
 ## Device Interface Functions (DIFs)
 
@@ -244,4 +244,4 @@ In this case both {{<regref "COMPARE_LOWER0_0">}} and {{<regref "COMPARE_UPPER0_
 
 ## Register Table
 
-{{< incGenFromIpDesc "../data/rv_timer.hjson" "registers" >}}
+* [Register Table](data/rv_timer.hjson#registers)

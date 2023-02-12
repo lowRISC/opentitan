@@ -108,10 +108,10 @@ The reset topology also contains additional properties:
 
 The reset manager handles the reset of the core domain, and also holds relevant reset information in CSR registers, such as:
 
-*  {{< regref "RESET_INFO" >}} indicates why the system was reset.
-*  {{< regref "ALERT_INFO" >}} contains the recorded alert status prior to system reset.
+*  {{#regref rstmgr.RESET_INFO }} indicates why the system was reset.
+*  {{#regref rstmgr.ALERT_INFO }} contains the recorded alert status prior to system reset.
    *  This is useful in case the reset was triggered by an alert escalation.
-*  {{< regref "CPU_INFO" >}} contains recorded CPU state prior to system reset.
+*  {{#regref rstmgr.CPU_INFO }} contains recorded CPU state prior to system reset.
    *  This is useful in case the reset was triggered by a watchdog where the host hung on a particular bus transaction.
 
 Additionally, the reset manager, along with the power manager, accepts requests from the system and asserts resets for the appropriate clock trees.
@@ -167,7 +167,7 @@ Parameter                   | Default       | Description
 
 ### Signals
 
-{{< incGenFromIpDesc "/hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson" "hwcfg" >}}
+* [Interface Tables](../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#interfaces)
 
 ## Design Details
 
@@ -280,7 +280,7 @@ Reset Cause             | Description
 `POR`                   | Cold boot, the system was reset through POR circuitry.
 `LOW_POWER_EXIT`        | Warm boot, the system was reset through low power exit.
 `NDM RESET`             | Warm boot, the system was reset through `rv_dm` non-debug-module request.
-`SW_REQ`                | Warm boot, the system was reset through {{< regref "RESET_REQ" >}}.
+`SW_REQ`                | Warm boot, the system was reset through {{#regref rstmgr.RESET_REQ }}.
 `HW_REQ`                | Warm boot, the system was reset through peripheral requests.  There may be multiple such requests.
 
 
@@ -322,11 +322,11 @@ The enable for such debug capture can be locked such that it never captures.
 
 The alert information register contains the value of the alert crash dump prior to a triggered reset.
 Since this information differs in length between system implementation, the alert information register only displays 32-bits at a time.
-The {{< regref "ALERT_INFO_ATTR" >}} register indicates how many 32-bit data segments must be read.
+The {{#regref rstmgr.ALERT_INFO_ATTR }} register indicates how many 32-bit data segments must be read.
 
-To enable alert crash dump capture, set {{< regref "ALERT_INFO_CTRL.EN" >}} to 1.
-Once the system has reset, check {{< regref "ALERT_INFO_ATTR.CNT_AVAIL" >}} for how many reads need to be done.
-Set {{< regref "ALERT_INFO_CTRL.INDEX" >}} to the desired segment, and then read the output from {{< regref "ALERT_INFO" >}}.
+To enable alert crash dump capture, set {{#regref rstmgr.ALERT_INFO_CTRL.EN }} to 1.
+Once the system has reset, check {{#regref rstmgr.ALERT_INFO_ATTR.CNT_AVAIL }} for how many reads need to be done.
+Set {{#regref rstmgr.ALERT_INFO_CTRL.INDEX }} to the desired segment, and then read the output from {{#regref rstmgr.ALERT_INFO }}.
 
 ### CPU Information
 
@@ -335,8 +335,8 @@ Since this information differs in length between system implementation, the info
 
 For more details on the CPU dump details, please see [crash dump](../rv_core_ibex/README.md#crash-dump-collection).
 
-The {{< regref "CPU_INFO_ATTR" >}} register indicates how many 32-bit data segments must be read.
-Software then simply needs to write in {{< regref "CPU_INFO_CTRL.INDEX" >}} which segment it wishes and then read out the {{< regref "CPU_INFO" >}} register.
+The {{#regref rstmgr.CPU_INFO_ATTR }} register indicates how many 32-bit data segments must be read.
+Software then simply needs to write in {{#regref rstmgr.CPU_INFO_CTRL.INDEX }} which segment it wishes and then read out the {{#regref rstmgr.CPU_INFO }} register.
 
 # Programmers Guide
 
@@ -346,4 +346,4 @@ Software then simply needs to write in {{< regref "CPU_INFO_CTRL.INDEX" >}} whic
 
 ## Register Table
 
-{{< incGenFromIpDesc "/hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson" "registers" >}}
+* [Register Table](../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#registers)

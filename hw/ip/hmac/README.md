@@ -27,8 +27,8 @@ This HMAC implementation is not hardened against side channel or fault injection
 It is meant purely for hashing acceleration.
 If hardened MAC operations are required, users should use either [KMAC](../kmac/README.md) or a software implementation.
 
-The 256-bit secret key is written in {{< regref "KEY_0" >}} to {{< regref "KEY_7" >}}.
-The message to authenticate is written to {{< regref "MSG_FIFO" >}} and the HMAC generates a 256-bit digest value which can be read from {{< regref "DIGEST_0" >}} to {{< regref "DIGEST_7" >}}.
+The 256-bit secret key is written in {{#regref hmac.KEY_0 }} to {{#regref hmac.KEY_7 }}.
+The message to authenticate is written to {{#regref hmac.MSG_FIFO }} and the HMAC generates a 256-bit digest value which can be read from {{#regref hmac.DIGEST_0 }} to {{#regref hmac.DIGEST_7 }}.
 The `hash_done` interrupt is raised to report to software that the final digest is available.
 
 The HMAC IP can run in SHA-256-only mode, whose purpose is to check the
@@ -38,13 +38,13 @@ generates the same result with the same message every time.
 
 The software doesn't need to provide the message length. The HMAC IP
 will calculate the length of the message received between **1** being written to
-{{< regref "CMD.hash_start" >}} and **1** being written to {{< regref "CMD.hash_process" >}}.
+{{#regref hmac.CMD.hash_start }} and **1** being written to {{#regref hmac.CMD.hash_process }}.
 
 This version doesn't have many defense mechanisms but is able to
 wipe internal variables such as the secret key, intermediate hash results
 H, digest and the message FIFO. It does not wipe the software accessible 16x32b FIFO.
 The software can wipe the variables by writing a 32-bit random value into
-{{< regref "WIPE_SECRET" >}} register. The internal variables will be reset to the written
+{{#regref hmac.WIPE_SECRET }} register. The internal variables will be reset to the written
 value. This version of the HMAC doesn't have a internal pseudo-random number
 generator to derive the random number from the written seed number.
 
@@ -84,24 +84,24 @@ hash result and the previous digest registers.
 
 ## Hardware Interface
 
-{{< incGenFromIpDesc "../data/hmac.hjson" "hwcfg" >}}
+* [Interface Tables](data/hmac.hjson#interfaces)
 
 ## Design Details
 
 ### SHA-256 message feed and pad
 
 A message is fed via a memory-mapped message FIFO. Any write access to the
-memory-mapped window {{< regref "MSG_FIFO" >}} updates the message FIFO. If the FIFO is full,
+memory-mapped window {{#regref hmac.MSG_FIFO }} updates the message FIFO. If the FIFO is full,
 the HMAC block will block any writes leading to back-pressure on the
 interconnect (as opposed to dropping those writes or overwriting existing FIFO
 contents). It is recommended this back-pressure is avoided by not writing to the
 memory-mapped message FIFO when it is full. To avoid doing so, software can
-read the {{< regref "STATUS.fifo_full" >}} register.
+read the {{#regref hmac.STATUS.fifo_full }} register.
 
 The logic assumes the input message is little-endian.
 It converts the byte order of the word right before writing to SHA2 storage as SHA2 treats the incoming message as big-endian.
-If SW wants to convert the message byte order, SW should set {{< regref "CFG.endian_swap" >}} to **1**.
-The byte order of the digest registers, from {{< regref "DIGEST_0" >}} to {{< regref "DIGEST_7" >}} can be configured with {{< regref "CFG.digest_swap" >}}.
+If SW wants to convert the message byte order, SW should set {{#regref hmac.CFG.endian_swap }} to **1**.
+The byte order of the digest registers, from {{#regref hmac.DIGEST_0 }} to {{#regref hmac.DIGEST_7 }} can be configured with {{#regref hmac.CFG.digest_swap }}.
 
 See the table below:
 
@@ -116,7 +116,7 @@ Push to SHA2 #0 | 03020105h | 01020304h
 Push to SHA2 #1 | 00000004h | 00000005h
 
 
-Small writes to {{< regref "MSG_FIFO" >}} are coalesced with into 32-bit words by the [packer logic](../prim/doc/prim_packer.md).
+Small writes to {{#regref hmac.MSG_FIFO }} are coalesced with into 32-bit words by the [packer logic]({{< relref "hw/ip/prim/doc/prim_packer" >}}).
 These words are fed into the internal message FIFO.
 While passing writes to the packer logic, the block also counts the number of bytes that are being passed.
 This gives the received message length, which is used in HMAC and SHA-256 as part of the hash computation.
@@ -238,9 +238,9 @@ More detailed and complete code can be found in the software under `sw/`, [ROM c
 ## Initialization
 
 This section of the code describes initializing the HMAC-SHA256, setting up the
-interrupts, endianness, and HMAC, SHA-256 mode. {{< regref "CFG.endian_swap" >}} reverses
+interrupts, endianness, and HMAC, SHA-256 mode. {{#regref hmac.CFG.endian_swap }} reverses
 the byte-order of input words when software writes into the message FIFO.
-{{< regref "CFG.digest_swap" >}} reverses the byte-order in the final HMAC or SHA hash.
+{{#regref hmac.CFG.digest_swap }} reverses the byte-order in the final HMAC or SHA hash.
 
 ```c
 void hmac_init(unsigned int endianess, unsigned int digest_endian) {
@@ -267,8 +267,8 @@ void hmac_init(unsigned int endianess, unsigned int digest_endian) {
 
 The following code shows how to send a message to the HMAC, the procedure is
 the same whether a full HMAC or just a SHA-256 calculation is required (choose
-between them using {{< regref "CFG.hmac_en" >}}). In both cases the SHA-256 engine must be
-enabled using {{< regref "CFG.sha_en" >}} (once all other configuration has been properly set).
+between them using {{#regref hmac.CFG.hmac_en }}). In both cases the SHA-256 engine must be
+enabled using {{#regref hmac.CFG.sha_en }} (once all other configuration has been properly set).
 If the message is bigger than 512-bit, the software must wait until the FIFO
 isn't full before writing further bits.
 
@@ -301,15 +301,15 @@ void run_hmac(uint32_t *msg, uint32_t msg_len, uint32_t *hash) {
 
 ## Updating the configurations
 
-The HMAC IP prevents {{< regref "CFG" >}} and {{< regref "KEY" >}} registers from updating while the engine is processing messages.
+The HMAC IP prevents {{#regref hmac.CFG }} and {{#regref hmac.KEY }} registers from updating while the engine is processing messages.
 Such attempts are discarded.
-The {{< regref "KEY" >}} register ignores any attempt to access the secret key in the middle of the process.
+The {{#regref hmac.KEY }} register ignores any attempt to access the secret key in the middle of the process.
 If the software tries to update the KEY, the IP reports an error through the Error FIFO. The error code is `SwUpdateSecretKeyInProcess`, `0x0003`.
 
 ## Errors
 
-When HMAC sees errors, the IP reports the error via {{<regref "INTR_STATUS.hmac_err" >}}.
-The details of the error type is stored in {{<regref "ERR_CODE">}}.
+When HMAC sees errors, the IP reports the error via {{#regref hmac.INTR_STATUS.hmac_err }}.
+The details of the error type is stored in {{#regref hmac.ERR_CODE }}.
 
 Error                        | Value | Description
 -----------------------------|-------|---------------
@@ -324,8 +324,8 @@ Error                        | Value | Description
 ### FIFO_EMPTY
 
 If the FIFO_FULL interrupt occurs, it is recommended the software does not write
-more data into {{< regref "MSG_FIFO" >}} until the interrupt is cleared and the status
-{{< regref "STATUS.fifo_full" >}} is lowered. Whilst the FIFO is full the HMAC will block
+more data into {{#regref hmac.MSG_FIFO }} until the interrupt is cleared and the status
+{{#regref hmac.STATUS.fifo_full }} is lowered. Whilst the FIFO is full the HMAC will block
 writes until the FIFO has space which will cause back-pressure on the
 interconnect.
 
@@ -335,4 +335,4 @@ interconnect.
 
 ## Register Table
 
-{{< incGenFromIpDesc "../data/hmac.hjson" "registers" >}}
+* [Register Table](data/hmac.hjson#registers)

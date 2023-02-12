@@ -310,7 +310,7 @@ Parameter                   | Default (Max) | Top Earlgrey | Description
 
 ### Signals
 
-{{< incGenFromIpDesc "../data/otp_ctrl.hjson" "hwcfg" >}}
+* [Interface Tables](data/otp_ctrl.hjson#interfaces)
 
 The OTP controller contains various interfaces that connect to other comportable IPs within OpenTitan, and these are briefly explained further below.
 
@@ -778,16 +778,16 @@ Typical programming sequences are explained at the end of the Programmer's guide
 The OTP controller initializes automatically upon power-up and is fully operational by the time the processor boots.
 The only initialization steps that SW should perform are:
 
-1. Check that the OTP controller has successfully initialized by reading {{< regref STATUS >}}. I.e., make sure that none of the ERROR bits are set, and that the DAI is idle ({{< regref STATUS.DAI_IDLE >}}).
+1. Check that the OTP controller has successfully initialized by reading {{#regref otp_ctrl.STATUS }}. I.e., make sure that none of the ERROR bits are set, and that the DAI is idle ({{#regref otp_ctrl.STATUS.DAI_IDLE }}).
 2. Set up the periodic background checks:
-    - Choose whether to enable periodic [background checks](#partition-checks) by programming nonzero mask values to {{< regref INTEGRITY_CHECK_PERIOD >}} and {{< regref CONSISTENCY_CHECK_PERIOD >}}.
-    - Choose whether such checks shall be subject to a timeout by programming a nonzero timeout cycle count to {{< regref CHECK_TIMEOUT >}}.
-    - It is recommended to lock down the background check registers via {{< regref CHECK_REGWEN >}}, once the background checks have been set up.
+    - Choose whether to enable periodic [background checks](#partition-checks) by programming nonzero mask values to {{#regref otp_ctrl.INTEGRITY_CHECK_PERIOD }} and {{#regref otp_ctrl.CONSISTENCY_CHECK_PERIOD }}.
+    - Choose whether such checks shall be subject to a timeout by programming a nonzero timeout cycle count to {{#regref otp_ctrl.CHECK_TIMEOUT }}.
+    - It is recommended to lock down the background check registers via {{#regref otp_ctrl.CHECK_REGWEN }}, once the background checks have been set up.
 
-If needed, one-off integrity and consistency checks can be triggered via {{< regref CHECK_TRIGGER >}}.
-If this functionality is not needed, it is recommended to lock down the trigger register via {{< regref CHECK_TRIGGER_REGWEN >}}.
+If needed, one-off integrity and consistency checks can be triggered via {{#regref otp_ctrl.CHECK_TRIGGER }}.
+If this functionality is not needed, it is recommended to lock down the trigger register via {{#regref otp_ctrl.CHECK_TRIGGER_REGWEN }}.
 
-Later on during the boot process, SW may also choose to block read access to the CREATOR_SW_CFG or OWNER_SW_CFG partitions at runtime via {{< regref CREATOR_SW_CFG_READ_LOCK >}} and {{< regref OWNER_SW_CFG_READ_LOCK >}}.
+Later on during the boot process, SW may also choose to block read access to the CREATOR_SW_CFG or OWNER_SW_CFG partitions at runtime via {{#regref otp_ctrl.CREATOR_SW_CFG_READ_LOCK }} and {{#regref otp_ctrl.OWNER_SW_CFG_READ_LOCK }}.
 
 
 ### Reset Considerations
@@ -803,7 +803,7 @@ Hence the OTP controller performs a blank check and returns an error if a write 
 
 ### Potential Side-Effects on Flash via Life Cycle
 
-It should be noted that the locked status of the partition holding the creator root key (i.e., the value of the {{< regref "SECRET2_DIGEST_0" >}}) determines the ID_STATUS of the device, which in turn determines SW accessibility of creator seed material in flash and OTP.
+It should be noted that the locked status of the partition holding the creator root key (i.e., the value of the {{#regref otp_ctrl.SECRET2_DIGEST_0 }}) determines the ID_STATUS of the device, which in turn determines SW accessibility of creator seed material in flash and OTP.
 That means that creator-seed-related collateral needs to be provisioned to Flash **before** the OTP digest lockdown mechanism is triggered, since otherwise accessibility to the corresponding flash region is lost.
 See the [life cycle controller documentation](../lc_ctrl/README.md#id-state-of-the-device) for more details.
 
@@ -813,13 +813,13 @@ OTP has to be programmed via the Direct Access Interface, which is comprised of 
 
 CSR Name                             | Description
 -------------------------------------|------------------------------------
-{{< regref DIRECT_ACCESS_WDATA_0 >}} | Low 32bit word to be written.
-{{< regref DIRECT_ACCESS_WDATA_1 >}} | High 32bit word to be written.
-{{< regref DIRECT_ACCESS_RDATA_0 >}} | Low 32bit word that has been read.
-{{< regref DIRECT_ACCESS_RDATA_1 >}} | High 32bit word that has been read.
-{{< regref DIRECT_ACCESS_ADDRESS >}} | byte address for the access.
-{{< regref DIRECT_ACCESS_CMD >}}     | Command register to trigger a read or a write access.
-{{< regref DIRECT_ACCESS_REGWEN >}}  | Write protection register for DAI.
+{{#regref otp_ctrl.DIRECT_ACCESS_WDATA_0 }} | Low 32bit word to be written.
+{{#regref otp_ctrl.DIRECT_ACCESS_WDATA_1 }} | High 32bit word to be written.
+{{#regref otp_ctrl.DIRECT_ACCESS_RDATA_0 }} | Low 32bit word that has been read.
+{{#regref otp_ctrl.DIRECT_ACCESS_RDATA_1 }} | High 32bit word that has been read.
+{{#regref otp_ctrl.DIRECT_ACCESS_ADDRESS }} | byte address for the access.
+{{#regref otp_ctrl.DIRECT_ACCESS_CMD }}     | Command register to trigger a read or a write access.
+{{#regref otp_ctrl.DIRECT_ACCESS_REGWEN }}  | Write protection register for DAI.
 
 See further below for a detailed [Memory Map](#direct-access-memory-map) of the address space accessible via the DAI.
 
@@ -827,35 +827,35 @@ See further below for a detailed [Memory Map](#direct-access-memory-map) of the 
 
 A typical readout sequence looks as follows:
 
-1. Check whether the DAI is idle by reading the {{< regref STATUS >}} register.
-2. Write the byte address for the access to {{< regref DIRECT_ACCESS_ADDRESS >}}.
+1. Check whether the DAI is idle by reading the {{#regref otp_ctrl.STATUS }} register.
+2. Write the byte address for the access to {{#regref otp_ctrl.DIRECT_ACCESS_ADDRESS }}.
 Note that the address is aligned with the granule, meaning that either 2 or 3 LSBs of the address are ignored, depending on whether the access granule is 32 or 64bit.
-3. Trigger a read command by writing 0x1 to {{< regref DIRECT_ACCESS_CMD >}}.
-4. Poll the {{< regref STATUS >}} until the DAI state goes back to idle.
+3. Trigger a read command by writing 0x1 to {{#regref otp_ctrl.DIRECT_ACCESS_CMD }}.
+4. Poll the {{#regref otp_ctrl.STATUS }} until the DAI state goes back to idle.
 Alternatively, the `otp_operation_done` interrupt can be enabled up to notify the processor once an access has completed.
 5. If the status register flags a DAI error, additional handling is required (see [Section on Error handling](#error-handling)).
-6. If the region accessed has a 32bit access granule, the 32bit chunk of read data can be read from {{< regref DIRECT_ACCESS_RDATA_0 >}}.
-If the region accessed has a 64bit access granule, the 64bit chunk of read data can be read from the {{< regref DIRECT_ACCESS_RDATA_0 >}} and {{< regref DIRECT_ACCESS_RDATA_1 >}} registers.
+6. If the region accessed has a 32bit access granule, the 32bit chunk of read data can be read from {{#regref otp_ctrl.DIRECT_ACCESS_RDATA_0 }}.
+If the region accessed has a 64bit access granule, the 64bit chunk of read data can be read from the {{#regref otp_ctrl.DIRECT_ACCESS_RDATA_0 }} and {{#regref otp_ctrl.DIRECT_ACCESS_RDATA_1 }} registers.
 7. Go back to 1. and repeat until all data has been read.
 
-The hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
+The hardware will set {{#regref otp_ctrl.DIRECT_ACCESS_REGWEN }} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
 
 ### Programming Sequence
 
 A typical programming sequence looks as follows:
 
-1. Check whether the DAI is idle by reading the {{< regref STATUS >}} register.
-2. If the region to be accessed has a 32bit access granule, place a 32bit chunk of data into {{< regref DIRECT_ACCESS_WDATA_0 >}}.
-If the region to be accessed has a 64bit access granule, both the {{< regref DIRECT_ACCESS_WDATA_0 >}} and {{< regref DIRECT_ACCESS_WDATA_1 >}} registers have to be used.
-3. Write the byte address for the access to {{< regref DIRECT_ACCESS_ADDRESS >}}.
+1. Check whether the DAI is idle by reading the {{#regref otp_ctrl.STATUS }} register.
+2. If the region to be accessed has a 32bit access granule, place a 32bit chunk of data into {{#regref otp_ctrl.DIRECT_ACCESS_WDATA_0 }}.
+If the region to be accessed has a 64bit access granule, both the {{#regref otp_ctrl.DIRECT_ACCESS_WDATA_0 }} and {{#regref otp_ctrl.DIRECT_ACCESS_WDATA_1 }} registers have to be used.
+3. Write the byte address for the access to {{#regref otp_ctrl.DIRECT_ACCESS_ADDRESS }}.
 Note that the address is aligned with the granule, meaning that either 2 or 3 LSBs of the address are ignored, depending on whether the access granule is 32 or 64bit.
-4. Trigger a write command by writing 0x2 to {{< regref DIRECT_ACCESS_CMD >}}.
-5. Poll the {{< regref STATUS >}} until the DAI state goes back to idle.
+4. Trigger a write command by writing 0x2 to {{#regref otp_ctrl.DIRECT_ACCESS_CMD }}.
+5. Poll the {{#regref otp_ctrl.STATUS }} until the DAI state goes back to idle.
 Alternatively, the `otp_operation_done` interrupt can be enabled up to notify the processor once an access has completed.
 6. If the status register flags a DAI error, additional handling is required (see [Section on Error handling](#error-handling)).
 7. Go back to 1. and repeat until all data has been written.
 
-The hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
+The hardware will set {{#regref otp_ctrl.DIRECT_ACCESS_REGWEN }} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
 
 Note that SW is responsible for keeping track of already programmed OTP word locations during the provisioning phase.
 **It is imperative that SW does not write the same word location twice**, since this can lead to ECC inconsistencies, thereby potentially rendering the device useless.
@@ -864,14 +864,14 @@ Note that SW is responsible for keeping track of already programmed OTP word loc
 
 The hardware digest computation for the hardware and secret partitions can be triggered as follows:
 
-1. Check whether the DAI is idle by reading the {{< regref STATUS >}} register.
-3. Write the partition base address to {{< regref DIRECT_ACCESS_ADDRESS >}}.
-4. Trigger a digest calculation command by writing 0x4 to {{< regref DIRECT_ACCESS_CMD >}}.
-5. Poll the {{< regref STATUS >}} until the DAI state goes back to idle.
+1. Check whether the DAI is idle by reading the {{#regref otp_ctrl.STATUS }} register.
+3. Write the partition base address to {{#regref otp_ctrl.DIRECT_ACCESS_ADDRESS }}.
+4. Trigger a digest calculation command by writing 0x4 to {{#regref otp_ctrl.DIRECT_ACCESS_CMD }}.
+5. Poll the {{#regref otp_ctrl.STATUS }} until the DAI state goes back to idle.
 Alternatively, the `otp_operation_done` interrupt can be enabled up to notify the processor once an access has completed.
 6. If the status register flags a DAI error, additional handling is required (see [Section on Error handling](#error-handling)).
 
-The hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
+The hardware will set {{#regref otp_ctrl.DIRECT_ACCESS_REGWEN }} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
 
 It should also be noted that the effect of locking a partition via the digest only takes effect **after** the next system reset.
 To prevent integrity check failures SW must therefore ensure that no more programming operations are issued to the affected partition after initiating the digest calculation sequence.
@@ -968,17 +968,17 @@ For the HW_CFG and SECRET* partitions, this can be achieved as follows:
 
 1. [Trigger](#digest-calculation-sequence) a digest calculation via the DAI.
 2. [Read back](#readout-sequence) and verify the digest location via the DAI.
-3. Perform a full-system reset and verify that the corresponding CSRs exposing the 64bit digest have been populated ({{< regref "HW_CFG_DIGEST_0" >}}, {{< regref "SECRET0_DIGEST_0" >}}, {{< regref "SECRET1_DIGEST_0" >}} or {{< regref "SECRET2_DIGEST_0" >}}).
+3. Perform a full-system reset and verify that the corresponding CSRs exposing the 64bit digest have been populated ({{#regref otp_ctrl.HW_CFG_DIGEST_0 }}, {{#regref otp_ctrl.SECRET0_DIGEST_0 }}, {{#regref otp_ctrl.SECRET1_DIGEST_0 }} or {{#regref otp_ctrl.SECRET2_DIGEST_0 }}).
 
 It should be noted that locking only takes effect after a system reset since the affected partitions first have to re-sense the digest values.
 Hence, it is critical that SW ensures that no more data is written to the partition to be locked after triggering the hardware digest calculation.
 Otherwise, the device will likely be rendered inoperable as this can lead to permanent digest mismatch errors after system reboot.
 
-For the {{< regref "CREATOR_SW_CFG" >}} and {{< regref "OWNER_SW_CFG" >}} partitions, the process is similar, but computation and programming of the digest is entirely up to software:
+For the {{#regref otp_ctrl.CREATOR_SW_CFG }} and {{#regref otp_ctrl.OWNER_SW_CFG }} partitions, the process is similar, but computation and programming of the digest is entirely up to software:
 
-1. Compute a 64bit digest over the relevant parts of the partition, and [program](#programming-sequence) that value to {{< regref "CREATOR_SW_CFG_DIGEST_0" >}} or {{< regref "OWNER_SW_CFG_DIGEST_0" >}} via the DAI. Note that digest accesses through the DAI have an access granule of 64bit.
+1. Compute a 64bit digest over the relevant parts of the partition, and [program](#programming-sequence) that value to {{#regref otp_ctrl.CREATOR_SW_CFG_DIGEST_0 }} or {{#regref otp_ctrl.OWNER_SW_CFG_DIGEST_0 }} via the DAI. Note that digest accesses through the DAI have an access granule of 64bit.
 2. [Read back](#readout-sequence) and verify the digest location via the DAI.
-3. Perform a full-system reset and verify that the corresponding digest CSRs {{< regref "CREATOR_SW_CFG_DIGEST_0" >}} or {{< regref "OWNER_SW_CFG_DIGEST_0" >}} have been populated with the correct 64bit value.
+3. Perform a full-system reset and verify that the corresponding digest CSRs {{#regref otp_ctrl.CREATOR_SW_CFG_DIGEST_0 }} or {{#regref otp_ctrl.OWNER_SW_CFG_DIGEST_0 }} have been populated with the correct 64bit value.
 
 Note that any unrecoverable errors during the programming steps, or mismatches during the read-back and verification steps indicate that the device might be malfunctioning (possibly due to fabrication defects) and hence the device may have to be scrapped.
 This is however rare and should not happen after fabrication testing.
@@ -989,7 +989,7 @@ This is however rare and should not happen after fabrication testing.
 
 ## Register Table
 
-{{< incGenFromIpDesc "../data/otp_ctrl.hjson" "registers" >}}
+* [Register Tabel](data/otp_ctrl.hjson#registers)
 
 # Additional Notes
 

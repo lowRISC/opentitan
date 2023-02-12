@@ -51,7 +51,7 @@ All hardware interfaces of the debug system are documented in the [PULP RISC-V D
 
 ### Signals
 
-{{< incGenFromIpDesc "../data/rv_dm.hjson" "hwcfg" >}}
+* [Interface Tables](data/rv_dm.hjson#interfaces)
 
 ### Life Cycle Control
 
@@ -131,4 +131,4 @@ input  tlul_pkg::tl_d2h_t  tl_h_i,
 
 ## Register Table
 
-{{< incGenFromIpDesc "../data/rv_dm.hjson" "registers" >}}
+* [Register Table](data/rv_dm.hjson#registers)

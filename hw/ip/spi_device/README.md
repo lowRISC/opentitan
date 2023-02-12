@@ -75,7 +75,7 @@ The IP supports Normal Read, Fast Read, Fast Read Dual Output, Fast Read Quad Ou
 This version of IP does not support Dual IO, Quad IO, QPI commands.
 
 In Passthrough mode, SPI Device receives SPI transactions from a host system and forwards the transactions to a downstream flash device.
-SW may filter prohibited commands by configuring 256-bit {{< regref "FILTER" >}} CSR.
+SW may filter prohibited commands by configuring 256-bit {{#regref spi_device.FILTER }} CSR.
 The IP cancels ongoing transaction if the received opcode matches to the filter CSR by de-asserting CSb and gating SCK to the downstream flash device.
 
 SW may program CSRs to change the address and/or the first 4 bytes of payload on-the-fly in Passthrough mode.
@@ -144,7 +144,7 @@ The SW may configure the logic to change a portion of the address or first 4 byt
 
 ## Hardware Interfaces
 
-{{< incGenFromIpDesc "../data/spi_device.hjson" "hwcfg" >}}
+* [Interface Tables](data/spi_device.hjson#interfaces)
 
 The TPM submodule requires a separate input port for CS#.
 The TPM submodule and other SPI Device modes are able to be active together.
@@ -164,7 +164,7 @@ The block diagram above shows how the SPI Device generic mode converts incoming
 bit-serialized SDI data into a valid byte, where the data bit is valid when the
 chip select signal (CSB) is 0 (active low) and SCK is at positive or negative
 edge (configurable, henceforth called the "active edge"). The bit order within
-the byte is determined by {{< regref "CFG.rx_order" >}} configuration register field. After a
+the byte is determined by {{#regref spi_device.CFG.rx_order }} configuration register field. After a
 byte is gathered, the interface module writes the byte data into a small FIFO
 ("RXFIFO") using SCK. It is read out of the FIFO and written into to the
 buffer SRAM ("DP_SRAM") using the system bus clock. If RXFIFO is full, this is
@@ -173,7 +173,7 @@ an error condition and the interface module discards the byte.
 The interface module also serializes data from the small transmit FIFO
 ("TXFIFO") and shifts it out on the SDO pin when CSB is 0 and SCK is at the
 active edge. The bit order within the byte can be configured with configuration
-register field {{< regref "CFG.tx_order" >}}. It is expected that software has prepared TX data
+register field {{#regref spi_device.CFG.tx_order }}. It is expected that software has prepared TX data
 based on the description in the "Defining
 Firmware Operation Mode" section below. Since SCK is not under the control of
 software or the device (it is driven by the external SPI host), it is possible
@@ -182,7 +182,7 @@ the interface needs to send data on the SDO pin. Either software has not
 prepared TX data or software does not care about the contents of the TX data -
 then the hardware will send whatever lingering data is in the empty TXFIFO. If
 this is a functional issue, then software should at least soft-reset the contents
-of the TXFIFO using the {{< regref "CONTROL.rst_txfifo" >}} register. The soft-reset signal
+of the TXFIFO using the {{#regref spi_device.CONTROL.rst_txfifo }} register. The soft-reset signal
 is not synchronized to the SCK clock, so software should drive the reset
 signal when the SPI interface is idle.
 
@@ -316,7 +316,7 @@ In the receive direction, data gathered from the SDI pin is written into the
 RXFIFO (see details below) at appropriate size boundaries. This data is
 handshake-received on the core clock side, gathered into byte or word quantity,
 and written into the RX circular buffer of the dual-port SRAM. On each write,
-the RXF write pointer ({{< regref "RXF_PTR.wptr" >}}) is incremented by hardware, wrapping at
+the RXF write pointer ({{#regref spi_device.RXF_PTR.wptr }}) is incremented by hardware, wrapping at
 the size of the circular buffer. Software can watch (via polling or interrupts)
 the incrementing of this write pointer to determine how much valid data has been
 received, and determine when and what data to act upon. Once it has acted upon
@@ -329,7 +329,7 @@ read pointer is managed by software. As an optimization the hardware will
 normally only write to the 32-bit wide SRAM when an entire word can be written.
 Since the end of the received data may not be aligned, there is a timer that
 forces sub-word writes if data has been staged for too long. The timer value
-({{< regref "CFG.timer_v" >}}) represents the number of core clock cycles. For instance, if
+({{#regref spi_device.CFG.timer_v }}) represents the number of core clock cycles. For instance, if
 timer value is configured in 0xFF, the RXF control logic will write gathered
 sub-word data in 255 cycles if no further bit stream from SPI is received.
 
@@ -368,7 +368,7 @@ auto-generated register file control logic.
 The SW may configure the map from the received opcode to the command process module by programming *cmd_info* list.
 Current SPI_DEVICE provides 24 command information entries.
 Each entry represents a command.
-Details of the fields are explained in the {{<regref "CMD_INFO_0">}}
+Details of the fields are explained in the {{#regref spi_device.CMD_INFO_0 }}
 
 First 11 commands are assigned to specific submodules.
 
@@ -379,7 +379,7 @@ Index  | Assigned Submodule
 [4]    | Read SFDP
 [10:5] | Read commands
 
-If the IP is in flash mode or in passthrough mode with {{<regref "INTERCEPT_EN">}} set, other than *opcode* and *valid* fields in the command information entries are ignored for Read Status and Read JEDEC ID commands.
+If the IP is in flash mode or in passthrough mode with {{#regref spi_device.INTERCEPT_EN }} set, other than *opcode* and *valid* fields in the command information entries are ignored for Read Status and Read JEDEC ID commands.
 The submodules directly return data on the MISO line (SD[1]).
 In Passthrough mode, if Read Status and Read JEDEC ID commands are intercepted by the internal HW, the other fields in the command information entries are ignored also.
 
@@ -400,7 +400,7 @@ If any entry matches to the received opcode, the cmdparse hands over the matched
 As explained in the [previous section](#command-information-list), the command parser checks the index to activate Read Status / Read JEDEC ID/ Read Command / Address 4B modules.
 Other than the first 11 slots and last two slots (the last two slots are not visible to SW), the cmdparse checks the *upload* field and activates the upload module if the field is set.
 
-SW can configure whether a submodule should process the command while in the passthrough mode by setting the {{<regref "INTERCEPT_EN">}} CSR.
+SW can configure whether a submodule should process the command while in the passthrough mode by setting the {{#regref spi_device.INTERCEPT_EN }} CSR.
 
 ### Status Control
 
@@ -420,13 +420,13 @@ Due to the CDC latency, SW may see the updated value (BUSY clear) with long dela
 
 WEL bit can be controlled by SW and also by HW.
 HW updates WEL bit when it receives WREN(06h) or WRDI(04h) commands.
-The opcode can be configured via {{<regref "CMD_INFO_WREN">}} and {{<regref "CMD_INFO_WRDI">}}.
+The opcode can be configured via {{#regref spi_device.CMD_INFO_WREN }} and {{#regref spi_device.CMD_INFO_WRDI }}.
 
-The SW update of the STATUS register via {{<regref "FLASH_STATUS">}} is not instantaneous.
+The SW update of the STATUS register via {{#regref spi_device.FLASH_STATUS }} is not instantaneous.
 The IP stores the SW request into the asynchronous FIFO then the request is processed in the SPI clock domain.
 The request updates the temporal status register, which is called as staged registers in the design.
 The staged registers are latched into the committed registers when CSb is released.
-SW sees the committed registers when reading the {{<regref "FLASH_STATUS">}} CSR.
+SW sees the committed registers when reading the {{#regref spi_device.FLASH_STATUS }} CSR.
 
 The attached host system also reads back the committed registers via Read Status commands.
 This scheme is to guarantee the atomicity of the STATUS register.
@@ -437,8 +437,8 @@ SW must configure the remaining command information entries to upload the Write 
 ### JEDEC ID Control
 
 JEDEC module returns JEDEC Device ID and Manufacturer ID following the Continuation Code (CC).
-SW may configure {{<regref "JEDEC_CC">}} CSR for HW to return proper CC.
-The *cc* field in {{<regref "JEDEC_CC">}} defines the return value, which is `0x7F` by default.
+SW may configure {{#regref spi_device.JEDEC_CC }} CSR for HW to return proper CC.
+The *cc* field in {{#regref spi_device.JEDEC_CC }} defines the return value, which is `0x7F` by default.
 *num_cc* defines how many times the HW to send CC byte before sending the JEDEC ID.
 
 The actual JEDEC ID consists of one byte manufacturer ID and two bytes device ID.
@@ -496,7 +496,7 @@ The IP only uses lower 11 bits of the received read command address (`addr[10:0]
 
 SW is responsible for updating the read buffer contents.
 The HW notifies the SW to update the buffer contents when needed.
-The HW provides a SW configurable read watermark CSR and read-only {{<regref "LAST_READ_ADDR">}} CSR.
+The HW provides a SW configurable read watermark CSR and read-only {{#regref spi_device.LAST_READ_ADDR }} CSR.
 The **LAST_READ_ADDR** shows the last read address of the recent read command.
 For instance, if the host system issues `0xABCD_E000` and reads 128 (or 0x80) bytes, the **LAST_READ_ADDR** after the transaction will show `0xABCD_E07F`.
 It does not show the commands falling into the mailbox region or Read SFDP command's address.
@@ -513,14 +513,14 @@ If a new read command crosses the current buffer boundary, the SW flips the inte
 ### 4B Address Management (EN4B/ EX4B)
 
 SW may configure the HW to receive EN4B and EX4B commands and change the read command address size between 3 bytes and 4 bytes.
-For the IP to recognize EN4B/ EX4B commands, SW should configure {{<regref "CMD_INFO_EN4B">}} and {{<regref "CMD_INFO_EX4B">}}.
+For the IP to recognize EN4B/ EX4B commands, SW should configure {{#regref spi_device.CMD_INFO_EN4B }} and {{#regref spi_device.CMD_INFO_EX4B }}.
 
 The two CSRs omit unnecessary fields from the **CMD_INFO** data structure.
 The HW logic creates the default **CMD_INFO** structures for the two commands.
 The command parser module uses the generated structures to process and trigger the 4B management module.
 
 When the HW receives one of the commands, the HW changes the broadcast signal *cfg_addr_4b_en*.
-Also the HW updates {{<regref "CFG.addr_4b_en">}} after passing through CDC.
+Also the HW updates {{#regref spi_device.CFG.addr_4b_en }} after passing through CDC.
 It takes at most three SYS_CLK cycles to update the value in the *CFG* register after the completion of the SPI transaction (CSb de-assertion).
 
 _Note: The HW changes the broadcasting signal and the CSR even though the SPI host system sends more than 8 beats of the SPI S[0].
@@ -542,9 +542,9 @@ The `addr_mode` is used to determine the address size in the command.
 If `busy` field in the command information entry is set, the upload module also sets *BUSY* bit in the *STATUS* register.
 SW may clear the *BUSY* bit after processing the command.
 
-The upload module provides {{<regref "UPLOAD_STATUS">}} and {{<regref "UPLOAD_STATUS2">}} CSRs for SW to parse the command, address, and payload.
+The upload module provides {{#regref spi_device.UPLOAD_STATUS }} and {{#regref spi_device.UPLOAD_STATUS2 }} CSRs for SW to parse the command, address, and payload.
 If a received command has payload, SW may read the payload from the Payload buffer starting from `payload_start_idx` address.
-In normal case, `payload_start_idx` in {{<regref "UPLOAD_STATUS2">}} shows **0**.
+In normal case, `payload_start_idx` in {{#regref spi_device.UPLOAD_STATUS2 }} shows **0**.
 In error case of the host sending more than the maximum allowed payload size (256B in the current version), the `payload_start_idx` may not be 0.
 It is expected that the `payload_depth` is maximum payload size, 256B if `payload_start_idx` is non-zero.
 In this scenario, SW should read from `payload_start_idx` to the end of the payload buffer then do a second read from the beginning of the buffer to the remained bytes.
@@ -584,9 +584,9 @@ Filtering the incoming command is the key role of the Passthrough module.
 }
 {{</wavejson>}}
 
-The passthrough logic filters the command based on the 256 bit of {{<regref "CMD_FILTER_0">}} CSR.
+The passthrough logic filters the command based on the 256 bit of {{#regref spi_device.CMD_FILTER_0 }} CSR.
 Each bit corresponds to each opcode.
-For example, if bit 5 of {{<regref "CMD_FILTER_0">}} is set, the passthrough drops **CSb** when it receives `05h` SPI command.
+For example, if bit 5 of {{#regref spi_device.CMD_FILTER_0 }} is set, the passthrough drops **CSb** when it receives `05h` SPI command.
 
 The SW does not know whether a SPI transaction is filtered or not.
 If the SW wants to check, it needs to set the _upload_ field with the opcode in the command information list.
@@ -594,18 +594,18 @@ Then, the HW uploads the command into the command/ address FIFOs and the payload
 
 #### Address Manipulation
 
-SW may configure the passthrough logic to swap certain address bits to desired values by configuring {{<regref "ADDR_SWAP_MASK">}} and {{<regref "ADDR_SWAP_DATA">}} CSRs.
+SW may configure the passthrough logic to swap certain address bits to desired values by configuring {{#regref spi_device.ADDR_SWAP_MASK }} and {{#regref spi_device.ADDR_SWAP_DATA }} CSRs.
 The address translation takes in effect only when the received command is in the command information list and *addr_swap_en* field in the entry is set.
 
-For instance, the passthrough logic sets bit 20 of the address to 1 if {{<regref "ADDR_SWAP_MASK">}} is `0x0010_0000` and {{<regref "ADDR_SWAP_DATA">}} is `0x0010_0000`.
+For instance, the passthrough logic sets bit 20 of the address to 1 if {{#regref spi_device.ADDR_SWAP_MASK }} is `0x0010_0000` and {{#regref spi_device.ADDR_SWAP_DATA }} is `0x0010_0000`.
 
 #### Write Status Data Manipulation
 
 The passthrough logic also provides a way to change the first 4 bytes of the payload to the downstream SPI flash device on-the-fly as same as the address.
 The main use of this feature is to protect the Status register.
 
-SW may configure the {{<regref "PAYLOAD_SWAP_MASK">}} and {{<regref "PAYLOAD_SWAP_DATA">}} CSRs to change the specific bit of the first 4 byte of the write payload.
-For example, {{<regref "PAYLOAD_SWAP_MASK">}} as `32'h 0000_0023` and {{<regref "PAYLOAD_SWAP_DATA">}} as `32'h 0000_0022` change bit 0 to 0, bit 1 to 1, bit 5 to 1 in the first byte payload.
+SW may configure the {{#regref spi_device.PAYLOAD_SWAP_MASK }} and {{#regref spi_device.PAYLOAD_SWAP_DATA }} CSRs to change the specific bit of the first 4 byte of the write payload.
+For example, {{#regref spi_device.PAYLOAD_SWAP_MASK }} as `32'h 0000_0023` and {{#regref spi_device.PAYLOAD_SWAP_DATA }} as `32'h 0000_0022` change bit 0 to 0, bit 1 to 1, bit 5 to 1 in the first byte payload.
 
 The CSRs are Little Endian (LE)s.
 The passthrough module consumes the lower byte first as SPI flash writes byte 0 first followed by byte 1.
@@ -630,9 +630,9 @@ SW is recommended to set the filter bit for Passthrough to not deliver the unmat
 As described in [SPI Device Modes](#spi-device-modes-and-active-submodules), SPI_DEVICE may return the data from the IP even if the passthrough mode is set.
 The HW can process Read Status, Read JEDEC ID, Read SFDP, Read commands accessing the mailbox region, and EN4B/EX4B.
 
-SW configures {{<regref "INTERCEPT_EN">}} CSR to enable the feature.
+SW configures {{#regref spi_device.INTERCEPT_EN }} CSR to enable the feature.
 SW may selectively enable/disable commands.
-For example, HW returns only Read Status data internally if {{<regref "INTERCEPT_EN">}} is `{status: 1'b 1, default: 1'b 0}`.
+For example, HW returns only Read Status data internally if {{#regref spi_device.INTERCEPT_EN }} is `{status: 1'b 1, default: 1'b 0}`.
 
 Other than Read command accessing mailbox space, it is recommended to filter the intercepted commands.
 
@@ -686,7 +686,7 @@ SW is recommended to discard the current context if any transaction is ongoing t
 
 ## Clock and Phase
 
-The SPI device module has two programmable register bits to control the SPI clock, {{< regref "CFG.CPOL" >}} and {{< regref "CFG.CPHA" >}}.
+The SPI device module has two programmable register bits to control the SPI clock, {{#regref spi_device.CFG.CPOL }} and {{#regref spi_device.CFG.CPHA }}.
 CPOL controls clock polarity and CPHA controls the clock phase.
 For further details, please refer to this diagram from Wikipedia:
 [File:SPI_timing_diagram2.svg](https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#/media/File:SPI_timing_diagram2.svg)
@@ -698,7 +698,7 @@ SW should configure the SPI_DEVICE to mode 0 to enable TPM mode along with other
 
 As described in the Theory of Operations above, in this mode, the SPI device
 writes incoming data directly into the SRAM (through RXFIFO) and updates the SPI
-device SRAM write pointer ({{< regref "RXF_PTR.wptr" >}}). It does not parse a command byte nor
+device SRAM write pointer ({{#regref spi_device.RXF_PTR.wptr }}). It does not parse a command byte nor
 address bytes, analyzing incoming data relies on firmware implementation of a
 higher level protocol. Data is sent from the TXF SRAM contents via TXFIFO.
 
@@ -754,7 +754,7 @@ CSB signal. If CSB goes to high, SDO is returned to High-Z state.
 }
 {{< /wavejson >}}
 
-Note that in the SPI mode 3 configuration ({{< regref "CFG.CPOL" >}}=1, {{< regref "CFG.CPHA" >}}=1), the
+Note that in the SPI mode 3 configuration ({{#regref spi_device.CFG.CPOL }}=1, {{#regref spi_device.CFG.CPHA }}=1), the
 logic isn't able to pop the entry from the TX async FIFO after the last bit
 in the last byte of a transaction. In mode 3, no further SCK edge is given
 after sending the last bit before the CSB de-assertion. The design is chosen to
@@ -823,18 +823,18 @@ pointers' widths.
 
 ## Initialization
 
-By default, RX SRAM FIFO base and limit address (via {{< regref "RXF_ADDR" >}} register) are
+By default, RX SRAM FIFO base and limit address (via {{#regref spi_device.RXF_ADDR }} register) are
 set to 0x0 and 0x1FC, 512 bytes. And TX SRAM FIFO base and limit addresses (in
-the {{< regref "TXF_ADDR" >}} register)  are 0x200 and 0x3FC. If FW wants bigger spaces, it can
-change the values of the above registers {{< regref "RXF_ADDR" >}} and {{< regref "TXF_ADDR" >}}.
+the {{#regref spi_device.TXF_ADDR }} register)  are 0x200 and 0x3FC. If FW wants bigger spaces, it can
+change the values of the above registers {{#regref spi_device.RXF_ADDR }} and {{#regref spi_device.TXF_ADDR }}.
 
-Software can configure the timer value {{< regref "CFG.timer_v" >}} to change the delay between
+Software can configure the timer value {{#regref spi_device.CFG.timer_v }} to change the delay between
 partial DATA received from SPI interface being written into the SRAM. The value
 of the field is the number of the core clock cycles that the logic waits for.
 
 ## Pointers
 
-RX / TX SRAM FIFO has read and write pointers, {{< regref "RXF_PTR" >}} and {{< regref "TXF_PTR" >}} . Those
+RX / TX SRAM FIFO has read and write pointers, {{#regref spi_device.RXF_PTR }} and {{#regref spi_device.TXF_PTR }} . Those
 pointers are used to manage circular FIFOs inside the SRAM. The pointer width in
 the register description is 16 bit but the number of valid bits in the pointers
 depends on the size of the SRAM.
@@ -877,8 +877,8 @@ The SW may configure TPM_CFG.hw_reg_dis and/or TPM_CFG.invalid_locality to fully
 The TPM protocol supports two protocol interfaces: FIFO and CRB (Command Response Buffer).
 In terms of hardware design, these two interfaces differ in how return-by-HW registers are handled.
 
-In FIFO mode, when {{< regref "TPM_CFG.tpm_mode" >}} is set to 0, HW registers reads must be returned after a maximum of 1 wait state.
-In CRB mode, when {{< regref "TPM_CFG.tpm_mode" >}} is set to 1, there are no such restrictions.
+In FIFO mode, when {{#regref spi_device.TPM_CFG.tpm_mode }} is set to 0, HW registers reads must be returned after a maximum of 1 wait state.
+In CRB mode, when {{#regref spi_device.TPM_CFG.tpm_mode }} is set to 1, there are no such restrictions.
 The logic always uploads both the command and address to the SW and waits for the return data in CRB mode.
 
 ### Return-by-HW register update
@@ -953,4 +953,4 @@ The SW must check TPM_INT_ENABLE, TPM_INT_STATUS and control the GPIO pin that i
 
 ## Register Table
 
-{{< incGenFromIpDesc "../data/spi_device.hjson" "registers" >}}
+* [Register Table](data/spi_device.hjson#registers)

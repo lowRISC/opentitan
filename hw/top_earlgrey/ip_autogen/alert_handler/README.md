@@ -111,7 +111,7 @@ Parameter      | Default (Max)    | Description
 
 ### Signals
 
-{{< incGenFromIpDesc "../data/alert_handler.hjson" "hwcfg" >}}
+* [Interface Tables](data/alert_handler.hjson#interfaces)
 
 The table below lists other alert handler module signals.
 The number of alert instances is parametric and hence alert and ping diff pairs are grouped together in packed arrays.
@@ -174,7 +174,7 @@ The `crashdump_o` struct outputs a snapshot of CSRs and alert handler state bits
 This can be useful for extracting more information about possible failures or bugs without having to use the tile-link bus interface (which may become unresponsive under certain circumstances).
 It is recommended for the top level to store this information in an always-on location.
 
-Note that the crashdump state is continuously output via `crashdump_o` until the latching trigger condition is true for the first time (see {{< regref CLASSA_CRASHDUMP_TRIGGER_SHADOWED >}}).
+Note that the crashdump state is continuously output via `crashdump_o` until the latching trigger condition is true for the first time (see {{#regref alert_handler.CLASSA_CRASHDUMP_TRIGGER_SHADOWED }}).
 After that, the `crashdump_o` is held constant until all classes that have escalated are cleared.
 This is done so that it is possible to capture the true alert cause before spurious alert events start to pop up due to escalation countermeasures with excessive side effects (like life cycle scrapping for example).
 If classes that have escalated are not configured as clearable, then it is not possible to re-arm the crashdump latching mechanism at runtime and the alert handler has to be reset.
@@ -386,7 +386,7 @@ After selecting one of the peripherals to ping, the LFSR timer waits until eithe
 In both cases, the LFSR timer proceeds with the next ping, but in the second case it will additionally raise a "pingfail" alert.
 The ping enable signal remains asserted during the time where the LFSR counter waits.
 
-The timeout value is a function of the ratios between the alert handler clock and peripheral clocks present in the system, and can be programmed at startup time via the register {{< regref "PING_TIMEOUT_CYC_SHADOWED" >}}.
+The timeout value is a function of the ratios between the alert handler clock and peripheral clocks present in the system, and can be programmed at startup time via the register {{#regref alert_handler.PING_TIMEOUT_CYC_SHADOWED }}.
 
 Note that the ping timer directly flags a "pingfail" alert if a spurious "ping ok" message comes in that has not been requested.
 
@@ -444,20 +444,20 @@ protocol:
 
     - Accumulation max value.
       This is the total number (sum of all alerts classified in this group) of alerts required to enter escalation phase (see below).
-      Example register is {{< regref "CLASSA_ACCUM_THRESH_SHADOWED" >}}.
+      Example register is {{#regref alert_handler.CLASSA_ACCUM_THRESH_SHADOWED }}.
     - Current accumulation register.
       This clearable register indicates how many alerts have been accumulated to date.
       Software should clear before it reaches the accumulation setting to avoid escalation.
-      Example register is {{< regref "CLASSA_ACCUM_CNT" >}}.
+      Example register is {{#regref alert_handler.CLASSA_ACCUM_CNT }}.
 
 2. The second way is an interrupt timeout counter which triggers escalation if an alert interrupt is not handled within the programmable timeout window.
    Once the counter hits the timeout threshold, the escalation protocol is triggered.
    The corresponding CSRs are:
 
-    - Interrupt timeout value in cycles {{< regref "CLASSA_TIMEOUT_CYC_SHADOWED" >}}.
+    - Interrupt timeout value in cycles {{#regref alert_handler.CLASSA_TIMEOUT_CYC_SHADOWED }}.
       The interrupt timeout is disabled if this is set to 0 (default).
-    - The current interrupt timeout value can be read via {{< regref "CLASSA_ESC_CNT" >}} if {{< regref "CLASSA_STATE" >}} is in the `Timeout` state.
-      Software should clear the corresponding interrupt state bit {{< regref "INTR_STATE.CLASSA" >}} before the timeout expires to avoid escalation.
+    - The current interrupt timeout value can be read via {{#regref alert_handler.CLASSA_ESC_CNT }} if {{#regref alert_handler.CLASSA_STATE }} is in the `Timeout` state.
+      Software should clear the corresponding interrupt state bit {{#regref alert_handler.INTR_STATE.CLASSA }} before the timeout expires to avoid escalation.
 
 Technically, the interrupt timeout feature (2. above) is implemented using the same counter used to time the escalation phases.
 This is possible since escalation phases or interrupt timeout periods are non-overlapping (escalation always takes precedence should it be triggered).
@@ -474,13 +474,13 @@ triggers.
 
 Each class can be programmed with its own escalation protocol.
 If one of the two mechanisms described above fires, a timer for that particular class is started.
-The timer can be programmed with up to 4 delays (e.g., {{< regref "CLASSA_PHASE0_CYC" >}}), each representing a distinct escalation phase (0 - 3).
+The timer can be programmed with up to 4 delays (e.g., {{#regref alert_handler.CLASSA_PHASE0_CYC }}), each representing a distinct escalation phase (0 - 3).
 Each of the four escalation severity outputs (0 - 3) are by default configured to be asserted during the corresponding phase, e.g., severity 0 in phase 0,  severity 1 in phase 1, etc.
-However, this mapping can be freely reassigned by modifying the corresponding enable/phase mappings (e.g., {{< regref "CLASSA_CTRL_SHADOWED.E0_MAP" >}} for enable bit 0 of class A).
+However, this mapping can be freely reassigned by modifying the corresponding enable/phase mappings (e.g., {{#regref alert_handler.CLASSA_CTRL_SHADOWED.E0_MAP }} for enable bit 0 of class A).
 This mapping will be locked in together with the alert enable configuration after initial configuration.
 
-SW can stop a triggered escalation protocol by clearing the corresponding escalation counter (e.g., {{< regref "CLASSA_ESC_CNT" >}}).
-Protection of this clearing is up to software, see the register control section that follows for {{< regref "CLASSA_CTRL_SHADOWED.LOCK" >}}.
+SW can stop a triggered escalation protocol by clearing the corresponding escalation counter (e.g., {{#regref alert_handler.CLASSA_ESC_CNT }}).
+Protection of this clearing is up to software, see the register control section that follows for {{#regref alert_handler.CLASSA_CTRL_SHADOWED.LOCK }}.
 
 It should be noted that each of the escalation phases have a duration of at least 1 clock cycle, even if the cycle count of a particular phase has been
 set to 0.
@@ -818,7 +818,7 @@ Due to asynchronous transitions and different path latencies in the system, a ch
 It is consequently possible for a group of alert senders to already be in reset or clock gated state, while the corresponding LPG logic does not yet know about this state change - and vice versa.
 
 In practice, this means that ping requests may be pending for several cycles until the LPG logic detects a reset or clock-gated condition and disables the corresponding alert channel(s).
-Fortunately, such delay can be tolerated by setting the ping timeout to a sufficiently large value (see {{< regref "CLASSA_TIMEOUT_CYC_SHADOWED" >}}).
+Fortunately, such delay can be tolerated by setting the ping timeout to a sufficiently large value (see {{#regref alert_handler.CLASSA_TIMEOUT_CYC_SHADOWED }}).
 
 As for alert events, this latency difference should not pose a problem.
 Alert events may get stuck in the alert sender due to a reset or clock-gated condition - but this is to be expected.
@@ -876,44 +876,44 @@ To initialize the block, software running at a high privilege levels (early in t
 1. For each alert and each local alert:
 
     - Determine if alert is enabled (should only be false if alert is known to be faulty).
-      Set {{< regref "ALERT_EN_SHADOWED_0.EN_A_0" >}} and {{< regref "LOC_ALERT_EN_SHADOWED_0.EN_LA_0" >}} accordingly.
+      Set {{#regref alert_handler.ALERT_EN_SHADOWED_0.EN_A_0 }} and {{#regref alert_handler.LOC_ALERT_EN_SHADOWED_0.EN_LA_0 }} accordingly.
 
     - Determine which class (A..D) the alert is associated with.
-      Set {{< regref "ALERT_CLASS_SHADOWED_0.CLASS_A_0" >}} and {{< regref "LOC_ALERT_CLASS_SHADOWED_0.CLASS_LA_0" >}} accordingly.
+      Set {{#regref alert_handler.ALERT_CLASS_SHADOWED_0.CLASS_A_0 }} and {{#regref alert_handler.LOC_ALERT_CLASS_SHADOWED_0.CLASS_LA_0 }} accordingly.
 
-    - Optionally lock each alert configuration by writing 0 to {{< regref "ALERT_REGWEN_0.EN_0" >}} or {{< regref "LOC_ALERT_REGWEN_0.EN_0" >}}.
+    - Optionally lock each alert configuration by writing 0 to {{#regref alert_handler.ALERT_REGWEN_0.EN_0 }} or {{#regref alert_handler.LOC_ALERT_REGWEN_0.EN_0 }}.
       Note however that only **locked and enabled** alerts are going to be pinged using the ping mechanism.
       This ensures that spurious ping failures cannot occur when previously enabled alerts are being disabled again (before locking).
 
 
-2. Set the ping timeout value {{< regref "PING_TIMEOUT_CYC_SHADOWED" >}}.
+2. Set the ping timeout value {{#regref alert_handler.PING_TIMEOUT_CYC_SHADOWED }}.
    This value is dependent on the clock ratios present in the system.
 
 3. For each class (A..D):
 
-    - Determine whether to enable escalation mechanisms (accumulation / interrupt timeout) for this particular class. Set {{< regref "CLASSA_CTRL_SHADOWED.EN" >}} accordingly.
+    - Determine whether to enable escalation mechanisms (accumulation / interrupt timeout) for this particular class. Set {{#regref alert_handler.CLASSA_CTRL_SHADOWED.EN }} accordingly.
 
     - Determine if this class of alerts allows clearing of escalation once it has begun.
-      Set {{< regref "CLASSA_CTRL_SHADOWED.LOCK" >}} to true if clearing should be disabled.
+      Set {{#regref alert_handler.CLASSA_CTRL_SHADOWED.LOCK }} to true if clearing should be disabled.
       If true, once escalation protocol begins, it can not be stopped, the assumption being that it ends in a chip reset else it will be rendered useless thenceforth.
 
-    - Determine the number of alerts required to be accumulated before escalation protocol kicks in. Set {{< regref "CLASSA_ACCUM_THRESH" >}} accordingly.
+    - Determine the number of alerts required to be accumulated before escalation protocol kicks in. Set {{#regref alert_handler.CLASSA_ACCUM_THRESH }} accordingly.
 
     - Determine whether the interrupt associated with that class needs a timeout.
-      If yes, set {{< regref "CLASSA_TIMEOUT_CYC_SHADOWED" >}} to an appropriate value greater than zero (zero corresponds to an infinite timeout and disables the mechanism).
+      If yes, set {{#regref alert_handler.CLASSA_TIMEOUT_CYC_SHADOWED }} to an appropriate value greater than zero (zero corresponds to an infinite timeout and disables the mechanism).
 
     - For each escalation phase (0..3):
-        - Determine length of each escalation phase by setting {{< regref "CLASSA_PHASE0_CYC" >}} accordingly
+        - Determine length of each escalation phase by setting {{#regref alert_handler.CLASSA_PHASE0_CYC }} accordingly
 
     - For each escalation signal (0..3):
-        - Determine whether to enable the escalation signal, and set the {{< regref "CLASSA_CTRL_SHADOWED.E0_EN" >}} bit accordingly (default is enabled).
-          Note that setting all of the `E*_EN` bits to 0 within a class has the same effect of disabling the entire class by setting {{< regref "CLASSA_CTRL_SHADOWED.EN" >}} to zero.
-        - Determine the phase -> escalation mapping of this class and program it via the {{< regref "CLASSA_CTRL_SHADOWED.E0_MAP" >}} values if it needs to be changed from the default mapping (0->0, 1->1, 2->2, 3->3).
+        - Determine whether to enable the escalation signal, and set the {{#regref alert_handler.CLASSA_CTRL_SHADOWED.E0_EN }} bit accordingly (default is enabled).
+          Note that setting all of the `E*_EN` bits to 0 within a class has the same effect of disabling the entire class by setting {{#regref alert_handler.CLASSA_CTRL_SHADOWED.EN }} to zero.
+        - Determine the phase -> escalation mapping of this class and program it via the {{#regref alert_handler.CLASSA_CTRL_SHADOWED.E0_MAP }} values if it needs to be changed from the default mapping (0->0, 1->1, 2->2, 3->3).
 
-    - Optionally lock the class configuration by writing 0 to {{< regref "CLASSA_CTRL_SHADOWED.REGWEN" >}}.
+    - Optionally lock the class configuration by writing 0 to {{#regref alert_handler.CLASSA_CTRL_SHADOWED.REGWEN }}.
 
-4. After initial configuration at startup, enable the ping timer mechanism by writing 1 to {{< regref "PING_TIMER_EN" >}}.
-It is also recommended to lock the ping timer configuration by clearing {{< regref "PING_TIMER_REGWEN" >}}.
+4. After initial configuration at startup, enable the ping timer mechanism by writing 1 to {{#regref alert_handler.PING_TIMER_EN }}.
+It is also recommended to lock the ping timer configuration by clearing {{#regref alert_handler.PING_TIMER_REGWEN }}.
 Note that only **locked and enabled** alerts are going to be pinged using the ping mechanism.
 This ensures that spurious ping failures cannot occur when previously enabled alerts are being disabled again (before locking).
 
@@ -922,12 +922,12 @@ This ensures that spurious ping failures cannot occur when previously enabled al
 For every alert that is enabled, an interrupt will be triggered on class A, B, C, or D.
 To handle an interrupt of a particular class, software should execute the following steps:
 
-1. If needed, check the escalation state of this class by reading {{< regref "CLASSA_STATE" >}}.
+1. If needed, check the escalation state of this class by reading {{#regref alert_handler.CLASSA_STATE }}.
    This reveals whether escalation protocol has been triggered and in which escalation phase the class is.
    In case interrupt timeouts are  enabled the class will be in timeout state unless escalation has already been triggered.
-   The current interrupt or escalation cycle counter can be read via {{< regref "CLASSA_ESC_CNT" >}}.
+   The current interrupt or escalation cycle counter can be read via {{#regref alert_handler.CLASSA_ESC_CNT }}.
 
-2. Since the interrupt does not indicate which alert triggered, SW must read the cause registers {{< regref "LOC_ALERT_CAUSE" >}} and {{< regref "ALERT_CAUSE" >}} etc.
+2. Since the interrupt does not indicate which alert triggered, SW must read the cause registers {{#regref alert_handler.LOC_ALERT_CAUSE }} and {{#regref alert_handler.ALERT_CAUSE }} etc.
    The cause bits of all alerts are concatenated and chunked into 32bit words.
    Hence the register file contains as many cause words as needed to cover all alerts present in the system.
    Each cause register contains a sticky bit that is set by the incoming alert, and is clearable with a write by software.
@@ -938,12 +938,12 @@ To handle an interrupt of a particular class, software should execute the follow
 
 3. After the event is cleared (if needed or possible), software should handle the interrupt as follows:
 
-    - Resetting the accumulation register for the class by writing {{< regref "CLASSA_CLR" >}}.
+    - Resetting the accumulation register for the class by writing {{#regref alert_handler.CLASSA_CLR }}.
       This also aborts the escalation protocol if it has been triggered.
-      If for some reason it is desired to never allow the accumulator or escalation to be cleared, software can initialize the {{< regref "CLASSA_CLR_REGWEN" >}} register to zero.
-      If {{< regref "CLASSA_CLR_REGWEN" >}} is already false when an alert interrupt is detected (either due to software control or hardware trigger via {{< regref "CLASSA_CTRL_SHADOWED.LOCK" >}}), then the accumulation counter can not be cleared and this step has no effect.
+      If for some reason it is desired to never allow the accumulator or escalation to be cleared, software can initialize the {{#regref alert_handler.CLASSA_CLR_REGWEN }} register to zero.
+      If {{#regref alert_handler.CLASSA_CLR_REGWEN }} is already false when an alert interrupt is detected (either due to software control or hardware trigger via {{#regref alert_handler.CLASSA_CTRL_SHADOWED.LOCK }}), then the accumulation counter can not be cleared and this step has no effect.
 
-    - After the accumulation counter is reset (if applicable), software should clear the class A interrupt state bit {{< regref "INTR_STATE.CLASSA" >}}.
+    - After the accumulation counter is reset (if applicable), software should clear the class A interrupt state bit {{#regref alert_handler.INTR_STATE.CLASSA }}.
       Clearing the class A interrupt state bit also clears and stops the interrupt timeout counter (if enabled).
 
 Note that testing interrupts by writing to the interrupt test registers does also trigger the internal interrupt timeout (if enabled), since the interrupt state is used as enable signal for the timer.
@@ -955,7 +955,7 @@ However, alert accumulation will not be triggered by this testing mechanism.
 
 ## Register Table
 
-{{< incGenFromIpDesc "../data/alert_handler.hjson" "registers" >}}
+* [Register Table](data/alert_handler.hjson#registers)
 
 
 # Additional Notes

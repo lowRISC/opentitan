@@ -163,18 +163,18 @@ During a transaction, software can issue multiple segment descriptions to the SP
 
 Issuing a command then consists of the following steps:
 1. Configure the IP to be compatible with each attached peripheral.
-The {{< regref "CONFIGOPTS" >}} multi-register holds separate sets of configuration settings, one for each CSB line.
+The {{#regref spi_host.CONFIGOPTS }} multi-register holds separate sets of configuration settings, one for each CSB line.
 In principle, the configuration of these device-specific options only needs to be done/performed once at initialization.
 
-2. Load the TX FIFO with the instructions and data to be transmitted to the remote device by writing to the {{< regref "TXDATA" >}} memory window.
-3. Specify which device should receive the next command using the {{< regref "CSID" >}} register.
-4. Wait for {{< regref "STATUS.READY" >}} before continuing.
-5. Issue speed, direction, and length details for the next command segment using the {{< regref "COMMAND" >}} register.
-If a command consists of multiple segments, then set {{< regref "COMMAND.CSAAT" >}} (Chip-select active after transaction) to one for all segments except the last one.
-Setting {{< regref "COMMAND.CSAAT" >}} to zero indicates the end of a transaction, prompting the IP to raise CSB at the end of the segment.
+2. Load the TX FIFO with the instructions and data to be transmitted to the remote device by writing to the {{#regref spi_host.TXDATA }} memory window.
+3. Specify which device should receive the next command using the {{#regref spi_host.CSID }} register.
+4. Wait for {{#regref spi_host.STATUS.READY }} before continuing.
+5. Issue speed, direction, and length details for the next command segment using the {{#regref spi_host.COMMAND }} register.
+If a command consists of multiple segments, then set {{#regref spi_host.COMMAND.CSAAT }} (Chip-select active after transaction) to one for all segments except the last one.
+Setting {{#regref spi_host.COMMAND.CSAAT }} to zero indicates the end of a transaction, prompting the IP to raise CSB at the end of the segment.
 
 6. Repeat steps 4 and 5 until all segments have been described.
-7. Read any peripheral response data from the RX FIFO by reading from the {{< regref "RXDATA" >}} memory window.
+7. Read any peripheral response data from the RX FIFO by reading from the {{#regref spi_host.RXDATA }} memory window.
 
 ### About Command Segments
 
@@ -248,7 +248,7 @@ For this reason the speed-mode is also adjustable on a segment-by-segment basis.
 
 #### Specifying Command Segments
 
-The SPI host supports all four possible modes for command segments, and they are controlled writing one of the following values to the 2-bit {{< regref "COMMAND.DIRECTION" >}} register:
+The SPI host supports all four possible modes for command segments, and they are controlled writing one of the following values to the 2-bit {{#regref spi_host.COMMAND.DIRECTION }} register:
 - 2'b00: Dummy cycles only (neither side transmits)
 - 2'b01: RX Only
 - 2'b10: TX Only
@@ -256,30 +256,30 @@ The SPI host supports all four possible modes for command segments, and they are
 
 ### CSID Register
 
-The {{< regref "CSID" >}} register is used to identify the target device for the next command segment.
-Whenever a command segment descriptor is written to {{< regref "COMMAND" >}}, {{< regref "CSID" >}} is passed into the FSM along with the command segment descriptor and the corresponding configurations options (taken from the CSID'th element of the `CONFIGOPTS` multi-register).
+The {{#regref spi_host.CSID }} register is used to identify the target device for the next command segment.
+Whenever a command segment descriptor is written to {{#regref spi_host.COMMAND }}, {{#regref spi_host.CSID }} is passed into the FSM along with the command segment descriptor and the corresponding configurations options (taken from the CSID'th element of the `CONFIGOPTS` multi-register).
 
 This register still exists when instantiated with only one CSB line (i.e. when NumCS=1).
-However in this case the {{< regref "CSID" >}} value is ignored.
+However in this case the {{#regref spi_host.CSID }} value is ignored.
 
-Changes in {{< regref "CSID" >}} also affect the CSB lines, because a change in CSID can also implicitly end a command, overriding {{< regref "COMMAND.CSAAT" >}}.
-If a change is detected in {{< regref "CSID" >}}, but the previous segment was submitted with the `CSAAT` bit asserted, the FSM terminates the previous command before moving on to the next segment.
-The previous CSB line is held low for *at least* `CSNTRAIL` cycles (as defined by the previous value of {{< regref "CONFIGOPTS.CSNTRAIL" >}}) and then brought high.
-All CSB lines are held high for `CSNIDLE` cycles (using the new value of {{< regref "CONFIGOPTS.CSNIDLE" >}}).
+Changes in {{#regref spi_host.CSID }} also affect the CSB lines, because a change in CSID can also implicitly end a command, overriding {{#regref spi_host.COMMAND.CSAAT }}.
+If a change is detected in {{#regref spi_host.CSID }}, but the previous segment was submitted with the `CSAAT` bit asserted, the FSM terminates the previous command before moving on to the next segment.
+The previous CSB line is held low for *at least* `CSNTRAIL` cycles (as defined by the previous value of {{#regref spi_host.CONFIGOPTS.CSNTRAIL }}) and then brought high.
+All CSB lines are held high for `CSNIDLE` cycles (using the new value of {{#regref spi_host.CONFIGOPTS.CSNIDLE }}).
 The new CSB line is asserted low, and SCK begins toggling after the usual `CSNLEAD` cycle delay.
 
 ### Configuration Options
 
-The {{< regref "CONFIGOPTS" >}} multi-register has one entry per CSB line and holds clock configuration and timing settings which are specific to each peripheral.
-Once the {{< regref "CONFIGOPTS" >}} multi-register has been programmed for each SPI peripheral device, the values can be left unchanged.
+The {{#regref spi_host.CONFIGOPTS }} multi-register has one entry per CSB line and holds clock configuration and timing settings which are specific to each peripheral.
+Once the {{#regref spi_host.CONFIGOPTS }} multi-register has been programmed for each SPI peripheral device, the values can be left unchanged.
 
 The following sections give details on how the SPI_HOST can be used to control a specific peripheral.
-For simplicity, this section describes how to interact one device, attached to CSB[0], and as such references are made to the multi-registers {{< regref "CONFIGOPTS" >}} and {{< regref "COMMAND" >}}.
+For simplicity, this section describes how to interact one device, attached to CSB[0], and as such references are made to the multi-registers {{#regref spi_host.CONFIGOPTS }} and {{#regref spi_host.COMMAND }}.
 To configure timing and send commands to devices on other CSB lines, instead use the `CONFIGOPTS` multi-register corresponding to desired CSB line.
 
 The most common differences between target devices are the requirements for a specific SPI clock phase or polarity, CPOL and CPHA, which were described in the previous section [SPI Protocol Basics](#spi-protocol-basics).
-These clock parameters can be set via the {{< regref "CONFIGOPTS.CPOL">}} or {{< regref "CONFIGOPTS.CPHA" >}} register fields.
-Likewise, as also described in the previous section, if device setup times require a full clock cycle before sampling the output, Full-Cycle Mode can be enabled by asserting the {{< regref "CONFIGOPTS.FULLCYC" >}} bit.
+These clock parameters can be set via the {{#regref spi_host.CONFIGOPTS.CPOL }} or {{#regref spi_host.CONFIGOPTS.CPHA }} register fields.
+Likewise, as also described in the previous section, if device setup times require a full clock cycle before sampling the output, Full-Cycle Mode can be enabled by asserting the {{#regref spi_host.CONFIGOPTS.FULLCYC }} bit.
 
 #### Clock rate selection
 
@@ -297,11 +297,11 @@ $$T_{\textrm{SCK},0}=\frac{1}{2}\frac{T_\textrm{clk}}{\textrm{CONFIGOPTS.CLKDIV}
 #### Chip-select Timing Control
 
 Typically the CSB line is automatically deasserted after the last edge of SCK.
-However, by asserting {{< regref "COMMAND.CSAAT" >}} when issuing a particular command, one can instruct the core to hold CSB low indefinitely after the last clock edge.
+However, by asserting {{#regref spi_host.COMMAND.CSAAT }} when issuing a particular command, one can instruct the core to hold CSB low indefinitely after the last clock edge.
 This is useful for merging two adjacent command segments together, to create more complex commands, such as flash Quad read commands which require a mix of segments with different speeds and directions.
-The CSB line can then be deasserted by either issuing another command without the {{< regref "COMMAND.CSAAT" >}} field, issuing a command to a different device (after changing the {{< regref "CSID" >}} register), or simply resetting the core FSM via the {{< regref "CONTROL.RST" >}} register.
+The CSB line can then be deasserted by either issuing another command without the {{#regref spi_host.COMMAND.CSAAT }} field, issuing a command to a different device (after changing the {{#regref spi_host.CSID }} register), or simply resetting the core FSM via the {{#regref spi_host.CONTROL.RST }} register.
 
-To avoid spurious clock signals, changes to the {{< regref "CONFIGOPTS" >}} parameters take effect only at the end of a command segment and only when all `csb` lines are deasserted.
+To avoid spurious clock signals, changes to the {{#regref spi_host.CONFIGOPTS }} parameters take effect only at the end of a command segment and only when all `csb` lines are deasserted.
 There are two cases to consider:
 1. Configuration changes detected and CSAAT=0 for the previous segment:
 This is when configuration changes are typically expected, and in this case, the SPI_HOST waits for the previous segment to complete before moving changing the configuration.
@@ -315,11 +315,11 @@ Most devices require at least one-half SCK clock-cycle between either edge of CS
 However, some devices may require more timing margin and so the SPI_HOST core offers some configuration registers for controlling the timing of the CSB edges when operating under automatic control.
 The relevant parameters are as follows:
 - T<sub>IDLE</sub>: The minimum time between each rising edge of CSB and the following falling edge.
-This time delay is a half SCK cycle by default but can be extended to as long as eight SCK cycles by setting the {{< regref "CONFIGOPTS.CSNIDLE">}} register.
+This time delay is a half SCK cycle by default but can be extended to as long as eight SCK cycles by setting the {{#regref spi_host.CONFIGOPTS.CSNIDLE }} register.
 - T<sub>LEAD</sub>: The minimum time between each falling edge of CSB and the first leading edge of SCK.
-This time delay is a half SCK cycle by default but can be extended to as long as eight SCK cycles by setting the {{< regref "CONFIGOPTS.CSNLEAD">}} register.
+This time delay is a half SCK cycle by default but can be extended to as long as eight SCK cycles by setting the {{#regref spi_host.CONFIGOPTS.CSNLEAD }} register.
 - T<sub>TRAIL</sub>: The minimum time between the last trailing edge of SCK and the following rising edge of CSB.
-This time delay is a half SCK cycle by default but can be extended to as long as eight SCK cycles by setting the {{< regref "CONFIGOPTS.CSNTRAIL">}} register.
+This time delay is a half SCK cycle by default but can be extended to as long as eight SCK cycles by setting the {{#regref spi_host.CONFIGOPTS.CSNTRAIL }} register.
 
 {{< wavejson >}}
 {signal: [
@@ -350,7 +350,7 @@ For example, if two devices have different requirements for `CPOL`, the clock po
 
 Furthermore, `csb` should be remain high for the minimum idle time both before and after the configuration update.
 For example, consider a SPI_HOST attached to two devices each with different requirements for the clock divider, clock polarity, and idle time.
-Consider a configuration where total idle time (as determined by the {{< regref "CONFIGOPTS.CLKDIV" >}} and {{< regref "CONFIGOPTS.CSNIDLE" >}} multi-registers) works out to 9 idle clocks for the first device, and 4 clocks for the second device.
+Consider a configuration where total idle time (as determined by the {{#regref spi_host.CONFIGOPTS.CLKDIV }} and {{#regref spi_host.CONFIGOPTS.CSNIDLE }} multi-registers) works out to 9 idle clocks for the first device, and 4 clocks for the second device.
 In this scenario then, when swapping from the first device to the second, the SPI_HOST IP will only swap the clock polarity once the first `csb` line, `csb[0]`, has been high for at least 9 clocks, and will continue to hold the second `csb` line, `csb[1]`, high for 4 additional clocks before starting the next transaction.
 
 {{< wavejson >}}
@@ -382,23 +382,23 @@ In this scenario then, when swapping from the first device to the second, the SP
 {{< /wavejson >}}
 
 This additional idle time applies not only when switching between devices but when making any changes to the configuration for most recently used device.
-For instance, even in a SPI_HOST configured for one device, changes to {{< regref "CONFIGOPTS" >}}, will trigger this extended idle time behavior to ensure that the change in configuration only occurs in the middle of a long idle period.
+For instance, even in a SPI_HOST configured for one device, changes to {{#regref spi_host.CONFIGOPTS }}, will trigger this extended idle time behavior to ensure that the change in configuration only occurs in the middle of a long idle period.
 
 
 ### Special Command Fields
 
-The {{< regref "COMMAND" >}} register must be written once for each command segment.
-Whenever a command segment is written to {{< regref "COMMAND" >}}, the contents of the {{< regref "CONFIGOPTS" >}}, {{< regref "CSID" >}}, and {{< regref "COMMAND" >}} registers are passed through the Config/Command FIFO to the SPI_HOST core FSM.
-Once the command is issued, the core will immediately deassert {{< regref "STATUS.READY" >}}, and once the command has started {{< regref "STATUS.ACTIVE" >}} will go high.
-The command is complete when {{< regref "STATUS.ACTIVE" >}} goes low.
-A `spi_event` interrupt can also be triggered to go off on completion by setting {{< regref "EVENT_ENABLE.IDLE" >}}.
+The {{#regref spi_host.COMMAND }} register must be written once for each command segment.
+Whenever a command segment is written to {{#regref spi_host.COMMAND }}, the contents of the {{#regref spi_host.CONFIGOPTS }}, {{#regref spi_host.CSID }}, and {{#regref spi_host.COMMAND }} registers are passed through the Config/Command FIFO to the SPI_HOST core FSM.
+Once the command is issued, the core will immediately deassert {{#regref spi_host.STATUS.READY }}, and once the command has started {{#regref spi_host.STATUS.ACTIVE }} will go high.
+The command is complete when {{#regref spi_host.STATUS.ACTIVE }} goes low.
+A `spi_event` interrupt can also be triggered to go off on completion by setting {{#regref spi_host.EVENT_ENABLE.IDLE }}.
 
 ### Chip Select Masks
 
 Each instance of the SPI_HOST IP supports a parametrizable number of chip select lines (CSB[NumCS-1:0]).
 Each CSB line can be routed either to a single peripheral or to a daisy-chain of peripherals.
-Whenever a segment description is written to the {{< regref "COMMAND">}} register, the  {{< regref "CSID" >}} is sent along with {{< regref "COMMAND" >}} and the `CONFIGOPTS` multi-register corresponding to {{< regref "CSID" >}}  to indicate which device is meant to receive the command.
-The SPI_HOST core typically then manages the details of asserting and deasserting the proper CSB line, subject to the timing parameters expressed in {{< regref "CONFIGOPTS.CSNLEAD" >}}, {{< regref "CONFIGOPTS.CSNTRAIL" >}}, and {{< regref "CONFIGOPTS.CSNIDLE" >}}.
+Whenever a segment description is written to the {{#regref spi_host.COMMAND }} register, the  {{#regref spi_host.CSID }} is sent along with {{#regref spi_host.COMMAND }} and the `CONFIGOPTS` multi-register corresponding to {{#regref spi_host.CSID }}  to indicate which device is meant to receive the command.
+The SPI_HOST core typically then manages the details of asserting and deasserting the proper CSB line, subject to the timing parameters expressed in {{#regref spi_host.CONFIGOPTS.CSNLEAD }}, {{#regref spi_host.CONFIGOPTS.CSNTRAIL }}, and {{#regref spi_host.CONFIGOPTS.CSNIDLE }}.
 
 If [Pass-through mode](#pass-through-mode) is enabled then the CSB lines are controlled by *neither* the SPI_HOST hardware nor the firmware register.
 In Pass-though mode, control of the CSB lines passes directly to the inter-module port, `passthrough_i.csb`.
@@ -409,8 +409,8 @@ The command interface can allows for any number of segments in a given command.
 
 Since most SPI Flash transactions typically consist of 3 or 4 segments, there is a small command FIFO for submitting segments to the SPI_HOST IP, so that firmware can issue the entire transaction at one time.
 
-Writing a segment description to {{< regref "COMMAND" >}} when {{< regref "STATUS.READY" >}} is low will trigger an error condition, which must be acknowledged by software.
-When submitting multiple segments to the the command queue, firmware can also check the {{< regref "STATUS.CMDQD" >}} register to determine how many unprocessed segments are in the FIFO.
+Writing a segment description to {{#regref spi_host.COMMAND }} when {{#regref spi_host.STATUS.READY }} is low will trigger an error condition, which must be acknowledged by software.
+When submitting multiple segments to the the command queue, firmware can also check the {{#regref spi_host.STATUS.CMDQD }} register to determine how many unprocessed segments are in the FIFO.
 
 ## Data Formatting
 
@@ -424,23 +424,23 @@ Based on the requirements for our chosen flash devices, this IP follows these co
 
 The programming model for the IP should meanwhile make it easy to quickly program the peripheral device, with a minimum amount of byte shuffling.
 It should be intuitive to program the specific flash devices we are targeting, while following the conventions above:
-- When transferring data in from the {{< regref "RXDATA" >}} memory window or out to the {{< regref "TXDATA" >}} window, the IP should fully utilize the TL-UL bus, using 32-bit I/O instructions.
+- When transferring data in from the {{#regref spi_host.RXDATA }} memory window or out to the {{#regref spi_host.TXDATA }} window, the IP should fully utilize the TL-UL bus, using 32-bit I/O instructions.
 - The SPI_HOST should make it easy to arrange transaction data in processor memory, meaning that bytes should be sequentially transmitted in order of ascending memory address.
   - When using 32-bit I/O instructions, this requires some knowledge of the processor byte-order.
 
-Based on these requirements, data read from {{< regref "RXDATA" >}} or placed in {{< regref "TXDATA" >}} are handled as follows:
-- 32-bit words placed in {{< regref "TXDATA" >}} are transmitted in first-in-first-out order.
-Likewise, words received from the SPI data lines are made available for reading from {{< regref "RXDATA" >}} in first-in-first-out order.
-- Within a 32-bit word, the `ByteOrder` parameter controls the order in which bytes are transmitted, and also the manner in which received bytes are eventually arranged in the 32-bit {{< regref "RXDATA" >}} register.
-By default (`ByteOrder` = 1, for Little-Endian processors), the LSB of {{< regref "TXDATA" >}} (i.e bits 7 though 0) is transmitted first, and the other bytes follow in order of increasing significance.
-Similarly, the first byte received is packed into the LSB of {{< regref "RXDATA" >}}, and the subsequent bytes of each {{< regref "RXDATA" >}} word are packed in order of increasing significance.
+Based on these requirements, data read from {{#regref spi_host.RXDATA }} or placed in {{#regref spi_host.TXDATA }} are handled as follows:
+- 32-bit words placed in {{#regref spi_host.TXDATA }} are transmitted in first-in-first-out order.
+Likewise, words received from the SPI data lines are made available for reading from {{#regref spi_host.RXDATA }} in first-in-first-out order.
+- Within a 32-bit word, the `ByteOrder` parameter controls the order in which bytes are transmitted, and also the manner in which received bytes are eventually arranged in the 32-bit {{#regref spi_host.RXDATA }} register.
+By default (`ByteOrder` = 1, for Little-Endian processors), the LSB of {{#regref spi_host.TXDATA }} (i.e bits 7 though 0) is transmitted first, and the other bytes follow in order of increasing significance.
+Similarly, the first byte received is packed into the LSB of {{#regref spi_host.RXDATA }}, and the subsequent bytes of each {{#regref spi_host.RXDATA }} word are packed in order of increasing significance.
 
-On the other hand, if `ByteOrder` is set to 0 (for Big-Endian processors), the MSB is transmitted first from {{< regref "TXDATA" >}}, and received data is loaded first into the MSB of {{< regref "RXDATA" >}}.
+On the other hand, if `ByteOrder` is set to 0 (for Big-Endian processors), the MSB is transmitted first from {{#regref spi_host.TXDATA }}, and received data is loaded first into the MSB of {{#regref spi_host.RXDATA }}.
    - The default choice of Little-Endian reflects native byte-order of the Ibex processor.
 - Finally *within a given byte*, the most significant bits are transmitted and received first.
 For Dual and Quad transactions the least significant bit in any instantaneous pair or nibble is transmitted or received on SD[0], and the remaining SD bits (1 though 3) are populated in order of increasing significance.
 
-The following figure shows how data appears on the serial data bus when the hardware reads it from {{< regref "TXDATA" >}} or writes it to {{< regref "RXDATA" >}}.
+The following figure shows how data appears on the serial data bus when the hardware reads it from {{#regref spi_host.TXDATA }} or writes it to {{#regref spi_host.RXDATA }}.
 
 {{< wavejson >}}
  {signal: [
@@ -498,14 +498,14 @@ However many bits of similar significance are packed into multiple parallel SD d
 
 ### Command Length and Alignment in DATA
 
-Even though the {{< regref "TXDATA" >}} memory window typically accepts 32-bit words, command segments do not need to use all the bytes from every word.
+Even though the {{#regref spi_host.TXDATA }} memory window typically accepts 32-bit words, command segments do not need to use all the bytes from every word.
 
 For TX (or Bidirectional) segments, unused bytes from the latest TX FIFO word are simply ignored at the end of a segment.
 For RX (or Bidirectional) segments, if the last few bytes received do not fill an entire DATA word, the partial word will be zero-padded and inserted into the RX FIFO once the segment is completed.
 If ByteOrder=1 (the default, Little-Endian case), this padding will fill the unused most-significant bytes of the final RX DATA word, otherwise the padding will fill the unused least-significant bytes.
 
 The following waveform illustrates an example SPI transaction, where neither the data transmitted nor the data received in each segment fit into an even number of 32-bit words.
-In this example, the values `I[31:0]`, `A[31:0]` and `B[31:0]`, have been previously written into {{< regref "TXDATA" >}} via firmware, and afterwards one word, `X[31:0]`, is available for reading from {{< regref "RXDATA" >}}.
+In this example, the values `I[31:0]`, `A[31:0]` and `B[31:0]`, have been previously written into {{#regref spi_host.TXDATA }} via firmware, and afterwards one word, `X[31:0]`, is available for reading from {{#regref spi_host.RXDATA }}.
 All data in the waveform is transferred using 32-bit instructions.
 
 {{< wavejson >}}
@@ -539,8 +539,8 @@ All data in the waveform is transferred using 32-bit instructions.
 }
 {{< /wavejson >}}
 
-When packing data into the TX FIFO, there are also no restrictions on the alignment of the data written to the {{< regref "TXDATA" >}} memory window, as it supports byte-enable signals.
-This means that when copying bytes into {{< regref "TXDATA" >}} from unaligned firmware memory addresses, it is possible to use byte or half-word instructions.
+When packing data into the TX FIFO, there are also no restrictions on the alignment of the data written to the {{#regref spi_host.TXDATA }} memory window, as it supports byte-enable signals.
+This means that when copying bytes into {{#regref spi_host.TXDATA }} from unaligned firmware memory addresses, it is possible to use byte or half-word instructions.
 Full-word instructions should however be used whenever possible, because each write consumes a full word of data in the TX FIFO regardless of the instruction size.
 Smaller writes will thus make inefficient use of the TX FIFO.
 
@@ -548,14 +548,14 @@ Filtering out disabled bytes consumes clock cycles in the data pipeline, and can
 In the worst case, such bubbles can also be interpreted as transient underflow conditions in the TX FIFO, and could trigger spurious interrupts.
 The longest delays occur whenever a word is loaded into the TX FIFO with only one byte enabled.
 
-When writing to the {{< regref "TXDATA" >}} window, only three types of data are expected: individual bytes, half-words, and full-words.
+When writing to the {{#regref spi_host.TXDATA }} window, only three types of data are expected: individual bytes, half-words, and full-words.
 Other types of write transactions (i.e., non-contiguous, zero-byte and three-byte writes) are not supported by most processors.
 Therefore it is assumed that if such transactions do appear, it is likely a sign of a system integrity error, and so these other classes of writes are not supported.
 
-If such transactions ever occur, they trigger an "Invalid Access" error event, which suspends the processing of future commands until the error has been cleared by setting the {{< regref "ERROR_STATUS.ACCESSINVAL" >}} bit.
+If such transactions ever occur, they trigger an "Invalid Access" error event, which suspends the processing of future commands until the error has been cleared by setting the {{#regref spi_host.ERROR_STATUS.ACCESSINVAL }} bit.
 
 The RX FIFO has no special provisions for packing received data in any unaligned fashion.
-Depending on the `ByteOrder` parameter, the first byte received is always packed into either the most- or least-significant byte read from the {{< regref "RXDATA" >}} memory window.
+Depending on the `ByteOrder` parameter, the first byte received is always packed into either the most- or least-significant byte read from the {{#regref spi_host.RXDATA }} memory window.
 
 
 ## Pass-through Mode
@@ -579,20 +579,20 @@ The SPI_HOST supports interrupts for the following SPI events:
 - `IDLE`: The SPI_HOST is idle.
 - `READY`: The SPI_HOST is ready to accept a new command.
 - `RXFULL`: The SPI_HOST has run out of room in the RXFIFO.
-- `RXWM`: The number of 32-bit words in the RXFIFO currently exceeds the value set in {{< regref "CONTROL.RX_WATERMARK" >}}.
+- `RXWM`: The number of 32-bit words in the RXFIFO currently exceeds the value set in {{#regref spi_host.CONTROL.RX_WATERMARK }}.
 - `TXEMPTY`: The SPI_HOST has transmitted all the data in the TX FIFO.
-- `TXWM`: The number of 32-bit words in the TX FIFO currently is currently less than the value set in {{< regref "CONTROL.TX_WATERMARK" >}}
+- `TXWM`: The number of 32-bit words in the TX FIFO currently is currently less than the value set in {{#regref spi_host.CONTROL.TX_WATERMARK }}
 
-Most SPI events signal a particular condition that persists until it is fixed, and these conditions can be detected by polling the corresponding field in the {{< regref "STATUS" >}} register.
+Most SPI events signal a particular condition that persists until it is fixed, and these conditions can be detected by polling the corresponding field in the {{#regref spi_host.STATUS }} register.
 
-In addition to these events, there are also two additional diagnostic fields in the {{< regref "STATUS" >}} register:
+In addition to these events, there are also two additional diagnostic fields in the {{#regref spi_host.STATUS }} register:
 - `RXSTALL`: The RX FIFO is full, and the SPI_HOST is stalled and waiting for firmware to remove some data.
 - `TXSTALL`: The TX FIFO is not only empty, but the SPI_HOST is stalled and waiting for firmware to add more data.
 
 These bits can provide diagnostic data for tuning the throughput of the device, but do not themselves generate event interrupts.
 
 By default none of these SPI events trigger an interrupt.
-They need to be enabled by writing to the corresponding field in {{< regref "EVENT_ENABLE" >}}.
+They need to be enabled by writing to the corresponding field in {{#regref spi_host.EVENT_ENABLE }}.
 
 The SPI event interrupt is signaled only when the IP enters the corresponding state.
 For example if an interrupt is requested when the TX FIFO is empty, the IP will only generate one interrupt when the last data word is transmitted from the TX FIFO.
@@ -609,61 +609,61 @@ The exact conditions for these *transient* stall conditions are implementation d
 ### Error Interrupt Conditions
 
 There are six types of error events which each represent a violation of the SPI_HOST programming model:
-- If {{< regref "COMMAND" >}} is written when {{< regref "STATUS.READY">}} is zero, the IP will assert {{< regref "ERROR_STATUS.CMDERR" >}}.
-- The IP asserts {{< regref "ERROR_STATUS.OVERFLOW" >}} if it receives a write to {{< regref "TXDATA" >}} when the TX FIFO is full.
-- The IP asserts {{< regref "ERROR_STATUS.UNDERFLOW" >}} if it software attempts to read {{< regref "RXDATA" >}} when the RX FIFO is empty.
-- Specifying a command segment with an invalid width (speed), or making a request for a Bidirectional Dual- or Quad-width segment will trigger a {{< regref "ERROR_STATUS.CMDINVAL" >}} error event.
-- Submitting a command segment to an invalid CSID (one larger or equal to `NumCS`) will trigger a {{< regref "ERROR_STATUS.CSIDINVAL" >}} event.
-- {{< regref "ERROR_STATUS.ACCESSINVAL" >}} is asserted if the IP receives a write event to the {{< regref "TXDATA" >}} window that does not correspond to any known processor data type (byte, half- or full-word).
+- If {{#regref spi_host.COMMAND }} is written when {{#regref spi_host.STATUS.READY }} is zero, the IP will assert {{#regref spi_host.ERROR_STATUS.CMDERR }}.
+- The IP asserts {{#regref spi_host.ERROR_STATUS.OVERFLOW }} if it receives a write to {{#regref spi_host.TXDATA }} when the TX FIFO is full.
+- The IP asserts {{#regref spi_host.ERROR_STATUS.UNDERFLOW }} if it software attempts to read {{#regref spi_host.RXDATA }} when the RX FIFO is empty.
+- Specifying a command segment with an invalid width (speed), or making a request for a Bidirectional Dual- or Quad-width segment will trigger a {{#regref spi_host.ERROR_STATUS.CMDINVAL }} error event.
+- Submitting a command segment to an invalid CSID (one larger or equal to `NumCS`) will trigger a {{#regref spi_host.ERROR_STATUS.CSIDINVAL }} event.
+- {{#regref spi_host.ERROR_STATUS.ACCESSINVAL }} is asserted if the IP receives a write event to the {{#regref spi_host.TXDATA }} window that does not correspond to any known processor data type (byte, half- or full-word).
 
 All of these programming violations will create an error event when they occur.
-They will also halt the IP until the corresponding bit is cleared in the {{< regref "ERROR_STATUS" >}} register.
-Whenever an error event occurs, the error must be acknowledged by clearing (write 1 to clear) the corresponding bit in {{< regref "ERROR_STATUS" >}}.
+They will also halt the IP until the corresponding bit is cleared in the {{#regref spi_host.ERROR_STATUS }} register.
+Whenever an error event occurs, the error must be acknowledged by clearing (write 1 to clear) the corresponding bit in {{#regref spi_host.ERROR_STATUS }}.
 
 By default all error events will trigger an `error` interrupt.
-Clearing the bit corresponding bit in the {{< regref "ERROR_ENABLE" >}} register in the suppresses interrupts for that class of error event and allows the IP to proceed even if one of these errors has occurred.
-The {{< regref "ERROR_STATUS" >}} register will continue to report all violations even if a particular class of error event has been disabled.
+Clearing the bit corresponding bit in the {{#regref spi_host.ERROR_ENABLE }} register in the suppresses interrupts for that class of error event and allows the IP to proceed even if one of these errors has occurred.
+The {{#regref spi_host.ERROR_STATUS }} register will continue to report all violations even if a particular class of error event has been disabled.
 
 Of the six error event classes, `ACCESSINVAL` error events are the only ones which cannot be disabled.
 This is because `ACCESSINVAL` events are caused by anomalous TLUL byte-enable masks that do not correspond to any known software instructions, and can only occur through a fault in the hardware integration.
 
-When handling SPI_HOST `error` interrupts, the {{< regref "ERROR_STATUS" >}} bit should be cleared *before* clearing the error interrupt in the {{< regref "INTR_STATE" >}} register.
+When handling SPI_HOST `error` interrupts, the {{#regref spi_host.ERROR_STATUS }} bit should be cleared *before* clearing the error interrupt in the {{#regref spi_host.INTR_STATE }} register.
 Failure do to so may result in a repeated interrupt.
 
 ## Status Indicators
 
-The {{< regref "STATUS" >}} register contains a number of fields that should be queried for successful operation or troubleshooting.
+The {{#regref spi_host.STATUS }} register contains a number of fields that should be queried for successful operation or troubleshooting.
 
-The register {{< regref "STATUS.ACTIVE" >}} indicates whether a command segment is currently being processed by the FSM.
-Even if {{< regref "STATUS.ACTIVE" >}} is high it is often still possible to insert another command segment into the command FIFO.
-The register {{< regref "STATUS.READY" >}} indicates that there is room in the command FIFO.
+The register {{#regref spi_host.STATUS.ACTIVE }} indicates whether a command segment is currently being processed by the FSM.
+Even if {{#regref spi_host.STATUS.ACTIVE }} is high it is often still possible to insert another command segment into the command FIFO.
+The register {{#regref spi_host.STATUS.READY }} indicates that there is room in the command FIFO.
 
-The {{< regref "STATUS.BYTEORDER" >}} field indicates the fixed value of the `ByteOrder` parameter, which is presented to software to confirm the byte ordering used in the {{< regref "RXDATA" >}} and {{< regref "TXDATA" >}} windows.
+The {{#regref spi_host.STATUS.BYTEORDER }} field indicates the fixed value of the `ByteOrder` parameter, which is presented to software to confirm the byte ordering used in the {{#regref spi_host.RXDATA }} and {{#regref spi_host.TXDATA }} windows.
 
-The 8-bit fields {{< regref "STATUS.RXQD" >}} and {{< regref "STATUS.TXQD" >}} respectively indicate the number of words currently stored in the RX and TX FIFOs.
+The 8-bit fields {{#regref spi_host.STATUS.RXQD }} and {{#regref spi_host.STATUS.TXQD }} respectively indicate the number of words currently stored in the RX and TX FIFOs.
 
-The remaining fields in the {{< regref "STATUS" >}} register are all flags related to the management of the TX and RX FIFOs, which are described in the [section on SPI Events](#spi-events-and-event-interrupts).
+The remaining fields in the {{#regref spi_host.STATUS }} register are all flags related to the management of the TX and RX FIFOs, which are described in the [section on SPI Events](#spi-events-and-event-interrupts).
 
 ## Other Registers
 
 ### SPI_HOST Enable
 
 The SPI_HOST state machine is disabled on reset.
-Before any commands are processed, the block must be enabled by writing one to the {{< regref "CONTROL.SPIEN" >}} register.
+Before any commands are processed, the block must be enabled by writing one to the {{#regref spi_host.CONTROL.SPIEN }} register.
 Writing a zero to this register temporarily suspends any previously submitted transactions.
-If the block is re-enabled by writing a one to {{< regref "CONTROL.SPIEN" >}}, any previously executing commands will continue from wherever they left off.
+If the block is re-enabled by writing a one to {{#regref spi_host.CONTROL.SPIEN }}, any previously executing commands will continue from wherever they left off.
 
 An unacknowledged error event suspends the core state machine.
 
 ### SPI_HOST Output Enable
 
 In addition to enabling the SPI_HOST FSM, the SPI_HOST outputs must also be enabled for successful operation.
-This can be achieved by also setting the {{< regref "CONTROL.OUTPUT_EN" >}} field when enabling the SPI_HOST FSM.
+This can be achieved by also setting the {{#regref spi_host.CONTROL.OUTPUT_EN }} field when enabling the SPI_HOST FSM.
 
 ### Component reset
 
 In addition to the global hardware reset, there is a software reset option which completely resets the SPI host.
-To use this reset, assert {{< regref "CONTROL.SW_RST" >}}, and then wait for the device to reset ({{< regref "STATUS.ACTIVE" >}}, {{< regref "STATUS.TXQD" >}} and {{< regref "STATUS.RXQD" >}} to all go to zero), before releasing {{< regref "CONTROL.SW_RST" >}}.
+To use this reset, assert {{#regref spi_host.CONTROL.SW_RST }}, and then wait for the device to reset ({{#regref spi_host.STATUS.ACTIVE }}, {{#regref spi_host.STATUS.TXQD }} and {{#regref spi_host.STATUS.RXQD }} to all go to zero), before releasing {{#regref spi_host.CONTROL.SW_RST }}.
 
 ## Block Diagram
 
@@ -671,7 +671,7 @@ To use this reset, assert {{< regref "CONTROL.SW_RST" >}}, and then wait for the
 
 ## Hardware Interfaces
 
-{{< incGenFromIpDesc "../data/spi_host.hjson" "hwcfg" >}}
+* [Interface Tables](data/spi_host.hjson#interfaces)
 
 # Design Details
 
@@ -874,10 +874,10 @@ This section describes the SPI_HOST FSM and its control of the `sck` and `csb` l
 ### Clock Divider
 
 The SPI_HOST FSM is driven by the rising edge of the input clock, however the FSM state registers are not *enabled* during every cycle.
-There is an internal clock counter `clk_cntr_q` which repeatedly counts down from {{< regref "CONFIGOPTS.CLKDIV" >}} to 0, and the FSM is only enabled when `clk_cntr_q == 0`.
+There is an internal clock counter `clk_cntr_q` which repeatedly counts down from {{#regref spi_host.CONFIGOPTS.CLKDIV }} to 0, and the FSM is only enabled when `clk_cntr_q == 0`.
 
 The exception is when the FSM is one of the two possible Idle states (`Idle` or `IdleCSBActive`), in which case `clk_cntr_q` is constantly held at zero, making it possible to immediately transition out of the idle state as soon as a new command appears.
-Once the FSM transitions out of the idle state, `clk_cntr_q` resets to {{< regref "CONFIGOPTS.CLKDIV" >}}, and FSM transitions are only enabled at the divided clock rate.
+Once the FSM transitions out of the idle state, `clk_cntr_q` resets to {{#regref spi_host.CONFIGOPTS.CLKDIV }}, and FSM transitions are only enabled at the divided clock rate.
 
 As shown in the waveform below, this has the effect of limiting the FSM transitions to only occur at discrete *timeslices* of duration:
 
@@ -944,11 +944,11 @@ This state always returns back to the `InternalClkHigh` state in the next timesl
 
 5. WaitTrail state: Similar to the WaitLead, this state serves to control the timing of the `csb` line.
 The FSM uses the `wait_cntr` register to ensure that it remains in this state for `csntrail+1` timeslices, during which time the active `csb` is still held low.
-The `wait_cntr` register resets to {{< regref "CONFIGOPTS.CSNTRAIL" >}} upon entering this state, and is decremented once per timeslice.
+The `wait_cntr` register resets to {{#regref spi_host.CONFIGOPTS.CSNTRAIL }} upon entering this state, and is decremented once per timeslice.
 This state transitions to `WaitIdle` when `wait_cntr` is zero.
 
 6. WaitIdle state: In this timing control state, the FSM uses the `wait_cntr` register to ensure that all `csb` lines are held high for at least `csnidle+1` timeslices.
-The `wait_cntr` register resets to {{< regref "CONFIGOPTS.CSNIDLE" >}} upon entering this state, and is decremented once per timeslice.
+The `wait_cntr` register resets to {{#regref spi_host.CONFIGOPTS.CSNIDLE }} upon entering this state, and is decremented once per timeslice.
 This state transitions to `Idle` when `wait_cntr` reaches zero.
 
 {{< wavejson >}}
@@ -1133,7 +1133,7 @@ The size of the decrement also depends on the speed of the current segment:
 - 2 for Dual-mode
 - 4 for Quad-mode
 
-The `byte_cntr_q` register is updated from the {{< regref "COMMAND.LEN" >}} register value, at the beginning of each segment, and decremented after each `byte_ending` pulse until the counter reaches zero.
+The `byte_cntr_q` register is updated from the {{#regref spi_host.COMMAND.LEN }} register value, at the beginning of each segment, and decremented after each `byte_ending` pulse until the counter reaches zero.
 
 This relationship between the milestone signals and the bit and byte counters is also illustrated in the previous waveform.
 
@@ -1150,7 +1150,7 @@ From the `ConfigSwitch` state, the state machine directly enters the `WaitLead` 
 
 A complete state diagram, including the `ConfigSwitch` state, is shown in the following section.
 
-The following waveform illustrates how a change in a single {{< regref "CONFIGOPTS" >}}, here {{< regref "CONFIGOPTS.CPOL" >}}, triggers an entry into the `ConfigSwitch` Idle state, and how the new configuration is applied at the transition from `WaitIdle` to `ConfigSwitch` thereby ensuring ample idle time both before and after the configuration update.
+The following waveform illustrates how a change in a single {{#regref spi_host.CONFIGOPTS }}, here {{#regref spi_host.CONFIGOPTS.CPOL }}, triggers an entry into the `ConfigSwitch` Idle state, and how the new configuration is applied at the transition from `WaitIdle` to `ConfigSwitch` thereby ensuring ample idle time both before and after the configuration update.
 
 {{< wavejson >}}
 {signal: [
@@ -1243,17 +1243,17 @@ Thus the FSM may not progress while stalled.
 The operation of the SPI_HOST IP proceeds in seven general steps.
 
 To initialize the IP:
-1. Program the {{< regref "CONFIGOPTS" >}} multi-register with the appropriate timing and polarity settings for each `csb` line.
+1. Program the {{#regref spi_host.CONFIGOPTS }} multi-register with the appropriate timing and polarity settings for each `csb` line.
 2. Set the desired interrupt parameters
 3. Enable the IP
 
 Then for each command:
 
-4. Load the data to be transmitted into the FIFO using the {{< regref "TXDATA" >}} memory window.
-5. Specify the target device by programming the {{< regref "CSID" >}}
-6. Specify the structure of the command by writing each segment into the {{< regref "COMMAND" >}} register
-   - For multi-segment transactions, be sure to assert {{< regref "COMMAND.CSAAT" >}} for all but the last command segment
-7. For transactions which expect to receive a reply, the data can then be read back from the {{< regref "RXDATA" >}} window.
+4. Load the data to be transmitted into the FIFO using the {{#regref spi_host.TXDATA }} memory window.
+5. Specify the target device by programming the {{#regref spi_host.CSID }}
+6. Specify the structure of the command by writing each segment into the {{#regref spi_host.COMMAND }} register
+   - For multi-segment transactions, be sure to assert {{#regref spi_host.COMMAND.CSAAT }} for all but the last command segment
+7. For transactions which expect to receive a reply, the data can then be read back from the {{#regref spi_host.RXDATA }} window.
 
 These latter four steps are then repeated for each command.
 Each step is covered in detail in the following sections.
@@ -1265,26 +1265,26 @@ The SPI_HOST IP is however suitable for interacting with any number of SPI devic
 
 ### Per-target Configuration
 
-The {{< regref "CONFIGOPTS" >}} multi-register must be programmed to reflect the requirements of the attached target devices.
+The {{#regref spi_host.CONFIGOPTS }} multi-register must be programmed to reflect the requirements of the attached target devices.
 As such these registers can be programmed once at initialization, or whenever a new device is connected (e.g., via changes in the external pin connections, or changes in the pinmux configuration).
-The proper settings for the {{< regref "CONFIGOPTS" >}} fields (e.g., CPOL and CPHA, clock divider, ratios, and other timing or sampling requirements) will all depend on the specific device attached as well as the board level delays.
+The proper settings for the {{#regref spi_host.CONFIGOPTS }} fields (e.g., CPOL and CPHA, clock divider, ratios, and other timing or sampling requirements) will all depend on the specific device attached as well as the board level delays.
 
 ### Interrupt configuration
 
 The next step is to configuration the interrupts for the SPI_HOST.
 This should also be done at initialization using the following register fields:
-- The {{< regref "ERROR_ENABLE" >}} register should be configured to indicate what types of error conditions (if any) should be ignored to not trigger an interrupt.
+- The {{#regref spi_host.ERROR_ENABLE }} register should be configured to indicate what types of error conditions (if any) should be ignored to not trigger an interrupt.
 At reset, these fields are all set indicating that all error classes trigger an interrupt.
 
-- For interrupt driven I/O the {{< regref "EVENT_ENABLE" >}} register must be configured to select the desired event interrupts to signal the desired conditions (e.g. "FIFO empty", "FIFO at the watermark level", or "ready for next command segment").
+- For interrupt driven I/O the {{#regref spi_host.EVENT_ENABLE }} register must be configured to select the desired event interrupts to signal the desired conditions (e.g. "FIFO empty", "FIFO at the watermark level", or "ready for next command segment").
 By default, this register is all zeros, meaning all event interrupts are disabled, and thus all transactions must be managed by polling the status register.
-   - When using the FIFO watermarks to send interrupts, the watermark levels must be set via the {{< regref "CONTROL.RX_WATERMARK" >}} and {{< regref "CONTROL.TX_WATERMARK" >}} fields.
+   - When using the FIFO watermarks to send interrupts, the watermark levels must be set via the {{#regref spi_host.CONTROL.RX_WATERMARK }} and {{#regref spi_host.CONTROL.TX_WATERMARK }} fields.
 
-- The event and error interrupts must finally be enabled using the {{< regref "INTR_ENABLE" >}} register.
+- The event and error interrupts must finally be enabled using the {{#regref spi_host.INTR_ENABLE }} register.
 
 ### Enabling the SPI_HOST
 
-The IP must be enabled before sending the first command by asserting the {{< regref "CONTROL.SPIEN" >}} bit.
+The IP must be enabled before sending the first command by asserting the {{#regref spi_host.CONTROL.SPIEN }} bit.
 
 ## Issuing Transactions
 
@@ -1300,7 +1300,7 @@ In this instance, the programming sequence will consist of at least four iterati
 ### Loading TX data
 
 SPI transactions expect each command to start with some command sequence from the host, and so usually data will be transmitted at least in the first command segment.
-The {{< regref "TXDATA" >}} window provides a simple interface to the TX FIFO.
+The {{#regref spi_host.TXDATA }} window provides a simple interface to the TX FIFO.
 Data can be written to the window using 8-, 16- or 32-bit instructions.
 
 Some attention, however, should be paid to byte-ordering and segmenting conventions.
@@ -1309,16 +1309,16 @@ Some attention, however, should be paid to byte-ordering and segmenting conventi
 
 For SPI flash applications, it is generally assumed that most of the *payload* data will be directly copied from embedded SRAM to the flash device.
 
-If this data is to copied to the {{< regref "TXDATA" >}} window using 32-bit instructions, the SPI_HOST should be parameterized such that the `ByteOrder` parameter matches the byte order of the embedded CPU (i.e., for Ibex, `ByteOrder` should be left set to `1` to indicate a Little-Endian CPU).
+If this data is to copied to the {{#regref spi_host.TXDATA }} window using 32-bit instructions, the SPI_HOST should be parameterized such that the `ByteOrder` parameter matches the byte order of the embedded CPU (i.e., for Ibex, `ByteOrder` should be left set to `1` to indicate a Little-Endian CPU).
 This will ensure that data is transmitted to the flash (and thus also stored in flash) in address-ascending order.
-For example, consider the transfer of four bytes, `D[3:0][7:0]`, to SPI via the {{< regref "TXDATA" >}} window.
+For example, consider the transfer of four bytes, `D[3:0][7:0]`, to SPI via the {{#regref spi_host.TXDATA }} window.
 - It is assumed for this example that all four bytes are contiguously stored in SRAM at a word-aligned address, with `D[0]` at the lowest byte-address.
 - When these bytes are loaded into the Ibex CPU they are arranged as the 32-bit word: `W[31:0] = {D[3][7:0], D[2][7:0], D[1][7:0], D[0][7:0]}`.
-- After this word are loaded into the {{< regref "TXDATA" >}} window, the LSB (i.e., `W[7:0] = D[0][7:0]`) is transmitted first, by virtue of the `ByteOrder == 1` configuration.
+- After this word are loaded into the {{#regref spi_host.TXDATA }} window, the LSB (i.e., `W[7:0] = D[0][7:0]`) is transmitted first, by virtue of the `ByteOrder == 1` configuration.
 
 In this way, configuring `ByteOrder` to match the CPU ensures that data is transmitted in memory-address order.
 
-The value of the `ByteOrder` parameter can be confirmed by firmware by reading the {{< regref "STATUS.BYTEORDER" >}} register field.
+The value of the `ByteOrder` parameter can be confirmed by firmware by reading the {{#regref spi_host.STATUS.BYTEORDER }} register field.
 
 Not all data to the SPI device will come from memory however.
 In many cases the transaction command codes or headers will be constructed or packed on the fly in CPU registers.
@@ -1350,14 +1350,14 @@ Assuming that `ByteOrder` is set to `1` for Little-Endian devices such as Ibex, 
  foot: {text: "Addresses are transmitted MSB first, and data is returned in order of increasing peripheral byte address."}}
 {{< /wavejson >}}
 
-Byte ordering on the bus can also be managed by writing {{< regref "TXDATA" >}} as a sequence of discrete bytes using 8-bit transactions, since partially-filled data-words are always sent in the order they are received.
+Byte ordering on the bus can also be managed by writing {{#regref spi_host.TXDATA }} as a sequence of discrete bytes using 8-bit transactions, since partially-filled data-words are always sent in the order they are received.
 
 A few examples related to using SPI flash devices on a Little-Endian platform:
 - A 4-byte address can be loaded into the TX FIFO as four individual bytes using 8-bit I/O instructions.
-- The above read command (with 4-byte address) can be loaded into the FIFO by first loading the command code into {{< regref "TXDATA" >}} as a single byte, and the address can be loaded into {{< regref "TXDATA" >}} using 32-bit instructions, provided the byte order is swapped before loading.
+- The above read command (with 4-byte address) can be loaded into the FIFO by first loading the command code into {{#regref spi_host.TXDATA }} as a single byte, and the address can be loaded into {{#regref spi_host.TXDATA }} using 32-bit instructions, provided the byte order is swapped before loading.
 - Flash transactions with 3-byte addressing require some care, as there are no 24-bit I/O instructions, though there are a several options:
     - After the 8-bit command code is sent, the address can either be sent in several I/O operations (e.g., the MSB is sent as an 8-bit command, and the remaining 16-bits can be sent after swapping)
-    - If bandwidth efficiency is a priority, the address, `A[23:0]`, and command code, `C[7:0]`, can all be packed together into a single 4-byte quantity `W[31:0] = {A[7:0], A[15:8], A[23:16], C[7:0]}`, which when loaded into {{< regref "TXDATA" >}} will ensure that the command code is sent first, followed by the address in MSB-first order.
+    - If bandwidth efficiency is a priority, the address, `A[23:0]`, and command code, `C[7:0]`, can all be packed together into a single 4-byte quantity `W[31:0] = {A[7:0], A[15:8], A[23:16], C[7:0]}`, which when loaded into {{#regref spi_host.TXDATA }} will ensure that the command code is sent first, followed by the address in MSB-first order.
 
 #### Segmenting Considerations
 
@@ -1368,36 +1368,36 @@ For the next TX segment, the transmitted data will start with the following *wor
 #### Refilling the TX FIFO
 
 For extremely long transactions, the TX FIFO may not have enough capacity to hold all the data being transmitted.
-In this case software can either poll the {{< regref "STATUS.TXQD" >}} register to determine the number of elements in the TX FIFO, or enable the SPI_HOST IP to send an interrupt when the FIFO drains to a certain level.
-If {{< regref "INTR_ENABLE.spi_event" >}} and {{< regref "EVENT_ENABLE.TXWM" >}} are both asserted, the IP will send an interrupt whenever the number of elements in the TX FIFO falls below {{< regref "CONTROL.TX_WATERMARK" >}}.
+In this case software can either poll the {{#regref spi_host.STATUS.TXQD }} register to determine the number of elements in the TX FIFO, or enable the SPI_HOST IP to send an interrupt when the FIFO drains to a certain level.
+If {{#regref spi_host.INTR_ENABLE.spi_event }} and {{#regref spi_host.EVENT_ENABLE.TXWM }} are both asserted, the IP will send an interrupt whenever the number of elements in the TX FIFO falls below {{#regref spi_host.CONTROL.TX_WATERMARK }}.
 
 ### Specifying the Segments
 
-Each write to the {{< regref "COMMAND" >}} register corresponds to a single command segment.
-The length, CSAAT flag, direction and speed settings for that segment should all be packed into a single 32-bit register and written simultaneously to {{< regref "COMMAND" >}}.
+Each write to the {{#regref spi_host.COMMAND }} register corresponds to a single command segment.
+The length, CSAAT flag, direction and speed settings for that segment should all be packed into a single 32-bit register and written simultaneously to {{#regref spi_host.COMMAND }}.
 
-The {{< regref "COMMAND" >}} should only be written when {{< regref "STATUS.READY" >}} is asserted.
+The {{#regref spi_host.COMMAND }} should only be written when {{#regref spi_host.STATUS.READY }} is asserted.
 
 While each command segment is being processed, the SPI_HOST has room to queue up exactly one additional segment descriptor in the Command Clock Domain Crossing.
 Once a second command segment descriptor has been submitted, software must wait for the state machine to finish processing the current segment before submitting more.
-Software can poll the {{< regref "STATUS.READY" >}} field to determine when it is safe to insert another segment descriptor.
-Otherwise the {{< regref "EVENT_ENABLE.IDLE" >}} bit can be enabled (along with {{< regref "INTR_ENABLE.spi_event" >}}) to trigger an event interrupt whenever {{< regref "STATUS.READY" >}} is asserted.
+Software can poll the {{#regref spi_host.STATUS.READY }} field to determine when it is safe to insert another segment descriptor.
+Otherwise the {{#regref spi_host.EVENT_ENABLE.IDLE }} bit can be enabled (along with {{#regref spi_host.INTR_ENABLE.spi_event }}) to trigger an event interrupt whenever {{#regref spi_host.STATUS.READY }} is asserted.
 
 ### Reading Back the Device Response
 
 Once an RX segment descriptor has been submitted to the SPI_HOST, the received data will be available in the RX FIFO after the first word has been received.
 
-The number of words in the FIFO can be polled by reading the {{< regref "STATUS.RXQD" >}} field.
-The SPI_HOST IP can also configured to generate watermark event interrupts whenever the number of words received reaches (or exceeds) {{< regref "CONTROL.RX_WATERMARK" >}}.
-To enable interrupts when ever the RX FIFO reaches the watermark, assert {{< regref "EVENT_ENABLE.RXWM" >}} along with {{< regref "INTR_ENABLE.spi_event" >}}.
+The number of words in the FIFO can be polled by reading the {{#regref spi_host.STATUS.RXQD }} field.
+The SPI_HOST IP can also configured to generate watermark event interrupts whenever the number of words received reaches (or exceeds) {{#regref spi_host.CONTROL.RX_WATERMARK }}.
+To enable interrupts when ever the RX FIFO reaches the watermark, assert {{#regref spi_host.EVENT_ENABLE.RXWM }} along with {{#regref spi_host.INTR_ENABLE.spi_event }}.
 
 ## Exception Handling
 
-The SPI_HOST will assert one of the {{< regref "ERROR_STATUS" >}} bits in the event of a firmware programming error, and will become unresponsive until firmware acknowledges the error by clearing the corresponding error bit.
+The SPI_HOST will assert one of the {{#regref spi_host.ERROR_STATUS }} bits in the event of a firmware programming error, and will become unresponsive until firmware acknowledges the error by clearing the corresponding error bit.
 
-The SPI_HOST interrupt handler should clear any bits in {{< regref "ERROR_STATUS" >}} bit before clearing {{< regref "INTR_STATE.error" >}}.
+The SPI_HOST interrupt handler should clear any bits in {{#regref spi_host.ERROR_STATUS }} bit before clearing {{#regref spi_host.INTR_STATE.error }}.
 
-In addition to clearing the {{< regref "ERROR_STATUS" >}} register, firmware can also trigger a complete software reset via the {{< regref "CONTROL.SW_RST" >}} bit, as described in the next section.
+In addition to clearing the {{#regref spi_host.ERROR_STATUS }} register, firmware can also trigger a complete software reset via the {{#regref spi_host.CONTROL.SW_RST }} bit, as described in the next section.
 
 Other system-level errors may arise due to improper programming of the target device (e.g., due to violations in the device programming model, or improper configuration of the SPI_HOST timing registers).
 Given that the SPI protocol provides no mechanism for the target device to stall the bus, the SPI_HOST will continue to function even if the remote device becomes unresponsive.
@@ -1407,11 +1407,11 @@ In case of an unresponsive device, the RX FIFO will still accumulate data from t
 
 In the event of an error the SPI_HOST IP can be reset under software control using the following procedure:
 
-1. Set {{< regref "CONTROL.SW_RST" >}}.
+1. Set {{#regref spi_host.CONTROL.SW_RST }}.
 2. Poll IP status registers for confirmation of successful state machine reset:
-   - Wait for {{< regref "STATUS.ACTIVE" >}} to clear.
-   - Wait for both FIFOs to completely drain by polling {{< regref "STATUS.TXQD" >}} and {{< regref "STATUS.RXQD" >}} until they reach zero.
-3. Clear {{ < regref "CONTROL.SW_RST" >}}.
+   - Wait for {{#regref spi_host.STATUS.ACTIVE }} to clear.
+   - Wait for both FIFOs to completely drain by polling {{#regref spi_host.STATUS.TXQD }} and {{#regref spi_host.STATUS.RXQD }} until they reach zero.
+3. Clear {{#regref spi_host.CONTROL.SW_RST }}.
 
 ## Device Interface Functions (DIFs)
 
@@ -1419,7 +1419,7 @@ In the event of an error the SPI_HOST IP can be reset under software control usi
 
 ## Register Table
 
-{{< incGenFromIpDesc "../data/spi_host.hjson" "registers" >}}
+* [Register Table](data/spi_host.hjson#registers)
 
 # Appendices
 
