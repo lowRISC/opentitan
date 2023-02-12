@@ -16,8 +16,21 @@ git-repository-url = "https://github.com/lowrisc/opentitan"
 edit-url-template = "https://github.com/lowrisc/opentitan/edit/master/{path}"
 curly-quotes = true
 
+additional-js = [
+    "./util/mdbook/wavejson/default.js",
+    "./util/mdbook/wavejson/wavedrom.min.js",
+    "./util/mdbook/wavejson/wavejson.js",
+]
+
+additional-css = [
+    "./util/mdbook/wavejson/wavejson.css",
+]
+
 [preprocessor.readme2index]
 command = "./util/mdbook_readme2index.py"
+
+[preprocessor.wavejson]
+command = "./util/mdbook_wavejson.py"
 
 [preprocessor.reggen]
 command = "./util/mdbook_reggen.py"
