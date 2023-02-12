@@ -74,7 +74,7 @@ extract those parameters.
 scripts, which are the ones that actually create the RAL package.
 Due to the way those scripts are implemented, RAL packages for the IP level
 testbenches are generated using
-[`reggen`](({{< relref "util/reggen/doc" >}})), and for the chip level
+[`reggen`](../../../../util/reggen/README.md), and for the chip level
 testbench, `util/topgen.py`. Which one to choose is decided by whether
 the `ip_hjson` or `top_hjson` parameter is supplied.
 

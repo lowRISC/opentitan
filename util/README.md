@@ -11,4 +11,4 @@ title: "Reference Manuals"
    * [Crossbar Tool](./tlgen/README.md): Describes `tlgen.py` and its Hjson format source. Used to generate self-documentation, rtl files of the crossbars at the toplevel.
    * [Vendor-In Tool](./doc/vendor.md): Describes `util/vendor.py` and its Hjson control file. Used to pull a local copy of code maintained in other upstream repositories and apply local patch sets.
 * [FPGA Reference Manual](../doc/contributing/fpga/ref_manual_fpga.md)
-* [OpenTitan Continuous Integration]({{< relref "continuous_integration.md" >}})
+* [OpenTitan Continuous Integration](../doc/contributing/ci/README.md)

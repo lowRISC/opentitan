@@ -58,7 +58,7 @@ By default, all muxed peripheral inputs are tied to zero.
 Further, all output enables are set to zero, which essentially causes all pads to be in high-Z state after reset.
 In addition to wiring programmability, each muxed peripheral input can be set constantly to 0 or 1, and each muxed chip output can be set constantly to 0, 1 or high-Z.
 
-See the [muxing matrix]({{< relref "#muxing-matrix">}}) section for more details about the mux implementation.
+See the [muxing matrix](#muxing-matrix) section for more details about the mux implementation.
 
 ### Retention and Wakeup Features
 
@@ -71,19 +71,19 @@ Each wakeup detector can listen on any one of the MIO / DIO signals that are rou
 The `pinmux` module itself is in the always-on (AON) power domain, and as such does not loose configuration state when a sleep power cycle is performed.
 However, only the wakeup detector logic will be actively clocked during sleep in order to save power.
 
-See the [retention logic]({{< relref "#retention-logic">}}) and [wakeup detectors]({{< relref "#wakeup-detectors">}}) sections for more details about the mux implementation.
+See the [retention logic](#retention-logic) and [wakeup detectors](#wakeup-detectors) sections for more details about the mux implementation.
 
 ### Test and Debug Access
 
 The hardware strap sampling and TAP isolation logic provides test and debug access to the chip during specific life cycle states.
-This mechanism is explained in more detail in the [strap sampling and TAP isolation]({{< relref "#strap-sampling-and-tap-isolation">}}) section.
+This mechanism is explained in more detail in the [strap sampling and TAP isolation](#strap-sampling-and-tap-isolation) section.
 
 ### Pad Attributes
 
 Additional pad-specific features such as inversion, pull-up, pull-down, virtual open-drain, drive-strength and input/output inversion etc. can be exercise via the pad attribute CSRs.
 The `pinmux` module supports a comprehensive set of such pad attributes, but it is permissible that some of them may not be supported by the underlying pad implementation.
 For example, certain ASIC libraries may not provide open-drain outputs, and FPGAs typically do not allow all of these attributes to be programmed dynamically at runtime.
-See the [generic pad wrapper]({{< relref "#generic-pad-wrapper" >}}) section below for more details.
+See the [generic pad wrapper](#generic-pad-wrapper) section below for more details.
 Note that static pad attributes for FPGAs are currently not covered in this specification.
 
 ## Hardware Interfaces
@@ -94,7 +94,7 @@ Note that static pad attributes for FPGAs are currently not covered in this spec
 
 The following table lists the main parameters used throughout the `pinmux` design.
 Note that the `pinmux` is generated based on the system configuration, and hence these parameters are placed into a package.
-The pinout and `pinmux` mappings are listed under [Pinout and Pinmux Mapping]({{< relref "#pinout-and-pinmux-mapping" >}}) for specific top-level configurations.
+The pinout and `pinmux` mappings are listed under [Pinout and Pinmux Mapping](#pinout-and-pinmux-mapping) for specific top-level configurations.
 
 Parameter      | Description
 ---------------|---------------
@@ -259,7 +259,7 @@ Signal               | Direction  | Type        | Description
 `attr_i[8:7]`        | `input`    | `logic`     | Slew rate (0x0: slowest, 0x3: fastest)
 `attr_i[12:9]`       | `input`    | `logic`     | Drive strength (0x0: weakest, 0xf: strongest)
 
-Note that the corresponding pad attribute registers {{< regref "MIO_PAD_ATTR_0" >}} and {{< regref "DIO_PAD_ATTR_0" >}} have "writes-any-reads-legal" (WARL) behavior (see also [pad attributes]({{< relref "#pad-attributes" >}})).
+Note that the corresponding pad attribute registers {{< regref "MIO_PAD_ATTR_0" >}} and {{< regref "DIO_PAD_ATTR_0" >}} have "writes-any-reads-legal" (WARL) behavior (see also [pad attributes](#pad-attributes)).
 
 # Programmers Guide
 
@@ -349,7 +349,7 @@ The `pinmux` contains eight wakeup detectors.
 These detectors can be individually enabled and disabled regardless of the sleep state.
 This ensures that SW can set them up before and disable them after sleep in order to ensure that no events are missed during sleep entry and exit.
 
-For more information on the patterns supported by the wakeup detectors, see [wakeup detectors]({{< relref "#wakeup-detectors" >}}).
+For more information on the patterns supported by the wakeup detectors, see [wakeup detectors](#wakeup-detectors).
 
 A typical programming sequence for the wakeup detectors looks as follows:
 

@@ -65,7 +65,7 @@ The peripheral and xbar components are then validated through `topgen/validate.p
 Once all validation is passed, the final Hjson is created.
 This Hjson is then used to generate the final top RTL.
 
-As part of this process, topgen invokes other tools, please see the documentation for [`reggen`](register_tool.md) and [`tlgen`](crossbar_tool.md) for more tool specific details.
+As part of this process, topgen invokes other tools, please see the documentation for [`reggen`](../reggen/README.md) and [`tlgen`](../tlgen/README.md) for more tool specific details.
 
 ## Usage
 

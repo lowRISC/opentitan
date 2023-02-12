@@ -141,7 +141,7 @@ A timing check has been completed either with an FPGA or ASIC synthesis flow.
 
 ### SEC_CM_DOCUMENTED
 
-Any custom security countermeasures other than standardized countermeasures listed under [SEC_CM_IMPLEMENTED]({{< relref "#sec_cm_implemented" >}})  have been identified, documented and their implementation has been planned.
+Any custom security countermeasures other than standardized countermeasures listed under [SEC_CM_IMPLEMENTED](#sec_cm_implemented)  have been identified, documented and their implementation has been planned.
 The actual implementation can be delayed until D2S.
 
 Where the area impact of countermeasures can be reliably estimated, it is recommended to insert dummy logic at D2 in order to better reflect the final area complexity of the design.

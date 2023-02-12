@@ -13,7 +13,7 @@
       name: tl_d_illegal_access
       desc: '''Drive unsupported requests via TL interface and verify correctness of response
             / behavior. Below error cases are tested bases on the
-            [TLUL spec]({{< relref "hw/ip/tlul/doc/_index.md#explicit-error-cases" >}})
+            [TLUL spec](/hw/ip/tlul/README.md#explicit-error-cases)
             - TL-UL protocol error cases
               - invalid opcode
               - some mask bits not set when opcode is `PutFullData`

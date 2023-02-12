@@ -45,7 +45,7 @@ A useful quick reference for USB Full-Speed is [USB Made Simple, Part 3 - Data F
 
 The block diagram shows a high level view of the USB device including the main register access paths.
 
-![Block Diagram](usbdev_block.svg "image_tooltip")
+![Block Diagram](doc/usbdev_block.svg)
 
 
 ## Clocking

@@ -40,7 +40,7 @@ This instantiates the OTBN DUT module `hw/ip/otbn/rtl/otbn.sv`.
 
 OTBN has the following interfaces:
 - A [Clock and reset interface](../../../dv/sv/common_ifs/README.md#clk_rst_if)
-- A [TileLink interface]({{< relref "/hw/dv/sv/tl_agent/doc.md" >}}).
+- A [TileLink interface](../../../dv/sv/tl_agent/README.md).
   OTBN is a TL-UL device, which expects to communicate with a TL-UL host.
   In the OpenTitan SoC, this will be the Ibex core.
 - Idle signals in each clock domain, `idle_o`, and `idle_otp_o`

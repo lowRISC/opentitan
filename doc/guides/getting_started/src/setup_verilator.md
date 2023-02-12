@@ -4,7 +4,7 @@ aliases:
     - /doc/ug/getting_started_verilator
 ---
 
-_Before following this guide, make sure you've followed the [dependency installation instructions]({{< relref "getting_started" >}})._
+_Before following this guide, make sure you've followed the [dependency installation instructions](README.md)._
 
 ## About Verilator
 

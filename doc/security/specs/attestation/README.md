@@ -58,7 +58,7 @@ Identity is used to attest the owner and BL0 configuration, as well as an
 attestation key used by the Kernel. This key is endorsed by the Creator Identity,
 but can also be endorsed by the Silicon Owner PKI. Endorsement of the Owner
 Identity with the Owner's PKI, is covered in detail in the
-[Owner Personalization](owner_personalization) process
+[Owner Personalization](../device_provisioning/README.md#owner_personalization) process
 described in the provisioning specification.
 
 When using a Silicon Owner PKI, the Owner is expected to maintain a device

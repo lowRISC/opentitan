@@ -6,7 +6,7 @@ title: "UART HWIP Technical Specification"
 
 This document specifies UART hardware IP functionality. This module
 conforms to the
-[Comportable guideline for peripheral functionality.](/doc/rm/comportability_specification)
+[Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader
 top level system.
 
