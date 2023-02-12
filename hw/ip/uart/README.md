@@ -54,7 +54,7 @@ significant bit is sent first. If the parity feature is turned on then an odd or
 even parity bit follows after the data bits. Finally a STOP (**1**) bit
 completes one byte of data transfer.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'Baud Clock',     wave: 'p............'                                                        },
@@ -81,7 +81,7 @@ completes one byte of data transfer.
     tock: -2,
   }
 }
-{{< /wavejson >}}
+```
 
 ### Transmission
 
@@ -127,7 +127,7 @@ minus 8 ticks in 144 or approximately +/- 5.5%. If parity is enabled
 the stop bit will be a bit time later, so this becomes 8/160 or about
 +/- 5%.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'Sample', wave: '', node: '..P............', period: "2" },
@@ -143,7 +143,7 @@ the stop bit will be a bit time later, so this becomes 8/160 or about
     text: 'Receiver sampling window',
   },
 }
-{{< /wavejson >}}
+```
 
 In practice, the transmitter and receiver will both differ from the
 ideal baud rate. Since the worst case difference for reception is 5%,
@@ -263,7 +263,7 @@ interrupt will be raised. If the line stays zero until the break error occurs,
 the frame error will be set at every char-time. Frame errors will continue to
 be reported after a break error.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'Baud Clock',        wave: 'p............'                                                 },
@@ -286,7 +286,7 @@ be reported after a break error.
     tock: -2,
   }
 }
-{{< /wavejson >}}
+```
 
 The effects of the line being low for certain periods are summarized
 in the table:

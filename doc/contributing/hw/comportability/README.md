@@ -484,7 +484,7 @@ The clearing of the event is done by a processor write when the handling of the 
 The waveform below shows the timing of the event occurrence, its latched value, and the clearing by the processor.
 More details follow.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'Clock',             wave: 'p.............' },
@@ -502,7 +502,7 @@ More details follow.
     tock: 0
   },
 }
-{{< /wavejson >}}
+```
 
 ### Status Type Interrupt
 
@@ -512,7 +512,7 @@ The difference between the event type and status type interrupt is the persisten
 The status type interrupts do not drop the interrupt lines until the cause signals are dropped by the processor or hardware logic
 SW is responsible to mask the interrupts if they want to process the interrupt in a deferred way.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'Clock',                  wave: 'p.............' },
@@ -530,8 +530,7 @@ SW is responsible to mask the interrupts if they want to process the interrupt i
     tock: 0
   },
 }
-{{< /wavejson >}}
-
+```
 
 ### Interrupts per module
 

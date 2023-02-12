@@ -61,7 +61,7 @@ with the value provided at the 256b input 'seed_i'.
 The state is internally updated in every clock cycle whenever the enable signal `xoshiro_en_i` is raised.
 The timing diagram below visualizes this process.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     {name: 'clk', wave: 'p......|....'},
@@ -71,4 +71,4 @@ The timing diagram below visualizes this process.
     {name: 'state', wave: 'x.3..45|678.', data: 'Seed'}
   ]
 }
-{{< /wavejson >}}
+```
