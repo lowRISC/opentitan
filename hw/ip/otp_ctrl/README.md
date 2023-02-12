@@ -93,7 +93,7 @@ Within each logical partition, there are specific enforceable properties
   - This controls whether a partition is locked and prevented from future updates.
   - A locked partition is stored alongside a digest to be used later for integrity verification.
 - Integrity Verification
-  - Once a partition is write-locked by calculating and writing a non-zero [digest]({{< relref "#locking-a-partition" >}}) to it, it can undergo periodic verification (time-scale configurable by software).
+  - Once a partition is write-locked by calculating and writing a non-zero [digest](#locking-a-partition) to it, it can undergo periodic verification (time-scale configurable by software).
 This verification takes two forms, partition integrity checks, and storage consistency checks.
 
 Since the OTP is memory-like in nature (it only outputs a certain number of bits per address location), some of the logical partitions are buffered in registers for instantaneous and parallel access by hardware.
@@ -109,7 +109,7 @@ The OTP controller for OpenTitan contains the seven logical partitions shown bel
 
 Generally speaking, the production life cycle of a device is split into 5 stages "Manufacturing" -> "Calibration and Testing" -> "Provisioning" -> "Mission" -> "RMA".
 OTP values are usually programmed during "Calibration and Testing", "Provisioning" and "RMA" stages, as explained below.
-A detailed listing of all the items and the corresponding memory map can be found in the [Programmer's Guide]({{< relref "#programmers-guide" >}})) further below.
+A detailed listing of all the items and the corresponding memory map can be found in the [Programmer's Guide](#programmers-guide)) further below.
 
 ### Calibration and Test
 
@@ -137,10 +137,10 @@ In order to support this transition, the [life cycle state](../lc_ctrl/README.md
 
 Write access to a partition can be permanently locked when software determines it will no longer make any updates to that partition.
 To lock, an integrity constant is calculated and programmed alongside the other data of that partition.
-The size of that integrity constant depends on the partition size granule, and is either 32bit or 64bit (see also [Direct Access Memory Map]({{< relref "#direct-access-memory-map" >}})).
+The size of that integrity constant depends on the partition size granule, and is either 32bit or 64bit (see also [Direct Access Memory Map](#direct-access-memory-map)).
 
 Once the "integrity digest" is non-zero, no further updates are allowed.
-If the partition is secret, software is in addition no longer able to read its contents (see [Secret Partition description]({{< relref "#secret-vs-nonsecret-partitions" >}})).
+If the partition is secret, software is in addition no longer able to read its contents (see [Secret Partition description](#secret-vs-nonsecret-partitions)).
 
 Note however, in all partitions, the digest itself is **ALWAYS** readable.
 This gives software an opportunity to confirm that the locking operation has proceeded correctly, and if not, scrap the part immediately.
@@ -290,7 +290,7 @@ The life cycle interface is used to update the life cycle state and transition c
 The commands are issued from the [life cycle controller](../lc_ctrl/README.md), and similarly, successful or failed indications are also sent back to the life cycle controller.
 Similar to the functional interface, the life cycle controller allows only one update per power cycle, and after a requested transition reverts to an inert state until reboot.
 
-For more details on how the software programs the OTP, please refer to the [Programmer's Guide]({{< relref "#programmers-guide" >}})) further below.
+For more details on how the software programs the OTP, please refer to the [Programmer's Guide](#programmers-guide)) further below.
 
 
 ## Hardware Interfaces
@@ -305,9 +305,9 @@ Parameter                   | Default (Max) | Top Earlgrey | Description
 `AlertAsyncOn`              | 2'b11         | 2'b11        |
 `RndCnstLfsrSeed`           | (see RTL)     | (see RTL)    | Seed to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
 `RndCnstLfsrPerm`           | (see RTL)     | (see RTL)    | Permutation to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
-`RndCnstKey`                | (see RTL)     | (see RTL)    | Random scrambling keys for secret partitions, to be used in the [scrambling datapath]({{< relref "#scrambling-datapath" >}}).
-`RndCnstDigestConst`        | (see RTL)     | (see RTL)    | Random digest finalization constants, to be used in the [scrambling datapath]({{< relref "#scrambling-datapath" >}}).
-`RndCnstDigestIV`           | (see RTL)     | (see RTL)    | Random digest initialization vectors, to be used in the [scrambling datapath]({{< relref "#scrambling-datapath" >}}).
+`RndCnstKey`                | (see RTL)     | (see RTL)    | Random scrambling keys for secret partitions, to be used in the [scrambling datapath](#scrambling-datapath).
+`RndCnstDigestConst`        | (see RTL)     | (see RTL)    | Random digest finalization constants, to be used in the [scrambling datapath](#scrambling-datapath).
+`RndCnstDigestIV`           | (see RTL)     | (see RTL)    | Random digest initialization vectors, to be used in the [scrambling datapath](#scrambling-datapath).
 `RndCnstRawUnlockToken`     | (see RTL)     | (see RTL)    | Global RAW unlock token to be used for the first life cycle transition. See also [conditional life cycle transitions](../lc_ctrl/README.md#conditional-transitions).
 
 ### Signals
@@ -434,7 +434,7 @@ The keys can be requested as illustrated below:
 ]}
 {{< /wavejson >}}
 
-The keys are derived from the FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED values stored in the `SECRET1` partition using the [scrambling primitive]({{< relref "#scrambling-datapath" >}}).
+The keys are derived from the FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED values stored in the `SECRET1` partition using the [scrambling primitive](#scrambling-datapath).
 If the key seeds have not yet been provisioned, the keys are derived from all-zero constants, and the `flash_otp_key_o.seed_valid` signal will be set to 0 in the response.
 
 Note that the req/ack protocol runs on the OTP clock.
@@ -449,7 +449,7 @@ If the scrambling device runs on a significantly slower clock than OTP, an addit
 #### Interfaces to SRAM and OTBN Scramblers
 
 The interfaces to the SRAM and OTBN scrambling devices follow a req / ack protocol, where the scrambling device first requests a new ephemeral key by asserting the request channel (`sram_otp_key_i[*]`, `otbn_otp_key_i`).
-The OTP controller then fetches entropy from EDN and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the [PRESENT scrambling data path]({{< relref "#scrambling-datapath" >}}).
+The OTP controller then fetches entropy from EDN and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the [PRESENT scrambling data path](#scrambling-datapath).
 Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_o[*]`, `otbn_otp_key_o`), which complete the req / ack handshake.
 The wave diagram below illustrates this process for the OTBN scrambling device.
 
@@ -468,7 +468,7 @@ If the key seeds have not yet been provisioned, the keys are derived from all-ze
 It should be noted that this mechanism requires the EDN and entropy distribution network to be operational, and a key derivation request will block if they are not.
 
 Note that the req/ack protocol runs on the OTP clock.
-It is the task of the scrambling device to perform the synchronization as described in the previous subsection on the [flash scrambler interface]({{< relref "#interface-to-flash-scrambler" >}}).
+It is the task of the scrambling device to perform the synchronization as described in the previous subsection on the [flash scrambler interface](#interface-to-flash-scrambler).
 
 #### Hardware Config Bits
 
@@ -493,7 +493,7 @@ The following is a high-level block diagram that illustrates everything that has
 
 ![OTP Controller Block Diagram](./doc/otp_ctrl_blockdiag.svg)
 
-Each of the partitions P0-P7 has its [own controller FSM]({{< relref "#partition-implementations" >}}) that interacts with the OTP wrapper and the [scrambling datapath]({{< relref "#scrambling-datapath" >}}) to fulfill its tasks.
+Each of the partitions P0-P7 has its [own controller FSM](#partition-implementations) that interacts with the OTP wrapper and the [scrambling datapath](#scrambling-datapath) to fulfill its tasks.
 The partitions expose the address ranges and access control information to the Direct Access Interface (DAI) in order to block accesses that go to locked address ranges.
 Further, the only two blocks that have (conditional) write access to the OTP are the DAI and the Life Cycle Interface (LCI) blocks.
 The partitions can only issue read transactions to the OTP macro.
@@ -546,7 +546,7 @@ Write access through the DAI will be locked in case the digest is set to a non-z
 Also, read access through the DAI and the CSR window can be locked at runtime via a CSR.
 Read transactions through the CSR window will error out if they are out of bounds, or if read access is locked.
 
-Note that unrecoverable [OTP errors]({{< relref "#generalized-open-source-interface" >}}), ECC failures in the digest register or external escalation via `lc_escalate_en` will move the partition controller into a terminal error state.
+Note that unrecoverable [OTP errors](#generalized-open-source-interface), ECC failures in the digest register or external escalation via `lc_escalate_en` will move the partition controller into a terminal error state.
 
 #### Buffered Partition
 
@@ -580,7 +580,7 @@ See [life cycle controller documentation](../lc_ctrl/README.md) for more details
 
 Upon reset release, the DAI controller first sends an initialization command to the OTP macro.
 Once the OTP macro becomes operational, an initialization request is sent to all partition controllers, which will read out and initialize the corresponding buffer registers.
-The DAI then becomes operational once all partitions have initialized, and supports read, write and digest calculation commands (see [here]({{< relref "#direct-access-interface" >}}) for more information about how to interact with the DAI through the CSRs).
+The DAI then becomes operational once all partitions have initialized, and supports read, write and digest calculation commands (see [here](#direct-access-interface) for more information about how to interact with the DAI through the CSRs).
 
 Read and write commands transfer either 32bit or 64bit of data from the OTP to the corresponding CSR and vice versa. The access size is determined automatically, depending on whether the partition is scrambled or not. Also, (de)scrambling is performed transparently, depending on whether the partition is scrambled or not.
 
@@ -594,7 +594,7 @@ Also, the DAI consumes the read and write access information provided by the par
 ![Life Cycle Interface FSM](./doc/otp_ctrl_lci_fsm.svg)
 
 Upon reset release the LCI FSM waits until the OTP controller has initialized and the LCI gets enabled.
-Once it is in the idle state, life cycle state updates can be initiated via the life cycle interface as [described here]({{< relref "#state-transitions" >}}).
+Once it is in the idle state, life cycle state updates can be initiated via the life cycle interface as [described here](#state-transitions).
 The LCI controller takes the life cycle state to be programmed and writes all 16bit words to OTP.
 In case of unrecoverable OTP errors, the FSM signals an error to the life cycle controller and moves into a terminal error state.
 
@@ -603,7 +603,7 @@ In case of unrecoverable OTP errors, the FSM signals an error to the life cycle 
 ![Key Derivation Interface FSM](./doc/otp_ctrl_kdi_fsm.svg)
 
 Upon reset release the KDI FSM waits until the OTP controller has initialized and the KDI gets enabled.
-Once it is in the idle state, key derivation can be requested via the [flash]({{< relref "#interface-to-flash-scrambler" >}}) and [sram]({{< relref "#interface-to-sram-and-otbn-scramblers" >}}) interfaces.
+Once it is in the idle state, key derivation can be requested via the [flash](#interface-to-flash-scrambler) and [sram](#interface-to-sram-and-otbn-scramblers) interfaces.
 Based on which interface makes the request, the KDI controller will evaluate a variant of the PRESENT digest mechanism as described in more detail below.
 
 ### Scrambling Datapath
@@ -623,7 +623,7 @@ Hence, no additional masking or diversification scheme is applied since only a v
 
 #### Digest Calculation
 
-The integrity digests used in the [partition checks]({{< relref "#partition-checks" >}}) are computed using a custom [Merkle-Damgard](https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction) scheme, where the employed one-way compression function F is constructed by using PRESENT in a [Davies-Meyer arrangement](https://en.wikipedia.org/wiki/One-way_compression_function#Davies%E2%80%93Meyer).
+The integrity digests used in the [partition checks](#partition-checks) are computed using a custom [Merkle-Damgard](https://en.wikipedia.org/wiki/Merkle%E2%80%93Damg%C3%A5rd_construction) scheme, where the employed one-way compression function F is constructed by using PRESENT in a [Davies-Meyer arrangement](https://en.wikipedia.org/wiki/One-way_compression_function#Davies%E2%80%93Meyer).
 This is illustrated in subfigure b).
 
 At the beginning of the digest calculation the 64bit state is initialized with an initialization vector (IV).
@@ -720,7 +720,7 @@ Signal                  | Direction        | Type                        | Descr
 `rdata_o`               | `output`         | `logic [IfWidth-1:0]`       | Read data from read commands.
 `err_o`                 | `output`         | `logic [ErrWidth-1:0]`      | Error code.
 
-The `prim_otp` wrappers implements the `Macro*` error codes (0x0 - 0x4) defined in the [OTP error handling]({{< relref "#error-handling" >}}).
+The `prim_otp` wrappers implements the `Macro*` error codes (0x0 - 0x4) defined in the [OTP error handling](#error-handling).
 
 The timing diagram below illustrates the timing of a command.
 Note that both read and write commands return a response, and each command is independent of the previously issued commands.
@@ -782,7 +782,7 @@ The only initialization steps that SW should perform are:
 
 1. Check that the OTP controller has successfully initialized by reading {{< regref STATUS >}}. I.e., make sure that none of the ERROR bits are set, and that the DAI is idle ({{< regref STATUS.DAI_IDLE >}}).
 2. Set up the periodic background checks:
-    - Choose whether to enable periodic [background checks]({{< relref "#partition-checks" >}}) by programming nonzero mask values to {{< regref INTEGRITY_CHECK_PERIOD >}} and {{< regref CONSISTENCY_CHECK_PERIOD >}}.
+    - Choose whether to enable periodic [background checks](#partition-checks) by programming nonzero mask values to {{< regref INTEGRITY_CHECK_PERIOD >}} and {{< regref CONSISTENCY_CHECK_PERIOD >}}.
     - Choose whether such checks shall be subject to a timeout by programming a nonzero timeout cycle count to {{< regref CHECK_TIMEOUT >}}.
     - It is recommended to lock down the background check registers via {{< regref CHECK_REGWEN >}}, once the background checks have been set up.
 
@@ -823,7 +823,7 @@ CSR Name                             | Description
 {{< regref DIRECT_ACCESS_CMD >}}     | Command register to trigger a read or a write access.
 {{< regref DIRECT_ACCESS_REGWEN >}}  | Write protection register for DAI.
 
-See further below for a detailed [Memory Map]({{< relref "#direct-access-memory-map" >}}) of the address space accessible via the DAI.
+See further below for a detailed [Memory Map](#direct-access-memory-map) of the address space accessible via the DAI.
 
 ### Readout Sequence
 
@@ -835,7 +835,7 @@ Note that the address is aligned with the granule, meaning that either 2 or 3 LS
 3. Trigger a read command by writing 0x1 to {{< regref DIRECT_ACCESS_CMD >}}.
 4. Poll the {{< regref STATUS >}} until the DAI state goes back to idle.
 Alternatively, the `otp_operation_done` interrupt can be enabled up to notify the processor once an access has completed.
-5. If the status register flags a DAI error, additional handling is required (see [Section on Error handling]({{< relref "#error-handling" >}})).
+5. If the status register flags a DAI error, additional handling is required (see [Section on Error handling](#error-handling)).
 6. If the region accessed has a 32bit access granule, the 32bit chunk of read data can be read from {{< regref DIRECT_ACCESS_RDATA_0 >}}.
 If the region accessed has a 64bit access granule, the 64bit chunk of read data can be read from the {{< regref DIRECT_ACCESS_RDATA_0 >}} and {{< regref DIRECT_ACCESS_RDATA_1 >}} registers.
 7. Go back to 1. and repeat until all data has been read.
@@ -854,7 +854,7 @@ Note that the address is aligned with the granule, meaning that either 2 or 3 LS
 4. Trigger a write command by writing 0x2 to {{< regref DIRECT_ACCESS_CMD >}}.
 5. Poll the {{< regref STATUS >}} until the DAI state goes back to idle.
 Alternatively, the `otp_operation_done` interrupt can be enabled up to notify the processor once an access has completed.
-6. If the status register flags a DAI error, additional handling is required (see [Section on Error handling]({{< relref "#error-handling" >}})).
+6. If the status register flags a DAI error, additional handling is required (see [Section on Error handling](#error-handling)).
 7. Go back to 1. and repeat until all data has been written.
 
 The hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
@@ -871,7 +871,7 @@ The hardware digest computation for the hardware and secret partitions can be tr
 4. Trigger a digest calculation command by writing 0x4 to {{< regref DIRECT_ACCESS_CMD >}}.
 5. Poll the {{< regref STATUS >}} until the DAI state goes back to idle.
 Alternatively, the `otp_operation_done` interrupt can be enabled up to notify the processor once an access has completed.
-6. If the status register flags a DAI error, additional handling is required (see [Section on Error handling]({{< relref "#error-handling" >}})).
+6. If the status register flags a DAI error, additional handling is required (see [Section on Error handling](#error-handling)).
 
 The hardware will set {{< regref DIRECT_ACCESS_REGWEN >}} to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
 
@@ -944,7 +944,7 @@ Write access to the affected partition will be locked if the digest has a nonzer
 For the software partition digests, it is entirely up to software to decide on the digest algorithm to be used.
 Hardware will determine the lock condition only based on whether a non-zero value is present at that location or not.
 
-For the hardware partitions, hardware calculates this digest and uses it for [background verification]({{< relref "#partition-checks" >}}).
+For the hardware partitions, hardware calculates this digest and uses it for [background verification](#partition-checks).
 Digest calculation can be triggered via the DAI.
 
 Finally, it should be noted that the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 / CREATOR_ROOT_KEY_SHARE1 items can only be programmed when the device is in the DEV, PROD, PROD_END and RMA stages.
@@ -956,8 +956,8 @@ Please consult the [life cycle controller documentation](../lc_ctrl/README.md) d
 
 The following represents a typical provisioning sequence for items in all partitions (except for the LIFE_CYCLE partition, which is not software-programmable):
 
-1. [Program]({{< relref "#programming-sequence" >}}) the item in 32bit or 64bit chunks via the DAI.
-2. [Read back]({{< relref "#readout-sequence" >}}) and verify the item via the DAI.
+1. [Program](#programming-sequence) the item in 32bit or 64bit chunks via the DAI.
+2. [Read back](#readout-sequence) and verify the item via the DAI.
 3. If the item is exposed via CSRs or a CSR window, perform a full-system reset and verify whether those fields are correctly populated.
 
 Note that any unrecoverable errors during the programming steps, or mismatches during the readback and verification steps indicate that the device might be malfunctioning (possibly due to fabrication defects) and hence the device may have to be scrapped.
@@ -968,8 +968,8 @@ This is however rare and should not happen after fabrication testing.
 Once a partition has been fully populated, write access to that partition has to be permanently locked.
 For the HW_CFG and SECRET* partitions, this can be achieved as follows:
 
-1. [Trigger]({{< relref "#digest-calculation-sequence" >}}) a digest calculation via the DAI.
-2. [Read back]({{< relref "#readout-sequence" >}}) and verify the digest location via the DAI.
+1. [Trigger](#digest-calculation-sequence) a digest calculation via the DAI.
+2. [Read back](#readout-sequence) and verify the digest location via the DAI.
 3. Perform a full-system reset and verify that the corresponding CSRs exposing the 64bit digest have been populated ({{< regref "HW_CFG_DIGEST_0" >}}, {{< regref "SECRET0_DIGEST_0" >}}, {{< regref "SECRET1_DIGEST_0" >}} or {{< regref "SECRET2_DIGEST_0" >}}).
 
 It should be noted that locking only takes effect after a system reset since the affected partitions first have to re-sense the digest values.
@@ -978,8 +978,8 @@ Otherwise, the device will likely be rendered inoperable as this can lead to per
 
 For the {{< regref "CREATOR_SW_CFG" >}} and {{< regref "OWNER_SW_CFG" >}} partitions, the process is similar, but computation and programming of the digest is entirely up to software:
 
-1. Compute a 64bit digest over the relevant parts of the partition, and [program]({{< relref "#programming-sequence" >}}) that value to {{< regref "CREATOR_SW_CFG_DIGEST_0" >}} or {{< regref "OWNER_SW_CFG_DIGEST_0" >}} via the DAI. Note that digest accesses through the DAI have an access granule of 64bit.
-2. [Read back]({{< relref "#readout-sequence" >}}) and verify the digest location via the DAI.
+1. Compute a 64bit digest over the relevant parts of the partition, and [program](#programming-sequence) that value to {{< regref "CREATOR_SW_CFG_DIGEST_0" >}} or {{< regref "OWNER_SW_CFG_DIGEST_0" >}} via the DAI. Note that digest accesses through the DAI have an access granule of 64bit.
+2. [Read back](#readout-sequence) and verify the digest location via the DAI.
 3. Perform a full-system reset and verify that the corresponding digest CSRs {{< regref "CREATOR_SW_CFG_DIGEST_0" >}} or {{< regref "OWNER_SW_CFG_DIGEST_0" >}} have been populated with the correct 64bit value.
 
 Note that any unrecoverable errors during the programming steps, or mismatches during the read-back and verification steps indicate that the device might be malfunctioning (possibly due to fabrication defects) and hence the device may have to be scrapped.

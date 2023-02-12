@@ -1734,7 +1734,7 @@
               - lc_iso_part_sw_wr_en_o: impacts flash_ctrl
               - lc_seed_hw_rd_en_o: impacts flash_ctrl & otp_ctrl
             - These outputs are enabled per the
-              [life cycle architecture spec]({{< relref "doc/security/specs/device_life_cycle/#architecture" >}}).
+              [life cycle architecture spec](doc/security/specs/device_life_cycle/README.md#architecture).
 
             X-ref'ed with the respective IP tests that consume these signals.
 

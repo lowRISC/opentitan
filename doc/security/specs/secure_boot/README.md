@@ -197,4 +197,4 @@ However, these are the requirements that the manifest format is required to supp
 [ot-unlock-flow]: #
 [ownership-transfer]: ../ownership_transfer/README.md
 [rv-isa-priv]: https://riscv.org/technical/specifications/
-[silicon-creator-keys]: {{< relref "#silicon-creator-keys" >}}
+[silicon-creator-keys]: #silicon-creator-keys

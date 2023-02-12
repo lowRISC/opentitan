@@ -20,7 +20,7 @@ At this point the device switches from a `LOCKED_OWNERSHIP` to an `UNLOCKED_OWNE
 Key derivations will also correspond to the unlocked state rather than the previous owner.
     * The previous owner's public keys are still stored after ownership is unlocked.
 1. The new owner creates a set of keys by any means they wish (doesn't have to be on an OpenTitan device).
-These keys must include an RSA-3072 key pair for secure boot, an ECDSA-P256 key pair for unlocking ownership, and another ECDSA-P256 key pair for endorsing the next owner (see [Owner Keys]({{< relref "#owner-keys" >}})).
+These keys must include an RSA-3072 key pair for secure boot, an ECDSA-P256 key pair for unlocking ownership, and another ECDSA-P256 key pair for endorsing the next owner (see [Owner Keys](#owner-keys)).
     * The number of redundant keys stored is configurable up to around 2kiB of total key material.
 The new owner may choose, for example, to generate several RSA public/private key pairs.
 1. The new owner gives their public keys to the previous owner (which may be the manufacturer), who endorses them with a cryptographic signature.
@@ -30,7 +30,7 @@ The endorser then creates an "ownership transfer payload", which includes the ne
 During boot (specifically during the `ROM_EXT` stage), the device will check the signature on the payload against the endorser's public key.
     * If the endorser is the previous owner, the device checks against the inactive public keys in the Silicon Owner slot.
     * If the endorser is the Silicon Creator, the device checks against public keys which have been injected during manufacturing.
-1. If the signature is valid, then `ROM_EXT` will set up the new owner as the current owner by randomly generating a new Silicon Owner "root secret" (which is used to derive the Silicon Owner identity key for attestation) and writing the new owner's public keys to one of the two slots described in [Key Provisioning]({{< relref "#key-provisioning" >}}).
+1. If the signature is valid, then `ROM_EXT` will set up the new owner as the current owner by randomly generating a new Silicon Owner "root secret" (which is used to derive the Silicon Owner identity key for attestation) and writing the new owner's public keys to one of the two slots described in [Key Provisioning](#key-provisioning).
     * The previous owner's public keys are still on the device and it is still in `UNLOCKED_OWNERSHIP` until the new owner's code successfully boots.
 This is a protection in case there is a problem with the new owner's keys or they have been tampered with in transit.
 1. At this point, the device should be restarted with the new owner's code.

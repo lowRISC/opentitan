@@ -3,7 +3,7 @@ title: "In-depth guide to contributing to OpenTitan"
 ---
 
 The way we work on OpenTitan is very similar to what is done in other collaborative open-source projects.
-For a brief overview see [Contributing to OpenTitan]({{< relref "contributing.md" >}}).
+For a brief overview see [Contributing to OpenTitan](../README.md).
 This document provides a detailed reference on how we collaborate within the OpenTitan project and is organized as follows:
 * [Communication](#communication)
 * [Working with Issues](#working-with-issues)
@@ -137,11 +137,11 @@ Do not attempt to commit code with a non-Apache license without discussing first
 All source code contributions must adhere to project style guides.
 We use separate style guides for different languages:
 * [SystemVerilog](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md)
-* [C/C++]({{< relref "c_cpp_coding_style.md" >}})
-* [Python]({{< relref "python_coding_style.md" >}})
-* [Markdown]({{< relref "markdown_usage_style.md" >}})
-* [Hjson]({{< relref "hjson_usage_style.md" >}})
-* [RISC-V Assembly]({{< relref "asm_coding_style.md" >}})
+* [C/C++](../style_guides/c_cpp_coding_style.md)
+* [Python](../style_guides/python_coding_style.md)
+* [Markdown](../style_guides/markdown_usage_style.md)
+* [Hjson](../style_guides/hjson_usage_style.md)
+* [RISC-V Assembly](../style_guides/asm_coding_style.md)
 
 If unsure about the style, be consistent with the existing code and do your best to match its style.
 
@@ -234,7 +234,7 @@ For more detailed information on how to submit a pull request, see our [GitHub n
 
 Committers are the only people in the project that can definitively approve contributions for inclusion.
 
-See the [Committers]({{< relref "committers.md" >}}) definition and role description for a fuller explanation.
+See the [Committers](../../project_governance/committers.md) definition and role description for a fuller explanation.
 
 ## Labeling and assigning PRs
 
@@ -289,7 +289,7 @@ When reviewing code and giving/discussing feedback, keep in mind that:
   This means that many people will see the same issue from different viewpoints.
   Always be friendly and patient and remember to adhere to our [code of conduct](https://www.lowrisc.org/code-of-conduct/).
 
-See also: [reviewing pull requests on GitHub](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/reviewing-proposed-changes-in-a-pull-request) and the [OpenTitan Commit Escalation Guidelines]({{< relref "committers.md#commit-escalation-guidelines" >}}).
+See also: [reviewing pull requests on GitHub](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/reviewing-proposed-changes-in-a-pull-request) and the [OpenTitan Commit Escalation Guidelines](../../project_governance/committers.md#commit-escalation-guidelines" >}}).
 
 ## How to receive a code review?
 

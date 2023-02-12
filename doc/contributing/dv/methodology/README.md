@@ -259,7 +259,7 @@ Apart from that, there are cleanup activities to resolve all pending TODO items 
 
 ## Assertions
 
-In DV, we follow the same assertion methodology as indicated in the [design methodology]({{< relref "./design.md#assertion-methodology" >}}).
+In DV, we follow the same assertion methodology as indicated in the [design methodology](../../hw/design.md#assertion-methodology).
 Wherever possible, the assertion monitors developed for FPV are reused in UVM testbenches when running dynamic simulations.
 An example of this is the [TLUL Protocol Checker](../../../../hw/ip/tlul/doc/TlulProtocolChecker.md).
 
@@ -585,7 +585,7 @@ There are several common countermeasures that are widely used in the blocks.
 Therefore, a common verification framework is built up in the DV base libraries.
 The following common countermeasures can be either automatically or semi-automatically verified by this framework.
 
-1. Countermeasures using common primitives can be verified by the [Security Countermeasure Verification Framework]({{< relref "sec_cm_dv_framework" >}}).
+1. Countermeasures using common primitives can be verified by the [Security Countermeasure Verification Framework](../sec_cm_dv_framework/README.md).
 2. The following common countermeasures can be verified by cip_lib.
 The steps to enabling them is described in cip_lib [document](../../../../hw/dv/sv/cip_lib/README.md#security-verification-in-cip_lib).
   - Bus integrity
@@ -631,7 +631,7 @@ We use the [OpenTitan GitHub Issue tracker](https://github.com/lowRISC/opentitan
 ## Getting Started with DV
 
 The process for getting started with DV involves many steps, including getting clarity on its purpose, setting up the testbench, documentation, etc.
-These are discussed in the [Getting Started with DV](../../../guides/getting_started/src/setup_dv.md) document.
+These are discussed in the [Getting Started with DV](https://docs.opentitan.org/doc/guides/getting_started/src/setup_dv.md) document.
 
 ## Pending Work Items
 

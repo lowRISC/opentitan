@@ -81,7 +81,7 @@ Some of the most commonly used tasks / functions are as follows:
 
 ##### Standard test vectors
 Besides constrained random test sequences, hmac test sequences also includes [standard
-SHA256 and HMAC test vectors]({{< relref "hw/dv/sv/test_vectors/doc.md" >}}) from
+SHA256 and HMAC test vectors](../../../dv/sv/test_vectors/README.md) from
 [NIST](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs)
 and [IETF](https://tools.ietf.org/html/rfc4868).
 The standard test vectors provide messages, keys (for HMAC only), and expected

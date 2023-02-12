@@ -22,13 +22,13 @@ The AES unit supports the following features:
   - Output Feedback (OFB) mode, and
   - Counter (CTR) mode.
 - Support for AES-192 can be removed to save area, and is enabled/disabled using a compile-time Verilog parameter
-- First-order masking of the cipher core using domain-oriented masking (DOM) to aggravate side-channel analysis (SCA), can optionally be disabled using compile-time Verilog parameters (for more details see [Security Hardening below]({{< relref "#side-channel-analysis" >}}))
+- First-order masking of the cipher core using domain-oriented masking (DOM) to aggravate side-channel analysis (SCA), can optionally be disabled using compile-time Verilog parameters (for more details see [Security Hardening below](#side-channel-analysis))
 - Latency per 16 byte data block of 12/14/16 clock cycles (unmasked implementation) and 56/66/72 clock cycles (DOM) in AES-128/192/256 mode
 - Automatic as well as software-initiated reseeding of internal pseudo-random number generators (PRNGs) with configurable reseeding rate resulting in max entropy consumption rates ranging from 286 Mbit/s to 0.035 Mbit/s (at 100 MHz).
-- Countermeasures for aggravating fault injection (FI) on the control path (for more details see [Security Hardening below]({{< relref "#fault-injection" >}}))
+- Countermeasures for aggravating fault injection (FI) on the control path (for more details see [Security Hardening below](#fault-injection))
 - Register-based data and control interface
 - System key-manager interface for optional key sideload to not expose key material to the processor and other hosts attached to the system bus interconnect.
-- On-the-fly round-key generation in parallel to the actual encryption/decryption from a single initial 128/192/256-bit key provided through the register interface (for more details see [Theory of Operations below]({{< relref "#theory-of-operations" >}}))
+- On-the-fly round-key generation in parallel to the actual encryption/decryption from a single initial 128/192/256-bit key provided through the register interface (for more details see [Theory of Operations below](#theory-of-operations))
 
 This AES unit targets medium performance (16 parallel S-Boxes, \~1 cycle per round for the unmasked implementation, \~5 cycles per round for the DOM implementation).
 High-speed, single-cycle operation for high-bandwidth data streaming is not required.
@@ -102,7 +102,7 @@ High-speed, single-cycle operation for high-bandwidth data streaming is not requ
 
 Therefore, the AES unit uses an iterative cipher core architecture with a 128-bit wide data path as shown in the figure below.
 Note that for the sake of simplicity, the figure shows the unmasked implementation.
-For details on the masked implementation of the cipher core refer to [Security Hardening below]({{< relref "#security-hardening" >}})).
+For details on the masked implementation of the cipher core refer to [Security Hardening below](#security-hardening)).
 Using an iterative architecture allows for a smaller circuit area at the cost of throughput.
 Employing a 128-bit wide data path allows to achieve the latency requirements of 12/14/16 clock cycles per 16B data block in AES-128/192/256 mode in the unmasked implementation, respectively.
 
@@ -252,7 +252,7 @@ The AES unit comes with the following S-Box implementations that can be selected
 
 The DOM S-Box has a latency of 5 clock cycles.
 All other implementations are fully combinational (one S-Box evaluation every clock cycle).
-See also [Security Hardening below.]({{< relref "#1st-order-masking-of-the-cipher-core" >}})
+See also [Security Hardening below.](#1st-order-masking-of-the-cipher-core)
 
 ### ShiftRows
 
@@ -330,7 +330,7 @@ To this end, the processor has to set the SIDELOAD bit in {{< regref "CTRL_SHADO
 Any write operations of the processor to the Initial Key registers {{< regref "KEY_SHARE0_0" >}} - {{< regref "KEY_SHARE1_7" >}} are then ignored.
 In normal/automatic mode, the AES unit only starts encryption/decryption if the sideload key is marked as valid.
 To update the sideload key, the processor has to 1) wait for the AES unit to become idle, 2) wait for the key manager to update the sideload key and assert the valid signal, and 3) write to the {{< regref "CTRL_SHADOWED" >}} register to start a new message.
-After using a sideload key, the processor has to trigger the clearing of all key registers inside the AES unit (see [De-Initialization]({{< relref "#de-initialization" >}}) below).
+After using a sideload key, the processor has to trigger the clearing of all key registers inside the AES unit (see [De-Initialization](#de-initialization) below).
 
 
 # Security Hardening

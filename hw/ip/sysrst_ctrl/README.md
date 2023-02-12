@@ -140,7 +140,7 @@ In particular, the transitions that can be detected are fixed to the following:
 - A H -> L transition on the `pwrb_in_i` signal
 - A L -> H transition on the `lid_open_i` signal
 
-Note that the signals may be potentially inverted due to the [input inversion feature]({{< relref "#inversion" >}}).
+Note that the signals may be potentially inverted due to the [input inversion feature](#inversion).
 
 In order to activate this feature, software should do the following:
 

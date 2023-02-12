@@ -35,7 +35,7 @@ The block diagram shows a conceptual view of the ADC controller state machine an
 
 ## Block Diagram
 
-![ADC_CTRL Block Diagram](adc_overview.svg "image_tooltip")
+![ADC_CTRL Block Diagram](doc/adc_overview.svg)
 
 
 ## Hardware Interface
@@ -214,7 +214,7 @@ The debug setup referred to uses a USB-C debug accessory.
 This insertion of this debug accessory into a system, can be detected by the ADC controller.
 
 The debug accessory voltage range of interest is shown in the diagram below:
-![Debug Cable Regions](debug_cable_regions.svg "image_tooltip")
+![Debug Cable Regions](doc/debug_cable_regions.svg)
 
 The ADC can be used to detect debug cable connection / disconnection in the non-overlapping regions.
 As an example use case of the two channel filters they can be used for detection of a USB-C debug accessory.
