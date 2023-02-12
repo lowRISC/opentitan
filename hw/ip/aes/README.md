@@ -277,7 +277,7 @@ During this initial phase, the cipher data path is kept idle.
 
 The timing diagram below visualizes this process.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     {    name: 'clk',       wave: 'p........|.......'},
@@ -298,7 +298,7 @@ The timing diagram below visualizes this process.
     ]
   ]
 }
-{{< /wavejson >}}
+```
 
 The AES unit is configured to do decryption (`Config op` = DECRYPT).
 Once the new key has been provided via the control and status registers (top), this new key is loaded into the Full Key register (`key_full` = K0-3) and the KEM starts performing encryption (`KEM op`=ENCRYPT).

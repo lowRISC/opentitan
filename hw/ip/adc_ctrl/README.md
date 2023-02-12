@@ -156,7 +156,7 @@ The controller holds this value until the ADC responds with `adc_i.data_valid` a
 Since there is no request sample signal between the controller and the ADC, the ADC takes a new sample when `adc_o.channel_sel` is changed from 0 to a valid channel.
 To take a new sample then, the controller actively sets `adc_o.channel_sel` to 0, before setting it to another valid channel.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     {node: '.a..b........', phase:0.2},
@@ -168,7 +168,7 @@ To take a new sample then, the controller actively sets `adc_o.channel_sel` to 0
   ],
   edge: [  'a<->b wakeup time',   ]
 }
-{{< /wavejson >}}
+```
 
 # Programmers Guide
 

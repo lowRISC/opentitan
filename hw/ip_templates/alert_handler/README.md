@@ -206,7 +206,7 @@ The "native alert message" will be repeated on the output wires as long as the a
 
 The wave pattern below illustrates differential full handshake mechanism.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'clk_i',                wave: 'p...............' },
@@ -232,7 +232,7 @@ The wave pattern below illustrates differential full handshake mechanism.
     tick: 0,
   }
 }
-{{< /wavejson >}}
+```
 
 The handshake pattern is repeated as long as the alert is true.
 The sender will wait for 2 cycles between handshakes.
@@ -258,7 +258,7 @@ That timeout is a function of the clock ratios present in the system, and has to
 
 The following wave diagram illustrates a correct ping sequence, viewed from the receiver side:
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'clk_i',              wave: 'p..............' },
@@ -284,7 +284,7 @@ The following wave diagram illustrates a correct ping sequence, viewed from the 
     tick: 0,
   }
 }
-{{< /wavejson >}}
+```
 
 In the unlikely case that a ping request collides with a native alert at the sender side, the native alert is held back until the ping handshake has been completed.
 This slightly delays the transmission of a native alert, but the alert will eventually be signaled.
@@ -307,7 +307,7 @@ This implicitly triggers a signal integrity alert on the receiver side.
 
 Some of these failure patterns are illustrated in the wave diagram below:
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'clk_i',               wave: 'p..............' },
@@ -330,7 +330,7 @@ Some of these failure patterns are illustrated in the wave diagram below:
     tick: 0,
   }
 }
-{{< /wavejson >}}
+```
 
 Note that if signal integrity failures occur during ping or alert handshaking, it is possible that the protocol state-machines lock up and the alert sender and receiver modules become unresponsive. However, the above mechanisms ensure that this will always trigger either a signal integrity alert or eventually a "pingfail" alert.
 
@@ -338,7 +338,7 @@ Note that if signal integrity failures occur during ping or alert handshaking, i
 
 Note that there is likely a (small) skew present within each differential pair of the signaling mechanism above. Since these pairs cross clock domain boundaries, it may thus happen that a level change appears in staggered manner after resynchronization, as illustrated below:
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'clk_i',   wave: 'p...........' },
@@ -357,7 +357,7 @@ Note that there is likely a (small) skew present within each differential pair o
     tick: 0,
   }
 }
-{{< /wavejson >}}
+```
 
 This behavior is permissible, but needs to be accounted for in the protocol logic.
 Further, the skew within the differential pair should be constrained to be smaller than the shortest clock period in the system.
@@ -488,7 +488,7 @@ set to 0.
 The next waveform shows the gathering of alerts of one class until eventually the escalation protocol is engaged.
 In this diagram, two different alerts are shown for class A, and the gathering and escalation configuration values are shown.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'clk_i',                        wave: 'p...................' },
@@ -526,7 +526,7 @@ In this diagram, two different alerts are shown for class A, and the gathering a
     tick: 0,
     }
 }
-{{< /wavejson >}}
+```
 
 In this diagram, the first alert triggers an interrupt to class A.
 The assumption is that the processor is wedged or taken over, in which case it does not handle the interrupt.
@@ -537,7 +537,7 @@ Also note that it takes one cycle to activate escalation and enter phase 0.
 
 The next wave shows a case where an interrupt remains unhandled and hence the interrupt timeout counter triggers escalation.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'clk_i',                       wave: 'p.....................' },
@@ -566,7 +566,7 @@ The next wave shows a case where an interrupt remains unhandled and hence the in
     tick: 0,
     }
 }
-{{< /wavejson >}}
+```
 
 It should be noted here that the differential escalation signaling protocol distinguishes 'true' escalation conditions from mere pings by encoding them as pulses that are N + 1 cycles long.
 This is reflected in the two wave diagrams above.
@@ -588,7 +588,7 @@ The receiver decodes that message and asserts the `esc_req_o` output after one c
 Further, it acknowledges the receipt of that message by continuously toggling the `esc_rx.resp_p/n` signals as long as the escalation signal is asserted.
 Any failure to respond correctly will trigger a `integ_fail_o` alert, as illustrated below:
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'clk_i',             wave: 'p..................' },
@@ -615,7 +615,7 @@ Any failure to respond correctly will trigger a `integ_fail_o` alert, as illustr
     tick: 0,
   }
 }
-{{< /wavejson >}}
+```
 
 Further, any differential signal mismatch on both the `esc_tx_i.esc_p/n` and `esc_rx_i.resp_p/n` lines will trigger an `integ_fail_o` alert.
 Mismatches on `esc_rx_i.resp_p/n` can be directly detected at the sender.
@@ -627,7 +627,7 @@ This back-signaling mechanism can be leveraged to fast-track escalation and use 
 
 Some signal integrity failure cases are illustrated in the wave diagram below:
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'clk_i',           wave: 'p...........' },
@@ -654,7 +654,7 @@ Some signal integrity failure cases are illustrated in the wave diagram below:
     tick: 0,
   }
 }
-{{< /wavejson >}}
+```
 
 
 ### Ping Testing of the Escalation Signals
@@ -670,7 +670,7 @@ The `integ_fail_o` triggers in this case since "no ping response" and "wrong pin
 
 This mechanism is illustrated below from the viewpoint of the sender module.
 
-{{< wavejson >}}
+```wavejson
 {
   signal: [
     { name: 'clk_i',           wave: 'p..............' },
@@ -697,7 +697,7 @@ This mechanism is illustrated below from the viewpoint of the sender module.
     tick: 0,
   }
 }
-{{< /wavejson >}}
+```
 
 Note that the escalation signal always takes precedence, and the `ping_req_i` will just be acknowledged with `ping_ok_o` in case `esc_req_i` is already asserted.
 An ongoing ping sequence will be aborted immediately.

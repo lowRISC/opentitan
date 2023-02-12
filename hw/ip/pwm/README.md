@@ -136,7 +136,8 @@ The PWM phase counter is reset whenever {{#regref pwm.CFG.CNTR_EN }} is disabled
 
 The following figure illustrates the effect of the clock divider register.  Note that changes to {{#regref pwm.CFG.CLK_DIV }} or {{#regref pwm.CFG.DC_RESN }} only take effect when {{#regref pwm.CFG.CNTR_EN }} is disabled.
 
-{{< wavejson >}}{signal: [
+```wavejson
+{signal: [
   {name: 'core_clk_i', wave: 'p..............|..........'},
   {name: 'sync(CFG.CNTR_EN)', wave: '0.1............|01........'},
   {name: 'sync(CFG.CLK_DIV)', wave: '2....4.........|..2.......', data: '2 4 4'},
@@ -148,7 +149,7 @@ The following figure illustrates the effect of the clock divider register.  Note
   {name: 'beat_end', wave: '0....10.10.10.1|0.....10..'}],
   config:{skin:'narrow'}
 }
-{{< /wavejson >}}
+```
 
 ### PWM Comparators and Pulse Generation.
 
@@ -178,7 +179,7 @@ However, to support various drive schemes, the polarity can be inverted on a cha
 The following figure illustrates the effect of the {{#regref pwm.PWM_PARAM_0.PHASE_DELAY_0 }} register and `duty_cycle`.
 Note that this figure shows two channels, 0 and 1, where the second channel has a significant phase delay, such that the output pulse is high when `phase_ctr` overflows to zero.
 
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'core_clk_i', wave: 'p.....|....|......'},
   {name: 'CFG.CLK_DIV', wave: '2.....|....|......', data: '0'},
@@ -198,7 +199,7 @@ Note that this figure shows two channels, 0 and 1, where the second channel has 
   ],
  config:{skin:'narrow'}
 }
-{{< /wavejson >}}
+```
 
 Changes to {{#regref pwm.PWM_EN.EN_0 }} bit have no effect on the *timing* of the pulses, as the `phase_ctr` is common to all channels.
 Enabling {{#regref pwm.PWM_EN.EN_0 }}, or changing {{#regref pwm.PWM_PARAM_0.PHASE_DELAY_0 }} is acceptable while the PWM channel is enabled.
@@ -245,7 +246,7 @@ To enter heartbeat mode, assert both {{#regref pwm.PWM_PARAM_0.BLINK_EN_0 }} and
 In heartbeat mode the duty cycle gradually transitions from {{#regref pwm.DUTY_CYCLE_0.A_0 }} to {{#regref pwm.DUTY_CYCLE_0.B_0 }} and back in a series of small steps.
 
 An example of this process is illustrated in the following waveform.
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'Pulse Cycle', wave: '2222222222222222222',
    data: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]},
@@ -259,7 +260,7 @@ An example of this process is illustrated in the following waveform.
 ],
  config:{skin:'narrow'}
 }
-{{< /wavejson >}}
+```
 
 The sequence starts with {{#regref pwm.BLINK_PARAM_0.X_0 }}+1 pulses at {{#regref pwm.DUTY_CYCLE_0.A_0 }}.
 The duty cycle then increases by {{#regref pwm.BLINK_PARAM_0.Y_0 }}+1 units, and {{#regref pwm.BLINK_PARAM_0.X_0 }}+1 more pulses are generated at the new duty cycle.

@@ -1084,13 +1084,15 @@ controller.
 
 7.  Deactivate the ADC by setting 'adc_pd_i' to save power.
 
-{{< wavejson >}} { signal: [ {node: '.a..b........', phase:0.2},
+```wavejson
+{ signal: [ {node: '.a..b........', phase:0.2},
 {name: 'adc_pd_i' , wave: '10|..|.....|....|..1'}, {name:
 'clk_ast_adc_i', wave: 'p.|..|.....|....|...'}, {name:
 'adc_chnsel_i' , wave: '0.|.3|..04.|....|0..'}, {name:
 'adc_d_val_o' , wave: '0.|..|.1.0.|.1..|.0.'}, {name: 'adc_d_o' ,
 wave: 'x.|..|.3.x.|.4..|.x.', data: ['ch0', 'ch1', 'ch1']}, ],
-edge: [ 'a<->b wakeup time', ] } {{< /wavejson >}}
+edge: [ 'a<->b wakeup time', ] }
+```
 
 # Random Number Generator
 
@@ -1102,12 +1104,13 @@ independent four random bit streams. rng_b_o bit streams are valid and
 can be sampled whenever 'rng_val_o' is asserted according to the
 following diagram.
 
-{{< wavejson >}} {signal: [ {name: 'clk' , wave:
+```wavejson
+{signal: [ {name: 'clk' , wave:
 'p.|......|......|......'}, {name: 'rng_enable' , wave:
 '01|......|......|......'}, {name: 'rng_valid' , wave:
 '0.|..10..|..10..|..10..'}, {name: 'rng_b' , wave:
-'x.|..3...|..4...|..5.....', data: ['es0','es1','es2']}, ]} {{<
-/wavejson >}}
+'x.|..3...|..4...|..5.....', data: ['es0','es1','es2']}, ]}
+```
 
 The expected rng_b_o valid output rate is about 50KHz. For more
 information on the RNG interface, please see the [<u>OpenTitan entropy
@@ -1123,7 +1126,8 @@ that entropy_ack and entropy_i are packed into enropy_rsp_i in the
 interface. Also note that once entropy_req_o is set, it will remain set
 until ack or until reset.
 
-{{< wavejson >}} {signal: [
+```wavejson
+{signal: [
 
 {name: 'clk_ast_es_i' , wave: 'p.|..........'},
 
@@ -1133,7 +1137,8 @@ until ack or until reset.
 
 {name: 'entropy_i' , wave: 'xx|2x.22x222x'},
 
-] } {{< /wavejson >}}
+] }
+```
 
 # Countermeasures and Alerts
 

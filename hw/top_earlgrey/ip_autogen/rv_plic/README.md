@@ -118,7 +118,7 @@ new interrupt event. The assumption is that the processor has cleaned up the
 originating interrupt event during the time between claim and complete such that
 `intr_src_i[ID]` will have de-asserted (unless a new interrupt has occurred).
 
-{{< wavejson >}}
+```wavejson
 { signal: [
   { name: 'clk',           wave: 'p...........' },
   { name: 'intr_src_i[i]', wave: '01....0.1...', node:'.a....e.f...'},
@@ -133,7 +133,7 @@ originating interrupt event during the time between claim and complete such that
     tick: 0,
   },
 }
-{{< /wavejson >}}
+```
 
 In the example above an interrupt for source ID `i` is configured as a level
 interrupt and is raised at a, this results in the target being notified of the
