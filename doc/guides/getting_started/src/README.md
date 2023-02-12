@@ -1,9 +1,4 @@
----
-title: "Getting Started"
-aliases:
-    - /doc/ug/getting_started
-    - /doc/ug/install_instructions
----
+# Getting Started
 
 Welcome!
 This guide will help you get OpenTitan up and running.

@@ -1,6 +1,4 @@
----
-title: ROM Controller Technical Specification
----
+# ROM Controller Technical Specification
 
 # Overview
 

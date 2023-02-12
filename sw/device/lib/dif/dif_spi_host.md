@@ -1,6 +1,4 @@
----
-title: "SPI Host DIF Checklist"
----
+# SPI Host DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [SPI Host DIF](../../../../hw/ip/spi_host/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

@@ -1,6 +1,4 @@
----
-title: "CSRNG HWIP Technical Specification"
----
+# CSRNG HWIP Technical Specification
 
 # Overview
 

@@ -1,6 +1,4 @@
----
-title: "Primitive Component: Keccak permutation"
----
+# Primitive Component: Keccak permutation
 
 # Overview
 

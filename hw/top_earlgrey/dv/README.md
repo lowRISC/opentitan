@@ -1,6 +1,4 @@
----
-title: "OpenTitan Earl Grey Chip DV Document"
----
+# OpenTitan Earl Grey Chip DV Document
 
 ## Goals
 * **DV**

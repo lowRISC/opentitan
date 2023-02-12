@@ -1,6 +1,4 @@
----
-title: "Signing Keys"
----
+# Signing Keys
 
 This directory contains ASN1 DER encoded development keys for signing ROM\_EXT
 images. Until we have a more ergonomic tool for working with keys and signatures,

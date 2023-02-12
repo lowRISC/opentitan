@@ -1,6 +1,4 @@
----
-title: "OpenTitan Software Build Instructions"
----
+# OpenTitan Software Build Instructions
 
 All OpenTitan software is built with [Bazel](https://bazel.build/).
 

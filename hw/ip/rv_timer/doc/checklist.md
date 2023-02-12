@@ -1,6 +1,4 @@
----
-title: "RV_TIMER Checklist"
----
+# RV_TIMER Checklist
 
 This checklist is for [Hardware Stage](../../../../doc/project_governance/development_stages.md)
 transitions for the [rv_timer peripheral.](../README.md) All checklist

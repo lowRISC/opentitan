@@ -1,6 +1,4 @@
----
-title: "PINMUX DV document"
----
+# PINMUX DV document
 
 ## Goals
 * **DV**:

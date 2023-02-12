@@ -1,5 +1,3 @@
----
-title: "Scoreboard"
----
+# Scoreboard
 
 **TODO**

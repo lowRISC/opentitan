@@ -1,7 +1,4 @@
----
-title: "OpenTitan Assertions"
-unlisted: true
----
+# OpenTitan Assertions
 
 # OpenTitan Assertions
 

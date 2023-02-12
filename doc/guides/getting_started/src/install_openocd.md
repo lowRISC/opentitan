@@ -1,6 +1,4 @@
----
-title: Install OpenOCD
----
+# Install OpenOCD
 
 OpenOCD is a tool to connect with the target chip over JTAG and similar transports.
 It also provides a GDB server which is an "intermediate" when debugging software on the chip with GDB.

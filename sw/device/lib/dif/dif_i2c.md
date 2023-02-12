@@ -1,6 +1,4 @@
----
-title: "I2C DIF Checklist"
----
+# I2C DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [I2C DIF](../../../../hw/ip/i2c/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

@@ -1,6 +1,4 @@
----
-title: "Bus Specification"
----
+# Bus Specification
 
 # Overview
 

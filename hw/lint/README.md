@@ -1,7 +1,4 @@
----
-title: "Linting"
-unlisted: true
----
+# Linting
 
 # RTL Linting
 

@@ -1,6 +1,4 @@
----
-title: "EDN Checklist"
----
+# EDN Checklist
 
 <!--
 NOTE: This is a template checklist document that is required to be copied over to the 'doc'

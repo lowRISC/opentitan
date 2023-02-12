@@ -1,6 +1,4 @@
----
-title: "ADC Controller DIF Checklist"
----
+# ADC Controller DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [ADC Controller DIF](../../../../hw/ip/adc_ctrl/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

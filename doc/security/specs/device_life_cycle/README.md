@@ -1,6 +1,4 @@
----
-title: "Device Life Cycle"
----
+# Device Life Cycle
 
 ## Overview
 

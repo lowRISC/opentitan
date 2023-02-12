@@ -1,6 +1,4 @@
----
-title: "Alert Handler Technical Specification"
----
+# Alert Handler Technical Specification
 
 
 # Overview

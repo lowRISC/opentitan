@@ -1,6 +1,4 @@
----
-title: "SPI Device HWIP Technical Specification"
----
+# SPI Device HWIP Technical Specification
 
 # Overview
 

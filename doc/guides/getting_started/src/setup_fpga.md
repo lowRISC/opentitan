@@ -1,8 +1,4 @@
----
-title: "FPGA Setup"
-aliases:
-    - /doc/ug/getting_started_fpga
----
+# FPGA Setup
 
 _Before following this guide, make sure you've followed the [dependency installation and software build instructions](README.md)._
 

@@ -1,6 +1,4 @@
----
-title: "Entropy Distribution Network DIF Checklist"
----
+# Entropy Distribution Network DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Entropy Distribution Network DIF](../../../../hw/ip/edn/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

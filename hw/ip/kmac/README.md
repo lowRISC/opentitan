@@ -1,6 +1,4 @@
----
-title: "KMAC HWIP Technical Specification"
----
+# KMAC HWIP Technical Specification
 
 # Overview
 

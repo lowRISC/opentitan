@@ -1,6 +1,4 @@
----
-title: "In-depth guide to contributing to OpenTitan"
----
+# In-depth guide to contributing to OpenTitan
 
 The way we work on OpenTitan is very similar to what is done in other collaborative open-source projects.
 For a brief overview see [Contributing to OpenTitan](../README.md).

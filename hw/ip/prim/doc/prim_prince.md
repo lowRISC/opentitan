@@ -1,6 +1,4 @@
----
-title: "Primitive Component: PRINCE Scrambler"
----
+# Primitive Component: PRINCE Scrambler
 
 # Overview
 

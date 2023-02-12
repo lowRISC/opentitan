@@ -1,6 +1,4 @@
----
-title: "LC_CTRL DV document"
----
+# LC_CTRL DV document
 
 ## Goals
 * **DV**

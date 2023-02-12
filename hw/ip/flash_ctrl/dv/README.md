@@ -1,6 +1,4 @@
----
-title: "FLASH_CTRL DV document"
----
+# FLASH_CTRL DV document
 
 ## Goals
 * **DV**

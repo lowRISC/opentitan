@@ -1,6 +1,4 @@
----
-title: "Power Manager HWIP Technical Specification"
----
+# Power Manager HWIP Technical Specification
 
 # Overview
 

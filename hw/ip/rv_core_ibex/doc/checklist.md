@@ -1,6 +1,4 @@
----
-title: "Ibex Processor Core Checklist"
----
+# Ibex Processor Core Checklist
 
 This checklist is for [Hardware Stage][] transitions for the [Ibex Processor Core.](../README.md)
 All checklist items refer to the content in the [Checklist.](../../../../doc/project_governance/checklist/README.md)

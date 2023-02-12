@@ -1,6 +1,4 @@
----
-title: "I2C DV document"
----
+# I2C DV document
 
 ## Goals
 * **DV**

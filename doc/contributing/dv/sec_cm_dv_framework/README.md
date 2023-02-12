@@ -1,6 +1,4 @@
----
-title: "Security Countermeasure Verification Framework"
----
+# Security Countermeasure Verification Framework
 
 ## Purpose
 In a security chip, there are many hardening security countermeasures implemented in security blocks.

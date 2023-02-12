@@ -1,6 +1,4 @@
----
-title: "Primitive Component: Flash Wrapper"
----
+# Primitive Component: Flash Wrapper
 
 # Overview
 `prim_flash` is a wrapper interface for technology specific flash modules.

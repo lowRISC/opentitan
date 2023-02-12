@@ -1,6 +1,4 @@
----
-title: "Primitive Component: PRESENT Scrambler"
----
+# Primitive Component: PRESENT Scrambler
 
 # Overview
 

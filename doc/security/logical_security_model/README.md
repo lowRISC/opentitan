@@ -1,6 +1,4 @@
----
-title: "OpenTitan Logical Security Model"
----
+# OpenTitan Logical Security Model
 
 ## Overview
 

@@ -1,6 +1,4 @@
----
-title: "Key Manager HWIP Technical Specification"
----
+# Key Manager HWIP Technical Specification
 
 # Overview
 

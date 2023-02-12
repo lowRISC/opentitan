@@ -1,6 +1,4 @@
----
-title: "Reset Manager HWIP Technical Specification"
----
+# Reset Manager HWIP Technical Specification
 
 # Overview
 

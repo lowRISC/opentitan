@@ -1,6 +1,4 @@
----
-title: "SYSRST_CTRL Checklist"
----
+# SYSRST_CTRL Checklist
 
 This checklist is for [Hardware Stage](../../../../doc/project_governance/development_stages.md) transitions for the [SYSRST_CTRL peripheral.](../README.md)
 All checklist items refer to the content in the [Checklist.](../../../../doc/project_governance/checklist/README.md)

@@ -1,8 +1,4 @@
----
-title: "Design Verification Setup"
-aliases:
-    - /doc/ug/getting_started_dv
----
+# Design Verification Setup
 
 _Before following this guide, make sure you've followed the [dependency installation and software build instructions](https://docs.opentitan.org/doc/guides/getting_started/)._
 

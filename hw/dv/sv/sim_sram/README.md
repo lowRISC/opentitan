@@ -1,6 +1,4 @@
----
-title: "Simulation SRAM"
----
+# Simulation SRAM
 
 The `sim_sram` module intercepts an outbound TL interface to carve out a chunk of "fake" memory used for simulation purposes only.
 This chunk of memory must not overlap with any device on the system address map - it must be an invalid address range from the system's perspective.

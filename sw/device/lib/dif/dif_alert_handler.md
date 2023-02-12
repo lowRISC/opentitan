@@ -1,6 +1,4 @@
----
-title: "Alert Handler DIF Checklist"
----
+# Alert Handler DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Alert Handler DIF](../../../../hw/top_earlgrey/ip_autogen/alert_handler/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

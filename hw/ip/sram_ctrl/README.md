@@ -1,6 +1,4 @@
----
-title: "SRAM Controller Technical Specification"
----
+# SRAM Controller Technical Specification
 
 
 # Overview

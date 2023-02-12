@@ -1,6 +1,4 @@
----
-title: Lightweight Threat Model
----
+# Lightweight Threat Model
 
 This threat model aims to identify in-scope design assets, attacker profiles,
 attack methods and attack surfaces. This is used to produce security

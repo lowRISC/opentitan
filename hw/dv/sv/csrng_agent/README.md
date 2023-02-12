@@ -1,6 +1,4 @@
----
-title: "CSRNG UVM Agent"
----
+# CSRNG UVM Agent
 
 CSRNG UVM Agent is extended from DV library agent classes.
 Models host or device csrng functionality.

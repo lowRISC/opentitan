@@ -1,6 +1,4 @@
----
-title: "Register Tool"
----
+# Register Tool
 
 The register tool is used to construct register documentation, register RTL and header files.
 It is either used stand-alone or by being invoked as part of Markdown processing.

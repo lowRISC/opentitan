@@ -1,6 +1,4 @@
----
-title: JTAG_DMI UVM Agent
----
+# JTAG_DMI UVM Agent
 
 JTAG_DMI UVM Agent is extended from DV library agent classes. Contrary to what
 the name suggests, it actually does not come with an agent. It is called an

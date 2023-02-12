@@ -1,6 +1,4 @@
----
-title: "HMAC DV document"
----
+# HMAC DV document
 
 ## Goals
 * **DV**

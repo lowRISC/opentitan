@@ -1,8 +1,4 @@
----
-title: Building (and Testing) Software
-aliases:
-    - /doc/ug/getting_started_build_sw
----
+# Building (and Testing) Software
 
 _Before following this guide, make sure you have read the_:
 * main [Getting Started](README.md) instructions,

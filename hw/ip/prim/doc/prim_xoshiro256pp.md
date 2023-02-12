@@ -1,6 +1,4 @@
----
-title: "Primitive Component: XoShiRo256++"
----
+# Primitive Component: XoShiRo256++
 
 # Overviewtitle
 

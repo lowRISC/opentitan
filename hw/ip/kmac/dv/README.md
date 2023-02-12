@@ -1,6 +1,4 @@
----
-title: "KMAC DV document"
----
+# KMAC DV document
 
 ## Goals
 * **DV**

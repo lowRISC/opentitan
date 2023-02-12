@@ -1,6 +1,4 @@
----
-title: "Device Provisioning"
----
+# Device Provisioning
 
 <p style="color: red; text-align: right;">
   Status: Pre-RFC

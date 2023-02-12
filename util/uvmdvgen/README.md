@@ -1,6 +1,4 @@
----
-title: "Uvmdvgen: Initial testbench auto-generation tool"
----
+# Uvmdvgen: Initial testbench auto-generation tool
 
 `uvmdvgen` is a Python based tool to generate the boilerplate code for a UVM
 agent as well as the complete UVM testbench for a given DUT. The tool generates
