@@ -21,15 +21,15 @@ Note that this procedure to hand control over to `usbdev_aon_wake` does not appl
    - The protocol engine begins ignoring transactions.
      Any non-idle signaling kicks off the process to resume.
    - The USB differential receiver is turned off, if it was controlled by the `rx_enable_o` pin.
-   - Software receives the event for going into the suspended state in {{< regref "intr_state.link_suspend" "hw/ip/usbdev/doc/_index.md" >}}.
+   - Software receives the event for going into the suspended state in {{#regref usbdev.intr_state.link_suspend }}.
 2. Software hands control to the AON module.
-   - Software writes a `1` to {{< regref "wake_control.suspend_req" "hw/ip/usbdev/doc/_index.md" >}}.
+   - Software writes a `1` to {{#regref usbdev.wake_control.suspend_req }}.
    - The AON module transitions to the active state and takes over the pullup enable.
      It begins monitoring for events that trigger waking / resuming / resetting.
 3. Software prepares for deep sleep.
    - It saves the current "device state" in the AON retention RAM, including the current configuration and device address (if any).
    - The `usbdev_linkstate` module is still powered and monitoring events, and it can resume at any time.
-     Note that if a resume event does occur before the point of no return, software need only set {{< regref "wake_control.wake_ack" "hw/ip/usbdev/doc/_index.md" >}} to restore control to `usbdev`.
+     Note that if a resume event does occur before the point of no return, software need only set {{#regref usbdev.wake_control.wake_ack }} to restore control to `usbdev`.
    - Software also does any other tasks for preparing for deep sleep, such as enabling USB events to wake the chip.
 4. Software begins deep sleep.
    - This is the likely the point of no return.
@@ -47,11 +47,11 @@ Note that this procedure to hand control over to `usbdev_aon_wake` does not appl
      It is now monitoring events alongside the AON module.
 4. Software releases the DIOs from sleep mode.
 5. Software checks the AON events and identifies the correct state transition.
-6. Software issues {{< regref "wake_control.wake_ack" "hw/ip/usbdev/doc/_index.md" >}} to the AON module.
+6. Software issues {{#regref usbdev.wake_control.wake_ack }} to the AON module.
    - The AON module stops monitoring events and controlling the pull-ups, restoring control to the full-power `usbdev` module.
    - The AON module also clears the stored events.
      Events that occurred between reading the stored values in the AON module and acknowledging the wake-up are captured in the `usbdev_linkstate` module.
-7. If software determined the state transition should be back to an active state, software issues {{< regref "usbctrl.resume_link_active" "hw/ip/usbdev/doc/_index.md" >}}.
+7. If software determined the state transition should be back to an active state, software issues {{#regref usbdev.usbctrl.resume_link_active }}.
    - After going to low-power, it's not clear to the hardware whether it needs a bus reset to transition out of the `LinkPowered` state.
      Software's saved state in the AON retention RAM should provide this information, and the CSR write provides a bypass mechanism.
    - The `usbdev_linkstate` module transitions from `LinkPowered` to `LinkResuming` state.

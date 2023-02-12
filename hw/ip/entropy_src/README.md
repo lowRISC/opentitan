@@ -50,7 +50,7 @@ The repetition count test fails if any sequence of bits continuously asserts the
 The thresholds for these tests should be chosen to achieve a low false-positive rate (&alpha;) given a conservative estimate of the manufacturing tolerances of the PTRNG noise source.
 The combined choice of threshold and window size then determine the false-negative rate (&beta;), or the probability of missing statistical defects at any particular magnitude.
 
-When the IP is disabled by clearing the `ENABLE` bit in {{< regref "CONF" >}}, all heath checks are disabled and all counters internal to the health checks are reset.
+When the IP is disabled by clearing the `ENABLE` bit in {{#regref entropy_src.CONF }}, all heath checks are disabled and all counters internal to the health checks are reset.
 
 In order to compensate for the fact our tests (like *all* realistic statistical tests) have finite resolution for detecting defects, we conservatively use 2048 bits of PTRNG noise source to construct each 384 bit conditioned entropy sample.
 When passed through the conditioning block, the resultant entropy stream will be full entropy unless the PTRNG noise source has encountered some statistical defect serious enough to reduce the raw min-entropy to a level below 0.375 bits of entropy per output bit.
@@ -82,7 +82,7 @@ Boot-time mode also has the feature that it bypasses the SHA conditioning functi
 For maximal flexibility in normal operation, the conditioning function can also be implemented by firmware.
 When this firmware conditioning feature is activated, data read directly out of the noise source can be reinjected into the entropy pipeline via a TL-UL register after it has been processed by firmware.
 It should be noted that this firmware algorithm must be vetted by NIST to satisfy the requirements for a full-entropy source.
-This feature can also be disabled for security purposes, either by locking the feature via the {{< regref "REGEN" >}} register at boot, or by a write to one-time programmable (OTP) memory.
+This feature can also be disabled for security purposes, either by locking the feature via the {{#regref entropy_src.REGEN }} register at boot, or by a write to one-time programmable (OTP) memory.
 
 ## Compatibility
 This IP block does not have any direct hardware compatibility requirements.
@@ -102,7 +102,7 @@ After a reset, the ENTROPY_SRC block will start up in boot-time mode by default.
 This feature is designed to provide an initial seed's worth of entropy with lower latency than the normal FIPS/CC compliant health check process.
 Health testing will still be performed on boot-time mode entropy, but the window of checking is, by default, 384 bits instead of 2048 bits.
 When entropy is delivered to the downstream hardware block, a signal will indicate what type of entropy it is - FIPS compliant or not.
-Boot-time mode can be completely disabled in the {{< regref "CONF" >}} register.
+Boot-time mode can be completely disabled in the {{#regref entropy_src.CONF }} register.
 
 Once the initial boot-time mode phase has completed, the ENTROPY_SRC block will switch to FIPS compliant mode.
 In this mode, once the raw entropy has been health checked, it will be passed into a conditioner block.
@@ -116,32 +116,32 @@ The firmware override function has the capability to completely override the har
 In the case of health tests, firmware can turn off one or all of the health tests and perform the tests in firmware.
 A data path is provided in the hardware such that the inbound entropy can be trapped in the pre-conditioner FIFO.
 Once a pre-determined threshold of entropy has been reached in this FIFO, the firmware can then read the entropy bits out of the FIFO.
-The exact mechanism for this functionality starts with setting the `FW_OV_MODE` field in the {{< regref "FW_OV_CONTROL" >}} register.
-This will enable firmware to monitor post-health test entropy bits by reading from the {{< regref "FW_OV_RD_DATA" >}} register.
-Firmware can use the {{< regref "OBSERVE_FIFO_THRESH" >}} and  {{< regref "OBSERVE_FIFO_DEPTH" >}} to determine the state of the OBSERVE FIFO.
+The exact mechanism for this functionality starts with setting the `FW_OV_MODE` field in the {{#regref entropy_src.FW_OV_CONTROL }} register.
+This will enable firmware to monitor post-health test entropy bits by reading from the {{#regref entropy_src.FW_OV_RD_DATA }} register.
+Firmware can use the {{#regref entropy_src.OBSERVE_FIFO_THRESH }} and  {{#regref entropy_src.OBSERVE_FIFO_DEPTH }} to determine the state of the OBSERVE FIFO.
 At this point, firmware can do additional health checks on the entropy.
 Optionally, firmware can do the conditioning function, assuming the hardware is configured to bypass the conditioner block.
-Once firmware has processed the entropy,  it can then write the results back into the {{< regref "FW_OV_WR_DATA" >}} register (pre-conditioner FIFO).
-The `FW_OV_ENTROPY_INSERT` in the {{< regref "FW_OV_CONTROL" >}} register will enable inserting entropy bits back into the entropy flow.
+Once firmware has processed the entropy,  it can then write the results back into the {{#regref entropy_src.FW_OV_WR_DATA }} register (pre-conditioner FIFO).
+The `FW_OV_ENTROPY_INSERT` in the {{#regref entropy_src.FW_OV_CONTROL }} register will enable inserting entropy bits back into the entropy flow.
 The firmware override control fields will be set such that the new entropy will resume normal flow operation.
 
 An additional feature of the firmware override function is to insert entropy bits into the flow and still use the conditioning function in the hardware.
-Setting the `FW_OV_INSERT_START` field in the {{< regref "FW_OV_SHA3_START" >}} register will prepare the hardware for this flow.
-Once this field is set true, the {{< regref "FW_OV_WR_DATA" >}} register can be written with entropy bits.
-The {{< regref "FW_OV_WR_FIFO_FULL" >}} register should be monitored after each write to ensure data is not dropped.
+Setting the `FW_OV_INSERT_START` field in the {{#regref entropy_src.FW_OV_SHA3_START }} register will prepare the hardware for this flow.
+Once this field is set true, the {{#regref entropy_src.FW_OV_WR_DATA }} register can be written with entropy bits.
+The {{#regref entropy_src.FW_OV_WR_FIFO_FULL }} register should be monitored after each write to ensure data is not dropped.
 Once all of the data has been written, the `FW_OV_INSERT_START` field should be set to false.
 The normal SHA3 processing will continue and finally push the conditioned entropy through the module.
 
 Health checks are performed on the input raw data from the PTRNG noise source when in that mode.
 There are four health tests that will be performed: repetitive count, adaptive proportion, bucket, and Markov tests.
 Each test has a pair of threshold values that determine that pass/fail of the test, one threshold for boot-time mode, and one for normal mode.
-By default, all tests are enabled, but can be turn off in the {{< regref "CONF" >}} register.
+By default, all tests are enabled, but can be turn off in the {{#regref entropy_src.CONF }} register.
 Because of the variability of the PTRNG noise source, there are several registers that log statistics associated with the health tests.
 For example, the adaptive proportion test has a high watermark register that logs the highest measured number of ones.
-The {{< regref "ADAPTP_HI_WATERMARKS" >}} register has an entry for both normal and boot-time modes.
+The {{#regref entropy_src.ADAPTP_HI_WATERMARKS }} register has an entry for both normal and boot-time modes.
 This register allows for determining how close the threshold value should be set to the fail over value.
-Specific to the adaptive proportion test, there is also the {{< regref "ADAPTP_LO_WATERMARKS" >}} register, which will hold the lowest number of ones measured.
-To help understand how well the thresholds work through time, a running count of test fails is kept in the {{< regref "ADAPTP_HI_TOTAL_FAILS" >}} register.
+Specific to the adaptive proportion test, there is also the {{#regref entropy_src.ADAPTP_LO_WATERMARKS }} register, which will hold the lowest number of ones measured.
+To help understand how well the thresholds work through time, a running count of test fails is kept in the {{#regref entropy_src.ADAPTP_HI_TOTAL_FAILS }} register.
 The above example for the adaptive proportion test also applies to the other health tests, with the exception of the low watermark registers.
 See the timing diagrams below for more details on how the health tests work.
 It should be noted that for all error counter registers, they are sized for 16 bits, which prevents any case where counters might wrap.
@@ -163,16 +163,16 @@ Below is a description of this interface:
 - test_fail_lo_pulse: indication that a low threshold comparison failed, to be read from a register.
 
 
-The {{< regref "ALERT_THRESHOLD" >}} register determines how many fails can occur before an alert is issued.
+The {{#regref entropy_src.ALERT_THRESHOLD }} register determines how many fails can occur before an alert is issued.
 By default, the current threshold is set to two, such that the occurrence of two failing test cycles back-to-back would provide a very low &alpha; value.
-The {{< regref "ALERT_FAIL_COUNTS" >}} register holds the total number of fails, plus all of the individual contributing failing tests.
-Setting the {{< regref "ALERT_THRESHOLD" >}} register to zero will disable alert generation.
+The {{#regref entropy_src.ALERT_FAIL_COUNTS }} register holds the total number of fails, plus all of the individual contributing failing tests.
+Setting the {{#regref entropy_src.ALERT_THRESHOLD }} register to zero will disable alert generation.
 
 Firmware has a path to read entropy from the ENTROPY_SRC block.
-The {{< regref "ENTROPY_CONTROL" >}} register allows firmware to set the internal multiplexers to steer entropy data to the {{< regref "ENTROPY_DATA" >}} register.
+The {{#regref entropy_src.ENTROPY_CONTROL }} register allows firmware to set the internal multiplexers to steer entropy data to the {{#regref entropy_src.ENTROPY_DATA }} register.
 The control bit `ES_TYPE` sets whether the entropy will come from the conditioning block or be sourced through the bypass path.
-A status bit will be set that can either be polled or generate an interrupt when the entropy bits are available to be read from the {{< regref "ENTROPY_DATA" >}} register.
-The firmware needs to read the {{< regref "ENTROPY_DATA" >}} register twelve times in order to cleanly evacuate the 384-bit seed from the hardware path (12*32bits=384bits total).
+A status bit will be set that can either be polled or generate an interrupt when the entropy bits are available to be read from the {{#regref entropy_src.ENTROPY_DATA }} register.
+The firmware needs to read the {{#regref entropy_src.ENTROPY_DATA }} register twelve times in order to cleanly evacuate the 384-bit seed from the hardware path (12*32bits=384bits total).
 The firmware will directly read out of the main entropy FIFO, and when the control bit `ES_ROUTE` is set, no entropy is being passed to the block hardware interface.
 
 If the `esfinal` FIFO fills up, additional entropy that has been health checked will be dropped before entering the conditioner.
@@ -189,7 +189,7 @@ See the Programmers Guide section for more details on the ENTROPY_SRC block disa
 
 ## Hardware Interfaces
 
-{{< incGenFromIpDesc "../data/entropy_src.hjson" "hwcfg" >}}
+* [Interface Tables](data/entropy_src.hjson#interfaces)
 
 ## Design Details
 
@@ -200,14 +200,14 @@ After power-up, the ENTROPY_SRC block is disabled.
 For simplicity of initialization, only a single register write is needed to start functional operation of the ENTROPY_SRC block.
 This assumes that proper defaults are chosen for thresholds, sampling rate, and other registers.
 
-For security reasons, a configuration and control register locking function is performed by the {{< regref "REGEN" >}} register.
-Clearing the bit in this register will prevent future modification of the {{< regref "CONF" >}} register or other writeable registers by firmware.
+For security reasons, a configuration and control register locking function is performed by the {{#regref entropy_src.REGEN }} register.
+Clearing the bit in this register will prevent future modification of the {{#regref entropy_src.CONF }} register or other writeable registers by firmware.
 
 ### Entropy Processing
 
 When enabled, the ENTROPY_SRC block will generate entropy bits continuously.
-The `es_entropy_valid` bit in the `ENTROPY_SRC_INTR_STATE` register will indicate to the firmware when entropy bits can read from the {{< regref "ENTROPY_DATA" >}} register.
-The firmware will do 32-bit register reads of the {{< regref "ENTROPY_DATA" >}} register to retrieve the entropy bits.
+The `es_entropy_valid` bit in the `ENTROPY_SRC_INTR_STATE` register will indicate to the firmware when entropy bits can read from the {{#regref entropy_src.ENTROPY_DATA }} register.
+The firmware will do 32-bit register reads of the {{#regref entropy_src.ENTROPY_DATA }} register to retrieve the entropy bits.
 Each read will automatically pop an entry from the entropy unpacker block.
 A full twelve 32-bit words need to be read at a time.
 
@@ -310,13 +310,13 @@ This NIST test is intended to signal a catastrophic failure with the PTRNG noise
 This NIST-defined test is intended to detect statistical bias in the raw entropy data.
 The test counts the number of 1's in a given sample, and applies thresholds to reject samples which deviate too far from the ideal mean of 50%.
 
-Depending on the value of the {{< regref "CONF.THRESHOLD_SCOPE" >}} field, the thresholds can either be applied collectively to the all RNG inputs, or the thresholds can be applied on a line-by-line basis.
-Setting {{< regref "CONF.THRESHOLD_SCOPE" >}} to `kMuBi4True` will apply the thresholds to the aggregated RNG stream.
+Depending on the value of the {{#regref entropy_src.CONF.THRESHOLD_SCOPE }} field, the thresholds can either be applied collectively to the all RNG inputs, or the thresholds can be applied on a line-by-line basis.
+Setting {{#regref entropy_src.CONF.THRESHOLD_SCOPE }} to `kMuBi4True` will apply the thresholds to the aggregated RNG stream.
 This can be useful for lowering the likelihood of coincidental test failures (higher &alpha;).
-Meanwhile, setting {{< regref "CONF.THRESHOLD_SCOPE" >}} to `kMuBi4False` will apply thresholds on a line-by-line basis which allows the ENTROPY_SRC to detect single line failures.
+Meanwhile, setting {{#regref entropy_src.CONF.THRESHOLD_SCOPE }} to `kMuBi4False` will apply thresholds on a line-by-line basis which allows the ENTROPY_SRC to detect single line failures.
 
 The following waveform shows how a sampling of a data pattern will be tested by the Adaptive Proportion test.
-In this example, the sum is taken over all RNG lines (i.e., {{< regref "CONF.THRESHOLD_SCOPE" >}} is True).
+In this example, the sum is taken over all RNG lines (i.e., {{#regref entropy_src.CONF.THRESHOLD_SCOPE }} is True).
 
 {{< wavejson >}}
 {signal: [
@@ -380,7 +380,7 @@ The test counts the number of changes in the a fixed number of RNG samples, and 
 On average, the number of switching (e.g., "01") vs. non-switching (e.g., "00") pairs should be 50% of the total, with a variance proportional to the sample size.
 
 Like the Adaptive Proportion test, the Markov Test can be computed either cumulatively (summing the results over all RNG lines) or on a per-line basis.
-In this example, the RNG lines are scored individually (i.e., {{< regref "CONF.THRESHOLD_SCOPE" >}} is False).
+In this example, the RNG lines are scored individually (i.e., {{#regref entropy_src.CONF.THRESHOLD_SCOPE }} is False).
 
 {{< wavejson >}}
 {signal: [
@@ -422,7 +422,7 @@ Once the FIFO is empty, subsequent entropy seed requests will have to wait the w
 
 A useful feature for the ENTROPY_SRC block is the ability to disable it in a graceful matter.
 Since there exists another feature to avoid power spikes between ENTROPY_SRC and CSRNG, software needs to monitor the disabling process.
-Bit 16 in the {{< regref "DEBUG_STATUS" >}} should be polled after the ENTROPY_SRC enable bits are cleared in the {{< regref "CONF" >}} register.
+Bit 16 in the {{#regref entropy_src.DEBUG_STATUS }} should be polled after the ENTROPY_SRC enable bits are cleared in the {{#regref entropy_src.CONF }} register.
 After the handshakes with CSRNG are finished, the above bit should be set and the ENTROPY_SRC block can be safely enabled again.
 
 ENTROPY_SRC may only be disabled if CSRNG is disabled.
@@ -438,4 +438,4 @@ Need to alert the system of a FIFO overflow condition.
 
 ## Register Table
 
-{{< incGenFromIpDesc "../data/entropy_src.hjson" "registers" >}}
+* [Register Table](data/entropy_src.hjson#registers)
