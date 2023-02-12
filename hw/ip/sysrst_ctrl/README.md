@@ -52,7 +52,7 @@ This output is always asserted when the `sysrst_ctrl` block is reset and remains
 
 ## Hardware Interfaces
 
-{{< incGenFromIpDesc "../data/sysrst_ctrl.hjson" "hwcfg" >}}
+* [Interface Tables](data/sysrst_ctrl.hjson#interfaces)
 
 ## Combo detection
 
@@ -70,21 +70,21 @@ The pre-condition debounce timing is the same as for combo detection, but the ke
 
 Let's use the "Power button + Key0 + Key1" combo with pre-condition "Key2" as an example:
 
-0. Software can define the key value `key2_in_i==0` as pre-condition in the {{< regref COM_PRE_SEL_CTL_0 >}} register.
-1. The key-pressed time for the pre-condition (e.g. 2 seconds) can be configured via the {{< regref COM_DET_SEL_CTL_0 >}} register.
-2. Software can define the three key values `pwrb_in_i==0`, `key0_in_i==0` and `key1_in_i==0` as trigger combination in the {{< regref COM_SEL_CTL_0 >}} register.
-3. The combo duration for which the above combo should be pressed (e.g. 10 seconds) can be configured via the {{< regref COM_DET_CTL_0 >}} register.
-4. Actions such as asserting `ec_rst_l_o` and raising an interrupt can be configured via the {{< regref COM_OUT_CTL_0 >}} register.
-5. The pulse width of the `ec_rst_l_o` pulse can be set in the {{< regref EC_RST_CTL >}} register.
-6. The software can optionally lock the `sysrst_ctrl` configuration via {{< regref REGWEN >}}
+0. Software can define the key value `key2_in_i==0` as pre-condition in the {{#regref spi_host.COM_PRE_SEL_CTL_0 }} register.
+1. The key-pressed time for the pre-condition (e.g. 2 seconds) can be configured via the {{#regref spi_host.COM_DET_SEL_CTL_0 }} register.
+2. Software can define the three key values `pwrb_in_i==0`, `key0_in_i==0` and `key1_in_i==0` as trigger combination in the {{#regref spi_host.COM_SEL_CTL_0 }} register.
+3. The combo duration for which the above combo should be pressed (e.g. 10 seconds) can be configured via the {{#regref spi_host.COM_DET_CTL_0 }} register.
+4. Actions such as asserting `ec_rst_l_o` and raising an interrupt can be configured via the {{#regref spi_host.COM_OUT_CTL_0 }} register.
+5. The pulse width of the `ec_rst_l_o` pulse can be set in the {{#regref spi_host.EC_RST_CTL }} register.
+6. The software can optionally lock the `sysrst_ctrl` configuration via {{#regref spi_host.REGWEN }}
 
 Once the above configuration is active, `sysrst_ctrl` will start the timer when the pre-condition is valid (logic 0 level on all pre-condition signals).
 If the timing condition (2 seconds) is met, `systrst_ctrl` will enable combo detection, and wait for a high (logic 1) to low (logic 0) transition of the combined trigger signal.
-If a transition is seen, and the timing condition is met (10 seconds), `sysrst_ctrl` will assert `ec_rst_l_o`, the interrupt request and set the interrupt status register {{< regref COMBO_INTR_STATUS >}} to indicate the interrupt cause.
-The software interrupt handler should then read the {{< regref COMBO_INTR_STATUS >}} register and clear the interrupt via the {{< regref INTR_STATE >}} register.
+If a transition is seen, and the timing condition is met (10 seconds), `sysrst_ctrl` will assert `ec_rst_l_o`, the interrupt request and set the interrupt status register {{#regref spi_host.COMBO_INTR_STATUS }} to indicate the interrupt cause.
+The software interrupt handler should then read the {{#regref spi_host.COMBO_INTR_STATUS }} register and clear the interrupt via the {{#regref spi_host.INTR_STATE }} register.
 
 Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `wkup_req_o`.
-Software should therefore read and clear the {{< regref WKUP_STATUS >}} register as well.
+Software should therefore read and clear the {{#regref spi_host.WKUP_STATUS }} register as well.
 
 ### Combo actions
 
@@ -92,14 +92,14 @@ The following four combo actions can be triggered:
 
 - Drive the `bat_disable` output high until the next reset.
 - Issue an interrupt to the processor via `intr_event_detected_o`.
-- Assert `ec_rst_l_o` for the amount of cycles configured in {{< regref EC_RST_CTL >}}.
+- Assert `ec_rst_l_o` for the amount of cycles configured in {{#regref spi_host.EC_RST_CTL }}.
 - Issue a reset request via `rst_req_o` to the reset manager of the OpenTitan system. Note that once a reset request is issued, it will remain asserted until the next reset.
 
-These actions can be configured via the {{< regref COM_OUT_CTL_0 >}} register for each of the combo blocks as described in the previous section.
+These actions can be configured via the {{#regref spi_host.COM_OUT_CTL_0 }} register for each of the combo blocks as described in the previous section.
 
 ### Hardwired reset stretching functionality
 
-In addition to the combo action described above, `ec_rst_l_o` is automatically asserted for the amount of cycles defined in the {{< regref EC_RST_CTL >}} register whenever the `ec_rst_l_i` input is asserted (i.e., when it transitions from high to low).
+In addition to the combo action described above, `ec_rst_l_o` is automatically asserted for the amount of cycles defined in the {{#regref spi_host.EC_RST_CTL }} register whenever the `ec_rst_l_i` input is asserted (i.e., when it transitions from high to low).
 
 ## Auto-block key outputs
 
@@ -107,26 +107,26 @@ Software can program the `sysrst_ctrl` block to override the output value of spe
 Let's use the "Power button + Esc + Refresh" combo as an example.
 When `pwrb_in_i` is asserted, `key1_out_o` (row) should be overridden so that `sysrst_ctrl` can detect if `key0_in_i` (column) is Refresh.
 
-1. The software enables the auto block feature and sets an appropriate debounce timer value in the {{< regref AUTO_BLOCK_DEBOUNCE_CTL >}} register.
-2. The software then defines the key outputs to auto override and their override values in the {{< regref AUTO_BLOCK_OUT_CTL >}} register.
+1. The software enables the auto block feature and sets an appropriate debounce timer value in the {{#regref spi_host.AUTO_BLOCK_DEBOUNCE_CTL }} register.
+2. The software then defines the key outputs to auto override and their override values in the {{#regref spi_host.AUTO_BLOCK_OUT_CTL }} register.
 
 Once the above configuration is active, `sysrst_ctrl` will detect a high (logic 1) to low (logic 0) transition on `pwrb_in_i` and check whether the key `pwrb_in_i` stays low for the programmed duration.
-If this condition is met, `sysrst_ctrl` will drive `key1_out_o` to the value programmed in {{< regref AUTO_BLOCK_OUT_CTL >}}.
+If this condition is met, `sysrst_ctrl` will drive `key1_out_o` to the value programmed in {{#regref spi_host.AUTO_BLOCK_OUT_CTL }}.
 
 ## Keyboard and input triggered interrupt
 
 Software can program the `sysrst_ctrl` block to detect edge transitions on the `pwrb_in_i`, `key0_in_i`, `key1_in_i`, `key2_in_i`, `ac_present_i`, `ec_rst_l_i` and `flash_wp_l_i` signals and trigger an interrupt:
 
-1. Software first defines the input signal and the edge transition to detect (H->L or L->H) via the {{< regref KEY_INTR_CTL >}} register.
-2. The software then programs an appropriate debounce timer value to the {{< regref KEY_INTR_DEBOUNCE_CTL >}} register.
+1. Software first defines the input signal and the edge transition to detect (H->L or L->H) via the {{#regref spi_host.KEY_INTR_CTL }} register.
+2. The software then programs an appropriate debounce timer value to the {{#regref spi_host.KEY_INTR_DEBOUNCE_CTL }} register.
 
 For example, when the power button is pressed, `pwrb_in_i` goes from logic 1 to logic 0 which would amount to an H->L transition.
 Likewise, when the power button is released, `pwrb_in_i` goes from logic 0 to logic 1 which would amount to an L->H transition.
-When `sysrst_ctrl` detects a transition (H->L or L->H) as specified in {{< regref KEY_INTR_CTL >}} and it meets the debounce requirement in {{< regref KEY_INTR_DEBOUNCE_CTL >}}, `sysrst_ctrl` sets the {{< regref KEY_INTR_STATUS >}} register to indicate the interrupt cause and send out a consolidated interrupt to the PLIC.
-The software interrupt handler should then read the {{< regref KEY_INTR_STATUS >}} register and clear the interrupt via the {{< regref INTR_STATE >}} register.
+When `sysrst_ctrl` detects a transition (H->L or L->H) as specified in {{#regref spi_host.KEY_INTR_CTL }} and it meets the debounce requirement in {{#regref spi_host.KEY_INTR_DEBOUNCE_CTL }}, `sysrst_ctrl` sets the {{#regref spi_host.KEY_INTR_STATUS }} register to indicate the interrupt cause and send out a consolidated interrupt to the PLIC.
+The software interrupt handler should then read the {{#regref spi_host.KEY_INTR_STATUS }} register and clear the interrupt via the {{#regref spi_host.INTR_STATE }} register.
 
 Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `wkup_req_o`.
-Software should therefore read and clear the {{< regref WKUP_STATUS >}} register as well.
+Software should therefore read and clear the {{#regref spi_host.WKUP_STATUS }} register as well.
 
 ## Ultra-low-power Wakeup Feature
 
@@ -138,28 +138,28 @@ In particular, the transitions that can be detected are fixed to the following:
 - A H -> L transition on the `pwrb_in_i` signal
 - A L -> H transition on the `lid_open_i` signal
 
-Note that the signals may be potentially inverted due to the [input inversion feature](#inversion).
+Note that the signals may be potentially inverted due to the [input inversion feature]({{< relref "#inversion" >}}).
 
 In order to activate this feature, software should do the following:
 
-1. Software can program the appropriate debounce times via the {{< regref ULP_AC_DEBOUNCE_CTL >}}, {{< regref ULP_LID_DEBOUNCE_CTL >}} and {{< regref ULP_PWRB_DEBOUNCE_CTL >}} registers.
-2. Then, software can activate detection by setting the {{< regref ULP_CTL >}} register to 1.
+1. Software can program the appropriate debounce times via the {{#regref spi_host.ULP_AC_DEBOUNCE_CTL }}, {{#regref spi_host.ULP_LID_DEBOUNCE_CTL }} and {{#regref spi_host.ULP_PWRB_DEBOUNCE_CTL }} registers.
+2. Then, software can activate detection by setting the {{#regref spi_host.ULP_CTL }} register to 1.
 
 Once the above configuration is active, `sysrst_ctrl` will start the timer when a transition is detected.
-Once the timing condition is met, `sysrst_ctrl` will assert `z3_wakeup` output signal, the interrupt request and set the interrupt status register {{< regref ULP_STATUS >}} to indicate the interrupt cause.
-The software interrupt handler should then read the {{< regref ULP_STATUS >}} register and clear the interrupt via the {{< regref INTR_STATE >}} register.
+Once the timing condition is met, `sysrst_ctrl` will assert `z3_wakeup` output signal, the interrupt request and set the interrupt status register {{#regref spi_host.ULP_STATUS }} to indicate the interrupt cause.
+The software interrupt handler should then read the {{#regref spi_host.ULP_STATUS }} register and clear the interrupt via the {{#regref spi_host.INTR_STATE }} register.
 
 Note that an interrupt will also issue a wakeup request to the OpenTitan power manager via `wkup_req_o`.
-Software should therefore read and clear the {{< regref WKUP_STATUS >}} register as well.
+Software should therefore read and clear the {{#regref spi_host.WKUP_STATUS }} register as well.
 
 Also note that the detection status is sticky.
-I.e., software needs to explicitly disable this feature by setting {{< regref ULP_CTL >}} to 0 in order to clear the FSM state.
-If software wants to re-arm the mechanism right away, it should first read back {{< regref ULP_CTL >}} to make sure it has been cleared before setting that register to 1 again.
+I.e., software needs to explicitly disable this feature by setting {{#regref spi_host.ULP_CTL }} to 0 in order to clear the FSM state.
+If software wants to re-arm the mechanism right away, it should first read back {{#regref spi_host.ULP_CTL }} to make sure it has been cleared before setting that register to 1 again.
 This is needed because this register has to be synchronized over to the AON clock domain.
 
 ## Pin input value accessibility
 
-`sysrst_ctrl` allows the software to read the raw input pin values via the {{< regref PIN_IN_VALUE >}} register like GPIOs.
+`sysrst_ctrl` allows the software to read the raw input pin values via the {{#regref spi_host.PIN_IN_VALUE }} register like GPIOs.
 To this end, the hardware samples the raw input values of `pwrb_in_i`, `key[0,1,2]_in_i`, `ac_present_i`, `ec_rst_l_i`, `flash_wp_l_i` before they are being inverted, and synchronizes them onto the bus clock domain.
 
 ## Pin output and keyboard inversion control {#inversion}
@@ -167,29 +167,29 @@ To this end, the hardware samples the raw input values of `pwrb_in_i`, `key[0,1,
 Software can optionally override all output signals, and change the signal polarity of some of the input and output signals.
 The output signal override feature always has higher priority than any of the combo pattern detection mechanisms described above.
 
-The selection of output signals to override, and the override values are programmable and lockable via the {{< regref PIN_ALLOWED_CTL >}} register.
-For example, {{< regref PIN_ALLOWED_CTL.EC_RST_L_0 >}} to 1 and {{< regref PIN_ALLOWED_CTL.EC_RST_L_1 >}} to 0 means that software allows `ec_rst_l_o` to be overridden with logic 0, but not with logic 1.
-If the SW locks the configuration with {{< regref REGWEN >}}, {{< regref PIN_ALLOWED_CTL >}} cannot be modified until the next OpenTitan reset.
+The selection of output signals to override, and the override values are programmable and lockable via the {{#regref spi_host.PIN_ALLOWED_CTL }} register.
+For example, {{#regref spi_host.PIN_ALLOWED_CTL.EC_RST_L_0 }} to 1 and {{#regref spi_host.PIN_ALLOWED_CTL.EC_RST_L_1 }} to 0 means that software allows `ec_rst_l_o` to be overridden with logic 0, but not with logic 1.
+If the SW locks the configuration with {{#regref spi_host.REGWEN }}, {{#regref spi_host.PIN_ALLOWED_CTL }} cannot be modified until the next OpenTitan reset.
 
-When the system is up and running, the software can modify {{< regref PIN_OUT_CTL >}} and {{< regref PIN_OUT_VALUE >}} to enable or disable the feature.
-For example, to release `ec_rst_l_o` after OpenTitan completes the reset, software can set {{< regref PIN_OUT_CTL >}} to 0 to stop the hardware from driving `ec_rst_l_o` to 0.
+When the system is up and running, the software can modify {{#regref spi_host.PIN_OUT_CTL }} and {{#regref spi_host.PIN_OUT_VALUE }} to enable or disable the feature.
+For example, to release `ec_rst_l_o` after OpenTitan completes the reset, software can set {{#regref spi_host.PIN_OUT_CTL }} to 0 to stop the hardware from driving `ec_rst_l_o` to 0.
 
-The input / output signal inversions can be programmed via the {{< regref KEY_INVERT_CTL >}} register.
+The input / output signal inversions can be programmed via the {{#regref spi_host.KEY_INVERT_CTL }} register.
 Input signals will be inverted before the combo detection logic, while output signals will be inverted after the output signal override logic.
 
 ## EC and Power-on-reset
 
 OpenTitan and EC will be reset together during power-on.
 When OpenTitan is in reset, `ec_rst_l_o` will be asserted (active low).
-The power-on-reset value of {{< regref PIN_ALLOWED_CTL.EC_RST_L_1 >}} and {{< regref PIN_OUT_CTL.EC_RST_L >}} will guarantee that `ec_rst_l_o` remains asserted after OpenTitan reset is released.
-The software can release `ec_rst_l_o` explicitly by setting {{< regref PIN_OUT_CTL.EC_RST_L >}} to 0 during boot in order to complete the OpenTitan and EC power-on-reset sequence.
+The power-on-reset value of {{#regref spi_host.PIN_ALLOWED_CTL.EC_RST_L_1 }} and {{#regref spi_host.PIN_OUT_CTL.EC_RST_L }} will guarantee that `ec_rst_l_o` remains asserted after OpenTitan reset is released.
+The software can release `ec_rst_l_o` explicitly by setting {{#regref spi_host.PIN_OUT_CTL.EC_RST_L }} to 0 during boot in order to complete the OpenTitan and EC power-on-reset sequence.
 
 Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration](../pinmux/README.md) before releasing `ec_rst_l_o`.
 
 ## Flash Write Protect Output
 
 Upon reset, the `flash_wp_l_o` signal will be asserted active low.
-The software can release `flash_wp_l_o` explicitly by setting {{< regref PIN_OUT_CTL.FLASH_WP_L >}} to 0 when needed.
+The software can release `flash_wp_l_o` explicitly by setting {{#regref spi_host.PIN_OUT_CTL.FLASH_WP_L }} to 0 when needed.
 The `flash_wp_l_o` signal does have a corresponding input signal `flash_wp_l_i` - but that one is mainly intended for pad observability and does not have a bypass path to `flash_wp_l_o`.
 Hence, the value of `flash_wp_l_o` defaults to logic 0 when it is not explicitly driven via the override function.
 
@@ -201,4 +201,4 @@ Note that since the `sysrst_ctrl` does not have control over the pad open-drain 
 
 ## Registers
 
-{{< incGenFromIpDesc "../data/sysrst_ctrl.hjson" "registers" >}}
+* [Register Table](data/sysrst_ctrl.hjson#registers)

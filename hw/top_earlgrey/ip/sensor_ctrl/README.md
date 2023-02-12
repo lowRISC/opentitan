@@ -34,11 +34,11 @@ Once an alert request is detected as active, the `sensor control` formulates a p
 
 The `sensor control` can optionally generate alert acknowledgements back to the `analog sensor top`.
 
-For each incoming alert, it can be programmed as fatal or recoverable through {{< regref "FATAL_ALERT_EN" >}}.
-If set to recoverable, an alert will be registered in {{< regref "RECOV_ALERT" >}} and the original `analog sensor top` event acknowledged.
+For each incoming alert, it can be programmed as fatal or recoverable through {{#regref sensor_ctrl.FATAL_ALERT_EN }}.
+If set to recoverable, an alert will be registered in {{#regref sensor_ctrl.RECOV_ALERT }} and the original `analog sensor top` event acknowledged.
 The acknowledgement prevents alerts from constantly being sent.
 
-If set to fatal, an alert will be registered in {{< regref "FATAL_ALERT" >}} but the original `analog sensor top` event will not be acknowledged.
+If set to fatal, an alert will be registered in {{#regref sensor_ctrl.FATAL_ALERT }} but the original `analog sensor top` event will not be acknowledged.
 This causes the alert to constantly send until the system escalates in some form.
 
 ## Wakeup Requests
@@ -53,12 +53,12 @@ It will only be able to send wakeups when the system is powered and the `clk_aon
 
 ### Signals
 
-{{< incGenFromIpDesc "../data/sensor_ctrl.hjson" "hwcfg" >}}
+* [Interface Tables](data/sensor_ctrl.hjson#interfaces)
 
 # Programmer's Guide
 
 Each available alert has a corresponding fatality configuration.
-If an alert event is set to 1 in {{< regref "FATAL_ALERT_EN" >}}, `sensor control` treats it as a fatal event instead of a recoverable event.
+If an alert event is set to 1 in {{#regref sensor_ctrl.FATAL_ALERT_EN }}, `sensor control` treats it as a fatal event instead of a recoverable event.
 Fatal events are not acknowledged, and continuously send alert events in the system until some kind of escalation is seen.
 
 ## Device Interface Functions (DIFs)
@@ -67,4 +67,4 @@ Fatal events are not acknowledged, and continuously send alert events in the sys
 
 ## Register Table
 
-{{< incGenFromIpDesc "../data/sensor_ctrl.hjson" "registers" >}}
+* [Register Table](data/sensor_ctrl.hjson#register)

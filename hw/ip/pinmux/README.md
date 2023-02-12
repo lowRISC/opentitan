@@ -86,7 +86,7 @@ Note that static pad attributes for FPGAs are currently not covered in this spec
 
 ## Hardware Interfaces
 
-{{< incGenFromIpDesc "/hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson" "hwcfg" >}}
+* [Interface Tables](../../top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson#interfaces)
 
 ### Parameters
 
@@ -151,7 +151,7 @@ This ensures that the output values remain stable until the system and its perip
 
 The `pinmux` contains eight programmable wakeup detector modules that can listen on any of the MIO or DIO pins.
 Each detector contains a debounce filter and an 8bit counter running on the AON clock domain.
-The detectors can be programmed via the {{< regref "WKUP_DETECTOR_0" >}} and {{< regref "WKUP_DETECTOR_CNT_TH_0" >}} registers to detect the following patterns:
+The detectors can be programmed via the {{#regref pinmux.WKUP_DETECTOR_0 }} and {{#regref pinmux.WKUP_DETECTOR_CNT_TH_0 }} registers to detect the following patterns:
 
 - rising edge
 - falling edge
@@ -162,9 +162,9 @@ The detectors can be programmed via the {{< regref "WKUP_DETECTOR_0" >}} and {{<
 Note that for all patterns listed above, the input signal is sampled with the AON clock.
 This means that the input signal needs to remain stable for at least one AON clock cycle after a level change for the detector to recognize the event (depending on the debounce filter configuration, the signal needs to remain stable for multiple clock cycles).
 
-If a pattern is detected, the wakeup detector will send a wakeup request to the power manager, and the cause bit corresponding to that detector will be set in the {{< regref "WKUP_CAUSE" >}} register.
+If a pattern is detected, the wakeup detector will send a wakeup request to the power manager, and the cause bit corresponding to that detector will be set in the {{#regref pinmux.WKUP_CAUSE }} register.
 
-Note that the wkup detector should be disabled by setting {{< regref "WKUP_DETECTOR_EN_0" >}} before changing the detection mode.
+Note that the wkup detector should be disabled by setting {{#regref pinmux.WKUP_DETECTOR_EN_0 }} before changing the detection mode.
 The reason for that is that the pulse width counter is NOT cleared upon a mode change while the detector is enabled.
 
 ## Strap Sampling and TAP Isolation
@@ -257,7 +257,7 @@ Signal               | Direction  | Type        | Description
 `attr_i[8:7]`        | `input`    | `logic`     | Slew rate (0x0: slowest, 0x3: fastest)
 `attr_i[12:9]`       | `input`    | `logic`     | Drive strength (0x0: weakest, 0xf: strongest)
 
-Note that the corresponding pad attribute registers {{< regref "MIO_PAD_ATTR_0" >}} and {{< regref "DIO_PAD_ATTR_0" >}} have "writes-any-reads-legal" (WARL) behavior (see also [pad attributes](#pad-attributes)).
+Note that the corresponding pad attribute registers {{#regref pinmux.MIO_PAD_ATTR_0 }} and {{#regref pinmux.DIO_PAD_ATTR_0 }} have "writes-any-reads-legal" (WARL) behavior (see also [pad attributes](#pad-attributes)).
 
 # Programmers Guide
 
@@ -265,10 +265,10 @@ Note that the corresponding pad attribute registers {{< regref "MIO_PAD_ATTR_0" 
 
 Software should determine and program the pad attributes at startup, or reprogram the attributes when the functionality requirements change at runtime.
 
-This can be achieved by writing to the {{< regref "MIO_PAD_ATTR_0" >}} and {{< regref "DIO_PAD_ATTR_0" >}} registers.
+This can be achieved by writing to the {{#regref pinmux.MIO_PAD_ATTR_0 }} and {{#regref pinmux.DIO_PAD_ATTR_0 }} registers.
 Note that the IO attributes should be configured before enabling muxed IOs going through the `pinmux` matrix in order to avoid undesired electrical behavior and/or contention at the pads.
 
-The pad attributes configuration can be locked down individually for each pad via the {{< regref "MIO_PAD_ATTR_REGWEN_0" >}} and {{< regref "DIO_PAD_ATTR_REGWEN_0" >}} registers.
+The pad attributes configuration can be locked down individually for each pad via the {{#regref pinmux.MIO_PAD_ATTR_REGWEN_0 }} and {{#regref pinmux.DIO_PAD_ATTR_REGWEN_0 }} registers.
 The configuration can then not be altered anymore until the next system reset.
 
 The following pad attributes are supported by this register layout by default:
@@ -294,7 +294,7 @@ The unsupported drive-strength bits in the corresponding CSRs would then always 
 
 Upon POR, the `pinmux` state is such that all MIO outputs are high-Z, and all MIO peripheral inputs are tied off to 0.
 Software should determine and program the `pinmux` mapping at startup, or reprogram it when the functionality requirements change at runtime.
-This can be achieved by writing the following values to the {{< regref "PERIPH_INSEL_0" >}} and {{< regref "MIO_OUTSEL_0" >}} registers.
+This can be achieved by writing the following values to the {{#regref pinmux.PERIPH_INSEL_0 }} and {{#regref pinmux.MIO_OUTSEL_0 }} registers.
 
 `periph_insel` Value  | Selected Input Signal
 ----------------------|-----------------------
@@ -313,13 +313,13 @@ The global default at reset is `0`, but the default of individual signals can be
 
 The global default at reset is `2`, but the default of individual signals can be overridden at design time, if needed.
 
-Note that the `pinmux` configuration should be sequenced after any IO attribute-specific configuration in the {{< regref "MIO_PAD_ATTR_0" >}} and {{< regref "DIO_PAD_ATTR_0" >}} registers to avoid any unwanted electric behavior and/or contention.
-If needed, each select signal can be individually locked down via {{< regref "MIO_PERIPH_INSEL_REGWEN_0" >}} or {{< regref "MIO_OUTSEL_REGWEN_0" >}}.
+Note that the `pinmux` configuration should be sequenced after any IO attribute-specific configuration in the {{#regref pinmux.MIO_PAD_ATTR_0 }} and {{#regref pinmux.DIO_PAD_ATTR_0 }} registers to avoid any unwanted electric behavior and/or contention.
+If needed, each select signal can be individually locked down via {{#regref pinmux.MIO_PERIPH_INSEL_REGWEN_0 }} or {{#regref pinmux.MIO_OUTSEL_REGWEN_0 }}.
 The configuration can then not be altered anymore until the next system reset.
 
 ## Sleep Features
 
-The sleep behavior of each individual MIO or DIO can be defined via the ({{< regref "MIO_PAD_SLEEP_EN_0" >}}, {{< regref "DIO_PAD_SLEEP_EN_0" >}}, {{< regref "MIO_PAD_SLEEP_MODE_0" >}} and {{< regref "DIO_PAD_SLEEP_MODE_0" >}}) registers.
+The sleep behavior of each individual MIO or DIO can be defined via the ({{#regref pinmux.MIO_PAD_SLEEP_EN_0 }}, {{#regref pinmux.DIO_PAD_SLEEP_EN_0 }}, {{#regref pinmux.MIO_PAD_SLEEP_MODE_0 }} and {{#regref pinmux.DIO_PAD_SLEEP_MODE_0 }}) registers.
 Available sleep behaviors are:
 `dio/mio_pad_sleep_en` Value  | `dio/mio_pad_sleep_mode` Value | Sleep Behavior
 ------------------------------|--------------------------------|-----------------------
@@ -333,12 +333,12 @@ Note that if the behavior is set to "Drive", the sleep mode will not be activate
 Rather, the retention logic continues to drive the value coming from the peripheral side.
 Also note that the sleep logic is located after the `pinmux` matrix, hence the sleep configuration is per MIO pad and not per MIO peripheral.
 
-Before sleep entry, SW should configure the appropriate sleep behavior of all MIOs/DIOs via {{< regref "MIO_PAD_SLEEP_MODE_0" >}}, {{< regref "DIO_PAD_SLEEP_MODE_0" >}}.
+Before sleep entry, SW should configure the appropriate sleep behavior of all MIOs/DIOs via {{#regref pinmux.MIO_PAD_SLEEP_MODE_0 }}, {{#regref pinmux.DIO_PAD_SLEEP_MODE_0 }}.
 This configuration can be optionally locked down, in which case it cannot be modified again until POR.
-The configured behavior is then activated for all pads that have sleep mode set to enabled ({{< regref "MIO_PAD_SLEEP_EN_0" >}} and {{< regref "DIO_PAD_SLEEP_EN_0" >}}) at once by the power manager during the sleep entry sequence.
+The configured behavior is then activated for all pads that have sleep mode set to enabled ({{#regref pinmux.MIO_PAD_SLEEP_EN_0 }} and {{#regref pinmux.DIO_PAD_SLEEP_EN_0 }}) at once by the power manager during the sleep entry sequence.
 
 When exiting sleep, the task of disabling the sleep behavior is however up to SW.
-I.e., it must clear the per-pad sleep status bits in registers {{< regref "MIO_PAD_SLEEP_STATUS_0" >}} and {{< regref "DIO_PAD_SLEEP_STATUS_0" >}} that have been set upon sleep entry.
+I.e., it must clear the per-pad sleep status bits in registers {{#regref pinmux.MIO_PAD_SLEEP_STATUS_0 }} and {{#regref pinmux.DIO_PAD_SLEEP_STATUS_0 }} that have been set upon sleep entry.
 The rationale for this is that it may not be desirable to disable sleep behavior on all pads at once due to some additional book keeping / re-initialization that needs to be performed while exiting sleep.
 
 ## Wakeup Features
@@ -351,19 +351,19 @@ For more information on the patterns supported by the wakeup detectors, see [wak
 
 A typical programming sequence for the wakeup detectors looks as follows:
 
-1. Before initiating any sleep mode, SW should configure the wakeup detectors appropriately and enable them via the {{< regref "WKUP_DETECTOR_0" >}}, {{< regref "WKUP_DETECTOR_CNT_TH_0" >}} and {{< regref "WKUP_DETECTOR_PADSEL_0" >}} registers.
+1. Before initiating any sleep mode, SW should configure the wakeup detectors appropriately and enable them via the {{#regref pinmux.WKUP_DETECTOR_0 }}, {{#regref pinmux.WKUP_DETECTOR_CNT_TH_0 }} and {{#regref pinmux.WKUP_DETECTOR_PADSEL_0 }} registers.
 
-2. Optionally, lock the wakeup detector configuration via the {{< regref "WKUP_DETECTOR_REGWEN_0" >}} registers.
+2. Optionally, lock the wakeup detector configuration via the {{#regref pinmux.WKUP_DETECTOR_REGWEN_0 }} registers.
 
 3. During sleep, the wakeup detectors will trigger a wakeup request if a matching pattern has been observed.
-   A bit corresponding to the wakeup detector that has observed the pattern will be set in the {{< regref "WKUP_CAUSE" >}} register.
+   A bit corresponding to the wakeup detector that has observed the pattern will be set in the {{#regref pinmux.WKUP_CAUSE }} register.
 
 4. When exiting sleep, SW should read the wake info register in the [power manager](../pwrmgr/README.md) to determine the reason(s) for the wakeup request.
 
-5. If the wakeup request was due to a pin wakeup pattern detector, SW should inspect the {{< regref "WKUP_CAUSE" >}} registers in order to determine the exact cause.
+5. If the wakeup request was due to a pin wakeup pattern detector, SW should inspect the {{#regref pinmux.WKUP_CAUSE }} registers in order to determine the exact cause.
 
-6. SW should in any case disable the wakeup detectors and clear the {{< regref "WKUP_CAUSE" >}} registers once it is safe to do so (in order to not miss any events).
-   Note that the {{< regref "WKUP_CAUSE" >}} registers reside in the slow AON clock domain, and hence clearing them takes a few uS to take effect.
+6. SW should in any case disable the wakeup detectors and clear the {{#regref pinmux.WKUP_CAUSE }} registers once it is safe to do so (in order to not miss any events).
+   Note that the {{#regref pinmux.WKUP_CAUSE }} registers reside in the slow AON clock domain, and hence clearing them takes a few uS to take effect.
    If needed, a SW readback can be performed to ensure that the clear operation has completed successfully.
 
 ## Pinout and Pinmux Mapping
@@ -385,4 +385,4 @@ design](../../top_earlgrey/doc/specification.md).
 
 Similar register descriptions can be generated with different parameterizations.
 
-{{< incGenFromIpDesc "/hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson" "registers" >}}
+* [Register Table](../../top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson#registers)

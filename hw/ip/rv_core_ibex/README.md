@@ -49,7 +49,7 @@ There are separate translations controls for instruction and data.
 Each control contains two programmable regions (2 for instruction and 2 for data).
 If a transaction matches multiple regions, the lowest indexed region has priority.
 
-For details on how to program the related registers, please see {{< regref "IBUS_ADDR_MATCHING_0" >}} and {{< regref "IBUS_REMAP_ADDR_0" >}}.
+For details on how to program the related registers, please see {{#regref rv_core_ibex.IBUS_ADDR_MATCHING_0 }} and {{#regref rv_core_ibex.IBUS_REMAP_ADDR_0 }}.
 
 ### Translation and Instruction Caching
 
@@ -62,19 +62,19 @@ The `FENCE.I` instruction forces the instruction cache to flush, and this aligns
 ## Random Number Generation
 
 The wrapper has a connection to the [Entropy Distribution Network (EDN)](../edn/README.md) with a register based interface.
-The {{< regref "RND_DATA" >}} register provides 32-bits directly from the EDN.
-{{< regref "RND_STATUS.RND_DATA_VALID" >}} indicates if the data in {{< regref "RND_DATA" >}} is valid or not.
+The {{#regref rv_core_ibex.RND_DATA }} register provides 32-bits directly from the EDN.
+{{#regref rv_core_ibex.RND_STATUS.RND_DATA_VALID}} indicates if the data in {{#regref rv_core_ibex.RND_DATA }} is valid or not.
 A polling style interface is used to get new random data.
-Any read to {{< regref "RND_DATA" >}} when it is valid invalidates the data and triggers an EDN request for new data.
-Software should poll {{< regref "RND_STATUS.RND_DATA_VALID" >}} until it is valid and then read from {{< regref "RND_DATA" >}} to get the new random data.
+Any read to {{#regref rv_core_ibex.RND_DATA }} when it is valid invalidates the data and triggers an EDN request for new data.
+Software should poll {{#regref rv_core_ibex.RND_STATUS.RND_DATA_VALID }} until it is valid and then read from {{#regref rv_core_ibex.RND_DATA }} to get the new random data.
 Either the data is valid or a request for new data is pending.
 It is not possible to have a state where there is no valid data without new data being requested.
 
-Upon reset {{< regref "RND_DATA" >}} is invalid.
+Upon reset {{#regref rv_core_ibex.RND_DATA }} is invalid.
 A request is made to the EDN immediately out of reset, this will not be answered until the EDN is enabled.
 Software should take care not to enable the EDN until the entropy complex configuration is as desired.
-When the entropy complex configuration is changed reading {{< regref "RND_DATA" >}} when it is valid will suffice to flush any old random data to trigger a new request under the new configuration.
-If a EDN request is pending when the entropy complex configuration is changed ({{< regref "RND_STATUS.RND_DATA_VALID" >}} is clear), it is advisable to wait until it is complete and then flush out the data to ensure the fresh value was produced under the new configuration.
+When the entropy complex configuration is changed reading {{#regref rv_core_ibex.RND_DATA }} when it is valid will suffice to flush any old random data to trigger a new request under the new configuration.
+If a EDN request is pending when the entropy complex configuration is changed ({{#regref rv_core_ibex.RND_STATUS.RND_DATA_VALID }} is clear), it is advisable to wait until it is complete and then flush out the data to ensure the fresh value was produced under the new configuration.
 
 ## Crash Dump Collection
 
@@ -136,7 +136,7 @@ When the ``fatal_hw_err`` alert is raised Ibex fetch is disabled and will remain
 
 ### Signals
 
-{{< incGenFromIpDesc "../data/rv_core_ibex.hjson" "hwcfg" >}}
+* [Interface Tables](data/rv_core_ibex.hjson#interfaces)
 
 All ports and parameters of Ibex are exposed through this wrapper module, except for the instruction and data memory interfaces (signals starting with `instr_` and `data_`).
 Refer to the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/02_user/integration.html) for a detailed description of these signals and parameters.
@@ -192,4 +192,4 @@ The `PipeLine` parameter can be used to configure the bus adapter pipelining.
 
 A number of memory-mapped registers are available to control Ibex-related functionality that's specific to OpenTitan.
 
-{{< incGenFromIpDesc "../data/rv_core_ibex.hjson" "registers" >}}
+* [Register Table](data/rv_core_ibex.hjson#registers)
