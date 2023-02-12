@@ -36,10 +36,10 @@ Hence, the throughput of sub-word write operations is three times lower than for
 Note however that the throughput of read operations is the same for full- and sub-word read operations.
 
 The scrambling mechanism is always enabled and the `sram_ctrl` provides the scrambling device with a predefined scrambling key and nonce when it comes out of reset.
-It is the task of SW to request an updated scrambling key and nonce via the CSRs as described in the [Programmer's Guide]({{< relref "#programmers-guide" >}}) below.
+It is the task of SW to request an updated scrambling key and nonce via the CSRs as described in the [Programmer's Guide](#programmers-guide) below.
 
 For SW convenience, the SRAM controller also provides an LFSR-based memory initialization feature that can overwrite the entire memory with pseudorandom data.
-Similarly to the scrambling key, it is the task of of SW to request memory initialization via the CSRs as described in the [Programmer's Guide]({{< relref "#programmers-guide" >}}) below.
+Similarly to the scrambling key, it is the task of of SW to request memory initialization via the CSRs as described in the [Programmer's Guide](#programmers-guide) below.
 
 Note that TL-UL accesses to the memory that occur while a key request or hardware initialization is pending will be blocked until the request has completed.
 

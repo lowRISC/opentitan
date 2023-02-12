@@ -3,7 +3,7 @@ title: "Software"
 ---
 
 This is the landing spot for software documentation within the OpenTitan project.
-More description and information can be found within the [Reference Manual](../util/README.md) and [User Guide]({{< relref "doc/ug" >}}) areas.
+More description and information can be found within the [Reference Manual](../util/README.md) and [User Guide](https://docs.opentitan.org/doc/guides/getting_started/) areas.
 
 There are three major parts to the OpenTitan software stack:
 
@@ -55,7 +55,7 @@ All DIFs are also documented on their respective [Hardware IP Specification](../
 
 ## Vendored in Code
 
-See [Vendor Tool User Guide]({{% relref "doc/ug/vendor_hw.md" %}})
+See [Vendor Tool User Guide](../util/doc/vendor.md)
 
 * [CoreMark](https://github.com/eembc/coremark)
 * [Cryptoc](https://chromium.googlesource.com/chromiumos/third_party/cryptoc/)

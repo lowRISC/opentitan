@@ -79,7 +79,7 @@ The hardware interfaces of this process is discussed later in this document.
 ## Comportable Peripheral Definition
 
 All comportable IP peripherals must adhere to a minimum set of functionality in order to be compliant with the framework that is going to be set around it.
-(An example framework is the [earlgrey top level design](../../hw/top_earlgrey/doc/top_earlgrey.md).)
+(An example framework is the [earlgrey top level design](../../../../hw/top_earlgrey/README.md).)
 This includes several mandatory features as well as several optional ones.
 It is notable that the framework contains designs that are neither the local host processor nor peripherals \- for example the power management unit, clock generators.
 These are handled as special case designs with their own specifications.
@@ -446,7 +446,7 @@ This is done with a list with key `countermeasures`.
 Each item is a dictionary with keys `name` and `desc`.
 The `desc` field is a human-readable description of the countermeasure.
 The `name` field should be either of the form `ASSET.CM_TYPE` or `INSTANCE.ASSET.CM_TYPE`.
-Here, `ASSET` and `CM_TYPE` should be one of the values given in the tables in the [Security countermeasures]({{< relref "#countermeasures" >}}) section.
+Here, `ASSET` and `CM_TYPE` should be one of the values given in the tables in the [Security countermeasures](#countermeasures) section.
 If specified, `INSTANCE` should name a submodule of the IP block holding the asset.
 It can be used to disambiguate in situations such as where there are two different keys that are protected with different countermeasures.
 
@@ -645,7 +645,7 @@ In terms of naming convention, alerts shall be given a meaningful name that is i
 Recoverable alerts must be prefixed with `recov_*`, whereas fatal alerts must be prefixed with `fatal_*`.
 For instance, an uncorrectable parity error in SRAM could be named `fatal_parity_error`.
 
-In cases where many diverse alert sources are bundled into one alert event (see [Alert Hardware Implementation]({{< relref "#alert-hardware-implementation" >}})), it may sometimes be difficult to assign the alert event a meaningful and descriptive name.
+In cases where many diverse alert sources are bundled into one alert event (see [Alert Hardware Implementation](#alert-hardware-implementation)), it may sometimes be difficult to assign the alert event a meaningful and descriptive name.
 In such cases, it is permissible to default the alert names to just `recov` and/or `fatal`.
 Note that this implies that the peripheral does not expose more than one alert for that type.
 

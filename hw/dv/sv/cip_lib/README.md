@@ -4,7 +4,7 @@ title: Comportable IP Testbench Architecture
 
 ## Overview
 Going along the lines of what it takes to design an IP that adheres to the
-[Comportability Specifications](/doc/rm/comportability_specification),
+[Comportability Specifications](../../../../doc/contributing/hw/comportability/README.md),
 we attempt to standardize the DV methodology for developing the IP level
 testbench environment as well by following the same approach. This document describes
 the Comportable IP (CIP) library, which is a complete UVM environment framework that

@@ -199,7 +199,7 @@ This is used by an Azure Pipelines pre-submit check script to ensure that the so
 
 ## Automatic SV Code Formatting using Verible (Open Source)
 
-The open source Verible tool used for [style linting]({{< relref "#style-linting-using-verible-open-source" >}}) also supports an automatic code formatting mode for SystemVerilog.
+The open source Verible tool used for [style linting](#style-linting-using-verible-open-source) also supports an automatic code formatting mode for SystemVerilog.
 The formatter follows our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md) and helps reducing manual code alignment steps.
 
 Note that this formatter is still under development and not entirely production ready yet due to some remaining formatting bugs and discrepancies - hence automatic code formatting is not enforced in CI at this point.
@@ -226,7 +226,7 @@ These are discussed in the [Getting Started Designing Hardware](./design.md) doc
 ## FPGA vs Silicon
 
 One output of the OpenTitan project will be silicon instantiations of hardware functionality described in this open source repository.
-The RTL repository defines design functionality at a level satisfactory to prove the hardware and software functionality in an FPGA (see [user guides]({{< relref "doc/ug" >}})).
+The RTL repository defines design functionality at a level satisfactory to prove the hardware and software functionality in an FPGA (see [user guides](https://docs.opentitan.org/doc/guides/getting_started/)).
 That level is so-called "tapeout ready".
 Once the project reaches that milestone, the team will work with a vendor or vendors to ensure a trustworthy, industry-quality, fully functional OpenTitan chip is manufactured.
 

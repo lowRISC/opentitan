@@ -71,7 +71,7 @@ Note the sequence is not designed into one specific module, but rather a result 
 ## Normal Operation
 
 Once the life cycle system is powered up and stable, its outputs remain static unless specifically requested to change or affected by security escalation.
-The life cycle controller can accept [change requests]({{< relref "#life-cycle-requests" >}}) from software as well as external entities.
+The life cycle controller can accept [change requests](#life-cycle-requests) from software as well as external entities.
 
 ### Unconditional Transitions
 
@@ -128,7 +128,7 @@ The life cycle controller contains two escalation paths that are connected to es
 The two escalation paths are redundant, and both trigger the same mechanism.
 Upon assertion of any of the two escalation actions, the life cycle state is **TEMPORARILY** altered.
 I.e. when this escalation path is triggered, the life cycle state is transitioned into "ESCALATE", which behaves like a virtual "SCRAP" state (i.e. this state is not programmed into OTP).
-This causes [all decoded outputs]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}) to be disabled until the next power cycle.
+This causes [all decoded outputs](#life-cycle-decoded-outputs-and-controls) to be disabled until the next power cycle.
 In addition to that, the life cycle controller asserts the ESCALATE_EN life cycle signal which is distributed to all IPs in the design that expose an escalation action (like moving FSMs into terminal error states or clearing sensitive registers).
 
 Whether to escalate to the life cycle controller or not is a software decision, please see the alert handler for more details.
@@ -168,7 +168,7 @@ This ensures that secrets cannot be scanned out, and specific values cannot be s
 - The TAP controller is unable to issue any kind of self test that would disrupt and scramble live logic which could lead to unpredictable behavior
 - The TAP controller or test function is unable to alter the non-volatile contents of flash or OTP
 
-See [TAP isolation]({{< relref "#tap-and-isolation" >}}) for more implementation details.
+See [TAP isolation](#tap-and-isolation) for more implementation details.
 
 #### NVM_DEBUG_EN
 
@@ -179,14 +179,14 @@ This type of functionality, if it exists, must be disabled during specific life 
 Since these back-door functions may bypass memory protection, they could be used to read out provisioned secrets that are not meant to be visible to software or a debug host.
 
 Note that NVM_DEBUG_EN is disabled in the last test unlocked state (TEST_UNLOCKED7) such that the isolated flash partition can be be securely populated, without exposing its contents via the NVM backdoor interface.
-See also accessibility description of the [isolated flash partition]({{< relref "#iso_part_sw_rd_en-and-iso_part_sw_wr_en" >}}).
+See also accessibility description of the [isolated flash partition](#iso_part_sw_rd_en-and-iso_part_sw_wr_en).
 
 #### HW_DEBUG_EN
 
 HW_DEBUG_EN refers to the general ungating of both invasive (JTAG control of the processor, bidirectional analog test points) and non-invasive debug (debug bus observation, and register access error returns).
 
 This signal thus needs to be routed to all security-aware and debug capable peripherals.
-This signal is used to determine whether OpenTitan peripheral register interfaces should [silently error]({{< relref "doc/rm/register_tool/_index.md#error_responses" >}}).
+This signal is used to determine whether OpenTitan peripheral register interfaces should [silently error](../../../util/reggen/README.md#error_responses" >}}).
 If HW_DEBUG_EN is set to ON, normal errors should be returned.
 If HW_DEBUG_EN is set to OFF, errors should return silently.
 
@@ -248,7 +248,7 @@ However, as these signals only gate functional access and not DFT access, it is 
 
 While the OWNER_SEED_SW_RW_EN is statically enabled in the states shown above, the CREATOR_SEED_SW_RW_EN is only enabled if the device has not yet been personalized (i.e., the OTP partition holding the root key has not been locked down yet).
 
-For more a list of the collateral in Flash and OTP and an explanation of how that collateral is affected by these signals, see the [OTP collateral]({{< relref "#otp-collateral" >}}) and [flash collateral]({{< relref "#flash-collateral" >}}) sections.
+For more a list of the collateral in Flash and OTP and an explanation of how that collateral is affected by these signals, see the [OTP collateral](#otp-collateral) and [flash collateral](#flash-collateral) sections.
 
 #### SEED_HW_RD_EN
 
@@ -266,12 +266,12 @@ This construction allows to write a value to that partition and keep it secret b
 ## OTP Collateral
 
 The following is a list of all life cycle related collateral stored in OTP.
-Most collateral also contain associated metadata to indicate when the collateral is restricted from further software access, see [accessibility summary]({{< relref "#otp-accessibility-summary-and-impact-of-provision_en" >}}) for more details.
+Most collateral also contain associated metadata to indicate when the collateral is restricted from further software access, see [accessibility summary](#otp-accessibility-summary-and-impact-of-provision_en) for more details.
 Since not all collateral is consumed by the life cycle controller, the consuming agent is also shown.
 
 {{< snippet "lc_ctrl_otp_collateral.md" >}}
 
-The TOKENs and KEYS are considered secret data and are stored in [wrapped format]({{< relref "#conditional-transitions">}}).
+The TOKENs and KEYS are considered secret data and are stored in [wrapped format](#conditional-transitions).
 Before use, the secrets are unwrapped.
 
 The SECRET0_DIGEST and SECRET2_DIGEST are the digest values computed over the secret partitions in OTP holding the tokens and root keys.
@@ -392,22 +392,22 @@ Signal                       | Direction        | Type                          
 `otp_manuf_state_i`          | `input`          | `otp_manuf_state_t`                      | HW_CFG bits from OTP ({{< regref MANUF_STATE_0 >}}).
 `lc_otp_vendor_test_o`       | `output`         | `otp_ctrl_pkg::lc_otp_vendor_test_req_t` | Vendor-specific test bits to OTP ({{< regref OTP_VENDOR_TEST_CTRL >}}).
 `lc_otp_vendor_test_i`       | `input`          | `otp_ctrl_pkg::lc_otp_vendor_test_rsp_t` | Vendor-specific test bits to OTP ({{< regref OTP_VENDOR_TEST_STATUS >}}).
-`lc_dft_en_o`                | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_nvm_debug_en_o`          | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_hw_debug_en_o`           | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_cpu_en_o`                | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_creator_seed_sw_rw_en_o` | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_owner_seed_sw_rw_en_o`   | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_iso_part_sw_rd_en_o`     | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_iso_part_sw_wr_en_o`     | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_seed_hw_rd_en_o`         | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_keymgr_en_o`             | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_escalate_en_o`           | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_check_byp_en_o`          | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_clk_byp_req_o`           | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_clk_byp_ack_i`           | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_flash_rma_req_o`         | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
-`lc_flash_rma_ack_i`         | `output`         | `lc_tx_t`                                | [Multibit control signal]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}).
+`lc_dft_en_o`                | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_nvm_debug_en_o`          | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_hw_debug_en_o`           | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_cpu_en_o`                | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_creator_seed_sw_rw_en_o` | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_owner_seed_sw_rw_en_o`   | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_iso_part_sw_rd_en_o`     | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_iso_part_sw_wr_en_o`     | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_seed_hw_rd_en_o`         | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_keymgr_en_o`             | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_escalate_en_o`           | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_check_byp_en_o`          | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_clk_byp_req_o`           | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_clk_byp_ack_i`           | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_flash_rma_req_o`         | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
+`lc_flash_rma_ack_i`         | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
 
 #### Power Manager Interface
 
@@ -435,7 +435,7 @@ Since the KMAC and life cycle controller are in different clock domains, the KMA
 
 #### Control Signal Propagation
 
-For better security, all the [life cycle control signals]({{< relref "#life-cycle-decoded-outputs-and-controls" >}}) are broadcast in multi-bit form.
+For better security, all the [life cycle control signals](#life-cycle-decoded-outputs-and-controls) are broadcast in multi-bit form.
 The active ON state for every signal is broadcast as `4'b1010`, while the inactive OFF state is encoded as `4'b0101`.
 For all life cycle signals except the escalation signal ESCALATE_EN, all values different from ON must be interpreted as OFF in RTL.
 In case of ESCALATE_EN, all values different from OFF must be interpreted as ON in RTL.
@@ -475,7 +475,7 @@ Conceptually speaking, the life cycle controller consists of a large  FSM that i
 ![LC Controller Block Diagram](./doc/lc_ctrl_blockdiag.svg)
 
 The main FSM implements a linear state sequence that always moves in one direction for increased glitch resistance.
-I.e., it never returns to the initialization and broadcast states as described in the [life cycle state controller section]({{< relref "#main-fsm" >}}).
+I.e., it never returns to the initialization and broadcast states as described in the [life cycle state controller section](#main-fsm).
 
 The main FSM state is redundantly encoded, and augmented with the life cycle state.
 That augmented state vector is consumed by three combinational submodules:
@@ -486,10 +486,10 @@ That augmented state vector is consumed by three combinational submodules:
 Note that the two additional life cycle control signals `lc_flash_rma_req_o` and `lc_clk_byp_req_o` are output by the main FSM, since they cannot be derived from the life cycle state alone and are reactive in nature in the sense that there is a corresponding acknowledgement signal.
 
 The life cycle controller contains a JTAG TAP that can be used to access the same CSR space that is accessible via TL-UL.
-In order to write to the CSRs, a [hardware mutex]({{< relref "#hardware-mutex" >}}) has to be claimed.
+In order to write to the CSRs, a [hardware mutex](#hardware-mutex) has to be claimed.
 
 The life cycle controller also contains two escalation receivers that are connected to escalation severity 1 and 2 of the alert handler module.
-The actions that are triggered by these escalation receivers are explained in the [escalation handling section]({{< relref "#escalation-handling" >}}) below.
+The actions that are triggered by these escalation receivers are explained in the [escalation handling section](#escalation-handling) below.
 
 ### System Integration and TAP Isolation
 
@@ -597,8 +597,8 @@ The request interface consists of 7 registers:
 3. {{< regref "TRANSITION_TOKEN_*" >}}: Any necessary token for conditional transitions.
 4. {{< regref "TRANSITION_CMD" >}}: Start the life cycle transition.
 5. {{< regref "STATUS" >}}: Indicates whether the requested transition succeeded.
-6. {{< regref OTP_VENDOR_TEST_CTRL >}}: See [Macro-specific test control bits]({{< relref "#vendor-specific-test-control-register" >}}).
-7. {{< regref OTP_VENDOR_TEST_STATUS >}}: See [Macro-specific test control bits]({{< relref "#vendor-specific-test-control-register" >}}).
+6. {{< regref OTP_VENDOR_TEST_CTRL >}}: See [Macro-specific test control bits](#vendor-specific-test-control-register).
+7. {{< regref OTP_VENDOR_TEST_STATUS >}}: See [Macro-specific test control bits](#vendor-specific-test-control-register).
 
 If the transition fails, the cause will be reported in this register as well.
 
@@ -622,7 +622,7 @@ To this end, the life cycle CSRs contain the {{< regref OTP_VENDOR_TEST_CTRL >}}
 These registers are only active during RAW, TEST_* and RMA life cycle states.
 In all other life cycle states, the status register reads back all-zero, and the control register value will be tied to 0 before forwarding it to the OTP macro.
 
-Similarly to the [Life Cycle Request Interface]({{< relref "#life-cycle-request-interface" >}}), the hardware mutex must be claimed in order to access both of these registers.
+Similarly to the [Life Cycle Request Interface](#life-cycle-request-interface), the hardware mutex must be claimed in order to access both of these registers.
 Note that these registers read back all-zero if the mutex is not claimed.
 
 ### TAP Construction and Isolation
@@ -632,7 +632,7 @@ Note that these registers read back all-zero if the mutex is not claimed.
 The life cycle TAP controller is functionally very similar to the [RISC-V debug module](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rv_dm/rtl/rv_dm.sv) for the Ibex processor and reuses the same debug transport module (DTM) and the associated debug module interface (DMI).
 The DTM and DMI are specified as part of the [RISC-V external debug specification, v0.13](https://github.com/riscv/riscv-debug-spec/blob/release/riscv-debug-release.pdf) and essentially provide a simple mechanism to read and write to a register space.
 In the case of the life cycle TAP controller this register space is essentially the life cycle CSR space.
-Hence, the [register table]({{< relref "#register-table" >}}) is identical for both the SW view and the view through the DMI, with the only difference that the byte offsets have to be converted to word offsets for the DMI.
+Hence, the [register table](#register-table) is identical for both the SW view and the view through the DMI, with the only difference that the byte offsets have to be converted to word offsets for the DMI.
 
 The RISC-V external debug specification defines the two custom JTAG registers 0x10 (DTM control/status) and 0x11 (DMI).
 The former provides status info such as idle state, number of address bits and RISC-V specification version plus reset control.
@@ -649,7 +649,7 @@ The TAP isolation and multiplexing is implemented in the pinmux IP as [described
 
 # Programmer's Guide
 
-The register layout and offsets shown in the [register table]{{< relref "#register-table" >}} below are identical for both the CSR and JTAG TAP interfaces.
+The register layout and offsets shown in the [register table]#register-table below are identical for both the CSR and JTAG TAP interfaces.
 Hence the following programming sequence applies to both SW running on the device and SW running on the test appliance that accesses life cycle through the TAP.
 
 1. In order to perform a life cycle transition, SW should first check whether the life cycle controller has successfully initialized and is ready to accept a transition command by making sure that the {{< regref "STATUS.READY" >}} bit is set to 1, and that all other status and error bits in {{< regref "STATUS" >}} are set to 0.

@@ -644,7 +644,7 @@ The {{< regref "STATUS.BYTEORDER" >}} field indicates the fixed value of the `By
 
 The 8-bit fields {{< regref "STATUS.RXQD" >}} and {{< regref "STATUS.TXQD" >}} respectively indicate the number of words currently stored in the RX and TX FIFOs.
 
-The remaining fields in the {{< regref "STATUS" >}} register are all flags related to the management of the TX and RX FIFOs, which are described in the [section on SPI Events]({{< relref "#spi-events-and-event-interrupts" >}}).
+The remaining fields in the {{< regref "STATUS" >}} register are all flags related to the management of the TX and RX FIFOs, which are described in the [section on SPI Events](#spi-events-and-event-interrupts).
 
 ## Other Registers
 
@@ -864,7 +864,7 @@ As this is an unlikely use case, transient stalls are considered an unlikely occ
 
 Dual- and Standard-mode segments can tolerate byte-to-byte delays of 7 or 15 clocks, so there are no known mechanism for transient stalls at these speeds.
 
-Please refer to the [the Appendix]({{< relref "#analysis-of-transient-datapath-stalls" >}}) for a detailed analysis of transient stall events.
+Please refer to the [the Appendix](#analysis-of-transient-datapath-stalls) for a detailed analysis of transient stall events.
 
 ## SPI_HOST Finite State Machine (FSM)
 
@@ -1141,7 +1141,7 @@ This relationship between the milestone signals and the bit and byte counters is
 
 ### Implementation of Configuration Change Delays
 
-As described in the [Theory of Operation]({{< relref "#idle-time-delays-when-changing-configurations" >}}), changes in configuration only occur when the SPI_HOST is idle.
+As described in the [Theory of Operation](#idle-time-delays-when-changing-configurations), changes in configuration only occur when the SPI_HOST is idle.
 The configuration change must be preceded by enough idle time to satisfy the previous configuration, and followed by enough idle time to satisfy the new configuration.
 
 In order to support these idle time requirements, the SPI_HOST FSM has two idle waiting states.

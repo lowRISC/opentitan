@@ -15,7 +15,7 @@ Important points before getting started:
 * All OpenTitan interactions are covered by [lowRISC's code of conduct](https://www.lowrisc.org/code-of-conduct/).
 * When communicating, remember OpenTitan is a security-focused project.
   Because of this, certain issues may need to be discussed in a small group first.
-  See the [Security Issues Process]({{<ref "#security-issues" >}}) described below for more details.
+  See the [Security Issues Process](#security-issues) described below for more details.
 * OpenTitan involves both hardware and software.
   We follow a hybrid approach involving both silicon and software design practices.
 * OpenTitan is a work in progress.
@@ -26,7 +26,7 @@ If you would like more details, see the [Detailed Contribution Guide](./detailed
 
 ## Bug reports
 
-**To report a security issue, please follow the [Security Issues Process]({{<ref "#security-issues" >}})**.
+**To report a security issue, please follow the [Security Issues Process](#security-issues)**.
 
 Ideally, all designs are bug free.
 Realistically, each piece of collateral in our repository is in a different state of maturity with some still under active testing and development.

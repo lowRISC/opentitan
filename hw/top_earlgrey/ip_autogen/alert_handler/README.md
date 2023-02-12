@@ -155,7 +155,7 @@ The latter is to ensure that all escalation receivers are always active and have
 
 The `lpg_cg_en_i` and `lpg_rst_en_i` are two arrays with multibit indication signals from the [clock](../../../ip/clkmgr/README.md) and [reset managers](../../../ip/rstmgr/README.md).
 These indication signals convey whether a specific group of alert senders are either clock gated or in reset.
-As explained in [more detail below]({{< relref "#low-power-management-of-alert-channels" >}}), this information is used to temporarily halt the ping timer mechanism on channels that are in a low-power state in order to prevent false positives.
+As explained in [more detail below](#low-power-management-of-alert-channels), this information is used to temporarily halt the ping timer mechanism on channels that are in a low-power state in order to prevent false positives.
 
 #### Crashdump Output
 
@@ -369,7 +369,7 @@ This ensures that the staggered level changes appear at most 1 cycle apart from 
 ### LFSR Timer
 
 The `ping_req_i` inputs of all signaling modules (`prim_alert_receiver`, `prim_esc_sender`) instantiated within the alert handler are connected to a central ping timer that alternatingly pings either an alert line or an escalation line after waiting for a pseudo-random amount of clock cycles.
-Further, this ping timer also randomly selects a particular alert line to be pinged (escalation senders are always pinged in-order due to the [ping monitoring mechanism]({{< relref "#monitoring-of-pings-at-the-escalation-receiver-side" >}}) on the escalation side).
+Further, this ping timer also randomly selects a particular alert line to be pinged (escalation senders are always pinged in-order due to the [ping monitoring mechanism](#monitoring-of-pings-at-the-escalation-receiver-side) on the escalation side).
 That should make it more difficult to predict the next ping occurrence based on past observations.
 
 The ping timer is implemented using an [LFSR-based PRNG of Galois type](../../../ip/prim/doc/prim_lfsr.md).
@@ -397,7 +397,7 @@ As described in the programmers guide below, the ping timer has to be enabled ex
 Only alerts that have been *enabled and locked* will be pinged in order to avoid spurious alerts.
 Escalation channels are always enabled, and hence will always be pinged once this mechanism has been turned on.
 
-In addition to the ping timer mechanism described above, the escalation receivers contain monitoring  counters that monitor the liveness of the alert handler (described in more detail in [this section]({{< relref "#monitoring-of-pings-at-the-escalation-receiver-side" >}})).
+In addition to the ping timer mechanism described above, the escalation receivers contain monitoring  counters that monitor the liveness of the alert handler (described in more detail in [this section](#monitoring-of-pings-at-the-escalation-receiver-side)).
 This mechanism requires that the maximum wait time between escalation receiver pings is bounded.
 To that end, escalation senders are pinged in-order every second ping operation (i.e., the wait time is randomized, but the selection of the escalation line is not).
 

@@ -3,7 +3,7 @@ title: Bazel Notes
 ---
 
 Both OpenTitan hardware and software is built with Bazel.
-While our [Getting Started]({{< relref "getting_started" >}}) guides detail some of the Bazel commands that can be used to build both types of artifacts, below are detailed notes on:
+While our [Getting Started](https://docs.opentitan.org/doc/guides/getting_started/) guides detail some of the Bazel commands that can be used to build both types of artifacts, below are detailed notes on:
 * how Bazel is configured for our project, and
 * brief examples of Bazel commands that are useful for:
     * querying,
@@ -26,7 +26,7 @@ The `WORKSPACE` file controls external dependencies such that builds can be made
 Bazel loads specific external dependencies, such as various language toolchains.
 It uses them to build OpenTitan targets (like it does with bazel\_embedded) or to satisfy dependencies (as it does with abseil).
 To produce increasingly stable releases the external dependencies loaded in `WORKSPACE` file attempts to fix a all external `http_archive`s to a specific SHA.
-As we add more dependencies to the workspace, builds and tests will become less sensitive to external updates, and we will vastly simplify the [Getting Started]({{< relref "getting_started" >}}) instructions.
+As we add more dependencies to the workspace, builds and tests will become less sensitive to external updates, and we will vastly simplify the [Getting Started](https://docs.opentitan.org/doc/guides/getting_started/) instructions.
 
 ## BUILD files
 
@@ -48,7 +48,7 @@ To maintain the invariant that hand-written files not be included in autogen dir
   ```console
   bazel clean --expunge
   ```
-  Note: you should rarely need to run this, see [below]({{< relref "#troubleshooting-builds" >}}) for when this may be necessary.
+  Note: you should rarely need to run this, see [below](#troubleshooting-builds) for when this may be necessary.
 
 # Locating Build Artifacts
 
@@ -257,7 +257,7 @@ The latter sledgehammer is only intended to be used as a last resort when the ex
 
 Create a `.bazelrc` file in your home directory to simplify executing bazel commands.
 For example, you can use a `.bazelrc` to:
-* set up a [disk cache]({{< relref "#disk-cache" >}}), or
+* set up a [disk cache](#disk-cache), or
 * skip running tests on the CW310 FPGA if you don not have one.
 
 A `.bazelrc` file that would accomplish this would look like:
@@ -302,7 +302,7 @@ For example, running
 bazel build //... --disk_cache=~/.cache/bazel-disk-cache
 ```
 will cache all built artifacts.
-Alternatively add the following to `$HOME/.bazelrc` to avoid having automatically use the disk cache on every Bazel invocation, as shown [above]({{< relref "#create-a-bazelrc-file" >}}).
+Alternatively add the following to `$HOME/.bazelrc` to avoid having automatically use the disk cache on every Bazel invocation, as shown [above](#create-a-bazelrc-file).
 
 Note that Bazel does not perform any garbage collection on the disk cache.
 To clean out the disk cache, you can set a cron job to periodically delete all files that have not been accessed for a certain amount of time.
@@ -347,7 +347,7 @@ bazel test --test_tag_filters=cw310,-broken //sw/device/tests/...
 Bazel was not optimized for the `git` worktree workflow, but using worktrees can help with branch management and provides the advantage of being able to run multiple Bazel jobs simultaneously.
 Here are some tips that can improve the developer experience when using worktrees.
 
-1. Follow the [instructions above]({{< relref "#disk-cache" >}}) to enable the disk cache.
+1. Follow the [instructions above](#disk-cache) to enable the disk cache.
   Bazel uses the workspace's path when caching actions.
   Because each worktree is a separate workspace at a different path, different worktrees cannot share an action cache.
   They can, however, share a disk cache, which helps avoid rebuilding the same artifacts across different worktrees.

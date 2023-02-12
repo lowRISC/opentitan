@@ -452,7 +452,7 @@ The stack has a maximum depth of eight and the top of the stack is the current l
 OTBN is a security co-processor.
 It contains various security features and is hardened against side-channel analysis and fault injection attacks.
 The following sections describe the high-level security features of OTBN.
-Refer to the [Design Details]({{< relref "#design-details" >}}) section for a more in-depth description.
+Refer to the [Design Details](#design-details) section for a more in-depth description.
 
 ## Data Integrity Protection
 
@@ -462,16 +462,16 @@ Data in OTBN travels along a data path which includes the data memory (DMEM), th
 Whenever possible, data transmitted or stored within OTBN is protected with an integrity protection code which guarantees the detection of at least three modified bits per 32 bit word.
 Additionally, instructions and data stored in the instruction and data memory, respectively, are scrambled with a lightweight, non-cryptographically-secure cipher.
 
-Refer to the [Data Integrity Protection]({{<relref "#design-details-data-integrity-protection">}}) section for details of how the data integrity protections are implemented.
+Refer to the [Data Integrity Protection](#design-details-data-integrity-protection) section for details of how the data integrity protections are implemented.
 
 ## Secure Wipe
 
 OTBN provides a mechanism to securely wipe all state it stores, including the instruction memory.
 
 The full secure wipe mechanism is split into three parts:
-- [Data memory secure wipe]({{<relref "#design-details-secure-wipe-dmem">}})
-- [Instruction memory secure wipe]({{<relref "#design-details-secure-wipe-imem">}})
-- [Internal state secure wipe]({{<relref "#design-details-secure-wipe-internal">}})
+- [Data memory secure wipe](#design-details-secure-wipe-dmem)
+- [Instruction memory secure wipe](#design-details-secure-wipe-imem)
+- [Internal state secure wipe](#design-details-secure-wipe-internal)
 
 A secure wipe is performed automatically in certain situations, or can be requested manually by the host software.
 The full secure wipe is automatically initiated as a local reaction to a fatal error.
@@ -480,7 +480,7 @@ In both cases OTBN enters the locked state afterwards and needs to be reset.
 A secure wipe of only the internal state is performed after reset, whenever an OTBN operation is complete, and after a recoverable error.
 Finally, host software can manually trigger the data memory and instruction memory secure wipe operations by issuing an appropriate [command](#design-details-commands).
 
-Refer to the [Secure Wipe]({{<relref "#design-details-secure-wipe">}}) section for implementation details.
+Refer to the [Secure Wipe](#design-details-secure-wipe) section for implementation details.
 
 ## Instruction Counter
 
@@ -504,7 +504,7 @@ To reduce side channel leakage OTBN employs a blanking technique on certain cont
 When a path is blanked it is forced to 0 (by ANDing the path with a blanking signal) preventing sensitive data bits producing a power signature via that path where that path isn't needed for the current instruction.
 
 Blanking controls all come directly from flops to prevent glitches in decode logic reducing the effectiveness of the blanking.
-These control signals are determined in the [prefetch stage]({{<relref "#instruction-prefetch">}}) via pre-decode logic.
+These control signals are determined in the [prefetch stage](#instruction-prefetch) via pre-decode logic.
 Full decoding is still performed in the execution stage with the full decode results checked against the pre-decode blanking control.
 If the full decode disagrees with the pre-decode OTBN raises a `BAD_INTERNAL_STATE` fatal error.
 
@@ -582,15 +582,15 @@ While DMEM is 4kiB, only the first 3kiB (at addresses `0x0` to `0xbff`) is visib
 This is to allow OTBN applications to store sensitive information in the other 1kiB, making it harder for that information to leak back to Ibex.
 
 Each memory write through the register interface updates a checksum.
-See the [Memory Load Integrity]({{< relref "#mem-load-integrity" >}}) section for more details.
+See the [Memory Load Integrity](#mem-load-integrity) section for more details.
 
 ### Instruction Prefetch {#instruction-prefetch}
 
-OTBN employs an instruction prefetch stage to enable pre-decoding of instructions to enable the [blanking SCA hardening measure]({{<relref "#blanking">}}).
+OTBN employs an instruction prefetch stage to enable pre-decoding of instructions to enable the [blanking SCA hardening measure](#blanking).
 Its operation is entirely transparent to software.
 It does not speculate and will only prefetch where the next instruction address can be known.
 This results in a stall cycle for all conditional branches and jumps as the result is neither predicted nor known ahead of time.
-Instruction bits held in the prefetch buffer are unscrambled but use the integrity protection described in [Data Integrity Protection]({{<relref "#design-details-data-integrity-protection">}}).
+Instruction bits held in the prefetch buffer are unscrambled but use the integrity protection described in [Data Integrity Protection](#design-details-data-integrity-protection).
 
 ### Random Numbers
 
@@ -709,7 +709,7 @@ The following actions are taken when OTBN detects a recoverable error:
    - The {{< regref "ERR_BITS" >}} register is set to a non-zero value that describes the error.
    - The current operation is marked as complete by setting {{< regref "INTR_STATE.done" >}}.
    - The {{< regref "STATUS" >}} register is set to `IDLE`.
-2. A [recoverable alert]({{< relref "#alerts" >}}) is raised.
+2. A [recoverable alert](#alerts) is raised.
 
 The host software can start another operation on OTBN after a recoverable error was detected.
 
@@ -727,14 +727,14 @@ The following actions are taken when OTBN detects a fatal error:
    - The {{< regref "ERR_BITS" >}} register is set to a non-zero value that describes the error.
    - The current operation is marked as complete by setting {{< regref "INTR_STATE.done" >}}.
 3. The {{< regref "STATUS" >}} register is set to `LOCKED`.
-4. A [fatal alert]({{< relref "#alerts" >}}) is raised.
+4. A [fatal alert](#alerts) is raised.
 
 Note that OTBN can detect some errors even when it isn't running.
 One example of this is an error caused by an integrity error when reading or writing OTBN's memories over the bus.
 In this case, the {{< regref "ERR_BITS" >}} register will not change.
 This avoids race conditions with the host processor's error handling software.
 However, every error that OTBN detects when it isn't running is fatal.
-This means that the cause will be reflected in {{< regref "FATAL_ALERT_CAUSE" >}}, as described below in [Alerts]({{< relref "#alerts" >}}).
+This means that the cause will be reflected in {{< regref "FATAL_ALERT_CAUSE" >}}, as described below in [Alerts](#alerts).
 This way, no alert is generated without setting an error code somewhere.
 
 ### List of Errors {#design-details-list-of-errors}
@@ -889,7 +889,7 @@ In the following, the Integrity Protection Code and the scrambling algorithm are
 OTBN uses the same integrity protection code everywhere to provide overarching data protection without regular re-encoding.
 The code is applied to 32b data words, and produces 39b of encoded data.
 
-The code used is an (39,32) Hsiao "single error correction, double error detection" (SECDED) error correction code (ECC) [[CHEN08]({{< relref "#ref-chen08">}})].
+The code used is an (39,32) Hsiao "single error correction, double error detection" (SECDED) error correction code (ECC) [[CHEN08](#ref-chen08)].
 It has a minimum Hamming distance of four, resulting in the ability to detect at least three errors in a 32 bit word.
 The code is used for error detection only; no error correction is performed.
 
@@ -904,20 +904,20 @@ Note that data stored in other temporary memories within OTBN, including the reg
 Scrambling is used to obfuscate the memory contents and to diffuse the data.
 Obfuscation makes passive probing more difficult, while diffusion makes active fault injection attacks more difficult.
 
-The scrambling mechanism is described in detail in the [section "Scrambling Primitive" of the SRAM Controller Technical Specification](/hw/ip/sram_ctrl/doc/#scrambling-primitive).
+The scrambling mechanism is described in detail in the [section "Scrambling Primitive" of the SRAM Controller Technical Specification](../sram_ctrl/README.md#scrambling-primitive).
 
 When OTBN comes out of reset, its memories have default scrambling keys.
-The host processor can request new keys for each memory by issuing a [secure wipe of DMEM]({{<relref "#design-details-secure-wipe-dmem">}}) and a [secure wipe of IMEM]({{<relref "#design-details-secure-wipe-imem">}}).
+The host processor can request new keys for each memory by issuing a [secure wipe of DMEM](#design-details-secure-wipe-dmem) and a [secure wipe of IMEM](#design-details-secure-wipe-imem).
 
 #### Actions on Integrity Errors
 
 A fatal error is raised whenever a data integrity violation is detected, which results in an immediate stop of all processing and the issuing of a fatal alert.
-The section [Error Handling and Reporting]({{< relref "#design-details-error-handling-and-reporting" >}}) describes the error handling in more detail.
+The section [Error Handling and Reporting](#design-details-error-handling-and-reporting) describes the error handling in more detail.
 
 #### Register File Integrity Protection
 
 OTBN contains two register files: the 32b GPRs and the 256b WDRs.
-The data stored in both register files is protected with the [Integrity Protection Code]({{< relref "#design-details-integrity-protection-code">}}).
+The data stored in both register files is protected with the [Integrity Protection Code](#design-details-integrity-protection-code).
 Neither the register file contents nor register addresses are scrambled.
 
 The GPRs `x2` to `x31` store a 32b data word together with the Integrity Protection Code, resulting in 39b of stored data.
@@ -948,14 +948,14 @@ Detected integrity violations in a register file raise a fatal `reg_error`.
 OTBN's data memory is 256b wide, but allows for 32b word accesses.
 To facilitate such accesses, all integrity protection in the data memory is done on a 32b word granularity.
 
-All data entering or leaving the data memory block is protected with the [Integrity Protection Code]({{< relref "#design-details-integrity-protection-code">}});
+All data entering or leaving the data memory block is protected with the [Integrity Protection Code](#design-details-integrity-protection-code);
 this code is not re-computed within the memory block.
 
-Before being stored in SRAM, the data word with the attached Integrity Protection Code, as well as the address are scrambled according to the [memory scrambling algorithm]({{< relref "#design-details-memory-scrambling">}}).
+Before being stored in SRAM, the data word with the attached Integrity Protection Code, as well as the address are scrambled according to the [memory scrambling algorithm](#design-details-memory-scrambling).
 The scrambling is reversed on a read.
 
 The ephemeral memory scrambling key and the nonce are provided by the [OTP block](../otp_ctrl/README.md).
-They are set once when OTBN block is reset, and changed whenever a [secure wipe]({{<relref "#design-details-secure-wipe-dmem">}}) of the data memory is performed.
+They are set once when OTBN block is reset, and changed whenever a [secure wipe](#design-details-secure-wipe-dmem) of the data memory is performed.
 
 
 The Integrity Protection Code is checked on every memory read, even though the code remains attached to the data.
@@ -964,14 +964,14 @@ Detected integrity violations in the data memory raise a fatal `dmem_error`.
 
 #### Instruction Memory (IMEM) Integrity Protection
 
-All data entering or leaving the instruction memory block is protected with the [Integrity Protection Code]({{< relref "#design-details-integrity-protection-code">}});
+All data entering or leaving the instruction memory block is protected with the [Integrity Protection Code](#design-details-integrity-protection-code);
 this code is not re-computed within the memory block.
 
-Before being stored in SRAM, the instruction word with the attached Integrity Protection Code, as well as the address are scrambled according to the [memory scrambling algorithm]({{< relref "#design-details-memory-scrambling">}}).
+Before being stored in SRAM, the instruction word with the attached Integrity Protection Code, as well as the address are scrambled according to the [memory scrambling algorithm](#design-details-memory-scrambling).
 The scrambling is reversed on a read.
 
 The ephemeral memory scrambling key and the nonce are provided by the [OTP block](../otp_ctrl/README.md).
-They are set once when OTBN block is reset, and changed whenever a [secure wipe]({{<relref "#design-details-secure-wipe-imem">}}) of the instruction memory is performed.
+They are set once when OTBN block is reset, and changed whenever a [secure wipe](#design-details-secure-wipe-imem) of the instruction memory is performed.
 
 The Integrity Protection Code is checked on every memory read, even though the code remains attached to the data.
 A further check must be performed when the data is consumed.
@@ -988,7 +988,7 @@ It isn't a cryptographically secure MAC, so cannot spot an attacker who can comp
 However, in this case the attacker would be equally able to control responses from OTBN, so any such check could be subverted.
 
 The CRC used is the 32-bit CRC-32-IEEE checksum.
-This standard choice of generating polynomial makes it compatible with other tooling and libraries, such as the [crc32 function](https://docs.python.org/3/library/binascii.html#binascii.crc32) in the python 'binascii' module and the crc instructions in the RISC-V bitmanip specification [[SYMBIOTIC21]]({{<relref "#ref-symbiotic21" >}}).
+This standard choice of generating polynomial makes it compatible with other tooling and libraries, such as the [crc32 function](https://docs.python.org/3/library/binascii.html#binascii.crc32) in the python 'binascii' module and the crc instructions in the RISC-V bitmanip specification [[SYMBIOTIC21]](#ref-symbiotic21).
 The stream over which the checksum is computed is the stream of writes that have been seen since the last write to {{< regref "LOAD_CHECKSUM" >}}.
 Each write is treated as a 48b value, `{imem, idx, wdata}`.
 Here, `imem` is a single bit flag which is one for writes to IMEM and zero for writes to DMEM.
@@ -1010,9 +1010,9 @@ Finally, it should read back the value of {{< regref "LOAD_CHECKSUM" >}} and com
 Applications running on OTBN may store sensitive data in the internal registers or the memory.
 In order to prevent an untrusted application from reading any leftover data, OTBN provides the secure wipe operation.
 This operation can be applied to:
-- [Data memory]({{<relref "#design-details-secure-wipe-dmem">}})
-- [Instruction memory]({{<relref "#design-details-secure-wipe-imem">}})
-- [Internal state]({{<relref "#design-details-secure-wipe-internal">}})
+- [Data memory](#design-details-secure-wipe-dmem)
+- [Instruction memory](#design-details-secure-wipe-imem)
+- [Internal state](#design-details-secure-wipe-internal)
 
 The three forms of secure wipe can be triggered in different ways.
 
@@ -1077,7 +1077,7 @@ Host software cannot explicitly trigger an internal secure wipe; it is performed
 
 OTBN is a specialized coprocessor which is used from the host CPU.
 This section describes how to interact with OTBN from the host CPU to execute an existing OTBN application.
-The section [Writing OTBN applications]({{< ref "#writing-otbn-applications" >}}) describes how to write such applications.
+The section [Writing OTBN applications](#writing-otbn-applications) describes how to write such applications.
 
 ## High-level operation sequence
 
@@ -1103,7 +1103,7 @@ The host CPU can determine if an application has completed by either polling {{<
   When {{< regref "STATUS" >}} has become `LOCKED` a fatal error has occurred and OTBN must be reset to perform further operations.
 * Alternatively, software can listen for the `done` interrupt to determine if the operation has completed.
   The standard sequence of working with interrupts has to be followed, i.e. the interrupt has to be enabled, an interrupt service routine has to be registered, etc.
-  The [DIF]({{<relref "#dif" >}}) contains helpers to do so conveniently.
+  The [DIF](#dif) contains helpers to do so conveniently.
 
 Note: This operation sequence only covers functional aspects.
 Depending on the application additional steps might be necessary, such as deleting secrets from the memories.
@@ -1114,7 +1114,7 @@ Depending on the application additional steps might be necessary, such as deleti
 
 ## Driver {#driver}
 
-A higher-level driver for the OTBN block is available at `sw/device/lib/runtime/otbn.h` ([API documentation](/sw/apis/lib_2runtime_2otbn_8h.html)).
+A higher-level driver for the OTBN block is available at `sw/device/lib/runtime/otbn.h` ([API documentation](../../../sw/apis/lib_2runtime_2otbn_8h.html)).
 
 Another driver for OTBN is part of the silicon creator code at `sw/device/silicon_creator/lib/drivers/otbn.h`.
 
@@ -1159,7 +1159,7 @@ Once OTBN has executed the {{< otbnInsnRef "ECALL" >}} instruction, the followin
 - The current operation is marked as complete by setting {{< regref "INTR_STATE.done" >}} and clearing {{< regref "STATUS" >}}.
 
 The first 2kiB of DMEM can be used to pass data back to the host processor, e.g. a "return value" or an "exit code".
-Refer to the section [Passing of data between the host CPU and OTBN]({{<relref "#writing-otbn-applications-datapassing" >}}) for more information.
+Refer to the section [Passing of data between the host CPU and OTBN](#writing-otbn-applications-datapassing) for more information.
 
 ## Using hardware loops
 
