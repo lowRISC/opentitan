@@ -1,6 +1,4 @@
----
-title: "EDN HWIP Technical Specification"
----
+# EDN HWIP Technical Specification
 
 # Overview
 

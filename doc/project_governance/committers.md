@@ -1,6 +1,4 @@
----
-title: "Committers"
----
+# Committers
 
 Committers are individuals with repository write access.
 While everyone can and is encouraged to contribute by reviewing code, committers are responsible for final approval and merge.

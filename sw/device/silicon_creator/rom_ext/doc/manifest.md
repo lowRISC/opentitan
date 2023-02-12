@@ -1,8 +1,4 @@
----
-title: Manifest Format
-aliases:
-- /sw/device/silicon_creator/manifest
----
+# Manifest Format
 
 <p style="color: red; text-align: right;">
   Status: Draft

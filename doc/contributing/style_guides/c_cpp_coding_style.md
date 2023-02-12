@@ -1,6 +1,4 @@
----
-title: "C and C++ Coding Style Guide"
----
+# C and C++ Coding Style Guide
 
 ## Basics
 

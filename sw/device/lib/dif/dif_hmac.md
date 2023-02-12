@@ -1,6 +1,4 @@
----
-title: "HMAC DIF Checklist"
----
+# HMAC DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [HMAC DIF](../../../../hw/ip/hmac/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

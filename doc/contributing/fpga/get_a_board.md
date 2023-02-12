@@ -1,6 +1,4 @@
----
-title: "Get an FPGA Board"
----
+# Get an FPGA Board
 
 FPGA boards come at different price points, with the price being a good indicator for how much logic the FPGA can hold.
 The following sections give details of how to obtain our supported FPGA boards.

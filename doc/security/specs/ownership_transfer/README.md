@@ -1,6 +1,4 @@
----
-title: "Ownership Transfer"
----
+# Ownership Transfer
 
 ## Overview
 

@@ -1,6 +1,4 @@
----
-title: OpenTitan Big Number Accelerator (OTBN) Instruction Set Architecture
----
+# OpenTitan Big Number Accelerator (OTBN) Instruction Set Architecture
 
 This document describes the instruction set for OTBN.
 For more details about the processor itself, see the [OTBN Technical Specification](../README.md).

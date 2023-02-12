@@ -1,7 +1,4 @@
----
-title: "Security"
-url: "/security/"
----
+# Security
 
 ## Overview
 

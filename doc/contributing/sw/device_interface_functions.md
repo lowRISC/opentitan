@@ -1,6 +1,4 @@
----
-title: "Device Interface Functions (DIFs)"
----
+# Device Interface Functions (DIFs)
 
 ## Motivation
 

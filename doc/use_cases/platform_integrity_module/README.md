@@ -1,6 +1,4 @@
----
-title: "Platform Integrity Module"
----
+# Platform Integrity Module
 
 An OpenTitan IC used as a Platform Integrity Module interposes between a
 platform's boot flash and its main boot devices such as the Baseboard Management

@@ -1,6 +1,4 @@
----
-title: "SPI_HOST HWIP Technical Specification"
----
+# SPI_HOST HWIP Technical Specification
 
 # Overview
 

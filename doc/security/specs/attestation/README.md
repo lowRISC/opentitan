@@ -1,6 +1,4 @@
----
-title: "Device Attestation"
----
+# Device Attestation
 
 ## Overview
 

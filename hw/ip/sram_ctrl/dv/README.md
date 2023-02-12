@@ -1,6 +1,4 @@
----
-title: "SRAM_CTRL DV document"
----
+# SRAM_CTRL DV document
 
 ## Goals
 * **DV**

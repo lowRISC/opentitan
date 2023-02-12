@@ -1,6 +1,4 @@
----
-title: "OTP_CTRL DV document"
----
+# OTP_CTRL DV document
 
 ## Goals
 * **DV**

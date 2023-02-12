@@ -1,6 +1,4 @@
----
-title: "Reference Manuals"
----
+# Reference Manuals
 
 * [Comportability Definition and Specification](../doc/contributing/hw/comportability/README.md)
 * [Device Interface Function (DIF) Specification](../doc/contributing/sw/device_interface_functions.md)

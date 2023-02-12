@@ -1,6 +1,4 @@
----
-title: "Introduction to the OpenTitan Project"
----
+# Introduction to the OpenTitan Project
 
 OpenTitan is a collaborative hardware and software development program with contributors from many organizations.
 This area gives some more information about how the project itself is organized and how to contribute.

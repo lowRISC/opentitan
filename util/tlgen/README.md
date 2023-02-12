@@ -1,6 +1,4 @@
----
-title: "Crossbar Generation Tool"
----
+# Crossbar Generation Tool
 
 The crossbar tool `tlgen.py` is used to build the TL-UL crossbar RTL.
 It can be used standalone or invoked as part of top module generation process (details of top generation forthcoming).

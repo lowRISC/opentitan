@@ -1,6 +1,4 @@
----
-title: "ALERT_HANDLER DV document"
----
+# ALERT_HANDLER DV document
 
 ## Goals
 * **DV**

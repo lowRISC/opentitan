@@ -1,6 +1,4 @@
----
-title: "RV Timer DIF Checklist"
----
+# RV Timer DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [RV Timer DIF](../../../../hw/ip/rv_timer/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

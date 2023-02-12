@@ -1,6 +1,4 @@
----
-title: "Primitive Component: Packer FIFO"
----
+# Primitive Component: Packer FIFO
 
 # Overview
 

@@ -1,6 +1,4 @@
----
-title: "PWM DIF Checklist"
----
+# PWM DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [PWM DIF](../../../../hw/ip/pwm/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

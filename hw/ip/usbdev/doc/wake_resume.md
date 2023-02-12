@@ -1,6 +1,4 @@
----
-title: "USBDEV Suspending and Resuming with Sleep / Low Power Modes"
----
+# USBDEV Suspending and Resuming with Sleep / Low Power Modes
 
 # Overview
 

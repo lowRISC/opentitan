@@ -1,6 +1,4 @@
----
-title: "ENTROPY_SRC HWIP Technical Specification"
----
+# ENTROPY_SRC HWIP Technical Specification
 
 # Overview
 

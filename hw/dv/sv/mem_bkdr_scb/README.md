@@ -1,6 +1,4 @@
----
-title: "Memory Backdoor Scoreboard"
----
+# Memory Backdoor Scoreboard
 
 The mem_model_pkg checks write value matches with previous write value, but
 there are some limitations.

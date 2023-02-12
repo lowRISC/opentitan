@@ -1,6 +1,4 @@
----
-title: "Primitive Component: SRAM Scrambler"
----
+# Primitive Component: SRAM Scrambler
 
 # Overview
 

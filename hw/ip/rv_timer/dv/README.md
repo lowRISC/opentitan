@@ -1,6 +1,4 @@
----
-title: "RV_TIMER DV document"
----
+# RV_TIMER DV document
 
 ## Goals
 * **DV**

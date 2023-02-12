@@ -1,6 +1,4 @@
----
-title: "Secure Hardware Design Guidelines"
----
+# Secure Hardware Design Guidelines
 
 ## Overview
 

@@ -1,6 +1,4 @@
----
-title: "SPI_HOST DV Document"
----
+# SPI_HOST DV Document
 
 ## Goals
 * **DV**

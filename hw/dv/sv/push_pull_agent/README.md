@@ -1,6 +1,4 @@
----
-title: "PUSH_PULL UVM Agent"
----
+# PUSH_PULL UVM Agent
 
 PUSH_PULL UVM Agent is extended from DV library agent classes.
 

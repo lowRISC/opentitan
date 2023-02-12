@@ -1,6 +1,4 @@
----
-title: "lowRISC Hardware Primitives"
----
+# lowRISC Hardware Primitives
 
 ## Concepts
 

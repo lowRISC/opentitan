@@ -1,6 +1,4 @@
----
-title: "Analog to Digital Converter Control Interface"
----
+# Analog to Digital Converter Control Interface
 
 # Overview
 

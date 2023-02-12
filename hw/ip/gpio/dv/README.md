@@ -1,6 +1,4 @@
----
-title: "GPIO DV document"
----
+# GPIO DV document
 
 ## Goals
 * **DV**

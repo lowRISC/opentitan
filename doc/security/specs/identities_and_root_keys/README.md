@@ -1,6 +1,4 @@
----
-title: "Identities and Root Keys"
----
+# Identities and Root Keys
 
 ## Overview
 

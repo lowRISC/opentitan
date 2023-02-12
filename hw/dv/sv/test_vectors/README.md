@@ -1,6 +1,4 @@
----
-title: "Test Vectors"
----
+# Test Vectors
 
 ## test_vectors_pkg.sv
 This class read a list of vector files and parse the useful information to

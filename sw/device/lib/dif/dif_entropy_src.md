@@ -1,6 +1,4 @@
----
-title: "Entropy Source DIF Checklist"
----
+# Entropy Source DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Entropy Source DIF](../../../../hw/ip/entropy_src/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

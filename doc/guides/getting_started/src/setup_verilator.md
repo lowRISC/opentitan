@@ -1,8 +1,4 @@
----
-title: Verilator Setup
-aliases:
-    - /doc/ug/getting_started_verilator
----
+# Verilator Setup
 
 _Before following this guide, make sure you've followed the [dependency installation instructions](README.md)._
 

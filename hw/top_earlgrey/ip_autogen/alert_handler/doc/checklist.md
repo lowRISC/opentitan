@@ -1,6 +1,4 @@
----
-title: "Alert Handler Checklist"
----
+# Alert Handler Checklist
 
 This checklist is for [Hardware Stage](../../../../../doc/project_governance/development_stages.md) transitions for the [Alert Handler peripheral.](../README.md)
 All checklist items refer to the content in the [Checklist.](../../../../../doc/project_governance/checklist/README.md)

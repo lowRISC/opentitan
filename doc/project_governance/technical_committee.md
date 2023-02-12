@@ -1,6 +1,4 @@
----
-title: "OpenTitan Technical Committee"
----
+# OpenTitan Technical Committee
 
 The OpenTitan Technical Committee is part of the [OpenTitan governance structure](./README.md) and the definitive description of its operations and responsibilities are stated in the [OpenTitan Technical Charter](https://static.opentitan.org/technical-charter.pdf).
 Key responsibilities defined in that document include:

@@ -1,6 +1,4 @@
----
-title: "HMAC HWIP Technical Specification"
----
+# HMAC HWIP Technical Specification
 
 # Overview
 

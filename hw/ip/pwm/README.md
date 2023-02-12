@@ -1,6 +1,4 @@
----
-title: "PWM HWIP Technical Specification"
----
+# PWM HWIP Technical Specification
 
 # Overview
 

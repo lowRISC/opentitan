@@ -1,6 +1,4 @@
----
-title: "ROM Controller DV document"
----
+# ROM Controller DV document
 
 ## Goals
 * **DV**

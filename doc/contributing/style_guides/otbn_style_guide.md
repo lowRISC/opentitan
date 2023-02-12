@@ -1,6 +1,4 @@
----
-title: "OTBN Assembly Style Guide"
----
+# OTBN Assembly Style Guide
 
 Where possible, OTBN assembly should follow the same principles as the [RISC-V assembly style guide](./asm_coding_style.md).
 This guide describes additional OTBN-specific guidelines, and places where OTBN assembly can or should diverge from the RISC-V style guidelines.

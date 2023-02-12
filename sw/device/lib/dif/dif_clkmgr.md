@@ -1,6 +1,4 @@
----
-title: "Clock Manager DIF Checklist"
----
+# Clock Manager DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Clock Manager DIF](../../../../hw/ip/clkmgr/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

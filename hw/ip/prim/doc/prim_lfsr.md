@@ -1,6 +1,4 @@
----
-title: "Primitive Component: LFSR"
----
+# Primitive Component: LFSR
 
 # Overview
 

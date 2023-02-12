@@ -1,6 +1,4 @@
----
-title: "JTAG DV UVM Agent"
----
+# JTAG DV UVM Agent
 
 JTAG UVM Agent is extended from the
 [DV library agent](../dv_lib/README.md) classes, which

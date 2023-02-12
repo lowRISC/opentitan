@@ -1,6 +1,4 @@
----
-title: "PWRMGR DV document"
----
+# PWRMGR DV document
 
 ## Goals
 * **DV**

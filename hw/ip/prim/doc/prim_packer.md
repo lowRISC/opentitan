@@ -1,6 +1,4 @@
----
-title: "Primitive Component: Packer"
----
+# Primitive Component: Packer
 
 # Overview
 

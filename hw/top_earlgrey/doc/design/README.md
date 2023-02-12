@@ -1,6 +1,4 @@
----
-title: "OpenTitan Earl Grey Chip Specification"
----
+# OpenTitan Earl Grey Chip Specification
 
 This document describes the OpenTitan Earl Grey chip functionality in detail.
 For an overview, refer to the [OpenTitan Earl Grey Chip Datasheet](../specification.md).

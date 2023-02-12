@@ -1,6 +1,4 @@
----
-title: "Primitive Component: PRINCE Scrambler"
----
+# Primitive Component: PRINCE Scrambler
 
 # Overview
 
@@ -120,5 +118,3 @@ The improvement involves alternating the keys `k0` and `k1` between rounds, as o
 
 The reduced 32bit variant mentioned above and all reduced round variants are non-standard and must only be used for scrambling purposes, since they **are not secure**.
 The 32bit variant leverages the same crypto primitives and key derivation functions as the 64bit variant, with the difference that the multiplication matrix is only comprised of the first two block diagonal submatrices (^M0 and ^M1 in the paper), and the shiftrows operation does not operate on nibbles but pairs of 2 bits instead.
-
-

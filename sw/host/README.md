@@ -1,5 +1,3 @@
----
-title: "Host Software"
----
+# Host Software
 
 **TODO**

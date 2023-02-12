@@ -1,6 +1,4 @@
----
-title: "FPGA Reference Manual"
----
+# FPGA Reference Manual
 
 This manual provides additional usage details about the FPGA.
 Specifically, it provides instructions on SW development flows and testing procedures.

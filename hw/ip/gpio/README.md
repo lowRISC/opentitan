@@ -1,6 +1,4 @@
----
-title: "GPIO HWIP Technical Specification"
----
+# GPIO HWIP Technical Specification
 
 # Overview
 

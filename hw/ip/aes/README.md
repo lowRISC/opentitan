@@ -1,6 +1,4 @@
----
-title: "AES HWIP Technical Specification"
----
+# AES HWIP Technical Specification
 
 
 # Overview

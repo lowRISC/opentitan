@@ -1,6 +1,4 @@
----
-title: "CSRNG DV document"
----
+# CSRNG DV document
 
 ## Goals
 * **DV**
