@@ -1,6 +1,4 @@
----
-title: "Reset Manager DIF Checklist"
----
+# Reset Manager DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Reset Manager DIF](../../../../hw/ip/rstmgr/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

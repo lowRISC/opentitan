@@ -1,6 +1,4 @@
----
-title: "Life Cycle Controller Technical Specification"
----
+# Life Cycle Controller Technical Specification
 
 
 # Overview

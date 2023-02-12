@@ -1,6 +1,4 @@
----
-title: "Ipgen: Generate IP blocks from IP templates"
----
+# Ipgen: Generate IP blocks from IP templates
 
 Ipgen is a tool to produce IP blocks from IP templates.
 

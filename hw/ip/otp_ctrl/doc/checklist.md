@@ -1,6 +1,4 @@
----
-title: "OTP_CTRL Checklist"
----
+# OTP_CTRL Checklist
 
 <!--
 NOTE: This is a template checklist document that is required to be copied over to the 'doc'

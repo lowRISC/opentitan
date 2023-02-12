@@ -1,6 +1,4 @@
----
-title: "Sensor Control Technical Specification"
----
+# Sensor Control Technical Specification
 
 # Overview
 

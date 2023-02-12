@@ -1,6 +1,4 @@
----
-title: "Primitive Component: Two input clock Mux with glitch protection"
----
+# Primitive Component: Two input clock Mux with glitch protection
 
 # Overview
 `prim_clock_gp_mux2` is a two input clock mux that protects a glitch. When a current clock source is switched to the next clock source where two clocks are totally unrelated, a glitch can be generated as follows.

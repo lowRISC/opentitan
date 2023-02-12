@@ -1,6 +1,4 @@
----
-title: "CSR utilities"
----
+# CSR utilities
 
 This csr_utils folder intends to implement CSR related methods and test sequences for DV
 to share across all testbenches.

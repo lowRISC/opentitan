@@ -1,6 +1,4 @@
----
-title: "System Reset Control Technical Specification"
----
+# System Reset Control Technical Specification
 
 # Overview
 

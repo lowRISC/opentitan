@@ -1,6 +1,4 @@
----
-title: "OpenTitan Continuous Integration"
----
+# OpenTitan Continuous Integration
 
 All changes to the OpenTitan source code are tested thoroughly in a continuous integration system.
 Tests run automatically when changes are proposed for inclusion by submitting a pull request, and on the `master` branch after changes are merged.

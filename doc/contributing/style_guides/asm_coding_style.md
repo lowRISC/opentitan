@@ -1,6 +1,4 @@
----
-title: "RISC-V Assembly Style Guide"
----
+# RISC-V Assembly Style Guide
 
 ## Basics
 

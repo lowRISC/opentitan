@@ -1,6 +1,4 @@
----
-title: "RNG UVM Agent"
----
+# RNG UVM Agent
 
 RNG UVM Agent is extended from DV library agent classes.
 

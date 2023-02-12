@@ -1,6 +1,4 @@
----
-title: "SPI_DEVICE Checklist"
----
+# SPI_DEVICE Checklist
 
 This checklist is for [Hardware Stage](../../../../doc/project_governance/development_stages.md) transitions for the [spi_device peripheral](../README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

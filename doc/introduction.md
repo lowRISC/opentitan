@@ -1,6 +1,4 @@
----
-title: "OpenTitan"
----
+# OpenTitan
 
 ## Introduction to OpenTitan
 

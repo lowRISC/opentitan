@@ -1,6 +1,4 @@
----
-title: "List of Top-Level Designs"
----
+# List of Top-Level Designs
 
 This page lists all top-level designs and their targets that are contained within this repository.
 Click on the design name to get more information about the design.

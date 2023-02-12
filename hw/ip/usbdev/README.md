@@ -1,6 +1,4 @@
----
-title: "USB 2.0 Full-Speed Device HWIP Technical Specification"
----
+# USB 2.0 Full-Speed Device HWIP Technical Specification
 
 # Overview
 

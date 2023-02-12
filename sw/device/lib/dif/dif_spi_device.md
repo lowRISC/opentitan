@@ -1,6 +1,4 @@
----
-title: "SPI Device DIF Checklist"
----
+# SPI Device DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [SPI Device DIF](../../../../hw/ip/spi_device/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

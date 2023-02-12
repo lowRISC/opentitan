@@ -1,6 +1,4 @@
----
-title: "Pinmux Technical Specification"
----
+# Pinmux Technical Specification
 
 
 # Overview

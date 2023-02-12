@@ -1,6 +1,4 @@
----
-title: "Design Verification Methodology within OpenTitan"
----
+# Design Verification Methodology within OpenTitan
 
 Verification within OpenTitan combines the challenges of industry-strength verification methodologies with open source ambitions.
 When in conflict, quality must win, and thus we aim to create a verification product that is equal to the quality required from a full production silicon chip tapeout.

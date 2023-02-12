@@ -1,6 +1,4 @@
----
-title: "SPI Device DV document"
----
+# SPI Device DV document
 
 
 ## Goals

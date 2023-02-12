@@ -1,6 +1,4 @@
----
-title: "Software"
----
+# Software
 
 This is the landing spot for software documentation within the OpenTitan project.
 More description and information can be found within the [Reference Manual](../util/README.md) and [User Guide](https://docs.opentitan.org/doc/guides/getting_started/) areas.

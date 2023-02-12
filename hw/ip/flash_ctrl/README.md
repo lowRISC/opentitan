@@ -1,6 +1,4 @@
----
-title: "Flash Controller HWIP Technical Specification"
----
+# Flash Controller HWIP Technical Specification
 
 # Overview
 

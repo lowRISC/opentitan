@@ -1,6 +1,4 @@
----
-title: "Universal 2nd-Factor Security Key"
----
+# Universal 2nd-Factor Security Key
 
 When used as a security key, OpenTitan implements the Universal 2nd Factor (U2F)
 authentication standard, using a Universal Serial Bus (USB) 1.1 interface to

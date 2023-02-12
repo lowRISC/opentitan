@@ -1,6 +1,4 @@
----
-title: "Design Methodology within OpenTitan"
----
+# Design Methodology within OpenTitan
 
 The design methodology within OpenTitan combines the challenges of industry-strength design methodologies with open source ambitions.
 When in conflict, quality must win, and thus we aim to create a final design product that is equal to the quality required from a full production silicon chip tapeout.

@@ -1,6 +1,4 @@
----
-title: "UART HWIP Technical Specification"
----
+# UART HWIP Technical Specification
 
 # Overview
 

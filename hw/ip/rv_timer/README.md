@@ -1,6 +1,4 @@
----
-title: "Timer HWIP Technical Specification"
----
+# Timer HWIP Technical Specification
 
 # Overview
 

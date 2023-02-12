@@ -1,6 +1,4 @@
----
-title: "Sensor Controller DIF Checklist"
----
+# Sensor Controller DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Sensor Controller DIF](../../../../hw/top_earlgrey/ip/sensor_ctrl/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

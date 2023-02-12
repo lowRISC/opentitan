@@ -1,6 +1,4 @@
----
-title: "ADC_CTRL DV document"
----
+# ADC_CTRL DV document
 
 ## Goals
 * **DV**

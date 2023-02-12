@@ -1,6 +1,4 @@
----
-title: "Building documentation"
----
+# Building documentation
 
 The documentation for OpenTitan is available [online](https://docs.opentitan.org).
 The creation of documentation is mainly based around the conversion from Markdown to HTML files with [Hugo](https://gohugo.io/).

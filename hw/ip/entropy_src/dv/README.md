@@ -1,6 +1,4 @@
----
-title: "ENTROPY_SRC DV document"
----
+# ENTROPY_SRC DV document
 
 ## Goals
 * **DV**

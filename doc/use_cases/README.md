@@ -1,6 +1,4 @@
----
-title: "Use Cases"
----
+# Use Cases
 
 ## Overview
 

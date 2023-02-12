@@ -1,6 +1,4 @@
----
-title: "Lifecycle Controller DIF Checklist"
----
+# Lifecycle Controller DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Lifecycle Controller DIF](../../../../hw/ip/lc_ctrl/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

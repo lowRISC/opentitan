@@ -1,6 +1,4 @@
----
-title: OpenTitan Big Number Accelerator (OTBN) Technical Specification
----
+# OpenTitan Big Number Accelerator (OTBN) Technical Specification
 
 # Overview
 

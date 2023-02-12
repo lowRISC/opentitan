@@ -1,6 +1,4 @@
----
-title: "`ralgen`: A FuseSoC generator for UVM RAL package"
----
+# `ralgen`: A FuseSoC generator for UVM RAL package
 
 The `ralgen.py` script is implemented as a
 [FuseSoC generator](https://fusesoc.readthedocs.io/en/master/user/generators.html).

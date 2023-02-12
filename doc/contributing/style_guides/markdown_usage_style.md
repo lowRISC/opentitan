@@ -1,6 +1,4 @@
----
-title: "Markdown Usage and Style Guide"
----
+# Markdown Usage and Style Guide
 
 ## Basics
 

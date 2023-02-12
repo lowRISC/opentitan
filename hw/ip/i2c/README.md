@@ -1,6 +1,4 @@
----
-title: "I2C HWIP Technical Specification"
----
+# I2C HWIP Technical Specification
 
 
 # Overview

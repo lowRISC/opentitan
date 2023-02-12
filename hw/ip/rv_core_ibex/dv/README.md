@@ -1,6 +1,4 @@
----
-title: "Ibex RISC-V Core Wrapper DV document"
----
+# Ibex RISC-V Core Wrapper DV document
 
 ## Goals
   * Verify compliance with the RISC-V specifications used by OpenTitan.

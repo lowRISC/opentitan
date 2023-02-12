@@ -1,6 +1,4 @@
----
-title: Install Vivado
----
+# Install Vivado
 
 Generating a bitstream for Xilinx devices requires a
 [Vivado](https://www.xilinx.com/products/design-tools/vivado.html) installation.

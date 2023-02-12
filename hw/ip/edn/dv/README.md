@@ -1,6 +1,4 @@
----
-title: "EDN DV document"
----
+# EDN DV document
 
 ## Goals
 * **DV**

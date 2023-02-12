@@ -1,6 +1,4 @@
----
-title: "Comportability Definition and Specification"
----
+# Comportability Definition and Specification
 
 ## Document Goals
 

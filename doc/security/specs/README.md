@@ -1,6 +1,4 @@
----
-title: "OpenTitan Security Model Specification"
----
+# OpenTitan Security Model Specification
 
 The current version of the security model targets discrete silicon
 implementations of OpenTitan. The architecture for an integrated IP solution

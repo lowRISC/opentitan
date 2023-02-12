@@ -1,7 +1,4 @@
----
-title: "FOO DV document"
-draft: true
----
+# FOO DV document
 
 <!-- Copy this file to hw/ip/foo/doc/index.md and make changes as needed.
 For convenience 'foo' in the document can be searched and replaced easily with the

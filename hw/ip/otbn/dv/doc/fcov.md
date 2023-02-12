@@ -1,6 +1,4 @@
----
-title: "OTBN functional coverage"
----
+# OTBN functional coverage
 
 We distinguish between *architectural* and *micro-architectural* functional coverage.
 The idea is that the points that go into architectural coverage are those that a DV engineer could derive by reading the block specification.

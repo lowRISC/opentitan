@@ -1,6 +1,4 @@
----
-title: "util/vendor.py: Vendor-in Components"
----
+# util/vendor.py: Vendor-in Components
 
 Not all code contained in this repository is actually developed within this repository.
 Code which we include from external sources is placed in `vendor` sub-directories (e.g. `hw/vendor`) and copied over from upstream sources.

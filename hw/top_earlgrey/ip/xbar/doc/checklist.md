@@ -1,6 +1,4 @@
----
-title: "TL-UL Checklist"
----
+# TL-UL Checklist
 
 This checklist is for [Hardware Stage](../../../../../doc/project_governance/development_stages.md) transitions for the [TL-UL component.](../../../../ip/tlul/README.md)
 All checklist items refer to the content in the [Checklist](../../../../../doc/project_governance/checklist/README.md).

@@ -1,6 +1,4 @@
----
-title: "Interrupt Controller Technical Specification"
----
+# Interrupt Controller Technical Specification
 
 # Overview
 

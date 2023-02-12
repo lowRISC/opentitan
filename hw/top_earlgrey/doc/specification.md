@@ -1,6 +1,4 @@
----
-title: "OpenTitan Earl Grey Chip Datasheet"
----
+# OpenTitan Earl Grey Chip Datasheet
 
 # Overview
 

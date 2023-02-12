@@ -1,6 +1,4 @@
----
-title: "Guidance for `volatile` in OpenTitan Silicon Creator Code"
----
+# Guidance for `volatile` in OpenTitan Silicon Creator Code
 
 ## TL;DR
 

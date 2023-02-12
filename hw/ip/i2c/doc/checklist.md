@@ -1,6 +1,4 @@
----
-title: "I2C Checklist"
----
+# I2C Checklist
 
 This checklist is for [Hardware Stage][] transitions for the [I2C peripheral.](../README.md)
 All checklist items refer to the content in the [Checklist.](../../../../doc/project_governance/checklist/README.md)

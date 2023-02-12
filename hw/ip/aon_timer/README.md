@@ -1,6 +1,4 @@
----
-title: "AON Timer Technical Specification"
----
+# AON Timer Technical Specification
 
 # Overview
 

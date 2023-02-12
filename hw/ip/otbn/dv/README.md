@@ -1,6 +1,4 @@
----
-title: "OTBN DV document"
----
+# OTBN DV document
 
 ## Goals
 * **DV**

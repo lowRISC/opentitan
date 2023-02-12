@@ -1,6 +1,4 @@
----
-title: "Memory Model"
----
+# Memory Model
 
 The memory model UVC models a memory device which any host interface can read
 from or write to. It is implemented as a `uvm_object`, and instantiates an

@@ -1,6 +1,4 @@
----
-title: "Pattern Generator HWIP Technical Specification"
----
+# Pattern Generator HWIP Technical Specification
 
 # Overview
 

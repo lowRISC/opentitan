@@ -1,6 +1,4 @@
----
-title: "Top Generation Tool"
----
+# Top Generation Tool
 
 The top generation tool `topgen.py` is used to build top specific modules for a specific OpenTitan design - for example [`top_earlgrey`](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey).
 Currently, as part of this generation process, the following top specific modules are created

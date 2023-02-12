@@ -1,6 +1,4 @@
----
-title: "PATTGEN DV document"
----
+# PATTGEN DV document
 
 ## Goals
 * **DV**

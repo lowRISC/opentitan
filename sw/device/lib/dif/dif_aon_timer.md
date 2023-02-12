@@ -1,6 +1,4 @@
----
-title: "Always-On Timer DIF Checklist"
----
+# Always-On Timer DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Always-On Timer DIF](../../../../hw/ip/aon_timer/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

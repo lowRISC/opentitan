@@ -1,6 +1,4 @@
----
-title: "Trusted Platform Module - TPM"
----
+# Trusted Platform Module - TPM
 
 ## Overview
 

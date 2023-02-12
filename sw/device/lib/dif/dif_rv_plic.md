@@ -1,6 +1,4 @@
----
-title: "PLIC DIF Checklist"
----
+# PLIC DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [PLIC DIF](../../../../hw/top_earlgrey/ip_autogen/rv_plic/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

@@ -1,6 +1,4 @@
----
-title: "KMAC DIF Checklist"
----
+# KMAC DIF Checklist
 
 This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [KMAC DIF](../../../../hw/ip/kmac/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).

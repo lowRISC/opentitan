@@ -1,6 +1,4 @@
----
-title: "OTP Controller Technical Specification"
----
+# OTP Controller Technical Specification
 
 
 # Overview

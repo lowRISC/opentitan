@@ -1,7 +1,4 @@
----
-title: "FOO DV document"
-draft: true
----
+# FOO DV document
 
 <!-- TODO: Remove "draft: true" from header before submitting -->
 

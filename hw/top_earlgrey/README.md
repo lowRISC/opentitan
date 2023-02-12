@@ -1,6 +1,4 @@
----
-title: "Top Earlgrey"
----
+# Top Earlgrey
 
 ## Specification
 

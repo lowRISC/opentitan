@@ -1,6 +1,4 @@
----
-title: "Clock Manager HWIP Technical Specification"
----
+# Clock Manager HWIP Technical Specification
 
 # Overview
 

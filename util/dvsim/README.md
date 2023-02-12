@@ -1,6 +1,4 @@
----
-title: "Testplanner tool"
----
+# Testplanner tool
 
 `testplanner` is a Python based tool for parsing testplans written in Hjson format into a data structure that can be used for:
 * Expanding the testplan inline within the DV document as a table;

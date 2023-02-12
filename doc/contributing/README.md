@@ -1,6 +1,4 @@
----
-title: Contributing to OpenTitan
----
+# Contributing to OpenTitan
 
 Thank you for your interest in contributing to OpenTitan.
 This document provides some guidelines to making those contributions.
