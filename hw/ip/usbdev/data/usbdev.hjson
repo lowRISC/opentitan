@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "usbdev",
+  human_name:         "USB Device",
   one_line_desc:      "USB 2.0 Full Speed device interface (12 Mbit/s)",
   one_paragraph_desc: '''
-  The OpenTitan USB Device provides compatibility with the industry standard Universal Serial Bus by implementing a Full Speed device (12 Mbit/s) according to the USB 2.0 Specification.
-  The device supports up to 12 bidirectional endpoints which may be used to support all of the USB 2.0 transfer types, including Isochronous transfers.
+  USB Device provides compatibility with the industry standard Universal Serial Bus by implementing a Full Speed device (12 Mbit/s) according to the USB 2.0 Specification.
+  USB Device supports up to 12 bidirectional endpoints which may be used to support all of the USB 2.0 transfer types, including Isochronous transfers.
   Support for packet transmission and reception is provided in hardware, with the generation of interrupts for software to mediate the different stages of Control and Data Transfers.
   The maximum packet size for transfers is configurable up to the specification limit of 64 bytes per packet, reducing the protocol overhead for Bulk transfers, and the inbuilt 2 KiB memory can accommodate 32 packets.
-  The device may be configured to use either a single-ended interface to an external differential transceiver or a differential input/output for more direct interfacing and reduced hardware complexity when prototyping.
+  USB Device may be configured to use either a single-ended interface to an external differential transceiver or a differential input/output for more direct interfacing and reduced hardware complexity when prototyping.
   '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",

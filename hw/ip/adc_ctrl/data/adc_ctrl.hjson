@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name:               "adc_ctrl",
-  one_line_desc:      "Low-power control interface for a dual-channel ADC with filtering and debouncing capability",
+  human_name:         "ADC Controller",
+  one_line_desc:      "Low-power controller for a dual-channel ADC with filtering and debouncing capability",
   one_paragraph_desc: '''
-  The Analog to Digital Converter (ADC) Control Interface hardware block provides a simple front-end to an analog block that allows filtering and debouncing of the sampled data.
-  The ADC controller supports 2 ADC channels and 8 filters on the values from the channels.
+  Analog to Digital Converter (ADC) Controller provides a simple front-end to an analog block that allows filtering and debouncing of the sampled data.
+  ADC Controller supports 2 ADC channels and 8 filters on the values from the channels.
   It has debounce timers on the filter output and supports ADCs with 10-bit output.
   To enable usage while the device is sleeping, it runs on a slow always-on clock.
   In addition, it has a low power periodic scan mode for monitoring ADC channels.

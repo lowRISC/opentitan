@@ -4,9 +4,10 @@
 //
 {
   name:               "pinmux",
+  human_name:         "Pin Multiplexer",
   one_line_desc:      "Multiplexes between on-chip hardware blocks and pins; can be configured at runtime",
   one_paragraph_desc: '''
-  The OpenTitan pin multiplexer connects on-chip hardware blocks to IC pins and controls the attributes of the pin drivers (such as pull-up/down, open-drain, and drive strength).
+  Pin Multiplexer connects on-chip hardware blocks to IC pins and controls the attributes of the pin drivers (such as pull-up/down, open-drain, and drive strength).
   Large parts of its functionality can be controlled by software through registers.
   Further features include per-pin programmable sleep behavior and wakeup pattern detectors as well as support for life-cycle-based JTAG (TAP) isolation and muxing.
   '''

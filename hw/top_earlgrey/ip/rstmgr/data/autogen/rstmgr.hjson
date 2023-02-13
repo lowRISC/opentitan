@@ -14,11 +14,12 @@
 #
 {
   name:               "rstmgr",
+  human_name:         "Reset Manager",
   one_line_desc:      "Controls the on-chip reset signals, records reset cause and CPU crash dump for software",
   one_paragraph_desc: '''
-  The OpenTitan reset manager controls the on-chip reset.
-  It receives one root power-on reset signal for each power domain from the AST and feeds one reset signal for each on-chip reset domain to the OpenTitan hardware blocks.
-  Resets can be requested by the power manager, which internally arbitrates peripheral resets, e.g., from AON timer and alert handler, the RISC-V debug module, and to a limited extent by software.
+  Reset Manager controls the on-chip reset.
+  It receives one root power-on reset signal for each power domain from AST and feeds one reset signal for each on-chip reset domain to the OpenTitan hardware blocks.
+  Resets can be requested by Power Manager, which internally arbitrates peripheral resets, e.g., from AON Timer and Alert Handler, RISC-V Debug Module, and to a limited extent by software.
   Through always-on registers, software can get information on the reset cause, as well as alert and CPU status prior to a triggered reset (crash dump).
   To deter fault injection (FI) attacks, several countermeasures are implemented, including consistency checks of leaf resets and support for shadow resets.
   '''

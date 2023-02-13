@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "uart",
+  human_name:         "UART",
   one_line_desc:      "Full duplex serial communication interface, supports bit rates of up to 1 Mbit/s",
   one_paragraph_desc: '''
-  The Universal Asynchronous Receiver/Transmitter (UART) hardware block provides industry standard serial communication with external devices via two wires at a programmable baud rate.
+  Universal Asynchronous Receiver/Transmitter (UART) provides industry standard serial communication with external devices via two wires at a programmable baud rate.
   Its full duplex design supports simultaneous transmission and reception, and flow control may be achieved using software handshaking if required.
-  To reduce software load, the device includes hardware FIFOs and supports interrupt generation when the FIFO level reaches software-programmable thresholds.
+  To reduce software load, UART includes hardware FIFOs and supports interrupt generation when the FIFO level reaches software-programmable thresholds.
   For compatibility with a variety of different targets and applications, the baud rate is software programmable and bit rates of up to 1 Mbit/s are supported.
   The data format is restricted to 8 bits, reducing the complexity and cost, with optional parity for robustness against transmission errors.
   '''
