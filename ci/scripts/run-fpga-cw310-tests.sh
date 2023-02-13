@@ -28,7 +28,6 @@ readonly BIT_SRC_DIR="${BIN_DIR}/hw/top_earlgrey"
 readonly BIT_NAME_PREFIX="lowrisc_systems_chip_earlgrey_cw310_0.1.bit"
 mkdir -p "${BIT_CACHE_DIR}"
 cp "${BIT_SRC_DIR}/${BIT_NAME_PREFIX}.orig" \
-    "${BIT_SRC_DIR}/${BIT_NAME_PREFIX}.splice" \
     "${BIT_SRC_DIR}/otp.mmi"  \
     "${BIT_SRC_DIR}/rom.mmi" \
     "${BIT_CACHE_DIR}"
