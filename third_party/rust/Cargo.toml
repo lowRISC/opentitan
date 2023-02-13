@@ -39,24 +39,42 @@ num-traits = "0.2.14"
 num_enum = "0.5.2"
 object = "0.25.3"
 proc-macro-error = "1.0"
-# FIXME(cfrantz): Temporarily locked to the same version as serde-annotate.
-proc-macro2 = "=1.0.45"
+proc-macro2 = "1.0.45"
 quote = "1.0"
 rand = "0.8.4"
 raw_tty = "0.1.0"
 regex = "1.5.4"
 rsa = "0.5.0"
 rusb = "0.8.1"
-serde = { version="1.0.130", features=["serde_derive"] }
+serde = { version="1.0", features=["serde_derive"] }
+serde_derive = "1.0"
+
 serde_bytes = "0.11"
 serde_json = "1.0.69"
 serialport = "4.0.1"
 sha2 = "0.10.1"
 shellwords = "1.1.0"
 structopt = "0.3"
-# FIXME(cfrantz): Temporarily locked to the same version as serde-annotate.
-syn = "=1.0.101"
+syn = "1.0"
 tempfile = "3.3.0"
 thiserror = "1.0.24"
 typetag = "0.1"
 zerocopy = "0.5.0"
+
+# We'd like to referece safe-ftdi and serde_annotate by their Git repos, but
+# we also need to support airgapped builds and bazel does not support git
+# repo references for airgapped builds.  As such, these two libraries are
+# downloaded as http_archive dependencies.  In order to have a globally
+# consistent set of crate dependencies, we have to list the deps of those
+# two crates here.  Those crates reference their deps via a `@crate_index`
+# repo.  In OpenTitan, we create our own `@crate_index` repo which is
+# share globally among all bazel sub-repositories.
+
+# safe-ftdi = { git = "https://github.com/lowRISC/safe-ftdi" }
+libftdi1-sys = "1.0.0"
+
+# serde_annotate = { git = "https://github.com/lowRISC/serde-annotate", branch="main"}
+ansi_term = "0.12"
+once_cell = "1.12"
+pest = "2.2"
+pest_derive = "2.2"
