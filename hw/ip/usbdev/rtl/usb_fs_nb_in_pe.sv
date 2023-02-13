@@ -206,7 +206,7 @@ module usb_fs_nb_in_pe #(
         if ((!more_data_to_send) || ((&in_ep_get_addr_o) && tx_data_get_i)) begin
           if (in_ep_iso_i[in_ep_index]) begin
             in_xact_state_next = StIdle; // no ACK for ISO EPs
-            in_xact_end = 1'b1;
+            in_xact_end = in_ep_has_data_i[in_ep_index];
           end else begin
             if (tx_pkt_end_i) begin
               in_xact_state_next = StWaitAckStart;
