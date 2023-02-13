@@ -123,8 +123,6 @@ static void ecc256_set_seed(const uint8_t *seed, size_t seed_len) {
  */
 static void p256_run_keygen(uint32_t mode, const uint32_t *seed,
                             const uint32_t *mask) {
-  SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP256KeyFromSeed));
-
   // Write mode.
   SS_CHECK_STATUS_OK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode));
 
@@ -222,11 +220,10 @@ static void ecc256_ecdsa_secret_keygen(const uint8_t *mask, size_t mask_len) {
   uint32_t ecc256_d1[kEcc256SeedNumWords];
   p256_ecdsa_gen_secret_key(ecc256_seed, ecc256_mask, ecc256_d0, ecc256_d1);
 
-  simple_serial_send_packet('r', (unsigned char *) ecc256_d0, kEcc256SeedNumBytes);
-  simple_serial_send_packet('r', (unsigned char *) ecc256_d1, kEcc256SeedNumBytes);
-
-  SS_CHECK_STATUS_OK(otbn_dmem_sec_wipe());
-  SS_CHECK_STATUS_OK(otbn_imem_sec_wipe());
+  simple_serial_send_packet('r', (unsigned char *)ecc256_d0,
+                            kEcc256SeedNumBytes);
+  simple_serial_send_packet('r', (unsigned char *)ecc256_d1,
+                            kEcc256SeedNumBytes);
 }
 
 /**
@@ -266,9 +263,6 @@ static void ecc256_ecdsa_gen_keypair(const uint8_t *mask, size_t mask_len) {
                             kEcc256CoordNumBytes);
   simple_serial_send_packet('r', (unsigned char *)ecc256_y,
                             kEcc256CoordNumBytes);
-
-  SS_CHECK_STATUS_OK(otbn_dmem_sec_wipe());
-  SS_CHECK_STATUS_OK(otbn_imem_sec_wipe());
 }
 
 /**
@@ -292,6 +286,9 @@ static void simple_serial_main(void) {
            kSimpleSerialOk);
   SS_CHECK(simple_serial_register_handler('x', ecc256_set_seed) ==
            kSimpleSerialOk);
+
+  LOG_INFO("Load p256 keygen from seed app into OTBN");
+  SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP256KeyFromSeed));
 
   LOG_INFO("Starting simple serial packet handling.");
   while (true) {
