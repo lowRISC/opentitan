@@ -146,4 +146,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/aes/dv/aes_${VARIANT}_sim_cfg.hj
 ```
 In this run command, $VARIANT can be `masked` or `unmasked`.
 ## Testplan
-{{< incGenFromIpDesc "../../data/aes_testplan.hjson" "testplan" >}}
+[Testplan](../data/aes_testplan.hjson)

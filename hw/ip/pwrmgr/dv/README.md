@@ -253,4 +253,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/pwrmgr/dv/pwrmgr_sim_cfg.hjson -
 ```
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/pwrmgr_testplan.hjson" "testplan" >}}
+[Testplan](../data/pwrmgr_testplan.hjson)

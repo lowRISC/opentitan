@@ -269,4 +269,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/spi_host/dv/spi_host_sim_cfg.hjs
 ```
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/spi_host_testplan.hjson" "testplan">}}
+[Testplan](../data/spi_host_testplan.hjson)

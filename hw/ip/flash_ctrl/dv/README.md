@@ -208,4 +208,4 @@ $ ./util/dvsim/dvsim.py hw/ip/flash_ctrl/dv/flash_ctrl_sim_cfg.hjson -i flash_ct
 ```
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/flash_ctrl_testplan.hjson" "testplan" >}}
+[Testplan](../data/flash_ctrl_testplan.hjson)
