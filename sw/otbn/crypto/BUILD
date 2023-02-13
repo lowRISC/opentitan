@@ -21,6 +21,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "div",
+    srcs = [
+        "div.s",
+    ],
+)
+
+otbn_library(
     name = "field25519",
     srcs = [
         "field25519.s",
