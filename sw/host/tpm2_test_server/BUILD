@@ -13,18 +13,15 @@ rust_binary(
         "src/interface.rs",
         "src/main.rs",
     ],
-    proc_macro_deps = [
-        "//sw/host/opentitanlib/opentitantool_derive",
-    ],
     stamp = 1,
     deps = [
         "//sw/host/opentitanlib",
-        "//third_party/rust/crates:anyhow",
-        "//third_party/rust/crates:env_logger",
-        "//third_party/rust/crates:log",
-        "//third_party/rust/crates:mio",
-        "//third_party/rust/crates:num_enum",
-        "//third_party/rust/crates:structopt",
+        "@crate_index//:anyhow",
+        "@crate_index//:env_logger",
+        "@crate_index//:log",
+        "@crate_index//:mio",
+        "@crate_index//:num_enum",
+        "@crate_index//:structopt",
     ],
 )
 

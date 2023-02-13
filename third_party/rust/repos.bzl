@@ -11,23 +11,23 @@ def rust_repos(rules_rust = None, safe_ftdi = None, serde_annotate = None):
     http_archive_or_local(
         name = "rules_rust",
         local = rules_rust,
-        sha256 = "fe8d7e62d093e10d8f87b9fd26e4ee2b8d64667ab6827f41fb38eda640233e0f",
-        strip_prefix = "rules_rust-add-missing-rv32-shas-20221031_01",
-        url = "https://github.com/lowRISC/rules_rust/archive/refs/tags/add-missing-rv32-shas-20221031_01.tar.gz",
+        sha256 = "322003618cd248ab9a85f055920859132ef81a2c73a0c9fc3816c74cb8fd9f6b",
+        strip_prefix = "rules_rust-rebase-20230213_01",
+        url = "https://github.com/lowRISC/rules_rust/archive/refs/tags/rebase-20230213_01.tar.gz",
     )
 
     http_archive_or_local(
-        name = "safe_ftdi",
+        name = "lowrisc_safe_ftdi",
         local = safe_ftdi,
-        sha256 = "33c61f3c2303e595c554a0b9ed8ba7ae3088d51052fa5916a9a4767604683b52",
-        strip_prefix = "safe-ftdi-bazel-20220511_01",
-        url = "https://github.com/lowRISC/safe-ftdi/archive/refs/tags/bazel-20220511_01.tar.gz",
+        sha256 = "2dc6744f4bf6f95fbe51befb9316a0a33f70291856fef8bd85157a387659e527",
+        strip_prefix = "safe-ftdi-bazel-20230213_01",
+        url = "https://github.com/lowRISC/safe-ftdi/archive/refs/tags/bazel-20230213_01.tar.gz",
     )
 
     http_archive_or_local(
-        name = "serde_annotate",
+        name = "lowrisc_serde_annotate",
         local = serde_annotate,
-        sha256 = "8d63b1525607bbdecfa688ea83d6e08ae50387ffe8521a5324ac5b467743eb7a",
-        strip_prefix = "serde-annotate-0.0.6",
-        url = "https://github.com/lowRISC/serde-annotate/archive/refs/tags/v0.0.6.tar.gz",
+        sha256 = "8772091928c47bf8c22e8ecdec049e1558993c9855ff9fd4a05daad77596ce9e",
+        strip_prefix = "serde-annotate-0.0.7",
+        url = "https://github.com/lowRISC/serde-annotate/archive/refs/tags/v0.0.7.tar.gz",
     )

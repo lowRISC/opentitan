@@ -58,23 +58,7 @@ rust_deps()
 load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
 crate_universe_dependencies(bootstrap = True)
 
-load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository", "render_config")
-crates_repository(
-    name = "crate_index",
-    annotations = {
-        "libudev-sys": [crate.annotation(
-            patches = ["@//third_party/rust/crates/patches:libudev-sys-0.1.4.patch"],
-            patch_args = ["-p1"],
-        )],
-    },
-    cargo_lockfile = "//third_party/rust/crates:Cargo.lock",
-    lockfile = "//third_party/rust/crates:Cargo.Bazel.lock",
-    manifests = ["//third_party/rust/crates:Cargo.toml"],
-    generator = "@cargo_bazel_bootstrap//:cargo-bazel",
-)
-
-load("@crate_index//:defs.bzl", "crate_repositories")
-
+load("//third_party/rust/crates:crates.bzl", "crate_repositories")
 crate_repositories()
 
 # OpenOCD
