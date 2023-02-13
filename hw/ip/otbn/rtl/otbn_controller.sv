@@ -23,6 +23,7 @@ module otbn_controller
 
   input  logic start_i,   // start the processing at address zero
   output logic locking_o, // Controller is in or is entering the locked state
+  input  logic err_bit_clear_i,
 
   input prim_mubi_pkg::mubi4_t fatal_escalate_en_i,
   input prim_mubi_pkg::mubi4_t recov_escalate_en_i,
@@ -623,7 +624,7 @@ module otbn_controller
     if (!rst_ni) begin
       err_bits_q <= '0;
     end else begin
-      if (start_i && !locking_o) begin
+      if (err_bit_clear_i && !locking_o) begin
         err_bits_q <= '0;
       end else begin
         err_bits_q <= err_bits_q | err_bits_d;

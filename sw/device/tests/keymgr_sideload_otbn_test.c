@@ -112,12 +112,8 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
       keymgr, sideload_params);  // Regenerate the sideload key.
   LOG_INFO("Keymgr generated HW output for OTBN.");
   uint32_t post_clear_salt_result[8];
-  // TODO (issue #16653) - fix the function call below
-  // and send in kErrBitsOk (error is actually not expected) and uncomment the
-  // equality check on outputs afterwards.
-  run_x25519_app(otbn, post_clear_salt_result, kOtbnInvalidKeyErr);
-  // TODO (issue #16653) - uncomment the equality check on output below.
-  // CHECK_ARRAYS_EQ(result, post_clear_salt_result, ARRAYSIZE(result));
+  run_x25519_app(otbn, post_clear_salt_result, kErrBitsOk);
+  CHECK_ARRAYS_EQ(result, post_clear_salt_result, ARRAYSIZE(result));
 
   // Change the salt to generate a different key.
   sideload_params.salt[0] = ~sideload_params.salt[0];

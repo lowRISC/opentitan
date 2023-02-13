@@ -91,8 +91,10 @@ rust_library(
         "src/test_utils/mod.rs",
         "src/test_utils/rpc.rs",
         "src/test_utils/status.rs",
+        "src/tpm/access.rs",
         "src/tpm/driver.rs",
         "src/tpm/mod.rs",
+        "src/tpm/status.rs",
         "src/transport/common/mod.rs",
         "src/transport/common/uart.rs",
         "src/transport/cw310/gpio.rs",
@@ -101,6 +103,7 @@ rust_library(
         "src/transport/cw310/usb.rs",
         "src/transport/errors.rs",
         "src/transport/hyperdebug/c2d2.rs",
+        "src/transport/hyperdebug/dfu.rs",
         "src/transport/hyperdebug/gpio.rs",
         "src/transport/hyperdebug/i2c.rs",
         "src/transport/hyperdebug/mod.rs",
@@ -155,8 +158,11 @@ rust_library(
         ":gpio",
         ":e2e_command",
         ":pinmux_config",
+        "@hyperdebug_firmware//file",
     ],
-    crate_features = select({
+    crate_features = [
+        "include_hyperdebug_firmware",
+    ] + select({
         "//sw/device:is_english_breakfast": ["english_breakfast"],
         "//conditions:default": [],
     }),
@@ -167,6 +173,7 @@ rust_library(
         "e2e_command": "$(location :e2e_command)",
         "gpio": "$(location :gpio)",
         "pinmux_config": "$(location :pinmux_config)",
+        "hyperdebug_firmware": "$(location @hyperdebug_firmware//file)",
     },
     deps = [
         "//sw/host/opentitanlib/bindgen",
@@ -218,6 +225,7 @@ rust_test(
         ":e2e_command",
         ":gpio",
         ":pinmux_config",
+        "@hyperdebug_firmware//file",
         "src/bootstrap/simple.bin",
         "src/spiflash/SFDP_MX66L1G.bin",
     ],

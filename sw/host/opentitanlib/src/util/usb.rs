@@ -29,11 +29,12 @@ impl UsbBackend {
         for device in rusb::devices().context("USB error")?.iter() {
             let descriptor = match device.device_descriptor() {
                 Ok(desc) => desc,
-                _ => {
+                Err(e) => {
                     deferred_log_messages.push(format!(
-                        "Could not read device descriptor for device at bus={} address={}",
+                        "Could not read device descriptor for device at bus={} address={}: {}",
                         device.bus_number(),
-                        device.address()
+                        device.address(),
+                        e,
                     ));
                     continue;
                 }
@@ -46,22 +47,24 @@ impl UsbBackend {
             }
             let handle = match device.open() {
                 Ok(handle) => handle,
-                _ => {
+                Err(e) => {
                     deferred_log_messages.push(format!(
-                        "Could not open device at bus={} address={}",
+                        "Could not open device at bus={} address={}: {}",
                         device.bus_number(),
-                        device.address()
+                        device.address(),
+                        e,
                     ));
                     continue;
                 }
             };
             let serial_number = match handle.read_serial_number_string_ascii(&descriptor) {
                 Ok(sn) => sn,
-                _ => {
+                Err(e) => {
                     deferred_log_messages.push(format!(
-                        "Could not read serial number from device at bus={} address={}",
+                        "Could not read serial number from device at bus={} address={}: {}",
                         device.bus_number(),
-                        device.address()
+                        device.address(),
+                        e,
                     ));
                     continue;
                 }
@@ -102,6 +105,14 @@ impl UsbBackend {
             serial_number,
             timeout: Duration::from_millis(500),
         })
+    }
+
+    pub fn get_vendor_id(&self) -> u16 {
+        self.device.device_descriptor().unwrap().vendor_id()
+    }
+
+    pub fn get_product_id(&self) -> u16 {
+        self.device.device_descriptor().unwrap().product_id()
     }
 
     /// Gets the usb serial number of the device.

@@ -412,8 +412,9 @@ module otbn_core
     .clk_i,
     .rst_ni,
 
-    .start_i      (controller_start),
+    .start_i         (controller_start),
     .locking_o,
+    .err_bit_clear_i (start_i),
 
     .fatal_escalate_en_i(controller_fatal_escalate_en),
     .recov_escalate_en_i(controller_recov_escalate_en),

@@ -51,8 +51,8 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     cfg.vif.reset_signals();
-    super.dut_init();
     set_aon_clk_freq();
+    super.dut_init();
     if (do_sysrst_ctrl_init) sysrst_ctrl_init();
     add_delay_after_reset_before_csrs_access();
   endtask
