@@ -108,4 +108,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/lc_ctrl/dv/lc_ctrl_sim_cfg.hjson
 ```
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/lc_ctrl_testplan.hjson" "testplan" >}}
+[Testplan](../data/lc_ctrl_testplan.hjson)

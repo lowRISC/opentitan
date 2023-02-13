@@ -35,7 +35,12 @@ command = "./util/mdbook_wavejson.py"
 [preprocessor.reggen]
 command = "./util/mdbook_reggen.py"
 # Python RegEx identifying ip block config paths.
-ip-cfg-py-regex = '(ip|ip_autogen)/.+/data/.+\.hjson'
+ip-cfg-py-regex = '(ip|ip_autogen)/.+/data/(?!.+_testplan).+\.hjson'
+
+[preprocessor.testplan]
+command = "./util/mdbook_testplan.py"
+# Python RegEx identifying testplan paths.
+testplan-py-regex = '.+_testplan\.hjson'
 
 [preprocessor.doxygen]
 command = "./util/mdbook_doxygen.py"

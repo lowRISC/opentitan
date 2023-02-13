@@ -191,4 +191,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/sram_ctrl/dv/sram_ctrl_${VARIANT
 In this run command, $VARIANT can be `main` or `ret`.
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/sram_ctrl_testplan.hjson" "testplan" >}}
+[Testplan](../data/sram_ctrl_testplan.hjson)

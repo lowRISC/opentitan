@@ -156,4 +156,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/pwm/dv/pwm_sim_cfg.hjson -i pwm_
 ```
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/pwm_testplan.hjson" "testplan" >}}
+[Testplan](../data/pwm_testplan.hjson)

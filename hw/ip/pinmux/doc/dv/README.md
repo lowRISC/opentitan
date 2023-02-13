@@ -41,4 +41,4 @@ In the pinmux_assert_fpv module, we declared four symbolic variables (`mio_sel_i
 Detailed explanation is listed in the [Symbolic Variables](../../../../formal/README.md#symbolic-variables) section.
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/pinmux_fpv_testplan.hjson" "testplan" >}}
+[Testplan](../../data/pinmux_fpv_testplan.hjson)
