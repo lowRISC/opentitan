@@ -69,4 +69,49 @@ impl GpioPin for HyperdebugGpioPin {
             }
         ))
     }
+
+    fn set(
+        &self,
+        mode: Option<PinMode>,
+        value: Option<bool>,
+        pull: Option<PullMode>,
+    ) -> Result<()> {
+        self.inner
+            .cmd_no_output(&format!(
+                "gpio multiset {} {} {} {}",
+                &self.pinname,
+                match value {
+                    Some(false) => "0",
+                    Some(true) => "1",
+                    None => "-",
+                },
+                match mode {
+                    Some(PinMode::Input) => "input",
+                    Some(PinMode::OpenDrain) => "opendrain",
+                    Some(PinMode::PushPull) => "pushpull",
+                    Some(PinMode::Alternate) => "alternate",
+                    None => "-",
+                },
+                match pull {
+                    Some(PullMode::None) => "none",
+                    Some(PullMode::PullUp) => "up",
+                    Some(PullMode::PullDown) => "down",
+                    None => "-",
+                },
+            ))
+            .or_else(|_| {
+                // HyperDebug firmware does not support atomically setting all three, fall back to
+                // separate commands.
+                if let Some(mode) = mode {
+                    self.set_mode(mode)?;
+                }
+                if let Some(pull) = pull {
+                    self.set_pull_mode(pull)?;
+                }
+                if let Some(value) = value {
+                    self.write(value)?;
+                }
+                Ok(())
+            })
+    }
 }
