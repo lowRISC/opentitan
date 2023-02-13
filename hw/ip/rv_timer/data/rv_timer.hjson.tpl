@@ -7,9 +7,10 @@
 ##  - timers: number of timers in each hart
 {
   name:               "rv_timer",
+  human_name:         "RISC-V Timer",
   one_line_desc:      "Memory-mapped timer unit implementing RISC-V mtime and mtimecmp registers",
   one_paragraph_desc: '''
-  The OpenTitan RISC-V Timer hardware block provides TileLink Uncached Light (TL-UL) memory-mapped registers `mtime` and `mtimecmp` which can be used as the machine-mode timer registers as defined in the RISC-V privileged spec v1.12.
+  RISC-V Timer provides TileLink Uncached Light (TL-UL) memory-mapped registers `mtime` and `mtimecmp` which can be used as the machine-mode timer registers as defined in the RISC-V privileged spec v1.12.
   Additional parameters can be used to add optional features, such as prescaler, step increment size, threshold-triggered interrupts, additional 64-bit timers, and support for multiple independent harts.
   '''
   design_spec:        "../doc",

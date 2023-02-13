@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "gpio",
+  human_name:         "General-Purpose I/O Controller",
   one_line_desc:      "General-purpose I/O pin control interface for software",
   one_paragraph_desc: '''
-  The GPIO hardware block allows software to communicate through general purpose I/O pins in a flexible manner.
+  General-Purpose Input/Output (GPIO) Controller allows software to communicate through general-purpose I/O pins in a flexible manner.
   It supports up to 32 GPIO ports and each of these ports can be written as peripheral outputs in two modes: either with direct access to each GPIO value using direct write, allowing software to control all GPIO ports simultaneously, or with masked writes to half of the bits at a time, allowing software to affect the output value of a subset of the bits without requiring a read-modify-write.
   In the input direction, software can read the contents of any of the GPIO peripheral inputs, and it can request the detection of an interrupt event for any of the 32 bits in a configurable manner for detecting rising edge, falling edge, or active low/high input.
   A noise filter is available through configuration for any of the inputs.

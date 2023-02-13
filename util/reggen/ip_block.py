@@ -56,6 +56,7 @@ REQUIRED_FIELDS = {
 }
 
 OPTIONAL_FIELDS = {
+    'human_name': ['s', "human-readable name of the component"],
     'one_line_desc': ['s', "one-line description of the component"],
     'one_paragraph_desc': ['s', "one-paragraph description of the component"],
     # Note: this revision list may be deprecated in the future.

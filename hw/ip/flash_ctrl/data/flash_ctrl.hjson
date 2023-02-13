@@ -6,9 +6,10 @@
 
 {
   name:               "flash_ctrl",
+  human_name:         "Flash Controller",
   one_line_desc:      "Interfaces and manages integrated non-volatile flash memory; supports scrambling, integrity, and secure wipe",
   one_paragraph_desc: '''
-  The OpenTitan flash controller interfaces the integrated, non-volatile flash memory with software and other hardware components in the system, such as life cycle controller, key manager, and OTP controller.
+  Flash Controller interfaces the integrated, non-volatile flash memory with software and other hardware components in the system, such as Life Cycle Controller, Key Manager, and OTP Controller.
   It consists of the open source flash controller that interfaces with a third party flash module.
   The protocol controller handles read, program, and erase requests, as well as life cycle RMA entry.
   It supports differentiation between informational and data flash partitions, flash memory protection at page boundaries, and the handling of key manager secrets inaccessible to software.

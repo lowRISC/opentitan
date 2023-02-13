@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "pwm",
+  human_name:         "Pulse Width Modulator",
   one_line_desc:      "Transmission of pulse-width modulated output signals with adjustable duty cycle",
   one_paragraph_desc: '''
-  This hardware block creates pulse-width modulated (PWM) signals with adjustable duty cycle.
+  Pulse Width Modulator creates pulse-width modulated (PWM) signals with adjustable duty cycle.
   It is suitable for general-purpose use, but primarily designed for control of LEDs.
   All outputs are programmable with frequency, phase, and duty cycle.
   '''

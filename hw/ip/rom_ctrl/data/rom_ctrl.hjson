@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "rom_ctrl",
+  human_name:         "ROM Controller",
   one_line_desc:      "Interfaces scrambled boot ROM with system bus and KMAC for initial health check after reset",
   one_paragraph_desc: '''
-  The ROM controller interfaces between the system bus and the scrambled ROM.
-  The controller is responsible for descrambling on memory fetches.
-  It also has a checker block that interfaces KMAC to perform a cryptographic hash of the ROM contents at boot to detect any malicious changes to the ROM itself while in reset.
-  The ROM controller also has status registers for ROM integrity errors or checker block FSM glitches.
+  ROM Controller interfaces between the system bus and the scrambled ROM.
+  It is responsible for descrambling on memory fetches.
+  It also has a checker block that interfaces KMAC Accelerator to perform a cryptographic hash of the ROM contents at boot to detect any malicious changes to the ROM itself while in reset.
+  ROM Controller also has status registers for ROM integrity errors or checker block FSM glitches.
   '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
