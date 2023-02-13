@@ -418,7 +418,6 @@ jobs:
         # Rename bitstreams to be compatible with subsequent steps
         # TODO(#13807): replace this after choosing a naming scheme
         mv "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"
-        mv "$BIN_DIR/$SUB_PATH/fpga_cw310_rom.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"
       }
 
       . util/build_consts.sh
