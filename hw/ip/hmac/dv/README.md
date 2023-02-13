@@ -141,4 +141,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/hmac/dv/hmac_sim_cfg.hjson -i hm
 ```
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/hmac_testplan.hjson" "testplan" >}}
+[Testplan](../data/hmac_testplan.hjson)

@@ -130,4 +130,4 @@ $ util/dvsim/dvsim.py hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson -i otbn_smoke
 ```
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/otbn_testplan.hjson" "testplan" >}}
+[Testplan](../data/otbn_testplan.hjson)

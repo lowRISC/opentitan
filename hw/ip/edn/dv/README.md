@@ -97,4 +97,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/edn/dv/edn_sim_cfg.hjson -i edn_
 ```
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/edn_testplan.hjson" "testplan" >}}
+[Testplan](../data/edn_testplan.hjson)

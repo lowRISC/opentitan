@@ -145,4 +145,4 @@ $ util/dvsim/dvsim.py hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson -i aon_timer_sm
 ```
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/aon_timer_testplan.hjson" "testplan" >}}
+[Testplan](../data/aon_timer_testplan.hjson)

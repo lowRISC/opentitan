@@ -121,4 +121,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/$CHIP/ip/$XBAR_IP/dv/autogen/${XBAR
 In this run command, $XBAR_IP can be xbar_main, xbar_peri, etc. $CHIP can be top_earlgrey, etc.
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/tlul_testplan.hjson" "testplan" >}}
+[Testplan](../../data/tlul_testplan.hjson)

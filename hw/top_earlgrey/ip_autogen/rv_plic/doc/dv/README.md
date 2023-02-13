@@ -45,4 +45,4 @@ Detailed explanation is listed in the
 [Symbolic Variables](../../../../../formal/README.md#symbolic-variables) section.
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/rv_plic_fpv_testplan.hjson" "testplan" >}}
+[Testplan](../../data/rv_plic_fpv_testplan.hjson)

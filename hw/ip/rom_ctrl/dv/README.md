@@ -95,4 +95,4 @@ $ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/rom_ctrl/dv/rom_ctrl_sim_cfg.hjs
 ```
 
 ## Testplan
-{{< incGenFromIpDesc "../../data/rom_ctrl_testplan.hjson" "testplan" >}}
+[Testplan](../data/rom_ctrl_testplan.hjson)
