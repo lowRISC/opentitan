@@ -543,7 +543,7 @@ They are meant generally for informational or debug purposes.
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_keymgr.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_keymgr.h)
 
 ## Register Table
 

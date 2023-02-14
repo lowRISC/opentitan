@@ -268,7 +268,7 @@ Need to alert the system of a FIFO overflow condition.
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_edn.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_edn.h)
 
 ## Register Table
 

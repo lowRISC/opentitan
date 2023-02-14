@@ -1108,7 +1108,7 @@ Depending on the application additional steps might be necessary, such as deleti
 
 ## Device Interface Functions (DIFs) {#dif}
 
-{{< dif_listing "sw/device/lib/dif/dif_otbn.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_otbn.h)
 
 ## Driver {#driver}
 

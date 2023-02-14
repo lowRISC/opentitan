@@ -112,7 +112,7 @@ If {{#regref aon_timer.WKUP_COUNT }} remains above the threshold after clearing 
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_aon_timer.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_aon_timer.h)
 
 ## Register Table
 

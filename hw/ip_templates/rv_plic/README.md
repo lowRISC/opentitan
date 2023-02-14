@@ -224,7 +224,7 @@ IP, and are documented [here](/sw/apis/isr__testutils_8h.html).
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_rv_plic.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_rv_plic.h)
 
 ## Registers
 

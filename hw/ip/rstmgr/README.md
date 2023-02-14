@@ -342,7 +342,7 @@ Software then simply needs to write in {{#regref rstmgr.CPU_INFO_CTRL.INDEX }} w
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_rstmgr.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_rstmgr.h)
 
 ## Register Table
 

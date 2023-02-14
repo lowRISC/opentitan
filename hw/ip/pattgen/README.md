@@ -136,7 +136,7 @@ To start both channel patterns at the same time, configure both channels then si
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_pattgen.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_pattgen.h)
 
 ## Register Table
 

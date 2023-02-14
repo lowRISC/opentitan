@@ -234,7 +234,7 @@ In case software needs access to this value, it can be read at {{#regref rom_ctr
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_rom_ctrl.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_rom_ctrl.h)
 
 ## Register Table
 
