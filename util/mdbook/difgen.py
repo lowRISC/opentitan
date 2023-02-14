@@ -37,14 +37,14 @@ def get_difref_info(combined_xml, dif_header):
     return functions
 
 # Create HTML List of DIFs, using the info from the combined xml
-def gen_listing_html(combined_xml, dif_header, dif_listings_html):
+def gen_listing_html(html_path: str, combined_xml, dif_header, dif_listings_html):
     compound = _get_dif_file_compound(combined_xml, dif_header)
     if compound == None:
         log.error("Doxygen output not found for {}".format(dif_header))
         return
 
     file_id = _get_dif_file_id(compound)
-    functions = _get_dif_function_info(compound, file_id)
+    functions = _get_dif_function_info(html_path, compound, file_id)
 
     if len(functions) == 0:
         log.error("No DIF functions found for {}".format(dif_header))
@@ -53,7 +53,7 @@ def gen_listing_html(combined_xml, dif_header, dif_listings_html):
     # Generate DIF listing header
     dif_listings_html.write('<p>To use this DIF, include the following C header:</p>')
     dif_listings_html.write('<pre><code class=language-c data-lang=c>')
-    dif_listings_html.write('#include "<a href="/sw/apis/{}.html">{}</a>"'.format(file_id, dif_header))
+    dif_listings_html.write('#include "<a href="{}/{}.html">{}</a>"'.format(html_path, file_id, dif_header))
     dif_listings_html.write('</code></pre>\n')
 
     # Generate DIF function list.
@@ -84,7 +84,7 @@ def _get_dif_file_compound(combined_xml, dif_header):
 def _get_dif_file_id(compound):
     return compound.attrib["id"]
 
-def _get_dif_function_info(compound, file_id):
+def _get_dif_function_info(html_path: str, compound, file_id):
     funcs = compound.find('sectiondef[@kind="func"]')
     if funcs == None:
         return []
@@ -105,7 +105,7 @@ def _get_dif_function_info(compound, file_id):
         func_info["id"] = m.attrib["id"]
         func_info["file_id"] = file_id
         func_info["local_id"] = func_id
-        func_info["full_url"] = "/sw/apis/{}.html#{}".format(file_id, func_id)
+        func_info["full_url"] = "{}/{}.html#{}".format(html_path, file_id, func_id)
 
         func_info["name"] = _get_text_or_empty(m, "name")
         func_info["prototype"] = _get_text_or_empty(
