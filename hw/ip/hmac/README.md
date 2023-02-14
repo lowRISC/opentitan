@@ -331,7 +331,7 @@ interconnect.
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_hmac.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_hmac.h)
 
 ## Register Table
 

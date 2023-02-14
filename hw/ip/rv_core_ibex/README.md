@@ -186,7 +186,7 @@ The `PipeLine` parameter can be used to configure the bus adapter pipelining.
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_rv_core_ibex.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_rv_core_ibex.h)
 
 ## Register Table
 

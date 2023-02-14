@@ -227,7 +227,7 @@ It should also be noted that data and address scrambling is never entirely disab
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_sram_ctrl.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_sram_ctrl.h)
 
 ## Register Table
 

@@ -486,7 +486,7 @@ All other parameters in registers `TIMING2`, `TIMING3`, `TIMING4` are unchanged 
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_i2c.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_i2c.h)
 
 ## Register Table
 

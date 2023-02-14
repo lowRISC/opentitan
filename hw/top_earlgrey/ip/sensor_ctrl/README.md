@@ -63,7 +63,7 @@ Fatal events are not acknowledged, and continuously send alert events in the sys
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_sensor_ctrl.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_sensor_ctrl.h)
 
 ## Register Table
 

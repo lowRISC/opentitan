@@ -197,7 +197,7 @@ Note that since the `sysrst_ctrl` does not have control over the pad open-drain 
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_sysrst_ctrl.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_sysrst_ctrl.h)
 
 ## Registers
 
