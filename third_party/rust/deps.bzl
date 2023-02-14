@@ -4,7 +4,6 @@
 
 load("@rules_rust//bindgen:repositories.bzl", "rust_bindgen_dependencies", "rust_bindgen_register_toolchains")
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains", "rust_repository_set")
-load("//third_party/rust/crates:crates.bzl", "raze_fetch_remote_crates")
 load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
 load(
     "@safe_ftdi//third_party/rust:deps.bzl",
@@ -35,7 +34,6 @@ def rust_deps():
     )
     rust_bindgen_dependencies()
     rust_bindgen_register_toolchains()
-    raze_fetch_remote_crates()
     ftdi_fetch_remote_crates()
     serde_annotate_fetch_remote_crates()
     rust_analyzer_dependencies()

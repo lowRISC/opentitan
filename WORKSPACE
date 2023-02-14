@@ -55,16 +55,27 @@ rust_repos()
 load("//third_party/rust:deps.bzl", "rust_deps")
 rust_deps()
 
-# Cargo Raze dependencies
-load("//third_party/cargo_raze:repos.bzl", "raze_repos")
-raze_repos()
-load("//third_party/cargo_raze:deps.bzl", "raze_deps")
-raze_deps()
-# The raze instructions would have us call `cargo_raze_transitive_deps`, but
-# that wants to re-instantiate rules_rust and mess up our rust configuration.
-# The single other action that transitive_deps would perform is to load and
-# instantiate `rules_foreign_cc_dependencies`, but this has already been done
-# above, so we can do nothing here.
+load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
+crate_universe_dependencies(bootstrap = True)
+
+load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository", "render_config")
+crates_repository(
+    name = "crate_index",
+    annotations = {
+        "libudev-sys": [crate.annotation(
+            patches = ["@//third_party/rust/crates/patches:libudev-sys-0.1.4.patch"],
+            patch_args = ["-p1"],
+        )],
+    },
+    cargo_lockfile = "//third_party/rust/crates:Cargo.lock",
+    lockfile = "//third_party/rust/crates:Cargo.Bazel.lock",
+    manifests = ["//third_party/rust/crates:Cargo.toml"],
+    generator = "@cargo_bazel_bootstrap//:cargo-bazel",
+)
+
+load("@crate_index//:defs.bzl", "crate_repositories")
+
+crate_repositories()
 
 # OpenOCD
 load("//third_party/openocd:repos.bzl", "openocd_repos")
