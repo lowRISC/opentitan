@@ -77,36 +77,23 @@ def main():
                     required=True,
                     help="Topgen generated config file `top_{name}.hjson`.")
     parser.add_argument(
-        "--outdir",
-        "-o",
-        help="Target TOP documentation directory.")
+        "--generator",
+        "-g",
+        help="Select generator")
 
     args = parser.parse_args()
+    gen = args.generator
 
-    outdir = Path(args.outdir)
-
-    doc_generators = [
-        {
-            "filename": "mmap.md",
-            "generator": generate_mmap_table,
-        },
-        {
-            "filename": "pinout.md",
-            "generator": generate_pinout_table,
-        },
-    ]
-
+    doc_generators = {
+        "mmap": generate_mmap_table,
+        "pinout": generate_pinout_table,
+    }
     with open(args.topcfg, 'r') as infile:
         top_level = hjson.load(infile)
-        top_outdir = outdir / top_level["name"]
-        top_outdir.mkdir(parents=True, exist_ok=True)
+        if gen not in doc_generators:
+            sys.exit(f"Unknown generator {gen}")
 
-        for doc in doc_generators:
-            outfile = top_outdir / doc["filename"]
-            table = doc["generator"](top_level)
-            with open(outfile, 'w') as f:
-                f.write(to_markdown(table))
-
+        print(doc_generators[gen](top_level))
 
 if __name__ == "__main__":
     main()
