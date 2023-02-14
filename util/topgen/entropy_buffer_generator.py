@@ -50,13 +50,10 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
-
-    args = parse_args()
-    k = args.num_bytes
-    out = args.output_file
-    sec = args.sec
-    seed = args.seed
+def gen_buffer(k: int,
+               out,
+               sec: bool,
+               seed: int):
 
     if (sec and seed):
         log.error("Options --sec and --seed cannot be used together")
@@ -78,6 +75,17 @@ def main():
     with open(out, 'w') as fp:
         for item in buffer:
             fp.write("%s\n" % item)
+
+
+def main():
+
+    args = parse_args()
+    k = args.num_bytes
+    out = args.output_file
+    sec = args.sec
+    seed = args.seed
+
+    gen_buffer(k, out, sec, seed)
 
 
 if __name__ == "__main__":
