@@ -145,6 +145,21 @@ otbn_error_t otbn_dmem_write(size_t num_words, const uint32_t *src,
   return kOtbnErrorOk;
 }
 
+otbn_error_t otbn_dmem_set(size_t num_words, const uint32_t src,
+                           otbn_addr_t dest) {
+  OTBN_RETURN_IF_ERROR(check_offset_len(dest, num_words, kOtbnDMemSizeBytes));
+
+  // No need to randomize here, since all the values are the same.
+  size_t i = 0;
+  for (; launder32(i) < num_words; ++i) {
+    abs_mmio_write32(kBase + OTBN_DMEM_REG_OFFSET + dest + i * sizeof(uint32_t),
+                     src);
+    HARDENED_CHECK_LT(i, num_words);
+  }
+  HARDENED_CHECK_EQ(i, num_words);
+  return kOtbnErrorOk;
+}
+
 otbn_error_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest) {
   OTBN_RETURN_IF_ERROR(check_offset_len(src, num_words, kOtbnDMemSizeBytes));
 

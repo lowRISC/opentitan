@@ -19,22 +19,19 @@
 .text
 
 /**
- * 256-bit modular multiplication based on Barrett reduction algorithm.
+ * Reduce a 512-bit value by a 256-bit P-256 modulus (either n or p).
  *
- * Returns c = a * b mod p
+ * Returns c = a mod m
  *
- * Expects two 256 bit operands, 256 bit modulus and pre-computed parameter u
- * for Barrett reduction (usually greek mu in literature). u is expected
- * without the leading 1 at bit 256. u has to be pre-computed as
- * u = floor(2^512/p).
- * This guarantees that u > 2^256, however, in order for u to be at
- * most 2^257-1, it has to be ensured that p >= 2^255 + 1.
+ * Expects a 512 bit input, a 256 bit modulus and pre-computed parameter u for
+ * Barrett reduction (usually greek mu in literature). u is expected without
+ * the leading 1 at bit 256. u has to be pre-computed as u = floor(2^512/p).
+ * This guarantees that u > 2^256, however, in order for u to be at most
+ * 2^257-1, it has to be ensured that m >= 2^255 + 1.
  *
  * This implementation mostly follows the description in the
  * "Handbook of Applied Cryptography" in Algorithm 14.42.
  * Differences:
- *   - This implementation incorporates a multiplication before the reduction.
- *     Therefore it expects two operands (a, b) instead of a wider integer x.
  *   - The computation of q2 ignores the MSbs of q1 and u to allow using
  *     a 256x256 bit multiplication. This is compensated later by
  *     individual (conditional) additions.
@@ -47,52 +44,27 @@
  * and Barrett constant of the P-256 underlying finite field only. For a
  * generic modulus a 2nd conditional subtraction of the modulus has to be
  * added or the modulus has to be in a range such that it can be mathematically
- * proven that a single subtraction is sufficient.
+ * proven that a single subtraction is sufficient. The following condition is
+ * sufficient (although potentially not necessary):
+ *   b * (b^2k mod m) + mu <= b^(k+1)
+ *
+ * For OTBN with a 256-bit modulus, we have b=2^256 and k=1, so this is:
+ *   2^256 * (2^512 mod m) + mu <= 2^512
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  w24: a, first 256 bit operand (a * b < 2^256 * p)
- * @param[in]  w25: b, second 256 bit operand (a * b < 2^256 * p)
- * @param[in]  w29: p, modulus of P-256 underlying finite field
- * @param[in]  w28: u, lower 256 bit of Barrett constant for curve P-256
+ * @param[in]  [w19,w20]: a, input (512 bits) such that a < 2^256 * m
+ * @param[in]  w22: correction factor, msb(a) * u
+ * @param[in]  w29: m, modulus, curve order n or finite field modulus p
+ * @param[in]  w28: u, lower 256 bit of Barrett constant for m
  * @param[in]  w31: all-zero
- * @param[in]  MOD: p, modulus of P-256 underlying finite field
+ * @param[in]  MOD: m, modulus
  * @param[out]  w19: c, result
  *
  * clobbered registers: w19, w20, w21, w22, w23, w24, w25
  * clobbered flag groups: FG0
  */
-mod_mul_256x256:
-  /* Compute the integer product of the operands x = a * b
-     x = [w20, w19] = a * b = w24 * w25
-     => max. length x: 512 bit */
-  bn.mulqacc.z          w24.0, w25.0,  0
-  bn.mulqacc            w24.1, w25.0, 64
-  bn.mulqacc.so  w19.L, w24.0, w25.1, 64
-  bn.mulqacc            w24.2, w25.0,  0
-  bn.mulqacc            w24.1, w25.1,  0
-  bn.mulqacc            w24.0, w25.2,  0
-  bn.mulqacc            w24.3, w25.0, 64
-  bn.mulqacc            w24.2, w25.1, 64
-  bn.mulqacc            w24.1, w25.2, 64
-  bn.mulqacc.so  w19.U, w24.0, w25.3, 64
-  bn.mulqacc            w24.3, w25.1,  0
-  bn.mulqacc            w24.2, w25.2,  0
-  bn.mulqacc            w24.1, w25.3,  0
-  bn.mulqacc            w24.3, w25.2, 64
-  bn.mulqacc.so  w20.L, w24.2, w25.3, 64
-  bn.mulqacc.so  w20.U, w24.3, w25.3,  0
-  bn.add    w20, w20, w31
-
-  /* Store correction factor to compensate for later neglected MSb of x.
-     x is 512 bit wide and therefore the 255 bit right shifted version q1
-     (below) contains 257 bit. Bit 256 of q1 is neglected to allow using a
-     256x256 multiplier. For the MSb of x being set we temporary store u
-     (or zero) here to be used in a later constant time correction of a
-     multiplication with u. Note that this requires the MSb flag being carried
-     over from the multiplication routine. */
-  bn.sel    w22, w28, w31, M
-
+p256_reduce:
   /* Compute q1' = q1[255:0] = x >> 255
      w21 = q1' = [w20, w19] >> 255 */
   bn.rshi   w21, w20, w19 >> 255
@@ -184,6 +156,114 @@ mod_mul_256x256:
 
   ret
 
+/**
+ * 256-bit modular multiplication for P-256 coordinate and scalar fields.
+ *
+ * Returns c = a * b mod m
+ *
+ * Expects two 256 bit operands, 256 bit modulus and pre-computed parameter u
+ * for Barrett reduction (usually greek mu in literature). See the note above
+ * `p256_reduce` for details.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w24: a, first 256 bit operand (a * b < 2^256 * p)
+ * @param[in]  w25: b, second 256 bit operand (a * b < 2^256 * p)
+ * @param[in]  w29: m, modulus, curve order n or finite field modulus p
+ * @param[in]  w28: u, lower 256 bit of Barrett constant for curve P-256
+ * @param[in]  w31: all-zero
+ * @param[in]  MOD: p, modulus of P-256 underlying finite field
+ * @param[out]  w19: c, result
+ *
+ * clobbered registers: w19, w20, w21, w22, w23, w24, w25
+ * clobbered flag groups: FG0
+ */
+mod_mul_256x256:
+  /* Compute the integer product of the operands x = a * b
+     x = [w20, w19] = a * b = w24 * w25
+     => max. length x: 512 bit */
+  bn.mulqacc.z          w24.0, w25.0,  0
+  bn.mulqacc            w24.1, w25.0, 64
+  bn.mulqacc.so  w19.L, w24.0, w25.1, 64
+  bn.mulqacc            w24.2, w25.0,  0
+  bn.mulqacc            w24.1, w25.1,  0
+  bn.mulqacc            w24.0, w25.2,  0
+  bn.mulqacc            w24.3, w25.0, 64
+  bn.mulqacc            w24.2, w25.1, 64
+  bn.mulqacc            w24.1, w25.2, 64
+  bn.mulqacc.so  w19.U, w24.0, w25.3, 64
+  bn.mulqacc            w24.3, w25.1,  0
+  bn.mulqacc            w24.2, w25.2,  0
+  bn.mulqacc            w24.1, w25.3,  0
+  bn.mulqacc            w24.3, w25.2, 64
+  bn.mulqacc.so  w20.L, w24.2, w25.3, 64
+  bn.mulqacc.so  w20.U, w24.3, w25.3,  0
+
+  /* Store correction factor to compensate for later neglected MSb of x.
+     x is 512 bit wide and therefore the 255 bit right shifted version q1
+     (below) contains 257 bit. Bit 256 of q1 is neglected to allow using a
+     256x256 multiplier. For the MSb of x being set we temporary store u
+     (or zero) here to be used in a later constant time correction of a
+     multiplication with u. Note that this requires the MSb flag being carried
+     over from the multiplication routine. */
+  bn.sel    w22, w28, w31, M
+
+  /* Reduce product modulo m. */
+  jal       x1, p256_reduce
+
+  ret
+
+/**
+ * 320- by 128-bit modular multiplication for P-256 coordinate and scalar fields.
+ *
+ * Returns c = a * b mod m
+ *
+ * Expects two operands, 256 bit modulus and pre-computed parameter u
+ * for Barrett reduction (usually greek mu in literature). See the note above
+ * `p256_reduce` for details.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w24: a0, low part of 320-bit operand a (256 bits)
+ * @param[in]  w25: a1, high part of 320-bit operand a (64 bits)
+ * @param[in]  w26: b, second operand (128 bits)
+ * @param[in]  w29: m, modulus, curve order n or finite field modulus p
+ * @param[in]  w28: u, lower 256 bit of Barrett constant for curve P-256
+ * @param[in]  w31: all-zero
+ * @param[in]  MOD: p, modulus of P-256 underlying finite field
+ * @param[out]  w19: c, result
+ *
+ * clobbered registers: w19, w20, w21, w22, w23, w24, w25
+ * clobbered flag groups: FG0
+ */
+mod_mul_320x128:
+  /* Compute the integer product of the operands x = a * b
+     x = [w20, w19] = a * b = w24 * w25
+     => max. length of x: 448 bit */
+  bn.mulqacc.z          w24.0, w26.0, 0
+  bn.mulqacc            w24.0, w26.1, 64
+  bn.mulqacc.so  w19.L, w24.1, w26.0, 64
+  bn.mulqacc            w24.1, w26.1, 0
+  bn.mulqacc            w24.2, w26.0, 0
+  bn.mulqacc            w24.2, w26.1, 64
+  bn.mulqacc.so  w19.U, w24.3, w26.0, 64
+  bn.mulqacc            w24.3, w26.1, 0
+  bn.mulqacc            w25.0, w26.0, 0
+  bn.mulqacc.wo    w20, w25.0, w26.1, 64
+
+  /* Store correction factor to compensate for later neglected MSb of x.
+     x is 512 bit wide and therefore the 255 bit right shifted version q1
+     (below) contains 257 bit. Bit 256 of q1 is neglected to allow using a
+     256x256 multiplier. For the MSb of x being set we temporary store u
+     (or zero) here to be used in a later constant time correction of a
+     multiplication with u. Note that this requires the MSb flag being carried
+     over from the multiplication routine. */
+  bn.sel    w22, w28, w31, M
+
+  /* Reduce product modulo m. */
+  jal       x1, p256_reduce
+
+  ret
 
 /**
  * Checks if a point is a valid curve point on curve P-256 (secp256r1)
@@ -1092,13 +1172,26 @@ scalar_mult_int:
  *   d = (d0 + d1) mod n
  *   k = (k0 + k1) mod n
  *
- * @param[in]  dmem[k0]:  first share of secret scalar (256 bits)
- * @param[in]  dmem[k1]:  second share of secret scalar (256 bits)
+ * Each share is 320 bits, which gives us 64 bits of extra redundancy modulo n
+ * (256 bits). This is a protection measure against side-channel attacks.
+ *
+ * For s = k^-1 * (r * d + msg), we compute a random nonzero masking scalar
+ * alpha, and compute s as:
+ *   s = ((k * alpha)^-1 * (r * (d * alpha) + alpha * msg)) mod n
+ *
+ * We choose alpha to be at most 128 bits, so the product with a 320b share
+ * produces fits in the same 512-bit modular reduction routine that we use for
+ * 256x256-bit multiplications. It should be safe to compute e.g. k * alpha =
+ * (k0 * alpha + k1 * alpha) mod n, because alpha has enough randomness to mask
+ * the true value of k.
+ *
+ * @param[in]  dmem[k0]:  first share of secret scalar (320 bits)
+ * @param[in]  dmem[k1]:  second share of secret scalar (320 bits)
  * @param[in]  dmem[msg]: message to be signed (256 bits)
  * @param[in]  dmem[r]:   dmem buffer for r component of signature (256 bits)
  * @param[in]  dmem[s]:   dmem buffer for s component of signature (256 bits)
- * @param[in]  dmem[d0]:  first share of private key d
- * @param[in]  dmem[d1]:  second share of private key d
+ * @param[in]  dmem[d0]:  first share of private key d (320 bits)
+ * @param[in]  dmem[d1]:  second share of private key d (320 bits)
  *
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
@@ -1111,15 +1204,49 @@ p256_sign:
   /* init all-zero register */
   bn.xor    w31, w31, w31
 
-  /* load first share of secret scalar k from dmem: w0 = dmem[k0] */
+  /* load first share of secret scalar k from dmem: w0,w1 = dmem[k0] */
   la        x16, k0
   li        x2, 0
-  bn.lid    x2, 0(x16)
-
-  /* load second share of secret scalar k from dmem: w1 = dmem[k1] */
-  la        x16, k1
+  bn.lid    x2, 0(x16++)
   li        x2, 1
   bn.lid    x2, 0(x16)
+
+  /* load second share of secret scalar k from dmem: w2,w3 = dmem[k1] */
+  la        x16, k1
+  li        x2, 2
+  bn.lid    x2, 0(x16++)
+  li        x2, 3
+  bn.lid    x2, 0(x16)
+
+  /* setup modulus n (curve order) and Barrett constant
+     MOD <= w29 <= n = dmem[p256_n]; w28 <= u_n = dmem[p256_u_n]  */
+  li        x2, 29
+  la        x3, p256_n
+  bn.lid    x2, 0(x3)
+  bn.wsrw   0, w29
+  li        x2, 28
+  la        x3, p256_u_n
+  bn.lid    x2, 0(x3)
+
+  /* Reduce k0 modulo n.
+     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
+
+     w0 <= [w0,w1] mod n = k0 mod n */
+  bn.mov   w19, w0
+  bn.mov   w20, w1
+  bn.mov   w22, w31
+  jal      x1, p256_reduce
+  bn.mov   w0, w19
+
+  /* Reduce k1 modulo n.
+     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
+
+     w1 <= [w2,w3] mod n = k1 mod n */
+  bn.mov   w19, w2
+  bn.mov   w20, w3
+  bn.mov   w22, w31
+  jal      x1, p256_reduce
+  bn.mov   w1, w19
 
   /* scalar multiplication with base point
      (x_1, y_1) = (w11, w12) <= k*G = w0*(dmem[p256_gx], dmem[p256_gy]) */
@@ -1137,73 +1264,120 @@ p256_sign:
   la        x3, p256_u_n
   bn.lid    x2, 0(x3)
 
-  /* re-load first share of secret scalar k from dmem: w0 = dmem[k0] */
+  /* re-load first share of secret scalar k from dmem: w0,w1 = dmem[k0] */
   la        x16, k0
   li        x2, 0
-  bn.lid    x2, 0(x16)
-
-  /* re-load second share of secret scalar k from dmem: w1 = dmem[k1] */
-  la        x16, k1
+  bn.lid    x2, 0(x16++)
   li        x2, 1
   bn.lid    x2, 0(x16)
 
-  /* Combine the shares of k for inversion.
-     TODO(#15507): modify inversion to handle k in shares.
-       w0 <= (w0 + w1) mod n = k */
-  bn.addm   w0, w0, w1
+  /* re-load second share of secret scalar k from dmem: w2,w3 = dmem[k1] */
+  la        x16, k1
+  li        x2, 2
+  bn.lid    x2, 0(x16++)
+  li        x2, 3
+  bn.lid    x2, 0(x16)
 
-  /* modular multiplicative inverse of k
-     w1 <= k^-1 mod n */
+  /* Generate a random 127-bit number.
+       w4 <= URND()[255:129] */
+  bn.wsrr  w4, 0x2 /* URND */
+  bn.rshi  w4, w31, w4 >> 129
+
+  /* Add 1 to get a 128-bit nonzero scalar for masking.
+       w4 <= w4 + 1 = alpha */
+  bn.addi  w4, w4, 1
+
+  /* w0 <= ([w0,w1] * w4) mod n = (k0 * alpha) mod n */
+  bn.mov    w24, w0
+  bn.mov    w25, w1
+  bn.mov    w26, w4
+  jal       x1, mod_mul_320x128
+  bn.mov    w0, w19
+
+  /* w19 <= ([w2,w3] * w26) mod n = (k1 * alpha) mod n */
+  bn.mov    w24, w2
+  bn.mov    w25, w3
+  jal       x1, mod_mul_320x128
+
+  /* w0 <= (w0+w19) mod n = (k * alpha) mod n */
+  bn.addm   w0, w0, w19
+
+  /* w1 <= w0^-1 mod n = (k * alpha)^-1 mod n */
   jal       x1, mod_inv
 
-  /* w24 = d0 = dmem[d0] */
-  la        x23, d0
-  li        x2, 24
-  bn.lid    x2, 0(x23)
+  /* Load first share of secret key d from dmem.
+       w2,w3 = dmem[d0] */
+  la        x16, d0
+  li        x2, 2
+  bn.lid    x2, 0(x16++)
+  li        x2, 3
+  bn.lid    x2, 0(x16)
 
-  /* w2 = k^-1*d0 mod n */
-  bn.mov    w25, w1
-  jal       x1, mod_mul_256x256
-  bn.mov    w2, w19
+  /* Load second share of secret key d from dmem.
+       w5,w6 = dmem[d1] */
+  la        x16, d1
+  li        x2, 5
+  bn.lid    x2, 0(x16++)
+  li        x2, 6
+  bn.lid    x2, 0(x16)
 
-  /* w24 = d1 = dmem[d1] */
-  la        x23, d1
-  li        x2, 24
-  bn.lid    x2, 0(x23)
+  /* w0 <= ([w2,w3] * w4) mod n = (d0 * alpha) mod n */
+  bn.mov    w24, w2
+  bn.mov    w25, w3
+  bn.mov    w26, w4
+  jal       x1, mod_mul_320x128
+  bn.mov    w0, w19
 
-  /* w19 = k^-1*d1 mod n */
-  jal       x1, mod_mul_256x256
+  /* w19 <= ([w5,w6] * w4) mod n = (d1 * alpha) mod n */
+  bn.mov    w24, w5
+  bn.mov    w25, w6
+  bn.mov    w26, w4
+  jal       x1, mod_mul_320x128
 
-  /* w19 <= w2*w19 mod n = (k^-1*d0 + k^-1*d1) mod n
-                         = (k^-1*d) mod n */
-  bn.addm   w19, w2, w19
+  /* w0 <= (w0+w19) mod n = (d * alpha) mod n */
+  bn.addm   w0, w0, w19
 
   /* w24 = r <= w11  mod n */
   bn.addm   w24, w11, w31
 
-  /* store r of signature in dmem: dmem[r] <= r = w24 */
+  /* Store r of signature in dmem.
+       dmem[r] <= r = w24 */
   la        x19, r
   li        x2, 24
   bn.sid    x2, 0(x19)
 
-  /* w0 = w19 <= w24*w25 = w24*w19 = r*k^-1*d  mod n */
+  /* w19 <= (w24 * w0) mod n = (r * d * alpha) mod n */
+  bn.mov    w25, w0
+  jal       x1, mod_mul_256x256
+
+  /* w0 <= (w1 * w19) mod n = ((k * alpha)^-1 * (r * d * alpha)) mod n
+                            = (k^-1 * r * d) mod n */
+  bn.mov    w24, w1
   bn.mov    w25, w19
   jal       x1, mod_mul_256x256
   bn.mov    w0, w19
 
-  /* load message from dmem: w24 = msg <= dmem[msg] */
+  /* Load message from dmem:
+       w24 = msg <= dmem[msg] */
   la        x18, msg
   li        x2, 24
   bn.lid    x2, 0(x18)
 
-  /* w19 = k^-1*msg <= w25*w24 = w1*w24  mod n */
-  bn.mov    w25, w1
+  /* w19 = (w24 * w4) mod n = <= (msg * alpha)  mod n */
+  bn.mov    w25, w4
   jal       x1, mod_mul_256x256
 
-  /* w0 = s <= w19 + w0 = k^-1*msg + r*k^-1*d  mod n */
-  bn.addm   w0, w19, w0
+  /* w19 = (w1 * w19) mod n = ((k * alpha)^-1 * (msg * alpha)) mod n
+                            = (k^-1 * msg) mod n */
+  bn.mov    w24, w1
+  bn.mov    w25, w19
+  jal       x1, mod_mul_256x256
 
-  /* store s of signature in dmem: dmem[s] <= s = w0 */
+  /* w0 = (w0 + w19) mod n = (k^-1*r*d + k^-1*msg) mod n = s */
+  bn.addm   w0, w0, w19
+
+  /* Store s of signature in dmem.
+       dmem[s] <= s = w0 */
   la        x20, s
   li        x2, 0
   bn.sid    x2, 0(x20)
@@ -1226,10 +1400,12 @@ p256_sign:
  * where:
  *   d = (d0 + d1) mod n
  *
+ * The shares d0 and d1 are up to 320 bits each to provide extra redundancy.
+ *
  * This routine runs in constant time.
  *
- * @param[in]     dmem[d0]:  first share of scalar d (256 bits)
- * @param[in]     dmem[d1]:  second share of scalar d (256 bits)
+ * @param[in]     dmem[d0]:  first share of scalar d (320 bits)
+ * @param[in]     dmem[d1]:  second share of scalar d (320 bits)
  * @param[in,out] dmem[x]:   affine x-coordinate (256 bits)
  * @param[in,out] dmem[y]:   affine y-coordinate (256 bits)
  *
@@ -1243,15 +1419,41 @@ p256_base_mult:
   /* init all-zero register */
   bn.xor    w31, w31, w31
 
-  /* load first share of scalar d from dmem: w0 = dmem[d0] */
+  /* Load first share of secret key d from dmem.
+       w0,w1 = dmem[d0] */
   la        x16, d0
   li        x2, 0
-  bn.lid    x2, 0(x16)
-
-  /* load second share of scalar d from dmem: w1 = dmem[d0] */
-  la        x16, d1
+  bn.lid    x2, 0(x16++)
   li        x2, 1
   bn.lid    x2, 0(x16)
+
+  /* Load second share of secret key d from dmem.
+       w2,w3 = dmem[d1] */
+  la        x16, d1
+  li        x2, 2
+  bn.lid    x2, 0(x16++)
+  li        x2, 3
+  bn.lid    x2, 0(x16)
+
+  /* Reduce d0 modulo n.
+     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
+
+     w0 <= [w0,w1] mod n = d0 mod n */
+  bn.mov   w19, w0
+  bn.mov   w20, w1
+  bn.mov   w22, w31
+  jal      x1, p256_reduce
+  bn.mov   w0, w19
+
+  /* Reduce d1 modulo n.
+     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
+
+     w1 <= [w2,w3] mod n = d1 mod n */
+  bn.mov   w19, w2
+  bn.mov   w20, w3
+  bn.mov   w22, w31
+  jal      x1, p256_reduce
+  bn.mov   w1, w19
 
   /* call internal scalar multiplication routine
      R = (x_a, y_a) = (w11, w12) <= d*P = (w0 + w1)*P */
@@ -1823,12 +2025,18 @@ p256_generate_k:
        w20, w21 <= k0, k1 */
   jal  x1, p256_random_scalar
 
-  /* Write the shares to DMEM. */
+  /* Write the shares to DMEM.
+     TODO: zeroes for high bits are temporary until p256_random_scalar supports
+     extra bits; remove later. */
   la        x20, k0
   li        x2, 20
-  bn.sid    x2++, 0(x20)
+  bn.sid    x2, 0(x20++)
+  li        x3, 31
+  bn.sid    x3, 0(x20)
   la        x20, k1
-  bn.sid    x2, 0(x20)
+  li        x2, 21
+  bn.sid    x2, 0(x20++)
+  bn.sid    x3, 0(x20)
 
   ret
 
@@ -1927,15 +2135,15 @@ p256_gy:
 
 .section .bss
 
-/* random scalar k (in two shares) */
+/* random scalar k (in two 320b shares) */
 .balign 32
 .weak k0
 k0:
-  .zero 32
+  .zero 64
 .balign 32
 .weak k1
 k1:
-  .zero 32
+  .zero 64
 
 /* message digest */
 .balign 32
@@ -1967,15 +2175,15 @@ x:
 y:
   .zero 32
 
-/* private key d (in two shares) */
+/* private key d (in two 320b shares) */
 .balign 32
 .weak d0
 d_share0:
-  .zero 32
+  .zero 64
 .balign 32
 .weak d1
 d_share1:
-  .zero 32
+  .zero 64
 
 /* verification result x_r (aka x_1) */
 .balign 32
