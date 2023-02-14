@@ -180,5 +180,5 @@ set_rule_status -rule {W_CNTL} -status {Waived}                           \
   -comment {PAD driving to I2C. PADs are not clock bounded}
 
 set_rule_status -rule {W_CNTL} -status {Waived}                           \
-  -expression {(Signal=~"top_earlgrey.*.u_reg.*_cdc.u_arb.*_sync.dst_ack_q") && (ReceivingFlop=~"top_earlgrey.*.u_sync_1.gen_generic.u_impl_generic.q_o*")} \
+  -expression {(Signal=~"top_earlgrey.*.u_reg.*_cdc.u_arb.*_sync.*.dst_ack_q") && (ReceivingFlop=~"top_earlgrey.*.u_sync_1.gen_generic.u_impl_generic.q_o*")} \
   -comment {PAD driving to I2C. PADs are not clock bounded}
