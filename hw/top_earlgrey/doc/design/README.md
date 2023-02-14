@@ -379,13 +379,141 @@ The choice of memory, or lack thereof at location 0x0 confers two exclusive bene
 
 For the purpose of `top_earlgrey`, the first option has been chosen to benefit software development and testing
 
-{{< topLevelDoc "earlgrey" "mmap" >}}
+<!-- BEGIN AUTOGEN util/design/gen-top-docs.py -t hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson -g mmap -->
+| Name              | Type          | Byte Address      |
+|:------------------|:--------------|:------------------|
+| uart0             | uart          | 0x40000000 (regs) |
+| uart1             | uart          | 0x40010000 (regs) |
+| uart2             | uart          | 0x40020000 (regs) |
+| uart3             | uart          | 0x40030000 (regs) |
+| gpio              | gpio          | 0x40040000 (regs) |
+| spi_device        | spi_device    | 0x40050000 (regs) |
+| i2c0              | i2c           | 0x40080000 (regs) |
+| i2c1              | i2c           | 0x40090000 (regs) |
+| i2c2              | i2c           | 0x400A0000 (regs) |
+| pattgen           | pattgen       | 0x400E0000 (regs) |
+| rv_timer          | rv_timer      | 0x40100000 (regs) |
+| otp_ctrl          | otp_ctrl      | 0x40130000 (core) |
+|                   |               | 0x40132000 (prim) |
+| lc_ctrl           | lc_ctrl       | 0x40140000 (regs) |
+| alert_handler     | alert_handler | 0x40150000 (regs) |
+| spi_host0         | spi_host      | 0x40300000 (regs) |
+| spi_host1         | spi_host      | 0x40310000 (regs) |
+| usbdev            | usbdev        | 0x40320000 (regs) |
+| pwrmgr_aon        | pwrmgr        | 0x40400000 (regs) |
+| rstmgr_aon        | rstmgr        | 0x40410000 (regs) |
+| clkmgr_aon        | clkmgr        | 0x40420000 (regs) |
+| sysrst_ctrl_aon   | sysrst_ctrl   | 0x40430000 (regs) |
+| adc_ctrl_aon      | adc_ctrl      | 0x40440000 (regs) |
+| pwm_aon           | pwm           | 0x40450000 (regs) |
+| pinmux_aon        | pinmux        | 0x40460000 (regs) |
+| aon_timer_aon     | aon_timer     | 0x40470000 (regs) |
+| ast               | ast           | 0x40480000 (regs) |
+| sensor_ctrl       | sensor_ctrl   | 0x40490000 (regs) |
+| sram_ctrl_ret_aon | sram_ctrl     | 0x40500000 (regs) |
+|                   |               | 0x40600000 (ram)  |
+| flash_ctrl        | flash_ctrl    | 0x41000000 (core) |
+|                   |               | 0x41008000 (prim) |
+|                   |               | 0x20000000 (mem)  |
+| rv_dm             | rv_dm         | 0x00010000 (mem)  |
+|                   |               | 0x41200000 (regs) |
+| rv_plic           | rv_plic       | 0x48000000 (regs) |
+| aes               | aes           | 0x41100000 (regs) |
+| hmac              | hmac          | 0x41110000 (regs) |
+| kmac              | kmac          | 0x41120000 (regs) |
+| otbn              | otbn          | 0x41130000 (regs) |
+| keymgr            | keymgr        | 0x41140000 (regs) |
+| csrng             | csrng         | 0x41150000 (regs) |
+| entropy_src       | entropy_src   | 0x41160000 (regs) |
+| edn0              | edn           | 0x41170000 (regs) |
+| edn1              | edn           | 0x41180000 (regs) |
+| sram_ctrl_main    | sram_ctrl     | 0x411C0000 (regs) |
+|                   |               | 0x10000000 (ram)  |
+| rom_ctrl          | rom_ctrl      | 0x00008000 (rom)  |
+|                   |               | 0x411e0000 (regs) |
+| rv_core_ibex      | rv_core_ibex  | 0x411F0000 (cfg)  |
+
+<!-- END AUTOGEN -->
 
 ## Hardware Interfaces
 
 ### Pinout
 
-{{< topLevelDoc "earlgrey" "pinout" >}}
+<!-- BEGIN AUTOGEN util/design/gen-top-docs.py -t hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson -g pinout -->
+| ID   | Name             | Bank   | Type         | Connection Type   | Description                                |
+|:-----|:-----------------|:-------|:-------------|:------------------|:-------------------------------------------|
+| 0    | POR_N            | VCC    | InputStd     | manual            | System reset                               |
+| 1    | USB_P            | VCC    | DualBidirTol | manual            | USB P signal                               |
+| 2    | USB_N            | VCC    | DualBidirTol | manual            | USB N signal                               |
+| 3    | CC1              | AVCC   | InputStd     | manual            | ADC input 1                                |
+| 4    | CC2              | AVCC   | InputStd     | manual            | ADC input 2                                |
+| 5    | FLASH_TEST_VOLT  | VCC    | AnalogIn0    | manual            | Flash test voltage input                   |
+| 6    | FLASH_TEST_MODE0 | VCC    | InputStd     | manual            | Flash test mode signal                     |
+| 7    | FLASH_TEST_MODE1 | VCC    | InputStd     | manual            | Flash test mode signal                     |
+| 8    | OTP_EXT_VOLT     | VCC    | AnalogIn1    | manual            | OTP external voltage input                 |
+| 9    | SPI_HOST_D0      | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 10   | SPI_HOST_D1      | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 11   | SPI_HOST_D2      | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 12   | SPI_HOST_D3      | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 13   | SPI_HOST_CLK     | VIOA   | BidirStd     | direct            | SPI host clock                             |
+| 14   | SPI_HOST_CS_L    | VIOA   | BidirStd     | direct            | SPI host chip select                       |
+| 15   | SPI_DEV_D0       | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 16   | SPI_DEV_D1       | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 17   | SPI_DEV_D2       | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 18   | SPI_DEV_D3       | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 19   | SPI_DEV_CLK      | VIOA   | InputStd     | direct            | SPI device clock                           |
+| 20   | SPI_DEV_CS_L     | VIOA   | InputStd     | direct            | SPI device chip select                     |
+| 0    | IOA0             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 1    | IOA1             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 2    | IOA2             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 3    | IOA3             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 4    | IOA4             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 5    | IOA5             | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 6    | IOA6             | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
+| 7    | IOA7             | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
+| 8    | IOA8             | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
+| 9    | IOB0             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 10   | IOB1             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 11   | IOB2             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 12   | IOB3             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 13   | IOB4             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 14   | IOB5             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 15   | IOB6             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 16   | IOB7             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 17   | IOB8             | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 18   | IOB9             | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
+| 19   | IOB10            | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
+| 20   | IOB11            | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
+| 21   | IOB12            | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
+| 22   | IOC0             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 23   | IOC1             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 24   | IOC2             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 25   | IOC3             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 26   | IOC4             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 27   | IOC5             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 28   | IOC6             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 29   | IOC7             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 30   | IOC8             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 31   | IOC9             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 32   | IOC10            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 33   | IOC11            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 34   | IOC12            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 35   | IOR0             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 36   | IOR1             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 37   | IOR2             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 38   | IOR3             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 39   | IOR4             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 40   | IOR5             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 41   | IOR6             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 42   | IOR7             | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 21   | IOR8             | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (ec_rst_l)    |
+| 22   | IOR9             | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (flash_wp_l)) |
+| 43   | IOR10            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 44   | IOR11            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 45   | IOR12            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 46   | IOR13            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+
+<!-- END AUTOGEN -->
 
 # RTL Implementation Notes
 
