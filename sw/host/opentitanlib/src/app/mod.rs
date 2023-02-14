@@ -88,10 +88,14 @@ impl StagedProgressBar {
 pub struct PinConfiguration {
     /// The input/output mode of the GPIO pin.
     pub mode: Option<PinMode>,
-    /// The default/initial level of the pin (true means high).
+    /// The default/initial level of the pin (true means high), has effect only in `PushPull` or
+    /// `OpenDrain` modes.
     pub level: Option<bool>,
     /// Whether the pin has pullup/down resistor enabled.
     pub pull_mode: Option<PullMode>,
+    /// The default/initial analog level of the pin in Volts, has effect only in `AnalogOutput`
+    /// mode.
+    pub volts: Option<f32>,
 }
 
 fn merge_field<T>(f1: &mut Option<T>, f2: Option<T>) -> Result<(), ()>
@@ -115,6 +119,7 @@ impl PinConfiguration {
         merge_field(&mut self.mode, other.mode)?;
         merge_field(&mut self.level, other.level)?;
         merge_field(&mut self.pull_mode, other.pull_mode)?;
+        merge_field(&mut self.volts, other.volts)?;
         Ok(())
     }
 }
@@ -174,7 +179,14 @@ impl TransportWrapperBuilder {
         pin_conf_list: &mut Vec<(String, PinConfiguration)>,
         pin_conf: &config::PinConfiguration,
     ) {
-        if (None, None, None) == (pin_conf.mode, pin_conf.pull_mode, pin_conf.level) {
+        if (None, None, None, None)
+            == (
+                pin_conf.mode,
+                pin_conf.pull_mode,
+                pin_conf.level,
+                pin_conf.volts,
+            )
+        {
             return;
         }
         let mut conf_entry: PinConfiguration = PinConfiguration::default();
@@ -186,6 +198,9 @@ impl TransportWrapperBuilder {
         }
         if let Some(level) = pin_conf.level {
             conf_entry.level = Some(level);
+        }
+        if let Some(volts) = pin_conf.volts {
+            conf_entry.volts = Some(volts);
         }
         pin_conf_list.push((pin_conf.name.to_string(), conf_entry))
     }
@@ -369,7 +384,7 @@ impl TransportWrapper {
     /// Apply given configuration to a single pins.
     fn apply_pin_configuration(&self, name: &str, conf: &PinConfiguration) -> Result<()> {
         let pin = self.gpio_pin(name)?;
-        pin.set(conf.mode, conf.level, conf.pull_mode)
+        pin.set(conf.mode, conf.level, conf.pull_mode, conf.volts)
     }
 
     /// Apply given configuration to a all the given pins.

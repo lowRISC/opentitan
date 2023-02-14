@@ -8,7 +8,7 @@ use regex::Regex;
 use std::rc::Rc;
 
 use crate::io::gpio::{
-    ClockNature, Edge, GpioMonitoring, GpioPin, MonitoringEvent, MonitoringReadResponse,
+    ClockNature, Edge, GpioError, GpioMonitoring, GpioPin, MonitoringEvent, MonitoringReadResponse,
     MonitoringStartResponse, PinMode, PullMode,
 };
 use crate::transport::hyperdebug::Inner;
@@ -56,6 +56,8 @@ impl GpioPin for HyperdebugGpioPin {
                     PinMode::Input => "input",
                     PinMode::OpenDrain => "opendrain",
                     PinMode::PushPull => "pushpull",
+                    PinMode::AnalogInput => "adc",
+                    PinMode::AnalogOutput => "dac",
                     PinMode::Alternate => "alternate",
                 }
             ),
@@ -75,15 +77,48 @@ impl GpioPin for HyperdebugGpioPin {
         ))
     }
 
+    fn analog_read(&self) -> Result<f32> {
+        let line = self
+            .inner
+            .cmd_one_line_output(&format!("adc {}", &self.pinname))
+            .map_err(|_| TransportError::CommunicationError("No output from adc".to_string()))?;
+        lazy_static! {
+            pub static ref ADC_REGEX: Regex = Regex::new("^ +([^ ])+ = ([0-9]+) mV").unwrap();
+        }
+        if let Some(captures) = ADC_REGEX.captures(&line) {
+            let milli_volts: u32 = captures.get(2).unwrap().as_str().parse()?;
+            Ok(milli_volts as f32 / 1000.0)
+        } else {
+            Err(TransportError::CommunicationError("Unrecognized adc output".to_string()).into())
+        }
+    }
+
+    fn analog_write(&self, volts: f32) -> Result<()> {
+        if volts > 3.3 || volts < 0.0 {
+            return Err(GpioError::UnsupportedPinVoltage(volts).into());
+        }
+        let milli_volts = (volts * 1000.0) as u32;
+        self.inner.cmd_no_output(&format!(
+            "gpio analog-set {} {}",
+            &self.pinname, milli_volts,
+        ))
+    }
+
     fn set(
         &self,
         mode: Option<PinMode>,
         value: Option<bool>,
         pull: Option<PullMode>,
+        volts: Option<f32>,
     ) -> Result<()> {
+        if let Some(v) = volts {
+            if v > 3.3 || v < 0.0 {
+                return Err(GpioError::UnsupportedPinVoltage(v).into());
+            }
+        }
         self.inner
             .cmd_no_output(&format!(
-                "gpio multiset {} {} {} {}",
+                "gpio multiset {} {} {} {} {}",
                 &self.pinname,
                 match value {
                     Some(false) => "0",
@@ -94,6 +129,8 @@ impl GpioPin for HyperdebugGpioPin {
                     Some(PinMode::Input) => "input",
                     Some(PinMode::OpenDrain) => "opendrain",
                     Some(PinMode::PushPull) => "pushpull",
+                    Some(PinMode::AnalogInput) => "adc",
+                    Some(PinMode::AnalogOutput) => "dac",
                     Some(PinMode::Alternate) => "alternate",
                     None => "-",
                 },
@@ -102,6 +139,11 @@ impl GpioPin for HyperdebugGpioPin {
                     Some(PullMode::PullUp) => "up",
                     Some(PullMode::PullDown) => "down",
                     None => "-",
+                },
+                if let Some(v) = volts {
+                    format!("{}", (v * 1000.0) as u32)
+                } else {
+                    "-".to_string()
                 },
             ))
             .or_else(|_| {
@@ -115,6 +157,9 @@ impl GpioPin for HyperdebugGpioPin {
                 }
                 if let Some(value) = value {
                     self.write(value)?;
+                }
+                if let Some(volts) = volts {
+                    self.analog_write(volts)?;
                 }
                 Ok(())
             })

@@ -15,10 +15,14 @@ pub struct PinConfiguration {
     pub name: String,
     /// The input/output mode of the GPIO pin.
     pub mode: Option<PinMode>,
-    /// The default/initial level of the pin (true means high).
+    /// The default/initial level of the pin (true means high), has effect only in `PushPull` and
+    /// `OpenDrain` modes.
     pub level: Option<bool>,
     /// Whether the pin has pullup/down resistor enabled.
     pub pull_mode: Option<PullMode>,
+    /// The default/initial analog level of the pin in Volts, has effect only in `AnalogOutput`
+    /// mode.
+    pub volts: Option<f32>,
     /// Name of a pin defined by the transport (or a lower level
     /// PinConfiguration).
     pub alias_of: Option<String>,

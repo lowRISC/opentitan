@@ -8,6 +8,7 @@ use structopt::clap::arg_enum;
 use thiserror::Error;
 
 use crate::impl_serializable_error;
+use crate::transport::TransportError;
 
 /// Errors related to the GPIO interface.
 #[derive(Debug, Error, Serialize, Deserialize)]
@@ -32,6 +33,8 @@ pub enum GpioError {
     PinValueConflict(String, String, String),
     #[error("Undefined pin logic value for pin {0}")]
     PinValueUndefined(String),
+    #[error("Unsupported voltage {0}V requested")]
+    UnsupportedPinVoltage(f32),
     #[error("Generic error: {0}")]
     Generic(String),
 }
@@ -44,6 +47,8 @@ arg_enum! {
         Input,
         PushPull,
         OpenDrain,
+        AnalogInput,
+        AnalogOutput,
         Alternate, // Pin used for UART/SPI/I2C or something else
     }
 }
@@ -72,12 +77,24 @@ pub trait GpioPin {
     /// Sets the weak pull resistors of the GPIO pin.
     fn set_pull_mode(&self, mode: PullMode) -> Result<()>;
 
+    /// Reads the analog value of the the GPIO pin in Volts. `AnalogInput` mode disables digital
+    /// circuitry for better results, but this method may also work in other modes.
+    fn analog_read(&self) -> Result<f32> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
+    /// Sets the analog value of the GPIO pin to `value` Volts, must be in `AnalogOutput` mode.
+    fn analog_write(&self, _volts: f32) -> Result<()> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
     /// Simultaneously sets mode, value, and weak pull, some transports may guarantee atomicity.
     fn set(
         &self,
         mode: Option<PinMode>,
         value: Option<bool>,
         pull: Option<PullMode>,
+        analog_value: Option<f32>,
     ) -> Result<()> {
         // Transports must override this function for truly atomic behavior.  Default
         // implementation below applies each setting separately.
@@ -89,6 +106,9 @@ pub trait GpioPin {
         }
         if let Some(value) = value {
             self.write(value)?;
+        }
+        if let Some(analog_value) = analog_value {
+            self.analog_write(analog_value)?;
         }
         Ok(())
     }
