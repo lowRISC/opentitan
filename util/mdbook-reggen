@@ -19,16 +19,11 @@ from reggen.ip_block import IpBlock
 import reggen.gen_cfg_html as gen_cfg_html
 import reggen.gen_html as gen_html
 
-LINK_PATTERN = re.compile(mdbook.LINK_PATTERN_STR)
 REGREF_PATTERN = re.compile(r"\{\{#regref\s+?(.+?)\s*?\}\}")
 
 
 def main() -> None:
-    if len(sys.argv) > 2:
-        if (sys.argv[1], sys.argv[2]) == ("supports", "html"):
-            sys.exit(0)
-        else:
-            sys.exit(1)
+    mdbook.supports_html_only()
 
     # load both the context and the book from stdin
     context, book = json.load(sys.stdin)
@@ -65,29 +60,20 @@ def main() -> None:
 
         name2path[block.name] = src_path
 
-    cfg_paths = set(Path(p) for p in name2path.values())
+    cfg_files = set(Path(p) for p in name2path.values())
     chapters_gen = mdbook.chapters(book["sections"])
     for chapter in chapters_gen:
         if not chapter["source_path"]:
             continue
         src_dir = Path(chapter["source_path"]).parent
 
-        def cfg_file_swap(match: re.Match) -> str:
-            """Swaps the extension of the file being linked to if it is a ip block config."""
-            try:
-                # relative_to can fail with a value error, if it isn't a local link
-                book_relative_path = (src_dir / match.group(2)).resolve().relative_to(book_root)
-            except ValueError:
-                return match.group(0)
-
-            if book_relative_path in cfg_paths:
-                return "[{}]({}.html{})".format(
-                    match.group(1),
-                    match.group(2).removesuffix(".hjson"),
-                    match.group(3),
-                )
-            else:
-                return match.group(0)
+        chapter["content"] = mdbook.change_link_ext(
+            cfg_files,
+            chapter["content"],
+            ".html",
+            book_root,
+            src_dir,
+        )
 
         def regref_swap(match: re.Match) -> str:
             """Replaces regref with a link to the register."""
@@ -101,7 +87,9 @@ def main() -> None:
                 # Make the path to the config file absolute (to root of the site),
                 # so we don't have to worry about what page we are in.
                 # Also, do the hjson -> html conversion.
-                path = "/{}.html".format(name2path[reg[0]].removeprefix("./").removesuffix(".hjson"))
+                path = "/{}.html".format(
+                    name2path[reg[0]].removeprefix("./").removesuffix(".hjson")
+                )
             except KeyError:
                 sys.exit(f"Ip block with name '{reg[0]}' could not be found.")
 
@@ -109,7 +97,6 @@ def main() -> None:
 
             return "[`{}`]({}#Reg_{})".format(name, path, reg[1].lower())
 
-        chapter["content"] = LINK_PATTERN.sub(cfg_file_swap, chapter["content"])
         chapter["content"] = REGREF_PATTERN.sub(regref_swap, chapter["content"])
 
     # dump the book into stdout
