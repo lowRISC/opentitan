@@ -376,7 +376,7 @@ The tables below summarize the pinout and pinmux connectivity for certain top-le
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_pinmux.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_pinmux.h)
 
 ## Register Table
 

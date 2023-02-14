@@ -621,7 +621,7 @@ The code snippet below shows how to perform this task.
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_aes.h" >}}
+* [DIF Listings](../../../sw/device/lib/dif/dif_aes.h)
 
 ## Register Table
 

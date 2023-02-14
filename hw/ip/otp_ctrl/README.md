@@ -985,7 +985,7 @@ This is however rare and should not happen after fabrication testing.
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_otp_ctrl.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_otp_ctrl.h)
 
 ## Register Table
 

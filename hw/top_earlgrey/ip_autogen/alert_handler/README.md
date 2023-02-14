@@ -951,7 +951,7 @@ However, alert accumulation will not be triggered by this testing mechanism.
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_alert_handler.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_alert_handler.h)
 
 ## Register Table
 

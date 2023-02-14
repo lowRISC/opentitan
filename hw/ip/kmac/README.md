@@ -511,7 +511,7 @@ It could restore the previous hashing state later and continue the operation.
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_kmac.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_kmac.h)
 
 ## Registers
 

@@ -240,7 +240,7 @@ In this case both {{#regref spi_device.COMPARE_LOWER0_0 }} and {{#regref spi_dev
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_rv_timer.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_rv_timer.h)
 
 ## Register Table
 

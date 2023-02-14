@@ -317,7 +317,7 @@ To control peripheral clocks, directly change the bits in {{#regref clkmgr.CLK_E
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_clkmgr.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_clkmgr.h)
 
 ## Register Table
 

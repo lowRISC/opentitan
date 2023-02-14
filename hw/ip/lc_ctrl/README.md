@@ -678,7 +678,7 @@ It is expected that the JTAG TAP interface is used to access the life cycle tran
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_lc_ctrl.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_lc_ctrl.h)
 
 ## Register Table
 

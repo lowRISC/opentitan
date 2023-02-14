@@ -351,7 +351,7 @@ If either a control endpoint's {{#regref usbdev.set_nak_out }} bit is set or sof
 
 ## Device Interface Functions (DIFs)
 
-{{< dif_listing "sw/device/lib/dif/dif_usbdev.h" >}}
+- [Device Interface Functions](../../../sw/device/lib/dif/dif_usbdev.h)
 
 ## Register Table
 
