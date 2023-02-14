@@ -20,6 +20,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::io::gpio::{ClockNature, Edge, GpioPin, PinMode, PullMode};
 use opentitanlib::transport::Capability;
 use opentitanlib::util::file;
+use opentitanlib::util::voltage::Voltage;
 
 #[derive(Debug, StructOpt)]
 /// Reads a GPIO pin.
@@ -138,10 +139,20 @@ pub struct GpioSet {
     pub pin: String,
     #[structopt(long, case_insensitive = true, help = "The I/O mode of the pin")]
     pub mode: Option<PinMode>,
-    #[structopt(long, parse(try_from_str), help = "The value to write to the pin")]
+    #[structopt(
+        long,
+        parse(try_from_str),
+        help = "The value to write to the pin, has effect only in PushPull and OpenDrain modes"
+    )]
     pub value: Option<bool>,
     #[structopt(long, case_insensitive = true, help = "The weak pull mode of the pin")]
     pub pull: Option<PullMode>,
+    #[structopt(
+        long,
+        parse(try_from_str),
+        help = "The analog value to write to the pin in volts, has effect only in AnalogOutput mode"
+    )]
+    pub voltage: Option<Voltage>,
 }
 
 impl CommandDispatch for GpioSet {
@@ -153,7 +164,68 @@ impl CommandDispatch for GpioSet {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
 
-        gpio_pin.set(self.mode, self.value, self.pull)?;
+        gpio_pin.set(
+            self.mode,
+            self.value,
+            self.pull,
+            self.voltage.map(|v| v.as_volts() as f32),
+        )?;
+        Ok(None)
+    }
+}
+
+#[derive(Debug, StructOpt)]
+/// Reads a GPIO pin.
+pub struct GpioAnalogRead {
+    #[structopt(name = "PIN", help = "The GPIO pin to read")]
+    pub pin: String,
+}
+
+#[derive(serde::Serialize)]
+pub struct GpioAnalogReadResult {
+    pub pin: String,
+    pub volts: f32,
+}
+
+impl CommandDispatch for GpioAnalogRead {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::GPIO).ok()?;
+        let gpio_pin = transport.gpio_pin(&self.pin)?;
+        let volts = gpio_pin.analog_read()?;
+        Ok(Some(Box::new(GpioAnalogReadResult {
+            pin: self.pin.clone(),
+            volts,
+        })))
+    }
+}
+
+#[derive(Debug, StructOpt)]
+/// Writes an analog voltage to a GPIO pin.
+pub struct GpioAnalogWrite {
+    #[structopt(name = "PIN", help = "The GPIO pin to write")]
+    pub pin: String,
+    #[structopt(
+        name = "VOLTS",
+        parse(try_from_str),
+        help = "The analog value to write to the pin in volts, has effect only in AnalogOutput mode"
+    )]
+    pub volts: f32,
+}
+
+impl CommandDispatch for GpioAnalogWrite {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::GPIO).ok()?;
+        let gpio_pin = transport.gpio_pin(&self.pin)?;
+
+        gpio_pin.analog_write(self.volts)?;
         Ok(None)
     }
 }
@@ -512,5 +584,7 @@ pub enum GpioCommand {
     SetMode(GpioSetMode),
     SetPullMode(GpioSetPullMode),
     Set(GpioSet),
+    AnalogRead(GpioAnalogRead),
+    AnalogWrite(GpioAnalogWrite),
     Monitoring(GpioMonitoring),
 }
