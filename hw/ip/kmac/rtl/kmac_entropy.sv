@@ -12,7 +12,8 @@ module kmac_entropy
 #(
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
-  parameter lfsr_fwd_perm_t RndCnstLfsrFwdPerm = RndCnstLfsrFwdPermDefault
+  parameter lfsr_fwd_perm_t RndCnstLfsrFwdPerm = RndCnstLfsrFwdPermDefault,
+  parameter msg_perm_t RndCnstMsgPerm = RndCnstMsgPermDefault
 ) (
   input clk_i,
   input rst_ni,
@@ -29,6 +30,10 @@ module kmac_entropy
   output logic                          rand_aux_o,
   input                                 rand_consumed_i,
 
+  // Message (re-)masking
+  output logic [MsgWidth-1:0] msg_mask_o,
+  input                       msg_mask_consumed_i,
+
   // Status
   input in_keyblock_i,
 
@@ -42,12 +47,6 @@ module kmac_entropy
   //// turned on, the logic sending garbage value and never de-assert
   //// rand_valid_o unless it is not processing KeyBlock.
   input fast_process_i,
-
-  //// LFSR Enable for Message Masking
-  //// If 1, LFSR advances to create 64-bit PRNG. This input is used to mask
-  //// the message fed into SHA3 (Keccak).
-  input                       msg_mask_en_i,
-  output logic [MsgWidth-1:0] msg_mask_o,
 
   //// SW update of seed
   input [NumSeedsEntropyLfsr-1:0]       seed_update_i,
@@ -198,6 +197,9 @@ module kmac_entropy
   logic lfsr_en;
   logic [NumChunksEntropyLfsr-1:0][ChunkSizeEntropyLfsr-1:0] lfsr_data_chunked;
   logic [EntropyLfsrW-1:0] lfsr_data, lfsr_data_permuted;
+
+  // Message (re-)masking
+  logic [MsgWidth-1:0] msg_mask, msg_mask_permuted;
 
   // Auxliliary randomness
   logic aux_rand_d, aux_rand_q;
@@ -416,7 +418,7 @@ module kmac_entropy
       .rst_ni,
       .seed_en_i(lfsr_seed_en[i]),
       .seed_i   (lfsr_seed[i]),
-      .lfsr_en_i(lfsr_en || msg_mask_en_i),
+      .lfsr_en_i(lfsr_en || msg_mask_consumed_i),
       .entropy_i('0),
       .state_o  (lfsr_data_chunked[i])
     );
@@ -430,7 +432,7 @@ module kmac_entropy
   end
 
   // Forwrad LSBs for masking the message.
-  assign msg_mask_o = lfsr_data_permuted[MsgWidth-1:0];
+  assign msg_mask = lfsr_data_permuted[MsgWidth-1:0];
 
   // LFSRs --------------------------------------------------------------------
 
@@ -481,6 +483,15 @@ module kmac_entropy
   assign rand_early_o = rand_valid_set;
 
   `ASSUME(ConsumeNotAseertWhenNotReady_M, rand_consumed_i |-> rand_valid_o)
+
+  // Add a permutation layer to the message mask output to avoid that the same
+  // adjacent bits of the Keccak input (the message) and state (will get
+  // combined with rand_data_o) get remasked using adjacent PRNG bits during
+  // loading and executing, respectively.
+  for (genvar i = 0; i < MsgWidth; i++) begin : gen_msg_mask_perm
+    assign msg_mask_permuted[i] = msg_mask[RndCnstMsgPerm[i]];
+  end
+  assign msg_mask_o = msg_mask_permuted;
 
   // Randomness outputs -------------------------------------------------------
 
@@ -790,6 +801,16 @@ module kmac_entropy
     end
     // All bit positions must be marked with 1.
     `ASSERT_I(PermutationCheck_A, &perm_fwd_test)
+  end
+
+  logic [MsgWidth-1:0] perm_msg_test;
+  initial begin : p_perm_msg_check
+    perm_msg_test = '0;
+    for (int k = 0; k < MsgWidth; k++) begin
+      perm_msg_test[RndCnstMsgPerm[k]] = 1'b1;
+    end
+    // All bit positions must be marked with 1.
+    `ASSERT_I(PermutationCheck_A, &perm_msg_test)
   end
 `endif
 

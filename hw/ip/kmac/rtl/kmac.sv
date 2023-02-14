@@ -33,7 +33,7 @@ module kmac
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_fwd_perm_t RndCnstLfsrFwdPerm = RndCnstLfsrFwdPermDefault,
-  parameter msg_perm_t  RndCnstMsgPerm  = RndCnstMsgPermDefault,
+  parameter msg_perm_t RndCnstMsgPerm = RndCnstMsgPermDefault,
 
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
@@ -251,7 +251,6 @@ module kmac
   // KMAC to SHA3 core
   logic                          msg_valid       ;
   logic [kmac_pkg::MsgWidth-1:0] msg_data [Share];
-  logic [kmac_pkg::MsgWidth-1:0] msg_data_masked [Share];
   logic [kmac_pkg::MsgStrbW-1:0] msg_strb        ;
   logic                          msg_ready       ;
 
@@ -308,9 +307,10 @@ module kmac
 
   prim_mubi_pkg::mubi4_t entropy_configured;
 
-  // Message Masking
-  logic msg_mask_en, cfg_msg_mask;
+  // Message (Re-)Masking
+  logic msg_mask_en;
   logic [MsgWidth-1:0] msg_mask;
+  logic msg_mask_consumed;
 
   // SHA3 Error response
   sha3_pkg::err_t sha3_err;
@@ -547,9 +547,8 @@ module kmac
   assign entropy_mode  = entropy_mode_e'(reg2hw.cfg_shadowed.entropy_mode.q);
   assign entropy_fast_process = reg2hw.cfg_shadowed.entropy_fast_process.q;
 
-  // msg_mask_en turns on the message LFSR when KMAC is enabled.
-  assign cfg_msg_mask = reg2hw.cfg_shadowed.msg_mask.q;
-  assign msg_mask_en = cfg_msg_mask & msg_valid & msg_ready;
+  // Message (re-)masking
+  assign msg_mask_en = reg2hw.cfg_shadowed.msg_mask.q;
 
   // Enable unsupported mode & strength combination
   assign cfg_en_unsupported_modestrength =
@@ -853,30 +852,6 @@ module kmac
   );
 
   // SHA3 hashing engine
-
-  // msg_data masking
-  if (EnMasking == 1) begin: g_msg_mask
-    logic [MsgWidth-1:0] msg_mask_permuted;
-
-    // Permute the LFSR output to avoid same lfsr applied to multiple times
-    always_comb begin
-      msg_mask_permuted = '0;
-      for (int unsigned i = 0 ; i < MsgWidth ; i++) begin
-        // Loop through the MsgPerm constant and swap between the bits
-        msg_mask_permuted[i] = msg_mask[RndCnstMsgPerm[i]];
-      end
-    end
-
-    for (genvar i = 0 ; i < Share ; i++) begin: g_msg_data_mask
-      assign msg_data_masked[i] = msg_data[i]
-                                ^ ({MsgWidth{cfg_msg_mask}} & msg_mask_permuted);
-    end : g_msg_data_mask
-  end else begin : g_no_msg_mask
-    assign msg_data_masked[0] = msg_data[0];
-
-    logic unused_msgmask;
-    assign unused_msgmask = ^{msg_mask, cfg_msg_mask, msg_mask_en};
-  end
   sha3 #(
     .EnMasking (EnMasking)
   ) u_sha3 (
@@ -885,9 +860,14 @@ module kmac
 
     // MSG_FIFO interface (or from KMAC)
     .msg_valid_i (msg_valid),
-    .msg_data_i  (msg_data_masked ),
-    .msg_strb_i  (msg_strb ),
+    .msg_data_i  (msg_data),
+    .msg_strb_i  (msg_strb),
     .msg_ready_o (msg_ready),
+
+    // Message (re-)masking
+    .msg_mask_en_i       (msg_mask_en),
+    .msg_mask_i          (msg_mask),
+    .msg_mask_consumed_o (msg_mask_consumed),
 
     // Entropy interface
     .rand_valid_i    (sha3_rand_valid),
@@ -1191,7 +1171,8 @@ module kmac
     kmac_entropy #(
      .RndCnstLfsrPerm(RndCnstLfsrPerm),
      .RndCnstLfsrSeed(RndCnstLfsrSeed),
-     .RndCnstLfsrFwdPerm(RndCnstLfsrFwdPerm)
+     .RndCnstLfsrFwdPerm(RndCnstLfsrFwdPerm),
+     .RndCnstMsgPerm(RndCnstMsgPerm)
     ) u_entropy (
       .clk_i,
       .rst_ni,
@@ -1208,6 +1189,10 @@ module kmac
       .rand_aux_o      (sha3_rand_aux),
       .rand_consumed_i (sha3_rand_consumed),
 
+      // Message (re-)masking
+      .msg_mask_o          (msg_mask),
+      .msg_mask_consumed_i (msg_mask_consumed),
+
       // Status from internal logic
       //// KMAC secret block handling indicator
       .in_keyblock_i (entropy_in_keyblock),
@@ -1220,10 +1205,6 @@ module kmac
       //// Entropy refresh period in clk cycles
       .wait_timer_prescaler_i (wait_timer_prescaler),
       .wait_timer_limit_i     (wait_timer_limit),
-
-      //// Message Masking
-      .msg_mask_en_i (msg_mask_en),
-      .msg_mask_o    (msg_mask),
 
       //// SW update of seed
       .seed_update_i         (entropy_seed_update),
@@ -1264,6 +1245,10 @@ module kmac
     assign sha3_rand_data = '0;
     assign sha3_rand_aux = '0;
     assign unused_sha3_rand_consumed = sha3_rand_consumed;
+
+    logic unused_msg_mask_consumed;
+    assign msg_mask = '0;
+    assign unused_msg_mask_consumed = msg_mask_consumed;
 
     logic [NumSeedsEntropyLfsr-1:0]       unused_seed_update;
     logic [NumSeedsEntropyLfsr-1:0][31:0] unused_seed_data;

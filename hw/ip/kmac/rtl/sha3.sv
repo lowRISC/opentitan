@@ -25,6 +25,11 @@ module sha3
   input        [MsgStrbW-1:0] msg_strb_i,         // one strobe for shares
   output logic                msg_ready_o,
 
+  // Message (re-)masking
+  input                     msg_mask_en_i,
+  input      [MsgWidth-1:0] msg_mask_i,
+  output logic              msg_mask_consumed_o,
+
   // Entropy interface
   input                     rand_valid_i,
   input                     rand_early_i,
@@ -147,6 +152,7 @@ module sha3
   logic                       keccak_valid;
   logic [KeccakMsgAddrW-1:0]  keccak_addr;
   logic [MsgWidth-1:0]        keccak_data [Share];
+  logic [MsgWidth-1:0]        keccak_data_masked [Share];
   logic                       keccak_ready;
 
   // Keccak round run signal can be controlled by sha3pad and also by software
@@ -422,6 +428,22 @@ module sha3
     .msg_count_error_o  (msg_count_error)
   );
 
+  // Message (re-)masking
+  if (EnMasking == 1) begin: g_msg_mask
+    for (genvar i = 0 ; i < Share ; i++) begin: g_msg_data_mask
+      assign keccak_data_masked[i] =
+          keccak_data[i] ^ ({MsgWidth{msg_mask_en_i}} & msg_mask_i);
+    end
+    assign msg_mask_consumed_o = msg_mask_en_i & keccak_valid & keccak_ready;
+
+  end else begin : g_no_msg_mask
+    assign keccak_data_masked[0] = keccak_data[0];
+    assign msg_mask_consumed_o = 1'b0;
+
+    logic unused_msg_mask;
+    assign unused_msg_mask = ^{msg_mask_en_i, msg_mask_i};
+  end
+
   // Keccak round logic
   keccak_round #(
     .Width    (sha3_pkg::StateW),
@@ -433,8 +455,8 @@ module sha3
     .rst_ni,
 
     .valid_i (keccak_valid),
-    .addr_i  (keccak_addr ),
-    .data_i  (keccak_data ),
+    .addr_i  (keccak_addr),
+    .data_i  (keccak_data_masked),
     .ready_o (keccak_ready),
 
     .rand_valid_i,
