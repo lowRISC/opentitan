@@ -130,6 +130,10 @@ mdbook_guides_args="build"
 mdbook_guides_args+=" --dest-dir ${build_dir}/guides/getting_started"
 mdbook_guides_args+=" ${proj_root}/doc/guides/getting_started"
 
+# Pass config to mdbook through environment variables
+# Website theme
+export MDBOOK_OUTPUT__HTML__THEME="$proj_root/site/book-theme/"
+
 # Register the pre-processors
 # Each book should only be passed the preprocessors it specifies inside the book.toml
 # ./book.toml
