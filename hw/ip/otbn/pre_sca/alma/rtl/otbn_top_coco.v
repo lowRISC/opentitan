@@ -4,20 +4,23 @@
 
 module otbn_top_coco #(
   // Instruction data width
-  parameter ImemDataWidth = 39
+  parameter ImemDataWidth = 39,
+  // Data path width for BN (wide) instructions, in bits.
+  parameter WLEN = 256
 ) (
   input clk_sys,
   input rst_sys_n,
   input imem_we_i,
   input [ImemDataWidth-1:0] imem_wdata_i,
-  input [ImemDataWidth-1:0] imem_wmask_i
+  input [ImemDataWidth-1:0] imem_wmask_i,
+  input [WLEN-1:0] edn_rnd_data_i,
+  input [WLEN-1:0] edn_urnd_data_i,
+  output [31:0] otbn_cycle_cnt_o
 );
   // Size of the instruction memory, in bytes
   localparam ImemSizeByte = 128*4;  //32'h1000;
   // Size of the data memory, in bytes
   localparam DmemSizeByte = 8*32;  //32'h1000;
-  // Data path width for BN (wide) instructions, in bits.
-  localparam WLEN = 256;
   // Sideload key data width
   localparam SideloadKeyWidth = 384;
   // "Extended" WLEN: the size of the datapath with added integrity bits
@@ -76,7 +79,6 @@ module otbn_top_coco #(
   // Entropy Distribution Network (EDN)
   wire edn_rnd_req, edn_urnd_req;
   wire edn_rnd_ack, edn_urnd_ack;
-  localparam [WLEN-1:0] FixedEdnVal = {{4{64'hAAAA_AAAA_9999_9999}}};
   assign edn_rnd_ack  = edn_rnd_req;
   assign edn_urnd_ack = edn_urnd_req;
 
@@ -116,13 +118,13 @@ module otbn_top_coco #(
 
     .edn_rnd_req_o (edn_rnd_req),
     .edn_rnd_ack_i (edn_rnd_ack),
-    .edn_rnd_data_i(FixedEdnVal),
+    .edn_rnd_data_i(edn_rnd_data_i),
     .edn_rnd_fips_i(1'b1),
     .edn_rnd_err_i (1'b0),
 
     .edn_urnd_req_o (edn_urnd_req),
     .edn_urnd_ack_i (edn_urnd_ack),
-    .edn_urnd_data_i(FixedEdnVal),
+    .edn_urnd_data_i(edn_urnd_data_i),
 
     .insn_cnt_o      (),
     .insn_cnt_clear_i(1'b0),
@@ -172,6 +174,22 @@ module otbn_top_coco #(
       end
     end
   end
+
+  // OTBN cycle counter to easily inspect waves and associate those waves with COCO-ALMA tool
+  // output. The counter is reset with the start pulse being sent.
+  reg [31:0] otbn_cycle_cnt_q;
+  always @(posedge clk_sys or negedge rst_sys_n) begin
+    if (!rst_sys_n) begin
+      otbn_cycle_cnt_q <= 32'b0;
+    end else begin
+      if (otbn_start) begin
+        otbn_cycle_cnt_q <= 32'b0;
+      end else if (otbn_start_done) begin
+        otbn_cycle_cnt_q <= otbn_cycle_cnt_q + 1;
+      end
+    end
+  end
+  assign otbn_cycle_cnt_o = otbn_cycle_cnt_q;
 
   localparam DmemSizeWords = DmemSizeByte / (WLEN / 8);
   localparam DmemIndexWidth = vbits(DmemSizeWords);
