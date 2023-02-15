@@ -201,6 +201,7 @@ tutorial](https://github.com/IAIK/coco-alma/tree/hw-verif#usage)
       --cycles 25 \
       --excluded-signals u_otbn_core.u_otbn_controller.rf_bignum_intg_err_i[0] \
       --glitch-behavior loose \
+      --dbg-signals otbn_cycle_cnt_o \
       --mode stable
    ```
 
