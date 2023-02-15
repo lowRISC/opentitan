@@ -197,7 +197,7 @@ Go to [this page](https://github.com/google/verible/releases) and download the c
 The example below is for Ubuntu 20.04:
 
 ```
-export VERIBLE_VERSION={{< tool_version "verible" >}}
+export VERIBLE_VERSION={{#tool-version verible }}
 wget https://github.com/google/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-20.04-focal-x86_64.tar.gz
 tar -xf verible-${VERIBLE_VERSION}-Ubuntu-20.04-focal-x86_64.tar.gz
 ```
@@ -205,7 +205,7 @@ tar -xf verible-${VERIBLE_VERSION}-Ubuntu-20.04-focal-x86_64.tar.gz
 If you are using Ubuntu 18.04 then instead use:
 
 ```console
-export VERIBLE_VERSION={{< tool_version "verible" >}}
+export VERIBLE_VERSION={{#tool-version verible }}
 wget https://github.com/google/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
 tar -xf verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
 ```
@@ -219,7 +219,7 @@ sudo mv verible-${VERIBLE_VERSION}/* /tools/verible/${VERIBLE_VERSION}/
 
 After installation you need to add `/tools/verible/$VERIBLE_VERSION/bin` to your `PATH` environment variable.
 
-Note that we currently use version {{< tool_version "verible" >}}, but it is expected that this version is going to be updated frequently, since the tool is under active development.
+Note that we currently use version {{#tool-version verible }}, but it is expected that this version is going to be updated frequently, since the tool is under active development.
 
 ### Step 6b: Install OpenOCD (optional)
 
