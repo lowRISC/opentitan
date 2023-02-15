@@ -86,7 +86,7 @@ Sometimes, it may be desirable to open the generated project in the Vivado GUI f
 To this end, run:
 
 ```console
-. /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
+. /tools/Xilinx/Vivado/{{#tool-version vivado }}/settings64.sh
 cd $REPO_TOP
 make -C $(dirname $(find bazel-out/* -wholename '*synth-vivado/Makefile')) build-gui
 ```
@@ -111,7 +111,7 @@ fusesoc --cores-root . run --flag=fileset_top --target=synth --no-export --setup
 
 You can then navigate to the created project directory, and open Vivado
 ```console
-. /tools/Xilinx/Vivado/{{< tool_version "vivado" >}}/settings64.sh
+. /tools/Xilinx/Vivado/{{#tool-version vivado }}/settings64.sh
 cd $REPO_TOP/build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/
 vivado
 ```
