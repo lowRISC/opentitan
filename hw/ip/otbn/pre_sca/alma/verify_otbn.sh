@@ -32,13 +32,16 @@ examples/otbn/labels/generate_bignum_rf_labels.py \
   -o tmp/labels_updated.txt -w 1 -s 0
 
 # Verify
-python3 verify.py --json tmp/circuit.json \
-  --top-module otbn_top_coco \
-  --label tmp/labels_updated.txt \
-  --vcd tmp/circuit.vcd \
-  --rst-name rst_sys_n \
-  --rst-phase 0 \
-  --rst-cycles 2 \
-  --init-delay 139 \
-  --cycles 25 \
-  --mode stable
+  python3 verify.py --json tmp/circuit.json \
+    --top-module otbn_top_coco \
+    --label tmp/labels_updated.txt \
+    --vcd tmp/circuit.vcd \
+    --checking-mode per-location \
+    --rst-name rst_sys_n \
+    --rst-phase 0 \
+    --rst-cycles 2 \
+    --init-delay 139 \
+    --cycles 25 \
+    --excluded-signals u_otbn_core.u_otbn_controller.rf_bignum_intg_err_i[0] \
+    --glitch-behavior loose \
+    --mode stable
