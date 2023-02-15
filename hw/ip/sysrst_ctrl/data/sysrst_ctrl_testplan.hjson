@@ -208,6 +208,11 @@
             Sample the covergroup when the event occurs.
             Cross the covergroup with combo_detect_sel_cg to cover all the input combination with
             all the possible combo_detect actions.
+            Crosses with the following features that also affect the same output:
+            - key/input triggered interrupt (key_intr_ctl and wkup_req_o).
+            - ultra-low-power wakeup (ulp_ctl and wkup_req_o).
+            - hardware reset stretch (ec_rst_ctl and ec_rst_l_o).
+            - output inversion control (key_invert_ctl and ec_rst_l_o).
             '''
     }
     {
@@ -219,6 +224,7 @@
             Sample the covergroup when the event occurs.
             Cross the covergroup with combo_detect_action_cg to cover all the input combination with
             all the possible combo_detect actions.
+            Cross the covergroup with enabled and disabled auto block key inputs (auto_block_out_ctl).
             '''
     }
     {
@@ -233,6 +239,7 @@
       desc: '''
             Cover the auto block enable/disable feature.
             Cover the auto block debounce timer.
+            Cross this with inverting input and output keys 0-2 (key_invert_ctl).
             '''
     }
     {
@@ -247,6 +254,7 @@
       name: sysrst_ctrl_key_intr_status_cg
       desc: '''
             Cover the H2L/L2H edge detect event of all the inputs.
+            Cross this with the inversion of input keys 0-2 (key_invert_ctl).
             '''
     }
     {
@@ -276,6 +284,7 @@
       name: sysrst_ctrl_key_invert_ctl_cg
       desc: '''
             Cover the invert values of all input and output values.
+            Crosses with hardware reset stretch for EC reset output (ec_rst_ctl and pin_out_ctl).
             '''
     }
     {
@@ -290,6 +299,7 @@
             Cover the auto blk input select and their values.
             Cross the key outputs selected to override with their override values.
             Sample the covergroup when the event occurs.
+            Cross with input value accessibility (pin_in_value).
             '''
     }
     {
