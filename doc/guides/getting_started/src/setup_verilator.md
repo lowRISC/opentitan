@@ -17,7 +17,7 @@ Note that Verilator 4.210 will not build with GCC 12.0 or later, so it will need
 The example below assumes gcc-11 and g++-11 are installed on the system.
 
 ```console
-export VERILATOR_VERSION={{< tool_version "verilator" >}}
+export VERILATOR_VERSION={{#tool-version verilator }}
 
 git clone https://github.com/verilator/verilator.git
 cd verilator
