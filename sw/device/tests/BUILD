@@ -2115,6 +2115,8 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl/rsa_3072:rsa_3072_verify",
         "//sw/device/lib/dif:adc_ctrl",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:csrng",
@@ -2142,5 +2144,6 @@ opentitan_functest(
         "//sw/device/lib/testing:spi_device_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto:rsa_3072_verify_testvectors_hardcoded_header",
     ],
 )
