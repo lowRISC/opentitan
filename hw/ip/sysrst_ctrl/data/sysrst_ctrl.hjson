@@ -135,7 +135,11 @@
       fields: [
         { bits: "TimerWidth-1:0",
           name: "ec_rst_pulse",
-          desc: "Configure the pulse width of ec_rst_l. 10-200ms, each step is 5us(200KHz clock)",
+          desc: '''
+            Configure the debounce timer in number of clock cycles.
+            Each step is 5 us for a 200 kHz clock.
+            The signal must exceed the debounce time by at least one clock cycle to be detected.
+          '''
         }
       ],
     }
@@ -149,7 +153,11 @@
       fields: [
         { bits: "TimerWidth-1:0",
           name: "ulp_ac_debounce_timer",
-          desc: "Configure the debounce timer. 10-200ms, each step is 5us(200KHz clock)",
+          desc: '''
+            Configure the debounce timer for the AC input in number of clock cycles.
+            Each step is 5 us for a 200 kHz clock.
+            The signal must exceed the debounce time by at least one clock cycle to be detected.
+          '''
         }
       ],
     }
@@ -163,7 +171,11 @@
       fields: [
         { bits: "TimerWidth-1:0",
           name: "ulp_lid_debounce_timer",
-          desc: "Configure the debounce timer. 10-200ms, each step is 5us(200KHz clock)",
+          desc: '''
+            Configure the debounce timer for the lid in number of clock cycles.
+            Each step is 5 us for a 200 kHz clock.
+            The signal must exceed the debounce time by at least one clock cycle to be detected.
+          '''
         }
       ],
     }
@@ -177,7 +189,11 @@
       fields: [
         { bits: "TimerWidth-1:0",
           name: "ulp_pwrb_debounce_timer",
-          desc: "Configure the debounce timer. 10-200ms, each step is 5us(200KHz clock)",
+          desc: '''
+            Configure the debounce timer for the power button in number of clock cycles.
+            Each step is 5 us for a 200 kHz clock.
+            The signal must exceed the debounce time by at least one clock cycle to be detected.
+          '''
         }
       ],
     }
@@ -631,7 +647,11 @@
       fields: [
         { bits: "TimerWidth-1:0",
           name: "debounce_timer",
-          desc: "Define the timer value so that the key or input is not oscillating for 0-200ms, each step is 5us(200KHz clock)",
+          desc: '''
+            Define the timer value so that the key or input is not oscillating in clock cycles.
+            Each step is 5 us for a 200 kHz clock.
+            The signal must exceed the debounce time by at least one clock cycle to be detected.
+          '''
         }
       ],
     }
@@ -644,7 +664,11 @@
       fields: [
         { bits:   "TimerWidth-1:0",
           name:   "debounce_timer",
-          desc:   "Define the timer value so that pwrb_in is not oscillating for 0-200ms, each step is 5us(200KHz clock)",
+          desc: '''
+            Define the timer value so that the pwrb_in is not oscillating in clock cycles.
+            Each step is 5 us for a 200 kHz clock.
+            The signal must exceed the debounce time by at least one clock cycle to be detected.
+          ''',
           resval: "2000",
         }
         { bits:   "16",
