@@ -5,6 +5,8 @@
 #include "hw/ip/aes/model/aes_modes.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/multibits.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/rsa_3072/rsa_3072_verify.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_csrng.h"
@@ -45,6 +47,12 @@
 #include "pwm_regs.h"       // Generated.
 #include "spi_host_regs.h"  // Generated.
 #include "uart_regs.h"      // Generated.
+
+// The autogen rule that creates this header creates it in a directory named
+// after the rule, then manipulates the include path in the
+// cc_compilation_context to include that directory, so the compiler will find
+// the version of this file matching the Bazel rule under test.
+#include "rsa_3072_verify_testvectors.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
                         .enable_uart_flow_control = true,
@@ -257,6 +265,10 @@ static const char *kKmacMessage =
     "\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf"
     "\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf"
     "\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7";
+
+static rsa_3072_verify_test_vector_t rsa3072_test_vector;
+static rsa_3072_int_t rsa3072_encoded_message;
+static rsa_3072_constants_t rsa3072_constants;
 
 static const uint8_t kUartMessage[] = {
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
@@ -548,7 +560,8 @@ static void configure_adc_ctrl_to_continuously_sample(void) {
       (dif_adc_ctrl_config_t){
           .mode = kDifAdcCtrlNormalPowerScanMode,
           .power_up_time_aon_cycles = kAdcCtrlPowerUpTimeAonCycles,
-          // Below configurations are unused, so set them to their reset values.
+          // Below configurations are unused, so set them to their reset
+          // values.
           .wake_up_time_aon_cycles = ADC_CTRL_ADC_PD_CTL_WAKEUP_TIME_MASK,
           .num_low_power_samples = ADC_CTRL_ADC_LP_SAMPLE_CTL_REG_RESVAL,
           .num_normal_power_samples = ADC_CTRL_ADC_SAMPLE_CTL_REG_RESVAL,
@@ -573,8 +586,8 @@ static void configure_adc_ctrl_to_continuously_sample(void) {
 }
 
 static void configure_entropy_complex(void) {
-  // The (test) ROM enables the entropy complex, and to reconfigure it requires
-  // temporarily disabling it.
+  // The (test) ROM enables the entropy complex, and to reconfigure it
+  // requires temporarily disabling it.
   entropy_testutils_stop_all();
 
   // Enable entropy_src interrupts for health-test alert detection.
@@ -833,6 +846,17 @@ void configure_pwm(void) {
   }
 }
 
+static void configure_otbn(void) {
+  rsa3072_test_vector = rsa_3072_verify_tests[0];
+  // Only one exponent (65537) is currently supported.
+  CHECK(rsa3072_test_vector.publicKey.e == 65537);
+  CHECK_STATUS_OK(rsa_3072_encode_sha256(rsa3072_test_vector.msg,
+                                         rsa3072_test_vector.msgLen,
+                                         &rsa3072_encoded_message));
+  CHECK_STATUS_OK(rsa_3072_compute_constants(&rsa3072_test_vector.publicKey,
+                                             &rsa3072_constants));
+}
+
 static void crypto_data_load_task(void *task_parameters) {
   LOG_INFO("Loading crypto block FIFOs with data ...");
 
@@ -972,6 +996,11 @@ static void max_power_task(void *task_parameters) {
   mmio_region_write32(i2c_1.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
   mmio_region_write32(i2c_2.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
 
+  // Issue OTBN start command.
+  CHECK_STATUS_OK(rsa_3072_verify_start(&rsa3072_test_vector.signature,
+                                        &rsa3072_test_vector.publicKey,
+                                        &rsa3072_constants));
+
   // Enable pattgen.
   mmio_region_write32(pattgen.base_addr, PATTGEN_CTRL_REG_OFFSET,
                       pattgen_ctrl_reg);
@@ -997,6 +1026,11 @@ static void max_power_task(void *task_parameters) {
   // ***************************************************************************
   // Check operation results.
   // ***************************************************************************
+  // Check OTBN operations.
+  hardened_bool_t result;
+  CHECK_STATUS_OK(rsa_3072_verify_finalize(&rsa3072_encoded_message, &result));
+  CHECK(result == kHardenedBoolTrue);
+
   // Check UART transactions.
   uint8_t received_uart_data[kUartFifoDepth];
   size_t num_uart_rx_bytes;
@@ -1041,6 +1075,10 @@ bool test_main(void) {
       dif_gpio_output_set_enabled(&gpio, /*pin=*/0, kDifToggleEnabled));
   configure_adc_ctrl_to_continuously_sample();
   configure_entropy_complex();
+  // Note: configuration of OTBN must be done *before* configuration of the
+  // HMAC, as the cryptolib uses HMAC in SHA256 mode, which will cause HMAC
+  // computation errors later in this test.
+  configure_otbn();
   configure_aes();
   configure_hmac();
   configure_kmac();
