@@ -158,8 +158,8 @@ module sysrst_ctrl_detect
       // detection stage, otherwise we fall back.
       DebounceSt: begin
         cnt_en = 1'b1;
-        // Unconditionally go back to idle if the detector is disabled.
-        if (!cfg_enable_i) begin
+        // Go back to idle if the detector is disabled or if trigger is deactivated.
+        if (!cfg_enable_i || !trigger_active) begin
           state_d = IdleSt;
           cnt_clr = 1'b1;
         end else if (cnt_done) begin
