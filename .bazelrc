@@ -98,9 +98,10 @@ build:ubsan --linkopt -fsanitize=undefined
 # Enable the rust nightly toolchain
 build --@rules_rust//rust/toolchain/channel=nightly
 
-# Enable the rust 'clippy' linter.
-#build --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
-#build --output_groups=+clippy_checks
+# Configure the rust 'clippy' linter.
+build --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
+build --output_groups=+clippy_checks
+build --@rules_rust//:clippy_flags="-Aclippy::bool_assert_comparison,-Aclippy::uninlined_format_args,-Dwarnings"
 
 # Import site-specific configuration.
 try-import .bazelrc-site
