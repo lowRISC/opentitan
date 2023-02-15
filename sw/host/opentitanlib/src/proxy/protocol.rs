@@ -22,6 +22,7 @@ pub enum Message {
 #[derive(Serialize, Deserialize)]
 pub enum Request {
     GetCapabilities,
+    ApplyDefaultConfiguration,
     Gpio { id: String, command: GpioRequest },
     Uart { id: String, command: UartRequest },
     Spi { id: String, command: SpiRequest },
@@ -33,6 +34,7 @@ pub enum Request {
 #[derive(Serialize, Deserialize)]
 pub enum Response {
     GetCapabilities(Capabilities),
+    ApplyDefaultConfiguration,
     Gpio(GpioResponse),
     Uart(UartResponse),
     Spi(SpiResponse),

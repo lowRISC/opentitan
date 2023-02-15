@@ -408,6 +408,7 @@ impl TransportWrapper {
     /// Configure all pins as input/output, pullup, etc. as declared in configuration files.
     /// Also configure SPI port mode/speed, and other similar settings.
     pub fn apply_default_configuration(&self) -> Result<()> {
+        self.transport.borrow().apply_default_configuration()?;
         self.apply_pin_configurations(&self.pin_conf_map)?;
         self.apply_spi_configurations(&self.spi_conf_map)?;
         Ok(())

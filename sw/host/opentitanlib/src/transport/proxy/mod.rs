@@ -151,6 +151,16 @@ impl Transport for Proxy {
         }
     }
 
+    fn apply_default_configuration(&self) -> Result<()> {
+        match self
+            .inner
+            .execute_command(Request::ApplyDefaultConfiguration)?
+        {
+            Response::ApplyDefaultConfiguration => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     // Create SPI Target instance, or return one from a cache of previously created instances.
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
         Ok(Rc::new(spi::ProxySpi::open(self, instance)?))
