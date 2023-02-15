@@ -114,6 +114,6 @@ nonhermetic_repo(name = "nonhermetic")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 http_file(
     name = "hyperdebug_firmware",
-    urls = ["https://storage.googleapis.com/aoa-recovery-test-images/hyperdebug_v2.0.20224-327de32a0.bin"],
-    sha256 = "e49c30da14702b0c8d7f58db175588c5973ce9b5c263dbe49f608b10e8d9ff93",
+    urls = ["https://storage.googleapis.com/aoa-recovery-test-images/hyperdebug_v2.0.20399-e8b715d1b.bin"],
+    sha256 = "d7c9352c4cdd3c2533a965940efba8078117d4d7536455cdf861419abeb11326",
 )
