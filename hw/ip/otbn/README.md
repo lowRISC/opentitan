@@ -84,7 +84,7 @@ For example, good choices for temporary registers are `x6`, `x7`, `x28`, `x29`, 
 
 OTBN has an in-built call stack which is accessed through the `x1` GPR.
 This is intended to be used as a return address stack, containing return addresses for the current stack of function calls.
-See the documentation for {{< otbnInsnRef "JAL" >}} and {{< otbnInsnRef "JALR" >}} for a description of how to use it for this purpose.
+See the documentation for {{#otbn-insn-ref JAL}} and {{#otbn-insn-ref JALR}} for a description of how to use it for this purpose.
 
 The call stack has a maximum depth of 8 elements.
 Each instruction that reads from `x1` pops a single element from the stack.
@@ -99,7 +99,7 @@ Providing the stack has at least one element, this is allowed, even if the stack
 
 Control and Status Registers (CSRs) are 32b wide registers used for "special" purposes, as detailed in their description;
 they are not related to the GPRs.
-CSRs can be accessed through dedicated instructions, {{< otbnInsnRef "CSRRS" >}} and {{< otbnInsnRef "CSRRW" >}}.
+CSRs can be accessed through dedicated instructions, {{#otbn-insn-ref CSRRS}} and {{#otbn-insn-ref CSRRW}}.
 Writes to read-only (RO) registers are ignored; they do not signal an error.
 All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is written to {{#regref otbn.CMD.start }}).
 
@@ -187,7 +187,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td>MOD0</td>
       <td>
-        Bits [31:0] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
+        Bits [31:0] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
     </tr>
@@ -196,7 +196,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td>MOD1</td>
       <td>
-        Bits [63:32] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
+        Bits [63:32] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
     </tr>
@@ -205,7 +205,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td>MOD2</td>
       <td>
-        Bits [95:64] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
+        Bits [95:64] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
     </tr>
@@ -214,7 +214,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td>MOD3</td>
       <td>
-        Bits [127:96] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
+        Bits [127:96] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
     </tr>
@@ -223,7 +223,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td>MOD4</td>
       <td>
-        Bits [159:128] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
+        Bits [159:128] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
     </tr>
@@ -232,7 +232,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td>MOD5</td>
       <td>
-        Bits [191:160] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
+        Bits [191:160] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
     </tr>
@@ -241,7 +241,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td>MOD6</td>
       <td>
-        Bits [223:192] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
+        Bits [223:192] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
     </tr>
@@ -250,7 +250,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td>MOD7</td>
       <td>
-        Bits [255:224] of the modulus operand, used in the {{< otbnInsnRef "BN.ADDM" >}}/{{< otbnInsnRef "BN.SUBM" >}} instructions.
+        Bits [255:224] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
         This CSR is mapped to the MOD WSR.
       </td>
     </tr>
@@ -312,7 +312,7 @@ GPRs are accessible from the base instruction subset, and WDRs are accessible fr
 
 OTBN has 256b Wide Special purpose Registers (WSRs).
 These are analogous to the 32b CSRs, but are used by big number instructions.
-They can be accessed with the {{< otbnInsnRef "BN.WSRR" >}} and {{< otbnInsnRef "BN.WSRW" >}} instructions.
+They can be accessed with the {{#otbn-insn-ref BN.WSRR}} and {{#otbn-insn-ref BN.WSRW}} instructions.
 Writes to read-only (RO) registers are ignored; they do not signal an error.
 All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is written to {{#regref otbn.CMD.start }}).
 
@@ -334,7 +334,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>MOD</td>
 <td>
 
-The modulus used by the {{< otbnInsnRef "BN.ADDM" >}} and {{< otbnInsnRef "BN.SUBM" >}} instructions.
+The modulus used by the {{#otbn-insn-ref BN.ADDM}} and {{#otbn-insn-ref BN.SUBM}} instructions.
 This WSR is also visible as CSRs `MOD0` through to `MOD7`.
 
 </td>
@@ -369,7 +369,7 @@ Reads never stall.
       <td>RW</td>
       <td>ACC</td>
       <td>
-        The accumulator register used by the {{< otbnInsnRef "BN.MULQACC" >}} instruction.
+        The accumulator register used by the {{#otbn-insn-ref BN.MULQACC}} instruction.
       </td>
     </tr>
     <tr>
@@ -440,7 +440,7 @@ The `M`, `L`, and `Z` flags are determined based on the result of the operation 
 
 ### Loop Stack
 
-OTBN has two instructions for hardware-assisted loops: {{< otbnInsnRef "LOOP" >}} and {{< otbnInsnRef "LOOPI" >}}.
+OTBN has two instructions for hardware-assisted loops: {{#otbn-insn-ref LOOP}} and {{#otbn-insn-ref LOOPI}}.
 Both use the same state for tracking control flow.
 This is a stack of tuples containing a loop count, start address and end address.
 The stack has a maximum depth of eight and the top of the stack is the current loop.
@@ -558,9 +558,9 @@ It cannot be read from or written to by user code through load or store instruct
 
 The data memory (DMEM) is 256b wide and read-write accessible from the base and big number instruction subsets of the OTBN processor core.
 There are four instructions that can access data memory.
-In the base instruction subset, there are {{< otbnInsnRef "LW" >}} (load word) and {{< otbnInsnRef "SW" >}} (store word).
+In the base instruction subset, there are {{#otbn-insn-ref LW}} (load word) and {{#otbn-insn-ref SW}} (store word).
 These access 32b-aligned 32b words.
-In the big number instruction subset, there are {{< otbnInsnRef "BN.LID" >}} (load indirect) and {{< otbnInsnRef "BN.SID" >}} (store indirect).
+In the big number instruction subset, there are {{#otbn-insn-ref BN.LID}} (load indirect) and {{#otbn-insn-ref BN.SID}} (store indirect).
 These access 256b-aligned 256b words.
 
 Both memories can be accessed through OTBN's register interface ({{#regref otbn.DMEM }} and {{#regref otbn.IMEM }}).
@@ -671,7 +671,7 @@ The software then runs to completion, without the ability for host software to i
 - OTBN transitions into the busy state, and reflects this by setting {{#regref otbn.STATUS }} to `BUSY_EXECUTE`.
 - The internal randomness source, which provides random numbers to the `URND` CSR and WSR, is re-seeded from the EDN.
 - The instruction at address zero is fetched and executed.
-- From this point on, all subsequent instructions are executed according to their semantics until either an {{< otbnInsnRef "ECALL" >}} instruction is executed, or an error is detected.
+- From this point on, all subsequent instructions are executed according to their semantics until either an {{#otbn-insn-ref ECALL}} instruction is executed, or an error is detected.
 - A [secure wipe of internal state](#design-details-secure-wipe-internal) is performed.
 - The {{#regref otbn.ERR_BITS }} register is set to indicate either a successful execution (value `0`), or to indicate the error that was observed (a non-zero value).
 - OTBN transitions into the [idle state](#design-details-operational-states) (in case of a successful execution, or a recoverable error) or the locked state (in case of a fatal error).
@@ -701,7 +701,7 @@ Recoverable errors can only occur during the execution of software on OTBN, and 
 
 The following actions are taken when OTBN detects a recoverable error:
 
-1. The currently running operation is terminated, similar to the way an {{< otbnInsnRef "ECALL" >}} instruction [is executed](#writing-otbn-applications-ecall):
+1. The currently running operation is terminated, similar to the way an {{#otbn-insn-ref ECALL}} instruction [is executed](#writing-otbn-applications-ecall):
    - No more instructions are fetched or executed.
    - A [secure wipe of internal state](#design-details-secure-wipe-internal) is performed.
    - The {{#regref otbn.ERR_BITS }} register is set to a non-zero value that describes the error.
@@ -719,7 +719,7 @@ Fatal errors can occur at any time, even when an OTBN operation isn't in progres
 The following actions are taken when OTBN detects a fatal error:
 
 1. A [secure wipe of the data memory](#design-details-secure-wipe-dmem) and a [secure wipe of the instruction memory](#design-details-secure-wipe-imem) is initiated.
-2. If OTBN [is not idle](#design-details-operational-states), then the currently running operation is terminated, similarly to how an operation ends after an {{< otbnInsnRef "ECALL" >}} instruction [is executed](#writing-otbn-applications-ecall):
+2. If OTBN [is not idle](#design-details-operational-states), then the currently running operation is terminated, similarly to how an operation ends after an {{#otbn-insn-ref ECALL}} instruction [is executed](#writing-otbn-applications-ecall):
    - No more instructions are fetched or executed.
    - A [secure wipe of internal state](#design-details-secure-wipe-internal) is performed.
    - The {{#regref otbn.ERR_BITS }} register is set to a non-zero value that describes the error.
@@ -928,8 +928,8 @@ The register files can consume data protected with the Integrity Protection Code
 Whenever possible the Integrity Protection Code is preserved from its source and written directly to the register files without recalculation, in particular in the following cases:
 
 * Data coming from the data memory (DMEM) through the load-store unit to a GPR or WDR.
-* Data copied between WDRs using the {{< otbnInsnRef "BN.MOV" >}} or {{< otbnInsnRef "BN.MOVR" >}} instructions.
-* Data conditionally copied between WDRs using the {{< otbnInsnRef "BN.SEL" >}} instruction.
+* Data copied between WDRs using the {{#otbn-insn-ref BN.MOV}} or {{#otbn-insn-ref BN.MOVR}} instructions.
+* Data conditionally copied between WDRs using the {{#otbn-insn-ref BN.SEL}} instruction.
 * Data copied between the `ACC` and `MOD` WSRs and a WDR.
   (TODO: Not yet implemented.)
 * Data copied between any of the `MOD0` to `MOD7` CSRs and a GPR.
@@ -1147,9 +1147,9 @@ All data passing must be done when OTBN [is idle](#design-details-operational-st
 
 ## Returning from an application {#writing-otbn-applications-ecall}
 
-The software running on OTBN signals completion by executing the {{< otbnInsnRef "ECALL" >}} instruction.
+The software running on OTBN signals completion by executing the {{#otbn-insn-ref ECALL}} instruction.
 
-Once OTBN has executed the {{< otbnInsnRef "ECALL" >}} instruction, the following things happen:
+Once OTBN has executed the {{#otbn-insn-ref ECALL}} instruction, the following things happen:
 
 - No more instructions are fetched or executed.
 - A [secure wipe of internal state](#design-details-secure-wipe-internal) is performed.
@@ -1161,7 +1161,7 @@ Refer to the section [Passing of data between the host CPU and OTBN](#writing-ot
 
 ## Using hardware loops
 
-OTBN provides two hardware loop instructions: {{< otbnInsnRef "LOOP" >}} and {{< otbnInsnRef "LOOPI" >}}.
+OTBN provides two hardware loop instructions: {{#otbn-insn-ref LOOP}} and {{#otbn-insn-ref LOOPI}}.
 
 ### Loop nesting
 
@@ -1232,8 +1232,8 @@ outer_body:
 ## Algorithic Examples: Multiplication with BN.MULQACC
 
 The big number instruction subset of OTBN generally operates on WLEN bit numbers.
-{{< otbnInsnRef "BN.MULQACC" >}} operates with WLEN/4 bit operands (with a full WLEN accumulator).
-This section outlines two techniques to perform larger multiplies by composing multiple {{< otbnInsnRef "BN.MULQACC" >}} instructions.
+{{#otbn-insn-ref BN.MULQACC}} operates with WLEN/4 bit operands (with a full WLEN accumulator).
+This section outlines two techniques to perform larger multiplies by composing multiple {{#otbn-insn-ref BN.MULQACC}} instructions.
 
 ### Multiplying two WLEN/2 numbers with BN.MULQACC
 
