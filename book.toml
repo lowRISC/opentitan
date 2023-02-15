@@ -37,6 +37,9 @@ command = "./util/mdbook-testplan"
 # Python RegEx identifying testplan paths.
 testplan-py-regex = '.+_testplan\.hjson'
 
+[preprocessor.otbn]
+command = "./util/mdbook-otbn"
+
 [preprocessor.doxygen]
 command = "./util/mdbook-doxygen"
 out-dir = "docs/"

@@ -122,8 +122,8 @@ In particular, how do they interact with instructions that could cause other err
 <!-- Documentation for the instructions in the ISA. Generated from ../data/insns.yml. -->
 # Base Instruction Subset
 
-{{< otbn_isa base >}}
+{{#otbn-isa base }}
 
 # Big Number Instruction Subset
 
-{{< otbn_isa bignum >}}
+{{#otbn-isa bignum }}
