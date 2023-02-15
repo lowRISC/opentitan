@@ -1,0 +1,15 @@
+<div id="blocks-dashboard" class="dashboard-table"></div>
+<script src="/js/dashboard.js"></script>
+<script src="/js/ot-nightly-results.js"></script>
+<script>
+  function produce_results_table(results) {
+    let block_result_collection = new BlockLevelResultsCollection();
+    results.map((result) => block_result_collection.add_results(result));
+
+    var dashboard_table_toplevel = document.querySelector("#blocks-dashboard");
+    var results_table = block_result_collection.make_results_table();
+    results_table.render(dashboard_table_toplevel);
+  }
+
+  fetch_all_results().then(produce_results_table);
+</script>

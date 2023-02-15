@@ -1,0 +1,1 @@
+../../../../util/site-dashboard/dashboard.js
