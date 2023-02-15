@@ -2066,7 +2066,10 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
+                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090909",
+                # TODO(#14814): enable flash scrambling / ECC by replacing above
+                # with below.
+                #"CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
             },
         ),
     ],
