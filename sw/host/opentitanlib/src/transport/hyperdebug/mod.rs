@@ -479,6 +479,10 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         ))
     }
 
+    fn apply_default_configuration(&self) -> Result<()> {
+        self.inner.cmd_no_output("reinit")
+    }
+
     // Create SPI Target instance, or return one from a cache of previously created instances.
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
         // Execute a "spi info" command to look up the numeric index corresponding to the given

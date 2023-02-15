@@ -45,6 +45,10 @@ impl<'a> TransportCommandHandler<'a> {
             Request::GetCapabilities => {
                 Ok(Response::GetCapabilities(self.transport.capabilities()?))
             }
+            Request::ApplyDefaultConfiguration => {
+                self.transport.apply_default_configuration()?;
+                Ok(Response::ApplyDefaultConfiguration)
+            }
             Request::Gpio { id, command } => {
                 let instance = self.transport.gpio_pin(id)?;
                 match command {

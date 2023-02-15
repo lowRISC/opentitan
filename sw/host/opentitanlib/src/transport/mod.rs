@@ -95,6 +95,12 @@ pub trait Transport {
     /// transport object.
     fn capabilities(&self) -> Result<Capabilities>;
 
+    /// Resets the transport to power-on condition.  That is, pin/uart/spi configuration reverts
+    /// to default, ongoing operations are cancelled, etc.
+    fn apply_default_configuration(&self) -> Result<()> {
+        Ok(())
+    }
+
     /// Returns a SPI [`Target`] implementation.
     fn spi(&self, _instance: &str) -> Result<Rc<dyn Target>> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Spi).into())
