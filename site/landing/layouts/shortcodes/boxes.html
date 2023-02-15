@@ -1,0 +1,50 @@
+<div style="max-width: max-content;">
+<style>
+.tiles__wrapper {
+  font-size: min(1.6vw, 1rem);
+  max-width: max-content;
+}
+.tiles__container {
+  background: linear-gradient(90deg, #4BC0C8 0%, #C779D0 50%, #FEAC5E 100%);
+  border-radius: 0.5em;
+  opacity: 0.8;
+  max-width: 50em;
+  width: 90vw;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr;
+  padding: 0.8em;
+  gap: 0.8em;
+}
+
+.tile {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255,255,255,0.8);
+  border-radius: 0.3em;
+  padding: 0.5em;
+  font-size: 1.2em;
+  text-decoration: none;
+  color: #333;
+  text-align: center;
+}
+
+.tile:hover,
+.tile:active,
+.tile:focus-visible {
+  background: white;
+  color: #000;
+}
+</style>
+<div class="tiles__wrapper">
+<div class="tiles__container">
+  <a class="tile" tabindex="1" id="doc-qa-hw" href="/book/hw#top" title="Hardware">HW</a>
+  <a class="tile" tabindex="1" id="doc-qa-sw" href="/book/sw#top" title="Software">SW</a>
+  <a class="tile" tabindex="1" id="doc-qa-security" href="/book/doc/security#top" title="Security">Security</a>
+  <a class="tile" tabindex="1" id="doc-qa-tools" href="/book/util#top" title="Tooling">Tooling</a>
+  <a class="tile" tabindex="1" id="doc-qa-governance" href="/book/doc/project_governance#top" title="Governance">Governance</a>
+  <a class="tile" tabindex="1" id="doc-qa-use-cases" href="/book/doc/use_cases#top" title="Use-Cases">Use-Cases</a>
+</div>
+</div>
+</div>

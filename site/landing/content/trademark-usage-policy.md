@@ -1,13 +1,16 @@
 ---
-title: "OpenTitan Trademark Usage Policy"
+title: "Trademark Usage Policy"
 ---
+
+# OpenTitan Trademark Usage Policy
+## Overview
 
 The OpenTitan trademarks and logos ("OpenTitan Trademarks") are licensed
 separately from the copyright or patent license grants contained in the
 Apache-licensed OpenTitan repositories on GitHub. Except as provided in this
 policy, you may not use any of the OpenTitan Trademarks.
 
-# Purpose of the Trademark Policy
+## Purpose of the Trademark Policy
 
 This policy exists to ensure that the identity and meaning of OpenTitan
 technology is clear to everyone. By using this policy, the OpenTitan project
@@ -18,7 +21,7 @@ the OpenTitan project name while preventing abusive uses that could mislead
 consumers. By adhering to this policy, you help to promote the freedom to use
 and develop high-quality OpenTitan technology.
 
-# Acceptable Use
+## Acceptable Use
 
 You may use the OpenTitan Trademarks without prior written permission (subject
 to other sections):
@@ -41,13 +44,13 @@ to other sections):
      unless the OpenTitan Project actually approved that specific
      implementation for the OpenTitan Certification.
 
-# Logo Usage Guidelines
+## Logo Usage Guidelines
 
 The OpenTitan logos serve as graphic trademarks for the OpenTitan Project. We
 ask that any use of the OpenTitan logos be in compliance with the general usage
 guidelines provided in this policy.
 
-# Use as a Source Identifier
+## Use as a Source Identifier
 
 You may not use the OpenTitan Trademarks or any confusingly similar mark as the
 name of your product or feature, except to accurately reference implementation
@@ -64,7 +67,7 @@ Trademarks in a manner consistent with these guidelines that would weaken or
 dilute the OpenTitan Trademarks, create confusion, or otherwise infringe upon
 these trademarks.
 
-# Technical Specifications & OpenTitan Certification
+## Technical Specifications & OpenTitan Certification
 
 Any person may utilize and implement the designs shared in the OpenTitan GitHub
 repositories according to the license terms in the LICENSE file. However, no
@@ -88,7 +91,7 @@ Any other use of the OpenTitan Trademarks to describe or promote an
 implementation, or to imply affiliation of an implementation with the OpenTitan
 project, is strictly prohibited.
 
-# Contact Us
+## Contact Us
 
 The OpenTitan Project protects the OpenTitan Trademarks on behalf of all of the
 contributors to the OpenTitan Project. This policy does not authorize you to

@@ -9,7 +9,7 @@
   background-size: 140em 23em;
   background-position: center bottom -1em;
   background-repeat: repeat-x;
-  padding: 3em $m-s 13.75em;
+  padding: 3em $m-s 20.75em;
 
   &__content {
     max-width: $max-width-m;
@@ -17,7 +17,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    min-height: 24em;
+    min-height: 17em;
     position: relative;
   }
 
@@ -25,8 +25,8 @@
     font-size: 1.75em;
     line-height: 1.5714;
     font-family: 'Livvic', sans-serif;
-    max-width: 45ch;
-    font-weight: 300;
+    max-width: 43ch;
+    font-weight: 700;
     position: relative;
     z-index: 2;
   }
@@ -37,7 +37,7 @@
     opacity: 0.3;
     position: absolute;
     top: 0.625em;
-    left: 50%;
+    left: 30%;
     transform: translateX(-27.1em);
   }
 

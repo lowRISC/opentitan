@@ -5,9 +5,10 @@ $blue: #1683B5;
 
 $max-width-xl: 90rem;
 $max-width-l: 79.25rem;
-$max-width-m: 65.75rem;
+$max-width-m: 55rem;
 $max-width-s: 52rem;
-$m-s: calc(1em + 1vw);
+// $m-s: calc(1em + 1vw);
+$m-s: 0;
 
 :root {
   --color-mode: 'light';

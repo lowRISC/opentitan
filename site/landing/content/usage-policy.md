@@ -1,12 +1,12 @@
 ---
-title: "Website Usage Licence"
-aliases:
-  - /usage/
+title: "Usage Policy"
 ---
 
-# *Terms on which we permit you to use this website*
+# Website Usage Licence
 
-# General
+## *Terms on which we permit you to use this website*
+
+## General
 
 1. You may use the web pages located under the domain *OpenTitan.org* ("this
    website") on the terms set out on this page. They are not intended to form a
@@ -38,7 +38,7 @@ aliases:
    permit you to access this website or use any content if you do not comply
    with these terms.
 
-# Using this Website
+## Using this Website
 
 4. This website is intended only to give you information about us and our
    products and services. We do not intend, through this website:
@@ -54,7 +54,7 @@ aliases:
    may not use this website for any other purpose. For example, you may not
    download this website or any part of it for your own use.
 
-# Information about you: privacy
+## Information about you: privacy
 
 1. If you subscribe to emails from us using this website, you consent to us
    using your email address for the purposes set out in our [privacy policy],
@@ -72,13 +72,13 @@ aliases:
    should not submit any information you regard as confidential. Any
    information you do submit, you submit at your own risk.
 
-# Use of cookies
+## Use of cookies
 
 1. Cookies are short text files stored in your web browser to allow us to
    remember you when you return to this website. More information about the
    particular cookies we use may be found at [privacy and cookie policy].
 
-# Accuracy of information and availability of this website
+## Accuracy of information and availability of this website
 
 1. While we hope that this website is accurate, up-to-date and free from bugs,
    we cannot promise that it will be. Furthermore, we cannot promise that this
@@ -92,7 +92,7 @@ aliases:
    not constitute technical, financial or legal advice or any other type of
    advice and should not be relied upon for any purposes.
 
-# Changes to these terms
+## Changes to these terms
 
 1. We reserve the right to vary these terms from time to time. Our new terms
    will be displayed on this website and by continuing to use and access this
@@ -100,7 +100,7 @@ aliases:
    by us. It is your responsibility to check these terms from time to time to
    verify such variations.
 
-# Hyperlinks and third party sites
+## Hyperlinks and third party sites
 
 1. This website may contain hyperlinks or references to third party websites
    other than this website. Any hyperlinks or references are provided for your
@@ -111,7 +111,7 @@ aliases:
    services. Your use of a third party site may be governed by the terms and
    conditions of that third party site.
 
-# Disputes and liability
+## Disputes and liability
 
 1. Except for any legal responsibility that we cannot exclude in law (such as
    for death or personal injury caused by our negligence and our statutory

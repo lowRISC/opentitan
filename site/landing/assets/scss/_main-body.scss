@@ -1,0 +1,7 @@
+.main-body {
+  > * {
+    margin: 0 auto;
+    max-width: $max-width-m;
+    padding: 0.75em $m-s;
+  }
+}
