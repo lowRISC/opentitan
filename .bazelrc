@@ -101,6 +101,7 @@ build --@rules_rust//rust/toolchain/channel=nightly
 # Enable the rust 'clippy' linter.
 #build --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 #build --output_groups=+clippy_checks
+test --@rules_rust//:clippy_flags="-Aclippy::bool_assert_comparison,-Aclippy::uninlined_format_args"
 
 # Import site-specific configuration.
 try-import .bazelrc-site

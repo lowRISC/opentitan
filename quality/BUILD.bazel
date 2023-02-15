@@ -5,7 +5,7 @@
 load("@ot_hack_bazelbuild_buildtools//buildifier:def.bzl", "buildifier", "buildifier_test")
 load("@lowrisc_lint//rules:rules.bzl", "licence_test")
 load("//rules:quality.bzl", "clang_format_check", "clang_format_test", "html_coverage_report")
-load("@rules_rust//rust:defs.bzl", "rustfmt_test")
+load("@rules_rust//rust:defs.bzl", "rust_clippy", "rustfmt_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -148,6 +148,12 @@ RUST_TARGETS = [
 rustfmt_test(
     name = "rustfmt_check",
     targets = RUST_TARGETS,
+)
+
+rust_clippy(
+    name = "rust_clippy",
+    testonly = True,
+    deps = RUST_TARGETS,
 )
 
 html_coverage_report(
