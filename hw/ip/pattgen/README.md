@@ -1,5 +1,7 @@
 # Pattern Generator HWIP Technical Specification
 
+{{#block-dashboard pattgen}}
+
 # Overview
 
 This document specifies the functionality of the pattern generator hardware IP (HWIP).

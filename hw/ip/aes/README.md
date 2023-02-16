@@ -1,5 +1,6 @@
 # AES HWIP Technical Specification
 
+{{#block-dashboard aes}}
 
 # Overview
 

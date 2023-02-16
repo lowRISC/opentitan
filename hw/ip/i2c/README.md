@@ -1,5 +1,6 @@
 # I2C HWIP Technical Specification
 
+{{#block-dashboard i2c}}
 
 # Overview
 

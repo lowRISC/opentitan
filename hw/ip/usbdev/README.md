@@ -1,5 +1,7 @@
 # USB 2.0 Full-Speed Device HWIP Technical Specification
 
+{{#block-dashboard usbdev}}
+
 # Overview
 
 This document specifies the USB device hardware IP functionality.

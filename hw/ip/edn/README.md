@@ -1,5 +1,7 @@
 # EDN HWIP Technical Specification
 
+{{#block-dashboard edn}}
+
 # Overview
 
 This document specifies EDN hardware IP functionality.

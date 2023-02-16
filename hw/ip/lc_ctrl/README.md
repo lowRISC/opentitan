@@ -1,5 +1,6 @@
 # Life Cycle Controller Technical Specification
 
+{{#block-dashboard lc_ctrl}}
 
 # Overview
 

@@ -1,5 +1,7 @@
 # ROM Controller Technical Specification
 
+{{#block-dashboard rom_ctrl}}
+
 # Overview
 
 This document describes the ROM controller (`rom_ctrl`).

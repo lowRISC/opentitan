@@ -1,5 +1,6 @@
 # Alert Handler Technical Specification
 
+{{#block-dashboard alert_handler}}
 
 # Overview
 

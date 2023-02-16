@@ -1,5 +1,7 @@
 # UART HWIP Technical Specification
 
+{{#block-dashboard uart}}
+
 # Overview
 
 This document specifies UART hardware IP functionality. This module

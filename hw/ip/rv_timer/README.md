@@ -1,5 +1,7 @@
 # Timer HWIP Technical Specification
 
+{{#block-dashboard rv_timer}}
+
 # Overview
 
 This document specifies RISC-V Timer hardware IP functionality. This module

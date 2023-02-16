@@ -1,5 +1,7 @@
 # Power Manager HWIP Technical Specification
 
+{{#block-dashboard pwrmgr}}
+
 # Overview
 
 This document specifies the functionality of the OpenTitan power manager.

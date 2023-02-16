@@ -1,5 +1,7 @@
 # HMAC HWIP Technical Specification
 
+{{#block-dashboard hmac}}
+
 # Overview
 
 This document specifies HMAC hardware IP functionality. This module conforms to
