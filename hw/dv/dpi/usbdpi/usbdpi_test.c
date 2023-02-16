@@ -11,12 +11,12 @@
 // Test-specific initialization
 void usbdpi_test_init(usbdpi_ctx_t *ctx) {
   // Test-specific initialization code
-  bool bOK = false;
+  bool ok = false;
   switch (ctx->test_number) {
     case 0:
       // The simple smoke test (usbdev_test) does not require any parameters
       // or special initialization at present
-      bOK = true;
+      ok = true;
       break;
 
     // Initialize streaming test
@@ -33,7 +33,7 @@ void usbdpi_test_init(usbdpi_ctx_t *ctx) {
       bool send = (ctx->test_arg[0] & 0x80U) != 0U;
 
       if (nstreams <= USBDPI_MAX_STREAMS) {
-        bOK = streams_init(ctx, nstreams, retrieve, checking, retrying, send);
+        ok = streams_init(ctx, nstreams, retrieve, checking, retrying, send);
       }
     } break;
 
@@ -43,7 +43,7 @@ void usbdpi_test_init(usbdpi_ctx_t *ctx) {
   }
 
   // TODO - commute this to a proper test failure at run time
-  assert(bOK);
+  assert(ok);
 }
 
 // Return the next step in the test sequence

@@ -79,6 +79,8 @@ inline unsigned out_stream_next(usbdpi_ctx_t *ctx) {
 // Initialize streaming state for the given number of streams
 bool streams_init(usbdpi_ctx_t *ctx, unsigned nstreams, bool retrieve,
                   bool checking, bool retrying, bool send) {
+  assert(ctx);
+
   // Can we support the requested number of streams?
   if (!nstreams || nstreams > USBDPI_MAX_STREAMS) {
     return false;
@@ -301,7 +303,7 @@ bool stream_sig_check(usbdpi_ctx_t *ctx, usbdpi_stream_t *s,
       if (get_le32(&sig[0]) == STREAM_SIGNATURE_HEAD &&
           get_le32(&sig[12]) == STREAM_SIGNATURE_TAIL &&
           // sanity check on transfer length, though we rely upon the CPU
-          // oftware to send, receive and count the number of bytes
+          // software to send, receive and count the number of bytes
           num_bytes > 0U && num_bytes < 0x10000000U && !sig[6] && !sig[7]) {
         // Signature includes the initial value of the device-side LFSR
         s->tst_lfsr = sig[4];

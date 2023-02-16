@@ -64,7 +64,7 @@ void dump_bytes(FILE *out, const char *prefix, const uint8_t *data, size_t n,
     // Printable ASCII characters
     for (unsigned idx = 0u; idx < chunk; idx++) {
       char ch = row[idx];
-      *dp++ = (ch < ' ' || ch >= 0x80u) ? '.' : ch;
+      *dp++ = (ch < ' ' || ch >= 0x7f) ? '.' : ch;
     }
     *dp = '\0';
     fprintf(out, "%s%s\n", prefix, buf);
