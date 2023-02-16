@@ -238,7 +238,7 @@ module usbdev_linkstate (
   /////////////////////
   // Reset detection //
   /////////////////////
-  //  Here we clean up the SE0 signal and generate a signle ev_reset at
+  //  Here we clean up the SE0 signal and generate a single ev_reset at
   //  the end of a valid reset
 
   always_comb begin : proc_rst_fsm

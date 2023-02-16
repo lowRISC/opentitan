@@ -446,7 +446,7 @@ module usb_fs_rx (
   // save and check pid //
   ////////////////////////
 
-  // shift in the entire 8-bit pid with an additional 9th bit used as a sentinal.
+  // shift in the entire 8-bit pid with an additional 9th bit used as a sentinel.
 
   logic [8:0] full_pid_q, full_pid_d;
   logic pid_valid, pid_complete;

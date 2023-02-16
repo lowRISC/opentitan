@@ -49,7 +49,7 @@ package usb_consts_pkg;
     SetupSynchFrame       = 8'd12
   } usb_setup_request_e;
 
-  // USB Desctiptor Types (USB2.0 Table 9-5)
+  // USB Descriptor Types (USB2.0 Table 9-5)
   typedef enum logic [7:0] {
     DscrTypeDevice        = 8'd1,
     DscrTypeConfiguration = 8'd2,
