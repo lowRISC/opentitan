@@ -118,6 +118,16 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Path to flash wrapper hierarchy.
   string flash_path_str;
 
+  // NOTE: Make sure to keep
+  // cfg.flash_ctrl_vif.rst_to_pd_time_ns < reset_width_clks_lo * clk_period_ns.
+  // This will make sure that the power-down assertion will happen before reset deassertion.
+
+  // Low limit of reset assertion time in clock cycles (from assertion to deassertion).
+  uint reset_width_clks_lo;
+
+  // High limit of reset assertion time in clock cycles (from assertion to deassertion).
+  uint reset_width_clks_hi;
+
   `uvm_object_new
 
   // Set partition select percentages. Make sure to keep sum equals to 100.
@@ -222,6 +232,14 @@ class flash_ctrl_seq_cfg extends uvm_object;
     disable_flash_init = 1'b0;  // Off
 
     flash_path_str = "tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic";
+
+    // NOTE: Make sure to keep
+    // cfg.flash_ctrl_vif.rst_to_pd_time_ns < reset_width_clks_lo * min clock period in ns.
+    // This will make sure that the power-down assertion will happen before reset deassertion.
+
+    reset_width_clks_lo = 50;
+
+    reset_width_clks_hi = 100;
 
     set_partition_pc();
 
