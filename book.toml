@@ -45,6 +45,9 @@ testplan-py-regex = '.+_testplan\.hjson'
 [preprocessor.otbn]
 command = "./util/mdbook_otbn.py"
 
+[preprocessor.dashboard]
+command = "./util/mdbook_dashboard.py"
+
 [preprocessor.doxygen]
 command = "./util/mdbook_doxygen.py"
 out-dir = "docs/"
