@@ -46,10 +46,10 @@ typedef enum device_type {
    */
   kDeviceFpgaCw310 = 2,
   /**
-   * Represents the "Nexys Video FPGA" device, i.e., the previous main FPGA
-   * development board for OpenTitan, containing a Xilinx FPGA.
+   * Represents the "ChipWhisperer CW305 FPGA" device, i.e., the smaller FPGA
+   * development board with SCA capability, containing a Xilinx FPGA.
    */
-  kDeviceFpgaNexysVideo = 3,
+  kDeviceFpgaCw305 = 3,
 } device_type_t;
 
 /**

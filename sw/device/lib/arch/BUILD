@@ -10,8 +10,8 @@ cc_library(
 )
 
 cc_library(
-    name = "fpga_nexysvideo",
-    srcs = ["device_fpga_nexysvideo.c"],
+    name = "fpga_cw305",
+    srcs = ["device_fpga_cw305.c"],
     deps = [
         ":device",
         "//sw/device/silicon_creator/lib:rom_print",
