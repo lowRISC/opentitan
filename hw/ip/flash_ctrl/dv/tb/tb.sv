@@ -203,24 +203,26 @@ module tb;
   );
 
   // Create edge in flash_power_down_h_i, whenever reset is asserted
-  logic init;
-  assign flash_power_down_h = (init ? 1'b1 : 1'b0);
+  logic init_pd;
+  assign flash_power_down_h = (init_pd ? 1'b1 : 1'b0);
   initial begin
     forever begin
       fork
         begin : isolation_fork
-          if (rst_n === 1'b1) begin
-            // Fork off a thread to deassert init after 5 clocks.
-            fork
-              begin : deassert_init
+          fork
+            begin
+              if (rst_n === 1'b1) begin
+                // Wait time from reset deassertion to power-down deassertion.
                 clk_rst_if.wait_clks(5);
-                init = 1'b0;
-              end : deassert_init
-            join_none
-          end else begin
-            init = 1'b1;
-          end
-
+                init_pd = 1'b0;
+              end else begin
+                // Wait time from reset assertion to power-down assertion. Should match flash-IP
+                // spec timing.
+                #(flash_ctrl_if.rst_to_pd_time_ns);
+                init_pd = 1'b1;
+              end
+            end
+          join_none
           // Wait for the rst_n to change.
           @(rst_n);
           disable fork;

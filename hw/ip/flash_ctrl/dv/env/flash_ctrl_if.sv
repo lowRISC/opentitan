@@ -67,6 +67,10 @@ interface flash_ctrl_if (
   logic ctrl_fsm_idle;
   logic [1:0] host_outstanding;
 
+  // Time to wait from reset assertion to power-down assertion. Default is 0.
+  // Defined here so it will be accessible by both the TB and the env cfg.
+  int unsigned rst_to_pd_time_ns = 0;
+
   clocking cb @(posedge clk);
     default input #1step output #2;
     output    rma_req, rma_seed;
