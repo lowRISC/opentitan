@@ -40,7 +40,7 @@ rust_library(
     ],
     version = "0.1.1",
     deps = [
-        "@crate_index__cxx-1.0.89//:cxx",
+        "@crate_index__cxx-1.0.91//:cxx",
         "@crate_index__iana-time-zone-haiku-0.1.1//:build_script_build",
     ],
 )
@@ -74,7 +74,7 @@ cargo_build_script(
     version = "0.1.1",
     visibility = ["//visibility:private"],
     deps = [
-        "@crate_index__cxx-build-1.0.89//:cxx_build",
+        "@crate_index__cxx-build-1.0.91//:cxx_build",
     ],
 )
 

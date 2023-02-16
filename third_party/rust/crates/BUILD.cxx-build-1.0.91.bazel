@@ -6,7 +6,7 @@
 #     bazel run //third_party/rust:crate_index
 ###############################################################################
 
-load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -14,8 +14,8 @@ package(default_visibility = ["//visibility:public"])
 #     "TODO",  # MIT OR Apache-2.0
 # ])
 
-rust_proc_macro(
-    name = "cxxbridge_macro",
+rust_library(
+    name = "cxx_build",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -32,15 +32,19 @@ rust_proc_macro(
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=cxxbridge-macro",
+        "crate-name=cxx-build",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.0.89",
+    version = "1.0.91",
     deps = [
+        "@crate_index__cc-1.0.79//:cc",
+        "@crate_index__codespan-reporting-0.11.1//:codespan_reporting",
+        "@crate_index__once_cell-1.17.1//:once_cell",
         "@crate_index__proc-macro2-1.0.51//:proc_macro2",
         "@crate_index__quote-1.0.23//:quote",
+        "@crate_index__scratch-1.0.3//:scratch",
         "@crate_index__syn-1.0.107//:syn",
     ],
 )

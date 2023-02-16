@@ -37,13 +37,10 @@ rust_library(
         "noclippy",
         "norustfmt",
     ],
-    version = "1.8.0",
+    version = "1.9.0",
     deps = select({
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crate_index__instant-0.1.12//:instant",  # cfg(target_arch = "wasm32")
-        ],
-        "@rules_rust//rust/platform:wasm32-wasi": [
-            "@crate_index__instant-0.1.12//:instant",  # cfg(target_arch = "wasm32")
+            "@crate_index__instant-0.1.12//:instant",  # cfg(all(target_arch = "wasm32", not(target_os = "wasi")))
         ],
         "//conditions:default": [],
     }),
