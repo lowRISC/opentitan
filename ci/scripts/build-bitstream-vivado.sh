@@ -46,7 +46,7 @@ case x"$TARGET" in
         ROM_TARGET=cw310
         ;;
     xcw305)
-        ROM_TARGET=nexysvideo
+        ROM_TARGET=cw305
         ;;
     *)
         usage "Unknown target: $TARGET"

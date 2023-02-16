@@ -10,10 +10,10 @@
 
 /**
  * @file
- * @brief Device-specific symbol definitions for the Nexysvideo device.
+ * @brief Device-specific symbol definitions for the ChipWhisperer CW305 device.
  */
 
-const device_type_t kDeviceType = kDeviceFpgaNexysVideo;
+const device_type_t kDeviceType = kDeviceFpgaCw305;
 
 const uint64_t kClockFreqCpuMhz = 10;
 
