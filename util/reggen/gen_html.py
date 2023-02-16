@@ -185,14 +185,14 @@ def gen_html_register(outfile: TextIO,
     # we also insert a label without the index so
     # that unnumbered links from the register table
     # descriptions and Hugo-generated docs are possible.
-    if rname[-2:] == "_0":
-        mr_anchor = ('id="Reg_{}"'
+    if rname[-2:] == "0":
+        mr_anchor = ('id="{}"'
                      .format(rname[:-2].lower()))
     else:
         mr_anchor = ''
 
     genout(outfile,
-           '<table class="regdef" id="Reg_{lrname}">\n'
+           '<table class="regdef" id="{lrname}">\n'
            ' <tr>\n'
            '  <th class="regdef" colspan=5 {mr_anchor}>\n'
            '   <div>{comp}.{link} @ {off:#x}</div>\n'
@@ -324,7 +324,7 @@ def gen_html_window(outfile: TextIO,
     wname = win.name or '(unnamed window)'
     offset = win.offset
     genout(outfile,
-           '<table class="regdef" id="Reg_{lwname}">\n'
+           '<table class="regdef" id="{lwname}">\n'
            '  <tr>\n'
            '    <th class="regdef">\n'
            '      <div>{comp}.{link} @ + {off:#x}</div>\n'

@@ -9,7 +9,7 @@ from typing import List, Match, Optional, Set
 
 def get_reg_link(rname: str) -> str:
     '''Return regname with a HTML link to itself'''
-    return '<a href="#Reg_{}">{}</a>'.format(rname.lower(), rname)
+    return '<a href="#{}">{}</a>'.format(rname.lower(), rname)
 
 
 def expand_paras(s: str, rnames: Set[str]) -> List[str]:
@@ -55,10 +55,10 @@ def _expand_paragraph(s: str, rnames: Set[str]) -> str:
         mr_names = set([base + "_0", base + "_1"])
         if base in rnames or len(rnames & mr_names) == 2:
             if match.group(1)[-1] == ".":
-                return ('<a href="#Reg_' + base + '"><code class=\"reg\">' +
+                return ('<a href="#' + base + '"><code class=\"reg\">' +
                         match.group(1)[:-1] + '</code></a>.')
             else:
-                return ('<a href="#Reg_' + base + '"><code class=\"reg\">' +
+                return ('<a href="#' + base + '"><code class=\"reg\">' +
                         match.group(1) + '</code></a>')
         log.warn('!!' + match.group(1).partition('.')[0] +
                  ' not found in register list.')
