@@ -1,5 +1,6 @@
 # OTP Controller Technical Specification
 
+{{#block-dashboard otp_ctrl}}
 
 # Overview
 

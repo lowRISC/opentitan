@@ -1,5 +1,7 @@
 # CSRNG HWIP Technical Specification
 
+{{#block-dashboard csrng}}
+
 # Overview
 
 This document specifies the Cryptographically Secure Random Number Generator (CSRNG) hardware IP functionality.

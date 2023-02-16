@@ -1,5 +1,7 @@
 # Key Manager HWIP Technical Specification
 
+{{#block-dashboard keymgr}}
+
 # Overview
 
 This document specifies the functionality of the OpenTitan key manager.

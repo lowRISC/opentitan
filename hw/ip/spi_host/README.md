@@ -1,5 +1,7 @@
 # SPI_HOST HWIP Technical Specification
 
+{{#block-dashboard spi_host}}
+
 # Overview
 
 This document specifies SPI_HOST hardware IP (HWIP) functionality.

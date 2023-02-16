@@ -1,7 +1,8 @@
 # SPI Device HWIP Technical Specification
 
-# Overview
+{{#block-dashboard spi_device}}
 
+# Overview
 
 ## Features
 

@@ -1,5 +1,7 @@
 # OpenTitan Big Number Accelerator (OTBN) Technical Specification
 
+{{#block-dashboard otbn}}
+
 # Overview
 
 This document specifies functionality of the OpenTitan Big Number Accelerator, or OTBN.

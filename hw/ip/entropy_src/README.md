@@ -1,5 +1,7 @@
 # ENTROPY_SRC HWIP Technical Specification
 
+{{#block-dashboard entropy_src}}
+
 # Overview
 
 This document specifies ENTROPY_SRC hardware IP functionality.

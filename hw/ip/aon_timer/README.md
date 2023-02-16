@@ -1,5 +1,7 @@
 # AON Timer Technical Specification
 
+{{#block-dashboard aon_timer}}
+
 # Overview
 
 This document specifies the Always-On ("AON") Timer IP functionality.

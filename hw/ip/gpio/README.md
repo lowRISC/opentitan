@@ -1,5 +1,7 @@
 # GPIO HWIP Technical Specification
 
+{{#block-dashboard gpio}}
+
 # Overview
 
 This document specifies GPIO hardware IP functionality. This

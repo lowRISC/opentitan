@@ -1,5 +1,7 @@
 # Flash Controller HWIP Technical Specification
 
+{{#block-dashboard flash_ctrl}}
+
 # Overview
 
 This document describes the flash controller functionality.

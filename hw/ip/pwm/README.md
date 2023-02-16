@@ -1,5 +1,7 @@
 # PWM HWIP Technical Specification
 
+{{#block-dashboard pwm}}
+
 # Overview
 
 This document specifies PWM hardware IP (HWIP) functionality.

@@ -1,5 +1,7 @@
 # System Reset Control Technical Specification
 
+{{#block-dashboard sysrst_ctrl}}
+
 # Overview
 
 This document specifies the functionality of the System Reset Controller (`sysrst_ctrl`) that provides programmable hardware-level responses to trusted IOs and basic board-level reset sequencing capabilities.

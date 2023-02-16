@@ -1,5 +1,7 @@
 # KMAC HWIP Technical Specification
 
+{{#block-dashboard kmac}}
+
 # Overview
 
 This document specifies the Keccak Message Authentication Code (KMAC) and Secure Hashing Algorithm 3 (SHA3) hardware IP functionality.

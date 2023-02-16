@@ -141,6 +141,7 @@ book_env+=" MDBOOK_PREPROCESSOR__REGGEN__COMMAND=${proj_root}/util/mdbook_reggen
 book_env+=" MDBOOK_PREPROCESSOR__WAVEJSON__COMMAND=${proj_root}/util/mdbook_wavejson.py"
 book_env+=" MDBOOK_PREPROCESSOR__README2INDEX__COMMAND=${proj_root}/util/mdbook_readme2index.py"
 book_env+=" MDBOOK_PREPROCESSOR__DASHBOARD__COMMAND=${proj_root}/util/mdbook_dashboard.py"
+book_env+=" MDBOOK_PREPROCESSOR__BLOCK_DASHBOARD__COMMAND=${proj_root}/util/mdbook-block-dashboard.py"
 # ./doc/guides/getting_started/book.toml
 book_guides_env="env"
 book_guides_env+=" MDBOOK_PREPROCESSOR__TOOLVERSION__COMMAND=${proj_root}/util/mdbook_toolversion.py"

@@ -1,5 +1,6 @@
 # SRAM Controller Technical Specification
 
+{{#block-dashboard sram_ctrl}}
 
 # Overview
 

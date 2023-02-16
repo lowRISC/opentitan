@@ -1,5 +1,7 @@
 # Analog to Digital Converter Control Interface
 
+{{#block-dashboard adc_ctrl}}
+
 # Overview
 
 This document specifies the ADC controller IP functionality.

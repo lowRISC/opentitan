@@ -1,5 +1,7 @@
 # Clock Manager HWIP Technical Specification
 
+{{#block-dashboard clkmgr}}
+
 # Overview
 
 This document specifies the functionality of the OpenTitan clock manager.
