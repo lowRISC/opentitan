@@ -54,14 +54,9 @@ def main() -> None:
 
         file_name = Path(src_path).name
 
-        # First calculate the path to the generated dif header,
-        # relative to the root of the project. This is the form ingested
-        # by the difgen library scripts.
-        rel_dif_h = (book_root / src_path).relative_to(SRCTREE_TOP)
-
         buffer = io.StringIO()
         buffer.write(f"# {file_name}\n")
-        difgen.gen_listing_html(html_out_dir, combined_xml, str(rel_dif_h),
+        difgen.gen_listing_html(html_out_dir, combined_xml, str(book_root / src_path),
                                 buffer)
         buffer.write(
             "\n<details><summary>\nGenerated from <a href=\"{}\">{}</a></summary>\n"

@@ -46,7 +46,7 @@ SHOW_NAMESPACES        = NO
 
 FILE_VERSION_FILTER    = "git -C '$(SRCTREE_TOP)' log --format='%h' -1 --"
 
-LAYOUT_FILE            = "$(SRCTREE_TOP)/site/docs/doxygen/layout.xml"
+LAYOUT_FILE            = "$(SRCTREE_TOP)/site/doxygen/layout.xml"
 
 #---------------------------------------------------------------------------
 # Configuration options related to warning and progress messages
@@ -62,9 +62,9 @@ WARN_LOGFILE           = "$(DOXYGEN_OUT)/doxygen_warnings.log"
 # Absolute path using $(SRCTREE_TOP)
 INPUT                  = "$(SRCTREE_TOP)/sw" \
                          "$(SRCTREE_TOP)/hw/top_earlgrey/sw" \
-                         "$(SRCTREE_TOP)/site/docs/doxygen/main_page.md"
+                         "$(SRCTREE_TOP)/site/doxygen/main_page.md"
 
-USE_MDFILE_AS_MAINPAGE = "$(SRCTREE_TOP)/site/docs/doxygen/main_page.md"
+USE_MDFILE_AS_MAINPAGE = "$(SRCTREE_TOP)/site/doxygen/main_page.md"
 
 FILE_PATTERNS          = *.h \
                          *.c \
@@ -80,7 +80,7 @@ EXCLUDE                = "$(SRCTREE_TOP)/sw/vendor" \
 EXCLUDE_SYMLINKS       = YES
 
 # Absolute path using $(SRCTREE_TOP)
-IMAGE_PATH             = "$(SRCTREE_TOP)/site/docs/doxygen"
+IMAGE_PATH             = "$(SRCTREE_TOP)/site/doxygen"
 
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing
@@ -94,23 +94,17 @@ REFERENCES_LINK_SOURCE = NO
 SOURCE_TOOLTIPS        = NO
 
 #---------------------------------------------------------------------------
-# Configuration options related to the alphabetical class index
-#---------------------------------------------------------------------------
-
-COLS_IN_ALPHA_INDEX    = 2
-
-#---------------------------------------------------------------------------
 # Configuration options related to the HTML output
 #---------------------------------------------------------------------------
 
 GENERATE_HTML          = YES
 
 # Relative to `OUTPUT_DIRECTORY`
-HTML_OUTPUT            = "public-api/sw/apis"
+HTML_OUTPUT            = "doxy/"
 
 # Absolute paths using $(SRCTREE_TOP)
-HTML_HEADER            = "$(SRCTREE_TOP)/site/docs/doxygen/header.html"
-HTML_FOOTER            = "$(SRCTREE_TOP)/site/docs/doxygen/footer.html"
+HTML_HEADER            = "$(SRCTREE_TOP)/site/doxygen/header.html"
+HTML_FOOTER            = "$(SRCTREE_TOP)/site/doxygen/footer.html"
 
 HTML_COLORSTYLE_HUE    = 271
 
@@ -192,8 +186,6 @@ SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------
 # Configuration options related to the dot tool
 #---------------------------------------------------------------------------
-
-CLASS_DIAGRAMS         = NO
 
 HAVE_DOT               = NO
 CLASS_GRAPH            = NO
