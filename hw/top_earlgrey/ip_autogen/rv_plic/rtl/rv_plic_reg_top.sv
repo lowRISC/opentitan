@@ -12,8 +12,8 @@ module rv_plic_ot_reg_top (
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
-  output rv_plic_reg_pkg::rv_plic_reg2hw_t reg2hw, // Write
-  input  rv_plic_reg_pkg::rv_plic_hw2reg_t hw2reg, // Read
+  output rv_plic_ot_reg_pkg::rv_plic_reg2hw_t reg2hw, // Write
+  input  rv_plic_ot_reg_pkg::rv_plic_hw2reg_t hw2reg, // Read
 
   // Integrity check errors
   output logic intg_err_o,
@@ -22,7 +22,7 @@ module rv_plic_ot_reg_top (
   input devmode_i // If 1, explicit error return for unmapped register access
 );
 
-  import rv_plic_reg_pkg::* ;
+  import rv_plic_ot_reg_pkg::* ;
 
   localparam int AW = 27;
   localparam int DW = 32;
