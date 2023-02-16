@@ -12,7 +12,7 @@ module prim_flash_bank #(
   parameter int PagesPerBank   = 256, // data pages per bank
   parameter int WordsPerPage   = 256, // words per page
   parameter int DataWidth      = 32,  // bits per word
-
+  parameter     MemInitFile    = "",
   // Derived parameters
   localparam int PageW = $clog2(PagesPerBank),
   localparam int WordW = $clog2(WordsPerPage),
@@ -406,7 +406,8 @@ module prim_flash_bank #(
   prim_ram_1p #(
     .Width(DataWidth),
     .Depth(WordsPerBank),
-    .DataBitsPerMask(DataWidth)
+    .DataBitsPerMask(DataWidth),
+    .MemInitFile(MemInitFile)
   ) u_mem (
     .clk_i,
     .rst_ni,

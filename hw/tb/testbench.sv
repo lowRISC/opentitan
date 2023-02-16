@@ -46,8 +46,11 @@ module testbench ();
    parameter int   RESP_MAX_WAIT_CYCLES = 1;
    parameter int   NUM_BEATS = 100;
    
-   localparam int unsigned RTC_CLOCK_PERIOD = 80ns;
+   localparam int unsigned RTC_CLOCK_PERIOD = 10ns;
    localparam int unsigned AON_PERIOD = 5us;
+   localparam int unsigned IO_PERIOD = 10.41ns;
+   localparam int unsigned USB_PERIOD = 20.82ns;
+   
    
    
    int          sections [bit [31:0]];
@@ -61,23 +64,28 @@ module testbench ();
    
    
    
-   string       binary;
-  /* 
-   typedef   logic [AW-1:0] axi_addr_t;
-   typedef   logic [DW-1:0] axi_data_t;
-   typedef   logic [IW-1:0] axi_id_t;
-   typedef   logic [SW-1:0] axi_strb_t;
-   typedef   logic [UW-1:0] axi_user_t;
-*/
+   string       flash_bank_a;
+   string       flash_bank_b;
+   string       SRAM;
+   
       
    logic  clk_sys = 1'b0;
    logic  aon_clk = 1'b0;
+   logic  io_clk = 1'b0;
+   logic  usb_clk = 1'b0;
+   
    
    logic  rst_sys_n;
    
    jtag_pkg::jtag_req_t jtag_i;
    jtag_pkg::jtag_rsp_t jtag_o;
 
+   
+   wire  [46:0] ibex_uart_rx, ibex_uart_tx;
+   assign ibex_uart_rx = '0;
+   
+   uart_bus #(.BAUD_RATE(7200), .PARITY_EN(0)) i_uart0_bus (.rx(ibex_uart_tx[26]), .tx(ibex_uart_rx[26]), .rx_en(1'b1));
+   
    typedef axi_test::axi_rand_slave #(  
      .AW(tlul2axi_pkg::AXI_ADDR_WIDTH),
      .DW(tlul2axi_pkg::AXI_SLV_PORT_DATA_WIDTH),
@@ -112,22 +120,7 @@ module testbench ();
    logic       enable      = 1'b0;
    logic       test_reset;
    logic       irq_ibex_i;
-   /*
-   `AXI_TYPEDEF_AW_CHAN_T (axi_aw_t, axi_addr_t, axi_id_t, axi_user_t)
-   `AXI_TYPEDEF_W_CHAN_T  (axi_w_t, axi_data_t, axi_strb_t, axi_user_t)
-   `AXI_TYPEDEF_B_CHAN_T  (axi_b_t, axi_id_t, axi_user_t)
-   `AXI_TYPEDEF_AR_CHAN_T (axi_ar_t, axi_addr_t, axi_id_t, axi_user_t)
-   `AXI_TYPEDEF_R_CHAN_T  (axi_r_t, axi_data_t, axi_id_t, axi_user_t)
-   `AXI_TYPEDEF_REQ_T     (axi_req_t, axi_aw_t, axi_w_t, axi_ar_t)
-   `AXI_TYPEDEF_RESP_T    (axi_resp_t, axi_b_t, axi_r_t)
-   
-   `AXI_ASSIGN (axi, axi_slave)
-   `AXI_ASSIGN_FROM_REQ (axi_slave, axi_req)
-   
-   `AXI_ASSIGN_TO_RESP  (axi_rsp, axi_slave)
-*/
-  // axi_req_t  axi_req;
-  // axi_resp_t axi_rsp;
+ 
    
    `AXI_ASSIGN (axi, axi_slave)
    `AXI_ASSIGN_FROM_REQ (axi_slave, axi_req)
@@ -182,9 +175,11 @@ module testbench ();
    
    top_earlgrey #(
     .OtpCtrlMemInitFile("/scratch/mciani/test/opentitan/hw/top_earlgrey/sw/tests/otp-img.mem"),
-    .RomCtrlBootRomInitFile("/scratch/mciani/test/opentitan/hw/top_earlgrey/sw/tests/fake_rom.vmem")
+    .RomCtrlBootRomInitFile("/scratch/mciani/test/opentitan/hw/top_earlgrey/sw/tests/boot_rom.vmem"),
+    .FlashCtrlMemInitFile("/scratch/mciani/test/opentitan/hw/top_earlgrey/sw/tests/hmac_test/hmac_smoketest.vmem")
    ) dut (
-    .mio_in_i('0),
+    .mio_in_i(ibex_uart_rx),
+    .mio_out_o(ibex_uart_tx),
     .dio_in_i('0),
     .ast_edn_req_i('0),
 //    .ast_edn_rsp_o(tieoff[0]),
@@ -283,8 +278,19 @@ module testbench ();
      aon_clk   = 1'b0;
      forever
        #(AON_PERIOD/2) aon_clk = ~aon_clk;
+   end
+   
+   initial begin  : io_clock_process
+     io_clk   = 1'b0;
+     forever
+       #(IO_PERIOD/2) io_clk = ~io_clk;
+   end
+   
+   initial begin  : usb_clock_process
+     usb_clk   = 1'b0;
+     forever
+       #(USB_PERIOD/2) usb_clk = ~usb_clk;
    end 
-
  
    initial begin  : axi_slave_process
       
@@ -306,23 +312,23 @@ module testbench ();
       };
 
       riscv_dbg.reset_master();
-      
-      if ( $value$plusargs ("OT_STRING=%s", binary));
-         $display("Testing %s", binary);
-         
-      repeat(10000)
+   /*   
+      if ( $value$plusargs ("SRAM=%s", SRAM));
+         $display("Testing %s", SRAM);
+     */ 
+  /*     if ( $value$plusargs ("flash_a=%s", flash_bank_a));
+         $display("Testing %s", flash_bank_a);*/
+     /* 
+      repeat(140000)
           @(posedge clk_sys);
       
       debug_module_init();
-      load_binary(binary);
-      
-      
-      // Call the JTAG preload task
-      jtag_data_preload();
+      load_binary(SRAM);
+      jtag_data_preload(); 
           
-      #(RTC_CLOCK_PERIOD)
+ */     #(RTC_CLOCK_PERIOD)
 ;
-      jtag_ibex_wakeup(32'h f0000080);
+      //jtag_ibex_wakeup(32'h f0000810);
     
       
       

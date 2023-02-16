@@ -16,7 +16,8 @@ module flash_phy
   import flash_ctrl_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
-  parameter bit SecScrambleEn = 1'b1
+  parameter bit SecScrambleEn = 1'b1,
+  parameter     MemInitFile   = ""
 )
 (
   input clk_i,
@@ -336,7 +337,8 @@ module flash_phy
     .InfoTypesWidth(InfoTypesWidth),
     .PagesPerBank(PagesPerBank),
     .WordsPerPage(WordsPerPage),
-    .DataWidth(flash_phy_pkg::FullDataWidth)
+    .DataWidth(flash_phy_pkg::FullDataWidth),
+    .MemInitFile(MemInitFile)
   ) u_flash (
     .clk_i,
     .rst_ni,

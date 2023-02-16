@@ -13,7 +13,7 @@ package tl_main_pkg;
     32'h c0000000
   };
   localparam logic [1:0][31:0] ADDR_SPACE_TLUL2AXI             = {
-    32'h 1c0000000,
+    32'h 1c000000,
     32'h 00010000
   };
   localparam logic [31:0] ADDR_SPACE_ROM_CTRL__ROM        = 32'h d0008000;

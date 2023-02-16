@@ -57,13 +57,10 @@ module testbench ();
    
    
    string       binary;
-  /* 
-   typedef   logic [AW-1:0] axi_addr_t;
-   typedef   logic [DW-1:0] axi_data_t;
-   typedef   logic [IW-1:0] axi_id_t;
-   typedef   logic [SW-1:0] axi_strb_t;
-   typedef   logic [UW-1:0] axi_user_t;
-*/
+   logic [UW-1:0] axi_user_t;
+
+   wire  [46:0] ibex_uart_rx, ibex_uart_tx;
+   
       
    logic  clk_sys = 1'b0;
    logic  rst_sys_n;
@@ -81,7 +78,7 @@ module testbench ();
      .RAND_RESP(RAND_RESP),
      .AX_MIN_WAIT_CYCLES(AX_MIN_WAIT_CYCLES),
      .AX_MAX_WAIT_CYCLES(AX_MAX_WAIT_CYCLES),
-     .R_MIN_WAIT_CYCLES(R_MIN_WAIT_CYCLES),
+     .R_MIN_WAIT_CYCLES(R_MIN_WAIT_CYCLES),reawsfgbaewrhgb
      .R_MAX_WAIT_CYCLES(R_MAX_WAIT_CYCLES),
      .RESP_MIN_WAIT_CYCLES(RESP_MIN_WAIT_CYCLES),
      .RESP_MAX_WAIT_CYCLES(RESP_MAX_WAIT_CYCLES)
@@ -105,22 +102,7 @@ module testbench ();
    logic       enable      = 1'b0;
    logic       test_reset;
    logic       irq_ibex_i;
-   /*
-   `AXI_TYPEDEF_AW_CHAN_T (axi_aw_t, axi_addr_t, axi_id_t, axi_user_t)
-   `AXI_TYPEDEF_W_CHAN_T  (axi_w_t, axi_data_t, axi_strb_t, axi_user_t)
-   `AXI_TYPEDEF_B_CHAN_T  (axi_b_t, axi_id_t, axi_user_t)
-   `AXI_TYPEDEF_AR_CHAN_T (axi_ar_t, axi_addr_t, axi_id_t, axi_user_t)
-   `AXI_TYPEDEF_R_CHAN_T  (axi_r_t, axi_data_t, axi_id_t, axi_user_t)
-   `AXI_TYPEDEF_REQ_T     (axi_req_t, axi_aw_t, axi_w_t, axi_ar_t)
-   `AXI_TYPEDEF_RESP_T    (axi_resp_t, axi_b_t, axi_r_t)
-   
-   `AXI_ASSIGN (axi, axi_slave)
-   `AXI_ASSIGN_FROM_REQ (axi_slave, axi_req)
-   
-   `AXI_ASSIGN_TO_RESP  (axi_rsp, axi_slave)
-*/
-  // axi_req_t  axi_req;
-  // axi_resp_t axi_rsp;
+ 
    
    `AXI_ASSIGN (axi, axi_slave)
    `AXI_ASSIGN_FROM_REQ (axi_slave, axi_req)
@@ -128,6 +110,8 @@ module testbench ();
    
    tlul2axi_pkg::slv_req_t axi_req;
    tlul2axi_pkg::slv_rsp_t axi_rsp;
+
+   uart_bus #(.BAUD_RATE(7200), .PARITY_EN(0)) i_uart0_bus (.rx(ibex_uart_tx[26]), .tx('0), .rx_en(1'b1));
    
    
    axi_ran_slave axi_rand_slave = new(axi);
@@ -158,6 +142,8 @@ module testbench ();
    top_earlgrey #(
    ) dut (
 
+    .mio_in_i(ibex_uart_rx),
+    .mio_out_o(ibex_uart_tx),
     .scan_rst_ni (rst_sys_n),
     .scan_en_i (1'b0),
     .scanmode_i (lc_ctrl_pkg::Off),

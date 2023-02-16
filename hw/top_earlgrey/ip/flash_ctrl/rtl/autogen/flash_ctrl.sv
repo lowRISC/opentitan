@@ -25,7 +25,8 @@ module flash_ctrl
   parameter lfsr_perm_t           RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter int                   ProgFifoDepth   = MaxFifoDepth,
   parameter int                   RdFifoDepth     = MaxFifoDepth,
-  parameter bit                   SecScrambleEn   = 1'b1
+  parameter bit                   SecScrambleEn   = 1'b1,
+  parameter                       MemInitFile     = ""
 ) (
   input        clk_i,
   input        rst_ni,
@@ -1340,7 +1341,8 @@ module flash_ctrl
   );
 
   flash_phy #(
-    .SecScrambleEn(SecScrambleEn)
+    .SecScrambleEn(SecScrambleEn),
+    .MemInitFile(MemInitFile)
   ) u_eflash (
     .clk_i,
     .rst_ni,

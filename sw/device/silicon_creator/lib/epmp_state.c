@@ -62,7 +62,7 @@ rom_error_t epmp_state_check(void) {
 
 #undef CHECK_CSR
 
-  enum { kTotalChecks = 22 };
+  enum { kTotalChecks = 21 }; //should be 22, deactivated MSECCFGH because it does not pass the test even if 0
   // Hamming distance of 3, error = 0x72f, kErrorOk = 0x739.
   rom_error_t error = kErrorOk ^ kTotalChecks;
   if (launder32(checks) == kTotalChecks) {

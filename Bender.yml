@@ -877,6 +877,7 @@ sources:
 ##### testbench
 
       #- hw/top_titangrey/tb/adapter_testbench.sv
+      - hw/tb/uart.sv
       - hw/tb/jtag_intf.sv
       - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv #- hw/tb/jtag_test.sv      #
       - hw/tb/testbench.sv

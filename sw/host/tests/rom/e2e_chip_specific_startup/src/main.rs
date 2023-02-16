@@ -201,7 +201,7 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
         EpmpEntry {
             cfg: EPMP_CFG_LOCKED_NONE,
             kind: EpmpRegionKind::Na4,
-            range: EpmpAddressRange(0x1001_c000, 0x1001_c004)
+            range: EpmpAddressRange(0xe001_c000, 0xe001_c004)
         }
     ));
     assert!(matches!(
@@ -219,7 +219,7 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
         EpmpEntry {
             cfg: EPMP_CFG_LRX,
             kind: EpmpRegionKind::Tor,
-            range: EpmpAddressRange(0x2000_0400, _)
+            range: EpmpAddressRange(0xF000_0400, _)
         }
     ));
     assert!(matches!(
@@ -227,7 +227,7 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
         EpmpEntry {
             cfg: EPMP_CFG_LRO,
             kind: EpmpRegionKind::Napot,
-            range: EpmpAddressRange(0x2000_0000, 0x2010_0000)
+            range: EpmpAddressRange(0xf000_0000, 0xf010_0000)
         }
     ));
     // Debug: only enabled for Test, Dev and RMA states:

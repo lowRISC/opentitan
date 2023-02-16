@@ -19,7 +19,8 @@ module opentitan_synth_wrap
 #(
    parameter SramCtrlMainMemInitFile = "",
    parameter OtpCtrlMemInitFile = "../hw/top_earlgrey/sw/tests/hello_test/otp-img.mem",
-   parameter RomCtrlBootRomInitFile = "../hw/top_earlgrey/sw/tests/hello_test/rom.vmem"
+   parameter RomCtrlBootRomInitFile = "../hw/top_earlgrey/sw/tests/hello_test/rom.vmem",
+   parameter FlashCtrlMemInitFile = ""  
 )  (  
    
    input logic                                                clk_i,
@@ -172,7 +173,8 @@ module opentitan_synth_wrap
    top_earlgrey #(
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .SramCtrlMainMemInitFile(SramCtrlMainMemInitFile),
-    .RomCtrlBootRomInitFile(RomCtrlBootRomInitFile)
+    .RomCtrlBootRomInitFile(RomCtrlBootRomInitFile),
+    .FlashCtrlMemInitFile(FlashCtrlMemInitFile)
    ) u_RoT (
     .mio_in_i('0),
     .dio_in_i('0),

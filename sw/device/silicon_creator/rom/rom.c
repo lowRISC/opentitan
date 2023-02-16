@@ -440,6 +440,7 @@ void rom_main(void) {
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 1, kCfiRomInit);
   SHUTDOWN_IF_ERROR(rom_init());
+  rom_bootstrap_message();
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomInit, 3);
 

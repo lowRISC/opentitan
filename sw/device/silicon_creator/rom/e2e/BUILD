@@ -758,22 +758,22 @@ BOOT_POLICY_NEWER_CASES = [
     {
         "a": 0,
         "b": 0,
-        "exit_success": "slot=0x20000000, security_version=0, lc_state=0x{}",
+        "exit_success": "slot=0xf0000000, security_version=0, lc_state=0x{}",
     },
     {
         "a": 0,
         "b": 1,
-        "exit_success": "slot=0x20080000, security_version=1, lc_state=0x{}",
+        "exit_success": "slot=0xf0080000, security_version=1, lc_state=0x{}",
     },
     {
         "a": 1,
         "b": 0,
-        "exit_success": "slot=0x20000000, security_version=1, lc_state=0x{}",
+        "exit_success": "slot=0xf0000000, security_version=1, lc_state=0x{}",
     },
     {
         "a": 1,
         "b": 1,
-        "exit_success": "slot=0x20000000, security_version=1, lc_state=0x{}",
+        "exit_success": "slot=0xf0000000, security_version=1, lc_state=0x{}",
     },
 ]
 
@@ -834,17 +834,17 @@ BOOT_POLICY_ROLLBACK_CASES = [
     {
         "a": 0,
         "b": 1,
-        "exit_success": "slot=0x20080000, security_version=1",
+        "exit_success": "slot=0xf0080000, security_version=1",
     },
     {
         "a": 2,
         "b": 0,
-        "exit_success": "slot=0x20000000, security_version=2",
+        "exit_success": "slot=0xf0000000, security_version=2",
     },
     {
         "a": 1,
         "b": 1,
-        "exit_success": "slot=0x20000000, security_version=1",
+        "exit_success": "slot=0xf0000000, security_version=1",
     },
 ]
 
@@ -3247,14 +3247,14 @@ test_suite(
 
             echo :::: Read and write memory (both SRAM and device).\\n
             # See hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h
-            set $sram_base = 0x10000000
+            set $sram_base = 0xe0000000
             set $sram_len = 0x00008000
             x/16xb $sram_base
             x/16xb $sram_base + ($sram_len / 2)
             x/16xb $sram_base + $sram_len - 16
 
             echo :::: Manually write bytes to UART0.\\n
-            set $uart0_base = 0x40000000
+            set $uart0_base = 0xC0000000
             set $uart_wdata = 0x1c
             print *(uint32_t*)($uart0_base + $uart_wdata) = 'O'
             print *(uint32_t*)($uart0_base + $uart_wdata) = 'K'

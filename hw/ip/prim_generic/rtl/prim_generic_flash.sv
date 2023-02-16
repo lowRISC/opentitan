@@ -13,7 +13,8 @@ module prim_flash #(
   parameter int PagesPerBank   = 256,// data pages per bank
   parameter int WordsPerPage   = 256,// words per page
   parameter int DataWidth      = 32, // bits per word
-  parameter int TestModeWidth  = 2
+  parameter int TestModeWidth  = 2,
+  parameter     MemInitFile    = ""
 ) (
   input clk_i,
   input rst_ni,
@@ -67,7 +68,8 @@ module prim_flash #(
       .InfoTypesWidth(InfoTypesWidth),
       .PagesPerBank(PagesPerBank),
       .WordsPerPage(WordsPerPage),
-      .DataWidth(DataWidth)
+      .DataWidth(DataWidth),
+      .MemInitFile(MemInitFile)
     ) u_prim_flash_bank (
       .clk_i,
       .rst_ni,

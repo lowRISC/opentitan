@@ -58,6 +58,7 @@ module top_earlgrey #(
   parameter SramCtrlRetAonMemInitFile = "",
   parameter bit SramCtrlRetAonInstrExec = 0,
   // parameters for flash_ctrl
+  parameter     FlashCtrlMemInitFile = "",
   parameter bit SecFlashCtrlScrambleEn = 1,
   parameter int FlashCtrlProgFifoDepth = 4,
   parameter int FlashCtrlRdFifoDepth = 16,
@@ -2083,6 +2084,7 @@ module top_earlgrey #(
     .RndCnstLfsrSeed(RndCnstFlashCtrlLfsrSeed),
     .RndCnstLfsrPerm(RndCnstFlashCtrlLfsrPerm),
     .SecScrambleEn(SecFlashCtrlScrambleEn),
+    .MemInitFile(FlashCtrlMemInitFile),
     .ProgFifoDepth(FlashCtrlProgFifoDepth),
     .RdFifoDepth(FlashCtrlRdFifoDepth)
   ) u_flash_ctrl (

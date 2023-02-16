@@ -20,6 +20,7 @@ module flash_ctrl
   parameter int                   ProgFifoDepth   = MaxFifoDepth,
   parameter int                   RdFifoDepth     = MaxFifoDepth,
   parameter bit                   SecScrambleEn   = 1'b1
+  parameter                       MemInitfile     = ""
 ) (
   input        clk_i,
   input        rst_ni,
@@ -1333,7 +1334,8 @@ module flash_ctrl
   );
 
   flash_phy #(
-    .SecScrambleEn(SecScrambleEn)
+    .SecScrambleEn(SecScrambleEn),
+    .MemInitFile(MemInitFile)
   ) u_eflash (
     .clk_i,
     .rst_ni,
