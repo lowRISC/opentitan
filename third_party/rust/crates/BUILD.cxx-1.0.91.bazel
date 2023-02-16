@@ -16,7 +16,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "serde_json",
+    name = "cxx",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,36 +28,29 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "std",
-    ],
     crate_root = "src/lib.rs",
     edition = "2018",
+    proc_macro_deps = [
+        "@crate_index__cxxbridge-macro-1.0.91//:cxxbridge_macro",
+    ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=serde_json",
+        "crate-name=cxx",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.0.92",
+    version = "1.0.91",
     deps = [
-        "@crate_index__itoa-1.0.5//:itoa",
-        "@crate_index__ryu-1.0.12//:ryu",
-        "@crate_index__serde-1.0.152//:serde",
-        "@crate_index__serde_json-1.0.92//:build_script_build",
+        "@crate_index__cxx-1.0.91//:build_script_build",
+        "@crate_index__link-cplusplus-1.0.8//:link_cplusplus",
     ],
 )
 
 cargo_build_script(
-    name = "serde_json_build_script",
+    name = "cxx_build_script",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-        "default",
-        "std",
-    ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -71,22 +64,27 @@ cargo_build_script(
         ],
     ),
     edition = "2018",
+    links = "cxxbridge1",
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=serde_json",
+        "crate-name=cxx",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.0.92",
+    version = "1.0.91",
     visibility = ["//visibility:private"],
+    deps = [
+        "@crate_index__cc-1.0.79//:cc",
+        "@crate_index__cxxbridge-flags-1.0.91//:cxxbridge_flags",
+    ],
 )
 
 alias(
     name = "build_script_build",
-    actual = "serde_json_build_script",
+    actual = "cxx_build_script",
     tags = ["manual"],
 )

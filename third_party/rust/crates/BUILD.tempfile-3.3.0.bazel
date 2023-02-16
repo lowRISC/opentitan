@@ -40,7 +40,7 @@ rust_library(
     version = "3.3.0",
     deps = [
         "@crate_index__cfg-if-1.0.0//:cfg_if",
-        "@crate_index__fastrand-1.8.0//:fastrand",
+        "@crate_index__fastrand-1.9.0//:fastrand",
         "@crate_index__remove_dir_all-0.5.3//:remove_dir_all",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [

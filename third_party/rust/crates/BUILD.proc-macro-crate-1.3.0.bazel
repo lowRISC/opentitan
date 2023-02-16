@@ -39,7 +39,7 @@ rust_library(
     ],
     version = "1.3.0",
     deps = [
-        "@crate_index__once_cell-1.17.0//:once_cell",
+        "@crate_index__once_cell-1.17.1//:once_cell",
         "@crate_index__toml_edit-0.18.1//:toml_edit",
     ],
 )
