@@ -20,9 +20,9 @@ The always-on wakeup timer operation is straightforward.
 A count starts at 0 and slowly ticks upwards (one tick every `N + 1` clock cycles, where `N` is the pre-scaler value).
 When it reaches / exceeds the wake threshold, a level wakeup signal is sent to the power manager and a level IRQ is sent to the processor.
 This wakeup signal stays high until it is explicitly acknowledged by software.
-To clear the wakeup write 0 to the {{#regref aon_timer.WKUP_CAUSE }} register.
-To clear the interrupt write 1 to {{#regref aon_timer.INTR_STATE.wkup_timer_expired }}.
-Note that if {{#regref aon_timer.WKUP_COUNT }} is not zeroed and remains at or above the wake threshold and the wakeup timer isn't disabled, the wakeup and interrupt will trigger again at the next clock tick.
+To clear the wakeup write 0 to the [`WKUP_CAUSE`](data/aon_timer.hjson#wkup_cause) register.
+To clear the interrupt write 1 to [`INTR_STATE.wkup_timer_expired`](data/aon_timer.hjson#intr_state).
+Note that if [`WKUP_COUNT`](data/aon_timer.hjson#wkup_count) is not zeroed and remains at or above the wake threshold and the wakeup timer isn't disabled, the wakeup and interrupt will trigger again at the next clock tick.
 The wakeup timer can be used like a real-time clock for long periods in a low-power mode (though it does not give any guarantees of time-accuracy). **TODO: specify accuracy**
 
 ### AON Watchdog timer
@@ -90,25 +90,25 @@ If software needs to guarantee completion of a register write, it can read back 
 
 ## Initialization
 
-1. Write the timer values {{#regref aon_timer.WKUP_COUNT }} and {{#regref aon_timer.WDOG_COUNT }} to zero.
-2. Program the desired wakeup pre-scaler value in {{#regref aon_timer.WKUP_CTRL }}.
-3. Program the desired thresholds in {{#regref aon_timer.WKUP_THOLD }}, {{#regref aon_timer.WDOG_BARK_THOLD }} and {{#regref aon_timer.WDOG_BITE_THOLD }}.
-4. Set the enable bit to 1 in the {{#regref aon_timer.WKUP_CTRL }} / {{#regref aon_timer.WDOG_CTRL }} registers.
-5. If desired, lock the watchdog configuration by writing 1 to the `regwen` bit in {{#regref aon_timer.WDOG_REGWEN }}.
+1. Write the timer values [`WKUP_COUNT`](data/aon_timer.hjson#wkup_count) and [`WDOG_COUNT`](data/aon_timer.hjson#wdog_count) to zero.
+2. Program the desired wakeup pre-scaler value in [`WKUP_CTRL`](data/aon_timer.hjson#wkup_ctrl).
+3. Program the desired thresholds in [`WKUP_THOLD`](data/aon_timer.hjson#wkup_thold), [`WDOG_BARK_THOLD`](data/aon_timer.hjson#wdog_bark_thold) and [`WDOG_BITE_THOLD`](data/aon_timer.hjson#wdog_bite_thold).
+4. Set the enable bit to 1 in the [`WKUP_CTRL`](data/aon_timer.hjson#wkup_ctrl) / [`WDOG_CTRL`](data/aon_timer.hjson#wdog_ctrl) registers.
+5. If desired, lock the watchdog configuration by writing 1 to the `regwen` bit in [`WDOG_REGWEN`](data/aon_timer.hjson#wdog_regwen).
 
 ## Watchdog pet
 
-Pet the watchdog by writing zero to the {{#regref aon_timer.WDOG_COUNT }} register.
+Pet the watchdog by writing zero to the [`WDOG_COUNT`](data/aon_timer.hjson#wdog_count) register.
 
 ## Interrupt Handling
 
 If either timer reaches the programmed threshold, interrupts are generated from the AON_TIMER module.
-Disable or reinitialize the wakeup timer if required by clearing the enable bit in {{#regref aon_timer.WKUP_CTRL }} or clearing the timer value in {{#regref aon_timer.WKUP_COUNT }}.
-Clear the interrupt by writing 1 into the Interrupt Status Register {{#regref aon_timer.INTR_STATE }}.
+Disable or reinitialize the wakeup timer if required by clearing the enable bit in [`WKUP_CTRL`](data/aon_timer.hjson#wkup_ctrl) or clearing the timer value in [`WKUP_COUNT`](data/aon_timer.hjson#wkup_count).
+Clear the interrupt by writing 1 into the Interrupt Status Register [`INTR_STATE`](data/aon_timer.hjson#intr_state).
 
-If the timer has caused a wakeup event ({{#regref aon_timer.WKUP_CAUSE }} is set) then clear the wakeup request by writing 0 to {{#regref aon_timer.WKUP_CAUSE }}.
+If the timer has caused a wakeup event ([`WKUP_CAUSE`](data/aon_timer.hjson#wkup_cause) is set) then clear the wakeup request by writing 0 to [`WKUP_CAUSE`](data/aon_timer.hjson#wkup_cause).
 
-If {{#regref aon_timer.WKUP_COUNT }} remains above the threshold after clearing the interrupt or wakeup event and the timer remains enabled, the interrupt and wakeup event will trigger again at the next clock tick.
+If [`WKUP_COUNT`](data/aon_timer.hjson#wkup_count) remains above the threshold after clearing the interrupt or wakeup event and the timer remains enabled, the interrupt and wakeup event will trigger again at the next clock tick.
 
 ## Device Interface Functions (DIFs)
 

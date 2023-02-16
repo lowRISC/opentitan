@@ -87,7 +87,7 @@ The slow FSM also handles power isolation controls as part of this process.
 
 Once the fast FSM acknowledges the power-up completion, the slow FSM transitions to `Idle` and waits for a power down request.
 When a power down request is received, the slow FSM turns off AST clocks and power as directed by software configuration.
-This means the clocks and power are not always turned off, but are rather controlled by software configurations in {{#regref pwm.CONTROL }} prior to low power entry .
+This means the clocks and power are not always turned off, but are rather controlled by software configurations in [`CONTROL`](../pwm/data/pwm.hjson#control) prior to low power entry .
 Once these steps are complete, the slow FSM transitions to a low power state and awaits a wake request, which can come either as an actual wakeup, or a reset event (for example always on watchdog expiration).
 
 #### Sparse FSM
@@ -117,7 +117,7 @@ Once strap sampling is complete, the system is ready to begin normal operations 
 The fast FSM acknowledges the slow FSM (which made the original power up request) and releases the system reset stage - this enables the processor to begin operation.
 Afterwards, the fast FSM transitions to `Active` state and waits for a software low power entry request.
 
-A low power request is initiated by software through a combination of WFI and software low power hint in {{#regref pwm.CONTROL }}.
+A low power request is initiated by software through a combination of WFI and software low power hint in [`CONTROL`](../pwm/data/pwm.hjson#control).
 Specifically, this means if software issues only WFI, the power manager does not treat it as a power down request.
 The notion of WFI is exported from the processor.
 For Ibex, this is currently in the form of `core_sleeping_o`.
@@ -353,12 +353,12 @@ Assume first the system has the power states described [above](#supported-low-po
 ## Programmer Sequence for Entering Low Power
 
 1. Disable interrupts
-2. Enable desired wakeup and reset sources in {{#regref pwm.WAKEUP_EN }} and {{#regref pwm.RESET_EN }}.
+2. Enable desired wakeup and reset sources in [`WAKEUP_EN`](../pwm/data/pwm.hjson#wakeup_en) and [`RESET_EN`](../pwm/data/pwm.hjson#reset_en).
 3. Perform any system-specific low power entry steps, e.g.
    - Interrupt checks (if something became pending prior to disable)
-4. Configure low power mode in {{#regref pwm.CONTROL }}.
-5. Set low power hint in {{#regref pwm.LOW_POWER_HINT }}.
-6. Set and poll {{#regref pwm.CFG_CDC_SYNC }} to ensure above settings propagate across clock domains.
+4. Configure low power mode in [`CONTROL`](../pwm/data/pwm.hjson#control).
+5. Set low power hint in [`LOW_POWER_HINT`](../pwm/data/pwm.hjson#low_power_hint).
+6. Set and poll [`CFG_CDC_SYNC`](../pwm/data/pwm.hjson#cfg_cdc_sync) to ensure above settings propagate across clock domains.
 7. Execute wait-for-interrupt instruction on the processing host.
 
 ### Possible Exits
@@ -384,10 +384,10 @@ When exiting from deep sleep, the system begins execution in ROM.
 1. Complete normal preparation steps.
 2. Check reset cause in [rstmgr](../rstmgr/README.md)
 3. Re-enable modules that have powered down.
-4. Disable wakeup recording through {{#regref pwm.WAKE_INFO_CAPTURE_DIS }}.
-5. Check which source woke up the system through {{#regref pwm.WAKE_INFO }}.
+4. Disable wakeup recording through [`WAKE_INFO_CAPTURE_DIS`](../pwm/data/pwm.hjson#wake_info_capture_dis).
+5. Check which source woke up the system through [`WAKE_INFO`](../pwm/data/pwm.hjson#wake_info).
 6. Take appropriate steps to handle the wake and resume normal operation.
-7. Once wake is handled, clear the wake indication in {{#regref pwm.WAKE_INFO }}.
+7. Once wake is handled, clear the wake indication in [`WAKE_INFO`](../pwm/data/pwm.hjson#wake_info).
 
 ### Exiting from Normal Sleep
 
@@ -395,11 +395,11 @@ The handling for fall-through and abort are similar to normal sleep exit.
 Since in these scenarios the system was not reset, software continues executing the instruction after the wait-for-interrupt invocation.
 
 1. Check exit condition to determine appropriate steps.
-2. Clear low power hints and configuration in {{#regref pwm.CONTROL }}.
-3. Set and poll {{#regref pwm.CFG_CDC_SYNC }} to ensure setting changes have propagated across clock boundaries.
+2. Clear low power hints and configuration in [`CONTROL`](../pwm/data/pwm.hjson#control).
+3. Set and poll [`CFG_CDC_SYNC`](../pwm/data/pwm.hjson#cfg_cdc_sync) to ensure setting changes have propagated across clock boundaries.
 4. Disable wakeup sources and stop recording.
 5. Re-enable interrupts for normal operation and wakeup handling.
-6. Once wake is handled, clear the wake indication in {{#regref pwm.WAKE_INFO }}.
+6. Once wake is handled, clear the wake indication in [`WAKE_INFO`](../pwm/data/pwm.hjson#wake_info).
 
 For an in-depth discussion, please see [power management programmers model](https://docs.google.com/document/d/1w86rmvylJgZVmmQ6Q1YBcCp2VFctkQT3zJ408SJMLPE/edit?usp=sharing) for additional details.
 

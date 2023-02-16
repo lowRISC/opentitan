@@ -78,8 +78,8 @@ The AES unit automatically starts the encryption/decryption of the next data blo
 The order in which the input registers are written does not matter.
 Every input register must be written at least once for the AES unit to automatically start encryption/decryption.
 This is the default behavior.
-It can be disabled by setting the MANUAL_OPERATION bit in {{#regref aes.CTRL_SHADOWED }} to `1`.
-In this case, the AES unit only starts the encryption/decryption once the START bit in {{#regref aes.TRIGGER }} is set to `1` (automatically cleared to `0` once the next encryption/decryption is started).
+It can be disabled by setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](data/aes.hjson#ctrl_shadowed) to `1`.
+In this case, the AES unit only starts the encryption/decryption once the START bit in [`TRIGGER`](data/aes.hjson#trigger) is set to `1` (automatically cleared to `0` once the next encryption/decryption is started).
 
 Similarly, the AES unit indicates via a status register when having new output data available to be read by the processor.
 Also, there is a back-pressure mechanism for the output data.
@@ -89,7 +89,7 @@ It only continues once the previous output data has been read and the correspond
 The order in which the output registers are read does not matter.
 Every output register must be read at least once for the AES unit to continue.
 This is the default behavior.
-It can be disabled by setting the MANUAL_OPERATION bit in {{#regref aes.CTRL_SHADOWED }} to `1`.
+It can be disabled by setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](data/aes.hjson#ctrl_shadowed) to `1`.
 In this case, the AES unit never stalls and just overwrites previous output data, independent of whether it has been read or not.
 
 
@@ -159,7 +159,7 @@ Phrases in italics apply to peculiarities of different block cipher modes.
 For a general introduction into these cipher modes, refer to [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf).
 
 1. The configuration and initial key is provided to the AES unit via a set of control and status registers (CSRs) accessible by the processor via TL-UL bus interface.
-   The processor must first provide the configuration to the {{#regref aes.CTRL_SHADOWED }} register.
+   The processor must first provide the configuration to the [`CTRL_SHADOWED`](data/aes.hjson#ctrl_shadowed) register.
    Then follows the initial key.
    Each key register must be written at least once.
    The order in which the registers are written does not matter.
@@ -186,8 +186,8 @@ For a general introduction into these cipher modes, refer to [Recommendation for
     The IV is ready if -- since the last IV update (either done by the processor or the AES unit itself) -- all IV registers have been written at least once or none of them.
     The AES unit will not automatically start the next encryption/decryption with a partially updated IV._
 
-    By setting the MANUAL_OPERATION bit in {{#regref aes.CTRL_SHADOWED }} to `1`, the AES unit can be operated in manual mode.
-    In manual mode, the AES unit starts encryption/decryption whenever the START bit in {{#regref aes.TRIGGER }} is set to `1`, irrespective of the status of the IV and input data registers.
+    By setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](data/aes.hjson#ctrl_shadowed) to `1`, the AES unit can be operated in manual mode.
+    In manual mode, the AES unit starts encryption/decryption whenever the START bit in [`TRIGGER`](data/aes.hjson#trigger) is set to `1`, irrespective of the status of the IV and input data registers.
 
 1. Once the State and Full Key registers have been loaded, the AES cipher core starts the encryption/decryption by adding the first round key to the initial state (all blocks in both data paths are bypassed).
    The result is stored back in the State register.
@@ -324,10 +324,10 @@ By default, the AES unit is controlled entirely by the processor.
 The processor writes both input data as well as the initial key to dedicated registers via the system bus interconnect.
 
 Alternatively, the processor can configure the AES unit to use an initial key provided by the [key manager](../keymgr/README.md) via key sideload interface without exposing the key to the processor or other hosts attached to the system bus interconnect.
-To this end, the processor has to set the SIDELOAD bit in {{#regref aes.CTRL_SHADOWED }} to `1`.
-Any write operations of the processor to the Initial Key registers {{#regref aes.KEY_SHARE0_0 }} - {{#regref aes.KEY_SHARE1_7 }} are then ignored.
+To this end, the processor has to set the SIDELOAD bit in [`CTRL_SHADOWED`](data/aes.hjson#ctrl_shadowed) to `1`.
+Any write operations of the processor to the Initial Key registers [`KEY_SHARE0_0`](data/aes.hjson#key_share0_0) - [`KEY_SHARE1_7`](data/aes.hjson#key_share1_7) are then ignored.
 In normal/automatic mode, the AES unit only starts encryption/decryption if the sideload key is marked as valid.
-To update the sideload key, the processor has to 1) wait for the AES unit to become idle, 2) wait for the key manager to update the sideload key and assert the valid signal, and 3) write to the {{#regref aes.CTRL_SHADOWED }} register to start a new message.
+To update the sideload key, the processor has to 1) wait for the AES unit to become idle, 2) wait for the key manager to update the sideload key and assert the valid signal, and 3) write to the [`CTRL_SHADOWED`](data/aes.hjson#ctrl_shadowed) register to start a new message.
 After using a sideload key, the processor has to trigger the clearing of all key registers inside the AES unit (see [De-Initialization](#de-initialization) below).
 
 
@@ -364,9 +364,9 @@ Alternatively, the two original versions of the masked Canright S-Box can be cho
 These are fully combinational (one S-Box evaluation every cycle) and have lower area footprint, but they are significantly less resistant to SCA.
 They are mainly included for reference but their usage is discouraged due to potential vulnerabilities to the correlation-enhanced collision attack as described by [Moradi et al.: "Correlation-Enhanced Power Analysis Collision Attack".](https://eprint.iacr.org/2010/297.pdf)
 
-The masking PRNG is reseeded with fresh entropy via [EDN](../edn/README.md) automatically 1) whenever a new key is provided (see {{#regref aes.CTRL_AUX_SHADOWED.KEY_TOUCH_FORCES_RESEED }}) and 2) based on a block counter.
-The rate at which this block counter initiates automatic reseed operations can be configured via {{#regref aes.CTRL_SHADOWED.PRNG_RESEED_RATE }}.
-In addition software can manually initiate a reseed operation via {{#regref aes.TRIGGER.PRNG_RESEED }}.
+The masking PRNG is reseeded with fresh entropy via [EDN](../edn/README.md) automatically 1) whenever a new key is provided (see [`CTRL_AUX_SHADOWED.KEY_TOUCH_FORCES_RESEED`](data/aes.hjson#ctrl_aux_shadowed)) and 2) based on a block counter.
+The rate at which this block counter initiates automatic reseed operations can be configured via [`CTRL_SHADOWED.PRNG_RESEED_RATE`](data/aes.hjson#ctrl_shadowed).
+In addition software can manually initiate a reseed operation via [`TRIGGER.PRNG_RESEED`](data/aes.hjson#trigger).
 
 Note that the masking can be enabled/disabled via compile-time Verilog parameter.
 It may be acceptable to disable the masking when using the AES cipher core for random number generation e.g. inside [CSRNG.](../csrng/README.md)
@@ -447,7 +447,7 @@ To protect against FI attacks on the control path, the AES unit implements the f
 
 If any of these countermeasures detects a fault, a fatal alert is triggered, the internal FSMs go into a terminal error state, the AES unit does not release further data and locks up until reset.
 Since the AES unit has no ability to reset itself, a system-supplied reset is required before the AES unit can become operational again.
-Such a condition is reported in {{#regref aes.STATUS.ALERT_FATAL_FAULT }}.
+Such a condition is reported in [`STATUS.ALERT_FATAL_FAULT`](data/aes.hjson#status).
 Details on where the fault has been detected are not provided.
 
 ### Data Path
@@ -464,32 +464,32 @@ This section discusses how software can interface with the AES unit.
 ## Clear upon Reset
 
 Upon reset, the AES unit will first reseed the internal PRNGs for register clearing and masking via EDN, and then clear all key, IV and data registers with pseudo-random data.
-Only after this sequence has finished, the unit becomes idle (indicated in {{#regref aes.STATUS.IDLE }}).
+Only after this sequence has finished, the unit becomes idle (indicated in [`STATUS.IDLE`](data/aes.hjson#status)).
 The AES unit is then ready for software initialization.
 Note that at this point, the key, IV and data registers' values can no longer be expected to match the reset values.
 
 
 ## Initialization
 
-Before initialization, software must ensure that the AES unit is idle by checking {{#regref aes.STATUS.IDLE }}.
-If the AES unit is not idle, write operations to {{#regref aes.CTRL_SHADOWED }}, the Initial Key registers {{#regref aes.KEY_SHARE0_0 }} - {{#regref aes.KEY_SHARE1_7 }} and initialization vector (IV) registers {{#regref aes.IV_0 }} - {{#regref aes.IV_3 }} are ignored.
+Before initialization, software must ensure that the AES unit is idle by checking [`STATUS.IDLE`](data/aes.hjson#status).
+If the AES unit is not idle, write operations to [`CTRL_SHADOWED`](data/aes.hjson#ctrl_shadowed), the Initial Key registers [`KEY_SHARE0_0`](data/aes.hjson#key_share0_0) - [`KEY_SHARE1_7`](data/aes.hjson#key_share1_7) and initialization vector (IV) registers [`IV_0`](data/aes.hjson#iv_0) - [`IV_3`](data/aes.hjson#iv_3) are ignored.
 
-To initialize the AES unit, software must first provide the configuration to the {{#regref aes.CTRL_SHADOWED }} register.
+To initialize the AES unit, software must first provide the configuration to the [`CTRL_SHADOWED`](data/aes.hjson#ctrl_shadowed) register.
 Since writing this register may initiate the reseeding of the internal PRNGs, software must check that the AES unit is idle before providing the initial key.
-Then software must write the initial key to the Initial Key registers {{#regref aes.KEY_SHARE0_0 }} - {{#regref aes.KEY_SHARE1_7 }}.
+Then software must write the initial key to the Initial Key registers [`KEY_SHARE0_0`](data/aes.hjson#key_share0_0) - [`KEY_SHARE1_7`](data/aes.hjson#key_share1_7).
 The key is provided in two shares:
-The first share is written to {{#regref aes.KEY_SHARE0_0 }} - {{#regref aes.KEY_SHARE0_7 }} and the second share is written to {{#regref aes.KEY_SHARE1_0 }} - {{#regref aes.KEY_SHARE1_7 }}.
-The actual initial key used for encryption corresponds to the value obtained by XORing {{#regref aes.KEY_SHARE0_0 }} - {{#regref aes.KEY_SHARE0_7 }} with {{#regref aes.KEY_SHARE1_0 }} - {{#regref aes.KEY_SHARE1_7 }}.
+The first share is written to [`KEY_SHARE0_0`](data/aes.hjson#key_share0_0) - [`KEY_SHARE0_7`](data/aes.hjson#key_share0_7) and the second share is written to [`KEY_SHARE1_0`](data/aes.hjson#key_share1_0) - [`KEY_SHARE1_7`](data/aes.hjson#key_share1_7).
+The actual initial key used for encryption corresponds to the value obtained by XORing [`KEY_SHARE0_0`](data/aes.hjson#key_share0_0) - [`KEY_SHARE0_7`](data/aes.hjson#key_share0_7) with [`KEY_SHARE1_0`](data/aes.hjson#key_share1_0) - [`KEY_SHARE1_7`](data/aes.hjson#key_share1_7).
 Note that all registers are little-endian.
-The key length is configured using the KEY_LEN field of {{#regref aes.CTRL_SHADOWED }}.
+The key length is configured using the KEY_LEN field of [`CTRL_SHADOWED`](data/aes.hjson#ctrl_shadowed).
 Independent of the selected key length, software must always write all 8 32-bit registers of both shares.
 Each register must be written at least once.
 The order in which the key registers are written does not matter.
 Anything can be written to the unused key registers of both shares, however, random data is preferred.
-For AES-128 ,the actual initial key used for encryption is formed by XORing {{#regref aes.KEY_SHARE0_0 }} - {{#regref aes.KEY_SHARE0_3 }} with {{#regref aes.KEY_SHARE1_0 }} - {{#regref aes.KEY_SHARE1_3 }}.
-For AES-192, the actual initial key used for encryption is formed by XORing {{#regref aes.KEY_SHARE0_0 }} - {{#regref aes.KEY_SHARE0_5 }} with {{#regref aes.KEY_SHARE1_0 }} - {{#regref aes.KEY_SHARE1_5 }}.
+For AES-128 ,the actual initial key used for encryption is formed by XORing [`KEY_SHARE0_0`](data/aes.hjson#key_share0_0) - [`KEY_SHARE0_3`](data/aes.hjson#key_share0_3) with [`KEY_SHARE1_0`](data/aes.hjson#key_share1_0) - [`KEY_SHARE1_3`](data/aes.hjson#key_share1_3).
+For AES-192, the actual initial key used for encryption is formed by XORing [`KEY_SHARE0_0`](data/aes.hjson#key_share0_0) - [`KEY_SHARE0_5`](data/aes.hjson#key_share0_5) with [`KEY_SHARE1_0`](data/aes.hjson#key_share1_0) - [`KEY_SHARE1_5`](data/aes.hjson#key_share1_5).
 
-If running in CBC, CFB, OFB or CTR mode, software must also write the IV registers {{#regref aes.IV_0 }} - {{#regref aes.IV_3 }}.
+If running in CBC, CFB, OFB or CTR mode, software must also write the IV registers [`IV_0`](data/aes.hjson#iv_0) - [`IV_3`](data/aes.hjson#iv_3).
 Since providing the initial key initiate the reseeding of the internal PRNGs, software must check that the AES unit is idle before writing the IV registers.
 These registers are little-endian, but the increment of the IV in CTR mode is big-endian (see [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)).
 Each IV register must be written at least once.
@@ -501,30 +501,30 @@ To start the encryption/decryption of a new message, software must wait for the 
 
 For block operation, software must initialize the AES unit as described in the previous section.
 In particular, the AES unit must be configured to run in normal/automatic mode.
-This is indicated by the MANUAL_OPERATION bit in {{#regref aes.CTRL_SHADOWED }} reading as `0`.
+This is indicated by the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](data/aes.hjson#ctrl_shadowed) reading as `0`.
 It ensures that the AES unit:
 1. Automatically starts encryption/decryption when new input data is available.
 1. Does not overwrite previous output data that has not yet been read by the processor.
 
 Then, software must:
-1. Ensure that the INPUT_READY bit in {{#regref aes.STATUS }} is `1`.
-1. Write Input Data Block `0` to the Input Data registers {{#regref aes.DATA_IN_0 }} - {{#regref aes.DATA_IN_3 }}.
+1. Ensure that the INPUT_READY bit in [`STATUS`](data/aes.hjson#status) is `1`.
+1. Write Input Data Block `0` to the Input Data registers [`DATA_IN_0`](data/aes.hjson#data_in_0) - [`DATA_IN_3`](data/aes.hjson#data_in_3).
    Each register must be written at least once.
    The order in which these registers are written does not matter.
-1. Wait for the INPUT_READY bit in {{#regref aes.STATUS }} to become `1`, i.e. wait for the AES unit to load Input Data Block `0` into the internal state register and start operation.
+1. Wait for the INPUT_READY bit in [`STATUS`](data/aes.hjson#status) to become `1`, i.e. wait for the AES unit to load Input Data Block `0` into the internal state register and start operation.
 1. Write Input Data Block `1` to the Input Data registers.
 
 Then for every Data Block `I=0,..,N-3`, software must:
-1. Wait for the OUTPUT_VALID bit in {{#regref aes.STATUS }} to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
+1. Wait for the OUTPUT_VALID bit in [`STATUS`](data/aes.hjson#status) to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
    The AES unit then directly starts processing the previously input block `I+1`
-2. Read Output Data Block `I` from the Output Data registers {{#regref aes.DATA_OUT_0 }} - {{#regref aes.DATA_OUT_3 }}.
+2. Read Output Data Block `I` from the Output Data registers [`DATA_OUT_0`](data/aes.hjson#data_out_0) - [`DATA_OUT_3`](data/aes.hjson#data_out_3).
    Each register must be read at least once.
    The order in which these registers are read does not matter.
 3. Write Input Data Block `I+2` into the Input Data register.
    There is no need to explicitly check INPUT_READY as in the same cycle OUTPUT_VALID becomes `1`, the current input is loaded in (meaning INPUT_READY becomes `1` one cycle later).
 
 Once all blocks have been input, the final data blocks `I=N-2,N-1` must be read out:
-1. Wait for the OUTPUT_VALID bit in {{#regref aes.STATUS }} to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
+1. Wait for the OUTPUT_VALID bit in [`STATUS`](data/aes.hjson#status) to become `1`, i.e., wait for the AES unit to finish encryption/decryption of Block `I`.
 2. Read Output Data Block `I` from the Output Data register.
 
 Note that interrupts are not provided, the latency of the AES unit is such that they are of little utility.
@@ -592,7 +592,7 @@ The code snippet below shows how to perform block operation.
 
 ## Padding
 
-For the AES unit to automatically start encryption/decryption of the next data block, software is required to always update all four Input Data registers {{#regref aes.DATA_IN_0 }} - {{#regref aes.DATA_IN_3 }} and read all four Output Data registers {{#regref aes.DATA_OUT_0 }} - {{#regref aes.DATA_OUT_3 }}.
+For the AES unit to automatically start encryption/decryption of the next data block, software is required to always update all four Input Data registers [`DATA_IN_0`](data/aes.hjson#data_in_0) - [`DATA_IN_3`](data/aes.hjson#data_in_3) and read all four Output Data registers [`DATA_OUT_0`](data/aes.hjson#data_out_0) - [`DATA_OUT_3`](data/aes.hjson#data_out_3).
 This is also true if the AES unit is operated in OFB or CTR mode, i.e., if the plaintext/ciphertext not necessarily needs to be a multiple of the block size (for more details refer to Appendix A of [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)).
 
 In the case that the plaintext/ciphertext is not a multiple of the block size and the AES unit is operated in OFB or CTR mode, software can employ any form of padding for the input data of the last message block as the padding bits do not have an effect on the actual message bits.
@@ -602,8 +602,8 @@ It is recommended that software discards the padding bits after reading the outp
 ## De-Initialization
 
 After finishing operation, software must:
-1. Disable the AES unit to no longer automatically start encryption/decryption by setting the MANUAL_OPERATION bit in {{#regref aes.CTRL_SHADOWED }} to `1`.
-1. Clear all key registers, IV registers as well as the Input Data and the Output Data registers with pseudo-random data by setting the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR bits in {{#regref aes.TRIGGER }} to `1`.
+1. Disable the AES unit to no longer automatically start encryption/decryption by setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](data/aes.hjson#ctrl_shadowed) to `1`.
+1. Clear all key registers, IV registers as well as the Input Data and the Output Data registers with pseudo-random data by setting the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR bits in [`TRIGGER`](data/aes.hjson#trigger) to `1`.
 
 The code snippet below shows how to perform this task.
 

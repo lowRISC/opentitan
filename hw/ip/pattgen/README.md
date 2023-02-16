@@ -30,7 +30,7 @@ This IP block does not have any direct hardware compatibility requirements.
 
 # Theory of Operations
 
-The pattern can be started (or halted) on either channel by setting the corresponding {{#regref pattgen.CTRL.ENABLE }} bit to 1 (or 0) for the desired channel.
+The pattern can be started (or halted) on either channel by setting the corresponding [`CTRL.ENABLE`](data/pattgen.hjson#ctrl) bit to 1 (or 0) for the desired channel.
 Once disabled, either channel can be configured independently.
 The channel parameters (i.e. clock divider ratio, clock polarity, pattern length, pattern data, and repetition count) can all be programmed on a per-channel basis.
 Enabling the pattern generator channel starts the pattern from the beginning.
@@ -90,8 +90,8 @@ The entire sequence can be restarted either by resetting or disabling and re-ena
 ### Interrupts
 
 The pattern generator HWIP provides two interrupt pins, `done_ch0` and `done_ch1`, which indicate the completion of pattern generation on the output channels.
-These interrupts can be enabled/disabled by setting/un-setting the corresponding bits of the {{#regref pattgen.INTR_ENABLE }} register.
-To clear the interrupts, bit `1` must be written the corresponding bits of {{#regref pattgen.INTR_STATE }} register
+These interrupts can be enabled/disabled by setting/un-setting the corresponding bits of the [`INTR_ENABLE`](data/pattgen.hjson#intr_enable) register.
+To clear the interrupts, bit `1` must be written the corresponding bits of [`INTR_STATE`](data/pattgen.hjson#intr_state) register
 
 # Programmers guide
 
@@ -101,8 +101,8 @@ The guide that follows provides instructions for configuring Channel 0.
 To configure Channel 1, use the registers with the "CH1" suffix, instead of the "CH0" registers.
 
 To configure a single channel:
-1. Before configuration, disable the desired channel by clearing the enable bit, {{#regref pattgen.CTRL.ENABLE_CH0 }}.
-1. Set the polarity bit, {{#regref pattgen.CTRL.POLARITY_CH0 }}, to determine the desired clock phase.
+1. Before configuration, disable the desired channel by clearing the enable bit, [`CTRL.ENABLE_CH0`](data/pattgen.hjson#ctrl).
+1. Set the polarity bit, [`CTRL.POLARITY_CH0`](data/pattgen.hjson#ctrl), to determine the desired clock phase.
 For either channel, a zero in the polarity bit indicates that the channel clock line (`pcl`) should start low, and the channel data line `pda` transitions on every falling edge of `pcl`.
 A one in the polarity bit inverts the `pcl` clock so that it starts high and `pda` transitions on the rising edge.
 The following waveform illustrates the effect of the `POLARITY` bit.
@@ -120,19 +120,19 @@ Here both channels are configured for simultaneous pattern generation, but the t
   head: {text: 'Effect of the Polarity Registers',tick:0}}
 ```
 
-1. Program the length of seed pattern using the length field, {{#regref pattgen.SIZE.LEN_CH0 }}.
+1. Program the length of seed pattern using the length field, [`SIZE.LEN_CH0`](data/pattgen.hjson#size).
 Note that since the allowed seed length ranges from 1-64, the value of this field should be one less than the pattern length.
-For example, to generate an 16-bit pattern, a value of 15 should be written to the field {{#regref pattgen.SIZE.LEN_CH0 }}.
-1. Program the seed pattern (between 1 and 64 bits in length) using the multi-register {{#regref pattgen.DATA_CH0_0 }} and {{#regref pattgen.DATA_CH0_1 }}.
-The first 32 bits to be transmitted, are programmed in the lower half of the multi-register (i.e. {{#regref pattgen.DATA_CH0_0 }}), and the latter 32 bits are programmed in the upper half of the multi-register (i.e. {{#regref pattgen.DATA_CH0_1 }}).
-1. Program the clock divider ratio using the register {{#regref pattgen.PREDIV_CH0.CLK_RATIO }}.
+For example, to generate an 16-bit pattern, a value of 15 should be written to the field [`SIZE.LEN_CH0`](data/pattgen.hjson#size).
+1. Program the seed pattern (between 1 and 64 bits in length) using the multi-register [`DATA_CH0_0`](data/pattgen.hjson#data_ch0_0) and [`DATA_CH0_1`](data/pattgen.hjson#data_ch0_1).
+The first 32 bits to be transmitted, are programmed in the lower half of the multi-register (i.e. [`DATA_CH0_0`](data/pattgen.hjson#data_ch0_0)), and the latter 32 bits are programmed in the upper half of the multi-register (i.e. [`DATA_CH0_1`](data/pattgen.hjson#data_ch0_1)).
+1. Program the clock divider ratio using the register [`PREDIV_CH0.CLK_RATIO`](data/pattgen.hjson#prediv_ch0).
 The resulting clock frequency will be slower than the input I/O clock by a ratio of 2&times;(CLK_RATIO+1):
 $$f_{pclx}=\frac{f_\textrm{I/O clk}}{2(\textrm{CLK_RATIO}+1)}$$
-1. Program the desired number of pattern repetitions using the repetition field {{#regref pattgen.SIZE.REPS_CH0 }}.
+1. Program the desired number of pattern repetitions using the repetition field [`SIZE.REPS_CH0`](data/pattgen.hjson#size).
 Note that since the allowed number of pattern repetitions ranges from 1-1024, the value of this field should be one less than the desired repetition count.
-For example, to repeat a pattern 30, a value of 29 should written to the field {{#regref pattgen.SIZE.REPS_CH0 }}.
-1. Finally to start the pattern, set the {{#regref pattgen.CTRL.ENABLE_CH0 }}.
-To start both channel patterns at the same time, configure both channels then simultaneously assert both the {{#regref pattgen.CTRL.ENABLE_CH0 }} and {{#regref pattgen.CTRL.ENABLE_CH1 }} bits in the same register access.
+For example, to repeat a pattern 30, a value of 29 should written to the field [`SIZE.REPS_CH0`](data/pattgen.hjson#size).
+1. Finally to start the pattern, set the [`CTRL.ENABLE_CH0`](data/pattgen.hjson#ctrl).
+To start both channel patterns at the same time, configure both channels then simultaneously assert both the [`CTRL.ENABLE_CH0`](data/pattgen.hjson#ctrl) and [`CTRL.ENABLE_CH1`](data/pattgen.hjson#ctrl) bits in the same register access.
 
 ## Device Interface Functions (DIFs)
 

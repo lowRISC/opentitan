@@ -50,7 +50,7 @@ interrupt and to "complete" the interrupt event.
 
 Interrupt sources have configurable priority values. The maximum value of the
 priority is configurable through the localparam `MAX_PRIO` in the rv_plic
-top-level module. For each target there is a threshold value ({{#regref rv_plic.THRESHOLD0 }} for
+top-level module. For each target there is a threshold value ([`THRESHOLD0`](data/rv_plic.hjson#threshold0) for
 target 0). RV_PLIC notifies a target of an interrupt only if it's priority is
 strictly greater than the target's threshold. Note this means an interrupt with
 a priority is 0 is effectively prevented from causing an interrupt at any target
@@ -70,25 +70,25 @@ level basis (where the signal remains at **1**).
 The choice is a system-integration decision and can be configured via the design parameter `LevelEdgeTrig` for each interrupt request.
 
 When the gateway detects an interrupt event it raises the interrupt pending bit
-({{#regref rv_plic.IP }}) for that interrupt source. When an interrupt is claimed by a target the
-relevant bit of {{#regref rv_plic.IP }} is cleared. A bit in {{#regref rv_plic.IP }} will not be reasserted until the
+([`IP`](data/rv_plic.hjson#ip)) for that interrupt source. When an interrupt is claimed by a target the
+relevant bit of [`IP`](data/rv_plic.hjson#ip) is cleared. A bit in [`IP`](data/rv_plic.hjson#ip) will not be reasserted until the
 target signals completion of the interrupt. Any new interrupt event between a
-bit in {{#regref rv_plic.IP }} asserting and completing that interrupt is ignored. In particular
+bit in [`IP`](data/rv_plic.hjson#ip) asserting and completing that interrupt is ignored. In particular
 this means that for edge triggered interrupts if a new edge is seen after the
-source's {{#regref rv_plic.IP }} bit is asserted but before completion, that edge will be ignored
+source's [`IP`](data/rv_plic.hjson#ip) bit is asserted but before completion, that edge will be ignored
 (counting missed edges as discussed in the RISC-V PLIC specification is not
 supported).
 
 Note that there is no ability for a level triggered interrupt to be cancelled.
-If the interrupt drops after the gateway has set a bit in {{#regref rv_plic.IP }}, the bit will
+If the interrupt drops after the gateway has set a bit in [`IP`](data/rv_plic.hjson#ip), the bit will
 remain set until the interrupt is completed. The SW handler should be conscious
 of this and check the interrupt still requires handling in the handler if this
 behaviour is possible.
 
 ### Interrupt Enables
 
-Each target has a set of Interrupt Enable ({{#regref rv_plic.IE0 }} for target 0) registers. Each
-bit in the {{#regref rv_plic.IE0 }} registers controls the corresponding interrupt source. If an
+Each target has a set of Interrupt Enable ([`IE0`](data/rv_plic.hjson#ie0) for target 0) registers. Each
+bit in the [`IE0`](data/rv_plic.hjson#ie0) registers controls the corresponding interrupt source. If an
 interrupt source is disabled for a target, then interrupt events from that
 source won't trigger an interrupt at the target. RV_PLIC doesn't have a global
 interrupt disable feature.
@@ -96,23 +96,23 @@ interrupt disable feature.
 ### Interrupt Claims
 
 "Claiming" an interrupt is done by a target reading the associated
-Claim/Completion register for the target ({{#regref rv_plic.CC0 }} for target 0). The return value
-of the {{#regref rv_plic.CC0 }} read represents the ID of the pending interrupt that has the
+Claim/Completion register for the target ([`CC0`](data/rv_plic.hjson#cc0) for target 0). The return value
+of the [`CC0`](data/rv_plic.hjson#cc0) read represents the ID of the pending interrupt that has the
 highest priority.  If two or more pending interrupts have the same priority,
 RV_PLIC chooses the one with lowest ID. Only interrupts that that are enabled
 for the target can be claimed. The target priority threshold doesn't matter
 (this only factors into whether an interrupt is signalled to the target) so
-lower priority interrupt IDs can be returned on a read from {{#regref rv_plic.CC0 }}. If no
+lower priority interrupt IDs can be returned on a read from [`CC0`](data/rv_plic.hjson#cc0). If no
 interrupt is pending (or all pending interrupts are disabled for the target) a
-read of {{#regref rv_plic.CC0 }} returns an ID of 0.
+read of [`CC0`](data/rv_plic.hjson#cc0) returns an ID of 0.
 
 ### Interrupt Completion
 
-After an interrupt is claimed, the relevant bit of interrupt pending ({{#regref rv_plic.IP }}) is
+After an interrupt is claimed, the relevant bit of interrupt pending ([`IP`](data/rv_plic.hjson#ip)) is
 cleared, regardless of the status of the `intr_src_i` input value.  Until a
 target "completes" the interrupt, it won't be re-asserted if a new event for the
 interrupt occurs. A target completes the interrupt by writing the ID of the
-interrupt to the Claim/Complete register ({{#regref rv_plic.CC0 }} for target 0). The write event
+interrupt to the Claim/Complete register ([`CC0`](data/rv_plic.hjson#cc0) for target 0). The write event
 is forwarded to the Gateway logic, which resets the interrupt status to accept a
 new interrupt event. The assumption is that the processor has cleaned up the
 originating interrupt event during the time between claim and complete such that
@@ -153,7 +153,7 @@ After reset, RV_PLIC doesn't generate any interrupts to any targets even if
 interrupt sources are set, as all priorities and thresholds are 0 by default and
 all ``IE`` values are 0. Software should configure the above three registers.
 
-{{#regref rv_plic.PRIO0 }} .. {{#regref rv_plic.PRIO31 }} registers are unique. So, only one of the targets
+[`PRIO0`](data/rv_plic.hjson#prio0) .. [`PRIO31`](data/rv_plic.hjson#prio1) registers are unique. So, only one of the targets
 shall configure them.
 
 ```c
@@ -181,14 +181,14 @@ void plic_enable(tid, iid) {
 ## Handling Interrupt Request Events
 
 If software receives an interrupt request, it is recommended to follow the steps
-shown below (assuming target 0 which uses {{#regref rv_plic.CC0 }} for claim/complete).
+shown below (assuming target 0 which uses [`CC0`](data/rv_plic.hjson#cc0) for claim/complete).
 
 1. Claim the interrupts right after entering to the interrupt service routine
-   by reading the {{#regref rv_plic.CC0 }} register.
+   by reading the [`CC0`](data/rv_plic.hjson#cc0) register.
 2. Determine which interrupt should be serviced based on the values read from
-   the {{#regref rv_plic.CC0 }} register.
+   the [`CC0`](data/rv_plic.hjson#cc0) register.
 3. Execute ISR, clearing the originating peripheral interrupt.
-4. Write Interrupt ID to {{#regref rv_plic.CC0 }}
+4. Write Interrupt ID to [`CC0`](data/rv_plic.hjson#cc0)
 5. Repeat as necessary for other pending interrupts.
 
 It is possible to have multiple interrupt events claimed. If software claims one
