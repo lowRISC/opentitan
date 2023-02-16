@@ -235,7 +235,7 @@ index 0000000..b71105c
 +OT_BIN       ?= $(OT_ROOT)/build-bin
 +OT_TOOLS     ?= /tools/riscv/bin
 +OT_FPGA_UART ?=
-+OT_TARGET    ?= fpga_nexysvideo
++OT_TARGET    ?= fpga_cw310
 +LDSCRIPT      = $(OT_ROOT)/sw/device/lib/testing/test_framework/ottf.ld
 +DEFINES       = $(CARG) -DPRIV_MISA_S=0 -DPRIV_MISA_U=0 -DRVTEST_ENTRY=_rvc_start -DTRAPALIGN=8
 +TARGET_SIM   ?= $(OT_ROOT)/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
@@ -258,7 +258,7 @@ index 0000000..b71105c
 +        && sed -e 's/^/[UART $(shell basename $(*))] /' "$(*).uart.log" $(REDIR) \
 +        && grep -o 'SIG: [a-zA-Z0-9_]*' "$(*).uart.log" \
 +            | sed 's/SIG: //' > $(*).signature.output
-+else ifeq ($(OT_TARGET),fpga_nexysvideo)
++else ifeq ($(OT_TARGET),fpga_cw310)
 +    MAKEARG =
 +    CARG =
 +    RUN_TARGET = \
