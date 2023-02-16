@@ -348,7 +348,7 @@ struct usbdpi_ctx {
    */
   usbdpi_transfer_t *sending;
 
-  int last_pu;
+  uint32_t last_pu;
   uint8_t lastrxpid;
 
   /**
@@ -359,8 +359,10 @@ struct usbdpi_ctx {
    * Current time in USB bit intervals
    */
   uint32_t tick_bits;
-
-  int recovery_time;
+  /**
+   * End time of recovery interval (following device attachment)
+   */
+  uint32_t recovery_time;
 
   /**
    * Test step number

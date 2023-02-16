@@ -66,7 +66,7 @@ static uint32_t set_driving(usbdpi_ctx_t *ctx, uint32_t d2p, uint32_t newval);
 
 // Try to send OUT transfer. Optionally expect Status packet (eg. ACK|NAK) in
 // response
-static void tryTX(usbdpi_ctx_t *ctx, uint8_t endpoint, bool bExpectStatus);
+static void tryTX(usbdpi_ctx_t *ctx, uint8_t endpoint, bool expect_status);
 
 // Test the ischronous transfers (without ACKs)
 // static void testIso(usbdpi_ctx_t *ctx);
@@ -879,7 +879,7 @@ void setBaud(usbdpi_ctx_t *ctx, uint8_t endpoint) {
 // Try an OUT transfer to the device, optionally expecting a Status
 //   packet (eg. ACK|NAK) in response; this is not expected for
 //   Isochronous transfers
-void tryTX(usbdpi_ctx_t *ctx, uint8_t endpoint, bool bExpectStatus) {
+void tryTX(usbdpi_ctx_t *ctx, uint8_t endpoint, bool expect_status) {
   const uint8_t pattern[] = {
       "AbCdEfGhIjKlMnOpQrStUvWxYz+0123456789-aBcDeFgHiJkLmNoPqRsTuVwXyZ"};
   usbdpi_transfer_t *tr = ctx->sending;
@@ -904,7 +904,7 @@ void tryTX(usbdpi_ctx_t *ctx, uint8_t endpoint, bool bExpectStatus) {
       if (ctx->tick_bits >= ctx->wait) {
         // Note: Isochronous transfers are not acknowledged and do not employ
         //       Data Toggle Synchronization
-        if (bExpectStatus && ctx->lastrxpid == USB_PID_ACK) {
+        if (expect_status && ctx->lastrxpid == USB_PID_ACK) {
           ctx->ep_out[endpoint].next_data =
               DATA_TOGGLE_ADVANCE(ctx->ep_out[endpoint].next_data);
         }
@@ -1107,6 +1107,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     return ctx->driving;
   }
 
+  // Are allowed to start transmitting yet; device recovery time elapsed?
   if (ctx->tick < ctx->recovery_time) {
     ctx->frame_start = ctx->tick_bits;
     return ctx->driving;

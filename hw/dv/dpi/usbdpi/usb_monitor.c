@@ -42,7 +42,7 @@ struct usb_monitor_ctx {
    * Current bus driver
    */
   usbmon_driver_t driver;
-  int pu;
+  uint32_t pu;
   int line;
   int rawbits;
   int bits;
