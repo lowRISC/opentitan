@@ -91,23 +91,31 @@ typedef struct ecdsa_p256_message_digest_t {
  * @param result Buffer in which to store the generated signature.
  * @return Result of the operation (OK or error).
  */
-otbn_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
-                             const ecdsa_p256_private_key_t *private_key,
-                             ecdsa_p256_signature_t *result);
+status_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
+                         const ecdsa_p256_private_key_t *private_key,
+                         ecdsa_p256_signature_t *result);
 
 /**
  * Verifies an ECDSA/P-256 signature.
  *
+ * If the signature is valid, writes `kHardenedBoolTrue` to `result`;
+ * otherwise, writes `kHardenedBoolFalse`.
+ *
+ * Note: the caller must check the `result` buffer in order to determine if a
+ * signature passed verification. If a signature is invalid, but nothing goes
+ * wrong during computation (e.g. hardware errors, failed preconditions), the
+ * status will be OK but `result` will be `kHardenedBoolFalse`.
+ *
  * @param signature Signature to be verified.
  * @param message_digest Digest of the message to check the signature against.
  * @param public_key Key to check the signature against.
- * @param result Buffer in which to store output (true iff signature is valid)
+ * @param result Output buffer (true if signature is valid, false otherwise)
  * @return Result of the operation (OK or error).
  */
-otbn_error_t ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
-                               const ecdsa_p256_message_digest_t *digest,
-                               const ecdsa_p256_public_key_t *public_key,
-                               hardened_bool_t *result);
+status_t ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
+                           const ecdsa_p256_message_digest_t *digest,
+                           const ecdsa_p256_public_key_t *public_key,
+                           hardened_bool_t *result);
 
 #ifdef __cplusplus
 }  // extern "C"

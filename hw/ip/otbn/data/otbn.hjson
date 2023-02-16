@@ -4,6 +4,16 @@
 {
   name:               "otbn",
   one_line_desc:      "OpenTitan Big Number accelerator, programmable coprocessor for asymmetric cryptography with SCA and FI countermeasures",
+  one_paragraph_desc: '''
+  The OpenTitan Big Number accelerator (OTBN) is a programmable coprocessor for asymmetric cryptographic algorithms such as RSA or elliptic curve cryptography (ECC).
+  Such algorithms are dominated by wide integer arithmetic, which are executed on OTBN's 256-bit-wide data path.
+  The data OTBN processes is often security sensitive, and OTBN is designed to reduce the attack surface by
+  (1) keeping the instruction set and the processor design as simple as possible to aid verification,
+  (2) minimizing control flow and clearly separating it from data flow,
+  (3) limiting OTBN's instruction fetch and data memory accesses to separate, dedicated on-chip memories,
+  (4) giving OTBN software direct access to cryptographically secure random numbers,
+  and (5) implementing various hardware countermeasures to deter side-channel analysis (SCA) and fault injection (FI) attacks.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
@@ -64,6 +74,17 @@
       default: "0"
       desc: '''
         If enabled (1), URND is advanced only when data is needed.
+        Disabled (0) by default.
+        Useful for SCA measurements only.
+        '''
+      local:   "false"
+      expose:  "true"
+    }
+    { name:    "SecSkipUrndReseedAtStart"
+      type:    "bit"
+      default: "0"
+      desc: '''
+        If enabled (1), URND reseed is skipped at the start of an operation.
         Disabled (0) by default.
         Useful for SCA measurements only.
         '''

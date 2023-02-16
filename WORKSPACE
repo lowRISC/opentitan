@@ -55,16 +55,11 @@ rust_repos()
 load("//third_party/rust:deps.bzl", "rust_deps")
 rust_deps()
 
-# Cargo Raze dependencies
-load("//third_party/cargo_raze:repos.bzl", "raze_repos")
-raze_repos()
-load("//third_party/cargo_raze:deps.bzl", "raze_deps")
-raze_deps()
-# The raze instructions would have us call `cargo_raze_transitive_deps`, but
-# that wants to re-instantiate rules_rust and mess up our rust configuration.
-# The single other action that transitive_deps would perform is to load and
-# instantiate `rules_foreign_cc_dependencies`, but this has already been done
-# above, so we can do nothing here.
+load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
+crate_universe_dependencies(bootstrap = True)
+
+load("//third_party/rust/crates:crates.bzl", "crate_repositories")
+crate_repositories()
 
 # OpenOCD
 load("//third_party/openocd:repos.bzl", "openocd_repos")
@@ -119,6 +114,6 @@ nonhermetic_repo(name = "nonhermetic")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 http_file(
     name = "hyperdebug_firmware",
-    urls = ["https://storage.googleapis.com/aoa-recovery-test-images/hyperdebug_v2.0.20224-327de32a0.bin"],
-    sha256 = "e49c30da14702b0c8d7f58db175588c5973ce9b5c263dbe49f608b10e8d9ff93",
+    urls = ["https://storage.googleapis.com/aoa-recovery-test-images/hyperdebug_v2.0.20399-e8b715d1b.bin"],
+    sha256 = "d7c9352c4cdd3c2533a965940efba8078117d4d7536455cdf861419abeb11326",
 )

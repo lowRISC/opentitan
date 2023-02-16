@@ -30,8 +30,8 @@ rust_test(
     },
     deps = [
         "//sw/host/opentitanlib",
-        "//third_party/rust/crates:anyhow",
-        "//third_party/rust/crates:serde",
-        "//third_party/rust/crates:serde_json",
+        "@crate_index//:anyhow",
+        "@crate_index//:serde",
+        "@crate_index//:serde_json",
     ],
 )

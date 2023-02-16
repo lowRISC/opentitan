@@ -1081,6 +1081,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .SecOtbnMuteUrnd(1'b1),
+    .SecOtbnSkipUrndReseedAtStart(1'b1),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .UsbdevRcvrWakeTimeUs(10000),
 % elif target["name"] == "cw305":

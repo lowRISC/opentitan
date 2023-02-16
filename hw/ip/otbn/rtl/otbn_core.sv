@@ -28,6 +28,7 @@ module otbn_core
 
   // Disable URND reseed and advance when not in use. Useful for SCA only.
   parameter bit SecMuteUrnd = 1'b0,
+  parameter bit SecSkipUrndReseedAtStart = 1'b0,
 
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
@@ -277,7 +278,8 @@ module otbn_core
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
   otbn_start_stop_control #(
-    .SecMuteUrnd(SecMuteUrnd)
+    .SecMuteUrnd(SecMuteUrnd),
+    .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart)
   ) u_otbn_start_stop_control (
     .clk_i,
     .rst_ni,

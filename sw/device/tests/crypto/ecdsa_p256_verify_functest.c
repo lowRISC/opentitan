@@ -27,31 +27,26 @@ static void compute_digest(size_t msg_len, const uint8_t *msg,
   memcpy(digest->h, hmac_digest.digest, sizeof(hmac_digest.digest));
 }
 
-bool ecdsa_p256_verify_test(const ecdsa_p256_verify_test_vector_t *testvec) {
+status_t ecdsa_p256_verify_test(
+    const ecdsa_p256_verify_test_vector_t *testvec) {
   // Hash message.
   ecdsa_p256_message_digest_t digest;
   compute_digest(testvec->msg_len, testvec->msg, &digest);
 
   // Attempt to verify signature.
   hardened_bool_t result;
-  otbn_error_t err = ecdsa_p256_verify(&testvec->signature, &digest,
-                                       &testvec->public_key, &result);
-  otbn_err_bits_t err_bits;
-  otbn_err_bits_get(&err_bits);
-  CHECK(
-      err == kOtbnErrorOk,
-      "Error from OTBN while verifying signature: 0x%08x. Error bits: 0b%032b",
-      err, err_bits);
+  TRY(ecdsa_p256_verify(&testvec->signature, &digest, &testvec->public_key,
+                        &result));
 
-  // Check if result matches expectation.
-  if (testvec->valid) {
-    CHECK(result == kHardenedBoolTrue, "Valid signature failed verification.");
-  } else {
-    CHECK(result == kHardenedBoolFalse,
-          "Invalid signature passed verification.");
+  if (testvec->valid && result != kHardenedBoolTrue) {
+    LOG_ERROR("Valid signature failed verification.");
+    return OTCRYPTO_RECOV_ERR;
+  } else if (!testvec->valid && result != kHardenedBoolFalse) {
+    LOG_ERROR("Invalid signature passed verification.");
+    return OTCRYPTO_RECOV_ERR;
   }
 
-  return true;
+  return OTCRYPTO_OK;
 }
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -67,15 +62,19 @@ bool test_main(void) {
              i + 1, kEcdsaP256VerifyNumTests);
     // Run test and print out result.
     ecdsa_p256_verify_test_vector_t testvec = ecdsa_p256_verify_tests[i];
-    bool local_result = ecdsa_p256_verify_test(&testvec);
-    if (local_result) {
+    status_t err = ecdsa_p256_verify_test(&testvec);
+    if (status_ok(err)) {
       LOG_INFO("Finished ecdsa_p256_verify_test on test vector %d : ok", i + 1);
     } else {
-      LOG_ERROR("Finished ecdsa_p256_verify_test on test vector %d : error",
-                i + 1);
+      LOG_ERROR("Finished ecdsa_p256_verify_test on test vector %d : error %r",
+                i + 1, err);
+      // For help with debugging, print the OTBN error bits, instruction
+      // count, and test vector notes.
+      LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
+      LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
       LOG_INFO("Test notes: %s", testvec.comment);
+      result = false;
     }
-    result &= local_result;
   }
   LOG_INFO("Finished ecdsa_p256_verify_test:%s", RULE_NAME);
 

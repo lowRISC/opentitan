@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/ecdsa_p256/ecdsa_p256.h"
+#include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -45,42 +46,25 @@ static void compute_digest(void) {
   memcpy(digest.h, hmac_digest.digest, sizeof(hmac_digest.digest));
 }
 
-bool sign_then_verify_test(void) {
+status_t sign_then_verify_test(void) {
   ecdsa_p256_signature_t signature;
   hardened_bool_t verificationResult;
 
   // Spin until OTBN is idle.
-  if (otbn_busy_wait_for_done() != kOtbnErrorOk) {
-    return false;
-  }
+  TRY(otbn_busy_wait_for_done());
 
   // Generate a signature for the message
   LOG_INFO("Signing...");
-  otbn_error_t err = ecdsa_p256_sign(&digest, &kPrivateKey, &signature);
-  if (err != kOtbnErrorOk) {
-    LOG_ERROR("Error from OTBN while signing: 0x%08x.", err);
-    otbn_err_bits_t err_bits;
-    otbn_err_bits_get(&err_bits);
-    LOG_INFO("OTBN error bits: 0x%08x", err_bits);
-    return false;
-  }
+  TRY(ecdsa_p256_sign(&digest, &kPrivateKey, &signature));
 
   // Verify the signature
   LOG_INFO("Verifying...");
-  err =
-      ecdsa_p256_verify(&signature, &digest, &kPublicKey, &verificationResult);
-  if (err != kOtbnErrorOk) {
-    LOG_ERROR("Error from OTBN while verifying signature: 0x%08x.", err);
-    otbn_err_bits_t err_bits;
-    otbn_err_bits_get(&err_bits);
-    LOG_INFO("OTBN error bits: 0x%08x", err_bits);
-    return false;
-  }
+  TRY(ecdsa_p256_verify(&signature, &digest, &kPublicKey, &verificationResult));
 
   // Signature verification is expected to succeed
   CHECK(verificationResult == kHardenedBoolTrue);
 
-  return true;
+  return OTCRYPTO_OK;
 }
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -90,5 +74,15 @@ bool test_main(void) {
 
   compute_digest();
 
-  return sign_then_verify_test();
+  status_t err = sign_then_verify_test();
+  if (!status_ok(err)) {
+    // If there was an error, print the OTBN error bits and instruction count.
+    LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
+    LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
+    // Print the error.
+    CHECK_STATUS_OK(err);
+    return false;
+  }
+
+  return true;
 }

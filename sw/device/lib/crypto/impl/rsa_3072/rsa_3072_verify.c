@@ -100,8 +100,8 @@ status_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
  * @param dst Address of the destination in OTBN's data memory.
  * @return The result of the operation.
  */
-otbn_error_t write_rsa_3072_int_to_otbn(const rsa_3072_int_t *src,
-                                        otbn_addr_t dst) {
+status_t write_rsa_3072_int_to_otbn(const rsa_3072_int_t *src,
+                                    otbn_addr_t dst) {
   return otbn_dmem_write(kRsa3072NumWords, src->data, dst);
 }
 
@@ -113,95 +113,90 @@ otbn_error_t write_rsa_3072_int_to_otbn(const rsa_3072_int_t *src,
  * @param dst The destination of the copied data in main memory (preallocated).
  * @return The result of the operation.
  */
-otbn_error_t read_rsa_3072_int_from_otbn(otbn_addr_t src, rsa_3072_int_t *dst) {
+status_t read_rsa_3072_int_from_otbn(otbn_addr_t src, rsa_3072_int_t *dst) {
   return otbn_dmem_read(kRsa3072NumWords, src, dst->data);
 }
 
-// TODO: This implementation waits while OTBN is processing; it should be
-// modified to be non-blocking.
-otbn_error_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
-                                        rsa_3072_constants_t *result) {
+status_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
+                                    rsa_3072_constants_t *result) {
   // Load the RSA app. Fails if OTBN is non-idle.
-  OTBN_RETURN_IF_ERROR(otbn_load_app(kOtbnAppRsa));
+  HARDENED_TRY(otbn_load_app(kOtbnAppRsa));
 
   // Set mode to compute constants.
-  OTBN_RETURN_IF_ERROR(otbn_dmem_write(
-      kOtbnRsaModeNumWords, &kOtbnRsaModeConstants, kOtbnVarRsaMode));
+  HARDENED_TRY(otbn_dmem_write(kOtbnRsaModeNumWords, &kOtbnRsaModeConstants,
+                               kOtbnVarRsaMode));
 
   // Set the modulus (n).
-  OTBN_RETURN_IF_ERROR(
-      write_rsa_3072_int_to_otbn(&public_key->n, kOtbnVarRsaInMod));
+  HARDENED_TRY(write_rsa_3072_int_to_otbn(&public_key->n, kOtbnVarRsaInMod));
 
   // Start the OTBN routine.
-  OTBN_RETURN_IF_ERROR(otbn_execute());
+  HARDENED_TRY(otbn_execute());
 
   // Spin here waiting for OTBN to complete.
-  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done());
+  HARDENED_TRY(otbn_busy_wait_for_done());
 
   // Read constant rr out of DMEM.
-  OTBN_RETURN_IF_ERROR(read_rsa_3072_int_from_otbn(kOtbnVarRsaRR, &result->rr));
+  HARDENED_TRY(read_rsa_3072_int_from_otbn(kOtbnVarRsaRR, &result->rr));
 
   // Read constant m0_inv out of DMEM.
-  OTBN_RETURN_IF_ERROR(
+  HARDENED_TRY(
       otbn_dmem_read(kOtbnWideWordNumWords, kOtbnVarRsaM0Inv, result->m0_inv));
 
-  return kOtbnErrorOk;
+  return OTCRYPTO_OK;
 }
 
-otbn_error_t rsa_3072_verify_start(const rsa_3072_int_t *signature,
-                                   const rsa_3072_public_key_t *public_key,
-                                   const rsa_3072_constants_t *constants) {
+status_t rsa_3072_verify_start(const rsa_3072_int_t *signature,
+                               const rsa_3072_public_key_t *public_key,
+                               const rsa_3072_constants_t *constants) {
   // Only the F4 modulus is supported.
   if (public_key->e != 65537) {
-    return kOtbnErrorInvalidArgument;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Reject the signature if it is too large (n <= sig): RFC 8017, section
   // 5.2.2, step 1.
   if (memrcmp(public_key->n.data, signature->data, kRsa3072NumBytes) <= 0) {
-    return kOtbnErrorInvalidArgument;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Load the RSA app. Fails if OTBN is non-idle.
-  OTBN_RETURN_IF_ERROR(otbn_load_app(kOtbnAppRsa));
+  HARDENED_TRY(otbn_load_app(kOtbnAppRsa));
 
   // Set mode to perform modular exponentiation.
-  OTBN_RETURN_IF_ERROR(otbn_dmem_write(kOtbnRsaModeNumWords,
-                                       &kOtbnRsaModeModexp, kOtbnVarRsaMode));
+  HARDENED_TRY(otbn_dmem_write(kOtbnRsaModeNumWords, &kOtbnRsaModeModexp,
+                               kOtbnVarRsaMode));
 
   // Set the modulus (n).
-  OTBN_RETURN_IF_ERROR(
-      write_rsa_3072_int_to_otbn(&public_key->n, kOtbnVarRsaInMod));
+  HARDENED_TRY(write_rsa_3072_int_to_otbn(&public_key->n, kOtbnVarRsaInMod));
 
   // Set the signature.
-  OTBN_RETURN_IF_ERROR(write_rsa_3072_int_to_otbn(signature, kOtbnVarRsaInBuf));
+  HARDENED_TRY(write_rsa_3072_int_to_otbn(signature, kOtbnVarRsaInBuf));
 
   // Set the precomputed constant R^2.
-  OTBN_RETURN_IF_ERROR(
-      write_rsa_3072_int_to_otbn(&constants->rr, kOtbnVarRsaRR));
+  HARDENED_TRY(write_rsa_3072_int_to_otbn(&constants->rr, kOtbnVarRsaRR));
 
   // Set the precomputed constant m0_inv.
-  OTBN_RETURN_IF_ERROR(otbn_dmem_write(kOtbnWideWordNumWords, constants->m0_inv,
-                                       kOtbnVarRsaM0Inv));
+  HARDENED_TRY(otbn_dmem_write(kOtbnWideWordNumWords, constants->m0_inv,
+                               kOtbnVarRsaM0Inv));
 
   // Start the OTBN routine.
-  OTBN_RETURN_IF_ERROR(otbn_execute());
+  HARDENED_TRY(otbn_execute());
 
-  return kOtbnErrorOk;
+  return OTCRYPTO_OK;
 }
 
-otbn_error_t rsa_3072_verify_finalize(const rsa_3072_int_t *message,
-                                      hardened_bool_t *result) {
+status_t rsa_3072_verify_finalize(const rsa_3072_int_t *message,
+                                  hardened_bool_t *result) {
   // Initially set the result to false in case of early returns due to invalid
   // arguments.
   *result = kHardenedBoolFalse;
 
   // Spin here waiting for OTBN to complete.
-  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done());
+  HARDENED_TRY(otbn_busy_wait_for_done());
 
   // Read recovered message out of OTBN dmem.
   rsa_3072_int_t recoveredMessage;
-  OTBN_RETURN_IF_ERROR(
+  HARDENED_TRY(
       read_rsa_3072_int_from_otbn(kOtbnVarRsaOutBuf, &recoveredMessage));
 
   // TODO: harden this memory comparison
@@ -213,23 +208,21 @@ otbn_error_t rsa_3072_verify_finalize(const rsa_3072_int_t *message,
     }
   }
 
-  return kOtbnErrorOk;
+  return OTCRYPTO_OK;
 }
 
-otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
-                             const rsa_3072_int_t *message,
-                             const rsa_3072_public_key_t *public_key,
-                             const rsa_3072_constants_t *constants,
-                             hardened_bool_t *result) {
+status_t rsa_3072_verify(const rsa_3072_int_t *signature,
+                         const rsa_3072_int_t *message,
+                         const rsa_3072_public_key_t *public_key,
+                         const rsa_3072_constants_t *constants,
+                         hardened_bool_t *result) {
   // Initially set the result to false in case of early returns due to invalid
   // arguments.
   *result = kHardenedBoolFalse;
 
   // Initiate OTBN signature verification.
-  OTBN_RETURN_IF_ERROR(rsa_3072_verify_start(signature, public_key, constants));
+  HARDENED_TRY(rsa_3072_verify_start(signature, public_key, constants));
 
   // Wait for OTBN operations to complete and signature to be verified.
-  OTBN_RETURN_IF_ERROR(rsa_3072_verify_finalize(message, result));
-
-  return kOtbnErrorOk;
+  return rsa_3072_verify_finalize(message, result);
 }

@@ -203,29 +203,26 @@ static void p256_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
                             const uint32_t *k) {
   uint32_t mode = 1;  // mode 1 => sign
   // Send operation mode to OTBN
-  SS_CHECK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode) ==
-           kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode));
   // Send Msg to OTBN
-  SS_CHECK(otbn_dmem_write(kEcc256NumWords, msg, kOtbnVarMsg) == kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_dmem_write(kEcc256NumWords, msg, kOtbnVarMsg));
   // Send two shares of private_key_d to OTBN
-  SS_CHECK(otbn_dmem_write(kEcc256NumWords, private_key_d, kOtbnVarD0) ==
-           kOtbnErrorOk);
-  SS_CHECK(otbn_dmem_write(kEcc256NumWords, private_key_d + kEcc256NumWords,
-                           kOtbnVarD1) == kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(
+      otbn_dmem_write(kEcc256NumWords, private_key_d, kOtbnVarD0));
+  SS_CHECK_STATUS_OK(otbn_dmem_write(
+      kEcc256NumWords, private_key_d + kEcc256NumWords, kOtbnVarD1));
   // Send two shares of secret_k to OTBN
-  SS_CHECK(otbn_dmem_write(kEcc256NumWords, k, kOtbnVarK0) == kOtbnErrorOk);
-  SS_CHECK(otbn_dmem_write(kEcc256NumWords, k + kEcc256NumWords, kOtbnVarK1) ==
-           kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_dmem_write(kEcc256NumWords, k, kOtbnVarK0));
+  SS_CHECK_STATUS_OK(
+      otbn_dmem_write(kEcc256NumWords, k + kEcc256NumWords, kOtbnVarK1));
 
   // Start OTBN execution
-  SS_CHECK(otbn_execute() == kOtbnErrorOk);
-  SS_CHECK(otbn_busy_wait_for_done() == kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_execute());
+  SS_CHECK_STATUS_OK(otbn_busy_wait_for_done());
 
   // Read the results back (sig_r, sig_s)
-  SS_CHECK(otbn_dmem_read(kEcc256NumWords, kOtbnVarR, signature_r) ==
-           kOtbnErrorOk);
-  SS_CHECK(otbn_dmem_read(kEcc256NumWords, kOtbnVarS, signature_s) ==
-           kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256NumWords, kOtbnVarR, signature_r));
+  SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256NumWords, kOtbnVarS, signature_s));
 }
 
 /**
@@ -236,7 +233,7 @@ static void p256_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
  */
 static void ecc256_ecdsa() {
   LOG_INFO("SSECDSA starting...");
-  SS_CHECK(otbn_load_app(kOtbnAppP256Ecdsa) == kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP256Ecdsa));
   LOG_INFO("otbn_status: 0x%08x", abs_mmio_read32(TOP_EARLGREY_OTBN_BASE_ADDR +
                                                   OTBN_STATUS_REG_OFFSET));
 
@@ -262,8 +259,8 @@ static void ecc256_ecdsa() {
   simple_serial_send_packet('r', ecc256_signature_s_bytes, kEcc256NumBytes);
 
   // Clear OTBN memory
-  SS_CHECK(otbn_dmem_sec_wipe() == kOtbnErrorOk);
-  SS_CHECK(otbn_imem_sec_wipe() == kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_dmem_sec_wipe());
+  SS_CHECK_STATUS_OK(otbn_imem_sec_wipe());
 }
 
 /**

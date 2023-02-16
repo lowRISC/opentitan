@@ -897,44 +897,44 @@ mod_inv:
  * @param[in]  w29: p, modulus of P-256 underlying finite field
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus of P-256 underlying finite field
- * @param[out]  w26: z, random projective z-coordinate
- * @param[out]  w6: x, projective x-coordinate
- * @param[out]  w7: y, projective y-coordinate
+ * @param[out] w14: x, projective x-coordinate
+ * @param[out] w15: y, projective y-coordinate
+ * @param[out] w16: z, random projective z-coordinate
  *
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the scaled projective y-coordinate.
  *
- * clobbered registers: w2, w6, w7, w19 to w26
+ * clobbered registers: w14 to w16, w19 to w26
  * clobbered flag groups: FG0
  */
 fetch_proj_randomize:
 
   /* get random number from URND */
-  bn.wsrr   w2, 2
+  bn.wsrr   w16, 2 /* URND */
 
   /* reduce random number
-     w26 = z <= w2 mod p */
-  bn.addm   w26, w2, w31
+     w16 = z <= w16 mod p */
+  bn.addm   w16, w16, w31
 
   /* fetch x-coordinate from dmem
      w24 = x_a <= dmem[x22] = dmem[dptr_x] */
   bn.lid    x10, 0(x21)
 
   /* scale x-coordinate
-     w6 = x <= w24*w26 = x_a*z  mod p */
-  bn.mov    w25, w26
+     w14 = x <= w24*w16 = x_a*z  mod p */
+  bn.mov    w25, w16
   jal       x1, mod_mul_256x256
-  bn.mov    w6, w19
+  bn.mov    w14, w19
 
   /* fetch y-coordinate from dmem
      w24 = y_a <= dmem[x22] = dmem[dptr_y] */
   bn.lid    x10, 0(x22)
 
   /* scale y-coordinate
-     w7 = y <= w24*w26 = y_a*z  mod p */
-  bn.mov    w25, w26
+     w15 = y <= w24*w16 = y_a*z  mod p */
+  bn.mov    w25, w16
   jal       x1, mod_mul_256x256
-  bn.mov    w7, w19
+  bn.mov    w15, w19
 
   ret
 
@@ -998,13 +998,25 @@ proj_double:
  *
  * The routine receives the scalar in two shares k0, k1 such that
  *   k = (k0 + k1) mod n
- * The double-and-add loop operates on both shares in parallel applying
- * Shamir's trick.
+ * The loop operates on both shares in parallel, computing (k0 + k1) * P as
+ * follows:
+ *  Q = (0, 1, 0) # origin
+ *  for i in 319..0:
+ *    Q = 2 * Q
+ *    A = if (k0[i] ^ k1[i]) then P else 2P
+ *    B = Q + A
+ *    Q = if (k0[i] | k1[i]) then B else Q
+ *
+ *
+ * Each share k0/k1 is 320 bits, even though it represents a 256-bit value.
+ * This is a side-channel protection measure.
  *
  * @param[in]  x21: dptr_x, pointer to affine x-coordinate in dmem
  * @param[in]  x22: dptr_y, pointer to affine y-coordinate in dmem
- * @param[in]  w0: k0, first share of scalar for multiplication
- * @param[in]  w1: k1, second share of scalar for multiplication
+ * @param[in]  w0: lower 256 bits of k0, first share of scalar
+ * @param[in]  w1: upper 64 bits of k0, first share of scalar
+ * @param[in]  w2: lower 256 bits of k1, second share of scalar
+ * @param[in]  w3: upper 64 bits of k1, second share of scalar
  * @param[in]  w27: b, curve domain parameter
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus, 2^256 > p > 2^255.
@@ -1014,7 +1026,7 @@ proj_double:
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
  *
- * clobbered registers: x2, x3, x10, w0 to w29
+ * clobbered registers: x2, x3, x10, w0 to w30
  * clobbered flag groups: FG0
  */
 scalar_mult_int:
@@ -1041,21 +1053,21 @@ scalar_mult_int:
   bn.lid    x2, 0(x3)
 
   /* get randomized projective coodinates of curve point
-     P = (x_p, y_p, z_p) = (w8, w9, w10) = (w6, w7, w26) =
+     P = (x_p, y_p, z_p) = (w8, w9, w10) = (w14, w15, w16) =
      (x*z mod p, y*z mod p, z) */
   li        x10, 24
   jal       x1, fetch_proj_randomize
-  bn.mov    w8, w6
-  bn.mov    w9, w7
-  bn.mov    w10, w26
+  bn.mov    w8, w14
+  bn.mov    w9, w15
+  bn.mov    w10, w16
 
   /* Init 2P, this will be used for the addition part in the double-and-add
      loop when the bit at the current index is 1 for both shares of the scalar.
-     2P = (w3, w4, w5) <= (w11, w12, w13) <= 2*(w8, w9, w10) = 2*P */
+     2P = (w4, w5, w6) <= (w11, w12, w13) <= 2*(w8, w9, w10) = 2*P */
   jal       x1, proj_double
-  bn.mov    w3, w11
-  bn.mov    w4, w12
-  bn.mov    w5, w13
+  bn.mov    w4, w11
+  bn.mov    w5, w12
+  bn.mov    w6, w13
 
   /* init double-and-add with point in infinity
      Q = (w8, w9, w10) <= (0, 1, 0) */
@@ -1063,15 +1075,24 @@ scalar_mult_int:
   bn.addi   w9, w31, 1
   bn.mov    w10, w31
 
+  /* Shift shares of k so their MSBs are in the most significant position of a
+     word.
+       w0,w1 <= [w0, w1] << 192 = k0 << 192
+       w2,w3 <= [w2, w3] << 192 = k1 << 192 */
+  bn.rshi   w1, w1, w0 >> 64
+  bn.rshi   w0, w0, w31 >> 64
+  bn.rshi   w3, w3, w2 >> 64
+  bn.rshi   w2, w2, w31 >> 64
+
   /* double-and-add loop with decreasing index */
-  loopi     256, 32
+  loopi     320, 34
 
     /* double point Q
        Q = (w11, w12, w13) <= 2*(w8, w9, w10) = 2*Q */
     jal       x1, proj_double
 
     /* re-fetch and randomize P again
-       P = (w6, w7, w26) */
+       P = (w14, w15, w16) */
     jal       x1, fetch_proj_randomize
 
     /* probe if MSb of either of the two scalars (k0 or k1) but not both is 1.
@@ -1079,19 +1100,25 @@ scalar_mult_int:
        - If both MSbs are set, select 2P for addition
        - If neither MSB is set, also 2P will be selected but this will be
          discarded later */
-    bn.xor    w8, w0, w1
+    bn.xor    w20, w1, w3
 
-    /* P = (w8, w9, w10)
-        <= (w0[255] xor w1[256])?P=(w6, w7, w26):2P=(w3, w4, w5) */
-    bn.sel    w8, w6, w3, M
-    bn.sel    w9, w7, w4, M
-    bn.sel    w10, w26, w5, M
+    /* N.B. The M bit here is secret. For side channel protection in the
+       selects below, it is vital that neither option is equal to the
+       destionation register (e.g. bn.sel w0, w0, w1). In this case, the
+       hamming distance from the destination's previous value to its new value
+       will be 0 in one of the cases and potentially reveal M.
+
+       P = (w8, w9, w10)
+        <= (w0[255] xor w1[255])?P=(w14, w15, w16):2P=(w4, w5, w6) */
+    bn.sel    w8, w14, w4, M
+    bn.sel    w9, w15, w5, M
+    bn.sel    w10, w16, w6, M
 
     /* save doubling result to survive follow-up subroutine call
-       Q = (w2, w6, w7) <= (w11, w12, w13) */
-    bn.mov    w2, w11
-    bn.mov    w6, w12
-    bn.mov    w7, w13
+       Q = (w7, w26, w30) <= (w11, w12, w13) */
+    bn.mov    w7, w11
+    bn.mov    w26, w12
+    bn.mov    w30, w13
 
     /* add points
        Q+P = (w11, w12, w13) <= (w11, w12, w13) + (w8, w9, w10) */
@@ -1099,17 +1126,22 @@ scalar_mult_int:
 
     /* probe if MSb of either one or both of the two
        scalars (k0 or k1) is 1.*/
-    bn.or     w8, w0, w1
+    bn.or     w20, w1, w3
 
-    /* select doubling result (Q) or addition result (Q+P)
-       Q = w0[255] or w1[255]?Q_a=(w11, w12, w13):Q=(w2, w6, w7) */
-    bn.sel    w8, w11, w2, M
-    bn.sel    w9, w12, w6, M
-    bn.sel    w10, w13, w7, M
+    /* N.B. As before, the select instructions below must use distinct
+       source/destination registers to avoid revealing M.
 
-    /* rotate both scalars left 1 bit */
-    bn.rshi   w0, w0, w0 >> 255
-    bn.rshi   w1, w1, w1 >> 255
+       Select doubling result (Q) or addition result (Q+P)
+         Q = w0[255] or w1[255]?Q_a=(w11, w12, w13):Q=(w7, w26, w30) */
+    bn.sel    w8, w11, w7, M
+    bn.sel    w9, w12, w26, M
+    bn.sel    w10, w13, w30, M
+
+    /* Shift both scalars left 1 bit. */
+    bn.rshi   w1, w1, w0 >> 255
+    bn.rshi   w0, w0, w31 >> 255
+    bn.rshi   w3, w3, w2 >> 255
+    bn.rshi   w2, w2, w31 >> 255
 
     /* init regs with random numbers from URND */
     bn.wsrr   w11, 2
@@ -1119,25 +1151,25 @@ scalar_mult_int:
     /* get a fresh random number from URND and scale the coordinates of
        2P = (w3, w4, w5) (scaling each projective coordinate with same
        factor results in same point) */
-    bn.wsrr   w2, 2
+    bn.wsrr   w7, 2
 
-    /* w3 = w3 * w2 */
-    bn.mov    w24, w3
-    bn.mov    w25, w2
-    jal       x1, mod_mul_256x256
-    bn.mov    w3, w19
-
-    /* w4 = w4 * w2 */
+    /* w4 = w4 * w7 */
     bn.mov    w24, w4
-    bn.mov    w25, w2
+    bn.mov    w25, w7
     jal       x1, mod_mul_256x256
     bn.mov    w4, w19
 
-    /* w5 = w5 * w2 */
+    /* w5 = w5 * w7 */
     bn.mov    w24, w5
-    bn.mov    w25, w2
+    bn.mov    w25, w7
     jal       x1, mod_mul_256x256
     bn.mov    w5, w19
+
+    /* w6 = w6 * w7 */
+    bn.mov    w24, w6
+    bn.mov    w25, w7
+    jal       x1, mod_mul_256x256
+    bn.mov    w6, w19
 
   /* convert back to affine coordinates
      R = (x_a, y_a) = (w11, w12) */
@@ -1227,26 +1259,6 @@ p256_sign:
   li        x2, 28
   la        x3, p256_u_n
   bn.lid    x2, 0(x3)
-
-  /* Reduce k0 modulo n.
-     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
-
-     w0 <= [w0,w1] mod n = k0 mod n */
-  bn.mov   w19, w0
-  bn.mov   w20, w1
-  bn.mov   w22, w31
-  jal      x1, p256_reduce
-  bn.mov   w0, w19
-
-  /* Reduce k1 modulo n.
-     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
-
-     w1 <= [w2,w3] mod n = k1 mod n */
-  bn.mov   w19, w2
-  bn.mov   w20, w3
-  bn.mov   w22, w31
-  jal      x1, p256_reduce
-  bn.mov   w1, w19
 
   /* scalar multiplication with base point
      (x_1, y_1) = (w11, w12) <= k*G = w0*(dmem[p256_gx], dmem[p256_gy]) */
@@ -1434,26 +1446,6 @@ p256_base_mult:
   bn.lid    x2, 0(x16++)
   li        x2, 3
   bn.lid    x2, 0(x16)
-
-  /* Reduce d0 modulo n.
-     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
-
-     w0 <= [w0,w1] mod n = d0 mod n */
-  bn.mov   w19, w0
-  bn.mov   w20, w1
-  bn.mov   w22, w31
-  jal      x1, p256_reduce
-  bn.mov   w0, w19
-
-  /* Reduce d1 modulo n.
-     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
-
-     w1 <= [w2,w3] mod n = d1 mod n */
-  bn.mov   w19, w2
-  bn.mov   w20, w3
-  bn.mov   w22, w31
-  jal      x1, p256_reduce
-  bn.mov   w1, w19
 
   /* call internal scalar multiplication routine
      R = (x_a, y_a) = (w11, w12) <= d*P = (w0 + w1)*P */
@@ -1904,27 +1896,41 @@ p256_scalar_mult:
 /**
  * Generate a nonzero random value in the scalar field.
  *
- * Returns t, a random value in the range [1,n-1].
+ * Returns t, a random value that is nonzero mod n, in shares.
  *
- * This follows the method in FIPS 186-4 sections B.4.2 and B.5.2 for
- * generation of secret scalar values d and k. The computation is:
- *   do {
- *     c = RBG(256); // fetch 256b random value
- *   } while (c >= n - 1)
- *   return c + 1;
+ * This follows a modified version of the method in FIPS 186-4 sections B.4.1
+ * and B.5.1 for generation of secret scalar values d and k. The computation
+ * in FIPS 186-4 is:
+ *   seed = RBG(seedlen) // seedlen >= 320
+ *   return (seed mod (n-1)) + 1
  *
- * This implementation handles the unmasked secret value, but the seed is
- * pulled from RND so it cannot be re-run with the same seed. This method
- * should not be used for keymgr-derived seeds! However, it masks the secret
- * scalar before returning so that it can be safely handled e.g. in scalarmult.
+ * The important features here are that (a) the seed is at least 64 bits longer
+ * than n in order to minimize bias after the reduction and (b) the resulting
+ * scalar is guaranteed to be nonzero.
+ *
+ * We deviate from FIPS a little bit here because for side-channel protection,
+ * we do not want to fully reduce the seed modulo (n-1) or combine the shares.
+ * Instead, we do the following:
+ *   seed0 = RBG(320)
+ *   seed1 = RBG(320)
+ *   x = URND(127) + 1 // random value for masking
+ *   if (seed0 * x + seed1 * x) mod n == 0:
+ *     retry
+ *   return seed0, seed1
+ *
+ * Essentially, we get two independent seeds and interpret these as additive
+ * shares of the scalar t = (seed0 + seed1) mod n. Then, we need to ensure t is
+ * nonzero. Multiplying each share with a random masking parameter allows us to
+ * safely add them, and then check if this result is 0; if it is, then t must
+ * be 0 mod n and we need to retry.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  w31:  all-zero
- * @param[out] w20:  first share of secret scalar t
- * @param[out] w21:  second share of secret scalar t
+ * @param[out] w15,w16:  first share of secret scalar t (320 bits)
+ * @param[out] w17,w18:  second share of secret scalar t (320 bits)
  *
- * clobbered registers: x2, x3, x20, w20, w21, w29
+ * clobbered registers: x2, x3, x20, w12 to w29
  * clobbered flag groups: FG0
  */
 p256_random_scalar:
@@ -1934,52 +1940,77 @@ p256_random_scalar:
   la        x3, p256_n
   bn.lid    x2, 0(x3)
 
-  /* w21 <= w29 - 1 = n - 1 */
-  bn.subi   w21, w29, 1
-
-  generate_key_retry:
-  /* Obtain 256 bits of randomness from RND. */
-  bn.wsrr   w20, 0x1 /* RND */
-
-  /* Additionally mask the seed with some bits from URND, just in case
-     there's any vulnerability in EDN that lets the attacker recover some bits
-     before they reach OTBN. */
-  bn.wsrr   w22, 0x2 /* URND */
-  bn.xor    w20, w20, w22
-
-  /* Compare the random value to (n-1).
-     FG0.C <= w20 < w21 = w20 < n - 1 */
-  bn.cmp    w20, w21
-
-  /* Read the FG0.C flag.
-     x2 <= FG0.C = w21 < n - 1 */
-  csrrw     x2, 0x7c0, x0
-  andi      x2, x2, 1
-
-  /* Done if w20 < n - 1, otherwise retry */
-  li        x3, 1
-  bne       x2, x3, generate_key_retry
-
-  /* If we get here, then w20 < n - 1. Add 1 to get the private key.
-     w20 <= w20 + 1 = t */
-  bn.addi   w20, w20, 1
-
-  /* MOD <= n */
+  /* Copy n into the MOD register. */
   bn.wsrw   0, w29
 
-  /* Get a new 256-bit random number from URND for masking.
-      w21 <= URND() mod n = t1 */
-  bn.wsrr   w21, 0x2 /* URND */
-  bn.addm   w21, w21, w31
+  /* Load Barrett constant for n.
+     w28 <= u_n = dmem[p256_u_n]  */
+  li        x2, 28
+  la        x3, p256_u_n
+  bn.lid    x2, 0(x3)
 
-  /* Calculate the other share of t.
-     w20 <= (w20 - w21) mod n = (t - t1) mod n = t0 */
-  bn.subm   w20, w20, w21
+  random_scalar_retry:
+  /* Obtain 768 bits of randomness from RND. */
+  bn.wsrr   w15, 0x1 /* RND */
+  bn.wsrr   w16, 0x1 /* RND */
+  bn.wsrr   w17, 0x1 /* RND */
+
+  /* XOR with bits from URND, just in case there's any vulnerability in EDN
+     that lets the attacker recover bits before they reach OTBN. */
+  bn.wsrr   w20, 0x2 /* URND */
+  bn.xor    w16, w16, w20
+  bn.wsrr   w20, 0x2 /* URND */
+  bn.xor    w17, w17, w20
+  bn.wsrr   w20, 0x2 /* URND */
+  bn.xor    w18, w18, w20
+
+  /* Shift bits to get 320-bit seeds.
+     w18 <= w16[255:192]
+     w16 <= w16[63:0] */
+  bn.rshi   w18, w31, w16 >> 192
+  bn.rshi   w20, w16, w31 >> 64
+  bn.rshi   w16, w20, w31 >> 192
+
+  /* Generate a random masking parameter.
+     w14 <= URND(127) + 1 = x */
+  bn.wsrr   w14, 0x2 /* URND */
+  bn.addi   w14, w14, 1
+
+  /* w12 <= ([w15,w16] * w14) mod n = (seed0 * x) mod n */
+  bn.mov    w24, w15
+  bn.mov    w25, w16
+  bn.mov    w26, w14
+  jal       x1, mod_mul_320x128
+  bn.mov    w12, w19
+
+  /* w13 <= ([w17,w18] * w14) mod n = (seed1 * x) mod n */
+  bn.mov    w24, w17
+  bn.mov    w25, w18
+  bn.mov    w26, w14
+  jal       x1, mod_mul_320x128
+  bn.mov    w13, w19
+
+  /* w12 <= (w12 + w13) mod n = ((seed0 + seed1) * x) mod n */
+  bn.addm   w12, w12, w13
+
+  /* Compare to 0.
+     FG0.Z <= (w12 =? w31) = ((seed0 + seed1) mod n =? 0) */
+  bn.cmp    w12, w31
+
+  /* Read the FG0.Z flag (position 3).
+     x2 <= 8 if FG0.Z else 0 */
+  csrrw     x2, 0x7c0, x0
+  andi      x2, x2, 8
+
+  /* Retry if x2 != 0. */
+  bne       x2, x0, random_scalar_retry
+
+  /* If we get here, then (seed0 + seed1) mod n is nonzero mod n; return. */
 
   ret
 
 /**
- * Generate the secret key d according to FIPS 186-4 section B.4.2.
+ * Generate the secret key d from a random seed.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -1993,21 +2024,31 @@ p256_generate_random_key:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
-  /* Generate a random scalar in two shares.
-       w20, w21 <= d0, d1 */
+  /* Generate a random scalar in two 320-bit shares.
+       w15, w16 <= d0
+       w17, w18 <= d1 */
   jal  x1, p256_random_scalar
 
-  /* Write the shares to DMEM. */
+  /* Write first share to DMEM.
+       dmem[d0] <= w15, w16 = d0 */
   la        x20, d0
-  li        x2, 20
-  bn.sid    x2++, 0(x20)
+  li        x2, 15
+  bn.sid    x2, 0(x20++)
+  li        x2, 16
+  bn.sid    x2, 0(x20)
+
+  /* Write second share to DMEM.
+       dmem[d1] <= w15, w16 = d0 */
   la        x20, d1
+  li        x2, 17
+  bn.sid    x2, 0(x20++)
+  li        x2, 18
   bn.sid    x2, 0(x20)
 
   ret
 
 /**
- * Generate the secret scalar k according to FIPS 186-4 section B.5.2.
+ * Generate the secret scalar k from a random seed.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -2021,22 +2062,26 @@ p256_generate_k:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
-  /* Generate a random scalar in two shares.
-       w20, w21 <= k0, k1 */
+  /* Generate a random scalar in two 320-bit shares.
+       w15, w16 <= k0
+       w17, w18 <= k1 */
   jal  x1, p256_random_scalar
 
-  /* Write the shares to DMEM.
-     TODO: zeroes for high bits are temporary until p256_random_scalar supports
-     extra bits; remove later. */
+  /* Write first share to DMEM.
+       dmem[k0] <= w15, w16 = k0 */
   la        x20, k0
-  li        x2, 20
+  li        x2, 15
   bn.sid    x2, 0(x20++)
-  li        x3, 31
-  bn.sid    x3, 0(x20)
+  li        x2, 16
+  bn.sid    x2, 0(x20)
+
+  /* Write second share to DMEM.
+       dmem[k1] <= w15, w16 = k0 */
   la        x20, k1
-  li        x2, 21
+  li        x2, 17
   bn.sid    x2, 0(x20++)
-  bn.sid    x3, 0(x20)
+  li        x2, 18
+  bn.sid    x2, 0(x20)
 
   ret
 

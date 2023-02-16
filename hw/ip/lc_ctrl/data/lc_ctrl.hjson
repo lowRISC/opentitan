@@ -4,6 +4,10 @@
 {
   name:               "lc_ctrl",
   one_line_desc:      "Manages device life cycle states and transitions, and controls key manager, flash, OTP, and debug access",
+  one_paragraph_desc: '''
+  The OpenTitan life cycle controller is responsible for handling and guarding transitions between different device life cycle states, concurrently decoding the current life cycle state and redundantly broadcasting encoded life cycle qualification signals across the system, e.g., to control the behavior of key manager, flash controller, OTP controller, and debug infrastructure.
+  In addition, it features an escalation receiver for the alert system to invalidate the life cycle state as part of an escalation sequence.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

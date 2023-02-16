@@ -5,6 +5,12 @@
 {
   name:               "i2c",
   one_line_desc:      "I2C interface for host and device mode, supporting up to 1 Mbaud data rates",
+  one_paragraph_desc: '''
+  The I2C hardware block provides the interface for the I2C serial communication protocol.
+  It can be configured in host (master) or device (slave) mode and supports standard data rate (100 kbaud), fast data rate (400 kbaud), and fast plus data rate (1 Mbaud).
+  In addition to supporting all mandatory I2C features, this block supports clock stretching in host mode and automatic clock stretching in device mode.
+  This block uses a 7-bit address space and it is compatible with any device covered by I2C specification operating at speeds up to 1 Mbaud.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

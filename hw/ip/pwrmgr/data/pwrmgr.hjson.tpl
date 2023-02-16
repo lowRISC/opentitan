@@ -9,6 +9,12 @@
 {
   name:               "pwrmgr",
   one_line_desc:      "Sequences on-chip power, clocks, and resets through different reset and power states",
+  one_paragraph_desc: '''
+  The OpenTitan power manager sequences on-chip power, clocks, and reset signals on power-on reset (aka cold boot), low power entry and exit, and non-power-on resets.
+  To this end, it can turn power domains on and off, control root resets with the reset manager, and control root clock enables with the AST and the clock manager.
+  During power up, it is responsible for triggering OTP sensing, initiating the life cycle controller, coordinating with the ROM controller for the startup ROM check, and eventually releasing software to execute.
+  It features several countermeasures to deter fault injection (FI) attacks.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

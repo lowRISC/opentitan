@@ -4,6 +4,12 @@
 {
   name:               "sram_ctrl",
   one_line_desc:      "Interfacing on-chip SRAM blocks with system bus, supports lightweight scrambling, integrity and secure wipe",
+  one_paragraph_desc: '''
+  The OpenTitan SRAM controller (sram_ctrl) instantiates on-chip SRAM and makes it accessible through the TileLink on-chip interconnect.
+  sram_ctrl includes a lightweight scrambling mechanism based on the PRINCE cipher to reduce the attack surface on the confidentiality and integrity of data stored in the SRAM.
+  For end-to-end data integrity protection, sram_ctrl stores the integrity bits alongside data words in memory and raises an alert if it detects an integrity fault.
+  sram_ctrl contains an LFSR-based initialization mechanism that overwrites the entire SRAM with pseudorandom data.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

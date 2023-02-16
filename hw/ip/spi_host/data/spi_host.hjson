@@ -4,6 +4,13 @@
 {
   name:               "spi_host",
   one_line_desc:      "Serial peripheral interface for host mode, suitable for interfacing external serial NOR flash devices",
+  one_paragraph_desc: '''
+  The SPI Host hardware block bridges communications from the TileLink Uncached Light (TL-UL) bus and off-chip devices by acting as a SPI interface bus master, primarily intended for communication with serial NOR flash devices and other low-speed devices.
+  While SPI is not a formal standard, this implementation aims to be general enough to support a variety of devices by providing a plethora of run-time configurable options.
+  Communication with each device on the bus uses an independent chip select (CS), and each transaction may be individually configured regarding endianness, polarity and phase (CPOL/ CPHA), and full-duplex/half-duplex commands in standard mode.
+  32-bit TL-UL registers interface with receive and transmit data FIFOs as well as a command FIFO for encoding multiple sequential 'segments' making up a larger SPI transaction.
+  This allows each segment to have an arbitrary byte-count, Std/Dual/Quad width, and direction, and it allows the CS to be managed automatically across multiple sequential segments.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
