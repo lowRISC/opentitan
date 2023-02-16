@@ -187,7 +187,7 @@ module usbdev
   logic [5:0]   ns_cnt;
   logic         us_tick;
 
-  assign us_tick = (ns_cnt == 6'd48);
+  assign us_tick = (ns_cnt == 6'd47);
   always_ff @(posedge clk_i or negedge rst_n) begin
     if (!rst_n) begin
       ns_cnt <= '0;
@@ -402,7 +402,7 @@ module usbdev
         clear_rdybit[out_endpoint] = 1'b1;
         update_pend[out_endpoint]  = 1'b1;
       end else if (in_ep_xact_end & in_endpoint_val) begin
-        // Clear when a IN transmission was sucessful
+        // Clear when an IN transmission was successful
         clear_rdybit[in_endpoint] = 1'b1;
       end
     end
@@ -699,7 +699,7 @@ module usbdev
     reg2hw.alert_test.qe
   };
 
-  // TDODO: stub alerts
+  // TODO: stub alerts
   localparam logic [NumAlerts-1:0] AlertIsFatal = {1'b1};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(

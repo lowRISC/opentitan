@@ -238,7 +238,7 @@ module usb_fs_tx (
 
     // Logic closely coupled to the FSM
     if (pkt_start_i) begin
-      // We need to have a inter-packed delay between
+      // We need to have an inter-packet delay between
       // 2 and 6.5 bit times (see USB 2.0 spec / 7.1.18.1)
       // The latency in the rest of the system is approximately (measured)
       // 3.68 bit-times, so we only introduce 1 bit-time here
