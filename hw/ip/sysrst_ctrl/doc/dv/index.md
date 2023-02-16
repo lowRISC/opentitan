@@ -79,8 +79,8 @@ It provides commonly used handles, variables, functions and tasks that the test 
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
 * sysrst_ctrl_combo_detect_action_cg: This covergroup will cover all the combo detect actions for combo detect register set 0-3.
-* sysrst_ctrl_combo_detect_sel_cg: This covergroup will sample the input selected for combo detect.
 * sysrst_ctrl_combo_detect_det_cg: This covergroup will cover the combo detect debounce timer value.
+* sysrst_ctrl_combo_precondition_det_cg: This covergroup will cover the combo precondition debounce timer value.
 * sysrst_ctrl_auto_block_debounce_ctl_cg: This will cover the auto block enable/disable feature, debounce timer value.
 * sysrst_ctrl_combo_intr_status_cg: This covergroup will capture the combo detect interrupt status.
 * sysrst_ctrl_key_intr_status_cg: This covergroup will capture the edge detect status for all the inputs.
