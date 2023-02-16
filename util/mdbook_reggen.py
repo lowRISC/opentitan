@@ -13,6 +13,7 @@ import sys
 import re
 import io
 from pathlib import Path
+from typing import List
 
 from mdbook import utils as md_utils
 from reggen.ip_block import IpBlock
@@ -38,7 +39,7 @@ def main() -> None:
             "Provide regex as preprocessor.reggen.ip-cfg-py-regex .",
         )
 
-    name2path = {}
+    cfg_files: List[Path] = []
     for chapter in md_utils.chapters(book["sections"]):
         src_path = chapter["source_path"]
         if not src_path or not ip_cfg_pattern.search(src_path):
@@ -57,9 +58,8 @@ def main() -> None:
         gen_html.gen_html(block, buffer)
         chapter["content"] = buffer.getvalue()
 
-        name2path[block.name] = src_path
+        cfg_files.append(Path(src_path))
 
-    cfg_files = set(Path(p) for p in name2path.values())
     for chapter in md_utils.chapters(book["sections"]):
         if not chapter["source_path"]:
             continue
@@ -72,30 +72,6 @@ def main() -> None:
             book_root,
             src_dir,
         )
-
-        def regref_swap(match: re.Match) -> str:
-            """Replaces regref with a link to the register."""
-            reg = match.group(1).split(".")
-            if len(reg) > 3 or len(reg) < 2:
-                sys.exit(
-                    f"{match.group(0)} is invalid. "
-                    "Should be in the form: 'ip_block.register.field', where 'field' is optional.",
-                )
-            try:
-                # Make the path to the config file absolute (to root of the site),
-                # so we don't have to worry about what page we are in.
-                # Also, do the hjson -> html conversion.
-                path = "/{}.html".format(
-                    name2path[reg[0]].removeprefix("./").removesuffix(".hjson")
-                )
-            except KeyError:
-                sys.exit(f"Ip block with name '{reg[0]}' could not be found.")
-
-            name = reg[1] + "." + reg[2] if len(reg) == 3 else reg[1]
-
-            return "[`{}`]({}#{})".format(name, path, reg[1].lower())
-
-        chapter["content"] = REGREF_PATTERN.sub(regref_swap, chapter["content"])
 
     # dump the book into stdout
     print(json.dumps(book))
