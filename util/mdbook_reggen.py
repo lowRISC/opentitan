@@ -93,7 +93,7 @@ def main() -> None:
 
             name = reg[1] + "." + reg[2] if len(reg) == 3 else reg[1]
 
-            return "[`{}`]({}#Reg_{})".format(name, path, reg[1].lower())
+            return "[`{}`]({}#{})".format(name, path, reg[1].lower())
 
         chapter["content"] = REGREF_PATTERN.sub(regref_swap, chapter["content"])
 
