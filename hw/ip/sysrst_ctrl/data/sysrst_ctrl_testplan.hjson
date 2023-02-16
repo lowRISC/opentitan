@@ -203,21 +203,10 @@
     {
       name: sysrst_ctrl_combo_detect_action_cg
       desc: '''
-            Cover all the combo detect actions.
+            Cover all the combo detect, combo_sel and combo_pre_sel actions.
             Create 4 instance to cover the combo detect register [0-3].
             Sample the covergroup when the event occurs.
-            Cross the covergroup with combo_detect_sel_cg to cover all the input combination with
-            all the possible combo_detect actions.
-            '''
-    }
-    {
-      name: sysrst_ctrl_combo_detect_sel_cg
-      desc: '''
-            Cover all the combo detect input select.
-            Cross all the inputs to cover all the combos.
-            Create 4 instance to cover the combo detect register [0-3].
-            Sample the covergroup when the event occurs.
-            Cross the covergroup with combo_detect_action_cg to cover all the input combination with
+            Cross the covergroup with combo_detect_sel_cg and combo_pre_sel_cg to cover all the input combination with
             all the possible combo_detect actions.
             '''
     }
@@ -226,6 +215,13 @@
       desc: '''
             Cover the combo detect debounce timer.
             Create 4 instance to cover the combo detect register [0-3].
+            '''
+    }
+    {
+      name: sysrst_ctrl_combo_precondition_det_cg
+      desc: '''
+            Cover the combo detect precondition debounce timer.
+            Create 4 instance to cover the combo detect precondition register [0-3].
             '''
     }
     {
