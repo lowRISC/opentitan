@@ -556,12 +556,12 @@ Once disabled, CSRNG may only be re-enabled after `ENTROPY_SRC` has been disable
 
 All CSRNG registers are little-endian.
 
-When providing additional data for an <tt>instantiate</tt>, <tt>reseed</tt> or <tt>update</tt> command the data words have to be written to {{#regref csrng.CMD_REQ }} in the correct order.
+When providing additional data for an <tt>instantiate</tt>, <tt>reseed</tt> or <tt>update</tt> command the data words have to be written to [`CMD_REQ`](data/csrng.hjson#cmd_req) in the correct order.
 Consider a byte string B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>n</sub> as defined in Appendix A of [NIST's SP 800-90A](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf), i.e., where B<sub>1</sub> is the most significant byte and B<sub>n</sub> the least significant byte.
-Providing this sequence as additional data to CSRNG requires software to write the following 32-bit words to {{#regref csrng.CMD_REQ }} in the following order:
+Providing this sequence as additional data to CSRNG requires software to write the following 32-bit words to [`CMD_REQ`](data/csrng.hjson#cmd_req) in the following order:
 
 <table>
-<caption>Byte order when writing to {{#regref csrng.CMD_REQ }}</caption>
+<caption>Byte order when writing to [`CMD_REQ`](data/csrng.hjson#cmd_req)</caption>
 <thead>
   <tr>
     <th>Word Index</th>
@@ -587,9 +587,9 @@ Providing this sequence as additional data to CSRNG requires software to write t
   </tr>
 </table>
 
-When reading the internal state from {{#regref csrng.INT_STATE_VAL }}, CSRNG returns the bytes of V and Key in the following order:
+When reading the internal state from [`INT_STATE_VAL`](data/csrng.hjson#int_state_val), CSRNG returns the bytes of V and Key in the following order:
 <table>
-<caption>Byte order when reading from {{#regref csrng.INT_STATE_VAL }}</caption>
+<caption>Byte order when reading from [`INT_STATE_VAL`](data/csrng.hjson#int_state_val)</caption>
 <thead>
   <tr>
     <th>Word Index</th>
@@ -627,13 +627,13 @@ When reading the internal state from {{#regref csrng.INT_STATE_VAL }}, CSRNG ret
   </tr>
 </table>
 
-Finally, when reading a byte string of say 64 bytes (16 words) B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>64</sub> from {{#regref csrng.GENBITS }} as defined in Appendix A of [NIST's SP 800-90A](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf), the bytes are returned in the following order.
+Finally, when reading a byte string of say 64 bytes (16 words) B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>64</sub> from [`GENBITS`](data/csrng.hjson#genbits) as defined in Appendix A of [NIST's SP 800-90A](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf), the bytes are returned in the following order.
 Note that always 4 words return 1 128-bit GENBITS block.
 Within each block, the least significant bytes are returned first and the most significant bytes are returned last.
 In particular, the most significant byte B<sub>1</sub> of the string is read in Word 4 and the least significant byte B<sub>64</sub> of the string is read in Word 13.
 
 <table>
-<caption>Byte order when reading from {{#regref csrng.GENBITS }}</caption>
+<caption>Byte order when reading from [`GENBITS`](data/csrng.hjson#genbits)</caption>
 <thead>
   <tr>
     <th>Word Index</th>

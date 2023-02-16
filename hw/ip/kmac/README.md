@@ -128,9 +128,9 @@ The interface has an additional address signal on top of the valid, ready, and d
 
 ![](./doc/sha3-padding.svg)
 
-The hashing process begins when the software issues the start command to {{#regref kmac.CMD }} .
+The hashing process begins when the software issues the start command to [`CMD`](data/kmac.hjson#cmd) .
 If cSHAKE is enabled, the padding logic expands the prefix value (`N || S` above) into a block size.
-The block size is determined by the {{#regref kmac.CFG.kstrength }} .
+The block size is determined by the [`CFG.kstrength`](data/kmac.hjson#cfg) .
 If the value is 128, the block size will be 168 bytes.
 If it is 256, the block size will be 136 bytes.
 The expanded prefix value is transmitted to the Keccak round logic.
@@ -139,16 +139,16 @@ After sending the block size, the padding logic triggers the Keccak round logic 
 If the mode is not cSHAKE, or cSHAKE mode and the prefix block has been processed, the padding logic accepts the incoming message bitstream and forward the data to the Keccak round logic in a block granularity.
 The padding logic controls the data flow and makes the Keccak logic to run after sending a block size.
 
-After the software writes the message bitstream, it should issue the Process command into {{#regref kmac.CMD }} register.
-The padding logic, after receiving the Process command, appends proper ending bits with respect to the {{#regref kmac.CFG.mode }} value.
+After the software writes the message bitstream, it should issue the Process command into [`CMD`](data/kmac.hjson#cmd) register.
+The padding logic, after receiving the Process command, appends proper ending bits with respect to the [`CFG.mode`](data/kmac.hjson#cfg) value.
 The logic writes 0 up to the block size to the Keccak round logic then ends with 1 at the end of the block.
 
 ![](./doc/sha3-padding-fsm.svg)
 
 After the Keccak round completes the last block, the padding logic asserts an `absorbed` signal to notify the software.
 The signal generates the `kmac_done` interrupt.
-At this point, the software is able to read the digest in {{#regref kmac.STATE }} memory region.
-If the output length is greater than the Keccak block rate in SHAKE and cSHAKE mode, the software may run the Keccak round manually by issuing Run command to {{#regref kmac.CMD }} register.
+At this point, the software is able to read the digest in [`STATE`](data/kmac.hjson#state) memory region.
+If the output length is greater than the Keccak block rate in SHAKE and cSHAKE mode, the software may run the Keccak round manually by issuing Run command to [`CMD`](data/kmac.hjson#cmd) register.
 
 The software completes the operation by issuing Done command after reading the digest.
 The padding logic clears internal variables and goes back to Idle state.
@@ -160,8 +160,8 @@ The padding logic clears internal variables and goes back to Idle state.
 KMAC core prepends and appends additional bitstream on top of Keccak padding logic in SHA3 core.
 The [NIST SP 800-185][] defines `KMAC[128,256](K, X, L, S)` as a cSHAKE function.
 See the section 4.3 in NIST SP 800-185 for details.
-If KMAC is enabled, the software should configure {{#regref kmac.CMD.mode }} to cSHAKE and the first six bytes of {{#regref kmac.PREFIX }} to `0x01204B4D4143` (bigendian).
-The first six bytes of {{#regref kmac.PREFIX }} represents the value of `encode_string("KMAC")`.
+If KMAC is enabled, the software should configure [`CMD.mode`](data/kmac.hjson#cmd) to cSHAKE and the first six bytes of [`PREFIX`](data/kmac.hjson#prefix) to `0x01204B4D4143` (bigendian).
+The first six bytes of [`PREFIX`](data/kmac.hjson#prefix) represents the value of `encode_string("KMAC")`.
 
 The KMAC padding logic prepends a block containing the encoded secret key to the output message.
 The KMAC first sends the block of secret key then accepts the incoming message bitstream.
@@ -192,7 +192,7 @@ This enables the HW to fire the interrupt even the FIFO remains empty.
 
 However, the recommended approach to write messages is:
 
-1. Check the FIFO depth {{#regref kmac.STATUS.fifo_depth }}. This represents the number of entry slots currently occupied in the FIFO.
+1. Check the FIFO depth [`STATUS.fifo_depth`](data/kmac.hjson#status). This represents the number of entry slots currently occupied in the FIFO.
 2. Calculate the remaining size as `<max number of fifo entries> - <STATUS.fifo_depth>) * <entry size>`.
 3. Write data to fill the remaining size.
 4. Repeat until all data is written.
@@ -247,12 +247,12 @@ However, this should be done carefully, and tests should always cover the scenar
 
 The message FIFO does not generate the masked message data.
 Incoming message bitstream is not sensitive to the leakage.
-If the `EnMasking` parameter is set and {{#regref kmac.CFG_SHADOWED.msg_mask }} is enabled, the message is masked upon loading into the Keccak core using the internal entropy generator.
+If the `EnMasking` parameter is set and [`CFG_SHADOWED.msg_mask`](data/kmac.hjson#cfg_shadowed) is enabled, the message is masked upon loading into the Keccak core using the internal entropy generator.
 The secret key, however, is stored as masked form always.
 
 If the `EnMasking` parameter is not set, the masking is disabled.
 Then, the software has to provide the key in unmasked form by default.
-Any write operations to {{#regref kmac.KEY_SHARE1_0 }} - {{#regref kmac.KEY_SHARE1_15 }} are ignored.
+Any write operations to [`KEY_SHARE1_0`](data/kmac.hjson#key_share1_0) - [`KEY_SHARE1_15`](data/kmac.hjson#key_share1_5) are ignored.
 
 If the `EnMasking` parameter is not set and the `SwKeyMasked` parameter is set, software has to provide the key in masked form.
 Internally, the design then unmasks the key by XORing the two key shares together when loading the key into the engine.
@@ -279,7 +279,7 @@ In addition to that, the KMAC/SHA3 blocks the software access to the Keccak stat
 ![](./doc/application-interface.svg)
 
 KMAC/SHA3 HWIP has an option to receive the secret key from the KeyMgr via sideload key interface.
-The software should set {{#regref kmac.CFG.sideload }} to use the KeyMgr sideloaded key for the SW-initiated KMAC operation.
+The software should set [`CFG.sideload`](data/kmac.hjson#cfg) to use the KeyMgr sideloaded key for the SW-initiated KMAC operation.
 `keymgr_pkg::hw_key_t` defines the structure of the sideloaded key.
 KeyMgr provides the sideloaded key in two-share masked form regardless of the compile-time parameter `EnMasking`.
 If `EnMasking` is not defined, the KMAC merges the shared key to the unmasked form before uses the key.
@@ -323,7 +323,7 @@ If the `EnMasking` parameter is not set, the second share is always zero.
 This section explains the entropy generator inside the KMAC HWIP.
 
 KMAC has an entropy generator to provide the design with pseudo-random numbers while processing the secret key block.
-The entropy is used for both remasking the DOM multipliers inside the Chi function of the Keccak core as well as for masking the message if {{#regref kmac.CFG_SHADOWED.msg_mask }} is enabled.
+The entropy is used for both remasking the DOM multipliers inside the Chi function of the Keccak core as well as for masking the message if [`CFG_SHADOWED.msg_mask`](data/kmac.hjson#cfg_shadowed) is enabled.
 
 ![Entropy block](./doc/kmac-entropy.svg)
 
@@ -332,7 +332,7 @@ This allows the module to generate 800 bits of fresh, pseudo-random numbers requ
 To break linear shift patterns, each LFSR features a non-linear layer.
 In addition an 800-bit wide permutation spanning across all LFSRs is used.
 
-Depending on {{#regref kmac.CFG_SHADOWED.entropy_mode }}, the entropy generator fetches initial entropy from the [Entropy Distribution Network (EDN)][edn] module or software has to provide a seed by writing the {{#regref kmac.ENTROPY_SEED_0 }} - {{#regref kmac.ENTROPY_SEED_4 }} registers in ascending order.
+Depending on [`CFG_SHADOWED.entropy_mode`](data/kmac.hjson#cfg_shadowed), the entropy generator fetches initial entropy from the [Entropy Distribution Network (EDN)][edn] module or software has to provide a seed by writing the [`ENTROPY_SEED_0`](data/kmac.hjson#entropy_seed_0) - [`ENTROPY_SEED_4`](data/kmac.hjson#entropy_seed_4) registers in ascending order.
 The module periodically refreshes the LFSR seeds with the new entropy from EDN.
 
 To limit the entropy consumption for reseeding, a cascaded reseeding mechanism is used.
@@ -340,7 +340,7 @@ Per reseeding operation, the entropy generator consumes five times 32 bits of en
 These five 32-bit words are directly fed into LFSRs 0/5/10/15/20 for reseeding.
 At the same time, the previous states of LFSRs 0/5/10/15/20 from before the reseeding operation are permuted and then forwarded to reseed LFSRs 1/6/11/16/21.
 Similarly, the previous states of LFSRs 1/6/11/16/21 from before the reseeding operation are permuted and then forwarded to reseed LFSRs 2/7/12/17/22.
-Software can still request a complete reseed of all 25 LFSRs from EDN by subsequently triggering five reseeding operations through {{#regref kmac.CMD.entropy_req }}.
+Software can still request a complete reseed of all 25 LFSRs from EDN by subsequently triggering five reseeding operations through [`CMD.entropy_req`](data/kmac.hjson#cmd).
 
 [edn]: ../edn/README.md
 
@@ -349,8 +349,8 @@ Software can still request a complete reseed of all 25 LFSRs from EDN by subsequ
 This section explains the errors KMAC HWIP raises during the hashing operations, their meanings, and the error handling process.
 
 KMAC HWIP has the error checkers in its internal datapath.
-If the checkers detect errors, whether they are triggered by the SW mis-configure, or HW malfunctions, they report the error to {{#regref kmac.ERR_CODE }} and raise an `kmac_error` interrupt.
-Each error code gives debugging information at the lower 24 bits of {{#regref kmac.ERR_CODE }}.
+If the checkers detect errors, whether they are triggered by the SW mis-configure, or HW malfunctions, they report the error to [`ERR_CODE`](data/kmac.hjson#err_code) and raise an `kmac_error` interrupt.
+Each error code gives debugging information at the lower 24 bits of [`ERR_CODE`](data/kmac.hjson#err_code).
 
 Value | Error Code | Description
 ------|------------|-------------
@@ -392,7 +392,7 @@ If the SW issues any commands while the application interface is being used, the
 The received command does not affect the Application process.
 The request is dropped by the KMAC_APP module.
 
-The lower 3 bits of {{#regref kmac.ERR_CODE }} contains the received command from the SW.
+The lower 3 bits of [`ERR_CODE`](data/kmac.hjson#err_code) contains the received command from the SW.
 #### WaitTimerExpired (0x04)
 
 The SW may set the EDN wait timer to exit from EDN request state if the response from EDN takes long.
@@ -404,18 +404,18 @@ It asserts the entropy valid signal to complete the current hashing operation.
 If the module does not complete, or flush the pending operation, it creates the back pressure to the message FIFO.
 Then, the SW may not be able to access the KMAC IP at all, as the crossbar is stuck.
 
-The SW may move the state machine to the reset state by issuing {{#regref kmac.CFG.err_processed }}.
+The SW may move the state machine to the reset state by issuing [`CFG.err_processed`](data/kmac.hjson#cfg).
 
 #### IncorrectEntropyMode (0x05)
 
 If SW misconfigures the entropy mode and let the entropy module prepare the random data, the module reports `IncorrectEntropyMode` error.
 The state machine moves to Wait state after reporting the error.
 
-The SW may move the state machine to the reset state by issuing {{#regref kmac.CFG.err_processed }}.
+The SW may move the state machine to the reset state by issuing [`CFG.err_processed`](data/kmac.hjson#cfg).
 
 #### UnexpectedModeStrength (0x06)
 
-When the SW issues `Start` command, the KMAC_ERRCHK module checks the {{#regref kmac.CFG.mode }} and {{#regref kmac.CFG.kstrength }}.
+When the SW issues `Start` command, the KMAC_ERRCHK module checks the [`CFG.mode`](data/kmac.hjson#cfg) and [`CFG.kstrength`](data/kmac.hjson#cfg).
 The KMAC HWIP assumes the combinations of two to be **SHA3-224**, **SHA3-256**, **SHA3-384**, **SHA3-512**, **SHAKE-128**, **SHAKE-256**, **cSHAKE-128**, and **cSHAKE-256**.
 If the combination of the `mode` and `kstrength` does not fall into above, the module reports the `UnexpectedModeStrength` error.
 
@@ -424,7 +424,7 @@ The SW may get the incorrect digest value.
 
 #### IncorrectFunctionName (0x07)
 
-If {{#regref kmac.CFG.kmac_en }} is set and the SW issues the `Start` command, the KMAC_ERRCHK checks if the {{#regref kmac.PREFIX }} has correct function name, `encode_string("KMAC")`.
+If [`CFG.kmac_en`](data/kmac.hjson#cfg) is set and the SW issues the `Start` command, the KMAC_ERRCHK checks if the [`PREFIX`](data/kmac.hjson#prefix) has correct function name, `encode_string("KMAC")`.
 If the value does not match to the byte form of `encode_string("KMAC")` (`0x4341_4D4B_2001`), it reports the `IncorrectFunctionName` error.
 
 As same as `UnexpectedModeStrength` error, this error does not block the hashing operation.
@@ -434,7 +434,7 @@ The SW may get the incorrect signature value.
 
 The KMAC_ERRCHK module checks the SW issued commands if it follows the guideline.
 If the SW issues the command that is not relevant to the current context, the module reports the `SwCmdSequence` error.
-The lower 3bits of the {{#regref kmac.ERR_CODE }} contains the received command.
+The lower 3bits of the [`ERR_CODE`](data/kmac.hjson#err_code) contains the received command.
 
 This error, however, does not stop the KMAC HWIP.
 The incorrect command is dropped at the following datapath, SHA3 core.
@@ -444,44 +444,44 @@ The incorrect command is dropped at the following datapath, SHA3 core.
 ## Initialization
 
 The software can update the KMAC/SHA3 configurations only when the IP is in the idle state.
-The software should check {{#regref kmac.STATUS.sha3_idle }} before updating the configurations.
-The software must first program {{#regref kmac.CFG.msg_endianness }} and {{#regref kmac.CFG.state_endianness }} at the initialization stage.
+The software should check [`STATUS.sha3_idle`](data/kmac.hjson#status) before updating the configurations.
+The software must first program [`CFG.msg_endianness`](data/kmac.hjson#cfg) and [`CFG.state_endianness`](data/kmac.hjson#cfg) at the initialization stage.
 These determine the byte order of incoming messages (msg_endianness) and the Keccak state output (state_endianness).
 
 ## Software Initiated KMAC/SHA3 process
 
 This section describes the expected software process to run the KMAC/SHA3 HWIP.
-At first, the software configures {{#regref kmac.CFG.kmac_en }} for KMAC operation.
-If KMAC is enabled, the software should configure {{#regref kmac.CFG.mode }} to cSHAKE and {{#regref kmac.CFG.kstrength }} to 128 or 256 bit security strength.
-The software also updates {{#regref kmac.PREFIX }} registers if cSHAKE mode is used.
-Current design does not convert cSHAKE mode to SHAKE even if {{#regref kmac.PREFIX }} is empty string.
-It is the software's responsibility to change the {{#regref kmac.CFG.mode }} to SHAKE in case of empty {{#regref kmac.PREFIX }}.
-The KMAC/SHA3 HWIP uses {{#regref kmac.PREFIX }} registers as it is.
-It means that the software should update {{#regref kmac.PREFIX }} with encoded values.
+At first, the software configures [`CFG.kmac_en`](data/kmac.hjson#cfg) for KMAC operation.
+If KMAC is enabled, the software should configure [`CFG.mode`](data/kmac.hjson#cfg) to cSHAKE and [`CFG.kstrength`](data/kmac.hjson#cfg) to 128 or 256 bit security strength.
+The software also updates [`PREFIX`](data/kmac.hjson#prefix) registers if cSHAKE mode is used.
+Current design does not convert cSHAKE mode to SHAKE even if [`PREFIX`](data/kmac.hjson#prefix) is empty string.
+It is the software's responsibility to change the [`CFG.mode`](data/kmac.hjson#cfg) to SHAKE in case of empty [`PREFIX`](data/kmac.hjson#prefix).
+The KMAC/SHA3 HWIP uses [`PREFIX`](data/kmac.hjson#prefix) registers as it is.
+It means that the software should update [`PREFIX`](data/kmac.hjson#prefix) with encoded values.
 
-If {{#regref kmac.CFG.kmac_en }} is set, the software should update the secret key.
-The software prepares two shares of the secret key and selects its length in {{#regref kmac.KEY_LEN }} then writes the shares of the secret key to {{#regref kmac.KEY_SHARE0 }} and {{#regref kmac.KEY_SHARE1 }} .
+If [`CFG.kmac_en`](data/kmac.hjson#cfg) is set, the software should update the secret key.
+The software prepares two shares of the secret key and selects its length in [`KEY_LEN`](data/kmac.hjson#key_len) then writes the shares of the secret key to [`KEY_SHARE0`](data/kmac.hjson#key_share0) and [`KEY_SHARE1`](data/kmac.hjson#key_share1) .
 The two shares of the secret key are the values that represent the secret key value when they are XORed together.
 The software can XOR the unmasked secret key with entropy.
 The XORed value is a share and the entropy used is the other share.
 
-After configuring, the software notifies the KMAC/SHA3 engine to accept incoming messages by issuing Start command into {{#regref kmac.CMD }} .
+After configuring, the software notifies the KMAC/SHA3 engine to accept incoming messages by issuing Start command into [`CMD`](data/kmac.hjson#cmd) .
 If Start command is not issued, the incoming message is discarded.
 If KMAC is enabled, the software pushes the `right_encode(output_length)` value at the end of the message.
 For example, if the desired output length is 256 bit, the software writes `0x00020100` to MSG_FIFO.
 
-After the software pushes all messages, it issues Process command to {{#regref kmac.CMD }} for SHA3 engine to complete the sponge absorbing process.
+After the software pushes all messages, it issues Process command to [`CMD`](data/kmac.hjson#cmd) for SHA3 engine to complete the sponge absorbing process.
 SHA3 hashing engine pads the incoming message as defined in the SHA3 specification.
 
 After the SHA3 engine completes the sponge absorbing step, it generates `kmac_done` interrupt.
-Or the software can poll the {{#regref kmac.STATUS.squeeze }} bit until it becomes 1.
+Or the software can poll the [`STATUS.squeeze`](data/kmac.hjson#status) bit until it becomes 1.
 In this stage, the software may run the Keccak round manually.
 
 If the desired digest length is greater than the Keccak rate, the software issues Run command for the Keccak round logic to run one full round after the software reads the current available Keccak state.
 At this stage, KMAC/SHA3 does not raise an interrupt when the Keccak round completes the software initiated manual run.
-The software should check {{#regref kmac.STATUS.squeeze }} register field for the readiness of {{#regref kmac.STATE }} value.
+The software should check [`STATUS.squeeze`](data/kmac.hjson#status) register field for the readiness of [`STATE`](data/kmac.hjson#state) value.
 
-After the software reads all the digest values, it issues Done command to {{#regref kmac.CMD }} register to clear the internal states.
+After the software reads all the digest values, it issues Done command to [`CMD`](data/kmac.hjson#cmd) register to clear the internal states.
 Done command clears the Keccak state, FSM in SHA3 and KMAC, and a few internal variables.
 Secret key and other software programmed values won't be reset.
 
@@ -492,7 +492,7 @@ This KMAC HWIP operates in little-endian.
 Internal SHA3 hashing engine receives in 64-bit granularity.
 The data written to SHA3 is assumed to be little endian.
 
-The software may write/read the data in big-endian order if {{#regref kmac.CFG.msg_endianness }} or {{#regref kmac.CFG.state_endianness }} is set.
+The software may write/read the data in big-endian order if [`CFG.msg_endianness`](data/kmac.hjson#cfg) or [`CFG.state_endianness`](data/kmac.hjson#cfg) is set.
 If the endianness bit is 1, the data is assumed to be big-endian.
 So, the internal logic byte-swap the data.
 For example, when the software writes `0xDEADBEEF` with endianness as 1, the logic converts it to `0xEFBEADDE` then writes into MSG_FIFO.
@@ -500,7 +500,7 @@ For example, when the software writes `0xDEADBEEF` with endianness as 1, the log
 The software managed secret key, and the prefix are always little-endian values.
 For example, if the software configures the function name `N` in KMAC operation, it writes `encode_string("KMAC")`.
 The `encode_string("KMAC")` represents `0x01 0x20 0x4b 0x4d 0x41 0x43` in byte order.
-The software writes `0x4d4b2001` into {{#regref kmac.PREFIX0 }} and `0x????4341` into {{#regref kmac.PREFIX1 }} .
+The software writes `0x4d4b2001` into [`PREFIX0`](data/kmac.hjson#prefix0) and `0x????4341` into [`PREFIX1`](data/kmac.hjson#prefix1) .
 Upper 2 bytes can vary depending on the customization input string `S`.
 
 ## KMAC/SHA3 context switching

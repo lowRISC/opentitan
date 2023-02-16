@@ -71,7 +71,7 @@ Signal                     | Direction        | Type                            
 `lc_escalate_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`             | Multibit life cycle escalation enable signal coming from life cycle controller, asserted if an escalation has occurred.
 `sram_otp_key_o`           | `output`         | `otp_ctrl_pkg::sram_otp_key_req_t` | Key derivation request going to the key derivation interface of the OTP controller.
 `sram_otp_key_i`           | `input`          | `otp_ctrl_pkg::sram_otp_key_rsp_t` | Ephemeral scrambling key coming back from the key derivation interface of the OTP controller.
-`otp_en_sram_ifetch_i`     | `input`          | `otp_ctrl_pkg::mubi8_t`            | Multibit value coming from the OTP HW_CFG partition ([EN_SRAM_IFETCH](../otp_ctrl/README.md#direct-access-memory-map)), set to kMuBi8True in order to enable the {{#regref sram_ctrl.EXEC }} CSR.
+`otp_en_sram_ifetch_i`     | `input`          | `otp_ctrl_pkg::mubi8_t`            | Multibit value coming from the OTP HW_CFG partition ([EN_SRAM_IFETCH](../otp_ctrl/README.md#direct-access-memory-map)), set to kMuBi8True in order to enable the [`EXEC`](data/sram_ctrl.hjson#exec) CSR.
 `cfg_i`                    | `input`          | `logic [CfgWidth-1:0]`             | Attributes for physical memory macro.
 
 #### Interfaces to OTP and the SRAM Scrambling Primitive
@@ -143,7 +143,7 @@ This behavior, combined with other top level defenses, form a multi-layered defe
 Since the scrambling device uses a block cipher in CTR mode, it is undesirable to initialize the memory with all-zeros from a security perspective, as that would reveal the XOR keystream.
 To this end, the `sram_ctrl` contains an LFSR-based initialization mechanism that overwrites the the entire memory with pseudorandom data.
 
-Initialization can be triggered via the {{#regref sram_ctrl.CTRL.INIT }} CSR, and once triggered, the LFSR is first re-seeded with the nonce that has been fetched together with the scrambling key.
+Initialization can be triggered via the [`CTRL.INIT`](data/sram_ctrl.hjson#ctrl) CSR, and once triggered, the LFSR is first re-seeded with the nonce that has been fetched together with the scrambling key.
 Then, the memory is initialized with pseudorandom data pulled from the LFSR.
 For each pseudorandom 32bit word, the initialization mechanism computes the corresponding integrity bits and writes both the data and integrity bits (39bit total) through the scrambling device using the most recently obtained scrambling key.
 
@@ -155,7 +155,7 @@ Note however that the PRNG sequence does not have strong security guarantees, si
 ### Code Execution from SRAM
 
 The SRAM controller contains an access control mechanism for filtering instruction fetches from the processor.
-As illustrated below, an OTP switch EN_SRAM_IFETCH (see [OTP memory map](../otp_ctrl/README.md#direct-access-memory-map)) allows to either tie code execution from SRAM to the life cycle state via the HW_DEBUG_EN function (see [life cycle docs](../lc_ctrl/README.md#hw_debug_en)), or it can be enabled / disabled via the {{#regref sram_ctrl.EXEC }} CSR.
+As illustrated below, an OTP switch EN_SRAM_IFETCH (see [OTP memory map](../otp_ctrl/README.md#direct-access-memory-map)) allows to either tie code execution from SRAM to the life cycle state via the HW_DEBUG_EN function (see [life cycle docs](../lc_ctrl/README.md#hw_debug_en)), or it can be enabled / disabled via the [`EXEC`](data/sram_ctrl.hjson#exec) CSR.
 
 ![SRAM Code Execution](./doc/sram_ctrl_sram_execution.svg)
 
@@ -205,19 +205,19 @@ For full write throughput, a more elaborate write buffering scheme would be requ
 The memory inside the SRAM controller can be used right away after a system reset.
 However, since the scrambling key defaults to a predefined value, it is recommended that SW performs the following initialization steps as early in the boot process as possible.
 
-1. Request an updated ephemeral scrambling key from OTP by writing 0x1 to {{#regref sram_ctrl.CTRL.RENEW_SCR_KEY }}.
-   SW should spin on {{#regref sram_ctrl.STATUS.SCR_KEY_VALID }} to wait until the new key has been obtained.
+1. Request an updated ephemeral scrambling key from OTP by writing 0x1 to [`CTRL.RENEW_SCR_KEY`](data/sram_ctrl.hjson#ctrl).
+   SW should spin on [`STATUS.SCR_KEY_VALID`](data/sram_ctrl.hjson#status) to wait until the new key has been obtained.
    While this is not strictly needed since memory accesses to the SRAM will be stalled until the updated key has been obtained, the PC value upon a watchdog crash will be more informative when using a spin wait.
 
-2. (optional) Initialize the memory with pseudo random data by writing 0x1 to {{#regref sram_ctrl.CTRL.INIT }}
-   SW should spin on {{#regref sram_ctrl.STATUS.INIT_DONE }} to wait until the memory has been initialized.
+2. (optional) Initialize the memory with pseudo random data by writing 0x1 to [`CTRL.INIT`](data/sram_ctrl.hjson#ctrl)
+   SW should spin on [`STATUS.INIT_DONE`](data/sram_ctrl.hjson#status) to wait until the memory has been initialized.
    While this is not strictly needed since memory accesses to the SRAM will be stalled until the initialization is done, the PC value upon a watchdog crash will be more informative when using a spin wait.
 
-3. (optional) Check the {{#regref sram_ctrl.STATUS.SCR_KEY_SEED_VALID }} bit:
+3. (optional) Check the [`STATUS.SCR_KEY_SEED_VALID`](data/sram_ctrl.hjson#status) bit:
     - In case the scrambling key seeds have been fully provisioned to OTP, this bit should be set to 0x1. A value of 0x0 indicates that the OTP could be malfunctioning or has been tampered with.
     - If the scrambling seeds have not yet been provisioned to OTP, this bit is set to 0x0. The scrambling key will in that case still be ephemeral, but the key seed mixed in as part of the key derivation process will be set to a predefined netlist constant.
 
-4. (optional) Lock down write access to {{#regref sram_ctrl.CTRL }} by writing to {{#regref sram_ctrl.CTRL_REGWEN }} if future key renewals and initializations should be disallowed until the next system reset.
+4. (optional) Lock down write access to [`CTRL`](data/sram_ctrl.hjson#ctrl) by writing to [`CTRL_REGWEN`](data/sram_ctrl.hjson#ctrl_regwen) if future key renewals and initializations should be disallowed until the next system reset.
 
 Note that before (re-)requesting an updated SRAM key it is imperative to make sure that:
 - The memory contents are not needed anymore. Requesting a key implicitly wipes all data in the SRAM.

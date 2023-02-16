@@ -49,7 +49,7 @@ There are separate translations controls for instruction and data.
 Each control contains two programmable regions (2 for instruction and 2 for data).
 If a transaction matches multiple regions, the lowest indexed region has priority.
 
-For details on how to program the related registers, please see {{#regref rv_core_ibex.IBUS_ADDR_MATCHING_0 }} and {{#regref rv_core_ibex.IBUS_REMAP_ADDR_0 }}.
+For details on how to program the related registers, please see [`IBUS_ADDR_MATCHING_0`](data/rv_core_ibex.hjson#ibus_addr_matching_0) and [`IBUS_REMAP_ADDR_0`](data/rv_core_ibex.hjson#ibus_remap_addr_0).
 
 ### Translation and Instruction Caching
 
@@ -62,19 +62,19 @@ The `FENCE.I` instruction forces the instruction cache to flush, and this aligns
 ## Random Number Generation
 
 The wrapper has a connection to the [Entropy Distribution Network (EDN)](../edn/README.md) with a register based interface.
-The {{#regref rv_core_ibex.RND_DATA }} register provides 32-bits directly from the EDN.
-{{#regref rv_core_ibex.RND_STATUS.RND_DATA_VALID}} indicates if the data in {{#regref rv_core_ibex.RND_DATA }} is valid or not.
+The [`RND_DATA`](data/rv_core_ibex.hjson#rnd_data) register provides 32-bits directly from the EDN.
+[`RND_STATUS.RND_DATA_VALID`](data/rv_core_ibex.hjson#rnd_status) indicates if the data in [`RND_DATA`](data/rv_core_ibex.hjson#rnd_data) is valid or not.
 A polling style interface is used to get new random data.
-Any read to {{#regref rv_core_ibex.RND_DATA }} when it is valid invalidates the data and triggers an EDN request for new data.
-Software should poll {{#regref rv_core_ibex.RND_STATUS.RND_DATA_VALID }} until it is valid and then read from {{#regref rv_core_ibex.RND_DATA }} to get the new random data.
+Any read to [`RND_DATA`](data/rv_core_ibex.hjson#rnd_data) when it is valid invalidates the data and triggers an EDN request for new data.
+Software should poll [`RND_STATUS.RND_DATA_VALID`](data/rv_core_ibex.hjson#rnd_status) until it is valid and then read from [`RND_DATA`](data/rv_core_ibex.hjson#rnd_data) to get the new random data.
 Either the data is valid or a request for new data is pending.
 It is not possible to have a state where there is no valid data without new data being requested.
 
-Upon reset {{#regref rv_core_ibex.RND_DATA }} is invalid.
+Upon reset [`RND_DATA`](data/rv_core_ibex.hjson#rnd_data) is invalid.
 A request is made to the EDN immediately out of reset, this will not be answered until the EDN is enabled.
 Software should take care not to enable the EDN until the entropy complex configuration is as desired.
-When the entropy complex configuration is changed reading {{#regref rv_core_ibex.RND_DATA }} when it is valid will suffice to flush any old random data to trigger a new request under the new configuration.
-If a EDN request is pending when the entropy complex configuration is changed ({{#regref rv_core_ibex.RND_STATUS.RND_DATA_VALID }} is clear), it is advisable to wait until it is complete and then flush out the data to ensure the fresh value was produced under the new configuration.
+When the entropy complex configuration is changed reading [`RND_DATA`](data/rv_core_ibex.hjson#rnd_data) when it is valid will suffice to flush any old random data to trigger a new request under the new configuration.
+If a EDN request is pending when the entropy complex configuration is changed ([`RND_STATUS.RND_DATA_VALID`](data/rv_core_ibex.hjson#rnd_status) is clear), it is advisable to wait until it is complete and then flush out the data to ensure the fresh value was produced under the new configuration.
 
 ## Crash Dump Collection
 
