@@ -228,6 +228,9 @@ module dm_mem #(
     assign rdata_o = (word_enable32_q) ? word_mux[32 +: 32] : word_mux[0 +: 32];
   end
 
+  logic [DbgAddressBits-1:0] addr;
+  assign addr = addr_i[DbgAddressBits-1:0];
+
   // read/write logic
   logic [dm::DataCount-1:0][31:0] data_bits;
   logic [7:0][7:0] rdata;
@@ -254,7 +257,7 @@ module dm_mem #(
     if (req_i) begin
       // this is a write
       if (we_i) begin
-        unique case (addr_i[DbgAddressBits-1:0]) inside
+        unique case (addr) inside
           HaltedAddr: begin
             halted_aligned[wdata_hartsel] = 1'b1;
             halted_d_aligned[wdata_hartsel] = 1'b1;
@@ -295,7 +298,7 @@ module dm_mem #(
 
       // this is a read
       end else begin
-        unique case (addr_i[DbgAddressBits-1:0]) inside
+        unique case (addr) inside
           // variable ROM content
           WhereToAddr: begin
             // variable jump to abstract cmd, program_buffer or resume
@@ -384,7 +387,7 @@ module dm_mem #(
   always_comb begin
     err_d = 1'b0;
     if (req_i) begin
-      unique case (addr_i[DbgAddressBits-1:0]) inside
+      unique case (addr) inside
         WhereToAddr:                              err_d = gen_wr_err(we_i, be_i, FullRegMask);
         HaltedAddr:                               err_d = gen_wr_err(we_i, be_i, HartSelMask);
         GoingAddr:                                err_d = gen_wr_err(we_i, be_i, OneBitMask);
