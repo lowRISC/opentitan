@@ -1900,13 +1900,20 @@ opentitan_functest(
 opentitan_functest(
     name = "usbdev_test",
     srcs = ["usbdev_test.c"],
-    targets = ["verilator"],
+    cw310 = cw310_params(
+        tags = ["skip_in_ci"],  # Requires DPI model
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+    ],
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
@@ -2059,7 +2066,10 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
+                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090909",
+                # TODO(#14814): enable flash scrambling / ECC by replacing above
+                # with below.
+                #"CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
             },
         ),
     ],
@@ -2110,10 +2120,13 @@ opentitan_functest(
         "//hw/ip/kmac/data:kmac_regs",
         "//hw/ip/pattgen/data:pattgen_regs",
         "//hw/ip/pwm/data:pwm_regs",
+        "//hw/ip/spi_host/data:spi_host_regs",
         "//hw/ip/uart/data:uart_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl/rsa_3072:rsa_3072_verify",
         "//sw/device/lib/dif:adc_ctrl",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:csrng",
@@ -2128,6 +2141,7 @@ opentitan_functest(
         "//sw/device/lib/dif:pattgen",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwm",
+        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/dif:uart",
@@ -2140,5 +2154,6 @@ opentitan_functest(
         "//sw/device/lib/testing:spi_device_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto:rsa_3072_verify_testvectors_hardcoded_header",
     ],
 )

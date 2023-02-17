@@ -16,28 +16,50 @@ static dif_usbdev_buffer_pool_t buffer_pool;
 
 void usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   uint32_t istate;
+
+  // Collect a set of interrupts
   CHECK_DIF_OK(dif_usbdev_irq_get_state(ctx->dev, &istate));
 
-  // Do this first to keep things going
-  CHECK_DIF_OK(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
+  if (!istate) {
+    // Nothing new to do right now, but keep buffers available for reception
+    CHECK_DIF_OK(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
+    return;
+  }
+
+  // Record bus frame
+  if ((istate & (1u << kDifUsbdevIrqFrame))) {
+    // The first bus frame is 1
+    CHECK_DIF_OK(dif_usbdev_status_get_frame(ctx->dev, &ctx->frame));
+    ctx->got_frame = true;
+  }
 
   // Process IN completions first so we get the fact that send completed
-  // before processing a response
+  // before processing a response to that transmission
+  // This is also important for device IN performance
   if (istate & (1u << kDifUsbdevIrqPktSent)) {
     uint16_t sentep;
     CHECK_DIF_OK(dif_usbdev_get_tx_sent(ctx->dev, &sentep));
     TRC_C('a' + sentep);
-    for (int ep = 0; ep < USBDEV_NUM_ENDPOINTS; ep++) {
+    for (unsigned ep = 0; ep < USBDEV_NUM_ENDPOINTS; ep++) {
       if (sentep & (1 << ep)) {
         // Free up the buffer and optionally callback
         CHECK_DIF_OK(
             dif_usbdev_clear_tx_status(ctx->dev, ctx->buffer_pool, ep));
+
         if (ctx->tx_done_callback[ep]) {
           ctx->tx_done_callback[ep](ctx->ep_ctx[ep]);
         }
       }
     }
+
+    // Clear the interrupt sooner so that we can respond more promptly to
+    // subsequent transmitted packets
+    CHECK_DIF_OK(dif_usbdev_irq_acknowledge(ctx->dev, kDifUsbdevIrqPktSent));
+    istate &= ~(1u << kDifUsbdevIrqPktSent);
   }
+
+  // Keep buffers available for packet reception
+  CHECK_DIF_OK(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
 
   if (istate & (1u << kDifUsbdevIrqPktReceived)) {
     while (true) {
@@ -56,7 +78,7 @@ void usb_testutils_poll(usb_testutils_ctx_t *ctx) {
         ctx->rx_callback[endpoint](ctx->ep_ctx[endpoint], packet_info, buffer);
       } else {
         TRC_S("USB: unexpected RX ");
-        TRC_I(rxinfo, 24);
+        TRC_I(endpoint, 8);
         CHECK_DIF_OK(
             dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
       }
@@ -71,9 +93,31 @@ void usb_testutils_poll(usb_testutils_ctx_t *ctx) {
       }
     }
   }
+
+  uint32_t accepted = istate;
+  dif_usbdev_irq_t irq = 0U;
+  while (accepted) {
+    if (accepted & 1U) {
+      CHECK_DIF_OK(dif_usbdev_irq_acknowledge(ctx->dev, irq));
+    }
+    accepted >>= 1;
+    irq++;
+  }
+
+  // Note: LinkInErr will be raised in response to a packet being NAKed by the
+  // host which is not expected behavior on a physical USB but this is something
+  // that the DPI model does to exercise packet resending when running
+  // usbdev_stream_test
+  //
+  // We can expect AVFIFO empty and RXFIFO full interrupts when using a real
+  // host and also 'LinkOut' errors because these can be triggered by a lack of
+  // space in the RXFIFO
+
   if (istate &
       ~((1u << kDifUsbdevIrqLinkReset) | (1u << kDifUsbdevIrqPktReceived) |
-        (1u << kDifUsbdevIrqPktSent))) {
+        (1u << kDifUsbdevIrqPktSent) | (1u << kDifUsbdevIrqFrame) |
+        (1u << kDifUsbdevIrqAvEmpty) | (1u << kDifUsbdevIrqRxFull) |
+        (1u << kDifUsbdevIrqLinkOutErr) | (1u << kDifUsbdevIrqLinkInErr))) {
     // Report anything that really should not be happening during testing,
     //   at least for now
     //
@@ -93,16 +137,13 @@ void usb_testutils_poll(usb_testutils_ctx_t *ctx) {
       TRC_C(' ');
     }
   }
-  // Clear the interrupts
-  CHECK_DIF_OK(dif_usbdev_irq_acknowledge_all(ctx->dev));
 
   // TODO - clean this up
   // Frame ticks every 1ms, use to flush data every 16ms
   // (faster in DPI but this seems to work ok)
-  // At reset frame count is 0, compare to 1 so no calls before SOF received
-  uint16_t usbframe;
-  CHECK_DIF_OK(dif_usbdev_status_get_frame(ctx->dev, &usbframe));
-  if ((usbframe & 0xf) == 1) {
+  //
+  // Ensure that we do not flush until we have received a frame
+  if (ctx->got_frame && (ctx->frame & 0xf) == 1) {
     if (ctx->flushed == 0) {
       for (int i = 0; i < USBDEV_NUM_ENDPOINTS; i++) {
         if (ctx->flush[i]) {
@@ -129,6 +170,7 @@ void usb_testutils_endpoint_setup(
   ctx->flush[ep] = flush;
   ctx->reset[ep] = reset;
 
+  // Enable IN traffic from device to host
   dif_usbdev_endpoint_id_t endpoint = {
       .number = ep,
       .direction = USBDEV_ENDPOINT_DIR_IN,
@@ -136,10 +178,12 @@ void usb_testutils_endpoint_setup(
   CHECK_DIF_OK(
       dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleEnabled));
 
-  endpoint.direction = USBDEV_ENDPOINT_DIR_OUT;
   if (out_mode != kUsbdevOutDisabled) {
+    // Enable OUT traffic from host to device
+    endpoint.direction = USBDEV_ENDPOINT_DIR_OUT;
     CHECK_DIF_OK(
         dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleEnabled));
+    // Enable reception of OUT packets
     CHECK_DIF_OK(dif_usbdev_endpoint_out_enable(ctx->dev, endpoint.number,
                                                 kDifToggleEnabled));
   }
@@ -155,6 +199,11 @@ void usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   ctx->dev = &usbdev;
   ctx->buffer_pool = &buffer_pool;
 
+  // Ensure that we do not invoke the endpoint 'flush' functions before
+  // detection of the first bus frame
+  ctx->got_frame = false;
+  ctx->frame = 0u;
+
   CHECK_DIF_OK(
       dif_usbdev_init(mmio_region_from_addr(USBDEV_BASE_ADDR), ctx->dev));
 
@@ -167,7 +216,7 @@ void usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   };
   CHECK_DIF_OK(dif_usbdev_configure(ctx->dev, ctx->buffer_pool, config));
 
-  // setup context
+  // Set up context
   for (int i = 0; i < USBDEV_NUM_ENDPOINTS; i++) {
     usb_testutils_endpoint_setup(ctx, i, kUsbdevOutDisabled, NULL, NULL, NULL,
                                  NULL, NULL);

@@ -344,13 +344,13 @@ jobs:
   - bash: |
       . util/build_consts.sh
       mkdir -p "$BIN_DIR/sw/device/lib/testing/test_rom"
-      cp $(ci/scripts/target-location.sh //sw/device/lib/testing/test_rom:test_rom_fpga_nexysvideo_vmem) \
+      cp $(ci/scripts/target-location.sh //sw/device/lib/testing/test_rom:test_rom_fpga_cw305_vmem) \
         "$BIN_DIR/sw/device/lib/testing/test_rom"
-    displayName: Copy test_rom_fpga_nexysvideo_vmem to $BIN_DIR
+    displayName: Copy test_rom_fpga_cw305_vmem to $BIN_DIR
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
-        - "/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.32.vmem"
+        - "/sw/device/lib/testing/test_rom/test_rom_fpga_cw305.32.vmem"
 
 - job: otbn_standalone_tests
   displayName: Run OTBN Smoke Test

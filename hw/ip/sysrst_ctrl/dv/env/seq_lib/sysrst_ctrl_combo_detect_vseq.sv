@@ -135,6 +135,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
     uint16_t [3:0] get_duration;
     uvm_reg_data_t [3:0] get_action;
     bit[4:0] get_trigger_combo[4];
+    bit [4:0] get_trigger_combo_pre[4];
 
     `uvm_info(`gfn, "Starting the body from combo detect", UVM_LOW)
 
@@ -191,6 +192,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       foreach (ral.com_det_ctl[i]) csr_rd(ral.com_det_ctl[i], get_duration[i]);
       foreach (ral.com_out_ctl[i]) csr_rd(ral.com_out_ctl[i], get_action[i]);
       foreach (ral.com_sel_ctl[i]) csr_rd(ral.com_sel_ctl[i], get_trigger_combo[i]);
+      foreach (ral.com_sel_ctl[i]) csr_rd(ral.com_pre_sel_ctl[i], get_trigger_combo_pre[i]);
 
       // Check if the interrupt has raised.
       // NOTE: The interrupt will only raise if the interrupt combo action is set.
@@ -210,8 +212,17 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
                             get_field_val(ral.com_sel_ctl[i].key1_in_sel, get_trigger_combo[i]),
                             get_field_val(ral.com_sel_ctl[i].key2_in_sel, get_trigger_combo[i]),
                             get_field_val(ral.com_sel_ctl[i].pwrb_in_sel, get_trigger_combo[i]),
-                            get_field_val(ral.com_sel_ctl[i].ac_present_sel,
-                                          get_trigger_combo[i]));
+                            get_field_val(ral.com_sel_ctl[i].ac_present_sel,get_trigger_combo[i]),
+                            get_field_val(ral.com_pre_sel_ctl[i].key0_in_sel,
+                                                             get_trigger_combo_pre[i]),
+                            get_field_val(ral.com_pre_sel_ctl[i].key1_in_sel,
+                                                             get_trigger_combo_pre[i]),
+                            get_field_val(ral.com_pre_sel_ctl[i].key2_in_sel,
+                                                             get_trigger_combo_pre[i]),
+                            get_field_val(ral.com_pre_sel_ctl[i].pwrb_in_sel,
+                                                             get_trigger_combo_pre[i]),
+                            get_field_val(ral.com_pre_sel_ctl[i].ac_present_sel,
+                                                             get_trigger_combo_pre[i]));
           end
 
           if (get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i])) begin

@@ -5,6 +5,8 @@
 #include "hw/ip/aes/model/aes_modes.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/multibits.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/rsa_3072/rsa_3072_verify.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_csrng.h"
@@ -19,6 +21,7 @@
 #include "sw/device/lib/dif/dif_pattgen.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwm.h"
+#include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -44,6 +47,12 @@
 #include "pwm_regs.h"       // Generated.
 #include "spi_host_regs.h"  // Generated.
 #include "uart_regs.h"      // Generated.
+
+// The autogen rule that creates this header creates it in a directory named
+// after the rule, then manipulates the include path in the
+// cc_compilation_context to include that directory, so the compiler will find
+// the version of this file matching the Bazel rule under test.
+#include "rsa_3072_verify_testvectors.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
                         .enable_uart_flow_control = true,
@@ -74,6 +83,7 @@ static dif_uart_t uart_3;
 static dif_pattgen_t pattgen;
 static dif_pwm_t pwm;
 static dif_flash_ctrl_state_t flash_ctrl;
+static dif_rv_plic_t rv_plic;
 
 static const dif_i2c_t *i2c_handles[] = {&i2c_0, &i2c_1, &i2c_2};
 static const dif_uart_t *uart_handles[] = {&uart_1, &uart_2, &uart_3};
@@ -98,10 +108,16 @@ enum {
    */
   kAdcCtrlPowerUpTimeAonCycles = 15,  // maximum power-up time
   /**
+   * Entropy Source parameters.
+   */
+  kEntropySrcHealthTestWindowSize = 0x60,
+  kEntropySrcAdaptiveProportionHealthTestHighThreshold = 0x50,
+  kEntropySrcAdaptiveProportionHealthTestLowThreshold = 0x10,
+  /**
    * EDN parameters.
    */
-  kEdn0ReseedInterval = 32,
-  kEdn1ReseedInterval = 4,
+  kEdn0ReseedInterval = 128,
+  kEdn1ReseedInterval = 32,
   /**
    * KMAC parameters.
    */
@@ -250,6 +266,10 @@ static const char *kKmacMessage =
     "\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf"
     "\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7";
 
+static rsa_3072_verify_test_vector_t rsa3072_test_vector;
+static rsa_3072_int_t rsa3072_encoded_message;
+static rsa_3072_constants_t rsa3072_constants;
+
 static const uint8_t kUartMessage[] = {
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
@@ -264,6 +284,60 @@ static const uint8_t kI2cMessage[] = {
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
 };
+
+static void log_entropy_src_alert_failures(void) {
+  dif_entropy_src_alert_fail_counts_t counts;
+  CHECK_DIF_OK(dif_entropy_src_get_alert_fail_counts(&entropy_src, &counts));
+  LOG_INFO("Entropy source health test failure encountered.");
+  LOG_INFO("Total Fails: %d", counts.total_fails);
+  for (size_t i = 0; i < kDifEntropySrcTestNumVariants; ++i) {
+    switch (i) {
+      case kDifEntropySrcTestRepetitionCount:
+        LOG_INFO("Fails (Repetition Count): %d", counts.high_fails[i]);
+        break;
+      case kDifEntropySrcTestRepetitionCountSymbol:
+        LOG_INFO("Fails (Repetition Symbol Count): %d", counts.high_fails[i]);
+        break;
+      case kDifEntropySrcTestAdaptiveProportion:
+        LOG_INFO("High Fails (Adaptive Proportion): %d", counts.high_fails[i]);
+        LOG_INFO("Low Fails (Adaptive Proportion): %d", counts.low_fails[i]);
+        break;
+      case kDifEntropySrcTestBucket:
+        LOG_INFO("Fails (Bucket): %d", counts.high_fails[i]);
+        break;
+      case kDifEntropySrcTestMarkov:
+        LOG_INFO("High Fails (Markov): %d", counts.high_fails[i]);
+        LOG_INFO("Low Fails (Markov): %d", counts.low_fails[i]);
+        break;
+      case kDifEntropySrcTestMailbox:
+        LOG_INFO("High Fails (Mailbox): %d", counts.high_fails[i]);
+        LOG_INFO("Low Fails (Mailbox): %d", counts.low_fails[i]);
+        break;
+    }
+  }
+}
+
+/**
+ * External (OTTF) ISR override.
+ */
+void ottf_external_isr(void) {
+  // Find which interrupt fired at PLIC by claiming it.
+  dif_rv_plic_irq_id_t irq_id;
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_claim(&rv_plic, kTopEarlgreyPlicTargetIbex0, &irq_id));
+
+  top_earlgrey_plic_peripheral_t periph =
+      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  switch (periph) {
+    case kTopEarlgreyPlicPeripheralEntropySrc:
+      log_entropy_src_alert_failures();
+      CHECK(false);
+      break;
+    default:
+      CHECK(false, "Unexpected IRQ fired with ID: %d", irq_id);
+      break;
+  }
+}
 
 /**
  * Initializes all DIF handles for each peripheral used in this test.
@@ -315,6 +389,8 @@ static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  CHECK_DIF_OK(dif_rv_plic_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &rv_plic));
 }
 
 static void configure_pinmux(void) {
@@ -484,7 +560,8 @@ static void configure_adc_ctrl_to_continuously_sample(void) {
       (dif_adc_ctrl_config_t){
           .mode = kDifAdcCtrlNormalPowerScanMode,
           .power_up_time_aon_cycles = kAdcCtrlPowerUpTimeAonCycles,
-          // Below configurations are unused, so set them to their reset values.
+          // Below configurations are unused, so set them to their reset
+          // values.
           .wake_up_time_aon_cycles = ADC_CTRL_ADC_PD_CTL_WAKEUP_TIME_MASK,
           .num_low_power_samples = ADC_CTRL_ADC_LP_SAMPLE_CTL_REG_RESVAL,
           .num_normal_power_samples = ADC_CTRL_ADC_SAMPLE_CTL_REG_RESVAL,
@@ -509,45 +586,47 @@ static void configure_adc_ctrl_to_continuously_sample(void) {
 }
 
 static void configure_entropy_complex(void) {
-  // The (test) ROM enables the entropy complex, and to reconfigure it requires
-  // temporarily disabling it.
+  // The (test) ROM enables the entropy complex, and to reconfigure it
+  // requires temporarily disabling it.
   entropy_testutils_stop_all();
 
-  CHECK_DIF_OK(dif_entropy_src_configure(
-      &entropy_src,
-      (dif_entropy_src_config_t){
-          .fips_enable = true,
-          .route_to_firmware = true,
-          .bypass_conditioner = false,
-          .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-          .health_test_threshold_scope = false,
-          .health_test_window_size = 0x200,
-          .alert_threshold = UINT16_MAX},
-      kDifToggleDisabled));
+  // Enable entropy_src interrupts for health-test alert detection.
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      &rv_plic, kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed, 0x1));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      &rv_plic, kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed,
+      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_entropy_src_irq_set_enabled(
+      &entropy_src, kDifEntropySrcIrqEsHealthTestFailed, kDifToggleEnabled));
+
+  // Configure entropy_src and health tests.
   CHECK_DIF_OK(dif_entropy_src_health_test_configure(
       &entropy_src, (dif_entropy_src_health_test_config_t){
                         .test_type = kDifEntropySrcTestRepetitionCount,
-                        .high_threshold = UINT16_MAX,
+                        .high_threshold = 0xf,
                         .low_threshold = 0}));
   CHECK_DIF_OK(dif_entropy_src_health_test_configure(
       &entropy_src, (dif_entropy_src_health_test_config_t){
                         .test_type = kDifEntropySrcTestRepetitionCountSymbol,
-                        .high_threshold = UINT16_MAX,
+                        .high_threshold = 0xf,
                         .low_threshold = 0}));
   CHECK_DIF_OK(dif_entropy_src_health_test_configure(
-      &entropy_src, (dif_entropy_src_health_test_config_t){
-                        .test_type = kDifEntropySrcTestAdaptiveProportion,
-                        .high_threshold = UINT16_MAX,
-                        .low_threshold = 0}));
+      &entropy_src,
+      (dif_entropy_src_health_test_config_t){
+          .test_type = kDifEntropySrcTestAdaptiveProportion,
+          .high_threshold =
+              kEntropySrcAdaptiveProportionHealthTestHighThreshold,
+          .low_threshold =
+              kEntropySrcAdaptiveProportionHealthTestLowThreshold}));
   CHECK_DIF_OK(dif_entropy_src_health_test_configure(
       &entropy_src, (dif_entropy_src_health_test_config_t){
                         .test_type = kDifEntropySrcTestBucket,
-                        .high_threshold = UINT16_MAX,
+                        .high_threshold = 0xff,
                         .low_threshold = 0}));
   CHECK_DIF_OK(dif_entropy_src_health_test_configure(
       &entropy_src, (dif_entropy_src_health_test_config_t){
                         .test_type = kDifEntropySrcTestMarkov,
-                        .high_threshold = UINT16_MAX,
+                        .high_threshold = 0xff,
                         .low_threshold = 0}));
   CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
       &entropy_src,
@@ -556,9 +635,22 @@ static void configure_entropy_complex(void) {
           .buffer_threshold = ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_RESVAL,
       },
       kDifToggleDisabled));
+  CHECK_DIF_OK(dif_entropy_src_configure(
+      &entropy_src,
+      (dif_entropy_src_config_t){
+          .fips_enable = true,
+          .route_to_firmware = false,
+          .bypass_conditioner = false,
+          .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
+          .health_test_threshold_scope = false,
+          .health_test_window_size = kEntropySrcHealthTestWindowSize,
+          .alert_threshold = UINT16_MAX},
+      kDifToggleEnabled));
 
+  // Configure CSRNG.
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
+  // Configure EDNs in auto mode.
   dif_edn_seed_material_t edn_empty_seed = {
       .len = 0,
   };
@@ -567,21 +659,19 @@ static void configure_entropy_complex(void) {
       .data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
   };
   dif_edn_auto_params_t edn_auto_params = {
-      // EDN0 provides lower-quality entropy. Let one generate command return
-      // eight 128-bit blocks, and reseed every 32 generates.
       .instantiate_cmd =
           {
               .cmd = csrng_cmd_header_build(kCsrngAppCmdInstantiate,
                                             kDifCsrngEntropySrcToggleEnable,
-                                            /*cmd_len=*/12,
+                                            /*cmd_len=*/edn_384_bit_seed.len,
                                             /*generate_len=*/0),
               .seed_material = edn_384_bit_seed,
           },
       .reseed_cmd =
           {
-              .cmd = csrng_cmd_header_build(kCsrngAppCmdReseed,
-                                            kDifCsrngEntropySrcToggleEnable,
-                                            /*cmd_len=*/12, /*generate_len=*/0),
+              .cmd = csrng_cmd_header_build(
+                  kCsrngAppCmdReseed, kDifCsrngEntropySrcToggleEnable,
+                  /*cmd_len=*/edn_384_bit_seed.len, /*generate_len=*/0),
               .seed_material = edn_384_bit_seed,
           },
       .generate_cmd =
@@ -589,13 +679,17 @@ static void configure_entropy_complex(void) {
               .cmd = csrng_cmd_header_build(kCsrngAppCmdGenerate,
                                             kDifCsrngEntropySrcToggleEnable,
                                             /*cmd_len=*/0,
-                                            /*generate_len=*/8),
+                                            /*generate_len=*/4096),
               .seed_material = edn_empty_seed,
           },
       .reseed_interval = 0,
   };
+  // EDN0 provides lower-quality entropy. Let one generate command return
+  // eight 128-bit blocks, and reseed every 128 generates.
   edn_auto_params.reseed_interval = kEdn0ReseedInterval;
   CHECK_DIF_OK(dif_edn_set_auto_mode(&edn_0, edn_auto_params));
+  // EDN1 provides higher-quality entropy. Let one generate command return
+  // eight 128-bit blocks, and reseed every 32 generates.
   edn_auto_params.reseed_interval = kEdn1ReseedInterval;
   CHECK_DIF_OK(dif_edn_set_auto_mode(&edn_1, edn_auto_params));
   CHECK_DIF_OK(dif_edn_configure(&edn_0));
@@ -752,8 +846,20 @@ void configure_pwm(void) {
   }
 }
 
+static void configure_otbn(void) {
+  rsa3072_test_vector = rsa_3072_verify_tests[0];
+  // Only one exponent (65537) is currently supported.
+  CHECK(rsa3072_test_vector.publicKey.e == 65537);
+  CHECK_STATUS_OK(rsa_3072_encode_sha256(rsa3072_test_vector.msg,
+                                         rsa3072_test_vector.msgLen,
+                                         &rsa3072_encoded_message));
+  CHECK_STATUS_OK(rsa_3072_compute_constants(&rsa3072_test_vector.publicKey,
+                                             &rsa3072_constants));
+}
+
 static void crypto_data_load_task(void *task_parameters) {
   LOG_INFO("Loading crypto block FIFOs with data ...");
+
   // Load data into AES block.
   dif_aes_data_t aes_plain_text;
   memcpy(aes_plain_text.data, kAesModesPlainText, sizeof(aes_plain_text.data));
@@ -890,6 +996,11 @@ static void max_power_task(void *task_parameters) {
   mmio_region_write32(i2c_1.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
   mmio_region_write32(i2c_2.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
 
+  // Issue OTBN start command.
+  CHECK_STATUS_OK(rsa_3072_verify_start(&rsa3072_test_vector.signature,
+                                        &rsa3072_test_vector.publicKey,
+                                        &rsa3072_constants));
+
   // Enable pattgen.
   mmio_region_write32(pattgen.base_addr, PATTGEN_CTRL_REG_OFFSET,
                       pattgen_ctrl_reg);
@@ -915,13 +1026,19 @@ static void max_power_task(void *task_parameters) {
   // ***************************************************************************
   // Check operation results.
   // ***************************************************************************
+  // Check OTBN operations.
+  hardened_bool_t result;
+  CHECK_STATUS_OK(rsa_3072_verify_finalize(&rsa3072_encoded_message, &result));
+  CHECK(result == kHardenedBoolTrue);
+
+  // Check UART transactions.
   uint8_t received_uart_data[kUartFifoDepth];
   size_t num_uart_rx_bytes;
   for (size_t i = 0; i < ARRAYSIZE(uart_handles); ++i) {
     CHECK_DIF_OK(
         dif_uart_rx_bytes_available(uart_handles[i], &num_uart_rx_bytes));
-    // Note, we don't care if all bytes have been transmitted out of the UART
-    // by the time the fastest processing crypto block (i.e., the AES) has
+    // Note, we don't care if all bytes have been transmitted out of the UART by
+    // the time the fastest processing crypto block (i.e., the AES) has
     // completed. Likely, we won't have transmitted all data since the UART is
     // quite a bit slower. We just check that what was transmitted is correct.
     memset((void *)received_uart_data, 0, kUartFifoDepth);
@@ -937,8 +1054,8 @@ static void check_otp_csr_configs(void) {
   dif_flash_ctrl_region_properties_t default_properties;
   CHECK_DIF_OK(dif_flash_ctrl_get_default_region_properties(
       &flash_ctrl, &default_properties));
-  CHECK(default_properties.scramble_en == kMultiBitBool4True);
-  CHECK(default_properties.ecc_en == kMultiBitBool4True);
+  CHECK(default_properties.scramble_en == kMultiBitBool4False);
+  CHECK(default_properties.ecc_en == kMultiBitBool4False);
   CHECK(default_properties.high_endurance_en == kMultiBitBool4False);
 }
 
@@ -958,6 +1075,10 @@ bool test_main(void) {
       dif_gpio_output_set_enabled(&gpio, /*pin=*/0, kDifToggleEnabled));
   configure_adc_ctrl_to_continuously_sample();
   configure_entropy_complex();
+  // Note: configuration of OTBN must be done *before* configuration of the
+  // HMAC, as the cryptolib uses HMAC in SHA256 mode, which will cause HMAC
+  // computation errors later in this test.
+  configure_otbn();
   configure_aes();
   configure_hmac();
   configure_kmac();
@@ -995,8 +1116,8 @@ bool test_main(void) {
   // ***************************************************************************
   // Yield control flow to the highest priority task in the run queue. Since
   // the tasks created above all have a higher priority level than the current
-  // "test_main" task, and no tasks block, execution will not be returned to
-  // the current task until the above tasks have been deleted.
+  // "test_main" task, and no tasks block, execution will not be returned to the
+  // current task until the above tasks have been deleted.
   // ***************************************************************************
   LOG_INFO("Yielding execution to another task.");
   ottf_task_yield();

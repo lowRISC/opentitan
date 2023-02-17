@@ -33,6 +33,25 @@ interface sysrst_ctrl_cov_if
       }
   endgroup // sysrst_ctrl_combo_detect_det_cg
 
+  /////////////////////////////////////////////////
+  // Combo detection precondition timer register cover points //
+  /////////////////////////////////////////////////
+
+  covergroup sysrst_ctrl_combo_precondition_det_cg (int index) with function sample (
+    bit [31:0] precondition_timer
+  );
+    option.per_instance = 1;
+    option.name = $sformatf("sysrst_ctrl_combo_precondition_det_cg%0d", index);
+
+    cp_precondition_timer: coverpoint precondition_timer
+      {
+        bins min_range = {[10:50]};
+        bins mid_range = {[51:100]};
+        bins max_range = {[101:$]};
+      }
+  endgroup // sysrst_ctrl_combo_precondition_det_cg
+
+
   ///////////////////////////////////////////////////////
   // Auto block debounce control register cover points //
   ///////////////////////////////////////////////////////
@@ -129,9 +148,11 @@ interface sysrst_ctrl_cov_if
   `DV_FCOV_INSTANTIATE_CG(sysrst_ctrl_pin_in_value_cg)
 
   sysrst_ctrl_combo_detect_det_cg combo_detect_det_cg_inst[4];
+  sysrst_ctrl_combo_precondition_det_cg combo_precondition_det_cg_inst[4];
   initial begin
     foreach (combo_detect_det_cg_inst[i]) begin
       combo_detect_det_cg_inst[i] = new(i);
+      combo_precondition_det_cg_inst[i] = new(i);
     end
   end
 
@@ -144,6 +165,14 @@ interface sysrst_ctrl_cov_if
   );
     combo_detect_det_cg_inst[index].sample(detection_timer);
   endfunction
+
+  function automatic void cg_combo_precondition_det_sample(
+    int index,
+    bit [31:0] precondition_timer
+  );
+      combo_precondition_det_cg_inst[index].sample(precondition_timer);
+  endfunction
+
 
   function automatic void cg_auto_block_sample (
     bit [15:0] debounce_timer,

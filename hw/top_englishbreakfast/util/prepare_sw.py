@@ -19,8 +19,8 @@ from pathlib import Path
 REPO_TOP = Path(__file__).resolve().parents[3]
 
 BINARIES = [
-    'sw/device/lib/testing/test_rom/test_rom_export_fpga_nexysvideo',
-    'sw/device/sca/aes_serial_export_fpga_nexysvideo',
+    'sw/device/lib/testing/test_rom/test_rom_export_fpga_cw305',
+    'sw/device/sca/aes_serial_export_fpga_cw305',
     'sw/device/lib/testing/test_rom/test_rom_export_sim_verilator',
     'sw/device/tests/aes_smoketest_export_sim_verilator',
     'sw/device/examples/hello_world/hello_world_export_sim_verilator',
