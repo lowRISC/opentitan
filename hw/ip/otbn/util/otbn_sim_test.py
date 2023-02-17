@@ -8,6 +8,8 @@
 import argparse
 import subprocess
 import sys
+from enum import IntEnum
+from typing import List
 
 from shared.check import CheckResult
 from shared.reg_dump import parse_reg_dump
@@ -16,6 +18,36 @@ from shared.reg_dump import parse_reg_dump
 ERR_BITS = 'ERR_BITS'
 INSN_CNT = 'INSN_CNT'
 STOP_PC = 'STOP_PC'
+
+
+# copied from hw/ip/otbn/dv/otbnsim/sim/constants.py
+class ErrBits(IntEnum):
+    '''A copy of the list of bits in the ERR_BITS register.'''
+    BAD_DATA_ADDR = 1 << 0
+    BAD_INSN_ADDR = 1 << 1
+    CALL_STACK = 1 << 2
+    ILLEGAL_INSN = 1 << 3
+    LOOP = 1 << 4
+    KEY_INVALID = 1 << 5
+    RND_REP_CHK_FAIL = 1 << 6
+    RND_FIPS_CHK_FAIL = 1 << 7
+    IMEM_INTG_VIOLATION = 1 << 16
+    DMEM_INTG_VIOLATION = 1 << 17
+    REG_INTG_VIOLATION = 1 << 18
+    BUS_INTG_VIOLATION = 1 << 19
+    BAD_INTERNAL_STATE = 1 << 20
+    ILLEGAL_BUS_ACCESS = 1 << 21
+    LIFECYCLE_ESCALATION = 1 << 22
+    FATAL_SOFTWARE = 1 << 23
+
+
+def get_err_names(err: int) -> List[str]:
+    '''Get the names of all error bits that are set.'''
+    out = []
+    for err_bit in ErrBits:
+        if err & err_bit != 0:
+            out.append(err_bit.name)
+    return out
 
 
 def main() -> int:
@@ -56,7 +88,8 @@ def main() -> int:
         # case, give a special error message and exit rather than print all the
         # mismatched registers.
         if actual_err != 0:
-            result.err(f'OTBN encountered an unexpected error.\n'
+            err_names = ', '.join(get_err_names(actual_err))
+            result.err(f'OTBN encountered an unexpected error: {err_names}.\n'
                        f'  {ERR_BITS}\t= {actual_err:#010x}\n'
                        f'  {INSN_CNT}\t= {insn_cnt:#010x}\n'
                        f'  {STOP_PC}\t= {stop_pc:#010x}')
