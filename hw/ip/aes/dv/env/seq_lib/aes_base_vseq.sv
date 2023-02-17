@@ -552,6 +552,26 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask // config_and_transmit
 
 
+  virtual task wait_for_fatal_alert_and_reset ();
+    // According to spec, check period will append an 'hFF from the LSF. Add 10 cycle buffers for
+    // register updates
+    int check_wait_cycles = 6 << 8 + 10;
+
+    // Check for the fatal alert on the alert interface.
+    `DV_SPINWAIT_EXIT(
+        wait(cfg.m_alert_agent_cfgs["fatal_fault"].vif.alert_tx_final.alert_p);,
+        cfg.clk_rst_vif.wait_clks(check_wait_cycles);,
+        $sformatf("Timeout waiting for alert %0s", "fatal_check_error"))
+    check_fatal_alert_nonblocking("fatal_fault");
+    // Reset and re-initialize the DUT.
+    // To avoid assertions firing erroneously due to resetting AES prior to the EDN
+    // interface, pull all resets concurrently. See
+    // https://github.com/lowRISC/opentitan/issues/13573 for details.
+    apply_resets_concurrently();
+    dut_init("HARD");
+  endtask
+
+
   ////////////////////////////////////////////////////////////////////////////////////////////
   // the status fsm has two tasks
   // 1 determine the status of the DUT
@@ -579,9 +599,6 @@ class aes_base_vseq extends cip_base_vseq #(
     bit                   done              = 0;
     string                txt               = "";
     int                   idle_cnt          = 0;
-     // According to spec, check period will append an 'hFF from the LSF. Add 10 cycle buffers for
-    // register updates
-    int                   check_wait_cycles =  6 << 8 + 10;
 
     txt     = "\n Entering FSM";
     rst_set = 0;
@@ -610,20 +627,9 @@ class aes_base_vseq extends cip_base_vseq #(
             `uvm_fatal(`gfn, $sformatf("\n\t WAS able to clear FATAL ALERT without reset \n\t %s",
                        status2string(status)))
           end else begin
-            // check fatal on the alert if
-            `DV_SPINWAIT_EXIT(
-                 wait(cfg.m_alert_agent_cfgs["fatal_fault"].vif.alert_tx_final.alert_p);,
-                 cfg.clk_rst_vif.wait_clks(check_wait_cycles);,
-                 $sformatf("Timeout waiting for alert %0s", "fatal_check_error"))
-            check_fatal_alert_nonblocking("fatal_fault");
-            // reset dut
+            wait_for_fatal_alert_and_reset();
             rst_set = 1;
             done    = 1;
-            // To avoid assertions firing erroneously due to resetting AES prior to the EDN
-            // interface, pull all resets concurrently. See
-            // https://github.com/lowRISC/opentitan/issues/13573 for details.
-            apply_resets_concurrently();
-            dut_init("HARD");
           end
         end else begin
           `uvm_fatal(`gfn, $sformatf("\n\t Unexpected Fatal alert in AES FSM \n\t %s",
