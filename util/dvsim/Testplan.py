@@ -244,7 +244,7 @@ class Testplan:
     def _parse_hjson(filename):
         """Parses an input file with HJson and returns a dict."""
         try:
-            return hjson.load(open(filename, 'rU'))
+            return hjson.load(open(filename, 'r'))
         except IOError as e:
             print(f"IO Error when opening file {filename}\n{e}")
         except hjson.scanner.HjsonDecodeError as e:
