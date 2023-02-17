@@ -38,6 +38,28 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "div_small_test",
+    srcs = [
+        "div_small_test.s",
+    ],
+    exp = "div_small_test.exp",
+    deps = [
+        "//sw/otbn/crypto:div",
+    ],
+)
+
+otbn_consttime_test(
+    name = "div_consttime",
+    # All secrets are stored in DMEM; timing is permitted to depend on the
+    # number of limbs.
+    secrets = ["dmem"],
+    subroutine = "div",
+    deps = [
+        ":div_small_test",
+    ],
+)
+
+otbn_sim_test(
     name = "field25519_test",
     srcs = [
         "field25519_test.s",
