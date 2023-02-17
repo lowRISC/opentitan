@@ -1,0 +1,4 @@
+# Expected quotient: 407 // 27 = 15
+w0 = 15
+# Expected remainder: 407 % 27 = 2
+w1 = 2
