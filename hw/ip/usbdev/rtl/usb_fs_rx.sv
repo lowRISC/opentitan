@@ -65,8 +65,8 @@ module usb_fs_rx (
   //////////////////////
   // Adjust inputs when D+/D- are flipped on the USB side
   logic usb_dp_flipped, usb_dn_flipped, usb_d_flipped;
-  assign usb_dp_flipped = usb_dp_i ^ cfg_pinflip_i;
-  assign usb_dn_flipped = usb_dn_i ^ cfg_pinflip_i;
+  assign usb_dp_flipped = cfg_pinflip_i ? usb_dn_i : usb_dp_i;
+  assign usb_dn_flipped = cfg_pinflip_i ? usb_dp_i : usb_dn_i;
   assign usb_d_flipped = usb_d_i ^ cfg_pinflip_i;
 
   ///////////////////////////////////////
