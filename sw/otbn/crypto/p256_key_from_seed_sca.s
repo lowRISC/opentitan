@@ -27,6 +27,27 @@ start:
   unimp
 
 p256_gen_secret_key:
+  /* First, generate the masked secret key d and write to DMEM.
+       dmem[d0] <= d0
+       dmem[d1] <= d1 */
+  jal       x1, run_gen_secret_key
+
+  ecall
+
+p256_gen_keypair:
+  /* First, generate the masked secret key d and write to DMEM.
+       dmem[d0] <= d0
+       dmem[d1] <= d1 */
+  jal       x1, run_gen_secret_key
+
+  /* Generate the public key Q = d*G.
+       dmem[x] <= Q.x
+       dmem[y] <= Q.y */
+  jal       x1, p256_base_mult
+
+  ecall
+
+run_gen_secret_key:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
@@ -61,21 +82,7 @@ p256_gen_secret_key:
   li        x2, 23
   bn.sid    x2, 0(x3)
 
-  ecall
-
-p256_gen_keypair:
-  /* First, generate the masked secret key d and write to DMEM.
-       dmem[d0] <= d0
-       dmem[d1] <= d1 */
-  jal       x1, p256_gen_secret_key
-
-  /* Generate the public key Q = d*G.
-       dmem[x] <= Q.x
-       dmem[y] <= Q.y */
-  jal       x1, p256_base_mult
-
-  ecall
-
+  ret
 
 /**
  * Note: Technically this could be a .bss section, but it is convenient for
