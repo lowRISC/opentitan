@@ -23,7 +23,7 @@ The IP block implements the following features:
 ## Description
 
 The `sysrst_ctrl` logic is very simple.
-It looks up the configuration registers to decide how long the EC reset pulse duration and how long the keyboard debounce timer should be.
+It looks up the configuration registers to decide how long the EC reset pulse duration and how long the key presses should be.
 Also what actions to take (e.g. Interrupt, EC reset, OpenTitan reset request, disconnect the battery from the power tree).
 
 ## Compatibility
@@ -36,6 +36,9 @@ The configuration programming interface is not based on any existing interface.
 
 The block diagram above shows a conceptual view of the `sysrst_ctrl` block, which consists of 3 main modules:
 The first is the configuration and status registers, the second is the keyboard combo debounce and detection logic, and the third is the pinout override logic.
+The debounce logic does not implement a low-pass filter, instead it uses a simpler technique of sampling once when the timer starts and then again when the timer ends.
+The detection logic does require the signal to stay active for the entire period, which can be used to detect any anomoulous signals that might elude the rudimentary debounce logic.
+For the auto block, key interrupt and ultra-low-power features there is only a debounce timer so it is good to be aware of this behavior of sampling the signal only twice.
 
 The `sysrst_ctrl` has four input pins (`pwrb_in_i`, `key[0,1,2]_in_i`) with corresponding output pins (`pwrb_out`, `key[0,1,2]_out`).
 During normal operation the `sysrst_ctrl` will pass the pin information directly from the input pins to the output pins with optional inversion.
