@@ -60,10 +60,11 @@ class aes_cipher_fi_vseq extends aes_base_vseq;
               // that state.
               clear_regs('{dataout: 1'b1, default: 1'b0});
               `DV_WAIT(cfg.aes_cipher_control_fi_vif[if_num].aes_cipher_ctrl_cs == await_state)
-            end else if (await_state == aes_pkg::CIPHER_CTRL_PRNG_RESEED) begin
-              // The PRNG Reseed state is also difficult to hit with a random delay. This writes the
-              // trigger register to bring the FSM into the PRNG Reseed state, and it waits until
-              // the FSM has reached that state.
+            end else if ((await_state == aes_pkg::CIPHER_CTRL_PRNG_RESEED) && `EN_MASKING) begin
+              // The PRNG Reseed state is also difficult to hit with a random delay, and completely
+              // unreachable for the unmasked implementation.
+              // This writes the trigger register to bring the FSM into the PRNG Reseed state, and
+              // waits until the FSM has reached that state.
               prng_reseed();
               `DV_WAIT(cfg.aes_cipher_control_fi_vif[if_num].aes_cipher_ctrl_cs == await_state)
             end else begin
