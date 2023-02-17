@@ -144,6 +144,16 @@ otbn_binary(
 )
 
 otbn_binary(
+    name = "p256_key_from_seed_sca",
+    srcs = [
+        "p256_key_from_seed_sca.s",
+    ],
+    deps = [
+        ":p256",
+    ],
+)
+
+otbn_binary(
     name = "p384_ecdsa_sca",
     srcs = [
         "p384_ecdsa_sca.s",
