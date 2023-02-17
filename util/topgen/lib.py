@@ -72,6 +72,15 @@ class Name:
     def as_c_type(self) -> str:
         return self.as_snake_case() + "_t"
 
+    def as_rust_type(self) -> str:
+        return self.as_camel_case()
+
+    def as_rust_const(self) -> str:
+        return "_".join([p.upper() for p in self.parts])
+
+    def as_rust_enum(self) -> str:
+        return self.as_camel_case()
+
     def remove_part(self, part_to_remove: str) -> "Name":
         return Name([p for p in self.parts if p != part_to_remove])
 
