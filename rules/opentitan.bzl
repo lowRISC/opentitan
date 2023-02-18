@@ -48,6 +48,8 @@ DEFAULT_SIGNING_KEYS = {
     "fake_dev_key_0": "@//sw/device/silicon_creator/rom/keys/fake:dev_private_key_0",
     "fake_prod_key_0": "@//sw/device/silicon_creator/rom/keys/fake:prod_private_key_0",
     "unauthorized_0": "@//sw/device/silicon_creator/rom/keys:unauthorized_private_key_0",
+    "fake_rom_ext_test_key_0": "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0",
+    "fake_rom_ext_dev_key_0": "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_dev_private_key_0",
 }
 
 def _obj_transform_impl(ctx):

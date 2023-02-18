@@ -108,6 +108,33 @@ ld_library(
 )
 
 cc_library(
+    name = "sigverify_keys",
+    srcs = ["sigverify_keys.c"],
+    hdrs = ["sigverify_keys.h"],
+    deps = [
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
+        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+        "//sw/device/silicon_creator/lib/sigverify:sigverify_without_mock_mod_exp_ibex",
+    ],
+)
+
+cc_test(
+    name = "sigverify_keys_unittest",
+    srcs = ["sigverify_keys_unittest.cc"],
+    deps = [
+        ":sigverify_keys",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "rom_ext",
     srcs = [
         "rom_ext.c",
@@ -118,6 +145,7 @@ cc_library(
     deps = [
         ":rom_ext_boot_policy",
         ":rom_ext_epmp",
+        ":sigverify_keys",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
@@ -140,8 +168,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:pinmux",
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/sigverify",
-        "//sw/device/silicon_creator/rom:sigverify_keys",
-        "//sw/device/silicon_creator/rom/keys/fake",
+        "//sw/device/silicon_creator/rom_ext/keys/fake",
     ],
 )
 

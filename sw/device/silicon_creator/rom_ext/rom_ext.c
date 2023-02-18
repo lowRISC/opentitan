@@ -24,9 +24,9 @@
 #include "sw/device/silicon_creator/lib/rom_print.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
-#include "sw/device/silicon_creator/rom/sigverify_keys.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
+#include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 

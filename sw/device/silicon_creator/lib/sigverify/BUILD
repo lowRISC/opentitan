@@ -223,7 +223,10 @@ cc_library(
 
 cc_library(
     name = "sigverify_without_mock_mod_exp_ibex",
-    visibility = ["//sw/device/silicon_creator/rom:__pkg__"],
+    visibility = [
+        "//sw/device/silicon_creator/rom:__pkg__",
+        "//sw/device/silicon_creator/rom_ext:__pkg__",
+    ],
     deps = [
         dual_cc_device_library_of(":mod_exp_ibex"),
         ":mod_exp_otbn",
