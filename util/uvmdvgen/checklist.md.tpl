@@ -43,7 +43,7 @@ Type          | Item                      | Resolution  | Note/Collaterals
 Documentation | [NEW_FEATURES][]          | Not Started |
 Documentation | [BLOCK_DIAGRAM][]         | Not Started |
 Documentation | [DOC_INTERFACE][]         | Not Started |
-Documentation | [DOC_INTEGRATION_GUIDE][] | Not Started |
+Documentation | [DOC_INTEGRATION_D2][]    | Not Started |
 Documentation | [MISSING_FUNC][]          | Not Started |
 Documentation | [FEATURE_FROZEN][]        | Not Started |
 RTL           | [FEATURE_COMPLETE][]      | Not Started |
@@ -62,7 +62,7 @@ Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
 [NEW_FEATURES]:          {{<relref "/doc/project/checklist.md#new_features" >}}
 [BLOCK_DIAGRAM]:         {{<relref "/doc/project/checklist.md#block_diagram" >}}
 [DOC_INTERFACE]:         {{<relref "/doc/project/checklist.md#doc_interface" >}}
-[DOC_INTEGRATION_GUIDE]: {{<relref "/doc/project/checklist.md#doc_integration_guide" >}}
+[DOC_INTEGRATION_D2]:    {{<relref "/doc/project/checklist.md#doc_integration_d2" >}}
 [MISSING_FUNC]:          {{<relref "/doc/project/checklist.md#missing_func" >}}
 [FEATURE_FROZEN]:        {{<relref "/doc/project/checklist.md#feature_frozen" >}}
 [FEATURE_COMPLETE]:      {{<relref "/doc/project/checklist.md#feature_complete" >}}
@@ -103,6 +103,7 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
 Documentation | [NEW_FEATURES_D3][]     | Not Started |
+Documentation | [DOC_INTEGRATION_D3][]  | Not Started |
 RTL           | [TODO_COMPLETE][]       | Not Started |
 Code Quality  | [LINT_COMPLETE][]       | Not Started |
 Code Quality  | [CDC_COMPLETE][]        | Not Started |
@@ -115,6 +116,7 @@ Review        | Reviewer(s)             | Not Started |
 Review        | Signoff date            | Not Started |
 
 [NEW_FEATURES_D3]:      {{<relref "/doc/project/checklist.md#new_features_d3" >}}
+[DOC_INTEGRATION_D3]:   {{<relref "/doc/project/checklist.md#doc_integration_d3" >}}
 [TODO_COMPLETE]:        {{<relref "/doc/project/checklist.md#todo_complete" >}}
 [LINT_COMPLETE]:        {{<relref "/doc/project/checklist.md#lint_complete" >}}
 [CDC_COMPLETE]:         {{<relref "/doc/project/checklist.md#cdc_complete" >}}

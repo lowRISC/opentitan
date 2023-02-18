@@ -81,7 +81,8 @@ Once all of the countermeasures in the specification are implemented, the design
 
 The fourth design stage is **Security Countermeasures Complete**.
 In this phase, no changes are expected on the design except for bug fixes.
-Once all bugs have been fixed, lint and CDC violations cleaned up, the design moves into its final stage: **Design Complete**.
+Once all known bugs have been fixed, lint and CDC violations cleaned up, the design moves into its final stage: **Design Complete**.
+Note that there may still be bug fixes after D3 has been declared until the design reaches V3 and consequently L2.
 
 | **Stage** | **Name** | **Definition** |
 | --- | --- | --- |
