@@ -29,8 +29,6 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    // TODO: remove once support alert checking
-    do_alert_check = 0;
     if (!uvm_config_db#(virtual sysrst_ctrl_cov_if)::get(null, "*.env" ,
         "sysrst_ctrl_cov_if", cov_if)) begin
       `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO COVER IF"))
