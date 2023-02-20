@@ -19,7 +19,6 @@ package sysrst_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  // TODO: add the names of alerts in order
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
   parameter uint   NUM_ALERTS = 1;
 
