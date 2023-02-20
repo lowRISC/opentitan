@@ -182,7 +182,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
          // Check intr_status
          if (rdata >= 1) exp_intr_state = 1;
          else            exp_intr_state = 0;
-         check_interrupts(.interrupts(1), .check_set(exp_intr_state));
+         check_interrupts(.interrupts(1 << IntrSysrstCtrl), .check_set(exp_intr_state));
 
          // Clear interrupt
          // Write to clear the register
