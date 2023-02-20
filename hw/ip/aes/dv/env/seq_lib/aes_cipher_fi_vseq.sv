@@ -13,7 +13,7 @@ class aes_cipher_fi_vseq extends aes_base_vseq;
   status_t aes_status;
   bit  finished_all_msgs = 0;
   bit  wait_for_alert_clear = 0;
-  bit  alert = 0;
+  bit  wait_for_alert_and_reset = 0;
 
   localparam bit FORCE   = 0;
   localparam bit RELEASE = 1;
@@ -60,21 +60,34 @@ class aes_cipher_fi_vseq extends aes_base_vseq;
               // that state.
               clear_regs('{dataout: 1'b1, default: 1'b0});
               `DV_WAIT(cfg.aes_cipher_control_fi_vif[if_num].aes_cipher_ctrl_cs == await_state)
-            end else if (await_state == aes_pkg::CIPHER_CTRL_PRNG_RESEED) begin
-              // The PRNG Reseed state is also difficult to hit with a random delay. This writes the
-              // trigger register to bring the FSM into the PRNG Reseed state, and it waits until
-              // the FSM has reached that state.
+            end else if ((await_state == aes_pkg::CIPHER_CTRL_PRNG_RESEED) && `EN_MASKING) begin
+              // The PRNG Reseed state is also difficult to hit with a random delay, and completely
+              // unreachable for the unmasked implementation.
+              // This writes the trigger register to bring the FSM into the PRNG Reseed state, and
+              // waits until the FSM has reached that state.
               prng_reseed();
               `DV_WAIT(cfg.aes_cipher_control_fi_vif[if_num].aes_cipher_ctrl_cs == await_state)
             end else begin
               cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
             end
+            if (finished_all_msgs) begin
+              // As long as the DUT hasn't finished processing messages yet, the signal forcing
+              // will interrupt the message processing. The `basic` thread will notice this and
+              // as part of the recovery procedure wait for an alert, reset the DUT and then
+              // continue processing messages.
+              // Otherwise we have to try to detect the alert and to reset the DUT ourselves.
+              wait_for_alert_and_reset = 1;
+            end
             `uvm_info(`gfn, $sformatf("FORCING %h on if[%d]", force_value, if_num), UVM_MEDIUM)
             cfg.aes_cipher_control_fi_vif[if_num].force_signal(target, FORCE, force_value);
             wait_for_alert_clear = 1;
+            if (wait_for_alert_and_reset) begin
+              wait_for_fatal_alert_and_reset();
+            end
           end
           basic: begin
             send_msg_queue(cfg.unbalanced, cfg.read_prob, cfg.write_prob);
+            finished_all_msgs = 1;
           end
         join_none
 
