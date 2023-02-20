@@ -38,6 +38,28 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "div_large_test",
+    srcs = [
+        "div_large_test.s",
+    ],
+    exp = "div_large_test.exp",
+    deps = [
+        "//sw/otbn/crypto:div",
+    ],
+)
+
+otbn_sim_test(
+    name = "div_medium_test",
+    srcs = [
+        "div_medium_test.s",
+    ],
+    exp = "div_medium_test.exp",
+    deps = [
+        "//sw/otbn/crypto:div",
+    ],
+)
+
+otbn_sim_test(
     name = "div_small_test",
     srcs = [
         "div_small_test.s",
