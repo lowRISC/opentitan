@@ -22,29 +22,29 @@ additional-css = [
 ]
 
 [preprocessor.readme2index]
-command = "./util/mdbook-readme2index"
+command = "./util/mdbook_readme2index.py"
 
 [preprocessor.wavejson]
-command = "./util/mdbook-wavejson"
+command = "./util/mdbook_wavejson.py"
 
 [preprocessor.reggen]
-command = "./util/mdbook-reggen"
+command = "./util/mdbook_reggen.py"
 # Python RegEx identifying ip block config paths.
 ip-cfg-py-regex = '(ip|ip_autogen)/.+/data/(?!.+_testplan).+\.hjson'
 
 [preprocessor.testplan]
-command = "./util/mdbook-testplan"
+command = "./util/mdbook_testplan.py"
 # Python RegEx identifying testplan paths.
 testplan-py-regex = '.+_testplan\.hjson'
 
 [preprocessor.otbn]
-command = "./util/mdbook-otbn"
+command = "./util/mdbook_otbn.py"
 
 [preprocessor.dashboard]
-command = "./util/mdbook-dashboard"
+command = "./util/mdbook_dashboard.py"
 
 [preprocessor.doxygen]
-command = "./util/mdbook-doxygen"
+command = "./util/mdbook_doxygen.py"
 out-dir = "docs/"
 html-out-dir = "doxy/"
 dif-src-py-regex = 'dif_\S*\.h'

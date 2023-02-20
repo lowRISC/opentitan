@@ -73,7 +73,11 @@ def main() -> None:
         buffer.write("</details>")
         chapter["content"] = buffer.getvalue()
 
-        chapter["path"] = chapter["path"].removesuffix(".h") + "_h.html"
+        # Rewrite path so `dif_*.h` files don't collide with `dif_*.md` files.
+        if Path(chapter["path"]).suffix == ".h":
+            chapter["path"] = str(Path(chapter["path"]).with_suffix(""))
+        chapter["path"] = chapter["path"] + "_h.html"
+
         header_files.add(Path(src_path))
 
     chapters_gen = mdbook.chapters(book["sections"])

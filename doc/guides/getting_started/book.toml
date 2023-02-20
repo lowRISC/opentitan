@@ -11,5 +11,5 @@ edit-url-template = "https://github.com/lowrisc/opentitan/edit/master/doc/guides
 curly-quotes = true
 
 [preprocessor.toolversion]
-command = "../../../util/mdbook-toolversion"
+command = "../../../util/mdbook_toolversion.py"
 
