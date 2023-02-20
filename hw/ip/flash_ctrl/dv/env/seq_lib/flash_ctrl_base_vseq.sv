@@ -41,14 +41,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     };
   }
 
-  // reset assertion time in clock cycles (from assertion to deassertion).
-  // Limits can be configured to control randomization. Will be randomized before each applt_reset.
-  rand uint reset_width_clks;
-
-  constraint reset_width_clks_c {
-    reset_width_clks inside {[cfg.seq_cfg.reset_width_clks_lo:cfg.seq_cfg.reset_width_clks_hi]};
-  }
-
   // Page to region map.
   // This is used to validate transactions based on their page address
   // and policy config associate with it.
@@ -151,7 +143,13 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     bit init_busy;
     if (kind == "HARD") begin
-      randomize(reset_width_clks);
+      // reset assertion time in clock cycles (from assertion to deassertion).
+      // Limits can be configured to control randomization.
+      // Will be randomized before each apply_reset.
+      uint reset_width_clks;
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(reset_width_clks,
+                                         reset_width_clks inside
+                             {[cfg.seq_cfg.reset_width_clks_lo:cfg.seq_cfg.reset_width_clks_hi]};)
       cfg.clk_rst_vif.apply_reset(.reset_width_clks(reset_width_clks));
       cfg.clk_rst_vif.wait_clks(cfg.post_reset_delay_clks);
     end
