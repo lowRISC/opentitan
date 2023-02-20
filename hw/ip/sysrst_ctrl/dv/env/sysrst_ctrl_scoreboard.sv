@@ -111,7 +111,6 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
         end
       end
       "intr_enable": begin
-        // FIXME
       end
       "intr_test": begin
         bit intr_test_val = get_field_val(cfg.ral.intr_test.event_detected, item.a_data);
