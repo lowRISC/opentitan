@@ -288,8 +288,17 @@ interface i2c_if(
   endtask: host_data
 
   task automatic host_stop(ref timing_cfg_t tc);
-    wait(scl_i === 1'b1);
+    // Stop is an SDA low to high transition whilst SCL is high. If both are high we cannot indicate
+    // a stop condition for this SCL pulse as that would require a high to low SDA transition which
+    // is the start signal.
+    if (scl_i === 1'b1 && sda_o === 1'b1) begin
+      `uvm_fatal(msg_id, "Cannot begin host_stop when both scl and sda are high")
+    end
+
+    // Ensure SDA Is low before SCL positive edge so a low to high transition can be generated. If
+    // SCL is high already SDA will be low already due to check above.
     sda_o = 1'b0;
+    wait(scl_i === 1'b1);
     wait_for_dly(tc.tClockStop);
     scl_o = 1'b1;
     wait_for_dly(tc.tSetupStop);
