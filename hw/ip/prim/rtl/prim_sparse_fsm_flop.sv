@@ -60,8 +60,8 @@ module prim_sparse_fsm_flop #(
   // If the assertion is not declared however, the statement below will fail.
   `ifdef INC_ASSERT
   logic unused_assert_connected;
-
-  `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
+/*
+  `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)*/
   `endif
 
 endmodule

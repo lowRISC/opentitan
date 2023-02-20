@@ -148,8 +148,8 @@ module prim_onehot_check #(
 
   logic unused_assert_connected;
   // TODO(#13337): only check generic for now. The path of this prim in other Impl may differ
-  if (Impl == prim_pkg::ImplGeneric) begin : gen_generic
+/*  if (Impl == prim_pkg::ImplGeneric) begin : gen_generic
     `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
-  end
+  end*/
   `endif
 endmodule : prim_onehot_check

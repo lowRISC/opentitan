@@ -175,7 +175,7 @@ module testbench ();
    
    top_earlgrey #(
     .OtpCtrlMemInitFile("/scratch/mciani/test/opentitan/hw/top_earlgrey/sw/tests/otp-img.mem"),
-    .RomCtrlBootRomInitFile("/scratch/mciani/test/opentitan/hw/top_earlgrey/sw/tests/boot_rom.vmem"),
+    .RomCtrlBootRomInitFile("/scratch/mciani/test/opentitan/hw/top_earlgrey/sw/tests/boot_rom_error.vmem"),
     .FlashCtrlMemInitFile("/scratch/mciani/test/opentitan/hw/top_earlgrey/sw/tests/hmac_test/hmac_smoketest.vmem")
    ) dut (
     .mio_in_i(ibex_uart_rx),

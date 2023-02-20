@@ -188,7 +188,7 @@ module opentitan_synth_wrap
     .calib_rdy_i(lc_ctrl_pkg::Off),
     .flash_bist_enable_i(lc_ctrl_pkg::Off),
     .flash_power_down_h_i('0),
-    .flash_power_ready_h_i('0),
+    .flash_power_ready_h_i(1'b1),
  //   .es_rng_rsp_i('0),
     .dft_hold_tap_sel_i('0),
     .pwrmgr_ast_rsp_i(5'b11111),
