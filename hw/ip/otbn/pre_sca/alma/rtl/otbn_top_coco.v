@@ -6,7 +6,9 @@ module otbn_top_coco #(
   // Instruction data width
   parameter ImemDataWidth = 39,
   // Data path width for BN (wide) instructions, in bits.
-  parameter WLEN = 256
+  parameter WLEN = 256,
+  // Sideload key data width
+  parameter SideloadKeyWidth = 384
 ) (
   input clk_sys,
   input rst_sys_n,
@@ -15,14 +17,14 @@ module otbn_top_coco #(
   input [ImemDataWidth-1:0] imem_wmask_i,
   input [WLEN-1:0] edn_rnd_data_i,
   input [WLEN-1:0] edn_urnd_data_i,
+  input [SideloadKeyWidth-1:0] sideload_key_share_0_i,
+  input [SideloadKeyWidth-1:0] sideload_key_share_1_i,
   output [31:0] otbn_cycle_cnt_o
 );
   // Size of the instruction memory, in bytes
   localparam ImemSizeByte = 128*4;  //32'h1000;
   // Size of the data memory, in bytes
   localparam DmemSizeByte = 8*32;  //32'h1000;
-  // Sideload key data width
-  localparam SideloadKeyWidth = 384;
   // "Extended" WLEN: the size of the datapath with added integrity bits
   localparam ExtWLEN = WLEN * ImemDataWidth / 32;
 
@@ -84,8 +86,7 @@ module otbn_top_coco #(
 
   // Sideload Key
   wire [2*SideloadKeyWidth-1:0] sideload_key_shares;
-  assign sideload_key_shares[SideloadKeyWidth-1:0] = {12{32'hDEADBEEF}};
-  assign sideload_key_shares[2*SideloadKeyWidth-1:SideloadKeyWidth] = {12{32'hBAADF00D}};
+  assign sideload_key_shares = {sideload_key_share_1_i, sideload_key_share_0_i};
 
   localparam [3:0] MuBi4False = 4'h9;
 
