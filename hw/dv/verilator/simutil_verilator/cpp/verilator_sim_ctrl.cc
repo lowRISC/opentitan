@@ -76,6 +76,7 @@ static bool read_ul_arg(unsigned long *arg_val, const char *arg_name,
     bad_fmt = true;
   } else {
     char *txt_end;
+    errno = 0;
     *arg_val = strtoul(arg_text, &txt_end, 0);
 
     // If txt_end doesn't point at a \0 then we didn't read the entire
