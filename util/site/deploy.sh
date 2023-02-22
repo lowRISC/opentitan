@@ -101,6 +101,7 @@ deploy_staging () {
     PROJECT="${OPENTITAN_ORG_ID}"
     rm -rf ${build_dir}
     ${proj_root}/util/site/build-docs.sh build-staging
+    remove_cruft
     gcloud storage cp -R --gzip-in-flight-all ${build_dir}/* gs://${PROJECT}-staging
 }
 
@@ -110,8 +111,13 @@ deploy_prod () {
     PROJECT="${OPENTITAN_ORG_ID}"
     rm -rf ${build_dir}
     ${proj_root}/util/site/build-docs.sh build
+    remove_cruft
     gcloud storage cp -R --gzip-in-flight-all ${build_dir}/* gs://${PROJECT}-prod
 }
+
+# Remove additional files from build directory that we don't need
+# TODO remove this when we are ready for .mdbookignore (https://github.com/rust-lang/mdBook/pull/1908)
+remove_cruft () { rm -rf ${build_dir}/book/.git ${build_dir}/book/.github ${build_dir}/book/build-site ${build_dir}/book/site ; }
 
 #######
 # CLI #
