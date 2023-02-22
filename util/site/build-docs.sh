@@ -2,23 +2,37 @@
 
 set -e
 
-command="build"
+# Get the project directory from the location of this script
+this_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+proj_root=$( realpath "${this_dir}/../.." )
+build_dir="${proj_root}/build-site"
+
+#######
+# CLI #
+#######
+declare command="build"
+# The following are only used for "command='serve-proxy'" ------------------------|
+declare public_domain="" # (optional) The public-facing domain                  <-|
+declare public_port=""   # (optional)The port added to the public-facing domain <-|
 
 case "$1" in
-  "build"|"build-local"|"serve"|"serve-proxy")
+  "build"|"build-local"|"build-staging"|"serve"|"serve-proxy")
     command="$1"
-    public_url="${2}"
+    public_domain="${2}"
     public_port="${3}"
     ;;
   "help"|*)
-    echo "USAGE: $0 [command]"
+    echo "USAGE: $0 <command> [public_domain] [public_port]"
     echo ""
     echo "commands:"
-    echo "  help         prints this message."
-    echo "  build        build the site and docs for prod"
-    echo "  build-local  build the site and docs for a localhost server"
-    echo "  serve        build and serve the site locally"
-    echo "  serve-proxy  build and serve the site, with a public url"
+    echo "  help          prints this message."
+    echo "  build         build the site and docs for prod"
+    echo "  build-local   build the site and docs for a localhost server"
+    echo "  build-staging build the site and docs for staging.opentitan.org"
+    echo "  serve         build and serve the site locally"
+    echo "  serve-proxy   build and serve the site, with a public url"
+    echo ""
+    echo "Optional arguments [public_domain] and [public_port] are only used when command='serve-proxy'"
     exit 0
     ;;
 esac
@@ -47,51 +61,50 @@ checkDeps
 # CONFIGURATION #
 #################
 declare base_url
-declare docs_url
-declare serve_port
-declare public_port
-
-# Get the project directory from the location of this script
-this_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-proj_root=$(realpath "${this_dir}/../..")
-
-# Create the output directory
-build_dir="$proj_root/build-site"
-mkdir -p "$build_dir"
+declare serve_port # The port used by the local webserver (using "build-docs.sh serve/serve-proxy")
 
 getURLs () {
-    # Default urls here are for production
-    local base_stem="https://opentitan.org"
+    # Defaults here are for production ("build-docs.sh build")
+    local scheme="https"
+    local domain="opentitan.org"
+    local port=""
 
-    # Use localhost for URL's when building/serving locally
+    # Use un-encrypted localhost URLs when building/serving locally
+    # - serve on port 9000.
     if [ "$command" = "build-local" ] || \
        [ "$command" = "serve" ]; then
-        base_stem="http://localhost"
+        scheme="http"
+        domain="localhost"
+        port=":9000"
         serve_port=":9000"
-        public_port=":9000"
     fi
-    # If the site is behind a proxy, set the URL/public_port appropriately
+    # "serve-proxy" gives us some simple defaults for serving behind a proxy:
+    # - set the public_domain/public_port appropriately (see $2/$3)
+    # - serve on port 8000.
     if [ "$command" = "serve-proxy" ] ; then
-        base_stem="http://${public_url}"
+        scheme="http"
+        domain="${public_domain}"
+        port=":${public_port}"
         serve_port=":8000"
-        public_port=":${public_port}"
+    fi
+    if [ "$command" = "build-staging" ] ; then
+        scheme="https"
+        domain="staging.opentitan.org"
     fi
 
-    base_url="${base_stem}${public_port}"
-    docs_url="${base_stem}${public_port}/book"
+    base_url="${scheme}://${domain}${port}"
 }
 getURLs
 
 # Export some environment variables that tools will pick up
-export HUGO_PARAMS_DOCSURL="${docs_url}" # hugo
-export URL_ROOT="${docs_url}" # earlgrey_diagram
+export HUGO_PARAMS_DOCSURL="${base_url}/book" # hugo
+export URL_ROOT="${base_url}/book" # earlgrey_diagram
 
 # Build up doxygen command
 doxygen_env="env"
 doxygen_env+=" SRCTREE_TOP=${proj_root}"
 doxygen_env+=" DOXYGEN_OUT=${build_dir}/gen"
 doxygen_args="${proj_root}/util/doxygen/Doxyfile"
-mkdir -p "${build_dir}/gen/doxy"
 
 # Build up mdbook arguments
 mdbook_args="build"
@@ -128,6 +141,9 @@ hugo_args+=" --baseURL ${base_url}"
 ############
 
 buildSite () {
+    mkdir -p "${build_dir}"
+    mkdir -p "${build_dir}/gen/doxy"
+
     echo "Building doxygen..."
     pushd "${this_dir}" >/dev/null
     # shellcheck disable=SC2086
