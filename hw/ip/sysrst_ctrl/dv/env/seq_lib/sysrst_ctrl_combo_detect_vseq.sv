@@ -151,6 +151,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
     repeat (num_trans) begin
       bit bat_act_triggered, ec_act_triggered, rst_act_triggered;
+      bit current_bat_act, current_ec_act, current_rst_act;
       bit [3:0] intr_actions, intr_actions_pre_reset;
       int ec_act_occur_cyc = 0;
       repeat ($urandom_range(1, 2)) begin
@@ -199,16 +200,19 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       for (int i = 0; i <= 3; i++) begin
         if (cycles > (get_duration[i] + set_key_timer) && triggered[i]) begin
           intr_actions[i]    = get_field_val(ral.com_out_ctl[i].interrupt, get_action[i]);
-          bat_act_triggered |= get_field_val(ral.com_out_ctl[i].bat_disable, get_action[i]);
-          ec_act_triggered  |= get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i]);
-          rst_act_triggered |= get_field_val(ral.com_out_ctl[i].rst_req, get_action[i]);
+          current_bat_act    = get_field_val(ral.com_out_ctl[i].bat_disable, get_action[i]);
+          current_ec_act     = get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i]);
+          current_rst_act    = get_field_val(ral.com_out_ctl[i].rst_req, get_action[i]);
+          bat_act_triggered |= current_bat_act;
+          ec_act_triggered  |= current_ec_act;
+          rst_act_triggered |= current_rst_act;
 
           if (cfg.en_cov) begin
             cov.combo_detect_action[i].sysrst_ctrl_combo_detect_action_cg.sample(
-              bat_act_triggered,
+              current_bat_act,
               intr_actions[i],
-              ec_act_triggered,
-              rst_act_triggered,
+              current_ec_act,
+              current_rst_act,
               get_field_val(ral.com_sel_ctl[i].key0_in_sel, get_trigger_combo[i]),
               get_field_val(ral.com_sel_ctl[i].key1_in_sel, get_trigger_combo[i]),
               get_field_val(ral.com_sel_ctl[i].key2_in_sel, get_trigger_combo[i]),
