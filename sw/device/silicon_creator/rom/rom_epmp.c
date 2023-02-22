@@ -94,7 +94,7 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   epmp_state_configure_napot(13, debug_rom, debug_rom_access);
   epmp_state_configure_na4(14, stack_guard, kEpmpPermLockedNoAccess);
   epmp_state_configure_napot(15, ram, kEpmpPermLockedReadWrite);
-  epmp_state.mseccfg = EPMP_MSECCFG_MMWP | EPMP_MSECCFG_RLB;
+  epmp_state.mseccfg = 0x0; //EPMP_MSECCFG_MMWP | EPMP_MSECCFG_RLB;
 }
 
 void rom_epmp_unlock_rom_ext_rx(epmp_region_t region) {

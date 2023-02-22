@@ -13,7 +13,7 @@
 #include "simple_system_common.h"
 #include <stdbool.h>
 
-#define TARGET_SYNTHESIS
+#define DUMMYBOY
 
 int main(int argc, char **argv) {
 
@@ -46,11 +46,11 @@ int main(int argc, char **argv) {
   asm volatile("csrw  mstatus, %0\n" : : "r"(val_1)); 
   asm volatile("csrw  mie, %0\n"     : : "r"(val_2));
 
-  plic_prio  = (int *) 0xC8000110;  // Priority reg
-  plic_en    = (int *) 0xC8002008;  // Enable reg
+  plic_prio  = (int *) 0xC800027C;  // Priority reg
+  plic_en    = (int *) 0xC8002010;  // Enable reg
 
  *plic_prio  = 1;                   // Set mbox interrupt priority to 1
- *plic_en    = 0x00000010;          // Enable interrupt
+ *plic_en    = 0x80000000;          // Enable interrupt
  
   printf("Ibex: Writing and reading the mailbox\r\n");
   uart_wait_tx_done();

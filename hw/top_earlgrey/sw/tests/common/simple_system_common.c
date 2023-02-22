@@ -337,7 +337,7 @@ int puts(const char *s)
 
 void external_irq_handler(void)  {
   
-  int mbox_id = 68;
+  int mbox_id = 159;
   int a, b, c, e, d;
   int volatile * p_reg, * p_reg1, * plic_check, * p_reg2, * p_reg3, * p_reg4, * p_reg5 ;
 

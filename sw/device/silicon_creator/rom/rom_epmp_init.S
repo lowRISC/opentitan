@@ -99,10 +99,13 @@ rom_epmp_init:
   li   t3, CFG_INDEX(13 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRWX)| /* Debug ROM   */ \
            CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)   | /* Stack Guard */ \
            CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)   /* RAM         */
+  //li   t4,  (EPMP_MSECCFG_MMWP | EPMP_MSECCFG_RLB)
+  
   csrw pmpcfg0, t0
   csrw pmpcfg1, t1
   csrw pmpcfg2, t2
   csrw pmpcfg3, t3
+  //csrw EPMP_MSECCFG , t4
 
   ret
   .size rom_epmp_init, .-rom_epmp_init

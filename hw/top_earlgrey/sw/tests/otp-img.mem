@@ -1,8 +1,8 @@
-// Generated on Tue, 14 Feb 2023 11:27:41 UTC with
+// Generated on Mon, 20 Feb 2023 13:37:15 UTC with
 // $ gen-otp-img.py  \
-//   --img-cfg /scratch/mciani/test/opentitan/hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked0.hjson \
-//   --lc-state-def /scratch/mciani/test/opentitan/hw/ip/lc_ctrl/data/lc_ctrl_state.hjson \
-//   --mmap-def /scratch/mciani/test/opentitan/hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson \
+//   --img-cfg /scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked0.hjson \
+//   --lc-state-def /scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/ip/lc_ctrl/data/lc_ctrl_state.hjson \
+//   --mmap-def /scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson \
 //   --out hw/top_earlgrey/sw/tests/otp-img.mem
 //
 // OTP MEM file with 1024 x 24bit layout
@@ -870,14 +870,14 @@
 @00035d 000000 // HW_CFG: MANUF_STATE
 @00035e 000000 // HW_CFG: MANUF_STATE
 @00035f 000000 // HW_CFG: MANUF_STATE
-@000360 009696 // HW_CFG: EN_SRAM_IFETCH, HW_CFG: EN_CSRNG_SW_APP_READ
-@000361 060096 // HW_CFG: EN_ENTROPY_SRC_FW_OVER, HW_CFG: EN_ENTROPY_SRC_FW_READ
+@000360 039669 // HW_CFG: EN_SRAM_IFETCH, HW_CFG: EN_CSRNG_SW_APP_READ
+@000361 060096 // HW_CFG: EN_ENTROPY_SRC_FW_READ, HW_CFG: EN_ENTROPY_SRC_FW_OVER
 @000362 000000 // unallocated
 @000363 000000 // unallocated
-@000364 2e96e2 // HW_CFG: HW_CFG_DIGEST
-@000365 234ba1 // HW_CFG: HW_CFG_DIGEST
-@000366 07d98e // HW_CFG: HW_CFG_DIGEST
-@000367 2e96b8 // HW_CFG: HW_CFG_DIGEST
+@000364 232bae // HW_CFG: HW_CFG_DIGEST
+@000365 27efbf // HW_CFG: HW_CFG_DIGEST
+@000366 15a949 // HW_CFG: HW_CFG_DIGEST
+@000367 2f2cf3 // HW_CFG: HW_CFG_DIGEST
 @000368 000000 // SECRET0: TEST_UNLOCK_TOKEN
 @000369 000000 // SECRET0: TEST_UNLOCK_TOKEN
 @00036a 000000 // SECRET0: TEST_UNLOCK_TOKEN
