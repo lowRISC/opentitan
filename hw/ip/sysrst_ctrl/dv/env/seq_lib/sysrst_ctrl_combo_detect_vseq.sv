@@ -224,6 +224,22 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
               get_field_val(ral.com_pre_sel_ctl[i].pwrb_in_sel, get_trigger_combo_pre[i]),
               get_field_val(ral.com_pre_sel_ctl[i].ac_present_sel, get_trigger_combo_pre[i])
             );
+            cov.combo_key_combinations.sysrst_ctrl_combo_key_combinations_cg.sample(
+              current_bat_act,
+              intr_actions[i],
+              current_ec_act,
+              current_rst_act,
+              get_field_val(ral.com_sel_ctl[i].key0_in_sel, get_trigger_combo[i]),
+              get_field_val(ral.com_sel_ctl[i].key1_in_sel, get_trigger_combo[i]),
+              get_field_val(ral.com_sel_ctl[i].key2_in_sel, get_trigger_combo[i]),
+              get_field_val(ral.com_sel_ctl[i].pwrb_in_sel, get_trigger_combo[i]),
+              get_field_val(ral.com_sel_ctl[i].ac_present_sel, get_trigger_combo[i]),
+              get_field_val(ral.com_pre_sel_ctl[i].key0_in_sel, get_trigger_combo_pre[i]),
+              get_field_val(ral.com_pre_sel_ctl[i].key1_in_sel, get_trigger_combo_pre[i]),
+              get_field_val(ral.com_pre_sel_ctl[i].key2_in_sel, get_trigger_combo_pre[i]),
+              get_field_val(ral.com_pre_sel_ctl[i].pwrb_in_sel, get_trigger_combo_pre[i]),
+              get_field_val(ral.com_pre_sel_ctl[i].ac_present_sel, get_trigger_combo_pre[i])
+            );
           end
 
           if (get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i])) begin
