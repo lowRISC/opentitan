@@ -25,18 +25,3 @@ partner_wd = "https://www.westerndigital.com/"
 partner_seagate = "https://www.seagate.com"
 partner_rivos = "https://www.rivosinc.com"
 partner_winbond = "https://www.winbond.com"
-
-[[deployment.targets]]
-name = "staging"
-URL = "gs://gold-hybrid-255313-staging"
-googleCloudCDNOrigin = "gold-hybrid-255313/opentitan-dot-org"
-
-[[deployment.targets]]
-name = "public"
-URL = "gs://gold-hybrid-255313"
-googleCloudCDNOrigin = "gold-hybrid-255313/opentitan-dot-org"
-
-[[deployment.matchers]]
-pattern = ".+"
-cacheControl = "max-age=28800, no-transform, public"
-gzip = true

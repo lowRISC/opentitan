@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 steps:
-- name: 'gcr.io/active-premise-257318/builder'
-  args: ['./util/build_docs.py']
+- name: 'gcr.io/gold-hybrid-255313/builder'
+  args: ['util/site/build-docs.sh build']
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['-m', 'rsync', '-r', '-d','build/docs/', 'gs://active-premise-257318']
+  args: ['-m', 'rsync', '-r', '-d', 'build-site/', 'gs://gold-hybrid-255313-prod']
