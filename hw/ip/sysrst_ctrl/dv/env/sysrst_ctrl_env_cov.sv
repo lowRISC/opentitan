@@ -86,107 +86,108 @@ class sysrst_ctrl_combo_detect_action_obj extends uvm_object;
     option.per_instance = 1;
     option.name = $sformatf("sysrst_ctrl_combo_detect_action_cg_%0d", index);
 
-    cp_bat_disable: coverpoint bat_disable;
-    cp_interrupt:   coverpoint interrupt;
-    cp_ec_rst:      coverpoint ec_rst;
-    cp_rst_req:     coverpoint rst_req;
-    cp_key0_in_sel:   coverpoint key0_in_sel;
-    cp_key1_in_sel:   coverpoint key1_in_sel;
-    cp_key2_in_sel:   coverpoint key2_in_sel;
-    cp_pwrb_in_sel:   coverpoint pwrb_in_sel;
-    cp_ac_present_sel:coverpoint ac_present_sel;
-    cp_precondition_key0_in_sel: coverpoint precondition_key0_in_sel;
-    cp_precondition_key1_in_sel: coverpoint precondition_key1_in_sel;
-    cp_precondition_key2_in_sel: coverpoint precondition_key2_in_sel;
-    cp_precondition_pwrb_in_sel: coverpoint precondition_pwrb_in_sel;
+    cp_bat_disable:    coverpoint bat_disable;
+    cp_interrupt:      coverpoint interrupt;
+    cp_ec_rst:         coverpoint ec_rst;
+    cp_rst_req:        coverpoint rst_req;
+    cp_key0_in_sel:    coverpoint key0_in_sel;
+    cp_key1_in_sel:    coverpoint key1_in_sel;
+    cp_key2_in_sel:    coverpoint key2_in_sel;
+    cp_pwrb_in_sel:    coverpoint pwrb_in_sel;
+    cp_ac_present_sel: coverpoint ac_present_sel;
+    cp_precondition_key0_in_sel:    coverpoint precondition_key0_in_sel;
+    cp_precondition_key1_in_sel:    coverpoint precondition_key1_in_sel;
+    cp_precondition_key2_in_sel:    coverpoint precondition_key2_in_sel;
+    cp_precondition_pwrb_in_sel:    coverpoint precondition_pwrb_in_sel;
     cp_precondition_ac_present_sel: coverpoint precondition_ac_present_sel;
+
     cross_bat_disable_combo_sel: cross cp_bat_disable, cp_key0_in_sel, cp_key1_in_sel,
-         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel,cp_precondition_key0_in_sel,
-         cp_precondition_key1_in_sel, cp_precondition_key2_in_sel,
-         cp_precondition_pwrb_in_sel, cp_precondition_ac_present_sel {
-         illegal_bins invalid_bat_disable = binsof(cp_key0_in_sel) intersect {0} &&
-                                binsof(cp_key1_in_sel) intersect {0} &&
-                                binsof(cp_key2_in_sel) intersect {0} &&
-                                binsof(cp_pwrb_in_sel) intersect {0} &&
-                                binsof(cp_ac_present_sel) intersect {0} &&
-                                binsof(cp_bat_disable) intersect {1};
-         ignore_bins invalid_combinations_key_0_sel = binsof(cp_key0_in_sel) intersect {1} &&
-                                binsof(cp_precondition_key0_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_key_1_sel = binsof(cp_key1_in_sel) intersect {1} &&
-                                binsof(cp_precondition_key1_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_key_2_sel = binsof(cp_key2_in_sel) intersect {1} &&
-                                binsof(cp_precondition_key2_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_pwrb_sel  = binsof(cp_pwrb_in_sel) intersect {1} &&
-                                binsof(cp_precondition_pwrb_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_ac_power_sel = binsof(cp_ac_present_sel) intersect {1} &&
-                                binsof(cp_precondition_ac_present_sel) intersect {1};
-         ignore_bins key_trigger_disabled = binsof (cp_bat_disable) intersect {0};
+      cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel, cp_precondition_key0_in_sel,
+      cp_precondition_key1_in_sel, cp_precondition_key2_in_sel,
+      cp_precondition_pwrb_in_sel, cp_precondition_ac_present_sel {
+      illegal_bins invalid_bat_disable = binsof(cp_key0_in_sel)    intersect {0} &&
+                                         binsof(cp_key1_in_sel)    intersect {0} &&
+                                         binsof(cp_key2_in_sel)    intersect {0} &&
+                                         binsof(cp_pwrb_in_sel)    intersect {0} &&
+                                         binsof(cp_ac_present_sel) intersect {0} &&
+                                         binsof(cp_bat_disable)    intersect {1};
+      ignore_bins invalid_combinations_key_0_sel =
+        binsof(cp_key0_in_sel) intersect {1} && binsof(cp_precondition_key0_in_sel) intersect {1};
+      ignore_bins invalid_combinations_key_1_sel =
+        binsof(cp_key1_in_sel) intersect {1} && binsof(cp_precondition_key1_in_sel) intersect {1};
+      ignore_bins invalid_combinations_key_2_sel =
+        binsof(cp_key2_in_sel) intersect {1} && binsof(cp_precondition_key2_in_sel) intersect {1};
+      ignore_bins invalid_combinations_pwrb_sel =
+        binsof(cp_pwrb_in_sel) intersect {1} && binsof(cp_precondition_pwrb_in_sel) intersect {1};
+      ignore_bins invalid_combinations_ac_power_sel = binsof(cp_ac_present_sel) intersect {1} &&
+        binsof(cp_precondition_ac_present_sel) intersect {1};
+      ignore_bins key_trigger_disabled = binsof (cp_bat_disable) intersect {0};
     }
     cross_interrupt_combo_sel: cross cp_interrupt, cp_key0_in_sel, cp_key1_in_sel,
-         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel,
-         cp_precondition_key0_in_sel, cp_precondition_key1_in_sel, cp_precondition_key2_in_sel,
-         cp_precondition_pwrb_in_sel, cp_precondition_ac_present_sel {
-         illegal_bins invalid_interrupt = binsof(cp_key0_in_sel) intersect {0} &&
-                                binsof(cp_key1_in_sel) intersect {0} &&
-                                binsof(cp_key2_in_sel) intersect {0} &&
-                                binsof(cp_pwrb_in_sel) intersect {0} &&
-                                binsof(cp_ac_present_sel) intersect {0} &&
-                                binsof(cp_interrupt) intersect {1};
-         ignore_bins invalid_combinations_key_0_sel = binsof(cp_key0_in_sel) intersect {1} &&
-                                binsof(cp_precondition_key0_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_key_1_sel = binsof(cp_key1_in_sel) intersect {1} &&
-                                binsof(cp_precondition_key1_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_key_2_sel = binsof(cp_key2_in_sel) intersect {1} &&
-                                binsof(cp_precondition_key2_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_pwrb_sel  = binsof(cp_pwrb_in_sel) intersect {1} &&
-                                binsof(cp_precondition_pwrb_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_ac_power_sel = binsof(cp_ac_present_sel) intersect {1} &&
-                                binsof(cp_precondition_ac_present_sel) intersect {1};
-         ignore_bins key_trigger_disabled = binsof (cp_interrupt) intersect {0};
+      cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel,
+      cp_precondition_key0_in_sel, cp_precondition_key1_in_sel, cp_precondition_key2_in_sel,
+      cp_precondition_pwrb_in_sel, cp_precondition_ac_present_sel {
+      illegal_bins invalid_interrupt = binsof(cp_key0_in_sel)    intersect {0} &&
+                                       binsof(cp_key1_in_sel)    intersect {0} &&
+                                       binsof(cp_key2_in_sel)    intersect {0} &&
+                                       binsof(cp_pwrb_in_sel)    intersect {0} &&
+                                       binsof(cp_ac_present_sel) intersect {0} &&
+                                       binsof(cp_interrupt)      intersect {1};
+      ignore_bins invalid_combinations_key_0_sel =
+        binsof(cp_key0_in_sel) intersect {1} && binsof(cp_precondition_key0_in_sel) intersect {1};
+      ignore_bins invalid_combinations_key_1_sel =
+        binsof(cp_key1_in_sel) intersect {1} && binsof(cp_precondition_key1_in_sel) intersect {1};
+      ignore_bins invalid_combinations_key_2_sel =
+        binsof(cp_key2_in_sel) intersect {1} && binsof(cp_precondition_key2_in_sel) intersect {1};
+      ignore_bins invalid_combinations_pwrb_sel =
+        binsof(cp_pwrb_in_sel) intersect {1} && binsof(cp_precondition_pwrb_in_sel) intersect {1};
+      ignore_bins invalid_combinations_ac_power_sel = binsof(cp_ac_present_sel) intersect {1} &&
+        binsof(cp_precondition_ac_present_sel) intersect {1};
+      ignore_bins key_trigger_disabled = binsof (cp_interrupt) intersect {0};
     }
     cross_ec_rst_combo_sel: cross cp_ec_rst, cp_key0_in_sel, cp_key1_in_sel,
-         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel,
-         cp_precondition_key0_in_sel, cp_precondition_key1_in_sel, cp_precondition_key2_in_sel,
-         cp_precondition_pwrb_in_sel, cp_precondition_ac_present_sel {
-         illegal_bins invalid_ec_rst = binsof(cp_key0_in_sel) intersect {0} &&
-                                binsof(cp_key1_in_sel) intersect {0} &&
-                                binsof(cp_key2_in_sel) intersect {0} &&
-                                binsof(cp_pwrb_in_sel) intersect {0} &&
-                                binsof(cp_ac_present_sel) intersect {0} &&
-                                binsof(cp_ec_rst) intersect {1};
-         ignore_bins invalid_combinations_key_0_sel = binsof(cp_key0_in_sel) intersect {1} &&
-                                binsof(cp_precondition_key0_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_key_1_sel = binsof(cp_key1_in_sel) intersect {1} &&
-                                binsof(cp_precondition_key1_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_key_2_sel = binsof(cp_key2_in_sel) intersect {1} &&
-                                binsof(cp_precondition_key2_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_pwrb_sel  = binsof(cp_pwrb_in_sel) intersect {1} &&
-                                binsof(cp_precondition_pwrb_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_ac_power_sel = binsof(cp_ac_present_sel) intersect {1} &&
-                                binsof(cp_precondition_ac_present_sel) intersect {1};
-         ignore_bins key_trigger_disabled = binsof (cp_ec_rst) intersect {0};
+      cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel,
+      cp_precondition_key0_in_sel, cp_precondition_key1_in_sel, cp_precondition_key2_in_sel,
+      cp_precondition_pwrb_in_sel, cp_precondition_ac_present_sel {
+      illegal_bins invalid_ec_rst = binsof(cp_key0_in_sel)    intersect {0} &&
+                                    binsof(cp_key1_in_sel)    intersect {0} &&
+                                    binsof(cp_key2_in_sel)    intersect {0} &&
+                                    binsof(cp_pwrb_in_sel)    intersect {0} &&
+                                    binsof(cp_ac_present_sel) intersect {0} &&
+                                    binsof(cp_ec_rst)         intersect {1};
+      ignore_bins invalid_combinations_key_0_sel =
+        binsof(cp_key0_in_sel) intersect {1} && binsof(cp_precondition_key0_in_sel) intersect {1};
+      ignore_bins invalid_combinations_key_1_sel =
+        binsof(cp_key1_in_sel) intersect {1} && binsof(cp_precondition_key1_in_sel) intersect {1};
+      ignore_bins invalid_combinations_key_2_sel =
+        binsof(cp_key2_in_sel) intersect {1} && binsof(cp_precondition_key2_in_sel) intersect {1};
+      ignore_bins invalid_combinations_pwrb_sel =
+        binsof(cp_pwrb_in_sel) intersect {1} && binsof(cp_precondition_pwrb_in_sel) intersect {1};
+      ignore_bins invalid_combinations_ac_power_sel = binsof(cp_ac_present_sel) intersect {1} &&
+        binsof(cp_precondition_ac_present_sel) intersect {1};
+      ignore_bins key_trigger_disabled = binsof (cp_ec_rst) intersect {0};
     }
     cross_rst_req_combo_sel: cross cp_rst_req, cp_key0_in_sel, cp_key1_in_sel,
-         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel,
-         cp_precondition_key0_in_sel, cp_precondition_key1_in_sel, cp_precondition_key2_in_sel,
-         cp_precondition_pwrb_in_sel, cp_precondition_ac_present_sel {
-         illegal_bins invalid_rst_req = binsof(cp_key0_in_sel) intersect {0} &&
-                                binsof(cp_key1_in_sel) intersect {0} &&
-                                binsof(cp_key2_in_sel) intersect {0} &&
-                                binsof(cp_pwrb_in_sel) intersect {0} &&
-                                binsof(cp_ac_present_sel) intersect {0} &&
-                                binsof(cp_rst_req) intersect {1};
-         ignore_bins invalid_combinations_key_0_sel = binsof(cp_key0_in_sel) intersect {1} &&
-                                binsof(cp_precondition_key0_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_key_1_sel = binsof(cp_key1_in_sel) intersect {1} &&
-                                binsof(cp_precondition_key1_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_key_2_sel = binsof(cp_key2_in_sel) intersect {1} &&
-                                binsof(cp_precondition_key2_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_pwrb_sel  = binsof(cp_pwrb_in_sel) intersect {1} &&
-                                binsof(cp_precondition_pwrb_in_sel)    intersect {1};
-         ignore_bins invalid_combinations_ac_power_sel = binsof(cp_ac_present_sel) intersect {1} &&
-                                binsof(cp_precondition_ac_present_sel) intersect {1};
-         ignore_bins key_trigger_disabled = binsof (cp_rst_req) intersect {0};
+      cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel,
+      cp_precondition_key0_in_sel, cp_precondition_key1_in_sel, cp_precondition_key2_in_sel,
+      cp_precondition_pwrb_in_sel, cp_precondition_ac_present_sel {
+      illegal_bins invalid_rst_req = binsof(cp_key0_in_sel)    intersect {0} &&
+                                     binsof(cp_key1_in_sel)    intersect {0} &&
+                                     binsof(cp_key2_in_sel)    intersect {0} &&
+                                     binsof(cp_pwrb_in_sel)    intersect {0} &&
+                                     binsof(cp_ac_present_sel) intersect {0} &&
+                                     binsof(cp_rst_req)        intersect {1};
+      ignore_bins invalid_combinations_key_0_sel =
+        binsof(cp_key0_in_sel) intersect {1} && binsof(cp_precondition_key0_in_sel) intersect {1};
+      ignore_bins invalid_combinations_key_1_sel =
+        binsof(cp_key1_in_sel) intersect {1} && binsof(cp_precondition_key1_in_sel) intersect {1};
+      ignore_bins invalid_combinations_key_2_sel =
+        binsof(cp_key2_in_sel) intersect {1} && binsof(cp_precondition_key2_in_sel) intersect {1};
+      ignore_bins invalid_combinations_pwrb_sel =
+        binsof(cp_pwrb_in_sel) intersect {1} && binsof(cp_precondition_pwrb_in_sel) intersect {1};
+      ignore_bins invalid_combinations_ac_power_sel = binsof(cp_ac_present_sel) intersect {1} &&
+        binsof(cp_precondition_ac_present_sel) intersect {1};
+      ignore_bins key_trigger_disabled = binsof (cp_rst_req) intersect {0};
     }
   endgroup  // sysrst_ctrl_combo_detect_action_cg
 
@@ -228,25 +229,25 @@ class sysrst_ctrl_combo_intr_status_obj extends uvm_object;
     cp_ac_present_sel:coverpoint ac_present_sel;
     cp_interrupt:   coverpoint interrupt;
     cross_combo0: cross cp_combo0_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
-       ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
+      cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
+      ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
                              binsof(cp_combo0_h2l) intersect {1};
-       }
+      }
     cross_combo1: cross cp_combo1_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
-       ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
+      cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
+      ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
                              binsof(cp_combo1_h2l) intersect {1};
-       }
+      }
     cross_combo2: cross cp_combo2_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
-       ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
+      cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
+      ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
                              binsof(cp_combo2_h2l) intersect {1};
-       }
+      }
     cross_combo3: cross cp_combo3_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
-       ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
+      cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
+      ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
                              binsof(cp_combo3_h2l) intersect {1};
-       }
+      }
   endgroup // sysrst_ctrl_combo_intr_status_cg
 
   function new(string name = "sysrst_ctrl_combo_intr_status_obj");
