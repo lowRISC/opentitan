@@ -198,31 +198,28 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       // NOTE: The interrupt will only raise if the interrupt combo action is set.
       for (int i = 0; i <= 3; i++) begin
         if (cycles > (get_duration[i] + set_key_timer) && triggered[i]) begin
-          intr_actions[i] = get_field_val(ral.com_out_ctl[i].interrupt, get_action[i]);
+          intr_actions[i]    = get_field_val(ral.com_out_ctl[i].interrupt, get_action[i]);
           bat_act_triggered |= get_field_val(ral.com_out_ctl[i].bat_disable, get_action[i]);
-          ec_act_triggered |= get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i]);
+          ec_act_triggered  |= get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i]);
           rst_act_triggered |= get_field_val(ral.com_out_ctl[i].rst_req, get_action[i]);
 
           if (cfg.en_cov) begin
-            cov.combo_detect_action[i].sysrst_ctrl_combo_detect_action_cg.sample(bat_act_triggered,
-                            intr_actions[i],
-                            ec_act_triggered,
-                            rst_act_triggered,
-                            get_field_val(ral.com_sel_ctl[i].key0_in_sel, get_trigger_combo[i]),
-                            get_field_val(ral.com_sel_ctl[i].key1_in_sel, get_trigger_combo[i]),
-                            get_field_val(ral.com_sel_ctl[i].key2_in_sel, get_trigger_combo[i]),
-                            get_field_val(ral.com_sel_ctl[i].pwrb_in_sel, get_trigger_combo[i]),
-                            get_field_val(ral.com_sel_ctl[i].ac_present_sel,get_trigger_combo[i]),
-                            get_field_val(ral.com_pre_sel_ctl[i].key0_in_sel,
-                                                             get_trigger_combo_pre[i]),
-                            get_field_val(ral.com_pre_sel_ctl[i].key1_in_sel,
-                                                             get_trigger_combo_pre[i]),
-                            get_field_val(ral.com_pre_sel_ctl[i].key2_in_sel,
-                                                             get_trigger_combo_pre[i]),
-                            get_field_val(ral.com_pre_sel_ctl[i].pwrb_in_sel,
-                                                             get_trigger_combo_pre[i]),
-                            get_field_val(ral.com_pre_sel_ctl[i].ac_present_sel,
-                                                             get_trigger_combo_pre[i]));
+            cov.combo_detect_action[i].sysrst_ctrl_combo_detect_action_cg.sample(
+              bat_act_triggered,
+              intr_actions[i],
+              ec_act_triggered,
+              rst_act_triggered,
+              get_field_val(ral.com_sel_ctl[i].key0_in_sel, get_trigger_combo[i]),
+              get_field_val(ral.com_sel_ctl[i].key1_in_sel, get_trigger_combo[i]),
+              get_field_val(ral.com_sel_ctl[i].key2_in_sel, get_trigger_combo[i]),
+              get_field_val(ral.com_sel_ctl[i].pwrb_in_sel, get_trigger_combo[i]),
+              get_field_val(ral.com_sel_ctl[i].ac_present_sel, get_trigger_combo[i]),
+              get_field_val(ral.com_pre_sel_ctl[i].key0_in_sel, get_trigger_combo_pre[i]),
+              get_field_val(ral.com_pre_sel_ctl[i].key1_in_sel, get_trigger_combo_pre[i]),
+              get_field_val(ral.com_pre_sel_ctl[i].key2_in_sel, get_trigger_combo_pre[i]),
+              get_field_val(ral.com_pre_sel_ctl[i].pwrb_in_sel, get_trigger_combo_pre[i]),
+              get_field_val(ral.com_pre_sel_ctl[i].ac_present_sel, get_trigger_combo_pre[i])
+            );
           end
 
           if (get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i])) begin
@@ -233,6 +230,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
           end
         end
       end
+
       if (ec_act_triggered) begin
         // We don't check ec_rst_pulse right after it occurs. past_cycles indicates how many
         // cycles the pulse has been active.
