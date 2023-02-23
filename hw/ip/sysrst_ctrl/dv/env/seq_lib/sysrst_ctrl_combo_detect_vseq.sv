@@ -100,34 +100,6 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
                                  set_key_timer), UVM_LOW);
   endtask
 
-  function void reset_combo_inputs();
-    // Set the inputs back to inactive to avoid its affect in next iterations
-    cfg.vif.pwrb_in = 1;
-    cfg.vif.key0_in = 1;
-    cfg.vif.key1_in = 1;
-    cfg.vif.key2_in = 1;
-    cfg.vif.ac_present = 1;
-  endfunction
-
-  task release_ec_rst_l_o();
-    uint16_t get_ec_rst_timer;
-
-    // Explicitly release the EC reset
-    // Disable the override function
-    ral.pin_out_ctl.ec_rst_l.set(0);
-    csr_update(ral.pin_out_ctl);
-    // Get the ec_rst timer value
-    csr_rd(ral.ec_rst_ctl, get_ec_rst_timer);
-
-    // Check ec_rst_l asserts for ec_rst_timer cycles after reset
-    monitor_ec_rst_low(get_ec_rst_timer);
-    cfg.clk_aon_rst_vif.wait_clks(10);
-
-    // ec_rst_l_o remains high
-    `DV_CHECK_EQ(cfg.vif.ec_rst_l_out, 1);
-
-  endtask
-
   task body();
     uvm_reg_data_t rdata;
     bit triggered[4];

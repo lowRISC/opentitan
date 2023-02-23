@@ -233,9 +233,18 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       end
       "alert_test": begin
       end
-      // TODO: need support pre-condition
-      "com_pre_sel_ctl_0", "com_pre_sel_ctl_1", "com_pre_sel_ctl_2", "com_pre_sel_ctl_3",
+      "com_pre_sel_ctl_0", "com_pre_sel_ctl_1", "com_pre_sel_ctl_2", "com_pre_sel_ctl_3": begin
+        // covered in sequence
+      end
       "com_pre_det_ctl_0", "com_pre_det_ctl_1", "com_pre_det_ctl_2", "com_pre_det_ctl_3": begin
+         if (addr_phase_write) begin
+           string csr_name = csr.get_name();
+           string str_idx = csr_name.getc(csr_name.len - 1);
+           int idx = str_idx.atoi();
+           cov_if.cg_combo_precondition_det_sample (idx,
+             get_field_val(ral.com_pre_det_ctl[idx].precondition_timer, item.a_data)
+           );
+         end
       end
       default: begin
        `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))

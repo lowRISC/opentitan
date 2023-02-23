@@ -17,3 +17,4 @@
 `include "sysrst_ctrl_combo_detect_vseq.sv"
 `include "sysrst_ctrl_edge_detect_vseq.sv"
 `include "sysrst_ctrl_stress_all_vseq.sv"
+`include "sysrst_ctrl_combo_detect_with_pre_cond_vseq.sv"
