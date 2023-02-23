@@ -20,6 +20,45 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
     cfg.clk_aon_rst_vif.set_freq_khz(200);
   endtask
 
+  // Set the inputs back to inactive
+  virtual function void reset_combo_inputs(bit[4:0] input_invert=5'h0);
+    cfg.vif.key0_in = ~input_invert[0];
+    cfg.vif.key1_in = ~input_invert[1];
+    cfg.vif.key2_in = ~input_invert[2];
+    cfg.vif.pwrb_in = ~input_invert[3];
+    cfg.vif.ac_present = ~input_invert[4];
+  endfunction
+
+  // Get input of combo detection logic
+  virtual function bit[4:0] get_combo_input();
+    get_combo_input[0] = cfg.vif.key0_in;
+    get_combo_input[1] = cfg.vif.key1_in;
+    get_combo_input[2] = cfg.vif.key2_in;
+    get_combo_input[3] = cfg.vif.pwrb_in;
+    get_combo_input[4] = cfg.vif.ac_present;
+  endfunction
+
+
+  // Disable ec_rst_l_o override
+  virtual task release_ec_rst_l_o();
+    uint16_t get_ec_rst_timer;
+
+    // Explicitly release the EC reset
+    // Disable the override function
+    ral.pin_out_ctl.ec_rst_l.set(0);
+    csr_update(ral.pin_out_ctl);
+    // Get the ec_rst timer value
+    csr_rd(ral.ec_rst_ctl, get_ec_rst_timer);
+
+    // Check ec_rst_l asserts for ec_rst_timer cycles after reset
+    monitor_ec_rst_low(get_ec_rst_timer);
+    cfg.clk_aon_rst_vif.wait_clks(10);
+
+    // ec_rst_l_o remains high
+    `DV_CHECK_EQ(cfg.vif.ec_rst_l_out, 1);
+
+  endtask
+
   virtual task monitor_ec_rst_low(int exp_cycles);
     int act_cycles, wait_cycles;
     int aon_period_ns = cfg.clk_aon_rst_vif.clk_period_ps / 1000;
@@ -31,7 +70,7 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
     `DV_SPINWAIT(while (cfg.vif.ec_rst_l_out != 1) begin
                    cfg.clk_aon_rst_vif.wait_clks(1);
                    act_cycles++;
-                 end,"time out waiting for ec_rst == 1",aon_period_ns * (exp_cycles + 3))
+                 end, "time out waiting for ec_rst == 1", aon_period_ns * (exp_cycles + 10))
     `DV_CHECK(act_cycles inside {[exp_cycles - 3 : exp_cycles + 3]},
               $sformatf("act(%0d) vs exp(%0d) +/-3", act_cycles, exp_cycles))
   endtask

@@ -87,6 +87,26 @@
     }
 
     {
+      name: combo_detect_with_pre_cond
+      desc: '''
+            Verify the combo detection with random action and precondition.
+
+            * Randomly set the input keys combination as precondition by configuring COM_PRE_SEL_CTL_0-3 register.
+            * Randomly set the input keys combination for combo detection by configuring COM_SEL_CTL_0-3 register.
+            * Set the random combo precondition duration via the COM_PRE_DET_CTL_0-3 register.
+            * Set the random combo duration via the COM_DET_CTL_0-3 register.
+            * Randomly select the action to be taken by configuring COM_OUT_CTL_0-3 register.
+            * Set the pulse width via EC_RST_CTL register.
+            * Randomly set the input keys, such that precondition and subsequent combo detection logic are activated randomly.
+            * Read the COMBO_INTR_STATUS register to check whether an interrupt is correctly raised for all the combinations.
+              Clear the interrupt in case it was raised.
+            * Check for bat_disable, rst_req or wake_up_o assertion depending on COM_OUT_CTL_0-3 register
+            '''
+      stage: V2
+      tests: ["sysrst_ctrl_combo_detect_with_pre_cond"]
+    }
+
+    {
       name: auto_block_key_outputs
       desc: '''
             Verify the auto block key output feature.
