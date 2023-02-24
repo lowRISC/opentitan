@@ -122,6 +122,8 @@ bignum_lshift256:
  *   for k=0..n-i-1:
  *     r[k+i], carry = addc(r[k+i], y[k] & mask, carry)
  *
+ * This routine runs in constant time.
+ *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]    x8: i, number of limbs to shift y (i < n)
