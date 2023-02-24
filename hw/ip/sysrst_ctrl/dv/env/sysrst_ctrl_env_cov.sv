@@ -147,20 +147,27 @@ class sysrst_ctrl_combo_key_combinations_obj extends uvm_object;
     cp_precondition_pwrb_in_sel:    coverpoint precondition_pwrb_in_sel;
     cp_precondition_ac_present_sel: coverpoint precondition_ac_present_sel;
 
-    cross_key_combinations_combo_sel: cross cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-      cp_pwrb_in_sel, cp_ac_present_sel, cp_precondition_key0_in_sel, cp_precondition_key1_in_sel,
-      cp_precondition_key2_in_sel, cp_precondition_pwrb_in_sel, cp_precondition_ac_present_sel
+    cross_key_combinations_combo_precondition_sel: cross cp_precondition_key0_in_sel,
+      cp_precondition_key1_in_sel, cp_precondition_key2_in_sel, cp_precondition_pwrb_in_sel,
+      cp_precondition_ac_present_sel iff ((bat_disable || interrupt || ec_rst || rst_req) &&
+      (key0_in_sel || key1_in_sel || key2_in_sel || pwrb_in_sel || ac_present_sel)) {
+      // Ignore case where all keys are enabled for precondition, as there wont be any keys left for
+      // combo detection
+      ignore_bins detection_disable = binsof(cp_precondition_key0_in_sel)    intersect {1} &&
+                                      binsof(cp_precondition_key1_in_sel)    intersect {1} &&
+                                      binsof(cp_precondition_key2_in_sel)    intersect {1} &&
+                                      binsof(cp_precondition_pwrb_in_sel)    intersect {1} &&
+                                      binsof(cp_precondition_ac_present_sel) intersect {1};
+    }
+
+    cross_key_combinations_combo_detection_sel: cross cp_key0_in_sel, cp_key1_in_sel,
+      cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel
       iff (bat_disable || interrupt || ec_rst || rst_req) {
-      ignore_bins invalid_combinations_key_0_sel =
-        binsof(cp_key0_in_sel) intersect {1} && binsof(cp_precondition_key0_in_sel) intersect {1};
-      ignore_bins invalid_combinations_key_1_sel =
-        binsof(cp_key1_in_sel) intersect {1} && binsof(cp_precondition_key1_in_sel) intersect {1};
-      ignore_bins invalid_combinations_key_2_sel =
-        binsof(cp_key2_in_sel) intersect {1} && binsof(cp_precondition_key2_in_sel) intersect {1};
-      ignore_bins invalid_combinations_pwrb_sel =
-        binsof(cp_pwrb_in_sel) intersect {1} && binsof(cp_precondition_pwrb_in_sel) intersect {1};
-      ignore_bins invalid_combinations_ac_power_sel = binsof(cp_ac_present_sel) intersect {1} &&
-        binsof(cp_precondition_ac_present_sel) intersect {1};
+      ignore_bins detection_disable = binsof(cp_key0_in_sel)    intersect {0} &&
+                                      binsof(cp_key1_in_sel)    intersect {0} &&
+                                      binsof(cp_key2_in_sel)    intersect {0} &&
+                                      binsof(cp_pwrb_in_sel)    intersect {0} &&
+                                      binsof(cp_ac_present_sel) intersect {0};
     }
   endgroup  // sysrst_ctrl_combo_key_combinations_cg
 
