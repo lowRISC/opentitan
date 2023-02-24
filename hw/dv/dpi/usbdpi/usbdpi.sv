@@ -220,13 +220,16 @@ module usbdpi #(
   logic       flip_detect, pullup_detect, rx_enable;
 
   // Detect a request to flip pins by the DN resistor being applied;
-  //   it's a full speed device so the pullup resistor is on the D+ signal
+  //   it's a full speed device so the pullup resistor is on the DP signal
   assign flip_detect = pullupdn_d2p;
   assign pullup_detect = pullupdp_d2p || pullupdn_d2p;
   assign rx_enable = rx_enable_d2p;
 
+  // Signals from device to software program
   assign d2p = {dp_d2p, dp_en_d2p, dn_d2p, dn_en_d2p, d_d2p, d_en_d2p, se0_d2p, tx_use_d_se0_d2p,
                 pullupdp_d2p, pullupdn_d2p, rx_enable};
+
+  // Interface to DPI model of USB host
   always_ff @(posedge clk_48MHz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       sense_p2d <= 1'b0;
@@ -257,7 +260,9 @@ module usbdpi #(
     end
   end
 
+  // Input signals to the device
   always_comb begin : proc_data
+    // Single-ended input to the device
     d_p2d = d_last;
     if (rx_enable) begin
       // Differential receiver is enabled.
@@ -271,22 +276,30 @@ module usbdpi #(
         d_p2d = 1'b0;
       end
     end
+
+    // DP differential input to the device
     if (dp_en_d2p) begin
+      // Device sees its own output when it is driving the bus
       if (tx_use_d_se0_d2p) begin
         dp_p2d = se0_d2p ? 1'b0 : flip_detect ^ d_d2p;
       end else begin
         dp_p2d = dp_d2p;
       end
     end else begin
+      // Output from the DPI model
       dp_p2d = dp_int;
     end
+
+    // DN differential input to the device
     if (dn_en_d2p) begin
+      // Device sees its own output when it is driving the bus
       if (tx_use_d_se0_d2p) begin
         dn_p2d = se0_d2p ? 1'b0 : flip_detect ^ ~d_d2p;
       end else begin
         dn_p2d = dn_d2p;
       end
     end else begin
+      // Output from the DPI model
       dn_p2d = dn_int;
     end
   end
