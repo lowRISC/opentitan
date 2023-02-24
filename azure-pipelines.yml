@@ -391,7 +391,7 @@ jobs:
   dependsOn:
     - lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool: ci-public
+  pool: EDA-TEST
   timeoutInMinutes: 240
   steps:
   - template: ci/checkout-template.yml

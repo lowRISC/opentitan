@@ -119,6 +119,7 @@ module sha3
   // to check if multiple process_i is received or not.
   logic processing;
 
+  // DO NOT MERGE
   // FSM variable
   sha3_st_sparse_e st, st_d;
 
