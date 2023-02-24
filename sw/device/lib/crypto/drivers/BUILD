@@ -63,6 +63,8 @@ cc_library(
     hdrs = ["entropy.h"],
     deps = [
         "//hw/ip/csrng/data:csrng_regs",
+        "//hw/ip/edn/data:edn_regs",
+        "//hw/ip/entropy_src/data:entropy_src_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -100,10 +102,13 @@ opentitan_functest(
     deps = [
         ":entropy",
         ":entropy_kat",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/dif:otbn",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:otbn_randomness_impl",
     ],
 )
 
