@@ -269,7 +269,7 @@ module usbdpi #(
       if (bypass_mode) begin
         // Device just sees its own output pins in bypass mode
         sense_p2d <= se0_d2p;
-      end if (!sense_p2d || pullup_detect) begin
+      end else if (!sense_p2d || pullup_detect) begin
         automatic byte p2d = usbdpi_host_to_device(ctx, d2p);
         d_last <= d_p2d;
         dp_en_p2d <= p2d[4];

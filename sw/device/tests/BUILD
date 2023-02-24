@@ -4058,6 +4058,25 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "usbdev_swdrive_test",
+    srcs = ["usbdev_swdrive_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    verilator = verilator_params(timeout = "long"),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "usbdev_logging_test",
     srcs = ["usbdev_logging_test.c"],
     exec_env = {
