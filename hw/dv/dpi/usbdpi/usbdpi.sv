@@ -211,6 +211,33 @@ module usbdpi #(
                        c_step, c_bus_state, c_tickbits, c_frame, c_hostSt,
                        c_state});
 
+  // We implement a bypass mode in which the device inputs are driven directly
+  // by the device outputs, so that software can exercise all of the pins
+  // independently when testing the pins_drive/_sense registers
+  logic bypass_mode;
+  logic [3:0] bypass_cnt;
+  logic pudp_d2p_last;
+  logic pudn_d2p_last;
+
+  always @(posedge clk_48MHz_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      bypass_cnt <= 4'b0;
+      bypass_mode <= 1'b0;
+    end else begin
+      pudp_d2p_last <= pullupdp_d2p;
+      pudn_d2p_last <= pullupdn_d2p;
+      // Repeated toggle of the pull up enables signals a request to enter
+      // bypass mode forever (deactivating the DPI model)
+      if ((pudp_d2p_last ^ pullupdp_d2p) & (pullupdp_d2p ^ pullupdn_d2p)) begin
+        if (&bypass_cnt) begin
+          bypass_mode <= 1'b1;
+        end else begin
+          bypass_cnt <= bypass_cnt + 1'b1;
+        end
+      end
+    end
+  end
+
   logic [10:0] d2p;
   logic [10:0] d2p_r;
   logic       unused_dummy;
@@ -239,7 +266,10 @@ module usbdpi #(
       dp_int <= 0;
       dn_int <= 0;
     end else if (enable) begin
-      if (!sense_p2d || pullup_detect) begin
+      if (bypass_mode) begin
+        // Device just sees its own output pins in bypass mode
+        sense_p2d <= se0_d2p;
+      end if (!sense_p2d || pullup_detect) begin
         automatic byte p2d = usbdpi_host_to_device(ctx, d2p);
         d_last <= d_p2d;
         dp_en_p2d <= p2d[4];
@@ -262,45 +292,52 @@ module usbdpi #(
 
   // Input signals to the device
   always_comb begin : proc_data
-    // Single-ended input to the device
-    d_p2d = d_last;
-    if (rx_enable) begin
-      // Differential receiver is enabled.
-      // If host is driving, update d_p2d only if there is a valid differential
-      // value.
-      if (d_en_d2p) begin
-        d_p2d = d_d2p;
-      end else if (dp_int && !dn_int) begin
-        d_p2d = 1'b1;
-      end else if (!dp_int && dn_int) begin
-        d_p2d = 1'b0;
-      end
-    end
-
-    // DP differential input to the device
-    if (dp_en_d2p) begin
-      // Device sees its own output when it is driving the bus
-      if (tx_use_d_se0_d2p) begin
-        dp_p2d = se0_d2p ? 1'b0 : flip_detect ^ d_d2p;
-      end else begin
-        dp_p2d = dp_d2p;
-      end
+    if (bypass_mode) begin
+      // Device just sees its own output pins in bypass mode
+      d_p2d  = d_d2p;
+      dp_p2d = dp_d2p;
+      dn_p2d = dn_d2p;
     end else begin
-      // Output from the DPI model
-      dp_p2d = dp_int;
-    end
-
-    // DN differential input to the device
-    if (dn_en_d2p) begin
-      // Device sees its own output when it is driving the bus
-      if (tx_use_d_se0_d2p) begin
-        dn_p2d = se0_d2p ? 1'b0 : flip_detect ^ ~d_d2p;
-      end else begin
-        dn_p2d = dn_d2p;
+      // Single-ended input to the device
+      d_p2d = d_last;
+      if (rx_enable) begin
+        // Differential receiver is enabled.
+        // If host is driving, update d_p2d only if there is a valid differential
+        // value.
+        if (d_en_d2p) begin
+          d_p2d = d_d2p;
+        end else if (dp_int && !dn_int) begin
+          d_p2d = 1'b1;
+        end else if (!dp_int && dn_int) begin
+          d_p2d = 1'b0;
+        end
       end
-    end else begin
-      // Output from the DPI model
-      dn_p2d = dn_int;
+
+      // DP differential input to the device
+      if (dp_en_d2p) begin
+        // Device sees its own output when it is driving the bus
+        if (tx_use_d_se0_d2p) begin
+          dp_p2d = se0_d2p ? 1'b0 : flip_detect ^ d_d2p;
+        end else begin
+          dp_p2d = dp_d2p;
+        end
+      end else begin
+        // Output from the DPI model
+        dp_p2d = dp_int;
+      end
+
+      // DN differential input to the device
+      if (dn_en_d2p) begin
+        // Device sees its own output when it is driving the bus
+        if (tx_use_d_se0_d2p) begin
+          dn_p2d = se0_d2p ? 1'b0 : flip_detect ^ ~d_d2p;
+        end else begin
+          dn_p2d = dn_d2p;
+        end
+      end else begin
+        // Output from the DPI model
+        dn_p2d = dn_int;
+      end
     end
   end
 endmodule
