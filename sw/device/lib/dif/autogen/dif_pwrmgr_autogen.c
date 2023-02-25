@@ -93,6 +93,19 @@ dif_result_t dif_pwrmgr_irq_get_state(
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwrmgr_irq_acknowledge_state(
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_irq_state_snapshot_t snapshot) {
+  if (pwrmgr == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(pwrmgr->base_addr, PWRMGR_INTR_STATE_REG_OFFSET,
+                      snapshot);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_irq_is_pending(const dif_pwrmgr_t *pwrmgr,
                                        dif_pwrmgr_irq_t irq, bool *is_pending) {
   if (pwrmgr == NULL || is_pending == NULL) {

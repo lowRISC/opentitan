@@ -102,6 +102,18 @@ dif_result_t dif_kmac_irq_get_state(const dif_kmac_t *kmac,
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_irq_acknowledge_state(
+    const dif_kmac_t *kmac, dif_kmac_irq_state_snapshot_t snapshot) {
+  if (kmac == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(kmac->base_addr, KMAC_INTR_STATE_REG_OFFSET, snapshot);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_irq_is_pending(const dif_kmac_t *kmac, dif_kmac_irq_t irq,
                                      bool *is_pending) {
   if (kmac == NULL || is_pending == NULL) {

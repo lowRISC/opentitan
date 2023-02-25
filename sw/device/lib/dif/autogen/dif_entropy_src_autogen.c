@@ -111,6 +111,20 @@ dif_result_t dif_entropy_src_irq_get_state(
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_irq_acknowledge_state(
+    const dif_entropy_src_t *entropy_src,
+    dif_entropy_src_irq_state_snapshot_t snapshot) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+                      snapshot);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_irq_is_pending(
     const dif_entropy_src_t *entropy_src, dif_entropy_src_irq_t irq,
     bool *is_pending) {

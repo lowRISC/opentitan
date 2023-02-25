@@ -135,6 +135,18 @@ dif_result_t dif_i2c_irq_get_state(const dif_i2c_t *i2c,
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_irq_acknowledge_state(
+    const dif_i2c_t *i2c, dif_i2c_irq_state_snapshot_t snapshot) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(i2c->base_addr, I2C_INTR_STATE_REG_OFFSET, snapshot);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_irq_is_pending(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
                                     bool *is_pending) {
   if (i2c == NULL || is_pending == NULL) {

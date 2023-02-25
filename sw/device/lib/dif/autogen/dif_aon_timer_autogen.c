@@ -108,6 +108,20 @@ dif_result_t dif_aon_timer_irq_get_state(
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_aon_timer_irq_acknowledge_state(
+    const dif_aon_timer_t *aon_timer,
+    dif_aon_timer_irq_state_snapshot_t snapshot) {
+  if (aon_timer == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(aon_timer->base_addr, AON_TIMER_INTR_STATE_REG_OFFSET,
+                      snapshot);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_aon_timer_irq_is_pending(const dif_aon_timer_t *aon_timer,
                                           dif_aon_timer_irq_t irq,
                                           bool *is_pending) {

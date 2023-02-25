@@ -120,7 +120,7 @@ dif_result_t dif_${ip.name_snake}_init(
    * A snapshot of the state of the interrupts for this IP.
    *
    * This is an opaque type, to be used with the `dif_${ip.name_snake}_irq_get_state()`
-   * function.
+   * and `dif_${ip.name_snake}_irq_acknowledge_state()` functions.
    */
   typedef uint32_t dif_${ip.name_snake}_irq_state_snapshot_t;
 
@@ -169,6 +169,25 @@ dif_result_t dif_${ip.name_snake}_init(
     const dif_${ip.name_snake}_t *${ip.name_snake},
     dif_${ip.name_snake}_irq_t irq,
     bool *is_pending);
+
+  /**
+   * Acknowledges all interrupts that were pending at the time of the state
+   * snapshot.
+   *
+   * @param ${ip.name_snake} A ${ip.name_snake} handle.
+  % if ip.name_snake == "rv_timer":
+   * @param hart_id The hart to manipulate.
+  % endif
+   * @param snapshot Interrupt state snapshot.
+   * @return The result of the operation.
+   */
+  OT_WARN_UNUSED_RESULT
+  dif_result_t dif_${ip.name_snake}_irq_acknowledge_state(
+    const dif_${ip.name_snake}_t *${ip.name_snake},
+  % if ip.name_snake == "rv_timer":
+    uint32_t hart_id,
+  % endif
+    dif_${ip.name_snake}_irq_state_snapshot_t snapshot);
 
   /**
    * Acknowledges all interrupts, indicating to the hardware that all
