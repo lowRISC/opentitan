@@ -86,6 +86,20 @@ dif_result_t dif_alert_handler_irq_get_state(
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_irq_acknowledge_state(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_irq_state_snapshot_t snapshot) {
+  if (alert_handler == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(alert_handler->base_addr,
+                      ALERT_HANDLER_INTR_STATE_REG_OFFSET, snapshot);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_irq_is_pending(
     const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t irq,
     bool *is_pending) {

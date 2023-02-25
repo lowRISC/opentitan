@@ -102,7 +102,7 @@ typedef enum dif_kmac_irq {
  * A snapshot of the state of the interrupts for this IP.
  *
  * This is an opaque type, to be used with the `dif_kmac_irq_get_state()`
- * function.
+ * and `dif_kmac_irq_acknowledge_state()` functions.
  */
 typedef uint32_t dif_kmac_irq_state_snapshot_t;
 
@@ -140,6 +140,18 @@ dif_result_t dif_kmac_irq_get_state(const dif_kmac_t *kmac,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_irq_is_pending(const dif_kmac_t *kmac, dif_kmac_irq_t irq,
                                      bool *is_pending);
+
+/**
+ * Acknowledges all interrupts that were pending at the time of the state
+ * snapshot.
+ *
+ * @param kmac A kmac handle.
+ * @param snapshot Interrupt state snapshot.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_irq_acknowledge_state(
+    const dif_kmac_t *kmac, dif_kmac_irq_state_snapshot_t snapshot);
 
 /**
  * Acknowledges all interrupts, indicating to the hardware that all

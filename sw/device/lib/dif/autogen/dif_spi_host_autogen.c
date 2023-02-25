@@ -99,6 +99,20 @@ dif_result_t dif_spi_host_irq_get_state(
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_host_irq_acknowledge_state(
+    const dif_spi_host_t *spi_host,
+    dif_spi_host_irq_state_snapshot_t snapshot) {
+  if (spi_host == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(spi_host->base_addr, SPI_HOST_INTR_STATE_REG_OFFSET,
+                      snapshot);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_host_irq_is_pending(const dif_spi_host_t *spi_host,
                                          dif_spi_host_irq_t irq,
                                          bool *is_pending) {

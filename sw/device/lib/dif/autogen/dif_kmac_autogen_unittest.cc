@@ -159,6 +159,35 @@ TEST_F(IrqIsPendingTest, Success) {
   EXPECT_FALSE(irq_state);
 }
 
+class AcknowledgeStateTest : public KmacTest {};
+
+TEST_F(AcknowledgeStateTest, NullArgs) {
+  dif_kmac_irq_state_snapshot_t irq_snapshot = 0;
+  EXPECT_DIF_BADARG(dif_kmac_irq_acknowledge_state(nullptr, irq_snapshot));
+}
+
+TEST_F(AcknowledgeStateTest, AckSnapshot) {
+  const uint32_t num_irqs = 3;
+  const uint32_t irq_mask = (1u << num_irqs) - 1;
+  dif_kmac_irq_state_snapshot_t irq_snapshot = 1;
+
+  // Test a few snapshots.
+  for (size_t i = 0; i < num_irqs; ++i) {
+    irq_snapshot = ~irq_snapshot & irq_mask;
+    irq_snapshot |= (1u << i);
+    EXPECT_WRITE32(KMAC_INTR_STATE_REG_OFFSET, irq_snapshot);
+    EXPECT_DIF_OK(dif_kmac_irq_acknowledge_state(&kmac_, irq_snapshot));
+  }
+}
+
+TEST_F(AcknowledgeStateTest, SuccessNoneRaised) {
+  dif_kmac_irq_state_snapshot_t irq_snapshot = 0;
+
+  EXPECT_READ32(KMAC_INTR_STATE_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_kmac_irq_get_state(&kmac_, &irq_snapshot));
+  EXPECT_EQ(irq_snapshot, 0);
+}
+
 class AcknowledgeAllTest : public KmacTest {};
 
 TEST_F(AcknowledgeAllTest, NullArgs) {

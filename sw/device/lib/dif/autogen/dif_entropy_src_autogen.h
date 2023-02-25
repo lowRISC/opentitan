@@ -106,7 +106,7 @@ typedef enum dif_entropy_src_irq {
  * A snapshot of the state of the interrupts for this IP.
  *
  * This is an opaque type, to be used with the `dif_entropy_src_irq_get_state()`
- * function.
+ * and `dif_entropy_src_irq_acknowledge_state()` functions.
  */
 typedef uint32_t dif_entropy_src_irq_state_snapshot_t;
 
@@ -147,6 +147,19 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_irq_is_pending(
     const dif_entropy_src_t *entropy_src, dif_entropy_src_irq_t irq,
     bool *is_pending);
+
+/**
+ * Acknowledges all interrupts that were pending at the time of the state
+ * snapshot.
+ *
+ * @param entropy_src A entropy_src handle.
+ * @param snapshot Interrupt state snapshot.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_irq_acknowledge_state(
+    const dif_entropy_src_t *entropy_src,
+    dif_entropy_src_irq_state_snapshot_t snapshot);
 
 /**
  * Acknowledges all interrupts, indicating to the hardware that all
