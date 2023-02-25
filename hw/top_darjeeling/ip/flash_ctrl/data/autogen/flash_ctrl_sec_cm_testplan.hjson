@@ -1,0 +1,201 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Security countermeasures testplan extracted from the IP Hjson using reggen.
+//
+// This testplan is auto-generated only the first time it is created. This is
+// because this testplan needs to be hand-editable. It is possible that these
+// testpoints can go out of date if the spec is updated with new
+// countermeasures. When `reggen` is invoked when this testplan already exists,
+// It checks if the list of testpoints is up-to-date and enforces the user to
+// make further manual updates.
+//
+// These countermeasures and their descriptions can be found here:
+// .../flash_ctrl/data/flash_ctrl.hjson
+//
+// It is possible that the testing of some of these countermeasures may already
+// be covered as a testpoint in a different testplan. This duplication is ok -
+// the test would have likely already been developed. We simply map those tests
+// to the testpoints below using the `tests` key.
+//
+// Please ensure that this testplan is imported in:
+// .../flash_ctrl/data/flash_ctrl_testplan.hjson
+{
+  testpoints: [
+    {
+      name: sec_cm_reg_bus_integrity
+      desc: "Verify the countermeasure(s) REG.BUS.INTEGRITY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_host_bus_integrity
+      desc: "Verify the countermeasure(s) HOST.BUS.INTEGRITY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_bus_integrity
+      desc: "Verify the countermeasure(s) MEM.BUS.INTEGRITY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_scramble_key_sideload
+      desc: "Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_lc_ctrl_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_config_regwen
+      desc: "Verify the countermeasure(s) CTRL.CONFIG.REGWEN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_data_regions_config_regwen
+      desc: "Verify the countermeasure(s) DATA_REGIONS.CONFIG.REGWEN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_data_regions_config_shadow
+      desc: "Verify the countermeasure(s) DATA_REGIONS.CONFIG.SHADOW."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_info_regions_config_regwen
+      desc: "Verify the countermeasure(s) INFO_REGIONS.CONFIG.REGWEN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_info_regions_config_shadow
+      desc: "Verify the countermeasure(s) INFO_REGIONS.CONFIG.SHADOW."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_bank_config_regwen
+      desc: "Verify the countermeasure(s) BANK.CONFIG.REGWEN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_bank_config_shadow
+      desc: "Verify the countermeasure(s) BANK.CONFIG.SHADOW."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_ctrl_global_esc
+      desc: "Verify the countermeasure(s) MEM.CTRL.GLOBAL_ESC."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_ctrl_local_esc
+      desc: "Verify the countermeasure(s) MEM.CTRL.LOCAL_ESC."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_disable_config_mubi
+      desc: "Verify the countermeasure(s) MEM_DISABLE.CONFIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_exec_config_redun
+      desc: "Verify the countermeasure(s) EXEC.CONFIG.REDUN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_scramble
+      desc: "Verify the countermeasure(s) MEM.SCRAMBLE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_integrity
+      desc: "Verify the countermeasure(s) MEM.INTEGRITY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_rma_entry_mem_sec_wipe
+      desc: "Verify the countermeasure(s) RMA_ENTRY.MEM.SEC_WIPE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_fsm_sparse
+      desc: "Verify the countermeasure(s) CTRL.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_phy_fsm_sparse
+      desc: "Verify the countermeasure(s) PHY.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_phy_prog_fsm_sparse
+      desc: "Verify the countermeasure(s) PHY_PROG.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctr_redun
+      desc: "Verify the countermeasure(s) CTR.REDUN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_phy_arbiter_ctrl_redun
+      desc: "Verify the countermeasure(s) PHY_ARBITER.CTRL.REDUN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_phy_host_grant_ctrl_consistency
+      desc: "Verify the countermeasure(s) PHY_HOST_GRANT.CTRL.CONSISTENCY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_phy_ack_ctrl_consistency
+      desc: "Verify the countermeasure(s) PHY_ACK.CTRL.CONSISTENCY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_fifo_ctr_redun
+      desc: "Verify the countermeasure(s) FIFO.CTR.REDUN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_tl_lc_gate_fsm_sparse
+      desc: "Verify the countermeasure(s) MEM_TL_LC_GATE.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_prog_tl_lc_gate_fsm_sparse
+      desc: "Verify the countermeasure(s) PROG_TL_LC_GATE.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+  ]
+}
