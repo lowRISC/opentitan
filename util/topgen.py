@@ -1202,7 +1202,11 @@ def main():
         # Multiple chip-levels (ASIC, FPGA, Verilator, etc)
         for target in topcfg["targets"]:
             target_name = target["name"]
-            render_template(TOPGEN_TEMPLATE_PATH / "chiplevel.sv.tpl",
+            tpl_name = "chiplevel"
+            if topname != "earlgrey":
+                tpl_name += f"_{topname}"
+            tpl_name += ".sv.tpl"
+            render_template(TOPGEN_TEMPLATE_PATH / tpl_name,
                             out_path /
                             f"rtl/autogen/chip_{topname}_{target_name}.sv",
                             gencmd=gencmd,
