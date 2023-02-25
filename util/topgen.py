@@ -1312,7 +1312,10 @@ def main():
         # Auto-generate tests in "sw/device/tests/autogen" area.
         gencmd = warnhdr + GENCMD.format(topname=topname)
         for fname in ["plic_all_irqs_test.c", "alert_test.c", "BUILD"]:
-            outfile = SRCTREE_TOP / "sw/device/tests/autogen" / fname
+            dirname = "autogen"
+            if topname != "earlgrey":
+                dirname += f"_{topname}"
+            outfile = SRCTREE_TOP / "sw/device/tests" / dirname / fname
             render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
                             outfile,
                             helper=c_helper,
