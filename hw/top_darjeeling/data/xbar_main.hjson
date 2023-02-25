@@ -1,0 +1,236 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "main",
+  type: "xbar",
+  clock_primary: "clk_main_i", // Main clock, used in sockets
+  other_clock_list: [ "clk_fixed_i", "clk_spi_host0_i", "clk_spi_host1_i", "clk_usb_i"] // Secondary clocks used by specific nodes
+  reset_primary: "rst_main_ni", // Main reset, used in sockets
+  other_reset_list: [ "rst_fixed_ni", "rst_spi_host0_ni", "rst_spi_host1_ni", "rst_usb_ni"] // Secondary clocks used by specific nodes
+
+  // Rationale for pipeline and req/rsp_fifo_pass:
+  // For host interfaces that are used during production state (corei/cored),
+  // minimize the amount of host introduced latency.  This is accomplished
+  // by setting pipeline to false.
+  // For host interfaces that are only used for debug, relax the timing by
+  // inserting a register slice and not allowing passthrough (more access
+  // latency. This is accomplished by setting `req/rsp_fifo_pass` to false,
+  // and implicitly using the default of pipeline true.
+  //
+  // For device interfaces, especially configuration registers, latency is
+  // not generally a concern, thus use `req/rsp_fifo_pass` false and pipeline
+  // true.
+  // For device accesses to memories (ram / rom / flash), performance is a concern,
+  // so use pipeline false where permissible by timing. If not, find a combination
+  // that works.
+  nodes: [
+    { name:  "rv_core_ibex.corei",
+      type:  "host",
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
+      pipeline: false
+    },
+    { name:  "rv_core_ibex.cored",
+      type:  "host",
+      clock: "clk_main_i",
+      reset: "rst_main_ni",
+      pipeline: false
+    },
+    { name:      "rv_dm.sba",
+      type:      "host",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "rv_dm.regs",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "rv_dm.mem",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "rom_ctrl.rom",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: true,
+      rsp_fifo_pass: false,
+    },
+    { name:      "rom_ctrl.regs",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "peri",
+      type:      "device",
+      clock:     "clk_fixed_i",
+      reset:     "rst_fixed_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "spi_host0",
+      type:      "device",
+      clock:     "clk_spi_host0_i",
+      reset:     "rst_spi_host0_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "spi_host1",
+      type:      "device",
+      clock:     "clk_spi_host1_i",
+      reset:     "rst_spi_host1_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "usbdev",
+      type:      "device",
+      clock:     "clk_usb_i",
+      reset:     "rst_usb_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "flash_ctrl.core",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "flash_ctrl.prim",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    // Return and examine whether this path
+    // latency can be improved.
+    { name:      "flash_ctrl.mem",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "hmac",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:         "kmac"
+      type:         "device"
+      clock:        "clk_main_i"
+      reset:        "rst_main_ni"
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    }
+    { name:      "aes",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "entropy_src",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "csrng",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "edn0",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "edn1",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "rv_plic",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      inst_type: "rv_plic",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "otbn",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "keymgr",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "rv_core_ibex.cfg",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "sram_ctrl_main.regs",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "sram_ctrl_main.ram",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      pipeline:  false
+    },
+  ],
+  connections: {
+    rv_core_ibex.corei:  ["rom_ctrl.rom", "rv_dm.mem", "sram_ctrl_main.ram", "flash_ctrl.mem"],
+    rv_core_ibex.cored:  [
+      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
+      "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1", "usbdev",
+      "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
+      "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
+      "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
+      "rv_core_ibex.cfg"
+    ],
+    rv_dm.sba: [
+      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
+      "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1", "usbdev",
+      "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
+      "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
+      "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
+      "rv_core_ibex.cfg",
+    ],
+  },
+}
