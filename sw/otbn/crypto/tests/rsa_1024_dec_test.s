@@ -15,12 +15,29 @@
  * w0). See comment at the end of the file for expected values.
  */
  run_rsa_1024_dec:
+  /* Init all-zero register. */
+  bn.xor  w31, w31, w31
+
+  /* Load number of limbs. */
+  li    x30, 4
+
+  /* Load pointers to modulus and Montgomery constant buffers. */
+  la    x16, modulus
+  la    x17, m0inv
+  la    x18, RR
+
+  /* Compute Montgomery constants. */
   jal      x1, modload
+
+  /* Run exponentiation.
+       dmem[plaintext] = dmem[ciphertext]^dmem[exp] mod dmem[modulus] */
+  la       x14, ciphertext
+  la       x15, exp
+  la       x2, plaintext
   jal      x1, modexp
-  /* pointer to out buffer */
-  lw        x21, 28(x0)
 
   /* copy all limbs of result to wide reg file */
+  la       x21, plaintext
   li       x8, 0
   loop     x30, 2
     bn.lid   x8, 0(x21++)
@@ -31,44 +48,9 @@
 
 .data
 
-/*
- * The words below are used by the code above, but the linker can't tell
- * because we reference them by absolute address. Make a global symbol
- * (cfg_data), which will refer to the whole lot and ensure that gc-sections
- * doesn't discard them.
- */
-.globl cfg_data
-cfg_data:
-
-/* reserved */
-.word 0x00000000
-
-/* number of limbs (N) */
-.word 0x00000004
-
-/* pointer to m0' (dptr_m0d) */
-.word 0x00000280
-
-/* pointer to RR (dptr_rr) */
-.word 0x000002c0
-
-/* load pointer to modulus (dptr_m) */
-.word 0x00000080
-
-/* pointer to base bignum buffer (dptr_in) */
-.word 0x000004c0
-
-/* pointer to exponent buffer (dptr_exp) */
-.word 0x000006c0
-
-/* pointer to out buffer (dptr_out) */
-.word 0x000008c0
-
-
 /* Modulus */
-/* skip to 128 */
-.skip 96
-
+.balign 32
+modulus:
 .word 0xc28cf49f
 .word 0xb6e64c3b
 .word 0xa21417f1
@@ -107,9 +89,8 @@ cfg_data:
 
 
 /* encrypted message */
-/* skip to 1216 */
-.skip 960
-
+.balign 32
+ciphertext:
 .word 0xe0e14a9b
 .word 0x7ae96741
 .word 0x4a430036
@@ -148,9 +129,8 @@ cfg_data:
 
 
 /* private exponent */
-/* skip to 1728 */
-.skip 384
-
+.balign 32
+exp:
 .word 0x93a8cd95
 .word 0x24a2614b
 .word 0xeeb788b3
@@ -186,3 +166,18 @@ cfg_data:
 .word 0x511778ce
 .word 0x42209f7b
 .word 0x41b468dc
+
+/* output buffer */
+.balign 32
+plaintext:
+.zero 128
+
+/* buffer for Montgomery constant RR */
+.balign 32
+RR:
+.zero 128
+
+/* buffer for Montgomery constant m0inv */
+.balign 32
+m0inv:
+.zero 32

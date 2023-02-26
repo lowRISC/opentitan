@@ -412,6 +412,7 @@ otbn_consttime_test(
 
 otbn_sim_test(
     name = "rsa_1024_dec_test",
+    timeout = "long",
     srcs = [
         "rsa_1024_dec_test.s",
     ],
