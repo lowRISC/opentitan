@@ -26,16 +26,18 @@ void otbn_testutils_wait_for_done(const dif_otbn_t *otbn,
     busy = status != kDifOtbnStatusIdle && status != kDifOtbnStatusLocked;
   }
 
-  // Error out if OTBN is locked.
-  CHECK(status == kDifOtbnStatusIdle, "OTBN is locked.");
-
-  // Get instruction count so that, if error bits are unexpected, we can print
-  // it to help with debugging.
+  // Get instruction count so that we can print them to help with debugging.
   uint32_t instruction_count;
   CHECK_DIF_OK(dif_otbn_get_insn_cnt(otbn, &instruction_count));
 
   dif_otbn_err_bits_t err_bits;
   CHECK_DIF_OK(dif_otbn_get_err_bits(otbn, &err_bits));
+
+  // Error out if OTBN is locked.
+  CHECK(status == kDifOtbnStatusIdle, "OTBN is locked. Error bits: 0x%08x",
+        err_bits);
+
+  // Error out if error bits do not match expectations.
   CHECK(err_bits == expected_err_bits,
         "OTBN error bits: got: 0x%08x, expected: 0x%08x.\nInstruction count: "
         "0x%08x",

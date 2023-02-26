@@ -5,6 +5,18 @@
 .section .text.start
 .globl start
 start:
+  /* Init all-zero register. */
+  bn.xor  w31, w31, w31
+
+  /* Load number of limbs. */
+  la    x2, n_limbs
+  lw    x30, 0(x2)
+
+  /* Load pointers to modulus and Montgomery constant buffers. */
+  la    x16, modulus
+  la    x17, m0d
+  la    x18, RR
+
   /* Read mode, then tail-call either rsa_encrypt or rsa_decrypt */
   la    x2, mode
   lw    x2, 0(x2)
@@ -19,13 +31,21 @@ start:
   unimp
 
 .text
+
 /**
  * RSA encryption
  */
 rsa_encrypt:
-  jal      x1, zero_work_buf
+  /* Compute Montgomery constants. */
   jal      x1, modload
+
+  /* Run exponentiation.
+       dmem[work_buf] = dmem[inout]^65537 mod dmem[modulus] */
+  la       x14, inout
+  la       x2, work_buf
   jal      x1, modexp_65537
+
+  /* dmem[inout] <= dmem[work_buf] */
   jal      x1, cp_work_buf
   ecall
 
@@ -33,9 +53,17 @@ rsa_encrypt:
  * RSA decryption
  */
 rsa_decrypt:
-  jal      x1, zero_work_buf
+  /* Compute Montgomery constants. */
   jal      x1, modload
+
+  /* Run exponentiation.
+       dmem[work_buf] = dmem[inout]^dmem[exp] mod dmem[modulus] */
+  la       x14, inout
+  la       x15, exp
+  la       x2, work_buf
   jal      x1, modexp
+
+  /* dmem[inout] <= dmem[work_buf] */
   jal      x1, cp_work_buf
   ecall
 
@@ -55,23 +83,19 @@ zero_work_buf:
 /**
  * Copy the contents of work_buf onto inout
  *
- * clobbered registers: x3, x4, w0
+ * clobbered registers: x2, x3, x4, w0
  */
 cp_work_buf:
-  la  x3, work_buf
-  la  x4, inout
-  /* The buffers are 512 bytes long, which we can load/store with
-     sixteen 256b words. */
-  loopi 16, 2
+  la    x2, n_limbs
+  lw    x30, 0(x2)
+  la    x3, work_buf
+  la    x4, inout
+  loop  x30, 2
     bn.lid x0, 0(x3++)
     bn.sid x0, 0(x4++)
   ret
 
-.data
-/*
-The structure of the 256b below are mandated by the calling convention of the
-RSA library.
-*/
+.bss
 
 /* Mode (1 = encrypt; 2 = decrypt) */
 .globl mode
@@ -82,32 +106,6 @@ mode:
 .globl n_limbs
 n_limbs:
   .word 0x00000000
-
-/* pointer to m0' (dptr_m0d) */
-dptr_m0d:
-  .word m0d
-
-/* pointer to RR (dptr_rr) */
-dptr_rr:
-  .word RR
-
-/* load pointer to modulus (dptr_m) */
-dptr_m:
-  .word modulus
-
-/* pointer to base bignum buffer (dptr_in) */
-dptr_in:
-  .word inout
-
-/* pointer to exponent buffer (dptr_exp, unused for encrypt) */
-dptr_exp:
-  .word exp
-
-/* pointer to out buffer (dptr_out) */
-dptr_out:
-  .word work_buf
-
-/* (End of fixed-layout section) */
 
 /* Modulus (n) */
 .balign 32
@@ -127,17 +125,17 @@ exp:
 inout:
   .zero 512
 
+/* Montgomery constant m0'. Filled by `modload`. */
 .balign 32
 m0d:
-  /* filled by modload */
   /* could go in scratchpad if there was space */
   .zero 32
 
 .section .scratchpad
 
+/* Montgomery constant RR. Filled by `modload`. */
 .balign 32
 RR:
-  /* filled by modload */
   .zero 512
 
 /* working data */
