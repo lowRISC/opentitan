@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_rust//rust:defs.bzl", "rust_binary")
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
@@ -35,6 +35,7 @@ rust_binary(
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
+    # stamping is necessary because opentitantool builds version.rs that needs it
     stamp = 1,
     tags = [
         # Only until we figure out how to deal with version.rs including
@@ -77,4 +78,11 @@ pkg_filegroup(
         ":binary",
     ],
     prefix = "opentitantool",
+)
+
+rust_test(
+    name = "opentitantool_test",
+    crate = ":opentitantool",
+    # stamping is necessary because opentitantool builds version.rs that needs it
+    stamp = 1,
 )
