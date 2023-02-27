@@ -111,6 +111,10 @@ package chip_env_pkg;
     OtpTypeLcStProd,          // Base OTP image in Prod lifecycle state.
     OtpTypeLcStRma,           // Base OTP image in RMA lifecycle state.
     OtpTypeLcStTestUnlocked0, // Base OTP image in TestUnlocked0 lifecycle state.
+    OtpTypeLcStTestUnlocked1, // Base OTP image in TestUnlocked1 lifecycle state.
+    OtpTypeLcStTestUnlocked2, // Base OTP image in TestUnlocked2 lifecycle state.
+    OtpTypeLcStTestLocked0, // Base OTP image in TestUnlocked0 lifecycle state.
+    OtpTypeLcStTestLocked1, // Base OTP image in TestUnlocked0 lifecycle state.
     OtpTypeCustom             // Custom OTP image specified via `sw_images` plusarg.
   } otp_type_e;
 
