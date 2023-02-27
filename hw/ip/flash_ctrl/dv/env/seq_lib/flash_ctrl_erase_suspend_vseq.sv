@@ -13,13 +13,10 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
   // Configure sequence knobs to tailor it to smoke seq.
   virtual function void configure_vseq();
     // number of transactions
-    cfg.seq_cfg.max_num_trans                 = 6;
+    cfg.seq_cfg.max_num_trans                 = 15;
 
     // no overlap mp regions
     cfg.seq_cfg.allow_mp_region_overlap       = 0;
-
-    // equal chance for bank and page erase
-    cfg.seq_cfg.op_erase_type_bank_pc         = 20;
 
     // enable scramble
     cfg.seq_cfg.mp_region_scramble_en_pc      = 50;
@@ -189,6 +186,11 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       reset_flash();
       do_erase();
+      // Check recovery by initiating an additional erase to the affected page and backdoor
+      // verify it.
+      // After an erase is suspended, the page must be erased before any other transaction can be
+      // initiated to the selected page.
+      check_recovery();
     end
   endtask : body
 
@@ -238,24 +240,13 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
     // 2. Scneario - Erase is in progress
     `uvm_info(`gfn, $sformatf("2. Scenario - Erase is in progress"), UVM_HIGH)
 
-    fork
-      begin : isolation_fork
-        fork
-          begin  // erase data
-            `uvm_info(`gfn, $sformatf("FLASH OP ERASE START OP: %0p", flash_op), UVM_HIGH)
-            flash_ctrl_start_op(flash_op);
-            wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
-          end
-          begin  // erase suspend while erase data is in progress
-            `uvm_info(`gfn, $sformatf("START COUNTING BEFORE ES REQ"), UVM_HIGH)
-            cfg.clk_rst_vif.wait_clks($urandom_range(50, 100));
-            csr_wr(.ptr(ral.erase_suspend), .value(1));
-            `uvm_info(`gfn, $sformatf("ERASE SUSPEND REQUESTED"), UVM_HIGH)
-          end
-        join_any;
-        disable fork;
-      end : isolation_fork
-    join
+    `uvm_info(`gfn, $sformatf("FLASH OP ERASE START OP: %0p", flash_op), UVM_HIGH)
+    flash_ctrl_start_op(flash_op);
+
+    `uvm_info(`gfn, $sformatf("START COUNTING BEFORE ES REQ"), UVM_HIGH)
+    cfg.clk_rst_vif.wait_clks($urandom_range(50, 100));
+    csr_wr(.ptr(ral.erase_suspend), .value(1));
+    `uvm_info(`gfn, $sformatf("ERASE SUSPEND REQUESTED"), UVM_HIGH)
 
     // WAITING THAT ERASE SUSPEND REQ IS DONE AND REQ RETURNED TO ZERO
     `DV_SPINWAIT(do begin
@@ -263,20 +254,32 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
       `uvm_info(`gfn, $sformatf("ERASE SUSPEND REQ: %0p", data), UVM_HIGH)
     end while (data == 1);, "ERASE SUSPEND TIMEOUT OCCURED!", cfg.seq_cfg.erase_timeout_ns)
 
-    cfg.flash_mem_bkdr_read(flash_op, flash_rd_data);
-
-    foreach (flash_rd_data[i]) begin
-      `uvm_info(`gfn, $sformatf("FLASH RD DATA: %0h", flash_rd_data[i]), UVM_HIGH)
-      // first 30 data are erased
-      if (i <= 30) begin
-        `DV_CHECK_EQ(flash_rd_data[i], ALL_ONES)
-      end
-      // last 50 data are not erased
-      if ((flash_rd_data.size()-i) <= 50) begin
-        `DV_CHECK_NE(flash_rd_data[i], ALL_ONES)
-      end
-    end
+    wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
 
   endtask : do_erase
+
+  // Task to run another erase on the page in which the erase-suspend done and check it complete
+  // successfully.
+  // After an erase is suspended, the page must be erased before any other transaction can be
+  // initiated to the selected page.
+  task check_recovery();
+    // Flash ctrl operation data queue - used for programing or reading the flash.
+    data_q_t    flash_op_data;
+    // Expected data.
+    data_q_t    exp_data;
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flash_op_data, flash_op_data.size() == 0;)
+
+    cfg.clk_rst_vif.wait_clks($urandom_range(15, 30));
+
+    `uvm_info(`gfn, $sformatf("Starting flash_ctrl op: %p", flash_op), UVM_LOW)
+    flash_ctrl_start_op(flash_op);
+    exp_data = cfg.calculate_expected_data(flash_op, flash_op_data);
+
+    wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
+    cfg.flash_mem_bkdr_erase_check(flash_op, exp_data);
+
+
+  endtask : check_recovery
 
 endclass : flash_ctrl_erase_suspend_vseq
