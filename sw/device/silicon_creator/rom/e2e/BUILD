@@ -56,21 +56,24 @@ SLOTS = {
     "b": "0x80000",
 }
 
+# list of all the production/dev/test keys, finally list of all keys
+# all the keys listed must be defined in /rules/opentitan.bzl
+FAKE_TEST_KEYS = ["fake_test_key_0"]
+
+FAKE_DEV_KEYS = ["fake_dev_key_0"]
+
+FAKE_PROD_KEYS = ["fake_prod_key_0"]
+
+FAKE_ALL_KEYS = FAKE_TEST_KEYS + FAKE_DEV_KEYS + FAKE_PROD_KEYS
+
+# list of all acceptable keys in each LC state
+# see secure boot documentation
 LC_KEY_TYPES = {
-    CONST.LCV.TEST_UNLOCKED0: [
-        "fake_test_key_0",
-        "fake_prod_key_0",
-    ],
-    CONST.LCV.DEV: [
-        "fake_dev_key_0",
-        "fake_prod_key_0",
-    ],
-    CONST.LCV.PROD: ["fake_prod_key_0"],
-    CONST.LCV.PROD_END: ["fake_prod_key_0"],
-    CONST.LCV.RMA: [
-        "fake_test_key_0",
-        "fake_prod_key_0",
-    ],
+    CONST.LCV.TEST_UNLOCKED0: FAKE_TEST_KEYS + FAKE_PROD_KEYS,
+    CONST.LCV.DEV: FAKE_DEV_KEYS + FAKE_PROD_KEYS,
+    CONST.LCV.PROD: FAKE_PROD_KEYS,
+    CONST.LCV.PROD_END: FAKE_PROD_KEYS,
+    CONST.LCV.RMA: FAKE_TEST_KEYS + FAKE_PROD_KEYS,
 }
 
 # Default OTP in TEST_UNLOCKED state
@@ -219,7 +222,7 @@ opentitan_functest(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
-    key = "fake_test_key_0",
+    key = FAKE_TEST_KEYS[0],
     ot_flash_binary = ":empty_test_slot_a",
     targets = [
         "cw310_rom",
@@ -392,7 +395,7 @@ opentitan_functest(
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
     ),
-    key = "fake_test_key_0",
+    key = FAKE_TEST_KEYS[0],
     ot_flash_binary = ":empty_test_slot_a",
     targets = ["cw310_rom"],
 )
@@ -603,7 +606,7 @@ opentitan_multislot_flash_binary(
     name = "rom_ext_b_flash_b_image",
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
-            "key": "fake_test_key_0",
+            "key": FAKE_TEST_KEYS[0],
             "offset": SLOTS["b"],
         },
     },
@@ -624,7 +627,7 @@ opentitan_multislot_flash_binary(
     name = "rom_ext_a_flash_b_image",
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": {
-            "key": "fake_test_key_0",
+            "key": FAKE_TEST_KEYS[0],
             "offset": SLOTS["b"],
         },
     },
@@ -645,7 +648,7 @@ opentitan_multislot_flash_binary(
     name = "rom_ext_b_flash_a_image",
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
-            "key": "fake_test_key_0",
+            "key": FAKE_TEST_KEYS[0],
             "offset": SLOTS["a"],
         },
     },
@@ -676,7 +679,7 @@ opentitan_multislot_flash_binary(
     name = "rom_ext_v_flash_b_image",
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
-            "key": "fake_test_key_0",
+            "key": FAKE_TEST_KEYS[0],
             "offset": SLOTS["b"],
         },
     },
@@ -1607,7 +1610,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             t["name"],
             slot,
         ): {
-            "key": "fake_test_key_0",
+            "key": FAKE_TEST_KEYS[0],
             "offset": offset,
         },
     },
@@ -2015,11 +2018,25 @@ test_suite(
     ],
 )
 
+# list of keys that will be used to build various flash images
+# it must contain at least one key of each type and contains all
+# the keys used in SIGVERIFY_LCS_2_VALID_KEY
 SIGVERIFY_LC_KEYS = [
-    "fake_test_key_0",
-    "fake_dev_key_0",
-    "fake_prod_key_0",
+    FAKE_TEST_KEYS[0],
+    FAKE_DEV_KEYS[0],
+    FAKE_PROD_KEYS[0],
 ]
+
+# provide a valid key for each LC state
+# this key must be present in SIGVERIFY_LC_KEYS to ensure
+# that the proper flush images are built
+SIGVERIFY_LCS_2_VALID_KEY = {
+    "test_unlocked0": FAKE_TEST_KEYS[0],
+    "dev": FAKE_DEV_KEYS[0],
+    "prod": FAKE_PROD_KEYS[0],
+    "prod_end": FAKE_PROD_KEYS[0],
+    "rma": FAKE_PROD_KEYS[0],
+}
 
 [
     genrule(
@@ -2884,11 +2901,7 @@ test_suite(
             "fpga_cw310",
         ],
     )
-    for key in [
-        "fake_test_key_0",
-        "fake_dev_key_0",
-        "fake_prod_key_0",
-    ]
+    for key in SIGVERIFY_LC_KEYS
 ]
 
 [otp_image(
@@ -2932,14 +2945,6 @@ SIGVERIFY_BAD_CASES = [
         "expected_bfv": hex_digits(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER),
     },
 ]
-
-SIGVERIFY_LCS_2_VALID_KEY = {
-    "test_unlocked0": "fake_test_key_0",
-    "dev": "fake_dev_key_0",
-    "prod": "fake_prod_key_0",
-    "prod_end": "fake_prod_key_0",
-    "rma": "fake_prod_key_0",
-}
 
 [
     opentitan_functest(
@@ -3017,11 +3022,8 @@ test_suite(
     for lc_state, lc_state_val in get_lc_items()
 ]
 
-SIGVERIFY_KEY_TYPE_KEYS = [
-    "fake_test_key_0",
-    "fake_dev_key_0",
-    "fake_prod_key_0",
-]
+# list of the keys to test when doing a full key set test
+SIGVERIFY_FULL_KEY_SET = FAKE_ALL_KEYS
 
 [
     opentitan_functest(
@@ -3048,7 +3050,7 @@ SIGVERIFY_KEY_TYPE_KEYS = [
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
-    for key in SIGVERIFY_KEY_TYPE_KEYS
+    for key in SIGVERIFY_FULL_KEY_SET
 ]
 
 test_suite(
@@ -3060,7 +3062,7 @@ test_suite(
             key,
         )
         for lc_state, _ in get_lc_items()
-        for key in SIGVERIFY_KEY_TYPE_KEYS
+        for key in SIGVERIFY_FULL_KEY_SET
     ],
 )
 
