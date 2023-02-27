@@ -4,10 +4,44 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load(
     "//rules:opentitan_test.bzl",
     "opentitan_functest",
     "verilator_params",
+)
+load("@ot_python_deps//:requirements.bzl", "requirement")
+
+py_binary(
+    name = "sphincsplus_set_testvectors",
+    srcs = ["sphincsplus_set_testvectors.py"],
+    deps = [
+        requirement("hjson"),
+        requirement("mako"),
+    ],
+)
+
+autogen_cryptotest_header(
+    name = "sphincsplus_shake_128s_simple_testvectors_hardcoded_header",
+    hjson = "//sw/device/tests/crypto/testvectors:sphincsplus_shake_128s_simple_testvectors_hardcoded",
+    template = ":sphincsplus_shake_128s_simple_testvectors.h.tpl",
+    tool = ":sphincsplus_set_testvectors",
+)
+
+opentitan_functest(
+    name = "verify_test_hardcoded",
+    srcs = ["verify_test.c"],
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        ":sphincsplus_shake_128s_simple_testvectors_hardcoded_header",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:verify",
+    ],
 )
 
 opentitan_functest(
