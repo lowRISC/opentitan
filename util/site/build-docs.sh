@@ -45,6 +45,18 @@ esac
 ################
 
 checkDeps () {
+    # Check for node dep
+    if command -v npm >/dev/null && node --version 2>&1 | grep -E '^v(1[4-9]|2[0-9])\.' > /dev/null 2>&1; then
+        HAS_NODE=1
+    else
+        HAS_NODE=0
+        echo "W: npm or node^14.0 not found - block diagram will not be built" >&2
+        echo "W: You can install with nvm:" >&2
+        echo "w:    $ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash" >&2
+        echo "w:    $ source ~/.bashrc" >&2
+        echo "w:    $ nvm install -lts" >&2
+    fi
+
     # Check for mdbook dep
     if ! command -v mdbook >/dev/null; then
         echo "E: mdbook not found, please install from your package manager or with:" >&2
@@ -147,6 +159,14 @@ hugo_args+=" --baseURL ${base_url}"
 buildSite () {
     mkdir -p "${build_dir}"
     mkdir -p "${build_dir}/gen/doxy"
+
+    if [ "$HAS_NODE" == "1" ]; then
+        echo "Building earlgrey diagram..."
+        npm --prefix "${proj_root}/site/earlgrey-diagram" install
+        npm --prefix "${proj_root}/site/earlgrey-diagram" run build
+        npm --prefix "${proj_root}/site/earlgrey-diagram" run deploy
+        echo "Earlgrey diagram build complete."
+    fi
 
     echo "Building doxygen..."
     pushd "${this_dir}" >/dev/null

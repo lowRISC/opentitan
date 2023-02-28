@@ -1,0 +1,134 @@
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+.diagram.modern {
+    --tooltip-background: #333;
+    --tooltip-border: #222;
+    --tooltip-arrow-size: 0.7em;
+}
+
+.diagram.modern .tooltip-box {
+    display: grid;
+    grid-auto-flow: row;
+    border-radius: 5px;
+    gap: 0.5em;
+    color: #eee;
+    text-align: center;
+    font-size: 0.9em;
+    grid-template-columns: 4.5em 1fr;
+}
+
+.diagram.modern .tooltip-box.has-report {
+    padding-bottom: 0.7em;
+}
+
+.diagram.modern .tooltip-box .tooltip-title {
+    font-weight: bold;
+    background: #666;
+    margin: 0 -0.5em;
+    padding: 0.5ex 1em;
+    border-radius: 0.5em;
+    grid-column: 1/-1;
+}
+
+.diagram.modern .tooltip-box .tooltip-divider {
+    font-weight: bold;
+    background: #666;
+    margin: 0 -0.5em;
+    border-radius: 0.5em;
+    grid-column: 1/-1;
+    height: 1px;
+}
+
+.diagram.modern .tooltip-box .tooltip-label {
+    text-align: left;
+    position: relative;
+}
+
+.diagram.modern .tooltip-box .tooltip-value {
+    font-weight: bold;
+    position: relative;
+}
+
+.diagram.modern .tooltip-report-tests {
+    padding: 0.2em 0.5em;
+    border-radius: 0.25em;
+    margin: -0.2em 0;
+}
+
+.diagram.modern .tooltip-report-tests:where(
+    .rate-0,
+    .rate-5,
+    .rate-10,
+    .rate-15,
+    .rate-20,
+    .rate-25,
+    .rate-30,
+    .rate-35,
+    .rate-40,
+    .rate-45
+) {
+    background-color: rgb(184, 29, 19);
+    color: #eee;
+}
+
+.diagram.modern .tooltip-report-tests:where(
+    .rate-50,
+    .rate-55,
+    .rate-60,
+    .rate-65,
+    .rate-70,
+    .rate-75,
+    .rate-80,
+    .rate-85
+) {
+    background-color: rgb(239, 183, 0);
+    color: #333;
+}
+
+.diagram.modern .tooltip-report-tests:where(
+    .rate-90,
+    .rate-95
+) {
+    background-color: rgb(130, 190, 0);
+    color: #333;
+}
+
+.diagram.modern .tooltip-report-tests:where(
+    .rate-100
+) {
+    background-color: rgb(0, 132, 80);
+    color: #eee;
+}
+
+.diagram.modern .tooltip-badge:before {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 0.7em;
+    height: 0.7em;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 100%;
+    left: 0;
+    right: 0;
+    background-color: transparent;
+    pointer-events: none;
+}
+
+.diagram.modern .tooltip-badge-good:before {
+    background-color: rgb(0, 132, 80);
+}
+
+.diagram.modern .tooltip-badge-prettygood:before {
+    background-color: rgb(130, 190, 0);
+}
+
+.diagram.modern .tooltip-badge-warn:before {
+    background-color: rgb(239, 183, 0);
+}
+
+.diagram.modern .tooltip-badge-alert:before {
+    background-color: rgb(184, 29, 19);
+}

@@ -1,0 +1,174 @@
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+:where(.diagram) {
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    font-size: 0.75em;
+    font-family: sans-serif;
+    line-height: normal;
+    --scale: 1.1;
+}
+
+:where(.diagram *) {
+    color: inherit;
+}
+
+:where(.lowrisc-block) {
+    position: absolute;
+    overflow: visible;
+    box-sizing: border-box;
+    z-index: auto;
+    --block-top: 0;
+    --block-left: 0;
+    --block-width: initial;
+    --block-height: initial;
+    --offset-top: 0;
+    --offset-left: 0;
+    top: calc(1em * ( var(--block-top) + var(--offset-top) ) * var(--scale, 1) - 1px);
+    left: calc(1em * ( var(--block-left) + var(--offset-left) ) * var(--scale, 1) - 1px);
+    width: calc(1em * var(--block-width, "auto") * var(--scale, 1));
+    height: calc(1em * var(--block-height, "auto") * var(--scale, 1));
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
+
+:where(.block) {
+    background: white;
+}
+
+:where(.lowrisc-block:not(.lowrisc-arrow)) {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border: 1px solid transparent;
+}
+
+:where(.lowrisc-crossbar) {
+    stroke: black;
+    stroke-width: 1px;
+}
+
+:where(.crossbar-background) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+:where(.crossbar-background > svg) {
+    width: 100%;
+    height: 100%;
+}
+
+:where(.lowrisc-arrow) {
+    text-align: left;
+    fill: white;
+    stroke: black;
+    stroke-width: 1px;
+    border: none;
+}
+
+:where(.lowrisc-arrow > svg) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+:where(.lowrisc-arrow.thin) {
+    fill: black;
+    stroke: none;
+    --thin-arrow-width: 1px;
+}
+
+:where(.lowrisc-arrow.thin:not([horizontal])) {
+    width: var(--thin-arrow-width) !important
+}
+
+:where(.lowrisc-arrow.thin[horizontal]) {
+    height: var(--thin-arrow-width) !important
+}
+
+:where(.domain) {
+    border: 1px solid black;
+}
+
+:where(.outline) {
+    pointer-events: none;
+    background: transparent;
+    --outline-border: 1px dashed black;
+    --outline-border-radius: 0;
+    border: none;
+}
+
+:where(.outline.top) {
+    border-top: var(--outline-border);
+}
+
+:where(.outline.bottom) {
+    border-bottom: var(--outline-border);
+}
+
+:where(.outline.left) {
+    border-left: var(--outline-border);
+}
+
+:where(.outline.right) {
+    border-right: var(--outline-border);
+}
+
+:where(.outline.top.left) {
+    border-top-left-radius: var(--outline-border-radius);
+}
+
+:where(.outline.top.right) {
+    border-top-right-radius: var(--outline-border-radius);
+}
+
+:where(.outline.bottom.left) {
+    border-bottom-left-radius: var(--outline-border-radius);
+}
+
+:where(.outline.bottom.right) {
+    border-bottom-right-radius: var(--outline-border-radius);
+}
+
+:where(.outline > *:not(.outline)) {
+    pointer-events: auto;
+}
+
+:where(.block) {
+    border: 1px solid black;
+    --block-width: 6;
+    --block-height: 3;
+}
+
+:where(.lane) {
+    --block-width: 6;
+}
+
+:where(.subdomain-badge) {
+    border: 1px solid black;
+    --block-width: 0.75;
+    --block-height: 0.75;
+}
+
+:where(.title) {
+    font-weight: bold;
+}
+
+:where(.clickable) {
+    cursor: pointer;
+}
+
+:where(.clickable:hover),
+:where(.clickable:active) {
+    background-image: linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.15));
+}

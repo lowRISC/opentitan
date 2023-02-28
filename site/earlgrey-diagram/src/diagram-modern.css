@@ -1,0 +1,94 @@
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+.diagram.modern {
+    background: white;
+}
+
+.diagram.modern .lowrisc-crossbar {
+    stroke: rgba(0,0,0,0.1);
+    stroke-width: 2px;
+    stroke-linecap: round;
+}
+
+.diagram.modern .lowrisc-arrow {
+    fill: #7b7979;
+    stroke: none;
+}
+
+.diagram.modern .lowrisc-arrow.thin {
+    --thin-arrow-width: 2px;
+}
+
+.diagram.modern #chip {
+    border-color: transparent;
+    color: #1c1230;
+}
+
+.diagram.modern #opentitan-logo {
+    fill: #402d68;
+    border-radius: 0.4em;
+}
+
+.diagram.modern #top {
+    background-color: #f8f8f8;
+}
+
+.diagram.modern .title {
+    text-transform: uppercase;
+}
+
+.diagram.modern .domain {
+    border-color: transparent;
+}
+
+.diagram.modern #high-speed,
+.diagram.modern #peripheral {
+    background-color: #e9e9e9;
+}
+
+.diagram.modern #ibex > span {
+    font-size: 1.2em;
+}
+
+.diagram.modern #ibex-shadow {
+    background-color: #35b2c0
+}
+
+.diagram.modern #ibex-shadow-label > span {
+    text-transform: uppercase;
+    color: white;
+    font-size: 0.85em;
+}
+
+.diagram.modern #always-on > .title {
+    color: crimson;
+    text-align: right;
+}
+
+.diagram.modern #always-on > .outline {
+    --outline-border: 2px dashed crimson;
+    --outline-border-radius: 0.5em;
+}
+
+.diagram.modern .block {
+    border-color: transparent;
+    border-radius: 0.5em;
+}
+
+.diagram.modern .subdomain-badge {
+    border-color: transparent;
+    border-radius: 0.25em;
+}
+
+.diagram.modern #clock-speeds > .lowrisc-block {
+    border-radius: 0.5em;
+}
+
+.diagram.modern .b100mhz { background-color: #8bd6df; }
+.diagram.modern .b96mhz { background-color: #6395ae; color: #eee; }
+.diagram.modern .b48mhz { background-color: #cfbde4; }
+.diagram.modern .b24mhz { background-color: #967ebf; color: #eee; }
+.diagram.modern .b200khz { background-color: #f9ad38; }
+.diagram.modern .blogic { background-color: #d4d4d2; }
