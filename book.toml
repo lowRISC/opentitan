@@ -36,3 +36,9 @@ command = "./util/mdbook_wavejson.py"
 command = "./util/mdbook_reggen.py"
 # Python RegEx identifying ip block config paths.
 ip-cfg-py-regex = '(ip|ip_autogen)/.+/data/.+\.hjson'
+
+[preprocessor.doxygen]
+command = "./util/mdbook_doxygen.py"
+out-dir = "docs/"
+html-out-dir = "doxy/"
+dif-src-py-regex = 'dif_\S*\.h'
