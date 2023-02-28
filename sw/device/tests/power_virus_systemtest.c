@@ -38,7 +38,9 @@
 
 #include "adc_ctrl_regs.h"     // Generated.
 #include "aes_regs.h"          // Generated.
+#include "csrng_regs.h"        // Generated.
 #include "entropy_src_regs.h"  // Generated.
+#include "gpio_regs.h"         // Generated.
 #include "hmac_regs.h"         // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "i2c_regs.h"       // Generated.
@@ -116,6 +118,8 @@ enum {
   /**
    * EDN parameters.
    */
+  kEdn0SeedMaterialNumWords = 0,
+  kEdn1SeedMaterialNumWords = 12,
   kEdn0ReseedInterval = 128,
   kEdn1ReseedInterval = 32,
   /**
@@ -166,6 +170,8 @@ enum {
   kSpiHost1Csid = 0xaabbaabb,
   kSpiHost1TxDataWord = 0xaaaaaaaa,
 };
+
+static uint32_t csrng_reseed_cmd_header;
 
 /**
  * These symbols are meant to be backdoor read by the testbench. Due to current
@@ -647,15 +653,19 @@ static void configure_entropy_complex(void) {
           .alert_threshold = UINT16_MAX},
       kDifToggleEnabled));
 
-  // Configure CSRNG.
+  // Configure CSRNG and create reseed command header for later use during max
+  // power epoch.
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
+  csrng_reseed_cmd_header = csrng_cmd_header_build(
+      kCsrngAppCmdReseed, kDifCsrngEntropySrcToggleEnable, /*cmd_len=*/0,
+      /*generate_len=*/0);
 
   // Configure EDNs in auto mode.
   dif_edn_seed_material_t edn_empty_seed = {
-      .len = 0,
+      .len = kEdn0SeedMaterialNumWords,
   };
   dif_edn_seed_material_t edn_384_bit_seed = {
-      .len = 12,
+      .len = kEdn1SeedMaterialNumWords,
       .data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
   };
   dif_edn_auto_params_t edn_auto_params = {
@@ -718,15 +728,15 @@ static void configure_aes(void) {
       .mode = kDifAesModeCbc,
       .key_len = kDifAesKey256,
       .key_provider = kDifAesKeySoftwareProvided,
-      .mask_reseeding = kDifAesReseedPer64Block,
+      .mask_reseeding = kDifAesReseedPerBlock,
       .manual_operation = kDifAesManualOperationManual,
       .reseed_on_key_change = false,
       .ctrl_aux_lock = false,
   };
 
   // Start the AES operation. Since we are in manual-mode, the encryption will
-  // not start until plain text data is loaded into the appropriate CSRs, the
-  // encryption operation is triggered.
+  // not start until plain text data is loaded into the appropriate CSRs, and
+  // the encryption operation is triggered.
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
                                 kTestTimeoutMicros);
   CHECK_DIF_OK(dif_aes_start(&aes, &aes_transaction_cfg, &aes_key, &aes_iv));
@@ -988,6 +998,16 @@ static void max_power_task(void *task_parameters) {
   pattgen_ctrl_reg =
       bitfield_bit32_write(pattgen_ctrl_reg, PATTGEN_CTRL_ENABLE_CH1_BIT, true);
 
+  // Prepare GPIO register values (for max power indicator).
+  const uint32_t gpio_on_reg_val = (1u << 16) | 1u;
+  const uint32_t gpio_off_reg_val = 1u << 16;
+
+  // Check all blocks are idle.
+  CHECK(aes_testutils_get_status(&aes, kDifAesStatusIdle) == 1u);
+  CHECK(mmio_region_read32(csrng.base_addr, CSRNG_SW_CMD_STS_REG_OFFSET) == 1u);
+
+  LOG_INFO("Entering max power epoch ...");
+
   // Enable all UARTs and I2Cs.
   mmio_region_write32(uart_1.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
   mmio_region_write32(uart_2.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
@@ -1009,19 +1029,35 @@ static void max_power_task(void *task_parameters) {
   mmio_region_write32(spi_host_1.base_addr, SPI_HOST_CONTROL_REG_OFFSET,
                       spi_host_1_ctrl_reg);
 
-  // Issue HMAC process, KMAC squeeze, and AES trigger commands.
+  // Request entropy during max power epoch. Since AES is so fast, realistically
+  // we will only be able to request a single block of entropy.
+  mmio_region_write32(csrng.base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+                      csrng_reseed_cmd_header);
+
+  // Issue HMAC process and KMAC squeeze commands.
   mmio_region_write32(hmac.base_addr, HMAC_CMD_REG_OFFSET, hmac_cmd_reg);
   kmac_operation_state.squeezing = true;
   mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, kmac_cmd_reg);
+
+  // Toggle GPIO pin to indicate we are in max power consumption epoch. Note, we
+  // do this BEFORE triggering the AES, since by the type the new value
+  // propagates to the pin, the AES will already be active.
+  mmio_region_write32(gpio.base_addr, GPIO_MASKED_OUT_LOWER_REG_OFFSET,
+                      gpio_on_reg_val);
+
+  // Issue AES trigger commands.
   mmio_region_write32(aes.base_addr, AES_TRIGGER_REG_OFFSET, aes_trigger_reg);
 
-  // Toggle GPIO pin to indicate we are in max power consumption.
-  CHECK_DIF_OK(dif_gpio_write(&gpio, 0, true));
-  // TODO (#14814): confirm AES is the fastest throughput cryto block.
-  // Otherwise, wait for that block to finish processing instead.
-  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusOutputValid, true,
-                                kTestTimeoutMicros);
-  CHECK_DIF_OK(dif_gpio_write(&gpio, 0, false));
+  // Wait for AES to complete encryption, as this is the fastest block.
+  while (!(mmio_region_read32(aes.base_addr, AES_STATUS_REG_OFFSET) &
+           (1u << AES_STATUS_OUTPUT_VALID_BIT)))
+    ;
+
+  // Toggle GPIO pin to indicate we are out of max power consumption epoch.
+  mmio_region_write32(gpio.base_addr, GPIO_MASKED_OUT_LOWER_REG_OFFSET,
+                      gpio_off_reg_val);
+
+  LOG_INFO("Exited max power epoch.");
 
   // ***************************************************************************
   // Check operation results.
