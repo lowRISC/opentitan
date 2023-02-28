@@ -12,7 +12,7 @@ use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{self, TransportWrapper};
-use opentitanlib::transport::cw310;
+use opentitanlib::transport::common::fpga::FpgaProgram;
 use opentitanlib::util::rom_detect::RomKind;
 
 /// Load a bitstream into the FPGA.
@@ -46,7 +46,7 @@ impl CommandDispatch for LoadBitstream {
         let pfunc = Box::new(move |_, chunk| {
             progress.inc(chunk as u64);
         });
-        let operation = cw310::FpgaProgram {
+        let operation = FpgaProgram {
             bitstream,
             rom_kind: self.rom_kind,
             rom_reset_pulse: self.rom_reset_pulse,

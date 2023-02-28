@@ -9,7 +9,7 @@ use std::time::Duration;
 use structopt::StructOpt;
 
 use crate::app::{self, TransportWrapper};
-use crate::transport::cw310;
+use crate::transport::common::fpga::FpgaProgram;
 use crate::util::rom_detect::RomKind;
 
 /// Load a bitstream into the FPGA.
@@ -51,7 +51,7 @@ impl LoadBitstream {
         let pfunc = Box::new(move |_, chunk| {
             progress.inc(chunk as u64);
         });
-        let operation = cw310::FpgaProgram {
+        let operation = FpgaProgram {
             bitstream: payload,
             rom_kind: self.rom_kind,
             rom_reset_pulse: self.rom_reset_pulse,
