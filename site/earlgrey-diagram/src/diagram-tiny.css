@@ -1,0 +1,39 @@
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+.diagram.tiny {
+    background: white;
+    font-size: 0.15em;
+}
+
+.diagram.tiny * {
+    color: transparent !important;
+    pointer-events: none !important;
+    user-select: none;
+}
+
+.diagram.tiny #opentitan-logo {
+    background: #aaa;
+}
+
+.diagram.tiny #opentitan-logo > svg {
+    display: none;
+}
+
+.diagram.tiny .lowrisc-arrow.thin {
+    display: none;
+}
+
+.diagram.tiny .title {
+    background: #aaa;
+    height: 1em !important;
+}
+
+.diagram.tiny #always-on > .outline {
+    --outline-border: 1px dashed crimson;
+}
+
+.diagram.tiny .block .subdomain-badge {
+    display: none;
+}

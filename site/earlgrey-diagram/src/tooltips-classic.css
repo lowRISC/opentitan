@@ -1,0 +1,125 @@
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+.diagram.classic {
+    --tooltip-background: white;
+    --tooltip-border: #000;
+    --tooltip-arrow-size: 0.7em;
+}
+
+.diagram.classic .tooltip-box {
+    display: grid;
+    grid-auto-flow: row;
+    border-radius: 5px;
+    gap: 0.5em;
+    color: #000;
+    text-align: center;
+    font-size: 0.9em;
+    grid-template-columns: 4.5em 1fr;
+}
+
+.diagram.classic .tooltip-box.has-report {
+    padding-bottom: 0.7em;
+}
+
+.diagram.classic .tooltip-box .tooltip-title {
+    font-weight: bold;
+    background: #ccc;
+    margin: 0 -0.5em;
+    padding: 0.5ex 1em;
+    border-radius: 0.5em;
+    grid-column: 1/-1;
+    border: 1px solid black;
+}
+
+.diagram.classic .tooltip-box .tooltip-divider {
+    font-weight: bold;
+    background: #666;
+    margin: 0 -0.5em;
+    border-radius: 0.5em;
+    grid-column: 1/-1;
+    height: 1px;
+}
+
+.diagram.classic .tooltip-box .tooltip-label {
+    text-align: left;
+    position: relative;
+}
+
+.diagram.classic .tooltip-box .tooltip-value {
+    font-weight: bold;
+    position: relative;
+}
+
+.diagram.classic .tooltip-report-tests {
+    padding: 0.2em 0.5em;
+    border-radius: 0.25em;
+    margin: -0.2em 0;
+    border: 1px solid #000;
+}
+
+.diagram.classic .tooltip-report-tests:where(
+    .rate-0,
+    .rate-5,
+    .rate-10,
+    .rate-15,
+    .rate-20,
+    .rate-25,
+    .rate-30,
+    .rate-35,
+    .rate-40,
+    .rate-45
+) {
+    background-color: #f4cccc;
+}
+
+.diagram.classic .tooltip-report-tests:where(
+    .rate-50,
+    .rate-55,
+    .rate-60,
+    .rate-65,
+    .rate-70,
+    .rate-75,
+    .rate-80,
+    .rate-85,
+    .rate-90
+) {
+    background-color: #fff2cc;
+}
+
+.diagram.classic .tooltip-report-tests:where(
+    .rate-95,
+    .rate-100
+) {
+    background-color: #d9ead3;
+}
+
+.diagram.classic .tooltip-badge:before {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 0.7em;
+    height: 0.7em;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 100%;
+    left: 0;
+    right: 0;
+    background-color: transparent;
+    pointer-events: none;
+    border: 1px solid black;
+}
+
+.diagram.classic .tooltip-badge-good:before,
+.diagram.classic .tooltip-badge-prettygood:before {
+    background-color: hsl(104, 35%, 63%);
+}
+
+.diagram.classic .tooltip-badge-warn:before {
+    background-color: hsl(45, 100%, 70%);
+}
+
+.diagram.classic .tooltip-badge-alert:before {
+    background-color: hsl(0, 65%, 70%);
+}

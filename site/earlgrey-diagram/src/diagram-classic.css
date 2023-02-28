@@ -1,0 +1,73 @@
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+.diagram.classic {
+    background: white;
+}
+
+.diagram.classic #opentitan-logo {
+    fill: #000;
+    border-radius: 0.4em;
+}
+
+.diagram.classic #chip {
+    background-color: #fff;
+}
+
+.diagram.classic #chip > .title,
+.diagram.classic #top > .title {
+    align-items: flex-start;
+    justify-content: left;
+}
+
+.diagram.classic #top {
+    background-color: #eee;
+}
+
+.diagram.classic #high-speed,
+.diagram.classic #peripheral {
+    background-color: #ccc;
+}
+
+.diagram.classic #ibex > span {
+    font-size: 1.2em;
+}
+
+.diagram.classic #ibex-shadow {
+    background-color: #a4b8db;
+}
+
+.diagram.classic #ibex-shadow-label > span {
+    text-transform: uppercase;
+    font-size: 0.85em;
+}
+
+.diagram.classic #always-on > .title {
+    color: crimson;
+    text-align: right;
+}
+
+.diagram.classic #always-on > .outline {
+    --outline-border: 1px dashed crimson;
+}
+
+.diagram.classic #high-speed > .title,
+.diagram.classic #peripheral > .title {
+    text-align: left;
+}
+
+.diagram.classic .block {
+    border-radius: 0.5em;
+}
+
+.diagram.classic #clock-speeds > .lowrisc-block {
+    border-radius: 0.5em;
+}
+
+.diagram.classic .b100mhz { background-color: #c9daf8; }
+.diagram.classic .b96mhz { background-color: #6d9eeb; }
+.diagram.classic .b48mhz { background-color: #f4cccc; }
+.diagram.classic .b24mhz { background-color: #d9ead3; }
+.diagram.classic .b200khz { background-color: #fff2cc; }
+.diagram.classic .blogic { background-color: #b7b7b7; }

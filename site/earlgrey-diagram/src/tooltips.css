@@ -1,0 +1,86 @@
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+:where(.diagram) {
+    --tooltip-background: white;
+    --tooltip-border: black;
+    --tooltip-arrow-size: 0.7em;
+}
+
+:where(.block-focus) {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    pointer-events: "none";
+}
+
+:where(.diagram-tooltip) {
+    position: absolute;
+    display: grid;
+    width: max-content;
+    top: calc(100% - 0.5 * var(--tooltip-arrow-size));
+    height: 0;
+    width: 100%;
+    justify-content: center;
+    z-index: 9999;
+}
+
+:where(.tooltip-box) {
+    position: relative;
+    top: calc(100% - 1.5 * var(--tooltip-arrow-size));
+    top: var(--tooltip-arrow-size);
+    border: 1px solid var(--tooltip-border);
+    background: var(--tooltip-background);
+    width: max-content;
+    height: max-content;
+    text-align: left;
+    color: #333;
+    padding: 0.5em 1em;
+}
+
+:where(.diagram-tooltip) {
+    display: none;
+}
+
+:where(.has-tooltip:hover),
+:where(.has-tooltip:active),
+:where(.has-tooltip:focus-visible),
+:where(.has-tooltip:focus-within) {
+    z-index: 999;
+}
+
+:where(.has-tooltip:hover > .diagram-tooltip),
+:where(.has-tooltip:active > .diagram-tooltip),
+:where(.has-tooltip:focus-visible > .diagram-tooltip),
+:where(.block-focus:focus-visible + .diagram-tooltip) {
+    display: grid;
+    height: calc(1px + var(--tooltip-arrow-size));
+}
+
+:where(.tooltip-box):before,
+:where(.tooltip-box):after {
+    content: "";
+    display: block;
+    width: 0px;
+    height: 0px;
+    position: absolute;
+    top: calc(-1 * var(--tooltip-arrow-size) + 1px);
+    left: calc(50% - 1.2 * var(--tooltip-arrow-size));
+    border-width: 0 calc(1.2 * var(--tooltip-arrow-size)) var(--tooltip-arrow-size) calc(1.2 * var(--tooltip-arrow-size));
+    border-style: solid;
+    border-color: transparent;
+}
+
+:where(.tooltip-box):after {
+    top: calc(-1 * var(--tooltip-arrow-size) + 1px);
+    border-bottom-color: var(--tooltip-background);
+}
+
+:where(.tooltip-box):before {
+    top: calc(-1 * var(--tooltip-arrow-size) + 1px - 1px);
+    border-bottom-color: var(--tooltip-border);
+}

@@ -1,0 +1,285 @@
+<style>
+  @import "../src/diagram.css";
+  /* @import "../src/diagram-classic.css"; */
+  @import "../src/diagram-modern.css";
+  /* @import "../src/diagram-tiny.css"; */
+  @import "../src/tooltips.css";
+  /* @import "../src/tooltips-classic.css"; */
+  @import "../src/tooltips-modern.css";
+</style>
+<script type="module" id="custom-elements">
+  import "../src/earlgrey.js";
+</script>
+
+<lowrisc-block id="opentitan-block-diagram" class="diagram modern" pos="0 0 63 43">
+  <lowrisc-block id="chip" class="domain" pos="0 0 63 43">
+    <lowrisc-block class="title" pos="1 1">chip_earlgrey_asic</lowrisc-block>
+
+    <lowrisc-block id="opentitan-logo" pos="60 0.5 2 2">
+      <svg width="100%" height="100%" viewBox="-61.201072 21.594324 52.519791 52.519791" xmlns="http://www.w3.org/2000/svg">
+        <path stoke="none" d="m -9.6337811,51.624532 h -6.5616669 v -1.852083 h -6.561666 c -0.529167,0 -0.926042,0.396875 -0.926042,0.926041 v 8.41375 h -8.466666 c -0.502709,0 -0.926042,0.423334 -0.926042,0.9525 v 6.561667 h 1.878542 v 6.561667 c 0,0.529166 0.423333,0.926041 0.952499,0.926041 h 5.609167 c 0.529167,0 0.9525,-0.396875 0.9525,-0.926041 v -6.561667 h 7.487708 V 59.11224 h 6.5616669 c 0.5291667,0 0.9525,-0.396875 0.9525,-0.926041 v -5.635625 c 0,-0.529167 -0.4233333,-0.926042 -0.9525,-0.926042 z M -37.758989,59.11224 h -8.440208 v -8.41375 c 0,-0.529166 -0.423334,-0.952499 -0.926042,-0.952499 h -6.561667 v 1.878541 h -6.561666 c -0.529167,0 -0.9525,0.423333 -0.9525,0.926042 v 5.635625 c 0,0.529166 0.423333,0.926041 0.9525,0.926041 h 6.561666 v 7.514167 h 7.46125 v 6.561667 c 0,0.529166 0.423334,0.926041 0.9525,0.926041 h 5.609167 c 0.529167,0 0.9525,-0.396875 0.9525,-0.926041 v -6.561667 h 1.852083 V 60.06474 c 0,-0.529166 -0.396875,-0.9525 -0.926041,-0.9525 z M -60.248572,44.136824 h 6.561666 v 1.852083 h 6.561667 c 0.529167,0 0.926042,-0.396875 0.926042,-0.926041 v -8.440209 h 8.466666 c 0.502709,0 0.926042,-0.423333 0.926042,-0.926041 v -6.561667 h -1.878542 v -6.588125 c 0,-0.529166 -0.423333,-0.9525 -0.9525,-0.9525 h -5.609166 c -0.529167,0 -0.9525,0.423334 -0.9525,0.9525 v 6.561667 h -7.487709 v 7.487708 h -6.561666 c -0.529167,0 -0.9525,0.423333 -0.9525,0.926042 v 5.662083 c 0,0.529167 0.423333,0.9525 0.9525,0.9525 z m 28.125208,-7.514167 h 8.440208 v 8.440209 c 0,0.529166 0.423333,0.926041 0.926042,0.926041 h 6.561666 v -1.852083 h 6.5616669 c 0.5291667,0 0.9525,-0.423333 0.9525,-0.9525 v -5.635625 c 0,-0.529167 -0.4233333,-0.926042 -0.9525,-0.926042 h -6.5616669 v -7.487708 h -7.487708 v -6.588125 c 0,-0.529166 -0.423333,-0.9525 -0.9525,-0.9525 h -5.609167 c -0.529166,0 -0.952499,0.423334 -0.952499,0.9525 v 6.561667 h -1.852084 v 6.561666 c 0,0.529167 0.396875,0.926042 0.926042,0.926042 z m -10.31875,18.758958 h 15.001875 V 40.379741 h -15.001875 v 14.975416 z" />
+      </svg>
+
+    </lowrisc-block>
+
+    <lowrisc-block id="top" class="domain" pos="1 3 61 30">
+      <lowrisc-block class="title" pos="1 0.5">top_earlgrey</lowrisc-block>
+
+      <lowrisc-block id="high-speed" class="domain" pos="1 2 29 27">
+        <lowrisc-block class="title" pos="1 0.5">High Speed Domain</lowrisc-block>
+
+        <lowrisc-block class="lane" pos="1 2">
+          <lowrisc-arrow pos="6.5 7 0.5 1" center="x"></lowrisc-arrow>
+          <lowrisc-block id="ibex" class="block b100mhz" pos="0 0 12 5.5">
+            <span><b>Ibex Core</b><br>(RV32IMCB)<br></span>
+          </lowrisc-block>
+          <lowrisc-block id="ibex-shadow" class="block" pos="1 1.5 12 5.5">
+            <lowrisc-block id="ibex-shadow-label" pos="0 4 12 1.5">
+              <span>Dual Lockstep</span>
+            </lowrisc-block>
+          </lowrisc-block>
+        </lowrisc-block>
+
+        <lowrisc-block class="lane" pos="15 2">
+          <lowrisc-arrow pos="3 3 0.5 5" center="x"></lowrisc-arrow>
+          <lowrisc-block id="interrupt-controller" class="block b100mhz" pos="0 0">
+            Interrupt<br>Controller
+          </lowrisc-block>
+          <lowrisc-block id="debug-module" class="block b100mhz" pos="0 4">
+            Debug<br>Module
+          </lowrisc-block>
+        </lowrisc-block>
+
+        <lowrisc-block class="lane" pos="22 2">
+          <lowrisc-arrow pos="3 3 0.5 5" center="x"></lowrisc-arrow>
+          <lowrisc-block id="rom" class="block b100mhz" pos="0 0">
+            ROM
+          </lowrisc-block>
+          <lowrisc-block id="main-sram" class="block b100mhz" pos="0 4">
+            Main<br>SRAM
+          </lowrisc-block>
+        </lowrisc-block>
+
+        <lowrisc-crossbar id="high-speed-crossbar" class="block b100mhz" pos="1 10 27 4">
+          TL-UL<br>Crossbar
+        </lowrisc-crossbar>
+
+        <lowrisc-block class="lane" pos="1 15">
+          <lowrisc-arrow pos="3 -1 0.5 9" center="x"></lowrisc-arrow>
+          <lowrisc-block id="key-manager" class="block b100mhz" pos="0 0">
+            Key<br>Manager
+          </lowrisc-block>
+          <lowrisc-block id="otbn" class="block b100mhz" pos="0 4">
+            OTBN
+          </lowrisc-block>
+          <lowrisc-block id="aes" class="block b100mhz" pos="0 8">
+            AES
+          </lowrisc-block>
+        </lowrisc-block>
+
+        <lowrisc-block class="lane" pos="8 15">
+          <lowrisc-arrow pos="3 -1 0.5 9" center="x"></lowrisc-arrow>
+          <lowrisc-block id="kmac" class="block b100mhz" pos="0 0">
+            KMAC
+          </lowrisc-block>
+          <lowrisc-block id="hmac" class="block b100mhz" pos="0 4">
+            HMAC
+          </lowrisc-block>
+          <lowrisc-block id="flash" class="block b100mhz" pos="0 8">
+            FLASH
+          </lowrisc-block>
+        </lowrisc-block>
+
+        <lowrisc-block class="lane" pos="15 15">
+          <lowrisc-arrow pos="3 -1 0.5 9" center="x"></lowrisc-arrow>
+          <lowrisc-block id="edn" class="block b100mhz" pos="0 0">
+            EDN
+          </lowrisc-block>
+          <lowrisc-block id="csrng" class="block b100mhz" pos="0 4">
+            CSRNG
+          </lowrisc-block>
+          <lowrisc-block id="entropy-source" class="block b100mhz" pos="0 8">
+            Entropy<br>Source
+          </lowrisc-block>
+        </lowrisc-block>
+
+        <lowrisc-block class="lane" pos="22 15">
+          <lowrisc-arrow pos="3 -1 0.5 9" center="x"></lowrisc-arrow>
+          <lowrisc-block id="spi-host-0" class="block b96mhz" pos="0 0">
+            SPI<br>Host 0
+          </lowrisc-block>
+          <lowrisc-block id="spi-host-1" class="block b48mhz" pos="0 4">
+            SPI<br>Host 1
+          </lowrisc-block>
+          <lowrisc-block id="usb" class="block b48mhz" pos="0 8">
+            <lowrisc-block class="subdomain-badge b200khz" pos="0.5 0.5"></lowrisc-block>
+            USB
+          </lowrisc-block>
+        </lowrisc-block>
+
+      </lowrisc-block>
+
+      <lowrisc-block id="peripheral" class="domain" pos="31 2 29 27">
+        <lowrisc-block class="title" pos="1 0.5" >Peripheral Domain</lowrisc-block>
+
+        <lowrisc-crossbar id="peripheral-crossbar" class="block b24mhz" pos="1 2 5 24">
+          TL-UL<br>Crossbar
+        </lowrisc-crossbar>
+
+        <lowrisc-block class="lane" pos="7.5 2">
+          <lowrisc-arrow pos="-1.5 1.5 15.5 0.5" horizontal center="y"></lowrisc-arrow>
+          <lowrisc-block id="otp-fuse-controller" class="block b24mhz" pos="0 0 6 3">
+            OTP (Fuse)<br>Controller
+          </lowrisc-block>
+          <lowrisc-block id="life-cycle" class="block b24mhz" pos="7 0 6 3">
+            Life<br>Cycle
+          </lowrisc-block>
+          <lowrisc-block id="alert-handler" class="block b24mhz" pos="14 0 6 3">
+            Alert<br>Handler
+          </lowrisc-block>
+        </lowrisc-block>
+
+        <lowrisc-block class="lane" pos="7.5 6">
+          <lowrisc-arrow pos="-1.5 1.5 15.5 0.5" horizontal center="y"></lowrisc-arrow>
+          <lowrisc-block id="uart" class="block b24mhz" pos="0 0 6 3">
+            4 &times; UART
+          </lowrisc-block>
+          <lowrisc-block id="timers" class="block b24mhz" pos="7 0 6 3">
+            Timers
+          </lowrisc-block>
+          <lowrisc-block id="gpio" class="block b24mhz" pos="14 0 6 3">
+            GPIO
+          </lowrisc-block>
+        </lowrisc-block>
+
+        <lowrisc-block class="lane" pos="7.5 10">
+          <lowrisc-arrow pos="-1.5 1.5 15.5 0.5" horizontal center="y"></lowrisc-arrow>
+          <lowrisc-block id="i2c" class="block b24mhz" pos="0 0 6 3">
+            3 &times; I²C
+          </lowrisc-block>
+          <lowrisc-block id="spi-device" class="block b24mhz" pos="7 0 6 3">
+            <lowrisc-block class="subdomain-badge b100mhz" pos="0.5 0.5"></lowrisc-block>
+            SPI<br>Device
+          </lowrisc-block>
+          <lowrisc-block id="pattern-generators" class="block b24mhz" pos="14 0 6 3">
+            Pattern<br>Generators
+          </lowrisc-block>
+        </lowrisc-block>
+
+        <lowrisc-block id="always-on" pos="-31 13">
+          <lowrisc-block class="title" pos="38.5 0.5 20">
+            Always-on Domain
+          </lowrisc-block>
+
+          <lowrisc-block class="outline top left bottom" pos="0 16 37.75 5">
+          </lowrisc-block>
+
+          <lowrisc-block class="outline bottom" pos="37.75 16 21.5 5">
+          </lowrisc-block>
+
+          <lowrisc-block class="outline top right bottom" pos="59.25 16 1.75 5">
+          </lowrisc-block>
+
+          <lowrisc-block class="outline top left right" pos="37.75 0.3 21.5 15.8">
+          </lowrisc-block>
+        </lowrisc-block>
+
+        <lowrisc-block class="lane" pos="7.5 15">
+          <lowrisc-arrow pos="-1.5 1.5 15.5 0.5" horizontal center="y"></lowrisc-arrow>
+          <lowrisc-block id="pwm" class="block b24mhz" pos="0 0 6 3">
+            <lowrisc-block class="subdomain-badge b200khz" pos="0.5 0.5"></lowrisc-block>
+            PWM
+          </lowrisc-block>
+          <lowrisc-block id="retention-sram" class="block b24mhz" pos="7 0 6 3">
+            Retention<br>SRAM
+          </lowrisc-block>
+          <lowrisc-block id="power-manager" class="block b24mhz" pos="14 0 6 3">
+            <lowrisc-block class="subdomain-badge b200khz" pos="0.5 0.5"></lowrisc-block>
+            Power<br>Manager
+          </lowrisc-block>
+          <lowrisc-arrow class="thin" pos="18 3 0 12" head="4 4" center="x"></lowrisc-arrow>
+        </lowrisc-block>
+
+        <lowrisc-block class="lane" pos="7.5 19">
+          <lowrisc-arrow pos="-1.5 1.5 15.5 0.5" horizontal center="y"></lowrisc-arrow>
+          <lowrisc-block id="sysrst-controller" class="block b24mhz" pos="0 0 6 3">
+            <lowrisc-block class="subdomain-badge b200khz" pos="0.5 0.5"></lowrisc-block>
+            Sysrst<br>Controller
+          </lowrisc-block>
+          <lowrisc-block id="aon-timers" class="block b24mhz" pos="7 0 6 3">
+            <lowrisc-block class="subdomain-badge b200khz" pos="0.5 0.5"></lowrisc-block>
+            AON<br>Timers
+          </lowrisc-block>
+          <lowrisc-block id="clkrst-managers" class="block b24mhz" pos="14 0 6 3">
+            <lowrisc-block class="subdomain-badge b200khz" pos="0.5 0.5"></lowrisc-block>
+            Clk/Rst<br>Managers
+          </lowrisc-block>
+          <lowrisc-arrow class="thin" pos="17 3 0 8" head="4 4" center="x"></lowrisc-arrow>
+        </lowrisc-block>
+
+        <lowrisc-block class="lane" pos="7.5 23">
+          <lowrisc-arrow pos="-1.5 1.5 15.5 0.5" horizontal center="y"></lowrisc-arrow>
+          <lowrisc-block id="pinmux-padctrl" class="block b24mhz" pos="0 0 6 3">
+            Pinmux /<br>Padctrl
+          </lowrisc-block>
+          <lowrisc-block id="adc-controller" class="block b24mhz" pos="7 0 6 3">
+            <lowrisc-block class="subdomain-badge b200khz" pos="0.5 0.5"></lowrisc-block>
+            ADC<br>Controller
+          </lowrisc-block>
+          <lowrisc-block id="sensor-control" class="block b24mhz" pos="14 0 6 3">
+            <lowrisc-block class="subdomain-badge b200khz" pos="0.5 0.5"></lowrisc-block>
+            Sensor<br>Control
+          </lowrisc-block>
+          <lowrisc-arrow class="thin" pos="16 3 0 4" head="4 4" center="x"></lowrisc-arrow>
+          <lowrisc-arrow class="thin" pos="10 3 0 4" head="4 4" center="x"></lowrisc-arrow>
+          <lowrisc-arrow class="thin" pos="3 3 0 4" head="4 4" center="x"></lowrisc-arrow>
+        </lowrisc-block>
+
+      </lowrisc-block>
+
+      <lowrisc-arrow pos="29 14 3 0.5" horizontal center="y"></lowrisc-arrow>
+    </lowrisc-block>
+
+    <lowrisc-block id="padding" class="block blogic" pos="2 35 43">
+      Padding (only wire and pad instances)
+    </lowrisc-block>
+
+    <lowrisc-arrow class="thin" pos="45 36.5 2" head="4 4" horizontal center="y"></lowrisc-arrow>
+
+    <lowrisc-block id="analog-sensor-top" class="block b24mhz" pos="47 35 14">
+      <lowrisc-block class="subdomain-badge b48mhz" pos="0.5 0.5"></lowrisc-block>
+      <lowrisc-block class="subdomain-badge b200khz" pos="0.5 1.75"></lowrisc-block>
+      Analog Sensor Top
+    </lowrisc-block>
+
+    <lowrisc-block id="clock-speeds" pos="1 40">
+      <lowrisc-block class="subdomain-badge b100mhz" pos="0 0 6 2">
+        ~100 MHz
+      </lowrisc-block>
+
+      <lowrisc-block class="subdomain-badge b96mhz" pos="7 0 6 2">
+        96 MHz
+      </lowrisc-block>
+
+      <lowrisc-block class="subdomain-badge b48mhz" pos="14 0 6 2">
+        48 MHz
+      </lowrisc-block>
+
+      <lowrisc-block class="subdomain-badge b24mhz" pos="21 0 6 2">
+        24 MHz
+      </lowrisc-block>
+
+      <lowrisc-block class="subdomain-badge b200khz" pos="28 0 6 2">
+        200 kHz
+      </lowrisc-block>
+
+      <lowrisc-block class="subdomain-badge blogic" pos="35 0 6 2">
+        Logic Only
+      </lowrisc-block>
+    </lowrisc-block>
+  </lowrisc-block>
+</lowrisc-block>
+
+<script type="module" id="hydrate">
+  import "../src/hydrate.js";
+</script>
