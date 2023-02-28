@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// I2C specification: https://www.nxp.com/docs/en/user-guide/UM10204.pdf
+// I2C specification (revision 6):
+// https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf
 
 package i2c_agent_pkg;
   // dep packages

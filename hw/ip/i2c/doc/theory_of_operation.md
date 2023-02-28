@@ -30,7 +30,7 @@ This arrangement is necessary for FPGA builds.
 
 ### Override Mode for Direct Pin Access
 
-The I2C hardware interface consists of two external pins, SCL and SDA, whose behavior is described in the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
+The I2C hardware interface consists of two external pins, SCL and SDA, whose behavior is described in the [I2C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
 These pins are typically controlled by an internal state machine.
 However, there is a simpler "override" mode, by which these pins can be directly manipulated by software.
 This override mode is useful for troubleshooting or error-recovery.
@@ -131,7 +131,7 @@ The format flags indicate the following signals received from the host:
 
 ### Timing Control Registers
 
-For standard mode, fast-mode and fast-mode plus, the timing requirements for each transaction are detailed in Table 10 of the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
+For standard mode, fast-mode and fast-mode plus, the timing requirements for each transaction are detailed in Table 10 of the [I2C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
 In order to claim complete compatibility at each mode, the state machine timings need to be adapted to whether there are Standard-mode, Fast-mode and Fast-mode Plus targets on the bus.
 Furthermore, depending on the actual capacitance of the bus, even a bus with all Fast-mode Plus capable targets may have to operate at slower speeds than 1Mbaud.
 For example, the host may need to run at lower frequencies, as discussed in Section 5.2 of the specification, but the computation of the nominal frequency will depend on timing specifications in Table 10, in this case particularly, the limits on t<sub>LOW</sub>, t<sub>HIGH</sub>, t<sub>r</sub>, and t<sub>f</sub>.
