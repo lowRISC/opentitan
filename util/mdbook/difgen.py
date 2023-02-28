@@ -20,31 +20,35 @@ def get_combined_xml(doxygen_xml_path):
         str(doxygen_xml_path.joinpath("index.xml")),
     ]
 
-    combined_xml_res = subprocess.run(xsltproc_args, check=True,
+    combined_xml_res = subprocess.run(
+        xsltproc_args, check=True,
         cwd=str(doxygen_xml_path), stdout=subprocess.PIPE,
-        universal_newlines=True)
+        universal_newlines=True,
+    )
     return ET.fromstring(combined_xml_res.stdout)
+
 
 # Get all information about individual DIF functions that are specified in one
 # DIF header. This returns only the Info from the XML that we require.
 def get_difref_info(combined_xml, dif_header):
     compound = _get_dif_file_compound(combined_xml, dif_header)
-    if compound == None:
+    if compound is None:
         return []
 
     file_id = _get_dif_file_id(compound)
     functions = _get_dif_function_info(compound, file_id)
     return functions
 
+
 # Create HTML List of DIFs, using the info from the combined xml
-def gen_listing_html(combined_xml, dif_header, dif_listings_html):
+def gen_listing_html(html_path: str, combined_xml, dif_header, dif_listings_html):
     compound = _get_dif_file_compound(combined_xml, dif_header)
-    if compound == None:
+    if compound is None:
         log.error("Doxygen output not found for {}".format(dif_header))
         return
 
     file_id = _get_dif_file_id(compound)
-    functions = _get_dif_function_info(compound, file_id)
+    functions = _get_dif_function_info(html_path, compound, file_id)
 
     if len(functions) == 0:
         log.error("No DIF functions found for {}".format(dif_header))
@@ -53,7 +57,9 @@ def gen_listing_html(combined_xml, dif_header, dif_listings_html):
     # Generate DIF listing header
     dif_listings_html.write('<p>To use this DIF, include the following C header:</p>')
     dif_listings_html.write('<pre><code class=language-c data-lang=c>')
-    dif_listings_html.write('#include "<a href="/sw/apis/{}.html">{}</a>"'.format(file_id, dif_header))
+    dif_listings_html.write('#include "<a href="{}/{}.html">{}</a>"'.format(
+        html_path, file_id, dif_header,
+    ))
     dif_listings_html.write('</code></pre>\n')
 
     # Generate DIF function list.
@@ -68,6 +74,7 @@ def gen_listing_html(combined_xml, dif_header, dif_listings_html):
         dif_listings_html.write('</li>\n')
     dif_listings_html.write('</ul>\n')
 
+
 # Generate HTML link for single function, using info returned from
 # get_difref_info
 def gen_difref_html(function_info, difref_html):
@@ -75,18 +82,21 @@ def gen_difref_html(function_info, difref_html):
     difref_html.write('<code>{name}</code>'.format(**function_info))
     difref_html.write('</a>\n')
 
+
 def _get_dif_file_compound(combined_xml, dif_header):
     for c in combined_xml.findall('compounddef[@kind="file"]'):
         if c.find("location").attrib["file"] == dif_header:
             return c
     return None
 
+
 def _get_dif_file_id(compound):
     return compound.attrib["id"]
 
-def _get_dif_function_info(compound, file_id):
+
+def _get_dif_function_info(html_path: str, compound, file_id):
     funcs = compound.find('sectiondef[@kind="func"]')
-    if funcs == None:
+    if funcs is None:
         return []
 
     # Collect useful info on each function
@@ -105,7 +115,7 @@ def _get_dif_function_info(compound, file_id):
         func_info["id"] = m.attrib["id"]
         func_info["file_id"] = file_id
         func_info["local_id"] = func_id
-        func_info["full_url"] = "/sw/apis/{}.html#{}".format(file_id, func_id)
+        func_info["full_url"] = "{}/{}.html#{}".format(html_path, file_id, func_id)
 
         func_info["name"] = _get_text_or_empty(m, "name")
         func_info["prototype"] = _get_text_or_empty(
