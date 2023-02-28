@@ -114,10 +114,11 @@ h6:target::before {
 table {
     margin: 0 auto;
     border-collapse: collapse;
+    font-size: 80%;
+    width: 100%;
 }
 table td {
     padding: 3px 20px;
-    border: 1px var(--table-border-color) solid;
 }
 table thead {
     background: var(--table-header-bg);
@@ -135,6 +136,10 @@ table thead tr {
 /* Alternate background colors for rows */
 table tbody tr:nth-child(2n) {
     background: var(--table-alternate-bg);
+}
+/* Add hard border to all table elements */
+table, th, td, tr{
+    border: 1px var(--table-header-bg) solid;
 }
 
 

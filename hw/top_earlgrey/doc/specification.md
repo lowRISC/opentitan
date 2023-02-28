@@ -14,13 +14,13 @@ The rest of the system can be shut off as part of the sleep mode.
 The OpenTitan Earl Grey chip provides the following features:
 
 <table>
-<thead style='font-size:100%'>
+<thead>
   <tr>
     <th colspan="2">OpenTitan Earl Grey Features</th>
   </tr>
 </thead>
-<tbody style='font-size:90%;line-height:110%'>
-  <tr>
+<tbody>
+  <tr style='vertical-align:top;'>
     <td>
       <ul>
         <li>RV32IMCB RISC-V "Ibex" core:
@@ -45,6 +45,26 @@ The OpenTitan Earl Grey chip provides the following features:
           </ul>
         </li>
         <br></br>
+        <li>Memory:
+          <ul>
+            <li>2x512kB banks eFlash</li>
+            <li>128kB main SRAM</li>
+            <li>4KB Always ON (AON) retention SRAM</li>
+            <li>32kB ROM</li>
+            <li>2kB OTP</li>
+          </ul>
+        </li>
+        <br></br>
+        <li>Software:
+          <ul>
+            <li>Boot ROM code implementing secure boot and chip configuration</li>
+            <li>Bare metal applications and validation tests</li>
+          </ul>
+        </li>
+      </ul>
+    </td>
+    <td>
+      <ul>
         <li>Security peripherals:
           <ul>
             <li>AES-128/192/256 with ECB/CBC/CFB/OFB/CTR modes</li>
@@ -59,19 +79,6 @@ The OpenTitan Earl Grey chip provides the following features:
             <li>OTP controller with access controls and memory scrambling</li>
             <li>Flash controller with access controls and memory scrambling</li>
             <li>ROM and SRAM controllers with low-latency memory scrambling</li>
-          </ul>
-        </li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-        <li>Memory:
-          <ul>
-            <li>2x512kB banks eFlash</li>
-            <li>128kB main SRAM</li>
-            <li>4KB Always ON (AON) retention SRAM</li>
-            <li>32kB ROM</li>
-            <li>2kB OTP</li>
           </ul>
         </li>
         <br></br>
@@ -94,13 +101,6 @@ The OpenTitan Earl Grey chip provides the following features:
             <li>Always ON (AON) timer</li>
             <li>Pulse-width modulator (PWM)</li>
             <li>Pattern Generator</li>
-          </ul>
-        </li>
-        <br></br>
-        <li>Software:
-          <ul>
-            <li>Boot ROM code implementing secure boot and chip configuration</li>
-            <li>Bare metal applications and validation tests</li>
           </ul>
         </li>
       </ul>

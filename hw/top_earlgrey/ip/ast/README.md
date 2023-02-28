@@ -67,6 +67,8 @@ with some augmentations.
 <col style="width: 59%" />
 </colgroup>
 <thead>
+</thead>
+<tbody>
 <tr class="even">
 <td><strong>Signal Name &amp; Affiliation</strong></td>
 <td><strong>I/O</strong></td>
@@ -887,8 +889,6 @@ is a project decision.</td>
 <td>async</td>
 <td>SPI external clock observability</td>
 </tr>
-</thead>
-<tbody>
 </tbody>
 </table>
 

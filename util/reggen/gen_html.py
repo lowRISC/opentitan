@@ -38,22 +38,18 @@ def gen_tbl_row(outfile: TextIO, msb: int, width: int, close: bool) -> None:
 def gen_html_reg_pic(outfile: TextIO, reg: Register, width: int) -> None:
 
     if (width > 32):
-        bsize = 3
         nextbit = 63
         hdrbits = 16
         nextline = 48
     elif (width > 16):
-        bsize = 3
         nextbit = 31
         hdrbits = 16
         nextline = 16
     elif (width > 8):
-        bsize = 3
         nextbit = 15
         nextline = 0
         hdrbits = 16
     else:
-        bsize = 12
         nextbit = 7
         nextline = 0
         hdrbits = 8
@@ -96,15 +92,10 @@ def gen_html_reg_pic(outfile: TextIO, reg: Register, width: int) -> None:
         namelen = len(fname)
         if namelen == 0 or fname == ' ':
             fname = "&nbsp;"
-        if (namelen > bsize * fieldwidth):
-            usestyle = (" style=\"font-size:" + str(
-                (bsize * 100 * fieldwidth) / namelen) + "%\"")
-        else:
-            usestyle = ""
 
         genout(
             outfile, "<td class=\"fname\" colspan=" + str(fieldwidth) +
-            usestyle + ">" + fname + "</td>\n")
+            ">" + fname + "</td>\n")
 
         if (fieldlsb == nextline) and nextline > 0:
             gen_tbl_row(outfile, nextline - 1, hdrbits, True)
