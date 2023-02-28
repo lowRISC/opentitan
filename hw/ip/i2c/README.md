@@ -8,14 +8,13 @@ This document specifies I2C hardware IP functionality.
 This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader top level system.
 
-
 ## Features
 
 - Two-pin clock-data parallel bidirectional external interface
 - Support for I2C Host ("I2C Master"<sup>1</sup>) and I2C Target ("I2C Slave"<sup>1</sup>) device modes
 - Support for standard (100 kbaud), fast (400 kbaud) and fast-plus (1 Mbaud) modes
 - Bandwidth up to 1 Mbaud
-- Support for all "Mandatory" features as specified for I2C Hosts (as listed in Table 2 of the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf)):
+- Support for all "Mandatory" features as specified for I2C Hosts (as listed in Table 2 of the [I2C specification (revision 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf)):
     - Start Condition
     - Stop Condition
     - Acknowledge
@@ -42,7 +41,7 @@ These protocols are not in scope of this document.
 
 ## Description
 
-This IP block implements the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf), though with some variation in nomenclature.
+This IP block implements the [I2C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf), though with some variation in nomenclature.
 For the purposes of this document, a "I2C Host" meets the specifications put forth for a "Master" device.
 Furthermore, a device which meets the specifications put forward for an I2C "Slave" device is here referred to as an "I2C Target" or "I2C Target Device".
 
@@ -70,7 +69,7 @@ This IP presents a simple register interface and state-machine to manage the cor
 
 ## Compatibility
 
-This IP block should be compatible with any target device covered by the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf), operating at speeds up to 1 Mbaud.
+This IP block should be compatible with any target device covered by the [I2C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf), operating at speeds up to 1 Mbaud.
 This IP in the host mode issues addresses in 7-bit encoding, and in the target mode, receives addresses in 7-bit encoding.
 (It remains the obligation of system designers to ensure that devices remain in a 7-bit address space.)
 This IP also supports clock-stretching, should that be required by target devices.
