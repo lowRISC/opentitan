@@ -18,6 +18,7 @@
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_kmac.h"
+#include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_pattgen.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwm.h"
@@ -73,6 +74,7 @@ static dif_edn_t edn_1;
 static dif_aes_t aes;
 static dif_hmac_t hmac;
 static dif_kmac_t kmac;
+static dif_otbn_t otbn;
 static dif_i2c_t i2c_0;
 static dif_i2c_t i2c_1;
 static dif_i2c_t i2c_2;
@@ -388,6 +390,8 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host_0));
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR), &spi_host_1));
+  CHECK_DIF_OK(
+      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
   CHECK_DIF_OK(dif_pattgen_init(
       mmio_region_from_addr(TOP_EARLGREY_PATTGEN_BASE_ADDR), &pattgen));
   CHECK_DIF_OK(dif_pwm_init(
@@ -867,6 +871,23 @@ static void configure_otbn(void) {
                                              &rsa3072_constants));
 }
 
+static void check_crypto_blocks_idle(void) {
+  // CSRNG
+  CHECK(mmio_region_get_bit32(csrng.base_addr, CSRNG_SW_CMD_STS_REG_OFFSET,
+                              CSRNG_SW_CMD_STS_CMD_RDY_BIT));
+  // AES
+  CHECK(aes_testutils_get_status(&aes, kDifAesStatusIdle));
+  // HMAC - no status register to check.
+  // KMAC
+  dif_kmac_status_t kmac_status;
+  CHECK_DIF_OK(dif_kmac_get_status(&kmac, &kmac_status));
+  CHECK(kmac_status.sha3_state == kDifKmacSha3StateAbsorbing);
+  // OTBN
+  dif_otbn_status_t otbn_status;
+  CHECK_DIF_OK(dif_otbn_get_status(&otbn, &otbn_status));
+  CHECK(otbn_status == kDifOtbnStatusIdle);
+}
+
 static void crypto_data_load_task(void *task_parameters) {
   LOG_INFO("Loading crypto block FIFOs with data ...");
 
@@ -1002,9 +1023,7 @@ static void max_power_task(void *task_parameters) {
   const uint32_t gpio_on_reg_val = (1u << 16) | 1u;
   const uint32_t gpio_off_reg_val = 1u << 16;
 
-  // Check all blocks are idle.
-  CHECK(aes_testutils_get_status(&aes, kDifAesStatusIdle) == 1u);
-  CHECK(mmio_region_read32(csrng.base_addr, CSRNG_SW_CMD_STS_REG_OFFSET) == 1u);
+  check_crypto_blocks_idle();
 
   LOG_INFO("Entering max power epoch ...");
 
