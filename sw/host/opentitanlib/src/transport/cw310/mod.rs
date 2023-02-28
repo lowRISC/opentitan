@@ -33,7 +33,7 @@ struct Inner {
 }
 
 pub struct CW310 {
-    device: Rc<RefCell<usb::Backend>>,
+    pub(crate) device: Rc<RefCell<usb::Backend>>,
     uart_override: Vec<String>,
     inner: RefCell<Inner>,
 }

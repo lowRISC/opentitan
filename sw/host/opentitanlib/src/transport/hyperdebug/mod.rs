@@ -25,7 +25,9 @@ use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
+use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::{flock_serial, SerialPortExclusiveLock, SerialPortUart};
+use crate::transport::cw310::CW310;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
 };
@@ -56,6 +58,12 @@ pub trait Flavor {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>>;
     fn get_default_usb_vid() -> u16;
     fn get_default_usb_pid() -> u16;
+    fn load_bitstream(_transport: &impl Transport, _fpga_program: &FpgaProgram) -> Result<()> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+    fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
 }
 
 pub const VID_GOOGLE: u16 = 0x18d1;
@@ -578,13 +586,18 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 &update_firmware_action.firmware,
                 &update_firmware_action.progress,
             )
+        } else if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
+            T::load_bitstream(self, fpga_program).map(|_| None)
+        } else if let Some(clear) = action.downcast_ref::<ClearBitstream>() {
+            T::clear_bitstream(clear).map(|_| None)
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
     }
 }
 
-pub struct StandardFlavor {}
+/// A `StandardFlavor` is a plain Hyperdebug board.
+pub struct StandardFlavor;
 
 impl Flavor for StandardFlavor {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
@@ -595,6 +608,61 @@ impl Flavor for StandardFlavor {
     }
     fn get_default_usb_pid() -> u16 {
         PID_HYPERDEBUG
+    }
+}
+
+/// A `CW310Flavor` is a Hyperdebug attached to a CW310 board.  Furthermore,
+/// both the Hyperdebug and CW310 USB interfaces are attached to the host.
+/// Hyperdebug is used for all IO with the CW310 board except for bitstream
+/// programming.
+pub struct CW310Flavor;
+
+impl Flavor for CW310Flavor {
+    fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
+        StandardFlavor::gpio_pin(inner, pinname)
+    }
+    fn get_default_usb_vid() -> u16 {
+        StandardFlavor::get_default_usb_vid()
+    }
+    fn get_default_usb_pid() -> u16 {
+        StandardFlavor::get_default_usb_pid()
+    }
+    fn load_bitstream(transport: &impl Transport, fpga_program: &FpgaProgram) -> Result<()> {
+        if fpga_program.skip() {
+            log::info!("Skip loading the __skip__ bitstream.");
+            return Ok(());
+        }
+
+        // First, try to establish a connection to the native CW310 interface
+        // which we will use for bitstream loading.
+        let cw310 = CW310::new(None, None, None, &[])?;
+
+        // The transport does not provide name resolution for the IO interface
+        // names, so: console=UART2 and RESET=CN10_29 on the Hyp+CW310.
+        // Open the console UART.  We do this first so we get the receiver
+        // started and the uart buffering data for us.
+        let uart = transport.uart("UART2")?;
+        let reset_pin = transport.gpio_pin("CN10_29")?;
+        if fpga_program.check_correct_version(&*uart, &*reset_pin)? {
+            return Ok(());
+        }
+
+        // Program the FPGA bitstream.
+        log::info!("Programming the FPGA bitstream.");
+        let usb = cw310.device.borrow();
+        usb.spi1_enable(false)?;
+        usb.fpga_program(
+            &fpga_program.bitstream,
+            fpga_program.progress.as_ref().map(Box::as_ref),
+        )?;
+        Ok(())
+    }
+    fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
+        let cw310 = CW310::new(None, None, None, &[])?;
+        let usb = cw310.device.borrow();
+        usb.spi1_enable(false)?;
+        usb.clear_bitstream()?;
+        Ok(())
     }
 }
 
