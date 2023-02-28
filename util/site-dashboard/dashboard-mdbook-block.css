@@ -35,7 +35,8 @@
   border-bottom: 1px solid;
 }
 
-.dashboard-table th, td {
+.dashboard-table th,
+.dashboard-table td {
   padding: 15px;
   font-size: 150%;
 }
