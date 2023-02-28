@@ -10,7 +10,7 @@ use thiserror::Error;
 use crate::app::config::process_config_file;
 use crate::app::{TransportWrapper, TransportWrapperBuilder};
 use crate::transport::hyperdebug::c2d2::C2d2Flavor;
-use crate::transport::hyperdebug::StandardFlavor;
+use crate::transport::hyperdebug::CW310Flavor;
 use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
 
@@ -76,7 +76,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
             Some(Path::new("/__builtin__/opentitan_ultradebug.json")),
         ),
         "hyperdebug" => (
-            hyperdebug::create::<StandardFlavor>(args)?,
+            hyperdebug::create::<CW310Flavor>(args)?,
             Some(Path::new("/__builtin__/hyperdebug_cw310.json")),
         ),
         "hyperdebug_dfu" => (hyperdebug::create_dfu(args)?, None),
