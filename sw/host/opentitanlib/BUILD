@@ -96,6 +96,7 @@ rust_library(
         "src/tpm/mod.rs",
         "src/tpm/status.rs",
         "src/transport/common/mod.rs",
+        "src/transport/common/fpga.rs",
         "src/transport/common/uart.rs",
         "src/transport/cw310/gpio.rs",
         "src/transport/cw310/mod.rs",
