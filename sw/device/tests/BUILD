@@ -2172,6 +2172,7 @@ opentitan_functest(
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:pattgen",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwm",
