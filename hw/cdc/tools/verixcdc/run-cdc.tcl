@@ -128,10 +128,12 @@ catch {rm tmp.env}
 set outfile [open tmp.env  w]
 puts $outfile "set_data_clock_domain rdata_o -module prim_fifo_async -derived_from rvalid_o"
 # TODO: These should not be hardcoded here, instead, we need to create another variable called CDC_CONSTRAINT
-# where a top could specifically suppli this
+# where a top could specifically supply this
 puts $outfile "set_stable {{top_earlgrey.u_pinmux_aon.mio_oe_retreg_q[46:0]}}"
 puts $outfile "set_stable {{top_earlgrey.u_pinmux_aon.dio_out_retreg_q[15:0]}}"
-puts $outfile "set_clock_sense -stop_propagation -clocks { AST_EXT_CLK } { u_ast.clk_ast_ext_i }"
+# TODO: Check why the original script sets these constraints.
+# This is commented out because it creates setup errors.
+# puts $outfile "set_clock_sense -stop_propagation -clocks { AST_EXT_CLK } { u_ast.clk_ast_ext_i }"
 
 close $outfile
 read_env tmp.env
