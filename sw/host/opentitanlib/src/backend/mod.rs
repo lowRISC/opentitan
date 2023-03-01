@@ -75,7 +75,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
             ultradebug::create(args)?,
             Some(Path::new("/__builtin__/opentitan_ultradebug.json")),
         ),
-        "hyperdebug" => (
+        "hyper310" => (
             hyperdebug::create::<CW310Flavor>(args)?,
             Some(Path::new("/__builtin__/hyperdebug_cw310.json")),
         ),

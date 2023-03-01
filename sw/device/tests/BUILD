@@ -1103,9 +1103,11 @@ opentitan_functest(
     name = "gpio_pinmux_test",
     srcs = ["gpio_pinmux_test.c"],
     cw310 = cw310_params(
-        interface = "hyperdebug",
+        interface = "hyper310",
         tags = ["manual"],
         test_cmds = [
+            "--rom-kind=testrom",
+            "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
         ],
     ),
