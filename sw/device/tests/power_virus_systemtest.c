@@ -841,9 +841,9 @@ void configure_pwm(void) {
                                   .clock_divisor = kPwmClockDivisor,
                                   .beats_per_pulse_cycle = kPwmBeatsPerCycle,
                               }));
+  CHECK_DIF_OK(dif_pwm_channel_set_enabled(
+      &pwm, (1u << PWM_PARAM_N_OUTPUTS) - 1, kDifToggleDisabled));
   for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
-    CHECK_DIF_OK(
-        dif_pwm_channel_set_enabled(&pwm, pwm_channels[i], kDifToggleDisabled));
     CHECK_DIF_OK(
         dif_pwm_configure_channel(&pwm, pwm_channels[i],
                                   (dif_pwm_channel_config_t){
@@ -855,8 +855,6 @@ void configure_pwm(void) {
                                       .blink_parameter_x = 0,  // unused
                                       .blink_parameter_y = 0,  // unused
                                   }));
-    CHECK_DIF_OK(
-        dif_pwm_channel_set_enabled(&pwm, pwm_channels[i], kDifToggleEnabled));
   }
 }
 
@@ -1026,6 +1024,10 @@ static void max_power_task(void *task_parameters) {
   check_crypto_blocks_idle();
 
   LOG_INFO("Entering max power epoch ...");
+
+  // Enable all PWM channels
+  mmio_region_write32(pwm.base_addr, PWM_PWM_EN_REG_OFFSET,
+                      (1u << PWM_PARAM_N_OUTPUTS) - 1);
 
   // Enable all UARTs and I2Cs.
   mmio_region_write32(uart_1.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
