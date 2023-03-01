@@ -77,6 +77,7 @@ void usb_testutils_poll(usb_testutils_ctx_t *ctx) {
       if (ctx->out[ep].rx_callback) {
         ctx->out[ep].rx_callback(ctx->out[ep].ep_ctx, packet_info, buffer);
       } else {
+        // Note: this could happen following endpoint removal
         TRC_S("USB: unexpected RX ");
         TRC_I(endpoint, 8);
         CHECK_DIF_OK(
@@ -214,7 +215,7 @@ void usb_testutils_out_endpoint_setup(
 }
 
 void usb_testutils_endpoint_setup(
-    usb_testutils_ctx_t *ctx, int ep,
+    usb_testutils_ctx_t *ctx, uint8_t ep,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
     void (*tx_done)(void *),
     void (*rx)(void *, dif_usbdev_rx_packet_info_t, dif_usbdev_buffer_t),
@@ -224,6 +225,46 @@ void usb_testutils_endpoint_setup(
   // Note: register the link reset handler only on the IN endpoint so that it
   // does not get invoked twice
   usb_testutils_out_endpoint_setup(ctx, ep, out_mode, ep_ctx, rx, NULL);
+}
+
+void usb_testutils_in_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep) {
+  // Disable IN traffic
+  dif_usbdev_endpoint_id_t endpoint = {
+      .number = ep,
+      .direction = USBDEV_ENDPOINT_DIR_IN,
+  };
+  CHECK_DIF_OK(
+      dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleDisabled));
+
+  // Remove callback handlers
+  ctx->in[ep].tx_done_callback = NULL;
+  ctx->in[ep].flush = NULL;
+  ctx->in[ep].reset = NULL;
+}
+
+void usb_testutils_out_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep) {
+  // Disable OUT traffic
+  dif_usbdev_endpoint_id_t endpoint = {
+      .number = ep,
+      .direction = USBDEV_ENDPOINT_DIR_OUT,
+  };
+  CHECK_DIF_OK(
+      dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleDisabled));
+
+  // Return the rest of the OUT endpoint configuration to its default state
+  CHECK_DIF_OK(dif_usbdev_endpoint_set_nak_out_enable(ctx->dev, endpoint.number,
+                                                      kDifToggleDisabled));
+  CHECK_DIF_OK(dif_usbdev_endpoint_out_enable(ctx->dev, endpoint.number,
+                                              kDifToggleDisabled));
+
+  // Remove callback handlers
+  ctx->out[ep].rx_callback = NULL;
+  ctx->out[ep].reset = NULL;
+}
+
+void usb_testutils_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep) {
+  usb_testutils_in_endpoint_remove(ctx, ep);
+  usb_testutils_out_endpoint_remove(ctx, ep);
 }
 
 void usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
@@ -258,27 +299,24 @@ void usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   // All about polling...
   CHECK_DIF_OK(dif_usbdev_irq_disable_all(ctx->dev, NULL));
 
-  // Provide buffers for any reception
+  // Provide buffers for any packet reception
   CHECK_DIF_OK(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
 
-  dif_usbdev_endpoint_id_t endpoint = {
-      .number = 0,
-      .direction = 1,
-  };
+  // Preemptively enable SETUP reception on endpoint zero for the
+  // Default Control Pipe; all other settings for that endpoint will be applied
+  // once the callback handlers are registered by a call to _endpoint_setup()
   CHECK_DIF_OK(
-      dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleEnabled));
-  CHECK_DIF_OK(
-      dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleDisabled));
+      dif_usbdev_endpoint_setup_enable(ctx->dev, 0, kDifToggleEnabled));
+}
 
-  endpoint.direction = 0;
-  CHECK_DIF_OK(
-      dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleEnabled));
-  CHECK_DIF_OK(
-      dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleDisabled));
-  CHECK_DIF_OK(dif_usbdev_endpoint_setup_enable(ctx->dev, endpoint.number,
-                                                kDifToggleEnabled));
-  CHECK_DIF_OK(dif_usbdev_endpoint_out_enable(ctx->dev, endpoint.number,
-                                              kDifToggleEnabled));
+void usb_testutils_fin(usb_testutils_ctx_t *ctx) {
+  // Remove the endpoints in reverse order so that Endpoint Zero goes down last
+  for (int ep = USBDEV_NUM_ENDPOINTS - 1; ep >= 0; ep--) {
+    usb_testutils_endpoint_remove(ctx, ep);
+  }
+
+  // Disconnect from the bus
+  CHECK_DIF_OK(dif_usbdev_interface_enable(ctx->dev, kDifToggleDisabled));
 }
 
 // `extern` declarations to give the inline functions in the
