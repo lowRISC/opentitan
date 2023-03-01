@@ -213,7 +213,7 @@
     {
       name: flash_ctrl_rw
       uvm_test_seq: flash_ctrl_rw_vseq
-      run_opts: ["+scb_otf_en=1"]
+      run_opts: ["+scb_otf_en=1", "+test_timeout_ns=5_000_000_000"]
       reseed: 20
     }
     {

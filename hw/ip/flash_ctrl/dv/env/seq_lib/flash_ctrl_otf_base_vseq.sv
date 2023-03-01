@@ -92,6 +92,13 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     solve rand_op.addr before rand_op.otf_addr;
     solve rand_op.addr before rand_op.num_words;
 
+    if (cfg.seq_cfg.op_readonly_on_info_partition) {
+      rand_op.partition == FlashPartInfo -> rand_op.op == flash_ctrl_pkg::FlashOpRead;
+    }
+    if (cfg.seq_cfg.op_readonly_on_info1_partition) {
+      rand_op.partition == FlashPartInfo1 -> rand_op.op == flash_ctrl_pkg::FlashOpRead;
+    }
+
     rand_op.partition dist { FlashPartData := 1, [FlashPartInfo:FlashPartInfo2] :/ 1};
     rand_op.addr[TL_AW-1:BusAddrByteW] == 'h0;
     rand_op.addr[1:0] == 'h0;
@@ -436,7 +443,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         `uvm_create_obj(flash_otf_item, exp_item)
 
         exp_item.cmd = flash_op;
-        exp_item.dq = flash_program_data;
+        exp_item.dq = cfg.calculate_expected_data(flash_op, flash_program_data);
         exp_item.region = my_region;
         // Scramble data
         exp_item.scramble(otp_addr_key, otp_data_key, flash_op.otf_addr);

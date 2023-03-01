@@ -463,7 +463,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t data;
     bit [31:0] intr_st;
     bit        wait_done = 0;
-    int        prog_timeout_ns = 100000; // 100 us
 
     `uvm_info("flash_ctrl_intr_write", $sformatf("num_wd: %0d  crd:%0d", flash_op.num_words,
                                                  cfg.wr_crd), UVM_MEDIUM)
@@ -473,7 +472,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                  cfg.wr_crd = 4 - curr_wr;
                  end,
                  "wait for wr_crd timeout",
-                 prog_timeout_ns, "flash_ctrl_intr_write")
+                 // Defined in the seq_cfg, default is 10ms.
+                 cfg.seq_cfg.prog_timeout_ns, "flash_ctrl_intr_write")
 
     flash_ctrl_start_op(flash_op);
 
@@ -488,7 +488,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                         cfg.intr_vif.pins[FlashCtrlIntrProgLvl] == 1 ||
                         cfg.intr_vif.pins[FlashCtrlIntrOpDone] == 1);,
                    "wait prog intr timeout",
-                   prog_timeout_ns, "flash_ctrl_intr_write")
+                   // Defined in the seq_cfg, default is 10ms.
+                   cfg.seq_cfg.prog_timeout_ns, "flash_ctrl_intr_write")
 
       csr_rd(.ptr(ral.intr_state), .value(data));
       intr_st = data;
