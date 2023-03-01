@@ -26,12 +26,47 @@ struct usb_testutils_ctx {
    * Most recent bus frame number received from host
    */
   uint16_t frame;
-  void *ep_ctx[USBDEV_NUM_ENDPOINTS];
-  void (*tx_done_callback[USBDEV_NUM_ENDPOINTS])(void *);
-  void (*rx_callback[USBDEV_NUM_ENDPOINTS])(void *, dif_usbdev_rx_packet_info_t,
-                                            dif_usbdev_buffer_t);
-  void (*flush[USBDEV_NUM_ENDPOINTS])(void *);
-  void (*reset[USBDEV_NUM_ENDPOINTS])(void *);
+
+  /**
+   * IN endpoints
+   */
+  struct {
+    /**
+     * Opaque context handle for callback functions
+     */
+    void *ep_ctx;
+    /**
+     * Callback for transmission of IN packet
+     */
+    void (*tx_done_callback)(void *);
+    /**
+     * Callback for periodically flushing IN data to host
+     */
+    void (*flush)(void *);
+    /**
+     * Callback for link reset
+     */
+    void (*reset)(void *);
+  } in[USBDEV_NUM_ENDPOINTS];
+
+  /**
+   * OUT endpoints
+   */
+  struct {
+    /**
+     * Opaque context handle for callback functions
+     */
+    void *ep_ctx;
+    /**
+     * Callback for reception of IN packet
+     */
+    void (*rx_callback)(void *, dif_usbdev_rx_packet_info_t,
+                        dif_usbdev_buffer_t);
+    /**
+     * Callback for link reset
+     */
+    void (*reset)(void *);
+  } out[USBDEV_NUM_ENDPOINTS];
 };
 
 /**
@@ -61,10 +96,39 @@ typedef enum usb_testutils_out_transfer_mode {
 } usb_testutils_out_transfer_mode_t;
 
 /**
- * Call to set up endpoints.
+ * Call to set up IN endpoint.
  *
- * Note that this library currently only supports setting up both the IN and OUT
- * endpoints in the same call, using the same `ep_ctx` for their callbacks.
+ * @param ctx usbdev context pointer
+ * @param ep endpoint number
+ * @param ep_ctx context pointer for callee
+ * @param tx_done(void *ep_ctx) callback once send has been Acked
+ * @param flush(void *ep_ctx) called every 16ms based USB host timebase
+ * @param reset(void *ep_ctx) called when an USB link reset is detected
+ */
+void usb_testutils_in_endpoint_setup(usb_testutils_ctx_t *ctx, uint8_t ep,
+                                     void *ep_ctx, void (*tx_done)(void *),
+                                     void (*flush)(void *),
+                                     void (*reset)(void *));
+
+/**
+ * Call to set up OUT endpoint.
+ *
+ * @param ctx usbdev context pointer
+ * @param ep endpoint number
+ * @param out_mode the transfer mode for OUT transactions
+ * @param ep_ctx context pointer for callee
+ * @param rx(void *ep_ctx, usbbufid_t buf, int size, int setup)
+          called when a packet is received
+ * @param reset(void *ep_ctx) called when an USB link reset is detected
+ */
+void usb_testutils_out_endpoint_setup(
+    usb_testutils_ctx_t *ctx, uint8_t ep,
+    usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
+    void (*rx)(void *, dif_usbdev_rx_packet_info_t, dif_usbdev_buffer_t),
+    void (*reset)(void *));
+
+/**
+ * Call to set up a pairt of IN and OUT endpoints.
  *
  * @param ctx usbdev context pointer
  * @param ep endpoint number
