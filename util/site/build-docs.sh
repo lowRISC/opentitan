@@ -107,6 +107,8 @@ esac
 ### Doxygen
 export SRCTREE_TOP="${proj_root}"
 export DOXYGEN_OUT="${build_dir}/gen"
+# mdbook theme
+export MDBOOK_OUTPUT__HTML__THEME="$proj_root/site/book-theme/"
 # Hugo
 export HUGO_PARAMS_DOCSURL="${base_url}/book"
 # Block diagram
