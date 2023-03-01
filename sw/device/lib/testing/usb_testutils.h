@@ -69,13 +69,6 @@ struct usb_testutils_ctx {
   } out[USBDEV_NUM_ENDPOINTS];
 };
 
-/**
- * Call regularly to poll the usbdev interface
- *
- * @param ctx usbdev context pointer
- */
-void usb_testutils_poll(usb_testutils_ctx_t *ctx);
-
 typedef enum usb_testutils_out_transfer_mode {
   /**
    * The endpoint does not support OUT transactions.
@@ -128,7 +121,7 @@ void usb_testutils_out_endpoint_setup(
     void (*reset)(void *));
 
 /**
- * Call to set up a pairt of IN and OUT endpoints.
+ * Call to set up a pair of IN and OUT endpoints.
  *
  * @param ctx usbdev context pointer
  * @param ep endpoint number
@@ -140,13 +133,37 @@ void usb_testutils_out_endpoint_setup(
  * @param flush(void *ep_ctx) called every 16ms based USB host timebase
  * @param reset(void *ep_ctx) called when an USB link reset is detected
  */
-void usb_testutils_endpoint_setup(usb_testutils_ctx_t *ctx, int ep,
+void usb_testutils_endpoint_setup(usb_testutils_ctx_t *ctx, uint8_t ep,
                                   usb_testutils_out_transfer_mode_t out_mode,
                                   void *ep_ctx, void (*tx_done)(void *),
                                   void (*rx)(void *,
                                              dif_usbdev_rx_packet_info_t,
                                              dif_usbdev_buffer_t),
                                   void (*flush)(void *), void (*reset)(void *));
+
+/**
+ * Remove an IN endpoint.
+ *
+ * @param ctx usbdev context pointer
+ * @param ep endpoint number
+ */
+void usb_testutils_in_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
+
+/**
+ * Remove an OUT endpoint.
+ *
+ * @param ctx usbdev context pointer
+ * @param ep endpoint number
+ */
+void usb_testutils_out_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
+
+/**
+ * Remove a pair of IN and OUT endpoints
+ *
+ * @param ctx usbdev context pointer
+ * @param ep endpoint number
+ */
+void usb_testutils_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
 
 /**
  * Returns an indication of whether an endpoint is currently halted because
@@ -175,5 +192,19 @@ inline bool usb_testutils_endpoint_halted(usb_testutils_ctx_t *ctx,
  */
 void usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
                         bool en_diff_rcvr, bool tx_use_d_se0);
+
+/**
+ * Call regularly to poll the usbdev interface
+ *
+ * @param ctx usbdev context pointer
+ */
+void usb_testutils_poll(usb_testutils_ctx_t *ctx);
+
+/**
+ * Finalize the usbdev interface
+ *
+ * @param ctx initialized usbdev context pointer
+ */
+void usb_testutils_fin(usb_testutils_ctx_t *ctx);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_H_
