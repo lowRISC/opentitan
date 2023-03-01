@@ -10,6 +10,7 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
+#include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
 
@@ -55,7 +56,43 @@ enum {
    * Mode option for the ECDSA keygen app (generates the full keypair).
    */
   kEcc256ModeKeypair = 2,
+  /**
+   * Max number of traces per batch.
+   */
+  kNumBatchOpsMax = 256,
 };
+
+/**
+ * An array of seeds to be used in a batch
+ */
+uint32_t batch_seeds[kNumBatchOpsMax][kEcc256SeedNumWords];
+
+/**
+ * An array of masks to be used in a batch
+ */
+uint32_t batch_masks[kNumBatchOpsMax][kEcc256SeedNumWords];
+
+/**
+ * Arrays for first and second share of masked private key d to be used in a
+ * batch
+ */
+uint32_t d0_batch[kEcc256SeedNumWords];
+uint32_t d1_batch[kEcc256SeedNumWords];
+
+/**
+ * Fixed-message indicator.
+ *
+ * Used in the 'b' (batch capture) command for indicating whether to use fixed
+ * or random message.
+ */
+static bool run_fixed = true;
+
+/**
+ * Masking indicator.
+ *
+ * Used in the 'b' (batch capture) command for indicating whether to use masks.
+ */
+static bool en_masks = false;
 
 OTBN_DECLARE_APP_SYMBOLS(p256_key_from_seed_sca);
 
@@ -91,7 +128,7 @@ static const otbn_addr_t kOtbnVarY =
  * The default value corresponds to the test data in
  *   sw/otbn/crypto/test/p256_key_from_seed_test.s
  *
- * This default value can be overwritten via the simpleserial command `s`
+ * This default value can be overwritten via the simpleserial command `x`
  * (see ecc256_set_seed)
  */
 uint32_t ecc256_seed[kEcc256SeedNumWords] = {
@@ -100,9 +137,26 @@ uint32_t ecc256_seed[kEcc256SeedNumWords] = {
 };
 
 /**
+ * Simple serial 'm' (set masks enable) command handler.
+ *
+ * This can be used for batch mode.
+ *
+ * @param enable 1 => masks enabled, 0 => masks disabled.
+ * @param enable_len Length of sent enable value.
+ */
+static void ecc256_en_masks(const uint8_t *enable, size_t enable_len) {
+  SS_CHECK(enable_len == 1);
+  if (*enable) {
+    en_masks = true;
+  } else {
+    en_masks = false;
+  }
+}
+
+/**
  * Simple serial 'x' (set seed) command handler.
  *
- * The key must be `kEcc256SeedNumBytes` bytes long.
+ * The seed must be `kEcc256SeedNumBytes` bytes long.
  *
  * @param seed Value for seed share.
  * @param seed_len Length of seed share.
@@ -142,6 +196,65 @@ static void p256_run_keygen(uint32_t mode, const uint32_t *seed,
   SS_CHECK_STATUS_OK(otbn_execute());
   SS_CHECK_STATUS_OK(otbn_busy_wait_for_done());
   sca_set_trigger_low();
+}
+
+static void ecc256_ecdsa_secret_keygen_batch(const uint8_t *data,
+                                             size_t data_len) {
+  uint32_t num_traces = 0;
+  uint32_t out[kEcc256SeedNumWords];
+  uint32_t batch_digest[kEcc256SeedNumWords];
+  uint8_t dummy[kEcc256SeedNumBytes];
+  SS_CHECK(data_len == sizeof(num_traces));
+  num_traces = read_32(data);
+
+  if (num_traces > kNumBatchOpsMax) {
+    LOG_ERROR("Too many traces for one batch.");
+    return;
+  }
+
+  // zero the batch digest
+  for (uint32_t j = 0; j < kEcc256SeedNumWords; ++j) {
+    batch_digest[j] = 0;
+  }
+
+  for (uint32_t i = 0; i < num_traces; ++i) {
+    if (run_fixed) {
+      memcpy(batch_seeds[i], ecc256_seed, kEcc256SeedNumBytes);
+    } else {
+      prng_rand_bytes((unsigned char *)batch_seeds[i], kEcc256SeedNumBytes);
+    }
+    if (en_masks) {
+      prng_rand_bytes((unsigned char *)batch_masks[i], kEcc256SeedNumBytes);
+    } else {
+      for (uint32_t j = 0; j < kEcc256SeedNumWords; ++j) {
+        batch_masks[i][j] = 0;
+      }
+    }
+    // Another PRNG run to determine 'run_fixed' for the next cycle.
+    prng_rand_bytes(dummy, kEcc256SeedNumBytes);
+    run_fixed = dummy[0] & 0x1;
+  }
+
+  for (uint32_t i = 0; i < num_traces; ++i) {
+    p256_run_keygen(kEcc256ModePrivateKeyOnly, batch_seeds[i], batch_masks[i]);
+
+    // Read results.
+    SS_CHECK_STATUS_OK(
+        otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0_batch));
+    SS_CHECK_STATUS_OK(
+        otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD1, d1_batch));
+
+    // The correctness of each batch is verified by computing and sending
+    // the batch digest. This digest is computed by XORing all d0 shares of
+    // the batch.
+    for (uint32_t j = 0; j < kEcc256SeedNumWords; ++j) {
+      batch_digest[j] ^= d0_batch[j];
+    }
+  }
+
+  // Send the batch digest to the host for verification.
+  simple_serial_send_packet('r', (uint8_t *)batch_digest,
+                            kEcc256SeedNumWords * 4);
 }
 
 /**
@@ -280,11 +393,15 @@ static void simple_serial_main(void) {
   LOG_INFO("Initializing simple serial interface to capture board.");
 
   simple_serial_init(sca_get_uart());
+  SS_CHECK(simple_serial_register_handler(
+               'b', ecc256_ecdsa_secret_keygen_batch) == kSimpleSerialOk);
   SS_CHECK(simple_serial_register_handler('k', ecc256_ecdsa_secret_keygen) ==
            kSimpleSerialOk);
   SS_CHECK(simple_serial_register_handler('p', ecc256_ecdsa_gen_keypair) ==
            kSimpleSerialOk);
   SS_CHECK(simple_serial_register_handler('x', ecc256_set_seed) ==
+           kSimpleSerialOk);
+  SS_CHECK(simple_serial_register_handler('m', ecc256_en_masks) ==
            kSimpleSerialOk);
 
   LOG_INFO("Load p256 keygen from seed app into OTBN");
