@@ -201,6 +201,8 @@ def cw310_params(
         @param args: Extra arguments to pass the test runner `opentitantool`.
         @param data: Data dependencies of the test.
         @param local: Whether the test should be run locally without sandboxing.
+        @param interface: Which communication interface to use with the CW310
+                          board.  Choices are "cw310" or "hyper310".
         @param otp: The OTP image to use.
         @param tags: The test tags to apply to the test rule.
         @param test_cmds: A list of required commands and args that make up the
@@ -213,6 +215,9 @@ def cw310_params(
                          bitstream that is loaded into the FPGA.
         @param clear_bitstream: Clear FPGA bitstream at the end of the test.
     """
+    if interface not in ("cw310", "hyper310"):
+        fail("The interface must be either 'cw310' or 'hyper310'")
+
     default_args = [
         "--rcfile=",
         "--logging={logging}",
@@ -221,7 +226,7 @@ def cw310_params(
         "--interface={}".format(interface),
     ]
     required_tags = [
-        "cw310",
+        interface,
         "exclusive",
     ]
     kwargs.update(
@@ -230,6 +235,7 @@ def cw310_params(
         exit_success = exit_success,
         exit_failure = exit_failure,
         local = local,
+        interface = interface,
         otp = otp,
         tags = required_tags + tags,
         test_runner = test_runner,
@@ -322,10 +328,16 @@ def opentitan_functest(
             # If the cw310 parameter was not provided or was provided without
             # the bitstream field, determine the bitstream argument based on
             # the target. Otherwise, use the provided bitstream argument.
-            DEFAULT_BITSTREAM = {
-                "cw310_test_rom": "@//hw/bitstream:test_rom",
-                "cw310_rom": "@//hw/bitstream:rom",
-            }
+            if cw310_["interface"] == "cw310":
+                DEFAULT_BITSTREAM = {
+                    "cw310_test_rom": "@//hw/bitstream:test_rom",
+                    "cw310_rom": "@//hw/bitstream:rom",
+                }
+            else:
+                DEFAULT_BITSTREAM = {
+                    "cw310_test_rom": "@//hw/bitstream/hyperdebug:test_rom",
+                    "cw310_rom": "@//hw/bitstream/hyperdebug:rom",
+                }
             if (cw310 == None) or (cw310.get("bitstream") == None):
                 cw310_["bitstream"] = DEFAULT_BITSTREAM[target]
 
@@ -463,6 +475,8 @@ def opentitan_functest(
         ########################################################################
         # Retrieve hardware-target-specific parameters.
         ########################################################################
+        interface = params.pop("interface", None)
+
         # Set Bitstream (for FPGA targets).
         bitstream = params.pop("bitstream", None)
         rom_kind = params.pop("rom_kind", None)
@@ -521,6 +535,8 @@ def opentitan_functest(
             # so that they'll be parsed as global options rather than
             # command-specific options.
             target_args = select({
+                # TODO(cfrantz): we may need to do something different here when
+                # the interface is "hyper310".
                 "@//ci:lowrisc_fpga_cw310": ["--cw310-uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
                 "//conditions:default": [],
             }) + target_args
