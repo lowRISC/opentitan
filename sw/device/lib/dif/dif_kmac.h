@@ -135,6 +135,10 @@ enum {
    * The length is in 32-bit words.
    */
   kDifKmacEntropySeedWords = 5,
+  /**
+   * The offset of the second share within the output state register.
+   */
+  kDifKmacStateShareOffset = 0x100,
 };
 
 /**
@@ -739,6 +743,16 @@ dif_result_t dif_kmac_get_hash_counter(const dif_kmac_t *kmac,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_config_is_locked(const dif_kmac_t *kmac, bool *is_locked);
+
+/**
+ * Poll until a given flag in the status register is set.
+ *
+ * @param kmac A KMAC handle.
+ * @param flag the
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_poll_status(const dif_kmac_t *kmac, uint32_t flag);
 
 #ifdef __cplusplus
 }  // extern "C"

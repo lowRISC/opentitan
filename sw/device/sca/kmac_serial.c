@@ -47,10 +47,6 @@ enum {
    */
   kDigestLength = 8,
   /**
-   * The offset of the second share within the output state register.
-   */
-  kDifKmacStateShareOffset = 0x100,
-  /**
    * Number of cycles (at `kClockFreqCpuHz`) that Ibex should sleep to minimize
    * noise during SHA3 operations. Caution: This number should be chosen to
    * provide enough time. Otherwise, Ibex might wake up while SHA3 is still busy
