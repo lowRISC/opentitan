@@ -272,8 +272,8 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "chip_sw_lc_ctrl_scrap_test",
-    srcs = ["chip_sw_lc_ctrl_scrap_test.c"],
+    name = "lc_ctrl_scrap_test",
+    srcs = ["lc_ctrl_scrap_test.c"],
     targets = ["dv"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
