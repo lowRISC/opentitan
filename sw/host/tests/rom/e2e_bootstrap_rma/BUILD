@@ -20,3 +20,10 @@ rust_binary(
         "//third_party/rust/crates:structopt",
     ],
 )
+
+py_binary(
+    name = "gen_rma_token",
+    srcs = [
+        "gen_rma_token.py",
+    ],
+)
