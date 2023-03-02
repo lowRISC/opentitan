@@ -455,7 +455,7 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_RMA_SPIN_EN": "0x739",  # HARDENED_BOOL_TRUE
+                "CREATOR_SW_CFG_RMA_SPIN_EN": hex(CONST.TRUE),
                 "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "10",
             },
         ),
@@ -503,21 +503,32 @@ bitstream_splice(
 )
 
 opentitan_functest(
-    name = "e2e_bootstrap_rma_iteration_1",
+    name = "e2e_bootstrap_rma",
     srcs = ["rom_e2e_bootstrap_rma_test.c"],
     cw310 = cw310_params(
         bitstream = ":bitstream_bootstrap_rma",
-        tags = ["vivado"],
+        tags = [
+            "jtag",
+            "vivado",
+        ],
         test_cmds = [
             "--rom-kind=rom",
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
+            "--bitstream=\"$(rootpath {bitstream})\"",
+            "--bootstrap=\"$(rootpath {flash})\"",
+            "--openocd=\"$(rootpath //third_party/openocd:openocd_bin)\"",
+            "--openocd-adapter-config=\"$(rootpath //third_party/openocd:jtag_adapter_cfg)\"",
         ],
     ),
+    data = [
+        "//third_party/openocd:jtag_adapter_cfg",
+        "//third_party/openocd:openocd_bin",
+    ],
     key = LC_KEY_TYPES[CONST.LCV.PROD][0],
     targets = ["cw310_rom"],
     test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
     deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
