@@ -16,6 +16,8 @@ pub enum Error {
     BadEraseAddress(u32, u32),
     #[error("erase length {0} not a multiple of {1} bytes")]
     BadEraseLength(u32, u32),
+    #[error("bad sequence length: {0}")]
+    BadSequenceLength(usize),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -70,6 +72,9 @@ impl SpiFlash {
     pub const WRITE_ENABLE: u8 = 0x06;
     pub const WRITE_DISABLE: u8 = 0x04;
     pub const READ_STATUS: u8 = 0x05;
+    // Winbond parts use 0x35 and 0x15 for extended status reads.
+    pub const READ_STATUS2: u8 = 0x35;
+    pub const READ_STATUS3: u8 = 0x15;
     pub const READ_ID: u8 = 0x9f;
     pub const ENTER_4B: u8 = 0xb7;
     pub const EXIT_4B: u8 = 0xe9;
@@ -121,6 +126,23 @@ impl SpiFlash {
             Transfer::Read(&mut buf),
         ])?;
         Ok(buf[0])
+    }
+
+    /// Read the extended status register from the `spi` target.
+    pub fn read_status_ex(spi: &dyn Target, seq: Option<&[u8]>) -> Result<u32> {
+        let seq = seq.unwrap_or(&[Self::READ_STATUS, Self::READ_STATUS2, Self::READ_STATUS3]);
+        ensure!(
+            seq.len() > 0 && seq.len() <= 3,
+            Error::BadSequenceLength(seq.len())
+        );
+        let mut buf = [0u8; 4];
+        for (op, byte) in seq.iter().zip(buf.iter_mut()) {
+            spi.run_transaction(&mut [
+                Transfer::Write(std::slice::from_ref(op)),
+                Transfer::Read(std::slice::from_mut(byte)),
+            ])?;
+        }
+        Ok(u32::from_le_bytes(buf))
     }
 
     /// Poll the status register waiting for the busy bit to clear.

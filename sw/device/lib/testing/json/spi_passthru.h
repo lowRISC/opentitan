@@ -17,6 +17,11 @@ extern "C" {
     field(continuation_len, uint8_t)
 UJSON_SERDE_STRUCT(ConfigJedecId, config_jedec_id_t, STRUCT_CONFIG_JEDEC_ID);
 
+#define STRUCT_STATUS_REGISTER(field, string) \
+    field(status, uint32_t) \
+    field(addr_4b, bool)
+UJSON_SERDE_STRUCT(StatusRegister, status_register_t, STRUCT_STATUS_REGISTER);
+
 // clang-format on
 #ifdef __cplusplus
 }

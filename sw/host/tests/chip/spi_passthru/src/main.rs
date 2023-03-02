@@ -8,10 +8,14 @@ use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
+use opentitanlib::io::spi::Transfer;
 use opentitanlib::spiflash::SpiFlash;
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::spi_passthru::ConfigJedecId;
+use opentitanlib::test_utils::spi_passthru::{ConfigJedecId, StatusRegister};
 use opentitanlib::uart::console::UartConsole;
+
+//const FLASH_STATUS_WIP: u32 = 0x01;
+const FLASH_STATUS_WEL: u32 = 0x02;
 
 #[derive(Debug, StructOpt)]
 struct Opts {
@@ -60,6 +64,76 @@ fn test_jedec_id(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
+fn test_enter_exit_4b_mode(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let spi = transport.spi(&opts.spi)?;
+
+    log::info!("Entering 4B address mode");
+    spi.run_transaction(&mut [Transfer::Write(&[SpiFlash::ENTER_4B])])?;
+    let sr = StatusRegister::read(&*uart)?;
+    assert!(sr.addr_4b, "expected to be in 4b mode");
+
+    log::info!("Exiting 4B address mode");
+    spi.run_transaction(&mut [Transfer::Write(&[SpiFlash::EXIT_4B])])?;
+    let sr = StatusRegister::read(&*uart)?;
+    assert!(!sr.addr_4b, "expected to be in 3b mode");
+    Ok(())
+}
+
+fn test_write_enable_disable(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let spi = transport.spi(&opts.spi)?;
+
+    log::info!("Sending WRITE_ENABLE");
+    spi.run_transaction(&mut [Transfer::Write(&[SpiFlash::WRITE_ENABLE])])?;
+    let status = SpiFlash::read_status(&*spi)?;
+    let sr = StatusRegister::read(&*uart)?;
+    assert!(
+        status as u32 & FLASH_STATUS_WEL != 0,
+        "expected WEL set via read_status"
+    );
+    assert!(
+        sr.status & FLASH_STATUS_WEL != 0,
+        "expected WEL set on the device"
+    );
+
+    log::info!("Sending WRITE_DISABLE");
+    spi.run_transaction(&mut [Transfer::Write(&[SpiFlash::WRITE_DISABLE])])?;
+    let status = SpiFlash::read_status(&*spi)?;
+    let sr = StatusRegister::read(&*uart)?;
+    assert!(
+        status as u32 & FLASH_STATUS_WEL == 0,
+        "expected WEL clear via read_status"
+    );
+    assert!(
+        sr.status & FLASH_STATUS_WEL == 0,
+        "expected WEL clear on the device"
+    );
+    Ok(())
+}
+
+fn test_read_status_extended(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let spi = transport.spi(&opts.spi)?;
+
+    let sr = StatusRegister {
+        status: 0x5A55AA,
+        addr_4b: false,
+    };
+    sr.write(&*uart)?;
+    // Note: because we're programming the flash_status register in firmware,
+    // we require one CS low-to-high transition to latch the values from the
+    // CSR into the spi device.  We'd normally expect this type of register
+    // setup to be done at init time and that the first SPI transaction will
+    // be a READ_ID or READ_SFDP, thus latching the flash_status contents.
+    //
+    // In this test program, we simply issue a NOP transaction to the device.
+    spi.run_transaction(&mut [Transfer::Write(&[SpiFlash::NOP])])?;
+    let value = SpiFlash::read_status_ex(&*spi, None)?;
+    assert_eq!(value, sr.status);
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
@@ -71,5 +145,8 @@ fn main() -> Result<()> {
     uart.clear_rx_buffer()?;
 
     execute_test!(test_jedec_id, &opts, &transport);
+    execute_test!(test_enter_exit_4b_mode, &opts, &transport);
+    execute_test!(test_write_enable_disable, &opts, &transport);
+    execute_test!(test_read_status_extended, &opts, &transport);
     Ok(())
 }
