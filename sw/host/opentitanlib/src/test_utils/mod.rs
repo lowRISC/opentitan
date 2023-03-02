@@ -14,6 +14,7 @@ pub mod load_bitstream;
 pub mod pinmux_config;
 
 pub mod rpc;
+pub mod spi_passthru;
 pub mod status;
 
 /// The `execute_test` macro should be used in end-to-end tests to

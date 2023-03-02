@@ -25,6 +25,12 @@ ujson_rust(
     defines = ["opentitanlib=crate"],
 )
 
+ujson_rust(
+    name = "spi_passthru",
+    srcs = ["//sw/device/lib/testing/json:spi_passthru"],
+    defines = ["opentitanlib=crate"],
+)
+
 filegroup(
     name = "config",
     srcs = glob(["src/app/config/*.json"]),
@@ -86,6 +92,7 @@ rust_library(
         "src/test_utils/e2e_command.rs",
         "src/test_utils/epmp.rs",
         "src/test_utils/gpio.rs",
+        "src/test_utils/spi_passthru.rs",
         "src/test_utils/init.rs",
         "src/test_utils/load_bitstream.rs",
         "src/test_utils/mod.rs",
@@ -160,6 +167,7 @@ rust_library(
         ":gpio",
         ":e2e_command",
         ":pinmux_config",
+        ":spi_passthru",
         "@hyperdebug_firmware//file",
     ],
     crate_features = [
@@ -177,6 +185,7 @@ rust_library(
         "e2e_command": "$(location :e2e_command)",
         "gpio": "$(location :gpio)",
         "pinmux_config": "$(location :pinmux_config)",
+        "spi_passthru": "$(location :spi_passthru)",
         "hyperdebug_firmware": "$(location @hyperdebug_firmware//file)",
     },
     deps = [
