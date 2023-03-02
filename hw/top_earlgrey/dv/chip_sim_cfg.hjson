@@ -739,6 +739,12 @@
       run_opts: ["+use_otp_image=OtpTypeLcStRma", "+otp_clear_secret2=1"]
     }
     {
+      name: chip_sw_otp_ctrl_vendor_test_csr_access
+      uvm_test_seq: chip_sw_otp_ctrl_vendor_test_csr_access_vseq
+      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_vendor_test_csr_access_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       // Set higher reseed value to reach all kmac_data to lc_ctrl toggle coverage.
       name: chip_sw_lc_ctrl_transition
       uvm_test_seq: chip_sw_lc_ctrl_transition_vseq

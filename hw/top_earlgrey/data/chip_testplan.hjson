@@ -2845,11 +2845,13 @@
             - Boot the chip successively in raw, test_*, dev, prod and rma LC states.
             - Verify that the SW is able to access the vendor test control and status registers in
               raw, test_* and rma LC states.
+              In open source environment, this check is implemented by probing the OTP_CTRL's
+              `lc_otp_vendor_test_i` port.
             - Verify that in dev / prod LC states, the vendor status always reads back 0s regardless
               of what is programmed into the vendor test control register.
             '''
       stage: V3
-      tests: []
+      tests: ["chip_sw_otp_ctrl_vendor_test_csr_access"]
     }
 
     // FLASH (pre-verified IP) integration tests:

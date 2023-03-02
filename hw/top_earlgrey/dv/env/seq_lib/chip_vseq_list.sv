@@ -41,6 +41,7 @@
 `include "chip_sw_lc_ctrl_scrap_vseq.sv"
 `include "chip_sw_lc_walkthrough_vseq.sv"
 `include "chip_sw_lc_walkthrough_testunlocks_vseq.sv"
+`include "chip_sw_otp_ctrl_vendor_test_csr_access_vseq.sv"
 `include "chip_sw_spi_device_tx_rx_vseq.sv"
 `include "chip_sw_spi_host_tx_rx_vseq.sv"
 `include "chip_sw_spi_passthrough_vseq.sv"

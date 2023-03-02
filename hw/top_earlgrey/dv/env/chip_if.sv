@@ -976,6 +976,10 @@ interface chip_if;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_oe_i,
       `PINMUX_HIER.periph_to_dio_oe_i)
 
+  // Signal probe function for `vendor_test_ctrl` request from LC_CTRL to OTP_CTRL.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
+      `OTP_CTRL_HIER.lc_otp_vendor_test_i)
+
 `undef TOP_HIER
 `undef ADC_CTRL_HIER
 `undef AES_HIER
