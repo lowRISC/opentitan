@@ -481,6 +481,7 @@ package otbn_pkg;
     logic                    logic_a_en;
     logic                    logic_shifter_en;
     logic [3:0]              logic_res_sel;
+    logic [NFlagGroups-1:0]  flags_en;
   } alu_predec_bignum_t;
 
   typedef struct packed {

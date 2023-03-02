@@ -117,10 +117,14 @@ module otbn_alu_bignum
   // ISPRs //
   ///////////
 
+  flags_t                              flags           [NFlagGroups];
+  flags_t                              flags_blanked   [NFlagGroups];
+  flags_t                              flags_q_blanked [NFlagGroups];
   flags_t                              flags_q [NFlagGroups];
   flags_t                              flags_d [NFlagGroups];
   logic   [NFlagGroups*FlagsWidth-1:0] flags_flattened;
   logic   [NFlagGroups-1:0]            flags_en;
+  logic   [NFlagGroups-1:0]            flags_en_predec;
   logic   [NFlagGroups-1:0]            is_operation_flag_group;
   flags_t                              selected_flags;
   flags_t                              adder_update_flags;
@@ -158,10 +162,27 @@ module otbn_alu_bignum
                             (mac_operation_flags_i &  mac_operation_flags_en_i);
 
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_flag_groups
+
+    assign flags_en_predec[i_fg] = alu_predec_bignum_i.flags_en[i_fg];
+
+    prim_blanker #(.Width($bits(flags_t))) u_flag_q_blanker (
+      .in_i (flags_q[i_fg]),
+      .en_i (~(flags_en_predec[i_fg] | ispr_init_i | sec_wipe_zero_i)),
+      .out_o(flags_q_blanked[i_fg])
+    );
+
+    prim_blanker #(.Width($bits(flags_t))) u_flag_blanker (
+      .in_i (flags[i_fg]),
+      .en_i (flags_en_predec[i_fg]),
+      .out_o(flags_blanked[i_fg])
+    );
+
+    assign flags_d[i_fg] = flags_en_predec[i_fg] ? flags_blanked[i_fg] : flags_q_blanked[i_fg];
+
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         flags_q[i_fg] <= '{Z : 1'b0, L : 1'b0, M : 1'b0, C : 1'b0};
-      end else if (flags_en[i_fg]) begin
+      end else begin
         flags_q[i_fg] <= flags_d[i_fg];
       end
     end
@@ -173,15 +194,13 @@ module otbn_alu_bignum
     // Flag updates can come from the Y adder result, the logical operation result or from an ISPR
     // write.
     always_comb begin
-      flags_d[i_fg] = adder_update_flags;
+      flags[i_fg] = adder_update_flags;
 
       unique case (1'b1)
-        ispr_init_i:           flags_d[i_fg] = '0;
-        adder_update_flags_en: flags_d[i_fg] = adder_update_flags;
-        logic_update_flags_en: flags_d[i_fg] = logic_update_flags;
-        mac_update_flags_en:   flags_d[i_fg] = mac_update_flags;
-        ispr_update_flags_en:  flags_d[i_fg] = ispr_base_wdata_i[i_fg*FlagsWidth+:FlagsWidth];
-        sec_wipe_zero_i:       flags_d[i_fg] = '0;
+        adder_update_flags_en: flags[i_fg] = adder_update_flags;
+        logic_update_flags_en: flags[i_fg] = logic_update_flags;
+        mac_update_flags_en:   flags[i_fg] = mac_update_flags;
+        ispr_update_flags_en:  flags[i_fg] = ispr_base_wdata_i[i_fg*FlagsWidth+:FlagsWidth];
         default: ;
       endcase
     end
@@ -193,6 +212,9 @@ module otbn_alu_bignum
       sec_wipe_zero_i;
   end
 
+  // TODO: use these flags_en for comparison with the prededecoder version for FI detection.
+  logic [NFlagGroups-1:0] unused_flags_en;
+  assign unused_flags_en = flags_en;
 
   logic [ExtWLEN-1:0]          mod_intg_q;
   logic [ExtWLEN-1:0]          mod_intg_d;

@@ -59,6 +59,8 @@ module otbn_predecode
   logic alu_bignum_logic_a_en;
   logic alu_bignum_logic_shifter_en;
   logic [3:0] alu_bignum_logic_res_sel;
+  logic [NFlagGroups-1:0] alu_bignum_flags_en;
+  flag_group_t alu_bignum_flag_group;
 
   logic mac_bignum_op_en;
   logic mac_bignum_acc_rd_en;
@@ -113,6 +115,7 @@ module otbn_predecode
   assign shift_amt_a_type_bignum = {imem_rdata_i[29:25], 3'b0};
   assign shift_amt_s_type_bignum = {imem_rdata_i[31:25], imem_rdata_i[14]};
 
+  assign alu_bignum_flag_group = imem_rdata_i[31];
   always_comb begin
     rf_ren_a_base   = 1'b0;
     rf_ren_b_base   = 1'b0;
@@ -136,6 +139,7 @@ module otbn_predecode
     alu_bignum_logic_a_en            = 1'b0;
     alu_bignum_logic_shifter_en      = 1'b0;
     alu_bignum_logic_res_sel         = '0;
+    alu_bignum_flags_en              = {NFlagGroups{1'b0}};
 
     mac_bignum_op_en     = 1'b0;
     mac_bignum_acc_rd_en = 1'b0;
@@ -242,13 +246,16 @@ module otbn_predecode
             // No read if destination is x0 unless read is to flags CSR. Both flag groups are in
             // a single ISPR so to write one group the other must be read to write it back
             // unchanged.
-            ispr_rd_en = (imem_rdata_i[11:7] != 5'b0) | (csr_addr == CsrFg0) | (csr_addr == CsrFg1);
-            ispr_wr_en = 1'b1;
+            ispr_rd_en          = (imem_rdata_i[11:7] != 5'b0) | (csr_addr == CsrFg0) |
+                                                                 (csr_addr == CsrFg1);
+            ispr_wr_en          = 1'b1;
+            alu_bignum_flags_en = {NFlagGroups{ispr_addr == IsprFlags}};
           end else if (imem_rdata_i[14:12] == 3'b010) begin
             // Read and set if source register isn't x0, otherwise read only
             if (imem_rdata_i[19:15] != 5'b0) begin
-              ispr_rd_en = 1'b1;
-              ispr_wr_en = 1'b1;
+              ispr_rd_en          = 1'b1;
+              ispr_wr_en          = 1'b1;
+              alu_bignum_flags_en = {NFlagGroups{ispr_addr == IsprFlags}};
             end else begin
               ispr_rd_en = 1'b1;
             end
@@ -260,6 +267,7 @@ module otbn_predecode
         ////////////////
 
         InsnOpcodeBignumArith: begin
+          alu_bignum_flags_en[alu_bignum_flag_group] = 1'b1;
           unique case (imem_rdata_i[14:12])
             3'b000, 3'b001, 3'b010, 3'b011:  begin
               // BN.ADD/BN.SUB/BN.ADDC/BN.SUBB
@@ -308,17 +316,18 @@ module otbn_predecode
               ctrl_flow_target_predec_o = loop_end_addr[ImemAddrWidth-1:0];
             end
             3'b010, 3'b100, 3'b110:  begin  // BN.AND/BN.OR/BN.XOR
-              rf_we_bignum                            = 1'b1;
-              rf_ren_a_bignum                         = 1'b1;
-              rf_ren_b_bignum                         = 1'b1;
-              alu_bignum_shifter_b_en                 = 1'b1;
-              alu_bignum_shift_right                  = imem_rdata_i[30];
-              alu_bignum_shift_amt                    = shift_amt_a_type_bignum;
-              alu_bignum_logic_a_en                   = 1'b1;
-              alu_bignum_logic_shifter_en             = 1'b1;
-              alu_bignum_logic_res_sel[AluOpLogicXor] = imem_rdata_i[14:12] == 3'b110;
-              alu_bignum_logic_res_sel[AluOpLogicOr]  = imem_rdata_i[14:12] == 3'b100;
-              alu_bignum_logic_res_sel[AluOpLogicAnd] = imem_rdata_i[14:12] == 3'b010;
+              rf_we_bignum                               = 1'b1;
+              rf_ren_a_bignum                            = 1'b1;
+              rf_ren_b_bignum                            = 1'b1;
+              alu_bignum_shifter_b_en                    = 1'b1;
+              alu_bignum_shift_right                     = imem_rdata_i[30];
+              alu_bignum_shift_amt                       = shift_amt_a_type_bignum;
+              alu_bignum_logic_a_en                      = 1'b1;
+              alu_bignum_logic_shifter_en                = 1'b1;
+              alu_bignum_logic_res_sel[AluOpLogicXor]    = imem_rdata_i[14:12] == 3'b110;
+              alu_bignum_logic_res_sel[AluOpLogicOr]     = imem_rdata_i[14:12] == 3'b100;
+              alu_bignum_logic_res_sel[AluOpLogicAnd]    = imem_rdata_i[14:12] == 3'b010;
+              alu_bignum_flags_en[alu_bignum_flag_group] = 1'b1;
             end
             3'b111, 3'b011: begin // BN.RSHI
               rf_we_bignum            = 1'b1;
@@ -330,13 +339,14 @@ module otbn_predecode
               alu_bignum_shift_amt    = shift_amt_s_type_bignum;
             end
             3'b101: begin // BN.NOT
-              rf_we_bignum                            = 1'b1;
-              rf_ren_b_bignum                         = 1'b1;
-              alu_bignum_shifter_b_en                 = 1'b1;
-              alu_bignum_shift_right                  = imem_rdata_i[30];
-              alu_bignum_shift_amt                    = shift_amt_a_type_bignum;
-              alu_bignum_logic_shifter_en             = 1'b1;
-              alu_bignum_logic_res_sel[AluOpLogicNot] = 1'b1;
+              rf_we_bignum                               = 1'b1;
+              rf_ren_b_bignum                            = 1'b1;
+              alu_bignum_shifter_b_en                    = 1'b1;
+              alu_bignum_shift_right                     = imem_rdata_i[30];
+              alu_bignum_shift_amt                       = shift_amt_a_type_bignum;
+              alu_bignum_logic_shifter_en                = 1'b1;
+              alu_bignum_logic_res_sel[AluOpLogicNot]    = 1'b1;
+              alu_bignum_flags_en[alu_bignum_flag_group] = 1'b1;
             end
             default: ;
           endcase
@@ -354,13 +364,14 @@ module otbn_predecode
               rf_ren_b_bignum = 1'b1;
             end
             3'b011, 3'b001: begin // BN.CMP[B]
-              rf_ren_a_bignum                  = 1'b1;
-              rf_ren_b_bignum                  = 1'b1;
-              alu_bignum_shifter_b_en          = 1'b1;
-              alu_bignum_shift_right           = imem_rdata_i[30];
-              alu_bignum_shift_amt             = shift_amt_a_type_bignum;
-              alu_bignum_adder_y_op_a_en       = 1'b1;
-              alu_bignum_adder_y_op_shifter_en = 1'b1;
+              rf_ren_a_bignum                            = 1'b1;
+              rf_ren_b_bignum                            = 1'b1;
+              alu_bignum_shifter_b_en                    = 1'b1;
+              alu_bignum_shift_right                     = imem_rdata_i[30];
+              alu_bignum_shift_amt                       = shift_amt_a_type_bignum;
+              alu_bignum_adder_y_op_a_en                 = 1'b1;
+              alu_bignum_adder_y_op_shifter_en           = 1'b1;
+              alu_bignum_flags_en[alu_bignum_flag_group] = 1'b1;
             end
             3'b100, 3'b101: begin  // BN.LID, BN.SID
               rf_ren_a_base        = 1'b1;
@@ -419,7 +430,8 @@ module otbn_predecode
 
           // BN.MULQACC.WO/BN.MULQACC.SO
           if (imem_rdata_i[30] == 1'b1 || imem_rdata_i[29] == 1'b1) begin
-            rf_we_bignum = 1'b1;
+            rf_we_bignum                               = 1'b1;
+            alu_bignum_flags_en[alu_bignum_flag_group] = 1'b1;
           end
 
           if (imem_rdata_i[12] == 1'b0) begin
@@ -472,6 +484,7 @@ module otbn_predecode
   assign alu_predec_bignum_o.logic_a_en            = alu_bignum_logic_a_en;
   assign alu_predec_bignum_o.logic_shifter_en      = alu_bignum_logic_shifter_en;
   assign alu_predec_bignum_o.logic_res_sel         = alu_bignum_logic_res_sel;
+  assign alu_predec_bignum_o.flags_en              = alu_bignum_flags_en;
 
   assign mac_predec_bignum_o.op_en     = mac_bignum_op_en;
   assign mac_predec_bignum_o.acc_rd_en = mac_bignum_acc_rd_en;
