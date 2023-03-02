@@ -391,7 +391,7 @@ jobs:
   dependsOn:
     - lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool: ci-public
+  pool: ci-public-eda
   timeoutInMinutes: 240
   steps:
   - template: ci/checkout-template.yml
@@ -449,7 +449,7 @@ jobs:
   dependsOn:
     - lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'), eq(variables['Build.SourceBranchName'], 'master'))
-  pool: ci-public
+  pool: ci-public-eda
   timeoutInMinutes: 240
   steps:
   - template: ci/checkout-template.yml
@@ -487,12 +487,13 @@ jobs:
     artifact: chip_earlgrey_cw310_hyperdebug-build-out
     displayName: Upload artifacts for CW310
     condition: failed()
+
 - job: chip_englishbreakfast_cw305
   displayName: CW305's Bitstream
   # Build CW305 variant of the English Breakfast toplevel design using Vivado
   dependsOn: build_and_execute_verilated_tests_englishbreakfast
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool: ci-public
+  pool: ci-public-eda
   timeoutInMinutes: 120 # 2 hours
   steps:
   - template: ci/checkout-template.yml
