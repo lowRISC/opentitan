@@ -459,6 +459,21 @@ otp_json(
                 "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "10",
             },
         ),
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                # This RMA token is a cSHAKE128 digest. The preimage is
+                # hardcoded into the test harness [0] and the tool that
+                # generated this token [1].
+                #
+                # [0]: //sw/host/tests/rom/e2e_bootstrap_rma
+                # [1]: //sw/host/tests/rom/e2e_bootstrap_rma:gen_rma_token
+                "RMA_TOKEN": "0x1faf9056acde66561685549803a28bec",
+                "CREATOR_ROOT_KEY_SHARE0": "<random>",
+                "CREATOR_ROOT_KEY_SHARE1": "<random>",
+            },
+            lock = True,
+        ),
     ],
     visibility = ["//visibility:private"],
 )
