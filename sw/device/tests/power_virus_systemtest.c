@@ -248,13 +248,9 @@ static const uint8_t kAesKeyShare1[] = {
     0x6a, 0x7a, 0x8a, 0x9a, 0xaa, 0xba, 0xca, 0xda, 0xea, 0xfa,
 };
 
-static const uint8_t kHmacKey[] = {
-    0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f,
-};
-
 static const dif_kmac_key_t kKmacKey = {
-    .share0 = {0x43424140, 0x47464544, 0x4b4a4948, 0x4f4e4f4c, 0x53525150,
-               0x57565554, 0x5b5a5958, 0x5f5e5d5c},
+    .share0 = {0x43424140, 0x47464544, 0x4B4A4948, 0x4F4E4D4C, 0x53525150,
+               0x57565554, 0x5B5A5958, 0x5F5E5D5C},
     .share1 = {0},
     .length = kDifKmacKeyLen256,
 };
@@ -273,6 +269,11 @@ static const char *kKmacMessage =
     "\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf"
     "\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf"
     "\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7";
+
+static const uint32_t kKmacDigest[] = {
+    0xF71886B5, 0xD5E1921F, 0x558C1B6C, 0x18CDD7DD, 0xCAB4978B, 0x1E83994D,
+    0x839A69B2, 0xD9E4A27D, 0xFDACFB70, 0xAE3300E5, 0xA2F185A5, 0xC3108570,
+    0x0888072D, 0x2818BD01, 0x6847FE98, 0x6589FC76};
 
 static rsa_3072_verify_test_vector_t rsa3072_test_vector;
 static rsa_3072_int_t rsa3072_encoded_message;
@@ -751,7 +752,18 @@ static void configure_hmac(void) {
       .digest_endianness = kDifHmacEndiannessLittle,
       .message_endianness = kDifHmacEndiannessLittle,
   };
-  CHECK_DIF_OK(dif_hmac_mode_hmac_start(&hmac, kHmacKey, hmac_transaction_cfg));
+  // Use HMAC in SHA256 mode to generate a 256bit key from `kHmacRefLongKey`.
+  CHECK_DIF_OK(dif_hmac_mode_sha256_start(&hmac, hmac_transaction_cfg));
+  hmac_testutils_push_message(&hmac, (char *)kHmacRefLongKey,
+                              sizeof(kHmacRefLongKey));
+  hmac_testutils_check_message_length(&hmac, sizeof(kHmacRefLongKey) * 8);
+  CHECK_DIF_OK(dif_hmac_process(&hmac));
+  dif_hmac_digest_t hmac_key_digest;
+  hmac_testutils_finish_polled(&hmac, &hmac_key_digest);
+
+  // Configure the HMAC in HMAC mode.
+  CHECK_DIF_OK(dif_hmac_mode_hmac_start(
+      &hmac, (uint8_t *)&hmac_key_digest.digest[0], hmac_transaction_cfg));
 }
 
 static void configure_kmac(void) {
@@ -886,6 +898,25 @@ static void check_crypto_blocks_idle(void) {
   CHECK(otbn_status == kDifOtbnStatusIdle);
 }
 
+static void complete_kmac_operations(uint32_t *digest) {
+  // Poll the status register until in the 'squeeze' state.
+  CHECK_DIF_OK(dif_kmac_poll_status(&kmac, KMAC_STATUS_SHA3_SQUEEZE_BIT));
+
+  // Read both shares of digest from state register and combine using XOR.
+  uint32_t digest_offset = KMAC_STATE_REG_OFFSET;
+  for (size_t i = 0; i < kKmacDigestLength; ++i) {
+    uint32_t share0 = mmio_region_read32(kmac.base_addr, digest_offset);
+    uint32_t share1 = mmio_region_read32(
+        kmac.base_addr, digest_offset + kDifKmacStateShareOffset);
+    digest[i] = share0 ^ share1;
+    digest_offset += sizeof(uint32_t);
+  }
+  kmac_operation_state.offset += kKmacDigestLength;
+
+  // Complete KMAC operations and reset operation state.
+  CHECK_DIF_OK(dif_kmac_end(&kmac, &kmac_operation_state));
+}
+
 static void crypto_data_load_task(void *task_parameters) {
   LOG_INFO("Loading crypto block FIFOs with data ...");
 
@@ -902,13 +933,34 @@ static void crypto_data_load_task(void *task_parameters) {
 
   // Load data into KMAC block.
   dif_kmac_customization_string_t kmac_customization_string;
-  CHECK_DIF_OK(dif_kmac_customization_string_init("Power Virus Test", 16,
+  CHECK_DIF_OK(dif_kmac_customization_string_init("My Tagged Application", 21,
                                                   &kmac_customization_string));
   CHECK_DIF_OK(dif_kmac_mode_kmac_start(
       &kmac, &kmac_operation_state, kDifKmacModeKmacLen256, kKmacDigestLength,
       &kKmacKey, &kmac_customization_string));
   CHECK_DIF_OK(dif_kmac_absorb(&kmac, &kmac_operation_state, kKmacMessage,
                                kKmacMessageLength, NULL));
+  // Prepare KMAC for squeeze command (to come later in max power epoch) by
+  // formatting message for KMAC operation. Note, below code is derived from
+  // the KMAC DIF: `dif_kmac_sqeeze()`.
+  CHECK(!kmac_operation_state.squeezing);
+  if (kmac_operation_state.append_d) {
+    // The KMAC operation requires that the output length (d) in bits be
+    // right encoded and appended to the end of the message.
+    uint32_t kmac_output_length_bits = kmac_operation_state.d * 32;
+    int len = 1 + (kmac_output_length_bits > 0xFF) +
+              (kmac_output_length_bits > 0xFFFF) +
+              (kmac_output_length_bits > 0xFFFFFF);
+    int shift = (len - 1) * 8;
+    while (shift >= 8) {
+      mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+                         (uint8_t)(kmac_output_length_bits >> shift));
+      shift -= 8;
+    }
+    mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+                       (uint8_t)kmac_output_length_bits);
+    mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET, (uint8_t)len);
+  }
 
   OTTF_TASK_DELETE_SELF_OR_DIE;
 }
@@ -964,28 +1016,7 @@ static void max_power_task(void *task_parameters) {
   // operations.
   // ***************************************************************************
 
-  // Prepare KMAC for squeeze command. Note, below code is derived from the
-  // KMAC DIF `dif_kmac_sqeeze()`.
-  CHECK(!kmac_operation_state.squeezing);
-  if (kmac_operation_state.append_d) {
-    // The KMAC operation requires that the output length (d) in bits be right
-    // encoded and appended to the end of the message.
-    // Note: kDifKmacMaxOutputLenWords could be reduced to make this code
-    // simpler. For example, a maximum of `(UINT16_MAX - 32) / 32` (just under
-    // 8 KiB) would mean that d is guaranteed to be less than 0xFFFF.
-    uint32_t d = kmac_operation_state.d * 32;
-    int len = 1 + (d > 0xFF) + (d > 0xFFFF) + (d > 0xFFFFFF);
-    int shift = (len - 1) * 8;
-    while (shift >= 8) {
-      mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
-                         (uint8_t)(d >> shift));
-      shift -= 8;
-    }
-    mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET, (uint8_t)d);
-    mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET, (uint8_t)len);
-  }
-
-  // Prepare AES and HMAC trigger / process commands.
+  // Prepare AES, HMAC, and KMAC trigger / process commands.
   uint32_t aes_trigger_reg = bitfield_bit32_write(0, kDifAesTriggerStart, true);
   uint32_t hmac_cmd_reg =
       mmio_region_read32(hmac.base_addr, HMAC_CMD_REG_OFFSET);
@@ -1083,6 +1114,21 @@ static void max_power_task(void *task_parameters) {
   // ***************************************************************************
   // Check operation results.
   // ***************************************************************************
+  // Check AES operation.
+  dif_aes_data_t aes_cipher_text;
+  CHECK_DIF_OK(dif_aes_read_output(&aes, &aes_cipher_text));
+  CHECK_ARRAYS_EQ((uint8_t *)aes_cipher_text.data, kAesModesCipherTextCbc256,
+                  ARRAYSIZE(aes_cipher_text.data));
+
+  // Check HMAC operations.
+  hmac_testutils_finish_and_check_polled(&hmac, &kHmacRefExpectedDigest);
+
+  // Check KMAC operations.
+  uint32_t kmac_digest[kKmacDigestLength];
+  complete_kmac_operations(kmac_digest);
+  CHECK(kKmacDigestLength == ARRAYSIZE(kKmacDigest));
+  CHECK_ARRAYS_EQ(kmac_digest, kKmacDigest, ARRAYSIZE(kKmacDigest));
+
   // Check OTBN operations.
   hardened_bool_t result;
   CHECK_STATUS_OK(rsa_3072_verify_finalize(&rsa3072_encoded_message, &result));
