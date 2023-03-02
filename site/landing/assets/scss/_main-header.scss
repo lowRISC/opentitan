@@ -28,14 +28,16 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
+}
 
-  &:after {
+/* Desktop specific styling */
+@media (min-width: $max-width-s) {
+  .main-header:after {
     content: "";
     display: block;
     flex-grow: 9999;
     height: 1em;
     order: 2;
-    flex-basis: calc((40em - 100%) * 999);
   }
 }
 
@@ -46,7 +48,6 @@
   min-width: 12.5em;
   order: 1;
   flex-grow: 1;
-  flex-basis: calc((40em - 100%) * 999);
 
   svg {
     width: 12.5em;
@@ -64,6 +65,65 @@
   }
 }
 
+/* Mobile specific styling */
+@media (max-width: $max-width-s) {
+  /* Place the theme toggle after the logo */
+  .main-header {
+    .user-toggle {
+      order: 2;
+    }
+  }
+
+  /* Hide the checkbox and only show its SVG label */
+  .main-nav-toggle {
+    display: none;
+  }
+
+  .main-nav-toggle-label {
+    display: block;
+    width: 2em;
+    height: 1.6em;
+    cursor: pointer;
+  }
+
+  /* Hide nav when closed */
+  .main-nav-toggle:not(:checked) ~ .main-nav {
+    display: none;
+  }
+
+  .main-nav {
+    /* Move margin from below to above the nav */
+    margin-bottom: -3em;
+    margin-top: 3em;
+
+    &__list {
+      flex-direction: column;
+      align-items: center;
+      font-size: 1.5rem;
+      gap: 0;
+    }
+  }
+}
+/* Desktop specific styling */
+@media (min-width: $max-width-s) {
+  /* Hide hamburger nav toggle on desktop */
+  .main-nav-toggle {
+    display: none;
+  }
+
+  .main-header {
+    .user-toggle {
+      order: 4;
+    }
+  }
+
+  .main-nav {
+    &__list {
+      gap: calc(0.25em + 1.56vw);
+    }
+  }
+}
+
 .main-nav {
   order: 3;
   flex-grow: 1;
@@ -75,10 +135,6 @@
   }
 
   &__item {
-    & + & {
-      margin-left: calc(0.25em + 1.56vw);
-    }
-
     a {
       color: $white;
       color: var(--text-white);

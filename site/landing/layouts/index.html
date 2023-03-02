@@ -35,6 +35,15 @@
       </a>
     </h1>
 
+    <input id="main-nav-toggle" class="main-nav-toggle" type="checkbox">
+    <label class="main-nav-toggle-label" for="main-nav-toggle">
+      <svg viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg" fill="white">
+          <rect width="20" height="2" y="1"></rect>
+          <rect width="20" height="2" y="7"></rect>
+          <rect width="20" height="2" y="13"></rect>
+      </svg>
+    </label>
+
     <nav id="main-nav" class="main-nav" aria-label="Main">
       <ul id="menu" class="main-nav__list">
         <li class="main-nav__item">
@@ -49,17 +58,18 @@
         <li class="main-nav__item">
           <a href="{{ .Site.Params.one_year_url }}">Blog</a>
         </li>
-        <li class="main-nav__item user-toggle">
-          <button class="[ toggle-button ] [ js-mode-toggle ]" aria-label="Switch light and dark theme">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path fill="currentColor"
-                d="M12 2a10 10 0 01.3 20H12a10 10 0 110-20zm0 2a8 8 0 100 16v-3a5 5 0 010-10V4zm0 4v8a4 4 0 100-8z"
-                fill-rule="evenodd" />
-            </svg>
-          </button>
-        </li>
       </ul>
     </nav>
+
+    <div class="user-toggle">
+      <button class="[ toggle-button ] [ js-mode-toggle ]" aria-label="Switch light and dark theme">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path fill="currentColor"
+            d="M12 2a10 10 0 01.3 20H12a10 10 0 110-20zm0 2a8 8 0 100 16v-3a5 5 0 010-10V4zm0 4v8a4 4 0 100-8z"
+            fill-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
   </header>
 
   <main id="main" role="main">
