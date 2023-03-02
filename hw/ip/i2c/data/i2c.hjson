@@ -114,7 +114,7 @@
   registers: [
     // CTRL register
     { name: "CTRL"
-      desc: "I2C control register (Functions TBD)"
+      desc: "I2C Control Register"
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
@@ -145,7 +145,7 @@
       ]
     }
     { name:     "STATUS"
-      desc:     "I2C live status register"
+      desc:     "I2C Live Status Register"
       swaccess: "ro"
       hwaccess: "hwo"
       hwext:    "true"
@@ -201,7 +201,7 @@
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     }
     { name: "RDATA"
-      desc: "I2C read data"
+      desc: "I2C Read Data"
       swaccess: "ro"
       hwaccess: "hrw"
       hwext: "true"
@@ -351,7 +351,7 @@
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     }
     { name: "OVRD"
-      desc: "I2C override control register"
+      desc: "I2C Override Control Register"
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
