@@ -111,7 +111,7 @@ The following diagram shows consecutive entries inserted into ACQ FIFO during a 
 
 If the transaction is a read operation (R/W bit = 1), the target pulls bytes out of TX FIFO and transmits them to the bus until the host signals the end of the transfer by sending a NACK signal.
 If TX FIFO holds no data, or if the ACQ FIFO contains more than 1 entry, the target will hold SCL low to stretch the clock and give software time to write data bytes into TX FIFO or handle the available command.
-See (#stretching-during-read) for more details.
+See [stretching during read](#stretching-during-read) for more details.
 TX FIFO input corresponds to [`TXDATA`](../data/i2c.hjson#txdata).
 Typically, a NACK signal is followed by a STOP or repeated START signal and the IP will raise an exception if the host sends a STOP signal after an ACK.
 An ACK/NACK signal is inserted into the ACQ FIFO as the first bit (bit 0), in the same entry with a STOP or repeated START signal.
