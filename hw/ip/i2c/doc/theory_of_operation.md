@@ -33,7 +33,7 @@ This arrangement is necessary for FPGA builds.
 The I2C hardware interface consists of two external pins, SCL and SDA, whose behavior is described in the [I2C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
 These pins are typically controlled by an internal state machine.
 However, there is a simpler "override" mode, by which these pins can be directly manipulated by software.
-This override mode is useful for troubleshooting or error-recovery.
+This override mode is useful for both troubleshooting and error recovery.
 
 To enter override mode, the register field [`OVRD.TXOVRDEN`](../data/i2c.hjson#ovrd) is asserted by software.
 In this state the output drivers `scl_tx_o` and `sda_tx_o` are controlled directly by the register fields [`OVRD.SCLVAL`](../data/i2c.hjson#ovrd) and [`OVRD.SDAVAL`](../data/i2c.hjson#ovrd).
@@ -50,39 +50,40 @@ This adds a one cycle module clock delay to both signals.
 If the module clock is sufficiently faster than I2C line speeds (for example 20MHz), this is not an issue.
 However if the line speeds and the module clock speeds become very close (2x), the 1 cycle delay may have an impact, as the internal state machine may mistakenly think it has sampled an SDA that has not yet been updated.
 
-It it thus recommended to run clock ratios such that the internal module clock is at least 5x-10x the line speeds.
+Therefore, it is recommended that the internal module clock frequency is at least 5-10x the line speeds.
 
 ### Byte-Formatted Programming Mode
 
 This section applies to I2C in the host mode.
-The state machine-controlled mode allows for higher-speed operation with less frequent software interaction.
-In this mode, the I2C pins are controlled by the I2C state machine, which in turn is controlled by a sequence of formatting indicators.
-The formatting indicators indicate:
+The state-machine-controlled mode allows for higher-speed operation with less frequent software interaction.
+In this mode, the I2C pins are controlled by the state machine, which in turn is controlled by a sequence of formatting indicators.
+These indicators determine:
 - The sequence of bytes which should be transmitted on the SDA and SCL pins.
 - The periods between transmitted bytes when the state-machine should stop transmission and instead read back a fixed number of bytes.
 - Which bytes should be preceded by a START symbol.
-- Which bytes should be followed by a STOP symbol
+- Which bytes should be followed by a STOP symbol.
+
 The format indicator consists of 13-bits.
-That is of one single Format Byte (entered into the format FIFO through [`FDATA.FBYTE`](../data/i2c.hjson#fdata)), and five (5) 1-bit flags (entered into the format FIFO through registers [`FDATA.READ`](../data/i2c.hjson#fdata), [`FDATA.RCONT`](../data/i2c.hjson#fdata), [`FDATA.START`](../data/i2c.hjson#fdata), [`FDATA.STOP`](../data/i2c.hjson#fdata) and [`FDATA.NAKOK`](../data/i2c.hjson#fdata))
+That is of one single format byte (entered into the format FIFO through [`FDATA.FBYTE`](../data/i2c.hjson#fdata)), and five 1-bit flags (entered into the format FIFO through registers [`FDATA.READ`](../data/i2c.hjson#fdata), [`FDATA.RCONT`](../data/i2c.hjson#fdata), [`FDATA.START`](../data/i2c.hjson#fdata), [`FDATA.STOP`](../data/i2c.hjson#fdata) and [`FDATA.NAKOK`](../data/i2c.hjson#fdata))
 
 The I2C reads each format indicator from the head of FMT_FIFO, and processes them in turn.
-If none of the flags are set for the format indicator, the I2C FSM simply transmits the Format Byte onto the SCL and SDA pins according to the specification, waits for acknowledgement, and then proceeds to the next format indicator.
+If none of the flags are set for the format indicator, the I2C FSM simply transmits the format byte onto the SCL and SDA pins according to the specification, waits for acknowledgement, and then proceeds to the next format indicator.
 The format flags modulate the behavior as follows.
 - READ (corresponds to [`FDATA.READ`](../data/i2c.hjson#fdata)):
-Signifies the Format Byte ([`FDATA.FBYTE`](../data/i2c.hjson#fdata)) should be treated as an unsigned number, R, and prompts the state machine to read R bytes from the target device.
-Bytes read from the bus, are inserted into the RX FIFO where they can be accessed by software.
-A value of 0 is treated as a read of 256B.
-To read a larger byte stream, multiple 256B reads can be chained together using the RCONT flag.
+Signifies the format byte ([`FDATA.FBYTE`](../data/i2c.hjson#fdata)) should be treated as an unsigned number, R, and prompts the state machine to read R bytes from the target device.
+Bytes read from the bus are inserted into the RX FIFO where they can be accessed by software.
+A value of 0 is treated as a read of 256 bytes.
+To read a larger byte stream, multiple 256-byte reads can be chained together using the RCONT flag.
 - RCONT (corresponds to FIFO inputs [`FDATA.RCONT`](../data/i2c.hjson#fdata), only used with READ):
-    - If RCONT is set, the Format Byte represents part of a longer sequence of reads, allowing for reads to be chained indefinitely.
+    - If RCONT is set, the format byte represents part of a longer sequence of reads, allowing for reads to be chained indefinitely.
     - The RCONT flag indicates the the final byte returned with the current read should be responded to with an ACK, allowing the target to continue sending data.
-(Note that the first R-1 bytes read will still be acknowledged regardless of whether RCONT is asserted or not.)
+    (Note that the first R-1 bytes read will still be acknowledged regardless of whether RCONT is asserted or not.)
 - START (corresponds to [`FDATA.START`](../data/i2c.hjson#fdata), Ignored when used with READ):
-Issue a START condition before transmitting the Format Byte on the bus.
-    - This flag may also be used to issue a repeated start condition.
+Issue a START condition before transmitting the format byte on the bus.
+This flag may also be used to issue a repeated start condition.
 - STOP (corresponds to [`FDATA.STOP`](../data/i2c.hjson#fdata)):
 Issue a STOP signal after processing this current entry in the FMT FIFO.
-    - Note that this flag is not compatible with (READ & RCONT), and will cause bus conflicts.
+Note that this flag is not compatible with (READ & RCONT), and will cause bus conflicts.
 - NAKOK (corresponds to [`FDATA.NAKOK`](../data/i2c.hjson#fdata), Not compatible with READ):
 Typically every byte transmitted must also receive an ACK signal, and the IP will raise an exception if no ACK is received.
 However, there are some I2C commands which do not require an ACK.
@@ -131,9 +132,9 @@ The format flags indicate the following signals received from the host:
 
 ### Timing Control Registers
 
-For standard mode, fast-mode and fast-mode plus, the timing requirements for each transaction are detailed in Table 10 of the [I2C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
-In order to claim complete compatibility at each mode, the state machine timings need to be adapted to whether there are Standard-mode, Fast-mode and Fast-mode Plus targets on the bus.
-Furthermore, depending on the actual capacitance of the bus, even a bus with all Fast-mode Plus capable targets may have to operate at slower speeds than 1Mbaud.
+For Standard-mode, Fast-mode and Fast-mode Plus, the timing requirements for each transaction are detailed in Table 10 of the [I2C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
+To claim complete compatibility at each mode, the state machine timings need to be adapted to whether there are Standard-mode, Fast-mode and Fast-mode Plus targets on the bus.
+Furthermore, depending on the actual capacitance of the bus, even a bus with all Fast-mode Plus capable targets may have to operate at slower speeds than 1 Mbaud.
 For example, the host may need to run at lower frequencies, as discussed in Section 5.2 of the specification, but the computation of the nominal frequency will depend on timing specifications in Table 10, in this case particularly, the limits on t<sub>LOW</sub>, t<sub>HIGH</sub>, t<sub>r</sub>, and t<sub>f</sub>.
 Assuming no clock stretching, for a given set of these four parameters the baud rate is then given to be:
 $$ 1/f\_{SCL}=t\_{LOW}+t\_{HIGH}+t\_{r}+t\_{f}. $$
@@ -184,20 +185,20 @@ In all cases described below, a target begins to stretch the clock after the ACK
 In the first two scenarios, it is after the ACK bit sent by the target, in the last scenario, it is after the host's ACK bit.
 
 #### Stretching after address read
-    - When a target device receives a start, the address and R/W bit are written into the ACQ FIFO.
-    - If there is no space in the ACQ FIFO to receive such a write, the target stretches the clock after the ACK bit and waits for software to make space.
-    - The `acq_full` interrupt is generated to alert software to such a situation.
+- When a target device receives a start, the address and R/W bit are written into the ACQ FIFO.
+- If there is no space in the ACQ FIFO to receive such a write, the target stretches the clock after the ACK bit and waits for software to make space.
+- The `acq_full` interrupt is generated to alert software to such a situation.
 
 #### Stretching during write
-    - Similar to the scenario above, if the host tries to write a data byte into the ACQ FIFO when there is no available space, the clock is also stretched after the ACK bit.
-    - The `acq_full` interrupt is generated to alert software to such a situation.
+- Similar to the scenario above, if the host tries to write a data byte into the ACQ FIFO when there is no available space, the clock is also stretched after the ACK bit.
+- The `acq_full` interrupt is generated to alert software to such a situation.
 
 #### Stretching during read
-    - When a target device receives a start and read command, it may stretch the clock for either of the following two reasons.
-      - If there is no data available to be sent back (TX FIFO empty case), the target stretches the clock until data is made available by software.
-      - If there is more than 1 entry in the ACQ FIFO.
-        - Having more than 1 entry in the ACQ FIFO suggests there is potentially an unhandled condition (STOP / RESTART) or an unhandled command (START) that requires software intervention before the read can proceed.
-    - The `tx_stretch` interrupt is generated to alert software to such a situation.
+- When a target device receives a start and read command, it may stretch the clock for either of the following two reasons.
+  - If there is no data available to be sent back (TX FIFO empty case), the target stretches the clock until data is made available by software.
+  - If there is more than 1 entry in the ACQ FIFO.
+    - Having more than 1 entry in the ACQ FIFO suggests there is potentially an unhandled condition (STOP / RESTART) or an unhandled command (START) that requires software intervention before the read can proceed.
+- The `tx_stretch` interrupt is generated to alert software to such a situation.
 
 
 ### Interrupts
@@ -217,7 +218,7 @@ If the module transmits a byte, but receives no ACK signal, the `nak` interrupt 
 In cases where a byte is transmitted and no ACK is expected or required, that byte should be submitted with NAKOK flag also asserted.
 
 When the I2C module is in transmit mode, the `scl_interference` or `sda_interference` interrupts will be asserted if the IP identifies that some other device (host or target) on the bus is forcing either signal low and interfering with the transmission.
-If should be noted that the `scl_interference` interrupt is not raised in the case when the target device is stretching the clock.
+It should be noted that the `scl_interference` interrupt is not raised in the case when the target device is stretching the clock.
 (However, it may be raised if the target allows SCL to go high and then pulls SCL down before the end of the current clock cycle.)
 
 A target device should never assert 0 on the SDA lines, and in the absence of multi-host support, the `sda_interference` interrupt is raised whenever the host IP detects that another device is pulling SDA low.
@@ -269,7 +270,7 @@ In both cases, the `cmd_complete` interrupt is asserted, in the beginning of a r
 The interrupt `cmd_complete` is asserted whenever a RESTART or a STOP bit is observed by the target.
 
 The interrupt `tx_stretch` is asserted whenever target intends to transmit data but cannot.
-See
+See [stretching during read]({{< relref "#stretching-during-read" >}}).
 
 When a host receives enough data from a target, it usually signals the end of the transaction by sending a NACK followed by a STOP or a repeated START.
 In a case when a target receives a STOP without the prerequisite NACK, the interrupt `unexp_stop` is asserted.
@@ -285,7 +286,7 @@ Firmware can configure the timeout value via the register [`HOST_TIMEOUT_CTRL`](
 
 ### Implementation Details: Format Flag Parsing
 
-To illustrate the behavior induced by various flags added to the formatting queue, the following figure shows a simplified version of the I2C_Host state machine.
+To illustrate the behavior induced by various flags added to the formatting queue, the following figure shows a simplified version of the `I2C_Host` state machine.
 In this simplified view, many sequential states have been collapsed into four sub-sequences of states (shown in square brackets) or have their names abbreviated:
 - Issue start
 - Issue stop
@@ -299,7 +300,7 @@ However, all transitions which are dependent on formatting flags are shown expli
 
 ![](../doc/I2C_state_diagram.svg)
 
-Similarly, the figure below shows a simplified version of the I2C_Target state machine.
+Similarly, the figure below shows a simplified version of the `I2C_Target` state machine.
 
 ![](../doc/I2C_state_diagram_target.svg)
 
