@@ -62,6 +62,19 @@
       ]
     },
     {
+      "name": "PINMUX_TAP_LC",
+      "pins": [
+        {
+          "name": "TAP_STRAP0",
+          "level": true
+        },
+        {
+          "name": "TAP_STRAP1",
+          "level": false
+        }
+      ]
+    },
+    {
       "name": "RESET",
       "pins": [
         {
