@@ -130,6 +130,7 @@ module otbn_controller
   output logic [BaseWordsPerWLEN-1:0] ispr_base_wr_en_o,
   output logic [ExtWLEN-1:0]          ispr_bignum_wdata_intg_o,
   output logic                        ispr_bignum_wr_en_o,
+  output logic [NFlagGroups-1:0]      ispr_flags_wr_o,
   output logic                        ispr_wr_commit_o,
   input  logic [ExtWLEN-1:0]          ispr_rdata_intg_i,
   output logic                        ispr_rd_en_o,
@@ -1410,6 +1411,8 @@ module otbn_controller
 
   assign ispr_wr_insn = insn_dec_shared_i.ispr_wr_insn | insn_dec_shared_i.ispr_rs_insn;
   assign ispr_rd_insn = insn_dec_shared_i.ispr_rd_insn | insn_dec_shared_i.ispr_rs_insn;
+
+  assign ispr_flags_wr_o = insn_dec_shared_i.ispr_flags_wr;
 
   // Write to RND_PREFETCH must not produce ISR write
   assign ispr_wr_base_insn =

@@ -172,6 +172,7 @@ module otbn_decoder
   logic ispr_rd_insn;
   logic ispr_wr_insn;
   logic ispr_rs_insn;
+  logic [NFlagGroups-1:0] ispr_flags_wr;
 
   // Reduced main ALU immediate MUX for Operand B
   logic [31:0] imm_b_base;
@@ -262,7 +263,8 @@ module otbn_decoder
     loop_insn:     loop_insn,
     ispr_rd_insn:  ispr_rd_insn,
     ispr_wr_insn:  ispr_wr_insn,
-    ispr_rs_insn:  ispr_rs_insn
+    ispr_rs_insn:  ispr_rs_insn,
+    ispr_flags_wr: ispr_flags_wr
   };
 
   /////////////
@@ -303,6 +305,7 @@ module otbn_decoder
     ispr_rd_insn           = 1'b0;
     ispr_wr_insn           = 1'b0;
     ispr_rs_insn           = 1'b0;
+    ispr_flags_wr          = '0;
 
     sel_insn_bignum        = 1'b0;
 
@@ -464,14 +467,18 @@ module otbn_decoder
             // No read if destination is x0 unless read is to flags CSR. Both flag groups are in
             // a single ISPR so to write one group the other must be read to write it back
             // unchanged.
-            ispr_rd_insn = (insn_rd != 5'b0)            |
-                           (imm_b_base[11:0] == CsrFg0) |
-                           (imm_b_base[11:0] == CsrFg1);
-            ispr_wr_insn = 1'b1;
+            ispr_rd_insn  = (insn_rd != 5'b0)            |
+                            (imm_b_base[11:0] == CsrFg0) |
+                            (imm_b_base[11:0] == CsrFg1);
+            ispr_wr_insn  = 1'b1;
+            ispr_flags_wr = {(imm_b_base[11:0] == CsrFg1), (imm_b_base[11:0] == CsrFg0)} |
+                            {NFlagGroups{imm_b_base[11:0] == CsrFlags}};
           end else if (insn[14:12] == 3'b010) begin
             // Read and set if source register isn't x0, otherwise read only
             if (insn_rs1 != 5'b0) begin
-              ispr_rs_insn = 1'b1;
+              ispr_rs_insn  = 1'b1;
+              ispr_flags_wr = {(imm_b_base[11:0] == CsrFg1), (imm_b_base[11:0] == CsrFg0)} |
+                              {NFlagGroups{imm_b_base[11:0] == CsrFlags}};
             end else begin
               ispr_rd_insn = 1'b1;
             end
