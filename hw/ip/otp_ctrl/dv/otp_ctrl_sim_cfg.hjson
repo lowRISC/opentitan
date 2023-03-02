@@ -66,7 +66,7 @@
   overrides: [
     {
       name: default_vcs_cov_cfg_file
-      value: "-cm_hier {proj_root}/hw/ip/otp_ctrl/dv/cov/otp_ctrl_cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg"
+      value: "-cm_hier {proj_root}/hw/ip/otp_ctrl/dv/cov/otp_ctrl_cover.cfg+{dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg"
     }
   ]
 
