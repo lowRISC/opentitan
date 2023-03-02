@@ -53,3 +53,10 @@ cc_library(
         "//sw/device/lib/ujson",
     ],
 )
+
+cc_library(
+    name = "spi_passthru",
+    srcs = ["spi_passthru.c"],
+    hdrs = ["spi_passthru.h"],
+    deps = ["//sw/device/lib/ujson"],
+)

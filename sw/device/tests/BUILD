@@ -2189,3 +2189,32 @@ opentitan_functest(
         "//sw/device/tests/crypto:rsa_3072_verify_testvectors_hardcoded_header",
     ],
 )
+
+opentitan_functest(
+    name = "spi_passthru_test",
+    srcs = ["spi_passthru_test.c"],
+    cw310 = cw310_params(
+        # This test will need hyperdebug once we start using multi-lane
+        # SPI modes.
+        #interface = "hyper310",
+        #tags = ["manual"],
+        test_cmds = [
+            "--rom-kind=testrom",
+            "--bitstream=\"$(location {bitstream})\"",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+    ),
+    targets = [
+        "cw310_test_rom",
+    ],
+    test_harness = "//sw/host/tests/chip/spi_passthru",
+    deps = [
+        "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/json:spi_passthru",
+        "//sw/device/lib/testing/test_framework:ottf_flow_control",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+    ],
+)
