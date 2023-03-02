@@ -12,7 +12,7 @@
   transition: top .1s linear;
   text-decoration: none;
 
-  &:focus, 
+  &:focus,
   &:focus-visible {
     top: 0;
     color: $dark-purple;
