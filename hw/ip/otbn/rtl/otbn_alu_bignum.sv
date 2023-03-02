@@ -88,6 +88,7 @@ module otbn_alu_bignum
   input  logic [BaseWordsPerWLEN-1:0] ispr_base_wr_en_i,
   input  logic [ExtWLEN-1:0]          ispr_bignum_wdata_intg_i,
   input  logic                        ispr_bignum_wr_en_i,
+  input  logic [NFlagGroups-1:0]      ispr_flags_wr_i,
   input  logic                        ispr_wr_commit_i,
   input  logic                        ispr_init_i,
   output logic [ExtWLEN-1:0]          ispr_rdata_intg_o,
@@ -113,86 +114,206 @@ module otbn_alu_bignum
   output logic alu_predec_error_o,
   output logic ispr_predec_error_o
 );
+
+  logic [WLEN+1:0] adder_y_res;
+  logic [WLEN-1:0] logical_res;
+
   ///////////
   // ISPRs //
   ///////////
 
-  flags_t                              flags_q [NFlagGroups];
   flags_t                              flags_d [NFlagGroups];
+  flags_t                              flags_q [NFlagGroups];
+  logic   [NFlagGroups-1:0]            flags_q_en;
   logic   [NFlagGroups*FlagsWidth-1:0] flags_flattened;
-  logic   [NFlagGroups-1:0]            flags_en;
-  logic   [NFlagGroups-1:0]            is_operation_flag_group;
   flags_t                              selected_flags;
   flags_t                              adder_update_flags;
-  logic                                adder_update_flags_en, adder_update_flags_en_raw;
-  flags_t                              logic_update_flags;
-  logic                                logic_update_flags_en, logic_update_flags_en_raw;
-  flags_t                              mac_update_flags;
-  logic                                mac_update_flags_en;
-  logic                                ispr_update_flags_en;
+  logic                                adder_update_flags_en_raw;
+  flags_t                              logic_update_flags [NFlagGroups];
+  logic                                logic_update_flags_en_raw;
+  flags_t                              mac_update_flags [NFlagGroups];
+  logic [NFlagGroups-1:0]              mac_update_z_flag_en_blanked;
+  flags_t                              ispr_update_flags [NFlagGroups];
 
   logic [NIspr-1:0] expected_ispr_rd_en_onehot;
   logic [NIspr-1:0] expected_ispr_wr_en_onehot;
   logic             ispr_wr_en;
 
-  assign adder_update_flags_en = operation_i.alu_flag_en   &
-                                 operation_commit_i        &
-                                 adder_update_flags_en_raw;
+  logic [NFlagGroups-1:0] expected_flag_group_sel;
+  flags_t                 expected_flag_sel;
+  logic [NFlagGroups-1:0] expected_flags_keep;
+  logic [NFlagGroups-1:0] expected_flags_adder_update;
+  logic [NFlagGroups-1:0] expected_flags_logic_update;
+  logic [NFlagGroups-1:0] expected_flags_mac_update;
+  logic [NFlagGroups-1:0] expected_flags_ispr_wr;
 
-  assign logic_update_flags_en = operation_i.alu_flag_en   &
-                                 operation_commit_i        &
-                                 logic_update_flags_en_raw;
+  /////////////////////
+  // Flags Selection //
+  /////////////////////
 
-  assign mac_update_flags_en   = operation_i.mac_flag_en & operation_commit_i;
+  always_comb begin
+    expected_flag_group_sel = '0;
+    expected_flag_group_sel[operation_i.flag_group] = 1'b1;
+  end
+  assign expected_flag_sel.C = operation_i.sel_flag == FlagC;
+  assign expected_flag_sel.M = operation_i.sel_flag == FlagM;
+  assign expected_flag_sel.L = operation_i.sel_flag == FlagL;
+  assign expected_flag_sel.Z = operation_i.sel_flag == FlagZ;
 
-  assign ispr_update_flags_en  = ispr_base_wr_en_i[0]       &
-                                 ispr_wr_commit_i           &
-                                 (ispr_addr_i == IsprFlags);
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_onehot_mux #(
+    .Width(FlagsWidth),
+    .Inputs(NFlagGroups)
+  ) u_flags_q_mux (
+    .clk_i,
+    .rst_ni,
+    .in_i  (flags_q),
+    .sel_i (alu_predec_bignum_i.flag_group_sel),
+    .out_o (selected_flags)
+  );
 
-  `ASSERT(UpdateFlagsOnehot, $onehot0({ispr_init_i, adder_update_flags_en, logic_update_flags_en,
-                                       mac_update_flags_en, ispr_update_flags_en}))
+  prim_onehot_mux #(
+    .Width(1),
+    .Inputs(FlagsWidth)
+  ) u_flag_mux (
+    .clk_i,
+    .rst_ni,
+    .in_i  ('{selected_flags.C,
+              selected_flags.M,
+              selected_flags.L,
+              selected_flags.Z}),
+    .sel_i ({alu_predec_bignum_i.flag_sel.Z,
+             alu_predec_bignum_i.flag_sel.L,
+             alu_predec_bignum_i.flag_sel.M,
+             alu_predec_bignum_i.flag_sel.C}),
+    .out_o (selection_flag_o)
+  );
 
-  assign selected_flags = flags_q[operation_i.flag_group];
+  //////////////////
+  // Flags Update //
+  //////////////////
 
-  assign mac_update_flags = (selected_flags        & ~mac_operation_flags_en_i) |
-                            (mac_operation_flags_i &  mac_operation_flags_en_i);
+  always_comb begin
+    expected_flags_adder_update = '0;
+    expected_flags_logic_update = '0;
+    expected_flags_mac_update   = '0;
+
+    expected_flags_adder_update[operation_i.flag_group] = operation_i.alu_flag_en &
+                                                          adder_update_flags_en_raw;
+    expected_flags_logic_update[operation_i.flag_group] = operation_i.alu_flag_en &
+                                                          logic_update_flags_en_raw;
+    expected_flags_mac_update[operation_i.flag_group]   = operation_i.mac_flag_en;
+  end
+  assign expected_flags_ispr_wr = ispr_flags_wr_i;
+
+  assign expected_flags_keep = ~(expected_flags_adder_update |
+                                 expected_flags_logic_update |
+                                 expected_flags_mac_update |
+                                 expected_flags_ispr_wr);
+
+  // Adder operations update all flags.
+  assign adder_update_flags.C = (operation_i.op == AluOpBignumAdd ||
+                                 operation_i.op == AluOpBignumAddc) ?  adder_y_res[WLEN+1] :
+                                                                      ~adder_y_res[WLEN+1];
+  assign adder_update_flags.M = adder_y_res[WLEN];
+  assign adder_update_flags.L = adder_y_res[1];
+  assign adder_update_flags.Z = ~|adder_y_res[WLEN:1];
+
+  for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_update_flag_groups
+
+    // Logical operations only update M, L and Z; C must remain at its old value.
+    assign logic_update_flags[i_fg].C = flags_q[i_fg].C;
+    assign logic_update_flags[i_fg].M = logical_res[WLEN-1];
+    assign logic_update_flags[i_fg].L = logical_res[0];
+    assign logic_update_flags[i_fg].Z = ~|logical_res;
+
+    ///////////////
+    // MAC Flags //
+    ///////////////
+
+    // MAC operations don't update C.
+    assign mac_update_flags[i_fg].C = flags_q[i_fg].C;
+
+    // Tie off unused signals.
+    logic unused_mac_operation_flags;
+    assign unused_mac_operation_flags = mac_operation_flags_i.C ^ mac_operation_flags_en_i.C;
+
+    // MAC operations update M and L depending on the operation. The individual enable signals for
+    // M and L are generated from flopped instruction bits with minimal logic. They are not data
+    // dependent.
+    assign mac_update_flags[i_fg].M = mac_operation_flags_en_i.M ?
+                                      mac_operation_flags_i.M : flags_q[i_fg].M;
+    assign mac_update_flags[i_fg].L = mac_operation_flags_en_i.L ?
+                                      mac_operation_flags_i.L : flags_q[i_fg].L;
+
+    // MAC operations update Z depending on the operation and data. For BN.MULQACC.SO, already the
+    // enable signal is data dependent (it depends on the lower half of the accumulator result). As
+    // a result the enable signal might change back and forth during instruction execution which may
+    // lead to SCA leakage. There is nothing that can really be done to avoid this other than
+    // pipelining the flag computation which has a peformance impact.
+    //
+    // By blanking the enable signal for the other flag group, we can at least avoid leakage related
+    // to the other flag group, i.e., we give the programmer a way to control where the leakage
+    // happens.
+    // SEC_CM: DATA_REG_SW.SCA
+    prim_blanker #(.Width(1)) u_mac_z_flag_en_blanker (
+      .in_i (mac_operation_flags_en_i.Z),
+      .en_i (alu_predec_bignum_i.flags_mac_update[i_fg]),
+      .out_o(mac_update_z_flag_en_blanked[i_fg])
+    );
+    assign mac_update_flags[i_fg].Z = mac_update_z_flag_en_blanked[i_fg] ?
+                                      mac_operation_flags_i.Z : flags_q[i_fg].Z;
+
+    // For ISPR writes, we get the full write data from the base ALU and will select the relevant
+    // parts using the blankers and one-hot muxes below.
+    assign ispr_update_flags[i_fg] = ispr_base_wdata_i[i_fg*FlagsWidth+:FlagsWidth];
+  end
 
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_flag_groups
+    // Note: Also the ispr_init_i and sec_wipe_zero_i paths might need blanking. However,
+    // these two signals are only ever asserted during initialization of OTBN before running an
+    // actual program. During program execution, these should both be static and low. As a result,
+    // the AND gate on the flags_q_en just acts like a delay and won't glitch.
+    //
+    // The actual flag initialization triggred by ispr_init_i or sec_wipe_zero_i is achieved by
+    // selecting not selecting any inputs in the one-hot muxes below.
+    assign flags_q_en[i_fg] = (alu_predec_bignum_i.flags_keep[i_fg] | ~operation_commit_i) &
+                              ~(ispr_init_i | sec_wipe_zero_i);
+
+    // SEC_CM: DATA_REG_SW.SCA
+    prim_onehot_mux #(
+      .Width(FlagsWidth),
+      .Inputs(5)
+    ) u_flags_d_mux (
+      .clk_i,
+      .rst_ni,
+      .in_i  ('{ispr_update_flags[i_fg],
+                mac_update_flags[i_fg],
+                logic_update_flags[i_fg],
+                adder_update_flags,
+                flags_q[i_fg]}),
+      .sel_i ({flags_q_en[i_fg],
+               alu_predec_bignum_i.flags_adder_update[i_fg] & operation_commit_i,
+               alu_predec_bignum_i.flags_logic_update[i_fg] & operation_commit_i,
+               alu_predec_bignum_i.flags_mac_update[i_fg] & operation_commit_i,
+               alu_predec_bignum_i.flags_ispr_wr[i_fg] & operation_commit_i}),
+      .out_o (flags_d[i_fg])
+    );
+
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         flags_q[i_fg] <= '{Z : 1'b0, L : 1'b0, M : 1'b0, C : 1'b0};
-      end else if (flags_en[i_fg]) begin
+      end else begin
         flags_q[i_fg] <= flags_d[i_fg];
       end
     end
 
-    assign is_operation_flag_group[i_fg] = operation_i.flag_group == i_fg;
-
     assign flags_flattened[i_fg*FlagsWidth+:FlagsWidth] = flags_q[i_fg];
-
-    // Flag updates can come from the Y adder result, the logical operation result or from an ISPR
-    // write.
-    always_comb begin
-      flags_d[i_fg] = adder_update_flags;
-
-      unique case (1'b1)
-        ispr_init_i:           flags_d[i_fg] = '0;
-        adder_update_flags_en: flags_d[i_fg] = adder_update_flags;
-        logic_update_flags_en: flags_d[i_fg] = logic_update_flags;
-        mac_update_flags_en:   flags_d[i_fg] = mac_update_flags;
-        ispr_update_flags_en:  flags_d[i_fg] = ispr_base_wdata_i[i_fg*FlagsWidth+:FlagsWidth];
-        sec_wipe_zero_i:       flags_d[i_fg] = '0;
-        default: ;
-      endcase
-    end
-
-    assign flags_en[i_fg] = ispr_init_i | ispr_update_flags_en |
-      (adder_update_flags_en & is_operation_flag_group[i_fg]) |
-      (logic_update_flags_en & is_operation_flag_group[i_fg]) |
-      (mac_update_flags_en   & is_operation_flag_group[i_fg]) |
-      sec_wipe_zero_i;
   end
 
+  /////////
+  // MOD //
+  /////////
 
   logic [ExtWLEN-1:0]          mod_intg_q;
   logic [ExtWLEN-1:0]          mod_intg_d;
@@ -269,6 +390,10 @@ module otbn_alu_bignum
                                mod_ispr_wr_en[i_word] |
                                sec_wipe_mod_urnd_i;
   end
+
+  /////////
+  // ACC //
+  /////////
 
   assign ispr_acc_wr_en_o   =
     ((ispr_addr_i == IsprAcc) & ispr_bignum_wr_en_i & ispr_wr_commit_i) | ispr_init_i;
@@ -467,7 +592,6 @@ module otbn_alu_bignum
   logic [WLEN:0]   adder_y_op_a, adder_y_op_b;
   logic            adder_y_carry_in;
   logic            adder_y_op_b_invert;
-  logic [WLEN+1:0] adder_y_res;
   logic [WLEN-1:0] adder_y_op_a_blanked;
   logic [WLEN-1:0] adder_y_op_shifter_res_blanked;
 
@@ -518,13 +642,6 @@ module otbn_alu_bignum
                          adder_y_carry_in};
 
   assign adder_y_res = adder_y_op_a + adder_y_op_b;
-
-  assign adder_update_flags.C = (operation_i.op == AluOpBignumAdd ||
-                                 operation_i.op == AluOpBignumAddc) ?  adder_y_res[WLEN+1] :
-                                                                      ~adder_y_res[WLEN+1];
-  assign adder_update_flags.M = adder_y_res[WLEN];
-  assign adder_update_flags.L = adder_y_res[1];
-  assign adder_update_flags.Z = ~|adder_y_res[WLEN:1];
 
   // The LSb of the adder results are unused.
   logic unused_adder_x_res_lsb, unused_adder_y_res_lsb;
@@ -700,14 +817,20 @@ module otbn_alu_bignum
       expected_shift_mod_sel != alu_predec_bignum_i.shift_mod_sel,
       expected_logic_a_en != alu_predec_bignum_i.logic_a_en,
       expected_logic_shifter_en != alu_predec_bignum_i.logic_shifter_en,
-      expected_logic_res_sel != alu_predec_bignum_i.logic_res_sel};
+      expected_logic_res_sel != alu_predec_bignum_i.logic_res_sel,
+      expected_flag_group_sel != alu_predec_bignum_i.flag_group_sel,
+      expected_flag_sel != alu_predec_bignum_i.flag_sel,
+      expected_flags_keep != alu_predec_bignum_i.flags_keep,
+      expected_flags_adder_update != alu_predec_bignum_i.flags_adder_update,
+      expected_flags_logic_update != alu_predec_bignum_i.flags_logic_update,
+      expected_flags_mac_update != alu_predec_bignum_i.flags_mac_update,
+      expected_flags_ispr_wr != alu_predec_bignum_i.flags_ispr_wr};
 
   ////////////////////////
   // Logical operations //
   ////////////////////////
 
   logic [WLEN-1:0] logical_res_mux_in [4];
-  logic [WLEN-1:0] logical_res;
   logic [WLEN-1:0] logical_op_a_blanked;
   logic [WLEN-1:0] logical_op_shifter_res_blanked;
 
@@ -741,26 +864,6 @@ module otbn_alu_bignum
     .sel_i (alu_predec_bignum_i.logic_res_sel),
     .out_o (logical_res)
   );
-
-  // Logical operations only update M, L and Z; C must remain at its old value.
-  assign logic_update_flags.C = selected_flags.C;
-  assign logic_update_flags.M = logical_res[WLEN-1];
-  assign logic_update_flags.L = logical_res[0];
-  assign logic_update_flags.Z = ~|logical_res;
-
-  /////////////////////////////////
-  // Conditional Select Flag Mux //
-  /////////////////////////////////
-
-  always_comb begin
-    unique case (operation_i.sel_flag)
-      FlagC:   selection_flag_o = selected_flags.C;
-      FlagM:   selection_flag_o = selected_flags.M;
-      FlagL:   selection_flag_o = selected_flags.L;
-      // FlagZ case
-      default: selection_flag_o = selected_flags.Z;
-    endcase
-  end
 
   ////////////////////////
   // Output multiplexer //

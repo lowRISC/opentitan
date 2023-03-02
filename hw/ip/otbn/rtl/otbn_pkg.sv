@@ -384,16 +384,17 @@ package otbn_pkg;
   // - insn_dec_bignum_t - Anything that only applies to bignum side microarchitecture
 
   typedef struct packed {
-    insn_subset_e   subset;
-    logic           ecall_insn;
-    logic           ld_insn;
-    logic           st_insn;
-    logic           branch_insn;
-    logic           jump_insn;
-    logic           loop_insn;
-    logic           ispr_rd_insn;
-    logic           ispr_wr_insn;
-    logic           ispr_rs_insn;
+    insn_subset_e           subset;
+    logic                   ecall_insn;
+    logic                   ld_insn;
+    logic                   st_insn;
+    logic                   branch_insn;
+    logic                   jump_insn;
+    logic                   loop_insn;
+    logic                   ispr_rd_insn;
+    logic                   ispr_wr_insn;
+    logic                   ispr_rs_insn;
+    logic [NFlagGroups-1:0] ispr_flags_wr;
   } insn_dec_shared_t;
 
   typedef struct packed {
@@ -481,6 +482,13 @@ package otbn_pkg;
     logic                    logic_a_en;
     logic                    logic_shifter_en;
     logic [3:0]              logic_res_sel;
+    logic [NFlagGroups-1:0]  flag_group_sel;
+    flags_t                  flag_sel;
+    logic [NFlagGroups-1:0]  flags_keep;
+    logic [NFlagGroups-1:0]  flags_adder_update;
+    logic [NFlagGroups-1:0]  flags_logic_update;
+    logic [NFlagGroups-1:0]  flags_mac_update;
+    logic [NFlagGroups-1:0]  flags_ispr_wr;
   } alu_predec_bignum_t;
 
   typedef struct packed {

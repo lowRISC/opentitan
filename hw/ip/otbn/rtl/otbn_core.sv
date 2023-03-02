@@ -214,6 +214,7 @@ module otbn_core
   logic [BaseWordsPerWLEN-1:0] ispr_base_wr_en;
   logic [ExtWLEN-1:0]          ispr_bignum_wdata_intg;
   logic                        ispr_bignum_wr_en;
+  logic [NFlagGroups-1:0]      ispr_flags_wr;
   logic                        ispr_wr_commit;
   logic [ExtWLEN-1:0]          ispr_rdata_intg;
   logic                        ispr_rd_en;
@@ -516,6 +517,7 @@ module otbn_core
     .ispr_base_wr_en_o       (ispr_base_wr_en),
     .ispr_bignum_wdata_intg_o(ispr_bignum_wdata_intg),
     .ispr_bignum_wr_en_o     (ispr_bignum_wr_en),
+    .ispr_flags_wr_o         (ispr_flags_wr),
     .ispr_wr_commit_o        (ispr_wr_commit),
     .ispr_rdata_intg_i       (ispr_rdata_intg),
     .ispr_rd_en_o            (ispr_rd_en),
@@ -804,6 +806,7 @@ module otbn_core
     .ispr_base_wr_en_i       (ispr_base_wr_en),
     .ispr_bignum_wdata_intg_i(ispr_bignum_wdata_intg),
     .ispr_bignum_wr_en_i     (ispr_bignum_wr_en),
+    .ispr_flags_wr_i         (ispr_flags_wr),
     .ispr_wr_commit_i        (ispr_wr_commit),
     .ispr_init_i             (ispr_init),
     .ispr_rdata_intg_o       (ispr_rdata_intg),
