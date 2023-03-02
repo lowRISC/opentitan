@@ -4,6 +4,10 @@
 //
 #ifndef OPENTITAN_SW_HOST_OPENTITANLIB_BINDGEN_DIFS_H_
 #define OPENTITAN_SW_HOST_OPENTITANLIB_BINDGEN_DIFS_H_
+
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
+
+#include "lc_ctrl_regs.h"  // Generated.
+
 #endif  // OPENTITAN_SW_HOST_OPENTITANLIB_BINDGEN_DIFS_H_

@@ -35,6 +35,9 @@ rust_bindgen_library(
     name = "dif",
     bindgen_flags = [
         "--allowlist-type=dif_lc_ctrl_state",
+        "--allowlist-type=dif_lc_ctrl_token",
+        "--allowlist-var=LC_CTRL_.*_BIT",
+        "--allowlist-var=LC_CTRL_.*_REG_OFFSET",
         "--allowlist-type=dif_rstmgr_reset_info",
     ],
     cc_lib = ":difs",
