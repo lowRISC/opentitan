@@ -142,5 +142,21 @@ sw/vendor/rustup/rustup-init.sh -y \
     --default-toolchain "${RUST_VERSION}"
 export PATH=$HOME/.cargo/bin:$PATH
 
+# Install mdbook
+MDBOOK_VERSION="v0.4.27"
+MDBOOK_BASE_URL="https://github.com/rust-lang/mdBook/releases/download"
+MDBOOK_TARBALL="mdbook-${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+MDBOOK_URL="${MDBOOK_BASE_URL}/${MDBOOK_VERSION}/${MDBOOK_TARBALL}"
+MDBOOK_DOWNLOAD="$TMPDIR/mdbook.tar.gz"
+
+curl -f -Ls -o "$MDBOOK_DOWNLOAD" "${MDBOOK_URL}" || {
+    error "Failed to download verible from ${MDBOOK_URL}"
+}
+
+sudo mkdir -p /tools/mdbook
+sudo chmod 777 /tools/mdbook
+tar -C /tools/mdbook -xf "$MDBOOK_DOWNLOAD"
+export PATH=/tools/mdbook:$PATH
+
 # Propagate PATH changes to all subsequent steps of the job
 echo "##vso[task.setvariable variable=PATH]$PATH"
