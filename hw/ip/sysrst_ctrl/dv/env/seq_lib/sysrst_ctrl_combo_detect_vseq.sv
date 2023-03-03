@@ -238,6 +238,14 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       csr_rd(ral.combo_intr_status, rdata);
       `DV_CHECK_EQ(rdata, intr_actions)
 
+      // If intr_actions is set then check if there is a transition
+      // on wkup_req_o signal
+      if (intr_actions) begin
+        `DV_CHECK_EQ(cfg.vif.wkup_req, 1);
+      end else begin
+        `DV_CHECK_EQ(cfg.vif.wkup_req, 0);
+      end
+
       if (intr_actions) begin
         check_interrupts(.interrupts(1 << IntrSysrstCtrl), .check_set(1));
 
@@ -263,8 +271,19 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
             cfg.vif.ac_present,
             intr_actions);
         end
+        // Check wkup_status register
+        csr_rd(ral.wkup_status, rdata);
+        if(!get_field_val(ral.wkup_status.wakeup_sts, rdata)) begin
+          `uvm_error(`gfn, "wkup_status.wakeup_sts set to 0")
+        end
+        // Write to clear wkup_req status, register is of type rw1c
+        csr_wr(ral.wkup_status, uvm_reg_data_t'('d1));
+        cfg.clk_aon_rst_vif.wait_clks(5);
+        // Check if status bit is cleared
+        csr_rd_check(ral.wkup_status, .compare_value(0));
       end else begin
         check_interrupts(.interrupts(1 << IntrSysrstCtrl), .check_set(0));
+        csr_rd_check(ral.wkup_status, .compare_value(0));
       end
 
       // If bat_disable trigger action is set then check if there is a transition
