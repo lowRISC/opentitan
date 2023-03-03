@@ -12,6 +12,86 @@
 #include "sw/device/lib/dif/dif_usbdev.h"
 #include "usb_testutils_diags.h"
 
+// Result codes to rx/tx callback handlers
+typedef enum {
+  /**
+   * Successful completion.
+   */
+  kUsbTestutilsXfrResultOk = 0u,
+  /**
+   * Failed to transfer because of internal error,
+   * eg. buffer exhaustion.
+   */
+  kUsbTestutilsXfrResultFailed = 1u,
+  /**
+   * Link reset interrupted transfer.
+   */
+  kUsbTestutilsXfrResultLinkReset = 2u,
+  /**
+   * Canceled by suspend, endpoint removal or finalization.
+   */
+  kUsbTestutilsXfrResultCanceled = 3u,
+} usb_testutils_xfr_result_t;
+
+// Flags affecting the transfer of larger data buffers
+typedef enum {
+  kUsbTestutilsXfrMaxPacketMask = 0x7fu,  // Max packet size [0,0x40U]
+  /**
+   * Explicitly specify the maximum packet size; otherwise the device default
+   * of USBDEV_MAX_PACKET_SIZE shall be assumed.
+   */
+  kUsbTestutilsXfrMaxPacketSupplied = 0x100u,
+  /**
+   * Employ double-buffering to minimize the response time to notification of
+   * each packet transmission. This does require that two device packet buffers
+   * be available for use, but it increases the transfer rate.
+   */
+  kUsbTestutilsXfrDoubleBuffered = 0x200u,
+  /**
+   * Emit/Expect Zero Length Packet as termination of data stage in the event
+   * that the final packet of the transfer is maximum length
+   */
+  kUsbTestutilsXfrEmployZLP = 0x400u,
+} usb_testutils_xfr_flags_t;
+
+// In-progress larger buffer transfer to/from host
+typedef struct usb_testutils_transfer {
+  /**
+   * Start of buffer for transfer
+   */
+  const uint8_t *buffer;
+  /**
+   * Total number of bytes to be transferred to/from buffer
+   */
+  uint32_t length;
+  /**
+   * Byte offset of the _next_ packet to be transferred
+   */
+  uint32_t offset;
+  /**
+   * Flags modifying the transfer
+   */
+  usb_testutils_xfr_flags_t flags;
+  /**
+   * Indicates that the last packet of the transfer has been reached;
+   * if 'next_valid' is true, then 'next_part' holds the last packet, already
+   * prepared for sending; if next_valid is false, then the last packet has
+   * already been supplied to usbdev and we're just awaiting the 'pkt_sent'
+   * interrupt.
+   */
+  bool last;
+  /**
+   * The next part has been prepared and is ready to send to usbdev
+   */
+  bool next_valid;
+  /**
+   * When sending IN data to the host, we may employ double-buffering and keep
+   * an additional buffer ready to be sent as soon as we're notified of the
+   * transfer of its predecessor
+   */
+  dif_usbdev_buffer_t next_part;
+} usb_testutils_transfer_t;
+
 typedef struct usb_testutils_ctx usb_testutils_ctx_t;
 
 struct usb_testutils_ctx {
@@ -38,7 +118,7 @@ struct usb_testutils_ctx {
     /**
      * Callback for transmission of IN packet
      */
-    void (*tx_done_callback)(void *);
+    void (*tx_done_callback)(void *, usb_testutils_xfr_result_t);
     /**
      * Callback for periodically flushing IN data to host
      */
@@ -47,6 +127,10 @@ struct usb_testutils_ctx {
      * Callback for link reset
      */
     void (*reset)(void *);
+    /**
+     * Current in-progress transfer, if any
+     */
+    usb_testutils_transfer_t transfer;
   } in[USBDEV_NUM_ENDPOINTS];
 
   /**
@@ -91,22 +175,22 @@ typedef enum usb_testutils_out_transfer_mode {
 /**
  * Call to set up IN endpoint.
  *
- * @param ctx usbdev context pointer
+ * @param ctx usb test utils context pointer
  * @param ep endpoint number
  * @param ep_ctx context pointer for callee
  * @param tx_done(void *ep_ctx) callback once send has been Acked
  * @param flush(void *ep_ctx) called every 16ms based USB host timebase
  * @param reset(void *ep_ctx) called when an USB link reset is detected
  */
-void usb_testutils_in_endpoint_setup(usb_testutils_ctx_t *ctx, uint8_t ep,
-                                     void *ep_ctx, void (*tx_done)(void *),
-                                     void (*flush)(void *),
-                                     void (*reset)(void *));
+void usb_testutils_in_endpoint_setup(
+    usb_testutils_ctx_t *ctx, uint8_t ep, void *ep_ctx,
+    void (*tx_done)(void *, usb_testutils_xfr_result_t), void (*flush)(void *),
+    void (*reset)(void *));
 
 /**
  * Call to set up OUT endpoint.
  *
- * @param ctx usbdev context pointer
+ * @param ctx usb test utils context pointer
  * @param ep endpoint number
  * @param out_mode the transfer mode for OUT transactions
  * @param ep_ctx context pointer for callee
@@ -123,7 +207,7 @@ void usb_testutils_out_endpoint_setup(
 /**
  * Call to set up a pair of IN and OUT endpoints.
  *
- * @param ctx usbdev context pointer
+ * @param ctx usb test utils context pointer
  * @param ep endpoint number
  * @param out_mode the transfer mode for OUT transactions
  * @param ep_ctx context pointer for callee
@@ -133,18 +217,17 @@ void usb_testutils_out_endpoint_setup(
  * @param flush(void *ep_ctx) called every 16ms based USB host timebase
  * @param reset(void *ep_ctx) called when an USB link reset is detected
  */
-void usb_testutils_endpoint_setup(usb_testutils_ctx_t *ctx, uint8_t ep,
-                                  usb_testutils_out_transfer_mode_t out_mode,
-                                  void *ep_ctx, void (*tx_done)(void *),
-                                  void (*rx)(void *,
-                                             dif_usbdev_rx_packet_info_t,
-                                             dif_usbdev_buffer_t),
-                                  void (*flush)(void *), void (*reset)(void *));
+void usb_testutils_endpoint_setup(
+    usb_testutils_ctx_t *ctx, uint8_t ep,
+    usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
+    void (*tx_done)(void *, usb_testutils_xfr_result_t),
+    void (*rx)(void *, dif_usbdev_rx_packet_info_t, dif_usbdev_buffer_t),
+    void (*flush)(void *), void (*reset)(void *));
 
 /**
  * Remove an IN endpoint.
  *
- * @param ctx usbdev context pointer
+ * @param ctx usb test utils context pointer
  * @param ep endpoint number
  */
 void usb_testutils_in_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
@@ -152,7 +235,7 @@ void usb_testutils_in_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
 /**
  * Remove an OUT endpoint.
  *
- * @param ctx usbdev context pointer
+ * @param ctx usb test utils context pointer
  * @param ep endpoint number
  */
 void usb_testutils_out_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
@@ -160,7 +243,7 @@ void usb_testutils_out_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
 /**
  * Remove a pair of IN and OUT endpoints
  *
- * @param ctx usbdev context pointer
+ * @param ctx usb test utils context pointer
  * @param ep endpoint number
  */
 void usb_testutils_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
@@ -169,7 +252,7 @@ void usb_testutils_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
  * Returns an indication of whether an endpoint is currently halted because
  * of the occurrence of an error.
  *
- * @param ctx usbdev context pointer
+ * @param ctx usb test utils context pointer
  * @param ep endpoint number
  * @return true iff the endpoint is halted as a result of an error condition
  */
@@ -182,7 +265,7 @@ inline bool usb_testutils_endpoint_halted(usb_testutils_ctx_t *ctx,
  * Does not connect the device, since the default endpoint is not yet enabled.
  * See usb_testutils_connect().
  *
- * @param ctx uninitialized usbdev context pointer
+ * @param ctx uninitialized usb test utils context pointer
  * @param pinflip boolean to indicate if PHY should be configured for D+/D- flip
  * @param en_diff_rcvr boolean to indicate if PHY should enable an external
  *                     differential receiver, activating the single-ended D
@@ -194,16 +277,40 @@ void usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
                         bool en_diff_rcvr, bool tx_use_d_se0);
 
 /**
+ * Send a larger data transfer from the given endpoint
+ *
+ * The usb_testutils layer will, if necessary, break this transfer into multiple
+ * packet buffers to be transferred in turn across the USB. The caller shall be
+ * notified via the tx_done_callback handler of successful completion of the
+ * entire transfer, or failure, and the caller must guarantee the availability
+ * of the supplied data throughout the operation.
+ *
+ * @param ctx        usb test utils context pointer
+ * @param ep         endpoint number
+ * @param data       buffer of data to be transferred
+ * @param length     number of bytes to be transferred
+ * @param flags      flags modifying the transfer operation
+ * @return           true iff the data has been accepted for transmission
+ */
+bool usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,
+                                 const uint8_t *data, uint32_t length,
+                                 usb_testutils_xfr_flags_t flags);
+
+/**
  * Call regularly to poll the usbdev interface
  *
- * @param ctx usbdev context pointer
+ * @param ctx usb test utils context pointer
  */
 void usb_testutils_poll(usb_testutils_ctx_t *ctx);
 
 /**
  * Finalize the usbdev interface
  *
- * @param ctx initialized usbdev context pointer
+ * Removes all endpoint handlers and disconnects the device from the USB.
+ * This should be used only if the USB device is no longer required, or if it is
+ * required to be restarted with, for example, a different bus configuration.
+ *
+ * @param ctx initialized usb test utils context pointer
  */
 void usb_testutils_fin(usb_testutils_ctx_t *ctx);
 
