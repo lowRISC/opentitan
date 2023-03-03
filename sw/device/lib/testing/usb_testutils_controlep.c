@@ -123,14 +123,31 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
         CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
         return kUsbTestutilsCtWaitIn;
       } else if ((wValue & 0xff00) == 0x200) {
+        usb_testutils_xfr_flags_t flags = kUsbTestutilsXfrDoubleBuffered;
+
         // Configuration descriptor
         len = ctctx->cfg_dscr_len;
         if (wLength < len) {
           len = wLength;
+        } else if (wLength > len) {
+          // Since we're not sending as much as requested, we may need to use
+          // a Zero Length Packet to mark the end of the data stage
+          flags |= kUsbTestutilsXfrEmployZLP;
         }
-        CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, ctctx->cfg_dscr,
-                                             len, &bytes_written));
-        CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+
+        if (len >= USBDEV_MAX_PACKET_SIZE) {
+          CHECK_DIF_OK(
+              dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
+
+          if (!usb_testutils_transfer_send(ctx, 0U, ctctx->cfg_dscr, len,
+                                           flags)) {
+            return kUsbTestutilsCtError;
+          }
+        } else {
+          CHECK_DIF_OK(dif_usbdev_buffer_write(
+              ctx->dev, &buffer, ctctx->cfg_dscr, len, &bytes_written));
+          CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+        }
         return kUsbTestutilsCtWaitIn;
       }
       return kUsbTestutilsCtError;  // unknown
@@ -267,7 +284,7 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
   return kUsbTestutilsCtError;
 }
 
-static void ctrl_tx_done(void *ctctx_v) {
+static void ctrl_tx_done(void *ctctx_v, usb_testutils_xfr_result_t result) {
   usb_testutils_controlep_ctx_t *ctctx =
       (usb_testutils_controlep_ctx_t *)ctctx_v;
   usb_testutils_ctx_t *ctx = ctctx->ctx;
@@ -353,7 +370,7 @@ static void ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
       .number = 0,
       .direction = USBDEV_ENDPOINT_DIR_IN,
   };
-  // Enable responding with STALL. Will be cleared by the HW.
+  // Enable responding with STALL. Will be cleared by the HW upon next SETUP.
   CHECK_DIF_OK(
       dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleEnabled));
   endpoint.direction = USBDEV_ENDPOINT_DIR_OUT;

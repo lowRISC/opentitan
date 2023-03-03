@@ -36,13 +36,6 @@
 #define STREAMS_MAX 11U
 #endif
 
-// TODO - currently we are unable to send the configuration descriptor
-// if we try to describe more than two bidirectional endpoints
-#if STREAMS_MAX > 2U
-#undef STREAMS_MAX
-#define STREAMS_MAX 2U
-#endif
-
 // Number of streams to be tested
 #ifndef NUM_STREAMS
 #define NUM_STREAMS STREAMS_MAX
@@ -216,15 +209,14 @@ struct usbdev_stream_test_ctx {
 
 /**
  * Configuration values for USB.
- * TODO - dynamically construct a config descriptor appropriate to the test;
- *        this would avoid creating unusable ports on the host and also provide
- *        a little more testing
  */
 static const uint8_t config_descriptors[] = {
     USB_CFG_DSCR_HEAD(USB_CFG_DSCR_LEN + STREAMS_MAX * (USB_INTERFACE_DSCR_LEN +
                                                         2 * USB_EP_DSCR_LEN),
                       STREAMS_MAX),
 
+    // Up to 11 interfaces and STREAMS_MAX in the descriptor head specifies how
+    // many of the interfaces will be declared to the host
     VEND_INTERFACE_DSCR(0, 2, 0x50, 1),
     USB_BULK_EP_DSCR(0, 1U, USBDEV_MAX_PACKET_SIZE, 0),
     USB_BULK_EP_DSCR(1, 1U, USBDEV_MAX_PACKET_SIZE, 0),
@@ -232,6 +224,42 @@ static const uint8_t config_descriptors[] = {
     VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
     USB_BULK_EP_DSCR(0, 2U, USBDEV_MAX_PACKET_SIZE, 0),
     USB_BULK_EP_DSCR(1, 2U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(2, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 3U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 3U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(3, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 4U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 4U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(4, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 5U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 5U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(5, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 6U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 6U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(6, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 7U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 7U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(7, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 8U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 8U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(8, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 9U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 9U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(9, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 10U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 10U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(10, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 11U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 11U, USBDEV_MAX_PACKET_SIZE, 0),
 };
 
 /**
@@ -414,7 +442,7 @@ static void buffer_check(usbdev_stream_test_ctx_t *ctx, usbdev_stream_t *s,
 }
 
 // Callback for successful buffer transmission
-static void strm_tx_done(void *stream_v) {
+static void strm_tx_done(void *stream_v, usb_testutils_xfr_result_t result) {
   usbdev_stream_t *s = (usbdev_stream_t *)stream_v;
   usbdev_stream_test_ctx_t *ctx = s->ctx;
   usb_testutils_ctx_t *usbdev = ctx->usbdev;
