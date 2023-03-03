@@ -53,10 +53,12 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
   assign unused_key = muxed_addr_key[KeySize-1 -: UnusedWidth];
 
   // Galois Multiply portion
+  // Note: Degree of IPoly and width parameters must match (leading MSB of IPoly is dropped).
   if (SecScrambleEn) begin : gen_gf_mult
     prim_gf_mult # (
       .Width(DataWidth),
-      .StagesPerCycle(DataWidth / GfMultCycles)
+      .StagesPerCycle(DataWidth / GfMultCycles),
+      .IPoly(ScrambleIPoly)
     ) u_mult (
       .clk_i,
       .rst_ni,

@@ -11,17 +11,11 @@ localparam int unsigned FlashKeySize = flash_phy_pkg::KeySize;
 localparam int unsigned FlashNumRoundsHalf = crypto_dpi_prince_pkg::NumRoundsHalf;
 localparam int unsigned FlashAddrWidth = 16;
 
-localparam bit[FlashDataWidth-1:0] IPoly = FlashDataWidth'(1'b1) << 15 |
-                                           FlashDataWidth'(1'b1) << 9  |
-                                           FlashDataWidth'(1'b1) << 7  |
-                                           FlashDataWidth'(1'b1) << 4  |
-                                           FlashDataWidth'(1'b1) << 3  |
-                                           FlashDataWidth'(1'b1) << 0;
-
 function bit [FlashDataWidth-1:0] flash_gf_mult2(bit [FlashDataWidth-1:0] operand);
   bit [FlashDataWidth-1:0] mult_out;
 
-  mult_out = operand[FlashDataWidth-1] ? (operand << 1) ^ IPoly : (operand << 1);
+  mult_out = operand[FlashDataWidth-1] ? (operand << 1) ^
+    flash_phy_pkg::ScrambleIPoly : (operand << 1);
   return mult_out;
 endfunction
 
