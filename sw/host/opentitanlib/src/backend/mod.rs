@@ -9,6 +9,7 @@ use thiserror::Error;
 
 use crate::app::config::process_config_file;
 use crate::app::{TransportWrapper, TransportWrapperBuilder};
+use crate::transport::dediprog::Dediprog;
 use crate::transport::hyperdebug::{C2d2Flavor, CW310Flavor, StandardFlavor, Ti50Flavor};
 use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
@@ -94,6 +95,14 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
             cw310::create(args)?,
             Some(Path::new("/__builtin__/opentitan_cw310.json")),
         ),
+        "dediprog" => {
+            let dediprog: Box<dyn Transport> = Box::new(Dediprog::new(
+                args.usb_vid,
+                args.usb_pid,
+                args.usb_serial.as_deref(),
+            )?);
+            (dediprog, Some(Path::new("/__builtin__/dediprog.json")))
+        }
         _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
     };
     if args.conf.is_empty() {

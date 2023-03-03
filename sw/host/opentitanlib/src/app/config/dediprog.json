@@ -1,0 +1,32 @@
+{
+  "includes": ["/__builtin__/opentitan.json"],
+  "interface": "dediprog",
+  "pins": [
+    {
+      "name": "VCC",
+      "volts": 3.5,
+    },
+    {
+      "name": "RESET",
+      "alias_of": "IO3",
+    },
+    {
+      "name": "IOC0",
+      "alias_of": "IO1"
+    },
+    {
+      "name": "IOC1",
+      "alias_of": "IO2"
+    },
+    {
+      "name": "IOC2",
+      "alias_of": "IO4"
+    }
+  ],
+  "spi": [
+    {
+      "name": "BOOTSTRAP",
+      "alias_of": "0"
+    }
+  ]
+}

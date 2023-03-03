@@ -64,6 +64,8 @@ pub enum SpiError {
     MismatchedDataLength(usize, usize),
     #[error("Invalid transfer mode: {0}")]
     InvalidTransferMode(String),
+    #[error("Invalid SPI voltage: {0}")]
+    InvalidVoltage(Voltage),
 }
 impl_serializable_error!(SpiError);
 

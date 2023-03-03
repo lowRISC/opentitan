@@ -57,6 +57,7 @@ impl Default for SpiFlash {
 impl SpiFlash {
     // Well known SPI Flash opcodes.
     pub const READ: u8 = 0x03;
+    pub const FAST_READ: u8 = 0x0B;
     pub const PAGE_PROGRAM: u8 = 0x02;
     pub const SECTOR_ERASE: u8 = 0x20;
     pub const CHIP_ERASE: u8 = 0xc7;

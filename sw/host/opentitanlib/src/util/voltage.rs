@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 use std::num::ParseFloatError;
 use std::str::FromStr;
 
@@ -16,6 +17,12 @@ impl FromStr for Voltage {
         // Allow voltages to be specified as they are in schematics: "3v3", "1v8", etc.
         let voltage = s.to_lowercase().replace('v', ".");
         Ok(Voltage(f64::from_str(&voltage)?))
+    }
+}
+
+impl Display for Voltage {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }
 

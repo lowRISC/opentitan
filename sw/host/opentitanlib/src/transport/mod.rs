@@ -19,6 +19,7 @@ use crate::io::uart::Uart;
 
 pub mod common;
 pub mod cw310;
+pub mod dediprog;
 pub mod hyperdebug;
 pub mod ioexpander;
 pub mod proxy;
