@@ -128,8 +128,6 @@ jobs:
     displayName: Check trailing whitespace
   - bash: ci/scripts/build-docs.sh
     displayName: Render documentation
-  - bash: ci/scripts/build-site.sh
-    displayName: Render landing site
   - bash: ci/scripts/get-build-type.sh "$SYSTEM_PULLREQUEST_TARGETBRANCH" "$(Build.Reason)"
     displayName: Type of change
     # Check what kinds of changes the PR contains
@@ -674,11 +672,11 @@ jobs:
     inputs:
       command: build
       tags: gcr.io/active-premise-257318/builder
-      Dockerfile: ./site/docs/builder.Dockerfile
+      Dockerfile: ./util/site/site-builder/builder.Dockerfile
       buildContext: .
   - task: Docker@2
     displayName: Build Documentation Redirector Container
     inputs:
       command: build
-      Dockerfile: ./site/redirector/Dockerfile
-      buildContext: ./site/redirector
+      Dockerfile: ./site/redirector/landing/Dockerfile
+      buildContext: ./site/redirector/landing
