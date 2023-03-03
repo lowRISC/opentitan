@@ -16,35 +16,44 @@ open source contributors and should add little overhead.
 ## Motivation
 
 RFCs in OpenTitan are used for decisions that need consensus from the technical
-committee. A summary of the RFC process as documented [here][rfc-process]:
+committee. The RFC workflow before this proposal is roughly:
 
 1. Write up your RFC somewhere.
-2. Create an issue in the OpenTitan repo with a link to your RFC.
-3. Label the issue with `RFC:Proposal`, then `RFC:TC review` when ready.
-4. Pending RFCs will be discussed in the next technical committee meeting.
+2. Create an issue labelled `RFC:Proposal` linking to your RFC in the main repo.
+3. Receive and address comments from others.
+4. Apply the `RFC:TC review` label when the RFC is ready to be voted on.
+5. The technical committee will vote on pending RFCs at their next meeting.
 5. Approved RFCs have their label changed to `RFC:Approved`.
 6. Rejected RFCs have their label removed.
 
 Typically, authors write their RFCs in one of two places:
 
-* A Google Doc, accessible only to select people.
-* The GitHub issue itself as Markdown.
+* Google Docs.
+* The GitHub issue's body as Markdown.
 
-RFCs stored like this are not discoverable and not portable. In the case
-of Google Docs, they are not accessible to everybody, even within the
-opentitan.org domain. RFCs are reviewed in private by the technical committee
-and project director.
+The entry-point for finding RFCs stored like this is through the `RFC:Approved`
+label in GitHub issues. The OpenTitan repository gets many issues and has many
+labels to sort them. Discovering RFCs requires regularly checking the `RFC`
+labels or keeping up to date with OpenTitan's fast moving issues.
 
-This makes it difficult (or impossible) for contributors to find documentation
-of what decisions have been made and why. Adopting more open processes for
-project governance will help the OpenTitan project be an exemplary case for
-open hardware development.
+Allowing authors to choose where they store their RFC content makes it
+harder to reference them as documentation. It also means we can't manage them
+consistently: we have no public-by-default rule for Google Docs, leading to
+many RFCs restricted only to select people. Comments are left in both GitHub
+iAssue comments and Google Docs reviews.
+
+In summary, the motivation of this RFC is to have:
+
+1. a single store of RFC documents,
+2. where RFCs can easily be discovered,
+3. where RFC content can be enforced to be public,
+4. where RFC comments are given and addressed in a consistent workflow.
 
 ## Explanation
 
 RFCs can be very important documentation artefacts. They show exactly what
 decisions have been made and the factors used to come to those decisions. As an
-open source project, we can make this process and the aftefacts more open. This
+open source project, we can make this process and the artefacts more open. This
 RFC proposes applying our open source development model to the RFC process.
 
 We would do this by having RFCs:
@@ -77,12 +86,6 @@ Having RFCs as plain documentation lets us reference them when, for example:
 * Explaining why something was designed as it was in documentation.
 * Pointing to similar or conflicting RFCs to new proposals.
 
-### Private RFCs
-
-How and where private RFCs are stored is out of scope for this RFC, except to
-say that any redacted form of a private RFC that can be included must be. At the
-very least, private RFCs are still assigned the next RFC number when accepted.
-
 ## Drawbacks
 
 * Some RFCs have private reasoning which cannot be submitted to a public repo.
@@ -99,10 +102,6 @@ documentation. Matching the RFC process to how we already contribute code and
 documentation makes the process more accessible. Text files can be written to
 and read by anybody, including people outside the opentitan.org domain.
 
-Opening up the RFC process makes our project governance more transparent and
-brings us closer inline with other open source projects. It shows that we don't
-gatekeep the project to corporate contributors or other insiders.
-
 Making the existance of private RFCs known in the public repo prevents confusion
 from those without access. They are included in a redacted form to provide at
 least some context on what they relate to and why they are private. They are
@@ -111,17 +110,19 @@ public in the future.
 
 ### Alternative: Google Docs
 
-We could instead go all-in on Google Docs and keep RFC documents in one shared
-folder. They would be somewhat discoverable, but unlike any of our existing
-documentation. This would also keep them locked into a proprietary platform and
-inaccessible to contributors outside opentitan.org.
+We could instead go all-in on Google Docs and keep RFC documents in one
+shared folder. They would be discoverable here, but unlike any of our existing
+documentation. The RFC content would be stored in the Google Docs format and
+would need converting to be moved or read elsewhere.
 
 ### Alternative: GitHub issues
 
 We could instead require that all RFC text is stored in the GitHub issues
-themselves. This would make them accessible to everybody, but less discoverable
-and harder to use as documentation. Issues can be commented on, but not reviewed
-like pull requests can be.
+themselves. GitHub issues can only be read through the GitHub interface, though
+the content is in Markdown format and could be copied elsewhere. They would
+still only be discoverable through the RFC labels in GitHub issues. Comments on
+GitHub issues do not have the same reviewing features that pull request comments
+do.
 
 ### Alternative: RFCs as documentation files in the monorepo
 
@@ -163,6 +164,5 @@ aspects of a decision are considered.
 We could present the Markdown RFC documents in a nice book like we do with other
 documentation. The [Rust RFC book][rfc-book] makes for a good example.
 
-[rfc-process]: https://staging.opentitan.org/book/doc/project_governance/rfc_process.html
 [rfc-book]: https://rust-lang.github.io/rfcs/
 [rfc3]: https://www.rfc-editor.org/rfc/rfc3
