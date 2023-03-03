@@ -19,7 +19,7 @@ genrule(
 genrule(
     name = "full_version_file",
     outs = ["full_version.txt"],
-    cmd = """cp bazel-out/volatile-status.txt $@""",
+    cmd = """cp -f bazel-out/volatile-status.txt $@""",
     stamp = 1,  # this provides volatile-status.txt
 )
 
