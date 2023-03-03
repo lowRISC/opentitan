@@ -100,16 +100,16 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
       begin : ec_rst_posedge_check
         forever begin
           @(posedge cfg.vif.ec_rst_l_out);
-          wait(cfg.vif.ec_rst_l_out);
-          if(!disable_ec_rst_check)
+          wait (cfg.vif.ec_rst_l_out);
+          if (!disable_ec_rst_check)
             `DV_CHECK(ec_rst_l2h_expected == 1, "Unexpected L2H transition of ec_rst_l_o");
         end
       end : ec_rst_posedge_check
       begin : ec_rst_negedge_check
         forever begin
           @(negedge cfg.vif.ec_rst_l_out);
-          wait(!cfg.vif.ec_rst_l_out);
-          if(!disable_ec_rst_check)
+          wait (!cfg.vif.ec_rst_l_out);
+          if (!disable_ec_rst_check)
             `DV_CHECK(ec_rst_h2l_expected == 1, "Unexpected H2L transition of ec_rst_l_o");
         end
       end : ec_rst_negedge_check
@@ -118,15 +118,15 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
 
   task automatic set_ec_rst_transition_bits(ref int start_cycles[$], uint16_t pulse_width);
     int window = 4, pulse_width_l, start_cycle;
-    if( start_cycles.size() == 0) return;
+    if (start_cycles.size() == 0) return;
     start_cycles.sort();
     start_cycle = start_cycles[0];
     // Update the aggregate pulse width in case of multiple combo blocks asserting ec_rst_l_o
-    if(start_cycles.size() == 1) begin
+    if (start_cycles.size() == 1) begin
       pulse_width_l = pulse_width;
     end
     else begin
-      if((start_cycles[0] + pulse_width) > start_cycles[$]) begin
+      if ((start_cycles[0] + pulse_width) > start_cycles[$]) begin
         pulse_width_l = pulse_width + (start_cycles[$] - start_cycles[0]);
       end
     end
@@ -230,7 +230,7 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
     `DV_SPINWAIT(while (cfg.vif.bat_disable != 1) begin
                    cfg.clk_aon_rst_vif.wait_clks(1);
                    inactive_cycles++;
-                 end, "time out waiting for bat_disable == 1",
+                 end , "time out waiting for bat_disable == 1",
                  aon_period_ns * (exp_cycles + 20))
     `DV_CHECK(inactive_cycles inside {[exp_cycles - 4 : exp_cycles + 4]},
            $sformatf("bat_disable_check: inact(%0d) vs exp(%0d) +/-4", inactive_cycles, exp_cycles))
@@ -243,10 +243,23 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
     `DV_SPINWAIT(while (cfg.vif.rst_req != 1) begin
                    cfg.clk_aon_rst_vif.wait_clks(1);
                    inactive_cycles++;
-                 end, "time out waiting for rst_req == 1",
+                 end , "time out waiting for rst_req == 1",
                  aon_period_ns * (exp_cycles + 20))
     `DV_CHECK(inactive_cycles inside {[exp_cycles - 4 : exp_cycles + 4]},
             $sformatf("rst_req_check: inact(%0d) vs exp(%0d) +/-4", inactive_cycles, exp_cycles))
+  endtask
+
+  task monitor_wkup_req_L2H(int exp_cycles);
+    int inactive_cycles = 0;
+    int aon_period_ns = cfg.clk_aon_rst_vif.clk_period_ps / 1000;
+    // Check wkup_req is low for exp_cycles. After exp_cycles+20, below will time out and fail.
+    `DV_SPINWAIT(while (cfg.vif.wkup_req != 1) begin
+                   cfg.clk_aon_rst_vif.wait_clks(1);
+                   inactive_cycles++;
+                 end , "time out waiting for wkup_req == 1",
+                 aon_period_ns * (exp_cycles + 20))
+    `DV_CHECK(inactive_cycles inside {[exp_cycles - 4 : exp_cycles + 4]},
+            $sformatf("wkup_req_check: inact(%0d) vs exp(%0d) +/-4", inactive_cycles, exp_cycles))
   endtask
 
   // Sample covergroups with key selections and combo actions
@@ -327,7 +340,7 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
       // Wait for debounce + detect timer
       cfg.clk_aon_rst_vif.wait_clks(cycles_precondition);
       for (int i = 0; i < 4; i++) begin
-        if(cycles_precondition > (set_duration_precondition[i] + set_key_timer) &&
+        if (cycles_precondition > (set_duration_precondition[i] + set_key_timer) &&
               get_combo_precondition_trigger(i)) begin
           precondition_detected[i] = (trigger_combo[i] & trigger_combo_precondition[i]) == 0;
           precond_detected_for_one_block |= precondition_detected[i];
@@ -367,13 +380,15 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
 
         while (precondition_detected > 0 && (combo_detected != precondition_detected) &&
                num_trans_combo_detect>0)  begin : combo_action_check
-          bit bat_act_triggered, ec_act_triggered, rst_act_triggered;
+          bit bat_act_triggered, ec_act_triggered, rst_act_triggered, wkup_req_triggered;
           bit [3:0] intr_actions, intr_actions_pre_reset;
           int bat_act_occur_cyc = 0;
           int rst_req_act_occur_cyc = 0;
           int bat_act_occur_cycles[$];
           int rst_req_act_occur_cycles[$];
           int ec_rst_start_time[$];
+          int wkup_req_occur_cycle = 0;
+          int wkup_req_occur_cycles[$];
           int max_wait_till_next_iter = set_pulse_width;
 
           // Sample combo key inputs
@@ -440,9 +455,10 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
 
               `uvm_info(`gfn, $sformatf("valid combo input transition detected for channel :%0d",i),
                                          UVM_LOW)
-              intr_actions[i]    = com_out_intr;
+              intr_actions[i] = com_out_intr;
+              wkup_req_triggered |= com_out_intr;
               bat_act_triggered |= com_out_bat_disable;
-              ec_act_triggered  |= com_out_ec_rst;
+              ec_act_triggered |= com_out_ec_rst;
               rst_act_triggered |= com_out_rst_req;
               if (cfg.en_cov) begin
                 for (int i = 0; i < 4; i++) begin
@@ -461,6 +477,9 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
               if (com_out_rst_req) begin
                 rst_req_act_occur_cycles.push_back(key_detect_time);
               end
+              if (com_out_intr) begin
+                wkup_req_occur_cycles.push_back(key_detect_time);
+              end
               combo_detected[i]= com_out_ec_rst | com_out_bat_disable | com_out_intr |
                                  com_out_rst_req;
             end
@@ -468,18 +487,25 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
             `uvm_info(`gfn, $sformatf("rst_act_triggered = %0b", rst_act_triggered), UVM_MEDIUM)
           end
           // Update start cycle of output assertion
-          if( bat_act_occur_cycles.size() > 0 ) begin
+          if (bat_act_occur_cycles.size() > 0 ) begin
             bat_act_occur_cycles.sort();
-            if( bat_act_occur_cycles[0] > cycles)
+            if (bat_act_occur_cycles[0] > cycles)
               bat_act_occur_cyc = bat_act_occur_cycles[0] - cycles;
           end
-          if( rst_req_act_occur_cycles.size() > 0 ) begin
+          if (rst_req_act_occur_cycles.size() > 0 ) begin
             rst_req_act_occur_cycles.sort();
-            if( rst_req_act_occur_cycles[0] > cycles)
+            if (rst_req_act_occur_cycles[0] > cycles)
               rst_req_act_occur_cyc = rst_req_act_occur_cycles[0] - cycles;
+          end
+          if (wkup_req_occur_cycles.size() > 0 ) begin
+            wkup_req_occur_cycles.sort();
+            if (wkup_req_occur_cycles[0] > cycles)
+              wkup_req_occur_cycle = wkup_req_occur_cycles[0] - cycles;
           end
           `uvm_info(`gfn, $sformatf("bat_act_occur_cyc = %0d", bat_act_occur_cyc), UVM_MEDIUM)
           `uvm_info(`gfn, $sformatf("rst_req_act_occur_cyc = %0d", rst_req_act_occur_cyc),
+                                     UVM_MEDIUM)
+          `uvm_info(`gfn, $sformatf("wkup_req_occur_cycle = %0d", wkup_req_occur_cycle),
                                      UVM_MEDIUM)
           // Check for Combo output assertions
           fork
@@ -505,6 +531,14 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
                 `DV_CHECK_EQ(cfg.vif.rst_req, 0);
               end
             end : rst_req_check
+            begin : wkup_req_check
+              if (wkup_req_triggered) begin
+                if (wkup_req_occur_cycle > 0) monitor_wkup_req_L2H(wkup_req_occur_cycle);
+                else `DV_CHECK_EQ(cfg.vif.wkup_req, 1);
+              end else begin
+                `DV_CHECK_EQ(cfg.vif.wkup_req, 0);
+              end
+            end : wkup_req_check
           join
 
           // Check for interrupt status after output check
@@ -531,8 +565,18 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
                     ral.combo_intr_status.combo3_h2l, rdata), cfg.vif.key0_in, cfg.vif.key1_in,
                     cfg.vif.key2_in, cfg.vif.pwrb_in, cfg.vif.ac_present, intr_actions);
               end
+              // Check wkup_status register
+              csr_rd(ral.wkup_status, rdata);
+              if (!get_field_val(ral.wkup_status.wakeup_sts, rdata)) begin
+                `uvm_error(`gfn, "wkup_status.wakeup_sts set to 0")
+              end
+              // Write to clear wkup_req status, register is of type rw1c
+              csr_wr(ral.wkup_status, uvm_reg_data_t'('d1));
+              cfg.clk_aon_rst_vif.wait_clks(5);
+              csr_rd_check(ral.wkup_status, .compare_value(0));
             end else begin
               check_interrupts(.interrupts(1 << IntrSysrstCtrl), .check_set(0));
+              csr_rd_check(ral.wkup_status, .compare_value(0));
             end
           end : intr_check
 
