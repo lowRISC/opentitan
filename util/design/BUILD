@@ -8,6 +8,11 @@ load("@rules_python//python:defs.bzl", "py_binary")
 package(default_visibility = ["//visibility:public"])
 
 py_library(
+    name = "prince",
+    srcs = ["prince.py"],
+)
+
+py_library(
     name = "secded_gen",
     srcs = ["secded_gen.py"],
     data = ["//util/design/data:secded_cfg.hjson"],
