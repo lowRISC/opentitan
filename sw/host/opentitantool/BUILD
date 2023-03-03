@@ -32,9 +32,15 @@ rust_binary(
         "src/command/version.rs",
         "src/main.rs",
     ],
+    compile_data = [
+        "//util:full_version.txt",
+    ],
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
+    rustc_env = {
+        "VERSION_FILE": "$(location //util:full_version.txt)",
+    },
     # stamping is necessary because opentitantool builds version.rs that needs it
     stamp = 1,
     tags = [
