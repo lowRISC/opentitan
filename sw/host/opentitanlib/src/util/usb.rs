@@ -120,15 +120,21 @@ impl UsbBackend {
         self.serial_number.as_str()
     }
 
+    pub fn set_active_configuration(&mut self, config: u8) -> Result<()> {
+        self.handle
+            .set_active_configuration(config)
+            .context("USB error")
+    }
+
+    pub fn claim_interface(&mut self, iface: u8) -> Result<()> {
+        self.handle.claim_interface(iface).context("USB error")
+    }
+
     //
     // Enumerating interfaces of the USB device.  The methods below leak rusb data structures,
     // and may have to be refactored, when we convert UsbDevice into a trait, and want to
     // support mocked implementations.
     //
-
-    pub fn claim_interface(&mut self, iface: u8) -> Result<()> {
-        self.handle.claim_interface(iface).context("USB error")
-    }
 
     pub fn active_config_descriptor(&self) -> Result<rusb::ConfigDescriptor> {
         self.device.active_config_descriptor().context("USB error")
