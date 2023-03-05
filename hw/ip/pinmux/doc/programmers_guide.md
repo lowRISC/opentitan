@@ -111,7 +111,7 @@ The tables below summarize the pinout and pinmux connectivity for certain top-le
 
 ### Top Earlgrey
 
-{{#include ../../top_earlgrey/ip/pinmux/doc/autogen/targets.md}}
+{{#include ../../../top_earlgrey/ip/pinmux/doc/autogen/targets.md}}
 
 ## Device Interface Functions (DIFs)
 

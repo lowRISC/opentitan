@@ -43,7 +43,7 @@ Thus the security of both volatile (OTP controller) and non-volatile (OTP IP) st
 
 The OTP controller for OpenTitan contains the seven logical partitions shown below.
 
-{{#include doc/otp_ctrl_partitions.md}}
+{{#include otp_ctrl_partitions.md}}
 
 Generally speaking, the production life cycle of a device is split into 5 stages "Manufacturing" -> "Calibration and Testing" -> "Provisioning" -> "Mission" -> "RMA".
 OTP values are usually programmed during "Calibration and Testing", "Provisioning" and "RMA" stages, as explained below.
