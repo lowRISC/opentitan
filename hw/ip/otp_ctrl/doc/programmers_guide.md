@@ -163,14 +163,14 @@ Hence, a read access to those windows will take in the order of 10-20 cycles unt
 
 Sizes below are specified in multiples of 32bit words.
 
-{{#include doc/otp_ctrl_mmap.md}}
+{{#include otp_ctrl_mmap.md}}
 
 Note that since the content in the SECRET* partitions are scrambled using a 64bit PRESENT cipher, read and write access through the DAI needs to occur at a 64bit granularity.
 Also, all digests (no matter whether they are SW or HW digests) have an access granule of 64bit.
 
 The table below lists digests locations, and the corresponding locked partitions.
 
-{{#include doc/otp_ctrl_digests.md}}
+{{#include otp_ctrl_digests.md}}
 
 Write access to the affected partition will be locked if the digest has a nonzero value.
 
