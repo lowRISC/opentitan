@@ -17,6 +17,9 @@ pyyaml==6.0
 tabulate==0.8.10
 typer==0.6.1
 
+# Dependencies: gen-flash-img.py
+pyfinite==1.9.1
+
 # Dependencies: dv_sim
 enlighten==1.10.2
 mistletoe==0.9.0
