@@ -27,6 +27,13 @@ pub struct SpiSfdp {
         help = "Display raw SFDP bytes rather than the parsed struct."
     )]
     raw: Option<usize>,
+
+    #[structopt(
+        short,
+        long,
+        help = "Start reading SFDP at offset.  Only valid with --raw."
+    )]
+    offset: Option<u32>,
 }
 
 // Print a hexdump of a buffer to `writer`.
@@ -70,9 +77,16 @@ impl CommandDispatch for SpiSfdp {
         let spi = context.params.create(transport, "BOOTSTRAP")?;
 
         if let Some(length) = self.raw {
+            let offset = self.offset.unwrap_or(0);
             let mut buffer = vec![0u8; length];
             spi.run_transaction(&mut [
-                Transfer::Write(&[SpiFlash::READ_SFDP, 0, 0, 0, 0]),
+                Transfer::Write(&[
+                    SpiFlash::READ_SFDP,
+                    (offset >> 16) as u8,
+                    (offset >> 8) as u8,
+                    (offset >> 0) as u8,
+                    0, // Dummy byte.
+                ]),
                 Transfer::Read(&mut buffer),
             ])?;
             hexdump(io::stdout(), &buffer)?;

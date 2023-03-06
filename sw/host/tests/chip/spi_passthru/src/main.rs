@@ -8,10 +8,10 @@ use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
-use opentitanlib::io::spi::Transfer;
+use opentitanlib::io::spi::{Target, Transfer};
 use opentitanlib::spiflash::SpiFlash;
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::spi_passthru::{ConfigJedecId, StatusRegister};
+use opentitanlib::test_utils::spi_passthru::{ConfigJedecId, SfdpData, StatusRegister};
 use opentitanlib::uart::console::UartConsole;
 
 //const FLASH_STATUS_WIP: u32 = 0x01;
@@ -134,6 +134,47 @@ fn test_read_status_extended(opts: &Opts, transport: &TransportWrapper) -> Resul
     Ok(())
 }
 
+fn read_sfdp(spi: &dyn Target, offset: u32) -> Result<Vec<u8>> {
+    let mut buf = vec![0u8; 256];
+    spi.run_transaction(&mut [
+        // READ_SFDP always takes a 3-byte address followed by a dummy
+        // byte regardless of address mode.
+        Transfer::Write(&[
+            SpiFlash::READ_SFDP,
+            (offset >> 16) as u8,
+            (offset >> 8) as u8,
+            (offset >> 0) as u8,
+            0, // Dummy byte.
+        ]),
+        Transfer::Read(&mut buf),
+    ])?;
+    Ok(buf)
+}
+
+fn test_read_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let spi = transport.spi(&opts.spi)?;
+
+    let sfdp = SfdpData {
+        data: (0..256).map(|x| x as u8).collect(),
+    };
+    sfdp.write(&*uart)?;
+
+    // Read and compare the whole SFDP buffer.
+    let buf = read_sfdp(&*spi, 0)?;
+    assert_eq!(buf, sfdp.data.as_slice());
+
+    // Test a read that would go beyond the length of the SFDP data.
+    // The observed behavior should be that the buffer recieved from
+    // the device should wrap around.
+    let buf = read_sfdp(&*spi, 0x30)?;
+    let data = sfdp.data.as_slice();
+    assert_eq!(buf[0x00..0xd0], data[0x30..0x100]);
+    assert_eq!(buf[0xd0..0x100], data[0x00..0x30]);
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
@@ -148,5 +189,6 @@ fn main() -> Result<()> {
     execute_test!(test_enter_exit_4b_mode, &opts, &transport);
     execute_test!(test_write_enable_disable, &opts, &transport);
     execute_test!(test_read_status_extended, &opts, &transport);
+    execute_test!(test_read_sfdp, &opts, &transport);
     Ok(())
 }
