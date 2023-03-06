@@ -176,6 +176,21 @@ It is also available for code storage, though that is not its intended purpose.
 
 The base address of the ROM, Flash, and SRAM are given in the address map section later in this document.
 
+### Secure boot
+
+Earlgrey follows the [Secure Boot](security/specs/secure_boot/index.md) specification. The `ROM` has 3 key slots
+which are allocated as follows:
+
+| Slot | Role | Name |
+|------|------|------|
+| 0 | test | `test 0` |
+| 1 | test | `test 1` |
+| 2 | dev | `dev 0` |
+| 3 | dev | `dev 1` |
+| 4 | prod | `prod 0` |
+| 5 | prod | `prod 1` |
+| 6 | prod | `prod 2` |
+
 ### Peripherals
 
 Earl Grey contains a suite of "peripherals", or subservient execution units connected to the Ibex processor by means of a bus interconnect.
