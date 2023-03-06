@@ -191,6 +191,7 @@ rust_library(
     deps = [
         "//sw/host/opentitanlib/bindgen",
         "@crate_index//:anyhow",
+        "@crate_index//:arrayvec",
         "@crate_index//:bitflags",
         "@crate_index//:bitvec",
         "@crate_index//:byteorder",

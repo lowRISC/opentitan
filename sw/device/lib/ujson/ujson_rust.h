@@ -31,7 +31,8 @@
 #define int16_t i16
 #define int8_t i8
 
-#define RUST_DEFAULT_DERIVE Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Eq
+#define RUST_DEFAULT_DERIVE \
+  Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Eq
 
 // clang-format off
 rust_attr[allow(unused_imports)]
@@ -43,9 +44,9 @@ use opentitanlib::test_utils::status::status_t;
 #define ujson_struct_field_array(t_, sz_, ...) \
     OT_IIF(OT_NOT(OT_VA_ARGS_COUNT(dummy, ##__VA_ARGS__))) \
     ( /*then*/ \
-        [t_; sz_]\
+        arrayvec::ArrayVec<OT_EXPAND(t_, sz_)> \
     , /*else*/ \
-        [OT_OBSTRUCT(ujson_struct_field_array_indirect)()(t_, __VA_ARGS__); sz_] \
+        arrayvec::ArrayVec<OT_OBSTRUCT(ujson_struct_field_array_indirect)()(t_, __VA_ARGS__), sz_> \
     ) /*endif*/
 
 #define ujson_struct_field(name_, type_, ...) \
