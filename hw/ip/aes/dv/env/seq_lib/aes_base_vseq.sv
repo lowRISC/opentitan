@@ -598,7 +598,7 @@ class aes_base_vseq extends cip_base_vseq #(
     bit                   is_blocking       = ~cfg_item.do_b2b;
     bit                   done              = 0;
     string                txt               = "";
-    int                   idle_cnt          = 0;
+    int                   not_idle_cnt      = 0;
 
     txt     = "\n Entering FSM";
     rst_set = 0;
@@ -673,15 +673,21 @@ class aes_base_vseq extends cip_base_vseq #(
           end
 
 
-        end else if ( !(status.idle || status.stall || status.output_valid)) begin
+        end else if (!(status.idle || status.stall || status.output_valid)) begin
           // state 3 //
-          // if not ready for input and no output ready should only occur after reset
-          if (!status.input_ready) begin
-            idle_cnt++;
-            if(idle_cnt == 1000) begin
-              `uvm_fatal(`gfn,
-                  $sformatf("AES REPORTED NOT IDLE, READY or STALLING for 100 consecutive reads"))
+          // Not idle, not stalling, not ready for input and no valid output should only occur when
+          // requesting entropy for reseeding the PRNGs which for example happens directly after
+          // reset.
+          if (!(status.input_ready || aes_requesting_entropy())) begin
+            not_idle_cnt++;
+            if (not_idle_cnt == 1000) begin
+              txt = "\nFor 1000 consecutive reads, AES";
+              txt = {txt, $sformatf("\n- neither reported IDLE, STALL, OUTPUT_VALID, INPUT_READY")};
+              txt = {txt, $sformatf("\n- nor did it fetch entropy")};
+              `uvm_fatal(`gfn, $sformatf("%s", txt))
             end
+          end else begin
+            not_idle_cnt = 0;
           end
           if (!read_output && !return_on_idle) done = 1;
           // else DUT is in operation wait for new output
@@ -928,5 +934,17 @@ class aes_base_vseq extends cip_base_vseq #(
     txt ={txt, $sformatf("\n\t ---| Alert -Fatal:  %0b", status.alert_fatal_fault)};
     return txt;
   endfunction // status2string
+
+
+  function automatic bit aes_requesting_entropy();
+    bit requesting_entropy;
+    if ((cfg.aes_reseed_vif.entropy_clearing_req == 1'b1) ||
+        (cfg.aes_reseed_vif.entropy_masking_req == 1'b1)) begin
+      requesting_entropy = 1'b1;
+    end else begin
+      requesting_entropy = 1'b0;
+    end
+    return requesting_entropy;
+  endfunction
 
 endclass : aes_base_vseq
