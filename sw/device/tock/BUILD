@@ -57,6 +57,15 @@ filegroup(
     output_group = "tock",
 )
 
+filegroup(
+    name = "earlgrey_top_defs",
+    srcs = [
+        "//hw/top_earlgrey/sw/autogen/chip:mod.rs",
+        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey.rs",
+        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey_memory.rs",
+    ],
+)
+
 pkg_tar(
     name = "tock_lowrisc_registers",
     srcs = [":lowrisc_defs"],
@@ -69,4 +78,11 @@ pkg_tar(
     srcs = [":earlgrey_defs"],
     mode = "0644",
     package_dir = "chips/earlgrey/src/registers",
+)
+
+pkg_tar(
+    name = "tock_earlgrey_top",
+    srcs = [":earlgrey_top_defs"],
+    mode = "0644",
+    package_dir = "chips/earlgrey/src/top",
 )

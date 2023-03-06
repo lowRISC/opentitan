@@ -111,9 +111,6 @@ class TopGenRust:
         self._name_to_block = name_to_block
         self.regwidth = int(top_info["datawidth"])
 
-        # The .c file needs the .h file's relative path, store it here
-        self.module_path = None
-
         self._init_plic_targets()
         self._init_plic_mapping()
         self._init_alert_mapping()
