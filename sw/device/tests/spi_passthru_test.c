@@ -56,6 +56,14 @@ static status_t read_status_register(ujson_t *uj,
   return OK_STATUS();
 }
 
+static status_t write_sfdp_data(ujson_t *uj, dif_spi_device_handle_t *spid) {
+  sfdp_data_t sfdp;
+  TRY(ujson_deserialize_sfdp_data_t(uj, &sfdp));
+  TRY(dif_spi_device_write_flash_buffer(spid, kDifSpiDeviceFlashBufferTypeSfdp,
+                                        0, sizeof(sfdp.data), sfdp.data));
+  return RESP_OK_STATUS(uj);
+}
+
 status_t command_processor(ujson_t *uj) {
   while (true) {
     test_command_t command;
@@ -70,6 +78,10 @@ status_t command_processor(ujson_t *uj) {
       case kTestCommandSpiWriteStatus:
         RESP_ERR(uj, write_status_register(uj, &spid));
         break;
+      case kTestCommandSpiWriteSfdp:
+        RESP_ERR(uj, write_sfdp_data(uj, &spid));
+        break;
+
       default:
         LOG_ERROR("Unrecognized command: %d", command);
         RESP_ERR(uj, INVALID_ARGUMENT());

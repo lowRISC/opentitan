@@ -35,3 +35,12 @@ impl StatusRegister {
         Ok(())
     }
 }
+
+impl SfdpData {
+    pub fn write(&self, uart: &dyn Uart) -> Result<()> {
+        TestCommand::SpiWriteSfdp.send(&*uart)?;
+        self.send(uart)?;
+        Status::recv(uart, Duration::from_secs(300), false)?;
+        Ok(())
+    }
+}
