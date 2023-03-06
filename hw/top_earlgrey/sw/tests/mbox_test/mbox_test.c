@@ -31,6 +31,14 @@ int main(int argc, char **argv) {
   int volatile  * plic_prio, * plic_en;
   int volatile * p_reg, * p_reg1, * edn_enable;
   int a = 0;
+  /*
+  plic_prio = (int *) 0xC1000014;
+  *plic_prio = 0xa26a38f7;
+
+  plic_prio = (int *) 0xC1000018;
+  *plic_prio = 0x1;
+  */
+
  
   unsigned val = 0xe0000001;
   asm volatile("csrw mtvec, %0\n" : : "r"(val));

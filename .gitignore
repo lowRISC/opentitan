@@ -113,3 +113,6 @@ compile_commands.json
 /sw/device/tests/simple_system_common.c
 /hw/top_earlgrey/sw/tests/common/crt0.o
 /scripts/uart
+/hw/top_earlgrey/sw/tests/mbox_test/mbox_test.d
+/hw/tb/spi_flash/
+/hw/script/struct

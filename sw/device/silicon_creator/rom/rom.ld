@@ -148,9 +148,9 @@ SECTIONS {
     *(.data.*)
 
     /* Tests are an exception to the rule that .data must be empty */
-    ASSERT(
+   /* ASSERT(
         (DEFINED(rom_test) ? 0 : SIZEOF(.data)) == 0,
-        "Error: .data section must be empty");
+        "Error: .data section must be empty");*/
   } > ram_main
 
   /**

@@ -17,19 +17,14 @@ module testbench ();
    import jtag_pkg::*;
    import jtag_ot_test::*;
    import dm_ot::*;
-   import tlul2axi_pkg::*;   
-     
+   import tlul2axi_pkg::*;
+   import top_earlgrey_pkg::*;
+        
    import "DPI-C" function read_elf(input string filename);
    import "DPI-C" function byte get_section(output longint address, output longint len); 
    import "DPI-C" context function byte read_section(input longint address, inout byte buffer[]);
    
  ////////////////////////////  Defines ////////////////////////////
-   
-   /*parameter int          AW = 64;   
-   parameter int          DW = 32;  
-   parameter int          IW = 8;   
-   parameter int          UW = 1;
-   parameter int unsigned SW = DW / 8;*/
  
    localparam AxiWideBeWidth    = 4;
    localparam AxiWideByteOffset = $clog2(AxiWideBeWidth);
@@ -51,8 +46,6 @@ module testbench ();
    localparam int unsigned IO_PERIOD = 10.41ns;
    localparam int unsigned USB_PERIOD = 20.82ns;
    
-   
-   
    int          sections [bit [31:0]];
    logic [31:0] memory[bit [31:0]];
 
@@ -60,10 +53,7 @@ module testbench ();
    logic        rst_ibex_n;
    
    logic  [254:0][255:0] tieoff;
-   
-   
-   
-   
+      
    string       flash_bank_a;
    string       flash_bank_b;
    string       SRAM;
@@ -139,200 +129,232 @@ module testbench ();
       .TT             (TT                )
    ) riscv_dbg_t;
   
-    // JTAG driver
-    JTAG_DV jtag_mst (clk_sys);
-   
-    riscv_dbg_t::jtag_driver_t jtag_driver = new(jtag_mst);
-    riscv_dbg_t riscv_dbg = new(jtag_driver);
+   // JTAG driver
+   JTAG_DV jtag_mst (clk_sys);
+  
+   riscv_dbg_t::jtag_driver_t jtag_driver = new(jtag_mst);
+   riscv_dbg_t riscv_dbg = new(jtag_driver);
 
-
-    assign jtag_i.tck        = clk_sys;  
-    assign jtag_i.trst_n     = jtag_mst.trst_n;
-    assign jtag_i.tms        = jtag_mst.tms;
-    assign jtag_i.tdi        = jtag_mst.tdi;
+   assign jtag_i.tck        = clk_sys;  
+   assign jtag_i.trst_n     = jtag_mst.trst_n;
+   assign jtag_i.tms        = jtag_mst.tms;
+   assign jtag_i.tdi        = jtag_mst.tdi;
+  
+   assign jtag_mst.tdo      = jtag_o.tdo;
    
-    assign jtag_mst.tdo      = jtag_o.tdo;
-    
-    entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
-    entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
-    logic es_rng_fips;
-    
-    rng #(
-     .EntropyStreams ( 4 )
-    ) u_rng (
-     .clk_i          ( clk_sys               ),
-     .rst_ni         ( rst_sys_n             ),
-     .clk_ast_rng_i  ( clk_sys               ),
-     .rst_ast_rng_ni ( rst_sys_n             ),
-     .rng_en_i       ( es_rng_req.rng_enable ),
-     .rng_fips_i     ( es_rng_fips           ),
-     .scan_mode_i    ( '0                    ),
-     .rng_b_o        ( es_rng_rsp.rng_b      ),
-     .rng_val_o      ( es_rng_rsp.rng_valid  )
+   entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
+   entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
+   logic es_rng_fips;
+  
+   wire  I0, I1, I2, I3, WPNeg, RESETNeg;
+   wire  PWROK_S, IOPWROK_S, BIAS_S, RETC_S;
+   logic SCK, CSNeg;
+   
+   logic [15:0] spi_i, spi_o, spi_oe_o;
+   assign SCK = spi_o[DioSpiHost0Sck];
+   assign CSNeg = spi_o[DioSpiHost0Csb];
+   assign RESETNeg = 1'b1;
+   assign WPNeg = 1'b0;
+
+   
+   
+   pad_alsaqr i_I0 ( .OEN(~spi_oe_o[DioSpiHost0Sd0]), .I(spi_o[DioSpiHost0Sd0]), .O(), .PUEN(1'b1), .PAD(I0), 
+                     .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S), .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
+ 
+   pad_alsaqr i_I1 ( .OEN(~spi_oe_o[DioSpiHost0Sd1]), .I(), .O(spi_i[DioSpiHost0Sd1]), .PUEN(1'b1), .PAD(I1), 
+                     .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S), .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
+   /*  
+   pad_alsaqr i_I2 ( .OEN(spi_oe_o[DioSpiHost0Sd2]), .I(spi_o[DioSpiHost0Sd2]), .O(spi_i[DioSpiHost0Sd2]), .PUEN(1'b0), .PAD(I2),
+                     .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S), .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
+  
+   pad_alsaqr i_I3 ( .OEN(spi_oe_o[DioSpiHost0Sd3]), .I(spi_o[DioSpiHost0Sd3]), .O(spi_i[DioSpiHost0Sd3]), .PUEN(1'b0), .PAD(I3), 
+                     .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S), .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
+   */
+
+   
+   s25fs256s #(
+    .TimingModel   ( "S25FS256SAGMFI000_F_30pF" ),
+    .mem_file_name ( "/scratch/mciani/he-soc/hardware/working_dir/opentitan/scripts/baadcode.vmem" ),
+    .UserPreload   ( 1 )
+   ) i_spi_flash_csn0 (
+    .SI       ( I0 ),
+    .SO       ( I1 ),
+    .SCK,      
+    .CSNeg,    
+    .WPNeg    (    ),
+    .RESETNeg (    )
    );
+  
+   rng #(
+    .EntropyStreams ( 4 )
+   ) u_rng (
+    .clk_i          ( clk_sys               ),
+    .rst_ni         ( rst_sys_n             ),
+    .clk_ast_rng_i  ( clk_sys               ),
+    .rst_ast_rng_ni ( rst_sys_n             ),
+    .rng_en_i       ( es_rng_req.rng_enable ),
+    .rng_fips_i     ( es_rng_fips           ),
+    .scan_mode_i    ( '0                    ),
+    .rng_b_o        ( es_rng_rsp.rng_b      ),
+    .rng_val_o      ( es_rng_rsp.rng_valid  )
+  );
    
 /////////////////////////////// DUT ///////////////////////////////
-   
-   top_earlgrey #(
-    .OtpCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/otp-img.mem"),
-    .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/boot_rom.vmem"),
-    .FlashCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/hmac_test/hmac_smoketest.vmem")
-   ) dut (
-    .mio_in_i(ibex_uart_rx),
-    .mio_out_o(ibex_uart_tx),
-    .dio_in_i('0),
-    .ast_edn_req_i('0),
+  
+  top_earlgrey #(
+   .OtpCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/otp-img.mem"),
+   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/spi_boot_rom.vmem"),
+   .FlashCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/hmac_test/hmac_smoketest.vmem")
+  ) dut (
+   .mio_in_i(ibex_uart_rx),
+   .mio_out_o(ibex_uart_tx),
+   .dio_in_i(spi_i),
+   .dio_out_o(spi_o),
+   .dio_oe_o(spi_oe_o),
+   .ast_edn_req_i('0),
 //    .ast_edn_rsp_o(tieoff[0]),
 //    .ast_lc_dft_en_o(tieoff[1]),
-    .obs_ctrl_i('0),
-    .ram_1p_cfg_i('0),
-    .ram_2p_cfg_i('0),
+   .obs_ctrl_i('0),
+   .ram_1p_cfg_i('0),
+   .ram_2p_cfg_i('0),
 //    .clk_main_jitter_en_o(tieoff[2]),
 //    .io_clk_byp_req_o(tieoff[3]),
-    .io_clk_byp_ack_i(lc_ctrl_pkg::Off),
+   .io_clk_byp_ack_i(lc_ctrl_pkg::Off),
 //    .all_clk_byp_req_o(tieoff[4]),
-    .all_clk_byp_ack_i(lc_ctrl_pkg::Off),
+   .all_clk_byp_ack_i(lc_ctrl_pkg::Off),
 //    .hi_speed_sel_o(tieoff[5]),
-    .div_step_down_req_i(lc_ctrl_pkg::Off),
-    .calib_rdy_i(lc_ctrl_pkg::Off),
-    .flash_bist_enable_i(lc_ctrl_pkg::Off),
-    .flash_power_down_h_i('0),
-    .flash_power_ready_h_i('1),
+   .div_step_down_req_i(lc_ctrl_pkg::Off),
+   .calib_rdy_i(lc_ctrl_pkg::Off),
+   .flash_bist_enable_i(lc_ctrl_pkg::Off),
+   .flash_power_down_h_i('0),
+   .flash_power_ready_h_i('1),
 //    .flash_test_mode_a_io('0),
 //    .flash_test_voltage_h_io('0),
 //    .flash_obs_o(tieoff[8]),
-    .es_rng_req_o(es_rng_req),
-    .es_rng_rsp_i(es_rng_rsp),
-    .es_rng_fips_o(es_rng_fips),
-//    .dft_strap_test_o(tieoff[11]),
-    .dft_hold_tap_sel_i('0),
+   .es_rng_req_o(es_rng_req),
+   .es_rng_rsp_i(es_rng_rsp),
+   .es_rng_fips_o(es_rng_fips),
+//   .dft_strap_test_o(tieoff[11]),
+   .dft_hold_tap_sel_i('0),
 //    .usb_dp_pullup_en_o(tieoff[13]),
 //    .usb_dn_pullup_en_o(tieoff[14]),
 //    .pwrmgr_ast_req_o(tieoff[15]),
-    .pwrmgr_ast_rsp_i(5'b11111),
+   .pwrmgr_ast_rsp_i(5'b11111),
 //    .otp_ctrl_otp_ast_pwr_seq_o(tieoff[16]),
-    .otp_ctrl_otp_ast_pwr_seq_h_i('0),
+   .otp_ctrl_otp_ast_pwr_seq_h_i('0),
 //    .otp_ext_voltage_h_io('0),
 //    .otp_obs_o(tieoff[17]),
-    .fpga_info_i('0),
+   .fpga_info_i('0),
                  
-    .scan_rst_ni (rst_sys_n),
-    .scan_en_i (1'b0),
-    .scanmode_i (lc_ctrl_pkg::Off),
-                     
+   .scan_rst_ni (rst_sys_n),
+   .scan_en_i (1'b0),
+   .scanmode_i (lc_ctrl_pkg::Off),
+                    
 
-    .por_n_i ({rst_sys_n, rst_sys_n}),
-                     
-    .clk_main_i (clk_sys),
-    .clk_io_i(clk_sys),
-    .clk_aon_i(clk_sys),
-    .clk_usb_i(clk_sys),
+   .por_n_i ({rst_sys_n, rst_sys_n}),
+                    
+   .clk_main_i (clk_sys),
+   .clk_io_i(clk_sys),
+   .clk_aon_i(clk_sys),
+   .clk_usb_i(clk_sys),
 
 //    .clks_ast_o(tieoff[19]),
 //    .rsts_ast_o(tieoff[20]),
                      
-    .axi_req_o(axi_req),
-    .axi_rsp_i(axi_rsp),
-    .irq_ibex_i('0),
-    .jtag_req_i(jtag_i),
-    .jtag_rsp_o(jtag_o)
-   );
+   .axi_req_o(axi_req),
+   .axi_rsp_i(axi_rsp),
+   .irq_ibex_i('0),
+   .jtag_req_i(jtag_i),
+   .jtag_rsp_o(jtag_o)
+  );
 
 ///////////////////////// Processes ///////////////////////////////
 
-   initial begin  : ibex_rst
-     rst_ibex_n = 1'b0;
-     @(posedge finished);
-     repeat(20) @(posedge clk_sys); 
-     rst_ibex_n = 1'b1; 
-   end
-   
-   initial begin  : ibex_irq
+  initial begin  : ibex_rst
+    rst_ibex_n = 1'b0;
+    @(posedge finished);
+    repeat(20) @(posedge clk_sys); 
+    rst_ibex_n = 1'b1; 
+  end
+  
+  initial begin  : ibex_irq
+    
+    @(posedge rst_sys_n);
+    irq_ibex_i = 1'b0;
+    
+    repeat (70000) @(posedge clk_sys);
+    irq_ibex_i = 1'b1;
      
-     @(posedge rst_sys_n);
-     irq_ibex_i = 1'b0;
+    repeat (10)  @(posedge clk_sys);
+    irq_ibex_i = 1'b0;
+    
+  end
+  
+  initial begin  : main_clock_rst_process
+    clk_sys   = 1'b0;
+    rst_sys_n = 1'b0;
+    jtag_mst.trst_n = 1'b0;
      
-     repeat (70000) @(posedge clk_sys);
-     irq_ibex_i = 1'b1;
-      
-     repeat (10)  @(posedge clk_sys);
-     irq_ibex_i = 1'b0;
-     
-   end
-   
-   initial begin  : main_clock_rst_process
- 
-     clk_sys   = 1'b0;
-     rst_sys_n = 1'b0;
-     jtag_mst.trst_n = 1'b0;
-      
-     repeat (2)
-       #(RTC_CLOCK_PERIOD/2) clk_sys = 1'b0;
-       rst_sys_n = 1'b1;
-   
-     forever
-       #(RTC_CLOCK_PERIOD/2) clk_sys = ~clk_sys;
-   end // block: main_clock_rst_process
-
+    repeat (2)
+     #(RTC_CLOCK_PERIOD/2) clk_sys = 1'b0;
+     rst_sys_n = 1'b1;
+  
+    forever
+      #(RTC_CLOCK_PERIOD/2) clk_sys = ~clk_sys;
+  end // block: main_clock_rst_process
    initial begin  : aon_clock_process
-     aon_clk   = 1'b0;
-     forever
-       #(AON_PERIOD/2) aon_clk = ~aon_clk;
-   end
-   
-   initial begin  : io_clock_process
-     io_clk   = 1'b0;
-     forever
-       #(IO_PERIOD/2) io_clk = ~io_clk;
-   end
-   
-   initial begin  : usb_clock_process
-     usb_clk   = 1'b0;
-     forever
-       #(USB_PERIOD/2) usb_clk = ~usb_clk;
-   end 
- 
-   initial begin  : axi_slave_process
-      
-     @(posedge rst_sys_n);
-     axi_rand_slave.reset();
-     repeat (4)  @(posedge clk_sys);
+    aon_clk   = 1'b0;
+    forever
+      #(AON_PERIOD/2) aon_clk = ~aon_clk;
+  end
+  
+  initial begin  : io_clock_process
+    io_clk   = 1'b0;
+    forever
+      #(IO_PERIOD/2) io_clk = ~io_clk;
+  end
+  
+  initial begin  : usb_clock_process
+    usb_clk   = 1'b0;
+    forever
+      #(USB_PERIOD/2) usb_clk = ~usb_clk;
+  end 
 
+  initial begin  : axi_slave_process
+     
+    @(posedge rst_sys_n);
+    axi_rand_slave.reset();
+    repeat (4)  @(posedge clk_sys);
      axi_rand_slave.run();
+  
+  end
    
-   end
-
-   initial  begin : local_jtag_preload
-
+  initial  begin : local_jtag_preload
       automatic dm_ot::sbcs_t sbcs = '{
-        sbautoincrement: 1'b1,
-        sbreadondata   : 1'b1,
-        sbaccess       : 3'h2,
-        default        : 1'b0
-      };
-
+       sbautoincrement: 1'b1,
+       sbreadondata   : 1'b1,
+       sbaccess       : 3'h2,
+       default        : 1'b0
+     };
       riscv_dbg.reset_master();
-   /*   
-      if ( $value$plusargs ("SRAM=%s", SRAM));
-         $display("Testing %s", SRAM);
-     */ 
-  /*     if ( $value$plusargs ("flash_a=%s", flash_bank_a));
-         $display("Testing %s", flash_bank_a);*/
-     /* 
-      repeat(140000)
-          @(posedge clk_sys);
-      
-      debug_module_init();
-      load_binary(SRAM);
-      jtag_data_preload(); 
-          
- */     #(RTC_CLOCK_PERIOD)
+     
+     //if ( $value$plusargs ("SRAM=%s", SRAM));
+     //   $display("Testing %s", SRAM);
+   
+     repeat(25000)
+         @(posedge clk_sys);
+     
+     //debug_module_init();
+     //load_binary(SRAM);
+     //jtag_data_preload(); 
+         
+     #(RTC_CLOCK_PERIOD)
 ;
-      //jtag_ibex_wakeup(32'h f0000810);
+      //jtag_ibex_wakeup(32'h f0000924);
     
       
       
-   end // block: local_jtag_preload
+  end // block: local_jtag_preload
    
 ///////////////////////////// Tasks ///////////////////////////////
    

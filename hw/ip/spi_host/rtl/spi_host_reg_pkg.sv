@@ -7,7 +7,7 @@
 package spi_host_reg_pkg;
 
   // Param list
-  parameter logic ByteOrder = 1;
+  parameter logic ByteOrder = 0;
   parameter int NumCS = 1;
   parameter int TxDepth = 72;
   parameter int RxDepth = 64;

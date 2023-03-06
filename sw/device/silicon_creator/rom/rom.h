@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_ROM_H_
 
 #include <stdnoreturn.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,13 +20,12 @@ extern "C" {
  * regular handlers.
  */
 #define ROM_INTERRUPT_HANDLER_ABI __attribute__((aligned(4)))
-
 /**
  * Denotes functions that have to be near the interrupt vector, because they
  * are jumped to from it.
  */
 #define ROM_VECTOR_FUNCTION __attribute__((section(".crt")))
-
+bool spi_test(void);
 /**
  * The first assembly procedure executed by the ROM (defined in
  * `rom.S`).
@@ -35,6 +35,7 @@ extern "C" {
  */
 ROM_VECTOR_FUNCTION
 noreturn void _rom_start_boot(void);
+
 
 /**
  * The first C function executed by the ROM (defined in `rom.c`)

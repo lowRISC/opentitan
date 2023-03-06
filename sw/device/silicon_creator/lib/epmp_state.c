@@ -23,16 +23,21 @@ extern void epmp_state_configure_napot(uint32_t entry, epmp_region_t region,
 
 rom_error_t epmp_state_check(void) {
   uint32_t checks = 0;
+  int volatile * fail;
+  fail = (int *) 0xffffffff;
   const epmp_state_t *s = &epmp_state;
 #define CHECK_CSR(reg, value) \
   do {                        \
     uint32_t csr;             \
     CSR_READ(reg, &csr);      \
-    checks += csr == (value); \
-  } while (false)
-
+    if(csr == value)          \
+       checks++;              \
+    else		      \
+       *fail=0x1;             \
+} while (false)
+    
   // Check address registers.
-  CHECK_CSR(CSR_REG_PMPADDR0, s->pmpaddr[0]);
+  CHECK_CSR(CSR_REG_PMPADDR0, s->pmpaddr[0]);   //ok
   CHECK_CSR(CSR_REG_PMPADDR1, s->pmpaddr[1]);
   CHECK_CSR(CSR_REG_PMPADDR2, s->pmpaddr[2]);
   CHECK_CSR(CSR_REG_PMPADDR3, s->pmpaddr[3]);
@@ -52,17 +57,17 @@ rom_error_t epmp_state_check(void) {
   // Check configuration registers.
   CHECK_CSR(CSR_REG_PMPCFG0, s->pmpcfg[0]);
   CHECK_CSR(CSR_REG_PMPCFG1, s->pmpcfg[1]);
-  CHECK_CSR(CSR_REG_PMPCFG2, s->pmpcfg[2]);
+  CHECK_CSR(CSR_REG_PMPCFG2, s->pmpcfg[2]);   
   CHECK_CSR(CSR_REG_PMPCFG3, s->pmpcfg[3]);
 
   // Check Machine Security Configuration (MSECCFG) register.
   // High bits are hardcoded to 0.
   CHECK_CSR(CSR_REG_MSECCFG, s->mseccfg);
-  CHECK_CSR(CSR_REG_MSECCFGH, 0);
+  CHECK_CSR(CSR_REG_MSECCFGH, 0);           //ok
 
 #undef CHECK_CSR
 
-  enum { kTotalChecks = 21 }; //should be 22, deactivated MSECCFGH because it does not pass the test even if 0
+  enum { kTotalChecks = 22 }; //should be 22
   // Hamming distance of 3, error = 0x72f, kErrorOk = 0x739.
   rom_error_t error = kErrorOk ^ kTotalChecks;
   if (launder32(checks) == kTotalChecks) {

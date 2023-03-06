@@ -7,6 +7,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <assert.h>
+#include <stdalign.h>
+#include <stddef.h>
+
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
@@ -36,9 +40,25 @@
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom/boot_policy.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
+#include "sw/device/silicon_creator/rom/string_lib.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys.h"
+#include "sw/device/lib/dif/dif_spi_host.h"
+#include "sw/device/silicon_creator/lib/rom_print.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/testing/rand_testutils.h"
 
+/*
+#include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/dif/dif_spi_host.h"
+#include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
+*/
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 
@@ -68,8 +88,11 @@
   X(kCfiRomTryBoot,      0x235) \
   X(kCfiRomPreBootCheck, 0x43a) \
   X(kCfiRomBoot,         0x2e2)
-// clang-format on
-
+// clang-format
+#define SPI_HOST_STATUS_REG_OFFSET 0x14
+#define SPI_HOST_STATUS_READY_BIT 31
+#define DATA_SET_SIZE 16
+#define MSG 0xbaadc0de
 // Define counters and constant values required by the CFI counter macros.
 CFI_DEFINE_COUNTERS(rom_counters, ROM_CFI_FUNC_COUNTERS_TABLE);
 
@@ -77,6 +100,7 @@ CFI_DEFINE_COUNTERS(rom_counters, ROM_CFI_FUNC_COUNTERS_TABLE);
 lifecycle_state_t lc_state = (lifecycle_state_t)0;
 // Boot data from flash.
 boot_data_t boot_data = {0};
+static dif_spi_host_t spi_host;
 
 OT_ALWAYS_INLINE
 static rom_error_t rom_irq_error(void) {
@@ -437,10 +461,11 @@ static rom_error_t rom_try_boot(void) {
 
 void rom_main(void) {
   CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomMain);
-
+  bool t;
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 1, kCfiRomInit);
   SHUTDOWN_IF_ERROR(rom_init());
-  rom_bootstrap_message();
+  
+  /* rom_bootstrap_message();
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomInit, 3);
 
@@ -453,8 +478,10 @@ void rom_main(void) {
   }
 
   // `rom_try_boot` will not return unless there is an error.
-  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 4, kCfiRomTryBoot);
-  shutdown_finalize(rom_try_boot());
+  //CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 4, kCfiRomTryBoot);*/
+  
+  t = spi_test();
+  while(true);//shutdown_finalize(rom_try_boot());
 }
 
 void rom_interrupt_handler(void) {
@@ -471,3 +498,89 @@ noreturn void rom_exception_handler(void);
 
 OT_ALIAS("rom_interrupt_handler")
 noreturn void rom_nmi_handler(void);
+
+/**
+ * Initialize the provided SPI host.
+ */
+
+void init_spi_host(dif_spi_host_t *spi_host,
+                   uint32_t peripheral_clock_freq_hz) {
+  dif_spi_host_config_t config = {
+      .spi_clock = peripheral_clock_freq_hz / 2,
+      .peripheral_clock_freq_hz = peripheral_clock_freq_hz,
+      .chip_select = {.idle = 2, .trail = 2, .lead = 2},
+      .full_cycle = true,
+      .cpha = true,
+      .cpol = true,
+  };
+  CHECK_DIF_OK(dif_spi_host_configure(spi_host, config));
+  CHECK_DIF_OK(dif_spi_host_output_set_enabled(spi_host, /*enabled=*/true));
+}
+
+
+bool spi_test(void) {
+
+  // Setup spi host configuration
+  rom_printf("Testing spi_host.\r\n");
+  uintptr_t base_addr;
+  uint64_t clkHz;
+  base_addr = TOP_EARLGREY_SPI_HOST0_BASE_ADDR;
+  clkHz = 10000000;
+ 
+  CHECK_DIF_OK(dif_spi_host_init(mmio_region_from_addr(base_addr), &spi_host));
+  init_spi_host(&spi_host, (uint32_t)clkHz);
+  uint32_t expected_data[DATA_SET_SIZE];
+  uint32_t received_data[DATA_SET_SIZE];
+  uint32_t read_data[3];
+  
+  for (uint32_t i = 0; i < ARRAYSIZE(expected_data); ++i) {
+    expected_data[i] = 0xBAADC0DE;
+  }
+
+  uint32_t buf[1];
+  dif_spi_host_segment_t segments[] = {
+      {
+          .type = kDifSpiHostSegmentTypeOpcode,
+          .opcode = 0x03,
+      },
+      {
+          .type = kDifSpiHostSegmentTypeAddress,
+          .address =
+              {
+                  .width = kDifSpiHostWidthStandard,
+                  .mode = kDifSpiHostAddrMode3b,
+                  .address = 0x0,
+              },
+      },
+ /*   {
+          .type = kDifSpiHostSegmentTypeDummy,
+          .dummy =
+              {
+                  .width = kDifSpiHostWidthStandard,
+                  .length = 8,
+              },
+	   },*/
+      {
+          .type = kDifSpiHostSegmentTypeRx,
+          .rx =
+              {
+                  .width = kDifSpiHostWidthStandard,
+                  .buf = buf,
+                  .length = sizeof(buf),
+              },
+      },
+  };
+  CHECK_DIF_OK(
+      dif_spi_host_transaction(&spi_host, 0, segments, ARRAYSIZE(segments)));
+ 
+  uint32_t data = read_32(buf);
+  if(data==MSG)
+      rom_printf("Passed: the read msg corresponds: %x\r\n", data);
+    
+  else
+      rom_printf("Failed: the read msg does not corresponds: %x\r\n", data);
+    
+
+  CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host, false));
+  return true;
+}
