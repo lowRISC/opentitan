@@ -31,6 +31,7 @@ rust_test(
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
+        "@crate_index//:arrayvec",
         "@crate_index//:serde",
         "@crate_index//:serde_json",
     ],
