@@ -22,7 +22,10 @@ py_library(
 py_binary(
     name = "gen-flash-img",
     srcs = ["gen-flash-img.py"],
-    deps = [":secded_gen"],
+    deps = [
+        ":secded_gen",
+        requirement("pyfinite"),
+    ],
 )
 
 py_binary(

@@ -453,7 +453,9 @@ def _scramble_flash_vmem_impl(ctx):
             ctx.executable._tool,
         ],
         arguments = [
+            "--infile",
             ctx.file.vmem.path,
+            "--outfile",
             scrambled_vmem.path,
         ],
         executable = ctx.executable._tool,
