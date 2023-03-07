@@ -150,7 +150,7 @@ buildSite () {
     echo "Building doxygen..."
     pushd "${this_dir}" >/dev/null
     # shellcheck disable=SC2086
-    ${doxygen_env} doxygen ${doxygen_args}
+#     ${doxygen_env} doxygen ${doxygen_args}
     popd >/dev/null
     echo "Doxygen build complete."
 

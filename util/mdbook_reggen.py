@@ -17,8 +17,8 @@ from typing import List
 
 from mdbook import utils as md_utils
 from reggen.ip_block import IpBlock
-import reggen.gen_cfg_html as gen_cfg_html
-import reggen.gen_html as gen_html
+import reggen.gen_cfg_md as gen_cfg_md
+import reggen.gen_md as gen_md
 
 REGREF_PATTERN = re.compile(r"\{\{#regref\s+?(.+?)\s*?\}\}")
 
@@ -31,13 +31,13 @@ def main() -> None:
     book_root = context["root"]
 
     try:
-        ip_cfg_str = context["config"]["preprocessor"]["reggen"]["ip-cfg-py-regex"]
+        ip_cfg_str = context["config"]["preprocessor"]["reggen"][
+            "ip-cfg-py-regex"]
         ip_cfg_pattern = re.compile(ip_cfg_str)
     except KeyError:
         sys.exit(
             "No RegEx pattern given in book.toml to identify ip block configuration files.\n"
-            "Provide regex as preprocessor.reggen.ip-cfg-py-regex .",
-        )
+            "Provide regex as preprocessor.reggen.ip-cfg-py-regex .", )
 
     cfg_files: List[Path] = []
     for chapter in md_utils.chapters(book["sections"]):
@@ -46,16 +46,14 @@ def main() -> None:
             continue
 
         block = IpBlock.from_text(
-            chapter["content"],
-            [],
-            "file at {}/{}".format(context["root"], chapter["source_path"])
-        )
+            chapter["content"], [],
+            "file at {}/{}".format(context["root"], chapter["source_path"]))
         buffer = io.StringIO()
         buffer.write("# Hardware Interfaces and Registers\n")
         buffer.write("## Interfaces\n")
-        gen_cfg_html.gen_cfg_html(block, buffer)
+        gen_cfg_md.gen_cfg_md(block, buffer)
         buffer.write("\n## Registers\n")
-        gen_html.gen_html(block, buffer)
+        gen_md.gen_md(block, buffer)
         chapter["content"] = buffer.getvalue()
 
         cfg_files.append(Path(src_path))
