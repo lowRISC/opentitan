@@ -26,6 +26,16 @@ UJSON_SERDE_STRUCT(StatusRegister, status_register_t, STRUCT_STATUS_REGISTER);
     field(data, uint8_t, 256)
 UJSON_SERDE_STRUCT(SfdpData, sfdp_data_t, STRUCT_SFDP_DATA);
 
+#define STRUCT_UPLOAD_INFO(field, string) \
+    field(opcode, uint8_t) \
+    field(has_address, bool) \
+    field(addr_4b, bool) \
+    field(data_len, uint16_t) \
+    field(flash_status, uint32_t) \
+    field(address, uint32_t) \
+    field(data, uint8_t, 256)
+UJSON_SERDE_STRUCT(UploadInfo, upload_info_t, STRUCT_UPLOAD_INFO);
+
 // clang-format on
 #ifdef __cplusplus
 }

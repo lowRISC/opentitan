@@ -17,6 +17,7 @@ extern "C" {
     value(_, PinmuxConfig) \
     value(_, SpiConfigureJedecId) \
     value(_, SpiReadStatus) \
+    value(_, SpiWaitForUpload) \
     value(_, SpiWriteStatus) \
     value(_, SpiWriteSfdp) \
     value(_, SwStrapRead)

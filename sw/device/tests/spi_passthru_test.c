@@ -64,6 +64,62 @@ static status_t write_sfdp_data(ujson_t *uj, dif_spi_device_handle_t *spid) {
   return RESP_OK_STATUS(uj);
 }
 
+static status_t wait_for_upload(ujson_t *uj, dif_spi_device_handle_t *spid) {
+  // Wait for a SPI transaction cause an upload.
+  bool upload_pending;
+  do {
+    // The UploadCmdfifoNotEmpty interrupt status is updated after the SPI
+    // transaction completes.
+    TRY(dif_spi_device_irq_is_pending(
+        &spid->dev, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, &upload_pending));
+  } while (!upload_pending);
+
+  upload_info_t info = {0};
+  uint8_t occupancy;
+
+  // Get the SPI opcode.
+  TRY(dif_spi_device_get_flash_command_fifo_occupancy(spid, &occupancy));
+  if (occupancy != 1) {
+    // Cannot have an uploaded command without an opcode.
+    return INTERNAL();
+  }
+  TRY(dif_spi_device_pop_flash_command_fifo(spid, &info.opcode));
+  // Get the flash_status register.
+  TRY(dif_spi_device_get_flash_status_registers(spid, &info.flash_status));
+
+  // Get the SPI address (if available).
+  TRY(dif_spi_device_get_flash_address_fifo_occupancy(spid, &occupancy));
+  if (occupancy) {
+    dif_toggle_t addr_4b;
+    TRY(dif_spi_device_get_4b_address_mode(spid, &addr_4b));
+    info.addr_4b = addr_4b;
+    TRY(dif_spi_device_pop_flash_address_fifo(spid, &info.address));
+    info.has_address = true;
+  }
+
+  // Get the SPI data payload (if available).
+  uint32_t start;
+  TRY(dif_spi_device_get_flash_payload_fifo_occupancy(spid, &info.data_len,
+                                                      &start));
+  if (info.data_len) {
+    if (info.data_len > sizeof(info.data)) {
+      // We aren't expecting more than 256 bytes of data.
+      return INVALID_ARGUMENT();
+    }
+    TRY(dif_spi_device_read_flash_buffer(spid,
+                                         kDifSpiDeviceFlashBufferTypePayload,
+                                         start, info.data_len, info.data));
+  }
+
+  // Finished: ack the IRQ and clear the busy bit (and all other bits)
+  // in flash_status.
+  TRY(dif_spi_device_irq_acknowledge(&spid->dev,
+                                     kDifSpiDeviceIrqUploadCmdfifoNotEmpty));
+  TRY(dif_spi_device_set_flash_status_registers(spid, 0));
+  RESP_OK(ujson_serialize_upload_info_t, uj, &info);
+  return OK_STATUS();
+}
+
 status_t command_processor(ujson_t *uj) {
   while (true) {
     test_command_t command;
@@ -80,6 +136,9 @@ status_t command_processor(ujson_t *uj) {
         break;
       case kTestCommandSpiWriteSfdp:
         RESP_ERR(uj, write_sfdp_data(uj, &spid));
+        break;
+      case kTestCommandSpiWaitForUpload:
+        RESP_ERR(uj, wait_for_upload(uj, &spid));
         break;
 
       default:
