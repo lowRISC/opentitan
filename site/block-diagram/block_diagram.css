@@ -19,6 +19,9 @@
  * - Grids of blocks
  * - Highlighting by clock
  * - Subclocks (maximum of 2)
+ * - Arrows between blocks
+ * - Arrows crossing tops/chips/etc
+ * - Arrow groups (of three arrows)
  *
  * The `earlgrey.html` block diagram in this repo can be used as an example as
  * it uses all of these features.
@@ -57,10 +60,15 @@
     --clock5-fg: var(--text-black);
     --clock6-fg: var(--text-black);
 
+    --arrow-bg: #7b7979;
+
     --gap: 0.8em;
     --padding: 0.8em;
     --aon-width: 0.15em;
     --block-height: 2.5em;
+    --arrow-width: 0.4em;
+    --arrow-head-width: 0.8em;
+    --arrow-head-length: 0.3em;
 
     --font-size: 0.75rem;
 }
@@ -221,7 +229,7 @@
  * See the `grid="[234]"` attributes for setting the number of columns for the
  * grid of blocks.
  *
- * `.blocks` elements may contain `.block`, or `.domain.always-on`
+ * `.blocks` elements may contain `.block`, `.arrow`, or `.domain.always-on`
  * elements.
  */
 .blocks {
@@ -370,4 +378,283 @@ a.block:visited {
 .clock6, .block[subclock1="clock6"]::before, .block[subclock2="clock6"]::after {
     --clock-bg: var(--clock6-bg);
     --clock-fg: var(--clock6-fg);
+}
+
+/**********
+ * Arrows *
+ **********/
+
+/**
+ *
+ * Arrow groups allow arrows within the same row or column to be placed
+ * side-by-side.
+ *
+ * Currently, only groups of three arrows are supported. More configurations can
+ * be added fairly easily.
+ *
+ * This can be made fully general once Chromium supports `display: subgrid`.
+ */
+.arrow-group {
+    display: contents;
+}
+
+/**
+ * Arrow groups of `n` arrows are supported by checking if the `x`th child is
+ * also the `n - x`th child of an `.arrow-group`.
+ *
+ * This ensures we only apply this styling when there are exactly `n` siblings.
+ */
+.arrow-group .arrow:nth-child(1):nth-last-child(3) { --arrow-offset: calc(50% - 1.5 * var(--arrow-head-width)); }
+.arrow-group .arrow:nth-child(2):nth-last-child(2) { --arrow-offset: 50%; }
+.arrow-group .arrow:nth-child(3):nth-last-child(1) { --arrow-offset: calc(50% + 1.5 * var(--arrow-head-width)); }
+
+/**
+ * Apply the `--arrow-offset` calculated above to shift within the row or col.
+ */
+.arrow-group .arrow.row { top: var(--arrow-offset); }
+.arrow-group .arrow.column { left: var(--arrow-offset); }
+
+/**
+ * An arrow between blocks within a `.blocks` grid.
+ *
+ * Arrows have heads on both ends and can span across blocks within the grid,
+ * and extend outside of the grid to some extent.
+ *
+ * ## Attributes
+ *
+ * The following attributes can be used to position an arrow:
+ * - `arrow-x`
+ * - `arrow-y`
+ * - `arrow-span` - number of blocks spanned perpendicular to the arrow.
+ * - `arrow-length` - number of blocks spanned parallel to the arrow.
+ * - `arrow-layers` - optional number of "layers" (e.g. tops, domains, etc.)
+ *                    that the arrow extends outside of its grid of blocks.
+ *
+ * These are documented in more detail below in the arrow positioning section.
+ *
+ * ## A note on SVGs
+ *
+ * These arrows were initially implemented using SVGs by using a line with two
+ * markers added to the ends. This allowed the line to be resized without the
+ * heads stretching.
+ *
+ * This worked fine but needed a few hacks to stop the line intersecting the
+ * arrow heads. Also, in order to style these SVGs they have to be defined
+ * within the HTML document and can't be included as an image.
+ *
+ * Instead, I've switched to using a background-color for the arrow's line and
+ * `::before` and `::after` elements for the heads.
+ */
+.arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: absolute;
+    place-self: center center;
+    width: 100%;
+    height: 100%;
+
+    background-color: var(--arrow-bg);
+    background-clip: padding-box;
+}
+
+/**
+ * Like subclocks, arrow heads are added using `::before` and `::after`
+ * pseudo-classes which allow for creating new elements via CSS.
+ *
+ * The triangle shape is made by setting only one side of the element's border.
+ */
+.arrow::before, .arrow::after {
+    display: block;
+    content: "";
+    position: absolute;
+    border-color: transparent;
+    border-style: solid;
+}
+
+/**
+ * Set up the border sizes for forming the triangles.
+ */
+.arrow.row::before, .arrow.row::after {
+    border-width: calc(0.5 * var(--arrow-head-width)) 0;
+}
+.arrow.column::before, .arrow.column::after {
+    border-width: 0 calc(0.5 * var(--arrow-head-width));
+}
+
+/**
+ * Fill in the single relevant border and position each arrow head.
+ */
+.arrow.row::before {
+    border-right: var(--arrow-head-length) solid var(--arrow-bg);
+    right: 100%;
+}
+.arrow.row::after {
+    border-left: var(--arrow-head-length) solid var(--arrow-bg);
+    left: 100%;
+}
+.arrow.column::before {
+    border-bottom: var(--arrow-head-length) solid var(--arrow-bg);
+    bottom: 100%;
+}
+.arrow.column::after {
+    border-top: var(--arrow-head-length) solid var(--arrow-bg);
+    top: 100%;
+}
+
+/**
+ * Helper attributes for positioning arrows.
+ *
+ * As before, these are necessary because support for using attribute values
+ * like numbers is still experimental, so we manually convert them to CSS
+ * variables here.
+ *
+ * These are just helpers, you can specify `style="--arrow-{?}: {?}"` manually
+ * if you need another value.
+ */
+.arrow[arrow-x="0"] { --arrow-x: 0; }
+.arrow[arrow-x="1"] { --arrow-x: 1; }
+.arrow[arrow-x="2"] { --arrow-x: 2; }
+.arrow[arrow-x="3"] { --arrow-x: 3; }
+.arrow[arrow-x="4"] { --arrow-x: 4; }
+.arrow[arrow-y="0"] { --arrow-y: 0; }
+.arrow[arrow-y="1"] { --arrow-y: 1; }
+.arrow[arrow-y="2"] { --arrow-y: 2; }
+.arrow[arrow-y="3"] { --arrow-y: 3; }
+.arrow[arrow-y="4"] { --arrow-y: 4; }
+.arrow[arrow-y="5"] { --arrow-y: 5; }
+.arrow[arrow-y="6"] { --arrow-y: 6; }
+.arrow[arrow-span="2"] { --arrow-span: 2; }
+.arrow[arrow-span="3"] { --arrow-span: 3; }
+.arrow[arrow-span="4"] { --arrow-span: 4; }
+.arrow[arrow-span="5"] { --arrow-span: 5; }
+.arrow[arrow-span="6"] { --arrow-span: 6; }
+.arrow[arrow-length="1"] { --arrow-length: 1; }
+.arrow[arrow-length="2"] { --arrow-length: 2; }
+.arrow[arrow-length="3"] { --arrow-length: 3; }
+.arrow[arrow-length="4"] { --arrow-length: 4; }
+.arrow[arrow-length="5"] { --arrow-length: 5; }
+.arrow[arrow-length="6"] { --arrow-length: 6; }
+.arrow[arrow-layers="1"] { --arrow-layers: 1; }
+.arrow[arrow-layers="2"] { --arrow-layers: 2; }
+.arrow[arrow-layers="3"] { --arrow-layers: 3; }
+.arrow[arrow-layers="4"] { --arrow-layers: 4; }
+.arrow[arrow-layers="5"] { --arrow-layers: 5; }
+.arrow[arrow-layers="6"] { --arrow-layers: 6; }
+
+/**
+ * The following group of classes calculate the size and position of arrows.
+ *
+ * This isn't an easy task, but this final state is quite stable. It can be
+ * refactored to be neater at some point if needs be.
+ *
+ * ## Stages of calculation
+ *
+ * The general tactic is to calculate the arrow's length in four parts and
+ * collect them all together at the end:
+ *
+ * - arrow-len-base: the base length of an arrow, e.g. the grid cells it spans
+ * - arrow-len-gaps: the extra space needed to span the gaps at either end
+ * - arrow-len-layers: the extra space needed for arrows to extend out of the
+ *                     grid of blocks into other layers.
+ *
+ * ## Sizing strategy
+ *
+ * Took a little while to work out how to get these arrows to always be the
+ * right lengths when the grid sizes are calculated dynamically.
+ *
+ * Here is the strategy:
+ *
+ * - For arrows of length `l > 2`, we place the arrow across the middle `l - 2`
+ *   blocks. This means the arrow heads poke out of the ends no matter the size
+ *   of the grid cells.
+ * - For arrows of length `l = 2`, we place the arrow within the first grid cell
+ *   only and position is so that it starts after.
+ * - For arrows of length `l = 1`, we give them no base length. These arrows are
+ *   likely reaching out of a blog grid using `arrow-layers` and don't span
+ *   between any blocks.
+ */
+
+/**
+ * The lengths for most arrows: 100% + two gaps either side.
+ */
+.arrow {
+    --arrow-len-base: 100%;
+    /* Maps arrow lengths (in grid cells) to the number of gaps they must span:
+     *  1  => no gaps: these arrows don't cross between any blocks.
+     *  2  => one gap: these arrows cross one gap between two blocks.
+     *  >2 => two gaps: these arrows span the middle blocks plus a gap each end.
+     */
+    --arrow-num-gaps: min(calc(var(--arrow-length) - 1), 2);
+    --arrow-len-gaps: calc(var(--arrow-num-gaps) * var(--gap));
+}
+
+.arrow[arrow-length="1"], .arrow[arrow-length="2"] {
+    /* These arrows don't span any blocks, so don't include grid cell size */
+    --arrow-len-base: 0%;
+}
+
+.arrow[arrow-layers] {
+    /* Arrows going outside the grid will cross one to another layer */
+    --arrow-len-layers: calc(var(--arrow-layers) * var(--padding) + var(--gap));
+    /* Plus include the gap of the side which stays within the grid */
+    --arrow-len-gaps: calc(var(--gap));
+}
+.arrow[arrow-layers][arrow-length="1"] {
+    /* Unlike above, external arrows with length "1" don't cross any gaps */
+    --arrow-len-gaps: 0px;
+    /* Also ensure they appear above domain backgrounds etc. */
+    z-index: 2;
+}
+
+/**
+ * Position arrows leaving the grid at the end of their grid cell
+ */
+.arrow.row[arrow-layers] {
+    left: calc(var(--arrow-head-length) - var(--gap));
+}
+.arrow.column[arrow-layers] {
+    top: calc(var(--arrow-head-length) - var(--gap));
+}
+
+/**
+ * Positioning for normal horizontal (row) arrows
+ */
+.arrow.row {
+    width: calc(var(--arrow-len-base) - 2 * var(--arrow-head-length) + var(--arrow-len-gaps) + var(--arrow-len-layers, 0px));
+    height: var(--arrow-width);
+    grid-row-start: var(--arrow-y);
+    grid-row-end: span var(--arrow-span, 1);
+    /* Span the middle `length - 2` blocks, pointing to the end two */
+    grid-column-start: calc(var(--arrow-x) + 1);
+    grid-column-end: span calc(var(--arrow-length) - 2);
+}
+
+/**
+ * Positioning for normal vertical (column) arrows
+ */
+.arrow.column {
+    height: calc(var(--arrow-len-base) - 2 * var(--arrow-head-length) + var(--arrow-len-gaps) + var(--arrow-len-layers, 0px));
+    width: var(--arrow-width);
+    grid-column-start: var(--arrow-x);
+    grid-column-end: span var(--arrow-span, 1);
+    /* Span the middle `length - 2` blocks, pointing to the end two */
+    grid-row-start: calc(var(--arrow-y) + 1);
+    grid-row-end: span calc(var(--arrow-length) - 2);
+}
+
+/**
+ * Arrows of length 1 or 2 actually only span a single cell: the first.
+ * They're positioned to begin at the end and span to the next cell.
+ */
+.arrow.row[arrow-length="1"], .arrow.row[arrow-length="2"] {
+    grid-column-start: var(--arrow-x);
+    grid-column-end: span 1;
+    left: calc(100% + var(--arrow-head-length));
+}
+.arrow.column[arrow-length="1"], .arrow.column[arrow-length="2"] {
+    grid-row-start: var(--arrow-y);
+    grid-row-end: span 1;
+    top: calc(100% + var(--arrow-head-length));
 }
