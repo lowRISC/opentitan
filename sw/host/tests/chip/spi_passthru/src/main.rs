@@ -196,6 +196,21 @@ fn test_chip_erase(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
+fn test_write_status(opts: &Opts, transport: &TransportWrapper, opcode: u8) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let spi = transport.spi(&opts.spi)?;
+    let info = UploadInfo::execute(&*uart, || {
+        spi.run_transaction(&mut [Transfer::Write(&[opcode])])?;
+        Ok(())
+    })?;
+
+    assert_eq!(info.opcode, opcode);
+    assert_eq!(info.has_address, false);
+    assert_eq!(info.data_len, 0);
+    assert_eq!(info.flash_status & FLASH_STATUS_STD_BITS, FLASH_STATUS_WIP);
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
@@ -212,5 +227,18 @@ fn main() -> Result<()> {
     execute_test!(test_read_status_extended, &opts, &transport);
     execute_test!(test_read_sfdp, &opts, &transport);
     execute_test!(test_chip_erase, &opts, &transport);
+    execute_test!(test_write_status, &opts, &transport, SpiFlash::WRITE_STATUS);
+    execute_test!(
+        test_write_status,
+        &opts,
+        &transport,
+        SpiFlash::WRITE_STATUS2
+    );
+    execute_test!(
+        test_write_status,
+        &opts,
+        &transport,
+        SpiFlash::WRITE_STATUS3
+    );
     Ok(())
 }
