@@ -89,6 +89,13 @@
       padding: 0.25em 0;
       white-space: nowrap;
 
+      svg {
+        vertical-align: bottom;
+        font-size: 1.5em;
+        width: 1em;
+        height: 1em;
+      }
+
       &:after {
         content: "";
         position: absolute;
