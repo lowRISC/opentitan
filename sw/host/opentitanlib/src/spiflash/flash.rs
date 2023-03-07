@@ -64,6 +64,10 @@ impl SpiFlash {
     // Winbond parts use 0x35 and 0x15 for extended status reads.
     pub const READ_STATUS2: u8 = 0x35;
     pub const READ_STATUS3: u8 = 0x15;
+    pub const WRITE_STATUS: u8 = 0x01;
+    // Winbond parts use 0x31 and 0x11 for extended status writes.
+    pub const WRITE_STATUS2: u8 = 0x31;
+    pub const WRITE_STATUS3: u8 = 0x11;
     pub const READ_ID: u8 = 0x9f;
     pub const ENTER_4B: u8 = 0xb7;
     pub const EXIT_4B: u8 = 0xe9;
