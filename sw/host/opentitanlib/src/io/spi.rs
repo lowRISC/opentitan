@@ -60,6 +60,12 @@ pub enum SpiError {
     InvalidSpeed(u32),
     #[error("Invalid data length: {0}")]
     InvalidDataLength(usize),
+    #[error("Invalid data width: {0:?}")]
+    InvalidDataWidth(eeprom::DataWidth),
+    #[error("Double transfer rate not supported")]
+    InvalidDoubleTransferRate(),
+    #[error("Invalid number of dummy cycles: {0}")]
+    InvalidDummyCycles(u8),
     #[error("Mismatched data length: {0} != {1}")]
     MismatchedDataLength(usize, usize),
     #[error("Invalid transfer mode: {0}")]
