@@ -227,6 +227,39 @@ fn test_sector_erase(opts: &Opts, transport: &TransportWrapper, address: u32) ->
     Ok(())
 }
 
+fn test_page_program(opts: &Opts, transport: &TransportWrapper, address: u32) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let spi = transport.spi(&opts.spi)?;
+    let data = (0..256).map(|x| x as u8).collect::<Vec<u8>>();
+    let mut flash = SpiFlash::default();
+    // Double the flash size so we can test 3b and 4b addresses.
+    flash.size = 32 * 1024 * 1024;
+
+    // Make sure we're in a mode appropriate for the address.
+    let mode = if address < 0x1000000 {
+        AddressMode::Mode3b
+    } else {
+        AddressMode::Mode4b
+    };
+    flash.set_address_mode(&*spi, mode)?;
+    let info = UploadInfo::execute(&*uart, || {
+        flash.program(&*spi, address, &data)?;
+        Ok(())
+    })?;
+
+    assert_eq!(info.opcode, SpiFlash::PAGE_PROGRAM);
+    assert_eq!(info.has_address, true);
+    assert_eq!(info.addr_4b, mode == AddressMode::Mode4b);
+    assert_eq!(info.address, address);
+    assert_eq!(info.data_len as usize, data.len());
+    assert_eq!(info.data.as_slice(), data.as_slice());
+    assert_eq!(
+        info.flash_status & FLASH_STATUS_STD_BITS,
+        FLASH_STATUS_WEL | FLASH_STATUS_WIP
+    );
+    Ok(())
+}
+
 fn test_write_status(opts: &Opts, transport: &TransportWrapper, opcode: u8) -> Result<()> {
     let uart = transport.uart("console")?;
     let spi = transport.spi(&opts.spi)?;
@@ -260,6 +293,8 @@ fn main() -> Result<()> {
     execute_test!(test_chip_erase, &opts, &transport);
     execute_test!(test_sector_erase, &opts, &transport, 0x0000_4000);
     execute_test!(test_sector_erase, &opts, &transport, 0x0100_4000);
+    execute_test!(test_page_program, &opts, &transport, 0x0000_4000);
+    execute_test!(test_page_program, &opts, &transport, 0x0100_4000);
     execute_test!(test_write_status, &opts, &transport, SpiFlash::WRITE_STATUS);
     execute_test!(
         test_write_status,
