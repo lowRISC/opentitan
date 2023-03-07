@@ -87,6 +87,7 @@
       display: block;
       position: relative;
       padding: 0.25em 0;
+      white-space: nowrap;
 
       &:after {
         content: "";
