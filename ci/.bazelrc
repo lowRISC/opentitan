@@ -19,6 +19,6 @@ build --verbose_failures
 # as possible.
 build --keep_going
 
-# Use the remote Bazel cache for CI.
-build --remote_cache=https://storage.googleapis.com/opentitan-bazel-cache
-build --remote_timeout=5
+# Use the remote Bazel cache for CI (temporarily disabled).
+# build --remote_cache=https://storage.googleapis.com/opentitan-bazel-cache
+# build --remote_timeout=5

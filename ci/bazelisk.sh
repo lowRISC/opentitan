@@ -18,13 +18,14 @@ echo "Running bazelisk in $(pwd)."
 GCP_BAZELRC="$(mktemp /tmp/XXXXXX.bazelrc)"
 trap 'rm ${GCP_BAZELRC}' EXIT
 
-if [[ -n "${GCP_BAZEL_CACHE_KEY}" && -f "${GCP_BAZEL_CACHE_KEY}" ]]; then
-    echo "Applying GCP cache key; will upload to the cache."
-    echo "build --google_credentials=${GCP_BAZEL_CACHE_KEY}" >> "${GCP_BAZELRC}"
-else
-    echo "No key/invalid path to key. Download from cache only."
-    echo "build --remote_upload_local_results=false" >> "${GCP_BAZELRC}"
-fi
+# Uploading to Bazel cache temporarily disabled.
+#if [[ -n "${GCP_BAZEL_CACHE_KEY}" && -f "${GCP_BAZEL_CACHE_KEY}" ]]; then
+#    echo "Applying GCP cache key; will upload to the cache."
+#    echo "build --google_credentials=${GCP_BAZEL_CACHE_KEY}" >> "${GCP_BAZELRC}"
+#else
+#    echo "No key/invalid path to key. Download from cache only."
+#    echo "build --remote_upload_local_results=false" >> "${GCP_BAZELRC}"
+#fi
 
 # Inject the OS version into a parameter used in the action key computation to
 # avoid collisions between different operating systems in the caches.
