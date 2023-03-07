@@ -14,7 +14,6 @@
     <meta property="twitter:description" content="{{ .Site.Params.description }}">
     <meta name="twitter:card" content="summary_large_image">
 
-
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -22,12 +21,7 @@
     <meta name="msapplication-TileColor" content="#c27bcf">
     <meta name="theme-color" content="#ffffff">
 
-
     <link href="https://fonts.googleapis.com/css?family=Livvic:300|Ubuntu:400,700&display=swap" rel="stylesheet">
-
-    {{ $options := (dict "targetPath" "css/style.css" "outputStyle" "compressed" "enableSourceMap" true) }}
-    {{ $style := resources.Get "scss/style.scss" | resources.ToCSS $options }}
-    <link rel="stylesheet" href="{{ $style.Permalink }}">
 
     {{ with .Params.ExtraStyles }}
       {{ range $css_url := . }}

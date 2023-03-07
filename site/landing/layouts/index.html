@@ -1,7 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" class="no-js">
 
-{{ partial "head.html" . }}
+<head>
+    {{ partial "head.html" . }}
+
+    {{ $options := (dict "targetPath" "css/landing.css" "outputStyle" "compressed" "enableSourceMap" true) }}
+    {{ $style := resources.Get "scss/landing.scss" | resources.ToCSS $options }}
+    <link rel="stylesheet" href="{{ $style.Permalink }}">
+</head>
 
 <body>
   <svg style="width: 0; height: 0; position: absolute; opacity: 0;">
