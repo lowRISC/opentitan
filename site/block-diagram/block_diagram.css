@@ -1,0 +1,373 @@
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * This is a CSS library for building block diagrams out of simple semantic HTML.
+ *
+ * We're not CSS engineers, so I've done my best not to include hacks, unstable
+ * features, or massive complexity. Remaining complexity will be documented
+ * or wrapped into variables to make intent clear.
+ *
+ * Most styling is configurable through variables within `.block-diagram`.
+ *
+ * The supported features/components are:
+ * - Tops
+ * - Domains
+ * - Top and domain labels
+ * - Always-on domains
+ * - Grids of blocks
+ * - Highlighting by clock
+ * - Subclocks (maximum of 2)
+ *
+ * The `earlgrey.html` block diagram in this repo can be used as an example as
+ * it uses all of these features.
+ */
+
+/**
+ * The root component of the whole block diagram.
+ *
+ * The following variables can be used to configure the styling of the diagram.
+ * These defaults can be overridden by re-defining the variables on a specific diagram.
+ */
+.block-diagram {
+    --text-white: #ffffff;
+    --text-black: #000000;
+
+    --diagram-bg: #ffffff;
+    --diagram-fg: var(--text-black);
+
+    --top-bg: #f8f8ff;
+    --top-fg: var(--text-black);
+
+    --domain-bg: #e9e9e9;
+    --domain-fg: var(--text-black);
+    --always-on: #dc143c;
+
+    --clock1-bg: #8bd6df;
+    --clock2-bg: #6395ae;
+    --clock3-bg: #cfbde4;
+    --clock4-bg: #967ebf;
+    --clock5-bg: #f9ad38;
+    --clock6-bg: #d4d4d2;
+    --clock1-fg: var(--text-black);
+    --clock2-fg: var(--text-white);
+    --clock3-fg: var(--text-black);
+    --clock4-fg: var(--text-white);
+    --clock5-fg: var(--text-black);
+    --clock6-fg: var(--text-black);
+
+    --gap: 0.8em;
+    --padding: 0.8em;
+    --aon-width: 0.15em;
+    --block-height: 2.5em;
+
+    --font-size: 0.75rem;
+}
+
+/**
+ * Lay the root out vertically. Various grids are used for horizontal layout
+ * within the block diagram.
+ *
+ * Block diagrams can be given a `.block-diagram-title`.
+ */
+.block-diagram {
+    display: flex;
+    flex-direction: column;
+    padding: var(--padding);
+    gap: var(--gap);
+
+    background-color: var(--diagram-bg);
+    color: var(--diagram-fg);
+}
+
+.block-diagram .block-diagram-title {
+    font-size: var(--font-size);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/********
+ * Tops *
+ ********/
+
+/**
+ * Represents a chip top-level. Can be given a `.top-title`.
+ *
+ * Tops should typically contain `.domains` or `.domain` components.
+ */
+.top {
+    display: flex;
+    flex-direction: column;
+    padding: var(--padding);
+
+    background-color: var(--top-bg);
+    color: var(--top-fg);
+
+    z-index: 3;
+}
+
+.top .top-title {
+    margin: 0;
+    font-size: var(--font-size);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/****************
+ * Grid helpers *
+ ****************/
+
+/**
+ * Helper attributes to specify grids with a certain number of columns.
+ *
+ * Currently only 2, 3, and 4 column grids have helpers. This can be extended
+ * to any number once the CSS `attr()` function supports numeric values.
+ */
+[grid="2"] { grid-template-columns: repeat(2, 1fr); }
+[grid="3"] { grid-template-columns: repeat(3, 1fr); }
+[grid="4"] { grid-template-columns: repeat(4, 1fr); }
+
+/**
+ * Helper attributes to specify the number of rows or columns a block spans.
+ *
+ * Currently only spans of 2 - 6 blocks have helpers. This can be extended to
+ * any number once the CSS `attr()` function supports numeric values.
+ */
+[grid-rows="2"] { grid-row: span 2; }
+[grid-rows="3"] { grid-row: span 3; }
+[grid-rows="4"] { grid-row: span 4; }
+[grid-rows="5"] { grid-row: span 5; }
+[grid-rows="6"] { grid-row: span 6; }
+[grid-cols="2"] { grid-column: span 2; }
+[grid-cols="3"] { grid-column: span 3; }
+[grid-cols="4"] { grid-column: span 4; }
+[grid-cols="5"] { grid-column: span 5; }
+[grid-cols="6"] { grid-column: span 6; }
+
+/***********
+ * Domains *
+ ***********/
+
+/**
+ * Group of grid-arranged domains.
+ *
+ * Use the `grid="[234]"` attribute to set the number of domains side-by-side.
+ */
+.domains {
+    display: grid;
+    gap: var(--gap);
+}
+
+/**
+ * Domain boundary. Can be given a `.domain-title`.
+ *
+ * Domains should be placed within `.top` or `.domains` elements.
+ */
+.domain {
+    display: block;
+
+    position: relative;
+    padding: var(--padding);
+    border-radius: 0.25em;
+
+    background-color: var(--domain-bg);
+    color: var(--domain-fg);
+}
+
+/**
+ * Domains may optionally have the `.always-on` class which will outline their
+ * blocks.
+ *
+ * These domains can be placed wherever regular domains can, plus also within
+ * `.blocks` elements to surround a subset of blocks.
+ *
+ * Domains can be given a `.domain-title`.
+ */
+.domain.always-on {
+    background-color: transparent;
+    border: var(--aon-width) dashed var(--always-on);
+    padding: calc(var(--padding) - var(--aon-width));
+}
+
+.blocks .domain.always-on {
+    /* Places the AON domain border in the middle of the gaps between blocks */
+    padding: calc(0.5 * var(--padding) - var(--aon-width));
+    margin: calc(-0.5 * var(--padding));
+}
+
+.domain .domain-title {
+    font-size: var(--font-size);
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 0;
+    margin: 0;
+}
+
+.domain.always-on .domain-title {
+    margin-top: calc(-0.5 * var(--padding));
+    font-size: var(--font-size);
+    text-align: right;
+    color: var(--always-on);
+}
+
+/**********
+ * Blocks *
+ **********/
+
+/**
+ * Group of blocks arranged in a grid.
+ *
+ * See the `grid="[234]"` attributes for setting the number of columns for the
+ * grid of blocks.
+ *
+ * `.blocks` elements may contain `.block`, or `.domain.always-on`
+ * elements.
+ */
+.blocks {
+    display: grid;
+    grid-auto-rows: minmax(var(--block-height), auto);
+    gap: var(--gap);
+    position: relative;
+}
+
+/**
+ * Individual block within a `.blocks` grid.
+ *
+ * ## Clocks
+ *
+ * Blocks can be given a class `.clock[123456]` to specify their clock speed,
+ * plus optional `subclock1="clock[123456]"` and `subclock2="clock[123456]"`
+ * attributes to specify up to two sub-clock speeds.
+ *
+ * ## Positioning
+ *
+ * Blocks are positioned automatically in left-to-right reading order.
+ * A block's size can be set using the `grid-rows` and `grid-cols` attributes.
+ */
+.block {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+
+    position: relative;
+    z-index: 2;
+
+    padding: calc(0.3 * var(--padding));
+    border-radius: 0.5em;
+
+    font-size: var(--font-size);
+    text-decoration: none;
+
+    background-color: var(--clock-bg);
+    color: var(--clock-fg);
+}
+
+a.block:visited {
+    background-color: var(--clock-bg);
+    color: var(--clock-fg);
+}
+
+.block .big-label {
+    font-size: calc(1.2 * var(--font-size));
+    font-weight: bold;
+}
+
+/**
+ * Subclocks are implemented using `::before` and `::after` CSS classes. This
+ * lets us create new elements through CSS only, but it does limit us to two
+ * subclocks.
+ *
+ * More than two seems unlikely, but this can be supported by adding elements
+ * representing subclocks into the HTML itself.
+ */
+.block[subclock1]::before, .block[subclock2]::after {
+    display: block;
+    content: "";
+
+    position: absolute;
+    left: calc(0.75 * var(--padding));
+
+    width: 0.75em;
+    height: 0.75em;
+    border-radius: 0.25em;
+}
+
+.block[subclock1]::before {
+    top: calc(0.75 * var(--padding));
+    background-color: var(--clock-bg);
+}
+
+.block[subclock2]::after {
+    bottom: calc(0.75 * var(--padding));
+    background-color: var(--clock-bg);
+}
+
+/**********
+ * Clocks *
+ **********/
+
+/**
+ * Legend of clock colours arranged in a row.
+ */
+.clocks {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    gap: var(--gap);
+
+    width: fit-content;
+}
+
+/**
+ * An individual clock in the legend of clocks.
+ *
+ * Apply each of the `.clock[123456]` classes to these elements to give them
+ * the correct colours.
+ */
+.clocks .clock {
+    text-align: center;
+
+    padding: calc(0.5 * var(--padding)) var(--padding);
+    border-radius: 0.5em;
+    font-size: var(--font-size);
+    white-space: nowrap;
+
+    background-color: var(--clock-bg);
+    color: var(--clock-fg);
+}
+
+/**
+ * Colours for the `.clock[123456]` classes and the corresponding subclocks.
+ */
+
+.clock1, .block[subclock1="clock1"]::before, .block[subclock2="clock1"]::after {
+    --clock-bg: var(--clock1-bg);
+    --clock-fg: var(--clock1-fg);
+}
+
+.clock2, .block[subclock1="clock2"]::before, .block[subclock2="clock2"]::after {
+    --clock-bg: var(--clock2-bg);
+    --clock-fg: var(--clock2-fg);
+}
+
+.clock3, .block[subclock1="clock3"]::before, .block[subclock2="clock3"]::after {
+    --clock-bg: var(--clock3-bg);
+    --clock-fg: var(--clock3-fg);
+}
+
+.clock4, .block[subclock1="clock4"]::before, .block[subclock2="clock4"]::after {
+    --clock-bg: var(--clock4-bg);
+    --clock-fg: var(--clock4-fg);
+}
+
+.clock5, .block[subclock1="clock5"]::before, .block[subclock2="clock5"]::after {
+    --clock-bg: var(--clock5-bg);
+    --clock-fg: var(--clock5-fg);
+}
+
+.clock6, .block[subclock1="clock6"]::before, .block[subclock2="clock6"]::after {
+    --clock-bg: var(--clock6-bg);
+    --clock-fg: var(--clock6-fg);
+}
