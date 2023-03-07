@@ -32,6 +32,14 @@ SPDX-License-Identifier: Apache-2.0
                     <a class="block clock1" href="https://opentitan.org/book/hw/ip/flash_ctrl/" id="flash">Flash</a>
                     <a class="block clock1" href="https://opentitan.org/book/hw/ip/entropy_src/" id="entropy-source">Entropy Source</a>
                     <a class="block clock3" href="https://opentitan.org/book/hw/ip/usbdev/" id="usb" subclock1="clock5">USB</a>
+                    <div class="arrow column" arrow-x="1" arrow-y="2" arrow-length="2" arrow-span="2"></div>
+                    <div class="arrow column" arrow-x="3" arrow-y="1" arrow-length="3"></div>
+                    <div class="arrow column" arrow-x="4" arrow-y="1" arrow-length="3"></div>
+                    <div class="arrow column" arrow-x="1" arrow-y="3" arrow-length="4"></div>
+                    <div class="arrow column" arrow-x="2" arrow-y="3" arrow-length="4"></div>
+                    <div class="arrow column" arrow-x="3" arrow-y="3" arrow-length="4"></div>
+                    <div class="arrow column" arrow-x="4" arrow-y="3" arrow-length="4"></div>
+                    <div class="arrow row" arrow-x="4" arrow-y="3" arrow-length="1" arrow-layers="2"></div>
                 </div>
             </div>
             <div class="domain">
@@ -59,8 +67,21 @@ SPDX-License-Identifier: Apache-2.0
                             <a class="block clock4" href="https://opentitan.org/book/hw/ip/pinmux/" id="pinmux-padctrl">Pinmux / Padctrl</a>
                             <a class="block clock4" href="https://opentitan.org/book/hw/ip/adc_ctrl/" id="adc-controller" subclock1="clock5">ADC Controller</a>
                             <a class="block clock4" href="https://opentitan.org/book/hw/top_earlgrey/ip/sensor_ctrl/" id="sensor-control" subclock1="clock5">Sensor Control</a>
+                            <div class="arrow row" arrow-x="0" arrow-y="1" arrow-length="4"></div>
+                            <div class="arrow row" arrow-x="0" arrow-y="2" arrow-length="4"></div>
+                            <div class="arrow row" arrow-x="0" arrow-y="3" arrow-length="4"></div>
+                            <div class="arrow column" arrow-x="1" arrow-y="3" arrow-length="1" arrow-layers="3"></div>
+                            <div class="arrow column" arrow-x="2" arrow-y="3" arrow-length="1" arrow-layers="3"></div>
+                            <div class="arrow-group">
+                                <div class="arrow column" arrow-x="3" arrow-y="3" arrow-length="1" arrow-layers="3"></div>
+                                <div class="arrow column" arrow-x="3" arrow-y="2" arrow-length="3" arrow-layers="3"></div>
+                                <div class="arrow column" arrow-x="3" arrow-y="1" arrow-length="4" arrow-layers="3"></div>
+                            </div>
                         </div>
                     </div>
+                    <div class="arrow row" arrow-x="1" arrow-y="1" arrow-length="4"></div>
+                    <div class="arrow row" arrow-x="1" arrow-y="2" arrow-length="4"></div>
+                    <div class="arrow row" arrow-x="1" arrow-y="3" arrow-length="4"></div>
                 </div>
             </div>
         </div>
@@ -69,6 +90,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="blocks" grid="4">
             <a class="block clock6" href="https://opentitan.org/book/hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_asic.html" id="padring" grid-cols="3">Padring (only wire and pad instances)</a>
             <a class="block clock4" href="https://opentitan.org/book/hw/top_earlgrey/ip/ast/" id="analog-sensor-top" subclock1="clock3" subclock2="clock5">Analog Sensor Top</a>
+            <div class="arrow row" arrow-x="3" arrow-y="1" arrow-length="2"></div>
         </div>
     </div>
     <div class="clocks">
