@@ -8,26 +8,28 @@ use serde::{Deserialize, Serialize};
 use super::spi::{SpiError, Target, Transfer};
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+/// Declarations of if and when to switch from single-lane SPI to a faster mode.
+pub enum Switch {
+    Mode111,
+    Mode11N,
+    Mode1NN,
+    ModeNNN,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum DataWidth {
-    Single,    // Standard SPI
-    SingleDtr, // Data on both rising and falling edges
-    Dual,      // Use both COPI and CIPO for data
-    DualDtr,   // Both COPI and CIPO, both clock edges
+    Single, // Standard SPI
+    Dual,   // Use both COPI and CIPO for data
     Quad,
-    QuadDtr,
     Octo,
-    OctoDtr,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Cmd {
     data: [u8; 8],
     opcode_len: u8,
-    opcode_width: DataWidth,
     addr_len: u8,
-    addr_width: DataWidth,
-    dummy_cycles: u8,
-    data_width: DataWidth,
+    mode: Mode,
 }
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
@@ -39,10 +41,15 @@ pub enum AddressMode {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Mode {
-    pub opcode_width: DataWidth,
-    pub addr_width: DataWidth,
+    /// The number of no-operation clock cycles between address and data phases.
     pub dummy_cycles: u8,
-    pub data_width: DataWidth,
+    /// Declarations of if and when to switch from single-lane SPI to a faster mode as declared by
+    /// `width` and `double_transfer_rate`.
+    pub switch: Switch,
+    /// How many lanes to use after the switch (1, 2, 4, or 8).
+    pub width: DataWidth,
+    /// Whether to shift data on both rising and falling clock edges after the switch.
+    pub double_transfer_rate: bool,
 }
 
 impl Mode {
@@ -51,11 +58,8 @@ impl Mode {
         let mut result = Cmd {
             data: [0u8; 8],
             opcode_len: 1,
-            opcode_width: self.opcode_width,
             addr_len: 0,
-            addr_width: self.addr_width,
-            dummy_cycles: self.dummy_cycles,
-            data_width: self.data_width,
+            mode: *self,
         };
         result.data[0] = opcode;
         result
@@ -65,11 +69,8 @@ impl Mode {
         let mut result = Cmd {
             data: [0u8; 8],
             opcode_len: 1,
-            opcode_width: self.opcode_width,
             addr_len: addr_mode as u8,
-            addr_width: self.addr_width,
-            dummy_cycles: self.dummy_cycles,
-            data_width: self.data_width,
+            mode: *self,
         };
         result.data[0] = opcode;
         result.data[1..1 + result.addr_len as usize]
@@ -81,11 +82,8 @@ impl Mode {
         let mut result = Cmd {
             data: [0u8; 8],
             opcode_len: 2,
-            opcode_width: self.opcode_width,
             addr_len: 0,
-            addr_width: self.addr_width,
-            dummy_cycles: self.dummy_cycles,
-            data_width: self.data_width,
+            mode: *self,
         };
         result.data[0] = opcode1;
         result.data[1] = opcode2;
@@ -96,11 +94,8 @@ impl Mode {
         let mut result = Cmd {
             data: [0u8; 8],
             opcode_len: 2,
-            opcode_width: self.opcode_width,
             addr_len: addr_mode as u8,
-            addr_width: self.addr_width,
-            dummy_cycles: self.dummy_cycles,
-            data_width: self.data_width,
+            mode: *self,
         };
         result.data[0] = opcode1;
         result.data[1] = opcode2;
@@ -111,64 +106,80 @@ impl Mode {
 
     pub fn dummy_cycles(&self, dummy_cycles: u8) -> Mode {
         Mode {
-            opcode_width: self.opcode_width,
-            addr_width: self.addr_width,
             dummy_cycles,
-            data_width: self.data_width,
+            switch: self.switch,
+            width: self.width,
+            double_transfer_rate: self.double_transfer_rate,
         }
     }
 }
 
 /// Single-wire
 pub const MODE_111: Mode = Mode {
-    opcode_width: DataWidth::Single,
-    addr_width: DataWidth::Single,
     dummy_cycles: 0,
-    data_width: DataWidth::Single,
+    switch: Switch::Mode111,
+    width: DataWidth::Single,
+    double_transfer_rate: false,
+};
+
+/// Double transfer rate on data phase
+pub const MODE_1S1S1D: Mode = Mode {
+    dummy_cycles: 0,
+    switch: Switch::Mode11N,
+    width: DataWidth::Single,
+    double_transfer_rate: true,
+};
+
+/// Double transfer rate on address and data phase
+pub const MODE_1S1D1D: Mode = Mode {
+    dummy_cycles: 0,
+    switch: Switch::Mode1NN,
+    width: DataWidth::Single,
+    double_transfer_rate: true,
 };
 
 /// Single-wire address, dual-wire data
 pub const MODE_112: Mode = Mode {
-    opcode_width: DataWidth::Single,
-    addr_width: DataWidth::Single,
     dummy_cycles: 0,
-    data_width: DataWidth::Dual,
+    switch: Switch::Mode11N,
+    width: DataWidth::Dual,
+    double_transfer_rate: false,
 };
 
 pub const MODE_122: Mode = Mode {
-    opcode_width: DataWidth::Single,
-    addr_width: DataWidth::Dual,
     dummy_cycles: 0,
-    data_width: DataWidth::Dual,
+    switch: Switch::Mode1NN,
+    width: DataWidth::Dual,
+    double_transfer_rate: false,
 };
 
 pub const MODE_222: Mode = Mode {
-    opcode_width: DataWidth::Dual,
-    addr_width: DataWidth::Dual,
     dummy_cycles: 0,
-    data_width: DataWidth::Dual,
+    switch: Switch::ModeNNN,
+    width: DataWidth::Dual,
+    double_transfer_rate: false,
 };
 
 /// Single-wire address, quad-wire data
 pub const MODE_114: Mode = Mode {
-    opcode_width: DataWidth::Single,
-    addr_width: DataWidth::Single,
     dummy_cycles: 0,
-    data_width: DataWidth::Quad,
+    switch: Switch::Mode11N,
+    width: DataWidth::Quad,
+    double_transfer_rate: false,
 };
 
 pub const MODE_144: Mode = Mode {
-    opcode_width: DataWidth::Single,
-    addr_width: DataWidth::Quad,
     dummy_cycles: 0,
-    data_width: DataWidth::Quad,
+    switch: Switch::Mode1NN,
+    width: DataWidth::Quad,
+    double_transfer_rate: false,
 };
 
 pub const MODE_444: Mode = Mode {
-    opcode_width: DataWidth::Quad,
-    addr_width: DataWidth::Quad,
     dummy_cycles: 0,
-    data_width: DataWidth::Quad,
+    switch: Switch::ModeNNN,
+    width: DataWidth::Quad,
+    double_transfer_rate: false,
 };
 
 impl Cmd {
@@ -176,12 +187,9 @@ impl Cmd {
     /// used in cases where the transport backend does not have specialied EEPROM/Flash
     /// communication primitives.
     pub fn to_bytes(&self) -> Result<&[u8]> {
-        if self.opcode_width == DataWidth::Single
-            && self.addr_width == DataWidth::Single
-            && self.dummy_cycles % 8 == 0
-            && self.data_width == DataWidth::Single
-        {
-            Ok(&self.data[0..(self.opcode_len + self.addr_len + self.dummy_cycles / 8) as usize])
+        if self.mode.switch == Switch::Mode111 && self.mode.dummy_cycles % 8 == 0 {
+            Ok(&self.data
+                [0..(self.opcode_len + self.addr_len + self.mode.dummy_cycles / 8) as usize])
         } else {
             Err(SpiError::InvalidOption(
                 "This target does not support the requested mode".to_string(),
@@ -194,20 +202,12 @@ impl Cmd {
         self.opcode_len
     }
 
-    pub fn get_opcode_width(&self) -> DataWidth {
-        self.opcode_width
-    }
-
     pub fn get_opcode(&self) -> &[u8] {
         &self.data[..self.opcode_len as usize]
     }
 
     pub fn get_address_len(&self) -> u8 {
         self.addr_len
-    }
-
-    pub fn get_address_width(&self) -> DataWidth {
-        self.addr_width
     }
 
     pub fn get_address(&self) -> u32 {
@@ -219,11 +219,19 @@ impl Cmd {
     }
 
     pub fn get_dummy_cycles(&self) -> u8 {
-        self.dummy_cycles
+        self.mode.dummy_cycles
     }
 
-    pub fn get_data_width(&self) -> DataWidth {
-        self.data_width
+    pub fn get_switch(&self) -> Switch {
+        self.mode.switch
+    }
+
+    pub fn get_width(&self) -> DataWidth {
+        self.mode.width
+    }
+
+    pub fn get_double_transfer_rate(&self) -> bool {
+        self.mode.double_transfer_rate
     }
 }
 
@@ -256,16 +264,13 @@ pub fn default_run_eeprom_transactions<T: Target + ?Sized>(
                 spi.run_transaction(&mut [Transfer::Write(cmd.to_bytes()?), Transfer::Write(wbuf)])?
             }
             Transaction::WaitForBusyClear => {
-                while {
-                    let mut buf = [0u8; 1];
+                let mut status = STATUS_WIP;
+                while status & STATUS_WIP != 0 {
                     spi.run_transaction(&mut [
                         Transfer::Write(&[READ_STATUS]),
-                        Transfer::Read(&mut buf),
+                        Transfer::Read(std::slice::from_mut(&mut status)),
                     ])?;
-                    buf[0]
-                } & STATUS_WIP
-                    != 0
-                {}
+                }
             }
         }
     }
