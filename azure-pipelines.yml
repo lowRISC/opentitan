@@ -235,8 +235,11 @@ jobs:
         --define DISABLE_VERILATOR_BUILD=true \
         -- "rdeps(//..., kind(bitstream_splice, //...))" \
         >> "${TARGET_PATTERN_FILE}"
+      # TODO(lowRISC/opentitan##17471): limit parallelism to 4 to avoid thrashing.
       ci/bazelisk.sh test \
         --build_tests_only=false \
+        --local_test_jobs=4 \
+        --local_cpu_resources=4 \
         --test_output=errors \
         --define DISABLE_VERILATOR_BUILD=true \
         --test_tag_filters=-broken,-cw310,-verilator,-dv \
