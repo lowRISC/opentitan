@@ -29,7 +29,13 @@
     {{ $style := resources.Get "scss/style.scss" | resources.ToCSS $options }}
     <link rel="stylesheet" href="{{ $style.Permalink }}">
 
+    {{ with .Params.ExtraStyles }}
+      {{ range $css_url := . }}
+        <link rel="stylesheet" href="{{ $css_url }}">
+      {{ end }}
+    {{ end }}
+
     <title>{{ .Title }} | OpenTitan</title>
 
-    {{ partial "gtag" . }} 
+    {{ partial "gtag" . }}
 </head>
