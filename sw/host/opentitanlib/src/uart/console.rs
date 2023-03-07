@@ -39,7 +39,7 @@ impl<T: Read + AsRawFd> ReadAsRawFd for T {}
 
 impl UartConsole {
     const CTRL_C: u8 = 3;
-    const BUFFER_LEN: usize = 1024;
+    const BUFFER_LEN: usize = 4096;
 
     // Runs an interactive console until CTRL_C is received.
     pub fn interact(
