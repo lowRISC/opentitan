@@ -11,11 +11,12 @@ use opentitanlib::execute_test;
 use opentitanlib::io::spi::{Target, Transfer};
 use opentitanlib::spiflash::SpiFlash;
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::spi_passthru::{ConfigJedecId, SfdpData, StatusRegister};
+use opentitanlib::test_utils::spi_passthru::{ConfigJedecId, SfdpData, StatusRegister, UploadInfo};
 use opentitanlib::uart::console::UartConsole;
 
-//const FLASH_STATUS_WIP: u32 = 0x01;
+const FLASH_STATUS_WIP: u32 = 0x01;
 const FLASH_STATUS_WEL: u32 = 0x02;
+const FLASH_STATUS_STD_BITS: u32 = FLASH_STATUS_WEL | FLASH_STATUS_WIP;
 
 #[derive(Debug, StructOpt)]
 struct Opts {
@@ -175,6 +176,26 @@ fn test_read_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
+fn test_chip_erase(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let spi = transport.spi(&opts.spi)?;
+    let flash = SpiFlash::default();
+
+    let info = UploadInfo::execute(&*uart, || {
+        flash.chip_erase(&*spi)?;
+        Ok(())
+    })?;
+
+    assert_eq!(info.opcode, SpiFlash::CHIP_ERASE);
+    assert_eq!(info.has_address, false);
+    assert_eq!(info.data_len, 0);
+    assert_eq!(
+        info.flash_status & FLASH_STATUS_STD_BITS,
+        FLASH_STATUS_WEL | FLASH_STATUS_WIP
+    );
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
@@ -190,5 +211,6 @@ fn main() -> Result<()> {
     execute_test!(test_write_enable_disable, &opts, &transport);
     execute_test!(test_read_status_extended, &opts, &transport);
     execute_test!(test_read_sfdp, &opts, &transport);
+    execute_test!(test_chip_erase, &opts, &transport);
     Ok(())
 }

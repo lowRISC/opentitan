@@ -25,7 +25,7 @@ impl ConfigJedecId {
 impl StatusRegister {
     pub fn read(uart: &dyn Uart) -> Result<Self> {
         TestCommand::SpiReadStatus.send(&*uart)?;
-        StatusRegister::recv(uart, Duration::from_secs(300), false)
+        Self::recv(uart, Duration::from_secs(300), false)
     }
 
     pub fn write(&self, uart: &dyn Uart) -> Result<()> {
@@ -42,5 +42,16 @@ impl SfdpData {
         self.send(uart)?;
         Status::recv(uart, Duration::from_secs(300), false)?;
         Ok(())
+    }
+}
+
+impl UploadInfo {
+    pub fn execute<F>(uart: &dyn Uart, f: F) -> Result<Self>
+    where
+        F: FnOnce() -> Result<()>,
+    {
+        TestCommand::SpiWaitForUpload.send(&*uart)?;
+        f()?;
+        Self::recv(uart, Duration::from_secs(300), false)
     }
 }
