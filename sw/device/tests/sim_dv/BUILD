@@ -831,6 +831,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
