@@ -2559,11 +2559,11 @@ test_suite(
             file rom.elf
 
             echo :::: Run until we check whether ROM execution is enabled.\\n
-            break kRomStartBootMaybeHalt
+            break kRomStartBootHalted
             continue
 
-            printf ":::: PC=%p. Expected PC=%p.\\n", $pc, kRomStartBootMaybeHalt
-            if $pc != kRomStartBootMaybeHalt
+            printf ":::: PC=%p. Expected PC=%p.\\n", $pc, kRomStartBootHalted
+            if $pc != kRomStartBootHalted
                 quit 42
             end
 
