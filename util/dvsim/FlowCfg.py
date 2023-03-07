@@ -620,6 +620,10 @@ class FlowCfg():
         if self.is_primary_cfg:
             self.publish_results_summary()
 
+        # Trigger a rebuild of the site/docs which may pull new data from
+        # the published results.
+        self.rebuild_site()
+
     def publish_results_summary(self):
         '''Public facing API for publishing md format results to the opentitan
         web server.
@@ -638,6 +642,33 @@ class FlowCfg():
             log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
         except Exception as e:
             log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
+
+    def rebuild_site(self):
+        '''Trigger a rebuild of the opentitan.org site using a Cloud Build trigger.
+
+        The Gcloud project which builds and deploys the site ("gold-hybrid-255131") uses
+        a cloudbuild yaml file (util/site/site-builder/cloudbuild-deploy-docs.yaml) to define
+        the rebuilding of the site.
+        A manually-triggered job ('site-builder-manual') has been created, which can be
+        triggered through an appropriately-authenticated Google Cloud SDK command. This
+        function calls that command.
+        '''
+        if which('gsutil') is None or which('gcloud') is None:
+            log.error("Google Cloud SDK not installed!"
+                      "Cannot access the Cloud Build API to trigger a site rebuild.")
+            return
+
+        project = 'gold-hybrid-255313'
+        trigger_name = 'site-builder-manual'
+        cmd = f"gcloud beta --project {project} builds triggers run {trigger_name}".split(' ')
+        try:
+            cmd_output = subprocess.run(args=cmd,
+                                        shell=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT)
+            log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
+        except Exception as e:
+            log.error(f"{e}: Failed to trigger Cloud Build job to rebuild site:\n\"{cmd}\"")
 
     def has_errors(self):
         return self.errors_seen
