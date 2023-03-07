@@ -14,19 +14,24 @@
   <nav id="main-nav" class="main-nav" aria-label="Main">
     <ul id="menu" class="main-nav__list">
       <li class="main-nav__item">
-        <a href="/book/doc/introduction.html">Documentation</a>
+        <a href="/documentation">Documentation</a>
       </li>
       <li class="main-nav__item">
-        <a href="/guides/getting_started">Getting&nbsp;Started</a>
+        <a href="/guides/getting_started#top">Getting Started</a>
       </li>
       <li class="main-nav__item">
-        <a href="#partners">Partners</a>
+        <a href="https://reports.opentitan.org/hw/top_earlgrey/dv/summary/latest/report.html">Dashboard</a>
       </li>
       <li class="main-nav__item">
-        <a href="{{ .Site.Params.github_repo }}">Source</a>
+        <a href="/book/doc/project_governance#top">About</a>
       </li>
       <li class="main-nav__item">
-        <a href="{{ .Site.Params.one_year_url }}">Blog</a>
+        <a href="{{ .Site.Params.github_repo }}" aria-label="View on Github">
+          <svg focusable="false" viewBox="0 0 24 24">
+            <path fill="currentColor" fill-rule="evenodd"
+              d="M11.4 1A9 9 0 002 10c0 4.2 2.7 7.7 6.5 9 .5 0 .7-.2.7-.5v-2.2s-2.7.5-3.3-1.2c0 0-.4-1-1-1.3 0 0-1-.6 0-.6 0 0 1 0 1.5 1 .8 1.4 2.2 1 2.8.7 0-.6.3-1 .6-1.2-2.1-.2-4.3-.5-4.3-4.1 0-1 .3-1.6.9-2.2C6.3 7 6 6 6.5 4.9c.8-.3 2.6 1 2.6 1a9.3 9.3 0 014.9 0s1.8-1.3 2.6-1c.6 1.2.2 2.2.1 2.5.6.6 1 1.2 1 2.2 0 3.6-2.2 3.9-4.4 4 .4.4.7 1 .7 1.8v3.1c0 .3.1.6.6.5a9.3 9.3 0 006.5-9c0-5-4.4-9-9.7-9z" />
+          </svg>
+        </a>
       </li>
       <li class="main-nav__item user-toggle">
         <button class="[ toggle-button ] [ js-mode-toggle ]" aria-label="Switch light and dark theme">
