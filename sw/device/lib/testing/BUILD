@@ -361,6 +361,19 @@ cc_library(
 )
 
 cc_library(
+    name = "spi_flash_testutils",
+    srcs = ["spi_flash_testutils.c"],
+    hdrs = ["spi_flash_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":spi_device_testutils",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "usb_testutils",
     srcs = [
         "usb_testutils.c",

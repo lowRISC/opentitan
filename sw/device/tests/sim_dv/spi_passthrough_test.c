@@ -18,6 +18,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
+#include "sw/device/lib/testing/spi_flash_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -135,11 +136,6 @@ static const pinmux_select_t pinmux_in_config[] = {
     //     },
 };
 
-enum spi_flash_status_bit {
-  kSpiFlashStatusBitWip = 0x1,
-  kSpiFlashStatusBitWel = 0x2,
-};
-
 /**
  * Initialize the provided SPI host. For the most part, the values provided are
  * filler, as spi_host0 will be in passthrough mode and spi_host1 will remain
@@ -159,48 +155,6 @@ void init_spi_host(dif_spi_host_t *spi_host,
   };
   CHECK_DIF_OK(dif_spi_host_configure(spi_host, config));
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(spi_host, /*enabled=*/true));
-}
-
-/**
- * Spin wait until a Read Status command shows the downstream SPI flash is no
- * longer busy.
- */
-void wait_until_not_busy(void) {
-  uint8_t status;
-
-  do {
-    dif_spi_host_segment_t transaction[] = {
-        {
-            .type = kDifSpiHostSegmentTypeOpcode,
-            .opcode = kSpiDeviceFlashOpReadStatus1,
-        },
-        {
-            .type = kDifSpiHostSegmentTypeRx,
-            .rx =
-                {
-                    .width = kDifSpiHostWidthStandard,
-                    .buf = &status,
-                    .length = 1,
-                },
-        },
-    };
-    CHECK_DIF_OK(dif_spi_host_transaction(&spi_host0, /*csid=*/0, transaction,
-                                          ARRAYSIZE(transaction)));
-  } while (status & kSpiFlashStatusBitWip);
-}
-
-/**
- * Issue the Write Enable command to the downstream SPI flash.
- */
-void issue_write_enable(void) {
-  dif_spi_host_segment_t transaction[] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = kSpiDeviceFlashOpWriteEnable,
-      },
-  };
-  CHECK_DIF_OK(dif_spi_host_transaction(&spi_host0, /*csid=*/0, transaction,
-                                        ARRAYSIZE(transaction)));
 }
 
 /**
@@ -229,7 +183,7 @@ void handle_write_status(uint32_t status, uint8_t offset, uint8_t opcode) {
   status |= (payload << offset);
   CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(&spi_device, status));
 
-  issue_write_enable();
+  spi_flash_testutils_issue_write_enable(&spi_host0);
 
   dif_spi_host_segment_t transaction[] = {
       {
@@ -248,7 +202,7 @@ void handle_write_status(uint32_t status, uint8_t offset, uint8_t opcode) {
   };
   CHECK_DIF_OK(dif_spi_host_transaction(&spi_host0, /*csid=*/0, transaction,
                                         ARRAYSIZE(transaction)));
-  wait_until_not_busy();
+  spi_flash_testutils_wait_until_not_busy(&spi_host0);
   CHECK_DIF_OK(dif_spi_device_clear_flash_busy_bit(&spi_device));
 }
 
@@ -258,17 +212,7 @@ void handle_write_status(uint32_t status, uint8_t offset, uint8_t opcode) {
  * Relays the command out to the downstream SPI flash.
  */
 void handle_chip_erase(void) {
-  issue_write_enable();
-
-  dif_spi_host_segment_t transaction[] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = kSpiDeviceFlashOpChipErase,
-      },
-  };
-  CHECK_DIF_OK(dif_spi_host_transaction(&spi_host0, /*csid=*/0, transaction,
-                                        ARRAYSIZE(transaction)));
-  wait_until_not_busy();
+  spi_flash_testutils_erase_chip(&spi_host0);
   CHECK_DIF_OK(dif_spi_device_clear_flash_busy_bit(&spi_device));
 }
 
@@ -290,30 +234,8 @@ void handle_sector_erase(void) {
   CHECK_DIF_OK(
       dif_spi_device_get_4b_address_mode(&spi_device, &addr4b_enabled));
 
-  issue_write_enable();
-
-  dif_spi_host_addr_mode_t addr_mode = dif_toggle_to_bool(addr4b_enabled)
-                                           ? kDifSpiHostAddrMode4b
-                                           : kDifSpiHostAddrMode3b;
-  dif_spi_host_segment_t transaction[] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = kSpiDeviceFlashOpSectorErase,
-      },
-      {
-          .type = kDifSpiHostSegmentTypeAddress,
-          .address =
-              {
-                  .width = kDifSpiHostWidthStandard,
-                  .mode = addr_mode,
-                  .address = address,
-              },
-      },
-  };
-  CHECK_DIF_OK(dif_spi_host_transaction(&spi_host0, /*csid=*/0, transaction,
-                                        ARRAYSIZE(transaction)));
-
-  wait_until_not_busy();
+  bool addr_is_4b = dif_toggle_to_bool(addr4b_enabled);
+  spi_flash_testutils_erase_sector(&spi_host0, address, addr_is_4b);
   CHECK_DIF_OK(dif_spi_device_clear_flash_busy_bit(&spi_device));
 }
 
@@ -346,39 +268,9 @@ void handle_page_program(void) {
   CHECK_DIF_OK(
       dif_spi_device_get_4b_address_mode(&spi_device, &addr4b_enabled));
 
-  issue_write_enable();
-
-  dif_spi_host_addr_mode_t addr_mode = dif_toggle_to_bool(addr4b_enabled)
-                                           ? kDifSpiHostAddrMode4b
-                                           : kDifSpiHostAddrMode3b;
-  dif_spi_host_segment_t transaction[] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = kSpiDeviceFlashOpPageProgram,
-      },
-      {
-          .type = kDifSpiHostSegmentTypeAddress,
-          .address =
-              {
-                  .width = kDifSpiHostWidthStandard,
-                  .mode = addr_mode,
-                  .address = address,
-              },
-      },
-      {
-          .type = kDifSpiHostSegmentTypeTx,
-          .tx =
-              {
-                  .width = kDifSpiHostWidthStandard,
-                  .buf = payload,
-                  .length = payload_occupancy,
-              },
-      },
-  };
-  CHECK_DIF_OK(dif_spi_host_transaction(&spi_host0, /*csid=*/0, transaction,
-                                        ARRAYSIZE(transaction)));
-
-  wait_until_not_busy();
+  bool addr_is_4b = dif_toggle_to_bool(addr4b_enabled);
+  spi_flash_testutils_program_page(&spi_host0, payload, payload_occupancy,
+                                   address, addr_is_4b);
   CHECK_DIF_OK(dif_spi_device_clear_flash_busy_bit(&spi_device));
 }
 
