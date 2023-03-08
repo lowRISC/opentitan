@@ -8,6 +8,7 @@
 - [Formal Verification](setup_formal.md)
 - [Building (and Testing) Software](build_sw.md)
 - [Building Documentation](build_docs.md)
+- [Running e2e Tests](e2e_regression_setup.md)
 
 # Tools Setup
 
