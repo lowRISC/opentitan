@@ -15,5 +15,8 @@ git-repository-url = "https://github.com/lowrisc/opentitan"
 edit-url-template = "https://github.com/lowrisc/opentitan/edit/master/doc/guides/getting_started/{path}"
 curly-quotes = true
 
+[preprocessor.readme2index]
+command = "../../../util/mdbook_readme2index.py"
+
 [preprocessor.toolversion]
 command = "../../../util/mdbook_toolversion.py"
