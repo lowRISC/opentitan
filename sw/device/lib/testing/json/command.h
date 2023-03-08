@@ -20,6 +20,10 @@ extern "C" {
     value(_, SpiWaitForUpload) \
     value(_, SpiWriteStatus) \
     value(_, SpiWriteSfdp) \
+    value(_, SpiFlashReadId) \
+    value(_, SpiFlashReadSfdp) \
+    value(_, SpiFlashEraseSector) \
+    value(_, SpiFlashWrite) \
     value(_, SwStrapRead)
 UJSON_SERDE_ENUM(TestCommand, test_command_t, ENUM_TEST_COMMAND);
 

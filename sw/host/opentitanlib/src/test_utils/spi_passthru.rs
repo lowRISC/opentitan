@@ -55,3 +55,38 @@ impl UploadInfo {
         Self::recv(uart, Duration::from_secs(300), false)
     }
 }
+
+impl SpiFlashReadId {
+    pub fn execute(uart: &dyn Uart) -> Result<Self> {
+        TestCommand::SpiFlashReadId.send(uart)?;
+        let data = SpiFlashReadId::recv(uart, Duration::from_secs(300), false)?;
+        Ok(data)
+    }
+}
+
+impl SpiFlashReadSfdp {
+    pub fn execute(&self, uart: &dyn Uart) -> Result<SfdpData> {
+        TestCommand::SpiFlashReadSfdp.send(uart)?;
+        self.send(uart)?;
+        let sfdp = SfdpData::recv(uart, Duration::from_secs(300), false)?;
+        Ok(sfdp)
+    }
+}
+
+impl SpiFlashEraseSector {
+    pub fn execute(&self, uart: &dyn Uart) -> Result<()> {
+        TestCommand::SpiFlashEraseSector.send(uart)?;
+        self.send(uart)?;
+        Status::recv(uart, Duration::from_secs(300), false)?;
+        Ok(())
+    }
+}
+
+impl SpiFlashWrite {
+    pub fn execute(&self, uart: &dyn Uart) -> Result<()> {
+        TestCommand::SpiFlashWrite.send(uart)?;
+        self.send(uart)?;
+        Status::recv(uart, Duration::from_secs(300), false)?;
+        Ok(())
+    }
+}

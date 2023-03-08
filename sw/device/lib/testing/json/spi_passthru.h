@@ -36,6 +36,31 @@ UJSON_SERDE_STRUCT(SfdpData, sfdp_data_t, STRUCT_SFDP_DATA);
     field(data, uint8_t, 256)
 UJSON_SERDE_STRUCT(UploadInfo, upload_info_t, STRUCT_UPLOAD_INFO);
 
+#define STRUCT_SPI_FLASH_READ_ID(field, string) \
+    field(device_id, uint16_t) \
+    field(manufacturer_id, uint8_t) \
+    field(continuation_len, uint8_t)
+UJSON_SERDE_STRUCT(SpiFlashReadId, spi_flash_read_id_t,
+    STRUCT_SPI_FLASH_READ_ID);
+
+#define STRUCT_SPI_FLASH_READ_SFDP(field, string) \
+    field(address, uint32_t) \
+    field(length, uint16_t)
+UJSON_SERDE_STRUCT(SpiFlashReadSfdp, spi_flash_read_sfdp_t,
+    STRUCT_SPI_FLASH_READ_SFDP);
+
+#define STRUCT_SPI_FLASH_ERASE_SECTOR(field, string) \
+    field(address, uint32_t) \
+    field(addr4b, bool)
+UJSON_SERDE_STRUCT(SpiFlashEraseSector, spi_flash_erase_sector_t, STRUCT_SPI_FLASH_ERASE_SECTOR);
+
+#define STRUCT_SPI_FLASH_WRITE(field, string) \
+    field(address, uint32_t) \
+    field(addr4b, bool) \
+    field(data, uint8_t, 256) \
+    field(length, uint16_t)
+UJSON_SERDE_STRUCT(SpiFlashWrite, spi_flash_write_t, STRUCT_SPI_FLASH_WRITE);
+
 // clang-format on
 #ifdef __cplusplus
 }
