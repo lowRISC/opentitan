@@ -440,24 +440,34 @@ bin_to_vmem = rv_rule(
 )
 
 def _scramble_flash_vmem_impl(ctx):
+    # Declare outputs.
     outputs = []
     scrambled_vmem = ctx.actions.declare_file("{}.scr.vmem".format(
         # Remove ".vmem" from file basename.
         ctx.file.vmem.basename.replace("." + ctx.file.vmem.extension, ""),
     ))
     outputs.append(scrambled_vmem)
+
+    # Build arguments / inputs to `gen-flash-img.py` script.
+    arguments = [
+        "--in-flash-vmem",
+        ctx.file.vmem.path,
+        "--out-flash-vmem",
+        scrambled_vmem.path,
+    ]
+    inputs = [
+        ctx.file.vmem,
+        ctx.executable._tool,
+    ]
+    if ctx.file.otp:
+        arguments.extend(["--in-otp-vmem", ctx.file.otp.path])
+        inputs.append(ctx.file.otp)
+
+    # Run the action script.
     ctx.actions.run(
-        outputs = [scrambled_vmem],
-        inputs = [
-            ctx.file.vmem,
-            ctx.executable._tool,
-        ],
-        arguments = [
-            "--infile",
-            ctx.file.vmem.path,
-            "--outfile",
-            scrambled_vmem.path,
-        ],
+        outputs = outputs,
+        inputs = inputs,
+        arguments = arguments,
         executable = ctx.executable._tool,
     )
     return [DefaultInfo(
@@ -468,6 +478,7 @@ def _scramble_flash_vmem_impl(ctx):
 scramble_flash_vmem = rv_rule(
     implementation = _scramble_flash_vmem_impl,
     attrs = {
+        "otp": attr.label(allow_single_file = True),
         "vmem": attr.label(allow_single_file = True),
         "_tool": attr.label(
             default = "@//util/design:gen-flash-img",
@@ -912,6 +923,7 @@ def opentitan_flash_binary(
         platform = OPENTITAN_PLATFORM,
         signing_keys = DEFAULT_SIGNING_KEYS,
         signed = True,
+        sim_otp = None,
         testonly = True,
         manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         **kwargs):
@@ -928,6 +940,8 @@ def opentitan_flash_binary(
       @param platform: The target platform for the artifacts.
       @param signing_keys: The signing keys for to sign each BIN file with.
       @param signed: Whether or not to emit signed binary/VMEM files.
+      @param sim_otp: OTP image that contains flash scrambling keys / enablement flag
+                      (only relevant for VMEM files built for sim targets).
       @param manifest: Partially populated manifest to set boot stage/slot configs.
       @param **kwargs: Arguments to forward to `opentitan_binary`.
     Emits rules:
@@ -1004,7 +1018,7 @@ def opentitan_flash_binary(
                         word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
                     )
 
-                    # Scramble signed VMEM64.
+                    # Scramble / compute ECC for signed VMEM64.
                     scr_signed_vmem_name = "{}_scr_vmem64_signed_{}".format(
                         devname,
                         key_name,
@@ -1012,6 +1026,7 @@ def opentitan_flash_binary(
                     dev_targets.append(":" + scr_signed_vmem_name)
                     scramble_flash_vmem(
                         name = scr_signed_vmem_name,
+                        otp = sim_otp,
                         vmem = signed_vmem_name,
                         platform = platform,
                         testonly = testonly,
@@ -1030,11 +1045,12 @@ def opentitan_flash_binary(
                 word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
             )
 
-            # Scramble VMEM64.
+            # Scramble / compute ECC for VMEM64.
             scr_vmem_name = "{}_scr_vmem64".format(devname)
             dev_targets.append(":" + scr_vmem_name)
             scramble_flash_vmem(
                 name = scr_vmem_name,
+                otp = sim_otp,
                 vmem = vmem_name,
                 platform = platform,
                 testonly = testonly,

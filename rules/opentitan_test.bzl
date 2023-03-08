@@ -379,10 +379,22 @@ def opentitan_functest(
         if slot not in _FLASH_SLOTS:
             fail("Invalid slot: {}. Valid slots are: silicon_creator_{a,b,virtual}".format(slot))
         deps += _FLASH_SLOTS[slot]
+
+        # Get OTP image for sim targets. We need to pass the OTP image to the
+        # flash scrambling script since it contains the seeds to derive the
+        # scrambling keys. No need to worry about flash image scrambling for
+        # FPGA targets as the flash is loaded through bootstrap (i.e., the front
+        # door), unlike the sim targets which load via backdoor.
+        sim_otp_ = None
+        if "sim_dv" in target_params:
+            sim_otp_ = target_params["sim_dv"]["otp"]
+        elif "sim_verilator" in target_params:
+            sim_otp_ = target_params["sim_verilator"]["otp"]
         ot_flash_binary = name + "_prog"
         opentitan_flash_binary(
             name = ot_flash_binary,
             signed = signed,
+            sim_otp = sim_otp_,
             deps = deps,
             devices = devices_to_build_for,
             manifest = manifest,
