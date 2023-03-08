@@ -13,10 +13,10 @@ util/site/build-docs.sh || {
 }
 
 # Upload Doxygen Warnings if Present
-if [ -f "build/docs-generated/sw/doxygen_warnings.log" ]; then
+if [ -f "build-site/gen/doxygen_warnings.log" ]; then
   echo -n "##vso[task.uploadfile]"
-  echo "${PWD}/build/docs-generated/sw/doxygen_warnings.log"
+  echo "${PWD}/build-site/gen/doxygen_warnings.log"
   # Doxygen currently generates lots of warnings.
   # echo -n "##vso[task.issue type=warning]"
-  # echo "Doxygen generated warnings. Use 'util/build_docs.py' to generate warning logfile."
+  # echo "Doxygen generated warnings. Use 'util/site/build-docs.sh' to generate warning logfile."
 fi
