@@ -10,12 +10,12 @@ set -e
 ci/bazelisk.sh test \
     --build_tests_only=true \
     --test_timeout=2400,2400,3600,-1 \
-    --local_test_jobs=4 \
-    --local_cpu_resources=4 \
+    --local_test_jobs=8 \
+    --local_cpu_resources=8 \
     --test_tag_filters=verilator,-broken \
     --test_output=errors \
     --//hw:verilator_options=--threads,1 \
-    --//hw:make_options=-j,4 \
+    --//hw:make_options=-j,8 \
     //sw/device/tests:aes_smoketest_sim_verilator \
     //sw/device/tests:uart_smoketest_sim_verilator \
     //sw/device/tests:crt_test_sim_verilator \
