@@ -10,9 +10,12 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::eeprom::AddressMode;
 use opentitanlib::io::spi::{Target, Transfer};
-use opentitanlib::spiflash::SpiFlash;
+use opentitanlib::spiflash::{Sfdp, SpiFlash};
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::spi_passthru::{ConfigJedecId, SfdpData, StatusRegister, UploadInfo};
+use opentitanlib::test_utils::spi_passthru::{
+    ConfigJedecId, SfdpData, SpiFlashEraseSector, SpiFlashReadSfdp, SpiFlashWrite, StatusRegister,
+    UploadInfo,
+};
 use opentitanlib::uart::console::UartConsole;
 
 const FLASH_STATUS_WIP: u32 = 0x01;
@@ -275,6 +278,39 @@ fn test_write_status(opts: &Opts, transport: &TransportWrapper, opcode: u8) -> R
     Ok(())
 }
 
+fn test_read_flash(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let spi = transport.spi(&opts.spi)?;
+
+    let sfdp_read = SpiFlashReadSfdp {
+        address: 0u32,
+        length: 256u16,
+    };
+    let sfdp_data = sfdp_read.execute(&*uart)?;
+    let sfdp = Sfdp::try_from(sfdp_data.data.as_slice())?;
+    let spi_flash = SpiFlash::from_sfdp(sfdp);
+
+    let address = 0x1000u32;
+    let erase_op = SpiFlashEraseSector {
+        address: address,
+        addr4b: false,
+    };
+    erase_op.execute(&*uart)?;
+
+    let write_op = SpiFlashWrite {
+        address: address,
+        addr4b: false,
+        data: (0..256).map(|x| x as u8).collect(),
+        length: 256,
+    };
+    write_op.execute(&*uart)?;
+
+    let mut read_data = vec![0; 256];
+    spi_flash.read(&*spi, address, &mut read_data)?;
+    assert_eq!(read_data.as_slice(), write_op.data.as_slice());
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
@@ -285,6 +321,7 @@ fn main() -> Result<()> {
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
     uart.clear_rx_buffer()?;
 
+    execute_test!(test_read_flash, &opts, &transport);
     execute_test!(test_jedec_id, &opts, &transport);
     execute_test!(test_enter_exit_4b_mode, &opts, &transport);
     execute_test!(test_write_enable_disable, &opts, &transport);

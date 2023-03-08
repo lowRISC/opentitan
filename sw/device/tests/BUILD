@@ -2216,9 +2216,11 @@ opentitan_functest(
     ],
     test_harness = "//sw/host/tests/chip/spi_passthru",
     deps = [
+        "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/json:spi_passthru",
         "//sw/device/lib/testing/test_framework:ottf_flow_control",
