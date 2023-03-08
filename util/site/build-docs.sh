@@ -132,6 +132,7 @@ book_env+=" MDBOOK_PREPROCESSOR__DASHBOARD__COMMAND=${proj_root}/util/mdbook_das
 # ./doc/guides/getting_started/book.toml
 book_guides_env="env"
 book_guides_env+=" MDBOOK_PREPROCESSOR__TOOLVERSION__COMMAND=${proj_root}/util/mdbook_toolversion.py"
+book_guides_env+=" MDBOOK_PREPROCESSOR__README2INDEX__COMMAND=${proj_root}/util/mdbook_readme2index.py"
 
 # Build up Hugo arguments
 hugo_args=""
