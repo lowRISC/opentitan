@@ -11,7 +11,7 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/ip/otbn/dv/uvm/latest/results.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/otbn/dv/uvm/latest/report.html)
 
 ## Design features
 
