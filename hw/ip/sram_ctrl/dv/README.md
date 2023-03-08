@@ -9,8 +9,8 @@
 
 ## Pre-verified sub-modules
 The following sub-modules are pre-verified:
-* [prim_prince](https://reports.opentitan.org/hw/ip/prim/dv/prim_prince/latest/results.html)
-* [prim_lfsr](https://reports.opentitan.org/hw/ip/prim/dv/prim_lfsr/latest/results.html)
+* [prim_prince](https://reports.opentitan.org/hw/ip/prim/dv/prim_prince/latest/report.html)
+* [prim_lfsr](https://reports.opentitan.org/hw/ip/prim/dv/prim_lfsr/latest/report.html)
 
 Only toggle coverage on the IOs of these sub-modules is enabled for coverage collection.
 
