@@ -13,6 +13,10 @@ class flash_ctrl_write_word_sweep_vseq extends flash_ctrl_otf_base_vseq;
     int num, bank;
     int mywd;
 
+    // Don't select a partition defined as read-only
+    cfg.seq_cfg.avoid_ro_partitions = 1'b1;
+
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rand_op)
     ctrl = rand_op;
     bank = rand_op.addr[OTFBankId];
     num = 1;

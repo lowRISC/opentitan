@@ -93,10 +93,18 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     solve rand_op.addr before rand_op.num_words;
 
     if (cfg.seq_cfg.op_readonly_on_info_partition) {
-      rand_op.partition == FlashPartInfo -> rand_op.op == flash_ctrl_pkg::FlashOpRead;
+      if (cfg.seq_cfg.avoid_ro_partitions) {
+        rand_op.partition != FlashPartInfo;
+      } else {
+        rand_op.partition == FlashPartInfo -> rand_op.op == flash_ctrl_pkg::FlashOpRead;
+      }
     }
     if (cfg.seq_cfg.op_readonly_on_info1_partition) {
-      rand_op.partition == FlashPartInfo1 -> rand_op.op == flash_ctrl_pkg::FlashOpRead;
+      if (cfg.seq_cfg.avoid_ro_partitions) {
+        rand_op.partition != FlashPartInfo1;
+      } else {
+        rand_op.partition == FlashPartInfo1 -> rand_op.op == flash_ctrl_pkg::FlashOpRead;
+      }
     }
 
     rand_op.partition dist { FlashPartData := 1, [FlashPartInfo:FlashPartInfo2] :/ 1};
@@ -119,6 +127,24 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   constraint special_info_acc_c {
     allow_spec_info_acc dist { 3'h7 := 1, 3'h0 := 1, [1:6] :/ 2};
   }
+
+  // If the partition that selected configured as read-only, set otf_wr_pct to 0 to make sure to
+  // not program those partitions.
+  int otf_wr_pct_temp, otf_bwr_pct_temp;
+  function void sync_otf_wr_ro_part();
+    if ((cfg.seq_cfg.op_readonly_on_info_partition &&
+         rand_op.partition == FlashPartInfo) ||
+        (cfg.seq_cfg.op_readonly_on_info1_partition &&
+         rand_op.partition == FlashPartInfo1)) begin
+      otf_wr_pct_temp = cfg.otf_wr_pct;
+      otf_bwr_pct_temp = cfg.otf_bwr_pct;
+      cfg.otf_wr_pct = 0;
+      cfg.otf_bwr_pct = 0;
+    end else begin
+      cfg.otf_wr_pct = otf_wr_pct_temp;
+      cfg.otf_bwr_pct = otf_bwr_pct_temp;
+    end
+  endfunction : sync_otf_wr_ro_part
 
   function void post_randomize();
     super.post_randomize();
@@ -443,7 +469,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         `uvm_create_obj(flash_otf_item, exp_item)
 
         exp_item.cmd = flash_op;
-        exp_item.dq = cfg.calculate_expected_data(flash_op, flash_program_data);
+        exp_item.dq = flash_program_data;
         exp_item.region = my_region;
         // Scramble data
         exp_item.scramble(otp_addr_key, otp_data_key, flash_op.otf_addr);

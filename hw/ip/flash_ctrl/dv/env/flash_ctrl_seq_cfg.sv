@@ -69,6 +69,8 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint op_on_info1_partition_pc;  // Choose info1 partition.
   uint op_on_info2_partition_pc;  // Choose info2 partition.
 
+  bit avoid_ro_partitions; // Avoid partitions defined as read-only.
+
   bit op_readonly_on_info_partition;   // Make info  partition read-only.
   bit op_readonly_on_info1_partition;  // Make info1 partition read-only.
   bit op_readonly_on_info2_partition;  // Make info2 partition read-only.
@@ -202,6 +204,8 @@ class flash_ctrl_seq_cfg extends uvm_object;
     op_readonly_on_info_partition = 0;
     // info1 partition will be read-only by default
     op_readonly_on_info1_partition = 1;
+
+    avoid_ro_partitions = 0;
 
     op_erase_type_bank_pc = 20;
     op_prog_type_repair_pc = 10;

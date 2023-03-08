@@ -9,7 +9,6 @@ class flash_ctrl_rw_vseq extends flash_ctrl_otf_base_vseq;
   int num, bank;
 
   virtual task body();
-    int otf_wr_pct_temp;
     cfg.clk_rst_vif.wait_clks(5);
 
     fork
@@ -24,16 +23,7 @@ class flash_ctrl_rw_vseq extends flash_ctrl_otf_base_vseq;
             num = ctrl_info_num;
           end
           // If the partition that selected configured as read-only, skip the program
-          if ((cfg.otf_wr_pct != 0) &&
-              ((cfg.seq_cfg.op_readonly_on_info_partition &&
-                rand_op.partition == FlashPartInfo) ||
-               (cfg.seq_cfg.op_readonly_on_info1_partition &&
-                rand_op.partition == FlashPartInfo1))) begin
-            otf_wr_pct_temp = cfg.otf_wr_pct;
-            cfg.otf_wr_pct = 0;
-          end else begin
-            cfg.otf_wr_pct = otf_wr_pct_temp;
-          end
+          sync_otf_wr_ro_part();
           randcase
             cfg.otf_wr_pct:prog_flash(ctrl, bank, num, fractions);
             cfg.otf_rd_pct:read_flash(ctrl, bank, num, fractions);

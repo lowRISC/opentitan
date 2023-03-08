@@ -13,6 +13,9 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
     string path = "tb.dut.u_prog_fifo.wdata_i[38]";
     int    state_timeout_ns = 100000; // 100us
 
+    // Don't select a partition defined as read-only
+    cfg.seq_cfg.avoid_ro_partitions = 1'b1;
+
     repeat(5) begin
       flash_otf_region_cfg(.scr_mode(scr_ecc_cfg), .ecc_mode(scr_ecc_cfg));
       `uvm_info(`gfn, "Assert write path err", UVM_LOW)

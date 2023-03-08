@@ -274,7 +274,8 @@
     {
       name: flash_ctrl_derr_detect
       uvm_test_seq: flash_ctrl_derr_detect_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=1", "+rerun=5"]
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=3", "+derr_pct=1",
+                 "+rerun=5", "+otf_wr_pct=1"]
       reseed: 5
     }
     {
