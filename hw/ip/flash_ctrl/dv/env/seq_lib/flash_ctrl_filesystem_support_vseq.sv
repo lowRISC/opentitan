@@ -22,6 +22,9 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
   virtual task body();
     int round;
 
+    // Don't select a partition defined as read-only
+    cfg.seq_cfg.avoid_ro_partitions = 1'b1;
+
     special_info_acc_c.constraint_mode(0);
     flash_program_data_c.constraint_mode(0);
 

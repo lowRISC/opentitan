@@ -40,6 +40,10 @@ class flash_ctrl_prog_reset_vseq extends flash_ctrl_otf_base_vseq;
     int num, bank, iter;
     int state_long_timeout_ns = 10000000; // 10ms
     int state_timeout_ns = 100000; // 100us
+
+    // Don't select a partition defined as read-only
+    cfg.seq_cfg.avoid_ro_partitions = 1'b1;
+
     cfg.m_tl_agent_cfg.check_tl_errs = 0;
     cfg.m_tl_agent_cfgs["flash_ctrl_eflash_reg_block"].check_tl_errs = 0;
 
