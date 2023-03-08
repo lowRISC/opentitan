@@ -2138,6 +2138,9 @@ opentitan_functest(
             "--bootstrap=\"$(location {flash})\"",
         ],
     ),
+    dv = dv_params(
+        otp = ":power_virus_systemtest_otp_img_rma",
+    ),
     targets = [
         # TODO(#14814): add more targets
         "cw310_test_rom",
