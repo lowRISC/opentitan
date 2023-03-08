@@ -272,23 +272,15 @@ $ ./util/dvsim/testplanner.py \
 ```
 
 ### APIs for external tools
-The `util/build_docs.py` script invokes the testplanner utility functions directly to parse the Hjson testplan and insert an HTML table within the DV document.
+The `util/site/build-docs.sh` script invokes the testplanner utility functions directly to parse the Hjson testplan and insert an HTML table within the DV document.
 This is done by invoking:
-```console
-$ ./util/build_docs.py --preview
-```
-The output for each testplan will be saved into `build/docs-generated`.
-For example the GPIO IP testplan is rendered into a table at `build/docs-generated/hw/ip/gpio/data/gpio_testplan.hjson.testplan`.
-The complete OpenTitan documentation is rendered locally at `https://localhost:1313`.
 
-The following snippet of code can be found in `util/build_docs.py`:
-```python
-from dvsim.Testplan import Testplan
-
-  # hjson_testplan_path: a string pointing to the path to Hjson testplan
-  testplan = Testplan(hjson_testplan_path)
-  text = testplan.get_testplan_table("html")
+```sh
+./util/site/build-docs.sh serve
 ```
+
+The `util/mdbook_testplan.py` preprocessor renders any testplan present the `SUMMARY.md` into the documenation.
+The complete OpenTitan documentation is rendered locally at `https://0.0.0.0:9000`.
 
 ## Future work
 * Allow DUT and its imported testplans to have the same testpoint name as long as they are in separate files.

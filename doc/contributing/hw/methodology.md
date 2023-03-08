@@ -44,10 +44,10 @@ Within the OpenTitan project there are two important tooling components to effic
 
 The first is the [Hugo](https://gohugo.io) tool, which converts an annotated Markdown file into a rendered HTML file (including this document).
 See the linked manual for information about the annotations and how to use it to create enhanced auto-generated additions to standard Markdown files.
-To automate the process a script [build_docs.py](../../guides/getting_started/src/build_docs.md) is provided for generating the documentation.
+To automate the process a script [build-docs.sh](https://opentitan.org/guides/getting_started/build_docs.html) is provided for generating the documentation.
 
 The second is the [reggen](../../../util/reggen/README.md) register tool that helps define the methodology and description language for specifying hardware registers.
-These descriptions are used by `build_docs.py` to ensure that the technical specifications for the IP are accurate and up to date with the hardware being built.
+These descriptions are used by `build-docs.sh` to ensure that the technical specifications for the IP are accurate and up to date with the hardware being built.
 
 Underlying and critical to this tooling is the human-written content that goes into the source Markdown and register descriptions.
 Clarity and consistency is key.

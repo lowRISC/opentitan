@@ -5,9 +5,9 @@
 ### Summary
 
 Markdown files are used to write most documentation.
-The main Markdown tool is [Hugo](https://gohugo.io).
+The main Markdown tool is [mdbook](https://rust-lang.github.io/mdBook/).
 
-The Markdown processing is done using the `build_docs.py` tool in the `util` directory.
+There exists a script, `./util/site/build-docs.sh`, to build all `mdbook` books as well as run documentation generators such as `doxygen`.
 
 As with all style guides the intention is to:
 
