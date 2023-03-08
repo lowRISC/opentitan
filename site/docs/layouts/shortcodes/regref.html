@@ -1,3 +1,0 @@
-{{ $base_url := "" }}
-{{ if len .Params | eq 2 }}{{ $base_url = relref . (.Get 1) }}{{ end }}
-{{ $name := .Get 0 }}{{ $ref := lower (index (split $name ".") 0) }}<a href="{{ $base_url }}#Reg_{{ $ref }}">{{ $name }}</a>{{- "" -}}
