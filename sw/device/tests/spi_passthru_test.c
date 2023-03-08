@@ -7,11 +7,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
+#include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/json/command.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
+#include "sw/device/lib/testing/spi_flash_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_flow_control.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -23,6 +26,7 @@
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 static dif_spi_device_handle_t spid;
+static dif_spi_host_t spih;
 
 static status_t configure_jedec_id(ujson_t *uj, dif_spi_device_handle_t *spid) {
   config_jedec_id_t config;
@@ -120,6 +124,61 @@ static status_t wait_for_upload(ujson_t *uj, dif_spi_device_handle_t *spid) {
   return OK_STATUS();
 }
 
+status_t spi_flash_read_id(ujson_t *uj, dif_spi_host_t *spih,
+                           dif_spi_device_handle_t *spid) {
+  TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleDisabled));
+  spi_flash_testutils_jedec_id_t jedec_id;
+  spi_flash_testutils_read_id(spih, &jedec_id);
+  TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleEnabled));
+
+  spi_flash_read_id_t uj_id = {
+      .device_id = jedec_id.device_id,
+      .manufacturer_id = jedec_id.manufacturer_id,
+      .continuation_len = jedec_id.continuation_len,
+  };
+  return RESP_OK(ujson_serialize_spi_flash_read_id_t, uj, &uj_id);
+}
+
+status_t spi_flash_read_sfdp(ujson_t *uj, dif_spi_host_t *spih,
+                             dif_spi_device_handle_t *spid) {
+  TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleDisabled));
+  spi_flash_read_sfdp_t op;
+  TRY(ujson_deserialize_spi_flash_read_sfdp_t(uj, &op));
+
+  sfdp_data_t sfdp;
+  CHECK(op.length <= sizeof(sfdp.data));
+  spi_flash_testutils_read_sfdp(spih, op.address, sfdp.data, op.length);
+  TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleEnabled));
+
+  return RESP_OK(ujson_serialize_sfdp_data_t, uj, &sfdp);
+}
+
+status_t spi_flash_erase_sector(ujson_t *uj, dif_spi_host_t *spih,
+                                dif_spi_device_handle_t *spid) {
+  spi_flash_erase_sector_t op;
+  TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleDisabled));
+  TRY(ujson_deserialize_spi_flash_erase_sector_t(uj, &op));
+  spi_flash_testutils_erase_sector(spih, op.address, op.addr4b);
+  TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleEnabled));
+  return RESP_OK_STATUS(uj);
+}
+
+status_t spi_flash_write(ujson_t *uj, dif_spi_host_t *spih,
+                         dif_spi_device_handle_t *spid) {
+  spi_flash_write_t op;
+  TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleDisabled));
+  TRY(ujson_deserialize_spi_flash_write_t(uj, &op));
+  if (op.length > sizeof(op.data)) {
+    LOG_ERROR("Flash write length larger than buffer: %u", op.length);
+    return INVALID_ARGUMENT();
+  }
+
+  spi_flash_testutils_program_page(spih, op.data, op.length, op.address,
+                                   op.addr4b);
+  TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleEnabled));
+  return RESP_OK_STATUS(uj);
+}
+
 status_t command_processor(ujson_t *uj) {
   while (true) {
     test_command_t command;
@@ -140,6 +199,18 @@ status_t command_processor(ujson_t *uj) {
       case kTestCommandSpiWaitForUpload:
         RESP_ERR(uj, wait_for_upload(uj, &spid));
         break;
+      case kTestCommandSpiFlashReadId:
+        RESP_ERR(uj, spi_flash_read_id(uj, &spih, &spid));
+        break;
+      case kTestCommandSpiFlashReadSfdp:
+        RESP_ERR(uj, spi_flash_read_sfdp(uj, &spih, &spid));
+        break;
+      case kTestCommandSpiFlashEraseSector:
+        RESP_ERR(uj, spi_flash_erase_sector(uj, &spih, &spid));
+        break;
+      case kTestCommandSpiFlashWrite:
+        RESP_ERR(uj, spi_flash_write(uj, &spih, &spid));
+        break;
 
       default:
         LOG_ERROR("Unrecognized command: %d", command);
@@ -151,6 +222,23 @@ status_t command_processor(ujson_t *uj) {
 }
 
 bool test_main(void) {
+  const uint32_t spi_host_clock_freq_hz =
+      (uint32_t)kClockFreqHiSpeedPeripheralHz;
+  CHECK_DIF_OK(dif_spi_host_init(
+      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spih));
+  dif_spi_host_config_t config = {
+      .spi_clock = spi_host_clock_freq_hz / 4,
+      .peripheral_clock_freq_hz = spi_host_clock_freq_hz,
+      .chip_select =
+          {
+              .idle = 2,
+              .trail = 2,
+              .lead = 2,
+          },
+  };
+  CHECK_DIF_OK(dif_spi_host_configure(&spih, config));
+  CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spih, /*enabled=*/true));
+
   CHECK_DIF_OK(dif_spi_device_init_handle(
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spid));
 
