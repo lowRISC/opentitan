@@ -311,6 +311,7 @@ For the `Olimex ARM-USB-TINY-H`, use the classic ARM JTAG header (J13) and make 
 Depending on the adapter's default state, OpenTitan may be held in reset when the adapter is initially connected.
 This reset will come under software control once OpenOCD initializes the driver.
 
+### Device permissions: udev rules
 The JTAG adapter's device node in `/dev` must have read-write permissions.
 Otherwise, OpenOCD will fail because it's unable to open the USB device.
 The udev rule below matches the ARM-USB-TINY-H adapter, sets the octal mode mask to `0666`, and creates a symlink at `/dev/jtag_adapter_arm_usb_tiny_h`.
