@@ -2853,6 +2853,20 @@
       stage: V3
       tests: ["chip_sw_otp_ctrl_vendor_test_csr_access"]
     }
+    {
+      name: chip_sw_otp_ctrl_escalation
+      desc: '''Verify escalation from otp_ctrl macro fatal error.
+
+            - Inject ECC fatal error into OTP macro's HW cfg partition, and read back this macro
+              via DAI interface.
+            - Because this fatal error will immediately turn off CPU, so the DV sequence will probe
+              the alert interface to make sure alert and escalation is triggered.
+
+            X'ref with chip_sw_all_escalation_resets.
+            '''
+      stage: V3
+      tests: ["chip_sw_otp_ctrl_escalation"]
+    }
 
     // FLASH (pre-verified IP) integration tests:
     {
