@@ -35,6 +35,7 @@ from topgen import intermodule as im
 from topgen import lib as lib
 from topgen import merge_top, search_ips, strong_random, validate_top
 from topgen.c_test import TopGenCTest
+from topgen.rust import TopGenRust
 from topgen.clocks import Clocks
 from topgen.gen_dv import gen_dv
 from topgen.gen_top_docs import gen_top_docs
@@ -1259,6 +1260,10 @@ def main():
         # object to store it.
         c_helper = TopGenCTest(completecfg, name_to_block)
 
+        # The Rust file needs some complex information, so we initialize this
+        # object to store it.
+        rs_helper = TopGenRust(completecfg, name_to_block)
+
         # "toplevel_pkg.sv.tpl" -> "rtl/autogen/top_{topname}_pkg.sv"
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel_pkg.sv.tpl",
                         out_path / f"rtl/autogen/top_{topname}_pkg.sv",
@@ -1320,6 +1325,54 @@ def main():
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
                             memory_cheader_path,
                             helper=c_helper)
+
+        # Rust File + Clang-format file
+
+        # Since SW does not use FuseSoC and instead expects those files always
+        # to be in hw/top_{topname}/sw/autogen, we currently create these files
+        # twice:
+        # - Once under out_path/sw/autogen
+        # - Once under hw/top_{topname}/sw/autogen
+        root_paths = [out_path.resolve(), SRCTREE_TOP]
+        out_paths = [
+            out_path.resolve(),
+            (SRCTREE_TOP / "hw/top_{}/".format(topname)).resolve()
+        ]
+        for idx, path in enumerate(out_paths):
+            # "clang-format" -> "sw/autogen/.clang-format"
+            cformat_tplpath = TOPGEN_TEMPLATE_PATH / "clang-format"
+            cformat_dir = path / "sw/autogen"
+            cformat_dir.mkdir(parents=True, exist_ok=True)
+            cformat_path = cformat_dir / ".clang-format"
+            cformat_path.write_text(cformat_tplpath.read_text())
+
+            # Save the header macro prefix into `rs_helper`
+            rel_header_dir = cformat_dir.relative_to(root_paths[idx])
+            rs_helper.header_macro_prefix = (
+                "OPENTITAN_" + str(rel_header_dir).replace("/", "_").upper())
+
+            # "top_{topname}.rs.tpl" -> "sw/autogen/top_{topname}.rs"
+            cheader_path = cformat_dir / f"top_{topname}.rs"
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel.rs.tpl",
+                            cheader_path,
+                            helper=rs_helper)
+
+            # TODO Rust don't have header this path
+            # should be used to generate rust modules.
+            # Save the relative header path into `rs_helper`
+            rel_header_path = cheader_path.relative_to(root_paths[idx])
+            rs_helper.header_path = str(rel_header_path)
+
+            # "toplevel_memory.ld.tpl" -> "sw/autogen/top_{topname}_memory.ld"
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.ld.tpl",
+                            cformat_dir / f"top_{topname}_memory.ld")
+
+            # TODO megre to one memmory file
+            # "toplevel_memory.rs.tpl" -> "sw/autogen/top_{topname}_memory.rs.h"
+            memory_cheader_path = cformat_dir / f"top_{topname}_memory.rs"
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.rs.tpl",
+                            memory_cheader_path,
+                            helper=rs_helper)
 
         # generate chip level xbar and alert_handler TB
         tb_files = [

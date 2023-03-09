@@ -219,7 +219,7 @@ static const char *kmac_inst_name = "kmac";
 // TODO: test lc_ctrl fatal_state, alert 17.
 static const char *lc_ctrl_inst_name = "lc_ctrl";
 static const char *otbn_inst_name = "otbn";
-// TODO test fatal macro, fatal check, and fatal prim, alerts 11, 12, and 14.
+// TODO test fatal macro, and fatal prim, alerts 11 and 14.
 // They don't have onehot_checkers, cause both u_reg, and u_reg_tap checkers?
 static const char *otp_ctrl_inst_name = "otp_ctrl";
 static const char *pattgen_inst_name = "pattgen";
@@ -368,7 +368,10 @@ static void otp_ctrl_fault_checker(bool enable, const char *ip_inst,
       relevant_mask, kDifOtpCtrlStatusCodeCheckPending, false);
   CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp_ctrl, &status));
   relevant_codes = status.codes & relevant_mask;
-  expected_codes = enable ? (1 << kDifOtpCtrlStatusCodeBusIntegError) : 0;
+  dif_otp_ctrl_status_code_t exp_err = (type == we_check)
+                                           ? kDifOtpCtrlStatusCodeBusIntegError
+                                           : kDifOtpCtrlStatusCodeDaiError;
+  expected_codes = enable ? (1 << exp_err) : 0;
   CHECK(relevant_codes == expected_codes,
         "For %s got codes 0x%x, expected 0x%x", ip_inst, relevant_codes,
         expected_codes);
@@ -845,7 +848,6 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
       fault_checker = fc;
     } break;
       // TODO add mechanism to inject:
-      // kTopEarlgreyAlertIdOtpCtrlFatalCheckError sparse fsm
       // kTopEarlgreyAlertIdOtpCtrlFatalMacroError uncorrectable ecc from macro
       // In any partition otp_ctrl_part_unbuf error_q = MacroEccUncorrError
       // kTopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert force at prim_otp interface
@@ -853,6 +855,11 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
       // forcing otp_prog_err_o from lc_ctrl_fsm and
       // kTopEarlgreyAlertIdLcCtrlFatalStateError using sparse fsm.
       // alerts, and corresponding CSR bit to check.
+    case kTopEarlgreyAlertIdOtpCtrlFatalCheckError: {
+      fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
+                            sparse_fsm_check};
+      fault_checker = fc;
+    } break;
     case kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError: {
       fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
                             we_check};
@@ -1112,7 +1119,8 @@ bool test_main(void) {
     // state the lc_ctrl blocks the CPU.
     if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalStdErr ||
         kExpectedAlertNumber == kTopEarlgreyAlertIdSramCtrlMainFatalError ||
-        kExpectedAlertNumber == kTopEarlgreyAlertIdLcCtrlFatalStateError) {
+        kExpectedAlertNumber == kTopEarlgreyAlertIdLcCtrlFatalStateError ||
+        kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalCheckError) {
       CHECK(interrupt_count == 0,
             "Expected regular ISR should not run for flash_ctrl, lc_ctrl fatal "
             "state, or sram_ctrl_main faults");

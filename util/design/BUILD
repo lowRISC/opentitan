@@ -8,6 +8,11 @@ load("@rules_python//python:defs.bzl", "py_binary")
 package(default_visibility = ["//visibility:public"])
 
 py_library(
+    name = "prince",
+    srcs = ["prince.py"],
+)
+
+py_library(
     name = "secded_gen",
     srcs = ["secded_gen.py"],
     data = ["//util/design/data:secded_cfg.hjson"],
@@ -17,7 +22,10 @@ py_library(
 py_binary(
     name = "gen-flash-img",
     srcs = ["gen-flash-img.py"],
-    deps = [":secded_gen"],
+    deps = [
+        ":secded_gen",
+        requirement("pyfinite"),
+    ],
 )
 
 py_binary(

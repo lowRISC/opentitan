@@ -21,3 +21,26 @@ impl ConfigJedecId {
         Ok(())
     }
 }
+
+impl StatusRegister {
+    pub fn read(uart: &dyn Uart) -> Result<Self> {
+        TestCommand::SpiReadStatus.send(&*uart)?;
+        StatusRegister::recv(uart, Duration::from_secs(300), false)
+    }
+
+    pub fn write(&self, uart: &dyn Uart) -> Result<()> {
+        TestCommand::SpiWriteStatus.send(&*uart)?;
+        self.send(uart)?;
+        Status::recv(uart, Duration::from_secs(300), false)?;
+        Ok(())
+    }
+}
+
+impl SfdpData {
+    pub fn write(&self, uart: &dyn Uart) -> Result<()> {
+        TestCommand::SpiWriteSfdp.send(&*uart)?;
+        self.send(uart)?;
+        Status::recv(uart, Duration::from_secs(300), false)?;
+        Ok(())
+    }
+}

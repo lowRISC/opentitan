@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test")
 load("//rules:ujson.bzl", "ujson_rust")
 
 package(default_visibility = ["//visibility:public"])
@@ -191,6 +191,7 @@ rust_library(
     deps = [
         "//sw/host/opentitanlib/bindgen",
         "@crate_index//:anyhow",
+        "@crate_index//:arrayvec",
         "@crate_index//:bitflags",
         "@crate_index//:bitvec",
         "@crate_index//:byteorder",
@@ -259,4 +260,9 @@ rust_test(
         "gpio": "$(location :gpio)",
         "pinmux_config": "$(location :pinmux_config)",
     },
+)
+
+rust_doc(
+    name = "opentitanlib_doc",
+    crate = ":opentitanlib",
 )

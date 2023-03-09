@@ -74,10 +74,11 @@ mod test {
     fn test_matrix() -> Result<()> {
         let before = example::Matrix {
             k: [
-                [0, 1, 2, 3, 4],
-                [100, 200, 300, 400, 500],
-                [-1, -2, -3, -4, -5],
-            ],
+                [0, 1, 2, 3, 4].into(),
+                [100, 200, 300, 400, 500].into(),
+                [-1, -2, -3, -4, -5].into(),
+            ]
+            .into(),
         };
         let after = roundtrip("matrix", &serde_json::to_string(&before)?)?;
         let after = serde_json::from_str::<example::Matrix>(&after)?;

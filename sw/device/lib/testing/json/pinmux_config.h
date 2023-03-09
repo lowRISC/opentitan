@@ -21,19 +21,20 @@ extern "C" {
 // clang-format off
 
 #define STRUCT_PINMUX_INPUT_SELECTION(field, string) \
-  field(peripheral, pinmux_peripheral_in_t, 16)      \
-      field(selector, pinmux_insel_t, 16)
+    field(peripheral, pinmux_peripheral_in_t, 16)    \
+    field(selector, pinmux_insel_t, 16)
 UJSON_SERDE_STRUCT(PinmuxInputSelection, pinmux_input_selection_t,
                    STRUCT_PINMUX_INPUT_SELECTION);
 
 #define STRUCT_PINMUX_OUTPUT_SELECTION(field, string) \
-  field(mio, pinmux_mio_out_t, 16) field(selector, pinmux_outsel_t, 16)
+    field(mio, pinmux_mio_out_t, 16)                  \
+    field(selector, pinmux_outsel_t, 16)
 UJSON_SERDE_STRUCT(PinmuxOutputSelection, pinmux_output_selection_t,
                    STRUCT_PINMUX_OUTPUT_SELECTION);
 
 #define STRUCT_PINMUX_CONFIG(field, string) \
-  field(input, pinmux_input_selection_t)    \
-      field(output, pinmux_output_selection_t)
+    field(input, pinmux_input_selection_t)  \
+    field(output, pinmux_output_selection_t)
 UJSON_SERDE_STRUCT(PinmuxConfig, pinmux_config_t, STRUCT_PINMUX_CONFIG);
 
 // clang-format on

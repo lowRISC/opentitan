@@ -37,8 +37,8 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*lc_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdLcCtrlFatalBusIntegError},
     '{"*otbn*prim_reg_we_check*", TopEarlgreyAlertIdOtbnFatal},
     // TODO TopEarlgreyAlertIdOtpCtrlFatalMacroError,
-    // TODO TopEarlgreyAlertIdOtpCtrlFatalCheckError
     // TODO TopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert.
+    '{"*otp_ctrl*u_otp_ctrl_dai*", TopEarlgreyAlertIdOtpCtrlFatalCheckError},
     '{"*otp_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdOtpCtrlFatalBusIntegError},
     '{"*pattgen*prim_reg_we_check*", TopEarlgreyAlertIdPattgenFatalFault},
     '{"*pinmux*prim_reg_we_check*", TopEarlgreyAlertIdPinmuxAonFatalFault},

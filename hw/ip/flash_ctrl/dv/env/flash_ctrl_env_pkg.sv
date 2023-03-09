@@ -346,17 +346,11 @@ package flash_ctrl_env_pkg;
   // remove bank select
   localparam int unsigned FlashByteAddrWidth = flash_ctrl_pkg::BusAddrByteW - 1;
 
-  localparam bit [FlashDataWidth-1:0] IPoly = FlashDataWidth'(1'b1) << 15 |
-                                      FlashDataWidth'(1'b1) << 9  |
-                                      FlashDataWidth'(1'b1) << 7  |
-                                      FlashDataWidth'(1'b1) << 4  |
-                                      FlashDataWidth'(1'b1) << 3  |
-                                      FlashDataWidth'(1'b1) << 0;
-
   function automatic bit [FlashDataWidth-1:0] flash_gf_mult2(bit [FlashDataWidth-1:0] operand);
     bit [FlashDataWidth-1:0]          mult_out;
 
-    mult_out = operand[FlashDataWidth-1] ? (operand << 1) ^ IPoly : (operand << 1);
+    mult_out = operand[FlashDataWidth-1] ? (operand << 1) ^
+      flash_phy_pkg::ScrambleIPoly : (operand << 1);
     return mult_out;
   endfunction
 

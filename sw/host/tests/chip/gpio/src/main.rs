@@ -75,7 +75,7 @@ static ref CONFIG: HashMap<&'static str, Config> = collection! {
             PinmuxMioOut::Ior13 => PinmuxOutsel::GpioGpio13,
         },
     },
-    "hyperdebug" => Config {
+    "hyper310" => Config {
         input: collection! {
             // The commented lines represent multi-fuction pins.  These will
             // be added back in when the hyperdebug firmware can set these

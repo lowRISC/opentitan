@@ -293,6 +293,7 @@ _NORMAL_DEPENDENCIES = {
         _COMMON_CONDITION: {
             "ansi_term": "@crate_index__ansi_term-0.12.1//:ansi_term",
             "anyhow": "@crate_index__anyhow-1.0.69//:anyhow",
+            "arrayvec": "@crate_index__arrayvec-0.7.2//:arrayvec",
             "atty": "@crate_index__atty-0.2.14//:atty",
             "bitflags": "@crate_index__bitflags-1.3.2//:bitflags",
             "bitvec": "@crate_index__bitvec-1.0.1//:bitvec",
@@ -526,6 +527,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/anyhow/1.0.69/download"],
         strip_prefix = "anyhow-1.0.69",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.anyhow-1.0.69.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__arrayvec-0.7.2",
+        sha256 = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/arrayvec/0.7.2/download"],
+        strip_prefix = "arrayvec-0.7.2",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.arrayvec-0.7.2.bazel"),
     )
 
     maybe(

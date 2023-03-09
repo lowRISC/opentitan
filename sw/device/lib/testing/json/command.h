@@ -16,6 +16,9 @@ extern "C" {
     value(_, GpioGet) \
     value(_, PinmuxConfig) \
     value(_, SpiConfigureJedecId) \
+    value(_, SpiReadStatus) \
+    value(_, SpiWriteStatus) \
+    value(_, SpiWriteSfdp) \
     value(_, SwStrapRead)
 UJSON_SERDE_ENUM(TestCommand, test_command_t, ENUM_TEST_COMMAND);
 

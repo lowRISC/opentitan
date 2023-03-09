@@ -52,6 +52,17 @@ package flash_phy_pkg;
   // If this value is greater than 1, constraints must be updated for multicycle paths
   parameter int unsigned CipherCycles  = 2;
 
+  // GF(2) irreducible polynomial for flash XEX scrambling scheme.
+  // We use the NIST 800-38B recommendation for block cipher modes of operation.
+  // See Section "5.3 Subkeys" on page 6:
+  // https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-38B.pdf
+  // Specifically, we use the polynomial: x^64 + x^4 + x^3 + x + 1. Note, the
+  // MSB get clipped off below.
+  parameter bit[DataWidth-1:0] ScrambleIPoly = DataWidth'(1'b1) << 4 |
+                                               DataWidth'(1'b1) << 3 |
+                                               DataWidth'(1'b1) << 1 |
+                                               DataWidth'(1'b1) << 0;
+
   // Read buffer metadata
   typedef enum logic [1:0] {
     Invalid     = 2'h0,

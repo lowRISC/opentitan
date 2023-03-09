@@ -1103,9 +1103,11 @@ opentitan_functest(
     name = "gpio_pinmux_test",
     srcs = ["gpio_pinmux_test.c"],
     cw310 = cw310_params(
-        interface = "hyperdebug",
+        interface = "hyper310",
         tags = ["manual"],
         test_cmds = [
+            "--rom-kind=testrom",
+            "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
         ],
     ),
@@ -2195,7 +2197,9 @@ opentitan_functest(
 
 opentitan_functest(
     name = "spi_passthru_test",
-    srcs = ["spi_passthru_test.c"],
+    srcs = [
+        "spi_passthru_test.c",
+    ],
     cw310 = cw310_params(
         # This test will need hyperdebug once we start using multi-lane
         # SPI modes.
@@ -2214,6 +2218,7 @@ opentitan_functest(
     deps = [
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/testing:spi_device_testutils",
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/json:spi_passthru",
         "//sw/device/lib/testing/test_framework:ottf_flow_control",
