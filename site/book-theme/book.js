@@ -1,3 +1,10 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+// SPDX-FileCopyrightText: 2023 'mdBook contributers' (https://github.com/rust-lang/mdBook)
+// SPDX-License-Identifier: MPL-2.0
+
 "use strict";
 
 // Fix back button cache problem
