@@ -5,6 +5,14 @@ SPDX-License-Identifier: Apache-2.0
 -->
 
 <link href="block_diagram.css" rel="stylesheet">
+<script src="block_diagram.js"></script>
+<script>
+// Append tooltips to each block on window load.
+window.onload = (event) => {
+    const blocks = document.querySelectorAll("#earlgrey-block-diagram .block");
+    loadTooltips("/earlgrey-stats.json", blocks);
+}
+</script>
 
 <figure class="block-diagram" id="earlgrey-block-diagram">
     <figcaption class="block-diagram-title">Chip_Earlgrey_ASIC</figcaption>

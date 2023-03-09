@@ -60,6 +60,22 @@
     --clock5-fg: var(--text-black);
     --clock6-fg: var(--text-black);
 
+    --tooltip-bg: #333;
+    --tooltip-fg: var(--text-white);
+    --tooltip-title-bg: #666;
+    --tooltip-title-fg: var(--text-white);
+    --tooltip-arrow-width: 0.8em;
+    --tooltip-arrow-height: 0.7em;
+
+    --status1-bg: #b81d13;
+    --status2-bg: #efb700;
+    --status3-bg: #82be00;
+    --status4-bg: #008450;
+    --status1-fg: var(--text-white);
+    --status2-fg: var(--text-black);
+    --status3-fg: var(--text-black);
+    --status4-fg: var(--text-white);
+
     --arrow-bg: #7b7979;
 
     --gap: 0.8em;
@@ -378,6 +394,134 @@ a.block:visited {
 .clock6, .block[subclock1="clock6"]::before, .block[subclock2="clock6"]::after {
     --clock-bg: var(--clock6-bg);
     --clock-fg: var(--clock6-fg);
+}
+
+/************
+ * Tooltips *
+ ************/
+
+.block:hover {
+    z-index: 3;
+}
+.block:not(:hover) .tooltip {
+    display: none;
+}
+
+.tooltip {
+    display: grid;
+    grid-template-columns: minmax(4.5em, auto) 1fr;
+    column-gap: 0.5em;
+    row-gap: 0.25em;
+
+    pointer-events: none;
+
+    position: absolute;
+    overflow: visible;
+
+    width: max-content;
+    padding: var(--padding);
+
+    transform: translateX(-50%);
+    top: calc(100% + 0.5 * var(--tooltip-arrow-height));
+    left: calc(50%);
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+
+    border-radius: 0.4em;
+    background: var(--tooltip-bg);
+    color: var(--tooltip-fg);
+
+    font-size: 0.75rem;
+}
+
+.tooltip::before {
+    display: block;
+    content: "";
+    z-index: 99;
+
+    position: absolute;
+    bottom: 100%;
+    transform: translateX(-50%);
+    left: 50%;
+
+    border-width: 0 var(--tooltip-arrow-width);
+    border-style: solid;
+    border-color: transparent;
+    border-bottom: var(--tooltip-arrow-height) solid var(--tooltip-bg);
+}
+
+.tooltip-title {
+    grid-column: span 2;
+    padding: 0.2em 0.4em;
+    margin-top: 0;
+    margin-bottom: 0.2em;
+
+    border-radius: 0.3em;
+    background: var(--tooltip-title-bg);
+    color: var(--tooltip-title-fg);
+
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+.tooltip hr {
+    grid-column: span 2;
+    width: 100%;
+    margin: 0.2em 0;
+    height: 0;
+}
+
+.tooltip .value {
+    position: relative;
+    font-weight: bold;
+}
+
+.status1 {
+    --status-bg: var(--status1-bg);
+    --status-fg: var(--status1-fg);
+}
+.status2 {
+    --status-bg: var(--status2-bg);
+    --status-fg: var(--status2-fg);
+}
+.status3 {
+    --status-bg: var(--status3-bg);
+    --status-fg: var(--status3-fg);
+}
+.status4 {
+    --status-bg: var(--status4-bg);
+    --status-fg: var(--status4-fg);
+}
+
+.tooltip .status::before {
+    display: block;
+    content: "";
+
+    position: absolute;
+    transform: translateY(-50%);
+    top: 50%;
+    left: 0;
+    right: 0;
+
+    width: 0.7em;
+    height: 0.7em;
+
+    border-radius: 100%;
+    background-color: var(--status-bg);
+    color: var(--status-fg);
+}
+
+.tooltip .percentage {
+    padding: 0.1em 1em;
+    margin: -0.1em 0;
+    border-radius: 0.3em;
+    background-color: var(--status-bg);
+    color: var(--status-fg);
+}
+
+.tooltip .label {
+    justify-self: start;
 }
 
 /**********
