@@ -499,6 +499,7 @@ package otbn_pkg;
     logic branch_insn;
     logic jump_insn;
     logic loop_insn;
+    logic sel_insn;
   } ctrl_flow_predec_t;
 
   typedef struct packed {

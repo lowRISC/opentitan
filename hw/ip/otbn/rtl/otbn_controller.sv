@@ -248,6 +248,7 @@ module otbn_controller
   logic [WLEN-1:0] rf_bignum_rd_data_a_no_intg;
   logic [WLEN-1:0] rf_bignum_rd_data_b_no_intg;
 
+  logic [ExtWLEN-1:0] rf_bignum_rd_data_b_intg_blanked;
   logic [ExtWLEN-1:0] selection_result;
 
   logic [1:0] rf_bignum_wr_en_unbuf;
@@ -1014,14 +1015,31 @@ module otbn_controller
   assign mac_bignum_commit_o = insn_executing;
 
   // Move / Conditional Select. Only select B register data when a selection instruction is being
-  // executed and the selection flag isn't set.
-
+  // executed and the selection flag isn't set. To avoid undesirable SCA leakage between the two
+  // registers for non-selection instructions, the B register is blanked except for selection
+  // instructions.
+  // Note that blanking both registers is not feasible nor absolutely required because:
+  // - The flag group selection and flag selection are known in the predecoder stage but the actual
+  //   flag isn't.
+  // - Selecting the flag in the predocder stage using combinatorial inputs may lead to SCA leakage
+  //   between the still combinatorial flag groups and flags within a group which might be
+  //   undesirable as well.
+  // - When executing a selection instruction, programmers can expected that there will be some SCA
+  //   leakage between the two options. But it may be much lesse expected for such leakage to occur
+  //   for other instructions.
   `ASSERT(SelFlagValid, insn_valid_i & insn_dec_bignum_i.sel_insn |->
     insn_dec_bignum_i.alu_sel_flag inside {FlagC, FlagL, FlagM, FlagZ})
 
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(ExtWLEN)) u_rf_bignum_rd_data_b_intg_blanker (
+    .in_i (rf_bignum_rd_data_b_intg_i),
+    .en_i (ctrl_flow_predec_i.sel_insn),
+    .out_o(rf_bignum_rd_data_b_intg_blanked)
+  );
+
   assign selection_result =
-    ~insn_dec_bignum_i.sel_insn | alu_bignum_selection_flag_i ? rf_bignum_rd_data_a_intg_i :
-                                                                rf_bignum_rd_data_b_intg_i;
+    ~ctrl_flow_predec_i.sel_insn | alu_bignum_selection_flag_i ? rf_bignum_rd_data_a_intg_i :
+                                                                 rf_bignum_rd_data_b_intg_blanked;
 
   // Bignum Register file write control
 
@@ -1477,6 +1495,7 @@ module otbn_controller
     |{ctrl_flow_predec_i.jump_insn       != (insn_dec_shared_i.jump_insn   & insn_valid_i),
       ctrl_flow_predec_i.loop_insn       != (insn_dec_shared_i.loop_insn   & insn_valid_i),
       ctrl_flow_predec_i.branch_insn     != (insn_dec_shared_i.branch_insn & insn_valid_i),
+      ctrl_flow_predec_i.sel_insn        != (insn_dec_bignum_i.sel_insn    & insn_valid_i),
       ctrl_flow_predec_i.call_stack_push != expected_call_stack_push,
       ctrl_flow_predec_i.call_stack_pop  != expected_call_stack_pop,
       branch_target_predec_error,

@@ -72,6 +72,7 @@ module otbn_predecode
   logic branch_insn;
   logic jump_insn;
   logic loop_insn;
+  logic sel_insn;
 
   wsr_e  wsr_addr;
   csr_e  csr_addr;
@@ -150,6 +151,7 @@ module otbn_predecode
     branch_insn = 1'b0;
     jump_insn   = 1'b0;
     loop_insn   = 1'b0;
+    sel_insn    = 1'b0;
 
     ctrl_flow_target_predec_o = '0;
 
@@ -352,6 +354,7 @@ module otbn_predecode
               rf_we_bignum    = 1'b1;
               rf_ren_a_bignum = 1'b1;
               rf_ren_b_bignum = 1'b1;
+              sel_insn        = 1'b1;
             end
             3'b011, 3'b001: begin // BN.CMP[B]
               rf_ren_a_bignum                  = 1'b1;
@@ -530,6 +533,7 @@ module otbn_predecode
   assign ctrl_flow_predec_o.branch_insn = branch_insn;
   assign ctrl_flow_predec_o.jump_insn   = jump_insn;
   assign ctrl_flow_predec_o.loop_insn   = loop_insn;
+  assign ctrl_flow_predec_o.sel_insn    = sel_insn;
 
   logic unused_clk, unused_rst;
 
