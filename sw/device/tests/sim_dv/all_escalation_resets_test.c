@@ -848,13 +848,16 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
       fault_checker = fc;
     } break;
       // TODO add mechanism to inject:
-      // kTopEarlgreyAlertIdOtpCtrlFatalMacroError uncorrectable ecc from macro
-      // In any partition otp_ctrl_part_unbuf error_q = MacroEccUncorrError
       // kTopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert force at prim_otp interface
       // u_otp output fatal_alert_o.
       // forcing otp_prog_err_o from lc_ctrl_fsm and
       // kTopEarlgreyAlertIdLcCtrlFatalStateError using sparse fsm.
       // alerts, and corresponding CSR bit to check.
+    case kTopEarlgreyAlertIdOtpCtrlFatalMacroError: {
+      fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
+                            sparse_fsm_check};
+      fault_checker = fc;
+    } break;
     case kTopEarlgreyAlertIdOtpCtrlFatalCheckError: {
       fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
                             sparse_fsm_check};
@@ -991,6 +994,14 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
   // DO NOT CHANGE THIS: it is used to notify the SV side.
   LOG_INFO("Ready for fault injection");
 
+  // OTP ecc macro error test requires otp to read backdoor injected error
+  // macro.
+  if (kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalMacroError) {
+    CHECK_DIF_OK(
+        dif_otp_ctrl_dai_read_start(&otp_ctrl, kDifOtpCtrlPartitionHwCfg, 0));
+    LOG_INFO("OTP_CTRL error inject done");
+  }
+
   // FlashCtrlFatalErr test requires host read request.
   if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalErr) {
     enum {
@@ -1116,10 +1127,12 @@ bool test_main(void) {
 
     // ISRs should not run if flash_ctrl or sram_ctrl_main get a fault because
     // flash or sram accesses are blocked in those cases. For lc_ctrl fatal
-    // state the lc_ctrl blocks the CPU.
+    // state, otp_fatal alerts tha will trigger LC to escalate, the lc_ctrl
+    // blocks the CPU.
     if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalStdErr ||
         kExpectedAlertNumber == kTopEarlgreyAlertIdSramCtrlMainFatalError ||
         kExpectedAlertNumber == kTopEarlgreyAlertIdLcCtrlFatalStateError ||
+        kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalMacroError ||
         kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalCheckError) {
       CHECK(interrupt_count == 0,
             "Expected regular ISR should not run for flash_ctrl, lc_ctrl fatal "
