@@ -182,6 +182,10 @@ buildSite () {
     ${book_guides_env} mdbook ${mdbook_guides_args}
     # shellcheck disable=SC2086
     hugo ${hugo_args}
+
+    # Block diagram stats
+    mkdir -p "${build_dir}/reports"
+    python "${proj_root}/util/site/fetch_block_stats.py" "${build_dir}/reports/earlgrey-stats.json"
 }
 buildSite
 

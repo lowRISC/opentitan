@@ -8,7 +8,7 @@ title: "Documentation"
 
 [OpenTitan](https://opentitan.org/) is an open source silicon Root of Trust (RoT) project. OpenTitan will make the silicon RoT design and implementation more transparent, trustworthy, and secure for enterprises, platform providers, and chip manufacturers. OpenTitan is administered by lowRISC CIC as a [collaborative project]({{< doc-url >}}doc/project_governance{{< /doc-url >}}) to produce high quality, open IP for instantiation as a full-featured product. This repository exists to enable collaboration across partners participating in the OpenTitan project.
 
-{{< earlgrey-diagram >}}
+{{< earlgrey-block-diagram >}}
 
 ## Getting Started
 

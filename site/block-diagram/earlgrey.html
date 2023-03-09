@@ -4,13 +4,13 @@ Licensed under the Apache License, Version 2.0, see LICENSE for details.
 SPDX-License-Identifier: Apache-2.0
 -->
 
-<link href="block_diagram.css" rel="stylesheet">
-<script src="block_diagram.js"></script>
+<link href="/css/block_diagram.css" rel="stylesheet">
+<script src="/js/block_diagram.js"></script>
 <script>
 // Append tooltips to each block on window load.
 window.onload = (event) => {
     const blocks = document.querySelectorAll("#earlgrey-block-diagram .block");
-    loadTooltips("/earlgrey-stats.json", blocks);
+    loadTooltips("/reports/earlgrey-stats.json", blocks);
 }
 </script>
 
@@ -116,13 +116,6 @@ window.onload = (event) => {
 
 <!-- Specific stylings for this diagram -->
 <style>
-#earlgrey-block-diagram {
-    margin: 1em;
-    width: 50em;
-    background-color: #ffffff;
-    font-family: sans-serif;
-}
-
 #interior-aon-domain {
     /* Merge this AON domain into the exterior */
     border-bottom: calc(var(--aon-width) + 1px) solid var(--diagram-bg);
