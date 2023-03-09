@@ -207,6 +207,19 @@
     }
 
     {
+      name: sysrst_ctrl_feature_disable
+      desc: '''
+            Verify the feature disable and debounce to idle state transitions
+
+            * Configure COM_DET_CTL, COM_PRE_DET_CTL, ULP_*_DEBOUNCE_CTL
+            * Assert input signals to trigger debounce timer and deassert before debounce timer expires
+            * Check for output and interrupts to make sure design doesnt detected the transitions
+            '''
+      stage: V2
+      tests: ["sysrst_ctrl_feature_disable"]
+    }
+
+    {
       name: stress_all
       desc: '''
             Test all the sequences randomly in one sequence.
