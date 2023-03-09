@@ -40,12 +40,18 @@ class RustEnum(object):
         self.name = name
         self.enum_counter = 0
         self.finalized = False
+        self.first_value = None
+        self.last_value = None
+        self.last_value_docstring = None
         self.repr_type = repr_type
         self.constants = []
+        # todo add flag for doc strings
 
     def repr(self) -> str:
         if isinstance(self.repr_type, int):
             return "u" + str(self.repr_type)
+        elif self.repr_type is None:
+            return "u32"
         else:
             return self.repr_type
 
@@ -57,28 +63,72 @@ class RustEnum(object):
         self.constants.append((full_name, value, docstring))
         return full_name
 
-    def add_last_constant(self, docstring=""):
+    def add_number_of_variants(self, docstring=""):
         assert not self.finalized
-
-        full_name = Name(["End"])
         _, last_val, _ = self.constants[-1]
-
-        self.constants.append((full_name, last_val + 1, r"\internal " + docstring))
+        self.last_value = last_val + 1
+        self.last_value_docstring = docstring
         self.finalized = True
 
-    def render(self):
-        template = ("% if enum.repr_type: \n"
-                    "#[repr(${enum.repr()})]\n"
-                    "% endif \n"
-                    "pub enum ${enum.name.as_rust_type()} {\n"
-                    "% for name, value, docstring in enum.constants:\n"
-                    "    % if len(docstring) > 0 : \n"
-                    "    /// ${docstring}\n"
-                    "    % endif \n"
-                    "    ${name.as_rust_enum()} = ${value},\n"
-                    "% endfor\n"
-                    "}")
-        return Template(template).render(enum=self)
+    def calculate_range(self):
+        _, last_val, _ = self.constants[-1]
+        _, first_val, _ = self.constants[0]
+        self.last_value = last_val
+        self.first_value = first_val
+
+    def render(self, gen_range=False, gen_cast=False):
+        self.calculate_range()
+        body = ("#[repr(${enum.repr()})]\n"
+                "pub enum ${enum.name.as_rust_type()} {\n"
+                "% for name, value, docstring in enum.constants:\n"
+                "    % if len(docstring) > 0 : \n"
+                "    /// ${docstring}\n"
+                "    % endif \n"
+                "    ${name.as_rust_enum()} = ${value},\n"
+                "% endfor\n"
+                "}")
+
+        impl = ("\n\n"
+                "impl ${enum.name.as_rust_type()} {\n"
+                "    % if enum.last_value_docstring:\n"
+                "    /// ${enum.last_value_docstring}\n"
+                "    % else: \n"
+                "    /// Total number of enum variants \n"
+                "    % endif \n"
+                "    const NUMBER: usize = ${len(enum.constants)};\n"
+                "    /// Enum first valid value\n"
+                "    const FIRST: ${enum.repr()} = "
+                "Self::${enum.constants[0][0].as_rust_enum()} as ${enum.repr()};\n"
+                "    /// Enum last valid value\n"
+                "    const LAST: ${enum.repr()} = "
+                "Self::${enum.constants[-1][0].as_rust_enum()} as ${enum.repr()};\n"
+                "}")
+
+        cast = ("\n\n"
+                "impl TryFrom<${enum.repr()}> for "
+                "${enum.name.as_rust_type()} {\n"
+                "    type Error = ${enum.repr()};\n"
+                "    fn try_from(val: ${enum.repr()}) -> Result<Self, Self::Error> {\n"
+                "        type Enum = ${enum.name.as_rust_type()};\n"
+                "        match val {\n"
+                "            Enum::FIRST..=Enum::LAST => {\n"
+                "                Ok(\n"
+                "                    // SAFETY: Following code is correct because generated\n"
+                "                    // enum have subsequent values assigned to variants.\n"
+                "                    unsafe {\n"
+                "                        core::mem::transmute(val)\n"
+                "                    },\n"
+                "                )\n"
+                "            }\n"
+                "            _ => Err(val),\n"
+                "        }\n"
+                "    }\n"
+                "}")
+        if gen_range:
+            body += impl
+        if gen_cast:
+            body += cast
+        return Template(body).render(enum=self)
 
 
 class RustArrayMapping(object):
@@ -183,7 +233,7 @@ class TopGenRust:
             enum.add_constant(Name(["ibex", str(core_id)]),
                               docstring="Ibex Core {}".format(core_id))
 
-        enum.add_last_constant("Final number of PLIC target")
+        enum.add_number_of_variants("Final number of PLIC target")
 
         self.plic_targets = enum
 
@@ -224,7 +274,7 @@ class TopGenRust:
                                                docstring=name)
             source_name_map[name] = source_name
 
-        sources.add_last_constant("Number of PLIC peripheral")
+        sources.add_number_of_variants("Number of PLIC peripheral")
 
         # Maintain a list of instance-specific IRQs by instance name.
         self.device_irqs = defaultdict(list)
@@ -248,7 +298,7 @@ class TopGenRust:
                 plic_mapping.add_entry(irq_id, source_name)
                 self.device_irqs[intr["module_name"]].append(intr["name"])
 
-        interrupts.add_last_constant("Number of Interrupt ID.")
+        interrupts.add_number_of_variants("Number of Interrupt ID.")
 
         self.plic_sources = sources
         self.plic_interrupts = interrupts
@@ -284,7 +334,7 @@ class TopGenRust:
                                                docstring=name)
             source_name_map[name] = source_name
 
-        sources.add_last_constant("Final number of Alert peripheral")
+        sources.add_number_of_variants("Final number of Alert peripheral")
 
         self.device_alerts = defaultdict(list)
         for alert in self.top["alert"]:
@@ -305,7 +355,7 @@ class TopGenRust:
                 alert_mapping.add_entry(alert_id, source_name)
                 self.device_alerts[alert["module_name"]].append(alert["name"])
 
-        alerts.add_last_constant("The number of Alert ID.")
+        alerts.add_number_of_variants("The number of Alert ID.")
 
         self.alert_sources = sources
         self.alert_alerts = alerts
@@ -342,7 +392,7 @@ class TopGenRust:
                 peripheral_in.add_constant(name, docstring='Peripheral Input {}'.format(i))
                 i += 1
 
-        peripheral_in.add_last_constant('Number of peripheral input')
+        peripheral_in.add_number_of_variants('Number of peripheral input')
 
         # Pinmux Input Selects
         insel = RustEnum(self._top_name + Name(['pinmux', 'insel']), self.regwidth)
@@ -356,7 +406,7 @@ class TopGenRust:
                 insel.add_constant(Name([pad['name']]),
                                    docstring='MIO Pad {}'.format(i))
                 i += 1
-        insel.add_last_constant('Number of valid insel value')
+        insel.add_number_of_variants('Number of valid insel value')
 
         # MIO Outputs
         mio_out = RustEnum(self._top_name + Name(['pinmux', 'mio', 'out']))
@@ -366,7 +416,7 @@ class TopGenRust:
                 mio_out.add_constant(Name.from_snake_case(pad['name']),
                                      docstring='MIO Pad {}'.format(i))
                 i += 1
-        mio_out.add_last_constant('Number of valid mio output')
+        mio_out.add_number_of_variants('Number of valid mio output')
 
         # Pinmux Output Selects
         outsel = RustEnum(self._top_name + Name(['pinmux', 'outsel']), self.regwidth)
@@ -384,7 +434,7 @@ class TopGenRust:
                 outsel.add_constant(name, docstring='Peripheral Output {}'.format(i))
                 i += 1
 
-        outsel.add_last_constant('Number of valid outsel value')
+        outsel.add_number_of_variants('Number of valid outsel value')
 
         self.pinmux_peripheral_in = peripheral_in
         self.pinmux_insel = insel
@@ -417,12 +467,12 @@ class TopGenRust:
 
             direct_enum.add_constant(
                 Name.from_snake_case(name))
-        direct_enum.add_last_constant("Number of valid direct pad")
+        direct_enum.add_number_of_variants("Number of valid direct pad")
 
         for pad in (muxed):
             muxed_enum.add_constant(
                 Name.from_snake_case(pad))
-        muxed_enum.add_last_constant("Number of valid muxed pad")
+        muxed_enum.add_number_of_variants("Number of valid muxed pad")
 
         self.direct_pads = direct_enum
         self.muxed_pads = muxed_enum
@@ -435,7 +485,7 @@ class TopGenRust:
                 Name.from_snake_case(signal["module"]) +
                 Name.from_snake_case(signal["name"]))
 
-        enum.add_last_constant("Number of valid pwrmgr wakeup signal")
+        enum.add_number_of_variants("Number of valid pwrmgr wakeup signal")
 
         self.pwrmgr_wakeups = enum
 
@@ -448,7 +498,7 @@ class TopGenRust:
         for rst in sw_rsts:
             enum.add_constant(Name.from_snake_case(rst))
 
-        enum.add_last_constant("Number of valid rstmgr software reset request")
+        enum.add_number_of_variants("Number of valid rstmgr software reset request")
 
         self.rstmgr_sw_rsts = enum
 
@@ -460,7 +510,7 @@ class TopGenRust:
                 Name.from_snake_case(signal["module"]) +
                 Name.from_snake_case(signal["name"]))
 
-        enum.add_last_constant("Number of valid pwrmgr reset_request signal")
+        enum.add_number_of_variants("Number of valid pwrmgr reset_request signal")
 
         self.pwrmgr_reset_requests = enum
 
@@ -488,14 +538,14 @@ class TopGenRust:
             clock_name = Name.from_snake_case(name).remove_part("clk")
             docstring = "Clock {} in group {}".format(name, c2g[name].name)
             gateable_clocks.add_constant(clock_name, docstring)
-        gateable_clocks.add_last_constant("Number of Valid Gateable Clock")
+        gateable_clocks.add_number_of_variants("Number of Valid Gateable Clock")
 
         for name in by_type.hint_clks.keys():
             # All these clocks start with `clk_` which is redundant.
             clock_name = Name.from_snake_case(name).remove_part("clk")
             docstring = "Clock {} in group {}".format(name, c2g[name].name)
             hintable_clocks.add_constant(clock_name, docstring)
-        hintable_clocks.add_last_constant("Number of Valid Hintable Clock")
+        hintable_clocks.add_number_of_variants("Number of Valid Hintable Clock")
 
         self.clkmgr_gateable_clocks = gateable_clocks
         self.clkmgr_hintable_clocks = hintable_clocks
