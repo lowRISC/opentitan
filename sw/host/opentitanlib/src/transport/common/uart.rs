@@ -144,7 +144,7 @@ impl Uart for SerialPortUart {
             // If flow control is enabled, read data from the input stream and
             // process the flow control chars.
             while self.flow_control.get() != FlowControl::None {
-                self.read_worker(pacing)?;
+                self.read_worker(Duration::ZERO)?;
                 // If we're ok to send, then break out of the flow-control loop and send the data.
                 if self.flow_control.get() == FlowControl::Resume {
                     break;
@@ -154,6 +154,11 @@ impl Uart for SerialPortUart {
                 .borrow_mut()
                 .write_all(std::slice::from_ref(b))
                 .context("UART write error")?;
+            // Sleep one uart character time after writing to the uart to pace characters into the
+            // usb-serial device so that we don't fill any device-internal buffers.  The CW310 (for
+            // example) appears to have a large internal buffer that will keep transmitting to OT
+            // even if an XOFF is sent.
+            std::thread::sleep(pacing);
         }
         Ok(())
     }
