@@ -21,12 +21,13 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // Set the inputs back to inactive
-  virtual function void reset_combo_inputs(bit[4:0] input_invert=5'h0);
-    cfg.vif.key0_in = ~input_invert[0];
-    cfg.vif.key1_in = ~input_invert[1];
-    cfg.vif.key2_in = ~input_invert[2];
-    cfg.vif.pwrb_in = ~input_invert[3];
-    cfg.vif.ac_present = ~input_invert[4];
+  virtual function void reset_combo_inputs(input bit [4:0] val = 5'h1F, bit [4:0] mask = 5'h1F);
+    // Set the inputs
+    if (mask[0]) cfg.vif.key0_in = val[0];
+    if (mask[1]) cfg.vif.key1_in = val[1];
+    if (mask[2]) cfg.vif.key2_in = val[2];
+    if (mask[3]) cfg.vif.pwrb_in = val[3];
+    if (mask[4]) cfg.vif.ac_present = val[4];
   endfunction
 
   // Get input of combo detection logic
