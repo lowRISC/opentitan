@@ -72,12 +72,12 @@ enum {
 /**
  * An array of seeds to be used in a batch
  */
-uint32_t batch_seeds[kNumBatchOpsMax][kEcc256SeedNumWords];
+uint32_t batch_share0[kNumBatchOpsMax][kEcc256SeedNumWords];
 
 /**
  * An array of masks to be used in a batch
  */
-uint32_t batch_masks[kNumBatchOpsMax][kEcc256SeedNumWords];
+uint32_t batch_share1[kNumBatchOpsMax][kEcc256SeedNumWords];
 
 /**
  * Arrays for first and second share of masked private key d to be used in a
@@ -187,21 +187,16 @@ static void otbn_manual_trigger(void) { SS_CHECK_STATUS_OK(otbn_execute()); }
  * @param[in] seed  Seed for key generation.
  * @param[in] mask  Mask for seed.
  */
-static void p256_run_keygen(uint32_t mode, const uint32_t *seed,
-                            const uint32_t *mask) {
+static void p256_run_keygen(uint32_t mode, const uint32_t *share0,
+                            const uint32_t *share1) {
   // Write mode.
   SS_CHECK_STATUS_OK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode));
 
-  // Compute first share of seed (seed ^ mask).
-  uint32_t seed0[kEcc256SeedNumWords];
-  for (size_t i = 0; i < kEcc256SeedNumWords; i++) {
-    seed0[i] = seed[i] ^ mask[i];
-  }
-
   // Write seed shares.
   SS_CHECK_STATUS_OK(
-      otbn_dmem_write(kEcc256SeedNumWords, seed0, kOtbnVarSeed0));
-  SS_CHECK_STATUS_OK(otbn_dmem_write(kEcc256SeedNumWords, mask, kOtbnVarSeed1));
+      otbn_dmem_write(kEcc256SeedNumWords, share0, kOtbnVarSeed0));
+  SS_CHECK_STATUS_OK(
+      otbn_dmem_write(kEcc256SeedNumWords, share1, kOtbnVarSeed1));
 
   // Execute program.
   sca_set_trigger_high();
@@ -231,16 +226,19 @@ static void ecc256_ecdsa_secret_keygen_batch(const uint8_t *data,
 
   for (uint32_t i = 0; i < num_traces; ++i) {
     if (run_fixed) {
-      memcpy(batch_seeds[i], ecc256_seed, kEcc256SeedNumBytes);
+      memcpy(batch_share0[i], ecc256_seed, kEcc256SeedNumBytes);
     } else {
-      prng_rand_bytes((unsigned char *)batch_seeds[i], kEcc256SeedNumBytes);
+      prng_rand_bytes((unsigned char *)batch_share0[i], kEcc256SeedNumBytes);
     }
     if (en_masks) {
-      prng_rand_bytes((unsigned char *)batch_masks[i], kEcc256SeedNumBytes);
+      prng_rand_bytes((unsigned char *)batch_share1[i], kEcc256SeedNumBytes);
     } else {
       for (uint32_t j = 0; j < kEcc256SeedNumWords; ++j) {
-        batch_masks[i][j] = 0;
+        batch_share1[i][j] = 0;
       }
+    }
+    for (uint32_t j = 0; j < kEcc256SeedNumWords; ++j) {
+      batch_share0[i][j] ^= batch_share1[i][j];
     }
     // Another PRNG run to determine 'run_fixed' for the next cycle.
     prng_rand_bytes(dummy, kEcc256SeedNumBytes);
@@ -248,7 +246,8 @@ static void ecc256_ecdsa_secret_keygen_batch(const uint8_t *data,
   }
 
   for (uint32_t i = 0; i < num_traces; ++i) {
-    p256_run_keygen(kEcc256ModePrivateKeyOnly, batch_seeds[i], batch_masks[i]);
+    p256_run_keygen(kEcc256ModePrivateKeyOnly, batch_share0[i],
+                    batch_share1[i]);
 
     // Read results.
     SS_CHECK_STATUS_OK(
@@ -284,8 +283,14 @@ static void ecc256_ecdsa_secret_keygen_batch(const uint8_t *data,
 static void p256_ecdsa_gen_secret_key(const uint32_t *seed,
                                       const uint32_t *mask, uint32_t *d0,
                                       uint32_t *d1) {
+  // Compute first share of seed (seed ^ mask).
+  uint32_t share0[kEcc256SeedNumWords];
+  for (size_t i = 0; i < kEcc256SeedNumWords; i++) {
+    share0[i] = seed[i] ^ mask[i];
+  }
+
   // Run the key generation program.
-  p256_run_keygen(kEcc256ModePrivateKeyOnly, seed, mask);
+  p256_run_keygen(kEcc256ModePrivateKeyOnly, share0, mask);
 
   // Read results.
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0));
@@ -309,8 +314,14 @@ static void p256_ecdsa_gen_secret_key(const uint32_t *seed,
 static void p256_ecdsa_gen_keypair(const uint32_t *seed, const uint32_t *mask,
                                    uint32_t *d0, uint32_t *d1, uint32_t *x,
                                    uint32_t *y) {
+  // Compute the first share of the seed (seed ^ mask).
+  uint32_t share0[kEcc256SeedNumWords];
+  for (size_t i = 0; i < kEcc256SeedNumWords; i++) {
+    share0[i] = seed[i] ^ mask[i];
+  }
+
   // Run the key generation program.
-  p256_run_keygen(kEcc256ModeKeypair, seed, mask);
+  p256_run_keygen(kEcc256ModeKeypair, share0, mask);
 
   // Read results.
   SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256SeedNumWords, kOtbnVarD0, d0));
