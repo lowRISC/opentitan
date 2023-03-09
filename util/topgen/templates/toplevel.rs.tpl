@@ -14,6 +14,8 @@
 //! - Pinmux Pin/Select Names
 //! - Power Manager Wakeups
 
+use core::convert::TryFrom;
+
 % for (inst_name, if_name), region in helper.devices():
 <%
     if_desc = inst_name if if_name is None else '{} device on {}'.format(if_name, inst_name)
@@ -59,13 +61,13 @@ pub const ${size_bytes_name}: usize = ${hex_size_bytes};
 ///
 /// Enumeration used to determine which peripheral asserted the corresponding
 /// interrupt.
-${helper.plic_sources.render()}
+${helper.plic_sources.render(gen_range=True, gen_cast=True)}
 
 /// PLIC Interrupt Source.
 ///
 /// Enumeration of all PLIC interrupt sources. The interrupt sources belonging to
 /// the same peripheral are guaranteed to be consecutive.
-${helper.plic_interrupts.render()}
+${helper.plic_interrupts.render(gen_range=True, gen_cast=True)}
 
 /// PLIC Interrupt Target.
 ///
@@ -83,7 +85,7 @@ ${helper.alert_sources.render()}
 ///
 /// Enumeration of all Alert Handler Alert Sources. The alert sources belonging to
 /// the same peripheral are guaranteed to be consecutive.
-${helper.alert_alerts.render()}
+${helper.alert_alerts.render(gen_range=True, gen_cast=True)}
 
 /// PLIC Interrupt Source to Peripheral Map
 ///
@@ -108,22 +110,22 @@ pub const PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET: usize = 2;
 pub const PINMUX_PERIPH_OUTSEL_IDX_OFFSET: usize = 3;
 
 /// Pinmux Peripheral Input.
-${helper.pinmux_peripheral_in.render()}
+${helper.pinmux_peripheral_in.render(gen_range=True, gen_cast=True)}
 
 /// Pinmux MIO Input Selector.
-${helper.pinmux_insel.render()}
+${helper.pinmux_insel.render(gen_range=True, gen_cast=True)}
 
 /// Pinmux MIO Output.
-${helper.pinmux_mio_out.render()}
+${helper.pinmux_mio_out.render(gen_range=True, gen_cast=True)}
 
 /// Pinmux Peripheral Output Selector.
-${helper.pinmux_outsel.render()}
+${helper.pinmux_outsel.render(gen_range=True, gen_cast=True)}
 
 /// Dedicated Pad Selects
-${helper.direct_pads.render()}
+${helper.direct_pads.render(gen_range=True, gen_cast=True)}
 
 /// Muxed Pad Selects
-${helper.muxed_pads.render()}
+${helper.muxed_pads.render(gen_range=True, gen_cast=True)}
 
 /// Power Manager Wakeup Signals
 ${helper.pwrmgr_wakeups.render()}

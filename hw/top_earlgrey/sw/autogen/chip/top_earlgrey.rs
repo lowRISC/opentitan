@@ -14,6 +14,8 @@
 //! - Pinmux Pin/Select Names
 //! - Power Manager Wakeups
 
+use core::convert::TryFrom;
+
 /// Peripheral base address for uart0 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -754,8 +756,34 @@ pub enum TopEarlgreyPlicPeripheral {
     Edn0 = 29,
     /// edn1
     Edn1 = 30,
-    /// \internal Number of PLIC peripheral
-    End = 31,
+}
+
+impl TopEarlgreyPlicPeripheral {
+    /// Number of PLIC peripheral
+    const NUMBER: usize = 31;
+    /// Enum first valid value
+    const FIRST: u32 = Self::Unknown as u32;
+    /// Enum last valid value
+    const LAST: u32 = Self::Edn1 as u32;
+}
+
+impl TryFrom<u32> for TopEarlgreyPlicPeripheral {
+    type Error = u32;
+    fn try_from(val: u32) -> Result<Self, Self::Error> {
+        type Enum = TopEarlgreyPlicPeripheral;
+        match val {
+            Enum::FIRST..=Enum::LAST => {
+                Ok(
+                    // SAFETY: Following code is correct because generated
+                    // enum have subsequent values assigned to variants.
+                    unsafe {
+                        core::mem::transmute(val)
+                    },
+                )
+            }
+            _ => Err(val),
+        }
+    }
 }
 
 /// PLIC Interrupt Source.
@@ -1134,19 +1162,44 @@ pub enum TopEarlgreyPlicIrqId {
     Edn1EdnCmdReqDone = 183,
     /// edn1_edn_fatal_err
     Edn1EdnFatalErr = 184,
-    /// \internal Number of Interrupt ID.
-    End = 185,
+}
+
+impl TopEarlgreyPlicIrqId {
+    /// Number of Interrupt ID.
+    const NUMBER: usize = 185;
+    /// Enum first valid value
+    const FIRST: u32 = Self::None as u32;
+    /// Enum last valid value
+    const LAST: u32 = Self::Edn1EdnFatalErr as u32;
+}
+
+impl TryFrom<u32> for TopEarlgreyPlicIrqId {
+    type Error = u32;
+    fn try_from(val: u32) -> Result<Self, Self::Error> {
+        type Enum = TopEarlgreyPlicIrqId;
+        match val {
+            Enum::FIRST..=Enum::LAST => {
+                Ok(
+                    // SAFETY: Following code is correct because generated
+                    // enum have subsequent values assigned to variants.
+                    unsafe {
+                        core::mem::transmute(val)
+                    },
+                )
+            }
+            _ => Err(val),
+        }
+    }
 }
 
 /// PLIC Interrupt Target.
 ///
 /// Enumeration used to determine which set of IE, CC, threshold registers to
 /// access for a given interrupt target.
+#[repr(u32)]
 pub enum TopEarlgreyPlicTarget {
     /// Ibex Core 0
     Ibex0 = 0,
-    /// \internal Final number of PLIC target
-    End = 1,
 }
 
 /// Alert Handler Source Peripheral.
@@ -1237,8 +1290,6 @@ pub enum TopEarlgreyAlertPeripheral {
     RomCtrl = 39,
     /// rv_core_ibex
     RvCoreIbex = 40,
-    /// \internal Final number of Alert peripheral
-    End = 41,
 }
 
 /// Alert Handler Alert Source.
@@ -1377,8 +1428,34 @@ pub enum TopEarlgreyAlertId {
     RvCoreIbexFatalHwErr = 63,
     /// rv_core_ibex_recov_hw_err
     RvCoreIbexRecovHwErr = 64,
-    /// \internal The number of Alert ID.
-    End = 65,
+}
+
+impl TopEarlgreyAlertId {
+    /// The number of Alert ID.
+    const NUMBER: usize = 65;
+    /// Enum first valid value
+    const FIRST: u32 = Self::Uart0FatalFault as u32;
+    /// Enum last valid value
+    const LAST: u32 = Self::RvCoreIbexRecovHwErr as u32;
+}
+
+impl TryFrom<u32> for TopEarlgreyAlertId {
+    type Error = u32;
+    fn try_from(val: u32) -> Result<Self, Self::Error> {
+        type Enum = TopEarlgreyAlertId;
+        match val {
+            Enum::FIRST..=Enum::LAST => {
+                Ok(
+                    // SAFETY: Following code is correct because generated
+                    // enum have subsequent values assigned to variants.
+                    unsafe {
+                        core::mem::transmute(val)
+                    },
+                )
+            }
+            _ => Err(val),
+        }
+    }
 }
 
 /// PLIC Interrupt Source to Peripheral Map
@@ -2020,8 +2097,34 @@ pub enum TopEarlgreyPinmuxPeripheralIn {
     SysrstCtrlAonLidOpen = 55,
     /// Peripheral Input 56
     UsbdevSense = 56,
-    /// \internal Number of peripheral input
-    End = 57,
+}
+
+impl TopEarlgreyPinmuxPeripheralIn {
+    /// Number of peripheral input
+    const NUMBER: usize = 57;
+    /// Enum first valid value
+    const FIRST: u32 = Self::GpioGpio0 as u32;
+    /// Enum last valid value
+    const LAST: u32 = Self::UsbdevSense as u32;
+}
+
+impl TryFrom<u32> for TopEarlgreyPinmuxPeripheralIn {
+    type Error = u32;
+    fn try_from(val: u32) -> Result<Self, Self::Error> {
+        type Enum = TopEarlgreyPinmuxPeripheralIn;
+        match val {
+            Enum::FIRST..=Enum::LAST => {
+                Ok(
+                    // SAFETY: Following code is correct because generated
+                    // enum have subsequent values assigned to variants.
+                    unsafe {
+                        core::mem::transmute(val)
+                    },
+                )
+            }
+            _ => Err(val),
+        }
+    }
 }
 
 /// Pinmux MIO Input Selector.
@@ -2125,11 +2228,38 @@ pub enum TopEarlgreyPinmuxInsel {
     Ior12 = 47,
     /// MIO Pad 46
     Ior13 = 48,
-    /// \internal Number of valid insel value
-    End = 49,
+}
+
+impl TopEarlgreyPinmuxInsel {
+    /// Number of valid insel value
+    const NUMBER: usize = 49;
+    /// Enum first valid value
+    const FIRST: u32 = Self::ConstantZero as u32;
+    /// Enum last valid value
+    const LAST: u32 = Self::Ior13 as u32;
+}
+
+impl TryFrom<u32> for TopEarlgreyPinmuxInsel {
+    type Error = u32;
+    fn try_from(val: u32) -> Result<Self, Self::Error> {
+        type Enum = TopEarlgreyPinmuxInsel;
+        match val {
+            Enum::FIRST..=Enum::LAST => {
+                Ok(
+                    // SAFETY: Following code is correct because generated
+                    // enum have subsequent values assigned to variants.
+                    unsafe {
+                        core::mem::transmute(val)
+                    },
+                )
+            }
+            _ => Err(val),
+        }
+    }
 }
 
 /// Pinmux MIO Output.
+#[repr(u32)]
 pub enum TopEarlgreyPinmuxMioOut {
     /// MIO Pad 0
     Ioa0 = 0,
@@ -2225,8 +2355,34 @@ pub enum TopEarlgreyPinmuxMioOut {
     Ior12 = 45,
     /// MIO Pad 46
     Ior13 = 46,
-    /// \internal Number of valid mio output
-    End = 47,
+}
+
+impl TopEarlgreyPinmuxMioOut {
+    /// Number of valid mio output
+    const NUMBER: usize = 47;
+    /// Enum first valid value
+    const FIRST: u32 = Self::Ioa0 as u32;
+    /// Enum last valid value
+    const LAST: u32 = Self::Ior13 as u32;
+}
+
+impl TryFrom<u32> for TopEarlgreyPinmuxMioOut {
+    type Error = u32;
+    fn try_from(val: u32) -> Result<Self, Self::Error> {
+        type Enum = TopEarlgreyPinmuxMioOut;
+        match val {
+            Enum::FIRST..=Enum::LAST => {
+                Ok(
+                    // SAFETY: Following code is correct because generated
+                    // enum have subsequent values assigned to variants.
+                    unsafe {
+                        core::mem::transmute(val)
+                    },
+                )
+            }
+            _ => Err(val),
+        }
+    }
 }
 
 /// Pinmux Peripheral Output Selector.
@@ -2388,11 +2544,38 @@ pub enum TopEarlgreyPinmuxOutsel {
     SysrstCtrlAonPwrbOut = 76,
     /// Peripheral Output 74
     SysrstCtrlAonZ3Wakeup = 77,
-    /// \internal Number of valid outsel value
-    End = 78,
+}
+
+impl TopEarlgreyPinmuxOutsel {
+    /// Number of valid outsel value
+    const NUMBER: usize = 78;
+    /// Enum first valid value
+    const FIRST: u32 = Self::ConstantZero as u32;
+    /// Enum last valid value
+    const LAST: u32 = Self::SysrstCtrlAonZ3Wakeup as u32;
+}
+
+impl TryFrom<u32> for TopEarlgreyPinmuxOutsel {
+    type Error = u32;
+    fn try_from(val: u32) -> Result<Self, Self::Error> {
+        type Enum = TopEarlgreyPinmuxOutsel;
+        match val {
+            Enum::FIRST..=Enum::LAST => {
+                Ok(
+                    // SAFETY: Following code is correct because generated
+                    // enum have subsequent values assigned to variants.
+                    unsafe {
+                        core::mem::transmute(val)
+                    },
+                )
+            }
+            _ => Err(val),
+        }
+    }
 }
 
 /// Dedicated Pad Selects
+#[repr(u32)]
 pub enum TopEarlgreyDirectPads {
     UsbdevUsbDp = 0,
     UsbdevUsbDn = 1,
@@ -2410,11 +2593,38 @@ pub enum TopEarlgreyDirectPads {
     SpiDeviceCsb = 13,
     SpiHost0Sck = 14,
     SpiHost0Csb = 15,
-    /// \internal Number of valid direct pad
-    End = 16,
+}
+
+impl TopEarlgreyDirectPads {
+    /// Number of valid direct pad
+    const NUMBER: usize = 16;
+    /// Enum first valid value
+    const FIRST: u32 = Self::UsbdevUsbDp as u32;
+    /// Enum last valid value
+    const LAST: u32 = Self::SpiHost0Csb as u32;
+}
+
+impl TryFrom<u32> for TopEarlgreyDirectPads {
+    type Error = u32;
+    fn try_from(val: u32) -> Result<Self, Self::Error> {
+        type Enum = TopEarlgreyDirectPads;
+        match val {
+            Enum::FIRST..=Enum::LAST => {
+                Ok(
+                    // SAFETY: Following code is correct because generated
+                    // enum have subsequent values assigned to variants.
+                    unsafe {
+                        core::mem::transmute(val)
+                    },
+                )
+            }
+            _ => Err(val),
+        }
+    }
 }
 
 /// Muxed Pad Selects
+#[repr(u32)]
 pub enum TopEarlgreyMuxedPads {
     Ioa0 = 0,
     Ioa1 = 1,
@@ -2463,11 +2673,38 @@ pub enum TopEarlgreyMuxedPads {
     Ior11 = 44,
     Ior12 = 45,
     Ior13 = 46,
-    /// \internal Number of valid muxed pad
-    End = 47,
+}
+
+impl TopEarlgreyMuxedPads {
+    /// Number of valid muxed pad
+    const NUMBER: usize = 47;
+    /// Enum first valid value
+    const FIRST: u32 = Self::Ioa0 as u32;
+    /// Enum last valid value
+    const LAST: u32 = Self::Ior13 as u32;
+}
+
+impl TryFrom<u32> for TopEarlgreyMuxedPads {
+    type Error = u32;
+    fn try_from(val: u32) -> Result<Self, Self::Error> {
+        type Enum = TopEarlgreyMuxedPads;
+        match val {
+            Enum::FIRST..=Enum::LAST => {
+                Ok(
+                    // SAFETY: Following code is correct because generated
+                    // enum have subsequent values assigned to variants.
+                    unsafe {
+                        core::mem::transmute(val)
+                    },
+                )
+            }
+            _ => Err(val),
+        }
+    }
 }
 
 /// Power Manager Wakeup Signals
+#[repr(u32)]
 pub enum TopEarlgreyPowerManagerWakeUps {
     SysrstCtrlAonWkupReq = 0,
     AdcCtrlAonWkupReq = 1,
@@ -2475,11 +2712,10 @@ pub enum TopEarlgreyPowerManagerWakeUps {
     PinmuxAonUsbWkupReq = 3,
     AonTimerAonWkupReq = 4,
     SensorCtrlWkupReq = 5,
-    /// \internal Number of valid pwrmgr wakeup signal
-    End = 6,
 }
 
 /// Reset Manager Software Controlled Resets
+#[repr(u32)]
 pub enum TopEarlgreyResetManagerSwResets {
     SpiDevice = 0,
     SpiHost0 = 1,
@@ -2489,21 +2725,19 @@ pub enum TopEarlgreyResetManagerSwResets {
     I2c0 = 5,
     I2c1 = 6,
     I2c2 = 7,
-    /// \internal Number of valid rstmgr software reset request
-    End = 8,
 }
 
 /// Power Manager Reset Request Signals
+#[repr(u32)]
 pub enum TopEarlgreyPowerManagerResetRequests {
     SysrstCtrlAonRstReq = 0,
     AonTimerAonAonTimerRstReq = 1,
-    /// \internal Number of valid pwrmgr reset_request signal
-    End = 2,
 }
 
 /// Clock Manager Software-Controlled ("Gated") Clocks.
 ///
 /// The Software has full control over these clocks.
+#[repr(u32)]
 pub enum TopEarlgreyGateableClocks {
     /// Clock clk_io_div4_peri in group peri
     IoDiv4Peri = 0,
@@ -2513,14 +2747,13 @@ pub enum TopEarlgreyGateableClocks {
     IoPeri = 2,
     /// Clock clk_usb_peri in group peri
     UsbPeri = 3,
-    /// \internal Number of Valid Gateable Clock
-    End = 4,
 }
 
 /// Clock Manager Software-Hinted Clocks.
 ///
 /// The Software has partial control over these clocks. It can ask them to stop,
 /// but the clock manager is in control of whether the clock actually is stopped.
+#[repr(u32)]
 pub enum TopEarlgreyHintableClocks {
     /// Clock clk_main_aes in group trans
     MainAes = 0,
@@ -2530,8 +2763,6 @@ pub enum TopEarlgreyHintableClocks {
     MainKmac = 2,
     /// Clock clk_main_otbn in group trans
     MainOtbn = 3,
-    /// \internal Number of Valid Hintable Clock
-    End = 4,
 }
 
 /// MMIO Region
