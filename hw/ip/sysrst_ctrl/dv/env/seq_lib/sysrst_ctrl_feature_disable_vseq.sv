@@ -4,16 +4,10 @@
 
 // This sequence asserts the inputs of sysrst_ctrl such that the
 // key detection blocks transition from Debounce to Idle state
-class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_base_vseq;
+class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_combo_detect_with_pre_cond_vseq;
   `uvm_object_utils(sysrst_ctrl_feature_disable_vseq)
 
   `uvm_object_new
-  // Combo detect egister settings
-  rand bit [4:0] trigger_combo[4];
-  rand bit [4:0] trigger_combo_precondition[4];
-  rand uvm_reg_data_t set_action[4];
-  rand uint16_t set_duration[4], set_duration_precondition[4];
-  rand uint16_t set_key_timer;
   // ec_rst_l_o assertion time
   rand uint16_t set_pulse_width;
   // Key debounce timer
@@ -71,38 +65,9 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_base_vseq;
 
   constraint ulp_debounce_time_c {ulp_debounce_ctl inside {[15 : 50]};}
 
-
-  function void set_combo_inputs(input bit [4:0] val = 5'h1F, bit [4:0] mask = 5'h1F);
-    // Set the inputs
-    if (mask[0]) cfg.vif.key0_in = val[0];
-    if (mask[1]) cfg.vif.key1_in = val[1];
-    if (mask[2]) cfg.vif.key2_in = val[2];
-    if (mask[3]) cfg.vif.pwrb_in = val[3];
-    if (mask[4]) cfg.vif.ac_present = val[4];
-  endfunction
-
-  task config_combo_register(int i, uint16_t mask = 16'hFF);
-    // Select the inputs for precondition
-    csr_wr(ral.com_pre_sel_ctl[i], mask & trigger_combo_precondition[i]);
-
-    // Set the duration for precondition keys to pressed
-    csr_wr(ral.com_pre_det_ctl[i], mask & set_duration_precondition[i]);
-    // Select the inputs for the combo
-    csr_wr(ral.com_sel_ctl[i], mask & trigger_combo[i]);
-
-    // Set the duration for combo to pressed
-    csr_wr(ral.com_det_ctl[i], mask & set_duration[i]);
-
-    // Set the trigger action
-    csr_wr(ral.com_out_ctl[i], mask & set_action[i]);
-
-    // It takes 2-3 clock cycles to sync the register values
-    cfg.clk_aon_rst_vif.wait_clks(3);
-  endtask
-
   task combo_debounce_to_idle();
     // Reset Combo detect inputs
-    set_combo_inputs();
+    reset_combo_inputs();
     release_ec_rst_l_o();
     // Set the ec_rst_0 pulse width
     csr_wr(ral.ec_rst_ctl, set_pulse_width);
@@ -119,73 +84,73 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_base_vseq;
       //            deassertion of inputs before debounce timer
       config_combo_register(i);
       // Set combo input
-      set_combo_inputs(~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo_precondition[i]);
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer - 10);
       // Deassert input signals before debounce timer
-      set_combo_inputs();
+      reset_combo_inputs();
       cfg.clk_aon_rst_vif.wait_clks(15);
 
       // Scenario : Trigger precondition Debounce to Idle state via
       //            disabling precondition before debounce timer
       // Assert input signals to match predoncition selection
-      set_combo_inputs(~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo_precondition[i]);
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer - 10);
       // Disable precondition before debounce timer
       csr_wr(ral.com_pre_sel_ctl[i], 0);
       cfg.clk_aon_rst_vif.wait_clks(10);
-      set_combo_inputs();
+      reset_combo_inputs();
       cfg.clk_aon_rst_vif.wait_clks(3);
 
       // Scenario : Trigger precondition Detect to Idle state via
       //            disabling precondition before detect timer
       // Assert input signals to match predoncition selection
       config_combo_register(i);
-      set_combo_inputs(~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo_precondition[i]);
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration_precondition[i] - 10);
       // Disable precondition before detect timer
       csr_wr(ral.com_pre_sel_ctl[i], 0);
       cfg.clk_aon_rst_vif.wait_clks(10);
-      set_combo_inputs();
+      reset_combo_inputs();
       cfg.clk_aon_rst_vif.wait_clks(3);
 
       // Scenario : Trigger precondition Detect to Idle state via
       //            deassertion of input signals
       // Assert input signals to match predoncition selection
       config_combo_register(i);
-      set_combo_inputs(~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo_precondition[i]);
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration_precondition[i] - 10);
       // Disable precondition before detect timer
-      set_combo_inputs();
+      reset_combo_inputs();
       cfg.clk_aon_rst_vif.wait_clks(15);
 
       // Scenario : Trigger combo detect Debounce to Idle state via
       //            deassertion of input signals before debounce timer
       // Set combo input to trigger precondition
       config_combo_register(i);
-      set_combo_inputs(~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo_precondition[i]);
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration_precondition[i] + 10);
       // Set combo input to trigger combo detection
-      set_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
       // Wait for some time but dont exceed debounce time
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer - 10);
       // Deassert combo inputs before debounce timer
-      set_combo_inputs();
+      reset_combo_inputs();
       cfg.clk_aon_rst_vif.wait_clks(10);
 
       // Scenario : Trigger combo detect Debounce to Idle state via
       //            disabling detection before debounce timer
       // Set combo input to trigger precondition
-      set_combo_inputs(~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo_precondition[i]);
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration_precondition[i] + 10);
       // Set combo input to trigger combo detection
-      set_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
       // Wait for some time but dont exceed debounce time
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer - 10);
       // Disable combo detect before debounce timer
       csr_wr(ral.com_sel_ctl[i], 0);
       cfg.clk_aon_rst_vif.wait_clks(15);
       // Reset combo inputs
-      set_combo_inputs();
+      reset_combo_inputs();
       cfg.clk_aon_rst_vif.wait_clks(10);
 
       // Scenario : Trigger combo Detect to Idle state via
@@ -194,16 +159,16 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_base_vseq;
       config_combo_register(i);
       // Wait for 3 clock cycles to sync the register value
       cfg.clk_aon_rst_vif.wait_clks(3);
-      set_combo_inputs(~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo_precondition[i]);
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration_precondition[i] + 10);
       // Set combo input to trigger combo detection
-      set_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
       // Wait for some time but dont exceed detect time
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration[i] - 10);
       // Disable combo detect before detect timer
       csr_wr(ral.com_sel_ctl[i], 0);
       cfg.clk_aon_rst_vif.wait_clks(10);
-      set_combo_inputs();
+      reset_combo_inputs();
       cfg.clk_aon_rst_vif.wait_clks(10);
 
       // Scenario : Trigger combo Detect to Idle state via
@@ -212,14 +177,14 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_base_vseq;
       config_combo_register(i);
       // Wait for 3 clock cycles to sync the register value
       cfg.clk_aon_rst_vif.wait_clks(3);
-      set_combo_inputs(~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo_precondition[i]);
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration_precondition[i] + 10);
       // Set combo input to trigger combo detection
-      set_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
       // Wait for some time but dont exceed detect time
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration[i] - 10);
       // Deassert combo inputs before detect timer
-      set_combo_inputs();
+      reset_combo_inputs();
       cfg.clk_aon_rst_vif.wait_clks(20);
 
       check_interrupts(.interrupts(1 << IntrSysrstCtrl), .check_set(0));
@@ -234,9 +199,9 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_base_vseq;
       `uvm_info(`gfn, $sformatf("configuring combo channel %0d", i), UVM_LOW)
       // Scenario : Assert ec_rst_l_i just before combo action triggers ec_rst_l_o
       config_combo_register(i);
-      set_combo_inputs(~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo_precondition[i]);
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration_precondition[i] + 10);
-      set_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
+      reset_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration[i] - 5);
       fork
         begin
@@ -253,7 +218,7 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_base_vseq;
       join
       `uvm_info(`gfn, "ec_rst_l_o asserted as expected", UVM_LOW)
       // Reset combo inputs
-      set_combo_inputs();
+      reset_combo_inputs();
       // Disable combo detect
       config_combo_register(i, 0);
     end

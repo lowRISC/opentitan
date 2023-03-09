@@ -198,21 +198,24 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
     `DV_CHECK_EQ(cfg.vif.ec_rst_l_out, 1)
   endtask
 
-  task config_register();
+  task config_combo_register(int i, uint16_t mask = 16'hFF);
     // Select the inputs for precondition
-    foreach (ral.com_pre_sel_ctl[i]) csr_wr(ral.com_pre_sel_ctl[i], trigger_combo_precondition[i]);
+    csr_wr(ral.com_pre_sel_ctl[i], mask & trigger_combo_precondition[i]);
 
     // Set the duration for precondition keys to pressed
-    foreach (ral.com_pre_det_ctl[i]) csr_wr(ral.com_pre_det_ctl[i], set_duration_precondition[i]);
-
+    csr_wr(ral.com_pre_det_ctl[i], mask & set_duration_precondition[i]);
     // Select the inputs for the combo
-    foreach (ral.com_sel_ctl[i]) csr_wr(ral.com_sel_ctl[i], trigger_combo[i]);
+    csr_wr(ral.com_sel_ctl[i], mask & trigger_combo[i]);
 
     // Set the duration for combo to pressed
-    foreach (ral.com_det_ctl[i]) csr_wr(ral.com_det_ctl[i], set_duration[i]);
+    csr_wr(ral.com_det_ctl[i], mask & set_duration[i]);
 
     // Set the trigger action
-    foreach (ral.com_out_ctl[i]) csr_wr(ral.com_out_ctl[i], set_action[i]);
+    csr_wr(ral.com_out_ctl[i], mask & set_action[i]);
+  endtask
+
+  task config_register();
+    for( int i = 0; i < 4; i++) config_combo_register(i);
 
     // Set the ec_rst_0 pulse width
     csr_wr(ral.ec_rst_ctl, set_pulse_width);
@@ -513,7 +516,7 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
               // Wait till next iteration
               cfg.clk_aon_rst_vif.wait_clks(set_pulse_width);
               // Reset combo inputs except the ones required to enable precondition
-              reset_combo_inputs(~combo_precondition_mask);
+              reset_combo_inputs(combo_precondition_mask);
             end
             begin : bat_disable_check
               if (bat_act_triggered) begin
