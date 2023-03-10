@@ -23,9 +23,41 @@ pub struct PinConfiguration {
     /// The default/initial analog level of the pin in Volts, has effect only in `AnalogOutput`
     /// mode.
     pub volts: Option<f32>,
-    /// Name of a pin defined by the transport (or a lower level
-    /// PinConfiguration).
+    /// If present, the name given by the first member of this struct is to be an alias of the pin
+    /// named in this field, (which may by defined by the transport natively, or through alias in
+    /// nother PinConfiguration).  This field is mutually exclusive with `on_io_expander`.
     pub alias_of: Option<String>,
+    /// If present, this pin is not natively supported by the transport, but is to be accessed
+    /// through an IO expander.  This field is mutually exclusive with `alias_of`.
+    pub on_io_expander: Option<IoExpanderPin>,
+}
+
+/// Declaration of a name of an IO expander and pin number on it.
+#[derive(Deserialize, Clone, Debug)]
+pub struct IoExpanderPin {
+    pub io_expander: String,
+    pub pin_no: u32,
+}
+
+/// Declaration of an IO expander.  Its name, how to reach it, and which protocol driver to use.
+#[derive(Deserialize, Clone, Debug)]
+pub struct IoExpander {
+    /// Name used to refer to this IO expander.
+    pub name: String,
+    /// Identifier of the driver to use.
+    pub driver: IoExpanderDriver,
+    /// I2C bus on which this IO expander sits (if the driver uses I2C).
+    pub i2c_bus: Option<String>,
+    /// I2C address of this IO expander sits (if the driver uses I2C).
+    pub i2c_address: Option<u8>,
+    /// Optional gpio strapping for MUXing the bus from the transport to this IO expander.
+    pub mux_strapping: Option<String>,
+}
+
+/// Identifier of the driver/protocol uses by an IO expander.
+#[derive(Deserialize, Clone, Debug)]
+pub enum IoExpanderDriver {
+    Sx1503,
 }
 
 /// Configuration of a particular GPIO pin.
@@ -109,11 +141,16 @@ pub struct ConfigurationFile {
     /// List of named sets of additional GPIO pin configurations (pullup/pulldown).
     #[serde(default)]
     pub strappings: Vec<StrappingConfiguration>,
-    /// List of UART configurations.
+    /// List of SPI port configurations.
     #[serde(default)]
     pub spi: Vec<SpiConfiguration>,
+    /// List of I2C port configurations.
     #[serde(default)]
     pub i2c: Vec<I2cConfiguration>,
+    /// List of UART port configurations.
     #[serde(default)]
     pub uarts: Vec<UartConfiguration>,
+    /// List of IO expander chips.
+    #[serde(default)]
+    pub io_expanders: Vec<IoExpander>,
 }
