@@ -9,21 +9,23 @@ pub mod config;
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioMonitoring, GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
+use crate::io::ioexpander::IoExpander;
 use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::{
-    Capability, Progress, ProxyOps, Transport, TransportError, TransportInterfaceType,
+    ioexpander, Capability, Progress, ProxyOps, Transport, TransportError, TransportInterfaceType,
 };
-use anyhow::{bail, Result};
-use std::time::Duration;
 
+use anyhow::{bail, ensure, Result};
 use indicatif::{ProgressBar, ProgressStyle};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::cell::{Cell, RefCell};
+use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::time::Duration;
 use std::vec::Vec;
 
 const DEFAULT_TEMPLATE: &str = "[{elapsed_precise}] [{wide_bar}] {bytes}/{total_bytes} ({eta})";
@@ -154,6 +156,7 @@ impl I2cConfiguration {
 pub struct TransportWrapperBuilder {
     interface: String,
     pin_alias_map: HashMap<String, String>,
+    pin_on_io_expander_map: HashMap<String, config::IoExpanderPin>,
     uart_map: HashMap<String, String>,
     spi_map: HashMap<String, String>,
     i2c_map: HashMap<String, String>,
@@ -161,14 +164,16 @@ pub struct TransportWrapperBuilder {
     spi_conf_list: Vec<(String, SpiConfiguration)>,
     i2c_conf_list: Vec<(String, I2cConfiguration)>,
     strapping_conf_map: HashMap<String, Vec<(String, PinConfiguration)>>,
+    io_expander_conf_map: HashMap<String, config::IoExpander>,
 }
 
 // This is the structure to be passed to each Command implementation,
 // replacing the "bare" Transport argument.  The fields other than
 // transport will have been computed from a number ConfigurationFiles.
 pub struct TransportWrapper {
-    transport: Box<dyn Transport>,
+    transport: Rc<dyn Transport>,
     pin_map: HashMap<String, String>,
+    artificial_pin_map: HashMap<String, Rc<dyn GpioPin>>,
     uart_map: HashMap<String, String>,
     spi_map: HashMap<String, String>,
     i2c_map: HashMap<String, String>,
@@ -183,6 +188,7 @@ impl TransportWrapperBuilder {
         Self {
             interface,
             pin_alias_map: HashMap::new(),
+            pin_on_io_expander_map: HashMap::new(),
             uart_map: HashMap::new(),
             spi_map: HashMap::new(),
             i2c_map: HashMap::new(),
@@ -190,6 +196,7 @@ impl TransportWrapperBuilder {
             spi_conf_list: Vec::new(),
             i2c_conf_list: Vec::new(),
             strapping_conf_map: HashMap::new(),
+            io_expander_conf_map: HashMap::new(),
         }
     }
 
@@ -270,6 +277,24 @@ impl TransportWrapperBuilder {
             if let Some(alias_of) = &pin_conf.alias_of {
                 self.pin_alias_map
                     .insert(pin_conf.name.to_uppercase(), alias_of.clone());
+            } else if let Some(on_io_expander) = &pin_conf.on_io_expander {
+                ensure!(
+                    &pin_conf.alias_of.is_none(),
+                    TransportError::InconsistentConf(
+                        TransportInterfaceType::Gpio,
+                        pin_conf.name.to_string()
+                    )
+                );
+                let uppercase_name = pin_conf.name.to_uppercase();
+                ensure!(
+                    !self.pin_on_io_expander_map.contains_key(&uppercase_name),
+                    TransportError::InconsistentConf(
+                        TransportInterfaceType::Gpio,
+                        pin_conf.name.to_string()
+                    )
+                );
+                self.pin_on_io_expander_map
+                    .insert(uppercase_name, on_io_expander.clone());
             }
             // Record default input / open drain / push pull configuration to the pin.
             Self::record_pin_conf(&mut self.pin_conf_list, &pin_conf);
@@ -304,6 +329,20 @@ impl TransportWrapperBuilder {
             }
             // TODO(#8769): Record baud / parity configration for later
             // use when opening uart.
+        }
+        for io_expander_conf in file.io_expanders {
+            match self
+                .io_expander_conf_map
+                .entry(io_expander_conf.name.to_string())
+            {
+                Entry::Vacant(v) => {
+                    v.insert(io_expander_conf);
+                }
+                Entry::Occupied(_) => bail!(TransportError::InconsistentConf(
+                    TransportInterfaceType::IoExpander,
+                    io_expander_conf.name.to_string()
+                )),
+            }
         }
         Ok(())
     }
@@ -379,9 +418,10 @@ impl TransportWrapperBuilder {
         }
         let spi_conf_map = Self::consolidate_spi_conf_map(&self.spi_map, &self.spi_conf_list)?;
         let i2c_conf_map = Self::consolidate_i2c_conf_map(&self.i2c_map, &self.i2c_conf_list)?;
-        Ok(TransportWrapper {
-            transport,
+        let mut transport_wrapper = TransportWrapper {
+            transport: Rc::from(transport),
             pin_map: self.pin_alias_map,
+            artificial_pin_map: HashMap::new(),
             uart_map: self.uart_map,
             spi_map: self.spi_map,
             i2c_map: self.i2c_map,
@@ -389,7 +429,33 @@ impl TransportWrapperBuilder {
             spi_conf_map,
             i2c_conf_map,
             strapping_conf_map,
-        })
+        };
+        let mut io_expanders: HashMap<String, IoExpander> = HashMap::new();
+        for (name, conf) in self.io_expander_conf_map {
+            io_expanders.insert(
+                name.to_string(),
+                ioexpander::create(&conf, &transport_wrapper)?,
+            );
+        }
+        transport_wrapper
+            .artificial_pin_map
+            .insert("NULL".to_string(), Rc::new(NullPin::new()));
+        for (pinname, v) in self.pin_on_io_expander_map {
+            if let Some(io) = io_expanders.get(&v.io_expander) {
+                ensure!(
+                    (v.pin_no as usize) < io.pins.len(),
+                    TransportError::InvalidIoExpanderPinNo(v.io_expander.to_string(), v.pin_no)
+                );
+                transport_wrapper
+                    .artificial_pin_map
+                    .insert(pinname, Rc::clone(&io.pins[v.pin_no as usize]));
+            } else {
+                bail!(TransportError::InvalidIoExpanderName(
+                    v.io_expander.to_string()
+                ));
+            }
+        }
+        Ok(transport_wrapper)
     }
 }
 
@@ -423,8 +489,8 @@ impl TransportWrapper {
     /// Returns a [`GpioPin`] implementation.
     pub fn gpio_pin(&self, name: &str) -> Result<Rc<dyn GpioPin>> {
         let resolved_pin_name = map_name(&self.pin_map, name);
-        if resolved_pin_name == "NULL" {
-            return Ok(Rc::new(NullPin::new(name)));
+        if let Some(pin) = self.artificial_pin_map.get(&resolved_pin_name) {
+            return Ok(pin.clone());
         }
         self.transport.gpio_pin(resolved_pin_name.as_str())
     }
@@ -493,8 +559,21 @@ impl TransportWrapper {
 
     /// Apply given configuration to a all the given pins.
     fn apply_pin_configurations(&self, conf_map: &HashMap<String, PinConfiguration>) -> Result<()> {
+        // Pins on IO expanders will rely on some "direct" pins being configured for I2C and
+        // possibly MUX strappings.  To account for that, first apply the configuration to all
+        // "direct" (non-artificial) pins, and then to the rest.  (In theory, an IO expander could
+        // be cascaded behind other IO expanders, requiring more complicated management of a
+        // dependency graph, if that ever becomes an issue, a topological sort in
+        // `TransportWrapperBuilder.build()` would probably be appropriate.)
         for (name, conf) in conf_map {
-            self.apply_pin_configuration(name, conf)?
+            if !self.artificial_pin_map.contains_key(name) {
+                self.apply_pin_configuration(name, conf)?;
+            }
+        }
+        for (name, conf) in conf_map {
+            if self.artificial_pin_map.contains_key(name) {
+                self.apply_pin_configuration(name, conf)?;
+            }
         }
         Ok(())
     }
@@ -566,14 +645,12 @@ fn map_name(map: &HashMap<String, String>, name: &str) -> String {
 /// (Absent any such declaration, it would result in an error to mention strappings of a pin that
 /// is not in fact supported.)
 struct NullPin {
-    name: String,
     has_warned: Cell<bool>,
 }
 
 impl NullPin {
-    fn new(name: &str) -> Self {
+    fn new() -> Self {
         Self {
-            name: name.to_string(),
             has_warned: Cell::new(false),
         }
     }
@@ -581,7 +658,7 @@ impl NullPin {
     /// Emit a warning the first this pin is accessed.
     fn warn(&self) {
         if !self.has_warned.get() {
-            log::warn!("Accessed NULL pin {}", self.name);
+            log::warn!("Accessed NULL pin");
             self.has_warned.set(true);
         }
     }

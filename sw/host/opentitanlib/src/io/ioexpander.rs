@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-pub mod eeprom;
-pub mod emu;
-pub mod gpio;
-pub mod i2c;
-pub mod ioexpander;
-pub mod jtag;
-pub mod spi;
-pub mod uart;
+use std::rc::Rc;
+
+use crate::io::gpio::GpioPin;
+
+pub struct IoExpander {
+    pub pins: Vec<Rc<dyn GpioPin>>,
+}

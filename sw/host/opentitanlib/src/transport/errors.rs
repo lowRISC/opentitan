@@ -43,6 +43,10 @@ pub enum TransportError {
     PllProgramFailed(String),
     #[error("Invalid pin strapping name \"{0}\"")]
     InvalidStrappingName(String),
+    #[error("Invalid IO expander name \"{0}\"")]
+    InvalidIoExpanderName(String),
+    #[error("Invalid pin {1} for IO expander \"{0}\"")]
+    InvalidIoExpanderPinNo(String, u32),
     #[error("Transport does not support the requested operation")]
     UnsupportedOperation,
     #[error("Requested operation invalid at this time")]
@@ -75,4 +79,5 @@ pub enum TransportInterfaceType {
     Emulator,
     ProxyOps,
     GpioMonitoring,
+    IoExpander,
 }
