@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::rc::Rc;
@@ -48,21 +48,18 @@ impl GpioPin for HyperdebugGpioPin {
     }
 
     fn set_mode(&self, mode: PinMode) -> Result<()> {
-        self.inner.execute_command(
-            &format!(
-                "gpiomode {} {}",
-                &self.pinname,
-                match mode {
-                    PinMode::Input => "input",
-                    PinMode::OpenDrain => "opendrain",
-                    PinMode::PushPull => "pushpull",
-                    PinMode::AnalogInput => "adc",
-                    PinMode::AnalogOutput => "dac",
-                    PinMode::Alternate => "alternate",
-                }
-            ),
-            |_| {},
-        )
+        self.inner.cmd_no_output(&format!(
+            "gpiomode {} {}",
+            &self.pinname,
+            match mode {
+                PinMode::Input => "input",
+                PinMode::OpenDrain => "opendrain",
+                PinMode::PushPull => "pushpull",
+                PinMode::AnalogInput => "adc",
+                PinMode::AnalogOutput => "dac",
+                PinMode::Alternate => "alternate",
+            }
+        ))
     }
 
     fn set_pull_mode(&self, mode: PullMode) -> Result<()> {
@@ -206,6 +203,7 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
         }
         let mut start_time: u64 = 0;
         let mut signals = Vec::new();
+        let mut unexpected_output = false;
         self.inner.execute_command(
             &format!("gpio monitoring start {}", pin_names.join(" ")),
             |line| {
@@ -214,10 +212,16 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
                 } else if let Some(captures) = SIGNAL_REGEX.captures(line) {
                     signals.push(captures.get(3).unwrap().as_str() != "0");
                 } else {
+                    unexpected_output = true;
                     log::error!("Unexpected HyperDebug output: {}\n", line);
                 };
             },
         )?;
+        if unexpected_output {
+            bail!(TransportError::CommunicationError(
+                "Unrecognized response".to_string()
+            ))
+        }
         Ok(MonitoringStartResponse {
             timestamp: start_time,
             initial_levels: signals,
@@ -247,6 +251,7 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
         let mut events = Vec::new();
         loop {
             let mut more_data = false;
+            let mut unexpected_output = false;
             self.inner.execute_command(
                 &format!("gpio monitoring read {}", pin_names.join(" ")),
                 |line| {
@@ -267,10 +272,16 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
                     } else if line == "Warning: more data" {
                         more_data = true;
                     } else {
+                        unexpected_output = true;
                         log::error!("Unexpected HyperDebug output: {}\n", line);
                     }
                 },
             )?;
+            if unexpected_output {
+                bail!(TransportError::CommunicationError(
+                    "Unrecognized response".to_string()
+                ))
+            }
             if !more_data {
                 break;
             }
