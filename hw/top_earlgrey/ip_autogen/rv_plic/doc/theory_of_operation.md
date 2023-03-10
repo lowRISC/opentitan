@@ -116,4 +116,3 @@ raised.  The SW handles the interrupt and it drops at e. However a new interrupt
 quickly occurs at f. As complete hasn't been signaled yet `irq_o` isn't
 asserted. At g the interrupt is completed (by writing `i` to it's
 Claim/Complete register) so at h `irq_o` is asserted due to the new interrupt.
-
