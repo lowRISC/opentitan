@@ -49,7 +49,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
       expected_intr[AcqFull] = 1;
       expected_intr[TxStretch] = 1;
       expected_intr[CmdComplete] = 1;
-      for (int i = 0; i < NumI2cIntr; i++) intr_q.push_back(i);
+      for (int i = 0; i < NumI2cIntr; i++) intr_q.push_back(i2c_intr_e'(i));
     end
     if (cfg.bad_addr_pct > 0) cfg.m_i2c_agent_cfg.allow_bad_addr = 1;
   endtask
