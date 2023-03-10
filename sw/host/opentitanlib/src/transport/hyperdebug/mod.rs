@@ -20,7 +20,6 @@ use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-use crate::collection;
 use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
@@ -45,7 +44,6 @@ pub use dfu::HyperdebugDfu;
 /// Nucleo-L552ZE-Q.
 pub struct Hyperdebug<T: Flavor> {
     spi_interface: BulkInterface,
-    i2c_names: HashMap<String, u8>,
     i2c_interface: BulkInterface,
     uart_ttys: HashMap<String, PathBuf>,
     inner: Rc<Inner>,
@@ -56,6 +54,18 @@ pub struct Hyperdebug<T: Flavor> {
 /// HyperDebug.  E.g. C2D2 and Servo micro.
 pub trait Flavor {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>>;
+    fn spi_index(_inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
+        bail!(TransportError::InvalidInstance(
+            TransportInterfaceType::Spi,
+            instance.to_string()
+        ))
+    }
+    fn i2c_index(_inner: &Rc<Inner>, instance: &str) -> Result<u8> {
+        bail!(TransportError::InvalidInstance(
+            TransportInterfaceType::I2c,
+            instance.to_string()
+        ))
+    }
     fn get_default_usb_vid() -> u16;
     fn get_default_usb_pid() -> u16;
     fn load_bitstream(_transport: &impl Transport, _fpga_program: &FpgaProgram) -> Result<()> {
@@ -190,16 +200,10 @@ impl<T: Flavor> Hyperdebug<T> {
                 }
             }
         }
-        // Eventually, the I2C bus names below should come from the HyperDebug firmware, declaring
-        // what it supports (as is the case with UARTs and SPI busses.)
-        let i2c_names: HashMap<String, u8> = collection! {
-            "0".to_string() => 0,
-        };
         let result = Hyperdebug::<T> {
             spi_interface: spi_interface.ok_or_else(|| {
                 TransportError::CommunicationError("Missing SPI interface".to_string())
             })?,
-            i2c_names,
             i2c_interface: i2c_interface.ok_or_else(|| {
                 TransportError::CommunicationError("Missing I2C interface".to_string())
             })?,
@@ -485,31 +489,14 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
 
     // Create SPI Target instance, or return one from a cache of previously created instances.
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
-        // Execute a "spi info" command to look up the numeric index corresponding to the given
-        // alphanumeric SPI instance name.
-        let mut buf = String::new();
-        let mut buf2 = String::new();
-        let captures = self
-            .inner
-            .cmd_one_line_output_match(&format!("spi info {}", instance), &SPI_REGEX, &mut buf)
-            .or_else(|_| {
-                self.inner.cmd_one_line_output_match(
-                    &format!("spiget {}", instance),
-                    &SPI_REGEX,
-                    &mut buf2,
-                )
-            })
-            .map_err(|_| {
-                TransportError::InvalidInstance(TransportInterfaceType::Spi, instance.to_string())
-            })?;
-        let idx = captures.get(1).unwrap().as_str().parse().unwrap();
-
+        let (enable_cmd, idx) = T::spi_index(&self.inner, instance)?;
         if let Some(instance) = self.inner.spis.borrow().get(&idx) {
             return Ok(Rc::clone(instance));
         }
         let instance: Rc<dyn Target> = Rc::new(spi::HyperdebugSpiTarget::open(
             &self.inner,
             &self.spi_interface,
+            enable_cmd,
             idx,
         )?);
         self.inner
@@ -521,9 +508,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
 
     // Create I2C Target instance, or return one from a cache of previously created instances.
     fn i2c(&self, instance: &str) -> Result<Rc<dyn Bus>> {
-        let &idx = self.i2c_names.get(instance).ok_or_else(|| {
-            TransportError::InvalidInstance(TransportInterfaceType::I2c, instance.to_string())
-        })?;
+        let idx = T::i2c_index(&self.inner, instance)?;
         if let Some(instance) = self.inner.i2cs.borrow().get(&idx) {
             return Ok(Rc::clone(instance));
         }
@@ -607,9 +592,62 @@ impl Flavor for StandardFlavor {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(Rc::new(gpio::HyperdebugGpioPin::open(inner, pinname)?))
     }
+
+    fn spi_index(inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
+        match instance.parse() {
+            Err(_) => {
+                // Execute a "spi info" command to look up the numeric index corresponding to the
+                // given alphanumeric SPI instance name.
+                let mut buf = String::new();
+                let captures = inner
+                    .cmd_one_line_output_match(
+                        &format!("spi info {}", instance),
+                        &SPI_REGEX,
+                        &mut buf,
+                    )
+                    .map_err(|_| {
+                        TransportError::InvalidInstance(
+                            TransportInterfaceType::Spi,
+                            instance.to_string(),
+                        )
+                    })?;
+                Ok((
+                    spi::USB_SPI_REQ_ENABLE,
+                    captures.get(1).unwrap().as_str().parse().unwrap(),
+                ))
+            }
+            Ok(n) => Ok((spi::USB_SPI_REQ_ENABLE, n)),
+        }
+    }
+
+    fn i2c_index(inner: &Rc<Inner>, instance: &str) -> Result<u8> {
+        match instance.parse() {
+            Err(_) => {
+                // Execute a "i2c info" command to look up the numeric index corresponding to the
+                // given alphanumeric I2C instance name.
+                let mut buf = String::new();
+                let captures = inner
+                    .cmd_one_line_output_match(
+                        &format!("i2c info {}", instance),
+                        &SPI_REGEX,
+                        &mut buf,
+                    )
+                    .map_err(|_| {
+                        TransportError::InvalidInstance(
+                            TransportInterfaceType::I2c,
+                            instance.to_string(),
+                        )
+                    })?;
+                Ok(captures.get(1).unwrap().as_str().parse().unwrap())
+            }
+            Ok(n) => Ok(n),
+        }
+    }
+
     fn get_default_usb_vid() -> u16 {
         VID_GOOGLE
     }
+
     fn get_default_usb_pid() -> u16 {
         PID_HYPERDEBUG
     }
@@ -624,6 +662,12 @@ pub struct CW310Flavor;
 impl Flavor for CW310Flavor {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         StandardFlavor::gpio_pin(inner, pinname)
+    }
+    fn spi_index(inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
+        StandardFlavor::spi_index(inner, instance)
+    }
+    fn i2c_index(inner: &Rc<Inner>, instance: &str) -> Result<u8> {
+        StandardFlavor::i2c_index(inner, instance)
     }
     fn get_default_usb_vid() -> u16 {
         StandardFlavor::get_default_usb_vid()

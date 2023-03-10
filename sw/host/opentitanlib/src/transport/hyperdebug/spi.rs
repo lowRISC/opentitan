@@ -18,6 +18,7 @@ use crate::transport::TransportError;
 pub struct HyperdebugSpiTarget {
     inner: Rc<Inner>,
     interface: BulkInterface,
+    target_enable_cmd: u8,
     target_idx: u8,
     max_chunk_size: usize,
     cs_asserted_count: Cell<u32>,
@@ -33,8 +34,10 @@ const USB_SPI_PKT_ID_RSP_TRANSFER_CONTINUE: u16 = 6;
 const USB_SPI_PKT_ID_CMD_CHIP_SELECT: u16 = 7;
 const USB_SPI_PKT_ID_RSP_CHIP_SELECT: u16 = 8;
 
+pub const USB_SPI_REQ_ENABLE: u8 = 0;
 //const USB_SPI_REQ_DISABLE: u8 = 1;
-const USB_SPI_REQ_ENABLE: u8 = 0;
+pub const USB_SPI_REQ_ENABLE_AP: u8 = 2;
+pub const USB_SPI_REQ_ENABLE_EC: u8 = 3;
 
 const USB_MAX_SIZE: usize = 64;
 const FULL_DUPLEX: usize = 65535;
@@ -149,14 +152,19 @@ impl RspChipSelect {
 }
 
 impl HyperdebugSpiTarget {
-    pub fn open(inner: &Rc<Inner>, spi_interface: &BulkInterface, idx: u8) -> Result<Self> {
+    pub fn open(
+        inner: &Rc<Inner>,
+        spi_interface: &BulkInterface,
+        enable_cmd: u8,
+        idx: u8,
+    ) -> Result<Self> {
         let mut usb_handle = inner.usb_device.borrow_mut();
 
         // Tell HyperDebug to enable SPI bridge, and to address particular SPI device.
         inner.selected_spi.set(idx);
         usb_handle.write_control(
             rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
-            USB_SPI_REQ_ENABLE,
+            enable_cmd,
             idx as u16,
             spi_interface.interface as u16,
             &[],
@@ -198,6 +206,7 @@ impl HyperdebugSpiTarget {
         Ok(Self {
             inner: Rc::clone(inner),
             interface: *spi_interface,
+            target_enable_cmd: enable_cmd,
             target_idx: idx,
             max_chunk_size: chunk as usize,
             cs_asserted_count: Cell::new(0),
@@ -210,7 +219,7 @@ impl HyperdebugSpiTarget {
             self.inner.selected_spi.set(self.target_idx);
             self.inner.usb_device.borrow().write_control(
                 rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
-                USB_SPI_REQ_ENABLE,
+                self.target_enable_cmd,
                 self.target_idx as u16,
                 self.interface.interface as u16,
                 &[],
