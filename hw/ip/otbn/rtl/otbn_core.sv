@@ -255,6 +255,8 @@ module otbn_core
   logic sec_wipe_mod_urnd;
   logic sec_wipe_zero;
 
+  logic zero_flags;
+
   logic                     prefetch_en;
   logic                     prefetch_loop_active;
   logic [31:0]              prefetch_loop_iterations;
@@ -323,6 +325,10 @@ module otbn_core
   // consistent grouping of signals with their valid signal.
   assign insn_addr = insn_fetch_resp_addr;
 
+  // For secure wipe and ISPR initialization, flags need to be cleared to 0. This is achieved
+  // through the blanking mechanism controlled by the instruction fetch/predecoder stage.
+  assign zero_flags = sec_wipe_zero | ispr_init;
+
   // Instruction fetch unit
   otbn_instruction_fetch #(
     .ImemSizeByte(ImemSizeByte)
@@ -370,7 +376,9 @@ module otbn_core
     .prefetch_ignore_errs_i    (prefetch_ignore_errs),
 
     .sec_wipe_wdr_en_i  (sec_wipe_wdr_d),
-    .sec_wipe_wdr_addr_i(sec_wipe_addr)
+    .sec_wipe_wdr_addr_i(sec_wipe_addr),
+
+    .zero_flags_i(zero_flags)
   );
 
   // Instruction decoder
@@ -819,7 +827,6 @@ module otbn_core
     .reg_intg_violation_err_o(alu_bignum_reg_intg_violation_err),
 
     .sec_wipe_mod_urnd_i(sec_wipe_mod_urnd),
-    .sec_wipe_zero_i    (sec_wipe_zero),
 
     .mac_operation_flags_i   (mac_bignum_operation_flags),
     .mac_operation_flags_en_i(mac_bignum_operation_flags_en),
