@@ -273,17 +273,26 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
     abs_mmio_write32(reg_address, cmd.seed_material->data[i]);
   }
 
-  // Poll the "command request done" interrupt bit. Once it is set, this
-  // signals that the command has been processed and the "status" bit is
-  // updated.
-  do {
-    reg = abs_mmio_read32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET);
-  } while (!bitfield_bit32_read(reg, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT));
+  if (cmd.id == kEntropyDrbgOpGenerate) {
+    // The Generate command is complete only after all entropy bits have been
+    // consumed.  Thus poll the register that indicates if entropy bits are
+    // available.
+    do {
+      reg = abs_mmio_read32(kBaseCsrng + CSRNG_GENBITS_VLD_REG_OFFSET);
+    } while (!bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_VLD_BIT));
 
-  // Check the "status" bit, which will be 1 only if there was an error.
-  reg = abs_mmio_read32(kBaseCsrng + CSRNG_SW_CMD_STS_REG_OFFSET);
-  if (bitfield_bit32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_BIT)) {
-    return INTERNAL();
+  } else {
+    // The non-Generate commands complete earlier, so poll the "command request
+    // done" interrupt bit.  Once it is set, the "status" bit is updated.
+    do {
+      reg = abs_mmio_read32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET);
+    } while (!bitfield_bit32_read(reg, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT));
+
+    // Check the "status" bit, which will be 1 only if there was an error.
+    reg = abs_mmio_read32(kBaseCsrng + CSRNG_SW_CMD_STS_REG_OFFSET);
+    if (bitfield_bit32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_BIT)) {
+      return INTERNAL();
+    }
   }
 
   return OK_STATUS();
