@@ -146,12 +146,12 @@ def lcv_hw_to_sw(hw_lc_state_val):
 
 _HEX_MAP = "0123456789abcdef"
 
-def hex_digits(v):
+def hex_digits(v, width = 32):
     """Convert an int into a hex string without 0x prefix"""
 
     # First "cast" `v` to a 32-bit unsigned int
     v &= 0xffffffff
-    hex_digits = [_HEX_MAP[(v >> i) & 0xf] for i in range(0, 32, 4)]
+    hex_digits = [_HEX_MAP[(v >> i) & 0xf] for i in range(0, width, 4)]
     return "".join(reversed(hex_digits))
 
 def hex(v):
