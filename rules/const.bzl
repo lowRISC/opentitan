@@ -8,6 +8,8 @@ CONST = struct(
     # Must match the definitions in hardened.h.
     TRUE = 0x739,
     FALSE = 0x1d4,
+    BYTE_TRUE = 0xa5,
+    BYTE_FALSE = 0x4b,
     # Must match the definitions in chip.h.
     ROM_EXT = 0x4552544f,
     OWNER = 0x3042544f,
