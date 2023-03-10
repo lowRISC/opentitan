@@ -87,6 +87,7 @@ interface otbn_trace_if
 
   input logic secure_wipe_req,
   input logic secure_wipe_ack,
+  input logic sec_wipe_zero,
 
   input logic locking_o,
   input logic urnd_all_zero,
@@ -327,7 +328,7 @@ interface otbn_trace_if
                                        AluOpBignumOr, AluOpBignumAnd, AluOpBignumNot});
 
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_flag_group_acceses
-    assign flags_write[i_fg] = (u_otbn_alu_bignum.sec_wipe_zero_i |
+    assign flags_write[i_fg] = (sec_wipe_zero |
         ((u_otbn_alu_bignum.alu_predec_bignum_i.flags_adder_update[i_fg] |
           u_otbn_alu_bignum.alu_predec_bignum_i.flags_logic_update[i_fg] |
           u_otbn_alu_bignum.alu_predec_bignum_i.flags_mac_update[i_fg] |

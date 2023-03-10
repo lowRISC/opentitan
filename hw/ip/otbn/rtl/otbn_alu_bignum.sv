@@ -76,7 +76,7 @@ module otbn_alu_bignum
 
   input  alu_bignum_operation_t operation_i,
   input  logic                  operation_valid_i,
-  input  logic                  operation_commit_i,
+  input  logic                  operation_commit_i, // used for SVAs only
   output logic [WLEN-1:0]       operation_result_o,
   output logic                  selection_flag_o,
 
@@ -101,7 +101,6 @@ module otbn_alu_bignum
   output logic                        reg_intg_violation_err_o,
 
   input logic                         sec_wipe_mod_urnd_i,
-  input logic                         sec_wipe_zero_i,
 
   input  flags_t                      mac_operation_flags_i,
   input  flags_t                      mac_operation_flags_en_i,
@@ -124,7 +123,6 @@ module otbn_alu_bignum
 
   flags_t                              flags_d [NFlagGroups];
   flags_t                              flags_q [NFlagGroups];
-  logic   [NFlagGroups-1:0]            flags_q_en;
   logic   [NFlagGroups*FlagsWidth-1:0] flags_flattened;
   flags_t                              selected_flags;
   flags_t                              adder_update_flags;
@@ -192,6 +190,10 @@ module otbn_alu_bignum
   //////////////////
   // Flags Update //
   //////////////////
+
+  // Note that the flag zeroing triggred by ispr_init_i and secure wipe is achieved by not
+  // selecting any inputs in the one-hot muxes below. The instruction fetch/predecoder stage
+  // is driving the selector inputs accordingly.
 
   always_comb begin
     expected_flags_adder_update = '0;
@@ -270,15 +272,6 @@ module otbn_alu_bignum
   end
 
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_flag_groups
-    // Note: Also the ispr_init_i and sec_wipe_zero_i paths might need blanking. However,
-    // these two signals are only ever asserted during initialization of OTBN before running an
-    // actual program. During program execution, these should both be static and low. As a result,
-    // the AND gate on the flags_q_en just acts like a delay and won't glitch.
-    //
-    // The actual flag initialization triggred by ispr_init_i or sec_wipe_zero_i is achieved by
-    // selecting not selecting any inputs in the one-hot muxes below.
-    assign flags_q_en[i_fg] = (alu_predec_bignum_i.flags_keep[i_fg] | ~operation_commit_i) &
-                              ~(ispr_init_i | sec_wipe_zero_i);
 
     // SEC_CM: DATA_REG_SW.SCA
     prim_onehot_mux #(
@@ -292,11 +285,11 @@ module otbn_alu_bignum
                 logic_update_flags[i_fg],
                 adder_update_flags,
                 flags_q[i_fg]}),
-      .sel_i ({flags_q_en[i_fg],
-               alu_predec_bignum_i.flags_adder_update[i_fg] & operation_commit_i,
-               alu_predec_bignum_i.flags_logic_update[i_fg] & operation_commit_i,
-               alu_predec_bignum_i.flags_mac_update[i_fg] & operation_commit_i,
-               alu_predec_bignum_i.flags_ispr_wr[i_fg] & operation_commit_i}),
+      .sel_i ({alu_predec_bignum_i.flags_keep[i_fg],
+               alu_predec_bignum_i.flags_adder_update[i_fg],
+               alu_predec_bignum_i.flags_logic_update[i_fg],
+               alu_predec_bignum_i.flags_mac_update[i_fg],
+               alu_predec_bignum_i.flags_ispr_wr[i_fg]}),
       .out_o (flags_d[i_fg])
     );
 
@@ -932,6 +925,10 @@ module otbn_alu_bignum
       default: ;
     endcase
   end
+
+  // Tie off unused signals.
+  logic unused_operation_commit;
+  assign unused_operation_commit = operation_commit_i;
 
   // Determine if `mod_intg_q` is used.  The control signals are only valid if `operation_i.op` is
   // not none. If `shift_mod_sel` is low, `mod_intg_q` flows into `adder_y_op_b` and from there

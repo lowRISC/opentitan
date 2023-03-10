@@ -60,7 +60,9 @@ module otbn_instruction_fetch
   input logic                     prefetch_ignore_errs_i,
 
   input logic                     sec_wipe_wdr_en_i,
-  input logic [4:0]               sec_wipe_wdr_addr_i
+  input logic [4:0]               sec_wipe_wdr_addr_i,
+
+  input logic                     zero_flags_i
 );
 
   function automatic logic insn_is_branch(logic [31:0] insn_data);
@@ -83,7 +85,8 @@ module otbn_instruction_fetch
 
   rf_predec_bignum_t   rf_predec_bignum_indirect, rf_predec_bignum_sec_wipe;
   rf_predec_bignum_t   rf_predec_bignum_q, rf_predec_bignum_d, rf_predec_bignum_insn;
-  alu_predec_bignum_t  alu_predec_bignum, alu_predec_bignum_q, alu_predec_bignum_d;
+  alu_predec_bignum_t  alu_predec_bignum_zero_flags;
+  alu_predec_bignum_t  alu_predec_bignum_q, alu_predec_bignum_d, alu_predec_bignum_insn;
   ispr_predec_bignum_t ispr_predec_bignum_q, ispr_predec_bignum_d;
   ispr_predec_bignum_t ispr_predec_bignum;
   mac_predec_bignum_t  mac_predec_bignum, mac_predec_bignum_q, mac_predec_bignum_d;
@@ -129,7 +132,7 @@ module otbn_instruction_fetch
     .imem_rvalid_i,
 
     .rf_predec_bignum_o        (rf_predec_bignum_insn),
-    .alu_predec_bignum_o       (alu_predec_bignum),
+    .alu_predec_bignum_o       (alu_predec_bignum_insn),
     .ctrl_flow_predec_o        (ctrl_flow_predec),
     .ctrl_flow_target_predec_o (ctrl_flow_target_predec),
     .ispr_predec_bignum_o      (ispr_predec_bignum),
@@ -195,7 +198,23 @@ module otbn_instruction_fetch
     end
   end
 
-  assign alu_predec_bignum_d = insn_fetch_en ? alu_predec_bignum : alu_predec_bignum_q;
+  // Flag zeroing
+  // For secure wipe and ISPR initialization, flags need to be set to 0. This is achieved
+  // by setting all selector inputs for the corresponding one-hot mux in the ALU to zero.
+  always_comb begin
+    alu_predec_bignum_zero_flags = alu_predec_bignum_insn;
+
+    alu_predec_bignum_zero_flags.flags_keep         = '0;
+    alu_predec_bignum_zero_flags.flags_adder_update = '0;
+    alu_predec_bignum_zero_flags.flags_logic_update = '0;
+    alu_predec_bignum_zero_flags.flags_mac_update   = '0;
+    alu_predec_bignum_zero_flags.flags_ispr_wr      = '0;
+  end
+
+  assign alu_predec_bignum_d = zero_flags_i  ? alu_predec_bignum_zero_flags :
+                               insn_fetch_en ? alu_predec_bignum_insn       :
+                                               alu_predec_bignum_q;
+
   assign mac_predec_bignum_d = insn_fetch_en ? mac_predec_bignum : mac_predec_bignum_q;
 
   assign ctrl_flow_predec_d = insn_fetch_en           ? ctrl_flow_predec   :
