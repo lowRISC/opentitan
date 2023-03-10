@@ -67,4 +67,3 @@ For each class a counter of alerts is kept, clearable by software.
 If that counter exceeds a programmable maximum value, then the escalation protocol for that class begins.
 
 The details for alert signaling, classification, and escalation are all given in the Theory of Operations section.
-
