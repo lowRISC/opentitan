@@ -88,11 +88,7 @@ The key used for all 3 functions is the `CreatorRootKey`.
 
 The advancement from `CreatorRootKey` to the `OwnerIntermediateKey` is irreversible during the current power cycle.
 
-While in the CreatorRootKey state, the key from OTP is continuously captured and sensed.
-This provides some security benefit as the key is constantly background checked by the OTP.
-When an operation begins, the sampling is stopped.
-If at the conclusion of the operation the key manager stays in the same state, sampling begins again.
-If on the other hand key manager transitions to another state, OTP sampling is stopped until reset.
+Keymgr reads the root key from OTP in a single clock cycle. It assumes that when keymgr's internal FSM reaches to this clock cycle, OTP root key is already available (`valid` is set to 1). Otherwise, keymgr skips loading the root key.
 
 ### OwnerIntermediateKey
 

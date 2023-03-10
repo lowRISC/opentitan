@@ -224,12 +224,11 @@ module keymgr_ctrl
   logic wipe_req;
   logic random_req;
   logic random_ack;
-  logic ld_root_key;
 
   // wipe and initialize take precedence
   assign update_sel = wipe_req             ? KeyUpdateWipe   :
                       random_req           ? KeyUpdateRandom :
-                      init_o | ld_root_key ? KeyUpdateRoot   : op_update_sel;
+                      init_o               ? KeyUpdateRoot   : op_update_sel;
 
   ///////////////////////////
   //  interaction between main fsm and prng
@@ -328,7 +327,9 @@ module keymgr_ctrl
       KeyUpdateRandom: begin
         for (int i = 0; i < CDIs; i++) begin
           for (int j = 0; j < Shares; j++) begin
-            key_state_d[i][j][cnt[EntropyRndWidth-1:0]] = entropy_i[j];
+            // Load each share with the same randomness so we can
+            // later simply XOR root key on them
+            key_state_d[i][j][cnt[EntropyRndWidth-1:0]] = entropy_i[i];
           end
         end
       end
@@ -337,8 +338,8 @@ module keymgr_ctrl
         if (root_key_valid_q) begin
           for (int i = 0; i < CDIs; i++) begin
             if (KmacEnMasking) begin : gen_two_share_key
-              key_state_d[i][0] = root_key_i.key_share0;
-              key_state_d[i][1] = root_key_i.key_share1;
+              key_state_d[i][0] ^= root_key_i.key_share0;
+              key_state_d[i][1] ^= root_key_i.key_share1;
             end else begin : gen_one_share_key
               key_state_d[i][0] = root_key_i.key_share0 ^ root_key_i.key_share1;
               key_state_d[i][1] = '0;
@@ -451,9 +452,6 @@ module keymgr_ctrl
     // Most states are initialized, mark the exceptions
     initialized = 1'b1;
 
-    // during certain states, the otp root key is continuosly loaded
-    ld_root_key = 1'b0;
-
     // if state is ever faulted, hold on to this indication
     // until reset.
     state_intg_err_d = state_intg_err_q;
@@ -520,13 +518,8 @@ module keymgr_ctrl
         stage_sel_o = advance_sel ? Creator : Disable;
         invalid_op = op_start_i & ~(advance_sel | disable_sel);
 
-        // as long as an operation is not requested, continously load root key
-        // if it is valid.
-        // If an invalidate condition hits, also stop loading key
-        ld_root_key = ~op_start_i;
         if (!en_i || inv_state) begin
           state_d = StCtrlWipe;
-          ld_root_key = '0;
         end else if (dis_state) begin
           state_d = StCtrlDisabled;
         end else if (adv_state) begin
