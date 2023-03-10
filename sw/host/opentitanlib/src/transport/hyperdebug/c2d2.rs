@@ -7,7 +7,7 @@ use std::rc::Rc;
 
 use crate::io::gpio::{GpioPin, PinMode, PullMode};
 use crate::transport::hyperdebug::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
-use crate::transport::TransportError;
+use crate::transport::{TransportError, TransportInterfaceType};
 
 /// The C2D2 (Case Closed Debugging Debugger) is used to bring up OT and EC chips sitting
 /// inside a computing device, such that those OT chips can provide Case Closed Debugging
@@ -26,6 +26,16 @@ impl Flavor for C2d2Flavor {
             return Ok(Rc::new(C2d2ResetPin::open(inner)?));
         }
         StandardFlavor::gpio_pin(inner, pinname)
+    }
+
+    fn spi_index(_inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
+        if instance == "0" {
+            return Ok((super::spi::USB_SPI_REQ_ENABLE, 0));
+        }
+        bail!(TransportError::InvalidInstance(
+            TransportInterfaceType::Spi,
+            instance.to_string()
+        ))
     }
 
     fn get_default_usb_vid() -> u16 {

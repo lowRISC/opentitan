@@ -9,7 +9,7 @@ use zerocopy::{AsBytes, FromBytes};
 
 use crate::io::i2c::{Bus, I2cError, Transfer};
 use crate::transport::hyperdebug::{BulkInterface, Inner};
-use crate::transport::TransportError;
+use crate::transport::{TransportError, TransportInterfaceType};
 
 pub struct HyperdebugI2cBus {
     inner: Rc<Inner>,
@@ -67,6 +67,10 @@ impl RspTransfer {
 
 impl HyperdebugI2cBus {
     pub fn open(inner: &Rc<Inner>, i2c_interface: &BulkInterface, idx: u8) -> Result<Self> {
+        ensure!(
+            idx < 16,
+            TransportError::InvalidInstance(TransportInterfaceType::I2c, idx.to_string())
+        );
         let mut usb_handle = inner.usb_device.borrow_mut();
 
         // Exclusively claim I2C interface, preparing for bulk transfers.
