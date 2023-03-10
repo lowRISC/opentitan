@@ -14,17 +14,26 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
+    set_and_release_sw_strap_nonblocking();
     // Disable mem checks in scoreboard - it does not factor in memory scrambling.
     cfg.en_scb_mem_chk = 1'b0;
+  endtask
+
+  // Drive sw_strap pins only when the ROM / test ROM code is active
+  virtual task set_and_release_sw_strap_nonblocking();
+    fork begin
+      forever begin
+        wait (cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
+        cfg.chip_vif.sw_straps_if.drive({3{cfg.use_spi_load_bootstrap}});
+        wait (cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+        cfg.chip_vif.sw_straps_if.disconnect();
+      end
+    end join_none
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
     // Reset the sw_test_status.
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusUnderReset;
-
-    // Initialize the SW strap pins - these are sort of dedicated.
-    // TODO: add logic to drive / undrive this only when the ROM / test ROM code is active.
-    cfg.chip_vif.sw_straps_if.drive({3{cfg.use_spi_load_bootstrap}});
 
     // Bring the chip out of reset.
     super.dut_init(reset_kind);
