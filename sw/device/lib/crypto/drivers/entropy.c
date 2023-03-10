@@ -252,6 +252,12 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
     return INTERNAL();
   }
 
+  // Clear the `cs_cmd_req_done` bit, which is asserted whenever a command
+  // request is completed, because that bit will be used below to determine if
+  // this command request is completed.
+  reg = bitfield_bit32_write(0, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT, true);
+  abs_mmio_write32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET, reg);
+
   // Build and write application command header.
   reg = bitfield_field32_write(0, kAppCmdFieldCmdId, cmd.id);
   reg = bitfield_field32_write(reg, kAppCmdFieldCmdLen, cmd_len);
@@ -273,10 +279,6 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
   do {
     reg = abs_mmio_read32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET);
   } while (!bitfield_bit32_read(reg, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT));
-
-  // Clear the interrupt bit by writing 1.
-  reg = bitfield_bit32_write(0, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT, true);
-  abs_mmio_write32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET, reg);
 
   // Check the "status" bit, which will be 1 only if there was an error.
   reg = abs_mmio_read32(kBaseCsrng + CSRNG_SW_CMD_STS_REG_OFFSET);
