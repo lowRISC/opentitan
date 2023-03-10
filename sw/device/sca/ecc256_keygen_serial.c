@@ -60,6 +60,13 @@ enum {
    * Max number of traces per batch.
    */
   kNumBatchOpsMax = 256,
+  /**
+   * Number of cycles that Ibex should sleep to minimize noise during OTBN
+   * operations. Caution: This number should be chosen to provide enough time
+   * to complete the operation. Otherwise, Ibex might wake up while OTBN is
+   * still busy and disturb the capture.
+   */
+  kIbexOtbnSleepCycles = 800,
 };
 
 /**
@@ -167,6 +174,11 @@ static void ecc256_set_seed(const uint8_t *seed, size_t seed_len) {
 }
 
 /**
+ * Callback wrapper for OTBN manual trigger function.
+ */
+static void otbn_manual_trigger(void) { SS_CHECK_STATUS_OK(otbn_execute()); }
+
+/**
  * Runs the OTBN key generation program.
  *
  * The seed shares must be `kEcc256SeedNumWords` words long.
@@ -193,7 +205,7 @@ static void p256_run_keygen(uint32_t mode, const uint32_t *seed,
 
   // Execute program.
   sca_set_trigger_high();
-  SS_CHECK_STATUS_OK(otbn_execute());
+  sca_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles);
   SS_CHECK_STATUS_OK(otbn_busy_wait_for_done());
   sca_set_trigger_low();
 }
