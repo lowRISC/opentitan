@@ -176,10 +176,11 @@ impl<'a> Bootstrap<'a> {
     ) -> Result<()> {
         updater.verify_capabilities(self, transport)?;
         let perform_bootstrap_reset = updater.uses_common_bootstrap_reset();
+        let rom_boot_strapping = transport.pin_strapping("ROM_BOOTSTRAP")?;
 
         if perform_bootstrap_reset {
             log::info!("Asserting bootstrap pins...");
-            transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
+            rom_boot_strapping.apply()?;
             transport.reset_target(self.reset_delay, self.clear_uart_rx)?;
             log::info!("Performing bootstrap...");
         }
@@ -187,7 +188,7 @@ impl<'a> Bootstrap<'a> {
 
         if perform_bootstrap_reset {
             log::info!("Releasing bootstrap pins...");
-            transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+            rom_boot_strapping.remove()?;
         }
 
         // Don't clear the UART RX buffer after bootstrap to preserve the bootstrap output.

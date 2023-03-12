@@ -87,7 +87,7 @@ impl StagedProgressBar {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Clone, Copy, Default, Debug)]
 pub struct PinConfiguration {
     /// The input/output mode of the GPIO pin.
     pub mode: Option<PinMode>,
@@ -449,6 +449,33 @@ impl TransportWrapper {
         self.transport.borrow().gpio_monitoring()
     }
 
+    pub fn pin_strapping(&self, name: &str) -> Result<PinStrapping> {
+        let proxy = if self.capabilities()?.request(Capability::PROXY).ok().is_ok() {
+            Some(self.proxy_ops()?)
+        } else {
+            None
+        };
+        let mut pins = Vec::new();
+        if let Some(strapping_conf_map) = self.strapping_conf_map.get(name) {
+            for (pin_name, conf) in strapping_conf_map {
+                pins.push(StrappedPin {
+                    pin: self.gpio_pin(pin_name)?,
+                    strapped: *conf,
+                    original: self.pin_conf_map.get(pin_name).map(|v| *v),
+                });
+            }
+        } else {
+            if proxy.is_none() {
+                bail!(TransportError::InvalidStrappingName(name.to_string()));
+            }
+        }
+        Ok(PinStrapping {
+            proxy,
+            name: name.to_string(),
+            pins,
+        })
+    }
+
     /// Returns a [`Emulator`] implementation.
     pub fn emulator(&self) -> Result<Rc<dyn Emulator>> {
         self.transport.borrow().emulator()
@@ -508,85 +535,17 @@ impl TransportWrapper {
         Ok(())
     }
 
-    /// Configure a specific set of pins as strong/weak pullup/pulldown as declared in
-    /// configuration files under a given strapping name.
-    pub fn apply_pin_strapping(&self, strapping_name: &str) -> Result<()> {
-        let mut success = false;
-        if self.capabilities()?.request(Capability::PROXY).ok().is_ok() {
-            // The transport happens to be connection to a remote opentitan session.  Pass
-            // request to the remote server.
-            if let Err(e) = self.proxy_ops()?.apply_pin_strapping(strapping_name) {
-                match e.downcast_ref::<TransportError>() {
-                    Some(TransportError::InvalidStrappingName(_)) => (),
-                    _ => return Err(e),
-                }
-            } else {
-                // Remote server recognized name of the strapping, based on its configuration.
-                // Make a note of that, and do not report error even if local configuration does
-                // not mention this trapping.
-                success = true;
-            }
-        }
-        if let Some(strapping_conf_map) = self.strapping_conf_map.get(strapping_name) {
-            // Local configuration contains this strapping, make a note of that and do not report
-            // error even if remote server did not recognize this strapping.
-            success = true;
-            self.apply_pin_configurations(strapping_conf_map)?;
-        }
-        if success {
-            Ok(())
-        } else {
-            Err(TransportError::InvalidStrappingName(strapping_name.to_string()).into())
-        }
-    }
-
-    /// Return the set of pins affected by the given strapping to their "default" (un-strapped)
-    /// configuration, that is, to the level declared in the "pins" section of configuration
-    /// files, outside of any "strappings" section.
-    pub fn remove_pin_strapping(&self, strapping_name: &str) -> Result<()> {
-        let mut success = false;
-        if self.capabilities()?.request(Capability::PROXY).ok().is_ok() {
-            // The transport happens to be connection to a remote opentitan session.  Pass
-            // request to the remote server.
-            if let Err(e) = self.proxy_ops()?.remove_pin_strapping(strapping_name) {
-                match e.downcast_ref::<TransportError>() {
-                    Some(TransportError::InvalidStrappingName(_)) => (),
-                    _ => return Err(e),
-                }
-            } else {
-                // Remote server recognized name of the strapping, based on its configuration.
-                // Make a note of that, and do not report error even if local configuration does
-                // not mention this trapping.
-                success = true;
-            }
-        }
-        if let Some(strapping_conf_map) = self.strapping_conf_map.get(strapping_name) {
-            // Local configuration contains this strapping, make a note of that and do not report
-            // error even if remote server did not recognize this strapping.
-            success = true;
-            for pin_name in strapping_conf_map.keys() {
-                if let Some(default_pin_conf) = self.pin_conf_map.get(pin_name) {
-                    self.apply_pin_configuration(pin_name, default_pin_conf)?;
-                }
-            }
-        }
-        if success {
-            Ok(())
-        } else {
-            Err(TransportError::InvalidStrappingName(strapping_name.to_string()).into())
-        }
-    }
-
     pub fn reset_target(&self, reset_delay: Duration, clear_uart_rx: bool) -> Result<()> {
+        let reset_strapping = self.pin_strapping("RESET")?;
         log::info!("Asserting the reset signal");
-        self.apply_pin_strapping("RESET")?;
+        reset_strapping.apply()?;
         std::thread::sleep(reset_delay);
         if clear_uart_rx {
             log::info!("Clearing the UART RX buffer");
             self.uart("console")?.clear_rx_buffer()?;
         }
         log::info!("Deasserting the reset signal");
-        self.remove_pin_strapping("RESET")?;
+        reset_strapping.remove()?;
         std::thread::sleep(reset_delay);
         Ok(())
     }
@@ -652,6 +611,81 @@ impl GpioPin for NullPin {
 
     fn set_pull_mode(&self, _mode: PullMode) -> Result<()> {
         self.warn();
+        Ok(())
+    }
+}
+
+/// Represents configuration of a set of pins as strong/weak pullup/pulldown as declared in
+/// configuration files under a given strapping name.
+pub struct PinStrapping {
+    name: String,
+    proxy: Option<Rc<dyn ProxyOps>>,
+    pins: Vec<StrappedPin>,
+}
+
+struct StrappedPin {
+    pin: Rc<dyn GpioPin>,
+    strapped: PinConfiguration,
+    original: Option<PinConfiguration>,
+}
+
+impl PinStrapping {
+    /// Configure the set of pins as strong/weak pullup/pulldown as declared in configuration
+    /// files under a given strapping name.
+    pub fn apply(&self) -> Result<()> {
+        if let Some(ref proxy_ops) = self.proxy {
+            // The transport happens to be connected to a remote opentitan session.  First, pass
+            // the request to the remote server.
+            if let Err(e) = proxy_ops.apply_pin_strapping(&self.name) {
+                match e.downcast_ref::<TransportError>() {
+                    Some(TransportError::InvalidStrappingName(_)) => {
+                        if self.pins.is_empty() {
+                            return Err(e);
+                        }
+                    }
+                    _ => return Err(e),
+                }
+            }
+        }
+        for StrappedPin {
+            pin,
+            strapped: conf,
+            original: _,
+        } in &self.pins
+        {
+            pin.set(conf.mode, conf.level, conf.pull_mode, conf.volts)?
+        }
+        Ok(())
+    }
+
+    /// Return the set of pins affected by the given strapping to their "default" (un-strapped)
+    /// configuration, that is, to the level declared in the "pins" section of configuration
+    /// files, outside of any "strappings" section.
+    pub fn remove(&self) -> Result<()> {
+        if let Some(ref proxy_ops) = self.proxy {
+            // The transport happens to be connection to a remote opentitan session.  Pass
+            // request to the remote server.
+            if let Err(e) = proxy_ops.remove_pin_strapping(&self.name) {
+                match e.downcast_ref::<TransportError>() {
+                    Some(TransportError::InvalidStrappingName(_)) => {
+                        if self.pins.is_empty() {
+                            return Err(e);
+                        }
+                    }
+                    _ => return Err(e),
+                }
+            }
+        }
+        for StrappedPin {
+            pin,
+            strapped: _,
+            original,
+        } in &self.pins
+        {
+            if let Some(conf) = original {
+                pin.set(conf.mode, conf.level, conf.pull_mode, conf.volts)?
+            }
+        }
         Ok(())
     }
 }

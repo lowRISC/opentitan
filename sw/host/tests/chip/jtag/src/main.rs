@@ -29,7 +29,7 @@ struct Opts {
 fn reset(transport: &TransportWrapper, strappings: &[&str], reset_delay: Duration) -> Result<()> {
     log::info!("Resetting target...");
     for strapping in strappings.iter() {
-        transport.apply_pin_strapping(strapping)?;
+        transport.pin_strapping(strapping)?.apply()?;
     }
     transport.reset_target(reset_delay, true)?;
     // we want to hold the strapping configuration here because in some life cycle states,
