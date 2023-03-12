@@ -475,4 +475,144 @@
       tests: ["i2c_target_hrst"]
     }
   ]
+  covergroups: [
+    {
+      name: i2c_interrupts_cg
+      desc: '''
+            Cover all the interrupts raised during I2C operation in both host and target mode
+            Cross interrupt with INTERRUPT_TEST register
+            '''
+    }
+    {
+      name: i2c_fifo_reset_cg
+      desc: '''
+            Cover the FIFO reset bits in FIFO_CTL register
+            Cross fmt_threshold with FMTRST
+            Cross rx_threshold with RXRST
+            Cross fmt_overflow with FMTRST
+            Cross rx_overflow with RXRST
+            Cross acq_overflow with ACQRST
+            Cross tx_overflow with TXRST
+            '''
+    }
+    {
+      name: i2c_fifo_level_cg
+      desc: '''
+             Cover the trigger level for FMT_FIFO and RX_FIFO interupts
+             * Cross fmt_threshold interrupt with FMT_FIFO trigger level
+             * Cross rx_threshold interrupt with RX_FIFO trigger level
+             Cover the FIFO levels in FIFO_STATUS
+            '''
+    }
+    {
+      name: i2c_operating_mode_cg
+      desc: '''
+            * Cover the operating mode (Host/Target) of DUT
+            * Cover the operating mode (Host/Target) of TB
+            * Cross the operating modes of DUT and TB
+            * Cover the SCL frequency
+            * Cross the SCL frequency with operating mode of DUT
+            '''
+    }
+    {
+      name: i2c_rd_wr_cg
+      desc: '''
+            Cover the number of bytes read from Target
+            Cover the number of bytes written to Target
+            * Cross the number of bytes read in Target and Host mode of DUT
+            * Cross the number of bytes written in Target and Host mode of DUT
+            Cover the address match feature of IP
+            * Cross the address sent or received with Host and Target mode of DUT
+            * Cross write address with address match
+            * Cross read address with address match
+            Cover values in Read bytes
+            * Cross with operating mode of I2C
+            Cover values in Write bytes
+            * Cross with operating mode of I2C
+            '''
+    }
+    {
+      name: i2c_status_cg
+      desc: '''
+            Cover the fields in i2c.STATUS register
+            '''
+    }
+    {
+      name: i2c_scl_sca_override_cg
+      desc: '''
+            Cover TX override enable bit TXOVRDEN
+            Cover override value of SCL
+            Cover override value of SDA
+            Cover oversampled value of SCL
+            Cover oversampled value of SDA
+            Cross override value of SCL with override enable
+            Cross override value of SDA with override enable
+            '''
+    }
+    {
+      name: i2c_cmd_complete_cg
+      desc: '''
+            Cover cmd_complete interrupt
+            Cross cmd_complete with Host mode Read and Write operation
+            Cross cmd_complete with Target mode Read and Write operation
+            '''
+    }
+    {
+      name: i2c_fmt_fifo_cg
+      desc: '''
+            Cover the values supported by FDATA register
+            * Data byte (all flags set to zero)
+            * Write address byte
+            * Read address byte
+            * Read a number of bytes from Target with NACK
+            *  Cover values ranging from 1-128 Bytes
+            * Read number of bytes from Target with ACK
+            *  Cover values ranging from 1-128 Bytes
+            * Stop byte
+            * Stop after Start (invalid transmission)
+            * Write address transmission with NAKOK
+            * Data transmission with NAKOK
+            * Stop data with NAKOK
+            Cross bytes with NAK from Target
+            * Cross data byte with NAKOK and NAK from Target
+            * Cross address byte with NAKOK and NAK from Target
+            * Cross data byte with NAKOK and NAK from Target
+            '''
+    }
+    {
+      name: i2c_acq_fifo_cg
+      desc: '''
+            Cover the values supported by ACQDATA
+            * Write address byte
+            * Read address byte
+            * Data byte
+            * ACK before STOP
+            * NAK before STOP
+            * RSTART with previous ACK for READ
+            * RSTART with previous NAK for READ
+            '''
+    }
+    {
+      name: i2c_scl_stretch_cg
+      desc: '''
+            Cover SCL stretch in Host mode
+            * Cover clock stretch after address byte
+            Cover SCL stretch in Target mode
+            Cover Target mode SCL stretch in the following scenario
+            * Read command received in ACQ FIFo and more than one entry in ACQ FIFO
+            '''
+    }
+    {
+      name: i2c_timing_parameters_cg
+      desc: '''
+            Cover different values of Timing parameters supported by I2C IP
+            '''
+    }
+    {
+      name: i2c_protocol_transitions_cg
+      desc: '''
+            Cover bus state transitions supported in I2C protocol including valid and invalid transitions
+            '''
+    }
+  ]
 }
