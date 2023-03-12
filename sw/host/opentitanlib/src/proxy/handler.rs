@@ -321,11 +321,11 @@ impl<'a> TransportCommandHandler<'a> {
                     Ok(Response::Proxy(ProxyResponse::Bootstrap))
                 }
                 ProxyRequest::ApplyPinStrapping { strapping_name } => {
-                    self.transport.apply_pin_strapping(strapping_name)?;
+                    self.transport.pin_strapping(strapping_name)?.apply()?;
                     Ok(Response::Proxy(ProxyResponse::ApplyPinStrapping))
                 }
                 ProxyRequest::RemovePinStrapping { strapping_name } => {
-                    self.transport.remove_pin_strapping(strapping_name)?;
+                    self.transport.pin_strapping(strapping_name)?.remove()?;
                     Ok(Response::Proxy(ProxyResponse::RemovePinStrapping))
                 }
             },

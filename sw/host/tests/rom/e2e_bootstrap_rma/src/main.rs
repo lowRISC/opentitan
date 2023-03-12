@@ -130,11 +130,11 @@ if {{ $i == {MAX_ATTEMPTS} }} {{
 fn reset(transport: &TransportWrapper, strappings: &[&str], reset_delay: Duration) -> Result<()> {
     log::info!("Resetting target...");
     for strapping in strappings.iter() {
-        transport.apply_pin_strapping(strapping)?;
+        transport.pin_strapping(strapping)?.apply()?;
     }
     transport.reset_target(reset_delay, true)?;
     for strapping in strappings.iter() {
-        transport.remove_pin_strapping(strapping)?;
+        transport.pin_strapping(strapping)?.remove()?;
     }
     Ok(())
 }

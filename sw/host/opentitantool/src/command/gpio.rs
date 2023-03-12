@@ -244,7 +244,7 @@ impl CommandDispatch for GpioApplyStrapping {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
-        transport.apply_pin_strapping(&self.name)?;
+        transport.pin_strapping(&self.name)?.apply()?;
         Ok(None)
     }
 }
@@ -553,7 +553,7 @@ impl CommandDispatch for GpioRemoveStrapping {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
-        transport.remove_pin_strapping(&self.name)?;
+        transport.pin_strapping(&self.name)?.remove()?;
         Ok(None)
     }
 }
