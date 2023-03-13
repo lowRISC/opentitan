@@ -161,6 +161,8 @@ def _otp_image(ctx):
         args.add("--lc-seed", ctx.attr.lc_seed[BuildSettingInfo].value)
     if ctx.attr.otp_seed:
         args.add("--otp-seed", ctx.attr.otp_seed[BuildSettingInfo].value)
+    if ctx.attr.data_perm:
+        args.add("--data-perm", ctx.attr.data_perm[BuildSettingInfo].value)
     args.add("--img-cfg", ctx.file.src)
     args.add_all(ctx.files.overlays, before_each = "--add-cfg")
     args.add("--out", "{}/{}.BITWIDTH.vmem".format(output.dirname, ctx.attr.name))
@@ -208,6 +210,10 @@ otp_image = rule(
         "otp_seed": attr.label(
             default = "//hw/ip/otp_ctrl/data:otp_seed",
             doc = "Configuration override seed used to randomize OTP netlist constants.",
+        ),
+        "data_perm": attr.label(
+            default = "//hw/ip/otp_ctrl/data:data_perm",
+            doc = "Post-processing option to trigger permuting bit positions in memfile.",
         ),
         "verbose": attr.bool(
             default = False,

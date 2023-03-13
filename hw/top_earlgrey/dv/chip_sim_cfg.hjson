@@ -128,11 +128,14 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 3
 
-  // Uncomment if using manufacturer tests / test hooks that live somewhere else
-  // on your system, outside of $REPO_TOP. See
-  // sw/device/tests/closed_source/README.md for more details.
   // exports: [
-  //   {MANUFACTURER_HOOKS_DIR: "/path/to/manufacturer_hooks_dir"}
+  //   Uncomment if using manufacturer tests / test hooks that live somewhere
+  //   else on your system, outside of $REPO_TOP. See
+  //   sw/device/tests/closed_source/README.md for more details.
+  //   {MANUFACTURER_HOOKS_DIR: "/path/to/manufacturer_hooks_dir"},
+  //   Uncomment if you are using the `--data-perm` OTP image generation flag,
+  //   when building OTP images with Bazel.
+  //   {BAZEL_OTP_DATA_PERM_FLAG: "[15:0],[23:16]"},
   // ]
 
   // Default UVM test and seq class name.

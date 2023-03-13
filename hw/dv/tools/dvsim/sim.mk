@@ -101,6 +101,9 @@ ifneq (${sw_images},)
 				bazel_opts+=" --//hw/ip/otp_ctrl/data:lc_seed=${build_seed}"; \
 				bazel_opts+=" --//hw/ip/otp_ctrl/data:otp_seed=${build_seed}"; \
 			fi; \
+			if [[ -n $${BAZEL_OTP_DATA_PERM_FLAG} ]]; then \
+				bazel_opts+=" --//hw/ip/otp_ctrl/data:data_perm=$${BAZEL_OTP_DATA_PERM_FLAG}"; \
+			fi; \
 			if [[ -z $${BAZEL_PYTHON_WHEELS_REPO} ]]; then \
 				echo "Building \"$${bazel_label}\" on network connected machine."; \
 				bazel_cmd="./bazelisk.sh"; \
