@@ -58,6 +58,7 @@ rust_library(
         "src/chip/alert.rs",
         "src/chip/boolean.rs",
         "src/chip/mod.rs",
+        "src/chip/autogen/mod.rs",
         "src/crypto/mod.rs",
         "src/crypto/rsa.rs",
         "src/crypto/sha256.rs",
@@ -159,7 +160,7 @@ rust_library(
     ] + select({
         "//sw/device:is_english_breakfast": [],
         "//conditions:default": [
-            "src/chip/earlgrey.rs",
+            "src/chip/autogen/earlgrey.rs",
             "src/test_utils/pinmux_config.rs",
         ],
     }),

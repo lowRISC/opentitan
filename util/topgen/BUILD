@@ -50,6 +50,7 @@ py_library(
         "intermodule.py",
         "lib.py",
         "resets.py",
+        "rust.py",
     ],
     deps = [
         "//util/reggen:inter_signal",
