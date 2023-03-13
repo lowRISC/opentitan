@@ -5,15 +5,15 @@
 load("//rules:autogen.bzl", "autogen_hjson_header")
 load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_alert_digest", "otp_image", "otp_json", "otp_partition")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
-load("@bazel_skylib//rules:common_settings.bzl", "int_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "int_flag", "string_flag")
 
 package(default_visibility = ["//visibility:public"])
 
-# These configurations expose the OTP image generation tool's seed override
-# command line arguments to enable dvsim to pass this through Bazel to the
-# underlying OTP image generation tool. This is required to enable dvsim to
-# invoke OTP image generation as part of the Bazel build process, while still
-# enabling the use of multiple seeds needed to achieve DV coverage.
+# These configurations expose the OTP image generation tool's command line
+# arguments to enable dvsim to pass this through Bazel to the underlying OTP
+# image generation script. This is required to enable dvsim to invoke OTP image
+# generation as part of the Bazel build process, while still enabling the use of
+# multiple seeds needed to achieve DV coverage.
 int_flag(
     name = "img_seed",
     build_setting_default = 0,
@@ -27,6 +27,11 @@ int_flag(
 int_flag(
     name = "otp_seed",
     build_setting_default = 0,
+)
+
+string_flag(
+    name = "data_perm",
+    build_setting_default = "",
 )
 
 # This package must be kept in sync with get_otp_images() from //rules:otp.bzl.
