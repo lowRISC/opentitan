@@ -151,12 +151,19 @@ impl SpiFlash {
         loop {
             // READ_SFDP always takes a 3-byte address followed by a dummy byte regardless of
             // address mode.
-            spi.run_eeprom_transactions(&mut [Transaction::Read(
-                MODE_111
-                    .dummy_cycles(8)
-                    .cmd_addr(SpiFlash::READ_SFDP, 0, AddressMode::Mode3b),
-                &mut buf,
-            )])?;
+            let mut eeprom_transactions: Vec<Transaction> = Vec::new();
+            let read_size = spi.get_eeprom_max_transfer_sizes()?.read;
+            for (i, transfer) in buf.chunks_mut(read_size).enumerate() {
+                eeprom_transactions.push(Transaction::Read(
+                    MODE_111.dummy_cycles(8).cmd_addr(
+                        SpiFlash::READ_SFDP,
+                        (i * read_size) as u32,
+                        AddressMode::Mode3b,
+                    ),
+                    transfer,
+                ));
+            }
+            spi.run_eeprom_transactions(&mut eeprom_transactions)?;
 
             // We only want to give SFDP parsing one extra chance for length
             // extension. If parsing fails a second time, just return the error.
@@ -229,7 +236,7 @@ impl SpiFlash {
         progress: impl Fn(u32, u32),
     ) -> Result<&Self> {
         // Break the read up according to the maximum chunksize the backend can handle.
-        for chunk in buffer.chunks_mut(spi.max_chunk_size()?) {
+        for chunk in buffer.chunks_mut(spi.get_eeprom_max_transfer_sizes()?.read) {
             spi.run_eeprom_transactions(&mut [Transaction::Read(
                 MODE_111.cmd_addr(SpiFlash::READ, address, self.address_mode),
                 chunk,

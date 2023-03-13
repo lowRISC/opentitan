@@ -5,7 +5,7 @@
 use anyhow::Result;
 use std::rc::Rc;
 
-use crate::io::spi::{AssertChipSelect, SpiError, Target, Transfer, TransferMode};
+use crate::io::spi::{AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode};
 use crate::transport::TransportError;
 use crate::util::voltage::Voltage;
 
@@ -48,7 +48,7 @@ impl Target for Ti50Spi {
     }
 
     /// Maximum chunksize handled by this SPI device.
-    fn max_chunk_size(&self) -> Result<usize> {
+    fn get_max_transfer_sizes(&self) -> Result<MaxSizes> {
         Err(TransportError::UnsupportedOperation.into())
     }
 

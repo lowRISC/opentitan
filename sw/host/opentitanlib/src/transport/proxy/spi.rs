@@ -7,7 +7,7 @@ use std::rc::Rc;
 
 use super::ProxyError;
 use crate::io::spi::{
-    AssertChipSelect, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
+    AssertChipSelect, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
 };
 use crate::proxy::protocol::{
     Request, Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse,
@@ -89,9 +89,16 @@ impl Target for ProxySpi {
         }
     }
 
-    fn max_chunk_size(&self) -> Result<usize> {
-        match self.execute_command(SpiRequest::GetMaxChunkSize)? {
-            SpiResponse::GetMaxChunkSize { size } => Ok(size as usize),
+    fn get_max_transfer_sizes(&self) -> Result<MaxSizes> {
+        match self.execute_command(SpiRequest::GetMaxTransferSizes)? {
+            SpiResponse::GetMaxTransferSizes { sizes } => Ok(sizes),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
+    fn get_eeprom_max_transfer_sizes(&self) -> Result<MaxSizes> {
+        match self.execute_command(SpiRequest::GetEepromMaxTransferSizes)? {
+            SpiResponse::GetEepromMaxTransferSizes { sizes } => Ok(sizes),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
