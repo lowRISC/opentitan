@@ -59,6 +59,8 @@ pub enum TransportError {
     MissingCapabilities(Capability, Capability),
     #[error("Inconsistent configuration for {0:?} instance {1}")]
     InconsistentConf(TransportInterfaceType, String),
+    #[error("Inconsistent configuration of transport interface {0} vs. {1}")]
+    InconsistentInterfaceConf(String, String),
 }
 impl_serializable_error!(TransportError);
 

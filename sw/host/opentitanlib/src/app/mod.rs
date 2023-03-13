@@ -14,7 +14,7 @@ use crate::io::uart::Uart;
 use crate::transport::{
     Capability, Progress, ProxyOps, Transport, TransportError, TransportInterfaceType,
 };
-use anyhow::Result;
+use anyhow::{bail, Result};
 use std::time::Duration;
 
 use indicatif::{ProgressBar, ProgressStyle};
@@ -139,6 +139,7 @@ impl SpiConfiguration {
 }
 
 pub struct TransportWrapperBuilder {
+    interface: String,
     pin_alias_map: HashMap<String, String>,
     uart_map: HashMap<String, String>,
     spi_map: HashMap<String, String>,
@@ -163,8 +164,9 @@ pub struct TransportWrapper {
 }
 
 impl TransportWrapperBuilder {
-    pub fn new() -> Self {
+    pub fn new(interface: String) -> Self {
         Self {
+            interface,
             pin_alias_map: HashMap::new(),
             uart_map: HashMap::new(),
             spi_map: HashMap::new(),
@@ -220,6 +222,19 @@ impl TransportWrapperBuilder {
     }
 
     pub fn add_configuration_file(&mut self, file: config::ConfigurationFile) -> Result<()> {
+        if let Some(interface) = file.interface {
+            if self.interface == "" {
+                self.interface = interface;
+            } else if self.interface == interface {
+                // Same value for interface between in command line and configuration file (or
+                // between multiple configuration files), nothing to update.
+            } else {
+                bail!(TransportError::InconsistentInterfaceConf(
+                    self.interface.to_string(),
+                    interface.to_string(),
+                ))
+            }
+        }
         // Merge content of configuration file into pin_map and other members.
         for pin_conf in file.pins {
             if let Some(alias_of) = &pin_conf.alias_of {
@@ -288,6 +303,10 @@ impl TransportWrapperBuilder {
                 })?;
         }
         Ok(result_spi_conf_map)
+    }
+
+    pub fn get_interface(&self) -> &str {
+        &self.interface
     }
 
     pub fn build(
