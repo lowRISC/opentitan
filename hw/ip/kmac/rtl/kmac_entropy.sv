@@ -230,6 +230,26 @@ module kmac_entropy
   // Datapath //
   //////////////
 
+  // For latching (`wait_timer_limit_i` != 0) during last `timer_update`
+  // See #16716
+  logic non_zero_wait_timer_limit;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      non_zero_wait_timer_limit <= '0;
+    end else if (timer_update) begin
+      non_zero_wait_timer_limit <= |wait_timer_limit_i;
+    end
+  end
+
+  logic [TimerPrescalerW-1:0] wait_timer_prescaler_d;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      wait_timer_prescaler_d <= '0;
+    end else if (timer_update) begin
+      wait_timer_prescaler_d <= wait_timer_prescaler_i;
+    end
+  end
+
   // Timers ===================================================================
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -262,7 +282,7 @@ module kmac_entropy
     end else if (timer_update) begin
       prescaler_cnt <= wait_timer_prescaler_i;
     end else if (timer_enable && prescaler_cnt == '0) begin
-      prescaler_cnt <= wait_timer_prescaler_i;
+      prescaler_cnt <= wait_timer_prescaler_d;
     end else if (timer_enable) begin
       prescaler_cnt <= prescaler_cnt - 1'b 1;
     end
@@ -622,7 +642,7 @@ module kmac_entropy
         // Wait timer
         timer_enable = 1'b 1;
 
-        if (timer_expired && |wait_timer_limit_i) begin
+        if (timer_expired && non_zero_wait_timer_limit) begin
           // If timer count is non-zero and expired;
           st_d = StRandErrWaitExpired;
 

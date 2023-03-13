@@ -688,6 +688,8 @@
           after it sends request to EDN module. If the timer expires, the
           entropy module moves to an error state and notifies to the system.
 
+          If there is a pending EDN request during wait timer update, then this update is delayed until the EDN request is complete.
+
           If 0, the entropy module waits the EDN response always. If EDN does
           not respond in this configuration, the software shall reset the IP.
           '''

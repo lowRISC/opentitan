@@ -358,8 +358,9 @@ The request is dropped by the KMAC_APP module.
 The lower 3 bits of [`ERR_CODE`](data/kmac.hjson#err_code) contains the received command from the SW.
 #### WaitTimerExpired (0x04)
 
-The SW may set the EDN wait timer to exit from EDN request state if the response from EDN takes long.
-If the timer expires, the module cancels the transaction and report the `WaitTimerExpired` error.
+The timer values set by SW is internally used only when pending EDN request is completed.
+Therefore, dynamically changing wait timer cannot be used as a way to poke the timer out of a stalling EDN request.
+If a non-zero timer expires, the module cancels the transaction and reports the `WaitTimerExpired` error.
 
 When this error happens, the state machine in KMAC_ENTROPY module moves to Wait state.
 In that state, it keeps using the pre-generated entropy and asserting the entropy valid signal.
