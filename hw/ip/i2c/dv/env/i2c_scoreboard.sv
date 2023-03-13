@@ -227,6 +227,20 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             rcont = bit'(get_field_val(ral.fdata.rcont, item.a_data));
             nakok = bit'(get_field_val(ral.fdata.nakok, item.a_data));
 
+            if (cfg.en_cov) begin
+              cov.fmt_fifo_cg.sample(
+                .fbyte(fbyte),
+                .start(start),
+                .stop(stop),
+                .read(read),
+                .rcont(rcont),
+                .nakok(nakok),
+                //TODO(#18033) at this point we do not yet know whether we receive an acknowledgement or not.
+                // We should cover this for V3.
+                .ack_int_recv(1'b0)
+              );
+            end
+
             // target address is begin programmed to begin a transaction
             if (start) begin
               tran_id++;
@@ -425,7 +439,24 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           end
         end
 
-        "status": do_read_check = 1'b0;
+        "status": begin
+          do_read_check = 1'b0;
+          if (cfg.en_cov) begin
+            cov.status_cg.sample(
+              .fmtfull   (`gmv(ral.status.fmtfull)),
+              .rxfull    (`gmv(ral.status.rxfull)),
+              .fmtempty  (`gmv(ral.status.fmtempty)),
+              .hostidle  (`gmv(ral.status.hostidle)),
+              .targetidle(`gmv(ral.status.targetidle)),
+              .rxempty   (`gmv(ral.status.rxempty)),
+              .txfull    (`gmv(ral.status.txfull)),
+              .acqfull   (`gmv(ral.status.acqfull)),
+              .txempty   (`gmv(ral.status.txempty)),
+              .acqempty  (`gmv(ral.status.acqempty))
+            );
+          end
+        end
+
         "fifo_status": do_read_check = 1'b0;
 
         "acqdata": begin
@@ -435,6 +466,22 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           obs.tran_id = cfg.rcvd_acq_cnt++;
           target_mode_wr_obs_port.write(obs);
           do_read_check = 1'b0;
+          if (cfg.en_cov) begin
+            cov.acq_fifo_cg.sample(.abyte(item.d_data[7:1]),
+                                   .rw_ack_nack(item.d_data[0]),
+                                   .signal(item.d_data[9:8]));
+          end
+        end
+
+        "ovrd": begin
+          do_read_check = 1'b0;
+          if (cfg.en_cov) begin
+            cov.scl_sda_override_cg.sample(
+              .txovrden(`gmv(ral.ovrd.txovrden)),
+              .sclval(`gmv(ral.ovrd.sclval)),
+              .sdaval(`gmv(ral.ovrd.sdaval))
+            );
+          end
         end
 
         default: do_read_check = 1'b0;

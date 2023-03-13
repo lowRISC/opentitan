@@ -139,6 +139,170 @@ covergroup i2c_operating_mode_cg
   cp_ip_mode_x_frequency: cross cp_ip_mode, cp_scl_frequency;
 endgroup
 
+
+covergroup i2c_status_cg
+  with function sample(
+    bit fmtfull,
+    bit rxfull,
+    bit fmtempty,
+    bit hostidle,
+    bit targetidle,
+    bit rxempty,
+    bit txfull,
+    bit acqfull,
+    bit txempty,
+    bit acqempty
+  );
+  option.per_instance = 1;
+
+  cp_fmtfull    : coverpoint fmtfull;
+  cp_rxfull     : coverpoint rxfull;
+  cp_fmtempty   : coverpoint fmtempty;
+  cp_hostidle   : coverpoint hostidle;
+  cp_targetidle : coverpoint targetidle;
+  cp_rxempty    : coverpoint rxempty;
+  cp_txfull     : coverpoint txfull;
+  cp_acqfull    : coverpoint acqfull;
+  cp_txempty    : coverpoint txempty;
+  cp_acqempty   : coverpoint acqempty;
+endgroup : i2c_status_cg
+
+covergroup i2c_scl_sda_override_cg
+  with function sample(bit txovrden, bit sclval, bit sdaval);
+  option.per_instance = 1;
+
+  cp_txorvden : coverpoint txovrden;
+  cp_sclval   : coverpoint sclval;
+  cp_sdaval   : coverpoint sdaval;
+  cp_txorvden_x_sclval : cross cp_txorvden, cp_sclval;
+  cp_txorvden_x_sdaval : cross cp_txorvden, cp_sdaval;
+endgroup : i2c_scl_sda_override_cg
+
+covergroup i2c_cmd_complete_cg
+  with function sample(
+    bit cmd_complete,
+    bit host_mode_read,
+    bit host_mode_write,
+    bit target_mode_read,
+    bit target_mode_write
+  );
+  option.per_instance = 1;
+
+  cp_cmd_complete : coverpoint cmd_complete;
+  cp_host_mode_read_complete    : cross cp_cmd_complete, host_mode_read;
+  cp_host_mode_write_complete   : cross cp_cmd_complete, host_mode_write;
+  cp_target_mode_read_complete  : cross cp_cmd_complete, target_mode_read;
+  cp_target_mode_write_complete : cross cp_cmd_complete, target_mode_write;
+endgroup : i2c_cmd_complete_cg
+
+// The 'format FIFO' controls the HWIP state-machine in HOST-mode, where the
+// transaction to be enacted is specified by a series of 1-byte+5-bit
+// packets in the FIFO. Each entry in the 'format FIFO' may part of a larger
+// transaction, chained together by using the RCONT bit.
+covergroup i2c_fmt_fifo_cg
+with function sample(bit[7:0] fbyte, bit start, bit stop, bit read, bit rcont, bit nakok,
+                     bit ack_int_recv);
+  option.per_instance = 1;
+
+  cp_fbyte : coverpoint fbyte {
+    bins all_zero = {8'h00};
+    bins sml      = {[  8'd1: 8'd100]};
+    bins med      = {[8'd101: 8'd200]};
+    bins high     = {[8'd201: 8'd254]};
+    bins all_ones = {8'hFF};
+  }
+  cp_start : coverpoint start;
+  cp_stop  : coverpoint stop;
+  cp_read  : coverpoint read;
+  cp_rcont : coverpoint rcont;
+  cp_nakok : coverpoint nakok;
+  cp_ack : coverpoint ack_int_recv {
+    bins ack = {1'b1};
+    bins nack = {1'b0};
+  }
+  cp_fbyte_X_start_X_stop_X_read_X_rcont_X_nakok_X_ack :
+    cross cp_fbyte, start, stop, read, rcont, nakok, cp_ack
+  {
+    bins data_byte = binsof(start) intersect {0} &&
+                     binsof(stop) intersect {0} &&
+                     binsof(read) intersect {0} &&
+                     binsof(rcont) intersect {0} &&
+                     binsof(nakok) intersect {0};
+    bins write_address_byte = binsof(start) intersect {1} &&
+                              binsof(read) intersect {0};
+    bins read_address_byte = binsof(start) intersect {1} &&
+                             binsof(read) intersect {1};
+    bins read_with_ack = binsof(read) intersect {1} &&
+                         binsof(rcont) intersect {1};
+    bins read_with_nack = binsof(read) intersect {1} &&
+                          binsof(rcont) intersect {0};
+    bins stop_byte = binsof(stop) intersect {1};
+    bins stop_after_start = binsof(stop) intersect {1} &&
+                            binsof(start) intersect {1};
+    //TODO(#18033) add these back in once it is possible to sample the ack in the scoreboard.
+    // bins write_address_byte_nak = binsof(start) intersect {1} &&
+    //                               binsof(cp_ack) intersect {0};
+    // bins data_byte_nack = binsof(cp_ack) intersect {0};
+    // bins stop_byte_nack = binsof(stop) intersect {1} &&
+    //                       binsof(cp_ack) intersect {0};
+    // bins nakok_byte_nack = binsof(nakok) intersect {1} &&
+    //                        binsof(cp_ack) intersect {0};
+    // bins nakok_addr_byte_nack = binsof(start) intersect {1} &&
+    //                             binsof(nakok) intersect {1} &&
+    //                             binsof(cp_ack) intersect {0};
+  }
+
+endgroup : i2c_fmt_fifo_cg
+
+// (TARGET/DEVICE mode) ACQDATA : I2C target acquired data
+// This register is populated with data + formatting information about the
+// previously-received byte from the host.
+// rw_ack_nack(abyte[0]) -> indicates R/W bit for adress bytes
+//                       -> indicates ACK/NACK bit for RSTART or STOP
+covergroup i2c_acq_fifo_cg
+  with function sample(bit[6:0] abyte, bit rw_ack_nack, bit[1:0] signal);
+  option.per_instance = 1;
+
+  cp_abyte : coverpoint {abyte, rw_ack_nack} {
+    bins all_zero = {8'h00};
+    bins sml      = {[8'd1: 8'd100]};
+    bins med      = {[8'd101: 8'd200]};
+    bins high     = {[8'd201: 8'd254]};
+    bins all_ones = {8'hFF};
+  }
+  cp_action : coverpoint signal {
+                         // 'signal'/'format_flags' encoding
+    bins none = {2'b00};   // No START or STOP: 00
+    bins stop = {2'b10};   //             STOP: 10
+    bins start = {2'b01};  //            START: 01
+    bins rstart = {2'b11}; //   repeated START: 11
+  }
+  cp_request_type: coverpoint rw_ack_nack iff (signal == 2'b01){
+    bins read = {1'b1};
+    bins write = {1'b0};
+  }
+  cp_abyte_X_cp_action : cross cp_abyte, cp_action {
+    bins write_address_byte = binsof(cp_action.start);
+    bins read_address_byte = binsof(cp_action.start);
+    bins data_byte = binsof(cp_action.none);
+  }
+  // Cover different combinations of Read request terminations in target mode
+  // `abyte[0]` format flag encodings for termination of read request
+  //  0 -> ACK
+  //  1 -> NACK
+  cp_target_read_ack_nack: coverpoint {signal, rw_ack_nack} {
+                                    // Read request start   // request termination
+    bins read_req_ack_before_stop    = ({2'b01, 1'b1} => {2'b10, 1'b0});
+    bins read_req_nack_before_rstart = ({2'b01, 1'b1} => {2'b11, 1'b0});
+    // This scenario is not possible to achieve since in target mode, DUT will recieve NACK/ACK
+    // from external host.
+    // With ACK, SDA will be driven low, but RStart requires SDA transition from high to low
+    ignore_bins read_req_ack_before_rstart = ({2'b01, 1'b1} => {2'b11, 1'b0});
+    // Similar to above bin, Stop requires SDA low to high transition,
+    // but during NACK SDA is driven high
+    ignore_bins read_req_nack_before_stop = ({2'b01, 1'b1} => {2'b10, 1'b0});
+  }
+endgroup : i2c_acq_fifo_cg
 class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
   `uvm_component_utils(i2c_env_cov)
 
@@ -147,16 +311,22 @@ class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
   i2c_fifo_level_cg fmt_fifo_level_cg;
   i2c_fifo_level_cg rx_fifo_level_cg;
   i2c_operating_mode_cg openting_mode_cg;
+  i2c_status_cg status_cg;
+  i2c_scl_sda_override_cg scl_sda_override_cg;
+  i2c_fmt_fifo_cg fmt_fifo_cg;
+  i2c_acq_fifo_cg acq_fifo_cg;
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
-
     fmt_fifo_level_cg = new(I2C_FMT_FIFO_DEPTH);
     rx_fifo_level_cg  = new(I2C_RX_FIFO_DEPTH);
     interrupts_cg = new();
     fifo_reset_cg = new();
     openting_mode_cg = new();
-
+    status_cg = new();
+    scl_sda_override_cg = new();
+    fmt_fifo_cg = new();
+    acq_fifo_cg = new();
   endfunction : new
 
 endclass : i2c_env_cov
