@@ -131,9 +131,15 @@ impl<'a> TransportCommandHandler<'a> {
                         let number = instance.get_max_transfer_count()?;
                         Ok(Response::Spi(SpiResponse::GetMaxTransferCount { number }))
                     }
-                    SpiRequest::GetMaxChunkSize => {
-                        let size = instance.max_chunk_size()?;
-                        Ok(Response::Spi(SpiResponse::GetMaxChunkSize { size }))
+                    SpiRequest::GetMaxTransferSizes => {
+                        let sizes = instance.get_max_transfer_sizes()?;
+                        Ok(Response::Spi(SpiResponse::GetMaxTransferSizes { sizes }))
+                    }
+                    SpiRequest::GetEepromMaxTransferSizes => {
+                        let sizes = instance.get_eeprom_max_transfer_sizes()?;
+                        Ok(Response::Spi(SpiResponse::GetEepromMaxTransferSizes {
+                            sizes,
+                        }))
                     }
                     SpiRequest::SetVoltage { voltage } => {
                         instance.set_voltage(*voltage)?;

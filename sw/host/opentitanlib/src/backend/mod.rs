@@ -9,8 +9,7 @@ use thiserror::Error;
 
 use crate::app::config::process_config_file;
 use crate::app::{TransportWrapper, TransportWrapperBuilder};
-use crate::transport::hyperdebug::c2d2::C2d2Flavor;
-use crate::transport::hyperdebug::{CW310Flavor, StandardFlavor};
+use crate::transport::hyperdebug::{C2d2Flavor, CW310Flavor, StandardFlavor};
 use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
 

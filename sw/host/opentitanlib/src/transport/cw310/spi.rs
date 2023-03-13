@@ -6,7 +6,7 @@ use anyhow::Result;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::io::spi::{AssertChipSelect, SpiError, Target, Transfer, TransferMode};
+use crate::io::spi::{AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode};
 use crate::transport::cw310::usb::Backend;
 use crate::transport::cw310::CW310;
 use crate::transport::TransportError;
@@ -89,8 +89,11 @@ impl Target for CW310Spi {
         Ok(42)
     }
 
-    fn max_chunk_size(&self) -> Result<usize> {
-        Ok(65536)
+    fn get_max_transfer_sizes(&self) -> Result<MaxSizes> {
+        Ok(MaxSizes {
+            read: 65536,
+            write: 65536,
+        })
     }
 
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {

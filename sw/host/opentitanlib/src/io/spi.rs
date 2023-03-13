@@ -122,6 +122,13 @@ impl TransferMode {
     }
 }
 
+/// Represents maximum allowed read or write operation in bytes.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct MaxSizes {
+    pub read: usize,
+    pub write: usize,
+}
+
 /// Represents a SPI transfer.
 pub enum Transfer<'rd, 'wr> {
     Read(&'rd mut [u8]),
@@ -149,8 +156,8 @@ pub trait Target {
     /// Returns the maximum number of transfers allowed in a single transaction.
     fn get_max_transfer_count(&self) -> Result<usize>;
 
-    /// Maximum chunksize handled by this SPI device.
-    fn max_chunk_size(&self) -> Result<usize>;
+    /// Maximum `Read` and `Write` data size for `run_transaction()`.
+    fn get_max_transfer_sizes(&self) -> Result<MaxSizes>;
 
     fn set_voltage(&self, _voltage: Voltage) -> Result<()> {
         Err(SpiError::InvalidOption("This target does not support set_voltage".to_string()).into())
@@ -159,6 +166,16 @@ pub trait Target {
     /// Runs a SPI transaction composed from the slice of [`Transfer`] objects.  Will assert the
     /// CS for the duration of the entire transactions.
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()>;
+
+    /// Maximum payload size of `Read` and `Write` elements for `run_eeprom_transactions()`.
+    fn get_eeprom_max_transfer_sizes(&self) -> Result<MaxSizes> {
+        // By default, go by the low-level SPI limits, allowing for 6 bytes of opcode+address+dummy
+        let spi_max = self.get_max_transfer_sizes()?;
+        Ok(MaxSizes {
+            read: spi_max.read,
+            write: spi_max.write - 6,
+        })
+    }
 
     /// Runs a number of EEPROM/FLASH protocol SPI transactions.  Will assert and deassert CS for
     /// each transaction.

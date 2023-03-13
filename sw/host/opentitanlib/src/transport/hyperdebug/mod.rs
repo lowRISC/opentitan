@@ -38,6 +38,7 @@ pub mod gpio;
 pub mod i2c;
 pub mod spi;
 
+pub use c2d2::C2d2Flavor;
 pub use dfu::HyperdebugDfu;
 
 /// Implementation of the Transport trait for HyperDebug based on the

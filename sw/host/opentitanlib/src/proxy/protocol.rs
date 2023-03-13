@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use crate::bootstrap::BootstrapOptions;
 use crate::io::emu::{EmuState, EmuValue};
 use crate::io::gpio::{PinMode, PullMode};
-use crate::io::spi::TransferMode;
+use crate::io::spi::{MaxSizes, TransferMode};
 use crate::proxy::errors::SerializedError;
 use crate::transport::Capabilities;
 use crate::util::voltage::Voltage;
@@ -111,7 +111,8 @@ pub enum SpiRequest {
         value: u32,
     },
     GetMaxTransferCount,
-    GetMaxChunkSize,
+    GetMaxTransferSizes,
+    GetEepromMaxTransferSizes,
     SetVoltage {
         voltage: Voltage,
     },
@@ -139,8 +140,11 @@ pub enum SpiResponse {
     GetMaxTransferCount {
         number: usize,
     },
-    GetMaxChunkSize {
-        size: usize,
+    GetMaxTransferSizes {
+        sizes: MaxSizes,
+    },
+    GetEepromMaxTransferSizes {
+        sizes: MaxSizes,
     },
     SetVoltage,
     RunTransaction {
