@@ -11,46 +11,61 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
   virtual i2c_if  i2c_vif;
 
+  // Local seq_items used to construct larger transactions.
+  // Construct txn_items by updating the local items as different
+  // events occur, then push the item into a queue for checking after the
+  // end of the transaction has been detected.
   local i2c_item  exp_rd_item;
   local i2c_item  exp_wr_item;
   local i2c_item  obs_wr_item;
   local i2c_item  obs_rd_item;
-  local i2c_item  rd_pending_item;
+  local i2c_item  rd_pending_item; // Store partially-complete state of read txn in host-mode
   local uint      rd_wait;
   local bit       host_init = 1'b0;
-  local uint      rdata_cnt = 0;
+  local uint      rdata_cnt = 0; // Count data-bytes read from a target in host-mode
   local uint      tran_id = 0;
   local uint      num_exp_tran = 0;
 
-  // queues hold expected read and write transactions
+  // DUT in HOST mode
+  ///////////////////
+  // These queues hold items representing full read or write transactions,
+  // assembled by monitoring the TL-interface to the HWIP block.
+  // As there is no model required to predict the transaction that should be
+  // recorded by the monitors (it is a pure comms system, the output data
+  // should exactly equal the input data), these queues become the source of
+  // expected 'exp_trn' items in the 'compare_trans' checker method.
   local i2c_item  exp_wr_q[$];
   local i2c_item  exp_rd_q[$];
-
-  // queues hold partial read transactions (address phase)
-  local i2c_item  rd_pending_q[$];
+  local i2c_item  rd_pending_q[$]; // Helper-queue : hold partial read transactions (data-phase)
 
   // TLM fifos hold the transactions sent by monitor
+  // These become the source of measured 'dut_trn' items in the 'compare_trans'
+  // checker method.
   uvm_tlm_analysis_fifo #(i2c_item) rd_item_fifo;
   uvm_tlm_analysis_fifo #(i2c_item) wr_item_fifo;
+  ///////////////////
 
+  // DUT in TARGET/DEVICE mode
+  ///////////////////
+  // Captures an item-per-byte read from 'ACQDATA' register
   uvm_analysis_port #(i2c_item) target_mode_wr_obs_port;
-
-  // Target mode transactions
+  // Target mode seq_item queues (wr/rd transactions)
   uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_exp_fifo;
   uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_obs_fifo;
   uvm_tlm_analysis_fifo #(i2c_item) target_mode_rd_exp_fifo;
   uvm_tlm_analysis_fifo #(i2c_item) target_mode_rd_obs_fifo;
+  ///////////////////
 
   // interrupt bit vector
   local bit [NumI2cIntr-1:0] intr_exp;
 
   int                        num_obs_rd;
   int                        obs_wr_id = 0;
-  // used only for fifo_reset test
-  bit                        skip_acq_comp = 0;
-  // Target mode read data is created by fetch_txn.
-  // In random tx fifo flush event, this make difficult to chekc read path integrity.
-  // With setting this bit, expected read data collected right at the input of tx fifo
+  bit                        skip_acq_comp = 0; // used only for fifo_reset test
+
+  // In Target-mode, read data is created by i2c_base_seq::fetch_txn().
+  // With a random tx fifo flush event, this makes it difficult to check read path integrity.
+  // By setting 'read_rnd_data = 1', expected read data is collected right at the input of tx fifo
   // and at the tx fifo reset event, expected read data also get flushed.
   bit                        read_rnd_data = 0;
   bit [7:0]                  mirrored_txdata[$];
@@ -85,8 +100,15 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     string str;
     super.run_phase(phase);
+    //-----------------------------------------------
+    // Checks for I2C DUT in TARGET/DEVICE mode
+    // - (agent in HOST mode)
+    //-----------------------------------------------
     if (cfg.m_i2c_agent_cfg.if_mode == Host) begin
       fork
+        // Compare seq_items for write transactions
+        // Currently, items for this check are captures byte-by-byte at the ACQFIFO reg
+        // Hence, we check only compare start, stop and wdata fields of the item.
         forever begin
           fork begin
             fork
@@ -109,6 +131,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             disable fork;
           end join
         end
+        // Compare seq_items for read transactions
         forever begin
           target_mode_rd_obs_fifo.get(obs_rd_item);
           if (!skip_target_rd_comp) begin
@@ -132,7 +155,11 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           end
         end
       join_none
-    end else begin
+    //-----------------------------------------------
+    // Checks for I2C DUT in HOST mode
+    // - (agent in TARGET/DEVICE mode)
+    //-----------------------------------------------
+    end else if (cfg.m_i2c_agent_cfg.if_mode == Device) begin
       forever begin
         `DV_SPINWAIT_EXIT(
           fork
@@ -147,15 +174,18 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg   csr;
-    i2c_item  sb_exp_wr_item;
-    i2c_item  sb_exp_rd_item;
+    i2c_item  sb_exp_wr_item; // tmpvar : Push into 'exp_wr_q' once a full txn is assembled
+    i2c_item  sb_exp_rd_item; // tmpvar : Push into 'exp_rd_q' once a full txn is assembled
     i2c_item  temp_item;
-    bit       fmt_overflow;
-    bit       do_read_check = 1'b1;
-    bit       write = item.is_write();
 
-    bit addr_phase_write  = (write && channel  == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
+    // After reads, if do_read_check is set, compare the mirrored_value against item.d_data
+    bit do_read_check = 1'b1;
+
+    bit write = item.is_write();
+    bit addr_phase_read = (!write && channel == AddrChannel);
+    bit addr_phase_write = (write && channel == AddrChannel);
+    bit data_phase_read = (!write && channel == DataChannel);
+    bit data_phase_write = (write && channel == DataChannel);
 
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     // if access was to a valid csr, get the csr handle
@@ -166,24 +196,25 @@ class i2c_scoreboard extends cip_base_scoreboard #(
       `uvm_fatal(`gfn, $sformatf("\naccess unexpected addr 0x%0h", csr_addr))
     end
 
+    // The access is to a valid CSR, now process it.
+    // writes -> update local variable and fifo at A-channel access
+    // reads  -> update predication at address phase and compare at D-channel access
+
     sb_exp_wr_item = new();
-    sb_exp_rd_item = new();
     if (addr_phase_write) begin
-      // incoming access is a write to a valid csr, then make updates right away
+      // incoming access is a write to a valid csr, so make updates right away
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
-      // process the csr req
-      // for write, update local variable and fifo at address phase
-      // for read, update predication at address phase and compare at data phase
       case (csr.get_name())
-        // add individual case item for each csr
         "ctrl": begin
           host_init = ral.ctrl.enablehost.get_mirrored_value();
         end
+
         "target_id": begin
            cfg.m_i2c_agent_cfg.target_addr0 = get_field_val(ral.target_id.address0, item.a_data);
            cfg.m_i2c_agent_cfg.target_addr1 = get_field_val(ral.target_id.address1, item.a_data);
         end
+
         "fdata": begin
           bit [7:0] fbyte;
           bit start, stop, read, rcont, nakok;
@@ -279,6 +310,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             end
           end
         end
+
         "fifo_ctrl": begin
           // these fields are WO
           bit fmtrst_val = bit'(get_field_val(ral.fifo_ctrl.fmtrst, item.a_data));
@@ -301,6 +333,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
                                         .rst(rxrst_val));
           end
         end
+
         "intr_test": begin
           bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
           intr_exp |= item.a_data;
@@ -312,24 +345,30 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             end
           end
         end
+
         "txdata": begin
           if (read_rnd_data) begin
             mirrored_txdata.push_back(item.a_data[7:0]);
           end
         end
       endcase
-      // get full write transaction
-      if (!cfg.under_reset && host_init && sb_exp_wr_item.start && sb_exp_wr_item.stop) begin
-        exp_wr_q.push_back(sb_exp_wr_item);
-        num_exp_tran++;
-        `uvm_info(`gfn, $sformatf("\nscoreboard, push to queue, exp_wr_item\n\%s",
-            sb_exp_wr_item.sprint()), UVM_DEBUG)
-      end
-    end // end of write address phase
 
-    // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
+      if (cfg.under_reset || !host_init) return;
+      // If we have completed a transaction (detected both start and stop)
+      //   - Push a completed txn item to the queue
+      if (sb_exp_wr_item.start &&
+          sb_exp_wr_item.stop) begin
+        exp_wr_q.push_back(sb_exp_wr_item); num_exp_tran++;
+        `uvm_info(`gfn,
+          $sformatf("\nscoreboard, push to queue, exp_wr_item\n\%s", sb_exp_wr_item.sprint()),
+          UVM_DEBUG)
+      end
+    end // addr_phase_write
+
+    sb_exp_rd_item = new();
     if (data_phase_read) begin
       case (csr.get_name())
+
         "rdata": begin
           do_read_check = 1'b0;
           if (host_init) begin
@@ -356,19 +395,23 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             end
             rd_pending_item.data_q.push_back(item.d_data);
             rdata_cnt++;
-            `uvm_info(`gfn, $sformatf("\nscoreboard, rd_pending_item\n\%s",
-                rd_pending_item.sprint()), UVM_DEBUG)
-            // get complete read transactions
-            if (rdata_cnt == rd_pending_item.num_data && rd_pending_item.stop) begin
+            `uvm_info(`gfn,
+              $sformatf("\nscoreboard, rd_pending_item\n\%s", rd_pending_item.sprint()),
+              UVM_DEBUG)
+            // Push completed read transactions into the 'exp_rd_q'
+            if (rd_pending_item.num_data == rdata_cnt &&
+                rd_pending_item.stop) begin
               `downcast(sb_exp_rd_item, rd_pending_item.clone());
               if (!cfg.under_reset) exp_rd_q.push_back(sb_exp_rd_item);
               num_exp_tran++;
-              `uvm_info(`gfn, $sformatf("\nscoreboard, push to queue, exp_rd_item\n\%s",
-                  sb_exp_rd_item.sprint()), UVM_DEBUG)
+              `uvm_info(`gfn,
+                $sformatf("\nscoreboard, push to queue, exp_rd_item\n\%s", sb_exp_rd_item.sprint()),
+                UVM_DEBUG)
               rdata_cnt = 0;
             end
           end
         end
+
         "intr_state": begin
           i2c_intr_e     intr;
           bit [TL_DW-1:0] intr_en = item.d_data;
@@ -381,14 +424,10 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             end
           end
         end
-        "status": begin
-          // check in test
-          do_read_check = 1'b0;
-        end
-        "fifo_status": begin
-          // check in test
-          do_read_check = 1'b0;
-        end
+
+        "status": do_read_check = 1'b0;
+        "fifo_status": do_read_check = 1'b0;
+
         "acqdata": begin
           i2c_item obs;
           `uvm_create_obj(i2c_item, obs);
@@ -397,10 +436,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           target_mode_wr_obs_port.write(obs);
           do_read_check = 1'b0;
         end
-        default: begin
-          // check in test
-          do_read_check = 1'b0;
-        end
+
+        default: do_read_check = 1'b0;
       endcase
 
       if (do_read_check) begin
@@ -408,7 +445,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             $sformatf("reg name: %0s", csr.get_full_name()))
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
-    end // end of read data phase
+    end // data_phase_read
   endtask : process_tl_access
 
   task compare_trans(bus_op_e dir = BusOpWrite);
