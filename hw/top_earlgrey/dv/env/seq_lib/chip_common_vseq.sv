@@ -58,6 +58,9 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
     cfg.chip_vif.mios_if.pins_pd = '0;
     cfg.chip_vif.dios_if.pins_pd[top_earlgrey_pkg::DioPadSpiDevD3:
                                  top_earlgrey_pkg::DioPadSpiHostD0] = '0;
+    // Keep the pull-down on IOC6, the ext_clk input, to avoid causing Xs to
+    // propagate through the clock gate.
+    cfg.chip_vif.mios_if.pins_pd[top_earlgrey_pkg::MioPadIoc6] = '1;
   endtask
 
 endclass

@@ -27,6 +27,12 @@ module ast_clks_byp (
   input clk_osc_aon_i,                      // AON Oscillator Clock
   input clk_osc_aon_val_i,                  // AON Oscillator Clock Valid
   input clk_ast_ext_i,                      // External Clock
+`ifdef AST_BYPASS_CLK
+  input clk_ext_sys_i,
+  input clk_ext_io_i,
+  input clk_ext_usb_i,
+  input clk_ext_aon_i,
+`endif // of AST_BYPASS_CLK
   input prim_mubi_pkg::mubi4_t io_clk_byp_req_i,    // External IO clock mux for OTP bootstrap
   input prim_mubi_pkg::mubi4_t all_clk_byp_req_i,   // External all clock mux override
   input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External Clock Frequecy is 96MHz (else 48MHz)
@@ -83,7 +89,11 @@ end
 logic rst_sw_ckbpe_n, clk_ast_ext_scn, sw_clk_byp_en;
 
 assign rst_sw_ckbpe_n = scan_mode_i ? scan_reset_ni : rst_sw_clk_byp_en;
+`ifndef AST_BYPASS_CLK
 assign clk_ast_ext_scn = scan_mode_i ? clk_osc_sys_i : clk_ast_ext_i;
+`else // of AST_BYPASS_CLK
+assign clk_ast_ext_scn = scan_mode_i ? clk_osc_sys_i : clk_ext_sys_i;
+`endif // of AST_BYPASS_CLK
 
 // De-assert with external clock input
 always_ff @( negedge clk_ast_ext_scn, negedge rst_sw_ckbpe_n ) begin
@@ -94,10 +104,23 @@ always_ff @( negedge clk_ast_ext_scn, negedge rst_sw_ckbpe_n ) begin
   end
 end
 
-logic clk_ext_en, clk_ext_scn;
+logic clk_ast_ext, clk_ext_en, clk_ext_scn;
+
+prim_clock_gating #(
+  .NoFpgaGate(1'b1)
+) u_clk_ast_ext_gating (
+`ifndef AST_BYPASS_CLK
+  .clk_i( clk_ast_ext_i ),
+`else
+  .clk_i( clk_ext_sys_i ),
+`endif
+  .en_i( clk_ext_en ),
+  .test_en_i( 1'b0 ),
+  .clk_o( clk_ast_ext )
+);
 
 assign clk_ext_en = sw_clk_byp_en;
-assign clk_ext_scn = scan_mode_i ? clk_osc_sys_i : clk_ast_ext_i && clk_ext_en;
+assign clk_ext_scn = scan_mode_i ? clk_osc_sys_i : clk_ast_ext;
 
 // Local EXT clock buffer
 ////////////////////////////////////////
@@ -126,6 +149,7 @@ assign rst_aon_exda_n = scan_mode_i ? scan_reset_ni : rst_aon_n_exda;
 
 // External USB & AON clocks genaration
 ////////////////////////////////////////
+`ifndef AST_BYPASS_CLK
 logic clk_src_ext_usb, ext_freq_is_96m, ext_freq_is_96m_sync;
 
 prim_flop_2sync #(
@@ -149,11 +173,16 @@ prim_clock_div #(
   .test_en_i ( scan_mode_i ),
   .clk_o ( clk_src_ext_usb )
 );
+`else // of AST_BYPASS_CLK
+logic clk_src_ext_usb, ext_freq_is_96m;
+assign clk_src_ext_usb = clk_ext_usb_i;
+`endif // of AST_BYPASS_CLK
 
 logic clk_ext_aon, clk_ext_aon_val;
 
 assign clk_ext_aon_val = 1'b1;  // Always ON clock
 
+`ifndef AST_BYPASS_CLK
 prim_clock_div #(
   .Divisor( 240 )
 ) u_no_scan_clk_usb_div240_div (
@@ -164,6 +193,9 @@ prim_clock_div #(
   .test_en_i ( scan_mode_i ),
   .clk_o ( clk_ext_aon )
 );
+`else // of AST_BYPASS_CLK
+assign clk_ext_aon = clk_ext_aon_i;
+`endif // of AST_BYPASS_CLK
 
 
 ////////////////////////////////////////
@@ -234,7 +266,11 @@ assign clk_ext_io_val = clk_ext_io_en;
 prim_clock_gating #(
   .NoFpgaGate ( 1'b1)
 ) u_clk_ext_io_ckgt (
+`ifndef AST_BYPASS_CLK
   .clk_i ( clk_ext ),
+`else // of AST_BYPASS_CLK
+  .clk_i ( clk_ext_io_i ),
+`endif // of AST_BYPASS_CLK
   .en_i ( clk_ext_io_en ),
   .test_en_i ( scan_mode_i ),
   .clk_o ( clk_ext_io )
@@ -412,6 +448,7 @@ assign extfreq_is_96m = sw_exfr_is_96m;
 ////////////////////////////////////////
 logic sys_clk_byp_sel, io_clk_byp_sel, usb_clk_byp_sel, aon_clk_byp_sel;
 
+`ifndef AST_BYPASS_CLK
 always_latch begin
   if ( !scan_mode_i ) begin
     sys_clk_byp_sel = sys_clk_byp;
@@ -421,6 +458,13 @@ always_latch begin
     ext_freq_is_96m = extfreq_is_96m;
   end
 end
+`else // of AST_BYPASS_CLK
+assign sys_clk_byp_sel = sys_clk_byp;
+assign io_clk_byp_sel  = io_clk_byp;
+assign usb_clk_byp_sel = usb_clk_byp;
+assign aon_clk_byp_sel = aon_clk_byp;
+assign ext_freq_is_96m = extfreq_is_96m;
+`endif // of AST_BYPASS_CLK
 
 
 ////////////////////////////////////////
@@ -496,6 +540,22 @@ prim_buf u_rst_clk_ext_aon (
   .out_o ( rst_clk_ext_aon_n )
 );
 
+// rst_aon_n deasset to io clock
+////////////////////////////////////////
+logic rst_aon_n_ioda, rst_aon_ioda_n;
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_rst_aon_n_ioda_sync (
+  .clk_i ( clk_src_io_o ),
+  .rst_ni ( rst_aon_n ),
+  .d_i ( 1'b1 ),
+  .q_o ( rst_aon_n_ioda )
+);
+
+assign rst_aon_ioda_n = scan_mode_i ? scan_reset_ni : rst_aon_n_ioda;
+
 // SYS Clock Bypass Mux
 ////////////////////////////////////////
 gfr_clk_mux2 u_clk_src_sys_sel (
@@ -514,6 +574,8 @@ gfr_clk_mux2 u_clk_src_sys_sel (
 
 // IO Clock Bypass Mux
 ////////////////////////////////////////
+logic clk_src_io, clk_src_io_val;
+
 gfr_clk_mux2 u_clk_src_io_sel (
   .clk_osc_i ( clk_osc_io_i ),
   .clk_osc_val_i ( clk_osc_io_val_i ),
@@ -524,9 +586,63 @@ gfr_clk_mux2 u_clk_src_io_sel (
   .ext_sel_i ( io_clk_byp_sel ),
   .clk_osc_en_o ( io_clk_osc_en ),
   .clk_ext_en_o ( io_clk_byp_en ),
-  .clk_val_o ( clk_src_io_val_o ),
+  .clk_val_o ( clk_src_io_val ),
+  .clk_o ( clk_src_io )
+);
+
+`ifndef AST_BYPASS_CLK
+assign clk_src_io_val_o = clk_src_io_val;
+assign clk_src_io_o = clk_src_io;
+`else // of AST_BYPASS_CLK
+// For FPGA, clk_ext is always the one frequency, so divide by 2 if downstream
+// thinks it should be "48 MHz" instead of "96 MHz".
+logic ext_freq_is_96m_io_sync;
+logic rst_src_io_n;
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_no_scan_rst_src_io_n_sync (
+  .clk_i ( clk_src_io ),
+  .rst_ni ( rst_aon_n ),
+  .d_i ( 1'b1 ),
+  .q_o ( rst_src_io_n )
+);
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_no_scan_ext_freq_is_96m_io_sync (
+  .clk_i ( clk_src_io ),
+  .rst_ni ( rst_src_io_n ),
+  .d_i ( ext_freq_is_96m ),
+  .q_o ( ext_freq_is_96m_io_sync )
+);
+
+logic clk_src_io_div2_sel;
+assign clk_src_io_div2_sel = !ext_freq_is_96m_io_sync & io_clk_byp_sel;
+
+prim_clock_div #(
+  .Divisor( 2 )
+) u_no_scan_clk_src_io_d1ord2 (
+  .clk_i ( clk_src_io ),
+  .rst_ni ( rst_src_io_n ),
+  .step_down_req_i( !clk_src_io_div2_sel ),
+  .step_down_ack_o ( ),
+  .test_en_i ( scan_mode_i ),
   .clk_o ( clk_src_io_o )
 );
+
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_no_scan_clk_src_io_val_sync (
+  .clk_i ( clk_src_io_o ),
+  .rst_ni ( rst_aon_ioda_n ),
+  .d_i ( clk_src_io_val ),
+  .q_o ( clk_src_io_val_o )
+);
+`endif // of AST_BYPASS_CLK
 
 // USB Clock Bypass Mux
 ////////////////////////////////////////
@@ -559,22 +675,6 @@ gfr_clk_mux2 u_clk_src_aon_sel (
   .clk_val_o ( clk_src_aon_val_o ),
   .clk_o ( clk_src_aon_o )
 );
-
-// rst_aon_n deasset to io clock
-////////////////////////////////////////
-logic rst_aon_n_ioda, rst_aon_ioda_n;
-
-prim_flop_2sync #(
-  .Width ( 1 ),
-  .ResetValue ( 1'b0 )
-) u_rst_aon_n_ioda_sync (
-  .clk_i ( clk_src_io_o ),
-  .rst_ni ( rst_aon_n ),
-  .d_i ( 1'b1 ),
-  .q_o ( rst_aon_n_ioda )
-);
-
-assign rst_aon_ioda_n = scan_mode_i ? scan_reset_ni : rst_aon_n_ioda;
 
 // All Clocks Bypass Acknowledge
 ////////////////////////////////////////

@@ -130,6 +130,9 @@ interface chip_if;
 
   initial begin
     cfg_default_weak_pulls_on_dios(1);
+    // Enable weak pull down on IOC6, to prevent X propagation from an
+    // undriven external clock (in the prim_clock_gating's glitch filter)
+    mios_if.pins_pd[top_earlgrey_pkg::MioPadIoc6] = 1;
   end
 
   // X-check monitor on the muxed chip IOs.
