@@ -259,7 +259,7 @@ jobs:
         - "/sw/***"
 
 - job: chip_englishbreakfast_verilator
-  displayName: Verilated English Breakfast
+  displayName: Verilated English Breakfast (Build)
   # Build Verilator simulation of the English Breakfast toplevel design
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
@@ -323,7 +323,7 @@ jobs:
 # building more than one top-level design with different parametrizations.
 # Work towards this goal is tracked in issue #4669.
 - job: build_and_execute_verilated_tests_englishbreakfast
-  displayName: Verilated English Breakfast
+  displayName: Verilated English Breakfast (Execute)
   # Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
   pool:
     vmImage: ubuntu-20.04
