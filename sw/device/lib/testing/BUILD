@@ -355,7 +355,9 @@ cc_library(
     hdrs = ["spi_device_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//sw/device/lib/base:status",
         "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/testing/json:spi_passthru",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )

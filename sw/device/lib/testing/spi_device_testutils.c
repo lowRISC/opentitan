@@ -214,3 +214,56 @@ void spi_device_testutils_configure_passthrough(
         spi_device, kSpiDeviceFlashOpWriteDisable, kDifToggleEnabled));
   }
 }
+
+status_t spi_device_testutils_wait_for_upload(dif_spi_device_handle_t *spid,
+                                              upload_info_t *info) {
+  // Wait for a SPI transaction cause an upload.
+  bool upload_pending;
+  do {
+    // The UploadCmdfifoNotEmpty interrupt status is updated after the SPI
+    // transaction completes.
+    TRY(dif_spi_device_irq_is_pending(
+        &spid->dev, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, &upload_pending));
+  } while (!upload_pending);
+
+  uint8_t occupancy;
+
+  // Get the SPI opcode.
+  TRY(dif_spi_device_get_flash_command_fifo_occupancy(spid, &occupancy));
+  if (occupancy != 1) {
+    // Cannot have an uploaded command without an opcode.
+    return INTERNAL();
+  }
+  TRY(dif_spi_device_pop_flash_command_fifo(spid, &info->opcode));
+  // Get the flash_status register.
+  TRY(dif_spi_device_get_flash_status_registers(spid, &info->flash_status));
+
+  // Get the SPI address (if available).
+  TRY(dif_spi_device_get_flash_address_fifo_occupancy(spid, &occupancy));
+  if (occupancy) {
+    dif_toggle_t addr_4b;
+    TRY(dif_spi_device_get_4b_address_mode(spid, &addr_4b));
+    info->addr_4b = addr_4b;
+    TRY(dif_spi_device_pop_flash_address_fifo(spid, &info->address));
+    info->has_address = true;
+  }
+
+  // Get the SPI data payload (if available).
+  uint32_t start;
+  TRY(dif_spi_device_get_flash_payload_fifo_occupancy(spid, &info->data_len,
+                                                      &start));
+  if (info->data_len) {
+    if (info->data_len > sizeof(info->data)) {
+      // We aren't expecting more than 256 bytes of data.
+      return INVALID_ARGUMENT();
+    }
+    TRY(dif_spi_device_read_flash_buffer(spid,
+                                         kDifSpiDeviceFlashBufferTypePayload,
+                                         start, info->data_len, info->data));
+  }
+
+  // Finished: ack the IRQ.
+  TRY(dif_spi_device_irq_acknowledge(&spid->dev,
+                                     kDifSpiDeviceIrqUploadCmdfifoNotEmpty));
+  return OK_STATUS();
+}

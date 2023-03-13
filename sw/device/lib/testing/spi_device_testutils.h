@@ -8,7 +8,9 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
+#include "sw/device/lib/testing/json/spi_passthru.h"
 
 /**
  * A set of typical opcodes for named flash commands.
@@ -73,5 +75,19 @@ enum spi_device_command_slot {
 void spi_device_testutils_configure_passthrough(
     dif_spi_device_handle_t *spi_device, uint32_t filters,
     bool upload_write_commands);
+
+/**
+ * Wait for a spi command upload.
+ *
+ * Upon detecting a spi command upload, the `info` block will be populated
+ * with the opcode, address and data phases of the uploaded command.
+ *
+ * @param spid A spid_device DIF handle.
+ * @param info Pointer to an upload_info_t.
+ * @return A status_t indicating success or failure in receving the uploaded
+ *         command.
+ */
+status_t spi_device_testutils_wait_for_upload(dif_spi_device_handle_t *spid,
+                                              upload_info_t *info);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_SPI_DEVICE_TESTUTILS_H_
