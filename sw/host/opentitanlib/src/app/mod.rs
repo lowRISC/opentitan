@@ -139,7 +139,6 @@ impl SpiConfiguration {
 }
 
 pub struct TransportWrapperBuilder {
-    transport: RefCell<Box<dyn Transport>>,
     pin_alias_map: HashMap<String, String>,
     uart_map: HashMap<String, String>,
     spi_map: HashMap<String, String>,
@@ -164,9 +163,8 @@ pub struct TransportWrapper {
 }
 
 impl TransportWrapperBuilder {
-    pub fn new(transport: Box<dyn crate::transport::Transport>) -> Self {
+    pub fn new() -> Self {
         Self {
-            transport: RefCell::new(transport),
             pin_alias_map: HashMap::new(),
             uart_map: HashMap::new(),
             spi_map: HashMap::new(),
@@ -292,7 +290,10 @@ impl TransportWrapperBuilder {
         Ok(result_spi_conf_map)
     }
 
-    pub fn build(self) -> Result<TransportWrapper> {
+    pub fn build(
+        self,
+        transport: Box<dyn crate::transport::Transport>,
+    ) -> Result<TransportWrapper> {
         let pin_conf_map =
             Self::consolidate_pin_conf_map(&self.pin_alias_map, &self.pin_conf_list)?;
         let mut strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>> =
@@ -305,7 +306,7 @@ impl TransportWrapperBuilder {
         }
         let spi_conf_map = Self::consolidate_spi_conf_map(&self.spi_map, &self.spi_conf_list)?;
         Ok(TransportWrapper {
-            transport: self.transport,
+            transport: RefCell::new(transport),
             pin_map: self.pin_alias_map,
             uart_map: self.uart_map,
             spi_map: self.spi_map,

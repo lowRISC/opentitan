@@ -60,6 +60,11 @@ pub enum Error {
 /// Creates the requested backend interface according to [`BackendOpts`].
 pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     let interface = args.interface.as_str();
+    let mut env = TransportWrapperBuilder::new();
+
+    for conf_file in &args.conf {
+        process_config_file(&mut env, conf_file.as_ref())?
+    }
     let (backend, default_conf) = match interface {
         "" => (create_empty_transport()?, None),
         "proxy" => (proxy::create(&args.proxy_opts)?, None),
@@ -91,17 +96,12 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         ),
         _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
     };
-    let mut env = TransportWrapperBuilder::new(backend);
-
     if args.conf.is_empty() {
         if let Some(conf_file) = default_conf {
             process_config_file(&mut env, conf_file)?
         }
     }
-    for conf_file in &args.conf {
-        process_config_file(&mut env, conf_file.as_ref())?
-    }
-    env.build()
+    env.build(backend)
 }
 
 pub fn create_empty_transport() -> Result<Box<dyn Transport>> {
