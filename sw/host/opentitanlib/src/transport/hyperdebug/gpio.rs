@@ -34,10 +34,7 @@ impl GpioPin for HyperdebugGpioPin {
     fn read(&self) -> Result<bool> {
         let line = self
             .inner
-            .cmd_one_line_output(&format!("gpioget {}", &self.pinname))
-            .map_err(|_| {
-                TransportError::CommunicationError("No output from gpioget".to_string())
-            })?;
+            .cmd_one_line_output(&format!("gpioget {}", &self.pinname))?;
         Ok(line.trim_start().starts_with('1'))
     }
 

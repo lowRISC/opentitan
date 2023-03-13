@@ -416,6 +416,58 @@ impl Target for HyperdebugSpiTarget {
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {
         let mut idx: usize = 0;
         self.select_my_spi_bus()?;
+
+        // Simple cases involving using only a single USB command can be handled without explicit
+        // embracing commands to hold CS asserted across a sequence of transfers, use that for
+        // avoiding several USB roundtrips in the common cases.
+        match transaction {
+            [Transfer::Write(wbuf), Transfer::Read(rbuf)] => {
+                ensure!(
+                    wbuf.len() <= self.max_sizes.write,
+                    SpiError::InvalidDataLength(wbuf.len())
+                );
+                ensure!(
+                    rbuf.len() <= self.max_sizes.read,
+                    SpiError::InvalidDataLength(rbuf.len())
+                );
+                self.transmit(wbuf, rbuf.len())?;
+                self.receive(rbuf)?;
+                return Ok(());
+            }
+            [Transfer::Write(wbuf)] => {
+                ensure!(
+                    wbuf.len() <= self.max_sizes.write,
+                    SpiError::InvalidDataLength(wbuf.len())
+                );
+                self.transmit(wbuf, 0)?;
+                self.receive(&mut [])?;
+                return Ok(());
+            }
+            [Transfer::Write(wbuf1), Transfer::Write(wbuf2)] => {
+                if wbuf1.len() + wbuf2.len() <= self.max_sizes.write {
+                    let mut combined_buf = vec![0u8; wbuf1.len() + wbuf2.len()];
+                    combined_buf[..wbuf1.len()].clone_from_slice(&wbuf1);
+                    combined_buf[wbuf1.len()..].clone_from_slice(&wbuf2);
+                    self.transmit(&combined_buf, 0)?;
+                    self.receive(&mut [])?;
+                    return Ok(());
+                }
+            }
+            [Transfer::Read(rbuf)] => {
+                ensure!(
+                    rbuf.len() <= self.max_sizes.read,
+                    SpiError::InvalidDataLength(rbuf.len())
+                );
+                self.transmit(&[], rbuf.len())?;
+                self.receive(rbuf)?;
+                return Ok(());
+            }
+            _ => (),
+        }
+
+        // If control flow reaches this point, we have a more complicated sequence of operations,
+        // and have to explicitly tell HyperDebug to keep the CS asserted while we issue each
+        // command in turn.
         self.do_assert_cs(true)?;
         while idx < transaction.len() {
             match &mut transaction[idx..] {
