@@ -377,6 +377,18 @@ static void otp_ctrl_fault_checker(bool enable, const char *ip_inst,
         expected_codes);
 }
 
+// OTP_prim_fault does not affect open source otp_ctrl's status register.
+static void otp_ctrl_prim_fault_checker(bool enable, const char *ip_inst,
+                                        const char *type) {
+  // Check the otp_ctrl integrity fatal error code.
+  dif_otp_ctrl_status_t status;
+  uint32_t expected_codes;
+  CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp_ctrl, &status));
+  expected_codes = 1 << kDifOtpCtrlStatusCodeDaiIdle;
+  CHECK(status.codes == expected_codes, "For %s got codes 0x%x, expected 0x%x",
+        ip_inst, status.codes, expected_codes);
+}
+
 static void pwrmgr_fault_checker(bool enable, const char *ip_inst,
                                  const char *type) {
   // Check the pwrmgr integrity fatal error code.
@@ -848,13 +860,16 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
       fault_checker = fc;
     } break;
       // TODO add mechanism to inject:
-      // kTopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert force at prim_otp interface
-      // u_otp output fatal_alert_o.
       // forcing otp_prog_err_o from lc_ctrl_fsm and
       // kTopEarlgreyAlertIdLcCtrlFatalStateError using sparse fsm.
       // alerts, and corresponding CSR bit to check.
     case kTopEarlgreyAlertIdOtpCtrlFatalMacroError: {
       fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
+                            sparse_fsm_check};
+      fault_checker = fc;
+    } break;
+    case kTopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert: {
+      fault_checker_t fc = {otp_ctrl_prim_fault_checker, otp_ctrl_inst_name,
                             sparse_fsm_check};
       fault_checker = fc;
     } break;
