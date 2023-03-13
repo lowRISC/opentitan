@@ -60,12 +60,12 @@ pub enum Error {
 /// Creates the requested backend interface according to [`BackendOpts`].
 pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     let interface = args.interface.as_str();
-    let mut env = TransportWrapperBuilder::new();
+    let mut env = TransportWrapperBuilder::new(interface.to_string());
 
     for conf_file in &args.conf {
         process_config_file(&mut env, conf_file.as_ref())?
     }
-    let (backend, default_conf) = match interface {
+    let (backend, default_conf) = match env.get_interface() {
         "" => (create_empty_transport()?, None),
         "proxy" => (proxy::create(&args.proxy_opts)?, None),
         "verilator" => (
