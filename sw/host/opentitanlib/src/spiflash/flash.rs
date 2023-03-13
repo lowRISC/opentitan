@@ -151,7 +151,7 @@ impl SpiFlash {
         loop {
             // READ_SFDP always takes a 3-byte address followed by a dummy byte regardless of
             // address mode.
-            let mut eeprom_transactions: Vec<Transaction> = Vec::new();
+            let mut eeprom_transactions = Vec::new();
             let read_size = spi.get_eeprom_max_transfer_sizes()?.read;
             for (i, transfer) in buf.chunks_mut(read_size).enumerate() {
                 eeprom_transactions.push(Transaction::Read(

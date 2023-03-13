@@ -37,9 +37,11 @@ pub mod dfu;
 pub mod gpio;
 pub mod i2c;
 pub mod spi;
+pub mod ti50;
 
 pub use c2d2::C2d2Flavor;
 pub use dfu::HyperdebugDfu;
+pub use ti50::Ti50Flavor;
 
 /// Implementation of the Transport trait for HyperDebug based on the
 /// Nucleo-L552ZE-Q.
@@ -428,7 +430,7 @@ impl Inner {
                         if buf[i] == b'\n' {
                             // Found a complete line, process it
                             let mut line_end = i;
-                            if line_end > line_start && buf[line_end - 1] == 13 {
+                            while line_end > line_start && buf[line_end - 1] == 13 {
                                 line_end -= 1;
                             }
                             let line = std::str::from_utf8(&buf[line_start..line_end])
