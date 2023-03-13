@@ -292,14 +292,12 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           end
           if (cfg.en_cov) begin
             cov.fmt_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[FmtThreshold]),
-                                         .fmtlvl(`gmv(ral.fifo_status.fmtlvl)),
-                                         .rxlvl(0),
+                                         .fifolvl(`gmv(ral.fifo_status.fmtlvl)),
                                          .rst(fmtrst_val));
           end
           if (cfg.en_cov) begin
             cov.rx_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[RxThreshold]),
-                                        .fmtlvl(0),
-                                        .rxlvl(`gmv(ral.fifo_status.rxlvl)),
+                                        .fifolvl(`gmv(ral.fifo_status.rxlvl)),
                                         .rst(rxrst_val));
           end
         end
