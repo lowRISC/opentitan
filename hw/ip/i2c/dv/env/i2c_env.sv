@@ -34,6 +34,7 @@ class i2c_env extends cip_base_env #(
     end
 
     virtual_sequencer.i2c_sequencer_h = m_i2c_agent.sequencer;
+    // Configuration for I2C DUT in TARGET/DEVICE mode (agent in HOST mode)
     if (cfg.m_i2c_agent_cfg.if_mode == Host) begin
       virtual_sequencer.target_mode_wr_exp_port.connect(
               scoreboard.target_mode_wr_exp_fifo.analysis_export);
