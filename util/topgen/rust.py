@@ -1,8 +1,7 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-"""This contains a class which is used to help generate `top_{name}.rs`.
-"""
+"""This contains a class which is used to help generate `top_{name}.rs`."""
 from collections import OrderedDict, defaultdict
 from typing import Dict, List, Optional, Tuple
 
@@ -36,8 +35,9 @@ class MemoryRegion(object):
 
 
 class RustEnum(object):
-    def __init__(self, name, repr_type=None):
-        self.name = name
+    def __init__(self, top_name, name, repr_type=None):
+        self.name = top_name + name
+        self.short_name = name
         self.enum_counter = 0
         self.finalized = False
         self.first_value = None
@@ -76,6 +76,20 @@ class RustEnum(object):
         self.last_value = last_val
         self.first_value = first_val
 
+    def render_host(self, gen_doc=False, gen_name=None):
+        self.calculate_range()
+        body = ("    pub enum ${enum.short_name.as_rust_type()}: ${enum.repr()} "
+                "[default = Self::End] {\n"
+                "% for name, value, docstring in enum.constants:\n"
+                "        % if len(docstring) > 0  and gen_doc: \n"
+                "        /// ${docstring}\n"
+                "        % endif \n"
+                "        ${name.as_rust_enum()} = ${value},\n"
+                "% endfor\n"
+                "        End = ${enum.last_value + 1},\n"
+                "    }")
+        return Template(body).render(enum=self)
+
     def render(self, gen_range=False, gen_cast=False):
         self.calculate_range()
         body = ("#[repr(${enum.repr()})]\n"
@@ -109,21 +123,15 @@ class RustEnum(object):
                 "${enum.name.as_rust_type()} {\n"
                 "    type Error = ${enum.repr()};\n"
                 "    fn try_from(val: ${enum.repr()}) -> Result<Self, Self::Error> {\n"
-                "        type Enum = ${enum.name.as_rust_type()};\n"
                 "        match val {\n"
-                "            Enum::FIRST..=Enum::LAST => {\n"
-                "                Ok(\n"
-                "                    // SAFETY: Following code is correct because generated\n"
-                "                    // enum have subsequent values assigned to variants.\n"
-                "                    unsafe {\n"
-                "                        core::mem::transmute(val)\n"
-                "                    },\n"
-                "                )\n"
-                "            }\n"
+                "            % for name, value, docstring in enum.constants:\n"
+                "            ${value} => Ok(Self::${name.as_rust_enum()}),\n"
+                "            % endfor \n"
                 "            _ => Err(val),\n"
                 "        }\n"
                 "    }\n"
                 "}")
+
         if gen_range:
             body += impl
         if gen_cast:
@@ -227,7 +235,7 @@ class TopGenRust:
         return ret
 
     def _init_plic_targets(self):
-        enum = RustEnum(self._top_name + Name(["plic", "target"]))
+        enum = RustEnum(self._top_name, Name(["plic", "target"]))
 
         for core_id in range(int(self.top["num_cores"])):
             enum.add_constant(Name(["ibex", str(core_id)]),
@@ -252,8 +260,8 @@ class TopGenRust:
         that they get the correct mapping to their PLIC id, which is used for
         addressing the right registers and bits.
         """
-        sources = RustEnum(self._top_name + Name(["plic", "peripheral"]), self.regwidth)
-        interrupts = RustEnum(self._top_name + Name(["plic", "irq", "id"]), self.regwidth)
+        sources = RustEnum(self._top_name, Name(["plic", "peripheral"]), self.regwidth)
+        interrupts = RustEnum(self._top_name, Name(["plic", "irq", "id"]), self.regwidth)
         plic_mapping = RustArrayMapping(
             self._top_name + Name(["plic", "interrupt", "for", "peripheral"]),
             sources.name)
@@ -318,8 +326,8 @@ class TopGenRust:
         correct mapping to their alert id, which is used for addressing the
         right registers and bits.
         """
-        sources = RustEnum(self._top_name + Name(["alert", "peripheral"]), self.regwidth)
-        alerts = RustEnum(self._top_name + Name(["alert", "id"]), self.regwidth)
+        sources = RustEnum(self._top_name, Name(["alert", "peripheral"]), self.regwidth)
+        alerts = RustEnum(self._top_name, Name(["alert", "id"]), self.regwidth)
         alert_mapping = RustArrayMapping(
             self._top_name + Name(["alert", "for", "peripheral"]),
             sources.name)
@@ -382,7 +390,7 @@ class TopGenRust:
         pinout_info = self.top['pinout']
 
         # Peripheral Inputs
-        peripheral_in = RustEnum(self._top_name + Name(['pinmux', 'peripheral', 'in']),
+        peripheral_in = RustEnum(self._top_name, Name(['pinmux', 'peripheral', 'in']),
                                  self.regwidth)
         i = 0
         for sig in pinmux_info['ios']:
@@ -395,7 +403,7 @@ class TopGenRust:
         peripheral_in.add_number_of_variants('Number of peripheral input')
 
         # Pinmux Input Selects
-        insel = RustEnum(self._top_name + Name(['pinmux', 'insel']), self.regwidth)
+        insel = RustEnum(self._top_name, Name(['pinmux', 'insel']), self.regwidth)
         insel.add_constant(Name(['constant', 'zero']),
                            docstring='Tie constantly to zero')
         insel.add_constant(Name(['constant', 'one']),
@@ -409,7 +417,7 @@ class TopGenRust:
         insel.add_number_of_variants('Number of valid insel value')
 
         # MIO Outputs
-        mio_out = RustEnum(self._top_name + Name(['pinmux', 'mio', 'out']))
+        mio_out = RustEnum(self._top_name, Name(['pinmux', 'mio', 'out']))
         i = 0
         for pad in pinout_info['pads']:
             if pad['connection'] == 'muxed':
@@ -419,7 +427,7 @@ class TopGenRust:
         mio_out.add_number_of_variants('Number of valid mio output')
 
         # Pinmux Output Selects
-        outsel = RustEnum(self._top_name + Name(['pinmux', 'outsel']), self.regwidth)
+        outsel = RustEnum(self._top_name, Name(['pinmux', 'outsel']), self.regwidth)
         outsel.add_constant(Name(['constant', 'zero']),
                             docstring='Tie constantly to zero')
         outsel.add_constant(Name(['constant', 'one']),
@@ -447,9 +455,9 @@ class TopGenRust:
         These are needed to configure pad specific configurations such as
         slew rate and other flags.
         """
-        direct_enum = RustEnum(self._top_name + Name(["direct", "pads"]))
+        direct_enum = RustEnum(self._top_name, Name(["direct", "pads"]))
 
-        muxed_enum = RustEnum(self._top_name + Name(["muxed", "pads"]))
+        muxed_enum = RustEnum(self._top_name, Name(["muxed", "pads"]))
 
         pads_info = self.top['pinout']['pads']
         muxed = [pad['name'] for pad in pads_info if pad['connection'] == 'muxed']
@@ -478,7 +486,7 @@ class TopGenRust:
         self.muxed_pads = muxed_enum
 
     def _init_pwrmgr_wakeups(self):
-        enum = RustEnum(self._top_name + Name(["power", "manager", "wake", "ups"]))
+        enum = RustEnum(self._top_name, Name(["power", "manager", "wake", "ups"]))
 
         for signal in self.top["wakeups"]:
             enum.add_constant(
@@ -493,7 +501,7 @@ class TopGenRust:
     def _init_rstmgr_sw_rsts(self):
         sw_rsts = self.top['resets'].get_sw_resets()
 
-        enum = RustEnum(self._top_name + Name(["reset", "manager", "sw", "resets"]))
+        enum = RustEnum(self._top_name, Name(["reset", "manager", "sw", "resets"]))
 
         for rst in sw_rsts:
             enum.add_constant(Name.from_snake_case(rst))
@@ -503,7 +511,7 @@ class TopGenRust:
         self.rstmgr_sw_rsts = enum
 
     def _init_pwrmgr_reset_requests(self):
-        enum = RustEnum(self._top_name + Name(["power", "manager", "reset", "requests"]))
+        enum = RustEnum(self._top_name, Name(["power", "manager", "reset", "requests"]))
 
         for signal in self.top["reset_requests"]["peripheral"]:
             enum.add_constant(
@@ -527,8 +535,8 @@ class TopGenRust:
         """
         clocks = self.top['clocks']
 
-        gateable_clocks = RustEnum(self._top_name + Name(["gateable", "clocks"]))
-        hintable_clocks = RustEnum(self._top_name + Name(["hintable", "clocks"]))
+        gateable_clocks = RustEnum(self._top_name, Name(["gateable", "clocks"]))
+        hintable_clocks = RustEnum(self._top_name, Name(["hintable", "clocks"]))
 
         c2g = clocks.make_clock_to_group()
         by_type = clocks.typed_clocks()

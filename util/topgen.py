@@ -1276,8 +1276,6 @@ def main():
                         f"rtl/autogen/top_{topname}_rnd_cnst_pkg.sv",
                         gencmd=gencmd)
 
-        # C Header + C File + Clang-format file
-
         # Since SW does not use FuseSoC and instead expects those files always
         # to be in hw/top_{topname}/sw/autogen, we currently create these files
         # twice:
@@ -1289,6 +1287,8 @@ def main():
             (SRCTREE_TOP / "hw/top_{}/".format(topname)).resolve()
         ]
         for idx, path in enumerate(out_paths):
+            # C Header + C File + Clang-format file
+
             # "clang-format" -> "sw/autogen/.clang-format"
             cformat_tplpath = TOPGEN_TEMPLATE_PATH / "clang-format"
             cformat_dir = path / "sw/autogen"
@@ -1326,19 +1326,9 @@ def main():
                             memory_cheader_path,
                             helper=c_helper)
 
-        # Rust File generator
+            # Rust toplevel chip files generator
 
-        # Since SW does not use FuseSoC and instead expects those files always
-        # to be in hw/top_{topname}/sw/autogen, we currently create these files
-        # twice:
-        # - Once under out_path/sw/autogen
-        # - Once under hw/top_{topname}/sw/autogen
-        root_paths = [out_path.resolve(), SRCTREE_TOP]
-        out_paths = [
-            out_path.resolve(),
-            (SRCTREE_TOP / "hw/top_{}/".format(topname)).resolve()
-        ]
-        for idx, path in enumerate(out_paths):
+            # Creating Rust output directory
             rsformat_dir = path / "sw/autogen/chip"
             rsformat_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1349,6 +1339,13 @@ def main():
                 render_template(TOPGEN_TEMPLATE_PATH / template,
                                 rsformat_dir / source,
                                 helper=rs_helper)
+
+        # Generating Rust host-side files
+        rsformat_dir = SRCTREE_TOP / "sw/host/opentitanlib/src/chip/autogen"
+        rsformat_dir.mkdir(parents=True, exist_ok=True)
+        render_template(TOPGEN_TEMPLATE_PATH / "host_toplevel.rs.tpl",
+                        rsformat_dir / f"{topname}.rs",
+                        helper=rs_helper)
 
         # generate chip level xbar and alert_handler TB
         tb_files = [
