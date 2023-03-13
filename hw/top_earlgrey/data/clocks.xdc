@@ -107,4 +107,4 @@ set_clock_groups -group ${clks_10_unbuf} -group ${clks_48_unbuf} -group ${clks_a
 
 ## The usb calibration handling inside ast is assumed to be async to the outside world
 ## even though its interface is also a usb clock.
-set_false_path -from [get_clocks clk_usb_48mhz] -to [get_pins u_ast/u_usb_clk/u_ref_pulse_sync/u_sync*/u_sync_1/gen_*/q_o_reg[0]/D]
+set_false_path -from ${clks_48_unbuf} -to [get_pins u_ast/u_usb_clk/u_ref_pulse_sync/u_sync*/u_sync_1/gen_*/q_o_reg[0]/D]
