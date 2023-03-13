@@ -83,7 +83,11 @@ end
 logic rst_sw_ckbpe_n, clk_ast_ext_scn, sw_clk_byp_en;
 
 assign rst_sw_ckbpe_n = scan_mode_i ? scan_reset_ni : rst_sw_clk_byp_en;
+`ifndef AST_BYPASS_CLK
 assign clk_ast_ext_scn = scan_mode_i ? clk_osc_sys_i : clk_ast_ext_i;
+`else // of AST_BYPASS_CLK
+assign clk_ast_ext_scn = clk_osc_sys_i;
+`endif // of AST_BYPASS_CLK
 
 // De-assert with external clock input
 always_ff @( negedge clk_ast_ext_scn, negedge rst_sw_ckbpe_n ) begin
@@ -103,12 +107,16 @@ assign clk_ext_scn = scan_mode_i ? clk_osc_sys_i : clk_ast_ext_i && clk_ext_en;
 ////////////////////////////////////////
 logic clk_ext;
 
+`ifndef AST_BYPASS_CLK
 prim_clock_buf #(
   .NoFpgaBuf ( 1'b1 )
 ) u_clk_ext_buf (
   .clk_i ( clk_ext_scn ),
   .clk_o ( clk_ext )
 );
+`else // of AST_BYPASS_CLK
+assign clk_ext = clk_osc_sys_i;
+`endif // of AST_BYPASS_CLK
 
 logic rst_aon_n_exda, rst_aon_exda_n;
 
@@ -139,6 +147,7 @@ prim_flop_2sync #(
   .q_o ( ext_freq_is_96m_sync )
 );
 
+`ifndef AST_BYPASS_CLK
 prim_clock_div #(
   .Divisor( 2 )
 ) u_no_scan_clk_ext_d1ord2 (
@@ -149,11 +158,15 @@ prim_clock_div #(
   .test_en_i ( scan_mode_i ),
   .clk_o ( clk_src_ext_usb )
 );
+`else // of AST_BYPASS_CLK
+assign clk_src_ext_usb = clk_osc_usb_i;
+`endif // of AST_BYPASS_CLK
 
 logic clk_ext_aon, clk_ext_aon_val;
 
 assign clk_ext_aon_val = 1'b1;  // Always ON clock
 
+`ifndef AST_BYPASS_CLK
 prim_clock_div #(
   .Divisor( 240 )
 ) u_no_scan_clk_usb_div240_div (
@@ -164,6 +177,9 @@ prim_clock_div #(
   .test_en_i ( scan_mode_i ),
   .clk_o ( clk_ext_aon )
 );
+`else // of AST_BYPASS_CLK
+assign clk_ext_aon = clk_osc_aon_i;
+`endif
 
 
 ////////////////////////////////////////
@@ -231,6 +247,7 @@ prim_flop_2sync #(
 assign clk_ext_io_en  = deep_sleep_n && clk_src_io_en;
 assign clk_ext_io_val = clk_ext_io_en;
 
+`ifndef AST_BYPASS_CLK
 prim_clock_gating #(
   .NoFpgaGate ( 1'b1)
 ) u_clk_ext_io_ckgt (
@@ -239,6 +256,28 @@ prim_clock_gating #(
   .test_en_i ( scan_mode_i ),
   .clk_o ( clk_ext_io )
 );
+`else // of AST_BYPASS_CLK
+logic clk_src_ext_io;
+
+prim_clock_div #(
+  .Divisor( 2 )
+) u_no_scan_clk_ext_io_d1ord2 (
+  .clk_i ( clk_ext ),
+  .rst_ni ( rst_aon_exda_n ),
+  .step_down_req_i( ext_freq_is_96m_sync ),
+  .step_down_ack_o ( ),
+  .test_en_i ( scan_mode_i ),
+  .clk_o ( clk_src_ext_io )
+);
+prim_clock_gating #(
+  .NoFpgaGate ( 1'b1)
+) u_clk_ext_io_ckgt (
+  .clk_i ( clk_src_ext_io ),
+  .en_i ( clk_ext_io_en ),
+  .test_en_i ( scan_mode_i ),
+  .clk_o ( clk_ext_io )
+);
+`endif // of AST_BYPASS_CLK
 
 // USB External Clock Enable
 ////////////////////////////////////////

@@ -64,6 +64,22 @@ waive -rules CLOCK_MUX -location {ast_clks_byp.sv} \
       -regexp {Clock '(clk_ast_ext_scn|clk_ext_scn|clk_src_ext_usb|clk_ext_aon)' is driven by a multiplexer here, used as a clock} \
       -comment {This is clock generation logic, hence it needs to drive this clock signal.}
 
+waive -rules IFDEF_CODE -location {ast_clks_byp.sv} \
+      -regexp {Assignment to 'clk_ast_ext_scn' contained within `ifndef 'AST_BYPASS_CLK' block at} \
+      -comment {This ifndef statement is fine as it is part of the FPGA/Verilator clock bypass mechanism.}
+
+waive -rules IFDEF_CODE -location {ast_clks_byp.sv} \
+      -regexp {'prim_clock_buf' instance 'u_clk_ext_buf' contained within `ifndef 'AST_BYPASS_CLK' block at} \
+      -comment {This ifndef statement is fine as it is part of the FPGA/Verilator clock bypass mechanism.}
+
+waive -rules IFDEF_CODE -location {ast_clks_byp.sv} \
+      -regexp {'prim_clock_div' instance 'u_no_scan_clk_(ext_d1ord2|usb_div240_div)' contained within `ifndef 'AST_BYPASS_CLK' block at} \
+      -comment {This ifndef statement is fine as it is part of the FPGA/Verilator clock bypass mechanism.}
+
+waive -rules IFDEF_CODE -location {ast_clks_byp.sv} \
+      -regexp {'prim_clock_gating' instance 'u_clk_ext_io_ckgt' contained within `ifndef 'AST_BYPASS_CLK' block at} \
+      -comment {This ifndef statement is fine as it is part of the FPGA/Verilator clock bypass mechanism.}
+
 waive -rules CLOCK_MUX -location {ast.sv} \
       -regexp {Clock 'clk_aon_n' is driven by a multiplexer here, used as a clock} \
       -comment {This clock inverter has a DFT mux.}
