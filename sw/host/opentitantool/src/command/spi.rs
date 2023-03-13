@@ -13,6 +13,7 @@ use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{self, TransportWrapper};
+use opentitanlib::io::eeprom::{AddressMode, Transaction, MODE_111};
 use opentitanlib::io::spi::{SpiParams, Transfer};
 use opentitanlib::spiflash::SpiFlash;
 use opentitanlib::tpm;
@@ -79,16 +80,12 @@ impl CommandDispatch for SpiSfdp {
         if let Some(length) = self.raw {
             let offset = self.offset.unwrap_or(0);
             let mut buffer = vec![0u8; length];
-            spi.run_transaction(&mut [
-                Transfer::Write(&[
-                    SpiFlash::READ_SFDP,
-                    (offset >> 16) as u8,
-                    (offset >> 8) as u8,
-                    (offset >> 0) as u8,
-                    0, // Dummy byte.
-                ]),
-                Transfer::Read(&mut buffer),
-            ])?;
+            spi.run_eeprom_transactions(&mut [Transaction::Read(
+                MODE_111
+                    .dummy_cycles(8)
+                    .cmd_addr(SpiFlash::READ_SFDP, offset, AddressMode::Mode3b),
+                &mut buffer,
+            )])?;
             hexdump(io::stdout(), &buffer)?;
             Ok(None)
         } else {
@@ -305,6 +302,111 @@ impl CommandDispatch for SpiTpm {
     }
 }
 
+/// Read plain data bytes from a SPI device (not necessarily SPI EEPROM/flash).
+#[derive(Debug, StructOpt)]
+pub struct SpiRawRead {
+    #[structopt(short = "n", long, help = "Number of bytes to read.")]
+    length: usize,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct SpiRawReadResponse {
+    hexdata: String,
+}
+
+impl CommandDispatch for SpiRawRead {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::SPI).ok()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        let mut v = vec![0u8; self.length];
+        spi_bus.run_transaction(&mut [Transfer::Read(&mut v)])?;
+        Ok(Some(Box::new(SpiRawReadResponse {
+            hexdata: hex::encode(v),
+        })))
+    }
+}
+
+/// Write plain data bytes to a SPI device (not necessarily SPI EEPROM/flash).
+#[derive(Debug, StructOpt)]
+pub struct SpiRawWrite {
+    #[structopt(short, long, help = "Hex data bytes to write.")]
+    hexdata: String,
+}
+
+impl CommandDispatch for SpiRawWrite {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::SPI).ok()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        spi_bus.run_transaction(&mut [Transfer::Write(&hex::decode(&self.hexdata)?)])?;
+        Ok(None)
+    }
+}
+
+/// Write data bytes to a SPI device then read data (not necessarily SPI EEPROM/flash).
+#[derive(Debug, StructOpt)]
+pub struct SpiRawWriteRead {
+    #[structopt(short, long, help = "Hex data bytes to write.")]
+    hexdata: String,
+
+    #[structopt(short = "n", long, help = "Number of bytes to read.")]
+    length: usize,
+}
+
+impl CommandDispatch for SpiRawWriteRead {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::SPI).ok()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        let mut v = vec![0u8; self.length];
+        spi_bus.run_transaction(&mut [
+            Transfer::Write(&hex::decode(&self.hexdata)?),
+            Transfer::Read(&mut v),
+        ])?;
+        Ok(Some(Box::new(SpiRawReadResponse {
+            hexdata: hex::encode(v),
+        })))
+    }
+}
+
+/// Simultaneously write and read plain data bytes to a SPI device (not SPI EEPROM/flash).
+#[derive(Debug, StructOpt)]
+pub struct SpiRawTransceive {
+    #[structopt(short, long, help = "Hex data bytes to write.")]
+    hexdata: String,
+}
+
+impl CommandDispatch for SpiRawTransceive {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::SPI).ok()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        let write_data = hex::decode(&self.hexdata)?;
+        let mut read_data = vec![0u8; write_data.len()];
+        spi_bus.run_transaction(&mut [Transfer::Both(&write_data, &mut read_data)])?;
+        Ok(Some(Box::new(SpiRawReadResponse {
+            hexdata: hex::encode(read_data),
+        })))
+    }
+}
+
 /// Commands for interacting with a SPI EEPROM.
 #[derive(Debug, StructOpt, CommandDispatch)]
 pub enum InternalSpiCommand {
@@ -313,6 +415,10 @@ pub enum InternalSpiCommand {
     Read(SpiRead),
     Erase(SpiErase),
     Program(SpiProgram),
+    RawRead(SpiRawRead),
+    RawWrite(SpiRawWrite),
+    RawWriteRead(SpiRawWriteRead),
+    RawTransceive(SpiRawTransceive),
     Tpm(SpiTpm),
 }
 
