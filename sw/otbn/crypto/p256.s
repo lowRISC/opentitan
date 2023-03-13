@@ -12,10 +12,14 @@
 .globl p256_base_mult
 .globl p256_sign
 .globl p256_verify
-.globl proj_add
 .globl p256_generate_k
 .globl p256_generate_random_key
 .globl p256_key_from_seed
+
+/* Exposed only for testing or SCA purposes. */
+.globl proj_add
+.globl mod_inv
+.globl mod_mul_320x128
 
 .text
 

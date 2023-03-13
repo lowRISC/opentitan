@@ -199,6 +199,16 @@ otbn_binary(
 )
 
 otbn_binary(
+    name = "p256_mod_inv_sca",
+    srcs = [
+        "p256_mod_inv_sca.s",
+    ],
+    deps = [
+        ":p256",
+    ],
+)
+
+otbn_binary(
     name = "p384_ecdsa_sca",
     srcs = [
         "p384_ecdsa_sca.s",
