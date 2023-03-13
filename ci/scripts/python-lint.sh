@@ -16,7 +16,7 @@ if [ $# != 1 ]; then
 fi
 tgt_branch="$1"
 
-merge_base="$(git merge-base origin/$tgt_branch HEAD)" || {
+merge_base="$(git merge-base origin/"$tgt_branch" HEAD)" || {
     echo >&2 "Failed to find fork point for origin/$tgt_branch."
     exit 1
 }
@@ -44,7 +44,7 @@ lintpy_cmd="util/lintpy.py --tools flake8 -f"
 set -o pipefail
 git diff -z --name-only --diff-filter=ACMRTUXB "$merge_base" -- \
   "${pathspec_args[@]}" | \
-    xargs -0 -r $lintpy_cmd || {
+    xargs -0 -r "$lintpy_cmd" || {
     echo -n "##vso[task.logissue type=error]"
     echo "Python lint failed."
     exit 1

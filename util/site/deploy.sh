@@ -89,7 +89,7 @@ deploy_site_builder () {
     gcloud config set project ${PROJECT}
     # Build the image locally using podman for speed
     tag="gcr.io/${PROJECT}/builder" # https://cloud.google.com/container-registry/docs/pushing-and-pulling#tag
-    pushd ${proj_root}
+    pushd "${proj_root}"
     podman build -t "${tag}" -f "${proj_root}/util/site/site-builder/builder.Dockerfile" .
     popd
     gcloud auth print-access-token | podman login -u oauth2accesstoken --password-stdin gcr.io && \
@@ -99,25 +99,25 @@ deploy_site_builder () {
 deploy_staging () {
     # "Build the site for staging and deploy it to the staging bucket hosted at staging.opentitan.org"
     PROJECT="${OPENTITAN_ORG_ID}"
-    rm -rf ${build_dir}
-    ${proj_root}/util/site/build-docs.sh build-staging
+    rm -rf "${build_dir}"
+    "${proj_root}"/util/site/build-docs.sh build-staging
     remove_cruft
-    gcloud storage cp -R --gzip-in-flight-all ${build_dir}/* gs://${PROJECT}-staging
+    gcloud storage cp -R --gzip-in-flight-all "${build_dir}"/* gs://${PROJECT}-staging
 }
 
 deploy_prod () {
     # DO_NOT_USE
     # "Build the site for production and deploy it to the production bucket hosted at opentitan.org"
     PROJECT="${OPENTITAN_ORG_ID}"
-    rm -rf ${build_dir}
-    ${proj_root}/util/site/build-docs.sh build
+    rm -rf "${build_dir}"
+    "${proj_root}"/util/site/build-docs.sh build
     remove_cruft
-    gcloud storage cp -R --gzip-in-flight-all ${build_dir}/* gs://${PROJECT}-prod
+    gcloud storage cp -R --gzip-in-flight-all "${build_dir}"/* gs://${PROJECT}-prod
 }
 
 # Remove additional files from build directory that we don't need
 # TODO remove this when we are ready for .mdbookignore (https://github.com/rust-lang/mdBook/pull/1908)
-remove_cruft () { rm -rf ${build_dir}/book/.git ${build_dir}/book/.github ${build_dir}/book/build-site ${build_dir}/book/site ; }
+remove_cruft () { rm -rf "${build_dir}"/book/.git "${build_dir}"/book/.github "${build_dir}"/book/build-site "${build_dir}"/book/site ; }
 
 #######
 # CLI #

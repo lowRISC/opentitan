@@ -31,7 +31,7 @@ fi
 # See #14695 for more information.
 echo "build --remote_default_exec_properties=OSVersion=\"$(lsb_release -ds)\"" >> "${GCP_BAZELRC}"
 
-"$(dirname $0)"/../bazelisk.sh \
+"$(dirname "$0")"/../bazelisk.sh \
   --bazelrc="${GCP_BAZELRC}" \
-  --bazelrc="$(dirname $0)"/.bazelrc \
+  --bazelrc="$(dirname "$0")"/.bazelrc \
   "$@"

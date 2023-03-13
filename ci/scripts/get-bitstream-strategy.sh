@@ -33,19 +33,19 @@ else
 fi
 
 # Retrieve the most recent bitstream at or before HEAD.
-BITSTREAM="--refresh HEAD" ./bazelisk.sh build ${bitstream_target}
+BITSTREAM="--refresh HEAD" ./bazelisk.sh build "${bitstream_target}"
 
 # The directory containing the bitstream is named after the git hash.
-bitstream_file=$(ci/scripts/target-location.sh ${bitstream_target})
-bitstream_commit=$(basename "$(dirname ${bitstream_file})")
+bitstream_file=$(ci/scripts/target-location.sh "${bitstream_target}")
+bitstream_commit=$(basename "$(dirname "${bitstream_file}")")
 
 echo "Checking for changes against pre-built bitstream from ${bitstream_commit}"
 echo "Files changed:"
-git diff --stat --name-only ${bitstream_commit}
+git diff --stat --name-only "${bitstream_commit}"
 echo
 echo "Changed files after exclusions applied:"
 # Use the cached bitstream if no changed files remain.
-if git diff --exit-code --stat --name-only ${bitstream_commit} -- "${excluded_files[@]}"; then
+if git diff --exit-code --stat --name-only "${bitstream_commit}" -- "${excluded_files[@]}"; then
   bitstream_strategy=cached
 else
   bitstream_strategy=build

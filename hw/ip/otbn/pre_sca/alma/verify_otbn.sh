@@ -9,9 +9,9 @@ echo "Verifying OTBN using Alma"
 
 # Parse
 python3 parse.py --keep --top-module otbn_top_coco --log-yosys \
-  --source ${REPO_TOP}/hw/ip/otbn/pre_sca/alma/rtl/ram_1p.v \
-  ${REPO_TOP}/hw/ip/otbn/pre_syn/syn_out/latest/generated/otbn_core.alma.v \
-  ${REPO_TOP}/hw/ip/otbn/pre_sca/alma/rtl/otbn_top_coco.v
+  --source "${REPO_TOP}"/hw/ip/otbn/pre_sca/alma/rtl/ram_1p.v \
+  "${REPO_TOP}"/hw/ip/otbn/pre_syn/syn_out/latest/generated/otbn_core.alma.v \
+  "${REPO_TOP}"/hw/ip/otbn/pre_sca/alma/rtl/otbn_top_coco.v
 
 # Assemble the program
 program=isw_and

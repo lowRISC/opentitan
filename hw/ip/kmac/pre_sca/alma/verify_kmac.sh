@@ -25,8 +25,8 @@ fi
 echo "Verifying ${TOP_MODULE} using Alma"
 
 ## Parse
-./parse.py --top-module ${TOP_MODULE} \
---source ${REPO_TOP}/hw/ip/kmac/pre_syn/syn_out/latest/generated/${TOP_MODULE}.alma.v \
+./parse.py --top-module "${TOP_MODULE}" \
+--source "${REPO_TOP}"/hw/ip/kmac/pre_syn/syn_out/latest/generated/"${TOP_MODULE}".alma.v \
 --netlist tmp/circuit.v --log-yosys
 
 # Label
@@ -44,13 +44,13 @@ S_I=$"s_i [$WIDTH_MIN_1:0] = secret $WIDTH_MIN_1:0\ns_i [$((WIDTH*2-1)):$WIDTH] 
 sed -i "s/\(s_i\s\[\)\([0-9]\+:0\)\(\]\s=\s\)unimportant/${S_I}/g" tmp/labels.txt
 
 # Trace
-./trace.py --testbench ${REPO_TOP}/hw/ip/kmac/pre_sca/alma/cpp/verilator_tb_${TESTBENCH}.cpp \
+./trace.py --testbench "${REPO_TOP}"/hw/ip/kmac/pre_sca/alma/cpp/verilator_tb_"${TESTBENCH}".cpp \
 --netlist tmp/circuit.v -o tmp/circuit
 
 # Verify
 ./verify.py --json tmp/circuit.json \
    --label tmp/labels.txt \
-   --top-module ${TOP_MODULE} \
+   --top-module "${TOP_MODULE}" \
    --vcd tmp/tmp.vcd \
    --rst-name rst_ni --rst-phase 0 \
    --probe-duration once --mode transient \

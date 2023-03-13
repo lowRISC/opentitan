@@ -58,16 +58,16 @@ cp $VFILE_DIR/uart0.log $VFILE_DIR/uart-flip-diff.log
 
 echo "Check No Flip Single Ended against expected logs"
 diff $VFILE_DIR/usb-noflip-se.log $EXPECT_USB
-diff $IGNORE_EX_UART $VFILE_DIR/uart-noflip-se.log $EXPECT_UART
+diff "$IGNORE_EX_UART" $VFILE_DIR/uart-noflip-se.log $EXPECT_UART
 
 echo "Check Flipped Single Ended against No Flip Single Ended"
-diff $IGNORE_USB $VFILE_DIR/usb-flip-se.log $VFILE_DIR/usb-noflip-se.log
-diff $IGNORE_UART $VFILE_DIR/uart-flip-se.log $VFILE_DIR/uart-noflip-se.log
+diff "$IGNORE_USB" $VFILE_DIR/usb-flip-se.log $VFILE_DIR/usb-noflip-se.log
+diff "$IGNORE_UART" $VFILE_DIR/uart-flip-se.log $VFILE_DIR/uart-noflip-se.log
 
 echo "Check No Flip differential against No Flip Single Ended"
-diff $IGNORE_USB $VFILE_DIR/usb-noflip-diff.log $VFILE_DIR/usb-noflip-se.log
-diff $IGNORE_UART $VFILE_DIR/uart-noflip-diff.log $VFILE_DIR/uart-noflip-se.log
+diff "$IGNORE_USB" $VFILE_DIR/usb-noflip-diff.log $VFILE_DIR/usb-noflip-se.log
+diff "$IGNORE_UART" $VFILE_DIR/uart-noflip-diff.log $VFILE_DIR/uart-noflip-se.log
 
 echo "Check Flipped differential against No Flip Single Ended"
-diff $IGNORE_USB $VFILE_DIR/usb-flip-diff.log $VFILE_DIR/usb-noflip-se.log
-diff $IGNORE_UART $VFILE_DIR/uart-flip-diff.log $VFILE_DIR/uart-noflip-se.log
+diff "$IGNORE_USB" $VFILE_DIR/usb-flip-diff.log $VFILE_DIR/usb-noflip-se.log
+diff "$IGNORE_UART" $VFILE_DIR/uart-flip-diff.log $VFILE_DIR/uart-noflip-se.log

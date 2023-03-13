@@ -28,7 +28,7 @@ bazel-bin/sw/host/opentitantool/opentitantool \
     --rcfile="" \
     --logging=info \
     --interface=verilator \
-    --verilator-bin=$BIN_DIR/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator \
+    --verilator-bin="$BIN_DIR"/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator \
     --verilator-rom="$(find bazel-out/* -name 'test_rom_sim_verilator.32.vmem')" \
     --verilator-flash="$(find bazel-out/* -name 'aes_smoketest_prog_sim_verilator.64.scr.vmem')" \
     console \

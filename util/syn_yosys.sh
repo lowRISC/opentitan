@@ -56,7 +56,7 @@ sv2v -DSYNTHESIS *.sv +RTS -N4 > combined.v
 modules=`cat combined.v | grep "^module" | sed -e "s/^module //" | sed -e "s/ (//"`
 echo "$modules" > modules.txt  # for debugging
 for module in $modules; do
-  sed -n "/^module $module /,/^endmodule/p" < combined.v > $module.v
+  sed -n "/^module $module /,/^endmodule/p" < combined.v > "$module".v
 done
 rm combined.v
 
@@ -100,17 +100,17 @@ for module in "${modules[@]}"; do
   # run Conformal LEC
   lec -xl -nogui -nobanner \
     -dofile  ../../hw/formal/lec_sv2v.do \
-    -logfile lec_${module}.log \
+    -logfile lec_"${module}".log \
     <<< "exit -force" > /dev/null 2>&1
 
   # summarize results
-  result=`grep "Compare Results" lec_${module}.log 2>&1`
+  result=`grep "Compare Results" lec_"${module}".log 2>&1`
   if [ $? -ne 0 ]; then
     result="CRASH"
   else
-    result=`echo $result | awk '{ print $4 }'`
+    result=`echo "$result" | awk '{ print $4 }'`
   fi
-  printf "%-25s %s\n" $module $result
+  printf "%-25s %s\n" "$module" "$result"
 done
 
 #-------------------------------------------------------------------------

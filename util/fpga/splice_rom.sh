@@ -134,10 +134,10 @@ updatemem -force --meminfo "${FPGA_BIN_DIR}/rom.mmi" \
   --out "${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.splice.bit" \
   --debug
 
-mv ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit.orig
+mv "${FPGA_BIN_DIR}"/"${FPGA_BIT_NAME}".bit "${FPGA_BIN_DIR}"/"${FPGA_BIT_NAME}".bit.orig
 
 # Rename to the canonical bitstream output name to simplify interaction with
 # other tools, and create a copy with a .splice suffix to be able to
 # export the artifact in CI.
-mv ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.splice.bit ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit
-cp ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit ${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit.splice
+mv "${FPGA_BIN_DIR}"/"${FPGA_BIT_NAME}".splice.bit "${FPGA_BIN_DIR}"/"${FPGA_BIT_NAME}".bit
+cp "${FPGA_BIN_DIR}"/"${FPGA_BIT_NAME}".bit "${FPGA_BIN_DIR}"/"${FPGA_BIT_NAME}".bit.splice

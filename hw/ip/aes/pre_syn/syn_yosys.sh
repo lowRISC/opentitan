@@ -90,7 +90,7 @@ OT_DEP_PACKAGES=(
 
 # Convert OpenTitan dependency sources.
 for file in "${OT_DEP_SOURCES[@]}"; do
-    module=`basename -s .sv $file`
+    module=`basename -s .sv "$file"`
 
     # Skip packages
     if echo "$module" | grep -q '_pkg$'; then
@@ -101,26 +101,26 @@ for file in "${OT_DEP_SOURCES[@]}"; do
         --define=SYNTHESIS --define=YOSYS \
         "${OT_DEP_PACKAGES[@]}" \
         -I"$LR_SYNTH_SRC_DIR"/../prim/rtl \
-        $file \
-        > $LR_SYNTH_OUT_DIR/generated/${module}.v
+        "$file" \
+        > "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
 
     # Make sure auto-generated primitives are resolved to generic or Xilinx-specific primitives
     # where available.
-    sed -i 's/prim_flop/prim_xilinx_flop/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i 's/prim_xilinx_flop_2sync/prim_flop_2sync/g'  $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i 's/prim_sec_anchor_flop/prim_xilinx_flop/g'   $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i 's/prim_buf/prim_xilinx_buf/g'                $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i 's/prim_sec_anchor_buf/prim_xilinx_buf/g'     $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i 's/prim_xor2/prim_xilinx_xor2/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i 's/prim_flop/prim_xilinx_flop/g'              "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i 's/prim_xilinx_flop_2sync/prim_flop_2sync/g'  "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i 's/prim_sec_anchor_flop/prim_xilinx_flop/g'   "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i 's/prim_buf/prim_xilinx_buf/g'                "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i 's/prim_sec_anchor_buf/prim_xilinx_buf/g'     "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i 's/prim_xor2/prim_xilinx_xor2/g'              "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
 done
 
 # Rename the prim_sparse_fsm_flop module. For some reason, sv2v decides to append a suffix.
 sed -i 's/module prim_sparse_fsm_flop_.*/module prim_sparse_fsm_flop \(/g' \
-    $LR_SYNTH_OUT_DIR/generated/prim_sparse_fsm_flop.v
+    "$LR_SYNTH_OUT_DIR"/generated/prim_sparse_fsm_flop.v
 
 # Get and convert core sources.
 for file in "$LR_SYNTH_SRC_DIR"/rtl/*.sv; do
-    module=`basename -s .sv $file`
+    module=`basename -s .sv "$file"`
 
     # Skip packages
     if echo "$module" | grep -q '_pkg$'; then
@@ -132,26 +132,26 @@ for file in "$LR_SYNTH_SRC_DIR"/rtl/*.sv; do
         "${OT_DEP_PACKAGES[@]}" \
         "$LR_SYNTH_SRC_DIR"/rtl/*_pkg.sv \
         -I"$LR_SYNTH_SRC_DIR"/../prim/rtl \
-        $file \
-        > $LR_SYNTH_OUT_DIR/generated/${module}.v
+        "$file" \
+        > "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
 
     # Make sure auto-generated primitives are resolved to generic or Xilinx-specific primitives
     # where available.
-    sed -i 's/prim_flop/prim_xilinx_flop/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i 's/prim_xilinx_flop_2sync/prim_flop_2sync/g'  $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i 's/prim_sec_anchor_flop/prim_xilinx_flop/g'   $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i 's/prim_buf/prim_xilinx_buf/g'                $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i 's/prim_sec_anchor_buf/prim_xilinx_buf/g'     $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i 's/prim_xor2/prim_xilinx_xor2/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i 's/prim_flop/prim_xilinx_flop/g'              "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i 's/prim_xilinx_flop_2sync/prim_flop_2sync/g'  "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i 's/prim_sec_anchor_flop/prim_xilinx_flop/g'   "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i 's/prim_buf/prim_xilinx_buf/g'                "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i 's/prim_sec_anchor_buf/prim_xilinx_buf/g'     "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i 's/prim_xor2/prim_xilinx_xor2/g'              "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
 
     # Rename prim_sparse_fsm_flop instances. For some reason, sv2v decides to append a suffix.
     sed -i 's/prim_sparse_fsm_flop_.*/prim_sparse_fsm_flop \#(/g' \
-        $LR_SYNTH_OUT_DIR/generated/${module}.v
+        "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
 
     # Remove the StateEnumT parameter from prim_sparse_fsm_flop instances. Yosys doesn't seem to
     # support this.
-    sed -i '/\.StateEnumT(logic \[.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i '/\.StateEnumT_aes_pkg.*(.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i '/\.StateEnumT(logic \[.*/d' "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
+    sed -i '/\.StateEnumT_aes_pkg.*(.*/d' "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
 done
 
 #-------------------------------------------------------------------------
@@ -175,4 +175,4 @@ fi
 #-------------------------------------------------------------------------
 # report kGE number
 #-------------------------------------------------------------------------
-python/get_kge.py $LR_SYNTH_CELL_LIBRARY_PATH $LR_SYNTH_OUT_DIR/reports/area.rpt
+python/get_kge.py "$LR_SYNTH_CELL_LIBRARY_PATH" "$LR_SYNTH_OUT_DIR"/reports/area.rpt

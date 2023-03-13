@@ -23,7 +23,7 @@ only_cdc_changes=0
 if [[ "$build_reason" = "PullRequest" ]]; then
     # Conservative way of checking for documentation-only and OTBN changes.
     # Only relevant for pipelines triggered from pull requests
-    merge_base="$(git merge-base HEAD origin/$tgt_branch)" || {
+    merge_base="$(git merge-base HEAD origin/"$tgt_branch")" || {
         echo >&2 "Failed to find fork point for origin/$tgt_branch."
         exit 1
     }
