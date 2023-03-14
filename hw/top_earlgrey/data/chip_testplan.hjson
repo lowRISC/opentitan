@@ -3518,7 +3518,7 @@
       in #14095 for more details on how to approach the implementation.
       '''
       stage: V3
-      tests: []
+      tests: ["chip_sw_power_virus"]
     }
     {
       name: chip_sw_power_idle_load

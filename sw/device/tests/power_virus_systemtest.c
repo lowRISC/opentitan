@@ -1157,8 +1157,8 @@ static void check_otp_csr_configs(void) {
   dif_flash_ctrl_region_properties_t default_properties;
   CHECK_DIF_OK(dif_flash_ctrl_get_default_region_properties(
       &flash_ctrl, &default_properties));
-  CHECK(default_properties.scramble_en == kMultiBitBool4False);
-  CHECK(default_properties.ecc_en == kMultiBitBool4False);
+  CHECK(default_properties.scramble_en == kMultiBitBool4True);
+  CHECK(default_properties.ecc_en == kMultiBitBool4True);
   CHECK(default_properties.high_endurance_en == kMultiBitBool4False);
 }
 
