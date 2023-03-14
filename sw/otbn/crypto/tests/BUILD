@@ -411,6 +411,58 @@ otbn_consttime_test(
 )
 
 otbn_sim_test(
+    name = "primality_test",
+    timeout = "long",
+    srcs = [
+        "primality_test.s",
+    ],
+    exp = "primality_test.exp",
+    deps = [
+        "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:modexp",
+    ],
+)
+
+otbn_sim_test(
+    name = "primality_test_witness_test",
+    timeout = "long",
+    srcs = [
+        "primality_test_witness_test.s",
+    ],
+    exp = "primality_test_witness_test.exp",
+    deps = [
+        "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:modexp",
+    ],
+)
+
+otbn_sim_test(
+    name = "primality_test_witness_negative_test",
+    timeout = "long",
+    srcs = [
+        "primality_test_witness_negative_test.s",
+    ],
+    exp = "primality_test_witness_negative_test.exp",
+    deps = [
+        "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:modexp",
+    ],
+)
+
+otbn_sim_test(
+    name = "primality_negative_test",
+    timeout = "long",
+    srcs = [
+        "primality_negative_test.s",
+    ],
+    exp = "primality_negative_test.exp",
+    deps = [
+        "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:modexp",
+    ],
+)
+
+otbn_sim_test(
     name = "rsa_1024_dec_test",
     timeout = "long",
     srcs = [
