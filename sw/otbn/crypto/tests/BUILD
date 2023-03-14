@@ -418,8 +418,8 @@ otbn_sim_test(
     ],
     exp = "primality_test.exp",
     deps = [
-        "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:primality",
     ],
 )
 
@@ -431,8 +431,8 @@ otbn_sim_test(
     ],
     exp = "primality_test_witness_test.exp",
     deps = [
-        "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:primality",
     ],
 )
 
@@ -444,8 +444,8 @@ otbn_sim_test(
     ],
     exp = "primality_test_witness_negative_test.exp",
     deps = [
-        "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:primality",
     ],
 )
 
@@ -457,8 +457,59 @@ otbn_sim_test(
     ],
     exp = "primality_negative_test.exp",
     deps = [
-        "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:primality",
+    ],
+)
+
+# Miller-Rabin with 1024-bit primes (as in RSA-2048).
+otbn_consttime_test(
+    name = "miller_rabin_consttime_1024",
+    # 4 limbs, x30 = n and x31 = n -1
+    initial_constants = [
+        "x30:4",
+        "x31:3",
+    ],
+    # All secrets are stored in DMEM; timing is permitted to depend on the
+    # number of limbs.
+    secrets = ["dmem"],
+    subroutine = "miller_rabin",
+    deps = [
+        ":primality_test",
+    ],
+)
+
+# Miller-Rabin with 1536-bit primes (as in RSA-3072).
+otbn_consttime_test(
+    name = "miller_rabin_consttime_1536",
+    # 6 limbs, x30 = n and x31 = n -1
+    initial_constants = [
+        "x30:6",
+        "x31:5",
+    ],
+    # All secrets are stored in DMEM; timing is permitted to depend on the
+    # number of limbs.
+    secrets = ["dmem"],
+    subroutine = "miller_rabin",
+    deps = [
+        ":primality_test",
+    ],
+)
+
+# Miller-Rabin with 2048-bit primes (as in RSA-4096).
+otbn_consttime_test(
+    name = "miller_rabin_consttime_2048",
+    # 8 limbs, x30 = n and x31 = n -1
+    initial_constants = [
+        "x30:8",
+        "x31:7",
+    ],
+    # All secrets are stored in DMEM; timing is permitted to depend on the
+    # number of limbs.
+    secrets = ["dmem"],
+    subroutine = "miller_rabin",
+    deps = [
+        ":primality_test",
     ],
 )
 
