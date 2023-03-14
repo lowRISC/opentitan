@@ -181,6 +181,12 @@ static uint32_t csrng_reseed_cmd_header;
  * by the testbench.
  */
 static volatile const uint32_t kI2cSclPeriodNs = 1000;
+
+/**
+ * The peripheral clock of I2C IP (in nanoseconds)
+ * In the DV sequence and in test_main(),
+ * it is dynamically computed from kClockFreqPeripheralHz
+ */
 static volatile uint32_t peripheral_clock_period_ns;
 
 /**
@@ -291,7 +297,7 @@ static const uint8_t kI2cMessage[] = {
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
-    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
 };
 
 static void log_entropy_src_alert_failures(void) {
@@ -446,46 +452,46 @@ static void configure_pinmux(void) {
                                         kTopEarlgreyPinmuxOutselUart3Tx));
 
   // I2C0:
-  //    SDA on IOA7
-  //    SCL on IOA8
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c0Sda,
-                                       kTopEarlgreyPinmuxInselIoa7));
+  //    SCL on IOA7
+  //    SDA on IOA8
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
                                        kTopEarlgreyPinmuxPeripheralInI2c0Scl,
+                                       kTopEarlgreyPinmuxInselIoa7));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c0Sda,
                                        kTopEarlgreyPinmuxInselIoa8));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa7,
-                                        kTopEarlgreyPinmuxOutselI2c0Sda));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa8,
                                         kTopEarlgreyPinmuxOutselI2c0Scl));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa8,
+                                        kTopEarlgreyPinmuxOutselI2c0Sda));
 
   // I2C1:
-  //    SDA on IOB9
-  //    SCL on IOB10
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c1Sda,
-                                       kTopEarlgreyPinmuxInselIob9));
+  //    SCL on IOB9
+  //    SDA on IOB10
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
                                        kTopEarlgreyPinmuxPeripheralInI2c1Scl,
+                                       kTopEarlgreyPinmuxInselIob9));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c1Sda,
                                        kTopEarlgreyPinmuxInselIob10));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob9,
-                                        kTopEarlgreyPinmuxOutselI2c1Sda));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob10,
                                         kTopEarlgreyPinmuxOutselI2c1Scl));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob10,
+                                        kTopEarlgreyPinmuxOutselI2c1Sda));
 
   // I2C2:
-  //    SDA on IOB11
-  //    SCL on IOB12
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c2Sda,
-                                       kTopEarlgreyPinmuxInselIob11));
+  //    SCL on IOB11
+  //    SDA on IOB12
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
                                        kTopEarlgreyPinmuxPeripheralInI2c2Scl,
+                                       kTopEarlgreyPinmuxInselIob11));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c2Sda,
                                        kTopEarlgreyPinmuxInselIob12));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob11,
-                                        kTopEarlgreyPinmuxOutselI2c2Sda));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob12,
                                         kTopEarlgreyPinmuxOutselI2c2Scl));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob12,
+                                        kTopEarlgreyPinmuxOutselI2c2Sda));
 
   // Enable pull-ups for SPI_HOST_0/1 data pins to avoid floating inputs.
   if (kDeviceType == kDeviceSimDV || kDeviceType == kDeviceSimVerilator) {
@@ -969,7 +975,7 @@ static void comms_data_load_task(void *task_parameters) {
   LOG_INFO("Loading communication block FIFOs with data ...");
   size_t bytes_written;
   CHECK(ARRAYSIZE(kUartMessage) == kUartFifoDepth);
-  CHECK(ARRAYSIZE(kI2cMessage) == I2C_PARAM_FIFO_DEPTH);
+  CHECK(ARRAYSIZE(kI2cMessage) == (I2C_PARAM_FIFO_DEPTH - 1));
 
   // Load data into UART FIFOs.
   for (size_t i = 0; i < ARRAYSIZE(uart_handles); ++i) {
@@ -982,10 +988,8 @@ static void comms_data_load_task(void *task_parameters) {
   // Load data into I2C FIFOs.
   dif_i2c_status_t i2c_status;
   for (size_t i = 0; i < ARRAYSIZE(i2c_handles); ++i) {
-    i2c_testutils_wr(i2c_handles[i], /*addr=*/i, I2C_PARAM_FIFO_DEPTH,
+    i2c_testutils_wr(i2c_handles[i], /*addr=*/i + 1, I2C_PARAM_FIFO_DEPTH - 1,
                      kI2cMessage, /*skip_stop=*/false);
-    CHECK_DIF_OK(dif_i2c_get_status(i2c_handles[i], &i2c_status));
-    CHECK(i2c_status.fmt_fifo_full);
   }
 
   // Load data into SPI host (1; as 0 is used in passthrough mode) FIFO.
@@ -1148,6 +1152,41 @@ static void max_power_task(void *task_parameters) {
     CHECK_DIF_OK(dif_uart_bytes_receive(uart_handles[i], num_uart_rx_bytes,
                                         received_uart_data, NULL));
     CHECK_ARRAYS_EQ(received_uart_data, kUartMessage, num_uart_rx_bytes);
+  }
+
+  // Check I2C transactions. Only for DVsim
+  if (kDeviceType == kDeviceSimDV) {
+    uint8_t tx_fifo_lvl, rx_fifo_lvl;
+
+    // Make sure all TX FIFOs have been drained.
+    for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
+      do {
+        CHECK_DIF_OK(dif_i2c_get_fifo_levels(i2c_handles[ii], &tx_fifo_lvl,
+                                             NULL, NULL, NULL));
+      } while (tx_fifo_lvl > 0);
+    };
+
+    // Read data from i2c device.
+    for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
+      i2c_testutils_rd(i2c_handles[ii], ii + 1, I2C_PARAM_FIFO_DEPTH - 1);
+    };
+
+    // Make sure all data has been read back.
+    for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
+      do {
+        CHECK_DIF_OK(dif_i2c_get_fifo_levels(i2c_handles[ii], NULL,
+                                             &rx_fifo_lvl, NULL, NULL));
+      } while (rx_fifo_lvl < I2C_PARAM_FIFO_DEPTH - 1);
+    };
+
+    // Make sure read data is correct.
+    for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
+      for (size_t jj = 0; jj < I2C_PARAM_FIFO_DEPTH - 1; ++jj) {
+        uint8_t byte;
+        CHECK_DIF_OK(dif_i2c_read_byte(i2c_handles[ii], &byte));
+        CHECK(kI2cMessage[jj] == byte);
+      };
+    };
   }
 
   OTTF_TASK_DELETE_SELF_OR_DIE;
