@@ -12,6 +12,8 @@
 .globl modexp_65537
 .globl modexp
 .globl modload
+.globl montmul
+.globl montmul_mul1
 
 /**
  * Precomputation of a constant m0' for Montgomery modular arithmetic
@@ -430,7 +432,7 @@ cond_sub_to_reg:
  * @param[in]  [w[4+N-1]:w4] intermediate result A
  * @param[out] [w[4+N-1]:w4] intermediate result A
  *
- * clobbered registers: x8, x10, x12, x13, x16, x19
+ * clobbered registers: x8, x10, x12, x13, x16, x19, x22
  *                      w24, w25, w26, w27, w28, w29, w30, w4 to w[4+N-1]
  * clobbered Flag Groups: FG0, FG1
  */
@@ -631,7 +633,7 @@ cond_sub_to_dmem:
  *        not usable after return.
  *
  * @param[in]  x16: dmem pointer to first limb of modulus M
- * @param[in]  x17: dptr_m0d: dmem pointer to Montgomery Constant m0'
+ * @param[in]  x17: dptr_m0d, dmem pointer to Montgomery Constant m0'
  * @param[in]  x19: dmem pointer to first limb of operand A
  * @param[in]  x21: dmem pointer to first limb of result C
  * @param[in]  x30: N, number of limbs
@@ -642,9 +644,8 @@ cond_sub_to_dmem:
  * @param[in]  x11: pointer to temp reg, must be set to 2
  * @param[in]  w31: all-zero
  *
- * clobbered registers: x6, x7, x8, x9, x10, x12, x13, x16, x19, x21
- *                      w2. w3. w24, w25, w26, w27, w28, w29, w30
- *                      w4 to w[4+N-1]
+ * clobbered registers: x6, x7, x8, x12, x13, x21, x22,
+ *                      w2, w3, w4 to w[4+N-1], w24 to w30
  * clobbered Flag Groups: FG0, FG1
  */
 montmul_mul1:
@@ -742,8 +743,8 @@ montmul_mul1:
  * @param[in]  x11: pointer to temp reg, must be set to 2
  * @param[out] [w[4+N-1]:w4]: result C
  *
- * clobbered registers: x5, x6, x7, x8, x10, x12, x13, x16, x17, x19, x20
- *                      w2, w3, w24 to w30, w4 to w[4+N-1]
+ * clobbered registers: x5, x6, x7, x8, x10, x12, x13, x20, x22
+ *                      w2, w3, w4 to w[4+N-1], w24 to w30
  * clobbered Flag Groups: FG0, FG1
  */
 montmul:
@@ -801,23 +802,18 @@ montmul:
  */
 sel_sqr_or_sqrmul:
   /* iterate over all limbs */
-  loop      x30, 6
-
+  loop      x30, 4
     /* load limb from dmem */
     bn.lid    x9, 0(x21)
 
-    /* store limb to dmem */
-    bn.sid    x11, 0(x21)
-
     /* load limb from regfile buffer */
     bn.movr   x11, x8++
-    bn.mov    w0, w2
 
-    /* conditional select: w2 = FG0.C?w[x8+i]:dmem[x21+i] */
-    bn.sel    w2, w0, w3, C
+    /* conditional select: w0 = FG0.C?w[x8+i]:dmem[x21+i] */
+    bn.sel    w0, w2, w3, C
 
     /* store selected limb to dmem */
-    bn.sid    x11, 0(x21++)
+    bn.sid    x0, 0(x21++)
 
   ret
 

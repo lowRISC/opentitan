@@ -86,6 +86,13 @@ otbn_library(
     ],
 )
 
+otbn_library(
+    name = "primality",
+    srcs = [
+        "primality.s",
+    ],
+)
+
 otbn_binary(
     name = "rsa",
     srcs = [
