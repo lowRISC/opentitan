@@ -1802,6 +1802,17 @@
       ]
       run_timeout_mins: 300
     }
+    {
+      name: chip_sw_flash_scrambling_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: [
+        "//sw/device/tests:flash_scrambling_smoketest:1",
+        "//sw/device/tests:flash_scrambling_smoketest_otp_img_rma:4",
+      ]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+use_otp_image=OtpTypeCustom"]
+      run_timeout_mins: 10
+    }
   ]
 
   // List of regressions.
@@ -1822,6 +1833,7 @@
               "chip_sw_spi_device_pass_through",
               "chip_sw_i2c_host_tx_rx",
               "chip_sw_i2c_device_tx_rx",
+              "chip_sw_flash_scrambling_smoketest",
               "chip_plic_all_irqs",
               "chip_sw_example_flash",
               "chip_sw_example_rom",

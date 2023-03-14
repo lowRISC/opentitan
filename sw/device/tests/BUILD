@@ -2229,3 +2229,37 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
     ],
 )
+
+otp_json(
+    name = "flash_scrambling_smoketest_otp_overlay",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                # Enable flash scrambling and ECC.
+                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
+            },
+        ),
+    ],
+)
+
+otp_image(
+    name = "flash_scrambling_smoketest_otp_img_rma",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [":flash_scrambling_smoketest_otp_overlay"],
+    visibility = ["//visibility:private"],
+)
+
+opentitan_functest(
+    name = "flash_scrambling_smoketest",
+    srcs = ["example_test_from_flash.c"],
+    dv = dv_params(
+        otp = ":flash_scrambling_smoketest_otp_img_rma",
+    ),
+    targets = [
+        "dv",
+    ],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)

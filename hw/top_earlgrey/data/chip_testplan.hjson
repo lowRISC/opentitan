@@ -3349,6 +3349,7 @@
               "chip_sw_rstmgr_smoketest",
               "chip_sw_sram_ctrl_smoketest",
               "chip_sw_uart_smoketest",
+              "chip_sw_flash_scrambling_smoketest",
             ]
     }
     {
