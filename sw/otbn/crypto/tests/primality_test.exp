@@ -1,0 +1,2 @@
+# Input is prime, so we should get all 1s.
+w21 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
