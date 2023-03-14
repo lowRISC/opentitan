@@ -26,12 +26,6 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
   CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
                                        kTopEarlgreyPinmuxPeripheralInGpioGpio24,
                                        kTopEarlgreyPinmuxInselIoc2));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc0,
-                                        kTopEarlgreyPinmuxOutselGpioGpio22));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc1,
-                                        kTopEarlgreyPinmuxOutselGpioGpio23));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc2,
-                                        kTopEarlgreyPinmuxOutselGpioGpio24));
 
   // Configure UART0 RX input to connect to MIO pad IOC3
   CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
