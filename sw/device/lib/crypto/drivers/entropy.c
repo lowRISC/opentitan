@@ -217,9 +217,15 @@ static const entropy_complex_config_t
             },
 };
 
+// Write a CSRNG command to a register.  That register can be the SW interface
+// of CSRNG, in which case the `check_completion` argument should be `true`.
+// That register can alternatively be one of EDN's that holds commands that EDN
+// passes to CSRNG, in which case the `check_completion` argument must be
+// `false`.
 OT_WARN_UNUSED_RESULT
 static status_t csrng_send_app_cmd(uint32_t reg_address,
-                                   entropy_csrng_cmd_t cmd) {
+                                   entropy_csrng_cmd_t cmd,
+                                   bool check_completion) {
   uint32_t reg;
   bool cmd_ready;
   do {
@@ -252,11 +258,13 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
     return INTERNAL();
   }
 
-  // Clear the `cs_cmd_req_done` bit, which is asserted whenever a command
-  // request is completed, because that bit will be used below to determine if
-  // this command request is completed.
-  reg = bitfield_bit32_write(0, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT, true);
-  abs_mmio_write32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET, reg);
+  if (check_completion) {
+    // Clear the `cs_cmd_req_done` bit, which is asserted whenever a command
+    // request is completed, because that bit will be used below to determine if
+    // this command request is completed.
+    reg = bitfield_bit32_write(0, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT, true);
+    abs_mmio_write32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET, reg);
+  }
 
   // Build and write application command header.
   reg = bitfield_field32_write(0, kAppCmdFieldCmdId, cmd.id);
@@ -273,25 +281,28 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
     abs_mmio_write32(reg_address, cmd.seed_material->data[i]);
   }
 
-  if (cmd.id == kEntropyDrbgOpGenerate) {
-    // The Generate command is complete only after all entropy bits have been
-    // consumed.  Thus poll the register that indicates if entropy bits are
-    // available.
-    do {
-      reg = abs_mmio_read32(kBaseCsrng + CSRNG_GENBITS_VLD_REG_OFFSET);
-    } while (!bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_VLD_BIT));
+  if (check_completion) {
+    if (cmd.id == kEntropyDrbgOpGenerate) {
+      // The Generate command is complete only after all entropy bits have been
+      // consumed.  Thus poll the register that indicates if entropy bits are
+      // available.
+      do {
+        reg = abs_mmio_read32(kBaseCsrng + CSRNG_GENBITS_VLD_REG_OFFSET);
+      } while (!bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_VLD_BIT));
 
-  } else {
-    // The non-Generate commands complete earlier, so poll the "command request
-    // done" interrupt bit.  Once it is set, the "status" bit is updated.
-    do {
-      reg = abs_mmio_read32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET);
-    } while (!bitfield_bit32_read(reg, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT));
+    } else {
+      // The non-Generate commands complete earlier, so poll the "command
+      // request done" interrupt bit.  Once it is set, the "status" bit is
+      // updated.
+      do {
+        reg = abs_mmio_read32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET);
+      } while (!bitfield_bit32_read(reg, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT));
 
-    // Check the "status" bit, which will be 1 only if there was an error.
-    reg = abs_mmio_read32(kBaseCsrng + CSRNG_SW_CMD_STS_REG_OFFSET);
-    if (bitfield_bit32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_BIT)) {
-      return INTERNAL();
+      // Check the "status" bit, which will be 1 only if there was an error.
+      reg = abs_mmio_read32(kBaseCsrng + CSRNG_SW_CMD_STS_REG_OFFSET);
+      if (bitfield_bit32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_BIT)) {
+        return INTERNAL();
+      }
     }
   }
 
@@ -361,9 +372,9 @@ static status_t edn_ready_block(uint32_t edn_address) {
 OT_WARN_UNUSED_RESULT
 static status_t edn_configure(const edn_config_t *config) {
   TRY(csrng_send_app_cmd(config->base_address + EDN_RESEED_CMD_REG_OFFSET,
-                         config->reseed));
+                         config->reseed, false));
   TRY(csrng_send_app_cmd(config->base_address + EDN_GENERATE_CMD_REG_OFFSET,
-                         config->generate));
+                         config->generate, false));
   abs_mmio_write32(
       config->base_address + EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_REG_OFFSET,
       config->reseed_interval);
@@ -376,7 +387,7 @@ static status_t edn_configure(const edn_config_t *config) {
 
   TRY(edn_ready_block(config->base_address));
   TRY(csrng_send_app_cmd(config->base_address + EDN_SW_CMD_REQ_REG_OFFSET,
-                         config->instantiate));
+                         config->instantiate, false));
   return edn_ready_block(config->base_address);
 }
 
@@ -503,7 +514,8 @@ status_t entropy_csrng_instantiate(
                                 .disable_trng_input = disable_trng_input,
                                 .seed_material = seed_material,
                                 .generate_len = 0,
-                            });
+                            },
+                            true);
 }
 
 status_t entropy_csrng_reseed(hardened_bool_t disable_trng_input,
@@ -514,7 +526,8 @@ status_t entropy_csrng_reseed(hardened_bool_t disable_trng_input,
                                 .disable_trng_input = disable_trng_input,
                                 .seed_material = seed_material,
                                 .generate_len = 0,
-                            });
+                            },
+                            true);
 }
 
 status_t entropy_csrng_update(const entropy_seed_material_t *seed_material) {
@@ -523,7 +536,8 @@ status_t entropy_csrng_update(const entropy_seed_material_t *seed_material) {
                                 .id = kEntropyDrbgOpUpdate,
                                 .seed_material = seed_material,
                                 .generate_len = 0,
-                            });
+                            },
+                            true);
 }
 
 status_t entropy_csrng_generate_start(
@@ -536,7 +550,8 @@ status_t entropy_csrng_generate_start(
                                 .id = kEntropyDrbgOpGenerate,
                                 .seed_material = seed_material,
                                 .generate_len = num_128bit_blocks,
-                            });
+                            },
+                            true);
 }
 
 status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len) {
@@ -568,5 +583,6 @@ status_t entropy_csrng_uninstantiate(void) {
                                 .id = kEntropyDrbgOpUpdate,
                                 .seed_material = NULL,
                                 .generate_len = 0,
-                            });
+                            },
+                            true);
 }
