@@ -163,7 +163,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     // overwrite secret_partition cfg with hw_cfg
     rand_info[0][0][1] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
     rand_info[0][0][2] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
-  endfunction // post_randomize
+  endfunction : post_randomize
 
   virtual task pre_start();
     bit csr_test_mode = 0;
@@ -257,7 +257,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         flash_ctrl_intr_enable(6'h3f);
       end
     end
-  endtask
+    otf_wr_pct_temp     = cfg.otf_wr_pct;
+    otf_bwr_pct_temp    = cfg.otf_bwr_pct;
+  endtask : pre_start
 
   // On the fly scoreboard mode
   // This will disable reference memory check in the end of the test
