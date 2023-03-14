@@ -181,7 +181,7 @@
 
     {
       name: chip_sw_spi_device_pass_through_collision
-      desc: '''Verify the collisions on driving spi_host is handled properly
+      desc: '''Verify the collisions on driving spi_host is handled properly.
 
             - Enable upload related interrupts and configure the spi_device in passthrough mode.
             - Configure a command slot to enable upload for a flash program/erase command.
@@ -202,7 +202,7 @@
     }
     {
       name: chip_sw_spi_device_tpm
-      desc: '''Verify the basic operation of the spi tpm mode..
+      desc: '''Verify the basic operation of the spi tpm mode.
 
             - The testbench sends a known payload over the chip's SPI device tpm input port.
             - The testbench sends a read command.
@@ -345,7 +345,7 @@
     }
     {
       name: chip_usb_wake_debug
-      desc: '''Verify that `usb_state_debug_i` can be read from the CSR
+      desc: '''Verify that `usb_state_debug_i` can be read from the CSR.
 
             - Drive random value on `usb_state_debug_i`.
             - Ensure the CSR `wake_debug` returns correctly value.
@@ -445,7 +445,7 @@
       desc: '''Verify the retention logic in pinmux that is activated during deep sleep.
 
             - Pick a pin (such as GPIO0) and enable it in output mode. Set a known value to it (0 or
-              1) and verify the correctless of the value on the chip IO..
+              1) and verify the correctless of the value on the chip IO.
             - Program the pin's retention value during deep sleep to be opposite of the active power
               value programmed in the previous step.
             - Reuse an existing deep sleep / low power wake up test, such as
@@ -1051,18 +1051,6 @@
       stage: V2
       tests: ["chip_sw_all_escalation_resets"]
     }
-    {
-      name: chip_sw_flash_ctrl_escalation_reset
-      desc: '''Verify the flash ctrl fatal error does not disturb escalation process
-            and operation of ibex core.
-
-            Trigger an internal fatal fault (host_gnt_err) from flash_ctrl
-            and let it escalate to reset. Upon alert escalation reset,
-            the internal status should be clean and should not send out more alerts.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_crash_alert"]
-    }
 
     // PWRMGR tests:
     {
@@ -1440,7 +1428,7 @@
     }
     {
       name: chip_sw_all_escalation_resets
-      desc: '''Verify escalation from all unit integrity errors
+      desc: '''Verify escalation from all unit integrity errors.
 
             Inject integrity errors in any unit that has a one-hot checker for CSR register
             writes, and verify escalation is triggered. Allow escalation to go through reset.
@@ -1649,7 +1637,7 @@
     }
     {
       name: chip_sw_lc_ctrl_otp_hw_cfg
-      desc: '''Verify the device_ID and ID_state CSRs
+      desc: '''Verify the device_ID and ID_state CSRs.
 
             - Preload the hw_cfg partition in OTP ctrl with random data.
             - Read the device ID and the ID state CSRs to verify their correctness.
@@ -2913,7 +2901,7 @@
 
             - Provision an RMA_UNLOCK token in OTP.
             - Repeat the following a few times:
-              - Randomize the otp contents for device id, manufacturing state and RMA_UNLOCK token..
+              - Randomize the otp contents for device id, manufacturing state and RMA_UNLOCK token.
               - Reset the chip.
               - Ensure chip revision, device id and manufacturing state can be read through the LC JTAG.
             - Enable RMA mode, and verify that the SW can access the flash after RMA completion.
@@ -3062,6 +3050,18 @@
             '''
       stage: V2
       tests: ["chip_sw_flash_ctrl_clock_freqs"]
+    }
+    {
+      name: chip_sw_flash_ctrl_escalation_reset
+      desc: '''Verify the flash ctrl fatal error does not disturb escalation process
+            and operation of ibex core.
+
+            Trigger an internal fatal fault (host_gnt_err) from flash_ctrl
+            and let it escalate to reset. Upon alert escalation reset,
+            the internal status should be clean and should not send out more alerts.
+            '''
+      stage: V2
+      tests: ["chip_sw_flash_crash_alert"]
     }
 
     ////////////////////////
