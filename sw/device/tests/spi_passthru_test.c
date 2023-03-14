@@ -14,6 +14,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/json/command.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
+#include "sw/device/lib/testing/spi_flash_emulator.h"
 #include "sw/device/lib/testing/spi_flash_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_flow_control.h"
@@ -164,6 +165,9 @@ status_t command_processor(ujson_t *uj) {
         break;
       case kTestCommandSpiFlashWrite:
         RESP_ERR(uj, spi_flash_write(uj, &spih, &spid));
+        break;
+      case kTestCommandSpiFlashEmulator:
+        RESP_ERR(uj, spi_flash_emulator(&spih, &spid));
         break;
 
       default:

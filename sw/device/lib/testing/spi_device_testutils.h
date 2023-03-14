@@ -35,6 +35,8 @@ typedef enum spi_device_flash_opcode {
   kSpiDeviceFlashOpPageProgram = 0x02,
   kSpiDeviceFlashOpEnter4bAddr = 0xb7,
   kSpiDeviceFlashOpExit4bAddr = 0xe9,
+  kSpiDeviceFlashOpResetEnable = 0x66,
+  kSpiDeviceFlashOpReset = 0x99,
 } spi_device_flash_opcode_t;
 
 /**

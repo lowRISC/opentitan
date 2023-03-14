@@ -364,8 +364,14 @@ cc_library(
 
 cc_library(
     name = "spi_flash_testutils",
-    srcs = ["spi_flash_testutils.c"],
-    hdrs = ["spi_flash_testutils.h"],
+    srcs = [
+        "spi_flash_emulator.c",
+        "spi_flash_testutils.c",
+    ],
+    hdrs = [
+        "spi_flash_emulator.h",
+        "spi_flash_testutils.h",
+    ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":spi_device_testutils",
