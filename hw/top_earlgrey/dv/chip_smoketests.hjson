@@ -25,7 +25,6 @@
       sw_images: ["//sw/device/tests:clkmgr_smoketest:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
-    // TODO(lowrisc/opentitan#7505): Debug CSRNG generate bits mismatch.
     {
      name: chip_sw_csrng_smoketest
      uvm_test_seq: chip_sw_base_vseq
