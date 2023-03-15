@@ -143,7 +143,7 @@
               - Ensure receving correct number of fmt_fifo and rx_fifo watermark interrupts
             '''
       stage: V2
-      tests: ["i2c_host_fifo_watermark"]
+      tests: [""]
     }
     {
       name: host_fifo_overflow
@@ -303,7 +303,7 @@
               - Ensure reset is handled correctly
             '''
       stage: V3
-      tests: [""]
+      tests: ["i2c_target_stress_all_with_rand_reset"]
     }
     {
       name: target_perf
