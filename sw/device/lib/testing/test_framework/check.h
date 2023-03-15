@@ -25,14 +25,14 @@
 
 /**
  * Checks that the given condition is true. If the condition is false, this
- * function logs and then aborts.
+ * function logs and then returns a `kInternal` error.
  *
  * @param condition An expression to check.
  * @param ... Arguments to a LOG_* macro, which are evaluated if the check
  * fails.
  */
-#define CHECK(condition, ...)                        \
-  do {                                               \
+#define CHECK_IMPL(condition, ...)                   \
+  ({                                                 \
     if (!(condition)) {                              \
       /* NOTE: because the condition in this if      \
          statement can be statically determined,     \
@@ -43,14 +43,35 @@
       } else {                                       \
         LOG_ERROR("CHECK-fail: " __VA_ARGS__);       \
       }                                              \
-      /* Currently, this macro will call into        \
-         the test failure code, which logs           \
-         "FAIL" and aborts. In the future,           \
-         we will try to condition on whether         \
-         or not this is a test.*/                    \
-      test_status_set(kTestStatusFailed);            \
+      INTERNAL();                                    \
     }                                                \
+    OK_STATUS();                                     \
+  })
+
+/**
+ * Checks that the given condition is true. If the condition is false, this
+ * function logs and then aborts.
+ *
+ * @param condition An expression to check.
+ * @param ... Arguments to a LOG_* macro, which are evaluated if the check
+ * fails.
+ */
+#define CHECK(condition, ...)                               \
+  do {                                                      \
+    if (status_err(CHECK_IMPL(condition, ##__VA_ARGS__))) { \
+      /* Currently, this macro will call into               \
+         the test failure code, which logs                  \
+         "FAIL" and aborts. In the future,                  \
+         we will try to condition on whether                \
+         or not this is a test.*/                           \
+      test_status_set(kTestStatusFailed);                   \
+    }                                                       \
   } while (false)
+
+/**
+ * Same as `CHECK` above but returns a status_t if false rather than aborting.
+ */
+#define TRY_CHECK(condition, ...) TRY(CHECK_IMPL(condition, ##__VA_ARGS__))
 
 // Note that this is *not* a polyglot header, so we can use the C11-only
 // _Generic keyword safely.
