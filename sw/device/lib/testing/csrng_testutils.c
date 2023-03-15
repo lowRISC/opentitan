@@ -14,64 +14,64 @@ enum {
   kNumOutputWordsMax = 16,
 };
 
-void csrng_testutils_cmd_ready_wait(const dif_csrng_t *csrng) {
+status_t csrng_testutils_cmd_ready_wait(const dif_csrng_t *csrng) {
   dif_csrng_cmd_status_t cmd_status;
   do {
-    CHECK_DIF_OK(dif_csrng_get_cmd_interface_status(csrng, &cmd_status));
-    CHECK(cmd_status.kind != kDifCsrngCmdStatusError);
+    TRY(dif_csrng_get_cmd_interface_status(csrng, &cmd_status));
+    TRY_CHECK(cmd_status.kind != kDifCsrngCmdStatusError);
   } while (cmd_status.kind != kDifCsrngCmdStatusReady);
+  return OK_STATUS();
 }
 
-void csrng_testutils_cmd_generate_run(const dif_csrng_t *csrng,
-                                      uint32_t *output, size_t output_len) {
-  csrng_testutils_cmd_ready_wait(csrng);
-  CHECK_DIF_OK(dif_csrng_generate_start(csrng, output_len));
+status_t csrng_testutils_cmd_generate_run(const dif_csrng_t *csrng,
+                                          uint32_t *output, size_t output_len) {
+  TRY(csrng_testutils_cmd_ready_wait(csrng));
+  TRY(dif_csrng_generate_start(csrng, output_len));
 
   dif_csrng_output_status_t output_status;
   do {
-    CHECK_DIF_OK(dif_csrng_get_output_status(csrng, &output_status));
+    TRY(dif_csrng_get_output_status(csrng, &output_status));
   } while (!output_status.valid_data);
 
-  CHECK_DIF_OK(dif_csrng_generate_read(csrng, output, output_len));
+  TRY(dif_csrng_generate_read(csrng, output, output_len));
+  return OK_STATUS();
 }
 
-void csrng_testutils_check_internal_state(
+status_t csrng_testutils_check_internal_state(
     const dif_csrng_t *csrng, const dif_csrng_internal_state_t *expected) {
-  csrng_testutils_cmd_ready_wait(csrng);
+  TRY(csrng_testutils_cmd_ready_wait(csrng));
   dif_csrng_internal_state_t got;
-  CHECK_DIF_OK(
-      dif_csrng_get_internal_state(csrng, kCsrngInternalStateIdSw, &got));
+  TRY(dif_csrng_get_internal_state(csrng, kCsrngInternalStateIdSw, &got));
 
-  CHECK(got.instantiated == expected->instantiated);
-  CHECK(got.reseed_counter == expected->reseed_counter);
-  CHECK(got.fips_compliance == expected->fips_compliance);
+  TRY_CHECK(got.instantiated == expected->instantiated);
+  TRY_CHECK(got.reseed_counter == expected->reseed_counter);
+  TRY_CHECK(got.fips_compliance == expected->fips_compliance);
 
-  CHECK_ARRAYS_EQ(got.v, expected->v, ARRAYSIZE(expected->v),
-                  "CSRNG internal V buffer mismatch.");
+  TRY_CHECK(memcmp(got.v, expected->v, sizeof(expected->v)) == 0);
 
-  CHECK_ARRAYS_EQ(got.key, expected->key, ARRAYSIZE(expected->key),
-                  "CSRNG internal K buffer mismatch.");
+  TRY_CHECK(memcmp(got.key, expected->key, sizeof(expected->key)) == 0);
+  return OK_STATUS();
 }
 
-void csrng_testutils_kat_instantiate(
+status_t csrng_testutils_kat_instantiate(
     const dif_csrng_t *csrng, bool fail_expected,
     const dif_csrng_seed_material_t *seed_material,
     const dif_csrng_internal_state_t *expected_state) {
   LOG_INFO("CSRNG KAT instantiate");
-  CHECK_DIF_OK(dif_csrng_uninstantiate(csrng));
+  TRY(dif_csrng_uninstantiate(csrng));
 
   // Instantiate CSRNG - use the provided seed material only.
   csrng_testutils_cmd_ready_wait(csrng);
-  CHECK_DIF_OK(dif_csrng_instantiate(csrng, kDifCsrngEntropySrcToggleDisable,
-                                     seed_material));
+  TRY(dif_csrng_instantiate(csrng, kDifCsrngEntropySrcToggleDisable,
+                            seed_material));
 
   // Check the internal state of created CSRNG instance.
   const dif_csrng_internal_state_t kZeroState = {};
-  csrng_testutils_check_internal_state(
+  return csrng_testutils_check_internal_state(
       csrng, fail_expected ? &kZeroState : expected_state);
 }
 
-void csrng_testutils_kat_generate(
+status_t csrng_testutils_kat_generate(
     const dif_csrng_t *csrng, size_t num_generates, size_t output_len,
     const uint32_t *expected_output,
     const dif_csrng_internal_state_t *expected_state) {
@@ -82,21 +82,20 @@ void csrng_testutils_kat_generate(
   for (int i = 0; i < num_generates; ++i) {
     csrng_testutils_cmd_generate_run(csrng, got, output_len);
   }
-  CHECK_ARRAYS_EQ(got, expected_output, output_len,
-                  "Generate command KAT output mismatch");
+  TRY_CHECK(memcmp(got, expected_output, output_len) == 0);
 
   // Check the internal state.
-  csrng_testutils_check_internal_state(csrng, expected_state);
+  return csrng_testutils_check_internal_state(csrng, expected_state);
 }
 
-void csrng_testutils_kat_reseed(
+status_t csrng_testutils_kat_reseed(
     const dif_csrng_t *csrng, const dif_csrng_seed_material_t *seed_material,
     const dif_csrng_internal_state_t *expected_state) {
   LOG_INFO("CSRNG KAT reseed");
 
   // Reseed CSRNG - use the provided seed material only.
   csrng_testutils_cmd_ready_wait(csrng);
-  CHECK_DIF_OK(csrng_send_app_cmd(
+  TRY(csrng_send_app_cmd(
       csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
       (csrng_app_cmd_t){
           .id = kCsrngAppCmdReseed,
@@ -105,11 +104,11 @@ void csrng_testutils_kat_reseed(
       }));
 
   // Check the internal state.
-  csrng_testutils_check_internal_state(csrng, expected_state);
+  return csrng_testutils_check_internal_state(csrng, expected_state);
 }
 
-void csrng_testutils_fips_instantiate_kat(const dif_csrng_t *csrng,
-                                          bool fail_expected) {
+status_t csrng_testutils_fips_instantiate_kat(const dif_csrng_t *csrng,
+                                              bool fail_expected) {
   // CTR_DRBG Known-Answer-Tests (KATs).
   //
   // Test vector sourced from NIST's CAVP website:
@@ -153,11 +152,11 @@ void csrng_testutils_fips_instantiate_kat(const dif_csrng_t *csrng,
       .instantiated = true,
       .fips_compliance = false,
   };
-  csrng_testutils_kat_instantiate(csrng, fail_expected, &kEntropyInput,
-                                  &kExpectedState);
+  return csrng_testutils_kat_instantiate(csrng, fail_expected, &kEntropyInput,
+                                         &kExpectedState);
 }
 
-void csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng) {
+status_t csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng) {
   enum {
     kExpectedOutputLen = 16,
   };
@@ -177,23 +176,22 @@ void csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng) {
       .instantiated = true,
       .fips_compliance = false,
   };
-  csrng_testutils_kat_generate(csrng, 2, kExpectedOutputLen, kExpectedOutput,
-                               &kExpectedState);
+  return csrng_testutils_kat_generate(csrng, 2, kExpectedOutputLen,
+                                      kExpectedOutput, &kExpectedState);
 }
 
-void csrng_testutils_cmd_status_check(const dif_csrng_t *csrng) {
+status_t csrng_testutils_cmd_status_check(const dif_csrng_t *csrng) {
   dif_csrng_cmd_status_t status;
-  CHECK_DIF_OK(dif_csrng_get_cmd_interface_status(csrng, &status));
-  CHECK(status.errors == 0, "Unexpected CSRNG cmd interface error: 0x%x",
-        status.errors);
-  CHECK(status.unhealthy_fifos == 0, "Unexpected CSRNG FIFO error: 0x%x",
-        status.unhealthy_fifos);
-  CHECK(status.errors != kDifCsrngCmdStatusError,
-        "Unexpected CSRNG status error");
+  TRY(dif_csrng_get_cmd_interface_status(csrng, &status));
+  TRY_CHECK(status.errors == 0);
+  TRY_CHECK(status.unhealthy_fifos == 0);
+  TRY_CHECK(status.errors != kDifCsrngCmdStatusError);
+  return OK_STATUS();
 }
 
-void csrng_testutils_recoverable_alerts_check(const dif_csrng_t *csrng) {
+status_t csrng_testutils_recoverable_alerts_check(const dif_csrng_t *csrng) {
   uint32_t alerts = UINT32_MAX;
-  CHECK_DIF_OK(dif_csrng_get_recoverable_alerts(csrng, &alerts));
-  CHECK(alerts == 0, "Unexpected local alerts 0x%x", alerts);
+  TRY(dif_csrng_get_recoverable_alerts(csrng, &alerts));
+  TRY_CHECK(alerts == 0);
+  return OK_STATUS();
 }

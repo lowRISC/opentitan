@@ -5,13 +5,14 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_CSRNG_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_CSRNG_TESTUTILS_H_
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 
 /**
  * Wait for the `csrng` instance command interface to be ready to accept
  * commands. Aborts test execution if an error is found.
  */
-void csrng_testutils_cmd_ready_wait(const dif_csrng_t *csrng);
+status_t csrng_testutils_cmd_ready_wait(const dif_csrng_t *csrng);
 
 /**
  * Runs CSRNG generate command.
@@ -20,8 +21,8 @@ void csrng_testutils_cmd_ready_wait(const dif_csrng_t *csrng);
  * @param output Output buffer.
  * @param output_len Number of words of entropy to write to output buffer.
  */
-void csrng_testutils_cmd_generate_run(const dif_csrng_t *csrng,
-                                      uint32_t *output, size_t output_len);
+status_t csrng_testutils_cmd_generate_run(const dif_csrng_t *csrng,
+                                          uint32_t *output, size_t output_len);
 
 /**
  * Checks the CSRNG internal state against `expected` values.
@@ -29,7 +30,7 @@ void csrng_testutils_cmd_generate_run(const dif_csrng_t *csrng,
  * @param csrng A CSRNG handle.
  * @param expected Expected CSRNG internal state.
  */
-void csrng_testutils_check_internal_state(
+status_t csrng_testutils_check_internal_state(
     const dif_csrng_t *csrng, const dif_csrng_internal_state_t *expected);
 
 /**
@@ -40,7 +41,7 @@ void csrng_testutils_check_internal_state(
  * @param seed_material Seed material to use for the command.
  * @param expected_state Expected CSRNG internal state after the command.
  */
-void csrng_testutils_kat_instantiate(
+status_t csrng_testutils_kat_instantiate(
     const dif_csrng_t *csrng, bool fail_expected,
     const dif_csrng_seed_material_t *seed_material,
     const dif_csrng_internal_state_t *expected_state);
@@ -55,7 +56,7 @@ void csrng_testutils_kat_instantiate(
  * @param expected_output Expected CSRNG output after the last command.
  * @param expected_state Expected CSRNG internal state after the last command.
  */
-void csrng_testutils_kat_generate(
+status_t csrng_testutils_kat_generate(
     const dif_csrng_t *csrng, uint32_t num_generates, uint32_t output_len,
     const uint32_t *expected_output,
     const dif_csrng_internal_state_t *expected_state);
@@ -67,7 +68,7 @@ void csrng_testutils_kat_generate(
  * @param seed_material Seed material to use for the command.
  * @param expected_state Expected CSRNG internal state after the command.
  */
-void csrng_testutils_kat_reseed(
+status_t csrng_testutils_kat_reseed(
     const dif_csrng_t *csrng, const dif_csrng_seed_material_t *seed_material,
     const dif_csrng_internal_state_t *expected_state);
 
@@ -77,15 +78,15 @@ void csrng_testutils_kat_reseed(
  * @param csrng Handle.
  * @param fail_expected Expected fail.
  */
-void csrng_testutils_fips_instantiate_kat(const dif_csrng_t *csrng,
-                                          bool fail_expected);
+status_t csrng_testutils_fips_instantiate_kat(const dif_csrng_t *csrng,
+                                              bool fail_expected);
 
 /**
  * CTR DRBG Known-Answer-Test (KAT) for GENERATE command.
  *
  * @param csrng Handle.
  */
-void csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng);
+status_t csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng);
 
 /**
  * Checks CSRNG command status.
@@ -94,7 +95,7 @@ void csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng);
  *
  * @param csrng Handle.
  */
-void csrng_testutils_cmd_status_check(const dif_csrng_t *csrng);
+status_t csrng_testutils_cmd_status_check(const dif_csrng_t *csrng);
 
 /**
  * Checks CSRNG recoverable alerts.
@@ -103,6 +104,6 @@ void csrng_testutils_cmd_status_check(const dif_csrng_t *csrng);
  *
  * @param csrng Handle.
  */
-void csrng_testutils_recoverable_alerts_check(const dif_csrng_t *csrng);
+status_t csrng_testutils_recoverable_alerts_check(const dif_csrng_t *csrng);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_CSRNG_TESTUTILS_H_
