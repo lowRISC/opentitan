@@ -188,12 +188,15 @@ module chip_${top["name"]}_${target["name"]} #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
+  logic [24-1:0]                       dio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
 
   logic unused_mio_in_raw;
+  logic unused_dio_in_raw;
   assign unused_mio_in_raw = ^mio_in_raw;
+  assign unused_dio_in_raw = ^dio_in_raw;
 
   // Manual pads
 % for pad in dedicated_pads:
@@ -307,7 +310,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .clk_scan_i   ( 1'b0                  ),
     .scanmode_i   ( prim_mubi_pkg::MuBi4False ),
   % endif
-    .dio_in_raw_o ( ),
+    .dio_in_raw_o ( dio_in_raw ),
     // Chip IOs
     .dio_pad_io ({
 % for pad in list(reversed(dedicated_pads)):
@@ -628,16 +631,7 @@ module chip_${top["name"]}_${target["name"]} #(
   // external clock comes in at a fixed position
   assign ext_clk = mio_in_raw[MioPadIoc6];
 
-  assign pad2ast = { manual_in_ast_misc,
-                     mio_in_raw[MioPadIoc3],
-                     mio_in_raw[MioPadIoc2],
-                     mio_in_raw[MioPadIoc1],
-                     mio_in_raw[MioPadIob2],
-                     mio_in_raw[MioPadIob1],
-                     mio_in_raw[MioPadIob0],
-                     mio_in_raw[MioPadIoa5],
-                     mio_in_raw[MioPadIoa4]
-                   };
+  assign pad2ast = `PAD2AST_WIRES ;
 
   // AST does not use all clocks / resets forwarded to it
   logic unused_slow_clk_en;
