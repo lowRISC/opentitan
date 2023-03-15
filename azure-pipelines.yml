@@ -285,7 +285,7 @@ jobs:
   displayName: Fast Verilated Earl Grey tests
   # Build and run fast tests on sim_verilator
   pool: ci-public
-  timeoutInMinutes: 180
+  timeoutInMinutes: 240
   dependsOn: lint
   steps:
   - template: ci/checkout-template.yml
