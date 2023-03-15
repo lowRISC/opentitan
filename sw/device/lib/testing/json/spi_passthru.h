@@ -61,6 +61,11 @@ UJSON_SERDE_STRUCT(SpiFlashEraseSector, spi_flash_erase_sector_t, STRUCT_SPI_FLA
     field(length, uint16_t)
 UJSON_SERDE_STRUCT(SpiFlashWrite, spi_flash_write_t, STRUCT_SPI_FLASH_WRITE);
 
+#define STRUCT_SPI_PASSTHRU_SWAP_MAP(field, string) \
+    field(mask, uint32_t) \
+    field(value, uint32_t)
+UJSON_SERDE_STRUCT(SpiPassthruSwapMap, spi_passthru_swap_map_t, STRUCT_SPI_PASSTHRU_SWAP_MAP);
+
 // clang-format on
 #ifdef __cplusplus
 }

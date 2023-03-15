@@ -13,8 +13,8 @@ use opentitanlib::io::spi::{Target, Transfer};
 use opentitanlib::spiflash::{Sfdp, SpiFlash};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::spi_passthru::{
-    ConfigJedecId, SfdpData, SpiFlashEraseSector, SpiFlashReadSfdp, SpiFlashWrite, StatusRegister,
-    UploadInfo,
+    ConfigJedecId, SfdpData, SpiFlashEraseSector, SpiFlashReadSfdp, SpiFlashWrite,
+    SpiPassthruSwapMap, StatusRegister, UploadInfo,
 };
 use opentitanlib::uart::console::UartConsole;
 
@@ -290,24 +290,65 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let sfdp = Sfdp::try_from(sfdp_data.data.as_slice())?;
     let spi_flash = SpiFlash::from_sfdp(sfdp);
 
-    let address = 0x1000u32;
+    // Put increasing count at 0x1000.
+    let address_inc = 0x1000u32;
     let erase_op = SpiFlashEraseSector {
-        address: address,
+        address: address_inc,
         addr4b: false,
     };
     erase_op.execute(&*uart)?;
 
-    let write_op = SpiFlashWrite {
-        address: address,
+    let write_op_inc = SpiFlashWrite {
+        address: address_inc,
         addr4b: false,
         data: (0..256).map(|x| x as u8).collect(),
         length: 256,
     };
-    write_op.execute(&*uart)?;
+    write_op_inc.execute(&*uart)?;
+
+    // Put decreasing count at 0x11000.
+    let address_dec = 0x11000u32;
+    let erase_op = SpiFlashEraseSector {
+        address: address_dec,
+        addr4b: false,
+    };
+    erase_op.execute(&*uart)?;
+
+    let write_op_dec = SpiFlashWrite {
+        address: address_dec,
+        addr4b: false,
+        data: (0..256).map(|x| 255u8 - (x as u8)).collect(),
+        length: 256,
+    };
+    write_op_dec.execute(&*uart)?;
 
     let mut read_data = vec![0; 256];
-    spi_flash.read(&*spi, address, &mut read_data)?;
-    assert_eq!(read_data.as_slice(), write_op.data.as_slice());
+    spi_flash.read(&*spi, address_inc, &mut read_data)?;
+    assert_eq!(read_data.as_slice(), write_op_inc.data.as_slice());
+
+    let mut read_data = vec![0; 256];
+    spi_flash.read(&*spi, address_dec, &mut read_data)?;
+    assert_eq!(read_data.as_slice(), write_op_dec.data.as_slice());
+
+    // Turn on address translation, making address_dec point to address_inc.
+    let address_swap = SpiPassthruSwapMap {
+        mask: 0x10000u32,
+        value: 0x00000u32,
+    };
+    address_swap.apply_address_swap(&*uart)?;
+
+    let mut read_data = vec![0; 256];
+    spi_flash.read(&*spi, address_dec, &mut read_data)?;
+    assert_eq!(read_data.as_slice(), write_op_inc.data.as_slice());
+    assert_ne!(read_data.as_slice(), write_op_dec.data.as_slice());
+
+    // Turn address translation back off.
+    let address_swap = SpiPassthruSwapMap {
+        mask: 0u32,
+        value: 0u32,
+    };
+    address_swap.apply_address_swap(&*uart)?;
+
     Ok(())
 }
 

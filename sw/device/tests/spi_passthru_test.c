@@ -134,6 +134,14 @@ status_t spi_flash_write(ujson_t *uj, dif_spi_host_t *spih,
   return RESP_OK_STATUS(uj);
 }
 
+status_t spi_passthru_set_address_map(ujson_t *uj,
+                                      dif_spi_device_handle_t *spid) {
+  spi_passthru_swap_map_t swap;
+  TRY(ujson_deserialize_spi_passthru_swap_map_t(uj, &swap));
+  TRY(dif_spi_device_set_flash_address_swap(spid, swap.mask, swap.value));
+  return RESP_OK_STATUS(uj);
+}
+
 status_t command_processor(ujson_t *uj) {
   while (true) {
     test_command_t command;
@@ -168,6 +176,9 @@ status_t command_processor(ujson_t *uj) {
         break;
       case kTestCommandSpiFlashEmulator:
         RESP_ERR(uj, spi_flash_emulator(&spih, &spid));
+        break;
+      case kTestCommandSpiPassthruSetAddressMap:
+        RESP_ERR(uj, spi_passthru_set_address_map(uj, &spid));
         break;
 
       default:
