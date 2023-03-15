@@ -457,12 +457,12 @@
 `define DV_GET_ENUM_PLUSARG(ENUM_, VAR_, PLUSARG_, CHECK_EXISTS_ = 0, ID_ = `gfn) \
   begin \
     string str; \
-    if ($value$plusargs("``PLUSARG_``=%0s", str)) begin \
+    if ($value$plusargs(`"``PLUSARG_``=%0s`", str)) begin \
       if (!uvm_enum_wrapper#(ENUM_)::from_name(str, VAR_)) begin \
-        `uvm_fatal(ID_, $sformatf("Cannot find %s from enum ``ENUM_``", VAR_.name())) \
+        `uvm_fatal(ID_, $sformatf(`"Cannot find %s from enum ``ENUM_```", VAR_.name())) \
       end \
     end else if (CHECK_EXISTS_) begin \
-      `uvm_fatal(ID_, "Please pass the plusarg +``PLUSARG_``=<``ENUM_``-literal>") \
+      `uvm_fatal(ID_, `"Please pass the plusarg +``PLUSARG_``=<``ENUM_``-literal>`") \
     end \
   end
 `endif
@@ -480,10 +480,10 @@
 `define DV_GET_QUEUE_PLUSARG(QUEUE_, PLUSARG_, DELIMITER_ = ",", CHECK_EXISTS_ = 0, ID_ = `gfn) \
   begin \
     string str; \
-    if ($value$plusargs("``PLUSARG_``=%0s", str)) begin \
+    if ($value$plusargs(`"``PLUSARG_``=%0s`", str)) begin \
       str_split(str, QUEUE_, DELIMITER_); \
     end else if (CHECK_EXISTS_) begin \
-      `uvm_fatal(ID_, "Please pass the plusarg +``PLUSARG_``=<``ENUM_``-literal>") \
+      `uvm_fatal(ID_, `"Please pass the plusarg +``PLUSARG_``=<``ENUM_``-literal>`") \
     end \
   end
 `endif
