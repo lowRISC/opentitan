@@ -90,3 +90,12 @@ impl SpiFlashWrite {
         Ok(())
     }
 }
+
+impl SpiPassthruSwapMap {
+    pub fn apply_address_swap(&self, uart: &dyn Uart) -> Result<()> {
+        TestCommand::SpiPassthruSetAddressMap.send(uart)?;
+        self.send(uart)?;
+        Status::recv(uart, Duration::from_secs(300), false)?;
+        Ok(())
+    }
+}
