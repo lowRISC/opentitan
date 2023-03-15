@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
@@ -14,19 +15,20 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-void test_ctr_drbg_ctr0(const dif_csrng_t *csrng) {
-  CHECK_DIF_OK(dif_csrng_uninstantiate(csrng));
-  csrng_testutils_fips_instantiate_kat(csrng, /*fail_expected=*/false);
-  csrng_testutils_fips_generate_kat(csrng);
+status_t test_ctr_drbg_ctr0(const dif_csrng_t *csrng) {
+  TRY(dif_csrng_uninstantiate(csrng));
+  TRY(csrng_testutils_fips_instantiate_kat(csrng, /*fail_expected=*/false));
+  TRY(csrng_testutils_fips_generate_kat(csrng));
+  return OK_STATUS();
 }
 
 bool test_main(void) {
   dif_csrng_t csrng;
-  CHECK_DIF_OK(dif_csrng_init(
-      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
+  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
+  CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
-  test_ctr_drbg_ctr0(&csrng);
+  CHECK_STATUS_OK(test_ctr_drbg_ctr0(&csrng));
 
   return true;
 }
