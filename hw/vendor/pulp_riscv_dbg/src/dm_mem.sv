@@ -278,7 +278,7 @@ module dm_mem #(
             // Handle ranges of addresses in the default statement instead of with range clauses
             // (`[:]`) in a `unique case inside` construct.  The reason is that not all tools
             // support ranges in `case inside` constructs.
-            if (addr >= DataBaseAddr && addr <= DataEndAddr) begin
+            unique if (addr >= DataBaseAddr && addr <= DataEndAddr) begin
               data_valid_o = 1'b1;
               for (int unsigned dc = 0; dc < dm::DataCount; dc++) begin
                 if ((addr_i[DbgAddressBits-1:2] - DataBaseAddr[DbgAddressBits-1:2]) == dc) begin
@@ -296,6 +296,8 @@ module dm_mem #(
                   end
                 end
               end
+            end else begin
+              // Workaround for `unique0 if` not being supported in some commercial simulators.
             end
           end
         endcase
@@ -329,7 +331,7 @@ module dm_mem #(
             // (`[:]`) in a `unique case inside` construct.  The reason is that not all tools
             // support ranges in `case inside` constructs.
 
-            if (addr >= DataBaseAddr && addr <= DataEndAddr) begin
+            unique if (addr >= DataBaseAddr && addr <= DataEndAddr) begin
               rdata_d = {
                         data_i[$clog2(dm::DataCount)'(((addr_i[DbgAddressBits-1:3]
                                                         - DataBaseAddr[DbgAddressBits-1:3]) << 1)
@@ -337,34 +339,28 @@ module dm_mem #(
                         data_i[$clog2(dm::DataCount)'(((addr_i[DbgAddressBits-1:3]
                                                         - DataBaseAddr[DbgAddressBits-1:3]) << 1))]
                         };
-            end
-
-            if (addr >= ProgBufBaseAddr && addr <= ProgBufEndAddr) begin
+            end else if (addr >= ProgBufBaseAddr && addr <= ProgBufEndAddr) begin
               rdata_d = progbuf[$clog2(dm::ProgBufSize)'(addr_i[DbgAddressBits-1:3] -
                             ProgBufBaseAddr[DbgAddressBits-1:3])];
-            end
-
-            // two slots for abstract command
-            if (addr >= AbstractCmdBaseAddr && addr <= AbstractCmdEndAddr) begin
+            end else if (addr >= AbstractCmdBaseAddr && addr <= AbstractCmdEndAddr) begin
+              // two slots for abstract command
               // return the correct address index
               rdata_d = abstract_cmd[3'(addr_i[DbgAddressBits-1:3] -
                              AbstractCmdBaseAddr[DbgAddressBits-1:3])];
-            end
-
-            // harts are polling for flags here
-            if (addr >= FlagsBaseAddr && addr <= FlagsEndAddr) begin
+            end else if (addr >= FlagsBaseAddr && addr <= FlagsEndAddr) begin
+              // harts are polling for flags here
               // release the corresponding hart
               if (({addr_i[DbgAddressBits-1:3], 3'b0} - FlagsBaseAddr[DbgAddressBits-1:0]) ==
                 (DbgAddressBits'(hartsel) & {{(DbgAddressBits-3){1'b1}}, 3'b0})) begin
                 rdata[DbgAddressBits'(hartsel) & DbgAddressBits'(3'b111)] = {6'b0, resume, go};
               end
               rdata_d = rdata;
-            end
-
-            // Access has to be forwarded to the ROM. The ROM starts at the HaltAddress of the core
-            // e.g.: it immediately jumps to the ROM base address.
-            if (addr >= RomBaseAddr && addr <= RomEndAddr) begin
+            end else if (addr >= RomBaseAddr && addr <= RomEndAddr) begin
+              // Access has to be forwarded to the ROM. The ROM starts at the HaltAddress of the
+              // core e.g.: it immediately jumps to the ROM base address.
               fwd_rom_d = 1'b1;
+            end else begin
+              // Workaround for `unique0 if` not being supported in some commercial simulators.
             end
           end
         endcase
@@ -409,20 +405,18 @@ module dm_mem #(
           // Handle ranges of addresses in the default statement instead of with range clauses
           // (`[:]`) in a `unique case inside` construct.  The reason is that not all tools
           // support ranges in `case inside` constructs.
-          if (addr >= DataBaseAddr && addr <= DataEndAddr) begin
+          unique if (addr >= DataBaseAddr && addr <= DataEndAddr) begin
             err_d = gen_wr_err(we_i, be_i, FullRegMask);
-          end
-          if (addr >= ProgBufBaseAddr && addr <= ProgBufEndAddr) begin
+          end else if (addr >= ProgBufBaseAddr && addr <= ProgBufEndAddr) begin
             err_d = gen_wr_err(we_i, be_i, FullRegMask);
-          end
-          if (addr >= AbstractCmdBaseAddr && addr <= AbstractCmdEndAddr) begin
+          end else if (addr >= AbstractCmdBaseAddr && addr <= AbstractCmdEndAddr) begin
             err_d = gen_wr_err(we_i, be_i, FullRegMask);
-          end
-          if (addr >= FlagsBaseAddr && addr <= FlagsEndAddr) begin
+          end else if (addr >= FlagsBaseAddr && addr <= FlagsEndAddr) begin
             err_d = gen_wr_err(we_i, be_i, FullRegMask);
-          end
-          if (addr >= RomBaseAddr && addr <= RomEndAddr) begin
+          end else if (addr >= RomBaseAddr && addr <= RomEndAddr) begin
             err_d = we_i; // Writing ROM area always errors.
+          end else begin
+            // Workaround for `unique0 if` not being supported in some commercial simulators.
           end
         end
       endcase

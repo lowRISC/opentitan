@@ -330,7 +330,7 @@ module dm_csrs #(
           // Handle ranges of addresses in the default statement instead of with range clauses
           // (`[:]`) in a `unique case inside` construct.  The reason is that not all tools
           // support ranges in `case inside` constructs.
-          if (dm_csr_addr >= dm::Data0 && dm_csr_addr <= DataEnd) begin
+          unique if (dm_csr_addr >= dm::Data0 && dm_csr_addr <= DataEnd) begin
             resp_queue_inp.data = data_q[$clog2(dm::DataCount)'(autoexecdata_idx)];
             if (!cmdbusy_i) begin
               // check whether we need to re-execute the command (just give a cmd_valid)
@@ -342,8 +342,7 @@ module dm_csrs #(
                 cmderr_d = dm::CmdErrBusy;
               end
             end
-          end
-          if (dm_csr_addr >= dm::ProgBuf0 && dm_csr_addr <= ProgBufEnd) begin
+          end else if (dm_csr_addr >= dm::ProgBuf0 && dm_csr_addr <= ProgBufEnd) begin
             resp_queue_inp.data = progbuf_q[dmi_req_i.addr[$clog2(dm::ProgBufSize)-1:0]];
             if (!cmdbusy_i) begin
               // check whether we need to re-execute the command (just give a cmd_valid)
@@ -357,6 +356,8 @@ module dm_csrs #(
                 cmderr_d = dm::CmdErrBusy;
               end
             end
+          end else begin
+            // Workaround for `unique0 if` not being supported in some commercial simulators.
           end
         end
       endcase
@@ -473,7 +474,7 @@ module dm_csrs #(
           // Handle ranges of addresses in the default statement instead of with range clauses
           // (`[:]`) in a `unique case inside` construct.  The reason is that not all tools
           // support ranges in `case inside` constructs.
-          if (dm_csr_addr >= dm::Data0 && dm_csr_addr <= DataEnd) begin
+          unique if (dm_csr_addr >= dm::Data0 && dm_csr_addr <= DataEnd) begin
             if (dm::DataCount > 0) begin
               // attempts to write them while busy is set does not change their value
               if (!cmdbusy_i) begin
@@ -488,8 +489,7 @@ module dm_csrs #(
                 end
               end
             end
-          end
-          if (dm_csr_addr >= dm::ProgBuf0 && dm_csr_addr <=ProgBufEnd) begin
+          end else if (dm_csr_addr >= dm::ProgBuf0 && dm_csr_addr <=ProgBufEnd) begin
             // attempts to write them while busy is set does not change their value
             if (!cmdbusy_i) begin
               progbuf_d[dmi_req_i.addr[$clog2(dm::ProgBufSize)-1:0]] = dmi_req_i.data;
@@ -505,6 +505,8 @@ module dm_csrs #(
                 cmderr_d = dm::CmdErrBusy;
               end
             end
+          end else begin
+            // Workaround for `unique0 if` not being supported in some commercial simulators.
           end
         end
       endcase
