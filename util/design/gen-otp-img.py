@@ -272,9 +272,10 @@ def main():
     # If the out argument does not contain "BITWIDTH", it will not be changed.
     memfile_path = Path(args.out.replace('BITWIDTH', str(bitness)))
 
-    with open(memfile_path, 'w') as outfile:
-        outfile.write(memfile_header)
-        outfile.write(memfile_body)
+    # Use binary mode and a large buffer size to improve performance.
+    with open(memfile_path, 'wb', buffering=2097152) as outfile:
+        outfile.write(memfile_header.encode('utf-8'))
+        outfile.write(memfile_body.encode('utf-8'))
 
 
 if __name__ == "__main__":

@@ -68,8 +68,8 @@ def main():
                 tpl = Template(tplfile.read())
                 with open(
                         Path(template).parent.joinpath(Path(template).stem),
-                        'w') as outfile:
-                    outfile.write(tpl.render(lc_st_enc=lc_st_enc))
+                        'wb', buffering=2097152) as outfile:
+                    outfile.write(tpl.render(lc_st_enc=lc_st_enc).encode('utf-8'))
 
 
 if __name__ == "__main__":
