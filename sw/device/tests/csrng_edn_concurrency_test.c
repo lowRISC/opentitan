@@ -332,7 +332,7 @@ static void main_task(void *task_parameters) {
         execution_state_update(kTestStateTearDown);
         break;
       }
-      csrng_testutils_recoverable_alerts_check(&csrng);
+      CHECK_STATUS_OK((csrng_testutils_recoverable_alerts_check(&csrng)));
       entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1);
       execution_state_update(kTestStateSetup);
     }
