@@ -307,9 +307,10 @@ def main(argv: List[str]):
     reformatted_vmem_lines = _reformat_flash_vmem(args.in_flash_vmem,
                                                   scrambling_configs)
 
-    # Write re-formatted output file.
-    with open(args.out_flash_vmem, "w") as of:
-        of.write("\n".join(reformatted_vmem_lines))
+    # Write re-formatted output file. Use binary mode and a large buffer size
+    # to improve performance.
+    with open(args.out_flash_vmem, "wb", buffering=2097152) as of:
+        of.write("\n".join(reformatted_vmem_lines).encode('utf-8'))
 
 
 if __name__ == "__main__":

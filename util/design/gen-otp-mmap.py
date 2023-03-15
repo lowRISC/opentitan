@@ -75,17 +75,20 @@ def main():
             log.error(err)
             exit(1)
 
-        with open(PARTITIONS_TABLE_FILE, 'w') as outfile:
-            outfile.write(TABLE_HEADER_COMMENT +
-                          otp_mmap.create_partitions_table() + '\n')
+        with open(PARTITIONS_TABLE_FILE, 'wb', buffering=2097152) as outfile:
+            outfile.write(TABLE_HEADER_COMMENT.encode('utf-8'))
+            outfile.write(otp_mmap.create_partitions_table().encode('utf-8'))
+            outfile.write('\n'.encode('utf-8'))
 
-        with open(DIGESTS_TABLE_FILE, 'w') as outfile:
-            outfile.write(TABLE_HEADER_COMMENT +
-                          otp_mmap.create_digests_table() + '\n')
+        with open(DIGESTS_TABLE_FILE, 'wb', buffering=2097152) as outfile:
+            outfile.write(TABLE_HEADER_COMMENT.encode('utf-8'))
+            outfile.write(otp_mmap.create_digests_table().encode('utf-8'))
+            outfile.write('\n'.encode('utf-8'))
 
-        with open(MMAP_TABLE_FILE, 'w') as outfile:
-            outfile.write(TABLE_HEADER_COMMENT + otp_mmap.create_mmap_table() +
-                          '\n')
+        with open(MMAP_TABLE_FILE, 'wb', buffering=2097152) as outfile:
+            outfile.write(TABLE_HEADER_COMMENT.encode('utf-8'))
+            outfile.write(otp_mmap.create_mmap_table().encode('utf-8'))
+            outfile.write('\n'.encode('utf-8'))
 
         # render all templates
         for template in TEMPLATES:
@@ -93,8 +96,8 @@ def main():
                 tpl = Template(tplfile.read())
                 with open(
                         Path(template).parent.joinpath(Path(template).stem),
-                        'w') as outfile:
-                    outfile.write(tpl.render(otp_mmap=otp_mmap))
+                        'wb', buffering=2097152) as outfile:
+                    outfile.write(tpl.render(otp_mmap=otp_mmap).encode('utf-8'))
 
 
 if __name__ == "__main__":
