@@ -52,8 +52,8 @@ function prepare() {
     local url="https://github.com/bazelbuild/bazelisk/releases/download/${release}/bazelisk-${target}"
 
     mkdir -p "$bindir"
-    echo "Downloading bazelisk ${release} (${url})." >> $bindir/bazelisk.log
-    curl ${CURL_FLAGS} --location "$url" --output "$file"
+    echo "Downloading bazelisk ${release} (${url})." >> "$bindir"/bazelisk.log
+    curl "${CURL_FLAGS}" --location "$url" --output "$file"
     chmod +x "$file"
 }
 

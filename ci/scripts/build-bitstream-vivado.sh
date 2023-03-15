@@ -100,7 +100,7 @@ fusesoc --verbose --cores-root=. \
   --build-root="$OBJ_DIR/hw" \
   "$CORE_NAME" \
   --BootRomInitFile="$BOOTROM_VMEM" \
-  $OTP_ARG
+  "$OTP_ARG"
 
 BITSTREAM_FNAME="lowrisc_systems_chip_${FLAVOUR}_${TARGET}_0.1.bit"
 BITSTREAM_PATH="$OBJ_DIR/hw/synth-vivado/$BITSTREAM_FNAME"

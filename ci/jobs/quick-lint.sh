@@ -30,10 +30,10 @@ echo "### Display environment information"
 ci/scripts/show-env.sh
 
 echo -e "\n### Check commit metadata"
-ci/scripts/lint-commits.sh $tgt_branch
+ci/scripts/lint-commits.sh "$tgt_branch"
 
 echo -e "\n### Check Licence Headers"
-ci/scripts/check-licence-headers.sh $tgt_branch
+ci/scripts/check-licence-headers.sh "$tgt_branch"
 
 echo -e "\n### Check executable bits"
 ci/scripts/exec-check.sh
@@ -42,21 +42,21 @@ echo -e "\n### Check for non-ASCII characters in source code"
 ci/scripts/check-ascii.sh
 
 echo -e "\n### Run Python lint (flake8)"
-ci/scripts/python-lint.sh $tgt_branch || {
+ci/scripts/python-lint.sh "$tgt_branch" || {
     echo "(ignoring python lint errors)"
 }
 
 echo -e "\n### Run Python lint (mypy)"
-ci/scripts/mypy.sh $tgt_branch
+ci/scripts/mypy.sh "$tgt_branch"
 
 echo -e "\n### Use clang-format to check C/C++ coding style"
-ci/scripts/clang-format.sh $tgt_branch
+ci/scripts/clang-format.sh "$tgt_branch"
 
 echo -e "\n### Check formatting on header guards"
-ci/scripts/include-guard.sh $tgt_branch
+ci/scripts/include-guard.sh "$tgt_branch"
 
 echo -e "\n### Use rustfmt to check Rust coding style"
-ci/scripts/rust-format.sh $tgt_branch
+ci/scripts/rust-format.sh "$tgt_branch"
 
 echo -e "\n### Run shellcheck on all shell scripts"
 ci/scripts/run-shellcheck.sh
@@ -68,4 +68,4 @@ echo -e "\n### Render landing site"
 ci/scripts/build-site.sh
 
 echo -e "\n### Check what kinds of changes the PR contains"
-ci/scripts/get-build-type.sh $tgt_branch PullRequest
+ci/scripts/get-build-type.sh "$tgt_branch" PullRequest

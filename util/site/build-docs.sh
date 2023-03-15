@@ -175,6 +175,6 @@ if [ "$command" = "serve" ] || [ "$command" = "serve-proxy" ]; then
   echo "Website being served at : ${base_url}"
   echo
   echo "--------------------------------------------"
-  python3 -m http.server -d "$build_dir" ${serve_port:1}
+  python3 -m http.server -d "$build_dir" "${serve_port:1}"
                                          # strip leading :
 fi
