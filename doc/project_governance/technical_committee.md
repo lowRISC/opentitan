@@ -30,3 +30,4 @@ The OpenTitan Technical Committee membership is:
 * Nir Tasher
 * Arnon Sharlin
 * Sivakumar
+* Tim Trippel
