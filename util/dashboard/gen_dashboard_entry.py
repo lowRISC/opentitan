@@ -63,9 +63,9 @@ def get_doc_url(base, url):
     """
     assert isinstance(url, str) and len(url) > 0
     if url[0] == '/':
-        return url
+        return '/book' + url
     else:
-        return '/' + base + '/' + url
+        return '/book/' + base + '/' + url
 
 
 # Link module name with its design spec doc.
@@ -73,7 +73,7 @@ def get_linked_design_spec(obj):
     result = ""
     if 'design_spec' in obj:
         result = "<span title='Design Spec'><a href='{}'>".format(
-            get_doc_url(obj['_ip_desc_hjson_dir'], obj['design_spec']))
+            get_doc_url(obj['_ip_desc_hjson_dir'], obj['design_spec']) + "/..")
         result += "<code>{}</code></a></span>".format(html.escape(obj['name']))
     else:
         result = html.escape(obj['name'])
@@ -85,7 +85,7 @@ def get_linked_design_spec(obj):
 def get_linked_dv_doc(obj):
     if 'dv_doc' in obj:
         return "<span title='DV Document'><a href=\"{}\">DV</a></span>".format(
-            get_doc_url(obj['_ip_desc_hjson_dir'], obj['dv_doc']))
+            get_doc_url(obj['_ip_desc_hjson_dir'], obj['dv_doc']) + "/../../dv")
     else:
         return ""
 
@@ -120,7 +120,7 @@ def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
             rev['commit_id'], obj['hw_checklist'], in_page_ref)
     elif 'hw_checklist' in obj:
         url = get_doc_url(obj['_ip_desc_hjson_dir'],
-                          obj['hw_checklist'] + in_page_ref)
+                          obj['hw_checklist'] + ".html" + in_page_ref)
     else:
         # There is no checklist available, so point to the template.
         # doc/project/hw_checklist.md.tpl is a symlink to ip_checklist.md.tpl,
@@ -153,7 +153,7 @@ def get_linked_sw_checklist(obj, rev, stage, is_latest_rev=True):
             rev['commit_id'], obj['sw_checklist'], in_page_ref)
     elif 'sw_checklist' in obj:
         url = get_doc_url(obj['_ip_desc_hjson_dir'],
-                          obj['sw_checklist'] + in_page_ref)
+                          obj['sw_checklist'] + ".html" + in_page_ref)
     else:
         # There is no checklist available, so point to the template.
         url = "https://github.com/lowrisc/opentitan/tree/master/"

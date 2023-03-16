@@ -65,9 +65,9 @@ DASHBOARD_TEMPLATE = """
     <tr>
       <th>Design Spec</th>
       <th>DV Document</th>
-      <th><a href="/doc/project_governance/development_stages.html#versioning">Spec Version</a></th>
+      <th><a href="/book/doc/project_governance/development_stages.html#versioning">Spec Version</a></th>
       <th colspan="4">
-        <a href="/doc/project_governance/development_stages.html#life-stages">
+        <a href="/book/doc/project_governance/development_stages.html#life-stages">
           Development Stage
         </a>
       </th>
