@@ -2723,7 +2723,7 @@ test_suite(
         tags = [
             "cw310_rom",
             "vivado",
-        ] + maybe_skip_in_ci(lc_state_val),
+        ],
     )
     for lc_state, lc_state_val in get_lc_items(
         CONST.LCV.TEST_UNLOCKED0,
