@@ -2,4 +2,4 @@
 
 ## Testplan
 
-{{< incGenFromIpDesc "../data/manuf_testplan.hjson" "testplan" >}}
+- [Test Plan](./sw/device/silicon_creator/manuf/data/manuf_testplan.hjson)

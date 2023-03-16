@@ -254,7 +254,7 @@
             ## Personalization
 
             The device is configured with a unique set of secrets, which once provisioned, are
-            hidden from software. These secrets are use to as the root of the key derivation
+            hidden from software. These secrets are used as the root of the key derivation
             function in the key manager.
 
             ## Test steps
@@ -263,15 +263,19 @@
             - Pre-load the OTP state with an image of an individualized device. See
               manuf_ft_sku_individualization for more details.
             - Check expected ls_state and OTP locked partitions (SECRET1, HW_CFG).
+            - Check the device lifecyle to be set in DEV, PROD or PROD_END state.
             - Initialize entropy source in FIPS mode. Check health status after setting appropriate
               health test parameters.
 
             ### Device secrets
             - Instantiate the SW CSRNG, and configure it to generate data.
+            - Configure the Silicon Creator secret info flash partition.
+            - Uninstantiate the SW CSRNG.
+            - Instantiate the SW CSRNG, and configure it to generate data.
             - Configure the following OTP entries with data extracted from the CSRNG:
               - CREATOR_ROOT_KEY_SHARE0
               - CREATOR_ROOT_KEY_SHARE1
-            - Configure the flash info secret partition with data extracted from the CSRNG.
+            - Uninstantiate the SW CSRNG.
             - Lock SECRET2 OTP partition.
             - Perform reset triggered by software.
 
