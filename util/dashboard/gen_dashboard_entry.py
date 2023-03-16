@@ -7,10 +7,9 @@ Generate HTML documentation from validated dashboard Hjson tree
 
 import html
 import logging as log
-import os.path
-import re
 import sys
 from pathlib import Path
+from typing import Union, Tuple, TextIO
 
 import dashboard.dashboard_validate as dashboard_validate
 import hjson
@@ -63,9 +62,9 @@ def get_doc_url(base, url):
     """
     assert isinstance(url, str) and len(url) > 0
     if url[0] == '/':
-        return url
+        return '/book' + url
     else:
-        return '/' + base + '/' + url
+        return '/book/' + base + '/' + url
 
 
 # Link module name with its design spec doc.
@@ -73,7 +72,7 @@ def get_linked_design_spec(obj):
     result = ""
     if 'design_spec' in obj:
         result = "<span title='Design Spec'><a href='{}'>".format(
-            get_doc_url(obj['_ip_desc_hjson_dir'], obj['design_spec']))
+            get_doc_url(obj['_ip_desc_hjson_dir'], obj['design_spec']) + "/..")
         result += "<code>{}</code></a></span>".format(html.escape(obj['name']))
     else:
         result = html.escape(obj['name'])
@@ -85,7 +84,7 @@ def get_linked_design_spec(obj):
 def get_linked_dv_doc(obj):
     if 'dv_doc' in obj:
         return "<span title='DV Document'><a href=\"{}\">DV</a></span>".format(
-            get_doc_url(obj['_ip_desc_hjson_dir'], obj['dv_doc']))
+            get_doc_url(obj['_ip_desc_hjson_dir'], obj['dv_doc']) + "/../../dv")
     else:
         return ""
 
@@ -120,7 +119,7 @@ def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
             rev['commit_id'], obj['hw_checklist'], in_page_ref)
     elif 'hw_checklist' in obj:
         url = get_doc_url(obj['_ip_desc_hjson_dir'],
-                          obj['hw_checklist'] + in_page_ref)
+                          obj['hw_checklist'] + ".html" + in_page_ref)
     else:
         # There is no checklist available, so point to the template.
         # doc/project/hw_checklist.md.tpl is a symlink to ip_checklist.md.tpl,
@@ -153,7 +152,7 @@ def get_linked_sw_checklist(obj, rev, stage, is_latest_rev=True):
             rev['commit_id'], obj['sw_checklist'], in_page_ref)
     elif 'sw_checklist' in obj:
         url = get_doc_url(obj['_ip_desc_hjson_dir'],
-                          obj['sw_checklist'] + in_page_ref)
+                          obj['sw_checklist'] + ".html" + in_page_ref)
     else:
         # There is no checklist available, so point to the template.
         url = "https://github.com/lowrisc/opentitan/tree/master/"
@@ -205,7 +204,35 @@ def get_development_stage(obj, rev, is_latest_rev=True):
 
 
 # Create dashboard of hardware IP development status
-def gen_dashboard_html(hjson_path, outfile):
+def gen_dashboard_row_html(config: Union[Path, Tuple[Path, Path]], outfile: TextIO):
+    """From an IP block's configuration data, generate a summary as a HTML table row.
+
+    Parameters
+        ----------
+        config : Union[
+            Path,              # Path to a block configuration file
+            Tuple[Path, Path], # Path to a block configuration file +
+                                 Path to the block's ip documentation dir
+        ]
+            The source configuration data the table row is generated from.
+        outfile : TextIO
+            io object the generated HTML is written into.
+
+    The Union of options for the 'config' argument allows us to handle some
+    special cases, such as templated IP that are instantiated as part of the
+    SoC generation process.
+    e.g
+    Path  ->  `hw/ip/aes/data/aes.hjson`
+    Tuple -> (`hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson`, `hw/ip/clkmgr/`)
+    """
+
+    if isinstance(config, Tuple):
+        hjson_path = config[0]
+        ip_desc_hjson_dir = str((config[1] / "data").relative_to(REPO_TOP))
+    else:
+        hjson_path = config
+        ip_desc_hjson_dir = str(hjson_path.parent.relative_to(REPO_TOP))
+
     with hjson_path:
         prjfile = open(str(hjson_path))
         try:
@@ -223,8 +250,7 @@ def gen_dashboard_html(hjson_path, outfile):
     else:
         log.fail("hjson file import failed\n")
 
-    ip_desc_hjson_dir = hjson_path.parent.relative_to(REPO_TOP)
-    obj['_ip_desc_hjson_dir'] = str(ip_desc_hjson_dir)
+    obj['_ip_desc_hjson_dir'] = ip_desc_hjson_dir
 
     # If `revisions` field doesn't exist, the tool assumes the Hjson
     # as the previous project format, which has only one version entry.
