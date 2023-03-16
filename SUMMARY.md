@@ -336,7 +336,7 @@
 
 - [Tools Overview](./util/README.md)
 - [Design-Related Tooling](./util/design/README.md)
-- [dvsim]()
+- [dvsim](./util/dvsim/README.md)
   - [Testplanner](./util/dvsim/doc/testplanner.md)
 - [fpvgen: Initial FPV Testbench Generation](./util/fpvgen/README.md)
 - [reggen & regtool: Register Generator](./util/reggen/README.md)
