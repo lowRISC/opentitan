@@ -1276,7 +1276,7 @@ def main():
                         f"rtl/autogen/top_{topname}_rnd_cnst_pkg.sv",
                         gencmd=gencmd)
 
-        # C Header + C File + Clang-format file
+        # C Header + C File + Rust File + Clang-format file
 
         # Since SW does not use FuseSoC and instead expects those files always
         # to be in hw/top_{topname}/sw/autogen, we currently create these files
@@ -1326,26 +1326,6 @@ def main():
                             memory_cheader_path,
                             helper=c_helper)
 
-        # Rust File + Clang-format file
-
-        # Since SW does not use FuseSoC and instead expects those files always
-        # to be in hw/top_{topname}/sw/autogen, we currently create these files
-        # twice:
-        # - Once under out_path/sw/autogen
-        # - Once under hw/top_{topname}/sw/autogen
-        root_paths = [out_path.resolve(), SRCTREE_TOP]
-        out_paths = [
-            out_path.resolve(),
-            (SRCTREE_TOP / "hw/top_{}/".format(topname)).resolve()
-        ]
-        for idx, path in enumerate(out_paths):
-            # "clang-format" -> "sw/autogen/.clang-format"
-            cformat_tplpath = TOPGEN_TEMPLATE_PATH / "clang-format"
-            cformat_dir = path / "sw/autogen"
-            cformat_dir.mkdir(parents=True, exist_ok=True)
-            cformat_path = cformat_dir / ".clang-format"
-            cformat_path.write_text(cformat_tplpath.read_text())
-
             # Save the header macro prefix into `rs_helper`
             rel_header_dir = cformat_dir.relative_to(root_paths[idx])
             rs_helper.header_macro_prefix = (
@@ -1363,11 +1343,7 @@ def main():
             rel_header_path = cheader_path.relative_to(root_paths[idx])
             rs_helper.header_path = str(rel_header_path)
 
-            # "toplevel_memory.ld.tpl" -> "sw/autogen/top_{topname}_memory.ld"
-            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.ld.tpl",
-                            cformat_dir / f"top_{topname}_memory.ld")
-
-            # TODO megre to one memmory file
+            # TODO merge to one memory file
             # "toplevel_memory.rs.tpl" -> "sw/autogen/top_{topname}_memory.rs.h"
             memory_cheader_path = cformat_dir / f"top_{topname}_memory.rs"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.rs.tpl",
