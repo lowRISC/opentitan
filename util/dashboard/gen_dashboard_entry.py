@@ -335,10 +335,10 @@ def gen_specboard_html(hjson_path, rel_hjson_path, outfile):
         r'/data/', '/doc/dv',
         hjson_stem.with_name('index.md'))
     design_spec_html = re.sub(
-        r'/data/', '/doc/',
+        r'/data/', '/',
         hjson_stem.with_suffix('.html'))
     dv_doc_html = re.sub(
-        r'/data/', '/doc/dv',
+        r'/data/', '/dv',
         hjson_stem.with_name('index.html'))
 
     # yapf: disable
