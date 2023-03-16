@@ -12,11 +12,17 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::io::i2c::{I2cParams, Transfer};
 use opentitanlib::tpm;
 use opentitanlib::transport::Capability;
+use opentitanlib::util::parse_int::ParseInt;
 
 /// Read plain data bytes from a I2C device.
 #[derive(Debug, StructOpt)]
 pub struct I2cRawRead {
-    #[structopt(short = "n", long, help = "Number of bytes to read.")]
+    #[structopt(
+        short = "n",
+        long,
+        parse(try_from_str=usize::from_str),
+        help = "Number of bytes to read."
+    )]
     length: usize,
 }
 
@@ -66,6 +72,48 @@ impl CommandDispatch for I2cRawWrite {
     }
 }
 
+/// Write data bytes to a I2C device, then read back a response.
+#[derive(Debug, StructOpt)]
+pub struct I2cRawWriteRead {
+    #[structopt(short, long, help = "Hex data bytes to write.")]
+    hexdata: String,
+    #[structopt(
+        short = "n",
+        long,
+        parse(try_from_str=usize::from_str),
+        help = "Number of bytes to read."
+    )]
+    length: usize,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct I2cRawWriteReadResponse {
+    hexdata: String,
+}
+
+impl CommandDispatch for I2cRawWriteRead {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::I2C).ok()?;
+        let context = context.downcast_ref::<I2cCommand>().unwrap();
+        let i2c_bus = context.params.create(transport)?;
+        let mut v = vec![0u8; self.length];
+        i2c_bus.run_transaction(
+            context.addr,
+            &mut [
+                Transfer::Write(&hex::decode(&self.hexdata)?),
+                Transfer::Read(&mut v),
+            ],
+        )?;
+        Ok(Some(Box::new(I2cRawWriteReadResponse {
+            hexdata: hex::encode(v),
+        })))
+    }
+}
+
 #[derive(Debug, StructOpt)]
 pub struct I2cTpm {
     #[structopt(subcommand)]
@@ -90,6 +138,7 @@ impl CommandDispatch for I2cTpm {
 pub enum InternalI2cCommand {
     RawRead(I2cRawRead),
     RawWrite(I2cRawWrite),
+    RawWriteRead(I2cRawWriteRead),
     Tpm(I2cTpm),
 }
 
@@ -98,7 +147,12 @@ pub struct I2cCommand {
     #[structopt(flatten)]
     params: I2cParams,
 
-    #[structopt(short, long, help = "7-bit address of I2C device (0..0x7F).")]
+    #[structopt(
+        short,
+        long,
+        parse(try_from_str=u8::from_str),
+        help = "7-bit address of I2C device (0..0x7F)."
+    )]
     addr: u8,
 
     #[structopt(subcommand)]
