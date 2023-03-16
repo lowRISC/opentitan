@@ -113,6 +113,25 @@ bool rom_test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_DIF_OK(dif_flash_ctrl_start_controller_init(&flash_ctrl));
   flash_ctrl_testutils_wait_for_init(&flash_ctrl);
+#if !OT_IS_ENGLISH_BREAKFAST
+  // Check the otp to see if flash scramble should be enabled.
+  otp_val = abs_mmio_read32(
+      TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
+  if (otp_val != 0) {
+    dif_flash_ctrl_region_properties_t default_properties;
+    CHECK_DIF_OK(dif_flash_ctrl_get_default_region_properties(
+        &flash_ctrl, &default_properties));
+    default_properties.scramble_en =
+        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING);
+    default_properties.ecc_en =
+        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC);
+    default_properties.high_endurance_en =
+        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE);
+    CHECK_DIF_OK(dif_flash_ctrl_set_default_region_properties(
+        &flash_ctrl, default_properties));
+  }
+#endif
   CHECK_DIF_OK(
       dif_flash_ctrl_set_flash_enablement(&flash_ctrl, kDifToggleEnabled));
 
@@ -170,27 +189,6 @@ bool rom_test_main(void) {
     CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, kDifToggleEnabled));
     LOG_INFO("Jitter is enabled");
   }
-
-#if !OT_IS_ENGLISH_BREAKFAST
-  // Check the otp to see if flash scramble should be enabled.
-  otp_val = abs_mmio_read32(
-      TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
-
-  if (otp_val != 0) {
-    dif_flash_ctrl_region_properties_t default_properties;
-    CHECK_DIF_OK(dif_flash_ctrl_get_default_region_properties(
-        &flash_ctrl, &default_properties));
-    default_properties.scramble_en =
-        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING);
-    default_properties.ecc_en =
-        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC);
-    default_properties.high_endurance_en =
-        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE);
-    CHECK_DIF_OK(dif_flash_ctrl_set_default_region_properties(
-        &flash_ctrl, default_properties));
-  }
-#endif
 
   if (bootstrap_requested() == kHardenedBoolTrue) {
     // This log statement is used to synchronize the rom and DV testbench
