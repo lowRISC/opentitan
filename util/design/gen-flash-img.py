@@ -11,7 +11,6 @@ r"""Takes a compiled VMEM image and processes it for loading into flash.
 """
 
 import argparse
-import functools
 import re
 import sys
 from dataclasses import dataclass
@@ -107,7 +106,6 @@ class FlashScramblingConfigs:
     data_key: int = None
 
 
-@functools.lru_cache(maxsize=None)
 def _xex_scramble(data: int, word_addr: int, flash_addr_key: int,
                   flash_data_key: int) -> int:
     operand_a = ((flash_addr_key & FLASH_GF_OPERAND_A_MASK) >>
@@ -246,12 +244,14 @@ def _reformat_flash_vmem(
         line_items = line.split()
         reformatted_line = ""
         address = None
+        address_offset = 0
         data = None
         for item in line_items:
             # Process the address first.
             if re.match(r"^@", item):
                 reformatted_line += item
                 address = int(item.lstrip("@"), 16)
+                address_offset = 0
             # Process the data words.
             else:
                 data = int(item, 16)
@@ -262,7 +262,7 @@ def _reformat_flash_vmem(
                 data_w_intg_ecc &= 0xF_FFFF_FFFF_FFFF_FFFF
                 if scrambling_configs.scrambling_enabled:
                     intg_ecc = data_w_intg_ecc & (0xF << FLASH_WORD_SIZE)
-                    data = _xex_scramble(data, address,
+                    data = _xex_scramble(data, address + address_offset,
                                          scrambling_configs.addr_key,
                                          scrambling_configs.data_key)
                     data_w_intg_ecc = intg_ecc | data
@@ -274,6 +274,7 @@ def _reformat_flash_vmem(
                     data_w_intg_ecc)
                 reformatted_line += str.format(VMEM_FORMAT_STR,
                                                data_w_full_ecc)
+                address_offset += 1
 
         # Append reformatted line to what will be the new output VMEM file.
         reformatted_vmem_lines.append(reformatted_line)
