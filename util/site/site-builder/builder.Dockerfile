@@ -23,12 +23,13 @@ RUN mkdir -p /tools
 ##############
 
 # Install nodejs
+ENV NODE_VERSION "v18.15.0"
 ENV NVM_DIR "/tools/.nvm"
-ENV PATH "/tools/.nvm/versions/node/v18.7.0/bin:${PATH}"
+ENV PATH "/tools/.nvm/versions/node/${NODE_VERSION}/bin:${PATH}"
 RUN mkdir /tools/.nvm \
     && curl -so- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash \
     && . "/tools/.nvm/nvm.sh" \
-    && nvm install v18.7.0
+    && nvm install "${NODE_VERSION}"
 
 # Install chrome-unstable for puppeteer
 RUN curl -so/tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-unstable_current_amd64.deb \
