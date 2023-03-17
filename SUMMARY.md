@@ -323,6 +323,7 @@
     - [Manufacturing Firmware](./sw/device/silicon_creator/manuf/README.md)
     - [ROM](./sw/device/silicon_creator/rom/README.md)
       - [Memory Protection](./sw/device/silicon_creator/rom/doc/memory_protection.md)
+      - [E2E tests](./sw/device/silicon_creator/rom/doc/e2e_tests.md)
       - [Signing Keys](./sw/device/silicon_creator/rom/keys/README.md)
     - [Manifest Format](./sw/device/silicon_creator/rom_ext/doc/manifest.md)
   - [Top-Level Tests](./sw/device/tests/README.md)
