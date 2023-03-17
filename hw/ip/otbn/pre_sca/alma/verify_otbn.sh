@@ -41,8 +41,7 @@ python3 verify.py --json tmp/circuit.json \
   --rst-phase 0 \
   --rst-cycles 2 \
   --init-delay 139 \
-  --cycles 25 \
   --excluded-signals u_otbn_core.u_otbn_controller.rf_bignum_intg_err_i[0] \
-  --glitch-behavior loose \
   --dbg-signals otbn_cycle_cnt_o \
+  --cycles 25 \
   --mode stable
