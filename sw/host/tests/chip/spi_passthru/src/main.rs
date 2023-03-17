@@ -13,8 +13,8 @@ use opentitanlib::io::spi::{Target, Transfer};
 use opentitanlib::spiflash::{Sfdp, SpiFlash};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::spi_passthru::{
-    ConfigJedecId, SfdpData, SpiFlashEraseSector, SpiFlashReadSfdp, SpiFlashWrite,
-    SpiPassthruSwapMap, StatusRegister, UploadInfo,
+    ConfigJedecId, SfdpData, SpiFlashEraseSector, SpiFlashReadSfdp, SpiFlashWrite, SpiMailboxMap,
+    SpiMailboxWrite, SpiPassthruSwapMap, StatusRegister, UploadInfo,
 };
 use opentitanlib::uart::console::UartConsole;
 
@@ -322,6 +322,15 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     };
     write_op_dec.execute(&*uart)?;
 
+    // Put count of evens in mailbox
+    let write_op_mbox = SpiMailboxWrite {
+        offset: 0u16,
+        data: (0..256).map(|x| (x << 1) as u8).collect(),
+        length: 256,
+    };
+    write_op_mbox.execute(&*uart)?;
+
+    // Read from flash with no special mapping.
     let mut read_data = vec![0; 256];
     spi_flash.read(&*spi, address_inc, &mut read_data)?;
     assert_eq!(read_data.as_slice(), write_op_inc.data.as_slice());
@@ -349,6 +358,18 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     };
     address_swap.apply_address_swap(&*uart)?;
 
+    // Enable the mailbox at the increasing count's address, and check the read.
+    let mbox_map = SpiMailboxMap {
+        address: address_inc,
+    };
+    mbox_map.apply(&*uart)?;
+    let mut read_data = vec![0; 256];
+    spi_flash.read(&*spi, address_inc, &mut read_data)?;
+    assert_eq!(read_data.as_slice(), write_op_mbox.data.as_slice());
+    assert_ne!(read_data.as_slice(), write_op_inc.data.as_slice());
+
+    // Disable the mailbox.
+    SpiMailboxMap::disable(&*uart)?;
     Ok(())
 }
 

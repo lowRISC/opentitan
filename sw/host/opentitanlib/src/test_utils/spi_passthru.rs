@@ -99,3 +99,27 @@ impl SpiPassthruSwapMap {
         Ok(())
     }
 }
+
+impl SpiMailboxMap {
+    pub fn apply(&self, uart: &dyn Uart) -> Result<()> {
+        TestCommand::SpiMailboxMap.send(uart)?;
+        self.send(uart)?;
+        Status::recv(uart, Duration::from_secs(300), false)?;
+        Ok(())
+    }
+
+    pub fn disable(uart: &dyn Uart) -> Result<()> {
+        TestCommand::SpiMailboxUnmap.send(uart)?;
+        Status::recv(uart, Duration::from_secs(300), false)?;
+        Ok(())
+    }
+}
+
+impl SpiMailboxWrite {
+    pub fn execute(&self, uart: &dyn Uart) -> Result<()> {
+        TestCommand::SpiMailboxWrite.send(uart)?;
+        self.send(uart)?;
+        Status::recv(uart, Duration::from_secs(300), false)?;
+        Ok(())
+    }
+}

@@ -134,6 +134,31 @@ status_t spi_flash_write(ujson_t *uj, dif_spi_host_t *spih,
   return RESP_OK_STATUS(uj);
 }
 
+status_t spi_mailbox_map(ujson_t *uj, dif_spi_device_handle_t *spid) {
+  spi_mailbox_map_t map;
+  TRY(ujson_deserialize_spi_mailbox_map_t(uj, &map));
+  TRY(dif_spi_device_enable_mailbox(spid, map.address));
+  return RESP_OK_STATUS(uj);
+}
+
+status_t spi_mailbox_unmap(ujson_t *uj, dif_spi_device_handle_t *spid) {
+  TRY(dif_spi_device_disable_mailbox(spid));
+  return RESP_OK_STATUS(uj);
+}
+
+status_t spi_mailbox_write(ujson_t *uj, dif_spi_device_handle_t *spid) {
+  spi_mailbox_write_t op;
+  TRY(ujson_deserialize_spi_mailbox_write_t(uj, &op));
+  if (op.length > sizeof(op.data)) {
+    LOG_ERROR("Mailbox write length larger than buffer: %u", op.length);
+    return INVALID_ARGUMENT();
+  }
+  TRY(dif_spi_device_write_flash_buffer(spid,
+                                        kDifSpiDeviceFlashBufferTypeMailbox,
+                                        op.offset, op.length, op.data));
+  return RESP_OK_STATUS(uj);
+}
+
 status_t spi_passthru_set_address_map(ujson_t *uj,
                                       dif_spi_device_handle_t *spid) {
   spi_passthru_swap_map_t swap;
@@ -176,6 +201,15 @@ status_t command_processor(ujson_t *uj) {
         break;
       case kTestCommandSpiFlashEmulator:
         RESP_ERR(uj, spi_flash_emulator(&spih, &spid));
+        break;
+      case kTestCommandSpiMailboxMap:
+        RESP_ERR(uj, spi_mailbox_map(uj, &spid));
+        break;
+      case kTestCommandSpiMailboxUnmap:
+        RESP_ERR(uj, spi_mailbox_unmap(uj, &spid));
+        break;
+      case kTestCommandSpiMailboxWrite:
+        RESP_ERR(uj, spi_mailbox_write(uj, &spid));
         break;
       case kTestCommandSpiPassthruSetAddressMap:
         RESP_ERR(uj, spi_passthru_set_address_map(uj, &spid));
@@ -222,7 +256,7 @@ bool test_main(void) {
       .status = true,
       .jedec_id = true,
       .sfdp = true,
-      .mailbox = false,
+      .mailbox = true,
   };
   CHECK_DIF_OK(
       dif_spi_device_set_passthrough_intercept_config(&spid, passthru_cfg));

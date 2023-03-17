@@ -25,6 +25,9 @@ extern "C" {
     value(_, SpiFlashEraseSector) \
     value(_, SpiFlashEmulator) \
     value(_, SpiFlashWrite) \
+    value(_, SpiMailboxMap) \
+    value(_, SpiMailboxUnmap) \
+    value(_, SpiMailboxWrite) \
     value(_, SpiPassthruSetAddressMap) \
     value(_, SwStrapRead)
 UJSON_SERDE_ENUM(TestCommand, test_command_t, ENUM_TEST_COMMAND);
