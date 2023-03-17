@@ -43,6 +43,18 @@ UJSON_SERDE_STRUCT(UploadInfo, upload_info_t, STRUCT_UPLOAD_INFO);
 UJSON_SERDE_STRUCT(SpiFlashReadId, spi_flash_read_id_t,
     STRUCT_SPI_FLASH_READ_ID);
 
+#define STRUCT_SPI_MAILBOX_MAP(field, string) \
+    field(address, uint32_t)
+UJSON_SERDE_STRUCT(SpiMailboxMap, spi_mailbox_map_t,
+    STRUCT_SPI_MAILBOX_MAP);
+
+#define STRUCT_SPI_MAILBOX_WRITE(field, string) \
+    field(offset, uint16_t) \
+    field(length, uint16_t) \
+    field(data, uint8_t, 256)
+UJSON_SERDE_STRUCT(SpiMailboxWrite, spi_mailbox_write_t,
+    STRUCT_SPI_MAILBOX_WRITE);
+
 #define STRUCT_SPI_FLASH_READ_SFDP(field, string) \
     field(address, uint32_t) \
     field(length, uint16_t)
