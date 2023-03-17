@@ -1811,7 +1811,6 @@
       ]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_otp_image=OtpTypeCustom"]
-      run_timeout_mins: 10
     }
   ]
 
