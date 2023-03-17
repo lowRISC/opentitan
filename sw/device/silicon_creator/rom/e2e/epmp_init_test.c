@@ -25,10 +25,12 @@ bool test_main(void) {
   dif_lc_ctrl_t lc_ctrl;
   mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc_ctrl));
-  const bool kDebugEnabled = lc_ctrl_testutils_debug_func_enabled(&lc_ctrl);
-  LOG_INFO("debug_enabled: %d", kDebugEnabled);
+  bool debug_enabled = false;
+  CHECK_STATUS_OK(
+      lc_ctrl_testutils_debug_func_enabled(&lc_ctrl, &debug_enabled));
+  LOG_INFO("debug_enabled: %d", debug_enabled);
 
-  if (kDebugEnabled != EXPECT_DEBUG) {
+  if (debug_enabled != EXPECT_DEBUG) {
     LOG_ERROR("Expected debug_enabled=%d", EXPECT_DEBUG);
     return false;
   }
@@ -50,7 +52,7 @@ bool test_main(void) {
   }
 
   const uint8_t kExpectedPmp13cfg =
-      kDebugEnabled
+      debug_enabled
           ? EPMP_CFG_L | EPMP_CFG_A_NAPOT | EPMP_CFG_X | EPMP_CFG_W | EPMP_CFG_R
           : EPMP_CFG_L | EPMP_CFG_A_NAPOT;
   if (pmp13cfg != kExpectedPmp13cfg) {

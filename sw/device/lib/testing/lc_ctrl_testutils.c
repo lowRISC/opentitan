@@ -10,7 +10,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-void lc_ctrl_testutils_lc_state_log_or_die(const dif_lc_ctrl_state_t *state) {
+status_t lc_ctrl_testutils_lc_state_log(const dif_lc_ctrl_state_t *state) {
   switch (*state) {
     case kDifLcCtrlStateTestUnlocked0:
       LOG_INFO("Life cycle state: TEST_UNLOCKED0");
@@ -49,15 +49,17 @@ void lc_ctrl_testutils_lc_state_log_or_die(const dif_lc_ctrl_state_t *state) {
       LOG_INFO("Life cycle state: RMA");
       break;
     default:
-      CHECK(false, "CPU is executing in locked/invalid life cycle state: %d",
-            (uint32_t)state);
-      break;
+      LOG_ERROR("CPU is executing in locked/invalid life cycle state: %d",
+                (uint32_t)state);
+      return FAILED_PRECONDITION();
   }
+  return OK_STATUS();
 }
 
-bool lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl) {
+status_t lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl,
+                                              bool *debug_enabled) {
   dif_lc_ctrl_state_t state;
-  CHECK_DIF_OK(dif_lc_ctrl_get_state(lc_ctrl, &state));
+  TRY(dif_lc_ctrl_get_state(lc_ctrl, &state));
 
   switch (state) {
     case kDifLcCtrlStateTestUnlocked0:
@@ -70,28 +72,33 @@ bool lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl) {
     case kDifLcCtrlStateTestUnlocked7:
     case kDifLcCtrlStateDev:
     case kDifLcCtrlStateRma:
-      return true;
+      *debug_enabled = true;
+      break;
     default:
-      return false;
+      *debug_enabled = false;
+      break;
   }
+  return OK_STATUS();
 }
 
-void lc_ctrl_testutils_check_transition_count(const dif_lc_ctrl_t *lc_ctrl,
-                                              uint8_t exp_lc_count) {
+status_t lc_ctrl_testutils_check_transition_count(const dif_lc_ctrl_t *lc_ctrl,
+                                                  uint8_t exp_lc_count) {
   LOG_INFO("Read LC count and check with expect_val=%d", exp_lc_count);
   uint8_t lc_count;
-  CHECK_DIF_OK(dif_lc_ctrl_get_attempts(lc_ctrl, &lc_count));
-  CHECK(lc_count == exp_lc_count,
-        "LC_count error, expected %d but actual count is %d", exp_lc_count,
-        lc_count);
+  TRY(dif_lc_ctrl_get_attempts(lc_ctrl, &lc_count));
+  TRY_CHECK(lc_count == exp_lc_count,
+            "LC_count error, expected %d but actual count is %d", exp_lc_count,
+            lc_count);
+  return OK_STATUS();
 }
 
-void lc_ctrl_testutils_check_lc_state(const dif_lc_ctrl_t *lc_ctrl,
-                                      dif_lc_ctrl_state_t exp_lc_state) {
+status_t lc_ctrl_testutils_check_lc_state(const dif_lc_ctrl_t *lc_ctrl,
+                                          dif_lc_ctrl_state_t exp_lc_state) {
   LOG_INFO("Read LC state and check with expect_state=%d", exp_lc_state);
   dif_lc_ctrl_state_t lc_state;
-  CHECK_DIF_OK(dif_lc_ctrl_get_state(lc_ctrl, &lc_state));
-  CHECK(lc_state == exp_lc_state,
-        "LC_state error, expected %d but actual state is %d", exp_lc_state,
-        lc_state);
+  TRY(dif_lc_ctrl_get_state(lc_ctrl, &lc_state));
+  TRY_CHECK(lc_state == exp_lc_state,
+            "LC_state error, expected %d but actual state is %d", exp_lc_state,
+            lc_state);
+  return OK_STATUS();
 }

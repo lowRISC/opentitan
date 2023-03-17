@@ -290,7 +290,7 @@ bool test_main(void) {
   rstmgr_testutils_reason_clear();
 
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &state));
-  lc_ctrl_testutils_lc_state_log_or_die(&state);
+  CHECK_STATUS_OK(lc_ctrl_testutils_lc_state_log(&state));
 
   switch (state) {
     case kDifLcCtrlStateDev:
