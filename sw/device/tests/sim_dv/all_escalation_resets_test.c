@@ -207,7 +207,6 @@ static const char *csrng_inst_name = "csrng";
 static const char *edn0_inst_name = "edn0";
 static const char *edn1_inst_name = "edn1";
 static const char *entropy_src_inst_name = "entropy_src";
-// TODO test u_eflash.u_flash alert 37, 38?
 static const char *flash_ctrl_inst_name = "flash_ctrl";
 static const char *gpio_inst_name = "gpio";
 static const char *hmac_inst_name = "hmac";
@@ -219,15 +218,12 @@ static const char *kmac_inst_name = "kmac";
 // TODO: test lc_ctrl fatal_state, alert 17.
 static const char *lc_ctrl_inst_name = "lc_ctrl";
 static const char *otbn_inst_name = "otbn";
-// TODO test fatal macro, and fatal prim, alerts 11 and 14.
-// They don't have onehot_checkers, cause both u_reg, and u_reg_tap checkers?
 static const char *otp_ctrl_inst_name = "otp_ctrl";
 static const char *pattgen_inst_name = "pattgen";
 static const char *pinmux_inst_name = "pinmux";
 static const char *pwm_inst_name = "pwm";
 static const char *pwrmgr_inst_name = "pwrmgr";
 static const char *rom_ctrl_inst_name = "rom_ctrl";
-// TODO: test rstmgr fatal consistency, alert 24.
 static const char *rstmgr_inst_name = "rstmgr";
 // TODO: test rv_core_ibex fatal SW error, alert 57.
 static const char *rv_core_ibex_inst_name = "rv_core_ibex";
@@ -280,6 +276,28 @@ static void flash_ctrl_fault_checker(bool enable, const char *ip_inst,
 
   CHECK(fault_code == enable, "For %s got codes 0x%x, expected 0x%x", ip_inst,
         fault_code, enable);
+}
+
+static void flash_ctrl_prim_fault_checker(bool enable, const char *ip_inst,
+                                          const char *type) {
+  dif_flash_ctrl_faults_t faults;
+  CHECK_DIF_OK(dif_flash_ctrl_get_faults(&flash_ctrl_state, &faults));
+
+  CHECK(faults.memory_properties_error == 0,
+        "For flash memory_properties err exp 1 get 0");
+  CHECK(faults.read_error == 0, "For flash read err exp 1 get 0");
+  CHECK(faults.prog_window_error == 0, "For flash prog_window err exp 1 get 0");
+  CHECK(faults.prog_type_error == 0, "For flash prog_type err exp 1 get 0");
+  CHECK(faults.host_gnt_error == 0, "For flash host_gnt err exp 1 get 0");
+  CHECK(faults.host_gnt_error == 0, "For flash host_gnt err exp 1 get 0");
+  CHECK(faults.register_integrity_error == 0,
+        "For flash register_integrity err exp 1 get 0");
+  CHECK(faults.phy_integrity_error == 0,
+        "For flash phy_integrity err exp 1 get 0");
+  CHECK(faults.lifecycle_manager_error == 0,
+        "For flash lifecycle_manager err exp 1 get 0");
+  CHECK(faults.shadow_storage_error == 0,
+        "For flash shadow_storage err exp 1 get 0");
 }
 
 /*
@@ -796,6 +814,11 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     case kTopEarlgreyAlertIdFlashCtrlFatalStdErr: {
       fault_checker_t fc = {flash_ctrl_fault_checker, flash_ctrl_inst_name,
                             we_check};
+      fault_checker = fc;
+    } break;
+    case kTopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert: {
+      fault_checker_t fc = {flash_ctrl_prim_fault_checker, flash_ctrl_inst_name,
+                            flash_fatal_check};
       fault_checker = fc;
     } break;
     case kTopEarlgreyAlertIdGpioFatalFault: {
