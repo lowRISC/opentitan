@@ -167,7 +167,7 @@ bool test_main(void) {
   uint8_t kExpCnt;
   get_dest_state_and_cnt(&curr_state, &kDestState, &kExpCnt);
 
-  lc_ctrl_testutils_check_transition_count(&lc, kExpCnt);
+  CHECK_STATUS_OK(lc_ctrl_testutils_check_transition_count(&lc, kExpCnt));
 
   bool secret0_locked;
   CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(

@@ -80,7 +80,8 @@ bool execute_lc_ctrl_transition_test(bool use_ext_clk) {
   if (curr_state == kDifLcCtrlStateTestUnlocked2) {
     // LC TestUnlocked2 is the intial test state for this sequence.
     // The sequence will check if lc_count matches the preload value.
-    lc_ctrl_testutils_check_transition_count(&lc, kLcStateTransitionCount);
+    CHECK_STATUS_OK(
+        lc_ctrl_testutils_check_transition_count(&lc, kLcStateTransitionCount));
 
     // Request lc_state transfer to Dev state.
     dif_lc_ctrl_token_t token;
@@ -101,7 +102,8 @@ bool execute_lc_ctrl_transition_test(bool use_ext_clk) {
     // Once the sequence checks current state and count via CSRs, the test can
     // exit successfully.
     CHECK(curr_state == kDifLcCtrlStateDev, "State transition failed!");
-    lc_ctrl_testutils_check_transition_count(&lc, kLcStateTransitionCount + 1);
+    CHECK_STATUS_OK(lc_ctrl_testutils_check_transition_count(
+        &lc, kLcStateTransitionCount + 1));
     return true;
   }
 
