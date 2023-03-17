@@ -69,6 +69,7 @@ pub enum TransportInterfaceType {
     Uart,
     Spi,
     I2c,
+    Jtag,
     Emulator,
     ProxyOps,
     GpioMonitoring,

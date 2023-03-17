@@ -9,6 +9,7 @@ pub mod config;
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioMonitoring, GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
+use crate::io::jtag::Jtag;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::{
@@ -322,6 +323,13 @@ impl TransportWrapper {
     /// transport object.
     pub fn capabilities(&self) -> Result<crate::transport::Capabilities> {
         self.transport.borrow().capabilities()
+    }
+
+    /// Returns a [`Jtag`] implementation.
+    pub fn jtag(&self, _openocd: &str, _openocd_adapter_config: &str) -> Result<Rc<dyn Jtag>> {
+        self.transport
+            .borrow()
+            .jtag(_openocd, _openocd_adapter_config)
     }
 
     /// Returns a SPI [`Target`] implementation.

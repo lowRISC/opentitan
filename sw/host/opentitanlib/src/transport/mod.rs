@@ -13,6 +13,7 @@ use crate::bootstrap::BootstrapOptions;
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
+use crate::io::jtag::Jtag;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 
@@ -37,6 +38,7 @@ bitflags! {
         const SPI = 0x00000002;
         const GPIO = 0x00000004;
         const I2C = 0x00000008;
+        const JTAG = 0x0000000A;
         const PROXY = 0x00000010;
         const EMULATOR = 0x00000020;
         const GPIO_MONITORING = 0x00000040; // Logic analyzer functionality
@@ -101,6 +103,10 @@ pub trait Transport {
         Ok(())
     }
 
+    /// Returns a [`Jtag`] implementation.
+    fn jtag(&self, _openocd: &str, _openocd_adapter_config: &str) -> Result<Rc<dyn Jtag>> {
+        Err(TransportError::InvalidInterface(TransportInterfaceType::Jtag).into())
+    }
     /// Returns a SPI [`Target`] implementation.
     fn spi(&self, _instance: &str) -> Result<Rc<dyn Target>> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Spi).into())
