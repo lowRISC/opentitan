@@ -6,5 +6,6 @@ pub mod eeprom;
 pub mod emu;
 pub mod gpio;
 pub mod i2c;
+pub mod jtag;
 pub mod spi;
 pub mod uart;

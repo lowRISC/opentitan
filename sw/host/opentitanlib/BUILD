@@ -73,6 +73,7 @@ rust_library(
         "src/io/emu.rs",
         "src/io/gpio.rs",
         "src/io/i2c.rs",
+        "src/io/jtag.rs",
         "src/io/mod.rs",
         "src/io/spi.rs",
         "src/io/uart.rs",
