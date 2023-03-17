@@ -555,7 +555,8 @@ interface keymgr_if(input clk, input rst_n);
     `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On || !en_chk)
 
   `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid ->
-                           (kmac_key[0] ^ kmac_key[1]) == (kmac_key_exp[0] ^ kmac_key_exp[1]))
+                           (kmac_key.key[0] ^ kmac_key.key[1]) ==
+                           (kmac_key_exp.key[0] ^ kmac_key_exp.key[1]))
   `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKeyValid, is_kmac_key_good ->
                            kmac_key_exp.valid == kmac_key.valid)
 
