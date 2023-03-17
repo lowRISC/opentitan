@@ -115,6 +115,7 @@ impl From<anyhow::Error> for SerializedError {
             crate::io::emu::EmuError,
             crate::io::gpio::GpioError,
             crate::io::i2c::I2cError,
+            crate::io::jtag::JtagError,
             crate::io::spi::SpiError,
             crate::io::uart::UartError,
             crate::transport::TransportError,

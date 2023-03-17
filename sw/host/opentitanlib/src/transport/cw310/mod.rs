@@ -12,6 +12,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::io::gpio::GpioPin;
+use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::{Uart, UartError};
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
