@@ -275,7 +275,10 @@ cc_test(
 cc_library(
     name = "sigverify_keys",
     srcs = ["sigverify_keys.c"],
-    hdrs = ["sigverify_keys.h"],
+    hdrs = [
+        "sigverify_keys.h",
+        "sigverify_keys_rsa.h",
+    ],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base:bitfield",

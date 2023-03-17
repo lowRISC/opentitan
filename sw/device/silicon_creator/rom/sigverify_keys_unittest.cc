@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/rom/sigverify_keys.h"
-
 #include <array>
 #include <cstring>
 #include <limits>
@@ -18,6 +16,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/sigverify/mock_mod_exp_otbn.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
+#include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "otp_ctrl_regs.h"
@@ -33,7 +32,7 @@ extern "C" {
  * a key. The remaining fields are initialized only because non-trivial
  * designated initializers are not supported.
  */
-constexpr sigverify_rom_key_t kSigverifyRsaKeys[]{
+constexpr sigverify_rom_rsa_key_t kSigverifyRsaKeys[]{
     {
         .key = {.n = {{0xa0}}, .n0_inv = {0}},
         .key_type = kSigverifyKeyTypeTest,
