@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/rom/sigverify_keys.h"
-
 #include <assert.h>
 #include <stddef.h>
 
@@ -12,6 +10,7 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
+#include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 
 #include "otp_ctrl_regs.h"
 
@@ -186,7 +185,7 @@ rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
   size_t i = ((uint64_t)rnd_uint32() * (uint64_t)kSigverifyRsaKeysCnt) >> 32;
   size_t iter_cnt = 0;
   for (; launder32(iter_cnt) < kSigverifyRsaKeysCnt; ++iter_cnt) {
-    const sigverify_rom_key_t *k = &kSigverifyRsaKeys[i];
+    const sigverify_rom_rsa_key_t *k = &kSigverifyRsaKeys[i];
     size_t k_id = sigverify_rsa_key_id_get(&k->key.n);
     if (launder32(k_id) == key_id) {
       HARDENED_CHECK_EQ(k_id, key_id);

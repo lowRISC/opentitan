@@ -123,7 +123,7 @@ pub struct RsaKeyExportCommand {
 /// Write the content of a big integer as an array of 32-bit words.
 /// The number must be represented as an array of bytes in little-endian whose
 /// length is a multiple of four. The output is compatible with the format used
-/// by the ROM and ROM_EXT with sigverify_rom_key_t, ie the modulus and n0_inv
+/// by the ROM and ROM_EXT with sigverify_rom_rsa_key_t, ie the modulus and n0_inv
 /// are represented as an array of 32-bit words in little-endian. To make the function's
 /// output flexible, the function can print up to a specified number of items per
 /// line, and each line can be prefixed and suffixed with a specified string

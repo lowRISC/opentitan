@@ -37,7 +37,7 @@
 #include "sw/device/silicon_creator/rom/boot_policy.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
-#include "sw/device/silicon_creator/rom/sigverify_keys.h"
+#include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"

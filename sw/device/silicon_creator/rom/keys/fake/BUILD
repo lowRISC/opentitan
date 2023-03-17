@@ -9,6 +9,7 @@ cc_library(
     srcs = [
         "sigverify_rsa_keys_fake.c",
         "//sw/device/silicon_creator/rom:sigverify_keys.h",
+        "//sw/device/silicon_creator/rom:sigverify_keys_rsa.h",
     ],
     hdrs = [
         "dev_key_0_rsa_3072_exp_f4.h",
