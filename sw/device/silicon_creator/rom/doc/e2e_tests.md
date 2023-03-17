@@ -2,7 +2,7 @@
 This guide will help you to setup an environment to run the ROM E2E tests in an Ubuntu 20.04 machine.
 
 ## Introduction
-The [ROM](https://OpenTitan.org/book/doc/security/specs/secure_boot/index.html?highlight=ROM#rom-rom) is the first boot stage of secure boot flow and by nature, it cannot be updated after manufacturing.
+The [ROM](../README.md) is the first boot stage of secure boot flow and by nature, it cannot be updated after manufacturing.
 The ROM E2E (End-to-End) tests validates the ROM features and can be used for regression tests.
 Each test is divided into components:
  - **ROM Image**, a C program built by `bazel` and spliced with the bitstream. The ROM is the DUT (Device Under Test) of the ROM E2E tests.
@@ -34,11 +34,11 @@ Some tests will use the JTAG interface to interact with OpenTitan, as the CW310 
 
 ## Software setup
 The software dependencies are covered by other guides in this book and are linked below.
-- Clone the OpenTitan repository and install the software dependencies: [Get started](README.md).
-- Setup the FPGA: [FPGA guide](./setup_fpga.md).
-- Install Vivado to be able to splice bitstreams: [Installing Vivado](install_vivado/README.md).
+- Clone the OpenTitan repository and install the software dependencies: [Get started](https://opentitan.org/guides/getting_started).
+- Setup the FPGA: [FPGA guide](https://opentitan.org/guides/getting_started/setup_fpga.html).
+- Install Vivado to be able to splice bitstreams: [Installing Vivado](https://opentitan.org/guides/getting_started/install_vivado).
 
-**Note**: Make sure that you added the udev rules for the [FPGA](install_vivado/README.md#device-permissions-udev-rules) board and the [JTAG](setup_fpga.md#device-permissions-udev-rules) adapter.
+**Note**: Make sure that you added the udev rules for the [FPGA](https://opentitan.org/guides/getting_started/install_vivado#device-permissions-udev-rules) board and the [JTAG](https://opentitan.org/guides/getting_started/setup_fpga.html#device-permissions-udev-rules) adapter.
 
 ## Running the ROM E2E tests
 The ROM E2E tests are listed in the bazel [BUILD file](https://github.com/lowRISC/OpenTitan/blob/master/sw/device/silicon_creator/rom/e2e/BUILD), alternatively they can be listed with the command:
