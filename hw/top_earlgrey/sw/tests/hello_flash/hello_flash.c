@@ -13,31 +13,33 @@
 #include "utils.h"
 #include <stdbool.h>
 
-#define TARGET_SYNTHESIS
+#define DUMMYBOY
 
 int main(int argc, char **argv) {
 
 
   #ifdef TARGET_SYNTHESIS                
   int baud_rate = 115200;
-  int test_freq = 50000000;
+  int test_freq = 40000000;
   #else
   //set_flls();
   int baud_rate = 115200;
   int test_freq = 100000000;
   #endif
   uart_set_cfg(0,(test_freq/baud_rate)>>4);
-  
+  printf("hello bocola\r\n");
+  uart_wait_tx_done();
+  /*
   int volatile  * plic_prio, * plic_en;
   int volatile * p_reg, * p_reg1, * edn_enable;
   int a = 0;
-  /*
+  
   plic_prio = (int *) 0xC1000014;
   *plic_prio = 0xa26a38f7;
 
   plic_prio = (int *) 0xC1000018;
   *plic_prio = 0x1;
-  */
+  
 
  
   unsigned val = 0xe0000001;
@@ -47,7 +49,7 @@ int main(int argc, char **argv) {
  *edn_enable = 0x9996;
   
   printf("FPGA test with two indipendent JTAG for Ibex and Ariane\r\n");
-  uart_wait_tx_done();
+  
   unsigned val_1 = 0x00001808;  // Set global interrupt enable in ibex regs
   unsigned val_2 = 0x00000800;  // Set external interrupts
 
@@ -77,10 +79,10 @@ int main(int argc, char **argv) {
   }
   /////////////////////////// Wait for shared memory test to start ///////////////////////////////
   
-  
+    
   while(1)
     asm volatile ("wfi"); // Ready to receive a command from the Agent --> Jump to the External_Irq_Handler
-
+*/
   return 0;
   
 }

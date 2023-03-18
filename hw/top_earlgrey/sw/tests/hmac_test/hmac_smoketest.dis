@@ -1,6 +1,6 @@
 
-bazel-out/k8-fastbuild/bin/sw/device/tests/hmac_smoketest_prog_sim_verilator.elf:     file format elf32-littleriscv
-bazel-out/k8-fastbuild/bin/sw/device/tests/hmac_smoketest_prog_sim_verilator.elf
+bazel-out/k8-fastbuild-ST-2cc462681f62/bin/sw/device/tests/hmac_smoketest_prog_sim_verilator.elf:     file format elf32-littleriscv
+bazel-out/k8-fastbuild-ST-2cc462681f62/bin/sw/device/tests/hmac_smoketest_prog_sim_verilator.elf
 architecture: riscv:rv32, flags 0x00000112:
 EXEC_P, HAS_SYMS, D_PAGED
 start address 0xf0000480

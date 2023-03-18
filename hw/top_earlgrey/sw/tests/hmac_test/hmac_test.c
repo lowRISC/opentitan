@@ -10,7 +10,7 @@
 //
 //
 
-#include "../common/simple_system_common.h"
+#include "../common/utils.h"
 #include <stdbool.h>
 #include "hmac_api.c"
 

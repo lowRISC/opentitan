@@ -12,10 +12,6 @@
 module tlul2axi
   import tlul_pkg::*;
   #(
-    parameter int unsigned AXI_ID_WIDTH      = 8,
-    parameter int unsigned AXI_ADDR_WIDTH    = 64,
-    parameter int unsigned AXI_DATA_WIDTH    = 32,
-    parameter int unsigned AXI_USER_WIDTH    = 1
    ) (
    input logic  clk_i,
    input logic  rst_ni,
@@ -32,7 +28,7 @@ module tlul2axi
    output       tlul2axi_pkg::slv_req_t axi_req_o
 
    );
-   
+
    enum  logic [2:0] { IDLE, WAIT_B_VALID, WAIT_R_VALID, WAIT_AR_READY, WAIT_AW_READY, WAIT_W_READY } state_q, state_d;
 
    assign intr_mbox_irq_o = intr_mbox_irq_i;
@@ -48,7 +44,7 @@ module tlul2axi
    );
    always_comb  begin
 
-    state_d = state_q; 
+    state_d = IDLE; 
 
     case(state_q)
 

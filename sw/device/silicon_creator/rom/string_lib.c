@@ -1,92 +1,16 @@
-// Copyright lowRISC contributors.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2017 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the ?License?); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an ?AS IS? BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
 
-#include "simple_system_common.h"
-
-/*
-unsigned int get_mepc() {
-  uint32_t result;
-  __asm__ volatile("csrr %0, mepc;" : "=r"(result));
-  return result;
-}
-
-unsigned int get_mcause() {
-  uint32_t result;
-  __asm__ volatile("csrr %0, mcause;" : "=r"(result));
-  return result;
-}
-
-unsigned int get_mtval() {
-  uint32_t result;
-  __asm__ volatile("csrr %0, mtval;" : "=r"(result));
-  return result;
-  }*/
-
-
-void simple_exc_handler(void) {
-  printf("EXCEPTION!!!\r\n");
-  /*
-  rputs("============\n");
-  puts("MEPC:   0x");
-  puthex(get_mepc());
-  puts("\nMCAUSE: 0x");
-  puthex(get_mcause());
-  puts("\nMTVAL:  0x");
-  puthex(get_mtval());
-  putchar('\n');
-  */
-}
-
-
-void uart_set_cfg(int parity, uint16_t clk_counter) {
-  unsigned int i;
-  *(volatile unsigned int*)(UART_REG_LCR) = 0x83; //sets 8N1 and set DLAB to 1
-  *(volatile unsigned int*)(UART_REG_DLM) = (clk_counter >> 8) & 0xFF;
-  *(volatile unsigned int*)(UART_REG_DLL) =  clk_counter       & 0xFF;
-  *(volatile unsigned int*)(UART_REG_FCR) = 0xA7; //enables 16byte FIFO and clear FIFOs
-  *(volatile unsigned int*)(UART_REG_LCR) = 0x03; //sets 8N1 and set DLAB to 0
-
-  *(volatile unsigned int*)(UART_REG_IER) = ((*(volatile unsigned int*)(UART_REG_IER)) & 0xF0) | 0x02; // set IER (interrupt enable register) on UART
-}
-
-void uart_send(const char* str, unsigned int len) {
-  unsigned int i;
-
-  while(len > 0) {
-    // process this in batches of 16 bytes to actually use the FIFO in the UART
-
-    // wait until there is space in the fifo
-    while( (*(volatile unsigned int*)(UART_REG_LSR) & 0x20) == 0);
-
-    for(i = 0; (i < UART_FIFO_DEPTH) && (len > 0); i++) {
-      // load FIFO
-      *(volatile unsigned int*)(UART_REG_THR) = *str++;
-
-      len--;
-    }
-  }
-}
-
-char uart_getchar() {
-  while((*((volatile int*)UART_REG_LSR) & 0x1) != 0x1);
-
-  return *(volatile int*)UART_REG_RBR;
-}
-
-void uart_sendchar(const char c) {
-  // wait until there is space in the fifo
-  while( (*(volatile unsigned int*)(UART_REG_LSR) & 0x20) == 0);
-
-  // load FIFO
-  *(volatile unsigned int*)(UART_REG_THR) = c;
-}
-
-void uart_wait_tx_done(void) {
-  // wait until there is space in the fifo
-  while( (*(volatile unsigned int*)(UART_REG_LSR) & 0x40) == 0);
-}
-
+#include "string_lib.h"
+#include "uart.h"
+#include <stdarg.h>
 
 #define PAD_RIGHT 1
 #define PAD_ZERO  2
@@ -333,43 +257,4 @@ int puts(const char *s)
   putchar('\n');
 
   return i;
-}
-
-void external_irq_handler(void)  {
-  
-  int mbox_id = 159;
-  int a, b, c, e, d;
-  int volatile * p_reg, * p_reg1, * plic_check, * p_reg2, * p_reg3, * p_reg4, * p_reg5 ;
-
-  //init pointer to check memory
-  
-  p_reg1 = (int *) 0x10404008;
-  p_reg2 = (int *) 0x10404010;
-  p_reg3 = (int *) 0x10404014;
-  p_reg4 = (int *) 0x10404018;
-  p_reg5 = (int *) 0x1040401C;
-
-  // start of """Interrupt Service Routine"""
-  
-  plic_check = (int *) 0xC8200004;
-  while(*plic_check != mbox_id);   //check wether the intr is the correct one
-  
-  p_reg = (int *) 0x10404020;
- *p_reg = 0x00000000;        //clearing the pending interrupt signal
- 
- *plic_check = mbox_id;      //completing interrupt
- 
-  a = *p_reg1;
-  b = *p_reg2;
-  c = *p_reg3;
-  d = *p_reg4;
-  e = *p_reg5;
-  
-  
-  if( a == 0xBAADC0DE &&  b == 0xBAADC0DE && c == 0xBAADC0DE && d == 0xBAADC0DE && e == 0xBAADC0DE){
-      p_reg = (int *) 0x10404024; // completion interrupt to ariane agent
-     *p_reg = 0x00000001;
-  }
-  
-  return;
 }

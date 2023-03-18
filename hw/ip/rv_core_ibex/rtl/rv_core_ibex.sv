@@ -10,7 +10,7 @@
  */
 
 `include "prim_assert.sv"
-`define DUMMYBOY
+`define DUMMY_BOY
 
 module rv_core_ibex
   import rv_core_ibex_pkg::*;
@@ -482,7 +482,7 @@ module rv_core_ibex
     .rvfi_mem_wdata,
 `endif
     // SEC_CM: FETCH.CTRL.LC_GATED
-`ifndef TARGET_SYNTHESIS            
+`ifndef FAKE            
     .fetch_enable_i         (fetch_enable),
 `else
     .fetch_enable_i         (lc_ctrl_pkg::On),

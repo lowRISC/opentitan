@@ -11,7 +11,7 @@
 // the TL-UL-based lowRISC chip design.
 
 `include "prim_assert.sv"
-
+`define DUMMYBOY
 module rv_dm
   import rv_dm_reg_pkg::*;
 #(

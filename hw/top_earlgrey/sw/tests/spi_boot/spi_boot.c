@@ -13,7 +13,7 @@
 #include "utils.h"
 #include <stdbool.h>
 
-#define TARGET_SYNTHESIS
+#define DUMMYBOY
 
 int main(int argc, char **argv) {
 
@@ -31,14 +31,6 @@ int main(int argc, char **argv) {
   int volatile  * plic_prio, * plic_en;
   int volatile * p_reg, * p_reg1, * edn_enable;
   int a = 0;
-  /*
-  plic_prio = (int *) 0xC1000014;
-  *plic_prio = 0xa26a38f7;
-
-  plic_prio = (int *) 0xC1000018;
-  *plic_prio = 0x1;
-  */
-
  
   unsigned val = 0xe0000001;
   asm volatile("csrw mtvec, %0\n" : : "r"(val));
@@ -46,35 +38,23 @@ int main(int argc, char **argv) {
   edn_enable = (int *) 0xc1170014;
  *edn_enable = 0x9996;
   
-  printf("FPGA test with two indipendent JTAG for Ibex and Ariane\r\n");
+  printf("SPI flash testing.\r\n");
   uart_wait_tx_done();
+
+  /*    Interrupts not used
   unsigned val_1 = 0x00001808;  // Set global interrupt enable in ibex regs
   unsigned val_2 = 0x00000800;  // Set external interrupts
 
   asm volatile("csrw  mstatus, %0\n" : : "r"(val_1)); 
   asm volatile("csrw  mie, %0\n"     : : "r"(val_2));
-
+  
   plic_prio  = (int *) 0xC800027C;  // Priority reg
   plic_en    = (int *) 0xC8002010;  // Enable reg
 
  *plic_prio  = 1;                   // Set mbox interrupt priority to 1
  *plic_en    = 0x80000000;          // Enable interrupt
+ */
  
-  printf("Ibex: Writing and reading the mailbox\r\n");
-  uart_wait_tx_done();
-  p_reg = (int *) 0x10404000;
- *p_reg = 0xbaadc0de;
-
-  a = *p_reg;
-  
-  if(a == 0xbaadc0de){
-     printf("Ibex: R & W succeeded\r\nIbex: Going in wfi\r\n");
-     uart_wait_tx_done();
-  }
-  else{
-     printf("Test failed, the mbox has not been accessed correctly\r\n");
-     uart_wait_tx_done();
-  }
   /////////////////////////// Wait for shared memory test to start ///////////////////////////////
   
   

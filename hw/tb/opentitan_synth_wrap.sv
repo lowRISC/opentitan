@@ -89,7 +89,12 @@ module opentitan_synth_wrap
    input logic                                                r_last_i,
    input logic [tlul2axi_pkg::AXI_USER_WIDTH-1:0]             r_user_i,
    input logic                                                r_valid_i,
-   output logic                                               r_ready_o
+   output logic                                               r_ready_o,
+
+   //SPI Signals
+   input logic  [15:0]                                        dio_in_i,
+   output logic [15:0]                                        dio_out_o,
+   output logic [15:0]                                        dio_oe_o                                           
 );
 
 
@@ -101,8 +106,9 @@ module opentitan_synth_wrap
 
    entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
    entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
+   
    logic es_rng_fips;
-
+   
    //Unwrapping JTAG strucutres
 
    assign jtag_i.tck    = jtag_tck_i;
@@ -177,7 +183,9 @@ module opentitan_synth_wrap
     .FlashCtrlMemInitFile(FlashCtrlMemInitFile)
    ) u_RoT (
     .mio_in_i('0),
-    .dio_in_i('0),
+    .dio_in_i,
+    .dio_out_o,
+    .dio_oe_o,
     .ast_edn_req_i('0),
     .obs_ctrl_i('0),
     .ram_1p_cfg_i('0),
@@ -189,33 +197,27 @@ module opentitan_synth_wrap
     .flash_bist_enable_i(lc_ctrl_pkg::Off),
     .flash_power_down_h_i('0),
     .flash_power_ready_h_i(1'b1),
- //   .es_rng_rsp_i('0),
     .dft_hold_tap_sel_i('0),
     .pwrmgr_ast_rsp_i(5'b11111),
     .otp_ctrl_otp_ast_pwr_seq_h_i('0),
     .fpga_info_i('0),
-                 
     .scan_rst_ni (por_n_i),
     .scan_en_i (1'b0),
     .scanmode_i (lc_ctrl_pkg::Off),
-                     
     .es_rng_fips_o(es_rng_fips),
     .es_rng_rsp_i(es_rng_rsp),
     .es_rng_req_o(es_rng_req),
-            
     .por_n_i ({por_n_i, por_n_i}),
-                     
     .clk_main_i (clk_i),
     .clk_io_i(clk_i),
     .clk_aon_i(clk_i),
     .clk_usb_i(clk_i),
-            
     .axi_req_o(axi_req),
     .axi_rsp_i(axi_rsp),
     .irq_ibex_i,
     .jtag_req_i(jtag_i),
     .jtag_rsp_o(jtag_o)
-    );
+   );
 
    rng #(
     .EntropyStreams ( 4 )
@@ -229,7 +231,7 @@ module opentitan_synth_wrap
     .scan_mode_i    ( '0                    ),
     .rng_b_o        ( es_rng_rsp.rng_b      ),
     .rng_val_o      ( es_rng_rsp.rng_valid  )
-  ); 
+   ); 
 
 
 endmodule

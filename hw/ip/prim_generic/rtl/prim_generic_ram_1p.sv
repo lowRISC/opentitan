@@ -13,6 +13,7 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
   parameter  int Depth           = 128,
   parameter  int DataBitsPerMask = 1, // Number of data bits per bit of write mask
   parameter      MemInitFile     = "", // VMEM file to initialize the memory with
+  parameter  int Otp             = 0,
   parameter  bit PrintSimCfg     = 1'b1,
   localparam int Aw              = $clog2(Depth)  // derived parameter
 ) (
@@ -94,12 +95,25 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
    
   logic unused_cfg;
   assign unused_cfg = ^cfg_i;
-  
+/*   
+  if(Otp) begin
+     logic [7:0]                    wea;
+     logic [63:0]                   dina;
+     assign wea  = 8'b00000000;
+     assign dina = 64'h00000000_00000000;
+     xilinx_otp_rom_bank_1024x24 otp_mem_i (
+                                    .clk  (clk_i),
+                                    .a (addr_i[12:3]),
+                                    .spo (rdata_o)
+                                    );
+    // unused = ^req_i & ^write_i & ^wdata_i & ^wmask_i;
+  end else begin*/
   tc_sram #(
      .NumWords(Depth),
      .DataWidth(Width),
      .NumPorts(32'd1),
      .PrintSimCfg(PrintSimCfg)
+//   .MemInitFile(MemInitFile)
   ) ram_primitive (
      .clk_i,
      .rst_ni,
@@ -110,7 +124,7 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
      .we_i(write_i),
      .be_i('1)
   );
-   
+  //end
 `endif
          
 endmodule

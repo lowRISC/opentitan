@@ -7,7 +7,6 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <stddef.h>
-#include "simple_system_regs.h"
 #include <stdint.h>
 
 #define STRING_LIB_H

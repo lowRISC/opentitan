@@ -1,6 +1,6 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-entifier: Apache-2.0
 //
 // Power Manager Fast FSM
 //
@@ -257,7 +257,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   assign rom_intg_chk_done = mubi4_or_hi(mubi4_and_hi(rom_intg_chk_dis, rom_ctrl_done_i),
                                          rom_ctrl_done_i);
   assign rom_intg_chk_good = mubi4_or_hi(rom_intg_chk_dis, rom_ctrl_good_i);
-`ifndef TARGET_SYNTHESIS
+`ifndef FAKE
   always_comb begin
     otp_init = 1'b0;
     lc_init = 1'b0;
@@ -494,7 +494,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
   end // always_comb
    
-`else // !`ifndef TARGET_SYNTHYESIS
+`else // !`ifndef FAKE
    
   always_comb begin
     otp_init = 1'b0;

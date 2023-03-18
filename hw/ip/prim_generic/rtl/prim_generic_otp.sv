@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "prim_assert.sv"
-`define DUMMYBOY
+//`define DUMMYBOY
 
-module prim_otp
+module prim_otp_generic
   import prim_otp_pkg::*;
 #(
   // Native OTP word size. This determines the size_i granule.
@@ -339,13 +339,14 @@ module prim_otp
     rdata_o = rdata_reshaped;
   end
    
-`ifndef TARGET_SYNTHESIS
-  prim_ram_1p_adv #(
+`ifndef FAKE
+  prim_otp_wrap_adv #(
     .Depth                (Depth),
     .Width                (Width + EccWidth),
     .MemInitFile          (MemInitFile),
     .EnableInputPipeline  (1),
-    .EnableOutputPipeline (1)
+    .EnableOutputPipeline (1),
+    .Otp                  (1)
   ) u_prim_ram_1p_adv (
     .clk_i,
     .rst_ni,
@@ -426,4 +427,4 @@ module prim_otp
   `ASSERT(CheckCommands1_A, state_q != ResetSt && valid_i && ready_o |-> cmd_i inside {Read, Write})
 
 
-endmodule : prim_otp
+endmodule : prim_otp_generic

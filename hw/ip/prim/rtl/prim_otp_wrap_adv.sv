@@ -1,21 +1,17 @@
-// Copyright lowRISC contributors.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
+// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
 //
-// Single-Port SRAM Wrapper
-//
-// Supported configurations:
-// - ECC for 32b and 64b wide memories with no write mask
-//   (Width == 32 or Width == 64, DataBitsPerMask is ignored).
-// - Byte parity if Width is a multiple of 8 bit and write masks have Byte
-//   granularity (DataBitsPerMask == 8).
-//
-// Note that the write mask needs to be per Byte if parity is enabled. If ECC is enabled, the write
-// mask cannot be used and has to be tied to {Width{1'b1}}.
 
 `include "prim_assert.sv"
-
-module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
+`define DUMMYBOY
+module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
   parameter  int Depth                = 512,
   parameter  int Width                = 32,
   parameter  int DataBitsPerMask      = 1,  // Number of data bits per bit of write mask
@@ -84,7 +80,7 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
   logic [TotalWidth-1:0]   rdata_sram ;
   logic [1:0]              rerror_q, rerror_d;
  
-
+`ifndef TARGET_SYNTHESIS
   prim_ram_1p #(
     .MemInitFile     (MemInitFile),
     .Width           (TotalWidth),
@@ -102,7 +98,21 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
     .rdata_o  (rdata_sram),
     .cfg_i
   );
-
+`else 
+  logic [7:0]                    wea;
+  logic [63:0]                   dina;
+  logic                          unused;
+ 
+  assign wea  = 8'b00000000;
+  assign dina = 64'h00000000_00000000;
+  xilinx_rom_bank_1024x22 otp_mem_i (
+                                 .clk (clk_i),
+                                 .a   (addr_q),
+                                 .spo (rdata_sram)
+                                 ) ;
+  assign unused = ^req_q & ^write_q & ^wdata_q & ^wmask_q;
+`endif
+   
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       rvalid_sram_q <= 1'b0;
@@ -267,4 +277,4 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
     assign rerror_q = rerror_d & {2{rvalid_d}};
   end
 
-endmodule : prim_ram_1p_adv
+endmodule 

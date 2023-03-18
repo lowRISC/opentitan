@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "prim_assert.sv"
+//`define DUMMYBOY
 
 module prim_otp
   import prim_otp_pkg::*;
@@ -337,13 +338,15 @@ module prim_otp
     end
     rdata_o = rdata_reshaped;
   end
-
-  prim_ram_1p_adv #(
+   
+`ifndef FAKE
+  prim_otp_wrap_adv #(
     .Depth                (Depth),
     .Width                (Width + EccWidth),
     .MemInitFile          (MemInitFile),
     .EnableInputPipeline  (1),
-    .EnableOutputPipeline (1)
+    .EnableOutputPipeline (1),
+    .Otp                  (1)
   ) u_prim_ram_1p_adv (
     .clk_i,
     .rst_ni,
@@ -357,6 +360,30 @@ module prim_otp
     .rerror_o (                        ),
     .cfg_i    ( '0                     )
   );
+
+`else // !`ifndef FPGA_EMUL
+/*  otp_ctrl_wrapper #(
+    .Depth                (Depth),
+    .Width                (Width + EccWidth),
+    .MemInitFile          (MemInitFile)
+  ) u_prim_ram_1p_adv (
+    .VDD_EFUSE(1'b1),
+    .VSS_EFUSE(1'b0),
+    .VQPS_EFUSE(1'b1),
+    .clk_i,
+    .rst_ni,
+    .req_i    ( req                    ),
+    .write_i  ( wren                   ),
+    .addr_i   ( addr                   ),
+    .wdata_i  ( wdata_rmw              ),
+    .rdata_o  ( rdata_ecc              ),
+    .rvalid_o ( rvalid                 )
+  );*/
+  logic unused;
+  assign rdata_ecc = '0;
+  assign rvalid    = '0; 
+  assign unused = ^{req, wren, addr, wdata_rmw, rdata_ecc, rvalid};
+`endif 
 
   // Currently it is assumed that no wrap arounds can occur.
   `ASSERT(NoWrapArounds_A, req |-> (addr >= addr_q))

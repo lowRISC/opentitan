@@ -116,7 +116,7 @@ module top_earlgrey #(
       tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm_ot::HaltAddress[31:0],
   parameter int unsigned RvCoreIbexDmExceptionAddr =
       tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm_ot::ExceptionAddress[31:0],
-  parameter bit RvCoreIbexPipeLine = 0
+  parameter bit RvCoreIbexPipeLine = 1
 ) (
   // Multiplexed I/O
   input        [46:0] mio_in_i,
