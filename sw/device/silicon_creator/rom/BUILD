@@ -110,7 +110,9 @@ cc_library(
         "rom.c",
         "rom.h",
 	"string_lib.c",
-	"string_lib.h"
+	"string_lib.h",
+	"uart.h",
+	"uart.c"
     ],
     deps = [
         ":boot_policy",
