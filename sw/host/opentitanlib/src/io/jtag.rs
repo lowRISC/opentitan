@@ -4,16 +4,17 @@
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
-use std::rc::Rc;
 use structopt::StructOpt;
 use thiserror::Error;
+
+use std::path::PathBuf;
+use std::rc::Rc;
 
 use crate::app::TransportWrapper;
 use crate::dif::lc_ctrl::LcCtrlReg;
 use crate::impl_serializable_error;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, StructOpt, Clone)]
 pub struct JtagParams {
     /// OpenOCD binary path.
     #[structopt(long, default_value = "openocd")]
@@ -41,7 +42,7 @@ pub struct JtagParams {
 
 impl JtagParams {
     pub fn create(&self, transport: &TransportWrapper) -> Result<Rc<dyn Jtag>> {
-        let jtag = transport.jtag(&self.openocd, &self.openocd_adapter_config)?;
+        let jtag = transport.jtag(&self)?;
         Ok(jtag)
     }
 }
