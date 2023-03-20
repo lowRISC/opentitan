@@ -58,7 +58,7 @@ void spi_flash_testutils_read_id(dif_spi_host_t *spih,
  * into the buffer.
  *
  * @param spih A SPI host handle.
- * @param buffer A pointer to a buffer that will hold the SFDP contents.
+ * @param[out] buffer A pointer to a buffer that will hold the SFDP contents.
  * @param length The number of bytes to write into `buffer`.
  */
 void spi_flash_testutils_read_sfdp(dif_spi_host_t *spih, uint32_t address,
@@ -74,7 +74,7 @@ typedef enum spi_flash_status_bit {
  *
  * Issues a Read Status transaction using the requested opcode.
  * In the case of a multi-byte status, the bytes are assembled and returned
- * as a litte-endian word
+ * as a litte-endian word.
  *
  * @param spih A SPI host handle.
  * @param opcode The desired Read Status opcode.
@@ -89,7 +89,7 @@ status_t spi_flash_testutils_read_status(dif_spi_host_t *spih, uint8_t opcode,
  *
  * Issues a Write Status transaction using the requested opcode.
  * In the case of a multi-byte status, the status word bytes are
- * as a litte-endian word
+ * as a litte-endian word.
  *
  * @param spih A SPI host handle.
  * @param opcode The desired Write Status opcode.
@@ -198,7 +198,7 @@ void spi_flash_testutils_program_page(dif_spi_host_t *spih, const void *payload,
  *
  * @param spih A SPI host handle.
  * @param opcode The desired read opcode.
- * @param payload A pointer to the buffer to receive data from the device.
+ * @param[out] payload A pointer to the buffer to receive data from the device.
  * @param length Number of bytes in the buffer. Must be less than or equal to
  *               256 bytes.
  * @param address The start address where the read should begin.
