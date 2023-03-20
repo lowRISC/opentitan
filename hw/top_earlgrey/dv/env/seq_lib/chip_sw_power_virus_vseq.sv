@@ -31,18 +31,16 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
       cfg.m_i2c_agent_cfgs[i].if_mode = Device;
     end
 
-    // Wait for test_main() to start
+    // Wait for test_main() to start and configurations to be computed.
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Computed peripheral clock period.");
-    // Backdoor read I2C configuration parameters.
-    i2c_scl_period_ns = sw_symbol_backdoor_read32("kI2cSclPeriodNs");
-    // Hard-coded from
-    // https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/arch/device_sim_dv.c
+    // Hard-coded from `sw/device/lib/arch/device_sim_dv.c`.
     peripheral_clock_freq_hz = 24 * 1000 * 1000;
-    peripheral_clock_period_ns = 1000000000/peripheral_clock_freq_hz;
-    `uvm_info(`gfn, $sformatf("kI2cSclPeriodNs = %0d", i2c_scl_period_ns), UVM_LOW);
+    peripheral_clock_period_ns = 1_000_000_000 / peripheral_clock_freq_hz;
     `uvm_info(`gfn, $sformatf("peripheral_clock_period_ns = %0d", peripheral_clock_period_ns),
       UVM_LOW);
 
+    // Hard-coded from `sw/device/tests/power_virus_systemtest.c`.
+    i2c_scl_period_ns = 1000;
     half_cycles_in_i2c_period = ((int'(i2c_scl_period_ns) / 2 - 1) /
       int'(peripheral_clock_period_ns)) + 1;
     `uvm_info(`gfn, $sformatf("Half (peripheral) cycles in I2C clock period: %d",
@@ -51,7 +49,7 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     // Enable I2C monitors.
     foreach (cfg.m_i2c_agent_cfgs[i]) begin
       cfg.m_i2c_agent_cfgs[i].en_monitor = 1'b1;
-      cfg.m_i2c_agent_cfgs[i].target_addr0 = i+1;
+      cfg.m_i2c_agent_cfgs[i].target_addr0 = i + 1;
       cfg.chip_vif.enable_i2c(.inst_num(i), .enable(1));
       cfg.m_i2c_agent_cfgs[i].timing_cfg.tClockLow = half_cycles_in_i2c_period - 2;
       cfg.m_i2c_agent_cfgs[i].timing_cfg.tClockPulse = half_cycles_in_i2c_period + 1;
