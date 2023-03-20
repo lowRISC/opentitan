@@ -22,40 +22,17 @@ enum {
   kJedecContCodeCount = 12,
   // A density of 24 corresponds to 16MiB (1<<24 bytes).
   kJedecDensity = 24,
-  // The standard SFDP signature value.
-  kSfdpSignature = 0x50444653,
 };
-
-typedef struct sfdp_header {
-  uint32_t signature;
-  uint8_t minor;
-  uint8_t major;
-  uint8_t nph;
-  uint8_t reserved;
-} sfdp_header_t;
-
-typedef struct parameter_header {
-  uint8_t param_id;
-  uint8_t minor;
-  uint8_t major;
-  uint8_t length;
-  uint8_t table_pointer[3];
-  uint8_t pad;
-} parameter_header_t;
 
 typedef struct bfpt {
   uint32_t data[9];
 } bfpt_t;
 
 typedef struct sfdp {
-  sfdp_header_t header;
-  parameter_header_t param;
+  spi_flash_testutils_sfdp_header_t header;
+  spi_flash_testutils_parameter_header_t param;
   bfpt_t bfpt;
 } sfdp_t;
-
-// JESD216F, section 6.4.18:
-// The Quad Enable mechanism is bits 20:23 of the 15th dword.
-#define QUAD_ENABLE ((bitfield_field32_t){.mask = 7, .index = 20})
 
 // This function prepares the downstream-visible SFDP table.
 // Out of convenience, it also checks the quad-enable mechanism from
@@ -120,7 +97,7 @@ static status_t read_and_prepare_sfdp(dif_spi_host_t *spih,
     // JESD216F, section 6.4.18:
     // The Quad Enable mechanism is bits 20:23 of the 15th dword.
     quad_enable = read_32(data + offset + 14 * sizeof(uint32_t));
-    quad_enable = bitfield_field32_read(quad_enable, QUAD_ENABLE);
+    quad_enable = bitfield_field32_read(quad_enable, SPI_FLASH_QUAD_ENABLE);
   }
   return OK_STATUS(quad_enable);
 }

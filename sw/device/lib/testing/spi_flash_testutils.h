@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 
@@ -16,6 +17,32 @@ typedef struct spi_flash_testutils_jedec_id {
   uint8_t manufacturer_id;
   uint8_t continuation_len;
 } spi_flash_testutils_jedec_id_t;
+
+enum {
+  // The standard SFDP signature value.
+  kSfdpSignature = 0x50444653,
+};
+
+typedef struct spi_flash_testutils_sfdp_header {
+  uint32_t signature;
+  uint8_t minor;
+  uint8_t major;
+  uint8_t nph;
+  uint8_t reserved;
+} spi_flash_testutils_sfdp_header_t;
+
+typedef struct spi_flash_testutils_parameter_header {
+  uint8_t param_id;
+  uint8_t minor;
+  uint8_t major;
+  uint8_t length;
+  uint8_t table_pointer[3];
+  uint8_t pad;
+} spi_flash_testutils_parameter_header_t;
+
+// JESD216F, section 6.4.18:
+// The Quad Enable mechanism is bits 20:23 of the 15th dword.
+#define SPI_FLASH_QUAD_ENABLE ((bitfield_field32_t){.mask = 7, .index = 20})
 
 /**
  * Read out the JEDEC ID from the SPI flash.
@@ -35,7 +62,7 @@ void spi_flash_testutils_read_id(dif_spi_host_t *spih,
  * @param length The number of bytes to write into `buffer`.
  */
 void spi_flash_testutils_read_sfdp(dif_spi_host_t *spih, uint32_t address,
-                                   uint8_t *buffer, size_t length);
+                                   void *buffer, size_t length);
 
 typedef enum spi_flash_status_bit {
   kSpiFlashStatusBitWip = 0x1,
@@ -142,7 +169,7 @@ void spi_flash_testutils_erase_sector(dif_spi_host_t *spih, uint32_t address,
  * @param addr_is_4b True if `address` is 4 bytes long, else 3 bytes.
  */
 void spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
-                                    uint8_t *payload, size_t length,
+                                    const void *payload, size_t length,
                                     uint32_t address, bool addr_is_4b);
 
 /**
@@ -162,7 +189,7 @@ void spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
  *                wrap around to the start of the page.
  * @param addr_is_4b True if `address` is 4 bytes long, else 3 bytes.
  */
-void spi_flash_testutils_program_page(dif_spi_host_t *spih, uint8_t *payload,
+void spi_flash_testutils_program_page(dif_spi_host_t *spih, const void *payload,
                                       size_t length, uint32_t address,
                                       bool addr_is_4b);
 
@@ -180,9 +207,8 @@ void spi_flash_testutils_program_page(dif_spi_host_t *spih, uint8_t *payload,
  * @param dummy The number of dummy cycles required after the address phase.
  */
 void spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
-                                 uint8_t *payload, size_t length,
-                                 uint32_t address, bool addr_is_4b,
-                                 uint8_t width, uint8_t dummy);
+                                 void *payload, size_t length, uint32_t address,
+                                 bool addr_is_4b, uint8_t width, uint8_t dummy);
 
 /**
  * Enable or disable Quad mode on the EEPROM according to the SFDP-described

@@ -46,7 +46,7 @@ void spi_flash_testutils_read_id(dif_spi_host_t *spih,
 }
 
 void spi_flash_testutils_read_sfdp(dif_spi_host_t *spih, uint32_t address,
-                                   uint8_t *buffer, size_t length) {
+                                   void *buffer, size_t length) {
   CHECK(spih != NULL);
   CHECK(buffer != NULL);
 
@@ -209,7 +209,7 @@ void spi_flash_testutils_erase_sector(dif_spi_host_t *spih, uint32_t address,
 }
 
 void spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
-                                    uint8_t *payload, size_t length,
+                                    const void *payload, size_t length,
                                     uint32_t address, bool addr_is_4b) {
   CHECK(spih != NULL);
   CHECK(payload != NULL);
@@ -249,7 +249,7 @@ void spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
   spi_flash_testutils_wait_until_not_busy(spih);
 }
 
-void spi_flash_testutils_program_page(dif_spi_host_t *spih, uint8_t *payload,
+void spi_flash_testutils_program_page(dif_spi_host_t *spih, const void *payload,
                                       size_t length, uint32_t address,
                                       bool addr_is_4b) {
   spi_flash_testutils_program_op(spih, kSpiDeviceFlashOpPageProgram, payload,
@@ -257,9 +257,9 @@ void spi_flash_testutils_program_page(dif_spi_host_t *spih, uint8_t *payload,
 }
 
 void spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
-                                 uint8_t *payload, size_t length,
-                                 uint32_t address, bool addr_is_4b,
-                                 uint8_t width, uint8_t dummy) {
+                                 void *payload, size_t length, uint32_t address,
+                                 bool addr_is_4b, uint8_t width,
+                                 uint8_t dummy) {
   CHECK(spih != NULL);
   CHECK(payload != NULL);
   CHECK(length <= 256);  // Length must be less than a page size.
