@@ -136,6 +136,7 @@ enum {
   /**
    * I2C parameters.
    */
+  kI2cSclPeriodNs = 1000,
   kI2cSdaRiseFallTimeNs = 10,
   kI2cDeviceMask = 0x7f,
   kI2c0DeviceAddress0 = 0x11,
@@ -174,13 +175,6 @@ enum {
 };
 
 static uint32_t csrng_reseed_cmd_header;
-
-/**
- * These symbols are meant to be backdoor read by the testbench. Due to current
- * DV infrastructure limitations, these must be `volatile const` to be accessed
- * by the testbench.
- */
-static volatile const uint32_t kI2cSclPeriodNs = 1000;
 
 /**
  * The peripheral clock of I2C IP (in nanoseconds)
@@ -1184,7 +1178,7 @@ static void max_power_task(void *task_parameters) {
       for (size_t jj = 0; jj < I2C_PARAM_FIFO_DEPTH - 1; ++jj) {
         uint8_t byte;
         CHECK_DIF_OK(dif_i2c_read_byte(i2c_handles[ii], &byte));
-        /*CHECK(kI2cMessage[jj] == byte);*/
+        CHECK(kI2cMessage[jj] == byte);
       };
     };
   }
