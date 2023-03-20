@@ -40,8 +40,8 @@ bool test_main(void) {
       dif_entropy_src_configure(&entropy_src, config, kDifToggleEnabled));
 
   // ensure health tests are actually running
-  entropy_testutils_wait_for_state(&entropy_src,
-                                   kDifEntropySrcMainFsmStateContHTRunning);
+  CHECK_STATUS_OK(entropy_testutils_wait_for_state(
+      &entropy_src, kDifEntropySrcMainFsmStateContHTRunning));
 
   uint32_t entropy_data;
   uint32_t last_entropy_data = 0;

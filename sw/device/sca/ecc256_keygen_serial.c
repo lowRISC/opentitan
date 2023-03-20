@@ -383,7 +383,7 @@ static void ecc256_ecdsa_gen_keypair(const uint8_t *mask, size_t mask_len) {
  * UART.
  */
 static void simple_serial_main(void) {
-  entropy_testutils_auto_mode_init();
+  SS_CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   sca_init(kScaTriggerSourceOtbn, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
                                       kScaPeripheralOtbn | kScaPeripheralCsrng |

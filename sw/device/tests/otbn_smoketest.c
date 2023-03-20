@@ -148,7 +148,7 @@ static void test_sec_wipe(dif_otbn_t *otbn) {
 }
 
 bool test_main(void) {
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   dif_otbn_t otbn;
   CHECK_DIF_OK(

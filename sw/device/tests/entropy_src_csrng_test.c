@@ -166,7 +166,7 @@ static void csrng_generate_output_check(void) {
  */
 static void test_csrng_sw_entropy_req_interrupt(
     const dif_csrng_seed_material_t *seed_material) {
-  entropy_testutils_stop_all();
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
   CHECK_DIF_OK(dif_entropy_src_configure(
       &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
@@ -241,7 +241,7 @@ static void edn_configure(const dif_edn_t *edn, irq_flag_id_t irq_flag_id,
  * commands.
  */
 static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
-  entropy_testutils_stop_all();
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
   CHECK_DIF_OK(dif_entropy_src_configure(
       &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
@@ -263,7 +263,8 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   CHECK_DIF_OK(dif_edn_generate_start(&edn1, /*len=*/1));
   edn_ready_wait(&edn0);
   edn_ready_wait(&edn1);
-  entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1);
+  CHECK_STATUS_OK(
+      entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
 
   LOG_INFO("OTBN:START");
   otbn_randomness_test_start(&otbn);
@@ -304,7 +305,8 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   irq_block_wait(kTestIrqFlagIdEdn1CmdDone);
 
   csrng_testutils_recoverable_alerts_check(&csrng);
-  entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1);
+  CHECK_STATUS_OK(
+      entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
 }
 
 void ottf_external_isr(void) {
