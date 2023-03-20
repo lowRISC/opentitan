@@ -108,6 +108,7 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
  *               string literal.
  * @param ... format parameters matching the format string.
  */
+#ifndef OT_DISABLE_LOGS
 #define LOG(severity, format, ...)                               \
   do {                                                           \
     if (kDeviceLogBypassUartAddress != 0) {                      \
@@ -128,6 +129,9 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
       base_log_internal_core(log_fields, ##__VA_ARGS__);         \
     }                                                            \
   } while (false)
+#else
+#define LOG(severity, format, ...) (void)0
+#endif
 
 /**
  * Implementation detail of `LOG`.
