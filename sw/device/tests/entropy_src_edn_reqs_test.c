@@ -221,11 +221,11 @@ bool test_main() {
   test_initialize();
 
   alert_handler_configure(&alert_handler);
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   // ensure health tests are actually running
-  entropy_testutils_wait_for_state(&entropy_src,
-                                   kDifEntropySrcMainFsmStateContHTRunning);
+  CHECK_STATUS_OK(entropy_testutils_wait_for_state(
+      &entropy_src, kDifEntropySrcMainFsmStateContHTRunning));
 
   CHECK_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ibex, &fpga_info));
   uint32_t loop = (fpga_info != 0) ? kFpgaLoop : 1;
@@ -246,7 +246,8 @@ bool test_main() {
     CHECK_STATUS_OK(keymgr_testutils_wait_for_operation_done(&kmgr));
     CHECK_STATUS_OK(
         keymgr_testutils_check_state(&kmgr, kDifKeymgrStateInitialized));
-    entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1);
+    CHECK_STATUS_OK(
+        entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
   }
   return true;
 }

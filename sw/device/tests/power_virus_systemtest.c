@@ -599,7 +599,7 @@ static void configure_adc_ctrl_to_continuously_sample(void) {
 static void configure_entropy_complex(void) {
   // The (test) ROM enables the entropy complex, and to reconfigure it
   // requires temporarily disabling it.
-  entropy_testutils_stop_all();
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
 
   // Enable entropy_src interrupts for health-test alert detection.
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(

@@ -70,7 +70,7 @@ status_t sign_then_verify_test(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   compute_digest();
 

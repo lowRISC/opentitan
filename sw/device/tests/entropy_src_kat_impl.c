@@ -76,10 +76,11 @@ static void flush_sha3_conditioner(dif_entropy_src_t *entropy_src) {
 }
 
 void entropy_src_kat_test(dif_entropy_src_t *entropy_src) {
-  entropy_testutils_stop_all();
-  entropy_testutils_fw_override_enable(entropy_src, kEntropyFifoBufferSize,
-                                       /*route_to_firmware=*/true,
-                                       /*bypass_conditioner=*/false);
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
+  CHECK_STATUS_OK(
+      entropy_testutils_fw_override_enable(entropy_src, kEntropyFifoBufferSize,
+                                           /*route_to_firmware=*/true,
+                                           /*bypass_conditioner=*/false));
 
   // Though most of the entropy_src state is cleared on disable, the
   // SHA3 conditioner accumulates entropy even from aborted seeds. For

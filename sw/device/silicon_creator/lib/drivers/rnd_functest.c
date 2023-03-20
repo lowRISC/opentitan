@@ -51,7 +51,7 @@ static uint32_t random_low_threshold(dif_entropy_src_test_t test_id,
 // and then re-enabled to run with the configured health thresholds.
 static void configure_random_health_checks(void) {
   // Generate random values using entropy complex in continuous mode.
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
   dif_entropy_src_health_test_config_t configs[kDifEntropySrcTestNumVariants];
   for (uint32_t test_id = kDifEntropySrcTestRepetitionCount;
        test_id < kDifEntropySrcTestNumVariants; ++test_id) {
@@ -67,18 +67,18 @@ static void configure_random_health_checks(void) {
   }
 
   // Configure health values after disabling the entropy complex.
-  entropy_testutils_stop_all();
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
   for (size_t i = 0; i < ARRAYSIZE(configs); ++i) {
     CHECK_DIF_OK(
         dif_entropy_src_health_test_configure(&entropy_src, configs[i]));
   }
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 }
 
 // Configures the entropy source health check and alert thresholds with the
 // configuration stored in OTP.
 static void configure_health_checks_from_otp(void) {
-  entropy_testutils_stop_all();
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
   dif_entropy_src_health_test_config_t configs[] = {
       [kDifEntropySrcTestRepetitionCount] =
           {
@@ -204,7 +204,7 @@ rom_error_t test_rnd_health_config_check(void) {
 
   // Configure entropy source one last time to leave the device in a good end
   // state.
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
   return kErrorOk;
 }
 

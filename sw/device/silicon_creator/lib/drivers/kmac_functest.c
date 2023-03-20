@@ -95,7 +95,7 @@ bool test_main(void) {
   // but KMAC blocking on entropy for SHAKE-256 would be unexpected and
   // potentially dangerous behavior for ROM. We disable it here so that if
   // that's happening the test will fail.
-  entropy_testutils_stop_all();
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
 
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, kmac_test);

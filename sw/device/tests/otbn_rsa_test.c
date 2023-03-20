@@ -682,7 +682,7 @@ static void test_rsa4096_roundtrip(void) {
 }
 
 bool test_main(void) {
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   test_rsa512_roundtrip();
   test_rsa1024_roundtrip();

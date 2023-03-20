@@ -262,12 +262,13 @@ static void fw_override_conditioner_write(
  * size of the `output` buffer.
  */
 static void csrng_static_generate_run(uint32_t *output, size_t output_len) {
-  entropy_testutils_stop_all();
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
   // TODO: May need to flush the output buffers before enabling enabling
   // firmware override connected to csrng.
-  entropy_testutils_fw_override_enable(&entropy_src, kEntropyFifoBufferSize,
-                                       /*firmware_override_enable=*/false,
-                                       /*bypass_conditioner=*/false);
+  CHECK_STATUS_OK(
+      entropy_testutils_fw_override_enable(&entropy_src, kEntropyFifoBufferSize,
+                                           /*firmware_override_enable=*/false,
+                                           /*bypass_conditioner=*/false));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
   fw_override_conditioner_write(&entropy_src);
 
