@@ -12,7 +12,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/hash.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/params.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -81,7 +80,7 @@ static rom_error_t pk_from_sig_test() {
 }
 
 bool test_main() {
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
   LOG_INFO("Starting WOTS test...");
 
   // Populate signature with {0, 1, 2, 3, ... }.
@@ -96,5 +95,5 @@ bool test_main() {
 
   EXECUTE_TEST(result, pk_from_sig_test);
 
-  return result == kErrorOk;
+  return status_ok(result);
 }

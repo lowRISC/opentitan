@@ -13,12 +13,12 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rstmgr_regs.h"
@@ -95,7 +95,7 @@ typedef enum TestPhase {
 } test_phase_t;
 
 bool test_main(void) {
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
   uint32_t reason = rstmgr_testutils_reason_get();
   rstmgr_alert_info_enable();
   LOG_INFO("reset_info = %08x", reason);
@@ -130,13 +130,13 @@ bool test_main(void) {
     if (*phase != kTestPhaseBite) {
       LOG_ERROR("Test failure: expected phase %d but got phase %d",
                 kTestPhaseBite, *phase);
-      result = kErrorUnknown;
+      result = UNKNOWN();
     } else {
-      result = kErrorOk;
+      result = OK_STATUS();
     }
   } else {
     LOG_ERROR("Unknown reset reason");
-    result = kErrorUnknown;
+    result = UNKNOWN();
   }
-  return result == kErrorOk;
+  return status_ok(result);
 }

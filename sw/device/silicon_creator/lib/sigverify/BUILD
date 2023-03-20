@@ -67,7 +67,6 @@ opentitan_functest(
     deps = [
         ":mod_exp_ibex",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
     ],
@@ -83,7 +82,6 @@ opentitan_functest(
     deps = [
         ":mod_exp_ibex",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
     ],
@@ -135,7 +133,6 @@ opentitan_functest(
     deps = [
         ":mod_exp_otbn",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
     ],
@@ -158,7 +155,6 @@ opentitan_functest(
     deps = [
         ":mod_exp_otbn",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
     ],
@@ -257,7 +253,6 @@ opentitan_functest(
     deps = [
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
@@ -274,7 +269,6 @@ opentitan_functest(
     deps = [
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
     ],
@@ -290,7 +284,6 @@ opentitan_functest(
     deps = [
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
     ],

@@ -81,7 +81,6 @@ opentitan_functest(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
     ],
 )
 
@@ -211,7 +210,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:test_main",
     ],
 )
 
@@ -287,7 +285,6 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
@@ -328,7 +325,6 @@ opentitan_functest(
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:test_main",
     ],
 )
 
@@ -504,7 +500,6 @@ opentitan_functest(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:test_main",
     ],
 )
 
@@ -573,7 +568,6 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:crc32",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:test_main",
     ],
 )
 
@@ -627,7 +621,7 @@ opentitan_functest(
     deps = [
         ":rstmgr",
         "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -665,7 +659,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:test_main",
     ],
 )
 
@@ -716,7 +709,6 @@ opentitan_functest(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )

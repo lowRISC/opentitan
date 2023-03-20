@@ -12,7 +12,6 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -102,7 +101,7 @@ static rom_error_t third_boot_test(void) {
 }
 
 bool test_main(void) {
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
 
   size_t reboot_counter = flash_ctrl_testutils_counter_get(kFlashCounterId);
 
@@ -128,7 +127,7 @@ bool test_main(void) {
     case 2: {
       EXECUTE_TEST(result, third_boot_test);
 
-      return result == kErrorOk;
+      return status_ok(result);
     }
   }
   return false;

@@ -8,9 +8,9 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -75,8 +75,8 @@ rom_error_t retention_sram_scramble_test(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
   EXECUTE_TEST(result, retention_sram_clear_test);
   EXECUTE_TEST(result, retention_sram_scramble_test);
-  return result == kErrorOk;
+  return status_ok(result);
 }

@@ -12,7 +12,6 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 // The autogen rule that creates this header creates it in a directory named
 // after the rule, then manipulates the include path in the
@@ -115,7 +114,7 @@ static rom_error_t spx_verify_negative_test(void) {
 }
 
 bool test_main() {
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
 
   CHECK(kNumNegativeTests <= kSpxVerifyNumTests,
         "kNumNegativeTests (%d) cannot be larger than the total number of "
@@ -139,5 +138,5 @@ bool test_main() {
     LOG_INFO("Finished negative test %d of %d.", test_index, kNumNegativeTests);
   }
 
-  return result == kErrorOk;
+  return status_ok(result);
 }
