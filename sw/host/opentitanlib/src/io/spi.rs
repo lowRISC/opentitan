@@ -182,37 +182,7 @@ pub trait Target {
     /// Runs a number of EEPROM/FLASH protocol SPI transactions.  Will assert and deassert CS for
     /// each transaction.
     fn run_eeprom_transactions(&self, transactions: &mut [eeprom::Transaction]) -> Result<()> {
-        // Default implementation translates into generic SPI read/write, which works as long as
-        // the transport supports generic SPI transfers of sufficint length, and that the mode is
-        // single-data-wire.
-        for transfer in transactions {
-            match transfer {
-                eeprom::Transaction::Command(cmd) => {
-                    self.run_transaction(&mut [Transfer::Write(cmd.to_bytes()?)])?
-                }
-                eeprom::Transaction::Read(cmd, rbuf) => self.run_transaction(&mut [
-                    Transfer::Write(cmd.to_bytes()?),
-                    Transfer::Read(rbuf),
-                ])?,
-                eeprom::Transaction::Write(cmd, wbuf) => self.run_transaction(&mut [
-                    Transfer::Write(cmd.to_bytes()?),
-                    Transfer::Write(wbuf),
-                ])?,
-                eeprom::Transaction::WaitForBusyClear => {
-                    while {
-                        let mut buf = [0u8; 1];
-                        self.run_transaction(&mut [
-                            Transfer::Write(&[eeprom::READ_STATUS]),
-                            Transfer::Read(&mut buf),
-                        ])?;
-                        buf[0]
-                    } & eeprom::STATUS_WIP
-                        != 0
-                    {}
-                }
-            }
-        }
-        Ok(())
+        eeprom::default_run_eeprom_transactions(self, transactions)
     }
 
     /// Assert the CS signal.  Uses reference counting, will be deasserted when each and every

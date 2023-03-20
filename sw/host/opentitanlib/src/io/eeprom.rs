@@ -5,7 +5,7 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-use super::spi::SpiError;
+use super::spi::{SpiError, Target, Transfer};
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum DataWidth {
@@ -236,3 +236,38 @@ pub enum Transaction<'rd, 'wr> {
 
 pub const READ_STATUS: u8 = 0x05;
 pub const STATUS_WIP: u8 = 0x01;
+
+pub fn default_run_eeprom_transactions<T: Target + ?Sized>(
+    spi: &T,
+    transactions: &mut [Transaction],
+) -> Result<()> {
+    // Default implementation translates into generic SPI read/write, which works as long as
+    // the transport supports generic SPI transfers of sufficint length, and that the mode is
+    // single-data-wire.
+    for transfer in transactions {
+        match transfer {
+            Transaction::Command(cmd) => {
+                spi.run_transaction(&mut [Transfer::Write(cmd.to_bytes()?)])?
+            }
+            Transaction::Read(cmd, rbuf) => {
+                spi.run_transaction(&mut [Transfer::Write(cmd.to_bytes()?), Transfer::Read(rbuf)])?
+            }
+            Transaction::Write(cmd, wbuf) => {
+                spi.run_transaction(&mut [Transfer::Write(cmd.to_bytes()?), Transfer::Write(wbuf)])?
+            }
+            Transaction::WaitForBusyClear => {
+                while {
+                    let mut buf = [0u8; 1];
+                    spi.run_transaction(&mut [
+                        Transfer::Write(&[READ_STATUS]),
+                        Transfer::Read(&mut buf),
+                    ])?;
+                    buf[0]
+                } & STATUS_WIP
+                    != 0
+                {}
+            }
+        }
+    }
+    Ok(())
+}
