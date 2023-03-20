@@ -38,13 +38,15 @@ sed -i 's/\(prd_i\s\[[0-9]\+:0\]\s=\s\)unimportant/\1random/g' tmp/labels.txt
 
 # Trace
 ./trace.py --testbench ${REPO_TOP}/hw/ip/aes/pre_sca/alma/cpp/verilator_tb_${TESTBENCH}.cpp \
---netlist tmp/circuit.v -o tmp/circuit
+  --netlist tmp/circuit.v --c-compiler gcc -o tmp/circuit
 
 # Verify
 ./verify.py --json tmp/circuit.json \
-   --label tmp/labels.txt \
-   --top-module ${TOP_MODULE} \
-   --vcd tmp/tmp.vcd \
-   --rst-name rst_ni --rst-phase 0 \
-   --probe-duration once --mode transient \
-   --glitch-behavior loose --cycles 6
+  --label tmp/labels.txt \
+  --top-module ${TOP_MODULE} \
+  --vcd tmp/tmp.vcd \
+  --rst-name rst_ni --rst-phase 0 \
+  --probe-duration once \
+  --mode transient \
+  --glitch-behavior loose \
+  --cycles 6
