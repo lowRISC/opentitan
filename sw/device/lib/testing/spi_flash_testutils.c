@@ -321,16 +321,16 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
       status = TRY(spi_flash_testutils_read_status(
           spih, kSpiDeviceFlashOpReadStatus1, 2));
       status = bitfield_bit32_write(status, 9, enabled);
-      status = TRY(spi_flash_testutils_write_status(
-          spih, kSpiDeviceFlashOpWriteStatus1, status, enabled ? 2 : 1));
+      TRY(spi_flash_testutils_write_status(spih, kSpiDeviceFlashOpWriteStatus1,
+                                           status, enabled ? 2 : 1));
       break;
     case 2:
       // QE is bit6 of status reg 1.
       status = TRY(spi_flash_testutils_read_status(
           spih, kSpiDeviceFlashOpReadStatus1, 1));
       status = bitfield_bit32_write(status, 6, enabled);
-      status = TRY(spi_flash_testutils_write_status(
-          spih, kSpiDeviceFlashOpWriteStatus1, status, 1));
+      TRY(spi_flash_testutils_write_status(spih, kSpiDeviceFlashOpWriteStatus1,
+                                           status, 1));
       break;
     case 3:
       // QE is bit7 of status reg 2.
@@ -338,8 +338,8 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
       status = TRY(spi_flash_testutils_read_status(
           spih, kSpiDeviceFlashOpReadStatus2, 1));
       status = bitfield_bit32_write(status, 7, enabled);
-      status = TRY(spi_flash_testutils_write_status(
-          spih, kSpiDeviceFlashOpWriteStatus2, status, 1));
+      TRY(spi_flash_testutils_write_status(spih, kSpiDeviceFlashOpWriteStatus2,
+                                           status, 1));
       break;
     case 4:
       // QE is bit1 of status reg 2.
@@ -348,8 +348,8 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
       status = TRY(spi_flash_testutils_read_status(
           spih, kSpiDeviceFlashOpReadStatus1, 2));
       status = bitfield_bit32_write(status, 9, enabled);
-      status = TRY(spi_flash_testutils_write_status(
-          spih, kSpiDeviceFlashOpWriteStatus1, status, 2));
+      TRY(spi_flash_testutils_write_status(spih, kSpiDeviceFlashOpWriteStatus1,
+                                           status, 2));
       break;
     case 5:
       // QE is bit1 of status reg 2.
@@ -361,8 +361,8 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
                     spih, kSpiDeviceFlashOpReadStatus2, 1))
                 << 8;
       status = bitfield_bit32_write(status, 9, enabled);
-      status = TRY(spi_flash_testutils_write_status(
-          spih, kSpiDeviceFlashOpWriteStatus1, status, 2));
+      TRY(spi_flash_testutils_write_status(spih, kSpiDeviceFlashOpWriteStatus1,
+                                           status, 2));
       break;
     case 6:
       // QE is bit1 of status reg 2.
@@ -371,8 +371,8 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
       status = TRY(spi_flash_testutils_read_status(
           spih, kSpiDeviceFlashOpReadStatus2, 1));
       status = bitfield_bit32_write(status, 1, enabled);
-      status = TRY(spi_flash_testutils_write_status(
-          spih, kSpiDeviceFlashOpWriteStatus2, status, 1));
+      TRY(spi_flash_testutils_write_status(spih, kSpiDeviceFlashOpWriteStatus2,
+                                           status, 1));
       break;
     case 7:
       // Reserved.
