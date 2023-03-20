@@ -454,36 +454,37 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   function void flash_mem_otf_read(flash_op_t flash_op, ref fdata_q_t data);
     flash_dv_part_e partition;
     int bank;
-    bit [75:0] rdata;
+    logic [flash_phy_pkg::FullDataWidth-1:0] rdata;
     int        size, is_odd, tail;
-    addr_t aligned_addr;
 
-    aligned_addr = flash_op.addr;
-    // QW (8byte) align
-    aligned_addr[2:0] = 'h0;
-    bank = flash_op.addr[OTFBankId];
-    partition = flash_op.partition;
     // If address is not 8byte aligned, full 76bit has to be read.
     // This exception is identified using 4Byte address bit, (addr[2])
     // and size of 4byte word.
     is_odd = flash_op.addr[2];
     size = (flash_op.num_words + is_odd) / 2;
     tail = (flash_op.num_words + is_odd) % 2;
+    // QW (8byte) align
+    flash_op.addr[2:0] = 'h0;
 
     `uvm_info("flash_mem_otf_read", $sformatf("is_odd:%0d size:%0d tail:%0d wd:%0d",
                                             is_odd, size, tail, flash_op.num_words), UVM_MEDIUM)
-    // Use per bank address.
-    aligned_addr[31:OTFBankId] = 'h0;
     for (int i = 0; i < size; i++) begin
-      rdata = mem_bkdr_util_h[partition][bank].read(aligned_addr);
+      flash_bkdr_read_full_word(flash_op, rdata);
       data.push_back(rdata);
-      aligned_addr += 8;
+      flash_op.addr += 8;
     end
     if (tail) begin
-      rdata = mem_bkdr_util_h[partition][bank].read(aligned_addr);
+      flash_bkdr_read_full_word(flash_op, rdata);
       data.push_back(rdata);
     end
   endfunction // flash_mem_otf_read
+
+  // Method to read one full width word of the flash.
+  virtual function void flash_bkdr_read_full_word(flash_op_t flash_op,
+                                          ref logic [flash_phy_pkg::FullDataWidth-1:0] word_data);
+    flash_mem_addr_attrs addr_attrs = new(flash_op.addr);
+    word_data = mem_bkdr_util_h[flash_op.partition][addr_attrs.bank].read(addr_attrs.bank_addr);
+  endfunction : flash_bkdr_read_full_word
 
   // Reads flash mem contents via backdoor.
   //
