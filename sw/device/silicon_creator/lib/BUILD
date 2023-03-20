@@ -61,7 +61,6 @@ opentitan_functest(
     ),
     deps = [
         ":boot_data",
-        ":test_main",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -163,7 +162,6 @@ opentitan_functest(
     deps = [
         ":error",
         ":irq_asm",
-        ":test_main",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
@@ -325,16 +323,6 @@ cc_test(
         dual_cc_device_library_of(":shutdown"),
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "test_main",
-    hdrs = ["test_main.h"],
-    deps = [
-        ":error",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 

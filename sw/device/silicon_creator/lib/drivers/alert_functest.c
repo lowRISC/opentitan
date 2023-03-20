@@ -14,10 +14,10 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
@@ -78,7 +78,7 @@ rom_error_t alert_escalate_test(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
   uint32_t reason = rstmgr_testutils_reason_get();
   rstmgr_alert_info_enable();
   LOG_INFO("reset_info = %08x", reason);
@@ -91,13 +91,13 @@ bool test_main(void) {
     EXECUTE_TEST(result, alert_no_escalate_test);
     EXECUTE_TEST(result, alert_escalate_test);
     LOG_ERROR("Test failure: should have reset before this line.");
-    result = kErrorUnknown;
+    result = UNKNOWN();
   } else if (bitfield_bit32_read(reason, kRstmgrReasonEscalation)) {
     CHECK(bitfield_popcount32(reason) == 1, "Expected exactly 1 reset reason.");
     LOG_INFO("Detected reset after escalation test");
   } else {
     LOG_ERROR("Unknown reset reason");
-    result = kErrorUnknown;
+    result = UNKNOWN();
   }
-  return result == kErrorOk;
+  return status_ok(result);
 }

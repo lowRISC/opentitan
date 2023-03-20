@@ -7,9 +7,9 @@
 
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "kmac_regs.h"
@@ -97,7 +97,7 @@ bool test_main(void) {
   // that's happening the test will fail.
   entropy_testutils_stop_all();
 
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
   EXECUTE_TEST(result, kmac_test);
-  return result == kErrorOk;
+  return status_ok(result);
 }

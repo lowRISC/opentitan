@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 static const char kMessage[] = "test message";
 
@@ -160,12 +160,12 @@ rom_error_t sigverify_test_negative(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
 
   compute_digest();
 
   EXECUTE_TEST(result, sigverify_test_exp_3);
   EXECUTE_TEST(result, sigverify_test_exp_65537);
   EXECUTE_TEST(result, sigverify_test_negative);
-  return result == kErrorOk;
+  return status_ok(result);
 }
