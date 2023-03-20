@@ -7,7 +7,9 @@
 
 #include <stdbool.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
@@ -106,5 +108,21 @@ void ottf_task_delete_self(void);
  * https://www.freertos.org/a00021.html#pcTaskGetName.
  */
 char *ottf_task_get_self_name(void);
+
+/**
+ * Execute a test function and log the test result.  Update the result value
+ * if there is a failure code.
+ */
+#define EXECUTE_TEST(result_, test_function_)                            \
+  do {                                                                   \
+    LOG_INFO("Starting test " #test_function_ "...");                    \
+    status_t local_status = INTO_STATUS(test_function_());               \
+    if (status_ok(local_status)) {                                       \
+      LOG_INFO("Finished test " #test_function_ ": %r.", local_status);  \
+    } else {                                                             \
+      result_ = local_status;                                            \
+      LOG_ERROR("Finished test " #test_function_ ": %r.", local_status); \
+    }                                                                    \
+  } while (0)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_MAIN_H_

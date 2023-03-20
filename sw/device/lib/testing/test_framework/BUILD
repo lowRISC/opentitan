@@ -222,6 +222,7 @@ cc_library(
         ":status",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:status",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
