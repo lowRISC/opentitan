@@ -214,6 +214,34 @@
       tests: ["chip_sw_spi_device_tpm"]
     }
 
+    {
+      name: chip_sw_spi_device_output_when_disabled_or_sleeping
+      desc: '''Verify spi_device output values when spi_device is disabled or the chip is sleeping.
+
+               SW needs to be able to set the SPI output value when spi_device is disabled or the
+               chip is sleeping, to either all-zeros or all-ones, depending on integration
+               requirements.  The following scenarios have to be verified:
+
+               After power-on reset:
+               - SW to configure pinmux retention logic so that the chip pins connected to
+                 spi_device outputs are (a) always zero or (b) always one (SW needs to be able to
+                 choose between a and b).
+               - DV environment to check that SPI outputs match configuration by SW.
+
+               Going to sleep:
+               - SW to disable spi_device, wait until CSb is high, configure pinmux retention logic
+                 as it would after POR, and put chip to sleep.
+               - DV environment to check that SPI outputs match configuration by SW.
+
+               Wake up from sleep:
+               - DV environment to wake chip from sleep.
+               - SW to enable spi_device and disable retention logic.
+               - DV environment to check that SPI transactions work as usual.
+             '''
+      stage: V3
+      tests: []
+    }
+
     // SPI_HOST (pre-verified IP) integration tests:
     {
       name: chip_sw_spi_host_tx_rx
