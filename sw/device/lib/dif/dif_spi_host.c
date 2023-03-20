@@ -316,8 +316,13 @@ static void issue_address(const dif_spi_host_t *spi_host,
 
 static void issue_dummy(const dif_spi_host_t *spi_host,
                         dif_spi_host_segment_t *segment, bool last_segment) {
-  write_command_reg(spi_host, segment->dummy.length, segment->dummy.width,
-                    kDifSpiHostDirectionDummy, last_segment);
+  if (segment->dummy.length > 0) {
+    // We only want to program a dummy segment if the number of cycles is
+    // greater than zero.  Programming a zero to the hardware results in a
+    // dummy segment of 512 bits.
+    write_command_reg(spi_host, segment->dummy.length, segment->dummy.width,
+                      kDifSpiHostDirectionDummy, last_segment);
+  }
 }
 
 static dif_result_t issue_data_phase(const dif_spi_host_t *spi_host,
