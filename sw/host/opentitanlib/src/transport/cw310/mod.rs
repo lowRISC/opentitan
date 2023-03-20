@@ -20,6 +20,7 @@ use crate::transport::common::uart::SerialPortUart;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
+use crate::util::openocd::OpenOcdServer;
 use crate::util::parse_int::ParseInt;
 
 pub mod gpio;
@@ -31,6 +32,7 @@ struct Inner {
     spi: Option<Rc<dyn Target>>,
     gpio: HashMap<String, Rc<dyn GpioPin>>,
     uart: HashMap<u32, Rc<dyn Uart>>,
+    jtag: Option<Rc<dyn Jtag>>,
 }
 
 pub struct CW310 {
@@ -225,6 +227,14 @@ impl Transport for CW310 {
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
+    }
+
+    fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
+        let mut inner = self.inner.borrow_mut();
+        if inner.jtag.is_none() {
+            inner.jtag = Some(Rc::new(OpenOcdServer::new(&opts)?));
+        }
+        Ok(Rc::clone(inner.jtag.as_ref().unwrap()))
     }
 }
 

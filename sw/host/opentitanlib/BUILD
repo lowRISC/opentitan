@@ -159,6 +159,7 @@ rust_library(
         "src/util/usb.rs",
         "src/util/usr_access.rs",
         "src/util/voltage.rs",
+        "src/util/openocd.rs",
     ] + select({
         "//sw/device:is_english_breakfast": [],
         "//conditions:default": [

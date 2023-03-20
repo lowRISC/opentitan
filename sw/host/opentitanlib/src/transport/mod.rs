@@ -13,7 +13,7 @@ use crate::bootstrap::BootstrapOptions;
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
-use crate::io::jtag::Jtag;
+use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 
@@ -104,7 +104,7 @@ pub trait Transport {
     }
 
     /// Returns a [`Jtag`] implementation.
-    fn jtag(&self, _openocd: &str, _openocd_adapter_config: &str) -> Result<Rc<dyn Jtag>> {
+    fn jtag(&self, _opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Jtag).into())
     }
     /// Returns a SPI [`Target`] implementation.
