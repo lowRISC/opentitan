@@ -427,7 +427,6 @@ void set_edn_auto_mode() {
   const dif_edn_t edn1 = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
 
-  // entropy_testutils_stop_all();
   CHECK_DIF_OK(dif_edn_stop(&edn0));
   CHECK_DIF_OK(dif_edn_stop(&edn1));
 
