@@ -13,6 +13,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 #define USING_INTERNAL_STATUS
 #include "sw/device/lib/base/internal/status.h"
@@ -63,16 +64,18 @@ typedef struct status {
  * conversion.  Once a more thorough refactoring of the DIFs is done, this
  * can be eliminated.
  *
- * @param expr_ Either a `status_t` or `dif_result_t`.
+ * @param expr_ Either a `status_t`, `dif_result_t` or `rom_error_t`.
  * @return The `status_t` representation of the input.
  */
 #define INTO_STATUS(expr_)                                                     \
   ({                                                                           \
     typeof(expr_) ex_ = (expr_);                                               \
-    static_assert(__builtin_types_compatible_p(typeof(ex_), status_t) ||       \
-                      __builtin_types_compatible_p(typeof(ex_), dif_result_t), \
-                  "Expressions passed to INTO_STATUS() must be of type "       \
-                  "`status_t`, or `dif_result_t`");                            \
+    static_assert(                                                             \
+        __builtin_types_compatible_p(typeof(ex_), status_t) ||                 \
+            __builtin_types_compatible_p(typeof(ex_), dif_result_t) ||         \
+            __builtin_types_compatible_p(typeof(ex_), rom_error_t),            \
+        "Expressions passed to INTO_STATUS() must be of type "                 \
+        "`status_t`, `dif_result_t` or `rom_error_t");                         \
     status_t status_;                                                          \
     if (__builtin_types_compatible_p(typeof(ex_), status_t)) {                 \
       memcpy(&status_, &ex_, sizeof(status_));                                 \
@@ -81,6 +84,17 @@ typedef struct status {
       memcpy(&code, &ex_, sizeof(code));                                       \
       status_ = status_create(code, MODULE_ID, __FILE__,                       \
                               code == kOk ? 0 : __LINE__);                     \
+    } else if (__builtin_types_compatible_p(typeof(ex_), rom_error_t)) {       \
+      uint32_t val;                                                            \
+      memcpy(&val, &ex_, sizeof(val));                                         \
+      absl_status_t code = val == kErrorOk ? 0                                 \
+                                           : bitfield_field32_read(            \
+                                                 val, ROM_ERROR_FIELD_STATUS); \
+      int32_t arg = bitfield_field32_read(val, ROM_ERROR_FIELD_ERROR);         \
+      uint32_t mod = bitfield_field32_read(val, ROM_ERROR_FIELD_MODULE);       \
+      uint32_t module = (mod & 0x1F) << 16 | (mod & 0x1F00) << (21 - 8);       \
+      status_ =                                                                \
+          status_create(code, module, __FILE__, code == kOk ? kErrorOk : arg); \
     }                                                                          \
     status_;                                                                   \
   })

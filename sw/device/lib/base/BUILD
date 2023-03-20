@@ -312,6 +312,7 @@ cc_library(
         ":macros",
         "//sw/device/lib/base/internal:status",
         "//sw/device/lib/dif:base",
+        "//sw/device/silicon_creator/lib:error",
     ],
 )
 
