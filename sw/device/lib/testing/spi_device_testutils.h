@@ -32,11 +32,17 @@ typedef enum spi_device_flash_opcode {
   kSpiDeviceFlashOpWriteStatus3 = 0x11,
   kSpiDeviceFlashOpChipErase = 0xc7,
   kSpiDeviceFlashOpSectorErase = 0x20,
+  kSpiDeviceFlashOpBlockErase32k = 0x52,
+  kSpiDeviceFlashOpBlockErase64k = 0xd8,
   kSpiDeviceFlashOpPageProgram = 0x02,
   kSpiDeviceFlashOpEnter4bAddr = 0xb7,
   kSpiDeviceFlashOpExit4bAddr = 0xe9,
   kSpiDeviceFlashOpResetEnable = 0x66,
   kSpiDeviceFlashOpReset = 0x99,
+  kSpiDeviceFlashOpSectorErase4b = 0x21,
+  kSpiDeviceFlashOpBlockErase32k4b = 0x5c,
+  kSpiDeviceFlashOpBlockErase64k4b = 0xdc,
+  kSpiDeviceFlashOpPageProgram4b = 0x12,
 } spi_device_flash_opcode_t;
 
 /**
@@ -66,7 +72,14 @@ enum spi_device_command_slot {
  *  - WriteStatus3
  *  - ChipErase
  *  - SectorErase
+ *  - BlockErase32k
+ *  - BlockErase64k
  *  - PageProgram
+ *  - SectorErase4b
+ *  - BlockErase32k4b
+ *  - BlockErase64k4b
+ *  - PageProgram4b
+ *  - Reset
  *  - Enter4bAddr
  *  - Exit4bAddr
  *
