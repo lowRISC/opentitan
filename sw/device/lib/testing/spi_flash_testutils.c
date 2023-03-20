@@ -303,14 +303,8 @@ void spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
               },
       },
   };
-  size_t tlen = ARRAYSIZE(transaction);
-  if (dummy == 0) {
-    // If there are no dummy cycles, then get rid of the dummy segment in
-    // the transaction.
-    memcpy(&transaction[2], &transaction[3], sizeof(dif_spi_host_segment_t));
-    tlen -= 1;
-  }
-  CHECK_DIF_OK(dif_spi_host_transaction(spih, /*csid=*/0, transaction, tlen));
+  CHECK_DIF_OK(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
+                                        ARRAYSIZE(transaction)));
 }
 
 status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
