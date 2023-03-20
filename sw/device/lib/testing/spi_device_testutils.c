@@ -171,7 +171,23 @@ void spi_device_testutils_configure_passthrough(
           .set_busy_status = upload_write_commands,
       },
       {
-          // Slot 16: PageProgram
+          // Slot 16: BlockErase32k
+          .opcode = kSpiDeviceFlashOpBlockErase32k,
+          .address_type = kDifSpiDeviceFlashAddrCfg,
+          .payload_io_type = kDifSpiDevicePayloadIoNone,
+          .upload = upload_write_commands,
+          .set_busy_status = upload_write_commands,
+      },
+      {
+          // Slot 17: BlockErase64k
+          .opcode = kSpiDeviceFlashOpBlockErase64k,
+          .address_type = kDifSpiDeviceFlashAddrCfg,
+          .payload_io_type = kDifSpiDevicePayloadIoNone,
+          .upload = upload_write_commands,
+          .set_busy_status = upload_write_commands,
+      },
+      {
+          // Slot 18: PageProgram
           .opcode = kSpiDeviceFlashOpPageProgram,
           .address_type = kDifSpiDeviceFlashAddrCfg,
           .payload_io_type = kDifSpiDevicePayloadIoSingle,
@@ -179,6 +195,48 @@ void spi_device_testutils_configure_passthrough(
           .upload = upload_write_commands,
           .set_busy_status = upload_write_commands,
       },
+      {
+          // Slot 19: SectorErase4b
+          .opcode = kSpiDeviceFlashOpSectorErase4b,
+          .address_type = kDifSpiDeviceFlashAddr4Byte,
+          .payload_io_type = kDifSpiDevicePayloadIoNone,
+          .upload = upload_write_commands,
+          .set_busy_status = upload_write_commands,
+      },
+      {
+          // Slot 20: BlockErase32k4b
+          .opcode = kSpiDeviceFlashOpBlockErase32k4b,
+          .address_type = kDifSpiDeviceFlashAddr4Byte,
+          .payload_io_type = kDifSpiDevicePayloadIoNone,
+          .upload = upload_write_commands,
+          .set_busy_status = upload_write_commands,
+      },
+      {
+          // Slot 21: BlockErase64k4b
+          .opcode = kSpiDeviceFlashOpBlockErase64k4b,
+          .address_type = kDifSpiDeviceFlashAddr4Byte,
+          .payload_io_type = kDifSpiDevicePayloadIoNone,
+          .upload = upload_write_commands,
+          .set_busy_status = upload_write_commands,
+      },
+      {
+          // Slot 22: PageProgram4b
+          .opcode = kSpiDeviceFlashOpPageProgram4b,
+          .address_type = kDifSpiDeviceFlashAddr4Byte,
+          .payload_io_type = kDifSpiDevicePayloadIoSingle,
+          .payload_dir_to_host = false,
+          .upload = upload_write_commands,
+          .set_busy_status = upload_write_commands,
+      },
+      {
+          // Slot 23: Reset
+          .opcode = kSpiDeviceFlashOpReset,
+          .address_type = kDifSpiDeviceFlashAddrDisabled,
+          .payload_io_type = kDifSpiDevicePayloadIoNone,
+          .upload = upload_write_commands,
+          .set_busy_status = upload_write_commands,
+      },
+
   };
   for (int i = 0; i < ARRAYSIZE(write_commands); ++i) {
     uint8_t slot = i + kSpiDeviceWriteCommandSlotBase;

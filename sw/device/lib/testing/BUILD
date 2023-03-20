@@ -375,7 +375,9 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":spi_device_testutils",
+        "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:status",
         "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/testing/test_framework:check",
     ],

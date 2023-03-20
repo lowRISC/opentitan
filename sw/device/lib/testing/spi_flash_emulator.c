@@ -7,6 +7,7 @@
 #include <stdalign.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
@@ -52,8 +53,19 @@ typedef struct sfdp {
   bfpt_t bfpt;
 } sfdp_t;
 
-static status_t prepare_sfdp(dif_spi_host_t *spih,
-                             dif_spi_device_handle_t *spid) {
+// JESD216F, section 6.4.18:
+// The Quad Enable mechanism is bits 20:23 of the 15th dword.
+#define QUAD_ENABLE ((bitfield_field32_t){.mask = 7, .index = 20})
+
+// This function prepares the downstream-visible SFDP table.
+// Out of convenience, it also checks the quad-enable mechanism from
+// the backend EEPROM part and returns the mechanism value
+//
+// TODO: Restructure this into something more general for dealing
+// with backend-eeprom properties that the emulator loop might
+// care about.
+static status_t read_and_prepare_sfdp(dif_spi_host_t *spih,
+                                      dif_spi_device_handle_t *spid) {
   alignas(uint32_t) uint8_t data[256];
   spi_flash_testutils_read_sfdp(spih, 0, data, sizeof(data));
 
@@ -83,6 +95,7 @@ static status_t prepare_sfdp(dif_spi_host_t *spih,
   if (offset >= sizeof(data)) {
     return INVALID_ARGUMENT();
   }
+  uint8_t length = data[offsetof(sfdp_t, param.length)];
 
   // We want to copy SFDP word 0 from the eeprom and preserve the
   // block_erase_size, write_granularity, write_en_required, write_en_opcode,
@@ -101,7 +114,15 @@ static status_t prepare_sfdp(dif_spi_host_t *spih,
 
   TRY(dif_spi_device_write_flash_buffer(spid, kDifSpiDeviceFlashBufferTypeSfdp,
                                         0, sizeof(sfdp), (uint8_t *)&sfdp));
-  return OK_STATUS();
+
+  uint32_t quad_enable = 0;
+  if (length >= 14) {
+    // JESD216F, section 6.4.18:
+    // The Quad Enable mechanism is bits 20:23 of the 15th dword.
+    quad_enable = read_32(data + offset + 14 * sizeof(uint32_t));
+    quad_enable = bitfield_field32_read(quad_enable, QUAD_ENABLE);
+  }
+  return OK_STATUS(quad_enable);
 }
 
 static status_t prepare_jedec_id(dif_spi_device_handle_t *spid) {
@@ -121,8 +142,10 @@ status_t spi_flash_emulator(dif_spi_host_t *spih,
   // TODO: add a mode that uses spi_device address translation.
   LOG_INFO("Configuring spi_flash_emulator.");
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleDisabled));
-  TRY(prepare_sfdp(spih, spid));
   TRY(prepare_jedec_id(spid));
+  uint8_t quad_enable = TRY(read_and_prepare_sfdp(spih, spid));
+  LOG_INFO("Setting the EEPROM's QE bit via mechanism %d", quad_enable);
+  TRY(spi_flash_testutils_quad_enable(spih, quad_enable, /*enabled=*/true));
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleEnabled));
   LOG_INFO("Starting spi_flash_emulator.");
 
@@ -133,16 +156,40 @@ status_t spi_flash_emulator(dif_spi_host_t *spih,
 
     TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleDisabled));
     switch (info.opcode) {
-      // TODO: process the alternate erase opcodes from the BFPT.
       case kSpiDeviceFlashOpChipErase:
         spi_flash_testutils_erase_chip(spih);
         break;
       case kSpiDeviceFlashOpSectorErase:
         spi_flash_testutils_erase_sector(spih, info.address, info.addr_4b);
         break;
+      case kSpiDeviceFlashOpBlockErase32k:
+        spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase32k,
+                                     info.address, info.addr_4b);
+        break;
+      case kSpiDeviceFlashOpBlockErase64k:
+        spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase64k,
+                                     info.address, info.addr_4b);
+        break;
       case kSpiDeviceFlashOpPageProgram:
         spi_flash_testutils_program_page(spih, info.data, info.data_len,
                                          info.address, info.addr_4b);
+        break;
+      case kSpiDeviceFlashOpSectorErase4b:
+        spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpSectorErase4b,
+                                     info.address, /*addr_is_4b=*/true);
+        break;
+      case kSpiDeviceFlashOpBlockErase32k4b:
+        spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase32k4b,
+                                     info.address, /*addr_is_4b=*/true);
+        break;
+      case kSpiDeviceFlashOpBlockErase64k4b:
+        spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase64k4b,
+                                     info.address, /*addr_is_4b=*/true);
+        break;
+      case kSpiDeviceFlashOpPageProgram4b:
+        spi_flash_testutils_program_op(spih, kSpiDeviceFlashOpPageProgram4b,
+                                       info.data, info.data_len, info.address,
+                                       /*addr_is_4b=*/true);
         break;
       case kSpiDeviceFlashOpReset:
         running = false;
