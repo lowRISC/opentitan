@@ -279,7 +279,7 @@ module testbench ();
      debug_module_init();
      load_binary(SRAM);
      jtag_data_preload();
-     jtag_ibex_wakeup(32'h e0000180);
+     jtag_ibex_wakeup(32'h e0000080);
      
 `endif               
   end // block: local_jtag_preload

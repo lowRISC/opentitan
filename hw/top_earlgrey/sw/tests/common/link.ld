@@ -76,6 +76,11 @@ SECTIONS
         _bss_end = .;
     } > ram
 
+    .logs.fields :
+    {
+        . = ALIGN(4);
+    } > ram
+
     /* ensure there is enough room for stack */
     .stack (NOLOAD): {
         . = ALIGN(4);
