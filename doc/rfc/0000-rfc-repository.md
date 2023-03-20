@@ -40,14 +40,14 @@ Allowing authors to choose where they store their RFC content makes it
 harder to reference them as documentation. It also means we can't manage them
 consistently: we have no public-by-default rule for Google Docs, leading to
 many RFCs restricted only to select people. Comments are left in both GitHub
-iAssue comments and Google Docs reviews.
+issue comments and Google Docs reviews.
 
-In summary, the motivation of this RFC is to have:
+In summary, the motivation of this RFC is to have a single store of RFC
+documents, where:
 
-1. a single store of RFC documents,
-2. where RFCs can easily be discovered,
-3. where RFC content can be enforced to be public,
-4. where RFC comments are given and addressed in a consistent workflow.
+1. RFCs can easily be discovered,
+2. RFC content can be enforced to be public,
+3. RFC comments are given and addressed in a consistent workflow.
 
 ## Explanation
 
