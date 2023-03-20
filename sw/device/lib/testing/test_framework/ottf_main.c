@@ -145,7 +145,7 @@ void _ottf_main(void) {
     // Run `test_main()` in a FreeRTOS task, allowing other FreeRTOS tasks to
     // be spawned, if requested in the main test task. Note, we spawn the main
     // test task at a priority level of 0.
-    ottf_task_create(test_wrapper, "test_main", kOttfFreeRtosMinStackSize, 0);
+    ottf_task_create(test_wrapper, "test_main", /*task_stack_depth=*/1024, 0);
     vTaskStartScheduler();
   } else {
     // Otherwise, launch `test_main()` on bare-metal.
