@@ -184,15 +184,17 @@ class chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq extends chip_sw_base_vseq;
     // Fork tasks for detecting edges.
     powerdown_count = 0;
     powerdown_count_enabled = 1;
-    fork
-      wait_for_adc_valid_falling_edge();
-      detect_powerdown_rising_edge();
-    join_none
+    fork begin : isolation_fork
+      fork
+        wait_for_adc_valid_falling_edge();
+        detect_powerdown_rising_edge();
+      join_none
 
-    // Generate a sequence of ADC data.
-    generate_adc_data();
+      // Generate a sequence of ADC data.
+      generate_adc_data();
 
-    disable fork;
+      disable fork;
+    end join
   endtask
 
 endclass
