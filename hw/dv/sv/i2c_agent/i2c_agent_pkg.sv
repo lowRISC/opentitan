@@ -18,7 +18,7 @@ package i2c_agent_pkg;
   typedef enum logic [3:0] {
     None, DevAck, RdData, WrData,
     HostStart, HostRStart, HostData, HostAck,
-    HostNAck, HostStop
+    HostNAck, HostStop, HostDataGlitch
   } drv_type_e;
 
   // Driver phase

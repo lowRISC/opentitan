@@ -112,6 +112,15 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         // Wait one more cycle for ack
         cfg.vif.wait_scl(.iter(1), .tc(cfg.timing_cfg));
       end
+      HostDataGlitch: begin
+        int num_bits = $bits(req.wdata);
+        int glitch_bit = $urandom_range(0, num_bits-1);
+        `uvm_info(`gfn, $sformatf("Driving host data glitch on bit(%0d)",glitch_bit), UVM_MEDIUM)
+        for (int i = num_bits -1; i >= glitch_bit; i--) begin
+          cfg.vif.host_data(cfg.timing_cfg, req.wdata[i]);
+        end
+        host_data_glitch();
+      end
       HostAck: begin
         // Wait for read data and send ack
         cfg.vif.wait_scl(.iter(8), .tc(cfg.timing_cfg));
@@ -133,6 +142,16 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
       end
     endcase
   endtask : drive_host_item
+
+  virtual task host_data_glitch();
+        `uvm_info(`gfn, $sformatf("Start proc_hot_glitch"), UVM_MEDIUM)
+        add_start();
+        cfg.agent_rst = 1;
+        cfg.hot_glitch = 0;
+        cfg.host_scl_force_high = 0;
+        cfg.host_scl_force_low = 0;
+        wait(!cfg.agent_rst);
+  endtask
 
   virtual task drive_device_item(i2c_item req);
     bit [7:0] rd_data_cnt = 8'd0;
@@ -268,11 +287,10 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     forever begin
       @(cfg.vif.cb);
       if (cfg.hot_glitch) begin
+        @(cfg.vif.cb);
+        `uvm_info(`gfn, $sformatf("Start proc_hot_glitch"), UVM_MEDIUM)
         wait_for_read_data_state();
-        randcase
-          1: add_start();
-          1: add_stop();
-        endcase
+        add_start();
         cfg.agent_rst = 1;
         cfg.hot_glitch = 0;
         cfg.host_scl_force_high = 0;
