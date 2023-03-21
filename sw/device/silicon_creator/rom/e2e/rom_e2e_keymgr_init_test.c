@@ -27,7 +27,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_keymgr_init(
       mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
 
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset);
+  CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset));
 
   dif_keymgr_binding_value_t bindings;
   CHECK_DIF_OK(dif_keymgr_read_binding(&keymgr, &bindings));

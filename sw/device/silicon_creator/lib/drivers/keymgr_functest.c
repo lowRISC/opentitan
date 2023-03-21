@@ -105,7 +105,8 @@ static void init_flash(void) {
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Initialize flash secrets.
-  keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret);
+  CHECK_STATUS_OK(
+      keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret));
 }
 
 /** Place kmac into sideload mode for correct keymgr operation */

@@ -188,9 +188,10 @@ static void keymgr_advance_to_creator_root_key(void) {
       retention_sram_get()
           ->reserved_creator[ARRAYSIZE((retention_sram_t){0}.reserved_creator) -
                              1] == TEST_ROM_IDENTIFIER;
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset);
-  keymgr_testutils_advance_state(&keymgr, NULL);
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateInitialized);
+  CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset));
+  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, NULL));
+  CHECK_STATUS_OK(
+      keymgr_testutils_check_state(&keymgr, kDifKeymgrStateInitialized));
   // Advance to kDifKeymgrStateCreatorRootKey state.
   if (is_using_test_rom) {
     LOG_INFO("Using test_rom, setting inputs and advancing state...");
@@ -206,7 +207,7 @@ static void keymgr_advance_to_creator_root_key(void) {
  */
 static void keymgr_check_cannot_advance(void) {
   LOG_INFO("Check that the Keymgr cannot advance...");
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset);
+  CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset));
   // Try to initialize the key manager. We expect this call to fail with
   // a "kDifLocked" code, since the key manager is not enabled.
   CHECK(kDifLocked == dif_keymgr_advance_state(&keymgr, NULL),
@@ -236,9 +237,11 @@ static void keymgr_check_root_key_is_invalid(void) {
 static void keymgr_check_can_generate_key(void) {
   keymgr_advance_to_creator_root_key();
   LOG_INFO("Check that the Keymgr can generate a key...");
-  keymgr_testutils_wait_for_operation_done(&keymgr);
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey);
-  keymgr_testutils_generate_versioned_key(&keymgr, kKeyVersionedParams);
+  CHECK_STATUS_OK(keymgr_testutils_wait_for_operation_done(&keymgr));
+  CHECK_STATUS_OK(
+      keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey));
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(&keymgr, kKeyVersionedParams));
 }
 
 /**
@@ -300,7 +303,8 @@ bool test_main(void) {
       if (rst_info & kDifRstmgrResetInfoPor) {
         LOG_INFO("First access test iteration...");
         // Make sure the secrets in flash are non-zero.
-        keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret);
+        CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash, &kCreatorSecret,
+                                                    &kOwnerSecret));
         // Program the SECRET2 partition and perform read back test.
         run_otp_access_tests(kWriteReadMode, kExpectPassed);
         // We expect the root key to be invalid at this point.
