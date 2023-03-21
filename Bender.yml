@@ -324,6 +324,12 @@ sources:
       - hw/ip/kmac/rtl/kmac_staterd.sv
       - hw/ip/kmac/rtl/sha3.sv
       - hw/ip/kmac/rtl/sha3pad.sv
+
+##### debug_mode_preload
+
+      - hw/ip/debug_mode/rtl/debug_mode_regs_reg_pkg.sv
+      - hw/ip/debug_mode/rtl/debug_mode_regs_reg_top.sv
+      - hw/ip/debug_mode/rtl/debug_mode_preload.sv
       
 ##### rom_ctrl
 
@@ -462,7 +468,8 @@ sources:
       - hw/ip/flash_ctrl/rtl/flash_phy_rd.sv
       - hw/ip/prim_generic/rtl/prim_generic_flash.sv
       - hw/ip/flash_ctrl/rtl/flash_phy.sv
-      - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl.sv
+      #- hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl.sv
+      - hw/ip/flash_ctrl/rtl/flash_ctrl.sv
 
 ###### uart
 
@@ -773,13 +780,14 @@ sources:
       - hw/top_earlgrey/rtl/autogen/top_earlgrey_pkg.sv
       - hw/top_earlgrey/rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv    
       - hw/top_earlgrey/rtl/jtag_id_pkg.sv
-      - hw/top_earlgrey/rtl/autogen/top_earlgrey.sv
+#     - hw/top_earlgrey/rtl/autogen/top_earlgrey.sv
+      - hw/tb/top_earlgrey.sv
       - hw/tb/opentitan_synth_wrap.sv
 
 ##### testbench
 
       - hw/tb/uart.sv
-      - hw/tb/spi_flash/S25fs256s/model/s25fs256s.v
+      #- hw/tb/spi_flash/S25fs256s/model/s25fs256s.v
       - hw/tb/jtag_intf.sv
       - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
       - hw/tb/testbench.sv
