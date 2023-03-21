@@ -113,7 +113,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   int      alert_max_delay;
 
   // Whether to keep the default response on the XHT interface at all time.
-  bit xht_only_default_rsp = 0;
+  bit xht_only_default_rsp = 1;
 
   ///////////////////////
   // Randomized fields //
