@@ -8,7 +8,7 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 package(default_visibility = ["//visibility:public"])
 
 rust_binary(
-    name = "tpm2-test-server",
+    name = "tpm2_test_server",
     srcs = [
         "src/interface.rs",
         "src/main.rs",
@@ -27,7 +27,7 @@ rust_binary(
 
 pkg_files(
     name = "binary",
-    srcs = [":tpm2-test-server"],
+    srcs = [":tpm2_test_server"],
 )
 
 pkg_filegroup(
@@ -35,5 +35,5 @@ pkg_filegroup(
     srcs = [
         ":binary",
     ],
-    prefix = "tpm2-test-server",
+    prefix = "tpm2_test_server",
 )
