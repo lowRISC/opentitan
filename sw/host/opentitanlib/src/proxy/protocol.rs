@@ -7,7 +7,9 @@ use std::collections::HashMap;
 
 use crate::bootstrap::BootstrapOptions;
 use crate::io::emu::{EmuState, EmuValue};
-use crate::io::gpio::{PinMode, PullMode};
+use crate::io::gpio::{
+    ClockNature, MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
+};
 use crate::io::spi::{MaxSizes, TransferMode};
 use crate::proxy::errors::SerializedError;
 use crate::transport::Capabilities;
@@ -24,6 +26,7 @@ pub enum Request {
     GetCapabilities,
     ApplyDefaultConfiguration,
     Gpio { id: String, command: GpioRequest },
+    GpioMonitoring { command: GpioMonRequest },
     Uart { id: String, command: UartRequest },
     Spi { id: String, command: SpiRequest },
     I2c { id: String, command: I2cRequest },
@@ -36,6 +39,7 @@ pub enum Response {
     GetCapabilities(Capabilities),
     ApplyDefaultConfiguration,
     Gpio(GpioResponse),
+    GpioMonitoring(GpioMonResponse),
     Uart(UartResponse),
     Spi(SpiResponse),
     I2c(I2cResponse),
@@ -57,6 +61,25 @@ pub enum GpioResponse {
     Read { value: bool },
     SetMode,
     SetPullMode,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum GpioMonRequest {
+    GetClockNature,
+    Start {
+        pins: Vec<String>,
+    },
+    Read {
+        pins: Vec<String>,
+        continue_monitoring: bool,
+    },
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum GpioMonResponse {
+    GetClockNature { resp: ClockNature },
+    Start { resp: MonitoringStartResponse },
+    Read { resp: MonitoringReadResponse },
 }
 
 #[derive(Serialize, Deserialize)]

@@ -4,19 +4,22 @@
 
 use anyhow::{bail, Result};
 
+use std::borrow::Borrow;
 use std::collections::HashMap;
+use std::rc::Rc;
 use std::time::Duration;
 
 use super::errors::SerializedError;
 use super::protocol::{
-    EmuRequest, EmuResponse, GpioRequest, GpioResponse, I2cRequest, I2cResponse,
-    I2cTransferRequest, I2cTransferResponse, Message, ProxyRequest, ProxyResponse, Request,
-    Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse, UartRequest,
-    UartResponse,
+    EmuRequest, EmuResponse, GpioMonRequest, GpioMonResponse, GpioRequest, GpioResponse,
+    I2cRequest, I2cResponse, I2cTransferRequest, I2cTransferResponse, Message, ProxyRequest,
+    ProxyResponse, Request, Response, SpiRequest, SpiResponse, SpiTransferRequest,
+    SpiTransferResponse, UartRequest, UartResponse,
 };
 use super::CommandHandler;
 use crate::app::TransportWrapper;
 use crate::bootstrap::Bootstrap;
+use crate::io::gpio::GpioPin;
 use crate::io::i2c;
 use crate::io::spi;
 use crate::transport::TransportError;
@@ -67,6 +70,32 @@ impl<'a> TransportCommandHandler<'a> {
                     GpioRequest::SetPullMode { pull } => {
                         instance.set_pull_mode(*pull)?;
                         Ok(Response::Gpio(GpioResponse::SetPullMode))
+                    }
+                }
+            }
+            Request::GpioMonitoring { command } => {
+                let instance = self.transport.gpio_monitoring()?;
+                match command {
+                    GpioMonRequest::GetClockNature => {
+                        let resp = instance.get_clock_nature()?;
+                        Ok(Response::GpioMonitoring(GpioMonResponse::GetClockNature {
+                            resp,
+                        }))
+                    }
+                    GpioMonRequest::Start { pins } => {
+                        let pins = self.transport.gpio_pins(pins)?;
+                        let pins = pins.iter().map(Rc::borrow).collect::<Vec<&dyn GpioPin>>();
+                        let resp = instance.monitoring_start(&pins)?;
+                        Ok(Response::GpioMonitoring(GpioMonResponse::Start { resp }))
+                    }
+                    GpioMonRequest::Read {
+                        pins,
+                        continue_monitoring,
+                    } => {
+                        let pins = self.transport.gpio_pins(pins)?;
+                        let pins = pins.iter().map(Rc::borrow).collect::<Vec<&dyn GpioPin>>();
+                        let resp = instance.monitoring_read(&pins, *continue_monitoring)?;
+                        Ok(Response::GpioMonitoring(GpioMonResponse::Read { resp }))
                     }
                 }
             }
