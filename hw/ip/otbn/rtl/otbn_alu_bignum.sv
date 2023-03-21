@@ -170,20 +170,26 @@ module otbn_alu_bignum
     .out_o (selected_flags)
   );
 
+  logic                  flag_mux_in [FlagsWidth];
+  logic [FlagsWidth-1:0] flag_mux_sel;
+  assign flag_mux_in = '{selected_flags.C,
+                         selected_flags.M,
+                         selected_flags.L,
+                         selected_flags.Z};
+  assign flag_mux_sel = {alu_predec_bignum_i.flag_sel.Z,
+                         alu_predec_bignum_i.flag_sel.L,
+                         alu_predec_bignum_i.flag_sel.M,
+                         alu_predec_bignum_i.flag_sel.C};
+
+  // SEC_CM: DATA_REG_SW.SCA
   prim_onehot_mux #(
     .Width(1),
     .Inputs(FlagsWidth)
   ) u_flag_mux (
     .clk_i,
     .rst_ni,
-    .in_i  ('{selected_flags.C,
-              selected_flags.M,
-              selected_flags.L,
-              selected_flags.Z}),
-    .sel_i ({alu_predec_bignum_i.flag_sel.Z,
-             alu_predec_bignum_i.flag_sel.L,
-             alu_predec_bignum_i.flag_sel.M,
-             alu_predec_bignum_i.flag_sel.C}),
+    .in_i  (flag_mux_in),
+    .sel_i (flag_mux_sel),
     .out_o (selection_flag_o)
   );
 
@@ -271,25 +277,31 @@ module otbn_alu_bignum
     assign ispr_update_flags[i_fg] = ispr_base_wdata_i[i_fg*FlagsWidth+:FlagsWidth];
   end
 
+  localparam int NFlagsSrcs = 5;
   for (genvar i_fg = 0; i_fg < NFlagGroups; i_fg++) begin : g_flag_groups
+
+    flags_t                flags_d_mux_in [NFlagsSrcs];
+    logic [NFlagsSrcs-1:0] flags_d_mux_sel;
+    assign flags_d_mux_in = '{ispr_update_flags[i_fg],
+                              mac_update_flags[i_fg],
+                              logic_update_flags[i_fg],
+                              adder_update_flags,
+                              flags_q[i_fg]};
+    assign flags_d_mux_sel = {alu_predec_bignum_i.flags_keep[i_fg],
+                              alu_predec_bignum_i.flags_adder_update[i_fg],
+                              alu_predec_bignum_i.flags_logic_update[i_fg],
+                              alu_predec_bignum_i.flags_mac_update[i_fg],
+                              alu_predec_bignum_i.flags_ispr_wr[i_fg]};
 
     // SEC_CM: DATA_REG_SW.SCA
     prim_onehot_mux #(
       .Width(FlagsWidth),
-      .Inputs(5)
+      .Inputs(NFlagsSrcs)
     ) u_flags_d_mux (
       .clk_i,
       .rst_ni,
-      .in_i  ('{ispr_update_flags[i_fg],
-                mac_update_flags[i_fg],
-                logic_update_flags[i_fg],
-                adder_update_flags,
-                flags_q[i_fg]}),
-      .sel_i ({alu_predec_bignum_i.flags_keep[i_fg],
-               alu_predec_bignum_i.flags_adder_update[i_fg],
-               alu_predec_bignum_i.flags_logic_update[i_fg],
-               alu_predec_bignum_i.flags_mac_update[i_fg],
-               alu_predec_bignum_i.flags_ispr_wr[i_fg]}),
+      .in_i  (flags_d_mux_in),
+      .sel_i (flags_d_mux_sel),
       .out_o (flags_d[i_fg])
     );
 
