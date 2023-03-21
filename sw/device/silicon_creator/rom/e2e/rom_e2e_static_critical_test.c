@@ -51,10 +51,11 @@ void boot_measurements_test(void) {
                  .digest_endianness = kDifHmacEndiannessLittle,
                  .message_endianness = kDifHmacEndiannessLittle,
              }));
-  hmac_testutils_push_message(&hmac, signed_region_start, signed_region_size);
+  CHECK_STATUS_OK(hmac_testutils_push_message(&hmac, signed_region_start,
+                                              signed_region_size));
   CHECK_DIF_OK(dif_hmac_process(&hmac));
   dif_hmac_digest_t act_digest;
-  hmac_testutils_finish_polled(&hmac, &act_digest);
+  CHECK_STATUS_OK(hmac_testutils_finish_polled(&hmac, &act_digest));
 
   CHECK_ARRAYS_EQ(boot_measurements.rom_ext.data, act_digest.digest,
                   ARRAYSIZE(act_digest.digest));
