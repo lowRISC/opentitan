@@ -138,12 +138,24 @@ impl Uart for SerialPortUart {
     fn write(&self, buf: &[u8]) -> Result<()> {
         // The constant of 10 is approximately 10 uart bit times per byte.
         let pacing = Duration::from_nanos(10 * 1_000_000_000u64 / (self.get_baudrate()? as u64));
-        log::debug!("pacing = {:?}", pacing);
+        log::debug!(
+            "flow control: {:?}, pacing = {:?}",
+            self.flow_control.get(),
+            pacing
+        );
+
+        if self.flow_control.get() == FlowControl::None {
+            return self
+                .port
+                .borrow_mut()
+                .write_all(buf)
+                .context("UART write error");
+        }
 
         for b in buf.iter() {
             // If flow control is enabled, read data from the input stream and
             // process the flow control chars.
-            while self.flow_control.get() != FlowControl::None {
+            loop {
                 self.read_worker(Duration::ZERO)?;
                 // If we're ok to send, then break out of the flow-control loop and send the data.
                 if self.flow_control.get() == FlowControl::Resume {
