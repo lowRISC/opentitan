@@ -1148,28 +1148,31 @@ static void max_power_task(void *task_parameters) {
     CHECK_ARRAYS_EQ(received_uart_data, kUartMessage, num_uart_rx_bytes);
   }
 
-  // Check I2C transactions. Only for DVsim
+  // Check I2C bits TXed were echoed back by the DV agent. (Only for DV.)
   if (kDeviceType == kDeviceSimDV) {
-    uint8_t tx_fifo_lvl, rx_fifo_lvl;
+    uint8_t fmt_fifo_lvl, rx_fifo_lvl;
 
     // Make sure all TX FIFOs have been drained.
     for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
       do {
-        CHECK_DIF_OK(dif_i2c_get_fifo_levels(i2c_handles[ii], &tx_fifo_lvl,
-                                             NULL, NULL, NULL));
-      } while (tx_fifo_lvl > 0);
+        CHECK_DIF_OK(dif_i2c_get_fifo_levels(
+            i2c_handles[ii], &fmt_fifo_lvl,
+            /*rx_fifo_lvl=*/NULL, /*tx_fifo_lvl=*/NULL, /*acq_fifo_lvl=*/NULL));
+      } while (fmt_fifo_lvl > 0);
     };
 
-    // Read data from i2c device.
+    // Read data from I2C RX FIFO.
     for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
-      i2c_testutils_rd(i2c_handles[ii], ii + 1, I2C_PARAM_FIFO_DEPTH - 1);
+      i2c_testutils_rd(i2c_handles[ii], /*addr=*/ii + 1,
+                       /*byte_count=*/I2C_PARAM_FIFO_DEPTH - 1);
     };
 
     // Make sure all data has been read back.
     for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
       do {
-        CHECK_DIF_OK(dif_i2c_get_fifo_levels(i2c_handles[ii], NULL,
-                                             &rx_fifo_lvl, NULL, NULL));
+        CHECK_DIF_OK(dif_i2c_get_fifo_levels(
+            i2c_handles[ii], /*fmt_fifo_lvl=*/NULL, &rx_fifo_lvl,
+            /*tx_fifo_lvl=*/NULL, /*acq_fifo_lvl=*/NULL));
       } while (rx_fifo_lvl < I2C_PARAM_FIFO_DEPTH - 1);
     };
 
