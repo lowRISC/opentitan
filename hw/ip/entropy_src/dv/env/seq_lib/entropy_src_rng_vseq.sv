@@ -425,7 +425,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     fork
         m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
         m_csrng_pull_seq.start(p_sequencer.csrng_sequencer_h);
-        m_xht_seq.start(p_sequencer.xht_sequencer);
+        if (!cfg.xht_only_default_rsp) begin
+          m_xht_seq.start(p_sequencer.xht_sequencer);
+        end
     join_none
   endtask
 
