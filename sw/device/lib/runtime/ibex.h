@@ -202,6 +202,8 @@ inline uint64_t ibex_timeout_elapsed(const ibex_timeout_t *timeout) {
  * @param expr An expression that is evaluated multiple times until true.
  * @param timeout_usec Timeout in microseconds.
  */
+// TODO(#17495) Remove this macro and rename `IBEX_TRY_SPIN_FOR` when all the
+// test are refactored.
 #define IBEX_SPIN_FOR(expr, timeout_usec)                                 \
   do {                                                                    \
     const ibex_timeout_t timeout_ = ibex_timeout_init(timeout_usec);      \
@@ -210,6 +212,23 @@ inline uint64_t ibex_timeout_elapsed(const ibex_timeout_t *timeout) {
             "Timed out after %d usec (%d CPU cycles) waiting for " #expr, \
             timeout_usec, (uint32_t)timeout_.cycles);                     \
     }                                                                     \
+  } while (0)
+
+/**
+ * Convenience macro to spin with timeout in microseconds.
+ *
+ * @param expr An expression that is evaluated multiple times until true.
+ * @param timeout_usec Timeout in microseconds.
+ * @return `kDeadlineExceeded` in case of timeout.
+ */
+#define IBEX_TRY_SPIN_FOR(expr, timeout_usec)                        \
+  do {                                                               \
+    const ibex_timeout_t timeout_ = ibex_timeout_init(timeout_usec); \
+    while (!(expr)) {                                                \
+      if (ibex_timeout_check(&timeout_)) {                           \
+        return DEADLINE_EXCEEDED();                                  \
+      }                                                              \
+    }                                                                \
   } while (0)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_H_
