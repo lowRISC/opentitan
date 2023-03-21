@@ -754,12 +754,13 @@ static void configure_hmac(void) {
   };
   // Use HMAC in SHA256 mode to generate a 256bit key from `kHmacRefLongKey`.
   CHECK_DIF_OK(dif_hmac_mode_sha256_start(&hmac, hmac_transaction_cfg));
-  hmac_testutils_push_message(&hmac, (char *)kHmacRefLongKey,
-                              sizeof(kHmacRefLongKey));
-  hmac_testutils_check_message_length(&hmac, sizeof(kHmacRefLongKey) * 8);
+  CHECK_STATUS_OK(hmac_testutils_push_message(&hmac, (char *)kHmacRefLongKey,
+                                              sizeof(kHmacRefLongKey)));
+  CHECK_STATUS_OK(
+      hmac_testutils_check_message_length(&hmac, sizeof(kHmacRefLongKey) * 8));
   CHECK_DIF_OK(dif_hmac_process(&hmac));
   dif_hmac_digest_t hmac_key_digest;
-  hmac_testutils_finish_polled(&hmac, &hmac_key_digest);
+  CHECK_STATUS_OK(hmac_testutils_finish_polled(&hmac, &hmac_key_digest));
 
   // Configure the HMAC in HMAC mode.
   CHECK_DIF_OK(dif_hmac_mode_hmac_start(
@@ -928,8 +929,10 @@ static void crypto_data_load_task(void *task_parameters) {
   CHECK_DIF_OK(dif_aes_load_data(&aes, aes_plain_text));
 
   // Load data into HMAC block.
-  hmac_testutils_push_message(&hmac, kHmacRefData, sizeof(kHmacRefData));
-  hmac_testutils_check_message_length(&hmac, sizeof(kHmacRefData) * 8);
+  CHECK_STATUS_OK(
+      hmac_testutils_push_message(&hmac, kHmacRefData, sizeof(kHmacRefData)));
+  CHECK_STATUS_OK(
+      hmac_testutils_check_message_length(&hmac, sizeof(kHmacRefData) * 8));
 
   // Load data into KMAC block.
   dif_kmac_customization_string_t kmac_customization_string;
@@ -1119,7 +1122,8 @@ static void max_power_task(void *task_parameters) {
                   ARRAYSIZE(aes_cipher_text.data));
 
   // Check HMAC operations.
-  hmac_testutils_finish_and_check_polled(&hmac, &kHmacRefExpectedDigest);
+  CHECK_STATUS_OK(
+      hmac_testutils_finish_and_check_polled(&hmac, &kHmacRefExpectedDigest));
 
   // Check KMAC operations.
   uint32_t kmac_digest[kKmacDigestLength];
