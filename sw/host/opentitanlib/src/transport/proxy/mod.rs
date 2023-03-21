@@ -14,7 +14,7 @@ use thiserror::Error;
 use crate::bootstrap::BootstrapOptions;
 use crate::impl_serializable_error;
 use crate::io::emu::Emulator;
-use crate::io::gpio::GpioPin;
+use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
@@ -197,6 +197,11 @@ impl Transport for Proxy {
     // Create GpioPin instance, or return one from a cache of previously created instances.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(Rc::new(gpio::ProxyGpioPin::open(self, pinname)?))
+    }
+
+    // Create ProxyOps instance.
+    fn gpio_monitoring(&self) -> Result<Rc<dyn GpioMonitoring>> {
+        Ok(Rc::new(gpio::GpioMonitoringImpl::new(self)?))
     }
 
     // Create Emulator instance, or return one from a cache of previously created instances.
