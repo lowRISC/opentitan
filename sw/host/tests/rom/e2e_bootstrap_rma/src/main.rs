@@ -241,7 +241,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         //
         // [0]: https://docs.opentitan.org/hw/ip/lc_ctrl/doc/#life-cycle-tap-controller
         // [1]: See where `dmi_jtag_tap` is created in hw/vendor/pulp_riscv_dbg/src/dmi_jtag.sv
-        // [2]: See where `dmi_jtag` is instantiated in hw/ip/lc_ctrl/rtl/lc_ctrl.sv
+        // [2]: See the `IdcodeValue` for `lc_ctrl` in hw/top_earlgrey/data/top_earlgrey.hjson
         //
         // Because these commands are command-line args, they *must* end with
         // semicolons to satisfy the TCL lexer. When a TCL program is read from
@@ -250,7 +250,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             "-c",
             "transport select jtag;",
             "-c",
-            "jtag newtap lc_ctrl tap -irlen 5 -expected-id 0x00000001 -ignore-bypass;",
+            "jtag newtap lc_ctrl tap -irlen 5 -expected-id 0x04f5484d -ignore-bypass;",
             "-c",
             &format!(
                 "target create {JTAG_TAP_NAME} riscv -chain-position lc_ctrl.tap -rtos hwthread;"
