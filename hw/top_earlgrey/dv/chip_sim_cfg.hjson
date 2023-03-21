@@ -1883,6 +1883,7 @@
               "chip_sw_kmac_mode_kmac",
               "chip_sw_kmac_mode_kmac_jitter_en",
               "chip_sw_sleep_pin_mio_dio_val",
+              "chip_sw_power_virus",
               // TODO: uncomment when these run with Xcelium.
               // "chip_sw_lc_walkthrough_dev",
               // "chip_sw_lc_walkthrough_prod",
