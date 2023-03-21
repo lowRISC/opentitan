@@ -18,6 +18,7 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
     int reset_txn_num = 1;
     bit reset_drv_st = 0;
     bit resume_sb = 0;
+    bit is_read;
 
     // Add some config noise to stretch coverage
     ral.ctrl.enablehost.set(1'b0);
@@ -62,7 +63,11 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
           if (i == reset_txn_num) begin
             `uvm_info("seq", $sformatf("test skip comparison is set %0d", i), UVM_HIGH)
             reset_drv_st = 1;
-            fetch_no_tb_txn(txn_q, m_i2c_host_seq.req_q);
+            fetch_no_tb_txn(txn_q, m_i2c_host_seq.req_q, is_read);
+            if(is_read)
+              `uvm_info(`gfn, "Injecting Start glitch in Read data", UVM_LOW)
+            else
+              `uvm_info(`gfn, "Injecting Start glitch in Write data", UVM_LOW)
           end else begin
             fetch_txn(txn_q, m_i2c_host_seq.req_q);
           end
@@ -90,25 +95,32 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
         `DV_WAIT(resume_sb,, cfg.spinwait_timeout_ns, "resume_sb")
       end
       begin
-        `DV_WAIT(reset_drv_st,, cfg.spinwait_timeout_ns, "set hot_glitch")
-        cfg.m_i2c_agent_cfg.hot_glitch = 1;
-        `DV_WAIT(!cfg.m_i2c_agent_cfg.hot_glitch,, cfg.spinwait_timeout_ns, "unset hot_glitch")
+        if (is_read) begin
+          `DV_WAIT(reset_drv_st,, cfg.spinwait_timeout_ns, "set hot_glitch")
+          repeat(13) // Start+Address+RW+DATA0
+            @(posedge cfg.m_i2c_agent_cfg.vif.scl_i);
+          cfg.m_i2c_agent_cfg.hot_glitch = 1;
+          `DV_WAIT(!cfg.m_i2c_agent_cfg.hot_glitch,, cfg.spinwait_timeout_ns, "unset hot_glitch")
+        end
       end
     join
   endtask : body
 
   // Feed txn to driver only. This doesn't create expected txn.
-  function void fetch_no_tb_txn(ref i2c_item src_q[$], i2c_item dst_q[$]);
+  function void fetch_no_tb_txn(ref i2c_item src_q[$], i2c_item dst_q[$], bit is_read);
     i2c_item txn;
     i2c_item rs_txn;
+    i2c_item exp_txn;
     i2c_item full_txn;
     int read_size;
-    bit is_read = get_read_write();
     bit [6:0] t_addr;
-    bit       valid_addr;
+    bit valid_addr;
+    bit got_valid;
 
     `uvm_info("seq", $sformatf("ntb idx %0d:is_read:%0b size:%0d fetch_txn:%0d",
                                start_cnt++, is_read, src_q.size(), full_txn_num++), UVM_MEDIUM)
+    // Update read/write bit for the address transaction
+    is_read = get_read_write();
 
     // From target mode, read data is corresponds to txdata from DUT.
     // While dut's sda is always 1, tb can drive sda freely.
@@ -125,6 +137,7 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
     if (is_read) full_txn.tran_id = this.exp_rd_id;
     // Address
     `uvm_create_obj(i2c_item, txn)
+    `uvm_create_obj(i2c_item, exp_txn)
     txn.drv_type = HostData;
     txn.start = 1;
     txn.wdata[7:1] = get_target_addr(); //target_addr0;
@@ -132,9 +145,39 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
     valid_addr = is_target_addr(txn.wdata[7:1]);
 
     txn.tran_id = this.tran_id;
+    `downcast(exp_txn, txn.clone());
     dst_q.push_back(txn);
     full_txn.addr = txn.wdata[7:1];
     full_txn.read = is_read;
+    // Start command acq entry
+    if (valid_addr && !is_read) begin
+      p_sequencer.target_mode_wr_exp_port.write(exp_txn);
+      cfg.sent_acq_cnt++;
+      this.tran_id++;
+      got_valid = 1;
+      if (is_read) this.exp_rd_id++;
+      // Add entry for RSTART glitch
+      `uvm_create_obj(i2c_item, exp_txn)
+      exp_txn.tran_id = this.tran_id;
+      exp_txn.rstart=1;
+      exp_txn.start=0;
+      exp_txn.stop=0;
+      p_sequencer.target_mode_wr_exp_port.write(exp_txn);
+      cfg.sent_acq_cnt++;
+      this.tran_id++;
+    end
+
+    `uvm_create_obj(i2c_item, txn)
+    txn = src_q.pop_front();
+    txn.drv_type = HostData;
+    txn.rstart = 0;
+    if (valid_addr && !is_read) begin
+      // For Write transactions in Target mode, since I2C driver is issuing data bytes,
+      // Filling up the queue with one data item would be sufficient
+      txn.drv_type = HostDataGlitch;
+      dst_q.push_back(txn);
+      return;
+    end
 
     // Start command acq entry
     read_size = get_read_data_size(src_q, is_read, read_rcvd);
