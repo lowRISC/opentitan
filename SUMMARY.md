@@ -382,6 +382,7 @@
   - [Silicon Creator Software](./sw/device/silicon_creator/README.md)
     - [Manufacturing Firmware](./sw/device/silicon_creator/manuf/README.md)
     - [ROM](./sw/device/silicon_creator/rom/README.md)
+      - [ROM Specification](./sw/device/silicon_creator/rom/doc/rom_overview_specification.md)
       - [Memory Protection](./sw/device/silicon_creator/rom/doc/memory_protection.md)
       - [E2E tests](./sw/device/silicon_creator/rom/doc/e2e_tests.md)
       - [Signing Keys](./sw/device/silicon_creator/rom/keys/README.md)
