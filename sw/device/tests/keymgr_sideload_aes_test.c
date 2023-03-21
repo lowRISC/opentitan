@@ -41,16 +41,17 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static void keymgr_initialize(void) {
   // Initialize keymgr and advance to CreatorRootKey state.
-  keymgr_testutils_startup(&keymgr, &kmac);
+  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
   LOG_INFO("Keymgr entered CreatorRootKey State");
   // Generate identity at CreatorRootKey (to follow same sequence and reuse
   // chip_sw_keymgr_key_derivation_vseq.sv).
-  keymgr_testutils_generate_identity(&keymgr);
+  CHECK_STATUS_OK(keymgr_testutils_generate_identity(&keymgr));
   LOG_INFO("Keymgr generated identity at CreatorRootKey State");
 
   // Advance to OwnerIntermediateKey state.
-  keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams);
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerIntermediateKey);
+  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+  CHECK_STATUS_OK(keymgr_testutils_check_state(
+      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
   LOG_INFO("Keymgr entered OwnerIntKey State");
 }
 
@@ -95,7 +96,8 @@ void aes_test(void) {
   // Generate sideload key for AES interface at OwnerIntKey state.
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
   sideload_params.dest = kDifKeymgrVersionedKeyDestAes;
-  keymgr_testutils_generate_versioned_key(&keymgr, sideload_params);
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for Aes at OwnerIntKey State");
 
   // Initialize AES.
@@ -156,7 +158,8 @@ void aes_test(void) {
 
   // Generate the same key again and check that encryption result is identical
   // as the first.
-  keymgr_testutils_generate_versioned_key(&keymgr, sideload_params);
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for Aes at OwnerIntKey State");
 
   dif_aes_data_t out_data_second_cipher;

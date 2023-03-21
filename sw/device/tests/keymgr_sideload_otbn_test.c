@@ -83,7 +83,8 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
   // TODO(weicai): also check in SV sequence that the key is correct.
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
   sideload_params.dest = kDifKeymgrVersionedKeyDestOtbn;
-  keymgr_testutils_generate_versioned_key(keymgr, sideload_params);
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for OTBN.");
 
   // Load the X25519 application.
@@ -108,8 +109,8 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
   // Clear the ERR bits register
   mmio_region_write32(otbn->base_addr, OTBN_ERR_BITS_REG_OFFSET, 0x0);
 
-  keymgr_testutils_generate_versioned_key(
-      keymgr, sideload_params);  // Regenerate the sideload key.
+  CHECK_STATUS_OK(keymgr_testutils_generate_versioned_key(
+      keymgr, sideload_params));  // Regenerate the sideload key.
   LOG_INFO("Keymgr generated HW output for OTBN.");
   uint32_t post_clear_salt_result[8];
   run_x25519_app(otbn, post_clear_salt_result, kErrBitsOk);
@@ -117,7 +118,8 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
 
   // Change the salt to generate a different key.
   sideload_params.salt[0] = ~sideload_params.salt[0];
-  keymgr_testutils_generate_versioned_key(keymgr, sideload_params);
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for OTBN.");
 
   uint32_t modified_salt_result[8];
@@ -129,7 +131,8 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
 
   // Change the salt back to generate the first key again.
   sideload_params.salt[0] = ~sideload_params.salt[0];
-  keymgr_testutils_generate_versioned_key(keymgr, sideload_params);
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for OTBN.");
 
   uint32_t same_key_result[8];
@@ -144,10 +147,11 @@ bool test_main(void) {
   // Initialize keymgr and advance to CreatorRootKey state.
   dif_keymgr_t keymgr;
   dif_kmac_t kmac;
-  keymgr_testutils_startup(&keymgr, &kmac);
+  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
   // Advance to OwnerIntermediateKey state.
-  keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams);
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerIntermediateKey);
+  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+  CHECK_STATUS_OK(keymgr_testutils_check_state(
+      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
   LOG_INFO("Keymgr entered OwnerIntKey State");
 
   // Initialize OTBN.

@@ -75,7 +75,8 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   // Generate the sideloaded key.
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
   sideload_params.dest = kDifKeymgrVersionedKeyDestKmac;
-  keymgr_testutils_generate_versioned_key(keymgr, sideload_params);
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for Kmac at OwnerIntKey State");
 
   kmac_testutils_kmac(kmac, kKmacMode, &kSoftwareKey, kCustomString,
@@ -110,7 +111,8 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
 
   // Sideload the same KMAC key again and check if we can compute the same
   // result as before.
-  keymgr_testutils_generate_versioned_key(keymgr, sideload_params);
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr regenerated HW output for Kmac at OwnerIntKey State");
 
   kmac_testutils_kmac(kmac, kKmacMode, &kSoftwareKey, kCustomString,
@@ -127,11 +129,12 @@ bool test_main(void) {
   // Initialize keymgr and advance to CreatorRootKey state.
   dif_keymgr_t keymgr;
   dif_kmac_t kmac;
-  keymgr_testutils_startup(&keymgr, &kmac);
+  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
 
   // Advance to OwnerIntKey state.
-  keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams);
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerIntermediateKey);
+  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+  CHECK_STATUS_OK(keymgr_testutils_check_state(
+      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
   LOG_INFO("Keymgr entered OwnerIntKey State");
 
   // Test KMAC sideloading.

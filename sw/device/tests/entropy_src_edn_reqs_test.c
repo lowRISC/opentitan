@@ -243,8 +243,9 @@ bool test_main() {
     AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, /*value=*/true,
                                   /*timeout_usec=*/100000);
     CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/false));
-    keymgr_testutils_wait_for_operation_done(&kmgr);
-    keymgr_testutils_check_state(&kmgr, kDifKeymgrStateInitialized);
+    CHECK_STATUS_OK(keymgr_testutils_wait_for_operation_done(&kmgr));
+    CHECK_STATUS_OK(
+        keymgr_testutils_check_state(&kmgr, kDifKeymgrStateInitialized));
     entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1);
   }
   return true;
