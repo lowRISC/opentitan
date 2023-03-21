@@ -146,9 +146,16 @@ book_env+=" MDBOOK_PREPROCESSOR__BLOCK_DASHBOARD__COMMAND=${proj_root}/util/mdbo
 book_guides_env="env"
 book_guides_env+=" MDBOOK_PREPROCESSOR__TOOLVERSION__COMMAND=${proj_root}/util/mdbook_toolversion.py"
 book_guides_env+=" MDBOOK_PREPROCESSOR__README2INDEX__COMMAND=${proj_root}/util/mdbook_readme2index.py"
+
 # Add theme to both books
 book_env+=" MDBOOK_OUTPUT__HTML__THEME=$proj_root/site/book-theme/"
 book_guides_env+=" MDBOOK_OUTPUT__HTML__THEME=$proj_root/site/book-theme/"
+# Set default themes
+book_env+=" MDBOOK_OUTPUT__HTML__DEFAULT_THEME=unicorn-vomit-light"
+book_guides_env+=" MDBOOK_OUTPUT__HTML__DEFAULT_THEME=unicorn-vomit-light"
+# TODO: update once we have an opentitan-dark theme
+book_env+=" MDBOOK_OUTPUT__HTML__PREFERRED_DARK_THEME=unicorn-vomit-light"
+book_guides_env+=" MDBOOK_OUTPUT__HTML__PREFERRED_DARK_THEME=unicorn-vomit-light"
 
 # Build up Hugo arguments
 hugo_args=""
