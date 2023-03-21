@@ -109,6 +109,9 @@ export SRCTREE_TOP="${proj_root}"
 export DOXYGEN_OUT="${build_dir}/gen"
 # mdbook theme
 export MDBOOK_OUTPUT__HTML__THEME="$proj_root/site/book-theme/"
+export MDBOOK_OUTPUT__HTML__DEFAULT_THEME="unicorn-vomit-light"
+# TODO: update once we have an opentitan-dark theme
+export MDBOOK_OUTPUT__HTML__PREFERRED_DARK_THEME="unicorn-vomit-light"
 # Hugo
 export HUGO_PARAMS_DOCSURL="${base_url}/book"
 # Block diagram
