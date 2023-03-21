@@ -74,6 +74,13 @@
     }
 
     {
+      name: entropy_src_rng_with_xht_rsps
+      uvm_test: entropy_src_rng_test
+      uvm_test_seq: entropy_src_rng_vseq
+      run_opts: ["+xht_only_default_rsp=0"]
+    }
+
+    {
       name: entropy_src_stress_all
       uvm_test: entropy_src_stress_all_test
       uvm_test_seq: entropy_src_stress_all_vseq

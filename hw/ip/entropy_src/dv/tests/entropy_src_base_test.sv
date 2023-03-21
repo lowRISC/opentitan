@@ -27,6 +27,13 @@ class entropy_src_base_test extends cip_base_test #(
   // Overrides should happen in the specific testcase.
 
   virtual function void configure_env();
+    // Take plusargs into account.
+    bit xht_only_default_rsp;
+    if ($value$plusargs("xht_only_default_rsp=%0b", xht_only_default_rsp)) begin
+      `uvm_info(`gfn, $sformatf("+xht_only_default_rsp specified"), UVM_MEDIUM)
+      cfg.xht_only_default_rsp = xht_only_default_rsp;
+    end
+
     // seed_cnt only used by smoke test
     // so there is no need to randomize it.
     cfg.seed_cnt                       = 1;
