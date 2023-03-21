@@ -183,6 +183,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         process_interrupts();
         process_fifo_exceptions();
         health_test_scoring_thread();
+        process_xht();
       join_none
     end
   endtask
@@ -1103,6 +1104,21 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         if (new_intrs[i]) begin
           `uvm_info(`gfn, $sformatf("INTERRUPT RECEIVED: %0s", i.name), UVM_FULL)
         end
+      end
+    end
+  endtask
+
+  task process_xht();
+    // Process XHT transactions.
+    forever begin
+      @(cfg.m_xht_agent_cfg.vif.mon_cb);
+      if (cfg.under_reset) continue;
+
+      if (cfg.xht_only_default_rsp) begin
+        // If the environment is configured to maintain the default XHT response at all time, ensure
+        // that this is really the case.
+        `DV_CHECK_EQ(cfg.m_xht_agent_cfg.vif.mon_cb.rsp,
+                     entropy_src_pkg::ENTROPY_SRC_XHT_RSP_DEFAULT)
       end
     end
   endtask
