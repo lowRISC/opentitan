@@ -117,6 +117,13 @@ module kmac_app
   output logic sparse_fsm_error_o
 );
 
+  import sha3_pkg::KeccakBitCapacity;
+  import sha3_pkg::L128;
+  import sha3_pkg::L224;
+  import sha3_pkg::L256;
+  import sha3_pkg::L384;
+  import sha3_pkg::L512;
+
   /////////////////
   // Definitions //
   /////////////////
@@ -702,12 +709,25 @@ module kmac_app
   // Keccak state Demux
   // Keccak state --> Register output is enabled when state is in StSw
   always_comb begin
+    reg_state_valid = 1'b 0;
+    reg_state_o = '{default:'0};
     if ((mux_sel_buf_output == SelSw) && (lc_escalate_en_i == lc_ctrl_pkg::Off)) begin
       reg_state_valid = keccak_state_valid_i;
       reg_state_o = keccak_state_i;
-    end else begin
-      reg_state_valid = 1'b 0;
-      reg_state_o = '{default:'0};
+      // If key is sideloaded and KMAC is SW initiated
+      // hide the capacity from SW by zeroing (see #17508)
+      if (keymgr_key_en_i) begin
+        for (int i = 0; i < Share; i++) begin
+          unique case (reg_keccak_strength_i)
+            L128: reg_state_o[i][sha3_pkg::StateW-1-:KeccakBitCapacity[L128]] = '0;
+            L224: reg_state_o[i][sha3_pkg::StateW-1-:KeccakBitCapacity[L224]] = '0;
+            L256: reg_state_o[i][sha3_pkg::StateW-1-:KeccakBitCapacity[L256]] = '0;
+            L384: reg_state_o[i][sha3_pkg::StateW-1-:KeccakBitCapacity[L384]] = '0;
+            L512: reg_state_o[i][sha3_pkg::StateW-1-:KeccakBitCapacity[L512]] = '0;
+            default: reg_state_o[i] = '0;
+          endcase
+        end
+      end
     end
   end
 
