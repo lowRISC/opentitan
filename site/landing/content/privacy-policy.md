@@ -135,7 +135,7 @@ rights free of charge. In summary, those include rights to:
 For further information on each of those rights, including the circumstances in
 which they apply, see the [Guidance from the UK Information Commissioner's
 Office (ICO) on individuals rights under the General Data Protection
-Regulation](http://ico.org.uk/for-organisations/guide-to-the-general-data-protection-regulation-gdpr/individual-rights/).
+Regulation](https://ico.org.uk/for-organisations/guide-to-the-general-data-protection-regulation-gdpr/individual-rights/).
 
 If you would like to exercise any of those rights, please:
 
@@ -149,7 +149,7 @@ on the 'unsubscribe' button at the bottom of the email newsletter. It may take
 up to seven days for this to take place.
 
 The [General Data Protection
-Regulation](http://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32016R0679&from=EN)
+Regulation](https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32016R0679&from=EN)
 also gives you right to lodge a complaint with a supervisory authority, in
 particular in the European Union (or European Economic Area) state where you
 work, normally live or where any alleged infringement of data protection laws

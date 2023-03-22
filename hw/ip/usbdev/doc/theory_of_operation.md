@@ -1,6 +1,6 @@
 # Theory of Operation
 
-A useful quick reference for USB Full-Speed is [USB Made Simple, Part 3 - Data Flow.](http://www.usbmadesimple.co.uk/ums_3.htm)
+A useful quick reference for USB Full-Speed is [USB Made Simple, Part 3 - Data Flow.](https://www.usbmadesimple.co.uk/ums_3.htm)
 
 The block diagram shows a high level view of the USB device including the main register access paths.
 
