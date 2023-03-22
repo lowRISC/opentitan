@@ -252,11 +252,10 @@ struct usb_testutils_streams_ctx {
  * @return The result status of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
-                                    unsigned nstreams,
-                                    usb_testutils_transfer_type_t xfr_types[],
-                                    uint32_t num_bytes,
-                                    usbdev_stream_flags_t flags, bool verbose);
+status_t usb_testutils_streams_init(
+    usb_testutils_streams_ctx_t *ctx, unsigned nstreams,
+    const usb_testutils_transfer_type_t xfr_types[], uint32_t num_bytes,
+    usbdev_stream_flags_t flags, bool verbose);
 
 /**
  * Service all streams, preparing and/or sending any data that we can, as well

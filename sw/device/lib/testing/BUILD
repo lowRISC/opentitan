@@ -424,6 +424,7 @@ cc_library(
     srcs = [
         "usb_testutils.c",
         "usb_testutils_controlep.c",
+        "usb_testutils_diags.c",
     ],
     hdrs = [
         "usb_testutils.h",

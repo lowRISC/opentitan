@@ -4,6 +4,8 @@
 
 #ifndef OPENTITAN_HW_DV_DPI_USBDPI_USB_TRANSFER_H_
 #define OPENTITAN_HW_DV_DPI_USBDPI_USB_TRANSFER_H_
+#include <assert.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>

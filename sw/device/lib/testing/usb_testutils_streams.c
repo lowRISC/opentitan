@@ -638,11 +638,10 @@ status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
   return OK_STATUS();
 }
 
-status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
-                                    unsigned nstreams,
-                                    usb_testutils_transfer_type_t xfr_types[],
-                                    uint32_t num_bytes,
-                                    usbdev_stream_flags_t flags, bool verbose) {
+status_t usb_testutils_streams_init(
+    usb_testutils_streams_ctx_t *ctx, unsigned nstreams,
+    const usb_testutils_transfer_type_t xfr_types[], uint32_t num_bytes,
+    usbdev_stream_flags_t flags, bool verbose) {
   TRY_CHECK(nstreams <= USBUTILS_STREAMS_MAX);
 
   // Initialize the state of each stream

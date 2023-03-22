@@ -23,6 +23,7 @@ typedef uint32_t svBitVecVal;
 #include "usb_transfer.h"
 #include "usb_utils.h"
 #include "usbdpi_stream.h"
+#include "usbdpi_test.h"
 
 // Shall we employ a proper simulation of the frame interval (1ms)?
 // TODO - until such time as we can perform multiple control transfers in a
@@ -156,6 +157,9 @@ typedef uint32_t svBitVecVal;
 // Maximum length of test status message
 #define USBDPI_MAX_TEST_MSG_LEN 80U
 
+// Maximum number of times to /re/try a Control Transfer before faulting it.
+#define USBDPI_MAX_RETRIES 2U
+
 // Vendor-specific commands used for test framework
 #define USBDPI_VENDOR_TEST_CONFIG 0x7CU
 #define USBDPI_VENDOR_TEST_STATUS 0x7EU
@@ -175,47 +179,9 @@ typedef enum {
   ST_GET = 2,
   ST_SYNC = 3,
   ST_EOP = 4,
-  ST_EOP0 = 5
+  ST_EOP0 = 5,
+  ST_RESUME = 6,
 } usbdpi_drv_state_t;
-
-// Test steps
-typedef enum {
-
-  STEP_BUS_RESET = 0u,
-  STEP_SET_DEVICE_ADDRESS,
-  STEP_GET_DEVICE_DESCRIPTOR,
-  STEP_GET_CONFIG_DESCRIPTOR,
-  STEP_GET_FULL_CONFIG_DESCRIPTOR,
-  STEP_SET_DEVICE_CONFIG,
-
-  // Read test configuration
-  // This is a bespoke 'vendor' command via which we inquire of the CPU
-  // software what behaviour is required
-  STEP_GET_TEST_CONFIG,
-  // Report test status (pass/failure) to the CPU software
-  STEP_SET_TEST_STATUS,
-
-  // usbdev_test
-  STEP_FIRST_READ,
-  STEP_READ_BAUD,
-  STEP_SECOND_READ,
-  STEP_SET_BAUD,
-  STEP_THIRD_READ,
-  STEP_TEST_ISO1,
-  STEP_TEST_ISO2,
-  STEP_ENDPT_UNIMPL_SETUP,
-  STEP_ENDPT_UNIMPL_OUT,
-  STEP_ENDPT_UNIMPL_IN,
-  STEP_DEVICE_UK_SETUP,
-  STEP_IDLE_START,
-  STEP_IDLE_END = STEP_IDLE_START + 4,
-
-  // usbdev_stream_test
-  STEP_STREAM_SERVICE = 0x20u,
-
-  // Disconnect the device and stop
-  STEP_BUS_DISCONNECT = 0x7fu
-} usbdpi_test_step_t;
 
 // Host states
 typedef enum {
@@ -287,7 +253,11 @@ struct usbdpi_ctx {
   /**
    * Test number, retrieved from the software
    */
-  uint16_t test_number;
+  usb_testutils_test_number_t test_number;
+  /**
+   * Phase within test, retrieved from the software
+   */
+  usbdev_suspend_phase_t test_phase;
   /**
    * Test-specific arguments
    */
@@ -371,20 +341,49 @@ struct usbdpi_ctx {
    */
   uint32_t tick_bits;
   /**
-   * End time of recovery interval (following device attachment)
+   * End time of bus reset (following device attachment)
+   */
+  uint32_t reset_time;
+  /**
+   * End time of recovery interval (following device attachment and reset)
    */
   uint32_t recovery_time;
+
+  /**
+   * End time of resume signaling
+   */
+  uint32_t resume_end_time;
+  /**
+   * End time of Low Speed SE0 when resuming
+   */
+  uint32_t resume_SE0_end_time;
+  /**
+   * End time of Low Speed J when resuming
+   */
+  uint32_t resume_J_end_time;
 
   /**
    * Test step number
    */
   usbdpi_test_step_t step;
+  /**
+   * Test sub-step number
+   */
+  uint8_t substep;
+  /**
+   * Number of attempts to complete the current Control Transfer stage
+   */
+  uint8_t num_tries;
 
-  // Bus framing
-  // Note: USB frame numbers are transmitted as 11-bit fields [0,0x7ffU]
+  /**
+   * Current bus frame number
+   * Note: USB frame numbers are transmitted as 11-bit fields [0,0x7ffU]
+   */
   uint16_t frame;
-  uint16_t framepend;
-
+  /**
+   * New bus frame pending
+   */
+  bool framepend;
   /**
    * Time at which the current frame started (bit intervals)
    */

@@ -2058,6 +2058,41 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "usbdev_suspend_test",
+    srcs = ["usbdev_suspend_test.c"],
+    cw310 = cw310_params(
+        tags = ["skip_in_ci"],  # Requires DPI model
+        timeout = "eternal",
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing:usb_testutils",
+        "//sw/device/lib/testing:usb_testutils_streams",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "rstmgr_alert_info_test",
     srcs = ["rstmgr_alert_info_test.c"],
     targets = [
