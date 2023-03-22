@@ -249,7 +249,7 @@ Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | N/A         |
 Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Waived      | Revisit later. Tool setup in progress
 Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | N/A         |
 Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Done        |
-Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Done        |[common_cov_excl.el][], [uart_cov_excl.el][]
+Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Done        |[common_cov_excl.cfg][], [uart_cov_excl.el][]
 Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Done        |
 Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | N/A         |
 Coverage      | [FPV_COI_COVERAGE_AT_100][]       | N/A         |
@@ -275,5 +275,5 @@ Review        | Signoff date                      | Done        | 2019-11-01
 [PRE_VERIFIED_SUB_MODULES_V3]:   ../../../../doc/project_governance/checklist/README.md#pre_verified_sub_modules_v3
 [NO_ISSUES_PENDING]:             ../../../../doc/project_governance/checklist/README.md#no_issues_pending
 
-[common_cov_excl.el]:https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/vcs/common_cov_excl.el
+[common_cov_excl.cfg]:https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/vcs/common_cov_excl.cfg
 [uart_cov_excl.el]:  https://github.com/lowRISC/opentitan/blob/04bb36e0ae1430262b048d400102b0fed43377ac/hw/ip/uart/dv/cov/uart_cov_excl.el

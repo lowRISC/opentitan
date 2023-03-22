@@ -57,4 +57,4 @@ See [Vendor Tool User Guide](../util/doc/vendor.md)
 
 * [CoreMark](https://github.com/eembc/coremark)
 * [Cryptoc](https://chromium.googlesource.com/chromiumos/third_party/cryptoc/)
-* [LLVM's Compiler-RT Coverage Profiling Library](https://github.com/llvm/llvm-project/tree/master/compiler-rt)
+* [LLVM's Compiler-RT Coverage Profiling Library](https://github.com/llvm/llvm-project/tree/main/compiler-rt)

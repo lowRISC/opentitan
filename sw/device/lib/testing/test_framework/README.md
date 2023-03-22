@@ -6,8 +6,8 @@
 
 [Chip-level tests](../../../tests/README.md) are designed to be executed across all OpenTitan verification targets DV simulation, Verilator simulation, FPGA, and (eventually) silicon, using host-side test initiation tools, and an on-device test framework, as shown in the figure above.
 On the _host_ side, two main tools are used to initiate tests on the device. For the DV simulation target, the [dvsim.py](https://github.com/lowRISC/opentitan/blob/master/util/dvsim/dvsim.py) tool is used, while for Verilator and FPGA targets, Bazel (and `opentitantool`) is used.
-Focusing on the _device_ side, for all three targets, the [on-device test framework](https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/testing/test_framework/test_main.c) is used to provide a uniform execution environment for chip-level tests.
-The [on-device test framework](https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/testing/test_framework/test_main.c) provides boilerplate setup code that configures the UART for communicating messages and test results back to the host.
+Focusing on the _device_ side, for all three targets, the [on-device test framework](https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/testing/test_framework/ottf_main.c) is used to provide a uniform execution environment for chip-level tests.
+The [on-device test framework](https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/testing/test_framework/ottf_main.c) provides boilerplate setup code that configures the UART for communicating messages and test results back to the host.
 
 # Writing a Chip-Level Test
 To write a chip-level test that uses this framework, one must create a new C file for the test (see [Chip-Level Tests](../../../tests/README.md) for where to place this test) and follow the steps below.
@@ -33,7 +33,7 @@ Check out the [rv\_timer smoke test](https://github.com/lowRISC/opentitan/blob/m
 ## Signaling the end of test and self-checking mechanism
 It is mandatory to invoke the target-agnostic API `test_status_set()` to explicitly signal the end of the test based on whether it passed or failed.
 When invoked, the API calls `abort()` at the end to stop the core from executing any further.
-Please see [`sw/device/lib/testing/test_framework/test_status.h`](https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/testing/test_framework/test_status.h) for documentation and usage.
+Please see [`sw/device/lib/testing/test_framework/status.h`](https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/testing/test_framework/status.h) for documentation and usage.
 
 ### Non-DV Targets
 In non-DV targets (Verilator simulation, FPGA, or silicon), the signal is a message written to the console.

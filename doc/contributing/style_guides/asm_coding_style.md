@@ -21,7 +21,7 @@ As such, no advice is provided for other RISC-V extensions, though this style gu
 
 ***When referring to a RISC-V register, they must be referred to by their ABI names.***
 
-See the [psABI Reference](https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.md#register-convention) for a reference to these names.
+See the [psABI Reference](https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.adoc#register-convention) for a reference to these names.
 
 Example:
 ```S
