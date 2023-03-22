@@ -73,6 +73,7 @@ impl Ti50Emulator {
         let inner = Rc::new(Inner {
             instance_directory,
             process: RefCell::new(process),
+            gpio_map: RefCell::new(HashMap::new()),
         });
 
         let mut gpio_map: HashMap<String, Rc<dyn GpioPin>> = HashMap::new();
@@ -82,8 +83,11 @@ impl Ti50Emulator {
         let reset_pin = ResetPin::open(&inner)?;
         gpio_map.insert("RESET".to_string(), Rc::new(reset_pin));
         for (name, state) in conf.gpio.iter() {
-            let path = format!("gpio{}", name);
-            let gpio: Rc<dyn GpioPin> = Rc::new(Ti50GpioPin::open(&inner, &path, state)?);
+            inner
+                .gpio_map
+                .borrow_mut()
+                .insert(name.to_string(), gpio::GpioConfiguration::default());
+            let gpio: Rc<dyn GpioPin> = Rc::new(Ti50GpioPin::open(&inner, name, *state)?);
             gpio_map.insert(name.to_uppercase(), Rc::clone(&gpio));
         }
         for (name, path) in conf.uart.iter() {
@@ -123,6 +127,8 @@ pub struct Inner {
     instance_directory: PathBuf,
     /// SubProcess instance
     process: RefCell<EmulatorProcess>,
+    /// Current state of host drive of all GPIOs
+    gpio_map: RefCell<HashMap<String, gpio::GpioConfiguration>>,
 }
 
 impl Inner {}
