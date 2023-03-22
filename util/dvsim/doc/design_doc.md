@@ -222,7 +222,7 @@ DVSim, hence, also uses Hjson as the language for storing data.
 ### Makefile based approach
 
 RTL simulations were the first to be developed at the commencement of the OpenTitan project.
-The initial setup used a [Makefile-based approach](https://github.com/lowRISC/stwg-base/blob/master/hw/dv/tools/README.md), which sequenced the various steps that are required to be invoked to successfully run a simulation.
+The initial setup used a Makefile-based approach, which sequenced the various steps that are required to be invoked to successfully run a simulation.
 As the number of DUTs and the number of tests for each DUT grew, and as the list of our requirements grew, the Makefile-based approach became harder to read and follow and maintain.
 It became clear that a better system was needed, one that scaled well with our growing list of requirements.
 
