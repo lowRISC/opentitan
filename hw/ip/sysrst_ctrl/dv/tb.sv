@@ -52,7 +52,6 @@ module tb;
     .tl_o                  (tl_if.d2h),
     .alert_rx_i            (alert_rx),
     .alert_tx_o            (alert_tx),
-    // TODO(#14041): wkup_req_o still needs to be checked in the scoreboard.
     .wkup_req_o            (sysrst_ctrl_if.wkup_req),
     .rst_req_o             (sysrst_ctrl_if.rst_req),
     .intr_event_detected_o (intr_event_detected),
