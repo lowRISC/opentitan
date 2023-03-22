@@ -7,66 +7,56 @@ use std::io::{Read, Write};
 use std::rc::Rc;
 
 use anyhow::{bail, Result};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::convert::TryFrom;
 use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
 
 use crate::io::emu::EmuState;
-use crate::io::gpio::{self, GpioError, GpioPin, PullMode};
+use crate::io::gpio::{self, GpioError, GpioPin, PinMode, PullMode};
 use crate::transport::ti50emulator::Inner;
 
 const GPIO_BUF_SIZE: usize = 16;
 
-/// Drive mode of I/O pins (that is, the subset supported by this emulator).
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
-pub enum PinMode {
-    Input,
-    PushPull,
-    OpenDrain,
+/// Structure representing GPIO pin configuration state.
+#[derive(Clone, Copy, Serialize, Deserialize)]
+pub struct GpioConfiguration {
+    pin_mode: PinMode,
+    pull_mode: PullMode,
+    value: bool,
 }
 
-/// Enumeration representing the GPIO control commands
-/// sent through the socket.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[repr(u8)]
-enum GpioStreamCommand {
-    SetZero = b'0',
-    SetOne = b'1',
-    GetState = b'%',
-}
-
-impl From<bool> for GpioStreamCommand {
-    fn from(value: bool) -> GpioStreamCommand {
-        match value {
-            false => GpioStreamCommand::SetZero,
-            true => GpioStreamCommand::SetOne,
+impl GpioConfiguration {
+    pub fn default() -> Self {
+        Self {
+            pin_mode: PinMode::Input,
+            pull_mode: PullMode::None,
+            value: false,
         }
     }
 }
 
-/// Enumeration that represents GPIO status updates caused
-/// by a response to a `GetState` command.
+/// Multi value logic with drive strength representations.
+/// (Subset of IEEE 1164).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum GpioStateUpdate {
-    Value(bool),
-    PinMode(Option<PinMode>),
-    PullMode(PullMode),
+#[repr(u8)]
+pub enum Logic {
+    StrongZero = b'0',
+    StrongOne = b'1',
+    WeakZero = b'L',
+    WeakOne = b'H',
+    HiImpedance = b'Z',
 }
 
-impl TryFrom<u8> for GpioStateUpdate {
+impl TryFrom<u8> for Logic {
     type Error = GpioError;
-    /// A function designed to convert the bytes sent by the GPIO stream to state changes.
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
-            b'0' => Ok(GpioStateUpdate::Value(false)),
-            b'1' => Ok(GpioStateUpdate::Value(true)),
-            b'z' => Ok(GpioStateUpdate::PinMode(None)),
-            b'i' => Ok(GpioStateUpdate::PinMode(Some(PinMode::Input))),
-            b'o' => Ok(GpioStateUpdate::PinMode(Some(PinMode::OpenDrain))),
-            b'-' => Ok(GpioStateUpdate::PullMode(PullMode::None)),
-            b'u' => Ok(GpioStateUpdate::PullMode(PullMode::PullUp)),
-            b'd' => Ok(GpioStateUpdate::PullMode(PullMode::PullDown)),
+            b'0' => Ok(Self::StrongZero),
+            b'1' => Ok(Self::StrongOne),
+            b'Z' => Ok(Self::HiImpedance),
+            b'H' => Ok(Self::WeakOne),
+            b'L' => Ok(Self::WeakZero),
             _ => Err(GpioError::Generic(format!(
                 "Invalid byte value during decoding GPIO stream hex: {:#04x} char: '{}'",
                 value, value as char
@@ -75,63 +65,40 @@ impl TryFrom<u8> for GpioStateUpdate {
     }
 }
 
-/// Structure representing GPIO pin configuration state.
-#[derive(Clone, Copy, Serialize, Deserialize)]
-pub struct GpioConfiguration {
-    pin_mode: Option<PinMode>,
-    pull_mode: PullMode,
-    value: bool,
-}
-
-impl GpioConfiguration {
-    /// Update current GPIO configurations by applying changes
-    /// encoded in `buf`.
-    pub fn update(&mut self, buf: &[u8]) -> Result<()> {
-        if !buf.is_empty() {
-            for data in buf.iter() {
-                match GpioStateUpdate::try_from(*data)? {
-                    GpioStateUpdate::Value(value) => {
-                        self.value = value;
-                    }
-                    GpioStateUpdate::PinMode(mode) => {
-                        self.pin_mode = mode;
-                    }
-                    GpioStateUpdate::PullMode(mode) => {
-                        self.pull_mode = mode;
-                    }
-                }
-            }
-            return Ok(());
-        }
-        bail!("GPIO configuration buffer is empty");
-    }
-}
-
-impl fmt::Display for GpioConfiguration {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?} {} {}", self.pin_mode, self.pull_mode, self.value)
-    }
-}
-
-/// Multi value logic with drive strength representations.
-/// (Subset of IEEE 1164).
-enum Logic {
-    StrongZero,
-    StrongOne,
-    WeakZero,
-    WeakOne,
-    HiImpedance,
-}
-
 impl fmt::Display for Logic {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Logic::StrongZero => write!(f, "0"),
-            Logic::StrongOne => write!(f, "1"),
-            Logic::WeakZero => write!(f, "L"),
-            Logic::WeakOne => write!(f, "H"),
-            Logic::HiImpedance => write!(f, "Z"),
-        }
+        write!(f, "{}", char::from(*self as u8))
+    }
+}
+
+impl Serialize for Logic {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for Logic {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let val = String::deserialize(deserializer)?;
+        Ok(match val.as_str() {
+            "0" => Logic::StrongZero,
+            "1" => Logic::StrongOne,
+            "L" => Logic::WeakZero,
+            "H" => Logic::WeakOne,
+            "Z" => Logic::HiImpedance,
+            _ => {
+                return Err(serde::de::Error::custom(format!(
+                    "Unrecognized logic level: {}",
+                    val
+                )))
+            }
+        })
     }
 }
 
@@ -139,16 +106,12 @@ impl From<GpioConfiguration> for Logic {
     /// Convert the GPIO state stored in `state` to multi-valued logic.
     fn from(state: GpioConfiguration) -> Logic {
         match (state.pin_mode, state.pull_mode, state.value) {
-            (Some(PinMode::PushPull), _, false) => Logic::StrongZero,
-            (Some(PinMode::PushPull), _, true) => Logic::StrongOne,
-            (Some(PinMode::OpenDrain), _, false) => Logic::StrongZero,
-            (Some(PinMode::OpenDrain), PullMode::PullUp, true) => Logic::WeakOne,
-            (Some(PinMode::OpenDrain), PullMode::PullDown, true) => Logic::WeakZero,
-            (Some(PinMode::OpenDrain), PullMode::None, true) => Logic::HiImpedance,
-            (Some(PinMode::Input), PullMode::PullUp, _) => Logic::WeakOne,
-            (Some(PinMode::Input), PullMode::PullDown, _) => Logic::WeakZero,
-            (Some(PinMode::Input), PullMode::None, _) => Logic::HiImpedance,
-            (None, _, _) => Logic::HiImpedance,
+            (PinMode::PushPull, _, false) => Logic::StrongZero,
+            (PinMode::PushPull, _, true) => Logic::StrongOne,
+            (PinMode::OpenDrain, _, false) => Logic::StrongZero,
+            (_, PullMode::PullUp, _) => Logic::WeakOne,
+            (_, PullMode::PullDown, _) => Logic::WeakZero,
+            (_, PullMode::None, _) => Logic::HiImpedance,
         }
     }
 }
@@ -157,34 +120,20 @@ impl From<GpioConfiguration> for Logic {
 /// If any inconsistencies are detected between the sides, it returns an error with the problem description.
 /// The state on the host side is passed by `host` argument and on DUT side by `dut`.
 /// Parameter `name` contain name of GPIO pin.
-fn resolve_state(name: &str, host: &Logic, dut: &Logic) -> Result<bool> {
+fn resolve_state(name: &str, host: Logic, dut: Logic) -> Result<bool> {
     match (host, dut) {
-        (Logic::StrongOne, Logic::StrongZero) => {
-            Err(
-                GpioError::PinValueConflict(name.to_string(), host.to_string(), dut.to_string())
-                    .into(),
-            )
-        }
+        // Host strong drive is stronger than the simulated dut, in order to simulate attackers
+        // overdriving write-protect or other signals.
         (Logic::StrongOne, _) => Ok(true),
-        (Logic::StrongZero, Logic::StrongOne) => {
-            Err(
-                GpioError::PinValueConflict(name.to_string(), host.to_string(), dut.to_string())
-                    .into(),
-            )
-        }
         (Logic::StrongZero, _) => Ok(false),
-        // Note: `dut` weak drive is stronger than `host` weak drive.
-        // This selection was made for compatibility with the Ti50 chip.
-        (
-            Logic::WeakZero | Logic::WeakOne | Logic::HiImpedance,
-            Logic::StrongOne | Logic::WeakOne,
-        ) => Ok(true),
-        (
-            Logic::WeakZero | Logic::WeakOne | Logic::HiImpedance,
-            Logic::StrongZero | Logic::WeakZero,
-        ) => Ok(false),
-        (Logic::WeakOne, Logic::HiImpedance) => Ok(true),
-        (Logic::WeakZero, Logic::HiImpedance) => Ok(false),
+        (_, Logic::StrongOne) => Ok(true),
+        (_, Logic::StrongZero) => Ok(false),
+        // Dut weak drive is stronger than host weak drive, in order to easily simulate weak
+        // strappings.
+        (_, Logic::WeakOne) => Ok(true),
+        (_, Logic::WeakZero) => Ok(false),
+        (Logic::WeakOne, _) => Ok(true),
+        (Logic::WeakZero, _) => Ok(false),
         (Logic::HiImpedance, Logic::HiImpedance) => {
             Err(GpioError::PinValueUndefined(name.to_string()).into())
         }
@@ -195,6 +144,8 @@ fn resolve_state(name: &str, host: &Logic, dut: &Logic) -> Result<bool> {
 pub struct Ti50GpioPin {
     /// Handle to Ti50Emulator internal data.
     inner: Rc<Inner>,
+    /// Canonical name of this GPIO pin
+    name: String,
     /// This socket is valid as long as SubProcess is running.
     socket: RefCell<Option<UnixStream>>,
     /// Full path to socket file.
@@ -202,27 +153,28 @@ pub struct Ti50GpioPin {
     /// Last SubProcess ID.
     last_id: Cell<u64>,
     /// Current state of DUT GPIO
-    dut_state: Cell<GpioConfiguration>,
-    /// Current state of host GPIO
-    host_state: Cell<GpioConfiguration>,
+    dut_state: Cell<Logic>,
 }
 
 impl Ti50GpioPin {
-    pub fn open(inner: &Rc<Inner>, path: &str, state: &GpioConfiguration) -> Result<Self> {
-        let soc_path = inner.process.borrow().get_runtime_dir().join(path);
+    pub fn open(inner: &Rc<Inner>, name: &str, state: Logic) -> Result<Self> {
+        let soc_path = inner
+            .process
+            .borrow()
+            .get_runtime_dir()
+            .join(format!("gpio{}", name));
         Ok(Self {
             inner: inner.clone(),
+            name: name.to_string(),
             socket: RefCell::new(None),
             path: soc_path,
             last_id: Cell::new(0),
-            dut_state: Cell::new(*state),
-            host_state: Cell::new(GpioConfiguration {
-                pin_mode: None,
-                pull_mode: PullMode::None,
-                value: false,
-            }),
+            dut_state: Cell::new(state),
         })
     }
+
+    const STREAM_CMD_GET_STATE: u8 = b'?';
+    const STREAM_RESP_GET_STATE: u8 = b'!';
 
     /// Function re-connect socket to `SubProcess` when detect
     /// that process was restarted.
@@ -241,109 +193,57 @@ impl Ti50GpioPin {
     fn update_dut_state(&self) -> Result<()> {
         if let Some(ref mut pin_fd) = *self.socket.borrow_mut() {
             let mut buf: [u8; GPIO_BUF_SIZE] = [0; GPIO_BUF_SIZE];
-            pin_fd.write_all(&[GpioStreamCommand::GetState as u8])?;
-            let len = pin_fd.read(&mut buf[..])?;
-            let mut state = self.dut_state.get();
-            state.update(&buf[0..len])?;
-            self.dut_state.set(state);
+            pin_fd.write_all(&[Self::STREAM_CMD_GET_STATE])?;
+            let mut seen_response = false;
+            while !seen_response {
+                let len = pin_fd.read(&mut buf[..])?;
+                for ch in &buf[..len] {
+                    if *ch == Self::STREAM_RESP_GET_STATE {
+                        seen_response = true;
+                    } else {
+                        self.dut_state.set(Logic::try_from(*ch)?);
+                    }
+                }
+            }
             return Ok(());
         }
         bail!("GPIO update DUT state fail - invalid socket");
     }
 
-    /// Write the GPIO state in DUT by sending the SetZero/SetOne command to the TockOS emulator process.
-    fn write_dut_value(&self, value: bool) -> Result<()> {
+    /// Write how the simulated host environment drives the GPIO signal, by sending the Logic
+    /// character to the TockOS emulator process.
+    fn write_host_state(&self, value: Logic) -> Result<()> {
         if let Some(ref mut pin_fd) = *self.socket.borrow_mut() {
-            pin_fd.write_all(&[GpioStreamCommand::from(value) as u8])?;
+            pin_fd.write_all(&[value as u8])?;
             return Ok(());
         }
-        bail!("GPIO write DUT state fail - invalid socket");
-    }
-
-    /// Function checks whether the state of the sub-process allows GPIO operations to be performed
-    fn check_state(&self) -> Result<()> {
-        let mut process = self.inner.process.borrow_mut();
-        process.update_status()?;
-        match process.get_state() {
-            EmuState::On => Ok(()),
-            state => Err(GpioError::Generic(format!(
-                "Operation not supported in Emulator state: {}",
-                state
-            ))
-            .into()),
-        }
-    }
-
-    /// Function validate GPIO configuration on DUT and Host side and
-    /// write `value` to Emulator process by a socket.
-    fn validate_and_write(&self, value: bool) -> Result<()> {
-        let mut host_state = self.host_state.get();
-        let mut dut_state = self.dut_state.get();
-        host_state.value = value;
-        match (
-            self.host_state.get().pin_mode,
-            self.dut_state.get().pin_mode,
-        ) {
-            (Some(PinMode::PushPull) | Some(PinMode::OpenDrain), None) => {
-                log::warn!(
-                    "GPIO write to disable pin on target device, states host:{} target:{}",
-                    host_state,
-                    dut_state,
-                );
-            }
-            (Some(PinMode::PushPull) | Some(PinMode::OpenDrain), Some(PinMode::Input)) => {
-                log::debug!("GPIO write host:{} target:{}", host_state, dut_state);
-            }
-            (_, _) => {
-                bail!(GpioError::PinModeConflict(
-                    self.path.display().to_string(),
-                    host_state.to_string(),
-                    dut_state.to_string()
-                ));
-            }
-        }
-        dut_state.value = resolve_state(
-            &self.path.to_string_lossy(),
-            &Logic::from(host_state),
-            &Logic::from(dut_state),
-        )?;
-        self.write_dut_value(dut_state.value)?;
-        self.dut_state.set(dut_state);
-        self.host_state.set(host_state);
-        Ok(())
+        bail!("GPIO write HOST state fail - invalid socket");
     }
 
     /// Function validate GPIO configuration on DUT and Host side
     /// and then returns resolved value of GPIO pin.
     fn validate_and_read(&self) -> Result<bool> {
-        let mut host_state = self.host_state.get();
+        let mut gpio_map = self.inner.gpio_map.borrow_mut();
+        let host_state = gpio_map.get_mut(&self.name).unwrap();
         let dut_state = self.dut_state.get();
-        match (host_state.pin_mode, dut_state.pin_mode) {
-            (Some(PinMode::Input), None) => {
-                log::warn!(
-                    "GPIO read from disable pin on target device, states host:{} target:{}",
-                    host_state,
-                    dut_state,
-                );
-            }
-            (Some(PinMode::Input), Some(PinMode::PushPull) | Some(PinMode::OpenDrain)) => {
-                log::debug!("GPIO read host:{} target:{}", host_state, dut_state);
-            }
-            (_, _) => {
-                bail!(GpioError::PinModeConflict(
-                    self.path.display().to_string(),
-                    host_state.to_string(),
-                    dut_state.to_string()
-                ));
-            }
-        }
-        host_state.value = resolve_state(
+        resolve_state(
             &self.path.to_string_lossy(),
-            &Logic::from(host_state),
-            &Logic::from(dut_state),
-        )?;
-        self.host_state.set(host_state);
-        Ok(host_state.value)
+            Logic::from(*host_state),
+            dut_state,
+        )
+    }
+
+    /// Modifies some aspect of the Host output drive, as given by the `update_fn`, and then
+    /// notifies the DUT about the new state of the Host drive.
+    fn update_and_notify(&self, update_fn: impl Fn(&mut GpioConfiguration)) -> Result<()> {
+        let mut gpio_map = self.inner.gpio_map.borrow_mut();
+        let host_state = gpio_map.get_mut(&self.name).unwrap();
+        update_fn(host_state);
+        if EmuState::On == self.inner.process.borrow().get_state() {
+            self.reconnect()?;
+            self.write_host_state(Logic::from(*host_state))?;
+        }
+        Ok(())
     }
 }
 
@@ -351,38 +251,30 @@ impl Ti50GpioPin {
 impl GpioPin for Ti50GpioPin {
     /// Reads the value of the GPIO pin.
     fn read(&self) -> Result<bool> {
-        self.check_state()?;
-        self.reconnect()?;
-        self.update_dut_state()?;
+        if EmuState::On == self.inner.process.borrow().get_state() {
+            self.reconnect()?;
+            self.update_dut_state()?;
+        }
         self.validate_and_read()
     }
 
     /// Sets the value of the GPIO pin to `value`.
     fn write(&self, value: bool) -> Result<()> {
-        self.check_state()?;
-        self.reconnect()?;
-        self.update_dut_state()?;
-        self.validate_and_write(value)
+        self.update_and_notify(|host_state| host_state.value = value)
     }
 
     /// Sets the mode of the GPIO pin as input, output, or open drain I/O.
     fn set_mode(&self, mode: gpio::PinMode) -> Result<()> {
-        let mut state = self.host_state.get();
         match mode {
-            gpio::PinMode::Input => state.pin_mode = Some(PinMode::Input),
-            gpio::PinMode::OpenDrain => state.pin_mode = Some(PinMode::OpenDrain),
-            gpio::PinMode::PushPull => state.pin_mode = Some(PinMode::PushPull),
-            _ => return Err(GpioError::UnsupportedPinMode(mode).into()),
+            PinMode::Input | PinMode::OpenDrain | PinMode::PushPull => {
+                self.update_and_notify(|host_state| host_state.pin_mode = mode)
+            }
+            _ => Err(GpioError::UnsupportedPinMode(mode).into()),
         }
-        self.host_state.set(state);
-        Ok(())
     }
 
     /// Sets the pull mode of the GPIO pin.
     fn set_pull_mode(&self, mode: PullMode) -> Result<()> {
-        let mut state = self.host_state.get();
-        state.pull_mode = mode;
-        self.host_state.set(state);
-        Ok(())
+        self.update_and_notify(|host_state| host_state.pull_mode = mode)
     }
 }

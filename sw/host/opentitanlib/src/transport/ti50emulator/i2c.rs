@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use log;
 
 use std::cell::{Cell, RefCell};
@@ -146,7 +146,8 @@ impl Ti50I2cBus {
         let mut socket = self.socket.borrow_mut();
         let id = self.inner.process.borrow().get_id();
         if self.last_id.get() != id {
-            let fd = UnixStream::connect(&self.path)?;
+            let fd =
+                UnixStream::connect(&self.path).context(format!("Pipe path: {:?}", &self.path))?;
             *socket = Some(fd);
             self.last_id.set(id);
         }
