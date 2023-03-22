@@ -1,7 +1,7 @@
 # `ralgen`: A FuseSoC generator for UVM RAL package
 
 The `ralgen.py` script is implemented as a
-[FuseSoC generator](https://fusesoc.readthedocs.io/en/master/user/generators.html).
+[FuseSoC generator](https://fusesoc.readthedocs.io/en/stable/user/build_system/generators.html).
 which enables the automatic creation of the SystemVerilog UVM RAL package and
 its insertion into the dependency tree when compiling the DV testbench.
 
@@ -78,7 +78,7 @@ the `ip_hjson` or `top_hjson` parameter is supplied.
 
 In addition, the `ralgen.py` script also creates a FuseSoC core file. It uses
 the `name` parameter to derive the
-[VLNV](https://fusesoc.readthedocs.io/en/master/user/overview.html#core-naming-rules)
+[VLNV](https://fusesoc.readthedocs.io/en/stable/user/build_system/core_files.html#naming-the-core-file)
 name for the generated core file.
 
 The generated core file adds **`lowrisc:dv:dv_base_reg`** as a dependency for

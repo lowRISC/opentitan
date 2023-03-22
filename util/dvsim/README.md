@@ -25,7 +25,7 @@ DVSim is located at `$REPO_TOP/util/dvsim/dvsim.py`.
 DVSim relies on the following third-party Python libraries:
 * **[Hjson](https://hjson.github.io/)**: to parse the Hjson DUT configuration data.
 * **[Enlighten](https://python-enlighten.readthedocs.io/en/stable/)**: to track the progress of the EDA tool flows on the console in a readable way.
-* **[Mistletoe](https://pypi.org/project/mistletoe/0.-1/)**: to convert Markdown format to HTML, used for testplan descriptions and EDA tool flow reports.
+* **[Mistletoe](https://pypi.org/project/mistletoe)**: to convert Markdown format to HTML, used for testplan descriptions and EDA tool flow reports.
 * **[Premailer](https://pypi.org/project/premailer/)**: to inline a block of CSS into the generated HTML report.
 * **[Tabulate](https://pypi.org/project/tabulate/)**: to pretty-print tabular data when displaying the report on the console.
 
