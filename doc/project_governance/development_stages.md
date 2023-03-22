@@ -45,7 +45,7 @@ See the _Versioning_ section of the document for more discussion.
 Signed-off fully-functioning (read: not buggy) designs stay in the "Signed-Off" life stage as an available complete IP, with an associated revision ID.
 
 There exists a [template for IP checklists](https://github.com/lowRISC/opentitan/blob/master/util/uvmdvgen/checklist.md.tpl).
-The DIF stages use a separate, [software-specific checklist](https://github.com/lowRISC/opentitan/blob/master/doc/project/sw_checklist.md.tpl).
+The DIF stages use a separate, [software-specific checklist](https://github.com/lowRISC/opentitan/blob/master/doc/project_governance/checklist/sw_checklist.md.tpl).
 All the checklist items are listed in the [Sign-off Checklist](./checklist/README.md).
 
 | **Stage** | **Name** | **Definition** |
