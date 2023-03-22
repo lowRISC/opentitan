@@ -6,7 +6,32 @@
 
 #include <assert.h>
 
-#include "usbdpi_stream.h"
+#include "usbdpi.h"
+
+#define AML_HACK 1
+
+// Timeout constants for Suspend/Resume test
+//   (these may differ depending upon whether the RTL has been modified to
+//    reduce the simulation time!)
+#if AML_HACK
+static const unsigned kSuspendTimeout = 750u;
+static const unsigned kActiveInterval = 150u;
+static const unsigned kSleepTimeout = 1000u;
+static const unsigned kResumeInterval = 300u;
+#else
+static const unsigned kSuspendTimeout = 4000u;
+static const unsigned kActiveInterval = 2000u;
+static const unsigned kSleepTimeout = 8000u;
+static const unsigned kResumeInterval = 3000u;
+#endif
+
+// Return the number of test frames required to exceed the given delay in
+// microseconds; this is required to ensure that the timers in the DUT reach
+// the required level to produce suspend/resume signaling etc
+static const unsigned test_frames(uint32_t usecs) {
+  // FRAME_INTERVAL is specified in bit intervals (1/12th us)
+  return ((12u * usecs + FRAME_INTERVAL - 1) / FRAME_INTERVAL);
+}
 
 // Test-specific initialization
 void usbdpi_test_init(usbdpi_ctx_t *ctx) {
@@ -64,6 +89,21 @@ void usbdpi_test_init(usbdpi_ctx_t *ctx) {
                           retrying, send);
       }
     } break;
+
+    // Suspend/Resume/Disconnect/Reconnect test
+    case kUsbTestNumberSuspend:
+      // This test iterates through a number of phases, performing a bus reset
+      // and reinitializing the device each time; OTTF test software supplies
+      // the test phase in a modified per-phase test descriptor
+      ctx->test_phase = (usbdev_suspend_phase_t)ctx->test_arg[0];
+      ok = true;
+      break;
+
+    // Exceptional Traffic test
+    case kUsbTestNumberExc:
+      // No test arguments at present
+      ok = true;
+      break;
 
     default:
       assert(!"Unrecognised/unsupported test in USBDPI");
@@ -137,6 +177,131 @@ usbdpi_test_step_t usbdpi_test_seq_next(usbdpi_ctx_t *ctx,
           }
           break;
 
+        // Suspend/Resume/Disconnect/Reconnect testing
+        case kUsbTestNumberSuspend:
+          switch (step) {
+            case STEP_GET_TEST_CONFIG:
+              if (ctx->test_phase) {
+                next_step = STEP_SUSPEND_LONG;
+              } else {
+                next_step = STEP_SUSPEND;
+              }
+              ctx->substep = 0u;
+              break;
+
+            // Must remain in SUSPEND for 4ms for the Suspend detection, and
+            // this is presently a variable number of (simulated) bus frames
+            case STEP_SUSPEND:
+              if (++ctx->substep >= test_frames(kSuspendTimeout)) {
+                next_step = STEP_ACTIVE;
+                ctx->substep = 0u;
+              } else {
+                next_step = STEP_SUSPEND;
+              }
+              break;
+
+            case STEP_ACTIVE:
+              if (++ctx->substep >= test_frames(kActiveInterval)) {
+                next_step = STEP_BUS_RESET;
+              } else {
+                next_step = STEP_ACTIVE;
+              }
+              break;
+
+            // Must remain in SUSPEND_LONG for 8ms for Suspend detection and
+            // then the test code to go to sleep, and this is presently a
+            // variable number of (simulated) bus frames
+            case STEP_SUSPEND_LONG:
+              if (++ctx->substep >= test_frames(kSleepTimeout)) {
+                switch (ctx->test_phase) {
+                  // Leave Suspended state by Resume Signaling
+                  case kSuspendPhaseSleepActivity:
+                  case kSuspendPhaseDeepActivity:
+                    next_step = STEP_RESUME;
+                    break;
+
+                  // Leave Suspended state by Bus Reset
+                  case kSuspendPhaseSleepReset:
+                  case kSuspendPhaseDeepReset:
+                    next_step = STEP_BUS_RESET;
+                    break;
+
+                  // Leave Suspended state by Disconnection
+                  default:
+                    assert(ctx->test_phase == kSuspendPhaseDeepDisconnect);
+                    // no break
+                  case kSuspendPhaseSleepDisconnect:
+                    next_step = STEP_BUS_DISCONNECT;
+                    break;
+                }
+                ctx->substep = 0u;
+              } else {
+                next_step = STEP_SUSPEND_LONG;
+              }
+              break;
+
+            case STEP_RESUME:
+              if (++ctx->substep >= test_frames(kResumeInterval)) {
+                // Advance the test phase
+                switch (ctx->test_phase) {
+                  case kSuspendPhaseSleepActivity:
+                    ctx->test_phase = kSuspendPhaseSleepReset;
+                    break;
+                  default:
+                    assert(ctx->test_phase == kSuspendPhaseDeepActivity);
+                    ctx->test_phase = kSuspendPhaseDeepReset;
+                    break;
+                }
+                // Disconnect the device to signal successful test completion
+                next_step = STEP_SUSPEND_LONG;
+              } else {
+                next_step = STEP_RESUME;
+              }
+              break;
+
+            default:
+              // TODO: any more states that we need to cover here?
+              break;
+          }
+          break;
+
+        case kUsbTestNumberExc:
+          // Test exceptional bus traffic such as accesses to invalid endpoints,
+          // generation of Request Errors...
+          switch (step) {
+            case STEP_GET_TEST_CONFIG:
+              next_step = STEP_ENDPT_UNIMPL_SETUP;
+              break;
+
+            // Test each of SETUP, IN and OUT to an unimplemented endpoint;
+            // traffic shall be ignored
+            case STEP_ENDPT_UNIMPL_SETUP:
+              next_step = STEP_ENDPT_UNIMPL_OUT;
+              break;
+            case STEP_ENDPT_UNIMPL_OUT:
+              next_step = STEP_ENDPT_UNIMPL_IN;
+              break;
+            case STEP_ENDPT_UNIMPL_IN:
+              next_step = STEP_DEVICE_UK_SETUP;
+              break;
+            // Test traffic to a different device address
+            case STEP_DEVICE_UK_SETUP:
+              next_step = STEP_UK_SETUP_REQ;
+              break;
+
+            // Test unknown Setup Request (software-defined behavior, but it
+            // should request STALLing)
+            case STEP_UK_SETUP_REQ:
+            case STEP_SUSPEND:
+              // Final resting state
+              next_step = STEP_SUSPEND;
+              break;
+
+            default:
+              break;
+          }
+          break;
+
         // Default behavior; usbdev_test
         default:
           // TODO - for now we're just maintaining the existing timing
@@ -149,9 +314,9 @@ usbdpi_test_step_t usbdpi_test_seq_next(usbdpi_ctx_t *ctx,
             case STEP_FIRST_READ:
               next_step = STEP_READ_BAUD;
               break;
-            // case STEP_READ_BAUD:
-            //   next_step = STEP_SECOND_READ;
-            //   break;
+            case STEP_READ_BAUD:
+              next_step = STEP_SECOND_READ;
+              break;
             case STEP_SECOND_READ:
               next_step = STEP_SET_BAUD;
               break;
@@ -161,37 +326,17 @@ usbdpi_test_step_t usbdpi_test_seq_next(usbdpi_ctx_t *ctx,
             case STEP_THIRD_READ:
               next_step = STEP_TEST_ISO1;
               break;
+
             case STEP_TEST_ISO1:
               next_step = STEP_TEST_ISO2;
               break;
-            // case STEP_TEST_ISO2:
-            //   next_step = STEP_ENDPT_UNIMPL_SETUP;
-            //   break;
-            case STEP_ENDPT_UNIMPL_SETUP:
-              next_step = STEP_ENDPT_UNIMPL_SETUP;
-              break;
-            case STEP_ENDPT_UNIMPL_OUT:
-              next_step = STEP_ENDPT_UNIMPL_IN;
-              break;
-            case STEP_ENDPT_UNIMPL_IN:
-              next_step = STEP_DEVICE_UK_SETUP;
-              break;
-            case STEP_DEVICE_UK_SETUP:
-              next_step = STEP_IDLE_START;
-              break;
-
-            case STEP_IDLE_END:
-              // Final resting state
-              next_step = STEP_IDLE_END;
-              break;
-
-            // TODO - for now this is still required to advance through
-            // the test steps
-            case STEP_IDLE_START:
             case STEP_TEST_ISO2:
-            case STEP_READ_BAUD:
+            case STEP_SUSPEND:
+              // Final resting state
+              next_step = STEP_SUSPEND;
+              break;
+
             default:
-              next_step = (usbdpi_test_step_t)((unsigned)step + 1U);
               break;
           }
           break;
