@@ -59,7 +59,7 @@ A number of software packages from the distribution's package manager are requir
 On Ubuntu 20.04, the required packages can be installed with the following command.
 
 ```sh
-sed -e '/^$/d' -e '/^#/d' ./apt-requirements.txt | sudo apt install -y
+sed '/^#/d' ./apt-requirements.txt | xargs sudo apt install -y
 ```
 
 Some tools in this repository are written in Python 3 and require Python dependencies to be installed through `pip`.
