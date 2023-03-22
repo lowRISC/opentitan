@@ -63,7 +63,7 @@ DIFs are very low-level software, so they have a more rigorous coding style than
 other parts of the codebase.
 
 DIFs should follow the [OpenTitan C/C++ style
-guide](https://docs.opentitan.org/doc/rm/c_cpp_coding_style/) where it does not
+guide](../../../../doc/contributing/style_guides/c_cpp_coding_style.md) where it does not
 contradict with the guidelines below.
 
 The guidelines below apply to writing DIFs, and code should be written in a

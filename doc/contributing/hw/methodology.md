@@ -109,7 +109,7 @@ Linting errors and warnings can be closed by fixing the code in question (prefer
 These waivers have to be reviewed as part of the pull request review process.
 
 Note that our continuous integration infrastructure does not currently run AscentLint on each pull request as it does with Verilator lint.
-However, all designs with enabled AscentLint targets on the master branch will be run through the tool in eight-hour intervals and the results are published as part of the tool dashboards on the [hardware IP overview page](https://docs.opentitan.org/hw), enabling designers to close the lint errors and warnings even if they cannot run the sign-off tool locally.
+However, all designs with enabled AscentLint targets on the master branch will be run through the tool in eight-hour intervals and the results are published as part of the tool dashboards on the [hardware IP overview page](https://opentitan.org/book/hw), enabling designers to close the lint errors and warnings even if they cannot run the sign-off tool locally.
 
 Goals for sign-off linting closure per design development stage are given in the [OpenTitan Development Stages](../../project_governance/development_stages.md) document.
 
@@ -224,7 +224,7 @@ These are discussed in the [Getting Started Designing Hardware](./design.md) doc
 ## FPGA vs Silicon
 
 One output of the OpenTitan project will be silicon instantiations of hardware functionality described in this open source repository.
-The RTL repository defines design functionality at a level satisfactory to prove the hardware and software functionality in an FPGA (see [user guides](https://docs.opentitan.org/doc/guides/getting_started/)).
+The RTL repository defines design functionality at a level satisfactory to prove the hardware and software functionality in an FPGA (see [user guides](https://opentitan.org/guides/getting_started)).
 That level is so-called "tapeout ready".
 Once the project reaches that milestone, the team will work with a vendor or vendors to ensure a trustworthy, industry-quality, fully functional OpenTitan chip is manufactured.
 

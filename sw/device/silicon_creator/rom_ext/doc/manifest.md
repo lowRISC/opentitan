@@ -81,7 +81,7 @@ the manifest is 896 bytes.
 
 *   `address_translation`: A hardened boolean representing whether address
     translation should be used for the `ROM_EXT` (see the [Ibex wrapper
-    documentation](https://docs.opentitan.org/hw/ip/rv_core_ibex/doc/)).
+    documentation](https://opentitan.org/book/hw/ip/rv_core_ibex)).
     This value should be either `0x739` (true) or `0x1d4` (false).
 
 *   `identifier`: Image identifier used to identify boot stage images. The
@@ -120,4 +120,4 @@ the manifest is 896 bytes.
     the start of the manifest in bytes. Must be 4-byte word aligned.
 
 [rsassa_pkcs1_v1_5]: https://datatracker.ietf.org/doc/html/rfc8017#section-8.2
-[key_manager]: https://docs.opentitan.org/hw/ip/keymgr/doc/
+[key_manager]: https://opentitan.org/book/hw/ip/keymgr

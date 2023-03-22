@@ -10,7 +10,7 @@ This repository exists to enable collaboration across partners participating in 
 ## Getting Started
 
 To get started with OpenTitan, see the [Getting Started](./guides/getting_started/src/README.md) page.
-For additional resources when working with OpenTitan, see the [list of user guides](https://docs.opentitan.org/doc/guides/getting_started/).
+For additional resources when working with OpenTitan, see the [list of user guides](https://opentitan.org/guides/getting_started/).
 For details on coding styles or how to use our project-specific tooling, see the [reference manuals](../util/README.md).
 Lastly, the [Hardware Dashboard page](../hw/README.md) contains technical documentation on the SoC, the Ibex processor core, and the individual IP blocks.
 For questions about how the project is organized, see the [project](./project_governance/README.md) landing spot for more information.
@@ -33,7 +33,7 @@ For questions about how the project is organized, see the [project](./project_go
 ## Development
 
 * [Getting Started](./guides/getting_started/src/README.md)
-* [User Guides](https://docs.opentitan.org/doc/guides/getting_started/)
+* [User Guides](https://opentitan.org/guides/getting_started)
 * [Reference Manuals](../util/README.md)
 * [Style Guides](./contributing/style_guides/README.md)
 

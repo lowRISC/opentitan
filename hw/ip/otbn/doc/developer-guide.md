@@ -4,7 +4,7 @@ This directory contains the implementation of the OpenTitan Big Number
 Accelerator (OTBN). OTBN is a coprocessor for asymmetric cryptographic
 operations like RSA or Elliptic Curve Cryptography (ECC).
 
-See https://docs.opentitan.org/hw/ip/otbn/doc/index.html for documentation on
+See [here](../README.md) for documentation on
 the current version of OTBN; documentation matching the code in this directory
 can be found in the `doc` directory.
 
@@ -18,9 +18,9 @@ through the [GitHub issue tracker](https://github.com/lowRISC/opentitan/issues).
 An assembler, linker and disassembler for OTBN can be found in
 `hw/ip/otbn/util`. These are wrappers around a RISC-V GCC and binutils toolchain
 so one must be available (see the OpenTitan documentation on [obtaining a
-toolchain](https://docs.opentitan.org/doc/ug/install_instructions/#software-development).
+toolchain](https://opentitan.org/guides/getting_started#step-3-install-the-lowrisc-risc-v-toolchain).
 For more details about the toolchain, see the [user
-guide](https://docs.opentitan.org/doc/ug/otbn_sw)).
+guide](../../../../doc/contributing/sw/otbn_sw.md)).
 
 `otbn_as.py` and `otbn_ld.py` can be used to build .elf files for use with
 simulations. They work work similarly to binutils programs they wrap.

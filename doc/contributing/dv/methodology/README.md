@@ -629,7 +629,7 @@ We use the [OpenTitan GitHub Issue tracker](https://github.com/lowRISC/opentitan
 ## Getting Started with DV
 
 The process for getting started with DV involves many steps, including getting clarity on its purpose, setting up the testbench, documentation, etc.
-These are discussed in the [Getting Started with DV](https://docs.opentitan.org/doc/guides/getting_started/src/setup_dv.md) document.
+These are discussed in the [Getting Started with DV](https://opentitan.org/guides/getting_started/setup_dv.html) document.
 
 ## Pending Work Items
 

@@ -280,7 +280,7 @@ system clock.</td>
 <td>1</td>
 <td>async</td>
 <td>System clock valid. Used as "ack" signals for the <a
-href="https://docs.opentitan.org/hw/ip/pwrmgr/doc/"><u>power
+href="https://opentitan.org/book/hw/ip/pwrmgr"><u>power
 manager</u></a></td>
 </tr>
 <tr class="even">
@@ -322,7 +322,7 @@ usb_ref_pulse_i is available and +/-3% otherwise. It may take up to 50
 ms for this clock to reach the accuracy target from the time
 'usb_ref_pulse_i' is available. USB clock calibration interface is
 further detailed <a
-href="https://docs.opentitan.org/hw/ip/usbdev/doc/#clocking"><u>here</u></a>.</td>
+href="https://opentitan.org/book/hw/ip/usbdev#clocking"><u>here</u></a>.</td>
 </tr>
 <tr class="odd">
 <td>clk_src_usb_val_o</td>
@@ -373,7 +373,7 @@ that require a fixed frequency, for example SPI and UART</td>
 <td>1</td>
 <td>async</td>
 <td>I/O and timer clock valid. Used as "ack" signals for the <a
-href="https://docs.opentitan.org/hw/ip/pwrmgr/doc/"><u>Power
+href="https://opentitan.org/book/hw/ip/pwrmgr"><u>Power
 manager</u></a>.</td>
 </tr>
 <tr class="odd">
@@ -651,14 +651,14 @@ programming.</p>
 <p>Clock calibration: AST clock sources are inaccurate by default and
 must be calibrated prior to use. The results of the calibration are
 stored in <a
-href="https://docs.opentitan.org/hw/ip/otp_ctrl/doc/"><u>OTP</u></a> and
+href="https://opentitan.org/book/hw/ip/otp_ctrl"><u>OTP</u></a> and
 reloaded by software upon system boot.</p>
 <p>First Flash / OTP programming: AST clock sources are inaccurate by
 default and may be out of range for initial flash and OTP programming.
 In this situation, an external clock may be required for initial
 programming such that a software image can be loaded to calibrate clocks
 and advance <a
-href="https://docs.opentitan.org/doc/security/specs/device_life_cycle/"><u>life
+href="https://opentitan.org/book/doc/security/specs/device_life_cycle"><u>life
 cycle</u></a>.</p></td>
 </tr>
 <tr class="odd">
@@ -983,7 +983,7 @@ released to the system.
 The USB clock requires an accuracy that cannot be achieved by the AST
 clocks natively. As a result, information from USB frames are used to
 [<u>calibrate the
-clock</u>](https://github.com/lowRISC/opentitan/blob/master/hw/ip/usbdev/doc/_index.md#clocking).
+clock</u>](../../../ip/usbdev/README.md#clocking).
 
 # Clock and Reset Inputs
 
@@ -1059,7 +1059,7 @@ AST contains an analog to digital converter that can be used to sample
 various input signals. For OpenTitan this will primarily be used for
 [<u>debug cable detection</u>](https://www.sparkfun.com/products/14746).
 To activate the ADC, the corresponding [<u>comportable
-module</u>](https://docs.opentitan.org/hw/ip/adc_ctrl/doc/) must first
+module</u>](../../../ip/adc_ctrl/README.md) must first
 activate the ADC through 'adc_pd_i'. Once activated, it should select
 the channel to sample. Channel transition from zero to non-zero value
 starts the ADC conversion. The ADC output is synchronous to the ADC
@@ -1098,7 +1098,7 @@ edge: [ 'a<->b wakeup time', ] }
 
 AST contains a random number generator that outputs random number
 bitstreams whenever it is enabled. After enabled by the [<u>comportable
-controller</u>](https://docs.opentitan.org/hw/ip/entropy_src/doc/)
+controller</u>](../../../ip/entropy_src/README.md)
 through 'rng_en_i', the AST begins generating multiple
 independent four random bit streams. rng_b_o bit streams are valid and
 can be sampled whenever 'rng_val_o' is asserted according to the
@@ -1114,14 +1114,14 @@ following diagram.
 
 The expected rng_b_o valid output rate is about 50KHz. For more
 information on the RNG interface, please see the [<u>OpenTitan entropy
-source module</u>](https://docs.opentitan.org/hw/ip/entropy_src/doc/).
+source module</u>](../../../ip/entropy_src/README.md).
 
 # Entropy Consumption
 
 AST consumes entropy for defensive purposes. However, AST does not
 consume its raw entropy directly. Instead, AST receives entropy from the
 [<u>Entropy Distribution Network
-(EDN)</u>](https://docs.opentitan.org/hw/ip/edn/doc/index.html). Note
+(EDN)</u>](../../../ip/edn/README.md). Note
 that entropy_ack and entropy_i are packed into enropy_rsp_i in the
 interface. Also note that once entropy_req_o is set, it will remain set
 until ack or until reset.
@@ -1152,7 +1152,7 @@ ensure they cannot be hard-wired or faulted to either '1' or
 
 Inside the sensor controller, the events are then converted into alerts
 as part of the wider [<u>OpenTitan alert handling
-system</u>](https://docs.opentitan.org/hw/top_earlgrey/ip_autogen/alert_handler/doc/).
+system</u>](../../ip_autogen/alert_handler/README.md).
 
 ## Alert Signaling
 
