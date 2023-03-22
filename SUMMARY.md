@@ -37,7 +37,6 @@
   - [Pinmux Targets](./hw/top_earlgrey/ip/pinmux/doc/autogen/targets.md)
     - [ASIC Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_asic.md)
     - [CW310 Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_cw310.md)
-    - [NEXYSVIDEO Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_nexysvideo.md)
 
 - [Cores](./hw/doc/cores.md)
   - [Ibex RISC-V Core Wrapper](./hw/ip/rv_core_ibex/README.md)
