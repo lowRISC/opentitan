@@ -146,7 +146,7 @@ module testbench ();
                      .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S), .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
 
    
-   s25fs256s #(
+  /* s25fs256s #(
     .TimingModel   ( "S25FS256SAGMFI000_F_30pF" ),
     .mem_file_name ( "/scratch/mciani/he-soc/hardware/working_dir/opentitan/scripts/vmem_scripts/outputs/baadcode.vmem" ),
     .UserPreload   ( 1 )
@@ -157,7 +157,7 @@ module testbench ();
     .CSNeg,    
     .WPNeg    (    ),
     .RESETNeg (    )
-   );
+   );*/
   
    rng #(
     .EntropyStreams ( 4 )
@@ -178,11 +178,11 @@ module testbench ();
   top_earlgrey #(
    .OtpCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/otp/otp-img.mem"),
 `ifdef IBEX_JTAG
-   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem")
+   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem"),
 `else
-   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem")
+   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem"),
 `endif
-   //.FlashCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/hmac_test/hmac_smoketest.vmem")
+   .FlashCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/hmac_test/hmac_smoketest.vmem")
   ) dut (
    .mio_in_i(ibex_uart_rx),
    .mio_out_o(ibex_uart_tx),
