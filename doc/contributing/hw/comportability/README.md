@@ -54,7 +54,7 @@ All files that use the default copyright and license should therefore include th
 // SPDX-License-Identifier: Apache-2.0
 ```
 
-The project has adopted [Hjson](https://hjson.org) for JSON files, extending JSON to allow comments.
+The project has adopted [Hjson](https://hjson.github.io/) for JSON files, extending JSON to allow comments.
 Thus the Hjson files can include the header above.
 If pure JSON must be used for some reason, the "SPDX-License-Identifier:" can be added as the first key after the opening "{".
 Tools developed by the project should accept and ignore this key.

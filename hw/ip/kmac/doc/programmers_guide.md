@@ -78,7 +78,7 @@ It could restore the previous hashing state later and continue the operation.
 
 [SHA3 specification, FIPS 202]: https://csrc.nist.gov/publications/detail/fips/202/final
 [NIST SP 800-185]: https://csrc.nist.gov/publications/detail/sp/800-185/final
-[Domain-Oriented Masking (DOM)]: https://eprint.iacr.org/2017/395.pdf../data/kmac.hjson#entropy_seed_0cation
+[Domain-Oriented Masking (DOM)]: https://eprint.iacr.org/2017/395.pdf
 
 # Overview
 

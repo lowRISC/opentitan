@@ -5,7 +5,7 @@
 ### Summary
 
 Json files are used to provide input data to many of the tools.
-The preference is to use [Hjson](https://hjson.org/), which is a variation of regular JSON that is easier to write.
+The preference is to use [Hjson](https://hjson.github.io), which is a variation of regular JSON that is easier to write.
 In particular, it allows the quote marks to be left off the key names, it allows a single string to be quoted with triple quote marks and flow over multiple lines (which is often needed in text descriptions) and it allows comments using the # or // style.
 
 This guide covers the enhancements provided by Hjson that are used in the project along with a recommended style.
@@ -42,7 +42,7 @@ It is always okay to deviate from the style guide by necessity, as long as that 
 
 Hjson is a variation of regular JSON that is easier to write.
 There are parsers in a number of languages and the tools make extensive use of the `hjson` package provided for Python 3.
-A full description can be found on the [Hjson website](https://hjson.org/), but the main features that make it convenient are that it keeps files cleaner by allowing the quote marks to be left off the key names, it enables long descriptive text by allowing a single string to flow over multiple lines and it allows comments using the # or // style.
+A full description can be found on the [Hjson website](https://hjson.github.io), but the main features that make it convenient are that it keeps files cleaner by allowing the quote marks to be left off the key names, it enables long descriptive text by allowing a single string to flow over multiple lines and it allows comments using the # or // style.
 
 For example:
 

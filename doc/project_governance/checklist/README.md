@@ -361,7 +361,7 @@ A functional coverage shell object has been created - this may not contain cover
 
 ### TB_LINT_SETUP
 
-[VeribleLint](https://google.github.io/verible/verilog_lint.html) for the testbench is [set up](../../../hw/lint/README.md) to run in nightly regression, with appropriate waivers.
+[VeribleLint](https://chipsalliance.github.io/verible/verilog_lint.html) for the testbench is [set up](../../../hw/lint/README.md) to run in nightly regression, with appropriate waivers.
 * For a constrained random testbench, an entry has been added to `hw/<top-level-design>/lint/<top-level-design>_dv_lint_cfgs.hjson`
 * For an FPV testbench, an entry has been added to `hw/<top-level-design>/lint/<top-level-design>_fpv_lint_cfgs.hjson`
 
