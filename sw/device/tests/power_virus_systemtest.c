@@ -543,9 +543,9 @@ static void configure_pinmux(void) {
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor11,
                                         kTopEarlgreyPinmuxOutselSpiHost1Sd1));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor12,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Sd1));
+                                        kTopEarlgreyPinmuxOutselSpiHost1Sd2));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor13,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Sd1));
+                                        kTopEarlgreyPinmuxOutselSpiHost1Sd3));
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0,
       kTopEarlgreyPinmuxInselIoa2));
