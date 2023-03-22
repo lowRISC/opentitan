@@ -40,7 +40,7 @@ For questions about how the project is organized, see the [project](./project_go
 ## Repository Structure
 
 The underlying
-[repo](http://www.github.com/lowrisc/opentitan)
+[repo](https://www.github.com/lowrisc/opentitan)
 is set up as a monolithic repository to contain RTL, helper scripts, technical documentation, and other software necessary to produce our hardware designs.
 
 Unless otherwise noted, everything in the repository is covered by the Apache License, Version 2.0. See the [LICENSE](https://github.com/lowRISC/opentitan/blob/master/LICENSE) file and [repository README](https://github.com/lowRISC/opentitan/blob/master/README.md) for more information on licensing and see the user guides below for more information on development methodology.

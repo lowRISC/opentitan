@@ -155,7 +155,7 @@ Exceptions:
 
 Use spaces to indent or align text.
 
-To convert tabs to spaces on any file, you can use the [UNIX `expand`](http://linux.die.net/man/1/expand) utility.
+To convert tabs to spaces on any file, you can use the [UNIX `expand`](https://linux.die.net/man/1/expand) utility.
 
 #### No Trailing Spaces
 
