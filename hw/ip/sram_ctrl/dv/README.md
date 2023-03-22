@@ -17,7 +17,8 @@ Only toggle coverage on the IOs of these sub-modules is enabled for coverage col
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/ip/sram_ctrl/dv/latest/report.html)
+* [Simulation results for SRAM](https://reports.opentitan.org/hw/ip/sram_ctrl_main/dv/latest/report.html)
+* [Simulation results for retention SRAM](https://reports.opentitan.org/hw/ip/sram_ctrl_ret/dv/latest/report.html)
 
 ## Design features
 For detailed information on SRAM_CTRL design features, please see the [SRAM_CTRL HWIP technical specification](../README.md).
