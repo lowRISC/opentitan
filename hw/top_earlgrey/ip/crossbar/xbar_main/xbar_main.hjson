@@ -82,6 +82,7 @@
       aes
       entropy_src
       csrng
+      dbg_mode
       edn0
       edn1
       hmac
@@ -304,6 +305,23 @@
         {
           base_addr: 0xC11e0000
           size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+    }
+    {
+      name: dbg_mode
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: "false"
+      inst_type: dbg_mode
+      addr_range:
+      [
+        {
+          base_addr: 0xFF000000
+          size_byte: 0x40
         }
       ]
       xbar: false

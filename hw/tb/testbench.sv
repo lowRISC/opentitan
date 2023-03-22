@@ -20,7 +20,9 @@ module testbench ();
    import tlul2axi_pkg::*;
    import top_earlgrey_pkg::*;
         
+   
    import "DPI-C" function read_elf(input string filename);
+   import "DPI-C" function read_vmem(input string filename);
    import "DPI-C" function byte get_section(output longint address, output longint len); 
    import "DPI-C" context function byte read_section(input longint address, inout byte buffer[]);
    
@@ -55,6 +57,7 @@ module testbench ();
    logic io_clk = 1'b0;
    logic usb_clk = 1'b0;
    logic rst_sys_n;
+   logic dbg_mode;
    logic es_rng_fips;
    logic SCK, CSNeg;
    logic [15:0] spi_i, spi_o, spi_oe_o;
@@ -175,11 +178,11 @@ module testbench ();
   top_earlgrey #(
    .OtpCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/otp/otp-img.mem"),
 `ifdef IBEX_JTAG
-   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/fake_rom.vmem"),
+   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem")
 `else
-   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem"),
+   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem")
 `endif
-   .FlashCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/hmac_test/hmac_smoketest.vmem")
+   //.FlashCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/hmac_test/hmac_smoketest.vmem")
   ) dut (
    .mio_in_i(ibex_uart_rx),
    .mio_out_o(ibex_uart_tx),
@@ -214,6 +217,7 @@ module testbench ();
    .clk_usb_i(clk_sys),
    .axi_req_o(axi_req),
    .axi_rsp_i(axi_rsp),
+   .dbg_mode,
    .irq_ibex_i('0),
    .jtag_req_i(jtag_i),
    .jtag_rsp_o(jtag_o)
@@ -269,6 +273,11 @@ module testbench ();
        sbaccess       : 3'h2,
        default        : 1'b0
      };
+
+    logic [31:0] dm_status;
+    //dm_ot::dtm_op_status_e op;
+    automatic int dmi_wait_cycles = 10;
+
       riscv_dbg.reset_master();
 `ifdef IBEX_JTAG
      if ( $value$plusargs ("SRAM=%s", SRAM));
@@ -278,8 +287,23 @@ module testbench ();
          @(posedge clk_sys); 
      debug_module_init();
      load_binary(SRAM);
+     // Halt Req
+     riscv_dbg.write_dmi(dm_ot::DMControl, 32'h8000_0001);
+     do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
+     while (sbcs.sbbusy);
+     // Wait for CVA6 to be halted
+     do riscv_dbg.read_dmi(dm_ot::DMStatus, dm_status, dmi_wait_cycles);
+     while (!dm_status[8]);
+     // Ensure haltreq, resumereq and ackhavereset all equal to 0
+     riscv_dbg.write_dmi(dm_ot::DMControl, 32'h0000_0001);
+     do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
+     while (sbcs.sbbusy);
      jtag_data_preload();
      jtag_ibex_wakeup(32'h e0000080);
+     repeat(1000000)
+        @(posedge clk_sys); 
+     jtag_ibex_wakeup(32'h d0008080);
+     
      
 `endif               
   end // block: local_jtag_preload

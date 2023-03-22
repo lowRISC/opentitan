@@ -37,6 +37,7 @@ initial force dut.rst_spi_host1_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(tlul2axi, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rom_ctrl__rom, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rom_ctrl__regs, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(dbg_mode, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(spi_host0, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(spi_host1, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(flash_ctrl__core, dut, clk_main_i, rst_n)

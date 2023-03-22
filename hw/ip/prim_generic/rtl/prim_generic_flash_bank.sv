@@ -18,28 +18,35 @@ module prim_flash_bank #(
   localparam int WordW = $clog2(WordsPerPage),
   localparam int AddrW = PageW + WordW
 ) (
-  input                              clk_i,
-  input                              rst_ni,
-  input                              rd_i,
-  input                              prog_i,
-  input                              prog_last_i,
+  input                        clk_i,
+  input                        rst_ni,
+  input                        rd_i,
+  input                        prog_i,
+  input                        prog_last_i,
   // the generic model does not make use of program types
-  input flash_ctrl_pkg::flash_prog_e prog_type_i,
-  input                              pg_erase_i,
-  input                              bk_erase_i,
-  input                              erase_suspend_req_i,
-  input                              he_i,
-  input [AddrW-1:0]                  addr_i,
-  input flash_ctrl_pkg::flash_part_e part_i,
-  input [InfoTypesWidth-1:0]         info_sel_i,
-  input [DataWidth-1:0]              prog_data_i,
-  output logic                       ack_o,
-  output logic                       done_o,
-  output logic [DataWidth-1:0]       rd_data_o,
-  input                              init_i,
-  output logic                       init_busy_o,
-  input                              flash_power_ready_h_i,
-  input                              flash_power_down_h_i
+  input                        flash_ctrl_pkg::flash_prog_e prog_type_i,
+  input                        pg_erase_i,
+  input                        bk_erase_i,
+  input                        erase_suspend_req_i,
+  input                        he_i,
+  input [AddrW-1:0]            addr_i,
+  input                        flash_ctrl_pkg::flash_part_e part_i,
+  input [InfoTypesWidth-1:0]   info_sel_i,
+  input [DataWidth-1:0]        prog_data_i,
+  output logic                 ack_o,
+  output logic                 done_o,
+  output logic [DataWidth-1:0] rd_data_o,
+  input                        init_i,
+  output logic                 init_busy_o,
+  // Debug mode Interface
+  input logic                  debug_flash_write_i,
+  input logic                  debug_flash_req_i,
+  input logic [15:0]           debug_flash_addr_i,
+  input logic [75:0]           debug_flash_wdata_i,
+  input logic [75:0]           debug_flash_wmask_i,
+  input logic                  debug_mode_i, 
+  input                        flash_power_ready_h_i,
+  input                        flash_power_down_h_i
 );
 
   `ifdef SYNTHESIS
@@ -403,6 +410,20 @@ module prim_flash_bank #(
                         (mem_part == flash_ctrl_pkg::FlashPartData |
                          mem_bk_erase);
 
+
+  logic        debug_flash_write;
+  logic        debug_flash_req;
+  logic [15:0] debug_flash_addr;
+  logic [75:0] debug_flash_wdata;
+  logic [75:0] debug_flash_wmask;
+
+  assign debug_flash_write = debug_mode_i ? debug_flash_write_i : mem_wr;
+  assign debug_flash_req = debug_mode_i ? debug_flash_req_i : data_mem_req;
+  assign debug_flash_addr = debug_mode_i ? debug_flash_addr_i : mem_addr;
+  assign debug_flash_wdata = debug_mode_i ? debug_flash_wdata_i : mem_wdata;
+  assign debug_flash_wmask = debug_mode_i ? debug_flash_wmask_i : {DataWidth{1'b1}}; 
+  
+
   prim_ram_1p #(
     .Width(DataWidth),
     .Depth(WordsPerBank),
@@ -411,11 +432,11 @@ module prim_flash_bank #(
   ) u_mem (
     .clk_i,
     .rst_ni,
-    .req_i    (data_mem_req),
-    .write_i  (mem_wr),
-    .addr_i   (mem_addr),
-    .wdata_i  (mem_wdata),
-    .wmask_i  ({DataWidth{1'b1}}),
+    .req_i    (debug_flash_req),//data_mem_req),
+    .write_i  (debug_flash_write),//mem_wr),
+    .addr_i   (debug_flash_addr),//mem_addr),
+    .wdata_i  (debug_flash_wdata),//mem_wdata),
+    .wmask_i  (debug_flash_wmask),//{DataWidth{1'b1}}),
     .rdata_o  (rd_data_main),
     .cfg_i    ('0)
   );

@@ -62,6 +62,12 @@ module xbar_main_bind;
     .h2d    (tl_rom_ctrl__regs_o),
     .d2h    (tl_rom_ctrl__regs_i)
   );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_dbg_mode (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_dbg_mode_o),
+    .d2h    (tl_dbg_mode_i)
+  );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_spi_host0 (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),

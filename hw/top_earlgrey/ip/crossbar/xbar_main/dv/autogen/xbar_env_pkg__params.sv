@@ -18,14 +18,16 @@ tl_device_t xbar_devices[$] = '{
         '{32'hc0400000, 32'hc07ffffe}
     }},
     '{"tlul2axi", '{
-        '{32'h00010000, 32'h9fffffff},
-        '{32'h1c0000000, 32'h1c00fffff}
+        '{32'h00010000, 32'h9fffffff}
     }},
     '{"rom_ctrl__rom", '{
         '{32'hd0008000, 32'hd000ffff}
     }},
     '{"rom_ctrl__regs", '{
         '{32'hc11e0000, 32'hc11e007f}
+    }},
+    '{"dbg_mode", '{
+        '{32'hff000000, 32'hff00003f}
     }},
     '{"spi_host0", '{
         '{32'hc0300000, 32'hc030003f}
@@ -109,6 +111,7 @@ tl_host_t xbar_hosts[$] = '{
         "aes",
         "entropy_src",
         "csrng",
+        "dbg_mode",
         "edn0",
         "edn1",
         "hmac",

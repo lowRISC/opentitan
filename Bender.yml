@@ -787,7 +787,7 @@ sources:
 ##### testbench
 
       - hw/tb/uart.sv
-      #- hw/tb/spi_flash/S25fs256s/model/s25fs256s.v
+      - hw/tb/spi_flash/S25fs256s/model/s25fs256s.v
       - hw/tb/jtag_intf.sv
       - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
       - hw/tb/testbench.sv

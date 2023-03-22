@@ -42,6 +42,13 @@ module flash_phy
   input mubi4_t flash_bist_enable_i,
   input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
   input ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
+  // Debug mode interface
+  input logic        debug_flash_write_i,
+  input logic        debug_flash_req_i,
+  input logic [15:0] debug_flash_addr_i,
+  input logic [75:0] debug_flash_wdata_i,
+  input logic [75:0] debug_flash_wmask_i,
+  input logic        debug_mode_i, 
   output logic [7:0] fla_obs_o,
   output logic fatal_prim_flash_alert_o,
   output logic recov_prim_flash_alert_o
@@ -363,6 +370,13 @@ module flash_phy
     .flash_power_down_h_i,
     .flash_test_mode_a_io,
     .flash_test_voltage_h_io,
+    // Debug Mode Interface
+    .debug_flash_write_i,
+    .debug_flash_req_i,  
+    .debug_flash_addr_i,  
+    .debug_flash_wdata_i,
+    .debug_flash_wmask_i, 
+    .debug_mode_i,        
     .flash_err_o(flash_ctrl_o.macro_err),
     .fatal_alert_o(fatal_prim_flash_alert_o),
     .recov_alert_o(recov_prim_flash_alert_o)
