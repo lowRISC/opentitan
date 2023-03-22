@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 /**
- * Initializes and returns a ujson context linked to the ottf console.
+ * Initializes and returns a ujson context linked to the OTTF console.
  *
  * @return An initialized ujson_t context.
  */

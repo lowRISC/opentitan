@@ -30,13 +30,13 @@
  * bare-metal program. Note, for the majority of top-level tests, this
  * should be set to false.
  *
- * Set `can_clobber_uart` to true if this test will reconfigure the UART in
- * any way, since the OTTF uses the UART to communicate test results on
+ * Set `console.test_may_clobber` to true if this test will reconfigure the UART
+ * in any way, since the OTTF uses the UART to communicate test results on
  * Verilator and FPGA platforms, it must be reconfigured by the OTTF before
  * test results are printed.
  */
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
-                        .can_clobber_uart = false, );
+                        .console.test_may_clobber = false, );
 
 /**
  * Override any of the default OTTF exception handlers (by uncommenting and

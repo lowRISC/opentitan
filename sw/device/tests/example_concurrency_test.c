@@ -32,8 +32,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
-                        .can_clobber_uart = false, );
+OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true);
 
 static void task_1(void *task_parameters) {
   // ***************************************************************************

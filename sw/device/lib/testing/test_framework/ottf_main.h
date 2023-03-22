@@ -38,9 +38,9 @@ enum {
 };
 
 /**
- * Returns the UART that is the console device.
+ * Returns the DIF handle that is the console device.
  */
-dif_uart_t *ottf_console(void);
+void *get_ottf_console(void);
 
 /**
  * TODO: add description

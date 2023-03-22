@@ -13,7 +13,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG(.can_clobber_uart = true, );
+OTTF_DEFINE_TEST_CONFIG(.console.test_may_clobber = true);
 
 rom_error_t uart_test(void) {
   // Configure UART0 as stdout.

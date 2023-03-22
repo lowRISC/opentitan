@@ -12,6 +12,7 @@
 #include "external/freertos/include/task.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -23,6 +24,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/coverage.h"
 #include "sw/device/lib/testing/test_framework/ottf_flow_control.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
@@ -39,8 +41,8 @@ OT_ASSERT_MEMBER_SIZE(ottf_test_config_t, enable_concurrency, 1);
 // tasks.
 extern void *pxCurrentTCB;
 
-// UART for communication with host.
-static dif_uart_t uart0;
+// Potential DIF handles for OTTF console communication.
+static dif_uart_t ottf_console_uart;
 
 // A global random number generator testutil handle.
 rand_testutils_rng_t rand_testutils_rng_ctx;
@@ -79,26 +81,39 @@ char *ottf_task_get_self_name(void) {
   return pcTaskGetName(/*xTaskToQuery=*/NULL);
 }
 
-static void init_uart(void) {
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
-  CHECK_DIF_OK(
-      dif_uart_configure(&uart0, (dif_uart_config_t){
-                                     .baudrate = kUartBaudrate,
-                                     .clk_freq_hz = kClockFreqPeripheralHz,
-                                     .parity_enable = kDifToggleDisabled,
-                                     .parity = kDifUartParityEven,
-                                     .tx_enable = kDifToggleEnabled,
-                                     .rx_enable = kDifToggleEnabled,
-                                 }));
-  base_uart_stdout(&uart0);
+static void ottf_init_console(void) {
+  uintptr_t base_addr = kOttfTestConfig.console.ip_base_addr;
+  switch (kOttfTestConfig.console.type) {
+    case (kOttfConsoleUart):
+      // Set a default for the console base address if the base address is not
+      // configured. The default is to use UART0.
+      if (base_addr == 0) {
+        base_addr = TOP_EARLGREY_UART0_BASE_ADDR;
+      }
+      CHECK_DIF_OK(
+          dif_uart_init(mmio_region_from_addr(base_addr), &ottf_console_uart));
+      CHECK_DIF_OK(dif_uart_configure(&ottf_console_uart,
+                                      (dif_uart_config_t){
+                                          .baudrate = kUartBaudrate,
+                                          .clk_freq_hz = kClockFreqPeripheralHz,
+                                          .parity_enable = kDifToggleDisabled,
+                                          .parity = kDifUartParityEven,
+                                          .tx_enable = kDifToggleEnabled,
+                                          .rx_enable = kDifToggleEnabled,
+                                      }));
+      base_uart_stdout(&ottf_console_uart);
+      break;
+    default:
+      CHECK(false, "unsupported OTTF console interface.");
+      break;
+  }
 }
 
 static void report_test_status(bool result) {
   // Reinitialize UART before print any debug output if the test clobbered it.
   if (kDeviceType != kDeviceSimDV) {
-    if (kOttfTestConfig.can_clobber_uart) {
-      init_uart();
+    if (kOttfTestConfig.console.test_may_clobber) {
+      ottf_init_console();
     }
     LOG_INFO("Finished %s", kOttfTestConfig.file);
   }
@@ -118,14 +133,19 @@ static void test_wrapper(void *task_parameters) {
   report_test_status(result);
 }
 
-dif_uart_t *ottf_console(void) { return &uart0; }
+void *get_ottf_console() {
+  switch (kOttfTestConfig.console.type) {
+    default:
+      return &ottf_console_uart;
+  }
+}
 
 void _ottf_main(void) {
   test_status_set(kTestStatusInTest);
 
-  // Initialize the UART to enable logging for non-DV simulation platforms.
+  // Initialize the console to enable logging for non-DV simulation platforms.
   if (kDeviceType != kDeviceSimDV) {
-    init_uart();
+    ottf_init_console();
     if (kOttfTestConfig.enable_uart_flow_control) {
       ottf_flow_control_enable();
     }
