@@ -36,8 +36,7 @@ pr:
 jobs:
 - job: checkout
   displayName: Checkout repository
-  pool:
-    vmImage: ubuntu-20.04
+  pool: ci-public
   steps:
   - checkout: self
     path: opentitan-repo
@@ -51,14 +50,14 @@ jobs:
   displayName: Quality (quick lint)
   # Run code quality checks (quick lint)
   dependsOn: checkout
-  pool:
-    vmImage: ubuntu-20.04
+  pool: ci-public
   steps:
   - template: ci/checkout-template.yml
-  - bash: |
-      sudo apt-get remove -y clang-6.0 libclang-common-6.0-dev libclang1-6.0 libllvm6.0
-    displayName: Uninstall Clang
-    # Remove existing Clang installation
+    # TODO(lowRISC/opentitan#17647): uncomment to run on Microsoft-hosted runner
+    #- bash: |
+    #    sudo apt-get remove -y clang-6.0 libclang-common-6.0-dev libclang1-6.0 libllvm6.0
+    #  displayName: Uninstall Clang
+    #  # Remove existing Clang installation
   - template: ci/install-package-dependencies.yml
     ## !!!
     ##
@@ -136,24 +135,24 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Confirm no .bazelrc-site files
 
-- job: airgapped_bazel_build
-  displayName: Test an airgapped Bazel build
-  timeoutInMinutes: 90
-  dependsOn: checkout
-  condition: eq(variables['Build.Reason'], 'PullRequest')
-  pool:
-    vmImage: ubuntu-20.04
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - bash: ci/scripts/test-airgapped-build.sh
+# TODO(lowRISC/opentitan#17647): re-enable test
+#- job: airgapped_bazel_build
+#  displayName: Test an airgapped Bazel build
+#  timeoutInMinutes: 90
+#  dependsOn: checkout
+#  condition: eq(variables['Build.Reason'], 'PullRequest')
+#  pool:
+#    vmImage: ubuntu-20.04
+#  steps:
+#  - template: ci/checkout-template.yml
+#  - template: ci/install-package-dependencies.yml
+#  - bash: ci/scripts/test-airgapped-build.sh
 
 - job: slow_lints
   displayName: Quality (in-depth lint)
   # Run code quality checks (in-depth lint)
   dependsOn: lint
-  pool:
-    vmImage: ubuntu-20.04
+  pool: ci-public
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
@@ -263,8 +262,7 @@ jobs:
   # Build Verilator simulation of the English Breakfast toplevel design
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool:
-    vmImage: ubuntu-20.04
+  pool: ci-public
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
@@ -325,8 +323,7 @@ jobs:
 - job: build_and_execute_verilated_tests_englishbreakfast
   displayName: Verilated English Breakfast (Execute)
   # Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
-  pool:
-    vmImage: ubuntu-20.04
+  pool: ci-public
   dependsOn: chip_englishbreakfast_verilator
   steps:
   - template: ci/checkout-template.yml
@@ -354,8 +351,7 @@ jobs:
   displayName: Run OTBN Smoke Test
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool:
-    vmImage: ubuntu-20.04
+  pool: ci-public
   timeoutInMinutes: 10
   steps:
   - template: ci/checkout-template.yml
@@ -512,8 +508,7 @@ jobs:
 
 - job: cache_bitstreams
   displayName: Cache bitstreams to GCP
-  pool:
-    vmImage: ubuntu-20.04
+  pool: ci-public
   dependsOn:
     - chip_earlgrey_cw310
     - chip_earlgrey_cw310_hyperdebug
@@ -613,8 +608,7 @@ jobs:
 
 - job: deploy_release_artifacts
   displayName: Package & deploy release
-  pool:
-    vmImage: ubuntu-20.04
+  pool: ci-public
   dependsOn:
     - lint
     - sw_build
@@ -652,31 +646,32 @@ jobs:
       assets: |
           $(Build.ArtifactStagingDirectory)/dist-final/*
 
-- job: build_docker_containers
-  displayName: "Build Docker Containers"
-  pool:
-    vmImage: ubuntu-20.04
-  dependsOn:
-    - lint
-  steps:
-  - template: ci/checkout-template.yml
-  - task: Docker@2
-    displayName: Build Developer Utility Container
-    continueOnError: True
-    inputs:
-      command: build
-      Dockerfile: ./util/container/Dockerfile
-      buildContext: .
-  - task: Docker@2
-    displayName: Build Documentation Builder Container
-    inputs:
-      command: build
-      tags: gcr.io/active-premise-257318/builder
-      Dockerfile: ./util/site/site-builder/builder.Dockerfile
-      buildContext: .
-  - task: Docker@2
-    displayName: Build Documentation Redirector Container
-    inputs:
-      command: build
-      Dockerfile: ./site/redirector/landing/Dockerfile
-      buildContext: ./site/redirector/landing
+# TODO(lowRISC/opentitan#17647): re-enable test
+#- job: build_docker_containers
+#  displayName: "Build Docker Containers"
+#  pool:
+#    vmImage: ubuntu-20.04
+#  dependsOn:
+#    - lint
+#  steps:
+#  - template: ci/checkout-template.yml
+#  - task: Docker@2
+#    displayName: Build Developer Utility Container
+#    continueOnError: True
+#    inputs:
+#      command: build
+#      Dockerfile: ./util/container/Dockerfile
+#      buildContext: .
+#  - task: Docker@2
+#    displayName: Build Documentation Builder Container
+#    inputs:
+#      command: build
+#      tags: gcr.io/active-premise-257318/builder
+#      Dockerfile: ./util/site/site-builder/builder.Dockerfile
+#      buildContext: .
+#  - task: Docker@2
+#    displayName: Build Documentation Redirector Container
+#    inputs:
+#      command: build
+#      Dockerfile: ./site/redirector/landing/Dockerfile
+#      buildContext: ./site/redirector/landing
