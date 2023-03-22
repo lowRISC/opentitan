@@ -102,8 +102,7 @@ static volatile bool task_done[kTestTaskIdCount];
  */
 static volatile uint32_t task_iter_count_max[kTestTaskIdCount];
 
-OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
-                        .can_clobber_uart = false, );
+OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true);
 
 /**
  * Initializes the peripherals used in this test.

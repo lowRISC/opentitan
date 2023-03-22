@@ -20,7 +20,7 @@
 
 // We declare this `extern` here to avoid a circular dependency with
 // `ottf_main.h`.
-extern dif_uart_t *ottf_console(void);
+extern void *get_ottf_console(void);
 
 #define FLOW_CONTROL_LOW_WATERMARK 4
 #define FLOW_CONTROL_HIGH_WATERMARK 8
@@ -36,7 +36,7 @@ void ottf_flow_control_enable(void) {
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &ottf_plic));
 
-  dif_uart_t *uart = ottf_console();
+  dif_uart_t *uart = (dif_uart_t *)get_ottf_console();
   CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, FLOW_CONRTOL_WATERMARK_CONFIG));
   CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
                                         kDifToggleEnabled));
@@ -57,7 +57,7 @@ void ottf_flow_control_enable(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
   // Make sure we're in the Resume state and we emit a Resume to the UART.
-  ottf_flow_control(ottf_console(), kFlowControlResume);
+  ottf_flow_control((dif_uart_t *)get_ottf_console(), kFlowControlResume);
 }
 
 // This version of the function is safe to call from within the ISR.
@@ -86,7 +86,7 @@ static status_t manage_flow_control(const dif_uart_t *uart,
 }
 
 bool ottf_flow_control_isr(void) {
-  dif_uart_t *uart = ottf_console();
+  dif_uart_t *uart = (dif_uart_t *)get_ottf_console();
   ottf_flow_control_intr += 1;
   bool rx;
   CHECK_DIF_OK(dif_uart_irq_is_pending(uart, kDifUartIrqRxWatermark, &rx));

@@ -151,8 +151,7 @@ static void execute_test(dif_uart_t *uart) {
   CHECK(uart_tx_empty_handled, "TX empty IRQ has not been handled!");
 }
 
-OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
-                        .can_clobber_uart = true, );
+OTTF_DEFINE_TEST_CONFIG(.console.test_may_clobber = true);
 
 bool test_main(void) {
   // Enable IRQs on Ibex

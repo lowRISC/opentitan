@@ -58,8 +58,7 @@
 #include "rsa_3072_verify_testvectors.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
-                        .enable_uart_flow_control = true,
-                        .can_clobber_uart = false, );
+                        .enable_uart_flow_control = true);
 
 /**
  * Peripheral DIF Handles.

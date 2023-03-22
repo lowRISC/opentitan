@@ -13,8 +13,7 @@
 
 static dif_rstmgr_t rstmgr;
 
-OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
-                        .can_clobber_uart = false, );
+OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false);
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init(

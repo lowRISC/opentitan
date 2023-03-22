@@ -6,6 +6,31 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_TEST_CONFIG_H_
 
 /**
+ * Communication interfaces that can be used as the OTTF console.
+ */
+typedef enum ottf_console_type {
+  kOttfConsoleUart = 0,
+} ottf_console_type_t;
+
+typedef struct ottf_console {
+  /**
+   * Communication interface type to use for the OTTF console (see
+   * `ottf_console_type_t` above).
+   */
+  ottf_console_type_t type;
+  /**
+   * Base address of the communication IP interface to use for the OTTF console.
+   */
+  uintptr_t ip_base_addr;
+  /**
+   * Indicates if the test may clobber (i.e., reconfigure it and use it during
+   * the test for another purpose) the OTTF console, and if the OTTF should
+   * reconfigure it before printing the test status.
+   */
+  bool test_may_clobber;
+} ottf_console_t;
+
+/**
  * Configuration variables for an on-device test.
  *
  * This type represents configuration values for an on-device test, which allow
@@ -22,15 +47,22 @@
  */
 typedef struct ottf_test_config {
   /**
-   * If true, `test_main()` is run as a FreeRTOS task, enabling test writers to
-   * to spawn additional (concurrent) FreeRTOS tasks within the `test_main()`
-   * execution context.
+   * If true, `test_main()` is run as a FreeRTOS task, enabling test writers
+   * to to spawn additional (concurrent) FreeRTOS tasks within the
+   * `test_main()` execution context.
    *
    * If false, `test_main()` is executed on bare-metal, and cannot spawn
-   * additional concurrent execution contexts. This is useful for tests that do
-   * not require concurrency, and seek to minimize simulation runtime.
+   * additional concurrent execution contexts. This is useful for tests that
+   * do not require concurrency, and seek to minimize simulation runtime.
    */
   bool enable_concurrency;
+
+  /**
+   * The communication peripheral to use as the test console, i.e. where test
+   * status and error messages are written to. Typically UART0, but other
+   * communication peripherals may be supported.
+   */
+  ottf_console_t console;
 
   /**
    * Indicates that this test will utilize the UART to receive commands from
@@ -39,13 +71,6 @@ typedef struct ottf_test_config {
    * enable interrupt handling before `test_main` begins.
    */
   bool enable_uart_flow_control;
-
-  /**
-   * Indicates that `test_main()` does something non-trivial to the UART
-   * device. Setting this to true will make `test_main()` guard against this
-   * by resetting the UART device before printing debug information.
-   */
-  bool can_clobber_uart;
 
   /**
    * Name of the file in which `kOttfTestConfig` is defined. Most of the time,
@@ -67,7 +92,7 @@ typedef struct ottf_test_config {
  * A test that wants to enable concurrency and can also clobber UART should use:
  *
  *   OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
- *                           .can_clobber_uart = true, );
+ *                           .console.test_may_clobber = true, );
  *
  */
 #define OTTF_DEFINE_TEST_CONFIG(...) \

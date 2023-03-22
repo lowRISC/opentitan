@@ -32,6 +32,6 @@ ujson_t ujson_ottf_console(void) {
   // requirement in bazel.  This is so ujson libraries can
   // provide dif-based implementations and still be host-compatible
   // and therefore can be depdendencies of opentitanlib.
-  extern dif_uart_t *ottf_console(void);
-  return ujson_init(ottf_console(), ottf_getc, ottf_putbuf);
+  extern void *get_ottf_console(void);
+  return ujson_init(get_ottf_console(), ottf_getc, ottf_putbuf);
 }
