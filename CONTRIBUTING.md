@@ -37,13 +37,12 @@ involved.
 * Code review is not design review and doesn't remove the need for discussing
   implementation options. If you would like to make a large-scale change or
   discuss multiple implementation options, discuss on the mailing list.
-* Create pull requests from a fork rather than making new branches in 
+* Create pull requests from a fork rather than making new branches in
   `github.com/lowrisc/opentitan`.
 * Do not attempt to commit code with a non-Apache license without discussing
   first.
 * If a relevant bug or tracking issue exists, reference it in the pull request
   and commits.
 
-Please see [Contributing to
-OpenTitan](https://docs.opentitan.org/doc/project/contributing/) for more
-general guidance.
+Please see [Contributing to OpenTitan](https://opentitan.org/book/doc/contributing)
+for more general guidance.
