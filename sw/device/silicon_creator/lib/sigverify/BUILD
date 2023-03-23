@@ -19,6 +19,11 @@ cc_library(
     hdrs = ["rsa_key.h"],
 )
 
+cc_library(
+    name = "spx_key",
+    hdrs = ["spx_key.h"],
+)
+
 dual_cc_library(
     name = "mod_exp_ibex",
     srcs = dual_inputs(
@@ -195,6 +200,7 @@ cc_library(
         ":mod_exp_ibex",
         ":mod_exp_otbn",
         ":rsa_key",
+        ":spx_key",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
