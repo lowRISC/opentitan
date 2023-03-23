@@ -154,6 +154,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     foreach (m_spi_device_agent_cfgs[i]) begin
       m_spi_device_agent_cfgs[i] =
         spi_agent_cfg::type_id::create($sformatf("m_spi_device_agent_cfg%0d", i));
+      // all the spi_agents talking to the host interface should be configured into
+      // device mode
+      m_spi_device_agent_cfgs[i].if_mode = dv_utils_pkg::Device;
     end
 
     // create i2c agent config obj
