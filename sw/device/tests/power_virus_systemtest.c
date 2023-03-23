@@ -1235,8 +1235,9 @@ bool test_main(void) {
   // We don't enable SPI host 1 just yet, as we want to pre-load its FIFO with
   // data before enabling it at the last moment, to initiate max power draw.
   configure_spi_host(&spi_host_1, /*enable=*/false);
-  spi_device_testutils_configure_passthrough(&spi_device, /*filters=*/0,
-                                             /*upload_write_commands=*/false);
+  CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
+      &spi_device, /*filters=*/0,
+      /*upload_write_commands=*/false));
   configure_pattgen();
   configure_pwm();
   LOG_INFO("All IPs configured.");
