@@ -10,48 +10,45 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_uart.h"
 
-#define FLOW_CONTROL_LOW_WATERMARK 4
-#define FLOW_CONTROL_HIGH_WATERMARK 8
-#define FLOW_CONTROL_WATERMARK_CONFIG kDifUartWatermarkByte8
-
 /**
  * Flow control state.
  */
-typedef enum flow_control {
+typedef enum ottf_console_flow_control {
   /** No flow control enabled. */
-  kFlowControlNone = 0,
+  kOttfConsoleFlowControlNone = 0,
   /** Automatically determine the next flow control state. */
-  kFlowControlAuto = 1,
+  kOttfConsoleFlowControlAuto = 1,
   /**
    * Flow control is in the `Resume` state (safe to receive).
    * This is also the ASCII code for `XON`.
    */
-  kFlowControlResume = 17,
+  kOttfConsoleFlowControlResume = 17,
   /**
    * Flow control is in the `Pause` state (risk of overrun).
    * This is also the ASCII code for `XOFF`.
    */
-  kFlowControlPause = 19,
-} flow_control_t;
+  kOttfConsoleFlowControlPause = 19,
+} ottf_console_flow_control_t;
 
 /**
  * Returns a pointer to the OTTF console device DIF handle.
  */
-void *get_ottf_console(void);
+void *ottf_console_get(void);
 
 /**
  * Initializes the OTTF console device and connects to the printf buffer.
  */
-void ottf_init_console(void);
+void ottf_console_init(void);
 
 /**
- * Manage flow control by inspecting the UART receive FIFO.
+ * Manage flow control by inspecting the OTTF console device's receive FIFO.
  *
  * @param uart A UART handle.
  * @param ctrl Set the next desired flow-control state.
  * @return The new state.
  */
-status_t ottf_flow_control(const dif_uart_t *uart, flow_control_t ctrl);
+status_t ottf_console_flow_control(const dif_uart_t *uart,
+                                   ottf_console_flow_control_t ctrl);
 
 /**
  * Enable flow control for the OTTF console.
@@ -64,11 +61,12 @@ status_t ottf_flow_control(const dif_uart_t *uart, flow_control_t ctrl);
  * This function configures UART interrupts at the PLIC and enables interrupts
  * at the CPU.
  */
-void ottf_flow_control_enable(void);
+void ottf_console_flow_control_enable(void);
 
 /**
- * The number of flow control interrupts that have occurred.
+ * Returns the number of OTTF console flow control interrupts that have
+ * occurred.
  */
-extern volatile uint32_t ottf_flow_control_intr;
+uint32_t ottf_console_get_flow_control_irqs(void);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_CONSOLE_H_
