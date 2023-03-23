@@ -290,6 +290,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/lib/sigverify:sigverify_without_mock_mod_exp_ibex",
+        "//sw/device/silicon_creator/lib/sigverify:spx_key",
     ],
 )
 
