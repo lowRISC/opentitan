@@ -95,14 +95,15 @@ static void init_peripherals(void) {
  */
 static void otp_write_test(int32_t address, const uint8_t *buffer,
                            uint32_t size, exp_test_result_t exp_result) {
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   for (int i = address; i < address + size; i += sizeof(uint64_t)) {
     uint64_t word;
     memcpy(&word, &buffer[i], sizeof(word));
     CHECK_DIF_OK(
         dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret2, i, word));
-    otp_ctrl_testutils_wait_for_dai(&otp);
-    otp_ctrl_testutils_dai_access_error_check(&otp, exp_result, address);
+    CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
+    CHECK_STATUS_OK(
+        otp_ctrl_testutils_dai_access_error_check(&otp, exp_result, address));
   }
 }
 
@@ -117,13 +118,14 @@ static void otp_write_test(int32_t address, const uint8_t *buffer,
  */
 static void otp_read_test(int32_t address, const uint8_t *buffer, uint32_t size,
                           exp_test_result_t exp_result) {
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   for (int i = address; i < address + size; i += sizeof(uint64_t)) {
     uint64_t got, exp;
     CHECK_DIF_OK(
         dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionSecret2, i));
-    otp_ctrl_testutils_wait_for_dai(&otp);
-    otp_ctrl_testutils_dai_access_error_check(&otp, exp_result, address);
+    CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
+    CHECK_STATUS_OK(
+        otp_ctrl_testutils_dai_access_error_check(&otp, exp_result, address));
 
     // Check whether the read data matches.
     memcpy(&exp, &buffer[i], sizeof(exp));
@@ -323,8 +325,8 @@ bool test_main(void) {
           // SECRET2 has not been locked yet.
           keymgr_check_root_key_is_invalid();
           // Lock the SECRET2 partition.
-          otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2,
-                                            0);
+          CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
+              &otp, kDifOtpCtrlPartitionSecret2, 0));
           reset_chip();
         } else {
           LOG_INFO("Third access test iteration...");

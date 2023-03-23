@@ -139,7 +139,8 @@ static void check_lock_otp_partition(const dif_otp_ctrl_t *otp) {
              ((uint32_t *)&digest)[1]);
     return;
   }
-  otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionSecret2, 0);
+  CHECK_STATUS_OK(
+      otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionSecret2, 0));
 }
 
 /** Key manager configuration steps performed in ROM. */

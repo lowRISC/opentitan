@@ -73,13 +73,13 @@ static void check_csrng_fuse_enabled(bool expected) {
       .consistency_period_mask = 0x3ffffff,
   };
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 
   uint32_t value;
   // Read the current value of the partition.
   CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionHwCfg,
                                            kOtpIfetchHwRelativeOffset));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(&otp, &value));
   multi_bit_bool_t enable = bitfield_field32_read(
       value,

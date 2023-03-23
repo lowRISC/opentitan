@@ -99,7 +99,7 @@ static void otp_ctrl_test(const dif_otp_ctrl_t *otp) {
       .consistency_period_mask = 0x3ffffff,
   };
   CHECK_DIF_OK(dif_otp_ctrl_configure(otp, config));
-  otp_ctrl_testutils_wait_for_dai(otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(otp));
 }
 
 /**

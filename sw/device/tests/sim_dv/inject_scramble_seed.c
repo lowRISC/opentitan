@@ -127,7 +127,7 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp_ctrl,
                                               kDifOtpCtrlPartitionSecret1,
                                               kFlashAddrKeyOffset + i, val));
-      otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+      CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
     };
 
     for (uint32_t i = 0; i < OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_SIZE;
@@ -138,7 +138,7 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp_ctrl,
                                               kDifOtpCtrlPartitionSecret1,
                                               kFlashDataKeyOffset + i, val));
-      otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+      CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
     };
 
     for (uint32_t i = 0; i < OTP_CTRL_PARAM_SRAM_DATA_KEY_SEED_SIZE;
@@ -148,12 +148,12 @@ bool test_main(void) {
 
       CHECK_DIF_OK(dif_otp_ctrl_dai_program64(
           &otp_ctrl, kDifOtpCtrlPartitionSecret1, kSramDataKeyOffset + i, val));
-      otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+      CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
     };
 
     // Lock the secret1 partition.
-    otp_ctrl_testutils_lock_partition(&otp_ctrl, kDifOtpCtrlPartitionSecret1,
-                                      0);
+    CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
+        &otp_ctrl, kDifOtpCtrlPartitionSecret1, 0));
 
     // Inform rom to setup scramble next round.
     uint32_t otp_val = 0;
@@ -165,7 +165,7 @@ bool test_main(void) {
         (OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET -
          OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET),
         otp_val));
-    otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+    CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
 
     // Check to see if there are any otp_ctrl errors.
     dif_otp_ctrl_status_t status;

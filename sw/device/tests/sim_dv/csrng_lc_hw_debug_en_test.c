@@ -170,16 +170,16 @@ static void lock_otp_secret0_partition(void) {
                                           kDifOtpCtrlPartitionSecret0,
                                           /*address=*/0x10,
                                           /*value=*/otp_token_l));
-  otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp_ctrl,
                                           kDifOtpCtrlPartitionSecret0,
                                           /*address=*/0x18,
                                           /*value=*/opt_token_h));
-  otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
 
   CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp_ctrl, kDifOtpCtrlPartitionSecret0,
                                        /*digest=*/0));
-  otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
 }
 
 /**

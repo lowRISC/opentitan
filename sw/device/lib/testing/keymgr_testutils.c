@@ -100,7 +100,8 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
     dif_otp_ctrl_t otp;
     TRY(dif_otp_ctrl_init(
         mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
-    otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2, 0);
+    TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2,
+                                          0));
 
     // Reboot device.
     rstmgr_testutils_reason_clear();
