@@ -248,9 +248,10 @@ bool test_main(void) {
   // We want to block passthru of the first 5 read commands, corresponding to
   // ReadStatus{1,2,3}, ReadJedecID and ReadSfdp.
   // We also block all write commands.
-  spi_device_testutils_configure_passthrough(&spid,
-                                             /*filters=*/0x1F,
-                                             /*upload_write_commands=*/true);
+  CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
+      &spid,
+      /*filters=*/0x1F,
+      /*upload_write_commands=*/true));
 
   dif_spi_device_passthrough_intercept_config_t passthru_cfg = {
       .status = true,

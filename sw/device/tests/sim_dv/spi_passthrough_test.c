@@ -397,8 +397,8 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_device_init_handle(spi_device_base_addr, &spi_device));
   bool upload_write_commands = (kUploadWriteCommands != 0);
-  spi_device_testutils_configure_passthrough(&spi_device, kFilteredCommands,
-                                             upload_write_commands);
+  CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
+      &spi_device, kFilteredCommands, upload_write_commands));
 
   // Enable all spi_device and spi_host interrupts, and check that they do not
   // trigger unless command upload is enabled.

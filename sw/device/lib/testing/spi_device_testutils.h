@@ -74,7 +74,7 @@ enum spi_device_command_slot {
  * @param filters A bitmap of command slots to enable passthrough filters for.
  * @param upload_write_commands Whether to upload write commands.
  */
-void spi_device_testutils_configure_passthrough(
+status_t spi_device_testutils_configure_passthrough(
     dif_spi_device_handle_t *spi_device, uint32_t filters,
     bool upload_write_commands);
 
