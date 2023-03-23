@@ -41,9 +41,6 @@ OT_ASSERT_MEMBER_SIZE(ottf_test_config_t, enable_concurrency, 1);
 // tasks.
 extern void *pxCurrentTCB;
 
-// Potential DIF handles for OTTF console communication.
-static dif_uart_t ottf_console_uart;
-
 // A global random number generator testutil handle.
 rand_testutils_rng_t rand_testutils_rng_ctx;
 
@@ -81,34 +78,6 @@ char *ottf_task_get_self_name(void) {
   return pcTaskGetName(/*xTaskToQuery=*/NULL);
 }
 
-static void ottf_init_console(void) {
-  uintptr_t base_addr = kOttfTestConfig.console.ip_base_addr;
-  switch (kOttfTestConfig.console.type) {
-    case (kOttfConsoleUart):
-      // Set a default for the console base address if the base address is not
-      // configured. The default is to use UART0.
-      if (base_addr == 0) {
-        base_addr = TOP_EARLGREY_UART0_BASE_ADDR;
-      }
-      CHECK_DIF_OK(
-          dif_uart_init(mmio_region_from_addr(base_addr), &ottf_console_uart));
-      CHECK_DIF_OK(dif_uart_configure(&ottf_console_uart,
-                                      (dif_uart_config_t){
-                                          .baudrate = kUartBaudrate,
-                                          .clk_freq_hz = kClockFreqPeripheralHz,
-                                          .parity_enable = kDifToggleDisabled,
-                                          .parity = kDifUartParityEven,
-                                          .tx_enable = kDifToggleEnabled,
-                                          .rx_enable = kDifToggleEnabled,
-                                      }));
-      base_uart_stdout(&ottf_console_uart);
-      break;
-    default:
-      CHECK(false, "unsupported OTTF console interface.");
-      break;
-  }
-}
-
 static void report_test_status(bool result) {
   // Reinitialize UART before print any debug output if the test clobbered it.
   if (kDeviceType != kDeviceSimDV) {
@@ -131,13 +100,6 @@ static void test_wrapper(void *task_parameters) {
   result = result && test_main();
   result = result && manufacturer_post_test_hook();
   report_test_status(result);
-}
-
-void *get_ottf_console() {
-  switch (kOttfTestConfig.console.type) {
-    default:
-      return &ottf_console_uart;
-  }
 }
 
 void _ottf_main(void) {

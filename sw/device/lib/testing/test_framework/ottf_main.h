@@ -38,11 +38,6 @@ enum {
 };
 
 /**
- * Returns the DIF handle that is the console device.
- */
-void *get_ottf_console(void);
-
-/**
  * TODO: add description
  */
 extern bool manufacturer_pre_test_hook(void);

@@ -228,7 +228,6 @@ cc_library(
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:rand_testutils",
         "//third_party/freertos",
         "@manufacturer_test_hooks//:test_hooks",
@@ -262,7 +261,9 @@ dual_cc_library(
         device = [
             ":check",
             ":ottf_start",
+            ":ottf_test_config",
             "//sw/device/lib/base:mmio",
+            "//sw/device/lib/runtime:print",
             "//sw/device/lib/dif:rv_plic",
             "//sw/device/lib/runtime:ibex",
             "//sw/device/lib/runtime:irq",
