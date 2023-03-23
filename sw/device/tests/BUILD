@@ -1126,7 +1126,6 @@ opentitan_functest(
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/json:gpio",
         "//sw/device/lib/testing/json:pinmux_config",
-        "//sw/device/lib/testing/test_framework:ottf_flow_control",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -2224,7 +2223,6 @@ opentitan_functest(
         "//sw/device/lib/testing:spi_flash_testutils",
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/json:spi_passthru",
-        "//sw/device/lib/testing/test_framework:ottf_flow_control",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
     ],

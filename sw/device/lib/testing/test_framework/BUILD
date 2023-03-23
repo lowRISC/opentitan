@@ -216,7 +216,7 @@ cc_library(
         ":check",
         ":coverage",
         ":freertos_port",
-        ":ottf_flow_control",
+        ":ottf_console",
         ":ottf_start",
         ":ottf_test_config",
         ":status",
@@ -244,7 +244,7 @@ cc_library(
     srcs = ["ujson_ottf.c"],
     hdrs = ["ujson_ottf.h"],
     deps = [
-        ":ottf_flow_control",
+        ":ottf_console",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:print",
@@ -253,11 +253,11 @@ cc_library(
 )
 
 dual_cc_library(
-    name = "ottf_flow_control",
+    name = "ottf_console",
     srcs = dual_inputs(
-        device = ["ottf_flow_control.c"],
+        device = ["ottf_console.c"],
     ),
-    hdrs = ["ottf_flow_control.h"],
+    hdrs = ["ottf_console.h"],
     deps = dual_inputs(
         device = [
             ":check",
@@ -312,7 +312,7 @@ opentitan_functest(
     ),
     deps = [
         ":check",
-        ":ottf_flow_control",
+        ":ottf_console",
         ":ottf_main",
         ":ujson_ottf",
         "//sw/device/lib/base:status",
