@@ -11,6 +11,11 @@ class hmac_env extends cip_base_env #(.CFG_T               (hmac_env_cfg),
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    // config hmac virtual interface
+    if (!uvm_config_db#(hmac_vif)::get(this, "", "hmac_vif", cfg.hmac_vif)) begin
+      `uvm_fatal(`gfn, "failed to get hmac_vif from uvm_config_db")
+    end
   endfunction
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);

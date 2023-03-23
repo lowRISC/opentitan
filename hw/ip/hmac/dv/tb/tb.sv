@@ -27,6 +27,7 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
+  hmac_if hmac_if(.clk_i(clk), .rst_ni(rst_n));
 
   `DV_ALERT_IF_CONNECT()
 
@@ -45,9 +46,7 @@ module tb;
     .intr_fifo_empty_o  ( intr_fifo_empty),
     .intr_hmac_err_o    ( intr_hmac_err  ),
 
-    // TODO: connect this signal and check correctness: it will cause the clock to
-    // be turned off at the wrong time if it is not accurate.
-    .idle_o             ()
+    .idle_o             (hmac_if.idle)
   );
 
   assign interrupts[HmacDone]         = intr_hmac_done;
@@ -61,6 +60,7 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(virtual hmac_if)::set(null, "*.env", "hmac_vif", hmac_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

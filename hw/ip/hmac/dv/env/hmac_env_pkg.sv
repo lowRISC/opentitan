@@ -102,6 +102,8 @@ package hmac_env_pkg;
     endcase
   endfunction
 
+  typedef virtual hmac_if hmac_vif;
+
   // package sources
   `include "hmac_env_cfg.sv"
   `include "hmac_env_cov.sv"

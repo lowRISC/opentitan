@@ -34,6 +34,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
     if (do_hmac_init) hmac_init();
+    `DV_CHECK_EQ(cfg.hmac_vif.is_idle(), 1'b1)
   endtask
 
   virtual task apply_reset(string kind = "HARD");
