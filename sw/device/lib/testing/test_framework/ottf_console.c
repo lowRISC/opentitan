@@ -13,18 +13,17 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
+// TODO: make this toplevel agnostic.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// We declare this `extern` here to avoid a circular dependency with
-// `ottf_main.h`.
-extern void *get_ottf_console(void);
+// Potential DIF handles for OTTF console communication.
+static dif_uart_t ottf_console_uart;
 
-#define FLOW_CONTROL_LOW_WATERMARK 4
-#define FLOW_CONTROL_HIGH_WATERMARK 8
-#define FLOW_CONRTOL_WATERMARK_CONFIG kDifUartWatermarkByte8
 const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
 // The flow_control_state and ottf_flow_control_intr varibles are shared between
@@ -32,12 +31,47 @@ const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 static volatile flow_control_t flow_control_state;
 volatile uint32_t ottf_flow_control_intr;
 
+void *get_ottf_console() {
+  switch (kOttfTestConfig.console.type) {
+    default:
+      return &ottf_console_uart;
+  }
+}
+
+void ottf_init_console(void) {
+  uintptr_t base_addr = kOttfTestConfig.console.ip_base_addr;
+  switch (kOttfTestConfig.console.type) {
+    case (kOttfConsoleUart):
+      // Set a default for the console base address if the base address is not
+      // configured. The default is to use UART0.
+      if (base_addr == 0) {
+        base_addr = TOP_EARLGREY_UART0_BASE_ADDR;
+      }
+      CHECK_DIF_OK(
+          dif_uart_init(mmio_region_from_addr(base_addr), &ottf_console_uart));
+      CHECK_DIF_OK(dif_uart_configure(&ottf_console_uart,
+                                      (dif_uart_config_t){
+                                          .baudrate = kUartBaudrate,
+                                          .clk_freq_hz = kClockFreqPeripheralHz,
+                                          .parity_enable = kDifToggleDisabled,
+                                          .parity = kDifUartParityEven,
+                                          .tx_enable = kDifToggleEnabled,
+                                          .rx_enable = kDifToggleEnabled,
+                                      }));
+      base_uart_stdout(&ottf_console_uart);
+      break;
+    default:
+      CHECK(false, "unsupported OTTF console interface.");
+      break;
+  }
+}
+
 void ottf_flow_control_enable(void) {
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &ottf_plic));
 
   dif_uart_t *uart = (dif_uart_t *)get_ottf_console();
-  CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, FLOW_CONRTOL_WATERMARK_CONFIG));
+  CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, FLOW_CONTROL_WATERMARK_CONFIG));
   CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
                                         kDifToggleEnabled));
 

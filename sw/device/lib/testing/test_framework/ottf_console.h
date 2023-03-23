@@ -10,6 +10,10 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_uart.h"
 
+#define FLOW_CONTROL_LOW_WATERMARK 4
+#define FLOW_CONTROL_HIGH_WATERMARK 8
+#define FLOW_CONTROL_WATERMARK_CONFIG kDifUartWatermarkByte8
+
 /**
  * Flow control state.
  */
@@ -29,6 +33,16 @@ typedef enum flow_control {
    */
   kFlowControlPause = 19,
 } flow_control_t;
+
+/**
+ * Returns a pointer to the OTTF console device DIF handle.
+ */
+void *get_ottf_console(void);
+
+/**
+ * Initializes the OTTF console device and connects to the printf buffer.
+ */
+void ottf_init_console(void);
 
 /**
  * Manage flow control by inspecting the UART receive FIFO.
