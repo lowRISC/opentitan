@@ -2263,3 +2263,40 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_functest(
+    name = "test_openocd",
+    srcs = ["example_test_from_flash.c"],
+    cw310 = cw310_params(
+        #bitstream = ":bitstream_default_otp",
+        tags = [
+            "jtag",
+            "vivado",
+        ],
+        test_cmds = [
+            "--rom-kind=rom",
+            "--bitstream=\"$(rootpath {bitstream})\"",
+            "--bootstrap=\"$(rootpath {flash})\"",
+            "--openocd=\"$(rootpath //third_party/openocd:openocd_bin)\"",
+            "--openocd-adapter-config=\"$(rootpath //third_party/openocd:jtag_adapter_cfg)\"",
+            "--openocd-riscv-target-config=\"$(rootpath //util/openocd/target:lowrisc-earlgrey.cfg)\"",
+            "--openocd-lc-target-config=\"$(rootpath //util/openocd/target:lowrisc-earlgrey-lc.cfg)\"",
+        ],
+    ),
+    data = [
+        "//third_party/openocd:jtag_adapter_cfg",
+        "//third_party/openocd:openocd_bin",
+        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "//util/openocd/target:lowrisc-earlgrey-lc.cfg",
+    ],
+    targets = ["cw310_rom"],
+    test_harness = "//sw/host/tests/chip/jtag",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
