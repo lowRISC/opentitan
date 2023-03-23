@@ -11,13 +11,7 @@ def is_pow2(v):
     if not isinstance(v, int):
         log.warning("is_pow2 received non-integer value {}".format(v))
         return False
-    t = 1
-    while t <= v:
-        if t == v:
-            return True
-        t = t * 2
-
-    return False
+    return (v > 0) and (v & (v - 1) == 0)
 
 
 def simplify_addr(dev, xbar):
@@ -196,7 +190,7 @@ def get_toggle_excl_bits(addr_ranges, addr_width=32):
     toggle_bits = 0
     for addr in addr_ranges:
         # The size of the addres range should be power of 2
-        assert is_power_of_two(addr[1] - addr[0] + 1)
+        assert is_pow2(addr[1] - addr[0] + 1)
 
         toggle_bits |= addr[0]
         toggle_bits |= addr[1] - addr[0]
@@ -219,9 +213,3 @@ def get_toggle_excl_bits(addr_ranges, addr_width=32):
         excl_bits.append((start_bit, addr_width - 1))
 
     return excl_bits
-
-
-def is_power_of_two(x):
-    """Function to check if x is power of 2
-    """
-    return (x and (not (x & (x - 1))))
