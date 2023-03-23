@@ -923,6 +923,36 @@ dif_result_t dif_usbdev_set_phy_pins_state(
     const dif_usbdev_t *usbdev, dif_toggle_t override_enable,
     dif_usbdev_phy_pins_drive_t overrides);
 
+/**
+ * Raw data transfer directly to the packet buffer memory. This is a faster
+ * implementation of the generic `mmio_memcpy_to_mmio32` that is specialized for
+ * the USB device and gives a significant performance improvement.
+ *
+ * @param usbdev A USB device.
+ * @param id Buffer number.
+ * @param src Source data.
+ * @param src_len Number of bytes to transfer.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_buffer_raw_write(const dif_usbdev_t *usbdev, uint8_t id,
+                                         const uint8_t *src, size_t src_len);
+
+/**
+ * Raw data transfer directly from the packet buffer memory. This is a faster
+ * implementation of the generic `mmio_memcpy_from_mmio32` that is specialized
+ * for the USB device and gives a significant performance improvemenet.
+ *
+ * @param usbdev A USB device.
+ * @param id Buffer number.
+ * @param dst Destination buffer.
+ * @param dst_len Number of bytes to transfer.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_buffer_raw_read(const dif_usbdev_t *usbdev, uint8_t id,
+                                        uint8_t *dst, size_t dst_len);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
