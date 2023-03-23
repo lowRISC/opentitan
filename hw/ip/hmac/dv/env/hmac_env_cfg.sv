@@ -11,6 +11,8 @@ class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
   // This would help trying to issue reset at specific timing during hmac hashing.
   bit hash_process_triggered;
 
+  hmac_vif hmac_vif;
+
   `uvm_object_utils(hmac_env_cfg)
   `uvm_object_new
 
