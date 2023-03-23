@@ -41,11 +41,6 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     cfg.hash_process_triggered = 0;
   endtask
 
-  virtual task dut_shutdown();
-    super.dut_shutdown();
-    // TODO: nothing extra to do yet
-  endtask
-
   virtual task hmac_init(bit sha_en = 1'b1,
                          bit hmac_en = 1'b1,
                          bit endian_swap = 1'b1,

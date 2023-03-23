@@ -4,7 +4,6 @@
 
 // datapath_stress sequence will generate all message with size 1 and hmac_en
 // thus will have 2 hashes (one for key, one for msg) with the shortest message required
-// TODO: potentially use DV to check throughput here
 
 class hmac_datapath_stress_vseq extends hmac_smoke_vseq;
   `uvm_object_utils(hmac_datapath_stress_vseq)
