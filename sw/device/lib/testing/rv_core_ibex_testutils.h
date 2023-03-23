@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 
 /**
@@ -30,9 +31,11 @@ bool rv_core_ibex_testutils_is_rnd_data_valid(
  * returned.
  * @param rv_core_ibex An rv_core_ibex handle.
  * @param timeout_usec Timeout in microseconds.
- * @return The random data read from the entropy source.
+ * @param[out] rnd The random data read from the entropy source.
+ * @return The result of the operation
  */
-uint32_t rv_core_ibex_testutils_get_rnd_data(
-    const dif_rv_core_ibex_t *rv_core_ibex, uint32_t timeout_usec);
+status_t rv_core_ibex_testutils_get_rnd_data(
+    const dif_rv_core_ibex_t *rv_core_ibex, uint32_t timeout_usec,
+    uint32_t *rnd);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_RV_CORE_IBEX_TESTUTILS_H_
