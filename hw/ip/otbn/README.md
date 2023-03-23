@@ -933,7 +933,6 @@ Whenever possible the Integrity Protection Code is preserved from its source and
 * Data copied between WDRs using the {{#otbn-insn-ref BN.MOV}} or {{#otbn-insn-ref BN.MOVR}} instructions.
 * Data conditionally copied between WDRs using the {{#otbn-insn-ref BN.SEL}} instruction.
 * Data copied between the `ACC` and `MOD` WSRs and a WDR.
-  (TODO: Not yet implemented.)
 * Data copied between any of the `MOD0` to `MOD7` CSRs and a GPR.
   (TODO: Not yet implemented.)
 
