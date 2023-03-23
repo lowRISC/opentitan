@@ -18,7 +18,6 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -82,7 +81,7 @@ static void report_test_status(bool result) {
   // Reinitialize UART before print any debug output if the test clobbered it.
   if (kDeviceType != kDeviceSimDV) {
     if (kOttfTestConfig.console.test_may_clobber) {
-      ottf_init_console();
+      ottf_console_init();
     }
     LOG_INFO("Finished %s", kOttfTestConfig.file);
   }
@@ -107,10 +106,7 @@ void _ottf_main(void) {
 
   // Initialize the console to enable logging for non-DV simulation platforms.
   if (kDeviceType != kDeviceSimDV) {
-    ottf_init_console();
-    if (kOttfTestConfig.enable_uart_flow_control) {
-      ottf_flow_control_enable();
-    }
+    ottf_console_init();
     LOG_INFO("Running %s", kOttfTestConfig.file);
   }
 

@@ -21,7 +21,7 @@ typedef struct ottf_console {
   /**
    * Base address of the communication IP interface to use for the OTTF console.
    */
-  uintptr_t ip_base_addr;
+  uintptr_t base_addr;
   /**
    * Indicates if the test may clobber (i.e., reconfigure it and use it during
    * the test for another purpose) the OTTF console, and if the OTTF should

@@ -43,7 +43,7 @@ status_t ottf_flow_control_test(ujson_t *uj) {
   }
 
   // We'd better have gotten a flow control interrupt.
-  CHECK(ottf_flow_control_intr > 0);
+  CHECK(ottf_console_get_flow_control_irqs() > 0);
 
   // Print out the received data so the test can check that it matches what was
   // sent.
