@@ -76,7 +76,7 @@ package edn_env_pkg;
   typedef enum int {
     EdnSfifoRescmdErrTest = 0,
     EdnSfifoGencmdErrTest = 1,
-    EdnErrTest            = 2, // TODO: issue #16218
+    EdnErrTest            = 2,
     EdnAckSmErrTest       = 20,
     EdnMainSmErrTest      = 21,
     EdnCntrErrTest        = 22,
