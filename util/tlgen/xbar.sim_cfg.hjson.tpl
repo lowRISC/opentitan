@@ -16,13 +16,13 @@
   testplan: "{proj_root}/hw/ip/tlul/data/tlul_testplan.hjson"
 
   // Add xbar_main specific exclusion files.
-  vcs_cov_excl_files: ["{proj_root}/hw/top_earlgrey/ip/{dut}/dv/autogen/xbar_cov_excl.el"]
+  vcs_cov_excl_files: ["{proj_root}/${xbar.ip_path}/dv/autogen/xbar_cov_excl.el"]
 
   // replace common cover.cfg with a generated one, which includes xbar toggle exclusions
   overrides: [
     {
       name: default_vcs_cov_cfg_file
-      value: "-cm_hier {proj_root}/hw/top_earlgrey/ip/{dut}/dv/autogen/xbar_cover.cfg"
+      value: "-cm_hier {proj_root}/${xbar.ip_path}/dv/autogen/xbar_cover.cfg"
     }
   ]
   // Import additional common sim cfg files.
