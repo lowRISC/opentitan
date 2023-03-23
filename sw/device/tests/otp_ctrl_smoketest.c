@@ -43,7 +43,7 @@ bool test_main(void) {
     uint32_t word;
     memcpy(&word, &kTestData[i], sizeof(word));
 
-    otp_ctrl_testutils_wait_for_dai(&otp);
+    CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
     CHECK_DIF_OK(dif_otp_ctrl_dai_program32(
                      &otp, kDifOtpCtrlPartitionVendorTest, 0x10 + i, word),
                  "Failed to program word kTestData[%d] = 0x%08x.", i, word);

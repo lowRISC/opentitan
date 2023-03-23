@@ -22,15 +22,16 @@ const uint8_t kOtpDaiTimeoutUs = 100;
  */
 static bool dai_finished(const dif_otp_ctrl_t *otp_ctrl) {
   dif_otp_ctrl_status_t status;
-  CHECK_DIF_OK(dif_otp_ctrl_get_status(otp_ctrl, &status));
-  return bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiIdle);
+  dif_result_t res = dif_otp_ctrl_get_status(otp_ctrl, &status);
+  return res == kDifOk &&
+         bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiIdle);
 }
 
-void otp_ctrl_testutils_dai_access_error_check(const dif_otp_ctrl_t *otp_ctrl,
-                                               exp_test_result_t exp_result,
-                                               int32_t address) {
+status_t otp_ctrl_testutils_dai_access_error_check(
+    const dif_otp_ctrl_t *otp_ctrl, exp_test_result_t exp_result,
+    int32_t address) {
   dif_otp_ctrl_status_t status;
-  CHECK_DIF_OK(dif_otp_ctrl_get_status(otp_ctrl, &status));
+  TRY(dif_otp_ctrl_get_status(otp_ctrl, &status));
   if (exp_result == kExpectFailed) {
     if (!bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiError)) {
       LOG_ERROR("Expected a DAI error for access to 0x%x", address);
@@ -47,15 +48,17 @@ void otp_ctrl_testutils_dai_access_error_check(const dif_otp_ctrl_t *otp_ctrl,
       LOG_ERROR("No DAI error code expected for access to 0x%x", address);
     }
   }
+  return OK_STATUS();
 }
 
-void otp_ctrl_testutils_wait_for_dai(const dif_otp_ctrl_t *otp_ctrl) {
-  IBEX_SPIN_FOR(dai_finished(otp_ctrl), kOtpDaiTimeoutUs);
+status_t otp_ctrl_testutils_wait_for_dai(const dif_otp_ctrl_t *otp_ctrl) {
+  IBEX_TRY_SPIN_FOR(dai_finished(otp_ctrl), kOtpDaiTimeoutUs);
+  return OK_STATUS();
 }
 
-void otp_ctrl_testutils_lock_partition(const dif_otp_ctrl_t *otp,
-                                       dif_otp_ctrl_partition_t partition,
-                                       uint64_t digest) {
-  CHECK_DIF_OK(dif_otp_ctrl_dai_digest(otp, partition, digest));
-  otp_ctrl_testutils_wait_for_dai(otp);
+status_t otp_ctrl_testutils_lock_partition(const dif_otp_ctrl_t *otp,
+                                           dif_otp_ctrl_partition_t partition,
+                                           uint64_t digest) {
+  TRY(dif_otp_ctrl_dai_digest(otp, partition, digest));
+  return otp_ctrl_testutils_wait_for_dai(otp);
 }

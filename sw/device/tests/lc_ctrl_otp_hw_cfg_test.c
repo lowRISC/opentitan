@@ -30,7 +30,7 @@ static void otp_ctrl_dai_read_32(const dif_otp_ctrl_t *otp,
                                  dif_otp_ctrl_partition_t partition,
                                  uint32_t address, uint32_t *buf) {
   CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(otp, partition, address));
-  otp_ctrl_testutils_wait_for_dai(otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(otp, buf));
 }
 

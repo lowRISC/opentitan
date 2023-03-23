@@ -87,23 +87,23 @@ static void lock_otp_secret0_partition(void) {
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret0,
                                           /*address=*/0x0,
                                           /*value=*/otp_unlock_token_0));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret0,
                                           /*address=*/0x8,
                                           /*value=*/otp_unlock_token_1));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret0,
                                           /*address=*/0x10,
                                           /*value=*/otp_exit_token_0));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret0,
                                           /*address=*/0x18,
                                           /*value=*/otp_exit_token_1));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 
   CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret0,
                                        /*digest=*/0));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 }
 
 static void lock_otp_secret2_partition() {
@@ -121,15 +121,15 @@ static void lock_otp_secret2_partition() {
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret2,
                                           /*address=*/0x0,
                                           /*value=*/otp_rma_token_0));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret2,
                                           /*address=*/0x8,
                                           /*value=*/otp_rma_token_1));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 
   CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret2,
                                        /*digest=*/0));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 }
 
 /**
