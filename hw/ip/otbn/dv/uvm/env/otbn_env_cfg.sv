@@ -122,8 +122,6 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   // Constrain the randomness of FIPS for RND. This is needed because otherwise FIPS would have
   // a fifty percent chance of being low. That would result with OTBN getting a recoverable error
   // half the time.
-  // TODO (lowRISC/opentitan#11915): Model recoverable alert behaviour in ISS and add a test where
-  // we change the percentage of FIPS being high to check it.
   function void gen_rnd_edn_rsp();
     bit fips;
     bit [cip_base_pkg::EDN_BUS_WIDTH-1:0] entropy;

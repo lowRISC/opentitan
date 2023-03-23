@@ -893,13 +893,11 @@ module otbn_controller
   assign rf_base_rd_data_a_no_intg = rf_base_rd_data_a_intg_i[31:0];
   assign rf_base_rd_data_b_no_intg = rf_base_rd_data_b_intg_i[31:0];
 
-  // TODO: For now integrity bits from RF base are ignored in the controller, remove this when end
-  // to end integrity features that use them are implemented
   logic unused_rf_base_rd_a_intg_bits;
-  logic unused_rf_base_rd_b_intg_bits;
 
+  // TODO(#18266): Implement GPR to ISPR end to end integrity path (ISPR writes from GPR take data
+  // from base RF port A)
   assign unused_rf_base_rd_a_intg_bits = |rf_base_rd_data_a_intg_i[38:32];
-  assign unused_rf_base_rd_b_intg_bits = |rf_base_rd_data_b_intg_i[38:32];
 
   // Base register file write MUX. Depending on the data source, integrity bits do or don't have to
   // be appended:
