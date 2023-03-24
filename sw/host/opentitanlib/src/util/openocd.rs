@@ -5,14 +5,13 @@
 use std::borrow::BorrowMut;
 use std::cell::{Cell, RefCell};
 use std::ffi::OsStr;
-use std::io::Read;
-use std::io::Write;
+use std::io::{self, ErrorKind, Read, Write};
 use std::mem::size_of;
-use std::net::TcpStream;
+use std::net::{TcpStream, ToSocketAddrs};
 use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
@@ -48,6 +47,9 @@ pub enum OpenOcdServerError {
 impl_serializable_error!(OpenOcdServerError);
 
 impl OpenOcdServer {
+    /// Delay between polls to the OpenOCD server to prevent thrashing.
+    const POLL_DELAY: Duration = Duration::from_millis(100);
+
     /// Create a new OpenOcdServer with the given JTAG options without starting OpenOCD.
     pub fn new(opts: &JtagParams) -> Result<OpenOcdServer> {
         Ok(OpenOcdServer {
@@ -130,13 +132,12 @@ impl OpenOcdServer {
 
         self.openocd_server_process.replace(Some(child));
 
-        // Give OpenOCD time to start up.
-        thread::sleep(Duration::from_millis(1000));
-
         log::info!("Connecting to OpenOCD tcl interface...");
 
-        let stream = TcpStream::connect(format!("localhost:{}", self.opts.openocd_port))
-            .context("failed to connect to openocd telnet interface")?;
+        let addr = format!("localhost:{}", self.opts.openocd_port);
+        let stream = Self::wait_for_socket(addr, self.opts.openocd_timeout)
+            .context("failed to connect to OpenOCD socket")?;
+
         self.openocd_socket_stream.set(Some(stream));
 
         // Test the connection by asking for OpenOCD's version.
@@ -156,8 +157,28 @@ impl OpenOcdServer {
             return Ok(());
         };
 
-        // TODO: send "shutdown" command and wait before killing the process.
-        Ok(child.kill()?)
+        // Ask the server nicely to shut down.
+        self.send_tcl_cmd("shutdown")
+            .context("failed to send shutdown command")?;
+
+        // Wait for it to exit.
+        child
+            .wait()
+            .context("failed to wait for OpenOCD server to exit")?;
+
+        Ok(())
+    }
+
+    /// Kill the server without waiting for it to exit.
+    fn kill(&self) -> Result<()> {
+        let Some(mut child) = self.openocd_server_process.take() else {
+            // OpenOCD wasn't started, do nothing.
+            return Ok(());
+        };
+
+        child.kill()?;
+
+        Ok(())
     }
 
     /// Send a TCL command to OpenOCD and wait for its response.
@@ -230,11 +251,33 @@ impl OpenOcdServer {
 
         Ok(())
     }
+
+    /// Poll `addr` until it is bound and a socket can connect.
+    fn wait_for_socket<A: ToSocketAddrs>(addr: A, timeout: Duration) -> io::Result<TcpStream> {
+        let start = Instant::now();
+        loop {
+            if start.elapsed() >= timeout {
+                return Err(ErrorKind::TimedOut.into());
+            }
+
+            match TcpStream::connect(&addr) {
+                // This is the error for addresses that aren't bound
+                Err(e) if e.kind() == ErrorKind::ConnectionRefused => (),
+                // All other errors (and `Ok`s) we want to know about
+                socket => return socket,
+            }
+
+            // Delay between loops if there's enough time before timeout.
+            if start.elapsed() + Self::POLL_DELAY < timeout {
+                thread::sleep(Self::POLL_DELAY);
+            }
+        }
+    }
 }
 
 impl Drop for OpenOcdServer {
     fn drop(&mut self) {
-        self.stop().ok();
+        self.kill().ok();
     }
 }
 
