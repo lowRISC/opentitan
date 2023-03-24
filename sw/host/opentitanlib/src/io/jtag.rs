@@ -9,6 +9,7 @@ use thiserror::Error;
 
 use std::path::PathBuf;
 use std::rc::Rc;
+use std::time::Duration;
 
 use crate::app::TransportWrapper;
 use crate::dif::lc_ctrl::LcCtrlReg;
@@ -35,6 +36,10 @@ pub struct JtagParams {
     /// Port used to start and connect to OpenOCD over.
     #[structopt(long, default_value = "6666")]
     pub openocd_port: u16,
+
+    /// Timeout when waiting for OpenOCD to start.
+    #[structopt(long, parse(try_from_str=humantime::parse_duration), default_value = "3s")]
+    pub openocd_timeout: Duration,
 
     #[structopt(long, default_value = "200")]
     pub adapter_speed_khz: u64,
