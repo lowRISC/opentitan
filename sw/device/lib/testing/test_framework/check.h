@@ -31,21 +31,26 @@
  * @param ... Arguments to a LOG_* macro, which are evaluated if the check
  * fails.
  */
-#define CHECK_IMPL(condition, ...)                   \
-  ({                                                 \
-    if (!(condition)) {                              \
-      /* NOTE: because the condition in this if      \
-         statement can be statically determined,     \
-         only one of the below string constants      \
-         will be included in the final binary.*/     \
-      if (OT_VA_ARGS_COUNT(_, ##__VA_ARGS__) == 0) { \
-        LOG_ERROR("CHECK-fail: " #condition);        \
-      } else {                                       \
-        LOG_ERROR("CHECK-fail: " __VA_ARGS__);       \
-      }                                              \
-      INTERNAL();                                    \
-    }                                                \
-    OK_STATUS();                                     \
+#define CHECK_IMPL(condition, ...)                                         \
+  ({                                                                       \
+    status_t sts_ = OK_STATUS();                                           \
+    /* NOTE: The volatile intermediate variable is added to guarantee that \
+     * this macro won't be optimized out when used with compiling time     \
+     * constants.*/                                                        \
+    volatile bool res_ = (condition);                                      \
+    if (!res_) {                                                           \
+      /* NOTE: because the condition in this if                            \
+         statement can be statically determined,                           \
+         only one of the below string constants                            \
+         will be included in the final binary.*/                           \
+      if (OT_VA_ARGS_COUNT(_, ##__VA_ARGS__) == 0) {                       \
+        LOG_ERROR("CHECK-fail: " #condition);                              \
+      } else {                                                             \
+        LOG_ERROR("CHECK-fail: " __VA_ARGS__);                             \
+      }                                                                    \
+      sts_ = INTERNAL();                                                   \
+    }                                                                      \
+    sts_;                                                                  \
   })
 
 /**
