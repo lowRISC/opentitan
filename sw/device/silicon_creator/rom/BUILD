@@ -278,6 +278,7 @@ cc_library(
     hdrs = [
         "sigverify_keys.h",
         "sigverify_keys_rsa.h",
+        "sigverify_keys_spx.h",
     ],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
