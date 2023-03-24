@@ -87,8 +87,6 @@ a > .hljs {
 }
 
 .right-buttons {
-    display: flex;
-    align-items: center;
     margin: 0 15px;
 }
 .right-buttons a {
@@ -104,20 +102,19 @@ a > .hljs {
 }
 
 .menu-title {
-    display: flex;
+    display: inline-block;
+    font-weight: 200;
+    font-size: 2.4rem;
+    line-height: var(--menu-bar-height);
+    text-align: center;
+    margin: 0;
     flex: 1;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
-
-.menu-title .logo {
-    width: 10em;
-    height: 100%;
-    margin: 1em auto;
-    fill: var(--icons);
-}
-
-.menu-title .logo svg {
-    display: block;
+.js .menu-title {
+    cursor: pointer;
 }
 
 .menu-bar,
