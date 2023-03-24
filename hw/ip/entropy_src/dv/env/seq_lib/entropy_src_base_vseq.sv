@@ -385,12 +385,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     bit intr_status;
     bit done;
     int cnt_per_interrupt;
-    bit entropy_data_reg_enable;
     uvm_reg_field intr_field;
     uvm_reg       data_reg;
-
-    entropy_data_reg_enable = (cfg.otp_en_es_fw_read == MuBi8True) &&
-                              (ral.conf.entropy_data_reg_enable.get_mirrored_value() == MuBi4True);
 
     bundles_found = 0;
 
