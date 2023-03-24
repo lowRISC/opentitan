@@ -7,6 +7,9 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/crypto/drivers/kmac.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
+#include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/status.h"
 
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
@@ -18,12 +21,15 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
   // TODO (#16410) Revisit/complete error checks
 
   kmac_error_t err;
-  size_t key_len = key->config.key_length;
+  size_t key_len = keyblob_share_num_words(key->config) * sizeof(uint32_t);
+
+  // Check the integrity of the blinded key.
+  if (integrity_blinded_key_check(key) != kHardenedBoolTrue) {
+    return kCryptoStatusBadArgs;
+  }
 
   // TODO (#16410, #15590): Add sideload support.
   if (key->config.hw_backed == kHardenedBoolTrue) {
-    return kCryptoStatusBadArgs;
-  } else if (key->keyblob_length != 2 * key_len) {
     return kCryptoStatusBadArgs;
   }
 
@@ -32,11 +38,10 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
     return kCryptoStatusBadArgs;
   }
 
-  kmac_blinded_key_t kmac_key = {
-      .share0 = key->keyblob,
-      .share1 = key->keyblob + key_len / 4,
-      .len = key_len,
-  };
+  kmac_blinded_key_t kmac_key;
+  OTCRYPTO_TRY_INTERPRET(
+      keyblob_to_shares(key, &kmac_key.share0, &kmac_key.share1));
+  kmac_key.len = key_len;
 
   switch (mac_mode) {
     case kMacModeKmac128:

@@ -50,8 +50,8 @@ typedef enum kmac_error {
  * Simplified key struct to pass blinded key internally.
  */
 typedef struct kmac_blinded_key {
-  const uint32_t *share0;
-  const uint32_t *share1;
+  uint32_t *share0;
+  uint32_t *share1;
   // The length of single share (in bytes)
   size_t len;
 } kmac_blinded_key_t;
