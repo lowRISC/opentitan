@@ -8,13 +8,12 @@ The PTRNG noise source mode is selected when the `ENABLE` field will be set.
 After the block is enabled and initialized, entropy bits will be collected up indefinitely until disabled.
 
 
-After a reset, the ENTROPY_SRC block will start up in boot-time mode by default.
+After a reset, the ENTROPY_SRC block will start up in boot-time / bypass mode by default.
 This feature is designed to provide an initial seed's worth of entropy with lower latency than the normal FIPS/CC compliant health check process.
 Health testing will still be performed on boot-time mode entropy, but the window of checking is, by default, 384 bits instead of 2048 bits.
-When entropy is delivered to the downstream hardware block, a signal will indicate what type of entropy it is - FIPS compliant or not.
-Boot-time mode can be completely disabled in the [`CONF`](../data/entropy_src.hjson#conf) register.
+When entropy is delivered to the downstream hardware block, a signal will indicate what type of entropy it is - FIPS/CC compliant or not.
 
-Once the initial boot-time mode phase has completed, the ENTROPY_SRC block will switch to FIPS compliant mode.
+Once the initial boot-time mode phase has completed, the ENTROPY_SRC block can be switched to FIPS/CC compliant mode (for simplicity referred to as FIPS mode) by setting the `FIPS_ENABLE` field in the [`CONF`](../data/entropy_src.hjson#conf) register to `kMultiBitBool4True`.
 In this mode, once the raw entropy has been health checked, it will be passed into a conditioner block.
 This block will compress the bits such that the entropy bits/physical bits, or min-entropy value, should be improved over the raw data source min-entropy value.
 The compression operation, by default, will compress every 2048 tested bits into 384 full-entropy bits.
@@ -24,7 +23,7 @@ This firmware conditioning algorithm can be disabled on boot for security purpos
 
 The firmware override function has the capability to completely override the hardware health tests and the conditioner paths.
 In the case of health tests, firmware can turn off one or all of the health tests and perform the tests in firmware.
-A data path is provided in the hardware such that the inbound entropy can be trapped in the pre-conditioner FIFO.
+A data path is provided in the hardware such that the inbound entropy can be trapped in the observe FIFO.
 Once a pre-determined threshold of entropy has been reached in this FIFO, the firmware can then read the entropy bits out of the FIFO.
 The exact mechanism for this functionality starts with setting the `FW_OV_MODE` field in the [`FW_OV_CONTROL`](../data/entropy_src.hjson#fw_ov_control) register.
 This will enable firmware to monitor post-health test entropy bits by reading from the [`FW_OV_RD_DATA`](../data/entropy_src.hjson#fw_ov_rd_data) register.
@@ -44,11 +43,11 @@ The normal SHA3 processing will continue and finally push the conditioned entrop
 
 Health checks are performed on the input raw data from the PTRNG noise source when in that mode.
 There are four health tests that will be performed: repetitive count, adaptive proportion, bucket, and Markov tests.
-Each test has a pair of threshold values that determine that pass/fail of the test, one threshold for boot-time mode, and one for normal mode.
+Each test has a pair of threshold values that determine that pass/fail of the test, one threshold for boot-time / bypass mode, and one for FIPS mode.
 By default, all tests are enabled, but can be turn off in the [`CONF`](../data/entropy_src.hjson#conf) register.
 Because of the variability of the PTRNG noise source, there are several registers that log statistics associated with the health tests.
 For example, the adaptive proportion test has a high watermark register that logs the highest measured number of ones.
-The [`ADAPTP_HI_WATERMARKS`](../data/entropy_src.hjson#adaptp_hi_watermarks) register has an entry for both normal and boot-time modes.
+The [`ADAPTP_HI_WATERMARKS`](../data/entropy_src.hjson#adaptp_hi_watermarks) register has an entry for both FIPS and boot-time modes.
 This register allows for determining how close the threshold value should be set to the fail over value.
 Specific to the adaptive proportion test, there is also the [`ADAPTP_LO_WATERMARKS`](../data/entropy_src.hjson#adaptp_lo_watermarks) register, which will hold the lowest number of ones measured.
 To help understand how well the thresholds work through time, a running count of test fails is kept in the [`ADAPTP_HI_TOTAL_FAILS`](../data/entropy_src.hjson#adaptp_hi_total_fails) register.
@@ -82,7 +81,7 @@ Firmware has a path to read entropy from the ENTROPY_SRC block.
 The [`ENTROPY_CONTROL`](../data/entropy_src.hjson#entropy_control) register allows firmware to set the internal multiplexers to steer entropy data to the [`ENTROPY_DATA`](../data/entropy_src.hjson#entropy_data) register.
 The control bit `ES_TYPE` sets whether the entropy will come from the conditioning block or be sourced through the bypass path.
 A status bit will be set that can either be polled or generate an interrupt when the entropy bits are available to be read from the [`ENTROPY_DATA`](../data/entropy_src.hjson#entropy_data) register.
-The firmware needs to read the [`ENTROPY_DATA`](../data/entropy_src.hjson#entropy_data) register twelve times in order to cleanly evacuate the 384-bit seed from the hardware path (12*32bits=384bits total).
+The firmware needs to read the [`ENTROPY_DATA`](../data/entropy_src.hjson#entropy_data) register twelve times in order to cleanly evacuate the 384-bit seed from the hardware path (12 * 32 bits = 384 bits in total).
 The firmware will directly read out of the main entropy FIFO, and when the control bit `ES_ROUTE` is set, no entropy is being passed to the block hardware interface.
 
 If the `esfinal` FIFO fills up, additional entropy that has been health checked will be dropped before entering the conditioner.
@@ -221,9 +220,9 @@ This NIST-defined test is intended to detect statistical bias in the raw entropy
 The test counts the number of 1's in a given sample, and applies thresholds to reject samples which deviate too far from the ideal mean of 50%.
 
 Depending on the value of the [`CONF.THRESHOLD_SCOPE`](../data/entropy_src.hjson#conf) field, the thresholds can either be applied collectively to the all RNG inputs, or the thresholds can be applied on a line-by-line basis.
-Setting [`CONF.THRESHOLD_SCOPE`](../data/entropy_src.hjson#conf) to `kMuBi4True` will apply the thresholds to the aggregated RNG stream.
+Setting [`CONF.THRESHOLD_SCOPE`](../data/entropy_src.hjson#conf) to `kMultiBitBool4True` will apply the thresholds to the aggregated RNG stream.
 This can be useful for lowering the likelihood of coincidental test failures (higher &alpha;).
-Meanwhile, setting [`CONF.THRESHOLD_SCOPE`](../data/entropy_src.hjson#conf) to `kMuBi4False` will apply thresholds on a line-by-line basis which allows the ENTROPY_SRC to detect single line failures.
+Meanwhile, setting [`CONF.THRESHOLD_SCOPE`](../data/entropy_src.hjson#conf) to `kMultiBitBool4False` will apply thresholds on a line-by-line basis which allows the ENTROPY_SRC to detect single line failures.
 
 The following waveform shows how a sampling of a data pattern will be tested by the Adaptive Proportion test.
 In this example, the sum is taken over all RNG lines (i.e., [`CONF.THRESHOLD_SCOPE`](../data/entropy_src.hjson#conf) is True).
