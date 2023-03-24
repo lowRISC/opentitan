@@ -22,7 +22,6 @@ allowed_suffixes=(
 
     md
     html
-    css
 
     # The ECMA Script standard allows unicode:
     # https://262.ecma-international.org/6.0/#sec-source-text

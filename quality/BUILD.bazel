@@ -53,8 +53,6 @@ licence_test(
         # Site Assets
         "site/**/assets/scss/**",
         "site/landing/static/js/tiny-slider.js",
-        # MdBook assets (MPL licensed)
-        "site/book-theme/*",
         # Code taken from Chromium, so covered by the BSD licence
         "sw/otbn/crypto/modexp.s",
         "sw/otbn/crypto/p256.s",
