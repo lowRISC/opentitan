@@ -426,9 +426,24 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               ping_timer_en = 1;
             end
           end
+         "alert_test", "ping_timeout_cyc_shadowed", "ping_timer_regwen": begin
+            // Do nothing. Already auto update mirrored value.
+          end
           default: begin
-            // TODO: align all names with shadow post_fix and re-enable this check.
-            //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+            // The following regs only need to auto update mirrored value.
+            if (!uvm_re_match("*alert_en_shadowed*", csr_name) ||
+                !uvm_re_match("*alert_class_shadowed*", csr_name) ||
+                !uvm_re_match("class*_ctrl_shadowed", csr_name) ||
+                !uvm_re_match("class*_crashdump_trigger_shadowed", csr_name) ||
+                !uvm_re_match("class*_phase*_cyc_shadowed", csr_name) ||
+                !uvm_re_match("class*_timeout_cyc_shadowed", csr_name) ||
+                !uvm_re_match("class*_accum_thresh_shadowed", csr_name) ||
+                !uvm_re_match("class*_clr_regwen", csr_name) ||
+                !uvm_re_match("class*_regwen", csr_name) ||
+                !uvm_re_match("*alert_regwen_*", csr_name)) begin
+            end else begin
+              `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+            end
           end
         endcase
       end
