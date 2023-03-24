@@ -5,18 +5,6 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "integrity_check",
-    srcs = ["integrity_check.c"],
-    hdrs = [
-        "integrity_check.h",
-    ],
-    deps = [
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/crypto/include:datatypes",
-    ],
-)
-
-cc_library(
     name = "hash",
     srcs = ["hash.c"],
     hdrs = [
@@ -27,6 +15,37 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
+    name = "integrity",
+    srcs = ["integrity.c"],
+    hdrs = ["integrity.h"],
+    deps = [
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
+    name = "keyblob",
+    srcs = ["keyblob.c"],
+    hdrs = ["keyblob.h"],
+    deps = [
+        ":integrity",
+        ":status",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_test(
+    name = "keyblob_unittest",
+    srcs = ["keyblob_unittest.cc"],
+    deps = [
+        ":keyblob",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -60,6 +79,8 @@ cc_library(
         "//sw/device/lib/crypto/include:mac.h",
     ],
     deps = [
+        ":integrity",
+        ":keyblob",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/crypto/drivers:kmac",
     ],
