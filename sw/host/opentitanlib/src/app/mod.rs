@@ -167,7 +167,7 @@ pub struct TransportWrapperBuilder {
 // replacing the "bare" Transport argument.  The fields other than
 // transport will have been computed from a number ConfigurationFiles.
 pub struct TransportWrapper {
-    transport: RefCell<Box<dyn Transport>>,
+    transport: Box<dyn Transport>,
     pin_map: HashMap<String, String>,
     uart_map: HashMap<String, String>,
     spi_map: HashMap<String, String>,
@@ -380,7 +380,7 @@ impl TransportWrapperBuilder {
         let spi_conf_map = Self::consolidate_spi_conf_map(&self.spi_map, &self.spi_conf_list)?;
         let i2c_conf_map = Self::consolidate_i2c_conf_map(&self.i2c_map, &self.i2c_conf_list)?;
         Ok(TransportWrapper {
-            transport: RefCell::new(transport),
+            transport,
             pin_map: self.pin_alias_map,
             uart_map: self.uart_map,
             spi_map: self.spi_map,
@@ -397,33 +397,27 @@ impl TransportWrapper {
     /// Returns a `Capabilities` object to check the capabilities of this
     /// transport object.
     pub fn capabilities(&self) -> Result<crate::transport::Capabilities> {
-        self.transport.borrow().capabilities()
+        self.transport.capabilities()
     }
 
     /// Returns a [`Jtag`] implementation.
     pub fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
-        self.transport.borrow().jtag(opts)
+        self.transport.jtag(opts)
     }
 
     /// Returns a SPI [`Target`] implementation.
     pub fn spi(&self, name: &str) -> Result<Rc<dyn Target>> {
-        self.transport
-            .borrow()
-            .spi(map_name(&self.spi_map, name).as_str())
+        self.transport.spi(map_name(&self.spi_map, name).as_str())
     }
 
     /// Returns a I2C [`Bus`] implementation.
     pub fn i2c(&self, name: &str) -> Result<Rc<dyn Bus>> {
-        self.transport
-            .borrow()
-            .i2c(map_name(&self.i2c_map, name).as_str())
+        self.transport.i2c(map_name(&self.i2c_map, name).as_str())
     }
 
     /// Returns a [`Uart`] implementation.
     pub fn uart(&self, name: &str) -> Result<Rc<dyn Uart>> {
-        self.transport
-            .borrow()
-            .uart(map_name(&self.uart_map, name).as_str())
+        self.transport.uart(map_name(&self.uart_map, name).as_str())
     }
 
     /// Returns a [`GpioPin`] implementation.
@@ -432,7 +426,7 @@ impl TransportWrapper {
         if resolved_pin_name == "NULL" {
             return Ok(Rc::new(NullPin::new(name)));
         }
-        self.transport.borrow().gpio_pin(resolved_pin_name.as_str())
+        self.transport.gpio_pin(resolved_pin_name.as_str())
     }
 
     /// Convenience method, returns a number of [`GpioPin`] implementations.
@@ -446,7 +440,7 @@ impl TransportWrapper {
 
     /// Returns a [`GpioMonitoring`] implementation.
     pub fn gpio_monitoring(&self) -> Result<Rc<dyn GpioMonitoring>> {
-        self.transport.borrow().gpio_monitoring()
+        self.transport.gpio_monitoring()
     }
 
     pub fn pin_strapping(&self, name: &str) -> Result<PinStrapping> {
@@ -478,17 +472,17 @@ impl TransportWrapper {
 
     /// Returns a [`Emulator`] implementation.
     pub fn emulator(&self) -> Result<Rc<dyn Emulator>> {
-        self.transport.borrow().emulator()
+        self.transport.emulator()
     }
 
     /// Methods available only on Proxy implementation.
     pub fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
-        self.transport.borrow().proxy_ops()
+        self.transport.proxy_ops()
     }
 
     /// Invoke non-standard functionality of some Transport implementations.
     pub fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
-        self.transport.borrow().dispatch(action)
+        self.transport.dispatch(action)
     }
 
     /// Apply given configuration to a single pins.
@@ -528,7 +522,7 @@ impl TransportWrapper {
     /// Configure all pins as input/output, pullup, etc. as declared in configuration files.
     /// Also configure SPI port mode/speed, and other similar settings.
     pub fn apply_default_configuration(&self) -> Result<()> {
-        self.transport.borrow().apply_default_configuration()?;
+        self.transport.apply_default_configuration()?;
         self.apply_pin_configurations(&self.pin_conf_map)?;
         self.apply_spi_configurations(&self.spi_conf_map)?;
         self.apply_i2c_configurations(&self.i2c_conf_map)?;
