@@ -15,12 +15,11 @@ use crate::io::emu::EmuState;
 use crate::io::uart::{Uart, UartError};
 use crate::transport::ti50emulator::emu::EMULATOR_INVALID_ID;
 use crate::transport::ti50emulator::Inner;
-use crate::transport::ti50emulator::Ti50Emulator;
 
 const TI50_UART_BAUDRATE: u32 = 115200;
 
 pub struct Ti50Uart {
-    inner: Rc<RefCell<Inner>>,
+    inner: Rc<Inner>,
     // This socket is valid as long as SubProcess is running.
     socket: RefCell<Option<UnixStream>>,
     // full path to socket file
@@ -30,10 +29,10 @@ pub struct Ti50Uart {
 }
 
 impl Ti50Uart {
-    pub fn open(ti50: &Ti50Emulator, path: &str) -> Result<Self> {
-        let soc_path = ti50.inner.borrow().process.get_runtime_dir().join(path);
+    pub fn open(inner: &Rc<Inner>, path: &str) -> Result<Self> {
+        let soc_path = inner.process.borrow().get_runtime_dir().join(path);
         Ok(Self {
-            inner: Rc::clone(&ti50.inner),
+            inner: inner.clone(),
             socket: RefCell::default(),
             path: soc_path,
             last_id: Cell::new(EMULATOR_INVALID_ID),
@@ -42,7 +41,7 @@ impl Ti50Uart {
 
     pub fn reconnect(&self) -> Result<()> {
         let mut socket = self.socket.borrow_mut();
-        let id = self.inner.borrow_mut().process.get_id();
+        let id = self.inner.process.borrow().get_id();
         if self.last_id.get() != id {
             *socket = Some(UnixStream::connect(&self.path).context("UART reconect error")?);
             self.last_id.set(id);
@@ -51,7 +50,7 @@ impl Ti50Uart {
     }
 
     pub fn get_state(&self) -> Result<EmuState> {
-        let process = &mut self.inner.borrow_mut().process;
+        let process = &mut self.inner.process.borrow_mut();
         process.update_status()?;
         Ok(process.get_state())
     }

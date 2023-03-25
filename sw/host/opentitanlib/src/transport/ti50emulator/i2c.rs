@@ -16,7 +16,6 @@ use crate::io::emu::EmuState;
 use crate::io::i2c::{Bus, I2cError, Transfer};
 use crate::transport::ti50emulator::emu::EMULATOR_INVALID_ID;
 use crate::transport::ti50emulator::Inner;
-use crate::transport::ti50emulator::Ti50Emulator;
 use crate::transport::TransportError;
 
 const MAX_READ_TIMEOUT: Duration = Duration::from_millis(35);
@@ -120,7 +119,7 @@ impl Ti50BusControl {
 
 /// Structure representing Emulated I2C BUS
 pub struct Ti50I2cBus {
-    inner: Rc<RefCell<Inner>>,
+    inner: Rc<Inner>,
     // This socket is valid as long as SubProcess is running.
     socket: RefCell<Option<UnixStream>>,
     // full path to socket file
@@ -131,10 +130,10 @@ pub struct Ti50I2cBus {
 
 impl Ti50I2cBus {
     /// Create new instance of [`Ti50I2cBus`] based on provided parameters.
-    pub fn open(ti50: &Ti50Emulator, path: &str) -> Result<Self> {
-        let soc_path = ti50.inner.borrow().process.get_runtime_dir().join(path);
+    pub fn open(inner: &Rc<Inner>, path: &str) -> Result<Self> {
+        let soc_path = inner.process.borrow().get_runtime_dir().join(path);
         Ok(Self {
-            inner: Rc::clone(&ti50.inner),
+            inner: inner.clone(),
             socket: RefCell::default(),
             path: soc_path,
             last_id: Cell::new(EMULATOR_INVALID_ID),
@@ -145,7 +144,7 @@ impl Ti50I2cBus {
     /// that process was restarted.
     pub fn reconnect(&self) -> Result<()> {
         let mut socket = self.socket.borrow_mut();
-        let id = self.inner.borrow_mut().process.get_id();
+        let id = self.inner.process.borrow().get_id();
         if self.last_id.get() != id {
             let fd = UnixStream::connect(&self.path)?;
             *socket = Some(fd);
@@ -156,7 +155,7 @@ impl Ti50I2cBus {
 
     /// Function check if I2C transaction should be performed on DUT.
     pub fn check_state(&self) -> Result<()> {
-        let process = &mut self.inner.borrow_mut().process;
+        let process = &mut self.inner.process.borrow_mut();
         process.update_status()?;
         match process.get_state() {
             EmuState::On => Ok(()),

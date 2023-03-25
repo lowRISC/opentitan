@@ -15,7 +15,6 @@ use std::path::PathBuf;
 use crate::io::emu::EmuState;
 use crate::io::gpio::{self, GpioError, GpioPin, PullMode};
 use crate::transport::ti50emulator::Inner;
-use crate::transport::ti50emulator::Ti50Emulator;
 
 const GPIO_BUF_SIZE: usize = 16;
 
@@ -195,7 +194,7 @@ fn resolve_state(name: &str, host: &Logic, dut: &Logic) -> Result<bool> {
 /// Structure representing an emulated GPIO pin.
 pub struct Ti50GpioPin {
     /// Handle to Ti50Emulator internal data.
-    inner: Rc<RefCell<Inner>>,
+    inner: Rc<Inner>,
     /// This socket is valid as long as SubProcess is running.
     socket: RefCell<Option<UnixStream>>,
     /// Full path to socket file.
@@ -209,10 +208,10 @@ pub struct Ti50GpioPin {
 }
 
 impl Ti50GpioPin {
-    pub fn open(ti50: &Ti50Emulator, path: &str, state: &GpioConfiguration) -> Result<Self> {
-        let soc_path = ti50.inner.borrow().process.get_runtime_dir().join(path);
+    pub fn open(inner: &Rc<Inner>, path: &str, state: &GpioConfiguration) -> Result<Self> {
+        let soc_path = inner.process.borrow().get_runtime_dir().join(path);
         Ok(Self {
-            inner: ti50.inner.clone(),
+            inner: inner.clone(),
             socket: RefCell::new(None),
             path: soc_path,
             last_id: Cell::new(0),
@@ -229,7 +228,7 @@ impl Ti50GpioPin {
     /// that process was restarted.
     fn reconnect(&self) -> Result<()> {
         let mut socket = self.socket.borrow_mut();
-        let id = self.inner.borrow_mut().process.get_id();
+        let id = self.inner.process.borrow().get_id();
         if self.last_id.get() != id {
             *socket = Some(UnixStream::connect(&self.path)?);
             self.last_id.set(id);
@@ -263,7 +262,7 @@ impl Ti50GpioPin {
 
     /// Function checks whether the state of the sub-process allows GPIO operations to be performed
     fn check_state(&self) -> Result<()> {
-        let process = &mut self.inner.borrow_mut().process;
+        let mut process = self.inner.process.borrow_mut();
         process.update_status()?;
         match process.get_state() {
             EmuState::On => Ok(()),
