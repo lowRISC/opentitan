@@ -26,7 +26,7 @@ mod i2c;
 mod spi;
 mod uart;
 
-use crate::transport::ti50emulator::emu::{EmulatorProcess, Ti50SubProcess};
+use crate::transport::ti50emulator::emu::{EmulatorProcess, ResetPin, Ti50SubProcess};
 use crate::transport::ti50emulator::gpio::Ti50GpioPin;
 use crate::transport::ti50emulator::i2c::Ti50I2cBus;
 use crate::transport::ti50emulator::uart::Ti50Uart;
@@ -77,6 +77,11 @@ impl Ti50Emulator {
     }
 
     fn configure_devices(&self) -> Result<()> {
+        let reset_pin = ResetPin::open(&self.inner)?;
+        self.inner
+            .borrow_mut()
+            .gpio_map
+            .insert("RESET".to_string(), Rc::new(reset_pin));
         let conf = self.inner.borrow().process.get_configurations()?;
         for (name, state) in conf.gpio.iter() {
             let path = format!("gpio{}", name);
@@ -117,7 +122,7 @@ impl Drop for Ti50Emulator {
 }
 
 /// Structure representing internal state of emulator
-struct Inner {
+pub struct Inner {
     /// Path of parent directory representing `Ti50Emulator` instance.
     instance_directory: PathBuf,
     /// SubProcess instance

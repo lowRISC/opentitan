@@ -24,6 +24,7 @@ use nix::unistd::Pid;
 use serde::{Deserialize, Serialize};
 
 use crate::io::emu::{EmuError, EmuState, EmuValue, Emulator};
+use crate::io::gpio::{self, GpioError, PinMode, PullMode};
 use crate::transport::ti50emulator::gpio::GpioConfiguration;
 use crate::transport::ti50emulator::Inner;
 use crate::transport::ti50emulator::Ti50Emulator;
@@ -491,5 +492,92 @@ impl Emulator for Ti50SubProcess {
         }
         process.stop_process()?;
         Ok(())
+    }
+}
+
+pub struct ResetPin {
+    /// Handle to Ti50Emulator internal data.
+    inner: Rc<RefCell<Inner>>,
+}
+
+impl ResetPin {
+    pub fn open(inner: &Rc<RefCell<Inner>>) -> Result<Self> {
+        Ok(Self {
+            inner: inner.clone(),
+        })
+    }
+}
+
+impl gpio::GpioPin for ResetPin {
+    /// Reads the value of the RESET pin.  Commands to start/stop emulator are considered to
+    /// decide the level of the RESET line.
+    fn read(&self) -> Result<bool> {
+        let process = &mut self.inner.borrow_mut().process;
+        process.update_status()?;
+        match process.state {
+            EmuState::On => Ok(true),
+            EmuState::Off | EmuState::Error => Ok(false),
+            EmuState::Busy => {
+                bail!(EmuError::StartFailureCause(String::from(
+                    "DUT is in transient state BUSY",
+                )));
+            }
+        }
+    }
+
+    /// Sets the value of the RESET pin to `value`, that is, take the emulator out of or into
+    /// reset, by starting or stopping the sub-process.
+    fn write(&self, value: bool) -> Result<()> {
+        let process = &mut self.inner.borrow_mut().process;
+        process.update_status()?;
+        if value {
+            // Come out of reset
+            match process.state {
+                EmuState::On => return Ok(()),
+                EmuState::Busy => {
+                    bail!(EmuError::StartFailureCause(String::from(
+                        "DUT is in transient state BUSY",
+                    )));
+                }
+                EmuState::Error => {
+                    log::debug!("DUT trying to recover after error");
+                }
+                _ => {}
+            };
+            process.spawn_process()?;
+            process.state = EmuState::On;
+        } else {
+            // Enter reset
+            match process.state {
+                EmuState::Off => return Ok(()),
+                EmuState::Busy => {
+                    bail!(EmuError::StopFailureCause(String::from(
+                        "DUT is in transient state BUSY"
+                    ),));
+                }
+                EmuState::Error => {
+                    log::info!("DUT stop after error");
+                }
+                _ => {}
+            }
+            process.stop_process()?;
+        }
+        Ok(())
+    }
+
+    // Accept either `PushPull` or `OpenDrain`, make no difference in functionality.
+    fn set_mode(&self, mode: PinMode) -> Result<()> {
+        match mode {
+            PinMode::PushPull | PinMode::OpenDrain => Ok(()),
+            _ => Err(GpioError::UnsupportedPinMode(mode).into()),
+        }
+    }
+
+    // Accept either pull up, or no pull, make no difference in functionality.
+    fn set_pull_mode(&self, mode: PullMode) -> Result<()> {
+        match mode {
+            PullMode::None | PullMode::PullUp => Ok(()),
+            _ => Err(GpioError::UnsupportedPullMode(mode).into()),
+        }
     }
 }
