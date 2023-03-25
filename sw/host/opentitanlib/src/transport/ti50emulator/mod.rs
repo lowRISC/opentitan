@@ -26,13 +26,22 @@ mod i2c;
 mod spi;
 mod uart;
 
-use crate::transport::ti50emulator::emu::{EmulatorProcess, ResetPin, Ti50SubProcess};
+use crate::transport::ti50emulator::emu::{EmulatorImpl, EmulatorProcess, ResetPin};
 use crate::transport::ti50emulator::gpio::Ti50GpioPin;
 use crate::transport::ti50emulator::i2c::Ti50I2cBus;
 use crate::transport::ti50emulator::uart::Ti50Uart;
 
 pub struct Ti50Emulator {
-    inner: Rc<RefCell<Inner>>,
+    /// Mapping of SPI handles to their symbolic names.
+    spi_map: HashMap<String, Rc<dyn Target>>,
+    /// Mapping of GPIO pins handles to their symbolic names.
+    gpio_map: HashMap<String, Rc<dyn GpioPin>>,
+    /// Mapping of I2C handles to their symbolic names.
+    i2c_map: HashMap<String, Rc<dyn Bus>>,
+    /// Mapping of UART handles to their symbolic names.
+    uart_map: HashMap<String, Rc<dyn Uart>>,
+    /// Struct implementing the Emulator trait
+    emu: Rc<EmulatorImpl>,
 }
 
 impl Ti50Emulator {
@@ -57,65 +66,52 @@ impl Ti50Emulator {
         log::info!("Initializing Ti50Emulator instance: {}", instance_name);
         fs::create_dir(&instance_directory).context("Falied to create instance directory")?;
 
-        let ti50 = Ti50Emulator {
-            inner: Rc::new(RefCell::new(Inner {
-                instance_directory: instance_directory.clone(),
-                process: EmulatorProcess::init(
-                    &instance_directory,
-                    executable_directory,
-                    executable,
-                )?,
-                emulator: None,
-                spi_map: HashMap::new(),
-                gpio_map: HashMap::new(),
-                i2c_map: HashMap::new(),
-                uart_map: HashMap::new(),
-            })),
-        };
-        ti50.configure_devices()?;
-        Ok(ti50)
-    }
+        let process = EmulatorProcess::init(&instance_directory, executable_directory, executable)?;
 
-    fn configure_devices(&self) -> Result<()> {
-        let reset_pin = ResetPin::open(&self.inner)?;
-        self.inner
-            .borrow_mut()
-            .gpio_map
-            .insert("RESET".to_string(), Rc::new(reset_pin));
-        let conf = self.inner.borrow().process.get_configurations()?;
+        let conf = process.get_configurations()?;
+
+        let inner = Rc::new(Inner {
+            instance_directory,
+            process: RefCell::new(process),
+        });
+
+        let mut gpio_map: HashMap<String, Rc<dyn GpioPin>> = HashMap::new();
+        let mut i2c_map = HashMap::new();
+        let mut uart_map = HashMap::new();
+
+        let reset_pin = ResetPin::open(&inner)?;
+        gpio_map.insert("RESET".to_string(), Rc::new(reset_pin));
         for (name, state) in conf.gpio.iter() {
             let path = format!("gpio{}", name);
-            let gpio: Rc<dyn GpioPin> = Rc::new(Ti50GpioPin::open(self, &path, state)?);
-            self.inner
-                .borrow_mut()
-                .gpio_map
-                .insert(name.to_uppercase(), Rc::clone(&gpio));
+            let gpio: Rc<dyn GpioPin> = Rc::new(Ti50GpioPin::open(&inner, &path, state)?);
+            gpio_map.insert(name.to_uppercase(), Rc::clone(&gpio));
         }
         for (name, path) in conf.uart.iter() {
-            let uart: Rc<dyn Uart> = Rc::new(Ti50Uart::open(self, path)?);
-            self.inner
-                .borrow_mut()
-                .uart_map
-                .insert(name.to_uppercase(), Rc::clone(&uart));
+            let uart: Rc<dyn Uart> = Rc::new(Ti50Uart::open(&inner, path)?);
+            uart_map.insert(name.to_uppercase(), Rc::clone(&uart));
         }
         for (name, path) in conf.i2c.iter() {
-            let i2c: Rc<dyn Bus> = Rc::new(Ti50I2cBus::open(self, path)?);
-            self.inner
-                .borrow_mut()
-                .i2c_map
-                .insert(name.to_uppercase(), Rc::clone(&i2c));
+            let i2c: Rc<dyn Bus> = Rc::new(Ti50I2cBus::open(&inner, path)?);
+            i2c_map.insert(name.to_uppercase(), Rc::clone(&i2c));
         }
-        Ok(())
+        let ti50_emu = Ti50Emulator {
+            spi_map: HashMap::new(),
+            gpio_map,
+            i2c_map,
+            uart_map,
+            emu: Rc::new(EmulatorImpl::open(&inner)?),
+        };
+        Ok(ti50_emu)
     }
 }
 
-impl Drop for Ti50Emulator {
+impl Drop for Inner {
     fn drop(&mut self) {
         log::info!(
             "Clenup Ti50Emulator instance directory: {}",
-            self.inner.borrow().instance_directory.display()
+            self.instance_directory.display()
         );
-        if let Err(e) = fs::remove_dir_all(&self.inner.borrow().instance_directory) {
+        if let Err(e) = fs::remove_dir_all(&self.instance_directory) {
             log::error!("Can't remove instance directory error: {}", e)
         }
     }
@@ -126,17 +122,7 @@ pub struct Inner {
     /// Path of parent directory representing `Ti50Emulator` instance.
     instance_directory: PathBuf,
     /// SubProcess instance
-    process: EmulatorProcess,
-    /// `Emualtor` instance
-    emulator: Option<Rc<dyn Emulator>>,
-    /// Mapping of SPI handles to their symbolic names.
-    spi_map: HashMap<String, Rc<dyn Target>>,
-    /// Mapping of GPIO pins handles to their symbolic names.
-    gpio_map: HashMap<String, Rc<dyn GpioPin>>,
-    /// Mapping of I2C handles to their symbolic names.
-    i2c_map: HashMap<String, Rc<dyn Bus>>,
-    /// Mapping of UART handles to their symbolic names.
-    uart_map: HashMap<String, Rc<dyn Uart>>,
+    process: RefCell<EmulatorProcess>,
 }
 
 impl Inner {}
@@ -151,48 +137,34 @@ impl Transport for Ti50Emulator {
 
     // Returns one of existing SPI instance.
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
-        Ok(Rc::clone(
-            self.inner.borrow().spi_map.get(instance).ok_or_else(|| {
-                TransportError::InvalidInstance(TransportInterfaceType::Spi, instance.to_string())
-            })?,
-        ))
+        Ok(Rc::clone(self.spi_map.get(instance).ok_or_else(|| {
+            TransportError::InvalidInstance(TransportInterfaceType::Spi, instance.to_string())
+        })?))
     }
 
     // Returns one of existing I2C instance.
     fn i2c(&self, instance: &str) -> Result<Rc<dyn Bus>> {
-        Ok(Rc::clone(
-            self.inner.borrow().i2c_map.get(instance).ok_or_else(|| {
-                TransportError::InvalidInstance(TransportInterfaceType::I2c, instance.to_string())
-            })?,
-        ))
+        Ok(Rc::clone(self.i2c_map.get(instance).ok_or_else(|| {
+            TransportError::InvalidInstance(TransportInterfaceType::I2c, instance.to_string())
+        })?))
     }
 
     // Returns one of existing UART instance.
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
-        Ok(Rc::clone(
-            self.inner.borrow().uart_map.get(instance).ok_or_else(|| {
-                TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
-            })?,
-        ))
+        Ok(Rc::clone(self.uart_map.get(instance).ok_or_else(|| {
+            TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
+        })?))
     }
 
     // Returns one of existing GPIO pin instance.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
-        Ok(Rc::clone(
-            self.inner.borrow().gpio_map.get(pinname).ok_or_else(|| {
-                TransportError::InvalidInstance(TransportInterfaceType::Gpio, pinname.to_string())
-            })?,
-        ))
+        Ok(Rc::clone(self.gpio_map.get(pinname).ok_or_else(|| {
+            TransportError::InvalidInstance(TransportInterfaceType::Gpio, pinname.to_string())
+        })?))
     }
 
     // Create Emulator instance, or return one from a cache of previously created instances.
     fn emulator(&self) -> Result<Rc<dyn Emulator>> {
-        match &mut self.inner.borrow_mut().emulator {
-            Some(emu) => Ok(Rc::clone(emu)),
-            slot => {
-                *slot = Some(Rc::new(Ti50SubProcess::open(self)?));
-                Ok(Rc::clone(slot.as_ref().unwrap()))
-            }
-        }
+        Ok(self.emu.clone())
     }
 }

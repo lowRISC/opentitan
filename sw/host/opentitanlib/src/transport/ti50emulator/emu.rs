@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs;
@@ -27,7 +26,6 @@ use crate::io::emu::{EmuError, EmuState, EmuValue, Emulator};
 use crate::io::gpio::{self, GpioError, PinMode, PullMode};
 use crate::transport::ti50emulator::gpio::GpioConfiguration;
 use crate::transport::ti50emulator::Inner;
-use crate::transport::ti50emulator::Ti50Emulator;
 
 const SPAWN_TIMEOUT: Duration = Duration::from_secs(10);
 const TIMEOUT: Duration = Duration::from_millis(1000);
@@ -416,30 +414,30 @@ impl EmulatorProcess {
 }
 
 /// Structure representing `Emulator` sub-process based on TockOS host-emulation architecture.
-pub struct Ti50SubProcess {
-    inner: Rc<RefCell<Inner>>,
+pub struct EmulatorImpl {
+    inner: Rc<Inner>,
 }
 
-impl Ti50SubProcess {
-    /// Create a new `Ti50SubProcess` instance.
-    pub fn open(ti50: &Ti50Emulator) -> Result<Self> {
+impl EmulatorImpl {
+    /// Create a new `EmulatorImpl` instance.
+    pub fn open(inner: &Rc<Inner>) -> Result<Self> {
         Ok(Self {
-            inner: ti50.inner.clone(),
+            inner: Rc::clone(inner),
         })
     }
 }
 
-impl Emulator for Ti50SubProcess {
+impl Emulator for EmulatorImpl {
     /// Simple function with return `EmuState` representing current state of Emulator instance.
     fn get_state(&self) -> Result<EmuState> {
-        let process = &mut self.inner.borrow_mut().process;
+        let mut process = self.inner.process.borrow_mut();
         process.update_status()?;
         Ok(process.state)
     }
 
     /// Start emulator sub-process with provided arguments.
     fn start(&self, factory_reset: bool, args: &HashMap<String, EmuValue>) -> Result<()> {
-        let process = &mut self.inner.borrow_mut().process;
+        let mut process = self.inner.process.borrow_mut();
         process.update_status()?;
         match process.state {
             EmuState::On => {
@@ -465,7 +463,7 @@ impl Emulator for Ti50SubProcess {
 
     /// Stop emulator sub-process.
     fn stop(&self) -> Result<()> {
-        let process = &mut self.inner.borrow_mut().process;
+        let mut process = self.inner.process.borrow_mut();
         process.update_status()?;
         match process.state {
             EmuState::Off => {
@@ -489,14 +487,14 @@ impl Emulator for Ti50SubProcess {
 }
 
 pub struct ResetPin {
-    /// Handle to Ti50Emulator internal data.
-    inner: Rc<RefCell<Inner>>,
+    /// Handle to EmulatorImpl internal data.
+    inner: Rc<Inner>,
 }
 
 impl ResetPin {
-    pub fn open(inner: &Rc<RefCell<Inner>>) -> Result<Self> {
+    pub fn open(inner: &Rc<Inner>) -> Result<Self> {
         Ok(Self {
-            inner: inner.clone(),
+            inner: Rc::clone(inner),
         })
     }
 }
@@ -505,7 +503,7 @@ impl gpio::GpioPin for ResetPin {
     /// Reads the value of the RESET pin.  Commands to start/stop emulator are considered to
     /// decide the level of the RESET line.
     fn read(&self) -> Result<bool> {
-        let process = &mut self.inner.borrow_mut().process;
+        let process = &mut self.inner.process.borrow_mut();
         process.update_status()?;
         match process.state {
             EmuState::On => Ok(true),
@@ -521,7 +519,7 @@ impl gpio::GpioPin for ResetPin {
     /// Sets the value of the RESET pin to `value`, that is, take the emulator out of or into
     /// reset, by starting or stopping the sub-process.
     fn write(&self, value: bool) -> Result<()> {
-        let process = &mut self.inner.borrow_mut().process;
+        let mut process = self.inner.process.borrow_mut();
         process.update_status()?;
         if value {
             // Come out of reset
