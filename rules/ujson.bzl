@@ -11,6 +11,9 @@ def _ujson_rust(ctx):
     module = ctx.actions.declare_file("{}.rs".format(ctx.label.name))
     ujson_lib = ctx.attr.ujson_lib[CcInfo].compilation_context.headers.to_list()
 
+    # Get the include search path for ujson.
+    ujson_lib_root = ctx.attr.ujson_lib[CcInfo].compilation_context.quote_includes.to_list()
+
     srcs = []
     includes = []
     for src in ctx.attr.srcs:
@@ -29,7 +32,8 @@ def _ujson_rust(ctx):
     # 3. Substitute all `rust_attr` for `#`, thus creating rust attributes.
     # 4. Format it with `rustfmt` so it looks nice and can be inspected.
     command = """
-        {preprocessor} -nostdinc -I. -DRUST_PREPROCESSOR_EMIT=1 -DNOSTDINC=1 {defines} $@ \
+        {preprocessor} -nostdinc -I{ujson_lib_root_includes} \
+        -DRUST_PREPROCESSOR_EMIT=1 -DNOSTDINC=1 {defines} $@ \
         | grep -v '#' \
         | sed -e "s/rust_attr/#/g" \
         | {rustfmt} > {module}""".format(
@@ -37,6 +41,7 @@ def _ujson_rust(ctx):
         defines = " ".join(defines),
         module = module.path,
         rustfmt = rustfmt.path,
+        ujson_lib_root_includes = " -I".join(ujson_lib_root),
     )
 
     ctx.actions.run_shell(
