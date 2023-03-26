@@ -1,9 +1,6 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-// TODO: This module is only a draft implementation that covers most of the ast_wrapper
-// functionality but is incomplete
-
 
 # SENSOR_CTRL register template
 #
