@@ -3,7 +3,22 @@
 # SPDX-License-Identifier: Apache-2.0
 
 steps:
-- name: 'gcr.io/gold-hybrid-255313/builder'
-  args: ['util/site/build-docs.sh', 'build']
-- name: 'gcr.io/cloud-builders/gsutil'
-  args: ['-m', 'rsync', '-r', '-d', 'build-site/', 'gs://gold-hybrid-255313-prod']
+# Use the 'gold-hybrid-255313/builder' container image (util/container/Dockerfile) to perform the build
+# > We override the 'ENTRYPOINT', as the default 'start.sh' script is currently incompatible with the Gcloud environment
+# > The default working directory is '/workspace'
+  - name: 'gcr.io/gold-hybrid-255313/builder'
+    entrypoint: bash
+    args:
+      - '-c'
+      - |
+        chown -R dev:dev /workspace
+        exec gosu dev:dev /bin/bash -c "./util/site/build-docs.sh build"
+# Copy the build artifacts to the bucket where the site is hosted
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args:
+      - '-m'
+      - 'rsync'
+      - '-r'
+      - '-d'
+      - '/workspace/build-site/'
+      - 'gs://gold-hybrid-255313-prod'
