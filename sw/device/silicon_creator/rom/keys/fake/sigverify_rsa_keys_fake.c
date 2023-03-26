@@ -34,16 +34,25 @@ const size_t kSigverifyRsaKeysStep = 1;
  */
 const sigverify_rom_rsa_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt_] = {
     {
-        .key = TEST_KEY_0_RSA_3072_EXP_F4,
-        .key_type = kSigverifyKeyTypeTest,
+        .entry =
+            {
+                .key = TEST_KEY_0_RSA_3072_EXP_F4,
+                .key_type = kSigverifyKeyTypeTest,
+            },
     },
     {
-        .key = DEV_KEY_0_RSA_3072_EXP_F4,
-        .key_type = kSigverifyKeyTypeDev,
+        .entry =
+            {
+                .key = DEV_KEY_0_RSA_3072_EXP_F4,
+                .key_type = kSigverifyKeyTypeDev,
+            },
     },
     {
-        .key = PROD_KEY_0_RSA_3072_EXP_F4,
-        .key_type = kSigverifyKeyTypeProd,
+        .entry =
+            {
+                .key = PROD_KEY_0_RSA_3072_EXP_F4,
+                .key_type = kSigverifyKeyTypeProd,
+            },
     },
 };
 

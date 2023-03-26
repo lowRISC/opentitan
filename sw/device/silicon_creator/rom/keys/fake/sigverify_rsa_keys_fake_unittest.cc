@@ -28,7 +28,7 @@ using ::testing::Return;
 TEST(Keys, UniqueIds) {
   std::unordered_set<uint32_t> ids;
   for (size_t i = 0; i < kSigverifyRsaKeysCnt; ++i) {
-    ids.insert(sigverify_rsa_key_id_get(&kSigverifyRsaKeys[i].key.n));
+    ids.insert(sigverify_rsa_key_id_get(&kSigverifyRsaKeys[i].entry.key.n));
   }
 
   EXPECT_EQ(ids.size(), kSigverifyRsaKeysCnt);
@@ -99,7 +99,7 @@ struct RsaVerifyTestCase {
 const RsaVerifyTestCase kRsaVerifyTestCases[3]{
     // message: "test"
     {
-        .key = &kSigverifyRsaKeys[0].key,
+        .key = &kSigverifyRsaKeys[0].entry.key,
         .sig =
             {
                 0xeb28a6d3, 0x936b42bb, 0x76d3973d, 0x6322d536, 0x253c7547,
@@ -125,7 +125,7 @@ const RsaVerifyTestCase kRsaVerifyTestCases[3]{
             },
     },
     {
-        .key = &kSigverifyRsaKeys[1].key,
+        .key = &kSigverifyRsaKeys[1].entry.key,
         .sig =
             {
                 0x3106a8c5, 0xb7b48a3a, 0xb06af030, 0x9dca44b1, 0x55eaa90a,
@@ -151,7 +151,7 @@ const RsaVerifyTestCase kRsaVerifyTestCases[3]{
             },
     },
     {
-        .key = &kSigverifyRsaKeys[2].key,
+        .key = &kSigverifyRsaKeys[2].entry.key,
         .sig =
             {
                 0x39b92a38, 0xf584ed48, 0x25f5f323, 0x04dde936, 0x608871c1,

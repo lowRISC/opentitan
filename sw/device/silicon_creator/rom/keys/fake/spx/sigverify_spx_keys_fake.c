@@ -34,16 +34,25 @@ const size_t kSigverifySpxKeysStep = 1;
  */
 const sigverify_rom_spx_key_t kSigverifySpxKeys[kSigverifySpxKeysCnt_] = {
     {
-        .key = TEST_KEY_0_SPX,
-        .key_type = kSigverifyKeyTypeTest,
+        .entry =
+            {
+                .key = TEST_KEY_0_SPX,
+                .key_type = kSigverifyKeyTypeTest,
+            },
     },
     {
-        .key = DEV_KEY_0_SPX,
-        .key_type = kSigverifyKeyTypeDev,
+        .entry =
+            {
+                .key = DEV_KEY_0_SPX,
+                .key_type = kSigverifyKeyTypeDev,
+            },
     },
     {
-        .key = PROD_KEY_0_SPX,
-        .key_type = kSigverifyKeyTypeProd,
+        .entry =
+            {
+                .key = PROD_KEY_0_SPX,
+                .key_type = kSigverifyKeyTypeProd,
+            },
     },
 };
 
