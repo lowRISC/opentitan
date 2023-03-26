@@ -182,6 +182,17 @@ impl HyperdebugI2cBus {
 }
 
 impl Bus for HyperdebugI2cBus {
+    /// Gets the maximum allowed speed of the I2C bus.
+    fn get_max_speed(&self) -> Result<u32> {
+        bail!(TransportError::UnsupportedOperation)
+    }
+
+    /// Sets the maximum allowed speed of the I2C bus, typical values are 100_000, 400_000 or
+    /// 1_000_000.
+    fn set_max_speed(&self, _max_speed: u32) -> Result<()> {
+        bail!(TransportError::UnsupportedOperation)
+    }
+
     fn run_transaction(&self, addr: u8, mut transaction: &mut [Transfer]) -> Result<()> {
         while !transaction.is_empty() {
             match transaction {

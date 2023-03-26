@@ -215,6 +215,14 @@ impl<'a> TransportCommandHandler<'a> {
             Request::I2c { id, command } => {
                 let instance = self.transport.i2c(id)?;
                 match command {
+                    I2cRequest::GetMaxSpeed => {
+                        let speed = instance.get_max_speed()?;
+                        Ok(Response::I2c(I2cResponse::GetMaxSpeed { speed }))
+                    }
+                    I2cRequest::SetMaxSpeed { value } => {
+                        instance.set_max_speed(*value)?;
+                        Ok(Response::I2c(I2cResponse::SetMaxSpeed))
+                    }
                     I2cRequest::RunTransaction {
                         address,
                         transaction: reqs,

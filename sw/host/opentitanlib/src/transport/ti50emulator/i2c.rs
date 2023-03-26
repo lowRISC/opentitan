@@ -17,6 +17,7 @@ use crate::io::i2c::{Bus, I2cError, Transfer};
 use crate::transport::ti50emulator::emu::EMULATOR_INVALID_ID;
 use crate::transport::ti50emulator::Inner;
 use crate::transport::ti50emulator::Ti50Emulator;
+use crate::transport::TransportError;
 
 const MAX_READ_TIMEOUT: Duration = Duration::from_millis(35);
 const MAX_WRITE_TIMEOUT: Duration = Duration::from_millis(35);
@@ -230,6 +231,17 @@ impl Ti50I2cBus {
 }
 
 impl Bus for Ti50I2cBus {
+    /// Gets the maximum allowed speed of the I2C bus.
+    fn get_max_speed(&self) -> Result<u32> {
+        bail!(TransportError::UnsupportedOperation)
+    }
+
+    /// Sets the maximum allowed speed of the I2C bus, typical values are 100_000, 400_000 or
+    /// 1_000_000.
+    fn set_max_speed(&self, _max_speed: u32) -> Result<()> {
+        bail!(TransportError::UnsupportedOperation)
+    }
+
     fn run_transaction(&self, addr: u8, transaction: &mut [Transfer]) -> Result<()> {
         self.check_state()?;
         self.reconnect()?;

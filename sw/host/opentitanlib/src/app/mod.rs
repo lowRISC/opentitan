@@ -139,6 +139,18 @@ impl SpiConfiguration {
     }
 }
 
+#[derive(Default, Debug)]
+pub struct I2cConfiguration {
+    pub bits_per_sec: Option<u32>,
+}
+
+impl I2cConfiguration {
+    fn merge(&mut self, other: &I2cConfiguration) -> Result<(), ()> {
+        merge_field(&mut self.bits_per_sec, other.bits_per_sec)?;
+        Ok(())
+    }
+}
+
 pub struct TransportWrapperBuilder {
     interface: String,
     pin_alias_map: HashMap<String, String>,
@@ -147,6 +159,7 @@ pub struct TransportWrapperBuilder {
     i2c_map: HashMap<String, String>,
     pin_conf_list: Vec<(String, PinConfiguration)>,
     spi_conf_list: Vec<(String, SpiConfiguration)>,
+    i2c_conf_list: Vec<(String, I2cConfiguration)>,
     strapping_conf_map: HashMap<String, Vec<(String, PinConfiguration)>>,
 }
 
@@ -161,6 +174,7 @@ pub struct TransportWrapper {
     i2c_map: HashMap<String, String>,
     pin_conf_map: HashMap<String, PinConfiguration>,
     spi_conf_map: HashMap<String, SpiConfiguration>,
+    i2c_conf_map: HashMap<String, I2cConfiguration>,
     strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>>,
 }
 
@@ -174,6 +188,7 @@ impl TransportWrapperBuilder {
             i2c_map: HashMap::new(),
             pin_conf_list: Vec::new(),
             spi_conf_list: Vec::new(),
+            i2c_conf_list: Vec::new(),
             strapping_conf_map: HashMap::new(),
         }
     }
@@ -222,6 +237,20 @@ impl TransportWrapperBuilder {
         spi_conf_list.push((spi_conf.name.to_string(), conf_entry))
     }
 
+    fn record_i2c_conf(
+        i2c_conf_list: &mut Vec<(String, I2cConfiguration)>,
+        i2c_conf: &config::I2cConfiguration,
+    ) {
+        if i2c_conf.bits_per_sec.is_none() {
+            return;
+        }
+        let mut conf_entry: I2cConfiguration = I2cConfiguration::default();
+        if let Some(bits_per_sec) = i2c_conf.bits_per_sec {
+            conf_entry.bits_per_sec = Some(bits_per_sec);
+        }
+        i2c_conf_list.push((i2c_conf.name.to_string(), conf_entry))
+    }
+
     pub fn add_configuration_file(&mut self, file: config::ConfigurationFile) -> Result<()> {
         if let Some(interface) = file.interface {
             if self.interface == "" {
@@ -260,6 +289,13 @@ impl TransportWrapperBuilder {
                     .insert(spi_conf.name.to_uppercase(), alias_of.clone());
             }
             Self::record_spi_conf(&mut self.spi_conf_list, &spi_conf);
+        }
+        for i2c_conf in file.i2c {
+            if let Some(alias_of) = &i2c_conf.alias_of {
+                self.i2c_map
+                    .insert(i2c_conf.name.to_uppercase(), alias_of.clone());
+            }
+            Self::record_i2c_conf(&mut self.i2c_conf_list, &i2c_conf);
         }
         for uart_conf in file.uarts {
             if let Some(alias_of) = &uart_conf.alias_of {
@@ -306,6 +342,23 @@ impl TransportWrapperBuilder {
         Ok(result_spi_conf_map)
     }
 
+    fn consolidate_i2c_conf_map(
+        i2c_alias_map: &HashMap<String, String>,
+        i2c_conf_list: &Vec<(String, I2cConfiguration)>,
+    ) -> Result<HashMap<String, I2cConfiguration>> {
+        let mut result_i2c_conf_map: HashMap<String, I2cConfiguration> = HashMap::new();
+        for (name, conf) in i2c_conf_list {
+            result_i2c_conf_map
+                .entry(map_name(i2c_alias_map, name))
+                .or_default()
+                .merge(conf)
+                .map_err(|_| {
+                    TransportError::InconsistentConf(TransportInterfaceType::I2c, name.to_string())
+                })?;
+        }
+        Ok(result_i2c_conf_map)
+    }
+
     pub fn get_interface(&self) -> &str {
         &self.interface
     }
@@ -325,6 +378,7 @@ impl TransportWrapperBuilder {
             );
         }
         let spi_conf_map = Self::consolidate_spi_conf_map(&self.spi_map, &self.spi_conf_list)?;
+        let i2c_conf_map = Self::consolidate_i2c_conf_map(&self.i2c_map, &self.i2c_conf_list)?;
         Ok(TransportWrapper {
             transport: RefCell::new(transport),
             pin_map: self.pin_alias_map,
@@ -333,6 +387,7 @@ impl TransportWrapperBuilder {
             i2c_map: self.i2c_map,
             pin_conf_map,
             spi_conf_map,
+            i2c_conf_map,
             strapping_conf_map,
         })
     }
@@ -433,12 +488,23 @@ impl TransportWrapper {
         Ok(())
     }
 
+    fn apply_i2c_configurations(&self, conf_map: &HashMap<String, I2cConfiguration>) -> Result<()> {
+        for (name, conf) in conf_map {
+            let i2c = self.i2c(name)?;
+            if let Some(bits_per_sec) = conf.bits_per_sec {
+                i2c.set_max_speed(bits_per_sec)?;
+            }
+        }
+        Ok(())
+    }
+
     /// Configure all pins as input/output, pullup, etc. as declared in configuration files.
     /// Also configure SPI port mode/speed, and other similar settings.
     pub fn apply_default_configuration(&self) -> Result<()> {
         self.transport.borrow().apply_default_configuration()?;
         self.apply_pin_configurations(&self.pin_conf_map)?;
         self.apply_spi_configurations(&self.spi_conf_map)?;
+        self.apply_i2c_configurations(&self.i2c_conf_map)?;
         Ok(())
     }
 
