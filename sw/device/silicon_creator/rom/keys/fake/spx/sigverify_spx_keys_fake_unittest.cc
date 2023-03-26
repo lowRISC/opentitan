@@ -14,7 +14,7 @@ using ::testing::Return;
 TEST(Keys, UniqueIds) {
   std::unordered_set<uint32_t> ids;
   for (size_t i = 0; i < kSigverifySpxKeysCnt; ++i) {
-    ids.insert(sigverify_spx_key_id_get(&kSigverifySpxKeys[i].key));
+    ids.insert(sigverify_spx_key_id_get(&kSigverifySpxKeys[i].entry.key));
   }
 
   EXPECT_EQ(ids.size(), kSigverifySpxKeysCnt);

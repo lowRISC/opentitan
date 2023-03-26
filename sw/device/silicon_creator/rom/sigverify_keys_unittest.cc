@@ -34,33 +34,33 @@ extern "C" {
  */
 constexpr sigverify_rom_rsa_key_t kSigverifyRsaKeys[]{
     {
-        .key = {.n = {{0xa0}}, .n0_inv = {0}},
-        .key_type = kSigverifyKeyTypeTest,
+        .entry = {.key_type = kSigverifyKeyTypeTest,
+                  .key = {.n = {{0xa0}}, .n0_inv = {0}}},
     },
     {
-        .key = {.n = {{0xb0}}, .n0_inv = {0}},
-        .key_type = kSigverifyKeyTypeProd,
+        .entry = {.key_type = kSigverifyKeyTypeProd,
+                  .key = {.n = {{0xb0}}, .n0_inv = {0}}},
     },
     {
-        .key = {.n = {{0xc0}}, .n0_inv = {0}},
-        .key_type = kSigverifyKeyTypeDev,
+        .entry = {.key_type = kSigverifyKeyTypeDev,
+                  .key = {.n = {{0xc0}}, .n0_inv = {0}}},
     },
     {
-        .key = {.n = {{0xa1}}, .n0_inv = {0}},
-        .key_type = kSigverifyKeyTypeTest,
+        .entry = {.key_type = kSigverifyKeyTypeTest,
+                  .key = {.n = {{0xa1}}, .n0_inv = {0}}},
     },
     {
-        .key = {.n = {{0xb1}}, .n0_inv = {0}},
-        .key_type = kSigverifyKeyTypeProd,
+        .entry = {.key_type = kSigverifyKeyTypeProd,
+                  .key = {.n = {{0xb1}}, .n0_inv = {0}}},
     },
     {
-        .key = {.n = {{0xc1}}, .n0_inv = {0}},
-        .key_type = kSigverifyKeyTypeDev,
+        .entry = {.key_type = kSigverifyKeyTypeDev,
+                  .key = {.n = {{0xc1}}, .n0_inv = {0}}},
     },
     {
-        .key = {.n = {{0xff}}, .n0_inv = {0}},
-        .key_type = static_cast<sigverify_key_type_t>(
-            std::numeric_limits<uint32_t>::max()),
+        .entry = {.key_type = static_cast<sigverify_key_type_t>(
+                      std::numeric_limits<uint32_t>::max()),
+                  .key = {.n = {{0xff}}, .n0_inv = {0}}},
     },
 };
 
@@ -87,7 +87,7 @@ using ::testing::Return;
 std::vector<size_t> MockKeyIndicesOfType(sigverify_key_type_t key_type) {
   std::vector<size_t> indices;
   for (size_t i = 0; i < kSigverifyRsaKeysCnt; ++i) {
-    if (kSigverifyRsaKeys[i].key_type == key_type) {
+    if (kSigverifyRsaKeys[i].entry.key_type == key_type) {
       indices.push_back(i);
     }
   }
@@ -206,7 +206,7 @@ TEST_P(NonOperationalStateDeathTest, BadKey) {
       {
         ExpectKeysGet();
         sigverify_rsa_key_get(
-            sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].key.n),
+            sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].entry.key.n),
             lc_state, &key);
       },
       "");
@@ -229,11 +229,12 @@ TEST_P(ValidBasedOnOtp, ValidInOtp) {
   ExpectOtpRead(key_index, kHardenedByteBoolTrue);
 
   const sigverify_rsa_key_t *key;
-  EXPECT_EQ(sigverify_rsa_key_get(
-                sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].key.n),
-                lc_state, &key),
-            kErrorOk);
-  EXPECT_EQ(key, &kSigverifyRsaKeys[key_index].key);
+  EXPECT_EQ(
+      sigverify_rsa_key_get(
+          sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].entry.key.n),
+          lc_state, &key),
+      kErrorOk);
+  EXPECT_EQ(key, &kSigverifyRsaKeys[key_index].entry.key);
 }
 
 TEST_P(ValidBasedOnOtp, InvalidInOtp) {
@@ -245,10 +246,11 @@ TEST_P(ValidBasedOnOtp, InvalidInOtp) {
   ExpectOtpRead(key_index, kHardenedByteBoolFalse);
 
   const sigverify_rsa_key_t *key;
-  EXPECT_EQ(sigverify_rsa_key_get(
-                sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].key.n),
-                lc_state, &key),
-            kErrorSigverifyBadKey);
+  EXPECT_EQ(
+      sigverify_rsa_key_get(
+          sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].entry.key.n),
+          lc_state, &key),
+      kErrorSigverifyBadKey);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -279,11 +281,12 @@ TEST_P(ValidInState, Get) {
   ExpectKeysGet();
 
   const sigverify_rsa_key_t *key;
-  EXPECT_EQ(sigverify_rsa_key_get(
-                sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].key.n),
-                lc_state, &key),
-            kErrorOk);
-  EXPECT_EQ(key, &kSigverifyRsaKeys[key_index].key);
+  EXPECT_EQ(
+      sigverify_rsa_key_get(
+          sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].entry.key.n),
+          lc_state, &key),
+      kErrorOk);
+  EXPECT_EQ(key, &kSigverifyRsaKeys[key_index].entry.key);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -308,10 +311,11 @@ TEST_P(InvalidInState, Get) {
   ExpectKeysGet();
 
   const sigverify_rsa_key_t *key;
-  EXPECT_EQ(sigverify_rsa_key_get(
-                sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].key.n),
-                lc_state, &key),
-            kErrorSigverifyBadKey);
+  EXPECT_EQ(
+      sigverify_rsa_key_get(
+          sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].entry.key.n),
+          lc_state, &key),
+      kErrorSigverifyBadKey);
 }
 
 INSTANTIATE_TEST_SUITE_P(

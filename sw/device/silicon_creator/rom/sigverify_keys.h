@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -59,6 +61,29 @@ enum {
    */
   kSigverifyNumEntriesPerOtpWord = sizeof(uint32_t),
 };
+
+/**
+ * Common initial sequence of public keys stored in ROM.
+ *
+ * OpenTitan ROM contains RSA and SPX keys whose definitions share this common
+ * initial sequence. This common initial sequence allows us to perform key
+ * lookup and validity checks in a generic manner by casting
+ * `sigverify_rom_rsa_key_t` or `sigverify_rom_spx_key_t` to this type.
+ */
+typedef struct sigverify_rom_key_header {
+  /**
+   * Type of the key.
+   */
+  sigverify_key_type_t key_type;
+  /**
+   * ID of the key.
+   */
+  uint32_t key_id;
+} sigverify_rom_key_header_t;
+
+OT_ASSERT_MEMBER_OFFSET(sigverify_rom_key_header_t, key_type, 0);
+OT_ASSERT_MEMBER_OFFSET(sigverify_rom_key_header_t, key_id, 4);
+OT_ASSERT_SIZE(sigverify_rom_key_header_t, 8);
 
 #ifdef __cplusplus
 }  // extern "C"
