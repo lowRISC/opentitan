@@ -82,6 +82,17 @@ pub struct SpiConfiguration {
     pub alias_of: Option<String>,
 }
 
+/// Configuration of a particular I2C bus.
+#[derive(Deserialize, Clone, Debug)]
+pub struct I2cConfiguration {
+    /// The user-visible name of the I2C bus.
+    pub name: String,
+    /// Data communication rate in bits/second.
+    pub bits_per_sec: Option<u32>,
+    /// Name of the I2C bus as defined by the transport.
+    pub alias_of: Option<String>,
+}
+
 /// Representation of the complete and unresolved content of a single
 /// confguration file.
 #[derive(Deserialize, Clone, Debug)]
@@ -101,6 +112,8 @@ pub struct ConfigurationFile {
     /// List of UART configurations.
     #[serde(default)]
     pub spi: Vec<SpiConfiguration>,
+    #[serde(default)]
+    pub i2c: Vec<I2cConfiguration>,
     #[serde(default)]
     pub uarts: Vec<UartConfiguration>,
 }

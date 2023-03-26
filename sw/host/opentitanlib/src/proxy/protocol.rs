@@ -168,6 +168,10 @@ pub enum I2cTransferResponse {
 
 #[derive(Serialize, Deserialize)]
 pub enum I2cRequest {
+    GetMaxSpeed,
+    SetMaxSpeed {
+        value: u32,
+    },
     RunTransaction {
         address: u8,
         transaction: Vec<I2cTransferRequest>,
@@ -176,6 +180,10 @@ pub enum I2cRequest {
 
 #[derive(Serialize, Deserialize)]
 pub enum I2cResponse {
+    GetMaxSpeed {
+        speed: u32,
+    },
+    SetMaxSpeed,
     RunTransaction {
         transaction: Vec<I2cTransferResponse>,
     },
