@@ -85,6 +85,23 @@ OT_ASSERT_MEMBER_OFFSET(sigverify_rom_key_header_t, key_type, 0);
 OT_ASSERT_MEMBER_OFFSET(sigverify_rom_key_header_t, key_id, 4);
 OT_ASSERT_SIZE(sigverify_rom_key_header_t, 8);
 
+/**
+ * Gets the ID of a public key.
+ *
+ * ID of an RSA key is the least significant word of its modulus. ID of an SPX
+ * key is its least significant word. This function leverages the common initial
+ * sequence of both types of keys to get their IDs in a generic manner.
+ *
+ * Callers must make sure that `key` is valid before calling this function.
+ *
+ * @param key A public key.
+ * @return ID of the key.
+ */
+inline uint32_t sigverify_rom_key_id_get(
+    const sigverify_rom_key_header_t *key) {
+  return key->key_id;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

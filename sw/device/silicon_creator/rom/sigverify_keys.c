@@ -214,3 +214,6 @@ rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
 
   return kErrorSigverifyBadKey;
 }
+
+// Extern declarations for the inline functions in the header.
+extern uint32_t sigverify_rom_key_id_get(const sigverify_rom_key_header_t *key);
