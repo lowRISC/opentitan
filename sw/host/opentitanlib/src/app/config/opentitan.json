@@ -1,10 +1,6 @@
 {
   "pins": [
     {
-      "name": "RESET",
-      "level": true
-    },
-    {
       "name": "SW_STRAP0",
       "mode": "PushPull",
       "level": false,
