@@ -1393,6 +1393,17 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     if (channel == AddrChannel) begin
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
+        if (csr.get_name() == "module_enable") begin
+          uvm_reg_data_t reg_data;
+          logic [3:0] tl_data_lsbs;
+          csr_rd(.ptr(ral.main_sm_state.main_sm_state), .value(reg_data), .backdoor(1));
+          tl_data_lsbs = item.get_written_data();
+          cov_vif.cg_sw_disable_sample(
+              ral.me_regwen.me_regwen.get_mirrored_value(),
+              tl_data_lsbs == MuBi4True,
+              entropy_src_main_sm_pkg::state_e'(reg_data)
+          );
+        end
         if (locked_reg_access) begin
           string msg = $sformatf("Attempt to write while locked: %s", csr.get_name());
           `uvm_info(`gfn, msg, UVM_FULL)
