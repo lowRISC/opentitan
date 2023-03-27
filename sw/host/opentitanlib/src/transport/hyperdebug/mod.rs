@@ -50,6 +50,7 @@ pub struct Hyperdebug<T: Flavor> {
     i2c_interface: BulkInterface,
     uart_ttys: HashMap<String, PathBuf>,
     inner: Rc<Inner>,
+    current_firmware_version: Option<String>,
     phantom: PhantomData<T>,
 }
 
@@ -120,19 +121,23 @@ impl<T: Flavor> Hyperdebug<T> {
         let mut uart_ttys: HashMap<String, PathBuf> = HashMap::new();
 
         let config_desc = device.active_config_descriptor()?;
-        if let Some(idx) = config_desc.description_string_index() {
+        let current_firmware_version = if let Some(idx) = config_desc.description_string_index() {
             if let Ok(current_firmware_version) = device.read_string_descriptor_ascii(idx) {
                 if let Some(released_firmware_version) = dfu::official_firmware_version()? {
                     if current_firmware_version != released_firmware_version {
                         log::warn!(
-                            "Current HyperDebug firmware version is {}, newest release is {}",
+                            "Current HyperDebug firmware version is {}, newest release is {}, Consider running `opentitantool transport update-firmware`",
                             current_firmware_version,
                             released_firmware_version,
                         );
-                        log::warn!("Consider running `opentitantool transport update-firmware`");
                     }
                 }
+                Some(current_firmware_version)
+            } else {
+                None
             }
+        } else {
+            None
         };
         // Iterate through each USB interface, discovering e.g. supported UARTs.
         for interface in config_desc.interfaces() {
@@ -222,6 +227,7 @@ impl<T: Flavor> Hyperdebug<T> {
                 i2cs: Default::default(),
                 uarts: Default::default(),
             }),
+            current_firmware_version,
             phantom: PhantomData,
         };
         Ok(result)
@@ -575,8 +581,10 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
             dfu::update_firmware(
                 &mut self.inner.usb_device.borrow_mut(),
+                self.current_firmware_version.as_deref(),
                 &update_firmware_action.firmware,
                 &update_firmware_action.progress,
+                update_firmware_action.force,
             )
         } else if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
             T::load_bitstream(self, fpga_program).map(|_| None)
