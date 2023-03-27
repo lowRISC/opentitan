@@ -8,6 +8,7 @@ interface entropy_src_cov_if
   import prim_mubi_pkg::*;
 (
   input logic clk_i,
+  input logic rst_ni,
   mubi8_t     otp_en_entropy_src_fw_read_i,
   mubi8_t     otp_en_entropy_src_fw_over_i
 );
@@ -956,18 +957,20 @@ interface entropy_src_cov_if
   assign csrng_if_ack = tb.dut.entropy_src_hw_if_o.es_ack;
 
   always @(posedge clk_i) begin
-    if(csrng_if_req && csrng_if_ack) begin
-      cg_csrng_hw_sample(tb.dut.reg2hw.conf.fips_enable.q,
-                         tb.dut.reg2hw.conf.threshold_scope.q,
-                         tb.dut.reg2hw.conf.rng_bit_enable.q,
-                         tb.dut.reg2hw.conf.rng_bit_sel.q,
-                         tb.dut.reg2hw.entropy_control.es_route.q,
-                         tb.dut.reg2hw.entropy_control.es_type.q,
-                         tb.dut.reg2hw.conf.entropy_data_reg_enable.q,
-                         otp_en_entropy_src_fw_read_i,
-                         tb.dut.reg2hw.fw_ov_control.fw_ov_mode.q,
-                         otp_en_entropy_src_fw_over_i,
-                         tb.dut.reg2hw.fw_ov_control.fw_ov_entropy_insert.q);
+    if (rst_ni) begin
+      if(csrng_if_req && csrng_if_ack) begin
+        cg_csrng_hw_sample(tb.dut.reg2hw.conf.fips_enable.q,
+                           tb.dut.reg2hw.conf.threshold_scope.q,
+                           tb.dut.reg2hw.conf.rng_bit_enable.q,
+                           tb.dut.reg2hw.conf.rng_bit_sel.q,
+                           tb.dut.reg2hw.entropy_control.es_route.q,
+                           tb.dut.reg2hw.entropy_control.es_type.q,
+                           tb.dut.reg2hw.conf.entropy_data_reg_enable.q,
+                           otp_en_entropy_src_fw_read_i,
+                           tb.dut.reg2hw.fw_ov_control.fw_ov_mode.q,
+                           otp_en_entropy_src_fw_over_i,
+                           tb.dut.reg2hw.fw_ov_control.fw_ov_entropy_insert.q);
+      end
     end
   end
 
