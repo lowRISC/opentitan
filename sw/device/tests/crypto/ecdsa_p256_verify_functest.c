@@ -16,27 +16,23 @@
 #include "ecdsa_p256_verify_testvectors.h"
 
 static void compute_digest(size_t msg_len, const uint8_t *msg,
-                           ecdsa_p256_message_digest_t *digest) {
+                           hmac_digest_t *digest) {
   // Compute the SHA-256 digest using the HMAC device.
   hmac_sha256_init();
   hmac_update(msg, msg_len);
-  hmac_digest_t hmac_digest;
-  hmac_final(&hmac_digest);
-
-  // Copy digest into the destination array.
-  memcpy(digest->h, hmac_digest.digest, sizeof(hmac_digest.digest));
+  hmac_final(digest);
 }
 
 status_t ecdsa_p256_verify_test(
     const ecdsa_p256_verify_test_vector_t *testvec) {
   // Hash message.
-  ecdsa_p256_message_digest_t digest;
+  hmac_digest_t digest;
   compute_digest(testvec->msg_len, testvec->msg, &digest);
 
   // Attempt to verify signature.
+  TRY(ecdsa_p256_verify_start(&testvec->signature, digest.digest, &testvec->public_key));
   hardened_bool_t result;
-  TRY(ecdsa_p256_verify(&testvec->signature, &digest, &testvec->public_key,
-                        &result));
+  TRY(ecdsa_p256_verify_finalize(&testvec->signature, &result));
 
   if (testvec->valid && result != kHardenedBoolTrue) {
     LOG_ERROR("Valid signature failed verification.");
