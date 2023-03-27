@@ -59,8 +59,6 @@ start:
   unimp
   unimp
 
-.text
-
 /**
  * Generate a fresh, random keypair.
  *
