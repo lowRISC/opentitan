@@ -10,7 +10,7 @@
 //
 
 `include "prim_assert.sv"
-`define DUMMYBOY
+
 module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
   parameter  int Depth                = 512,
   parameter  int Width                = 32,

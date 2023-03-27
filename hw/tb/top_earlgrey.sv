@@ -2560,7 +2560,7 @@ module top_earlgrey #(
       .regs_tl_o(rom_ctrl_regs_tl_rsp),
       .rom_tl_i(rom_ctrl_rom_tl_req),
       .rom_tl_o(rom_ctrl_rom_tl_rsp),
-
+      .dbg_mode,
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])

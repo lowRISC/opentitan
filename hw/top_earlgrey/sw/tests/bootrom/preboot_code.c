@@ -14,7 +14,7 @@
 #include "/sw/device/tests/hmac_smoketest.c"
 #include <stdbool.h>
 
-#define TARGET_SYNTHESIS
+#define DUMMYBOY
 
 int main(int argc, char **argv) {
 

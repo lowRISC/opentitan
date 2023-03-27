@@ -100,7 +100,7 @@ module debug_mode_preload import tlul_pkg::*; (
    assign flash_addr_o  = address[15:0];
    assign flash_req_o   = flash_req;
    assign flash_write_o = 1'b1;
-   assign flash_wdata_o = {payload_1>>1, payload_2>>1, payload_3[31:19]>>1};
+   assign flash_wdata_o = {payload_1, payload_2, payload_3[31:20]};
    assign debug_mode_o  = debug_mode;
    
    always_ff @(posedge clk_i or negedge rst_ni) begin

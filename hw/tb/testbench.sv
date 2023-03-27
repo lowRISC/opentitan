@@ -22,7 +22,6 @@ module testbench ();
         
    
    import "DPI-C" function read_elf(input string filename);
-   import "DPI-C" function read_vmem(input string filename);
    import "DPI-C" function byte get_section(output longint address, output longint len); 
    import "DPI-C" context function byte read_section(input longint address, inout byte buffer[]);
    
@@ -176,13 +175,14 @@ module testbench ();
 /////////////////////////////// DUT ///////////////////////////////
   
   top_earlgrey #(
+   //.RvCoreIbexSecureIbex(0),
    .OtpCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/otp/otp-img.mem"),
 `ifdef IBEX_JTAG
-   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem"),
+   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem")
 `else
-   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem"),
+   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem")
 `endif
-   .FlashCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/hmac_test/hmac_smoketest.vmem")
+   //.FlashCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/hmac_test/hmac_smoketest.vmem")
   ) dut (
    .mio_in_i(ibex_uart_rx),
    .mio_out_o(ibex_uart_tx),
@@ -287,7 +287,7 @@ module testbench ();
          @(posedge clk_sys); 
      debug_module_init();
      load_binary(SRAM);
-     // Halt Req
+  /*   // Halt Req
      riscv_dbg.write_dmi(dm_ot::DMControl, 32'h8000_0001);
      do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
      while (sbcs.sbbusy);
@@ -297,10 +297,10 @@ module testbench ();
      // Ensure haltreq, resumereq and ackhavereset all equal to 0
      riscv_dbg.write_dmi(dm_ot::DMControl, 32'h0000_0001);
      do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
-     while (sbcs.sbbusy);
+     while (sbcs.sbbusy);*/
      jtag_data_preload();
      jtag_ibex_wakeup(32'h e0000080);
-     repeat(1000000)
+     repeat(400000)
         @(posedge clk_sys); 
      jtag_ibex_wakeup(32'h d0008080);
      

@@ -63,6 +63,7 @@
         { bits: "31:1" },
         { bits: "0",
           name: "debug_mode",
+          resval: "1",
           desc: "if 1 debug mode",
         }
       ],

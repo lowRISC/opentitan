@@ -13,7 +13,7 @@
 #include "../common/utils.h"
 #include <stdbool.h>
 
-//#define TARGET_SYNTHESIS
+//#define DUMMYBOY
 
 int main(int argc, char **argv) {
 
@@ -41,19 +41,18 @@ int main(int argc, char **argv) {
   
   *debug_mode = 0x00000001;
   
-  for(int i=0; i<(sizeof(hmac_smoketest)/sizeof(hmac_smoketest[0]))-4; i=i+3){
-    *payload_1  = hmac_smoketest[i];
-    *payload_2  = hmac_smoketest[i+1];
-    *payload_3  = hmac_smoketest[i+2];
-    *address    = i/3;
-    *start      = 0x1;
+  for(int i = 0; i < buffer_size; i += 3) {
+     if(i + 2 < buffer_size) {
+        *payload_1 = hmac_smoketest[i];
+        *payload_2 = hmac_smoketest[i+1];
+        *payload_3 = hmac_smoketest[i+2];
+        *address = i/3;
+        *start = 0x1;
+     }
   }
 
   *debug_mode = 0x0;
   
-  while(1)
-    asm volatile ("wfi");
-
   return 0;
   
 }

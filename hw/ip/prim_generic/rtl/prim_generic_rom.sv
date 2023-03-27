@@ -13,6 +13,7 @@ module prim_rom import prim_rom_pkg::*; #(
 ) (
   input  logic             clk_i,
   input  logic             rst_ni,
+  input  logic             fake_i,
   input  logic             req_i,
   input  logic [Aw-1:0]    addr_i,
   output logic [Width-1:0] rdata_o,
@@ -21,13 +22,22 @@ module prim_rom import prim_rom_pkg::*; #(
    
 `ifdef TARGET_SYNTHESIS
  `ifndef FAKE
-      
+/*
+  logic [Width-1:0] rdata_secure, rdata_debug;
+  assign rdata_o = fake_i ? rdata_debug : rdata_secure;
+
+  xilinx_rom_fake_bank_8192x40 fake_rom_mem_i (
+                                              .clk  (clk_i),
+                                              .a (addr_i),
+                                              .spo (rdata_debug)
+                                              );
+  */
   xilinx_rom_bank_8192x40 rom_mem_i (
                                     .clk  (clk_i),
                                     .a (addr_i),
                                     .spo (rdata_o)
                                     );
-   
+     
   logic  unused; 
   assign unused = ^req_i & ^cfg_i & rst_ni;
  `else 

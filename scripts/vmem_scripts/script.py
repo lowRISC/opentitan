@@ -15,6 +15,7 @@ vmem_output_lines = []
 h_output_lines = []
 
 # Iterate over the lines in the input file
+num_elements = 0
 for line in lines:
     # Skip any lines that don't start with "@"
     if not line.startswith('@'):
@@ -52,13 +53,10 @@ for line in lines:
     
     # Convert the new 32-bit words to uint32_t values and append them to the output lines for the .h file
     h_output_lines.append('    ' + ', '.join([f'0x{word}' for word in new_data]) + ',')
+    num_elements += len(new_data)
 
 # Join the output lines for the .vmem file into a string
 vmem_output_contents = '\n'.join(vmem_output_lines)
-
-# Write the output string for the .vmem file to a file
-with open('hmac_smoketest32.vmem', 'w') as f:
-    f.write(vmem_output_contents)
 
 # Generate the output string for the .h file
 h_output_contents = '''#ifndef HMAC_SMOKETEST_H_
@@ -66,12 +64,17 @@ h_output_contents = '''#ifndef HMAC_SMOKETEST_H_
 
 #include <stdint.h>
 
-static const uint32_t hmac_smoketest[] = {
-''' + '\n'.join(h_output_lines) + '''
-};
+static const uint32_t buffer_size = {num_elements};
+static const uint32_t hmac_smoketest[{num_elements}] = {{
+{h_output_lines}
+}};
 
 #endif /* HMAC_SMOKETEST_H_ */
-'''
+'''.format(num_elements=num_elements, h_output_lines='\n'.join(h_output_lines))
+
+# Write the output string for the .vmem file to a file
+with open('hmac_smoketest32.vmem', 'w') as f:
+    f.write(vmem_output_contents)
 
 # Write the output string for the .h file to a file
 with open('hmac_smoketest.h', 'w') as f:
