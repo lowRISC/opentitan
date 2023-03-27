@@ -44,7 +44,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   bit interrupt_handler_active = 0;
 
   // List of states to specfically hit for main_sm transition coverage
-  localparam int NumRareMainFsmStates = 8;
+  localparam int NumRareMainFsmStates = 12;
 
   entropy_src_main_sm_pkg::state_e [NumRareMainFsmStates - 1:0] rare_fsm_states = {
      entropy_src_main_sm_pkg::StartupPass1,
@@ -54,7 +54,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
      entropy_src_main_sm_pkg::BootPostHTChk,
      entropy_src_main_sm_pkg::ContHTStart,
      entropy_src_main_sm_pkg::FWInsertStart,
-     entropy_src_main_sm_pkg::Sha3MsgDone
+     entropy_src_main_sm_pkg::Sha3MsgDone,
+     entropy_src_main_sm_pkg::Sha3Prep,
+     entropy_src_main_sm_pkg::Sha3Process,
+     entropy_src_main_sm_pkg::Sha3Valid,
+     entropy_src_main_sm_pkg::AlertState
   };
 
   // A checklist vector with each bit corresponding to each of the rare_fsm_states above.
