@@ -17,7 +17,7 @@ typedef struct aes_gcm_test {
   /**
    * Key length.
    */
-  aes_key_len_t key_len;
+  size_t key_len;
   /**
    * Key material (length = key_len).
    */

@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_TESTS_CRYPTO_AES_GCM_TESTVECTORS_H_
 #define OPENTITAN_SW_DEVICE_TESTS_CRYPTO_AES_GCM_TESTVECTORS_H_
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/tests/crypto/aes_gcm_testutils.h"
 
@@ -62,7 +63,7 @@ static uint8_t kCiphertext256[32] = {
 const aes_gcm_test_t kAesGcmTestvectors[3] = {
     // Empty input, empty aad, 96-bit IV, 128-bit key
     {
-        .key_len = kAesKeyLen128,
+        .key_len = ARRAYSIZE(kKey128),
         .key = kKey128,
         .iv_len = 12,
         .iv =
@@ -82,7 +83,7 @@ const aes_gcm_test_t kAesGcmTestvectors[3] = {
 
     // Empty input, empty aad, 128-bit IV, 128-bit key
     {
-        .key_len = kAesKeyLen128,
+        .key_len = ARRAYSIZE(kKey128),
         .key = kKey128,
         .iv_len = 16,
         .iv =
@@ -102,7 +103,7 @@ const aes_gcm_test_t kAesGcmTestvectors[3] = {
 
     // 128-bit IV, 256-bit key, real message and aad
     {
-        .key_len = kAesKeyLen256,
+        .key_len = ARRAYSIZE(kKey256),
         .key = kKey256,
         .iv_len = 16,
         .iv =

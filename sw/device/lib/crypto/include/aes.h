@@ -5,6 +5,9 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_AES_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_AES_H_
 
+#include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
+
 /**
  * @file
  * @brief AES operations for the OpenTitan cryptography library.
@@ -114,16 +117,37 @@ typedef struct gcm_ghash_context gcm_ghash_context_t;
 crypto_status_t otcrypto_aes_keygen(crypto_blinded_key_t *key);
 
 /**
+ * Get the number of blocks needed for the plaintext length and padding mode.
+ *
+ * This returns the size of the padded plaintext, which is the same as the
+ * ciphertext size. Returns `kCryptoStatusBadArgs` if the padding mode and
+ * length are incompatible (for instance, if the padding mode is "no padding"
+ * but the input length is not a multiple of the AES block size).
+ *
+ * @param plaintext_len Plaintext data length in bytes.
+ * @param aes_padding Padding scheme to be used for the data.
+ * @return Size of the padded input or ciphertext.
+ * @return Result of the operation.
+ */
+crypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
+                                                     aes_padding_t aes_padding,
+                                                     size_t *padded_len);
+
+/**
  * Performs the AES operation.
  *
  * The input data in the `cipher_input` is first padded using the
  * `aes_padding` scheme and the output is copied to `cipher_output`.
  *
  * The caller should allocate space for the `cipher_output` buffer,
- * (same length as input, rounded up to the next full block), and
- * set the length of expected output in the `len` field of the
- * output. If the user-set length and the output length do not
- * match, an error message will be returned.
+ * which should have the length returned by
+ * `otcrypto_aes_padded_plaintext_length`, and set the length of expected
+ * output in the `len` field of the output. If the user-set length and the
+ * expected length do not match, an error message will be returned.
+ *
+ * Note that, during decryption, the padding mode is ignored. This function
+ * will NOT check the padding or return an error if the padding is invalid,
+ * since doing so could expose a padding oracle (especially in CBC mode).
  *
  * @param key Pointer to the blinded key struct with key shares.
  * @param iv Initialization vector, used for CBC, CFB, OFB, CTR modes.
@@ -140,7 +164,7 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
                              aes_operation_t aes_operation,
                              crypto_const_uint8_buf_t cipher_input,
                              aes_padding_t aes_padding,
-                             crypto_uint8_buf_t *cipher_output);
+                             crypto_uint8_buf_t cipher_output);
 
 /**
  * Performs the AES-GCM authenticated encryption operation.

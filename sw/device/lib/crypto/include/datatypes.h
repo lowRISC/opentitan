@@ -286,21 +286,21 @@ typedef enum crypto_lib_version {
  */
 typedef struct crypto_key_config {
   // Crypto library version for this key.
-  const crypto_lib_version_t version;
+  crypto_lib_version_t version;
   // Mode for which the key usage is intended.
-  const key_mode_t key_mode;
+  key_mode_t key_mode;
   // Length in bytes of the unblinded form of this key.
-  const size_t key_length;
+  size_t key_length;
   // Whether the hardware key manager should produce this key.
-  const hardened_bool_t hw_backed;
+  hardened_bool_t hw_backed;
   // Diversification input for key manager (ignored and may be
   // `NULL` if `hw_backed` is false).
   crypto_const_uint8_buf_t diversification_hw_backed;
   // Whether the key should be exportable (if this is true,
   // `hw_backed` must be false).
-  const hardened_bool_t exportable;
+  hardened_bool_t exportable;
   // Key security level.
-  const crypto_key_security_level_t security_level;
+  crypto_key_security_level_t security_level;
 } crypto_key_config_t;
 
 /**
@@ -323,7 +323,7 @@ typedef struct crypto_unblinded_key {
 typedef struct crypto_blinded_key {
   // Key configuration information.
   const crypto_key_config_t config;
-  // Length of key material.
+  // Length of blinded key material in bytes.
   const size_t keyblob_length;
   // Implementation specific, storage provided by caller.
   uint32_t *keyblob;
