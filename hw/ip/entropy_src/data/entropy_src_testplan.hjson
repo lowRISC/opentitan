@@ -259,6 +259,12 @@
             '''
     }
     {
+      name: sw_disable_cg
+      desc: '''
+            Covers SW attempting to disable entropy_src in different states of the module.
+            '''
+    }
+    {
       name: win_ht_cg
       desc: '''
             Covers a range of window sizes for each windowed health test.  For each test we need:

@@ -455,6 +455,24 @@ interface entropy_src_cov_if
 
   endgroup : sw_update_cg
 
+  covergroup sw_disable_cg with function sample(bit me_regwen,
+                                                bit module_enable,
+                                                entropy_src_main_sm_pkg::state_e main_sm_state);
+
+    option.name         = "sw_disable_cg";
+    option.per_instance = 1;
+
+    // Cross SW attempting to disable entropy_src with the state of its main FSM.
+    cr_disable_main_sm_state: cross me_regwen, module_enable, main_sm_state {
+      // This cross is about disabling, so ignore enables.
+      ignore_bins enable = binsof(module_enable) intersect {1'b1};
+      // Ignore writes to module_enable when that register is locked because they won't disable
+      // entropy_src.
+      ignore_bins locked = binsof(me_regwen) intersect {1'b0};
+    }
+
+  endgroup : sw_disable_cg
+
   // "Shallow" covergroup to validate that the windowed health checks are passing and failing for
   // all possible window sizes
   covergroup win_ht_cg with function sample(health_test_e test_type,
@@ -766,6 +784,7 @@ interface entropy_src_cov_if
   `DV_FCOV_INSTANTIATE_CG(csrng_hw_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(observe_fifo_event_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(sw_update_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(sw_disable_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(cont_ht_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(win_ht_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(win_ht_deep_threshold_cg, en_full_cov)
@@ -857,6 +876,13 @@ interface entropy_src_cov_if
     string msg, fmt;
 
     sw_update_cg_inst.sample(offset, sw_regupd, module_enable);
+
+  endfunction
+
+  function automatic void cg_sw_disable_sample(bit me_regwen,
+                                               bit module_enable,
+                                               entropy_src_main_sm_pkg::state_e main_sm_state);
+    sw_disable_cg_inst.sample(me_regwen, module_enable, main_sm_state);
 
   endfunction
 
