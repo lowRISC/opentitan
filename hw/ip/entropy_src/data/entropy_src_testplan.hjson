@@ -265,6 +265,14 @@
             '''
     }
     {
+      name: enable_delay_cg
+      desc: '''
+            Covers the enable and disable delay mechanism in different states of the module.  This
+            covergroup only gets sampled when the enable input of `entropy_src_enable_delay`
+            changes.
+            '''
+    }
+    {
       name: win_ht_cg
       desc: '''
             Covers a range of window sizes for each windowed health test.  For each test we need:
