@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
-#include "sw/device/lib/crypto/impl/ecdsa_p256/ecdsa_p256.h"
+#include "sw/device/lib/crypto/impl/ecc/ecdsa_p256.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"

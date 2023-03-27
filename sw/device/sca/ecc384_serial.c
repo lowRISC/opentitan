@@ -27,7 +27,7 @@
  * See https://wiki.newae.com/SimpleSerial for details on the protocol.
  *
  * The OTBN-related code was developed based on
- * https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto/ecdsa_p256
+ * https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto/ecc/ecdsa_p256.c
  * and
  * https://github.com/lowRISC/opentitan/blob/master/sw/device/tests/crypto/ecdsa_p256_functest.c
  *
