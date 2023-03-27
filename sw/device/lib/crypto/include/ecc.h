@@ -150,29 +150,6 @@ crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
                                     ecc_signature_t *signature);
 
 /**
- * Performs the deterministic ECDSA digital signature generation.
- *
- * In the case of deterministic ECDSA, the random value ‘k’ for the
- * signature generation is deterministically generated from the
- * private key and the input message. Refer to RFC6979 for details.
- *
- * The `domain_parameter` field of the `elliptic_curve` is required
- * only for a custom curve. For named curves this field is ignored
- * and can be set to `NULL`.
- *
- * @param private_key Pointer to the blinded private key (d) struct.
- * @param input_message Input message to be signed.
- * @param elliptic_curve Pointer to the elliptic curve to be used.
- * @param[out] signature Pointer to the signature struct with (r,s) values.
- * @return Result of the deterministic ECDSA signature.
- * generation
- */
-crypto_status_t otcrypto_deterministic_ecdsa_sign(
-    const crypto_blinded_key_t *private_key,
-    crypto_const_uint8_buf_t input_message, ecc_curve_t *elliptic_curve,
-    ecc_signature_t *signature);
-
-/**
  * Performs the ECDSA digital signature verification.
  *
  * The `domain_parameter` field of the `elliptic_curve` is required

@@ -23,7 +23,7 @@ extern "C" {
  */
 typedef const struct ecdsa_p256_verify_test_vector {
   // The public key.
-  ecdsa_p256_public_key_t public_key;
+  p256_point_t public_key;
   // The signature to verify.
   ecdsa_p256_signature_t signature;
   // Expected result (true iff signature is valid).

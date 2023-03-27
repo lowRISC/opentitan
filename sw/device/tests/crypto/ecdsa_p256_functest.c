@@ -15,9 +15,9 @@
 static const char kMessage[] = "test message";
 
 // Digest of the test message above.
-ecdsa_p256_message_digest_t digest;
+hmac_digest_t hmac_digest;
 
-static const ecdsa_p256_public_key_t kPublicKey = {
+static const p256_point_t kPublicKey = {
     // Public key x-coordinate (Q.x)
     .x = {0x558bb24e, 0x246288eb, 0x9e1bbff2, 0xa7094ad8, 0xcd926786,
           0x075d07ca, 0xac2de782, 0x1f791431},
@@ -27,39 +27,36 @@ static const ecdsa_p256_public_key_t kPublicKey = {
 };
 
 // Private key (d) in two shares
-static const ecdsa_p256_private_key_t kPrivateKey = {
-    .d0 = {0xaf57b4cd, 0x744c9f1c, 0x8b7e0c02, 0x283e93e9, 0x0d18f00c,
-           0xda0b6cf4, 0x8fe6bb7a, 0x5545a0b7, 0x00000000, 0x00000000},
+static const p256_masked_scalar_t kPrivateKey = {
+    .share0 = {0xaf57b4cd, 0x744c9f1c, 0x8b7e0c02, 0x283e93e9, 0x0d18f00c,
+               0xda0b6cf4, 0x8fe6bb7a, 0x5545a0b7, 0x00000000, 0x00000000},
     // TODO(#15409): add real data here to ensure the second share is
     // incorporated.
-    .d1 = {0},
+    .share1 = {0},
 };
 
 static void compute_digest(void) {
   // Compute the SHA-256 digest using the HMAC device.
   hmac_sha256_init();
   hmac_update((unsigned char *)&kMessage, sizeof(kMessage) - 1);
-  hmac_digest_t hmac_digest;
   hmac_final(&hmac_digest);
-
-  // Copy digest into the destination array.
-  memcpy(digest.h, hmac_digest.digest, sizeof(hmac_digest.digest));
 }
 
 status_t sign_then_verify_test(void) {
-  ecdsa_p256_signature_t signature;
-  hardened_bool_t verificationResult;
-
   // Spin until OTBN is idle.
   TRY(otbn_busy_wait_for_done());
 
   // Generate a signature for the message
   LOG_INFO("Signing...");
-  TRY(ecdsa_p256_sign(&digest, &kPrivateKey, &signature));
+  TRY(ecdsa_p256_sign_start(hmac_digest.digest, &kPrivateKey));
+  ecdsa_p256_signature_t signature;
+  TRY(ecdsa_p256_sign_finalize(&signature));
 
   // Verify the signature
   LOG_INFO("Verifying...");
-  TRY(ecdsa_p256_verify(&signature, &digest, &kPublicKey, &verificationResult));
+  TRY(ecdsa_p256_verify_start(&signature, hmac_digest.digest, &kPublicKey));
+  hardened_bool_t verificationResult;
+  TRY(ecdsa_p256_verify_finalize(&signature, &verificationResult));
 
   // Signature verification is expected to succeed
   CHECK(verificationResult == kHardenedBoolTrue);
