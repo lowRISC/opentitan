@@ -223,6 +223,17 @@ class tl_seq_item extends uvm_sequence_item;
     return !(`chk_prot_a_opcode);
   endfunction
 
+  function automatic logic [DataWidth-1:0] get_written_data();
+    logic [DataWidth-1:0] masked_data = 'x;
+    `DV_CHECK(is_write(), "get_written_data() may only be called on a write")
+    for (int i = 0; i < MaskWidth; i++) begin
+      if (a_mask[i] == 1'b1) begin
+        masked_data[8*i +: 8] = a_data[8*i +: 8];
+      end
+    end
+    return masked_data;
+  endfunction
+
   function bit get_error_PutFullData_mask_size_mismatched();
     return !(`chk_prot_mask_w_PutFullData);
   endfunction
