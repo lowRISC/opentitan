@@ -73,7 +73,7 @@ static status_t run_aes_test(void) {
   aes_key_t key = {
       .mode = kAesCipherModeCtr,
       .sideload = kHardenedBoolFalse,
-      .key_len = kAesKeyLen128,
+      .key_len = 4,
       .key_shares = {share0, share1},
   };
   TRY(aes_encrypt_begin(key, &kIv));

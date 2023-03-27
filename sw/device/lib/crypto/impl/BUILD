@@ -5,6 +5,20 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "aes",
+    srcs = ["aes.c"],
+    hdrs = ["//sw/device/lib/crypto/include:aes.h"],
+    deps = [
+        ":integrity",
+        ":keyblob",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:aes",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "hash",
     srcs = ["hash.c"],
     hdrs = [
