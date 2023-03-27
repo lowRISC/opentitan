@@ -12,11 +12,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT OR Apache-2.0
+#     "TODO",  # MIT
 # ])
 
 rust_library(
-    name = "windows_x86_64_gnu",
+    name = "errno_dragonfly",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -33,19 +33,20 @@ rust_library(
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=windows_x86_64_gnu",
+        "crate-name=errno-dragonfly",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.42.1",
+    version = "0.1.2",
     deps = [
-        "@crate_index__windows_x86_64_gnu-0.42.1//:build_script_build",
+        "@crate_index__errno-dragonfly-0.1.2//:build_script_build",
+        "@crate_index__libc-0.2.139//:libc",
     ],
 )
 
 cargo_build_script(
-    name = "windows_x86_64_gnu_build_script",
+    name = "errno-dragonfly_build_script",
     srcs = glob(["**/*.rs"]),
     crate_name = "build_script_build",
     crate_root = "build.rs",
@@ -65,17 +66,20 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=windows_x86_64_gnu",
+        "crate-name=errno-dragonfly",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.42.1",
+    version = "0.1.2",
     visibility = ["//visibility:private"],
+    deps = [
+        "@crate_index__cc-1.0.79//:cc",
+    ],
 )
 
 alias(
     name = "build_script_build",
-    actual = "windows_x86_64_gnu_build_script",
+    actual = "errno-dragonfly_build_script",
     tags = ["manual"],
 )
