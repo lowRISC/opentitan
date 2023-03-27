@@ -7,6 +7,7 @@ use std::cell::{Cell, RefCell};
 use std::ffi::OsStr;
 use std::io::Read;
 use std::io::Write;
+use std::mem::size_of;
 use std::net::TcpStream;
 use std::process::{Child, Command, Stdio};
 use std::thread;
@@ -173,6 +174,44 @@ impl OpenOcdServer {
         self.openocd_socket_stream.replace(Some(stream));
         String::from_utf8(answer).context("failed to parse OpenOCD response as UTF-8")
     }
+
+    fn read_memory_impl<T: ParseInt>(&self, addr: u32, buf: &mut [T]) -> Result<usize> {
+        // Ibex does not have a MMU so always tell OpenOCD that we are using physical addresses
+        // otherwise it will try to translate the address through the (non-existent) MMU
+        let cmd = format!(
+            "read_memory 0x{addr:x} {width} {count} phys",
+            width = 8 * size_of::<T>(),
+            count = buf.len()
+        );
+        let response = self.send_tcl_cmd(cmd.as_str())?;
+        response.trim().split(" ").try_fold(0, |idx, val| {
+            if idx < buf.len() {
+                buf[idx] = T::from_str(val).context(format!(
+                    "expected response to be an hexadecimal byte, got '{response}'"
+                ))?;
+                Ok(idx + 1)
+            } else {
+                bail!("OpenOCD returned too much data on read".to_string())
+            }
+        })
+    }
+
+    fn write_memory_impl<T: ToString>(&self, addr: u32, buf: &[T]) -> Result<()> {
+        // Convert data to space-separated strings.
+        let data: Vec<_> = buf.iter().map(ToString::to_string).collect();
+        let data_str = &data[..].join(" ");
+        // See [read_memory] about physical addresses
+        let cmd = format!(
+            "write_memory 0x{addr:x} {width} {{ {data_str} }} phys",
+            width = 8 * size_of::<T>()
+        );
+        let response = self.send_tcl_cmd(cmd.as_str())?;
+        if !response.is_empty() {
+            bail!("unexpected response: '{response}'");
+        }
+
+        Ok(())
+    }
 }
 
 impl Drop for OpenOcdServer {
@@ -214,30 +253,37 @@ impl Jtag for OpenOcdServer {
         Ok(())
     }
 
-    fn read_memory(&self, addr: u32, buf: &mut [u8]) -> Result<u32> {
-        let cmd = format!("read_memory 0x{addr:x} 8 {count}", count = buf.len());
-        let _response = self.send_tcl_cmd(cmd.as_str())?;
-        todo!("handle response from OpenOCD");
+    fn read_memory(&self, addr: u32, buf: &mut [u8]) -> Result<usize> {
+        self.read_memory_impl(addr, buf)
+    }
+
+    fn read_memory32(&self, addr: u32, buf: &mut [u32]) -> Result<usize> {
+        self.read_memory_impl(addr, buf)
     }
 
     fn write_memory(&self, addr: u32, buf: &[u8]) -> Result<()> {
-        // Convert data to space-separated strings.
-        let data: Vec<_> = buf.iter().map(ToString::to_string).collect();
-        let data_str = &data[..].join(" ");
+        self.write_memory_impl(addr, buf)
+    }
 
-        let cmd = format!("write_memory 0x{addr:x} 8 {{ {data_str} }}");
-        let _response = self.send_tcl_cmd(cmd.as_str())?;
-
-        todo!("handle response from OpenOCD");
+    fn write_memory32(&self, addr: u32, buf: &[u32]) -> Result<()> {
+        self.write_memory_impl(addr, buf)
     }
 
     fn halt(&self) -> Result<()> {
-        let _response = self.send_tcl_cmd("halt")?;
-        todo!("handle response from OpenOCD");
+        let response = self.send_tcl_cmd("halt")?;
+        if !response.is_empty() {
+            bail!("unexpected response: '{response}'");
+        }
+
+        Ok(())
     }
 
     fn resume(&self) -> Result<()> {
-        let _response = self.send_tcl_cmd("resume")?;
-        todo!("handle response from OpenOCD");
+        let response = self.send_tcl_cmd("resume")?;
+        if !response.is_empty() {
+            bail!("unexpected response: '{response}'");
+        }
+
+        Ok(())
     }
 }
