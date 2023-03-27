@@ -15,6 +15,7 @@ fold = { enable = true}
 git-repository-url = "https://github.com/lowrisc/opentitan"
 edit-url-template = "https://github.com/lowrisc/opentitan/edit/master/{path}"
 curly-quotes = true
+mathjax-support = true
 
 additional-js = [
     "./util/mdbook/wavejson/default.js",
