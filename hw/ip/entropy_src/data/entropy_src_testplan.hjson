@@ -53,6 +53,14 @@
       tests: ["entropy_src_rng"]
     }
     {
+      name: rng_max_rate
+      desc: '''
+            Verify RNG entropy at maximum production rate
+            '''
+      stage: V2
+      tests: ["entropy_src_rng_max_rate"]
+    }
+    {
       name: health_checks
       desc: '''
             Verify AdaptProp, RepCnt, RepCntSym, Bucket, Markov health check results
