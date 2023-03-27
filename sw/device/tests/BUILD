@@ -2266,7 +2266,7 @@ opentitan_functest(
     name = "test_openocd",
     srcs = ["example_test_from_flash.c"],
     cw310 = cw310_params(
-        #bitstream = ":bitstream_default_otp",
+        bitstream = "//hw/bitstream:rom_otp_test_unlocked0",
         tags = [
             "jtag",
             "vivado",
