@@ -27,7 +27,7 @@ enum {
    * Simple serial protocol version 1.1.
    */
   kSimpleSerialProtocolVersion = 1,
-  kUartMaxRxPacketSize = 64,
+  kUartMaxRxPacketSize = 128,
 };
 
 /**

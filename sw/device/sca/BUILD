@@ -101,6 +101,7 @@ opentitan_flash_binary(
         "//sw/device/sca/lib:sca",
         "//sw/device/sca/lib:simple_serial",
         "//sw/otbn/crypto:p256_key_from_seed_sca",
+        "//sw/otbn/crypto:p256_mod_inv_sca",
     ],
 )
 
