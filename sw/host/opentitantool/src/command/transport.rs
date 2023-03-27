@@ -47,6 +47,12 @@ pub struct TransportUpdateFirmware {
         help = "Local firmware file to use instead of official release"
     )]
     filename: Option<PathBuf>,
+
+    #[structopt(
+        long,
+        help = "Update even if transport already reports identical version number"
+    )]
+    force: bool,
 }
 
 impl CommandDispatch for TransportUpdateFirmware {
@@ -63,6 +69,7 @@ impl CommandDispatch for TransportUpdateFirmware {
         let operation = UpdateFirmware {
             firmware,
             progress: Some(progress.pfunc()),
+            force: self.force,
         };
         transport.dispatch(&operation)
     }

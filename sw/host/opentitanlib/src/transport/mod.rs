@@ -175,6 +175,9 @@ pub struct UpdateFirmware<'a> {
     pub firmware: Option<Vec<u8>>,
     /// A progress function to provide user feedback, see details of the `Progress` struct.
     pub progress: Option<Box<dyn Fn(Progress) + 'a>>,
+    /// Should updating be attempted, even if the current firmware version matches that of the
+    /// image to be updated to.
+    pub force: bool,
 }
 
 /// An `EmptyTransport` provides no communications backend.

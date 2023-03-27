@@ -54,8 +54,10 @@ impl Transport for HyperdebugDfu {
         if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
             update_firmware(
                 &mut self.usb_backend.borrow_mut(),
+                None, /* current_firmware_version */
                 &update_firmware_action.firmware,
                 &update_firmware_action.progress,
+                update_firmware_action.force,
             )
         } else {
             bail!(TransportError::UnsupportedOperation)
@@ -124,8 +126,10 @@ fn get_hyperdebug_firmware_version(firmware: &[u8]) -> Result<&str> {
 /// This method is used both by the `Hyperdebug` and the `HyperdebugDfu` structs.
 pub fn update_firmware(
     usb_device: &mut UsbBackend,
+    current_firmware_version: Option<&str>,
     firmware: &Option<Vec<u8>>,
     progress: &Option<Box<dyn Fn(Progress)>>,
+    force: bool,
 ) -> Result<Option<Box<dyn Annotate>>> {
     let firmware: &[u8] = if let Some(vec) = firmware.as_ref() {
         validate_firmware_image(vec)?;
@@ -133,6 +137,19 @@ pub fn update_firmware(
     } else {
         OFFICIAL_FIRMWARE.ok_or_else(|| anyhow!("No build-in firmware, use --filename"))?
     };
+
+    if !force {
+        if let Some(current_version) = current_firmware_version {
+            let new_version = get_hyperdebug_firmware_version(firmware)?;
+            if new_version == current_version {
+                log::warn!(
+                    "HyperDebug already running firmware version {}.  Consider --force.",
+                    new_version,
+                );
+                return Ok(None);
+            }
+        }
+    }
 
     let dfu_desc = scan_usb_descriptor(usb_device)?;
 
