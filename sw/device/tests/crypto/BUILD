@@ -73,7 +73,7 @@ opentitan_functest(
     deps = [
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl/ecdsa_p256",
+        "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -121,7 +121,7 @@ opentitan_functest(
         ":ecdsa_p256_verify_testvectors_hardcoded_header",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl/ecdsa_p256",
+        "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
