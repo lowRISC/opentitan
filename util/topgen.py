@@ -783,10 +783,6 @@ def generete_rust(topname, completecfg, name_to_block, out_path, version_stamp,
                         helper=rs_helper)
 
     # Generating Rust host-side files
-
-    # The Rust file needs some complex information, so we initialize this
-    # object to store it. Disabling version stamp to avoid file difference.
-    rs_helper = TopGenRust(completecfg, name_to_block, {})
     rsformat_dir = src_tree_top / "sw/host/opentitanlib/src/chip/autogen"
     rsformat_dir.mkdir(parents=True, exist_ok=True)
     render_template(topgen_template_path / "host_toplevel.rs.tpl",
@@ -1287,8 +1283,8 @@ def main():
 
     # Generate Rust toplevel definitions
     if not args.no_rust:
-        generete_rust(topname, completecfg, name_to_block, out_path.resolve(), version_stamp,
-                      SRCTREE_TOP, TOPGEN_TEMPLATE_PATH)
+        generete_rust(topname, completecfg, name_to_block, out_path.resolve(),
+                      version_stamp, SRCTREE_TOP, TOPGEN_TEMPLATE_PATH)
         if args.rust_only:
             sys.exit(0)
 

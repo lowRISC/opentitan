@@ -162,11 +162,12 @@ class RustArrayMapping(object):
             "];")
         return Template(template).render(mapping=self)
 
+
 class RustFileHeader(object):
-    def __init__(self, name: str, version_stamp: Dict[str, str]):
+    def __init__(self, name: str, version_stamp: Dict[str, str], skip: bool):
         self.name = name
         self.data = version_stamp
-        print(self.data)
+        self.skip = skip
         tm = int(version_stamp.get('BUILD_TIMESTAMP', 0))
         self.tstamp = datetime.utcfromtimestamp(tm) if tm else datetime.utcnow()
 
@@ -183,12 +184,15 @@ class RustFileHeader(object):
         return self.tstamp.isoformat()
 
     def render(self):
-        template = (
-            "// Built for ${header.build()}\n"
-            "// https://github.com/lowRISC/opentitan/tree/${header.scm_sha()}\n"
-            "// Tree status: ${header.scm_status()}\n"
-            "// Build date: ${header.time_stamp()}")
-        return Template(template).render(header=self)
+        if self.skip:
+            return Template(("")).render(header=self)
+        else:
+            template = (
+                "// Built for ${header.build()}\n"
+                "// https://github.com/lowRISC/opentitan/tree/${header.scm_sha()}\n"
+                "// Tree status: ${header.scm_status()}\n"
+                "// Build date: ${header.time_stamp()}")
+            return Template(template).render(header=self)
 
 
 class TopGenRust:
@@ -197,7 +201,7 @@ class TopGenRust:
         self._top_name = Name(["top"]) + Name.from_snake_case(top_info["name"])
         self._name_to_block = name_to_block
         self.regwidth = int(top_info["datawidth"])
-        self.file_header = RustFileHeader("foo.tpl", version_stamp)
+        self.file_header = RustFileHeader("foo.tpl", version_stamp, len(version_stamp) == 0)
 
         self._init_plic_targets()
         self._init_plic_mapping()
