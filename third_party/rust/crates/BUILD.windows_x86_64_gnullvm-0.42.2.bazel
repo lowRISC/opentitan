@@ -16,7 +16,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "windows_x86_64_msvc",
+    name = "windows_x86_64_gnullvm",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -33,19 +33,19 @@ rust_library(
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=windows_x86_64_msvc",
+        "crate-name=windows_x86_64_gnullvm",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.42.1",
+    version = "0.42.2",
     deps = [
-        "@crate_index__windows_x86_64_msvc-0.42.1//:build_script_build",
+        "@crate_index__windows_x86_64_gnullvm-0.42.2//:build_script_build",
     ],
 )
 
 cargo_build_script(
-    name = "windows_x86_64_msvc_build_script",
+    name = "windows_x86_64_gnullvm_build_script",
     srcs = glob(["**/*.rs"]),
     crate_name = "build_script_build",
     crate_root = "build.rs",
@@ -65,17 +65,17 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=windows_x86_64_msvc",
+        "crate-name=windows_x86_64_gnullvm",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.42.1",
+    version = "0.42.2",
     visibility = ["//visibility:private"],
 )
 
 alias(
     name = "build_script_build",
-    actual = "windows_x86_64_msvc_build_script",
+    actual = "windows_x86_64_gnullvm_build_script",
     tags = ["manual"],
 )

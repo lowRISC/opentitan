@@ -93,7 +93,7 @@ alias(
 
 alias(
     name = "env_logger",
-    actual = "@crate_index__env_logger-0.8.4//:env_logger",
+    actual = "@crate_index__env_logger-0.10.0//:env_logger",
     tags = ["manual"],
 )
 
