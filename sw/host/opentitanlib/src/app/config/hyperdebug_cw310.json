@@ -1,6 +1,6 @@
 {
   "includes": ["/__builtin__/opentitan.json"],
-  "interface": "hyperdebug",
+  "interface": "hyper310",
   "pins": [
     {
       "name": "RESET",
