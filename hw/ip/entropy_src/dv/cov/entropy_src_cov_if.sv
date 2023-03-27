@@ -474,6 +474,86 @@ interface entropy_src_cov_if
 
   endgroup : sw_disable_cg
 
+  covergroup enable_delay_cg with function sample(bit enable_i,
+                                                  bit esrng_fifo_not_empty_i,
+                                                  bit esbit_fifo_not_empty_i,
+                                                  bit postht_fifo_not_empty_i,
+                                                  bit cs_aes_halt_req_i,
+                                                  bit sha3_done_i,
+                                                  bit bypass_mode_i,
+                                                  bit enable_o);
+    option.name         = "enable_delay_cg";
+    option.per_instance = 1;
+
+    cp_enable: coverpoint enable_i {
+      bins disabling = {1'b0};
+      bins enabling = {1'b1};
+    }
+
+    // Cover the decision to immediately forward the enable/disable or to delay it.
+    cp_enable_io: coverpoint {enable_i, enable_o} {
+      bins disable_immediately = {2'b00};
+      bins disable_delayed = {2'b01};
+      bins enable_delayed = {2'b10};
+      bins enable_immediately = {2'b11};
+    }
+
+    cp_esrng_fifo: coverpoint esrng_fifo_not_empty_i {
+      bins empty = {1'b0};
+      bins not_empty = {1'b1};
+    }
+
+    cp_esbit_fifo: coverpoint esbit_fifo_not_empty_i {
+      bins empty = {1'b0};
+      bins not_empty = {1'b1};
+    }
+
+    cp_postht_fifo: coverpoint postht_fifo_not_empty_i {
+      bins empty = {1'b0};
+      bins not_empty = {1'b1};
+    }
+
+    cr_enable_i_fifo_state: cross cp_enable, cp_esrng_fifo, cp_esbit_fifo, cp_postht_fifo {
+      // When re-enabling, all those FIFOs are empty.
+      //
+      // This is a property of the current implementation and it may be legal to change the
+      // implementation so that this no longer holds.  In the current implementation, however, it is
+      // impossible to cover these cases.  These cases are thus put into `illegal_bins`, so that
+      // they fail if the implementation changes and the coverage has to be redefined.
+      illegal_bins enabling_and_any_fifo_not_empty =
+          binsof(cp_enable.enabling) && (binsof(cp_esrng_fifo.not_empty) ||
+                                         binsof(cp_esbit_fifo.not_empty) ||
+                                         binsof(cp_postht_fifo.not_empty));
+    }
+
+    cp_sha3_state: coverpoint {cs_aes_halt_req_i, sha3_done_i} {
+      bins idle = {2'b00};
+      // AES Halt Req and SHA3 Done cannot be true at the same time.
+      //
+      // This is a property of the current implementation and it may be legal to change the
+      // implementation so that this no longer holds.  In the current implementation, however, it is
+      // impossible to cover these cases.  These cases are thus put into `illegal_bins`, so that
+      // they fail if the implementation changes and the coverage has to be redefined.
+      bins sha3_done = {2'b01};
+      bins aes_halt_req = {2'b10};
+      illegal_bins aes_halt_req_and_sha3_done = {2'b11};
+    }
+
+    cr_enable_i_sha3_state: cross cp_enable, cp_sha3_state {
+      // SHA3 Done cannot be true when enabling (and thus currently disabled).
+      //
+      // This is a property of the current implementation and it may be legal to change the
+      // implementation so that this no longer holds.  In the current implementation, however, it is
+      // impossible to cover these cases.  These cases are thus put into `illegal_bins`, so that
+      // they fail if the implementation changes and the coverage has to be redefined.
+      illegal_bins enabling_and_sha3_done =
+          binsof(cp_enable.enabling) && binsof(cp_sha3_state.sha3_done);
+    }
+
+    cr_enable_i_bypass_mode: cross cp_enable, bypass_mode_i;
+
+  endgroup : enable_delay_cg
+
   // "Shallow" covergroup to validate that the windowed health checks are passing and failing for
   // all possible window sizes
   covergroup win_ht_cg with function sample(health_test_e test_type,
@@ -786,6 +866,7 @@ interface entropy_src_cov_if
   `DV_FCOV_INSTANTIATE_CG(observe_fifo_event_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(sw_update_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(sw_disable_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(enable_delay_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(cont_ht_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(win_ht_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(win_ht_deep_threshold_cg, en_full_cov)
@@ -956,8 +1037,16 @@ interface entropy_src_cov_if
   assign csrng_if_req = tb.dut.entropy_src_hw_if_i.es_req;
   assign csrng_if_ack = tb.dut.entropy_src_hw_if_o.es_ack;
 
-  always @(posedge clk_i) begin
-    if (rst_ni) begin
+  logic enable_q, enable_qq;
+
+  always @(posedge clk_i, negedge rst_ni) begin
+    if (!rst_ni) begin
+      enable_q  <= 1'b0;
+      enable_qq <= 1'b0;
+    end else begin
+      enable_qq <= enable_q;
+      enable_q  <= tb.dut.u_entropy_src_core.u_enable_delay.enable_i;
+
       if(csrng_if_req && csrng_if_ack) begin
         cg_csrng_hw_sample(tb.dut.reg2hw.conf.fips_enable.q,
                            tb.dut.reg2hw.conf.threshold_scope.q,
@@ -970,6 +1059,19 @@ interface entropy_src_cov_if
                            tb.dut.reg2hw.fw_ov_control.fw_ov_mode.q,
                            otp_en_entropy_src_fw_over_i,
                            tb.dut.reg2hw.fw_ov_control.fw_ov_entropy_insert.q);
+      end
+
+      if (enable_qq != enable_q) begin
+        // Only sample this CG when the enable signal changes.
+        enable_delay_cg_inst.sample(
+            enable_q,
+            tb.dut.u_entropy_src_core.u_enable_delay.esrng_fifo_not_empty_i,
+            tb.dut.u_entropy_src_core.u_enable_delay.esbit_fifo_not_empty_i,
+            tb.dut.u_entropy_src_core.u_enable_delay.postht_fifo_not_empty_i,
+            tb.dut.u_entropy_src_core.u_enable_delay.cs_aes_halt_req_i,
+            tb.dut.u_entropy_src_core.u_enable_delay.sha3_done_i == MuBi4True,
+            tb.dut.u_entropy_src_core.u_enable_delay.bypass_mode_i,
+            tb.dut.u_entropy_src_core.u_enable_delay.enable_o);
       end
     end
   end
