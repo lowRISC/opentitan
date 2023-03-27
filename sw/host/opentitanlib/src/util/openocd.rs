@@ -9,6 +9,7 @@ use std::io::Read;
 use std::io::Write;
 use std::net::TcpStream;
 use std::process::{Child, Command, Stdio};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
@@ -20,6 +21,7 @@ use crate::dif::lc_ctrl::LcCtrlReg;
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, JtagParams, JtagTap};
 use crate::util::parse_int::ParseInt;
+use crate::util::printer;
 
 /// Represents an OpenOCD server that we can interact with.
 pub struct OpenOcdServer {
@@ -29,6 +31,9 @@ pub struct OpenOcdServer {
     openocd_server_process: RefCell<Option<Child>>,
     /// Stream to the telnet interface of OpenOCD.
     openocd_socket_stream: Cell<Option<TcpStream>>,
+    /// Accumulators for OpenOCD stdout and stderr
+    openocd_accumulated_stdout: Arc<Mutex<String>>,
+    openocd_accumulated_stderr: Arc<Mutex<String>>,
 }
 
 /// Errors related to the OpenOCD server.
@@ -48,6 +53,8 @@ impl OpenOcdServer {
             opts: opts.clone(),
             openocd_server_process: Default::default(),
             openocd_socket_stream: Default::default(),
+            openocd_accumulated_stdout: Default::default(),
+            openocd_accumulated_stderr: Default::default(),
         })
     }
 
@@ -98,17 +105,28 @@ impl OpenOcdServer {
             args.join(" ")
         );
 
-        // TODO: forward output/stderr to loggin using a worker, like for verilator.
         let mut cmd = Command::new(&self.opts.openocd);
         cmd.args(args)
             .stdin(Stdio::null())
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit());
-        let child = cmd.spawn().with_context(|| {
+        let mut child = cmd.spawn().with_context(|| {
             let program = cmd.get_program();
             let args = cmd.get_args().collect::<Vec<_>>().join(OsStr::new(" "));
             format!("failed to spawn openocd: {program:?} {args:?}",)
         })?;
+        // printer stdout and stderr
+        let stdout = child.stdout.take().unwrap();
+        let stderr = child.stderr.take().unwrap();
+        let a = self.openocd_accumulated_stdout.clone();
+        let b = self.openocd_accumulated_stderr.clone();
+        std::thread::spawn(move || {
+            printer::accumulate(stdout, concat!(module_path!(), "::stdout"), a)
+        });
+        std::thread::spawn(move || {
+            printer::accumulate(stderr, concat!(module_path!(), "::stderr"), b)
+        });
+
         self.openocd_server_process.replace(Some(child));
 
         // Give OpenOCD time to start up.
