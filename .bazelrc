@@ -15,6 +15,10 @@ build --strip='never'
 # our codebase generates a lot of warnings by setting the -Wpedantic flag
 build --features=-all_warnings
 
+# Enable toolchain hardening features.
+# `guards` adds `unimp` guard instructions after unconditional jumps.
+build --features=guards
+
 # Enable toolchain resolution with cc
 build --incompatible_enable_cc_toolchain_resolution
 
