@@ -15,7 +15,7 @@ extern "C" {
 
 typedef struct aes_gcm_test {
   /**
-   * Key length.
+   * Key length in words.
    */
   size_t key_len;
   /**

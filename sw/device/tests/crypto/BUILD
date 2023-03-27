@@ -9,6 +9,27 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 package(default_visibility = ["//visibility:public"])
 
 opentitan_functest(
+    name = "aes_functest",
+    srcs = ["aes_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":aes_testvectors",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
+    name = "aes_testvectors",
+    srcs = ["aes_testvectors.h"],
+    deps = [
+        "//sw/device/lib/crypto/impl:aes",
+    ],
+)
+
+opentitan_functest(
     name = "aes_gcm_functest",
     srcs = ["aes_gcm_functest.c"],
     verilator = verilator_params(
