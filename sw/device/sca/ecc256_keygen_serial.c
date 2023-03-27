@@ -67,6 +67,35 @@ enum {
    * still busy and disturb the capture.
    */
   kIbexOtbnSleepCycles = 800,
+  /**
+   * Number of bytes for ECDSA P-256 modular inverse input shares (k0,k1).
+   */
+  kEcc256ModInvInputShareNumBytes = 320 / 8,
+  /**
+   * Number of words for ECDSA P-256 modular inverse input shares (k0,k1).
+   */
+  kEcc256ModInvInputShareNumWords =
+      kEcc256ModInvInputShareNumBytes / sizeof(uint32_t),
+  /**
+   * Number of bytes for ECDSA P-256 modular inverse output ((k*alpha)^-1 mod
+   * n).
+   */
+  kEcc256ModInvOutputKAlphaInvNumBytes = 256 / 8,
+  /**
+   * Number of words for ECDSA P-256 modular inverse output ((k*alpha)^-1 mod
+   * n).
+   */
+  kEcc256ModInvOutputKAlphaInvNumWords =
+      kEcc256ModInvOutputKAlphaInvNumBytes / sizeof(uint32_t),
+  /**
+   * Number of bytes for ECDSA P-256 modular inverse output mask (alpha).
+   */
+  kEcc256ModInvOutputAlphaNumBytes = 128 / 8,
+  /**
+   * Number of words for ECDSA P-256 modular inverse output mask (alpha).
+   */
+  kEcc256ModInvOutputAlphaNumWords =
+      kEcc256ModInvOutputAlphaNumBytes / sizeof(uint32_t),
 };
 
 /**
@@ -101,6 +130,9 @@ static bool run_fixed = true;
  */
 static bool en_masks = false;
 
+/**
+ * App configuration for p256_key_from_seed_sca
+ */
 OTBN_DECLARE_APP_SYMBOLS(p256_key_from_seed_sca);
 
 OTBN_DECLARE_SYMBOL_ADDR(p256_key_from_seed_sca, mode);
@@ -130,6 +162,27 @@ static const otbn_addr_t kOtbnVarY =
     OTBN_ADDR_T_INIT(p256_key_from_seed_sca, y);
 
 /**
+ * App configuration for p256_mod_inv_sca
+ */
+OTBN_DECLARE_APP_SYMBOLS(p256_mod_inv_sca);
+
+OTBN_DECLARE_SYMBOL_ADDR(p256_mod_inv_sca, k0);
+OTBN_DECLARE_SYMBOL_ADDR(p256_mod_inv_sca, k1);
+OTBN_DECLARE_SYMBOL_ADDR(p256_mod_inv_sca, kalpha_inv);
+OTBN_DECLARE_SYMBOL_ADDR(p256_mod_inv_sca, alpha);
+
+static const otbn_app_t kOtbnAppP256ModInv = OTBN_APP_T_INIT(p256_mod_inv_sca);
+
+static const otbn_addr_t kOtbnVarModInvK0 =
+    OTBN_ADDR_T_INIT(p256_mod_inv_sca, k0);
+static const otbn_addr_t kOtbnVarModInvK1 =
+    OTBN_ADDR_T_INIT(p256_mod_inv_sca, k1);
+static const otbn_addr_t kOtbnVarModInvKAplhaInv =
+    OTBN_ADDR_T_INIT(p256_mod_inv_sca, kalpha_inv);
+static const otbn_addr_t kOtbnVarModInvAlpha =
+    OTBN_ADDR_T_INIT(p256_mod_inv_sca, alpha);
+
+/**
  * Seed value.
  *
  * The default value corresponds to the test data in
@@ -142,6 +195,50 @@ uint32_t ecc256_seed[kEcc256SeedNumWords] = {
     0x016064e9, 0x11e3f4d6, 0xac3a6fa7, 0xaba11a1b, 0x8f9271d1,
     0x22b79d5f, 0x1176f31d, 0xb5ac3a51, 0x99a082d7, 0x484eb366,
 };
+
+/**
+ * Modular inverse input share values.
+ *
+ * The default value corresponds to the default values in
+ *   sw/otbn/crypto/p256_mod_inv_sca.s
+ *
+ * These default values can be overwritten via the simpleserial command `i`
+ */
+uint32_t ecc256_modinv_k0[kEcc256ModInvInputShareNumWords] = {
+    0x2130fb63, 0xd47c4a89, 0xcdf7c706, 0x3a27d1b2, 0x210904c7,
+    0xbead5ed1, 0xc0fe2d66, 0x2c8d5cd1, 0xf9bb7401, 0x7e8bb020,
+};
+uint32_t ecc256_modinv_k1[kEcc256ModInvInputShareNumWords] = {
+    0x381ea73e, 0x0b02ae2e, 0xf965aef6, 0x2c230bf7, 0x0bf8f151,
+    0xde11e80c, 0x87b8dbdd, 0xf9bb7400, 0x06448bff, 0x81744fde,
+};
+
+/**
+ * Simple serial 'a' (app select) command handler.
+ *
+ * This handler has to be called to load a new app to otbn.
+ *
+ * @param app_cmd 0 => ecc256 keygen, 1 => ecc256 modular inverse.
+ * @param app_cmd_len Length of sent command value.
+ */
+static void ecc256_app_select(const uint8_t *app_cmd, size_t app_cmd_len) {
+  SS_CHECK(app_cmd_len == 1);
+  if (*app_cmd == 0) {
+    // wipe otbn memory before loading new app
+    otbn_imem_sec_wipe();
+    otbn_dmem_sec_wipe();
+    // load keygen app
+    SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP256KeyFromSeed));
+  } else if (*app_cmd == 1) {
+    // wipe otbn memory before loading new app
+    otbn_imem_sec_wipe();
+    otbn_dmem_sec_wipe();
+    // load mod inv app
+    SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP256ModInv));
+  } else {
+    LOG_ERROR("Wrong app select command.");
+  }
+}
 
 /**
  * Simple serial 'm' (set masks enable) command handler.
@@ -174,9 +271,85 @@ static void ecc256_set_seed(const uint8_t *seed, size_t seed_len) {
 }
 
 /**
+ * Simple serial 'i' (set modinv k0/k1 input) command handler.
+ *
+ * Each share must be `kEcc256ModInvInputShareNumBytes` bytes long.
+ *
+ * @param k0_k1 Value for input.
+ * @param k0_k1_len Length of input.
+ */
+static void ecc256_modinv_set_input(const uint8_t *k0_k1, size_t k0_k1_len) {
+  SS_CHECK(k0_k1_len == 2 * kEcc256ModInvInputShareNumBytes);
+  // copy k0
+  memcpy(ecc256_modinv_k0, k0_k1, kEcc256ModInvInputShareNumBytes);
+  // copy k1
+  memcpy(ecc256_modinv_k1, (k0_k1 + kEcc256ModInvInputShareNumBytes),
+         kEcc256ModInvInputShareNumBytes);
+}
+
+/**
  * Callback wrapper for OTBN manual trigger function.
  */
 static void otbn_manual_trigger(void) { SS_CHECK_STATUS_OK(otbn_execute()); }
+
+/**
+ * Runs the OTBN modular inverse program.
+ *
+ * The input must be `kEcc256ModInvInputShareNumWords` words long.
+ *
+ * @param[in] input  Iput value for the OTBN modular inverse.
+ */
+static void p256_run_modinv(uint32_t *k0, uint32_t *k1) {
+  // Write input.
+  SS_CHECK_STATUS_OK(
+      otbn_dmem_write(kEcc256ModInvInputShareNumWords, k0, kOtbnVarModInvK0));
+  SS_CHECK_STATUS_OK(
+      otbn_dmem_write(kEcc256ModInvInputShareNumWords, k1, kOtbnVarModInvK1));
+
+  // Execute program.
+  sca_set_trigger_high();
+  sca_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles);
+  otbn_busy_wait_for_done();
+  sca_set_trigger_low();
+}
+
+/**
+ * Computes the modular inverse of a certain input.
+ *
+ * The input must be `kEcc256ModInvInputShareNumWords` words long.
+ *
+ * @param[in] input  Input for modular inverse computation.
+ */
+static void ecc256_modinv(const uint8_t *k0_k1, size_t k0_k1_len) {
+  if (k0_k1_len != 2 * kEcc256ModInvInputShareNumBytes) {
+    LOG_ERROR("Invalid input length %hu", (uint8_t)k0_k1_len);
+    return;
+  }
+
+  // Copy input to an aligned buffer.
+  uint32_t modinv_k0[kEcc256ModInvInputShareNumWords];
+  uint32_t modinv_k1[kEcc256ModInvInputShareNumWords];
+  memcpy(modinv_k0, k0_k1, kEcc256ModInvInputShareNumBytes);
+  memcpy(modinv_k1, (k0_k1 + kEcc256ModInvInputShareNumBytes),
+         kEcc256ModInvInputShareNumBytes);
+
+  // Run the key generation program.
+  p256_run_modinv(modinv_k0, modinv_k1);
+
+  // Read result.
+  uint32_t modinv_kalpha_inv[kEcc256ModInvOutputKAlphaInvNumWords];
+  uint32_t modinv_alpha[kEcc256ModInvOutputAlphaNumWords];
+  SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256ModInvOutputKAlphaInvNumWords,
+                                    kOtbnVarModInvKAplhaInv,
+                                    modinv_kalpha_inv));
+  SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc256ModInvOutputAlphaNumWords,
+                                    kOtbnVarModInvAlpha, modinv_alpha));
+
+  simple_serial_send_packet('r', (unsigned char *)modinv_kalpha_inv,
+                            kEcc256ModInvOutputKAlphaInvNumBytes);
+  simple_serial_send_packet('r', (unsigned char *)modinv_alpha,
+                            kEcc256ModInvOutputAlphaNumBytes);
+}
 
 /**
  * Runs the OTBN key generation program.
@@ -426,7 +599,14 @@ static void simple_serial_main(void) {
            kSimpleSerialOk);
   SS_CHECK(simple_serial_register_handler('m', ecc256_en_masks) ==
            kSimpleSerialOk);
+  SS_CHECK(simple_serial_register_handler('a', ecc256_app_select) ==
+           kSimpleSerialOk);
+  SS_CHECK(simple_serial_register_handler('i', ecc256_modinv_set_input) ==
+           kSimpleSerialOk);
+  SS_CHECK(simple_serial_register_handler('q', ecc256_modinv) ==
+           kSimpleSerialOk);
 
+  // load keygen app as default
   LOG_INFO("Load p256 keygen from seed app into OTBN");
   SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP256KeyFromSeed));
 
