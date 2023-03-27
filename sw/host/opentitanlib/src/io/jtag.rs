@@ -74,13 +74,18 @@ pub trait Jtag {
     /// Write a value to a lifecycle controller register.
     fn write_lc_ctrl_reg(&self, reg: &LcCtrlReg, value: u32) -> Result<()>;
 
-    /// Read bytes from memory into the provided buffer.
+    /// Read bytes/words from memory into the provided buffer.
+    /// When reading bytes, each memory access is 8 bits.
+    /// When reading words, each memory access is 32 bit. If the hardware
+    /// does not support unaligned memory accesses, this function will fail.
     ///
-    /// On success, returns the number of bytes read.
-    fn read_memory(&self, addr: u32, buf: &mut [u8]) -> Result<u32>;
+    /// On success, returns the number of bytes/words read.
+    fn read_memory(&self, addr: u32, buf: &mut [u8]) -> Result<usize>;
+    fn read_memory32(&self, addr: u32, buf: &mut [u32]) -> Result<usize>;
 
-    /// Write bytes to memory.
+    /// Write bytes/words to memory.
     fn write_memory(&self, addr: u32, buf: &[u8]) -> Result<()>;
+    fn write_memory32(&self, addr: u32, buf: &[u32]) -> Result<()>;
 
     /// Send a HALT command over Jtag.
     fn halt(&self) -> Result<()>;
