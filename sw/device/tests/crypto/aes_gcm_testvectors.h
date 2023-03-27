@@ -32,7 +32,7 @@ static const uint32_t kKey256[8] = {
  * Authenticated data for testing.
  */
 static const uint32_t kAadLen = 18;
-static uint8_t kAad[20] = {
+static uint8_t kAad[18] = {
     // aad = 'authenticated data'
     //     = 61757468656e746963617465642064617461
     0x61, 0x75, 0x74, 0x68, 0x65, 0x6e, 0x74, 0x69, 0x63,
