@@ -9,6 +9,14 @@
 // requirements of this software are peculiar in that the USBDPI model used in
 // top-level requires packet responses very promptly, so the introduction of
 // logging/tracing code can substantially alter behavior and cause malfunction
+//
+// Employ faster memory copying routines to/from the packet buffer
+//   (the standard dif_usbdev_buffer_write/read functionality should normally be
+//    employed, but it is inefficient; the replacement routines better model the
+//    attainable performance)
+#ifndef USBUTILS_MEM_FASTER
+#define USBUTILS_MEM_FASTER 0
+#endif
 
 // Used for tracing what is going on. This may impact timing which is critical
 // when simulating with the USB DPI module.
