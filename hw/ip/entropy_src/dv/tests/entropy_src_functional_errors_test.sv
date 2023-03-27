@@ -25,4 +25,4 @@ class entropy_src_functional_errors_test extends entropy_src_base_test;
 
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)
   endfunction
-endclass : entropy_src_intr_test
+endclass : entropy_src_functional_errors_test
