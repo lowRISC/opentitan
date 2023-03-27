@@ -1930,14 +1930,20 @@ p256_scalar_mult:
   /* init all-zero register */
   bn.xor    w31, w31, w31
 
-  /* load first share of scalar from dmem: w0 = dmem[k0] */
+  /* Load first share of secret key k from dmem.
+       w0,w1 = dmem[k0] */
   la        x16, k0
   li        x2, 0
+  bn.lid    x2, 0(x16++)
+  li        x2, 1
   bn.lid    x2, 0(x16)
 
-  /* load second share of scalar from dmem: w1 = dmem[k1] */
+  /* Load second share of secret key d from dmem.
+       w2,w3 = dmem[k1] */
   la        x16, k1
-  li        x2, 1
+  li        x2, 2
+  bn.lid    x2, 0(x16++)
+  li        x2, 3
   bn.lid    x2, 0(x16)
 
   /* call internal scalar multiplication routine
@@ -2518,11 +2524,11 @@ y:
 /* private key d (in two 320b shares) */
 .balign 32
 .weak d0
-d_share0:
+d0:
   .zero 64
 .balign 32
 .weak d1
-d_share1:
+d1:
   .zero 64
 
 /* verification result x_r (aka x_1) */

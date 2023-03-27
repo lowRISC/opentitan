@@ -56,6 +56,16 @@ otbn_library(
 )
 
 otbn_binary(
+    name = "p256_ecdh",
+    srcs = [
+        "p256_ecdh.s",
+    ],
+    deps = [
+        ":p256",
+    ],
+)
+
+otbn_binary(
     name = "p256_ecdsa",
     srcs = [
         "p256_ecdsa.s",
