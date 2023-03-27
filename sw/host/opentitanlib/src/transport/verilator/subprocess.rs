@@ -9,7 +9,7 @@ use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use crate::transport::verilator::stdout;
+use crate::util::printer;
 
 /// Verilator startup options.
 pub struct Options {
@@ -65,7 +65,9 @@ impl Subprocess {
         let accumulator: Arc<Mutex<String>> = Default::default();
         let stdout = child.stdout.take().unwrap();
         let a = Arc::clone(&accumulator);
-        std::thread::spawn(move || stdout::accumulate(stdout, a));
+        std::thread::spawn(move || {
+            printer::accumulate(stdout, concat!(module_path!(), "::stdout"), a)
+        });
 
         Ok(Subprocess {
             child,

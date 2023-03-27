@@ -10,6 +10,7 @@ pub mod num_de;
 pub mod openocd;
 pub mod parse_int;
 pub mod present;
+pub mod printer;
 pub mod rom_detect;
 pub mod unknown;
 pub mod usb;
