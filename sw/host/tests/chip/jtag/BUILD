@@ -12,6 +12,7 @@ rust_binary(
         "src/main.rs",
     ],
     deps = [
+        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
         "//third_party/rust/crates:regex",
         "@crate_index//:anyhow",
