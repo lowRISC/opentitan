@@ -5,10 +5,6 @@
 #define OPENTITAN_SW_HOST_TESTS_USBDEV_USBDEV_STREAM_STREAM_TEST_H_
 #include <cstdint>
 
-#ifndef ABS
-#define ABS(x) (((x) < 0) ? -(x) : (x))
-#endif
-
 // Maximum number of concurrent streams
 #ifdef USBDEV_NUM_ENDPOINTS
 #define STREAMS_MAX (USBDEV_NUM_ENDPOINTS - 1U)
@@ -32,6 +28,10 @@ struct TestConfig {
    * Verbose logging/diagnostic reporting
    */
   bool verbose;
+  /**
+   * Override the stream flags using the command line arguments?
+   */
+  bool override_flags;
   /**
    * Retrieve data from the device
    */

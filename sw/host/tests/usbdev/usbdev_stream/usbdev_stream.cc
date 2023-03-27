@@ -96,9 +96,19 @@ ssize_t USBDevStream::sig_detect(ssize_t nrecv) {
             res2 = sig_read8(offsetof(usbdev_stream_sig_t, reserved2));
             num_bytes = sig_read32(offsetof(usbdev_stream_sig_t, num_bytes));
 
+            // Extract the stream flags unless they're being overridden
+            if (!cfg.override_flags) {
+              retrieve_ = ((stream & kUsbdevStreamFlagRetrieve) != 0U);
+              check_ = ((stream & kUsbdevStreamFlagCheck) != 0U);
+              send_ = ((stream & kUsbdevStreamFlagSend) != 0U);
+            }
+            stream &= kUsbdevStreamFlagID;
+
             if (cfg.verbose) {
               printf("Signature detected: stream #%u LFSR 0x%02x bytes 0x%x\n",
                      stream, init_lfsr, num_bytes);
+              printf(" - retrieve %c check %c send %c\n", retrieve_ ? 'Y' : 'N',
+                     check_ ? 'Y' : 'N', send_ ? 'Y' : 'N');
             }
 
             // Simple sanity check of the received signature
@@ -144,7 +154,8 @@ ssize_t USBDevStream::sig_detect(ssize_t nrecv) {
 
 // Iniitialise a stream between the specified input and output ports
 bool USBDevStream::Open(unsigned id, const char *in_name, const char *out_name,
-                        uint32_t transfer_bytes) {
+                        uint32_t transfer_bytes, bool retrieve, bool check,
+                        bool send) {
   // Remember stream IDentifier
   id_ = id;
 
@@ -158,6 +169,11 @@ bool USBDevStream::Open(unsigned id, const char *in_name, const char *out_name,
   // Initialise circular buffer
   buf_.wr_idx = 0U;
   buf_.rd_idx = 0U;
+
+  // Stream properties
+  retrieve_ = retrieve;
+  check_ = check;
+  send_ = send;
 
   // Number of bytes to be transferred
   transfer_bytes_ = transfer_bytes;
@@ -200,8 +216,7 @@ void USBDevStream::Close() {
 
 // Return an indication of whether this stream has completed its transfer
 bool USBDevStream::Completed() const {
-  return (!cfg.retrieve || bytes_recvd_ >= transfer_bytes_) &&
-         (!cfg.send || bytes_sent_ >= transfer_bytes_);
+  return (bytes_recvd_ >= transfer_bytes_) && (bytes_sent_ >= transfer_bytes_);
 }
 
 // Service the given data stream
@@ -220,7 +235,7 @@ bool USBDevStream::Service() {
     }
     if (to_send > 0U) {
       ssize_t nsent;
-      if (cfg.send) {
+      if (send_) {
         if (cfg.verbose) {
           printf("S%u: Trying to send %u byte(s)\n", id_, to_send);
         }
@@ -234,8 +249,7 @@ bool USBDevStream::Service() {
       }
 
       if (cfg.verbose) {
-        printf("S%u: %s %zd byte(s)\n", id_, cfg.send ? "Sent" : "Dropped",
-               nsent);
+        printf("S%u: %s %zd byte(s)\n", id_, send_ ? "Sent" : "Dropped", nsent);
       }
 
       // Update the buffer reading state
@@ -263,7 +277,7 @@ bool USBDevStream::Service() {
 
   uint8_t *dp = &buf_.data[buf_.wr_idx];
   ssize_t nrecvd;
-  if (cfg.retrieve) {
+  if (sig_recvd_ != kSigStateReceived || retrieve_) {
     if (cfg.verbose) {
       printf("S%u: Trying to fetch %u byte(s)\n", id_, to_fetch);
     }
@@ -273,13 +287,6 @@ bool USBDevStream::Service() {
       return false;
     }
   } else {
-    if (sig_recvd_ != kSigStateReceived) {
-      // Pretend that we've received the expected signature
-      // Note: transfer_bytes remains at the requested value
-      tst_lfsr_ = USBTST_LFSR_SEED(id_);
-      sig_recvd_ = kSigStateReceived;
-    }
-
     // Generate a stream of bytes _as if_ we'd received them correctly from
     // the device
     uint8_t next_lfsr = tst_lfsr_;
@@ -324,8 +331,8 @@ bool USBDevStream::Service() {
         uint8_t recvd = sp[idx];
 
         // Check whether the received byte is as expected
-        if (cfg.check) {
-          if (cfg.retrieve && recvd != expected) {
+        if (retrieve_ && check_) {
+          if (recvd != expected) {
             printf("S%u: Mismatched data from device 0x%02x, expected 0x%02x\n",
                    id_, recvd, expected);
           }

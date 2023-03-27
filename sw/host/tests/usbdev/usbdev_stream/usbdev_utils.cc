@@ -16,9 +16,9 @@
 #include "stream_test.h"
 
 // Open and configure a serial port connection to/from the USB device
-int port_open(const char *dev_name, bool bWrite) {
-  const char *port_type = bWrite ? "output" : "input";
-  int fd = open(dev_name, bWrite ? O_WRONLY : O_RDONLY);
+int port_open(const char *dev_name, bool write) {
+  const char *port_type = write ? "output" : "input";
+  int fd = open(dev_name, write ? O_WRONLY : O_RDONLY);
   if (fd < 0) {
     fprintf(stderr, "ERROR: Could not open %s port '%s'\n", port_type,
             dev_name);

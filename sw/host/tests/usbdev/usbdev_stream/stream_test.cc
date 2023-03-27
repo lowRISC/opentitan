@@ -51,23 +51,23 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <iostream>
 #include <sys/time.h>
 
 #include "usbdev_stream.h"
 #include "usbdev_utils.h"
 
 // Test properties
-// This is about the amount that we can transfer within a 1 hour 'eternal' test
-// constexpr uint32_t bytes_to_transfer = (0x60U << 20);
-// This takes about 80s presently with transfer of sending of undefined data
-// and no checking of the received data, but ca. 260s with LFSR generation and
-// checking
-constexpr uint32_t kBytesToTransfer = (0x10U << 20);
-// This takes about 10 seconds on CW310 FPGA
-// constexpr uint32_t kBytesToTransfer = (1U << 20);
-
-// This is appropriate for a Verilator chip simulation with 15 min timeout
-// constexpr uint32_t kBytesToTransfer = 0x2400U;
+//
+// 16MiB takes about 80s presently with no appreciable CPU activity on the CW310
+// (ie. undefined transmitted data, and no checking of received data) but ca.
+// 305s with LFSR generation and checking across all of the 11 streams possible.
+//
+// 96MiB is about the amount that we can transfer within a 1 hour 'eternal' test
+//
+// Note: in normal use such as regression tests, the stream signatures will
+//       override the specified transfer amount
+constexpr uint32_t kTransferBytes = (0x10U << 20);
 
 // Has any data yet been received from the device?
 bool received = false;
@@ -130,27 +130,33 @@ int main(int argc, char *argv[]) {
   const char *in_port = NULL;
   unsigned nstreams = 2U;
 
+  cfg.override_flags = false;
+
   // Collect alternative port names
   for (int i = 1; i < argc; i++) {
     if (argv[i][0] == '-') {
       switch (tolower(argv[i][1])) {
         case 'c':
           cfg.check = get_bool(&argv[i][2]);
+          cfg.override_flags = true;
           break;
         case 'n':
           nstreams = atoi(&argv[i][2]);
           break;
         case 'r':
           cfg.retrieve = get_bool(&argv[i][2]);
+          cfg.override_flags = true;
           break;
         case 's':
           cfg.send = get_bool(&argv[i][2]);
+          cfg.override_flags = true;
           break;
         case 'v':
           cfg.verbose = get_bool(&argv[i][2]);
           break;
         default:
-          fprintf(stderr, "ERROR: Unrecognised option '%s'\n", argv[i]);
+          std::cerr << "ERROR: Unrecognised option '" << argv[i] << "'"
+                    << std::endl;
           report_syntax();
           return 6;
       }
@@ -159,7 +165,8 @@ int main(int argc, char *argv[]) {
     } else if (!in_port) {
       in_port = argv[i];
     } else {
-      fprintf(stderr, "ERROR: Parameter '%s' unrecognised\n", argv[i]);
+      std::cerr << "ERROR: Parameter '" << argv[i] << "' unrecognised"
+                << std::endl;
       report_syntax();
       return 7;
     }
@@ -176,12 +183,11 @@ int main(int argc, char *argv[]) {
     in_port = "/dev/ttyUSB0";
   }
 
-  puts(
-      "USB Streaming Test\n"
-      " (host side implementation of usbdev_stream_test)\n");
+  std::cout << "USB Streaming Test" << std::endl
+            << " (host side implementation of usbdev_stream_test)" << std::endl;
 
   // Decide upon the number of bytes to be transferred for the entire test
-  uint32_t transfer_bytes = kBytesToTransfer;
+  uint32_t transfer_bytes = kTransferBytes;
   transfer_bytes = (transfer_bytes + nstreams - 1) / nstreams;
   if (cfg.verbose) {
     printf(" - %u stream(s), 0x%x bytes each\n", nstreams, transfer_bytes);
@@ -193,7 +199,8 @@ int main(int argc, char *argv[]) {
 
   // Initialise all streams
   for (unsigned idx = 0U; idx < nstreams; idx++) {
-    if (!streams[idx].Open(idx, in_port, out_port, transfer_bytes)) {
+    if (!streams[idx].Open(idx, in_port, out_port, transfer_bytes, cfg.retrieve,
+                           cfg.check, cfg.send)) {
       while (idx-- > 0U) {
         streams[idx].Close();
       }
@@ -207,9 +214,9 @@ int main(int argc, char *argv[]) {
     in_port = in_name;
   }
 
-  printf("Streaming...\r");
+  std::cout << "Streaming...\r" << std::flush;
 
-  int32_t prev_bytes = INT32_MAX;
+  int32_t prev_bytes = 0;
   bool bDone = false;
   do {
     uint32_t total_bytes = 0U;
@@ -236,9 +243,11 @@ int main(int argc, char *argv[]) {
     }
 
     // Down counting of the number of bytes remaining to be transferred
-    if (ABS(bytes_sent - prev_bytes) >= 0x1000 || bDone) {
-      printf("Bytes left: 0x%x         \r", total_bytes - bytes_sent);
-      fflush(stdout);
+    if (std::abs(bytes_sent - prev_bytes) >= 0x1000 || bDone) {
+      std::cout << "Bytes left: 0x" << std::hex << total_bytes - bytes_sent
+                << "         \r" << std::flush;
+      //      printf("Bytes left: 0x%x         \r", total_bytes - bytes_sent);
+      //      fflush(stdout);
       prev_bytes = bytes_sent;
     }
 

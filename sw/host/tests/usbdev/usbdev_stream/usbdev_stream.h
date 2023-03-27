@@ -19,6 +19,30 @@ typedef enum {
   kSigStateReceived,
 } sig_state_t;
 
+// Test/stream flags
+typedef enum {
+  /**
+   * Mask for extracting the stream ID number
+   */
+  kUsbdevStreamFlagID = 0x0FU,
+  /**
+   * Host shall retrieve IN data from the device for this stream
+   */
+  kUsbdevStreamFlagRetrieve = 0x10U,
+  /**
+   * Host shall check that IN data matches as expected
+   */
+  kUsbdevStreamFlagCheck = 0x20U,
+  /**
+   * DPI model (or Host) shall retry IN data fetches, where possible
+   */
+  kUsbdevStreamFlagRetry = 0x40U,
+  /**
+   * Host shall send OUT data to the device for this stream
+   */
+  kUsbdevStreamFlagSend = 0x80U
+} usbdev_stream_flags_t;
+
 /**
  * Stream signature
  * Note: this needs to be transferred over a byte stream
@@ -33,7 +57,7 @@ typedef struct __attribute__((packed)) usbdev_stream_sig {
    */
   uint8_t init_lfsr;
   /**
-   * Stream number
+   * Stream number and flags
    */
   uint8_t stream;
   /**
@@ -61,9 +85,12 @@ class USBDevStream {
    * @param  in_name   Name of input port to use
    * @param  out_name  Name of output port to use
    * @paran  num_bytes Number of bytes to be transferred
+   * @param  retrieve  Retrieve IN data for this stream?
+   * @param  check     Check retrieved data?
+   * @param  send      Send OUT data for this stream
    */
   bool Open(unsigned id, const char *in_name, const char *out_name,
-            uint32_t num_bytes);
+            uint32_t num_bytes, bool retrieve, bool check, bool send);
   /**
    * Finalise the stream, releasing all resources
    */
@@ -157,6 +184,18 @@ class USBDevStream {
    */
   sig_state_t sig_recvd_;
   unsigned sig_cnt_;
+  /**
+   * Retrieve IN data for this stream?
+   */
+  bool retrieve_;
+  /**
+   * Check the received data against expectations?
+   */
+  bool check_;
+  /**
+   * Send OUT data for this stream?
+   */
+  bool send_;
   /**
    * Total number of bytes received
    */

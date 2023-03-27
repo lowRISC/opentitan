@@ -11,14 +11,17 @@
  * The returned file descriptor may be passed directly to close()
  *
  * @param  dev_name  Device path of serial port
- * @param  bWrite    Indicates whether to open for writing or reading
+ * @param  write     Indicates whether to open for writing or reading
  * @return           File descriptor, or negative to indicate failure
  */
-int port_open(const char *dev_name, bool bWrite);
+int port_open(const char *dev_name, bool write);
 
 /**
  * Receive a sequence of bytes from the USB device, non-blocking
  *
+ * @param  in        File descriptor
+ * @param  buf       Buffer to receive data
+ * @param  len       Buffer length (= maximum number of bytes to receive)
  * @return           Number of bytes received, or -ve to indicate failure
  */
 ssize_t recv_bytes(int in, uint8_t *buf, size_t len);
