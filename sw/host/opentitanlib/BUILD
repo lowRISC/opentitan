@@ -140,7 +140,6 @@ rust_library(
         "src/transport/ultradebug/uart.rs",
         "src/transport/verilator/mod.rs",
         "src/transport/verilator/gpio.rs",
-        "src/transport/verilator/stdout.rs",
         "src/transport/verilator/subprocess.rs",
         "src/transport/verilator/transport.rs",
         "src/transport/verilator/uart.rs",
@@ -160,6 +159,7 @@ rust_library(
         "src/util/usr_access.rs",
         "src/util/voltage.rs",
         "src/util/openocd.rs",
+        "src/util/printer.rs",
     ] + select({
         "//sw/device:is_english_breakfast": [],
         "//conditions:default": [
