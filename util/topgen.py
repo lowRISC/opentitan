@@ -976,6 +976,12 @@ def main():
           path, the alternate path has priority.
         """)
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose")
+    parser.add_argument(
+        '--version-stamp',
+        type=Path,
+        default=None,
+        help=
+        'If version stamping, the location of workspace version stamp file.')
 
     # Generator options: 'no' series. cannot combined with 'only' series
     parser.add_argument(
@@ -1087,6 +1093,14 @@ def main():
                                 object_pairs_hook=OrderedDict)
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
+
+    # Extract version stamp from file
+    version_stamp = {}
+    if args.version_stamp is not None:
+        with open(args.version_stamp, 'rt') as f:
+            for line in f:
+                k, v = line.strip().split(' ', 1)
+                version_stamp[k] = v
 
     # Initialize RNG for compile-time netlist constants.
     if args.entropy_buffer:
@@ -1262,7 +1276,7 @@ def main():
 
         # The Rust file needs some complex information, so we initialize this
         # object to store it.
-        rs_helper = TopGenRust(completecfg, name_to_block)
+        rs_helper = TopGenRust(completecfg, name_to_block, version_stamp)
 
         # "toplevel_pkg.sv.tpl" -> "rtl/autogen/top_{topname}_pkg.sv"
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel_pkg.sv.tpl",

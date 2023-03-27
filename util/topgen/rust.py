@@ -4,6 +4,7 @@
 """This contains a class which is used to help generate `top_{name}.rs`."""
 from collections import OrderedDict, defaultdict
 from typing import Dict, List, Optional, Tuple
+from datetime import datetime
 
 from mako.template import Template
 from reggen.ip_block import IpBlock
@@ -161,13 +162,42 @@ class RustArrayMapping(object):
             "];")
         return Template(template).render(mapping=self)
 
+class RustFileHeader(object):
+    def __init__(self, name: str, version_stamp: Dict[str, str]):
+        self.name = name
+        self.data = version_stamp
+        print(self.data)
+        tm = int(version_stamp.get('BUILD_TIMESTAMP', 0))
+        self.tstamp = datetime.utcfromtimestamp(tm) if tm else datetime.utcnow()
+
+    def build(self) -> str:
+        return self.data.get('BUILD_GIT_VERSION', '<unknown>')
+
+    def scm_sha(self) -> str:
+        return self.data.get('BUILD_SCM_REVISION', '<unknown>')
+
+    def scm_status(self) -> str:
+        return self.data.get('BUILD_SCM_STATUS', '<unknown>')
+
+    def time_stamp(self) -> str:
+        return self.tstamp.isoformat()
+
+    def render(self):
+        template = (
+            "// Built for ${header.build()}\n"
+            "// https://github.com/lowRISC/opentitan/tree/${header.scm_sha()}\n"
+            "// Tree status: ${header.scm_status()}\n"
+            "// Build date: ${header.time_stamp()}")
+        return Template(template).render(header=self)
+
 
 class TopGenRust:
-    def __init__(self, top_info, name_to_block: Dict[str, IpBlock]):
+    def __init__(self, top_info, name_to_block: Dict[str, IpBlock], version_stamp: Dict[str, str]):
         self.top = top_info
         self._top_name = Name(["top"]) + Name.from_snake_case(top_info["name"])
         self._name_to_block = name_to_block
         self.regwidth = int(top_info["datawidth"])
+        self.file_header = RustFileHeader("foo.tpl", version_stamp)
 
         self._init_plic_targets()
         self._init_plic_mapping()
