@@ -12,8 +12,6 @@
 // Verify pimux.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED* and
 // RMA, regardless of the value on DFT SW straps.
 
-// TODO: This test is broken. Drive functional JTAG traffic as opposed to pin connectivity.
-
 class chip_tap_straps_vseq extends chip_sw_base_vseq;
   string path_dft_strap_test_o = "tb.dut.top_earlgrey.dft_strap_test_o";
   string path_dft_tap_req = "tb.dut.top_earlgrey.u_dft_tap_breakout.req_i";
