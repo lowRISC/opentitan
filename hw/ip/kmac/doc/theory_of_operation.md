@@ -93,7 +93,7 @@ The interface has an additional address signal on top of the valid, ready, and d
 
 The hashing process begins when the software issues the start command to [`CMD`](../data/kmac.hjson#cmd) .
 If cSHAKE is enabled, the padding logic expands the prefix value (`N || S` above) into a block size.
-The block size is determined by the [`CFG.kstrength`](../data/kmac.hjson#cfg) .
+The block size is determined by the [`CFG_SHADOWED.kstrength`](../data/kmac.hjson#cfg_shadowed) .
 If the value is 128, the block size will be 168 bytes.
 If it is 256, the block size will be 136 bytes.
 The expanded prefix value is transmitted to the Keccak round logic.
@@ -103,7 +103,7 @@ If the mode is not cSHAKE, or cSHAKE mode and the prefix block has been processe
 The padding logic controls the data flow and makes the Keccak logic to run after sending a block size.
 
 After the software writes the message bitstream, it should issue the Process command into [`CMD`](../data/kmac.hjson#cmd) register.
-The padding logic, after receiving the Process command, appends proper ending bits with respect to the [`CFG.mode`](../data/kmac.hjson#cfg) value.
+The padding logic, after receiving the Process command, appends proper ending bits with respect to the [`CFG_SHADOWED.mode`](../data/kmac.hjson#cfg_shadowed) value.
 The logic writes 0 up to the block size to the Keccak round logic then ends with 1 at the end of the block.
 
 ![](../doc/sha3-padding-fsm.svg)
@@ -242,7 +242,7 @@ In addition to that, the KMAC/SHA3 blocks the software access to the Keccak stat
 ![](../doc/application-interface.svg)
 
 KMAC/SHA3 HWIP has an option to receive the secret key from the KeyMgr via sideload key interface.
-The software should set [`CFG.sideload`](../data/kmac.hjson#cfg) to use the KeyMgr sideloaded key for the SW-initiated KMAC operation.
+The software should set [`CFG_SHADOWED.sideload`](../data/kmac.hjson#cfg_shadowed) to use the KeyMgr sideloaded key for the SW-initiated KMAC operation.
 `keymgr_pkg::hw_key_t` defines the structure of the sideloaded key.
 KeyMgr provides the sideloaded key in two-share masked form regardless of the compile-time parameter `EnMasking`.
 If `EnMasking` is not defined, the KMAC merges the shared key to the unmasked form before uses the key.
@@ -295,7 +295,7 @@ This allows the module to generate 800 bits of fresh, pseudo-random numbers requ
 To break linear shift patterns, each LFSR features a non-linear layer.
 In addition an 800-bit wide permutation spanning across all LFSRs is used.
 
-Depending on [`CFG_SHADOWED.entropy_mode`](../data/kmac.hjson#cfg_shadowed), the entropy generator fetches initial entropy from the [Entropy Distribution Network (EDN)][edn] module or software has to provide a seed by writing the [`ENTROPY_SEED_0`](data/kmac.hjson#entropy_seed_0) - [`ENTROPY_SEED_4`](../data/kmac.hjson#entropy_seed_4) registers in ascending order.
+Depending on [`CFG_SHADOWED.entropy_mode`](../data/kmac.hjson#cfg_shadowed), the entropy generator fetches initial entropy from the [Entropy Distribution Network (EDN)][edn] module or software has to provide a seed by writing the [`ENTROPY_SEED_0`](../data/kmac.hjson#entropy_seed_0) - [`ENTROPY_SEED_4`](../data/kmac.hjson#entropy_seed_4) registers in ascending order.
 The module periodically refreshes the LFSR seeds with the new entropy from EDN.
 
 To limit the entropy consumption for reseeding, a cascaded reseeding mechanism is used.
@@ -303,17 +303,17 @@ Per reseeding operation, the entropy generator consumes five times 32 bits of en
 These five 32-bit words are directly fed into LFSRs 0/5/10/15/20 for reseeding.
 At the same time, the previous states of LFSRs 0/5/10/15/20 from before the reseeding operation are permuted and then forwarded to reseed LFSRs 1/6/11/16/21.
 Similarly, the previous states of LFSRs 1/6/11/16/21 from before the reseeding operation are permuted and then forwarded to reseed LFSRs 2/7/12/17/22.
-Software can still request a complete reseed of all 25 LFSRs from EDN by subsequently triggering five reseeding operations through [`CMD.entropy_req`](data/kmac.hjson#cmd).
+Software can still request a complete reseed of all 25 LFSRs from EDN by subsequently triggering five reseeding operations through [`CMD.entropy_req`](../data/kmac.hjson#cmd).
 
-[edn]: ../../../edn/README.md
+[edn]: ../../edn/README.md
 
 ### Error Report
 
 This section explains the errors KMAC HWIP raises during the hashing operations, their meanings, and the error handling process.
 
 KMAC HWIP has the error checkers in its internal datapath.
-If the checkers detect errors, whether they are triggered by the SW mis-configure, or HW malfunctions, they report the error to [`ERR_CODE`](data/kmac.hjson#err_code) and raise an `kmac_error` interrupt.
-Each error code gives debugging information at the lower 24 bits of [`ERR_CODE`](data/kmac.hjson#err_code).
+If the checkers detect errors, whether they are triggered by the SW mis-configure, or HW malfunctions, they report the error to [`ERR_CODE`](../data/kmac.hjson#err_code) and raise an `kmac_error` interrupt.
+Each error code gives debugging information at the lower 24 bits of [`ERR_CODE`](../data/kmac.hjson#err_code).
 
 Value | Error Code | Description
 ------|------------|-------------
@@ -355,7 +355,7 @@ If the SW issues any commands while the application interface is being used, the
 The received command does not affect the Application process.
 The request is dropped by the KMAC_APP module.
 
-The lower 3 bits of [`ERR_CODE`](data/kmac.hjson#err_code) contains the received command from the SW.
+The lower 3 bits of [`ERR_CODE`](../data/kmac.hjson#err_code) contains the received command from the SW.
 #### WaitTimerExpired (0x04)
 
 The timer values set by SW is internally used only when pending EDN request is completed.
@@ -368,18 +368,18 @@ It asserts the entropy valid signal to complete the current hashing operation.
 If the module does not complete, or flush the pending operation, it creates the back pressure to the message FIFO.
 Then, the SW may not be able to access the KMAC IP at all, as the crossbar is stuck.
 
-The SW may move the state machine to the reset state by issuing [`CFG.err_processed`](data/kmac.hjson#cfg).
+The SW may move the state machine to the reset state by issuing [`CFG_SHADOWED.err_processed`](../data/kmac.hjson#cfg_shadowed).
 
 #### IncorrectEntropyMode (0x05)
 
 If SW misconfigures the entropy mode and let the entropy module prepare the random data, the module reports `IncorrectEntropyMode` error.
 The state machine moves to Wait state after reporting the error.
 
-The SW may move the state machine to the reset state by issuing [`CFG.err_processed`](data/kmac.hjson#cfg).
+The SW may move the state machine to the reset state by issuing [`CFG_SHADOWED.err_processed`](../data/kmac.hjson#cfg_shadowed).
 
 #### UnexpectedModeStrength (0x06)
 
-When the SW issues `Start` command, the KMAC_ERRCHK module checks the [`CFG.mode`](data/kmac.hjson#cfg) and [`CFG.kstrength`](data/kmac.hjson#cfg).
+When the SW issues `Start` command, the KMAC_ERRCHK module checks the [`CFG_SHADOWED.mode`](../data/kmac.hjson#cfg_shadowed) and [`CFG_SHADOWED.kstrength`](../data/kmac.hjson#cfg_shadowed).
 The KMAC HWIP assumes the combinations of two to be **SHA3-224**, **SHA3-256**, **SHA3-384**, **SHA3-512**, **SHAKE-128**, **SHAKE-256**, **cSHAKE-128**, and **cSHAKE-256**.
 If the combination of the `mode` and `kstrength` does not fall into above, the module reports the `UnexpectedModeStrength` error.
 
@@ -388,7 +388,7 @@ The SW may get the incorrect digest value.
 
 #### IncorrectFunctionName (0x07)
 
-If [`CFG.kmac_en`](data/kmac.hjson#cfg) is set and the SW issues the `Start` command, the KMAC_ERRCHK checks if the [`PREFIX`](data/kmac.hjson#prefix) has correct function name, `encode_string("KMAC")`.
+If [`CFG_SHADOWED.kmac_en`](../data/kmac.hjson#cfg_shadowed) is set and the SW issues the `Start` command, the KMAC_ERRCHK checks if the [`PREFIX`](../data/kmac.hjson#prefix) has correct function name, `encode_string("KMAC")`.
 If the value does not match to the byte form of `encode_string("KMAC")` (`0x4341_4D4B_2001`), it reports the `IncorrectFunctionName` error.
 
 As same as `UnexpectedModeStrength` error, this error does not block the hashing operation.
@@ -398,7 +398,7 @@ The SW may get the incorrect signature value.
 
 The KMAC_ERRCHK module checks the SW issued commands if it follows the guideline.
 If the SW issues the command that is not relevant to the current context, the module reports the `SwCmdSequence` error.
-The lower 3bits of the [`ERR_CODE`](data/kmac.hjson#err_code) contains the received command.
+The lower 3bits of the [`ERR_CODE`](../data/kmac.hjson#err_code) contains the received command.
 
 This error, however, does not stop the KMAC HWIP.
 The incorrect command is dropped at the following datapath, SHA3 core.
