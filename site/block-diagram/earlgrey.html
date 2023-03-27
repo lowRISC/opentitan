@@ -22,7 +22,10 @@ window.onload = (event) => {
             <div class="domain">
                 <h3 class="domain-title">High speed domain</h2>
                 <div class="blocks" grid="4">
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/rv_core_ibex/" id="ibex" grid-rows="2" grid-cols="2"><span class="big-label">Ibex Core</span> (RV32IMCB)</a>
+                    <a class="block clock1 dual" href="https://opentitan.org/book/hw/ip/rv_core_ibex/" id="ibex" grid-rows="2" grid-cols="2">
+                        <span class="dual-label">DUAL LOCKSTEP</span>
+                        <span class="big-label">Ibex Core</span> (RV32IMCB)
+                    </a>
                     <a class="block clock1" href="https://opentitan.org/book/hw/top_earlgrey/ip_autogen/rv_plic/" id="interrupt-controller">Interrupt Controller</a>
                     <a class="block clock1" href="https://opentitan.org/book/hw/ip/rom_ctrl/" id="rom">ROM</a>
                     <a class="block clock1" href="https://opentitan.org/book/hw/ip/rv_dm/" id="debug-module">Debug Module</a>

@@ -19,6 +19,7 @@
  * - Grids of blocks
  * - Highlighting by clock
  * - Subclocks (maximum of 2)
+ * - Dual lockstep shadowing
  * - Arrows between blocks
  * - Arrows crossing tops/chips/etc
  * - Arrow groups (of three arrows)
@@ -85,6 +86,8 @@
     --arrow-width: 0.4em;
     --arrow-head-width: 0.8em;
     --arrow-head-length: 0.3em;
+    --dual-offset-x: 1em;
+    --dual-offset-y: 1.25rem;
 
     --font-size: 0.75rem;
 }
@@ -264,6 +267,13 @@
  * plus optional `subclock1="clock[123456]"` and `subclock2="clock[123456]"`
  * attributes to specify up to two sub-clock speeds.
  *
+ * ## Duals
+ *
+ * Blocks can be given the `.dual` class, which will add a shadow-block behind
+ * them, useful for dual-lockstep cores.
+ *
+ * `.dual` blocks can contain a `.dual-label` element to label the shadow-block.
+ *
  * ## Positioning
  *
  * Blocks are positioned automatically in left-to-right reading order.
@@ -296,6 +306,41 @@ a.block:visited {
 .block .big-label {
     font-size: calc(1.2 * var(--font-size));
     font-weight: bold;
+}
+
+/**
+ * Dual blocks have another "shadow block" behind them.
+ */
+.block.dual {
+    margin-right: var(--dual-offset-x);
+    margin-bottom: var(--dual-offset-y);
+
+    /* Add the shadow ibex as a literal shadow */
+    box-shadow:
+        var(--dual-offset-x) var(--dual-offset-y) 0 rgba(0, 0, 0, 0.1), /* Darkening shadow */
+        var(--dual-offset-x) var(--dual-offset-y) 0 var(--clock-bg);    /* Clock colour */
+}
+
+/**
+ * Label for dual blocks.
+ */
+.block.dual .dual-label {
+    position: absolute;
+
+    --label-font-size: calc(0.9 * var(--font-size));
+
+    /* Centre within the non-overlapped shadow area */
+    bottom: calc(
+        -1 * var(--label-font-size) - /* Move text below main block */
+        0.3 * var(--padding) -        /* Including the block's padding */
+        0.5 * var(--dual-offset-y) +  /* Down to half way through the offset */
+        0.5 * var(--label-font-size)  /* But come back by half the text's height */
+    );
+    left: var(--dual-offset-x);
+    width: 100%;
+
+    font-size: var(--label-font-size);
+    color: var(--clock-fg);
 }
 
 /**
