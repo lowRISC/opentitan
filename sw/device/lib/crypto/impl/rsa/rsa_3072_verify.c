@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/impl/rsa_3072/rsa_3072_verify.h"
+#include "sw/device/lib/crypto/impl/rsa/rsa_3072_verify.h"
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"

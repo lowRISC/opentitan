@@ -6,7 +6,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
-#include "sw/device/lib/crypto/impl/rsa_3072/rsa_3072_verify.h"
+#include "sw/device/lib/crypto/impl/rsa/rsa_3072_verify.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_csrng.h"

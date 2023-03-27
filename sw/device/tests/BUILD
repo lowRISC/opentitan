@@ -2162,7 +2162,7 @@ opentitan_functest(
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl/rsa_3072:rsa_3072_verify",
+        "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
         "//sw/device/lib/dif:adc_ctrl",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:csrng",
