@@ -23,6 +23,10 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
     num_invalid_hw_input == 0;
   }
 
+  constraint otp_key_c {
+    do_invalid_otp_key == 0;
+  }
+
   task write_random_sw_content();
     uvm_reg         csr_update_q[$];
 
