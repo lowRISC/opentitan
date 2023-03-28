@@ -143,4 +143,4 @@ For a list of available tests  to run, please see the 'Tests' column in the [tes
 
 ## Testplan (Gate level simulations)
 Note that the descriptions of the test below may be replicated from the table above.
-[Testplan](../data/chip_testplan.hjson:gls)
+[Testplan](../data/chip_testplan.hjson)
