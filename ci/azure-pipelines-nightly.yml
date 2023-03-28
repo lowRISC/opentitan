@@ -34,7 +34,8 @@ variables:
 jobs:
 - job: checkout
   displayName: "Checkout repository"
-  pool: ci-public
+  pool:
+    vmImage: ubuntu-20.04
   steps:
   - checkout: self
     # Set fetchDepth to 0 to pull the entire git tree for the bitstream cache to work
