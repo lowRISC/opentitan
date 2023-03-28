@@ -12,14 +12,14 @@ These determine the byte order of incoming messages (msg_endianness) and the Kec
 This section describes the expected software process to run the KMAC/SHA3 HWIP.
 At first, the software configures [`CFG_SHADOWED.kmac_en`](../data/kmac.hjson#cfg_shadowed) for KMAC operation.
 If KMAC is enabled, the software should configure [`CFG_SHADOWED.mode`](../data/kmac.hjson#cfg_shadowed) to cSHAKE and [`CFG_SHADOWED.kstrength`](../data/kmac.hjson#cfg_shadowed) to 128 or 256 bit security strength.
-The software also updates [`PREFIX`](../data/kmac.hjson#prefix) registers if cSHAKE mode is used.
-Current design does not convert cSHAKE mode to SHAKE even if [`PREFIX`](../data/kmac.hjson#prefix) is empty string.
-It is the software's responsibility to change the [`CFG_SHADOWED.mode`](../data/kmac.hjson#cfg_shadowed) to SHAKE in case of empty [`PREFIX`](../data/kmac.hjson#prefix).
-The KMAC/SHA3 HWIP uses [`PREFIX`](../data/kmac.hjson#prefix) registers as it is.
-It means that the software should update [`PREFIX`](../data/kmac.hjson#prefix) with encoded values.
+The software also updates [`PREFIX`](../data/kmac.hjson#prefix_0) registers if cSHAKE mode is used.
+Current design does not convert cSHAKE mode to SHAKE even if [`PREFIX`](../data/kmac.hjson#prefix_0) is empty string.
+It is the software's responsibility to change the [`CFG_SHADOWED.mode`](../data/kmac.hjson#cfg_shadowed) to SHAKE in case of empty [`PREFIX`](../data/kmac.hjson#prefix_0).
+The KMAC/SHA3 HWIP uses [`PREFIX`](../data/kmac.hjson#prefix_0) registers as it is.
+It means that the software should update [`PREFIX`](../data/kmac.hjson#prefix_0) with encoded values.
 
 If [`CFG_SHADOWED.kmac_en`](../data/kmac.hjson#cfg_shadowed) is set, the software should update the secret key.
-The software prepares two shares of the secret key and selects its length in [`KEY_LEN`](../data/kmac.hjson#key_len) then writes the shares of the secret key to [`KEY_SHARE0`](../data/kmac.hjson#key_share0) and [`KEY_SHARE1`](../data/kmac.hjson#key_share1) .
+The software prepares two shares of the secret key and selects its length in [`KEY_LEN`](../data/kmac.hjson#key_len) then writes the shares of the secret key to [`KEY_SHARE0`](../data/kmac.hjson#key_share0_0) and [`KEY_SHARE1`](../data/kmac.hjson#key_share1_0) .
 The two shares of the secret key are the values that represent the secret key value when they are XORed together.
 The software can XOR the unmasked secret key with entropy.
 The XORed value is a share and the entropy used is the other share.
@@ -59,7 +59,7 @@ For example, when the software writes `0xDEADBEEF` with endianness as 1, the log
 The software managed secret key, and the prefix are always little-endian values.
 For example, if the software configures the function name `N` in KMAC operation, it writes `encode_string("KMAC")`.
 The `encode_string("KMAC")` represents `0x01 0x20 0x4b 0x4d 0x41 0x43` in byte order.
-The software writes `0x4d4b2001` into [`PREFIX0`](../data/kmac.hjson#prefix0) and `0x????4341` into [`PREFIX1`](../data/kmac.hjson#prefix1) .
+The software writes `0x4d4b2001` into [`PREFIX0`](../data/kmac.hjson#prefix_0) and `0x????4341` into [`PREFIX1`](../data/kmac.hjson#prefix_1) .
 Upper 2 bytes can vary depending on the customization input string `S`.
 
 ## KMAC/SHA3 context switching
@@ -240,8 +240,8 @@ The padding logic clears internal variables and goes back to Idle state.
 KMAC core prepends and appends additional bitstream on top of Keccak padding logic in SHA3 core.
 The [NIST SP 800-185][] defines `KMAC[128,256](K, X, L, S)` as a cSHAKE function.
 See the section 4.3 in NIST SP 800-185 for details.
-If KMAC is enabled, the software should configure [`CMD.mode`](../data/kmac.hjson#cmd) to cSHAKE and the first six bytes of [`PREFIX`](../data/kmac.hjson#prefix) to `0x01204B4D4143` (bigendian).
-The first six bytes of [`PREFIX`](../data/kmac.hjson#prefix) represents the value of `encode_string("KMAC")`.
+If KMAC is enabled, the software should configure [`CMD.mode`](../data/kmac.hjson#cmd) to cSHAKE and the first six bytes of [`PREFIX`](../data/kmac.hjson#prefix_0) to `0x01204B4D4143` (bigendian).
+The first six bytes of [`PREFIX`](../data/kmac.hjson#prefix_0) represents the value of `encode_string("KMAC")`.
 
 The KMAC padding logic prepends a block containing the encoded secret key to the output message.
 The KMAC first sends the block of secret key then accepts the incoming message bitstream.
@@ -332,7 +332,7 @@ The secret key, however, is stored as masked form always.
 
 If the `EnMasking` parameter is not set, the masking is disabled.
 Then, the software has to provide the key in unmasked form by default.
-Any write operations to [`KEY_SHARE1_0`](../data/kmac.hjson#key_share1_0) - [`KEY_SHARE1_15`](../data/kmac.hjson#key_share1_5) are ignored.
+Any write operations to [`KEY_SHARE1_0`](../data/kmac.hjson#key_share1_0) - [`KEY_SHARE1_15`](../data/kmac.hjson#key_share1_15) are ignored.
 
 If the `EnMasking` parameter is not set and the `SwKeyMasked` parameter is set, software has to provide the key in masked form.
 Internally, the design then unmasks the key by XORing the two key shares together when loading the key into the engine.
@@ -504,7 +504,7 @@ The SW may get the incorrect digest value.
 
 #### IncorrectFunctionName (0x07)
 
-If [`CFG_SHADOWED.kmac_en`](../data/kmac.hjson#cfg_shadowed) is set and the SW issues the `Start` command, the KMAC_ERRCHK checks if the [`PREFIX`](../data/kmac.hjson#prefix) has correct function name, `encode_string("KMAC")`.
+If [`CFG_SHADOWED.kmac_en`](../data/kmac.hjson#cfg_shadowed) is set and the SW issues the `Start` command, the KMAC_ERRCHK checks if the [`PREFIX`](../data/kmac.hjson#prefix_0) has correct function name, `encode_string("KMAC")`.
 If the value does not match to the byte form of `encode_string("KMAC")` (`0x4341_4D4B_2001`), it reports the `IncorrectFunctionName` error.
 
 As same as `UnexpectedModeStrength` error, this error does not block the hashing operation.
@@ -533,14 +533,14 @@ These determine the byte order of incoming messages (msg_endianness) and the Kec
 This section describes the expected software process to run the KMAC/SHA3 HWIP.
 At first, the software configures [`CFG_SHADOWED.kmac_en`](../data/kmac.hjson#cfg_shadowed) for KMAC operation.
 If KMAC is enabled, the software should configure [`CFG_SHADOWED.mode`](../data/kmac.hjson#cfg_shadowed) to cSHAKE and [`CFG_SHADOWED.kstrength`](../data/kmac.hjson#cfg_shadowed) to 128 or 256 bit security strength.
-The software also updates [`PREFIX`](../data/kmac.hjson#prefix) registers if cSHAKE mode is used.
-Current design does not convert cSHAKE mode to SHAKE even if [`PREFIX`](../data/kmac.hjson#prefix) is empty string.
-It is the software's responsibility to change the [`CFG_SHADOWED.mode`](../data/kmac.hjson#cfg_shadowed) to SHAKE in case of empty [`PREFIX`](../data/kmac.hjson#prefix).
-The KMAC/SHA3 HWIP uses [`PREFIX`](../data/kmac.hjson#prefix) registers as it is.
-It means that the software should update [`PREFIX`](../data/kmac.hjson#prefix) with encoded values.
+The software also updates [`PREFIX`](../data/kmac.hjson#prefix_0) registers if cSHAKE mode is used.
+Current design does not convert cSHAKE mode to SHAKE even if [`PREFIX`](../data/kmac.hjson#prefix_0) is empty string.
+It is the software's responsibility to change the [`CFG_SHADOWED.mode`](../data/kmac.hjson#cfg_shadowed) to SHAKE in case of empty [`PREFIX`](../data/kmac.hjson#prefix_0).
+The KMAC/SHA3 HWIP uses [`PREFIX`](../data/kmac.hjson#prefix_0) registers as it is.
+It means that the software should update [`PREFIX`](../data/kmac.hjson#prefix_0) with encoded values.
 
 If [`CFG_SHADOWED.kmac_en`](../data/kmac.hjson#cfg_shadowed) is set, the software should update the secret key.
-The software prepares two shares of the secret key and selects its length in [`KEY_LEN`](../data/kmac.hjson#key_len) then writes the shares of the secret key to [`KEY_SHARE0`](../data/kmac.hjson#key_share0) and [`KEY_SHARE1`](../data/kmac.hjson#key_share1) .
+The software prepares two shares of the secret key and selects its length in [`KEY_LEN`](../data/kmac.hjson#key_len) then writes the shares of the secret key to [`KEY_SHARE0`](../data/kmac.hjson#key_share0_0) and [`KEY_SHARE1`](../data/kmac.hjson#key_share1_0) .
 The two shares of the secret key are the values that represent the secret key value when they are XORed together.
 The software can XOR the unmasked secret key with entropy.
 The XORed value is a share and the entropy used is the other share.
