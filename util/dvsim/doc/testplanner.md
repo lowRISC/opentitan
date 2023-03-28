@@ -4,7 +4,7 @@
 * Expanding the testplan inline within the DV document as a table;
 * Annotating the simulation results with testplan entries for a document driven DV execution;
 
-Please see [DV methodology](../../doc/contributing/dv/methodology/README.md#documentation) for more details on the rationale and motivation for writing and maintaining testplans in a machine-parseable format (`Hjson`).
+Please see [DV methodology](../../../doc/contributing/dv/methodology/README.md#documentation) for more details on the rationale and motivation for writing and maintaining testplans in a machine-parseable format (`Hjson`).
 This document will focus on the anatomy of an Hjson testplan, the list of features supported and some of the ways of using the tool.
 
 ## Hjson testplan
@@ -15,7 +15,7 @@ A testplan consists of a list of planned tests (testpoints) and a list of planne
 
 A testpoint is an entry in the testplan representing a planned test.
 Each testpoint maps one-to-one to a unique feature of the design.
-Additionally, a testpoint for each of the [key areas of focus](../../doc/contributing/dv/methodology/README.md#key-test-focus-areas) (whichever ones are applicable) is also captured in the testplan.
+Additionally, a testpoint for each of the [key areas of focus](../../../doc/contributing/dv/methodology/README.md#key-test-focus-areas) (whichever ones are applicable) is also captured in the testplan.
 
 The following attributes are used to define each testpoint, at minimum:
 * **name: testpoint name**
@@ -36,11 +36,11 @@ The following attributes are used to define each testpoint, at minimum:
     A multi-line string that briefly describes the intent of the test.
     It is recommended, but not always necessary to add a high level goal, stimulus, and the checking procedure so that the reader gets a clear idea of what and how the said feature is going to be tested.
 
-    Full [Markdown](../../doc/contributing/style_guides/markdown_usage_style.md) syntax is supported when writing the description.
+    Full [Markdown](../../../doc/contributing/style_guides/markdown_usage_style.md) syntax is supported when writing the description.
 
 * **tests: list of written test(s) for this testpoint**
 
-    The testplan is written in the initial work stage of the verification [life-cycle](../../doc/project_governance/development_stages.md#hardware-verification-stages).
+    The testplan is written in the initial work stage of the verification [life-cycle](../../../doc/project_governance/development_stages.md#hardware-verification-stages-v).
     Later, when the DV engineer writes the tests, they may not map one-to-one to a testpoint - it may be possible that a written test satisfactorily addresses multiple testpoints; OR it may also be possible that a testpoint needs to be split into multiple smaller tests.
     To cater to these needs, we provide the ability to set a list of written tests for each testpoint.
     It is used to not only indicate the current progress so far into each verification stage, but also map the simulation results to the testpoints to generate the final report table.
@@ -210,7 +210,7 @@ The following examples provided within `util/dvsim/examples/testplanner` can be 
 * **`common_testplan.hjson`**: shared testplan imported within the DUT testplan
 * **`foo_dv_doc.md`**: DUT testplan imported within the DV document doc in Markdown
 
-In addition, see the [UART DV document](../../hw/ip/uart/dv/README.md) for a 'production' example of inline expansion of an imported testplan as a table within the DV document.
+In addition, see the [UART DV document](../../../hw/ip/uart/dv/README.md) for a 'production' example of inline expansion of an imported testplan as a table within the DV document.
 The [UART testplan](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson) imports some of the shared testplans located at `hw/dv/tools/dvsim/testplans` area.
 
 ### Limitations

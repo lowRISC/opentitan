@@ -39,7 +39,7 @@ Note that you may have already done this if you followed the getting started ste
 
 # Other related documents
 
-* [Testplanner tool](./doc/testplanner)
+* [Testplanner tool](./doc/testplanner.md)
 * [Design document](./doc/design_doc.md)
 * [Glossary](./doc/glossary.md)
 

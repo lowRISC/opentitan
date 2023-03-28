@@ -2,4 +2,4 @@
 
 ## Testplan
 
-- [Test Plan](./sw/device/silicon_creator/manuf/data/manuf_testplan.hjson)
+- [Test Plan](data/manuf_testplan.hjson)
