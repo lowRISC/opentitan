@@ -8,11 +8,12 @@ cc_library(
     name = "hash",
     srcs = ["hash.c"],
     hdrs = [
-        "//sw/device/lib/crypto/drivers:kmac.h",
         "//sw/device/lib/crypto/include:hash.h",
     ],
     deps = [
+        ":status",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/include:datatypes",
     ],
@@ -74,14 +75,13 @@ cc_library(
     name = "mac",
     srcs = ["mac.c"],
     hdrs = [
-        "//sw/device/lib/crypto/drivers:kmac.h",
-        "//sw/device/lib/crypto/include:datatypes.h",
         "//sw/device/lib/crypto/include:mac.h",
     ],
     deps = [
         ":integrity",
         ":keyblob",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:kmac",
     ],
 )

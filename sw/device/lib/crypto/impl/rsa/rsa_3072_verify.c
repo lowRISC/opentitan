@@ -48,6 +48,10 @@ status_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
                                 rsa_3072_int_t *result) {
   enum { kSha256DigestNumWords = 8 };
 
+  if (msg == NULL && msgLen != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   // Message encoding as described in RFC 8017, Section 9.2. The encoded
   // message is:
   //
@@ -73,11 +77,9 @@ status_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
 
   // Compute the SHA-256 message digest.
   hmac_sha256_init();
-  if (msg != NULL) {
-    HARDENED_TRY(hmac_sha256_update(msg, msgLen));
-  }
+  hmac_update(msg, msgLen);
   hmac_digest_t digest;
-  HARDENED_TRY(hmac_sha256_final(&digest));
+  hmac_final(&digest);
 
   // Copy the message digest into the least significant end of the result.
   memcpy(result->data, digest.digest, sizeof(digest.digest));
