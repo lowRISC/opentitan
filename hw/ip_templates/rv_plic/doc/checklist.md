@@ -51,7 +51,6 @@ Code Quality  | [CDC_SETUP][]           | N/A         |
 Code Quality  | [TIMING_CHECK][]        | Done        | Fmax @ 50MHz on NexysVideo
 Code Quality  | [CDC_SYNCMACRO][]       | N/A         |
 Security      | [SEC_CM_DOCUMENTED][]   | N/A         |
-Security      | [SEC_RND_CNST][]        | N/A         |
 
 [NEW_FEATURES]:        ../../../../../doc/project_governance/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:       ../../../../../doc/project_governance/checklist/README.md#block_diagram
@@ -69,7 +68,6 @@ Security      | [SEC_RND_CNST][]        | N/A         |
 [TIMING_CHECK]:         ../../../../../doc/project_governance/checklist/README.md#timing_check
 [CDC_SYNCMACRO]:       ../../../../../doc/project_governance/checklist/README.md#cdc_syncmacro
 [SEC_CM_DOCUMENTED]:   ../../../../../doc/project_governance/checklist/README.md#sec_cm_documented
-[SEC_RND_CNST]:        ../../../../../doc/project_governance/checklist/README.md#sec_rnd_cnst
 
 ### D2S
 
