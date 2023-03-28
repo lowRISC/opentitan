@@ -10,6 +10,9 @@
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('h', 'a', 's')
+
 /**
  * Return the digest size (in bytes) for given hashing mode.
  *

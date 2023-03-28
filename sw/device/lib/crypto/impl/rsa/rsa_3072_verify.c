@@ -13,6 +13,9 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('r', '3', 'v')
+
 OTBN_DECLARE_APP_SYMBOLS(run_rsa_verify_3072);  // The OTBN RSA-3072 app.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072,
                          mode);  // Mode (constants or modexp).

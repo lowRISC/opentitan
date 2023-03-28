@@ -13,6 +13,9 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otbn_regs.h"  // Generated.
 
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('d', 'b', 'n')
+
 enum {
   /**
    * Base address for OTBN.

@@ -12,6 +12,9 @@
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('d', 'h', 'm')
+
 /**
  * Stop any current operation on the HMAC block.
  *
