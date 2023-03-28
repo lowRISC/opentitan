@@ -7,6 +7,7 @@
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -119,6 +120,7 @@ void ottf_external_isr(void) {
       test_status_set(kTestStatusFailed);
   }
   fired_irqs[spi_device_irq] = true;
+  LOG_INFO("%s: %d", __func__, spi_device_irq);
 
   // Check if the same interrupt fired at SPI DEVICE as well.
   bool flag_out;
@@ -231,6 +233,17 @@ static bool exp_irqs_fired(void) {
          fired_irqs[kDifSpiDeviceIrqGenericRxFull];
 }
 
+static void sync_testbench(void) {
+  // Set WFI status for testbench synchronization,
+  // no actual WFI instruction is issued.
+  test_status_set(kTestStatusInWfi);
+  test_status_set(kTestStatusInTest);
+}
+
+enum {
+  kTimeoutUs = 1000,
+};
+
 static bool execute_test(dif_spi_device_handle_t *spi_device) {
   LOG_INFO("Executing the test.");
 
@@ -238,88 +251,82 @@ static bool execute_test(dif_spi_device_handle_t *spi_device) {
   CHECK_DIF_OK(dif_spi_device_send(spi_device, spi_device_tx_data,
                                    SPI_DEVICE_DATASET_SIZE,
                                    &bytes_transferred));
-  if (bytes_transferred != SPI_DEVICE_DATASET_SIZE) {
-    LOG_ERROR(
+  CHECK(!exp_irqs_fired());
+  sync_testbench();
+  CHECK(bytes_transferred == SPI_DEVICE_DATASET_SIZE,
         "SPI_DEVICE TX_FIFO transferred bytes mismatched: {act: %d, exp: %d}",
         bytes_transferred, SPI_DEVICE_DATASET_SIZE);
-  } else {
-    LOG_INFO("Transferred %d bytes to SPI_DEVICE TX_FIFO.", bytes_transferred);
-  }
+  LOG_INFO("Transferred %d bytes to SPI_DEVICE TX_FIFO.", bytes_transferred);
 
   CHECK_DIF_OK(dif_spi_device_set_irq_levels(
       spi_device, SPI_DEVICE_DATASET_SIZE, SPI_DEVICE_DATASET_SIZE / 2));
   expected_irqs[kDifSpiDeviceIrqGenericTxWatermark] = true;
 
-  bool read_rx_fifo_done = false;
-  while (!read_rx_fifo_done || !exp_irqs_fired()) {
-    // set rx tx level back to default value so TxBelowLevel irq won't trigger
-    if (fired_irqs[kDifSpiDeviceIrqGenericTxWatermark] &&
-        expected_irqs[kDifSpiDeviceIrqGenericTxWatermark]) {
-      CHECK_DIF_OK(dif_spi_device_set_irq_levels(spi_device,
-                                                 SPI_DEVICE_DATASET_SIZE, 0));
-      expected_irqs[kDifSpiDeviceIrqGenericTxWatermark] = false;
-      expected_irqs[kDifSpiDeviceIrqGenericRxWatermark] = true;
-      LOG_INFO("SPI_DEVICE tx_below_level interrupt fired.");
-    }
+  IBEX_SPIN_FOR(fired_irqs[kDifSpiDeviceIrqGenericTxWatermark] &&
+                    expected_irqs[kDifSpiDeviceIrqGenericTxWatermark],
+                kTimeoutUs);
 
-    // wait for SPI_HOST to send 128 bytes and trigger RxAboveLevel irq
-    if (fired_irqs[kDifSpiDeviceIrqGenericRxWatermark] &&
-        expected_irqs[kDifSpiDeviceIrqGenericRxWatermark]) {
-      expected_irqs[kDifSpiDeviceIrqGenericRxWatermark] = false;
-      LOG_INFO("SPI_DEVICE rx_above_level interrupt fired.");
-    }
+  // Set rx tx level back to default value so TxBelowLevel irq won't trigger.
+  CHECK_DIF_OK(
+      dif_spi_device_set_irq_levels(spi_device, SPI_DEVICE_DATASET_SIZE, 0));
+  expected_irqs[kDifSpiDeviceIrqGenericTxWatermark] = false;
+  expected_irqs[kDifSpiDeviceIrqGenericRxWatermark] = true;
+  LOG_INFO("SPI_DEVICE tx_below_level interrupt fired.");
 
-    // when 128 bytes received in RX_FIFO from SPI_HOST,
-    // read out and compare against the expected data
-    if (fired_irqs[kDifSpiDeviceIrqGenericRxWatermark] && !read_rx_fifo_done) {
-      size_t bytes_recved = 0;
-      uint8_t spi_device_rx_data[SPI_DEVICE_DATASET_SIZE];
-      CHECK_DIF_OK(dif_spi_device_recv(spi_device, spi_device_rx_data,
-                                       SPI_DEVICE_DATASET_SIZE, &bytes_recved));
-      if (bytes_recved == SPI_DEVICE_DATASET_SIZE) {
-        LOG_INFO("Received %d bytes from SPI_DEVICE RX_FIFO.", bytes_recved);
-        read_rx_fifo_done = true;
-      } else {
-        LOG_ERROR(
-            "SPI_DEVICE RX_FIFO recvd bytes mismatched: {act: %d, exp: %d}",
-            bytes_recved, SPI_DEVICE_DATASET_SIZE);
-      }
-      LOG_INFO("SPI_DEVICE read out RX FIFO.");
-      // expect SPI_HOST to send another 1024 bytes to fill RX SRAM FIFO
-      expected_irqs[kDifSpiDeviceIrqGenericTxUnderflow] = true;
-      fired_irqs[kDifSpiDeviceIrqGenericRxWatermark] = false;
+  // Wait for SPI_HOST to send 128 bytes and trigger RxAboveLevel irq.
+  IBEX_SPIN_FOR(fired_irqs[kDifSpiDeviceIrqGenericRxWatermark] &&
+                    expected_irqs[kDifSpiDeviceIrqGenericRxWatermark],
+                kTimeoutUs);
+  expected_irqs[kDifSpiDeviceIrqGenericRxWatermark] = false;
+  LOG_INFO("SPI_DEVICE rx_above_level interrupt fired.");
 
-      // Check data consistency.
-      LOG_INFO("Checking the received SPI_HOST RX_FIFO data for consistency.");
-      for (int i = 0; i < SPI_DEVICE_DATASET_SIZE; ++i) {
-        CHECK(spi_device_rx_data[i] == exp_spi_device_rx_data[i],
-              "SPI_DEVICE RX_FIFO data[%d] mismatched: {act: %08x, exp: %08x}",
-              i, spi_device_rx_data[i], exp_spi_device_rx_data[i]);
-      }
-    }
+  // When 128 bytes received in RX_FIFO from SPI_HOST,
+  // read out and compare against the expected data.
+  IBEX_SPIN_FOR(fired_irqs[kDifSpiDeviceIrqGenericRxWatermark], kTimeoutUs);
+  size_t bytes_recved = 0;
+  uint8_t spi_device_rx_data[SPI_DEVICE_DATASET_SIZE];
+  CHECK_DIF_OK(dif_spi_device_recv(spi_device, spi_device_rx_data,
+                                   SPI_DEVICE_DATASET_SIZE, &bytes_recved));
+  CHECK(bytes_recved == SPI_DEVICE_DATASET_SIZE,
+        "SPI_DEVICE RX_FIFO recvd bytes mismatched: {act: %d, exp: %d}",
+        bytes_recved, SPI_DEVICE_DATASET_SIZE);
+  LOG_INFO("Received %d bytes from SPI_DEVICE RX_FIFO.", bytes_recved);
 
-    if (read_rx_fifo_done && fired_irqs[kDifSpiDeviceIrqGenericTxUnderflow]) {
-      expected_irqs[kDifSpiDeviceIrqGenericRxWatermark] = true;
-      expected_irqs[kDifSpiDeviceIrqGenericTxUnderflow] = false;
-      LOG_INFO("SPI_DEVICE Tx underflow fired.");
-    }
+  expected_irqs[kDifSpiDeviceIrqGenericTxUnderflow] = true;
+  fired_irqs[kDifSpiDeviceIrqGenericRxWatermark] = false;
 
-    if (read_rx_fifo_done && fired_irqs[kDifSpiDeviceIrqGenericRxWatermark]) {
-      expected_irqs[kDifSpiDeviceIrqGenericRxWatermark] = false;
-      expected_irqs[kDifSpiDeviceIrqGenericRxFull] = true;
-      LOG_INFO("SPI_DEVICE RX Above level interrupt fired.");
-    }
+  // Check data consistency.
+  LOG_INFO("Checking the received SPI_HOST RX_FIFO data for consistency.");
+  CHECK_ARRAYS_EQ(spi_device_rx_data, exp_spi_device_rx_data,
+                  SPI_DEVICE_DATASET_SIZE);
 
-    // After RX SRAM FIFO full, expect RX async FIFO overflow irq
-    if (fired_irqs[kDifSpiDeviceIrqGenericRxFull] &&
-        !fired_irqs[kDifSpiDeviceIrqGenericRxOverflow]) {
-      expected_irqs[kDifSpiDeviceIrqGenericRxFull] = false;
-      expected_irqs[kDifSpiDeviceIrqGenericRxOverflow] = true;
-      LOG_INFO("SPI_DEVICE RX_FIFO full interrupt fired.");
-    }
+  sync_testbench();
+  IBEX_SPIN_FOR(fired_irqs[kDifSpiDeviceIrqGenericTxUnderflow], kTimeoutUs);
+  LOG_INFO("SPI_DEVICE Tx underflow fired.");
 
-    wait_for_interrupt();
-  }
+  // expect SPI_HOST to send another 1024 bytes to fill RX SRAM FIFO.
+  expected_irqs[kDifSpiDeviceIrqGenericRxWatermark] = true;
+  expected_irqs[kDifSpiDeviceIrqGenericTxUnderflow] = false;
+
+  IBEX_SPIN_FOR(fired_irqs[kDifSpiDeviceIrqGenericRxWatermark], kTimeoutUs);
+  expected_irqs[kDifSpiDeviceIrqGenericRxWatermark] = false;
+  expected_irqs[kDifSpiDeviceIrqGenericRxFull] = true;
+  LOG_INFO("SPI_DEVICE RX Above level interrupt fired.");
+
+  // After RX SRAM FIFO full, expect RX async FIFO overflow irq.
+  IBEX_SPIN_FOR(fired_irqs[kDifSpiDeviceIrqGenericRxFull] &&
+                    !fired_irqs[kDifSpiDeviceIrqGenericRxOverflow],
+                kTimeoutUs);
+  LOG_INFO("SPI_DEVICE RX_FIFO full interrupt fired.");
+
+  expected_irqs[kDifSpiDeviceIrqGenericRxFull] = false;
+  expected_irqs[kDifSpiDeviceIrqGenericRxOverflow] = true;
+  sync_testbench();
+  // After RX SRAM FIFO full, expect RX async FIFO overflow irq.
+  IBEX_SPIN_FOR(fired_irqs[kDifSpiDeviceIrqGenericRxOverflow], kTimeoutUs);
+  LOG_INFO("SPI_DEVICE RX_FIFO Overflow interrupt fired.");
+
+  CHECK(exp_irqs_fired());
 
   return true;
 }
@@ -346,13 +353,13 @@ bool test_main(void) {
           },
   };
 
-  // Initialize SPI_DEVICE
+  // Initialize SPI_DEVICE.
   spi_device_init_with_irqs(spi_device_base_addr, &spi_device,
                             spi_device_config);
 
   mmio_region_t plic_base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  // Initialize the PLIC
+  // Initialize the PLIC.
   plic_init_with_irqs(plic_base_addr, &plic0);
 
   // Enable the external IRQ at Ibex.
