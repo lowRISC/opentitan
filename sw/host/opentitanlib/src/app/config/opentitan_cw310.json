@@ -23,27 +23,14 @@
     {
       "name": "TAP_STRAP0",
       "mode": "PushPull",
-      "level": false,
       "pull_mode": "None"
       "alias_of": "USB_A18"
     },
     {
       "name": "TAP_STRAP1",
       "mode": "PushPull",
-      "level": false,
       "pull_mode": "None"
       "alias_of": "USB_A19"
-    }
-  ],
-  "strappings": [
-    {
-      "name": "RESET",
-      "pins": [
-        {
-          "name": "TAP_STRAP1",
-          "level": true
-        }
-      ]
     }
   ],
   "spi": [

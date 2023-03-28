@@ -25,6 +25,14 @@
       "pull_mode": "None",
       "alias_of": "IOC2"
     }
+    {
+      "name": "TAP_STRAP0",
+      "level": false
+    },
+    {
+      "name": "TAP_STRAP1",
+      "level": true
+    },
   ],
   "strappings": [
     {
@@ -71,6 +79,19 @@
         {
           "name": "TAP_STRAP1",
           "level": false
+        }
+      ]
+    },
+    {
+      "name": "PINMUX_TAP_RISCV",
+      "pins": [
+        {
+          "name": "TAP_STRAP0",
+          "level": false
+        },
+        {
+          "name": "TAP_STRAP1",
+          "level": true
         }
       ]
     },
