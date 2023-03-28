@@ -357,18 +357,24 @@ void init_test_components() {
                                                  /*ecc_en*/ false,
                                                  /*he_en*/ false));
 
-  test_step_cnt = flash_ctrl_testutils_counter_get(kCounterTestSteps);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
   // Total number of iterations for each test phase
-  num_total_wakeups = flash_ctrl_testutils_counter_get(kCounterMaxWakeups);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_get(kCounterMaxWakeups, &num_total_wakeups));
 
   // We don't expect test_step_cnt to 256 (flash mem is filled with all zeros)
   // for this test. If it is 256, we just initialize the counters/NVM-fields
   // again.
   if (test_step_cnt == 256) {
-    flash_ctrl_testutils_counter_init_zero(&flash_ctrl, kCounterTestSteps);
-    flash_ctrl_testutils_counter_init_zero(&flash_ctrl, kCounterMaxWakeups);
-    test_step_cnt = flash_ctrl_testutils_counter_get(kCounterTestSteps);
-    num_total_wakeups = flash_ctrl_testutils_counter_get(kCounterMaxWakeups);
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_init_zero(&flash_ctrl, kCounterTestSteps));
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_init_zero(&flash_ctrl,
+                                                           kCounterMaxWakeups));
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterMaxWakeups,
+                                                     &num_total_wakeups));
   }
 
   // If this is the first iteration,
@@ -376,8 +382,8 @@ void init_test_components() {
   if (num_total_wakeups == 0) {
     // number of total wakeups
     num_total_wakeups = 2;
-    flash_ctrl_testutils_counter_set_at_least(&flash_ctrl, kCounterMaxWakeups,
-                                              num_total_wakeups);
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+        &flash_ctrl, kCounterMaxWakeups, num_total_wakeups));
   }
 }
 
@@ -405,8 +411,10 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
     LOG_INFO("POR reset");
 
     // Increment the test_step counter for the next test step
-    flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterTestSteps);
-    test_step_cnt = flash_ctrl_testutils_counter_get(kCounterTestSteps);
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterTestSteps));
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
 
     // Set the AON timer to send a wakeup signal in ~10-50us.
     aon_timer_testutils_wakeup_config(&aon_timer,
@@ -457,8 +465,10 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
     CHECK(is_cause, "Phase #1: Expected alert has NOT been fired!!");
 
     // Increment the test_step counter for the next test step
-    flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterTestSteps);
-    test_step_cnt = flash_ctrl_testutils_counter_get(kCounterTestSteps);
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterTestSteps));
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
 
     // Set the AON timer to send a wakeup signal in ~10-50us.
     aon_timer_testutils_wakeup_config(&aon_timer,

@@ -98,7 +98,7 @@ bool test_main(void) {
   dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
   rstmgr_reset_info = rstmgr_testutils_reason_get();
 
-  uint32_t address;
+  uint32_t address = 0;
   CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
       &flash, kRegionBasePageIndex, kFlashDataRegion, kRegionSize, &address));
 
@@ -112,11 +112,11 @@ bool test_main(void) {
 
     // Erasing the page and writing data to it followed
     // by a read back and compare to sanity check basic operation.
-    CHECK(flash_ctrl_testutils_erase_and_write_page(
+    CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
         &flash, address, kPartitionId, data, kDifFlashCtrlPartitionTypeData,
         kNumWords));
     uint32_t readback_data[kNumWords];
-    CHECK(flash_ctrl_testutils_read(
+    CHECK_STATUS_OK(flash_ctrl_testutils_read(
         &flash, address, kPartitionId, readback_data,
         kDifFlashCtrlPartitionTypeData, kNumWords, 0));
     CHECK_ARRAYS_EQ(data, readback_data, kNumWords);
@@ -150,9 +150,9 @@ bool test_main(void) {
     CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralAonTimerAon);
     CHECK(irq_serviced == kDifAonTimerIrqWdogTimerBark);
 
-    CHECK(flash_ctrl_testutils_wait_transaction_end(&flash));
+    CHECK_STATUS_OK(flash_ctrl_testutils_wait_transaction_end(&flash));
 
-    CHECK(flash_ctrl_testutils_read(
+    CHECK_STATUS_OK(flash_ctrl_testutils_read(
         &flash, address, kPartitionId, readback_data,
         kDifFlashCtrlPartitionTypeData, kNumWords, 0));
     uint32_t expected_data[kNumWords];

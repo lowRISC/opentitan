@@ -53,10 +53,10 @@ static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
       .scramble_en = kMultiBitBool4False,
       .ecc_en = kMultiBitBool4False,
       .high_endurance_en = kMultiBitBool4False};
-  uint32_t addr;
+  uint32_t addr = 0;
   CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup_properties(
       flash_ctrl, base_page, /*data_region=*/kFlashMpRegions - 1,
-      /*region_size=*/1, exp_page);
+      /*region_size=*/1, exp_page, &addr));
 
   // Double check that the region address covers the area we care about.
   CHECK((exp_data_addr >= (addr + kFlashStartAddr)) &&
@@ -76,9 +76,9 @@ static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
       /*bank=*/0, /*partition_id=*/0, iso_page, &addr));
 
   uint32_t read_data[16];
-  CHECK(flash_ctrl_testutils_read(flash_ctrl, addr, /*partition_id=*/0,
-                                  read_data, kDifFlashCtrlPartitionTypeInfo,
-                                  ARRAYSIZE(read_data), 0));
+  CHECK_STATUS_OK(flash_ctrl_testutils_read(
+      flash_ctrl, addr, /*partition_id=*/0, read_data,
+      kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(read_data), 0));
 
   CHECK_ARRAYS_EQ(kIsoPartExpData, read_data, ARRAYSIZE(read_data),
                   "Isolated info page data mismatch.");

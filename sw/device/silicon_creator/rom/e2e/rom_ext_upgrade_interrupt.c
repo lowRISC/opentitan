@@ -36,7 +36,8 @@ static void increment_flash_counter(void) {
       &flash_ctrl,
       /*rd_en*/ true,
       /*prog_en*/ true, false, false, false, false));
-  flash_ctrl_testutils_counter_increment(&flash_ctrl, kFlashCounterId);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_increment(&flash_ctrl, kFlashCounterId));
   CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
       &flash_ctrl, false, false, false, false, false, false));
 }
@@ -103,7 +104,9 @@ static rom_error_t third_boot_test(void) {
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  size_t reboot_counter = flash_ctrl_testutils_counter_get(kFlashCounterId);
+  size_t reboot_counter = 0;
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_get(kFlashCounterId, &reboot_counter));
 
   switch (reboot_counter) {
     case 0: {

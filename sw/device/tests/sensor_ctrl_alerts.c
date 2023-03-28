@@ -139,8 +139,10 @@ static uint32_t get_next_event_to_test(void) {
   // Reseed so that we don't see the same sequence after each reset.
   rand_testutils_reseed();
   do {
-    event_idx = flash_ctrl_testutils_counter_get(kCounterEventIdx);
-    flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterEventIdx);
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_get(kCounterEventIdx, &event_idx));
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterEventIdx));
     // Drop each event randomly to reduce run time.
   } while (rand_testutils_gen32() <= UINT32_MAX >> 1 &&
            event_idx < SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS);
@@ -186,9 +188,11 @@ bool test_main(void) {
   // Make sure we do not try to test more than half of all available events
   // in a single test.  Testing too many would just make the run time too
   // long.
+  uint32_t value = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterNumTests, &value));
   uint32_t event_idx = get_next_event_to_test();
   if (event_idx == SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS ||
-      flash_ctrl_testutils_counter_get(kCounterNumTests) >= kNumTestsMax) {
+      value >= kNumTestsMax) {
     LOG_INFO("Tested all events");
     return true;
   } else {
@@ -202,7 +206,8 @@ bool test_main(void) {
   test_event(event_idx, /*fatal*/ kDifToggleEnabled);
 
   // increment flash counter to know where we are
-  flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterNumTests);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterNumTests));
 
   // Now request system to reset and test again
   LOG_INFO("Rebooting system");

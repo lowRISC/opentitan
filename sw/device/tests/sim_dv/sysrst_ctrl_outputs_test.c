@@ -104,8 +104,8 @@ static void sync_with_testbench(void) {
   // no actual WFI instruction is issued.
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
-  flash_ctrl_testutils_backdoor_wait_update(&flash, (uintptr_t)&kTestPhase,
-                                            kTestPhaseTimeoutUsec);
+  CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_wait_update(
+      &flash, (uintptr_t)&kTestPhase, kTestPhaseTimeoutUsec));
 }
 
 // Enables the sysrst_ctrl overrides for the output pins. Allows

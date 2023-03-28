@@ -91,7 +91,8 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
 
   // First check the flash stored value
-  uint32_t event_idx = flash_ctrl_testutils_counter_get(0);
+  uint32_t event_idx = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &event_idx));
   // Enable flash access
   CHECK_STATUS_OK(
       flash_ctrl_testutils_default_region_access(&flash_ctrl,
@@ -103,7 +104,7 @@ bool test_main(void) {
                                                  /*he_en*/ false));
 
   // Increment flash counter to know where we are
-  flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
 
   // Read wakeup reason before check
   dif_pwrmgr_wakeup_reason_t wakeup_reason;

@@ -54,8 +54,8 @@ static void set_hung_address(dif_clkmgr_gateable_clock_t clock,
   uint32_t addr =
       (uintptr_t)&hung_data_addr[clock] - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
   uint32_t flash_word[2] = {value, 0};
-  CHECK(flash_ctrl_testutils_write(&flash_ctrl, addr, 0, flash_word,
-                                   kDifFlashCtrlPartitionTypeData, 2));
+  CHECK_STATUS_OK(flash_ctrl_testutils_write(
+      &flash_ctrl, addr, 0, flash_word, kDifFlashCtrlPartitionTypeData, 2));
   CHECK(hung_data_addr[clock] == value, "Unexpected mismatch on read back");
   LOG_INFO("The expected hung address for clock %d is 0x%x at 0x%x", clock,
            value, addr);
@@ -197,7 +197,9 @@ bool test_main(void) {
 
     // Starting clock.
     dif_clkmgr_gateable_clock_t clock = kTopEarlgreyGateableClocksIoDiv4Peri;
-    LOG_INFO("Next clock to test %d", flash_ctrl_testutils_counter_get(0));
+    uint32_t value = 0;
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &value));
+    LOG_INFO("Next clock to test %d", value);
 
     test_gateable_clocks_off(&clkmgr, &pwrmgr, clock);
 
@@ -206,7 +208,8 @@ bool test_main(void) {
     return false;
   } else if (rstmgr_testutils_is_reset_info(&rstmgr,
                                             kDifRstmgrResetInfoWatchdog)) {
-    dif_clkmgr_gateable_clock_t clock = flash_ctrl_testutils_counter_get(0);
+    dif_clkmgr_gateable_clock_t clock = {0};
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &clock));
     LOG_INFO("Got an expected watchdog reset when reading for clock %d", clock);
 
     size_t actual_size;
@@ -230,10 +233,10 @@ bool test_main(void) {
     LOG_INFO("The expected hung address = 0x%x", expected_hung_address);
     CHECK(cpu_dump[2] == expected_hung_address, "Unexpected hung address");
     // Mark this clock as tested.
-    flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
 
     if (clock < kTopEarlgreyGateableClocksLast) {
-      clock = flash_ctrl_testutils_counter_get(0);
+      CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &clock));
       LOG_INFO("Next clock to test %d", clock);
 
       rstmgr_testutils_pre_reset(&rstmgr);

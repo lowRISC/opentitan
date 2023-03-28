@@ -176,15 +176,15 @@ static void save_fault_checker(fault_checker_t *fault_checker) {
   uint32_t function_addr = (uint32_t)(fault_checker->function);
   uint32_t ip_inst_addr = (uint32_t)(fault_checker->ip_inst);
   uint32_t type_addr = (uint32_t)(fault_checker->type);
-  CHECK(flash_ctrl_testutils_write(
+  CHECK_STATUS_OK(flash_ctrl_testutils_write(
       &flash_ctrl_state,
       (uint32_t)(&nv_fault_checker[0]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
       0, &function_addr, kDifFlashCtrlPartitionTypeData, 1));
-  CHECK(flash_ctrl_testutils_write(
+  CHECK_STATUS_OK(flash_ctrl_testutils_write(
       &flash_ctrl_state,
       (uint32_t)(&nv_fault_checker[1]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
       0, &ip_inst_addr, kDifFlashCtrlPartitionTypeData, 1));
-  CHECK(flash_ctrl_testutils_write(
+  CHECK_STATUS_OK(flash_ctrl_testutils_write(
       &flash_ctrl_state,
       (uint32_t)(&nv_fault_checker[2]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
       0, &type_addr, kDifFlashCtrlPartitionTypeData, 1));
@@ -513,15 +513,16 @@ void ottf_external_isr(void) {
   // interrupt counter and errors-out if there are too many interrupts.
 
   // Increment the interrupt count and detect overflows.
-  uint32_t interrupt_count =
-      flash_ctrl_testutils_counter_get(kCounterInterrupt);
+  uint32_t interrupt_count = 0;
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_get(kCounterInterrupt, &interrupt_count));
   if (interrupt_count > kMaxInterrupts) {
     restore_fault_checker(&fault_checker);
     CHECK(false, "For %s, reset count %d got too many interrupts (%d)",
           fault_checker.ip_inst, reset_count, interrupt_count);
   }
-  flash_ctrl_testutils_counter_set_at_least(
-      &flash_ctrl_state, kCounterInterrupt, interrupt_count + 1);
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+      &flash_ctrl_state, kCounterInterrupt, interrupt_count + 1));
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
@@ -582,12 +583,13 @@ void ottf_external_nmi_handler(void) {
   LOG_INFO("At NMI handler");
 
   // Increment the nmi interrupt count.
-  uint32_t nmi_count = flash_ctrl_testutils_counter_get(kCounterNmi);
+  uint32_t nmi_count = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterNmi, &nmi_count));
   if (nmi_count > kMaxInterrupts) {
     LOG_INFO("Saturating nmi interrupts at %d", nmi_count);
   } else {
-    flash_ctrl_testutils_counter_set_at_least(&flash_ctrl_state, kCounterNmi,
-                                              nmi_count + 1);
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+        &flash_ctrl_state, kCounterNmi, nmi_count + 1));
   }
 
   // Check that this NMI was due to an alert handler escalation, and not due
@@ -1127,7 +1129,8 @@ bool test_main(void) {
                                                  /*he_en*/ false));
 
   // Get the flash maintained reset counter.
-  reset_count = flash_ctrl_testutils_counter_get(kCounterReset);
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterReset,
+                                                   (uint32_t *)&reset_count));
   LOG_INFO("Reset counter value: %u", reset_count);
   if (reset_count > kMaxResets) {
     restore_fault_checker(&fault_checker);
@@ -1136,8 +1139,8 @@ bool test_main(void) {
   }
 
   // Increment reset counter to know where we are.
-  flash_ctrl_testutils_counter_set_at_least(&flash_ctrl_state, kCounterReset,
-                                            reset_count + 1);
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+      &flash_ctrl_state, kCounterReset, reset_count + 1));
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
@@ -1158,8 +1161,11 @@ bool test_main(void) {
 
     LOG_INFO("Booting for the second time due to escalation reset");
 
-    int interrupt_count = flash_ctrl_testutils_counter_get(kCounterInterrupt);
-    int nmi_count = flash_ctrl_testutils_counter_get(kCounterNmi);
+    uint32_t interrupt_count = 0;
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_get(kCounterInterrupt, &interrupt_count));
+    uint32_t nmi_count = 0;
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterNmi, &nmi_count));
 
     LOG_INFO("Interrupt count %d", interrupt_count);
     LOG_INFO("NMI count %d", nmi_count);

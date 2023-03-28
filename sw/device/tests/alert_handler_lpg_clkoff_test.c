@@ -452,10 +452,13 @@ bool test_main(void) {
                                                /*ecc_en*/ false,
                                                /*he_en*/ false);
 
-    test_step_cnt = flash_ctrl_testutils_counter_get(kCounterTestSteps);
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
     if (test_step_cnt == 256) {
-      flash_ctrl_testutils_counter_init_zero(&flash_ctrl, kCounterTestSteps);
-      test_step_cnt = flash_ctrl_testutils_counter_get(kCounterTestSteps);
+      CHECK_STATUS_OK(flash_ctrl_testutils_counter_init_zero(
+          &flash_ctrl, kCounterTestSteps));
+      CHECK_STATUS_OK(
+          flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
     }
   } else {
     // Initialize the test_step counter to zero for the simulation
@@ -480,7 +483,8 @@ bool test_main(void) {
     if (kDeviceType == kDeviceFpgaCw310) {
       // Read the test_step_cnt and compute the test phase
       // amd the peripheral ID to test
-      test_step_cnt = flash_ctrl_testutils_counter_get(kCounterTestSteps);
+      CHECK_STATUS_OK(
+          flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
       test_phase = test_step_cnt / ARRAYSIZE(kPeripherals);
       peri_idx = test_step_cnt - (test_phase)*ARRAYSIZE(kPeripherals);
 
@@ -509,7 +513,8 @@ bool test_main(void) {
       set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleEnabled);
 
       // Increment the test_step counter
-      flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterTestSteps);
+      CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(
+          &flash_ctrl, kCounterTestSteps));
       // Request system reset to unlock the alert handler config and test the
       // next peripheral
       CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));

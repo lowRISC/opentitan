@@ -237,13 +237,11 @@ bool test_main(void) {
                                                      /*he_en=*/false));
       // write ret_non_scrambled to 0
       const uint32_t new_data = 0;
-      CHECK(flash_ctrl_testutils_write(
-                &flash_ctrl_state,
-                (uint32_t)&ret_non_scrambled -
-                    TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-                /*partition_id*/ 0, &new_data, kDifFlashCtrlPartitionTypeData,
-                /*word_count*/ 1),
-            "Flash write failed");
+      CHECK_STATUS_OK(flash_ctrl_testutils_write(
+          &flash_ctrl_state,
+          (uint32_t)&ret_non_scrambled - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+          /*partition_id=*/0, &new_data, kDifFlashCtrlPartitionTypeData,
+          /*word_count=*/1));
       // wipe data otherwise, the data may still be read after reset, since it's
       // written with the default key/nounce.
       LOG_INFO("Wiping ret_sram...");

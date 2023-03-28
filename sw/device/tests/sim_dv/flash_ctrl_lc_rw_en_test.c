@@ -69,7 +69,7 @@ const bool kProdExpectedAccess[5] = {true, true, true, true, false};
 
 static bool access_partitions(bool do_write, bool do_read, int page_id,
                               const uint32_t *data, uint32_t size) {
-  uint32_t address;
+  uint32_t address = 0;
   CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
       &flash, page_id, kBankId, kPartitionId, &address));
 
@@ -77,17 +77,17 @@ static bool access_partitions(bool do_write, bool do_read, int page_id,
 
   if (do_write == true) {
     // Erase and write page.
-    retval &= flash_ctrl_testutils_erase_and_write_page(
+    retval &= status_ok(flash_ctrl_testutils_erase_and_write_page(
         &flash, address, kPartitionId, data, kDifFlashCtrlPartitionTypeInfo,
-        size);
+        size));
   }
 
   if (do_read == true) {
     // Read page.
     uint32_t readback_data[size];
-    retval &=
+    retval &= status_ok(
         flash_ctrl_testutils_read(&flash, address, kPartitionId, readback_data,
-                                  kDifFlashCtrlPartitionTypeInfo, size, 0);
+                                  kDifFlashCtrlPartitionTypeInfo, size, 0));
     if (retval) {
       CHECK_ARRAYS_EQ(data, readback_data, size);
     }

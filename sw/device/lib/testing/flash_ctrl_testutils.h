@@ -26,10 +26,10 @@ status_t flash_ctrl_testutils_wait_for_init(
  * Clears any error codes and returns the value of operation_error.
  *
  * @param flash_state A flash_ctrl state handle.
- * @return False if the operation produced an error.
+ * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-bool flash_ctrl_testutils_wait_transaction_end(
+status_t flash_ctrl_testutils_wait_transaction_end(
     dif_flash_ctrl_state_t *flash_state);
 
 /**
@@ -129,10 +129,10 @@ status_t flash_ctrl_testutils_info_region_scrambled_setup(
  * @param byte_address The byte address of the page to erase.
  * @param partition_id The partition index.
  * @param partition_type The partition type, data or info.
- * @return False if the operation failed.
+ * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-bool flash_ctrl_testutils_erase_page(
+status_t flash_ctrl_testutils_erase_page(
     dif_flash_ctrl_state_t *flash_state, uint32_t byte_address,
     uint32_t partition_id, dif_flash_ctrl_partition_type_t partition_type);
 
@@ -149,14 +149,13 @@ bool flash_ctrl_testutils_erase_page(
  * @param data The data to program.
  * @param partition_type The partition type, data or info.
  * @param word_count The number of uint32_t words to program.
- * @return False if the operation produced an error.
+ * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
-                                uint32_t byte_address, uint32_t partition_id,
-                                const uint32_t *data,
-                                dif_flash_ctrl_partition_type_t partition_type,
-                                uint32_t word_count);
+status_t flash_ctrl_testutils_write(
+    dif_flash_ctrl_state_t *flash_state, uint32_t byte_address,
+    uint32_t partition_id, const uint32_t *data,
+    dif_flash_ctrl_partition_type_t partition_type, uint32_t word_count);
 
 /**
  * Erases and Programs the page at byte_address.
@@ -169,10 +168,10 @@ bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
  * @param data The data to program.
  * @param partition_type The partition type, data or info.
  * @param word_count The number of uint32_t words to program.
- * @return False if the operation fails.
+ * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-bool flash_ctrl_testutils_erase_and_write_page(
+status_t flash_ctrl_testutils_erase_and_write_page(
     dif_flash_ctrl_state_t *flash_state, uint32_t byte_address,
     uint32_t partition_id, const uint32_t *data,
     dif_flash_ctrl_partition_type_t partition_type, uint32_t word_count);
@@ -187,14 +186,14 @@ bool flash_ctrl_testutils_erase_and_write_page(
  * @param data_out The data read from the page.
  * @param partition_type The partition type, data or info.
  * @param word_count The number of uint32_t words to read.
- * @return The operation error flag.
+ * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-bool flash_ctrl_testutils_read(dif_flash_ctrl_state_t *flash_state,
-                               uint32_t byte_address, uint32_t partition_id,
-                               uint32_t *data_out,
-                               dif_flash_ctrl_partition_type_t partition_type,
-                               uint32_t word_count, uint32_t delay);
+status_t flash_ctrl_testutils_read(
+    dif_flash_ctrl_state_t *flash_state, uint32_t byte_address,
+    uint32_t partition_id, uint32_t *data_out,
+    dif_flash_ctrl_partition_type_t partition_type, uint32_t word_count,
+    uint32_t delay);
 
 /**
  * Sets the flash default configuration.
@@ -219,11 +218,11 @@ status_t flash_ctrl_testutils_default_region_access(
  * @param bank The bank ID.
  * @param data_only True to only erase the data partitions. False to erase
  *                  everything.
- * @return False if the operation failed.
+ * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-bool flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
-                                     uint32_t bank, bool data_only);
+status_t flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
+                                         uint32_t bank, bool data_only);
 
 enum {
   kFlashCtrlTestUtilsCounterMaxCount = 256,
@@ -233,9 +232,10 @@ enum {
  * Returns the value of a non-volatile counter in flash.
  *
  * @param counter Counter ID, [0, 2].
- * @return Value of the non-volatile counter
+ * @value[out] Value of the non-volatile counter
+ * @return the result of the operation.
  */
-uint32_t flash_ctrl_testutils_counter_get(size_t counter);
+status_t flash_ctrl_testutils_counter_get(size_t counter, uint32_t *value);
 
 /**
  * Increments a non-volatile counter in flash.
@@ -243,8 +243,8 @@ uint32_t flash_ctrl_testutils_counter_get(size_t counter);
  * @param flash_state A flash_ctrl state handle.
  * @param counter Counter ID, [0, 2].
  */
-void flash_ctrl_testutils_counter_increment(dif_flash_ctrl_state_t *flash_state,
-                                            size_t counter);
+status_t flash_ctrl_testutils_counter_increment(
+    dif_flash_ctrl_state_t *flash_state, size_t counter);
 
 /**
  * Sets a non-volatile counter to at least `val`.
@@ -258,7 +258,7 @@ void flash_ctrl_testutils_counter_increment(dif_flash_ctrl_state_t *flash_state,
  * @param counter Counter ID, [0, 2].
  * @param val Counter value.
  */
-void flash_ctrl_testutils_counter_set_at_least(
+status_t flash_ctrl_testutils_counter_set_at_least(
     dif_flash_ctrl_state_t *flash_state, size_t counter, uint32_t val);
 
 /**
@@ -270,6 +270,7 @@ void flash_ctrl_testutils_counter_set_at_least(
  * @param flash_state A flash_ctrl state handle.
  * @param strike_counter The address of the counter.
  * @param new_val The new counter value.
+ * @return The result of the operation.
  */
 void flash_ctrl_testutils_set_counter(dif_flash_ctrl_state_t *flash_state,
                                       uint32_t *strike_counter,
@@ -285,9 +286,10 @@ void flash_ctrl_testutils_set_counter(dif_flash_ctrl_state_t *flash_state,
  *
  * @param flash_state A flash_ctrl handle.
  * @param counter The ID of the NVM counter, [0, 2].
+ * @param The result of the operation.
  **/
-void flash_ctrl_testutils_counter_init_zero(dif_flash_ctrl_state_t *flash_state,
-                                            size_t counter);
+status_t flash_ctrl_testutils_counter_init_zero(
+    dif_flash_ctrl_state_t *flash_state, size_t counter);
 
 /**
  * Init the backdoor API, it should be called before
@@ -311,7 +313,7 @@ status_t flash_ctrl_testutils_backdoor_init(
  * will write to.
  * @param timeout Timeout.
  */
-void flash_ctrl_testutils_backdoor_wait_update(
+status_t flash_ctrl_testutils_backdoor_wait_update(
     dif_flash_ctrl_state_t *flash_state, uintptr_t addr, size_t timeout);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_
