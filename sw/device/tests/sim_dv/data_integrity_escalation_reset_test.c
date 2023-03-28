@@ -568,13 +568,14 @@ bool test_main(void) {
 
   // Enable access to flash for storing info across resets.
   LOG_INFO("Setting default region accesses");
-  flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
 
   // Get the flash maintained reset counter.
   reset_count = flash_ctrl_testutils_counter_get(kCounterReset);

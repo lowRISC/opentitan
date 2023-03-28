@@ -243,7 +243,7 @@ bool flash_ctrl_testutils_read(dif_flash_ctrl_state_t *flash_state,
   return flash_ctrl_testutils_wait_transaction_end(flash_state);
 }
 
-void flash_ctrl_testutils_default_region_access(
+status_t flash_ctrl_testutils_default_region_access(
     dif_flash_ctrl_state_t *flash_state, bool rd_en, bool prog_en,
     bool erase_en, bool scramble_en, bool ecc_en, bool high_endurance_en) {
   dif_flash_ctrl_region_properties_t default_properties = {
@@ -255,8 +255,9 @@ void flash_ctrl_testutils_default_region_access(
       .high_endurance_en =
           high_endurance_en ? kMultiBitBool4True : kMultiBitBool4False};
 
-  CHECK_DIF_OK(dif_flash_ctrl_set_default_region_properties(
-      flash_state, default_properties));
+  TRY(dif_flash_ctrl_set_default_region_properties(flash_state,
+                                                   default_properties));
+  return OK_STATUS();
 }
 
 bool flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
@@ -380,18 +381,19 @@ void flash_ctrl_testutils_counter_init_zero(dif_flash_ctrl_state_t *flash_state,
   }
 }
 
-void flash_ctrl_testutils_backdoor_init(dif_flash_ctrl_state_t *flash_state) {
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+status_t flash_ctrl_testutils_backdoor_init(
+    dif_flash_ctrl_state_t *flash_state) {
+  TRY(dif_flash_ctrl_init_state(
       flash_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
-  flash_ctrl_testutils_default_region_access(flash_state,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  return flash_ctrl_testutils_default_region_access(flash_state,
+                                                    /*rd_en*/ true,
+                                                    /*prog_en*/ true,
+                                                    /*erase_en*/ true,
+                                                    /*scramble_en*/ false,
+                                                    /*ecc_en*/ false,
+                                                    /*he_en*/ false);
 }
 
 void flash_ctrl_testutils_backdoor_wait_update(

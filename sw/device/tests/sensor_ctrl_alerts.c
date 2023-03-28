@@ -174,13 +174,14 @@ bool test_main(void) {
       kDifAlertHandlerClassA, kDifToggleEnabled, kDifToggleEnabled));
 
   // Enable flash access
-  flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
 
   // Make sure we do not try to test more than half of all available events
   // in a single test.  Testing too many would just make the run time too

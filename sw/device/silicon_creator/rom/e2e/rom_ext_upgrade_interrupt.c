@@ -32,13 +32,13 @@ static void increment_flash_counter(void) {
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true, false, false,
-                                             false, false);
+  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
+      &flash_ctrl,
+      /*rd_en*/ true,
+      /*prog_en*/ true, false, false, false, false));
   flash_ctrl_testutils_counter_increment(&flash_ctrl, kFlashCounterId);
-  flash_ctrl_testutils_default_region_access(&flash_ctrl, false, false, false,
-                                             false, false, false);
+  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
+      &flash_ctrl, false, false, false, false, false, false));
 }
 
 static rom_error_t first_boot_test(void) {
