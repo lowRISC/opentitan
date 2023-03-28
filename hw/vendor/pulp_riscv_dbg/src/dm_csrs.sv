@@ -216,7 +216,7 @@ module dm_csrs #(
   // types instead.
   assign autoexecdata_idx = 4'({dm_csr_addr} - {dm::Data0});
 
-  always_comb begin : csr_read_write
+  always_comb (*xprop_off *) begin : csr_read_write
     // --------------------
     // Static Values (R/O)
     // --------------------

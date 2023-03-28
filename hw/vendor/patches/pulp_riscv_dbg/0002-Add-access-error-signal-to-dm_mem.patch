@@ -1,12 +1,12 @@
-From 05cf125bc39f3416c5113180d4b98493812d3305 Mon Sep 17 00:00:00 2001
+From 67e7bb1c9427779182af52016d2f06c4add2db21 Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 25 Oct 2022 19:38:49 -0700
-Subject: [PATCH 3/4] Add access error signal to dm_mem
+Subject: [PATCH 2/3] Add access error signal to dm_mem
 
 Signed-off-by: Michael Schaffner <msf@google.com>
 
 diff --git a/src/dm_mem.sv b/src/dm_mem.sv
-index 09fc919..889193d 100755
+index 5b2c556..cc0cc69 100755
 --- a/src/dm_mem.sv
 +++ b/src/dm_mem.sv
 @@ -20,7 +20,8 @@ module dm_mem #(
