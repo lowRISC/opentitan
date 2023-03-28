@@ -18,6 +18,7 @@ load(
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
 )
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 
 """Rules to build OpenTitan for the RISC-V target"""
 
@@ -462,6 +463,11 @@ def _scramble_flash_vmem_impl(ctx):
     if ctx.file.otp:
         arguments.extend(["--in-otp-vmem", ctx.file.otp.path])
         inputs.append(ctx.file.otp)
+        if ctx.attr.otp_data_perm:
+            arguments.extend([
+                "--otp-data-perm",
+                ctx.attr.otp_data_perm[BuildSettingInfo].value,
+            ])
 
     # Run the action script.
     ctx.actions.run(
@@ -480,6 +486,10 @@ scramble_flash_vmem = rv_rule(
     attrs = {
         "otp": attr.label(allow_single_file = True),
         "vmem": attr.label(allow_single_file = True),
+        "otp_data_perm": attr.label(
+            default = "//hw/ip/otp_ctrl/data:data_perm",
+            doc = "Option to indicate OTP VMEM file bit layout.",
+        ),
         "_tool": attr.label(
             default = "@//util/design:gen-flash-img",
             executable = True,
