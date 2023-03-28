@@ -10,6 +10,9 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('p', '2', 's')
+
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa);        // The OTBN ECDSA/P-256 app.
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, mode);  // ECDSA mode (sign or verify).
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, msg);   // Message digest.

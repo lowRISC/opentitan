@@ -12,6 +12,9 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "kmac_regs.h"  // Generated.
 
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('d', 'k', 'm')
+
 /**
  * Security strength values.
  *

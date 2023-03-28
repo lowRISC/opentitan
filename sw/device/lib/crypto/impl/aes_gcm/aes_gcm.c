@@ -14,6 +14,9 @@
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('g', 'c', 'm')
+
 enum {
   /* Log2 of the number of bytes in an AES block. */
   kAesBlockLog2NumBytes = 4,

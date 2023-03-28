@@ -15,6 +15,9 @@
 #include "entropy_src_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('d', 'e', 'n')
+
 enum {
   kBaseCsrng = TOP_EARLGREY_CSRNG_BASE_ADDR,
   kBaseEntropySrc = TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR,
