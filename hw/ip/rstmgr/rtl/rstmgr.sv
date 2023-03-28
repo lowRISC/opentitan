@@ -552,7 +552,7 @@ module rstmgr
   ) u_cpu_reset_synced (
     .clk_i,
     .rst_ni(local_rst_n),
-    .d_i(cpu_i.rst_cpu_n),
+    .d_i(),
     .q_o(rst_cpu_nq)
   );
 
