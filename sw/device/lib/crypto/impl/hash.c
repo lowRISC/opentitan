@@ -6,7 +6,9 @@
 
 #include <stdbool.h>
 
+#include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
+#include "sw/device/lib/crypto/impl/status.h"
 
 /**
  * Return the digest size (in bytes) for given hashing mode.
@@ -49,13 +51,39 @@ static crypto_status_t get_digest_size(hash_mode_t hash_mode,
   return kCryptoStatusOK;
 }
 
+/**
+ * Compute SHA256 using the HMAC hardware block.
+ *
+ * @param message Message to hash.
+ * @param[out] digest Output digest.
+ */
 OT_WARN_UNUSED_RESULT
+static status_t sha256(crypto_const_uint8_buf_t message,
+                       crypto_uint8_buf_t *digest) {
+  HARDENED_CHECK_EQ(digest->len, kHmacDigestNumBytes);
+
+  // Initialize the hardware.
+  hmac_sha256_init();
+
+  // Pass the message and check the length.
+  hmac_update(message.data, message.len);
+
+  // Retrieve the digest and copy it to the destination buffer.
+  hmac_digest_t hmac_digest;
+  hmac_final(&hmac_digest);
+  memcpy(digest->data, hmac_digest.digest, kHmacDigestNumBytes);
+
+  return OTCRYPTO_OK;
+}
+
 crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
                               hash_mode_t hash_mode,
                               crypto_uint8_buf_t *digest) {
   if (input_message.data == NULL && input_message.len != 0) {
     return kCryptoStatusBadArgs;
-  } else if (digest->data == NULL) {
+  }
+
+  if (digest == NULL || digest->data == NULL) {
     return kCryptoStatusBadArgs;
   }
 
@@ -82,8 +110,12 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
     case kHashModeSha3_512:
       err = kmac_sha3_512(input_message, digest);
       break;
+    case kHashModeSha256:
+      // Call the HMAC block driver in SHA-256 mode.
+      OTCRYPTO_TRY_INTERPRET(sha256(input_message, digest));
+      break;
     default:
-      // TODO: (#16410) Connect SHA-2 implementations
+      // TODO: (#16410) Connect SHA2-{384,512} implementations
       return kCryptoStatusBadArgs;
   }
 
@@ -93,12 +125,9 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
     return kCryptoStatusBadArgs;
   }
 
-  // TODO: (#16410) SHA-2 error check to be added here
-
   return kCryptoStatusOK;
 }
 
-OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
                              xof_mode_t xof_mode,
                              crypto_const_uint8_buf_t function_name_string,

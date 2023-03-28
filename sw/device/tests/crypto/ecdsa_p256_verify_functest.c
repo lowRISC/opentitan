@@ -19,9 +19,9 @@ static void compute_digest(size_t msg_len, const uint8_t *msg,
                            ecdsa_p256_message_digest_t *digest) {
   // Compute the SHA-256 digest using the HMAC device.
   hmac_sha256_init();
-  CHECK_STATUS_OK(hmac_sha256_update(msg, msg_len));
+  hmac_update(msg, msg_len);
   hmac_digest_t hmac_digest;
-  CHECK_STATUS_OK(hmac_sha256_final(&hmac_digest));
+  hmac_final(&hmac_digest);
 
   // Copy digest into the destination array.
   memcpy(digest->h, hmac_digest.digest, sizeof(hmac_digest.digest));
