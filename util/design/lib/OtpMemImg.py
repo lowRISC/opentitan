@@ -11,12 +11,13 @@ import logging as log
 import random
 from typing import Tuple
 
+from mubi.prim_mubi import mubi_value_as_int
+
 from lib.common import (check_bool, check_int, ecc_encode, permute_bits,
-                        random_or_hexvalue)
+                        random_or_hexvalue, validate_data_perm_option)
 from lib.LcStEnc import LcStEnc
 from lib.OtpMemMap import OtpMemMap
 from lib.Present import Present
-from mubi.prim_mubi import mubi_value_as_int
 
 # Seed diversification constant for OtpMemImg (this enables to use
 # the same seed for different classes)
@@ -441,7 +442,6 @@ class OtpMemImg(OtpMemMap):
 
     def validate_data_perm(self, data_perm):
         '''Validate data permutation option'''
-
         # Byte aligned total width after adding ECC bits
         secded_cfg = self.lc_state.config['secded']
         raw_bitlen = secded_cfg['data_width'] + secded_cfg['ecc_width']
@@ -451,23 +451,7 @@ class OtpMemImg(OtpMemMap):
         self.data_perm = list(
             range(total_bitlen)) if not data_perm else data_perm
 
-        # Check for bijectivity
-        if len(self.data_perm) != total_bitlen:
-            raise RuntimeError(
-                'Data permutation "{}" is not bijective, since'
-                'it does not have the same length as the data.'.format(
-                    data_perm))
-        for k in self.data_perm:
-            if k >= total_bitlen:
-                raise RuntimeError(
-                    'Data permutation "{}" is not bijective,'
-                    'since the index {} is out of bounds.'.format(
-                        data_perm, k))
-
-        if len(set(self.data_perm)) != total_bitlen:
-            raise RuntimeError(
-                'Data permutation "{}" is not bijective,'
-                'since it contains duplicated indices.'.format(data_perm))
+        validate_data_perm_option(total_bitlen, self.data_perm)
 
     def streamout_memfile(self) -> Tuple[str, int]:
         '''Streamout of memory image in MEM file format
