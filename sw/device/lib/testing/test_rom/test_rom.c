@@ -112,7 +112,7 @@ bool rom_test_main(void) {
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_DIF_OK(dif_flash_ctrl_start_controller_init(&flash_ctrl));
-  flash_ctrl_testutils_wait_for_init(&flash_ctrl);
+  CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl));
 #if !OT_IS_ENGLISH_BREAKFAST
   // Check the otp to see if flash scramble should be enabled.
   otp_val = abs_mmio_read32(

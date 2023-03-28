@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 
 /**
@@ -14,7 +15,8 @@
  *
  * @param flash_state A flash_ctrl state handle.
  */
-void flash_ctrl_testutils_wait_for_init(dif_flash_ctrl_state_t *flash_state);
+status_t flash_ctrl_testutils_wait_for_init(
+    dif_flash_ctrl_state_t *flash_state);
 
 /**
  * Wait for a flash_ctrl operation to end.
