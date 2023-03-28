@@ -169,7 +169,7 @@ module rstmgr
     ) u_rst_sw_ctrl_reg (
       .clk_i,
       .rst_ni(local_rst_n),
-      .we(reg2hw.sw_rst_ctrl_n[i].qe & reg2hw.sw_rst_regen[i]),
+      .we(reg2hw.sw_rst_ctrl_n[i].qe & reg2hw.sw_rst_regwen[i]),
       .wd(reg2hw.sw_rst_ctrl_n[i].q),
       .de('0),
       .d('0),
