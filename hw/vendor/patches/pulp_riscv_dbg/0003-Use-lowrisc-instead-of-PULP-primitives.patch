@@ -1,12 +1,12 @@
-From 85e5139d1cb07b2dd16a5698aff758b06a17c851 Mon Sep 17 00:00:00 2001
+From 1d6023dbb9b96929d7503bb8541eae8d12a56b41 Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 25 Oct 2022 18:27:27 -0700
-Subject: [PATCH 4/4] Use lowrisc instead of PULP primitives
+Subject: [PATCH 3/3] Use lowrisc instead of PULP primitives
 
 Signed-off-by: Michael Schaffner <msf@google.com>
 
 diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
-index 581c3f7..ee13a50 100644
+index 56091fa..2a907fa 100644
 --- a/src/dm_csrs.sv
 +++ b/src/dm_csrs.sv
 @@ -79,6 +79,7 @@ module dm_csrs #(

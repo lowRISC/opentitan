@@ -231,7 +231,7 @@ module dm_mem #(
   // read/write logic
   logic [dm::DataCount-1:0][31:0] data_bits;
   logic [7:0][7:0] rdata;
-  always_comb begin : p_rw_logic
+  always_comb (* xprop_off *) begin : p_rw_logic
 
     halted_d_aligned   = NrHartsAligned'(halted_q);
     resuming_d_aligned = NrHartsAligned'(resuming_q);
