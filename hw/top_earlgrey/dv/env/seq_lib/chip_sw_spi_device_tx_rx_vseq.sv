@@ -22,6 +22,11 @@ class chip_sw_spi_device_tx_rx_vseq extends chip_sw_base_vseq;
     exp_spi_device_tx_data.size() == SPI_DEVICE_DATA_SIZE;
   }
 
+  virtual task sync_with_sw();
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+  endtask:sync_with_sw
+
   virtual task cpu_init();
     super.cpu_init();
     sw_symbol_backdoor_overwrite("spi_device_tx_data", exp_spi_device_tx_data);
@@ -33,7 +38,7 @@ class chip_sw_spi_device_tx_rx_vseq extends chip_sw_base_vseq;
     super.body();
 
     // Wait SPI_DEVICE filled TX FIFO, otherwise SDO will be X
-    cfg.clk_rst_vif.wait_clks(100);
+    sync_with_sw();
     csr_spinwait(.ptr(ral.spi_device.status.txf_full), .exp_data('b1), .backdoor(1),
                  .spinwait_delay_ns(1));
 
@@ -45,14 +50,13 @@ class chip_sw_spi_device_tx_rx_vseq extends chip_sw_base_vseq;
     end
 
     // Wait for the CPU to read out the RX_FIFO
-    `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "SPI_DEVICE read out RX FIFO.");,
-                 "Timeout waiting for CPU to read out the RX_FIFO")
+    sync_with_sw();
 
     // Send data to fill RX_SRAM to test RX SRAM FIFO full interrupt
     send_spi_host_rx_data(spi_device_tx_data, SPI_DEVICE_RX_SRAM_SIZE);
 
     // Wait for RX_FULL interrupt to fire
-    cfg.clk_rst_vif.wait_clks(1_000);
+     sync_with_sw();
 
     // Send an extra data to test RX Async FIFO overflow
     send_spi_host_rx_data(spi_device_tx_data, SPI_DEVICE_DATA_SIZE);
