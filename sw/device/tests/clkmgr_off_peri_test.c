@@ -183,13 +183,14 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
 
   // Enable raw flash access.
-  flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
 
   if (rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor)) {
     rstmgr_testutils_pre_reset(&rstmgr);

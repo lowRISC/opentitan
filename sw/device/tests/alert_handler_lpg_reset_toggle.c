@@ -408,13 +408,14 @@ bool test_main(void) {
   // between resets on the FPGA.
   if (kDeviceType == kDeviceFpgaCw310) {
     // Enable flash access
-    flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                               /*rd_en*/ true,
-                                               /*prog_en*/ true,
-                                               /*erase_en*/ true,
-                                               /*scramble_en*/ false,
-                                               /*ecc_en*/ false,
-                                               /*he_en*/ false);
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_default_region_access(&flash_ctrl,
+                                                   /*rd_en*/ true,
+                                                   /*prog_en*/ true,
+                                                   /*erase_en*/ true,
+                                                   /*scramble_en*/ false,
+                                                   /*ecc_en*/ false,
+                                                   /*he_en*/ false));
 
     test_step_cnt = flash_ctrl_testutils_counter_get(kCounterTestSteps);
     if (test_step_cnt == 256) {

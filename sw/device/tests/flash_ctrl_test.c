@@ -120,9 +120,9 @@ static void test_basic_io(void) {
   CHECK_ARRAYS_EQ(output_page, input_page, FLASH_UINT32_WORDS_PER_PAGE);
 
   // Set up default access for data partitions.
-  flash_ctrl_testutils_default_region_access(
+  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
       &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
-      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false);
+      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
 
   // Perform similar test on the last page of the first bank.
   ptrdiff_t flash_bank_0_last_page_addr = flash_bank_1_addr - FLASH_PAGE_SZ;
@@ -153,9 +153,9 @@ static void test_memory_protection(void) {
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Set up default access for data partitions.
-  flash_ctrl_testutils_default_region_access(
+  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
       &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
-      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false);
+      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
 
   // A memory protection region representing the first page of the second bank.
   dif_flash_ctrl_region_properties_t protected_properties = {
@@ -188,9 +188,9 @@ static void test_memory_protection(void) {
                                         kDifFlashCtrlPartitionTypeData));
 
   // Turn off flash access by default.
-  flash_ctrl_testutils_default_region_access(
+  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
       &flash, /*rd_en=*/false, /*prog_en=*/false, /*erase_en=*/false,
-      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false);
+      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
 
   // Enable protected region for access.
   CHECK_DIF_OK(

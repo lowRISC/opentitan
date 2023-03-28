@@ -144,7 +144,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
-  flash_ctrl_testutils_backdoor_init(&flash);
+  CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
 
   while (kTestPhase < kTestPhaseDone) {
     switch (kTestPhase) {

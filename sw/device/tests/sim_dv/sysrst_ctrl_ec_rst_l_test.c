@@ -194,7 +194,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
-  flash_ctrl_testutils_backdoor_init(&flash);
+  CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
 
   pinmux_setup();
   rstmgr_reset_info = rstmgr_testutils_reason_get();

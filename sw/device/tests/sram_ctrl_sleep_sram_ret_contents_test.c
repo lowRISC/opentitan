@@ -227,13 +227,14 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_flash_ctrl_init_state(
           &flash_ctrl_state,
           mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                                 /*rd_en=*/true,
-                                                 /*prog_en=*/true,
-                                                 /*erase_en=*/true,
-                                                 /*scramble_en=*/false,
-                                                 /*ecc_en=*/false,
-                                                 /*he_en=*/false);
+      CHECK_STATUS_OK(
+          flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
+                                                     /*rd_en=*/true,
+                                                     /*prog_en=*/true,
+                                                     /*erase_en=*/true,
+                                                     /*scramble_en=*/false,
+                                                     /*ecc_en=*/false,
+                                                     /*he_en=*/false));
       // write ret_non_scrambled to 0
       const uint32_t new_data = 0;
       CHECK(flash_ctrl_testutils_write(

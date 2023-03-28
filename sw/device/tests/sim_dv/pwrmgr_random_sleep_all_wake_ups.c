@@ -72,13 +72,14 @@ bool test_main(void) {
 
   // Enable access to flash for storing info across resets.
   LOG_INFO("Setting default region accesses");
-  flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
 
   uint32_t wakeup_count = flash_ctrl_testutils_counter_get(0);
   int wakeup_unit = get_wakeup_unit(wakeup_count);

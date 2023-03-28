@@ -200,7 +200,7 @@ bool flash_ctrl_testutils_read(dif_flash_ctrl_state_t *flash_state,
  * @param ecc_en Default ECC enable.
  * @param high_endurance_en Default high endurance enable
  */
-void flash_ctrl_testutils_default_region_access(
+status_t flash_ctrl_testutils_default_region_access(
     dif_flash_ctrl_state_t *flash_state, bool rd_en, bool prog_en,
     bool erase_en, bool scramble_en, bool ecc_en, bool high_endurance_en);
 
@@ -287,8 +287,10 @@ void flash_ctrl_testutils_counter_init_zero(dif_flash_ctrl_state_t *flash_state,
  * `flash_ctrl_testutils_backdoor_wait_update`.
  *
  * @param flash_state A flash_ctrl handle.
+ * @return The result of the operation.
  */
-void flash_ctrl_testutils_backdoor_init(dif_flash_ctrl_state_t *flash_state);
+status_t flash_ctrl_testutils_backdoor_init(
+    dif_flash_ctrl_state_t *flash_state);
 
 /**
  * This is a backdoor API to be used with dvsim testbench.

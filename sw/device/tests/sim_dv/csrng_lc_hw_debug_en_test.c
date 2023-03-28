@@ -287,13 +287,14 @@ static void csrng_static_generate_run(uint32_t *output, size_t output_len) {
 
 bool test_main(void) {
   peripherals_init();
-  flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                             /*rd_en=*/true,
-                                             /*prog_en=*/true,
-                                             /*erase_en=*/true,
-                                             /*scramble_en=*/false,
-                                             /*ecc_en=*/false,
-                                             /*he_en=*/false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
+                                                 /*rd_en=*/true,
+                                                 /*prog_en=*/true,
+                                                 /*erase_en=*/true,
+                                                 /*scramble_en=*/false,
+                                                 /*ecc_en=*/false,
+                                                 /*he_en=*/false));
 
   dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
   rstmgr_testutils_reason_clear();
