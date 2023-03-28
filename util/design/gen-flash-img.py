@@ -19,6 +19,9 @@ from pathlib import Path
 from typing import List
 
 from pyfinite import ffield
+from util.design.lib.common import (inverse_permute_bits,
+                                    validate_data_perm_option,
+                                    vmem_permutation_string)
 from util.design.lib.Present import Present
 
 import prince
@@ -28,6 +31,7 @@ MUBI4_TRUE = 0x6
 
 # Fixed OTP data / scrambling parameters.
 OTP_WORD_SIZE = 16  # bits
+OTP_WORD_SIZE_WECC = 24  # bits
 OTP_FLASH_DATA_DEFAULT_CFG_RE = re.compile(
     r"CREATOR_SW_CFG: CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG")
 OTP_FLASH_DATA_DEFAULT_CFG_BLOCK_SIZE = 32  # bits
@@ -129,7 +133,7 @@ def _convert_array_2_int(data_array: List[int],
     return reformatted_data
 
 
-def _get_flash_scrambling_configs(otp_vmem_file: str,
+def _get_flash_scrambling_configs(otp_vmem_file: str, otp_data_perm: list,
                                   configs: FlashScramblingConfigs) -> None:
     # Open OTP VMEM file and read into memory, skipping comment lines.
     try:
@@ -149,7 +153,16 @@ def _get_flash_scrambling_configs(otp_vmem_file: str,
     for line in otp_vmem_lines:
         if (OTP_FLASH_DATA_DEFAULT_CFG_RE.search(line) or
                 OTP_SECRET1_RE.search(line)):
+            # Convert OTP VMEM word from string to int.
             otp_data_word_w_ecc = int(line.split()[1], 16)
+            # Un-permute bits if necessary.
+            if otp_data_perm:
+                otp_data_word_as_str = format(
+                    otp_data_word_w_ecc, "0" + str(OTP_WORD_SIZE_WECC) + "b")
+                otp_data_word_w_ecc = int(
+                    inverse_permute_bits(otp_data_word_as_str, otp_data_perm),
+                    2)
+            # Drop ECC bits.
             otp_data_word = otp_data_word_w_ecc & (2**OTP_WORD_SIZE - 1)
             otp_data_block |= otp_data_word << (idx * OTP_WORD_SIZE)
             idx += 1
@@ -292,13 +305,35 @@ def main(argv: List[str]):
                         type=str,
                         help="Input OTP (VMEM) file to retrieve data from.")
     parser.add_argument("--out-flash-vmem", type=str, help="Output VMEM file.")
+    parser.add_argument("--otp-data-perm",
+                        type=vmem_permutation_string,
+                        metavar="<map>",
+                        default=[],
+                        help="""
+                        This is a post-processing option and allows permuting
+                        the bit positions before writing the memfile. The bit
+                        mapping needs to be supplied as a comma separated list
+                        of bit slices, where the numbers refer to the bit
+                        positions in the original data word before remapping,
+                        for example:
+
+                        "[7:0],[15:8]".
+
+                        The mapping must be bijective - otherwise this will
+                        generate an error.
+                        """)
     args = parser.parse_args(argv)
+
+    # Validate OTP bit permutation configuration.
+    if args.otp_data_perm:
+        validate_data_perm_option(OTP_WORD_SIZE_WECC, args.otp_data_perm)
 
     # Read flash scrambling configurations (including: enablement, address and
     # data key seeds) directly from OTP VMEM file.
     scrambling_configs = FlashScramblingConfigs()
     if args.in_otp_vmem:
-        _get_flash_scrambling_configs(args.in_otp_vmem, scrambling_configs)
+        _get_flash_scrambling_configs(args.in_otp_vmem, args.otp_data_perm,
+                                      scrambling_configs)
 
     # Compute flash scrambling keys from seeds.
     if scrambling_configs.scrambling_enabled:

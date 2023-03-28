@@ -24,6 +24,7 @@ py_binary(
     srcs = ["gen-flash-img.py"],
     deps = [
         ":secded_gen",
+        "//util/design/lib:common",
         "//util/design/lib:present",
         requirement("pyfinite"),
     ],
