@@ -17,24 +17,6 @@ static const char kMessage[] = "test message";
 // Digest of the test message above.
 hmac_digest_t hmac_digest;
 
-static const p256_point_t kPublicKey = {
-    // Public key x-coordinate (Q.x)
-    .x = {0x558bb24e, 0x246288eb, 0x9e1bbff2, 0xa7094ad8, 0xcd926786,
-          0x075d07ca, 0xac2de782, 0x1f791431},
-    // Public key y-coordinate (Q.y)
-    .y = {0x23e49c27, 0xfaa21024, 0xf17353bd, 0x40f008a5, 0x2155c09e,
-          0x5954f0a4, 0x155f3e00, 0x874bc63c},
-};
-
-// Private key (d) in two shares
-static const p256_masked_scalar_t kPrivateKey = {
-    .share0 = {0xaf57b4cd, 0x744c9f1c, 0x8b7e0c02, 0x283e93e9, 0x0d18f00c,
-               0xda0b6cf4, 0x8fe6bb7a, 0x5545a0b7, 0x00000000, 0x00000000},
-    // TODO(#15409): add real data here to ensure the second share is
-    // incorporated.
-    .share1 = {0},
-};
-
 static void compute_digest(void) {
   // Compute the SHA-256 digest using the HMAC device.
   hmac_sha256_init();
@@ -42,24 +24,27 @@ static void compute_digest(void) {
   hmac_final(&hmac_digest);
 }
 
-status_t sign_then_verify_test(void) {
+status_t sign_then_verify_test(hardened_bool_t *verificationResult) {
   // Spin until OTBN is idle.
   TRY(otbn_busy_wait_for_done());
 
-  // Generate a signature for the message
+  // Generate a keypair.
+  LOG_INFO("Generating keypair...");
+  TRY(ecdsa_p256_keygen_start());
+  p256_masked_scalar_t private_key;
+  p256_point_t public_key;
+  TRY(ecdsa_p256_keygen_finalize(&private_key, &public_key));
+
+  // Generate a signature for the message.
   LOG_INFO("Signing...");
-  TRY(ecdsa_p256_sign_start(hmac_digest.digest, &kPrivateKey));
+  TRY(ecdsa_p256_sign_start(hmac_digest.digest, &private_key));
   ecdsa_p256_signature_t signature;
   TRY(ecdsa_p256_sign_finalize(&signature));
 
-  // Verify the signature
+  // Verify the signature.
   LOG_INFO("Verifying...");
-  TRY(ecdsa_p256_verify_start(&signature, hmac_digest.digest, &kPublicKey));
-  hardened_bool_t verificationResult;
-  TRY(ecdsa_p256_verify_finalize(&signature, &verificationResult));
-
-  // Signature verification is expected to succeed
-  CHECK(verificationResult == kHardenedBoolTrue);
+  TRY(ecdsa_p256_verify_start(&signature, hmac_digest.digest, &public_key));
+  TRY(ecdsa_p256_verify_finalize(&signature, verificationResult));
 
   return OTCRYPTO_OK;
 }
@@ -71,13 +56,20 @@ bool test_main(void) {
 
   compute_digest();
 
-  status_t err = sign_then_verify_test();
+  hardened_bool_t verificationResult;
+  status_t err = sign_then_verify_test(&verificationResult);
   if (!status_ok(err)) {
     // If there was an error, print the OTBN error bits and instruction count.
     LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
     LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
     // Print the error.
     CHECK_STATUS_OK(err);
+    return false;
+  }
+
+  // Signature verification is expected to succeed.
+  if (verificationResult != kHardenedBoolTrue) {
+    LOG_ERROR("Signature failed to pass verification!");
     return false;
   }
 

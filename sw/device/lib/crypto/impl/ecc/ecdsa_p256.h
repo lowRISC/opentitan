@@ -27,11 +27,32 @@ typedef struct ecdsa_p256_signature_t {
 } ecdsa_p256_signature_t;
 
 /**
+ * Start an async ECDSA/P-256 keypair generation operation on OTBN.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @return Result of the operation (OK or error).
+ */
+status_t ecdsa_p256_keygen_start(void);
+
+/**
+ * Finish an async ECDSA/P-256 keypair generation operation on OTBN.
+ *
+ * Blocks until OTBN is idle.
+ *
+ * @param[out] private_key Generated private key.
+ * @param[out] public_key Generated public key.
+ * @return Result of the operation (OK or error).
+ */
+status_t ecdsa_p256_keygen_finalize(p256_masked_scalar_t *private_key,
+                                    p256_point_t *public_key);
+
+/**
  * Start an async ECDSA/P-256 signature generation operation on OTBN.
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
- * @param message_digest Digest of the message to sign.
+ * @param digest Digest of the message to sign.
  * @param private_key Secret key to sign the message with.
  * @return Result of the operation (OK or error).
  */
@@ -45,7 +66,7 @@ status_t ecdsa_p256_sign_start(const uint32_t digest[kP256ScalarWords],
  *
  * Blocks until OTBN is idle.
  *
- * @param result Buffer in which to store the generated signature.
+ * @param[out] result Buffer in which to store the generated signature.
  * @return Result of the operation (OK or error).
  */
 status_t ecdsa_p256_sign_finalize(ecdsa_p256_signature_t *result);
@@ -58,7 +79,7 @@ status_t ecdsa_p256_sign_finalize(ecdsa_p256_signature_t *result);
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
  * @param signature Signature to be verified.
- * @param message_digest Digest of the message to check the signature against.
+ * @param digest Digest of the message to check the signature against.
  * @param public_key Key to check the signature against.
  * @return Result of the operation (OK or error).
  */
@@ -82,7 +103,8 @@ status_t ecdsa_p256_verify_start(const ecdsa_p256_signature_t *signature,
  * status will be OK but `result` will be `kHardenedBoolFalse`.
  *
  * @param signature Signature to be verified.
- * @param result Output buffer (true if signature is valid, false otherwise)
+ * @param[out] result Output buffer (true if signature is valid, false
+ * otherwise)
  * @return Result of the operation (OK or error).
  */
 status_t ecdsa_p256_verify_finalize(const ecdsa_p256_signature_t *signature,
