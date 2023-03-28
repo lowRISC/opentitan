@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
 #ifdef __cplusplus
@@ -24,29 +25,6 @@ enum {
 };
 
 /**
- * Error return types for KMAC.
- *
- * This is not the exhaustive list, so the fields of this enum are likely to be
- * revised later.
- */
-typedef enum kmac_error {
-  kKmacOk = 0,
-  kKmacInternalError,
-  kKmacNotIdle,
-  kKmacCfgWriteDisabled,
-  kKmacIntrErrPending,
-  kKmacCfgDisabledError,
-  kKmacFatalFaultError,
-  kKmacRecovFaultError,
-  kKmacArgsError,
-  kKmacDigestLenTooLongError,
-  kKmacUnsupportedKeySizeError,
-  kKmacNotImplemented,
-  kKmacCustomPaddingError,
-  kKmacUnsupportedPaddingLength,
-} kmac_error_t;
-
-/**
  * Simplified key struct to pass blinded key internally.
  */
 typedef struct kmac_blinded_key {
@@ -60,10 +38,10 @@ typedef struct kmac_blinded_key {
  * Check whether given key length is valid for KMAC.
 
  * @param key_len Key length as input.
- * @return Return true if given key length is valid.
+ * @return Return OTCRYPTO_OK if valid and otherwise an error.
  */
 OT_WARN_UNUSED_RESULT
-bool kmac_is_valid_key_len(size_t key_len);
+status_t kmac_key_length_check(size_t key_len);
 
 /**
  * Set the "global" config of HWIP
@@ -88,7 +66,7 @@ bool kmac_is_valid_key_len(size_t key_len);
  * @return Error code.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_hwip_default_configure(void);
+status_t kmac_hwip_default_configure(void);
 
 /**
  * Compute SHA-3-224 in one-shot.
@@ -104,8 +82,8 @@ kmac_error_t kmac_hwip_default_configure(void);
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_sha3_224(crypto_const_uint8_buf_t message,
-                           crypto_uint8_buf_t *digest);
+status_t kmac_sha3_224(crypto_const_uint8_buf_t message,
+                       crypto_uint8_buf_t *digest);
 
 /**
  * Compute SHA-3-256 in one-shot.
@@ -121,8 +99,8 @@ kmac_error_t kmac_sha3_224(crypto_const_uint8_buf_t message,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_sha3_256(crypto_const_uint8_buf_t message,
-                           crypto_uint8_buf_t *digest);
+status_t kmac_sha3_256(crypto_const_uint8_buf_t message,
+                       crypto_uint8_buf_t *digest);
 /**
  * Compute SHA-3-384 in one-shot.
  *
@@ -137,8 +115,8 @@ kmac_error_t kmac_sha3_256(crypto_const_uint8_buf_t message,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_sha3_384(crypto_const_uint8_buf_t message,
-                           crypto_uint8_buf_t *digest);
+status_t kmac_sha3_384(crypto_const_uint8_buf_t message,
+                       crypto_uint8_buf_t *digest);
 
 /**
  * Compute SHA-3-512 in one-shot.
@@ -154,8 +132,8 @@ kmac_error_t kmac_sha3_384(crypto_const_uint8_buf_t message,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_sha3_512(crypto_const_uint8_buf_t message,
-                           crypto_uint8_buf_t *digest);
+status_t kmac_sha3_512(crypto_const_uint8_buf_t message,
+                       crypto_uint8_buf_t *digest);
 
 /**
  * Compute SHAKE-128 in one-shot.
@@ -171,8 +149,8 @@ kmac_error_t kmac_sha3_512(crypto_const_uint8_buf_t message,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_shake_128(crypto_const_uint8_buf_t message,
-                            crypto_uint8_buf_t *digest);
+status_t kmac_shake_128(crypto_const_uint8_buf_t message,
+                        crypto_uint8_buf_t *digest);
 
 /**
  * Compute SHAKE-256 in one-shot.
@@ -188,8 +166,8 @@ kmac_error_t kmac_shake_128(crypto_const_uint8_buf_t message,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_shake_256(crypto_const_uint8_buf_t message,
-                            crypto_uint8_buf_t *digest);
+status_t kmac_shake_256(crypto_const_uint8_buf_t message,
+                        crypto_uint8_buf_t *digest);
 
 /**
  * Compute CSHAKE-128 in one-shot.
@@ -207,10 +185,10 @@ kmac_error_t kmac_shake_256(crypto_const_uint8_buf_t message,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_cshake_128(crypto_const_uint8_buf_t message,
-                             crypto_const_uint8_buf_t func_name,
-                             crypto_const_uint8_buf_t cust_str,
-                             crypto_uint8_buf_t *digest);
+status_t kmac_cshake_128(crypto_const_uint8_buf_t message,
+                         crypto_const_uint8_buf_t func_name,
+                         crypto_const_uint8_buf_t cust_str,
+                         crypto_uint8_buf_t *digest);
 
 /**
  * Compute CSHAKE-256 in one-shot.
@@ -228,10 +206,10 @@ kmac_error_t kmac_cshake_128(crypto_const_uint8_buf_t message,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_cshake_256(crypto_const_uint8_buf_t message,
-                             crypto_const_uint8_buf_t func_name,
-                             crypto_const_uint8_buf_t cust_str,
-                             crypto_uint8_buf_t *digest);
+status_t kmac_cshake_256(crypto_const_uint8_buf_t message,
+                         crypto_const_uint8_buf_t func_name,
+                         crypto_const_uint8_buf_t cust_str,
+                         crypto_uint8_buf_t *digest);
 
 /**
  * Compute KMAC-128 in one-shot.
@@ -250,10 +228,10 @@ kmac_error_t kmac_cshake_256(crypto_const_uint8_buf_t message,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_kmac_128(kmac_blinded_key_t *key,
-                           crypto_const_uint8_buf_t message,
-                           crypto_const_uint8_buf_t cust_str,
-                           crypto_uint8_buf_t *digest);
+status_t kmac_kmac_128(kmac_blinded_key_t *key,
+                       crypto_const_uint8_buf_t message,
+                       crypto_const_uint8_buf_t cust_str,
+                       crypto_uint8_buf_t *digest);
 
 /**
  * Compute KMAC-256 in one-shot.
@@ -272,10 +250,10 @@ kmac_error_t kmac_kmac_128(kmac_blinded_key_t *key,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_kmac_256(kmac_blinded_key_t *key,
-                           crypto_const_uint8_buf_t message,
-                           crypto_const_uint8_buf_t cust_str,
-                           crypto_uint8_buf_t *digest);
+status_t kmac_kmac_256(kmac_blinded_key_t *key,
+                       crypto_const_uint8_buf_t message,
+                       crypto_const_uint8_buf_t cust_str,
+                       crypto_uint8_buf_t *digest);
 
 #ifdef __cplusplus
 }

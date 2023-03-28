@@ -82,8 +82,10 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
     return kCryptoStatusBadArgs;
   }
 
-  kmac_error_t err;
   size_t key_len = keyblob_share_num_words(key->config) * sizeof(uint32_t);
+
+  // Check `key_len` is valid/supported by KMAC HWIP.
+  OTCRYPTO_TRY_INTERPRET(kmac_key_length_check(key_len));
 
   // Check the integrity of the blinded key.
   if (integrity_blinded_key_check(key) != kHardenedBoolTrue) {
@@ -92,11 +94,6 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
 
   // TODO (#16410, #15590): Add sideload support.
   if (key->config.hw_backed == kHardenedBoolTrue) {
-    return kCryptoStatusBadArgs;
-  }
-
-  // Check `key_len` is valid/supported by KMAC HWIP.
-  if (!kmac_is_valid_key_len(key_len)) {
     return kCryptoStatusBadArgs;
   }
 
@@ -111,7 +108,8 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
       if (key->config.key_mode != kKeyModeKmac128) {
         return kCryptoStatusBadArgs;
       }
-      err = kmac_kmac_128(&kmac_key, input_message, customization_string, tag);
+      OTCRYPTO_TRY_INTERPRET(
+          kmac_kmac_128(&kmac_key, input_message, customization_string, tag));
       break;
     case kMacModeKmac256:
       // Check `key_mode` matches `mac_mode`
@@ -119,7 +117,8 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
         return kCryptoStatusBadArgs;
       }
 
-      err = kmac_kmac_256(&kmac_key, input_message, customization_string, tag);
+      OTCRYPTO_TRY_INTERPRET(
+          kmac_kmac_256(&kmac_key, input_message, customization_string, tag));
       break;
     case kMacModeHmacSha256:
       // Check `key_mode` matches `mac_mode`
@@ -132,18 +131,9 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
       }
       // Call hardware HMAC driver.
       OTCRYPTO_TRY_INTERPRET(hmac_sha256(key, input_message, tag));
-
-      // TODO(#16410) Appease the KMAC error check. Remove once KMAC uses
-      // status_t.
-      err = kKmacOk;
       break;
     default:
       return kCryptoStatusBadArgs;
-  }
-
-  // TODO (#16410) Error checks
-  if (err != kKmacOk) {
-    return kCryptoStatusBadArgs;
   }
 
   return kCryptoStatusOK;

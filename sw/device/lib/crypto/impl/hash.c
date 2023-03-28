@@ -96,19 +96,18 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
     return kCryptoStatusBadArgs;
   }
 
-  kmac_error_t err = kKmacOk;
   switch (hash_mode) {
     case kHashModeSha3_224:
-      err = kmac_sha3_224(input_message, digest);
+      OTCRYPTO_TRY_INTERPRET(kmac_sha3_224(input_message, digest));
       break;
     case kHashModeSha3_256:
-      err = kmac_sha3_256(input_message, digest);
+      OTCRYPTO_TRY_INTERPRET(kmac_sha3_256(input_message, digest));
       break;
     case kHashModeSha3_384:
-      err = kmac_sha3_384(input_message, digest);
+      OTCRYPTO_TRY_INTERPRET(kmac_sha3_384(input_message, digest));
       break;
     case kHashModeSha3_512:
-      err = kmac_sha3_512(input_message, digest);
+      OTCRYPTO_TRY_INTERPRET(kmac_sha3_512(input_message, digest));
       break;
     case kHashModeSha256:
       // Call the HMAC block driver in SHA-256 mode.
@@ -117,12 +116,6 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
     default:
       // TODO: (#16410) Connect SHA2-{384,512} implementations
       return kCryptoStatusBadArgs;
-  }
-
-  // TODO: (#14549, #16410) Revisit KMAC error flow
-  // Need to map KMAC driver error enum to cryptolib error enum
-  if (err != kKmacOk) {
-    return kCryptoStatusBadArgs;
   }
 
   return kCryptoStatusOK;
@@ -149,29 +142,23 @@ crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
     }
   }
 
-  kmac_error_t err;
   switch (xof_mode) {
     case kXofModeSha3Shake128:
-      err = kmac_shake_128(input_message, digest);
+      OTCRYPTO_TRY_INTERPRET(kmac_shake_128(input_message, digest));
       break;
     case kXofModeSha3Shake256:
-      err = kmac_shake_256(input_message, digest);
+      OTCRYPTO_TRY_INTERPRET(kmac_shake_256(input_message, digest));
       break;
     case kXofModeSha3Cshake128:
-      err = kmac_cshake_128(input_message, function_name_string,
-                            customization_string, digest);
+      OTCRYPTO_TRY_INTERPRET(kmac_cshake_128(
+          input_message, function_name_string, customization_string, digest));
       break;
     case kXofModeSha3Cshake256:
-      err = kmac_cshake_256(input_message, function_name_string,
-                            customization_string, digest);
+      OTCRYPTO_TRY_INTERPRET(kmac_cshake_256(
+          input_message, function_name_string, customization_string, digest));
       break;
     default:
       return kCryptoStatusBadArgs;
-  }
-
-  // TODO: (#14549, #16410) Revisit KMAC error flow
-  if (err != kKmacOk) {
-    return kCryptoStatusBadArgs;
   }
 
   return kCryptoStatusOK;
