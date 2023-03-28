@@ -58,6 +58,14 @@ static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_ecdsa, d0);
 static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_ecdsa, d1);
 static const otbn_addr_t kOtbnVarXR = OTBN_ADDR_T_INIT(p256_ecdsa, x_r);
 
+/**
+ * Hardened values for different modes (see p256_ecdsa.s).
+ */
+enum {
+  kModeSign = 0x15b,
+  kModeVerify = 0x727,
+};
+
 OTTF_DEFINE_TEST_CONFIG();
 
 /**
@@ -247,8 +255,8 @@ static void p256_ecdsa_sign(dif_otbn_t *otbn, const uint8_t *msg,
   CHECK(otbn != NULL);
 
   // Write input arguments.
-  uint32_t mode = 1;  // mode 1 => sign
-  otbn_testutils_write_data(otbn, sizeof(mode), &mode, kOtbnVarMode);
+  uint32_t mode = kModeSign;
+  otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode, kOtbnVarMode);
   otbn_testutils_write_data(otbn, /*len_bytes=*/32, msg, kOtbnVarMsg);
   otbn_testutils_write_data(otbn, /*len_bytes=*/32, private_key_d, kOtbnVarD0);
 
@@ -290,8 +298,8 @@ static void p256_ecdsa_verify(dif_otbn_t *otbn, const uint8_t *msg,
   CHECK(otbn != NULL);
 
   // Write input arguments.
-  uint32_t mode = 2;  // mode 2 => verify
-  otbn_testutils_write_data(otbn, sizeof(mode), &mode, kOtbnVarMode);
+  uint32_t mode = kModeVerify;
+  otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode, kOtbnVarMode);
   otbn_testutils_write_data(otbn, /*len_bytes=*/32, msg, kOtbnVarMsg);
   otbn_testutils_write_data(otbn, /*len_bytes=*/32, signature_r, kOtbnVarR);
   otbn_testutils_write_data(otbn, /*len_bytes=*/32, signature_s, kOtbnVarS);

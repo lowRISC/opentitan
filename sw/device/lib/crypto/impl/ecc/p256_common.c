@@ -23,8 +23,8 @@ enum {
 };
 
 status_t p256_masked_scalar_write(const p256_masked_scalar_t *src,
-                                       const otbn_addr_t share0_addr,
-                                       const otbn_addr_t share1_addr) {
+                                  const otbn_addr_t share0_addr,
+                                  const otbn_addr_t share1_addr) {
   HARDENED_TRY(
       otbn_dmem_write(kP256MaskedScalarShareWords, src->share0, share0_addr));
   HARDENED_TRY(

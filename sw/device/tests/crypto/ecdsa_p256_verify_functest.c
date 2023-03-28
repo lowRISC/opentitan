@@ -30,7 +30,8 @@ status_t ecdsa_p256_verify_test(
   compute_digest(testvec->msg_len, testvec->msg, &digest);
 
   // Attempt to verify signature.
-  TRY(ecdsa_p256_verify_start(&testvec->signature, digest.digest, &testvec->public_key));
+  TRY(ecdsa_p256_verify_start(&testvec->signature, digest.digest,
+                              &testvec->public_key));
   hardened_bool_t result;
   TRY(ecdsa_p256_verify_finalize(&testvec->signature, &result));
 

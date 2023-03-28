@@ -34,19 +34,72 @@ static const otbn_addr_t kOtbnVarEcdsaD0 = OTBN_ADDR_T_INIT(p256_ecdsa, d0);
 static const otbn_addr_t kOtbnVarEcdsaD1 = OTBN_ADDR_T_INIT(p256_ecdsa, d1);
 static const otbn_addr_t kOtbnVarEcdsaXr = OTBN_ADDR_T_INIT(p256_ecdsa, x_r);
 
-/* Mode is represented by a single word, 1 for sign and 2 for verify */
-static const uint32_t kOtbnEcdsaModeWords = 1;
-static const uint32_t kOtbnEcdsaModeSign = 1;
-static const uint32_t kOtbnEcdsaModeVerify = 2;
+enum {
+  /*
+   * Mode is represented by a single word.
+   */
+  kOtbnEcdsaModeWords = 1,
+  /*
+   * Mode to generate a new random keypair.
+   *
+   * Value taken from `p256_ecdsa.s`.
+   */
+  kOtbnEcdsaModeKeygen = 0x3d4,
+  /*
+   * Mode to generate a signature.
+   *
+   * Value taken from `p256_ecdsa.s`.
+   */
+  kOtbnEcdsaModeSign = 0x15b,
+  /*
+   * Mode to verify a signature.
+   *
+   * Value taken from `p256_ecdsa.s`.
+   */
+  kOtbnEcdsaModeVerify = 0x727,
+};
+
+status_t ecdsa_p256_keygen_start(void) {
+  // Load the ECDSA/P-256 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppEcdsa));
+
+  // Set mode so start() will jump into keygen.
+  uint32_t mode = kOtbnEcdsaModeKeygen;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
+
+  // Start the OTBN routine.
+  return otbn_execute();
+}
+
+status_t ecdsa_p256_keygen_finalize(p256_masked_scalar_t *private_key,
+                                    p256_point_t *public_key) {
+  // Spin here waiting for OTBN to complete.
+  HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Read the masked private key from OTBN dmem.
+  HARDENED_TRY(otbn_dmem_read(kP256MaskedScalarShareWords, kOtbnVarEcdsaD0,
+                              private_key->share0));
+  HARDENED_TRY(otbn_dmem_read(kP256MaskedScalarShareWords, kOtbnVarEcdsaD1,
+                              private_key->share1));
+
+  // Read the public key from OTBN dmem.
+  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarEcdsaX, public_key->x));
+  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarEcdsaY, public_key->y));
+
+  // Wipe DMEM.
+  HARDENED_TRY(otbn_dmem_sec_wipe());
+
+  return OTCRYPTO_OK;
+}
 
 status_t ecdsa_p256_sign_start(const uint32_t digest[kP256ScalarWords],
                                const p256_masked_scalar_t *private_key) {
   // Load the ECDSA/P-256 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdsa));
 
-  // Set mode so start() will jump into p256_ecdsa_sign.
-  HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &kOtbnEcdsaModeSign,
-                               kOtbnVarEcdsaMode));
+  // Set mode so start() will jump into signing.
+  uint32_t mode = kOtbnEcdsaModeSign;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
 
   // Set the message digest.
   HARDENED_TRY(otbn_dmem_write(kP256ScalarWords, digest, kOtbnVarEcdsaMsg));
@@ -69,6 +122,9 @@ status_t ecdsa_p256_sign_finalize(ecdsa_p256_signature_t *result) {
   // Read signature S out of OTBN dmem.
   HARDENED_TRY(otbn_dmem_read(kP256ScalarWords, kOtbnVarEcdsaS, result->s));
 
+  // Wipe DMEM.
+  HARDENED_TRY(otbn_dmem_sec_wipe());
+
   return OTCRYPTO_OK;
 }
 
@@ -78,9 +134,10 @@ status_t ecdsa_p256_verify_start(const ecdsa_p256_signature_t *signature,
   // Load the ECDSA/P-256 app and set up data pointers
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdsa));
 
-  // Set mode so start() will jump into p256_ecdsa_verify.
-  HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &kOtbnEcdsaModeVerify,
-                               kOtbnVarEcdsaMode));
+  // Set mode so start() will jump into verifying.
+  uint32_t mode = kOtbnEcdsaModeVerify;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
+
   // Set the message digest.
   HARDENED_TRY(otbn_dmem_write(kP256ScalarWords, digest, kOtbnVarEcdsaMsg));
 
@@ -110,6 +167,9 @@ status_t ecdsa_p256_verify_finalize(const ecdsa_p256_signature_t *signature,
   HARDENED_TRY(otbn_dmem_read(kP256ScalarWords, kOtbnVarEcdsaXr, x_r));
 
   *result = hardened_memeq(x_r, signature->r, kP256ScalarWords);
+
+  // Wipe DMEM.
+  HARDENED_TRY(otbn_dmem_sec_wipe());
 
   return OTCRYPTO_OK;
 }
