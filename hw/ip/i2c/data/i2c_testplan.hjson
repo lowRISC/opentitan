@@ -15,15 +15,15 @@
     {
       name: host_smoke
       desc: '''
-            Smoke test in which random (rd/wr) transactions are
+            Smoke test in which random (rx/tx) transactions are
             sent to the DUT and received asynchronously with scoreboard checks.
 
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
               - Enable DUT host
-              - Clear/Enable interrupt (if needed)
-              - Program OVRD, FDATA register
-              - Randomize I2C timing in TIMING 0-4 registers and other parameters such as TL agent
+              - Clear and enable interrupt (if needed)
+              - Program OVRD and FDATA registers
+              - Randomize I2C timing in TIMING[0-4] registers and other parameters such as TL agent
                 delays
               - Randomize address and data for read/write transactions sent to the agent by the DUT
 
@@ -42,11 +42,11 @@
 
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
-              - In host transmit mode, device (target/host) forces sda or scl signal low within the
-                clock pulse of host scl that asserts `sda_interference` or `scl_interference`
+              - In host transmit mode, device (target/host) forces SDA or SCL signal low within the
+                clock pulse of host SCL that asserts `sda_interference` or `scl_interference`
                 interrupts
               - In host receiving mode (data or ack bits), SDA signal is changed with the
-                clock pulse of host scl that asserts `intr_sda_unstable` interrupts
+                clock pulse of host SCL that asserts `intr_sda_unstable` interrupts
               - When error interrupt assertions are detected, dut, agent, and scoreboard will be
                 reset on-the-fly then new transaction can be continue programming
 
@@ -66,7 +66,7 @@
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
               - Combine above sequences in one test to run sequentially
-                except csr sequence and i2c_host_rx_oversample_vseq (requires zero_delays)
+                except CSR sequence and i2c_host_rx_oversample_vseq (requires zero_delays)
               - Randomly add reset between each sequence
 
             Checking:
@@ -84,7 +84,7 @@
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
               - Combine above sequences in one test to run sequentially
-                except csr sequence and i2c_host_rx_oversample_vseq (requires zero_delays)
+                except CSR sequence and i2c_host_rx_oversample_vseq (requires zero_delays)
               - Randomly add reset within the sequences then switch to another one
 
             Checking:
@@ -101,7 +101,7 @@
 
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
-              - Reduce access latency for all fifos
+              - Reduce access latency for all FIFOs
               - Issue long read/write back-to-back transactions
               - Read rx_fifo as soon as read data valid
               - Clear interrupt quickly
@@ -143,6 +143,7 @@
               - Ensure receving correct number of fmt_fifo and rx_fifo watermark interrupts
             '''
       stage: V2
+      //TODO add watermark test.
       tests: [""]
     }
     {
@@ -170,7 +171,7 @@
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
               - Fill up the fmt_fifo with data to be sent out
-              - Reset the fifo randomly after a number of bytes shows up on fmt_fifo
+              - Reset the FIFO randomly after a number of bytes shows up on fmt_fifo
 
             Checking:
               - Ensure the remaining entries are not show up after fmt_fifo is reset
@@ -186,10 +187,10 @@
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
               - Send enough read and write requests to fmt_fifo
-              - Hold reading data from rx_fifo until rx fifo is full
+              - Hold reading data from rx_fifo until FIFO is full
 
             Checking:
-              - Check fifo full states by reading status register
+              - Check FIFO full states by reading status register
             '''
       stage: V2
       tests: ["i2c_host_fifo_full"]
@@ -202,8 +203,8 @@
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
               - Set timeout enable bit of TIMEOUT_CTRL register
-              - Program timeout values (higher than host scl clock pulse) into TIMEOUT_CTRL register
-              - Configure agent to pull down target (device) scl after the bit 9 (ACK) is
+              - Program timeout values (higher than host SCL clock pulse) into TIMEOUT_CTRL register
+              - Configure agent to pull down target (device) SCL after the bit 9 (ACK) is
                 transmitted
 
             Checking:
@@ -219,7 +220,7 @@
             Host mode: test oversampling on received channel.
 
             Stimulus:
-              - Use input clock to sample the target sda (sample with baud rate equal to 1)
+              - Use input clock to sample the target SDA (sample with baud rate equal to 1)
               - Drive scl_rx using input clock
 
             Checking:
@@ -235,7 +236,7 @@
     {
       name: target_smoke
       desc: '''
-            Smoke test in which random (rd/wr) transactions are
+            Smoke test in which random (rx/tx) transactions are
             sent to the DUT and received asynchronously with scoreboard checks.
 
             Stimulus:
@@ -277,11 +278,11 @@
 
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
-              - Combine above sequences in one test to run sequentiall except csr sequence
+              - Combine above sequences in one test to run sequentiall except CSR sequence
               - Randomly add reset between each sequence
 
             Checking:
-              - Ensure transactions are transmitted/received correctly,
+              - Ensure transactions are transmitted/received correctly
               - Ensure reset is handled correctly
             '''
       stage: V2
@@ -295,7 +296,7 @@
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
               - Combine above sequences in one test to run sequentially
-                except csr sequence
+                except CSR sequence
               - Randomly add reset within the sequences then switch to another one
 
             Checking:
@@ -312,9 +313,9 @@
 
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
-              - Reduce access latency for all fifos
+              - Reduce access latency for all FIFOs
               - Issue long read/write back-to-back transactions
-              - Make all fifos accessible without any delay
+              - Make all FIFOs accessible without any delay
               - Clear interrupt quickly
 
             Checking:
@@ -361,11 +362,11 @@
 
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
-              - Run read write mixed traffic.
-              - Assert reset any period between stop and the next start.
+              - Run read write mixed traffic
+              - Assert reset any period between stop and the next start
 
             Checking:
-              - Ensure the remaining entries are not show up after each fifio is reset,
+              - Ensure the remaining entries are not show up after each fifio is reset
             '''
       stage: V2
       tests: ["i2c_target_fifo_reset_acq", "i2c_target_fifo_reset_tx"]
@@ -378,10 +379,10 @@
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
               - Send enough read and write requests to acq_fifo
-              - Slow down acq fifo read process to trigger acq_full interrupt
+              - Slow down acq FIFO read process to trigger acq_full interrupt
 
             Checking:
-              - Check fifo full states by reading status register
+              - Check FIFO full states by reading status register
             '''
       stage: V2
       tests: ["i2c_target_stress_wr", "i2c_target_intr_stress_wr"]
@@ -407,11 +408,11 @@
       name: target_clock_stretch
       desc: '''
             Test clock stretch feature of DUT Target mode.
-            For the write and address transaction, when acq fifo is full, DUT starts to stretch clock.
-            For the read transaction, when dut receives read command, the tx fifo is empty,
+            For the write and address transaction, when acq_fifo is full, DUT starts to stretch clock.
+            For the read transaction, when dut receives read command, the tx_fifo is empty,
             DUT starts to stretch clock.
             Using read / write mixed traffic, trigger stretch condition by slowing down acq / tx
-            fifo process.
+            FIFO process.
 
             Checking:
             Ensure all read /write data received correct on the other side without dropping any data.
@@ -433,10 +434,10 @@
       tests: ["i2c_target_bad_addr"]
     }
     {
-      name: runt_frame
+      name: interrupt_transaction
       desc: '''
-            Create tests to interrupt normal transaction by a new 'start' or reset.
-            Run those test with dut host and target mode if possible.
+            Create tests to interrupt a normal transaction by a new 'start' or 'reset'.
+            Run those tests with dut host and target mode if possible.
 
             Checking:
             Dut can accept a new transaction after discarding interrupted transaction.
