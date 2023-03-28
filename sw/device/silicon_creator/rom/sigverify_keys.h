@@ -8,6 +8,8 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -101,6 +103,57 @@ inline uint32_t sigverify_rom_key_id_get(
     const sigverify_rom_key_header_t *key) {
   return key->key_id;
 }
+
+/**
+ * Input parameters for `sigverify_key_get()`.
+ */
+typedef struct sigverify_key_get_in_params {
+  /**
+   * A key ID.
+   */
+  uint32_t key_id;
+  /**
+   * Life cycle state of the device.
+   */
+  lifecycle_state_t lc_state;
+  /**
+   * Array in which the requested key is searched for.
+   */
+  const sigverify_rom_key_header_t *key_array;
+  /**
+   * Offset of the OTP item that determines the validity of the keys.
+   */
+  size_t otp_offset;
+  /**
+   * Number of keys in `key_array`.
+   */
+  size_t key_cnt;
+  /**
+   * Size of each entry in `key_array`.
+   */
+  size_t key_size;
+  /**
+   * Step size to use when looking for public keys.
+   *
+   * This must be coprime with and less than `key_cnt`.
+   * Note: Step size is not applicable when `key_cnt` is 1.
+   */
+  size_t step;
+} sigverify_key_get_in_params_t;
+
+/**
+ * Returns the key with the given ID.
+ *
+ * This function returns the key only if it can be used in the given life cycle
+ * state and is valid in OTP. OTP check is performed only if the device is in a
+ * non-test operational state (PROD, PROD_END, DEV, RMA).
+ *
+ * @param in_params Input parameters.
+ * @param key Key with the given ID, valid only if it exists.
+ * @return Result of the operation.
+ */
+rom_error_t sigverify_key_get(sigverify_key_get_in_params_t in_params,
+                              const sigverify_rom_key_header_t **key);
 
 #ifdef __cplusplus
 }  // extern "C"

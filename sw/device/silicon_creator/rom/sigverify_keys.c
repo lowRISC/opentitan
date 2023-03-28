@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/silicon_creator/rom/sigverify_keys.h"
+
 #include <assert.h>
 #include <stddef.h>
 
@@ -11,8 +13,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
-
-#include "otp_ctrl_regs.h"
+#include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 
 /**
  * Checks the validity of a key in OTP.
@@ -23,9 +24,9 @@
  * @param key_index Index of the key to check.
  * @return Whether the key is valid or not.
  */
-static rom_error_t key_is_valid_in_otp(size_t key_index) {
+static rom_error_t key_is_valid_in_otp(size_t otp_offset, size_t key_index) {
   const uint32_t addr =
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN_OFFSET +
+      otp_offset +
       (key_index / kSigverifyNumEntriesPerOtpWord) * sizeof(uint32_t);
   const bitfield_field32_t field = {
       .mask = UINT8_MAX,
@@ -51,14 +52,15 @@ static rom_error_t key_is_valid_in_otp(size_t key_index) {
  * @return The result of the operation.
  */
 static rom_error_t key_is_valid_in_lc_state_rma(sigverify_key_type_t key_type,
+                                                size_t otp_offset,
                                                 size_t key_index) {
   switch (launder32(key_type)) {
     case kSigverifyKeyTypeTest:
       HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeTest);
-      return key_is_valid_in_otp(key_index);
+      return key_is_valid_in_otp(otp_offset, key_index);
     case kSigverifyKeyTypeProd:
       HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeProd);
-      return key_is_valid_in_otp(key_index);
+      return key_is_valid_in_otp(otp_offset, key_index);
     case kSigverifyKeyTypeDev:
       HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeDev);
       return kErrorSigverifyBadKey;
@@ -78,6 +80,7 @@ static rom_error_t key_is_valid_in_lc_state_rma(sigverify_key_type_t key_type,
  * @return The result of the operation.
  */
 static rom_error_t key_is_valid_in_lc_state_dev(sigverify_key_type_t key_type,
+                                                size_t otp_offset,
                                                 size_t key_index) {
   switch (launder32(key_type)) {
     case kSigverifyKeyTypeTest:
@@ -85,10 +88,10 @@ static rom_error_t key_is_valid_in_lc_state_dev(sigverify_key_type_t key_type,
       return kErrorSigverifyBadKey;
     case kSigverifyKeyTypeProd:
       HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeProd);
-      return key_is_valid_in_otp(key_index);
+      return key_is_valid_in_otp(otp_offset, key_index);
     case kSigverifyKeyTypeDev:
       HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeDev);
-      return key_is_valid_in_otp(key_index);
+      return key_is_valid_in_otp(otp_offset, key_index);
     default:
       HARDENED_UNREACHABLE();
   }
@@ -105,6 +108,7 @@ static rom_error_t key_is_valid_in_lc_state_dev(sigverify_key_type_t key_type,
  * @return The result of the operation.
  */
 static rom_error_t key_is_valid_in_lc_state_prod(sigverify_key_type_t key_type,
+                                                 size_t otp_offset,
                                                  size_t key_index) {
   switch (launder32(key_type)) {
     case kSigverifyKeyTypeTest:
@@ -112,7 +116,7 @@ static rom_error_t key_is_valid_in_lc_state_prod(sigverify_key_type_t key_type,
       return kErrorSigverifyBadKey;
     case kSigverifyKeyTypeProd:
       HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeProd);
-      return key_is_valid_in_otp(key_index);
+      return key_is_valid_in_otp(otp_offset, key_index);
     case kSigverifyKeyTypeDev:
       HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeDev);
       return kErrorSigverifyBadKey;
@@ -156,59 +160,78 @@ static rom_error_t key_is_valid_in_lc_state_test(
  * @return The result of the operation.
  */
 static rom_error_t key_is_valid(sigverify_key_type_t key_type,
-                                lifecycle_state_t lc_state, size_t key_index) {
+                                lifecycle_state_t lc_state, size_t otp_offset,
+                                size_t key_index) {
   switch (launder32(lc_state)) {
     case kLcStateTest:
       HARDENED_CHECK_EQ(lc_state, kLcStateTest);
       return key_is_valid_in_lc_state_test(key_type);
     case kLcStateProd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProd);
-      return key_is_valid_in_lc_state_prod(key_type, key_index);
+      return key_is_valid_in_lc_state_prod(key_type, otp_offset, key_index);
     case kLcStateProdEnd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
-      return key_is_valid_in_lc_state_prod(key_type, key_index);
+      return key_is_valid_in_lc_state_prod(key_type, otp_offset, key_index);
     case kLcStateDev:
       HARDENED_CHECK_EQ(lc_state, kLcStateDev);
-      return key_is_valid_in_lc_state_dev(key_type, key_index);
+      return key_is_valid_in_lc_state_dev(key_type, otp_offset, key_index);
     case kLcStateRma:
       HARDENED_CHECK_EQ(lc_state, kLcStateRma);
-      return key_is_valid_in_lc_state_rma(key_type, key_index);
+      return key_is_valid_in_lc_state_rma(key_type, otp_offset, key_index);
     default:
       HARDENED_UNREACHABLE();
   }
 }
 
-rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
-                                  const sigverify_rsa_key_t **key) {
+/**
+ * Utility function to get a key entry from any array.
+ *
+ * @param array An array.
+ * @param entry_size Size of each entry in `array`.
+ * @param entry_index Index of the entry to get.
+ * @return Requested entry.
+ */
+static inline const sigverify_rom_key_header_t *array_get_generic(
+    const sigverify_rom_key_header_t *array, size_t entry_size,
+    size_t entry_index) {
+  return (const sigverify_rom_key_header_t *)((const char *)array +
+                                              entry_size * entry_index);
+}
+
+rom_error_t sigverify_key_get(sigverify_key_get_in_params_t in_params,
+                              const sigverify_rom_key_header_t **key) {
   size_t cand_key_index = UINT32_MAX;
-  // Random start index that is less than `kSigverifyRsaKeysCnt`.
-  size_t i = ((uint64_t)rnd_uint32() * (uint64_t)kSigverifyRsaKeysCnt) >> 32;
+  // Random start index that is less than `in_params.key_cnt`.
+  size_t i = ((uint64_t)rnd_uint32() * (uint64_t)in_params.key_cnt) >> 32;
   size_t iter_cnt = 0;
-  for (; launder32(iter_cnt) < kSigverifyRsaKeysCnt; ++iter_cnt) {
-    const sigverify_rom_rsa_key_t *k = &kSigverifyRsaKeys[i];
-    size_t k_id = sigverify_rsa_key_id_get(&k->key.n);
-    if (launder32(k_id) == key_id) {
-      HARDENED_CHECK_EQ(k_id, key_id);
-      rom_error_t error = key_is_valid(k->key_type, lc_state, i);
+  for (; launder32(iter_cnt) < in_params.key_cnt; ++iter_cnt) {
+    const sigverify_rom_key_header_t *k =
+        array_get_generic(in_params.key_array, in_params.key_size, i);
+    if (launder32(sigverify_rom_key_id_get(k)) == in_params.key_id) {
+      HARDENED_CHECK_EQ(sigverify_rom_key_id_get(k), in_params.key_id);
+      rom_error_t error = key_is_valid(k->key_type, in_params.lc_state,
+                                       in_params.otp_offset, i);
       if (launder32(error) == kErrorOk) {
         HARDENED_CHECK_EQ(error, kErrorOk);
         cand_key_index = i;
       }
     }
-    i += kSigverifyRsaKeysStep;
-    if (launder32(i) >= kSigverifyRsaKeysCnt) {
-      i -= kSigverifyRsaKeysCnt;
+    i += in_params.step;
+    if (launder32(i) >= in_params.key_cnt) {
+      i -= in_params.key_cnt;
     }
-    HARDENED_CHECK_LT(i, kSigverifyRsaKeysCnt);
+    HARDENED_CHECK_LT(i, in_params.key_cnt);
   }
-  HARDENED_CHECK_EQ(iter_cnt, kSigverifyRsaKeysCnt);
+  HARDENED_CHECK_EQ(iter_cnt, in_params.key_cnt);
 
-  if (launder32(cand_key_index) < kSigverifyRsaKeysCnt) {
-    HARDENED_CHECK_LT(cand_key_index, kSigverifyRsaKeysCnt);
-    rom_error_t error = key_is_valid(kSigverifyRsaKeys[cand_key_index].key_type,
-                                     lc_state, cand_key_index);
+  if (launder32(cand_key_index) < in_params.key_cnt) {
+    HARDENED_CHECK_LT(cand_key_index, in_params.key_cnt);
+    const sigverify_rom_key_header_t *cand_key = array_get_generic(
+        in_params.key_array, in_params.key_size, cand_key_index);
+    rom_error_t error = key_is_valid(cand_key->key_type, in_params.lc_state,
+                                     in_params.otp_offset, cand_key_index);
     HARDENED_CHECK_EQ(error, kErrorOk);
-    *key = &kSigverifyRsaKeys[cand_key_index].key;
+    *key = cand_key;
     return error;
   }
 
