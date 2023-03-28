@@ -48,8 +48,12 @@ pub struct InitializeTest {
 impl InitializeTest {
     pub fn init_logging(&self) {
         let level = self.logging;
+        // The tests might use OpenOCD which uses util::printer so we will get
+        // more useful logging if we log the target instead of the module path
         if level != LevelFilter::Off {
             env_logger::Builder::from_default_env()
+                .format_target(true)
+                .format_module_path(false)
                 .filter(None, level)
                 .init();
         }

@@ -109,6 +109,8 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
     let logging = opts.logging;
     if logging != LevelFilter::Off {
         env_logger::Builder::from_default_env()
+            .format_target(true)
+            .format_module_path(false)
             .filter(None, opts.logging)
             .init();
     }
@@ -151,6 +153,8 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
     if opts.logging != logging {
         // Try re-initializing the logger.  Ignore errors.
         let _ = env_logger::Builder::from_default_env()
+            .format_target(true)
+            .format_module_path(false)
             .filter(None, opts.logging)
             .try_init();
     }
