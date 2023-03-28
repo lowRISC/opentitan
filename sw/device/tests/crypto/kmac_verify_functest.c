@@ -21,10 +21,7 @@ bool test_main(void) {
   LOG_INFO("Testing cryptolib KMAC driver.");
 
   // Initialize the core with default parameters
-  kmac_error_t err = kmac_hwip_default_configure();
-  if (err != kKmacOk) {
-    return err;
-  }
+  CHECK_STATUS_OK(kmac_hwip_default_configure());
 
   for (size_t i = 0; i < ARRAYSIZE(nist_kmac_vectors); i++) {
     kmac_test_vector_t *current_test_vector = &nist_kmac_vectors[i];
