@@ -20,9 +20,6 @@ For detailed information on USBDEV design features, please see the [USBDEV HWIP 
 ## Testbench architecture
 USBDEV testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
-### Block diagram
-![Block diagram](tb.svg)
-
 ### Top level testbench
 Top level testbench is located at `hw/ip/usbdev/dv/tb/tb.sv`.
 It instantiates the USBDEV DUT module `hw/ip/usbdev/rtl/usbdev.sv`.
