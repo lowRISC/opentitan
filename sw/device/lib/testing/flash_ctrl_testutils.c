@@ -60,27 +60,30 @@ bool flash_ctrl_testutils_wait_transaction_end(
   return output.operation_error == 0;
 }
 
-uint32_t flash_ctrl_testutils_data_region_setup_properties(
+status_t flash_ctrl_testutils_data_region_setup_properties(
     dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
     uint32_t data_region, uint32_t region_size,
-    dif_flash_ctrl_region_properties_t region_properties) {
+    dif_flash_ctrl_region_properties_t region_properties, uint32_t *offset) {
   dif_flash_ctrl_data_region_properties_t data_region_properties = {
       .base = base_page_index,
       .properties = region_properties,
       .size = region_size};
 
-  CHECK_DIF_OK(dif_flash_ctrl_set_data_region_properties(
-      flash_state, data_region, data_region_properties));
-  CHECK_DIF_OK(dif_flash_ctrl_set_data_region_enablement(
-      flash_state, data_region, kDifToggleEnabled));
+  TRY(dif_flash_ctrl_set_data_region_properties(flash_state, data_region,
+                                                data_region_properties));
+  TRY(dif_flash_ctrl_set_data_region_enablement(flash_state, data_region,
+                                                kDifToggleEnabled));
 
-  dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
-  return (base_page_index * device_info.bytes_per_page);
+  if (offset != NULL) {
+    dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
+    *offset = base_page_index * device_info.bytes_per_page;
+  }
+  return OK_STATUS();
 }
 
-uint32_t flash_ctrl_testutils_data_region_setup(
+status_t flash_ctrl_testutils_data_region_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
-    uint32_t data_region, uint32_t region_size) {
+    uint32_t data_region, uint32_t region_size, uint32_t *offset) {
   dif_flash_ctrl_region_properties_t region_properties = {
       .ecc_en = kMultiBitBool4True,
       .high_endurance_en = kMultiBitBool4False,
@@ -89,13 +92,13 @@ uint32_t flash_ctrl_testutils_data_region_setup(
       .rd_en = kMultiBitBool4True,
       .scramble_en = kMultiBitBool4False};
   return flash_ctrl_testutils_data_region_setup_properties(
-      flash_state, base_page_index, data_region, region_size,
-      region_properties);
+      flash_state, base_page_index, data_region, region_size, region_properties,
+      offset);
 }
 
-uint32_t flash_ctrl_testutils_data_region_scrambled_setup(
+status_t flash_ctrl_testutils_data_region_scrambled_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
-    uint32_t data_region, uint32_t region_size) {
+    uint32_t data_region, uint32_t region_size, uint32_t *offset) {
   dif_flash_ctrl_region_properties_t region_properties = {
       .ecc_en = kMultiBitBool4True,
       .high_endurance_en = kMultiBitBool4False,
@@ -104,8 +107,8 @@ uint32_t flash_ctrl_testutils_data_region_scrambled_setup(
       .rd_en = kMultiBitBool4True,
       .scramble_en = kMultiBitBool4True};
   return flash_ctrl_testutils_data_region_setup_properties(
-      flash_state, base_page_index, data_region, region_size,
-      region_properties);
+      flash_state, base_page_index, data_region, region_size, region_properties,
+      offset);
 }
 
 status_t flash_ctrl_testutils_info_region_setup_properties(

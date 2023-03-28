@@ -83,14 +83,12 @@ static uint32_t kBank1Page0Data[kNumTestWords];
 static uint32_t region_addresses[kNumRegions];
 
 static void setup_unscrambled_regions(void) {
-  region_addresses[kAddressBank0Page0Data] =
-      flash_ctrl_testutils_data_region_setup(&flash_state,
-                                             kRegionBaseBank0Page0Index,
-                                             kFlashDataRegionZero, kRegionSize);
-  region_addresses[kAddressBank1Page0Data] =
-      flash_ctrl_testutils_data_region_setup(&flash_state,
-                                             kRegionBaseBank1Page0Index,
-                                             kFlashDataRegionOne, kRegionSize);
+  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
+      &flash_state, kRegionBaseBank0Page0Index, kFlashDataRegionZero,
+      kRegionSize, &region_addresses[kAddressBank0Page0Data]));
+  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
+      &flash_state, kRegionBaseBank1Page0Index, kFlashDataRegionOne,
+      kRegionSize, &region_addresses[kAddressBank1Page0Data]));
   CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
       &flash_state, kFlashInfoPageIdCreatorSecret, kFlashInfoBank, kPartitionId,
       &region_addresses[kAddressCreatorSecret]));
@@ -104,14 +102,12 @@ static void setup_unscrambled_regions(void) {
 }
 
 static void setup_scrambled_regions(void) {
-  region_addresses[kAddressBank0Page0Data] =
-      flash_ctrl_testutils_data_region_scrambled_setup(
-          &flash_state, kRegionBaseBank0Page0Index, kFlashDataRegionZero,
-          kRegionSize);
-  region_addresses[kAddressBank1Page0Data] =
-      flash_ctrl_testutils_data_region_scrambled_setup(
-          &flash_state, kRegionBaseBank1Page0Index, kFlashDataRegionOne,
-          kRegionSize);
+  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_scrambled_setup(
+      &flash_state, kRegionBaseBank0Page0Index, kFlashDataRegionZero,
+      kRegionSize, &region_addresses[kAddressBank0Page0Data]));
+  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_scrambled_setup(
+      &flash_state, kRegionBaseBank1Page0Index, kFlashDataRegionOne,
+      kRegionSize, &region_addresses[kAddressBank1Page0Data]));
   CHECK_STATUS_OK(flash_ctrl_testutils_info_region_scrambled_setup(
       &flash_state, kFlashInfoPageIdCreatorSecret, kFlashInfoBank, kPartitionId,
       &region_addresses[kAddressCreatorSecret]));
