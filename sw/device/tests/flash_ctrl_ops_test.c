@@ -161,8 +161,9 @@ static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
  */
 static void do_info_partition_test(uint32_t partition_number,
                                    const uint32_t *test_data) {
-  uint32_t address = flash_ctrl_testutils_info_region_setup(
-      &flash_state, partition_number, kFlashInfoBank, kPartitionId);
+  uint32_t address;
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
+      &flash_state, partition_number, kFlashInfoBank, kPartitionId, &address));
 
   CHECK_DIF_OK(dif_flash_ctrl_set_prog_fifo_watermark(&flash_state, 0));
   CHECK_DIF_OK(dif_flash_ctrl_set_read_fifo_watermark(&flash_state, 8));

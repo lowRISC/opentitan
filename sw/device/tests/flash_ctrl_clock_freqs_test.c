@@ -56,8 +56,9 @@ static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
  * Confirms that the written data is read back correctly.
  */
 static void do_info_partition_test(uint32_t partition_number) {
-  uint32_t address = flash_ctrl_testutils_info_region_setup(
-      &flash_state, partition_number, kFlashInfoBank, kPartitionId);
+  uint32_t address;
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
+      &flash_state, partition_number, kFlashInfoBank, kPartitionId, &address));
 
   for (int i = 0; i < kDataSize; ++i) {
     test_data[i] = rand_testutils_gen32();

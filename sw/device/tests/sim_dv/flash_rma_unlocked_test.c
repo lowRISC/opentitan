@@ -82,8 +82,10 @@ static const uint32_t kRandomData[7][kDataSize] = {
 
 static void write_info_page_scrambled(uint32_t page_index,
                                       const uint32_t *data) {
-  uint32_t address = flash_ctrl_testutils_info_region_scrambled_setup(
-      &flash_state, page_index, kFlashInfoBank, kPartitionId);
+  uint32_t address = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_scrambled_setup(
+      &flash_state, page_index, kFlashInfoBank, kPartitionId,
+      &address));
   CHECK(flash_ctrl_testutils_erase_and_write_page(
       &flash_state, address, kPartitionId, data, kDifFlashCtrlPartitionTypeInfo,
       kDataSize));
@@ -102,8 +104,9 @@ static void read_and_check_info_page_scrambled(bool is_equal,
                                                uint32_t page_index,
                                                const uint32_t *data) {
   uint32_t readback_data[kDataSize];
-  uint32_t address = flash_ctrl_testutils_info_region_scrambled_setup(
-      &flash_state, page_index, kFlashInfoBank, kPartitionId);
+  uint32_t address = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_scrambled_setup(
+      &flash_state, page_index, kFlashInfoBank, kPartitionId, &address));
 
   CHECK(flash_ctrl_testutils_read(&flash_state, address, kPartitionId,
                                   readback_data, kDifFlashCtrlPartitionTypeInfo,

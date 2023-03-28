@@ -69,8 +69,9 @@ const bool kProdExpectedAccess[5] = {true, true, true, true, false};
 
 static bool access_partitions(bool do_write, bool do_read, int page_id,
                               const uint32_t *data, uint32_t size) {
-  uint32_t address = flash_ctrl_testutils_info_region_setup(
-      &flash, page_id, kBankId, kPartitionId);
+  uint32_t address;
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
+      &flash, page_id, kBankId, kPartitionId, &address));
 
   bool retval = true;
 
