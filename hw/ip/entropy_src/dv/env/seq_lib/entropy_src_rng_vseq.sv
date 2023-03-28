@@ -66,8 +66,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // to AlertState) by creating another checklist variable and updating the task
   // targeted_transition_thread()
 
-  bit [NumRareMainFsmStates - 1:0] rare_state_to_idle_checklist = 8'b00000000;
-  bit [NumRareMainFsmStates - 1:0] rare_state_to_idle_backdoor = 8'b00100000;
+  bit [NumRareMainFsmStates - 1:0] rare_state_to_idle_checklist = '{default: 1'b0};
+  bit [NumRareMainFsmStates - 1:0] rare_state_to_idle_backdoor = '{
+    NumRareMainFsmStates - 3: 1'b1, // StartupHTStart
+    default: 1'b0
+  };
 
   constraint dly_to_access_intr_c {
     dly_to_access_intr dist {
