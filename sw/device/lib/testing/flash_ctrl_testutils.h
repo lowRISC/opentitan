@@ -40,12 +40,14 @@ bool flash_ctrl_testutils_wait_transaction_end(
  * @param data_region The region index.
  * @param region_size The region size (in number of pages).
  * @param region_properties The properties for the data region.
- * @return The byte address offset of the region.
+ * @param region_properties The properties for the data region.
+ * @param[out] offset The byte address offset of the region.
+ * @return The result of the operation.
  */
-uint32_t flash_ctrl_testutils_data_region_setup_properties(
+status_t flash_ctrl_testutils_data_region_setup_properties(
     dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
     uint32_t data_region, uint32_t region_size,
-    dif_flash_ctrl_region_properties_t region_properties);
+    dif_flash_ctrl_region_properties_t region_properties, uint32_t *offset);
 
 /**
  * Setup and enable for a data region with scrambling disabled.
@@ -54,11 +56,12 @@ uint32_t flash_ctrl_testutils_data_region_setup_properties(
  * @param base_page_index The region base page index.
  * @param data_region The region index.
  * @param region_size The region size (in number of pages).
- * @return The byte address offset of the region.
+ * @param[out] offset The byte address offset of the region.
+ * @return The result of the operation.
  */
-uint32_t flash_ctrl_testutils_data_region_setup(
+status_t flash_ctrl_testutils_data_region_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
-    uint32_t data_region, uint32_t region_size);
+    uint32_t data_region, uint32_t region_size, uint32_t *offset);
 
 /**
  * Setup and enable for a data region with scrambling enabled.
@@ -67,11 +70,12 @@ uint32_t flash_ctrl_testutils_data_region_setup(
  * @param base_page_index The region base page index.
  * @param data_region The region index.
  * @param region_size The region size (in number of pages).
- * @return The byte address offset of the region.
+ * @param[out] offset The byte address offset of the region.
+ * @return The result of the operation.
  */
-uint32_t flash_ctrl_testutils_data_region_scrambled_setup(
+status_t flash_ctrl_testutils_data_region_scrambled_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
-    uint32_t data_region, uint32_t region_size);
+    uint32_t data_region, uint32_t region_size, uint32_t *offset);
 
 /**
  * Setup and enable for an info region taking region properties as a parameter.

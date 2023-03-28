@@ -54,7 +54,7 @@ static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
       .ecc_en = kMultiBitBool4False,
       .high_endurance_en = kMultiBitBool4False};
   uint32_t addr;
-  addr = flash_ctrl_testutils_data_region_setup_properties(
+  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup_properties(
       flash_ctrl, base_page, /*data_region=*/kFlashMpRegions - 1,
       /*region_size=*/1, exp_page);
 

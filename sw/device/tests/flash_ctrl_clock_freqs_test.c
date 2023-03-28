@@ -87,9 +87,10 @@ static void do_data_partition_test(uint32_t bank_number) {
   if (bank_number == 0) {
     // Bank 0 contains the program data so can only be read and checked
     // against the host interface read.
-    uint32_t address = flash_ctrl_testutils_data_region_setup(
+    uint32_t address;
+    CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
         &flash_state, kRegionBaseBank0Page0Index, kFlashBank0DataRegion,
-        kRegionSize);
+        kRegionSize, &address));
 
     uint32_t readback_data[kDataSize];
     CHECK(flash_ctrl_testutils_read(
@@ -104,8 +105,10 @@ static void do_data_partition_test(uint32_t bank_number) {
       for (int j = 0; j < kDataSize; ++j) {
         test_data[i] = rand_testutils_gen32();
       }
-      uint32_t address = flash_ctrl_testutils_data_region_setup(
-          &flash_state, page_index, kFlashBank1DataRegion, kRegionSize);
+      uint32_t address;
+      CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
+          &flash_state, page_index, kFlashBank1DataRegion, kRegionSize,
+          &address));
       CHECK(flash_ctrl_testutils_erase_page(&flash_state, address, kPartitionId,
                                             kDifFlashCtrlPartitionTypeData));
       CHECK(flash_ctrl_testutils_write(

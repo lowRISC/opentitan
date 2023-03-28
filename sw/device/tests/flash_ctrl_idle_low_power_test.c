@@ -98,8 +98,9 @@ bool test_main(void) {
   dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
   rstmgr_reset_info = rstmgr_testutils_reason_get();
 
-  uint32_t address = flash_ctrl_testutils_data_region_setup(
-      &flash, kRegionBasePageIndex, kFlashDataRegion, kRegionSize);
+  uint32_t address;
+  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
+      &flash, kRegionBasePageIndex, kFlashDataRegion, kRegionSize, &address));
 
   if (rstmgr_reset_info == kDifRstmgrResetInfoPor) {
     // Create data. Random data will be different than
