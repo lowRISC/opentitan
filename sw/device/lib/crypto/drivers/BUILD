@@ -72,7 +72,7 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:status",
     ],
 )
 

@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
+#include "sw/device/lib/crypto/impl/status.h"
 
 #include "csrng_regs.h"        // Generated
 #include "edn_regs.h"          // Generated
@@ -246,7 +247,7 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
   uint32_t cmd_len = cmd.seed_material == NULL ? 0 : cmd.seed_material->len;
 
   if (cmd_len & ~kAppCmdFieldCmdLen.mask) {
-    return INTERNAL();
+    return OTCRYPTO_RECOV_ERR;
   }
 
   // TODO: Consider removing this since the driver will be constructing these
@@ -255,7 +256,7 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
   // CPU register with natively aligned loads.
   if (cmd.seed_material != NULL &&
       misalignment32_of((uintptr_t)cmd.seed_material->data) != 0) {
-    return INTERNAL();
+    return OTCRYPTO_RECOV_ERR;
   }
 
   if (check_completion) {
@@ -301,12 +302,12 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
       // Check the "status" bit, which will be 1 only if there was an error.
       reg = abs_mmio_read32(kBaseCsrng + CSRNG_SW_CMD_STS_REG_OFFSET);
       if (bitfield_bit32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_BIT)) {
-        return INTERNAL();
+        return OTCRYPTO_RECOV_ERR;
       }
     }
   }
 
-  return OK_STATUS();
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -358,9 +359,9 @@ static status_t edn_ready_block(uint32_t edn_address) {
   } while (!bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_RDY_BIT));
 
   if (bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_STS_BIT)) {
-    return INTERNAL();
+    return OTCRYPTO_RECOV_ERR;
   }
-  return OK_STATUS();
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -371,9 +372,10 @@ static status_t edn_ready_block(uint32_t edn_address) {
  */
 OT_WARN_UNUSED_RESULT
 static status_t edn_configure(const edn_config_t *config) {
-  TRY(csrng_send_app_cmd(config->base_address + EDN_RESEED_CMD_REG_OFFSET,
-                         config->reseed, false));
-  TRY(csrng_send_app_cmd(config->base_address + EDN_GENERATE_CMD_REG_OFFSET,
+  HARDENED_TRY(csrng_send_app_cmd(
+      config->base_address + EDN_RESEED_CMD_REG_OFFSET, config->reseed, false));
+  HARDENED_TRY(
+      csrng_send_app_cmd(config->base_address + EDN_GENERATE_CMD_REG_OFFSET,
                          config->generate, false));
   abs_mmio_write32(
       config->base_address + EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_REG_OFFSET,
@@ -385,8 +387,9 @@ static status_t edn_configure(const edn_config_t *config) {
                                kMultiBitBool4True);
   abs_mmio_write32(config->base_address + EDN_CTRL_REG_OFFSET, reg);
 
-  TRY(edn_ready_block(config->base_address));
-  TRY(csrng_send_app_cmd(config->base_address + EDN_SW_CMD_REQ_REG_OFFSET,
+  HARDENED_TRY(edn_ready_block(config->base_address));
+  HARDENED_TRY(
+      csrng_send_app_cmd(config->base_address + EDN_SW_CMD_REQ_REG_OFFSET,
                          config->instantiate, false));
   return edn_ready_block(config->base_address);
 }
@@ -485,7 +488,7 @@ static status_t entropy_src_configure(const entropy_complex_config_t *config) {
                    kMultiBitBool4True);
 
   // TODO: Add FI checks.
-  return OK_STATUS();
+  return OTCRYPTO_OK;
 }
 
 status_t entropy_complex_init(void) {
@@ -494,14 +497,14 @@ status_t entropy_complex_init(void) {
   const entropy_complex_config_t *config =
       &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous];
   if (launder32(config->id) != kEntropyComplexConfigIdContinuous) {
-    return INTERNAL();
+    return OTCRYPTO_RECOV_ERR;
   }
 
   // TODO: Add health check configuration.
 
-  TRY(entropy_src_configure(config));
+  HARDENED_TRY(entropy_src_configure(config));
   csrng_configure();
-  TRY(edn_configure(&config->edn0));
+  HARDENED_TRY(edn_configure(&config->edn0));
   return edn_configure(&config->edn1);
 }
 
@@ -568,12 +571,12 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len) {
     }
     buf[i] = abs_mmio_read32(kBaseCsrng + CSRNG_GENBITS_REG_OFFSET);
   }
-  return OK_STATUS();
+  return OTCRYPTO_OK;
 }
 
 status_t entropy_csrng_generate(const entropy_seed_material_t *seed_material,
                                 uint32_t *buf, size_t len) {
-  TRY(entropy_csrng_generate_start(seed_material, len));
+  HARDENED_TRY(entropy_csrng_generate_start(seed_material, len));
   return entropy_csrng_generate_data_get(buf, len);
 }
 
