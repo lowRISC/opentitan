@@ -242,7 +242,7 @@ bool test_main(void) {
   flash_info = dif_flash_ctrl_get_device_info();
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  flash_ctrl_testutils_wait_for_init(&flash);
+  CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash));
 
   LOG_INFO("flash test!");
 

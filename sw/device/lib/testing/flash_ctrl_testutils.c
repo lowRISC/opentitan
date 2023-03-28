@@ -18,11 +18,13 @@
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-void flash_ctrl_testutils_wait_for_init(dif_flash_ctrl_state_t *flash_state) {
+status_t flash_ctrl_testutils_wait_for_init(
+    dif_flash_ctrl_state_t *flash_state) {
   dif_flash_ctrl_status_t status;
   do {
-    CHECK_DIF_OK(dif_flash_ctrl_get_status(flash_state, &status));
+    TRY(dif_flash_ctrl_get_status(flash_state, &status));
   } while (status.controller_init_wip);
+  return OK_STATUS();
 }
 
 bool flash_ctrl_testutils_wait_transaction_end(
