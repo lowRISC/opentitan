@@ -30,6 +30,7 @@
             Checking:
               - Check the timing behavior of START, STOP, ACK, NACK, and "repeated" START
               - Read and write transfer matching
+              - Command complete interrupt (cmd_complete) raised
             '''
       stage: V1
       tests: ["i2c_host_smoke"]
@@ -138,7 +139,7 @@
               - Write data quickly to fmt_fifo and rx_fifo for triggering watermark interrupts
 
             Checking:
-              - Ensure the fmt_fifo and rx_fifo watermark interrupts are asserted
+              - Ensure the fmt_fifo and rx_fifo watermark interrupts are asserted (fmt_threshold and rx_threshold)
               - Ensure the fmt_fifo and rx_fifo watermark interrupts stay asserted until cleared
               - Ensure receving correct number of fmt_fifo and rx_fifo watermark interrupts
             '''
@@ -228,6 +229,20 @@
             '''
       stage: V2
       tests: ["i2c_host_rx_oversample"]
+    }
+    {
+      name: host_nak
+      desc: '''
+            Host mode: test response to not receiving an ack
+
+            Stimulus:
+              - Host sends an address or a data write but receives no ack
+
+            Checking:
+              - Interrupt nak is raised
+            '''
+      stage: V2
+      tests: [""]
     }
 
     //-----------------------------------------------
@@ -383,6 +398,7 @@
 
             Checking:
               - Check FIFO full states by reading status register
+              - Whether acq_full interrupt raised
             '''
       stage: V2
       tests: ["i2c_target_stress_wr", "i2c_target_intr_stress_wr"]
@@ -419,6 +435,14 @@
             '''
       stage: V2
       tests: ["i2c_target_stretch"]
+    }
+    {
+      name: target_loopback
+      desc: '''
+            Test loopback mode, which is enabled by i2c.CTRL.LLPBK.
+            '''
+      stage: V3
+      tests: [""]
     }
     {
       name: bad_address
