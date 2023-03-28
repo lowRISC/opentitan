@@ -81,7 +81,8 @@ bool test_main(void) {
                                                  /*ecc_en*/ false,
                                                  /*he_en*/ false));
 
-  uint32_t wakeup_count = flash_ctrl_testutils_counter_get(0);
+  uint32_t wakeup_count = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &wakeup_count));
   int wakeup_unit = get_wakeup_unit(wakeup_count);
   bool deep_sleep = get_deep_sleep(wakeup_count);
 
@@ -91,8 +92,8 @@ bool test_main(void) {
     check_wakeup_reason(wakeup_unit);
     LOG_INFO("Woke up by source %d", wakeup_unit);
     cleanup(wakeup_unit);
-    flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
-    wakeup_count = flash_ctrl_testutils_counter_get(0);
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &wakeup_count));
     wakeup_unit = get_wakeup_unit(wakeup_count);
     deep_sleep = get_deep_sleep(wakeup_count);
     delay_n_clear(4);
@@ -106,8 +107,8 @@ bool test_main(void) {
           deep_sleep) {
         return true;
       }
-      flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
-      wakeup_count = flash_ctrl_testutils_counter_get(0);
+      CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
+      CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &wakeup_count));
       wakeup_unit = get_wakeup_unit(wakeup_count);
       deep_sleep = get_deep_sleep(wakeup_count);
       delay_n_clear(4);

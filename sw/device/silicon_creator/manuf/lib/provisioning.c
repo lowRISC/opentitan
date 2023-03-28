@@ -242,20 +242,14 @@ static status_t flash_ctrl_creator_secret_write(
       flash_state, kFlashInfoPageIdCreatorSecret, kFlashInfoBankId,
       kFlashInfoPartitionId, &address));
 
-  if (!flash_ctrl_testutils_erase_and_write_page(
-          flash_state, address, kFlashInfoPartitionId, creator_seed,
-          kDifFlashCtrlPartitionTypeInfo, kCreatorSeedSizeInWords)) {
-    return INTERNAL();
-  }
+  TRY(flash_ctrl_testutils_erase_and_write_page(
+      flash_state, address, kFlashInfoPartitionId, creator_seed,
+      kDifFlashCtrlPartitionTypeInfo, kCreatorSeedSizeInWords));
 
   uint32_t creator_seed_result[kCreatorSeedSizeInWords];
-  if (!flash_ctrl_testutils_read(flash_state, address, kFlashInfoPartitionId,
-                                 creator_seed_result,
-                                 kDifFlashCtrlPartitionTypeInfo,
-                                 kCreatorSeedSizeInWords, /*delay=*/0)) {
-    return INTERNAL();
-  }
-
+  TRY(flash_ctrl_testutils_read(
+      flash_state, address, kFlashInfoPartitionId, creator_seed_result,
+      kDifFlashCtrlPartitionTypeInfo, kCreatorSeedSizeInWords, /*delay=*/0));
   bool found_error = false;
   for (size_t i = 0; i < kCreatorSeedSizeInWords; ++i) {
     found_error |= creator_seed[i] == 0 || creator_seed[i] == UINT32_MAX ||

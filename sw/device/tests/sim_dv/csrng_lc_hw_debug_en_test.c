@@ -312,10 +312,10 @@ bool test_main(void) {
         (uint32_t)(nv_csrng_output)-TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
     uint32_t expected[kEntropyFifoBufferSize];
     csrng_static_generate_run(expected, ARRAYSIZE(expected));
-    CHECK(flash_ctrl_testutils_write(&flash_ctrl_state, address,
-                                     /*partition_id=*/0, expected,
-                                     kDifFlashCtrlPartitionTypeData,
-                                     ARRAYSIZE(expected)));
+    CHECK_STATUS_OK(flash_ctrl_testutils_write(&flash_ctrl_state, address,
+                                               /*partition_id=*/0, expected,
+                                               kDifFlashCtrlPartitionTypeData,
+                                               ARRAYSIZE(expected)));
     CHECK_ARRAYS_EQ(nv_csrng_output, expected, ARRAYSIZE(expected));
 
     lock_otp_secret0_partition();

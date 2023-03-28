@@ -84,9 +84,8 @@ static void write_info_page_scrambled(uint32_t page_index,
                                       const uint32_t *data) {
   uint32_t address = 0;
   CHECK_STATUS_OK(flash_ctrl_testutils_info_region_scrambled_setup(
-      &flash_state, page_index, kFlashInfoBank, kPartitionId,
-      &address));
-  CHECK(flash_ctrl_testutils_erase_and_write_page(
+      &flash_state, page_index, kFlashInfoBank, kPartitionId, &address));
+  CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
       &flash_state, address, kPartitionId, data, kDifFlashCtrlPartitionTypeInfo,
       kDataSize));
 }
@@ -96,7 +95,7 @@ static void write_data_page_scrambled(uint32_t page_index, uint32_t region,
   uint32_t address;
   CHECK_STATUS_OK(flash_ctrl_testutils_data_region_scrambled_setup(
       &flash_state, page_index, region, kRegionSize, &address));
-  CHECK(flash_ctrl_testutils_erase_and_write_page(
+  CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
       &flash_state, address, kPartitionId, data, kDifFlashCtrlPartitionTypeData,
       kDataSize));
 }
@@ -109,9 +108,9 @@ static void read_and_check_info_page_scrambled(bool is_equal,
   CHECK_STATUS_OK(flash_ctrl_testutils_info_region_scrambled_setup(
       &flash_state, page_index, kFlashInfoBank, kPartitionId, &address));
 
-  CHECK(flash_ctrl_testutils_read(&flash_state, address, kPartitionId,
-                                  readback_data, kDifFlashCtrlPartitionTypeInfo,
-                                  kDataSize, 0));
+  CHECK_STATUS_OK(flash_ctrl_testutils_read(
+      &flash_state, address, kPartitionId, readback_data,
+      kDifFlashCtrlPartitionTypeInfo, kDataSize, 0));
   if (is_equal) {
     CHECK_ARRAYS_EQ(readback_data, data, kDataSize);
   } else {
@@ -128,9 +127,9 @@ static void read_and_check_data_page_scrambled(bool is_equal,
   CHECK_STATUS_OK(flash_ctrl_testutils_data_region_scrambled_setup(
       &flash_state, page_index, region, kRegionSize, &address));
 
-  CHECK(flash_ctrl_testutils_read(&flash_state, address, kPartitionId,
-                                  readback_data, kDifFlashCtrlPartitionTypeData,
-                                  kDataSize, 0));
+  CHECK_STATUS_OK(flash_ctrl_testutils_read(
+      &flash_state, address, kPartitionId, readback_data,
+      kDifFlashCtrlPartitionTypeData, kDataSize, 0));
   if (is_equal) {
     CHECK_ARRAYS_EQ(readback_data, data, kDataSize);
   } else {

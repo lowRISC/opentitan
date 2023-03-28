@@ -47,12 +47,12 @@ static status_t write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
         flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
   }
 
-  TRY_CHECK(flash_ctrl_testutils_erase_and_write_page(
+  TRY(flash_ctrl_testutils_erase_and_write_page(
       flash, address, kFlashInfoPartitionId, data->value,
       kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(data->value)));
 
   keymgr_testutils_secret_t readback_data;
-  TRY_CHECK(flash_ctrl_testutils_read(
+  TRY(flash_ctrl_testutils_read(
       flash, address, kFlashInfoPartitionId, readback_data.value,
       kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(readback_data.value), 0));
   TRY_CHECK(memcmp(data->value, readback_data.value, sizeof(data->value)) == 0);
