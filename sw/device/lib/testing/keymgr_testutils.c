@@ -38,13 +38,13 @@ enum {
 static status_t write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
                                 const keymgr_testutils_secret_t *data,
                                 bool scramble) {
-  uint32_t address;
+  uint32_t address = 0;
   if (scramble) {
-    address = flash_ctrl_testutils_info_region_scrambled_setup(
-        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId);
+    TRY(flash_ctrl_testutils_info_region_scrambled_setup(
+        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
   } else {
-    address = flash_ctrl_testutils_info_region_setup(
-        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId);
+    TRY(flash_ctrl_testutils_info_region_setup(
+        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
   }
 
   TRY_CHECK(flash_ctrl_testutils_erase_and_write_page(

@@ -71,9 +71,9 @@ static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
       .ecc_en = kMultiBitBool4False,
       .high_endurance_en = kMultiBitBool4False};
 
-  addr = flash_ctrl_testutils_info_region_setup_properties(
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup_properties(
       flash_ctrl, /*page_id=*/3,
-      /*bank=*/0, /*partition_id=*/0, iso_page);
+      /*bank=*/0, /*partition_id=*/0, iso_page, &addr));
 
   uint32_t read_data[16];
   CHECK(flash_ctrl_testutils_read(flash_ctrl, addr, /*partition_id=*/0,

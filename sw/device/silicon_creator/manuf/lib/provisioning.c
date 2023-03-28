@@ -237,9 +237,10 @@ static status_t flash_ctrl_creator_secret_write(
                              kCreatorSeedSizeInWords));
   TRY(entropy_csrng_uninstantiate());
 
-  uint32_t address = flash_ctrl_testutils_info_region_scrambled_setup(
+  uint32_t address = 0;
+  TRY(flash_ctrl_testutils_info_region_scrambled_setup(
       flash_state, kFlashInfoPageIdCreatorSecret, kFlashInfoBankId,
-      kFlashInfoPartitionId);
+      kFlashInfoPartitionId, &address));
 
   if (!flash_ctrl_testutils_erase_and_write_page(
           flash_state, address, kFlashInfoPartitionId, creator_seed,

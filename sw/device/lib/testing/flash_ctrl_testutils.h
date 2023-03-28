@@ -81,12 +81,13 @@ uint32_t flash_ctrl_testutils_data_region_scrambled_setup(
  * @param bank The required bank.
  * @param partition_id The partition index.
  * @param region_properties The properties for the info region.
- * @return The byte address offset of the region.
+ * @param[out] offset The byte address offset of the region.
+ * @return The result of the operation.
  */
-uint32_t flash_ctrl_testutils_info_region_setup_properties(
+status_t flash_ctrl_testutils_info_region_setup_properties(
     dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
-    uint32_t partition_id,
-    dif_flash_ctrl_region_properties_t region_properties);
+    uint32_t partition_id, dif_flash_ctrl_region_properties_t region_properties,
+    uint32_t *offset);
 
 /**
  * Setup and enable for an info region with scrambling disabled.
@@ -95,11 +96,12 @@ uint32_t flash_ctrl_testutils_info_region_setup_properties(
  * @param page_id Region page index.
  * @param bank The required bank.
  * @param partition_id The partition index.
- * @return The byte address offset of the region.
+ * @param[out] offset The byte address offset of the region.
+ * @return The result of the operation.
  */
-uint32_t flash_ctrl_testutils_info_region_setup(
+status_t flash_ctrl_testutils_info_region_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
-    uint32_t partition_id);
+    uint32_t partition_id, uint32_t *offset);
 
 /**
  * Setup and enable for an info region with scrambling enabled.
@@ -108,11 +110,12 @@ uint32_t flash_ctrl_testutils_info_region_setup(
  * @param page_id Region page index.
  * @param bank The required bank.
  * @param partition_id The partition index.
- * @return The byte address offset of the region.
+ * @param[out] offset The byte address offset of the region.
+ * @return The result of the operation.
  */
-uint32_t flash_ctrl_testutils_info_region_scrambled_setup(
+status_t flash_ctrl_testutils_info_region_scrambled_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
-    uint32_t partition_id);
+    uint32_t partition_id, uint32_t *offset);
 
 /**
  * Erases the page at byte_address.

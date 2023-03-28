@@ -108,25 +108,28 @@ uint32_t flash_ctrl_testutils_data_region_scrambled_setup(
       region_properties);
 }
 
-uint32_t flash_ctrl_testutils_info_region_setup_properties(
+status_t flash_ctrl_testutils_info_region_setup_properties(
     dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
-    uint32_t partition_id,
-    dif_flash_ctrl_region_properties_t region_properties) {
+    uint32_t partition_id, dif_flash_ctrl_region_properties_t region_properties,
+    uint32_t *offset) {
   dif_flash_ctrl_info_region_t info_region = {
       .bank = bank, .page = page_id, .partition_id = partition_id};
 
-  CHECK_DIF_OK(dif_flash_ctrl_set_info_region_properties(
-      flash_state, info_region, region_properties));
-  CHECK_DIF_OK(dif_flash_ctrl_set_info_region_enablement(
-      flash_state, info_region, kDifToggleEnabled));
+  TRY(dif_flash_ctrl_set_info_region_properties(flash_state, info_region,
+                                                region_properties));
+  TRY(dif_flash_ctrl_set_info_region_enablement(flash_state, info_region,
+                                                kDifToggleEnabled));
 
-  dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
-  return (page_id * device_info.bytes_per_page);
+  if (offset != NULL) {
+    dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
+    *offset = page_id * device_info.bytes_per_page;
+  }
+  return OK_STATUS();
 }
 
-uint32_t flash_ctrl_testutils_info_region_setup(
+status_t flash_ctrl_testutils_info_region_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
-    uint32_t partition_id) {
+    uint32_t partition_id, uint32_t *offset) {
   dif_flash_ctrl_region_properties_t region_properties = {
       .ecc_en = kMultiBitBool4True,
       .high_endurance_en = kMultiBitBool4False,
@@ -135,12 +138,12 @@ uint32_t flash_ctrl_testutils_info_region_setup(
       .rd_en = kMultiBitBool4True,
       .scramble_en = kMultiBitBool4False};
   return flash_ctrl_testutils_info_region_setup_properties(
-      flash_state, page_id, bank, partition_id, region_properties);
+      flash_state, page_id, bank, partition_id, region_properties, offset);
 }
 
-uint32_t flash_ctrl_testutils_info_region_scrambled_setup(
+status_t flash_ctrl_testutils_info_region_scrambled_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
-    uint32_t partition_id) {
+    uint32_t partition_id, uint32_t *offset) {
   dif_flash_ctrl_region_properties_t region_properties = {
       .ecc_en = kMultiBitBool4True,
       .high_endurance_en = kMultiBitBool4False,
@@ -149,7 +152,7 @@ uint32_t flash_ctrl_testutils_info_region_scrambled_setup(
       .rd_en = kMultiBitBool4True,
       .scramble_en = kMultiBitBool4True};
   return flash_ctrl_testutils_info_region_setup_properties(
-      flash_state, page_id, bank, partition_id, region_properties);
+      flash_state, page_id, bank, partition_id, region_properties, offset);
 }
 
 bool flash_ctrl_testutils_erase_page(

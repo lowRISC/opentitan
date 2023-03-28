@@ -91,16 +91,16 @@ static void setup_unscrambled_regions(void) {
       flash_ctrl_testutils_data_region_setup(&flash_state,
                                              kRegionBaseBank1Page0Index,
                                              kFlashDataRegionOne, kRegionSize);
-  region_addresses[kAddressCreatorSecret] =
-      flash_ctrl_testutils_info_region_setup(&flash_state,
-                                             kFlashInfoPageIdCreatorSecret,
-                                             kFlashInfoBank, kPartitionId);
-  region_addresses[kAddressOwnerSecret] =
-      flash_ctrl_testutils_info_region_setup(&flash_state,
-                                             kFlashInfoPageIdOwnerSecret,
-                                             kFlashInfoBank, kPartitionId);
-  region_addresses[kAddressIsoPart] = flash_ctrl_testutils_info_region_setup(
-      &flash_state, kFlashInfoPageIdIsoPart, kFlashInfoBank, kPartitionId);
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
+      &flash_state, kFlashInfoPageIdCreatorSecret, kFlashInfoBank, kPartitionId,
+      &region_addresses[kAddressCreatorSecret]));
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
+      &flash_state, kFlashInfoPageIdOwnerSecret, kFlashInfoBank, kPartitionId,
+      &region_addresses[kAddressOwnerSecret]));
+
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
+      &flash_state, kFlashInfoPageIdIsoPart, kFlashInfoBank, kPartitionId,
+      &region_addresses[kAddressIsoPart]));
 }
 
 static void setup_scrambled_regions(void) {
@@ -112,17 +112,15 @@ static void setup_scrambled_regions(void) {
       flash_ctrl_testutils_data_region_scrambled_setup(
           &flash_state, kRegionBaseBank1Page0Index, kFlashDataRegionOne,
           kRegionSize);
-  region_addresses[kAddressCreatorSecret] =
-      flash_ctrl_testutils_info_region_scrambled_setup(
-          &flash_state, kFlashInfoPageIdCreatorSecret, kFlashInfoBank,
-          kPartitionId);
-  region_addresses[kAddressOwnerSecret] =
-      flash_ctrl_testutils_info_region_scrambled_setup(
-          &flash_state, kFlashInfoPageIdOwnerSecret, kFlashInfoBank,
-          kPartitionId);
-  region_addresses[kAddressIsoPart] =
-      flash_ctrl_testutils_info_region_scrambled_setup(
-          &flash_state, kFlashInfoPageIdIsoPart, kFlashInfoBank, kPartitionId);
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_scrambled_setup(
+      &flash_state, kFlashInfoPageIdCreatorSecret, kFlashInfoBank, kPartitionId,
+      &region_addresses[kAddressCreatorSecret]));
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_scrambled_setup(
+      &flash_state, kFlashInfoPageIdOwnerSecret, kFlashInfoBank, kPartitionId,
+      &region_addresses[kAddressOwnerSecret]));
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_scrambled_setup(
+      &flash_state, kFlashInfoPageIdIsoPart, kFlashInfoBank, kPartitionId,
+      &region_addresses[kAddressIsoPart]));
 }
 
 static void erase_and_write_regions(void) {
