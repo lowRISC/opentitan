@@ -116,6 +116,7 @@ cc_library(
         ":rom_epmp",
         ":sigverify_keys",
         ":sigverify_keys_rsa",
+        ":sigverify_keys_spx",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",
@@ -310,6 +311,24 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+    ],
+)
+
+cc_library(
+    name = "sigverify_keys_spx",
+    srcs = [
+        "sigverify_keys_spx.c",
+    ],
+    hdrs = [
+        "sigverify_keys_spx.h",
+    ],
+    deps = [
+        ":sigverify_keys",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/sigverify:spx_key",
     ],
 )
 
