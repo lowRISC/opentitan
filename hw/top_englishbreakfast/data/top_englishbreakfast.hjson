@@ -136,7 +136,7 @@
     // If type is "ext", there is no root, since it is external
     //
     // domains: The power domains of a particular reset
-    // This is a list of of the supported power domains.
+    // This is a list of the supported power domains.
     // Valid values are Aon and (power domain)0 ~ (power domain)1.
     // If no value is supplied, the default is only the Aon version.
     //
