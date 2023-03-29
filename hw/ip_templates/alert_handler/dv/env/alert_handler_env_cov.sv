@@ -154,11 +154,9 @@ class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_
     num_cycles_cp: coverpoint num_cycles_between_pings{
       bins less_than_5000_cycs = {[1:4_999]};
       bins less_than_100k_cycs = {[5_000:99_999]};
-      bins less_than_200k_cycs = {[100_000:199_999]};
-      bins less_than_300k_cycs = {[200_000:299_999]};
-      bins less_than_400k_cycs = {[300_000:399_999]};
-      bins less_than_500k_cycs = {[400_000:499_999]};
-      bins more_than_500k_cycs = {[500_000:'hFFFF]};
+      bins less_than_150k_cycs = {[5_000:149_999]};
+      bins less_than_200k_cycs = {[150_000:199_999]};
+      bins more_than_200k_cycs = {[200_000:$]};
     }
   endgroup
 
