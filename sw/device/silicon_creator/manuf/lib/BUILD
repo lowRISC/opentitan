@@ -5,6 +5,7 @@
 load(
     "//rules:opentitan_test.bzl",
     "OPENTITANTOOL_OPENOCD_DATA_DEPS",
+    "OPENTITANTOOL_OPENOCD_TEST_CMDS",
     "cw310_params",
     "opentitan_functest",
 )
@@ -251,5 +252,26 @@ test_suite(
     tests = [
         ":manuf_scrap_functest_{}".format(lc_state)
         for lc_state, _ in _ALL_LC_ITEMS
+    ],
+)
+
+opentitan_functest(
+    name = "manuf_cp_unlock_raw_functest",
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:rom_otp_raw",
+        tags = [
+            "jtag",
+        ],
+        test_cmds = OPENTITANTOOL_OPENOCD_TEST_CMDS,
+    ),
+    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+    targets = ["cw310_rom"],
+    test_harness = "//sw/host/tests/manuf/manuf_cp_unlock_raw:manuf_cp_unlock_raw",
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
     ],
 )
