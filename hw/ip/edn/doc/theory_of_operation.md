@@ -1,6 +1,6 @@
 # Theory of Operation
 
-The EDN is for distributing random number streams to hardware blocks, via peripheral ports on on the EDN.
+The EDN is for distributing random number streams to hardware blocks, via peripheral ports on the EDN.
 Each block connected to a peripheral port is referred to as an endpoint.
 
 To enable the EDN block, set the `EDN_ENABLE` field in the [`CTRL`](../data/edn.hjson#ctrl) register..
