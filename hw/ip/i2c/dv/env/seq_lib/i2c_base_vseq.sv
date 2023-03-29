@@ -730,7 +730,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   // For read transaction, all read bytes for one transaction is accumulated to 'full_txn'
   // and compared with received transaction at the scoreboard.
   virtual function void fetch_txn(ref i2c_item src_q[$], i2c_item dst_q[$],
-                                  input bit force_ack = 0);
+                                  input bit force_ack = 0, bit skip_start = 0);
     i2c_item txn;
     i2c_item rs_txn;
     i2c_item exp_txn;
@@ -752,10 +752,15 @@ class i2c_base_vseq extends cip_base_vseq #(
     `uvm_create_obj(i2c_item, full_txn)
 
     // Add 'START' to the front
-    `uvm_create_obj(i2c_item, txn)
-    txn.drv_type = HostStart;
-    dst_q.push_back(txn);
-    full_txn.start = 1;
+    if (!skip_start) begin
+      `uvm_create_obj(i2c_item, txn)
+      txn.drv_type = HostStart;
+      dst_q.push_back(txn);
+      full_txn.start = 1;
+    end
+    else begin
+      full_txn.rstart = 1;
+    end
     if (is_read) full_txn.tran_id = this.exp_rd_id;
     // Address
     `uvm_create_obj(i2c_item, txn)
