@@ -150,7 +150,7 @@ The following functions are the basic functionality for initializing and
 handling the lifetime of a handle.
 
 * `dif_result_t dif_<ip>_init(mmio_region_t base_addr, dif_<ip>_t *handle);`
-  initializes `handle` with with the base address of the instantiated IP this
+  initializes `handle` with the base address of the instantiated IP this
   DIF is targeting to use. This DIF is **auto-generated**.
 
 * `dif_result_t dif_<ip>_configure(const dif_<ip>_t *handle, dif_<ip>_config_t

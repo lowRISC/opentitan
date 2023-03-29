@@ -2302,7 +2302,7 @@
               enabled.
             - Read the OTP and verify that the fuse is enabled.
             - Read the entropy_data_fifo via SW and verify that it reads valid values.
-            - Reset the chip, but this time, initialize the OTP with with the fuse disabled.
+            - Reset the chip, but this time, initialize the OTP with the fuse disabled.
             - Read the OTP and verify that fuse is disabled.
             - Read the internal state via SW and verify that the entropy valid bit is zero.
             '''
