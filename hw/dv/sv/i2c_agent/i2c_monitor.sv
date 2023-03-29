@@ -258,40 +258,69 @@ class i2c_monitor extends dv_base_monitor #(
     end
   endtask : monitor_ready_to_end
 
+  // Handle agent reset and set stop bit to indicate completion of the current transaction
+  task handle_agent_rst(input string task_name);
+    int wait_timeout_ns = 1_000_000; // 1 ms
+    if (cfg.agent_rst) begin
+      @(cfg.vif.cb);
+      mon_dut_item.clear_all();
+      `DV_WAIT((!cfg.agent_rst), , wait_timeout_ns, $sformatf("%s:agent reset de-assert",
+               task_name));
+      cfg.got_stop = 1;
+      `uvm_info(`gfn, $sformatf("monitor forceout from %s", task_name), UVM_MEDIUM)
+    end
+  endtask
+
   task target_addr(ref bit skip);
     bit r_bit = 1'b0;
+    bit do_skip = 0; // ref variable update is not supported in fork-join_any/none
     skip = 0;
-    cfg.vif.drv_phase = DrvAddr;
-    // collecting address
-    for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
-      cfg.vif.p_edge_scl();
-      mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
-      `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]),
-                UVM_HIGH)
-    end
-    `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_MEDIUM)
-    cfg.vif.p_edge_scl();
-    r_bit = cfg.vif.cb.sda_i;
-    `uvm_info(`gfn, $sformatf("\nmonitor, rw %d", r_bit), UVM_MEDIUM)
-    mon_dut_item.bus_op = (r_bit) ? BusOpRead : BusOpWrite;
-    cfg.valid_addr = is_target_addr(mon_dut_item.addr);
-    cfg.is_read = r_bit;
+    fork begin
+       fork
+         begin // address capture thread
+           cfg.vif.drv_phase = DrvAddr;
+           // collecting address
+           for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
+             cfg.vif.p_edge_scl();
+             mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
+             `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]),
+                       UVM_HIGH)
+           end
+           `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_MEDIUM)
+           cfg.vif.p_edge_scl();
+           r_bit = cfg.vif.cb.sda_i;
+           `uvm_info(`gfn, $sformatf("\nmonitor, rw %d", r_bit), UVM_MEDIUM)
+           mon_dut_item.bus_op = (r_bit) ? BusOpRead : BusOpWrite;
+           cfg.valid_addr = is_target_addr(mon_dut_item.addr);
+           cfg.is_read = r_bit;
 
-    if (mon_dut_item.bus_op == BusOpRead) begin
-      cfg.read_addr_q.push_back(cfg.valid_addr);
-    end
-    `uvm_info(`gfn, $sformatf("allow_bad_addr : %0d is_target_addr:%0d",
-                              cfg.allow_bad_addr, cfg.valid_addr), UVM_MEDIUM)
-    if (cfg.allow_bad_addr & !cfg.valid_addr) begin
-      // skip rest of transaction and wait for next start
-      `uvm_info(`gfn, $sformatf("illegal address :0x%x", mon_dut_item.addr), UVM_MEDIUM)
-      mon_dut_item.clear_all();
-      skip = 1;
-    end else begin
-      // expect target addr ack
-      cfg.vif.sample_target_data(cfg.timing_cfg, r_bit);
-      `DV_CHECK_CASE_EQ(r_bit, 1'b0)
-    end
+           if (mon_dut_item.bus_op == BusOpRead) begin
+             cfg.read_addr_q.push_back(cfg.valid_addr);
+           end
+           `uvm_info(`gfn, $sformatf("allow_bad_addr : %0d is_target_addr:%0d",
+                                     cfg.allow_bad_addr, cfg.valid_addr), UVM_MEDIUM)
+           if (cfg.allow_bad_addr & !cfg.valid_addr) begin
+             // skip rest of transaction and wait for next start
+             `uvm_info(`gfn, $sformatf("illegal address :0x%x", mon_dut_item.addr), UVM_MEDIUM)
+             mon_dut_item.clear_all();
+             do_skip = 1;
+           end else begin
+             // expect target addr ack
+             cfg.vif.sample_target_data(cfg.timing_cfg, r_bit);
+             `DV_CHECK_CASE_EQ(r_bit, 1'b0)
+           end
+         end
+         begin // agent reset thread
+           bit rst_detected = 0;
+           wait(cfg.agent_rst);
+           handle_agent_rst("target_addr");
+           do_skip = 1; // Skip processing rest of the transaction
+         end
+       join_any
+       disable fork;
+      end
+    join
+    skip = do_skip;
   endtask
 
   // Rewrite read / write task using glitch free edge functions.
@@ -346,14 +375,7 @@ class i2c_monitor extends dv_base_monitor #(
           // This is undeterministic event so cannot set the timeout,
           // but this thread will be terminated by the other thread.
           wait((cfg.allow_ack_stop & mon_rstart) | cfg.agent_rst);
-          if (cfg.agent_rst) begin
-            int wait_timeout_ns = 1_000_000; // 1 ms
-            @(cfg.vif.cb);
-            mon_dut_item.clear_all();
-            `DV_WAIT((!cfg.agent_rst),, wait_timeout_ns, "target_read:agent reset de-assert");
-            cfg.got_stop = 1;
-            `uvm_info(`gfn, "monitor forceout from target_read", UVM_MEDIUM)
-          end
+          handle_agent_rst("target_read");
         end
       join_any
       disable fork;
@@ -394,13 +416,8 @@ class i2c_monitor extends dv_base_monitor #(
           end
         end
         begin
-          int wait_timeout_ns = 1_000_000; // 1 ms
           wait(cfg.agent_rst);
-          @(cfg.vif.cb);
-          mon_dut_item.clear_all();
-          `DV_WAIT((!cfg.agent_rst),, wait_timeout_ns, "target_write:agent reset de-assert");
-          cfg.got_stop = 1;
-          `uvm_info(`gfn,"mon forceout from target_write", UVM_MEDIUM)
+          handle_agent_rst("target_write");
         end
       join_any
       disable fork;
