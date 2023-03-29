@@ -440,7 +440,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_reset_acq_fifo(const dif_i2c_t *i2c);
 
 /**
- * Sets watermarks for for the RX and FMT FIFOs, which will fire the respective
+ * Sets watermarks for the RX and FMT FIFOs, which will fire the respective
  * interrupts when each fifo exceeds, or falls below, the set level.
  *
  * Note that the 30-byte level is only supported for the RX FIFO: trying to use

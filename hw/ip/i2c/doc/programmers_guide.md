@@ -48,7 +48,7 @@ $$ \textrm{T_STO_MIN}= \lceil{t\_{STO,min}/t\_{clk}}\rceil $$
 1. Input the integer timing parameters, THD_STA_MIN, TSU_STA_MIN, THD_DAT_MIN, TSU_DAT_MIN, T_BUF_MIN and T_STO_MIN into their corresponding registers (`TIMING2.THD_STA`, `TIMING2.TSU_STA`, `TIMING3.THD_DAT`, `TIMING3.TSU_DAT`, `TIMING4.T_BUF`, `TIMING4.T_STO`)
     - This step allows the firmware to manage SDA signal delays to ensure that the SDA outputs are compliant with the specification.
     - The registers `TIMING0.THIGH` and `TIMING0.TLOW` will be taken care of in a later step.
-1. Take the given values for for t<sub>f</sub> and t<sub>r</sub> and convert them to integer counts as well:
+1. Take the given values for t<sub>f</sub> and t<sub>r</sub> and convert them to integer counts as well:
 $$ \textrm{T_R}= \lceil{t\_{r}/t\_{clk}}\rceil $$
 $$ \textrm{T_F}= \lceil{t\_{f}/t\_{clk}}\rceil $$
 1. Store T_R and T_F in their corresponding registers: `TIMING1.T_R` and `TIMING1.T_F`.
