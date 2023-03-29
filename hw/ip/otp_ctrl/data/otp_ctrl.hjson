@@ -1235,7 +1235,7 @@
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
       desc:    '''
-               Test enable qualifier coming from from life cycle controller.
+               Test enable qualifier coming from life cycle controller.
                This signals enables the TL-UL access port to the proprietary OTP IP.
                '''
     }
