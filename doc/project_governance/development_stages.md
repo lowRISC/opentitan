@@ -101,7 +101,7 @@ The testbench is still being created, scoreboards implemented, DV document and t
 Once the verification environment is available for writing tests, with a testplan written including a testplan and a functional coverage plan, it has completed the Initial Work stage.
 
 The second verification stage is **Under Test**.
-In this stage, the verification environment is available but not all tests in the testplan are are completed and the coverpoints are not implemented.
+In this stage, the verification environment is available but not all tests in the testplan are completed and the coverpoints are not implemented.
 Once all of the items in the testplan are implemented, it exits this stage.
 
 The third verification stage is **Testing Complete**.

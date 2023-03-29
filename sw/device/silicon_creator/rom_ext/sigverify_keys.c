@@ -68,7 +68,7 @@ static rom_error_t key_is_valid_in_lc_state_dev(sigverify_key_type_t key_type,
 /**
  * Determines whether a key is valid in PROD and PROD_END life cycle states.
  *
- * Only production keys that are are valid in PROD and PROD_END life cycle
+ * Only production keys that are valid in PROD and PROD_END life cycle
  * states.
  *
  * @param key_type Type of the key.
