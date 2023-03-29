@@ -6,7 +6,7 @@
 // LFSR-based PRNG to
 //
 // a) determine the next peripheral index to be pinged (can be an alert receiver or an
-//    escalation sender). it it is detected that this particular peripheral is disabled,
+//    escalation sender). it is detected that this particular peripheral is disabled,
 //    another index will be drawn from the PRNG.
 //
 // b) determine the amount of pause cycles to wait before pinging the peripheral selected in a).

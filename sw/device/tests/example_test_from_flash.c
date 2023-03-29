@@ -47,7 +47,7 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
  * details of the default OTTF exception handlers.
  *
  * Note, the `ottf_machine_ecall_handler` cannot be overridden when using the
- * full OTTF, as it it used to implement FreeRTOS context switching. See its
+ * full OTTF, as it used to implement FreeRTOS context switching. See its
  * implementation in `sw/device/lib/testing/test_framework/ottf_main.c`.
  */
 // void ottf_exception_handler(void) {}
