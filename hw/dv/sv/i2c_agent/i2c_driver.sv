@@ -35,7 +35,6 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
       begin
         if (cfg.if_mode == Host) host_scl_pause_ctrl();
       end
-      proc_hot_glitch();
     join_none
   endtask
 
@@ -58,33 +57,11 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
               process_reset();
               req.clear_all();
             end
-            begin
-              // Agent hot reset. It only resets I2C agent.
-              // The DUT funtions normally without reset.
-              // This event only happens in directed test case so cannot set the timeout.
-              // It will be killed by disable fork when 'drive_*_item' is finished.
-              wait(cfg.agent_rst);
-              `uvm_info(`gfn, "drvdbg agent reset", UVM_MEDIUM)
-              req.clear_all();
-            end
           join_any
           disable fork;
         end: iso_fork
       join
       seq_item_port.item_done();
-
-      // When agent reset happens, flush all sequence items from sequencer request queue,
-      // before it starts a new sequence.
-      if (cfg.agent_rst) begin
-        i2c_item dummy;
-        do begin
-          seq_item_port.try_next_item(dummy);
-          if (dummy != null) seq_item_port.item_done();
-        end while (dummy != null);
-
-        repeat(2) @(cfg.vif.cb);
-        cfg.agent_rst = 0;
-      end
     end
   endtask : get_and_drive
 
@@ -142,7 +119,9 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         cfg.vif.drv_phase = DrvStop;
         cfg.host_scl_stop = 1;
         cfg.vif.host_stop(cfg.timing_cfg);
-        if (cfg.allow_bad_addr & !cfg.valid_addr)cfg.got_stop = 1;
+        if (cfg.allow_bad_addr & !cfg.valid_addr) begin
+          cfg.got_stop = 1;
+        end
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("\n  host_driver, received invalid request"))
@@ -276,49 +255,4 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
      end
   endtask
 
-  // When 'cfg.hot_glitch' is triggered, it wait for data read state
-  // then add 'start' or 'stop' during data read state.
-  // Agent reset (without dut reset) is asserted after this event to
-  // clear driver and monitor state.
-  task proc_hot_glitch();
-    forever begin
-      @(cfg.vif.cb);
-      if (cfg.hot_glitch) begin
-        wait_for_read_data_state();
-        randcase
-          1: add_start();
-          1: add_stop();
-        endcase
-        cfg.agent_rst = 1;
-        cfg.hot_glitch = 0;
-        cfg.host_scl_force_high = 0;
-        cfg.host_scl_force_low = 0;
-        wait(!cfg.agent_rst);
-      end
-    end
-  endtask
-
-  // Task looking for data read state.
-  task wait_for_read_data_state();
-    int wait_timeout_ns = 500_000_000; // 500 ms
-    `DV_WAIT(cfg.vif.drv_phase == DrvRd,, wait_timeout_ns, "wait_for_read_data_state");
-    repeat(2) @(posedge cfg.vif.scl_i);
-  endtask
-
-  // Force quit scl stuck at high.
-  // 'start' will be added by the next sequence.
-  task add_start();
-    `uvm_info(`gfn, "proc_hot_glitch: add start", UVM_MEDIUM)
-    cfg.host_scl_force_high = 1;
-    cfg.vif.wait_for_dly(cfg.timing_cfg.tSetupStart);
-  endtask // add_start
-
-  // Force quit scl stuck at low.
-  // 'stop' is manually added here.
-  task add_stop();
-    `uvm_info(`gfn, "proc_hot_glitch: add stop", UVM_MEDIUM)
-    cfg.host_scl_force_low = 1;
-    cfg.host_scl_stop = 1;
-    cfg.vif.host_stop(cfg.timing_cfg);
-  endtask
 endclass : i2c_driver

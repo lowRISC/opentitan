@@ -53,9 +53,6 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   bit       valid_addr;
   bit       is_read;
 
-  // when this is set, driver can send 's' or 'p' in the middle of txn
-  bit       hot_glitch;
-
   // reset agent only without resetting dut
   bit       agent_rst = 0;
 
