@@ -166,7 +166,7 @@ static void check_entropy_src_fw_read_enable(bool expected) {
  * - Read and verify the OTP `HW_CFG.EN_ENTROPY_SRC_FW_READ` against the
  * previous step expectation.
  * - Read the entropy_data_fifo via SW; verify that it reads valid values.
- * - Reset the chip, but this time, initialize the OTP with with the
+ * - Reset the chip, but this time, initialize the OTP with the
  * `HW_CFG.EN_ENTROPY_SRC_FW_READ` fuse bit set to disable.
  * - Read and verify the OTP `HW_CFG.EN_ENTROPY_SRC_FW_READ` against the
  * previous step expectation.
