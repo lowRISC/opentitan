@@ -52,6 +52,14 @@ function buildTooltip(stats) {
         buildElement("p", "tooltip-title", name),
     ];
 
+    // Append the one-line-description if the block has one
+    if (stats.one_line_desc) {
+        children = children.concat([
+            buildElement("p", "tooltip-text", stats.one_line_desc),
+            buildElement("hr"),
+        ]);
+    }
+
     // Append the design and verification stages if the block has them.
     if (stats.design_stage && stats.verification_stage) {
         // Get status classes for design and verification stages.

@@ -42,11 +42,14 @@ def parse_data_file(rel_path: str) -> Tuple[str, str, str]:
     with (REPO_TOP / rel_path).open() as f:
         block_data = hjson.load(f)
 
+    desc = block_data.get('one_line_desc')
+
     try:
         return (
             block_data['version'],
             block_data['design_stage'],
             block_data['verification_stage'],
+            desc,
         )
     except KeyError:
         # Assumes the last value is the most recent
@@ -55,6 +58,7 @@ def parse_data_file(rel_path: str) -> Tuple[str, str, str]:
             revision['version'],
             revision['design_stage'],
             revision['verification_stage'],
+            desc,
         )
 
 
@@ -81,7 +85,8 @@ def main() -> None:
             block_output['version'],
             block_output['design_stage'],
             block_output['verification_stage'],
-        ) = parse_data_file(block['data_file']) if block['data_file'] else (None, None, None)
+            block_output['one_line_desc'],
+        ) = parse_data_file(block['data_file']) if block['data_file'] else (None, None, None, None)
         (
             block_output['total_runs'],
             block_output['total_passing'],
