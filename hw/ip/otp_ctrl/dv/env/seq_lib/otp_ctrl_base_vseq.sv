@@ -364,6 +364,16 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
                               bit           wait_done = 1,
                               otp_ecc_err_e ecc_err = OtpNoEccErr);
     bit [TL_DW-1:0] backdoor_rd_val, addr;
+
+    // If ECC and check error happens in the same consistency check, the scb cannot predict which
+    // error will happen first, so it cannot correctly predict the error status and alert
+    // triggered.
+    // So the sequence only allows one error at a time.
+    if (get_field_val(ral.check_trigger.consistency, val) &&
+        `gmv(ral.check_timeout) > 0 && `gmv(ral.check_timeout) <= CHK_TIMEOUT_CYC) begin
+      ecc_err = OtpNoEccErr;
+    end
+
     // Backdoor write ECC errors
     if (ecc_err != OtpNoEccErr) begin
       int part_idx = $urandom_range(HwCfgIdx, LifeCycleIdx);
