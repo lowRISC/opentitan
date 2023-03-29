@@ -194,6 +194,8 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
   virtual task do_erase();
     cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
     cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::On;
     // Default region settings
     default_region_read_en    = MuBi4True;
     default_region_program_en = MuBi4True;
