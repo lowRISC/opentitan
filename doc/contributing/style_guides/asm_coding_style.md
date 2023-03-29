@@ -163,7 +163,7 @@ After the prefix, labels should be `snake_case` like other symbols.
 
 This advice applies specifically to `.S` files, as well as globally-scoped assembly in `.c` and `.cc` files.
 
-While this is is already implicit, we only use the `.S` extension for assembly files; not `.s` or `.asm`. Note that `.s` actually means something else; `.S`
+While this is already implicit, we only use the `.S` extension for assembly files; not `.s` or `.asm`. Note that `.s` actually means something else; `.S`
 files have the preprocessor run on them; `.s` files do not.
 
 ### Indentation
