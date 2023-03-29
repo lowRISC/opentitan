@@ -114,7 +114,7 @@ TLDR: `bazelisk.sh test --test_tag_filters=-cw310,-verilator,-vivado,-jtag,-eter
 
 You may find it useful to use wildcards to build/test all targets in the OpenTitan repository instead of individual targets.
 `//sw/...` is shorthand for all targets in `sw` that isn't tagged with manual.
-If a a target (a test or build artifact) relies on optional parts of the "Getting Started" guide they should be tagged so they can be filtered out and users can `bazelisk.sh test //...` once they filter out the appropriate tags.
+If a target (a test or build artifact) relies on optional parts of the "Getting Started" guide they should be tagged so they can be filtered out and users can `bazelisk.sh test //...` once they filter out the appropriate tags.
 We maintain or use the following tags to support this:
 * `broken` is used to tag tests that are committed but should not be expected by CI or others to pass.
 * `cw310`, `cw310_test_rom`, and `cw310_rom` are used to tag tests that depend on a correctly setup cw310 "Bergen Board" to emulate OpenTitan.
