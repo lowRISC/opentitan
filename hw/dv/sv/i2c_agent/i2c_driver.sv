@@ -88,6 +88,16 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     end
   endtask : get_and_drive
 
+  // Task to drive bits on SDA from TB to DUT while DUT is operating in Target mode
+  virtual task drive_host_data_bits(ref i2c_item req);
+    int num_bits = $bits(req.wdata);
+    `uvm_info(`gfn, $sformatf("Driving host item 0x%x", req.wdata), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("wait_cycles 0x%x", req.wait_cycles), UVM_MEDIUM)
+    for (int i = num_bits - 1; i >= (num_bits - req.wait_cycles); i--) begin
+      cfg.vif.host_data(cfg.timing_cfg, req.wdata[i]);
+    end
+  endtask
+
   virtual task drive_host_item(i2c_item req);
     // During pause period, let drive_scl control scl
     `DV_WAIT(scl_pause == 1'b0,, scl_spinwait_timeout_ns, "drive_host_item")
@@ -105,12 +115,11 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         cfg.vif.host_rstart(cfg.timing_cfg);
       end
       HostData: begin
-        `uvm_info(`gfn, $sformatf("Driving host item 0x%x", req.wdata), UVM_MEDIUM)
-        for (int i = $bits(req.wdata) -1; i >= 0; i--) begin
-          cfg.vif.host_data(cfg.timing_cfg, req.wdata[i]);
-        end
-        // Wait one more cycle for ack
+        drive_host_data_bits(req);
         cfg.vif.wait_scl(.iter(1), .tc(cfg.timing_cfg));
+      end
+      HostDataNoWaitForACK: begin
+        drive_host_data_bits(req);
       end
       HostAck: begin
         // Wait for read data and send ack
@@ -121,6 +130,13 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         // Wait for read data and send nack
         cfg.vif.wait_scl(.iter(8), .tc(cfg.timing_cfg));
         cfg.vif.host_data(cfg.timing_cfg, 1);
+      end
+      HostWait: begin
+        // Wait for wait_cycles number of SCL cycles
+        `uvm_info(`gfn, $sformatf("wait_cycles 0x%x", req.wait_cycles), UVM_MEDIUM)
+        for (int i = 0; i < req.wait_cycles; i++) begin
+          cfg.vif.wait_scl(.iter(1), .tc(cfg.timing_cfg));
+        end
       end
       HostStop: begin
         cfg.vif.drv_phase = DrvStop;
