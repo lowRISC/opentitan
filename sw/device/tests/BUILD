@@ -144,7 +144,7 @@ opentitan_functest(
         # before checking for the ping_timeout error.
         # The wait-time for the Verilator would be around
         # 32M*8us = 256s (kClockFreqPeripheralHz = 125K).
-        # Thus it is not not recommended to run this test on
+        # Thus it is not recommended to run this test on
         # Verilator as this wait-time looks impractical. It should still
         # be run as part of the DV nightly regression.
         "cw310_test_rom",
@@ -231,7 +231,7 @@ opentitan_functest(
         # before checking for the ping_timeout error.
         # The wait-time for the Verilator would be around
         # 32M*8us = 256s (kClockFreqPeripheralHz = 125K).
-        # Thus it is not not recommended to run this test on
+        # Thus it is not recommended to run this test on
         # Verilator as this wait-time looks impractical. It should still
         # be run as part of the DV nightly regression.
         "cw310_test_rom",
@@ -276,7 +276,7 @@ opentitan_functest(
         # before checking for the ping_timeout error.
         # The wait-time for the Verilator would be around
         # 4s (kClockFreqPeripheralHz = 125K).
-        # Thus it is not not recommended to run this test on
+        # Thus it is not recommended to run this test on
         # Verilator as this wait-time looks impractical. It should still
         # be run as part of the DV nightly regression.
         "cw310_test_rom",
