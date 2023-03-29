@@ -148,9 +148,9 @@ extern const uint32_t kUartTxFifoCpuCycles;
 extern const uint32_t kAstCheckPollCpuCycles;
 
 /**
- * An address to write to to report test status.
+ * An address to write to report test status.
  *
- * If this is zero, there is no address to write to to report test status.
+ * If this is zero, there is no address to write to report test status.
  *
  * Depending on the simulation environment and the value written to this
  * address, the simulation may stop.
@@ -162,7 +162,7 @@ extern const uintptr_t kDeviceTestStatusAddress;
 /**
  * An address to write use for UART logging bypass
  *
- * If this is zero, there is no address to write to to bypass UART logging.
+ * If this is zero, there is no address to write to bypass UART logging.
  *
  * @see #LOG
  */
