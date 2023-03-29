@@ -1016,7 +1016,7 @@ This operation can be applied to:
 
 The three forms of secure wipe can be triggered in different ways.
 
-A secure wipe of either the instruction or the data memory can be triggered from from host software by issuing a `SEC_WIPE_DMEM` or `SEC_WIPE_IMEM` [command](#design-details-command).
+A secure wipe of either the instruction or the data memory can be triggered from host software by issuing a `SEC_WIPE_DMEM` or `SEC_WIPE_IMEM` [command](#design-details-command).
 
 A secure wipe of instruction memory, data memory, and all internal state is performed automatically when handling a [fatal error](#design-details-fatal-errors).
 In addition, it can be triggered by the [Life Cycle Controller](../lc_ctrl/README.md) before RMA entry using the `lc_rma_req/ack` interface.

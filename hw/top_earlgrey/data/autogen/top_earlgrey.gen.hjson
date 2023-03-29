@@ -1353,7 +1353,7 @@
           name: lc_dft_en
           desc:
             '''
-            Test enable qualifier coming from from life cycle controller.
+            Test enable qualifier coming from life cycle controller.
             This signals enables the TL-UL access port to the proprietary OTP IP.
             '''
           struct: lc_tx
@@ -15456,7 +15456,7 @@
         name: lc_dft_en
         desc:
           '''
-          Test enable qualifier coming from from life cycle controller.
+          Test enable qualifier coming from life cycle controller.
           This signals enables the TL-UL access port to the proprietary OTP IP.
           '''
         struct: lc_tx
