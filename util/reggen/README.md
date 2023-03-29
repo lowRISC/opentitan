@@ -897,7 +897,7 @@ The diagram below visualizes the internals of the `prim_subreg_shadow` module us
 When compared to a normal register, the `prim_subreg_shadow` module is comprised of two additional storage components, giving three storage flops in total.
 The **staged** register holds a written value before being committed.
 The **shadow** register holds a second copy after being committed.
-And the the standard storage register holds the **committed** value.
+And the standard storage register holds the **committed** value.
 
 Under the hood, these registers are implemented using the `prim_subreg` module.
 This means a shadow register can implement any of the types described in [this section](./README.md#register-definitions-per-type).

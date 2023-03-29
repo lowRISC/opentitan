@@ -746,7 +746,7 @@ class jtag_rv_debugger extends uvm_object;
   // Clear trigger data1 register and optionally, tdata2 as well.
   //
   // clear_tdata2: Knob to clear tdata2 as well.
-  // Note: It is upto the the caller to ensure the right trigger is selected first. Also, we are
+  // Note: It is upto the caller to ensure the right trigger is selected first. Also, we are
   // leaving tdata2 in a stale state.
   protected virtual task clear_tdata1(bit clear_tdata2);
     abstract_cmd_err_e status;

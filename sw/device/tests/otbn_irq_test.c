@@ -73,7 +73,7 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
 
   otbn_testutils_load_app(otbn, app);
 
-  // If the the CTRL.SOFTWARE_ERRS_FATAL flag is set, a software error will be
+  // If the CTRL.SOFTWARE_ERRS_FATAL flag is set, a software error will be
   // promoted to a fatal error (which, among other things, bricks OTBN until
   // next reset). Make sure that's not turned on.
   CHECK(dif_otbn_set_ctrl_software_errs_fatal(otbn, false) == kDifOk);

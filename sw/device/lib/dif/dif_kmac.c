@@ -625,7 +625,7 @@ dif_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
     return kDifError;
   }
 
-  // Poll until the the status register is in the 'absorb' state.
+  // Poll until the status register is in the 'absorb' state.
   if (!is_state_absorb(kmac)) {
     return kDifError;
   }

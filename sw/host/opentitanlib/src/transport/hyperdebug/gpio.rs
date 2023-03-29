@@ -30,7 +30,7 @@ impl HyperdebugGpioPin {
 }
 
 impl GpioPin for HyperdebugGpioPin {
-    /// Reads the value of the the GPIO pin `id`.
+    /// Reads the value of the GPIO pin `id`.
     fn read(&self) -> Result<bool> {
         let line = self
             .inner

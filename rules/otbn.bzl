@@ -61,7 +61,7 @@ def _otbn_binary(ctx):
     `rv32-{as,ld,...}` programs to produce the resource.  These "native"
     otbn resources are the `otbn_objs` and `elf` output groups.
 
-    In order to make the otbn resource useful to the the main CPU, the
+    In order to make the otbn resource useful to the main CPU, the
     otbn resource needs to be included as a blob of data that the main
     CPU can dump into the otbn `imem` area and ask otbn to execute it.
     `util/otbn-build.py` does this with some objcopy-fu, emitting

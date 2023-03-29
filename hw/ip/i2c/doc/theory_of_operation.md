@@ -23,7 +23,7 @@ The SDA and SCL outputs are assumed to be connected to a tri-state buffer, with 
 
 Rather than toggling the buffer inputs, the buffer inputs are *continuously asserted low*, and instead the buffer *enable* signals are toggled.
 The SDA or SCL buffers are enabled for a logical "Low" output on the respective signal, and are disabled for logical "High" outputs.
-This arrangement allows the the output pins to float high if there is no conflict from external devices, or to be pulled low if there is a conflict (as is required for clock-stretching or--in future revisions-- multi-host functionality).
+This arrangement allows the output pins to float high if there is no conflict from external devices, or to be pulled low if there is a conflict (as is required for clock-stretching or--in future revisions-- multi-host functionality).
 
 This arrangement is necessary for FPGA builds.
 
@@ -76,7 +76,7 @@ A value of 0 is treated as a read of 256 bytes.
 To read a larger byte stream, multiple 256-byte reads can be chained together using the RCONT flag.
 - RCONT (corresponds to FIFO inputs [`FDATA.RCONT`](../data/i2c.hjson#fdata), only used with READ):
     - If RCONT is set, the format byte represents part of a longer sequence of reads, allowing for reads to be chained indefinitely.
-    - The RCONT flag indicates the the final byte returned with the current read should be responded to with an ACK, allowing the target to continue sending data.
+    - The RCONT flag indicates the final byte returned with the current read should be responded to with an ACK, allowing the target to continue sending data.
     (Note that the first R-1 bytes read will still be acknowledged regardless of whether RCONT is asserted or not.)
 - START (corresponds to [`FDATA.START`](../data/i2c.hjson#fdata), Ignored when used with READ):
 Issue a START condition before transmitting the format byte on the bus.

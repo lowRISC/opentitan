@@ -121,7 +121,7 @@ This behavior, combined with other top level defenses, form a multi-layered defe
 ### LFSR Initialization Feature
 
 Since the scrambling device uses a block cipher in CTR mode, it is undesirable to initialize the memory with all-zeros from a security perspective, as that would reveal the XOR keystream.
-To this end, the `sram_ctrl` contains an LFSR-based initialization mechanism that overwrites the the entire memory with pseudorandom data.
+To this end, the `sram_ctrl` contains an LFSR-based initialization mechanism that overwrites the entire memory with pseudorandom data.
 
 Initialization can be triggered via the [`CTRL.INIT`](../data/sram_ctrl.hjson#ctrl) CSR, and once triggered, the LFSR is first re-seeded with the nonce that has been fetched together with the scrambling key.
 Then, the memory is initialized with pseudorandom data pulled from the LFSR.

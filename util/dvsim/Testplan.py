@@ -816,7 +816,7 @@ def _merge_dicts(list1, list2, use_list1_for_defaults=True):
     '''Merge 2 dicts into one
 
     This function takes 2 dicts as args list1 and list2. It recursively merges
-    list2 into list1 and returns list1. The recursion happens when the the
+    list2 into list1 and returns list1. The recursion happens when the
     value of a key in both lists is a dict. If the values of the same key in
     both lists (at the same tree level) are of dissimilar type, then there is a
     conflict and an error is thrown. If they are of the same scalar type, then

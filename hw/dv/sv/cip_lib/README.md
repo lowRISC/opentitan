@@ -457,7 +457,7 @@ If the REGWEN CSR meets the following criteria, it can be fully verified by the 
  - The related lockable CSRs are not WO type, otherwise the read value is always 0 and CSR tests can't really verify if the write value is taken or not.
  - No CSR exclusions have been added to the REGWEN CSR and its related lockable CSRs.
 If not, users need to write a test to verify it separately since cip_lib and dv_base_reg can't predict its value.
-For example, the [sram_ctrl_regwen_vseq](https://github.com/lowRISC/opentitan/blob/master/hw/ip/sram_ctrl/dv/env/seq_lib/sram_ctrl_regwen_vseq.sv) has been added to verify `ctrl_regwen` and the the lockable register `ctrl` since `ctrl` is a `WO` register and excluded in CSR tests.
+For example, the [sram_ctrl_regwen_vseq](https://github.com/lowRISC/opentitan/blob/master/hw/ip/sram_ctrl/dv/env/seq_lib/sram_ctrl_regwen_vseq.sv) has been added to verify `ctrl_regwen` and the lockable register `ctrl` since `ctrl` is a `WO` register and excluded in CSR tests.
 
 Functional coverage for REGWEN CSRs and their related lockable CSRs is generated automatically in dv_base_reg.
 The details of functional coverage is described in [csr_testplan](https://github.com/lowRISC/opentitan/blob/master/hw/dv/tools/dvsim/testplans/csr_testplan.hjson).

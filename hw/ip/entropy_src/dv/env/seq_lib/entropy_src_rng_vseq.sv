@@ -357,7 +357,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   task shutdown_indefinite_seqs();
     // Once the CSR access is done, we can shut down everything else
     // Note: the CSRNG agent needs to be completely shut down before
-    // shutting down the the AST/RNG.  Otherwise the CSRNG pull agent
+    // shutting down the AST/RNG.  Otherwise the CSRNG pull agent
     // will stall waiting for entropy
     `uvm_info(`gfn, "Confirming that CSRNG indefinite seq has started", UVM_HIGH)
     `uvm_info(`gfn, $sformatf("STATE: %s", m_csrng_pull_seq.get_sequence_state().name), UVM_HIGH)

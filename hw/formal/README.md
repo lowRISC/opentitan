@@ -217,7 +217,7 @@ To ensure the symbolic variable performs the expected behaviors, two assumptions
 Coverpoints are used for properties and corner cases that the designer wants to make sure are being exercised by the testbench (e.g. FIFO-full checks).
 The code coverage tool then reports the coverage percentage of these coverpoints together with the other cover metrics (such as line coverage and branch coverage).
 
-The macro <code>`COVER(name, prop, clk, rst)</code> of [prim_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv) can be used to add coverpoints to your design, where the cover property uses the same SVA syntax, operators, and system functions as the the assert properties.
+The macro <code>`COVER(name, prop, clk, rst)</code> of [prim_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv) can be used to add coverpoints to your design, where the cover property uses the same SVA syntax, operators, and system functions as the assert properties.
 
 ## Running FPV on DVSim
 

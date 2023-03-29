@@ -22,7 +22,7 @@ inline bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t flag) {
 }
 
 /**
- * Waits for the given AES status flag to be set the the given value.
+ * Waits for the given AES status flag to be set the given value.
  *
  * @param aes An aes DIF handle.
  * @param flag Status flag to query.

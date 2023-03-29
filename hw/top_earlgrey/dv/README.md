@@ -79,7 +79,7 @@ The full chip testbench instantiates (already handled in CIP base env) the [tl_a
 ### UVM RAL Model
 The CHIP RAL model is created with the [`ralgen`](../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually (separately) by running `make` in the the `hw/` area.
+It can be created manually (separately) by running `make` in the `hw/` area.
 
 ### Reference models
 

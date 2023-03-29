@@ -277,7 +277,7 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
 
     This is the top level testbench module that instantiates the DUT along with
     some of the interfaces that are required to be instantiated and connected and
-    passed on the the `uvm_config_db` since the base DV/CIP library classes
+    passed on the `uvm_config_db` since the base DV/CIP library classes
     retrieve them. The user needs to look through the RTL and make additional
     connections as needed.
 

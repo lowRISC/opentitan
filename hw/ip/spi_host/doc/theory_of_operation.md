@@ -260,7 +260,7 @@ The command interface can allows for any number of segments in a given command.
 Since most SPI Flash transactions typically consist of 3 or 4 segments, there is a small command FIFO for submitting segments to the SPI_HOST IP, so that firmware can issue the entire transaction at one time.
 
 Writing a segment description to [`COMMAND`](../data/spi_host.hjson#command) when [`STATUS.READY`](../data/spi_host.hjson#status) is low will trigger an error condition, which must be acknowledged by software.
-When submitting multiple segments to the the command queue, firmware can also check the [`STATUS.CMDQD`](../data/spi_host.hjson#status) register to determine how many unprocessed segments are in the FIFO.
+When submitting multiple segments to the command queue, firmware can also check the [`STATUS.CMDQD`](../data/spi_host.hjson#status) register to determine how many unprocessed segments are in the FIFO.
 
 ## Data Formatting
 
@@ -687,7 +687,7 @@ In this mode, each `shift_en_i` pulse is induces a shift of only one bit.
 - In Quad-mode, the four most significant bits, `sr_q[7:4]`, are connected to `sd_o[3:0]` and the shift register shifts four bits with every pulse.
 
 The connections to the shift register inputs are similar.
-Depending on the speed, the `sd_i` inputs are routed to the the 1, 2, or 4 least significant inputs of the shift register.
+Depending on the speed, the `sd_i` inputs are routed to the 1, 2, or 4 least significant inputs of the shift register.
 In full-cycle mode, the shift register LSB's are updated directly from the `sd_i` inputs.
 Otherwise the data first passes through an input sampling register, `sd_i_q[3:0]`, which allows the input sampling events to be staggered from the output shift events.
 
@@ -968,7 +968,7 @@ foot: {text: "Key: WL=\"WaitLead\", Hi=\"InternalClkHigh\", Lo=\"InternalClkLow\
 }
 ```
 
-### Milestone Signals and Control of the the Bit and Byte Counters
+### Milestone Signals and Control of the Bit and Byte Counters
 
 The previous waveform also highlights the relationship between the milestone signals and the bit and byte counters.
 At the beginning of each byte `bit_cntr_q` is reset to a speed-specific value, to trigger the correct number of shift operations required for each byte:

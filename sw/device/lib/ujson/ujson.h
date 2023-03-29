@@ -112,7 +112,7 @@ status_t ujson_consume_maybe(ujson_t *uj, char ch);
  *
  * Consume whitespace until finding a double-quote.  Consume all characters
  * (obeying json escape sequences) until the next double-quote.  If the
- * input string exceeds the length of the user buffer, the the user
+ * input string exceeds the length of the user buffer, the user
  * buffer will contain a truncated string and the entire input json string
  * will be consumed.
  *

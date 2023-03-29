@@ -304,7 +304,7 @@ def parse_args():
                         nargs="*",
                         metavar='CAT',
                         choices=_LIST_CATEGORIES,
-                        help=('Parse the the given .hjson config file, list '
+                        help=('Parse the given .hjson config file, list '
                               'the things that can be run, then exit. The '
                               'list can be filtered with a space-separated '
                               'of categories from: {}.'.format(
