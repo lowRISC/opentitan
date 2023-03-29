@@ -212,7 +212,7 @@ class Program:
         self.loop_warps = {}  # type: Dict[Tuple[int, int], int]
 
     def copy(self) -> 'Program':
-        '''Return a a shallow copy of the program
+        '''Return a shallow copy of the program
 
         This is a shallow copy, so shares ProgInsn instances, but it can be
         modified by adding instructions without affecting the original.
