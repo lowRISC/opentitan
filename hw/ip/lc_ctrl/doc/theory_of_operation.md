@@ -130,7 +130,7 @@ This feature may be there for a variety of reasons, but primarily it can be used
 This type of functionality, if it exists, must be disabled during specific life cycle states.
 Since these back-door functions may bypass memory protection, they could be used to read out provisioned secrets that are not meant to be visible to software or a debug host.
 
-Note that NVM_DEBUG_EN is disabled in the last test unlocked state (TEST_UNLOCKED7) such that the isolated flash partition can be be securely populated, without exposing its contents via the NVM backdoor interface.
+Note that NVM_DEBUG_EN is disabled in the last test unlocked state (TEST_UNLOCKED7) such that the isolated flash partition can be securely populated, without exposing its contents via the NVM backdoor interface.
 See also accessibility description of the [isolated flash partition](#iso_part_sw_rd_en-and-iso_part_sw_wr_en).
 
 #### HW_DEBUG_EN
