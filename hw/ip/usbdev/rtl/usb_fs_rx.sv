@@ -91,7 +91,7 @@ module usb_fs_rx (
   // Both D+ and D- may temporarily be less than VIH (min) during differential
   // signal transitions. This period can be up to 14 ns (TFST) for full-speed
   // transitions and up to 210 ns (TLST) for low-speed transitions. Logic in the
-  // receiver must ensure that that this is not interpreted as an SE0.
+  // receiver must ensure that this is not interpreted as an SE0.
   // Since the 48MHz sample clock is 20.833ns period we will either miss this or
   // sample it only once, so it will be covered by line_state=DT and the next
   // sample will not be SE0 unless this was a real SE0 transition

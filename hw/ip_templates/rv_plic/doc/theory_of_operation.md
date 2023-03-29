@@ -72,7 +72,7 @@ interrupt disable feature.
 Claim/Completion register for the target ([`CC0`](../data/rv_plic.hjson#cc0) for target 0). The return value
 of the [`CC0`](../data/rv_plic.hjson#cc0) read represents the ID of the pending interrupt that has the
 highest priority.  If two or more pending interrupts have the same priority,
-RV_PLIC chooses the one with lowest ID. Only interrupts that that are enabled
+RV_PLIC chooses the one with lowest ID. Only interrupts that are enabled
 for the target can be claimed. The target priority threshold doesn't matter
 (this only factors into whether an interrupt is signalled to the target) so
 lower priority interrupt IDs can be returned on a read from [`CC0`](../data/rv_plic.hjson#cc0). If no

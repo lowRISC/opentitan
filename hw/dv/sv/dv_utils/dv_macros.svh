@@ -491,7 +491,7 @@
 // Enable / disable assertions at a module hierarchy identified by LABEL_.
 //
 // This goes in conjunction with `DV_ASSERT_CTRL() macro above, but is invoked in the entity that is
-// sending the req to turn on / off the assertions. Note that that piece of code invoking this macro
+// sending the req to turn on / off the assertions. Note that piece of code invoking this macro
 // does not have the information on the actual hierarchical path to the module or the levels - this
 // is 'wrapped' into the LABEL_ instead. DV user needs to uniquify the label sufficienly enough to
 // reflect it.
