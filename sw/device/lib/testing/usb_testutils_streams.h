@@ -10,22 +10,24 @@
 #include "sw/device/lib/testing/usb_testutils.h"
 
 // Maximum number of concurrent streams
+#ifndef USBUTILS_STREAMS_MAX
 #ifdef USBDEV_NUM_ENDPOINTS
 // Endpoint zero implements the default control pipe
-#define STREAMS_MAX (USBDEV_NUM_ENDPOINTS - 1U)
+#define USBUTILS_STREAMS_MAX (USBDEV_NUM_ENDPOINTS - 1U)
 #else
-#define STREAMS_MAX 11U
+#define USBUTILS_STREAMS_MAX 11U
+#endif
 #endif
 
 // Maximum number of buffer simultaneously awaiting transmission
 // (we must leave some available for packet reception)
-#ifndef MAX_TX_BUFFERS
-#define MAX_TX_BUFFERS 24U
+#ifndef USBUTILS_STREAMS_TXBUF_MAX
+#define USBUTILS_STREAMS_TXBUF_MAX 24U
 #endif
 
 // Stream signature words
-#define STREAM_SIGNATURE_HEAD 0x579EA01AU
-#define STREAM_SIGNATURE_TAIL 0x160AE975U
+#define USBDEV_STREAM_SIGNATURE_HEAD 0x579EA01AU
+#define USBDEV_STREAM_SIGNATURE_TAIL 0x160AE975U
 
 // Seed numbers for the LFSR generators in each transfer direction for
 // the given stream number
@@ -66,7 +68,7 @@ typedef enum {
 } usbdev_stream_flags_t;
 
 // Forward declaration to context state
-typedef struct usbdev_stream_test_ctx usbdev_stream_test_ctx_t;
+typedef struct usb_testutils_streams_ctx usb_testutils_streams_ctx_t;
 
 /**
  * Stream signature
@@ -82,7 +84,7 @@ typedef struct __attribute__((packed)) usbdev_stream_sig {
    */
   uint8_t init_lfsr;
   /**
-   * Stream number and flags
+   * Stream number (bits 3:0) and flags (bits 7:4)
    */
   uint8_t stream;
   /**
@@ -111,7 +113,7 @@ typedef struct usbdev_stream {
   /**
    * Pointer to test context; callback functions receive only stream pointer
    */
-  usbdev_stream_test_ctx_t *ctx;
+  usb_testutils_streams_ctx_t *ctx;
   /**
    * Stream IDentifier
    */
@@ -179,15 +181,19 @@ typedef struct usbdev_stream {
 /**
  * Context state for streaming test
  */
-struct usbdev_stream_test_ctx {
+struct usb_testutils_streams_ctx {
   /**
    * Context pointer
    */
   usb_testutils_ctx_t *usbdev;
   /**
+   * Number of streams in use
+   */
+  unsigned nstreams;
+  /**
    * State information for each of the test streams
    */
-  usbdev_stream_t streams[STREAMS_MAX];
+  usbdev_stream_t streams[USBUTILS_STREAMS_MAX];
   /**
    * Per-endpoint limits on the number of buffers that may be queued for
    * transmission
@@ -205,19 +211,81 @@ struct usbdev_stream_test_ctx {
    * Buffers that have been filled but cannot yet be presented for transmission
    */
   // 12 X 24 X 4 (or 8?)( BYTES... could perhaps simplify this at some point
-  dif_usbdev_buffer_t tx_bufs[USBDEV_NUM_ENDPOINTS][MAX_TX_BUFFERS];
+  dif_usbdev_buffer_t tx_bufs[USBDEV_NUM_ENDPOINTS][USBUTILS_STREAMS_TXBUF_MAX];
 };
 
-// Initialise a stream, preparing it for use
-void stream_init(usbdev_stream_test_ctx_t *ctx, usbdev_stream_t *s, uint8_t id,
-                 uint8_t ep_in, uint8_t ep_out, uint32_t transfer_bytes,
-                 usbdev_stream_flags_t flags, bool verbose);
+/**
+ * Initialize a number of concurrent streams with the same properties;
+ * this set of streams is assigned endpoints from endpoint 1 upwards, in order.
+ *
+ * @param  ctx       Context state for streaming test
+ * @param  nstreams  Number of streams
+ * @param  num_bytes Number of bytes to be transferred by each stream
+ * @param  flags     Stream/test flags to be used for each stream
+ * @param  verbose   Whether to perform verbose logging for each stream
+ * @return The result status of the operation.
+ */
+status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
+                                    unsigned nstreams, uint32_t num_bytes,
+                                    usbdev_stream_flags_t flags, bool verbose);
 
-// Service the given stream, preparing and/or sending any data that we can;
-// data reception is handled via callbacks and requires no attention here
-void stream_service(usbdev_stream_test_ctx_t *ctx, usbdev_stream_t *s);
+/**
+ * Service all streams, preparing and/or sending any data that we can, as well
+ * as handling received data.
+ *
+ * Note: this calls usb_testutils_poll() internally to keep that layer alive
+ *       and handling packet reception.
+ *
+ * @param  ctx       Context state for streaming test
+ * @return The result status of the operation.
+ */
+status_t usb_testutils_streams_service(usb_testutils_streams_ctx_t *ctx);
 
-// Returns an indication of whether a stream has completed its data transfer
-bool stream_completed(const usbdev_stream_t *s);
+/**
+ * Returns an indication of whether all streams have completed their data
+ * transfers.
+ *
+ * @param  ctx       Context state for streaming test
+ */
+bool usb_testutils_streams_completed(const usb_testutils_streams_ctx_t *ctx);
+
+/**
+ * Initialize a stream, preparing it for use.
+ *
+ * @param  ctx       Context state for streaming test
+ * @param  id        Stream identifier (0-based)
+ * @param  ep_in     Endpoint to be used for IN traffic (to host)
+ * @param  ep_out    Endpoint to be used for OUT traffic (from host)
+ * @param  num_bytes Number of bytes to be transferred by stream
+ * @param  flags     Stream/test flags
+ * @param  verbose   Whether to perform verbose logging for this stream
+ * @return The result status of the operation.
+ */
+status_t usb_testutils_stream_init(usb_testutils_streams_ctx_t *ctx, uint8_t id,
+                                   uint8_t ep_in, uint8_t ep_out,
+                                   uint32_t num_bytes,
+                                   usbdev_stream_flags_t flags, bool verbose);
+
+/**
+ * Service the given stream, preparing and/or sending any data that we can.
+ *
+ * Note: the caller must invoke usb_testutils_poll() itself in order to ensure
+ *       that packet reception continues to occur.
+ *
+ * @param  ctx       Context state for streaming test
+ * @param  id        Stream identifier (0-based)
+ * @return The result status of the operation.
+ */
+status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
+                                      uint8_t id);
+
+/**
+ * Returns an indication of whether a stream has completed its data transfer.
+ *
+ * @param  ctx       Context state for streaming test
+ * @param  id        Stream identifier (0-based)
+ */
+bool usb_testutils_stream_completed(const usb_testutils_streams_ctx_t *ctx,
+                                    uint8_t id);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_STREAMS_H_

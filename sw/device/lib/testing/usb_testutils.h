@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/dif/dif_usbdev.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "usb_testutils_diags.h"
 
 // Result codes to rx/tx callback handlers

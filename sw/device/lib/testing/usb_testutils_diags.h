@@ -15,7 +15,7 @@
 //    employed, but it is inefficient; the replacement routines better model the
 //    attainable performance)
 #ifndef USBUTILS_MEM_FASTER
-#define USBUTILS_MEM_FASTER 0
+#define USBUTILS_MEM_FASTER 1
 #endif
 
 // Used for tracing what is going on. This may impact timing which is critical

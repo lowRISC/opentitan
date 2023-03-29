@@ -423,4 +423,3 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
-
