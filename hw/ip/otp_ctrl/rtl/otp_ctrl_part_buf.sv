@@ -344,7 +344,7 @@ module otp_ctrl_part_buf
         end
       end
       ///////////////////////////////////////////////////////////////////
-      // Wait for OTP response and and compare the digest. In case there is
+      // Wait for OTP response and compare the digest. In case there is
       // a mismatch, lock down the partition and go into the terminal error
       // state. In case an OTP transaction fails, latch the OTP error code
       // and jump to a terminal error state.

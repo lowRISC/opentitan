@@ -246,7 +246,7 @@ module otp_ctrl_part_unbuf
         end
       end
       ///////////////////////////////////////////////////////////////////
-      // Wait for OTP response and and release the TL-UL response. In
+      // Wait for OTP response and release the TL-UL response. In
       // case an OTP transaction fails, latch the OTP error code,
       // signal a TL-Ul bus error and jump to a terminal error state.
       ReadWaitSt: begin

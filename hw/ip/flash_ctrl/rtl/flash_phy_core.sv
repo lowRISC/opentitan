@@ -556,7 +556,7 @@ module flash_phy_core
   ) u_scramble (
     .clk_i,
     .rst_ni,
-    // both escalation and and integrity error cause the scramble keys to change
+    // both escalation and integrity error cause the scramble keys to change
     .disable_i(mubi4_test_true_loose(flash_disable[ScrDisableIdx])),
     .calc_req_i(prog_calc_req | rd_calc_req),
     .op_req_i(prog_op_req | rd_op_req),
