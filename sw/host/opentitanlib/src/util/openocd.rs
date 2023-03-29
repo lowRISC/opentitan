@@ -109,8 +109,8 @@ impl OpenOcdServer {
         let mut cmd = Command::new(&self.opts.openocd);
         cmd.args(args)
             .stdin(Stdio::null())
-            .stdout(Stdio::inherit())
-            .stderr(Stdio::inherit());
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
         let mut child = cmd.spawn().with_context(|| {
             let program = cmd.get_program();
             let args = cmd.get_args().collect::<Vec<_>>().join(OsStr::new(" "));
