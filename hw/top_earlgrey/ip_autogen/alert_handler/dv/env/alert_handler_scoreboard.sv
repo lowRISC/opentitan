@@ -729,9 +729,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       automatic int class_i = i;
       begin
         cfg.clk_rst_vif.wait_clks(1);
-        // TODO(#13026): Update `crashdump_triggered`.
-        // crashdump_triggered[class_i] = 0;
-        crashdump_triggered = 0;
+        crashdump_triggered[class_i] = 0;
         if (under_intr_classes[class_i]) begin
           if (cfg.en_cov) cov.clear_intr_cnt_cg.sample(class_i);
           clr_esc_under_intr[class_i] = 1;

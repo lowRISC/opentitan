@@ -5,7 +5,6 @@ CAPI=2:
 name: ${instance_vlnv("lowrisc:ip:alert_handler_reg:0.1")}
 description: "Auto-generated alert handler register sources"
 virtual:
-  # TODO: Check if the generated files actually maintain a stable public API.
   - "lowrisc:ip_interfaces:alert_handler_reg"
 
 filesets:
