@@ -539,7 +539,7 @@ class IpBlock:
             if rb.has_shadowed_reg():
                 return True
 
-        # if we are here, then no one has has a shadowed register
+        # if we are here, then no one has a shadowed register
         return False
 
     def get_primary_clock(self) -> ClockingItem:
