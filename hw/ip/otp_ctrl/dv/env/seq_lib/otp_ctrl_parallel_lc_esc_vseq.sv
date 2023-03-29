@@ -74,6 +74,9 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_lock_vseq;
   endtask
 
   virtual task set_lc_esc_and_check();
+    otp_ctrl_dai_lock_vseq dai_lock_vseq;
+    uvm_sequence           seq;
+
     // Random issue key requests before lc_esc_en is issued.
     randcase
       1: req_otbn_key(0);
@@ -92,7 +95,18 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_lock_vseq;
 
     // After LC_escalate is On, we trigger the dai_lock_vseq to check interfaces will return
     // default values and the design won't hang.
-    otp_ctrl_dai_lock_vseq::body();
+    seq = create_seq_by_name("otp_ctrl_dai_lock_vseq");
+    `downcast(dai_lock_vseq, seq)
+    dai_lock_vseq.set_sequencer(p_sequencer);
+    `DV_CHECK_RANDOMIZE_FATAL(dai_lock_vseq)
+
+    // This sequence will only run one iteration and once we hit a reset, we will need to clear the
+    // otp memories. Otherwise, if lc_esc is issued during OTP program, there might be ECC
+    // uncorrectable errors and the OTP init will return an error.
+    // This sequence case is not handled by scb but checked via direct sequence.
+    dai_lock_vseq.num_trans = 1;
+    dai_lock_vseq.do_otp_ctrl_init = 1;
+    dai_lock_vseq.start(p_sequencer);
   endtask
 
   virtual task post_start();
