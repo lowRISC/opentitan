@@ -160,7 +160,7 @@ module lc_ctrl
     .hw2reg    ( tap_hw2reg                  ),
     // SEC_CM: BUS.INTEGRITY
     // While the TAP does not have bus integrity, it does have a WE checker
-    // that feeds into intg_err_o - hence this is is wired up to the fatal_bus_integ_error.
+    // that feeds into intg_err_o - hence this is wired up to the fatal_bus_integ_error.
     .intg_err_o( fatal_bus_integ_error_tap_d ),
     .devmode_i ( 1'b1                        )
   );
