@@ -412,3 +412,15 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
+
+cc_library(
+    name = "usb_testutils_streams",
+    srcs = ["usb_testutils_streams.c"],
+    hdrs = ["usb_testutils_streams.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":usb_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
