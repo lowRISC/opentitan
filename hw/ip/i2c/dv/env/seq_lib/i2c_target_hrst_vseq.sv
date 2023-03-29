@@ -2,10 +2,47 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Host agent reset test
+// Test to check the behaviour of DUT in case of RSTART or STOP githces in Target mode
+// Sequence:
+// > Initialize DUT in Target mode
+// > Randomly introduce glitches specified by enum `glitch_e`
+//   > For each gltich type, byte transmission will be interrupted causing the internal FSM to
+//     go to Idle/AcquireStart state
+// > Issue transactions after glitch to check if DUT is processing transactions as expected
+
 class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
   `uvm_object_utils(i2c_target_hrst_vseq)
   `uvm_object_new
+
+  // Protocol glitch type
+  rand glitch_e glitch;
+  // 0 - Indicates Start/Stop glitch in Write transaction
+  // 1 - Indicates Start/Stop glitch in Read transaction
+  rand tran_type_e rw_bit;
+  // Used to track which call to fetch_txn should avoid appending Start
+  bit skip_start;
+  constraint rw_bit_c {
+    rw_bit dist {ReadOnly := 1, WriteOnly := 1};
+  }
+  // Randomize type of glitch based on rw_bit with equal probability
+  constraint glitch_c {
+     if (rw_bit == ReadOnly) {
+       glitch dist {
+         ReadDataByteStart := 1,
+         ReadDataAckStart := 1,
+         ReadDataAckStop := 1
+       };
+     }
+     else{
+       glitch dist {
+         AddressByteStart := 1,
+         AddressByteStop := 1 ,
+         WriteDataByteStart := 1 ,
+         WriteDataByteStop := 1
+       };
+     }
+     solve rw_bit before glitch;
+  }
 
   virtual task pre_start();
     super.pre_start();
@@ -26,6 +63,7 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
     ral.ctrl.enablehost.set(1'b1);
     ral.ctrl.enabletarget.set(1'b0);
     csr_update(ral.ctrl);
+    skip_start = 0;
 
     // Intialize dut in device mode and agent in host mode
     initialization(Device);
@@ -43,9 +81,14 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
         for (int i = 0; i < num_trans; i++) begin
           `uvm_info("seq", $sformatf("round %0d reset_txn_num:%0d", i, reset_txn_num), UVM_MEDIUM)
           if (i > 0) begin
-            // wait for previous stop before program a new timing param.
+            // Wait for previous stop before proceeding with next sequence.
             `DV_WAIT(cfg.m_i2c_agent_cfg.got_stop,, cfg.spinwait_timeout_ns, "target_hrst_vseq")
             cfg.m_i2c_agent_cfg.got_stop = 0;
+            // Reset i2c.TXDATA fifo after completion of glitch transaction
+            if (i == reset_txn_num + 1 && rw_bit == ReadOnly) begin
+              ral.fifo_ctrl.txrst.set(1'b1);
+              csr_update(ral.fifo_ctrl);
+            end
           end
           // exclude timing param update during and right after runt transaction
           if (!(i inside {reset_txn_num, (reset_txn_num + 1)})) begin
@@ -59,156 +102,275 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
             cfg.min_data = 20;
           end
           create_txn(txn_q);
+          // Populate transaction queue
           if (i == reset_txn_num) begin
             `uvm_info("seq", $sformatf("test skip comparison is set %0d", i), UVM_HIGH)
             reset_drv_st = 1;
-            fetch_no_tb_txn(txn_q, m_i2c_host_seq.req_q);
+            fetch_no_tb_txn(m_i2c_host_seq.req_q);
           end else begin
-            fetch_txn(txn_q, m_i2c_host_seq.req_q);
+            fetch_txn(txn_q, m_i2c_host_seq.req_q, .skip_start(skip_start));
           end
-          m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
+          // Start sequence
+          fork
+            begin : main_thread
+              m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
+            end : main_thread
+            begin : agent_reset
+              if (i == reset_txn_num) begin
+                // Wait until just before glitch is introduced and then issue agent reset
+                // Wait_cycles variable indicates at which point monitor on TB has to be reset.
+                // During data transmission, glitch is introduced on a random bit using
+                //   <i2c_item>.wait_cycles
+                // So, monitor should be reset before the earliest glitch cycle.
+                // - For AddressByteStart the minimum is 1 cycle
+                // - For AddressByteStop, the minimum is 9 cycles (Start+Address+ACK).
+                // To prevent TB side races, +1 is added to these limits.
+                int wait_cycles = glitch inside {AddressByteStart, AddressByteStop} ? 2 : 10;
+                repeat(wait_cycles) @(posedge cfg.m_i2c_agent_cfg.vif.scl_i);
+                `uvm_info(`gfn, "Issue agent_rst", UVM_MEDIUM)
+                // Reset agent
+                cfg.m_i2c_agent_cfg.agent_rst = 1;
+                cfg.clk_rst_vif.wait_clks(2);
+                cfg.m_i2c_agent_cfg.agent_rst = 0;
+                `uvm_info(`gfn, "Clear agent_rst", UVM_MEDIUM)
+              end
+            end : agent_reset
+          join
+          // reset skip_start after reset_txn_num+1 iteration
+          if (i > reset_txn_num) begin
+            skip_start = 0;
+          end
           if (i == reset_txn_num) begin
             resume_sb = 1;
             `uvm_info("seq", $sformatf("resume test comparison %0d", i), UVM_HIGH)
           end
-
           sent_txn_cnt++;
         end
       end
       process_target_interrupts();
       stop_target_interrupt_handler();
+      // Wait for completion of all transactions issued in the sequence
       begin
         `DV_WAIT(reset_drv_st,, cfg.spinwait_timeout_ns, "tb_comp_off")
-        while (!cfg.scb_h.target_mode_wr_exp_fifo.is_empty()) begin
-          cfg.clk_rst_vif.wait_clks(1);
-        end
+        `DV_SPINWAIT(while (!cfg.scb_h.target_mode_wr_exp_fifo.is_empty()) begin
+                       cfg.clk_rst_vif.wait_clks(1);
+                     end,
+                     $sformatf("timed out waiting for target_mode_wr_exp_fifo size:%0d",
+                       cfg.scb_h.target_mode_wr_exp_fifo.used()),
+                     cfg.spinwait_timeout_ns)
         cfg.scb_h.skip_target_txn_comp = 1;
-        while (!cfg.scb_h.target_mode_rd_exp_fifo.is_empty()) begin
-          cfg.clk_rst_vif.wait_clks(1);
-        end
+        `DV_SPINWAIT(while (!cfg.scb_h.target_mode_rd_exp_fifo.is_empty()) begin
+                       cfg.clk_rst_vif.wait_clks(1);
+                     end,
+                     $sformatf("timed out waiting for target_mode_rd_exp_fifo size:%0d",
+                       cfg.scb_h.target_mode_rd_exp_fifo.used()),
+                     cfg.spinwait_timeout_ns)
         cfg.scb_h.skip_target_rd_comp = 1;
         `DV_WAIT(resume_sb,, cfg.spinwait_timeout_ns, "resume_sb")
-      end
-      begin
-        `DV_WAIT(reset_drv_st,, cfg.spinwait_timeout_ns, "set hot_glitch")
-        cfg.m_i2c_agent_cfg.hot_glitch = 1;
-        `DV_WAIT(!cfg.m_i2c_agent_cfg.hot_glitch,, cfg.spinwait_timeout_ns, "unset hot_glitch")
       end
     join
   endtask : body
 
-  // Feed txn to driver only. This doesn't create expected txn.
-  function void fetch_no_tb_txn(ref i2c_item src_q[$], i2c_item dst_q[$]);
+  // Update expected transaction from ACQDATA register
+  function void push_exp_txn(ref i2c_item exp_txn);
+    // Push transaction for expected ACQ data
+    p_sequencer.target_mode_wr_exp_port.write(exp_txn);
+    exp_txn.tran_id = this.tran_id;
+    cfg.sent_acq_cnt++;
+    this.tran_id++;
+  endfunction
+
+  // Populate transaction queue to introduce Start/Stop conditions in Write Data/Address byte
+  function void create_write_glitch(ref i2c_item driver_q[$]);
     i2c_item txn;
-    i2c_item rs_txn;
+    i2c_item exp_txn;
+    bit valid_addr;
+    bit got_valid;
+    `uvm_info(`gfn, $sformatf("Introducing %s glitch", glitch.name()), UVM_LOW)
+    // Address byte
+    `uvm_create_obj(i2c_item, txn)
+    `uvm_create_obj(i2c_item, exp_txn)
+    txn.wdata[7:1] = get_target_addr(); //target_addr0;
+    txn.wdata[0] = rw_bit == ReadOnly;
+    txn.drv_type = HostData;
+    valid_addr = is_target_addr(txn.wdata[7:1]);
+    exp_txn.wdata = txn.wdata;
+    // Push transaction to driver queue
+    driver_q.push_back(txn);
+    // Update glitch data
+    if (glitch inside {AddressByteStart, AddressByteStop}) begin
+      i2c_item  glitch_txn;
+      exp_txn.wdata = 8'hAA;
+      txn.wait_cycles = $urandom_range(2,6);
+      // Add entry for Address glitch
+      `uvm_create_obj(i2c_item, glitch_txn)
+      if (glitch == AddressByteStart) begin
+        txn.wdata = 8'hFF;
+        exp_txn.rstart = 1;
+        // Add Start glitch
+        glitch_txn.drv_type = HostRStart;
+        skip_start = 1;
+      end else begin
+        txn.wdata = 8'h00;
+        exp_txn.stop = 1;
+        // Add Stop glitch
+        glitch_txn.drv_type = HostStop;
+      end
+      // Push transaction for driver
+      driver_q.push_back(glitch_txn);
+      push_exp_txn(exp_txn);
+      return; // return, since glitch entry is done
+    end else begin
+      // for valid address transaction indicate start bit
+      txn.start = 1;
+      exp_txn.start = 1;
+      push_exp_txn(exp_txn);
+    end
+    // Data byte
+    `uvm_create_obj(i2c_item, txn)
+    `uvm_create_obj(i2c_item, exp_txn)
+    txn.wdata = $urandom_range(1, 127);
+    exp_txn.wdata = 8'hDD;
+    // Glitch in Data byte
+    if (glitch inside {WriteDataByteStart, WriteDataByteStop}) begin
+      txn.drv_type = HostDataNoWaitForACK;
+      txn.wait_cycles = $urandom_range(2, 6);
+      if(glitch == WriteDataByteStart) begin
+        txn.wdata = 8'hFF;
+        exp_txn.rstart = 1;
+        skip_start = 1;
+      end else if (glitch == WriteDataByteStop) begin
+        txn.wdata = 8'h00;
+        exp_txn.stop = 1;
+      end
+      // Push transaction to driver queue
+      driver_q.push_back(txn);
+      // Add glitch transaction
+      `uvm_create_obj(i2c_item, txn)
+      if(glitch == WriteDataByteStart) begin
+        txn.drv_type = HostRStart;
+        txn.rstart = 1;
+        skip_start = 1;
+      end else begin
+        txn.drv_type = HostStop;
+        txn.stop = 1;
+      end
+      // Push transaction for driver
+      driver_q.push_back(txn);
+    end
+    // Push transaction for expected ACQ data
+    push_exp_txn(exp_txn);
+  endfunction
+
+  task create_read_glitch(ref i2c_item driver_q[$]);
+    i2c_item txn;
     i2c_item full_txn;
-    int read_size;
-    bit is_read = get_read_write();
-    bit [6:0] t_addr;
-    bit       valid_addr;
-
-    `uvm_info("seq", $sformatf("ntb idx %0d:is_read:%0b size:%0d fetch_txn:%0d",
-                               start_cnt++, is_read, src_q.size(), full_txn_num++), UVM_MEDIUM)
-
-    // From target mode, read data is corresponds to txdata from DUT.
-    // While dut's sda is always 1, tb can drive sda freely.
-    // Update read data to all 1's to recevie any incoming data bits.
-    update_rd_data(is_read, src_q);
-    print_wr_data(is_read, src_q);
+    i2c_item read_txn;
+    i2c_item exp_txn;
+    bit valid_addr;
+    bit got_valid;
+    `uvm_info(`gfn, $sformatf("Introducing %s glitch", glitch.name()), UVM_LOW)
+    // Address byte
+    `uvm_create_obj(i2c_item, txn)
     `uvm_create_obj(i2c_item, full_txn)
+    `uvm_create_obj(i2c_item, exp_txn)
+    txn.wdata[7:1] = get_target_addr(); //target_addr0;
+    txn.wdata[0] = rw_bit == ReadOnly;
+    txn.read = rw_bit == ReadOnly;
+    txn.drv_type = HostData;
+    txn.tran_id = this.tran_id;
+    full_txn.start = 1;
+    full_txn.tran_id = this.exp_rd_id;
+    `downcast(exp_txn, txn.clone());
+    valid_addr = is_target_addr(txn.wdata[7:1]);
+    // Push transaction for driver
+    driver_q.push_back(txn);
+    // Update expected transaction for address
+    exp_txn.start = 1;
+    exp_txn.read = 1;
+    push_exp_txn(exp_txn);
+    // Update read transasction count
+    if (valid_addr) this.exp_rd_id++;
+    // Update read transaction of DUT
+    `uvm_create_obj(i2c_item, read_txn)
+    read_txn.wdata = 8'hFF;
+    read_rcvd.push_back(1); // add one entry for txfifo
+    read_txn_q.push_back(read_txn);
+    // Data byte
+    if(glitch inside {ReadDataByteStart}) begin
+      // Update driver transaction
+      `uvm_create_obj(i2c_item, txn)
+      txn.drv_type = HostWait;
+      txn.wait_cycles = $urandom_range(1, 6);
+      // Clear TXDATA FIFO
+      ral.fifo_ctrl.txrst.set(1'b1);
+      csr_update(ral.fifo_ctrl);
+      cfg.clk_rst_vif.wait_clks(1);
+      // Write 'hFF to TXDATA FIFO so that SDA is driven high
+      csr_wr(.ptr(ral.txdata), .value('hFF));
+      cfg.clk_rst_vif.wait_clks(1);
+      // Push transaction to driver
+      driver_q.push_back(txn);
+      // Introduce Start glitch
+      `uvm_create_obj(i2c_item, txn)
+      txn.drv_type = HostRStart;
+      // Push glitch transaction to driver
+      driver_q.push_back(txn);
+      // Update expected transaction
+      `uvm_create_obj(i2c_item, exp_txn)
+      exp_txn.wdata = 8'hDD;
+      exp_txn.rstart = 1;
+      push_exp_txn(exp_txn);
+      skip_start = 1;
+      full_txn.rstart = 1;
+      if (valid_addr) p_sequencer.target_mode_rd_exp_port.write(full_txn);
+      return;
+    end else if (glitch inside {ReadDataAckStart, ReadDataAckStop}) begin
+      // Update driver transaction
+      `uvm_create_obj(i2c_item, txn)
+      txn.drv_type = HostWait;
+      txn.wait_cycles = 8; // Wait for full byte transmission
+      // Push transaction to driver
+      driver_q.push_back(txn);
+      // Introduce Start glitch
+      `uvm_create_obj(i2c_item, txn)
+      `uvm_create_obj(i2c_item, exp_txn)
+      exp_txn.wdata = 8'hDD;
+      if (glitch inside {ReadDataAckStart}) begin
+        txn.drv_type = HostRStart;
+        exp_txn.rstart = 1;
+        skip_start = 1;
+        full_txn.rstart = 1;
+      end else begin
+        txn.drv_type = HostStop;
+        exp_txn.stop = 1;
+        full_txn.stop = 1;
+      end
+      // Push glitch transaction to driver
+      driver_q.push_back(txn);
+      // push expected transaction
+      push_exp_txn(exp_txn);
+      if (valid_addr) p_sequencer.target_mode_rd_exp_port.write(full_txn);
+    end
+  endtask
+
+  // Populate transaction queue with glitches based on glitch variable
+  task fetch_no_tb_txn(ref i2c_item dst_q[$]);
+    i2c_item txn;
+    cfg.bad_addr_pct = 0; // Disable address randomization
+    `uvm_info("seq", $sformatf("rw_bit:%0b ", bit'(rw_bit)), UVM_MEDIUM)
 
     // Add 'START' to the front
     `uvm_create_obj(i2c_item, txn)
     txn.drv_type = HostStart;
     dst_q.push_back(txn);
-    full_txn.start = 1;
-    if (is_read) full_txn.tran_id = this.exp_rd_id;
-    // Address
-    `uvm_create_obj(i2c_item, txn)
-    txn.drv_type = HostData;
-    txn.start = 1;
-    txn.wdata[7:1] = get_target_addr(); //target_addr0;
-    txn.wdata[0] = is_read;
-    valid_addr = is_target_addr(txn.wdata[7:1]);
 
-    txn.tran_id = this.tran_id;
-    dst_q.push_back(txn);
-    full_txn.addr = txn.wdata[7:1];
-    full_txn.read = is_read;
-
-    // Start command acq entry
-    read_size = get_read_data_size(src_q, is_read, read_rcvd);
-
-    // Data
-    while (src_q.size() > 0) begin
-      `uvm_create_obj(i2c_item, txn)
-      txn = src_q.pop_front();
-      if (txn.drv_type != HostRStart) begin
-        // Restart only has empty data for address holder
-        full_txn.data_q.push_back(txn.wdata);
-      end
-
-      // RS creates 2 extra acq entry
-      // one for RS
-      // the other for a new start acq_entry with address
-      if (txn.drv_type == HostRStart) begin
-        bit prv_read = 0;
-        bit prv_valid = valid_addr;
-
-        t_addr = get_target_addr();
-        valid_addr = is_target_addr(t_addr);
-
-        `uvm_create_obj(i2c_item, rs_txn)
-        `downcast(rs_txn, txn.clone())
-        dst_q.push_back(txn);
-
-        rs_txn.drv_type = HostData;
-        rs_txn.start = 1;
-        rs_txn.rstart = 0;
-        rs_txn.wdata[7:1] = t_addr;
-        prv_read = is_read;
-        is_read = rs_txn.read;
-        rs_txn.wdata[0] = is_read;
-        dst_q.push_back(rs_txn);
-
-        // fetch previous full_txn and creat a new one
-        if (prv_read) begin
-          full_txn.stop = 1;
-        end
-        `uvm_create_obj(i2c_item, full_txn)
-        `downcast(full_txn, rs_txn);
-        if (is_read) begin
-          full_txn.tran_id = exp_rd_id;
-        end
-      end else begin
-        if (is_read) begin
-          i2c_item read_txn;
-          `uvm_create_obj(i2c_item, read_txn)
-          `downcast(read_txn, txn.clone())
-          full_txn.num_data++;
-          if (src_q.size() == 0) begin
-            txn.drv_type = get_eos(.is_stop(1));
-          end else begin
-            // if your next item is restart Do nack
-            if (src_q[0].drv_type == HostRStart) txn.drv_type = get_eos();
-            else txn.drv_type = HostAck;
-          end
-          if (!cfg.use_drooling_tx) read_txn_q.push_back(read_txn);
-        end
-
-        dst_q.push_back(txn);
-
-      end
-    end // while (src_q.size() > 0)
-
-    // Stop
-    `uvm_create_obj(i2c_item, txn)
-    txn.tran_id = this.tran_id;
-    txn.stop = 1;
-    txn.drv_type = HostStop;
-    dst_q.push_back(txn);
-    full_txn.stop = 1;
-  endfunction
+    if (rw_bit == ReadOnly) begin
+      create_read_glitch(dst_q);
+    end else begin
+      create_write_glitch(dst_q);
+    end
+  endtask
 
   task stop_target_interrupt_handler();
     string id = "stop_interrupt_handler";
@@ -231,17 +393,5 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
     cfg.stop_intr_handler = 1;
     `uvm_info(id, "called stop_intr_handler", UVM_MEDIUM)
   endtask // stop_target_interrupt_handler
-
-  // Replace read data to all 1's.
-  function void update_rd_data(bit is_read, ref i2c_item myq[$]);
-    bit read = is_read;
-    foreach (myq[i]) begin
-      if (myq[i].rstart) begin
-        read = myq[i].read;
-      end else begin
-        if (read) myq[i].wdata = 8'hff;
-      end
-    end
-  endfunction
 
 endclass : i2c_target_hrst_vseq
