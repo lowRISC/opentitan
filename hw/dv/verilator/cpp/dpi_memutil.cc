@@ -246,7 +246,7 @@ static std::vector<uint8_t> MergeSegments(const AddrRange<uint32_t> &rng0,
     std::vector<uint8_t> ret = std::move(seg1);
     ret.resize(new_len);
 
-    // We know that that rng0 isn't completely contained in rng1 and
+    // We know that rng0 isn't completely contained in rng1 and
     // that rng0 doesn't stick out of the left hand end. That means it
     // must stick out of the right (so rng1.hi < rng0.hi). However, we
     // also know that the two ranges overlap, so rng0.lo <= rng1.hi.

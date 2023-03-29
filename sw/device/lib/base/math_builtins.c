@@ -247,7 +247,7 @@ _ot_builtin_div64_intentionally_not_implemented_see_pull_11451(void);
 // the name of an undefined symbol.
 //
 // Of course, this depends on people linking this file in... but hopefully it
-// is sufficiently pervasive that that won't be an issue; at any rate, it means
+// is sufficiently pervasive that won't be an issue; at any rate, it means
 // people will land somewhere when they grep for __udivdi3 and friends.
 OT_WEAK int64_t __divdi3(int64_t a, int64_t b) {
   _ot_builtin_div64_intentionally_not_implemented_see_pull_11451();
