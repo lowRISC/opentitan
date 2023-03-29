@@ -189,7 +189,7 @@ When this happens, the power manager creates a local escalation request that beh
 If the main power ever becomes unstable (the power okay indication is low even though it is powered on), the power manager requests an internal reset.
 This reset behaves similarly to the escalation reset and transitions directly into reset handling.
 
-Note that under normal low power conditions, the main power may be be turned off.
+Note that under normal low power conditions, the main power may be turned off.
 As a result of this, the main power unstable checks are valid only during states that power should be on and stable.
 This includes any state where power manager has requested the power to be turned on.
 
