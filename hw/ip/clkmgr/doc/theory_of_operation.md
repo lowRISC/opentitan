@@ -265,7 +265,7 @@ Software sets both an expected maximum and minimum for each measured clock.
 Clock manager then counts the number of relevant root clock cycles in each always-on clock period.
 If the resulting count differs from the programmed thresholds, a recoverable error is registered.
 
-Since the counts are measured against a single cycle of always on clock, the minimal error that can be detected is dependent on the clock ratio between the measured clock and 1 cycle of of the always on clock.
+Since the counts are measured against a single cycle of always on clock, the minimal error that can be detected is dependent on the clock ratio between the measured clock and 1 cycle of the always on clock.
 Assume a 24MHz clock and an always-on clock of 200KHz.
 The minimal error detection is then 200KHz / 24MHz, or approximately 0.83%.
 
