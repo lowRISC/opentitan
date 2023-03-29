@@ -243,7 +243,7 @@ class ControlGraph:
                 insn = program.get_insn(sec.end)
                 operands = program.get_operands(sec.end)
                 if insn.mnemonic == 'jal' and operands['grd'] == 1:
-                    # push to to the call stack
+                    # push to the call stack
                     call_stack = [sec.end + 4] + call_stack
                     child_indent += 2
                 out += [

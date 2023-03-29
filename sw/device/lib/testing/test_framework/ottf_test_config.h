@@ -48,7 +48,7 @@ typedef struct ottf_console {
 typedef struct ottf_test_config {
   /**
    * If true, `test_main()` is run as a FreeRTOS task, enabling test writers
-   * to to spawn additional (concurrent) FreeRTOS tasks within the
+   * to spawn additional (concurrent) FreeRTOS tasks within the
    * `test_main()` execution context.
    *
    * If false, `test_main()` is executed on bare-metal, and cannot spawn
