@@ -30,6 +30,9 @@ class i2c_item extends uvm_sequence_item;
   // Use for debug print
   string                   pname = "";
 
+  // Use to indicate the number of cycles Agent consumes for Write data or while in idle state
+  int                      wait_cycles = 8;
+
   constraint fbyte_c     { fbyte      inside {[0 : 127] }; }
   constraint rcont_c     {
      solve read, stop before rcont;
@@ -39,6 +42,10 @@ class i2c_item extends uvm_sequence_item;
      } else {
        rcont dist { 1 :/ 1, 0 :/ 2 };
      }
+  }
+
+  constraint wait_cycles_c {
+    wait_cycles == 8;
   }
 
   `uvm_object_utils_begin(i2c_item)
@@ -60,6 +67,7 @@ class i2c_item extends uvm_sequence_item;
     `uvm_field_int(rcont,                   UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_field_int(nakok,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
     `uvm_field_enum(drv_type_e,  drv_type,  UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_int(wait_cycles,             UVM_DEFAULT | UVM_NOCOMPARE)
   `uvm_object_utils_end
 
   `uvm_object_new
