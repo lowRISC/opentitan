@@ -295,7 +295,7 @@
       desc: '''Covers if sequence issued various OTP_CTRL's background checks after any fatal alert
             is triggered.'''
     }
-    { // TODO: this is from a wrapper class, confirm if this is the correct format
+    {
       name: csr_rd_after_alert_cg
       desc: '''Covers if the following CSRs are being read and the value is checked in scoreboard
             after any fatal alert is triggered:
@@ -316,17 +316,17 @@
       name: lci_err_code_cg
       desc: '''Covers all applicable error codes in LCI.'''
     }
-    { // TODO: this is an array of covergroups, confirm if this is the correct format
+    {
       name: unbuf_err_code_cg
       desc: '''This is an array of covergroups to cover all applicable error codes in three
             unbuffered partitions.'''
     }
-    { // TODO: this is an array of covergroups, confirm if this is the correct format
+    {
       name: buf_err_code_cg
       desc: '''This is an array of covergroups to cover all applicable error codes in five
             buffered partitions.'''
     }
-    { // TODO: this is an array of covergroups, confirm if this is the correct format
+    {
       name: unbuf_access_lock_cg_wrap_cg
       desc: '''This is an array of covergroups to cover lock conditions below in three
             unbuffered partitions:
@@ -339,7 +339,7 @@
       name: dai_access_secret2_cg
       desc: '''Covers whether `lc_creator_seed_sw_rw_en` is On during any DAI accesses.'''
     }
-    { // TODO: this is an array of covergroups, confirm if this is the correct format
+    {
       name: status_csr_cg
       desc: '''Covers the value of every bit in `status` CSR.'''
     }
