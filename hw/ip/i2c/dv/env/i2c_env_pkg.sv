@@ -45,6 +45,24 @@ package i2c_env_pkg;
     ReadWrite = 2
   } tran_type_e;
 
+  // Possible Start/Stop conditions that can be issued during an active transmission
+  //
+  // DUT Mode | SCL driver | Operation  |   Stage      | SDA Driver | Start/Stop condition
+  // -------- | ---------- | ---------- | ------------ | ---------- | --------------------
+  // Target   |    TB      | Write/Read | Address Byte |  TB        |  Start/Stop
+  // Target   |    TB      | Write      | Data Byte    |  TB        |  Start/Stop
+  // Target   |    TB      | Read       | Data byte    |  DUT       |  Start (with rdata 'hFF)
+  // Target   |    TB      | Read       | Data Ack     |  TB        |  Start/Stop
+  typedef enum int{
+    AddressByteStart   = 0,
+    AddressByteStop    = 1,
+    WriteDataByteStart = 2,
+    WriteDataByteStop  = 3,
+    ReadDataByteStart  = 4,
+    ReadDataAckStart   = 5,
+    ReadDataAckStop    = 6
+  } glitch_e;
+
   parameter uint I2C_FMT_FIFO_DEPTH = i2c_reg_pkg::FifoDepth;
   parameter uint I2C_RX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;
   parameter uint I2C_TX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;
