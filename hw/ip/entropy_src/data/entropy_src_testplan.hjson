@@ -178,7 +178,7 @@
              Covers that all three fifos (the esrng fifo, the observe fifo, and the esfinal fifo)
              have all been forced into the three error states (write overflow, read underflow,
              and invalid state), and the error has sucessfully generated an alert and that
-             the alert is successfully reported in the the ERR_CODE register.
+             the alert is successfully reported in the ERR_CODE register.
              '''
     }
     {

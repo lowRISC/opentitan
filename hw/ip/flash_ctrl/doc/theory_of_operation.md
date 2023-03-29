@@ -364,7 +364,7 @@ The third host requests immediately hits in the local cache and responds in orde
 
 The flash buffer is a small read-only memory that holds multiple entries of recently read flash words.
 This is needed when the flash word is wider than a bus word.
-The flash access time is amortized across the the entire flash word if software accesses in a mostly
+The flash access time is amortized across the entire flash word if software accesses in a mostly
 linear sequence.
 
 The flash buffer has a round robin replacement policy when more flash words are read.

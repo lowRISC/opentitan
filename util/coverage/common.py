@@ -144,7 +144,7 @@ def get_test_log_dirs(test_targets: List[str]) -> List[Path]:
         test_targets: Test targets.
 
     Returns:
-        Log directories of the the given test targets.
+        Log directories of the given test targets.
     """
     [test_log_dir_root] = run(BAZEL, "info", "bazel-testlogs")
     test_log_dirs = []

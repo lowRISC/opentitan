@@ -466,7 +466,7 @@ module lc_ctrl
 
   assign lc_flash_rma_seed_o = transition_token_q[RmaSeedWidth-1:0];
 
-  // Gate the the vendor specific test ctrl/status bits to zero in production states.
+  // Gate the vendor specific test ctrl/status bits to zero in production states.
   // Buffer the enable signal to prevent optimization of the multibit signal.
   lc_tx_t lc_raw_test_rma;
   lc_tx_t [1:0] lc_raw_test_rma_buf;

@@ -42,7 +42,7 @@ impl ProxyGpioPin {
 }
 
 impl GpioPin for ProxyGpioPin {
-    /// Reads the value of the the GPIO pin `id`.
+    /// Reads the value of the GPIO pin `id`.
     fn read(&self) -> Result<bool> {
         match self.execute_command(GpioRequest::Read)? {
             GpioResponse::Read { value } => Ok(value),

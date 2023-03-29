@@ -65,7 +65,7 @@ arg_enum! {
 
 /// A trait which represents a single GPIO pin.
 pub trait GpioPin {
-    /// Reads the value of the the GPIO pin.
+    /// Reads the value of the GPIO pin.
     fn read(&self) -> Result<bool>;
 
     /// Sets the value of the GPIO pin to `value`.
@@ -77,7 +77,7 @@ pub trait GpioPin {
     /// Sets the weak pull resistors of the GPIO pin.
     fn set_pull_mode(&self, mode: PullMode) -> Result<()>;
 
-    /// Reads the analog value of the the GPIO pin in Volts. `AnalogInput` mode disables digital
+    /// Reads the analog value of the GPIO pin in Volts. `AnalogInput` mode disables digital
     /// circuitry for better results, but this method may also work in other modes.
     fn analog_read(&self) -> Result<f32> {
         Err(TransportError::UnsupportedOperation.into())

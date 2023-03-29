@@ -72,7 +72,7 @@ TL host interface into FOO device.
 ### UVM RAL Model
 The FOO RAL model is created with the [`ralgen`](../tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually (separately) by running `make` in the the `hw/` area.
+It can be created manually (separately) by running `make` in the `hw/` area.
 
 ### Reference models
 [Describe reference models in use if applicable, example: SHA256/HMAC]

@@ -123,7 +123,7 @@ static void mont_mul(const sigverify_rsa_key_t *key,
     // at most 1, we can subtract the modulus from `result` without taking it
     // into account and fit `result` into `kSigVerifyRsaNumWords`. Since this is
     // not a direct comparison with the modulus, the final result is not
-    // guaranteed to be the the least non-negative residue of x*y*R^-1 mod n.
+    // guaranteed to be the least non-negative residue of x*y*R^-1 mod n.
     if (acc0 >> 32) {
       subtract_modulus(key, result);
     }

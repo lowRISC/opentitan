@@ -259,7 +259,7 @@ class SimCfg(FlowCfg):
                 self.sw_build_opts.extend(build_mode_obj.sw_build_opts)
             else:
                 log.error(
-                    "Mode \"%s\" enabled on the the command line is not defined",
+                    "Mode \"%s\" enabled on the command line is not defined",
                     en_build_mode)
                 sys.exit(1)
 
@@ -274,7 +274,7 @@ class SimCfg(FlowCfg):
                 self.sw_build_opts.extend(run_mode_obj.sw_build_opts)
             else:
                 log.error(
-                    "Mode \"%s\" enabled on the the command line is not defined",
+                    "Mode \"%s\" enabled on the command line is not defined",
                     en_run_mode)
                 sys.exit(1)
 

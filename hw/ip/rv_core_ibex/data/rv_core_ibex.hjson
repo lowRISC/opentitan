@@ -435,7 +435,7 @@
     { name: "LOGIC.SHADOW"
       desc: '''
         Shadow core run in lockstep to crosscheck CPU behaviour. This provides
-        broad protection for all assets with the the Ibex core.
+        broad protection for all assets with the Ibex core.
       '''
     }
     { name: "FETCH.CTRL.LC_GATED"

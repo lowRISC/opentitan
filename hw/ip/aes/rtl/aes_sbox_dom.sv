@@ -531,7 +531,7 @@ module aes_dom_dep_mul_gf2pn #(
 
   end else begin : gen_not_pre_dom_indep
     // This DOM-dep multiplier is not directly followed by an un-pipelined DOM-indep multiplier. As
-    // a result, the the d_y and _D_y_z0 parts of d_b can be summed up prior to the multiplication
+    // a result, the d_y and _D_y_z0 parts of d_b can be summed up prior to the multiplication
     // with input x which allows saving 2 GF multipliers.
 
     // Sum up d_y and _D_y_z0.

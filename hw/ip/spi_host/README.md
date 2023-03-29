@@ -43,7 +43,7 @@ For instance, this OpenTitan SPI Host IP is primarily designed for controlling Q
 Though this IP implementation aims to be general enough to support a variety of devices, the Winbond serial flash device is used as the primary reference for understanding our host requirements.
 
 There are also a number of good references describing legacy host implementations for this protocol, which are useful for understanding some of the general needs for a wider range of target devices.
-For instance, the legacy [SPI Block Guide](https://web.archive.org/web/20150413003534/http://www.ee.nmt.edu/~teare/ee308l/datasheets/S12SPIV3.pdf) from Motorola contains a definitive overview of some of the the general requirements for a standard SPI host, notably the definitions of SPI clock phase and polarity (CPOL and CPHA).
+For instance, the legacy [SPI Block Guide](https://web.archive.org/web/20150413003534/http://www.ee.nmt.edu/~teare/ee308l/datasheets/S12SPIV3.pdf) from Motorola contains a definitive overview of some of the general requirements for a standard SPI host, notably the definitions of SPI clock phase and polarity (CPOL and CPHA).
 In order to potentially support a broad range of devices, this SPI Host IP also supports all four of the standard SPI clock phases.
 
 ### SPI Protocol Basics

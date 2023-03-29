@@ -60,7 +60,7 @@ impl C2d2ResetPin {
 }
 
 impl GpioPin for C2d2ResetPin {
-    /// Reads the value of the the reset pin.
+    /// Reads the value of the reset pin.
     fn read(&self) -> Result<bool> {
         let line = self
             .inner

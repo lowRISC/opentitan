@@ -475,7 +475,7 @@ bool test_main(void) {
       2- Enable the corresponding alerts
       3- Wait long enough
       4- Confirm that ping_timeout has not been triggered
-      5- Reset the the device to test the next peripheral
+      5- Reset the device to test the next peripheral
   */
   while (test_step_cnt < 1 * ARRAYSIZE(kPeripherals)) {
     // Run the negative test only on the FPGA

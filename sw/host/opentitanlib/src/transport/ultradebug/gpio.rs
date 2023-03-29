@@ -71,7 +71,7 @@ pub struct UltradebugGpioPin {
 }
 
 impl GpioPin for UltradebugGpioPin {
-    /// Reads the value of the the GPIO pin `id`.
+    /// Reads the value of the GPIO pin `id`.
     fn read(&self) -> Result<bool> {
         let bits = self.device.borrow_mut().gpio_get().context("FTDI error")?;
         Ok(bits & (1 << self.pin_id) != 0)

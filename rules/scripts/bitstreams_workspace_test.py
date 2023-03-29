@@ -37,7 +37,7 @@ class TestBitstreamCache(unittest.TestCase):
         cached_files = cache.GetFromCache('abcd')
 
         # This is more of an implementation detail, but it verifies that we hit
-        # the the mocked `os.walk` function as expected.
+        # the mocked `os.walk` function as expected.
         os.walk.assert_called_once_with('cache/abcd')
 
         self.assertEqual(
@@ -123,7 +123,7 @@ filegroup(
 ''')
 
         # This is more of an implementation detail, but it verifies that we hit
-        # the the mocked `os.walk` function as expected.
+        # the mocked `os.walk` function as expected.
         os.walk.assert_called_once_with('cache/abcd')
 
 

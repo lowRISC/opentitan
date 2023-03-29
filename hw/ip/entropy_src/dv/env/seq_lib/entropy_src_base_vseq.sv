@@ -143,7 +143,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     end
   endtask;
 
-  // Helper function to entropy_src_init. Tries to apply the the new configuration
+  // Helper function to entropy_src_init. Tries to apply the new configuration
   // Does not check for invalid MuBi or threshold alert values
   virtual task try_apply_base_configuration(entropy_src_dut_cfg newcfg, realtime pause,
                                             output bit completed);

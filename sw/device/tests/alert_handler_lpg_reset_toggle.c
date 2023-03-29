@@ -441,7 +441,7 @@ bool test_main(void) {
       3- Wait long enough
       4- Confirm that ping_timeout has not been triggered
       5- Release the reset of the IP
-      6- Reset the the device to test the next peripheral
+      6- Reset the device to test the next peripheral
   */
   while (test_step_cnt < 1 * ARRAYSIZE(kPeripherals)) {
     // Run the negative test only on the FPGA

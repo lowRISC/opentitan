@@ -192,7 +192,7 @@ static void task_done_set_and_yield(task_id_t task_id) {
 /**
  * OTBN task.
  *
- * Executes OTBN randomness test the the test state is set to `kTestStateRun`.
+ * Executes OTBN randomness test, the test state is set to `kTestStateRun`.
  *
  * @param task_parameters Unused. Set to NULL by ottf.
  */
@@ -224,7 +224,7 @@ static void otbn_task(void *task_parameters) {
 /**
  * Ibex task.
  *
- * Executes Ibex randomness test the the test state is set to `kTestStateRun`.
+ * Executes Ibex randomness test the, test state is set to `kTestStateRun`.
  *
  * @param task_parameters Unused. Set to NULL by ottf.
  */

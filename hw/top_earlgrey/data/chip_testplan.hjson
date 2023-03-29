@@ -3251,7 +3251,7 @@
       name: chip_sw_rv_core_ibex_address_translation
       desc: '''Verify the simple address translation functionality.
 
-               - Setup address translation for both slots on the the I and D
+               - Setup address translation for both slots on the I and D
                  side and check correct translation for I and D accesses.
                - Switch address translation to use different regions that
                  overlap for both slots and check translation again. Ensure some
