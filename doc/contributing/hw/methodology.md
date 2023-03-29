@@ -152,7 +152,7 @@ Details on how to run the tool will be provided once the decision has been final
 The team will standardize on a suite of clock-crossing modules that can be used for most multi-clock designs.
 Many of those will be documented in the `hw/ip/prim/doc` directory.
 
-Similar to the linting tool, due to the proprietary nature of the CDC tool, it is possible that not all content towards running the tool will be checked in in the open source repository.
+Similar to the linting tool, due to the proprietary nature of the CDC tool, it is possible that not all content towards running the tool will be checked in the open source repository.
 For those items, we will work with the tool provider to allow other partners to also use the tool.
 When this methodology is finalized the details will be given here. (TODO)
 
