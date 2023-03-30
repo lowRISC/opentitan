@@ -88,6 +88,8 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     // tHoldStart and tClockStart need to be non-zero to make the start condition detectable.
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tHoldStart = half_period_cycles;
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockStart = half_period_cycles;
+    // tSetupBit need to be non-zero to detect the data bits
+    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tSetupBit = half_period_cycles / 2;
 
     // tClockStop, tSetupStop, and tHoldStop have to be non-zero to make the stop condition
     // detectable.
