@@ -86,6 +86,21 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "ecdh_p256_functest",
+    srcs = ["ecdh_p256_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl/ecc:ecdh_p256",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "ecdsa_p256_functest",
     srcs = ["ecdsa_p256_functest.c"],
     verilator = verilator_params(
