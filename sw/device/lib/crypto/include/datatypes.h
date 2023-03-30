@@ -27,15 +27,18 @@ extern "C" {
  */
 typedef enum crypto_status {
   // Status is OK; no errors.
-  kCryptoStatusOK = 0xc6c5,
+  kCryptoStatusOK = 0xcb6,
   // Invalid input arguments; wrong length or invalid type.
-  kCryptoStatusBadArgs = 0xe9cb,
+  kCryptoStatusBadArgs = 0xb07,
   // Error after which it is OK to retry (e.g. timeout).
-  kCryptoStatusInternalError = 0x5eb2,
+  kCryptoStatusInternalError = 0x5c3,
   // Error after which it is not OK to retry (e.g. integrity check).
-  kCryptoStatusFatalError = 0xd176,
+  kCryptoStatusFatalError = 0xf5c,
   // An asynchronous operation is still in progress.
-  kCryptoStatusAsyncIncomplete = 0x37e1,
+  kCryptoStatusAsyncIncomplete = 0xae1,
+  // TODO: remove all instances of this error before release; it is to track
+  // implementations that are not yet complete.
+  kCryptoStatusNotImplemented = 0x7ff,
 } crypto_status_t;
 
 /**

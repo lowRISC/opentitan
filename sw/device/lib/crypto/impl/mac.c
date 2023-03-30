@@ -97,7 +97,7 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
 
   // TODO (#16410, #15590): Add sideload support.
   if (key->config.hw_backed == kHardenedBoolTrue) {
-    return kCryptoStatusBadArgs;
+    return kCryptoStatusNotImplemented;
   }
 
   kmac_blinded_key_t kmac_key;
