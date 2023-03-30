@@ -72,6 +72,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   string otp_images[otp_type_e];
 
   uint               sw_test_timeout_ns = 12_000_000; // 12ms
+  // delay until the pull is propagated, only available in closed-source
+  uint               pad_pull_delay = 0;
   sw_logger_vif      sw_logger_vif;
   sw_test_status_vif sw_test_status_vif;
   ast_supply_vif     ast_supply_vif;
@@ -447,6 +449,14 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
       end
       mem_iter = mem_iter.next();
     end while (mem_iter != mem_iter.first());
+    return 0;
+  endfunction
+
+  virtual function int is_mio_open_drain(int pin_num);
+    return 0;
+  endfunction
+
+  virtual function int is_dio_open_drain(int pin_num);
     return 0;
   endfunction
 
