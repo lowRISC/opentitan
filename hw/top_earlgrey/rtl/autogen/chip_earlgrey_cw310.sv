@@ -994,7 +994,7 @@ module chip_earlgrey_cw310 #(
     .SecAesAllowForcingMasks(1'b1),
     .KmacEnMasking(1),
     .KmacSwKeyMasked(1),
-    .SecKmacCmdDelay(40),
+    .SecKmacCmdDelay(160),
     .SecKmacIdleAcceptSwMsg(1'b1),
     .KeymgrKmacEnMasking(1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
@@ -1111,7 +1111,7 @@ module chip_earlgrey_cw310 #(
   // IP              - GPIO[11:9] - Index for clkmgr_aon_idle
   // ------------------------------------------------------------
   //  AES            -   000      -  0
-  //  HMAC           -   001      -  1
+  //  HMAC           -   001      -  1 - not implemented on CW305
   //  KMAC           -   010      -  2 - not implemented on CW305
   //  OTBN (IO_DIV4) -   011      -  3 - not implemented on CW305
   //  OTBN           -   100      -  4 - not implemented on CW305
@@ -1119,6 +1119,8 @@ module chip_earlgrey_cw310 #(
   // In addition, GPIO8 is used for gating the capture trigger in software.
   // Note that GPIO[11:8] are connected to LED[3:0] on the CW310.
   // On the CW305, GPIO[9,8] are connected to LED[5,7].
+
+  prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
 
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
@@ -1130,8 +1132,6 @@ module chip_earlgrey_cw310 #(
       default: trigger_sel = clkmgr_pkg::HintMainAes;
     endcase;
   end
-
-  prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
   assign clk_trans_idle = top_earlgrey.clkmgr_aon_idle[trigger_sel];
 
   logic clk_io_div4_trigger_en, manual_in_io_clk_trigger_en;

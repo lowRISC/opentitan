@@ -1075,7 +1075,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesAllowForcingMasks(1'b1),
     .KmacEnMasking(1),
     .KmacSwKeyMasked(1),
-    .SecKmacCmdDelay(40),
+    .SecKmacCmdDelay(160),
     .SecKmacIdleAcceptSwMsg(1'b1),
     .KeymgrKmacEnMasking(1),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
