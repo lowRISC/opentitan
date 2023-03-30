@@ -38,7 +38,7 @@ extern "C" {
                                  ((__LINE__ & 0x7ff) << 5) | kUnavailable)})
 #define OTCRYPTO_NOT_IMPLEMENTED                          \
   ((status_t){.value = (int32_t)(0x80000000 | MODULE_ID | \
-                                 ((__LINE__ & 0x7ff) << 5) | kUnImplemented)})
+                                 ((__LINE__ & 0x7ff) << 5) | kUnimplemented)})
 
 /**
  * Convert a `status_t` into a `crypto_status_t`.

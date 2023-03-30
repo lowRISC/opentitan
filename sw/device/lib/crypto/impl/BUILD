@@ -19,6 +19,24 @@ cc_library(
 )
 
 cc_library(
+    name = "drbg",
+    srcs = ["drbg.c"],
+    hdrs = ["//sw/device/lib/crypto/include:drbg.h"],
+    deps = [
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
+    name = "ecc",
+    srcs = ["ecc.c"],
+    hdrs = ["//sw/device/lib/crypto/include:ecc.h"],
+    deps = [
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "hash",
     srcs = ["hash.c"],
     hdrs = [
@@ -44,6 +62,15 @@ cc_library(
 )
 
 cc_library(
+    name = "kdf",
+    srcs = ["kdf.c"],
+    hdrs = ["//sw/device/lib/crypto/include:kdf.h"],
+    deps = [
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "keyblob",
     srcs = ["keyblob.c"],
     hdrs = ["keyblob.h"],
@@ -61,6 +88,24 @@ cc_test(
     deps = [
         ":keyblob",
         "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "key_transport",
+    srcs = ["key_transport.c"],
+    hdrs = ["//sw/device/lib/crypto/include:key_transport.h"],
+    deps = [
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
+    name = "rsa",
+    srcs = ["rsa.c"],
+    hdrs = ["//sw/device/lib/crypto/include:rsa.h"],
+    deps = [
+        "//sw/device/lib/crypto/include:datatypes",
     ],
 )
 

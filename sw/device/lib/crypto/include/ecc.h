@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_ECC_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_ECC_H_
 
+#include "sw/device/lib/crypto/include/datatypes.h"
+
 /**
  * @file
  * @brief Elliptic curve operations for OpenTitan cryptography library.
@@ -366,40 +368,6 @@ crypto_status_t otcrypto_ecdsa_sign_async_start(
  * @return Result of async ECDSA finalize operation.
  */
 crypto_status_t otcrypto_ecdsa_sign_async_finalize(ecc_signature_t *signature);
-
-/**
- * Starts the asynchronous deterministic ECDSA digital signature generation.
- *
- * Initializes OTBN and starts the OTBN routine to compute the digital
- * signature on the input message. The `domain_parameter` field of the
- * `elliptic_curve` is required only for a custom curve. For named
- * curves this field is ignored and can be set to `NULL`.
- *
- * @param private_key Pointer to the blinded private key (d) struct.
- * @param input_message Input message to be signed.
- * @param elliptic_curve Pointer to the elliptic curve to be used.
- * @return Result of async ECDSA start operation.
- */
-crypto_status_t otcrypto_deterministic_ecdsa_sign_async_start(
-    const crypto_blinded_key_t *private_key,
-    crypto_const_uint8_buf_t input_message, ecc_curve_t *elliptic_curve);
-
-/**
- * Finalizes the asynchronous deterministic ECDSA digital signature generation.
- *
- * In the case of deterministic ECDSA, the random value ‘k’ for the
- * signature generation is deterministically generated from the
- * private key and the input message. Refer to RFC6979 for details.
- *
- * Returns `kCryptoStatusOK` and copies the signature if the OTBN
- * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN is
- * busy or `kCryptoStatusInternalError` if there is an error.
- *
- * @param[out] signature Pointer to the signature struct with (r,s) values.
- * @return Result of async deterministic ECDSA finalize operation.
- */
-crypto_status_t otcrypto_ecdsa_deterministic_sign_async_finalize(
-    ecc_signature_t *signature);
 
 /**
  * Starts the asynchronous ECDSA digital signature verification.

@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KDF_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KDF_H_
 
+#include "sw/device/lib/crypto/include/datatypes.h"
+
 /**
  * @file
  * @brief Key derivation functions for the OpenTitan cryptography library.
