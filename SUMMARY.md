@@ -257,6 +257,7 @@
     - [Device Interface Functions](./sw/device/lib/dif/dif_sram_ctrl.h)
     - [Checklist](./hw/ip/sram_ctrl/doc/checklist.md)
   - [System Reset Controller](./hw/ip/sysrst_ctrl/README.md)
+    - [Theory of Operation](./hw/ip/sysrst_ctrl/doc/theory_of_operation.md)
     - [Design Verification](./hw/ip/sysrst_ctrl/dv/README.md)
       - [Testplan](./hw/ip/sysrst_ctrl/data/sysrst_ctrl_testplan.hjson)
     - [Interface and Registers](./hw/ip/sysrst_ctrl/data/sysrst_ctrl.hjson)
