@@ -38,7 +38,7 @@ static status_t construct_aes_key(const crypto_blinded_key_t *blinded_key,
   // TODO(#15590): add support for sideloaded keys by actuating keymgr here if
   // needed (this requires a keymgr driver).
   if (blinded_key->config.hw_backed != kHardenedBoolFalse) {
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_NOT_IMPLEMENTED;
   }
   aes_key->sideload = kHardenedBoolFalse;
 
@@ -123,10 +123,9 @@ static status_t aes_padding_apply(aes_padding_t padding_mode,
       break;
     case kAesPaddingNull:
       // This routine should not be called if padding is not needed.
-      return OTCRYPTO_BAD_ARGS;
+      return OTCRYPTO_RECOV_ERR;
     default:
-      // TODO(#15591): Add any other padding modes that will be included in the
-      // final API.
+      // Unrecognized padding mode.
       return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(padding_written, kHardenedBoolTrue);

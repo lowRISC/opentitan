@@ -44,7 +44,7 @@ crypto_status_t crypto_status_interpret(status_t status) {
     case kOutOfRange:
       return kCryptoStatusInternalError;
     case kUnimplemented:
-      return kCryptoStatusInternalError;
+      return kCryptoStatusNotImplemented;
     case kUnauthenticated:
       return kCryptoStatusInternalError;
     case kUnknown:

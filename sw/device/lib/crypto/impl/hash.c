@@ -116,8 +116,14 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
       // Call the HMAC block driver in SHA-256 mode.
       OTCRYPTO_TRY_INTERPRET(sha256(input_message, digest));
       break;
+    case kHashModeSha384:
+      // TODO: (#16410) Connect SHA2-384 implementation
+      return kCryptoStatusNotImplemented;
+    case kHashModeSha512:
+      // TODO: (#16410) Connect SHA2-512 implementation
+      return kCryptoStatusNotImplemented;
     default:
-      // TODO: (#16410) Connect SHA2-{384,512} implementations
+      // Unrecognized hash mode.
       return kCryptoStatusBadArgs;
   }
 
