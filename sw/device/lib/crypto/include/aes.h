@@ -5,7 +5,6 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_AES_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_AES_H_
 
-#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
 /**
@@ -79,12 +78,6 @@ typedef enum aes_padding {
   kAesPaddingPkcs7 = 0xce99,
   // Pads with 0x80 (10000000), followed by zero bytes.
   kAesPaddingIso9797M2 = 0xb377,
-  // Pads with 0x00 bytes.
-  kAesPaddingIso9797M1 = 0x49eb,
-  // Pads with random bytes, last byte is no. of padded bytes.
-  kAesPaddingRandom = 0x746c,
-  // Pads with 0x00 bytes, last byte is no. of padded bytes.
-  kAesPaddingX923 = 0xed32,
   // Add no padding.
   kAesPaddingNull = 0x259f,
 } aes_padding_t;

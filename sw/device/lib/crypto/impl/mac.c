@@ -15,6 +15,13 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('m', 'a', 'c')
 
+crypto_status_t otcrypto_mac_keygen(crypto_blinded_key_t *key) {
+  // TODO: Implement KMAC sideloaded key generation once we have a keymgr
+  // driver. In the meantime, non-sideloaded KMAC or HMAC keys can simply be
+  // generated using the DRBG and key-import functions.
+  return kCryptoStatusNotImplemented;
+}
+
 /**
  * Call the hardware HMAC-SHA256 driver.
  *
@@ -140,4 +147,23 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
   }
 
   return kCryptoStatusOK;
+}
+
+crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
+                                   const crypto_blinded_key_t *key,
+                                   mac_mode_t hmac_mode) {
+  // TODO: Implement streaming HMAC API once we have streaming SHA256.
+  return kCryptoStatusNotImplemented;
+}
+
+crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
+                                     crypto_const_uint8_buf_t input_message) {
+  // TODO: Implement streaming HMAC API once we have streaming SHA256.
+  return kCryptoStatusNotImplemented;
+}
+
+crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
+                                    crypto_uint8_buf_t *tag) {
+  // TODO: Implement streaming HMAC API once we have streaming SHA256.
+  return kCryptoStatusNotImplemented;
 }

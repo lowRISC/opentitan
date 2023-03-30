@@ -24,6 +24,13 @@ OT_ASSERT_ENUM_VALUE(kAesCipherModeCtr, (uint32_t)kBlockCipherModeCtr);
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('a', 'e', 's')
 
+crypto_status_t otcrypto_aes_keygen(crypto_blinded_key_t *key) {
+  // TODO: Implement AES sideloaded key generation once we have a keymgr
+  // driver. In the meantime, non-sideloaded AES keys can simply be generated
+  // using the DRBG and key-import functions.
+  return kCryptoStatusNotImplemented;
+}
+
 /**
  * Extract an AES key from the blinded key struct.
  *
@@ -318,4 +325,61 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
   OTCRYPTO_TRY_INTERPRET(aes_end());
 
   return kCryptoStatusOK;
+}
+
+crypto_status_t otcrypto_aes_encrypt_gcm(
+    const crypto_blinded_key_t *key, crypto_const_uint8_buf_t plaintext,
+    crypto_uint8_buf_t iv, crypto_uint8_buf_t aad, aead_gcm_tag_len_t tag_len,
+    crypto_uint8_buf_t *ciphertext, crypto_uint8_buf_t *auth_tag) {
+  // TODO: Connect AES-GCM operations to the API.
+  return kCryptoStatusNotImplemented;
+}
+
+crypto_status_t otcrypto_aes_decrypt_gcm(const crypto_blinded_key_t *key,
+                                         crypto_const_uint8_buf_t ciphertext,
+                                         crypto_uint8_buf_t iv,
+                                         crypto_uint8_buf_t aad,
+                                         crypto_uint8_buf_t auth_tag,
+                                         crypto_uint8_buf_t *plaintext) {
+  // TODO: Connect AES-GCM operations to the API.
+  return kCryptoStatusNotImplemented;
+}
+
+crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
+                                        gcm_ghash_context_t *ctx) {
+  // TODO: Connect AES-GCM operations to the API.
+  return kCryptoStatusNotImplemented;
+}
+
+crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
+                                          crypto_const_uint8_buf_t input) {
+  // TODO: Connect AES-GCM operations to the API.
+  return kCryptoStatusNotImplemented;
+}
+
+crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
+                                         crypto_uint8_buf_t digest) {
+  // TODO: Connect AES-GCM operations to the API.
+  return kCryptoStatusNotImplemented;
+}
+
+crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
+                                      crypto_const_uint8_buf_t input,
+                                      crypto_uint8_buf_t output) {
+  // TODO: Connect AES-GCM operations to the API.
+  return kCryptoStatusNotImplemented;
+}
+
+crypto_status_t otcrypto_aes_kwp_encrypt(
+    const crypto_blinded_key_t *key_to_wrap,
+    const crypto_blinded_key_t *key_kek, crypto_uint8_buf_t *wrapped_key) {
+  // TODO: AES-KWP is not yet implemented.
+  return kCryptoStatusNotImplemented;
+}
+
+crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_uint8_buf_t wrapped_key,
+                                         const crypto_blinded_key_t *key_kek,
+                                         crypto_blinded_key_t *unwrapped_key) {
+  // TODO: AES-KWP is not yet implemented.
+  return kCryptoStatusNotImplemented;
 }

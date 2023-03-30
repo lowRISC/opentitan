@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KEY_TRANSPORT_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KEY_TRANSPORT_H_
 
+#include "sw/device/lib/crypto/include/datatypes.h"
+
 /**
  * @file
  * @brief Key import/export for the OpenTitan cryptography library.
@@ -83,7 +85,8 @@ crypto_status_t otcrypto_blinded_to_unblinded_key(
  * @return Result of blinding operation.
  */
 crypto_status_t otcrypto_unblinded_to_blinded_key(
-    const crypto_unblinded_key unblinded_key, crypto_blinded_key_t blinded_key);
+    const crypto_unblinded_key_t unblinded_key,
+    crypto_blinded_key_t blinded_key);
 
 #ifdef __cplusplus
 }  // extern "C"

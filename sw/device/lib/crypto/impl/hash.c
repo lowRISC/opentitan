@@ -172,3 +172,21 @@ crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
 
   return kCryptoStatusOK;
 }
+
+crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
+                                   hash_mode_t hash_mode) {
+  // TODO: Implement streaming hash functions.
+  return kCryptoStatusNotImplemented;
+}
+
+crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
+                                     crypto_const_uint8_buf_t input_message) {
+  // TODO: Implement streaming hash functions.
+  return kCryptoStatusNotImplemented;
+}
+
+crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
+                                    crypto_uint8_buf_t *digest) {
+  // TODO: Implement streaming hash functions.
+  return kCryptoStatusNotImplemented;
+}
