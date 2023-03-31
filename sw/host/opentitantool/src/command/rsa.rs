@@ -258,6 +258,11 @@ pub struct RsaSignResult {
 
 #[derive(Debug, StructOpt)]
 pub struct RsaSignCommand {
+    #[structopt(short, long, help = "File containing a SHA256 digest")]
+    input: Option<PathBuf>,
+    #[structopt(short, long, help = "File name to write the signature to")]
+    output: Option<PathBuf>,
+
     #[structopt(
         name = "DER_FILE",
         parse(try_from_str=RsaPrivateKey::from_pkcs8_der_file),
@@ -267,16 +272,10 @@ pub struct RsaSignCommand {
     #[structopt(
         name = "SHA256_DIGEST",
         parse(try_from_str=ParseInt::from_str),
+        required_unless = "input",
         help = "SHA256 digest of the message"
     )]
-    digest: Sha256Digest,
-    #[structopt(
-        name = "output",
-        short,
-        long,
-        help = "File name to write the signature to"
-    )]
-    output: Option<PathBuf>,
+    digest: Option<Sha256Digest>,
 }
 
 impl CommandDispatch for RsaSignCommand {
@@ -285,12 +284,18 @@ impl CommandDispatch for RsaSignCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let signature = self.private_key.sign(&self.digest)?;
+        let digest = if let Some(input) = &self.input {
+            let bytes = std::fs::read(input)?;
+            Sha256Digest::from_le_bytes(&bytes)?
+        } else {
+            self.digest.clone().unwrap()
+        };
+        let signature = self.private_key.sign(&digest)?;
         if let Some(output) = &self.output {
             signature.write_to_file(output)?;
         }
         Ok(Some(Box::new(RsaSignResult {
-            digest: self.digest.to_string(),
+            digest: digest.to_string(),
             signature: signature.to_string(),
         })))
     }
