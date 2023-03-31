@@ -216,7 +216,7 @@ fn test_sector_erase(opts: &Opts, transport: &TransportWrapper, address: u32) ->
     };
     flash.set_address_mode(&*spi, mode)?;
     let info = UploadInfo::execute(&*uart, || {
-        flash.erase(&*spi, address, flash.erase_size)?;
+        flash.erase(&*spi, address, flash.erase.last().unwrap().size)?;
         Ok(())
     })?;
 

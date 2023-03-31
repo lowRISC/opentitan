@@ -8,15 +8,17 @@ use std::any::Any;
 use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::PathBuf;
+use std::time::Duration;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{StagedProgressBar, TransportWrapper};
 use opentitanlib::io::eeprom::{AddressMode, Transaction, MODE_111};
 use opentitanlib::io::spi::{SpiParams, Transfer};
-use opentitanlib::spiflash::SpiFlash;
+use opentitanlib::spiflash::{EraseMode, ReadMode, SpiFlash};
 use opentitanlib::tpm;
 use opentitanlib::transport::Capability;
+use opentitanlib::transport::ProgressIndicator;
 
 /// Read and parse an SFDP table.
 #[derive(Debug, StructOpt)]
@@ -138,6 +140,15 @@ pub struct SpiRead {
         help = "Number of bytes to read."
     )]
     length: usize,
+    #[structopt(
+        short,
+        long,
+        possible_values = &ReadMode::variants(),
+        case_insensitive=true,
+        default_value = "standard",
+        help = "Read mode"
+    )]
+    pub mode: ReadMode,
     #[structopt(short, long, help = "Hexdump the data.")]
     hexdump: bool,
     #[structopt(name = "FILE", default_value = "-")]
@@ -172,6 +183,7 @@ impl CommandDispatch for SpiRead {
         let spi = context.params.create(transport, "BOOTSTRAP")?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
+        flash.read_mode = self.mode;
 
         let mut buffer = vec![0u8; self.length];
         let progress = StagedProgressBar::new();
@@ -194,10 +206,26 @@ impl CommandDispatch for SpiRead {
 /// Erase sectors of a SPI EEPROM.
 #[derive(Debug, StructOpt)]
 pub struct SpiErase {
-    #[structopt(short, long, help = "Start offset.")]
-    start: u32,
-    #[structopt(short = "n", long, help = "Number of bytes to erase.")]
-    length: u32,
+    #[structopt(short, long, required_unless = "chip", help = "Start offset.")]
+    start: Option<u32>,
+    #[structopt(
+        short = "n",
+        long,
+        required_unless = "chip",
+        help = "Number of bytes to erase."
+    )]
+    length: Option<u32>,
+    #[structopt(long, help = "Erase the whole chip.")]
+    chip: bool,
+    #[structopt(
+        short,
+        long,
+        possible_values = &EraseMode::variants(),
+        case_insensitive=true,
+        default_value = "standard",
+        help = "Erase mode"
+    )]
+    pub mode: EraseMode,
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -217,12 +245,29 @@ impl CommandDispatch for SpiErase {
         let spi = context.params.create(transport, "BOOTSTRAP")?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
+        flash.erase_mode = self.mode;
+
+        let (start, length) = if self.chip {
+            (0, flash.size)
+        } else {
+            (self.start.unwrap(), self.length.unwrap())
+        };
 
         let progress = StagedProgressBar::new();
-        flash.erase_with_progress(&*spi, self.start, self.length, &progress)?;
+        if self.chip {
+            // Since we can't get any progress from chip_erase, be extra
+            // helpful and set the progress bar to 99% complete and enable
+            // the steady tick so the user can watch the seconds count up.
+            progress.new_stage("", length as usize);
+            progress.enable_steady_tick(Duration::from_secs(1));
+            progress.progress(length as usize * 99 / 100);
+            flash.chip_erase(&*spi)?;
+        } else {
+            flash.erase_with_progress(&*spi, start, length, &progress)?;
+        }
 
         Ok(Some(Box::new(SpiEraseResponse {
-            length: self.length,
+            length,
             bytes_per_second: progress.bytes_per_second(),
         })))
     }

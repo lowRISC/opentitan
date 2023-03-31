@@ -179,18 +179,18 @@ impl InternalJedecParams {
     field!(density_pow2 -> bool, 2, 31, 1);
 
     field!(wait_states_144 -> u8, 3, 0, 5);
-    field!(mode_bits_144 -> u8, 3, 0, 3);
-    field!(read_opcode_144 -> u8, 3, 0, 8);
+    field!(mode_bits_144 -> u8, 3, 5, 3);
+    field!(read_opcode_144 -> u8, 3, 8, 8);
     field!(wait_states_114 -> u8, 3, 16, 5);
     field!(mode_bits_114 -> u8, 3, 21, 3);
     field!(read_opcode_114 -> u8, 3, 24, 8);
 
-    field!(wait_states_122 -> u8, 4, 0, 5);
-    field!(mode_bits_122 -> u8, 4, 0, 3);
-    field!(read_opcode_122 -> u8, 4, 0, 8);
-    field!(wait_states_112 -> u8, 4, 16, 5);
-    field!(mode_bits_112 -> u8, 4, 21, 3);
-    field!(read_opcode_112 -> u8, 4, 22, 8);
+    field!(wait_states_112 -> u8, 4, 0, 5);
+    field!(mode_bits_112 -> u8, 4, 5, 3);
+    field!(read_opcode_112 -> u8, 4, 8, 8);
+    field!(wait_states_122 -> u8, 4, 16, 5);
+    field!(mode_bits_122 -> u8, 4, 21, 3);
+    field!(read_opcode_122 -> u8, 4, 24, 8);
 
     field!(support_fast_read_222 -> bool, 5, 0, 1);
     field!(support_fast_read_444 -> bool, 5, 4, 1);
@@ -430,7 +430,7 @@ impl Default for MaxSpeed {
 }
 
 /// `FastReadParam` represents the parameters for the different styles of fast read.
-#[derive(Default, Debug, Serialize, Annotate)]
+#[derive(Clone, Default, Debug, Serialize, Annotate)]
 pub struct FastReadParam {
     pub wait_states: u8,
     pub mode_bits: u8,
@@ -439,7 +439,7 @@ pub struct FastReadParam {
 }
 
 /// `SectorErase` represents the supported erase sector sizes of the device.
-#[derive(Default, Debug, Serialize, Annotate)]
+#[derive(Clone, Default, Debug, Serialize, Annotate)]
 pub struct SectorErase {
     pub size: u32,
     #[annotate(format=hex)]
@@ -447,7 +447,7 @@ pub struct SectorErase {
     pub time: Option<TimeBound>,
 }
 
-#[derive(Default, Debug, Serialize)]
+#[derive(Clone, Default, Debug, Serialize)]
 pub struct TimeBound {
     #[serde(with = "humantime_serde")]
     pub typical: Duration,
