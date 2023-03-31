@@ -10,6 +10,7 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_flash_binary(
     name = "hello_world",
+    testonly = False,
     srcs = [
         "hello_world.c",
     ],

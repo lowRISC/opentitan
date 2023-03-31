@@ -187,6 +187,7 @@ manifest({
 
 opentitan_flash_binary(
     name = "rom_ext_slot_a",
+    testonly = False,
     manifest = ":manifest_standard",
     signed = True,
     deps = [
@@ -199,6 +200,7 @@ opentitan_flash_binary(
 
 opentitan_flash_binary(
     name = "rom_ext_slot_b",
+    testonly = False,
     manifest = ":manifest_standard",
     signed = True,
     deps = [
@@ -211,6 +213,7 @@ opentitan_flash_binary(
 
 opentitan_flash_binary(
     name = "rom_ext_slot_virtual",
+    testonly = False,
     manifest = ":manifest_virtual",
     signed = True,
     deps = [
@@ -229,6 +232,7 @@ manifest({
 
 opentitan_flash_binary(
     name = "rom_ext_slot_a_bad_address_translation",
+    testonly = False,
     manifest = ":manifest_bad_address_translation",
     signed = True,
     deps = [
