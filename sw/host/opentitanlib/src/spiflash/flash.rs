@@ -3,12 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::app::NoProgressBar;
-use crate::io::eeprom::{AddressMode, Transaction, MODE_111};
+use crate::io::eeprom::{AddressMode, Mode, Transaction, MODE_111, MODE_112, MODE_114};
 use crate::io::spi::Target;
-use crate::spiflash::sfdp::{BlockEraseSize, Sfdp, SupportedAddressModes};
+use crate::spiflash::sfdp::{
+    BlockEraseSize, FastReadParam, SectorErase, Sfdp, SupportedAddressModes,
+};
 use crate::transport::ProgressIndicator;
 use anyhow::{ensure, Result};
 use std::convert::TryFrom;
+use structopt::clap::arg_enum;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -21,6 +24,8 @@ pub enum Error {
     BadEraseLength(u32, u32),
     #[error("bad sequence length: {0}")]
     BadSequenceLength(usize),
+    #[error("unsupported mode: {0:?}")]
+    UnsupportedMode(ReadMode),
 }
 
 impl From<SupportedAddressModes> for AddressMode {
@@ -32,24 +37,129 @@ impl From<SupportedAddressModes> for AddressMode {
     }
 }
 
+arg_enum! {
+#[derive(Debug, Clone, Copy)]
+pub enum ReadMode {
+    Standard,
+    Fast,
+    Dual,
+    Quad,
+}
+}
+
+// Conflict between deriving Default and the `arg_enum!` macro.
+// The workaround is to manually derive Default.
+#[allow(clippy::derivable_impls)]
+impl Default for ReadMode {
+    fn default() -> Self {
+        ReadMode::Standard
+    }
+}
+
+pub struct ReadTypes {
+    pub standard: FastReadParam,
+    pub fast: FastReadParam,
+    pub dual: FastReadParam,
+    pub quad: FastReadParam,
+}
+
+impl Default for ReadTypes {
+    fn default() -> Self {
+        Self {
+            standard: FastReadParam {
+                wait_states: 0,
+                mode_bits: 0,
+                opcode: SpiFlash::READ,
+            },
+            fast: FastReadParam {
+                wait_states: 8,
+                mode_bits: 0,
+                opcode: SpiFlash::FAST_READ,
+            },
+            dual: FastReadParam {
+                wait_states: 8,
+                mode_bits: 0,
+                opcode: SpiFlash::FAST_DUAL_READ,
+            },
+            quad: FastReadParam {
+                wait_states: 8,
+                mode_bits: 0,
+                opcode: SpiFlash::FAST_QUAD_READ,
+            },
+        }
+    }
+}
+
+impl ReadTypes {
+    pub fn from_sfdp(sfdp: &Sfdp) -> Self {
+        Self {
+            standard: FastReadParam {
+                wait_states: 0,
+                mode_bits: 0,
+                opcode: SpiFlash::READ,
+            },
+            fast: FastReadParam {
+                wait_states: 8,
+                mode_bits: 0,
+                opcode: SpiFlash::FAST_READ,
+            },
+            dual: if sfdp.jedec.support_fast_read_112 {
+                sfdp.jedec.param_112.clone()
+            } else {
+                Default::default()
+            },
+            quad: if sfdp.jedec.support_fast_read_114 {
+                sfdp.jedec.param_114.clone()
+            } else {
+                Default::default()
+            },
+        }
+    }
+}
+
+arg_enum! {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EraseMode {
+    Standard,
+    Block,
+}
+}
+
+// Conflict between deriving Default and the `arg_enum!` macro.
+// The workaround is to manually derive Default.
+#[allow(clippy::derivable_impls)]
+impl Default for EraseMode {
+    fn default() -> Self {
+        EraseMode::Standard
+    }
+}
+
 pub struct SpiFlash {
     pub size: u32,
-    pub erase_size: u32,
-    pub erase_opcode: u8,
     pub program_size: u32,
     pub address_mode: AddressMode,
+    pub read_mode: ReadMode,
+    pub erase_mode: EraseMode,
     pub sfdp: Option<Sfdp>,
+    pub read_type: ReadTypes,
+    pub erase: Vec<SectorErase>,
 }
 
 impl Default for SpiFlash {
     fn default() -> Self {
         SpiFlash {
             size: 16 * 1024 * 1024,
-            erase_size: 4 * 1024,
-            erase_opcode: 0x20,
             program_size: SpiFlash::LEGACY_PAGE_SIZE,
-            address_mode: AddressMode::default(),
+            address_mode: Default::default(),
+            read_mode: Default::default(),
+            erase_mode: Default::default(),
             sfdp: None,
+            read_type: Default::default(),
+            erase: vec![SectorErase {
+                size: 4096,
+                opcode: SpiFlash::SECTOR_ERASE,
+                time: None,
+            }],
         }
     }
 }
@@ -57,7 +167,9 @@ impl Default for SpiFlash {
 impl SpiFlash {
     // Well known SPI Flash opcodes.
     pub const READ: u8 = 0x03;
-    pub const FAST_READ: u8 = 0x0B;
+    pub const FAST_READ: u8 = 0x0b;
+    pub const FAST_DUAL_READ: u8 = 0x3b;
+    pub const FAST_QUAD_READ: u8 = 0x6b;
     pub const PAGE_PROGRAM: u8 = 0x02;
     pub const SECTOR_ERASE: u8 = 0x20;
     pub const CHIP_ERASE: u8 = 0xc7;
@@ -181,17 +293,36 @@ impl SpiFlash {
 
     /// Create a new `SpiFlash` instance from an SFDP table.
     pub fn from_sfdp(sfdp: Sfdp) -> Self {
-        let (erase_sz, erase_op) = match sfdp.jedec.block_erase_size {
-            BlockEraseSize::Block4KiB => (4096, sfdp.jedec.erase_opcode_4kib),
-            _ => (sfdp.jedec.erase[0].size, sfdp.jedec.erase[0].opcode),
-        };
+        let read_type = ReadTypes::from_sfdp(&sfdp);
+        let mut erase = sfdp
+            .jedec
+            .erase
+            .iter()
+            .filter_map(|e| if e.size != 0 { Some(e.clone()) } else { None })
+            .collect::<Vec<_>>();
+        // If the SFDP claims to support 4K erases, but a 4K SectorErase is not
+        // present, synthesize one and add it to the list.
+        if sfdp.jedec.block_erase_size == BlockEraseSize::Block4KiB
+            && !erase.iter().any(|e| e.size == 4096)
+        {
+            erase.push(SectorErase {
+                size: 4096,
+                opcode: sfdp.jedec.erase_opcode_4kib,
+                time: None,
+            });
+        }
+        // Sort largest to smallest.
+        erase.sort_by(|a, b| b.size.cmp(&a.size));
+
         SpiFlash {
             size: sfdp.jedec.density,
-            erase_size: erase_sz,
-            erase_opcode: erase_op,
             program_size: SpiFlash::LEGACY_PAGE_SIZE,
             address_mode: AddressMode::from(sfdp.jedec.address_modes),
+            read_mode: Default::default(),
+            erase_mode: Default::default(),
             sfdp: Some(sfdp),
+            read_type,
+            erase,
         }
     }
 
@@ -229,6 +360,20 @@ impl SpiFlash {
         self.read_with_progress(spi, address, buffer, &NoProgressBar)
     }
 
+    fn select_read(&self) -> Result<(Mode, &FastReadParam)> {
+        match self.read_mode {
+            ReadMode::Standard => Ok((MODE_111, &self.read_type.standard)),
+            ReadMode::Fast => Ok((MODE_111, &self.read_type.fast)),
+            ReadMode::Dual if self.read_type.dual.opcode != 0 => {
+                Ok((MODE_112, &self.read_type.dual))
+            }
+            ReadMode::Quad if self.read_type.quad.opcode != 0 => {
+                Ok((MODE_114, &self.read_type.quad))
+            }
+            _ => Err(Error::UnsupportedMode(self.read_mode).into()),
+        }
+    }
+
     /// Read into `buffer` from the SPI flash starting at `address`.
     /// The `progress` callback will be invoked after each chunk of the read operation.
     pub fn read_with_progress(
@@ -239,12 +384,17 @@ impl SpiFlash {
         progress: &dyn ProgressIndicator,
     ) -> Result<&Self> {
         progress.new_stage("", buffer.len());
+        let (mode, param) = self.select_read()?;
         // Break the read up according to the maximum chunksize the backend can handle.
         let chunk_size = spi.get_eeprom_max_transfer_sizes()?.read;
         for (idx, chunk) in buffer.chunks_mut(chunk_size).enumerate() {
             progress.progress(idx * chunk_size);
             spi.run_eeprom_transactions(&mut [Transaction::Read(
-                MODE_111.cmd_addr(SpiFlash::READ, address, self.address_mode),
+                mode.dummy_cycles(param.wait_states).cmd_addr(
+                    param.opcode,
+                    address,
+                    self.address_mode,
+                ),
                 chunk,
             )])?;
             address += chunk.len() as u32;
@@ -269,6 +419,21 @@ impl SpiFlash {
         self.erase_with_progress(spi, address, length, &NoProgressBar)
     }
 
+    fn select_erase(&self, address: u32, length: u32) -> Result<&SectorErase> {
+        if self.erase_mode == EraseMode::Standard {
+            // We assume the last element of the `erase` list is the standard
+            // SECTOR_ERASE.  So far, this has been true for all eeproms
+            // encountered by the author.
+            return Ok(self.erase.last().unwrap());
+        }
+        for e in self.erase.iter() {
+            if address % e.size == 0 && length >= e.size {
+                return Ok(e);
+            }
+        }
+        Err(Error::BadEraseAddress(address, self.erase.last().unwrap().size).into())
+    }
+
     /// Erase a segment of the SPI flash starting at `address` for `length` bytes.
     /// The address and length must be sector aligned.
     /// The `progress` callback will be invoked after each chunk of the erase operation.
@@ -279,25 +444,25 @@ impl SpiFlash {
         length: u32,
         progress: &dyn ProgressIndicator,
     ) -> Result<&Self> {
-        if address % self.erase_size != 0 {
-            return Err(Error::BadEraseAddress(address, self.erase_size).into());
+        let min_erase_size = self.erase.last().unwrap().size;
+        if address % min_erase_size != 0 {
+            return Err(Error::BadEraseAddress(address, min_erase_size).into());
         }
-        if length % self.erase_size != 0 {
-            return Err(Error::BadEraseLength(length, self.erase_size).into());
+        if length % min_erase_size != 0 {
+            return Err(Error::BadEraseLength(length, min_erase_size).into());
         }
         progress.new_stage("", length as usize);
         let end = address + length;
-        for addr in (address..end).step_by(self.erase_size as usize) {
-            progress.progress((addr - address) as usize);
+        let mut addr = address;
+        while addr < end {
+            let erase = self.select_erase(addr, end - addr)?;
             spi.run_eeprom_transactions(&mut [
                 Transaction::Command(MODE_111.cmd(SpiFlash::WRITE_ENABLE)),
-                Transaction::Command(MODE_111.cmd_addr(
-                    SpiFlash::SECTOR_ERASE,
-                    addr,
-                    self.address_mode,
-                )),
+                Transaction::Command(MODE_111.cmd_addr(erase.opcode, addr, self.address_mode)),
                 Transaction::WaitForBusyClear,
             ])?;
+            progress.progress((addr - address) as usize);
+            addr += erase.size;
         }
         progress.progress(length as usize);
         Ok(self)

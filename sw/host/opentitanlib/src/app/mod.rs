@@ -61,6 +61,12 @@ impl StagedProgressBar {
         }
     }
 
+    pub fn enable_steady_tick(&self, duration: Duration) {
+        let bar = self.current_progress_bar.borrow();
+        let bar = bar.as_ref().unwrap();
+        bar.enable_steady_tick(duration.as_millis() as u64);
+    }
+
     /// Returns the overall bytes per second for the most recent stage (either completed or in
     /// progress).
     pub fn bytes_per_second(&self) -> f64 {

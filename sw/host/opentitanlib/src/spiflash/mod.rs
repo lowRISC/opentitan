@@ -5,5 +5,5 @@
 pub mod flash;
 pub mod sfdp;
 
-pub use flash::SpiFlash;
+pub use flash::{EraseMode, ReadMode, SpiFlash};
 pub use sfdp::{BlockEraseSize, Sfdp, SupportedAddressModes, WriteGranularity};
