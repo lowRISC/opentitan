@@ -37,6 +37,7 @@ interface chip_if;
 `endif
 `define ADC_CTRL_HIER       `TOP_HIER.u_adc_ctrl_aon
 `define AES_HIER            `TOP_HIER.u_aes
+`define AES_CONTROL_HIER    `AES_HIER.u_aes_core.u_aes_control
 `define ALERT_HANDLER_HIER  `TOP_HIER.u_alert_handler
 `define AON_TIMER_HIER      `TOP_HIER.u_aon_timer_aon
 `define AST_HIER            u_ast
@@ -980,9 +981,101 @@ interface chip_if;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
       `OTP_CTRL_HIER.lc_otp_vendor_test_i)
 
+  /*
+   * Signal probe functions for sampling the FSM states of the IPs
+   * during the max power epoch of the power_virus test.
+   */
+
+  // Signal probe fuction for `fsm_state_q` of ADC_CTRL
+  wire [4:0] adc_ctrl_state;
+  assign adc_ctrl_state = `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_adc_ctrl_fsm_state,
+      adc_ctrl_state, 5)
+
+  // Signal probe function for `cio_csb_o` of SPI_HOST_0
+  wire spi_host_0_cio_csb_o;
+  assign spi_host_0_cio_csb_o = `SPI_HOST_HIER(0).cio_csb_o;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_spi_host_0_cio_csb_o,
+      spi_host_0_cio_csb_o, 1)
+
+  // Signal probe function for `cio_csb_i` of SPI_DEVICE
+  wire spi_device_cio_csb_i;
+  assign spi_device_cio_csb_i = `SPI_DEVICE_HIER.cio_csb_i;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_spi_device_cio_csb_i,
+      spi_device_cio_csb_i, 1)
+
+  // Signal probe function for `fsm.state_q` of SPI_HOST_1
+  wire [2:0] spi_host_1_state;
+  assign spi_host_1_state = `SPI_HOST_HIER(1).u_spi_core.u_fsm.state_q;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_spi_host_1_fsm_state,
+      spi_host_1_state, 3)
+
+  // Signal probe function for `state_q` of CSRNG main FSM
+  wire [csrng_pkg::MainSmStateWidth-1:0] csrng_main_state;
+  assign csrng_main_state = `CSRNG_HIER.u_csrng_core.u_csrng_main_sm.state_q;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_csrng_main_fsm_state,
+      csrng_main_state, csrng_pkg::MainSmStateWidth)
+
+  // Signal probe function for `aes_ctrl_cs` of AES_CTRL_FSM
+  wire [5:0] aes_ctrl_fsm_state;
+  assign aes_ctrl_fsm_state =
+      `AES_CONTROL_HIER.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.u_aes_control_fsm.aes_ctrl_cs;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_aes_ctrl_fsm_state,
+      aes_ctrl_fsm_state, 6)
+
+  // Signal probe function for `st_q` of HMAC
+  wire [2:0] hmac_fsm_state;
+  assign hmac_fsm_state = `HMAC_HIER.u_hmac.st_q;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_hmac_fsm_state,
+      hmac_fsm_state, 3)
+
+  // Signal probe function for `st` of KMAC_CORE
+  wire [5:0] kmac_fsm_state;
+  assign kmac_fsm_state = `KMAC_HIER.u_kmac_core.st;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_kmac_fsm_state,
+      kmac_fsm_state, 6)
+
+  // Signal probe function for `state_q` OTBN_START_STOP_CONTROL
+  wire [6:0] otbn_fsm_state;
+  assign otbn_fsm_state = `OTBN_HIER.u_otbn_core.u_otbn_start_stop_control.state_q;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otbn_fsm_state,
+      otbn_fsm_state, 7)
+
+  // Signal probe function for `state_q` of EDN_0_MAIN_SM
+  wire [8:0] edn_0_fsm_state;
+  assign edn_0_fsm_state = `EDN_HIER(0).u_edn_core.u_edn_main_sm.state_q;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_edn_0_fsm_state,
+      edn_0_fsm_state, 9)
+
+  // Signal probe function for `state_q` of EDN_1_MAIN_SM
+  wire [8:0] edn_1_fsm_state;
+  assign edn_1_fsm_state = `EDN_HIER(1).u_edn_core.u_edn_main_sm.state_q;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_edn_1_fsm_state,
+      edn_1_fsm_state, 9)
+
+  // Signal probe function for `state_q` of ENTROPY_SOURCE_MAIN_SM
+  wire [8:0] entropy_src_fsm_state;
+  assign entropy_src_fsm_state = `ENTROPY_SRC_HIER.u_entropy_src_core.u_entropy_src_main_sm.state_q;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_entropy_src_fsm_state,
+      entropy_src_fsm_state, 9)
+
+  // Signal probe function for `chan0.enable` and `chan1.enable`of PATTGEN
+  wire [1:0] pattgen_chan_1_0_enable;
+  assign pattgen_chan_1_0_enable = {`PATTGEN_HIER.u_pattgen_core.chan1.enable,
+                                    `PATTGEN_HIER.u_pattgen_core.chan0.enable};
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pattgen_chan_1_0_enable,
+      pattgen_chan_1_0_enable, 2)
+
+  // tb.dut.top_earlgrey.u_pwm_aon.u_pwm_core.cntr_en
+  wire pwm_core_cntr_en;
+  assign pwm_core_cntr_en = `PWM_HIER.u_pwm_core.cntr_en;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pwm_core_cntr_en,
+      pwm_core_cntr_en, 1)
+
 `undef TOP_HIER
 `undef ADC_CTRL_HIER
 `undef AES_HIER
+`undef AES_CONTROL_HIER
 `undef ALERT_HANDLER_HIER
 `undef AON_TIMER_HIER
 `undef AST_HIER
