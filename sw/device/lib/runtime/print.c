@@ -12,6 +12,8 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/dif/dif_spi_device.h"
+#include "sw/device/lib/dif/dif_uart.h"
 
 // This is declared as an enum to force the values to be
 // compile-time constants, but the type is otherwise not
@@ -66,6 +68,22 @@ void base_set_stdout(buffer_sink_t out) {
   base_stdout = out;
 }
 
+static size_t base_dev_spi_device(void *data, const char *buf, size_t len) {
+  dif_spi_device_handle_t *spi_device = (dif_spi_device_handle_t *)data;
+  size_t total_bytes_sent = 0;
+  size_t bytes_sent_this_iter = 0;
+  do {
+    bytes_sent_this_iter = 0;
+    if (dif_spi_device_send(spi_device, buf + (total_bytes_sent * sizeof(char)),
+                            len - total_bytes_sent,
+                            &bytes_sent_this_iter) != kDifOk) {
+      return total_bytes_sent + bytes_sent_this_iter;
+    }
+    total_bytes_sent += bytes_sent_this_iter;
+  } while (total_bytes_sent < len);
+  return total_bytes_sent;
+}
+
 static size_t base_dev_uart(void *data, const char *buf, size_t len) {
   const dif_uart_t *uart = (const dif_uart_t *)data;
   for (size_t i = 0; i < len; ++i) {
@@ -74,6 +92,11 @@ static size_t base_dev_uart(void *data, const char *buf, size_t len) {
     }
   }
   return len;
+}
+
+void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device) {
+  base_set_stdout((buffer_sink_t){.data = (void *)spi_device,
+                                  .sink = &base_dev_spi_device});
 }
 
 void base_uart_stdout(const dif_uart_t *uart) {

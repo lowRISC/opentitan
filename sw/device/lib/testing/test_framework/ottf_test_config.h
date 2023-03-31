@@ -10,6 +10,7 @@
  */
 typedef enum ottf_console_type {
   kOttfConsoleUart = 0,
+  kOttfConsoleSpiDevice,
 } ottf_console_type_t;
 
 typedef struct ottf_console {

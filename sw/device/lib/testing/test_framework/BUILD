@@ -272,6 +272,7 @@ dual_cc_library(
         shared = [
             "//sw/device/lib/base:status",
             "//sw/device/lib/dif:uart",
+            "//sw/device/lib/dif:spi_device",
         ],
     ),
 )

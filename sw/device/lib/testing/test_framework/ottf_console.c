@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
+#include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
@@ -26,6 +27,10 @@
  */
 enum {
   /**
+   * SPI device console configuration parameters.
+   */
+  kSpiDeviceRxCommitWait = 63,  // clock cycles
+  /**
    * Flow control parameters.
    */
   kFlowControlLowWatermark = 4,   // bytes
@@ -38,6 +43,7 @@ enum {
 };
 
 // Potential DIF handles for OTTF console communication.
+static dif_spi_device_handle_t ottf_console_spi_device;
 static dif_uart_t ottf_console_uart;
 
 // The `flow_control_state` and `flow_control_irqs` variables are shared between
@@ -47,6 +53,8 @@ static volatile uint32_t flow_control_irqs;
 
 void *ottf_console_get() {
   switch (kOttfTestConfig.console.type) {
+    case kOttfConsoleSpiDevice:
+      return &ottf_console_spi_device;
     default:
       return &ottf_console_uart;
   }
@@ -60,6 +68,7 @@ void ottf_console_init(void) {
       // Set a default for the console base address if the base address is not
       // configured. The default is to use UART0.
       if (base_addr == 0) {
+        CHECK(kOttfTestConfig.console.type == kOttfConsoleUart);
         base_addr = TOP_EARLGREY_UART0_BASE_ADDR;
       }
       CHECK_DIF_OK(
@@ -79,6 +88,30 @@ void ottf_console_init(void) {
       if (kOttfTestConfig.enable_uart_flow_control) {
         ottf_console_flow_control_enable();
       }
+      break;
+    case (kOttfConsoleSpiDevice):
+      CHECK_DIF_OK(dif_spi_device_init_handle(
+          mmio_region_from_addr(kOttfTestConfig.console.base_addr),
+          &ottf_console_spi_device));
+      CHECK_DIF_OK(dif_spi_device_configure(
+          &ottf_console_spi_device,
+          (dif_spi_device_config_t){
+              .clock_polarity = kDifSpiDeviceEdgePositive,
+              .data_phase = kDifSpiDeviceEdgeNegative,
+              .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
+              .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
+              .device_mode = kDifSpiDeviceModeGeneric,
+              .mode_cfg =
+                  {
+                      .generic =
+                          {
+                              .rx_fifo_commit_wait = kSpiDeviceRxCommitWait,
+                              .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
+                              .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
+                          },
+                  },
+          }));
+      base_spi_device_stdout(&ottf_console_spi_device);
       break;
     default:
       CHECK(false, "unsupported OTTF console interface.");
