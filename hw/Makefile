@@ -128,10 +128,18 @@ clean-regs-header:
 	rm -r -f ${REG_OUTPUT_SW_DIR}
 
 top-hjson = $(PRJ_DIR)/hw/$*/data/$*.hjson
+version_out_dir = $(PRJ_DIR)/build
+version_path = $(version_out_dir)/workspace_status.txt
 
-top: $(tops_gen) $(tops_reg)
+$(version_out_dir):
+	mkdir -p $@
+
+workspace_status: $(version_out_dir)
+	${PRJ_DIR}/util/get_workspace_status.sh > ${version_path}
+
+top: workspace_status $(tops_gen) $(tops_reg)
 $(tops_gen): %_gen:
-	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags}
+	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -o ${PRJ_DIR}/hw/$*/ --version-stamp ${version_path} ${toolflags}
 
 $(tops_reg): %_reg:
 	mkdir -p ${REG_OUTPUT_DV_DIR}/$*
