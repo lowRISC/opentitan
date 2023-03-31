@@ -131,6 +131,50 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     end join
   endtask
 
+  // A local define to probe the state of an IP and to check if it is IDLE.
+  `define _DV_PROBE_AND_CHECK_IDLE(SIGNAL_NAME, IDLE_VAL)          \
+      SIGNAL_NAME = cfg.chip_vif.signal_probe_``SIGNAL_NAME``(SignalProbeSample); \
+      `uvm_info(`gfn, $sformatf("adc_ctrl_state = 0x%0x", SIGNAL_NAME), UVM_LOW); \
+      `DV_CHECK_NE(SIGNAL_NAME, IDLE_VAL);
+
+  // A utility function to check the FSM states of the IPs.
+  virtual task check_ip_activity();
+    logic [4:0] adc_ctrl_fsm_state;
+    logic spi_device_cio_csb_i;
+    logic spi_host_0_cio_csb_o;
+    logic [2:0] spi_host_1_fsm_state;
+    logic [csrng_pkg::MainSmStateWidth-1:0] csrng_main_fsm_state;
+    logic [5:0] aes_ctrl_fsm_state;
+    logic [2:0] hmac_fsm_state;
+    logic [5:0] kmac_fsm_state;
+    logic [6:0] otbn_fsm_state;
+    logic [8:0] edn_0_fsm_state;
+    logic [8:0] edn_1_fsm_state;
+    logic [8:0] entropy_src_fsm_state;
+    logic [1:0] pattgen_chan_1_0_enable;
+    logic pwm_core_cntr_en;
+
+    // Wait for max-power indicator GPIO pin (IOB8) to go up.
+    wait (cfg.chip_vif.mios[top_earlgrey_pkg::MioPadIob8]);
+    // Wait for 16 clock cycles.
+    cfg.clk_rst_vif.wait_clks(16);
+
+    `_DV_PROBE_AND_CHECK_IDLE(adc_ctrl_fsm_state, adc_ctrl_pkg::PWRDN)
+    `_DV_PROBE_AND_CHECK_IDLE(spi_device_cio_csb_i, 1'b1)
+    `_DV_PROBE_AND_CHECK_IDLE(spi_host_0_cio_csb_o, 1'b1)
+    `_DV_PROBE_AND_CHECK_IDLE(spi_host_1_fsm_state, 3'b000)
+    `_DV_PROBE_AND_CHECK_IDLE(csrng_main_fsm_state, csrng_pkg::MainSmIdle)
+    `_DV_PROBE_AND_CHECK_IDLE(aes_ctrl_fsm_state, aes_pkg::CTRL_IDLE)
+    `_DV_PROBE_AND_CHECK_IDLE(hmac_fsm_state, 3'b000)
+    `_DV_PROBE_AND_CHECK_IDLE(kmac_fsm_state, 6'b011000)
+    `_DV_PROBE_AND_CHECK_IDLE(otbn_fsm_state, otbn_pkg::OtbnStartStopStateInitial)
+    `_DV_PROBE_AND_CHECK_IDLE(edn_0_fsm_state, edn_pkg::Idle)
+    `_DV_PROBE_AND_CHECK_IDLE(edn_1_fsm_state, edn_pkg::Idle)
+    `_DV_PROBE_AND_CHECK_IDLE(entropy_src_fsm_state, entropy_src_main_sm_pkg::Idle)
+    `_DV_PROBE_AND_CHECK_IDLE(pattgen_chan_1_0_enable, 2'b00)
+    `_DV_PROBE_AND_CHECK_IDLE(pwm_core_cntr_en, 1'b0)
+  endtask
+
   task pre_start();
     // i2c_agent configs
     configure_i2c_agents();
@@ -162,8 +206,8 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     $assertoff(0, "tb.dut.top_earlgrey.u_spi_device.u_readcmd.u_readsram.u_fifo.DataKnown_A");
     super.body();
 
-    // Wait for test_main() to start and configurations to be computed.
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "All IPs configured.");
+    // Wait for configurations to be computed and max power epoch to start.
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Entering max power epoch ...");
 
     // Main fork-join block to handle IP-specific threads
     fork
@@ -187,7 +231,12 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
         // Send the command and check the response.
         execute_spi_flash_sequence();
       end
+
+      begin : ip_activity_check_thread
+        // Check if the IPs are active at the beginning of max power epoch.
+        check_ip_activity();
+      end
     join
   endtask
-
+`undef _DV_PROBE_AND_CHECK_IDLE
 endclass : chip_sw_power_virus_vseq

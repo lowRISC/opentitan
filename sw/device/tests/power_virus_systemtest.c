@@ -953,6 +953,12 @@ void configure_pwm(void) {
                                       .blink_parameter_y = 0,  // unused
                                   }));
   }
+
+  // Enable all the PWM channels. The outputs will start toggling
+  // after the phase counter is enabled (i.e, PWM_CFG_REG.CNTR_EN = 1).
+  CHECK_DIF_OK(dif_pwm_channel_set_enabled(
+      &pwm,
+      /*channels*/ (1u << PWM_PARAM_N_OUTPUTS) - 1, kDifToggleEnabled));
 }
 
 static void configure_otbn(void) {
@@ -1144,6 +1150,17 @@ static void max_power_task(void *task_parameters) {
   pattgen_ctrl_reg =
       bitfield_bit32_write(pattgen_ctrl_reg, PATTGEN_CTRL_ENABLE_CH1_BIT, true);
 
+  // Prepare adc_ctrl enablement command
+  uint32_t adc_ctrl_reg =
+      mmio_region_read32(adc_ctrl.base_addr, ADC_CTRL_ADC_EN_CTL_REG_OFFSET);
+  adc_ctrl_reg = bitfield_bit32_write(adc_ctrl_reg,
+                                      ADC_CTRL_ADC_EN_CTL_ADC_ENABLE_BIT, true);
+
+  // Prepare PWM channels for the enablement. The outputs will start toggling
+  // after the phase counter is enabled (i.e, PWM_CFG_REG.CNTR_EN = 1).
+  uint32_t pwm_cfg_reg = mmio_region_read32(pwm.base_addr, PWM_CFG_REG_OFFSET);
+  pwm_cfg_reg = bitfield_bit32_write(pwm_cfg_reg, PWM_CFG_CNTR_EN_BIT, true);
+
   // Prepare GPIO register values (for max power indicator).
   const uint32_t gpio_on_reg_val = (1u << 16) | 1u;
   const uint32_t gpio_off_reg_val = 1u << 16;
@@ -1152,9 +1169,12 @@ static void max_power_task(void *task_parameters) {
 
   LOG_INFO("Entering max power epoch ...");
 
-  // Enable all PWM channels
-  mmio_region_write32(pwm.base_addr, PWM_PWM_EN_REG_OFFSET,
-                      (1u << PWM_PARAM_N_OUTPUTS) - 1);
+  // Enable adc_ctrl
+  mmio_region_write32(adc_ctrl.base_addr, ADC_CTRL_ADC_EN_CTL_REG_OFFSET,
+                      adc_ctrl_reg);
+
+  // Enable toggling at all PWM channels by enabling the phase counter.
+  mmio_region_write32(pwm.base_addr, PWM_CFG_REG_OFFSET, pwm_cfg_reg);
 
   // Enable all UARTs and I2Cs.
   mmio_region_write32(uart_1.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
