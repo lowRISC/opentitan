@@ -4,6 +4,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+
 cc_library(
     name = "aes",
     srcs = ["aes.c"],
@@ -31,7 +33,11 @@ cc_library(
     name = "ecc",
     srcs = ["ecc.c"],
     hdrs = ["//sw/device/lib/crypto/include:ecc.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":keyblob",
+        "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )

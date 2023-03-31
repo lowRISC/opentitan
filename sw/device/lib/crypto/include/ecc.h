@@ -149,7 +149,7 @@ crypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
 crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
                                     crypto_const_uint8_buf_t input_message,
                                     const ecc_curve_t *elliptic_curve,
-                                    ecc_signature_t *signature);
+                                    const ecc_signature_t *signature);
 
 /**
  * Performs the ECDSA digital signature verification.
@@ -168,7 +168,7 @@ crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
  */
 crypto_status_t otcrypto_ecdsa_verify(const ecc_public_key_t *public_key,
                                       crypto_const_uint8_buf_t input_message,
-                                      ecc_signature_t *signature,
+                                      const ecc_signature_t *signature,
                                       const ecc_curve_t *elliptic_curve,
                                       hardened_bool_t *verification_result);
 
@@ -253,7 +253,7 @@ crypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
 crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
                                       crypto_const_uint8_buf_t input_message,
                                       eddsa_sign_mode_t sign_mode,
-                                      ecc_signature_t *signature);
+                                      const ecc_signature_t *signature);
 
 /**
  * Verifies an Ed25519 signature.
@@ -269,7 +269,7 @@ crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
 crypto_status_t otcrypto_ed25519_verify(
     const crypto_unblinded_key_t *public_key,
     crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
-    ecc_signature_t *signature, hardened_bool_t *verification_result);
+    const ecc_signature_t *signature, hardened_bool_t *verification_result);
 
 /**
  * Generates a new key pair for X25519 key exchange.
@@ -326,7 +326,7 @@ crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
  * @return Result of asynchronous ECDSA keygen start operation.
  */
 crypto_status_t otcrypto_ecdsa_keygen_async_start(
-    const ecc_curve_t *elliptic_curve, crypto_key_config_t *config);
+    const ecc_curve_t *elliptic_curve, const crypto_key_config_t *config);
 
 /**
  * Finalizes the asynchronous key generation for ECDSA operation.
@@ -383,7 +383,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_start(
  * @return Result of async ECDSA finalize operation.
  */
 crypto_status_t otcrypto_ecdsa_sign_async_finalize(
-    const ecc_curve_t *elliptic_curve, ecc_signature_t *signature);
+    const ecc_curve_t *elliptic_curve, const ecc_signature_t *signature);
 
 /**
  * Starts the asynchronous ECDSA digital signature verification.
@@ -401,7 +401,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(
  */
 crypto_status_t otcrypto_ecdsa_verify_async_start(
     const ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
-    ecc_signature_t *signature, const ecc_curve_t *elliptic_curve);
+    const ecc_signature_t *signature, const ecc_curve_t *elliptic_curve);
 
 /**
  * Finalizes the asynchronous ECDSA digital signature verification.
@@ -422,7 +422,7 @@ crypto_status_t otcrypto_ecdsa_verify_async_start(
  * @return Result of async ECDSA verify finalize operation.
  */
 crypto_status_t otcrypto_ecdsa_verify_async_finalize(
-    const ecc_curve_t *elliptic_curve, ecc_signature_t *signature,
+    const ecc_curve_t *elliptic_curve, const ecc_signature_t *signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -444,7 +444,7 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
  * @return Result of asynchronous ECDH keygen start operation.
  */
 crypto_status_t otcrypto_ecdh_keygen_async_start(
-    const ecc_curve_t *elliptic_curve, crypto_key_config_t *config);
+    const ecc_curve_t *elliptic_curve, const crypto_key_config_t *config);
 
 /**
  * Finalizes the asynchronous key generation for ECDSA operation.
@@ -516,7 +516,7 @@ crypto_status_t otcrypto_ecdh_async_finalize(
  * @return Result of asynchronous ed25519 keygen start operation.
  */
 crypto_status_t otcrypto_ed25519_keygen_async_start(
-    crypto_key_config_t *config);
+    const crypto_key_config_t *config);
 
 /**
  * Finalizes the asynchronous key generation for Ed25519.
@@ -552,7 +552,7 @@ crypto_status_t otcrypto_ed25519_keygen_async_finalize(
 crypto_status_t otcrypto_ed25519_sign_async_start(
     const crypto_blinded_key_t *private_key,
     crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
-    ecc_signature_t *signature);
+    const ecc_signature_t *signature);
 
 /**
  * Finalizes the asynchronous Ed25519 digital signature generation.
@@ -565,7 +565,7 @@ crypto_status_t otcrypto_ed25519_sign_async_start(
  * @return Result of async Ed25519 finalize operation.
  */
 crypto_status_t otcrypto_ed25519_sign_async_finalize(
-    ecc_signature_t *signature);
+    const ecc_signature_t *signature);
 
 /**
  * Starts the asynchronous Ed25519 digital signature verification.
@@ -582,7 +582,7 @@ crypto_status_t otcrypto_ed25519_sign_async_finalize(
 crypto_status_t otcrypto_ed25519_verify_async_start(
     const crypto_unblinded_key_t *public_key,
     crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
-    ecc_signature_t *signature);
+    const ecc_signature_t *signature);
 
 /**
  * Finalizes the asynchronous Ed25519 digital signature verification.
@@ -610,7 +610,8 @@ crypto_status_t otcrypto_ed25519_verify_async_finalize(
  * @param config Private key configuration.
  * @return Result of asynchronous X25519 keygen start operation.
  */
-crypto_status_t otcrypto_x25519_keygen_async_start(crypto_key_config_t *config);
+crypto_status_t otcrypto_x25519_keygen_async_start(
+    const crypto_key_config_t *config);
 
 /**
  * Finalizes the asynchronous key generation for X25519.
