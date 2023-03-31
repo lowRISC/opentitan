@@ -970,6 +970,7 @@ def opentitan_flash_binary(
     """
     deps = kwargs.pop("deps", [])
     all_targets = []
+    binaries = []
     for device in devices:
         if device not in PER_DEVICE_DEPS:
             fail("invalid device; device must be in {}".format(PER_DEVICE_DEPS.keys()))
@@ -994,6 +995,7 @@ def opentitan_flash_binary(
             **kwargs
         ))
         bin_name = "{}_{}".format(devname, "bin")
+        binaries.append(":" + bin_name)
 
         # Sign BIN (if required) and generate scrambled VMEM images.
         if signed:
@@ -1074,10 +1076,17 @@ def opentitan_flash_binary(
         )
         all_targets.extend(dev_targets)
 
-    # Create a filegroup with just all targets from all devices.
+    # Create a filegroup with all targets from all devices.
     native.filegroup(
         name = name,
         srcs = all_targets,
+        testonly = testonly,
+    )
+
+    # Create a filegroup with all binary targets.
+    native.filegroup(
+        name = name + "_bin",
+        srcs = binaries,
         testonly = testonly,
     )
 
