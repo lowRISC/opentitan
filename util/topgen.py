@@ -752,6 +752,48 @@ def create_mem(item, addrsep, regwidth):
                          swaccess=swaccess)
 
 
+def generete_rust(topname, completecfg, name_to_block, out_path, version_stamp,
+                  src_tree_top, topgen_template_path):
+    # Template render hellper
+    def render_template(template_path: str, rendered_path: Path,
+                        **other_info):
+        template_contents = generate_top(completecfg, name_to_block,
+                                         str(template_path), **other_info)
+
+        rendered_path.parent.mkdir(exist_ok=True, parents=True)
+        with rendered_path.open(mode="w", encoding="UTF-8") as fout:
+            fout.write(template_contents)
+
+    # The Rust file needs some complex information, so we initialize this
+    # object to store it.
+    rs_helper = TopGenRust(completecfg, name_to_block, version_stamp)
+
+    rust_files = [("toplevel_mod.rs.tpl", "mod.rs"),
+                  ("toplevel.rs.tpl", f"top_{topname}.rs"),
+                  ("toplevel_memory.rs.tpl", f"top_{topname}_memory.rs")]
+
+    # Creating Rust output directory
+    rsformat_dir = out_path / "sw/autogen/chip/"
+    rsformat_dir.mkdir(parents=True, exist_ok=True)
+
+    # Generating Rust device description for external sw usage
+    for (template, source) in rust_files:
+        render_template(topgen_template_path / template,
+                        rsformat_dir / source,
+                        helper=rs_helper)
+
+    # Generating Rust host-side files
+
+    # The Rust file needs some complex information, so we initialize this
+    # object to store it. Disabling version stamp to avoid file difference.
+    rs_helper = TopGenRust(completecfg, name_to_block, {})
+    rsformat_dir = src_tree_top / "sw/host/opentitanlib/src/chip/autogen"
+    rsformat_dir.mkdir(parents=True, exist_ok=True)
+    render_template(topgen_template_path / "host_toplevel.rs.tpl",
+                    rsformat_dir / f"{topname}.rs",
+                    helper=rs_helper)
+
+
 def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     # Create generated list
     # These modules are generated through topgen
@@ -997,6 +1039,10 @@ def main():
         action="store_true",
         help="If defined, topgen doesn't generate the interrup controller RTLs."
     )
+    parser.add_argument(
+        "--no-rust",
+        action="store_true",
+        help="If defined, topgen doesn't generate Rust code.")
 
     # Generator options: 'only' series. cannot combined with 'no' series
     parser.add_argument(
@@ -1015,6 +1061,10 @@ def main():
         "--alert-handler-only",
         action="store_true",
         help="If defined, the tool generates alert handler hjson only")
+    parser.add_argument(
+        "--rust-only",
+        action="store_true",
+        help="If defined, the tool generates top Rust code only")
     # Generator options: generate dv ral model
     parser.add_argument(
         "--top_ral",
@@ -1097,10 +1147,15 @@ def main():
     # Extract version stamp from file
     version_stamp = {}
     if args.version_stamp is not None:
-        with open(args.version_stamp, 'rt') as f:
-            for line in f:
-                k, v = line.strip().split(' ', 1)
-                version_stamp[k] = v
+        try:
+            with open(args.version_stamp, 'rt') as f:
+                log.info("version stamp path: {}", args.version_stamp)
+                for line in f:
+                    k, v = line.strip().split(' ', 1)
+                    version_stamp[k] = v
+                    log.info("{} {}", k, v)
+        except ValueError:
+            raise SystemExit(sys.exc_info()[1])
 
     # Initialize RNG for compile-time netlist constants.
     if args.entropy_buffer:
@@ -1230,6 +1285,13 @@ def main():
     genhjson_path.write_text(genhdr + gencmd +
                              hjson.dumps(completecfg, for_json=True) + '\n')
 
+    # Generate Rust toplevel definitions
+    if not args.no_rust:
+        generete_rust(topname, completecfg, name_to_block, out_path.resolve(), version_stamp,
+                      SRCTREE_TOP, TOPGEN_TEMPLATE_PATH)
+        if args.rust_only:
+            sys.exit(0)
+
     if not args.no_top or args.top_only:
 
         def render_template(template_path: str, rendered_path: Path,
@@ -1273,10 +1335,6 @@ def main():
         # The C / SV file needs some complex information, so we initialize this
         # object to store it.
         c_helper = TopGenCTest(completecfg, name_to_block)
-
-        # The Rust file needs some complex information, so we initialize this
-        # object to store it.
-        rs_helper = TopGenRust(completecfg, name_to_block, version_stamp)
 
         # "toplevel_pkg.sv.tpl" -> "rtl/autogen/top_{topname}_pkg.sv"
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel_pkg.sv.tpl",
@@ -1339,27 +1397,6 @@ def main():
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
                             memory_cheader_path,
                             helper=c_helper)
-
-            # Rust toplevel chip files generator
-
-            # Creating Rust output directory
-            rsformat_dir = path / "sw/autogen/chip"
-            rsformat_dir.mkdir(parents=True, exist_ok=True)
-
-            rust_files = [("toplevel_mod.rs.tpl", "mod.rs"),
-                          ("toplevel.rs.tpl", f"top_{topname}.rs"),
-                          ("toplevel_memory.rs.tpl", f"top_{topname}_memory.rs")]
-            for (template, source) in rust_files:
-                render_template(TOPGEN_TEMPLATE_PATH / template,
-                                rsformat_dir / source,
-                                helper=rs_helper)
-
-        # Generating Rust host-side files
-        rsformat_dir = SRCTREE_TOP / "sw/host/opentitanlib/src/chip/autogen"
-        rsformat_dir.mkdir(parents=True, exist_ok=True)
-        render_template(TOPGEN_TEMPLATE_PATH / "host_toplevel.rs.tpl",
-                        rsformat_dir / f"{topname}.rs",
-                        helper=rs_helper)
 
         # generate chip level xbar and alert_handler TB
         tb_files = [
