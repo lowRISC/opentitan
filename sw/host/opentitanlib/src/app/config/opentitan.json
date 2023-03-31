@@ -24,15 +24,21 @@
       "level": false,
       "pull_mode": "None",
       "alias_of": "IOC2"
-    }
+    },
     {
       "name": "TAP_STRAP0",
-      "level": false
+      "mode": "PushPull",
+      "level": false,
+      "pull_mode": "None",
+      "alias_of": "IOC8"
     },
     {
       "name": "TAP_STRAP1",
-      "level": true
-    },
+      "mode": "PushPull",
+      "level": true,
+      "pull_mode": "None",
+      "alias_of": "IOC5"
+    }
   ],
   "strappings": [
     {
