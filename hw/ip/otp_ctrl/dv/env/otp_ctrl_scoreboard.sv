@@ -25,8 +25,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   // This bit is used for DAI interface to mark if the read access is valid.
   bit dai_read_valid;
 
-  // TODO: currently skip checking if the ECC error is uncorrectable. Support reading is when we
-  // update to mem_bkdr_if.
+  // ICEBOX(#17798): currently scb will skip checking the readout value if the ECC error is
+  // uncorrectable. Because if the error is uncorrectable, current scb does not track all the
+  // backdoor injected values.
+  // This issue proposes to track the otp_memory_array in mem_bkdr_if and once backdoor inject any
+  // value, mem_bkdr_if will update its otp_memory_array.
   bit check_dai_rd_data = 1;
 
   // Status related variables
