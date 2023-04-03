@@ -24,8 +24,8 @@ void sram_ctrl_testutils_write(uintptr_t address,
 static bool check_finished(const dif_sram_ctrl_t *sram_ctrl,
                            dif_sram_ctrl_status_t flag) {
   dif_sram_ctrl_status_bitfield_t status;
-  CHECK_DIF_OK(dif_sram_ctrl_get_status(sram_ctrl, &status));
-  return status & flag;
+  dif_result_t res = dif_sram_ctrl_get_status(sram_ctrl, &status);
+  return (res == kDifOk) && (status & flag);
 }
 
 void sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl) {
