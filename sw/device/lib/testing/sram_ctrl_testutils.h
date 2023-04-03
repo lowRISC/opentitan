@@ -39,8 +39,10 @@ status_t sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl);
 
 /**
  * Triggers the SRAM wipe operation and waits for it to finish.
+ *
+ * @return The result of the operation.
  */
-void sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl);
+status_t sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl);
 
 /**
  * Reads data from `backdoor_addr` in SRAM (retention or main) and

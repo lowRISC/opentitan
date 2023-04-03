@@ -56,13 +56,14 @@ status_t sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl) {
   return OK_STATUS();
 }
 
-void sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl) {
+status_t sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl) {
   CHECK_DIF_OK(dif_sram_ctrl_wipe(sram_ctrl));
   // The timeout calculation is the same as the scramble timeout.
   uint32_t usec =
       udiv64_slow(1000000, udiv64_slow(kClockFreqCpuHz, 850, NULL) + 1, NULL);
   LOG_INFO("Waiting for SRAM wipe to finish");
   IBEX_SPIN_FOR(check_finished(sram_ctrl, kDifSramCtrlStatusInitDone), usec);
+  return OK_STATUS();
 }
 
 void sram_ctrl_testutils_check_backdoor_write(uintptr_t backdoor_addr,
