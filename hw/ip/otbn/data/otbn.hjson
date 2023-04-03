@@ -389,37 +389,11 @@
           desc: '''
             The operation to perform.
 
-            <table>
-              <thead>
-                <tr>
-                  <th>Value</th>
-                  <th>Name</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>0xd8</td>
-                  <td>EXECUTE</td>
-                  <td>
-                    Starts the execution of the program stored in the
-                    instruction memory, starting at address zero.
-                  </td>
-                </tr>
-                <tr>
-                  <td>0xc3</td>
-                  <td>SEC_WIPE_DMEM</td>
-                  <td>Securely removes all contents from the data memory.</td>
-                </tr>
-                <tr>
-                  <td>0x1e</td>
-                  <td>SEC_WIPE_IMEM</td>
-                  <td>
-                    Securely removes all contents from the instruction memory.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            | Value | Name          | Description |
+            |:------|:--------------|:------------|
+            | 0xd8  | EXECUTE       | Starts the execution of the program stored in the instruction memory, starting at address zero. |
+            | 0xc3  | SEC_WIPE_DMEM | Securely removes all contents from the data memory. |
+            | 0x1e  | SEC_WIPE_IMEM | Securely removes all contents from the instruction  memory. |
           '''
           tags: [
             // Don't write this field in the automated CSR tests: it would
@@ -472,51 +446,15 @@
             All BUSY values represent an operation started by a write to the
             !!CMD register.
 
-            <table>
-              <thead>
-                <tr>
-                  <th>Value</th>
-                  <th>Name</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>0x00</td>
-                  <td>IDLE</td>
-                  <td>OTBN is idle: it is not performing any action.</td>
-                </tr>
-                <tr>
-                  <td>0x01</td>
-                  <td>BUSY_EXECUTE</td>
-                  <td>OTBN is busy executing software.</td>
-                </tr>
-                <tr>
-                  <td>0x02</td>
-                  <td>BUSY_SEC_WIPE_DMEM</td>
-                  <td>OTBN is busy securely wiping the data memory.</td>
-                </tr>
-                <tr>
-                  <td>0x03</td>
-                  <td>BUSY_SEC_WIPE_IMEM</td>
-                  <td>OTBN is busy securely wiping the instruction memory.</td>
-                </tr>
-                <tr>
-                  <td>0x04</td>
-                  <td>BUSY_SEC_WIPE_INT</td>
-                  <td>OTBN is busy securely wiping the internal state.</td>
-                </tr>
-                <tr>
-                  <td>0xFF</td>
-                  <td>LOCKED</td>
-                  <td>
-                    OTBN is locked as reaction to a fatal error, and must be
-                    reset to unlock it again. See also the section
-                    "Reaction to Fatal Errors".
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            | Value | Name               | Description                                           |
+            |:------|:-------------------|:------------------------------------------------------|
+            | 0x00  | IDLE               | OTBN is idle: it is not performing any action.        |
+            | 0x01  | BUSY_EXECUTE       | OTBN is busy executing software.                      |
+            | 0x02  | BUSY_SEC_WIPE_DMEM | OTBN is busy securely wiping the data memory.         |
+            | 0x03  | BUSY_SEC_WIPE_IMEM | OTBN is busy securely wiping the instruction memory.  |
+            | 0x04  | BUSY_SEC_WIPE_INT  | OTBN is busy securely wiping the internal state.      |
+            | 0xFF  | LOCKED             | OTBN is locked as reaction to a fatal error, and must be reset to unlock it again. See also the section "Reaction to Fatal Errors". |
+
           '''
           tags: [
             // Exclude this field from the automated CSR tests. The register model does not know
