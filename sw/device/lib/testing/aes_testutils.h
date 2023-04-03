@@ -41,8 +41,10 @@ inline bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t flag) {
  * Initializes CSRNG and EDN0 to produce a fixed seed which after being loaded
  * into AES causes the AES masking PRNG to output an all-zero vector. Entropy
  * src and EDN1 are left untouched.
+ *
+ * @return The result of the operation.
  */
-void aes_testutils_masking_prng_zero_output_seed(void);
+status_t aes_testutils_masking_prng_zero_output_seed(void);
 
 /**
  * CTR_DRBG Known-Answer-Test (KAT) using the CSRNG SW application interface.

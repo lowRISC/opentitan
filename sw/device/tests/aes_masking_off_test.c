@@ -73,7 +73,7 @@ bool test_main(void) {
   LOG_INFO("Testing AES with masking switched off");
 
   // Initialize EDN and CSRNG to generate the required seed.
-  aes_testutils_masking_prng_zero_output_seed();
+  CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed());
 
   // Initialise AES.
   dif_aes_t aes;
