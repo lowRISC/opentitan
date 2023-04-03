@@ -26,7 +26,7 @@ pub enum ManifestError {
 fixed_size_bigint!(ManifestRsaBuffer, at_most 3072);
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
-struct ManifestBigInt(Option<HexEncoded<ManifestRsaBuffer>>);
+struct ManifestRsaBigInt(Option<HexEncoded<ManifestRsaBuffer>>);
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 struct ManifestSmallInt<T: ParseInt + fmt::LowerHex>(Option<HexEncoded<T>>);
@@ -102,16 +102,16 @@ impl ManifestSpec {
         self.overwrite(other)
     }
 
-    pub fn update_signature(&mut self, signature: ManifestRsaBuffer) {
-        self.signature.0 = Some(HexEncoded(signature))
+    pub fn update_rsa_signature(&mut self, rsa_signature: ManifestRsaBuffer) {
+        self.rsa_signature.0 = Some(HexEncoded(rsa_signature))
     }
 
     pub fn update_modulus(&mut self, modulus: ManifestRsaBuffer) {
         self.modulus.0 = Some(HexEncoded(modulus))
     }
 
-    pub fn signature(&self) -> Option<&ManifestRsaBuffer> {
-        self.signature.0.as_ref().map(|v| &v.0)
+    pub fn rsa_signature(&self) -> Option<&ManifestRsaBuffer> {
+        self.rsa_signature.0.as_ref().map(|v| &v.0)
     }
 
     pub fn modulus(&self) -> Option<&ManifestRsaBuffer> {
@@ -132,7 +132,7 @@ trait ManifestPacked<T> {
     fn overwrite(&mut self, o: Self);
 }
 
-impl ManifestPacked<ManifestRsaBuffer> for ManifestBigInt {
+impl ManifestPacked<ManifestRsaBuffer> for ManifestRsaBigInt {
     fn unpack(self, name: &'static str) -> Result<ManifestRsaBuffer> {
         match self.0 {
             Some(v) => Ok(v.0),
@@ -185,9 +185,9 @@ impl<T: ParseInt + fmt::LowerHex, const N: usize> ManifestPacked<[T; N]>
 
 manifest_def! {
     pub struct ManifestSpec {
-        signature: ManifestBigInt,
+        rsa_signature: ManifestRsaBigInt,
         usage_constraints: ManifestUsageConstraintsDef,
-        modulus: ManifestBigInt,
+        modulus: ManifestRsaBigInt,
         address_translation: ManifestSmallInt<u32>,
         identifier: ManifestSmallInt<u32>,
         length: ManifestSmallInt<u32>,
@@ -272,20 +272,20 @@ impl TryFrom<[u32; 8]> for LifecycleDeviceId {
     }
 }
 
-impl TryFrom<SigverifyRsaBuffer> for ManifestBigInt {
+impl TryFrom<SigverifyRsaBuffer> for ManifestRsaBigInt {
     type Error = anyhow::Error;
 
-    fn try_from(o: SigverifyRsaBuffer) -> Result<ManifestBigInt> {
+    fn try_from(o: SigverifyRsaBuffer) -> Result<ManifestRsaBigInt> {
         (&o).try_into()
     }
 }
 
-impl TryFrom<&SigverifyRsaBuffer> for ManifestBigInt {
+impl TryFrom<&SigverifyRsaBuffer> for ManifestRsaBigInt {
     type Error = anyhow::Error;
 
-    fn try_from(o: &SigverifyRsaBuffer) -> Result<ManifestBigInt> {
+    fn try_from(o: &SigverifyRsaBuffer) -> Result<ManifestRsaBigInt> {
         let rsa = ManifestRsaBuffer::from_le_bytes(o.data.as_bytes())?;
-        Ok(ManifestBigInt(Some(HexEncoded(rsa))))
+        Ok(ManifestRsaBigInt(Some(HexEncoded(rsa))))
     }
 }
 
