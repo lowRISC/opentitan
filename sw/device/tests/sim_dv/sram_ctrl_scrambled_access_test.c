@@ -292,7 +292,7 @@ static void execute_retention_sram_test(void) {
   prepare_sram_for_scrambling();
 
   LOG_INFO("Scrambling...");
-  sram_ctrl_testutils_scramble(&ret_sram);
+  CHECK_STATUS_OK(sram_ctrl_testutils_scramble(&ret_sram));
 
   // Reset the Ecc error count that lies on the main sram.
   LOG_INFO("Checking memory...");

@@ -28,8 +28,8 @@ static bool check_finished(const dif_sram_ctrl_t *sram_ctrl,
   return (res == kDifOk) && (status & flag);
 }
 
-void sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl) {
-  CHECK_DIF_OK(dif_sram_ctrl_request_new_key(sram_ctrl));
+status_t sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl) {
+  TRY(dif_sram_ctrl_request_new_key(sram_ctrl));
 
   // Calculate the timeout time.
   // The SRAM Controller documentation says that it takes approximately 800
@@ -51,7 +51,9 @@ void sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl) {
 
   // Loop until new scrambling key has been obtained.
   LOG_INFO("Waiting for SRAM scrambling to finish");
-  IBEX_SPIN_FOR(check_finished(sram_ctrl, kDifSramCtrlStatusScrKeyValid), usec);
+  IBEX_TRY_SPIN_FOR(check_finished(sram_ctrl, kDifSramCtrlStatusScrKeyValid),
+                    usec);
+  return OK_STATUS();
 }
 
 void sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl) {

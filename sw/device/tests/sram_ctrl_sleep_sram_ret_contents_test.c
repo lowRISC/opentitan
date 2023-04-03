@@ -247,7 +247,7 @@ bool test_main(void) {
       LOG_INFO("Wiping ret_sram...");
       sram_ctrl_testutils_wipe(&ret_sram);
       LOG_INFO("Scrambling ret_sram...");
-      sram_ctrl_testutils_scramble(&ret_sram);
+      CHECK_STATUS_OK(sram_ctrl_testutils_scramble(&ret_sram));
 
       test_ret_sram_in_normal_sleep();
 
