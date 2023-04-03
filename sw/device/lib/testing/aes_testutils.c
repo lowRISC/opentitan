@@ -48,7 +48,7 @@ const uint32_t kAesMaskingPrngZeroOutputSeed[kCsrngBlockLen] = {
 //
 //   V = 8d 97 b4 1b c2 0a cb bb - 81 06 d3 91 85 46 67 f8
 //
-// from this seed material upon instantiate. The key is arbitrarity chosen.
+// from this seed material upon instantiate. The key is arbitrarily chosen.
 // Encrypting V using this key then gives the required
 // kAesMaskingPrngZeroOutputSeed above.
 const uint32_t kEdnSeedMaterialInstantiate[kEdnSeedMaterialLen] = {
@@ -136,7 +136,7 @@ status_t aes_testutils_masking_prng_zero_output_seed(void) {
   return OK_STATUS();
 }
 
-void aes_testutils_csrng_kat(void) {
+status_t aes_testutils_csrng_kat(void) {
   const dif_csrng_t csrng = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
 
@@ -156,10 +156,10 @@ void aes_testutils_csrng_kat(void) {
          sizeof(kCsrngVInstantiate));
   memcpy(expected_state_instantiate.key, kCsrngKeyInstantiate,
          sizeof(kCsrngKeyInstantiate));
-  csrng_testutils_kat_instantiate(&csrng, false, &seed_material_instantiate,
-                                  &expected_state_instantiate);
+  TRY(csrng_testutils_kat_instantiate(&csrng, false, &seed_material_instantiate,
+                                      &expected_state_instantiate));
 
-  // Generate one block containting the required seed for the AES masking PRNG
+  // Generate one block containing the required seed for the AES masking PRNG
   // to output an all-zero vector.
   dif_csrng_internal_state_t expected_state_generate = {
       .reseed_counter = 2,
@@ -169,9 +169,9 @@ void aes_testutils_csrng_kat(void) {
   memcpy(expected_state_generate.v, kCsrngVGenerate, sizeof(kCsrngVGenerate));
   memcpy(expected_state_generate.key, kCsrngKeyGenerate,
          sizeof(kCsrngKeyGenerate));
-  csrng_testutils_kat_generate(&csrng, 1, kCsrngBlockLen,
-                               kAesMaskingPrngZeroOutputSeed,
-                               &expected_state_generate);
+  TRY(csrng_testutils_kat_generate(&csrng, 1, kCsrngBlockLen,
+                                   kAesMaskingPrngZeroOutputSeed,
+                                   &expected_state_generate));
 
   // Reseed the CSRNG instance to produce the required seed for the AES masking
   // PRNG to output an all-zero vector upon the next generate command.
@@ -189,13 +189,14 @@ void aes_testutils_csrng_kat(void) {
          sizeof(kCsrngVInstantiate));
   memcpy(expected_state_reseed.key, kCsrngKeyInstantiate,
          sizeof(kCsrngKeyInstantiate));
-  csrng_testutils_kat_reseed(&csrng, &seed_material_reseed,
-                             &expected_state_reseed);
+  TRY(csrng_testutils_kat_reseed(&csrng, &seed_material_reseed,
+                                 &expected_state_reseed));
 
-  // Generate one block containting the required seed for the AES masking PRNG
+  // Generate one block containing the required seed for the AES masking PRNG
   // to output an all-zero vector.
-  csrng_testutils_kat_generate(&csrng, 1, kCsrngBlockLen,
-                               kAesMaskingPrngZeroOutputSeed,
-                               &expected_state_generate);
+  TRY(csrng_testutils_kat_generate(&csrng, 1, kCsrngBlockLen,
+                                   kAesMaskingPrngZeroOutputSeed,
+                                   &expected_state_generate));
+  return OK_STATUS();
 }
 #endif

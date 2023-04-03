@@ -57,7 +57,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
   // Perform the known-answer testing on the CSRNG SW application interface.
-  aes_testutils_csrng_kat();
+  CHECK_STATUS_OK(aes_testutils_csrng_kat());
 
   // Test AES with masking switched off.
   //
