@@ -51,16 +51,7 @@ static void initialize_clkmgr(void) {
   CLKMGR_TESTUTILS_CHECK_CLOCK_HINT(clkmgr, kAesClock, kDifToggleEnabled);
 }
 
-bool test_main(void) {
-  dif_aes_t aes;
-
-  initialize_clkmgr();
-
-  // Initialise AES.
-  CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
-  CHECK_DIF_OK(dif_aes_reset(&aes));
-
+status_t execute_test(dif_aes_t *aes) {
   // Mask the key. Note that this should not be done manually. Software is
   // expected to get the key in two shares right from the beginning.
   uint8_t key_share0[sizeof(kAesModesKey256)];
@@ -99,19 +90,19 @@ bool test_main(void) {
   // Initiate an AES operation with a known key, plain text and digest, write
   // AES clk hint to 0 and verify that the AES clk hint status within clkmgr now
   // reads 1 (AES is enabled), before the AES operation is complete.
-  CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, NULL));
+  CHECK_DIF_OK(dif_aes_start(aes, &transaction, &key, NULL));
 
   // "Convert" plain data byte arrays to `dif_aes_data_t`.
   dif_aes_data_t in_data_plain;
   memcpy(in_data_plain.data, kAesModesPlainText, sizeof(in_data_plain.data));
 
   // Load the plain text to trigger the encryption operation.
-  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true, TIMEOUT);
-  CHECK_DIF_OK(dif_aes_load_data(&aes, in_data_plain));
+  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusInputReady, true, TIMEOUT);
+  CHECK_DIF_OK(dif_aes_load_data(aes, in_data_plain));
 
   // Write the PRNG_RESEED bit to reseed the internal state of the PRNG.
-  CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
-  CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerStart));
+  CHECK_DIF_OK(dif_aes_trigger(aes, kDifAesTriggerPrngReseed));
+  CHECK_DIF_OK(dif_aes_trigger(aes, kDifAesTriggerStart));
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kAesClock, kDifToggleDisabled, kDifToggleEnabled);
 
@@ -131,12 +122,24 @@ bool test_main(void) {
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kAesClock, kDifToggleEnabled, kDifToggleEnabled);
   dif_aes_data_t out_data;
-  CHECK_DIF_OK(dif_aes_read_output(&aes, &out_data));
+  CHECK_DIF_OK(dif_aes_read_output(aes, &out_data));
 
   // Finish the ECB encryption transaction.
-  CHECK_DIF_OK(dif_aes_end(&aes));
+  CHECK_DIF_OK(dif_aes_end(aes));
   CHECK_ARRAYS_EQ((uint8_t *)out_data.data, kAesModesCipherTextEcb256,
                   sizeof(out_data.data));
+  return OK_STATUS();
+}
 
-  return true;
+bool test_main(void) {
+  dif_aes_t aes;
+
+  initialize_clkmgr();
+
+  // Initialise AES.
+  CHECK_DIF_OK(
+      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  CHECK_DIF_OK(dif_aes_reset(&aes));
+
+  return status_ok(execute_test(&aes));
 }

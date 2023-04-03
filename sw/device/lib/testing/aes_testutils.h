@@ -17,8 +17,8 @@
  */
 inline bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t flag) {
   bool status;
-  CHECK_DIF_OK(dif_aes_get_status(aes, flag, &status));
-  return status;
+  dif_result_t res = dif_aes_get_status(aes, flag, &status);
+  return (res == kDifOk) && status;
 }
 
 /**
@@ -29,9 +29,9 @@ inline bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t flag) {
  * @param value The status flag value.
  * @param timeout_usec Timeout in microseconds.
  */
-#define AES_TESTUTILS_WAIT_FOR_STATUS(aes_, flag_, value_, timeout_usec_) \
-  IBEX_SPIN_FOR(aes_testutils_get_status((aes_), (flag_)) == (value_),    \
-                (timeout_usec_))
+#define AES_TESTUTILS_WAIT_FOR_STATUS(aes_, flag_, value_, timeout_usec_)  \
+  IBEX_TRY_SPIN_FOR(aes_testutils_get_status((aes_), (flag_)) == (value_), \
+                    (timeout_usec_))
 
 #if !OT_IS_ENGLISH_BREAKFAST
 /**

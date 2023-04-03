@@ -213,20 +213,7 @@ void test_initialize(void) {
       &alert_handler));
 }
 
-/**
- * TODO: Run the test entropy src end reqs in continuous mode
- * (https://github.com/lowRISC/opentitan/issues/13393)
- */
-bool test_main() {
-  test_initialize();
-
-  alert_handler_configure(&alert_handler);
-  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
-
-  // ensure health tests are actually running
-  CHECK_STATUS_OK(entropy_testutils_wait_for_state(
-      &entropy_src, kDifEntropySrcMainFsmStateContHTRunning));
-
+status_t execute_test(void) {
   CHECK_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ibex, &fpga_info));
   uint32_t loop = (fpga_info != 0) ? kFpgaLoop : 1;
 
@@ -249,5 +236,23 @@ bool test_main() {
     CHECK_STATUS_OK(
         entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
   }
-  return true;
+
+  return OK_STATUS();
+}
+
+/**
+ * TODO: Run the test entropy src end reqs in continuous mode
+ * (https://github.com/lowRISC/opentitan/issues/13393)
+ */
+bool test_main() {
+  test_initialize();
+
+  alert_handler_configure(&alert_handler);
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
+
+  // ensure health tests are actually running
+  CHECK_STATUS_OK(entropy_testutils_wait_for_state(
+      &entropy_src, kDifEntropySrcMainFsmStateContHTRunning));
+
+  return status_ok(execute_test());
 }
