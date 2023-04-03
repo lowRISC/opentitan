@@ -6,7 +6,7 @@ use std::rc::Rc;
 use std::thread;
 use std::time::Duration;
 
-use anyhow::Result;
+use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -17,6 +17,7 @@ use crate::dif::lc_ctrl::{
 };
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, JtagTap};
+use crate::test_utils::poll;
 
 /// Errors related to performing an LcTransition.
 #[derive(Error, Debug, Deserialize, Serialize)]
@@ -129,4 +130,22 @@ pub fn trigger_lc_transition(
     jtag.connect(JtagTap::LcTap)?;
 
     Ok(())
+}
+
+pub fn wait_for_status(jtag: &Rc<dyn Jtag>, timeout: Duration, status: LcCtrlStatus) -> Result<()> {
+    // Wait for LC controller to be ready.
+    poll::poll_until(timeout, Duration::from_millis(50), || {
+        let polled_status = jtag
+            .read_lc_ctrl_reg(&LcCtrlReg::Status)
+            .context("failed to read status register")?;
+        let polled_status =
+            LcCtrlStatus::from_bits(polled_status).context("status has invalid bits set")?;
+
+        // Check for any error bits set.
+        if polled_status.contains(LcCtrlStatus::ERRORS) {
+            bail!("status has error bits set: {status:#b}");
+        }
+
+        Ok(polled_status.contains(status))
+    })
 }

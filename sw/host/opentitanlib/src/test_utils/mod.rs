@@ -13,7 +13,7 @@ pub mod load_bitstream;
 // set of IO and pinmux constants as the "earlgrey" chip.
 #[cfg(not(feature = "english_breakfast"))]
 pub mod pinmux_config;
-
+pub mod poll;
 pub mod rpc;
 pub mod spi_passthru;
 pub mod status;
