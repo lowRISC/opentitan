@@ -168,6 +168,19 @@ bitflags! {
         const STATE_ERROR            = 0b1 << bindgen::dif::LC_CTRL_STATUS_STATE_ERROR_BIT;
         const BUS_INTEG_ERROR        = 0b1 << bindgen::dif::LC_CTRL_STATUS_BUS_INTEG_ERROR_BIT;
         const OTP_PARTITION_ERROR    = 0b1 << bindgen::dif::LC_CTRL_STATUS_OTP_PARTITION_ERROR_BIT;
+
+        const ERRORS =
+            Self::INITIALIZED.bits() |
+            Self::READY.bits() |
+            Self::TRANSITION_SUCCESSFUL.bits() |
+            Self::TRANSITION_COUNT_ERROR.bits() |
+            Self::TRANSITION_ERROR.bits() |
+            Self::TOKEN_ERROR.bits() |
+            Self::FLASH_RMA_ERROR.bits() |
+            Self::OTP_ERROR.bits() |
+            Self::STATE_ERROR.bits() |
+            Self::BUS_INTEG_ERROR.bits() |
+            Self::OTP_PARTITION_ERROR.bits();
     }
 }
 
