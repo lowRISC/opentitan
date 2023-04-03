@@ -26,14 +26,7 @@ static const uint8_t kKeyShare1[] = {
 
 OTTF_DEFINE_TEST_CONFIG();
 
-bool test_main(void) {
-  dif_aes_t aes;
-
-  // Initialise AES.
-  CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
-  CHECK_DIF_OK(dif_aes_reset(&aes));
-
+status_t execute_test(dif_aes_t *aes) {
   // Mask the key. Note that this should not be done manually. Software is
   // expected to get the key in two shares right from the beginning.
   uint8_t key_share0[sizeof(kAesModesKey256)];
@@ -63,40 +56,52 @@ bool test_main(void) {
   };
 
   // Write the initial key share, IV and data in CSRs (known combinations).
-  CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key, &iv));
+  CHECK_DIF_OK(dif_aes_start(aes, &transaction, &key, &iv));
   dif_aes_data_t in_data_plain;
   memcpy(in_data_plain.data, kAesModesPlainText, sizeof(in_data_plain.data));
-  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true, TIMEOUT);
-  CHECK_DIF_OK(dif_aes_load_data(&aes, in_data_plain));
+  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusInputReady, true, TIMEOUT);
+  CHECK_DIF_OK(dif_aes_load_data(aes, in_data_plain));
 
   // Write the PRNG_RESEED bit to reseed the internal state of the PRNG.
-  CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
+  CHECK_DIF_OK(dif_aes_trigger(aes, kDifAesTriggerPrngReseed));
 
   // Trigger the AES operation to run and wait for it to complete.
-  CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerStart));
-  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusOutputValid, true, TIMEOUT);
+  CHECK_DIF_OK(dif_aes_trigger(aes, kDifAesTriggerStart));
+  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusOutputValid, true, TIMEOUT);
 
   // Check the ciphertext against the expected value.
   dif_aes_data_t out_data;
-  CHECK_DIF_OK(dif_aes_read_output(&aes, &out_data));
+  CHECK_DIF_OK(dif_aes_read_output(aes, &out_data));
   CHECK_ARRAYS_EQ((uint8_t *)out_data.data, kAesModesCipherTextCbc256,
                   sizeof(out_data.data));
 
   // Write the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR trigger bits to 1 and
   // wait for it to complete by polling the status idle bit.
-  CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerDataOutClear));
-  CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerKeyIvDataInClear));
-  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, TIMEOUT);
+  CHECK_DIF_OK(dif_aes_trigger(aes, kDifAesTriggerDataOutClear));
+  CHECK_DIF_OK(dif_aes_trigger(aes, kDifAesTriggerKeyIvDataInClear));
+  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusIdle, true, TIMEOUT);
 
   // Read back the data out CSRs - they should all read garbage values.
-  CHECK(dif_aes_read_output(&aes, &out_data) == kDifError);
-  CHECK(!aes_testutils_get_status(&aes, kDifAesStatusOutputValid));
+  CHECK(dif_aes_read_output(aes, &out_data) == kDifError);
+  CHECK(!aes_testutils_get_status(aes, kDifAesStatusOutputValid));
 
   // Assertion check verifies that the internal states (data_in, key share and
   // IV are also garbage, i.e. different from the originally written values.
-  CHECK_DIF_OK(dif_aes_read_iv(&aes, &iv));
+  CHECK_DIF_OK(dif_aes_read_iv(aes, &iv));
   CHECK_ARRAYS_NE((uint8_t *)iv.iv, kAesModesIvCbc, sizeof(kAesModesIvCbc));
 
-  CHECK_DIF_OK(dif_aes_end(&aes));
-  return true;
+  CHECK_DIF_OK(dif_aes_end(aes));
+
+  return OK_STATUS();
+}
+
+bool test_main(void) {
+  dif_aes_t aes;
+
+  // Initialise AES.
+  CHECK_DIF_OK(
+      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  CHECK_DIF_OK(dif_aes_reset(&aes));
+
+  return status_ok(execute_test(&aes));
 }

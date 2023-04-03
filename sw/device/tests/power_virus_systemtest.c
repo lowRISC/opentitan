@@ -788,7 +788,7 @@ static void configure_entropy_complex(void) {
   CHECK_DIF_OK(dif_edn_configure(&edn_1));
 }
 
-static void configure_aes(void) {
+static status_t configure_aes(void) {
   // Prepare and load AES key shares.
   uint8_t aes_key_share0[sizeof(kAesModesKey256)];
   for (size_t i = 0; i < sizeof(kAesModesKey256); ++i) {
@@ -822,6 +822,7 @@ static void configure_aes(void) {
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
                                 kTestTimeoutMicros);
   CHECK_DIF_OK(dif_aes_start(&aes, &aes_transaction_cfg, &aes_key, &aes_iv));
+  return OK_STATUS();
 }
 
 static void configure_hmac(void) {
@@ -1001,14 +1002,23 @@ static void complete_kmac_operations(uint32_t *digest) {
   CHECK_DIF_OK(dif_kmac_end(&kmac, &kmac_operation_state));
 }
 
+/**
+ * This function should be removed when we refactor the test to return
+ * `status_t` to the ottf.
+ */
+static status_t aes_wait_for_status_ready(dif_aes_t *aes) {
+  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusInputReady, true,
+                                kTestTimeoutMicros);
+  return OK_STATUS();
+}
+
 static void crypto_data_load_task(void *task_parameters) {
   LOG_INFO("Loading crypto block FIFOs with data ...");
 
   // Load data into AES block.
   dif_aes_data_t aes_plain_text;
   memcpy(aes_plain_text.data, kAesModesPlainText, sizeof(aes_plain_text.data));
-  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
-                                kTestTimeoutMicros);
+  CHECK_STATUS_OK(aes_wait_for_status_ready(&aes));
   CHECK_DIF_OK(dif_aes_load_data(&aes, aes_plain_text));
 
   // Load data into HMAC block.
@@ -1312,7 +1322,7 @@ bool test_main(void) {
   // HMAC, as the cryptolib uses HMAC in SHA256 mode, which will cause HMAC
   // computation errors later in this test.
   configure_otbn();
-  configure_aes();
+  CHECK_STATUS_OK(configure_aes());
   configure_hmac();
   configure_kmac();
   configure_uart(&uart_1);
