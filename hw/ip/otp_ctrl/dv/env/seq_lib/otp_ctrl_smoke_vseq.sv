@@ -107,7 +107,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       // to avoid access locked OTP partions, issue reset and clear the OTP memory to all 0.
       if (access_locked_parts == 0) begin
         do_otp_ctrl_init = 1;
-        if (i > 1) dut_init();
+        if (i > 1 && do_dut_init) dut_init();
         // after otp-init done, check status
         cfg.clk_rst_vif.wait_clks(1);
         if (!cfg.otp_ctrl_vif.lc_esc_on) begin
@@ -200,7 +200,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
       if (cfg.otp_ctrl_vif.lc_prog_req == 0) csr_rd(.ptr(ral.err_code[0]), .value(tlul_val));
 
       if ($urandom_range(0, 1)) rd_digests();
-      dut_init();
+      if (do_dut_init) dut_init();
 
       // read and check digest in scb
       rd_digests();
