@@ -52,8 +52,10 @@ status_t aes_testutils_masking_prng_zero_output_seed(void);
  * Initializes CSRNG and then runs multiple generate and a reseed command to
  * ensure the seed leading to an all-zero output of the AES masking PRNG can
  * repeatedly be generated.
+ *
+ * @return The result of the operation.
  */
-void aes_testutils_csrng_kat(void);
+status_t aes_testutils_csrng_kat(void);
 #endif
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AES_TESTUTILS_H_
