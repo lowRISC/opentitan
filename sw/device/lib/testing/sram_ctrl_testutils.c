@@ -65,23 +65,3 @@ status_t sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl) {
   IBEX_SPIN_FOR(check_finished(sram_ctrl, kDifSramCtrlStatusInitDone), usec);
   return OK_STATUS();
 }
-
-void sram_ctrl_testutils_check_backdoor_write(uintptr_t backdoor_addr,
-                                              uint32_t num_words,
-                                              uint32_t offset_addr,
-                                              const uint8_t *expected_bytes) {
-  mmio_region_t mem_region = mmio_region_from_addr(backdoor_addr);
-  uint32_t backdoor_data[num_words];
-  uint32_t expected_data[num_words];
-
-  for (int i = 0; i < num_words; ++i) {
-    backdoor_data[i] =
-        mmio_region_read32(mem_region, sizeof(uint32_t) * (offset_addr + i));
-    // The expected data bytes are organized little-endian.
-    expected_data[i] = expected_bytes[(i * sizeof(uint32_t)) + 3] << 24 |
-                       expected_bytes[(i * sizeof(uint32_t)) + 2] << 16 |
-                       expected_bytes[(i * sizeof(uint32_t)) + 1] << 8 |
-                       expected_bytes[(i * sizeof(uint32_t))];
-    CHECK(backdoor_data[i] == expected_data[i]);
-  }
-}
