@@ -42,7 +42,7 @@ pub const CHIP_BL0_SIZE_MAX: u32 = 0x70000;
 #[repr(C)]
 #[derive(FromBytes, AsBytes, Debug, Default)]
 pub struct Manifest {
-    pub signature: SigverifyRsaBuffer,
+    pub rsa_signature: SigverifyRsaBuffer,
     pub usage_constraints: ManifestUsageConstraints,
     pub modulus: SigverifyRsaBuffer,
     pub address_translation: u32,
@@ -116,7 +116,7 @@ pub struct KeymgrBindingValue {
 /// requires a nightly compiler.
 /// TODO(#6915): Convert this to a unit test after we start running rust tests during our builds.
 pub fn check_manifest_layout() {
-    assert_eq!(offset_of!(Manifest, signature), 0);
+    assert_eq!(offset_of!(Manifest, rsa_signature), 0);
     assert_eq!(offset_of!(Manifest, usage_constraints), 384);
     assert_eq!(offset_of!(Manifest, modulus), 432);
     assert_eq!(offset_of!(Manifest, address_translation), 816);

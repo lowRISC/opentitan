@@ -121,7 +121,7 @@ enum {
  */
 typedef struct manifest {
   /**
-   * Image signature.
+   * RSA signature of the image.
    *
    * RSASSA-PKCS1-v1_5 signature of the image generated using a 3072-bit RSA
    * private key and the SHA-256 hash function. The signed region of an image
@@ -139,7 +139,7 @@ typedef struct manifest {
    * usage constraints read from the hardware can be obtained using
    * `manifest_digest_region_get()`.
    */
-  sigverify_rsa_buffer_t signature;
+  sigverify_rsa_buffer_t rsa_signature;
   /**
    * Usage constraints.
    */
@@ -211,7 +211,7 @@ typedef struct manifest {
   uint32_t entry_point;
 } manifest_t;
 
-OT_ASSERT_MEMBER_OFFSET(manifest_t, signature, 0);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_signature, 0);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 384);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, modulus, 432);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 816);
@@ -289,7 +289,7 @@ inline manifest_digest_region_t manifest_digest_region_get(
     const manifest_t *manifest) {
   enum {
     kDigestRegionOffset =
-        sizeof(manifest->signature) + sizeof(manifest->usage_constraints),
+        sizeof(manifest->rsa_signature) + sizeof(manifest->usage_constraints),
   };
   return (manifest_digest_region_t){
       .start = (const char *)manifest + kDigestRegionOffset,

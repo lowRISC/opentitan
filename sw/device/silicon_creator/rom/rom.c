@@ -239,8 +239,8 @@ static rom_error_t rom_verify(const manifest_t *manifest,
          sizeof(boot_measurements.rom_ext));
 
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 2);
-  return sigverify_rsa_verify(&manifest->signature, key, &act_digest, lc_state,
-                              flash_exec);
+  return sigverify_rsa_verify(&manifest->rsa_signature, key, &act_digest,
+                              lc_state, flash_exec);
 }
 
 /* These symbols are defined in

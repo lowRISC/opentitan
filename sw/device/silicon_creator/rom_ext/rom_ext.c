@@ -82,8 +82,8 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest) {
   hmac_digest_t act_digest;
   hmac_sha256_final(&act_digest);
   uint32_t flash_exec = 0;
-  return sigverify_rsa_verify(&manifest->signature, key, &act_digest, lc_state,
-                              &flash_exec);
+  return sigverify_rsa_verify(&manifest->rsa_signature, key, &act_digest,
+                              lc_state, &flash_exec);
 }
 
 /* These symbols are defined in
