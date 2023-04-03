@@ -245,7 +245,7 @@ bool test_main(void) {
       // wipe data otherwise, the data may still be read after reset, since it's
       // written with the default key/nounce.
       LOG_INFO("Wiping ret_sram...");
-      sram_ctrl_testutils_wipe(&ret_sram);
+      CHECK_STATUS_OK(sram_ctrl_testutils_wipe(&ret_sram));
       LOG_INFO("Scrambling ret_sram...");
       CHECK_STATUS_OK(sram_ctrl_testutils_scramble(&ret_sram));
 
