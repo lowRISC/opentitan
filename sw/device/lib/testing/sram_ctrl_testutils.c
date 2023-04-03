@@ -19,12 +19,13 @@ void sram_ctrl_testutils_write(uintptr_t address,
 }
 
 /**
- * Checks whether the SRAM scramble operation has finished.
+ * Checks whether the SRAM operation has finished.
  */
-static bool scramble_finished(const dif_sram_ctrl_t *sram_ctrl) {
+static bool check_finished(const dif_sram_ctrl_t *sram_ctrl,
+                           dif_sram_ctrl_status_t flag) {
   dif_sram_ctrl_status_bitfield_t status;
   CHECK_DIF_OK(dif_sram_ctrl_get_status(sram_ctrl, &status));
-  return status & kDifSramCtrlStatusScrKeyValid;
+  return status & flag;
 }
 
 void sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl) {
@@ -50,16 +51,7 @@ void sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl) {
 
   // Loop until new scrambling key has been obtained.
   LOG_INFO("Waiting for SRAM scrambling to finish");
-  IBEX_SPIN_FOR(scramble_finished(sram_ctrl), usec);
-}
-
-/**
- * Checks whether the SRAM wipe operation has finished.
- */
-static bool wipe_finished(const dif_sram_ctrl_t *sram_ctrl) {
-  dif_sram_ctrl_status_bitfield_t status;
-  CHECK_DIF_OK(dif_sram_ctrl_get_status(sram_ctrl, &status));
-  return status & kDifSramCtrlStatusInitDone;
+  IBEX_SPIN_FOR(check_finished(sram_ctrl, kDifSramCtrlStatusScrKeyValid), usec);
 }
 
 void sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl) {
@@ -68,7 +60,7 @@ void sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl) {
   uint32_t usec =
       udiv64_slow(1000000, udiv64_slow(kClockFreqCpuHz, 850, NULL) + 1, NULL);
   LOG_INFO("Waiting for SRAM wipe to finish");
-  IBEX_SPIN_FOR(wipe_finished(sram_ctrl), usec);
+  IBEX_SPIN_FOR(check_finished(sram_ctrl, kDifSramCtrlStatusInitDone), usec);
 }
 
 void sram_ctrl_testutils_check_backdoor_write(uintptr_t backdoor_addr,
