@@ -451,7 +451,7 @@ bool test_main(void) {
 #if !OT_IS_ENGLISH_BREAKFAST
   if (transaction.force_masks) {
     LOG_INFO("Initializing entropy complex.");
-    aes_testutils_masking_prng_zero_output_seed();
+    CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed());
     CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
   }
 #endif

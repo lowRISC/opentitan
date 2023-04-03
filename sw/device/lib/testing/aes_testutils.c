@@ -77,18 +77,18 @@ const uint32_t kEdnSeedMaterialReseed[kEdnSeedMaterialLen] = {
     0x5f6fb665, 0x21ca8e3f, 0x5ba3dba1, 0x2c10a9ec, 0x03b8cd4b, 0x8264aaea,
     0x371e6305, 0x8fb186e1, 0xf622bc3e, 0x98e5d247, 0x73040c38, 0x6596739e};
 
-void aes_testutils_masking_prng_zero_output_seed(void) {
+status_t aes_testutils_masking_prng_zero_output_seed(void) {
   const dif_csrng_t csrng = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
   const dif_edn_t edn0 = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
 
   // Shutdown EDN0 and CSRNG
-  CHECK_DIF_OK(dif_edn_stop(&edn0));
-  CHECK_DIF_OK(dif_csrng_stop(&csrng));
+  TRY(dif_edn_stop(&edn0));
+  TRY(dif_csrng_stop(&csrng));
 
   // Re-eanble CSRNG
-  CHECK_DIF_OK(dif_csrng_configure(&csrng));
+  TRY(dif_csrng_configure(&csrng));
 
   // Re-enable EDN0 and configure it to produce the seed that if loaded into AES
   // causes the AES masking PRNG to output and all-zero output.
@@ -132,7 +132,8 @@ void aes_testutils_masking_prng_zero_output_seed(void) {
          kEdnSeedMaterialInstantiate, sizeof(kEdnSeedMaterialInstantiate));
   memcpy(edn0_params.reseed_cmd.seed_material.data, kEdnSeedMaterialReseed,
          sizeof(kEdnSeedMaterialReseed));
-  CHECK_DIF_OK(dif_edn_set_auto_mode(&edn0, edn0_params));
+  TRY(dif_edn_set_auto_mode(&edn0, edn0_params));
+  return OK_STATUS();
 }
 
 void aes_testutils_csrng_kat(void) {
