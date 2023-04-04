@@ -25,11 +25,12 @@ crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
   return kCryptoStatusNotImplemented;
 }
 
-crypto_status_t otcrypto_rsa_verify(
-    const rsa_public_key_t *rsa_public_key,
-    crypto_const_uint8_buf_t input_message, rsa_padding_t padding_mode,
-    rsa_hash_t hash_mode, crypto_const_uint8_buf_t signature,
-    verification_status_t *verification_result) {
+crypto_status_t otcrypto_rsa_verify(const rsa_public_key_t *rsa_public_key,
+                                    crypto_const_uint8_buf_t input_message,
+                                    rsa_padding_t padding_mode,
+                                    rsa_hash_t hash_mode,
+                                    crypto_const_uint8_buf_t signature,
+                                    hardened_bool_t *verification_result) {
   // TODO: Connect RSA implementations to API.
   return kCryptoStatusNotImplemented;
 }
@@ -69,7 +70,7 @@ crypto_status_t otcrypto_rsa_verify_async_start(
 
 crypto_status_t otcrypto_rsa_verify_async_finalize(
     crypto_const_uint8_buf_t input_message, rsa_padding_t padding_mode,
-    rsa_hash_t hash_mode, verification_status_t *verification_result) {
+    rsa_hash_t hash_mode, hardened_bool_t *verification_result) {
   // TODO: Connect RSA implementations to API.
   return kCryptoStatusNotImplemented;
 }

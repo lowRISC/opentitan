@@ -42,18 +42,6 @@ typedef enum crypto_status {
 } crypto_status_t;
 
 /**
- * Enum to handle return values of the verification APIs.
- *
- * Values are hardened.
- */
-typedef enum verification_status {
-  // Return value for successful verification.
-  kVerificationStatusPass = 0x5e34,
-  // Return value for unsuccessful verification.
-  kVerificationStatusFail = 0x2f4c,
-} verification_status_t;
-
-/**
  * Struct to handle crypto data buffer with pointer and length.
  * Note: If the crypto_uint8_buf_t is used for output data, it is
  * expected that the user (1) sets the length of the expected output
