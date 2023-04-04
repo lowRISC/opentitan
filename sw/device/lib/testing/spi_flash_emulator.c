@@ -148,8 +148,8 @@ status_t spi_flash_emulator(dif_spi_host_t *spih,
                                          info.address, info.addr_4b));
         break;
       case kSpiDeviceFlashOpPageProgram:
-        spi_flash_testutils_program_page(spih, info.data, info.data_len,
-                                         info.address, info.addr_4b);
+        TRY(spi_flash_testutils_program_page(spih, info.data, info.data_len,
+                                             info.address, info.addr_4b));
         break;
       case kSpiDeviceFlashOpSectorErase4b:
         TRY(spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpSectorErase4b,
