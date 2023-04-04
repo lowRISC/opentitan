@@ -134,7 +134,7 @@ status_t spi_flash_emulator(dif_spi_host_t *spih,
     TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleDisabled));
     switch (info.opcode) {
       case kSpiDeviceFlashOpChipErase:
-        spi_flash_testutils_erase_chip(spih);
+        TRY(spi_flash_testutils_erase_chip(spih));
         break;
       case kSpiDeviceFlashOpSectorErase:
         spi_flash_testutils_erase_sector(spih, info.address, info.addr_4b);

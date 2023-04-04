@@ -162,9 +162,9 @@ status_t spi_flash_testutils_issue_write_enable(dif_spi_host_t *spih) {
   return OK_STATUS();
 }
 
-void spi_flash_testutils_erase_chip(dif_spi_host_t *spih) {
-  CHECK(spih != NULL);
-  CHECK_STATUS_OK(spi_flash_testutils_issue_write_enable(spih));
+status_t spi_flash_testutils_erase_chip(dif_spi_host_t *spih) {
+  TRY_CHECK(spih != NULL);
+  TRY(spi_flash_testutils_issue_write_enable(spih));
 
   dif_spi_host_segment_t transaction[] = {
       {
@@ -172,9 +172,9 @@ void spi_flash_testutils_erase_chip(dif_spi_host_t *spih) {
           .opcode = kSpiDeviceFlashOpChipErase,
       },
   };
-  CHECK_DIF_OK(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
-                                        ARRAYSIZE(transaction)));
-  CHECK_STATUS_OK(spi_flash_testutils_wait_until_not_busy(spih));
+  TRY(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
+                               ARRAYSIZE(transaction)));
+  return spi_flash_testutils_wait_until_not_busy(spih);
 }
 
 void spi_flash_testutils_erase_op(dif_spi_host_t *spih, uint8_t opcode,
