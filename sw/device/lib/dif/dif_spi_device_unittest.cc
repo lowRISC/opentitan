@@ -806,6 +806,51 @@ TEST_F(SendTest, NullArgs) {
   EXPECT_DIF_OK(dif_spi_device_send(&spi_, buf.data(), buf.size(), nullptr));
 }
 
+class SendPolledTest : public SpiTest {
+  void SetUp() { spi_.config = kDefaultConfig; }
+};
+
+TEST_F(SendPolledTest, NullArgs) {
+  std::string buf(16, '\0');
+  EXPECT_DIF_BADARG(
+      dif_spi_device_send_polled(nullptr, buf.data(), buf.size()));
+  EXPECT_DIF_BADARG(dif_spi_device_send_polled(&spi_, nullptr, buf.size()));
+}
+
+TEST_F(SendPolledTest, BufTooBig) {
+  std::string buf(SpiTest::kFifoLen + 1, '\0');
+  EXPECT_DIF_BADARG(dif_spi_device_send_polled(&spi_, buf.data(), buf.size()));
+}
+
+TEST_F(SendPolledTest, ZeroLengthBuf) {
+  std::string buf(0, '\0');
+  EXPECT_DIF_OK(dif_spi_device_send_polled(&spi_, buf.data(), buf.size()));
+}
+
+TEST_F(SendPolledTest, InitiallyFullThenEmptyThenFullFifo) {
+  EXPECT_READ32(SPI_DEVICE_TXF_PTR_REG_OFFSET,
+                {{SPI_DEVICE_TXF_PTR_WPTR_OFFSET, FifoPtr(0x5c, true)},
+                 {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x5c, false)}});
+  EXPECT_READ32(SPI_DEVICE_TXF_PTR_REG_OFFSET,
+                {{SPI_DEVICE_TXF_PTR_WPTR_OFFSET, FifoPtr(0x5c, true)},
+                 {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x5c, true)}});
+
+  auto message = MakeBlob(kFifoLen);
+  auto fifo_base =
+      SPI_DEVICE_BUFFER_REG_OFFSET + spi_.config.mode_cfg.generic.rx_fifo_len;
+  for (int i = 0; i < kFifoLen; i += 4) {
+    auto idx = fifo_base + (i + 0x5c) % kFifoLen;
+    EXPECT_WRITE32(idx, LeInt(&message[i]));
+  }
+
+  EXPECT_WRITE32(SPI_DEVICE_TXF_PTR_REG_OFFSET,
+                 {{SPI_DEVICE_TXF_PTR_WPTR_OFFSET, FifoPtr(0x5c, false)},
+                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x5c, true)}});
+
+  EXPECT_DIF_OK(
+      dif_spi_device_send_polled(&spi_, message.data(), message.size()));
+}
+
 class GenericTest : public SpiTest {};
 
 TEST_F(GenericTest, NullArgs) {

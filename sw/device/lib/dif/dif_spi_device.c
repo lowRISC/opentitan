@@ -630,6 +630,38 @@ dif_result_t dif_spi_device_send(dif_spi_device_handle_t *spi, const void *buf,
   return kDifOk;
 }
 
+dif_result_t dif_spi_device_send_polled(dif_spi_device_handle_t *spi,
+                                        const void *buf, size_t buf_len) {
+  if (spi == NULL || buf == NULL ||
+      buf_len > spi->config.mode_cfg.generic.tx_fifo_len) {
+    return kDifBadArg;
+  }
+  if (buf_len == 0) {
+    return kDifOk;
+  }
+
+  fifo_ptrs_t tx_fifo;
+  uint16_t free_fifo_space_bytes = 0;
+
+  do {
+    tx_fifo = decompress_ptrs(spi, kTxFifoParams);
+    free_fifo_space_bytes =
+        spi->config.mode_cfg.generic.tx_fifo_len -
+        fifo_bytes_in_use(tx_fifo, spi->config.mode_cfg.generic.tx_fifo_len);
+  } while (free_fifo_space_bytes < buf_len);
+
+  size_t bytes_copied =
+      spi_memcpy(spi, &tx_fifo, spi->config.mode_cfg.generic.rx_fifo_len,
+                 spi->config.mode_cfg.generic.tx_fifo_len, (uint8_t *)buf,
+                 buf_len, /*is_recv=*/false);
+  compress_ptrs(spi, kTxFifoParams, tx_fifo);
+
+  if (bytes_copied != buf_len) {
+    return kDifError;
+  }
+  return kDifOk;
+}
+
 dif_result_t dif_spi_device_enable_mailbox(dif_spi_device_handle_t *spi,
                                            uint32_t address) {
   if (spi == NULL) {
