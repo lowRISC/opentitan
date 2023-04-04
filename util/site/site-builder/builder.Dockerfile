@@ -18,29 +18,6 @@ ENV LANGUAGE en_US:en
 
 RUN mkdir -p /tools
 
-##############
-### nodejs ###
-##############
-
-# Install nodejs
-ENV NODE_VERSION "v18.15.0"
-ENV NVM_DIR "/tools/.nvm"
-ENV PATH "/tools/.nvm/versions/node/${NODE_VERSION}/bin:${PATH}"
-RUN mkdir /tools/.nvm \
-    && curl -so- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash \
-    && . "/tools/.nvm/nvm.sh" \
-    && nvm install "${NODE_VERSION}"
-
-# Install chrome-unstable for puppeteer
-RUN curl -so/tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-unstable_current_amd64.deb \
-    && apt-get install -y --no-install-recommends /tmp/chrome.deb
-
-# Create and prepopulate npm and puppeteer caches
-ENV PUPPETEER_CACHE_DIR "/tools/.puppeteer"
-ENV npm_config_cache "/tools/.npm"
-COPY site/earlgrey-diagram/package*.json /tmp/site/earlgrey-diagram/
-RUN npm --prefix /tmp/site/earlgrey-diagram/ install
-
 ############
 ### rust ###
 ############
