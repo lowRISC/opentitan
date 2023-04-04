@@ -82,7 +82,7 @@ status_t spi_flash_read_id(ujson_t *uj, dif_spi_host_t *spih,
                            dif_spi_device_handle_t *spid) {
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleDisabled));
   spi_flash_testutils_jedec_id_t jedec_id;
-  spi_flash_testutils_read_id(spih, &jedec_id);
+  TRY(spi_flash_testutils_read_id(spih, &jedec_id));
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleEnabled));
 
   spi_flash_read_id_t uj_id = {
