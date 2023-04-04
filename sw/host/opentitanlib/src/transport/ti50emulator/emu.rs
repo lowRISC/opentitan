@@ -7,19 +7,19 @@ use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs;
 use std::fs::File;
-use std::io::BufReader;
-use std::io::{ErrorKind, Read};
+use std::io::{BufReader, Read};
+use std::os::fd::AsRawFd;
 use std::os::unix::fs::FileTypeExt;
-use std::os::unix::net::UnixListener;
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command};
+use std::process::{Child, Command, Stdio};
 use std::rc::Rc;
-use std::thread;
 use std::time::Duration;
 
 use anyhow::{bail, Context, Result};
 use log;
+use nix::sys::select;
 use nix::sys::signal::{self, Signal};
+use nix::sys::time::{TimeVal, TimeValLike};
 use nix::unistd::Pid;
 use serde::{Deserialize, Serialize};
 
@@ -29,9 +29,10 @@ use crate::transport::ti50emulator::gpio::GpioConfiguration;
 use crate::transport::ti50emulator::Inner;
 use crate::transport::ti50emulator::Ti50Emulator;
 
+const SPAWN_TIMEOUT: Duration = Duration::from_secs(10);
 const TIMEOUT: Duration = Duration::from_millis(1000);
 const MAX_RETRY: usize = 5;
-const PATTERN: &[u8; 5] = b"READY";
+const PATTERN: &str = "CHIP READY";
 pub const EMULATOR_INVALID_ID: u64 = 0;
 
 #[derive(Serialize, Deserialize)]
@@ -172,13 +173,9 @@ impl EmulatorProcess {
 
     /// Run Emulator executable as sub-process and wait until Emulator is ready to work.
     fn spawn_process(&mut self) -> Result<()> {
-        let socket_path = self.runtime_directory.join("control_soc");
-
         let mut args_list = vec![
             OsString::from("--path"),
             self.runtime_directory.clone().into_os_string(),
-            OsString::from("--control_socket"),
-            socket_path.clone().into_os_string(),
         ];
 
         match self.current_args.get("apps") {
@@ -211,58 +208,54 @@ impl EmulatorProcess {
             }
         };
 
-        log::info!("Waiting for sub-process start");
-        let ready_handle = thread::spawn(move || {
-            let control_socket = UnixListener::bind(socket_path).unwrap();
-            control_socket
-                .set_nonblocking(true)
-                .expect("Can't set non-blocking socket");
-            let mut buffer = [0u8; 8];
-            let mut retry = 0;
-            for stream in control_socket.incoming() {
-                match stream {
-                    Ok(mut socket) => {
-                        let len = socket.read(&mut buffer[..]).unwrap();
-                        if PATTERN[..] == buffer[0..PATTERN.len()] {
-                            log::info!("Ti50Emulator ready");
-                        }
-                        return Ok(len);
-                    }
-                    Err(err) if err.kind() == ErrorKind::WouldBlock => {
-                        log::debug!("Wait for sub-process...");
-                        std::thread::sleep(TIMEOUT);
-                        retry += 1;
-                        if retry >= MAX_RETRY {
-                            return Err(EmuError::StartFailureCause(
-                                "Spawning Ti50Emulator sub-process timeout".to_string(),
-                            ));
-                        }
-                    }
-                    Err(_err) => {
-                        return Err(EmuError::RuntimeError(
-                            "Control socket io error".to_string(),
-                        ));
-                    }
-                }
-            }
-            Err(EmuError::StartFailureCause(
-                "Waiting for sub-process failed".to_string(),
-            ))
-        });
-
         log::info!("Spawning Ti50Emulator sub-process");
         log::info!("Command: {} {:?}", exec.display(), args_list);
-        let handle = Command::new(&exec)
+        let mut handle = Command::new(&exec)
             .args(args_list)
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
             .spawn()
             .context("Could not spawn sub-process")?;
-        self.proc = Some(handle);
-        match ready_handle
-            .join()
-            .expect("Can't join control socket thread")
-        {
-            Ok(_) => Ok(()),
-            Err(err) => Err(err.into()),
+
+        log::info!("Waiting for sub-process start");
+        let child_stdout = handle.stdout.as_mut().expect("Failed to open stdout");
+        let mut buffer = Vec::new();
+        let mut timeout = TimeVal::microseconds(SPAWN_TIMEOUT.as_micros().try_into()?);
+        let mut fdset = select::FdSet::new();
+        fdset.insert(child_stdout.as_raw_fd());
+        loop {
+            // Select will subtract from the timeout, so that total time waited across all
+            // iterations of the loop is bounded.
+            if select::select(None, Some(&mut fdset), None, None, Some(&mut timeout))? == 0 {
+                // Timeout
+                return Err(EmuError::StartFailureCause(
+                    "Spawning Ti50Emulator sub-process timeout".to_string(),
+                )
+                .into());
+            }
+            let prev_len = buffer.len();
+            buffer.resize(prev_len + 256, 0u8);
+            let read_count = child_stdout.read(&mut buffer[prev_len..])?;
+            if read_count == 0 {
+                // Sub-process closed its stdout.  This can reasonably be assumed to mean
+                // that it has terminated.
+                let exit_status = handle.wait()?;
+                return Err(EmuError::StartFailureCause(format!(
+                    "Ti50Emulator sub-process exited with error: {}",
+                    exit_status
+                ))
+                .into());
+            }
+            buffer.resize(prev_len + read_count, 0u8);
+            while let Some(newline_pos) = buffer.iter().position(|c| *c == b'\n') {
+                if PATTERN.as_bytes() == &buffer[..newline_pos] {
+                    log::info!("Ti50Emulator ready");
+                    self.proc = Some(handle);
+                    return Ok(());
+                }
+                // Any other output from the subprocess is ignored, and we keep reading.
+                buffer.drain(..newline_pos + 1);
+            }
         }
     }
 
