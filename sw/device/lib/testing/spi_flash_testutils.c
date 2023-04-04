@@ -259,14 +259,14 @@ status_t spi_flash_testutils_program_page(dif_spi_host_t *spih,
                                         payload, length, address, addr_is_4b);
 }
 
-void spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
-                                 void *payload, size_t length, uint32_t address,
-                                 bool addr_is_4b, uint8_t width,
-                                 uint8_t dummy) {
-  CHECK(spih != NULL);
-  CHECK(payload != NULL);
-  CHECK(length <= 256);  // Length must be less than a page size.
-  CHECK(width == 1 || width == 2 || width == 4);
+status_t spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
+                                     void *payload, size_t length,
+                                     uint32_t address, bool addr_is_4b,
+                                     uint8_t width, uint8_t dummy) {
+  TRY_CHECK(spih != NULL);
+  TRY_CHECK(payload != NULL);
+  TRY_CHECK(length <= 256);  // Length must be less than a page size.
+  TRY_CHECK(width == 1 || width == 2 || width == 4);
 
   dif_spi_host_addr_mode_t addr_mode =
       addr_is_4b ? kDifSpiHostAddrMode4b : kDifSpiHostAddrMode3b;
@@ -306,8 +306,9 @@ void spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
               },
       },
   };
-  CHECK_DIF_OK(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
-                                        ARRAYSIZE(transaction)));
+  TRY(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
+                               ARRAYSIZE(transaction)));
+  return OK_STATUS();
 }
 
 status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
