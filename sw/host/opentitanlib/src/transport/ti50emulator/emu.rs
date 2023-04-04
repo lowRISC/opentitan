@@ -188,11 +188,7 @@ impl EmulatorProcess {
                         .map(|a| self.executable_directory.join(a).into()),
                 );
             }
-            None => {
-                bail!(EmuError::StartFailureCause(
-                    "Ti50 sub-process missing application list".to_string()
-                ))
-            }
+            None => (),
             _ => {
                 bail!(EmuError::StartFailureCause(
                     "Ti50 sub-process expect apps to be list of string".to_string()
@@ -391,7 +387,7 @@ impl EmulatorProcess {
     /// sub-process. If `args` contains paths to files they will be copied to the runtime directory.
     fn update_args(&mut self, factory_reset: bool, args: &HashMap<String, EmuValue>) -> Result<()> {
         let allowed = HashSet::from(["exec", "flash", "apps", "version_state", "pmu_state"]);
-        let mandatory = ["exec", "apps"];
+        let mandatory = ["exec"];
         for &name in mandatory.iter() {
             if !self.current_args.contains_key(name) && !args.contains_key(name) {
                 bail!(EmuError::StartFailureCause(format!(
