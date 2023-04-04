@@ -15,8 +15,8 @@ use structopt::StructOpt;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boolean::MultiBitBool8;
 use opentitanlib::dif::lc_ctrl::{
-    DifLcCtrlState, DifLcCtrlToken, LcBit, LcCtrlReg, LcCtrlStatusBit, LcCtrlTransitionCmdBit,
-    LcCtrlTransitionRegwenBit,
+    DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus, LcCtrlTransitionCmd,
+    LcCtrlTransitionRegwen,
 };
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -160,7 +160,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         Echo("--- Waiting for controller to be ready..."),
         PollUntilRegEq(
             Status,
-            LcBit::union([LcCtrlStatusBit::Initialized, LcCtrlStatusBit::Ready]),
+            (LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY).bits(),
         ),
         Echo("--- Lifecycle controller is ready!"),
         AssertRegEq(LcState, DifLcCtrlState::Prod.redundant_encoding()),
@@ -169,7 +169,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         AssertRegEq(ClaimTransitionIf, u8::from(MultiBitBool8::True).into()),
         AssertRegEq(
             TransitionRegwen,
-            LcBit::union([LcCtrlTransitionRegwenBit::TransitionRegwen]),
+            LcCtrlTransitionRegwen::TRANSITION_REGWEN.bits(),
         ),
         WriteReg(TransitionToken0, token0),
         WriteReg(TransitionToken1, token1),
@@ -182,16 +182,13 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         WriteReg(TransitionTarget, DifLcCtrlState::Rma.redundant_encoding()),
         AssertRegEq(TransitionTarget, DifLcCtrlState::Rma.redundant_encoding()),
         Echo("--- Initiate the life cycle transition"),
-        WriteReg(TransitionCmd, LcBit::union([LcCtrlTransitionCmdBit::Start])),
+        WriteReg(TransitionCmd, LcCtrlTransitionCmd::START.bits()),
         AssertRegEq(TransitionRegwen, 0),
-        AssertRegEq(Status, LcBit::union([LcCtrlStatusBit::Initialized])),
+        AssertRegEq(Status, LcCtrlStatus::INITIALIZED.bits()),
         Echo("--- Poll the STATUS register while device erases flash..."),
         PollUntilRegEq(
             Status,
-            LcBit::union([
-                LcCtrlStatusBit::Initialized,
-                LcCtrlStatusBit::TransitionSuccessful,
-            ]),
+            (LcCtrlStatus::INITIALIZED | LcCtrlStatus::TRANSITION_SUCCESSFUL).bits(),
         ),
         AssertRegEq(LcState, DifLcCtrlState::PostTransition.redundant_encoding()),
         Echo("--- Lifecycle transition complete"),
