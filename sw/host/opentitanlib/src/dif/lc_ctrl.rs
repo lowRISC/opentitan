@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use bitflags::bitflags;
 use num_enum::IntoPrimitive;
+use serde::{Deserialize, Serialize};
 
 use crate::with_unknown;
 
@@ -150,57 +152,48 @@ impl LcCtrlReg {
     }
 }
 
-pub trait LcBit: Clone + Into<u32> {
-    /// Builds a register value from a collection of [LcBit] bits.
-    fn union<const N: usize>(bits: [Self; N]) -> u32 {
-        bits.into_iter()
-            .map(|bit| bit.into())
-            .map(|bit: u32| 1 << bit)
-            .fold(0u32, |acc, shifted| acc | shifted)
+bitflags! {
+    /// Bits of the lc_ctrl.STATUS register, aka [LcCtrlReg::Status].
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
+    #[serde(transparent)]
+    pub struct LcCtrlStatus: u32 {
+        const INITIALIZED            = 0b1 << bindgen::dif::LC_CTRL_STATUS_INITIALIZED_BIT;
+        const READY                  = 0b1 << bindgen::dif::LC_CTRL_STATUS_READY_BIT;
+        const TRANSITION_SUCCESSFUL  = 0b1 << bindgen::dif::LC_CTRL_STATUS_TRANSITION_SUCCESSFUL_BIT;
+        const TRANSITION_COUNT_ERROR = 0b1 << bindgen::dif::LC_CTRL_STATUS_TRANSITION_COUNT_ERROR_BIT;
+        const TRANSITION_ERROR       = 0b1 << bindgen::dif::LC_CTRL_STATUS_TRANSITION_ERROR_BIT;
+        const TOKEN_ERROR            = 0b1 << bindgen::dif::LC_CTRL_STATUS_TOKEN_ERROR_BIT;
+        const FLASH_RMA_ERROR        = 0b1 << bindgen::dif::LC_CTRL_STATUS_FLASH_RMA_ERROR_BIT;
+        const OTP_ERROR              = 0b1 << bindgen::dif::LC_CTRL_STATUS_OTP_ERROR_BIT;
+        const STATE_ERROR            = 0b1 << bindgen::dif::LC_CTRL_STATUS_STATE_ERROR_BIT;
+        const BUS_INTEG_ERROR        = 0b1 << bindgen::dif::LC_CTRL_STATUS_BUS_INTEG_ERROR_BIT;
+        const OTP_PARTITION_ERROR    = 0b1 << bindgen::dif::LC_CTRL_STATUS_OTP_PARTITION_ERROR_BIT;
     }
 }
 
-/// Bits of the lc_ctrl.STATUS register, aka [LcCtrlReg::Status].
-#[derive(IntoPrimitive, Clone, Debug)]
-#[repr(u32)]
-pub enum LcCtrlStatusBit {
-    Initialized = bindgen::dif::LC_CTRL_STATUS_INITIALIZED_BIT,
-    Ready = bindgen::dif::LC_CTRL_STATUS_READY_BIT,
-    TransitionSuccessful = bindgen::dif::LC_CTRL_STATUS_TRANSITION_SUCCESSFUL_BIT,
-    TransitionCountError = bindgen::dif::LC_CTRL_STATUS_TRANSITION_COUNT_ERROR_BIT,
-    TransitionError = bindgen::dif::LC_CTRL_STATUS_TRANSITION_ERROR_BIT,
-    TokenError = bindgen::dif::LC_CTRL_STATUS_TOKEN_ERROR_BIT,
-    FlashRmaError = bindgen::dif::LC_CTRL_STATUS_FLASH_RMA_ERROR_BIT,
-    OtpError = bindgen::dif::LC_CTRL_STATUS_OTP_ERROR_BIT,
-    StateError = bindgen::dif::LC_CTRL_STATUS_STATE_ERROR_BIT,
-    BusIntegError = bindgen::dif::LC_CTRL_STATUS_BUS_INTEG_ERROR_BIT,
-    OtpPartitionError = bindgen::dif::LC_CTRL_STATUS_OTP_PARTITION_ERROR_BIT,
+bitflags! {
+    /// Bits of the lc_ctrl.TRANSITION_REGWEN register, aka [LcCtrlReg::TransitionRegwen].
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+    pub struct LcCtrlTransitionRegwen: u32 {
+        const TRANSITION_REGWEN = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_REGWEN_TRANSITION_REGWEN_BIT;
+    }
 }
-impl LcBit for LcCtrlStatusBit {}
 
-/// Bits of the lc_ctrl.TRANSITION_REGWEN register, aka [LcCtrlReg::TransitionRegwen].
-#[derive(IntoPrimitive, Clone, Debug)]
-#[repr(u32)]
-pub enum LcCtrlTransitionRegwenBit {
-    TransitionRegwen = bindgen::dif::LC_CTRL_TRANSITION_REGWEN_TRANSITION_REGWEN_BIT,
+bitflags! {
+    /// Bits of the lc_ctrl.TRANSITION_CMD register, aka [LcCtrlReg::TransitionCmd].
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+    pub struct LcCtrlTransitionCmd: u32 {
+        const START = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_CMD_START_BIT;
+    }
 }
-impl LcBit for LcCtrlTransitionRegwenBit {}
 
-/// Bits of the lc_ctrl.TRANSITION_CMD register, aka [LcCtrlReg::TransitionCmd].
-#[derive(IntoPrimitive, Clone, Debug)]
-#[repr(u32)]
-pub enum LcCtrlTransitionCmdBit {
-    Start = bindgen::dif::LC_CTRL_TRANSITION_CMD_START_BIT,
+bitflags! {
+    /// Bits of the lc_ctrl.TRANSITION_CTRL register, aka [LcCtrlReg::TransitionCtrl].
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+    pub struct LcCtrlTransitionCtrl: u32 {
+        const EXT_CLOCK_EN = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT;
+    }
 }
-impl LcBit for LcCtrlTransitionCmdBit {}
-
-/// Bits of the lc_ctrl.TRANSITION_CTRL register, aka [LcCtrlReg::TransitionCtrl].
-#[derive(IntoPrimitive, Clone, Debug)]
-#[repr(u32)]
-pub enum LcCtrlTransitionCtrlBit {
-    ExtClockEn = bindgen::dif::LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT,
-}
-impl LcBit for LcCtrlTransitionCtrlBit {}
 
 #[cfg(test)]
 mod tests {
@@ -245,12 +238,19 @@ mod tests {
     }
 
     #[test]
-    fn lc_bit_union() {
-        assert_eq!(LcBit::union([] as [LcCtrlStatusBit; 0]), 0);
-        assert_eq!(LcBit::union([LcCtrlStatusBit::Initialized]), 1);
+    fn lc_status_bits() {
+        assert_eq!(LcCtrlStatus::empty(), LcCtrlStatus::from_bits_truncate(0));
         assert_eq!(
-            LcBit::union([LcCtrlStatusBit::Initialized, LcCtrlStatusBit::Ready]),
-            3
+            LcCtrlStatus::INITIALIZED,
+            LcCtrlStatus::from_bits_truncate(1)
         );
+        assert_eq!(
+            LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY,
+            LcCtrlStatus::from_bits_truncate(3)
+        );
+
+        let ready = LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY;
+        assert!(ready.contains(LcCtrlStatus::READY));
+        assert!(!ready.contains(LcCtrlStatus::TRANSITION_SUCCESSFUL));
     }
 }

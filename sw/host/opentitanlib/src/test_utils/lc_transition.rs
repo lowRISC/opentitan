@@ -13,8 +13,7 @@ use thiserror::Error;
 use crate::app::TransportWrapper;
 use crate::chip::boolean::MultiBitBool8;
 use crate::dif::lc_ctrl::{
-    DifLcCtrlState, LcBit, LcCtrlReg, LcCtrlStatusBit, LcCtrlTransitionCmdBit,
-    LcCtrlTransitionCtrlBit,
+    DifLcCtrlState, LcCtrlReg, LcCtrlStatus, LcCtrlTransitionCmd, LcCtrlTransitionCtrl,
 };
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, JtagTap};
@@ -23,7 +22,7 @@ use crate::io::jtag::{Jtag, JtagTap};
 #[derive(Error, Debug, Deserialize, Serialize)]
 pub enum LcTransitionError {
     #[error("LC controller not ready to perform an LC transition (status: {0:x}).")]
-    LcCtrlNotReady(u32),
+    LcCtrlNotReady(LcCtrlStatus),
     #[error("LC transition mutex was already claimed.")]
     MutexAlreadyClaimed,
     #[error("Failed to claim LC transition mutex.")]
@@ -31,9 +30,11 @@ pub enum LcTransitionError {
     #[error("LC transition target programming failed (target state: {0:x}).")]
     TargetProgrammingFailed(u32),
     #[error("LC transition failed (status: {0:x}).")]
-    TransitionFailed(u32),
+    TransitionFailed(LcCtrlStatus),
     #[error("Bad post transition LC state: {0:x}.")]
     BadPostTransitionState(u32),
+    #[error("Invalid LC state: {0:x}")]
+    InvalidState(u32),
     #[error("Generic error {0}")]
     Generic(String),
 }
@@ -47,11 +48,10 @@ pub fn trigger_lc_transition(
     reset_delay: Duration,
 ) -> Result<()> {
     // Check the lc_ctrl is initialized and ready to accept a transition request.
-    let lc_status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
-    let expected_lc_status =
-        LcCtrlStatusBit::union([LcCtrlStatusBit::Initialized, LcCtrlStatusBit::Ready]);
-    if lc_status != expected_lc_status {
-        return Err(LcTransitionError::LcCtrlNotReady(lc_status).into());
+    let status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
+    let status = LcCtrlStatus::from_bits(status).ok_or(LcTransitionError::InvalidState(status))?;
+    if status != LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY {
+        return Err(LcTransitionError::LcCtrlNotReady(status).into());
     }
 
     // Check the LC transition mutex has not been claimed yet.
@@ -90,31 +90,27 @@ pub fn trigger_lc_transition(
     if use_external_clk {
         jtag.write_lc_ctrl_reg(
             &LcCtrlReg::TransitionCtrl,
-            LcCtrlTransitionCtrlBit::union([LcCtrlTransitionCtrlBit::ExtClockEn]),
+            LcCtrlTransitionCtrl::EXT_CLOCK_EN.bits(),
         )?;
     } else {
         jtag.write_lc_ctrl_reg(&LcCtrlReg::TransitionCtrl, 0)?;
     }
 
     // Initiate LC transition and poll status register until transition is completed.
-    jtag.write_lc_ctrl_reg(
-        &LcCtrlReg::TransitionCmd,
-        LcCtrlTransitionCmdBit::union([LcCtrlTransitionCmdBit::Start]),
-    )?;
+    jtag.write_lc_ctrl_reg(&LcCtrlReg::TransitionCmd, LcCtrlTransitionCmd::START.bits())?;
     let one_millis = Duration::from_millis(1);
     loop {
         let status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
-        if (status & LcCtrlStatusBit::union([LcCtrlStatusBit::TransitionSuccessful])) != 0 {
+        let status =
+            LcCtrlStatus::from_bits(status).ok_or(LcTransitionError::InvalidState(status))?;
+
+        if status.contains(LcCtrlStatus::TRANSITION_SUCCESSFUL) {
             break;
         }
-        if (status
-            & !LcCtrlStatusBit::union([
-                LcCtrlStatusBit::Initialized,
-                LcCtrlStatusBit::Ready,
-                LcCtrlStatusBit::TransitionSuccessful,
-            ]))
-            != 0
-        {
+
+        let expected_status =
+            LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY | LcCtrlStatus::TRANSITION_SUCCESSFUL;
+        if status != expected_status {
             return Err(LcTransitionError::TransitionFailed(status).into());
         }
         thread::sleep(one_millis);
