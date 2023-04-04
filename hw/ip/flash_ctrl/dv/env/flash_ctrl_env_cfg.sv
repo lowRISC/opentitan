@@ -1135,4 +1135,42 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     end
   endfunction // get_part
 
+  virtual function void load_otf_mem_page(flash_dv_part_e part,
+                                          int bank,
+                                          int page);
+    addr_t addr;
+    addr[OTFBankId-1:11] = page;
+    for (int i = 0; i < 256; i++) begin
+      update_otf_mem_read_zone(part, bank, addr);
+      addr += 8;
+    end
+  endfunction : load_otf_mem_page
+
+  function void update_otf_mem_read_zone(flash_dv_part_e part, int bank, addr_t addr);
+    flash_otf_item item;
+    int page;
+     bit [BankAddrW-1:0] mem_addr;
+
+    `uvm_create_obj(flash_otf_item, item)
+    item.dq.push_back($urandom());
+    item.dq.push_back($urandom());
+    if (part == FlashPartData) begin
+      addr[OTFBankId] = bank;
+      page = addr2page(addr);
+      item.region = get_region(page, 0);
+      // back to per bank addr
+      addr[OTFBankId] = 0;
+    end else begin
+      page = addr2page(addr);
+      item.region = get_region_from_info(mp_info[bank][part>>1][page]);
+    end
+    item.page = page;
+    item.scramble(otp_addr_key, otp_data_key, addr, 0);
+    mem_bkdr_util_h[part][bank].write(addr, item.fq[0]);
+    // address should be mem_addr
+    mem_addr = addr >> 3;
+    if (part == FlashPartData) otf_scb_h.data_mem[bank][mem_addr] = item.fq[0];
+    else otf_scb_h.info_mem[bank][part>>1][mem_addr] = item.fq[0];
+  endfunction : update_otf_mem_read_zone
+
 endclass

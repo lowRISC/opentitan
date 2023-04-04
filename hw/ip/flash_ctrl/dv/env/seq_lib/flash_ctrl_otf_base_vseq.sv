@@ -1222,44 +1222,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
      if (!in_err) wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
    endtask
 
-  function void update_otf_mem_read_zone(flash_dv_part_e part, int bank, addr_t addr);
-    flash_otf_item item;
-    int page;
-     bit [BankAddrW-1:0] mem_addr;
-
-    `uvm_create_obj(flash_otf_item, item)
-    item.dq.push_back($urandom());
-    item.dq.push_back($urandom());
-    if (part == FlashPartData) begin
-      addr[OTFBankId] = bank;
-      page = cfg.addr2page(addr);
-      item.region = cfg.get_region(page, 0);
-      // back to per bank addr
-      addr[OTFBankId] = 0;
-    end else begin
-      page = cfg.addr2page(addr);
-      item.region = cfg.get_region_from_info(cfg.mp_info[bank][part>>1][page]);
-    end
-    item.page = page;
-    item.scramble(otp_addr_key, otp_data_key, addr, 0);
-    cfg.mem_bkdr_util_h[part][bank].write(addr, item.fq[0]);
-    // address should be mem_addr
-     mem_addr = addr >> 3;
-    if (part == FlashPartData) cfg.otf_scb_h.data_mem[bank][mem_addr] = item.fq[0];
-    else cfg.otf_scb_h.info_mem[bank][part>>1][mem_addr] = item.fq[0];
-  endfunction // update_otf_mem_read_zone
-
-  function void load_otf_mem_page(flash_dv_part_e part,
-                                  int bank,
-                                  int page);
-    addr_t addr;
-    addr[OTFBankId-1:11] = page;
-    for (int i = 0; i < 256; i++) begin
-      update_otf_mem_read_zone(part, bank, addr);
-      addr += 8;
-    end
-  endfunction // load_otf_mem_page
-
   // Update rd / dr tgt of the memory with their page profile
   function void flash_otf_mem_read_zone_init();
     // 8byte aligned
@@ -1281,7 +1243,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
           // data partition 2 banks
           for (int i = 0; i < 2; i++) begin
             for (addr_t addr = st_addr; addr <= ed_addr; addr += 8) begin
-              update_otf_mem_read_zone(part, i, addr);
+              cfg.update_otf_mem_read_zone(part, i, addr);
             end
             `uvm_info("flash_otf_init",
                       $sformatf("part:%s pre:%s bank:%0d st:%x ed:%x",
@@ -1298,7 +1260,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
             ed_addr = st_addr + 511; // 0x1FF
             for (int i = 0; i < 2; i++) begin
               for (addr_t addr = st_addr; addr <= ed_addr; addr += 8) begin
-                update_otf_mem_read_zone(part, i, addr);
+                cfg.update_otf_mem_read_zone(part, i, addr);
               end
             end
             `uvm_info("flash_otf_init",

@@ -128,7 +128,6 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
               cfg.clk_rst_vif.wait_clks(10);
             end
             `uvm_info(`gfn, "RESET", UVM_LOW)
-            cfg.seq_cfg.disable_flash_init = 1;
             // Enable secret seed at the beginning of the loop
             cfg.seq_cfg.en_init_keys_seeds = 0;
             cfg.flash_ctrl_vif.rma_req = lc_ctrl_pkg::Off;
