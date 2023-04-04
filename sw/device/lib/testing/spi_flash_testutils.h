@@ -200,10 +200,11 @@ status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
  *                Note that an address + length that crosses a page boundary may
  *                wrap around to the start of the page.
  * @param addr_is_4b True if `address` is 4 bytes long, else 3 bytes.
+ * @return status_t containing either OK or an error.
  */
-void spi_flash_testutils_program_page(dif_spi_host_t *spih, const void *payload,
-                                      size_t length, uint32_t address,
-                                      bool addr_is_4b);
+status_t spi_flash_testutils_program_page(dif_spi_host_t *spih,
+                                          const void *payload, size_t length,
+                                          uint32_t address, bool addr_is_4b);
 
 /**
  * Perform a read via the requested opcode.

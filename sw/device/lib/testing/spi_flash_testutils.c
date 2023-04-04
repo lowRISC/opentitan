@@ -252,12 +252,11 @@ status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
   return spi_flash_testutils_wait_until_not_busy(spih);
 }
 
-void spi_flash_testutils_program_page(dif_spi_host_t *spih, const void *payload,
-                                      size_t length, uint32_t address,
-                                      bool addr_is_4b) {
-  CHECK_STATUS_OK(
-      spi_flash_testutils_program_op(spih, kSpiDeviceFlashOpPageProgram,
-                                     payload, length, address, addr_is_4b));
+status_t spi_flash_testutils_program_page(dif_spi_host_t *spih,
+                                          const void *payload, size_t length,
+                                          uint32_t address, bool addr_is_4b) {
+  return spi_flash_testutils_program_op(spih, kSpiDeviceFlashOpPageProgram,
+                                        payload, length, address, addr_is_4b);
 }
 
 void spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,

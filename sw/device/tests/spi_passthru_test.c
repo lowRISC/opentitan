@@ -127,8 +127,8 @@ status_t spi_flash_write(ujson_t *uj, dif_spi_host_t *spih,
     return INVALID_ARGUMENT();
   }
 
-  spi_flash_testutils_program_page(spih, op.data, op.length, op.address,
-                                   op.addr4b);
+  TRY(spi_flash_testutils_program_page(spih, op.data, op.length, op.address,
+                                       op.addr4b));
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleEnabled));
   return RESP_OK_STATUS(uj);
 }
