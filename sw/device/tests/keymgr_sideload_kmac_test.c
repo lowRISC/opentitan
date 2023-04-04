@@ -61,9 +61,9 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   CHECK_STATUS_OK(kmac_testutils_config(kmac, false));
 
   uint32_t output[kKmacOutputLen];
-  kmac_testutils_kmac(kmac, kKmacMode, &kSoftwareKey, kCustomString,
-                      kCustomStringLen, kKmacMessage, kKmacMessageLen,
-                      kKmacOutputLen, output);
+  CHECK_STATUS_OK(kmac_testutils_kmac(
+      kmac, kKmacMode, &kSoftwareKey, kCustomString, kCustomStringLen,
+      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output));
   LOG_INFO("Computed KMAC output for software key.");
 
   // Check that the output matches the expected output.
@@ -79,9 +79,9 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
       keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for Kmac at OwnerIntKey State");
 
-  kmac_testutils_kmac(kmac, kKmacMode, &kSoftwareKey, kCustomString,
-                      kCustomStringLen, kKmacMessage, kKmacMessageLen,
-                      kKmacOutputLen, output);
+  CHECK_STATUS_OK(kmac_testutils_kmac(
+      kmac, kKmacMode, &kSoftwareKey, kCustomString, kCustomStringLen,
+      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output));
   LOG_INFO("Computed KMAC output for sideloaded key.");
 
   if (kDeviceType == kDeviceSimDV) {
@@ -101,9 +101,9 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   CHECK_DIF_OK(
       dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleDisabled));
 
-  kmac_testutils_kmac(kmac, kKmacMode, &kSoftwareKey, kCustomString,
-                      kCustomStringLen, kKmacMessage, kKmacMessageLen,
-                      kKmacOutputLen, output);
+  CHECK_STATUS_OK(kmac_testutils_kmac(
+      kmac, kKmacMode, &kSoftwareKey, kCustomString, kCustomStringLen,
+      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output));
   LOG_INFO("Computed KMAC output for software key (for inequality check.)");
 
   // Verify that KMAC output is not equal to the one the from the sideload.
@@ -115,9 +115,9 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
       keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr regenerated HW output for Kmac at OwnerIntKey State");
 
-  kmac_testutils_kmac(kmac, kKmacMode, &kSoftwareKey, kCustomString,
-                      kCustomStringLen, kKmacMessage, kKmacMessageLen,
-                      kKmacOutputLen, output);
+  CHECK_STATUS_OK(kmac_testutils_kmac(
+      kmac, kKmacMode, &kSoftwareKey, kCustomString, kCustomStringLen,
+      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output));
   LOG_INFO("Re-computed KMAC output for sideloaded key.");
 
   if (kDeviceType == kDeviceSimDV) {
