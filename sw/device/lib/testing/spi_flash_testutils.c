@@ -115,9 +115,9 @@ status_t spi_flash_testutils_read_status(dif_spi_host_t *spih, uint8_t opcode,
 
 status_t spi_flash_testutils_write_status(dif_spi_host_t *spih, uint8_t opcode,
                                           uint32_t status, size_t length) {
-  CHECK(spih != NULL);
-  CHECK(length <= 3);
-  spi_flash_testutils_issue_write_enable(spih);
+  TRY_CHECK(spih != NULL);
+  TRY_CHECK(length <= 3);
+  TRY(spi_flash_testutils_issue_write_enable(spih));
   dif_spi_host_segment_t transaction[] = {
       {
           .type = kDifSpiHostSegmentTypeOpcode,
@@ -149,7 +149,7 @@ status_t spi_flash_testutils_wait_until_not_busy(dif_spi_host_t *spih) {
   return OK_STATUS();
 }
 
-void spi_flash_testutils_issue_write_enable(dif_spi_host_t *spih) {
+status_t spi_flash_testutils_issue_write_enable(dif_spi_host_t *spih) {
   CHECK(spih != NULL);
   dif_spi_host_segment_t transaction[] = {
       {
@@ -157,13 +157,14 @@ void spi_flash_testutils_issue_write_enable(dif_spi_host_t *spih) {
           .opcode = kSpiDeviceFlashOpWriteEnable,
       },
   };
-  CHECK_DIF_OK(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
-                                        ARRAYSIZE(transaction)));
+  TRY(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
+                               ARRAYSIZE(transaction)));
+  return OK_STATUS();
 }
 
 void spi_flash_testutils_erase_chip(dif_spi_host_t *spih) {
   CHECK(spih != NULL);
-  spi_flash_testutils_issue_write_enable(spih);
+  CHECK_STATUS_OK(spi_flash_testutils_issue_write_enable(spih));
 
   dif_spi_host_segment_t transaction[] = {
       {
@@ -179,7 +180,7 @@ void spi_flash_testutils_erase_chip(dif_spi_host_t *spih) {
 void spi_flash_testutils_erase_op(dif_spi_host_t *spih, uint8_t opcode,
                                   uint32_t address, bool addr_is_4b) {
   CHECK(spih != NULL);
-  spi_flash_testutils_issue_write_enable(spih);
+  CHECK_STATUS_OK(spi_flash_testutils_issue_write_enable(spih));
 
   dif_spi_host_addr_mode_t addr_mode =
       addr_is_4b ? kDifSpiHostAddrMode4b : kDifSpiHostAddrMode3b;
@@ -217,7 +218,7 @@ void spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
   CHECK(payload != NULL);
   CHECK(length <= 256);  // Length must be less than a page size.
 
-  spi_flash_testutils_issue_write_enable(spih);
+  CHECK_STATUS_OK(spi_flash_testutils_issue_write_enable(spih));
 
   dif_spi_host_addr_mode_t addr_mode =
       addr_is_4b ? kDifSpiHostAddrMode4b : kDifSpiHostAddrMode3b;

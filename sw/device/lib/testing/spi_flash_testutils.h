@@ -112,8 +112,11 @@ status_t spi_flash_testutils_wait_until_not_busy(dif_spi_host_t *spih);
 
 /**
  * Issue the Write Enable command to the downstream SPI flash.
+ *
+ * @param spih A SPI host handle.
+ * @return status_t containing either OK or an error.
  */
-void spi_flash_testutils_issue_write_enable(dif_spi_host_t *spih);
+status_t spi_flash_testutils_issue_write_enable(dif_spi_host_t *spih);
 
 /**
  * Perform full Chip Erase sequence, including the Write Enable and Chip Erase
