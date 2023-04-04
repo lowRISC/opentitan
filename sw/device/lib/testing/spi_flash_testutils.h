@@ -141,9 +141,10 @@ status_t spi_flash_testutils_erase_chip(dif_spi_host_t *spih);
  * @param opcode The desired erase opcode.
  * @param address An address contained within the desired sector.
  * @param addr_is_4b True if `address` is 4 bytes long, else 3 bytes.
+ * @return status_t containing either OK or an error.
  */
-void spi_flash_testutils_erase_op(dif_spi_host_t *spih, uint8_t opcode,
-                                  uint32_t address, bool addr_is_4b);
+status_t spi_flash_testutils_erase_op(dif_spi_host_t *spih, uint8_t opcode,
+                                      uint32_t address, bool addr_is_4b);
 
 /**
  * Perform full Sector Erase sequence via the standard Sector Erase opcode.

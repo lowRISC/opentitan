@@ -177,10 +177,10 @@ status_t spi_flash_testutils_erase_chip(dif_spi_host_t *spih) {
   return spi_flash_testutils_wait_until_not_busy(spih);
 }
 
-void spi_flash_testutils_erase_op(dif_spi_host_t *spih, uint8_t opcode,
-                                  uint32_t address, bool addr_is_4b) {
-  CHECK(spih != NULL);
-  CHECK_STATUS_OK(spi_flash_testutils_issue_write_enable(spih));
+status_t spi_flash_testutils_erase_op(dif_spi_host_t *spih, uint8_t opcode,
+                                      uint32_t address, bool addr_is_4b) {
+  TRY_CHECK(spih != NULL);
+  TRY(spi_flash_testutils_issue_write_enable(spih));
 
   dif_spi_host_addr_mode_t addr_mode =
       addr_is_4b ? kDifSpiHostAddrMode4b : kDifSpiHostAddrMode3b;
@@ -199,16 +199,16 @@ void spi_flash_testutils_erase_op(dif_spi_host_t *spih, uint8_t opcode,
               },
       },
   };
-  CHECK_DIF_OK(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
-                                        ARRAYSIZE(transaction)));
+  TRY(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
+                               ARRAYSIZE(transaction)));
 
-  CHECK_STATUS_OK(spi_flash_testutils_wait_until_not_busy(spih));
+  return spi_flash_testutils_wait_until_not_busy(spih);
 }
 
 void spi_flash_testutils_erase_sector(dif_spi_host_t *spih, uint32_t address,
                                       bool addr_is_4b) {
-  spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpSectorErase, address,
-                               addr_is_4b);
+  CHECK_STATUS_OK(spi_flash_testutils_erase_op(
+      spih, kSpiDeviceFlashOpSectorErase, address, addr_is_4b));
 }
 
 void spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
