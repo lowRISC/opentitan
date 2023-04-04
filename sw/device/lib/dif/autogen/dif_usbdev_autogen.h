@@ -159,9 +159,9 @@ typedef enum dif_usbdev_irq {
   kDifUsbdevIrqPowered = 15,
   /**
    * Raised if a packet to an OUT endpoint started to be received but was then
-   * dropped due to an error. This error is raised if either the data toggle,
-   * token, packet or CRC is invalid or if there is no buffer available in the
-   * Received Buffer FIFO.
+   * dropped due to an error. This error is raised if the data toggle, token,
+   * packet and/or CRC are invalid, if the Available Buffer FIFO is empty or if
+   * the Received Buffer FIFO is full.
    */
   kDifUsbdevIrqLinkOutErr = 16,
 } dif_usbdev_irq_t;

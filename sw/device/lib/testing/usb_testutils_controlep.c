@@ -106,7 +106,7 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
   // Endpoint for SetFeature/ClearFeature/GetStatus requests
   dif_usbdev_endpoint_id_t endpoint = {
       .number = (uint8_t)wIndex,
-      .direction = bmRequestType & 0x80,
+      .direction = ((bmRequestType & 0x80U) != 0U),
   };
   dif_usbdev_buffer_t buffer;
   CHECK_DIF_OK(dif_usbdev_buffer_request(ctx->dev, ctx->buffer_pool, &buffer));
@@ -321,7 +321,7 @@ static void ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
                                               kDifToggleEnabled));
 
   TRC_C('0' + ctctx->ctrlstate);
-  uint32_t bytes_written;
+  size_t bytes_written;
   // TODO: Should check for canceled IN transactions due to receiving a SETUP
   // packet.
   switch (ctctx->ctrlstate) {

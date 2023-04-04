@@ -161,7 +161,7 @@ void usb_testutils_poll(usb_testutils_ctx_t *ctx) {
       } else {
         // Note: this could happen following endpoint removal
         TRC_S("USB: unexpected RX ");
-        TRC_I(endpoint, 8);
+        TRC_I(ep, 8);
         CHECK_DIF_OK(
             dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
       }
