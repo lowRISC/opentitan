@@ -156,7 +156,7 @@ function getStageStatus(stage) {
  * @returns {string} The `status[1234]` class corresponding to this percentage.
  */
 function getPassingStatus(passing) {
-    if (passing <= 45) {
+    if (passing < 50) {
         return "status1";
     } else if (passing <= 90) {
         return "status2";
