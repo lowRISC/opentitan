@@ -5,9 +5,12 @@ This guide will help you get OpenTitan up and running.
 
 ## Workflow Options
 
-An important preliminary note: to run OpenTitan software, you will need to not only build the software but somehow simulate the hardware it runs on.
-As shown in the diagram below, we currently support multiple build targets and workflows, including: Verilator, FPGA, and DV (commercial RTL simulators, such as VCS and Xcelium).
-**However, if you are new to the project, we recommend simulation with Verilator.**
+An important preliminary note: to run OpenTitan software, you won't just need to build the software itself.
+You'll also need to somehow simulate the hardware it runs on.
+We currently support multiple build targets and workflows, shown in the diagram below.
+These include: Verilator, FPGA, and DV (commercial RTL simulators, such as VCS and Xcelium).
+
+**If you are new to the project, we recommend simulation with Verilator.**
 This uses only free tools, and does not require any additional hardware such as an FPGA.
 
 ![Getting Started Workflow](getting_started_workflow.svg)
