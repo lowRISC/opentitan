@@ -46,7 +46,7 @@ Verilator 4.210 2021-07-07 rev v4.210 (mod)
 
 If you need to install to a different location than `/tools/verilator/...`, you can pass a different directory to `./configure --prefix` above and add `your/install/location/bin` to `PATH` instead.
 
-## Running Software on a Verilator Simulation with Bazel
+## Use Bazel to run software on a verilator simulation
 
 First the RTL must be built into a simulator binary.
 This is done by running fusesoc, which collects up RTL code and passes it to Verilator to generate and then compile a C++ model.
