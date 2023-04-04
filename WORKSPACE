@@ -91,6 +91,10 @@ coremark_repos()
 load("//third_party/xkcp:repos.bzl", "xkcp_repos")
 xkcp_repos()
 
+# Binary firmware images for hyperdebug
+load("//third_party/hyperdebug:repos.bzl", "hyperdebug_repos")
+hyperdebug_repos()
+
 # Bitstreams from https://storage.googleapis.com/opentitan-bitstreams/
 load("//rules:bitstreams.bzl", "bitstreams_repo")
 bitstreams_repo(name = "bitstreams")
@@ -109,11 +113,3 @@ hooks_repo(name = "manufacturer_test_hooks")
 # The nonhermetic_repo imports environment variables needed to run vivado.
 load("//rules:nonhermetic.bzl", "nonhermetic_repo")
 nonhermetic_repo(name = "nonhermetic")
-
-# Binary firmware image for HyperDebug
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
-http_file(
-    name = "hyperdebug_firmware",
-    urls = ["https://storage.googleapis.com/aoa-recovery-test-images/hyperdebug_v2.0.20634-ee78d5668.bin"],
-    sha256 = "c72c418bc56d673d4106af9a0973c6e4268d09fb18d363e7ad336a877a127be9",
-)
