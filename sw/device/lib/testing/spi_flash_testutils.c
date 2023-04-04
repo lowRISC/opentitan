@@ -138,15 +138,15 @@ status_t spi_flash_testutils_write_status(dif_spi_host_t *spih, uint8_t opcode,
   return OK_STATUS();
 }
 
-void spi_flash_testutils_wait_until_not_busy(dif_spi_host_t *spih) {
-  CHECK(spih != NULL);
-  status_t status;
+status_t spi_flash_testutils_wait_until_not_busy(dif_spi_host_t *spih) {
+  TRY_CHECK(spih != NULL);
+  uint32_t status;
 
   do {
-    status =
-        spi_flash_testutils_read_status(spih, kSpiDeviceFlashOpReadStatus1, 1);
-    CHECK_STATUS_OK(status);
-  } while (status.value & kSpiFlashStatusBitWip);
+    status = TRY(
+        spi_flash_testutils_read_status(spih, kSpiDeviceFlashOpReadStatus1, 1));
+  } while (status & kSpiFlashStatusBitWip);
+  return OK_STATUS();
 }
 
 void spi_flash_testutils_issue_write_enable(dif_spi_host_t *spih) {
@@ -173,7 +173,7 @@ void spi_flash_testutils_erase_chip(dif_spi_host_t *spih) {
   };
   CHECK_DIF_OK(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
                                         ARRAYSIZE(transaction)));
-  spi_flash_testutils_wait_until_not_busy(spih);
+  CHECK_STATUS_OK(spi_flash_testutils_wait_until_not_busy(spih));
 }
 
 void spi_flash_testutils_erase_op(dif_spi_host_t *spih, uint8_t opcode,
@@ -201,7 +201,7 @@ void spi_flash_testutils_erase_op(dif_spi_host_t *spih, uint8_t opcode,
   CHECK_DIF_OK(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
                                         ARRAYSIZE(transaction)));
 
-  spi_flash_testutils_wait_until_not_busy(spih);
+  CHECK_STATUS_OK(spi_flash_testutils_wait_until_not_busy(spih));
 }
 
 void spi_flash_testutils_erase_sector(dif_spi_host_t *spih, uint32_t address,
@@ -248,7 +248,7 @@ void spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
   CHECK_DIF_OK(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
                                         ARRAYSIZE(transaction)));
 
-  spi_flash_testutils_wait_until_not_busy(spih);
+  CHECK_STATUS_OK(spi_flash_testutils_wait_until_not_busy(spih));
 }
 
 void spi_flash_testutils_program_page(dif_spi_host_t *spih, const void *payload,

@@ -104,8 +104,11 @@ status_t spi_flash_testutils_write_status(dif_spi_host_t *spih, uint8_t opcode,
 /**
  * Spin wait until a Read Status command shows the downstream SPI flash is no
  * longer busy.
+ *
+ * @param spih A SPI host handle.
+ * @return status_t containing either OK or an error.
  */
-void spi_flash_testutils_wait_until_not_busy(dif_spi_host_t *spih);
+status_t spi_flash_testutils_wait_until_not_busy(dif_spi_host_t *spih);
 
 /**
  * Issue the Write Enable command to the downstream SPI flash.
