@@ -90,8 +90,8 @@ status_t spi_flash_testutils_read_sfdp(dif_spi_host_t *spih, uint32_t address,
 
 status_t spi_flash_testutils_read_status(dif_spi_host_t *spih, uint8_t opcode,
                                          size_t length) {
-  CHECK(spih != NULL);
-  CHECK(length <= 3);
+  TRY_CHECK(spih != NULL);
+  TRY_CHECK(length <= 3);
   uint32_t status;
   dif_spi_host_segment_t transaction[] = {
       {
@@ -150,7 +150,7 @@ status_t spi_flash_testutils_wait_until_not_busy(dif_spi_host_t *spih) {
 }
 
 status_t spi_flash_testutils_issue_write_enable(dif_spi_host_t *spih) {
-  CHECK(spih != NULL);
+  TRY_CHECK(spih != NULL);
   dif_spi_host_segment_t transaction[] = {
       {
           .type = kDifSpiHostSegmentTypeOpcode,
