@@ -77,12 +77,12 @@ status_t test_chip_erase(void) {
 
   // Check that the first page of flash actually got erased.
   uint8_t buf[256] = {0};
-  spi_flash_testutils_read_op(&spi_host, kSpiDeviceFlashOpReadNormal, buf,
-                              sizeof(buf),
-                              /*address=*/0,
-                              /*addr_is_4b=*/false,
-                              /*width=*/1,
-                              /*dummy=*/0);
+  TRY(spi_flash_testutils_read_op(&spi_host, kSpiDeviceFlashOpReadNormal, buf,
+                                  sizeof(buf),
+                                  /*address=*/0,
+                                  /*addr_is_4b=*/false,
+                                  /*width=*/1,
+                                  /*dummy=*/0));
   uint8_t expected[256];
   memset(expected, 0xFF, sizeof(expected));
   CHECK_ARRAYS_EQ(buf, expected, ARRAYSIZE(expected));
@@ -106,11 +106,11 @@ status_t test_page_program(void) {
                                    /*address=*/0, /*addr_is_4b=*/0);
 
   uint8_t buf[256];
-  spi_flash_testutils_read_op(&spi_host, kSpiDeviceFlashOpReadNormal, buf,
-                              sizeof(buf), 0,
-                              /*addr_is_4b=*/false,
-                              /*width=*/1,
-                              /*dummy=*/0);
+  TRY(spi_flash_testutils_read_op(&spi_host, kSpiDeviceFlashOpReadNormal, buf,
+                                  sizeof(buf), 0,
+                                  /*addr_is_4b=*/false,
+                                  /*width=*/1,
+                                  /*dummy=*/0));
   CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
   return OK_STATUS();
 }
@@ -118,11 +118,11 @@ status_t test_page_program(void) {
 // Read the flash device using the "fast read" opcode.
 status_t test_fast_read(void) {
   uint8_t buf[256];
-  spi_flash_testutils_read_op(&spi_host, kSpiDeviceFlashOpReadFast, buf,
-                              sizeof(buf), 0,
-                              /*addr_is_4b=*/false,
-                              /*width=*/1,
-                              /*dummy=*/8);
+  TRY(spi_flash_testutils_read_op(&spi_host, kSpiDeviceFlashOpReadFast, buf,
+                                  sizeof(buf), 0,
+                                  /*addr_is_4b=*/false,
+                                  /*width=*/1,
+                                  /*dummy=*/8));
   CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
   return OK_STATUS();
 }
@@ -130,11 +130,11 @@ status_t test_fast_read(void) {
 // Read the flash device using the "fast dual read" opcode.
 status_t test_dual_read(void) {
   uint8_t buf[256];
-  spi_flash_testutils_read_op(&spi_host, kSpiDeviceFlashOpReadDual, buf,
-                              sizeof(buf), 0,
-                              /*addr_is_4b=*/false,
-                              /*width=*/2,
-                              /*dummy=*/8);
+  TRY(spi_flash_testutils_read_op(&spi_host, kSpiDeviceFlashOpReadDual, buf,
+                                  sizeof(buf), 0,
+                                  /*addr_is_4b=*/false,
+                                  /*width=*/2,
+                                  /*dummy=*/8));
   CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
   return OK_STATUS();
 }
@@ -142,11 +142,11 @@ status_t test_dual_read(void) {
 // Read the flash device using the "fast quad read" opcode.
 status_t test_quad_read(void) {
   uint8_t buf[256];
-  spi_flash_testutils_read_op(&spi_host, kSpiDeviceFlashOpReadQuad, buf,
-                              sizeof(buf), 0,
-                              /*addr_is_4b=*/false,
-                              /*width=*/4,
-                              /*dummy=*/8);
+  TRY(spi_flash_testutils_read_op(&spi_host, kSpiDeviceFlashOpReadQuad, buf,
+                                  sizeof(buf), 0,
+                                  /*addr_is_4b=*/false,
+                                  /*width=*/4,
+                                  /*dummy=*/8));
   CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
   return OK_STATUS();
 }

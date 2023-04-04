@@ -218,10 +218,12 @@ status_t spi_flash_testutils_program_page(dif_spi_host_t *spih,
  * @param addr_is_4b True if `address` is 4 bytes long, else 3 bytes.
  * @param width The width of the read (1, 2 or 4 bits).
  * @param dummy The number of dummy cycles required after the address phase.
+ * @return status_t containing either OK or an error.
  */
-void spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
-                                 void *payload, size_t length, uint32_t address,
-                                 bool addr_is_4b, uint8_t width, uint8_t dummy);
+status_t spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
+                                     void *payload, size_t length,
+                                     uint32_t address, bool addr_is_4b,
+                                     uint8_t width, uint8_t dummy);
 
 /**
  * Enable or disable Quad mode on the EEPROM according to the SFDP-described
