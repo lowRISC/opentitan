@@ -10,10 +10,10 @@
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-void spi_flash_testutils_read_id(dif_spi_host_t *spih,
-                                 spi_flash_testutils_jedec_id_t *id) {
-  CHECK(spih != NULL);
-  CHECK(id != NULL);
+status_t spi_flash_testutils_read_id(dif_spi_host_t *spih,
+                                     spi_flash_testutils_jedec_id_t *id) {
+  TRY_CHECK(spih != NULL);
+  TRY_CHECK(id != NULL);
 
   uint8_t buffer[32];
   dif_spi_host_segment_t transaction[] = {
@@ -31,18 +31,19 @@ void spi_flash_testutils_read_id(dif_spi_host_t *spih,
               },
       },
   };
-  CHECK_DIF_OK(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
-                                        ARRAYSIZE(transaction)));
+  TRY(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
+                               ARRAYSIZE(transaction)));
 
   size_t page = 0;
   while ((page < sizeof(buffer)) && (buffer[page] == 0x7fu)) {
     ++page;
   }
-  CHECK(page + 3 <= sizeof(buffer));
+  TRY_CHECK(page + 3 <= sizeof(buffer));
   id->continuation_len = page;
   id->manufacturer_id = buffer[page];
   id->device_id = buffer[page + 1];
   id->device_id |= (uint16_t)buffer[page + 2] << 8;
+  return OK_STATUS();
 }
 
 void spi_flash_testutils_read_sfdp(dif_spi_host_t *spih, uint32_t address,

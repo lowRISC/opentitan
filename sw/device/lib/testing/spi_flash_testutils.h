@@ -49,9 +49,10 @@ typedef struct spi_flash_testutils_parameter_header {
  *
  * @param spih A SPI host handle.
  * @param[out] id A pointer to where to store the ID.
+ * @return The result of the operation.
  */
-void spi_flash_testutils_read_id(dif_spi_host_t *spih,
-                                 spi_flash_testutils_jedec_id_t *id);
+status_t spi_flash_testutils_read_id(dif_spi_host_t *spih,
+                                     spi_flash_testutils_jedec_id_t *id);
 
 /**
  * Read out the SFDP from the indicated address and place the table contents
