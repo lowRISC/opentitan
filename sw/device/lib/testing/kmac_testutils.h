@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_KMAC_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_KMAC_TESTUTILS_H_
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 
 /**
@@ -17,8 +18,9 @@
  *
  * @param kmac KMAC context
  * @param sideload Whether to configure KMAC to read a sideloaded key.
+ * @return The result of the operation.
  */
-void kmac_testutils_config(dif_kmac_t *kmac, bool sideload);
+status_t kmac_testutils_config(dif_kmac_t *kmac, bool sideload);
 
 /**
  * Runs the full KMAC operation.

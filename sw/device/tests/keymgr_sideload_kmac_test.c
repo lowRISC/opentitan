@@ -58,7 +58,7 @@ OTTF_DEFINE_TEST_CONFIG();
 static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
                                           dif_kmac_t *kmac) {
   // Configure KMAC hardware (using software key and software entropy).
-  kmac_testutils_config(kmac, false);
+  CHECK_STATUS_OK(kmac_testutils_config(kmac, false));
 
   uint32_t output[kKmacOutputLen];
   kmac_testutils_kmac(kmac, kKmacMode, &kSoftwareKey, kCustomString,
@@ -70,7 +70,7 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   CHECK_ARRAYS_EQ(output, kSoftwareKeyExpectedOutput, kKmacOutputLen);
 
   // Reconfigure KMAC to use the sideloaded key.
-  kmac_testutils_config(kmac, true);
+  CHECK_STATUS_OK(kmac_testutils_config(kmac, true));
 
   // Generate the sideloaded key.
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;

@@ -123,7 +123,7 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
     // We shouldn't use the KMAC block's default entropy setting for keymgr, so
     // configure it to use software entropy (and a sideloaded key, although it
     // shouldn't matter here and tests should reconfigure if needed).
-    kmac_testutils_config(kmac, true);
+    TRY(kmac_testutils_config(kmac, true));
 
     // Initialize keymgr context.
     TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),

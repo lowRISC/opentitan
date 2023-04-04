@@ -78,7 +78,7 @@ static void init_peripherals(void) {
   // KMAC (init for Keymgr use)
   CHECK_DIF_OK(
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
-  kmac_testutils_config(&kmac, true);
+  CHECK_STATUS_OK(kmac_testutils_config(&kmac, true));
   // Keymgr
   CHECK_DIF_OK(dif_keymgr_init(
       mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));

@@ -7,7 +7,7 @@
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-void kmac_testutils_config(dif_kmac_t *kmac, bool sideload) {
+status_t kmac_testutils_config(dif_kmac_t *kmac, bool sideload) {
   dif_kmac_config_t config = {
       // Use software-provided "entropy" to avoid waiting for EDN.
       .entropy_mode = kDifKmacEntropyModeSoftware,
@@ -29,7 +29,8 @@ void kmac_testutils_config(dif_kmac_t *kmac, bool sideload) {
       .msg_mask = false,
   };
 
-  CHECK_DIF_OK(dif_kmac_configure(kmac, config));
+  TRY(dif_kmac_configure(kmac, config));
+  return OK_STATUS();
 }
 
 void kmac_testutils_kmac(const dif_kmac_t *kmac,
