@@ -243,8 +243,11 @@
           name: "FIPS_ENABLE",
           mubi: true,
           desc: '''
-                Setting this field to `kMultiBitBool4True` selects the FIPS/CC compliant mode (or short FIPS mode) in which the ENTROPY_SRC block will enable FIPS qualified entropy to be generated.
-                Setting the field to `kMultiBitBool4False` selects the boot-time / bypass mode in which the hardware conditioning is bypassed.
+                Setting this field to `kMultiBitBool4True` selects the FIPS/CC compliant mode (or short FIPS mode).
+                In this mode, the ENTROPY_SRC block can generate FIPS qualified entropy.
+                Additional requirements to generate FIPS qualified entropy are i) that at most one of the !!ENTROPY_CONTROL.ES_ROUTE and !!ENTROPY_CONTROL.ES_TYPE fields are set to `kMultiBitBool4True` but not both, and ii) that !!CONF.RNG_BIT_ENABLE is set to `kMultiBitBool4False`.
+
+                Setting this field to `kMultiBitBool4False` selects the boot-time / bypass mode in which the hardware conditioning is bypassed.
 
                 '''
           resval: false,
@@ -274,6 +277,8 @@
           mubi: true,
           desc: '''
                 Setting this field to `kMultiBitBool4True` enables the single RNG bit mode, where only one bit is sampled.
+                Note that the ENTROPY_SRC block can only generate FIPS qualified entropy if this field is set to `kMultiBitBool4False`.
+                Additional requirements to generate FIPS qualified entropy are i) that !!CONF.FIPS_ENABLE is set to `kMultiBitBool4True`, and ii) that at most one of the !!ENTROPY_CONTROL.ES_ROUTE and !!ENTROPY_CONTROL.ES_TYPE fields but not both are set to `kMultiBitBool4True`.
                 '''
           resval: false
         },
@@ -317,6 +322,9 @@
                 Setting this field to `kMultiBitBool4True` will bypass the hardware conditioning.
                 For this to work, also !!ENTROPY_CONTROL.ES_ROUTE needs to be set to `kMultiBitBool4True` to route the unconditioned, raw entropy to the !!ENTROPY_DATA register.
                 Alternatively, the hardware conditioning can be bypassed by setting !!CONF.FIPS_ENABLE to `kMultiBitBool4False` to disable FIPS mode and enable bypass / boot-time mode.
+                In both cases, the ENTROPY_SRC block will not generate FIPS qualified entropy.
+
+                To generate FIPS qualified entropy, i) !!CONF.FIPS_ENABLE needs to be set to `kMultiBitBool4True`, ii) !!CONF.RNG_BIT_ENABLE needs to be set to `kMultiBitBool4False`, and iii) at most one of the !!ENTROPY_CONTROL.ES_ROUTE and !!ENTROPY_CONTROL.ES_TYPE fields needs to be set to `kMultiBitBool4True` but not both.
                 '''
           resval: false
         },
