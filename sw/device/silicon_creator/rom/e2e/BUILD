@@ -2279,8 +2279,13 @@ SRAM_JTAG_INJECTION_GDB_SCRIPT = """
         monitor mww 0x40470024 0
 
 
+        # The Ibex core is initialized with a default ePMP configuration [3]
+        # when it starts. This configuration has no PMP entry for the RAM
+        # and mseccfg.mmwp is set to 1 so access that don't match a PMP entry will
+        # be denied.
+        #
         # Before transferring the SRAM program to the device, we must configure
-        # the PMP unit to enable writing to and executing from SRAM. Due to
+        # the PMP unit to enable reading, writing to and executing from SRAM. Due to
         # implementation details of OpenTitan's hardware debug module, we cannot
         # set pmpcfg* registers to arbitrary values [1]. However, we can safely
         # modify unused PMP configuration registers. Thankfully, pmp0cfg (the
@@ -2300,21 +2305,39 @@ SRAM_JTAG_INJECTION_GDB_SCRIPT = """
         #
         # [1]: https://github.com/lowRISC/opentitan/issues/14978
         # [2]: https://riscv.org/wp-content/uploads/2019/03/riscv-debug-release.pdf
+        # [3]: https://github.com/lowRISC/opentitan/blob/master/hw/ip/rv_core_ibex/rtl/ibex_pmp_reset.svh
 
         echo :::: Configure the PMP unit.\\n
         monitor reg pmpcfg0
         # Write "L NAPOT X W R" to pmp{0,1,2,3}cfg in pmpcfg0. Crucially, this
         # value is no less permissive than whatever the current value is.
         monitor reg pmpcfg0 0x9f9f9f9f
-        monitor reg pmpaddr0 0xffffffff
-
-        echo :::: Value of CREATOR_SW_CFG_ROM_EXEC_EN.\\n
-        monitor mdw 0x40131108
+        # This corresponds to the range 0x10000000-0x10020000
+        # hex((0x10000000 >> 2) | ((0x20000 - 1) >> 3)) = 0x4003fff
+        monitor reg pmpaddr0 0x4003fff
+        monitor reg pmpcfg0
+        monitor reg pmpaddr0
 
         echo :::: Load the SRAM program onto the device and check integrity.\\n
         file sram_program.elf
         load sram_program.elf
         compare-sections
+
+        # When setting $sp, GDB will go and read the top 64 bytes of the stack behind
+        # our back. Due to a RTL bug [1,2], if a system bus read fails, the error will
+        # be sticky and all subsequence memory operations will fail.
+        # In the present case, reading the stack could fail because memory scrambling is
+        # enabled but the stack is not initialized so mostly likely reading from it will
+        # trigger an ECC fault. This can be fixed by initializing the stack
+        #
+        # [1]: https://github.com/lowRISC/opentitan/issues/17729
+        # [2]: https://github.com/pulp-platform/riscv-dbg/issues/154
+
+        set $stack_fill_addr = _stack_end - 128
+        while ($stack_fill_addr != _stack_end)
+            set *(uint32_t *)$stack_fill_addr = 0xdeadbeef
+            set $stack_fill_addr = $stack_fill_addr + 4
+        end
 
         echo :::: Update registers before calling functions.\\n
         set $sp = _stack_end
