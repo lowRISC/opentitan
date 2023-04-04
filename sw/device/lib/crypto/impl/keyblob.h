@@ -73,17 +73,27 @@ void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
  * 20 bytes would technically fit in 5. This is to preserve word-alignment of
  * the shares.
  *
+ * Returns an error if called for an asymmetric key configuration; asymmetric
+ * keys are likely to be masked with arithmetic rather than boolean (XOR)
+ * schemes, and this function cannot be used for them.
+ *
  * @param key Plaintext key.
  * @param mask Blinding value.
  * @param config Key configuration.
  * @param[out] keyblob Destination buffer.
+ * @return Result of the operation.
  */
-void keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
-                               const crypto_key_config_t config,
-                               uint32_t *keyblob);
+OT_WARN_UNUSED_RESULT
+status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
+                                   const crypto_key_config_t config,
+                                   uint32_t *keyblob);
 
 /**
  * Incorporate a fresh mask into the blinded key.
+ *
+ * Returns an error if called for an asymmetric key configuration; asymmetric
+ * keys are likely to be masked with arithmetic rather than boolean (XOR)
+ * schemes, and this function cannot be used for them.
  *
  * @param key Blinded key to re-mask. Modified in-place.
  * @param mask Blinding parameter (fresh random mask).

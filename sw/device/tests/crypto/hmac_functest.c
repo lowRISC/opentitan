@@ -52,7 +52,8 @@ static void run_test(crypto_const_uint8_buf_t msg, const uint32_t *exp_tag) {
   };
 
   uint32_t keyblob[keyblob_num_words(config)];
-  keyblob_from_key_and_mask(kTestKey.key, kTestMask, config, keyblob);
+  CHECK_STATUS_OK(
+      keyblob_from_key_and_mask(kTestKey.key, kTestMask, config, keyblob));
   crypto_blinded_key_t blinded_key = {
       .config = config,
       .keyblob = keyblob,

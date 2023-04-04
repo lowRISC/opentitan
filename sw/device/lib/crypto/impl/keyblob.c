@@ -11,8 +11,35 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'b', 'b')
 
+/**
+ * Determine the number of bytes in one share of a blinded key.
+ *
+ * Normally, this is the same length as the unblinded key material. However, in
+ * the case of some asymmetric keys, the shares might be longer.
+ *
+ * @param config Key configuration.
+ * @return Number of bytes in one share of the blinded key.
+ */
+static size_t keyblob_share_num_bytes(const crypto_key_config_t config) {
+  // Get the key type from the top 16 bits of the full mode.
+  key_type_t key_type = (key_type_t)(config.key_mode >> 16);
+  switch (launder32(key_type)) {
+    case kKeyTypeEcc:
+      // ECC keys have 64 extra redundant bits per share.
+      return config.key_length + (64 / 8);
+    case kKeyTypeRsa:
+      // RSA key shares are the same size as the unmasked key.
+      // TODO: update once masking is implemented for RSA keys.
+      return config.key_length;
+    default:
+      // Symmetric key shares are simply the same size as the unmasked key.
+      return config.key_length;
+  }
+  HARDENED_UNREACHABLE();
+}
+
 size_t keyblob_share_num_words(const crypto_key_config_t config) {
-  size_t len_bytes = config.key_length;
+  size_t len_bytes = keyblob_share_num_bytes(config);
   if (len_bytes % sizeof(uint32_t) == 0) {
     return len_bytes / sizeof(uint32_t);
   }
@@ -60,9 +87,57 @@ void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
   hardened_memcpy(keyblob + share_words, share1, share_words);
 }
 
-void keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
-                               const crypto_key_config_t config,
-                               uint32_t *keyblob) {
+/**
+ * Checks that the configuration represents a symmetric key.
+ *
+ * @param config Key configuration.
+ * @return OK if `config` represents a symmetric key, BAD_ARGS otherwise.
+ */
+static status_t ensure_symmetric(const crypto_key_config_t config) {
+  // Get the key type from the top 16 bits of the full mode.
+  key_type_t key_type = (key_type_t)(launder32(config.key_mode) >> 16);
+  int32_t result = launder32(OTCRYPTO_OK.value ^ key_type);
+  switch (launder32(key_type)) {
+    case kKeyTypeAes:
+      HARDENED_CHECK_EQ(key_type, kKeyTypeAes);
+      result ^= launder32(kKeyTypeAes);
+      break;
+    case kKeyTypeHmac:
+      HARDENED_CHECK_EQ(key_type, kKeyTypeHmac);
+      result ^= launder32(kKeyTypeHmac);
+      break;
+    case kKeyTypeKmac:
+      HARDENED_CHECK_EQ(key_type, kKeyTypeKmac);
+      result ^= launder32(kKeyTypeKmac);
+      break;
+    case kKeyTypeKdf:
+      HARDENED_CHECK_EQ(key_type, kKeyTypeKdf);
+      result ^= launder32(kKeyTypeKdf);
+      break;
+    case kKeyTypeEcc:
+      // Asymmetric!
+      return OTCRYPTO_BAD_ARGS;
+    case kKeyTypeRsa:
+      // Asymmetric!
+      return OTCRYPTO_BAD_ARGS;
+    default:
+      // Unrecognized key type.
+      return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_NE(config.key_mode >> 16, kKeyTypeEcc);
+  HARDENED_CHECK_NE(config.key_mode >> 16, kKeyTypeRsa);
+
+  // If we get here, the result should be OTCRYPTO_OK.
+  return (status_t){.value = result};
+}
+
+status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
+                                   const crypto_key_config_t config,
+                                   uint32_t *keyblob) {
+  // This only works for symmetric keys; asymmetric keys may use masking
+  // schemes that are more complex than XOR.
+  HARDENED_TRY(ensure_symmetric(config));
+
   size_t key_words = keyblob_share_num_words(config);
   // share0 = key ^ mask, share1 = mask
   uint32_t share0[key_words];
@@ -70,9 +145,14 @@ void keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
     share0[i] = key[i] ^ mask[i];
   }
   keyblob_from_shares(share0, mask, config, keyblob);
+  return OTCRYPTO_OK;
 }
 
 status_t keyblob_remask(crypto_blinded_key_t *key, const uint32_t *mask) {
+  // This only works for symmetric keys; asymmetric keys may use masking
+  // schemes that are more complex than XOR.
+  HARDENED_TRY(ensure_symmetric(key->config));
+
   size_t key_share_words = keyblob_share_num_words(key->config);
   size_t keyblob_words = keyblob_num_words(key->config);
 
