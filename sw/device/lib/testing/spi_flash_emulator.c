@@ -140,28 +140,28 @@ status_t spi_flash_emulator(dif_spi_host_t *spih,
         spi_flash_testutils_erase_sector(spih, info.address, info.addr_4b);
         break;
       case kSpiDeviceFlashOpBlockErase32k:
-        spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase32k,
-                                     info.address, info.addr_4b);
+        TRY(spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase32k,
+                                         info.address, info.addr_4b));
         break;
       case kSpiDeviceFlashOpBlockErase64k:
-        spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase64k,
-                                     info.address, info.addr_4b);
+        TRY(spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase64k,
+                                         info.address, info.addr_4b));
         break;
       case kSpiDeviceFlashOpPageProgram:
         spi_flash_testutils_program_page(spih, info.data, info.data_len,
                                          info.address, info.addr_4b);
         break;
       case kSpiDeviceFlashOpSectorErase4b:
-        spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpSectorErase4b,
-                                     info.address, /*addr_is_4b=*/true);
+        TRY(spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpSectorErase4b,
+                                         info.address, /*addr_is_4b=*/true));
         break;
       case kSpiDeviceFlashOpBlockErase32k4b:
-        spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase32k4b,
-                                     info.address, /*addr_is_4b=*/true);
+        TRY(spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase32k4b,
+                                         info.address, /*addr_is_4b=*/true));
         break;
       case kSpiDeviceFlashOpBlockErase64k4b:
-        spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase64k4b,
-                                     info.address, /*addr_is_4b=*/true);
+        TRY(spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase64k4b,
+                                         info.address, /*addr_is_4b=*/true));
         break;
       case kSpiDeviceFlashOpPageProgram4b:
         spi_flash_testutils_program_op(spih, kSpiDeviceFlashOpPageProgram4b,
