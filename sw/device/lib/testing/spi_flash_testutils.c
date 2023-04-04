@@ -205,10 +205,10 @@ status_t spi_flash_testutils_erase_op(dif_spi_host_t *spih, uint8_t opcode,
   return spi_flash_testutils_wait_until_not_busy(spih);
 }
 
-void spi_flash_testutils_erase_sector(dif_spi_host_t *spih, uint32_t address,
-                                      bool addr_is_4b) {
-  CHECK_STATUS_OK(spi_flash_testutils_erase_op(
-      spih, kSpiDeviceFlashOpSectorErase, address, addr_is_4b));
+status_t spi_flash_testutils_erase_sector(dif_spi_host_t *spih,
+                                          uint32_t address, bool addr_is_4b) {
+  return spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpSectorErase,
+                                      address, addr_is_4b);
 }
 
 void spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,

@@ -235,7 +235,8 @@ void handle_sector_erase(void) {
       dif_spi_device_get_4b_address_mode(&spi_device, &addr4b_enabled));
 
   bool addr_is_4b = dif_toggle_to_bool(addr4b_enabled);
-  spi_flash_testutils_erase_sector(&spi_host0, address, addr_is_4b);
+  CHECK_STATUS_OK(
+      spi_flash_testutils_erase_sector(&spi_host0, address, addr_is_4b));
   CHECK_DIF_OK(dif_spi_device_clear_flash_busy_bit(&spi_device));
 }
 

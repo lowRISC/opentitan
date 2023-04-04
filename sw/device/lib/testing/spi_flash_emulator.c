@@ -137,7 +137,7 @@ status_t spi_flash_emulator(dif_spi_host_t *spih,
         TRY(spi_flash_testutils_erase_chip(spih));
         break;
       case kSpiDeviceFlashOpSectorErase:
-        spi_flash_testutils_erase_sector(spih, info.address, info.addr_4b);
+        TRY(spi_flash_testutils_erase_sector(spih, info.address, info.addr_4b));
         break;
       case kSpiDeviceFlashOpBlockErase32k:
         TRY(spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase32k,

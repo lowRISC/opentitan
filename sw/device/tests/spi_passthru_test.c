@@ -112,7 +112,7 @@ status_t spi_flash_erase_sector(ujson_t *uj, dif_spi_host_t *spih,
   spi_flash_erase_sector_t op;
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleDisabled));
   TRY(ujson_deserialize_spi_flash_erase_sector_t(uj, &op));
-  spi_flash_testutils_erase_sector(spih, op.address, op.addr4b);
+  TRY(spi_flash_testutils_erase_sector(spih, op.address, op.addr4b));
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleEnabled));
   return RESP_OK_STATUS(uj);
 }
