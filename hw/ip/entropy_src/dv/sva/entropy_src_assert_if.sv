@@ -35,8 +35,9 @@
     u_entropy_src_bucket_ht.u_prim_max_tree_bin_cntr_max
 
 interface entropy_src_assert_if
+  import entropy_src_pkg::*;
 (
-  input entropy_src_hw_if_i
+  input entropy_src_hw_if_req_t entropy_src_hw_if_i
 );
 
   task automatic assert_off_alert ();
