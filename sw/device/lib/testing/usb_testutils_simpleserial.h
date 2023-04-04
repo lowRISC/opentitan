@@ -15,6 +15,7 @@
 typedef struct usb_testutils_ss_ctx {
   usb_testutils_ctx_t *ctx;
   int ep;
+  bool sending;
   dif_usbdev_buffer_t cur_buf;
   int cur_cpos;
   union usb_ss_b2w {
@@ -29,8 +30,9 @@ typedef struct usb_testutils_ss_ctx {
  *
  * @param ssctx instance context
  * @param c byte to send
+ * @return true iff the character was accepted for transmission
  */
-void usb_testutils_simpleserial_send_byte(usb_testutils_ss_ctx_t *ssctx,
+bool usb_testutils_simpleserial_send_byte(usb_testutils_ss_ctx_t *ssctx,
                                           uint8_t c);
 
 /**
