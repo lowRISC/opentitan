@@ -202,7 +202,7 @@ void handle_write_status(uint32_t status, uint8_t offset, uint8_t opcode) {
   };
   CHECK_DIF_OK(dif_spi_host_transaction(&spi_host0, /*csid=*/0, transaction,
                                         ARRAYSIZE(transaction)));
-  spi_flash_testutils_wait_until_not_busy(&spi_host0);
+  CHECK_STATUS_OK(spi_flash_testutils_wait_until_not_busy(&spi_host0));
   CHECK_DIF_OK(dif_spi_device_clear_flash_busy_bit(&spi_device));
 }
 
