@@ -59,10 +59,11 @@ status_t test_software_reset(void) {
 }
 
 status_t test_read_sfdp(void) {
-  spi_flash_testutils_read_sfdp(&spi_host, 0, sfdp.data, sizeof(sfdp.data));
+  TRY(spi_flash_testutils_read_sfdp(&spi_host, 0, sfdp.data,
+                                    sizeof(sfdp.data)));
   LOG_INFO("SFDP signature is 0x%08x", sfdp.header.signature);
-  CHECK(sfdp.header.signature == kSfdpSignature,
-        "Expected to find the SFDP signature!");
+  TRY_CHECK(sfdp.header.signature == kSfdpSignature,
+            "Expected to find the SFDP signature!");
 
   uint32_t bfpt_offset = sfdp.param.table_pointer[0] |
                          sfdp.param.table_pointer[1] << 8 |

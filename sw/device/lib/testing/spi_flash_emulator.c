@@ -44,7 +44,7 @@ typedef struct sfdp {
 static status_t read_and_prepare_sfdp(dif_spi_host_t *spih,
                                       dif_spi_device_handle_t *spid) {
   alignas(uint32_t) uint8_t data[256];
-  spi_flash_testutils_read_sfdp(spih, 0, data, sizeof(data));
+  TRY(spi_flash_testutils_read_sfdp(spih, 0, data, sizeof(data)));
 
   // TODO: present a better SFDP table.  This table is as simple
   // as possible and copies only a few bits of relevant data

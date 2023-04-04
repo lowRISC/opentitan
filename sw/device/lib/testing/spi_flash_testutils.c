@@ -46,10 +46,10 @@ status_t spi_flash_testutils_read_id(dif_spi_host_t *spih,
   return OK_STATUS();
 }
 
-void spi_flash_testutils_read_sfdp(dif_spi_host_t *spih, uint32_t address,
-                                   void *buffer, size_t length) {
-  CHECK(spih != NULL);
-  CHECK(buffer != NULL);
+status_t spi_flash_testutils_read_sfdp(dif_spi_host_t *spih, uint32_t address,
+                                       void *buffer, size_t length) {
+  TRY_CHECK(spih != NULL);
+  TRY_CHECK(buffer != NULL);
 
   dif_spi_host_segment_t transaction[] = {
       {
@@ -83,8 +83,9 @@ void spi_flash_testutils_read_sfdp(dif_spi_host_t *spih, uint32_t address,
               },
       },
   };
-  CHECK_DIF_OK(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
-                                        ARRAYSIZE(transaction)));
+  TRY(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
+                               ARRAYSIZE(transaction)));
+  return OK_STATUS();
 }
 
 status_t spi_flash_testutils_read_status(dif_spi_host_t *spih, uint8_t opcode,
