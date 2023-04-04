@@ -73,7 +73,7 @@ status_t test_read_sfdp(void) {
 }
 
 status_t test_chip_erase(void) {
-  spi_flash_testutils_erase_chip(&spi_host);
+  TRY(spi_flash_testutils_erase_chip(&spi_host));
 
   // Check that the first page of flash actually got erased.
   uint8_t buf[256] = {0};

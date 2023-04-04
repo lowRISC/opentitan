@@ -125,8 +125,9 @@ status_t spi_flash_testutils_issue_write_enable(dif_spi_host_t *spih);
  * Does not return until the erase completes.
  *
  * @param spih A SPI host handle.
+ * @return status_t containing either OK or an error.
  */
-void spi_flash_testutils_erase_chip(dif_spi_host_t *spih);
+status_t spi_flash_testutils_erase_chip(dif_spi_host_t *spih);
 
 /**
  * Perform full Sector Erase sequence via the requested opcode.

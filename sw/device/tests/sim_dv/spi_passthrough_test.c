@@ -212,7 +212,7 @@ void handle_write_status(uint32_t status, uint8_t offset, uint8_t opcode) {
  * Relays the command out to the downstream SPI flash.
  */
 void handle_chip_erase(void) {
-  spi_flash_testutils_erase_chip(&spi_host0);
+  CHECK_STATUS_OK(spi_flash_testutils_erase_chip(&spi_host0));
   CHECK_DIF_OK(dif_spi_device_clear_flash_busy_bit(&spi_device));
 }
 
