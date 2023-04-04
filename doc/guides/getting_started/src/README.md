@@ -54,7 +54,7 @@ If you have an FPGA and download the bitstream from our cloud bucket rather than
 If you are specifying a new machine to run top-level simulations of the whole of OpenTitan using Verilator, it is recommended that you
 have a minimum of **32GiB of physical RAM** and at least **512GiB of SSD/HDD storage** for the build tools, repository and Ubuntu installation.
 
-## Step 2: Install Package Manager Dependencies
+## Step 2: Install dependencies using the package manager
 
 *Skip this step if using the Docker container.*
 
@@ -65,7 +65,9 @@ On Ubuntu 20.04, the required packages can be installed with the following comma
 sed '/^#/d' ./apt-requirements.txt | xargs sudo apt install -y
 ```
 
-Some tools in this repository are written in Python 3 and require Python dependencies to be installed through `pip`.
+## Step 3: Install Python libraries needed
+
+Some tools in this repository are written in Python and require their dependencies to be installed through `pip`.
 We recommend installing the latest version of `pip` and `setuptools` (especially if on older systems such as Ubuntu 18.04) using:
 
 ```console
@@ -88,7 +90,7 @@ cd $REPO_TOP
 pip3 install --user -r python-requirements.txt
 ```
 
-## Step 3: Install the LowRISC RISC-V Toolchain
+## Step 4: Install the LowRISC RISC-V Toolchain
 
 *Skip this step if using the Docker container.*
 
@@ -101,7 +103,7 @@ cd $REPO_TOP
 ./util/get-toolchain.py
 ```
 
-If you did not encounter errors running the script, **you're done and can go to step 4**.
+If you did not encounter errors running the script, **you're done and can go to step 5**.
 If you did, read on.
 
 #### Troubleshooting
@@ -124,7 +126,7 @@ ls $TOOLCHAIN_PATH/bin/riscv32-unknown-elf-as
 If that prints out the file path without errors, then you've successfully installed the toolchain.
 Otherwise, try to find the `riscv32-unknown-elf-as` file in your file system and make sure `$TOOLCHAIN_PATH` is correctly set.
 
-## Step 4: Set up your Simulation Tool or FPGA
+## Step 5: Set up your Simulation Tool or FPGA
 
 *Note: If you are using the pre-built Docker container, Verilator is already installed.
 Unless you know you need the FPGA or DV guides, you can skip this step.*
@@ -136,25 +138,25 @@ Follow the guide(s) that applies to you:
 * Option 2 (FPGA setup): [FPGA guide](./setup_fpga.md), or
 * Option 3 (design verification setup): [DV guide](./setup_dv.md)
 
-## Step 5: Build OpenTitan Software
+## Step 6: Build OpenTitan Software
 
 Follow the [dedicated guide](./build_sw.md) to build OpenTitan's software and run tests.
 
-## Step 6: Optional Additional Steps
+## Step 7: Optional Additional Steps
 
 If you have made it this far, congratulations!
 Hopefully you got a "Hello World!" demo running on OpenTitan using either the Verilator or FPGA targets.
 
 Depending on the specific way you want to use or contribute to OpenTitan, there may be a few extra steps you want to do.
 In particular:
-* *If you want to contribute SystemVerilog code upstream to OpenTitan*, follow step 6a to install Verible.
-* *If you want to debug on-chip OpenTitan software with GDB*, follow step 6b to install OpenOCD.
-* *If you want to run supported formal verification flows for OpenTitan, using tools like JasperGold,* follow step 6c to set up formal verification.
-* *If you want to simulate OpenTitan using Siemens Questa,* follow step 6d to set it up.
+* *If you want to contribute SystemVerilog code upstream to OpenTitan*, follow step 7a to install Verible.
+* *If you want to debug on-chip OpenTitan software with GDB*, follow step 7b to install OpenOCD.
+* *If you want to run supported formal verification flows for OpenTitan, using tools like JasperGold,* follow step 7c to set up formal verification.
+* *If you want to simulate OpenTitan using Siemens Questa,* follow step 7d to set it up.
 
 It also may make sense to stick with the basic setup and come back to these steps if you find you need them later.
 
-### Step 6a: Install Verible (optional)
+### Step 7a: Install Verible (optional)
 
 Verible is an open source SystemVerilog style linter and formatting tool.
 The style linter is relatively mature and we use it as part of our [RTL design flow](https://opentitan.org/book/doc/contributing/hw/methodology.html).
@@ -192,22 +194,22 @@ After installation you need to add `/tools/verible/$VERIBLE_VERSION/bin` to your
 
 Note that we currently use version {{#tool-version verible }}, but it is expected that this version is going to be updated frequently, since the tool is under active development.
 
-### Step 6b: Install OpenOCD (optional)
+### Step 7b: Install OpenOCD (optional)
 
 See the [OpenOCD install guide](./install_openocd.md).
 
-### Step 6c: Set up formal verification (optional)
+### Step 7c: Set up formal verification (optional)
 
 See the [formal verification setup guide](./setup_formal.md)
 
-### Step 6d: Set up Siemens Questa (optional)
+### Step 7d: Set up Siemens Questa (optional)
 ￼
 Once a standard installation of Questa has been completed, add `QUESTA_HOME` as an environment variable which points to the Questa installation directory.
 
 As of Questa version 21.4 there are some code incompatibilities with the OpenTitan code-base.
 See issue [#9514](https://github.com/lowRISC/opentitan/issues/9514) for the list of issues and temporary workarounds.
 
-## Step 7: Additional Resources
+## Step 8: Additional Resources
 
 As you may have guessed, there are several other pieces of hardware and software, besides a "Hello World!" demo, that are being actively developed for the OpenTitan project.
 If you are interested in these, check out the additional resources below.
