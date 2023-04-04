@@ -211,14 +211,14 @@ status_t spi_flash_testutils_erase_sector(dif_spi_host_t *spih,
                                       address, addr_is_4b);
 }
 
-void spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
-                                    const void *payload, size_t length,
-                                    uint32_t address, bool addr_is_4b) {
-  CHECK(spih != NULL);
-  CHECK(payload != NULL);
-  CHECK(length <= 256);  // Length must be less than a page size.
+status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
+                                        const void *payload, size_t length,
+                                        uint32_t address, bool addr_is_4b) {
+  TRY_CHECK(spih != NULL);
+  TRY_CHECK(payload != NULL);
+  TRY_CHECK(length <= 256);  // Length must be less than a page size.
 
-  CHECK_STATUS_OK(spi_flash_testutils_issue_write_enable(spih));
+  TRY(spi_flash_testutils_issue_write_enable(spih));
 
   dif_spi_host_addr_mode_t addr_mode =
       addr_is_4b ? kDifSpiHostAddrMode4b : kDifSpiHostAddrMode3b;
@@ -246,17 +246,18 @@ void spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
               },
       },
   };
-  CHECK_DIF_OK(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
-                                        ARRAYSIZE(transaction)));
+  TRY(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
+                               ARRAYSIZE(transaction)));
 
-  CHECK_STATUS_OK(spi_flash_testutils_wait_until_not_busy(spih));
+  return spi_flash_testutils_wait_until_not_busy(spih);
 }
 
 void spi_flash_testutils_program_page(dif_spi_host_t *spih, const void *payload,
                                       size_t length, uint32_t address,
                                       bool addr_is_4b) {
-  spi_flash_testutils_program_op(spih, kSpiDeviceFlashOpPageProgram, payload,
-                                 length, address, addr_is_4b);
+  CHECK_STATUS_OK(
+      spi_flash_testutils_program_op(spih, kSpiDeviceFlashOpPageProgram,
+                                     payload, length, address, addr_is_4b));
 }
 
 void spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
