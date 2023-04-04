@@ -9,7 +9,7 @@ It translates synthesizable Verilog code into a simulation program in C++, which
 
 ### Install Verilator
 
-Even though Verilator is packaged for most Linux distributions these versions tend to be too old to be usable.
+Even though Verilator is packaged for most Linux distributions, these versions tend to be too old to be usable.
 We recommend compiling Verilator from source, as outlined here.
 
 Fetch, build and install Verilator itself (this should be done outside the `$REPO_TOP` directory).
