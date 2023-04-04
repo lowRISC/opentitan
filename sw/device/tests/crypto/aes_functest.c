@@ -64,7 +64,8 @@ static void encrypt_decrypt_test(const aes_test_t *test) {
 
   // Construct blinded key from the key and testing mask.
   uint32_t keyblob[keyblob_num_words(config)];
-  keyblob_from_key_and_mask(test->key, kKeyMask, config, keyblob);
+  CHECK_STATUS_OK(
+      keyblob_from_key_and_mask(test->key, kKeyMask, config, keyblob));
   crypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
