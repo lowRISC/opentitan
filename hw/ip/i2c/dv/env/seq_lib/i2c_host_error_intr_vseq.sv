@@ -68,6 +68,19 @@ class i2c_host_error_intr_vseq extends i2c_rx_tx_vseq;
   virtual task process_error_interrupts();
     forever begin
       @(posedge cfg.clk_rst_vif.clk) begin
+        // Check for interrupts
+        if(cfg.m_i2c_agent_cfg.timing_cfg.tSclInterference == 0 &&
+          cfg.intr_vif.pins[SclInference]) begin
+          `uvm_error(`gfn, "Unexpected assertion of intr_scl_interference_o")
+        end
+        if(cfg.m_i2c_agent_cfg.timing_cfg.tSdaInterference == 0 &&
+           cfg.intr_vif.pins[SdaInference]) begin
+          `uvm_error(`gfn, "Unexpected assertion of intr_sda_interference_o")
+        end
+        if((cfg.m_i2c_agent_cfg.timing_cfg.tSdaUnstable == 0) &&
+            cfg.intr_vif.pins[SdaUnstable]) begin
+          `uvm_error(`gfn, "Unexpected assertion of intr_sda_unstable_o")
+        end
         if (cfg.intr_vif.pins[SclInference] ||
             cfg.intr_vif.pins[SdaInference] ||
             cfg.intr_vif.pins[SdaUnstable]) begin
