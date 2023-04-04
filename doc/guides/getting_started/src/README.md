@@ -45,7 +45,7 @@ If you do have Linux, you are still welcome to try the Docker container.
 However, as the container option is currently experimental, we recommend following the steps below to build manually if you plan on being a long-term user or contributor for the project.
 
 Our continuous integration setup runs on Ubuntu 20.04 LTS, which gives us the most confidence that this distribution works out of the box.
-We do our best to support other distributions, but cannot guarantee they can be used "out of the box" and might require updates of packages.
+We do our best to support other distributions, but cannot guarantee they can be used "out of the box" and they might require updates of packages.
 Please file a [GitHub issue](https://github.com/lowRISC/opentitan/issues) if you need help or would like to propose a change to increase compatibility with other distributions.
 
 You will need at least **7GiB of available RAM** in order to build the Verilator simulation.
