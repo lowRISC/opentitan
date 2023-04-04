@@ -61,9 +61,10 @@ status_t spi_flash_testutils_read_id(dif_spi_host_t *spih,
  * @param spih A SPI host handle.
  * @param[out] buffer A pointer to a buffer that will hold the SFDP contents.
  * @param length The number of bytes to write into `buffer`.
+ * @return The result of the operation.
  */
-void spi_flash_testutils_read_sfdp(dif_spi_host_t *spih, uint32_t address,
-                                   void *buffer, size_t length);
+status_t spi_flash_testutils_read_sfdp(dif_spi_host_t *spih, uint32_t address,
+                                       void *buffer, size_t length);
 
 typedef enum spi_flash_status_bit {
   kSpiFlashStatusBitWip = 0x1,

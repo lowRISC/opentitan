@@ -101,7 +101,7 @@ status_t spi_flash_read_sfdp(ujson_t *uj, dif_spi_host_t *spih,
 
   sfdp_data_t sfdp;
   CHECK(op.length <= sizeof(sfdp.data));
-  spi_flash_testutils_read_sfdp(spih, op.address, sfdp.data, op.length);
+  TRY(spi_flash_testutils_read_sfdp(spih, op.address, sfdp.data, op.length));
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleEnabled));
 
   return RESP_OK(ujson_serialize_sfdp_data_t, uj, &sfdp);
