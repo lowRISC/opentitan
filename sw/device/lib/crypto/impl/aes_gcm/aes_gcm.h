@@ -16,15 +16,6 @@
 extern "C" {
 #endif  // __cplusplus
 
-enum {
-  /* Full tag size in bits. */
-  kAesGcmTagNumBits = 128,
-  /* Full tag size in bytes. */
-  kAesGcmTagNumBytes = kAesGcmTagNumBits / 8,
-  /* Full tag size in words. */
-  kAesGcmTagNumWords = kAesGcmTagNumBytes / sizeof(uint32_t),
-};
-
 /**
  * AES-GCM authenticated encryption as defined in NIST SP800-38D, algorithm 4.
  *
@@ -43,15 +34,18 @@ enum {
  * @param plaintext plaintext value (may be NULL if plaintext_len is 0)
  * @param aad_len length of AAD in bytes
  * @param aad AAD value (may be NULL if aad_len is 0)
- * @param ciphertext Output buffer for ciphertext (same length as plaintext)
- * @param[out] tag Output buffer for tag (128 bits)
+ * @param tag_len Tag length in bytes
+ * @param[out] tag Output buffer for tag
+ * @param[out] ciphertext Output buffer for ciphertext (same length as
+ * plaintext)
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
 status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
                          const uint8_t *iv, const size_t plaintext_len,
                          const uint8_t *plaintext, const size_t aad_len,
-                         const uint8_t *aad, uint8_t *ciphertext, uint8_t *tag);
+                         const uint8_t *aad, const size_t tag_len, uint8_t *tag,
+                         uint8_t *ciphertext);
 
 /**
  * AES-GCM authenticated decryption as defined in NIST SP800-38D, algorithm 5.
@@ -71,8 +65,6 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
  * other than OK, all output from this function should be discarded, including
  * `success`.
  *
- * This implementation does not support short tags.
- *
  * @param key AES key
  * @param iv_len length of IV in bytes
  * @param iv IV value (may be NULL if iv_len is 0)
@@ -80,7 +72,8 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
  * @param ciphertext plaintext value (may be NULL if ciphertext_len is 0)
  * @param aad_len length of AAD in bytes
  * @param aad AAD value (may be NULL if aad_len is 0)
- * @param tag Authentication tag (128 bits)
+ * @param tag_len Tag length in bytes
+ * @param tag Authentication tag
  * @param plaintext[out] Output buffer for plaintext (same length as ciphertext)
  * @param success[out] True if authentication was successful, otherwise false
  * @return Error status; OK if no errors
@@ -89,8 +82,29 @@ OT_WARN_UNUSED_RESULT
 status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
                          const uint8_t *iv, const size_t ciphertext_len,
                          const uint8_t *ciphertext, const size_t aad_len,
-                         const uint8_t *aad, const uint8_t *tag,
-                         uint8_t *plaintext, hardened_bool_t *success);
+                         const uint8_t *aad, const size_t tag_len,
+                         const uint8_t *tag, uint8_t *plaintext,
+                         hardened_bool_t *success);
+
+/**
+ * Implements the GCTR function as specified in SP800-38D, section 6.5.
+ *
+ * The block cipher is fixed to AES. Note that the GCTR function is a modified
+ * version of the AES-CTR mode of encryption.
+ *
+ * Input must be less than 2^32 blocks long; that is, `len` < 2^36, since each
+ * block is 16 bytes.
+ *
+ * @param key The AES key
+ * @param icb Initial counter block, 128 bits
+ * @param len Number of bytes for input and output
+ * @param input Pointer to input buffer (may be NULL if `len` is 0)
+ * @param[out] output Pointer to output buffer (same size as input, may be the
+ * same buffer)
+ */
+OT_WARN_UNUSED_RESULT
+status_t aes_gcm_gctr(const aes_key_t key, const aes_block_t *icb, size_t len,
+                      const uint8_t *input, uint8_t *output);
 
 #ifdef __cplusplus
 }  // extern "C"

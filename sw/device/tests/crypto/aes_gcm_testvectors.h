@@ -60,7 +60,7 @@ static uint8_t kCiphertext256[32] = {
     0xaa, 0x83, 0x6f, 0x29, 0xb0, 0xfa, 0x06, 0xcd, 0xd5, 0x75, 0xaa,
     0xb8, 0x23, 0x3f, 0x1d, 0xf9, 0x3e, 0x80, 0x16, 0x33, 0x71};
 
-const aes_gcm_test_t kAesGcmTestvectors[3] = {
+const aes_gcm_test_t kAesGcmTestvectors[] = {
     // Empty input, empty aad, 96-bit IV, 128-bit key
     {
         .key_len = ARRAYSIZE(kKey128),
@@ -74,11 +74,12 @@ const aes_gcm_test_t kAesGcmTestvectors[3] = {
         .plaintext = NULL,
         .aad_len = 0,
         .aad = NULL,
+        .ciphertext = NULL,
+        .tag_len = 16,
         .tag =
             {// Tag = b7aa223a6c75a0976633ce79d9fddf06
              0xb7, 0xaa, 0x22, 0x3a, 0x6c, 0x75, 0xa0, 0x97, 0x66, 0x33, 0xce,
              0x79, 0xd9, 0xfd, 0xdf, 0x06},
-        .ciphertext = NULL,
     },
 
     // Empty input, empty aad, 128-bit IV, 128-bit key
@@ -94,11 +95,12 @@ const aes_gcm_test_t kAesGcmTestvectors[3] = {
         .plaintext = NULL,
         .aad_len = 0,
         .aad = NULL,
+        .ciphertext = NULL,
+        .tag_len = 16,
         .tag =
             {// Tag = 4c59f0d420d9eb8669c40ad23b5419ba
              0x4c, 0x59, 0xf0, 0xd4, 0x20, 0xd9, 0xeb, 0x86, 0x69, 0xc4, 0x0a,
              0xd2, 0x3b, 0x54, 0x19, 0xba},
-        .ciphertext = NULL,
     },
 
     // 128-bit IV, 256-bit key, real message and aad
@@ -114,11 +116,33 @@ const aes_gcm_test_t kAesGcmTestvectors[3] = {
         .plaintext = kPlaintext,
         .aad_len = kAadLen,
         .aad = kAad,
+        .ciphertext = kCiphertext256,
+        .tag_len = 16,
         .tag =
             {// Tag = 324895b3d2f656e4fa2f8ce056137061
              0x32, 0x48, 0x95, 0xb3, 0xd2, 0xf6, 0x56, 0xe4, 0xfa, 0x2f, 0x8c,
              0xe0, 0x56, 0x13, 0x70, 0x61},
+    },
+
+    // 128-bit IV, 256-bit key, real message and aad, short tag
+    {
+        .key_len = ARRAYSIZE(kKey256),
+        .key = kKey256,
+        .iv_len = 16,
+        .iv =
+            {// IV = c58aded2e1bbecba8b16a5757e5475bd
+             0xc5, 0x8a, 0xde, 0xd2, 0xe1, 0xbb, 0xec, 0xba, 0x8b, 0x16, 0xa5,
+             0x75, 0x7e, 0x54, 0x75, 0xbd},
+        .plaintext_len = kPlaintextLen,
+        .plaintext = kPlaintext,
+        .aad_len = kAadLen,
+        .aad = kAad,
         .ciphertext = kCiphertext256,
+        .tag_len = 12,
+        .tag =
+            {// Tag = 324895b3d2f656e4fa2f8ce0
+             0x32, 0x48, 0x95, 0xb3, 0xd2, 0xf6, 0x56, 0xe4, 0xfa, 0x2f, 0x8c,
+             0xe0, 0, 0, 0, 0},
     },
 };
 
