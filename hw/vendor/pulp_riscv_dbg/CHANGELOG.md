@@ -4,7 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## Unreleased
+
+## [0.8.0] - 2023-04-05
+### Fixed
+- dm_csrs: Fix W1C behavior of `sberror` (#155) [@andreaskurth](https://github.com/andreaskurth)
+- gen_rom.py: Port to python3 (#152) [@andreaskurth](https://github.com/andreaskurth)
+
+### Added
+- `xprop_off` to Xprop-incompatible processes (#151) [@andreaskurth](https://github.com/andreaskurth)
+
 ## [0.7.0] - 2022-11-02
 ### Fixed
 - 64-bit unaligned accesses (#145) [@creinwar](https://github.com/creinwar)
