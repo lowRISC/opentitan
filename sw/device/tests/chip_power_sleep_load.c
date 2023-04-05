@@ -117,7 +117,7 @@ void prepare_to_exit(void) {
   // Check that the system has not been reset due to escalation
   pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0);
 
-  aon_timer_testutils_shutdown(&aon_timer);
+  CHECK_STATUS_OK(aon_timer_testutils_shutdown(&aon_timer));
 
   // Set the test status flag back to "TestStatusInTest"
   test_status_set(kTestStatusInTest);

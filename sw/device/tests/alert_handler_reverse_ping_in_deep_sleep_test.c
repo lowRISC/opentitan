@@ -220,7 +220,7 @@ bool test_main(void) {
     LOG_INFO("Wakeup reset");
     CHECK(rstmgr_testutils_is_reset_info(&rstmgr,
                                          kDifRstmgrResetInfoLowPowerExit));
-    aon_timer_testutils_shutdown(&aon_timer);
+    CHECK_STATUS_OK(aon_timer_testutils_shutdown(&aon_timer));
 
     // At this point the test has verified that the reset reason is low power
     // exit, which discounts any resets triggered by local alert escalations.

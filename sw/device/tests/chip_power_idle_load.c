@@ -333,7 +333,7 @@ bool test_main(void) {
   // reset reason is still POR.
   pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0);
 
-  aon_timer_testutils_shutdown(&aon_timer);
+  CHECK_STATUS_OK(aon_timer_testutils_shutdown(&aon_timer));
 
   test_status_set(kTestStatusInTest);
 

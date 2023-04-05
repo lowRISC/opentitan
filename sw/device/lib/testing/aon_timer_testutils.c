@@ -70,16 +70,17 @@ status_t aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,
   return OK_STATUS();
 }
 
-void aon_timer_testutils_shutdown(const dif_aon_timer_t *aon_timer) {
-  CHECK_DIF_OK(dif_aon_timer_wakeup_stop(aon_timer));
-  CHECK_DIF_OK(dif_aon_timer_watchdog_stop(aon_timer));
-  CHECK_DIF_OK(dif_aon_timer_clear_wakeup_cause(aon_timer));
-  CHECK_DIF_OK(dif_aon_timer_irq_acknowledge_all(aon_timer));
+status_t aon_timer_testutils_shutdown(const dif_aon_timer_t *aon_timer) {
+  TRY(dif_aon_timer_wakeup_stop(aon_timer));
+  TRY(dif_aon_timer_watchdog_stop(aon_timer));
+  TRY(dif_aon_timer_clear_wakeup_cause(aon_timer));
+  TRY(dif_aon_timer_irq_acknowledge_all(aon_timer));
   // Read and verify both timers are actually disabled. This ensures the
   // synchronization from the core clock to the AON clock domain completed.
   bool enabled;
-  CHECK_DIF_OK(dif_aon_timer_wakeup_is_enabled(aon_timer, &enabled));
-  CHECK(enabled == false);
-  CHECK_DIF_OK(dif_aon_timer_watchdog_is_enabled(aon_timer, &enabled));
-  CHECK(enabled == false);
+  TRY(dif_aon_timer_wakeup_is_enabled(aon_timer, &enabled));
+  TRY_CHECK(enabled == false);
+  TRY(dif_aon_timer_watchdog_is_enabled(aon_timer, &enabled));
+  TRY_CHECK(enabled == false);
+  return OK_STATUS();
 }
