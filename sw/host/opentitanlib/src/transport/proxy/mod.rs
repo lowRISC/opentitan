@@ -248,13 +248,20 @@ impl ProxyOpsImpl {
 }
 
 impl ProxyOps for ProxyOpsImpl {
+    fn provides_map(&self) -> Result<HashMap<String, String>> {
+        match self.execute_command(ProxyRequest::Provides {})? {
+            ProxyResponse::Provides { provides_map } => Ok(provides_map),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     fn bootstrap(&self, options: &BootstrapOptions, payload: &[u8]) -> Result<()> {
         match self.execute_command(ProxyRequest::Bootstrap {
             options: options.clone(),
             payload: payload.to_vec(),
         })? {
             ProxyResponse::Bootstrap => Ok(()),
-            _ => bail!(ProxyError::UnexpectedReply()), // Enable when second option is added
+            _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
 
@@ -263,7 +270,7 @@ impl ProxyOps for ProxyOpsImpl {
             strapping_name: strapping_name.to_string(),
         })? {
             ProxyResponse::ApplyPinStrapping => Ok(()),
-            _ => bail!(ProxyError::UnexpectedReply()), // Enable when second option is added
+            _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
 
@@ -272,7 +279,7 @@ impl ProxyOps for ProxyOpsImpl {
             strapping_name: strapping_name.to_string(),
         })? {
             ProxyResponse::RemovePinStrapping => Ok(()),
-            _ => bail!(ProxyError::UnexpectedReply()), // Enable when second option is added
+            _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
 }

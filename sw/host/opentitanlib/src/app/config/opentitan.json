@@ -118,5 +118,8 @@
       "parity": "None",
       "stopbits": "Stop1"
     }
-  ]
+  ],
+  "provides": {
+    "chip": "opentitan"
+  }
 }

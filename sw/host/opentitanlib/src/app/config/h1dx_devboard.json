@@ -6,5 +6,8 @@
       "parity": "None",
       "stopbits": "Stop1"
     }
-  ]
+  ],
+  "provides": {
+    "chip": "h1dx"
+  }
 }

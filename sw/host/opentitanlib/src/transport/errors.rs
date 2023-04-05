@@ -61,10 +61,14 @@ pub enum TransportError {
     ProxyConnectError(String, String),
     #[error("Requested capabilities {0:?}, but capabilities {1:?} are supplied")]
     MissingCapabilities(Capability, Capability),
-    #[error("Inconsistent configuration for {0:?} instance {1}")]
+    #[error("Inconsistent configuration for {0:?} instance \"{1}\"")]
     InconsistentConf(TransportInterfaceType, String),
-    #[error("Inconsistent configuration of transport interface {0} vs. {1}")]
+    #[error("Inconsistent configuration of transport interface \"{0}\" vs. \"{1}\"")]
     InconsistentInterfaceConf(String, String),
+    #[error("Expected value \"{1}\" for key \"{0}\", found \"{2}\"")]
+    RequiresUnequal(String, String, String),
+    #[error("Expected value \"{1}\" for key \"{0}\", found none")]
+    RequiresMissing(String, String),
 }
 impl_serializable_error!(TransportError);
 
@@ -80,4 +84,5 @@ pub enum TransportInterfaceType {
     ProxyOps,
     GpioMonitoring,
     IoExpander,
+    Provides,
 }

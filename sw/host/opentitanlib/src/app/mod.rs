@@ -166,6 +166,8 @@ impl I2cConfiguration {
 
 pub struct TransportWrapperBuilder {
     interface: String,
+    provides_list: Vec<(String, String)>,
+    requires_list: Vec<(String, String)>,
     pin_alias_map: HashMap<String, String>,
     pin_on_io_expander_map: HashMap<String, config::IoExpanderPin>,
     uart_map: HashMap<String, String>,
@@ -183,6 +185,7 @@ pub struct TransportWrapperBuilder {
 // transport will have been computed from a number ConfigurationFiles.
 pub struct TransportWrapper {
     transport: Rc<dyn Transport>,
+    provides_map: HashMap<String, String>,
     pin_map: HashMap<String, String>,
     artificial_pin_map: HashMap<String, Rc<dyn GpioPin>>,
     uart_map: HashMap<String, String>,
@@ -198,6 +201,8 @@ impl TransportWrapperBuilder {
     pub fn new(interface: String) -> Self {
         Self {
             interface,
+            provides_list: Vec::new(),
+            requires_list: Vec::new(),
             pin_alias_map: HashMap::new(),
             pin_on_io_expander_map: HashMap::new(),
             uart_map: HashMap::new(),
@@ -283,6 +288,12 @@ impl TransportWrapperBuilder {
                 ))
             }
         }
+        for (key, value) in file.provides {
+            self.provides_list.push((key, value));
+        }
+        for (key, value) in file.requires {
+            self.requires_list.push((key, value));
+        }
         // Merge content of configuration file into pin_map and other members.
         for pin_conf in file.pins {
             if let Some(alias_of) = &pin_conf.alias_of {
@@ -358,6 +369,49 @@ impl TransportWrapperBuilder {
         Ok(())
     }
 
+    fn consolidate_provides_map(
+        result_provides_map: &mut HashMap<String, String>,
+        provides_list: Vec<(String, String)>,
+    ) -> Result<()> {
+        for (key, value) in provides_list {
+            match result_provides_map.entry(key.clone()) {
+                Entry::Vacant(v) => {
+                    v.insert(value);
+                }
+                Entry::Occupied(v) => {
+                    if v.get() != &value {
+                        bail!(TransportError::InconsistentConf(
+                            TransportInterfaceType::Provides,
+                            key
+                        ))
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn verify_requires_list(
+        provides_map: &HashMap<String, String>,
+        requires_list: &Vec<(String, String)>,
+    ) -> Result<()> {
+        for (key, required_value) in requires_list {
+            match provides_map.get(key) {
+                Some(actual_value) if actual_value == required_value => (),
+                Some(actual_value) => bail!(TransportError::RequiresUnequal(
+                    key.to_string(),
+                    required_value.to_string(),
+                    actual_value.to_string()
+                )),
+                None => bail!(TransportError::RequiresMissing(
+                    key.to_string(),
+                    required_value.to_string()
+                )),
+            }
+        }
+        Ok(())
+    }
+
     fn consolidate_pin_conf_map(
         pin_alias_map: &HashMap<String, String>,
         pin_conf_list: &Vec<(String, PinConfiguration)>,
@@ -417,6 +471,19 @@ impl TransportWrapperBuilder {
         self,
         transport: Box<dyn crate::transport::Transport>,
     ) -> Result<TransportWrapper> {
+        let mut provides_map = if transport
+            .capabilities()?
+            .request(Capability::PROXY)
+            .ok()
+            .is_ok()
+        {
+            transport.proxy_ops()?.provides_map()?
+        } else {
+            HashMap::new()
+        };
+        Self::consolidate_provides_map(&mut provides_map, self.provides_list)?;
+        Self::verify_requires_list(&provides_map, &self.requires_list)?;
+
         let pin_conf_map =
             Self::consolidate_pin_conf_map(&self.pin_alias_map, &self.pin_conf_list)?;
         let mut strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>> =
@@ -431,6 +498,7 @@ impl TransportWrapperBuilder {
         let i2c_conf_map = Self::consolidate_i2c_conf_map(&self.i2c_map, &self.i2c_conf_list)?;
         let mut transport_wrapper = TransportWrapper {
             transport: Rc::from(transport),
+            provides_map,
             pin_map: self.pin_alias_map,
             artificial_pin_map: HashMap::new(),
             uart_map: self.uart_map,
@@ -475,6 +543,23 @@ impl TransportWrapper {
     /// transport object.
     pub fn capabilities(&self) -> Result<crate::transport::Capabilities> {
         self.transport.capabilities()
+    }
+
+    /// Returns a string->string map containing user-defined aspects "provided" by the testbed
+    /// setup.  For instance, whether a SPI flash chip is fitted in the socket, or whether pullup
+    /// resistors are suitable for high-speed I2C.
+    pub fn provides_map(&self) -> Result<&HashMap<String, String>> {
+        Ok(&self.provides_map)
+    }
+
+    pub fn query_provides(&self, key: &str) -> Result<&str> {
+        self.provides_map
+            .get(key)
+            .map(String::as_str)
+            .ok_or_else(|| {
+                TransportError::InvalidInstance(TransportInterfaceType::Provides, key.to_string())
+                    .into()
+            })
     }
 
     /// Returns a [`Jtag`] implementation.

@@ -6,6 +6,7 @@ use anyhow::Result;
 use regex::Regex;
 use serde_annotate::Annotate;
 use std::any::Any;
+use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::time::Duration;
@@ -102,10 +103,52 @@ impl CommandDispatch for VerilatorWatch {
     }
 }
 
+#[derive(Debug, StructOpt)]
+pub struct TransportQuery {
+    #[structopt(help = "User defined key to look up")]
+    key: String,
+}
+
+#[derive(serde::Serialize)]
+pub struct TransportQueryResult {
+    key: String,
+    value: String,
+}
+
+impl CommandDispatch for TransportQuery {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let value = transport.query_provides(&self.key)?;
+        Ok(Some(Box::new(TransportQueryResult {
+            key: self.key.clone(),
+            value: value.to_string(),
+        })))
+    }
+}
+
+#[derive(Debug, StructOpt)]
+pub struct TransportQueryAll {}
+
+impl CommandDispatch for TransportQueryAll {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let value: HashMap<String, String> = transport.provides_map()?.clone();
+        Ok(Some(Box::new(value)))
+    }
+}
+
 /// Commands for interacting with the transport debugger device itself.
 #[derive(Debug, StructOpt, CommandDispatch)]
 pub enum TransportCommand {
     Init(TransportInit),
     VerilatorWatch(VerilatorWatch),
     UpdateFirmware(TransportUpdateFirmware),
+    Query(TransportQuery),
+    QueryAll(TransportQueryAll),
 }

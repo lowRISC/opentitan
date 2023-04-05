@@ -245,6 +245,7 @@ pub enum EmuResponse {
 
 #[derive(Serialize, Deserialize)]
 pub enum ProxyRequest {
+    Provides,
     Bootstrap {
         options: BootstrapOptions,
         payload: Vec<u8>,
@@ -259,6 +260,9 @@ pub enum ProxyRequest {
 
 #[derive(Serialize, Deserialize)]
 pub enum ProxyResponse {
+    Provides {
+        provides_map: HashMap<String, String>,
+    },
     Bootstrap,
     ApplyPinStrapping,
     RemovePinStrapping,

@@ -7,6 +7,7 @@
 use crate::io::gpio::{PinMode, PullMode};
 
 use serde::Deserialize;
+use std::collections::HashMap;
 
 /// Configuration of a particular GPIO pin.
 #[derive(Deserialize, Clone, Debug)]
@@ -135,6 +136,13 @@ pub struct ConfigurationFile {
     /// List of names of other configuration files to include recursively.
     #[serde(default)]
     pub includes: Vec<String>,
+    /// List of user-defined features "provided" by the testing setup using this file.
+    #[serde(default)]
+    pub provides: HashMap<String, String>,
+    /// List of user-defined features which must be "provided" by the testing setup (through other
+    /// configuration files), in order for it to make sense to use this file.
+    #[serde(default)]
+    pub requires: HashMap<String, String>,
     /// List of GPIO pin configurations.
     #[serde(default)]
     pub pins: Vec<PinConfiguration>,
