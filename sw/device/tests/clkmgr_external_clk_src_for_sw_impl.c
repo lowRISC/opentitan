@@ -34,8 +34,9 @@ void execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk) {
   dif_clkmgr_t clkmgr;
   dif_clkmgr_recov_err_codes_t err_codes;
 
-  uint32_t kMeasurementDelayMicros =
-      aon_timer_testutils_get_us_from_aon_cycles(kMeasurementsPerRound);
+  uint32_t delay_micros = 0;
+  CHECK_STATUS_OK(aon_timer_testutils_get_us_from_aon_cycles(
+      kMeasurementsPerRound, &delay_micros));
 
   CHECK_DIF_OK(dif_clkmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
@@ -48,7 +49,7 @@ void execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk) {
   clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
       /*low_speed=*/false);
-  busy_spin_micros(kMeasurementDelayMicros);
+  busy_spin_micros(delay_micros);
   CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
   clkmgr_testutils_disable_clock_counts(&clkmgr);
 
@@ -69,7 +70,7 @@ void execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk) {
   clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/true,
       /*low_speed=*/!fast_ext_clk);
-  busy_spin_micros(kMeasurementDelayMicros);
+  busy_spin_micros(delay_micros);
   CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
   clkmgr_testutils_disable_clock_counts(&clkmgr);
 }

@@ -40,8 +40,9 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
   dif_sensor_ctrl_t sensor_ctrl;
 
-  const uint32_t kMeasurementDelayMicros =
-      aon_timer_testutils_get_us_from_aon_cycles(kMeasurementsPerRound);
+  uint32_t delay_micros = 0;
+  CHECK_STATUS_OK(aon_timer_testutils_get_us_from_aon_cycles(
+      kMeasurementsPerRound, &delay_micros));
 
   CHECK_DIF_OK(dif_clkmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
@@ -62,7 +63,7 @@ bool test_main(void) {
     clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
         &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/true,
         /*low_speed=*/true);
-    busy_spin_micros(kMeasurementDelayMicros);
+    busy_spin_micros(delay_micros);
 
     // Check we get errors, but let the counters keep going.
     dif_clkmgr_recov_err_codes_t err_codes;
