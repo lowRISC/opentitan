@@ -162,6 +162,35 @@ module tb;
   bit en_sim_sram = 1'b1;
   wire sel_sim_sram = !dut.chip_if.stub_cpu & en_sim_sram;
 
+  // Interface presently just permits the DPI model to be easily connected and
+  // disconnected as required, since SENSE pin is a MIO with other uses.
+  usb20_if u_usb20_if (
+    .clk_i            (dut.chip_if.usb_clk),
+    .rst_ni           (dut.chip_if.usb_rst_n),
+
+    .usb_vbus         (dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc7]),
+    .usb_p            (dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbP]),
+    .usb_n            (dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbN])
+  );
+
+  // Instantiate & connect the USB DPI model for top-level testing.
+  usb20_usbdpi u_usb20_usbdpi (
+    .clk_i            (dut.chip_if.usb_clk),
+    .rst_ni           (dut.chip_if.usb_rst_n),
+
+    .enable           (u_usb20_if.connected),
+
+    // Outputs from the DPI module
+    .usb_sense_p2d_o  (u_usb20_if.usb_sense_p2d),
+    .usb_dp_en_p2d_o  (u_usb20_if.usb_dp_en_p2d),
+    .usb_dn_en_p2d_o  (u_usb20_if.usb_dn_en_p2d),
+    .usb_dp_p2d_o     (u_usb20_if.usb_dp_p2d),
+    .usb_dn_p2d_o     (u_usb20_if.usb_dn_p2d),
+
+    .usb_p            (dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbP]),
+    .usb_n            (dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbN])
+  );
+
   sim_sram u_sim_sram (
     .clk_i    (sel_sim_sram ? `CPU_HIER.clk_i : 1'b0),
     .rst_ni   (`CPU_HIER.rst_ni),
@@ -211,6 +240,10 @@ module tb;
     // AST io clk blocker interface.
     uvm_config_db#(virtual ast_ext_clk_if)::set(
         null, "*.env", "ast_ext_clk_vif", dut.ast_ext_clk_if);
+
+    // USB DPI interface.
+    uvm_config_db#(virtual usb20_if)::set(
+        null, "*.env", "usb20_vif", u_usb20_if);
 
     // Format time in microseconds losing no precision. The added "." makes it easier to determine
     // the order of magnitude without counting digits, as is needed if it was formatted as ps or ns.
@@ -371,6 +404,13 @@ module tb;
                                        .n_bits($bits(`OTBN_DMEM_HIER)),
                                        .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[OtbnDmem0], `OTBN_DMEM_HIER)
+
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for USBDEV BUFFER", UVM_MEDIUM)
+      m_mem_bkdr_util[UsbdevBuf] = new(.name  ("mem_bkdr_util[UsbdevBuf]"),
+                                       .path  (`DV_STRINGIFY(`USBDEV_BUF_HIER)),
+                                       .depth ($size(`USBDEV_BUF_HIER)),
+                                       .n_bits($bits(`USBDEV_BUF_HIER)),
+                                       .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
 
       mem = mem.first();
       do begin

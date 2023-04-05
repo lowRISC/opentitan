@@ -299,6 +299,13 @@
 
     // USB (pre-verified IP) integration tests:
     {
+      name: chip_sw_usbdev_dpi
+      desc: '''Sketch of USBDPI integration.
+            '''
+      stage: V2
+      tests: ["chip_sw_usbdev_dpi"]
+    }
+    {
       name: chip_sw_usb_fs_tx_rx
       desc: '''Verify the transmission of single-ended data over the USB at full speed. As a part of
             this test, the enablement of USB pullup is also expected to be verified.

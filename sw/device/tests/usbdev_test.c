@@ -98,11 +98,6 @@ static void usb_receipt_callback(uint8_t c) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  CHECK(kDeviceType == kDeviceSimVerilator || kDeviceType == kDeviceFpgaCw310,
-        "This test is not expected to run on platforms other than the "
-        "Verilator simulation or CW310 FPGA. It needs the USB DPI model "
-        "or host application.");
-
   LOG_INFO("Running USBDEV test");
 
   CHECK_DIF_OK(dif_pinmux_init(

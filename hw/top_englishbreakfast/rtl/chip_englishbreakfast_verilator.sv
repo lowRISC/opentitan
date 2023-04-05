@@ -296,6 +296,7 @@ module chip_englishbreakfast_verilator (
     .clk_i           (clk_i),
     .rst_ni          (rst_ni),
     .clk_48MHz_i     (clk_i),
+    .enable          (1'b1),
     .sense_p2d       (cio_usbdev_sense_p2d),
     .pullupdp_d2p    (cio_usbdev_dp_pullup_d2p),
     .pullupdn_d2p    (cio_usbdev_dn_pullup_d2p),

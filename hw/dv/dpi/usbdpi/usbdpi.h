@@ -81,6 +81,7 @@ typedef uint32_t svBitVecVal;
 #define P2D_DN 2
 #define P2D_DP 4
 #define P2D_D 8
+#define P2D_OE 0x10
 
 /* Remember these go LSB first */
 

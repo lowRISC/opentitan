@@ -78,6 +78,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   sw_test_status_vif sw_test_status_vif;
   ast_supply_vif     ast_supply_vif;
   ast_ext_clk_vif    ast_ext_clk_vif;
+  usb20_vif          usb20_vif;
 
   // Number of RAM tiles for each RAM instance.
   uint num_ram_main_tiles;

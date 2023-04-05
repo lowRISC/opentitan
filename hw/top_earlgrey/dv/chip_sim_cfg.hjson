@@ -532,6 +532,15 @@
       run_timeout_mins: 180
     }
     {
+      name: chip_sw_usbdev_dpi
+      uvm_test_seq: chip_sw_usbdev_dpi_vseq
+      sw_images: ["//sw/device/tests:usbdev_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+uart_idx=0", "+calibrate_usb_clk=1"]
+      run_timeout_mins: 120
+      reseed: 1
+    }
+    {
       name: chip_sw_inject_scramble_seed
       uvm_test_seq: chip_sw_inject_scramble_seed_vseq
       sw_images: ["//sw/device/tests/sim_dv:inject_scramble_seed:1"]

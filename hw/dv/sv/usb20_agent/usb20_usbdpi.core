@@ -1,0 +1,21 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:usb20_usbdpi:0.1"
+description: "USB20-USBDPI"
+
+filesets:
+  files_rtl:
+    files:
+      - usb20_if.sv: { file_type: systemVerilogSource }
+      - usb20_usbdpi.sv: { file_type: systemVerilogSource }
+
+  files_dv:
+    depend:
+      - lowrisc:dv_dpi:usbdpi
+
+targets:
+  default:
+    filesets:
+      - files_rtl
