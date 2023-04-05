@@ -136,14 +136,18 @@ module entropy_src_main_sm
         if (!enable_i) begin
           state_d = Idle;
         end else begin
-          sha3_start_o = 1'b1;
-          state_d = StartupPhase1;
+          cs_aes_halt_req_o = 1'b1;
+          if (cs_aes_halt_ack_i) begin
+            sha3_start_o = 1'b1;
+            state_d = StartupPhase1;
+          end
         end
       end
       StartupPhase1: begin
         if (!enable_i) begin
           state_d = Idle;
         end else begin
+          cs_aes_halt_req_o = 1'b1;
           if (ht_done_pulse_i) begin
             if (ht_fail_pulse_i) begin
               state_d = StartupFail1;
@@ -158,6 +162,7 @@ module entropy_src_main_sm
         if (!enable_i) begin
           state_d = Idle;
         end else begin
+          cs_aes_halt_req_o = 1'b1;
           if (ht_done_pulse_i) begin
             if (ht_fail_pulse_i) begin
               state_d = StartupFail1;
@@ -173,6 +178,7 @@ module entropy_src_main_sm
         if (!enable_i) begin
           state_d = Idle;
         end else begin
+          cs_aes_halt_req_o = 1'b1;
           if (ht_done_pulse_i) begin
             if (ht_fail_pulse_i) begin
               // Failed two consecutive tests

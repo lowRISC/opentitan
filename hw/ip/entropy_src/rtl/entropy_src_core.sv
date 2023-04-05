@@ -2591,8 +2591,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .main_sm_err_o        (es_main_sm_err)
   );
 
-  // es to cs halt request to reduce power spikes
-  assign cs_aes_halt_d = cs_aes_halt_req;
+  // Halt request to CSRNG's AES in order to reduce power spikes while Entropy Source's SHA3 is
+  // active.
+  assign cs_aes_halt_d =
+      // If a request has not been acknowledged yet, keep requesting (protocol requirement).
+      (cs_aes_halt_q & ~cs_aes_halt_i.cs_aes_halt_ack) ? 1'b1 :
+      // Else forward halt requests from the main SM.
+      cs_aes_halt_req;
+
   assign cs_aes_halt_o.cs_aes_halt_req = cs_aes_halt_q;
 
   //--------------------------------------------
