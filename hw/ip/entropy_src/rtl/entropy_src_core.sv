@@ -399,13 +399,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     fifo_read_err_sum;
   logic                     fifo_status_err_sum;
   logic [30:0]              err_code_test_bit;
-  logic                     sha3_msgfifo_ready;
   logic                     sha3_state_vld;
   logic                     sha3_start_raw;
   logic                     sha3_start;
   logic                     sha3_process;
-  logic                     sha3_msg_end;
-  logic                     sha3_msg_rdy_mask;
   logic                     sha3_block_processed;
   prim_mubi_pkg::mubi4_t    sha3_done;
   prim_mubi_pkg::mubi4_t    sha3_absorbed;
@@ -478,7 +475,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        cs_aes_halt_q, cs_aes_halt_d;
   logic [63:0] es_rdata_capt_q, es_rdata_capt_d;
   logic        es_rdata_capt_vld_q, es_rdata_capt_vld_d;
-  logic        sha3_msg_rdy_mask_q, sha3_msg_rdy_mask_d;
   mubi4_t      mubi_mod_en_dly_d, mubi_mod_en_dly_q;
 
 
@@ -495,7 +491,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       es_rdata_capt_q        <= '0;
       es_rdata_capt_vld_q    <= '0;
       fw_ov_sha3_start_pfe_q <= '0;
-      sha3_msg_rdy_mask_q    <= '0;
       mubi_mod_en_dly_q      <= prim_mubi_pkg::MuBi4False;
       sha3_flush_q           <= '0;
       sha3_start_mask_q      <= '0;
@@ -509,7 +504,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       es_rdata_capt_q        <= es_rdata_capt_d;
       es_rdata_capt_vld_q    <= es_rdata_capt_vld_d;
       fw_ov_sha3_start_pfe_q <= fw_ov_sha3_start_pfe;
-      sha3_msg_rdy_mask_q    <= sha3_msg_rdy_mask_d;
       sha3_flush_q           <= sha3_flush_d;
       sha3_start_mask_q      <= sha3_start_mask_d;
       mubi_mod_en_dly_q      <= mubi_mod_en_dly_d;
@@ -2423,7 +2417,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
                             ~es_enable_fo[10] & ~pfifo_precon_not_empty :
                             ~es_delayed_enable & ~pfifo_precon_not_empty;
 
-  assign pfifo_precon_pop = (pfifo_cond_push && sha3_msgfifo_ready);
+  assign pfifo_precon_pop = (pfifo_cond_push && sha3_msg_rdy);
 
   assign es_fw_ov_wr_alert = fw_ov_mode && fw_ov_mode_entropy_insert &&
          fw_ov_fifo_wr_pulse && fw_ov_wr_fifo_full;
@@ -2438,30 +2432,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // and compress it such that a perfect entropy source is created
   // This block will take in 2048 (by default setting) bits to create 384 bits.
 
-  // Note on backpressure from the SHA block:
-  // If we use the full sha3_msgfifo_ready signal, we create a combinational logic
-  // loop.  However, the SHA3 seems to have a hiccup by which it some times
-  // asserts ready even though it is processing data, so we mask our push
-  // signal with our (flop-based) sha3_msg_rdy_mask
-  assign pfifo_cond_push  = pfifo_precon_not_empty && !es_bypass_mode && sha3_msg_rdy_mask;
+  assign pfifo_cond_push  = pfifo_precon_not_empty && !es_bypass_mode;
 
   assign pfifo_cond_wdata = pfifo_precon_rdata;
 
   assign msg_data[0] = pfifo_cond_wdata;
 
-  // The SHA3 block cannot take messages except between the
-  // start and cs_aes_req pulses
-  assign sha3_msg_end        = cs_aes_halt_req;
-
-  assign sha3_msg_rdy_mask_d = sha3_start ? 1'b1 :
-                               sha3_msg_end ? 1'b0 :
-                               sha3_msg_rdy_mask_q;
-
-  assign sha3_msg_rdy_mask = sha3_msg_rdy_mask_q & ~sha3_msg_end;
-
   assign pfifo_cond_rdata = sha3_state[0][SeedLen-1:0];
   assign pfifo_cond_not_empty = sha3_state_vld;
-  assign sha3_msgfifo_ready = sha3_msg_rdy & sha3_msg_rdy_mask;
 
   // SHA3 hashing engine
   sha3 #(
