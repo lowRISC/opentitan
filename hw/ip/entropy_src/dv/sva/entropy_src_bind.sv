@@ -20,4 +20,6 @@ module entropy_src_bind;
     .d2h    (tl_o)
   );
 
+  bind entropy_src entropy_src_assert_if u_entropy_src_assert_if ( .* );
+
 endmodule

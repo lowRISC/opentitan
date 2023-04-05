@@ -37,8 +37,79 @@
 interface entropy_src_assert_if
   import entropy_src_pkg::*;
 (
+  input logic clk_i,
+  input logic rst_ni,
+
   input entropy_src_hw_if_req_t entropy_src_hw_if_i
 );
+
+  logic cs_aes_halt_active_d, cs_aes_halt_active_q;
+  logic keccak_active_d, keccak_active_q;
+
+  always_ff @(posedge clk_i, negedge rst_ni) begin
+    if (!rst_ni) begin
+      cs_aes_halt_active_q <= 1'b0;
+      keccak_active_q <= 1'b0;
+    end else begin
+      cs_aes_halt_active_q <= cs_aes_halt_active_d;
+      keccak_active_q <= keccak_active_d;
+    end
+  end
+  `ASSERT_KNOWN(CsAesHaltActiveKnown_A, cs_aes_halt_active_q)
+  `ASSERT_KNOWN(KeccakActiveKnown_A, keccak_active_q)
+
+  assign keccak_active_d = `CORE.u_sha3.u_keccak.run_i ? 1'b1 :      // set when Keccak starts
+                           `CORE.u_sha3.u_keccak.complete_o ? 1'b0 : // clear when Keccak completes
+                           keccak_active_q;                          // keep otherwise
+
+  always_comb begin
+    cs_aes_halt_active_d = cs_aes_halt_active_q;
+    if (!cs_aes_halt_active_q) begin
+      // CS AES Halt becomes active on req/ack handshake.
+      if (`CORE.cs_aes_halt_o.cs_aes_halt_req && `CORE.cs_aes_halt_i.cs_aes_halt_ack) begin
+        cs_aes_halt_active_d = 1'b1;
+      end
+    end else begin
+      if (!`CORE.cs_aes_halt_o.cs_aes_halt_req) begin
+        // CS AES halt becomes inactive when req drops.
+        cs_aes_halt_active_d = 1'b0;
+      end
+    end
+  end
+
+  // TODO: Remove this (debug only).
+  //
+  // Print a warning when keccak is active but cs_aes_halt isn't, outside the already known
+  // scenarios.
+  always_ff @(posedge clk_i, negedge rst_ni) begin
+    if (rst_ni && keccak_active_q && !cs_aes_halt_active_q) begin
+      entropy_src_main_sm_pkg::state_e state;
+      string msg;
+      state = `CORE.u_entropy_src_main_sm.state_q;
+      if (!(state inside {entropy_src_main_sm_pkg::FWInsertMsg,
+                          entropy_src_main_sm_pkg::Sha3Prep,
+                          entropy_src_main_sm_pkg::StartupPhase1,
+                          entropy_src_main_sm_pkg::StartupPass1,
+                          entropy_src_main_sm_pkg::StartupFail1,
+                          entropy_src_main_sm_pkg::ContHTRunning,
+                          entropy_src_main_sm_pkg::Idle,
+                          entropy_src_main_sm_pkg::AlertHang})) begin
+        msg = $sformatf("keccak active without CSRNG AES halted in state %0s", state.name());
+        `dv_warning(msg)
+      end
+    end
+  end
+
+  // Keccak may only be active if CSRNG's AES is halted.
+  `ASSERT(KeccakActiveOnlyWhenCsAesHaltActive_A, keccak_active_q |-> cs_aes_halt_active_q)
+
+  // When CSRNG's AES gets halted, Keccak must be activated in the next dozens of cycles or
+  // entropy_src must be disabled.  This assertion prevents spurious halts of CSRNG's AES.
+  //
+  // TODO: Doesn't work yet (has to take disabling into consideration, at least), but is of
+  // secondary concern.
+  // `ASSERT(CsAesHaltActiveOnlyAWhenKeccakActive_A,
+  //         cs_aes_halt_active_q |-> ##[0:36] keccak_active_q)
 
   task automatic assert_off_alert ();
 
@@ -49,6 +120,10 @@ interface entropy_src_assert_if
   endtask // assert_on_alert
 
   task automatic assert_off_err ();
+    $assertoff(0, CsAesHaltActiveKnown_A);
+    $assertoff(0, KeccakActiveKnown_A);
+    $assertoff(0, KeccakActiveOnlyWhenCsAesHaltActive_A);
+    // $assertoff(0, CsAesHaltActiveOnlyAWhenKeccakActive_A); // TODO: see above
     $assertoff(0, tb.dut.AlertTxKnownO_A);
     $assertoff(0, tb.dut.IntrEsFifoErrKnownO_A);
     $assertoff(0, tb.dut.EsHwIfEsAckKnownO_A);
