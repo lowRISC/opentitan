@@ -22,9 +22,15 @@ status_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds,
                                                     uint32_t *cycles);
 
 /**
- * Returns the number of microseconds corresponding to the given AON cycles.
+ * Compute the number of microseconds corresponding to the given AON cycles.
+ *
+ * @param aon_timer An Always-On Timer handle.
+ * @param cycles The number of AON clock cycles.
+ * @param[out] microseconds The number of microseconds.
+ * @return The result of the operation.
  */
-uint32_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles);
+status_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles,
+                                                    uint32_t *microseconds);
 
 /**
  * Configure wakeup counter for a number of AON clock cycles.

@@ -26,13 +26,15 @@ status_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds,
   return OK_STATUS();
 }
 
-uint32_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles) {
+status_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles,
+                                                    uint32_t *us) {
   uint64_t uss = udiv64_slow(cycles * 1000000, kClockFreqAonHz,
                              /*rem_out=*/NULL);
-  CHECK(uss < UINT32_MAX,
-        "The value 0x%08x%08x can't fit into the 32 bits timer counter.",
-        (uss >> 32), (uint32_t)uss);
-  return (uint32_t)uss;
+  TRY_CHECK(uss < UINT32_MAX,
+            "The value 0x%08x%08x can't fit into the 32 bits timer counter.",
+            (uss >> 32), (uint32_t)uss);
+  *us = uss;
+  return OK_STATUS();
 }
 
 status_t aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,

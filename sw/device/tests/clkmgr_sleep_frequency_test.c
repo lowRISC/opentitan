@@ -73,8 +73,9 @@ bool test_main(void) {
   dif_sensor_ctrl_t sensor_ctrl;
   dif_aon_timer_t aon_timer;
 
-  const uint32_t kMeasurementDelayMicros =
-      aon_timer_testutils_get_us_from_aon_cycles(kMeasurementsPerRound);
+  uint32_t delay_micros = 0;
+  CHECK_STATUS_OK(aon_timer_testutils_get_us_from_aon_cycles(
+      kMeasurementsPerRound, &delay_micros));
 
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
@@ -100,7 +101,7 @@ bool test_main(void) {
   clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
       /*low_speed=*/false);
-  busy_spin_micros(kMeasurementDelayMicros);
+  busy_spin_micros(delay_micros);
 
   // check results
   CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
@@ -111,7 +112,7 @@ bool test_main(void) {
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
       /*low_speed=*/false);
 
-  busy_spin_micros(kMeasurementDelayMicros);
+  busy_spin_micros(delay_micros);
 
   // Set wakeup timer to 100 us to have enough down time, and also wait before
   // entering sleep to have a chance to measure before sleeping. With normal
