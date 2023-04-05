@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{bail, ensure, Result};
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use std::thread;
@@ -58,12 +58,24 @@ impl Register {
 pub enum TpmError {
     #[error("TPM timeout")]
     Timeout,
+    #[error("Unexpected response size {0}")]
+    UnexpectedResponseSize(usize),
+    #[error("Response incomplete. Missing {0} bytes.")]
+    ResponseIncomplete(usize),
+    #[error("Failed to get status")]
+    ReadStatusFail,
+    #[error("Timeout polling for response")]
+    ResponseTimeout,
 }
 
 /// Low level interface for accessing TPM.  Separate implementations exist for SPI and I2C.
 pub trait Driver {
     /// Initialize the TPM by claiming the access register.
     fn init(&self) -> Result<()> {
+        self.write_register(
+            Register::ACCESS,
+            &TpmAccess::ACTIVE_LOCALITY.bits().to_be_bytes(),
+        )?;
         self.write_register(
             Register::ACCESS,
             &TpmAccess::REQUEST_USE.bits().to_be_bytes(),
@@ -77,14 +89,59 @@ pub trait Driver {
     /// Write to the given TPM register.
     fn write_register(&self, register: Register, data: &[u8]) -> Result<()>;
 
-    /// Execute a TPM command and return the result as a `Vec<u8>` or time out.
-    fn execute_command(&self, cmd: &[u8]) -> Result<Vec<u8>>;
+    /// Execute a TPM command and return the result as a Vec<u8> or time out.
+    fn execute_command(&self, cmd: &[u8]) -> Result<Vec<u8>> {
+        self.write_register(Register::STS, &TpmStatus::CMD_READY.to_le_bytes())?;
+
+        log::debug!("RUN({}) {:02X?}", cmd.len(), cmd);
+        self.poll_for_ready()?;
+        for slice in cmd.chunks(MAX_TRANSACTION_SIZE) {
+            self.write_register(Register::DATA_FIFO, slice)?;
+        }
+        self.write_register(Register::STS, &TpmStatus::TPM_GO.to_le_bytes())?;
+
+        let sz = self
+            .poll_for_data_available()?
+            .burst_count()
+            .max(RESPONSE_HEADER_SIZE)
+            .min(MAX_TRANSACTION_SIZE);
+        let mut result: Vec<u8> = vec![0; sz];
+        self.read_register(Register::DATA_FIFO, result.as_mut_slice())?;
+        let resp_size: usize = u32::from_be_bytes(result[2..6].try_into().unwrap()) as usize;
+        ensure!(
+            resp_size < MAX_RESPONSE_SIZE,
+            TpmError::UnexpectedResponseSize(resp_size)
+        );
+        let mut remaining = resp_size - sz;
+
+        let mut sts = self.read_status()?;
+        while sts.is_valid() && sts.data_available() && remaining > 0 {
+            let to_read: usize = remaining.min(MAX_TRANSACTION_SIZE);
+            let mut result2: Vec<u8> = vec![0; to_read];
+            self.read_register(Register::DATA_FIFO, result2.as_mut_slice())?;
+            result.append(&mut result2);
+            remaining -= to_read;
+            sts = self.read_status()?;
+        }
+        ensure!(remaining == 0, TpmError::ResponseIncomplete(remaining));
+        log::debug!("RES({}) {:02X?}", result.len(), result.as_slice());
+
+        // Return to idle state.
+        self.write_register(Register::STS, &TpmStatus::CMD_READY.to_le_bytes())?;
+
+        Ok(result)
+    }
 
     /// Fetches the current status.
     fn read_status(&self) -> Result<TpmStatus> {
         let mut out = [0u8; 4];
-        self.read_register(Register::STS, &mut out)?;
-        Ok(TpmStatus::from_bytes(out))
+        let res = self.read_register(Register::STS, &mut out);
+        if res.is_ok() {
+            Ok(TpmStatus::from_bytes(out))
+        } else {
+            log::error!("Failed to read status");
+            Err(TpmError::ReadStatusFail.into())
+        }
     }
 
     /// Poll the status register until the status is valid and data is available or time out.
@@ -94,10 +151,36 @@ pub trait Driver {
         let mut sts = self.read_status()?;
         // If the device is busy and doesn't actually respond, the status comes back as !0. This
         // will look like a valid status with a full FIFO, so ignore this case.
-        while !sts.is_valid() || !sts.data_available() || sts.raw_value() == !0 {
+        while !sts.is_valid()
+            || !sts.data_available()
+            || sts.raw_value() == !0
+            // Sometimes the status returns shifted. Detect that here.
+            || (sts.raw_value() & 0xFF) == 0xFF
+        {
             if Instant::now() > deadline {
-                bail!("Status poll timeout.");
+                log::error!("Status poll timeout.");
+                return Err(TpmError::ResponseTimeout.into());
             }
+            sts = self.read_status()?;
+            thread::sleep(Duration::from_millis(10));
+        }
+        Ok(sts)
+    }
+
+    /// Poll the status register until the status is valid and the tpm is ready or time out.
+    fn poll_for_ready(&self) -> Result<TpmStatus> {
+        const STATUS_POLL_TIMEOUT: Duration = Duration::from_millis(30000);
+        let deadline = Instant::now() + STATUS_POLL_TIMEOUT;
+        let mut sts = self.read_status()?;
+        // If the device is busy and doesn't actually respond, the status comes back as !0. This
+        // will look like a valid status with a full FIFO, so ignore this case.
+        while !sts.is_valid()
+            || !sts.is_ready()
+            || sts.raw_value() == !0
+            // Sometimes the status returns shifted. Detect that here.
+            || (sts.raw_value() & 0xFF) == 0xFF
+        {
+            ensure!(Instant::now() <= deadline, TpmError::Timeout);
             sts = self.read_status()?;
             thread::sleep(Duration::from_millis(10));
         }
@@ -167,7 +250,7 @@ const SPI_TPM_WRITE: u32 = 0x40000000;
 const SPI_TPM_DATA_LEN_POS: u8 = 24;
 const SPI_TPM_ADDRESS_OFFSET: u32 = 0x00D40000;
 
-const MAX_TRANSACTION_SIZE: usize = 64;
+const MAX_TRANSACTION_SIZE: usize = 32;
 const RESPONSE_HEADER_SIZE: usize = 6;
 const MAX_RESPONSE_SIZE: usize = 4096;
 
@@ -185,47 +268,6 @@ impl Driver for SpiDriver {
         self.spi
             .run_transaction(&mut [spi::Transfer::Write(data)])?;
         Ok(())
-    }
-
-    fn execute_command(&self, cmd: &[u8]) -> Result<Vec<u8>> {
-        self.write_register(Register::STS, &TpmStatus::CMD_READY.to_le_bytes())?;
-
-        log::debug!("RUN({}) {:02X?}", cmd.len(), cmd);
-        for slice in cmd.chunks(MAX_TRANSACTION_SIZE) {
-            self.write_register(Register::DATA_FIFO, slice)?;
-        }
-        self.write_register(Register::STS, &TpmStatus::TPM_GO.to_le_bytes())?;
-
-        let sz = self
-            .poll_for_data_available()?
-            .burst_count()
-            .max(RESPONSE_HEADER_SIZE);
-        let mut result: Vec<u8> = vec![0; sz];
-        self.read_register(Register::DATA_FIFO, result.as_mut_slice())?;
-        let resp_size: usize = u32::from_be_bytes(result[2..6].try_into().unwrap()) as usize;
-        if resp_size > MAX_RESPONSE_SIZE {
-            bail!("Unexpected response size.");
-        }
-        let mut remaining = resp_size - sz;
-
-        let mut sts = self.read_status()?;
-        while sts.is_valid() && sts.data_available() && remaining > 0 {
-            let to_read: usize = remaining.min(sts.burst_count());
-            let mut result2: Vec<u8> = vec![0; to_read];
-            self.read_register(Register::DATA_FIFO, result2.as_mut_slice())?;
-            result.append(&mut result2);
-            remaining -= to_read;
-            sts = self.read_status()?;
-        }
-        if remaining > 0 {
-            log::error!("Lost data in fifo!");
-        }
-        log::debug!("RES({}) {:02X?}", result.len(), result.as_slice());
-
-        // Return to idle state.
-        self.write_register(Register::STS, &TpmStatus::CMD_READY.to_le_bytes())?;
-
-        Ok(result)
     }
 }
 
@@ -254,14 +296,42 @@ impl I2cDriver {
 
 impl Driver for I2cDriver {
     fn read_register(&self, register: Register, data: &mut [u8]) -> Result<()> {
-        self.i2c.run_transaction(
-            self.addr,
-            &mut [
-                i2c::Transfer::Write(&[Self::addr(register).unwrap()]),
-                i2c::Transfer::Read(data),
-            ],
-        )?;
-        Ok(())
+        const MAX_TRIES: usize = 10;
+        let mut count = 0;
+        // Retry in case the I2C bus wasn't ready.
+        let res = loop {
+            count += 1;
+            let res = self.i2c.run_transaction(
+                self.addr,
+                &mut [
+                    i2c::Transfer::Write(&[Self::addr(register).unwrap()]),
+                    i2c::Transfer::Read(data),
+                ],
+            );
+            match res {
+                Err(e) => {
+                    log::trace!(
+                        "Register 0x{:X} access error: {}",
+                        Self::addr(register).unwrap(),
+                        e
+                    );
+                    if count == MAX_TRIES {
+                        break Err(e);
+                    }
+                }
+                Ok(()) => {
+                    if count > 1 {
+                        log::trace!("Success after {} tries.", count);
+                    }
+                    break Ok(());
+                }
+            }
+            thread::sleep(Duration::from_millis(100));
+        };
+        if res.is_err() {
+            log::error!("Failed to read TPM register.");
+        }
+        res
     }
 
     fn write_register(&self, register: Register, data: &[u8]) -> Result<()> {
@@ -270,9 +340,5 @@ impl Driver for I2cDriver {
         self.i2c
             .run_transaction(self.addr, &mut [i2c::Transfer::Write(&buffer)])?;
         Ok(())
-    }
-
-    fn execute_command(&self, _cmd: &[u8]) -> Result<Vec<u8>> {
-        bail!("Not implemented!")
     }
 }

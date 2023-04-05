@@ -30,6 +30,10 @@ impl TpmStatus {
         self.0
     }
 
+    pub fn is_ready(&self) -> bool {
+        (self.0 >> 6) & 1 == 1
+    }
+
     pub fn from_bytes(val: [u8; 4]) -> Self {
         Self(u32::from_le_bytes(val))
     }
