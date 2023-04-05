@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 
 /**
@@ -21,10 +22,13 @@ uint32_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles);
 
 /**
  * Configure wakeup counter for a number of AON clock cycles.
+ *
+ * @param aon_timer An Always-On Timer handle.
  * @param cycles The number of AON clock cycles.
+ * @return The result of the operation.
  */
-void aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
-                                       uint32_t cycles);
+status_t aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
+                                           uint32_t cycles);
 
 /**
  * Configure watchdog counter in number of AON clock cycles.

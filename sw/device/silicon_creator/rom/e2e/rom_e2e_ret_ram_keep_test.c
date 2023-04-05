@@ -82,7 +82,8 @@ rom_error_t retention_ram_keep_test(void) {
     CHECK_DIF_OK(dif_aon_timer_init(
         mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
         &aon_timer));
-    aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
+    CHECK_STATUS_OK(
+        aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 
     // Enter low-power
     static_assert(kDifPwrmgrWakeupRequestSourceFive ==

@@ -122,7 +122,7 @@ static void prgm_usb_wakeup(void *dif) {
  * set wakeup signal in 50us
  */
 static void prgm_aontimer_wakeup(void *dif) {
-  aon_timer_testutils_wakeup_config(dif, 10);
+  CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(dif, 10));
 }
 
 /**

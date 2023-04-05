@@ -115,7 +115,7 @@ void test_ret_sram_in_normal_sleep(void) {
   retention_sram_check((check_config_t){.do_write = true, .is_equal = true});
 
   // set up wakeup timer
-  aon_timer_testutils_wakeup_config(&aon_timer, 20);
+  CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(&aon_timer, 20));
   // Enable all the AON interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
                                      kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
@@ -142,7 +142,7 @@ void enter_deep_sleep() {
   // Prepare rstmgr for a reset.
   rstmgr_testutils_pre_reset(&rstmgr);
   // set up wakeup timer
-  aon_timer_testutils_wakeup_config(&aon_timer, 20);
+  CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(&aon_timer, 20));
   // Deep sleep.
   pwrmgr_testutils_enable_low_power(&pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
                                     0);

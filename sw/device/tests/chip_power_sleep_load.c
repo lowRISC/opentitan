@@ -365,7 +365,8 @@ bool test_main(void) {
 
   if (kDeepSleep) {
     // activate in Wakeup mode (no need for IRQ)
-    aon_timer_testutils_wakeup_config(&aon_timer, kTimeTillBark);
+    CHECK_STATUS_OK(
+        aon_timer_testutils_wakeup_config(&aon_timer, kTimeTillBark));
   } else {
     // Unmask the software interrupt so it can be used to bring the CPU out of
     // sleep without having an NMI race WFI.

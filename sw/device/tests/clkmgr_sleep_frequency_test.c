@@ -118,7 +118,8 @@ bool test_main(void) {
   // sleep all measurements should remain enabled, and there should be no
   // errors for clocks that were selectively turned off.
   uint32_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 1000 : 100;
-  aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
+  CHECK_STATUS_OK(
+      aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 
   // Enable all the AON interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,

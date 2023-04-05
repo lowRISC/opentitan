@@ -33,22 +33,23 @@ uint32_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles) {
   return (uint32_t)uss;
 }
 
-void aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
-                                       uint32_t cycles) {
+status_t aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
+                                           uint32_t cycles) {
   // Make sure that wake-up timer is stopped.
-  CHECK_DIF_OK(dif_aon_timer_wakeup_stop(aon_timer));
+  TRY(dif_aon_timer_wakeup_stop(aon_timer));
 
   // Make sure the wake-up IRQ is cleared to avoid false positive.
-  CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(aon_timer,
-                                             kDifAonTimerIrqWkupTimerExpired));
+  TRY(dif_aon_timer_irq_acknowledge(aon_timer,
+                                    kDifAonTimerIrqWkupTimerExpired));
 
   bool is_pending = true;
-  CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
-      aon_timer, kDifAonTimerIrqWkupTimerExpired, &is_pending));
-  CHECK(!is_pending);
+  TRY(dif_aon_timer_irq_is_pending(aon_timer, kDifAonTimerIrqWkupTimerExpired,
+                                   &is_pending));
+  TRY_CHECK(!is_pending);
 
   // Set prescaler to zero.
-  CHECK_DIF_OK(dif_aon_timer_wakeup_start(aon_timer, cycles, 0));
+  TRY(dif_aon_timer_wakeup_start(aon_timer, cycles, 0));
+  return OK_STATUS();
 }
 
 void aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,

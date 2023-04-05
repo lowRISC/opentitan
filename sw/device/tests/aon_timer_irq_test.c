@@ -108,7 +108,7 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   irq = kDifAonTimerIrqWdogTimerBark;
   if (expected_irq == kDifAonTimerIrqWkupTimerExpired) {
     // Setup the wake up interrupt.
-    aon_timer_testutils_wakeup_config(aon_timer, count_cycles);
+    CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(aon_timer, count_cycles));
   } else {
     // Change the default value since the expectation is different.
     irq = kDifAonTimerIrqWkupTimerExpired;

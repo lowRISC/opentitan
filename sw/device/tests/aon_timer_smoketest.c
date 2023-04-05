@@ -20,7 +20,7 @@ static void aon_timer_test_wakeup_timer(dif_aon_timer_t *aon) {
   // Test the wake-up timer functionality by setting a single cycle counter.
   // Delay to compensate for AON Timer 200kHz clock (less should suffice, but
   // to be on a cautious side - lets keep it at 100 for now).
-  aon_timer_testutils_wakeup_config(aon, 1);
+  CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(aon, 1));
 
   busy_spin_micros(100);
 
