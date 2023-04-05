@@ -194,6 +194,7 @@ module entropy_src_main_sm
         if (!enable_i) begin
           state_d = Idle;
         end else begin
+          cs_aes_halt_req_o = 1'b1;
           sha3_start_o = 1'b1;
           state_d = ContHTRunning;
         end
@@ -202,6 +203,7 @@ module entropy_src_main_sm
         if (!enable_i) begin
           state_d = Idle;
         end else begin
+          cs_aes_halt_req_o = 1'b1;
           if (ht_done_pulse_i) begin
             if (alert_thresh_fail_i) begin
               state_d = AlertState;
@@ -247,24 +249,21 @@ module entropy_src_main_sm
       Sha3Done: begin
         if (!enable_i) begin
           sha3_done_o = prim_mubi_pkg::MuBi4True;
-          state_d = Sha3MsgDone;
+          state_d = Sha3Quiesce;
         end else begin
+          cs_aes_halt_req_o = 1'b1;
           if (main_stage_rdy_i) begin
             sha3_done_o = prim_mubi_pkg::MuBi4True;
             main_stage_push_o = 1'b1;
-            state_d = Sha3MsgDone;
+            state_d = Sha3Quiesce;
           end
-        end
-      end
-      Sha3MsgDone: begin
-        if (!cs_aes_halt_ack_i) begin
-          state_d = Sha3Quiesce;
         end
       end
       Sha3Quiesce: begin
         if (!enable_i || fw_ov_ent_insert_i) begin
           state_d = Idle;
         end else begin
+          cs_aes_halt_req_o = 1'b1;
           state_d = ContHTStart;
         end
       end
