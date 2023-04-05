@@ -7,5 +7,8 @@
       "name": "console",
       "alias_of": "GSC"
     }
-  ]
+  ],
+  "provides": {
+    "chip": "ti50emulator"
+  }
 }

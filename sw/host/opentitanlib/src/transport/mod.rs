@@ -6,6 +6,7 @@ use anyhow::Result;
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
 
@@ -159,6 +160,12 @@ pub trait Transport {
 
 /// Methods available only on the Proxy implementation of the Transport trait.
 pub trait ProxyOps {
+    /// Returns a string->string map containing user-defined aspects "provided" by the testbed
+    /// setup.  For instance, whether a SPI flash chip is fitted in the socket, or whether pullup
+    /// resistors are suitable for high-speed I2C.  Most of the time, this information will not
+    /// come from the actual transport layer, but from the TransportWrapper above it.
+    fn provides_map(&self) -> Result<HashMap<String, String>>;
+
     fn bootstrap(&self, options: &BootstrapOptions, payload: &[u8]) -> Result<()>;
     fn apply_pin_strapping(&self, strapping_name: &str) -> Result<()>;
     fn remove_pin_strapping(&self, strapping_name: &str) -> Result<()>;
