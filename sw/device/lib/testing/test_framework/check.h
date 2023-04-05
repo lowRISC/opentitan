@@ -171,15 +171,14 @@
  * equal rather than aborting.
  */
 #define TRY_CHECK_ARRAYS_EQ(actual_, expected_, num_items_, ...) \
-  TRY(CHECK_ARRAYS_EQ_IMPL(true, actual_, expected_, num_items_, ##__VA_ARGS__))
+  TRY(CHECK_ARRAYS_IMPL(true, actual_, expected_, num_items_, ##__VA_ARGS__))
 
 /**
  * Same as `CHECK_ARRAYS_NE` above but returns `kInternal` if the arrays are not
  * equal rather than aborting.
  */
-#define TRY_CHECK_ARRAYS_NE(actual_, expected_, num_items_, ...)  \
-  TRY(CHECK_ARRAYS_EQ_IMPL(false, actual_, expected_, num_items_, \
-                           ##__VA_ARGS__))
+#define TRY_CHECK_ARRAYS_NE(actual_, expected_, num_items_, ...) \
+  TRY(CHECK_ARRAYS_IMPL(false, actual_, expected_, num_items_, ##__VA_ARGS__))
 
 /**
  * Compare `num_items_` of `actual_` against `not_expected_` buffer.
