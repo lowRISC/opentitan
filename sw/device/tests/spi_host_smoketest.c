@@ -62,8 +62,8 @@ status_t test_read_sfdp(void) {
   TRY(spi_flash_testutils_read_sfdp(&spi_host, 0, sfdp.data,
                                     sizeof(sfdp.data)));
   LOG_INFO("SFDP signature is 0x%08x", sfdp.header.signature);
-  TRY_CHECK(sfdp.header.signature == kSfdpSignature,
-            "Expected to find the SFDP signature!");
+  CHECK(sfdp.header.signature == kSfdpSignature,
+        "Expected to find the SFDP signature!");
 
   uint32_t bfpt_offset = sfdp.param.table_pointer[0] |
                          sfdp.param.table_pointer[1] << 8 |
@@ -85,7 +85,7 @@ status_t test_chip_erase(void) {
                                   /*dummy=*/0));
   uint8_t expected[256];
   memset(expected, 0xFF, sizeof(expected));
-  CHECK_ARRAYS_EQ(buf, expected, ARRAYSIZE(expected));
+  TRY_CHECK_ARRAYS_EQ(buf, expected, ARRAYSIZE(expected));
   return OK_STATUS();
 }
 
@@ -101,9 +101,9 @@ status_t test_enable_quad_mode(void) {
 
 // Program a pattern into the flash part and read it back.
 status_t test_page_program(void) {
-  spi_flash_testutils_program_page(&spi_host, kGettysburgPrelude,
-                                   sizeof(kGettysburgPrelude),
-                                   /*address=*/0, /*addr_is_4b=*/0);
+  TRY(spi_flash_testutils_program_page(&spi_host, kGettysburgPrelude,
+                                       sizeof(kGettysburgPrelude),
+                                       /*address=*/0, /*addr_is_4b=*/0));
 
   uint8_t buf[256];
   TRY(spi_flash_testutils_read_op(&spi_host, kSpiDeviceFlashOpReadNormal, buf,
@@ -111,7 +111,7 @@ status_t test_page_program(void) {
                                   /*addr_is_4b=*/false,
                                   /*width=*/1,
                                   /*dummy=*/0));
-  CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
+  TRY_CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
   return OK_STATUS();
 }
 
@@ -123,7 +123,7 @@ status_t test_fast_read(void) {
                                   /*addr_is_4b=*/false,
                                   /*width=*/1,
                                   /*dummy=*/8));
-  CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
+  TRY_CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
   return OK_STATUS();
 }
 
@@ -135,7 +135,7 @@ status_t test_dual_read(void) {
                                   /*addr_is_4b=*/false,
                                   /*width=*/2,
                                   /*dummy=*/8));
-  CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
+  TRY_CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
   return OK_STATUS();
 }
 
@@ -147,7 +147,7 @@ status_t test_quad_read(void) {
                                   /*addr_is_4b=*/false,
                                   /*width=*/4,
                                   /*dummy=*/8));
-  CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
+  TRY_CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
   return OK_STATUS();
 }
 
