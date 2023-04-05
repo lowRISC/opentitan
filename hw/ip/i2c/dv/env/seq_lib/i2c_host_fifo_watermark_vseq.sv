@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // test the threshold interrupt of fmt_fifo and rx_fifo
-class i2c_host_fifo_threshold_vseq extends i2c_rx_tx_vseq;
-  `uvm_object_utils(i2c_host_fifo_threshold_vseq)
+class i2c_host_fifo_watermark_vseq extends i2c_rx_tx_vseq;
+  `uvm_object_utils(i2c_host_fifo_watermark_vseq)
   `uvm_object_new
 
   // fast write data to fmt_fifo to quickly trigger fmt_threshold interrupt
@@ -31,7 +31,7 @@ class i2c_host_fifo_threshold_vseq extends i2c_rx_tx_vseq;
     bit check_fmt_threshold, check_rx_threshold;
 
     initialization(.mode(Host));
-    `uvm_info(`gfn, "\n--> start of i2c_host_fifo_threshold_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> start of i2c_host_fifo_watermark_vseq", UVM_DEBUG)
     for (int i = 1; i <= num_trans; i++) begin
       check_fmt_threshold = 1'b1;
       check_rx_threshold  = 1'b1;
@@ -94,7 +94,7 @@ class i2c_host_fifo_threshold_vseq extends i2c_rx_tx_vseq;
         end
       join
     end
-    `uvm_info(`gfn, "\n--> end of i2c_host_fifo_threshold_vseq", UVM_DEBUG)
+    `uvm_info(`gfn, "\n--> end of i2c_host_fifo_watermark_vseq", UVM_DEBUG)
   endtask : body
 
   task process_fmt_threshold_intr();
@@ -150,4 +150,4 @@ class i2c_host_fifo_threshold_vseq extends i2c_rx_tx_vseq;
     end
   endtask : process_rx_threshold_intr
 
-endclass : i2c_host_fifo_threshold_vseq
+endclass : i2c_host_fifo_watermark_vseq
