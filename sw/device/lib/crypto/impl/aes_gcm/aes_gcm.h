@@ -52,25 +52,6 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
                          const uint8_t *iv, const size_t plaintext_len,
                          const uint8_t *plaintext, const size_t aad_len,
                          const uint8_t *aad, uint8_t *ciphertext, uint8_t *tag);
-/**
- * GHASH operation as defined in NIST SP800-38D, algorithm 2.
- *
- * The input size must be a multiple of the block size.
- *
- * This operation is an internal subcomponent of GCM and should not be used
- * directly except for implementing alternative, customized GCM interfaces
- * (such as using a block cipher other than AES). For other ciphers, the block
- * size must still be 128 bits.
- *
- * @param hash_subkey The hash subkey (a 128-bit cipher block).
- * @param input_len Number of bytes in the input.
- * @param input Pointer to input buffer.
- * @param[out] output Block in which to store the output.
- * @return Error status; OK if no errors
- */
-OT_WARN_UNUSED_RESULT
-status_t aes_gcm_ghash(const aes_block_t *hash_subkey, const size_t input_len,
-                       const uint8_t *input, aes_block_t *output);
 
 /**
  * AES-GCM authenticated decryption as defined in NIST SP800-38D, algorithm 5.

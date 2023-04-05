@@ -24,20 +24,25 @@
  * @param test Test vector to use
  */
 static void test_decrypt_timing(aes_gcm_test_t test) {
+  size_t tag_num_words = test.tag_len / sizeof(uint32_t);
+  CHECK(tag_num_words * sizeof(uint32_t) == test.tag_len,
+        "Tag length %d is not a multiple of the word size (%d).", test.tag_len,
+        sizeof(uint32_t));
+
   // Call AES-GCM decrypt with an incorrect tag (first word wrong).
   test.tag[0]++;
   uint32_t cycles_invalid1 = call_aes_gcm_decrypt(test, /*tag_valid=*/false);
   test.tag[0]--;
 
   // Call AES-GCM decrypt with an incorrect tag (middle word wrong).
-  test.tag[kAesGcmTagNumWords / 2]++;
+  test.tag[tag_num_words / 2]++;
   uint32_t cycles_invalid2 = call_aes_gcm_decrypt(test, /*tag_valid=*/false);
-  test.tag[kAesGcmTagNumWords / 2]--;
+  test.tag[tag_num_words / 2]--;
 
   // Call AES-GCM decrypt with an incorrect tag (last word wrong).
-  test.tag[kAesGcmTagNumWords - 1]++;
+  test.tag[tag_num_words - 1]++;
   uint32_t cycles_invalid3 = call_aes_gcm_decrypt(test, /*tag_valid=*/false);
-  test.tag[kAesGcmTagNumWords - 1]--;
+  test.tag[tag_num_words - 1]--;
 
   // Check that the cycle counts for the invalid tags match.
   CHECK(cycles_invalid1 == cycles_invalid2,

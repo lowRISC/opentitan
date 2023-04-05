@@ -9,9 +9,20 @@ cc_library(
     srcs = ["aes_gcm.c"],
     hdrs = ["aes_gcm.h"],
     deps = [
+        ":ghash",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
+    ],
+)
+
+cc_library(
+    name = "ghash",
+    srcs = ["ghash.c"],
+    hdrs = ["ghash.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
     ],
 )
