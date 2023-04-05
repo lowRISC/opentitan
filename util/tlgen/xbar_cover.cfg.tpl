@@ -28,6 +28,8 @@
 -node tb.dut tl_*.d_param
 -node tb.dut tl_*.d_opcode[2:1]
 
+-moduletree prim_cdc_rand_delay  // exclude DV construct.
+
 // [UNR] these device address bits are always 0
 % for device in xbar.devices:
 <%
