@@ -190,8 +190,9 @@ bool test_main(void) {
     irq_global_ctrl(true);
     irq_external_ctrl(true);
 
-    uint32_t wakeup_threshold = aon_timer_testutils_get_aon_cycles_from_us(
-        kTestParamWakeupThresholdUsec);
+    uint32_t wakeup_threshold = 0;
+    CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(
+        kTestParamWakeupThresholdUsec, &wakeup_threshold));
 
     // Sleep longer in FPGA and silicon targets.
     if (kDeviceType != kDeviceSimDV && kDeviceType != kDeviceSimVerilator) {

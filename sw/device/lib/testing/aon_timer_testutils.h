@@ -11,9 +11,15 @@
 #include "sw/device/lib/dif/dif_aon_timer.h"
 
 /**
- * Returns the number of AON cycles corresponding to the given microseconds.
+ * Compute the number of AON cycles corresponding to the given microseconds.
+ *
+ * @param aon_timer An Always-On Timer handle.
+ * @param microseconds The number of microseconds.
+ * @param[out] cycles The number of AON clock cycles.
+ * @return The result of the operation.
  */
-uint32_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds);
+status_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds,
+                                                    uint32_t *cycles);
 
 /**
  * Returns the number of microseconds corresponding to the given AON cycles.

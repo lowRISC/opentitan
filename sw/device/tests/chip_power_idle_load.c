@@ -289,8 +289,9 @@ bool test_main(void) {
   nmi_state = (dif_rv_core_ibex_nmi_state_t){0};
   CHECK_DIF_OK(
       dif_rv_core_ibex_enable_nmi(&rv_core_ibex, kDifRvCoreIbexNmiSourceWdog));
-  uint32_t count_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(kTimeTillBark);
+  uint32_t count_cycles = 0;
+  CHECK_STATUS_OK(
+      aon_timer_testutils_get_aon_cycles_from_us(kTimeTillBark, &count_cycles));
   CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(&aon_timer, count_cycles,
                                                       UINT32_MAX, false));
 
