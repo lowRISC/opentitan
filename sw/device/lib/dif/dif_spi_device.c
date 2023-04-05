@@ -917,7 +917,7 @@ dif_result_t dif_spi_device_get_flash_command_slot(
       break;
   }
 
-  uint32_t dummy_cycles;
+  uint32_t dummy_cycles = 0;
   if (bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_DUMMY_EN_0_BIT)) {
     dummy_cycles = 1 + bitfield_field32_read(
                            reg_val, SPI_DEVICE_CMD_INFO_0_DUMMY_SIZE_0_FIELD);

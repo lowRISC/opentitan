@@ -243,8 +243,12 @@ bool test_main(void) {
                   });
 
       LOG_INFO("Setting up watch dog and triggering a double fault.");
-      uint32_t bark_cycles = aon_timer_testutils_get_aon_cycles_from_us(100);
-      uint32_t bite_cycles = aon_timer_testutils_get_aon_cycles_from_us(100);
+      uint32_t bark_cycles = 0;
+      CHECK_STATUS_OK(
+          aon_timer_testutils_get_aon_cycles_from_us(100, &bark_cycles));
+      uint32_t bite_cycles = 0;
+      CHECK_STATUS_OK(
+          aon_timer_testutils_get_aon_cycles_from_us(100, &bite_cycles));
 
       // Set wdog as a reset source.
       CHECK_DIF_OK(dif_pwrmgr_set_request_sources(

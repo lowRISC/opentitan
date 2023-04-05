@@ -205,13 +205,13 @@ void init_units() {
  *  configure adc module
  */
 static void configure_adc_ctrl(const dif_adc_ctrl_t *adc_ctrl) {
-  int wake_up_time_aon_cycles;
-  int power_up_time_aon_cycles;
+  uint32_t wake_up_time_aon_cycles = 0;
+  uint32_t power_up_time_aon_cycles = 0;
 
-  power_up_time_aon_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(kPowerUpTimeInUs);
-  wake_up_time_aon_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(kWakeUpTimeInUs);
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(
+      kPowerUpTimeInUs, &power_up_time_aon_cycles));
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(
+      kWakeUpTimeInUs, &wake_up_time_aon_cycles));
   CHECK_DIF_OK(dif_adc_ctrl_set_enabled(adc_ctrl, kDifToggleDisabled));
   CHECK_DIF_OK(dif_adc_ctrl_reset(adc_ctrl));
   CHECK_DIF_OK(dif_adc_ctrl_configure(

@@ -221,12 +221,14 @@ static void alert_handler_config(void) {
  */
 static void config_escalate(dif_aon_timer_t *aon_timer,
                             const dif_pwrmgr_t *pwrmgr) {
-  uint64_t bark_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(kWdogBarkMicros) *
-      alert_handler_testutils_cycle_rescaling_factor();
-  uint64_t bite_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(kWdogBiteMicros) *
-      alert_handler_testutils_cycle_rescaling_factor();
+  uint32_t bark_cycles = 0;
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(kWdogBarkMicros,
+                                                             &bark_cycles));
+  bark_cycles *= alert_handler_testutils_cycle_rescaling_factor();
+  uint32_t bite_cycles = 0;
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(kWdogBiteMicros,
+                                                             &bite_cycles));
+  bite_cycles *= alert_handler_testutils_cycle_rescaling_factor();
 
   LOG_INFO(
       "Wdog will bark after %u/%u us/cycles and bite after %u/%u us/cycles",
@@ -275,10 +277,12 @@ static void timer_on(uint32_t usec) {
 static void config_wdog(const dif_aon_timer_t *aon_timer,
                         const dif_pwrmgr_t *pwrmgr, uint64_t bark_time_us,
                         uint64_t bite_time_us) {
-  uint32_t bark_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(bark_time_us);
-  uint32_t bite_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(bite_time_us);
+  uint32_t bark_cycles = 0;
+  CHECK_STATUS_OK(
+      aon_timer_testutils_get_aon_cycles_from_us(bark_time_us, &bark_cycles));
+  uint32_t bite_cycles = 0;
+  CHECK_STATUS_OK(
+      aon_timer_testutils_get_aon_cycles_from_us(bite_time_us, &bite_cycles));
 
   LOG_INFO("Wdog will bark after %u us and bite after %u us",
            (uint32_t)bark_time_us, (uint32_t)bite_time_us);
