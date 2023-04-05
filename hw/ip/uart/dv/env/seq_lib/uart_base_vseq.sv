@@ -102,9 +102,9 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
       `DV_CHECK_RANDOMIZE_FATAL(ral.timeout_ctrl.en)
       csr_update(ral.timeout_ctrl);
 
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.fifo_ctrl.rxilvl,
-                                     value <= 4;)
-      `DV_CHECK_RANDOMIZE_FATAL(ral.fifo_ctrl.txilvl)
+      `DV_CHECK_RANDOMIZE_FATAL(ral.fifo_ctrl.rxilvl)
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.fifo_ctrl.txilvl,
+                                     value <= 6;)
       csr_update(ral.fifo_ctrl);
     end
   endtask
@@ -138,7 +138,8 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
   virtual task spinwait_txidle();
     if (ral.ctrl.tx.get_mirrored_value()) begin
       // use a very big timeout as it takes long time to flush all the items
-      csr_spinwait(.ptr(ral.status.txidle), .exp_data(1'b1), .timeout_ns(40_000_000),
+      csr_spinwait(.ptr(ral.status.txidle), .exp_data(1'b1),
+                   .timeout_ns(UART_FIFO_DEPTH * 1_250_000),
                    .spinwait_delay_ns($urandom_range(0, 1000)));
     end
   endtask

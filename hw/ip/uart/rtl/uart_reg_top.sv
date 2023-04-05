@@ -204,11 +204,11 @@ module uart_reg_top (
   logic fifo_ctrl_txrst_wd;
   logic [2:0] fifo_ctrl_rxilvl_qs;
   logic [2:0] fifo_ctrl_rxilvl_wd;
-  logic [1:0] fifo_ctrl_txilvl_qs;
-  logic [1:0] fifo_ctrl_txilvl_wd;
+  logic [2:0] fifo_ctrl_txilvl_qs;
+  logic [2:0] fifo_ctrl_txilvl_wd;
   logic fifo_status_re;
-  logic [5:0] fifo_status_txlvl_qs;
-  logic [5:0] fifo_status_rxlvl_qs;
+  logic [7:0] fifo_status_txlvl_qs;
+  logic [7:0] fifo_status_rxlvl_qs;
   logic ovrd_we;
   logic ovrd_txen_qs;
   logic ovrd_txen_wd;
@@ -1272,11 +1272,11 @@ module uart_reg_top (
   );
   assign reg2hw.fifo_ctrl.rxilvl.qe = fifo_ctrl_qe;
 
-  //   F[txilvl]: 6:5
+  //   F[txilvl]: 7:5
   prim_subreg #(
-    .DW      (2),
+    .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0)
+    .RESVAL  (3'h0)
   ) u_fifo_ctrl_txilvl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1301,9 +1301,9 @@ module uart_reg_top (
 
 
   // R[fifo_status]: V(True)
-  //   F[txlvl]: 5:0
+  //   F[txlvl]: 7:0
   prim_subreg_ext #(
-    .DW    (6)
+    .DW    (8)
   ) u_fifo_status_txlvl (
     .re     (fifo_status_re),
     .we     (1'b0),
@@ -1316,9 +1316,9 @@ module uart_reg_top (
     .qs     (fifo_status_txlvl_qs)
   );
 
-  //   F[rxlvl]: 21:16
+  //   F[rxlvl]: 23:16
   prim_subreg_ext #(
-    .DW    (6)
+    .DW    (8)
   ) u_fifo_status_rxlvl (
     .re     (fifo_status_re),
     .we     (1'b0),
@@ -1582,7 +1582,7 @@ module uart_reg_top (
 
   assign fifo_ctrl_rxilvl_wd = reg_wdata[4:2];
 
-  assign fifo_ctrl_txilvl_wd = reg_wdata[6:5];
+  assign fifo_ctrl_txilvl_wd = reg_wdata[7:5];
   assign fifo_status_re = addr_hit[9] & reg_re & !reg_error;
   assign ovrd_we = addr_hit[10] & reg_we & !reg_error;
 
@@ -1688,12 +1688,12 @@ module uart_reg_top (
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[4:2] = fifo_ctrl_rxilvl_qs;
-        reg_rdata_next[6:5] = fifo_ctrl_txilvl_qs;
+        reg_rdata_next[7:5] = fifo_ctrl_txilvl_qs;
       end
 
       addr_hit[9]: begin
-        reg_rdata_next[5:0] = fifo_status_txlvl_qs;
-        reg_rdata_next[21:16] = fifo_status_rxlvl_qs;
+        reg_rdata_next[7:0] = fifo_status_txlvl_qs;
+        reg_rdata_next[23:16] = fifo_status_rxlvl_qs;
       end
 
       addr_hit[10]: begin

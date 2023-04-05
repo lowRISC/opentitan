@@ -27,17 +27,18 @@ class uart_fifo_full_vseq extends uart_tx_rx_vseq;
 
   constraint dly_to_next_trans_c {
     dly_to_next_trans dist {
-      0           :/ 30,  // more back2back transaction
+      0           :/ UART_FIFO_DEPTH - 2,  // more back2back transaction
       [1:100]     :/ 5,
       [100:10000] :/ 2
     };
   }
 
   constraint wait_for_idle_c {
-    // fifo is 32 depth, wait/not_wait = 1/40, higher change to have fifo full
+    // ratio of wait/not_wait depends upon UART_FIFO_DEPTH to ensure we're very likely to get a run
+    // of transactions to fill the FIFO
     wait_for_idle dist {
       1       :/ 1,
-      0       :/ 40
+      0       :/ UART_FIFO_DEPTH + 10
     };
   }
 

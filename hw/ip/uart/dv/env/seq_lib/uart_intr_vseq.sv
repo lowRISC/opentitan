@@ -53,7 +53,7 @@ class uart_intr_vseq extends uart_base_vseq;
     case (uart_intr)
       TxWatermark: begin
         int level = ral.fifo_ctrl.txilvl.get_mirrored_value();
-        int watermark_bytes = get_watermark_bytes_by_level(level, UartTx);
+        int watermark_bytes = get_watermark_bytes_by_level(level);
         if (!en_tx) return;
         //  when tx is enabled, one extra item is in the data path
         //  when watermark_bytes==1, watermark interrupt is triggered before item is processed
@@ -63,7 +63,7 @@ class uart_intr_vseq extends uart_base_vseq;
         drive_tx_bytes(.num_bytes(1));
         // wait until it drops below watermark
         csr_spinwait(.ptr(ral.fifo_status.txlvl),
-                     .exp_data(get_watermark_bytes_by_level(level, UartTx)),
+                     .exp_data(get_watermark_bytes_by_level(level)),
                      .compare_op(CompareOpLt));
         check_one_intr(.uart_intr(uart_intr), .exp(1));
         cfg.m_uart_agent_cfg.vif.wait_for_tx_idle();
@@ -76,7 +76,7 @@ class uart_intr_vseq extends uart_base_vseq;
 
       RxWatermark: begin
         int level = ral.fifo_ctrl.rxilvl.get_mirrored_value();
-        int watermark_bytes = get_watermark_bytes_by_level(level, UartRx);
+        int watermark_bytes = get_watermark_bytes_by_level(level);
         drive_rx_bytes(.num_bytes(watermark_bytes - 1));
         check_one_intr(.uart_intr(uart_intr), .exp(0));
         drive_rx_bytes(.num_bytes(1));

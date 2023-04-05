@@ -191,7 +191,7 @@ package uart_reg_pkg;
       logic        qe;
     } rxilvl;
     struct packed {
-      logic [1:0]  q;
+      logic [2:0]  q;
       logic        qe;
     } txilvl;
   } uart_reg2hw_fifo_ctrl_reg_t;
@@ -280,17 +280,17 @@ package uart_reg_pkg;
       logic        de;
     } rxilvl;
     struct packed {
-      logic [1:0]  d;
+      logic [2:0]  d;
       logic        de;
     } txilvl;
   } uart_hw2reg_fifo_ctrl_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [5:0]  d;
+      logic [7:0]  d;
     } txlvl;
     struct packed {
-      logic [5:0]  d;
+      logic [7:0]  d;
     } rxlvl;
   } uart_hw2reg_fifo_status_reg_t;
 
@@ -300,26 +300,26 @@ package uart_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    uart_reg2hw_intr_state_reg_t intr_state; // [126:119]
-    uart_reg2hw_intr_enable_reg_t intr_enable; // [118:111]
-    uart_reg2hw_intr_test_reg_t intr_test; // [110:95]
-    uart_reg2hw_alert_test_reg_t alert_test; // [94:93]
-    uart_reg2hw_ctrl_reg_t ctrl; // [92:68]
-    uart_reg2hw_status_reg_t status; // [67:56]
-    uart_reg2hw_rdata_reg_t rdata; // [55:47]
-    uart_reg2hw_wdata_reg_t wdata; // [46:38]
-    uart_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [37:27]
+    uart_reg2hw_intr_state_reg_t intr_state; // [127:120]
+    uart_reg2hw_intr_enable_reg_t intr_enable; // [119:112]
+    uart_reg2hw_intr_test_reg_t intr_test; // [111:96]
+    uart_reg2hw_alert_test_reg_t alert_test; // [95:94]
+    uart_reg2hw_ctrl_reg_t ctrl; // [93:69]
+    uart_reg2hw_status_reg_t status; // [68:57]
+    uart_reg2hw_rdata_reg_t rdata; // [56:48]
+    uart_reg2hw_wdata_reg_t wdata; // [47:39]
+    uart_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [38:27]
     uart_reg2hw_ovrd_reg_t ovrd; // [26:25]
     uart_reg2hw_timeout_ctrl_reg_t timeout_ctrl; // [24:0]
   } uart_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    uart_hw2reg_intr_state_reg_t intr_state; // [64:49]
-    uart_hw2reg_status_reg_t status; // [48:43]
-    uart_hw2reg_rdata_reg_t rdata; // [42:35]
-    uart_hw2reg_fifo_ctrl_reg_t fifo_ctrl; // [34:28]
-    uart_hw2reg_fifo_status_reg_t fifo_status; // [27:16]
+    uart_hw2reg_intr_state_reg_t intr_state; // [69:54]
+    uart_hw2reg_status_reg_t status; // [53:48]
+    uart_hw2reg_rdata_reg_t rdata; // [47:40]
+    uart_hw2reg_fifo_ctrl_reg_t fifo_ctrl; // [39:32]
+    uart_hw2reg_fifo_status_reg_t fifo_status; // [31:16]
     uart_hw2reg_val_reg_t val; // [15:0]
   } uart_hw2reg_t;
 
@@ -356,7 +356,7 @@ package uart_reg_pkg;
   parameter logic [0:0] UART_STATUS_RXIDLE_RESVAL = 1'h 1;
   parameter logic [0:0] UART_STATUS_RXEMPTY_RESVAL = 1'h 1;
   parameter logic [7:0] UART_RDATA_RESVAL = 8'h 0;
-  parameter logic [21:0] UART_FIFO_STATUS_RESVAL = 22'h 0;
+  parameter logic [23:0] UART_FIFO_STATUS_RESVAL = 24'h 0;
   parameter logic [15:0] UART_VAL_RESVAL = 16'h 0;
 
   // Register index

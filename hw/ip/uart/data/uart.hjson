@@ -250,24 +250,36 @@
               desc: "1 character"
             },
             { value: "1",
+              name: "rxlvl2",
+              desc: "2 characters"
+            },
+            { value: "2",
               name: "rxlvl4",
               desc: "4 characters"
             },
-            { value: "2",
+            { value: "3",
               name: "rxlvl8",
               desc: "8 characters"
             },
-            { value: "3",
+            { value: "4",
               name: "rxlvl16",
               desc: "16 characters"
             },
-            { value: "4",
-              name: "rxlvl30",
-              desc: "30 characters"
+            { value: "5",
+              name: "rxlvl32",
+              desc: "32 characters"
+            },
+            { value: "6",
+              name: "rxlvl64",
+              desc: "64 characters"
+            },
+            { value: "7",
+              name: "rxlvl126",
+              desc: "126 characters"
             },
           ]
         }
-        { bits: "6:5",
+        { bits: "7:5",
           name: "TXILVL",
           desc: '''Trigger level for TX interrupts. If the FIFO depth is less than the setting, it
                 raises tx_watermark interrupt.
@@ -275,20 +287,32 @@
           enum: [
             { value: "0",
               name: "txlvl1",
-              desc: "2 characters"
+              desc: "1 character"
             },
             { value: "1",
+              name: "txlvl2",
+              desc: "2 characters"
+            },
+            { value: "2",
               name: "txlvl4",
               desc: "4 characters"
             },
-            { value: "2",
+            { value: "3",
               name: "txlvl8",
               desc: "8 characters"
             },
-            { value: "3",
+            { value: "4",
               name: "txlvl16",
               desc: "16 characters"
-            }
+            },
+            { value: "5",
+              name: "txlvl32",
+              desc: "32 characters"
+            },
+            { value: "6",
+              name: "txlvl64",
+              desc: "64 characters"
+            },
           ]
         }
       ]
@@ -299,11 +323,11 @@
       hwaccess: "hwo",
       hwext: "true",
       fields: [
-        { bits: "5:0",
+        { bits: "7:0",
           name: "TXLVL",
           desc: "Current fill level of TX fifo"
         }
-        { bits: "21:16",
+        { bits: "23:16",
           name: "RXLVL",
           desc: "Current fill level of RX fifo"
         }
