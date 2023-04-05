@@ -2457,8 +2457,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
                                sha3_msg_end ? 1'b0 :
                                sha3_msg_rdy_mask_q;
 
-  assign sha3_msg_rdy_mask = sha3_msg_rdy_mask_q & ~sha3_msg_end &
-                             ~cs_aes_halt_req;
+  assign sha3_msg_rdy_mask = sha3_msg_rdy_mask_q & ~sha3_msg_end;
 
   assign pfifo_cond_rdata = sha3_state[0][SeedLen-1:0];
   assign pfifo_cond_not_empty = sha3_state_vld;
