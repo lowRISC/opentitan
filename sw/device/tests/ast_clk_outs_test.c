@@ -80,7 +80,8 @@ bool test_main(void) {
     //
     // Set the counters so we should get an error unless they are cleared.
     uint32_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 1000 : 100;
-    aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
+    CHECK_STATUS_OK(
+        aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 
     LOG_INFO("Start clock measurements to cause an error for main clk.");
     clkmgr_testutils_enable_clock_counts_with_expected_thresholds(

@@ -167,7 +167,8 @@ bool test_main(void) {
   LOG_INFO("ready for power down");
   busy_spin_micros(10);
   // timer setup in case wake up comes before entering low power mode
-  aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
+  CHECK_STATUS_OK(
+      aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 
   // Deep sleep.
   pwrmgr_testutils_enable_low_power(

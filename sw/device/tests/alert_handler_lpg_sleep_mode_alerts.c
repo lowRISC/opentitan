@@ -417,8 +417,8 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
         flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
 
     // Set the AON timer to send a wakeup signal in ~10-50us.
-    aon_timer_testutils_wakeup_config(&aon_timer,
-                                      rand_testutils_gen32_range(2, 10));
+    CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(
+        &aon_timer, rand_testutils_gen32_range(2, 10)));
 
     // Trigger the SV side to inject fault.
     // DO NOT CHANGE THIS: it is used to notify the SV side.
@@ -471,8 +471,8 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
         flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
 
     // Set the AON timer to send a wakeup signal in ~10-50us.
-    aon_timer_testutils_wakeup_config(&aon_timer,
-                                      rand_testutils_gen32_range(2, 10));
+    CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(
+        &aon_timer, rand_testutils_gen32_range(2, 10)));
     // Enter the normal sleep mode
     enter_low_power(/*deep_sleep=*/false);
   } else {

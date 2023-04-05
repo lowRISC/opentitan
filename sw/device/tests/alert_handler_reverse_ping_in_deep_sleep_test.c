@@ -208,7 +208,8 @@ bool test_main(void) {
     CHECK(interrupt_serviced == false, "Unexpected interrupt triggered.");
 
     // Enable and enter deep sleep.
-    aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
+    CHECK_STATUS_OK(
+        aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
     pwrmgr_testutils_enable_low_power(&pwrmgr,
                                       kDifPwrmgrWakeupRequestSourceFive, 0);
     wait_for_interrupt();
