@@ -13,9 +13,9 @@ namespace {
 class ManifestTest : public rom_test::RomTest {
  protected:
   ManifestTest() {
-    manifest_.length = 0x1000;
-    manifest_.code_start = 0x400;
-    manifest_.code_end = 0x800;
+    manifest_.length = sizeof(manifest_t) + 0x1000;
+    manifest_.code_start = sizeof(manifest_t);
+    manifest_.code_end = sizeof(manifest_t) + 0x800;
     manifest_.entry_point = 0x500;
   }
 

@@ -11,10 +11,10 @@ CONST = struct(
     # Must match the definitions in chip.h.
     ROM_EXT = 0x4552544f,
     OWNER = 0x3042544f,
-    MANIFEST_SIZE = 896,
-    ROM_EXT_SIZE_MIN = 896,
+    MANIFEST_SIZE = 8752,
+    ROM_EXT_SIZE_MIN = 8752,
     ROM_EXT_SIZE_MAX = 0x10000,
-    BL0_SIZE_MIN = 896,
+    BL0_SIZE_MIN = 8752,
     BL0_SIZE_MAX = 0x70000,
     DEFAULT_USAGE_CONSTRAINTS = 0xa5a5a5a5,
     # Must match the definitions in lc_ctrl_regs.h.

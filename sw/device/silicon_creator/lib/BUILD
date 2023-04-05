@@ -224,6 +224,7 @@ dual_cc_library(
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+            "//sw/device/silicon_creator/lib/sigverify:spx_key",
             "//sw/device/silicon_creator/lib/base:chip",
         ],
     ),
