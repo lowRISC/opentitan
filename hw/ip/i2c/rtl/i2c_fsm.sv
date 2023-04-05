@@ -404,6 +404,17 @@ module i2c_fsm import i2c_pkg::*;
   logic [16:0] sda_rise_latency;
   assign sda_rise_latency = t_r_i + 16'h2;
 
+  // For SDA interference we need to latch host enable to detect a rising edge.
+  logic host_enable_q;
+
+  always_ff @ (posedge clk_i or negedge rst_ni) begin : host_enable_latch
+    if (!rst_ni) begin
+      host_enable_q <= 0;
+    end else begin
+      host_enable_q <= host_enable_i;
+    end
+  end
+
   // When detection is enabled, count through the rise time.
   // Once rise time count is reached, hold in place until disabled.
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -425,7 +436,7 @@ module i2c_fsm import i2c_pkg::*;
   //
   // When the count is reached, we are pass the rise time period.
   // Now check for any inconsistency in the sda value.
-  assign event_sda_interference_o = (host_idle_o & host_enable_i & !sda_i) |
+  assign event_sda_interference_o = (host_idle_o & host_enable_i & !host_enable_q & !sda_i) |
                                     ((sda_rise_cnt == sda_rise_latency) & (sda_o & !sda_i));
 
   logic rw_bit_q;
