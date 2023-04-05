@@ -144,8 +144,7 @@
               - Ensure receving correct number of fmt_fifo and rx_fifo watermark interrupts
             '''
       stage: V2
-      //TODO add watermark test.
-      tests: [""]
+      tests: ["i2c_host_fifo_watermark"]
     }
     {
       name: host_fifo_overflow
