@@ -54,7 +54,10 @@ status_t aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,
  * the design stops generating events that may affect the simulation from
  * terminating cleanly. The wakeup and watchdog timer controls are read back
  * to ensure the written value successfully crossed the AON clock domain.
+ *
+ * @param aon_timer An Always-On Timer handle.
+ * @return The result of the operation.
  */
-void aon_timer_testutils_shutdown(const dif_aon_timer_t *aon_timer);
+status_t aon_timer_testutils_shutdown(const dif_aon_timer_t *aon_timer);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AON_TIMER_TESTUTILS_H_
