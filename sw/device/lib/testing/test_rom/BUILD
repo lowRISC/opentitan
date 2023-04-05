@@ -100,6 +100,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+        "//sw/device/silicon_creator/lib/sigverify:spx_key",
     ],
 )
 

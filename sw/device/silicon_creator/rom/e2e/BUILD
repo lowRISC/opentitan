@@ -2070,7 +2070,7 @@ SIGVERIFY_LCS_2_VALID_KEY = {
         testonly = True,
         srcs = ["empty_test_slot_{}_{}_bin_signed_{}".format(slot, device, key)],
         outs = ["empty_test_slot_{}_corrupted_{}.{}.signed.bin".format(slot, device, key)],
-        cmd_bash = "cat $(SRCS) > $(OUTS) && dd if=/dev/zero of=$(OUTS) bs=4 seek=7 count=1 conv=notrunc status=none".format(slot),
+        cmd_bash = "cat $(SRCS) > $(OUTS) && dd if=/dev/zero of=$(OUTS) bs=4 seek=1971 count=1 conv=notrunc status=none".format(slot),
     )
     for slot in SLOTS
     for device in [
