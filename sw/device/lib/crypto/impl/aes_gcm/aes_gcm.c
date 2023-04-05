@@ -27,7 +27,6 @@ enum {
 static_assert(kAesBlockNumBytes == (1 << kAesBlockLog2NumBytes),
               "kAesBlockLog2NumBytes does not match kAesBlockNumBytes");
 
-
 /**
  * Increment a 32-bit big-endian word.
  *
@@ -66,29 +65,13 @@ static status_t aes_encrypt_block(const aes_key_t key, const aes_block_t *iv,
                                   const aes_block_t *input,
                                   aes_block_t *output) {
   HARDENED_TRY(aes_encrypt_begin(key, iv));
-  HARDENED_TRY(aes_update(/*dest=*/ NULL, input));
-  HARDENED_TRY(aes_update(output, /*src=*/ NULL));
+  HARDENED_TRY(aes_update(/*dest=*/NULL, input));
+  HARDENED_TRY(aes_update(output, /*src=*/NULL));
   return aes_end();
 }
 
-/**
- * Implements the GCTR function as specified in SP800-38D, section 6.5.
- *
- * The block cipher is fixed to AES. Note that the GCTR function is a modified
- * version of the AES-CTR mode of encryption.
- *
- * Input must be less than 2^32 blocks long; that is, `len` < 2^36, since each
- * block is 16 bytes.
- *
- * @param key The AES key
- * @param icb Initial counter block, 128 bits
- * @param len Number of bytes for input and output
- * @param input Pointer to input buffer (may be NULL if `len` is 0)
- * @param[out] output Pointer to output buffer (same size as input, may be the
- * same buffer)
- */
-status_t aes_gcm_gctr(const aes_key_t key, const aes_block_t *icb,
-                      size_t len, const uint8_t *input, uint8_t *output) {
+status_t aes_gcm_gctr(const aes_key_t key, const aes_block_t *icb, size_t len,
+                      const uint8_t *input, uint8_t *output) {
   // If the input is empty, the output must be as well. Since the output length
   // is 0, simply return.
   if (len == 0) {
@@ -250,6 +233,7 @@ static status_t aes_gcm_counter(const size_t iv_len, const uint8_t *iv,
  * @param aad_len Length of the associated data in bytes
  * @param aad Associated data value
  * @param j0 Counter block (J0 in the NIST specification)
+ * @param tag_len Tag length in bytes
  * @param[out] tag Buffer for output tag (128 bits)
  */
 OT_WARN_UNUSED_RESULT
@@ -257,7 +241,8 @@ static status_t aes_gcm_compute_tag(const aes_key_t key, ghash_context_t *ctx,
                                     const size_t ciphertext_len,
                                     const uint8_t *ciphertext,
                                     const size_t aad_len, const uint8_t *aad,
-                                    const aes_block_t *j0, uint8_t *tag) {
+                                    const aes_block_t *j0, size_t tag_len,
+                                    uint8_t *tag) {
   // Compute S = GHASH(H, expand(A) || expand(C) || len64(A) || len64(C))
   // where:
   //   * A is the aad, C is the ciphertext
@@ -284,14 +269,23 @@ static status_t aes_gcm_compute_tag(const aes_key_t key, ghash_context_t *ctx,
   ghash_final(ctx, s.data);
 
   // Compute the tag T = GCTR(K, J0, S).
-  return aes_gcm_gctr(key, j0, kAesBlockNumBytes, (unsigned char *)s.data, tag);
+  uint32_t full_tag[kAesBlockNumWords];
+  HARDENED_TRY(aes_gcm_gctr(key, j0, kAesBlockNumBytes, (unsigned char *)s.data,
+                            (unsigned char *)full_tag));
+
+  // Truncate the tag if needed. NIST requires we take the most significant
+  // bits in big-endian representation, which corresponds to the least
+  // significant bits in Ibex's little-endian representation.
+  memcpy(tag, full_tag, tag_len);
+
+  return OTCRYPTO_OK;
 }
 
 status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
                          const uint8_t *iv, const size_t plaintext_len,
                          const uint8_t *plaintext, const size_t aad_len,
-                         const uint8_t *aad, uint8_t *ciphertext,
-                         uint8_t *tag) {
+                         const uint8_t *aad, const size_t tag_len, uint8_t *tag,
+                         uint8_t *ciphertext) {
   // Check that the input parameter sizes are valid.
   HARDENED_TRY(check_buffer_lengths(iv_len, plaintext_len, aad_len));
 
@@ -314,16 +308,24 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
 
   // Compute the authentication tag T.
   return aes_gcm_compute_tag(key, &ctx, plaintext_len, ciphertext, aad_len, aad,
-                             &j0, tag);
+                             &j0, tag_len, tag);
 }
 
 status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
                          const uint8_t *iv, const size_t ciphertext_len,
                          const uint8_t *ciphertext, const size_t aad_len,
-                         const uint8_t *aad, const uint8_t *tag,
-                         uint8_t *plaintext, hardened_bool_t *success) {
+                         const uint8_t *aad, const size_t tag_len,
+                         const uint8_t *tag, uint8_t *plaintext,
+                         hardened_bool_t *success) {
   // Check that the input parameter sizes are valid.
   HARDENED_TRY(check_buffer_lengths(iv_len, ciphertext_len, aad_len));
+
+  // Get the tag length in words.
+  if (tag_len % sizeof(uint32_t) != 0) {
+    // Tag length must be a multiple of 32 bits.
+    return OTCRYPTO_BAD_ARGS;
+  }
+  size_t tag_len_words = tag_len / sizeof(uint32_t);
 
   // Initialize the hash subkey H.
   ghash_context_t ctx;
@@ -334,18 +336,18 @@ status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
   HARDENED_TRY(aes_gcm_counter(iv_len, iv, &ctx, &j0));
 
   // Compute the expected authentication tag T.
-  uint32_t expected_tag[kAesGcmTagNumBytes];
+  uint32_t expected_tag[tag_len_words];
   HARDENED_TRY(aes_gcm_compute_tag(key, &ctx, ciphertext_len, ciphertext,
-                                   aad_len, aad, &j0,
+                                   aad_len, aad, &j0, tag_len,
                                    (unsigned char *)expected_tag));
 
   // Copy actual tag to word-size buffers to ensure it is aligned for
   // `hardened_memeq`.
-  uint32_t tag_words[kAesGcmTagNumWords];
-  memcpy(tag_words, tag, kAesGcmTagNumBytes);
+  uint32_t tag_words[tag_len_words];
+  memcpy(tag_words, tag, tag_len);
 
   // Compare the expected tag to the actual tag (in constant time).
-  *success = hardened_memeq(expected_tag, tag_words, kAesGcmTagNumWords);
+  *success = hardened_memeq(expected_tag, tag_words, tag_len_words);
   if (*success != kHardenedBoolTrue) {
     // If authentication fails, do not proceed to decryption; simply exit
     // with success = False. We still use `OTCRYPTO_OK` because there was no

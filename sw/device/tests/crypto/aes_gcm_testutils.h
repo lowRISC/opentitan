@@ -41,13 +41,15 @@ typedef struct aes_gcm_test {
   size_t aad_len;
   uint8_t *aad;
   /**
-   * Authentication tag.
-   */
-  uint8_t tag[16];
-  /**
    * Ciphertext (same length as plaintext).
    */
   uint8_t *ciphertext;
+  /**
+   * Authentication tag. If the tag is short, the last elements should be
+   * ignored.
+   */
+  size_t tag_len;
+  uint8_t tag[16];
 } aes_gcm_test_t;
 
 /**

@@ -30,7 +30,7 @@ static uint32_t profile_end(uint64_t t_start) {
 
 uint32_t call_aes_gcm_encrypt(aes_gcm_test_t test) {
   uint8_t actual_ciphertext[test.plaintext_len];
-  uint8_t actual_tag[kAesGcmTagNumBytes];
+  uint8_t actual_tag[test.tag_len];
 
   // Construct AES key. Construct key shares by setting first share to full key
   // and second share to 0. (Note: this is not a secure construction! But it
@@ -47,13 +47,13 @@ uint32_t call_aes_gcm_encrypt(aes_gcm_test_t test) {
   uint64_t t_start = profile_start();
   status_t err = aes_gcm_encrypt(
       test_key, test.iv_len, test.iv, test.plaintext_len, test.plaintext,
-      test.aad_len, test.aad, actual_ciphertext, actual_tag);
+      test.aad_len, test.aad, test.tag_len, actual_tag, actual_ciphertext);
   uint32_t cycles = profile_end(t_start);
   LOG_INFO("aes_gcm_encrypt took %d cycles", cycles);
 
   // Check for errors and that the tag and plaintext match expected values.
   CHECK_STATUS_OK(err);
-  CHECK_ARRAYS_EQ(actual_tag, test.tag, sizeof(test.tag));
+  CHECK_ARRAYS_EQ(actual_tag, test.tag, test.tag_len);
   if (test.plaintext_len > 0) {
     int cmp = memcmp(actual_ciphertext, test.ciphertext, test.plaintext_len);
     CHECK(cmp == 0, "AES-GCM encryption output does not match ciphertext");
@@ -79,9 +79,10 @@ uint32_t call_aes_gcm_decrypt(aes_gcm_test_t test, bool tag_valid) {
 
   // Call decrypt() with a cycle count timing profile.
   uint64_t t_start = profile_start();
-  status_t err = aes_gcm_decrypt(
-      test_key, test.iv_len, test.iv, test.plaintext_len, test.ciphertext,
-      test.aad_len, test.aad, test.tag, actual_plaintext, &success);
+  status_t err =
+      aes_gcm_decrypt(test_key, test.iv_len, test.iv, test.plaintext_len,
+                      test.ciphertext, test.aad_len, test.aad, test.tag_len,
+                      test.tag, actual_plaintext, &success);
   uint32_t cycles = profile_end(t_start);
   LOG_INFO("aes_gcm_decrypt took %d cycles", cycles);
 
