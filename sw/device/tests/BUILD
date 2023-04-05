@@ -2300,3 +2300,27 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
+
+opentitan_functest(
+    name = "spi_device_ottf_console_test",
+    srcs = ["spi_device_ottf_console_test.c"],
+    cw310 = cw310_params(
+        interface = "hyper310",
+        tags = ["manual"],
+        test_cmds = [
+            "--rom-kind=testrom",
+            "--bitstream=\"$(location {bitstream})\"",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+    ),
+    targets = [
+        "cw310_test_rom",
+    ],
+    test_harness = "//sw/host/tests/chip/spi_device_ottf_console",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
