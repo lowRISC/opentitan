@@ -68,20 +68,75 @@ void base_set_stdout(buffer_sink_t out) {
   base_stdout = out;
 }
 
+static const size_t kSpiDeviceFrameHeaderSizeBytes = 12;
+static uint32_t spi_device_frame_num = 0;
+
+/**
+ * Sends data out of the SPI device.
+ *
+ * Data is packaged into a frame that is described below. Note, the 0xFF padding
+ * is to account for packet loss on the host side due to shortcomings in the
+ * HyperDebug firmware. The host side reads the header first, then decides how
+ * many words to read from the data section.
+ *
+ * -----------------------------------------------
+ * |   0xFF_FF_FF_FF Pad   | 4-bytes  |          |
+ * -----------------------------------|          |
+ * |      Frame Number     | 4-bytes  |  Header  |
+ * -----------------------------------|          |
+ * |   Data Length (bytes) | 4-bytes  |          |
+ * -----------------------------------|----------|
+ * |   0xFF_FF_FF_FF Pad   | 4-bytes  |          |
+ * -----------------------------------|          |
+ * |      Data (word aligned)         |   Data   |
+ * -----------------------------------|          |
+ * |     0xFF Pad Bytes    | <4-bytes |          |
+ * -----------------------------------|----------|
+ */
 static size_t base_dev_spi_device(void *data, const char *buf, size_t len) {
   dif_spi_device_handle_t *spi_device = (dif_spi_device_handle_t *)data;
-  size_t total_bytes_sent = 0;
-  size_t bytes_sent_this_iter = 0;
-  do {
-    bytes_sent_this_iter = 0;
-    if (dif_spi_device_send(spi_device, buf + (total_bytes_sent * sizeof(char)),
-                            len - total_bytes_sent,
-                            &bytes_sent_this_iter) != kDifOk) {
-      return total_bytes_sent + bytes_sent_this_iter;
+
+  const size_t kDataPacketSizeBytes = ((len + 3u) & ~3u) + 4;
+  const size_t kFrameSizeBytes =
+      kSpiDeviceFrameHeaderSizeBytes + kDataPacketSizeBytes;
+  uint8_t frame_bytes[kFrameSizeBytes];
+
+  // Construct the frame header packet.
+  // Add the pad bytes.
+  for (size_t i = 0; i < 4; ++i) {
+    frame_bytes[i] = 0xff;
+  }
+  // Add the frame number.
+  for (size_t i = 0; i < 4; ++i) {
+    frame_bytes[i + 4] = (spi_device_frame_num >> (i * 8)) & 0xff;
+  }
+  // Add the data length.
+  for (size_t i = 0; i < 4; ++i) {
+    frame_bytes[i + 8] = (len >> (i * 8)) & 0xff;
+  }
+
+  // Construct the frame data packet.
+  // Add the pad bytes.
+  for (size_t i = 0; i < 4; ++i) {
+    frame_bytes[i + 12] = 0xff;
+  }
+  // Add the data and pad bytes.
+  for (size_t i = 0; i < ((len + 3u) & ~3u); ++i) {
+    if (i < len) {
+      frame_bytes[i + 16] = buf[i];
+    } else {
+      frame_bytes[i + 16] = 0xff;
     }
-    total_bytes_sent += bytes_sent_this_iter;
-  } while (total_bytes_sent < len);
-  return total_bytes_sent;
+  }
+
+  // Send the frame.
+  if (dif_spi_device_send_polled(spi_device, frame_bytes,
+                                 /*buf_len=*/kFrameSizeBytes) != kDifOk) {
+    return 0;
+  }
+  spi_device_frame_num++;
+
+  return len;
 }
 
 static size_t base_dev_uart(void *data, const char *buf, size_t len) {
@@ -95,6 +150,8 @@ static size_t base_dev_uart(void *data, const char *buf, size_t len) {
 }
 
 void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device) {
+  // Reset the frame counter.
+  spi_device_frame_num = 0;
   base_set_stdout((buffer_sink_t){.data = (void *)spi_device,
                                   .sink = &base_dev_spi_device});
 }
