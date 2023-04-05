@@ -11,6 +11,7 @@ use thiserror::Error;
 
 use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
+use crate::io::console::ConsoleDevice;
 
 #[derive(Clone, Debug, StructOpt, Serialize, Deserialize)]
 pub struct UartParams {
@@ -83,6 +84,16 @@ pub trait Uart {
         let mut buf = [0u8; 256];
         while self.read_timeout(&mut buf, TIMEOUT)? > 0 {}
         Ok(())
+    }
+}
+
+impl<'a> ConsoleDevice for dyn Uart + 'a {
+    fn console_read(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
+        self.read_timeout(buf, timeout)
+    }
+
+    fn console_write(&self, buf: &[u8]) -> Result<()> {
+        self.write(buf)
     }
 }
 
