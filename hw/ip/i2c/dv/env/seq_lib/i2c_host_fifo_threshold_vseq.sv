@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // test the threshold interrupt of fmt_fifo and rx_fifo
-// TODO: Weicai's comments in PR #3128: consider constraining rx_fifo_access_dly
-// to test threshold irq
 class i2c_host_fifo_threshold_vseq extends i2c_rx_tx_vseq;
   `uvm_object_utils(i2c_host_fifo_threshold_vseq)
   `uvm_object_new
@@ -107,9 +105,9 @@ class i2c_host_fifo_threshold_vseq extends i2c_rx_tx_vseq;
     csr_rd(.ptr(ral.intr_enable), .value(intr_enable), .backdoor(1'b1));
     if (intr_enable[FmtThreshold] && cfg.intr_vif.pins[FmtThreshold]) begin
       cnt_fmt_threshold++;
-      // read registers via backdoor
-      csr_rd(.ptr(ral.fifo_ctrl.fmtilvl), .value(fmt_ilvl), .backdoor(1'b1));
-      csr_rd(.ptr(ral.fifo_status.fmtlvl), .value(fmt_lvl), .backdoor(1'b1));
+      // read registers
+      csr_rd(.ptr(ral.fifo_ctrl.fmtilvl), .value(fmt_ilvl));
+      csr_rd(.ptr(ral.fifo_status.fmtlvl), .value(fmt_lvl));
       `uvm_info(`gfn, $sformatf("\n fmtilvl %0d, fmtlvl %0d", fmt_ilvl, fmt_lvl), UVM_DEBUG)
       // bound checking for fmt_lvl w.r.t fmt_ilvl because rx_fifo can received an extra data
       // before fmt_threshold intr pin is asserted (corner case)
@@ -133,9 +131,9 @@ class i2c_host_fifo_threshold_vseq extends i2c_rx_tx_vseq;
     csr_rd(.ptr(ral.intr_enable), .value(intr_enable), .backdoor(1'b1));
     if (intr_enable[RxThreshold] && cfg.intr_vif.pins[RxThreshold]) begin
       cnt_rx_threshold++;
-      // read registers via backdoor
-      csr_rd(.ptr(ral.fifo_status.rxlvl), .value(rx_lvl), .backdoor(1'b1));
-      csr_rd(.ptr(ral.fifo_ctrl.rxilvl), .value(rx_ilvl), .backdoor(1'b1));
+      // read registers
+      csr_rd(.ptr(ral.fifo_status.rxlvl), .value(rx_lvl));
+      csr_rd(.ptr(ral.fifo_ctrl.rxilvl), .value(rx_ilvl));
       // bound checking for rx_lvl w.r.t rx_ilvl because rx_fifo can received an extra data
       // before rx_threshold intr pin is asserted (corner case)
       if (!cfg.under_reset) begin
