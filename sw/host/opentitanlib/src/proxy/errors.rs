@@ -112,6 +112,7 @@ impl From<anyhow::Error> for SerializedError {
             crate::bootstrap::BootstrapError,
             crate::bootstrap::LegacyBootstrapError,
             crate::bootstrap::RescueError,
+            crate::io::console::ConsoleError,
             crate::io::emu::EmuError,
             crate::io::gpio::GpioError,
             crate::io::i2c::I2cError,
