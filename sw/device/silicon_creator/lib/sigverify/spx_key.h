@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/params.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -15,7 +17,7 @@ enum {
   /**
    * Length of an SPX public key in bits.
    */
-  kSigverifySpxKeyNumBits = 256,
+  kSigverifySpxKeyNumBits = kSpxPkBytes * 8,
   /**
    * Length of an SPX public key in bytes.
    */
@@ -24,7 +26,26 @@ enum {
    * Length of an SPX public key in words.
    */
   kSigVerifySpxKeyWords = kSigVerifySpxKeyBytes / sizeof(uint32_t),
+  /**
+   * Length of an SPX signature in bits.
+   */
+  kSigverifySpxSigNumBits = kSpxBytes * 8,
+  /**
+   * Length of an SPX signature in bytes.
+   */
+  kSigverifySpxSigNumBytes = kSigverifySpxSigNumBits / 8,
+  /**
+   * Length of an SPX signature in words.
+   */
+  kSigverifySpxSigNumWords = kSigverifySpxSigNumBytes / sizeof(uint32_t),
 };
+
+/**
+ * An SPX signature.
+ */
+typedef struct sigverify_spx_signature {
+  uint32_t data[kSigverifySpxSigNumWords];
+} sigverify_spx_signature_t;
 
 /**
  * An SPX public key.

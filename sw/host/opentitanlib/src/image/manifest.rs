@@ -59,6 +59,21 @@ pub struct Manifest {
     pub entry_point: u32,
 }
 
+/// A type that holds 1964 32-bit words for SPX signtures.
+#[repr(C)]
+#[derive(FromBytes, AsBytes, Debug)]
+pub struct SigverifySpxSignature {
+    pub data: [u32; 1964usize],
+}
+
+impl Default for SigverifySpxSignature {
+    fn default() -> Self {
+        Self {
+            data: [0; 1964usize],
+        }
+    }
+}
+
 /// A type that holds 96 32-bit words for RSA-3072.
 #[repr(C)]
 #[derive(FromBytes, AsBytes, Debug)]
