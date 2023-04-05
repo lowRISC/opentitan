@@ -156,10 +156,11 @@ static void wdog_nmi_test(void) {
   // Setup the wdog bark interrupt.
   uint32_t count_cycles =
       aon_timer_testutils_get_aon_cycles_from_us(kWdogBarkMicros);
-  aon_timer_testutils_watchdog_config(&aon_timer,
-                                      /*bark_cycles=*/count_cycles,
-                                      /*bite_cycles=*/UINT32_MAX,
-                                      /*pause_in_sleep=*/false);
+  CHECK_STATUS_OK(
+      aon_timer_testutils_watchdog_config(&aon_timer,
+                                          /*bark_cycles=*/count_cycles,
+                                          /*bite_cycles=*/UINT32_MAX,
+                                          /*pause_in_sleep=*/false));
   LOG_INFO("Wait for aon_timer NMI");
   IBEX_SPIN_FOR(nmi_fired, kWdogBarkMicros * 2);
 

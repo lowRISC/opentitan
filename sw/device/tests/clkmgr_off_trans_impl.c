@@ -100,8 +100,8 @@ static void test_hintable_clocks_off(const dif_clkmgr_t *clkmgr,
   uint32_t bite_cycles = aon_timer_testutils_get_aon_cycles_from_us(bite_us);
   LOG_INFO("Setting bite reset for %u us (%u cycles)", bite_us, bite_cycles);
 
-  aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX, bite_cycles,
-                                      false);
+  CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX,
+                                                      bite_cycles, false));
   CHECK_DIF_OK(
       dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, kDifToggleDisabled));
   // Short wait to make sure clocks reacted to hints.
