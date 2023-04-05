@@ -35,14 +35,17 @@ status_t aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
  *
  * The watchdog counter is set without locking it, and configured so it doesn't
  * pause for low power.
+ *
+ * @param aon_timer An Always-On Timer handle.
  * @param bark_cycles The number of AON clock cycles till barking.
  * @param bite_cycles The number of AON clock cycles till biting.
  * @param pause_in_sleep Don't increment while sleeping.
+ * @return The result of the operation.
  */
-void aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,
-                                         uint32_t bark_cycles,
-                                         uint32_t bite_cycles,
-                                         bool pause_in_sleep);
+status_t aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,
+                                             uint32_t bark_cycles,
+                                             uint32_t bite_cycles,
+                                             bool pause_in_sleep);
 
 /**
  * Turn off the AON timer peripheral.

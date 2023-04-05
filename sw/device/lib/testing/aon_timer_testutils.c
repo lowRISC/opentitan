@@ -52,22 +52,22 @@ status_t aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
   return OK_STATUS();
 }
 
-void aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,
-                                         uint32_t bark_cycles,
-                                         uint32_t bite_cycles,
-                                         bool pause_in_sleep) {
+status_t aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,
+                                             uint32_t bark_cycles,
+                                             uint32_t bite_cycles,
+                                             bool pause_in_sleep) {
   // Make sure that watchdog timer is stopped.
-  CHECK_DIF_OK(dif_aon_timer_watchdog_stop(aon_timer));
+  TRY(dif_aon_timer_watchdog_stop(aon_timer));
 
   // Make sure the watchdog IRQ is cleared to avoid false positive.
-  CHECK_DIF_OK(
-      dif_aon_timer_irq_acknowledge(aon_timer, kDifAonTimerIrqWdogTimerBark));
+  TRY(dif_aon_timer_irq_acknowledge(aon_timer, kDifAonTimerIrqWdogTimerBark));
   bool is_pending = true;
-  CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
-      aon_timer, kDifAonTimerIrqWdogTimerBark, &is_pending));
-  CHECK(!is_pending);
-  CHECK_DIF_OK(dif_aon_timer_watchdog_start(aon_timer, bark_cycles, bite_cycles,
-                                            pause_in_sleep, false));
+  TRY(dif_aon_timer_irq_is_pending(aon_timer, kDifAonTimerIrqWdogTimerBark,
+                                   &is_pending));
+  TRY_CHECK(!is_pending);
+  TRY(dif_aon_timer_watchdog_start(aon_timer, bark_cycles, bite_cycles,
+                                   pause_in_sleep, false));
+  return OK_STATUS();
 }
 
 void aon_timer_testutils_shutdown(const dif_aon_timer_t *aon_timer) {

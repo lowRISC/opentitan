@@ -775,8 +775,8 @@ bool test_main(void) {
         udiv64_slow(kWdogBarkMicros * kClockFreqAonHz, 1000000, NULL);
     uint64_t bite_cycles =
         udiv64_slow(kWdogBiteMicros * kClockFreqAonHz, 1000000, NULL);
-    aon_timer_testutils_watchdog_config(&aon_timer, bark_cycles, bite_cycles,
-                                        false);
+    CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(&aon_timer, bark_cycles,
+                                                        bite_cycles, false));
 
     CHECK_DIF_OK(dif_uart_alert_force(&uart0, kDifUartAlertFatalFault));
     CHECK_DIF_OK(dif_uart_alert_force(&uart1, kDifUartAlertFatalFault));
