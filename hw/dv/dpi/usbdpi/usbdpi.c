@@ -62,7 +62,8 @@ static void setDeviceConfiguration(usbdpi_ctx_t *ctx, uint8_t config);
 static void setTestStatus(usbdpi_ctx_t *ctx, uint32_t status, const char *msg);
 
 // Change DP and DN outputs from host
-static uint32_t set_driving(usbdpi_ctx_t *ctx, uint32_t d2p, uint32_t newval);
+static uint32_t set_driving(usbdpi_ctx_t *ctx, uint32_t d2p, uint32_t newval,
+                            bool p2d_oe);
 
 // Try to send OUT transfer. Optionally expect Status packet (eg. ACK|NAK) in
 // response
@@ -181,6 +182,7 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
             "drives\n",
             ctx->frame, ctx->tick_bits, st_states[ctx->state],
             hs_states[ctx->hostSt]);
+        // TODO: stop the test
         break;
 
       // Device to host transmission; collect the bits
@@ -193,14 +195,13 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
 
       case ST_IDLE:
         // Nothing to do
+        ctx->state = ST_GET;
         break;
 
       default:
         assert(!"Invalid/unknown state");
         break;
     }
-
-    ctx->state = ST_GET;
   } else {
     if (ctx->state == ST_GET) {
       ctx->state = ST_IDLE;
@@ -1046,8 +1047,9 @@ void testUnimplEp(usbdpi_ctx_t *ctx, uint8_t pid, uint8_t device,
   }
 }
 
-// Change DP and DN outputs from host
-uint32_t set_driving(usbdpi_ctx_t *ctx, uint32_t d2p, uint32_t newval) {
+// Change host outputs
+uint32_t set_driving(usbdpi_ctx_t *ctx, uint32_t d2p, uint32_t newval,
+                     bool p2d_oe) {
   // Always maintain the current state of VBUS
   uint32_t driving = ctx->driving & P2D_SENSE;
   if (d2p & D2P_DNPU) {
@@ -1063,6 +1065,10 @@ uint32_t set_driving(usbdpi_ctx_t *ctx, uint32_t d2p, uint32_t newval) {
     } else if (newval & P2D_DN) {
       driving |= P2D_DN;
     }
+  }
+  // Enable host output drivers?
+  if (p2d_oe) {
+    driving |= P2D_OE;
   }
   return driving;
 }
@@ -1286,7 +1292,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
 
     case ST_SYNC:
       dat = ((USB_SYNC & ctx->bit)) ? P2D_DP : P2D_DN;
-      ctx->driving = set_driving(ctx, d2p, dat);
+      ctx->driving = set_driving(ctx, d2p, dat, true);
       force_stat = 1;
       ctx->bit <<= 1;
       if (ctx->bit == 0x100) {
@@ -1307,7 +1313,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
         ctx->linebits = (ctx->linebits << 1);
       } else if (ctx->byte >= sending->num_bytes) {
         ctx->state = ST_EOP;
-        ctx->driving = set_driving(ctx, d2p, 0);  // SE0
+        ctx->driving = set_driving(ctx, d2p, 0, true);  // SE0
         ctx->bit = 1;
         force_stat = 1;
       } else {
@@ -1329,19 +1335,20 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     } break;
 
     case ST_EOP0:
-      ctx->driving = set_driving(ctx, d2p, 0);  // SE0
+      ctx->driving = set_driving(ctx, d2p, 0, true);  // SE0
       ctx->state = ST_EOP;
       break;
 
     case ST_EOP:  // SE0 SE0 J
       if (ctx->bit == 4) {
-        ctx->driving = set_driving(ctx, d2p, P2D_DP);  // J
+        ctx->driving = set_driving(ctx, d2p, P2D_DP, true);  // J
       }
       if (ctx->bit == 8) {
         usbdpi_transfer_t *sending = ctx->sending;
         assert(sending);
         // Stop driving: host pulldown to SE0 unless there is a pullup on DP
-        ctx->driving = set_driving(ctx, d2p, (d2p & D2P_PU) ? P2D_DP : 0);
+        ctx->driving =
+            set_driving(ctx, d2p, (d2p & D2P_PU) ? P2D_DP : 0, false);
         if (ctx->byte == sending->data_start) {
           ctx->bit = 1;
           ctx->state = ST_SYNC;

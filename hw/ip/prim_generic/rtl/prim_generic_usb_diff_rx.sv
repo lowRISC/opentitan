@@ -10,8 +10,8 @@
 module prim_generic_usb_diff_rx #(
   parameter int CalibW = 32
 ) (
-  input wire         input_pi,      // differential input
-  input wire         input_ni,      // differential input
+  inout              input_pi,      // differential input
+  inout              input_ni,      // differential input
   input              input_en_i,    // input buffer enable
   input              core_pok_h_i,  // core power indication at VCC level
   input              pullup_p_en_i, // pullup enable for P
@@ -35,9 +35,9 @@ module prim_generic_usb_diff_rx #(
   assign unused_pullup_p_en = pullup_p_en_i;
   assign unused_pullup_n_en = pullup_n_en_i;
 `else
-  // pullup / pulldown termination
-  assign (weak0, weak1) input_p = pullup_p_en_i ? 1'b1 : 1'bz;
-  assign (weak0, weak1) input_n = pullup_n_en_i ? 1'b1 : 1'bz;
+  // pullup termination
+  assign (weak0, pull1) input_pi = pullup_p_en_i ? 1'b1 : 1'bz;
+  assign (weak0, pull1) input_ni = pullup_n_en_i ? 1'b1 : 1'bz;
 `endif
 
   assign input_o = (input_en_i) ? input_p & ~input_n : 1'b0;
