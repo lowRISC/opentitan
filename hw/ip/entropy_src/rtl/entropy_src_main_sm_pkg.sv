@@ -42,7 +42,9 @@ package entropy_src_main_sm_pkg;
     StartupFail1      = 9'b000010111, // startup mode, look for second fail, alert if fail
     ContHTStart       = 9'b001000000, // continuous test mode, pulse the sha3 start input
     ContHTRunning     = 9'b110100010, // continuous test mode, wait for health test done pulse
+    FWInsertStartAesHalt = 9'b011010011, // TODO: proper state encoding
     FWInsertStart     = 9'b011000011, // fw ov mode, start the sha3 block
+    FWInsertMsgAesHalt = 9'b101011001, // TODO: proper state encoding
     FWInsertMsg       = 9'b001011001, // fw ov mode, insert fw message into sha3 block
     Sha3MsgDone       = 9'b100001111, // sha3 mode, all input messages added, ready to process
     Sha3Prep          = 9'b011111000, // sha3 mode, request csrng arb to reduce power

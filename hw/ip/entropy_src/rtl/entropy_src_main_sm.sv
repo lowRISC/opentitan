@@ -64,11 +64,10 @@ module entropy_src_main_sm
         if (enable_i) begin
           // running fw override mode and in sha3 mode
           if (fw_ov_ent_insert_i && !bypass_mode_i) begin
-            sha3_start_o = 1'b1;
             if (fw_ov_sha3_start_i) begin
-              state_d = FWInsertMsg;
+              state_d = FWInsertMsgAesHalt;
             end else begin
-              state_d = FWInsertStart;
+              state_d = FWInsertStartAesHalt;
             end
           // running in bypass_mode and not fw override mode
           end else if (bypass_mode_i && !fw_ov_ent_insert_i) begin
@@ -214,18 +213,46 @@ module entropy_src_main_sm
           end
         end
       end
+      FWInsertStartAesHalt: begin
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          cs_aes_halt_req_o = 1'b1;
+          if (cs_aes_halt_ack_i) begin
+            sha3_start_o = 1'b1;
+            state_d = FWInsertStart;
+          end
+        end
+      end
       FWInsertStart: begin
         if (!enable_i) begin
           state_d = Idle;
-        end else if (fw_ov_sha3_start_i) begin
-          state_d = FWInsertMsg;
+        end else begin
+          cs_aes_halt_req_o = 1'b1;
+          if (fw_ov_sha3_start_i) begin
+            state_d = FWInsertMsg;
+          end
+        end
+      end
+      FWInsertMsgAesHalt: begin
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          cs_aes_halt_req_o = 1'b1;
+          if (cs_aes_halt_ack_i) begin
+            sha3_start_o = 1'b1;
+            state_d = FWInsertMsg;
+          end
         end
       end
       FWInsertMsg: begin
         if (!enable_i) begin
           state_d = Idle;
-        end else if (!fw_ov_sha3_start_i) begin
-          state_d = Sha3Prep;
+        end else begin
+          cs_aes_halt_req_o = 1'b1;
+          if (!fw_ov_sha3_start_i) begin
+            state_d = Sha3Prep;
+          end
         end
       end
       Sha3Prep: begin
