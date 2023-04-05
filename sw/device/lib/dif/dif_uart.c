@@ -163,6 +163,9 @@ dif_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
     case kDifUartWatermarkByte1:
       value = UART_FIFO_CTRL_RXILVL_VALUE_RXLVL1;
       break;
+    case kDifUartWatermarkByte2:
+      value = UART_FIFO_CTRL_RXILVL_VALUE_RXLVL2;
+      break;
     case kDifUartWatermarkByte4:
       value = UART_FIFO_CTRL_RXILVL_VALUE_RXLVL4;
       break;
@@ -172,8 +175,14 @@ dif_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
     case kDifUartWatermarkByte16:
       value = UART_FIFO_CTRL_RXILVL_VALUE_RXLVL16;
       break;
-    case kDifUartWatermarkByte30:
-      value = UART_FIFO_CTRL_RXILVL_VALUE_RXLVL30;
+    case kDifUartWatermarkByte32:
+      value = UART_FIFO_CTRL_RXILVL_VALUE_RXLVL32;
+      break;
+    case kDifUartWatermarkByte64:
+      value = UART_FIFO_CTRL_RXILVL_VALUE_RXLVL64;
+      break;
+    case kDifUartWatermarkByte126:
+      value = UART_FIFO_CTRL_RXILVL_VALUE_RXLVL126;
       break;
     default:
       return kDifError;
@@ -200,6 +209,9 @@ dif_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
     case kDifUartWatermarkByte1:
       value = UART_FIFO_CTRL_TXILVL_VALUE_TXLVL1;
       break;
+    case kDifUartWatermarkByte2:
+      value = UART_FIFO_CTRL_TXILVL_VALUE_TXLVL2;
+      break;
     case kDifUartWatermarkByte4:
       value = UART_FIFO_CTRL_TXILVL_VALUE_TXLVL4;
       break;
@@ -208,6 +220,12 @@ dif_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
       break;
     case kDifUartWatermarkByte16:
       value = UART_FIFO_CTRL_TXILVL_VALUE_TXLVL16;
+      break;
+    case kDifUartWatermarkByte32:
+      value = UART_FIFO_CTRL_TXILVL_VALUE_TXLVL32;
+      break;
+    case kDifUartWatermarkByte64:
+      value = UART_FIFO_CTRL_TXILVL_VALUE_TXLVL64;
       break;
     default:
       // The minimal TX watermark is 1 byte, maximal 16 bytes.

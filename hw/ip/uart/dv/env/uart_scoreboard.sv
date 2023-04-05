@@ -133,16 +133,14 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
   endfunction
 
   virtual function void predict_tx_watermark_intr(uint tx_q_size = tx_q.size);
-    uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.txilvl.get_mirrored_value(),
-                                                  UartTx);
+    uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.txilvl.get_mirrored_value());
     intr_exp[TxWatermark] = get_non_sticky_interrupt(.cur_intr(intr_exp[TxWatermark]),
                                                      .new_intr(tx_q_size < watermark),
                                                      .triggered(tx_watermark_triggered));
   endfunction
 
   virtual function void predict_rx_watermark_intr(uint rx_q_size = rx_q.size);
-    uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.rxilvl.get_mirrored_value(),
-                                                  UartRx);
+    uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.rxilvl.get_mirrored_value());
     intr_exp[RxWatermark] = get_non_sticky_interrupt(
         .cur_intr(intr_exp[RxWatermark]),
         .new_intr(rx_q_size >= watermark && rx_enabled),
@@ -425,7 +423,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               rxlvl_exp = rx_q.size();
             end
             DataChannel: begin // check at data phase
-              bit [5:0] txlvl_act, rxlvl_act;
+              bit [7:0] txlvl_act, rxlvl_act;
 
               void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
               txlvl_act = ral.fifo_status.txlvl.get_mirrored_value();

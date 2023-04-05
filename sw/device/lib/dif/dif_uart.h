@@ -76,6 +76,10 @@ typedef enum dif_uart_watermark {
    */
   kDifUartWatermarkByte1 = 0,
   /**
+   * Indicates a two-byte watermark.
+   */
+  kDifUartWatermarkByte2,
+  /**
    * Indicates a four-byte watermark.
    */
   kDifUartWatermarkByte4,
@@ -88,9 +92,17 @@ typedef enum dif_uart_watermark {
    */
   kDifUartWatermarkByte16,
   /**
-   * Indicates a thirty-byte watermark.
+   * Indicates a thirty-two-byte watermark.
    */
-  kDifUartWatermarkByte30,
+  kDifUartWatermarkByte32,
+  /**
+   * Indicates a sixty-four-byte watermark.
+   */
+  kDifUartWatermarkByte64,
+  /**
+   * Indicates a one-hundred-twenty-six byte watermark.
+   */
+  kDifUartWatermarkByte126,
 } dif_uart_watermark_t;
 
 /**

@@ -20,7 +20,7 @@ package uart_env_pkg;
   `include "dv_macros.svh"
 
   // local types
-  parameter uint UART_FIFO_DEPTH = 32;
+  parameter uint UART_FIFO_DEPTH = 128;
   // alerts
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
@@ -38,13 +38,16 @@ package uart_env_pkg;
   } uart_intr_e;
 
   // get the number of bytes that triggers watermark interrupt
-  function automatic int get_watermark_bytes_by_level(int lvl, uart_dir_e dir);
+  function automatic int get_watermark_bytes_by_level(int lvl);
     case(lvl)
-      0: return dir == UartTx ? 2 : 1;
-      1: return 4;
-      2: return 8;
-      3: return 16;
-      4: return 30;
+      0: return 1;
+      1: return 2;
+      2: return 4;
+      3: return 8;
+      4: return 16;
+      5: return 32;
+      6: return 64;
+      7: return 126;
       default: begin
         `uvm_fatal("uart_env_pkg::get_watermark_bytes_by_level",
                    $sformatf("invalid watermark level value - %0d", lvl))

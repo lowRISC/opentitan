@@ -28,19 +28,28 @@ module uart_core (
   import uart_reg_pkg::*;
 
   localparam int NcoWidth = $bits(reg2hw.ctrl.nco.q);
+  // Keep in sync with UART_FIFO_DEPTH in dv/env/uart_env_pkg.sv.
+  // Watermark levels will require adjustment for different depth values, see the assignments to
+  // `rx_watermark_d` and `tx_watermark_d` below in this file and the
+  // `get_watermaark_bytes_by_level` function in dv/env/uart_env_pkg.sv. Register definitions in
+  // `data/uart.hjson` should also be adjusted.
+  localparam int UART_FIFO_DEPTH = 128;
+  localparam int UART_FIFO_DEPTH_W = $clog2(UART_FIFO_DEPTH)+1;
 
   logic   [15:0]  rx_val_q;
   logic   [7:0]   uart_rdata;
   logic           tick_baud_x16, rx_tick_baud;
-  logic   [5:0]   tx_fifo_depth, rx_fifo_depth;
-  logic   [5:0]   rx_fifo_depth_prev_q;
+
+  logic   [UART_FIFO_DEPTH_W-1:0] tx_fifo_depth, rx_fifo_depth;
+  logic   [UART_FIFO_DEPTH_W-1:0] rx_fifo_depth_prev_q;
+
   logic   [23:0]  rx_timeout_count_d, rx_timeout_count_q, uart_rxto_val;
   logic           rx_fifo_depth_changed, uart_rxto_en;
   logic           tx_enable, rx_enable;
   logic           sys_loopback, line_loopback, rxnf_enable;
   logic           uart_fifo_rxrst, uart_fifo_txrst;
   logic   [2:0]   uart_fifo_rxilvl;
-  logic   [1:0]   uart_fifo_txilvl;
+  logic   [2:0]   uart_fifo_txilvl;
   logic           ovrd_tx_en, ovrd_tx_val;
   logic   [7:0]   tx_fifo_data;
   logic           tx_fifo_rready, tx_fifo_rvalid;
@@ -172,7 +181,7 @@ module uart_core (
   prim_fifo_sync #(
     .Width   (8),
     .Pass    (1'b0),
-    .Depth   (32)
+    .Depth   (UART_FIFO_DEPTH)
   ) u_uart_txfifo (
     .clk_i,
     .rst_ni,
@@ -273,7 +282,7 @@ module uart_core (
   prim_fifo_sync #(
     .Width   (8),
     .Pass    (1'b0),
-    .Depth   (32)
+    .Depth   (UART_FIFO_DEPTH)
   ) u_uart_rxfifo (
     .clk_i,
     .rst_ni,
@@ -300,10 +309,13 @@ module uart_core (
 
   always_comb begin
     unique case(uart_fifo_txilvl)
-      2'h0:    tx_watermark_d = (tx_fifo_depth < 6'd2);
-      2'h1:    tx_watermark_d = (tx_fifo_depth < 6'd4);
-      2'h2:    tx_watermark_d = (tx_fifo_depth < 6'd8);
-      default: tx_watermark_d = (tx_fifo_depth < 6'd16);
+      3'h0:    tx_watermark_d = (tx_fifo_depth < 8'd1);
+      3'h1:    tx_watermark_d = (tx_fifo_depth < 8'd2);
+      3'h2:    tx_watermark_d = (tx_fifo_depth < 8'd4);
+      3'h3:    tx_watermark_d = (tx_fifo_depth < 8'd8);
+      3'h4:    tx_watermark_d = (tx_fifo_depth < 8'd16);
+      3'h5:    tx_watermark_d = (tx_fifo_depth < 8'd32);
+      default: tx_watermark_d = (tx_fifo_depth < 8'd64);
     endcase
   end
 
@@ -335,11 +347,14 @@ module uart_core (
 
   always_comb begin
     unique case(uart_fifo_rxilvl)
-      3'h0:    rx_watermark_d = (rx_fifo_depth >= 6'd1);
-      3'h1:    rx_watermark_d = (rx_fifo_depth >= 6'd4);
-      3'h2:    rx_watermark_d = (rx_fifo_depth >= 6'd8);
-      3'h3:    rx_watermark_d = (rx_fifo_depth >= 6'd16);
-      3'h4:    rx_watermark_d = (rx_fifo_depth >= 6'd30);
+      3'h0:    rx_watermark_d = (rx_fifo_depth >= 8'd1);
+      3'h1:    rx_watermark_d = (rx_fifo_depth >= 8'd2);
+      3'h2:    rx_watermark_d = (rx_fifo_depth >= 8'd4);
+      3'h3:    rx_watermark_d = (rx_fifo_depth >= 8'd8);
+      3'h4:    rx_watermark_d = (rx_fifo_depth >= 8'd16);
+      3'h5:    rx_watermark_d = (rx_fifo_depth >= 8'd32);
+      3'h6:    rx_watermark_d = (rx_fifo_depth >= 8'd64);
+      3'h7:    rx_watermark_d = (rx_fifo_depth >= 8'd126);
       default: rx_watermark_d = 1'b0;
     endcase
   end
