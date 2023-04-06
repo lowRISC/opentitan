@@ -65,6 +65,6 @@ jobs:
         --define bitstream=gcp_splice \
         --test_tag_filters=-verilator,-dv,-broken \
         --build_tests_only \
-        --test_output=errors \
+        --test_output=streamed \
         //sw/device/silicon_creator/rom/e2e/...
     displayName: "Run all ROM E2E tests"
