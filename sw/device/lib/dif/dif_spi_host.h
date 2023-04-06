@@ -203,6 +203,56 @@ dif_result_t dif_spi_host_transaction(const dif_spi_host_t *spi_host,
                                       dif_spi_host_segment_t *segments,
                                       size_t length);
 
+typedef enum dif_spi_host_events {
+  /**
+   * Enable IRQ to be fired when `STATUS.RXFULL` goes high.
+   */
+  kDifSpiHostEvtRxFull = 1 << 0,
+  /**
+   * Enable IRQ to be fired when `STATUS.TXEMPTY` goes high.
+   */
+  kDifSpiHostEvtTxEmpty = 1 << 1,
+  /**
+   * Enable IRQ to be fired when the number of 32-bit words in the RX FIFO is
+   * greater than `CONTROL.RX_WATERMARK`.
+   */
+  kDifSpiHostEvtRxWm = 1 << 2,
+  /**
+   * Enable IRQ to be fired when the number of 32-bit words in the TX FIFO is
+   * greater than `CONTROL.TX_WATERMARK`.
+   */
+  kDifSpiHostEvtTxWm = 1 << 3,
+  /**
+   * Enable IRQ to be fired when `STATUS.READY` goes high.
+   */
+  kDifSpiHostEvtReady = 1 << 4,
+  /**
+   * Enable IRQ to be fired when `STATUS.ACTIVE` goes high.
+   */
+  kDifSpiHostEvtActive = 1 << 5,
+  /**
+   * All above together.
+   */
+  kDifSpiHostEvtAll = (1 << 6) - 1,
+} dif_spi_host_events_code_t;
+
+/**
+ * Bitmask with the `dif_spi_host_events_code_t` values.
+ */
+typedef uint32_t dif_spi_host_events_t;
+
+/**
+ * Set the enable state of the spi host events.
+ *
+ * @param spi_host A SPI Host handle.
+ * @param events A bitmask with the events to be enabled or disabled.
+ * @param enable True to enable the `events` or false to disable.
+ * @return The result of the operation.
+ */
+dif_result_t dif_spi_host_event_set_enabled(const dif_spi_host_t *spi_host,
+                                            dif_spi_host_events_t events,
+                                            bool enable);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
