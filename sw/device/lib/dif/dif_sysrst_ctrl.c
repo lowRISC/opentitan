@@ -22,32 +22,51 @@ static_assert(SYSRST_CTRL_KEY_INTR_STATUS_FLASH_WP_L_L2H_BIT == 13,
 dif_result_t dif_sysrst_ctrl_key_combo_detect_configure(
     const dif_sysrst_ctrl_t *sysrst_ctrl, dif_sysrst_ctrl_key_combo_t key_combo,
     dif_sysrst_ctrl_key_combo_config_t config) {
-  if (sysrst_ctrl == NULL || config.keys > kDifSysrstCtrlKeyAll ||
+  if (sysrst_ctrl == NULL || config.pre_condition_keys > kDifSysrstCtrlKeyAll ||
+      config.keys > kDifSysrstCtrlKeyAll ||
       config.actions > kDifSysrstCtrlKeyComboActionAll) {
     return kDifBadArg;
   }
 
+  ptrdiff_t pre_cond_combo_select_ctl_reg_offset;
+  ptrdiff_t pre_cond_combo_detect_ctl_reg_offset;
   ptrdiff_t combo_select_ctl_reg_offset;
   ptrdiff_t combo_detect_ctl_reg_offset;
   ptrdiff_t combo_action_ctl_reg_offset;
 
   switch (key_combo) {
     case kDifSysrstCtrlKeyCombo0:
+      pre_cond_combo_select_ctl_reg_offset =
+          SYSRST_CTRL_COM_PRE_SEL_CTL_0_REG_OFFSET;
+      pre_cond_combo_detect_ctl_reg_offset =
+          SYSRST_CTRL_COM_PRE_DET_CTL_0_REG_OFFSET;
       combo_select_ctl_reg_offset = SYSRST_CTRL_COM_SEL_CTL_0_REG_OFFSET;
       combo_detect_ctl_reg_offset = SYSRST_CTRL_COM_DET_CTL_0_REG_OFFSET;
       combo_action_ctl_reg_offset = SYSRST_CTRL_COM_OUT_CTL_0_REG_OFFSET;
       break;
     case kDifSysrstCtrlKeyCombo1:
+      pre_cond_combo_select_ctl_reg_offset =
+          SYSRST_CTRL_COM_PRE_SEL_CTL_1_REG_OFFSET;
+      pre_cond_combo_detect_ctl_reg_offset =
+          SYSRST_CTRL_COM_PRE_DET_CTL_1_REG_OFFSET;
       combo_select_ctl_reg_offset = SYSRST_CTRL_COM_SEL_CTL_1_REG_OFFSET;
       combo_detect_ctl_reg_offset = SYSRST_CTRL_COM_DET_CTL_1_REG_OFFSET;
       combo_action_ctl_reg_offset = SYSRST_CTRL_COM_OUT_CTL_1_REG_OFFSET;
       break;
     case kDifSysrstCtrlKeyCombo2:
+      pre_cond_combo_select_ctl_reg_offset =
+          SYSRST_CTRL_COM_PRE_SEL_CTL_2_REG_OFFSET;
+      pre_cond_combo_detect_ctl_reg_offset =
+          SYSRST_CTRL_COM_PRE_DET_CTL_2_REG_OFFSET;
       combo_select_ctl_reg_offset = SYSRST_CTRL_COM_SEL_CTL_2_REG_OFFSET;
       combo_detect_ctl_reg_offset = SYSRST_CTRL_COM_DET_CTL_2_REG_OFFSET;
       combo_action_ctl_reg_offset = SYSRST_CTRL_COM_OUT_CTL_2_REG_OFFSET;
       break;
     case kDifSysrstCtrlKeyCombo3:
+      pre_cond_combo_select_ctl_reg_offset =
+          SYSRST_CTRL_COM_PRE_SEL_CTL_3_REG_OFFSET;
+      pre_cond_combo_detect_ctl_reg_offset =
+          SYSRST_CTRL_COM_PRE_DET_CTL_3_REG_OFFSET;
       combo_select_ctl_reg_offset = SYSRST_CTRL_COM_SEL_CTL_3_REG_OFFSET;
       combo_detect_ctl_reg_offset = SYSRST_CTRL_COM_DET_CTL_3_REG_OFFSET;
       combo_action_ctl_reg_offset = SYSRST_CTRL_COM_OUT_CTL_3_REG_OFFSET;
@@ -61,6 +80,12 @@ dif_result_t dif_sysrst_ctrl_key_combo_detect_configure(
     return kDifLocked;
   }
 
+  mmio_region_write32(sysrst_ctrl->base_addr,
+                      pre_cond_combo_select_ctl_reg_offset,
+                      config.pre_condition_keys);
+  mmio_region_write32(sysrst_ctrl->base_addr,
+                      pre_cond_combo_detect_ctl_reg_offset,
+                      config.pre_condition_detection_time_threshold);
   mmio_region_write32(sysrst_ctrl->base_addr, combo_select_ctl_reg_offset,
                       config.keys);
   mmio_region_write32(sysrst_ctrl->base_addr, combo_detect_ctl_reg_offset,
