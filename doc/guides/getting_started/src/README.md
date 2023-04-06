@@ -77,10 +77,10 @@ python3 -m pip install --user -U pip "setuptools<66.0.0"
 The `pip` installation instructions use the `--user` flag to install without root permissions.
 Binaries are installed to `~/.local/bin`; check that this directory is listed in your `PATH` by running `which pip3`.
 It should show `~/.local/bin/pip3`.
-If it doesn't, add `~/.local/bin` to your `PATH`, e.g. by adding the following line to your `~/.bashrc` file:
+If it doesn't, prepend `~/.local/bin` to your `PATH`, e.g. by adding the following line to your `~/.bashrc` file:
 
 ```console {title=~/.bashrc}
-export PATH=$PATH:~/.local/bin
+export PATH=~/.local/bin:$PATH
 ```
 
 Now install additional Python dependencies:
