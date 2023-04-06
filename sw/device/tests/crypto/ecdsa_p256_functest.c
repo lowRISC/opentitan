@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/drivers/hmac.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/ecc/ecdsa_p256.h"
-#include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
+#include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/ecc.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -14,37 +15,79 @@
 // Message
 static const char kMessage[] = "test message";
 
-// Digest of the test message above.
-hmac_digest_t hmac_digest;
+static const ecc_curve_t kCurveP256 = {
+    .curve_type = kEccCurveTypeNistP256,
+    .domain_parameter = NULL,
+};
 
-static void compute_digest(void) {
-  // Compute the SHA-256 digest using the HMAC device.
-  hmac_sha256_init();
-  hmac_update((unsigned char *)&kMessage, sizeof(kMessage) - 1);
-  hmac_final(&hmac_digest);
-}
+static const crypto_key_config_t kPrivateKeyConfig = {
+    .version = kCryptoLibVersion1,
+    .key_mode = kKeyModeEcdsa,
+    .key_length = 258 / 8,
+    .hw_backed = kHardenedBoolFalse,
+    .diversification_hw_backed = NULL,
+    .security_level = kSecurityLevelLow,
+};
 
-status_t sign_then_verify_test(hardened_bool_t *verificationResult) {
-  // Spin until OTBN is idle.
-  TRY(otbn_busy_wait_for_done());
+status_t sign_then_verify_test(hardened_bool_t *verification_result) {
+  // Allocate space for a masked private key.
+  uint32_t keyblob[keyblob_num_words(kPrivateKeyConfig)];
+  crypto_blinded_key_t private_key = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+
+  // Allocate space for a public key.
+  uint32_t pk_x[kP256CoordWords] = {0};
+  uint32_t pk_y[kP256CoordWords] = {0};
+  ecc_public_key_t public_key = {
+      .x =
+          {
+              .key_mode = kKeyModeEcdsa,
+              .key_length = sizeof(pk_x),
+              .key = pk_x,
+          },
+      .y =
+          {
+              .key_mode = kKeyModeEcdsa,
+              .key_length = sizeof(pk_y),
+              .key = pk_y,
+          },
+  };
+  public_key.x.checksum = integrity_unblinded_checksum(&public_key.x);
+  public_key.y.checksum = integrity_unblinded_checksum(&public_key.y);
 
   // Generate a keypair.
   LOG_INFO("Generating keypair...");
-  TRY(ecdsa_p256_keygen_start());
-  p256_masked_scalar_t private_key;
-  p256_point_t public_key;
-  TRY(ecdsa_p256_keygen_finalize(&private_key, &public_key));
+  CHECK(otcrypto_ecdsa_keygen(&kCurveP256, &private_key, &public_key) ==
+        kCryptoStatusOK);
+
+  // Package message in a cryptolib-style struct.
+  crypto_const_uint8_buf_t message = {
+      .len = sizeof(kMessage) - 1,
+      .data = (unsigned char *)&kMessage,
+  };
+
+  // Allocate space for the signature.
+  uint32_t sigR[kP256ScalarWords] = {0};
+  uint32_t sigS[kP256ScalarWords] = {0};
+  ecc_signature_t signature = {
+      .len_r = sizeof(sigR),
+      .r = sigR,
+      .len_s = sizeof(sigS),
+      .s = sigS,
+  };
 
   // Generate a signature for the message.
   LOG_INFO("Signing...");
-  TRY(ecdsa_p256_sign_start(hmac_digest.digest, &private_key));
-  ecdsa_p256_signature_t signature;
-  TRY(ecdsa_p256_sign_finalize(&signature));
+  CHECK(otcrypto_ecdsa_sign(&private_key, message, &kCurveP256, &signature) ==
+        kCryptoStatusOK);
 
   // Verify the signature.
   LOG_INFO("Verifying...");
-  TRY(ecdsa_p256_verify_start(&signature, hmac_digest.digest, &public_key));
-  TRY(ecdsa_p256_verify_finalize(&signature, verificationResult));
+  CHECK(otcrypto_ecdsa_verify(&public_key, message, &signature, &kCurveP256,
+                              verification_result) == kCryptoStatusOK);
 
   return OTCRYPTO_OK;
 }
@@ -53,8 +96,6 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
-
-  compute_digest();
 
   hardened_bool_t verificationResult;
   status_t err = sign_then_verify_test(&verificationResult);
