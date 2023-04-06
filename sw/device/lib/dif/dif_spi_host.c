@@ -434,3 +434,14 @@ dif_result_t dif_spi_host_event_set_enabled(const dif_spi_host_t *spi_host,
                       reg);
   return kDifOk;
 }
+
+dif_result_t dif_spi_host_event_get_enabled(const dif_spi_host_t *spi_host,
+                                            dif_spi_host_events_t *events) {
+  if (spi_host == NULL || events == NULL) {
+    return kDifBadArg;
+  }
+
+  *events =
+      mmio_region_read32(spi_host->base_addr, SPI_HOST_EVENT_ENABLE_REG_OFFSET);
+  return kDifOk;
+}
