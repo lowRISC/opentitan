@@ -136,7 +136,8 @@ However, if you want to interact with the simulation in additional ways, there a
 ## Execution Log
 
 All executed instructions in the loaded software into Verilator simulations are logged to the file `trace_core_00000000.log`.
-By default this file is stored somewhere in `~/.cache/bazel`, you can find it using the following command:
+By default this file is stored in a subdirectory of `~/.cache/bazel`.
+You can find it using the following command:
 
 ```console
 find ~/.cache/bazel -name "trace_core_00000000.log"
