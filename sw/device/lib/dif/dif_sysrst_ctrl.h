@@ -109,6 +109,18 @@ typedef enum dif_sysrst_ctrl_key_combo_action {
  */
 typedef struct dif_sysrst_ctrl_key_combo_config {
   /**
+   * The keys that comprise the pre-condition key combination to detect (i.e.,
+   * one or more `dif_sysrst_ctrl_key_t`s ORed together).
+   */
+  uint32_t pre_condition_keys;
+  /**
+   * The duration the pre-condition key combination should be pressed to enable
+   * triggering an action by an additional key combination press.
+   *
+   * Units: increments of 5us; [0, 2^32) represents [0, 60) seconds.
+   */
+  uint32_t pre_condition_detection_time_threshold;
+  /**
    * The keys that comprise the key combination to detect (i.e., one or more
    * `dif_sysrst_ctrl_key_t`s ORed together).
    */
