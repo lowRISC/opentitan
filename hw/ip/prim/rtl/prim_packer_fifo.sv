@@ -41,7 +41,7 @@
 
 `include "prim_assert.sv"
 
-module prim_packer_fifo #(
+module prim_ot_packer_fifo #(
   parameter int InW  = 32,
   parameter int OutW = 8,
   parameter bit ClearOnRead = 1'b1, // if == 1 always output 0 after read

@@ -151,7 +151,7 @@ module spi_fwmode
   ///////////////
 
   // FIFO: Connecting FwMode to SRAM CTRLs
-  prim_fifo_async #(
+  prim_ot_fifo_async #(
     .Width (FifoWidth),
     .Depth (FifoDepth)
   ) u_rx_fifo (
@@ -173,7 +173,7 @@ module spi_fwmode
     .rdepth_o     (as_rxfifo_depth_o)
   );
 
-  prim_fifo_async #(
+  prim_ot_fifo_async #(
     .Width (FifoWidth),
     .Depth (FifoDepth)
   ) u_tx_fifo (

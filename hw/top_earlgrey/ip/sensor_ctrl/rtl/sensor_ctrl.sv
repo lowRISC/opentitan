@@ -65,7 +65,7 @@ module sensor_ctrl
     );
   end
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(NumAlertEvents),
     .ResetValue('0)
   ) u_alert_p_sync (
@@ -75,7 +75,7 @@ module sensor_ctrl
     .q_o(alert_event_p)
   );
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(NumAlertEvents),
     .ResetValue({NumAlertEvents{1'b1}})
   ) u_alert_n_sync (
@@ -125,7 +125,7 @@ module sensor_ctrl
 
   assign hw2reg.status.io_pok.de = 1'b1;
 
-  prim_intr_hw #(.Width(1)) u_io_intr (
+  prim_ot_intr_hw #(.Width(1)) u_io_intr (
     .clk_i,
     .rst_ni,
     .event_intr_i           (|{io_rise, io_fall}),
@@ -153,7 +153,7 @@ module sensor_ctrl
     .q_negedge_pulse_o(init_fall)
   );
 
-  prim_intr_hw #(.Width(1)) u_init_intr (
+  prim_ot_intr_hw #(.Width(1)) u_init_intr (
     .clk_i,
     .rst_ni,
     .event_intr_i           (|{init_rise, init_fall}),
@@ -292,7 +292,7 @@ module sensor_ctrl
                       (~&async_alert_event_n) |
                       (|reg2hw.recov_alert);
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_wake_sync (

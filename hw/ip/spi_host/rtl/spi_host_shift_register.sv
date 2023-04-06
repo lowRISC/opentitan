@@ -8,7 +8,7 @@
 
 `include "prim_assert.sv"
 
-module spi_host_shift_register (
+module spi_host_shift_register_ot (
   input              clk_i,
   input              rst_ni,
   input              wr_en_i,
@@ -38,7 +38,7 @@ module spi_host_shift_register (
 
   input              sw_rst_i
 );
-  import spi_host_cmd_pkg::*;
+  import spi_host_cmd_ot_pkg::*;
 
   logic        [7:0] sr_q;
   logic        [7:0] sr_d;
@@ -113,4 +113,4 @@ module spi_host_shift_register (
     end
   end
 
-endmodule : spi_host_shift_register
+endmodule : spi_host_shift_register_ot

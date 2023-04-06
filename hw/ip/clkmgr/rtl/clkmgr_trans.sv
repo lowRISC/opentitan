@@ -45,7 +45,7 @@ module clkmgr_trans
   assign idle_valid = (idle_cnt == TransIdleCnt);
   assign local_en = sw_hint_synced | ~idle_valid;
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1)
   ) u_hint_sync (
     .clk_i(clk_i),
@@ -131,8 +131,8 @@ module clkmgr_trans
   // we hold the error because there is no guarantee on
   // what the timing of cnt_err looks like, it may be a
   // pulse or it may be level.  If it's for former,
-  // prim_sync_reqack may miss it, if it's the latter,
-  // prim_pulse_sync may miss it.  As a result, just
+  // prim_ot_sync_reqack may miss it, if it's the latter,
+  // prim_ot_pulse_sync may miss it.  As a result, just
   // latch forever and sync it over.
   logic hold_err;
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -144,7 +144,7 @@ module clkmgr_trans
   end
 
   // register facing domain
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1)
   ) u_err_sync (
     .clk_i(clk_reg_i),
@@ -161,7 +161,7 @@ module clkmgr_trans
     end
   end
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1)
   ) u_en_sync (
     .clk_i(clk_reg_i),

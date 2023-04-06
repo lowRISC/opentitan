@@ -154,7 +154,7 @@ module flash_phy
 
 
   // This fifo holds the expected return order
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width   (BankW),
     .Pass    (0),
     .Depth   (SeqFifoDepth)
@@ -232,7 +232,7 @@ module flash_phy
     // pop if the response came from the appropriate fifo
     assign host_rsp_ack[bank] = host_req_done_o & (rsp_bank_sel == bank);
 
-    prim_fifo_sync #(
+    prim_ot_fifo_sync #(
       .Width   (BusFullWidth + 1),
       .Pass    (1'b1),
       .Depth   (FlashMacroOustanding),

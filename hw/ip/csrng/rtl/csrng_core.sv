@@ -416,7 +416,7 @@ module csrng_core import csrng_pkg::*; #(
   //--------------------------------------------
   // All TLUL interrupts are collect in the section.
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1)
   ) u_intr_hw_cs_cmd_req_done (
     .clk_i                  (clk_i),
@@ -431,7 +431,7 @@ module csrng_core import csrng_pkg::*; #(
     .intr_o                 (intr_cs_cmd_req_done_o)
   );
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1)
   ) u_intr_hw_cs_entropy_req (
     .clk_i                  (clk_i),
@@ -447,7 +447,7 @@ module csrng_core import csrng_pkg::*; #(
   );
 
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1)
   ) u_intr_hw_cs_hw_inst_exc (
     .clk_i                  (clk_i),
@@ -463,7 +463,7 @@ module csrng_core import csrng_pkg::*; #(
   );
 
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1)
   ) u_intr_hw_cs_fatal_err (
     .clk_i                  (clk_i),
@@ -902,11 +902,11 @@ module csrng_core import csrng_pkg::*; #(
 
   // pack the gen bits into a 32 bit register sized word
 
-  prim_packer_fifo #(
+  prim_ot_packer_fifo #(
     .InW(BlkLen),
     .OutW(32),
     .ClearOnRead(1'b0)
-  ) u_prim_packer_fifo_sw_genbits (
+  ) u_prim_ot_packer_fifo_sw_genbits (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (!cs_enable_fo[29]),
@@ -1132,11 +1132,11 @@ module csrng_core import csrng_pkg::*; #(
   end : gen_cmd_ack
 
 
-  prim_packer_fifo #(
+  prim_ot_packer_fifo #(
     .InW(32),
     .OutW(SeedLen),
     .ClearOnRead(1'b1)
-  ) u_prim_packer_fifo_adata (
+  ) u_prim_ot_packer_fifo_adata (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (!cs_enable_fo[37] || packer_adata_clr),

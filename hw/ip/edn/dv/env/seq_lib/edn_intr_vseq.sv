@@ -45,8 +45,8 @@ class edn_intr_vseq extends edn_base_vseq;
     bit           fifo_forced_values [4] = {1'b1, 1'b1, 1'b1, 1'b0};
 
     // Turn off assertions
-    $assertoff(0, "tb.dut.u_edn_core.u_prim_fifo_sync_rescmd.DataKnown_A");
-    $assertoff(0, "tb.dut.u_edn_core.u_prim_fifo_sync_gencmd.DataKnown_A");
+    $assertoff(0, "tb.dut.u_edn_core.u_prim_ot_fifo_sync_rescmd.DataKnown_A");
+    $assertoff(0, "tb.dut.u_edn_core.u_prim_ot_fifo_sync_gencmd.DataKnown_A");
     cfg.edn_assert_vif.assert_off();
 
     // Enable intr_state

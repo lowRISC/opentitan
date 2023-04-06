@@ -251,10 +251,10 @@ module tb;
                   otp_prog_if.AckAssertedOnlyWhenReqAsserted_A)
   `DV_ASSERT_CTRL(
       "KmacIfSyncReqAckAckNeedsReq",
-      dut.u_lc_ctrl_kmac_if.u_prim_sync_reqack_data_in.u_prim_sync_reqack.SyncReqAckAckNeedsReq)
+      dut.u_lc_ctrl_kmac_if.u_prim_ot_sync_reqack_data_in.u_prim_ot_sync_reqack.SyncReqAckAckNeedsReq)
   `DV_ASSERT_CTRL(
       "KmacIfSyncReqAckAckNeedsReq",
-      dut.u_lc_ctrl_kmac_if.u_prim_sync_reqack_data_out.u_prim_sync_reqack.SyncReqAckAckNeedsReq)
+      dut.u_lc_ctrl_kmac_if.u_prim_ot_sync_reqack_data_out.u_prim_ot_sync_reqack.SyncReqAckAckNeedsReq)
   `DV_ASSERT_CTRL("KmacIfSyncReqAckAckNeedsReq",
                   kmac_app_if.req_data_if.H_DataStableWhenValidAndNotReady_A)
   `DV_ASSERT_CTRL("KmacIfSyncReqAckAckNeedsReq", kmac_app_if.req_data_if.ValidHighUntilReady_A)

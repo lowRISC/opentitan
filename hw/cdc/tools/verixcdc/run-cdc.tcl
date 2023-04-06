@@ -99,7 +99,7 @@ if {$PARAMS != ""} {
 set prim_2ff_modules {}
 
 # Find every derivated modules from 2FF synchronizer
-foreach mod [get_all_modules prim_flop_2sync] {
+foreach mod [get_all_modules prim_ot_flop_2sync] {
   lappend prim_2ff_modules $mod
   puts "Adding to list prim_2ff_modules: $mod"
 }
@@ -117,7 +117,7 @@ set_user_cntl_synchronizer -name opentitan_2ff $prim_2ff_modules
 # The following paths ignore data integrity errors that are directly generated on the async fifo data
 # The path is as follows: asycn_fifo.rdata_o -> data integrity check -> a_valid
 # There are two such paths: One path is a the error pin directly into ibex, and the other is ibex's internal check
-set async_fifo_data [get_pins -of_objects [get_cells -hier * -filter {ref_name == prim_fifo_async}] -filter {name =~ rdata_o*}]
+set async_fifo_data [get_pins -of_objects [get_cells -hier * -filter {ref_name == prim_ot_fifo_async}] -filter {name =~ rdata_o*}]
 set_ignore_cdc_paths -name async_fifo_to_ibex_data_err -through_signal $async_fifo_data -through_signal [get_pins top_earlgrey/u_rv_core_ibex/u_core/data_err_i]
 set_ignore_cdc_paths -name async_fifo_to_ibex_ecc_err -through_signal $async_fifo_data -through_signal [get_pins top_earlgrey/u_rv_core_ibex/u_core/u_ibex_core/load_store_unit_i/load_resp_intg_err_o]
 

@@ -112,7 +112,7 @@ module spid_readbuffer
   assign flip = current_buffer_idx == next_buffer_addr;
 
   // make flip event single cycle pulse signal
-  // It will be synchronized into the bus clock domain using prim_pulse_sync
+  // It will be synchronized into the bus clock domain using prim_ot_pulse_sync
   logic flip_q;
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) flip_q <= 1'b 0;

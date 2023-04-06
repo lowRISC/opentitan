@@ -6,7 +6,7 @@
 
 `include "prim_assert.sv"
 
-module prim_fifo_async_sram_adapter #(
+module prim_ot_fifo_async_sram_adapter #(
   parameter int unsigned Width = 32,
   parameter int unsigned Depth = 16,
 
@@ -137,7 +137,7 @@ module prim_fifo_async_sram_adapter #(
 
   assign w_wptr_gray_d = dec2gray(w_wptr_d);
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width (PtrW)
   ) u_sync_wptr_gray (
     .clk_i  (clk_rd_i),
@@ -179,7 +179,7 @@ module prim_fifo_async_sram_adapter #(
 
   assign r_rptr_gray_d = dec2gray(r_rptr_d);
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width (PtrW)
   ) u_sync_rptr_gray (
     .clk_i  (clk_wr_i),
@@ -338,7 +338,7 @@ module prim_fifo_async_sram_adapter #(
   // Function //
   //////////////
 
-  // dec2gray / gray2dec copied from prim_fifo_async.sv
+  // dec2gray / gray2dec copied from prim_ot_fifo_async.sv
   function automatic [PtrW-1:0] dec2gray(input logic [PtrW-1:0] decval);
     logic [PtrW-1:0] decval_sub;
     logic [PtrW-1:0] decval_in;
@@ -436,4 +436,4 @@ module prim_fifo_async_sram_adapter #(
   // FPV coverage
   `COVER_FPV(WFull_C, w_full, clk_wr_i, !rst_wr_ni)
 
-endmodule : prim_fifo_async_sram_adapter
+endmodule : prim_ot_fifo_async_sram_adapter

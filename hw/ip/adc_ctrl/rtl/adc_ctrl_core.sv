@@ -169,7 +169,7 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
 
   // synchronzie from clk_aon into cfg domain
   logic cfg_oneshot_done;
-  prim_pulse_sync u_oneshot_done_sync (
+  prim_ot_pulse_sync u_oneshot_done_sync (
     .clk_src_i(clk_aon_i),
     .rst_src_ni(rst_aon_ni),
     .src_pulse_i(oneshot_done),

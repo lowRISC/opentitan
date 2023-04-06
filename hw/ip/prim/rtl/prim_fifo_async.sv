@@ -6,7 +6,7 @@
 
 `include "prim_assert.sv"
 
-module prim_fifo_async #(
+module prim_ot_fifo_async #(
   parameter  int unsigned Width  = 16,
   parameter  int unsigned Depth  = 4,
   parameter  bit OutputZeroIfEmpty = 1'b0, // if == 1 always output 0 when FIFO is empty
@@ -73,7 +73,7 @@ module prim_fifo_async #(
   end
 
   // sync gray-coded pointer to read clk
-  prim_flop_2sync #(.Width(PTR_WIDTH)) sync_wptr (
+  prim_ot_flop_2sync #(.Width(PTR_WIDTH)) sync_wptr (
     .clk_i    (clk_rd_i),
     .rst_ni   (rst_rd_ni),
     .d_i      (fifo_wptr_gray_q),
@@ -106,7 +106,7 @@ module prim_fifo_async #(
   end
 
   // sync gray-coded pointer to write clk
-  prim_flop_2sync #(.Width(PTR_WIDTH)) sync_rptr (
+  prim_ot_flop_2sync #(.Width(PTR_WIDTH)) sync_rptr (
     .clk_i    (clk_wr_i),
     .rst_ni   (rst_wr_ni),
     .d_i      (fifo_rptr_gray_q),

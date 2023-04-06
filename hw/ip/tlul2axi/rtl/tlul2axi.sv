@@ -12,6 +12,8 @@
 module tlul2axi
   import tlul_pkg::*;
   #(
+   parameter type axi_req_t = logic,
+   parameter type axi_rsp_t = logic
    ) (
    input logic  clk_i,
    input logic  rst_ni,
@@ -24,8 +26,8 @@ module tlul2axi
    output logic intr_mbox_irq_o,
       
    //  axi master 
-   input        tlul2axi_pkg::slv_rsp_t axi_rsp_i,
-   output       tlul2axi_pkg::slv_req_t axi_req_o
+   input        axi_rsp_t axi_rsp_i,
+   output       axi_req_t axi_req_o
 
    );
 
@@ -111,46 +113,46 @@ module tlul2axi
     // Default assignments
         
   
-    axi_req_o.aw.addr   = { 32'b0, tl_i.a_address };
+    axi_req_o.aw.addr   = { 'h0, tl_i.a_address };
     axi_req_o.aw.prot   = 3'b0;
     axi_req_o.aw.region = 4'b0;
     axi_req_o.aw.len    = 8'b0;
-    axi_req_o.aw.size   = { 1'b0 , tl_i.a_size };   
+    axi_req_o.aw.size   = { 'h0 , tl_i.a_size };   
     axi_req_o.aw.burst  = axi_pkg::BURST_INCR; 
-    axi_req_o.aw.lock   = 1'b0;
-    axi_req_o.aw.cache  = 4'b0;
-    axi_req_o.aw.qos    = 4'b0;
+    axi_req_o.aw.lock   = 'h0;
+    axi_req_o.aw.cache  = 'h0;
+    axi_req_o.aw.qos    = 'h0;
     axi_req_o.aw.id     = tl_i.a_source;
-    axi_req_o.aw.atop   = '0;
-    axi_req_o.aw.user   = '0;
+    axi_req_o.aw.atop   = 'h0;
+    axi_req_o.aw.user   = 'h0;
 
    
-    axi_req_o.ar.addr   = { 32'b0, tl_i.a_address };
-    axi_req_o.ar.prot   = 3'b0;
-    axi_req_o.ar.region = 4'b0;
-    axi_req_o.ar.len    = 8'b0;
-    axi_req_o.ar.size   = { 1'b0 , tl_i.a_size };
+    axi_req_o.ar.addr   = { 'h0, tl_i.a_address };
+    axi_req_o.ar.prot   = 'h0;
+    axi_req_o.ar.region = 'h0;
+    axi_req_o.ar.len    = 'h0;
+    axi_req_o.ar.size   = { 'h0 , tl_i.a_size };
     axi_req_o.ar.burst  = axi_pkg::BURST_INCR; 
-    axi_req_o.ar.lock   = 1'b0;
-    axi_req_o.ar.cache  = 4'b0;
-    axi_req_o.ar.qos    = 4'b0;
+    axi_req_o.ar.lock   = 'h0;
+    axi_req_o.ar.cache  = 'h0;
+    axi_req_o.ar.qos    = 'h0;
     axi_req_o.ar.id     = tl_i.a_source;
-    axi_req_o.ar.user   = '0;
+    axi_req_o.ar.user   = 'h0;
  
-    axi_req_o.w.data    = '0;
-    axi_req_o.w.strb    = '0;
-    axi_req_o.w.user    = '0;
+    axi_req_o.w.data    = 'h0;
+    axi_req_o.w.strb    = 'h0;
+    axi_req_o.w.user    = 'h0;
 
-    tl_o_int.d_valid     = 1'b0;
-    tl_o_int.d_opcode    = tlul_pkg::AccessAck;
-    tl_o_int.d_param     = '0;
-    tl_o_int.d_size      = tl_i.a_size;
-    tl_o_int.d_source    = '0;
-    tl_o_int.d_sink      = '0;
-    tl_o_int.d_data      = '0;
-    tl_o_int.d_user      = tl_i.a_user;
-    tl_o_int.d_error     = '0;
-    tl_o_int.a_ready     = '0;
+    tl_o_int.d_valid    = 'h0;
+    tl_o_int.d_opcode   = tlul_pkg::AccessAck;
+    tl_o_int.d_param    = 'h0;
+    tl_o_int.d_size     = tl_i.a_size;
+    tl_o_int.d_source   = 'h0;
+    tl_o_int.d_sink     = 'h0;
+    tl_o_int.d_data     = 'h0;
+    tl_o_int.d_user     = tl_i.a_user;
+    tl_o_int.d_error    = 'h0;
+    tl_o_int.a_ready    = 'h0;
 
     axi_req_o.b_ready   = 1'b0;
     axi_req_o.r_ready   = 1'b0;

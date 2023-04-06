@@ -16,7 +16,7 @@
 
 `include "prim_assert.sv"
 
-module prim_max_tree #(
+module prim_ot_max_tree #(
   parameter int NumSrc = 32,
   parameter int Width = 8,
   // Derived parameters
@@ -149,4 +149,4 @@ module prim_max_tree #(
   `ASSERT(MaxIndexComputationInvalid_A, !max_valid_o |-> max_idx_o == '0)
 `endif
 
-endmodule : prim_max_tree
+endmodule : prim_ot_max_tree

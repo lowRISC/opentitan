@@ -4,14 +4,14 @@
 //
 // Description: I2C core module
 
-module  i2c_core #(
+module  i2c_core_ot #(
   parameter int                    FifoDepth = 64
 ) (
   input                            clk_i,
   input                            rst_ni,
 
-  input i2c_reg_pkg::i2c_reg2hw_t  reg2hw,
-  output i2c_reg_pkg::i2c_hw2reg_t hw2reg,
+  input i2c_ot_reg_pkg::i2c_reg2hw_t  reg2hw,
+  output i2c_ot_reg_pkg::i2c_hw2reg_t hw2reg,
 
   input                            scl_i,
   output logic                     scl_o,
@@ -284,7 +284,7 @@ module  i2c_core #(
   assign unused_alert_test_qe = reg2hw.alert_test.qe;
   assign unused_alert_test_q = reg2hw.alert_test.q;
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width   (13),
     .Pass    (1'b1),
     .Depth   (FifoDepth)
@@ -305,7 +305,7 @@ module  i2c_core #(
 
   assign rx_fifo_rready = reg2hw.rdata.re;
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width   (8),
     .Pass    (1'b0),
     .Depth   (FifoDepth)
@@ -330,7 +330,7 @@ module  i2c_core #(
   assign tx_fifo_wvalid = line_loopback ? 1'b1 : reg2hw.txdata.qe;
   assign tx_fifo_wdata  = line_loopback ? acq_fifo_rdata[7:0] : reg2hw.txdata.q;
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(8),
     .Pass(1'b1),
     .Depth(FifoDepth)
@@ -351,7 +351,7 @@ module  i2c_core #(
 
   assign acq_fifo_rready = reg2hw.acqdata.abyte.re & reg2hw.acqdata.signal.re;
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(10),
     .Pass(1'b0),
     .Depth(FifoDepth)
@@ -371,7 +371,7 @@ module  i2c_core #(
   );
 
   // sync the incoming SCL and SDA signals
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue(1'b1)
   ) u_i2c_sync_scl (
@@ -381,7 +381,7 @@ module  i2c_core #(
     .q_o (scl_sync)
   );
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue(1'b1)
   ) u_i2c_sync_sda (
@@ -391,7 +391,7 @@ module  i2c_core #(
     .q_o (sda_sync)
   );
 
-  i2c_fsm #(
+  i2c_fsm_ot #(
     .FifoDepth(FifoDepth)
   ) u_i2c_fsm (
     .clk_i,
@@ -463,7 +463,7 @@ module  i2c_core #(
     .event_host_timeout_o    (event_host_timeout)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_fmt_watermark (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_fmt_watermark (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_fmt_watermark),
@@ -476,7 +476,7 @@ module  i2c_core #(
     .intr_o                 (intr_fmt_watermark_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_rx_watermark (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_rx_watermark (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_rx_watermark),
@@ -489,7 +489,7 @@ module  i2c_core #(
     .intr_o                 (intr_rx_watermark_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_fmt_overflow (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_fmt_overflow (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_fmt_overflow),
@@ -502,7 +502,7 @@ module  i2c_core #(
     .intr_o                 (intr_fmt_overflow_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_rx_overflow (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_rx_overflow (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_rx_overflow),
@@ -515,7 +515,7 @@ module  i2c_core #(
     .intr_o                 (intr_rx_overflow_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_nak (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_nak (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_nak),
@@ -528,7 +528,7 @@ module  i2c_core #(
     .intr_o                 (intr_nak_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_scl_interference (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_scl_interference (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_scl_interference),
@@ -541,7 +541,7 @@ module  i2c_core #(
     .intr_o                 (intr_scl_interference_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_sda_interference (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_sda_interference (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_sda_interference),
@@ -554,7 +554,7 @@ module  i2c_core #(
     .intr_o                 (intr_sda_interference_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_stretch_timeout (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_stretch_timeout (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_stretch_timeout),
@@ -567,7 +567,7 @@ module  i2c_core #(
     .intr_o                 (intr_stretch_timeout_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_sda_unstable (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_sda_unstable (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_sda_unstable),
@@ -580,7 +580,7 @@ module  i2c_core #(
     .intr_o                 (intr_sda_unstable_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_cmd_complete (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_cmd_complete (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_cmd_complete),
@@ -593,7 +593,7 @@ module  i2c_core #(
     .intr_o                 (intr_cmd_complete_o)
   );
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1),
     .IntrT ("Status")
   ) intr_hw_tx_stretch (
@@ -609,7 +609,7 @@ module  i2c_core #(
     .intr_o                 (intr_tx_stretch_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_tx_overflow (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_tx_overflow (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_tx_overflow),
@@ -622,7 +622,7 @@ module  i2c_core #(
     .intr_o                 (intr_tx_overflow_o)
   );
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1),
     .IntrT ("Status")
   ) intr_hw_acq_overflow (
@@ -638,7 +638,7 @@ module  i2c_core #(
     .intr_o                 (intr_acq_full_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_unexp_stop (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_unexp_stop (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_unexp_stop),
@@ -651,7 +651,7 @@ module  i2c_core #(
     .intr_o                 (intr_unexp_stop_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_host_timeout (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_host_timeout (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_host_timeout),

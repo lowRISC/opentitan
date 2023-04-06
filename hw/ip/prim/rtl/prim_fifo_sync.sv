@@ -6,7 +6,7 @@
 
 `include "prim_assert.sv"
 
-module prim_fifo_sync #(
+module prim_ot_fifo_sync #(
   parameter int unsigned Width       = 16,
   parameter bit Pass                 = 1'b1, // if == 1 allow requests to pass through empty FIFO
   parameter int unsigned Depth       = 4,
@@ -99,7 +99,7 @@ module prim_fifo_sync #(
     assign full_o   = full;
     assign rvalid_o = ~empty & ~under_rst;
 
-    prim_fifo_sync_cnt #(
+    prim_ot_fifo_sync_cnt #(
       .Width(PTR_WIDTH),
       .Depth(Depth),
       .Secure(Secure)

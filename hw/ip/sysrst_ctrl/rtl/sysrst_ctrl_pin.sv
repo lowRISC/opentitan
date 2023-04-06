@@ -49,7 +49,7 @@ module sysrst_ctrl_pin
 
   // Synchronize between GPIO and cfg(24MHz)
   // Use the raw input values here (not the inverted pass through values)
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(8)
   ) u_cfg_ac_present_i_pin (
     .clk_i,

@@ -75,7 +75,7 @@ module rv_timer import rv_timer_reg_pkg::*;
 
 
   for (genvar h = 0 ; h < N_HARTS ; h++) begin : gen_harts
-    prim_intr_hw #(
+    prim_ot_intr_hw #(
       .Width(N_TIMERS)
     ) u_intr_hw (
       .clk_i,

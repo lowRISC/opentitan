@@ -8,8 +8,8 @@
 
 `include "prim_assert.sv"
 
-module spi_host
-  import spi_host_reg_pkg::*;
+module spi_host_ot
+  import spi_host_reg_ot_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
@@ -41,7 +41,7 @@ module spi_host
   output logic             intr_spi_event_o
 );
 
-  import spi_host_cmd_pkg::*;
+  import spi_host_cmd_ot_pkg::*;
 
   spi_host_reg2hw_t reg2hw;
   spi_host_hw2reg_t hw2reg;
@@ -51,7 +51,7 @@ module spi_host
 
   // Register module
   logic [NumAlerts-1:0] alert_test, alerts;
-  spi_host_reg_top u_reg (
+  spi_host_reg_top_ot u_reg (
     .clk_i,
     .rst_ni,
     .tl_i       (tl_i),
@@ -215,7 +215,7 @@ module spi_host
   assign error_cmd_inval  = command_valid & ~command_busy &
                             (test_speed_inval | test_dir_inval);
 
-  spi_host_reg_pkg::spi_host_reg2hw_configopts_mreg_t configopts;
+  spi_host_reg_ot_pkg::spi_host_reg2hw_configopts_mreg_t configopts;
 
   if (NumCS == 1) begin : gen_single_device
     assign configopts   = reg2hw.configopts[0];
@@ -270,7 +270,7 @@ module spi_host
 
   logic [3:0]  cmd_qd;
 
-  spi_host_command_queue #(
+  spi_host_command_queue_ot #(
     .CmdDepth(CmdDepth)
   ) u_cmd_queue (
     .clk_i,
@@ -295,7 +295,7 @@ module spi_host
   logic        rx_valid;
   logic        rx_ready;
 
-  spi_host_window u_window (
+  spi_host_window_ot u_window (
     .clk_i,
     .rst_ni,
     .rx_win_i   (fifo_win_h2d[0]),
@@ -382,9 +382,9 @@ module spi_host
 
   // Note on ByteOrder and ByteSwapping.
   // ByteOrder == 1 is for Little-Endian transmission (i.e. LSB first), which is acheived by
-  // default with the prim_packer_fifo implementation.  Thus we have to swap if Big-Endian
+  // default with the prim_ot_packer_fifo implementation.  Thus we have to swap if Big-Endian
   // transmission is required (i.e. if ByteOrder == 0).
-  spi_host_data_fifos #(
+  spi_host_data_fifos_ot #(
     .TxDepth(TxDepth),
     .RxDepth(RxDepth),
     .SwapBytes(~ByteOrder)
@@ -432,7 +432,7 @@ module spi_host
   assign sw_rst = reg2hw.control.sw_rst.q;
   assign en_sw  = reg2hw.control.spien.q;
 
-  spi_host_core #(
+  spi_host_core_ot #(
     .NumCS(NumCS)
   ) u_spi_core (
     .clk_i,
@@ -515,7 +515,7 @@ module spi_host
   assign event_error   = |(error_vec & error_mask);
   assign enb_error     = |sw_error_status;
 
-  prim_intr_hw #(.Width(1)) intr_hw_error (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_error (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_error),
@@ -587,7 +587,7 @@ module spi_host
     end
   end
 
-  prim_intr_hw #(.Width(1)) intr_hw_spi_event (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_spi_event (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_spi_event),
@@ -622,4 +622,4 @@ module spi_host
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
-endmodule : spi_host
+endmodule : spi_host_ot

@@ -32,7 +32,7 @@ module dev_entropy #(
 logic dev_en_dev;
 
 // Sync dev_en to Dev clock
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_dev_en_dev_sync (
@@ -56,7 +56,7 @@ logic [(1<<EntropyRateWidth)-1:0] erate_cnt, dev_rate;
 // In most cases the rate will be set ahead of the dev_en_i
 logic [EntropyRateWidth-1:0] dev_rate_sync;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( EntropyRateWidth ),
   .ResetValue ( {EntropyRateWidth{1'b0}} )
 ) u_erate_sync (
@@ -112,7 +112,7 @@ end
 // Sync wvalid to ES clock
 logic wready_dev, wready_es;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_wvalid_es_sync (
@@ -158,7 +158,7 @@ logic rst_es_dev_in_n, rst_es_dev_da_n, rst_es_dev_n;
 
 assign rst_es_dev_in_n = rst_ni && rst_dev_ni;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_rst_es_n_da (
@@ -173,7 +173,7 @@ assign rst_es_dev_n = rst_es_dev_da_n;
 // Sync wready_es to Device clock
 logic wready, wready_es_dev;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_wready_es_dev_sync (
@@ -201,7 +201,7 @@ end
 // Sync wdata_val to Device clock
 logic wdata_val_dev;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_wvalid_dev_sync (
@@ -233,7 +233,7 @@ end
 logic rdata, rvalid;
 logic [6-1:0] depth;
 
-prim_packer_fifo #(
+prim_ot_packer_fifo #(
   .InW ( 32 ),
   .OutW ( 1 )
 ) u_dev_fifo (

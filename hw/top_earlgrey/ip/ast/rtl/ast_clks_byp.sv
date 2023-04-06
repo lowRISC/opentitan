@@ -112,7 +112,7 @@ prim_clock_buf #(
 
 logic rst_aon_n_exda, rst_aon_exda_n;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_rst_aon_n_exda_sync (
@@ -128,7 +128,7 @@ assign rst_aon_exda_n = scan_mode_i ? scan_reset_ni : rst_aon_n_exda;
 ////////////////////////////////////////
 logic clk_src_ext_usb, ext_freq_is_96m, ext_freq_is_96m_sync;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   // Assume external clock is 96Hhz on reset
   .ResetValue ( 1'b1 )
@@ -174,7 +174,7 @@ prim_clock_div #(
 ////////////////////////////////////////
 logic deep_sleep, deep_sleep_n;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_deep_sleep_sync (
@@ -191,7 +191,7 @@ assign deep_sleep_n = !deep_sleep;
 logic clk_ext_sys, clk_ext_sys_en, clk_ext_sys_val;
 logic clk_src_sys_en;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_no_scan_clk_src_sys_en_sync (
@@ -218,7 +218,7 @@ tc_clk_gating #(
 logic clk_ext_io, clk_ext_io_en, clk_ext_io_val;
 logic clk_src_io_en;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_no_scan_clk_src_io_en_sync (
@@ -245,7 +245,7 @@ tc_clk_gating #(
 logic clk_ext_usb, clk_ext_usb_en, clk_ext_usb_val;
 logic clk_src_usb_en;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_no_scan_clk_src_usb_en_sync (
@@ -564,7 +564,7 @@ gfr_clk_mux2 u_clk_src_aon_sel (
 ////////////////////////////////////////
 logic rst_aon_n_ioda, rst_aon_ioda_n;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_rst_aon_n_ioda_sync (
@@ -589,7 +589,7 @@ always_ff @( posedge clk_aon, negedge rst_aon_n ) begin
   end
 end
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_all_clks_byp_en_sync (
@@ -620,7 +620,7 @@ always_ff @( posedge clk_aon, negedge rst_aon_n ) begin
   end
 end
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_only_io_clk_byp_en_sync (
@@ -653,7 +653,7 @@ always_ff @( posedge clk_aon, negedge rst_aon_n ) begin
   end
 end
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_io_clk_byp_is_48m_sync (

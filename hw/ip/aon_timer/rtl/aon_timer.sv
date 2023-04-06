@@ -69,7 +69,7 @@ module aon_timer import aon_timer_reg_pkg::*;
   //////////////////////////////
 
   logic aon_sleep_mode;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1)
   ) u_sync_sleep_mode (
     .clk_i   (clk_aon_i),
@@ -214,7 +214,7 @@ module aon_timer import aon_timer_reg_pkg::*;
   assign hw2reg.intr_state.wdog_timer_bark.d  = intr_state_d[AON_WDOG];
   assign hw2reg.intr_state.wdog_timer_bark.de = intr_state_de;
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width (2)
   ) u_intr_hw (
     .clk_i,

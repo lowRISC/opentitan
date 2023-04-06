@@ -718,7 +718,7 @@ module spi_readcmd
   // watermark, flip are pulse signals. watermark pulse width is 1 SCK.
   // flip pulse width varies inside readbuffer and changed into 1 SCK width.
   // They are not registered (output of comb logic).
-  // As these signals goes into prim_pulse_sync, no need to register here.
+  // As these signals goes into prim_ot_pulse_sync, no need to register here.
   assign sck_read_watermark_o = read_watermark;
   assign sck_read_flip_o      = read_flip;
 

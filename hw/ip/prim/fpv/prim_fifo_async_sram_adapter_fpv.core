@@ -2,15 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:fpv:prim_fifo_async_sram_adapter_fpv:0.1"
-description: "prim_fifo_async_sram_adapter FPV target"
+name: "lowrisc:fpv:prim_ot_fifo_async_sram_adapter_fpv:0.1"
+description: "prim_ot_fifo_async_sram_adapter FPV target"
 filesets:
   files_formal:
     depend:
       - lowrisc:prim:all
       - lowrisc:prim:ram_2p_async_adv
     files:
-      - tb/prim_fifo_async_sram_adapter_tb.sv
+      - tb/prim_ot_fifo_async_sram_adapter_tb.sv
     file_type: systemVerilogSource
 
 targets:
@@ -18,7 +18,7 @@ targets:
     default_tool: icarus
     filesets:
       - files_formal
-    toplevel: prim_fifo_async_sram_adapter_tb
+    toplevel: prim_ot_fifo_async_sram_adapter_tb
 
   formal:
     <<: *default_target

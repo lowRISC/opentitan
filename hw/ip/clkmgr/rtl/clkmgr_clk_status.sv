@@ -18,7 +18,7 @@ module clkmgr_clk_status #(
   // therefore after synchronization we must de-bounce the
   // signal to ensure it is stable
   logic [NumClocks-1:0] ens_sync;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(NumClocks)
   ) u_en_sync (
     .clk_i,

@@ -75,7 +75,7 @@ module prim_dom_and_2share #(
   );
 
   // Register stage
-  prim_flop_en #(
+  prim_ot_flop_en #(
     .Width      ( DW*2 ),
     .ResetValue ( '0   )
   ) u_prim_flop_t01 (
@@ -96,7 +96,7 @@ module prim_dom_and_2share #(
     // reshared cross-domain terms with inner-domain terms derived from different input data.
 
     logic [DW-1:0] t_a0b0_q, t_a1b1_q;
-    prim_flop_en #(
+    prim_ot_flop_en #(
       .Width      ( DW*2 ),
       .ResetValue ( '0   )
     ) u_prim_flop_tab01 (

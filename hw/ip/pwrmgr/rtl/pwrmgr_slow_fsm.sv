@@ -275,7 +275,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   // We need to synchronize the above because the reset
   // may cause the signal to change at any time.
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width(1)
   ) u_main_pok_sync (
     .clk_i,

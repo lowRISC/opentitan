@@ -5,7 +5,7 @@
 // Module for SPI_HOST RX and TX queues
 //
 
-module spi_host_data_fifos #(
+module spi_host_data_fifos_ot #(
   parameter int         TxDepth   = 72,
   parameter int         RxDepth   = 64,
   parameter logic       SwapBytes = 0
@@ -72,7 +72,7 @@ module spi_host_data_fifos #(
   assign tx_data_be = { tx_data_ordered, tx_be_ordered };
   assign { core_tx_data_o, core_tx_be_o } = core_tx_data_be;
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(36),
     .Pass(1),
     .Depth(TxDepth)
@@ -95,7 +95,7 @@ module spi_host_data_fifos #(
 
   assign rx_qd_o = 8'(rx_depth);
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(32),
     .Pass(1),
     .Depth(RxDepth)
@@ -121,4 +121,4 @@ module spi_host_data_fifos #(
   assign tx_wm_o    = (tx_qd_o <  tx_watermark_i);
   assign rx_wm_o    = (rx_qd_o >= rx_watermark_i);
 
-endmodule : spi_host_data_fifos
+endmodule : spi_host_data_fifos_ot

@@ -99,7 +99,7 @@ module clkmgr_meas_chk
     end
   end
 
-  prim_sync_reqack u_err_sync (
+  prim_ot_sync_reqack u_err_sync (
     .clk_src_i,
     .rst_src_ni,
     .clk_dst_i(clk_i),

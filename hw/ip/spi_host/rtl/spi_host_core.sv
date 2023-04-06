@@ -5,13 +5,13 @@
 // Core Implemenation module for Serial Peripheral Interface (SPI) Host IP.
 //
 
-module spi_host_core #(
+module spi_host_core_ot #(
   parameter  int NumCS     = 1
 ) (
   input                             clk_i,
   input                             rst_ni,
 
-  input spi_host_cmd_pkg::command_t command_i,
+  input spi_host_cmd_ot_pkg::command_t command_i,
   input                             command_valid_i,
   output                            command_ready_o,
   input                             en_i,
@@ -61,7 +61,7 @@ module spi_host_core #(
   logic       last_read;
   logic       last_write;
 
-  spi_host_byte_merge u_merge (
+  spi_host_byte_merge_ot u_merge (
     .clk_i,
     .rst_ni,
     .byte_i       (rx_data_sr),
@@ -74,7 +74,7 @@ module spi_host_core #(
     .sw_rst_i
   );
 
-  spi_host_byte_select u_select (
+  spi_host_byte_select_ot u_select (
     .clk_i,
     .rst_ni,
     .word_i       (tx_data_i),
@@ -88,7 +88,7 @@ module spi_host_core #(
     .sw_rst_i
   );
 
-  spi_host_shift_register u_shift_reg (
+  spi_host_shift_register_ot u_shift_reg (
     .clk_i,
     .rst_ni,
     .wr_en_i      (wr_en),
@@ -114,7 +114,7 @@ module spi_host_core #(
     .sd_i         (sd_i)
   );
 
-  spi_host_fsm #(
+  spi_host_fsm_ot #(
     .NumCS(NumCS)
   ) u_fsm (
     .clk_i,
@@ -142,4 +142,4 @@ module spi_host_core #(
     .active_o
   );
 
-endmodule : spi_host_core
+endmodule : spi_host_core_ot

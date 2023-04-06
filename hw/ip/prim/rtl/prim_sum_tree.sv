@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Based on prim_max_tree, this module implements an explicit binary tree to find the
+// Based on prim_ot_max_tree, this module implements an explicit binary tree to find the
 // sum of this inputs. The solution has O(N) area and O(log(N)) delay complexity, and
 // thus scales well with many input sources.
 //

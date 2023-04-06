@@ -55,7 +55,7 @@ module rstmgr_cnsty_chk
   end
 
   logic sync_parent_rst;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue(1)
   ) u_parent_sync (
@@ -66,7 +66,7 @@ module rstmgr_cnsty_chk
   );
 
   logic sync_child_rst;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue(1)
   ) u_child_sync (
@@ -258,7 +258,7 @@ module rstmgr_cnsty_chk
   end // always_comb
 
   logic child_ack;
-  prim_sync_reqack u_child_handshake (
+  prim_ot_sync_reqack u_child_handshake (
     .clk_src_i(clk_i),
     .rst_src_ni(rst_ni),
     .clk_dst_i(child_clk_i),

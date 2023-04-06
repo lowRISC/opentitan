@@ -37,7 +37,7 @@ assign usb_clk_en = scan_mode_i || osc_en;
 logic rst_da_n, rst_n;
 
 // 2-stage de-assertion
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_rst_da (
@@ -79,7 +79,7 @@ ast_pulse_sync u_ref_pulse_sync (
 // 2-stage de-assertion
 logic rst_usb_n;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_rst_ast_usb_da (
@@ -92,7 +92,7 @@ prim_flop_2sync #(
 // Sync usb_ref_val_i to clk
 logic usb_ref_val;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_ref_val_sync (
@@ -127,7 +127,7 @@ prim_clock_buf #(
 logic rst_val_n;
 assign rst_val_n = usb_clk_en;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_no_scan_val_sync (

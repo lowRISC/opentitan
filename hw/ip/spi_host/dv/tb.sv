@@ -9,7 +9,7 @@ module tb;
   import dv_utils_pkg::*;
   import spi_host_env_pkg::*;
   import spi_host_test_pkg::*;
-  import spi_host_reg_pkg::*;
+  import spi_host_reg_ot_pkg::*;
   import lc_ctrl_pkg::*;
 
   import spi_device_pkg::passthrough_req_t;
@@ -50,7 +50,7 @@ module tb;
   `DV_ALERT_IF_CONNECT
 
   // dut
-  spi_host dut (
+  spi_host_ot dut (
     .clk_i                (clk),
     .rst_ni               (rst_n),
 

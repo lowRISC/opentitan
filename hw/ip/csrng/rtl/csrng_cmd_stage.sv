@@ -120,7 +120,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   // Capture the transfer length of data behind the command.
   //---------------------------------------------------------
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(CmdFifoWidth),
     .Pass(0),
     .Depth(CmdFifoDepth),
@@ -371,7 +371,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   // Genbits FIFO.
   //---------------------------------------------------------
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(GenBitsFifoWidth),
     .Pass(0),
     .Depth(GenBitsFifoDepth),

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Testbench module for prim_fifo_sync.
+// Testbench module for prim_ot_fifo_sync.
 // Intended to be used with a formal tool.
 //
 // This formal testbench instantiates a set of differently parameterized FIFOs:
@@ -14,7 +14,7 @@
 // Data/depth value checks are enabled up to depth 8 in order to constrain the
 // runtime.
 
-module prim_fifo_sync_tb #(
+module prim_ot_fifo_sync_tb #(
   // number of DUTs instantiated in this FPV testbench
   parameter int unsigned NumDuts = 11,
   // fifo params
@@ -41,7 +41,7 @@ module prim_fifo_sync_tb #(
   // non-pass FIFOs //
   ////////////////////
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(Width),
     .Pass(1'b0),
     .Depth(1)
@@ -58,7 +58,7 @@ module prim_fifo_sync_tb #(
     .depth_o(depth_o[0][0])
   );
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(Width),
     .Pass(1'b0),
     .Depth(7)
@@ -75,7 +75,7 @@ module prim_fifo_sync_tb #(
     .depth_o(depth_o[1][2:0])
   );
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(Width),
     .Pass(1'b0),
     .Depth(8)
@@ -92,7 +92,7 @@ module prim_fifo_sync_tb #(
     .depth_o(depth_o[2][3:0])
   );
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(Width),
     .Pass(1'b0),
     .Depth(15)
@@ -109,7 +109,7 @@ module prim_fifo_sync_tb #(
     .depth_o(depth_o[3][3:0])
   );
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(Width),
     .Pass(1'b0),
     .Depth(16)
@@ -131,7 +131,7 @@ module prim_fifo_sync_tb #(
   ////////////////
 
   // depth_o-zero is per definition a pass-through FIFO
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(Width),
     .Pass(1'b1),
     .Depth(0)
@@ -148,7 +148,7 @@ module prim_fifo_sync_tb #(
     .depth_o(depth_o[5][0])
   );
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(Width),
     .Pass(1'b1),
     .Depth(1)
@@ -165,7 +165,7 @@ module prim_fifo_sync_tb #(
     .depth_o(depth_o[6][0])
   );
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(Width),
     .Pass(1'b1),
     .Depth(7)
@@ -182,7 +182,7 @@ module prim_fifo_sync_tb #(
     .depth_o(depth_o[7][2:0])
   );
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(Width),
     .Pass(1'b1),
     .Depth(8)
@@ -199,7 +199,7 @@ module prim_fifo_sync_tb #(
     .depth_o(depth_o[8][3:0])
   );
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(Width),
     .Pass(1'b1),
     .Depth(15)
@@ -216,7 +216,7 @@ module prim_fifo_sync_tb #(
     .depth_o(depth_o[9][3:0])
   );
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(Width),
     .Pass(1'b1),
     .Depth(16)
@@ -233,4 +233,4 @@ module prim_fifo_sync_tb #(
     .depth_o(depth_o[10][4:0])
   );
 
-endmodule : prim_fifo_sync_tb
+endmodule : prim_ot_fifo_sync_tb

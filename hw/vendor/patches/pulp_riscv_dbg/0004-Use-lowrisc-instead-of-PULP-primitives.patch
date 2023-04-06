@@ -53,7 +53,7 @@ index 581c3f7..ee13a50 100644
 -  fifo_v2 #(
 -    .dtype            ( logic [$bits(dmi_resp_o)-1:0] ),
 -    .DEPTH            ( 2                             )
-+  prim_fifo_sync #(
++  prim_ot_fifo_sync #(
 +    .Width   ($bits(dmi_resp_o)),
 +    .Pass    (1'b0),
 +    .Depth   (2)
@@ -139,7 +139,7 @@ index f9d66fd..ec7a755 100644
 -    .dst_valid_o ( core_dmi_valid_o     ),
 -    .dst_ready_i ( core_dmi_ready_i     )
 +  logic combined_rstn_premux;
-+  prim_flop_2sync #(
++  prim_ot_flop_2sync #(
 +    .Width(1),
 +    .ResetValue(0)
 +  ) u_combined_rstn_sync (
@@ -186,7 +186,7 @@ index f9d66fd..ec7a755 100644
 -  logic                    clear_pending_rise_edge_detect;
 -
 -  assign clear_pending_rise_edge_detect = !core_clear_pending_q && core_clear_pending;
-+  prim_fifo_async_simple #(
++  prim_ot_fifo_async_simple #(
 +    .Width($bits(dm_ot::dmi_req_t)),
 +    // Use the RZ protocol so that the two sides can be reset independently without getting
 +    // out of sync due to EVEN/ODD states.
@@ -213,7 +213,7 @@ index f9d66fd..ec7a755 100644
 -      core_clear_pending_q <= core_clear_pending;
 -    end
 -  end
-+  prim_fifo_async_simple #(
++  prim_ot_fifo_async_simple #(
 +    .Width($bits(dm_ot::dmi_resp_t)),
 +    // Use the RZ protocol so that the two sides can be reset independently without getting
 +    // out of sync due to EVEN/ODD states.

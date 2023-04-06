@@ -118,11 +118,11 @@ module testbench ();
 
      
    `AXI_ASSIGN (axi, axi_slave)
-   `AXI_ASSIGN_FROM_REQ (axi_slave, axi_req)
-   `AXI_ASSIGN_TO_RESP  (axi_rsp, axi_slave)
+   `AXI_ASSIGN_FROM_REQ (axi_slave, ot_axi_req)
+   `AXI_ASSIGN_TO_RESP  (ot_axi_rsp, axi_slave)
    
-   tlul2axi_pkg::slv_req_t axi_req;
-   tlul2axi_pkg::slv_rsp_t axi_rsp;
+   tlul2axi_pkg::mst_req_t ot_axi_req;
+   tlul2axi_pkg::mst_rsp_t ot_axi_rsp;
 
    assign jtag_i.tck        = clk_sys;  
    assign jtag_i.trst_n     = jtag_mst.trst_n;
@@ -174,53 +174,92 @@ module testbench ();
    
 /////////////////////////////// DUT ///////////////////////////////
   
-  top_earlgrey #(
-   //.RvCoreIbexSecureIbex(0),
-   .OtpCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/otp/otp-img.mem"),
-`ifdef IBEX_JTAG
-   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem")
-`else
-   .RomCtrlBootRomInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem")
-`endif
-   //.FlashCtrlMemInitFile("/scratch/mciani/he-soc/hardware/working_dir/opentitan/hw/top_earlgrey/sw/tests/hmac_test/hmac_smoketest.vmem")
+  secure_subsystem #(
+   .AXI_ADDR_WIDTH(tlul2axi_pkg::AXI_ADDR_WIDTH          ),
+   .AXI_DATA_WIDTH(tlul2axi_pkg::AXI_MST_PORT_DATA_WIDTH ),
+   .AXI_ID_WIDTH(tlul2axi_pkg::AXI_ID_WIDTH              ),
+   .AXI_USER_WIDTH(tlul2axi_pkg::AXI_USER_WIDTH          ),
+   .OtpCtrlMemInitFile("../hw/top_earlgrey/sw/tests/otp/otp-img.mem"),
+   `ifdef IBEX_JTAG
+   .RomCtrlBootRomInitFile("../hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem")
+   `else
+   .RomCtrlBootRomInitFile("../hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem")
+   `endif
+   //.FlashCtrlMemInitFile("../hw/top_earlgrey/sw/tests/hmac_test/hmac_smoketest.vmem")
   ) dut (
-   .mio_in_i(ibex_uart_rx),
-   .mio_out_o(ibex_uart_tx),
-   .dio_in_i(spi_i),
-   .dio_out_o(spi_o),
-   .dio_oe_o(spi_oe_o),
-   .ast_edn_req_i('0),
-   .obs_ctrl_i('0),
-   .ram_1p_cfg_i('0),
-   .ram_2p_cfg_i('0),
-   .io_clk_byp_ack_i(lc_ctrl_pkg::Off),
-   .all_clk_byp_ack_i(lc_ctrl_pkg::Off),
-   .div_step_down_req_i(lc_ctrl_pkg::Off),
-   .calib_rdy_i(lc_ctrl_pkg::Off),
-   .flash_bist_enable_i(lc_ctrl_pkg::Off),
-   .flash_power_down_h_i('0),
-   .flash_power_ready_h_i('1),
-   .es_rng_req_o(es_rng_req),
-   .es_rng_rsp_i(es_rng_rsp),
-   .es_rng_fips_o(es_rng_fips),
-   .dft_hold_tap_sel_i('0),
-   .pwrmgr_ast_rsp_i(5'b11111),
-   .otp_ctrl_otp_ast_pwr_seq_h_i('0),
-   .fpga_info_i('0),
-   .scan_rst_ni (rst_sys_n),
-   .scan_en_i (1'b0),
-   .scanmode_i (lc_ctrl_pkg::Off),
-   .por_n_i ({rst_sys_n, rst_sys_n}),
-   .clk_main_i (clk_sys),
-   .clk_io_i(clk_sys),
-   .clk_aon_i(clk_sys),
-   .clk_usb_i(clk_sys),
-   .axi_req_o(axi_req),
-   .axi_rsp_i(axi_rsp),
-   .dbg_mode,
-   .irq_ibex_i('0),
-   .jtag_req_i(jtag_i),
-   .jtag_rsp_o(jtag_o)
+   
+      .clk_i(clk_sys),
+      .por_n_i(rst_sys_n),
+
+      .irq_ibex_i('0),
+   // JTAG port
+      .jtag_tck_i    (jtag_i.tck),
+      .jtag_tms_i    (jtag_i.tms),
+      .jtag_trst_n_i (jtag_i.trst_n),
+      .jtag_tdi_i    (jtag_i.tdi),
+      .jtag_tdo_o    (jtag_o.tdo),
+      .jtag_tdo_oe_o (),
+
+   //AXI AR channel
+      .ar_id_o       (ot_axi_req.ar.id),
+      .ar_addr_o     (ot_axi_req.ar.addr),
+      .ar_len_o      (ot_axi_req.ar.len),
+      .ar_size_o     (ot_axi_req.ar.size),
+      .ar_burst_o    (ot_axi_req.ar.burst),
+      .ar_lock_o     (ot_axi_req.ar.lock),
+      .ar_cache_o    (ot_axi_req.ar.cache),
+      .ar_prot_o     (ot_axi_req.ar.prot),
+      .ar_qos_o      (ot_axi_req.ar.qos),
+      .ar_region_o   (ot_axi_req.ar.region),
+      .ar_user_o     (ot_axi_req.ar.user),
+      .ar_valid_o    (ot_axi_req.ar_valid),
+      .ar_ready_i    (ot_axi_rsp.ar_ready),
+
+   //AXI AW channel
+      .aw_id_o       (ot_axi_req.aw.id),
+      .aw_addr_o     (ot_axi_req.aw.addr),
+      .aw_len_o      (ot_axi_req.aw.len),
+      .aw_size_o     (ot_axi_req.aw.size),
+      .aw_burst_o    (ot_axi_req.aw.burst),
+      .aw_lock_o     (ot_axi_req.aw.lock),
+      .aw_cache_o    (ot_axi_req.aw.cache),
+      .aw_prot_o     (ot_axi_req.aw.prot),
+      .aw_qos_o      (ot_axi_req.aw.qos),
+      .aw_region_o   (ot_axi_req.aw.region),
+      .aw_atop_o     (ot_axi_req.aw.atop),
+      .aw_user_o     (ot_axi_req.aw.user),
+      .aw_valid_o    (ot_axi_req.aw_valid),
+      .aw_ready_i    (ot_axi_rsp.aw_ready),
+
+
+   //AXI W channel
+      .w_data_o      (ot_axi_req.w.data),
+      .w_strb_o      (ot_axi_req.w.strb),
+      .w_last_o      (ot_axi_req.w.last),
+      .w_user_o      (ot_axi_req.w.user),
+      .w_valid_o     (ot_axi_req.w_valid),
+      .w_ready_i     (ot_axi_rsp.w_ready),
+
+   //AXI B channel
+      .b_id_i        (ot_axi_rsp.b.id),
+      .b_resp_i      (ot_axi_rsp.b.resp),
+      .b_user_i      (ot_axi_rsp.b.user),
+      .b_valid_i     (ot_axi_rsp.b_valid),
+      .b_ready_o     (ot_axi_req.b_ready),
+
+   //AXI R channel
+      .r_id_i        (ot_axi_rsp.r.id),
+      .r_data_i      (ot_axi_rsp.r.data),
+      .r_resp_i      (ot_axi_rsp.r.resp),
+      .r_last_i      (ot_axi_rsp.r.last),
+      .r_user_i      (ot_axi_rsp.r.user),
+      .r_valid_i     (ot_axi_rsp.r_valid),
+      .r_ready_o     (ot_axi_req.r_ready),
+
+      .dio_in_i      ('0),
+         
+      .mio_in_i      (ibex_uart_rx),
+      .mio_out_o     (ibex_uart_tx)
   );
 
 ///////////////////////// Processes ///////////////////////////////
@@ -287,22 +326,11 @@ module testbench ();
          @(posedge clk_sys); 
      debug_module_init();
      load_binary(SRAM);
-  /*   // Halt Req
-     riscv_dbg.write_dmi(dm_ot::DMControl, 32'h8000_0001);
-     do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
-     while (sbcs.sbbusy);
-     // Wait for CVA6 to be halted
-     do riscv_dbg.read_dmi(dm_ot::DMStatus, dm_status, dmi_wait_cycles);
-     while (!dm_status[8]);
-     // Ensure haltreq, resumereq and ackhavereset all equal to 0
-     riscv_dbg.write_dmi(dm_ot::DMControl, 32'h0000_0001);
-     do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
-     while (sbcs.sbbusy);*/
      jtag_data_preload();
-     jtag_ibex_wakeup(32'h e0000080);
+     jtag_ibex_wakeup(32'h e0000080); //preload the flash
      repeat(400000)
-        @(posedge clk_sys); 
-     jtag_ibex_wakeup(32'h d0008080);
+        @(posedge clk_sys);
+     jtag_ibex_wakeup(32'h d0008080); //secure boot
      
      
 `endif               

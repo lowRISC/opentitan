@@ -9,7 +9,7 @@
 
 `include "prim_assert.sv"
 
-module prim_intr_hw # (
+module prim_ot_intr_hw # (
   parameter int unsigned Width = 1,
   parameter bit FlopOutput = 1,
 

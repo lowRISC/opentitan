@@ -25,7 +25,7 @@ module rstmgr_por #(
   logic cnt_en;
 
   // sync the POR
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_rst_sync (

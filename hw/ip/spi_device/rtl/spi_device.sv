@@ -444,13 +444,13 @@ module spi_device
     if (!rst_ni) txf_empty_q <= 1'b1;
     else         txf_empty_q <= txf_empty;
   end
-  prim_flop_2sync #(.Width(1)) u_sync_rxf (
+  prim_ot_flop_2sync #(.Width(1)) u_sync_rxf (
     .clk_i,
     .rst_ni,
     .d_i(rxf_full_q),
     .q_o(rxf_full_syncd)
   );
-  prim_flop_2sync #(.Width(1), .ResetValue(1'b1)) u_sync_txe (
+  prim_ot_flop_2sync #(.Width(1), .ResetValue(1'b1)) u_sync_txe (
     .clk_i,
     .rst_ni,
     .d_i(txf_empty_q),
@@ -505,7 +505,7 @@ module spi_device
   // rxf_overflow
   //    Could trigger lint error for input clock.
   //    It's unavoidable due to the characteristics of SPI intf
-  prim_pulse_sync u_rxf_overflow (
+  prim_ot_pulse_sync u_rxf_overflow (
     .clk_src_i   (clk_spi_in_buf     ),
     .rst_src_ni  (rst_ni             ),
     .src_pulse_i (rxf_overflow       ),
@@ -517,7 +517,7 @@ module spi_device
   // txf_underflow
   //    Could trigger lint error for input clock.
   //    It's unavoidable due to the characteristics of SPI intf
-  prim_pulse_sync u_txf_underflow (
+  prim_ot_pulse_sync u_txf_underflow (
     .clk_src_i   (clk_spi_out_buf     ),
     .rst_src_ni  (rst_ni              ),
     .src_pulse_i (txf_underflow       ),
@@ -526,7 +526,7 @@ module spi_device
     .dst_pulse_o (intr_fwm_txunderflow)
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_rxf (
+  prim_ot_intr_hw #(.Width(1)) u_intr_rxf (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_sram_rxf_full                  ),
@@ -539,7 +539,7 @@ module spi_device
     .intr_o                 (intr_generic_rx_full_o              )
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_rxlvl (
+  prim_ot_intr_hw #(.Width(1)) u_intr_rxlvl (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_fwm_rxlvl                           ),
@@ -552,7 +552,7 @@ module spi_device
     .intr_o                 (intr_generic_rx_watermark_o              )
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_txlvl (
+  prim_ot_intr_hw #(.Width(1)) u_intr_txlvl (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_fwm_txlvl                           ),
@@ -565,7 +565,7 @@ module spi_device
     .intr_o                 (intr_generic_tx_watermark_o              )
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_rxerr (
+  prim_ot_intr_hw #(.Width(1)) u_intr_rxerr (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_fwm_rxerr                       ),
@@ -578,7 +578,7 @@ module spi_device
     .intr_o                 (intr_generic_rx_error_o              )
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_rxoverflow (
+  prim_ot_intr_hw #(.Width(1)) u_intr_rxoverflow (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_fwm_rxoverflow                     ),
@@ -591,7 +591,7 @@ module spi_device
     .intr_o                 (intr_generic_rx_overflow_o              )
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_txunderflow (
+  prim_ot_intr_hw #(.Width(1)) u_intr_txunderflow (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_fwm_txunderflow                     ),
@@ -619,7 +619,7 @@ module spi_device
   );
   assign intr_upload_cmdfifo_not_empty = cmdfifo_set_pulse;
 
-  prim_intr_hw #(.Width(1)) u_intr_cmdfifo_not_empty (
+  prim_ot_intr_hw #(.Width(1)) u_intr_cmdfifo_not_empty (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_upload_cmdfifo_not_empty                ),
@@ -632,7 +632,7 @@ module spi_device
     .intr_o                 (intr_upload_cmdfifo_not_empty_o              )
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_payload_not_empty (
+  prim_ot_intr_hw #(.Width(1)) u_intr_payload_not_empty (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_upload_payload_not_empty                ),
@@ -645,7 +645,7 @@ module spi_device
     .intr_o                 (intr_upload_payload_not_empty_o              )
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_payload_overflow (
+  prim_ot_intr_hw #(.Width(1)) u_intr_payload_overflow (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_upload_payload_overflow                ),
@@ -659,7 +659,7 @@ module spi_device
   );
 
 
-  prim_pulse_sync u_flash_readbuf_watermark_pulse_sync (
+  prim_ot_pulse_sync u_flash_readbuf_watermark_pulse_sync (
     .clk_src_i   (clk_spi_in_buf             ),
     .rst_src_ni  (rst_ni                     ),
     .src_pulse_i (flash_sck_readbuf_watermark),
@@ -667,7 +667,7 @@ module spi_device
     .rst_dst_ni  (rst_ni                     ),
     .dst_pulse_o (intr_readbuf_watermark     )
   );
-  prim_intr_hw #(.Width(1)) u_intr_readbuf_watermark (
+  prim_ot_intr_hw #(.Width(1)) u_intr_readbuf_watermark (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_readbuf_watermark                ),
@@ -680,7 +680,7 @@ module spi_device
     .intr_o                 (intr_readbuf_watermark_o              )
   );
 
-  prim_pulse_sync u_flash_readbuf_flip_pulse_sync (
+  prim_ot_pulse_sync u_flash_readbuf_flip_pulse_sync (
     .clk_src_i   (clk_spi_in_buf        ),
     .rst_src_ni  (rst_ni                ),
     .src_pulse_i (flash_sck_readbuf_flip),
@@ -688,7 +688,7 @@ module spi_device
     .rst_dst_ni  (rst_ni                ),
     .dst_pulse_o (intr_readbuf_flip     )
   );
-  prim_intr_hw #(.Width(1)) u_intr_readbuf_flip (
+  prim_ot_intr_hw #(.Width(1)) u_intr_readbuf_flip (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_readbuf_flip                ),
@@ -704,9 +704,9 @@ module spi_device
   // cmdaddr_notempty is a level signal. Issue has been discussed in
   //   https://github.com/lowRISC/opentitan/issues/15282.
   //
-  // TODO: Remove `prim_intr_hw` and ditect connect from status(level)
+  // TODO: Remove `prim_ot_intr_hw` and ditect connect from status(level)
   // assign intr_o = (status | test) & enable;
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width (1       ),
     .IntrT ("Status")
   ) u_intr_tpm_cmdaddr_notempty (
@@ -1051,7 +1051,7 @@ module spi_device
   );
 
   // TPM CSb 2FF sync to SYS_CLK
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width      (1    ),
     .ResetValue (1'b 1)
   ) u_sys_tpm_csb_sync (

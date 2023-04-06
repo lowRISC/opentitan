@@ -546,7 +546,7 @@ module flash_ctrl
     .rerror_i    (2'b0)
   );
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(BusFullWidth),
     .Depth(ProgFifoDepth)
   ) u_prog_fifo (
@@ -665,7 +665,7 @@ module flash_ctrl
   assign sw_rfifo_rready = adapter_rvalid;
 
   // the read fifo below is dedicated to the software read path.
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(BusFullWidth),
     .Depth(RdFifoDepth)
   ) u_sw_rd_fifo (
@@ -1143,7 +1143,7 @@ module flash_ctrl
     .q_negedge_pulse_o()
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_prog_empty (
+  prim_ot_intr_hw #(.Width(1)) u_intr_prog_empty (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_event[ProgEmpty]),
@@ -1169,7 +1169,7 @@ module flash_ctrl
     .q_negedge_pulse_o()
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_prog_lvl (
+  prim_ot_intr_hw #(.Width(1)) u_intr_prog_lvl (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_event[ProgLvl]),
@@ -1195,7 +1195,7 @@ module flash_ctrl
     .q_negedge_pulse_o()
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_rd_full (
+  prim_ot_intr_hw #(.Width(1)) u_intr_rd_full (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_event[RdFull]),
@@ -1221,7 +1221,7 @@ module flash_ctrl
     .q_negedge_pulse_o()
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_rd_lvl (
+  prim_ot_intr_hw #(.Width(1)) u_intr_rd_lvl (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_event[RdLvl]),
@@ -1237,7 +1237,7 @@ module flash_ctrl
   assign intr_event[OpDone] = sw_ctrl_done;
   assign intr_event[CorrErr] = |flash_phy_rsp.ecc_single_err;
 
-  prim_intr_hw #(.Width(1)) u_intr_op_done (
+  prim_ot_intr_hw #(.Width(1)) u_intr_op_done (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_event[OpDone]),
@@ -1250,7 +1250,7 @@ module flash_ctrl
     .intr_o                 (intr_op_done_o)
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_corr_err (
+  prim_ot_intr_hw #(.Width(1)) u_intr_corr_err (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_event[CorrErr]),

@@ -5,17 +5,17 @@
 // Queue for SPI_HOST commands
 //
 
-module spi_host_command_queue #(
+module spi_host_command_queue_ot #(
   parameter int CmdDepth = 4
 ) (
   input                              clk_i,
   input                              rst_ni,
 
-  input  spi_host_cmd_pkg::command_t command_i,
+  input  spi_host_cmd_ot_pkg::command_t command_i,
   input                              command_valid_i,
   output logic                       command_busy_o,
 
-  output spi_host_cmd_pkg::command_t core_command_o,
+  output spi_host_cmd_ot_pkg::command_t core_command_o,
   output logic                       core_command_valid_o,
   input                              core_command_ready_i,
 
@@ -35,8 +35,8 @@ module spi_host_command_queue #(
 
   logic [CmdDepthW-1:0] cmd_depth;
 
-  prim_fifo_sync #(
-    .Width(spi_host_cmd_pkg::CmdSize),
+  prim_ot_fifo_sync #(
+    .Width(spi_host_cmd_ot_pkg::CmdSize),
     .Pass(1),
     .Depth(CmdDepth)
   ) cmd_fifo (
@@ -56,4 +56,4 @@ module spi_host_command_queue #(
 
   assign qd_o = 4'(cmd_depth);
 
-endmodule : spi_host_command_queue
+endmodule : spi_host_command_queue_ot

@@ -11,12 +11,12 @@
 // from the destination (DST) to the source (SRC) domain, an additional register stage can be
 // inserted for data buffering.
 //
-// Under the hood, this module uses a prim_sync_reqack primitive for synchronizing the
-// REQ/ACK handshake. See prim_sync_reqack.sv for more details.
+// Under the hood, this module uses a prim_ot_sync_reqack primitive for synchronizing the
+// REQ/ACK handshake. See prim_ot_sync_reqack.sv for more details.
 
 `include "prim_assert.sv"
 
-module prim_sync_reqack_data #(
+module prim_ot_sync_reqack_data #(
   parameter int unsigned Width       = 1,
   parameter bit          EnRstChks   = 1'b0, // Enable reset-related assertion checks, disabled by
                                              // default.
@@ -47,10 +47,10 @@ module prim_sync_reqack_data #(
   ////////////////////////////////////
   // REQ/ACK synchronizer primitive //
   ////////////////////////////////////
-  prim_sync_reqack #(
+  prim_ot_sync_reqack #(
     .EnRstChks(EnRstChks),
     .EnRzHs(EnRzHs)
-  ) u_prim_sync_reqack (
+  ) u_prim_ot_sync_reqack (
     .clk_src_i,
     .rst_src_ni,
     .clk_dst_i,

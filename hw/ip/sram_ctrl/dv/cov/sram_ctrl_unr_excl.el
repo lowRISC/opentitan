@@ -33,7 +33,7 @@ INSTANCE: tb.dut.u_tl_adapter_sram.u_sramreqfifo
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "644960181" "(gen_normal_fifo.full ? (2'(Depth)) : ((gen_normal_fifo.wptr_msb == gen_normal_fifo.rptr_msb) ? ((2'(gen_normal_fifo.wptr_value) - 2'(gen_normal_fifo.rptr_value))) : (((2'(Depth) - 2'(gen_normal_fifo.rptr_value)) + 2'(gen_normal_fifo.wptr_value))))) 1 -1" (2 "1")
 CHECKSUM: "3557630994 1702182424"
-INSTANCE: tb.dut.u_sram_ctrl.u_prim_sync_reqack_data.u_prim_sync_reqack
+INSTANCE: tb.dut.u_sram_ctrl.u_prim_ot_sync_reqack_data.u_prim_ot_sync_reqack
 ANNOTATION: "VC_COV_UNR"
 Block 10 "170878399" ";"
 ANNOTATION: "VC_COV_UNR"
@@ -77,7 +77,7 @@ Toggle 0to1 sram_tl_o.d_param [2] "logic sram_tl_o.d_param[2:0]"
 ANNOTATION: "VC_COV_UNR"
 Toggle 1to0 sram_tl_o.d_param [2] "logic sram_tl_o.d_param[2:0]"
 CHECKSUM: "3557630994 2212754372"
-INSTANCE: tb.dut.u_sram_ctrl.u_prim_sync_reqack_data.u_prim_sync_reqack
+INSTANCE: tb.dut.u_sram_ctrl.u_prim_ot_sync_reqack_data.u_prim_ot_sync_reqack
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "1492303176" "src_fsm_cs" (4) "src_fsm_cs default,-,-"
 ANNOTATION: "VC_COV_UNR"

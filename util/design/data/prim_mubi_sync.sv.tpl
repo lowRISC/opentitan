@@ -43,10 +43,10 @@ module prim_mubi${n_bits}_sync
   logic [MuBi${n_bits}Width-1:0] mubi;
   if (AsyncOn) begin : gen_flops
     logic [MuBi${n_bits}Width-1:0] mubi_sync;
-    prim_flop_2sync #(
+    prim_ot_flop_2sync #(
       .Width(MuBi${n_bits}Width),
       .ResetValue(MuBi${n_bits}Width'(ResetValue))
-    ) u_prim_flop_2sync (
+    ) u_prim_ot_flop_2sync (
       .clk_i,
       .rst_ni,
       .d_i(MuBi${n_bits}Width'(mubi_i)),

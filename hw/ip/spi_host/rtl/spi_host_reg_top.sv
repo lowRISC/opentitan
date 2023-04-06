@@ -6,7 +6,7 @@
 
 `include "prim_assert.sv"
 
-module spi_host_reg_top (
+module spi_host_reg_top_ot (
   input clk_i,
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -17,8 +17,8 @@ module spi_host_reg_top (
   input  tlul_pkg::tl_d2h_t tl_win_i  [2],
 
   // To HW
-  output spi_host_reg_pkg::spi_host_reg2hw_t reg2hw, // Write
-  input  spi_host_reg_pkg::spi_host_hw2reg_t hw2reg, // Read
+  output spi_host_reg_ot_pkg::spi_host_reg2hw_t reg2hw, // Write
+  input  spi_host_reg_ot_pkg::spi_host_hw2reg_t hw2reg, // Read
 
   // Integrity check errors
   output logic intg_err_o,
@@ -27,7 +27,7 @@ module spi_host_reg_top (
   input devmode_i // If 1, explicit error return for unmapped register access
 );
 
-  import spi_host_reg_pkg::* ;
+  import spi_host_reg_ot_pkg::* ;
 
   localparam int AW = 6;
   localparam int DW = 32;

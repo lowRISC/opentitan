@@ -39,10 +39,10 @@ module rv_plic_ot_target #(
   logic max_valid;
   logic [PrioWidth-1:0] max_value;
   logic [SrcWidth-1:0] max_idx;
-  prim_max_tree #(
+  prim_ot_max_tree #(
     .NumSrc(N_SOURCE),
     .Width(PrioWidth)
-  ) u_prim_max_tree (
+  ) u_prim_ot_max_tree (
     .clk_i,
     .rst_ni,
     .values_i(prio_i),

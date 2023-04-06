@@ -125,7 +125,7 @@ module prim_sram_arbiter #(
   assign sram_ack = sram_rvalid_i & (|steer);
 
   // Request FIFO
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width    (N),
     .Pass     (1'b0),
     .Depth    (4)        // Assume at most 4 pipelined

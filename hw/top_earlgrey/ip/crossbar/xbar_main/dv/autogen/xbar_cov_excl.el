@@ -14,7 +14,7 @@ MODULE: xbar_main
 Block 1 "0" "assign unused_scanmode = scanmode_i;"
 
 ANNOTATION: "[UNR]"
-MODULE: prim_fifo_sync
+MODULE: prim_ot_fifo_sync
 Branch 2 "2323268504" "(!rst_ni)" (1) "(!rst_ni) 0,1,-,-"
 Branch 3 "3736627057" "(!rst_ni)" (1) "(!rst_ni) 0,1,-,-"
 

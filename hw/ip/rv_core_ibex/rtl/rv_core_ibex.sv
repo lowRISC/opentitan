@@ -244,7 +244,7 @@ module rv_core_ibex
 
   // Synchronize to fast Ibex clock domain.
   logic alert_irq_nm;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1)
   ) u_alert_nmi_sync (
     .clk_i,
@@ -254,7 +254,7 @@ module rv_core_ibex
   );
 
   logic wdog_irq_nm;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1)
   ) u_wdog_nmi_sync (
     .clk_i,
@@ -292,7 +292,7 @@ module rv_core_ibex
   // timer interrupts do not come from
   // rv_plic and may not be synchronous to the ibex core
   logic irq_timer_sync;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1)
   ) u_intr_timer_sync (
     .clk_i,
@@ -323,10 +323,10 @@ module rv_core_ibex
   logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] nonce;
   logic unused_seed_valid;
   localparam int PayLoadW = ibex_pkg::SCRAMBLE_KEY_W + ibex_pkg::SCRAMBLE_NONCE_W + 1;
-  prim_sync_reqack_data #(
+  prim_ot_sync_reqack_data #(
     .Width(PayLoadW),
     .DataSrc2Dst(1'b0)
-  ) u_prim_sync_reqack_data (
+  ) u_prim_ot_sync_reqack_data (
     .clk_src_i  ( clk_i                         ),
     .rst_src_ni ( rst_ni                        ),
     .clk_dst_i  ( clk_otp_i                     ),

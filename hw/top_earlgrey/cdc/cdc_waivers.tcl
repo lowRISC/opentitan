@@ -48,7 +48,7 @@ set_rule_status -rule {W_DATA W_MASYNC} -status {Waived} \
 # Driving from PAD to gpio/ uart/ i2c
 set_rule_status -rule {W_MASYNC} -status {Waived}           \
   -expression {(Driver=~"IO*") &&                           \
-    (ReceivingFlop=~"*u_gpio.gen_filter*prim_flop_2sync*")} \
+    (ReceivingFlop=~"*u_gpio.gen_filter*prim_ot_flop_2sync*")} \
   -comment {Other than PADS, other signals are static}
 set_rule_status -rule {W_MASYNC} -status {Waived}                         \
   -expression {(Driver=~"IO*") && (ReceivingFlop=~"*u_uart*.*u_sync_1*")} \
@@ -77,7 +77,7 @@ set_rule_status -rule {W_RECON_GROUPS} -status {Waived}                         
   -comment {Reconverged signals coming from AST}
 
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived}                           \
-  -expression {(ControlSignal =~ "*u_reg.*cdc*.prim_flop_2sync.u_sync_1.*u_impl_generic.q_o*") && (ReconSignal=~"top_earlgrey.*.u_reg*")} \
+  -expression {(ControlSignal =~ "*u_reg.*cdc*.prim_ot_flop_2sync.u_sync_1.*u_impl_generic.q_o*") && (ReconSignal=~"top_earlgrey.*.u_reg*")} \
   -comment {Reconverged signals coming from AST}
 
 # RV PLIC signals reconverged

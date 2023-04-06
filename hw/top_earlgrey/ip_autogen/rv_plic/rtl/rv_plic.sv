@@ -325,9 +325,9 @@ module rv_plic_ot import rv_plic_ot_reg_pkg::*; #(
 
   // Synchronize all incoming interrupt requests.
   logic [NumSrc-1:0] intr_src_synced;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(NumSrc)
-  ) u_prim_flop_2sync (
+  ) u_prim_ot_flop_2sync (
     .clk_i,
     .rst_ni,
     .d_i(intr_src_i),

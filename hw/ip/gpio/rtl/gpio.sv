@@ -6,8 +6,8 @@
 
 `include "prim_assert.sv"
 
-module gpio
-  import gpio_reg_pkg::*;
+module gpio_ot
+  import gpio_ot_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   // This parameter instantiates 2-stage synchronizers on all GPIO inputs.
@@ -120,7 +120,7 @@ module gpio
   logic [31:0] event_intr_combined;
 
   // instantiate interrupt hardware primitive
-  prim_intr_hw #(.Width(32)) intr_hw (
+  prim_ot_intr_hw #(.Width(32)) intr_hw (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_intr_combined),
@@ -168,7 +168,7 @@ module gpio
   end
 
   // Register module
-  gpio_reg_top u_reg (
+  gpio_ot_reg_top u_reg (
     .clk_i,
     .rst_ni,
 

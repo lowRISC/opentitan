@@ -30,9 +30,9 @@
 `define SHA3 \
     u_sha3.u_keccak.u_round_count
 `define REPCNT \
-    u_entropy_src_repcnt_ht.u_prim_max_tree_rep_cntr_max
+    u_entropy_src_repcnt_ht.u_prim_ot_max_tree_rep_cntr_max
 `define BUCKET \
-    u_entropy_src_bucket_ht.u_prim_max_tree_bin_cntr_max
+    u_entropy_src_bucket_ht.u_prim_ot_max_tree_bin_cntr_max
 
 interface entropy_src_assert_if
 (
@@ -64,10 +64,10 @@ interface entropy_src_assert_if
     $assertoff(0, `CORE.u_sha3.MuxSelKnown_A);
     $assertoff(0, `CORE.u_entropy_src_main_sm.u_state_regs_A);
     $assertoff(0, `CORE.u_entropy_src_ack_sm.u_state_regs_A);
-    $assertoff(0, `CORE.u_prim_fifo_sync_esfinal.DepthKnown_A);
-    $assertoff(0, `CORE.u_prim_fifo_sync_esfinal.RvalidKnown_A);
-    $assertoff(0, `CORE.u_prim_fifo_sync_esfinal.WreadyKnown_A);
-    $assertoff(0, `CORE.u_prim_fifo_sync_esrng.DataKnown_A);
+    $assertoff(0, `CORE.u_prim_ot_fifo_sync_esfinal.DepthKnown_A);
+    $assertoff(0, `CORE.u_prim_ot_fifo_sync_esfinal.RvalidKnown_A);
+    $assertoff(0, `CORE.u_prim_ot_fifo_sync_esfinal.WreadyKnown_A);
+    $assertoff(0, `CORE.u_prim_ot_fifo_sync_esrng.DataKnown_A);
     $assertoff(0, `CORE.u_entropy_src_adaptp_ht.u_sum.SumComputation_A);
     $assertoff(0, `CORE.u_entropy_src_markov_ht.u_sum.SumComputation_A);
     $assertoff(0, `CORE.u_entropy_src_adaptp_ht.u_min.ValidInImpliesValidOut_A);

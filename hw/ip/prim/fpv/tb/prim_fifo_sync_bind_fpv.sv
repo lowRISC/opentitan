@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-module prim_fifo_sync_bind_fpv;
+module prim_ot_fifo_sync_bind_fpv;
 
   localparam int unsigned Width = 4;
 
@@ -14,7 +14,7 @@ module prim_fifo_sync_bind_fpv;
   // non-pass FIFOs //
   ////////////////////
 
-  bind i_nopass1 prim_fifo_sync_assert_fpv #(
+  bind i_nopass1 prim_ot_fifo_sync_assert_fpv #(
     .Width(Width),
     .Pass(1'b0),
     .Depth(1),
@@ -32,7 +32,7 @@ module prim_fifo_sync_bind_fpv;
     .depth_o
   );
 
-  bind i_nopass7 prim_fifo_sync_assert_fpv #(
+  bind i_nopass7 prim_ot_fifo_sync_assert_fpv #(
     .Width(Width),
     .Pass(1'b0),
     .Depth(7),
@@ -50,7 +50,7 @@ module prim_fifo_sync_bind_fpv;
     .depth_o
   );
 
-  bind i_nopass8 prim_fifo_sync_assert_fpv #(
+  bind i_nopass8 prim_ot_fifo_sync_assert_fpv #(
     .Width(Width),
     .Pass(1'b0),
     .Depth(8),
@@ -68,7 +68,7 @@ module prim_fifo_sync_bind_fpv;
     .depth_o
   );
 
-  bind i_nopass15 prim_fifo_sync_assert_fpv #(
+  bind i_nopass15 prim_ot_fifo_sync_assert_fpv #(
     .Width(Width),
     .Pass(1'b0),
     .Depth(15),
@@ -86,7 +86,7 @@ module prim_fifo_sync_bind_fpv;
     .depth_o
   );
 
-  bind i_nopass16 prim_fifo_sync_assert_fpv #(
+  bind i_nopass16 prim_ot_fifo_sync_assert_fpv #(
     .Width(Width),
     .Pass(1'b0),
     .Depth(16),
@@ -108,7 +108,7 @@ module prim_fifo_sync_bind_fpv;
   // pass FIFOs //
   ////////////////
 
-  bind i_pass0 prim_fifo_sync_assert_fpv #(
+  bind i_pass0 prim_ot_fifo_sync_assert_fpv #(
     .Width(Width),
     .Pass(1'b1),
     .Depth(0),
@@ -126,7 +126,7 @@ module prim_fifo_sync_bind_fpv;
     .depth_o
   );
 
-  bind i_pass1 prim_fifo_sync_assert_fpv #(
+  bind i_pass1 prim_ot_fifo_sync_assert_fpv #(
     .Width(Width),
     .Pass(1'b1),
     .Depth(1),
@@ -144,7 +144,7 @@ module prim_fifo_sync_bind_fpv;
     .depth_o
   );
 
-  bind i_pass7 prim_fifo_sync_assert_fpv #(
+  bind i_pass7 prim_ot_fifo_sync_assert_fpv #(
     .Width(Width),
     .Pass(1'b1),
     .Depth(7),
@@ -162,7 +162,7 @@ module prim_fifo_sync_bind_fpv;
     .depth_o
   );
 
-  bind i_pass8 prim_fifo_sync_assert_fpv #(
+  bind i_pass8 prim_ot_fifo_sync_assert_fpv #(
     .Width(Width),
     .Pass(1'b1),
     .Depth(8),
@@ -180,7 +180,7 @@ module prim_fifo_sync_bind_fpv;
     .depth_o
   );
 
-  bind i_pass15 prim_fifo_sync_assert_fpv #(
+  bind i_pass15 prim_ot_fifo_sync_assert_fpv #(
     .Width(Width),
     .Pass(1'b1),
     .Depth(15),
@@ -198,7 +198,7 @@ module prim_fifo_sync_bind_fpv;
     .depth_o
   );
 
-  bind i_pass16 prim_fifo_sync_assert_fpv #(
+  bind i_pass16 prim_ot_fifo_sync_assert_fpv #(
     .Width(Width),
     .Pass(1'b1),
     .Depth(16),
@@ -216,4 +216,4 @@ module prim_fifo_sync_bind_fpv;
     .depth_o
   );
 
-endmodule : prim_fifo_sync_bind_fpv
+endmodule : prim_ot_fifo_sync_bind_fpv

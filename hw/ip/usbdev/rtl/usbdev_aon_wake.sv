@@ -164,7 +164,7 @@ module usbdev_aon_wake import usbdev_pkg::*;(
   logic aon_dppullup_en_d, aon_dppullup_en_q;
   logic aon_dnpullup_en_d, aon_dnpullup_en_q;
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(2)
   ) u_pullup_en_cdc (
     .clk_i(clk_aon_i),

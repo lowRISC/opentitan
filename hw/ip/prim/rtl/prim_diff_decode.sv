@@ -51,7 +51,7 @@ module prim_diff_decode #(
     // 2 sync regs, one reg for edge detection
     logic diff_pq, diff_nq, diff_pd, diff_nd;
 
-    prim_flop_2sync #(
+    prim_ot_flop_2sync #(
       .Width(1),
       .ResetValue('0)
     ) i_sync_p (
@@ -61,7 +61,7 @@ module prim_diff_decode #(
       .q_o(diff_pd)
     );
 
-    prim_flop_2sync #(
+    prim_ot_flop_2sync #(
       .Width(1),
       .ResetValue(1'b1)
     ) i_sync_n (

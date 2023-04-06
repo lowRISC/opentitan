@@ -6,7 +6,7 @@
 //
 // This module is only meant to be used in special cases where a handshake synchronizer
 // is not viable (this is for instance the case for the multibit life cycle signals).
-// For handshake-based synchronization, consider using prim_sync_reqack_data.
+// For handshake-based synchronization, consider using prim_ot_sync_reqack_data.
 //
 //
 // Description:
@@ -59,10 +59,10 @@ module prim_multibit_sync #(
   logic [NumChecks:0][Width-1:0]   data_check_d;
   logic [NumChecks-1:0][Width-1:0] data_check_q;
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(Width),
     .ResetValue(ResetValue)
-  ) i_prim_flop_2sync (
+  ) i_prim_ot_flop_2sync (
     .clk_i,
     .rst_ni,
     .d_i(data_i),

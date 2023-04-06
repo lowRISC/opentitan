@@ -13,7 +13,7 @@ package i2c_env_pkg;
   import i2c_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
-  import i2c_reg_pkg::*;
+  import i2c_ot_reg_pkg::*;
   import i2c_ral_pkg::*;
 
   // macro includes
@@ -45,10 +45,10 @@ package i2c_env_pkg;
     ReadWrite = 2
   } tran_type_e;
 
-  parameter uint I2C_FMT_FIFO_DEPTH = i2c_reg_pkg::FifoDepth;
-  parameter uint I2C_RX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;
-  parameter uint I2C_TX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;
-  parameter uint I2C_ACQ_FIFO_DEPTH = i2c_reg_pkg::FifoDepth;
+  parameter uint I2C_FMT_FIFO_DEPTH = i2c_ot_reg_pkg::FifoDepth;
+  parameter uint I2C_RX_FIFO_DEPTH  = i2c_ot_reg_pkg::FifoDepth;
+  parameter uint I2C_TX_FIFO_DEPTH  = i2c_ot_reg_pkg::FifoDepth;
+  parameter uint I2C_ACQ_FIFO_DEPTH = i2c_ot_reg_pkg::FifoDepth;
 
   // alerts
   parameter uint NUM_ALERTS = 1;

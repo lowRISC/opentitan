@@ -31,7 +31,7 @@
 
 `include "prim_assert.sv"
 
-module prim_sync_reqack #(
+module prim_ot_sync_reqack #(
   parameter bit EnRstChks = 1'b0,   // Enable reset-related assertion checks, disabled by default.
   parameter bit EnRzHs = 1'b0       // By Default, the faster NRZ handshake protocol
                                     // (EnRzHs = 0) is used. Enable the RZ handshake protocol
@@ -103,7 +103,7 @@ module prim_sync_reqack #(
     end
 
     // Move ACK over to SRC domain.
-    prim_flop_2sync #(
+    prim_ot_flop_2sync #(
       .Width(1)
     ) ack_sync (
       .clk_i  (clk_src_i),
@@ -155,7 +155,7 @@ module prim_sync_reqack #(
     end
 
     // Move REQ over to DST domain.
-    prim_flop_2sync #(
+    prim_ot_flop_2sync #(
       .Width(1)
     ) req_sync (
       .clk_i  (clk_dst_i),
@@ -195,7 +195,7 @@ module prim_sync_reqack #(
     assign dst_handshake = dst_req_o & dst_ack_i;
 
     // Move REQ over to DST domain.
-    prim_flop_2sync #(
+    prim_ot_flop_2sync #(
       .Width(1)
     ) req_sync (
       .clk_i  (clk_dst_i),
@@ -205,7 +205,7 @@ module prim_sync_reqack #(
     );
 
     // Move ACK over to SRC domain.
-    prim_flop_2sync #(
+    prim_ot_flop_2sync #(
       .Width(1)
     ) ack_sync (
       .clk_i  (clk_src_i),

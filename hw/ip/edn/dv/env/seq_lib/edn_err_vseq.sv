@@ -42,8 +42,8 @@ class edn_err_vseq extends edn_base_vseq;
     expect_fatal_alerts = 1'b1;
 
     // Turn off assertions
-    $assertoff(0, "tb.dut.u_edn_core.u_prim_fifo_sync_rescmd.DataKnown_A");
-    $assertoff(0, "tb.dut.u_edn_core.u_prim_fifo_sync_gencmd.DataKnown_A");
+    $assertoff(0, "tb.dut.u_edn_core.u_prim_ot_fifo_sync_rescmd.DataKnown_A");
+    $assertoff(0, "tb.dut.u_edn_core.u_prim_ot_fifo_sync_gencmd.DataKnown_A");
     cfg.edn_assert_vif.assert_off();
 
     // Send INS cmd

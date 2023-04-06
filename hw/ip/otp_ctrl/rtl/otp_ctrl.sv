@@ -513,7 +513,7 @@ module otp_ctrl
   // Interrupts and Alert Senders //
   //////////////////////////////////
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1)
   ) u_intr_operation_done (
     .clk_i,
@@ -528,7 +528,7 @@ module otp_ctrl
     .intr_o                 ( intr_otp_operation_done_o               )
   );
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1)
   ) u_intr_error (
     .clk_i,
@@ -816,7 +816,7 @@ module otp_ctrl
 
   // We can have up to two OTP commands in flight, hence we size this to be 2 deep.
   // The partitions can unconditionally sink requested data.
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(vbits(NumAgents)),
     .Depth(2)
   ) u_otp_rsp_fifo (
@@ -937,7 +937,7 @@ module otp_ctrl
 
   // The init request comes from the power manager, which lives in the AON clock domain.
   logic pwr_otp_req_synced;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1)
   ) u_otp_init_sync (
     .clk_i,

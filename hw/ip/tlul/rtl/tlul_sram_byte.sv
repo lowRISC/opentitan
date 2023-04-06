@@ -152,7 +152,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
       a_user: tl_i.a_user
     };
 
-    prim_fifo_sync #(
+    prim_ot_fifo_sync #(
       .Width(TxnDataWidth),
       .Pass(1'b0),
       .Depth(1),
@@ -264,7 +264,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
     logic size_fifo_rdy;
     logic [top_pkg::TL_SZW-1:0] a_size;
-    prim_fifo_sync #(
+    prim_ot_fifo_sync #(
       .Width(top_pkg::TL_SZW),
       .Pass(1'b0),
       .Depth(Outstanding),

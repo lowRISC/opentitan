@@ -62,7 +62,7 @@ module pattgen_core
     .event_done_o (event_done_ch1)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_done_ch0 (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_done_ch0 (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_done_ch0),
@@ -75,7 +75,7 @@ module pattgen_core
     .intr_o                 (intr_done_ch0_o)
   );
 
-   prim_intr_hw #(.Width(1)) intr_hw_done_ch1 (
+   prim_ot_intr_hw #(.Width(1)) intr_hw_done_ch1 (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_done_ch1),

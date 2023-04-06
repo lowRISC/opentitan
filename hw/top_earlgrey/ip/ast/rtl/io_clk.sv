@@ -54,7 +54,7 @@ prim_clock_buf #(
 logic rst_val_n;
 assign rst_val_n = io_clk_en;
 
-prim_flop_2sync #(
+prim_ot_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_no_scan_val_sync (

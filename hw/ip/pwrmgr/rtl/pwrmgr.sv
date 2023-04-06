@@ -95,7 +95,7 @@ module pwrmgr
   logic ndmreset_req_q;
   logic ndm_req_valid;
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_ndm_sync (
@@ -617,7 +617,7 @@ module pwrmgr
 
   // This interrupt is asserted whenever the fast FSM transitions
   // into active state.  However, it does not assert during POR
-  prim_intr_hw #(.Width(1)) intr_wakeup (
+  prim_ot_intr_hw #(.Width(1)) intr_wakeup (
     .clk_i,
     .rst_ni,
     .event_intr_i           (wkup),

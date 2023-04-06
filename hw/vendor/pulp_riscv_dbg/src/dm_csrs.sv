@@ -551,7 +551,7 @@ module dm_ot_csrs #(
   assign unused_testmode = testmode_i;
 
   // response FIFO
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width   (32),
     .Pass    (1'b0),
     .Depth   (2)

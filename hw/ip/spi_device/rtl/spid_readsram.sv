@@ -293,7 +293,7 @@ module spid_readsram
   //////////////
   // Instance //
   //////////////
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width ($bits(sram_data_t)),
     .Pass  (1'b 1),
     .Depth (1),
@@ -317,7 +317,7 @@ module spid_readsram
     .err_o    ()
   );
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width             ($bits(spi_byte_t)),
     .Pass              (1'b1),
     .Depth             (2),

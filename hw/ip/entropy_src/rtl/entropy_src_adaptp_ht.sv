@@ -65,7 +65,7 @@ module entropy_src_adaptp_ht #(
   end : gen_cntrs
 
   // determine the highest counter counter value
-  prim_max_tree #(
+  prim_ot_max_tree #(
     .NumSrc(RngBusWidth),
     .Width(RegWidth)
   ) u_max (
@@ -79,9 +79,9 @@ module entropy_src_adaptp_ht #(
   );
 
   // determine the lowest counter value
-  // Negate the inputs and outputs of prim_max_tree to find the minimum
+  // Negate the inputs and outputs of prim_ot_max_tree to find the minimum
   // For this unsigned application, one's complement negation (i.e. logical inversion) is fine.
-  prim_max_tree #(
+  prim_ot_max_tree #(
     .NumSrc(RngBusWidth),
     .Width(RegWidth)
   ) u_min (

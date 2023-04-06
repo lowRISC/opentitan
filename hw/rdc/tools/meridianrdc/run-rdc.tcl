@@ -110,7 +110,7 @@ if {$PARAMS != ""} {
 #              cell
 # -supress_rf: Force suppression of E_RST_METASTABILITY violation going
 #              "through" this cell
-set_rdc_user_defined_sync_cell -force prim_flop_2sync \
+set_rdc_user_defined_sync_cell -force prim_ot_flop_2sync \
   -comment "async reset then 2FF @ CLK"
 
 #########################

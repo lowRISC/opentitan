@@ -40,7 +40,7 @@ module rstmgr_leaf_rst
  );
 
   logic leaf_rst_sync;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_rst_sync (
@@ -82,7 +82,7 @@ module rstmgr_leaf_rst
   if (SecCheck) begin : gen_rst_chk
 
     // We have to create a separately synced reset for the child handshakes below, since keeping the
-    // child side of the prim_sync_reqack synchronizer under reset would defeat the reset checker's
+    // child side of the prim_ot_sync_reqack synchronizer under reset would defeat the reset checker's
     // purpose, as it would never count any clock ticks in the WaitForChildRelease state above.
     logic leaf_chk_rst_n;
     prim_rst_sync u_prim_rst_sync (

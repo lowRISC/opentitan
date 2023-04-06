@@ -370,7 +370,7 @@ module spid_upload
   end
 
   // payloadptr_clr --> sys domain
-  prim_pulse_sync u_payloadptr_clr_psync (
+  prim_ot_pulse_sync u_payloadptr_clr_psync (
     // source clock domain
     .clk_src_i   (clk_i),
     .rst_src_ni  (sys_rst_ni),
@@ -517,7 +517,7 @@ module spid_upload
   // should be de-asserted when SPI line is in idle (CSb == 1).
 
   // CmdFifo
-  prim_fifo_async_sram_adapter #(
+  prim_ot_fifo_async_sram_adapter #(
     .Width        (CmdFifoWidth),
     .Depth        (CmdFifoDepth),
     .SramAw       (SramAw),
@@ -581,7 +581,7 @@ module spid_upload
   assign sys_sram_gnt    [SramCmdFifo] = sys_cmdfifo_gnt_i;
 
   // AddrFifo
-  prim_fifo_async_sram_adapter #(
+  prim_ot_fifo_async_sram_adapter #(
     .Width        (AddrFifoWidth),
     .Depth        (AddrFifoDepth),
     .SramAw       (SramAw),

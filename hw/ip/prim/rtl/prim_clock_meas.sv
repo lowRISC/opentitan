@@ -48,7 +48,7 @@ module prim_clock_meas #(
   //////////////////////////
 
   logic ref_en;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1)
   ) u_ref_meas_en_sync (
     .d_i(en_i),
@@ -74,7 +74,7 @@ module prim_clock_meas #(
 
   // sync reference clock view of enable back into the source domain
   logic en_ref_sync;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1)
   ) ack_sync (
     .clk_i,
@@ -146,7 +146,7 @@ module prim_clock_meas #(
   // for each reference cycle.
   // The count obtained during the last reference cycle is used
   // to measure how fast/slow the input clock is.
-  prim_pulse_sync u_sync_ref (
+  prim_ot_pulse_sync u_sync_ref (
     .clk_src_i(clk_ref_i),
     .rst_src_ni(rst_ref_ni),
     .src_pulse_i(ref_en),

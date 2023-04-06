@@ -6,14 +6,14 @@
 
 `include "prim_assert.sv"
 
-module gpio_reg_top (
+module gpio_ot_reg_top (
   input clk_i,
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
-  output gpio_reg_pkg::gpio_reg2hw_t reg2hw, // Write
-  input  gpio_reg_pkg::gpio_hw2reg_t hw2reg, // Read
+  output gpio_ot_reg_pkg::gpio_reg2hw_t reg2hw, // Write
+  input  gpio_ot_reg_pkg::gpio_hw2reg_t hw2reg, // Read
 
   // Integrity check errors
   output logic intg_err_o,
@@ -22,7 +22,7 @@ module gpio_reg_top (
   input devmode_i // If 1, explicit error return for unmapped register access
 );
 
-  import gpio_reg_pkg::* ;
+  import gpio_ot_reg_pkg::* ;
 
   localparam int AW = 6;
   localparam int DW = 32;

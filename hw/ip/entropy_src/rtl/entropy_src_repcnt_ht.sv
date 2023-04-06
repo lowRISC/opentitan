@@ -88,10 +88,10 @@ module entropy_src_repcnt_ht #(
 
   end : gen_cntrs
 
-  prim_max_tree #(
+  prim_ot_max_tree #(
     .NumSrc(RngBusWidth),
     .Width(RegWidth)
-  ) u_prim_max_tree_rep_cntr_max (
+  ) u_prim_ot_max_tree_rep_cntr_max (
     .clk_i,
     .rst_ni,
     .values_i   (rep_cntr),

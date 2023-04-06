@@ -28,7 +28,7 @@ module prim_edge_detector #(
   logic [Width-1:0] q_sync_d, q_sync_q;
 
   if (EnSync) begin : g_sync
-    prim_flop_2sync #(
+    prim_ot_flop_2sync #(
       .Width (Width),
       .ResetValue (ResetValue)
     ) u_sync (

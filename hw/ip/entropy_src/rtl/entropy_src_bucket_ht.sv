@@ -67,10 +67,10 @@ module entropy_src_bucket_ht #(
     assign bin_cnt_exceeds_thresh[i] = (bin_cntr[i] > thresh_i);
   end : gen_symbol_match
 
-  prim_max_tree #(
+  prim_ot_max_tree #(
     .NumSrc(NUM_BINS),
     .Width(RegWidth)
-  ) u_prim_max_tree_bin_cntr_max (
+  ) u_prim_ot_max_tree_bin_cntr_max (
     .clk_i,
     .rst_ni,
     .values_i   (bin_cntr),

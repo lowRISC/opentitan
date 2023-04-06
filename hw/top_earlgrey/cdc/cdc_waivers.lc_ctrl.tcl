@@ -16,4 +16,4 @@ set_rule_status -rule {W_FANOUT} -status {Waived} \
   -comment {No Reconvergence issue. Each IP handles Escalate En individually}
 
 # lc_sender output (to be changed once in a power up)
-set_rule_status -rule {W_CNTL} -status {Waived} -expression {((Signal=~"*u_lc_ctrl.*.u_prim_lc_sender_*_en.gen_flops*") || (Signal=~"*u_lc_ctrl.*.u_prim_lc_sender_*rma_req*.gen_flops*")) && (ReceivingFlop=~"*u_prim_flop_2sync*")} -comment {LC EN is one-time change during a power up. Slow to fast clock error can be ignored}
+set_rule_status -rule {W_CNTL} -status {Waived} -expression {((Signal=~"*u_lc_ctrl.*.u_prim_lc_sender_*_en.gen_flops*") || (Signal=~"*u_lc_ctrl.*.u_prim_lc_sender_*rma_req*.gen_flops*")) && (ReceivingFlop=~"*u_prim_ot_flop_2sync*")} -comment {LC EN is one-time change during a power up. Slow to fast clock error can be ignored}

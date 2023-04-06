@@ -144,7 +144,7 @@ module kmac_msgfifo
   end
 
   // MsgFIFO
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width  ($bits(fifo_t)),
     .Pass   (1'b 1),
     .Depth  (MsgDepth),

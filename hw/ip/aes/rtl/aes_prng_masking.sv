@@ -133,11 +133,11 @@ module aes_prng_masking import aes_pkg::*;
     assign entropy_req_o = SecSkipPRNGReseeding ? 1'b0         : reseed_req_i & ~seed_valid;
     assign reseed_ack_o  = SecSkipPRNGReseeding ? reseed_req_i : seed_valid;
 
-    prim_packer_fifo #(
+    prim_ot_packer_fifo #(
       .InW         ( EntropyWidth ),
       .OutW        ( Width        ),
       .ClearOnRead ( 1'b0         )
-    ) u_prim_packer_fifo (
+    ) u_prim_ot_packer_fifo (
       .clk_i    ( clk_i         ),
       .rst_ni   ( rst_ni        ),
       .clr_i    ( 1'b0          ), // Not needed.

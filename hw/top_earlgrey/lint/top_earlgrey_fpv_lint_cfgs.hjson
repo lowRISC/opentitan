@@ -54,10 +54,10 @@
                rel_path: "hw/ip/prim/prim_lfsr_fpv/lint/{tool}"
              }
              {
-               name: prim_fifo_sync_fpv
-               fusesoc_core: lowrisc:fpv:prim_fifo_sync_fpv
+               name: prim_ot_fifo_sync_fpv
+               fusesoc_core: lowrisc:fpv:prim_ot_fifo_sync_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/ip/prim/prim_fifo_sync_fpv/lint/{tool}"
+               rel_path: "hw/ip/prim/prim_ot_fifo_sync_fpv/lint/{tool}"
              }
              {
                name: prim_alert_rxtx_fpv

@@ -41,7 +41,7 @@ module prim_clock_timeout #(
   end
 
   logic chk_req;
-  prim_sync_reqack u_ref_timeout (
+  prim_ot_sync_reqack u_ref_timeout (
     .clk_src_i(clk_i),
     .rst_src_ni(rst_ni),
     .clk_dst_i(clk_chk_i),

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Basic testbench for prim_flop_2sync with CDC random delay enabled.
+// Basic testbench for prim_ot_flop_2sync with CDC random delay enabled.
 module tb;
   `include "dv_macros.svh"
 
@@ -13,7 +13,7 @@ module tb;
 
   clk_rst_if clk_rst_if(.clk, .rst_n);
 
-  prim_flop_2sync #(.Width(32)) dut (
+  prim_ot_flop_2sync #(.Width(32)) dut (
     // source clock domain
     .d_i    (src_d),
     // destination clock domain

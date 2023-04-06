@@ -6,7 +6,7 @@
 
 `include "prim_assert.sv"
 
-module prim_fifo_sync_cnt #(
+module prim_ot_fifo_sync_cnt #(
   parameter int Depth = 4,
   parameter int Width = 16,
   parameter bit Secure = 1'b0
@@ -99,4 +99,4 @@ module prim_fifo_sync_cnt #(
 
 
 
-endmodule // prim_fifo_sync_cnt
+endmodule // prim_ot_fifo_sync_cnt

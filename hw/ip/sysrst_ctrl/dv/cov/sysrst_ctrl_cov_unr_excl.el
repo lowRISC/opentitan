@@ -275,7 +275,7 @@ Branch 0 "1492303176" "src_fsm_cs" (4) "src_fsm_cs default,-,-"
 ANNOTATION: "VC_COV_UNR"
 Branch 1 "814912860" "dst_fsm_cs" (4) "dst_fsm_cs default,-,-"
 CHECKSUM: "3839527590 2212754372"
-INSTANCE: tb.dut.u_prim_sync_reqack
+INSTANCE: tb.dut.u_prim_ot_sync_reqack
 ANNOTATION: "VC_COV_UNR"
 Branch 0 "1492303176" "src_fsm_cs" (4) "src_fsm_cs default,-,-"
 ANNOTATION: "VC_COV_UNR"
@@ -823,7 +823,7 @@ Block 11 "170878399" ";"
 ANNOTATION: "VC_COV_UNR"
 Block 19 "1804254986" ";"
 CHECKSUM: "3839527590 2385261621"
-INSTANCE: tb.dut.u_prim_sync_reqack
+INSTANCE: tb.dut.u_prim_ot_sync_reqack
 ANNOTATION: "VC_COV_UNR"
 Block 11 "170878399" ";"
 ANNOTATION: "VC_COV_UNR"

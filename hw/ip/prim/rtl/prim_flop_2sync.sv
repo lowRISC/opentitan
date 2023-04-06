@@ -6,7 +6,7 @@
 // This may need to be moved to prim_generic if libraries have a specific cell
 // for synchronization
 
-module prim_flop_2sync #(
+module prim_ot_flop_2sync #(
   parameter int               Width      = 16,
   parameter logic [Width-1:0] ResetValue = '0,
   parameter bit               EnablePrimCdcRand = 1
@@ -58,4 +58,4 @@ module prim_flop_2sync #(
     .q_o
   );
 
-endmodule : prim_flop_2sync
+endmodule : prim_ot_flop_2sync

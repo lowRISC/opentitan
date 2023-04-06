@@ -557,7 +557,7 @@ module kmac
   // Convert mubi4_t to logic to generate interrupts
   assign event_absorbed = prim_mubi_pkg::mubi4_test_true_strict(app_absorbed);
 
-  prim_intr_hw #(.Width(1)) intr_kmac_done (
+  prim_ot_intr_hw #(.Width(1)) intr_kmac_done (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_absorbed),
@@ -581,7 +581,7 @@ module kmac
 
   assign event_msgfifo_empty = ~msgfifo_empty_q & msgfifo_empty;
 
-  prim_intr_hw #(.Width(1)) intr_fifo_empty (
+  prim_ot_intr_hw #(.Width(1)) intr_fifo_empty (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_msgfifo_empty),
@@ -666,7 +666,7 @@ module kmac
   logic sha3_storage_rst_error;
   assign control_integrity_error = sha3_storage_rst_error;
 
-  prim_intr_hw #(.Width(1)) intr_kmac_err (
+  prim_ot_intr_hw #(.Width(1)) intr_kmac_err (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_error),
@@ -1133,11 +1133,11 @@ module kmac
     logic unused_entropy_fips;
 
     // Synchronize EDN interface
-    prim_sync_reqack_data #(
+    prim_ot_sync_reqack_data #(
       .Width(edn_pkg::ENDPOINT_BUS_WIDTH),
       .DataSrc2Dst(1'b0),
       .DataReg(1'b0)
-    ) u_prim_sync_reqack_data (
+    ) u_prim_ot_sync_reqack_data (
       .clk_src_i (clk_i),
       .rst_src_ni(rst_ni),
       .clk_dst_i (clk_edn_i),

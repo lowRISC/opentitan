@@ -749,7 +749,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // instantiate interrupt hardware primitives
   //--------------------------------------------
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1)
   ) u_intr_hw_es_entropy_valid (
     .clk_i                  (clk_i),
@@ -764,7 +764,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .intr_o                 (intr_es_entropy_valid_o)
   );
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1)
   ) u_intr_hw_es_health_test_failed (
     .clk_i                  (clk_i),
@@ -780,7 +780,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1)
   ) u_intr_hw_es_observe_fifo_ready (
     .clk_i                  (clk_i),
@@ -795,7 +795,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .intr_o                 (intr_es_observe_fifo_ready_o)
   );
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1)
   ) u_intr_hw_es_fatal_err (
     .clk_i                  (clk_i),
@@ -961,11 +961,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(RngBusWidth),
     .Pass(0),
     .Depth(2)
-  ) u_prim_fifo_sync_esrng (
+  ) u_prim_ot_fifo_sync_esrng (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (sfifo_esrng_clr),
@@ -989,7 +989,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
                                                                    pfifo_postht_not_full );
 
   // fifo err
-  // Note: for prim_fifo_sync is not an error to push to a fifo that is full.  In fact, the
+  // Note: for prim_ot_fifo_sync is not an error to push to a fifo that is full.  In fact, the
   // backpressure mechanism applied to the RNG inputs counts on this.
   assign sfifo_esrng_err =
          {1'b0,
@@ -1020,11 +1020,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign rng_bit_en = rng_bit_enable_pfe;
   assign rng_bit_sel = reg2hw.conf.rng_bit_sel.q;
 
-  prim_packer_fifo #(
+  prim_ot_packer_fifo #(
     .InW(1),
     .OutW(RngBusWidth),
     .ClearOnRead(1'b0)
-  ) u_prim_packer_fifo_esbit (
+  ) u_prim_ot_packer_fifo_esbit (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (pfifo_esbit_clr),
@@ -2262,11 +2262,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // pack tested entropy into 32 bit packer
   //--------------------------------------------
 
-  prim_packer_fifo #(
+  prim_ot_packer_fifo #(
     .InW(RngBusWidth),
     .OutW(PostHTWidth),
     .ClearOnRead(1'b0)
-  ) u_prim_packer_fifo_postht (
+  ) u_prim_ot_packer_fifo_postht (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (pfifo_postht_clr),
@@ -2305,11 +2305,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // store entropy into a 64 entry deep FIFO
   //--------------------------------------------
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(ObserveFifoWidth),
     .Pass(0),
     .Depth(ObserveFifoDepth)
-  ) u_prim_fifo_sync_observe (
+  ) u_prim_ot_fifo_sync_observe (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (sfifo_observe_clr),
@@ -2373,11 +2373,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // pack entropy into 64 bit packer
   //--------------------------------------------
 
-  prim_packer_fifo #(
+  prim_ot_packer_fifo #(
     .InW(ObserveFifoWidth),
     .OutW(PreCondWidth),
     .ClearOnRead(1'b0)
-  ) u_prim_packer_fifo_precon (
+  ) u_prim_ot_packer_fifo_precon (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (pfifo_precon_clr),
@@ -2512,11 +2512,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // bypass SHA conditioner path
   //--------------------------------------------
 
-  prim_packer_fifo #(
+  prim_ot_packer_fifo #(
      .InW(PostHTWidth),
      .OutW(SeedLen),
      .ClearOnRead(1'b0)
-  ) u_prim_packer_fifo_bypass (
+  ) u_prim_ot_packer_fifo_bypass (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (pfifo_bypass_clr),
@@ -2645,11 +2645,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // send processed entropy to final fifo
   //--------------------------------------------
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(1+SeedLen),
     .Pass(0),
     .Depth(EsFifoDepth)
-  ) u_prim_fifo_sync_esfinal (
+  ) u_prim_ot_fifo_sync_esfinal (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .clr_i          (sfifo_esfinal_clr),
@@ -2679,7 +2679,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign {esfinal_fips_flag,esfinal_data} = sfifo_esfinal_rdata;
 
   // fifo err
-  // Note: for prim_fifo_sync is not an error to push to a fifo that is full.  In fact, the
+  // Note: for prim_ot_fifo_sync is not an error to push to a fifo that is full.  In fact, the
   // backpressure mechanism applied to the previous FIFO counts on this.
   assign sfifo_esfinal_err =
          {1'b0,
@@ -2733,11 +2733,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // software es read path
   //--------------------------------------------
 
-  prim_packer_fifo #(
+  prim_ot_packer_fifo #(
     .InW(SeedLen),
     .OutW(FullRegWidth),
     .ClearOnRead(1'b0)
-  ) u_prim_packer_fifo_swread (
+  ) u_prim_ot_packer_fifo_swread (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (pfifo_swread_clr),

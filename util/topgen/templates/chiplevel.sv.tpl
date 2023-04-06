@@ -1237,7 +1237,7 @@ module chip_${top["name"]}_${target["name"]} #(
   assign clk_io_div4_trigger_oe = mio_oe[MioOutGpioGpio8];
 
   // Synchronize signals to manual_in_io_clk.
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width ($bits(clk_trans_idle) + 2)
   ) u_sync_trigger (
     .clk_i (manual_in_io_clk),

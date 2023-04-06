@@ -44,11 +44,11 @@ module lc_ctrl_kmac_if
   // transition has been initiated.
   // Hence no further synchronization registers are required on the outgoing data.
   // We just instantiate this synchronizer instance to facilitate CDC tooling (i.e., we
-  // make sure the CDC paths go through a prim_sync_reqack_data instance).
-  prim_sync_reqack_data #(
+  // make sure the CDC paths go through a prim_ot_sync_reqack_data instance).
+  prim_ot_sync_reqack_data #(
     .Width(LcTokenWidth),
     .DataSrc2Dst(1'b1)
-  ) u_prim_sync_reqack_data_out (
+  ) u_prim_ot_sync_reqack_data_out (
     .clk_src_i  ( clk_i                 ),
     .rst_src_ni ( rst_ni                ),
     .clk_dst_i  ( clk_kmac_i            ),
@@ -66,14 +66,14 @@ module lc_ctrl_kmac_if
   logic token_hash_ack_d, token_hash_ack_q;
   logic token_hash_err_q, token_hash_err_d;
   lc_token_t hashed_token_q, hashed_token_d;
-  prim_sync_reqack_data #(
+  prim_ot_sync_reqack_data #(
     // Token + Error bit
     .Width      (LcTokenWidth + 1),
     .DataSrc2Dst(1'b0),
     // This instantiates a data register
     // on the destination side.
     .DataReg    (1'b1)
-  ) u_prim_sync_reqack_data_in (
+  ) u_prim_ot_sync_reqack_data_in (
     .clk_src_i  ( clk_i                ),
     .rst_src_ni ( rst_ni               ),
     .clk_dst_i  ( clk_kmac_i           ),

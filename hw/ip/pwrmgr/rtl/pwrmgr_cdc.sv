@@ -87,7 +87,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   logic slow_cdc_sync;
   pwr_ast_rsp_t slow_ast_q, slow_ast_q2;
 
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width(1)
   ) u_req_pwrdn_sync (
     .clk_i(clk_slow_i),
@@ -96,7 +96,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(slow_req_pwrdn_o)
   );
 
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width(1)
   ) u_ack_pwrup_sync (
     .clk_i(clk_slow_i),
@@ -105,7 +105,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(slow_ack_pwrup_o)
   );
 
-  prim_pulse_sync u_slow_cdc_sync (
+  prim_ot_pulse_sync u_slow_cdc_sync (
     .clk_src_i(clk_i),
     .rst_src_ni(rst_ni),
     .src_pulse_i(cfg_cdc_sync_i),
@@ -117,7 +117,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   // Even though this is multi-bit, the bits are individual request lines.
   // So there is no general concern about recombining as there is
   // no intent to use them in a related manner.
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width($bits(pwr_peri_t))
   ) u_slow_ext_req_sync (
     .clk_i  (clk_slow_i),
@@ -126,7 +126,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o    (slow_peri_reqs_o)
   );
 
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width(1)
   ) u_ip_clk_status_sync (
     .clk_i  (clk_slow_i),
@@ -137,7 +137,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   // Some of the AST signals are multi-bits themselves (such as clk_val)
   // thus they need to be delayed one more stage to check for stability
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width($bits(pwr_ast_rsp_t)),
     .ResetValue(PWR_AST_RSP_SYNC_DEFAULT)
   ) u_ast_sync (
@@ -196,7 +196,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   logic pwrup_cause_toggle_q, pwrup_cause_toggle_q2;
   logic pwrup_cause_chg;
 
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width(1)
   ) u_req_pwrup_sync (
     .clk_i,
@@ -205,7 +205,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(req_pwrup_o)
   );
 
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width(1)
   ) u_ack_pwrdn_sync (
     .clk_i,
@@ -214,7 +214,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(ack_pwrdn_o)
   );
 
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width(1)
   ) u_int_fsm_invalid_sync (
     .clk_i,
@@ -223,7 +223,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(fsm_invalid_o)
   );
 
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width(1)
   ) u_pwrup_chg_sync (
     .clk_i,
@@ -232,7 +232,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(pwrup_cause_toggle_q)
   );
 
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width(1)
   ) u_ip_clk_en_sync (
     .clk_i,
@@ -241,7 +241,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(usb_ip_clk_en_o)
   );
 
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width(1)
   ) u_sleeping_sync (
     .clk_i,
@@ -250,7 +250,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(core_sleeping_o)
   );
 
-  prim_pulse_sync u_scdc_sync (
+  prim_ot_pulse_sync u_scdc_sync (
     .clk_src_i(clk_slow_i),
     .rst_src_ni(rst_slow_ni),
     .src_pulse_i(slow_cdc_sync),
@@ -277,7 +277,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     end
   end
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width($bits(pwr_peri_t))
   ) u_ext_req_sync (
     .clk_i,
@@ -286,7 +286,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(peri_reqs_o)
   );
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue(1'b1)
   ) u_sync_flash_idle (
@@ -296,7 +296,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(flash_o.flash_idle)
   );
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width($bits(pwr_otp_rsp_t)),
     .ResetValue('0)
   ) u_sync_otp (
@@ -320,7 +320,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   ////////////////////////////////
   // Handshake
   ////////////////////////////////
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_clr_req_sync (

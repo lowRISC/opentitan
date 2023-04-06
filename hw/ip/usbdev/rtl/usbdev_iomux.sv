@@ -54,7 +54,7 @@ module usbdev_iomux
   //////////
 
   // USB input pins
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width (4)
   ) cdc_io_to_usb (
     .clk_i,

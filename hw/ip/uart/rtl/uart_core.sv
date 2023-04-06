@@ -169,7 +169,7 @@ module uart_core (
 
   assign tx_fifo_rready = tx_uart_idle & tx_fifo_rvalid & tx_enable;
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width   (8),
     .Pass    (1'b0),
     .Depth   (32)
@@ -219,7 +219,7 @@ module uart_core (
   //////////////
 
   //      sync the incoming data
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue(1'b1)
   ) sync_rx (
@@ -270,7 +270,7 @@ module uart_core (
 
   assign rx_fifo_wvalid = rx_valid & ~event_rx_frame_err & ~event_rx_parity_err;
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width   (8),
     .Pass    (1'b0),
     .Depth   (32)
@@ -387,7 +387,7 @@ module uart_core (
 
   // instantiate interrupt hardware primitives
 
-  prim_intr_hw #(.Width(1)) intr_hw_tx_watermark (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_tx_watermark (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_tx_watermark),
@@ -400,7 +400,7 @@ module uart_core (
     .intr_o                 (intr_tx_watermark_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_rx_watermark (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_rx_watermark (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_rx_watermark),
@@ -413,7 +413,7 @@ module uart_core (
     .intr_o                 (intr_rx_watermark_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_tx_empty (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_tx_empty (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_tx_empty),
@@ -426,7 +426,7 @@ module uart_core (
     .intr_o                 (intr_tx_empty_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_rx_overflow (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_rx_overflow (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_rx_overflow),
@@ -439,7 +439,7 @@ module uart_core (
     .intr_o                 (intr_rx_overflow_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_rx_frame_err (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_rx_frame_err (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_rx_frame_err),
@@ -452,7 +452,7 @@ module uart_core (
     .intr_o                 (intr_rx_frame_err_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_rx_break_err (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_rx_break_err (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_rx_break_err),
@@ -465,7 +465,7 @@ module uart_core (
     .intr_o                 (intr_rx_break_err_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_rx_timeout (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_rx_timeout (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_rx_timeout),
@@ -478,7 +478,7 @@ module uart_core (
     .intr_o                 (intr_rx_timeout_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_rx_parity_err (
+  prim_ot_intr_hw #(.Width(1)) intr_hw_rx_parity_err (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_rx_parity_err),

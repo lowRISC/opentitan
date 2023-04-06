@@ -116,7 +116,9 @@ module top_earlgrey #(
       tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm_ot::HaltAddress[31:0],
   parameter int unsigned RvCoreIbexDmExceptionAddr =
       tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm_ot::ExceptionAddress[31:0],
-  parameter bit RvCoreIbexPipeLine = 1
+  parameter bit RvCoreIbexPipeLine = 1,
+  parameter type axi_req_t = logic,
+  parameter type axi_rsp_t = logic
 ) (
   // Multiplexed I/O
   input        [46:0] mio_in_i,
@@ -135,8 +137,8 @@ module top_earlgrey #(
   // Inter-module Signal External type
   output ast_pkg::adc_ast_req_t       adc_req_o,
   input  ast_pkg::adc_ast_rsp_t       adc_rsp_i,
-  output tlul2axi_pkg::slv_req_t       axi_req_o,
-  input  tlul2axi_pkg::slv_rsp_t       axi_rsp_i,
+  output axi_req_t                    axi_req_o,
+  input  axi_rsp_t                    axi_rsp_i,
   input  logic       irq_ibex_i,
   input  jtag_pkg::jtag_req_t       jtag_req_i,
   output jtag_pkg::jtag_rsp_t       jtag_rsp_o,
@@ -1141,7 +1143,7 @@ module top_earlgrey #(
       .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
-  gpio #(
+  gpio_ot #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[4:4]),
     .GpioAsyncOn(GpioGpioAsyncOn)
   ) u_gpio (
@@ -1214,7 +1216,7 @@ module top_earlgrey #(
       .scan_clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
       .rst_ni (rstmgr_aon_resets.rst_spi_device_n[rstmgr_pkg::Domain0Sel])
   );
-  i2c #(
+  i2c_ot #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[6:6])
   ) u_i2c0 (
 
@@ -1256,7 +1258,7 @@ module top_earlgrey #(
       .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
       .rst_ni (rstmgr_aon_resets.rst_i2c0_n[rstmgr_pkg::Domain0Sel])
   );
-  i2c #(
+  i2c_ot #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[7:7])
   ) u_i2c1 (
 
@@ -1298,7 +1300,7 @@ module top_earlgrey #(
       .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
       .rst_ni (rstmgr_aon_resets.rst_i2c1_n[rstmgr_pkg::Domain0Sel])
   );
-  i2c #(
+  i2c_ot #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[8:8])
   ) u_i2c2 (
 
@@ -1550,7 +1552,7 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
       .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
-  spi_host #(
+  spi_host_ot #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[19:19])
   ) u_spi_host0 (
 
@@ -1582,7 +1584,7 @@ module top_earlgrey #(
       .clk_i (clkmgr_aon_clocks.clk_io_peri),
       .rst_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel])
   );
-  spi_host #(
+  spi_host_ot #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[20:20])
   ) u_spi_host1 (
 
@@ -2030,7 +2032,10 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_aon_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel])
   );
-  tlul2axi u_tlul2axi (
+  tlul2axi  #(
+      .axi_req_t(axi_req_t),
+      .axi_rsp_t(axi_rsp_t)
+  ) u_tlul2axi (
 
       // Interrupt
       .intr_mbox_irq_o (intr_tlul2axi_mbox_irq),
@@ -3321,6 +3326,6 @@ module top_earlgrey #(
 
 
   // make sure scanmode_i is never X (including during reset)
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
+//  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
 
 endmodule

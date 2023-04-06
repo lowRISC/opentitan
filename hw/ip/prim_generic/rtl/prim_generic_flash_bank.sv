@@ -159,7 +159,7 @@ module prim_flash_bank #(
   assign wvalid = (rd_i | prog_i | pg_erase_i | bk_erase_i) & !init_busy_o;
   assign ack_o = ack & !init_busy_o;
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width   ($bits(cmd_payload_t)),
     .Pass    (0),
     .Depth   (2)

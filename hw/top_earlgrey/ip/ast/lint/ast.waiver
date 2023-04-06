@@ -117,23 +117,23 @@ waive -rules RESET_DRIVER -location {ast.sv} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
 waive -rules RESET_DRIVER -location {ast.sv dev_entropy.sv ast_clks_byp.sv} \
-      -regexp {'q_o[0]' driven in module 'prim_flop_2sync' by port .* at prim_flop_2sync.sv} \
+      -regexp {'q_o[0]' driven in module 'prim_ot_flop_2sync' by port .* at prim_ot_flop_2sync.sv} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
 waive -rules RESET_DRIVER -location {ast.sv} \
-      -msg {'vcmain_pok_por_sys' is driven by instance 'u_rst_sys_dasrt' of module 'prim_flop_2sync', and used as an asynchronous reset 'rst_dev_ni' at dev_entropy.sv} \
+      -msg {'vcmain_pok_por_sys' is driven by instance 'u_rst_sys_dasrt' of module 'prim_ot_flop_2sync', and used as an asynchronous reset 'rst_dev_ni' at dev_entropy.sv} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
 waive -rules RESET_DRIVER -location {dev_entropy.sv} \
-      -msg {'rst_es_dev_nd' is driven by instance 'u_rst_es_n_da' of module 'prim_flop_2sync', and used as an asynchronous reset 'rst_es_dev_n'} \
+      -msg {'rst_es_dev_nd' is driven by instance 'u_rst_es_n_da' of module 'prim_ot_flop_2sync', and used as an asynchronous reset 'rst_es_dev_n'} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
 waive -rules RESET_DRIVER -location {dev_entropy.sv} \
-      -msg {'rst_es_dev_nd' is driven by instance 'u_rst_es_n_da' of module 'prim_flop_2sync', and used as an asynchronous reset 'rst_es_dev_n'} \
+      -msg {'rst_es_dev_nd' is driven by instance 'u_rst_es_n_da' of module 'prim_ot_flop_2sync', and used as an asynchronous reset 'rst_es_dev_n'} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
 waive -rules RESET_DRIVER -location {dev_entropy.sv} \
-      -msg {'rst_es_dev_da_n' is driven by instance 'u_rst_es_n_da' of module 'prim_flop_2sync', and used as an asynchronous reset 'rst_es_dev_n' at} \
+      -msg {'rst_es_dev_da_n' is driven by instance 'u_rst_es_n_da' of module 'prim_ot_flop_2sync', and used as an asynchronous reset 'rst_es_dev_n' at} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
 waive -rules RESET_DRIVER -location {dev_entropy.sv} \
@@ -185,11 +185,11 @@ waive -rules RESET_DRIVER -location {ast.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \
-      -regexp {'rst_da_n' is driven by instance 'u_rst_da' of module 'prim_flop_2sync', and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {'rst_da_n' is driven by instance 'u_rst_da' of module 'prim_ot_flop_2sync', and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \
-      -regexp {'q_o[0]' driven in module 'prim_flop_2sync' by port 'u_sync_2.q_o[0]' at prim_flop_2sync.sv} \
+      -regexp {'q_o[0]' driven in module 'prim_ot_flop_2sync' by port 'u_sync_2.q_o[0]' at prim_ot_flop_2sync.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \
@@ -209,7 +209,7 @@ waive -rules RESET_DRIVER -location {usb_clk.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \
-      -regexp {'q_o[0]' driven in module 'prim_flop_2sync' by port 'u_sync_2.q_o[0]' at prim_flop_2sync.sv} \
+      -regexp {'q_o[0]' driven in module 'prim_ot_flop_2sync' by port 'u_sync_2.q_o[0]' at prim_ot_flop_2sync.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \
@@ -221,11 +221,11 @@ waive -rules RESET_DRIVER -location {usb_clk.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \
-      -regexp {'rst_usb_n' is driven by instance 'u_rst_ast_usb_da' of module 'prim_flop_2sync', and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {'rst_usb_n' is driven by instance 'u_rst_ast_usb_da' of module 'prim_ot_flop_2sync', and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \
-      -regexp {'q_o[0]' driven in module 'prim_flop_2sync' by port 'u_sync_2.q_o[0]' at prim_flop_2sync.sv} \
+      -regexp {'q_o[0]' driven in module 'prim_ot_flop_2sync' by port 'u_sync_2.q_o[0]' at prim_ot_flop_2sync.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \

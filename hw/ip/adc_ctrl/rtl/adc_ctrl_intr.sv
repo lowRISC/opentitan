@@ -66,7 +66,7 @@ module adc_ctrl_intr import adc_ctrl_reg_pkg::*; (
   end
 
   logic filter_match_event;
-  prim_sync_reqack u_match_sync (
+  prim_ot_sync_reqack u_match_sync (
     .clk_src_i(clk_aon_i),
     .rst_src_ni(rst_aon_ni),
     .clk_dst_i(clk_i),
@@ -82,8 +82,8 @@ module adc_ctrl_intr import adc_ctrl_reg_pkg::*; (
   logic [1+NumAdcFilter-1:0] intr_events;
 
   // Note that aon_req_hold is a value held in an async domain.
-  // aon_req_hold's value should not change until handshake is completed by `prim_sync_reqack`.
-  // There is no reason to use `prim_sync_reqack` in this case because that module passes
+  // aon_req_hold's value should not change until handshake is completed by `prim_ot_sync_reqack`.
+  // There is no reason to use `prim_ot_sync_reqack` in this case because that module passes
   // through data only when the direction is src->dst.
   assign intr_events = {cfg_oneshot_done_i,
                         {NumAdcFilter{filter_match_event}} & aon_req_hold} & cfg_intr_en_i;
@@ -100,7 +100,7 @@ module adc_ctrl_intr import adc_ctrl_reg_pkg::*; (
   assign adc_intr_status_o.oneshot.d = 1'b1;
 
   // instantiate interrupt hardware primitive
-  prim_intr_hw #(.Width(1)) i_adc_ctrl_intr_o (
+  prim_ot_intr_hw #(.Width(1)) i_adc_ctrl_intr_o (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .event_intr_i           (|intr_events),

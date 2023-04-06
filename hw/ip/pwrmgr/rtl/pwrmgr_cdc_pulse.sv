@@ -43,7 +43,7 @@ module pwrmgr_cdc_pulse (
   end
 
 
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width(1)
   ) i_pos_sync (
     .clk_i,
@@ -52,7 +52,7 @@ module pwrmgr_cdc_pulse (
     .q_o(clk_slow_pq)
   );
 
-  prim_flop_2sync # (
+  prim_ot_flop_2sync # (
     .Width(1)
   ) i_neg_sync (
     .clk_i,

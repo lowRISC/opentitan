@@ -2,16 +2,16 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:fpv:prim_fifo_sync_fpv:0.1"
-description: "prim_fifo_sync FPV target"
+name: "lowrisc:fpv:prim_ot_fifo_sync_fpv:0.1"
+description: "prim_ot_fifo_sync FPV target"
 filesets:
   files_formal:
     depend:
       - lowrisc:prim:all
     files:
-      - vip/prim_fifo_sync_assert_fpv.sv
-      - tb/prim_fifo_sync_bind_fpv.sv
-      - tb/prim_fifo_sync_tb.sv
+      - vip/prim_ot_fifo_sync_assert_fpv.sv
+      - tb/prim_ot_fifo_sync_bind_fpv.sv
+      - tb/prim_ot_fifo_sync_tb.sv
     file_type: systemVerilogSource
 
 targets:
@@ -21,7 +21,7 @@ targets:
     default_tool: icarus
     filesets:
       - files_formal
-    toplevel: prim_fifo_sync_tb
+    toplevel: prim_ot_fifo_sync_tb
 
   formal:
     <<: *default_target

@@ -5,7 +5,7 @@
 
 `include "prim_assert.sv"
 
-module prim_fifo_async_simple #(
+module prim_ot_fifo_async_simple #(
   parameter int unsigned Width  = 16,
   parameter bit          EnRstChks = 1'b0, // Enable reset-related assertion checks, disabled by
                                            // default.
@@ -61,10 +61,10 @@ module prim_fifo_async_simple #(
   // REQ/ACK synchronizer primitive //
   ////////////////////////////////////
 
-  prim_sync_reqack #(
+  prim_ot_sync_reqack #(
     .EnRstChks(EnRstChks),
     .EnRzHs(EnRzHs)
-  ) u_prim_sync_reqack (
+  ) u_prim_ot_sync_reqack (
     .clk_src_i(clk_wr_i),
     .rst_src_ni(rst_wr_ni),
     .clk_dst_i(clk_rd_i),

@@ -26,7 +26,7 @@ module rstmgr_ctrl
   logic [OffDomains-1:0] rst_pd_nd, rst_pd_nq;
 
   // always on handling
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_aon_rst (
@@ -53,7 +53,7 @@ module rstmgr_ctrl
 
   localparam int DomainPdStartIdx = DomainAonSel + 1;
   for(genvar i = 0; i < OffDomains; i++) begin : gen_rst_pd_n
-    prim_flop_2sync #(
+    prim_ot_flop_2sync #(
       .Width(1),
       .ResetValue('0)
     ) u_pd_rst (

@@ -99,7 +99,7 @@ set_rule_status -rule {W_MASYNC} -status {Waived}                           \
   -comment {retention regs}
 
 set_rule_status -rule {W_MASYNC} -status {Waived}                           \
-  -expression {(Driver =~ "top_earlgrey.u_rv_dm.u_lc_en_sync.gen_flops.u_prim_flop_2sync.u_sync_2.gen_generic.u_impl_generic.q_o*") && (ReceivingFlop=~"top_earlgrey.u_lc_ctrl.u_dmi_jtag.*_q*")} \
+  -expression {(Driver =~ "top_earlgrey.u_rv_dm.u_lc_en_sync.gen_flops.u_prim_ot_flop_2sync.u_sync_2.gen_generic.u_impl_generic.q_o*") && (ReceivingFlop=~"top_earlgrey.u_lc_ctrl.u_dmi_jtag.*_q*")} \
   -comment {retention regs}
 
 
@@ -112,7 +112,7 @@ set_rule_status -rule {W_MASYNC} -status {Waived}                           \
   -comment {retention regs}
 
 set_rule_status -rule {W_MASYNC} -status {Waived}                           \
-  -expression {(Driver =~ "top_earlgrey.u_rv_dm.u_lc_en_sync.gen_flops.u_prim_flop_2sync.u_sync_2.gen_generic.u_impl_generic.q_o*") && (ReceivingFlop=~"top_earlgrey.u_rv_dm.dap.i_dmi_jtag_tap.bypass_q*")} \
+  -expression {(Driver =~ "top_earlgrey.u_rv_dm.u_lc_en_sync.gen_flops.u_prim_ot_flop_2sync.u_sync_2.gen_generic.u_impl_generic.q_o*") && (ReceivingFlop=~"top_earlgrey.u_rv_dm.dap.i_dmi_jtag_tap.bypass_q*")} \
   -comment {retention regs}
 
 
@@ -129,7 +129,7 @@ set_rule_status -rule {W_MASYNC} -status {Waived}                           \
   -comment {retention regs}
 
 set_rule_status -rule {W_MASYNC} -status {Waived}                           \
-  -expression {(Driver =~ "top_earlgrey.u_rv_dm.u_lc_en_sync.gen_flops.u_prim_flop_2sync.u_sync_2.gen_generic.u_impl_generic.q_o*") && (ReceivingFlop=~"top_earlgrey.u_rv_dm.dap.*zero1*")} \
+  -expression {(Driver =~ "top_earlgrey.u_rv_dm.u_lc_en_sync.gen_flops.u_prim_ot_flop_2sync.u_sync_2.gen_generic.u_impl_generic.q_o*") && (ReceivingFlop=~"top_earlgrey.u_rv_dm.dap.*zero1*")} \
   -comment {retention regs}
 
 set_rule_status -rule {W_MASYNC} -status {Waived}                           \
@@ -206,11 +206,11 @@ set_rule_status -rule {W_MASYNC} -status {Waived}                           \
   -comment {PAD to spi_device}
 
 set_rule_status -rule {W_MASYNC} -status {Waived}                           \
-  -expression {(Driver =~ "*SPI_*") && (ReceivingFlop=~"top_earlgrey.u_pinmux_aon.gen_wkup_detect*.u_pinmux_wkup.u_prim_filter.gen_async.prim_flop_2sync.u_sync_1.gen_generic.u_impl_generic.q_o*")} \
+  -expression {(Driver =~ "*SPI_*") && (ReceivingFlop=~"top_earlgrey.u_pinmux_aon.gen_wkup_detect*.u_pinmux_wkup.u_prim_filter.gen_async.prim_ot_flop_2sync.u_sync_1.gen_generic.u_impl_generic.q_o*")} \
   -comment {PAD to spi_device}
 
 set_rule_status -rule {W_MASYNC} -status {Waived}                           \
-  -expression {(Driver =~ "*USB_*") && (ReceivingFlop=~"top_earlgrey.u_pinmux_aon.gen_wkup_detect*.u_pinmux_wkup.u_prim_filter.gen_async.prim_flop_2sync.u_sync_1.gen_generic.u_impl_generic.q_o*")} \
+  -expression {(Driver =~ "*USB_*") && (ReceivingFlop=~"top_earlgrey.u_pinmux_aon.gen_wkup_detect*.u_pinmux_wkup.u_prim_filter.gen_async.prim_ot_flop_2sync.u_sync_1.gen_generic.u_impl_generic.q_o*")} \
   -comment {PAD to spi_device}
 
 set_rule_status -rule {W_MASYNC} -status {Waived}                           \
@@ -286,12 +286,12 @@ set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "top_earlgrey.u_
 set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "top_earlgrey.u_pwrmgr_aon.u_fsm.u_state_regs.u_state_flop.gen_generic.u_impl_generic.q_o[11:0]") && (Driver =~ "top_earlgrey.u_rom_ctrl.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.u_done_sender.gen_flops.u_prim_flop.gen_generic.u_impl_generic.q_o[0]")} -status {Waived} -comment {rom_ctrl_i.good is not synchronized as it acts as a "payload" signal to "done". Good is only observed if "done" is high}
 set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "top_earlgrey.u_pwrmgr_aon.u_fsm.u_state_regs.u_state_flop.gen_generic.u_impl_generic.q_o[11:0]") && (Driver =~ "IOB1")} -status {Waived} -comment {Multiple clocks on PAD & included in waived path}
 set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "top_earlgrey.u_pinmux_aon.mio_out_retreg_q[46:0]") && (Driver =~ "u_ast.ast2padmux_o[0]")} -status {Waived} -comment {Multiple clocks on PAD & included in waived path}
-set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "top_earlgrey.u_pinmux_aon.u_usbdev_aon_wake.filter_*.gen_async.prim_flop_2sync.u_sync_1.gen_generic.u_impl_generic.q_o*") && (Driver =~ "USB*")} -status {Waived} -comment {Paired clocks are not recognized by tool}
+set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "top_earlgrey.u_pinmux_aon.u_usbdev_aon_wake.filter_*.gen_async.prim_ot_flop_2sync.u_sync_1.gen_generic.u_impl_generic.q_o*") && (Driver =~ "USB*")} -status {Waived} -comment {Paired clocks are not recognized by tool}
 set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "top_earlgrey.u_pinmux_aon.*io_o*_retreg_q*")} -status {Waived}  -comment {Multiple clocks on PAD & included in waived path}
 set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "USB_*") && (Driver =~ "top_earlgrey.u_usbdev.u_reg.u_phy_pins_drive_dp_o.q[0]")} -status {Waived} -comment {Paired clocks are not recognized by tool}
 set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "top_earlgrey.u_flash_ctrl.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks*.u_prim_flash_bank.st_q*")} -status {Waived} -comment {Multiple clocks on PAD & included in waived path}
 set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "top_earlgrey.u_rv_dm.dap.i_dmi_jtag_tap.*_q*")} -status {Waived} -comment {Multiple clocks on PAD & included in waived path}
-set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "top_earlgrey.u_rv_dm.dap.dtmcs_q.zero1[31]") && (MultiClockDomains =~ "AST_EXT_CLK,MAIN_CLK::AST_EXT_CLK,JTAG_TCK,MAIN_CLK") && (Driver =~ "top_earlgrey.u_rv_dm.u_pm_en_sync.gen_flops.u_prim_flop_2sync.u_sync_2.gen_generic.u_impl_generic.q_o[0]")} -status {Waived} -lastedit_user {root} -lastedit_time {Wednesday, 16 November 2022 16:19:54 PDT}
+set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "top_earlgrey.u_rv_dm.dap.dtmcs_q.zero1[31]") && (MultiClockDomains =~ "AST_EXT_CLK,MAIN_CLK::AST_EXT_CLK,JTAG_TCK,MAIN_CLK") && (Driver =~ "top_earlgrey.u_rv_dm.u_pm_en_sync.gen_flops.u_prim_ot_flop_2sync.u_sync_2.gen_generic.u_impl_generic.q_o[0]")} -status {Waived} -lastedit_user {root} -lastedit_time {Wednesday, 16 November 2022 16:19:54 PDT}
 set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "top_earlgrey.u_rv_dm.dap.dr_q[40]") && (Driver =~ "top_earlgrey.u_pinmux_aon.mio_pad_attr_q[37].invert")} -status {Waived} -comment {included in waived paths : start signal and receiving signal (flop) have been reviewed and waived in the same error or other errors}
 set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "top_earlgrey.u_rv_dm.dap.dr_q[40]") && (Driver =~ "top_earlgrey.u_rv_dm.dap.i_dmi_cdc.i_cdc_resp.storage[0][0]")} -status {Waived} -comment {included in waived paths : start signal and receiving signal (flop) have been reviewed and waived in the same error or other errors}
 set_rule_status -rule {W_MASYNC} -expression {(ReceivingFlop =~ "USB_*")} -status {Waived} -comment {Paired clocks are not recognized by tool}

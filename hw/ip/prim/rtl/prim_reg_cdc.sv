@@ -154,7 +154,7 @@ module prim_reg_cdc #(
 
   // the software transaction is pulse synced across the domain.
   // the prim_reg_cdc_arb module handles conflicts with ongoing hardware updates.
-  prim_pulse_sync u_src_to_dst_req (
+  prim_ot_pulse_sync u_src_to_dst_req (
     .clk_src_i,
     .rst_src_ni,
     .clk_dst_i,

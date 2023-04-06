@@ -5,9 +5,9 @@
 // Command & Configuration Options structure for SPI HOST.
 //
 
-package spi_host_cmd_pkg;
+package spi_host_cmd_ot_pkg;
 
-  parameter int CSW = prim_util_pkg::vbits(spi_host_reg_pkg::NumCS);
+  parameter int CSW = prim_util_pkg::vbits(spi_host_reg_ot_pkg::NumCS);
   parameter int CmdSize = CSW + 45;
 
   // For decoding the direction register

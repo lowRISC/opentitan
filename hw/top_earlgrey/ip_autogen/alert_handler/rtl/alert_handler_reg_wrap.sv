@@ -51,7 +51,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
   // interrupts //
   ////////////////
 
-    prim_intr_hw #(
+    prim_ot_intr_hw #(
       .Width(1)
     ) u_irq_classa (
       .clk_i,
@@ -66,7 +66,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
       .intr_o                 ( irq_o[0]                     )
     );
 
-    prim_intr_hw #(
+    prim_ot_intr_hw #(
       .Width(1)
     ) u_irq_classb (
       .clk_i,
@@ -81,7 +81,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
       .intr_o                 ( irq_o[1]                     )
     );
 
-    prim_intr_hw #(
+    prim_ot_intr_hw #(
       .Width(1)
     ) u_irq_classc (
       .clk_i,
@@ -96,7 +96,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
       .intr_o                 ( irq_o[2]                     )
     );
 
-    prim_intr_hw #(
+    prim_ot_intr_hw #(
       .Width(1)
     ) u_irq_classd (
       .clk_i,

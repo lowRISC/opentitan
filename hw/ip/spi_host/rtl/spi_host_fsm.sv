@@ -9,8 +9,8 @@
 
 `include "prim_assert.sv"
 
-module spi_host_fsm
-  import spi_host_cmd_pkg::*;
+module spi_host_fsm_ot
+  import spi_host_cmd_ot_pkg::*;
 #(
   parameter  int NumCS = 1
 ) (
@@ -540,7 +540,7 @@ module spi_host_fsm
 
   assign sck_o = sck_q;
 
-  prim_flop_en u_sck_flop (
+  prim_ot_flop_en u_sck_flop (
     .clk_i,
     .rst_ni,
     .en_i(~stall),

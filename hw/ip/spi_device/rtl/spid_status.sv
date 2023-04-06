@@ -184,7 +184,7 @@ module spid_status
   // Status in SCK
   assign sck_sw_ack = 1'b 1; // always accept when clock is valid.
 
-  prim_fifo_async #(
+  prim_ot_fifo_async #(
     .Width             (StatusW),
     .Depth             (2),
     .OutputZeroIfEmpty (1'b 1)

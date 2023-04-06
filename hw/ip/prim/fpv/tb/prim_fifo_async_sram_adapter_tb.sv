@@ -4,7 +4,7 @@
 //
 // Testbench module for prim_fifo_sram_async
 
-module prim_fifo_async_sram_adapter_tb #(
+module prim_ot_fifo_async_sram_adapter_tb #(
   parameter int unsigned Width = 32,
   parameter int unsigned Depth = 16,
 
@@ -48,7 +48,7 @@ module prim_fifo_async_sram_adapter_tb #(
   logic [SramDw-1:0] r_sram_rdata;
   logic [1:0]        r_sram_rerror;
 
-  prim_fifo_async_sram_adapter #(
+  prim_ot_fifo_async_sram_adapter #(
     .Width (Width),
     .Depth (Depth),
 
@@ -201,4 +201,4 @@ end // !FpgaSram
           clk_rd_i, !rst_ni)
 `endif // FPV_ON
 
-endmodule : prim_fifo_async_sram_adapter_tb
+endmodule : prim_ot_fifo_async_sram_adapter_tb

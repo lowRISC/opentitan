@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Assertions for prim_fifo_sync.
+// Assertions for prim_ot_fifo_sync.
 // Intended to be used with a formal tool.
 
 `include "prim_assert.sv"
 
-module prim_fifo_sync_assert_fpv #(
+module prim_ot_fifo_sync_assert_fpv #(
   // can be desabled for deeper FIFOs
   parameter bit EnableDataCheck = 1'b1,
   parameter int unsigned Width = 16,
@@ -167,7 +167,7 @@ module prim_fifo_sync_assert_fpv #(
     // valid input is valid output
     `ASSERT(Rvalid_A, rvalid_o == wvalid_i)
     // ensure full coverage
-    `ASSERT(UnusedClr_A, prim_fifo_sync.gen_passthru_fifo.unused_clr == clr_i)
+    `ASSERT(UnusedClr_A, prim_ot_fifo_sync.gen_passthru_fifo.unused_clr == clr_i)
   end else begin : gen_depth_gt0
     // check wready
     `ASSERT(Wready_A, depth_o < Depth |-> wready_o)
@@ -211,4 +211,4 @@ module prim_fifo_sync_assert_fpv #(
   // elements ready to be read
   `ASSERT(RvalidNoElemskBkwd_A, !rvalid_o |-> depth_o == 0)
 
-endmodule : prim_fifo_sync_assert_fpv
+endmodule : prim_ot_fifo_sync_assert_fpv

@@ -261,7 +261,7 @@ module edn_core import edn_pkg::*;
   // instantiate interrupt hardware primitives
   //--------------------------------------------
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1)
   ) u_intr_hw_edn_cmd_req_done (
     .clk_i                  (clk_i),
@@ -277,7 +277,7 @@ module edn_core import edn_pkg::*;
   );
 
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1)
   ) u_intr_hw_edn_fatal_err (
     .clk_i                  (clk_i),
@@ -526,11 +526,11 @@ module edn_core import edn_pkg::*;
          intr_sts_gate_q;
 
   // rescmd fifo
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(RescmdFifoWidth),
     .Pass(0),
     .Depth(RescmdFifoDepth)
-  ) u_prim_fifo_sync_rescmd (
+  ) u_prim_ot_fifo_sync_rescmd (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (sfifo_rescmd_clr),
@@ -566,11 +566,11 @@ module edn_core import edn_pkg::*;
           (sfifo_rescmd_full && !sfifo_rescmd_not_empty)};
 
   // gencmd fifo
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(GencmdFifoWidth),
     .Pass(0),
     .Depth(GencmdFifoDepth)
-  ) u_prim_fifo_sync_gencmd (
+  ) u_prim_ot_fifo_sync_gencmd (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (sfifo_gencmd_clr),
@@ -608,11 +608,11 @@ module edn_core import edn_pkg::*;
           (sfifo_gencmd_full && !sfifo_gencmd_not_empty)};
 
   // output fifo
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(OutputFifoWidth),
     .Pass(0),
     .Depth(OutputFifoDepth)
-  ) u_prim_fifo_sync_output (
+  ) u_prim_ot_fifo_sync_output (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (sfifo_output_clr),
@@ -762,11 +762,11 @@ module edn_core import edn_pkg::*;
   // csrng interface packer
   //--------------------------------------------
 
-  prim_packer_fifo #(
+  prim_ot_packer_fifo #(
      .InW(CSGenBitsWidth),
      .OutW(CSGenBitsWidth),
      .ClearOnRead(1'b0)
-  ) u_prim_packer_fifo_cs (
+  ) u_prim_ot_packer_fifo_cs (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .clr_i      (packer_cs_clr),
@@ -837,11 +837,11 @@ module edn_core import edn_pkg::*;
   //--------------------------------------------
 
   for (genvar i = 0; i < NumEndPoints; i=i+1) begin : gen_ep_blk
-    prim_packer_fifo #(
+    prim_ot_packer_fifo #(
       .InW(CSGenBitsWidth),
       .OutW(EndPointBusWidth),
       .ClearOnRead(1'b0)
-    ) u_prim_packer_fifo_ep (
+    ) u_prim_ot_packer_fifo_ep (
       .clk_i      (clk_i),
       .rst_ni     (rst_ni),
       .clr_i      (packer_ep_clr[i]),

@@ -229,7 +229,7 @@ module otbn_scramble_ctrl
   assign otbn_imem_scramble_key_req_busy_o =
     (state_d == ScrambleCtrlImemReq) | imem_scramble_req_pending_d;
 
-  prim_sync_reqack_data #(
+  prim_ot_sync_reqack_data #(
     .Width($bits(otp_ctrl_pkg::otbn_otp_key_rsp_t)-1),
     .EnRstChks(1'b1),
     .DataSrc2Dst(1'b0)

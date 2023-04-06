@@ -50,7 +50,7 @@ module spid_addr_4b (
   ////////////////
   // The logic below converts SYS CSR output into SPI cfg_addr_4b_en value.
   logic spi_reg_cfg_addr_4b_en_sync;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue(1'b1)
   ) u_sys2spi_sync (
@@ -68,7 +68,7 @@ module spid_addr_4b (
   // that SW can read.
 
   logic sys_cfg_addr_4b_en_sync;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width (1),
     .ResetValue (1'b 0)
   ) u_spi2sys_sync (

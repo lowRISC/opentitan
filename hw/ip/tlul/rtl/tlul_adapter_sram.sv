@@ -461,7 +461,7 @@ module tlul_adapter_sram
   //    responses), storing the request is necessary. And if the read entry
   //    is write op, it is safe to return the response right away. If it is
   //    read reqeust, then D response is waiting until read data arrives.
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width   (ReqFifoWidth),
     .Pass    (1'b0),
     .Depth   (Outstanding)
@@ -484,7 +484,7 @@ module tlul_adapter_sram
   //    While the ReqFIFO holds the request until it is sent back via TL-UL, the
   //    sramreqfifo only needs to hold the mask and word offset until the read
   //    data returns from memory.
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width   (SramReqFifoWidth),
     .Pass    (1'b0),
     .Depth   (Outstanding)
@@ -509,7 +509,7 @@ module tlul_adapter_sram
   //    back pressured, the response FIFO should store the returned data not to
   //    lose the data from the SRAM interface. Remember, SRAM interface doesn't
   //    have back-pressure signal such as read_ready.
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width   (RspFifoWidth),
     .Pass    (1'b1),
     .Depth   (Outstanding),

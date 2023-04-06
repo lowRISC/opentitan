@@ -203,7 +203,7 @@ module otbn
 
   assign done = is_busy_status(status_q) & ~is_busy_status(status_d) & init_sec_wipe_done_q;
 
-  prim_intr_hw #(
+  prim_ot_intr_hw #(
     .Width(1)
   ) u_intr_hw_done (
     .clk_i,

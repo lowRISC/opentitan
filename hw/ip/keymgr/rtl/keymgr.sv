@@ -613,7 +613,7 @@ module keymgr
   //  Alerts and Interrupts
   /////////////////////////////////////
 
-  prim_intr_hw #(.Width(1)) u_intr_op_done (
+  prim_ot_intr_hw #(.Width(1)) u_intr_op_done (
     .clk_i,
     .rst_ni,
     .event_intr_i           (op_done),

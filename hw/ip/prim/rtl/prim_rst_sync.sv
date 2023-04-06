@@ -36,7 +36,7 @@ module prim_rst_sync #(
     assign scan_rst    = scan_rst_ni;
   end
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width        (1),
     .ResetValue   (ActiveHigh)
   ) u_sync (

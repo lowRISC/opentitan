@@ -19,7 +19,7 @@ module prim_edn_req
   parameter int OutWidth = 32,
   // Repetition check for incoming edn data
   parameter bit RepCheck = 0,
-  // Disable reset-related assertion checks inside prim_sync_reqack primitives.
+  // Disable reset-related assertion checks inside prim_ot_sync_reqack primitives.
   parameter bit EnRstChks = 0,
 
   // EDN Request latency checker
@@ -56,12 +56,12 @@ module prim_edn_req
   logic [edn_pkg::ENDPOINT_BUS_WIDTH-1:0] word_data;
   logic word_fips;
   localparam int SyncWidth = $bits({edn_i.edn_fips, edn_i.edn_bus});
-  prim_sync_reqack_data #(
+  prim_ot_sync_reqack_data #(
     .Width(SyncWidth),
     .EnRstChks(EnRstChks),
     .DataSrc2Dst(1'b0),
     .DataReg(1'b0)
-  ) u_prim_sync_reqack_data (
+  ) u_prim_ot_sync_reqack_data (
     .clk_src_i  ( clk_i                           ),
     .rst_src_ni ( rst_ni                          ),
     .clk_dst_i  ( clk_edn_i                       ),
@@ -112,11 +112,11 @@ module prim_edn_req
     assign err_o = '0;
   end
 
-  prim_packer_fifo #(
+  prim_ot_packer_fifo #(
     .InW(edn_pkg::ENDPOINT_BUS_WIDTH),
     .OutW(OutWidth),
     .ClearOnRead(1'b0)
-  ) u_prim_packer_fifo (
+  ) u_prim_ot_packer_fifo (
     .clk_i,
     .rst_ni,
     .clr_i    ( 1'b0          ), // not needed

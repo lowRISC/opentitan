@@ -13,23 +13,23 @@ package spi_host_env_pkg;
   import spi_agent_pkg::*;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;
-  import spi_host_reg_pkg::*;
+  import spi_host_reg_ot_pkg::*;
   import spi_host_ral_pkg::*;
 
   // parameters
-  parameter uint SPI_HOST_NUM_CS         = spi_host_reg_pkg::NumCS;
-  parameter uint SPI_HOST_TX_DEPTH       = spi_host_reg_pkg::TxDepth;
-  parameter uint SPI_HOST_RX_DEPTH       = spi_host_reg_pkg::RxDepth;
-  parameter uint SPI_HOST_CMD_DEPTH      = spi_host_reg_pkg::CmdDepth;
-  parameter bit  SPI_HOST_BYTEORDER      = spi_host_reg_pkg::ByteOrder;
-  parameter uint SPI_HOST_BLOCK_AW       = spi_host_reg_pkg::BlockAw;
-  parameter uint SPI_HOST_TX_FIFO_START  = spi_host_reg_pkg::SPI_HOST_TXDATA_OFFSET;
+  parameter uint SPI_HOST_NUM_CS         = spi_host_reg_ot_pkg::NumCS;
+  parameter uint SPI_HOST_TX_DEPTH       = spi_host_reg_ot_pkg::TxDepth;
+  parameter uint SPI_HOST_RX_DEPTH       = spi_host_reg_ot_pkg::RxDepth;
+  parameter uint SPI_HOST_CMD_DEPTH      = spi_host_reg_ot_pkg::CmdDepth;
+  parameter bit  SPI_HOST_BYTEORDER      = spi_host_reg_ot_pkg::ByteOrder;
+  parameter uint SPI_HOST_BLOCK_AW       = spi_host_reg_ot_pkg::BlockAw;
+  parameter uint SPI_HOST_TX_FIFO_START  = spi_host_reg_ot_pkg::SPI_HOST_TXDATA_OFFSET;
   parameter uint SPI_HOST_TX_FIFO_END    = (SPI_HOST_TX_FIFO_START - 1) +
-                                           spi_host_reg_pkg::SPI_HOST_TXDATA_SIZE;
+                                           spi_host_reg_ot_pkg::SPI_HOST_TXDATA_SIZE;
 
-  parameter uint SPI_HOST_RX_FIFO_START  = spi_host_reg_pkg::SPI_HOST_RXDATA_OFFSET;
+  parameter uint SPI_HOST_RX_FIFO_START  = spi_host_reg_ot_pkg::SPI_HOST_RXDATA_OFFSET;
   parameter uint SPI_HOST_RX_FIFO_END    = (SPI_HOST_RX_FIFO_START - 1) +
-                                           spi_host_reg_pkg::SPI_HOST_RXDATA_SIZE;
+                                           spi_host_reg_ot_pkg::SPI_HOST_RXDATA_SIZE;
 
   // macro includes
   `include "uvm_macros.svh"

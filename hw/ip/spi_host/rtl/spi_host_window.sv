@@ -8,7 +8,7 @@
 
 `include "prim_assert.sv"
 
-module spi_host_window (
+module spi_host_window_ot (
   input  clk_i,
   input  rst_ni,
   input  tlul_pkg::tl_h2d_t rx_win_i,
@@ -22,7 +22,7 @@ module spi_host_window (
   output logic              rx_ready_o
 );
 
-  localparam int AW = spi_host_reg_pkg::BlockAw;
+  localparam int AW = spi_host_reg_ot_pkg::BlockAw;
   localparam int DW = 32;
   localparam int ByteMaskW = DW / 8;
 
@@ -89,4 +89,4 @@ module spi_host_window (
     .rerror_i('0)
   );
 
-endmodule : spi_host_window
+endmodule : spi_host_window_ot

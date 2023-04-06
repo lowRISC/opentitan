@@ -5,7 +5,7 @@
 // Byte-merge module for collecting words in SPI Host IP
 //
 
-module spi_host_byte_merge (
+module spi_host_byte_merge_ot (
   input               clk_i,
   input               rst_ni,
   input        [7:0]  byte_i,
@@ -47,7 +47,7 @@ module spi_host_byte_merge (
     end
   end
 
-  prim_packer_fifo #(
+  prim_ot_packer_fifo #(
     .InW(8),
     .OutW(32)
   ) u_packer (
@@ -63,4 +63,4 @@ module spi_host_byte_merge (
     .depth_o  ()
   );
 
-endmodule : spi_host_byte_merge
+endmodule : spi_host_byte_merge_ot

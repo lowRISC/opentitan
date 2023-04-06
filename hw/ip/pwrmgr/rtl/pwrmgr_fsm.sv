@@ -203,7 +203,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   logic slow_lc_done;
   logic lc_done;
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1)
   ) u_slow_sync_lc_done (
     .clk_i(clk_slow_i),
@@ -212,7 +212,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
     .q_o(slow_lc_done)
   );
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1)
   ) u_sync_lc_done (
     .clk_i,

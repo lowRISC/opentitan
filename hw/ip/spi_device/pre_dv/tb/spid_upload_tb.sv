@@ -379,7 +379,7 @@ module spid_upload_tb;
 
   // CSb pulse
   logic csb_sckin_sync_d, csb_sckin_sync_q, csb_asserted_pulse_sckin;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width      (1),
     .ResetValue (1'b 1)
   ) u_csb_sckin_sync (
@@ -397,7 +397,7 @@ module spid_upload_tb;
 
   // CSb deassertion pulse generator
   logic csb_sync, csb_sync_q, csb_deasserted_busclk;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width      (1),
     .ResetValue (1'b 1)
   ) u_csb_sync (

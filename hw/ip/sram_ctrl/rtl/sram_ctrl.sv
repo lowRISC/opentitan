@@ -301,10 +301,10 @@ module sram_ctrl
     end
   end
 
-  prim_sync_reqack_data #(
+  prim_ot_sync_reqack_data #(
     .Width($bits(otp_ctrl_pkg::sram_otp_key_rsp_t)-1),
     .DataSrc2Dst(1'b0)
-  ) u_prim_sync_reqack_data (
+  ) u_prim_ot_sync_reqack_data (
     .clk_src_i  ( clk_i              ),
     .rst_src_ni ( rst_ni             ),
     .clk_dst_i  ( clk_otp_i          ),

@@ -246,12 +246,12 @@ module csrng_ctr_drbg_upd #(
   // input request fifo for staging update requests
   //--------------------------------------------
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(UpdReqFifoWidth),
     .Pass(0),
     .Depth(UpdReqFifoDepth),
     .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_updreq (
+  ) u_prim_ot_fifo_sync_updreq (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
@@ -382,12 +382,12 @@ module csrng_ctr_drbg_upd #(
   // block_encrypt request fifo for staging aes requests
   //--------------------------------------------
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(BlkEncReqFifoWidth),
     .Pass(0),
     .Depth(BlkEncReqFifoDepth),
     .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_bencreq (
+  ) u_prim_ot_fifo_sync_bencreq (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
@@ -425,12 +425,12 @@ module csrng_ctr_drbg_upd #(
   // block_encrypt response fifo from block encrypt
   //--------------------------------------------
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(BlkEncAckFifoWidth),
     .Pass(0),
     .Depth(BlkEncAckFifoDepth),
     .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_bencack (
+  ) u_prim_ot_fifo_sync_bencack (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
@@ -460,12 +460,12 @@ module csrng_ctr_drbg_upd #(
   // fifo to stage provided_data, waiting for blk_encrypt to ack
   //--------------------------------------------
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(PDataFifoWidth),
     .Pass(0),
     .Depth(PDataFifoDepth),
     .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_pdata (
+  ) u_prim_ot_fifo_sync_pdata (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),
@@ -584,12 +584,12 @@ module csrng_ctr_drbg_upd #(
   // XOR the additional data with the new key and value from block encryption
   assign updated_key_and_v = concat_outblk_q ^ sfifo_pdata_v;
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(FinalFifoWidth),
     .Pass(0),
     .Depth(FinalFifoDepth),
     .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_final (
+  ) u_prim_ot_fifo_sync_final (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
     .clr_i    (!ctr_drbg_upd_enable_i),

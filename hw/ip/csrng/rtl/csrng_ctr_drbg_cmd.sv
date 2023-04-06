@@ -142,12 +142,12 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   // input request fifo for staging cmd request
   //--------------------------------------------
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(CmdreqFifoWidth),
     .Pass(0),
     .Depth(CmdreqFifoDepth),
     .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_cmdreq (
+  ) u_prim_ot_fifo_sync_cmdreq (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .clr_i          (!ctr_drbg_cmd_enable_i),
@@ -239,12 +239,12 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   // fifo to stage rc and command, waiting for update block to ack
   //--------------------------------------------
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(RCStageFifoWidth),
     .Pass(0),
     .Depth(RCStageFifoDepth),
     .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_rcstage (
+  ) u_prim_ot_fifo_sync_rcstage (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .clr_i          (!ctr_drbg_cmd_enable_i),
@@ -278,12 +278,12 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   // final cmd block processing
   //--------------------------------------------
 
-  prim_fifo_sync #(
+  prim_ot_fifo_sync #(
     .Width(KeyVRCFifoWidth),
     .Pass(0),
     .Depth(KeyVRCFifoDepth),
     .OutputZeroIfEmpty(1'b0)
-  ) u_prim_fifo_sync_keyvrc (
+  ) u_prim_ot_fifo_sync_keyvrc (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
     .clr_i          (!ctr_drbg_cmd_enable_i),

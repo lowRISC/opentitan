@@ -290,7 +290,7 @@ sources:
       - hw/ip/rv_core_ibex/rtl/rv_core_ibex_pkg.sv
       - hw/ip/rv_core_ibex/rtl/rv_core_ibex_reg_pkg.sv
       - hw/ip/rv_core_ibex/rtl/rv_core_ibex_cfg_reg_top.sv
-      - target: rtl
+      - target: any(rtl,test)
         files:
           - hw/vendor/lowrisc_ibex/rtl/ibex_tracer.sv
           - hw/vendor/lowrisc_ibex/rtl/ibex_top_tracing.sv
@@ -299,7 +299,6 @@ sources:
 
 ##### rv_dm
 
-      - hw/ip/rv_dm/rtl/jtag_pkg.sv
       - hw/ip/rv_dm/rtl/rv_dm_reg_pkg.sv
       - hw/ip/rv_dm/rtl/rv_dm_regs_reg_top.sv
       - hw/ip/rv_dm/rtl/rv_dm_mem_reg_top.sv
@@ -433,7 +432,6 @@ sources:
       - hw/ip/lc_ctrl/rtl/lc_ctrl_kmac_if.sv
       - hw/ip/lc_ctrl/rtl/lc_ctrl_signal_decode.sv
       - hw/ip/lc_ctrl/rtl/lc_ctrl_state_decode.sv
-      - hw/ip/lc_ctrl/rtl/lc_ctrl_state_pkg.sv
       - hw/ip/lc_ctrl/rtl/lc_ctrl_state_pkg.sv.tpl
       - hw/ip/lc_ctrl/rtl/lc_ctrl_state_transition.sv
       - hw/ip/lc_ctrl/rtl/lc_ctrl.sv
@@ -447,7 +445,6 @@ sources:
 
 #### flash_ctrl
 
-      - hw/ip/flash_ctrl/rtl/flash_phy_pkg.sv
       - hw/ip/flash_ctrl/rtl/flash_ctrl_arb.sv
       - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl_core_reg_top.sv
       - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl_region_cfg.sv

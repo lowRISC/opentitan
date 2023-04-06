@@ -108,7 +108,7 @@ module rstmgr
   logic ndmreset_req_q;
   logic ndm_req_valid;
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_sync (
@@ -187,7 +187,7 @@ module rstmgr
   // If a reset does not support a particular power domain, that reset is always hard-wired to 0.
 
   logic [PowerDomains-1:0] rst_por_n;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_aon_por (
@@ -211,7 +211,7 @@ module rstmgr
 
 
   logic [PowerDomains-1:0] rst_por_io_n;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_aon_por_io (
@@ -235,7 +235,7 @@ module rstmgr
 
 
   logic [PowerDomains-1:0] rst_por_io_div2_n;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_aon_por_io_div2 (
@@ -259,7 +259,7 @@ module rstmgr
 
 
   logic [PowerDomains-1:0] rst_por_io_div4_n;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_aon_por_io_div4 (
@@ -283,7 +283,7 @@ module rstmgr
 
 
   logic [PowerDomains-1:0] rst_por_usb_n;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_aon_por_usb (
@@ -311,7 +311,7 @@ module rstmgr
   assign resets_o.rst_lc_n[DomainAonSel] = rst_lc_n[DomainAonSel];
 
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_0_lc (
@@ -335,7 +335,7 @@ module rstmgr
   assign resets_o.rst_lc_io_div4_n[DomainAonSel] = rst_lc_io_div4_n[DomainAonSel];
 
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_0_lc_io_div4 (
@@ -355,7 +355,7 @@ module rstmgr
   );
 
   logic [PowerDomains-1:0] rst_sys_n;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_aon_sys (
@@ -374,7 +374,7 @@ module rstmgr
     .clk_o(resets_o.rst_sys_n[DomainAonSel])
   );
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_0_sys (
@@ -398,7 +398,7 @@ module rstmgr
   assign resets_o.rst_sys_io_n[DomainAonSel] = rst_sys_io_n[DomainAonSel];
 
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_0_sys_io (
@@ -418,7 +418,7 @@ module rstmgr
   );
 
   logic [PowerDomains-1:0] rst_sys_io_div4_n;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_aon_sys_io_div4 (
@@ -437,7 +437,7 @@ module rstmgr
     .clk_o(resets_o.rst_sys_io_div4_n[DomainAonSel])
   );
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_0_sys_io_div4 (
@@ -457,7 +457,7 @@ module rstmgr
   );
 
   logic [PowerDomains-1:0] rst_sys_aon_n;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_aon_sys_aon (
@@ -485,7 +485,7 @@ module rstmgr
   assign resets_o.rst_spi_device_n[DomainAonSel] = rst_spi_device_n[DomainAonSel];
 
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_0_spi_device (
@@ -505,7 +505,7 @@ module rstmgr
   );
 
   logic [PowerDomains-1:0] rst_usb_n;
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_aon_usb (
@@ -546,7 +546,7 @@ module rstmgr
   assign rst_ndm       = ~first_reset & ndm_req_valid;
   assign rst_low_power = ~first_reset & pwr_i.reset_cause == pwrmgr_pkg::LowPwrEntry;
 
-  prim_flop_2sync #(
+  prim_ot_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_cpu_reset_synced (

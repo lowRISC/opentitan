@@ -44,7 +44,7 @@ module dmi_ot_cdc (
 
   // TODO: Make it clean for synthesis.
 
-  prim_fifo_async #(
+  prim_ot_fifo_async #(
     .Width       ( $bits(dm_ot::dmi_req_t) ),
     .Depth       ( 4 )
   ) i_cdc_req (
@@ -63,7 +63,7 @@ module dmi_ot_cdc (
     .rdepth_o    (                  )
   );
 
-  prim_fifo_async #(
+  prim_ot_fifo_async #(
     .Width       ( $bits(dm_ot::dmi_resp_t) ),
     .Depth       ( 4 )
   ) i_cdc_resp (

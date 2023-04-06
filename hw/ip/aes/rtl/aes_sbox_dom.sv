@@ -115,7 +115,7 @@ module aes_dom_indep_mul_gf2pn #(
   assign bq_z0_d = z_0 ^ mul_ay_bx;
 
   // Registers
-  prim_flop_en #(
+  prim_ot_flop_en #(
     .Width      ( 2*NPower ),
     .ResetValue ( '0       )
   ) u_prim_flop_abq_z0 (
@@ -137,7 +137,7 @@ module aes_dom_indep_mul_gf2pn #(
     // reshared cross-domain terms with inner-domain terms derived from different input data.
 
     logic [NPower-1:0] mul_ax_ay_q, mul_bx_by_q;
-    prim_flop_en #(
+    prim_ot_flop_en #(
       .Width      ( 2*NPower ),
       .ResetValue ( '0       )
     ) u_prim_flop_mul_abx_aby (
@@ -217,7 +217,7 @@ module aes_dom_dep_mul_gf2pn_unopt #(
   assign b_yz_d = b_y ^ b_z;
 
   // Registers
-  prim_flop_en #(
+  prim_ot_flop_en #(
     .Width      ( 2*NPower ),
     .ResetValue ( '0       )
   ) u_prim_flop_ab_yz (
@@ -259,7 +259,7 @@ module aes_dom_dep_mul_gf2pn_unopt #(
     // different clock cycles.
 
     logic [NPower-1:0] a_x_q, b_x_q;
-    prim_flop_en #(
+    prim_ot_flop_en #(
       .Width      ( 2*NPower ),
       .ResetValue ( '0       )
     ) u_prim_flop_ab_x (
@@ -357,7 +357,7 @@ module aes_dom_dep_mul_gf2pn #(
   assign b_yz0_d = b_y ^ z_0;
 
   // Registers
-  prim_flop_en #(
+  prim_ot_flop_en #(
     .Width      ( 2*NPower ),
     .ResetValue ( '0       )
   ) u_prim_flop_ab_yz0 (
@@ -403,7 +403,7 @@ module aes_dom_dep_mul_gf2pn #(
   assign bxz0_z1_d = mul_bx_z0_buf ^ z_1;
 
   // Registers
-  prim_flop_en #(
+  prim_ot_flop_en #(
     .Width      ( 2*NPower ),
     .ResetValue ( '0       )
   ) u_prim_flop_abxz0_z1 (
@@ -493,7 +493,7 @@ module aes_dom_dep_mul_gf2pn #(
     end
 
     // Registers
-    prim_flop_en #(
+    prim_ot_flop_en #(
       .Width      ( 2*NPower ),
       .ResetValue ( '0       )
     ) u_prim_flop_mul_abx_aby (
@@ -612,7 +612,7 @@ module aes_dom_inverse_gf2p4 #(
   logic [1:0] a_gamma_ss_q, b_gamma_ss_q;
   assign a_gamma_ss_d = aes_scale_omega2_gf2p2(aes_square_gf2p2(a_gamma1 ^ a_gamma0));
   assign b_gamma_ss_d = aes_scale_omega2_gf2p2(aes_square_gf2p2(b_gamma1 ^ b_gamma0));
-  prim_flop_en #(
+  prim_ot_flop_en #(
     .Width      ( 4  ),
     .ResetValue ( '0 )
   ) u_prim_flop_ab_gamma_ss (
@@ -624,7 +624,7 @@ module aes_dom_inverse_gf2p4 #(
   );
 
   logic [1:0] a_gamma1_q, a_gamma0_q, b_gamma1_q, b_gamma0_q;
-  prim_flop_en #(
+  prim_ot_flop_en #(
     .Width      ( 8  ),
     .ResetValue ( '0 )
   ) u_prim_flop_ab_gamma10 (
@@ -697,7 +697,7 @@ module aes_dom_inverse_gf2p4 #(
     // We instantiate the input pipeline registers for the DOM-dep multiplier outside of the
     // multiplier to enable sharing of pipeline registers where applicable.
 
-    prim_flop_en #(
+    prim_ot_flop_en #(
       .Width      ( 8  ),
       .ResetValue ( '0 )
     ) u_prim_flop_ab_gamma10_q (
@@ -709,7 +709,7 @@ module aes_dom_inverse_gf2p4 #(
     );
 
     // These inputs are used by both DOM-dep multipliers below.
-    prim_flop_en #(
+    prim_ot_flop_en #(
       .Width      ( 4  ),
       .ResetValue ( '0 )
     ) u_prim_flop_ab_omega_buf (
@@ -823,7 +823,7 @@ module aes_dom_inverse_gf2p8 #(
   logic [3:0] a_y_ss_q, b_y_ss_q;
   assign a_y_ss_d = aes_square_scale_gf2p4_gf2p2(a_y1 ^ a_y0);
   assign b_y_ss_d = aes_square_scale_gf2p4_gf2p2(b_y1 ^ b_y0);
-  prim_flop_en #(
+  prim_ot_flop_en #(
     .Width      ( 8  ),
     .ResetValue ( '0 )
   ) u_prim_flop_ab_y_ss (
@@ -839,7 +839,7 @@ module aes_dom_inverse_gf2p8 #(
     // We instantiate the input pipeline registers for the DOM-dep multiplier outside of the
     // multiplier to enable sharing of pipeline registers where applicable.
 
-    prim_flop_en #(
+    prim_ot_flop_en #(
       .Width      ( 16  ),
       .ResetValue ( '0  )
     ) u_prim_flop_ab_y10 (
@@ -935,7 +935,7 @@ module aes_dom_inverse_gf2p8 #(
   // Formulas 18 and 19 in [2].
 
   logic [3:0] a_y1_qqq, a_y0_qqq, b_y1_qqq, b_y0_qqq;
-  prim_flop_en #(
+  prim_ot_flop_en #(
     .Width      ( 16 ),
     .ResetValue ( '0 )
   ) u_prim_flop_ab_y10_qqq (
