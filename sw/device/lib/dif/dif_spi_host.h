@@ -253,6 +253,17 @@ dif_result_t dif_spi_host_event_set_enabled(const dif_spi_host_t *spi_host,
                                             dif_spi_host_events_t events,
                                             bool enable);
 
+/**
+ * Get the enabled events.
+ *
+ * @param spi_host A SPI Host handle.
+ * @param[out] events A bitmask that will contain all the events that are
+ * enabled.
+ * @return The result of the operation.
+ */
+dif_result_t dif_spi_host_event_get_enabled(const dif_spi_host_t *spi_host,
+                                            dif_spi_host_events_t *events);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
