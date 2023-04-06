@@ -415,3 +415,22 @@ dif_result_t dif_spi_host_transaction(const dif_spi_host_t *spi_host,
   }
   return kDifOk;
 }
+
+dif_result_t dif_spi_host_event_set_enabled(const dif_spi_host_t *spi_host,
+                                            dif_spi_host_events_t event,
+                                            bool enable) {
+  if (spi_host == NULL || (event & ~kDifSpiHostEvtAll) != 0) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg =
+      mmio_region_read32(spi_host->base_addr, SPI_HOST_EVENT_ENABLE_REG_OFFSET);
+  if (enable) {
+    reg |= event;
+  } else {
+    reg &= ~event;
+  }
+  mmio_region_write32(spi_host->base_addr, SPI_HOST_EVENT_ENABLE_REG_OFFSET,
+                      reg);
+  return kDifOk;
+}
