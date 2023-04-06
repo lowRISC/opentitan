@@ -288,8 +288,9 @@ inline rom_error_t manifest_check(const manifest_t *manifest) {
 inline manifest_digest_region_t manifest_digest_region_get(
     const manifest_t *manifest) {
   enum {
-    kDigestRegionOffset =
-        sizeof(manifest->rsa_signature) + sizeof(manifest->usage_constraints),
+    // TODO(#17824): This should depend on `CREATOR_SW_CFG_SIGVERIFY_SPX_EN`.
+    kDigestRegionOffset = offsetof(manifest_t, usage_constraints) +
+                          sizeof(manifest->usage_constraints),
   };
   return (manifest_digest_region_t){
       .start = (const char *)manifest + kDigestRegionOffset,
