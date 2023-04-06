@@ -62,6 +62,9 @@ build:ot_coverage_on_target --per_file_copt='//sw/device/silicon_creator[/:].*,/
 # Needed to be able to build host binaries while collecting coverage.
 coverage:ot_coverage_on_target --platforms=""
 
+# Disable ccache if it happens to be installed
+build --define=CCACHE_DISABLE=true
+
 # Configuration to override resource constrained test
 # scheduling. Enable with `--config=local_test_jobs_per_cpus`
 test:local_test_jobs_per_cpus --local_test_jobs=HOST_CPUS*0.22
