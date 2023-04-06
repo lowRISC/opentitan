@@ -32,7 +32,7 @@ void boot_measurements_test(void) {
   const manifest_t *manifest = manifest_def_get();
   CHECK(manifest->usage_constraints.selector_bits == 0);
   const char *signed_region_start =
-      (const char *)manifest + sizeof(sigverify_rsa_buffer_t);
+      (const char *)manifest + offsetof(manifest_t, usage_constraints);
   const char *manifest_end = (const char *)manifest + sizeof(manifest_t);
   const char *image_end = (const char *)manifest + manifest->length;
   size_t signed_region_size = image_end - signed_region_start;
