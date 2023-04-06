@@ -824,9 +824,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval, alert_threshold), UVM_HIGH)
       end
     end else begin : no_test_failure
-      if (!threshold_alert_active && !main_sm_escalates) begin
-        any_fail_count_regval = 0;
-        // Now we know that all tests have passed we can clear the failure counts
+      if (!fw_ov_insert && !threshold_alert_active && !main_sm_escalates) begin
+        // Now we know that all tests have passed we can clear the failure counts. In FW_OV mode
+        // alerts are suppressed but we keep counting failures. In addition, even in case of a
+        // full passing test sequence, counters are not cleared.
         `DV_CHECK_FATAL(alert_fail_reg.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_DIRECT)))
         `DV_CHECK_FATAL(extht_fail_reg.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_DIRECT)))
         `DV_CHECK_FATAL(any_fail_count_fld.predict(.value('0), .kind(UVM_PREDICT_DIRECT)))
