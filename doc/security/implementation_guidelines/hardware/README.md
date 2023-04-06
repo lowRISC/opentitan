@@ -69,12 +69,14 @@ redundancy/detectors) and requires only modest numbers of traces.
 For increased resistance against side channel leakage (typically: power,
 electromagnetic radiation, or timing), designs in general should ensure that the
 creation or transmission of *secret material* is handled in such a way as to not
-work with "small" subsets of bits of sensitive information. Attacks like DPA are
-very powerful because they are able to "divide and conquer" an AES operation
-(regardless of key size) into its 8-bit S-Boxes and enumerate all 256 possible
-values to evaluate hypotheses. Evaluating/processing information in 32-bit
-quanta (or larger) will make these kinds of enumerations much more difficult;
-operating on a single bit at a time makes them almost trivial.
+work with "small" subsets of bits of sensitive information. All side channel attacks
+use a strategy of "divide and conquer" to recover *secret material* e.g. word by
+word or byte by byte. Making sure to evaluate/process information in 32-bit quanta
+or larger will make this more difficult. Attacks like DPA are especially powerful
+because on top of such a "divide and conquer" strategy, where e.g. in the case of AES
+DPA addresses algorithm-inherent 8-bit intermediate values, they benefit from
+statistical analysis of a large number of side channel observations to recover the
+correct values.
 
 Below we will go deeper into these recommendations for general design practices.
 Individual module guidance for particular IP (processor, AES, SHA, etc) will be
