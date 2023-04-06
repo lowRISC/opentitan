@@ -109,9 +109,9 @@ opentitan_functest(
         timeout = "long",
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:hmac",
-        "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
+        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
