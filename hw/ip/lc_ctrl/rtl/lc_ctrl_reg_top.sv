@@ -55,9 +55,9 @@ module lc_ctrl_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [32:0] reg_we_check;
+  logic [33:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(33)
+    .OneHotWidth(34)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -140,6 +140,9 @@ module lc_ctrl_reg_top (
   logic status_state_error_qs;
   logic status_bus_integ_error_qs;
   logic status_otp_partition_error_qs;
+  logic claim_transition_if_regwen_we;
+  logic claim_transition_if_regwen_qs;
+  logic claim_transition_if_regwen_wd;
   logic claim_transition_if_re;
   logic claim_transition_if_we;
   logic [7:0] claim_transition_if_qs;
@@ -441,15 +444,45 @@ module lc_ctrl_reg_top (
   );
 
 
+  // R[claim_transition_if_regwen]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1)
+  ) u_claim_transition_if_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (claim_transition_if_regwen_we),
+    .wd     (claim_transition_if_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (claim_transition_if_regwen_qs)
+  );
+
+
   // R[claim_transition_if]: V(True)
   logic claim_transition_if_qe;
   logic [0:0] claim_transition_if_flds_we;
   assign claim_transition_if_qe = &claim_transition_if_flds_we;
+  // Create REGWEN-gated WE signal
+  logic claim_transition_if_gated_we;
+  assign claim_transition_if_gated_we = claim_transition_if_we & claim_transition_if_regwen_qs;
   prim_subreg_ext #(
     .DW    (8)
   ) u_claim_transition_if (
     .re     (claim_transition_if_re),
-    .we     (claim_transition_if_we),
+    .we     (claim_transition_if_gated_we),
     .wd     (claim_transition_if_wd),
     .d      (hw2reg.claim_transition_if.d),
     .qre    (),
@@ -1034,42 +1067,43 @@ module lc_ctrl_reg_top (
 
 
 
-  logic [32:0] addr_hit;
+  logic [33:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == LC_CTRL_ALERT_TEST_OFFSET);
     addr_hit[ 1] = (reg_addr == LC_CTRL_STATUS_OFFSET);
-    addr_hit[ 2] = (reg_addr == LC_CTRL_CLAIM_TRANSITION_IF_OFFSET);
-    addr_hit[ 3] = (reg_addr == LC_CTRL_TRANSITION_REGWEN_OFFSET);
-    addr_hit[ 4] = (reg_addr == LC_CTRL_TRANSITION_CMD_OFFSET);
-    addr_hit[ 5] = (reg_addr == LC_CTRL_TRANSITION_CTRL_OFFSET);
-    addr_hit[ 6] = (reg_addr == LC_CTRL_TRANSITION_TOKEN_0_OFFSET);
-    addr_hit[ 7] = (reg_addr == LC_CTRL_TRANSITION_TOKEN_1_OFFSET);
-    addr_hit[ 8] = (reg_addr == LC_CTRL_TRANSITION_TOKEN_2_OFFSET);
-    addr_hit[ 9] = (reg_addr == LC_CTRL_TRANSITION_TOKEN_3_OFFSET);
-    addr_hit[10] = (reg_addr == LC_CTRL_TRANSITION_TARGET_OFFSET);
-    addr_hit[11] = (reg_addr == LC_CTRL_OTP_VENDOR_TEST_CTRL_OFFSET);
-    addr_hit[12] = (reg_addr == LC_CTRL_OTP_VENDOR_TEST_STATUS_OFFSET);
-    addr_hit[13] = (reg_addr == LC_CTRL_LC_STATE_OFFSET);
-    addr_hit[14] = (reg_addr == LC_CTRL_LC_TRANSITION_CNT_OFFSET);
-    addr_hit[15] = (reg_addr == LC_CTRL_LC_ID_STATE_OFFSET);
-    addr_hit[16] = (reg_addr == LC_CTRL_HW_REV_OFFSET);
-    addr_hit[17] = (reg_addr == LC_CTRL_DEVICE_ID_0_OFFSET);
-    addr_hit[18] = (reg_addr == LC_CTRL_DEVICE_ID_1_OFFSET);
-    addr_hit[19] = (reg_addr == LC_CTRL_DEVICE_ID_2_OFFSET);
-    addr_hit[20] = (reg_addr == LC_CTRL_DEVICE_ID_3_OFFSET);
-    addr_hit[21] = (reg_addr == LC_CTRL_DEVICE_ID_4_OFFSET);
-    addr_hit[22] = (reg_addr == LC_CTRL_DEVICE_ID_5_OFFSET);
-    addr_hit[23] = (reg_addr == LC_CTRL_DEVICE_ID_6_OFFSET);
-    addr_hit[24] = (reg_addr == LC_CTRL_DEVICE_ID_7_OFFSET);
-    addr_hit[25] = (reg_addr == LC_CTRL_MANUF_STATE_0_OFFSET);
-    addr_hit[26] = (reg_addr == LC_CTRL_MANUF_STATE_1_OFFSET);
-    addr_hit[27] = (reg_addr == LC_CTRL_MANUF_STATE_2_OFFSET);
-    addr_hit[28] = (reg_addr == LC_CTRL_MANUF_STATE_3_OFFSET);
-    addr_hit[29] = (reg_addr == LC_CTRL_MANUF_STATE_4_OFFSET);
-    addr_hit[30] = (reg_addr == LC_CTRL_MANUF_STATE_5_OFFSET);
-    addr_hit[31] = (reg_addr == LC_CTRL_MANUF_STATE_6_OFFSET);
-    addr_hit[32] = (reg_addr == LC_CTRL_MANUF_STATE_7_OFFSET);
+    addr_hit[ 2] = (reg_addr == LC_CTRL_CLAIM_TRANSITION_IF_REGWEN_OFFSET);
+    addr_hit[ 3] = (reg_addr == LC_CTRL_CLAIM_TRANSITION_IF_OFFSET);
+    addr_hit[ 4] = (reg_addr == LC_CTRL_TRANSITION_REGWEN_OFFSET);
+    addr_hit[ 5] = (reg_addr == LC_CTRL_TRANSITION_CMD_OFFSET);
+    addr_hit[ 6] = (reg_addr == LC_CTRL_TRANSITION_CTRL_OFFSET);
+    addr_hit[ 7] = (reg_addr == LC_CTRL_TRANSITION_TOKEN_0_OFFSET);
+    addr_hit[ 8] = (reg_addr == LC_CTRL_TRANSITION_TOKEN_1_OFFSET);
+    addr_hit[ 9] = (reg_addr == LC_CTRL_TRANSITION_TOKEN_2_OFFSET);
+    addr_hit[10] = (reg_addr == LC_CTRL_TRANSITION_TOKEN_3_OFFSET);
+    addr_hit[11] = (reg_addr == LC_CTRL_TRANSITION_TARGET_OFFSET);
+    addr_hit[12] = (reg_addr == LC_CTRL_OTP_VENDOR_TEST_CTRL_OFFSET);
+    addr_hit[13] = (reg_addr == LC_CTRL_OTP_VENDOR_TEST_STATUS_OFFSET);
+    addr_hit[14] = (reg_addr == LC_CTRL_LC_STATE_OFFSET);
+    addr_hit[15] = (reg_addr == LC_CTRL_LC_TRANSITION_CNT_OFFSET);
+    addr_hit[16] = (reg_addr == LC_CTRL_LC_ID_STATE_OFFSET);
+    addr_hit[17] = (reg_addr == LC_CTRL_HW_REV_OFFSET);
+    addr_hit[18] = (reg_addr == LC_CTRL_DEVICE_ID_0_OFFSET);
+    addr_hit[19] = (reg_addr == LC_CTRL_DEVICE_ID_1_OFFSET);
+    addr_hit[20] = (reg_addr == LC_CTRL_DEVICE_ID_2_OFFSET);
+    addr_hit[21] = (reg_addr == LC_CTRL_DEVICE_ID_3_OFFSET);
+    addr_hit[22] = (reg_addr == LC_CTRL_DEVICE_ID_4_OFFSET);
+    addr_hit[23] = (reg_addr == LC_CTRL_DEVICE_ID_5_OFFSET);
+    addr_hit[24] = (reg_addr == LC_CTRL_DEVICE_ID_6_OFFSET);
+    addr_hit[25] = (reg_addr == LC_CTRL_DEVICE_ID_7_OFFSET);
+    addr_hit[26] = (reg_addr == LC_CTRL_MANUF_STATE_0_OFFSET);
+    addr_hit[27] = (reg_addr == LC_CTRL_MANUF_STATE_1_OFFSET);
+    addr_hit[28] = (reg_addr == LC_CTRL_MANUF_STATE_2_OFFSET);
+    addr_hit[29] = (reg_addr == LC_CTRL_MANUF_STATE_3_OFFSET);
+    addr_hit[30] = (reg_addr == LC_CTRL_MANUF_STATE_4_OFFSET);
+    addr_hit[31] = (reg_addr == LC_CTRL_MANUF_STATE_5_OFFSET);
+    addr_hit[32] = (reg_addr == LC_CTRL_MANUF_STATE_6_OFFSET);
+    addr_hit[33] = (reg_addr == LC_CTRL_MANUF_STATE_7_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1109,7 +1143,8 @@ module lc_ctrl_reg_top (
                (addr_hit[29] & (|(LC_CTRL_PERMIT[29] & ~reg_be))) |
                (addr_hit[30] & (|(LC_CTRL_PERMIT[30] & ~reg_be))) |
                (addr_hit[31] & (|(LC_CTRL_PERMIT[31] & ~reg_be))) |
-               (addr_hit[32] & (|(LC_CTRL_PERMIT[32] & ~reg_be)))));
+               (addr_hit[32] & (|(LC_CTRL_PERMIT[32] & ~reg_be))) |
+               (addr_hit[33] & (|(LC_CTRL_PERMIT[33] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -1121,80 +1156,83 @@ module lc_ctrl_reg_top (
 
   assign alert_test_fatal_bus_integ_error_wd = reg_wdata[2];
   assign status_re = addr_hit[1] & reg_re & !reg_error;
-  assign claim_transition_if_re = addr_hit[2] & reg_re & !reg_error;
-  assign claim_transition_if_we = addr_hit[2] & reg_we & !reg_error;
+  assign claim_transition_if_regwen_we = addr_hit[2] & reg_we & !reg_error;
+
+  assign claim_transition_if_regwen_wd = reg_wdata[0];
+  assign claim_transition_if_re = addr_hit[3] & reg_re & !reg_error;
+  assign claim_transition_if_we = addr_hit[3] & reg_we & !reg_error;
 
   assign claim_transition_if_wd = reg_wdata[7:0];
-  assign transition_regwen_re = addr_hit[3] & reg_re & !reg_error;
-  assign transition_cmd_we = addr_hit[4] & reg_we & !reg_error;
+  assign transition_regwen_re = addr_hit[4] & reg_re & !reg_error;
+  assign transition_cmd_we = addr_hit[5] & reg_we & !reg_error;
 
   assign transition_cmd_wd = reg_wdata[0];
-  assign transition_ctrl_re = addr_hit[5] & reg_re & !reg_error;
-  assign transition_ctrl_we = addr_hit[5] & reg_we & !reg_error;
+  assign transition_ctrl_re = addr_hit[6] & reg_re & !reg_error;
+  assign transition_ctrl_we = addr_hit[6] & reg_we & !reg_error;
 
   assign transition_ctrl_wd = reg_wdata[0];
-  assign transition_token_0_re = addr_hit[6] & reg_re & !reg_error;
-  assign transition_token_0_we = addr_hit[6] & reg_we & !reg_error;
+  assign transition_token_0_re = addr_hit[7] & reg_re & !reg_error;
+  assign transition_token_0_we = addr_hit[7] & reg_we & !reg_error;
 
   assign transition_token_0_wd = reg_wdata[31:0];
-  assign transition_token_1_re = addr_hit[7] & reg_re & !reg_error;
-  assign transition_token_1_we = addr_hit[7] & reg_we & !reg_error;
+  assign transition_token_1_re = addr_hit[8] & reg_re & !reg_error;
+  assign transition_token_1_we = addr_hit[8] & reg_we & !reg_error;
 
   assign transition_token_1_wd = reg_wdata[31:0];
-  assign transition_token_2_re = addr_hit[8] & reg_re & !reg_error;
-  assign transition_token_2_we = addr_hit[8] & reg_we & !reg_error;
+  assign transition_token_2_re = addr_hit[9] & reg_re & !reg_error;
+  assign transition_token_2_we = addr_hit[9] & reg_we & !reg_error;
 
   assign transition_token_2_wd = reg_wdata[31:0];
-  assign transition_token_3_re = addr_hit[9] & reg_re & !reg_error;
-  assign transition_token_3_we = addr_hit[9] & reg_we & !reg_error;
+  assign transition_token_3_re = addr_hit[10] & reg_re & !reg_error;
+  assign transition_token_3_we = addr_hit[10] & reg_we & !reg_error;
 
   assign transition_token_3_wd = reg_wdata[31:0];
-  assign transition_target_re = addr_hit[10] & reg_re & !reg_error;
-  assign transition_target_we = addr_hit[10] & reg_we & !reg_error;
+  assign transition_target_re = addr_hit[11] & reg_re & !reg_error;
+  assign transition_target_we = addr_hit[11] & reg_we & !reg_error;
 
   assign transition_target_wd = reg_wdata[29:0];
-  assign otp_vendor_test_ctrl_re = addr_hit[11] & reg_re & !reg_error;
-  assign otp_vendor_test_ctrl_we = addr_hit[11] & reg_we & !reg_error;
+  assign otp_vendor_test_ctrl_re = addr_hit[12] & reg_re & !reg_error;
+  assign otp_vendor_test_ctrl_we = addr_hit[12] & reg_we & !reg_error;
 
   assign otp_vendor_test_ctrl_wd = reg_wdata[31:0];
-  assign otp_vendor_test_status_re = addr_hit[12] & reg_re & !reg_error;
-  assign lc_state_re = addr_hit[13] & reg_re & !reg_error;
-  assign lc_transition_cnt_re = addr_hit[14] & reg_re & !reg_error;
-  assign lc_id_state_re = addr_hit[15] & reg_re & !reg_error;
-  assign hw_rev_re = addr_hit[16] & reg_re & !reg_error;
-  assign device_id_0_re = addr_hit[17] & reg_re & !reg_error;
-  assign device_id_1_re = addr_hit[18] & reg_re & !reg_error;
-  assign device_id_2_re = addr_hit[19] & reg_re & !reg_error;
-  assign device_id_3_re = addr_hit[20] & reg_re & !reg_error;
-  assign device_id_4_re = addr_hit[21] & reg_re & !reg_error;
-  assign device_id_5_re = addr_hit[22] & reg_re & !reg_error;
-  assign device_id_6_re = addr_hit[23] & reg_re & !reg_error;
-  assign device_id_7_re = addr_hit[24] & reg_re & !reg_error;
-  assign manuf_state_0_re = addr_hit[25] & reg_re & !reg_error;
-  assign manuf_state_1_re = addr_hit[26] & reg_re & !reg_error;
-  assign manuf_state_2_re = addr_hit[27] & reg_re & !reg_error;
-  assign manuf_state_3_re = addr_hit[28] & reg_re & !reg_error;
-  assign manuf_state_4_re = addr_hit[29] & reg_re & !reg_error;
-  assign manuf_state_5_re = addr_hit[30] & reg_re & !reg_error;
-  assign manuf_state_6_re = addr_hit[31] & reg_re & !reg_error;
-  assign manuf_state_7_re = addr_hit[32] & reg_re & !reg_error;
+  assign otp_vendor_test_status_re = addr_hit[13] & reg_re & !reg_error;
+  assign lc_state_re = addr_hit[14] & reg_re & !reg_error;
+  assign lc_transition_cnt_re = addr_hit[15] & reg_re & !reg_error;
+  assign lc_id_state_re = addr_hit[16] & reg_re & !reg_error;
+  assign hw_rev_re = addr_hit[17] & reg_re & !reg_error;
+  assign device_id_0_re = addr_hit[18] & reg_re & !reg_error;
+  assign device_id_1_re = addr_hit[19] & reg_re & !reg_error;
+  assign device_id_2_re = addr_hit[20] & reg_re & !reg_error;
+  assign device_id_3_re = addr_hit[21] & reg_re & !reg_error;
+  assign device_id_4_re = addr_hit[22] & reg_re & !reg_error;
+  assign device_id_5_re = addr_hit[23] & reg_re & !reg_error;
+  assign device_id_6_re = addr_hit[24] & reg_re & !reg_error;
+  assign device_id_7_re = addr_hit[25] & reg_re & !reg_error;
+  assign manuf_state_0_re = addr_hit[26] & reg_re & !reg_error;
+  assign manuf_state_1_re = addr_hit[27] & reg_re & !reg_error;
+  assign manuf_state_2_re = addr_hit[28] & reg_re & !reg_error;
+  assign manuf_state_3_re = addr_hit[29] & reg_re & !reg_error;
+  assign manuf_state_4_re = addr_hit[30] & reg_re & !reg_error;
+  assign manuf_state_5_re = addr_hit[31] & reg_re & !reg_error;
+  assign manuf_state_6_re = addr_hit[32] & reg_re & !reg_error;
+  assign manuf_state_7_re = addr_hit[33] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
     reg_we_check[0] = alert_test_we;
     reg_we_check[1] = 1'b0;
-    reg_we_check[2] = claim_transition_if_we;
-    reg_we_check[3] = 1'b0;
-    reg_we_check[4] = transition_cmd_gated_we;
-    reg_we_check[5] = transition_ctrl_gated_we;
-    reg_we_check[6] = transition_token_0_gated_we;
-    reg_we_check[7] = transition_token_1_gated_we;
-    reg_we_check[8] = transition_token_2_gated_we;
-    reg_we_check[9] = transition_token_3_gated_we;
-    reg_we_check[10] = transition_target_gated_we;
-    reg_we_check[11] = otp_vendor_test_ctrl_gated_we;
-    reg_we_check[12] = 1'b0;
+    reg_we_check[2] = claim_transition_if_regwen_we;
+    reg_we_check[3] = claim_transition_if_gated_we;
+    reg_we_check[4] = 1'b0;
+    reg_we_check[5] = transition_cmd_gated_we;
+    reg_we_check[6] = transition_ctrl_gated_we;
+    reg_we_check[7] = transition_token_0_gated_we;
+    reg_we_check[8] = transition_token_1_gated_we;
+    reg_we_check[9] = transition_token_2_gated_we;
+    reg_we_check[10] = transition_token_3_gated_we;
+    reg_we_check[11] = transition_target_gated_we;
+    reg_we_check[12] = otp_vendor_test_ctrl_gated_we;
     reg_we_check[13] = 1'b0;
     reg_we_check[14] = 1'b0;
     reg_we_check[15] = 1'b0;
@@ -1215,6 +1253,7 @@ module lc_ctrl_reg_top (
     reg_we_check[30] = 1'b0;
     reg_we_check[31] = 1'b0;
     reg_we_check[32] = 1'b0;
+    reg_we_check[33] = 1'b0;
   end
 
   // Read data return
@@ -1242,127 +1281,131 @@ module lc_ctrl_reg_top (
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[7:0] = claim_transition_if_qs;
+        reg_rdata_next[0] = claim_transition_if_regwen_qs;
       end
 
       addr_hit[3]: begin
-        reg_rdata_next[0] = transition_regwen_qs;
+        reg_rdata_next[7:0] = claim_transition_if_qs;
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[0] = '0;
+        reg_rdata_next[0] = transition_regwen_qs;
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[0] = transition_ctrl_qs;
+        reg_rdata_next[0] = '0;
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[31:0] = transition_token_0_qs;
+        reg_rdata_next[0] = transition_ctrl_qs;
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[31:0] = transition_token_1_qs;
+        reg_rdata_next[31:0] = transition_token_0_qs;
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[31:0] = transition_token_2_qs;
+        reg_rdata_next[31:0] = transition_token_1_qs;
       end
 
       addr_hit[9]: begin
-        reg_rdata_next[31:0] = transition_token_3_qs;
+        reg_rdata_next[31:0] = transition_token_2_qs;
       end
 
       addr_hit[10]: begin
-        reg_rdata_next[29:0] = transition_target_qs;
+        reg_rdata_next[31:0] = transition_token_3_qs;
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[31:0] = otp_vendor_test_ctrl_qs;
+        reg_rdata_next[29:0] = transition_target_qs;
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[31:0] = otp_vendor_test_status_qs;
+        reg_rdata_next[31:0] = otp_vendor_test_ctrl_qs;
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[29:0] = lc_state_qs;
+        reg_rdata_next[31:0] = otp_vendor_test_status_qs;
       end
 
       addr_hit[14]: begin
-        reg_rdata_next[4:0] = lc_transition_cnt_qs;
+        reg_rdata_next[29:0] = lc_state_qs;
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[31:0] = lc_id_state_qs;
+        reg_rdata_next[4:0] = lc_transition_cnt_qs;
       end
 
       addr_hit[16]: begin
+        reg_rdata_next[31:0] = lc_id_state_qs;
+      end
+
+      addr_hit[17]: begin
         reg_rdata_next[15:0] = hw_rev_chip_rev_qs;
         reg_rdata_next[31:16] = hw_rev_chip_gen_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[18]: begin
         reg_rdata_next[31:0] = device_id_0_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[19]: begin
         reg_rdata_next[31:0] = device_id_1_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[20]: begin
         reg_rdata_next[31:0] = device_id_2_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[21]: begin
         reg_rdata_next[31:0] = device_id_3_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[22]: begin
         reg_rdata_next[31:0] = device_id_4_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[23]: begin
         reg_rdata_next[31:0] = device_id_5_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[24]: begin
         reg_rdata_next[31:0] = device_id_6_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[25]: begin
         reg_rdata_next[31:0] = device_id_7_qs;
       end
 
-      addr_hit[25]: begin
+      addr_hit[26]: begin
         reg_rdata_next[31:0] = manuf_state_0_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[27]: begin
         reg_rdata_next[31:0] = manuf_state_1_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[28]: begin
         reg_rdata_next[31:0] = manuf_state_2_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[29]: begin
         reg_rdata_next[31:0] = manuf_state_3_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[30]: begin
         reg_rdata_next[31:0] = manuf_state_4_qs;
       end
 
-      addr_hit[30]: begin
+      addr_hit[31]: begin
         reg_rdata_next[31:0] = manuf_state_5_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[32]: begin
         reg_rdata_next[31:0] = manuf_state_6_qs;
       end
 
-      addr_hit[32]: begin
+      addr_hit[33]: begin
         reg_rdata_next[31:0] = manuf_state_7_qs;
       end
 
