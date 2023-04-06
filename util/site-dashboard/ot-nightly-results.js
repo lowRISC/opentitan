@@ -41,7 +41,8 @@ const all_report_urls = [
   ["uart", ["https://reports.opentitan.org/hw/ip/uart/dv/latest/"]],
   ["usbdev", ["https://reports.opentitan.org/hw/ip/usbdev/dv/latest/"]],
   ["xbar", ["https://reports.opentitan.org/hw/top_earlgrey/ip/xbar_main/dv/autogen/latest/", "https://reports.opentitan.org/hw/top_earlgrey/ip/xbar_peri/dv/autogen/latest/"]],
-  ["chip", ["https://reports.opentitan.org/hw/top_earlgrey/dv/latest/"]]
+  ["chip", ["https://reports.opentitan.org/hw/top_earlgrey/dv/latest/"]],
+  ["rv_core_ibex", ["https://ibex.reports.lowrisc.org/opentitan/latest/"]]
 ];
 
 async function fetch_block_report(block_report_url) {

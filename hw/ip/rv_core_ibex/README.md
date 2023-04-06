@@ -1,5 +1,7 @@
 # Ibex RISC-V Core Wrapper Technical Specification
 
+{{#block-dashboard rv_core_ibex}}
+
 # Overview
 
 This document specifies Ibex CPU core wrapper functionality.
