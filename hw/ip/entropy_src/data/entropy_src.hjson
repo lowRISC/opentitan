@@ -1019,9 +1019,8 @@
           desc: '''This field will hold a running count of
                    the total alert count, which is a sum of all of the other
                    counters in the !!ALERT_FAIL_COUNTS register.
-                   It will be reset after every
-                   passing test sequence. If an alert is signaled, this value
-                   will persist until it is cleared.
+                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
+                   If an alert is signaled, this value will persist until it is cleared.
                 '''
         }
       ]
@@ -1035,57 +1034,57 @@
         { bits: "7:4",
           name: "REPCNT_FAIL_COUNT",
           desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count. It will be reset after every
-                   passing test sequence. If an alert is signaled, this value
-                   will persist until it is cleared.
+                   contribute to the total alert count.
+                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
+                   If an alert is signaled, this value will persist until it is cleared.
                 '''
         }
         { bits: "11:8",
           name: "ADAPTP_HI_FAIL_COUNT",
           desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count. It will be reset after every
-                   passing test sequence. If an alert is signaled, this value
-                   will persist until it is cleared.
+                   contribute to the total alert count.
+                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
+                   If an alert is signaled, this value will persist until it is cleared.
                 '''
         }
         { bits: "15:12",
           name: "ADAPTP_LO_FAIL_COUNT",
           desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count. It will be reset after every
-                   passing test sequence. If an alert is signaled, this value
-                   will persist until it is cleared.
+                   contribute to the total alert count.
+                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
+                   If an alert is signaled, this value will persist until it is cleared.
                 '''
         }
         { bits: "19:16",
           name: "BUCKET_FAIL_COUNT",
           desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count. It will be reset after every
-                   passing test sequence. If an alert is signaled, this value
-                   will persist until it is cleared.
+                   contribute to the total alert count.
+                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
+                   If an alert is signaled, this value will persist until it is cleared.
                 '''
         }
         { bits: "23:20",
           name: "MARKOV_HI_FAIL_COUNT",
           desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count. It will be reset after every
-                   passing test sequence. If an alert is signaled, this value
-                   will persist until it is cleared.
+                   contribute to the total alert count.
+                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
+                   If an alert is signaled, this value will persist until it is cleared.
                 '''
         }
         { bits: "27:24",
           name: "MARKOV_LO_FAIL_COUNT",
           desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count. It will be reset after every
-                   passing test sequence. If an alert is signaled, this value
-                   will persist until it is cleared.
+                   contribute to the total alert count.
+                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
+                   If an alert is signaled, this value will persist until it is cleared.
                 '''
         }
         { bits: "31:28",
           name: "REPCNTS_FAIL_COUNT",
           desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count. It will be reset after every
-                   passing test sequence. If an alert is signaled, this value
-                   will persist until it is cleared.
+                   contribute to the total alert count.
+                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
+                   If an alert is signaled, this value will persist until it is cleared.
                 '''
         }
       ]
@@ -1099,17 +1098,17 @@
         { bits: "3:0",
           name: "EXTHT_HI_FAIL_COUNT",
           desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count. It will be reset after every
-                   passing test sequence. If an alert is signaled, this value
-                   will persist until it is cleared.
+                   contribute to the total alert count.
+                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
+                   If an alert is signaled, this value will persist until it is cleared.
                 '''
         }
         { bits: "7:4",
           name: "EXTHT_LO_FAIL_COUNT",
           desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count. It will be reset after every
-                   passing test sequence. If an alert is signaled, this value
-                   will persist until it is cleared.
+                   contribute to the total alert count.
+                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
+                   If an alert is signaled, this value will persist until it is cleared.
                 '''
         }
       ]
