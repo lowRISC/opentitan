@@ -547,5 +547,32 @@ TEST_F(EventEnableRegTest, SetEnableNullArgs) {
       &spi_host_, static_cast<dif_spi_host_events_code_t>(0xFF), true));
 }
 
+TEST_F(EventEnableRegTest, Read) {
+  dif_spi_host_events_t evt = 0;
+  // Check individual events.
+  for (auto pair : kEventsMap) {
+    uint32_t reg_offset = pair[1];
+    EXPECT_READ32(SPI_HOST_EVENT_ENABLE_REG_OFFSET, 1 << reg_offset);
+    EXPECT_DIF_OK(dif_spi_host_event_get_enabled(&spi_host_, &evt));
+    EXPECT_EQ(pair[0], evt);
+  }
+
+  // Check all the events.
+  uint32_t all_events = 0;
+  for (auto pair : kEventsMap) {
+    all_events |= 1 << pair[1];
+  }
+  EXPECT_READ32(SPI_HOST_EVENT_ENABLE_REG_OFFSET, all_events);
+  EXPECT_DIF_OK(dif_spi_host_event_get_enabled(&spi_host_, &evt));
+  EXPECT_EQ(all_events, evt);
+}
+
+// Checks that arguments are validated.
+TEST_F(EventEnableRegTest, GetEnableNullArgs) {
+  dif_spi_host_events_t events;
+  EXPECT_DIF_BADARG(dif_spi_host_event_get_enabled(nullptr, &events));
+  EXPECT_DIF_BADARG(dif_spi_host_event_get_enabled(&spi_host_, nullptr));
+}
+
 }  // namespace
 }  // namespace dif_spi_host_unittest
