@@ -482,5 +482,70 @@ TEST_F(FifoTest, MisalignedRead) {
   EXPECT_THAT(buffer.value, ElementsAre(0, 1, 2, 3, 4, 5, 6, 7, 8));
 }
 
+class EventEnableRegTest : public SpiHostTest {
+ protected:
+  static constexpr std::array<std::array<uint32_t, 2>, 6> kEventsMap{{
+      {kDifSpiHostEvtRxFull, SPI_HOST_EVENT_ENABLE_RXFULL_BIT},
+      {kDifSpiHostEvtTxEmpty, SPI_HOST_EVENT_ENABLE_TXEMPTY_BIT},
+      {kDifSpiHostEvtRxWm, SPI_HOST_EVENT_ENABLE_RXWM_BIT},
+      {kDifSpiHostEvtTxWm, SPI_HOST_EVENT_ENABLE_TXWM_BIT},
+      {kDifSpiHostEvtReady, SPI_HOST_EVENT_ENABLE_READY_BIT},
+      {kDifSpiHostEvtActive, SPI_HOST_EVENT_ENABLE_IDLE_BIT},
+  }};
+};
+// C++ 14 requires this.
+constexpr std::array<std::array<uint32_t, 2>, 6> EventEnableRegTest::kEventsMap;
+TEST_F(EventEnableRegTest, WriteEnable) {
+  // Check individual events.
+  for (auto pair : kEventsMap) {
+    dif_spi_host_events_t evt = pair[0];
+    uint32_t reg_offset = pair[1];
+    EXPECT_READ32(SPI_HOST_EVENT_ENABLE_REG_OFFSET, 0x00);
+    EXPECT_WRITE32(SPI_HOST_EVENT_ENABLE_REG_OFFSET, 1 << reg_offset);
+    EXPECT_DIF_OK(dif_spi_host_event_set_enabled(&spi_host_, evt, true));
+  }
+
+  // Check all the events.
+  uint32_t all_events = 0;
+  for (auto pair : kEventsMap) {
+    all_events |= 1 << pair[1];
+  }
+  EXPECT_READ32(SPI_HOST_EVENT_ENABLE_REG_OFFSET, 0x00);
+  EXPECT_WRITE32(SPI_HOST_EVENT_ENABLE_REG_OFFSET, all_events);
+  EXPECT_DIF_OK(
+      dif_spi_host_event_set_enabled(&spi_host_, kDifSpiHostEvtAll, true));
+}
+
+TEST_F(EventEnableRegTest, WriteDisable) {
+  uint32_t all_events = 0;
+  for (auto pair : kEventsMap) {
+    all_events |= 1 << pair[1];
+  }
+
+  // Check individual events.
+  for (auto pair : kEventsMap) {
+    dif_spi_host_events_t evt = pair[0];
+    uint32_t reg_offset = pair[1];
+    EXPECT_READ32(SPI_HOST_EVENT_ENABLE_REG_OFFSET, all_events);
+    EXPECT_WRITE32(SPI_HOST_EVENT_ENABLE_REG_OFFSET,
+                   all_events & ~(1 << reg_offset));
+    EXPECT_DIF_OK(dif_spi_host_event_set_enabled(&spi_host_, evt, false));
+  }
+
+  // Check all the events.
+  EXPECT_READ32(SPI_HOST_EVENT_ENABLE_REG_OFFSET, all_events);
+  EXPECT_WRITE32(SPI_HOST_EVENT_ENABLE_REG_OFFSET, 0);
+  EXPECT_DIF_OK(
+      dif_spi_host_event_set_enabled(&spi_host_, kDifSpiHostEvtAll, false));
+}
+
+// Checks that arguments are validated.
+TEST_F(EventEnableRegTest, SetEnableNullArgs) {
+  EXPECT_DIF_BADARG(
+      dif_spi_host_event_set_enabled(nullptr, kDifSpiHostEvtAll, true));
+  EXPECT_DIF_BADARG(dif_spi_host_event_set_enabled(
+      &spi_host_, static_cast<dif_spi_host_events_code_t>(0xFF), true));
+}
+
 }  // namespace
 }  // namespace dif_spi_host_unittest
