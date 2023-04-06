@@ -336,7 +336,7 @@ mod tests {
         assert_eq!(
             OpenocdTclBlock::AssertRegEq(LcCtrlReg::LcIdState, 0x3c).into_tcl(),
             r#"
-set reg_value [ lc_ctrl.tap.0 riscv dmi_read 0xf ]
+set reg_value [ lc_ctrl.tap.0 riscv dmi_read 0x10 ]
 if { $reg_value != 60 } {
     echo "Expected LcIdState == 0x3c, but it is $reg_value"
     nonexistent_command_that_causes_openocd_to_exit_with_error
@@ -347,7 +347,7 @@ if { $reg_value != 60 } {
             OpenocdTclBlock::PollUntilRegEq(LcCtrlReg::TransitionToken0, 0x1234).into_tcl(),
             r#"
 for { set i 0 } { $i < 1000 } { set i [expr {$i + 1}] } {
-    set reg_value [ lc_ctrl.tap.0 riscv dmi_read 0x6 ]
+    set reg_value [ lc_ctrl.tap.0 riscv dmi_read 0x7 ]
     if { $reg_value == 4660 } {
         break
     }
@@ -360,7 +360,7 @@ if { $i == 1000 } {
         );
         assert_eq!(
             OpenocdTclBlock::WriteReg(LcCtrlReg::TransitionToken3, 0xabcd).into_tcl(),
-            "lc_ctrl.tap.0 riscv dmi_write 0x9 0xabcd"
+            "lc_ctrl.tap.0 riscv dmi_write 0xa 0xabcd"
         );
 
         assert_eq!(OpenocdTclBlock::Echo("bar").into_tcl(), "echo \"bar\"");

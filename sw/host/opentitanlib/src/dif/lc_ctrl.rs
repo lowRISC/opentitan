@@ -232,9 +232,9 @@ mod tests {
 
     #[test]
     fn lc_ctrl_register_offsets() {
-        assert_eq!(LcCtrlReg::LcState.byte_offset(), 0x34);
-        assert_eq!(0x34 / 4, 0xd);
-        assert_eq!(LcCtrlReg::LcState.word_offset(), 0xd);
+        let offset = bindgen::dif::LC_CTRL_LC_STATE_REG_OFFSET;
+        assert_eq!(LcCtrlReg::LcState.byte_offset(), offset);
+        assert_eq!(LcCtrlReg::LcState.word_offset(), offset / 4);
     }
 
     #[test]

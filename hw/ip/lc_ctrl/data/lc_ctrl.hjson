@@ -609,13 +609,30 @@
     /////////////////////////
     // Transition CMD CSRs //
     /////////////////////////
-
+    { name: "CLAIM_TRANSITION_IF_REGWEN",
+      desc: '''
+            Register write enable for the hardware mutex register.
+            ''',
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        {
+            bits:   "0",
+            desc: '''
+            This bit is managed by software and is set to 1 by default.
+            When cleared to 0, the !!CLAIM_TRANSITION_IF mutex register cannot be written to anymore. Write 0 to clear this bit.
+            '''
+            resval: 1,
+        },
+      ]
+    },
     { name: "CLAIM_TRANSITION_IF",
       desc: "Hardware mutex to claim exclusive access to the transition interface.",
       swaccess: "rw",
       hwaccess: "hrw",
       hwqe:     "true",
       hwext:    "true",
+      regwen:   "CLAIM_TRANSITION_IF_REGWEN",
       tags: [ // this register is only writable if the mutex has not been claimed already.
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
@@ -632,7 +649,7 @@
           '''
         }
       ]
-    }
+    },
     { name: "TRANSITION_REGWEN",
       desc: '''
             Register write enable for all transition interface registers.
