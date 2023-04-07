@@ -65,6 +65,9 @@ Concurrent assertion inside an initial block. It can be used for checking parame
 ### `ASSERT_FINAL(__name, __prop)
 Concurrent assertion inside a final block. It can be used e.g. for making sure that a FIFO is empty at the end of each sim.
 
+### `ASSERT_AT_RESET(__name, __prop, __rst = `ASSERT_DEFAULT_RST)
+Assertion just before reset. Can be used to check sum-like properties that get cleared at reset.
+
 ### `ASSERT_NEVER(__name, __prop,  __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
 Assert that a concurrent property never happens.
 

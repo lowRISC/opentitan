@@ -71,6 +71,9 @@
 //  ASSERT_FINAL: Assertion in final block. Can be used for things like queues being empty at end of
 //                sim, all credits returned at end of sim, state machines in idle at end of sim.
 //
+//  ASSERT_AT_RESET: Assertion just before reset. Can be used to check sum-like properties that get
+//                   cleared at reset.
+//
 //  ASSERT:       Assert a concurrent property directly. It can be called as a module (or
 //                interface) body item.
 //
