@@ -12,7 +12,7 @@ use std::env::{self, args_os, ArgsOs};
 use std::ffi::OsString;
 use std::fs::{self, read_to_string, File};
 use std::io::{self, ErrorKind, Write};
-use std::iter::{IntoIterator, Iterator};
+use std::iter::Iterator;
 use std::os::unix::io::AsRawFd;
 use std::path::PathBuf;
 use std::process::{self, ChildStdout, Command, Stdio};
@@ -111,7 +111,7 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
     }?;
 
     // Extend the argument list with all remaining command line arguments.
-    arguments.extend(args.into_iter());
+    arguments.extend(args);
     let opts = Opts::from_iter(&arguments);
     if opts.logging != logging {
         // Try re-initializing the logger.  Ignore errors.
