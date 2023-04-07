@@ -148,7 +148,7 @@ fn read_sfdp(spi: &dyn Target, offset: u32) -> Result<Vec<u8>> {
             SpiFlash::READ_SFDP,
             (offset >> 16) as u8,
             (offset >> 8) as u8,
-            (offset >> 0) as u8,
+            offset as u8,
             0, // Dummy byte.
         ]),
         Transfer::Read(&mut buf),
@@ -202,9 +202,11 @@ fn test_chip_erase(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 fn test_sector_erase(opts: &Opts, transport: &TransportWrapper, address: u32) -> Result<()> {
     let uart = transport.uart("console")?;
     let spi = transport.spi(&opts.spi)?;
-    let mut flash = SpiFlash::default();
-    // Double the flash size so we can test 3b and 4b addresses.
-    flash.size = 32 * 1024 * 1024;
+    let mut flash = SpiFlash {
+        // Double the flash size so we can test 3b and 4b addresses.
+        size: 32 * 1024 * 1024,
+        ..Default::default()
+    };
 
     // Make sure we're in a mode appropriate for the address.
     let mode = if address < 0x1000000 {
@@ -234,9 +236,11 @@ fn test_page_program(opts: &Opts, transport: &TransportWrapper, address: u32) ->
     let uart = transport.uart("console")?;
     let spi = transport.spi(&opts.spi)?;
     let data = (0..256).map(|x| x as u8).collect::<Vec<u8>>();
-    let mut flash = SpiFlash::default();
-    // Double the flash size so we can test 3b and 4b addresses.
-    flash.size = 32 * 1024 * 1024;
+    let mut flash = SpiFlash {
+        // Double the flash size so we can test 3b and 4b addresses.
+        size: 32 * 1024 * 1024,
+        ..Default::default()
+    };
 
     // Make sure we're in a mode appropriate for the address.
     let mode = if address < 0x1000000 {
