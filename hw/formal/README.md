@@ -67,6 +67,13 @@ Concurrent assertion inside a final block. It can be used e.g. for making sure t
 
 ### `ASSERT_AT_RESET(__name, __prop, __rst = `ASSERT_DEFAULT_RST)
 Assertion just before reset. Can be used to check sum-like properties that get cleared at reset.
+Note that unless your simulation ends with a reset, the property does not get checked at end of
+simulation; use `ASSERT_AT_RESET_AND_FINAL` if the property should also get checked at end of
+simulation.
+
+### `ASSERT_AT_RESET_AND_FINAL(__name, __prop, __rst = `ASSERT_DEFAULT_RST)
+Assertion just before reset and in final block. Can be used to check sum-like properties before
+every reset and at the end of simulation.
 
 ### `ASSERT_NEVER(__name, __prop,  __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
 Assert that a concurrent property never happens.

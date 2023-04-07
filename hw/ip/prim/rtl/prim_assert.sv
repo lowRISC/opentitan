@@ -73,6 +73,12 @@
 //
 //  ASSERT_AT_RESET: Assertion just before reset. Can be used to check sum-like properties that get
 //                   cleared at reset.
+//                   Note that unless your simulation ends with a reset, the property does not get
+//                   checked at end of simulation; use ASSERT_AT_RESET_AND_FINAL if the property
+//                   should also get checked at end of simulation.
+//
+//  ASSERT_AT_RESET_AND_FINAL: Assertion just before reset and in final block. Can be used to check
+//                             sum-like properties before every reset and at the end of simulation.
 //
 //  ASSERT:       Assert a concurrent property directly. It can be called as a module (or
 //                interface) body item.
