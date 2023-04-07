@@ -597,7 +597,7 @@ def opentitan_binary(
         name,
         platform = OPENTITAN_PLATFORM,
         extract_sw_logs_db = False,
-        testonly = True,
+        testonly = False,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts.
 
@@ -720,7 +720,7 @@ def opentitan_rom_binary(
         name,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
-        testonly = True,
+        testonly = False,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for ROM.
 
@@ -830,7 +830,7 @@ def opentitan_multislot_flash_binary(
         image_size = 0,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
-        testonly = True):
+        testonly = False):
     """A helper macro for generating multislot OpenTitan binary flash images.
 
     This macro is mostly a wrapper around the `assemble_flash_image` rule, that
@@ -934,7 +934,7 @@ def opentitan_flash_binary(
         signing_keys = DEFAULT_SIGNING_KEYS,
         signed = True,
         sim_otp = None,
-        testonly = True,
+        testonly = False,
         manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for flash.
@@ -1086,7 +1086,7 @@ def opentitan_ram_binary(
         archive_symbol_prefix,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
-        testonly = True,
+        testonly = False,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for RAM.
 
