@@ -151,6 +151,7 @@ opentitan_functest(
 
 [opentitan_flash_binary(
     name = "empty_test_slot_{}".format(slot),
+    testonly = True,
     srcs = ["empty_test.c"],
     devices = [
         "fpga_cw310",
@@ -261,6 +262,7 @@ opentitan_functest(
 
 opentitan_flash_binary(
     name = "rom_e2e_keymgr_init_test",
+    testonly = True,
     srcs = [":rom_e2e_keymgr_init_test.c"],
     deps = [
         "//sw/device/lib/dif:keymgr",
@@ -630,6 +632,7 @@ opentitan_functest(
 
 opentitan_multislot_flash_binary(
     name = "rom_ext_b_flash_b_image",
+    testonly = True,
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
             "key": FAKE_TEST_KEYS[0],
@@ -651,6 +654,7 @@ opentitan_functest(
 
 opentitan_multislot_flash_binary(
     name = "rom_ext_a_flash_b_image",
+    testonly = True,
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": {
             "key": FAKE_TEST_KEYS[0],
@@ -672,6 +676,7 @@ opentitan_functest(
 
 opentitan_multislot_flash_binary(
     name = "rom_ext_b_flash_a_image",
+    testonly = True,
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
             "key": FAKE_TEST_KEYS[0],
@@ -703,6 +708,7 @@ opentitan_functest(
 
 opentitan_multislot_flash_binary(
     name = "rom_ext_v_flash_b_image",
+    testonly = True,
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
             "key": FAKE_TEST_KEYS[0],
@@ -828,6 +834,7 @@ SEC_VERS = [
 
 [opentitan_flash_binary(
     name = "empty_test_slot_{}_sec_ver_{}".format(slot, sec_ver),
+    testonly = True,
     srcs = ["empty_test.c"],
     devices = ["fpga_cw310"],
     local_defines = [
@@ -846,6 +853,7 @@ SEC_VERS = [
 
 [opentitan_multislot_flash_binary(
     name = "sec_ver_{}_{}_image".format(sec_ver_a, sec_ver_b),
+    testonly = True,
     srcs = {
         ":empty_test_slot_a_sec_ver_{}".format(sec_ver_a): {
             "key": "fake_prod_key_0",
@@ -1066,6 +1074,7 @@ otp_json(
 # confirms the watchdog is disabled.
 [opentitan_flash_binary(
     name = "test_watchdog_{}".format(watchdog_config),
+    testonly = True,
     srcs = ["watchdog_test.c"],
     devices = [
         "fpga_cw310",
@@ -1190,6 +1199,7 @@ ALERT_LC_STATES = get_lc_items(
 
 [opentitan_flash_binary(
     name = "rom_e2e_alert_config_test_{}".format(lc_state),
+    testonly = True,
     srcs = ["rom_e2e_alert_config_test.c"],
     devices = [
         "fpga_cw310",
@@ -1318,6 +1328,7 @@ otp_alert_digest(
 
 [opentitan_flash_binary(
     name = "rom_e2e_shutdown_alert_config_test_{}".format(lc_state),
+    testonly = True,
     srcs = ["rom_e2e_shutdown_alert_config_test.c"],
     devices = [
         "fpga_cw310",
@@ -1381,6 +1392,7 @@ SIGVERIFY_MOD_EXP_CASES = [
 
 opentitan_flash_binary(
     name = "empty_test_sigverify_mod_exp",
+    testonly = True,
     srcs = ["empty_test.c"],
     devices = [
         "fpga_cw310",
@@ -1603,6 +1615,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         t["name"],
         slot,
     ),
+    testonly = True,
     srcs = ["empty_test.c"],
     devices = [
         "fpga_cw310",
@@ -1631,6 +1644,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         t["name"],
         slot,
     ),
+    testonly = True,
     srcs = {
         "boot_policy_bad_manifest_{}_{}_bin".format(
             t["name"],
@@ -1857,6 +1871,7 @@ BOOT_DATA_RECOVERY_CASES = [
         case["lc_state"],
         case["default_boot_data"],
     ),
+    testonly = True,
     srcs = ["empty_test.c"],
     devices = [
         "fpga_cw310",
@@ -2137,6 +2152,7 @@ BOOT_POLICY_VALID_CASES = [
             a["desc"],
             b["desc"],
         ),
+        testonly = True,
         srcs = {
             ":empty_test_slot_a{}".format(a["suffix"]): {
                 "key": "fake_prod_key_0",
@@ -2878,6 +2894,7 @@ test_suite(
             "nothing" if slot == "a" else "bad",
             key,
         ),
+        testonly = True,
         srcs = {
             ":empty_test_slot_{}_corrupted".format(slot): {
                 "key": key,
@@ -2896,6 +2913,7 @@ test_suite(
 [
     opentitan_multislot_flash_binary(
         name = "sigverify_always_img_a_bad_b_bad_{}".format(key),
+        testonly = True,
         srcs = {
             ":empty_test_slot_a_corrupted": {
                 "key": key,
@@ -2935,6 +2953,7 @@ test_suite(
 [
     opentitan_multislot_flash_binary(
         name = "sigverify_always_img_a_nothing_b_nothing_{}".format(key),
+        testonly = True,
         srcs = {
             ":sigverify_always_img_a_nothing": {
                 "key": key,
@@ -3610,6 +3629,7 @@ test_suite(
 
 opentitan_flash_binary(
     name = "rom_ext_upgrade_test",
+    testonly = True,
     srcs = ["rom_ext_upgrade_test.c"],
     devices = [
         "fpga_cw310",
