@@ -59,6 +59,8 @@ rust_library(
         "src/chip/boolean.rs",
         "src/chip/mod.rs",
         "src/chip/autogen/mod.rs",
+        "src/console/mod.rs",
+        "src/console/spi.rs",
         "src/crypto/mod.rs",
         "src/crypto/rsa.rs",
         "src/crypto/sha256.rs",
