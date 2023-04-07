@@ -179,13 +179,13 @@ module testbench ();
    .AXI_DATA_WIDTH(tlul2axi_pkg::AXI_MST_PORT_DATA_WIDTH ),
    .AXI_ID_WIDTH(tlul2axi_pkg::AXI_ID_WIDTH              ),
    .AXI_USER_WIDTH(tlul2axi_pkg::AXI_USER_WIDTH          ),
-   .OtpCtrlMemInitFile("../hw/top_earlgrey/sw/tests/otp/otp-img.mem"),
+   .OtpCtrlMemInitFile("../sw/bare-metal/opentitan/otp/otp-img.mem"),
    `ifdef IBEX_JTAG
-   .RomCtrlBootRomInitFile("../hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem")
+   .RomCtrlBootRomInitFile("../sw/bare-metal/opentitan/bootrom/boot_rom.vmem")
    `else
-   .RomCtrlBootRomInitFile("../hw/top_earlgrey/sw/tests/bootrom/boot_rom.vmem")
+   .RomCtrlBootRomInitFile("../sw/bare-metal/opentitan/bootrom/boot_rom.vmem")
    `endif
-   //.FlashCtrlMemInitFile("../hw/top_earlgrey/sw/tests/hmac_test/hmac_smoketest.vmem")
+   //.FlashCtrlMemInitFile("../sw/bare-metal/alsaqr/hmac_test/hmac_smoketest.vmem")
   ) dut (
    
       .clk_i(clk_sys),
