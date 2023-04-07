@@ -291,11 +291,11 @@ mod tests {
 
         // Ensure the result is identical to the original.
         let (mut orig_bytes, mut res_bytes) = (Vec::<u8>::new(), Vec::<u8>::new());
-        File::open(&testdata!("test_image.bin"))
+        File::open(testdata!("test_image.bin"))
             .unwrap()
             .read_to_end(&mut orig_bytes)
             .unwrap();
-        File::open(&testdata!("test_image_out.bin"))
+        File::open(testdata!("test_image_out.bin"))
             .unwrap()
             .read_to_end(&mut res_bytes)
             .unwrap();

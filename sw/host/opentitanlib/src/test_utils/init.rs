@@ -9,7 +9,7 @@ use serde_annotate::Annotate;
 use std::env::ArgsOs;
 use std::ffi::OsString;
 use std::io::ErrorKind;
-use std::iter::{IntoIterator, Iterator};
+use std::iter::Iterator;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -98,7 +98,7 @@ impl InitializeTest {
         }?;
 
         // Extend the argument list with all remaining command line arguments.
-        arguments.extend(args.into_iter());
+        arguments.extend(args);
         Ok(arguments)
     }
 

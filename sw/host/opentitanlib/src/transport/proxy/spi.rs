@@ -84,7 +84,7 @@ impl Target for ProxySpi {
 
     fn get_max_transfer_count(&self) -> Result<usize> {
         match self.execute_command(SpiRequest::GetMaxTransferCount)? {
-            SpiResponse::GetMaxTransferCount { number } => Ok(number as usize),
+            SpiResponse::GetMaxTransferCount { number } => Ok(number),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }

@@ -88,7 +88,7 @@ impl GpioPin for HyperdebugGpioPin {
     }
 
     fn analog_write(&self, volts: f32) -> Result<()> {
-        if volts > 3.3 || volts < 0.0 {
+        if !(0.0..=3.3).contains(&volts) {
             return Err(GpioError::UnsupportedPinVoltage(volts).into());
         }
         let milli_volts = (volts * 1000.0) as u32;
@@ -106,7 +106,7 @@ impl GpioPin for HyperdebugGpioPin {
         volts: Option<f32>,
     ) -> Result<()> {
         if let Some(v) = volts {
-            if v > 3.3 || v < 0.0 {
+            if !(0.0..=3.3).contains(&v) {
                 return Err(GpioError::UnsupportedPinVoltage(v).into());
             }
         }

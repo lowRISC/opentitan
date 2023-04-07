@@ -347,6 +347,9 @@ pub enum BlockEraseSize {
     Invalid,
 }
 
+// Conflict between deriving Default and having a num_enum(default).
+// The workaround is to manually derive Default.
+#[allow(clippy::derivable_impls)]
 impl Default for BlockEraseSize {
     fn default() -> Self {
         BlockEraseSize::Invalid
@@ -364,6 +367,9 @@ pub enum WriteGranularity {
     Invalid,
 }
 
+// Conflict between deriving Default and having a num_enum(default).
+// The workaround is to manually derive Default.
+#[allow(clippy::derivable_impls)]
 impl Default for WriteGranularity {
     fn default() -> Self {
         WriteGranularity::Invalid
@@ -383,6 +389,9 @@ pub enum SupportedAddressModes {
     Invalid,
 }
 
+// Conflict between deriving Default and having a num_enum(default).
+// The workaround is to manually derive Default.
+#[allow(clippy::derivable_impls)]
 impl Default for SupportedAddressModes {
     fn default() -> Self {
         SupportedAddressModes::Invalid
@@ -411,6 +420,9 @@ pub enum MaxSpeed {
     NotSupported,
 }
 
+// Conflict between deriving Default and having a num_enum(default).
+// The workaround is to manually derive Default.
+#[allow(clippy::derivable_impls)]
 impl Default for MaxSpeed {
     fn default() -> Self {
         MaxSpeed::NotSupported

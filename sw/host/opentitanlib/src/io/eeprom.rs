@@ -30,16 +30,11 @@ pub struct Cmd {
     data_width: DataWidth,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AddressMode {
+    #[default]
     Mode3b = 3,
     Mode4b = 4,
-}
-
-impl Default for AddressMode {
-    fn default() -> Self {
-        AddressMode::Mode3b
-    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]

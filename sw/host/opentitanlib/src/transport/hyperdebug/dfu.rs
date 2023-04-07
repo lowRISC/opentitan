@@ -258,9 +258,7 @@ fn do_update_firmware(
         wait_for_idle(usb_device, dfu_interface)?;
         bytes_erased += page_size;
         if let Some(progress) = progress {
-            progress(Progress::Progress {
-                pos: bytes_erased as u32,
-            });
+            progress(Progress::Progress { pos: bytes_erased });
         }
     }
 
@@ -277,7 +275,7 @@ fn do_update_firmware(
 
         let mut request = [0u8; 5];
         request[0] = DFUSE_PROGRAM_PAGE;
-        request[1..5].copy_from_slice(&((base_address + bytes_sent) as u32).to_le_bytes());
+        request[1..5].copy_from_slice(&(base_address + bytes_sent).to_le_bytes());
         usb_device.write_control(
             rusb::request_type(
                 rusb::Direction::Out,
@@ -305,9 +303,7 @@ fn do_update_firmware(
         wait_for_idle(usb_device, dfu_interface)?;
         bytes_sent += chunk_size;
         if let Some(progress) = progress {
-            progress(Progress::Progress {
-                pos: bytes_sent as u32,
-            });
+            progress(Progress::Progress { pos: bytes_sent });
         }
     }
 
