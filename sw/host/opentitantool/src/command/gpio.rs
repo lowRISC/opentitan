@@ -440,13 +440,13 @@ impl CommandDispatch for GpioMonitoringVcd {
                 .collect::<Vec<&dyn GpioPin>>(),
         )?;
         writeln!(&mut file, "$version")?;
-        let properties = super::version::get_volatile_status();
+        let version = super::version::VersionResponse::default();
         writeln!(
             &mut file,
             "   opentitantool {} {} {}",
-            properties.get("BUILD_GIT_VERSION").unwrap(),
-            properties.get("BUILD_SCM_STATUS").unwrap(),
-            properties.get("BUILD_TIMESTAMP").unwrap().parse::<i64>()?
+            version.version,
+            if version.clean { "clean" } else { "modified" },
+            version.timestamp,
         )?;
         writeln!(&mut file, "$end")?;
         match clock_nature {
