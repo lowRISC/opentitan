@@ -88,13 +88,9 @@ impl UartConsole {
                 self.newline = false;
             }
             self.newline = buf[i] == b'\n';
-            stdout.as_mut().map_or(Ok(()), |out| {
-                out.write_all(if self.newline {
-                    b"\r\n"
-                } else {
-                    &buf[i..i + 1]
-                })
-            })?;
+            stdout
+                .as_mut()
+                .map_or(Ok(()), |out| out.write_all(&buf[i..i + 1]))?;
         }
         stdout.as_mut().map_or(Ok(()), |out| out.flush())?;
 
