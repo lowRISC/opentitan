@@ -289,23 +289,35 @@ impl EmulatorProcess {
                 }
                 std::thread::sleep(TIMEOUT);
             }
+            log::warn!("Ti50Emulator sub-process did not shut down gracefully, killing...");
             log::debug!("Stop sub-process PID:{} SIGKILL", pid);
             for _retry in 0..MAX_RETRY {
                 match signal::kill(Pid::from_raw(pid), Signal::SIGKILL) {
                     Ok(()) => {}
-                    Err(nix::Error::Sys(nix::errno::Errno::ESRCH)) => {
-                        log::debug!("Stop sub-process PID:{} process terminated", pid);
-                        self.cleanup()?;
-                        self.proc = None;
-                        self.state = EmuState::Off;
-                        return Ok(());
-                    }
+                    Err(nix::Error::Sys(nix::errno::Errno::ESRCH)) => {}
                     Err(e) => {
                         self.proc = None;
                         self.state = EmuState::Error;
                         bail!(EmuError::StopFailureCause(format!(
                             "Unable to stop process pid:{} error:{}",
                             pid, e
+                        )));
+                    }
+                }
+                match handle.try_wait() {
+                    Ok(None) => {}
+                    Ok(Some(status)) => {
+                        log::info!("Stop sub-process terminated PID: {} {}", pid, status);
+                        self.cleanup()?;
+                        self.state = EmuState::Off;
+                        self.proc = None;
+                        return Ok(());
+                    }
+                    Err(e) => {
+                        self.state = EmuState::Error;
+                        bail!(EmuError::StopFailureCause(format!(
+                            "Unexpected error querying process presence: {}",
+                            e
                         )));
                     }
                 }
