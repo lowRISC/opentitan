@@ -446,8 +446,8 @@ impl Target for HyperdebugSpiTarget {
             [Transfer::Write(wbuf1), Transfer::Write(wbuf2)] => {
                 if wbuf1.len() + wbuf2.len() <= self.max_sizes.write {
                     let mut combined_buf = vec![0u8; wbuf1.len() + wbuf2.len()];
-                    combined_buf[..wbuf1.len()].clone_from_slice(&wbuf1);
-                    combined_buf[wbuf1.len()..].clone_from_slice(&wbuf2);
+                    combined_buf[..wbuf1.len()].clone_from_slice(wbuf1);
+                    combined_buf[wbuf1.len()..].clone_from_slice(wbuf2);
                     self.transmit(&combined_buf, 0)?;
                     self.receive(&mut [])?;
                     return Ok(());

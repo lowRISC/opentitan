@@ -39,7 +39,7 @@ impl FpgaProgram<'_> {
             reset_pin.write(true)?;
 
             // Now read the uart until the ROM prints it's version.
-            if rd.detect(&*uart)? {
+            if rd.detect(uart)? {
                 log::info!("Already running the correct bitstream.  Skip loading bitstream.");
                 // If we're already running the right ROM+bitstream,
                 // then we can skip bootstrap.

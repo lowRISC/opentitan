@@ -7,8 +7,8 @@ use crate::with_unknown;
 with_unknown! {
     /// From `//sw/device/lib/base/hardened.h`.
     pub enum HardenedBool: u32 {
-        True = bindgen::hardened::hardened_bool_kHardenedBoolTrue as u32,
-        False = bindgen::hardened::hardened_bool_kHardenedBoolFalse as u32,
+        True = bindgen::hardened::hardened_bool_kHardenedBoolTrue,
+        False = bindgen::hardened::hardened_bool_kHardenedBoolFalse,
     }
 
     /// From `//sw/device/lib/base/hardened.h`.

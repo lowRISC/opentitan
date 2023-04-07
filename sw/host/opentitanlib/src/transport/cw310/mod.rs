@@ -229,7 +229,7 @@ impl Transport for CW310 {
     fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
         let mut inner = self.inner.borrow_mut();
         if inner.jtag.is_none() {
-            inner.jtag = Some(Rc::new(OpenOcdServer::new(&opts)?));
+            inner.jtag = Some(Rc::new(OpenOcdServer::new(opts)?));
         }
         Ok(Rc::clone(inner.jtag.as_ref().unwrap()))
     }

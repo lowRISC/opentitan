@@ -263,7 +263,7 @@ fn do_update_firmware(
 
         let mut request = [0u8; 5];
         request[0] = DFUSE_PROGRAM_PAGE;
-        request[1..5].copy_from_slice(&((base_address + bytes_sent) as u32).to_le_bytes());
+        request[1..5].copy_from_slice(&(base_address + bytes_sent).to_le_bytes());
         usb_device.write_control(
             rusb::request_type(
                 rusb::Direction::Out,
