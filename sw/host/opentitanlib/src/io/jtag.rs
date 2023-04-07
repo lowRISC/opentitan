@@ -47,7 +47,7 @@ pub struct JtagParams {
 
 impl JtagParams {
     pub fn create(&self, transport: &TransportWrapper) -> Result<Rc<dyn Jtag>> {
-        let jtag = transport.jtag(&self)?;
+        let jtag = transport.jtag(self)?;
         Ok(jtag)
     }
 }

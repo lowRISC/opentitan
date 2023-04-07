@@ -143,7 +143,7 @@ impl GpioPin for Sx1503Pin {
         pull: Option<PullMode>,
         analog_value: Option<f32>,
     ) -> Result<()> {
-        if let Some(_) = analog_value {
+        if analog_value.is_some() {
             bail!(TransportError::UnsupportedOperation);
         }
         if let (None, None, None) = (mode, value, pull) {

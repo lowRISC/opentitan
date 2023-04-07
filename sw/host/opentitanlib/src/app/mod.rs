@@ -264,7 +264,7 @@ impl TransportWrapperBuilder {
 
     pub fn add_configuration_file(&mut self, file: config::ConfigurationFile) -> Result<()> {
         if let Some(interface) = file.interface {
-            if self.interface == "" {
+            if self.interface.is_empty() {
                 self.interface = interface;
             } else if self.interface == interface {
                 // Same value for interface between in command line and configuration file (or
@@ -272,7 +272,7 @@ impl TransportWrapperBuilder {
             } else {
                 bail!(TransportError::InconsistentInterfaceConf(
                     self.interface.to_string(),
-                    interface.to_string(),
+                    interface,
                 ))
             }
         }
@@ -344,7 +344,7 @@ impl TransportWrapperBuilder {
                 }
                 Entry::Occupied(_) => bail!(TransportError::InconsistentConf(
                     TransportInterfaceType::IoExpander,
-                    io_expander_conf.name.to_string()
+                    io_expander_conf.name
                 )),
             }
         }
@@ -525,13 +525,11 @@ impl TransportWrapper {
                 pins.push(StrappedPin {
                     pin: self.gpio_pin(pin_name)?,
                     strapped: *conf,
-                    original: self.pin_conf_map.get(pin_name).map(|v| *v),
+                    original: self.pin_conf_map.get(pin_name).copied(),
                 });
             }
-        } else {
-            if proxy.is_none() {
-                bail!(TransportError::InvalidStrappingName(name.to_string()));
-            }
+        } else if proxy.is_none() {
+            bail!(TransportError::InvalidStrappingName(name.to_string()));
         }
         Ok(PinStrapping {
             proxy,

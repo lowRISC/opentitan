@@ -17,7 +17,7 @@ pub fn create(
     transport_wrapper: &TransportWrapper,
 ) -> Result<IoExpander> {
     match conf.driver {
-        config::IoExpanderDriver::Sx1503 => sx1503::create(&conf, &transport_wrapper),
+        config::IoExpanderDriver::Sx1503 => sx1503::create(conf, transport_wrapper),
         // Add future drivers here
     }
 }

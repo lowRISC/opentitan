@@ -76,7 +76,7 @@ impl OpenOcdServer {
 
         // Pass the path to the adapter config file if given.
         if let Some(cfg) = &self.opts.openocd_adapter_config {
-            args.extend(["-f", &cfg]);
+            args.extend(["-f", cfg]);
         }
 
         // Because these commands are command-line args, they *must* end with
@@ -93,7 +93,7 @@ impl OpenOcdServer {
             JtagTap::LcTap => &self.opts.openocd_lc_target_config,
         };
         if let Some(cfg) = &target {
-            args.extend(["-f", &cfg]);
+            args.extend(["-f", cfg]);
         }
 
         // Use the default port explicity to avoid relying on it not changing.
@@ -223,7 +223,7 @@ impl OpenOcdServer {
             count = buf.len()
         );
         let response = self.send_tcl_cmd(cmd.as_str())?;
-        response.trim().split(" ").try_fold(0, |idx, val| {
+        response.trim().split(' ').try_fold(0, |idx, val| {
             if idx < buf.len() {
                 buf[idx] = T::from_str(val).context(format!(
                     "expected response to be an hexadecimal byte, got '{response}'"

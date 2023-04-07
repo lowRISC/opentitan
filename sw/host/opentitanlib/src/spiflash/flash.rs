@@ -111,7 +111,7 @@ impl SpiFlash {
     pub fn read_status_ex(spi: &dyn Target, seq: Option<&[u8]>) -> Result<u32> {
         let seq = seq.unwrap_or(&[Self::READ_STATUS, Self::READ_STATUS2, Self::READ_STATUS3]);
         ensure!(
-            seq.len() > 0 && seq.len() <= 3,
+            !seq.is_empty() && seq.len() <= 3,
             Error::BadSequenceLength(seq.len())
         );
         let mut buf = [0u8; 4];

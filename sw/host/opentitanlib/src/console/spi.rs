@@ -22,7 +22,7 @@ impl<'a> SpiConsoleDevice<'a> {
 
     pub fn new(spi: &'a dyn Target) -> Self {
         Self {
-            spi: spi,
+            spi,
             rx_buf: RefCell::new(VecDeque::new()),
             console_next_frame_number: Cell::new(0),
         }
@@ -33,8 +33,8 @@ impl<'a> SpiConsoleDevice<'a> {
         let mut header = vec![0u8; SpiConsoleDevice::SPI_FRAME_HEADER_SIZE];
         self.spi
             .run_transaction(&mut [Transfer::Write(&[0xff; 4]), Transfer::Read(&mut header)])?;
-        let frame_number: u32 = u32::from_le_bytes(*&header[0..4].try_into().unwrap());
-        let data_len_bytes: usize = u32::from_le_bytes(*&header[4..8].try_into().unwrap()) as usize;
+        let frame_number: u32 = u32::from_le_bytes(header[0..4].try_into().unwrap());
+        let data_len_bytes: usize = u32::from_le_bytes(header[4..8].try_into().unwrap()) as usize;
         if frame_number != self.console_next_frame_number.get()
             || data_len_bytes > SpiConsoleDevice::SPI_MAX_DATA_LENGTH
         {
@@ -50,10 +50,7 @@ impl<'a> SpiConsoleDevice<'a> {
             .run_transaction(&mut [Transfer::Write(&[0xff; 4]), Transfer::Read(&mut data)])?;
 
         // Copy data to the internal data queue.
-        for i in 0..(data_len_bytes as usize) {
-            self.rx_buf.borrow_mut().push_back(data[i]);
-        }
-
+        self.rx_buf.borrow_mut().extend(&data[..data_len_bytes]);
         Ok(data_len_bytes)
     }
 }
@@ -61,10 +58,8 @@ impl<'a> SpiConsoleDevice<'a> {
 impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
     fn console_read(&self, buf: &mut [u8], _timeout: Duration) -> Result<usize> {
         // Attempt to refill the internal data queue if it is empty.
-        if self.rx_buf.borrow().len() == 0 {
-            if self.read_from_spi()? == 0 {
-                return Ok(0);
-            }
+        if self.rx_buf.borrow().is_empty() && self.read_from_spi()? == 0 {
+            return Ok(0);
         }
 
         // Copy from the internal data queue to the output buffer.
