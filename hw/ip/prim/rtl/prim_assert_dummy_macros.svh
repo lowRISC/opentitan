@@ -10,6 +10,7 @@
 `define ASSERT_INIT_NET(__name, __prop)
 `define ASSERT_FINAL(__name, __prop)
 `define ASSERT_AT_RESET(__name, __prop, __rst = `ASSERT_DEFAULT_RST)
+`define ASSERT_AT_RESET_AND_FINAL(__name, __prop, __rst = `ASSERT_DEFAULT_RST)
 `define ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
 `define ASSERT_NEVER(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
 `define ASSERT_KNOWN(__name, __sig, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)

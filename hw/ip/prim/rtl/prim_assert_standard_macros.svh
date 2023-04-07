@@ -60,6 +60,10 @@
       `ASSERT_ERROR(__name)                                                  \
     end
 
+`define ASSERT_AT_RESET_AND_FINAL(__name, __prop, __rst = `ASSERT_DEFAULT_RST) \
+    `ASSERT_AT_RESET(AtReset_``__name``, __prop, __rst)                        \
+    `ASSERT_FINAL(Final_``__name``, __prop)
+
 `define ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
   __name: assert property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop))       \
     else begin                                                                           \

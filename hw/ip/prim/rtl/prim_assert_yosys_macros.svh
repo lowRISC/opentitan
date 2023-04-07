@@ -27,6 +27,10 @@
 // may or may not implement, so we leave it blank for the time being.
 `define ASSERT_AT_RESET(__name, __prop, __rst = `ASSERT_DEFAULT_RST)
 
+`define ASSERT_AT_RESET_AND_FINAL(__name, __prop, __rst = `ASSERT_DEFAULT_RST) \
+  `ASSERT_AT_RESET(AtReset_``__name``, __prop, __rst)                          \
+  `ASSERT_FINAL(Final_``__name``, __prop)
+
 `define ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
   always_ff @(posedge __clk) begin                                                       \
     if (! (__rst !== '0)) __name: assert (__prop);                                       \
