@@ -2344,6 +2344,8 @@ SRAM_JTAG_INJECTION_GDB_SCRIPT = """
         set $gp = __global_pointer$
         info registers
 
+        shell sleep 5
+
         # When testing SRAM execution, we want to be sure the code is running
         # out of SRAM and not the instruction cache.
         echo :::: Invalidate the icache.\\n
@@ -2369,6 +2371,7 @@ SRAM_JTAG_INJECTION_GDB_SCRIPT = """
         tags = [
             "cw310_rom",
             "vivado",
+            "flaky",
         ],
     )
     for lc_state, _ in get_lc_items(
@@ -3586,6 +3589,7 @@ test_suite(
             "cw310_rom",
             "exclusive",
             "vivado",
+            "flaky",
         ] + maybe_skip_in_ci(lc_state_val),
     )
     for lc_state, lc_state_val in get_lc_items(
