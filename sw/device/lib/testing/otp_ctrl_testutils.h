@@ -37,4 +37,40 @@ status_t otp_ctrl_testutils_lock_partition(const dif_otp_ctrl_t *otp,
                                            dif_otp_ctrl_partition_t partition,
                                            uint64_t digest);
 
+/**
+ * Reads a 64bit value from OTP using the DAI interface.
+ *
+ * @param otp otp_ctrl instance.
+ * @param partition OTP partition.
+ * @param address Address relative to the start of the `partition`. Must be a
+ * 64bit aligned address.
+ * @param[out] result The 64bit value result.
+ * @return OK_STATUS on successful read.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t otp_ctrl_testutils_dai_read64(
+    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
+    uint32_t address, uint64_t *result);
+
+/**
+ * Writes `len` number of 64bit words from buffer into otp `partition` starting
+ * at `start_address` using the DAI interface.
+ *
+ * @param otp otp_ctrl instance.
+ * @param partition OTP partition.
+ * @param start_address Address relative to the start of the `partition`. Must
+ * be a 64bit aligned address.
+ * @param buffer The buffer containing the data to be written into OTP.
+ * The function may override values for entries previously written. The caller
+ * can use the result buffer to detect which OTP words were already programmed.
+ * @param len The number of 64bit words to write into otp. `buffer` must have at
+ * least `len` 64bit words.
+ * @return OK_STATUS on success.
+ */
+OT_WARN_UNUSED_RESULT
+status_t otp_ctrl_testutils_dai_write64(const dif_otp_ctrl_t *otp,
+                                        dif_otp_ctrl_partition_t partition,
+                                        uint32_t start_address,
+                                        const uint64_t *buffer, size_t len);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_OTP_CTRL_TESTUTILS_H_
