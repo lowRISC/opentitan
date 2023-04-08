@@ -61,116 +61,6 @@ static status_t lc_ctrl_state_check(const dif_lc_ctrl_t *lc_ctrl) {
 }
 
 /**
- * Wrapper used to poll for OTP DAI interface ready.
- *
- * TODO: Remove wrapper once otp_testutils switches to status_t. Blocking
- * operations are not allowed in manufacturing. Make sure to add a timeout to
- * the test util version of this function before switching over.
- *
- * @param otp otp_ctrl instance.
- * @return OK_STATUS if the otp_ctrl is ready to accept new DAI commands.
- */
-OT_WARN_UNUSED_RESULT
-static status_t otp_ctrl_wait_for_dai(const dif_otp_ctrl_t *otp) {
-  otp_ctrl_testutils_wait_for_dai(otp);
-  return OK_STATUS();
-}
-
-/**
- * Checks if there were any errors found after executing a DAI write transaction
- * to the SECRET2 partition.
- *
- * @param otp otp_ctrl instance
- * @return OK_STATUS if there were no errors detected.
- */
-OT_WARN_UNUSED_RESULT
-static status_t otp_ctrl_dai_write_to_secret2_error_check(
-    const dif_otp_ctrl_t *otp) {
-  dif_otp_ctrl_status_t status;
-  TRY(dif_otp_ctrl_get_status(otp, &status));
-
-  // TODO: Check for other OTP errors.
-  if (bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiIdle) &&
-      !bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiError)) {
-    return OK_STATUS();
-  }
-  return INTERNAL();
-}
-
-/**
- * Reads a 64bit value from OTP using the DAI interface.
- *
- * @param otp otp_ctrl instance.
- * @param partition OTP partition.
- * @param address Address relative to the start of the `partition`. Must be a
- * 64bit aligned address.
- * @param[out] result The 64bit value result.
- * @return OK_STATUS on successful read.
- */
-OT_WARN_UNUSED_RESULT
-static status_t otp_ctrl_dai_read64(const dif_otp_ctrl_t *otp,
-                                    dif_otp_ctrl_partition_t partition,
-                                    uint32_t address, uint64_t *result) {
-  TRY(otp_ctrl_wait_for_dai(otp));
-  TRY(dif_otp_ctrl_dai_read_start(otp, partition, address));
-  TRY(otp_ctrl_wait_for_dai(otp));
-  TRY(dif_otp_ctrl_dai_read64_end(otp, result));
-  return OK_STATUS();
-}
-
-/**
- * Writes `len` number of 64bit words from buffer into otp `partition` starting
- * at `start_address`.
- *
- * @param otp otp_ctrl instance.
- * @param partition OTP partition.
- * @param start_address Address relative to the start of the `partition`. Must
- * be a 64bit aligned address.
- * @param buffer The buffer containing the data to be written into OTP.
- * @param len The number of 64bit words to write into otp. `buffer` must have at
- * least `len` 64bit words.
- * @return OK_STATUS on success.
- */
-OT_WARN_UNUSED_RESULT
-static status_t otp_write(const dif_otp_ctrl_t *otp,
-                          dif_otp_ctrl_partition_t partition,
-                          uint32_t start_address, const uint64_t *buffer,
-                          size_t len) {
-  uint32_t stop_address = start_address + (len * sizeof(uint64_t));
-  for (uint32_t addr = start_address, i = 0; addr < stop_address;
-       addr += sizeof(uint64_t), ++i) {
-    TRY(otp_ctrl_wait_for_dai(otp));
-    TRY(dif_otp_ctrl_dai_program64(otp, kDifOtpCtrlPartitionSecret2, addr,
-                                   buffer[i]));
-    TRY(otp_ctrl_wait_for_dai(otp));
-    TRY(otp_ctrl_dai_write_to_secret2_error_check(otp));
-
-    uint64_t read_data;
-    TRY(otp_ctrl_dai_read64(otp, kDifOtpCtrlPartitionSecret2, addr,
-                            &read_data));
-    if (read_data != buffer[i]) {
-      return INTERNAL();
-    }
-  }
-  return OK_STATUS();
-}
-
-/**
- * Locks SECRET2 partition.
- *
- * TODO: Remove wrapper once otp_testutils switches to status_t.
- *
- * @param otp otp_ctrl instance.
- * @return OK_STATUS on success.
- */
-OT_WARN_UNUSED_RESULT
-static status_t otp_lock_partition(const dif_otp_ctrl_t *otp) {
-  TRY(dif_otp_ctrl_dai_digest(otp, kDifOtpCtrlPartitionSecret2, /*digest=*/0));
-  TRY(otp_ctrl_wait_for_dai(otp));
-  return OK_STATUS();
-}
-
-/**
  * Performs sanity check of buffers holding a masked secret.
  *
  * @param share0 Share 0 buffer.
@@ -279,12 +169,17 @@ static status_t otp_partition_secret2_configure(const dif_otp_ctrl_t *otp) {
 
   TRY(shares_check(share0, share1, kRootKeyShareSizeIn64BitWords));
 
-  TRY(otp_write(otp, kDifOtpCtrlPartitionSecret2, kRootKeyOffsetShare0, share0,
-                kRootKeyShareSizeIn64BitWords));
-  TRY(otp_write(otp, kDifOtpCtrlPartitionSecret2, kRootKeyOffsetShare1, share1,
-                kRootKeyShareSizeIn64BitWords));
+  TRY(otp_ctrl_testutils_dai_write64(otp, kDifOtpCtrlPartitionSecret2,
+                                     kRootKeyOffsetShare0, share0,
+                                     kRootKeyShareSizeIn64BitWords));
+  TRY(otp_ctrl_testutils_dai_write64(otp, kDifOtpCtrlPartitionSecret2,
+                                     kRootKeyOffsetShare1, share1,
+                                     kRootKeyShareSizeIn64BitWords));
+  TRY(shares_check(share0, share1, kRootKeyShareSizeIn64BitWords));
 
-  TRY(otp_lock_partition(otp));
+  TRY(otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionSecret2,
+                                        /*digest=*/0));
+
   return OK_STATUS();
 }
 
