@@ -264,6 +264,84 @@ dif_result_t dif_spi_host_event_set_enabled(const dif_spi_host_t *spi_host,
 dif_result_t dif_spi_host_event_get_enabled(const dif_spi_host_t *spi_host,
                                             dif_spi_host_events_t *events);
 
+typedef struct dif_spi_host_status {
+  /**
+   * Indicates the SPI host is ready to receive commands.
+   */
+  bool ready;
+  /**
+   * Indicates the SPI host is processing a previously issued command.
+   */
+  bool active;
+  /**
+   * Indicates that the transmit data fifo is full.
+   */
+  bool tx_full;
+  /**
+   * Indicates that the transmit data fifo is empty.
+   */
+  bool tx_empty;
+  /**
+   * If true, signifies that an ongoing transaction has stalled due to lack of
+   * data in the`TX FIFO`.
+   */
+  bool tx_stall;
+  /**
+   * If true, the amount of data in the `TX FIFO` has fallen below the
+   * level of `CONTROL.TX_WATERMARK`words (32b each).
+   */
+  bool tx_water_mark;
+  /**
+   * Indicates that the receive fifo is full. Any ongoing transactions will
+   * stall until firmware reads some data from `RXDATA`.
+   */
+  bool rx_full;
+  /**
+   * Indicates that the receive fifo is empty. Any reads from `RX FIFO` will
+   * cause an error interrupt.
+   */
+  bool rx_empty;
+  /**
+   * If true, signifies that an ongoing transaction has stalled due to lack of
+   * available space in the `RX FIFO`.
+   */
+  bool rx_stall;
+  /**
+   * If true the least significant bits will be transmitted first.
+   */
+  bool least_significant_first;
+  /**
+   * If true, the number of 32-bits in the `RX FIFO` now exceeds the
+   * `CONTROL.RX_WATERMARK`entries (32b each).
+   */
+  bool rx_water_mark;
+  /**
+   * Indicates how many unread 32-bit words are currently in the command
+   * segment queue.
+   */
+  uint32_t cmd_queue_depth;
+  /**
+   * Indicates how many unread 32-bit words are currently in the `RX FIFO`.
+   * When active, this result may an underestimate due to synchronization
+   * delays.
+   */
+  uint32_t rx_queue_depth;
+  /**
+   * Indicates how many unsent 32-bit words are currently in the`TX FIFO`.
+   */
+  uint32_t tx_queue_depth;
+} dif_spi_host_status_t;
+
+/**
+ * Read the current status of the spi host.
+ *
+ * @param spi_host A SPI Host handle.
+ * @param[out] status The status of the spi.
+ * @return dif_result_t
+ */
+dif_result_t dif_spi_host_get_status(const dif_spi_host_t *spi_host,
+                                     dif_spi_host_status_t *status);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

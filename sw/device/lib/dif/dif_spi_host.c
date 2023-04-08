@@ -445,3 +445,34 @@ dif_result_t dif_spi_host_event_get_enabled(const dif_spi_host_t *spi_host,
       mmio_region_read32(spi_host->base_addr, SPI_HOST_EVENT_ENABLE_REG_OFFSET);
   return kDifOk;
 }
+
+dif_result_t dif_spi_host_get_status(const dif_spi_host_t *spi_host,
+                                     dif_spi_host_status_t *status) {
+  if (spi_host == NULL || status == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg =
+      mmio_region_read32(spi_host->base_addr, SPI_HOST_STATUS_REG_OFFSET);
+
+  status->ready = bitfield_bit32_read(reg, SPI_HOST_STATUS_READY_BIT);
+  status->active = bitfield_bit32_read(reg, SPI_HOST_STATUS_ACTIVE_BIT);
+  status->tx_empty = bitfield_bit32_read(reg, SPI_HOST_STATUS_TXEMPTY_BIT);
+  status->rx_empty = bitfield_bit32_read(reg, SPI_HOST_STATUS_RXEMPTY_BIT);
+  status->tx_full = bitfield_bit32_read(reg, SPI_HOST_STATUS_TXFULL_BIT);
+  status->rx_full = bitfield_bit32_read(reg, SPI_HOST_STATUS_RXFULL_BIT);
+  status->tx_water_mark = bitfield_bit32_read(reg, SPI_HOST_STATUS_TXWM_BIT);
+  status->rx_water_mark = bitfield_bit32_read(reg, SPI_HOST_STATUS_RXWM_BIT);
+  status->tx_stall = bitfield_bit32_read(reg, SPI_HOST_STATUS_TXSTALL_BIT);
+  status->rx_stall = bitfield_bit32_read(reg, SPI_HOST_STATUS_RXSTALL_BIT);
+  status->least_significant_first =
+      bitfield_bit32_read(reg, SPI_HOST_STATUS_BYTEORDER_BIT);
+  status->tx_queue_depth =
+      bitfield_field32_read(reg, SPI_HOST_STATUS_TXQD_FIELD);
+  status->rx_queue_depth =
+      bitfield_field32_read(reg, SPI_HOST_STATUS_RXQD_FIELD);
+  status->cmd_queue_depth =
+      bitfield_field32_read(reg, SPI_HOST_STATUS_CMDQD_FIELD);
+
+  return kDifOk;
+}
