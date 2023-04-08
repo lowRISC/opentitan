@@ -41,6 +41,8 @@ opentitan_functest(
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
