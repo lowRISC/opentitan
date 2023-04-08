@@ -574,5 +574,73 @@ TEST_F(EventEnableRegTest, GetEnableNullArgs) {
   EXPECT_DIF_BADARG(dif_spi_host_event_get_enabled(&spi_host_, nullptr));
 }
 
+class StatusTest : public SpiHostTest {
+ protected:
+  void expect_status_eq(dif_spi_host_status_t expected) {
+    dif_spi_host_status_t status;
+    EXPECT_DIF_OK(dif_spi_host_get_status(&spi_host_, &status));
+    EXPECT_EQ(status.ready, expected.ready);
+    EXPECT_EQ(status.active, expected.active);
+    EXPECT_EQ(status.tx_empty, expected.tx_empty);
+    EXPECT_EQ(status.rx_empty, expected.rx_empty);
+    EXPECT_EQ(status.tx_full, expected.tx_full);
+    EXPECT_EQ(status.rx_full, expected.rx_full);
+    EXPECT_EQ(status.tx_water_mark, expected.tx_water_mark);
+    EXPECT_EQ(status.rx_water_mark, expected.rx_water_mark);
+    EXPECT_EQ(status.tx_stall, expected.tx_stall);
+    EXPECT_EQ(status.rx_stall, expected.rx_stall);
+    EXPECT_EQ(status.least_significant_first, expected.least_significant_first);
+    EXPECT_EQ(status.tx_queue_depth, expected.tx_queue_depth);
+    EXPECT_EQ(status.rx_queue_depth, expected.rx_queue_depth);
+    EXPECT_EQ(status.cmd_queue_depth, expected.cmd_queue_depth);
+  }
+};
+
+TEST_F(StatusTest, Read) {
+  static constexpr std::array<std::pair<uint32_t, dif_spi_host_status_t>, 14>
+      kMap = {{
+          {1 << SPI_HOST_STATUS_READY_BIT,
+           (dif_spi_host_status_t){.ready = true}},
+          {1 << SPI_HOST_STATUS_ACTIVE_BIT,
+           (dif_spi_host_status_t){.active = true}},
+          {1 << SPI_HOST_STATUS_TXFULL_BIT,
+           (dif_spi_host_status_t){.tx_full = true}},
+          {1 << SPI_HOST_STATUS_TXEMPTY_BIT,
+           (dif_spi_host_status_t){.tx_empty = true}},
+          {1 << SPI_HOST_STATUS_TXSTALL_BIT,
+           (dif_spi_host_status_t){.tx_stall = true}},
+          {1 << SPI_HOST_STATUS_TXWM_BIT,
+           (dif_spi_host_status_t){.tx_water_mark = true}},
+          {1 << SPI_HOST_STATUS_RXFULL_BIT,
+           (dif_spi_host_status_t){.rx_full = true}},
+          {1 << SPI_HOST_STATUS_RXEMPTY_BIT,
+           (dif_spi_host_status_t){.rx_empty = true}},
+          {1 << SPI_HOST_STATUS_RXSTALL_BIT,
+           (dif_spi_host_status_t){.rx_stall = true}},
+          {1 << SPI_HOST_STATUS_RXWM_BIT,
+           (dif_spi_host_status_t){.rx_water_mark = true}},
+          {1 << SPI_HOST_STATUS_BYTEORDER_BIT,
+           (dif_spi_host_status_t){.least_significant_first = true}},
+          {0xF << SPI_HOST_STATUS_CMDQD_OFFSET,
+           (dif_spi_host_status_t){.cmd_queue_depth = 0xF}},
+          {0xFF << SPI_HOST_STATUS_RXQD_OFFSET,
+           (dif_spi_host_status_t){.rx_queue_depth = 0xFF}},
+          {0xFF << SPI_HOST_STATUS_TXQD_OFFSET,
+           (dif_spi_host_status_t){.tx_queue_depth = 0xFF}},
+      }};
+
+  for (auto pair : kMap) {
+    EXPECT_READ32(SPI_HOST_STATUS_REG_OFFSET, pair.first);
+    expect_status_eq(pair.second);
+  }
+}
+
+// Checks that arguments are validated.
+TEST_F(StatusTest, NullArgs) {
+  dif_spi_host_status_t status;
+  EXPECT_DIF_BADARG(dif_spi_host_get_status(nullptr, &status));
+  EXPECT_DIF_BADARG(dif_spi_host_get_status(&spi_host_, nullptr));
+}
+
 }  // namespace
 }  // namespace dif_spi_host_unittest
