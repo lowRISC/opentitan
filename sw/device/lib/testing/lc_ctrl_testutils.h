@@ -47,4 +47,16 @@ status_t lc_ctrl_testutils_check_transition_count(const dif_lc_ctrl_t *lc_ctrl,
 status_t lc_ctrl_testutils_check_lc_state(const dif_lc_ctrl_t *lc_ctrl,
                                           dif_lc_ctrl_state_t exp_lc_state);
 
+/**
+ * Checks the device life cycle state to determine if it is in operational
+ * state.
+ *
+ * @param lc_ctrl Life cycle controller instance.
+ * @return OK_STATUS if the device is in PROD, PROD_END or DEV state; otherwise
+ * FAILED_PRECONDITION.
+ */
+OT_WARN_UNUSED_RESULT
+status_t lc_ctrl_testutils_operational_state_check(
+    const dif_lc_ctrl_t *lc_ctrl);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_LC_CTRL_TESTUTILS_H_
