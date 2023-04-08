@@ -26,7 +26,7 @@ opentitan_functest(
     name = "provisioning_functest",
     srcs = ["provisioning_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_otp_dev",
+        bitstream = "//hw/bitstream:rom_otp_dev_individualized",
     ),
     targets = [
         "cw310_rom",

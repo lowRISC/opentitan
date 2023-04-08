@@ -126,9 +126,7 @@ static status_t otp_ctrl_dai_read64(const dif_otp_ctrl_t *otp,
  * @param partition OTP partition.
  * @param start_address Address relative to the start of the `partition`. Must
  * be a 64bit aligned address.
- * @param[inout] buffer The buffer containing the data to be written into OTP.
- * The function may override values for entries previously written. The caller
- * can use the result buffer to detect which OTP words were already programmed.
+ * @param buffer The buffer containing the data to be written into OTP.
  * @param len The number of 64bit words to write into otp. `buffer` must have at
  * least `len` 64bit words.
  * @return OK_STATUS on success.
@@ -136,26 +134,18 @@ static status_t otp_ctrl_dai_read64(const dif_otp_ctrl_t *otp,
 OT_WARN_UNUSED_RESULT
 static status_t otp_write(const dif_otp_ctrl_t *otp,
                           dif_otp_ctrl_partition_t partition,
-                          uint32_t start_address, uint64_t *buffer,
+                          uint32_t start_address, const uint64_t *buffer,
                           size_t len) {
   uint32_t stop_address = start_address + (len * sizeof(uint64_t));
   for (uint32_t addr = start_address, i = 0; addr < stop_address;
        addr += sizeof(uint64_t), ++i) {
-    // Read the data back to perform a sanity check.
-    uint64_t read_data;
-    TRY(otp_ctrl_dai_read64(otp, kDifOtpCtrlPartitionSecret2, addr,
-                            &read_data));
-    if (read_data != kOtpDefaultBlankValue) {
-      buffer[i] = read_data;
-      continue;
-    }
-
     TRY(otp_ctrl_wait_for_dai(otp));
     TRY(dif_otp_ctrl_dai_program64(otp, kDifOtpCtrlPartitionSecret2, addr,
                                    buffer[i]));
     TRY(otp_ctrl_wait_for_dai(otp));
     TRY(otp_ctrl_dai_write_to_secret2_error_check(otp));
 
+    uint64_t read_data;
     TRY(otp_ctrl_dai_read64(otp, kDifOtpCtrlPartitionSecret2, addr,
                             &read_data));
     if (read_data != buffer[i]) {
@@ -279,9 +269,10 @@ static status_t otp_partition_secret2_configure(const dif_otp_ctrl_t *otp) {
   TRY(entropy_csrng_generate(/*seed_material=*/NULL, (uint32_t *)share0,
                              kRootKeyShareSizeIn32BitWords));
 
-  uint64_t share1[kRootKeyShareSizeIn64BitWords];
   TRY(entropy_csrng_reseed(/*disable_trng_inpu=*/kHardenedBoolFalse,
                            /*seed_material=*/NULL));
+
+  uint64_t share1[kRootKeyShareSizeIn64BitWords];
   TRY(entropy_csrng_generate(/*seed_material=*/NULL, (uint32_t *)share1,
                              kRootKeyShareSizeIn32BitWords));
   TRY(entropy_csrng_uninstantiate());
@@ -292,7 +283,6 @@ static status_t otp_partition_secret2_configure(const dif_otp_ctrl_t *otp) {
                 kRootKeyShareSizeIn64BitWords));
   TRY(otp_write(otp, kDifOtpCtrlPartitionSecret2, kRootKeyOffsetShare1, share1,
                 kRootKeyShareSizeIn64BitWords));
-  TRY(shares_check(share0, share1, kRootKeyShareSizeIn64BitWords));
 
   TRY(otp_lock_partition(otp));
   return OK_STATUS();
