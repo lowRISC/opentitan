@@ -105,8 +105,12 @@ bool i2c_testutils_target_check_wr(const dif_i2c_t *i2c, uint8_t byte_count,
 
 /**
  * Initialize the pinmux.
+ *
+ * @param pimmux A pinmux handler.
+ * @param kI2cIdx The i2c identifier.
+ * @return The result of the operation.
  */
-void i2c_testutils_connect_i2c_to_pinmux_pins(const dif_pinmux_t *pinmux,
-                                              uint8_t kI2cIdx);
+status_t i2c_testutils_connect_i2c_to_pinmux_pins(const dif_pinmux_t *pinmux,
+                                                  uint8_t kI2cIdx);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_I2C_TESTUTILS_H_

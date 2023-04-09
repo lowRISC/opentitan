@@ -200,8 +200,8 @@ bool i2c_testutils_target_check_wr(const dif_i2c_t *i2c, uint8_t byte_count,
   return i2c_testutils_target_check_end(i2c, cont_byte);
 }
 
-void i2c_testutils_connect_i2c_to_pinmux_pins(const dif_pinmux_t *pinmux,
-                                              uint8_t kI2cIdx) {
+status_t i2c_testutils_connect_i2c_to_pinmux_pins(const dif_pinmux_t *pinmux,
+                                                  uint8_t kI2cIdx) {
   top_earlgrey_pinmux_mio_out_t i2c_pinmux_out1_id, i2c_pinmux_out2_id;
   top_earlgrey_pinmux_insel_t i2c_pinmux_in1_id, i2c_pinmux_in2_id;
   top_earlgrey_pinmux_peripheral_in_t i2c_pinmux_insel_scl_id,
@@ -209,16 +209,13 @@ void i2c_testutils_connect_i2c_to_pinmux_pins(const dif_pinmux_t *pinmux,
   top_earlgrey_pinmux_outsel_t i2c_pinmux_outsel_scl_id,
       i2c_pinmux_outsel_sda_id;
 
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       i2c_conf[kI2cIdx].pins_peripheral_in[0],
-                                       i2c_conf[kI2cIdx].pins_insel[0]));
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       i2c_conf[kI2cIdx].pins_peripheral_in[1],
-                                       i2c_conf[kI2cIdx].pins_insel[1]));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux,
-                                        i2c_conf[kI2cIdx].pins_mio_out[0],
-                                        i2c_conf[kI2cIdx].pins_outsel[0]));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux,
-                                        i2c_conf[kI2cIdx].pins_mio_out[1],
-                                        i2c_conf[kI2cIdx].pins_outsel[1]));
+  TRY(dif_pinmux_input_select(pinmux, i2c_conf[kI2cIdx].pins_peripheral_in[0],
+                              i2c_conf[kI2cIdx].pins_insel[0]));
+  TRY(dif_pinmux_input_select(pinmux, i2c_conf[kI2cIdx].pins_peripheral_in[1],
+                              i2c_conf[kI2cIdx].pins_insel[1]));
+  TRY(dif_pinmux_output_select(pinmux, i2c_conf[kI2cIdx].pins_mio_out[0],
+                               i2c_conf[kI2cIdx].pins_outsel[0]));
+  TRY(dif_pinmux_output_select(pinmux, i2c_conf[kI2cIdx].pins_mio_out[1],
+                               i2c_conf[kI2cIdx].pins_outsel[1]));
+  return OK_STATUS();
 }
