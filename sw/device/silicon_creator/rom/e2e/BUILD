@@ -3803,3 +3803,13 @@ test_suite(
     tags = ["manual"],
     tests = ["rom_ext_upgrade_interrupt_{}".format(lc_state) for lc_state, _ in get_lc_items()],
 )
+
+test_suite(
+    name = "amaury",
+    tests = [
+        "rom_e2e_debug_test",
+        "rom_e2e_asm_interrupt_handler",
+        "rom_e2e_jtag_inject_tests",
+        "rom_e2e_asm_watchdog",
+    ],
+)

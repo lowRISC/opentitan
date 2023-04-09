@@ -68,5 +68,5 @@ jobs:
         --test_output=all \
         --flaky_test_attempts=10 \
         --runs_per_test=10 \
-        //sw/device/silicon_creator/rom/e2e:asm_interrupt_handler_fpga_cw310_test_otp_test_unlocked0
+        //sw/device/silicon_creator/rom/e2e:amaury
     displayName: "Run all ROM E2E tests"
