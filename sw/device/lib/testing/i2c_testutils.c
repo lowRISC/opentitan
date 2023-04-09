@@ -91,7 +91,8 @@ void i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count,
   // TODO: Check for errors / status.
 }
 
-void i2c_testutils_rd(const dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count) {
+status_t i2c_testutils_rd(const dif_i2c_t *i2c, uint8_t addr,
+                          uint8_t byte_count) {
   dif_i2c_fmt_flags_t flags = kDefaultFlags;
   uint8_t data_frame;
   uint8_t fifo_level;
@@ -101,7 +102,7 @@ void i2c_testutils_rd(const dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count) {
   // First write the address.
   flags.start = true;
   data_frame = (addr << 1) | kI2cRead;
-  CHECK_DIF_OK(dif_i2c_write_byte_raw(i2c, data_frame, flags));
+  TRY(dif_i2c_write_byte_raw(i2c, data_frame, flags));
 
   // Schedule the read transaction by writing flags to the fifo.
   flags = kDefaultFlags;
@@ -109,9 +110,10 @@ void i2c_testutils_rd(const dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count) {
   flags.stop = true;
 
   // Inform the controller how many bytes to read overall.
-  CHECK_DIF_OK(dif_i2c_write_byte_raw(i2c, byte_count, flags));
+  TRY(dif_i2c_write_byte_raw(i2c, byte_count, flags));
 
   // TODO: Check for errors / status.
+  return OK_STATUS();
 }
 
 bool i2c_testutils_target_check_start(const dif_i2c_t *i2c, uint8_t *addr) {
