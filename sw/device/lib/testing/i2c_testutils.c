@@ -171,12 +171,13 @@ bool i2c_testutils_target_check_rd(const dif_i2c_t *i2c, uint8_t *addr,
   return i2c_testutils_target_check_end(i2c, cont_byte);
 }
 
-void i2c_testutils_target_wr(const dif_i2c_t *i2c, uint8_t byte_count) {
+status_t i2c_testutils_target_wr(const dif_i2c_t *i2c, uint8_t byte_count) {
   uint8_t acq_fifo_lvl;
-  CHECK_DIF_OK(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
-  CHECK(acq_fifo_lvl + 2 + byte_count <= I2C_PARAM_FIFO_DEPTH);
+  TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
+  TRY_CHECK(acq_fifo_lvl + 2 + byte_count <= I2C_PARAM_FIFO_DEPTH);
 
   // TODO: Check for errors / status.
+  return OK_STATUS();
 }
 
 bool i2c_testutils_target_check_wr(const dif_i2c_t *i2c, uint8_t byte_count,
