@@ -60,8 +60,9 @@ const i2c_connect_conf_t i2c_conf[] = {
      .pins_outsel = {kTopEarlgreyPinmuxOutselI2c2Scl,
                      kTopEarlgreyPinmuxOutselI2c2Sda}}};
 
-void i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count,
-                      const uint8_t *data, bool skip_stop) {
+status_t i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr,
+                          uint8_t byte_count, const uint8_t *data,
+                          bool skip_stop) {
   dif_i2c_fmt_flags_t flags = kDefaultFlags;
   uint8_t data_frame;
 
@@ -70,7 +71,7 @@ void i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count,
 
   // TODO: The current function does not support write payloads
   // larger than the fifo depth.
-  CHECK(byte_count <= I2C_PARAM_FIFO_DEPTH);
+  TRY_CHECK(byte_count <= I2C_PARAM_FIFO_DEPTH);
 
   // TODO: #15377 The I2C DIF says: "Callers should prefer
   // `dif_i2c_write_byte()` instead, since that function provides clearer
@@ -80,17 +81,18 @@ void i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count,
   // First write the address.
   flags.start = true;
   data_frame = (addr << 1) | kI2cWrite;
-  CHECK_DIF_OK(dif_i2c_write_byte_raw(i2c, data_frame, flags));
+  TRY(dif_i2c_write_byte_raw(i2c, data_frame, flags));
 
   // Once address phase is through, blast the rest as generic data.
   flags = kDefaultFlags;
   for (uint8_t i = 0; i < byte_count; ++i) {
     // Issue a stop for the last byte.
     flags.stop = ((i == byte_count - 1) && !skip_stop);
-    CHECK_DIF_OK(dif_i2c_write_byte_raw(i2c, data[i], flags));
+    TRY(dif_i2c_write_byte_raw(i2c, data[i], flags));
   }
 
   // TODO: Check for errors / status.
+  return OK_STATUS();
 }
 
 status_t i2c_testutils_rd(const dif_i2c_t *i2c, uint8_t addr,
