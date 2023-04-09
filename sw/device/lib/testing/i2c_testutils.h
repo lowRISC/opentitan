@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 
@@ -18,9 +19,11 @@
  * @param byte_count The number of bytes to be written.
  * @param data Stream of data bytes to be written.
  * @param skip_stop Skip the stop bit as this may be chained with a read.
+ * @return The result of the operation.
  */
-void i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count,
-                      const uint8_t *data, bool skip_stop);
+status_t i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr,
+                          uint8_t byte_count, const uint8_t *data,
+                          bool skip_stop);
 
 /**
  * Construct an I2C read as an I2C host.
