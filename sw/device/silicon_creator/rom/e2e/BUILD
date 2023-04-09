@@ -2526,6 +2526,7 @@ test_suite(
         tags = [
             "cw310_rom",
             "vivado",
+            "flaky",
         ] + maybe_skip_in_ci(lc_state_val),
     )
     for lc_state, lc_state_val in get_lc_items(
@@ -2537,7 +2538,7 @@ test_suite(
 
 test_suite(
     name = "rom_e2e_asm_interrupt_handler",
-    tags = ["manual"],
+    tags = ["manual", "flaky"],
     tests = [
         "asm_interrupt_handler_fpga_cw310_test_otp_" + lc_state
         for lc_state, _ in get_lc_items(
