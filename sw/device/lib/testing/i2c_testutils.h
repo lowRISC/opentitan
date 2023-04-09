@@ -83,8 +83,9 @@ bool i2c_testutils_target_check_rd(const dif_i2c_t *i2c, uint8_t *addr,
  *
  * @param i2c A I2C DIF handle.
  * @param byte_count The number of bytes to be written.
+ * @return The result of the operation.
  */
-void i2c_testutils_target_wr(const dif_i2c_t *i2c, uint8_t byte_count);
+status_t i2c_testutils_target_wr(const dif_i2c_t *i2c, uint8_t byte_count);
 
 /**
  * Check completion of an I2C write as an I2C device.
