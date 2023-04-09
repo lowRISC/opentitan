@@ -28,8 +28,10 @@ void i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count,
  * @param i2c An I2C DIF handle.
  * @param addr The device address for the transaction.
  * @param byte_count The number of bytes to be read.
+ * @return The result of the operation.
  */
-void i2c_testutils_rd(const dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count);
+status_t i2c_testutils_rd(const dif_i2c_t *i2c, uint8_t addr,
+                          uint8_t byte_count);
 
 /**
  * Check that the target I2C device received the start of a transaction.

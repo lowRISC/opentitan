@@ -1282,8 +1282,9 @@ static void max_power_task(void *task_parameters) {
 
     // Read data from I2C RX FIFO.
     for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
-      i2c_testutils_rd(i2c_handles[ii], /*addr=*/ii + 1,
-                       /*byte_count=*/I2C_PARAM_FIFO_DEPTH - 1);
+      CHECK_STATUS_OK(
+          i2c_testutils_rd(i2c_handles[ii], /*addr=*/ii + 1,
+                           /*byte_count=*/I2C_PARAM_FIFO_DEPTH - 1));
     };
 
     // Make sure all data has been read back.
