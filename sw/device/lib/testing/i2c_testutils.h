@@ -60,9 +60,10 @@ bool i2c_testutils_target_check_end(const dif_i2c_t *i2c, uint8_t *cont_byte);
  * @param i2c An I2C DIF handle.
  * @param byte_count The number of bytes to be read.
  * @param data Array of data bytes to be sent.
+ * @return The result of the operation.
  */
-void i2c_testutils_target_rd(const dif_i2c_t *i2c, uint8_t byte_count,
-                             const uint8_t *data);
+status_t i2c_testutils_target_rd(const dif_i2c_t *i2c, uint8_t byte_count,
+                                 const uint8_t *data);
 
 /**
  * Check completion of an I2C read as an I2C device.

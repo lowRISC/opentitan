@@ -149,19 +149,19 @@ bool i2c_testutils_target_check_end(const dif_i2c_t *i2c, uint8_t *cont_byte) {
   return true;
 }
 
-void i2c_testutils_target_rd(const dif_i2c_t *i2c, uint8_t byte_count,
-                             const uint8_t *data) {
+status_t i2c_testutils_target_rd(const dif_i2c_t *i2c, uint8_t byte_count,
+                                 const uint8_t *data) {
   uint8_t tx_fifo_lvl, acq_fifo_lvl;
-  CHECK_DIF_OK(
-      dif_i2c_get_fifo_levels(i2c, NULL, NULL, &tx_fifo_lvl, &acq_fifo_lvl));
+  TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, &tx_fifo_lvl, &acq_fifo_lvl));
   // Check there's space in tx_fifo and acq_fifo
-  CHECK(tx_fifo_lvl + byte_count <= I2C_PARAM_FIFO_DEPTH);
-  CHECK(acq_fifo_lvl + 2 <= I2C_PARAM_FIFO_DEPTH);
+  TRY_CHECK(tx_fifo_lvl + byte_count <= I2C_PARAM_FIFO_DEPTH);
+  TRY_CHECK(acq_fifo_lvl + 2 <= I2C_PARAM_FIFO_DEPTH);
 
   for (uint8_t i = 0; i < byte_count; ++i) {
-    CHECK_DIF_OK(dif_i2c_transmit_byte(i2c, data[i]));
+    TRY(dif_i2c_transmit_byte(i2c, data[i]));
   }
   // TODO: Check for errors / status.
+  return OK_STATUS();
 }
 
 bool i2c_testutils_target_check_rd(const dif_i2c_t *i2c, uint8_t *addr,
