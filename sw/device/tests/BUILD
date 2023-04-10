@@ -5,6 +5,8 @@
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules:opentitan_test.bzl",
+    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
+    "OPENTITANTOOL_OPENOCD_TEST_CMDS",
     "ROM_BOOT_FAILURE_MSG",
     "cw310_params",
     "dv_params",
@@ -2273,22 +2275,9 @@ opentitan_functest(
             "jtag",
             "vivado",
         ],
-        test_cmds = [
-            "--rom-kind=rom",
-            "--bitstream=\"$(rootpath {bitstream})\"",
-            "--bootstrap=\"$(rootpath {flash})\"",
-            "--openocd=\"$(rootpath //third_party/openocd:openocd_bin)\"",
-            "--openocd-adapter-config=\"$(rootpath //third_party/openocd:jtag_adapter_cfg)\"",
-            "--openocd-riscv-target-config=\"$(rootpath //util/openocd/target:lowrisc-earlgrey.cfg)\"",
-            "--openocd-lc-target-config=\"$(rootpath //util/openocd/target:lowrisc-earlgrey-lc.cfg)\"",
-        ],
+        test_cmds = OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
-    data = [
-        "//third_party/openocd:jtag_adapter_cfg",
-        "//third_party/openocd:openocd_bin",
-        "//util/openocd/target:lowrisc-earlgrey.cfg",
-        "//util/openocd/target:lowrisc-earlgrey-lc.cfg",
-    ],
+    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
     targets = ["cw310_rom"],
     test_harness = "//sw/host/tests/chip/jtag",
     deps = [
