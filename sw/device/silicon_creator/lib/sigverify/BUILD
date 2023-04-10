@@ -16,6 +16,7 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "rsa_key",
+    srcs = ["rsa_key.c"],
     hdrs = ["rsa_key.h"],
 )
 
