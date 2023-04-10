@@ -9,7 +9,6 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Randomization weights in percentages, and other related settings.
 
   // Maximun number of times the vseq is randomized and rerun.
-  // TODO: This should move to `dv_base_seq_cfg`.
   uint max_num_trans;
 
   // Memory protection configuration.
@@ -27,7 +26,6 @@ class flash_ctrl_seq_cfg extends uvm_object;
   flash_ctrl_pkg::flash_op_e flash_only_op;
 
   // Weights to enable read / program and erase for each mem region.
-  // TODO: Should these be per region?
   uint mp_region_en_pc;
   uint mp_region_read_en_pc;
   uint mp_region_program_en_pc;
