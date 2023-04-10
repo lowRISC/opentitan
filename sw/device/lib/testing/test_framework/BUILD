@@ -279,8 +279,7 @@ dual_cc_library(
 
 _FLOW_CONTROL_MESSAGE = (
     "Mary had a little lamb, its fleece was white as snow. " +
-    "Everywhere that Mary went the lamb was sure to go." +
-    "\n"
+    "Everywhere that Mary went the lamb was sure to go."
 )
 
 opentitan_functest(
@@ -293,7 +292,7 @@ opentitan_functest(
             "--exec=\"console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control\"",
             "console",
             "--flow-control",
-            "--send=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
+            "--send=\"{}\n\"".format(_FLOW_CONTROL_MESSAGE),
             "--exit-success=\"RESULT:{}\"".format(_FLOW_CONTROL_MESSAGE),
             "--exit-failure=\"PASS|FAIL\"",
         ],
@@ -307,7 +306,7 @@ opentitan_functest(
             "--exec \"console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control\"",
             "console",
             "--flow-control",
-            "--send=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
+            "--send=\"{}\n\"".format(_FLOW_CONTROL_MESSAGE),
             "--exit-success=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
             "--exit-failure=\"PASS|FAIL\"",
         ],

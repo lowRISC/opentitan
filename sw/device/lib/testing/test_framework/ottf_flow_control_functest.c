@@ -27,11 +27,11 @@ status_t ottf_flow_control_test(ujson_t *uj) {
     // Print a bunch of stuff so that ibex will be busy
     // driving the transmitter while the host sends data
     // to the UART.
-    base_printf("WAIT\n");
+    base_printf("WAIT\r\n");
     busy_spin_micros(delay);
   }
 
-  base_printf("Reading\n");
+  base_printf("Reading\r\n");
   // Receive a line of text into a buffer.
   uint8_t buf[256] = {0};
   for (size_t i = 0; i < sizeof(buf) - 1; ++i) {
@@ -47,7 +47,7 @@ status_t ottf_flow_control_test(ujson_t *uj) {
 
   // Print out the received data so the test can check that it matches what was
   // sent.
-  base_printf("RESULT:%s\n", buf);
+  base_printf("RESULT:%s\r\n", buf);
   return OK_STATUS();
 }
 
