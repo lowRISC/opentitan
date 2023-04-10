@@ -63,6 +63,16 @@ status_t otp_ctrl_testutils_lock_partition(const dif_otp_ctrl_t *otp,
   return otp_ctrl_testutils_wait_for_dai(otp);
 }
 
+status_t otp_ctrl_testutils_dai_read32(const dif_otp_ctrl_t *otp,
+                                       dif_otp_ctrl_partition_t partition,
+                                       uint32_t address, uint32_t *result) {
+  TRY(otp_ctrl_testutils_wait_for_dai(otp));
+  TRY(dif_otp_ctrl_dai_read_start(otp, partition, address));
+  TRY(otp_ctrl_testutils_wait_for_dai(otp));
+  TRY(dif_otp_ctrl_dai_read32_end(otp, result));
+  return OK_STATUS();
+}
+
 status_t otp_ctrl_testutils_dai_read64(const dif_otp_ctrl_t *otp,
                                        dif_otp_ctrl_partition_t partition,
                                        uint32_t address, uint64_t *result) {
@@ -91,6 +101,27 @@ static status_t otp_ctrl_dai_write_error_check(const dif_otp_ctrl_t *otp) {
     return OK_STATUS();
   }
   return INTERNAL();
+}
+
+status_t otp_ctrl_testutils_dai_write32(const dif_otp_ctrl_t *otp,
+                                        dif_otp_ctrl_partition_t partition,
+                                        uint32_t start_address,
+                                        const uint32_t *buffer, size_t len) {
+  uint32_t stop_address = start_address + (len * sizeof(uint32_t));
+  for (uint32_t addr = start_address, i = 0; addr < stop_address;
+       addr += sizeof(uint32_t), ++i) {
+    TRY(otp_ctrl_testutils_wait_for_dai(otp));
+    TRY(dif_otp_ctrl_dai_program32(otp, partition, addr, buffer[i]));
+    TRY(otp_ctrl_testutils_wait_for_dai(otp));
+    TRY(otp_ctrl_dai_write_error_check(otp));
+
+    uint32_t read_data;
+    TRY(otp_ctrl_testutils_dai_read32(otp, partition, addr, &read_data));
+    if (read_data != buffer[i]) {
+      return INTERNAL();
+    }
+  }
+  return OK_STATUS();
 }
 
 status_t otp_ctrl_testutils_dai_write64(const dif_otp_ctrl_t *otp,
