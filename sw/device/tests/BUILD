@@ -2271,22 +2271,15 @@ opentitan_functest(
     srcs = ["example_test_from_flash.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_test_unlocked0",
-        tags = [
-            "jtag",
-            "vivado",
-        ],
+        tags = ["jtag"],
         test_cmds = OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
     targets = ["cw310_rom"],
     test_harness = "//sw/host/tests/chip/jtag",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
 
