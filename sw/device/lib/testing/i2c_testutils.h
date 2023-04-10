@@ -38,9 +38,10 @@ status_t i2c_testutils_rd(const dif_i2c_t *i2c, uint8_t addr,
  *
  * @param i2c An I2C DIF handle.
  * @param[out] addr The address that was used for the transaction.
- * @return Direction of transaction is signaled as Read and not Write.
+ * @return kOk(dir) Where dir indicates the direction of transaction is signaled
+ * as Read(1) and not Write(0), or an error.
  */
-bool i2c_testutils_target_check_start(const dif_i2c_t *i2c, uint8_t *addr);
+status_t i2c_testutils_target_check_start(const dif_i2c_t *i2c, uint8_t *addr);
 
 /**
  * Check that the target I2C device received the end of a transaction.
@@ -49,10 +50,12 @@ bool i2c_testutils_target_check_start(const dif_i2c_t *i2c, uint8_t *addr);
  * @param[out] cont_byte The contents of the acquired restart byte if host has
  *                       signaled a repeated START, can be null if test doesn't
  *                       accept a repeated start.
- * @return Repeated start has signaled that the transaction should continue and
- *         the contents of cont_byte are valid.
+ * @return kOk(dir) Where dir indicates that repeated start has signaled that
+ * the transaction should continue and the contents of cont_byte are valid, or
+ * an error.
  */
-bool i2c_testutils_target_check_end(const dif_i2c_t *i2c, uint8_t *cont_byte);
+status_t i2c_testutils_target_check_end(const dif_i2c_t *i2c,
+                                        uint8_t *cont_byte);
 
 /**
  * Prepare for, and respond to, an I2C read as an I2C device.
@@ -72,11 +75,12 @@ status_t i2c_testutils_target_rd(const dif_i2c_t *i2c, uint8_t byte_count,
  * @param[out] addr Address that received the I2C read.
  * @param[out] cont_byte received continuation byte. Can be null if test
  *                       expects STOP signal.
- * @return Repeated start has signaled that the transaction should continue and
- *         the contents of cont_byte are valid.
+ * @return kOk(dir) Where dir indicates that repeated start has signaled that
+ * the transaction should continue and the contents of cont_byte are valid, or
+ * an error.
  */
-bool i2c_testutils_target_check_rd(const dif_i2c_t *i2c, uint8_t *addr,
-                                   uint8_t *cont_byte);
+status_t i2c_testutils_target_check_rd(const dif_i2c_t *i2c, uint8_t *addr,
+                                       uint8_t *cont_byte);
 
 /**
  * Prepare for an I2C write as an I2C device.
@@ -96,12 +100,13 @@ status_t i2c_testutils_target_wr(const dif_i2c_t *i2c, uint8_t byte_count);
  * @param[out] bytes Array of bytes to store the result of the write.
  * @param[out] cont_byte Received continuation byte. Can be null if test expects
  *                       STOP signal.
- * @return Repeated START has signaled that the transaction should continue and
- *         the contents of cont_byte are valid.
+ * @return kOk(dir) Where dir indicates that repeated START has signaled that
+ * the transaction should continue and the contents of cont_byte are valid, or
+ * an error.
  */
-bool i2c_testutils_target_check_wr(const dif_i2c_t *i2c, uint8_t byte_count,
-                                   uint8_t *addr, uint8_t *bytes,
-                                   uint8_t *cont_byte);
+status_t i2c_testutils_target_check_wr(const dif_i2c_t *i2c, uint8_t byte_count,
+                                       uint8_t *addr, uint8_t *bytes,
+                                       uint8_t *cont_byte);
 
 /**
  * Initialize the pinmux.

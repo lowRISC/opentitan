@@ -240,7 +240,7 @@ bool test_main(void) {
   CHECK(tx_fifo_lvl == 0);
 
   uint8_t addr;
-  i2c_testutils_target_check_rd(&i2c, &addr, NULL);
+  CHECK_STATUS_OK(i2c_testutils_target_check_rd(&i2c, &addr, NULL));
   check_addr(addr, id0, id1);
 
   // Read data from i2c device.
@@ -252,8 +252,8 @@ bool test_main(void) {
                                                // junk
 
   uint8_t received_data[kI2cByteCount];
-  i2c_testutils_target_check_wr(&i2c, kI2cByteCount, &addr, received_data,
-                                NULL);
+  CHECK_STATUS_OK(i2c_testutils_target_check_wr(&i2c, kI2cByteCount, &addr,
+                                                received_data, NULL));
   check_addr(addr, id0, id1);
 
   for (uint8_t i = 0; i < kI2cByteCount; ++i) {
