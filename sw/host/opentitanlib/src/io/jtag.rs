@@ -55,6 +55,8 @@ impl JtagParams {
 /// Errors related to the JTAG interface.
 #[derive(Error, Debug, Deserialize, Serialize)]
 pub enum JtagError {
+    #[error("Operation not valid on selected JTAG TAP: {0:?}")]
+    Tap(JtagTap),
     #[error("JTAG timeout")]
     Timeout,
     #[error("JTAG busy")]
@@ -100,7 +102,7 @@ pub trait Jtag {
 }
 
 /// Available JTAG TAPs (software TAPS) in OpenTitan.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub enum JtagTap {
     /// RISC-V core's TAP.
     RiscvTap,

@@ -13,13 +13,13 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::dif::lc_ctrl::LcCtrlReg;
 use crate::impl_serializable_error;
-use crate::io::jtag::{Jtag, JtagParams, JtagTap};
+use crate::io::jtag::{Jtag, JtagError, JtagParams, JtagTap};
 use crate::util::parse_int::ParseInt;
 use crate::util::printer;
 
@@ -34,6 +34,8 @@ pub struct OpenOcdServer {
     /// Accumulators for OpenOCD stdout and stderr
     openocd_accumulated_stdout: Arc<Mutex<String>>,
     openocd_accumulated_stderr: Arc<Mutex<String>>,
+    /// JTAG TAP OpenOCD is connected to.
+    jtag_tap: Cell<Option<JtagTap>>,
 }
 
 /// Errors related to the OpenOCD server.
@@ -58,6 +60,7 @@ impl OpenOcdServer {
             openocd_socket_stream: Default::default(),
             openocd_accumulated_stdout: Default::default(),
             openocd_accumulated_stderr: Default::default(),
+            jtag_tap: Default::default(),
         })
     }
 
@@ -92,6 +95,7 @@ impl OpenOcdServer {
             JtagTap::RiscvTap => &self.opts.openocd_riscv_target_config,
             JtagTap::LcTap => &self.opts.openocd_lc_target_config,
         };
+        self.jtag_tap.set(Some(tap));
         if let Some(cfg) = &target {
             args.extend(["-f", cfg]);
         }
@@ -166,6 +170,9 @@ impl OpenOcdServer {
             .wait()
             .context("failed to wait for OpenOCD server to exit")?;
 
+        // Cleanup TAP selection.
+        self.jtag_tap.set(None);
+
         Ok(())
     }
 
@@ -175,6 +182,9 @@ impl OpenOcdServer {
             // OpenOCD wasn't started, do nothing.
             return Ok(());
         };
+
+        // Cleanup TAP selection.
+        self.jtag_tap.set(None);
 
         child.kill()?;
 
@@ -291,6 +301,10 @@ impl Jtag for OpenOcdServer {
     }
 
     fn read_lc_ctrl_reg(&self, reg: &LcCtrlReg) -> Result<u32> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::LcTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
         let reg_offset = reg.word_offset();
         let cmd = format!("riscv dmi_read 0x{reg_offset:x}");
         let response = self.send_tcl_cmd(cmd.as_str())?;
@@ -303,6 +317,10 @@ impl Jtag for OpenOcdServer {
     }
 
     fn write_lc_ctrl_reg(&self, reg: &LcCtrlReg, value: u32) -> Result<()> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::LcTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
         let reg_offset = reg.word_offset();
         let cmd = format!("riscv dmi_write 0x{reg_offset:x} 0x{value:x}");
         let response = self.send_tcl_cmd(cmd.as_str())?;
@@ -315,22 +333,42 @@ impl Jtag for OpenOcdServer {
     }
 
     fn read_memory(&self, addr: u32, buf: &mut [u8]) -> Result<usize> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
         self.read_memory_impl(addr, buf)
     }
 
     fn read_memory32(&self, addr: u32, buf: &mut [u32]) -> Result<usize> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
         self.read_memory_impl(addr, buf)
     }
 
     fn write_memory(&self, addr: u32, buf: &[u8]) -> Result<()> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
         self.write_memory_impl(addr, buf)
     }
 
     fn write_memory32(&self, addr: u32, buf: &[u32]) -> Result<()> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
         self.write_memory_impl(addr, buf)
     }
 
     fn halt(&self) -> Result<()> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
         let response = self.send_tcl_cmd("halt")?;
         if !response.is_empty() {
             bail!("unexpected response: '{response}'");
@@ -340,6 +378,10 @@ impl Jtag for OpenOcdServer {
     }
 
     fn resume(&self) -> Result<()> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
         let response = self.send_tcl_cmd("resume")?;
         if !response.is_empty() {
             bail!("unexpected response: '{response}'");
