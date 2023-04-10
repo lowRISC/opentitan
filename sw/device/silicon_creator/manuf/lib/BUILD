@@ -1,9 +1,63 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest")
+
+load(
+    "//rules:opentitan_test.bzl",
+    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
+    "cw310_params",
+    "opentitan_functest",
+)
+load("//rules:const.bzl", "CONST", "get_lc_items")
 
 package(default_visibility = ["//visibility:public"])
+
+_TEST_UNLOCKED_LC_ITEMS = get_lc_items(
+    CONST.LCV.TEST_UNLOCKED0,
+    CONST.LCV.TEST_UNLOCKED1,
+    CONST.LCV.TEST_UNLOCKED2,
+    CONST.LCV.TEST_UNLOCKED3,
+    CONST.LCV.TEST_UNLOCKED4,
+    CONST.LCV.TEST_UNLOCKED5,
+    CONST.LCV.TEST_UNLOCKED6,
+    CONST.LCV.TEST_UNLOCKED7,
+)
+
+_TEST_LOCKED_LC_ITEMS = get_lc_items(
+    CONST.LCV.TEST_LOCKED0,
+    CONST.LCV.TEST_LOCKED1,
+    CONST.LCV.TEST_LOCKED2,
+    CONST.LCV.TEST_LOCKED3,
+    CONST.LCV.TEST_LOCKED4,
+    CONST.LCV.TEST_LOCKED5,
+    CONST.LCV.TEST_LOCKED6,
+)
+
+_MISSION_MODE_LC_ITEMS = get_lc_items(
+    CONST.LCV.DEV,
+    CONST.LCV.PROD,
+    CONST.LCV.PROD_END,
+    CONST.LCV.RMA,
+)
+
+_ALL_LC_ITEMS = (
+    _TEST_LOCKED_LC_ITEMS +
+    _TEST_UNLOCKED_LC_ITEMS +
+    _MISSION_MODE_LC_ITEMS
+)
+
+_MANUF_LC_TRANSITION_TEST_CMDS = [
+    "--rom-kind=rom",
+    "--bitstream=\"$(rootpath {bitstream})\"",
+    "--openocd=\"$(rootpath //third_party/openocd:openocd_bin)\"",
+    "--openocd-adapter-config=\"$(rootpath //third_party/openocd:jtag_adapter_cfg)\"",
+    "--openocd-riscv-target-config=\"$(rootpath //util/openocd/target:lowrisc-earlgrey.cfg)\"",
+    "--openocd-lc-target-config=\"$(rootpath //util/openocd/target:lowrisc-earlgrey-lc.cfg)\"",
+]
+
+_MANUF_LC_TRANSITION_TEST_CMDS_WBOOTSTRAP = _MANUF_LC_TRANSITION_TEST_CMDS + [
+    "--bootstrap=\"$(rootpath {flash})\"",
+]
 
 cc_library(
     name = "individualize",
@@ -88,5 +142,42 @@ opentitan_functest(
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+# We bootstrap code into flash in LC states where CPU execution is enabled. In
+# other LC states, we do not perform bootstrap, as it will not succeed.
+[
+    opentitan_functest(
+        name = "manuf_scrap_functest_{}".format(lc_state.lower()),
+        srcs = ["empty_functest.c"],
+        cw310 = cw310_params(
+            bitstream = "//hw/bitstream:rom_otp_{}".format(lc_state.lower()),
+            tags = ["jtag"],
+            test_cmds = (
+                _MANUF_LC_TRANSITION_TEST_CMDS if (
+                    (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS
+                ) else _MANUF_LC_TRANSITION_TEST_CMDS_WBOOTSTRAP
+            ) + [
+                "--initial-lc-state=\"{}\"".format(lc_state),
+            ],
+        ),
+        data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        targets = ["cw310_rom"],
+        test_harness = "//sw/host/tests/manuf/manuf_scrap",
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state, lc_val in _ALL_LC_ITEMS
+]
+
+test_suite(
+    name = "manuf_scrap_functest",
+    tags = ["manual"],
+    tests = [
+        ":manuf_scrap_functest_{}".format(lc_state)
+        for lc_state, _ in _ALL_LC_ITEMS
     ],
 )
