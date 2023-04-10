@@ -20,6 +20,22 @@ DEFAULT_TEST_FAILURE_MSG = "({})|({})".format(
     ROM_BOOT_FAILURE_MSG,
 )
 
+OPENTITANTOOL_OPENOCD_TEST_CMDS = [
+    "--rom-kind=rom",
+    "--bitstream=\"$(rootpath {bitstream})\"",
+    "--bootstrap=\"$(rootpath {flash})\"",
+    "--openocd=\"$(rootpath //third_party/openocd:openocd_bin)\"",
+    "--openocd-adapter-config=\"$(rootpath //third_party/openocd:jtag_adapter_cfg)\"",
+    "--openocd-riscv-target-config=\"$(rootpath //util/openocd/target:lowrisc-earlgrey.cfg)\"",
+    "--openocd-lc-target-config=\"$(rootpath //util/openocd/target:lowrisc-earlgrey-lc.cfg)\"",
+]
+OPENTITANTOOL_OPENOCD_DATA_DEPS = [
+    "//third_party/openocd:jtag_adapter_cfg",
+    "//third_party/openocd:openocd_bin",
+    "//util/openocd/target:lowrisc-earlgrey.cfg",
+    "//util/openocd/target:lowrisc-earlgrey-lc.cfg",
+]
+
 # This constant holds a dictionary of slot-specific linker script dependencies
 # that determine how an `opentitan_flash_binary` is built.
 _FLASH_SLOTS = {
