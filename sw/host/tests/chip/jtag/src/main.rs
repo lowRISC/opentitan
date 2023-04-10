@@ -102,7 +102,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     assert_eq!(lc_ctrl_transition_regwen[0], 0);
     let mut lc_ctrl_transition_if = [u8::from(MultiBitBool8::True) as u32; 1];
 
-    jtag.write_memory32(lc_ctrl_transition_if_addr, &mut lc_ctrl_transition_if)?;
+    jtag.write_memory32(lc_ctrl_transition_if_addr, &lc_ctrl_transition_if)?;
     assert_eq!(
         jtag.read_memory32(
             lc_ctrl_transition_regwen_addr,
@@ -113,7 +113,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     assert_eq!(lc_ctrl_transition_regwen[0], 1);
     // Release mutex
     lc_ctrl_transition_if[0] = u8::from(MultiBitBool8::False) as u32;
-    jtag.write_memory32(lc_ctrl_transition_if_addr, &mut lc_ctrl_transition_if)?;
+    jtag.write_memory32(lc_ctrl_transition_if_addr, &lc_ctrl_transition_if)?;
     assert_eq!(
         jtag.read_memory32(
             lc_ctrl_transition_regwen_addr,
@@ -130,19 +130,14 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let mut ram = [0u8; SIZE];
     assert_eq!(jtag.read_memory(test_ram_addr, &mut ram)?, SIZE);
     log::info!("ram: {:?}", ram);
-    let mut test_data = [0u8; SIZE];
-    for i in 0..SIZE {
-        test_data[i] = i as u8;
-    }
+    let test_data = (0..SIZE as u8).collect::<Vec<u8>>();
     jtag.write_memory(test_ram_addr, &test_data)?;
     let mut test_data2 = [0u8; SIZE];
     assert_eq!(jtag.read_memory(test_ram_addr, &mut test_data2)?, SIZE);
     log::info!("ram: {:?}", test_data2);
-    for i in 0..SIZE {
-        assert_eq!(test_data2[i], i as u8);
-    }
+    assert_eq!(test_data, test_data2);
     // restore RAM
-    jtag.write_memory(test_ram_addr, &mut ram)?;
+    jtag.write_memory(test_ram_addr, &ram)?;
     jtag.resume()?;
 
     jtag.disconnect()?;
