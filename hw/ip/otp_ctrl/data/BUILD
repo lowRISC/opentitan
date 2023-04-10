@@ -411,7 +411,7 @@ otp_image(
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
         ":otp_json_alert_digest_cfg",
-        ":otp_json_hw_cfg",
+        ":otp_json_hw_cfg_empty_and_unlocked",
     ],
 )
 
