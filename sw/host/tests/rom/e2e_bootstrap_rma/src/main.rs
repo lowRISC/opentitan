@@ -75,7 +75,7 @@ enum OpenocdTclBlock<'a> {
 
 impl OpenocdTclBlock<'_> {
     /// Compiles this operation to a JimTCL string that OpenOCD can execute.
-    fn to_tcl(self) -> String {
+    fn into_tcl(self) -> String {
         match self {
             // Contrary to OpenOCD's documentation [0], I can't get `shutdown
             // [error]` to affect OpenOCD's exit code.  My hacky workaround is
@@ -198,7 +198,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     ];
 
     let script_contents: String = script_transition_to_rma
-        .map(OpenocdTclBlock::to_tcl)
+        .map(OpenocdTclBlock::into_tcl)
         .join("\n");
 
     const SCRIPT_FILE_PATH: &str = "tmp_script.cfg";
@@ -337,7 +337,7 @@ mod tests {
     #[test]
     fn openocd_statements() {
         assert_eq!(
-            OpenocdTclBlock::AssertRegEq(LcCtrlReg::LcIdState, 0x3c).to_tcl(),
+            OpenocdTclBlock::AssertRegEq(LcCtrlReg::LcIdState, 0x3c).into_tcl(),
             r#"
 set reg_value [ lc_ctrl.tap.0 riscv dmi_read 0xf ]
 if { $reg_value != 60 } {
@@ -347,7 +347,7 @@ if { $reg_value != 60 } {
         );
 
         assert_eq!(
-            OpenocdTclBlock::PollUntilRegEq(LcCtrlReg::TransitionToken0, 0x1234).to_tcl(),
+            OpenocdTclBlock::PollUntilRegEq(LcCtrlReg::TransitionToken0, 0x1234).into_tcl(),
             r#"
 for { set i 0 } { $i < 1000 } { set i [expr {$i + 1}] } {
     set reg_value [ lc_ctrl.tap.0 riscv dmi_read 0x6 ]
@@ -362,11 +362,11 @@ if { $i == 1000 } {
 }"#
         );
         assert_eq!(
-            OpenocdTclBlock::WriteReg(LcCtrlReg::TransitionToken3, 0xabcd).to_tcl(),
+            OpenocdTclBlock::WriteReg(LcCtrlReg::TransitionToken3, 0xabcd).into_tcl(),
             "lc_ctrl.tap.0 riscv dmi_write 0x9 0xabcd"
         );
 
-        assert_eq!(OpenocdTclBlock::Echo("bar").to_tcl(), "echo \"bar\"");
+        assert_eq!(OpenocdTclBlock::Echo("bar").into_tcl(), "echo \"bar\"");
     }
 
     /// Stringifying echo statements should panic when they contain unsupported
@@ -374,6 +374,6 @@ if { $i == 1000 } {
     #[test]
     #[should_panic]
     fn openocd_statements_echo_panic() {
-        let _s = OpenocdTclBlock::Echo("bad string \"").to_tcl();
+        let _s = OpenocdTclBlock::Echo("bad string \"").into_tcl();
     }
 }
