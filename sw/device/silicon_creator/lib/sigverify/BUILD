@@ -22,6 +22,7 @@ cc_library(
 
 cc_library(
     name = "spx_key",
+    srcs = ["spx_key.c"],
     hdrs = ["spx_key.h"],
     deps = ["//sw/device/silicon_creator/lib/sigverify/sphincsplus:params"],
 )
