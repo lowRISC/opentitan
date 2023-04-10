@@ -271,6 +271,43 @@ otp_json(
     seed = "94259314771464387",
 )
 
+# Represents a device in DEV state with the SECRET0 and SECRET1 partitions in
+# locked state. SECRET2 partition is unlocked.
+otp_json(
+    name = "otp_json_dev_individualized",
+    partitions = [
+        otp_partition(
+            name = "SECRET0",
+            items = {
+                "TEST_UNLOCK_TOKEN": "<random>",
+                "TEST_EXIT_TOKEN": "<random>",
+            },
+            lock = True,
+        ),
+        otp_partition(
+            name = "SECRET1",
+            items = {
+                "FLASH_ADDR_KEY_SEED": "<random>",
+                "FLASH_DATA_KEY_SEED": "<random>",
+                "SRAM_DATA_KEY_SEED": "<random>",
+            },
+            lock = True,
+        ),
+        # SECRET2 partition is empty and in unlocked state to allow
+        # personalization to configure the device secrets.
+        otp_partition(
+            name = "SECRET2",
+            lock = False,
+        ),
+        otp_partition(
+            name = "LIFE_CYCLE",
+            count = "5",
+            state = "DEV",
+        ),
+    ],
+    seed = "94259314771464387",
+)
+
 otp_json(
     name = "otp_json_prod",
     partitions = [
@@ -394,6 +431,14 @@ otp_alert_digest(
 otp_image(
     name = "img_dev",
     src = ":otp_json_dev",
+    overlays = STD_OTP_OVERLAYS,
+)
+
+# Represents a device in DEV state with the SECRET0 and SECRET1 partitions in
+# locked state. SECRET2 partition is unlocked.
+otp_image(
+    name = "img_dev_individualized",
+    src = ":otp_json_dev_individualized",
     overlays = STD_OTP_OVERLAYS,
 )
 

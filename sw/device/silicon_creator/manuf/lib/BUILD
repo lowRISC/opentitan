@@ -18,6 +18,7 @@ cc_library(
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
     ],
 )
@@ -26,7 +27,7 @@ opentitan_functest(
     name = "provisioning_functest",
     srcs = ["provisioning_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_otp_dev",
+        bitstream = "//hw/bitstream:rom_otp_dev_individualized",
     ),
     targets = [
         "cw310_rom",
@@ -41,6 +42,8 @@ opentitan_functest(
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

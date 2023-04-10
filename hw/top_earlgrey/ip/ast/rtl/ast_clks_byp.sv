@@ -104,23 +104,28 @@ always_ff @( negedge clk_ast_ext_scn, negedge rst_sw_ckbpe_n ) begin
   end
 end
 
-logic clk_ast_ext, clk_ext_en, clk_ext_scn;
+logic clk_ext_en, clk_ext_scn;
+
+assign clk_ext_en = sw_clk_byp_en;
+`ifdef AST_BYPASS_CLK
+logic clk_ast_ext;
 
 prim_clock_gating #(
   .NoFpgaGate(1'b1)
 ) u_clk_ast_ext_gating (
-`ifndef AST_BYPASS_CLK
-  .clk_i( clk_ast_ext_i ),
-`else
   .clk_i( clk_ext_sys_i ),
-`endif
   .en_i( clk_ext_en ),
   .test_en_i( 1'b0 ),
   .clk_o( clk_ast_ext )
 );
 
-assign clk_ext_en = sw_clk_byp_en;
 assign clk_ext_scn = scan_mode_i ? clk_osc_sys_i : clk_ast_ext;
+`else
+//we can't use prim_clock_gating here for the following reason:
+//prim_clock_gating default behavior at wakeup: clk_i=1'bx, en_i=don't care --> clk_o=1'bx
+//we want to mask that 1'bx as some tests doesn't use clk_ast_ext_i
+assign clk_ext_scn = scan_mode_i ? clk_osc_sys_i : (clk_ast_ext_i && clk_ext_en);
+`endif
 
 // Local EXT clock buffer
 ////////////////////////////////////////

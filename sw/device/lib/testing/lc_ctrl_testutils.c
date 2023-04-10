@@ -102,3 +102,14 @@ status_t lc_ctrl_testutils_check_lc_state(const dif_lc_ctrl_t *lc_ctrl,
             lc_state);
   return OK_STATUS();
 }
+
+status_t lc_ctrl_testutils_operational_state_check(
+    const dif_lc_ctrl_t *lc_ctrl) {
+  dif_lc_ctrl_state_t state;
+  TRY(dif_lc_ctrl_get_state(lc_ctrl, &state));
+  if (state == kDifLcCtrlStateProd || state == kDifLcCtrlStateProdEnd ||
+      state == kDifLcCtrlStateDev) {
+    return OK_STATUS();
+  }
+  return FAILED_PRECONDITION();
+}
