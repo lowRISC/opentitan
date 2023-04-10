@@ -14,6 +14,9 @@ def rust_deps():
         #include_rustc_srcs = False,
         edition = "2021",
         versions = ["1.67.0", "nightly/2023-01-26"],
+        extra_target_triples = [
+            "riscv32imc-unknown-none-elf",
+        ],
     )
 
     rust_bindgen_dependencies()
