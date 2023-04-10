@@ -235,7 +235,7 @@ static void rsa_roundtrip(uint32_t size_bytes, const uint8_t *modulus,
   profile_start();
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
-  otbn_testutils_load_app(&otbn, kOtbnAppRsa);
+  CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppRsa));
   profile_end("Initialization");
 
   // Encrypt

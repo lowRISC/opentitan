@@ -57,7 +57,7 @@ static void check_otbn_insn_cnt(dif_otbn_t *otbn, uint32_t expected_insn_cnt) {
 static void test_barrett384(dif_otbn_t *otbn) {
   enum { kDataSizeBytes = 48 };
 
-  otbn_testutils_load_app(otbn, kAppBarrett);
+  CHECK_STATUS_OK(otbn_testutils_load_app(otbn, kAppBarrett));
 
   // a, first operand
   static const uint8_t a[kDataSizeBytes] = {10};
@@ -121,7 +121,7 @@ static void test_barrett384(dif_otbn_t *otbn) {
  * returned.
  */
 static void test_err_test(dif_otbn_t *otbn) {
-  otbn_testutils_load_app(otbn, kAppErrTest);
+  CHECK_STATUS_OK(otbn_testutils_load_app(otbn, kAppErrTest));
 
   // TODO: Turn on software_errs_fatal for err_test. Currently the model doesn't
   // support this feature so turning it on leads to a failure when run with the

@@ -88,7 +88,7 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
   LOG_INFO("Keymgr generated HW output for OTBN.");
 
   // Load the X25519 application.
-  otbn_testutils_load_app(otbn, kOtbnAppX25519);
+  CHECK_STATUS_OK(otbn_testutils_load_app(otbn, kOtbnAppX25519));
   // Run the OTBN app and retrieve the result.
   uint32_t result[8];
   run_x25519_app(otbn, result, kErrBitsOk);

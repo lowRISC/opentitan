@@ -346,7 +346,7 @@ static void test_ecdsa_p256_roundtrip(void) {
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
   otbn_init_irq();
-  otbn_testutils_load_app(&otbn, kOtbnAppP256Ecdsa);
+  CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppP256Ecdsa));
   profile_end(t_start_init, "Initialization");
 
   // Sign
@@ -361,7 +361,7 @@ static void test_ecdsa_p256_roundtrip(void) {
   // Securely wipe OTBN data memory and reload app
   LOG_INFO("Wiping OTBN DMEM and reloading app");
   otbn_wipe_dmem(&otbn);
-  otbn_testutils_load_app(&otbn, kOtbnAppP256Ecdsa);
+  CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppP256Ecdsa));
 
   // Verify
   uint8_t signature_x_r[32] = {0};
