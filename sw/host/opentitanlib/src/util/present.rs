@@ -8,7 +8,7 @@ use std::convert::TryInto;
 /// PRESENT block cipher.
 ///
 /// Based on version 1.2 of the following Python implementation
-/// https://github.com/doegox/python-cryptoplus
+/// <https://github.com/doegox/python-cryptoplus>
 pub struct Present {
     round_keys: Vec<u64>,
 }

@@ -111,7 +111,7 @@ impl LcCtrlReg {
         self.clone().into()
     }
     /// Converts the register's byte offset into a word offset for use with DMI.
-    /// https://docs.opentitan.org/hw/ip/lc_ctrl/doc/#life-cycle-tap-controller
+    /// <https://docs.opentitan.org/hw/ip/lc_ctrl/doc/#life-cycle-tap-controller>
     pub fn word_offset(&self) -> u32 {
         const BYTES_PER_WORD: u32 = std::mem::size_of::<u32>() as u32;
         assert_eq!(self.byte_offset() % BYTES_PER_WORD, 0);

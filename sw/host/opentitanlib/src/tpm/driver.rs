@@ -77,7 +77,7 @@ pub trait Driver {
     /// Write to the given TPM register.
     fn write_register(&self, register: Register, data: &[u8]) -> Result<()>;
 
-    /// Execute a TPM command and return the result as a Vec<u8> or time out.
+    /// Execute a TPM command and return the result as a `Vec<u8>` or time out.
     fn execute_command(&self, cmd: &[u8]) -> Result<Vec<u8>>;
 
     /// Fetches the current status.

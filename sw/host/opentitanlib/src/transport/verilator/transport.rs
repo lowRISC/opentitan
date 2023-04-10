@@ -38,7 +38,7 @@ pub struct Verilator {
 }
 
 impl Verilator {
-    /// Creates a verilator subprocess-hosting transport from [`options`].
+    /// Creates a verilator subprocess-hosting transport from `options`.
     pub fn from_options(options: Options) -> Result<Self> {
         lazy_static! {
             static ref UART: Regex = Regex::new("UART: Created ([^ ]+) for uart0").unwrap();
