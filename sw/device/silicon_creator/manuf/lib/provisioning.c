@@ -9,6 +9,7 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 
 #include "otp_ctrl_regs.h"
@@ -39,26 +40,6 @@ enum {
 static_assert(OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_SIZE ==
                   OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE1_SIZE,
               "Detected Root key share size mismatch");
-
-/**
- * Checks the device life cycle state to determine if it is ok to proceed with
- * provisioning.
- *
- * @param lc_ctrl Life cycle controller instance.
- * @return OK_STATUS if the device is in PROD, PROD_END or DEV state; otherwise
- * FAILED_PRECONDITION.
- */
-OT_WARN_UNUSED_RESULT
-static status_t lc_ctrl_state_check(const dif_lc_ctrl_t *lc_ctrl) {
-  // TODO: Switch to lc_ctrl_testutils.
-  dif_lc_ctrl_state_t state;
-  TRY(dif_lc_ctrl_get_state(lc_ctrl, &state));
-  if (state == kDifLcCtrlStateProd || state == kDifLcCtrlStateProdEnd ||
-      state == kDifLcCtrlStateDev) {
-    return OK_STATUS();
-  }
-  return FAILED_PRECONDITION();
-}
 
 /**
  * Performs sanity check of buffers holding a masked secret.
@@ -187,7 +168,7 @@ status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
                                            const dif_lc_ctrl_t *lc_ctrl,
                                            const dif_otp_ctrl_t *otp) {
   // Check life cycle in either PROD or DEV.
-  TRY(lc_ctrl_state_check(lc_ctrl));
+  TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
 
   // Skip if SECRET2 partition is locked. We won't be able to configure the
   // secret info flash page nor the OTP secrets if the OTP SECRET2 partition is
