@@ -489,7 +489,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Reads flash mem contents via backdoor.
   //
   // The addr arg need not be word aligned - its the same addr programmed into the `control` CSR.
-  // TODO: add support for partition.
   virtual function void flash_mem_bkdr_read(flash_op_t flash_op, ref data_q_t data);
     flash_mem_addr_attrs             addr_attrs = new(flash_op.addr);
 
@@ -544,7 +543,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   //
   // The addr need not be bus word aligned, Its the same addr programmed into the `control` CSR.
   // The data queue is sized for the bus word.
-  // TODO: support for partition.
   virtual function void flash_mem_bkdr_write(flash_op_t flash_op, flash_mem_init_e scheme,
                                              data_q_t data = {});
     flash_mem_addr_attrs addr_attrs = new(flash_op.addr);
