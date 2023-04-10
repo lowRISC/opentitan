@@ -624,6 +624,27 @@ impl TransportWrapper {
         std::thread::sleep(reset_delay);
         Ok(())
     }
+
+    pub fn reset_target_w_strappings(
+        &self,
+        reset_delay: Duration,
+        clear_uart_rx: bool,
+        added_strappings: &[&str],
+        hold_added_strappings: bool,
+    ) -> Result<()> {
+        for strapping in added_strappings.iter() {
+            self.pin_strapping(strapping)?.apply()?;
+        }
+        self.reset_target(reset_delay, clear_uart_rx)?;
+        // Sometimes we want to hold the additional strappings, e.g., when the strapping is a TAP
+        // strap that is sampled continuously.
+        if !hold_added_strappings {
+            for strapping in added_strappings.iter() {
+                self.pin_strapping(strapping)?.remove()?;
+            }
+        }
+        Ok(())
+    }
 }
 
 /// Given an pin/uart/spi/i2c port name, if the name is a known alias, return the underlying
