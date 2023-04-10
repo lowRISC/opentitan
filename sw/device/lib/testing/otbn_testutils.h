@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_OTBN_TESTUTILS_H_
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 
@@ -150,8 +151,10 @@ typedef uint32_t otbn_addr_t;
  *
  * @param otbn The context object.
  * @param app The application to load into OTBN.
+ * @return The result of the operation.
  */
-void otbn_testutils_load_app(const dif_otbn_t *otbn, const otbn_app_t app);
+OT_WARN_UNUSED_RESULT
+status_t otbn_testutils_load_app(const dif_otbn_t *otbn, const otbn_app_t app);
 
 /**
  * Starts the OTBN execute operation.

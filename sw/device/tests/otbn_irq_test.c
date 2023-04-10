@@ -71,7 +71,7 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
   // we see the Done interrupt fire.
   otbn_finished = false;
 
-  otbn_testutils_load_app(otbn, app);
+  CHECK_STATUS_OK(otbn_testutils_load_app(otbn, app));
 
   // If the CTRL.SOFTWARE_ERRS_FATAL flag is set, a software error will be
   // promoted to a fatal error (which, among other things, bricks OTBN until

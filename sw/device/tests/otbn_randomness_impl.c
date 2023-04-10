@@ -39,7 +39,7 @@ void otbn_randomness_test_start(dif_otbn_t *otbn) {
   uint32_t rv = UINT32_MAX;
   otbn_testutils_write_data(otbn, sizeof(uint32_t), &rv, kVarRv);
 
-  otbn_testutils_load_app(otbn, kOtbnAppRandomnessApp);
+  CHECK_STATUS_OK(otbn_testutils_load_app(otbn, kOtbnAppRandomnessApp));
   otbn_testutils_execute(otbn);
 }
 

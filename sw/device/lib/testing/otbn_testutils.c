@@ -61,22 +61,23 @@ static void check_app_address_ranges(const otbn_app_t *app) {
   CHECK(app->dmem_data_end >= app->dmem_data_start);
 }
 
-void otbn_testutils_load_app(const dif_otbn_t *otbn, const otbn_app_t app) {
+status_t otbn_testutils_load_app(const dif_otbn_t *otbn, const otbn_app_t app) {
   check_app_address_ranges(&app);
 
   const size_t imem_size = app.imem_end - app.imem_start;
   const size_t data_size = app.dmem_data_end - app.dmem_data_start;
 
   // Memory images and offsets must be multiples of 32b words.
-  CHECK(imem_size % sizeof(uint32_t) == 0);
-  CHECK(data_size % sizeof(uint32_t) == 0);
+  TRY_CHECK(imem_size % sizeof(uint32_t) == 0);
+  TRY_CHECK(data_size % sizeof(uint32_t) == 0);
 
-  CHECK_DIF_OK(dif_otbn_imem_write(otbn, 0, app.imem_start, imem_size));
+  TRY(dif_otbn_imem_write(otbn, 0, app.imem_start, imem_size));
 
   // Write initialized data
   if (data_size > 0) {
-    CHECK_DIF_OK(dif_otbn_dmem_write(otbn, 0, app.dmem_data_start, data_size));
+    TRY(dif_otbn_dmem_write(otbn, 0, app.dmem_data_start, data_size));
   }
+  return OK_STATUS();
 }
 
 void otbn_testutils_execute(const dif_otbn_t *otbn) {
