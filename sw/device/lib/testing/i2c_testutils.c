@@ -18,8 +18,10 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "i2c_regs.h"  // Generated.
 
-static const uint8_t kI2cWrite = 0;
-static const uint8_t kI2cRead = 1;
+enum {
+  kI2cWrite = 0,
+  kI2cRead = 1,
+};
 
 // Default flags for i2c operations.
 static const dif_i2c_fmt_flags_t kDefaultFlags = {.start = false,
@@ -116,37 +118,40 @@ status_t i2c_testutils_rd(const dif_i2c_t *i2c, uint8_t addr,
   return OK_STATUS();
 }
 
-bool i2c_testutils_target_check_start(const dif_i2c_t *i2c, uint8_t *addr) {
+status_t i2c_testutils_target_check_start(const dif_i2c_t *i2c, uint8_t *addr) {
   uint8_t acq_fifo_lvl;
-  CHECK_DIF_OK(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
-  CHECK(acq_fifo_lvl > 1);
+  TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
+  TRY_CHECK(acq_fifo_lvl > 1);
 
   dif_i2c_signal_t signal;
   uint8_t byte;
-  CHECK_DIF_OK(dif_i2c_acquire_byte(i2c, &byte, &signal));
+  TRY(dif_i2c_acquire_byte(i2c, &byte, &signal));
   // Check acq_fifo is as expected and write addr and continue
-  CHECK(signal == kDifI2cSignalStart);
+  TRY_CHECK(signal == kDifI2cSignalStart);
   *addr = byte >> 1;
-  return byte & kI2cRead;
+
+  return OK_STATUS(byte & kI2cRead);
 }
 
-bool i2c_testutils_target_check_end(const dif_i2c_t *i2c, uint8_t *cont_byte) {
+status_t i2c_testutils_target_check_end(const dif_i2c_t *i2c,
+                                        uint8_t *cont_byte) {
   uint8_t acq_fifo_lvl;
-  CHECK_DIF_OK(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
-  CHECK(acq_fifo_lvl >= 1);
+  TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
+  TRY_CHECK(acq_fifo_lvl >= 1);
 
   dif_i2c_signal_t signal;
   uint8_t byte;
-  CHECK_DIF_OK(dif_i2c_acquire_byte(i2c, &byte, &signal));
+  TRY(dif_i2c_acquire_byte(i2c, &byte, &signal));
   // Check transaction is terminated with a stop or a continue that the caller
   // is prepared to handle
   if (signal == kDifI2cSignalStop) {
-    return false;
+    return OK_STATUS(false);
   }
-  CHECK(cont_byte != NULL);
+  TRY_CHECK(cont_byte != NULL);
   *cont_byte = byte;
-  CHECK(signal == kDifI2cSignalRepeat);
-  return true;
+  TRY_CHECK(signal == kDifI2cSignalRepeat);
+
+  return OK_STATUS(true);
 }
 
 status_t i2c_testutils_target_rd(const dif_i2c_t *i2c, uint8_t byte_count,
@@ -164,9 +169,10 @@ status_t i2c_testutils_target_rd(const dif_i2c_t *i2c, uint8_t byte_count,
   return OK_STATUS();
 }
 
-bool i2c_testutils_target_check_rd(const dif_i2c_t *i2c, uint8_t *addr,
-                                   uint8_t *cont_byte) {
-  CHECK(i2c_testutils_target_check_start(i2c, addr) == kI2cRead);
+status_t i2c_testutils_target_check_rd(const dif_i2c_t *i2c, uint8_t *addr,
+                                       uint8_t *cont_byte) {
+  int32_t dir = TRY(i2c_testutils_target_check_start(i2c, addr));
+  TRY_CHECK(dir == kI2cRead);
   // TODO: Check for errors / status.
   return i2c_testutils_target_check_end(i2c, cont_byte);
 }
@@ -180,19 +186,20 @@ status_t i2c_testutils_target_wr(const dif_i2c_t *i2c, uint8_t byte_count) {
   return OK_STATUS();
 }
 
-bool i2c_testutils_target_check_wr(const dif_i2c_t *i2c, uint8_t byte_count,
-                                   uint8_t *addr, uint8_t *bytes,
-                                   uint8_t *cont_byte) {
+status_t i2c_testutils_target_check_wr(const dif_i2c_t *i2c, uint8_t byte_count,
+                                       uint8_t *addr, uint8_t *bytes,
+                                       uint8_t *cont_byte) {
   uint8_t acq_fifo_lvl;
-  CHECK_DIF_OK(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
-  CHECK(acq_fifo_lvl >= 2 + byte_count);
+  TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
+  TRY_CHECK(acq_fifo_lvl >= 2 + byte_count);
 
-  CHECK(i2c_testutils_target_check_start(i2c, addr) == kI2cWrite);
+  int32_t dir = TRY(i2c_testutils_target_check_start(i2c, addr));
+  TRY_CHECK(dir == kI2cWrite);
 
   for (uint8_t i = 0; i < byte_count; ++i) {
     dif_i2c_signal_t signal;
-    CHECK_DIF_OK(dif_i2c_acquire_byte(i2c, bytes + i, &signal));
-    CHECK(signal == kDifI2cSignalNone);
+    TRY(dif_i2c_acquire_byte(i2c, bytes + i, &signal));
+    TRY_CHECK(signal == kDifI2cSignalNone);
   }
 
   // TODO: Check for errors / status.
