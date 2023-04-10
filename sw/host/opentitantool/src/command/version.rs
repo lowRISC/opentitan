@@ -38,6 +38,6 @@ impl CommandDispatch for Version {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        Ok(Some(Box::new(VersionResponse::default())))
+        Ok(Some(Box::<VersionResponse>::default()))
     }
 }

@@ -141,7 +141,7 @@ impl CommandDispatch for TpmExecuteCommand {
         let tpm = context.downcast_ref::<Box<dyn tpm::Driver>>().unwrap();
         let resp = tpm.execute_command(&hex::decode(&self.hexdata)?)?;
         Ok(Some(Box::new(TpmExecuteCommandResponse {
-            hexdata: hex::encode(&resp),
+            hexdata: hex::encode(resp),
         })))
     }
 }
