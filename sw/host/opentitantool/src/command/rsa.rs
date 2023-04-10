@@ -143,7 +143,7 @@ fn write_bigint_as_u32<W: Write>(
         // print prefix and newline on multiples of nr_per_line
         if idx % nr_per_line == 0 {
             if idx != 0 {
-                write!(out, "{}\n", suffix)?;
+                writeln!(out, "{}", suffix)?;
             }
             write!(out, "{}", prefix)?;
         }
@@ -152,7 +152,7 @@ fn write_bigint_as_u32<W: Write>(
         write!(out, "{:#010x}, ", val)?;
     }
     // extra return to the line
-    write!(out, "{}\n", suffix)?;
+    writeln!(out, "{}", suffix)?;
     Ok(())
 }
 
@@ -219,7 +219,7 @@ impl CommandDispatch for RsaKeyExportCommand {
         // write header guard
         writeln!(&mut file, "#ifndef {}", header_guard)?;
         writeln!(&mut file, "#define {}", header_guard)?;
-        writeln!(&mut file, "")?;
+        writeln!(&mut file)?;
         writeln!(&mut file, "#define {} \\", keyname)?;
         writeln!(&mut file, " {{ \\")?;
         writeln!(&mut file, "    .n = \\")?;
@@ -236,7 +236,7 @@ impl CommandDispatch for RsaKeyExportCommand {
         write_bigint_as_u32(&mut file, key.n0_inv()?.to_le_bytes(), 4, "        ", "\\")?;
         writeln!(&mut file, "        }}, \\")?;
         writeln!(&mut file, " }}")?;
-        writeln!(&mut file, "")?;
+        writeln!(&mut file)?;
         writeln!(&mut file, "#endif // {}", header_guard)?;
 
         Ok(None)
@@ -286,7 +286,7 @@ impl CommandDispatch for RsaSignCommand {
     ) -> Result<Option<Box<dyn Annotate>>> {
         let digest = if let Some(input) = &self.input {
             let bytes = std::fs::read(input)?;
-            Sha256Digest::from_le_bytes(&bytes)?
+            Sha256Digest::from_le_bytes(bytes)?
         } else {
             self.digest.clone().unwrap()
         };

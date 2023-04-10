@@ -43,11 +43,6 @@ rust_binary(
     ],
     # stamping is necessary because opentitantool builds version.rs that needs it
     stamp = 1,
-    tags = [
-        # Only until we figure out how to deal with version.rs including
-        # the bazel voltatile-status.txt file.
-        "no-clippy",
-    ],
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

@@ -148,7 +148,7 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
     }?;
 
     // Extend the argument list with all remaining command line arguments.
-    arguments.extend(args.into_iter());
+    arguments.extend(args);
     let opts = Opts::from_iter(&arguments);
     if opts.logging != logging {
         // Try re-initializing the logger.  Ignore errors.

@@ -63,7 +63,7 @@ impl CommandDispatch for AssembleCommand {
         let mut image = ImageAssembler::with_params(self.size, self.mirror);
         image.parse(&self.filename)?;
         let content = image.assemble()?;
-        std::fs::write(&self.output, &content)?;
+        std::fs::write(&self.output, content)?;
         Ok(None)
     }
 }
