@@ -254,5 +254,3 @@ void sigverify_usage_constraints_get(
   }
 }
 
-// `extern` declarations for `inline` functions in the header.
-extern uint32_t sigverify_rsa_key_id_get(const sigverify_rsa_buffer_t *modulus);
