@@ -68,7 +68,7 @@ pub enum SpiError {
 impl_serializable_error!(SpiError);
 
 /// Represents the SPI transfer mode.
-/// See https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#Clock_polarity_and_phase
+/// See <https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#Clock_polarity_and_phase>
 /// for details about SPI transfer modes.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum TransferMode {

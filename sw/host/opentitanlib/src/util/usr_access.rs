@@ -86,7 +86,7 @@ pub fn usr_access_get(bitstream: &[u8]) -> Result<u32> {
 /// |-------+-------+-------+-------------------------+-------+--------+--------|
 ///
 /// From
-/// https://www.xilinx.com/content/dam/xilinx/support/documents/application_notes/xapp1232-bitstream-id-with-usr_access.pdf
+/// <https://www.xilinx.com/content/dam/xilinx/support/documents/application_notes/xapp1232-bitstream-id-with-usr_access.pdf>
 pub fn usr_access_timestamp() -> u32 {
     let now = Utc::now();
     now.day() << 27
