@@ -26,23 +26,15 @@ struct Opts {
     jtag: JtagParams,
 }
 
-fn reset(transport: &TransportWrapper, strappings: &[&str], reset_delay: Duration) -> Result<()> {
-    log::info!("Resetting target...");
-    for strapping in strappings.iter() {
-        transport.pin_strapping(strapping)?.apply()?;
-    }
-    transport.reset_target(reset_delay, true)?;
-    // we want to hold the strapping configuration here because in some life cycle states,
-    // the tap multiplexing is dynamic so remove the tap strap would actually change the tap
-    Ok(())
-}
-
 fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Reset the device and confirm that its lifecycle state is now RMA by
     // reading the "LCV:" line from the UART.
     let uart = transport.uart("console")?;
 
-    reset(transport, &[], opts.init.bootstrap.options.reset_delay)?;
+    transport.reset_target(
+        opts.init.bootstrap.options.reset_delay,
+        /*clear_uart_rx=*/ true,
+    )?;
     const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
 
     let mut console = UartConsole {
@@ -56,10 +48,11 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     //
     // Test the RISC-V TAP
     //
-    reset(
-        transport,
-        &["PINMUX_TAP_RISCV"],
+    transport.reset_target_w_strappings(
         opts.init.bootstrap.options.reset_delay,
+        /*clear_uart_rx=*/ true,
+        &["PINMUX_TAP_RISCV"],
+        /*hold_added_strappings=*/ true,
     )?;
 
     let jtag = transport.jtag(&opts.jtag)?;
@@ -145,10 +138,11 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     //
     // Test the LC TAP
     //
-    reset(
-        transport,
-        &["PINMUX_TAP_LC"],
+    transport.reset_target_w_strappings(
         opts.init.bootstrap.options.reset_delay,
+        /*clear_uart_rx=*/ true,
+        &["PINMUX_TAP_LC"],
+        /*hold_added_strappings=*/ true,
     )?;
 
     let jtag = transport.jtag(&opts.jtag)?;
