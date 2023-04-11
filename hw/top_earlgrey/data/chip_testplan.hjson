@@ -868,23 +868,6 @@
       tests: ["chip_sw_plic_sw_irq"]
     }
     {
-      name: chip_plic_fatal_alert
-      desc: '''Verify that the fatal alert is fired from PLIC due to bus integrity violation.
-
-            - PLIC is a non-preverified IP, so it is necessary to test the assertion of fatal alert
-              via fault injection.
-            - In stub CPU mode, read a register in PLIC.
-            - Intercept the access in the SystemVerilog testbench and using force, inject an
-              integrity error on the command channel.
-            - Verify that the fatal alert fired on the PLIC output.
-            - Reboot the chip and this time, inject a fatal alert through violation of the reg
-              write-enable one hot check using the standardized sec_cm_pkg framework.
-            - Verify that the fatal alert fired on the PLIC output.
-            '''
-      stage: V3
-      tests: []
-    }
-    {
       name: chip_sw_plic_alerts
       desc: '''Verify alerts from PLIC due to both, TL intg and reg WE onehot check faults.
 
@@ -892,7 +875,7 @@
               separately.
             '''
       stage: V3
-      tests: []
+      tests: ["chip_sw_all_escalation_resets"]
     }
 
     // CLKMGR tests:
