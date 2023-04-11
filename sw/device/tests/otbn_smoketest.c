@@ -99,7 +99,7 @@ static void test_barrett384(dif_otbn_t *otbn) {
   CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError));
 
   // Reading back result (c).
-  otbn_testutils_read_data(otbn, sizeof(c), kOupC, &c);
+  CHECK_STATUS_OK(otbn_testutils_read_data(otbn, sizeof(c), kOupC, &c));
 
   for (int i = 0; i < sizeof(c); ++i) {
     CHECK(c[i] == c_expected[i],

@@ -70,7 +70,8 @@ static void run_x25519_app(dif_otbn_t *otbn, uint32_t *result,
   CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, expect_err_bits));
 
   // Copy the result (also a 256-bit Montgomery u-coordinate).
-  otbn_testutils_read_data(otbn, 32, kOtbnVarEncResult, result);
+  CHECK_STATUS_OK(
+      otbn_testutils_read_data(otbn, 32, kOtbnVarEncResult, result));
 }
 
 /**

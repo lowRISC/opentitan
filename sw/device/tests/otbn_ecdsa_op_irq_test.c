@@ -278,8 +278,10 @@ static void p256_ecdsa_sign(dif_otbn_t *otbn, const uint8_t *msg,
   otbn_wait_for_done_irq(otbn);
 
   // Read back results.
-  otbn_testutils_read_data(otbn, /*len_bytes=*/32, kOtbnVarR, signature_r);
-  otbn_testutils_read_data(otbn, /*len_bytes=*/32, kOtbnVarS, signature_s);
+  CHECK_STATUS_OK(
+      otbn_testutils_read_data(otbn, /*len_bytes=*/32, kOtbnVarR, signature_r));
+  CHECK_STATUS_OK(
+      otbn_testutils_read_data(otbn, /*len_bytes=*/32, kOtbnVarS, signature_s));
 }
 
 /**
@@ -322,7 +324,8 @@ static void p256_ecdsa_verify(dif_otbn_t *otbn, const uint8_t *msg,
   otbn_wait_for_done_irq(otbn);
 
   // Read back results.
-  otbn_testutils_read_data(otbn, /*len_bytes=*/32, kOtbnVarXR, signature_x_r);
+  CHECK_STATUS_OK(otbn_testutils_read_data(otbn, /*len_bytes=*/32, kOtbnVarXR,
+                                           signature_x_r));
 }
 
 /**
