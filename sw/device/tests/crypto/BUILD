@@ -48,7 +48,9 @@ cc_library(
     srcs = ["aes_gcm_testutils.c"],
     hdrs = ["aes_gcm_testutils.h"],
     deps = [
-        "//sw/device/lib/crypto/impl/aes_gcm",
+        "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
     ],
