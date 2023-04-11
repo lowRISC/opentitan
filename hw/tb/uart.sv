@@ -24,7 +24,7 @@ interface uart_bus #(
 
 /* pragma translate_off */
 `ifndef VERILATOR
-  time          BIT_PERIOD = 64'd680000; //64'd1000000000000 / BAUD_RATE *1ps;    
+  time          BIT_PERIOD = 64'd1000000000000 / BAUD_RATE *1ps;    
    
 
   logic [7:0]       character;

@@ -779,7 +779,7 @@ sources:
       - hw/top_earlgrey/rtl/jtag_id_pkg.sv
 #     - hw/top_earlgrey/rtl/autogen/top_earlgrey.sv
       - hw/tb/top_earlgrey.sv
-      - hw/tb/opentitan_synth_wrap.sv
+      - hw/tb/secure_subsystem_synth_wrap.sv
 
 ##### testbench
 

@@ -113,11 +113,11 @@ module tlul2axi
     // Default assignments
         
   
-    axi_req_o.aw.addr   = { 'h0, tl_i.a_address };
+    axi_req_o.aw.addr   = { '0, tl_i.a_address };
     axi_req_o.aw.prot   = 3'b0;
     axi_req_o.aw.region = 4'b0;
     axi_req_o.aw.len    = 8'b0;
-    axi_req_o.aw.size   = { 'h0 , tl_i.a_size };   
+    axi_req_o.aw.size   = { '0 , tl_i.a_size };   
     axi_req_o.aw.burst  = axi_pkg::BURST_INCR; 
     axi_req_o.aw.lock   = 'h0;
     axi_req_o.aw.cache  = 'h0;
@@ -127,11 +127,11 @@ module tlul2axi
     axi_req_o.aw.user   = 'h0;
 
    
-    axi_req_o.ar.addr   = { 'h0, tl_i.a_address };
+    axi_req_o.ar.addr   = { '0, tl_i.a_address };
     axi_req_o.ar.prot   = 'h0;
     axi_req_o.ar.region = 'h0;
     axi_req_o.ar.len    = 'h0;
-    axi_req_o.ar.size   = { 'h0 , tl_i.a_size };
+    axi_req_o.ar.size   = { '0 , tl_i.a_size };
     axi_req_o.ar.burst  = axi_pkg::BURST_INCR; 
     axi_req_o.ar.lock   = 'h0;
     axi_req_o.ar.cache  = 'h0;

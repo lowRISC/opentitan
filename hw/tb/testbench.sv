@@ -63,9 +63,9 @@ module testbench ();
    
    wire  I0, I1, I2, I3, WPNeg, RESETNeg;
    wire  PWROK_S, IOPWROK_S, BIAS_S, RETC_S;
-   wire  [46:0] ibex_uart_rx, ibex_uart_tx;
+   wire  ibex_uart_rx, ibex_uart_tx;
    
-   uart_bus #(.BAUD_RATE(7200), .PARITY_EN(0)) i_uart0_bus (.rx(ibex_uart_tx[26]), .tx(ibex_uart_rx[26]), .rx_en(1'b1));
+   uart_bus #(.BAUD_RATE(680000), .PARITY_EN(0)) i_uart0_bus (.rx(ibex_uart_tx), .tx(ibex_uart_rx), .rx_en(1'b1));
    
    typedef axi_test::axi_rand_slave #(  
      .AW(tlul2axi_pkg::AXI_ADDR_WIDTH),
@@ -174,7 +174,7 @@ module testbench ();
    
 /////////////////////////////// DUT ///////////////////////////////
   
-  secure_subsystem #(
+  secure_subsystem_synth_wrap #(
    .AXI_ADDR_WIDTH(tlul2axi_pkg::AXI_ADDR_WIDTH          ),
    .AXI_DATA_WIDTH(tlul2axi_pkg::AXI_MST_PORT_DATA_WIDTH ),
    .AXI_ID_WIDTH(tlul2axi_pkg::AXI_ID_WIDTH              ),
@@ -255,11 +255,10 @@ module testbench ();
       .r_user_i      (ot_axi_rsp.r.user),
       .r_valid_i     (ot_axi_rsp.r_valid),
       .r_ready_o     (ot_axi_req.r_ready),
-
-      .dio_in_i      ('0),
          
-      .mio_in_i      (ibex_uart_rx),
-      .mio_out_o     (ibex_uart_tx)
+      .ibex_uart_rx_i(ibex_uart_rx),
+      .ibex_uart_tx_o(ibex_uart_tx),
+      .ibex_uart_tx_oe_o(         )
   );
 
 ///////////////////////// Processes ///////////////////////////////

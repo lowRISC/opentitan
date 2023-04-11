@@ -10,7 +10,7 @@
 
 `include "axi/typedef.svh"
 
-module secure_subsystem
+module secure_subsystem_synth_wrap
    import axi_pkg::*;
    import jtag_pkg::*;
    import tlul2axi_pkg::*;
@@ -18,8 +18,8 @@ module secure_subsystem
    import lc_ctrl_pkg::*;
 #(
    parameter SramCtrlMainMemInitFile = "",
-   parameter OtpCtrlMemInitFile = "../hw/top_earlgrey/sw/tests/otp/otp-img.mem",
-   parameter RomCtrlBootRomInitFile = "../hw/top_earlgrey/sw/tests/bootrom/fake_rom.vmem",
+   parameter OtpCtrlMemInitFile = "../sw/bare-metal/opentitan/otp/otp-img.mem",
+   parameter RomCtrlBootRomInitFile = "../sw/bare-metal/opentitan/bootrom/fake_rom.vmem",
    parameter FlashCtrlMemInitFile = "",
    parameter int unsigned AXI_ID_WIDTH = 8,
    parameter int unsigned AXI_ADDR_WIDTH = 64,
@@ -97,14 +97,10 @@ module secure_subsystem
    input logic                                                r_valid_i,
    output logic                                               r_ready_o,
 
-   //SPI Signals
-   input logic  [15:0]                                        dio_in_i,
-   output logic [15:0]                                        dio_out_o,
-   output logic [15:0]                                        dio_oe_o,
-                                           
-   input logic  [46:0]                                        mio_in_i,
-   output logic [46:0]                                        mio_out_o,
-   output logic [46:0]                                        mio_oe_o
+   // OT peripherals
+   input logic                                                ibex_uart_rx_i,
+   output logic                                               ibex_uart_tx_o,
+   output logic                                               ibex_uart_tx_oe_o
 );
 
    typedef logic [31:0]                 addr_t;
@@ -143,8 +139,21 @@ module secure_subsystem
 
    entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
    entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
+
+   logic [15:0] dio_in_i;
+   logic [15:0] dio_out_o;
+   logic [15:0] dio_oe_o;
+                                           
+   logic [46:0] mio_in_i;
+   logic [46:0] mio_out_o;
+   logic [46:0] mio_oe_o;
    
    logic es_rng_fips;
+
+   assign dio_in_i = '0;
+   assign mio_in_i[25:0]  = '0;
+   assign mio_in_i[46:27] = '0;
+
    
    //Unwrapping JTAG strucutres
 
@@ -156,6 +165,10 @@ module secure_subsystem
    assign jtag_tdo_o    = jtag_o.tdo;
    assign jtag_tdo_oe_o = jtag_o.tdo_oe;
 
+   assign mio_in_i[26] = ibex_uart_rx_i;
+   assign ibex_uart_tx_o = mio_out_o[26];
+   assign ibex_uart_tx_oe_o = mio_oe_o[26];
+   
    //Unwrapping AXI strucutres
 
    //AR channel
