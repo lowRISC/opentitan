@@ -214,7 +214,9 @@ status_t otbn_testutils_read_data(const dif_otbn_t *otbn, size_t len_bytes,
  * @param otbn The context object.
  * @param max_addr The highest address to dump. Set to 0 to output the whole
  *                 DMEM. Must be a multiple of WLEN.
+ * @return The result of the operation.
  */
-void otbn_testutils_dump_dmem(const dif_otbn_t *otbn, uint32_t max_addr);
+OT_WARN_UNUSED_RESULT
+status_t otbn_testutils_dump_dmem(const dif_otbn_t *otbn, uint32_t max_addr);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_OTBN_TESTUTILS_H_
