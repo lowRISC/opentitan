@@ -40,12 +40,12 @@ void otbn_randomness_test_start(dif_otbn_t *otbn) {
   otbn_testutils_write_data(otbn, sizeof(uint32_t), &rv, kVarRv);
 
   CHECK_STATUS_OK(otbn_testutils_load_app(otbn, kOtbnAppRandomnessApp));
-  otbn_testutils_execute(otbn);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
 }
 
 bool otbn_randomness_test_end(dif_otbn_t *otbn, bool skip_otbn_done_check) {
   if (!skip_otbn_done_check) {
-    otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError);
+    CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError));
   }
   uint32_t rv;
   otbn_testutils_read_data(otbn, /*len_bytes=*/4, kVarRv, &rv);

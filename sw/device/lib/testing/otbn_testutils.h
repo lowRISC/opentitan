@@ -162,8 +162,10 @@ status_t otbn_testutils_load_app(const dif_otbn_t *otbn, const otbn_app_t app);
  * Use `otbn_testutils_wait_for_done()` to wait for execution to complete.
  *
  * @param otbn The context object.
+ * @return The result of the operation.
  */
-void otbn_testutils_execute(const dif_otbn_t *otbn);
+OT_WARN_UNUSED_RESULT
+status_t otbn_testutils_execute(const dif_otbn_t *otbn);
 
 /**
  * Waits for OTBN to be done with the current operation.
@@ -173,9 +175,11 @@ void otbn_testutils_execute(const dif_otbn_t *otbn);
  *
  * @param otbn The context object.
  * @param expected_err_bits Expected error bits.
+ * @return The result of the operation.
  */
-void otbn_testutils_wait_for_done(const dif_otbn_t *otbn,
-                                  dif_otbn_err_bits_t expected_err_bits);
+OT_WARN_UNUSED_RESULT
+status_t otbn_testutils_wait_for_done(const dif_otbn_t *otbn,
+                                      dif_otbn_err_bits_t expected_err_bits);
 
 /**
  * Copies data from the CPU memory to OTBN data memory.

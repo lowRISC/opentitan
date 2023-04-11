@@ -118,8 +118,8 @@ static void rsa_encrypt(dif_otbn_t *otbn, const uint8_t *modulus,
   otbn_testutils_write_data(otbn, size_bytes, in, kOtbnVarRsaInOut);
 
   // Call OTBN to perform operation, and wait for it to complete.
-  otbn_testutils_execute(otbn);
-  otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
+  CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError));
 
   // Read back results.
   otbn_testutils_read_data(otbn, size_bytes, kOtbnVarRsaInOut, out);
@@ -156,8 +156,8 @@ static void rsa_decrypt(dif_otbn_t *otbn, const uint8_t *modulus,
   otbn_testutils_write_data(otbn, size_bytes, in, kOtbnVarRsaInOut);
 
   // Call OTBN to perform operation
-  otbn_testutils_execute(otbn);
-  otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
+  CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError));
 
   // Read back results.
   otbn_testutils_read_data(otbn, size_bytes, kOtbnVarRsaInOut, out);

@@ -17,31 +17,33 @@ enum {
   kOtbnWlenBytes = 256 / 8,
 };
 
-void otbn_testutils_wait_for_done(const dif_otbn_t *otbn,
-                                  dif_otbn_err_bits_t expected_err_bits) {
+status_t otbn_testutils_wait_for_done(const dif_otbn_t *otbn,
+                                      dif_otbn_err_bits_t expected_err_bits) {
   bool busy = true;
   dif_otbn_status_t status;
   while (busy) {
-    CHECK_DIF_OK(dif_otbn_get_status(otbn, &status));
+    TRY(dif_otbn_get_status(otbn, &status));
     busy = status != kDifOtbnStatusIdle && status != kDifOtbnStatusLocked;
   }
 
   // Get instruction count so that we can print them to help with debugging.
   uint32_t instruction_count;
-  CHECK_DIF_OK(dif_otbn_get_insn_cnt(otbn, &instruction_count));
+  TRY(dif_otbn_get_insn_cnt(otbn, &instruction_count));
 
   dif_otbn_err_bits_t err_bits;
-  CHECK_DIF_OK(dif_otbn_get_err_bits(otbn, &err_bits));
+  TRY(dif_otbn_get_err_bits(otbn, &err_bits));
 
   // Error out if OTBN is locked.
-  CHECK(status == kDifOtbnStatusIdle, "OTBN is locked. Error bits: 0x%08x",
-        err_bits);
+  TRY_CHECK(status == kDifOtbnStatusIdle, "OTBN is locked. Error bits: 0x%08x",
+            err_bits);
 
   // Error out if error bits do not match expectations.
-  CHECK(err_bits == expected_err_bits,
-        "OTBN error bits: got: 0x%08x, expected: 0x%08x.\nInstruction count: "
-        "0x%08x",
-        err_bits, expected_err_bits, instruction_count);
+  TRY_CHECK(
+      err_bits == expected_err_bits,
+      "OTBN error bits: got: 0x%08x, expected: 0x%08x.\nInstruction count: "
+      "0x%08x",
+      err_bits, expected_err_bits, instruction_count);
+  return OK_STATUS();
 }
 
 /**
@@ -80,8 +82,9 @@ status_t otbn_testutils_load_app(const dif_otbn_t *otbn, const otbn_app_t app) {
   return OK_STATUS();
 }
 
-void otbn_testutils_execute(const dif_otbn_t *otbn) {
-  CHECK_DIF_OK(dif_otbn_write_cmd(otbn, kDifOtbnCmdExecute));
+status_t otbn_testutils_execute(const dif_otbn_t *otbn) {
+  TRY(dif_otbn_write_cmd(otbn, kDifOtbnCmdExecute));
+  return OK_STATUS();
 }
 
 void otbn_testutils_write_data(const dif_otbn_t *otbn, size_t len_bytes,
