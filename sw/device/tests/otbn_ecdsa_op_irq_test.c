@@ -269,7 +269,7 @@ static void p256_ecdsa_sign(dif_otbn_t *otbn, const uint8_t *msg,
   otbn_testutils_write_data(otbn, /*len_bytes=*/64, d1, kOtbnVarD1);
 
   // Call OTBN to perform operation, and wait for it to complete.
-  otbn_testutils_execute(otbn);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
   otbn_wait_for_done_irq(otbn);
 
   // Read back results.
@@ -307,7 +307,7 @@ static void p256_ecdsa_verify(dif_otbn_t *otbn, const uint8_t *msg,
   otbn_testutils_write_data(otbn, /*len_bytes=*/32, public_key_y, kOtbnVarY);
 
   // Call OTBN to perform operation, and wait for it to complete.
-  otbn_testutils_execute(otbn);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
   otbn_wait_for_done_irq(otbn);
 
   // Read back results.

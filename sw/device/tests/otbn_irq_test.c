@@ -83,7 +83,7 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
       dif_otbn_irq_set_enabled(otbn, kDifOtbnIrqDone, kDifToggleEnabled));
 
   // Start OTBN
-  otbn_testutils_execute(otbn);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
 
   // At this point, OTBN should be running. Wait for an interrupt that says
   // it's done.

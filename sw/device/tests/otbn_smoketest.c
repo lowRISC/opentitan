@@ -94,9 +94,9 @@ static void test_barrett384(dif_otbn_t *otbn) {
   otbn_testutils_write_data(otbn, sizeof(u), &u, kInpU);
 
   CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(otbn, true));
-  otbn_testutils_execute(otbn);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
   CHECK(dif_otbn_set_ctrl_software_errs_fatal(otbn, false) == kDifUnavailable);
-  otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError);
+  CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError));
 
   // Reading back result (c).
   otbn_testutils_read_data(otbn, sizeof(c), kOupC, &c);
@@ -127,8 +127,9 @@ static void test_err_test(dif_otbn_t *otbn) {
   // support this feature so turning it on leads to a failure when run with the
   // model.
   CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(otbn, false));
-  otbn_testutils_execute(otbn);
-  otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsBadDataAddr);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
+  CHECK_STATUS_OK(
+      otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsBadDataAddr));
 
   check_otbn_insn_cnt(otbn, 1);
 }
@@ -139,12 +140,12 @@ static void test_sec_wipe(dif_otbn_t *otbn) {
   CHECK_DIF_OK(dif_otbn_write_cmd(otbn, kDifOtbnCmdSecWipeDmem));
   CHECK_DIF_OK(dif_otbn_get_status(otbn, &otbn_status));
   CHECK(otbn_status == kDifOtbnStatusBusySecWipeDmem);
-  otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError);
+  CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError));
 
   CHECK_DIF_OK(dif_otbn_write_cmd(otbn, kDifOtbnCmdSecWipeImem));
   CHECK_DIF_OK(dif_otbn_get_status(otbn, &otbn_status));
   CHECK(otbn_status == kDifOtbnStatusBusySecWipeImem);
-  otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError);
+  CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError));
 }
 
 bool test_main(void) {

@@ -205,7 +205,7 @@ bool test_main(void) {
   get_rand_words(&ibex, kNumAddrs, dmem_offsets, max);
 
   // Wait for OTBN to be idle.
-  otbn_testutils_wait_for_done(&otbn, kDifOtbnErrBitsNoError);
+  CHECK_STATUS_OK(otbn_testutils_wait_for_done(&otbn, kDifOtbnErrBitsNoError));
 
   // Write random address offsets.
   otbn_write_mem_words(&otbn, kNumAddrs, imem_offsets, dif_otbn_imem_write);
@@ -229,9 +229,9 @@ bool test_main(void) {
 
   // Re-scramble IMEM and DMEM by fetching new scrambling keys from OTP.
   CHECK_DIF_OK(dif_otbn_write_cmd(&otbn, kDifOtbnCmdSecWipeImem));
-  otbn_testutils_wait_for_done(&otbn, kDifOtbnErrBitsNoError);
+  CHECK_STATUS_OK(otbn_testutils_wait_for_done(&otbn, kDifOtbnErrBitsNoError));
   CHECK_DIF_OK(dif_otbn_write_cmd(&otbn, kDifOtbnCmdSecWipeDmem));
-  otbn_testutils_wait_for_done(&otbn, kDifOtbnErrBitsNoError);
+  CHECK_STATUS_OK(otbn_testutils_wait_for_done(&otbn, kDifOtbnErrBitsNoError));
 
   // Read back and check random address offsets. We don't care about the values.
   // "Most" reads should trigger integrity errors.
