@@ -81,7 +81,7 @@ static dif_rstmgr_t rstmgr_aon;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t rv_plic;
 static dif_rv_timer_t rv_timer;
-static dif_sensor_ctrl_t sensor_ctrl;
+static dif_sensor_ctrl_t sensor_ctrl_aon;
 static dif_spi_device_t spi_device;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
@@ -186,8 +186,8 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_timer_init(base_addr, &rv_timer));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR);
-  CHECK_DIF_OK(dif_sensor_ctrl_init(base_addr, &sensor_ctrl));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_sensor_ctrl_init(base_addr, &sensor_ctrl_aon));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_device_init(base_addr, &spi_device));
@@ -702,10 +702,10 @@ static void trigger_alert_test(void) {
 
   // Write sensor_ctrl's alert_test reg and check alert_cause.
   for (dif_sensor_ctrl_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_sensor_ctrl_alert_force(&sensor_ctrl, kDifSensorCtrlAlertRecovAlert + i));
+    CHECK_DIF_OK(dif_sensor_ctrl_alert_force(&sensor_ctrl_aon, kDifSensorCtrlAlertRecovAlert + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopEarlgreyAlertIdSensorCtrlRecovAlert + i;
+    exp_alert = kTopEarlgreyAlertIdSensorCtrlAonRecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

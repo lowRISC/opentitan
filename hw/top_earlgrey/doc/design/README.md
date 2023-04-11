@@ -424,7 +424,7 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 | pinmux_aon        | pinmux        | 0x40460000 (regs) |
 | aon_timer_aon     | aon_timer     | 0x40470000 (regs) |
 | ast               | ast           | 0x40480000 (regs) |
-| sensor_ctrl       | sensor_ctrl   | 0x40490000 (regs) |
+| sensor_ctrl_aon   | sensor_ctrl   | 0x40490000 (regs) |
 | sram_ctrl_ret_aon | sram_ctrl     | 0x40500000 (regs) |
 |                   |               | 0x40600000 (ram)  |
 | flash_ctrl        | flash_ctrl    | 0x41000000 (core) |

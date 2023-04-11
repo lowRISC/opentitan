@@ -523,22 +523,22 @@
  */
 #define TOP_EARLGREY_AST_SIZE_BYTES 0x400
 /**
- * Peripheral base address for sensor_ctrl in top earlgrey.
+ * Peripheral base address for sensor_ctrl_aon in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR 0x40490000
+#define TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR 0x40490000
 
 /**
- * Peripheral size for sensor_ctrl in top earlgrey.
+ * Peripheral size for sensor_ctrl_aon in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR and
- * `TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR + TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR and
+ * `TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR + TOP_EARLGREY_SENSOR_CTRL_AON_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES 0x40
+#define TOP_EARLGREY_SENSOR_CTRL_AON_SIZE_BYTES 0x40
 /**
  * Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.
  *

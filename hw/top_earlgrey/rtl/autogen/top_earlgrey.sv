@@ -51,7 +51,7 @@ module top_earlgrey #(
   parameter bit SecPinmuxAonVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter pinmux_pkg::target_cfg_t PinmuxAonTargetCfg = pinmux_pkg::DefaultTargetCfg,
   // parameters for aon_timer_aon
-  // parameters for sensor_ctrl
+  // parameters for sensor_ctrl_aon
   // parameters for sram_ctrl_ret_aon
   parameter bit SramCtrlRetAonInstrExec = 0,
   // parameters for flash_ctrl
@@ -338,9 +338,9 @@ module top_earlgrey #(
   logic [5:0]  cio_pwm_aon_pwm_en_d2p;
   // pinmux_aon
   // aon_timer_aon
-  // sensor_ctrl
-  logic [8:0]  cio_sensor_ctrl_ast_debug_out_d2p;
-  logic [8:0]  cio_sensor_ctrl_ast_debug_out_en_d2p;
+  // sensor_ctrl_aon
+  logic [8:0]  cio_sensor_ctrl_aon_ast_debug_out_d2p;
+  logic [8:0]  cio_sensor_ctrl_aon_ast_debug_out_en_d2p;
   // sram_ctrl_ret_aon
   // flash_ctrl
   logic        cio_flash_ctrl_tck_p2d;
@@ -491,8 +491,8 @@ module top_earlgrey #(
   logic intr_adc_ctrl_aon_match_done;
   logic intr_aon_timer_aon_wkup_timer_expired;
   logic intr_aon_timer_aon_wdog_timer_bark;
-  logic intr_sensor_ctrl_io_status_change;
-  logic intr_sensor_ctrl_init_status_change;
+  logic intr_sensor_ctrl_aon_io_status_change;
+  logic intr_sensor_ctrl_aon_init_status_change;
   logic intr_flash_ctrl_prog_empty;
   logic intr_flash_ctrl_prog_lvl;
   logic intr_flash_ctrl_rd_full;
@@ -714,8 +714,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       otp_ctrl_prim_tl_rsp;
   tlul_pkg::tl_h2d_t       lc_ctrl_tl_req;
   tlul_pkg::tl_d2h_t       lc_ctrl_tl_rsp;
-  tlul_pkg::tl_h2d_t       sensor_ctrl_tl_req;
-  tlul_pkg::tl_d2h_t       sensor_ctrl_tl_rsp;
+  tlul_pkg::tl_h2d_t       sensor_ctrl_aon_tl_req;
+  tlul_pkg::tl_d2h_t       sensor_ctrl_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       alert_handler_tl_req;
   tlul_pkg::tl_d2h_t       alert_handler_tl_rsp;
   tlul_pkg::tl_h2d_t       sram_ctrl_ret_aon_regs_tl_req;
@@ -1999,15 +1999,15 @@ module top_earlgrey #(
   );
   sensor_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[33:32])
-  ) u_sensor_ctrl (
+  ) u_sensor_ctrl_aon (
 
       // Output
-      .cio_ast_debug_out_o    (cio_sensor_ctrl_ast_debug_out_d2p),
-      .cio_ast_debug_out_en_o (cio_sensor_ctrl_ast_debug_out_en_d2p),
+      .cio_ast_debug_out_o    (cio_sensor_ctrl_aon_ast_debug_out_d2p),
+      .cio_ast_debug_out_en_o (cio_sensor_ctrl_aon_ast_debug_out_en_d2p),
 
       // Interrupt
-      .intr_io_status_change_o   (intr_sensor_ctrl_io_status_change),
-      .intr_init_status_change_o (intr_sensor_ctrl_init_status_change),
+      .intr_io_status_change_o   (intr_sensor_ctrl_aon_io_status_change),
+      .intr_init_status_change_o (intr_sensor_ctrl_aon_init_status_change),
       // [32]: recov_alert
       // [33]: fatal_alert
       .alert_tx_o  ( alert_tx[33:32] ),
@@ -2020,8 +2020,8 @@ module top_earlgrey #(
       .ast_init_done_i(ast_init_done_i),
       .ast2pinmux_i(ast2pinmux_i),
       .wkup_req_o(pwrmgr_aon_wakeups[5]),
-      .tl_i(sensor_ctrl_tl_req),
-      .tl_o(sensor_ctrl_tl_rsp),
+      .tl_i(sensor_ctrl_aon_tl_req),
+      .tl_o(sensor_ctrl_aon_tl_rsp),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
@@ -2649,8 +2649,8 @@ module top_earlgrey #(
       intr_flash_ctrl_rd_full, // IDs [161 +: 1]
       intr_flash_ctrl_prog_lvl, // IDs [160 +: 1]
       intr_flash_ctrl_prog_empty, // IDs [159 +: 1]
-      intr_sensor_ctrl_init_status_change, // IDs [158 +: 1]
-      intr_sensor_ctrl_io_status_change, // IDs [157 +: 1]
+      intr_sensor_ctrl_aon_init_status_change, // IDs [158 +: 1]
+      intr_sensor_ctrl_aon_io_status_change, // IDs [157 +: 1]
       intr_aon_timer_aon_wdog_timer_bark, // IDs [156 +: 1]
       intr_aon_timer_aon_wkup_timer_expired, // IDs [155 +: 1]
       intr_adc_ctrl_aon_match_done, // IDs [154 +: 1]
@@ -2987,9 +2987,9 @@ module top_earlgrey #(
     .tl_lc_ctrl_o(lc_ctrl_tl_req),
     .tl_lc_ctrl_i(lc_ctrl_tl_rsp),
 
-    // port: tl_sensor_ctrl
-    .tl_sensor_ctrl_o(sensor_ctrl_tl_req),
-    .tl_sensor_ctrl_i(sensor_ctrl_tl_rsp),
+    // port: tl_sensor_ctrl_aon
+    .tl_sensor_ctrl_aon_o(sensor_ctrl_aon_tl_req),
+    .tl_sensor_ctrl_aon_i(sensor_ctrl_aon_tl_rsp),
 
     // port: tl_alert_handler
     .tl_alert_handler_o(alert_handler_tl_req),
@@ -3137,15 +3137,15 @@ module top_earlgrey #(
   assign mio_d2p[MioOutSpiHost1Sck] = cio_spi_host1_sck_d2p;
   assign mio_d2p[MioOutSpiHost1Csb] = cio_spi_host1_csb_d2p;
   assign mio_d2p[MioOutFlashCtrlTdo] = cio_flash_ctrl_tdo_d2p;
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut0] = cio_sensor_ctrl_ast_debug_out_d2p[0];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut1] = cio_sensor_ctrl_ast_debug_out_d2p[1];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut2] = cio_sensor_ctrl_ast_debug_out_d2p[2];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut3] = cio_sensor_ctrl_ast_debug_out_d2p[3];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut4] = cio_sensor_ctrl_ast_debug_out_d2p[4];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut5] = cio_sensor_ctrl_ast_debug_out_d2p[5];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut6] = cio_sensor_ctrl_ast_debug_out_d2p[6];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut7] = cio_sensor_ctrl_ast_debug_out_d2p[7];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut8] = cio_sensor_ctrl_ast_debug_out_d2p[8];
+  assign mio_d2p[MioOutSensorCtrlAonAstDebugOut0] = cio_sensor_ctrl_aon_ast_debug_out_d2p[0];
+  assign mio_d2p[MioOutSensorCtrlAonAstDebugOut1] = cio_sensor_ctrl_aon_ast_debug_out_d2p[1];
+  assign mio_d2p[MioOutSensorCtrlAonAstDebugOut2] = cio_sensor_ctrl_aon_ast_debug_out_d2p[2];
+  assign mio_d2p[MioOutSensorCtrlAonAstDebugOut3] = cio_sensor_ctrl_aon_ast_debug_out_d2p[3];
+  assign mio_d2p[MioOutSensorCtrlAonAstDebugOut4] = cio_sensor_ctrl_aon_ast_debug_out_d2p[4];
+  assign mio_d2p[MioOutSensorCtrlAonAstDebugOut5] = cio_sensor_ctrl_aon_ast_debug_out_d2p[5];
+  assign mio_d2p[MioOutSensorCtrlAonAstDebugOut6] = cio_sensor_ctrl_aon_ast_debug_out_d2p[6];
+  assign mio_d2p[MioOutSensorCtrlAonAstDebugOut7] = cio_sensor_ctrl_aon_ast_debug_out_d2p[7];
+  assign mio_d2p[MioOutSensorCtrlAonAstDebugOut8] = cio_sensor_ctrl_aon_ast_debug_out_d2p[8];
   assign mio_d2p[MioOutPwmAonPwm0] = cio_pwm_aon_pwm_d2p[0];
   assign mio_d2p[MioOutPwmAonPwm1] = cio_pwm_aon_pwm_d2p[1];
   assign mio_d2p[MioOutPwmAonPwm2] = cio_pwm_aon_pwm_d2p[2];
@@ -3214,15 +3214,15 @@ module top_earlgrey #(
   assign mio_en_d2p[MioOutSpiHost1Sck] = cio_spi_host1_sck_en_d2p;
   assign mio_en_d2p[MioOutSpiHost1Csb] = cio_spi_host1_csb_en_d2p;
   assign mio_en_d2p[MioOutFlashCtrlTdo] = cio_flash_ctrl_tdo_en_d2p;
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut0] = cio_sensor_ctrl_ast_debug_out_en_d2p[0];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut1] = cio_sensor_ctrl_ast_debug_out_en_d2p[1];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut2] = cio_sensor_ctrl_ast_debug_out_en_d2p[2];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut3] = cio_sensor_ctrl_ast_debug_out_en_d2p[3];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut4] = cio_sensor_ctrl_ast_debug_out_en_d2p[4];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut5] = cio_sensor_ctrl_ast_debug_out_en_d2p[5];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut6] = cio_sensor_ctrl_ast_debug_out_en_d2p[6];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut7] = cio_sensor_ctrl_ast_debug_out_en_d2p[7];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut8] = cio_sensor_ctrl_ast_debug_out_en_d2p[8];
+  assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut0] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[0];
+  assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut1] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[1];
+  assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut2] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[2];
+  assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut3] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[3];
+  assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut4] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[4];
+  assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut5] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[5];
+  assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut6] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[6];
+  assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut7] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[7];
+  assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut8] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[8];
   assign mio_en_d2p[MioOutPwmAonPwm0] = cio_pwm_aon_pwm_en_d2p[0];
   assign mio_en_d2p[MioOutPwmAonPwm1] = cio_pwm_aon_pwm_en_d2p[1];
   assign mio_en_d2p[MioOutPwmAonPwm2] = cio_pwm_aon_pwm_en_d2p[2];

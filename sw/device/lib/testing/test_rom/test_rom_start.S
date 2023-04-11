@@ -162,7 +162,7 @@ _start:
   call crt_section_copy
 
   // Wait for AST initialization to complete.
-  li   a0, TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR
+  li   a0, TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR
 .L_ast_done_loop:
   lw   t0, SENSOR_CTRL_STATUS_REG_OFFSET(a0)
   srli t0, t0, SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT // no-op as bit index is currently 0

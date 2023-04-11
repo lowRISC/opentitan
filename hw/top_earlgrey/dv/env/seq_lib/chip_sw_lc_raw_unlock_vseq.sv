@@ -133,7 +133,7 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
     clkmgr_switch_to_ext_clk();
 
     `uvm_info(`gfn, "Check sensor_ctrl status bit set to 0", UVM_LOW)
-    csr_rd_check(.ptr(ral.sensor_ctrl.status.ast_init_done), .compare_value(0), .backdoor(1));
+    csr_rd_check(.ptr(ral.sensor_ctrl_aon.status.ast_init_done), .compare_value(0), .backdoor(1));
 
   endtask
 endclass

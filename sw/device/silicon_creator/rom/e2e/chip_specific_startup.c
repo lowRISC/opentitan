@@ -135,7 +135,7 @@ status_t test_chip_specific_startup(ujson_t *uj) {
   // Read out the AST_DONE bit.  The test harness will evaluate it for
   // correctness based on the OTP configuration.
   mmio_region_t sensor_ctrl =
-      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR);
+      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR);
   cs.ast_init_done = bitfield_bit32_read(
       mmio_region_read32(sensor_ctrl, SENSOR_CTRL_STATUS_REG_OFFSET),
       SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT);

@@ -191,7 +191,8 @@ void init_units(void) {
       mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
   CHECK_DIF_OK(dif_sensor_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR), &sensor_ctrl));
+      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR),
+      &sensor_ctrl));
   CHECK_DIF_OK(dif_usbdev_init(
       mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
 }
@@ -252,7 +253,7 @@ void cleanup(uint32_t test_idx) {
       CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
       CHECK_DIF_OK(dif_aon_timer_clear_wakeup_cause(&aon_timer));
       break;
-    case PWRMGR_PARAM_SENSOR_CTRL_WKUP_REQ_IDX:
+    case PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX:
       // clear event trigger
       CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(&sensor_ctrl, 0,
                                                          kDifToggleDisabled));

@@ -238,8 +238,8 @@
       local: "true"
     },
 
-    { name: "SENSOR_CTRL_WKUP_REQ_IDX",
-      desc: "Vector index for sensor_ctrl wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
+    { name: "SENSOR_CTRL_AON_WKUP_REQ_IDX",
+      desc: "Vector index for sensor_ctrl_aon wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
       default: "5",
       local: "true"
