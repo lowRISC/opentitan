@@ -128,6 +128,8 @@ jobs:
     displayName: Check trailing whitespace
   - bash: ci/scripts/build-docs.sh
     displayName: Render documentation
+  - bash: ci/scripts/check-links.sh
+    displayName: Check File Links
   - bash: ci/scripts/get-build-type.sh "$SYSTEM_PULLREQUEST_TARGETBRANCH" "$(Build.Reason)"
     displayName: Type of change
     # Check what kinds of changes the PR contains
