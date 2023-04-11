@@ -8,8 +8,6 @@ cc_library(
     name = "fake",
     srcs = [
         "sigverify_rsa_keys_fake.c",
-        "//sw/device/silicon_creator/rom:sigverify_keys.h",
-        "//sw/device/silicon_creator/rom:sigverify_keys_rsa.h",
     ],
     hdrs = [
         "dev_key_0_rsa_3072_exp_f4.h",
@@ -19,16 +17,28 @@ cc_library(
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib/sigverify",
+        "//sw/device/silicon_creator/rom:sigverify_keys",
     ],
 )
 
+# Flatten //sw/device/silicon_creator/lib/sigverify:rsa_verify to exclude mock_mod_exp_ibex
 cc_test(
     name = "fake_unittest",
-    srcs = ["sigverify_rsa_keys_fake_unittest.cc"],
+    srcs = [
+        "sigverify_rsa_keys_fake_unittest.cc",
+        "//sw/device/silicon_creator/lib/sigverify:rsa_verify.c",
+        "//sw/device/silicon_creator/lib/sigverify:rsa_verify.h",
+    ],
     deps = [
         ":fake",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:flash_exec",
+        "//sw/device/silicon_creator/lib/sigverify:mod_exp_ibex_device_library",
+        "//sw/device/silicon_creator/lib/sigverify:mod_exp_otbn",
+        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/rom:sigverify_keys",
         "//sw/device/silicon_creator/rom:sigverify_keys_rsa",
         "//sw/device/silicon_creator/testing:rom_test",

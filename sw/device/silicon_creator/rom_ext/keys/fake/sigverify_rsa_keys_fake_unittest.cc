@@ -14,8 +14,8 @@
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/sigverify/mock_mod_exp_otbn.h"
-#include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
+#include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
+#include "sw/device/silicon_creator/lib/sigverify/rsa_verify.h"
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 

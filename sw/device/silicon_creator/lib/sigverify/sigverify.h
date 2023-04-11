@@ -15,16 +15,6 @@
 extern "C" {
 #endif  // __cplusplus
 
-enum {
-  /**
-   * Correct `flash_exec` value.
-   *
-   * This value must be equal to `FLASH_CTRL_PARAM_EXEC_EN`. Defined here to be
-   * able to use in tests.
-   */
-  kSigverifyFlashExec = 0xa26a38f7,
-};
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
