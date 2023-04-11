@@ -31,7 +31,6 @@ static const uint32_t kKey256[8] = {
 /**
  * Authenticated data for testing.
  */
-static const uint32_t kAadLen = 18;
 static uint8_t kAad[18] = {
     // aad = 'authenticated data'
     //     = 61757468656e746963617465642064617461
@@ -41,7 +40,6 @@ static uint8_t kAad[18] = {
 /**
  * Plaintext for testing.
  */
-static const uint32_t kPlaintextLen = 32;
 static uint8_t kPlaintext[32] = {
     // plaintext = 'authenticated and encrypted data'
     //           =
@@ -112,9 +110,9 @@ const aes_gcm_test_t kAesGcmTestvectors[] = {
             {// IV = c58aded2e1bbecba8b16a5757e5475bd
              0xc5, 0x8a, 0xde, 0xd2, 0xe1, 0xbb, 0xec, 0xba, 0x8b, 0x16, 0xa5,
              0x75, 0x7e, 0x54, 0x75, 0xbd},
-        .plaintext_len = kPlaintextLen,
+        .plaintext_len = sizeof(kPlaintext),
         .plaintext = kPlaintext,
-        .aad_len = kAadLen,
+        .aad_len = sizeof(kAad),
         .aad = kAad,
         .ciphertext = kCiphertext256,
         .tag_len = 16,
@@ -133,9 +131,9 @@ const aes_gcm_test_t kAesGcmTestvectors[] = {
             {// IV = c58aded2e1bbecba8b16a5757e5475bd
              0xc5, 0x8a, 0xde, 0xd2, 0xe1, 0xbb, 0xec, 0xba, 0x8b, 0x16, 0xa5,
              0x75, 0x7e, 0x54, 0x75, 0xbd},
-        .plaintext_len = kPlaintextLen,
+        .plaintext_len = sizeof(kPlaintext),
         .plaintext = kPlaintext,
-        .aad_len = kAadLen,
+        .aad_len = sizeof(kAad),
         .aad = kAad,
         .ciphertext = kCiphertext256,
         .tag_len = 12,

@@ -8,6 +8,8 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
+#include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
+#include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -24,6 +26,11 @@ OT_ASSERT_ENUM_VALUE(kAesCipherModeCtr, (uint32_t)kBlockCipherModeCtr);
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('a', 'e', 's')
 
+// Check GHASH context size against the underlying implementation.
+static_assert(sizeof(ghash_context_t) == sizeof(gcm_ghash_context_t),
+              "Sizes of GHASH context object for top-level API must match the "
+              "underlying implementation.");
+
 crypto_status_t otcrypto_aes_keygen(crypto_blinded_key_t *key) {
   // TODO: Implement AES sideloaded key generation once we have a keymgr
   // driver. In the meantime, non-sideloaded AES keys can simply be generated
@@ -34,20 +41,37 @@ crypto_status_t otcrypto_aes_keygen(crypto_blinded_key_t *key) {
 /**
  * Extract an AES key from the blinded key struct.
  *
+ * Also performs integrity, mode, and null-pointer checks on the key. This
+ * function is only for basic AES modes; do not use for AES-GCM or AES-KWP keys
+ * since they will fail the mode check.
+ *
  * @param blinded_key Blinded key struct.
  * @param aes_mode Block cipher mode.
  * @param[out] aes_key Destination AES key struct.
  * @return Result of the operation.
  */
-static status_t construct_aes_key(const crypto_blinded_key_t *blinded_key,
+static status_t aes_key_construct(const crypto_blinded_key_t *blinded_key,
                                   const block_cipher_mode_t aes_mode,
                                   aes_key_t *aes_key) {
+  // Key integrity check.
+  if (launder32(integrity_blinded_key_check(blinded_key)) !=
+      kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(blinded_key),
+                    kHardenedBoolTrue);
+
   // TODO(#15590): add support for sideloaded keys by actuating keymgr here if
   // needed (this requires a keymgr driver).
   if (blinded_key->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
   aes_key->sideload = kHardenedBoolFalse;
+
+  // Check for null pointer (not allowed for non-sideloaded keys).
+  if (blinded_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   // Set the block cipher mode based on the key mode.
   switch (blinded_key->config.key_mode) {
@@ -232,12 +256,6 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
     return kCryptoStatusBadArgs;
   }
 
-  // Key integrity check.
-  if (integrity_blinded_key_check(key) != kHardenedBoolTrue) {
-    return kCryptoStatusBadArgs;
-  }
-  HARDENED_CHECK_EQ(iv.len, kAesBlockNumBytes);
-
   // Calculate the number of blocks for the input, including the padding for
   // encryption.
   size_t input_nblocks;
@@ -272,7 +290,7 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
 
   // Parse the AES key.
   aes_key_t aes_key;
-  OTCRYPTO_TRY_INTERPRET(construct_aes_key(key, aes_mode, &aes_key));
+  OTCRYPTO_TRY_INTERPRET(aes_key_construct(key, aes_mode, &aes_key));
 
   // Start the operation (encryption or decryption).
   switch (aes_operation) {
@@ -327,22 +345,200 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
   return kCryptoStatusOK;
 }
 
-crypto_status_t otcrypto_aes_encrypt_gcm(
-    const crypto_blinded_key_t *key, crypto_const_uint8_buf_t plaintext,
-    crypto_uint8_buf_t iv, crypto_uint8_buf_t aad, aead_gcm_tag_len_t tag_len,
-    crypto_uint8_buf_t *ciphertext, crypto_uint8_buf_t *auth_tag) {
-  // TODO: Connect AES-GCM operations to the API.
-  return kCryptoStatusNotImplemented;
+/**
+ * Construct the underlying AES key for AES-GCM.
+ *
+ * Also performs integrity, mode, and null-pointer checks on the key.
+ *
+ * @param blinded_key Blinded key struct.
+ * @param[out] aes_key Destination AES key struct.
+ * @return Result of the operation.
+ */
+static status_t aes_gcm_key_construct(const crypto_blinded_key_t *blinded_key,
+                                      aes_key_t *aes_key) {
+  // Key integrity check.
+  if (launder32(integrity_blinded_key_check(blinded_key)) !=
+      kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(blinded_key),
+                    kHardenedBoolTrue);
+
+  // Check the key mode.
+  if (launder32(blinded_key->config.key_mode) != kKeyModeAesGcm) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(blinded_key->config.key_mode, kKeyModeAesGcm);
+
+  // Set the mode of the underlying AES key to CTR (since this is the
+  // underlying block cipher mode for GCM).
+  aes_key->mode = kAesCipherModeCtr;
+
+  // TODO(#15590): add support for sideloaded keys by actuating keymgr here if
+  // needed (this requires a keymgr driver).
+  if (blinded_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_NOT_IMPLEMENTED;
+  }
+  aes_key->sideload = kHardenedBoolFalse;
+
+  // Check for null pointer (not allowed for non-sideloaded keys).
+  if (blinded_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Set the AES key length (in words).
+  aes_key->key_len = keyblob_share_num_words(blinded_key->config);
+
+  // Get pointers to the individual shares.
+  uint32_t *share0;
+  uint32_t *share1;
+  HARDENED_TRY(keyblob_to_shares(blinded_key, &share0, &share1));
+  aes_key->key_shares[0] = share0;
+  aes_key->key_shares[1] = share1;
+
+  return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes_decrypt_gcm(const crypto_blinded_key_t *key,
-                                         crypto_const_uint8_buf_t ciphertext,
-                                         crypto_uint8_buf_t iv,
-                                         crypto_uint8_buf_t aad,
-                                         crypto_uint8_buf_t auth_tag,
-                                         crypto_uint8_buf_t *plaintext) {
-  // TODO: Connect AES-GCM operations to the API.
-  return kCryptoStatusNotImplemented;
+/**
+ * Checks if the given byte-length matches the tag length enum value.
+ *
+ * @param byte_len Allocated tag length in bytes.
+ * @param tag_len Allocated tag length in bytes.
+ * @return OK if the tag length is acceptable, BAD_ARGS otherwise.
+ */
+status_t aes_gcm_check_tag_length(size_t byte_len, aead_gcm_tag_len_t tag_len) {
+  size_t bit_len = 0;
+  switch (launder32(tag_len)) {
+    case kAeadGcmTagLen128:
+      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen128);
+      bit_len = 128;
+      break;
+    case kAeadGcmTagLen120:
+      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen120);
+      bit_len = 120;
+      break;
+    case kAeadGcmTagLen112:
+      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen112);
+      bit_len = 112;
+      break;
+    case kAeadGcmTagLen104:
+      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen104);
+      bit_len = 104;
+      break;
+    case kAeadGcmTagLen96:
+      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen96);
+      bit_len = 96;
+      break;
+    case kAeadGcmTagLen64:
+      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen64);
+      bit_len = 64;
+      break;
+    case kAeadGcmTagLen32:
+      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen32);
+      bit_len = 32;
+      break;
+    default:
+      // Invalid tag length.
+      return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_GT(bit_len, 0);
+
+  if (launder32(byte_len) * 8 != bit_len) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(byte_len * 8, bit_len);
+
+  // Extra hardening checks; the byte-length must be nonzero, a multiple of 2,
+  // and at most the size of an AES block.
+  HARDENED_CHECK_EQ(byte_len % 2, 0);
+  HARDENED_CHECK_LT(0, byte_len);
+  HARDENED_CHECK_LE(byte_len, kAesBlockNumBytes);
+
+  return OTCRYPTO_OK;
+}
+
+crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
+                                         crypto_const_uint8_buf_t plaintext,
+                                         crypto_const_uint8_buf_t iv,
+                                         crypto_const_uint8_buf_t aad,
+                                         aead_gcm_tag_len_t tag_len,
+                                         crypto_uint8_buf_t *ciphertext,
+                                         crypto_uint8_buf_t *auth_tag) {
+  // Check for NULL pointers in input pointers and required-nonzero-length data
+  // buffers.
+  if (key == NULL || iv.data == NULL || ciphertext == NULL ||
+      auth_tag == NULL || auth_tag->data == NULL) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // Conditionally check for null pointers in data buffers that may be
+  // 0-length.
+  if ((aad.len != 0 && aad.data == NULL) ||
+      (ciphertext->len != 0 && ciphertext->data == NULL) ||
+      (plaintext.len != 0 && plaintext.data == NULL)) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // Ensure the plaintext and ciphertext lengths match.
+  if (launder32(ciphertext->len) != plaintext.len) {
+    return kCryptoStatusBadArgs;
+  }
+  HARDENED_CHECK_EQ(ciphertext->len, plaintext.len);
+
+  // Check the tag length.
+  OTCRYPTO_TRY_INTERPRET(aes_gcm_check_tag_length(auth_tag->len, tag_len));
+
+  // Construct the AES key.
+  aes_key_t aes_key;
+  OTCRYPTO_TRY_INTERPRET(aes_gcm_key_construct(key, &aes_key));
+
+  // Call the core encryption operation.
+  OTCRYPTO_TRY_INTERPRET(aes_gcm_encrypt(
+      aes_key, iv.len, iv.data, plaintext.len, plaintext.data, aad.len,
+      aad.data, auth_tag->len, auth_tag->data, ciphertext->data));
+
+  return kCryptoStatusOK;
+}
+
+crypto_status_t otcrypto_aes_decrypt_gcm(
+    const crypto_blinded_key_t *key, crypto_const_uint8_buf_t ciphertext,
+    crypto_const_uint8_buf_t iv, crypto_const_uint8_buf_t aad,
+    aead_gcm_tag_len_t tag_len, crypto_const_uint8_buf_t auth_tag,
+    crypto_uint8_buf_t *plaintext, hardened_bool_t *success) {
+  // Check for NULL pointers in input pointers and required-nonzero-length data
+  // buffers.
+  if (key == NULL || iv.data == NULL || plaintext == NULL ||
+      auth_tag.data == NULL) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // Conditionally check for null pointers in data buffers that may be
+  // 0-length.
+  if ((aad.len != 0 && aad.data == NULL) ||
+      (ciphertext.len != 0 && ciphertext.data == NULL) ||
+      (plaintext->len != 0 && plaintext->data == NULL)) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // Construct the AES key.
+  aes_key_t aes_key;
+  OTCRYPTO_TRY_INTERPRET(aes_gcm_key_construct(key, &aes_key));
+
+  // Ensure the plaintext and ciphertext lengths match.
+  if (launder32(ciphertext.len) != plaintext->len) {
+    return kCryptoStatusBadArgs;
+  }
+  HARDENED_CHECK_EQ(ciphertext.len, plaintext->len);
+
+  // Check the tag length.
+  OTCRYPTO_TRY_INTERPRET(aes_gcm_check_tag_length(auth_tag.len, tag_len));
+
+  // Call the core decryption operation.
+  OTCRYPTO_TRY_INTERPRET(aes_gcm_decrypt(
+      aes_key, iv.len, iv.data, ciphertext.len, ciphertext.data, aad.len,
+      aad.data, auth_tag.len, auth_tag.data, plaintext->data, success));
+
+  return kCryptoStatusOK;
 }
 
 crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,

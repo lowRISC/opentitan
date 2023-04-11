@@ -88,7 +88,9 @@ typedef enum aes_padding {
  * Representation is internal to the hmac implementation; initialize
  * with #otcrypto_gcm_ghash_init.
  */
-typedef struct gcm_ghash_context gcm_ghash_context_t;
+typedef struct gcm_ghash_context {
+  uint32_t ctx[68];
+} gcm_ghash_context_t;
 
 /**
  * Generates a new AES key.
@@ -183,10 +185,13 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
  * @return Result of the authenticated encryption.
  * operation
  */
-crypto_status_t otcrypto_aes_encrypt_gcm(
-    const crypto_blinded_key_t *key, crypto_const_uint8_buf_t plaintext,
-    crypto_uint8_buf_t iv, crypto_uint8_buf_t aad, aead_gcm_tag_len_t tag_len,
-    crypto_uint8_buf_t *ciphertext, crypto_uint8_buf_t *auth_tag);
+crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
+                                         crypto_const_uint8_buf_t plaintext,
+                                         crypto_const_uint8_buf_t iv,
+                                         crypto_const_uint8_buf_t aad,
+                                         aead_gcm_tag_len_t tag_len,
+                                         crypto_uint8_buf_t *ciphertext,
+                                         crypto_uint8_buf_t *auth_tag);
 
 /**
  * Performs the AES-GCM authenticated decryption operation.
@@ -200,21 +205,25 @@ crypto_status_t otcrypto_aes_encrypt_gcm(
  * in the `len` field of `plaintext`. If the user-set length and the
  * output length does not match, an error message will be returned.
  *
+ * The caller must check the `success` argument before operating on
+ * `plaintext`. If the authentication check fails, then `plaintext` should not
+ * be used and there are no guarantees about its contents.
+ *
  * @param key Pointer to the blinded gcm-key struct.
  * @param ciphertext Input data to be decrypted.
  * @param iv Initialization vector for the decryption function.
  * @param aad Additional authenticated data.
  * @param auth_tag Authentication tag to be verified.
  * @param[out] plaintext Decrypted plaintext data, same len as input data.
+ * @param[out] success True if the authentication check passed, otherwise false.
  * @return Result of the authenticated decryption.
  * operation
  */
-crypto_status_t otcrypto_aes_decrypt_gcm(const crypto_blinded_key_t *key,
-                                         crypto_const_uint8_buf_t ciphertext,
-                                         crypto_uint8_buf_t iv,
-                                         crypto_uint8_buf_t aad,
-                                         crypto_uint8_buf_t auth_tag,
-                                         crypto_uint8_buf_t *plaintext);
+crypto_status_t otcrypto_aes_decrypt_gcm(
+    const crypto_blinded_key_t *key, crypto_const_uint8_buf_t ciphertext,
+    crypto_const_uint8_buf_t iv, crypto_const_uint8_buf_t aad,
+    aead_gcm_tag_len_t tag_len, crypto_const_uint8_buf_t auth_tag,
+    crypto_uint8_buf_t *plaintext, hardened_bool_t *success);
 
 /**
  * Internal GHASH operation of Galois Counter Mode (GCM).
