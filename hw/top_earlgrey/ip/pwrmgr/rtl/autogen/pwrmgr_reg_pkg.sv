@@ -13,7 +13,7 @@ package pwrmgr_reg_pkg;
   parameter int PINMUX_AON_PIN_WKUP_REQ_IDX = 2;
   parameter int PINMUX_AON_USB_WKUP_REQ_IDX = 3;
   parameter int AON_TIMER_AON_WKUP_REQ_IDX = 4;
-  parameter int SENSOR_CTRL_WKUP_REQ_IDX = 5;
+  parameter int SENSOR_CTRL_AON_WKUP_REQ_IDX = 5;
   parameter int NumRstReqs = 2;
   parameter int NumIntRstReqs = 2;
   parameter int NumDebugRstReqs = 1;

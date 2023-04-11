@@ -52,7 +52,7 @@
       otp_ctrl.core
       otp_ctrl.prim
       lc_ctrl
-      sensor_ctrl
+      sensor_ctrl_aon
       alert_handler
       ast
       sram_ctrl_ret_aon.ram
@@ -420,7 +420,7 @@
       req_fifo_pass: true
     }
     {
-      name: sensor_ctrl
+      name: sensor_ctrl_aon
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni

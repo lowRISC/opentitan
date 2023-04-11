@@ -561,7 +561,7 @@
       base_addr: "0x40480000",
       attr: "reggen_only",
     },
-    { name: "sensor_ctrl",
+    { name: "sensor_ctrl_aon",
       type: "sensor_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "secure",
@@ -1134,10 +1134,10 @@
         'otp_ctrl.otp_obs'                : 'otp_obs',
         'rstmgr_aon.por_n'                : 'por_n'
         'rv_core_ibex.fpga_info'          : 'fpga_info'
-        'sensor_ctrl.ast_alert'           : 'sensor_ctrl_ast_alert',
-        'sensor_ctrl.ast_status'          : 'sensor_ctrl_ast_status',
-        'sensor_ctrl.ast2pinmux'          : 'ast2pinmux',
-        'sensor_ctrl.ast_init_done'       : 'ast_init_done',
+        'sensor_ctrl_aon.ast_alert'       : 'sensor_ctrl_ast_alert',
+        'sensor_ctrl_aon.ast_status'      : 'sensor_ctrl_ast_status',
+        'sensor_ctrl_aon.ast2pinmux'      : 'ast2pinmux',
+        'sensor_ctrl_aon.ast_init_done'   : 'ast_init_done',
         'spi_device.sck_monitor'          : 'sck_monitor',
         'usbdev.usb_rx_d'                 : '',
         'usbdev.usb_tx_d'                 : '',
@@ -1351,7 +1351,7 @@
       { instance: "spi_device",      port: 'tpm_csb',        connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_host1",       port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "flash_ctrl",      port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sensor_ctrl",     port: '',               connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "sensor_ctrl_aon", port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "pwm_aon",         port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "otp_ctrl",        port: 'test[0]',        connection: 'muxed' , pad: ''             , desc: ''},
       // Sysrst ctrl has both muxed and dedicated IOs

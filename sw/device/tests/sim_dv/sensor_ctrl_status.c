@@ -34,7 +34,7 @@ static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
 static sensor_ctrl_isr_ctx_t sensor_ctrl_isr_ctx = {
     .sensor_ctrl = &sensor_ctrl,
     .plic_sensor_ctrl_start_irq_id =
-        kTopEarlgreyPlicIrqIdSensorCtrlIoStatusChange,
+        kTopEarlgreyPlicIrqIdSensorCtrlAonIoStatusChange,
     .expected_irq = kDifSensorCtrlIrqIoStatusChange,
     .is_only_irq = false};
 
@@ -49,7 +49,7 @@ void ottf_external_isr(void) {
                                 &irq_id);
 
   // Check that both the peripheral and the irq id is correct
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralSensorCtrl,
+  CHECK(peripheral == kTopEarlgreyPlicPeripheralSensorCtrlAon,
         "IRQ peripheral: %d is incorrect", peripheral);
   CHECK(irq_id == kDifSensorCtrlIrqIoStatusChange, "IRQ ID: %d is incorrect",
         irq_id);
@@ -70,13 +70,14 @@ bool test_main(void) {
 
   // Initialize sensor_ctrl
   CHECK_DIF_OK(dif_sensor_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR), &sensor_ctrl));
+      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR),
+      &sensor_ctrl));
 
   // Enable interrupts
   rv_plic_testutils_irq_range_enable(
       &plic, kTopEarlgreyPlicTargetIbex0,
-      kTopEarlgreyPlicIrqIdSensorCtrlIoStatusChange,
-      kTopEarlgreyPlicIrqIdSensorCtrlIoStatusChange);
+      kTopEarlgreyPlicIrqIdSensorCtrlAonIoStatusChange,
+      kTopEarlgreyPlicIrqIdSensorCtrlAonIoStatusChange);
 
   // Acknowledge the interrupt state that sets by default
   CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge_all(&sensor_ctrl));

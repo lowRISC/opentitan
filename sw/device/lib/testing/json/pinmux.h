@@ -241,15 +241,15 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_EARLGREY_PINMUX_MIO_
     value(_, SpiHost1Sck, kTopEarlgreyPinmuxOutselSpiHost1Sck) \
     value(_, SpiHost1Csb, kTopEarlgreyPinmuxOutselSpiHost1Csb) \
     value(_, FlashCtrlTdo, kTopEarlgreyPinmuxOutselFlashCtrlTdo) \
-    value(_, SensorCtrlAstDebugOut0, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut0) \
-    value(_, SensorCtrlAstDebugOut1, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut1) \
-    value(_, SensorCtrlAstDebugOut2, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut2) \
-    value(_, SensorCtrlAstDebugOut3, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut3) \
-    value(_, SensorCtrlAstDebugOut4, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut4) \
-    value(_, SensorCtrlAstDebugOut5, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut5) \
-    value(_, SensorCtrlAstDebugOut6, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut6) \
-    value(_, SensorCtrlAstDebugOut7, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut7) \
-    value(_, SensorCtrlAstDebugOut8, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut8) \
+    value(_, SensorCtrlAstDebugOut0, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut0) \
+    value(_, SensorCtrlAstDebugOut1, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut1) \
+    value(_, SensorCtrlAstDebugOut2, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut2) \
+    value(_, SensorCtrlAstDebugOut3, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut3) \
+    value(_, SensorCtrlAstDebugOut4, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut4) \
+    value(_, SensorCtrlAstDebugOut5, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut5) \
+    value(_, SensorCtrlAstDebugOut6, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut6) \
+    value(_, SensorCtrlAstDebugOut7, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut7) \
+    value(_, SensorCtrlAstDebugOut8, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut8) \
     value(_, PwmAonPwm0, kTopEarlgreyPinmuxOutselPwmAonPwm0) \
     value(_, PwmAonPwm1, kTopEarlgreyPinmuxOutselPwmAonPwm1) \
     value(_, PwmAonPwm2, kTopEarlgreyPinmuxOutselPwmAonPwm2) \

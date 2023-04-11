@@ -85,7 +85,7 @@ static_assert(kDifPwrmgrWakeupRequestSourceFive ==
                   (1u << PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX),
               "Layout of WAKE_INFO register changed.");
 static_assert(kDifPwrmgrWakeupRequestSourceSix ==
-                  (1u << PWRMGR_PARAM_SENSOR_CTRL_WKUP_REQ_IDX),
+                  (1u << PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX),
               "Layout of WAKE_INFO register changed.");
 
 /**

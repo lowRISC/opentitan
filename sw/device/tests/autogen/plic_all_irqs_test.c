@@ -64,7 +64,7 @@ static dif_otp_ctrl_t otp_ctrl;
 static dif_pattgen_t pattgen;
 static dif_pwrmgr_t pwrmgr_aon;
 static dif_rv_timer_t rv_timer;
-static dif_sensor_ctrl_t sensor_ctrl;
+static dif_sensor_ctrl_t sensor_ctrl_aon;
 static dif_spi_device_t spi_device;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
@@ -603,25 +603,25 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralSensorCtrl: {
+    case kTopEarlgreyPlicPeripheralSensorCtrlAon: {
       dif_sensor_ctrl_irq_t irq = (dif_sensor_ctrl_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSensorCtrlIoStatusChange);
+          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSensorCtrlAonIoStatusChange);
       CHECK(irq == sensor_ctrl_irq_expected,
-            "Incorrect sensor_ctrl IRQ triggered: exp = %d, obs = %d",
+            "Incorrect sensor_ctrl_aon IRQ triggered: exp = %d, obs = %d",
             sensor_ctrl_irq_expected, irq);
       sensor_ctrl_irq_serviced = irq;
 
       dif_sensor_ctrl_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_sensor_ctrl_irq_get_state(&sensor_ctrl, &snapshot));
+      CHECK_DIF_OK(dif_sensor_ctrl_irq_get_state(&sensor_ctrl_aon, &snapshot));
       CHECK(snapshot == (dif_sensor_ctrl_irq_state_snapshot_t)(1 << irq),
-            "Only sensor_ctrl IRQ %d expected to fire. Actual interrupt "
+            "Only sensor_ctrl_aon IRQ %d expected to fire. Actual interrupt "
             "status = %x",
             irq, snapshot);
 
       // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl, irq, false));
-      CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge(&sensor_ctrl, irq));
+      CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl_aon, irq, false));
+      CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge(&sensor_ctrl_aon, irq));
       break;
     }
 
@@ -898,8 +898,8 @@ static void peripherals_init(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_timer_init(base_addr, &rv_timer));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR);
-  CHECK_DIF_OK(dif_sensor_ctrl_init(base_addr, &sensor_ctrl));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_sensor_ctrl_init(base_addr, &sensor_ctrl_aon));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_device_init(base_addr, &spi_device));
@@ -956,7 +956,7 @@ static void peripheral_irqs_clear(void) {
   CHECK_DIF_OK(dif_pattgen_irq_acknowledge_all(&pattgen));
   CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge_all(&pwrmgr_aon));
   CHECK_DIF_OK(dif_rv_timer_irq_acknowledge_all(&rv_timer, kHart));
-  CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge_all(&sensor_ctrl));
+  CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge_all(&sensor_ctrl_aon));
   CHECK_DIF_OK(dif_spi_device_irq_acknowledge_all(&spi_device));
   CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host0));
   CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host1));
@@ -1056,7 +1056,7 @@ static void peripheral_irqs_enable(void) {
   CHECK_DIF_OK(
       dif_rv_timer_irq_restore_all(&rv_timer, kHart, &rv_timer_irqs));
   CHECK_DIF_OK(
-      dif_sensor_ctrl_irq_restore_all(&sensor_ctrl, &sensor_ctrl_irqs));
+      dif_sensor_ctrl_irq_restore_all(&sensor_ctrl_aon, &sensor_ctrl_irqs));
   CHECK_DIF_OK(
       dif_spi_device_irq_restore_all(&spi_device, &spi_device_irqs));
   CHECK_DIF_OK(
@@ -1351,17 +1351,17 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from rv_timer is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralSensorCtrl;
+  peripheral_expected = kTopEarlgreyPlicPeripheralSensorCtrlAon;
   for (dif_sensor_ctrl_irq_t irq = kDifSensorCtrlIrqIoStatusChange;
        irq <= kDifSensorCtrlIrqInitStatusChange; ++irq) {
     sensor_ctrl_irq_expected = irq;
-    LOG_INFO("Triggering sensor_ctrl IRQ %d.", irq);
-    CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl, irq, true));
+    LOG_INFO("Triggering sensor_ctrl_aon IRQ %d.", irq);
+    CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl_aon, irq, true));
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
     IBEX_SPIN_FOR(sensor_ctrl_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from sensor_ctrl is serviced.", irq);
+    LOG_INFO("IRQ %d from sensor_ctrl_aon is serviced.", irq);
   }
 
   peripheral_expected = kTopEarlgreyPlicPeripheralSpiDevice;

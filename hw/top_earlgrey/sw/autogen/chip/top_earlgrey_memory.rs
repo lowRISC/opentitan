@@ -412,19 +412,19 @@ pub const TOP_EARLGREY_AST_BASE_ADDR: usize = 0x40480000;
 /// `TOP_EARLGREY_AST_BASE_ADDR + TOP_EARLGREY_AST_SIZE_BYTES`.
 pub const TOP_EARLGREY_AST_SIZE_BYTES: usize = 0x400;
 
-/// Peripheral base address for sensor_ctrl in top earlgrey.
+/// Peripheral base address for sensor_ctrl_aon in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR: usize = 0x40490000;
+pub const TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR: usize = 0x40490000;
 
-/// Peripheral size for sensor_ctrl in top earlgrey.
+/// Peripheral size for sensor_ctrl_aon in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR and
-/// `TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR + TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES`.
-pub const TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES: usize = 0x40;
+/// address between #TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR and
+/// `TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR + TOP_EARLGREY_SENSOR_CTRL_AON_SIZE_BYTES`.
+pub const TOP_EARLGREY_SENSOR_CTRL_AON_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.
 ///

@@ -69,7 +69,7 @@ interface chip_if;
 `define RV_DM_HIER          `TOP_HIER.u_rv_dm
 `define RV_PLIC_HIER        `TOP_HIER.u_rv_plic
 `define RV_TIMER_HIER       `TOP_HIER.u_rv_timer
-`define SENSOR_CTRL_HIER    `TOP_HIER.u_sensor_ctrl
+`define SENSOR_CTRL_HIER    `TOP_HIER.u_sensor_ctrl_aon
 `define SPI_DEVICE_HIER     `TOP_HIER.u_spi_device
 `define SPI_HOST_HIER(i)    `TOP_HIER.u_spi_host``i
 `define SRAM_CTRL_MAIN_HIER `TOP_HIER.u_sram_ctrl_main
@@ -999,7 +999,7 @@ interface chip_if;
       PeripheralRvDm:           path = {path, ".", `DV_STRINGIFY(`RV_DM_HIER)};
       PeripheralRvPlic:         path = {path, ".", `DV_STRINGIFY(`RV_PLIC_HIER)};
       PeripheralRvTimer:        path = {path, ".", `DV_STRINGIFY(`RV_TIMER_HIER)};
-      PeripheralSensorCtrl:     path = {path, ".", `DV_STRINGIFY(`SENSOR_CTRL_HIER)};
+      PeripheralSensorCtrlAon:  path = {path, ".", `DV_STRINGIFY(`SENSOR_CTRL_HIER)};
       PeripheralSpiDevice:      path = {path, ".", `DV_STRINGIFY(`SPI_DEVICE_HIER)};
       PeripheralSpiHost0:       path = {path, ".", `DV_STRINGIFY(`SPI_HOST_HIER(0))};
       PeripheralSpiHost1:       path = {path, ".", `DV_STRINGIFY(`SPI_HOST_HIER(1))};

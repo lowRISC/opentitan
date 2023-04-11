@@ -71,7 +71,8 @@ bool test_main(void) {
 
   // Initialize sensor_ctrl
   CHECK_DIF_OK(dif_sensor_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR), &sensor_ctrl));
+      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR),
+      &sensor_ctrl));
 
   // Enable all the AON interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&plic, kTopEarlgreyPlicTargetIbex0,

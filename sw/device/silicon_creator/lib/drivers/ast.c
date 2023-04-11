@@ -20,7 +20,7 @@ const uint32_t kAstCheckPollCpuCycles = 10000;
 #endif
 
 enum {
-  kBase = TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR,
+  kBase = TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR,
 };
 
 rom_error_t ast_check(lifecycle_state_t lc_state) {

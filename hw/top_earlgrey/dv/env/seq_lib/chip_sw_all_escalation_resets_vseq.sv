@@ -53,7 +53,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*rv_dm*prim_reg_we_check*", TopEarlgreyAlertIdRvDmFatalFault},
     '{"*rv_plic*prim_reg_we_check*", TopEarlgreyAlertIdRvPlicFatalFault},
     '{"*rv_timer*prim_reg_we_check*", TopEarlgreyAlertIdRvTimerFatalFault},
-    '{"*sensor_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdSensorCtrlFatalAlert},
+    '{"*sensor_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdSensorCtrlAonFatalAlert},
     '{"*spi_device*prim_reg_we_check*", TopEarlgreyAlertIdSpiDeviceFatalFault},
     '{"*spi_host0*prim_reg_we_check*", TopEarlgreyAlertIdSpiHost0FatalFault},
     '{"*spi_host1*prim_reg_we_check*", TopEarlgreyAlertIdSpiHost1FatalFault},

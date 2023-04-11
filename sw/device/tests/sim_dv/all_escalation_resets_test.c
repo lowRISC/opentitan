@@ -972,7 +972,7 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdSensorCtrlFatalAlert: {
+    case kTopEarlgreyAlertIdSensorCtrlAonFatalAlert: {
       fault_checker_t fc = {trivial_fault_checker, sensor_ctrl_inst_name,
                             we_check};
       fault_checker = fc;
