@@ -298,11 +298,13 @@ crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
  * input.
  *
  * @param key AES key for the GCTR operation.
+ * @param icb Initial counter block.
  * @param input Input buffer.
  * @param[out] output Output buffer (same length as input).
  * @return Result of the operation.
  */
 crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
+                                      crypto_const_uint8_buf_t icb,
                                       crypto_const_uint8_buf_t input,
                                       crypto_uint8_buf_t output);
 
