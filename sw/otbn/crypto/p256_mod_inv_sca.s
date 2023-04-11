@@ -6,7 +6,7 @@
  * Wrapper specifically for SCA/formal analysis of p256 modular inversion.
  *
  * This routine would never normally be exposed, but it's helpful for SCA to
- * analyze it in isolation. 
+ * analyze it in isolation.
  */
 
 .section .text.start
