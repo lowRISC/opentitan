@@ -38,6 +38,7 @@ cc_library(
     deps = [
         ":keyblob",
         "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/impl/ecc:ecdh_p256",
         "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
         "//sw/device/lib/crypto/include:datatypes",
     ],
