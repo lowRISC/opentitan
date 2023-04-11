@@ -5,6 +5,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 
 static const char kMessage[] = "test message";

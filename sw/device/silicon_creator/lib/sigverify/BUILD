@@ -53,6 +53,11 @@ dual_cc_library(
     ),
 )
 
+alias(
+    name = "mod_exp_ibex_device_library",
+    actual = dual_cc_device_library_of(":mod_exp_ibex"),
+)
+
 cc_test(
     name = "mod_exp_ibex_unittest",
     srcs = ["mod_exp_ibex_unittest.cc"],
@@ -220,38 +225,24 @@ cc_library(
     ],
 )
 
-# Common inputs for sigverify.c; we publish two variants of this
-# library, so factoring this out simplifies the build.
 cc_library(
-    name = "sigverify_inner",
-    hdrs = ["sigverify.h"],
-    visibility = ["//visibility:private"],
+    name = "flash_exec",
+    srcs = ["flash_exec.c"],
+    hdrs = ["flash_exec.h"],
     deps = [
-        ":rsa_verify",
-        ":spx_key",
-        ":usage_constraints",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//sw/device/lib/base:macros",
     ],
 )
 
 cc_library(
     name = "sigverify",
+    hdrs = ["sigverify.h"],
     deps = [
-        ":mod_exp_ibex",
-        ":mod_exp_otbn",
-        ":sigverify_inner",
-    ],
-)
-
-cc_library(
-    name = "sigverify_without_mock_mod_exp_ibex",
-    visibility = [
-        "//sw/device/silicon_creator/rom:__pkg__",
-        "//sw/device/silicon_creator/rom_ext:__pkg__",
-    ],
-    deps = [
-        dual_cc_device_library_of(":mod_exp_ibex"),
-        ":mod_exp_otbn",
-        ":sigverify_inner",
+        ":rsa_verify",
+        # Note: Will be replaced by spx_verify when implemented
+        ":spx_key",
+        ":usage_constraints",
     ],
 )
 
@@ -259,8 +250,8 @@ cc_test(
     name = "sigverify_unittest",
     srcs = ["sigverify_unittest.cc"],
     deps = [
+        ":flash_exec",
         ":sigverify",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
@@ -276,6 +267,7 @@ opentitan_functest(
         ],
     ),
     deps = [
+        ":flash_exec",
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -292,6 +284,7 @@ opentitan_functest(
         ],
     ),
     deps = [
+        "flash_exec",
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -307,6 +300,7 @@ opentitan_functest(
     ),
     targets = ["cw310_test_rom"],  # Test set is too large to run in simulation
     deps = [
+        "flash_exec",
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
