@@ -188,9 +188,11 @@ status_t otbn_testutils_wait_for_done(const dif_otbn_t *otbn,
  * @param len_bytes Number of bytes to copy.
  * @param dest Address of the destination in OTBN's data memory.
  * @param src Source of the data to copy.
+ * @return The result of the operation.
  */
-void otbn_testutils_write_data(const dif_otbn_t *otbn, size_t len_bytes,
-                               const void *src, otbn_addr_t dest);
+OT_WARN_UNUSED_RESULT
+status_t otbn_testutils_write_data(const dif_otbn_t *otbn, size_t len_bytes,
+                                   const void *src, otbn_addr_t dest);
 
 /**
  * Copies data from OTBN's data memory to CPU memory.

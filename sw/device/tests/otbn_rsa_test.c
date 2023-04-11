@@ -111,11 +111,14 @@ static void rsa_encrypt(dif_otbn_t *otbn, const uint8_t *modulus,
 
   // Write input arguments.
   uint32_t mode = 1;  // mode 1 => encrypt
-  otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode, kOtbnVarRsaMode);
-  otbn_testutils_write_data(otbn, sizeof(uint32_t), &n_limbs,
-                            kOtbnVarRsaNLimbs);
-  otbn_testutils_write_data(otbn, size_bytes, modulus, kOtbnVarRsaModulus);
-  otbn_testutils_write_data(otbn, size_bytes, in, kOtbnVarRsaInOut);
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode,
+                                            kOtbnVarRsaMode));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(uint32_t), &n_limbs,
+                                            kOtbnVarRsaNLimbs));
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, size_bytes, modulus, kOtbnVarRsaModulus));
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, size_bytes, in, kOtbnVarRsaInOut));
 
   // Call OTBN to perform operation, and wait for it to complete.
   CHECK_STATUS_OK(otbn_testutils_execute(otbn));
@@ -149,11 +152,16 @@ static void rsa_decrypt(dif_otbn_t *otbn, const uint8_t *modulus,
 
   // Write input arguments.
   uint32_t mode = 2;  // mode 2 => decrypt
-  otbn_testutils_write_data(otbn, sizeof(mode), &mode, kOtbnVarRsaMode);
-  otbn_testutils_write_data(otbn, sizeof(n_limbs), &n_limbs, kOtbnVarRsaNLimbs);
-  otbn_testutils_write_data(otbn, size_bytes, modulus, kOtbnVarRsaModulus);
-  otbn_testutils_write_data(otbn, size_bytes, private_exponent, kOtbnVarRsaExp);
-  otbn_testutils_write_data(otbn, size_bytes, in, kOtbnVarRsaInOut);
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, sizeof(mode), &mode, kOtbnVarRsaMode));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(n_limbs), &n_limbs,
+                                            kOtbnVarRsaNLimbs));
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, size_bytes, modulus, kOtbnVarRsaModulus));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, size_bytes, private_exponent,
+                                            kOtbnVarRsaExp));
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, size_bytes, in, kOtbnVarRsaInOut));
 
   // Call OTBN to perform operation
   CHECK_STATUS_OK(otbn_testutils_execute(otbn));
