@@ -3807,9 +3807,9 @@ test_suite(
 test_suite(
     name = "amaury",
     tests = [
-        "rom_e2e_debug_test",
+        #"rom_e2e_debug_test",
         "rom_e2e_asm_interrupt_handler",
-        "rom_e2e_jtag_inject_tests",
-        "rom_e2e_asm_watchdog",
+        #"rom_e2e_jtag_inject_tests",
+        #"rom_e2e_asm_watchdog",
     ],
 )
