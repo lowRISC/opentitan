@@ -87,9 +87,10 @@ status_t otbn_testutils_execute(const dif_otbn_t *otbn) {
   return OK_STATUS();
 }
 
-void otbn_testutils_write_data(const dif_otbn_t *otbn, size_t len_bytes,
-                               const void *src, otbn_addr_t dest) {
-  CHECK_DIF_OK(dif_otbn_dmem_write(otbn, dest, src, len_bytes));
+status_t otbn_testutils_write_data(const dif_otbn_t *otbn, size_t len_bytes,
+                                   const void *src, otbn_addr_t dest) {
+  TRY(dif_otbn_dmem_write(otbn, dest, src, len_bytes));
+  return OK_STATUS();
 }
 
 void otbn_testutils_read_data(const dif_otbn_t *otbn, size_t len_bytes,

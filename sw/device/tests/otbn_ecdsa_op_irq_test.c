@@ -256,17 +256,22 @@ static void p256_ecdsa_sign(dif_otbn_t *otbn, const uint8_t *msg,
 
   // Write input arguments.
   uint32_t mode = kModeSign;
-  otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode, kOtbnVarMode);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, msg, kOtbnVarMsg);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, private_key_d, kOtbnVarD0);
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode, kOtbnVarMode));
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, /*len_bytes=*/32, msg, kOtbnVarMsg));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, /*len_bytes=*/32,
+                                            private_key_d, kOtbnVarD0));
 
   // Write redundant upper bits of d (all-zero for this test).
   uint8_t d0_high[32] = {0};
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, d0_high, kOtbnVarD0 + 32);
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, /*len_bytes=*/32, d0_high,
+                                            kOtbnVarD0 + 32));
 
   // Write second share of d (all-zero for this test).
   uint8_t d1[64] = {0};
-  otbn_testutils_write_data(otbn, /*len_bytes=*/64, d1, kOtbnVarD1);
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, /*len_bytes=*/64, d1, kOtbnVarD1));
 
   // Call OTBN to perform operation, and wait for it to complete.
   CHECK_STATUS_OK(otbn_testutils_execute(otbn));
@@ -299,12 +304,18 @@ static void p256_ecdsa_verify(dif_otbn_t *otbn, const uint8_t *msg,
 
   // Write input arguments.
   uint32_t mode = kModeVerify;
-  otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode, kOtbnVarMode);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, msg, kOtbnVarMsg);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, signature_r, kOtbnVarR);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, signature_s, kOtbnVarS);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, public_key_x, kOtbnVarX);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, public_key_y, kOtbnVarY);
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode, kOtbnVarMode));
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, /*len_bytes=*/32, msg, kOtbnVarMsg));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, /*len_bytes=*/32, signature_r,
+                                            kOtbnVarR));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, /*len_bytes=*/32, signature_s,
+                                            kOtbnVarS));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, /*len_bytes=*/32,
+                                            public_key_x, kOtbnVarX));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, /*len_bytes=*/32,
+                                            public_key_y, kOtbnVarY));
 
   // Call OTBN to perform operation, and wait for it to complete.
   CHECK_STATUS_OK(otbn_testutils_execute(otbn));

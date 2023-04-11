@@ -88,10 +88,10 @@ static void test_barrett384(dif_otbn_t *otbn) {
   // c = (a * b) % m = (10 * 20) % m = 200
   static const uint8_t c_expected[kDataSizeBytes] = {200};
 
-  otbn_testutils_write_data(otbn, sizeof(a), &a, kInpA);
-  otbn_testutils_write_data(otbn, sizeof(b), &b, kInpB);
-  otbn_testutils_write_data(otbn, sizeof(m), &m, kInpM);
-  otbn_testutils_write_data(otbn, sizeof(u), &u, kInpU);
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(a), &a, kInpA));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(b), &b, kInpB));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(m), &m, kInpM));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(u), &u, kInpU));
 
   CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(otbn, true));
   CHECK_STATUS_OK(otbn_testutils_execute(otbn));
