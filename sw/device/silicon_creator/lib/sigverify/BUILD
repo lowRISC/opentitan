@@ -40,7 +40,6 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//sw/device/lib/base:macros",
-            "//sw/device/lib/base:memory",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -192,6 +191,22 @@ sh_test(
     ],
 )
 
+cc_library(
+    name = "rsa_verify",
+    srcs = ["rsa_verify.c"],
+    hdrs = ["rsa_verify.h"],
+    deps = [
+        ":mod_exp_ibex",
+        ":mod_exp_otbn",
+        ":rsa_key",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+    ],
+)
+
 # Common inputs for sigverify.c; we publish two variants of this
 # library, so factoring this out simplifies the build.
 cc_library(
@@ -200,19 +215,10 @@ cc_library(
     hdrs = ["sigverify.h"],
     visibility = ["//visibility:private"],
     deps = [
-        ":mod_exp_ibex",
-        ":mod_exp_otbn",
-        ":rsa_key",
+        ":rsa_verify",
         ":spx_key",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
     ],
 )
