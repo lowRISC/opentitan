@@ -266,20 +266,29 @@ impl OpenOcdServer {
     fn wait_for_socket<A: ToSocketAddrs>(addr: A, timeout: Duration) -> io::Result<TcpStream> {
         let start = Instant::now();
         loop {
-            if start.elapsed() >= timeout {
-                return Err(ErrorKind::TimedOut.into());
-            }
-
+            log::warn!("Attempting to make tcp connection...");
             match TcpStream::connect(&addr) {
                 // This is the error for addresses that aren't bound
                 Err(e) if e.kind() == ErrorKind::ConnectionRefused => (),
+                // This is error has been observed in CQ.
+                Err(e) if e.kind() == ErrorKind::AddrNotAvailable => {
+                    log::warn!("Got ErrorKind::AddrInUse on client socket, odd...");
+                }
                 // All other errors (and `Ok`s) we want to know about
+                Err(e) => {
+                    log::warn!("Error: {:?}", e.kind());
+
+                    return Err(e);
+                }
                 socket => return socket,
             }
 
             // Delay between loops if there's enough time before timeout.
             if start.elapsed() + Self::POLL_DELAY < timeout {
                 thread::sleep(Self::POLL_DELAY);
+            } else {
+                log::warn!("timeout");
+                return Err(ErrorKind::TimedOut.into());
             }
         }
     }
