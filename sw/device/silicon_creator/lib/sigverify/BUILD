@@ -207,19 +207,29 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "usage_constraints",
+    srcs = ["usage_constraints.c"],
+    hdrs = ["usage_constraints.h"],
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+    ],
+)
+
 # Common inputs for sigverify.c; we publish two variants of this
 # library, so factoring this out simplifies the build.
 cc_library(
     name = "sigverify_inner",
-    srcs = ["sigverify.c"],
     hdrs = ["sigverify.h"],
     visibility = ["//visibility:private"],
     deps = [
         ":rsa_verify",
         ":spx_key",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib/drivers:otp",
+        ":usage_constraints",
     ],
 )
 

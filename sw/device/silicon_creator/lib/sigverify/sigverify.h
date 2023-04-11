@@ -8,8 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_verify.h"
+#include "sw/device/silicon_creator/lib/sigverify/usage_constraints.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,26 +24,6 @@ enum {
    */
   kSigverifyFlashExec = 0xa26a38f7,
 };
-
-
-/**
- * Gets the usage constraints struct that is used for verifying a ROM_EXT.
- *
- * This function reads
- * - The device identifier from the life cycle controller,
- * - Creator and owner manufacturing states from the OTP,
- * - The life cycle state from life cycle controller, and
- * masks the fields of `usage_constraints` according to the given
- * `selector_bits`.
- *
- * See also: `manifest_usage_constraints_t`.
- *
- * @param selector_bits Selector bits of the manifest of the ROM_EXT to be
- * verified.
- * @param[out] usage_constraints Usage constraints.
- */
-void sigverify_usage_constraints_get(
-    uint32_t selector_bits, manifest_usage_constraints_t *usage_constraints);
 
 #ifdef __cplusplus
 }  // extern "C"
