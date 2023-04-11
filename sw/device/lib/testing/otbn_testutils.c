@@ -99,8 +99,8 @@ status_t otbn_testutils_read_data(const dif_otbn_t *otbn, size_t len_bytes,
   return OK_STATUS();
 }
 
-void otbn_dump_dmem(const dif_otbn_t *otbn, uint32_t max_addr) {
-  CHECK(max_addr % kOtbnWlenBytes == 0);
+status_t otbn_dump_dmem(const dif_otbn_t *otbn, uint32_t max_addr) {
+  TRY_CHECK(max_addr % kOtbnWlenBytes == 0);
 
   if (max_addr == 0) {
     max_addr = dif_otbn_get_dmem_size_bytes(otbn);
@@ -108,9 +108,10 @@ void otbn_dump_dmem(const dif_otbn_t *otbn, uint32_t max_addr) {
 
   for (int i = 0; i < max_addr; i += kOtbnWlenBytes) {
     uint32_t data[kOtbnWlenBytes / sizeof(uint32_t)];
-    CHECK_DIF_OK(dif_otbn_dmem_read(otbn, i, data, kOtbnWlenBytes));
+    TRY(dif_otbn_dmem_read(otbn, i, data, kOtbnWlenBytes));
     LOG_INFO("DMEM @%04d: 0x%08x%08x%08x%08x%08x%08x%08x%08x",
              i / kOtbnWlenBytes, data[7], data[6], data[5], data[4], data[3],
              data[2], data[1], data[0]);
   }
+  return OK_STATUS();
 }
