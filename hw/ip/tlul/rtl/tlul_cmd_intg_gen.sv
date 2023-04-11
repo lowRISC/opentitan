@@ -9,8 +9,6 @@
  */
 
 module tlul_cmd_intg_gen import tlul_pkg::*; #(
-  // TODO: default generation of data integrity is on until host native
-  // generation is ready
   parameter bit EnableDataIntgGen = 1'b1
 ) (
   // TL-UL interface
