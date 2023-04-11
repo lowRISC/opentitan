@@ -543,27 +543,123 @@ crypto_status_t otcrypto_aes_decrypt_gcm(
 
 crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
                                         gcm_ghash_context_t *ctx) {
-  // TODO: Connect AES-GCM operations to the API.
-  return kCryptoStatusNotImplemented;
+  if (hash_subkey == NULL || ctx == NULL || hash_subkey->keyblob == NULL) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // Key integrity check.
+  if (launder32(integrity_blinded_key_check(hash_subkey)) !=
+      kHardenedBoolTrue) {
+    return kCryptoStatusBadArgs;
+  }
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(hash_subkey),
+                    kHardenedBoolTrue);
+
+  // Check the key mode.
+  if (launder32(hash_subkey->config.key_mode) != kKeyModeAesGcm) {
+    return kCryptoStatusBadArgs;
+  }
+  HARDENED_CHECK_EQ(hash_subkey->config.key_mode, kKeyModeAesGcm);
+
+  // The hash subkey cannot be sideloaded, since GHASH is implemented in
+  // software.
+  if (hash_subkey->config.hw_backed != kHardenedBoolFalse) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // Get pointers to the individual shares of the blinded key.
+  uint32_t *share0;
+  uint32_t *share1;
+  OTCRYPTO_TRY_INTERPRET(keyblob_to_shares(hash_subkey, &share0, &share1));
+
+  // Combine the shares; the underlying GHASH operation is not yet hardened, so
+  // we need to unmask the key.
+  uint32_t unmasked_key[kGhashBlockNumWords];
+  for (size_t i = 0; i < kGhashBlockNumWords; i++) {
+    unmasked_key[i] = share0[i] ^ share1[i];
+  }
+
+  // Set the key for the GHASH context and start a GHASH operation.
+  ghash_context_t *gctx = (ghash_context_t *)ctx->ctx;
+  ghash_init_subkey(unmasked_key, gctx);
+  ghash_init(gctx);
+
+  return kCryptoStatusOK;
 }
 
 crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
                                           crypto_const_uint8_buf_t input) {
-  // TODO: Connect AES-GCM operations to the API.
-  return kCryptoStatusNotImplemented;
+  if (ctx == NULL) {
+    return kCryptoStatusBadArgs;
+  }
+
+  if (input.len != 0 && input.data == NULL) {
+    return kCryptoStatusBadArgs;
+  }
+
+  ghash_context_t *gctx = (ghash_context_t *)ctx->ctx;
+  ghash_update(gctx, input.len, input.data);
+
+  return kCryptoStatusOK;
 }
 
 crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
                                          crypto_uint8_buf_t digest) {
-  // TODO: Connect AES-GCM operations to the API.
-  return kCryptoStatusNotImplemented;
+  if (ctx == NULL || digest.data == NULL) {
+    return kCryptoStatusBadArgs;
+  }
+
+  if (launder32(digest.len) != kGhashBlockNumBytes) {
+    return kCryptoStatusBadArgs;
+  }
+  HARDENED_CHECK_EQ(digest.len, kGhashBlockNumBytes);
+
+  ghash_context_t *gctx = (ghash_context_t *)ctx->ctx;
+  uint32_t result[kGhashBlockNumBytes];
+  ghash_final(gctx, result);
+
+  // TODO(#17711) Change to `hardened_memcpy`.
+  memcpy(digest.data, result, sizeof(result));
+
+  return kCryptoStatusOK;
 }
 
 crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
+                                      crypto_const_uint8_buf_t icb,
                                       crypto_const_uint8_buf_t input,
                                       crypto_uint8_buf_t output) {
-  // TODO: Connect AES-GCM operations to the API.
-  return kCryptoStatusNotImplemented;
+  if (key == NULL || icb.data == NULL) {
+    return kCryptoStatusBadArgs;
+  }
+
+  if ((input.len != 0 && input.data == NULL) ||
+      (output.len != 0 && output.data == NULL)) {
+    return kCryptoStatusBadArgs;
+  }
+
+  if (launder32(icb.len) != kAesBlockNumBytes) {
+    return kCryptoStatusBadArgs;
+  }
+  HARDENED_CHECK_EQ(icb.len, kAesBlockNumBytes);
+
+  if (launder32(input.len) != output.len) {
+    return kCryptoStatusBadArgs;
+  }
+  HARDENED_CHECK_EQ(input.len, output.len);
+
+  // Construct the AES key.
+  aes_key_t aes_key;
+  OTCRYPTO_TRY_INTERPRET(aes_gcm_key_construct(key, &aes_key));
+
+  // Construct the initial counter block.
+  aes_block_t aes_icb;
+  // TODO(#17711) Change to `hardened_memcpy`.
+  memcpy(aes_icb.data, icb.data, kAesBlockNumBytes);
+
+  OTCRYPTO_TRY_INTERPRET(
+      aes_gcm_gctr(aes_key, &aes_icb, input.len, input.data, output.data));
+
+  return kCryptoStatusOK;
 }
 
 crypto_status_t otcrypto_aes_kwp_encrypt(
