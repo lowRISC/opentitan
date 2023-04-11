@@ -28,7 +28,7 @@ static const otbn_addr_t kVarUrndOut = OTBN_ADDR_T_INIT(randomness, urnd_out);
 static void print_uint256(dif_otbn_t *otbn, const otbn_addr_t var,
                           const char *prefix) {
   uint32_t data[32 / sizeof(uint32_t)];
-  otbn_testutils_read_data(otbn, /*len_bytes=*/32, var, &data);
+  CHECK_STATUS_OK(otbn_testutils_read_data(otbn, /*len_bytes=*/32, var, &data));
   LOG_INFO("%s0x%08x%08x%08x%08x%08x%08x%08x%08x", prefix, data[7], data[6],
            data[5], data[4], data[3], data[2], data[1], data[0]);
 }
@@ -49,10 +49,11 @@ bool otbn_randomness_test_end(dif_otbn_t *otbn, bool skip_otbn_done_check) {
     CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError));
   }
   uint32_t rv;
-  otbn_testutils_read_data(otbn, /*len_bytes=*/4, kVarRv, &rv);
+  CHECK_STATUS_OK(otbn_testutils_read_data(otbn, /*len_bytes=*/4, kVarRv, &rv));
   if (rv != 0) {
     uint32_t fail_idx;
-    otbn_testutils_read_data(otbn, /*len_bytes=*/4, kVarFailIdx, &fail_idx);
+    CHECK_STATUS_OK(otbn_testutils_read_data(otbn, /*len_bytes=*/4, kVarFailIdx,
+                                             &fail_idx));
     LOG_ERROR("ERROR: Test with index %d failed.", fail_idx);
     return false;
   }

@@ -202,9 +202,11 @@ status_t otbn_testutils_write_data(const dif_otbn_t *otbn, size_t len_bytes,
  * @param src The address in OTBN data memory to copy from.
  * @param[out] dest The destination of the copied data in main memory
  *                  (preallocated).
+ * @return The result of the operation.
  */
-void otbn_testutils_read_data(const dif_otbn_t *otbn, size_t len_bytes,
-                              otbn_addr_t src, void *dest);
+OT_WARN_UNUSED_RESULT
+status_t otbn_testutils_read_data(const dif_otbn_t *otbn, size_t len_bytes,
+                                  otbn_addr_t src, void *dest);
 
 /**
  * Writes a LOG_INFO message with the contents of each 256b DMEM word.
