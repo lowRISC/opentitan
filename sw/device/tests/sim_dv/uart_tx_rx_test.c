@@ -517,8 +517,8 @@ void config_external_clock(const dif_clkmgr_t *clkmgr) {
   CHECK(curr_state == kDifLcCtrlStateRma,
         "LC State isn't in kDifLcCtrlStateRma!");
 
-  clkmgr_testutils_enable_external_clock_and_wait_for_completion(
-      clkmgr, kUseLowSpeedSel);
+  CHECK_STATUS_OK(
+      clkmgr_testutils_enable_external_clock_blocking(clkmgr, kUseLowSpeedSel));
 }
 
 OTTF_DEFINE_TEST_CONFIG();

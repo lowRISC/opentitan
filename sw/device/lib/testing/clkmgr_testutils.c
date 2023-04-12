@@ -207,10 +207,11 @@ bool clkmgr_testutils_check_measurement_counts(const dif_clkmgr_t *clkmgr) {
   return success;
 }
 
-void clkmgr_testutils_enable_external_clock_and_wait_for_completion(
+status_t clkmgr_testutils_enable_external_clock_blocking(
     const dif_clkmgr_t *clkmgr, bool is_low_speed) {
   LOG_INFO("Configure clkmgr to enable external clock");
-  CHECK_DIF_OK(dif_clkmgr_external_clock_set_enabled(clkmgr, is_low_speed));
-  CHECK_DIF_OK(dif_clkmgr_wait_for_ext_clk_switch(clkmgr));
+  TRY(dif_clkmgr_external_clock_set_enabled(clkmgr, is_low_speed));
+  TRY(dif_clkmgr_wait_for_ext_clk_switch(clkmgr));
   LOG_INFO("Switching to external clock completes");
+  return OK_STATUS();
 }
