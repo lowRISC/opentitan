@@ -227,9 +227,9 @@ typedef enum dif_spi_host_events {
    */
   kDifSpiHostEvtReady = 1 << 4,
   /**
-   * Enable IRQ to be fired when `STATUS.ACTIVE` goes high.
+   * Enable IRQ to be fired when `STATUS.ACTIVE` goes low.
    */
-  kDifSpiHostEvtActive = 1 << 5,
+  kDifSpiHostEvtIdle = 1 << 5,
   /**
    * All above together.
    */

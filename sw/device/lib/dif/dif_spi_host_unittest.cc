@@ -490,7 +490,7 @@ class EventEnableRegTest : public SpiHostTest {
       {kDifSpiHostEvtRxWm, SPI_HOST_EVENT_ENABLE_RXWM_BIT},
       {kDifSpiHostEvtTxWm, SPI_HOST_EVENT_ENABLE_TXWM_BIT},
       {kDifSpiHostEvtReady, SPI_HOST_EVENT_ENABLE_READY_BIT},
-      {kDifSpiHostEvtActive, SPI_HOST_EVENT_ENABLE_IDLE_BIT},
+      {kDifSpiHostEvtIdle, SPI_HOST_EVENT_ENABLE_IDLE_BIT},
   }};
 };
 // C++ 14 requires this.
