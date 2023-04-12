@@ -167,21 +167,20 @@ status_t clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
   return OK_STATUS();
 }
 
-bool clkmgr_testutils_check_measurement_enables(const dif_clkmgr_t *clkmgr,
-                                                dif_toggle_t expected_status) {
+status_t clkmgr_testutils_check_measurement_enables(
+    const dif_clkmgr_t *clkmgr, dif_toggle_t expected_status) {
   bool success = true;
   for (int i = kDifClkmgrMeasureClockIo; i <= kDifClkmgrMeasureClockUsb; ++i) {
     dif_clkmgr_measure_clock_t clock = (dif_clkmgr_measure_clock_t)i;
     dif_toggle_t actual_status;
-    CHECK_DIF_OK(
-        dif_clkmgr_measure_counts_get_enable(clkmgr, clock, &actual_status));
+    TRY(dif_clkmgr_measure_counts_get_enable(clkmgr, clock, &actual_status));
     if (actual_status != expected_status) {
       LOG_INFO("Unexpected enable for clock %d: expected %s", i,
                (expected_status == kDifToggleEnabled ? "enabled" : "disabled"));
       success = false;
     }
   }
-  return success;
+  return OK_STATUS(success);
 }
 
 status_t clkmgr_testutils_disable_clock_counts(const dif_clkmgr_t *clkmgr) {

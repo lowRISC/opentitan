@@ -253,6 +253,22 @@
   } while (false)
 
 /**
+ * Unwrap a `status_t` when it represents a non-error value, otherwise prints a
+ * human-readable error message and abort.
+ *
+ * @param expr An expression which evaluates to a `status_t`.
+ */
+#define UNWRAP(expr, ...)                          \
+  ({                                               \
+    status_t status_ = expr;                       \
+    if (!status_ok(status_)) {                     \
+      LOG_ERROR("CHECK-STATUS-fail: %r", status_); \
+      test_status_set(kTestStatusFailed);          \
+    }                                              \
+    status_.value;                                 \
+  })
+
+/**
  * Checks that the `status_t` represents a non-error value.
  *
  * Prints a human-readable error message if the status represents an error.

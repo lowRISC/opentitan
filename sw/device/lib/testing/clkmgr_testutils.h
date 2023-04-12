@@ -109,10 +109,12 @@ status_t clkmgr_testutils_check_measurement_counts(const dif_clkmgr_t *clkmgr);
  * @param clkmgr A clkmgr DIF handle.
  * @param expected_status The expected status of the enables.
  * @return False if any enable status is unexpected.
+ * @return Return `kInternal` in case of errors, otherwise `kOk(res)`, where
+ * `res` is false if any enable status is unexpected`.
  */
 OT_WARN_UNUSED_RESULT
-bool clkmgr_testutils_check_measurement_enables(const dif_clkmgr_t *clkmgr,
-                                                dif_toggle_t expected_status);
+status_t clkmgr_testutils_check_measurement_enables(
+    const dif_clkmgr_t *clkmgr, dif_toggle_t expected_status);
 
 /**
  * Disable all clock measurements.

@@ -105,8 +105,9 @@ bool test_main(void) {
   } else if (pwrmgr_testutils_is_wakeup_reason(
                  &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) {
     // Fail if some measurements are enabled.
-    CHECK(clkmgr_testutils_check_measurement_enables(&clkmgr,
-                                                     kDifToggleDisabled));
+    bool all_disabled = UNWRAP(clkmgr_testutils_check_measurement_enables(
+        &clkmgr, kDifToggleDisabled));
+    CHECK(all_disabled);
     // Check measurement control regwen is enabled.
     dif_toggle_t state;
     CHECK_DIF_OK(dif_clkmgr_measure_ctrl_get_enable(&clkmgr, &state));
