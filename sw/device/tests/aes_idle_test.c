@@ -39,7 +39,7 @@ static bool is_hintable_clock_enabled(const dif_clkmgr_t *clkmgr,
   return clock_state == kDifToggleEnabled;
 }
 
-static void initialize_clkmgr(void) {
+static status_t initialize_clkmgr(void) {
   mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_clkmgr_init(addr, &clkmgr));
 
@@ -48,7 +48,8 @@ static void initialize_clkmgr(void) {
   CHECK_DIF_OK(dif_clkmgr_hintable_clock_get_hint(&clkmgr, kAesClock,
                                                   &clock_hint_state));
   CHECK(clock_hint_state == kDifToggleEnabled);
-  CLKMGR_TESTUTILS_CHECK_CLOCK_HINT(clkmgr, kAesClock, kDifToggleEnabled);
+  return CLKMGR_TESTUTILS_CHECK_CLOCK_HINT(clkmgr, kAesClock,
+                                           kDifToggleEnabled);
 }
 
 status_t execute_test(dif_aes_t *aes) {
@@ -133,8 +134,7 @@ status_t execute_test(dif_aes_t *aes) {
 
 bool test_main(void) {
   dif_aes_t aes;
-
-  initialize_clkmgr();
+  CHECK_STATUS_OK(initialize_clkmgr());
 
   // Initialise AES.
   CHECK_DIF_OK(

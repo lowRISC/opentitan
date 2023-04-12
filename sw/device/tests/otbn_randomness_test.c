@@ -118,7 +118,7 @@ static void otbn_init_irq(void) {
   irq_external_ctrl(true);
 }
 
-void initialize_clkmgr(void) {
+status_t initialize_clkmgr(void) {
   mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_clkmgr_init(addr, &clkmgr));
 
@@ -127,20 +127,11 @@ void initialize_clkmgr(void) {
   CHECK_DIF_OK(dif_clkmgr_hintable_clock_get_hint(&clkmgr, kOtbnClock,
                                                   &clock_hint_state));
   CHECK(clock_hint_state == kDifToggleEnabled);
-  CLKMGR_TESTUTILS_CHECK_CLOCK_HINT(clkmgr, kOtbnClock, kDifToggleEnabled);
+  return CLKMGR_TESTUTILS_CHECK_CLOCK_HINT(clkmgr, kOtbnClock,
+                                           kDifToggleEnabled);
 }
 
-bool test_main(void) {
-  // Initialize EDN in auto mode.
-  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
-
-  initialize_clkmgr();
-
-  mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
-  CHECK_DIF_OK(dif_otbn_init(addr, &otbn));
-
-  otbn_init_irq();
-
+status_t execute_test() {
   // Write the OTBN clk hint to 0 within clkmgr to indicate OTBN clk can be
   // gated and verify that the OTBN clk hint status within clkmgr reads 0 (OTBN
   // is idle).
@@ -173,5 +164,18 @@ bool test_main(void) {
   otbn_randomness_test_log_results(&otbn);
 
   // Check for successful test execution (self-reported).
-  return otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/true);
+  TRY_CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/true));
+  return OK_STATUS();
+}
+
+bool test_main(void) {
+  // Initialize EDN in auto mode.
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
+  CHECK_STATUS_OK(initialize_clkmgr());
+
+  mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
+  CHECK_DIF_OK(dif_otbn_init(addr, &otbn));
+
+  otbn_init_irq();
+  return status_ok(execute_test());
 }
