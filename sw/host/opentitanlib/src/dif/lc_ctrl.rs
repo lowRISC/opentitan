@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::with_unknown;
+use anyhow::Result;
 use num_enum::IntoPrimitive;
+
+use crate::with_unknown;
 
 with_unknown! {
     pub enum DifLcCtrlState: u32 {
@@ -41,6 +43,35 @@ impl DifLcCtrlState {
         let value: u32 = self.0;
         assert_eq!(value & 0b11111, value);
         (0..6).fold(0u32, |acc, _| (acc << 5) | value)
+    }
+
+    pub fn parse_lc_state_str(lc_state_str: &str) -> Result<Self> {
+        match lc_state_str {
+            "raw" => Ok(DifLcCtrlState::Raw),
+            "test_unlocked0" => Ok(DifLcCtrlState::TestUnlocked0),
+            "test_locked0" => Ok(DifLcCtrlState::TestLocked0),
+            "test_unlocked1" => Ok(DifLcCtrlState::TestUnlocked1),
+            "test_locked1" => Ok(DifLcCtrlState::TestLocked1),
+            "test_unlocked2" => Ok(DifLcCtrlState::TestUnlocked2),
+            "test_locked2" => Ok(DifLcCtrlState::TestLocked2),
+            "test_unlocked3" => Ok(DifLcCtrlState::TestUnlocked3),
+            "test_locked3" => Ok(DifLcCtrlState::TestLocked3),
+            "test_unlocked4" => Ok(DifLcCtrlState::TestUnlocked4),
+            "test_locked4" => Ok(DifLcCtrlState::TestLocked4),
+            "test_unlocked5" => Ok(DifLcCtrlState::TestUnlocked5),
+            "test_locked5" => Ok(DifLcCtrlState::TestLocked5),
+            "test_unlocked6" => Ok(DifLcCtrlState::TestUnlocked6),
+            "test_locked6" => Ok(DifLcCtrlState::TestLocked6),
+            "test_unlocked7" => Ok(DifLcCtrlState::TestUnlocked7),
+            "dev" => Ok(DifLcCtrlState::Dev),
+            "prod" => Ok(DifLcCtrlState::Prod),
+            "prod_end" => Ok(DifLcCtrlState::ProdEnd),
+            "rma" => Ok(DifLcCtrlState::Rma),
+            "scrap" => Ok(DifLcCtrlState::Scrap),
+            "post_transition" => Ok(DifLcCtrlState::PostTransition),
+            "escalate" => Ok(DifLcCtrlState::Escalate),
+            _ => Ok(DifLcCtrlState::StateInvalid),
+        }
     }
 }
 
