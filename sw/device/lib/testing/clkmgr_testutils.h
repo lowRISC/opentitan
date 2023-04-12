@@ -122,12 +122,14 @@ bool clkmgr_testutils_check_measurement_enables(const dif_clkmgr_t *clkmgr,
 void clkmgr_testutils_disable_clock_counts(const dif_clkmgr_t *clkmgr);
 
 /**
- * Switch to use external clock and wait until the switching is done
+ * Switch to use external clock and wait until the switching is done.
  *
  * @param clkmgr A clkmgr DIF handle.
  * @param is_low_speed Is external clock in low speed mode or not.
+ * @return The result of the operation.
  */
-void clkmgr_testutils_enable_external_clock_and_wait_for_completion(
+OT_WARN_UNUSED_RESULT
+status_t clkmgr_testutils_enable_external_clock_blocking(
     const dif_clkmgr_t *clkmgr, bool is_low_speed);
 
 /**
