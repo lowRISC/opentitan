@@ -36,9 +36,6 @@ class keymgr_hwsw_invalid_input_vseq extends keymgr_sw_invalid_input_vseq;
   task body();
     // invalid HW input may cause unstable data on kmac interface
     $assertoff(0, "tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A");
-    // The following assertion is not relevant for block-level, it was added
-    // to double check OTP root key becomes valid when it is needed
-    $assertoff(0, "tb.dut.u_ctrl.RootKeyValidDuringLatching_A");
     super.body();
   endtask : body
 endclass : keymgr_hwsw_invalid_input_vseq
