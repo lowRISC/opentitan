@@ -2274,28 +2274,6 @@
       tests: ["chip_sw_entropy_src_csrng"]
     }
     {
-      name: chip_sw_entropy_src_cs_aes_halt
-      desc: '''Verify the `entropy_src`'s aes halt handshake with CSRNG.
-
-            - Through one of the application interfaces of CSRNG, issue a reseed command. This can
-              be done via a hardware peripheral requesting entropy via EDN.
-            - Through the SW application interface, issue a generate command.
-            - While the CSRNG is performing the generate operation, issue another reseed command
-              via the first application interface. Verify via backdoor probes, the SHA3 in the
-              entropy_src module is triggered at the same time the AES engine in CSRNG is
-              performing an operation.
-            - The second reseed command should trigger the entropy_src to request that the CSRNG
-              halts the AES engine until entropy is available. Verify via assertion checks, the halt
-              request successfully completed. Also verify that the AES engine is indeed paused
-              during this time.
-
-            Note: There may be existing tests that already create this scenario. It should be
-            sufficient to augment those tests with the backdoor / assertion checks.
-            '''
-      stage: V3
-      tests: []
-    }
-    {
       name: chip_sw_entropy_src_fuse_en_fw_read
       desc: '''Verify the fuse input entropy_src.
 
