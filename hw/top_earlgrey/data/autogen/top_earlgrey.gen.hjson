@@ -6517,6 +6517,11 @@
         }
         {
           name: cs_aes_halt
+          desc:
+            '''
+            Coordinate activity between CSRNG's AES and Entropy Source's SHA3.
+            When CSRNG gets a request and its AES is not active, it acknowledges and until the request has dropped neither runs its AES nor drops the acknowledge.
+            '''
           struct: cs_aes_halt
           package: entropy_src_pkg
           type: req_rsp
@@ -18620,6 +18625,11 @@
       }
       {
         name: cs_aes_halt
+        desc:
+          '''
+          Coordinate activity between CSRNG's AES and Entropy Source's SHA3.
+          When CSRNG gets a request and its AES is not active, it acknowledges and until the request has dropped neither runs its AES nor drops the acknowledge.
+          '''
         struct: cs_aes_halt
         package: entropy_src_pkg
         type: req_rsp
