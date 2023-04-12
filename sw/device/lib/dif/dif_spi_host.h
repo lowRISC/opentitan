@@ -249,6 +249,7 @@ typedef uint32_t dif_spi_host_events_t;
  * @param enable True to enable the `events` or false to disable.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_host_event_set_enabled(const dif_spi_host_t *spi_host,
                                             dif_spi_host_events_t events,
                                             bool enable);
@@ -261,6 +262,7 @@ dif_result_t dif_spi_host_event_set_enabled(const dif_spi_host_t *spi_host,
  * enabled.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_host_event_get_enabled(const dif_spi_host_t *spi_host,
                                             dif_spi_host_events_t *events);
 
@@ -337,8 +339,9 @@ typedef struct dif_spi_host_status {
  *
  * @param spi_host A SPI Host handle.
  * @param[out] status The status of the spi.
- * @return dif_result_t
+ * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_host_get_status(const dif_spi_host_t *spi_host,
                                      dif_spi_host_status_t *status);
 
