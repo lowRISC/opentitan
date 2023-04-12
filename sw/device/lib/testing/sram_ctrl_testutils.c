@@ -19,16 +19,17 @@ void sram_ctrl_testutils_write(uintptr_t address,
 }
 
 /**
- * Checks whether the SRAM scramble operation has finished.
+ * Checks whether the SRAM operation has finished.
  */
-static bool scramble_finished(const dif_sram_ctrl_t *sram_ctrl) {
+static bool check_finished(const dif_sram_ctrl_t *sram_ctrl,
+                           dif_sram_ctrl_status_t flag) {
   dif_sram_ctrl_status_bitfield_t status;
-  CHECK_DIF_OK(dif_sram_ctrl_get_status(sram_ctrl, &status));
-  return status & kDifSramCtrlStatusScrKeyValid;
+  dif_result_t res = dif_sram_ctrl_get_status(sram_ctrl, &status);
+  return (res == kDifOk) && (status & flag);
 }
 
-void sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl) {
-  CHECK_DIF_OK(dif_sram_ctrl_request_new_key(sram_ctrl));
+status_t sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl) {
+  TRY(dif_sram_ctrl_request_new_key(sram_ctrl));
 
   // Calculate the timeout time.
   // The SRAM Controller documentation says that it takes approximately 800
@@ -50,43 +51,17 @@ void sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl) {
 
   // Loop until new scrambling key has been obtained.
   LOG_INFO("Waiting for SRAM scrambling to finish");
-  IBEX_SPIN_FOR(scramble_finished(sram_ctrl), usec);
+  IBEX_TRY_SPIN_FOR(check_finished(sram_ctrl, kDifSramCtrlStatusScrKeyValid),
+                    usec);
+  return OK_STATUS();
 }
 
-/**
- * Checks whether the SRAM wipe operation has finished.
- */
-static bool wipe_finished(const dif_sram_ctrl_t *sram_ctrl) {
-  dif_sram_ctrl_status_bitfield_t status;
-  CHECK_DIF_OK(dif_sram_ctrl_get_status(sram_ctrl, &status));
-  return status & kDifSramCtrlStatusInitDone;
-}
-
-void sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl) {
+status_t sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl) {
   CHECK_DIF_OK(dif_sram_ctrl_wipe(sram_ctrl));
   // The timeout calculation is the same as the scramble timeout.
   uint32_t usec =
       udiv64_slow(1000000, udiv64_slow(kClockFreqCpuHz, 850, NULL) + 1, NULL);
   LOG_INFO("Waiting for SRAM wipe to finish");
-  IBEX_SPIN_FOR(wipe_finished(sram_ctrl), usec);
-}
-
-void sram_ctrl_testutils_check_backdoor_write(uintptr_t backdoor_addr,
-                                              uint32_t num_words,
-                                              uint32_t offset_addr,
-                                              const uint8_t *expected_bytes) {
-  mmio_region_t mem_region = mmio_region_from_addr(backdoor_addr);
-  uint32_t backdoor_data[num_words];
-  uint32_t expected_data[num_words];
-
-  for (int i = 0; i < num_words; ++i) {
-    backdoor_data[i] =
-        mmio_region_read32(mem_region, sizeof(uint32_t) * (offset_addr + i));
-    // The expected data bytes are organized little-endian.
-    expected_data[i] = expected_bytes[(i * sizeof(uint32_t)) + 3] << 24 |
-                       expected_bytes[(i * sizeof(uint32_t)) + 2] << 16 |
-                       expected_bytes[(i * sizeof(uint32_t)) + 1] << 8 |
-                       expected_bytes[(i * sizeof(uint32_t))];
-    CHECK(backdoor_data[i] == expected_data[i]);
-  }
+  IBEX_SPIN_FOR(check_finished(sram_ctrl, kDifSramCtrlStatusInitDone), usec);
+  return OK_STATUS();
 }

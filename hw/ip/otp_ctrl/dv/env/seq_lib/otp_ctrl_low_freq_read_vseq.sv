@@ -15,6 +15,13 @@ class otp_ctrl_low_freq_read_vseq extends otp_ctrl_base_vseq;
     cfg.clk_rst_vif.set_freq_mhz(6);
   endtask
 
+  virtual task post_start();
+    super.post_start();
+
+    // restore original clock frequency
+    cfg.clk_rst_vif.set_freq_mhz(cfg.clk_freq_mhz);
+  endtask : post_start
+
   virtual task body();
     // Backdoor write all partitions.
     for (int addr = VendorTestOffset / 4; addr < LifeCycleOffset / 4; addr++) begin

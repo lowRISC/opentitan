@@ -239,6 +239,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
           end
         endcase
         cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
+        #(cfg.pad_pull_delay * 1ns);
         pinmux_mio_outsel_checks();
       end
     end
@@ -336,7 +337,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       if (mio_pad_attr[i].invert && exp_out !== 1'bz && exp_oe) exp_out = ~exp_out;
       // If virtual open drain is enabled, then the pad is driven to 0 if out is 0, else hi-z.
       if (mio_pad_attr[i].virt_od_en && exp_out && exp_oe) exp_oe = 0;
-
+      if (mio_pad_attr[i].od_en && exp_out && exp_oe && cfg.is_mio_open_drain(i) == 1)
+        exp_oe = 0;
       obs_strength = $sformatf("%v", cfg.chip_vif.mios_if.pins[i]);
       if (exp_oe && exp_out !== 1'bz) begin
         exp_strength = {mio_pad_attr[i].drive_strength[0] ? "St" : "Pu", $sformatf("%0d", exp_out)};
@@ -460,6 +462,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
         endcase
         pinmux_dio_drive_inputs();
         cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
+        #(cfg.pad_pull_delay * 1ns);
         pinmux_dio_insel_checks();
       end
     end
@@ -550,6 +553,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
             exp_out = exp;
             if (dio_pad_attr[i].invert) exp_out = ~exp_out;
             if (dio_pad_attr[i].virt_od_en && exp_out) exp_out = 1'bz;
+            if (dio_pad_attr[i].od_en && exp_out && cfg.is_dio_open_drain(DioToDioPadMap[i]))
+              exp_out = 1'bz;
             if (exp_out === 1'bz && dio_pad_attr[i].pull_en) exp_out = dio_pad_attr[i].pull_select;
             exp_in = exp_out;
             if (exp_in === 1'bz) exp_in = 1'bx;  // Undriven input treated as x.

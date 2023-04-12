@@ -12,7 +12,7 @@ use std::env::{self, args_os, ArgsOs};
 use std::ffi::OsString;
 use std::fs::{self, read_to_string, File};
 use std::io::{self, ErrorKind, Write};
-use std::iter::{IntoIterator, Iterator};
+use std::iter::Iterator;
 use std::os::unix::io::AsRawFd;
 use std::path::PathBuf;
 use std::process::{self, ChildStdout, Command, Stdio};
@@ -20,8 +20,8 @@ use std::str::FromStr;
 use std::time::Duration;
 use structopt::StructOpt;
 
-use opentitanlib::backend;
 use opentitanlib::proxy::SessionHandler;
+use opentitanlib::{backend, util};
 
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -54,12 +54,15 @@ struct Opts {
     )]
     listen_port: Option<u16>,
 
-    #[structopt(long, help = "Start session, staying in foreground (do not daemonize)")]
-    debug: bool,
+    #[structopt(
+        long,
+        help = "Start session, staying in foreground (do not daemonize).  Session process will terminate if its parent dies."
+    )]
+    foreground: bool,
 
     #[structopt(
         long,
-        help = "Internal, used to tell the child process run as a daemon."
+        help = "Internal, used to tell the child process to run as a daemon."
     )]
     child: bool,
 }
@@ -108,7 +111,7 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
     }?;
 
     // Extend the argument list with all remaining command line arguments.
-    arguments.extend(args.into_iter());
+    arguments.extend(args);
     let opts = Opts::from_iter(&arguments);
     if opts.logging != logging {
         // Try re-initializing the logger.  Ignore errors.
@@ -228,8 +231,13 @@ fn stop_session(run_file_fn: impl FnOnce(u16) -> PathBuf, port: u16) -> Result<B
 fn main() -> Result<()> {
     let opts = parse_command_line(Opts::from_args(), args_os())?;
 
-    if opts.debug {
-        // Start session process in foreground (do not daemonize)
+    if opts.foreground {
+        // Start session process in foreground (do not daemonize).  The session process will
+        // terminate if its parent dies.  This might be useful for use in scripts.
+
+        // Request a SIGTERM if our parent dies.
+        util::nix::request_parent_death_signal(Signal::SIGTERM)?;
+
         let transport = backend::create(&opts.backend_opts)?;
         let mut session = SessionHandler::init(&transport, opts.listen_port)?;
         println!("Listening on port {}", session.get_port());

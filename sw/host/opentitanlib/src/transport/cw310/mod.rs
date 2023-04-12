@@ -10,17 +10,18 @@ use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::rc::Rc;
-use std::time::Duration;
 
 use crate::io::gpio::GpioPin;
+use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::{Uart, UartError};
+use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::SerialPortUart;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
+use crate::util::openocd::OpenOcdServer;
 use crate::util::parse_int::ParseInt;
-use crate::util::rom_detect::{RomDetect, RomKind};
 
 pub mod gpio;
 pub mod spi;
@@ -31,10 +32,11 @@ struct Inner {
     spi: Option<Rc<dyn Target>>,
     gpio: HashMap<String, Rc<dyn GpioPin>>,
     uart: HashMap<u32, Rc<dyn Uart>>,
+    jtag: Option<Rc<dyn Jtag>>,
 }
 
 pub struct CW310 {
-    device: Rc<RefCell<usb::Backend>>,
+    pub(crate) device: Rc<RefCell<usb::Backend>>,
     uart_override: Vec<String>,
     inner: RefCell<Inner>,
 }
@@ -185,42 +187,20 @@ impl Transport for CW310 {
             // Open the console UART.  We do this first so we get the receiver
             // started and the uart buffering data for us.
             let uart = self.uart("0")?;
-            if fpga_program.bitstream.starts_with(b"__skip__") {
+            let reset_pin = self.gpio_pin(Self::PIN_SRST)?;
+            if fpga_program.skip() {
                 log::info!("Skip loading the __skip__ bitstream.");
                 return Ok(None);
             }
-            if let Some(rom_kind) = &fpga_program.rom_kind {
-                let mut rd = RomDetect::new(
-                    *rom_kind,
-                    &fpga_program.bitstream,
-                    Some(fpga_program.rom_timeout),
-                )?;
-
-                // Send a reset pulse so the ROM will print the FPGA version.
-                let reset_pin = self.gpio_pin(Self::PIN_SRST)?;
-                // Reset is active low, sleep, then drive high.
-                reset_pin.write(false)?;
-                std::thread::sleep(fpga_program.rom_reset_pulse);
-                // Also clear the UART RX buffer for improved robustness.
-                uart.clear_rx_buffer()?;
-                reset_pin.write(true)?;
-
-                // Now read the uart until the ROM prints it's version.
-                if rd.detect(&*uart)? {
-                    log::info!("Already running the correct bitstream.  Skip loading bitstream.");
-                    // If we're already running the right ROM+bitstream,
-                    // then we can skip bootstrap.
-                    return Ok(None);
-                }
+            if fpga_program.check_correct_version(&*uart, &*reset_pin)? {
+                return Ok(None);
             }
+
             // Program the FPGA bitstream.
             log::info!("Programming the FPGA bitstream.");
             let usb = self.device.borrow();
             usb.spi1_enable(false)?;
-            usb.fpga_program(
-                &fpga_program.bitstream,
-                fpga_program.progress.as_ref().map(Box::as_ref),
-            )?;
+            usb.fpga_program(&fpga_program.bitstream, fpga_program.progress.as_ref())?;
             Ok(None)
         } else if action.downcast_ref::<ResetSam3x>().is_some() {
             self.device.borrow().reset_sam3x()?;
@@ -245,21 +225,14 @@ impl Transport for CW310 {
             Err(TransportError::UnsupportedOperation.into())
         }
     }
-}
 
-/// Command for Transport::dispatch().
-pub struct FpgaProgram<'a> {
-    /// The bitstream content to load into the FPGA.
-    pub bitstream: Vec<u8>,
-    /// What type of ROM to expect.
-    pub rom_kind: Option<RomKind>,
-    /// How long of a reset pulse to send to the device.
-    pub rom_reset_pulse: Duration,
-    /// How long to wait for the ROM to print its type and version.
-    pub rom_timeout: Duration,
-    /// A progress function to provide user feedback.
-    /// Will be called with the address and length of each chunk sent to the target device.
-    pub progress: Option<Box<dyn Fn(u32, u32) + 'a>>,
+    fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
+        let mut inner = self.inner.borrow_mut();
+        if inner.jtag.is_none() {
+            inner.jtag = Some(Rc::new(OpenOcdServer::new(opts)?));
+        }
+        Ok(Rc::clone(inner.jtag.as_ref().unwrap()))
+    }
 }
 
 /// Command for Transport::dispatch().
@@ -267,6 +240,3 @@ pub struct SetPll {}
 
 /// Command for Transport::dispatch(). Resets the CW310's SAM3X chip.
 pub struct ResetSam3x {}
-
-/// Command for Transport::dispatch().
-pub struct ClearBitstream {}

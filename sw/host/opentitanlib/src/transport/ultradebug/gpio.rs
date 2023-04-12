@@ -71,7 +71,7 @@ pub struct UltradebugGpioPin {
 }
 
 impl GpioPin for UltradebugGpioPin {
-    /// Reads the value of the the GPIO pin `id`.
+    /// Reads the value of the GPIO pin `id`.
     fn read(&self) -> Result<bool> {
         let bits = self.device.borrow_mut().gpio_get().context("FTDI error")?;
         Ok(bits & (1 << self.pin_id) != 0)
@@ -91,8 +91,7 @@ impl GpioPin for UltradebugGpioPin {
         let direction = match mode {
             PinMode::Input => false,
             PinMode::PushPull => true,
-            PinMode::OpenDrain => return Err(GpioError::UnsupportedPinMode(mode).into()),
-            PinMode::Alternate => return Err(GpioError::UnsupportedPinMode(mode).into()),
+            _ => return Err(GpioError::UnsupportedPinMode(mode).into()),
         };
         self.device
             .borrow_mut()

@@ -14,7 +14,7 @@ use thiserror::Error;
 use crate::bootstrap::BootstrapOptions;
 use crate::impl_serializable_error;
 use crate::io::emu::Emulator;
-use crate::io::gpio::GpioPin;
+use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
@@ -138,7 +138,25 @@ impl ProxyOps for ProxyOpsImpl {
             payload: payload.to_vec(),
         })? {
             ProxyResponse::Bootstrap => Ok(()),
-            //_ => bail!(ProxyError::UnexpectedReply()), // Enable when second option is added
+            _ => bail!(ProxyError::UnexpectedReply()), // Enable when second option is added
+        }
+    }
+
+    fn apply_pin_strapping(&self, strapping_name: &str) -> Result<()> {
+        match self.execute_command(ProxyRequest::ApplyPinStrapping {
+            strapping_name: strapping_name.to_string(),
+        })? {
+            ProxyResponse::ApplyPinStrapping => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()), // Enable when second option is added
+        }
+    }
+
+    fn remove_pin_strapping(&self, strapping_name: &str) -> Result<()> {
+        match self.execute_command(ProxyRequest::RemovePinStrapping {
+            strapping_name: strapping_name.to_string(),
+        })? {
+            ProxyResponse::RemovePinStrapping => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()), // Enable when second option is added
         }
     }
 }
@@ -147,6 +165,16 @@ impl Transport for Proxy {
     fn capabilities(&self) -> Result<Capabilities> {
         match self.inner.execute_command(Request::GetCapabilities)? {
             Response::GetCapabilities(capabilities) => Ok(capabilities.add(Capability::PROXY)),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
+    fn apply_default_configuration(&self) -> Result<()> {
+        match self
+            .inner
+            .execute_command(Request::ApplyDefaultConfiguration)?
+        {
+            Response::ApplyDefaultConfiguration => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
@@ -169,6 +197,11 @@ impl Transport for Proxy {
     // Create GpioPin instance, or return one from a cache of previously created instances.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(Rc::new(gpio::ProxyGpioPin::open(self, pinname)?))
+    }
+
+    // Create ProxyOps instance.
+    fn gpio_monitoring(&self) -> Result<Rc<dyn GpioMonitoring>> {
+        Ok(Rc::new(gpio::GpioMonitoringImpl::new(self)?))
     }
 
     // Create Emulator instance, or return one from a cache of previously created instances.

@@ -506,9 +506,12 @@ class cip_base_vseq #(
       int check_cycles = $urandom_range(max_alert_handshake_cycles,
                                         max_alert_handshake_cycles * 3);
 
-      // This task allows recoverable alerts to fire, or fatal alert being triggered once by
-      // `alert_test` register.
+      // This task wait for recoverable alerts handshake to complete, or fatal alert being
+      // triggered once by `alert_test` register.
       cfg.clk_rst_vif.wait_clks(max_alert_handshake_cycles);
+      foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
+        `DV_SPINWAIT(cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();)
+      end
 
       repeat(check_cycles) begin
         cfg.clk_rst_vif.wait_clks(1);

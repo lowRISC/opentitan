@@ -62,15 +62,17 @@ bool test_main(void) {
 
   // Enable access to flash for storing info across resets.
   LOG_INFO("Setting default region accesses");
-  flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
 
-  uint32_t wakeup_count = flash_ctrl_testutils_counter_get(0);
+  uint32_t wakeup_count = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &wakeup_count));
 
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
     LOG_INFO("POR reset");
@@ -82,7 +84,7 @@ bool test_main(void) {
     if (wakeup_count == PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX) {
       return true;
     }
-    flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
     delay_n_clear(4);
     execute_test(wakeup_count + 1, /*deep_sleep=*/true);
   }

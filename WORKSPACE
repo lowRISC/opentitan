@@ -55,16 +55,11 @@ rust_repos()
 load("//third_party/rust:deps.bzl", "rust_deps")
 rust_deps()
 
-# Cargo Raze dependencies
-load("//third_party/cargo_raze:repos.bzl", "raze_repos")
-raze_repos()
-load("//third_party/cargo_raze:deps.bzl", "raze_deps")
-raze_deps()
-# The raze instructions would have us call `cargo_raze_transitive_deps`, but
-# that wants to re-instantiate rules_rust and mess up our rust configuration.
-# The single other action that transitive_deps would perform is to load and
-# instantiate `rules_foreign_cc_dependencies`, but this has already been done
-# above, so we can do nothing here.
+load("@rules_rust//crate_universe:repositories.bzl", "crate_universe_dependencies")
+crate_universe_dependencies(bootstrap = True)
+
+load("//third_party/rust/crates:crates.bzl", "crate_repositories")
+crate_repositories()
 
 # OpenOCD
 load("//third_party/openocd:repos.bzl", "openocd_repos")
@@ -114,3 +109,11 @@ hooks_repo(name = "manufacturer_test_hooks")
 # The nonhermetic_repo imports environment variables needed to run vivado.
 load("//rules:nonhermetic.bzl", "nonhermetic_repo")
 nonhermetic_repo(name = "nonhermetic")
+
+# Binary firmware image for HyperDebug
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+http_file(
+    name = "hyperdebug_firmware",
+    urls = ["https://storage.googleapis.com/aoa-recovery-test-images/hyperdebug_v2.0.20634-ee78d5668.bin"],
+    sha256 = "c72c418bc56d673d4106af9a0973c6e4268d09fb18d363e7ad336a877a127be9",
+)

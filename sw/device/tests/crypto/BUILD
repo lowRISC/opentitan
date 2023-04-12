@@ -9,6 +9,27 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 package(default_visibility = ["//visibility:public"])
 
 opentitan_functest(
+    name = "aes_functest",
+    srcs = ["aes_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":aes_testvectors",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
+    name = "aes_testvectors",
+    srcs = ["aes_testvectors.h"],
+    deps = [
+        "//sw/device/lib/crypto/impl:aes",
+    ],
+)
+
+opentitan_functest(
     name = "aes_gcm_functest",
     srcs = ["aes_gcm_functest.c"],
     verilator = verilator_params(
@@ -65,6 +86,21 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "ecdh_p256_functest",
+    srcs = ["ecdh_p256_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl/ecc:ecdh_p256",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "ecdsa_p256_functest",
     srcs = ["ecdsa_p256_functest.c"],
     verilator = verilator_params(
@@ -73,7 +109,7 @@ opentitan_functest(
     deps = [
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl/ecdsa_p256",
+        "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -87,6 +123,30 @@ autogen_cryptotest_header(
     tool = "//sw/device/tests/crypto:ecdsa_p256_verify_set_testvectors",
 )
 
+autogen_cryptotest_header(
+    name = "kmac_verify_testvectors_hardcoded_header",
+    hjson = "//sw/device/tests/crypto/testvectors:kmac_verify_testvectors_hardcoded",
+    template = ":kmac_verify_testvectors.h.tpl",
+    tool = "//sw/device/tests/crypto:kmac_verify_set_testvectors",
+)
+
+opentitan_functest(
+    name = "kmac_verify_functest_hardcoded",
+    srcs = ["kmac_verify_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":kmac_verify_testvectors_hardcoded_header",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:mac",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 opentitan_functest(
     name = "ecdsa_p256_verify_functest_hardcoded",
     srcs = ["ecdsa_p256_verify_functest.c"],
@@ -97,7 +157,7 @@ opentitan_functest(
         ":ecdsa_p256_verify_testvectors_hardcoded_header",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl/ecdsa_p256",
+        "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -130,7 +190,7 @@ opentitan_functest(
         ":rsa_3072_verify_testvectors_wycheproof_header",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl/rsa_3072:rsa_3072_verify",
+        "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -153,7 +213,7 @@ opentitan_functest(
         ":rsa_3072_verify_testvectors_hardcoded_header",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl/rsa_3072:rsa_3072_verify",
+        "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -170,6 +230,20 @@ py_binary(
     ],
 )
 
+opentitan_functest(
+    name = "hmac_functest",
+    srcs = ["hmac_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/impl:mac",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 py_binary(
     name = "rsa_3072_verify_set_testvectors",
     srcs = ["rsa_3072_verify_set_testvectors.py"],
@@ -178,6 +252,31 @@ py_binary(
         "//util/design/lib:common",
         requirement("hjson"),
         requirement("mako"),
+    ],
+)
+
+py_binary(
+    name = "kmac_verify_set_testvectors",
+    srcs = ["kmac_verify_set_testvectors.py"],
+    imports = ["."],
+    deps = [
+        "//util/design/lib:common",
+        requirement("hjson"),
+        requirement("mako"),
+    ],
+)
+
+opentitan_functest(
+    name = "sha256_functest",
+    srcs = ["sha256_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 

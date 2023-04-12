@@ -88,7 +88,7 @@ uint32_t CRC5(uint32_t dwInput, int iBitcnt) {
 }  // CRC5()
 
 // Added mdhayter
-uint32_t CRC16(uint8_t *data, int bytes) {
+uint32_t CRC16(const uint8_t *data, int bytes) {
   const uint32_t poly16 = 0xA001;
   uint32_t crc16 = 0xffff;
   int i;

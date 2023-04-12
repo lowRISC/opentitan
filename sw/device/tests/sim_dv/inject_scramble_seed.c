@@ -53,10 +53,10 @@ static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
       .scramble_en = kMultiBitBool4False,
       .ecc_en = kMultiBitBool4False,
       .high_endurance_en = kMultiBitBool4False};
-  uint32_t addr;
-  addr = flash_ctrl_testutils_data_region_setup_properties(
+  uint32_t addr = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup_properties(
       flash_ctrl, base_page, /*data_region=*/kFlashMpRegions - 1,
-      /*region_size=*/1, exp_page);
+      /*region_size=*/1, exp_page, &addr));
 
   // Double check that the region address covers the area we care about.
   CHECK((exp_data_addr >= (addr + kFlashStartAddr)) &&
@@ -71,14 +71,14 @@ static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
       .ecc_en = kMultiBitBool4False,
       .high_endurance_en = kMultiBitBool4False};
 
-  addr = flash_ctrl_testutils_info_region_setup_properties(
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup_properties(
       flash_ctrl, /*page_id=*/3,
-      /*bank=*/0, /*partition_id=*/0, iso_page);
+      /*bank=*/0, /*partition_id=*/0, iso_page, &addr));
 
   uint32_t read_data[16];
-  CHECK(flash_ctrl_testutils_read(flash_ctrl, addr, /*partition_id=*/0,
-                                  read_data, kDifFlashCtrlPartitionTypeInfo,
-                                  ARRAYSIZE(read_data), 0));
+  CHECK_STATUS_OK(flash_ctrl_testutils_read(
+      flash_ctrl, addr, /*partition_id=*/0, read_data,
+      kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(read_data), 0));
 
   CHECK_ARRAYS_EQ(kIsoPartExpData, read_data, ARRAYSIZE(read_data),
                   "Isolated info page data mismatch.");
@@ -127,7 +127,7 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp_ctrl,
                                               kDifOtpCtrlPartitionSecret1,
                                               kFlashAddrKeyOffset + i, val));
-      otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+      CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
     };
 
     for (uint32_t i = 0; i < OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_SIZE;
@@ -138,7 +138,7 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp_ctrl,
                                               kDifOtpCtrlPartitionSecret1,
                                               kFlashDataKeyOffset + i, val));
-      otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+      CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
     };
 
     for (uint32_t i = 0; i < OTP_CTRL_PARAM_SRAM_DATA_KEY_SEED_SIZE;
@@ -148,12 +148,12 @@ bool test_main(void) {
 
       CHECK_DIF_OK(dif_otp_ctrl_dai_program64(
           &otp_ctrl, kDifOtpCtrlPartitionSecret1, kSramDataKeyOffset + i, val));
-      otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+      CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
     };
 
     // Lock the secret1 partition.
-    otp_ctrl_testutils_lock_partition(&otp_ctrl, kDifOtpCtrlPartitionSecret1,
-                                      0);
+    CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
+        &otp_ctrl, kDifOtpCtrlPartitionSecret1, 0));
 
     // Inform rom to setup scramble next round.
     uint32_t otp_val = 0;
@@ -165,7 +165,7 @@ bool test_main(void) {
         (OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET -
          OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET),
         otp_val));
-    otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+    CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
 
     // Check to see if there are any otp_ctrl errors.
     dif_otp_ctrl_status_t status;

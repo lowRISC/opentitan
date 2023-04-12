@@ -176,15 +176,15 @@ static void save_fault_checker(fault_checker_t *fault_checker) {
   uint32_t function_addr = (uint32_t)(fault_checker->function);
   uint32_t ip_inst_addr = (uint32_t)(fault_checker->ip_inst);
   uint32_t type_addr = (uint32_t)(fault_checker->type);
-  CHECK(flash_ctrl_testutils_write(
+  CHECK_STATUS_OK(flash_ctrl_testutils_write(
       &flash_ctrl_state,
       (uint32_t)(&nv_fault_checker[0]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
       0, &function_addr, kDifFlashCtrlPartitionTypeData, 1));
-  CHECK(flash_ctrl_testutils_write(
+  CHECK_STATUS_OK(flash_ctrl_testutils_write(
       &flash_ctrl_state,
       (uint32_t)(&nv_fault_checker[1]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
       0, &ip_inst_addr, kDifFlashCtrlPartitionTypeData, 1));
-  CHECK(flash_ctrl_testutils_write(
+  CHECK_STATUS_OK(flash_ctrl_testutils_write(
       &flash_ctrl_state,
       (uint32_t)(&nv_fault_checker[2]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
       0, &type_addr, kDifFlashCtrlPartitionTypeData, 1));
@@ -207,7 +207,6 @@ static const char *csrng_inst_name = "csrng";
 static const char *edn0_inst_name = "edn0";
 static const char *edn1_inst_name = "edn1";
 static const char *entropy_src_inst_name = "entropy_src";
-// TODO test u_eflash.u_flash alert 37, 38?
 static const char *flash_ctrl_inst_name = "flash_ctrl";
 static const char *gpio_inst_name = "gpio";
 static const char *hmac_inst_name = "hmac";
@@ -219,15 +218,12 @@ static const char *kmac_inst_name = "kmac";
 // TODO: test lc_ctrl fatal_state, alert 17.
 static const char *lc_ctrl_inst_name = "lc_ctrl";
 static const char *otbn_inst_name = "otbn";
-// TODO test fatal macro, fatal check, and fatal prim, alerts 11, 12, and 14.
-// They don't have onehot_checkers, cause both u_reg, and u_reg_tap checkers?
 static const char *otp_ctrl_inst_name = "otp_ctrl";
 static const char *pattgen_inst_name = "pattgen";
 static const char *pinmux_inst_name = "pinmux";
 static const char *pwm_inst_name = "pwm";
 static const char *pwrmgr_inst_name = "pwrmgr";
 static const char *rom_ctrl_inst_name = "rom_ctrl";
-// TODO: test rstmgr fatal consistency, alert 24.
 static const char *rstmgr_inst_name = "rstmgr";
 // TODO: test rv_core_ibex fatal SW error, alert 57.
 static const char *rv_core_ibex_inst_name = "rv_core_ibex";
@@ -280,6 +276,28 @@ static void flash_ctrl_fault_checker(bool enable, const char *ip_inst,
 
   CHECK(fault_code == enable, "For %s got codes 0x%x, expected 0x%x", ip_inst,
         fault_code, enable);
+}
+
+static void flash_ctrl_prim_fault_checker(bool enable, const char *ip_inst,
+                                          const char *type) {
+  dif_flash_ctrl_faults_t faults;
+  CHECK_DIF_OK(dif_flash_ctrl_get_faults(&flash_ctrl_state, &faults));
+
+  CHECK(faults.memory_properties_error == 0,
+        "For flash memory_properties err exp 1 get 0");
+  CHECK(faults.read_error == 0, "For flash read err exp 1 get 0");
+  CHECK(faults.prog_window_error == 0, "For flash prog_window err exp 1 get 0");
+  CHECK(faults.prog_type_error == 0, "For flash prog_type err exp 1 get 0");
+  CHECK(faults.host_gnt_error == 0, "For flash host_gnt err exp 1 get 0");
+  CHECK(faults.host_gnt_error == 0, "For flash host_gnt err exp 1 get 0");
+  CHECK(faults.register_integrity_error == 0,
+        "For flash register_integrity err exp 1 get 0");
+  CHECK(faults.phy_integrity_error == 0,
+        "For flash phy_integrity err exp 1 get 0");
+  CHECK(faults.lifecycle_manager_error == 0,
+        "For flash lifecycle_manager err exp 1 get 0");
+  CHECK(faults.shadow_storage_error == 0,
+        "For flash shadow_storage err exp 1 get 0");
 }
 
 /*
@@ -368,10 +386,25 @@ static void otp_ctrl_fault_checker(bool enable, const char *ip_inst,
       relevant_mask, kDifOtpCtrlStatusCodeCheckPending, false);
   CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp_ctrl, &status));
   relevant_codes = status.codes & relevant_mask;
-  expected_codes = enable ? (1 << kDifOtpCtrlStatusCodeBusIntegError) : 0;
+  dif_otp_ctrl_status_code_t exp_err = (type == we_check)
+                                           ? kDifOtpCtrlStatusCodeBusIntegError
+                                           : kDifOtpCtrlStatusCodeDaiError;
+  expected_codes = enable ? (1 << exp_err) : 0;
   CHECK(relevant_codes == expected_codes,
         "For %s got codes 0x%x, expected 0x%x", ip_inst, relevant_codes,
         expected_codes);
+}
+
+// OTP_prim_fault does not affect open source otp_ctrl's status register.
+static void otp_ctrl_prim_fault_checker(bool enable, const char *ip_inst,
+                                        const char *type) {
+  // Check the otp_ctrl integrity fatal error code.
+  dif_otp_ctrl_status_t status;
+  uint32_t expected_codes;
+  CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp_ctrl, &status));
+  expected_codes = 1 << kDifOtpCtrlStatusCodeDaiIdle;
+  CHECK(status.codes == expected_codes, "For %s got codes 0x%x, expected 0x%x",
+        ip_inst, status.codes, expected_codes);
 }
 
 static void pwrmgr_fault_checker(bool enable, const char *ip_inst,
@@ -480,15 +513,16 @@ void ottf_external_isr(void) {
   // interrupt counter and errors-out if there are too many interrupts.
 
   // Increment the interrupt count and detect overflows.
-  uint32_t interrupt_count =
-      flash_ctrl_testutils_counter_get(kCounterInterrupt);
+  uint32_t interrupt_count = 0;
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_get(kCounterInterrupt, &interrupt_count));
   if (interrupt_count > kMaxInterrupts) {
     restore_fault_checker(&fault_checker);
     CHECK(false, "For %s, reset count %d got too many interrupts (%d)",
           fault_checker.ip_inst, reset_count, interrupt_count);
   }
-  flash_ctrl_testutils_counter_set_at_least(
-      &flash_ctrl_state, kCounterInterrupt, interrupt_count + 1);
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+      &flash_ctrl_state, kCounterInterrupt, interrupt_count + 1));
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
@@ -549,12 +583,13 @@ void ottf_external_nmi_handler(void) {
   LOG_INFO("At NMI handler");
 
   // Increment the nmi interrupt count.
-  uint32_t nmi_count = flash_ctrl_testutils_counter_get(kCounterNmi);
+  uint32_t nmi_count = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterNmi, &nmi_count));
   if (nmi_count > kMaxInterrupts) {
     LOG_INFO("Saturating nmi interrupts at %d", nmi_count);
   } else {
-    flash_ctrl_testutils_counter_set_at_least(&flash_ctrl_state, kCounterNmi,
-                                              nmi_count + 1);
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+        &flash_ctrl_state, kCounterNmi, nmi_count + 1));
   }
 
   // Check that this NMI was due to an alert handler escalation, and not due
@@ -715,10 +750,12 @@ static void alert_handler_config(void) {
 }
 
 static void set_aon_timers(const dif_aon_timer_t *aon_timer) {
-  uint32_t bark_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(kWdogBarkMicros);
-  uint32_t bite_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(kWdogBiteMicros);
+  uint32_t bark_cycles = 0;
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(kWdogBarkMicros,
+                                                             &bark_cycles));
+  uint32_t bite_cycles = 0;
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(kWdogBiteMicros,
+                                                             &bite_cycles));
 
   LOG_INFO(
       "Wdog will bark after %u us (%u cycles) and bite after %u us (%u cycles)",
@@ -783,6 +820,11 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
                             we_check};
       fault_checker = fc;
     } break;
+    case kTopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert: {
+      fault_checker_t fc = {flash_ctrl_prim_fault_checker, flash_ctrl_inst_name,
+                            flash_fatal_check};
+      fault_checker = fc;
+    } break;
     case kTopEarlgreyAlertIdGpioFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, gpio_inst_name, we_check};
       fault_checker = fc;
@@ -845,14 +887,24 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
       fault_checker = fc;
     } break;
       // TODO add mechanism to inject:
-      // kTopEarlgreyAlertIdOtpCtrlFatalCheckError sparse fsm
-      // kTopEarlgreyAlertIdOtpCtrlFatalMacroError uncorrectable ecc from macro
-      // In any partition otp_ctrl_part_unbuf error_q = MacroEccUncorrError
-      // kTopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert force at prim_otp interface
-      // u_otp output fatal_alert_o.
       // forcing otp_prog_err_o from lc_ctrl_fsm and
       // kTopEarlgreyAlertIdLcCtrlFatalStateError using sparse fsm.
       // alerts, and corresponding CSR bit to check.
+    case kTopEarlgreyAlertIdOtpCtrlFatalMacroError: {
+      fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
+                            sparse_fsm_check};
+      fault_checker = fc;
+    } break;
+    case kTopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert: {
+      fault_checker_t fc = {otp_ctrl_prim_fault_checker, otp_ctrl_inst_name,
+                            sparse_fsm_check};
+      fault_checker = fc;
+    } break;
+    case kTopEarlgreyAlertIdOtpCtrlFatalCheckError: {
+      fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
+                            sparse_fsm_check};
+      fault_checker = fc;
+    } break;
     case kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError: {
       fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
                             we_check};
@@ -984,6 +1036,14 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
   // DO NOT CHANGE THIS: it is used to notify the SV side.
   LOG_INFO("Ready for fault injection");
 
+  // OTP ecc macro error test requires otp to read backdoor injected error
+  // macro.
+  if (kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalMacroError) {
+    CHECK_DIF_OK(
+        dif_otp_ctrl_dai_read_start(&otp_ctrl, kDifOtpCtrlPartitionHwCfg, 0));
+    LOG_INFO("OTP_CTRL error inject done");
+  }
+
   // FlashCtrlFatalErr test requires host read request.
   if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalErr) {
     enum {
@@ -1061,16 +1121,18 @@ bool test_main(void) {
 
   // Enable access to flash for storing info across resets.
   LOG_INFO("Setting default region accesses");
-  flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
 
   // Get the flash maintained reset counter.
-  reset_count = flash_ctrl_testutils_counter_get(kCounterReset);
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterReset,
+                                                   (uint32_t *)&reset_count));
   LOG_INFO("Reset counter value: %u", reset_count);
   if (reset_count > kMaxResets) {
     restore_fault_checker(&fault_checker);
@@ -1079,8 +1141,8 @@ bool test_main(void) {
   }
 
   // Increment reset counter to know where we are.
-  flash_ctrl_testutils_counter_set_at_least(&flash_ctrl_state, kCounterReset,
-                                            reset_count + 1);
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+      &flash_ctrl_state, kCounterReset, reset_count + 1));
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
@@ -1101,18 +1163,24 @@ bool test_main(void) {
 
     LOG_INFO("Booting for the second time due to escalation reset");
 
-    int interrupt_count = flash_ctrl_testutils_counter_get(kCounterInterrupt);
-    int nmi_count = flash_ctrl_testutils_counter_get(kCounterNmi);
+    uint32_t interrupt_count = 0;
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_get(kCounterInterrupt, &interrupt_count));
+    uint32_t nmi_count = 0;
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterNmi, &nmi_count));
 
     LOG_INFO("Interrupt count %d", interrupt_count);
     LOG_INFO("NMI count %d", nmi_count);
 
     // ISRs should not run if flash_ctrl or sram_ctrl_main get a fault because
     // flash or sram accesses are blocked in those cases. For lc_ctrl fatal
-    // state the lc_ctrl blocks the CPU.
+    // state, otp_fatal alerts tha will trigger LC to escalate, the lc_ctrl
+    // blocks the CPU.
     if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalStdErr ||
         kExpectedAlertNumber == kTopEarlgreyAlertIdSramCtrlMainFatalError ||
-        kExpectedAlertNumber == kTopEarlgreyAlertIdLcCtrlFatalStateError) {
+        kExpectedAlertNumber == kTopEarlgreyAlertIdLcCtrlFatalStateError ||
+        kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalMacroError ||
+        kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalCheckError) {
       CHECK(interrupt_count == 0,
             "Expected regular ISR should not run for flash_ctrl, lc_ctrl fatal "
             "state, or sram_ctrl_main faults");

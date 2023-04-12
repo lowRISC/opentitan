@@ -35,12 +35,18 @@ pub enum TransportError {
     ReadError(String, String),
     #[error("FPGA programming failed: {0}")]
     FpgaProgramFailed(String),
+    #[error("Firmware programming failed: {0}")]
+    FirmwareProgramFailed(String),
     #[error("Error clearing FPGA bitstream")]
     ClearBitstreamFailed(),
     #[error("PLL programming failed: {0}")]
     PllProgramFailed(String),
     #[error("Invalid pin strapping name \"{0}\"")]
     InvalidStrappingName(String),
+    #[error("Invalid IO expander name \"{0}\"")]
+    InvalidIoExpanderName(String),
+    #[error("Invalid pin {1} for IO expander \"{0}\"")]
+    InvalidIoExpanderPinNo(String, u32),
     #[error("Transport does not support the requested operation")]
     UnsupportedOperation,
     #[error("Requested operation invalid at this time")]
@@ -55,8 +61,10 @@ pub enum TransportError {
     ProxyConnectError(String, String),
     #[error("Requested capabilities {0:?}, but capabilities {1:?} are supplied")]
     MissingCapabilities(Capability, Capability),
-    #[error("Inconsistent configuration for pin {0}")]
-    InconsistentPinConf(String),
+    #[error("Inconsistent configuration for {0:?} instance {1}")]
+    InconsistentConf(TransportInterfaceType, String),
+    #[error("Inconsistent configuration of transport interface {0} vs. {1}")]
+    InconsistentInterfaceConf(String, String),
 }
 impl_serializable_error!(TransportError);
 
@@ -67,6 +75,9 @@ pub enum TransportInterfaceType {
     Uart,
     Spi,
     I2c,
+    Jtag,
     Emulator,
     ProxyOps,
+    GpioMonitoring,
+    IoExpander,
 }

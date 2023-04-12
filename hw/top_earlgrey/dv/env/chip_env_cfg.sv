@@ -23,6 +23,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Indicates which clock source to use for chip simulations.
   chip_clock_source_e   chip_clock_source;
 
+  // Indicates which JTAG to mux on the pads, if any
+  chip_jtag_tap_e       select_jtag = JtagTapNone;
+
   // Memory backdoor util instances for all memory instances in the chip.
   mem_bkdr_util mem_bkdr_util_h[chip_mem_e];
 
@@ -69,6 +72,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   string otp_images[otp_type_e];
 
   uint               sw_test_timeout_ns = 12_000_000; // 12ms
+  // delay until the pull is propagated, only available in closed-source
+  uint               pad_pull_delay = 0;
   sw_logger_vif      sw_logger_vif;
   sw_test_status_vif sw_test_status_vif;
   ast_supply_vif     ast_supply_vif;
@@ -151,6 +156,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     foreach (m_spi_device_agent_cfgs[i]) begin
       m_spi_device_agent_cfgs[i] =
         spi_agent_cfg::type_id::create($sformatf("m_spi_device_agent_cfg%0d", i));
+      // all the spi_agents talking to the host interface should be configured into
+      // device mode
+      m_spi_device_agent_cfgs[i].if_mode = dv_utils_pkg::Device;
     end
 
     // create i2c agent config obj
@@ -195,6 +203,10 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     otp_images[OtpTypeLcStProd] = "otp_ctrl_img_prod.vmem";
     otp_images[OtpTypeLcStRma] = "otp_ctrl_img_rma.vmem";
     otp_images[OtpTypeLcStTestUnlocked0] = "otp_ctrl_img_test_unlocked0.vmem";
+    otp_images[OtpTypeLcStTestUnlocked1] = "otp_ctrl_img_test_unlocked1.vmem";
+    otp_images[OtpTypeLcStTestUnlocked2] = "otp_ctrl_img_test_unlocked2.vmem";
+    otp_images[OtpTypeLcStTestLocked0] = "otp_ctrl_img_test_locked0.vmem";
+    otp_images[OtpTypeLcStTestLocked1] = "otp_ctrl_img_test_locked1.vmem";
     otp_images[OtpTypeCustom] = "";
 
     `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)
@@ -437,6 +449,14 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
       end
       mem_iter = mem_iter.next();
     end while (mem_iter != mem_iter.first());
+    return 0;
+  endfunction
+
+  virtual function int is_mio_open_drain(int pin_num);
+    return 0;
+  endfunction
+
+  virtual function int is_dio_open_drain(int pin_num);
     return 0;
   endfunction
 

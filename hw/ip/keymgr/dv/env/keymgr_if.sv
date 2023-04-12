@@ -89,7 +89,11 @@ interface keymgr_if(input clk, input rst_n);
 
   string msg_id = "keymgr_if";
 
-  task automatic init();
+  task automatic init(bit rand_otp_key, bit invalid_otp_key);
+    // Keymgr only latches OTP key once, so this scb does not support change OTP key on the
+    // fly. Will write a direct sequence to cover otp key change on the fly.
+    otp_ctrl_pkg::otp_keymgr_key_t local_otp_key;
+
     // async delay as these signals are from different clock domain
     #($urandom_range(1000, 0) * 1ns);
     keymgr_en = lc_ctrl_pkg::On;
@@ -99,6 +103,16 @@ interface keymgr_if(input clk, input rst_n);
     flash   = flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT;
     rom_digest.data = 256'hA20A046CF42E6EAC560A3F82BFA76285B5C1D4AEA7C915E49A32D1C89BE0F507;
     rom_digest.valid = '1;
+    if (rand_otp_key) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_key,
+                                         local_otp_key.valid == 1;
+                                         !(local_otp_key.key_share0 inside {0, '1});
+                                         !(local_otp_key.key_share1 inside {0, '1});, , msg_id)
+    end else begin
+      local_otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
+    end
+    if (invalid_otp_key) local_otp_key.valid = 0;
+    otp_key = local_otp_key;
   endtask
 
   // reset local exp variables when reset is issued
@@ -118,11 +132,10 @@ interface keymgr_if(input clk, input rst_n);
     start_edn_req = 0;
   endfunction
 
-  // randomize otp, lc, flash input data
+  // randomize lc, flash input data
   task automatic drive_random_hw_input_data(int num_invalid_input = 0);
     lc_ctrl_pkg::lc_keymgr_div_t     local_keymgr_div;
     bit [keymgr_pkg::DevIdWidth-1:0] local_otp_device_id;
-    otp_ctrl_pkg::otp_keymgr_key_t   local_otp_key;
     flash_ctrl_pkg::keymgr_flash_t   local_flash;
     rom_ctrl_pkg::keymgr_data_t      local_rom_digest;
 
@@ -135,11 +148,6 @@ interface keymgr_if(input clk, input rst_n);
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_device_id,
                                        !(local_otp_device_id inside {0, '1});, , msg_id)
-
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_key,
-                                       local_otp_key.valid == 1;
-                                       !(local_otp_key.key_share0 inside {0, '1});
-                                       !(local_otp_key.key_share1 inside {0, '1});, , msg_id)
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_flash,
                                        foreach (local_flash.seeds[i]) {
@@ -162,16 +170,6 @@ interface keymgr_if(input clk, input rst_n);
                                              local_otp_device_id inside {0, '1};, , msg_id)
         end
         1: begin
-           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_key,
-                                              !local_otp_key.valid;, , msg_id)
-         end
-        1: begin
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_key,
-                                             local_otp_key.valid;
-                                             local_otp_key.key_share0 inside {0, '1} ||
-                                             local_otp_key.key_share1 inside {0, '1};, , msg_id)
-        end
-        1: begin
           int idx = $urandom_range(0, flash_ctrl_pkg::NumSeeds - 1);
           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_flash,
                                              local_flash.seeds[idx] inside {0, '1};, , msg_id)
@@ -190,7 +188,6 @@ interface keymgr_if(input clk, input rst_n);
 
     keymgr_div = local_keymgr_div;
     otp_device_id = local_otp_device_id;
-    otp_key = local_otp_key;
     flash   = local_flash;
     rom_digest = local_rom_digest;
 
@@ -555,7 +552,8 @@ interface keymgr_if(input clk, input rst_n);
     `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On || !en_chk)
 
   `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid ->
-                           kmac_key == kmac_key_exp)
+                           (kmac_key.key[0] ^ kmac_key.key[1]) ==
+                           (kmac_key_exp.key[0] ^ kmac_key_exp.key[1]))
   `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKeyValid, is_kmac_key_good ->
                            kmac_key_exp.valid == kmac_key.valid)
 

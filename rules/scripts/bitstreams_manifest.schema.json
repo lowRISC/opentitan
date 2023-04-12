@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/rules/scripts/bitstreams_manifest.schema.json",
+  "title": "Bitstreams Cache Manifest v1",
+  "description":
+      "A manifest of bitstreams in a cache entry, informing what is there and how to reproduce",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "description": "Version number of this manifest's schema",
+      "type": "number",
+      "minimum": 1,
+      "maximum": 1
+    },
+    "buildId": {
+      "description": "Build ID associated with this entry (typically a git hash)",
+      "type": "string"
+    },
+    "outputFiles": {
+      "description": "Map of output file paths to their metadata objects",
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/outputFile" }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "buildId",
+    "outputFiles"
+  ],
+  "$defs": {
+    "bitstreamInfo": {
+      "description": "Bitstream build output",
+      "type": "object",
+      "properties": {
+        "@type": {
+          "description": "Tag for type of this object",
+          "type": "string",
+          "const": "bitstreamInfo"
+        },
+        "design": {
+          "description": "Design name / top for the bitstream",
+          "type": "string"
+        }
+      },
+      "required": [
+        "@type",
+        "design"
+      ]
+    },
+    "memoryMapInfo": {
+      "description": "Build output that maps memories to cells in a hardware implementation",
+      "type": "object",
+      "properties": {
+        "@type": {
+          "description": "Tag for type of this object",
+          "type": "string",
+          "const": "memoryMapInfo"
+        },
+        "design": {
+          "description": "Design name / top for the bitstream",
+          "type": "string"
+        },
+        "memoryId": {
+          "description": "Name or key identifying the associated memory",
+          "type": "string"
+        }
+      },
+      "required": [
+        "@type",
+        "design",
+        "memoryId"
+      ]
+    },
+    "outputFile": {
+      "description": "Information about a build output file",
+      "type": "object",
+      "properties": {
+        "buildTarget": {
+          "description": "Build target that generated the output",
+          "type": "string"
+        },
+        "outputInfo": {
+          "oneOf": [
+            { "$ref": "#/$defs/bitstreamInfo" },
+            { "$ref": "#/$defs/memoryMapInfo" }
+          ]
+        }
+      },
+      "required": [
+        "outputInfo"
+      ]
+    }
+  }
+}

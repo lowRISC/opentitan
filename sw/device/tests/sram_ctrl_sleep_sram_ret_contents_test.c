@@ -115,7 +115,7 @@ void test_ret_sram_in_normal_sleep(void) {
   retention_sram_check((check_config_t){.do_write = true, .is_equal = true});
 
   // set up wakeup timer
-  aon_timer_testutils_wakeup_config(&aon_timer, 20);
+  CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(&aon_timer, 20));
   // Enable all the AON interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
                                      kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
@@ -142,7 +142,7 @@ void enter_deep_sleep() {
   // Prepare rstmgr for a reset.
   rstmgr_testutils_pre_reset(&rstmgr);
   // set up wakeup timer
-  aon_timer_testutils_wakeup_config(&aon_timer, 20);
+  CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(&aon_timer, 20));
   // Deep sleep.
   pwrmgr_testutils_enable_low_power(&pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
                                     0);
@@ -227,28 +227,27 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_flash_ctrl_init_state(
           &flash_ctrl_state,
           mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                                 /*rd_en=*/true,
-                                                 /*prog_en=*/true,
-                                                 /*erase_en=*/true,
-                                                 /*scramble_en=*/false,
-                                                 /*ecc_en=*/false,
-                                                 /*he_en=*/false);
+      CHECK_STATUS_OK(
+          flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
+                                                     /*rd_en=*/true,
+                                                     /*prog_en=*/true,
+                                                     /*erase_en=*/true,
+                                                     /*scramble_en=*/false,
+                                                     /*ecc_en=*/false,
+                                                     /*he_en=*/false));
       // write ret_non_scrambled to 0
       const uint32_t new_data = 0;
-      CHECK(flash_ctrl_testutils_write(
-                &flash_ctrl_state,
-                (uint32_t)&ret_non_scrambled -
-                    TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-                /*partition_id*/ 0, &new_data, kDifFlashCtrlPartitionTypeData,
-                /*word_count*/ 1),
-            "Flash write failed");
+      CHECK_STATUS_OK(flash_ctrl_testutils_write(
+          &flash_ctrl_state,
+          (uint32_t)&ret_non_scrambled - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+          /*partition_id=*/0, &new_data, kDifFlashCtrlPartitionTypeData,
+          /*word_count=*/1));
       // wipe data otherwise, the data may still be read after reset, since it's
       // written with the default key/nounce.
       LOG_INFO("Wiping ret_sram...");
-      sram_ctrl_testutils_wipe(&ret_sram);
+      CHECK_STATUS_OK(sram_ctrl_testutils_wipe(&ret_sram));
       LOG_INFO("Scrambling ret_sram...");
-      sram_ctrl_testutils_scramble(&ret_sram);
+      CHECK_STATUS_OK(sram_ctrl_testutils_scramble(&ret_sram));
 
       test_ret_sram_in_normal_sleep();
 

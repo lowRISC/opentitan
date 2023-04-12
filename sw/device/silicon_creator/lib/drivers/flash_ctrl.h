@@ -133,10 +133,9 @@ typedef enum flash_ctrl_info_page {
 #define FLASH_CTRL_OTP_FIELD_HE \
   (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 2 }
 
-
 /**
- * The following constants represent the expected number of sec_mmio register
- * writes performed by functions in provided in this module. See
+ * The following constants represent the expected number of sec_mmio
+ * register writes performed by functions in provided in this module. See
  * `SEC_MMIO_WRITE_INCREMENT()` for more details.
  *
  * Example:
@@ -155,8 +154,6 @@ enum {
   kFlashCtrlSecMmioBankErasePermsSet = 1,
   kFlashCtrlSecMmioInit = 3,
 };
-
-
 
 /**
  * Value of a word in flash after erase.
@@ -385,7 +382,7 @@ void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms);
  * @param perms New permissions.
  */
 void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
-                            flash_ctrl_perms_t perms);
+                               flash_ctrl_perms_t perms);
 
 /**
  * A struct for flash configuration settings.
@@ -424,13 +421,14 @@ void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg);
  * Sets configuration settings for an info page.
  *
  * The caller is responsible for calling
- * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgSet)` when sec_mmio is being
- * used to check expectations.
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgSet)` when sec_mmio is
+ * being used to check expectations.
  *
  * @param info_page An information page.
  * @param cfg New configuration settings.
  */
-void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page, flash_ctrl_cfg_t cfg);
+void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
+                             flash_ctrl_cfg_t cfg);
 
 /**
  * Set bank erase permissions for both flash banks.

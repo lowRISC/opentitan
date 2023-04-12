@@ -72,15 +72,17 @@ bool test_main(void) {
 
   // Enable access to flash for storing info across resets.
   LOG_INFO("Setting default region accesses");
-  flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
 
-  uint32_t wakeup_count = flash_ctrl_testutils_counter_get(0);
+  uint32_t wakeup_count = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &wakeup_count));
   int wakeup_unit = get_wakeup_unit(wakeup_count);
   bool deep_sleep = get_deep_sleep(wakeup_count);
 
@@ -90,8 +92,8 @@ bool test_main(void) {
     check_wakeup_reason(wakeup_unit);
     LOG_INFO("Woke up by source %d", wakeup_unit);
     cleanup(wakeup_unit);
-    flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
-    wakeup_count = flash_ctrl_testutils_counter_get(0);
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &wakeup_count));
     wakeup_unit = get_wakeup_unit(wakeup_count);
     deep_sleep = get_deep_sleep(wakeup_count);
     delay_n_clear(4);
@@ -105,8 +107,8 @@ bool test_main(void) {
           deep_sleep) {
         return true;
       }
-      flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
-      wakeup_count = flash_ctrl_testutils_counter_get(0);
+      CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
+      CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &wakeup_count));
       wakeup_unit = get_wakeup_unit(wakeup_count);
       deep_sleep = get_deep_sleep(wakeup_count);
       delay_n_clear(4);

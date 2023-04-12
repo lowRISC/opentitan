@@ -722,6 +722,7 @@ class CovReport(Deploy):
         # Keep track of coverage results, once the job is finished.
         self.cov_total = ""
         self.cov_results = ""
+        self.cov_results_dict = dict()
 
     def post_finish(self, status):
         """Extract the coverage results summary for the dashboard.
@@ -741,6 +742,8 @@ class CovReport(Deploy):
                                     headers="firstrow",
                                     tablefmt="pipe",
                                     colalign=colalign)
+        for tup in zip(*results):
+            self.cov_results_dict[tup[0]] = tup[1]
 
 
 class CovAnalyze(Deploy):

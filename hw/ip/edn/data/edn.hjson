@@ -3,6 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "edn",
+  human_name:         "Entropy Distribution Network",
+  one_line_desc:      "Distributes random numbers produced by CSRNG to hardware blocks",
+  one_paragraph_desc: '''
+  Entropy Distribution Network (EDN) interfaces various hardware blocks consuming random numbers to CSRNG.
+  Besides adapting bus widths, it provides a set of registers for firmware to manage the corresponding CSRNG application interface.
+  This allows configuring EDN to automatically send reseed and generate commands to the connected CSRNG context in order to continuously supply consumers with entropy of defined quality.
+  Additionally, EDN supports a boot-time request mode, in which it supplies a limited amount of potentially lower-quality entropy with less firmware interaction immediately at boot-time or after reset.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

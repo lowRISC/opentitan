@@ -190,8 +190,9 @@ bool test_main(void) {
     irq_global_ctrl(true);
     irq_external_ctrl(true);
 
-    uint32_t wakeup_threshold = aon_timer_testutils_get_aon_cycles_from_us(
-        kTestParamWakeupThresholdUsec);
+    uint32_t wakeup_threshold = 0;
+    CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(
+        kTestParamWakeupThresholdUsec, &wakeup_threshold));
 
     // Sleep longer in FPGA and silicon targets.
     if (kDeviceType != kDeviceSimDV && kDeviceType != kDeviceSimVerilator) {
@@ -208,7 +209,8 @@ bool test_main(void) {
     CHECK(interrupt_serviced == false, "Unexpected interrupt triggered.");
 
     // Enable and enter deep sleep.
-    aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
+    CHECK_STATUS_OK(
+        aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
     pwrmgr_testutils_enable_low_power(&pwrmgr,
                                       kDifPwrmgrWakeupRequestSourceFive, 0);
     wait_for_interrupt();
@@ -219,7 +221,7 @@ bool test_main(void) {
     LOG_INFO("Wakeup reset");
     CHECK(rstmgr_testutils_is_reset_info(&rstmgr,
                                          kDifRstmgrResetInfoLowPowerExit));
-    aon_timer_testutils_shutdown(&aon_timer);
+    CHECK_STATUS_OK(aon_timer_testutils_shutdown(&aon_timer));
 
     // At this point the test has verified that the reset reason is low power
     // exit, which discounts any resets triggered by local alert escalations.

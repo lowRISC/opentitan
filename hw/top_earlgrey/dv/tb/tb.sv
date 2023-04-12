@@ -404,16 +404,36 @@ module tb;
       // See chip_padctrl_attributes_vseq for more details.
       forever @dut.chip_if.chip_padctrl_attributes_test_sva_disable begin
         if (dut.chip_if.chip_padctrl_attributes_test_sva_disable) begin
+          $assertoff(0, dut.top_earlgrey.u_flash_ctrl);
+          $assertoff(0, dut.top_earlgrey.u_gpio);
+          $assertoff(0, dut.top_earlgrey.u_i2c0);
+          $assertoff(0, dut.top_earlgrey.u_i2c1);
+          $assertoff(0, dut.top_earlgrey.u_i2c2);
           $assertoff(0, dut.top_earlgrey.u_pinmux_aon);
           $assertoff(0, dut.top_earlgrey.u_spi_device);
           $assertoff(0, dut.top_earlgrey.u_spi_host0);
+          $assertoff(0, dut.top_earlgrey.u_spi_host1);
           $assertoff(0, dut.top_earlgrey.u_sysrst_ctrl_aon);
+          $assertoff(0, dut.top_earlgrey.u_uart0);
+          $assertoff(0, dut.top_earlgrey.u_uart1);
+          $assertoff(0, dut.top_earlgrey.u_uart2);
+          $assertoff(0, dut.top_earlgrey.u_uart3);
           $assertoff(0, dut.top_earlgrey.u_usbdev);
         end else begin
+          $asserton(0, dut.top_earlgrey.u_flash_ctrl);
+          $asserton(0, dut.top_earlgrey.u_gpio);
+          $asserton(0, dut.top_earlgrey.u_i2c0);
+          $asserton(0, dut.top_earlgrey.u_i2c1);
+          $asserton(0, dut.top_earlgrey.u_i2c2);
           $asserton(0, dut.top_earlgrey.u_pinmux_aon);
           $asserton(0, dut.top_earlgrey.u_spi_device);
           $asserton(0, dut.top_earlgrey.u_spi_host0);
+          $asserton(0, dut.top_earlgrey.u_spi_host1);
           $asserton(0, dut.top_earlgrey.u_sysrst_ctrl_aon);
+          $asserton(0, dut.top_earlgrey.u_uart0);
+          $asserton(0, dut.top_earlgrey.u_uart1);
+          $asserton(0, dut.top_earlgrey.u_uart2);
+          $asserton(0, dut.top_earlgrey.u_uart3);
           $asserton(0, dut.top_earlgrey.u_usbdev);
         end
       end

@@ -1,6 +1,4 @@
----
-title: "Primitive Component: PRINCE Scrambler"
----
+# Primitive Component: PRINCE Scrambler
 
 # Overview
 
@@ -64,7 +62,7 @@ The PRINCE module is fully unrolled and combinational by default.
 But since data and key state registers can optionally be enabled, the primitive also has a clock, reset and valid input besides the key and plaintext inputs.
 On the output side it exposes the ciphertext with its corresponding valid signal.
 
-The internal construction follows the the algorithm described in the original [paper](https://eprint.iacr.org/2012/529.pdf).
+The internal construction follows the algorithm described in the original [paper](https://eprint.iacr.org/2012/529.pdf).
 The block size is 64bit and the key size is 128bit.
 In its original formulation, this cipher has 11 rounds (but 12 non-linear layers), which are arranged in a mirrored structure, which allows the same circuit to be used for encryption and decryption with a lightweight tweak applied to the key:
 
@@ -120,5 +118,3 @@ The improvement involves alternating the keys `k0` and `k1` between rounds, as o
 
 The reduced 32bit variant mentioned above and all reduced round variants are non-standard and must only be used for scrambling purposes, since they **are not secure**.
 The 32bit variant leverages the same crypto primitives and key derivation functions as the 64bit variant, with the difference that the multiplication matrix is only comprised of the first two block diagonal submatrices (^M0 and ^M1 in the paper), and the shiftrows operation does not operate on nibbles but pairs of 2 bits instead.
-
-

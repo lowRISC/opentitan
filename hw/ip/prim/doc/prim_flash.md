@@ -1,6 +1,4 @@
----
-title: "Primitive Component: Flash Wrapper"
----
+# Primitive Component: Flash Wrapper
 
 # Overview
 `prim_flash` is a wrapper interface for technology specific flash modules.
@@ -92,7 +90,7 @@ It is the flash wrapper decision on how many outstanding transaction to accept.
 The following are examples for read, program and erase transactions.
 
 ### Read
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk_i',     wave: 'p.................'},
   {name: 'rd_i',      wave: '011..0.1..0.......'},
@@ -101,10 +99,10 @@ The following are examples for read, program and erase transactions.
   {name: 'done_o',    wave: '0....10...10....10'},
   {name: 'rd_data_o', wave: 'x....2x...2x....2x'},
 ]}
-{{< /wavejson >}}
+```
 
 ### Program
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk_i',       wave: 'p................'},
   {name: 'prog_i',      wave: '011...0.1....0...'},
@@ -114,17 +112,17 @@ The following are examples for read, program and erase transactions.
   {name: 'ack_o',       wave: '010..10.....10...'},
   {name: 'done_o',      wave: '0..............10'},
 ]}
-{{< /wavejson >}}
+```
 
 ### Erase
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk_i',     wave: 'p................'},
   {name: '*_erase_i', wave: '01.0.........1.0.'},
   {name: 'ack_o',     wave: '0.10..........10.'},
   {name: 'done_o',    wave: '0.....10.........'},
 ]}
-{{< /wavejson >}}
+```
 
 ## Initialization
 
@@ -152,7 +150,7 @@ The suspend operation input request starts with `erase_suspend_req` assertion. F
 When the erase suspend completes, the flash wrapper circuitry also asserts `done` for the ongoing erase transaction to ensure all hardware gracefully completes.
 
 The following is an example diagram
-{{< wavejson >}}
+```wavejson
 {signal: [
   {name: 'clk_i',                wave: 'p................'},
   {name: 'pg_erase_i',           wave: '01.0..............'},
@@ -161,7 +159,7 @@ The following is an example diagram
   {name: 'done_o',               wave: '0............10..'},
  ]
   }
-{{< /wavejson >}}
+```
 
 ## Error Interrupt
 The `flash_err_o` is a level interrupt indication, that is asserted whenever an error event occurs in one of the Flash banks.

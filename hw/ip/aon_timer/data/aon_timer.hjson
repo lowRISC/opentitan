@@ -4,6 +4,15 @@
 //
 {
   name:               "aon_timer",
+  human_name:         "Always-On Timer",
+  one_line_desc:      "Wakeup and watchdog timers running on a low-power, always-on clock",
+  one_paragraph_desc: '''
+  Always-On (AON) Timer is the main timer hardware block of OpenTitan.
+  It includes two 32-bit up-counting timers, one of which functions as a wakeup timer and the other as a watchdog timer.
+  The watchdog timer has two thresholds: a 'bark' threshold that generates an interrupt and a 'bite' threshold that resets the system.
+  The wakeup timer has a 12-bit pre-scaler to enable very long timeouts and also generates an interrupt to the core.
+  The timers run on a ~200 kHz AON clock and have a maximum timeout window of roughly ~6 hours for the watchdog timer and ~1000 days with the use of the pre-scaler for the wakeup timer.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

@@ -10,11 +10,10 @@
 
 crypto_status_t crypto_status_interpret(status_t status) {
   // First, check for a hardened-ok status.
-  uint32_t res = launder32(kCryptoStatusOK ^ kHardenedBoolTrue);
   hardened_bool_t is_ok = hardened_status_ok(status);
   if (launder32(is_ok) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(is_ok, kHardenedBoolTrue);
-    return res ^ is_ok;
+    return launder32(status.value);
   }
   HARDENED_CHECK_NE(is_ok, kHardenedBoolTrue);
 
@@ -44,7 +43,7 @@ crypto_status_t crypto_status_interpret(status_t status) {
     case kOutOfRange:
       return kCryptoStatusInternalError;
     case kUnimplemented:
-      return kCryptoStatusInternalError;
+      return kCryptoStatusNotImplemented;
     case kUnauthenticated:
       return kCryptoStatusInternalError;
     case kUnknown:

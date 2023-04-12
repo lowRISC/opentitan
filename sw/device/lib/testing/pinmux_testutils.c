@@ -26,12 +26,6 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
   CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
                                        kTopEarlgreyPinmuxPeripheralInGpioGpio24,
                                        kTopEarlgreyPinmuxInselIoc2));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc0,
-                                        kTopEarlgreyPinmuxOutselGpioGpio22));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc1,
-                                        kTopEarlgreyPinmuxOutselGpioGpio23));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc2,
-                                        kTopEarlgreyPinmuxOutselGpioGpio24));
 
   // Configure UART0 RX input to connect to MIO pad IOC3
   CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
@@ -140,7 +134,7 @@ uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
                                           attr, &attr_out));
   bool state;
   // The value read is unmodified by the internal pull resistors and represents
-  // the the upper bit of the 4 possible states [Strong0, Weak0, Weak1,
+  // the upper bit of the 4 possible states [Strong0, Weak0, Weak1,
   // Strong1].
   CHECK_DIF_OK(dif_gpio_read(gpio, io, &state));
   uint32_t result = state ? 2 : 0;

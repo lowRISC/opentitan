@@ -4,7 +4,7 @@
 
 // This sequence will detect the edge transition on input keys
 // and raise an interrupt if the detected edge of signal remains
-// stable during the entire debounce period
+// stable during the entire debounce period.
 class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
   `uvm_object_utils(sysrst_ctrl_edge_detect_vseq)
 
@@ -20,7 +20,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
     solve set_timer before wait_cycles;
     set_timer dist {
       [10:100] :/ 95,
-      [101:$]   :/ 5
+      [101:$]  :/ 5
     };
    }
 
@@ -31,9 +31,9 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
    constraint wait_cycles_c {
      wait_cycles dist {
        // sysrst_ctrl_detect.state : DebounceSt -> IdleSt
-       [1 : set_timer] :/20,
+       [1 : set_timer]                 :/20,
        // sysrst_ctrl_detect.state : DetectSt -> IdleSt
-       (set_timer + 1) :/20,
+       (set_timer + 1)                 :/20,
        // sysrst_ctrl_detect.state : DetectSt -> StableSt
        [set_timer + 2 : set_timer * 2] :/60
      };
@@ -49,7 +49,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
      bit l2h_detected;
 
      fork
-       if (edge_detect_l2h.en_l2h)
+       if (edge_detect_l2h.en_l2h) begin
          forever begin
            @(posedge cfg.vif.sysrst_ctrl_inputs[index]);
              if (!edge_detect_l2h.l2h_triggered) begin
@@ -57,7 +57,8 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
                l2h_detected = 1;
              end
          end
-       if (edge_detect_h2l.en_h2l)
+       end
+       if (edge_detect_h2l.en_h2l) begin
          forever begin
            @(negedge cfg.vif.sysrst_ctrl_inputs[index]);
              if (!edge_detect_h2l.h2l_triggered) begin
@@ -65,8 +66,8 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
                h2l_detected = 1;
              end
          end
-
-       // after h2l_detected is set, check the input stay low for enought time
+       end
+       // After h2l_detected is set, check the input stay low for enought time
        forever begin
          bit h2l_timer_reached;
          wait (h2l_detected && !edge_detect_h2l.h2l_triggered);
@@ -77,7 +78,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
              h2l_timer_reached = 1;
            end
            begin
-             // if edge change occurs again before the timer reaches the defined value, the interrupt
+             // If edge change occurs again before the timer reaches the defined value, the interrupt
              // won't happen
              @(cfg.vif.sysrst_ctrl_inputs[index]);
            end
@@ -96,7 +97,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
              l2h_timer_reached = 1;
            end
            begin
-             // if edge change occurs again before the timer reaches the defined value, the interrupt
+             // If edge change occurs again before the timer reaches the defined value, the interrupt
              // won't happen
              @(cfg.vif.sysrst_ctrl_inputs[index]);
            end
@@ -140,12 +141,12 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
 
      csr_rd(ral.key_intr_ctl, get_input);
 
-     // start monitor edge
-     fork begin  // isolation fork
+     // Start monitor edge
+     fork begin  // Isolation fork
        for (int i = 0; i < NumInputs; i++) begin
          automatic int local_i = i;
          edge_detect_h2l[i].en_h2l = get_input[i];
-         edge_detect_l2h[i].en_l2h = get_input[NumInputs + i + 1];
+         edge_detect_l2h[i].en_l2h = get_input[NumInputs + i];
          fork
            monitor_input_edge(sysrst_input_idx_e'(local_i), edge_detect_h2l[local_i],
                   edge_detect_l2h[local_i]);
@@ -161,7 +162,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
          cfg.clk_aon_rst_vif.wait_clks(wait_cycles);
          cfg.vif.randomize_input();
 
-         // make sure the previous transition lasts long enough, so that everything is settled and we can check them
+         // Make sure the previous transition lasts long enough, so that everything is settled and we can check them
          cfg.clk_aon_rst_vif.wait_clks(set_timer+10);
 
          // Enable the bus clock to read the status register
@@ -178,12 +179,12 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
            check_l2h_edge_intr(sysrst_input_idx_e'(i), edge_detect_l2h[i], rdata);
          end
 
-         // check intr_status
+         // Check intr_status
          if (rdata >= 1) exp_intr_state = 1;
          else            exp_intr_state = 0;
-         check_interrupts(.interrupts(1), .check_set(exp_intr_state));
+         check_interrupts(.interrupts(1 << IntrSysrstCtrl), .check_set(exp_intr_state));
 
-         // clear interrupt
+         // Clear interrupt
          // Write to clear the register
          csr_wr(ral.key_intr_status, rdata);
 

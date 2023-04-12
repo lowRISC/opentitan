@@ -3,6 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "keymgr",
+  human_name:         "Key Manager",
+  one_line_desc:      "Managing identities and root keys; shielding confidential assets from software; providing a key derivation interface for software",
+  one_paragraph_desc: '''
+  Key Manager implements the hardware component of the identities and root keys strategy of OpenTitan.
+  It shields confidential assets from direct software access and provides an interface for software to use derived keys and identity outputs.
+  The key derivation functionality interfaces KMAC Accelerator.
+  Key Manager provides AES Accelerator, OTBN, and KMAC Accelerator with confidential keys over sideload interfaces that are not accessible from software.
+  In addition, it supports the [Open Profile for DICE][pigweed-open-dice].
+
+  [pigweed-open-dice]: https://pigweed.googlesource.com/open-dice/+/HEAD/docs/specification.md#Open-Profile-for-DICE
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

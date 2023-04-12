@@ -234,14 +234,15 @@ void ottf_external_isr(void) {
   // interrupt counter and errors-out if there are too many interrupts.
 
   // Increment the interrupt count and detect overflows.
-  uint32_t interrupt_count =
-      flash_ctrl_testutils_counter_get(kCounterInterrupt);
+  uint32_t interrupt_count = 0;
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_get(kCounterInterrupt, &interrupt_count));
   if (interrupt_count > kMaxInterrupts) {
     CHECK(false, "Reset count %d got too many interrupts (%d)", reset_count,
           interrupt_count);
   }
-  flash_ctrl_testutils_counter_set_at_least(
-      &flash_ctrl_state, kCounterInterrupt, interrupt_count + 1);
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+      &flash_ctrl_state, kCounterInterrupt, interrupt_count + 1));
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
@@ -300,13 +301,14 @@ void ottf_load_integrity_error_handler(void) {
         kErrorRamAddress, mtval);
 
   // Increment the exception count.
-  uint32_t exception_count =
-      flash_ctrl_testutils_counter_get(kCounterException);
+  uint32_t exception_count = 0;
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_get(kCounterException, &exception_count));
   if (exception_count > kMaxInterrupts) {
     LOG_INFO("Saturating exception counter at %d", exception_count);
   } else {
-    flash_ctrl_testutils_counter_set_at_least(
-        &flash_ctrl_state, kCounterException, exception_count + 1);
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+        &flash_ctrl_state, kCounterException, exception_count + 1));
   }
 
   rv_core_ibex_fault_checker(true);
@@ -326,13 +328,14 @@ void ottf_instr_access_fault_handler(void) {
         kFaultTarget);
 
   // Increment the nmi interrupt count.
-  uint32_t exception_count =
-      flash_ctrl_testutils_counter_get(kCounterException);
+  uint32_t exception_count = 0;
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_get(kCounterException, &exception_count));
   if (exception_count > kMaxInterrupts) {
     LOG_INFO("Saturating exception counter at %d", exception_count);
   } else {
-    flash_ctrl_testutils_counter_set_at_least(
-        &flash_ctrl_state, kCounterException, exception_count + 1);
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+        &flash_ctrl_state, kCounterException, exception_count + 1));
   }
 
   rv_core_ibex_fault_checker(true);
@@ -350,12 +353,13 @@ void ottf_external_nmi_handler(void) {
   LOG_INFO("At NMI handler");
 
   // Increment the nmi interrupt count.
-  uint32_t nmi_count = flash_ctrl_testutils_counter_get(kCounterNmi);
+  uint32_t nmi_count = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterNmi, &nmi_count));
   if (nmi_count > kMaxInterrupts) {
     LOG_INFO("Saturating nmi interrupts at %d", nmi_count);
   } else {
-    flash_ctrl_testutils_counter_set_at_least(&flash_ctrl_state, kCounterNmi,
-                                              nmi_count + 1);
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+        &flash_ctrl_state, kCounterNmi, nmi_count + 1));
   }
 
   // Check that this NMI was due to an alert handler escalation, and not due
@@ -486,10 +490,12 @@ static void alert_handler_config(void) {
 }
 
 static void set_aon_timers() {
-  uint32_t bark_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(kWdogBarkMicros);
-  uint32_t bite_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(kWdogBiteMicros);
+  uint32_t bark_cycles = 0;
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(kWdogBarkMicros,
+                                                             &bark_cycles));
+  uint32_t bite_cycles = 0;
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(kWdogBiteMicros,
+                                                             &bite_cycles));
 
   LOG_INFO(
       "Wdog will bark after %u us (%u cycles) and bite after %u us (%u cycles)",
@@ -568,24 +574,26 @@ bool test_main(void) {
 
   // Enable access to flash for storing info across resets.
   LOG_INFO("Setting default region accesses");
-  flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
 
   // Get the flash maintained reset counter.
-  reset_count = flash_ctrl_testutils_counter_get(kCounterReset);
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterReset,
+                                                   (uint32_t *)&reset_count));
   LOG_INFO("Reset counter value: %u", reset_count);
   if (reset_count > kMaxResets) {
     CHECK(false, "Got too many resets (%d)", reset_count);
   }
 
   // Increment reset counter to know where we are.
-  flash_ctrl_testutils_counter_set_at_least(&flash_ctrl_state, kCounterReset,
-                                            reset_count + 1);
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+      &flash_ctrl_state, kCounterReset, reset_count + 1));
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
@@ -603,9 +611,14 @@ bool test_main(void) {
     LOG_INFO("Booting for the second time due to escalation reset");
 
     // Get the counts from flash.
-    int interrupt_count = flash_ctrl_testutils_counter_get(kCounterInterrupt);
-    int nmi_count = flash_ctrl_testutils_counter_get(kCounterNmi);
-    int exception_count = flash_ctrl_testutils_counter_get(kCounterException);
+    uint32_t interrupt_count = 0;
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_get(kCounterInterrupt, &interrupt_count));
+    uint32_t nmi_count = 0;
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterNmi, &nmi_count));
+    uint32_t exception_count = 0;
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_get(kCounterException, &exception_count));
 
     LOG_INFO("Interrupt count %d", interrupt_count);
     LOG_INFO("NMI count %d", nmi_count);

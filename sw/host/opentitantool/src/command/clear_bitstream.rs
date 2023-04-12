@@ -9,7 +9,7 @@ use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::transport::cw310;
+use opentitanlib::transport::common::fpga;
 
 /// Clear the bitstream of the FPGA
 #[derive(Debug, StructOpt)]
@@ -21,6 +21,6 @@ impl CommandDispatch for ClearBitstream {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        transport.dispatch(&cw310::ClearBitstream {})
+        transport.dispatch(&fpga::ClearBitstream)
     }
 }

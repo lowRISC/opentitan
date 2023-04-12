@@ -4,6 +4,14 @@
 
 {
   name:               "i2c",
+  human_name:         "I2C Interface",
+  one_line_desc:      "I2C interface for host and device mode, supporting up to 1 Mbaud data rates",
+  one_paragraph_desc: '''
+  I2C Interface implements the I2C serial communication protocol.
+  It can be configured in host (master) or device (slave) mode and supports standard data rate (100 kbaud), fast data rate (400 kbaud), and fast plus data rate (1 Mbaud).
+  In addition to supporting all mandatory I2C features, this block supports clock stretching in host mode and automatic clock stretching in device mode.
+  I2C Interface uses a 7-bit address space and is compatible with any device covered by I2C specification operating at speeds up to 1 Mbaud.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
@@ -59,7 +67,7 @@
     { name: "cmd_complete"
       desc: '''
         host and target mode interrupt.
-        In host mode, raised if the host issues a repated START or terminates the transaction by issuing STOP.
+        In host mode, raised if the host issues a repeated START or terminates the transaction by issuing STOP.
         In target mode, raised if the external host issues a STOP or repeated START.
       '''
     }
@@ -106,7 +114,7 @@
   registers: [
     // CTRL register
     { name: "CTRL"
-      desc: "I2C control register (Functions TBD)"
+      desc: "I2C Control Register"
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
@@ -137,7 +145,7 @@
       ]
     }
     { name:     "STATUS"
-      desc:     "I2C live status register"
+      desc:     "I2C Live Status Register"
       swaccess: "ro"
       hwaccess: "hwo"
       hwext:    "true"
@@ -193,7 +201,7 @@
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     }
     { name: "RDATA"
-      desc: "I2C read data"
+      desc: "I2C Read Data"
       swaccess: "ro"
       hwaccess: "hrw"
       hwext: "true"
@@ -343,7 +351,7 @@
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
     }
     { name: "OVRD"
-      desc: "I2C override control register"
+      desc: "I2C Override Control Register"
       swaccess: "rw"
       hwaccess: "hro"
       fields: [

@@ -102,8 +102,7 @@ static volatile bool task_done[kTestTaskIdCount];
  */
 static volatile uint32_t task_iter_count_max[kTestTaskIdCount];
 
-OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
-                        .can_clobber_uart = false, );
+OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true);
 
 /**
  * Initializes the peripherals used in this test.
@@ -193,7 +192,7 @@ static void task_done_set_and_yield(task_id_t task_id) {
 /**
  * OTBN task.
  *
- * Executes OTBN randomness test the the test state is set to `kTestStateRun`.
+ * Executes OTBN randomness test, the test state is set to `kTestStateRun`.
  *
  * @param task_parameters Unused. Set to NULL by ottf.
  */
@@ -225,7 +224,7 @@ static void otbn_task(void *task_parameters) {
 /**
  * Ibex task.
  *
- * Executes Ibex randomness test the the test state is set to `kTestStateRun`.
+ * Executes Ibex randomness test the, test state is set to `kTestStateRun`.
  *
  * @param task_parameters Unused. Set to NULL by ottf.
  */
@@ -270,7 +269,7 @@ static void ibex_task(void *task_parameters) {
  * reseed commands.
  */
 static void entropy_config(void) {
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   LOG_INFO("Generating EDN params");
   dif_edn_auto_params_t edn_params0 = edn_auto_params_build();
@@ -281,7 +280,7 @@ static void entropy_config(void) {
   task_iter_count_max[kTestTaskIdIbex] =
       rand_testutils_gen32_range(/*min=*/1, kTestParamNumIbexIterationsMax);
 
-  entropy_testutils_stop_all();
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
   CHECK_DIF_OK(dif_entropy_src_configure(
       &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
@@ -332,8 +331,9 @@ static void main_task(void *task_parameters) {
         execution_state_update(kTestStateTearDown);
         break;
       }
-      csrng_testutils_recoverable_alerts_check(&csrng);
-      entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1);
+      CHECK_STATUS_OK((csrng_testutils_recoverable_alerts_check(&csrng)));
+      CHECK_STATUS_OK(
+          entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
       execution_state_update(kTestStateSetup);
     }
     // The rest of this code block is executed when

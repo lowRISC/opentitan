@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import datetime
+import json
 import logging as log
 import os
 import pprint
@@ -411,35 +412,51 @@ class FlowCfg():
 
         '''
         for item in self.cfgs:
+            json_str = (item._gen_json_results(results)
+                        if hasattr(item, '_gen_json_results')
+                        else None)
             result = item._gen_results(results)
             log.info("[results]: [%s]:\n%s\n", item.name, result)
             log.info("[scratch_path]: [%s] [%s]", item.name, item.scratch_path)
-            item.write_results_html(self.results_html_name, item.results_md)
+            item.write_results(self.results_html_name, item.results_md,
+                               json_str)
             log.log(VERBOSE, "[report]: [%s] [%s/report.html]", item.name,
                     item.results_dir)
             self.errors_seen |= item.errors_seen
 
         if self.is_primary_cfg:
             self.gen_results_summary()
-            self.write_results_html(self.results_html_name,
-                                    self.results_summary_md)
+            self.write_results(self.results_html_name,
+                               self.results_summary_md)
 
     def gen_results_summary(self):
         '''Public facing API to generate summary results for each IP/cfg file
         '''
         return
 
-    def write_results_html(self, filename, text_md):
-        """Converts md text to HTML and writes to results_dir area."""
+    def write_results(self, html_filename, text_md, json_str=None):
+        """Write results to files.
+
+        This function converts text_md to HTML and writes the result to a file
+        in self.results_dir with the file name given by html_filename.  If
+        json_str is not None, this function additionally writes json_str to a
+        file with the same path and base name as the HTML file but with '.json'
+        as suffix.
+        """
 
         # Prepare reports directory, keeping 90 day history.
         clean_odirs(odir=self.results_dir, max_odirs=89)
         mk_path(self.results_dir)
 
         # Write results to the report area.
-        with open(self.results_dir / filename, "w") as f:
+        with open(self.results_dir / html_filename, "w") as f:
             f.write(
                 md_results_to_html(self.results_title, self.css_file, text_md))
+
+        if json_str is not None:
+            filename = Path(html_filename).with_suffix('.json')
+            with open(self.results_dir / filename, "w") as f:
+                f.write(json_str)
 
     def _get_results_page_link(self, relative_to, link_text=''):
         """Create a relative markdown link to the results page."""
@@ -564,23 +581,34 @@ class FlowCfg():
         publish_results_md = publish_results_md + history_txt
 
         # Publish the results page.
-        # First, write the results html file to the scratch area.
-        self.write_results_html("publish.html", publish_results_md)
+        # First, write the results html and json files to the scratch area.
+        json_str = (json.dumps(self.results_dict)
+                    if hasattr(self, 'results_dict')
+                    else None)
+        self.write_results("publish.html", publish_results_md, json_str)
         results_html_file = self.results_dir / "publish.html"
 
+        # Second, copy the files to the server.
         log.info("Publishing results to %s", self.results_server_url)
-        cmd = (self.results_server_cmd + " cp " +
-               str(results_html_file) + " " +
-               self.results_server_page)
-        log.log(VERBOSE, cmd)
-        try:
-            cmd_output = subprocess.run(args=cmd,
-                                        shell=True,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT)
-            log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
-        except Exception as e:
-            log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
+        suffixes = ['html'] + (['json'] if json_str is not None else [])
+        for suffix in suffixes:
+            src = str(Path(results_html_file).with_suffix('.' + suffix))
+            dst = self.results_server_page
+            # results_server_page has '.html' as suffix.  If that does not match
+            # suffix, change it.
+            if suffix != 'html':
+                assert dst[-5:] == '.html'
+                dst = dst[:-5] + '.json'
+            cmd = f"{self.results_server_cmd} cp {src} {dst}"
+            log.log(VERBOSE, cmd)
+            try:
+                cmd_output = subprocess.run(args=cmd,
+                                            shell=True,
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.STDOUT)
+                log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
+            except Exception as e:
+                log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
 
     def publish_results(self):
         '''Public facing API for publishing results to the opentitan web
@@ -591,6 +619,10 @@ class FlowCfg():
 
         if self.is_primary_cfg:
             self.publish_results_summary()
+
+        # Trigger a rebuild of the site/docs which may pull new data from
+        # the published results.
+        self.rebuild_site()
 
     def publish_results_summary(self):
         '''Public facing API for publishing md format results to the opentitan
@@ -610,6 +642,33 @@ class FlowCfg():
             log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
         except Exception as e:
             log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
+
+    def rebuild_site(self):
+        '''Trigger a rebuild of the opentitan.org site using a Cloud Build trigger.
+
+        The Gcloud project which builds and deploys the site ("gold-hybrid-255131") uses
+        a cloudbuild yaml file (util/site/site-builder/cloudbuild-deploy-docs.yaml) to define
+        the rebuilding of the site.
+        A manually-triggered job ('site-builder-manual') has been created, which can be
+        triggered through an appropriately-authenticated Google Cloud SDK command. This
+        function calls that command.
+        '''
+        if which('gsutil') is None or which('gcloud') is None:
+            log.error("Google Cloud SDK not installed!"
+                      "Cannot access the Cloud Build API to trigger a site rebuild.")
+            return
+
+        project = 'gold-hybrid-255313'
+        trigger_name = 'site-builder-manual'
+        cmd = f"gcloud beta --project {project} builds triggers run {trigger_name}".split(' ')
+        try:
+            cmd_output = subprocess.run(args=cmd,
+                                        shell=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT)
+            log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
+        except Exception as e:
+            log.error(f"{e}: Failed to trigger Cloud Build job to rebuild site:\n\"{cmd}\"")
 
     def has_errors(self):
         return self.errors_seen

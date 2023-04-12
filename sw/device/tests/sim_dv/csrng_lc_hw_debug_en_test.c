@@ -170,16 +170,16 @@ static void lock_otp_secret0_partition(void) {
                                           kDifOtpCtrlPartitionSecret0,
                                           /*address=*/0x10,
                                           /*value=*/otp_token_l));
-  otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp_ctrl,
                                           kDifOtpCtrlPartitionSecret0,
                                           /*address=*/0x18,
                                           /*value=*/opt_token_h));
-  otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
 
   CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp_ctrl, kDifOtpCtrlPartitionSecret0,
                                        /*digest=*/0));
-  otp_ctrl_testutils_wait_for_dai(&otp_ctrl);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
 }
 
 /**
@@ -262,12 +262,13 @@ static void fw_override_conditioner_write(
  * size of the `output` buffer.
  */
 static void csrng_static_generate_run(uint32_t *output, size_t output_len) {
-  entropy_testutils_stop_all();
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
   // TODO: May need to flush the output buffers before enabling enabling
   // firmware override connected to csrng.
-  entropy_testutils_fw_override_enable(&entropy_src, kEntropyFifoBufferSize,
-                                       /*firmware_override_enable=*/false,
-                                       /*bypass_conditioner=*/false);
+  CHECK_STATUS_OK(
+      entropy_testutils_fw_override_enable(&entropy_src, kEntropyFifoBufferSize,
+                                           /*firmware_override_enable=*/false,
+                                           /*bypass_conditioner=*/false));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
   fw_override_conditioner_write(&entropy_src);
 
@@ -286,13 +287,14 @@ static void csrng_static_generate_run(uint32_t *output, size_t output_len) {
 
 bool test_main(void) {
   peripherals_init();
-  flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                             /*rd_en=*/true,
-                                             /*prog_en=*/true,
-                                             /*erase_en=*/true,
-                                             /*scramble_en=*/false,
-                                             /*ecc_en=*/false,
-                                             /*he_en=*/false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
+                                                 /*rd_en=*/true,
+                                                 /*prog_en=*/true,
+                                                 /*erase_en=*/true,
+                                                 /*scramble_en=*/false,
+                                                 /*ecc_en=*/false,
+                                                 /*he_en=*/false));
 
   dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
   rstmgr_testutils_reason_clear();
@@ -310,10 +312,10 @@ bool test_main(void) {
         (uint32_t)(nv_csrng_output)-TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
     uint32_t expected[kEntropyFifoBufferSize];
     csrng_static_generate_run(expected, ARRAYSIZE(expected));
-    CHECK(flash_ctrl_testutils_write(&flash_ctrl_state, address,
-                                     /*partition_id=*/0, expected,
-                                     kDifFlashCtrlPartitionTypeData,
-                                     ARRAYSIZE(expected)));
+    CHECK_STATUS_OK(flash_ctrl_testutils_write(&flash_ctrl_state, address,
+                                               /*partition_id=*/0, expected,
+                                               kDifFlashCtrlPartitionTypeData,
+                                               ARRAYSIZE(expected)));
     CHECK_ARRAYS_EQ(nv_csrng_output, expected, ARRAYSIZE(expected));
 
     lock_otp_secret0_partition();

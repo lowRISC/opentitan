@@ -1,12 +1,10 @@
----
-title: "Testplanner tool"
----
+# DVSIM Testplanner tool
 
 `testplanner` is a Python based tool for parsing testplans written in Hjson format into a data structure that can be used for:
 * Expanding the testplan inline within the DV document as a table;
 * Annotating the simulation results with testplan entries for a document driven DV execution;
 
-Please see [DV methodology]({{< relref "doc/ug/dv_methodology/index.md#documentation" >}}) for more details on the rationale and motivation for writing and maintaining testplans in a machine-parseable format (`Hjson`).
+Please see [DV methodology](../../../doc/contributing/dv/methodology/README.md#documentation) for more details on the rationale and motivation for writing and maintaining testplans in a machine-parseable format (`Hjson`).
 This document will focus on the anatomy of an Hjson testplan, the list of features supported and some of the ways of using the tool.
 
 ## Hjson testplan
@@ -17,7 +15,7 @@ A testplan consists of a list of planned tests (testpoints) and a list of planne
 
 A testpoint is an entry in the testplan representing a planned test.
 Each testpoint maps one-to-one to a unique feature of the design.
-Additionally, a testpoint for each of the [key areas of focus]({{< relref "doc/ug/dv_methodology/index.md#key-test-focus-areas" >}}) (whichever ones are applicable) is also captured in the testplan.
+Additionally, a testpoint for each of the [key areas of focus](../../../doc/contributing/dv/methodology/README.md#key-test-focus-areas) (whichever ones are applicable) is also captured in the testplan.
 
 The following attributes are used to define each testpoint, at minimum:
 * **name: testpoint name**
@@ -38,11 +36,11 @@ The following attributes are used to define each testpoint, at minimum:
     A multi-line string that briefly describes the intent of the test.
     It is recommended, but not always necessary to add a high level goal, stimulus, and the checking procedure so that the reader gets a clear idea of what and how the said feature is going to be tested.
 
-    Full [Markdown]({{< relref "doc/sg/markdown_usage_style" >}}) syntax is supported when writing the description.
+    Full [Markdown](../../../doc/contributing/style_guides/markdown_usage_style.md) syntax is supported when writing the description.
 
 * **tests: list of written test(s) for this testpoint**
 
-    The testplan is written in the initial work stage of the verification [life-cycle]({{< relref "doc/project/development_stages#hardware-verification-stages" >}}).
+    The testplan is written in the initial work stage of the verification [life-cycle](../../../doc/project_governance/development_stages.md#hardware-verification-stages-v).
     Later, when the DV engineer writes the tests, they may not map one-to-one to a testpoint - it may be possible that a written test satisfactorily addresses multiple testpoints; OR it may also be possible that a testpoint needs to be split into multiple smaller tests.
     To cater to these needs, we provide the ability to set a list of written tests for each testpoint.
     It is used to not only indicate the current progress so far into each verification stage, but also map the simulation results to the testpoints to generate the final report table.
@@ -212,7 +210,7 @@ The following examples provided within `util/dvsim/examples/testplanner` can be 
 * **`common_testplan.hjson`**: shared testplan imported within the DUT testplan
 * **`foo_dv_doc.md`**: DUT testplan imported within the DV document doc in Markdown
 
-In addition, see the [UART DV document]({{< relref "hw/ip/uart/doc/dv" >}}) for a 'production' example of inline expansion of an imported testplan as a table within the DV document.
+In addition, see the [UART DV document](../../../hw/ip/uart/dv/README.md) for a 'production' example of inline expansion of an imported testplan as a table within the DV document.
 The [UART testplan](https://github.com/lowRISC/opentitan/blob/master/hw/ip/uart/data/uart_testplan.hjson) imports some of the shared testplans located at `hw/dv/tools/dvsim/testplans` area.
 
 ### Limitations
@@ -274,23 +272,15 @@ $ ./util/dvsim/testplanner.py \
 ```
 
 ### APIs for external tools
-The `util/build_docs.py` script invokes the testplanner utility functions directly to parse the Hjson testplan and insert an HTML table within the DV document.
+The `util/site/build-docs.sh` script invokes the testplanner utility functions directly to parse the Hjson testplan and insert an HTML table within the DV document.
 This is done by invoking:
-```console
-$ ./util/build_docs.py --preview
-```
-The output for each testplan will be saved into `build/docs-generated`.
-For example the GPIO IP testplan is rendered into a table at `build/docs-generated/hw/ip/gpio/data/gpio_testplan.hjson.testplan`.
-The complete OpenTitan documentation is rendered locally at `https://localhost:1313`.
 
-The following snippet of code can be found in `util/build_docs.py`:
-```python
-from dvsim.Testplan import Testplan
-
-  # hjson_testplan_path: a string pointing to the path to Hjson testplan
-  testplan = Testplan(hjson_testplan_path)
-  text = testplan.get_testplan_table("html")
+```sh
+./util/site/build-docs.sh serve
 ```
+
+The `util/mdbook_testplan.py` preprocessor renders any testplan present the `SUMMARY.md` into the documenation.
+The complete OpenTitan documentation is rendered locally at `https://0.0.0.0:9000`.
 
 ## Future work
 * Allow DUT and its imported testplans to have the same testpoint name as long as they are in separate files.

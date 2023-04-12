@@ -1,6 +1,4 @@
----
-title: "Primitive Component: PRESENT Scrambler"
----
+# Primitive Component: PRESENT Scrambler
 
 # Overview
 
@@ -59,7 +57,7 @@ data_i       | NumPhysRounds |  data_o
 The PRESENT module is fully unrolled and combinational, meaning that it does not have any clock, reset or handshaking inputs.
 The only inputs are the key and the plaintext, and the only output is the ciphertext.
 
-The internal construction follows the the algorithm described in the original [paper](http://www.lightweightcrypto.org/present/present_ches2007.pdf).
+The internal construction follows the algorithm described in the original [paper](http://www.lightweightcrypto.org/present/present_ches2007.pdf).
 The block size is 64bit and the key size can be either 80bit or 128bit, depending on the security requirements.
 In its original formulation, this cipher has 31 rounds comprised of an XOR operation with a round key, followed by the application of an s-box and a permutation layer, as illustrated for the encryption pass below:
 

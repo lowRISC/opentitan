@@ -23,8 +23,9 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*edn1*prim_reg_we_check*", TopEarlgreyAlertIdEdn1FatalAlert},
     '{"*entropy_src*prim_reg_we_check*", TopEarlgreyAlertIdEntropySrcFatalAlert},
     '{"*flash_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdFlashCtrlFatalStdErr},
-    // TODO test u_eflash.u_flash alert TopEarlgreyAlertIdFlashCtrlFatalErr
-    // TODO TopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert.
+    // test u_eflash.u_flash alert TopEarlgreyAlertIdFlashCtrlFatalErr is implemented in the
+    // `chip_sw_flash_host_gnt_err_inj_vseq` sequence.
+    '{"*flash_ctrl*.u_flash.*prim_reg_we_check*", TopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert},
     '{"*gpio*prim_reg_we_check*", TopEarlgreyAlertIdGpioFatalFault},
     '{"*hmac*prim_reg_we_check*", TopEarlgreyAlertIdHmacFatalFault},
     '{"*i2c0*prim_reg_we_check*", TopEarlgreyAlertIdI2c0FatalFault},
@@ -36,9 +37,9 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*lc_ctrl*state_regs*", TopEarlgreyAlertIdLcCtrlFatalStateError},
     '{"*lc_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdLcCtrlFatalBusIntegError},
     '{"*otbn*prim_reg_we_check*", TopEarlgreyAlertIdOtbnFatal},
-    // TODO TopEarlgreyAlertIdOtpCtrlFatalMacroError,
-    // TODO TopEarlgreyAlertIdOtpCtrlFatalCheckError
-    // TODO TopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert.
+    // TopEarlgreyAlertIdOtpCtrlFatalMacroError: done in chip_sw_otp_ctrl_escalation_vseq
+    '{"*otp_ctrl.u_otp.*u_state_regs", TopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert},
+    '{"*otp_ctrl*u_otp_ctrl_dai*", TopEarlgreyAlertIdOtpCtrlFatalCheckError},
     '{"*otp_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdOtpCtrlFatalBusIntegError},
     '{"*pattgen*prim_reg_we_check*", TopEarlgreyAlertIdPattgenFatalFault},
     '{"*pinmux*prim_reg_we_check*", TopEarlgreyAlertIdPinmuxAonFatalFault},

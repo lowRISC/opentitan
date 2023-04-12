@@ -22,6 +22,8 @@ class flash_ctrl_rw_vseq extends flash_ctrl_otf_base_vseq;
           end else begin
             num = ctrl_info_num;
           end
+          // If the partition that selected configured as read-only, skip the program
+          sync_otf_wr_ro_part();
           randcase
             cfg.otf_wr_pct:prog_flash(ctrl, bank, num, fractions);
             cfg.otf_rd_pct:read_flash(ctrl, bank, num, fractions);

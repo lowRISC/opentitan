@@ -132,7 +132,7 @@ void initialize_clkmgr(void) {
 
 bool test_main(void) {
   // Initialize EDN in auto mode.
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   initialize_clkmgr();
 

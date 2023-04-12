@@ -70,7 +70,6 @@ hw/top_englishbreakfast/ip/xbar_main/xbar_main.core
 hw/top_englishbreakfast/ip/xbar_peri/xbar_peri.core
 
 # Rust Cargo build system files.
-Cargo.lock
 sw/host/**/target
 rust-project.json
 
@@ -88,3 +87,9 @@ compile_commands.json
 
 # Clangd index directory.
 .cache/clangd/
+
+# mdbook builds into `./book` directories, let's ignore them
+book
+
+# Hugo Lock
+.hugo_build.lock

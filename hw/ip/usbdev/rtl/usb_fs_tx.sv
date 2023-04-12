@@ -238,7 +238,7 @@ module usb_fs_tx (
 
     // Logic closely coupled to the FSM
     if (pkt_start_i) begin
-      // We need to have a inter-packed delay between
+      // We need to have an inter-packet delay between
       // 2 and 6.5 bit times (see USB 2.0 spec / 7.1.18.1)
       // The latency in the rest of the system is approximately (measured)
       // 3.68 bit-times, so we only introduce 1 bit-time here
@@ -453,19 +453,17 @@ module usb_fs_tx (
 
   // Handle the D+ / D- pin flip on the USB side, and provide both the
   // dp/dn and d/se0 interfaces, for compatibility with multiple driver types.
-  logic usb_d_flipped, usb_se0_flipped, usb_dp_flipped, usb_dn_flipped;
+  logic usb_se0_flipped, usb_dp_flipped, usb_dn_flipped;
 
   always_comb begin
     if (link_reset_i) begin
-      usb_d_flipped = 1'b0 ^ cfg_pinflip_i;
       usb_se0_flipped = 1'b0;
       usb_dp_flipped = 1'b0 ^ cfg_pinflip_i;
       usb_dn_flipped = 1'b1 ^ cfg_pinflip_i;
     end else begin
-      usb_d_flipped = usb_d_d ^ cfg_pinflip_i;
       usb_se0_flipped = usb_se0_d;
-      usb_dp_flipped = (usb_d_d & ~usb_se0_d) ^ cfg_pinflip_i;
-      usb_dn_flipped = (~usb_d_d & ~usb_se0_d) ^ cfg_pinflip_i;
+      usb_dp_flipped = (cfg_pinflip_i ? ~usb_d_d :  usb_d_d) & ~usb_se0_d;
+      usb_dn_flipped = (cfg_pinflip_i ?  usb_d_d : ~usb_d_d) & ~usb_se0_d;
     end
   end
 
@@ -475,7 +473,7 @@ module usb_fs_tx (
   ) u_usb_d_o_flop (
     .clk_i,
     .rst_ni,
-    .d_i(usb_d_flipped),
+    .d_i(usb_dp_flipped),  // Note: single-ended 'D' output mirrors D+
     .q_o(usb_d_o)
   );
 

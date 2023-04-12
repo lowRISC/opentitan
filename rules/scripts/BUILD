@@ -25,6 +25,9 @@ py_library(
     srcs = [
         "bitstreams_workspace.py",
     ],
+    deps = [
+        requirement("jsonschema"),
+    ],
 )
 
 py_test(

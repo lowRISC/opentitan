@@ -7,7 +7,7 @@ use serde_annotate::Annotate;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 
-use crate::app::{self, TransportWrapper};
+use crate::app::{StagedProgressBar, TransportWrapper};
 use crate::bootstrap::{self, BootstrapOptions};
 
 /// Load a program into the chip.
@@ -30,15 +30,8 @@ impl Bootstrap {
 
     pub fn load(&self, transport: &TransportWrapper, file: &Path) -> Result<()> {
         let payload = std::fs::read(file)?;
-        let progress = app::progress_bar(payload.len() as u64);
-        bootstrap::Bootstrap::update_with_progress(
-            transport,
-            &self.options,
-            &payload,
-            |_, chunk| {
-                progress.inc(chunk as u64);
-            },
-        )?;
+        let progress = StagedProgressBar::new();
+        bootstrap::Bootstrap::update_with_progress(transport, &self.options, &payload, &progress)?;
         Ok(())
     }
 }

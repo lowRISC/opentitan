@@ -9,7 +9,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -64,7 +63,7 @@ rom_error_t retention_ram_init_test(void) {
 }
 
 bool test_main(void) {
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
   EXECUTE_TEST(result, retention_ram_init_test);
-  return result == kErrorOk;
+  return status_ok(result);
 }

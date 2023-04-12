@@ -11,7 +11,7 @@ and chip manufacturers.  OpenTitan is administered by [lowRISC
 CIC](https://www.lowrisc.org) as a collaborative project to produce high
 quality, open IP for instantiation as a full-featured product. See the
 [OpenTitan site](https://opentitan.org/) and [OpenTitan
-docs](https://docs.opentitan.org) for more information about the project.
+docs](https://opentitan.org/book) for more information about the project.
 
 ## About this repository
 
@@ -27,8 +27,8 @@ access it [online at docs.opentitan.org](https://docs.opentitan.org/).
 
 ## How to contribute
 
-Have a look at [CONTRIBUTING](https://github.com/lowRISC/opentitan/blob/master/CONTRIBUTING.md) and our [documentation on
-project organization and processes](https://docs.opentitan.org/doc/project/)
+Have a look at [CONTRIBUTING](CONTRIBUTING.md) and our [documentation on
+project organization and processes](./doc/project_governance/README.md)
 for guidelines on how to contribute code to this repository.
 
 ## Licensing

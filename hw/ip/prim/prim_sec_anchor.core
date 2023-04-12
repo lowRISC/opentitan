@@ -10,8 +10,9 @@ filesets:
     files:
         - rtl/prim_sec_anchor_buf.sv
         - rtl/prim_sec_anchor_flop.sv
-
     file_type: systemVerilogSource
+    depend:
+        - lowrisc:prim:assert
 
 targets:
   default:

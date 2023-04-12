@@ -14,12 +14,12 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
@@ -27,7 +27,6 @@
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "keymgr_regs.h"
@@ -105,7 +104,8 @@ static void init_flash(void) {
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Initialize flash secrets.
-  keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret);
+  CHECK_STATUS_OK(
+      keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret));
 }
 
 /** Place kmac into sideload mode for correct keymgr operation */
@@ -138,7 +138,8 @@ static void check_lock_otp_partition(const dif_otp_ctrl_t *otp) {
              ((uint32_t *)&digest)[1]);
     return;
   }
-  otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionSecret2, 0);
+  CHECK_STATUS_OK(
+      otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionSecret2, 0));
 }
 
 /** Key manager configuration steps performed in ROM. */
@@ -191,7 +192,7 @@ rom_error_t keymgr_rom_ext_test(void) {
 }
 
 bool test_main(void) {
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
 
@@ -227,7 +228,7 @@ bool test_main(void) {
 
     EXECUTE_TEST(result, keymgr_rom_test);
     EXECUTE_TEST(result, keymgr_rom_ext_test);
-    return result == kErrorOk;
+    return status_ok(result);
   } else {
     LOG_FATAL("Unexpected reset reason unexpected: %08x", info);
   }

@@ -89,11 +89,12 @@ static void run_test(const dif_hmac_t *hmac, const char *data, size_t len,
                      const uint8_t *key,
                      const dif_hmac_digest_t *expected_digest) {
   test_start(hmac, key);
-  hmac_testutils_push_message(hmac, data, len);
-  hmac_testutils_fifo_empty_polled(hmac);
-  hmac_testutils_check_message_length(hmac, len * 8);
+  CHECK_STATUS_OK(hmac_testutils_push_message(hmac, data, len));
+  CHECK_STATUS_OK(hmac_testutils_fifo_empty_polled(hmac));
+  CHECK_STATUS_OK(hmac_testutils_check_message_length(hmac, len * 8));
   run_hmac(hmac);
-  hmac_testutils_finish_and_check_polled(hmac, expected_digest);
+  CHECK_STATUS_OK(
+      hmac_testutils_finish_and_check_polled(hmac, expected_digest));
 }
 
 bool test_main(void) {

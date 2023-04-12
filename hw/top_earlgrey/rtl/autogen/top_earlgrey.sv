@@ -73,6 +73,8 @@ module top_earlgrey #(
   // parameters for otbn
   parameter bit OtbnStub = 0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
+  parameter bit SecOtbnMuteUrnd = 0,
+  parameter bit SecOtbnSkipUrndReseedAtStart = 0,
   // parameters for keymgr
   parameter bit KeymgrKmacEnMasking = 1,
   // parameters for csrng
@@ -2270,6 +2272,8 @@ module top_earlgrey #(
     .Stub(OtbnStub),
     .RegFile(OtbnRegFile),
     .RndCnstUrndPrngSeed(RndCnstOtbnUrndPrngSeed),
+    .SecMuteUrnd(SecOtbnMuteUrnd),
+    .SecSkipUrndReseedAtStart(SecOtbnSkipUrndReseedAtStart),
     .RndCnstOtbnKey(RndCnstOtbnOtbnKey),
     .RndCnstOtbnNonce(RndCnstOtbnOtbnNonce)
   ) u_otbn (

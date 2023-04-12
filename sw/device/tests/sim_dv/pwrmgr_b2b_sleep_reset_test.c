@@ -91,18 +91,20 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
 
   // First check the flash stored value
-  uint32_t event_idx = flash_ctrl_testutils_counter_get(0);
+  uint32_t event_idx = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &event_idx));
   // Enable flash access
-  flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
 
   // Increment flash counter to know where we are
-  flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
 
   // Read wakeup reason before check
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
@@ -165,7 +167,8 @@ bool test_main(void) {
   LOG_INFO("ready for power down");
   busy_spin_micros(10);
   // timer setup in case wake up comes before entering low power mode
-  aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
+  CHECK_STATUS_OK(
+      aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 
   // Deep sleep.
   pwrmgr_testutils_enable_low_power(

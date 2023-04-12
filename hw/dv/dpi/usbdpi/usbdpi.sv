@@ -45,6 +45,9 @@ module usbdpi #(
   import "DPI-C" function
     byte usbdpi_host_to_device(input chandle ctx, input bit [10:0] d2p);
 
+  import "DPI-C" function
+    void usbdpi_diags(input chandle ctx, output bit [95:0] diags);
+
   chandle ctx;
 
   initial begin
@@ -56,6 +59,143 @@ module usbdpi #(
     usbdpi_close(ctx);
   end
 
+  // USB Packet IDentifier values, for waveform viewing
+  typedef enum bit [7:0] {
+    OUT = 8'hE1,
+    IN = 8'h69,
+    SOF = 8'hA5,
+    SETUP = 8'h2D,
+    DATA0 = 8'hC3,
+    DATA1 = 8'h4B,
+    ACK = 8'hD2,
+    NAK = 8'h5A,
+    STALL = 8'h1E,
+    NYET = 8'h96,
+    PING = 8'hB4
+  } usb_pid_t;
+
+  // Host state
+  // Note: MUST be kept consistent with usbdpi_host_state_t in usbdpi.h
+  typedef enum bit [4:0] {
+    HS_STARTFRAME = 0,
+    HS_WAITACK = 1,
+    HS_SET_DATASTAGE = 2,
+    HS_DS_RXDATA = 3,
+    HS_DS_SENDACK = 4,
+    HS_DONEDADR = 5,
+    HS_REQDATA = 6,
+    HS_WAITDATA = 7,
+    HS_SENDACK = 8,
+    HS_WAIT_PKT = 9,
+    HS_ACKIFDATA = 10,
+    HS_SENDHI = 11,
+    HS_EMPTYDATA = 12,
+    HS_WAITACK2 = 13,
+    HS_STREAMOUT = 14,
+    HS_STREAMIN = 15,
+    HS_NEXTFRAME = 16
+  } usbdpi_host_state_t;
+
+  // Bus state
+  // Note: MUST be kept consistent with usbdpi_bus_state in usbdpi.h
+  typedef enum bit [4:0] {
+    kUsbIdle = 0,
+    kUsbControlSetup,
+    kUsbControlSetupAck,
+    kUsbControlDataOut,
+    kUsbControlDataOutAck,  // 4
+    kUsbControlStatusInToken,
+    kUsbControlStatusInData,
+    kUsbControlStatusInAck,
+
+    kUsbControlDataInToken,  // 8
+    kUsbControlDataInData,
+    kUsbControlDataInAck,
+    kUsbControlStatusOut,
+    kUsbControlStatusOutAck,  // 0xc
+    kUsbIsoToken,
+    kUsbIsoDataIn,
+    kUsbIsoDataOut,
+
+    kUsbBulkOut,  // 0x10
+    kUsbBulkOutAck,
+    kUsbBulkInToken,
+    kUsbBulkInData,
+    kUsbBulkInAck
+  } usbdpi_bus_state_t;
+
+  // USB monitor state
+  // Note: MUST be kept consistent with usbdpi_monitor_state_t in usb_monitor.c
+  typedef enum bit [1:0] {
+    MS_IDLE = 0,
+    MS_GET_PID,
+    MS_GET_BYTES
+  } usb_monitor_state_t;
+
+  // USB driver state
+  // Note: MUST be kept consistent with usbdpi_drv_state_t in usbdpi.h
+  typedef enum bit [3:0] {
+    ST_IDLE = 0,
+    ST_SEND = 1,
+    ST_GET = 2,
+    ST_SYNC = 3,
+    ST_EOP = 4,
+    ST_EOP0 = 5
+  } usbdpi_drv_state_t;
+
+  // Test steps
+  typedef enum bit [6:0] {
+
+    STEP_BUS_RESET = 0,
+    STEP_SET_DEVICE_ADDRESS,
+    STEP_GET_DEVICE_DESCRIPTOR,
+    STEP_GET_CONFIG_DESCRIPTOR,
+    STEP_GET_FULL_CONFIG_DESCRIPTOR,
+    STEP_SET_DEVICE_CONFIG,
+
+    STEP_GET_TEST_CONFIG,
+    STEP_SET_TEST_STATUS,
+
+    // usbdev_test
+    STEP_FIRST_READ,
+    STEP_READ_BAUD,
+    STEP_SECOND_READ,
+    STEP_SET_BAUD,
+    STEP_THIRD_READ,
+    STEP_TEST_ISO1,
+    STEP_TEST_ISO2,
+    STEP_ENDPT_UNIMPL_SETUP,
+    STEP_ENDPT_UNIMPL_OUT,
+    STEP_ENDPT_UNIMPL_IN,
+    STEP_DEVICE_UK_SETUP,
+    STEP_IDLE_START,
+    STEP_IDLE_END = STEP_IDLE_START + 4,
+
+    // usbdev_stream_test
+    STEP_STREAM_SERVICE = 'h20,
+
+    // Disconnect the device and stop
+    STEP_BUS_DISCONNECT = 'h7f
+  } usbdpi_test_step_t;
+
+  // Make usb_monitor diagnostic information viewable in waveforms
+  bit [9:0] c_spare1;
+  usb_monitor_state_t c_mon_state;
+  bit [3:0] c_mon_bits;
+  bit [7:0] c_mon_byte;
+  usb_pid_t c_mon_pid;
+  // Make usbdpi diagnostic information viewable in waveforms
+  usbdpi_test_step_t c_step;
+  usbdpi_bus_state_t c_bus_state;
+  bit [31:0] c_tickbits;
+  bit [10:0] c_frame;
+  usbdpi_host_state_t c_hostSt;
+  usbdpi_drv_state_t c_state;
+  always @(posedge clk_48MHz_i)
+    usbdpi_diags(ctx, {c_spare1, c_mon_state, c_mon_bits, c_mon_byte, c_mon_pid,
+                       c_step, c_bus_state, c_tickbits, c_frame, c_hostSt,
+                       c_state});
+
   logic [10:0] d2p;
   logic [10:0] d2p_r;
   logic       unused_dummy;
@@ -64,7 +204,8 @@ module usbdpi #(
   logic       dp_int, dn_int, d_last;
   logic       flip_detect, pullup_detect, rx_enable;
 
-  // Detect a request to flip pins by the DN resistor being applied
+  // Detect a request to flip pins by the DN resistor being applied;
+  //   it's a full speed device so the pullup resistor is on the D+ signal
   assign flip_detect = pullupdn_d2p;
   assign pullup_detect = pullupdp_d2p || pullupdn_d2p;
   assign rx_enable = rx_enable_d2p;

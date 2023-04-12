@@ -62,9 +62,10 @@ static void entropy_data_flush(dif_entropy_src_t *entropy_src) {
  */
 void test_firmware_override(dif_entropy_src_t *entropy) {
   CHECK_DIF_OK(dif_entropy_src_set_enabled(entropy, kDifToggleDisabled));
-  entropy_testutils_fw_override_enable(entropy, kEntropyFifoBufferSize,
-                                       /*route_to_firmware=*/true,
-                                       /*bypass_conditioner=*/false);
+  CHECK_STATUS_OK(
+      entropy_testutils_fw_override_enable(entropy, kEntropyFifoBufferSize,
+                                           /*route_to_firmware=*/true,
+                                           /*bypass_conditioner=*/false));
   entropy_data_flush(entropy);
 
   // Read data from the observation FIFO and write it back into the

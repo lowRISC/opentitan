@@ -111,18 +111,22 @@ static void rsa_encrypt(dif_otbn_t *otbn, const uint8_t *modulus,
 
   // Write input arguments.
   uint32_t mode = 1;  // mode 1 => encrypt
-  otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode, kOtbnVarRsaMode);
-  otbn_testutils_write_data(otbn, sizeof(uint32_t), &n_limbs,
-                            kOtbnVarRsaNLimbs);
-  otbn_testutils_write_data(otbn, size_bytes, modulus, kOtbnVarRsaModulus);
-  otbn_testutils_write_data(otbn, size_bytes, in, kOtbnVarRsaInOut);
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode,
+                                            kOtbnVarRsaMode));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(uint32_t), &n_limbs,
+                                            kOtbnVarRsaNLimbs));
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, size_bytes, modulus, kOtbnVarRsaModulus));
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, size_bytes, in, kOtbnVarRsaInOut));
 
   // Call OTBN to perform operation, and wait for it to complete.
-  otbn_testutils_execute(otbn);
-  otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
+  CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError));
 
   // Read back results.
-  otbn_testutils_read_data(otbn, size_bytes, kOtbnVarRsaInOut, out);
+  CHECK_STATUS_OK(
+      otbn_testutils_read_data(otbn, size_bytes, kOtbnVarRsaInOut, out));
 }
 
 /**
@@ -149,18 +153,24 @@ static void rsa_decrypt(dif_otbn_t *otbn, const uint8_t *modulus,
 
   // Write input arguments.
   uint32_t mode = 2;  // mode 2 => decrypt
-  otbn_testutils_write_data(otbn, sizeof(mode), &mode, kOtbnVarRsaMode);
-  otbn_testutils_write_data(otbn, sizeof(n_limbs), &n_limbs, kOtbnVarRsaNLimbs);
-  otbn_testutils_write_data(otbn, size_bytes, modulus, kOtbnVarRsaModulus);
-  otbn_testutils_write_data(otbn, size_bytes, private_exponent, kOtbnVarRsaExp);
-  otbn_testutils_write_data(otbn, size_bytes, in, kOtbnVarRsaInOut);
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, sizeof(mode), &mode, kOtbnVarRsaMode));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(n_limbs), &n_limbs,
+                                            kOtbnVarRsaNLimbs));
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, size_bytes, modulus, kOtbnVarRsaModulus));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, size_bytes, private_exponent,
+                                            kOtbnVarRsaExp));
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, size_bytes, in, kOtbnVarRsaInOut));
 
   // Call OTBN to perform operation
-  otbn_testutils_execute(otbn);
-  otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
+  CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError));
 
   // Read back results.
-  otbn_testutils_read_data(otbn, size_bytes, kOtbnVarRsaInOut, out);
+  CHECK_STATUS_OK(
+      otbn_testutils_read_data(otbn, size_bytes, kOtbnVarRsaInOut, out));
 }
 
 /**
@@ -235,7 +245,7 @@ static void rsa_roundtrip(uint32_t size_bytes, const uint8_t *modulus,
   profile_start();
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
-  otbn_testutils_load_app(&otbn, kOtbnAppRsa);
+  CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppRsa));
   profile_end("Initialization");
 
   // Encrypt
@@ -682,7 +692,7 @@ static void test_rsa4096_roundtrip(void) {
 }
 
 bool test_main(void) {
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   test_rsa512_roundtrip();
   test_rsa1024_roundtrip();

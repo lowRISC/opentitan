@@ -92,6 +92,21 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     solve rand_op.addr before rand_op.otf_addr;
     solve rand_op.addr before rand_op.num_words;
 
+    if (cfg.seq_cfg.op_readonly_on_info_partition) {
+      if (cfg.seq_cfg.avoid_ro_partitions) {
+        rand_op.partition != FlashPartInfo;
+      } else {
+        rand_op.partition == FlashPartInfo -> rand_op.op == flash_ctrl_pkg::FlashOpRead;
+      }
+    }
+    if (cfg.seq_cfg.op_readonly_on_info1_partition) {
+      if (cfg.seq_cfg.avoid_ro_partitions) {
+        rand_op.partition != FlashPartInfo1;
+      } else {
+        rand_op.partition == FlashPartInfo1 -> rand_op.op == flash_ctrl_pkg::FlashOpRead;
+      }
+    }
+
     rand_op.partition dist { FlashPartData := 1, [FlashPartInfo:FlashPartInfo2] :/ 1};
     rand_op.addr[TL_AW-1:BusAddrByteW] == 'h0;
     rand_op.addr[1:0] == 'h0;
@@ -113,6 +128,24 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     allow_spec_info_acc dist { 3'h7 := 1, 3'h0 := 1, [1:6] :/ 2};
   }
 
+  // If the partition that selected configured as read-only, set otf_wr_pct to 0 to make sure to
+  // not program those partitions.
+  int otf_wr_pct_temp, otf_bwr_pct_temp;
+  function void sync_otf_wr_ro_part();
+    if ((cfg.seq_cfg.op_readonly_on_info_partition &&
+         rand_op.partition == FlashPartInfo) ||
+        (cfg.seq_cfg.op_readonly_on_info1_partition &&
+         rand_op.partition == FlashPartInfo1)) begin
+      otf_wr_pct_temp = cfg.otf_wr_pct;
+      otf_bwr_pct_temp = cfg.otf_bwr_pct;
+      cfg.otf_wr_pct = 0;
+      cfg.otf_bwr_pct = 0;
+    end else begin
+      cfg.otf_wr_pct = otf_wr_pct_temp;
+      cfg.otf_bwr_pct = otf_bwr_pct_temp;
+    end
+  endfunction : sync_otf_wr_ro_part
+
   function void post_randomize();
     super.post_randomize();
     foreach (rand_regions[i]) begin
@@ -130,7 +163,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     // overwrite secret_partition cfg with hw_cfg
     rand_info[0][0][1] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
     rand_info[0][0][2] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
-  endfunction // post_randomize
+  endfunction : post_randomize
 
   virtual task pre_start();
     bit csr_test_mode = 0;
@@ -224,7 +257,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         flash_ctrl_intr_enable(6'h3f);
       end
     end
-  endtask
+    otf_wr_pct_temp     = cfg.otf_wr_pct;
+    otf_bwr_pct_temp    = cfg.otf_bwr_pct;
+  endtask : pre_start
 
   // On the fly scoreboard mode
   // This will disable reference memory check in the end of the test
@@ -1187,44 +1222,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
      if (!in_err) wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
    endtask
 
-  function void update_otf_mem_read_zone(flash_dv_part_e part, int bank, addr_t addr);
-    flash_otf_item item;
-    int page;
-     bit [BankAddrW-1:0] mem_addr;
-
-    `uvm_create_obj(flash_otf_item, item)
-    item.dq.push_back($urandom());
-    item.dq.push_back($urandom());
-    if (part == FlashPartData) begin
-      addr[OTFBankId] = bank;
-      page = cfg.addr2page(addr);
-      item.region = cfg.get_region(page, 0);
-      // back to per bank addr
-      addr[OTFBankId] = 0;
-    end else begin
-      page = cfg.addr2page(addr);
-      item.region = cfg.get_region_from_info(cfg.mp_info[bank][part>>1][page]);
-    end
-    item.page = page;
-    item.scramble(otp_addr_key, otp_data_key, addr, 0);
-    cfg.mem_bkdr_util_h[part][bank].write(addr, item.fq[0]);
-    // address should be mem_addr
-     mem_addr = addr >> 3;
-    if (part == FlashPartData) cfg.otf_scb_h.data_mem[bank][mem_addr] = item.fq[0];
-    else cfg.otf_scb_h.info_mem[bank][part>>1][mem_addr] = item.fq[0];
-  endfunction // update_otf_mem_read_zone
-
-  function void load_otf_mem_page(flash_dv_part_e part,
-                                  int bank,
-                                  int page);
-    addr_t addr;
-    addr[OTFBankId-1:11] = page;
-    for (int i = 0; i < 256; i++) begin
-      update_otf_mem_read_zone(part, bank, addr);
-      addr += 8;
-    end
-  endfunction // load_otf_mem_page
-
   // Update rd / dr tgt of the memory with their page profile
   function void flash_otf_mem_read_zone_init();
     // 8byte aligned
@@ -1246,7 +1243,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
           // data partition 2 banks
           for (int i = 0; i < 2; i++) begin
             for (addr_t addr = st_addr; addr <= ed_addr; addr += 8) begin
-              update_otf_mem_read_zone(part, i, addr);
+              cfg.update_otf_mem_read_zone(part, i, addr);
             end
             `uvm_info("flash_otf_init",
                       $sformatf("part:%s pre:%s bank:%0d st:%x ed:%x",
@@ -1263,7 +1260,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
             ed_addr = st_addr + 511; // 0x1FF
             for (int i = 0; i < 2; i++) begin
               for (addr_t addr = st_addr; addr <= ed_addr; addr += 8) begin
-                update_otf_mem_read_zone(part, i, addr);
+                cfg.update_otf_mem_read_zone(part, i, addr);
               end
             end
             `uvm_info("flash_otf_init",

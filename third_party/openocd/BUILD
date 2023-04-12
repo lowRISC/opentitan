@@ -51,6 +51,7 @@ configure_make(
         "--enable-remote-bitbang",
     ],
     copts = ["-Wno-error=unused-variable"],
+    env = {"CCACHE": "none"},
     lib_source = "@openocd//:all_srcs",
     out_binaries = ["openocd"],
 )

@@ -9,7 +9,6 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Randomization weights in percentages, and other related settings.
 
   // Maximun number of times the vseq is randomized and rerun.
-  // TODO: This should move to `dv_base_seq_cfg`.
   uint max_num_trans;
 
   // Memory protection configuration.
@@ -27,7 +26,6 @@ class flash_ctrl_seq_cfg extends uvm_object;
   flash_ctrl_pkg::flash_op_e flash_only_op;
 
   // Weights to enable read / program and erase for each mem region.
-  // TODO: Should these be per region?
   uint mp_region_en_pc;
   uint mp_region_read_en_pc;
   uint mp_region_program_en_pc;
@@ -69,6 +67,8 @@ class flash_ctrl_seq_cfg extends uvm_object;
   uint op_on_info1_partition_pc;  // Choose info1 partition.
   uint op_on_info2_partition_pc;  // Choose info2 partition.
 
+  bit avoid_ro_partitions; // Avoid partitions defined as read-only.
+
   bit op_readonly_on_info_partition;   // Make info  partition read-only.
   bit op_readonly_on_info1_partition;  // Make info1 partition read-only.
   bit op_readonly_on_info2_partition;  // Make info2 partition read-only.
@@ -100,14 +100,36 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Timeout for erase transaction
   uint erase_timeout_ns;
 
+  // Expected time for the erase-suspend operation
+  uint erase_suspend_expected_time_ns;
+
   // Timeout for read transaction
   uint read_timeout_ns;
+
+  // Timeout for LC state transition
+  uint state_wait_timeout_ns;
 
   // Enable/Disable the Secret Seeds and Keys during Initialisation
   bit en_init_keys_seeds;
 
+  // States whether to wait for the flash_init to finish before starting the actual sequence.
+  bit wait_init_done;
+
   // Enable/Disable the Random Flash Inititlisation After Reset
   bit disable_flash_init;
+
+  // Path to flash wrapper hierarchy.
+  string flash_path_str;
+
+  // NOTE: Make sure to keep
+  // cfg.flash_ctrl_vif.rst_to_pd_time_ns < reset_width_clks_lo * clk_period_ns.
+  // This will make sure that the power-down assertion will happen before reset deassertion.
+
+  // Low limit of reset assertion time in clock cycles (from assertion to deassertion).
+  uint reset_width_clks_lo;
+
+  // High limit of reset assertion time in clock cycles (from assertion to deassertion).
+  uint reset_width_clks_hi;
 
   `uvm_object_new
 
@@ -181,6 +203,8 @@ class flash_ctrl_seq_cfg extends uvm_object;
     // info1 partition will be read-only by default
     op_readonly_on_info1_partition = 1;
 
+    avoid_ro_partitions = 0;
+
     op_erase_type_bank_pc = 20;
     op_prog_type_repair_pc = 10;
     op_max_words = 512;
@@ -196,15 +220,33 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
     check_mem_post_tran = 1'b1;
 
-    prog_timeout_ns = 10_000_000;  // 10ms
+    prog_timeout_ns                     = 10_000_000;   // 10ms
 
-    read_timeout_ns = 10_000_000;  // 10ms
+    read_timeout_ns                     = 100_000;      // 100us
 
-    erase_timeout_ns = 120_000_000;  // 120ms
+    erase_timeout_ns                    = 120_000_000;  // 120ms
+
+    erase_suspend_expected_time_ns      = 50_000;       // 50us
+
+    state_wait_timeout_ns               = 500_000;      // 500us
 
     en_init_keys_seeds = 1'b0;  // Off
 
+    // By default, wait for flash to finish initializing process before sending transactions
+    //  requests.
+    wait_init_done = 1'b1;
+
     disable_flash_init = 1'b0;  // Off
+
+    flash_path_str = "tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic";
+
+    // NOTE: Make sure to keep
+    // cfg.flash_ctrl_vif.rst_to_pd_time_ns < reset_width_clks_lo * min clock period in ns.
+    // This will make sure that the power-down assertion will happen before reset deassertion.
+
+    reset_width_clks_lo = 50;
+
+    reset_width_clks_hi = 100;
 
     set_partition_pc();
 

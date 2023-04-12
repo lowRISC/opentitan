@@ -161,7 +161,9 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/i2c/data:i2c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:i2c",
+        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/testing/test_framework:check",
     ],
@@ -353,7 +355,30 @@ cc_library(
     hdrs = ["spi_device_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//sw/device/lib/base:status",
         "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/testing/json:spi_passthru",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
+    name = "spi_flash_testutils",
+    srcs = [
+        "spi_flash_emulator.c",
+        "spi_flash_testutils.c",
+    ],
+    hdrs = [
+        "spi_flash_emulator.h",
+        "spi_flash_testutils.h",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":spi_device_testutils",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
@@ -367,6 +392,7 @@ cc_library(
     hdrs = [
         "usb_testutils.h",
         "usb_testutils_controlep.h",
+        "usb_testutils_diags.h",
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [

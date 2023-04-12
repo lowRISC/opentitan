@@ -18,6 +18,7 @@ load(
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
 )
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 
 """Rules to build OpenTitan for the RISC-V target"""
 
@@ -33,12 +34,12 @@ _targets_compatible_with = {
 
 # This constant holds a dictionary of per-device dependencies which are used to
 # generate slightly different binaries for each hardware target, including two
-# simulation platforms (DV and Verilator), and two FPGA platforms (NexysVideo
+# simulation platforms (DV and Verilator), and two FPGA platforms (CW305
 # and CW310).
 PER_DEVICE_DEPS = {
     "sim_verilator": ["@//sw/device/lib/arch:sim_verilator"],
     "sim_dv": ["@//sw/device/lib/arch:sim_dv"],
-    "fpga_nexysvideo": ["@//sw/device/lib/arch:fpga_nexysvideo"],
+    "fpga_cw305": ["@//sw/device/lib/arch:fpga_cw305"],
     "fpga_cw310": ["@//sw/device/lib/arch:fpga_cw310"],
 }
 
@@ -48,6 +49,8 @@ DEFAULT_SIGNING_KEYS = {
     "fake_dev_key_0": "@//sw/device/silicon_creator/rom/keys/fake:dev_private_key_0",
     "fake_prod_key_0": "@//sw/device/silicon_creator/rom/keys/fake:prod_private_key_0",
     "unauthorized_0": "@//sw/device/silicon_creator/rom/keys:unauthorized_private_key_0",
+    "fake_rom_ext_test_key_0": "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0",
+    "fake_rom_ext_dev_key_0": "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_dev_private_key_0",
 }
 
 def _obj_transform_impl(ctx):
@@ -438,22 +441,39 @@ bin_to_vmem = rv_rule(
 )
 
 def _scramble_flash_vmem_impl(ctx):
+    # Declare outputs.
     outputs = []
     scrambled_vmem = ctx.actions.declare_file("{}.scr.vmem".format(
         # Remove ".vmem" from file basename.
         ctx.file.vmem.basename.replace("." + ctx.file.vmem.extension, ""),
     ))
     outputs.append(scrambled_vmem)
+
+    # Build arguments / inputs to `gen-flash-img.py` script.
+    arguments = [
+        "--in-flash-vmem",
+        ctx.file.vmem.path,
+        "--out-flash-vmem",
+        scrambled_vmem.path,
+    ]
+    inputs = [
+        ctx.file.vmem,
+        ctx.executable._tool,
+    ]
+    if ctx.file.otp:
+        arguments.extend(["--in-otp-vmem", ctx.file.otp.path])
+        inputs.append(ctx.file.otp)
+        if ctx.attr.otp_data_perm:
+            arguments.extend([
+                "--otp-data-perm",
+                ctx.attr.otp_data_perm[BuildSettingInfo].value,
+            ])
+
+    # Run the action script.
     ctx.actions.run(
-        outputs = [scrambled_vmem],
-        inputs = [
-            ctx.file.vmem,
-            ctx.executable._tool,
-        ],
-        arguments = [
-            ctx.file.vmem.path,
-            scrambled_vmem.path,
-        ],
+        outputs = outputs,
+        inputs = inputs,
+        arguments = arguments,
         executable = ctx.executable._tool,
     )
     return [DefaultInfo(
@@ -464,7 +484,12 @@ def _scramble_flash_vmem_impl(ctx):
 scramble_flash_vmem = rv_rule(
     implementation = _scramble_flash_vmem_impl,
     attrs = {
+        "otp": attr.label(allow_single_file = True),
         "vmem": attr.label(allow_single_file = True),
+        "otp_data_perm": attr.label(
+            default = "//hw/ip/otp_ctrl/data:data_perm",
+            doc = "Option to indicate OTP VMEM file bit layout.",
+        ),
         "_tool": attr.label(
             default = "@//util/design:gen-flash-img",
             executable = True,
@@ -572,7 +597,7 @@ def opentitan_binary(
         name,
         platform = OPENTITAN_PLATFORM,
         extract_sw_logs_db = False,
-        testonly = True,
+        testonly = False,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts.
 
@@ -695,7 +720,7 @@ def opentitan_rom_binary(
         name,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
-        testonly = True,
+        testonly = False,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for ROM.
 
@@ -805,7 +830,7 @@ def opentitan_multislot_flash_binary(
         image_size = 0,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
-        testonly = True):
+        testonly = False):
     """A helper macro for generating multislot OpenTitan binary flash images.
 
     This macro is mostly a wrapper around the `assemble_flash_image` rule, that
@@ -908,7 +933,8 @@ def opentitan_flash_binary(
         platform = OPENTITAN_PLATFORM,
         signing_keys = DEFAULT_SIGNING_KEYS,
         signed = True,
-        testonly = True,
+        sim_otp = None,
+        testonly = False,
         manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for flash.
@@ -924,6 +950,8 @@ def opentitan_flash_binary(
       @param platform: The target platform for the artifacts.
       @param signing_keys: The signing keys for to sign each BIN file with.
       @param signed: Whether or not to emit signed binary/VMEM files.
+      @param sim_otp: OTP image that contains flash scrambling keys / enablement flag
+                      (only relevant for VMEM files built for sim targets).
       @param manifest: Partially populated manifest to set boot stage/slot configs.
       @param **kwargs: Arguments to forward to `opentitan_binary`.
     Emits rules:
@@ -942,6 +970,7 @@ def opentitan_flash_binary(
     """
     deps = kwargs.pop("deps", [])
     all_targets = []
+    binaries = []
     for device in devices:
         if device not in PER_DEVICE_DEPS:
             fail("invalid device; device must be in {}".format(PER_DEVICE_DEPS.keys()))
@@ -966,6 +995,7 @@ def opentitan_flash_binary(
             **kwargs
         ))
         bin_name = "{}_{}".format(devname, "bin")
+        binaries.append(":" + bin_name)
 
         # Sign BIN (if required) and generate scrambled VMEM images.
         if signed:
@@ -1000,7 +1030,7 @@ def opentitan_flash_binary(
                         word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
                     )
 
-                    # Scramble signed VMEM64.
+                    # Scramble / compute ECC for signed VMEM64.
                     scr_signed_vmem_name = "{}_scr_vmem64_signed_{}".format(
                         devname,
                         key_name,
@@ -1008,6 +1038,7 @@ def opentitan_flash_binary(
                     dev_targets.append(":" + scr_signed_vmem_name)
                     scramble_flash_vmem(
                         name = scr_signed_vmem_name,
+                        otp = sim_otp,
                         vmem = signed_vmem_name,
                         platform = platform,
                         testonly = testonly,
@@ -1026,11 +1057,12 @@ def opentitan_flash_binary(
                 word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
             )
 
-            # Scramble VMEM64.
+            # Scramble / compute ECC for VMEM64.
             scr_vmem_name = "{}_scr_vmem64".format(devname)
             dev_targets.append(":" + scr_vmem_name)
             scramble_flash_vmem(
                 name = scr_vmem_name,
+                otp = sim_otp,
                 vmem = vmem_name,
                 platform = platform,
                 testonly = testonly,
@@ -1044,10 +1076,17 @@ def opentitan_flash_binary(
         )
         all_targets.extend(dev_targets)
 
-    # Create a filegroup with just all targets from all devices.
+    # Create a filegroup with all targets from all devices.
     native.filegroup(
         name = name,
         srcs = all_targets,
+        testonly = testonly,
+    )
+
+    # Create a filegroup with all binary targets.
+    native.filegroup(
+        name = name + "_bin",
+        srcs = binaries,
         testonly = testonly,
     )
 
@@ -1056,7 +1095,7 @@ def opentitan_ram_binary(
         archive_symbol_prefix,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
-        testonly = True,
+        testonly = False,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for RAM.
 

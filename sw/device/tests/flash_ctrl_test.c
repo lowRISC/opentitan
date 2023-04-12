@@ -68,17 +68,17 @@ static void test_basic_io(void) {
 
   // Test erasing flash data partition; this should turn the whole bank to all
   // ones.
-  CHECK(flash_ctrl_testutils_erase_page(&flash, flash_bank_1_addr,
-                                        /*partition_id=*/0,
-                                        kDifFlashCtrlPartitionTypeData));
+  CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
+      &flash, flash_bank_1_addr,
+      /*partition_id=*/0, kDifFlashCtrlPartitionTypeData));
   for (int i = 0; i < FLASH_UINT32_WORDS_PER_PAGE; ++i) {
     CHECK_EQZ(~mmio_region_read32(flash_bank_1, i * sizeof(uint32_t)));
   }
 
   // Erasing flash info partition 0; this should turn one page to all ones.
-  CHECK(flash_ctrl_testutils_erase_page(&flash, flash_bank_1_addr,
-                                        /*partition_id=*/0,
-                                        kDifFlashCtrlPartitionTypeInfo));
+  CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
+      &flash, flash_bank_1_addr,
+      /*partition_id=*/0, kDifFlashCtrlPartitionTypeInfo));
 
   // Prepare an entire page of non-trivial data to program into flash.
   uint32_t input_page[FLASH_UINT32_WORDS_PER_PAGE];
@@ -96,12 +96,13 @@ static void test_basic_io(void) {
 
   // Attempt to live-program an entire page, where the overall payload is much
   // larger than the internal flash FIFO.
-  CHECK(flash_ctrl_testutils_erase_and_write_page(
+  CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
       &flash, flash_bank_1_addr, /*partition_id=*/0, input_page,
       kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
-  CHECK(flash_ctrl_testutils_read(&flash, flash_bank_1_addr, /*partition_id=*/0,
-                                  output_page, kDifFlashCtrlPartitionTypeData,
-                                  FLASH_UINT32_WORDS_PER_PAGE, /*delay=*/0));
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_read(&flash, flash_bank_1_addr, /*partition_id=*/0,
+                                output_page, kDifFlashCtrlPartitionTypeData,
+                                FLASH_UINT32_WORDS_PER_PAGE, /*delay=*/0));
   CHECK_ARRAYS_EQ(output_page, input_page, FLASH_UINT32_WORDS_PER_PAGE);
 
   // Check from host side also.
@@ -111,38 +112,39 @@ static void test_basic_io(void) {
   CHECK_ARRAYS_EQ(output_page, input_page, FLASH_UINT32_WORDS_PER_PAGE);
 
   // Similar check for info page.
-  CHECK(flash_ctrl_testutils_erase_and_write_page(
+  CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
       &flash, flash_bank_1_addr, /*partition_id=*/0, input_page,
       kDifFlashCtrlPartitionTypeInfo, FLASH_UINT32_WORDS_PER_PAGE));
-  CHECK(flash_ctrl_testutils_read(&flash, flash_bank_1_addr, /*partition_id=*/0,
-                                  output_page, kDifFlashCtrlPartitionTypeInfo,
-                                  FLASH_UINT32_WORDS_PER_PAGE, /*delay=*/0));
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_read(&flash, flash_bank_1_addr, /*partition_id=*/0,
+                                output_page, kDifFlashCtrlPartitionTypeInfo,
+                                FLASH_UINT32_WORDS_PER_PAGE, /*delay=*/0));
   CHECK_ARRAYS_EQ(output_page, input_page, FLASH_UINT32_WORDS_PER_PAGE);
 
   // Set up default access for data partitions.
-  flash_ctrl_testutils_default_region_access(
+  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
       &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
-      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false);
+      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
 
   // Perform similar test on the last page of the first bank.
   ptrdiff_t flash_bank_0_last_page_addr = flash_bank_1_addr - FLASH_PAGE_SZ;
   mmio_region_t flash_bank_0_last_page = mmio_region_from_addr(
       TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + flash_bank_0_last_page_addr);
-  CHECK(flash_ctrl_testutils_erase_page(&flash, flash_bank_0_last_page_addr,
-                                        /*partition_id=*/0,
-                                        kDifFlashCtrlPartitionTypeData));
+  CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
+      &flash, flash_bank_0_last_page_addr,
+      /*partition_id=*/0, kDifFlashCtrlPartitionTypeData));
   for (int i = 0; i < FLASH_UINT32_WORDS_PER_PAGE; ++i) {
     CHECK_EQZ(
         ~mmio_region_read32(flash_bank_0_last_page, i * sizeof(uint32_t)));
   }
 
-  CHECK(flash_ctrl_testutils_write(
+  CHECK_STATUS_OK(flash_ctrl_testutils_write(
       &flash, flash_bank_0_last_page_addr, /*partition_id=*/0, input_page,
       kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
-  CHECK(flash_ctrl_testutils_read(&flash, flash_bank_0_last_page_addr,
-                                  /*partition_id=*/0, output_page,
-                                  kDifFlashCtrlPartitionTypeData,
-                                  FLASH_UINT32_WORDS_PER_PAGE, /*delay=*/0));
+  CHECK_STATUS_OK(flash_ctrl_testutils_read(
+      &flash, flash_bank_0_last_page_addr,
+      /*partition_id=*/0, output_page, kDifFlashCtrlPartitionTypeData,
+      FLASH_UINT32_WORDS_PER_PAGE, /*delay=*/0));
 
   CHECK_ARRAYS_EQ(output_page, input_page, FLASH_UINT32_WORDS_PER_PAGE);
 }
@@ -153,9 +155,9 @@ static void test_memory_protection(void) {
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Set up default access for data partitions.
-  flash_ctrl_testutils_default_region_access(
+  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
       &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
-      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false);
+      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
 
   // A memory protection region representing the first page of the second bank.
   dif_flash_ctrl_region_properties_t protected_properties = {
@@ -180,17 +182,17 @@ static void test_memory_protection(void) {
   uintptr_t bad_region_start = ok_region_end;
 
   // Erase good and bad regions.
-  CHECK(flash_ctrl_testutils_erase_page(&flash, ok_region_start,
-                                        /*partition_id=*/0,
-                                        kDifFlashCtrlPartitionTypeData));
-  CHECK(flash_ctrl_testutils_erase_page(&flash, bad_region_start,
-                                        /*partition_id=*/0,
-                                        kDifFlashCtrlPartitionTypeData));
+  CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
+      &flash, ok_region_start,
+      /*partition_id=*/0, kDifFlashCtrlPartitionTypeData));
+  CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
+      &flash, bad_region_start,
+      /*partition_id=*/0, kDifFlashCtrlPartitionTypeData));
 
   // Turn off flash access by default.
-  flash_ctrl_testutils_default_region_access(
+  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
       &flash, /*rd_en=*/false, /*prog_en=*/false, /*erase_en=*/false,
-      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false);
+      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
 
   // Enable protected region for access.
   CHECK_DIF_OK(
@@ -208,9 +210,9 @@ static void test_memory_protection(void) {
   }
 
   // Perform a partial write.
-  CHECK(!flash_ctrl_testutils_write(
+  CHECK(status_err(flash_ctrl_testutils_write(
       &flash, region_boundary_start, /*partition_id=*/0, words,
-      kDifFlashCtrlPartitionTypeData, ARRAYSIZE(words)));
+      kDifFlashCtrlPartitionTypeData, ARRAYSIZE(words))));
   // Words in the good region should still match, while words in the bad region
   // should be all-ones, since we erased.
   for (int i = 0; i < ARRAYSIZE(words); ++i) {
@@ -223,14 +225,14 @@ static void test_memory_protection(void) {
   }
 
   // Attempt to erase bad page, which should fail.
-  CHECK(!flash_ctrl_testutils_erase_page(&flash, bad_region_start,
-                                         /*partition_id=*/0,
-                                         kDifFlashCtrlPartitionTypeData));
+  CHECK(status_err(flash_ctrl_testutils_erase_page(
+      &flash, bad_region_start,
+      /*partition_id=*/0, kDifFlashCtrlPartitionTypeData)));
 
   // Attempt to erase the good page, which should succeed.
-  CHECK(flash_ctrl_testutils_erase_page(&flash, ok_region_start,
-                                        /*partition_id=*/0,
-                                        kDifFlashCtrlPartitionTypeData));
+  CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
+      &flash, ok_region_start,
+      /*partition_id=*/0, kDifFlashCtrlPartitionTypeData));
   for (int i = 0; i < FLASH_UINT32_WORDS_PER_PAGE; i++) {
     CHECK_EQZ(~mmio_region_read32(ok_region, i * sizeof(uint32_t)));
   }
@@ -242,7 +244,7 @@ bool test_main(void) {
   flash_info = dif_flash_ctrl_get_device_info();
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  flash_ctrl_testutils_wait_for_init(&flash);
+  CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash));
 
   LOG_INFO("flash test!");
 

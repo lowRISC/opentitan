@@ -76,63 +76,106 @@ class sysrst_ctrl_combo_detect_action_obj extends uvm_object;
     bit key1_in_sel,
     bit key2_in_sel,
     bit pwrb_in_sel,
-    bit ac_present_sel
+    bit ac_present_sel,
+    bit precondition_key0_in_sel,
+    bit precondition_key1_in_sel,
+    bit precondition_key2_in_sel,
+    bit precondition_pwrb_in_sel,
+    bit precondition_ac_present_sel
   );
     option.per_instance = 1;
     option.name = $sformatf("sysrst_ctrl_combo_detect_action_cg_%0d", index);
 
-    cp_bat_disable: coverpoint bat_disable;
-    cp_interrupt:   coverpoint interrupt;
-    cp_ec_rst:      coverpoint ec_rst;
-    cp_rst_req:     coverpoint rst_req;
-    cp_key0_in_sel:   coverpoint key0_in_sel;
-    cp_key1_in_sel:   coverpoint key1_in_sel;
-    cp_key2_in_sel:   coverpoint key2_in_sel;
-    cp_pwrb_in_sel:   coverpoint pwrb_in_sel;
-    cp_ac_present_sel:coverpoint ac_present_sel;
-    cross_bat_disable_combo_sel: cross cp_bat_disable, cp_key0_in_sel, cp_key1_in_sel,
-         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel {
-         illegal_bins invalid_bat_disable = binsof(cp_key0_in_sel) intersect {0} &&
-                                binsof(cp_key1_in_sel) intersect {0} &&
-                                binsof(cp_key2_in_sel) intersect {0} &&
-                                binsof(cp_pwrb_in_sel) intersect {0} &&
-                                binsof(cp_ac_present_sel) intersect {0} &&
-                                binsof(cp_bat_disable) intersect {1};
-         }
-    cross_interrupt_combo_sel: cross cp_interrupt, cp_key0_in_sel, cp_key1_in_sel,
-         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel {
-         illegal_bins invalid_interrupt = binsof(cp_key0_in_sel) intersect {0} &&
-                                binsof(cp_key1_in_sel) intersect {0} &&
-                                binsof(cp_key2_in_sel) intersect {0} &&
-                                binsof(cp_pwrb_in_sel) intersect {0} &&
-                                binsof(cp_ac_present_sel) intersect {0} &&
-                                binsof(cp_interrupt) intersect {1};
-         }
-    cross_ec_rst_combo_sel: cross cp_ec_rst, cp_key0_in_sel, cp_key1_in_sel,
-         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel {
-         illegal_bins invalid_ec_rst = binsof(cp_key0_in_sel) intersect {0} &&
-                                binsof(cp_key1_in_sel) intersect {0} &&
-                                binsof(cp_key2_in_sel) intersect {0} &&
-                                binsof(cp_pwrb_in_sel) intersect {0} &&
-                                binsof(cp_ac_present_sel) intersect {0} &&
-                                binsof(cp_ec_rst) intersect {1};
-         }
-    cross_rst_req_combo_sel: cross cp_rst_req, cp_key0_in_sel, cp_key1_in_sel,
-         cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel {
-         illegal_bins invalid_rst_req = binsof(cp_key0_in_sel) intersect {0} &&
-                                binsof(cp_key1_in_sel) intersect {0} &&
-                                binsof(cp_key2_in_sel) intersect {0} &&
-                                binsof(cp_pwrb_in_sel) intersect {0} &&
-                                binsof(cp_ac_present_sel) intersect {0} &&
-                                binsof(cp_rst_req) intersect {1};
-         }
-  endgroup // sysrst_ctrl_combo_detect_action_cg
+    cp_bat_disable:    coverpoint bat_disable;
+    cp_interrupt:      coverpoint interrupt;
+    cp_ec_rst:         coverpoint ec_rst;
+    cp_rst_req:        coverpoint rst_req;
+    cp_key0_in_sel:    coverpoint key0_in_sel;
+    cp_key1_in_sel:    coverpoint key1_in_sel;
+    cp_key2_in_sel:    coverpoint key2_in_sel;
+    cp_pwrb_in_sel:    coverpoint pwrb_in_sel;
+    cp_ac_present_sel: coverpoint ac_present_sel;
+    cp_precondition_key0_in_sel:    coverpoint precondition_key0_in_sel;
+    cp_precondition_key1_in_sel:    coverpoint precondition_key1_in_sel;
+    cp_precondition_key2_in_sel:    coverpoint precondition_key2_in_sel;
+    cp_precondition_pwrb_in_sel:    coverpoint precondition_pwrb_in_sel;
+    cp_precondition_ac_present_sel: coverpoint precondition_ac_present_sel;
+  endgroup  // sysrst_ctrl_combo_detect_action_cg
 
   function new(string name = "sysrst_ctrl_combo_detect_action_obj");
     super.new(name);
     sysrst_ctrl_combo_detect_action_cg = new(name);
   endfunction : new
 endclass : sysrst_ctrl_combo_detect_action_obj
+
+////////////////////////////////////////////////
+// Combo detect key combinations cover points //
+// Because there are many key combinations    //
+// and each combo block is the same we can    //
+// aggregate these statistics.                //
+////////////////////////////////////////////////
+class sysrst_ctrl_combo_key_combinations_obj extends uvm_object;
+  `uvm_object_utils(sysrst_ctrl_combo_key_combinations_obj)
+
+  covergroup sysrst_ctrl_combo_key_combinations_cg with function sample (
+    bit bat_disable,
+    bit interrupt,
+    bit ec_rst,
+    bit rst_req,
+    bit key0_in_sel,
+    bit key1_in_sel,
+    bit key2_in_sel,
+    bit pwrb_in_sel,
+    bit ac_present_sel,
+    bit precondition_key0_in_sel,
+    bit precondition_key1_in_sel,
+    bit precondition_key2_in_sel,
+    bit precondition_pwrb_in_sel,
+    bit precondition_ac_present_sel
+  );
+    option.per_instance = 1;
+    option.name = "sysrst_ctrl_combo_key_combinations_cg";
+
+    cp_key0_in_sel:    coverpoint key0_in_sel;
+    cp_key1_in_sel:    coverpoint key1_in_sel;
+    cp_key2_in_sel:    coverpoint key2_in_sel;
+    cp_pwrb_in_sel:    coverpoint pwrb_in_sel;
+    cp_ac_present_sel: coverpoint ac_present_sel;
+    cp_precondition_key0_in_sel:    coverpoint precondition_key0_in_sel;
+    cp_precondition_key1_in_sel:    coverpoint precondition_key1_in_sel;
+    cp_precondition_key2_in_sel:    coverpoint precondition_key2_in_sel;
+    cp_precondition_pwrb_in_sel:    coverpoint precondition_pwrb_in_sel;
+    cp_precondition_ac_present_sel: coverpoint precondition_ac_present_sel;
+
+    cross_key_combinations_combo_precondition_sel: cross cp_precondition_key0_in_sel,
+      cp_precondition_key1_in_sel, cp_precondition_key2_in_sel, cp_precondition_pwrb_in_sel,
+      cp_precondition_ac_present_sel iff ((bat_disable || interrupt || ec_rst || rst_req) &&
+      (key0_in_sel || key1_in_sel || key2_in_sel || pwrb_in_sel || ac_present_sel)) {
+      // Ignore case where all keys are enabled for precondition, as there wont be any keys left for
+      // combo detection
+      ignore_bins detection_disable = binsof(cp_precondition_key0_in_sel)    intersect {1} &&
+                                      binsof(cp_precondition_key1_in_sel)    intersect {1} &&
+                                      binsof(cp_precondition_key2_in_sel)    intersect {1} &&
+                                      binsof(cp_precondition_pwrb_in_sel)    intersect {1} &&
+                                      binsof(cp_precondition_ac_present_sel) intersect {1};
+    }
+
+    cross_key_combinations_combo_detection_sel: cross cp_key0_in_sel, cp_key1_in_sel,
+      cp_key2_in_sel, cp_pwrb_in_sel, cp_ac_present_sel
+      iff (bat_disable || interrupt || ec_rst || rst_req) {
+      ignore_bins detection_disable = binsof(cp_key0_in_sel)    intersect {0} &&
+                                      binsof(cp_key1_in_sel)    intersect {0} &&
+                                      binsof(cp_key2_in_sel)    intersect {0} &&
+                                      binsof(cp_pwrb_in_sel)    intersect {0} &&
+                                      binsof(cp_ac_present_sel) intersect {0};
+    }
+  endgroup  // sysrst_ctrl_combo_key_combinations_cg
+
+  function new(string name = "sysrst_ctrl_combo_key_combinations_obj");
+    super.new(name);
+    sysrst_ctrl_combo_key_combinations_cg = new();
+  endfunction : new
+endclass : sysrst_ctrl_combo_key_combinations_obj
 
 /////////////////////////////////////////////
 // Combo intr status register cover points //
@@ -166,25 +209,25 @@ class sysrst_ctrl_combo_intr_status_obj extends uvm_object;
     cp_ac_present_sel:coverpoint ac_present_sel;
     cp_interrupt:   coverpoint interrupt;
     cross_combo0: cross cp_combo0_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
-       ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
+      cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
+      ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
                              binsof(cp_combo0_h2l) intersect {1};
-       }
+      }
     cross_combo1: cross cp_combo1_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
-       ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
+      cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
+      ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
                              binsof(cp_combo1_h2l) intersect {1};
-       }
+      }
     cross_combo2: cross cp_combo2_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
-       ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
+      cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
+      ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
                              binsof(cp_combo2_h2l) intersect {1};
-       }
+      }
     cross_combo3: cross cp_combo3_h2l, cp_key0_in_sel, cp_key1_in_sel, cp_key2_in_sel,
-       cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
-       ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
+      cp_pwrb_in_sel, cp_ac_present_sel, cp_interrupt {
+      ignore_bins invalid0 = binsof(cp_interrupt) intersect {0} &&
                              binsof(cp_combo3_h2l) intersect {1};
-       }
+      }
   endgroup // sysrst_ctrl_combo_intr_status_cg
 
   function new(string name = "sysrst_ctrl_combo_intr_status_obj");
@@ -242,6 +285,7 @@ class sysrst_ctrl_env_cov extends cip_base_env_cov #(
   sysrst_ctrl_pin_cfgs_obj pin_cfg_cg[string];
   sysrst_ctrl_debounce_timer_obj debounce_timer_cg[string];
   sysrst_ctrl_combo_detect_action_obj combo_detect_action[int];
+  sysrst_ctrl_combo_key_combinations_obj combo_key_combinations;
   sysrst_ctrl_combo_intr_status_obj combo_intr_status;
   sysrst_ctrl_wakeup_event_obj wakeup_event;
 
@@ -266,6 +310,7 @@ class sysrst_ctrl_env_cov extends cip_base_env_cov #(
       combo_detect_action[i] = new(i);
     end
 
+    combo_key_combinations = new();
     combo_intr_status = new();
     wakeup_event = new();
   endfunction : new

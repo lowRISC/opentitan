@@ -306,6 +306,65 @@ namespace {
   % endif
   }
 
+  class AcknowledgeStateTest : public ${ip.name_camel}Test {};
+
+  TEST_F(AcknowledgeStateTest, NullArgs) {
+    dif_${ip.name_snake}_irq_state_snapshot_t irq_snapshot = 0;
+    EXPECT_DIF_BADARG(dif_${ip.name_snake}_irq_acknowledge_state(
+        nullptr,
+      % if ip.name_snake == "rv_timer":
+        0,
+      % endif
+        irq_snapshot
+        ));
+  }
+
+  TEST_F(AcknowledgeStateTest, AckSnapshot) {
+  <%
+    num_irqs = 0
+    for irq in ip.irqs:
+      num_irqs += irq.width
+  %>
+    const uint32_t num_irqs = ${num_irqs};
+    const uint32_t irq_mask = (1u << num_irqs) - 1;
+    dif_${ip.name_snake}_irq_state_snapshot_t irq_snapshot = 1;
+
+    // Test a few snapshots.
+    for (size_t i = 0; i < num_irqs; ++i) {
+      irq_snapshot = ~irq_snapshot & irq_mask;
+      irq_snapshot |= (1u << i);
+    % if ip.name_snake == "rv_timer":
+      EXPECT_WRITE32(${ip.name_upper}_INTR_STATE0_REG_OFFSET, 
+    % else:
+      EXPECT_WRITE32(${ip.name_upper}_INTR_STATE_REG_OFFSET, 
+    % endif
+        irq_snapshot);
+      EXPECT_DIF_OK(dif_${ip.name_snake}_irq_acknowledge_state(
+          &${ip.name_snake}_, 
+        % if ip.name_snake == "rv_timer":
+          0,
+        % endif
+          irq_snapshot));
+    }
+  }
+
+  TEST_F(AcknowledgeStateTest, SuccessNoneRaised) {
+    dif_${ip.name_snake}_irq_state_snapshot_t irq_snapshot = 0;
+
+  % if ip.name_snake == "rv_timer":
+    EXPECT_READ32(${ip.name_upper}_INTR_STATE0_REG_OFFSET, 0);
+  % else:
+    EXPECT_READ32(${ip.name_upper}_INTR_STATE_REG_OFFSET, 0);
+  % endif
+    EXPECT_DIF_OK(dif_${ip.name_snake}_irq_get_state(
+        &${ip.name_snake}_, 
+      % if ip.name_snake == "rv_timer":
+        0,
+      % endif
+        &irq_snapshot));
+    EXPECT_EQ(irq_snapshot, 0);
+  }
+
   class AcknowledgeAllTest : public ${ip.name_camel}Test {};
 
   TEST_F(AcknowledgeAllTest, NullArgs) {

@@ -34,11 +34,6 @@ INSTANCE: tb.dut.u_reg_regs.u_status_escalated.wr_en_data_arb
 ANNOTATION: "[UNR] all inputs are constant"
 Block 2 "1620753216" "assign wr_data = d;"
 
-CHECKSUM: "1738953883 3087984712"
-INSTANCE: tb.dut.u_reg_regs.u_chk
-ANNOTATION: "[LOWRISK] when a_valid is low, we drive X on data, so this condition isn't covered"
-Condition 1 "899198529" "(tl_i.a_valid & (((|err)) | ((|data_err)))) 1 -1" (1 "01")
-
 CHECKSUM: "1296247128 1854270750"
 INSTANCE: tb.dut
 ANNOTATION: "[UNSUPPORTED] ACK can't come without REQ"
@@ -85,3 +80,8 @@ CHECKSUM: "835220981 2115631974"
 INSTANCE: tb.dut.u_tlul_adapter_sram.u_sramreqfifo
 ANNOTATION: "[UNR] this fifo can never be full, because transactions can drain into u_rspfifo"
 Branch 0 "1862733684" "gen_normal_fifo.full" (0) "gen_normal_fifo.full 1,-"
+
+CHECKSUM: "826810526 1029109911"
+INSTANCE: tb.dut.u_tlul_lc_gate
+ANNOTATION: "[LOWRISK] This happens in the 1st cycle after exiting reset. In order to cover it, need to drive TL items during reset, which isn't supported in the agent."
+Condition 4 "4047466955" "(outstanding_txn == '0) 1 -1"

@@ -19,6 +19,12 @@ cc_library(
     hdrs = ["rsa_key.h"],
 )
 
+cc_library(
+    name = "spx_key",
+    hdrs = ["spx_key.h"],
+    deps = ["//sw/device/silicon_creator/lib/sigverify/sphincsplus:params"],
+)
+
 dual_cc_library(
     name = "mod_exp_ibex",
     srcs = dual_inputs(
@@ -67,7 +73,6 @@ opentitan_functest(
     deps = [
         ":mod_exp_ibex",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
     ],
@@ -83,7 +88,6 @@ opentitan_functest(
     deps = [
         ":mod_exp_ibex",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
     ],
@@ -135,7 +139,6 @@ opentitan_functest(
     deps = [
         ":mod_exp_otbn",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
     ],
@@ -158,7 +161,6 @@ opentitan_functest(
     deps = [
         ":mod_exp_otbn",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
     ],
@@ -199,6 +201,7 @@ cc_library(
         ":mod_exp_ibex",
         ":mod_exp_otbn",
         ":rsa_key",
+        ":spx_key",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -223,7 +226,10 @@ cc_library(
 
 cc_library(
     name = "sigverify_without_mock_mod_exp_ibex",
-    visibility = ["//sw/device/silicon_creator/rom:__pkg__"],
+    visibility = [
+        "//sw/device/silicon_creator/rom:__pkg__",
+        "//sw/device/silicon_creator/rom_ext:__pkg__",
+    ],
     deps = [
         dual_cc_device_library_of(":mod_exp_ibex"),
         ":mod_exp_otbn",
@@ -254,7 +260,6 @@ opentitan_functest(
     deps = [
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
@@ -271,7 +276,6 @@ opentitan_functest(
     deps = [
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
     ],
@@ -287,7 +291,6 @@ opentitan_functest(
     deps = [
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
     ],

@@ -23,6 +23,7 @@ filesets:
       - seq_lib/sysrst_ctrl_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/sysrst_ctrl_in_out_inverted_vseq.sv: {is_include_file: true}
       - seq_lib/sysrst_ctrl_combo_detect_ec_rst_vseq.sv: {is_include_file: true}
+      - seq_lib/sysrst_ctrl_combo_detect_ec_rst_with_pre_cond_vseq.sv: {is_include_file: true}
       - seq_lib/sysrst_ctrl_pin_access_vseq.sv: {is_include_file: true}
       - seq_lib/sysrst_ctrl_pin_override_vseq.sv: {is_include_file: true}
       - seq_lib/sysrst_ctrl_flash_wr_prot_vseq.sv: {is_include_file: true}
@@ -32,6 +33,8 @@ filesets:
       - seq_lib/sysrst_ctrl_combo_detect_vseq.sv: {is_include_file: true}
       - seq_lib/sysrst_ctrl_edge_detect_vseq.sv: {is_include_file: true}
       - seq_lib/sysrst_ctrl_stress_all_vseq.sv: {is_include_file: true}
+      - seq_lib/sysrst_ctrl_combo_detect_with_pre_cond_vseq.sv: {is_include_file: true}
+      - seq_lib/sysrst_ctrl_feature_disable_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

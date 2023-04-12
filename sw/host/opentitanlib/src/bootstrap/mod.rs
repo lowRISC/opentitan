@@ -11,12 +11,12 @@ use structopt::clap::arg_enum;
 use structopt::StructOpt;
 use thiserror::Error;
 
-use crate::app::TransportWrapper;
+use crate::app::{NoProgressBar, TransportWrapper};
 use crate::impl_serializable_error;
 use crate::io::gpio::GpioPin;
 use crate::io::spi::SpiParams;
 use crate::io::uart::UartParams;
-use crate::transport::Capability;
+use crate::transport::{Capability, ProgressIndicator};
 
 mod eeprom;
 mod legacy;
@@ -70,7 +70,7 @@ trait UpdateProtocol {
         container: &Bootstrap,
         transport: &TransportWrapper,
         payload: &[u8],
-        progress: &dyn Fn(u32, u32),
+        progress: &dyn ProgressIndicator,
     ) -> Result<()>;
 }
 
@@ -122,7 +122,7 @@ impl<'a> Bootstrap<'a> {
         options: &BootstrapOptions,
         payload: &[u8],
     ) -> Result<()> {
-        Self::update_with_progress(transport, options, payload, |_, _| {})
+        Self::update_with_progress(transport, options, payload, &NoProgressBar)
     }
 
     /// Perform the update, sending the firmware `payload` to a SPI or UART target depending on
@@ -132,7 +132,7 @@ impl<'a> Bootstrap<'a> {
         transport: &TransportWrapper,
         options: &BootstrapOptions,
         payload: &[u8],
-        progress: impl Fn(u32, u32),
+        progress: &dyn ProgressIndicator,
     ) -> Result<()> {
         if transport
             .capabilities()?
@@ -164,7 +164,7 @@ impl<'a> Bootstrap<'a> {
             reset_pin: transport.gpio_pin("RESET")?,
             reset_delay: options.reset_delay,
         }
-        .do_update(updater, transport, payload, &progress)
+        .do_update(updater, transport, payload, progress)
     }
 
     fn do_update(
@@ -172,14 +172,15 @@ impl<'a> Bootstrap<'a> {
         updater: Box<dyn UpdateProtocol>,
         transport: &TransportWrapper,
         payload: &[u8],
-        progress: &dyn Fn(u32, u32),
+        progress: &dyn ProgressIndicator,
     ) -> Result<()> {
         updater.verify_capabilities(self, transport)?;
         let perform_bootstrap_reset = updater.uses_common_bootstrap_reset();
+        let rom_boot_strapping = transport.pin_strapping("ROM_BOOTSTRAP")?;
 
         if perform_bootstrap_reset {
             log::info!("Asserting bootstrap pins...");
-            transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
+            rom_boot_strapping.apply()?;
             transport.reset_target(self.reset_delay, self.clear_uart_rx)?;
             log::info!("Performing bootstrap...");
         }
@@ -187,7 +188,7 @@ impl<'a> Bootstrap<'a> {
 
         if perform_bootstrap_reset {
             log::info!("Releasing bootstrap pins...");
-            transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+            rom_boot_strapping.remove()?;
         }
 
         // Don't clear the UART RX buffer after bootstrap to preserve the bootstrap output.

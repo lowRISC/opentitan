@@ -1,10 +1,54 @@
----
-title: "Signing Keys"
----
+# Signing Keys
 
-This directory contains ASN1 DER encoded development keys for signing ROM\_EXT
-images. Until we have a more ergonomic tool for working with keys and signatures,
-below snippets can be used for various operations.
+# Generating keys with opentitantool
+
+Open Titan Tool is the recommended tool to generate RSA keys to use in
+the `ROM`.
+
+- Inspecting a key (show the public information of a key, replace `$key_basename` by
+the name of your key):
+```sh
+bazel run //sw/host/opentitantool -- rsa key show $PWD/$key_basename.der
+```
+Example output:
+```
+{
+  key_num_bits: 3072,
+  modulus: "0xa22244f7...",
+  public_exponent: "0x010001",
+  n0_inv: "0x2af3...",
+  rr: "0x82ca57ba..."
+}
+```
+
+- Generating a key pair in the current directory:
+```sh
+bazel run //sw/host/opentitantool -- rsa key generate $outdir $key_basename
+```
+This will generate two files `$outdir/$key_basename.der` (private key)
+and `$outdir/$key_basename.pub.der` (public key). Note that if you want to generate
+a key in the current directory, you need to set `$outdir` to `$PWD` since `bazel` does
+not run the tool in the current directory.
+
+- Exporting a key to a header for use in the ROM:
+```sh
+bazel run //sw/host/opentitantool -- rsa key export $PWD/$key_basename.der
+```
+After exporting the key, it is recommended to follow the best practices and make
+sure that the header follows the OpenTitan convention (for example for fake
+keys that will be committed to the repository) by running
+```sh
+# from root of the repository
+./util/fix_include_guard.py sw/device/.../$key_basename.h
+bazel run //quality:clang_format_fix
+```
+Don't forget to add the copyright comment at the beginning of the file.
+
+# Generating keys manually with openssl
+
+This directory contains ASN1 DER encoded development keys for signing ROM
+images. It is recommended to use `opentitantool` but the below snippets
+can be used to generate and manipulate keys.
 
 Generating a key pair:
 ```

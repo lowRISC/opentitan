@@ -32,7 +32,7 @@
 /**
  * Configuration values for USB.
  */
-static uint8_t config_descriptors[] = {
+static const uint8_t config_descriptors[] = {
     USB_CFG_DSCR_HEAD(
         USB_CFG_DSCR_LEN + 2 * (USB_INTERFACE_DSCR_LEN + 2 * USB_EP_DSCR_LEN),
         2),
@@ -43,6 +43,12 @@ static uint8_t config_descriptors[] = {
     USB_BULK_EP_DSCR(0, 2, 32, 0),
     USB_BULK_EP_DSCR(1, 2, 32, 4),
 };
+
+/**
+ * Test descriptor
+ */
+static const uint8_t test_descriptor[] = {
+    USB_TESTUTILS_TEST_DSCR(0, 0, 0, 0, 0)};
 
 /**
  * USB device context types.
@@ -91,9 +97,10 @@ static void usb_receipt_callback(uint8_t c) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  CHECK(kDeviceType == kDeviceSimVerilator,
+  CHECK(kDeviceType == kDeviceSimVerilator || kDeviceType == kDeviceFpgaCw310,
         "This test is not expected to run on platforms other than the "
-        "Verilator simulation. It needs the USB DPI model.");
+        "Verilator simulation or CW310 FPGA. It needs the USB DPI model "
+        "or host application.");
 
   LOG_INFO("Running USBDEV test");
 
@@ -110,7 +117,8 @@ bool test_main(void) {
   usb_testutils_init(&usbdev, /*pinflip=*/false, /*en_diff_rcvr=*/false,
                      /*tx_use_d_se0=*/false);
   usb_testutils_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
-                               sizeof(config_descriptors));
+                               sizeof(config_descriptors), test_descriptor,
+                               sizeof(test_descriptor));
   while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured) {
     usb_testutils_poll(&usbdev);
   }
@@ -124,10 +132,10 @@ bool test_main(void) {
   base_printf("\r\n");
   for (int i = 0; i < kExpectedUsbCharsRecved; i++) {
     CHECK(buffer[i] == kExpectedUsbRecved[i],
-          "Recieved char #%d mismatched: exp = %x, actual = %x", i,
+          "Received char #%d mismatched: exp = %x, actual = %x", i,
           kExpectedUsbRecved[i], buffer[i]);
   }
-  LOG_INFO("USB recieved %d characters: %s", usb_chars_recved_total, buffer);
+  LOG_INFO("USB received %d characters: %s", usb_chars_recved_total, buffer);
 
   return true;
 }

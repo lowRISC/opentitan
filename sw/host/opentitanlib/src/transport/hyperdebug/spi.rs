@@ -10,7 +10,7 @@ use std::rc::Rc;
 use zerocopy::{AsBytes, FromBytes};
 
 use crate::io::spi::{
-    AssertChipSelect, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
+    AssertChipSelect, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
 };
 use crate::transport::hyperdebug::{BulkInterface, Inner};
 use crate::transport::TransportError;
@@ -18,8 +18,9 @@ use crate::transport::TransportError;
 pub struct HyperdebugSpiTarget {
     inner: Rc<Inner>,
     interface: BulkInterface,
+    target_enable_cmd: u8,
     target_idx: u8,
-    max_chunk_size: usize,
+    max_sizes: MaxSizes,
     cs_asserted_count: Cell<u32>,
 }
 
@@ -33,8 +34,10 @@ const USB_SPI_PKT_ID_RSP_TRANSFER_CONTINUE: u16 = 6;
 const USB_SPI_PKT_ID_CMD_CHIP_SELECT: u16 = 7;
 const USB_SPI_PKT_ID_RSP_CHIP_SELECT: u16 = 8;
 
+pub const USB_SPI_REQ_ENABLE: u8 = 0;
 //const USB_SPI_REQ_DISABLE: u8 = 1;
-const USB_SPI_REQ_ENABLE: u8 = 0;
+pub const USB_SPI_REQ_ENABLE_AP: u8 = 2;
+pub const USB_SPI_REQ_ENABLE_EC: u8 = 3;
 
 const USB_MAX_SIZE: usize = 64;
 const FULL_DUPLEX: usize = 65535;
@@ -149,14 +152,19 @@ impl RspChipSelect {
 }
 
 impl HyperdebugSpiTarget {
-    pub fn open(inner: &Rc<Inner>, spi_interface: &BulkInterface, idx: u8) -> Result<Self> {
+    pub fn open(
+        inner: &Rc<Inner>,
+        spi_interface: &BulkInterface,
+        enable_cmd: u8,
+        idx: u8,
+    ) -> Result<Self> {
         let mut usb_handle = inner.usb_device.borrow_mut();
 
         // Tell HyperDebug to enable SPI bridge, and to address particular SPI device.
         inner.selected_spi.set(idx);
         usb_handle.write_control(
             rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
-            USB_SPI_REQ_ENABLE,
+            enable_cmd,
             idx as u16,
             spi_interface.interface as u16,
             &[],
@@ -192,14 +200,15 @@ impl HyperdebugSpiTarget {
             )
         );
 
-        // Round the max chunk size down to the nearest power of two.
-        let chunk =
-            std::cmp::min(resp.max_write_chunk, resp.max_read_chunk).next_power_of_two() / 2;
         Ok(Self {
             inner: Rc::clone(inner),
             interface: *spi_interface,
+            target_enable_cmd: enable_cmd,
             target_idx: idx,
-            max_chunk_size: chunk as usize,
+            max_sizes: MaxSizes {
+                read: resp.max_read_chunk as usize,
+                write: resp.max_write_chunk as usize,
+            },
             cs_asserted_count: Cell::new(0),
         })
     }
@@ -210,7 +219,7 @@ impl HyperdebugSpiTarget {
             self.inner.selected_spi.set(self.target_idx);
             self.inner.usb_device.borrow().write_control(
                 rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
-                USB_SPI_REQ_ENABLE,
+                self.target_enable_cmd,
                 self.target_idx as u16,
                 self.interface.interface as u16,
                 &[],
@@ -368,16 +377,30 @@ impl Target for HyperdebugSpiTarget {
 
     fn get_max_speed(&self) -> Result<u32> {
         let mut buf = String::new();
-        let captures = self.inner.cmd_one_line_output_match(
-            &format!("spiget {}", &self.target_idx),
-            &super::SPI_REGEX,
-            &mut buf,
-        )?;
+        let mut buf2 = String::new();
+        let captures = self
+            .inner
+            .cmd_one_line_output_match(
+                &format!("spi info {}", &self.target_idx),
+                &super::SPI_REGEX,
+                &mut buf,
+            )
+            .or_else(|_| {
+                self.inner.cmd_one_line_output_match(
+                    &format!("spiget {}", &self.target_idx),
+                    &super::SPI_REGEX,
+                    &mut buf2,
+                )
+            })?;
         Ok(captures.get(3).unwrap().as_str().parse().unwrap())
     }
     fn set_max_speed(&self, frequency: u32) -> Result<()> {
         self.inner
-            .cmd_no_output(&format!("spisetspeed {} {}", &self.target_idx, frequency))
+            .cmd_no_output(&format!("spi set speed {} {}", &self.target_idx, frequency))
+            .or_else(|_| {
+                self.inner
+                    .cmd_no_output(&format!("spisetspeed {} {}", &self.target_idx, frequency))
+            })
     }
 
     fn get_max_transfer_count(&self) -> Result<usize> {
@@ -386,13 +409,65 @@ impl Target for HyperdebugSpiTarget {
         Ok(usize::MAX)
     }
 
-    fn max_chunk_size(&self) -> Result<usize> {
-        Ok(self.max_chunk_size)
+    fn get_max_transfer_sizes(&self) -> Result<MaxSizes> {
+        Ok(self.max_sizes)
     }
 
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {
         let mut idx: usize = 0;
         self.select_my_spi_bus()?;
+
+        // Simple cases involving using only a single USB command can be handled without explicit
+        // embracing commands to hold CS asserted across a sequence of transfers, use that for
+        // avoiding several USB roundtrips in the common cases.
+        match transaction {
+            [Transfer::Write(wbuf), Transfer::Read(rbuf)] => {
+                ensure!(
+                    wbuf.len() <= self.max_sizes.write,
+                    SpiError::InvalidDataLength(wbuf.len())
+                );
+                ensure!(
+                    rbuf.len() <= self.max_sizes.read,
+                    SpiError::InvalidDataLength(rbuf.len())
+                );
+                self.transmit(wbuf, rbuf.len())?;
+                self.receive(rbuf)?;
+                return Ok(());
+            }
+            [Transfer::Write(wbuf)] => {
+                ensure!(
+                    wbuf.len() <= self.max_sizes.write,
+                    SpiError::InvalidDataLength(wbuf.len())
+                );
+                self.transmit(wbuf, 0)?;
+                self.receive(&mut [])?;
+                return Ok(());
+            }
+            [Transfer::Write(wbuf1), Transfer::Write(wbuf2)] => {
+                if wbuf1.len() + wbuf2.len() <= self.max_sizes.write {
+                    let mut combined_buf = vec![0u8; wbuf1.len() + wbuf2.len()];
+                    combined_buf[..wbuf1.len()].clone_from_slice(wbuf1);
+                    combined_buf[wbuf1.len()..].clone_from_slice(wbuf2);
+                    self.transmit(&combined_buf, 0)?;
+                    self.receive(&mut [])?;
+                    return Ok(());
+                }
+            }
+            [Transfer::Read(rbuf)] => {
+                ensure!(
+                    rbuf.len() <= self.max_sizes.read,
+                    SpiError::InvalidDataLength(rbuf.len())
+                );
+                self.transmit(&[], rbuf.len())?;
+                self.receive(rbuf)?;
+                return Ok(());
+            }
+            _ => (),
+        }
+
+        // If control flow reaches this point, we have a more complicated sequence of operations,
+        // and have to explicitly tell HyperDebug to keep the CS asserted while we issue each
+        // command in turn.
         self.do_assert_cs(true)?;
         while idx < transaction.len() {
             match &mut transaction[idx..] {
@@ -401,11 +476,11 @@ impl Target for HyperdebugSpiTarget {
                     // request/reply.  Take advantage of that by detecting pairs of
                     // Transfer::Write followed by Transfer::Read.
                     ensure!(
-                        wbuf.len() <= self.max_chunk_size,
+                        wbuf.len() <= self.max_sizes.write,
                         SpiError::InvalidDataLength(wbuf.len())
                     );
                     ensure!(
-                        rbuf.len() <= self.max_chunk_size,
+                        rbuf.len() <= self.max_sizes.read,
                         SpiError::InvalidDataLength(rbuf.len())
                     );
                     self.transmit(wbuf, rbuf.len())?;
@@ -416,7 +491,7 @@ impl Target for HyperdebugSpiTarget {
                 }
                 [Transfer::Write(wbuf), ..] => {
                     ensure!(
-                        wbuf.len() <= self.max_chunk_size,
+                        wbuf.len() <= self.max_sizes.write,
                         SpiError::InvalidDataLength(wbuf.len())
                     );
                     self.transmit(wbuf, 0)?;
@@ -424,7 +499,7 @@ impl Target for HyperdebugSpiTarget {
                 }
                 [Transfer::Read(rbuf), ..] => {
                     ensure!(
-                        rbuf.len() <= self.max_chunk_size,
+                        rbuf.len() <= self.max_sizes.read,
                         SpiError::InvalidDataLength(rbuf.len())
                     );
                     self.transmit(&[], rbuf.len())?;
@@ -436,7 +511,7 @@ impl Target for HyperdebugSpiTarget {
                         SpiError::MismatchedDataLength(wbuf.len(), rbuf.len())
                     );
                     ensure!(
-                        wbuf.len() <= self.max_chunk_size,
+                        wbuf.len() <= self.max_sizes.read && wbuf.len() <= self.max_sizes.write,
                         SpiError::InvalidDataLength(wbuf.len())
                     );
                     self.transmit(wbuf, FULL_DUPLEX)?;

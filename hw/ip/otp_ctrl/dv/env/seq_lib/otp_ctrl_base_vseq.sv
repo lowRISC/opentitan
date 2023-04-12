@@ -314,7 +314,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       end
 
       if (`gmv(ral.hw_cfg_digest[0]) || `gmv(ral.hw_cfg_digest[1])) begin
-        // TODO: hw_cfg part cannot be read locked.
+        // ICEBOX (#17770): hw_cfg part cannot be read locked.
         // if (!$urandom_range(0, 4)) cfg.forced_mubi_part_access[HwCfgIdx].read_lock = 1;
         if (!$urandom_range(0, 4)) forced_mubi_part_access[HwCfgIdx].write_lock = 1;
       end
@@ -364,6 +364,16 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
                               bit           wait_done = 1,
                               otp_ecc_err_e ecc_err = OtpNoEccErr);
     bit [TL_DW-1:0] backdoor_rd_val, addr;
+
+    // If ECC and check error happens in the same consistency check, the scb cannot predict which
+    // error will happen first, so it cannot correctly predict the error status and alert
+    // triggered.
+    // So the sequence only allows one error at a time.
+    if (get_field_val(ral.check_trigger.consistency, val) &&
+        `gmv(ral.check_timeout) > 0 && `gmv(ral.check_timeout) <= CHK_TIMEOUT_CYC) begin
+      ecc_err = OtpNoEccErr;
+    end
+
     // Backdoor write ECC errors
     if (ecc_err != OtpNoEccErr) begin
       int part_idx = $urandom_range(HwCfgIdx, LifeCycleIdx);
@@ -593,11 +603,13 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin
       repeat (10) begin
         bit [TL_DW-1:0] data;
-        bit test_access_en = cfg.otp_ctrl_vif.lc_dft_en_i == lc_ctrl_pkg::On;
+        bit test_access_en;
         bit [TL_AW-1:0] rand_addr = $urandom_range(0, NUM_PRIM_REG - 1) * 4;
         bit [TL_AW-1:0] tlul_addr =
             cfg.ral_models["otp_ctrl_prim_reg_block"].get_addr_from_offset(rand_addr);
+        rand_drive_dft_en();
         `DV_CHECK_STD_RANDOMIZE_FATAL(data)
+        test_access_en = cfg.otp_ctrl_vif.lc_dft_en_i == lc_ctrl_pkg::On;
         tl_access(.addr(tlul_addr), .write(1), .data(data), .exp_err_rsp(~test_access_en),
                   .tl_sequencer_h(p_sequencer.tl_sequencer_hs["otp_ctrl_prim_reg_block"]));
         tl_access(.addr(tlul_addr), .write(0), .data(data), .exp_err_rsp(~test_access_en),
@@ -606,4 +618,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
      end
   endtask
 
+  // Empty task, only drive it under `otp_ctrl_test_access_vseq`
+  virtual task rand_drive_dft_en();
+  endtask
 endclass : otp_ctrl_base_vseq

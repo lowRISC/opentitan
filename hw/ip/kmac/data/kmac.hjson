@@ -4,6 +4,18 @@
 
 {
   name:               "kmac",
+  human_name:         "KMAC Accelerator",
+  one_line_desc:      "Accelerator for Keccak-based keyed hash message authentication code and SHA-3 hash functions; with SCA and FI countermeasures",
+  one_paragraph_desc: '''
+  OpenTitan protocols use [Keccak/SHA-3][nist-fips-202]-based cryptographic primitives for data authentication, integrity checking, and key derivation.
+  KMAC Accelerator supports Keccak-based Message Authentication Code (KMAC) and the SHA3-derived functions SHAKE and cSHAKE as defined in [NIST SP 800-185][nist-sp-800-185].
+  The Keccak core uses first-order domain-oriented masking (DOM) to deter side-channel analysis (SCA).
+  To save area, the masking can optionally be disabled using a compile-time Verilog parameter.
+  In addition, KMAC Accelerator features several countermeasures to deter fault injection (FI) attacks.
+
+  [nist-fips-202]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf
+  [nist-sp-800-185]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-185.pdf
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
@@ -675,6 +687,8 @@
           The entropy module in KMAC waits up to this field in the timer pulse
           after it sends request to EDN module. If the timer expires, the
           entropy module moves to an error state and notifies to the system.
+
+          If there is a pending EDN request during wait timer update, then this update is delayed until the EDN request is complete.
 
           If 0, the entropy module waits the EDN response always. If EDN does
           not respond in this configuration, the software shall reset the IP.

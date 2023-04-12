@@ -80,7 +80,8 @@ typedef enum dif_alert_handler_irq {
  * A snapshot of the state of the interrupts for this IP.
  *
  * This is an opaque type, to be used with the
- * `dif_alert_handler_irq_get_state()` function.
+ * `dif_alert_handler_irq_get_state()` and
+ * `dif_alert_handler_irq_acknowledge_state()` functions.
  */
 typedef uint32_t dif_alert_handler_irq_state_snapshot_t;
 
@@ -121,6 +122,19 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_irq_is_pending(
     const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t irq,
     bool *is_pending);
+
+/**
+ * Acknowledges all interrupts that were pending at the time of the state
+ * snapshot.
+ *
+ * @param alert_handler A alert_handler handle.
+ * @param snapshot Interrupt state snapshot.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_irq_acknowledge_state(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_irq_state_snapshot_t snapshot);
 
 /**
  * Acknowledges all interrupts, indicating to the hardware that all

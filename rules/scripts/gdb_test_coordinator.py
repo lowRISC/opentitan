@@ -50,6 +50,8 @@ class BackgroundProcessGroup:
         # Register the new process with our selector. The `echo` closure may be
         # called multiple times by `maybe_print_output`.
         def echo(line):
+            if line == "":
+                return
             self.console.print(f"[{label}] ", style=style, end='')
             print(line, flush=True)
 
@@ -91,6 +93,11 @@ class BackgroundProcessGroup:
 
     def maybe_print_output(self, timeout_seconds: int) -> None:
         self._block_for_output(timeout_seconds)
+
+    def flush_all(self, timeout_seconds: int) -> None:
+        now = time.time_ns()
+        while time.time_ns() <= now + timeout_seconds * 1000000000:
+            self.maybe_print_output(timeout_seconds)
 
     def block_until_line_contains(self,
                                   proc: subprocess.Popen,
@@ -231,6 +238,8 @@ def main(rom_kind: str = typer.Option(...),
         # script. The opentitantool console will either time out or exit due to
         # the given success pattern.
         if background.empty() and proc == openocd:
+            # wait a little bit so that we can flush the output of all processes
+            background.flush_all(1)
             openocd.terminate()
             openocd.wait()
             background.forget(openocd)
@@ -244,6 +253,8 @@ def main(rom_kind: str = typer.Option(...),
         print(f"{background.get_name(proc)} exited with code {returncode}")
 
         if returncode != 0:
+            # wait a little bit so that we can flush the output of all processes
+            background.flush_all(1)
             sys.exit(returncode)
 
         background.forget(proc)

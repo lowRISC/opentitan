@@ -7,7 +7,7 @@ use anyhow::Result;
 use crate::app::TransportWrapper;
 use crate::bootstrap::{Bootstrap, UpdateProtocol};
 use crate::spiflash::SpiFlash;
-use crate::transport::Capability;
+use crate::transport::{Capability, ProgressIndicator};
 
 /// Implements the SPI EEPROM bootstrap protocol.
 pub struct Eeprom;
@@ -42,7 +42,7 @@ impl UpdateProtocol for Eeprom {
         container: &Bootstrap,
         transport: &TransportWrapper,
         payload: &[u8],
-        progress: &dyn Fn(u32, u32),
+        progress: &dyn ProgressIndicator,
     ) -> Result<()> {
         let spi = container.spi_params.create(transport, "BOOTSTRAP")?;
         let flash = SpiFlash::from_spi(&*spi)?;

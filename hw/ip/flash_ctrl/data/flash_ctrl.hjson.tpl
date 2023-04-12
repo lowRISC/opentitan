@@ -17,6 +17,15 @@
 
 {
   name:               "flash_ctrl",
+  human_name:         "Flash Controller",
+  one_line_desc:      "Interfaces and manages integrated non-volatile flash memory; supports scrambling, integrity, and secure wipe",
+  one_paragraph_desc: '''
+  Flash Controller interfaces the integrated, non-volatile flash memory with software and other hardware components in the system, such as Life Cycle Controller, Key Manager, and OTP Controller.
+  It consists of the open source flash controller that interfaces with a third party flash module.
+  The protocol controller handles read, program, and erase requests, as well as life cycle RMA entry.
+  It supports differentiation between informational and data flash partitions, flash memory protection at page boundaries, and the handling of key manager secrets inaccessible to software.
+  The actual physical controller is highly parameterized (number of banks, number of pages for each bank, number of words and word size for each page, and number of read buffers) and supports XEX scrambling configurable by software, as well as two types of ECC support configurable on a page boundary.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv"
   hw_checklist:       "../doc/checklist",

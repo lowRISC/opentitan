@@ -10,7 +10,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf_flow_control.h"
+#include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -27,11 +27,11 @@ status_t ottf_flow_control_test(ujson_t *uj) {
     // Print a bunch of stuff so that ibex will be busy
     // driving the transmitter while the host sends data
     // to the UART.
-    base_printf("WAIT\n");
+    base_printf("WAIT\r\n");
     busy_spin_micros(delay);
   }
 
-  base_printf("Reading\n");
+  base_printf("Reading\r\n");
   // Receive a line of text into a buffer.
   uint8_t buf[256] = {0};
   for (size_t i = 0; i < sizeof(buf) - 1; ++i) {
@@ -43,11 +43,11 @@ status_t ottf_flow_control_test(ujson_t *uj) {
   }
 
   // We'd better have gotten a flow control interrupt.
-  CHECK(ottf_flow_control_intr > 0);
+  CHECK(ottf_console_get_flow_control_irqs() > 0);
 
   // Print out the received data so the test can check that it matches what was
   // sent.
-  base_printf("RESULT:%s\n", buf);
+  base_printf("RESULT:%s\r\n", buf);
   return OK_STATUS();
 }
 

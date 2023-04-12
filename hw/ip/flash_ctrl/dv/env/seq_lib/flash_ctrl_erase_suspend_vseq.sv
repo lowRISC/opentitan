@@ -13,13 +13,10 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
   // Configure sequence knobs to tailor it to smoke seq.
   virtual function void configure_vseq();
     // number of transactions
-    cfg.seq_cfg.max_num_trans                 = 6;
+    cfg.seq_cfg.max_num_trans                 = 15;
 
     // no overlap mp regions
     cfg.seq_cfg.allow_mp_region_overlap       = 0;
-
-    // equal chance for bank and page erase
-    cfg.seq_cfg.op_erase_type_bank_pc         = 20;
 
     // enable scramble
     cfg.seq_cfg.mp_region_scramble_en_pc      = 50;
@@ -31,16 +28,13 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
 
     // randomize memory
     cfg.seq_cfg.flash_init_set_pc             = 0;
-
   endfunction
+
+  // Flash ctrl operation data queue - used for programing or reading the flash.
+  data_q_t    flash_op_data;
 
   // Randomized flash ctrl operation.
   rand flash_op_t flash_op;
-
-  rand uint bank;
-
-  // Constraint for banks.
-  constraint bank_c {bank inside {[0 : flash_ctrl_pkg::NumBanks - 1]};}
 
   // Constraint address to be in relevant range for the selected partition.
   constraint addr_c {
@@ -88,10 +82,7 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
 
       mp_regions[i].erase_en == MuBi4True;
 
-      mp_regions[i].scramble_en dist {
-        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_scramble_en_pc),
-        MuBi4True  :/ cfg.seq_cfg.mp_region_scramble_en_pc
-      };
+      mp_regions[i].scramble_en == MuBi4False;
 
       mp_regions[i].ecc_en == MuBi4False;
 
@@ -189,12 +180,22 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       reset_flash();
       do_erase();
+      // Check that the erase suspended by initiating a read to another page of the flash and make
+      // sure it completes in a reasonable time relevant for read - cfg.seq_cfg.read_timeout_ns.
+      check_erase_suspended();
+      // Check recovery by initiating an additional erase to the affected page and backdoor
+      // verify it.
+      // After an erase is suspended, the page must be erased before any other transaction can be
+      // initiated to the selected page.
+      check_recovery();
     end
   endtask : body
 
   virtual task do_erase();
     cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
     cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::On;
     // Default region settings
     default_region_read_en    = MuBi4True;
     default_region_program_en = MuBi4True;
@@ -203,7 +204,6 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
 
     // Configure the flash with scramble disable.
     foreach (mp_regions[k]) begin
-      mp_regions[k].scramble_en = 0;
       flash_ctrl_mp_region_cfg(k, mp_regions[k]);
       `uvm_info(`gfn, $sformatf("MP regions values %p", mp_regions[k]), UVM_HIGH)
     end
@@ -221,7 +221,7 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
     flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));
 
     // 1. Scenario - erase is not active
-    `uvm_info(`gfn, $sformatf("Scenario 1: erase is not active"), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("Scenario 1: Erase is not active"), UVM_HIGH)
 
     // Read data before writing
     csr_rd(.ptr(ral.erase_suspend), .value(data));
@@ -236,47 +236,66 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
     csr_rd_check(.ptr(ral.erase_suspend.req), .compare_value(0));
 
     // 2. Scneario - Erase is in progress
-    `uvm_info(`gfn, $sformatf("2. Scenario - Erase is in progress"), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("Scenario 2: Erase is in progress"), UVM_HIGH)
 
-    fork
-      begin : isolation_fork
-        fork
-          begin  // erase data
-            `uvm_info(`gfn, $sformatf("FLASH OP ERASE START OP: %0p", flash_op), UVM_HIGH)
-            flash_ctrl_start_op(flash_op);
-            wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
-          end
-          begin  // erase suspend while erase data is in progress
-            `uvm_info(`gfn, $sformatf("START COUNTING BEFORE ES REQ"), UVM_HIGH)
-            cfg.clk_rst_vif.wait_clks($urandom_range(50, 100));
-            csr_wr(.ptr(ral.erase_suspend), .value(1));
-            `uvm_info(`gfn, $sformatf("ERASE SUSPEND REQUESTED"), UVM_HIGH)
-          end
-        join_any;
-        disable fork;
-      end : isolation_fork
-    join
+    `uvm_info(`gfn, $sformatf("FLASH OP ERASE START OP: %0p", flash_op), UVM_HIGH)
+    flash_ctrl_start_op(flash_op);
+
+    `uvm_info(`gfn, $sformatf("START COUNTING BEFORE ES REQ"), UVM_HIGH)
+    cfg.clk_rst_vif.wait_clks($urandom_range(50, 100));
+    csr_wr(.ptr(ral.erase_suspend), .value(1));
+    `uvm_info(`gfn, $sformatf("ERASE SUSPEND REQUESTED"), UVM_HIGH)
 
     // WAITING THAT ERASE SUSPEND REQ IS DONE AND REQ RETURNED TO ZERO
     `DV_SPINWAIT(do begin
-    csr_rd(.ptr(ral.erase_suspend), .value(data));
-      `uvm_info(`gfn, $sformatf("ERASE SUSPEND REQ: %0p", data), UVM_HIGH)
-    end while (data == 1);, "ERASE SUSPEND TIMEOUT OCCURED!", cfg.seq_cfg.erase_timeout_ns)
+                   csr_rd(.ptr(ral.erase_suspend), .value(data));
+                   `uvm_info(`gfn, $sformatf("ERASE SUSPEND REQ: %0p", data), UVM_HIGH)
+                 end while (data == 1);,
+                 "ERASE SUSPEND TIMEOUT OCCURED!", cfg.seq_cfg.erase_timeout_ns)
 
-    cfg.flash_mem_bkdr_read(flash_op, flash_rd_data);
-
-    foreach (flash_rd_data[i]) begin
-      `uvm_info(`gfn, $sformatf("FLASH RD DATA: %0h", flash_rd_data[i]), UVM_HIGH)
-      // first 30 data are erased
-      if (i <= 30) begin
-        `DV_CHECK_EQ(flash_rd_data[i], ALL_ONES)
-      end
-      // last 50 data are not erased
-      if ((flash_rd_data.size()-i) <= 50) begin
-        `DV_CHECK_NE(flash_rd_data[i], ALL_ONES)
-      end
-    end
+    wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_suspend_expected_time_ns));
 
   endtask : do_erase
+
+  // Check that the erase suspended by initiating a read to another page of the flash and make
+  // sure it completes in a reasonable time relevant for read - cfg.seq_cfg.read_timeout_ns.
+  // If the erase that suspended was bank-erase, make sure to read from the other bank.
+  task check_erase_suspended();
+    flash_op_t flash_op_erase = flash_op;
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(flash_op,
+                     flash_op.partition != flash_op_erase.partition ||
+                     flash_op.addr[FlashMemAddrBankMsbBit-:(FlashBankWidth+FlashPageWidth)] !=
+                     flash_op_erase.addr[FlashMemAddrBankMsbBit-:(FlashBankWidth+FlashPageWidth)];
+                     if (flash_op_erase.erase_type == flash_ctrl_pkg::FlashEraseBank) {
+                       flash_op.addr[FlashMemAddrBankMsbBit] !=
+                       flash_op_erase.addr[FlashMemAddrBankMsbBit];
+                     })
+    flash_op.op = FlashOpRead;
+    `uvm_info(`gfn, $sformatf("START READ DIFFERENT PAGE TO CHECK THE ERASE IS SUSPENDED, op: %p",
+                              flash_op), UVM_HIGH)
+    flash_ctrl_start_op(flash_op);
+    flash_ctrl_read(flash_op.num_words, flash_op_data, 1'b0);
+    wait_flash_op_done(.timeout_ns(cfg.seq_cfg.read_timeout_ns));
+    flash_op = flash_op_erase;
+  endtask : check_erase_suspended
+
+  // Task to run another erase on the page in which the erase-suspend done and check it complete
+  // successfully.
+  // After an erase is suspended, the page must be erased before any other transaction can be
+  // initiated to the selected page.
+  task check_recovery();
+    // Expected data.
+    data_q_t    exp_data;
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flash_op_data, flash_op_data.size() == 0;)
+
+    `uvm_info(`gfn, $sformatf("START ERASE THE SAME PAGE TO CHECK RECOVERY flash_ctrl op: %p",
+                              flash_op), UVM_HIGH)
+    flash_ctrl_start_op(flash_op);
+    exp_data = cfg.calculate_expected_data(flash_op, flash_op_data);
+    wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
+    cfg.flash_mem_bkdr_erase_check(flash_op, exp_data);
+
+  endtask : check_recovery
 
 endclass : flash_ctrl_erase_suspend_vseq

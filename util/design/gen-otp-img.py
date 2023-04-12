@@ -9,12 +9,11 @@ import argparse
 import datetime
 import logging as log
 import random
-import re
 from pathlib import Path
 
 import hjson
 
-from lib.common import wrapped_docstring
+from lib.common import vmem_permutation_string, wrapped_docstring
 from lib.OtpMemImg import OtpMemImg
 
 # Get the memory map definition.
@@ -44,33 +43,6 @@ def _override_seed(args, name, config):
         if config.setdefault('seed', new_seed) == new_seed:
             log.warning('No {} specified, setting to {}.'.format(
                 name, new_seed))
-
-
-def _permutation_string(data_perm):
-    '''Check permutation format and expand the ranges'''
-
-    if not isinstance(data_perm, str):
-        TypeError()
-
-    if not data_perm:
-        return ''
-
-    # Check the format first
-    pattern = r'^((?:\[[0-9]+:[0-9]+\])+(?:,\[[0-9]+:[0-9]+\])*)'
-    match = re.fullmatch(pattern, data_perm)
-    if match is None:
-        raise ValueError()
-    # Expand the ranges
-    expanded_perm = []
-    groups = match.groups()
-    for group in groups[0].split(','):
-        k1, k0 = [int(x) for x in group[1:-1].split(':')]
-        if k1 > k0:
-            expanded_perm = list(range(k0, k1 + 1)) + expanded_perm
-        else:
-            expanded_perm = list(range(k0, k1 - 1, -1)) + expanded_perm
-
-    return expanded_perm
 
 
 # TODO: this can be removed when we have moved to Python 3.8
@@ -193,7 +165,7 @@ def main():
                         are ignored.
                         ''')
     parser.add_argument('--data-perm',
-                        type=_permutation_string,
+                        type=vmem_permutation_string,
                         metavar='<map>',
                         default='',
                         help='''
@@ -203,7 +175,7 @@ def main():
                         of bit slices, where the numbers refer to the bit positions in
                         the original data word before remapping, for example:
 
-                        "[7:0],[16:8]".
+                        "[7:0],[15:8]".
 
                         The mapping must be bijective - otherwise this will generate
                         an error.
@@ -272,9 +244,10 @@ def main():
     # If the out argument does not contain "BITWIDTH", it will not be changed.
     memfile_path = Path(args.out.replace('BITWIDTH', str(bitness)))
 
-    with open(memfile_path, 'w') as outfile:
-        outfile.write(memfile_header)
-        outfile.write(memfile_body)
+    # Use binary mode and a large buffer size to improve performance.
+    with open(memfile_path, 'wb', buffering=2097152) as outfile:
+        outfile.write(memfile_header.encode('utf-8'))
+        outfile.write(memfile_body.encode('utf-8'))
 
 
 if __name__ == "__main__":

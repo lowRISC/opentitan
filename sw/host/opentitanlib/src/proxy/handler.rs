@@ -4,19 +4,22 @@
 
 use anyhow::{bail, Result};
 
+use std::borrow::Borrow;
 use std::collections::HashMap;
+use std::rc::Rc;
 use std::time::Duration;
 
 use super::errors::SerializedError;
 use super::protocol::{
-    EmuRequest, EmuResponse, GpioRequest, GpioResponse, I2cRequest, I2cResponse,
-    I2cTransferRequest, I2cTransferResponse, Message, ProxyRequest, ProxyResponse, Request,
-    Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse, UartRequest,
-    UartResponse,
+    EmuRequest, EmuResponse, GpioMonRequest, GpioMonResponse, GpioRequest, GpioResponse,
+    I2cRequest, I2cResponse, I2cTransferRequest, I2cTransferResponse, Message, ProxyRequest,
+    ProxyResponse, Request, Response, SpiRequest, SpiResponse, SpiTransferRequest,
+    SpiTransferResponse, UartRequest, UartResponse,
 };
 use super::CommandHandler;
 use crate::app::TransportWrapper;
 use crate::bootstrap::Bootstrap;
+use crate::io::gpio::GpioPin;
 use crate::io::i2c;
 use crate::io::spi;
 use crate::transport::TransportError;
@@ -45,6 +48,10 @@ impl<'a> TransportCommandHandler<'a> {
             Request::GetCapabilities => {
                 Ok(Response::GetCapabilities(self.transport.capabilities()?))
             }
+            Request::ApplyDefaultConfiguration => {
+                self.transport.apply_default_configuration()?;
+                Ok(Response::ApplyDefaultConfiguration)
+            }
             Request::Gpio { id, command } => {
                 let instance = self.transport.gpio_pin(id)?;
                 match command {
@@ -63,6 +70,32 @@ impl<'a> TransportCommandHandler<'a> {
                     GpioRequest::SetPullMode { pull } => {
                         instance.set_pull_mode(*pull)?;
                         Ok(Response::Gpio(GpioResponse::SetPullMode))
+                    }
+                }
+            }
+            Request::GpioMonitoring { command } => {
+                let instance = self.transport.gpio_monitoring()?;
+                match command {
+                    GpioMonRequest::GetClockNature => {
+                        let resp = instance.get_clock_nature()?;
+                        Ok(Response::GpioMonitoring(GpioMonResponse::GetClockNature {
+                            resp,
+                        }))
+                    }
+                    GpioMonRequest::Start { pins } => {
+                        let pins = self.transport.gpio_pins(pins)?;
+                        let pins = pins.iter().map(Rc::borrow).collect::<Vec<&dyn GpioPin>>();
+                        let resp = instance.monitoring_start(&pins)?;
+                        Ok(Response::GpioMonitoring(GpioMonResponse::Start { resp }))
+                    }
+                    GpioMonRequest::Read {
+                        pins,
+                        continue_monitoring,
+                    } => {
+                        let pins = self.transport.gpio_pins(pins)?;
+                        let pins = pins.iter().map(Rc::borrow).collect::<Vec<&dyn GpioPin>>();
+                        let resp = instance.monitoring_read(&pins, *continue_monitoring)?;
+                        Ok(Response::GpioMonitoring(GpioMonResponse::Read { resp }))
                     }
                 }
             }
@@ -127,9 +160,15 @@ impl<'a> TransportCommandHandler<'a> {
                         let number = instance.get_max_transfer_count()?;
                         Ok(Response::Spi(SpiResponse::GetMaxTransferCount { number }))
                     }
-                    SpiRequest::GetMaxChunkSize => {
-                        let size = instance.max_chunk_size()?;
-                        Ok(Response::Spi(SpiResponse::GetMaxChunkSize { size }))
+                    SpiRequest::GetMaxTransferSizes => {
+                        let sizes = instance.get_max_transfer_sizes()?;
+                        Ok(Response::Spi(SpiResponse::GetMaxTransferSizes { sizes }))
+                    }
+                    SpiRequest::GetEepromMaxTransferSizes => {
+                        let sizes = instance.get_eeprom_max_transfer_sizes()?;
+                        Ok(Response::Spi(SpiResponse::GetEepromMaxTransferSizes {
+                            sizes,
+                        }))
                     }
                     SpiRequest::SetVoltage { voltage } => {
                         instance.set_voltage(*voltage)?;
@@ -205,6 +244,14 @@ impl<'a> TransportCommandHandler<'a> {
             Request::I2c { id, command } => {
                 let instance = self.transport.i2c(id)?;
                 match command {
+                    I2cRequest::GetMaxSpeed => {
+                        let speed = instance.get_max_speed()?;
+                        Ok(Response::I2c(I2cResponse::GetMaxSpeed { speed }))
+                    }
+                    I2cRequest::SetMaxSpeed { value } => {
+                        instance.set_max_speed(*value)?;
+                        Ok(Response::I2c(I2cResponse::SetMaxSpeed))
+                    }
                     I2cRequest::RunTransaction {
                         address,
                         transaction: reqs,
@@ -272,6 +319,14 @@ impl<'a> TransportCommandHandler<'a> {
                 ProxyRequest::Bootstrap { options, payload } => {
                     Bootstrap::update(self.transport, options, payload)?;
                     Ok(Response::Proxy(ProxyResponse::Bootstrap))
+                }
+                ProxyRequest::ApplyPinStrapping { strapping_name } => {
+                    self.transport.pin_strapping(strapping_name)?.apply()?;
+                    Ok(Response::Proxy(ProxyResponse::ApplyPinStrapping))
+                }
+                ProxyRequest::RemovePinStrapping { strapping_name } => {
+                    self.transport.pin_strapping(strapping_name)?.remove()?;
+                    Ok(Response::Proxy(ProxyResponse::RemovePinStrapping))
                 }
             },
         }

@@ -752,6 +752,7 @@ module otp_ctrl
     .lc_en_i (lc_dft_en[0]),
     .flush_req_i('0),
     .flush_ack_o(),
+    .resp_pending_o(),
     .err_o   (intg_error[2])
   );
 
@@ -851,7 +852,7 @@ module otp_ctrl
   // Note: as opposed to the OTP arbitration above, we do not perform cycle-wise arbitration, but
   // transaction-wise arbitration. This is implemented using a RR arbiter that acts as a mutex.
   // I.e., each agent (e.g. the DAI or a partition) can request a lock on the mutex. Once granted,
-  // the partition can keep the the lock as long as needed for the transaction to complete. The
+  // the partition can keep the lock as long as needed for the transaction to complete. The
   // partition must yield its lock by deasserting the request signal for the arbiter to proceed.
   // Since this scheme does not have built-in preemtion, it must be ensured that the agents
   // eventually release their locks for this to be fair.

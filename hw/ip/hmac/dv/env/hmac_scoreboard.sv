@@ -77,8 +77,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               if (item.a_data[HashProcess] && hmac_start) begin
                 {hmac_process, hmac_start} = item.a_data[1:0];
                 predict_digest(msg_q);
+                check_idle_o(1'b0);
               end else if (item.a_data[HashStart]) begin
                 {hmac_process, hmac_start} = item.a_data[1:0];
+                check_idle_o(1'b0);
                 msg_q.delete(); // make sure next transaction won't include this msg_q
                 update_wr_msg_length(0);
               end
@@ -179,6 +181,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             if (sha_en && hmac_process) begin
               void'(ral.intr_state.hmac_done.predict(.value(1), .kind(UVM_PREDICT_READ)));
             end
+            check_idle_o(1'b1);
             flush();
           end
         end
@@ -414,4 +417,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     end
   endfunction
 
+  virtual function void check_idle_o(bit val);
+    if (cfg.under_reset == 0) `DV_CHECK_EQ(cfg.hmac_vif.is_idle(), val)
+  endfunction
 endclass

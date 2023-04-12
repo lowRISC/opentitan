@@ -178,6 +178,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     string port_name;
     string glitch_core_path;
     string glitch_path;
+    string glitch_path_lockstep;
     bit glitched_port_is_inp;
     int unsigned unpacked_idx;
     val_t orig_val;
@@ -278,6 +279,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     glitch_core_path = glitch_lockstep_core ? lockstep_core_path : core_path;
     port_name = ports[port_idx].name;
     glitch_path = $sformatf("%s.%s", glitch_core_path, port_name);
+    glitch_path_lockstep = $sformatf("%s.%s", lockstep_path, port_name);
     glitched_port_is_inp = (uvm_re_match("*_i", port_name) == 0);
 
     // If the port is an unpacked array, pick an index of the unpacked dimension to glitch and apply
@@ -285,6 +287,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     if (ports[port_idx].unpacked_dim_width > 0) begin
       unpacked_idx = $urandom_range(ports[port_idx].unpacked_dim_width - 1);
       glitch_path = $sformatf("%s[%0d]", glitch_path, unpacked_idx);
+      glitch_path_lockstep = $sformatf("%s[%0d]", glitch_path_lockstep, unpacked_idx);
     end
 
     // Pick one bit to glitch in the port.
@@ -301,11 +304,11 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       if ($urandom_range(1)) begin
         // Glitch at some time at which the CPU is in Boot ROM, which currently takes up to 18k CPU
         // clock cycles to execute.
-        cfg.chip_vif.cpu_clk_rst_if.wait_n_clks($urandom_range(18000));
+        cfg.chip_vif.cpu_clk_rst_if.wait_n_clks($urandom_range(1, 18000));
       end else begin
         // Glitch after Boot ROM, when the CPU is executing program code.
         `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
-        cfg.chip_vif.cpu_clk_rst_if.wait_n_clks($urandom_range(1000));
+        cfg.chip_vif.cpu_clk_rst_if.wait_n_clks($urandom_range(1, 1000));
       end
       // Ensure we are still running.  If not, skip the test without injecting an error.
       if (!cpu_is_executing_code()) begin
@@ -519,19 +522,26 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       end else begin
         $assertoff(0, "tb.dut.top_earlgrey.u_rv_core_ibex.u_core.u_ibex_core");
       end
-    end else if (!glitch_lockstep_core) begin
-      // When glitching a TL-UL output signal of the main core, the core may no longer adhere to the
-      // TL-UL bus specification. Therefore, assertions on the corresponding TL-UL device and host
-      // ports of the main X-bar may need to be disabled.
+    end
+
+    if (!glitch_lockstep_core) begin
       case (port_name)
+        // When glitching an input or output signal of the main core potentially feeding into the
+        // bus interfaces, the core may no longer adhere to the TL-UL bus specification.
+        // Therefore, assertions on the corresponding TL-UL device and host ports of the main
+        // X-bar may need to be disabled.
+        "instr_req_o",
+        "instr_addr_o",
         // The RF read addresses impact the read data thereby changing a potential branching
         // decision and thus instr_req_o. Changing instr_req_o on the falling clock edge can
-        // lead to failing assertions in the corresponding TL-UL device and host ports of
-        // the main X-bar.
+        // lead to failing assertions.
         "rf_raddr_a_o",
         "rf_raddr_b_o",
-        "instr_req_o",
-        "instr_addr_o": begin
+        // Glitching the instruction cache tag or data may trigger an ECC error and cause the cache
+        // to immediately refetch the corresponding address from memory. As a result, instr_req_o
+        // may go high on the falling clock edge leading to failing assertions.
+        "ic_tag_rdata_i",
+        "ic_data_rdata_i": begin
           $assertoff(0,
               "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_rv_core_ibex__corei.gen_device");
           $assertoff(0,
@@ -571,12 +581,50 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     // Force the glitched value onto the port for one cycle, then release it again.
     `DV_CHECK_FATAL(uvm_hdl_force(glitch_path, glitched_val));
     `uvm_info(`gfn, $sformatf("Forcing %s to value 'h%0x.", glitch_path, glitched_val), UVM_LOW)
+    if (!glitch_lockstep_core && glitched_port_is_inp) begin
+      // The input ports of the ibex_core module are defined as `logic` without an explicit net
+      // type. According to the standard, simulation tools are thus supposed to model these inputs
+      // using a `var` type. However, it turns out that some tools collapse input ports into a
+      // single object to reduce the number of assignments to improve simulation performance.
+      // As a result, glitches inserted to inputs of the non-lockstep core may propagate back and
+      // also change the input of the lockstep core. If this happens, both cores are glitched
+      // simultaneously without any alerts firing.
+      //
+      // To avoid this, we also glitch the corresponding input of the ibex_lockstep instance to
+      // the opposite value. The ibex_lockstep instance is embedded inside prim_buf cells across
+      // which glitches don't progagate back. Also, the delay lines are embedded inside the
+      // ibex_lockstep instance. It's thus fine to apply the glitch simultaneously.
+      //
+      // It's further worth noting that:
+      //
+      // 1. For some top-level inputs there may exist single points of failure, e.g. some inputs
+      //    without integrity protection, some control signals without spurious enable detection.
+      //    There are always such single points of failures. Where and how many there are depends
+      //    on the surrounding modules, backend etc. and is out of scope for the lockstep
+      //    countermeasure.
+      // 2. To verify the lockstep countermeasure, we should actually be glitching internal core
+      //    signals instead of inputs to the ibex_core module. However, the problem with this is
+      //    that it's infeasible to always correctly model how the glitching of any internal signal
+      //    impacts core behavior and ultimately whether this should be detected. Forcing inputs
+      //    of ibex_core is a way to make the test feasible in the first place.
+      //
+      // For more details refer to https://github.com/lowRISC/ibex/pull/1967 .
+      `DV_CHECK_FATAL(uvm_hdl_force(glitch_path_lockstep, orig_val));
+      `uvm_info(`gfn, $sformatf("Forcing %s to value 'h%0x.", glitch_path_lockstep, orig_val),
+          UVM_LOW)
+    end
     cfg.chip_vif.cpu_clk_rst_if.wait_n_clks(1);
     if ((uvm_re_match("irq_*_i", port_name) != 0) && (port_name != "debug_req_i")) begin
       // If the port is not an interrupt or debug request, which are level-sensitive signals,
       // release the forcing at this point.
       `DV_CHECK_FATAL(uvm_hdl_release(glitch_path));
       `uvm_info(`gfn, $sformatf("Releasing force of %s.", glitch_path), UVM_LOW)
+      if (!glitch_lockstep_core && glitched_port_is_inp) begin
+        // In case we glitched an input port of the non-lockstep core, we must now also release
+        // the force applied to the corresponding port of the ibex_lockstep instance.
+        `DV_CHECK_FATAL(uvm_hdl_release(glitch_path_lockstep));
+        `uvm_info(`gfn, $sformatf("Releasing force of %s.", glitch_path_lockstep), UVM_LOW)
+      end
     end
 
     // An alert should be triggered, so we check for that. Depending on the glitched signal and

@@ -8,11 +8,11 @@ use std::any::Any;
 use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::PathBuf;
-use std::time::Instant;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::app::{self, TransportWrapper};
+use opentitanlib::app::{StagedProgressBar, TransportWrapper};
+use opentitanlib::io::eeprom::{AddressMode, Transaction, MODE_111};
 use opentitanlib::io::spi::{SpiParams, Transfer};
 use opentitanlib::spiflash::SpiFlash;
 use opentitanlib::tpm;
@@ -27,6 +27,13 @@ pub struct SpiSfdp {
         help = "Display raw SFDP bytes rather than the parsed struct."
     )]
     raw: Option<usize>,
+
+    #[structopt(
+        short,
+        long,
+        help = "Start reading SFDP at offset.  Only valid with --raw."
+    )]
+    offset: Option<u32>,
 }
 
 // Print a hexdump of a buffer to `writer`.
@@ -70,11 +77,14 @@ impl CommandDispatch for SpiSfdp {
         let spi = context.params.create(transport, "BOOTSTRAP")?;
 
         if let Some(length) = self.raw {
+            let offset = self.offset.unwrap_or(0);
             let mut buffer = vec![0u8; length];
-            spi.run_transaction(&mut [
-                Transfer::Write(&[SpiFlash::READ_SFDP, 0, 0, 0, 0]),
-                Transfer::Read(&mut buffer),
-            ])?;
+            spi.run_eeprom_transactions(&mut [Transaction::Read(
+                MODE_111
+                    .dummy_cycles(8)
+                    .cmd_addr(SpiFlash::READ_SFDP, offset, AddressMode::Mode3b),
+                &mut buffer,
+            )])?;
             hexdump(io::stdout(), &buffer)?;
             Ok(None)
         } else {
@@ -164,13 +174,8 @@ impl CommandDispatch for SpiRead {
         flash.set_address_mode_auto(&*spi)?;
 
         let mut buffer = vec![0u8; self.length];
-        let progress = app::progress_bar(self.length as u64);
-        let t0 = Instant::now();
-        flash.read_with_progress(&*spi, self.start, &mut buffer, |_, chunk| {
-            progress.inc(chunk as u64);
-        })?;
-        progress.finish();
-        let duration = t0.elapsed().as_secs_f64();
+        let progress = StagedProgressBar::new();
+        flash.read_with_progress(&*spi, self.start, &mut buffer, &progress)?;
 
         if self.filename.to_str() == Some("-") {
             self.write_file(io::stdout(), &buffer)?;
@@ -180,7 +185,7 @@ impl CommandDispatch for SpiRead {
             self.write_file(file, &buffer)?;
             Ok(Some(Box::new(SpiReadResponse {
                 length: buffer.len(),
-                bytes_per_second: buffer.len() as f64 / duration,
+                bytes_per_second: progress.bytes_per_second(),
             })))
         }
     }
@@ -213,17 +218,12 @@ impl CommandDispatch for SpiErase {
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
 
-        let progress = app::progress_bar(self.length as u64);
-        let t0 = Instant::now();
-        flash.erase_with_progress(&*spi, self.start, self.length, |_, chunk| {
-            progress.inc(chunk as u64);
-        })?;
-        progress.finish();
-        let duration = t0.elapsed().as_secs_f64();
+        let progress = StagedProgressBar::new();
+        flash.erase_with_progress(&*spi, self.start, self.length, &progress)?;
 
         Ok(Some(Box::new(SpiEraseResponse {
             length: self.length,
-            bytes_per_second: self.length as f64 / duration,
+            bytes_per_second: progress.bytes_per_second(),
         })))
     }
 }
@@ -256,17 +256,12 @@ impl CommandDispatch for SpiProgram {
         flash.set_address_mode_auto(&*spi)?;
 
         let buffer = fs::read(&self.filename)?;
-        let progress = app::progress_bar(buffer.len() as u64);
-        let t0 = Instant::now();
-        flash.program_with_progress(&*spi, self.start, &buffer, |_, chunk| {
-            progress.inc(chunk as u64);
-        })?;
-        progress.finish();
-        let duration = t0.elapsed().as_secs_f64();
+        let progress = StagedProgressBar::new();
+        flash.program_with_progress(&*spi, self.start, &buffer, &progress)?;
 
         Ok(Some(Box::new(SpiProgramResponse {
             length: buffer.len(),
-            bytes_per_second: buffer.len() as f64 / duration,
+            bytes_per_second: progress.bytes_per_second(),
         })))
     }
 }
@@ -291,6 +286,111 @@ impl CommandDispatch for SpiTpm {
     }
 }
 
+/// Read plain data bytes from a SPI device (not necessarily SPI EEPROM/flash).
+#[derive(Debug, StructOpt)]
+pub struct SpiRawRead {
+    #[structopt(short = "n", long, help = "Number of bytes to read.")]
+    length: usize,
+}
+
+#[derive(Debug, serde::Serialize)]
+pub struct SpiRawReadResponse {
+    hexdata: String,
+}
+
+impl CommandDispatch for SpiRawRead {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::SPI).ok()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        let mut v = vec![0u8; self.length];
+        spi_bus.run_transaction(&mut [Transfer::Read(&mut v)])?;
+        Ok(Some(Box::new(SpiRawReadResponse {
+            hexdata: hex::encode(v),
+        })))
+    }
+}
+
+/// Write plain data bytes to a SPI device (not necessarily SPI EEPROM/flash).
+#[derive(Debug, StructOpt)]
+pub struct SpiRawWrite {
+    #[structopt(short, long, help = "Hex data bytes to write.")]
+    hexdata: String,
+}
+
+impl CommandDispatch for SpiRawWrite {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::SPI).ok()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        spi_bus.run_transaction(&mut [Transfer::Write(&hex::decode(&self.hexdata)?)])?;
+        Ok(None)
+    }
+}
+
+/// Write data bytes to a SPI device then read data (not necessarily SPI EEPROM/flash).
+#[derive(Debug, StructOpt)]
+pub struct SpiRawWriteRead {
+    #[structopt(short, long, help = "Hex data bytes to write.")]
+    hexdata: String,
+
+    #[structopt(short = "n", long, help = "Number of bytes to read.")]
+    length: usize,
+}
+
+impl CommandDispatch for SpiRawWriteRead {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::SPI).ok()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        let mut v = vec![0u8; self.length];
+        spi_bus.run_transaction(&mut [
+            Transfer::Write(&hex::decode(&self.hexdata)?),
+            Transfer::Read(&mut v),
+        ])?;
+        Ok(Some(Box::new(SpiRawReadResponse {
+            hexdata: hex::encode(v),
+        })))
+    }
+}
+
+/// Simultaneously write and read plain data bytes to a SPI device (not SPI EEPROM/flash).
+#[derive(Debug, StructOpt)]
+pub struct SpiRawTransceive {
+    #[structopt(short, long, help = "Hex data bytes to write.")]
+    hexdata: String,
+}
+
+impl CommandDispatch for SpiRawTransceive {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::SPI).ok()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        let write_data = hex::decode(&self.hexdata)?;
+        let mut read_data = vec![0u8; write_data.len()];
+        spi_bus.run_transaction(&mut [Transfer::Both(&write_data, &mut read_data)])?;
+        Ok(Some(Box::new(SpiRawReadResponse {
+            hexdata: hex::encode(read_data),
+        })))
+    }
+}
+
 /// Commands for interacting with a SPI EEPROM.
 #[derive(Debug, StructOpt, CommandDispatch)]
 pub enum InternalSpiCommand {
@@ -299,6 +399,10 @@ pub enum InternalSpiCommand {
     Read(SpiRead),
     Erase(SpiErase),
     Program(SpiProgram),
+    RawRead(SpiRawRead),
+    RawWrite(SpiRawWrite),
+    RawWriteRead(SpiRawWriteRead),
+    RawTransceive(SpiRawTransceive),
     Tpm(SpiTpm),
 }
 

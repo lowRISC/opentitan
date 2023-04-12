@@ -128,11 +128,14 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 3
 
-  // Uncomment if using manufacturer tests / test hooks that live somewhere else
-  // on your system, outside of $REPO_TOP. See
-  // sw/device/tests/closed_source/README.md for more details.
   // exports: [
-  //   {MANUFACTURER_HOOKS_DIR: "/path/to/manufacturer_hooks_dir"}
+  //   Uncomment if using manufacturer tests / test hooks that live somewhere
+  //   else on your system, outside of $REPO_TOP. See
+  //   sw/device/tests/closed_source/README.md for more details.
+  //   {MANUFACTURER_HOOKS_DIR: "/path/to/manufacturer_hooks_dir"},
+  //   Uncomment if you are using the `--data-perm` OTP image generation flag,
+  //   when building OTP images with Bazel.
+  //   {BAZEL_OTP_DATA_PERM_FLAG: "[15:0],[23:16]"},
   // ]
 
   // Default UVM test and seq class name.
@@ -241,6 +244,30 @@
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_unlocked0.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
               --out {run_dir}/otp_ctrl_img_test_unlocked0.vmem \
+              {gen_otp_images_cmd_opts}
+        ''',
+        '''{gen_otp_images_cmd} \
+              --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_unlocked1.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --out {run_dir}/otp_ctrl_img_test_unlocked1.vmem \
+              {gen_otp_images_cmd_opts}
+        ''',
+        '''{gen_otp_images_cmd} \
+              --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_unlocked2.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --out {run_dir}/otp_ctrl_img_test_unlocked2.vmem \
+              {gen_otp_images_cmd_opts}
+        ''',
+        '''{gen_otp_images_cmd} \
+              --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_locked0.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --out {run_dir}/otp_ctrl_img_test_locked0.vmem \
+              {gen_otp_images_cmd_opts}
+        ''',
+        '''{gen_otp_images_cmd} \
+              --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_locked1.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --out {run_dir}/otp_ctrl_img_test_locked1.vmem \
               {gen_otp_images_cmd_opts}
         ''',
          '''{gen_otp_images_cmd} \
@@ -719,6 +746,20 @@
       run_opts: ["+use_otp_image=OtpTypeLcStRma", "+otp_clear_secret2=1"]
     }
     {
+      name: chip_sw_otp_ctrl_vendor_test_csr_access
+      uvm_test_seq: chip_sw_otp_ctrl_vendor_test_csr_access_vseq
+      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_vendor_test_csr_access_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_otp_ctrl_escalation
+      uvm_test_seq: chip_sw_otp_ctrl_escalation_vseq
+      sw_images: ["//sw/device/tests/sim_dv:all_escalation_resets_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+bypass_alert_ready_to_end_check=1"]
+      reseed: 1
+    }
+    {
       // Set higher reseed value to reach all kmac_data to lc_ctrl toggle coverage.
       name: chip_sw_lc_ctrl_transition
       uvm_test_seq: chip_sw_lc_ctrl_transition_vseq
@@ -730,7 +771,7 @@
     {
       name: chip_sw_lc_ctrl_rma_to_scrap
       uvm_test_seq: chip_sw_lc_ctrl_scrap_vseq
-      sw_images: ["//sw/device/tests/sim_dv:chip_sw_lc_ctrl_scrap_test:1"]
+      sw_images: ["//sw/device/tests/sim_dv:lc_ctrl_scrap_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1",
                  "+src_dec_state=DecLcStRma"]
@@ -739,7 +780,7 @@
     {
       name: chip_sw_lc_ctrl_raw_to_scrap
       uvm_test_seq: chip_sw_lc_ctrl_scrap_vseq
-      sw_images: ["//sw/device/tests/sim_dv:chip_sw_lc_ctrl_scrap_test:1"]
+      sw_images: ["//sw/device/tests/sim_dv:lc_ctrl_scrap_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1",
                  "+src_dec_state=DecLcStRaw"]
@@ -748,7 +789,7 @@
     {
       name: chip_sw_lc_ctrl_test_locked0_to_scrap
       uvm_test_seq: chip_sw_lc_ctrl_scrap_vseq
-      sw_images: ["//sw/device/tests/sim_dv:chip_sw_lc_ctrl_scrap_test:1"]
+      sw_images: ["//sw/device/tests/sim_dv:lc_ctrl_scrap_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1",
                  "+src_dec_state=DecLcStTestLocked0"]
@@ -757,7 +798,7 @@
     {
       name: chip_sw_lc_ctrl_rand_to_scrap
       uvm_test_seq: chip_sw_lc_ctrl_scrap_vseq
-      sw_images: ["//sw/device/tests/sim_dv:chip_sw_lc_ctrl_scrap_test:1"]
+      sw_images: ["//sw/device/tests/sim_dv:lc_ctrl_scrap_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
       reseed: 3
@@ -1585,6 +1626,12 @@
       run_timeout_mins: 120
     }
     {
+      name: chip_tap_straps_testunlock0
+      uvm_test_seq: chip_tap_straps_vseq
+      en_run_modes: ["strap_tests_mode"]
+      run_opts: ["+use_otp_image=OtpTypeLcStTestUnlocked0"]
+    }
+    {
       name: chip_tap_straps_rma
       uvm_test_seq: chip_tap_straps_vseq
       en_run_modes: ["strap_tests_mode"]
@@ -1728,7 +1775,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:csrng_edn_concurrency_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=20_000_000", "+rng_srate_value_min=15",
+      run_opts: ["+sw_test_timeout_ns=30_000_000", "+rng_srate_value_min=15",
                  "+rng_srate_value_max=20", "+cal_sys_clk_70mhz=1", "+en_jitter=1"]
       run_timeout_mins: 240
     }
@@ -1751,6 +1798,30 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=200_000_000"]
     }
+    {
+      name: chip_sw_power_virus
+      uvm_test_seq: chip_sw_power_virus_vseq
+      sw_images: [
+        "//sw/device/tests:power_virus_systemtest:1",
+        "//sw/device/tests:power_virus_systemtest_otp_img_rma:4",
+      ]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: [
+        "+sw_test_timeout_ns=200_000_000",
+        "+use_otp_image=OtpTypeCustom",
+      ]
+      run_timeout_mins: 300
+    }
+    {
+      name: chip_sw_flash_scrambling_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: [
+        "//sw/device/tests:flash_scrambling_smoketest:1",
+        "//sw/device/tests:flash_scrambling_smoketest_otp_img_rma:4",
+      ]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+use_otp_image=OtpTypeCustom"]
+    }
   ]
 
   // List of regressions.
@@ -1771,6 +1842,7 @@
               "chip_sw_spi_device_pass_through",
               "chip_sw_i2c_host_tx_rx",
               "chip_sw_i2c_device_tx_rx",
+              "chip_sw_flash_scrambling_smoketest",
               "chip_plic_all_irqs",
               "chip_sw_example_flash",
               "chip_sw_example_rom",
@@ -1821,6 +1893,7 @@
               "chip_sw_kmac_mode_kmac",
               "chip_sw_kmac_mode_kmac_jitter_en",
               "chip_sw_sleep_pin_mio_dio_val",
+              "chip_sw_power_virus",
               // TODO: uncomment when these run with Xcelium.
               // "chip_sw_lc_walkthrough_dev",
               // "chip_sw_lc_walkthrough_prod",

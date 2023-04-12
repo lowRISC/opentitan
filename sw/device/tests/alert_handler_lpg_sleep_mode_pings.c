@@ -319,26 +319,33 @@ void init_test_components() {
   // Need a NVM counter to keep the test-step info
   // after waking up from the deep sleep mode.
   // Enable flash access
-  flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
 
-  test_step_cnt = flash_ctrl_testutils_counter_get(kCounterTestSteps);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
   // Total number of iterations for each test phase
-  rnd_num_iterations = flash_ctrl_testutils_counter_get(kCounterTestPhase);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_get(kCounterTestPhase, &rnd_num_iterations));
 
   // We don't expect test_step_cnt to 256 (flash mem is filled with all zeros)
   // for this test. If it is 256, we just initialize the counters/NVM-fields
   // again.
   if (test_step_cnt == 256) {
-    flash_ctrl_testutils_counter_init_zero(&flash_ctrl, kCounterTestSteps);
-    flash_ctrl_testutils_counter_init_zero(&flash_ctrl, kCounterTestPhase);
-    test_step_cnt = flash_ctrl_testutils_counter_get(kCounterTestSteps);
-    rnd_num_iterations = flash_ctrl_testutils_counter_get(kCounterTestPhase);
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_init_zero(&flash_ctrl, kCounterTestSteps));
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_init_zero(&flash_ctrl, kCounterTestPhase));
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterTestPhase,
+                                                     &rnd_num_iterations));
   }
 
   // If this is the first iteration,
@@ -347,8 +354,8 @@ void init_test_components() {
     // 4 <= num_iters <= 8
     rand_testutils_reseed();
     rnd_num_iterations = rand_testutils_gen32_range(4, 8);
-    flash_ctrl_testutils_counter_set_at_least(&flash_ctrl, kCounterTestPhase,
-                                              rnd_num_iterations);
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+        &flash_ctrl, kCounterTestPhase, rnd_num_iterations));
   }
 }
 
@@ -377,8 +384,8 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
     LOG_INFO("POR reset");
     // Set the AON timer to send a wakeup signal in ~10-20us.
-    aon_timer_testutils_wakeup_config(&aon_timer,
-                                      rand_testutils_gen32_range(2, 4));
+    CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(
+        &aon_timer, rand_testutils_gen32_range(2, 4)));
     // Enter normal sleep mode.
     enter_low_power(/*deep_sleep=*/false);
   } else { /*wakeup reset*/
@@ -460,12 +467,14 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
     }
 
     // Increment the test_step counter for the next test step
-    flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterTestSteps);
-    test_step_cnt = flash_ctrl_testutils_counter_get(kCounterTestSteps);
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterTestSteps));
+    CHECK_STATUS_OK(
+        flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
 
     // Set the AON timer to send a wakeup signal in ~100-150us.
-    aon_timer_testutils_wakeup_config(&aon_timer,
-                                      rand_testutils_gen32_range(20, 30));
+    CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(
+        &aon_timer, rand_testutils_gen32_range(20, 30)));
     /**
      * Enter the normal sleep or deep sleep mode
      * Deep sleep mode is time consuming in DV, and normal sleep mode is more

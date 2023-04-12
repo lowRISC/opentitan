@@ -65,8 +65,8 @@ module usb_fs_rx (
   //////////////////////
   // Adjust inputs when D+/D- are flipped on the USB side
   logic usb_dp_flipped, usb_dn_flipped, usb_d_flipped;
-  assign usb_dp_flipped = usb_dp_i ^ cfg_pinflip_i;
-  assign usb_dn_flipped = usb_dn_i ^ cfg_pinflip_i;
+  assign usb_dp_flipped = cfg_pinflip_i ? usb_dn_i : usb_dp_i;
+  assign usb_dn_flipped = cfg_pinflip_i ? usb_dp_i : usb_dn_i;
   assign usb_d_flipped = usb_d_i ^ cfg_pinflip_i;
 
   ///////////////////////////////////////
@@ -91,7 +91,7 @@ module usb_fs_rx (
   // Both D+ and D- may temporarily be less than VIH (min) during differential
   // signal transitions. This period can be up to 14 ns (TFST) for full-speed
   // transitions and up to 210 ns (TLST) for low-speed transitions. Logic in the
-  // receiver must ensure that that this is not interpreted as an SE0.
+  // receiver must ensure that this is not interpreted as an SE0.
   // Since the 48MHz sample clock is 20.833ns period we will either miss this or
   // sample it only once, so it will be covered by line_state=DT and the next
   // sample will not be SE0 unless this was a real SE0 transition
@@ -446,7 +446,7 @@ module usb_fs_rx (
   // save and check pid //
   ////////////////////////
 
-  // shift in the entire 8-bit pid with an additional 9th bit used as a sentinal.
+  // shift in the entire 8-bit pid with an additional 9th bit used as a sentinel.
 
   logic [8:0] full_pid_q, full_pid_d;
   logic pid_valid, pid_complete;

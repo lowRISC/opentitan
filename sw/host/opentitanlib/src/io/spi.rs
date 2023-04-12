@@ -9,6 +9,7 @@ use std::str::FromStr;
 use structopt::StructOpt;
 use thiserror::Error;
 
+use super::eeprom;
 use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::util::voltage::Voltage;
@@ -63,11 +64,13 @@ pub enum SpiError {
     MismatchedDataLength(usize, usize),
     #[error("Invalid transfer mode: {0}")]
     InvalidTransferMode(String),
+    #[error("Invalid SPI voltage: {0}")]
+    InvalidVoltage(Voltage),
 }
 impl_serializable_error!(SpiError);
 
 /// Represents the SPI transfer mode.
-/// See https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#Clock_polarity_and_phase
+/// See <https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#Clock_polarity_and_phase>
 /// for details about SPI transfer modes.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum TransferMode {
@@ -121,6 +124,13 @@ impl TransferMode {
     }
 }
 
+/// Represents maximum allowed read or write operation in bytes.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct MaxSizes {
+    pub read: usize,
+    pub write: usize,
+}
+
 /// Represents a SPI transfer.
 pub enum Transfer<'rd, 'wr> {
     Read(&'rd mut [u8]),
@@ -148,8 +158,8 @@ pub trait Target {
     /// Returns the maximum number of transfers allowed in a single transaction.
     fn get_max_transfer_count(&self) -> Result<usize>;
 
-    /// Maximum chunksize handled by this SPI device.
-    fn max_chunk_size(&self) -> Result<usize>;
+    /// Maximum `Read` and `Write` data size for `run_transaction()`.
+    fn get_max_transfer_sizes(&self) -> Result<MaxSizes>;
 
     fn set_voltage(&self, _voltage: Voltage) -> Result<()> {
         Err(SpiError::InvalidOption("This target does not support set_voltage".to_string()).into())
@@ -158,6 +168,52 @@ pub trait Target {
     /// Runs a SPI transaction composed from the slice of [`Transfer`] objects.  Will assert the
     /// CS for the duration of the entire transactions.
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()>;
+
+    /// Maximum payload size of `Read` and `Write` elements for `run_eeprom_transactions()`.
+    fn get_eeprom_max_transfer_sizes(&self) -> Result<MaxSizes> {
+        // By default, go by the low-level SPI limits, allowing for 6 bytes of opcode+address+dummy
+        let spi_max = self.get_max_transfer_sizes()?;
+        Ok(MaxSizes {
+            read: spi_max.read,
+            write: spi_max.write - 6,
+        })
+    }
+
+    /// Runs a number of EEPROM/FLASH protocol SPI transactions.  Will assert and deassert CS for
+    /// each transaction.
+    fn run_eeprom_transactions(&self, transactions: &mut [eeprom::Transaction]) -> Result<()> {
+        // Default implementation translates into generic SPI read/write, which works as long as
+        // the transport supports generic SPI transfers of sufficint length, and that the mode is
+        // single-data-wire.
+        for transfer in transactions {
+            match transfer {
+                eeprom::Transaction::Command(cmd) => {
+                    self.run_transaction(&mut [Transfer::Write(cmd.to_bytes()?)])?
+                }
+                eeprom::Transaction::Read(cmd, rbuf) => self.run_transaction(&mut [
+                    Transfer::Write(cmd.to_bytes()?),
+                    Transfer::Read(rbuf),
+                ])?,
+                eeprom::Transaction::Write(cmd, wbuf) => self.run_transaction(&mut [
+                    Transfer::Write(cmd.to_bytes()?),
+                    Transfer::Write(wbuf),
+                ])?,
+                eeprom::Transaction::WaitForBusyClear => {
+                    while {
+                        let mut buf = [0u8; 1];
+                        self.run_transaction(&mut [
+                            Transfer::Write(&[eeprom::READ_STATUS]),
+                            Transfer::Read(&mut buf),
+                        ])?;
+                        buf[0]
+                    } & eeprom::STATUS_WIP
+                        != 0
+                    {}
+                }
+            }
+        }
+        Ok(())
+    }
 
     /// Assert the CS signal.  Uses reference counting, will be deasserted when each and every
     /// returned `AssertChipSelect` object have gone out of scope.

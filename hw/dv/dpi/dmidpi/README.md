@@ -1,7 +1,7 @@
 DMI DPI module for OpenOCD remote_bitbang driver
 ================================================
 
-This DPI module provides a "virtual" JTAG connection between a simulated chip and [OpenOCD](http://openocd.org/).
+This DPI module provides a "virtual" JTAG connection between a simulated chip and [OpenOCD](https://openocd.org/).
 It makes use of the `remote_bitbang` JTAG driver shipped with OpenOCD, which forwards JTAG requests over TCP to a remote server.
 The `dmidpi` module is instantiated in the hardware simulation to receive the JTAG requests from OpenOCD and drive DMI pins directly.
 

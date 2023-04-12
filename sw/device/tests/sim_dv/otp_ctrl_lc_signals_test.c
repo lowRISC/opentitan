@@ -78,7 +78,7 @@ static void init_peripherals(void) {
   // KMAC (init for Keymgr use)
   CHECK_DIF_OK(
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
-  kmac_testutils_config(&kmac, true);
+  CHECK_STATUS_OK(kmac_testutils_config(&kmac, true));
   // Keymgr
   CHECK_DIF_OK(dif_keymgr_init(
       mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
@@ -95,14 +95,15 @@ static void init_peripherals(void) {
  */
 static void otp_write_test(int32_t address, const uint8_t *buffer,
                            uint32_t size, exp_test_result_t exp_result) {
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   for (int i = address; i < address + size; i += sizeof(uint64_t)) {
     uint64_t word;
     memcpy(&word, &buffer[i], sizeof(word));
     CHECK_DIF_OK(
         dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret2, i, word));
-    otp_ctrl_testutils_wait_for_dai(&otp);
-    otp_ctrl_testutils_dai_access_error_check(&otp, exp_result, address);
+    CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
+    CHECK_STATUS_OK(
+        otp_ctrl_testutils_dai_access_error_check(&otp, exp_result, address));
   }
 }
 
@@ -117,13 +118,14 @@ static void otp_write_test(int32_t address, const uint8_t *buffer,
  */
 static void otp_read_test(int32_t address, const uint8_t *buffer, uint32_t size,
                           exp_test_result_t exp_result) {
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   for (int i = address; i < address + size; i += sizeof(uint64_t)) {
     uint64_t got, exp;
     CHECK_DIF_OK(
         dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionSecret2, i));
-    otp_ctrl_testutils_wait_for_dai(&otp);
-    otp_ctrl_testutils_dai_access_error_check(&otp, exp_result, address);
+    CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
+    CHECK_STATUS_OK(
+        otp_ctrl_testutils_dai_access_error_check(&otp, exp_result, address));
 
     // Check whether the read data matches.
     memcpy(&exp, &buffer[i], sizeof(exp));
@@ -188,9 +190,10 @@ static void keymgr_advance_to_creator_root_key(void) {
       retention_sram_get()
           ->reserved_creator[ARRAYSIZE((retention_sram_t){0}.reserved_creator) -
                              1] == TEST_ROM_IDENTIFIER;
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset);
-  keymgr_testutils_advance_state(&keymgr, NULL);
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateInitialized);
+  CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset));
+  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, NULL));
+  CHECK_STATUS_OK(
+      keymgr_testutils_check_state(&keymgr, kDifKeymgrStateInitialized));
   // Advance to kDifKeymgrStateCreatorRootKey state.
   if (is_using_test_rom) {
     LOG_INFO("Using test_rom, setting inputs and advancing state...");
@@ -206,7 +209,7 @@ static void keymgr_advance_to_creator_root_key(void) {
  */
 static void keymgr_check_cannot_advance(void) {
   LOG_INFO("Check that the Keymgr cannot advance...");
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset);
+  CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset));
   // Try to initialize the key manager. We expect this call to fail with
   // a "kDifLocked" code, since the key manager is not enabled.
   CHECK(kDifLocked == dif_keymgr_advance_state(&keymgr, NULL),
@@ -236,9 +239,11 @@ static void keymgr_check_root_key_is_invalid(void) {
 static void keymgr_check_can_generate_key(void) {
   keymgr_advance_to_creator_root_key();
   LOG_INFO("Check that the Keymgr can generate a key...");
-  keymgr_testutils_wait_for_operation_done(&keymgr);
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey);
-  keymgr_testutils_generate_versioned_key(&keymgr, kKeyVersionedParams);
+  CHECK_STATUS_OK(keymgr_testutils_wait_for_operation_done(&keymgr));
+  CHECK_STATUS_OK(
+      keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey));
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(&keymgr, kKeyVersionedParams));
 }
 
 /**
@@ -290,7 +295,7 @@ bool test_main(void) {
   rstmgr_testutils_reason_clear();
 
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &state));
-  lc_ctrl_testutils_lc_state_log_or_die(&state);
+  CHECK_STATUS_OK(lc_ctrl_testutils_lc_state_log(&state));
 
   switch (state) {
     case kDifLcCtrlStateDev:
@@ -300,7 +305,8 @@ bool test_main(void) {
       if (rst_info & kDifRstmgrResetInfoPor) {
         LOG_INFO("First access test iteration...");
         // Make sure the secrets in flash are non-zero.
-        keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret);
+        CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash, &kCreatorSecret,
+                                                    &kOwnerSecret));
         // Program the SECRET2 partition and perform read back test.
         run_otp_access_tests(kWriteReadMode, kExpectPassed);
         // We expect the root key to be invalid at this point.
@@ -319,8 +325,8 @@ bool test_main(void) {
           // SECRET2 has not been locked yet.
           keymgr_check_root_key_is_invalid();
           // Lock the SECRET2 partition.
-          otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2,
-                                            0);
+          CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
+              &otp, kDifOtpCtrlPartitionSecret2, 0));
           reset_chip();
         } else {
           LOG_INFO("Third access test iteration...");

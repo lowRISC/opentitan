@@ -13,9 +13,9 @@ namespace {
 class ManifestTest : public rom_test::RomTest {
  protected:
   ManifestTest() {
-    manifest_.length = 0x1000;
-    manifest_.code_start = 0x400;
-    manifest_.code_end = 0x800;
+    manifest_.length = sizeof(manifest_t) + 0x1000;
+    manifest_.code_start = sizeof(manifest_t);
+    manifest_.code_end = sizeof(manifest_t) + 0x800;
     manifest_.entry_point = 0x500;
   }
 
@@ -28,8 +28,8 @@ TEST_F(ManifestTest, DigestRegionGet) {
 
   // Digest region starts immediately after `usage_constraints` and ends at the
   // end of the image.
-  size_t digest_region_offset =
-      sizeof(manifest_t::signature) + sizeof(manifest_t::usage_constraints);
+  size_t digest_region_offset = offsetof(manifest_t, usage_constraints) +
+                                sizeof(manifest_t::usage_constraints);
   EXPECT_EQ(digest_region.start,
             reinterpret_cast<const char *>(&manifest_) + digest_region_offset);
   EXPECT_EQ(digest_region.length, manifest_.length - digest_region_offset);

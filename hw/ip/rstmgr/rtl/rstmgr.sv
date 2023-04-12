@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // This module is the overall reset manager wrapper
-// TODO: This module is only a draft implementation that covers most of the rstmgr
-// functoinality but is incomplete
 
 `include "prim_assert.sv"
 

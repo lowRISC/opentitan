@@ -6,7 +6,7 @@
 #include "sw/device/silicon_creator/rom/keys/fake/dev_key_0_rsa_3072_exp_f4.h"
 #include "sw/device/silicon_creator/rom/keys/fake/prod_key_0_rsa_3072_exp_f4.h"
 #include "sw/device/silicon_creator/rom/keys/fake/test_key_0_rsa_3072_exp_f4.h"
-#include "sw/device/silicon_creator/rom/sigverify_keys.h"
+#include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 
 #include "otp_ctrl_regs.h"
 
@@ -32,22 +32,31 @@ const size_t kSigverifyRsaKeysStep = 1;
  * Please see sw/device/silicon_creator/rom/keys/README.md for more
  * details.
  */
-const sigverify_rom_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt_] = {
+const sigverify_rom_rsa_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt_] = {
     {
-        .key = TEST_KEY_0_RSA_3072_EXP_F4,
-        .key_type = kSigverifyKeyTypeTest,
+        .entry =
+            {
+                .key = TEST_KEY_0_RSA_3072_EXP_F4,
+                .key_type = kSigverifyKeyTypeTest,
+            },
     },
     {
-        .key = DEV_KEY_0_RSA_3072_EXP_F4,
-        .key_type = kSigverifyKeyTypeDev,
+        .entry =
+            {
+                .key = DEV_KEY_0_RSA_3072_EXP_F4,
+                .key_type = kSigverifyKeyTypeDev,
+            },
     },
     {
-        .key = PROD_KEY_0_RSA_3072_EXP_F4,
-        .key_type = kSigverifyKeyTypeProd,
+        .entry =
+            {
+                .key = PROD_KEY_0_RSA_3072_EXP_F4,
+                .key_type = kSigverifyKeyTypeProd,
+            },
     },
 };
 
-static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE >=
+static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN_SIZE >=
                   kSigverifyRsaKeysCnt_,
-              "CREATOR_SW_CFG_KEY_IS_VALID OTP item must be at least "
+              "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN OTP item must be at least "
               "`kSigVerifyNumKeysFake` bytes.");

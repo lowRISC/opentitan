@@ -15,23 +15,15 @@
 #include "aes_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// Static assertions for enum values.
-OT_ASSERT_ENUM_VALUE(kAesCipherModeEcb, AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB);
-OT_ASSERT_ENUM_VALUE(kAesCipherModeCbc, AES_CTRL_SHADOWED_MODE_VALUE_AES_CBC);
-OT_ASSERT_ENUM_VALUE(kAesCipherModeCfb, AES_CTRL_SHADOWED_MODE_VALUE_AES_CFB);
-OT_ASSERT_ENUM_VALUE(kAesCipherModeOfb, AES_CTRL_SHADOWED_MODE_VALUE_AES_OFB);
-OT_ASSERT_ENUM_VALUE(kAesCipherModeCtr, AES_CTRL_SHADOWED_MODE_VALUE_AES_CTR);
-
-OT_ASSERT_ENUM_VALUE(kAesKeyLen128, AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128);
-OT_ASSERT_ENUM_VALUE(kAesKeyLen192, AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_192);
-OT_ASSERT_ENUM_VALUE(kAesKeyLen256, AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_256);
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('d', 'a', 'e')
 
 enum {
   kBase = TOP_EARLGREY_AES_BASE_ADDR,
 
-  kAesKeyWordLen128 = 4,
-  kAesKeyWordLen192 = 6,
-  kAesKeyWordLen256 = 8,
+  kAesKeyWordLen128 = 128 / (sizeof(uint32_t) * 8),
+  kAesKeyWordLen192 = 192 / (sizeof(uint32_t) * 8),
+  kAesKeyWordLen256 = 256 / (sizeof(uint32_t) * 8),
 };
 
 /**
@@ -64,31 +56,26 @@ static status_t aes_write_key(aes_key_t key) {
     return OTCRYPTO_OK;
   }
 
-  size_t key_words;
-  switch (key.key_len) {
-    case kAesKeyLen128:
-      key_words = kAesKeyWordLen128;
-      break;
-    case kAesKeyLen192:
-      key_words = kAesKeyWordLen192;
-      break;
-    case kAesKeyLen256:
-      key_words = kAesKeyWordLen256;
-      break;
-    default:
-      return OTCRYPTO_BAD_ARGS;
-  }
-
   uint32_t share0 = kBase + AES_KEY_SHARE0_0_REG_OFFSET;
   uint32_t share1 = kBase + AES_KEY_SHARE1_0_REG_OFFSET;
 
-  for (size_t i = 0; i < key_words; ++i) {
+  // Handle key shares in two separate loops to avoid dealing with
+  // corresponding parts too close together, which could risk power
+  // side-channel leakage in the ALU.
+  // TODO: randomize iteration order.
+  size_t i = 0;
+  for (; i < key.key_len; ++i) {
     abs_mmio_write32(share0 + i * sizeof(uint32_t), key.key_shares[0][i]);
+  }
+  HARDENED_CHECK_EQ(i, key.key_len);
+  for (i = 0; i < key.key_len; ++i) {
     abs_mmio_write32(share1 + i * sizeof(uint32_t), key.key_shares[1][i]);
   }
-  for (size_t i = key_words; i < 8; ++i) {
-    // NOTE: all eight share registers must be written; in the case we don't
-    // have enough key data, we fill it with zeroes.
+  HARDENED_CHECK_EQ(i, key.key_len);
+
+  // NOTE: all eight share registers must be written; in the case we don't have
+  // enough key data, we fill it with zeroes.
+  for (size_t i = key.key_len; i < 8; ++i) {
     abs_mmio_write32(share0 + i * sizeof(uint32_t), 0);
     abs_mmio_write32(share1 + i * sizeof(uint32_t), 0);
   }
@@ -116,13 +103,13 @@ static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
       ctrl_reg =
           bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_OPERATION_FIELD,
                                  AES_CTRL_SHADOWED_OPERATION_VALUE_AES_ENC);
-      operation_written = kHardenedBoolTrue;
+      operation_written = launder32(kHardenedBoolTrue);
       break;
     case kHardenedBoolFalse:
       ctrl_reg =
           bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_OPERATION_FIELD,
                                  AES_CTRL_SHADOWED_OPERATION_VALUE_AES_DEC);
-      operation_written = kHardenedBoolTrue;
+      operation_written = launder32(kHardenedBoolTrue);
       break;
     default:
       // Invalid value.
@@ -136,12 +123,12 @@ static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
     case kHardenedBoolTrue:
       ctrl_reg =
           bitfield_bit32_write(ctrl_reg, AES_CTRL_SHADOWED_SIDELOAD_BIT, true);
-      sideload_written = kHardenedBoolTrue;
+      sideload_written = launder32(kHardenedBoolTrue);
       break;
     case kHardenedBoolFalse:
       ctrl_reg =
           bitfield_bit32_write(ctrl_reg, AES_CTRL_SHADOWED_SIDELOAD_BIT, false);
-      sideload_written = kHardenedBoolTrue;
+      sideload_written = launder32(kHardenedBoolTrue);
       break;
     default:
       // Invalid value.
@@ -149,11 +136,63 @@ static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
   }
   HARDENED_CHECK_EQ(sideload_written, kHardenedBoolTrue);
 
-  // Set the mode and the key length.
-  ctrl_reg =
-      bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD, key.mode);
-  ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
-                                    key.key_len);
+  // Translate the cipher mode to the hardware-encoding value and write the
+  // control reg field.
+  aes_cipher_mode_t mode_written;
+  switch (launder32(key.mode)) {
+    case kAesCipherModeEcb:
+      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB);
+      mode_written = launder32(kAesCipherModeEcb);
+      break;
+    case kAesCipherModeCbc:
+      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_CBC);
+      mode_written = launder32(kAesCipherModeCbc);
+      break;
+    case kAesCipherModeCfb:
+      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_CFB);
+      mode_written = launder32(kAesCipherModeCfb);
+      break;
+    case kAesCipherModeOfb:
+      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_OFB);
+      mode_written = launder32(kAesCipherModeOfb);
+      break;
+    case kAesCipherModeCtr:
+      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_CTR);
+      mode_written = launder32(kAesCipherModeCtr);
+      break;
+    default:
+      // Invalid value.
+      return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(mode_written, key.mode);
+
+  // Translate the key length to the hardware-encoding value and write the
+  // control reg field.
+  switch (key.key_len) {
+    case kAesKeyWordLen128:
+      ctrl_reg =
+          bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
+                                 AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128);
+      break;
+    case kAesKeyWordLen192:
+      ctrl_reg =
+          bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
+                                 AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_192);
+      break;
+    case kAesKeyWordLen256:
+      ctrl_reg =
+          bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
+                                 AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_256);
+      break;
+    default:
+      // Invalid value.
+      return OTCRYPTO_BAD_ARGS;
+  }
 
   // Never enable manual operation.
   ctrl_reg = bitfield_bit32_write(
@@ -171,7 +210,8 @@ static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
   HARDENED_TRY(aes_write_key(key));
 
   // ECB does not need to set an IV, so we're done early.
-  if (key.mode == kAesCipherModeEcb) {
+  if (key.mode == launder32(kAesCipherModeEcb)) {
+    HARDENED_CHECK_EQ(key.mode, kAesCipherModeEcb);
     return OTCRYPTO_OK;
   }
 

@@ -378,6 +378,21 @@ dif_result_t dif_spi_device_send(dif_spi_device_handle_t *spi, const void *buf,
                                  size_t buf_len, size_t *bytes_sent);
 
 /**
+ * Writes `buf_len` bytes to the TX FIFO, blocking until all bytes can be
+ * written.
+ *
+ * Applies only to generic mode.
+ *
+ * @param spi A SPI device.
+ * @param buf A pointer to bytes to be written.
+ * @param buf_len The length of the buffer `buf` points to.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_send_polled(dif_spi_device_handle_t *spi,
+                                        const void *buf, size_t buf_len);
+
+/**
  * Enable the mailbox region for spi_device flash / passthrough modes.
  *
  * Allocate 1 KiB for the mailbox, starting from the provided base `address`.

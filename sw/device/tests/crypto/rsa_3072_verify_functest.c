@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
-#include "sw/device/lib/crypto/impl/rsa_3072/rsa_3072_verify.h"
+#include "sw/device/lib/crypto/impl/rsa/rsa_3072_verify.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -15,7 +15,7 @@
 // the version of this file matching the Bazel rule under test.
 #include "rsa_3072_verify_testvectors.h"
 
-bool rsa_3072_verify_test(const rsa_3072_verify_test_vector_t *testvec) {
+status_t rsa_3072_verify_test(const rsa_3072_verify_test_vector_t *testvec) {
   // Encode message
   rsa_3072_int_t encodedMessage;
   CHECK_STATUS_OK(
@@ -23,27 +23,36 @@ bool rsa_3072_verify_test(const rsa_3072_verify_test_vector_t *testvec) {
 
   // Precompute Montgomery constants
   rsa_3072_constants_t constants;
-  otbn_error_t err =
-      rsa_3072_compute_constants(&testvec->publicKey, &constants);
-  if (err != kOtbnErrorOk) {
-    LOG_ERROR("Error from OTBN while computing constants: 0x%08x.", err);
-    return false;
-  }
+  TRY(rsa_3072_compute_constants(&testvec->publicKey, &constants));
 
   // Attempt to verify signature
   hardened_bool_t result;
-  err = rsa_3072_verify(&testvec->signature, &encodedMessage,
-                        &testvec->publicKey, &constants, &result);
+  status_t err = rsa_3072_verify(&testvec->signature, &encodedMessage,
+                                 &testvec->publicKey, &constants, &result);
 
   if (testvec->valid) {
-    CHECK(err == kOtbnErrorOk);
-    CHECK(result == kHardenedBoolTrue);
+    // Return the error value if not OK.
+    TRY(err);
+    // Check result.
+    if (result != kHardenedBoolTrue) {
+      LOG_ERROR("Valid signature failed verification.");
+      return OTCRYPTO_RECOV_ERR;
+    }
   } else {
-    CHECK(err == kOtbnErrorOk || err == kOtbnErrorInvalidArgument);
-    CHECK(result == kHardenedBoolFalse);
+    // Signature is expected to be invalid.
+    if (result != kHardenedBoolFalse) {
+      LOG_ERROR("Invalid signature passed verification.");
+      return OTCRYPTO_RECOV_ERR;
+    }
+    // Error code may be OK or BAD_ARGS, but other errors indicate a problem.
+    if (!status_ok(err) &&
+        crypto_status_interpret(err) != kCryptoStatusBadArgs) {
+      LOG_ERROR("Unexpected error on invalid signature: %r.", err);
+      return err;
+    }
   }
 
-  return true;
+  return OTCRYPTO_OK;
 }
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -66,15 +75,19 @@ bool test_main(void) {
     }
 
     // Run test and print out result.
-    bool local_result = rsa_3072_verify_test(&testvec);
-    if (local_result) {
+    status_t err = rsa_3072_verify_test(&testvec);
+    if (status_ok(err)) {
       LOG_INFO("Finished rsa_3072_verify_test on test vector %d : ok", i + 1);
     } else {
-      LOG_ERROR("Finished rsa_3072_verify_test on test vector %d : error",
-                i + 1);
+      LOG_ERROR("Finished rsa_3072_verify_test on test vector %d : error %r",
+                i + 1, err);
+      // For help with debugging, print the OTBN error bits, instruction
+      // count, and test vector notes.
+      LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
+      LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
       LOG_INFO("Test notes: %s", testvec.comment);
+      result = false;
     }
-    result &= local_result;
   }
   LOG_INFO("Finished rsa_3072_verify_test:%s", RULE_NAME);
 

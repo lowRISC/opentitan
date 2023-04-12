@@ -25,7 +25,12 @@
 module otbn_start_stop_control
   import otbn_pkg::*;
   import prim_mubi_pkg::*;
-(
+#(
+  // Disable URND advance when not in use. Useful for SCA only.
+  parameter bit SecMuteUrnd = 1'b0,
+  // Skip URND re-seed at the start of the operation. Useful for SCA only.
+  parameter bit SecSkipUrndReseedAtStart = 1'b0
+) (
   input  logic clk_i,
   input  logic rst_ni,
 
@@ -63,6 +68,10 @@ module otbn_start_stop_control
 
   import otbn_pkg::*;
 
+  // Create lint errors to reduce the risk of accidentally enabling these features.
+  `ASSERT_STATIC_LINT_ERROR(OtbnSecMuteUrndNonDefault, SecMuteUrnd == 0)
+  `ASSERT_STATIC_LINT_ERROR(OtbnSecSkipUrndReseedAtStartNonDefault, SecSkipUrndReseedAtStart == 0)
+
   otbn_start_stop_state_e state_q, state_d;
   logic init_sec_wipe_done_q, init_sec_wipe_done_d;
   mubi4_t wipe_after_urnd_refresh_q, wipe_after_urnd_refresh_d;
@@ -71,6 +80,7 @@ module otbn_start_stop_control
   logic mubi_err_q, mubi_err_d;
   logic urnd_reseed_err_q, urnd_reseed_err_d;
   logic secure_wipe_error_q, secure_wipe_error_d;
+  logic skip_reseed_q;
 
   logic addr_cnt_inc;
   logic [5:0] addr_cnt_q, addr_cnt_d;
@@ -96,6 +106,24 @@ module otbn_start_stop_control
   assign rma_request   = mubi4_test_true_strict(rma_req_i);
   assign stop          = esc_request | rma_request | secure_wipe_req_i;
   assign should_lock_d = should_lock_q | esc_request | rma_request;
+
+  // Only if SecSkipUrndReseedAtStart is set, the controller start pulse is sent
+  // one cycle after leaving the Halt state.
+  if (SecSkipUrndReseedAtStart) begin: gen_skip_reseed
+    logic skip_reseed_d;
+
+    assign skip_reseed_d = ((state_q == OtbnStartStopStateHalt) & start_i & ~stop);
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        skip_reseed_q <= 1'b0;
+      end else begin
+        skip_reseed_q <= skip_reseed_d;
+      end
+    end
+  end else begin: gen_reseed
+    assign skip_reseed_q = 1'b0;
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -152,21 +180,21 @@ module otbn_start_stop_control
         urnd_reseed_req_o     = 1'b1;
         if (urnd_reseed_ack_i) begin
           urnd_advance_o = 1'b1;
-          state_d = OtbnStartStopSecureWipeWdrUrnd;
+          state_d        = OtbnStartStopSecureWipeWdrUrnd;
         end
       end
       OtbnStartStopStateHalt: begin
         if (stop && !rma_request) begin
           state_d = OtbnStartStopStateLocked;
         end else if (start_i || rma_request) begin
-          urnd_reseed_req_o = 1'b1;
+          urnd_reseed_req_o = ~SecSkipUrndReseedAtStart | rma_request;
           ispr_init_o       = 1'b1;
           state_reset_o     = 1'b1;
           state_d           = OtbnStartStopStateUrndRefresh;
         end
       end
       OtbnStartStopStateUrndRefresh: begin
-        urnd_reseed_req_o = 1'b1;
+        urnd_reseed_req_o = ~skip_reseed_q;
         if (stop) begin
           if (mubi4_test_false_strict(wipe_after_urnd_refresh_q) && !rma_request) begin
             // We are told to stop and don't have to wipe after the current URND refresh is ack'd,
@@ -186,7 +214,7 @@ module otbn_start_stop_control
           if (mubi4_test_false_strict(wipe_after_urnd_refresh_q)) begin
             // We are not stopping and we don't have to wipe after the current URND refresh is
             // ack'd, so we wait for the ACK and then start executing.
-            if (urnd_reseed_ack_i) begin
+            if (urnd_reseed_ack_i || skip_reseed_q) begin
               state_d = OtbnStartStopStateRunning;
             end
           end else begin
@@ -202,7 +230,7 @@ module otbn_start_stop_control
         end
       end
       OtbnStartStopStateRunning: begin
-        urnd_advance_o    = 1'b1;
+        urnd_advance_o    = ~SecMuteUrnd;
         allow_secure_wipe = 1'b1;
 
         if (stop) begin
@@ -332,9 +360,10 @@ module otbn_start_stop_control
                                 init_sec_wipe_done_q; // keep
 
   // Logic separate from main FSM code to avoid false combinational loop warning from verilator
-  assign controller_start_o = (state_q == OtbnStartStopStateUrndRefresh) &
-                              mubi4_test_false_strict(wipe_after_urnd_refresh_q) &
-                              urnd_reseed_ack_i;
+  assign controller_start_o =
+    // The controller start pulse is fired when finishing the initial URND reseed.
+    ((state_q == OtbnStartStopStateUrndRefresh) & (urnd_reseed_ack_i | skip_reseed_q) &
+      mubi4_test_false_strict(wipe_after_urnd_refresh_q));
 
   assign done_o = ((state_q == OtbnStartStopSecureWipeComplete && init_sec_wipe_done_q) ||
                    (stop && (state_q == OtbnStartStopStateUrndRefresh) &&

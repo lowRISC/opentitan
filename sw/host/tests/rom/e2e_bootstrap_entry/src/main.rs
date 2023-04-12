@@ -79,7 +79,7 @@ impl<'a> BootstrapTest<'a> {
             transport,
             reset_delay,
         };
-        transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
+        transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
         transport.reset_target(b.reset_delay, true)?;
         let spi = transport.spi("0").unwrap();
         SpiFlash::from_spi(&*spi)
@@ -93,16 +93,15 @@ impl<'a> BootstrapTest<'a> {
 
 impl<'a> Drop for BootstrapTest<'a> {
     fn drop(&mut self) {
-        self.transport.apply_pin_strapping("ROM_BOOTSTRAP").unwrap();
+        let bootstrapping = self.transport.pin_strapping("ROM_BOOTSTRAP").unwrap();
+        bootstrapping.apply().unwrap();
         self.transport.reset_target(self.reset_delay, true).unwrap();
         let spi = self.transport.spi("0").unwrap();
         SpiFlash::from_spi(&*spi)
             .unwrap()
             .chip_erase(&*spi)
             .unwrap();
-        self.transport
-            .remove_pin_strapping("ROM_BOOTSTRAP")
-            .unwrap();
+        bootstrapping.remove().unwrap();
         self.transport.reset_target(self.reset_delay, true).unwrap();
     }
 }
@@ -121,7 +120,7 @@ fn test_bootstrap_enabled_requested(opts: &Opts, transport: &TransportWrapper) -
         ..Default::default()
     };
 
-    transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
     // Now watch the console for the exit conditions.
@@ -326,7 +325,7 @@ fn test_bootstrap_shutdown(
     // Send CHIP_ERASE to transition to phase 2.
     SpiFlash::from_spi(&*spi)?.chip_erase(&*spi)?;
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
-    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     // SECTOR_ERASE with invalid address to trigger a shutdown.
     SpiFlash::set_write_enable(&*spi)?;
     let bad_erase = [cmd, 0xff, 0xff, 0xff];
@@ -386,9 +385,9 @@ fn test_bootstrap_phase1_page_program(opts: &Opts, transport: &TransportWrapper)
     SpiFlash::from_spi(&*spi)?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
         // Note: We must start at a flash-word-aligned address.
-        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
+        .program(&*spi, 0x821e0, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
-    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
     // We should see the expected BFV.
@@ -423,10 +422,10 @@ fn test_bootstrap_phase1_erase(
     // Send `erase_cmd` to transition to phase 2.
     erase()?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
+        .program(&*spi, 0x821e0, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
 
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
-    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
     // `kErrorBootPolicyBadLength` (0242500d) is defined in `error.h`.
     console.exit_success = Some(Regex::new("BFV:0242500d")?);
@@ -436,11 +435,11 @@ fn test_bootstrap_phase1_erase(
     }
 
     // Put the chip into bootstrap mode again and erase.
-    transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
     erase()?;
     uart.clear_rx_buffer()?;
-    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
     // `kErrorBootPolicyBadIdentifier` (0142500d) is defined in `error.h`.
     console.exit_success = Some(Regex::new("BFV:0142500d")?);
@@ -465,10 +464,10 @@ fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Resu
         // Send CHIP_ERASE to transition to phase 2.
         .chip_erase(&*spi)?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
+        .program(&*spi, 0x821e0, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
 
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
-    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
     // `kErrorBootPolicyBadLength` (0242500d) is defined in `error.h`.
     console.exit_success = Some(Regex::new("0242500d")?);
@@ -477,11 +476,11 @@ fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Resu
         bail!("FAIL: {:?}", result);
     }
 
-    transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
     assert_eq!(SpiFlash::read_status(&*spi)?, 0x00);
     let mut buf: [u8; 8] = [0xa5; 8];
-    SpiFlash::from_spi(&*spi)?.read(&*spi, 0x80330, &mut buf)?;
+    SpiFlash::from_spi(&*spi)?.read(&*spi, 0x821e0, &mut buf)?;
     log::info!("Received: {:?}", &buf);
     assert_ne!(u64::from_le_bytes(buf), 0x4552_544f_0000_0000u64);
 
@@ -502,7 +501,7 @@ fn test_bootstrap_phase2_reset(opts: &Opts, transport: &TransportWrapper) -> Res
     // Send CHIP_ERASE to transition to phase 2.
     SpiFlash::from_spi(&*spi)?.chip_erase(&*spi)?;
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
-    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     // Discard buffered messages before interacting with the console.
     uart.clear_rx_buffer()?;
     SpiFlash::chip_reset(&*spi)?;
@@ -530,7 +529,7 @@ fn test_bootstrap_phase2_page_program(opts: &Opts, transport: &TransportWrapper)
         // Send CHIP_ERASE to transition to phase 2.
         .chip_erase(&*spi)?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
+        .program(&*spi, 0x821e0, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
 
     let mut console = UartConsole {
         timeout: Some(Duration::new(1, 0)),
@@ -539,7 +538,7 @@ fn test_bootstrap_phase2_page_program(opts: &Opts, transport: &TransportWrapper)
         ..Default::default()
     };
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
-    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
     if result != ExitStatus::ExitSuccess {
@@ -560,7 +559,7 @@ fn test_bootstrap_phase2_erase(
     let spiflash = SpiFlash::from_spi(&*spi)?;
     let erase = || match erase_cmd {
         // We should erase the page of the identifier of the second slot.
-        SpiFlash::SECTOR_ERASE => spiflash.erase(&*spi, 0x80330 & (!4096 + 1), 4096),
+        SpiFlash::SECTOR_ERASE => spiflash.erase(&*spi, 0x821e0 & (!4096 + 1), 4096),
         SpiFlash::CHIP_ERASE => spiflash.chip_erase(&*spi),
         _ => bail!("Unexpected erase command opcode: {:?}", erase_cmd),
     };
@@ -568,7 +567,7 @@ fn test_bootstrap_phase2_erase(
     // Send `erase_cmd` to transition to phase 2.
     erase()?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
+        .program(&*spi, 0x821e0, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
     // Erase again.
     erase()?;
 
@@ -579,7 +578,7 @@ fn test_bootstrap_phase2_erase(
         ..Default::default()
     };
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
-    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
     if result != ExitStatus::ExitSuccess {
@@ -599,9 +598,9 @@ fn test_bootstrap_phase2_read(opts: &Opts, transport: &TransportWrapper) -> Resu
         // Send CHIP_ERASE to transition to phase 2.
         .chip_erase(&*spi)?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?
-        // Read 8 bytes starting from 0x80330.
-        .read(&*spi, 0x80330, &mut read_buf)?;
+        .program(&*spi, 0x821e0, &0x4552_544f_0000_0000_u64.to_le_bytes())?
+        // Read 8 bytes starting from 0x821e0.
+        .read(&*spi, 0x821e0, &mut read_buf)?;
     let received = u64::from_le_bytes(read_buf);
     log::info!("Received: {:#x}", received);
     assert_ne!(received, 0x4552_544f_0000_0000_u64);
@@ -613,7 +612,7 @@ fn test_bootstrap_phase2_read(opts: &Opts, transport: &TransportWrapper) -> Resu
         ..Default::default()
     };
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
-    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
     if result != ExitStatus::ExitSuccess {
@@ -640,7 +639,7 @@ fn test_bootstrap_watchdog_check(opts: &Opts, transport: &TransportWrapper) -> R
     // Release bootstrap pin strapping and verify that we don't receive
     // anything over UART until the console times out.
     uart.clear_rx_buffer()?;
-    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
     if result != ExitStatus::Timeout {
         bail!("FAIL: {:?}", result);

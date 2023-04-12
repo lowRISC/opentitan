@@ -45,8 +45,9 @@ bool test_main(void) {
   dif_sensor_ctrl_t sensor_ctrl;
   dif_aon_timer_t aon_timer;
 
-  const uint32_t kMeasurementDelayMicros =
-      aon_timer_testutils_get_us_from_aon_cycles(kMeasurementsPerRound);
+  uint32_t delay_micros = 0;
+  CHECK_STATUS_OK(aon_timer_testutils_get_us_from_aon_cycles(
+      kMeasurementsPerRound, &delay_micros));
 
   CHECK_DIF_OK(dif_clkmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
@@ -67,7 +68,7 @@ bool test_main(void) {
     clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
         &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
         /*low_speed=*/false);
-    busy_spin_micros(kMeasurementDelayMicros);
+    busy_spin_micros(delay_micros);
 
     // check results
     CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
@@ -80,7 +81,8 @@ bool test_main(void) {
     //
     // Set the counters so we should get an error unless they are cleared.
     uint32_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 1000 : 100;
-    aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
+    CHECK_STATUS_OK(
+        aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 
     LOG_INFO("Start clock measurements to cause an error for main clk.");
     clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
@@ -89,7 +91,7 @@ bool test_main(void) {
     // Disable writes to measure ctrl registers.
     CHECK_DIF_OK(dif_clkmgr_measure_ctrl_disable(&clkmgr));
 
-    busy_spin_micros(kMeasurementDelayMicros);
+    busy_spin_micros(delay_micros);
 
     pwrmgr_testutils_enable_low_power(
         &pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
@@ -122,7 +124,7 @@ bool test_main(void) {
     clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
         &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
         /*low_speed=*/false);
-    busy_spin_micros(kMeasurementDelayMicros);
+    busy_spin_micros(delay_micros);
     CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
     clkmgr_testutils_disable_clock_counts(&clkmgr);
 

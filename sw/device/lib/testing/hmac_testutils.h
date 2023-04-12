@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 
 /**
@@ -89,8 +90,8 @@ extern const dif_hmac_digest_t kHmacRefExpectedDigest;
  * @param hmac An HMAC handle.
  * @param expected_sent_bits Expected size of hashed data in bits.
  */
-void hmac_testutils_check_message_length(const dif_hmac_t *hmac,
-                                         uint64_t expected_sent_bits);
+status_t hmac_testutils_check_message_length(const dif_hmac_t *hmac,
+                                             uint64_t expected_sent_bits);
 
 /**
  * Spins until the HMAC FIFO is empty, or has timed out.
@@ -99,7 +100,7 @@ void hmac_testutils_check_message_length(const dif_hmac_t *hmac,
  *
  * @param hmac An HMAC handle.
  */
-void hmac_testutils_fifo_empty_polled(const dif_hmac_t *hmac);
+status_t hmac_testutils_fifo_empty_polled(const dif_hmac_t *hmac);
 
 /**
  * Spins until the HMAC has finished processing final hash, or timed out.
@@ -109,8 +110,8 @@ void hmac_testutils_fifo_empty_polled(const dif_hmac_t *hmac);
  * @param hmac An HMAC handle.
  * @param digest_out HMAC final digest.
  */
-void hmac_testutils_finish_polled(const dif_hmac_t *hmac,
-                                  dif_hmac_digest_t *digest_out);
+status_t hmac_testutils_finish_polled(const dif_hmac_t *hmac,
+                                      dif_hmac_digest_t *digest_out);
 
 /**
  * Spins until HMAC has processed the final hash, and compares the digests.
@@ -121,8 +122,8 @@ void hmac_testutils_finish_polled(const dif_hmac_t *hmac,
  * @param hmac An HMAC handle.
  * @param expected Expected HMAC final digest.
  */
-void hmac_testutils_finish_and_check_polled(const dif_hmac_t *hmac,
-                                            const dif_hmac_digest_t *expected);
+status_t hmac_testutils_finish_and_check_polled(
+    const dif_hmac_t *hmac, const dif_hmac_digest_t *expected);
 
 /**
  * Loads entire message into the HMAC engine.
@@ -134,7 +135,7 @@ void hmac_testutils_finish_and_check_polled(const dif_hmac_t *hmac,
  * @param data Data to be hashed.
  * @param len Size of the data to be hashed.
  */
-void hmac_testutils_push_message(const dif_hmac_t *hmac, const char *data,
-                                 size_t len);
+status_t hmac_testutils_push_message(const dif_hmac_t *hmac, const char *data,
+                                     size_t len);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_HMAC_TESTUTILS_H_

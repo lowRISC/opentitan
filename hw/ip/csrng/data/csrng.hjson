@@ -2,6 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 { name:               "csrng",
+  human_name:         "Cryptographically Secure Random Number Generator",
+  one_line_desc:      "Takes entropy bits to produce cryptographically secure random numbers for consumption by hardware blocks and by software",
+  one_paragraph_desc: '''
+  Cryptographically Secure Random Number Generator (CSRNG) consumes random seeds from Entropy Source and generates random numbers for separate application interface contexts, such as multiple entropy distribution networks and software.
+  When used in fully deterministic mode, the random numbers are generated just based on seeds provided by the application input.
+  CSRNG targets compliance with [BSI's AIS31 recommendations for Common Criteria (CC)][bsi-ais31] as well as NIST's [SP 800-90A][nist-sp-800-90a] and [SP 800-90C][nist-sp-800-90c].
+  Internally, it uses the CTR_DRBG construction with a security strength of 256 bits as specified by [SP 800-90A][nist-sp-800-90a].
+
+  [bsi-ais31]: https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Zertifizierung/Interpretationen/AIS_31_Functionality_classes_for_random_number_generators_e.pdf
+  [nist-sp-800-90a]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf
+  [nist-sp-800-90c]: https://csrc.nist.gov/CSRC/media/Publications/sp/800-90c/draft/documents/sp800_90c_second_draft.pdf
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

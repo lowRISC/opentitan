@@ -10,6 +10,7 @@ from typing import (
     List,
 )
 import logging as log
+import os
 from pathlib import Path, PurePath
 from pprint import pformat
 import subprocess
@@ -74,6 +75,7 @@ def run(*args) -> List[str]:
     log.debug(f"command: {' '.join(args)}")
     try:
         res = subprocess.run(args,
+                             env=os.environ.copy(),
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
                              encoding='ascii',
@@ -142,7 +144,7 @@ def get_test_log_dirs(test_targets: List[str]) -> List[Path]:
         test_targets: Test targets.
 
     Returns:
-        Log directories of the the given test targets.
+        Log directories of the given test targets.
     """
     [test_log_dir_root] = run(BAZEL, "info", "bazel-testlogs")
     test_log_dirs = []
@@ -255,9 +257,14 @@ def measure_coverage(*, log_level: LogLevel, out_root_dir: Path,
         test_targets_query(bazel_test_type),
     )
     test_targets = test_targets_fn(test_targets_all)
+    # Instrumented ROM overflows the space allocated for ROM. `test_targets_fn` for
+    # functional tests programs the FPGA with the non-instrumented test ROM and we skip
+    # bitstream loading during tests.
     run(
         BAZEL,
         "coverage",
+        "--define",
+        "bitstream=skip",
         f"--config={config}",
         "--test_output=all",
         *test_targets,

@@ -38,3 +38,7 @@ waive -rules {CLOCK_USE RESET_USE} -location {otbn_alu_bignum.sv otbn_rf_bignum_
 waive -rules {CLOCK_USE RESET_USE} -location {otbn_instruction_fetch.sv} \
       -regexp {'(clk_i|rst_ni)' is connected to 'otbn_predecode' port} \
       -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
+
+waive -rules {ONE_BIT_MEM_WIDTH} -location {otbn_alu_bignum.sv} \
+      -msg {Memory 'flag_mux_in' has word width which is single bit wide} \
+      -comment {The in_i input of prim_onehot_mux has an unpacked and a packed dimension where in this particular case the latter is 1.}

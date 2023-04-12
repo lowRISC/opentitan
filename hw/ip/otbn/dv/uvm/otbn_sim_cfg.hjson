@@ -13,7 +13,7 @@ name:
   tb: tb
 
   // Simulator used to sign off this block
-  tool: vcs
+  tool: xcelium
 
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:otbn_sim:0.1

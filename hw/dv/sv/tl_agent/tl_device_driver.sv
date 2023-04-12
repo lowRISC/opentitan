@@ -113,15 +113,22 @@ class tl_device_driver extends tl_base_driver;
   endtask : d_channel_thread
 
   function void invalidate_d_channel();
-    cfg.vif.d2h_int.d_opcode <= tlul_pkg::tl_d_op_e'('x);
-    cfg.vif.d2h_int.d_param <= '{default:'x};
-    cfg.vif.d2h_int.d_size <= '{default:'x};
-    cfg.vif.d2h_int.d_source <= '{default:'x};
-    cfg.vif.d2h_int.d_sink <= '{default:'x};
-    cfg.vif.d2h_int.d_data <= '{default:'x};
-    cfg.vif.d2h_int.d_user <= '{default:'x};
-    cfg.vif.d2h_int.d_error <= 1'bx;
-    cfg.vif.d2h_int.d_valid <= 1'b0;
+    if (cfg.invalidate_d_x) begin
+      cfg.vif.d2h_int.d_opcode <= tlul_pkg::tl_d_op_e'('x);
+      cfg.vif.d2h_int.d_param <= '{default:'x};
+      cfg.vif.d2h_int.d_size <= '{default:'x};
+      cfg.vif.d2h_int.d_source <= '{default:'x};
+      cfg.vif.d2h_int.d_sink <= '{default:'x};
+      cfg.vif.d2h_int.d_data <= '{default:'x};
+      cfg.vif.d2h_int.d_user <= '{default:'x};
+      cfg.vif.d2h_int.d_error <= 1'bx;
+      cfg.vif.d2h_int.d_valid <= 1'b0;
+    end else begin // if (cfg.invalidate_d_x)
+      tlul_pkg::tl_d2h_t d2h;
+      `DV_CHECK_STD_RANDOMIZE_FATAL(d2h)
+      d2h.d_valid = 1'b0;
+      cfg.vif.d2h_int <= d2h;
+    end
   endfunction : invalidate_d_channel
 
 endclass

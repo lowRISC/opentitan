@@ -183,6 +183,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         process_interrupts();
         process_fifo_exceptions();
         health_test_scoring_thread();
+        process_xht();
       join_none
     end
   endtask
@@ -799,8 +800,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       if (main_sm_exp_alert_cond) begin
         if (!fw_ov_insert && !threshold_alert_active && !main_sm_escalates) begin
           if (dut_phase == STARTUP) begin
-            fmt =  "New alert anticpated with >= 2 failing windows.";
-            fmt += "(supercedes count/threshold of %01d/%01d)";
+            fmt =  "New alert anticpated with >= 2 failing windows." +
+                   "(supercedes count/threshold of %01d/%01d)";
           end else begin
             fmt = "New alert anticpated! Fail count (%01d) >= threshold (%01d)";
           end
@@ -823,9 +824,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval, alert_threshold), UVM_HIGH)
       end
     end else begin : no_test_failure
-      if (!threshold_alert_active && !main_sm_escalates) begin
-        any_fail_count_regval = 0;
-        // Now we know that all tests have passed we can clear the failure counts
+      if (!fw_ov_insert && !threshold_alert_active && !main_sm_escalates) begin
+        // Now we know that all tests have passed we can clear the failure counts. In FW_OV mode
+        // alerts are suppressed but we keep counting failures. In addition, even in case of a
+        // full passing test sequence, counters are not cleared.
         `DV_CHECK_FATAL(alert_fail_reg.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_DIRECT)))
         `DV_CHECK_FATAL(extht_fail_reg.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_DIRECT)))
         `DV_CHECK_FATAL(any_fail_count_fld.predict(.value('0), .kind(UVM_PREDICT_DIRECT)))
@@ -1107,6 +1109,21 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
   endtask
 
+  task process_xht();
+    // Process XHT transactions.
+    forever begin
+      @(cfg.m_xht_agent_cfg.vif.mon_cb);
+      if (cfg.under_reset) continue;
+
+      if (cfg.xht_only_default_rsp) begin
+        // If the environment is configured to maintain the default XHT response at all time, ensure
+        // that this is really the case.
+        `DV_CHECK_EQ(cfg.m_xht_agent_cfg.vif.mon_cb.rsp,
+                     entropy_src_pkg::ENTROPY_SRC_XHT_RSP_DEFAULT)
+      end
+    end
+  endtask
+
   // All the HT threshold registers are one-way: they can only become more strict unless
   // the DUT is reset.  This function encapsulates this behavior.
   //
@@ -1377,6 +1394,17 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     if (channel == AddrChannel) begin
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
+        if (csr.get_name() == "module_enable") begin
+          uvm_reg_data_t reg_data;
+          logic [3:0] tl_data_lsbs;
+          csr_rd(.ptr(ral.main_sm_state.main_sm_state), .value(reg_data), .backdoor(1));
+          tl_data_lsbs = item.get_written_data();
+          cov_vif.cg_sw_disable_sample(
+              ral.me_regwen.me_regwen.get_mirrored_value(),
+              tl_data_lsbs == MuBi4True,
+              entropy_src_main_sm_pkg::state_e'(reg_data)
+          );
+        end
         if (locked_reg_access) begin
           string msg = $sformatf("Attempt to write while locked: %s", csr.get_name());
           `uvm_info(`gfn, msg, UVM_FULL)
@@ -2238,7 +2266,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           // update counters for processing next seed:
           pass_count = 0;
           seed_idx++;
-        end : window_loop
+        end
       end : enabled_loop
     end : simulation_loop
   endtask

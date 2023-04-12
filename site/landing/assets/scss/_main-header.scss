@@ -12,7 +12,7 @@
   transition: top .1s linear;
   text-decoration: none;
 
-  &:focus, 
+  &:focus,
   &:focus-visible {
     top: 0;
     color: $dark-purple;
@@ -43,6 +43,7 @@
   width: 12.5em;
   max-height: 2.375em;
   min-width: 12.5em;
+  margin: 0;
   order: 1;
   flex-grow: 1;
   flex-basis: calc((40em - 100%) * 999);
@@ -87,6 +88,14 @@
       display: block;
       position: relative;
       padding: 0.25em 0;
+      white-space: nowrap;
+
+      svg {
+        vertical-align: bottom;
+        font-size: 1.5em;
+        width: 1em;
+        height: 1em;
+      }
 
       &:after {
         content: "";

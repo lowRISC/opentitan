@@ -620,6 +620,36 @@ module ibex_top import ibex_pkg::*; #(
           .cfg_i       (ram_cfg_i)
         );
 
+        `ifdef INC_ASSERT
+          // Sample scramble key whenever it is valid for use in the assertions below.  This may be
+          // redundant with the sampling performed in the actual design, but that is okay because
+          // the assertions exist to check the correct functioning of the design.
+          logic [SCRAMBLE_KEY_W-1:0] sampled_scramble_key;
+          always_ff @(posedge clk_i, negedge rst_ni) begin
+            if (!rst_ni) begin
+              sampled_scramble_key <= 'x;
+            end else if (scramble_key_valid_i) begin
+              sampled_scramble_key <= scramble_key_i;
+            end
+          end
+
+          // Ensure that when a scramble key is received, it is correctly applied to the icache
+          // scrambled memory primitives.  The upper bound in the cycle ranges below is not exact,
+          // but it should not take more than 10 cycles.
+          `ASSERT(ScrambleKeyAppliedAtTagBank_A,
+                  scramble_key_valid_i
+                  |-> ##[0:10]
+                  tag_bank.key_valid_i && (tag_bank.key_i == sampled_scramble_key),
+                  clk_i, !rst_ni
+          )
+          `ASSERT(ScrambleKeyAppliedAtDataBank_A,
+                  scramble_key_valid_i
+                  |-> ##[0:10]
+                  data_bank.key_valid_i && (data_bank.key_i == sampled_scramble_key),
+                  clk_i, !rst_ni
+          )
+        `endif
+
       end else begin : gen_noscramble_rams
 
         // Tag RAM instantiation

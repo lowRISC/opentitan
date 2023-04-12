@@ -10,6 +10,13 @@
 
 {
   name:               "otp_ctrl",
+  human_name:         "One-Time Programmable Memory Controller",
+  one_line_desc:      "Interfaces integrated one-time programmable memory, supports scrambling, integrity and secure wipe",
+  one_paragraph_desc: '''
+  One-Time Programmable (OTP) Memory Controller provides an open source abstraction interface for software and other hardware components such as Life Cycle Controller and Key Manager to interact with an integrated, closed source, proprietary OTP memory.
+  On top of defensive features provided by the proprietary OTP memory to deter side-channel analysis (SCA), fault injection (FI) attacks, and visual and electrical probing, the open source OTP controller features high-level logical security protection such as integrity checks and scrambling, as well as software isolation for when OTP contents are readable and programmable.
+  It features multiple individually-lockable logical partitions, periodic / persistent checking of OTP values, and a separate partition and interface for Life Cycle Controller.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
@@ -243,26 +250,50 @@
       default: "4",
       local: "true"
     },
-    { name: "CreatorSwCfgUseSwRsaVerifyOffset",
-      desc: "Offset of CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
+    { name: "CreatorSwCfgSigverifyRsaModExpIbexEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN",
       type: "int",
       default: "228",
       local: "true"
     },
-    { name: "CreatorSwCfgUseSwRsaVerifySize",
-      desc: "Size of CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
+    { name: "CreatorSwCfgSigverifyRsaModExpIbexEnSize",
+      desc: "Size of CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN",
       type: "int",
       default: "4",
       local: "true"
     },
-    { name: "CreatorSwCfgKeyIsValidOffset",
-      desc: "Offset of CREATOR_SW_CFG_KEY_IS_VALID",
+    { name: "CreatorSwCfgSigverifyRsaKeyEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN",
       type: "int",
       default: "232",
       local: "true"
     },
-    { name: "CreatorSwCfgKeyIsValidSize",
-      desc: "Size of CREATOR_SW_CFG_KEY_IS_VALID",
+    { name: "CreatorSwCfgSigverifyRsaKeyEnSize",
+      desc: "Size of CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+    { name: "CreatorSwCfgSigverifySpxEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_SIGVERIFY_SPX_EN",
+      type: "int",
+      default: "240",
+      local: "true"
+    },
+    { name: "CreatorSwCfgSigverifySpxEnSize",
+      desc: "Size of CREATOR_SW_CFG_SIGVERIFY_SPX_EN",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "CreatorSwCfgSigverifySpxKeyEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN",
+      type: "int",
+      default: "244",
+      local: "true"
+    },
+    { name: "CreatorSwCfgSigverifySpxKeyEnSize",
+      desc: "Size of CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN",
       type: "int",
       default: "8",
       local: "true"
@@ -270,7 +301,7 @@
     { name: "CreatorSwCfgFlashDataDefaultCfgOffset",
       desc: "Offset of CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
       type: "int",
-      default: "240",
+      default: "252",
       local: "true"
     },
     { name: "CreatorSwCfgFlashDataDefaultCfgSize",
@@ -282,7 +313,7 @@
     { name: "CreatorSwCfgFlashInfoBootDataCfgOffset",
       desc: "Offset of CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG",
       type: "int",
-      default: "244",
+      default: "256",
       local: "true"
     },
     { name: "CreatorSwCfgFlashInfoBootDataCfgSize",
@@ -294,7 +325,7 @@
     { name: "CreatorSwCfgRngEnOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_EN",
       type: "int",
-      default: "248",
+      default: "260",
       local: "true"
     },
     { name: "CreatorSwCfgRngEnSize",
@@ -306,7 +337,7 @@
     { name: "CreatorSwCfgJitterEnOffset",
       desc: "Offset of CREATOR_SW_CFG_JITTER_EN",
       type: "int",
-      default: "252",
+      default: "264",
       local: "true"
     },
     { name: "CreatorSwCfgJitterEnSize",
@@ -318,7 +349,7 @@
     { name: "CreatorSwCfgRetRamResetMaskOffset",
       desc: "Offset of CREATOR_SW_CFG_RET_RAM_RESET_MASK",
       type: "int",
-      default: "256",
+      default: "268",
       local: "true"
     },
     { name: "CreatorSwCfgRetRamResetMaskSize",
@@ -330,7 +361,7 @@
     { name: "CreatorSwCfgManufStateOffset",
       desc: "Offset of CREATOR_SW_CFG_MANUF_STATE",
       type: "int",
-      default: "260",
+      default: "272",
       local: "true"
     },
     { name: "CreatorSwCfgManufStateSize",
@@ -342,7 +373,7 @@
     { name: "CreatorSwCfgRomExecEnOffset",
       desc: "Offset of CREATOR_SW_CFG_ROM_EXEC_EN",
       type: "int",
-      default: "264",
+      default: "276",
       local: "true"
     },
     { name: "CreatorSwCfgRomExecEnSize",
@@ -354,7 +385,7 @@
     { name: "CreatorSwCfgCpuctrlOffset",
       desc: "Offset of CREATOR_SW_CFG_CPUCTRL",
       type: "int",
-      default: "268",
+      default: "280",
       local: "true"
     },
     { name: "CreatorSwCfgCpuctrlSize",
@@ -366,7 +397,7 @@
     { name: "CreatorSwCfgMinSecVerRomExtOffset",
       desc: "Offset of CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT",
       type: "int",
-      default: "272",
+      default: "284",
       local: "true"
     },
     { name: "CreatorSwCfgMinSecVerRomExtSize",
@@ -378,7 +409,7 @@
     { name: "CreatorSwCfgMinSecVerBl0Offset",
       desc: "Offset of CREATOR_SW_CFG_MIN_SEC_VER_BL0",
       type: "int",
-      default: "276",
+      default: "288",
       local: "true"
     },
     { name: "CreatorSwCfgMinSecVerBl0Size",
@@ -390,7 +421,7 @@
     { name: "CreatorSwCfgDefaultBootDataInProdEnOffset",
       desc: "Offset of CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN",
       type: "int",
-      default: "280",
+      default: "292",
       local: "true"
     },
     { name: "CreatorSwCfgDefaultBootDataInProdEnSize",
@@ -402,7 +433,7 @@
     { name: "CreatorSwCfgRmaSpinEnOffset",
       desc: "Offset of CREATOR_SW_CFG_RMA_SPIN_EN",
       type: "int",
-      default: "284",
+      default: "296",
       local: "true"
     },
     { name: "CreatorSwCfgRmaSpinEnSize",
@@ -414,7 +445,7 @@
     { name: "CreatorSwCfgRmaSpinCyclesOffset",
       desc: "Offset of CREATOR_SW_CFG_RMA_SPIN_CYCLES",
       type: "int",
-      default: "288",
+      default: "300",
       local: "true"
     },
     { name: "CreatorSwCfgRmaSpinCyclesSize",
@@ -426,7 +457,7 @@
     { name: "CreatorSwCfgRngRepcntThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS",
       type: "int",
-      default: "292",
+      default: "304",
       local: "true"
     },
     { name: "CreatorSwCfgRngRepcntThresholdsSize",
@@ -438,7 +469,7 @@
     { name: "CreatorSwCfgRngRepcntsThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS",
       type: "int",
-      default: "296",
+      default: "308",
       local: "true"
     },
     { name: "CreatorSwCfgRngRepcntsThresholdsSize",
@@ -450,7 +481,7 @@
     { name: "CreatorSwCfgRngAdaptpHiThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS",
       type: "int",
-      default: "300",
+      default: "312",
       local: "true"
     },
     { name: "CreatorSwCfgRngAdaptpHiThresholdsSize",
@@ -462,7 +493,7 @@
     { name: "CreatorSwCfgRngAdaptpLoThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS",
       type: "int",
-      default: "304",
+      default: "316",
       local: "true"
     },
     { name: "CreatorSwCfgRngAdaptpLoThresholdsSize",
@@ -474,7 +505,7 @@
     { name: "CreatorSwCfgRngBucketThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS",
       type: "int",
-      default: "308",
+      default: "320",
       local: "true"
     },
     { name: "CreatorSwCfgRngBucketThresholdsSize",
@@ -486,7 +517,7 @@
     { name: "CreatorSwCfgRngMarkovHiThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS",
       type: "int",
-      default: "312",
+      default: "324",
       local: "true"
     },
     { name: "CreatorSwCfgRngMarkovHiThresholdsSize",
@@ -498,7 +529,7 @@
     { name: "CreatorSwCfgRngMarkovLoThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS",
       type: "int",
-      default: "316",
+      default: "328",
       local: "true"
     },
     { name: "CreatorSwCfgRngMarkovLoThresholdsSize",
@@ -510,7 +541,7 @@
     { name: "CreatorSwCfgRngExthtHiThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS",
       type: "int",
-      default: "320",
+      default: "332",
       local: "true"
     },
     { name: "CreatorSwCfgRngExthtHiThresholdsSize",
@@ -522,7 +553,7 @@
     { name: "CreatorSwCfgRngExthtLoThresholdsOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS",
       type: "int",
-      default: "324",
+      default: "336",
       local: "true"
     },
     { name: "CreatorSwCfgRngExthtLoThresholdsSize",
@@ -534,7 +565,7 @@
     { name: "CreatorSwCfgRngAlertThresholdOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_ALERT_THRESHOLD",
       type: "int",
-      default: "328",
+      default: "340",
       local: "true"
     },
     { name: "CreatorSwCfgRngAlertThresholdSize",
@@ -546,7 +577,7 @@
     { name: "CreatorSwCfgRngHealthConfigDigestOffset",
       desc: "Offset of CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST",
       type: "int",
-      default: "332",
+      default: "344",
       local: "true"
     },
     { name: "CreatorSwCfgRngHealthConfigDigestSize",
@@ -1204,7 +1235,7 @@
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
       desc:    '''
-               Test enable qualifier coming from from life cycle controller.
+               Test enable qualifier coming from life cycle controller.
                This signals enables the TL-UL access port to the proprietary OTP IP.
                '''
     }

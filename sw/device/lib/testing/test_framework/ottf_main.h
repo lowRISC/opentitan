@@ -7,7 +7,10 @@
 
 #include <stdbool.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/runtime/ibex.h"
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
@@ -34,11 +37,6 @@ extern bool test_main(void);
 enum {
   kOttfFreeRtosMinStackSize = configMINIMAL_STACK_SIZE,
 };
-
-/**
- * Returns the UART that is the console device.
- */
-dif_uart_t *ottf_console(void);
 
 /**
  * TODO: add description
@@ -106,5 +104,27 @@ void ottf_task_delete_self(void);
  * https://www.freertos.org/a00021.html#pcTaskGetName.
  */
 char *ottf_task_get_self_name(void);
+
+/**
+ * Execute a test function, profile the execution and log the test result.
+ * Update the result value if there is a failure code.
+ */
+#define EXECUTE_TEST(result_, test_function_)                            \
+  do {                                                                   \
+    LOG_INFO("Starting test " #test_function_ "...");                    \
+    uint64_t t_start_ = ibex_mcycle_read();                              \
+    status_t local_status = INTO_STATUS(test_function_());               \
+    uint32_t cycles_ = ibex_mcycle_read() - t_start_;                    \
+    uint32_t clock_mhz = (uint32_t)kClockFreqCpuHz / 1000000;            \
+    uint32_t micros = cycles_ / clock_mhz;                               \
+    if (status_ok(local_status)) {                                       \
+      LOG_INFO("Successfully finished test " #test_function_             \
+               " in %u cycles or %u us @ %u MHz.",                       \
+               cycles_, micros, clock_mhz);                              \
+    } else {                                                             \
+      result_ = local_status;                                            \
+      LOG_ERROR("Finished test " #test_function_ ": %r.", local_status); \
+    }                                                                    \
+  } while (0)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_MAIN_H_

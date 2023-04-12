@@ -38,7 +38,6 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
   endtask
 
   task body();
-    int state_wait_timeout_ns = 50000; // 50 us
     int long_wait_timeout_ns = 5000000; // 5ms
     int wait_time;
     string path;
@@ -55,7 +54,7 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
             otp_model();
             `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rd_buf_en == 1);,
                          "Timed out waiting for rd_buf_en",
-                         state_wait_timeout_ns)
+                         cfg.seq_cfg.state_wait_timeout_ns)
             `uvm_info("Test", "RMA REQUEST START", UVM_LOW)
             rma_seed = $urandom;  // Random RMA Seed
             send_rma_req(rma_seed);
@@ -76,7 +75,7 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
             `uvm_info("Test", $sformatf("index: %s exception_mode: %0d",
                                         reset_index.name, exception_mode), UVM_LOW)
             if (reset_index == DVWaitRmaRsp) wait_time = long_wait_timeout_ns;
-            else wait_time = state_wait_timeout_ns;
+            else wait_time = cfg.seq_cfg.state_wait_timeout_ns;
 
             `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.lcmgr_state == dv2rtl_st(reset_index));,
                          $sformatf("Timed out waiting for %s", reset_index.name),
@@ -129,7 +128,6 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
               cfg.clk_rst_vif.wait_clks(10);
             end
             `uvm_info(`gfn, "RESET", UVM_LOW)
-            cfg.seq_cfg.disable_flash_init = 1;
             // Enable secret seed at the beginning of the loop
             cfg.seq_cfg.en_init_keys_seeds = 0;
             cfg.flash_ctrl_vif.rma_req = lc_ctrl_pkg::Off;
@@ -149,7 +147,7 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
       otp_model();
       `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rd_buf_en == 1);,
                    "Timed out waiting for rd_buf_en",
-                   state_wait_timeout_ns)
+                   cfg.seq_cfg.state_wait_timeout_ns)
 
       apply_reset();
       cfg.flash_ctrl_vif.lc_seed_hw_rd_en = lc_ctrl_pkg::On;

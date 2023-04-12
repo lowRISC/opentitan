@@ -62,6 +62,7 @@ cc_library(
     name = "earl_grey_test_rom_lib",
     deps = [
         "//sw/device/lib/dif:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/rom:bootstrap",
     ],
 )
@@ -99,6 +100,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+        "//sw/device/silicon_creator/lib/sigverify:spx_key",
     ],
 )
 

@@ -9,6 +9,11 @@
 
 .section .text
 
+/* Initialise WDRs before using them */
+bn.xor w14, w14, w14
+bn.xor w15, w15, w15
+bn.xor w16, w16, w16
+
 /**
  * Unrolled 768=384x384 bit multiplication.
  *
@@ -209,7 +214,10 @@ solinas384:
 wrap_solinas384:
   /* Initialize all-zero register. */
   bn.xor w31, w31, w31
-
+  /* Initialise WDRs before using them */
+  bn.xor w14, w14, w14
+  bn.xor w15, w15, w15
+  bn.xor w16, w16, w16
   /* load first operand from dmem to [w9, w8] */
   li     x4, 8
   la     x5, first

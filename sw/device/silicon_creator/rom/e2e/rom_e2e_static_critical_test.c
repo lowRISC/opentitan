@@ -32,7 +32,7 @@ void boot_measurements_test(void) {
   const manifest_t *manifest = manifest_def_get();
   CHECK(manifest->usage_constraints.selector_bits == 0);
   const char *signed_region_start =
-      (const char *)manifest + sizeof(sigverify_rsa_buffer_t);
+      (const char *)manifest + offsetof(manifest_t, usage_constraints);
   const char *manifest_end = (const char *)manifest + sizeof(manifest_t);
   const char *image_end = (const char *)manifest + manifest->length;
   size_t signed_region_size = image_end - signed_region_start;
@@ -51,10 +51,11 @@ void boot_measurements_test(void) {
                  .digest_endianness = kDifHmacEndiannessLittle,
                  .message_endianness = kDifHmacEndiannessLittle,
              }));
-  hmac_testutils_push_message(&hmac, signed_region_start, signed_region_size);
+  CHECK_STATUS_OK(hmac_testutils_push_message(&hmac, signed_region_start,
+                                              signed_region_size));
   CHECK_DIF_OK(dif_hmac_process(&hmac));
   dif_hmac_digest_t act_digest;
-  hmac_testutils_finish_polled(&hmac, &act_digest);
+  CHECK_STATUS_OK(hmac_testutils_finish_polled(&hmac, &act_digest));
 
   CHECK_ARRAYS_EQ(boot_measurements.rom_ext.data, act_digest.digest,
                   ARRAYSIZE(act_digest.digest));

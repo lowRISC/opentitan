@@ -35,6 +35,7 @@
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -1097,10 +1098,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering adc_ctrl_aon IRQ %d.", irq);
     CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(adc_ctrl_irq_serviced == irq,
-          "Incorrect adc_ctrl_aon IRQ serviced: exp = %d, obs = %d", irq,
-          adc_ctrl_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(adc_ctrl_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from adc_ctrl_aon is serviced.", irq);
   }
 
@@ -1111,10 +1111,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering alert_handler IRQ %d.", irq);
     CHECK_DIF_OK(dif_alert_handler_irq_force(&alert_handler, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(alert_handler_irq_serviced == irq,
-          "Incorrect alert_handler IRQ serviced: exp = %d, obs = %d", irq,
-          alert_handler_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(alert_handler_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from alert_handler is serviced.", irq);
   }
 
@@ -1125,10 +1124,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering aon_timer_aon IRQ %d.", irq);
     CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer_aon, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(aon_timer_irq_serviced == irq,
-          "Incorrect aon_timer_aon IRQ serviced: exp = %d, obs = %d", irq,
-          aon_timer_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(aon_timer_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from aon_timer_aon is serviced.", irq);
   }
 
@@ -1139,10 +1137,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering csrng IRQ %d.", irq);
     CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(csrng_irq_serviced == irq,
-          "Incorrect csrng IRQ serviced: exp = %d, obs = %d", irq,
-          csrng_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(csrng_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from csrng is serviced.", irq);
   }
 
@@ -1153,10 +1150,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering edn0 IRQ %d.", irq);
     CHECK_DIF_OK(dif_edn_irq_force(&edn0, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(edn_irq_serviced == irq,
-          "Incorrect edn0 IRQ serviced: exp = %d, obs = %d", irq,
-          edn_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(edn_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from edn0 is serviced.", irq);
   }
 
@@ -1167,10 +1163,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering edn1 IRQ %d.", irq);
     CHECK_DIF_OK(dif_edn_irq_force(&edn1, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(edn_irq_serviced == irq,
-          "Incorrect edn1 IRQ serviced: exp = %d, obs = %d", irq,
-          edn_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(edn_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from edn1 is serviced.", irq);
   }
 
@@ -1181,10 +1176,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering entropy_src IRQ %d.", irq);
     CHECK_DIF_OK(dif_entropy_src_irq_force(&entropy_src, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(entropy_src_irq_serviced == irq,
-          "Incorrect entropy_src IRQ serviced: exp = %d, obs = %d", irq,
-          entropy_src_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(entropy_src_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from entropy_src is serviced.", irq);
   }
 
@@ -1195,10 +1189,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering flash_ctrl IRQ %d.", irq);
     CHECK_DIF_OK(dif_flash_ctrl_irq_force(&flash_ctrl, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(flash_ctrl_irq_serviced == irq,
-          "Incorrect flash_ctrl IRQ serviced: exp = %d, obs = %d", irq,
-          flash_ctrl_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(flash_ctrl_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from flash_ctrl is serviced.", irq);
   }
 
@@ -1209,10 +1202,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering gpio IRQ %d.", irq);
     CHECK_DIF_OK(dif_gpio_irq_force(&gpio, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(gpio_irq_serviced == irq,
-          "Incorrect gpio IRQ serviced: exp = %d, obs = %d", irq,
-          gpio_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(gpio_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from gpio is serviced.", irq);
   }
 
@@ -1223,10 +1215,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering hmac IRQ %d.", irq);
     CHECK_DIF_OK(dif_hmac_irq_force(&hmac, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(hmac_irq_serviced == irq,
-          "Incorrect hmac IRQ serviced: exp = %d, obs = %d", irq,
-          hmac_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(hmac_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from hmac is serviced.", irq);
   }
 
@@ -1237,10 +1228,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering i2c0 IRQ %d.", irq);
     CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(i2c_irq_serviced == irq,
-          "Incorrect i2c0 IRQ serviced: exp = %d, obs = %d", irq,
-          i2c_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(i2c_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from i2c0 is serviced.", irq);
   }
 
@@ -1251,10 +1241,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering i2c1 IRQ %d.", irq);
     CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(i2c_irq_serviced == irq,
-          "Incorrect i2c1 IRQ serviced: exp = %d, obs = %d", irq,
-          i2c_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(i2c_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from i2c1 is serviced.", irq);
   }
 
@@ -1265,10 +1254,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering i2c2 IRQ %d.", irq);
     CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(i2c_irq_serviced == irq,
-          "Incorrect i2c2 IRQ serviced: exp = %d, obs = %d", irq,
-          i2c_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(i2c_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from i2c2 is serviced.", irq);
   }
 
@@ -1279,10 +1267,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering keymgr IRQ %d.", irq);
     CHECK_DIF_OK(dif_keymgr_irq_force(&keymgr, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(keymgr_irq_serviced == irq,
-          "Incorrect keymgr IRQ serviced: exp = %d, obs = %d", irq,
-          keymgr_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(keymgr_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from keymgr is serviced.", irq);
   }
 
@@ -1293,10 +1280,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering kmac IRQ %d.", irq);
     CHECK_DIF_OK(dif_kmac_irq_force(&kmac, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(kmac_irq_serviced == irq,
-          "Incorrect kmac IRQ serviced: exp = %d, obs = %d", irq,
-          kmac_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(kmac_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from kmac is serviced.", irq);
   }
 
@@ -1307,10 +1293,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering otbn IRQ %d.", irq);
     CHECK_DIF_OK(dif_otbn_irq_force(&otbn, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(otbn_irq_serviced == irq,
-          "Incorrect otbn IRQ serviced: exp = %d, obs = %d", irq,
-          otbn_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(otbn_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from otbn is serviced.", irq);
   }
 
@@ -1321,10 +1306,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering otp_ctrl IRQ %d.", irq);
     CHECK_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(otp_ctrl_irq_serviced == irq,
-          "Incorrect otp_ctrl IRQ serviced: exp = %d, obs = %d", irq,
-          otp_ctrl_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(otp_ctrl_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from otp_ctrl is serviced.", irq);
   }
 
@@ -1335,10 +1319,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering pattgen IRQ %d.", irq);
     CHECK_DIF_OK(dif_pattgen_irq_force(&pattgen, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(pattgen_irq_serviced == irq,
-          "Incorrect pattgen IRQ serviced: exp = %d, obs = %d", irq,
-          pattgen_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(pattgen_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from pattgen is serviced.", irq);
   }
 
@@ -1349,10 +1332,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering pwrmgr_aon IRQ %d.", irq);
     CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_aon, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(pwrmgr_irq_serviced == irq,
-          "Incorrect pwrmgr_aon IRQ serviced: exp = %d, obs = %d", irq,
-          pwrmgr_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(pwrmgr_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from pwrmgr_aon is serviced.", irq);
   }
 
@@ -1363,10 +1345,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering rv_timer IRQ %d.", irq);
     CHECK_DIF_OK(dif_rv_timer_irq_force(&rv_timer, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(rv_timer_irq_serviced == irq,
-          "Incorrect rv_timer IRQ serviced: exp = %d, obs = %d", irq,
-          rv_timer_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(rv_timer_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from rv_timer is serviced.", irq);
   }
 
@@ -1377,10 +1358,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering sensor_ctrl IRQ %d.", irq);
     CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(sensor_ctrl_irq_serviced == irq,
-          "Incorrect sensor_ctrl IRQ serviced: exp = %d, obs = %d", irq,
-          sensor_ctrl_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(sensor_ctrl_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from sensor_ctrl is serviced.", irq);
   }
 
@@ -1391,10 +1371,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering spi_device IRQ %d.", irq);
     CHECK_DIF_OK(dif_spi_device_irq_force(&spi_device, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(spi_device_irq_serviced == irq,
-          "Incorrect spi_device IRQ serviced: exp = %d, obs = %d", irq,
-          spi_device_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(spi_device_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from spi_device is serviced.", irq);
   }
 
@@ -1405,10 +1384,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering spi_host0 IRQ %d.", irq);
     CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host0, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(spi_host_irq_serviced == irq,
-          "Incorrect spi_host0 IRQ serviced: exp = %d, obs = %d", irq,
-          spi_host_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(spi_host_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from spi_host0 is serviced.", irq);
   }
 
@@ -1419,10 +1397,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering spi_host1 IRQ %d.", irq);
     CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host1, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(spi_host_irq_serviced == irq,
-          "Incorrect spi_host1 IRQ serviced: exp = %d, obs = %d", irq,
-          spi_host_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(spi_host_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from spi_host1 is serviced.", irq);
   }
 
@@ -1433,10 +1410,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering sysrst_ctrl_aon IRQ %d.", irq);
     CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(sysrst_ctrl_irq_serviced == irq,
-          "Incorrect sysrst_ctrl_aon IRQ serviced: exp = %d, obs = %d", irq,
-          sysrst_ctrl_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(sysrst_ctrl_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from sysrst_ctrl_aon is serviced.", irq);
   }
 
@@ -1450,10 +1426,9 @@ static void peripheral_irqs_trigger(void) {
       LOG_INFO("Triggering uart0 IRQ %d.", irq);
       CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq, true));
 
-      // TODO: Make race-condition free
-      CHECK(uart_irq_serviced == irq,
-            "Incorrect uart0 IRQ serviced: exp = %d, obs = %d", irq,
-            uart_irq_serviced);
+      // This avoids a race where *irq_serviced is read before
+      // entering the ISR.
+      IBEX_SPIN_FOR(uart_irq_serviced == irq, 1);
       LOG_INFO("IRQ %d from uart0 is serviced.", irq);
     }
   }
@@ -1465,10 +1440,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering uart1 IRQ %d.", irq);
     CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(uart_irq_serviced == irq,
-          "Incorrect uart1 IRQ serviced: exp = %d, obs = %d", irq,
-          uart_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(uart_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from uart1 is serviced.", irq);
   }
 
@@ -1479,10 +1453,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering uart2 IRQ %d.", irq);
     CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(uart_irq_serviced == irq,
-          "Incorrect uart2 IRQ serviced: exp = %d, obs = %d", irq,
-          uart_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(uart_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from uart2 is serviced.", irq);
   }
 
@@ -1493,10 +1466,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering uart3 IRQ %d.", irq);
     CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(uart_irq_serviced == irq,
-          "Incorrect uart3 IRQ serviced: exp = %d, obs = %d", irq,
-          uart_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(uart_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from uart3 is serviced.", irq);
   }
 
@@ -1507,10 +1479,9 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("Triggering usbdev IRQ %d.", irq);
     CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq, true));
 
-    // TODO: Make race-condition free
-    CHECK(usbdev_irq_serviced == irq,
-          "Incorrect usbdev IRQ serviced: exp = %d, obs = %d", irq,
-          usbdev_irq_serviced);
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(usbdev_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from usbdev is serviced.", irq);
   }
 }

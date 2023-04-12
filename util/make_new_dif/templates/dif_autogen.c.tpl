@@ -248,6 +248,34 @@ dif_result_t dif_${ip.name_snake}_init(
   }
 
   OT_WARN_UNUSED_RESULT
+  dif_result_t dif_${ip.name_snake}_irq_acknowledge_state(
+    const dif_${ip.name_snake}_t *${ip.name_snake},
+  % if ip.name_snake == "rv_timer":
+    uint32_t hart_id,
+  % endif
+    dif_${ip.name_snake}_irq_state_snapshot_t snapshot) {
+    if (${ip.name_snake} == NULL) {
+      return kDifBadArg;
+    }
+
+  % if ip.name_snake == "rv_timer":
+    switch (hart_id) {
+      % for hart_id in range(int(ip.parameters["N_HARTS"].default)):
+        case ${hart_id}:
+          ${mmio_region_write32("RV_TIMER_INTR_STATE%d_REG_OFFSET" % hart_id, "snapshot")}
+          break;
+      % endfor
+      default:
+        return kDifBadArg;
+    }
+  % else:
+    ${mmio_region_write32(ip.name_upper + "_INTR_STATE_REG_OFFSET", "snapshot")}
+  % endif
+
+    return kDifOk;
+  }
+
+  OT_WARN_UNUSED_RESULT
   dif_result_t dif_${ip.name_snake}_irq_is_pending(
     const dif_${ip.name_snake}_t *${ip.name_snake},
     dif_${ip.name_snake}_irq_t irq,

@@ -87,23 +87,23 @@ static void lock_otp_secret0_partition(void) {
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret0,
                                           /*address=*/0x0,
                                           /*value=*/otp_unlock_token_0));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret0,
                                           /*address=*/0x8,
                                           /*value=*/otp_unlock_token_1));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret0,
                                           /*address=*/0x10,
                                           /*value=*/otp_exit_token_0));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret0,
                                           /*address=*/0x18,
                                           /*value=*/otp_exit_token_1));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 
   CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret0,
                                        /*digest=*/0));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 }
 
 static void lock_otp_secret2_partition() {
@@ -121,15 +121,15 @@ static void lock_otp_secret2_partition() {
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret2,
                                           /*address=*/0x0,
                                           /*value=*/otp_rma_token_0));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret2,
                                           /*address=*/0x8,
                                           /*value=*/otp_rma_token_1));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 
   CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret2,
                                        /*digest=*/0));
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 }
 
 /**
@@ -171,7 +171,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
 
   if (curr_state == kDifLcCtrlStateTestUnlocked0) {
-    lc_ctrl_testutils_check_transition_count(&lc, 1);
+    CHECK_STATUS_OK(lc_ctrl_testutils_check_transition_count(&lc, 1));
     bool secret0_locked;
     CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(
         &otp, kDifOtpCtrlPartitionSecret0, &secret0_locked));
@@ -227,7 +227,7 @@ bool test_main(void) {
       LOG_INFO(
           "In destination state. Check LC count and lock secret2 partition.");
       CHECK(curr_state == kDestState);
-      lc_ctrl_testutils_check_transition_count(&lc, 2);
+      CHECK_STATUS_OK(lc_ctrl_testutils_check_transition_count(&lc, 2));
 
       lock_otp_secret2_partition();
       LOG_INFO("Written and locked OTP secret2 partition in next power cycle!");
@@ -238,7 +238,7 @@ bool test_main(void) {
     } else {
       if (kDestState == kDifLcCtrlStateRma ||
           kDestState == kDifLcCtrlStateProdEnd) {
-        lc_ctrl_testutils_check_transition_count(&lc, 2);
+        CHECK_STATUS_OK(lc_ctrl_testutils_check_transition_count(&lc, 2));
         LOG_INFO("LC transition done!");
         return true;
       } else {
@@ -246,7 +246,7 @@ bool test_main(void) {
         LOG_INFO(
             "In destination state. Check LC count and transfer to RMA "
             "state.");
-        lc_ctrl_testutils_check_transition_count(&lc, 2);
+        CHECK_STATUS_OK(lc_ctrl_testutils_check_transition_count(&lc, 2));
 
         // Issue a LC state transfer to destination state.
         dif_lc_ctrl_token_t token;
@@ -273,7 +273,7 @@ bool test_main(void) {
   } else {
     LOG_INFO("In RMA state. Check LC count and exit.");
     CHECK(curr_state == kDifLcCtrlStateRma);
-    lc_ctrl_testutils_check_transition_count(&lc, 3);
+    CHECK_STATUS_OK(lc_ctrl_testutils_check_transition_count(&lc, 3));
     return true;
   }
 }

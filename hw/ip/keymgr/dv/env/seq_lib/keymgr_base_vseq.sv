@@ -23,6 +23,9 @@ class keymgr_base_vseq extends cip_base_vseq #(
   rand keymgr_pkg::keymgr_ops_e gen_operation;
   rand keymgr_pkg::keymgr_key_dest_e key_dest;
 
+  rand bit do_rand_otp_key;
+  rand bit do_invalid_otp_key;
+
   // save DUT returned current state here, rather than using it from RAL, it's needed info to
   // predict operation result in seq
   keymgr_pkg::keymgr_working_state_e current_state = keymgr_pkg::StReset;
@@ -31,6 +34,11 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   constraint is_key_version_err_c {
     is_key_version_err == 0;
+  }
+
+  constraint otp_key_c {
+    do_rand_otp_key == 0;
+    do_invalid_otp_key == 0;
   }
 
   constraint gen_operation_c {
@@ -50,7 +58,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
     op_before_enable_keymgr();
 
-    cfg.keymgr_vif.init();
+    cfg.keymgr_vif.init(do_rand_otp_key, do_invalid_otp_key);
 
     delay_after_reset_before_access_csr();
 

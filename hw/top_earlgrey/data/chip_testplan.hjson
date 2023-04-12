@@ -181,7 +181,7 @@
 
     {
       name: chip_sw_spi_device_pass_through_collision
-      desc: '''Verify the collisions on driving spi_host is handled properly
+      desc: '''Verify the collisions on driving spi_host is handled properly.
 
             - Enable upload related interrupts and configure the spi_device in passthrough mode.
             - Configure a command slot to enable upload for a flash program/erase command.
@@ -202,7 +202,7 @@
     }
     {
       name: chip_sw_spi_device_tpm
-      desc: '''Verify the basic operation of the spi tpm mode..
+      desc: '''Verify the basic operation of the spi tpm mode.
 
             - The testbench sends a known payload over the chip's SPI device tpm input port.
             - The testbench sends a read command.
@@ -212,6 +212,34 @@
             '''
       stage: V2
       tests: ["chip_sw_spi_device_tpm"]
+    }
+
+    {
+      name: chip_sw_spi_device_output_when_disabled_or_sleeping
+      desc: '''Verify spi_device output values when spi_device is disabled or the chip is sleeping.
+
+               SW needs to be able to set the SPI output value when spi_device is disabled or the
+               chip is sleeping, to either all-zeros or all-ones, depending on integration
+               requirements.  The following scenarios have to be verified:
+
+               After power-on reset:
+               - SW to configure pinmux retention logic so that the chip pins connected to
+                 spi_device outputs are (a) always zero or (b) always one (SW needs to be able to
+                 choose between a and b).
+               - DV environment to check that SPI outputs match configuration by SW.
+
+               Going to sleep:
+               - SW to disable spi_device, wait until CSb is high, configure pinmux retention logic
+                 as it would after POR, and put chip to sleep.
+               - DV environment to check that SPI outputs match configuration by SW.
+
+               Wake up from sleep:
+               - DV environment to wake chip from sleep.
+               - SW to enable spi_device and disable retention logic.
+               - DV environment to check that SPI transactions work as usual.
+             '''
+      stage: V3
+      tests: []
     }
 
     // SPI_HOST (pre-verified IP) integration tests:
@@ -345,7 +373,7 @@
     }
     {
       name: chip_usb_wake_debug
-      desc: '''Verify that `usb_state_debug_i` can be read from the CSR
+      desc: '''Verify that `usb_state_debug_i` can be read from the CSR.
 
             - Drive random value on `usb_state_debug_i`.
             - Ensure the CSR `wake_debug` returns correctly value.
@@ -445,7 +473,7 @@
       desc: '''Verify the retention logic in pinmux that is activated during deep sleep.
 
             - Pick a pin (such as GPIO0) and enable it in output mode. Set a known value to it (0 or
-              1) and verify the correctless of the value on the chip IO..
+              1) and verify the correctless of the value on the chip IO.
             - Program the pin's retention value during deep sleep to be opposite of the active power
               value programmed in the previous step.
             - Reuse an existing deep sleep / low power wake up test, such as
@@ -479,7 +507,8 @@
             host (SV testbench) performs these stimulus / checks.
             '''
       stage: V2
-      tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma"]
+      tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma",
+              "chip_tap_straps_testunlock0"]
     }
 
     // PATTGEN (pre-verified IP) integration tests:
@@ -1051,18 +1080,6 @@
       stage: V2
       tests: ["chip_sw_all_escalation_resets"]
     }
-    {
-      name: chip_sw_flash_ctrl_escalation_reset
-      desc: '''Verify the flash ctrl fatal error does not disturb escalation process
-            and operation of ibex core.
-
-            Trigger an internal fatal fault (host_gnt_err) from flash_ctrl
-            and let it escalate to reset. Upon alert escalation reset,
-            the internal status should be clean and should not send out more alerts.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_crash_alert"]
-    }
 
     // PWRMGR tests:
     {
@@ -1440,7 +1457,7 @@
     }
     {
       name: chip_sw_all_escalation_resets
-      desc: '''Verify escalation from all unit integrity errors
+      desc: '''Verify escalation from all unit integrity errors.
 
             Inject integrity errors in any unit that has a one-hot checker for CSR register
             writes, and verify escalation is triggered. Allow escalation to go through reset.
@@ -1649,7 +1666,7 @@
     }
     {
       name: chip_sw_lc_ctrl_otp_hw_cfg
-      desc: '''Verify the device_ID and ID_state CSRs
+      desc: '''Verify the device_ID and ID_state CSRs.
 
             - Preload the hw_cfg partition in OTP ctrl with random data.
             - Read the device ID and the ID state CSRs to verify their correctness.
@@ -1734,7 +1751,7 @@
               - lc_iso_part_sw_wr_en_o: impacts flash_ctrl
               - lc_seed_hw_rd_en_o: impacts flash_ctrl & otp_ctrl
             - These outputs are enabled per the
-              [life cycle architecture spec]({{< relref "doc/security/specs/device_life_cycle/#architecture" >}}).
+              [life cycle architecture spec](doc/security/specs/device_life_cycle/README.md#architecture).
 
             X-ref'ed with the respective IP tests that consume these signals.
 
@@ -2286,7 +2303,7 @@
               enabled.
             - Read the OTP and verify that the fuse is enabled.
             - Read the entropy_data_fifo via SW and verify that it reads valid values.
-            - Reset the chip, but this time, initialize the OTP with with the fuse disabled.
+            - Reset the chip, but this time, initialize the OTP with the fuse disabled.
             - Read the OTP and verify that fuse is disabled.
             - Read the internal state via SW and verify that the entropy valid bit is zero.
             '''
@@ -2845,11 +2862,27 @@
             - Boot the chip successively in raw, test_*, dev, prod and rma LC states.
             - Verify that the SW is able to access the vendor test control and status registers in
               raw, test_* and rma LC states.
+              In open source environment, this check is implemented by probing the OTP_CTRL's
+              `lc_otp_vendor_test_i` port.
             - Verify that in dev / prod LC states, the vendor status always reads back 0s regardless
               of what is programmed into the vendor test control register.
             '''
       stage: V3
-      tests: []
+      tests: ["chip_sw_otp_ctrl_vendor_test_csr_access"]
+    }
+    {
+      name: chip_sw_otp_ctrl_escalation
+      desc: '''Verify escalation from otp_ctrl macro fatal error.
+
+            - Inject ECC fatal error into OTP macro's HW cfg partition, and read back this macro
+              via DAI interface.
+            - Because this fatal error will immediately turn off CPU, so the DV sequence will probe
+              the alert interface to make sure alert and escalation is triggered.
+
+            X'ref with chip_sw_all_escalation_resets.
+            '''
+      stage: V3
+      tests: ["chip_sw_otp_ctrl_escalation"]
     }
 
     // FLASH (pre-verified IP) integration tests:
@@ -2897,7 +2930,7 @@
 
             - Provision an RMA_UNLOCK token in OTP.
             - Repeat the following a few times:
-              - Randomize the otp contents for device id, manufacturing state and RMA_UNLOCK token..
+              - Randomize the otp contents for device id, manufacturing state and RMA_UNLOCK token.
               - Reset the chip.
               - Ensure chip revision, device id and manufacturing state can be read through the LC JTAG.
             - Enable RMA mode, and verify that the SW can access the flash after RMA completion.
@@ -3046,6 +3079,18 @@
             '''
       stage: V2
       tests: ["chip_sw_flash_ctrl_clock_freqs"]
+    }
+    {
+      name: chip_sw_flash_ctrl_escalation_reset
+      desc: '''Verify the flash ctrl fatal error does not disturb escalation process
+            and operation of ibex core.
+
+            Trigger an internal fatal fault (host_gnt_err) from flash_ctrl
+            and let it escalate to reset. Upon alert escalation reset,
+            the internal status should be clean and should not send out more alerts.
+            '''
+      stage: V2
+      tests: ["chip_sw_flash_crash_alert"]
     }
 
     ////////////////////////
@@ -3207,7 +3252,7 @@
       name: chip_sw_rv_core_ibex_address_translation
       desc: '''Verify the simple address translation functionality.
 
-               - Setup address translation for both slots on the the I and D
+               - Setup address translation for both slots on the I and D
                  side and check correct translation for I and D accesses.
                - Switch address translation to use different regions that
                  overlap for both slots and check translation again. Ensure some
@@ -3333,6 +3378,7 @@
               "chip_sw_rstmgr_smoketest",
               "chip_sw_sram_ctrl_smoketest",
               "chip_sw_uart_smoketest",
+              "chip_sw_flash_scrambling_smoketest",
             ]
     }
     {
@@ -3502,7 +3548,7 @@
       in #14095 for more details on how to approach the implementation.
       '''
       stage: V3
-      tests: []
+      tests: ["chip_sw_power_virus"]
     }
     {
       name: chip_sw_power_idle_load

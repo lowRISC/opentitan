@@ -14,6 +14,9 @@ class flash_ctrl_write_rnd_wd_vseq extends flash_ctrl_otf_base_vseq;
     int num, bank;
     int mywd;
 
+    // Don't select a partition defined as read-only
+    cfg.seq_cfg.avoid_ro_partitions = 1'b1;
+
     num = 1;
     flash_program_data_c.constraint_mode(0);
     repeat(100) begin

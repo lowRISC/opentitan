@@ -44,10 +44,18 @@ k0:
   .word 0x1b76ebe8
   .word 0x74210263
   .word 0x1420fc41
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
 .globl k1
 .balign 32
 k1:
-  .zero 32
+  .zero 64
 
 /* example curve point x-coordinate */
 .globl x

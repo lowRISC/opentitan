@@ -71,9 +71,9 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
   // we see the Done interrupt fire.
   otbn_finished = false;
 
-  otbn_testutils_load_app(otbn, app);
+  CHECK_STATUS_OK(otbn_testutils_load_app(otbn, app));
 
-  // If the the CTRL.SOFTWARE_ERRS_FATAL flag is set, a software error will be
+  // If the CTRL.SOFTWARE_ERRS_FATAL flag is set, a software error will be
   // promoted to a fatal error (which, among other things, bricks OTBN until
   // next reset). Make sure that's not turned on.
   CHECK(dif_otbn_set_ctrl_software_errs_fatal(otbn, false) == kDifOk);
@@ -83,7 +83,7 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
       dif_otbn_irq_set_enabled(otbn, kDifOtbnIrqDone, kDifToggleEnabled));
 
   // Start OTBN
-  otbn_testutils_execute(otbn);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
 
   // At this point, OTBN should be running. Wait for an interrupt that says
   // it's done.
@@ -158,7 +158,7 @@ void ottf_external_isr(void) {
 }
 
 bool test_main(void) {
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
   plic_init_with_irqs();
 
   // Enable the external IRQ (so that we see the interrupt from the PLIC)

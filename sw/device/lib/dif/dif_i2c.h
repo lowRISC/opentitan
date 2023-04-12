@@ -360,14 +360,14 @@ typedef struct dif_i2c_status {
 } dif_i2c_status_t;
 
 /**
- * Get I2C Status and store it in status
+ * Get I2C status.
  *
- * @param i2c An I2c handle.
- * @param[out] status I2C status as understood by the block
+ * @param i2c An I2C handle.
+ * @param[out] status I2C status as understood by the block.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_get_status(dif_i2c_t *i2c, dif_i2c_status_t *status);
+dif_result_t dif_i2c_get_status(const dif_i2c_t *i2c, dif_i2c_status_t *status);
 
 /**
  * Computes timing parameters for an I2C host and stores them in `config`.
@@ -440,7 +440,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_reset_acq_fifo(const dif_i2c_t *i2c);
 
 /**
- * Sets watermarks for for the RX and FMT FIFOs, which will fire the respective
+ * Sets watermarks for the RX and FMT FIFOs, which will fire the respective
  * interrupts when each fifo exceeds, or falls below, the set level.
  *
  * Note that the 30-byte level is only supported for the RX FIFO: trying to use

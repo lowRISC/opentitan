@@ -45,14 +45,38 @@ class TestFunc(unittest.TestCase):
                                          "-zmuldefs", "-o",
                                          str(merged_library), *obj_files)
 
-    def test_handle_test_targets(self):
+    @patch("functest_coverage.run")
+    def test_handle_test_targets(self, mock_run):
         test_targets = [
             "//foo/test", "//bar/test_cw310_test_rom",
             "//qux/long_wycheproof_test"
         ]
+        mock_run.side_effect = (
+            None,
+            ["workspace_path"],
+            ["bitstream_file.bit"],
+            None,
+        )
 
         res = functest_coverage.handle_test_targets(test_targets)
+
         self.assertEqual(res, ["//bar/test_cw310_test_rom"])
+        calls_mock_run = mock_run.call_args_list
+        self.assertEqual(len(calls_mock_run), 4)
+        self.assertEqual(calls_mock_run[0][0],
+                         (functest_coverage.BAZEL, "build",
+                          functest_coverage.BITSTREAM_TARGET))
+        self.assertEqual(calls_mock_run[1][0],
+                         (functest_coverage.BAZEL, "info", "workspace"))
+        self.assertEqual(
+            calls_mock_run[2][0],
+            (functest_coverage.BAZEL, "cquery", "--output=starlark",
+             "--starlark:expr", "target.files.to_list()[0].path",
+             functest_coverage.BITSTREAM_TARGET))
+        self.assertEqual(
+            calls_mock_run[3][0],
+            (functest_coverage.BAZEL, "run", "//sw/host/opentitantool", "--",
+             "fpga", "load-bitstream", "workspace_path/bitstream_file.bit"))
 
     def mock_binary_file(self: unittest.TestCase,
                          name: str,

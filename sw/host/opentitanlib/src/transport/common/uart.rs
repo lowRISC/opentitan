@@ -2,23 +2,31 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
+use nix::fcntl::{flock, FlockArg};
+use nix::sys::signal;
+use nix::unistd::Pid;
 use serialport::ClearBuffer;
 //use serialport::{FlowControl, SerialPort};
-use serialport::SerialPort;
+use serialport::{SerialPort, TTYPort};
 use std::cell::{Cell, RefCell};
 use std::collections::VecDeque;
-use std::io::ErrorKind;
+use std::fs::OpenOptions;
+use std::io::{ErrorKind, Read, Write};
+use std::os::unix::io::AsRawFd;
 use std::time::Duration;
 
 //use crate::io::uart::{Uart, UartError};
 use crate::io::uart::{FlowControl, Uart, UartError};
+use crate::transport::TransportError;
 
 /// Implementation of the `Uart` trait on top of a serial device, such as `/dev/ttyUSB0`.
 pub struct SerialPortUart {
     flow_control: Cell<FlowControl>,
-    port: RefCell<Box<dyn SerialPort>>,
+    port: RefCell<TTYPort>,
     rxbuf: RefCell<VecDeque<u8>>,
+    /// Lock field, will remove lock file via the `Drop` trait.
+    _lock: SerialPortExclusiveLock,
 }
 
 impl SerialPortUart {
@@ -31,14 +39,15 @@ impl SerialPortUart {
 
     /// Open the given serial device, such as `/dev/ttyUSB0`.
     pub fn open(port_name: &str) -> Result<Self> {
+        let lock = SerialPortExclusiveLock::lock(port_name)?;
+        let port = TTYPort::open(&serialport::new(port_name, 115200))
+            .map_err(|e| UartError::OpenError(e.to_string()))?;
+        flock_serial(&port, port_name)?;
         Ok(SerialPortUart {
             flow_control: Cell::new(FlowControl::None),
-            port: RefCell::new(
-                serialport::new(port_name, 115200)
-                    .open()
-                    .map_err(|e| UartError::OpenError(e.to_string()))?,
-            ),
+            port: RefCell::new(port),
             rxbuf: RefCell::default(),
+            _lock: lock,
         })
     }
 
@@ -129,13 +138,25 @@ impl Uart for SerialPortUart {
     fn write(&self, buf: &[u8]) -> Result<()> {
         // The constant of 10 is approximately 10 uart bit times per byte.
         let pacing = Duration::from_nanos(10 * 1_000_000_000u64 / (self.get_baudrate()? as u64));
-        log::debug!("pacing = {:?}", pacing);
+        log::debug!(
+            "flow control: {:?}, pacing = {:?}",
+            self.flow_control.get(),
+            pacing
+        );
+
+        if self.flow_control.get() == FlowControl::None {
+            return self
+                .port
+                .borrow_mut()
+                .write_all(buf)
+                .context("UART write error");
+        }
 
         for b in buf.iter() {
             // If flow control is enabled, read data from the input stream and
             // process the flow control chars.
-            while self.flow_control.get() != FlowControl::None {
-                self.read_worker(pacing)?;
+            loop {
+                self.read_worker(Duration::ZERO)?;
                 // If we're ok to send, then break out of the flow-control loop and send the data.
                 if self.flow_control.get() == FlowControl::Resume {
                     break;
@@ -145,6 +166,11 @@ impl Uart for SerialPortUart {
                 .borrow_mut()
                 .write_all(std::slice::from_ref(b))
                 .context("UART write error")?;
+            // Sleep one uart character time after writing to the uart to pace characters into the
+            // usb-serial device so that we don't fill any device-internal buffers.  The CW310 (for
+            // example) appears to have a large internal buffer that will keep transmitting to OT
+            // even if an XOFF is sent.
+            std::thread::sleep(pacing);
         }
         Ok(())
     }
@@ -155,4 +181,81 @@ impl Uart for SerialPortUart {
         self.port.borrow_mut().clear(ClearBuffer::Input)?;
         Ok(())
     }
+}
+
+const PID_FILE_LEN: usize = 11;
+
+/// Struct for managing a lock file in `/var/lock` corresponding to a particular serial port.  The
+/// `Drop` trait of this struct will delete the lock file, so the `SerialPortExclusiveLock`
+/// instance should be kept alive for as long as the serial port handle it is guarding.  Should
+/// this process terminate without `drop()` getting a chance to run, other processes will
+/// recognize that the lock file is stale, as they verify whether a process with the given PID is
+/// still running.
+pub struct SerialPortExclusiveLock {
+    lockfilename: String,
+}
+
+impl SerialPortExclusiveLock {
+    pub fn lock(port_name: &str) -> Result<Self> {
+        let start_of_last = match port_name.rfind('/') {
+            Some(n) => n + 1,
+            None => 0,
+        };
+        let lockfilename = format!("/var/lock/LCK..{}", &port_name[start_of_last..]);
+        if let Ok(mut lockfile) = OpenOptions::new().read(true).open(&lockfilename) {
+            // The following code attempts to parse a PID from the lock file, and send a "no-op"
+            // signal to the process identified by it.  If successful, that means that the process
+            // is still running (no actual signal will be delivered), and we should refrain from
+            // also opening the same port.  On any parsing error or failure to deliver the signal,
+            // we proceed to overwrite the lock file with our own PID.
+            match (|| -> Result<()> {
+                let mut buf = [0u8; PID_FILE_LEN];
+                match lockfile.read(&mut buf) {
+                    Ok(PID_FILE_LEN) => {
+                        let line = std::str::from_utf8(&buf)?;
+                        let pid = line.trim().parse()?;
+                        signal::kill(Pid::from_raw(pid), None)?;
+                        Ok(()) // This will result in "Device is locked" error.
+                    }
+                    _ => bail!(""),
+                }
+            })() {
+                Ok(()) => bail!(TransportError::OpenError(
+                    port_name.to_string(),
+                    "Device is locked".to_string()
+                )),
+                Err(_) => {
+                    log::info!("Lockfile is stale. Overriding it...");
+                    std::fs::remove_file(&lockfilename)
+                        .context(format!("Cannot remove stale file {}", &lockfilename))?;
+                }
+            }
+        }
+        let mut lockfile = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&lockfilename)?;
+        if PID_FILE_LEN != lockfile.write(format!("{:10}\n", nix::unistd::getpid()).as_bytes())? {
+            bail!(TransportError::OpenError(
+                port_name.to_string(),
+                "Error writing lockfile".to_string()
+            ));
+        }
+        Ok(Self { lockfilename })
+    }
+}
+
+impl Drop for SerialPortExclusiveLock {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.lockfilename);
+    }
+}
+
+/// Invoke Linux `flock()` on the given serial port, lock will be released when the file
+/// descriptor is closed (or when the process terminates).
+pub fn flock_serial(port: &TTYPort, port_name: &str) -> Result<()> {
+    flock(port.as_raw_fd(), FlockArg::LockExclusiveNonblock).map_err(|_| {
+        TransportError::OpenError(port_name.to_string(), "Device is locked".to_string())
+    })?;
+    Ok(())
 }

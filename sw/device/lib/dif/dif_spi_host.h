@@ -203,6 +203,145 @@ dif_result_t dif_spi_host_transaction(const dif_spi_host_t *spi_host,
                                       dif_spi_host_segment_t *segments,
                                       size_t length);
 
+typedef enum dif_spi_host_events {
+  /**
+   * Enable IRQ to be fired when `STATUS.RXFULL` goes high.
+   */
+  kDifSpiHostEvtRxFull = 1 << 0,
+  /**
+   * Enable IRQ to be fired when `STATUS.TXEMPTY` goes high.
+   */
+  kDifSpiHostEvtTxEmpty = 1 << 1,
+  /**
+   * Enable IRQ to be fired when the number of 32-bit words in the RX FIFO is
+   * greater than `CONTROL.RX_WATERMARK`.
+   */
+  kDifSpiHostEvtRxWm = 1 << 2,
+  /**
+   * Enable IRQ to be fired when the number of 32-bit words in the TX FIFO is
+   * greater than `CONTROL.TX_WATERMARK`.
+   */
+  kDifSpiHostEvtTxWm = 1 << 3,
+  /**
+   * Enable IRQ to be fired when `STATUS.READY` goes high.
+   */
+  kDifSpiHostEvtReady = 1 << 4,
+  /**
+   * Enable IRQ to be fired when `STATUS.ACTIVE` goes high.
+   */
+  kDifSpiHostEvtActive = 1 << 5,
+  /**
+   * All above together.
+   */
+  kDifSpiHostEvtAll = (1 << 6) - 1,
+} dif_spi_host_events_code_t;
+
+/**
+ * Bitmask with the `dif_spi_host_events_code_t` values.
+ */
+typedef uint32_t dif_spi_host_events_t;
+
+/**
+ * Set the enable state of the spi host events.
+ *
+ * @param spi_host A SPI Host handle.
+ * @param events A bitmask with the events to be enabled or disabled.
+ * @param enable True to enable the `events` or false to disable.
+ * @return The result of the operation.
+ */
+dif_result_t dif_spi_host_event_set_enabled(const dif_spi_host_t *spi_host,
+                                            dif_spi_host_events_t events,
+                                            bool enable);
+
+/**
+ * Get the enabled events.
+ *
+ * @param spi_host A SPI Host handle.
+ * @param[out] events A bitmask that will contain all the events that are
+ * enabled.
+ * @return The result of the operation.
+ */
+dif_result_t dif_spi_host_event_get_enabled(const dif_spi_host_t *spi_host,
+                                            dif_spi_host_events_t *events);
+
+typedef struct dif_spi_host_status {
+  /**
+   * Indicates the SPI host is ready to receive commands.
+   */
+  bool ready;
+  /**
+   * Indicates the SPI host is processing a previously issued command.
+   */
+  bool active;
+  /**
+   * Indicates that the transmit data fifo is full.
+   */
+  bool tx_full;
+  /**
+   * Indicates that the transmit data fifo is empty.
+   */
+  bool tx_empty;
+  /**
+   * If true, signifies that an ongoing transaction has stalled due to lack of
+   * data in the`TX FIFO`.
+   */
+  bool tx_stall;
+  /**
+   * If true, the amount of data in the `TX FIFO` has fallen below the
+   * level of `CONTROL.TX_WATERMARK`words (32b each).
+   */
+  bool tx_water_mark;
+  /**
+   * Indicates that the receive fifo is full. Any ongoing transactions will
+   * stall until firmware reads some data from `RXDATA`.
+   */
+  bool rx_full;
+  /**
+   * Indicates that the receive fifo is empty. Any reads from `RX FIFO` will
+   * cause an error interrupt.
+   */
+  bool rx_empty;
+  /**
+   * If true, signifies that an ongoing transaction has stalled due to lack of
+   * available space in the `RX FIFO`.
+   */
+  bool rx_stall;
+  /**
+   * If true the least significant bits will be transmitted first.
+   */
+  bool least_significant_first;
+  /**
+   * If true, the number of 32-bits in the `RX FIFO` now exceeds the
+   * `CONTROL.RX_WATERMARK`entries (32b each).
+   */
+  bool rx_water_mark;
+  /**
+   * Indicates how many unread 32-bit words are currently in the command
+   * segment queue.
+   */
+  uint32_t cmd_queue_depth;
+  /**
+   * Indicates how many unread 32-bit words are currently in the `RX FIFO`.
+   * When active, this result may an underestimate due to synchronization
+   * delays.
+   */
+  uint32_t rx_queue_depth;
+  /**
+   * Indicates how many unsent 32-bit words are currently in the`TX FIFO`.
+   */
+  uint32_t tx_queue_depth;
+} dif_spi_host_status_t;
+
+/**
+ * Read the current status of the spi host.
+ *
+ * @param spi_host A SPI Host handle.
+ * @param[out] status The status of the spi.
+ * @return dif_result_t
+ */
+dif_result_t dif_spi_host_get_status(const dif_spi_host_t *spi_host,
+                                     dif_spi_host_status_t *status);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

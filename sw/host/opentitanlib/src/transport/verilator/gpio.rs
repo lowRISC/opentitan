@@ -12,6 +12,7 @@ use std::time::Duration;
 
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use crate::transport::verilator::transport::Inner;
+use crate::transport::TransportError;
 use crate::util::file;
 
 pub struct VerilatorGpioPin {
@@ -71,7 +72,11 @@ impl GpioPin for VerilatorGpioPin {
         mode: Option<PinMode>,
         value: Option<bool>,
         pull: Option<PullMode>,
+        analog_value: Option<f32>,
     ) -> Result<()> {
+        if analog_value.is_some() {
+            return Err(TransportError::UnsupportedOperation.into());
+        }
         if let Some(mode) = mode {
             self.pinmode.set(mode);
         }

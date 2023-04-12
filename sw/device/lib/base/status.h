@@ -13,6 +13,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 #define USING_INTERNAL_STATUS
 #include "sw/device/lib/base/internal/status.h"
@@ -55,35 +56,44 @@ typedef struct status {
   int32_t value;
 } status_t;
 
+#define DIF_RESULT_INTO_STATUS(expr_)                                     \
+  ({                                                                      \
+    typeof(expr_) _val = (expr_);                                         \
+    absl_status_t code;                                                   \
+    memcpy(&code, &_val, sizeof(code));                                   \
+    status_create(code, MODULE_ID, __FILE__, code == kOk ? 0 : __LINE__); \
+  })
+
+#define ROM_ERROR_INTO_STATUS(expr_)                                          \
+  ({                                                                          \
+    typeof(expr_) ex_ = (expr_);                                              \
+    uint32_t val;                                                             \
+    memcpy(&val, &ex_, sizeof(val));                                          \
+    absl_status_t code =                                                      \
+        val == kErrorOk ? 0                                                   \
+                        : bitfield_field32_read(val, ROM_ERROR_FIELD_STATUS); \
+    int32_t arg = bitfield_field32_read(val, ROM_ERROR_FIELD_ERROR);          \
+    uint32_t mod = bitfield_field32_read(val, ROM_ERROR_FIELD_MODULE);        \
+    uint32_t module = (mod & 0x1F) << 16 | (mod & 0x1F00) << (21 - 8);        \
+    status_create(code, module, __FILE__, code == kOk ? kErrorOk : arg);      \
+  })
+
 /**
  * Converts a value into a status_t.
  *
- * This macro uses the GCC/clang `__builtin_types_compatible_p` extension to
- * detect the type of the input expression and apply the appropriate
- * conversion.  Once a more thorough refactoring of the DIFs is done, this
- * can be eliminated.
+ * This macro uses the C11 `_Generic` feature to detect the type of the input
+ * expression and apply the appropriate conversion.  Once a more thorough
+ * refactoring of the DIFs is done, this can be eliminated.
  *
- * @param expr_ Either a `status_t` or `dif_result_t`.
+ * @param expr_ Either a `status_t`, `dif_result_t` or `rom_error_t`.
  * @return The `status_t` representation of the input.
  */
-#define INTO_STATUS(expr_)                                                     \
-  ({                                                                           \
-    typeof(expr_) ex_ = (expr_);                                               \
-    static_assert(__builtin_types_compatible_p(typeof(ex_), status_t) ||       \
-                      __builtin_types_compatible_p(typeof(ex_), dif_result_t), \
-                  "Expressions passed to INTO_STATUS() must be of type "       \
-                  "`status_t`, or `dif_result_t`");                            \
-    status_t status_;                                                          \
-    if (__builtin_types_compatible_p(typeof(ex_), status_t)) {                 \
-      memcpy(&status_, &ex_, sizeof(status_));                                 \
-    } else if (__builtin_types_compatible_p(typeof(ex_), dif_result_t)) {      \
-      absl_status_t code;                                                      \
-      memcpy(&code, &ex_, sizeof(code));                                       \
-      status_ = status_create(code, kStatusModuleId, __FILE__,                 \
-                              code == kOk ? 0 : __LINE__);                     \
-    }                                                                          \
-    status_;                                                                   \
-  })
+// clang-format off
+  #define INTO_STATUS(expr_) _Generic((expr_),                                   \
+           status_t: (expr_),                                                   \
+        rom_error_t: ROM_ERROR_INTO_STATUS(expr_),                              \
+       dif_result_t: DIF_RESULT_INTO_STATUS(expr_))
+// clang-format on
 
 /**
  * Evaluates a status_t for Ok or Error status, returning the Ok value.
@@ -105,7 +115,10 @@ typedef struct status {
   })
 
 // This global constant is available to all modules and is the constant zero.
-extern const uint32_t kStatusModuleId;
+// This name intentionally violates the constant naming convention of
+// `kModuleId` because users are expected to provide an override in the form
+// of a preprocessor defintion: `#define MODULE_ID MAKE_MODULE_ID(...)`.
+extern const uint32_t MODULE_ID;
 
 // Operations on status codes:
 /**
@@ -155,12 +168,11 @@ OT_ALWAYS_INLINE absl_status_t status_err(status_t s) {
 // Create a status with an optional argument.
 // TODO(cfrantz, alphan): Figure out how we want to create statuses in
 // silicon_creator code.
-#define STATUS_CREATE(s_, ...)                            \
-  ({                                                      \
-    static_assert(OT_VA_ARGS_COUNT(_, __VA_ARGS__) <= 2,  \
-                  "status macros take 0 or 1 arguments"); \
-    status_create(s_, kStatusModuleId, __FILE__,          \
-                  OT_GET_LAST_ARG(__VA_ARGS__));          \
+#define STATUS_CREATE(s_, ...)                                            \
+  ({                                                                      \
+    static_assert(OT_VA_ARGS_COUNT(_, __VA_ARGS__) <= 2,                  \
+                  "status macros take 0 or 1 arguments");                 \
+    status_create(s_, MODULE_ID, __FILE__, OT_GET_LAST_ARG(__VA_ARGS__)); \
   })
 
 // Helpers for creating statuses of various kinds.

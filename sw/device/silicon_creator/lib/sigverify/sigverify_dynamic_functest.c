@@ -4,10 +4,10 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 // The autogen rule that creates this header creates it in a directory named
 // after the rule, then manipulates the include path in the
@@ -59,7 +59,7 @@ rom_error_t sigverify_test(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
 
   // The definition of `RULE_NAME` comes from the autogen Bazel rule.
   LOG_INFO("Starting sigverify_dynamic_functest:%s", RULE_NAME);
@@ -69,5 +69,5 @@ bool test_main(void) {
     EXECUTE_TEST(result, sigverify_test);
   }
   LOG_INFO("Finished sigverify_dynamic_functest:%s", RULE_NAME);
-  return result == kErrorOk;
+  return status_ok(result);
 }

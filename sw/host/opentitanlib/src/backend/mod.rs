@@ -9,8 +9,8 @@ use thiserror::Error;
 
 use crate::app::config::process_config_file;
 use crate::app::{TransportWrapper, TransportWrapperBuilder};
-use crate::transport::hyperdebug::c2d2::C2d2Flavor;
-use crate::transport::hyperdebug::StandardFlavor;
+use crate::transport::dediprog::Dediprog;
+use crate::transport::hyperdebug::{C2d2Flavor, CW310Flavor, StandardFlavor, Ti50Flavor};
 use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
 
@@ -24,31 +24,31 @@ mod verilator;
 #[derive(Debug, StructOpt)]
 pub struct BackendOpts {
     #[structopt(long, default_value = "", help = "Name of the debug interface")]
-    interface: String,
+    pub interface: String,
 
     #[structopt(long, parse(try_from_str = u16::from_str),
                 help="USB Vendor ID of the interface")]
-    usb_vid: Option<u16>,
+    pub usb_vid: Option<u16>,
     #[structopt(long, parse(try_from_str = u16::from_str),
                 help="USB Product ID of the interface")]
-    usb_pid: Option<u16>,
+    pub usb_pid: Option<u16>,
     #[structopt(long, help = "USB serial number of the interface")]
-    usb_serial: Option<String>,
+    pub usb_serial: Option<String>,
 
     #[structopt(flatten)]
-    cw310_opts: cw310::Cw310Opts,
+    pub cw310_opts: cw310::Cw310Opts,
 
     #[structopt(flatten)]
-    verilator_opts: verilator::VerilatorOpts,
+    pub verilator_opts: verilator::VerilatorOpts,
 
     #[structopt(flatten)]
-    proxy_opts: proxy::ProxyOpts,
+    pub proxy_opts: proxy::ProxyOpts,
 
     #[structopt(flatten)]
-    ti50emulator_opts: ti50emulator::Ti50EmulatorOpts,
+    pub ti50emulator_opts: ti50emulator::Ti50EmulatorOpts,
 
     #[structopt(long, number_of_values(1), help = "Configuration files")]
-    conf: Vec<PathBuf>,
+    pub conf: Vec<PathBuf>,
 }
 
 #[derive(Error, Debug)]
@@ -60,7 +60,12 @@ pub enum Error {
 /// Creates the requested backend interface according to [`BackendOpts`].
 pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     let interface = args.interface.as_str();
-    let (backend, default_conf) = match interface {
+    let mut env = TransportWrapperBuilder::new(interface.to_string());
+
+    for conf_file in &args.conf {
+        process_config_file(&mut env, conf_file.as_ref())?
+    }
+    let (backend, default_conf) = match env.get_interface() {
         "" => (create_empty_transport()?, None),
         "proxy" => (proxy::create(&args.proxy_opts)?, None),
         "verilator" => (
@@ -75,31 +80,37 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
             ultradebug::create(args)?,
             Some(Path::new("/__builtin__/opentitan_ultradebug.json")),
         ),
-        "hyperdebug" => (
-            hyperdebug::create::<StandardFlavor>(args)?,
+        "hyper310" => (
+            hyperdebug::create::<CW310Flavor>(args)?,
             Some(Path::new("/__builtin__/hyperdebug_cw310.json")),
         ),
+        "hyperdebug" => (hyperdebug::create::<StandardFlavor>(args)?, None),
+        "hyperdebug_dfu" => (hyperdebug::create_dfu(args)?, None),
         "c2d2" => (
             hyperdebug::create::<C2d2Flavor>(args)?,
             Some(Path::new("/__builtin__/h1dx_devboard.json")),
         ),
+        "ti50" => (hyperdebug::create::<Ti50Flavor>(args)?, None),
         "cw310" => (
             cw310::create(args)?,
             Some(Path::new("/__builtin__/opentitan_cw310.json")),
         ),
+        "dediprog" => {
+            let dediprog: Box<dyn Transport> = Box::new(Dediprog::new(
+                args.usb_vid,
+                args.usb_pid,
+                args.usb_serial.as_deref(),
+            )?);
+            (dediprog, Some(Path::new("/__builtin__/dediprog.json")))
+        }
         _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
     };
-    let mut env = TransportWrapperBuilder::new(backend);
-
     if args.conf.is_empty() {
         if let Some(conf_file) = default_conf {
             process_config_file(&mut env, conf_file)?
         }
     }
-    for conf_file in &args.conf {
-        process_config_file(&mut env, conf_file.as_ref())?
-    }
-    env.build()
+    env.build(backend)
 }
 
 pub fn create_empty_transport() -> Result<Box<dyn Transport>> {

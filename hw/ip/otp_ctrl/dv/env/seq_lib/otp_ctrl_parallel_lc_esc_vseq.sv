@@ -92,7 +92,13 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_lock_vseq;
 
     // After LC_escalate is On, we trigger the dai_lock_vseq to check interfaces will return
     // default values and the design won't hang.
-    otp_ctrl_dai_lock_vseq::body();
+    // This sequence will skip all the dut_init, and if reset is needed, the seq we will clear the
+    // otp memories. Otherwise, if lc_esc is issued during OTP program, there might be ECC
+    // uncorrectable errors and the OTP init will return an error.
+    // The case `otp_init` errors are not handled by scb but checked via direct sequence.
+    do_dut_init = 0;
+    do_otp_ctrl_init = 1;
+    super.body();
   endtask
 
   virtual task post_start();

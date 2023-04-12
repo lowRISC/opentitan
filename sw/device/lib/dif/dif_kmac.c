@@ -31,11 +31,6 @@ enum {
    * The lowest security level is 128 (e.g. SHAKE128).
    */
   kDifKmacMaximumBitRate = 1600 - (2 * 128),
-
-  /**
-   * The offset of the second share within the output state register.
-   */
-  kDifKmacStateShareOffset = 0x100,
 };
 
 dif_result_t dif_kmac_customization_string_init(
@@ -151,14 +146,7 @@ static bool has_error_occurred(const dif_kmac_t *kmac) {
   return bitfield_bit32_read(reg, KMAC_INTR_STATE_KMAC_ERR_BIT);
 }
 
-/**
- * Poll until the status register is in the 'absorb' state or int state register
- * has indicated an error.
- *
- * @param kmac
- * @return dif_result
- */
-static dif_result_t poll_state(const dif_kmac_t *kmac, uint32_t flag) {
+dif_result_t dif_kmac_poll_status(const dif_kmac_t *kmac, uint32_t flag) {
   while (true) {
     uint32_t reg = mmio_region_read32(kmac->base_addr, KMAC_STATUS_REG_OFFSET);
     if (bitfield_bit32_read(reg, flag)) {
@@ -335,7 +323,7 @@ dif_result_t dif_kmac_mode_sha3_start(
   mmio_region_write32(kmac->base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
 
   // Poll until the status register is in the 'absorb' state.
-  return poll_state(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
+  return dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
 }
 
 dif_result_t dif_kmac_mode_shake_start(
@@ -384,7 +372,7 @@ dif_result_t dif_kmac_mode_shake_start(
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
   mmio_region_write32(kmac->base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
 
-  return poll_state(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
+  return dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
 }
 
 dif_result_t dif_kmac_mode_cshake_start(
@@ -484,7 +472,7 @@ dif_result_t dif_kmac_mode_cshake_start(
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
   mmio_region_write32(kmac->base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
 
-  return poll_state(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
+  return dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
 }
 
 dif_result_t dif_kmac_mode_kmac_start(
@@ -599,7 +587,7 @@ dif_result_t dif_kmac_mode_kmac_start(
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
   mmio_region_write32(kmac->base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
 
-  return poll_state(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
+  return dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
 }
 
 static void msg_fifo_write(const dif_kmac_t *kmac, const unsigned char *data,
@@ -637,7 +625,7 @@ dif_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
     return kDifError;
   }
 
-  // Poll until the the status register is in the 'absorb' state.
+  // Poll until the status register is in the 'absorb' state.
   if (!is_state_absorb(kmac)) {
     return kDifError;
   }
@@ -751,7 +739,8 @@ dif_result_t dif_kmac_squeeze(const dif_kmac_t *kmac,
     }
 
     // Poll the status register until in the 'squeeze' state.
-    DIF_RETURN_IF_ERROR(poll_state(kmac, KMAC_STATUS_SHA3_SQUEEZE_BIT));
+    DIF_RETURN_IF_ERROR(
+        dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_SQUEEZE_BIT));
 
     uint32_t offset =
         KMAC_STATE_REG_OFFSET + operation_state->offset * sizeof(uint32_t);

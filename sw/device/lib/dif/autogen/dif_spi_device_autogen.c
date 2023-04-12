@@ -131,6 +131,20 @@ dif_result_t dif_spi_device_irq_get_state(
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_irq_acknowledge_state(
+    const dif_spi_device_t *spi_device,
+    dif_spi_device_irq_state_snapshot_t snapshot) {
+  if (spi_device == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(spi_device->base_addr, SPI_DEVICE_INTR_STATE_REG_OFFSET,
+                      snapshot);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_irq_is_pending(const dif_spi_device_t *spi_device,
                                            dif_spi_device_irq_t irq,
                                            bool *is_pending) {

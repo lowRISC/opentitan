@@ -5,12 +5,18 @@
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules:opentitan_test.bzl",
+    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
+    "OPENTITANTOOL_OPENOCD_TEST_CMDS",
     "ROM_BOOT_FAILURE_MSG",
     "cw310_params",
     "dv_params",
     "opentitan_functest",
     "verilator_params",
 )
+load("//rules:splice.bzl", "bitstream_splice")
+load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image", "otp_json", "otp_partition")
+
+package(default_visibility = ["//visibility:public"])
 
 # TODO(lowRISC:opentitan#13180): this is a temporary solution to enable writing
 # manufacturer specific tests in the `manufacturer_test_hooks` repository that
@@ -140,7 +146,7 @@ opentitan_functest(
         # before checking for the ping_timeout error.
         # The wait-time for the Verilator would be around
         # 32M*8us = 256s (kClockFreqPeripheralHz = 125K).
-        # Thus it is not not recommended to run this test on
+        # Thus it is not recommended to run this test on
         # Verilator as this wait-time looks impractical. It should still
         # be run as part of the DV nightly regression.
         "cw310_test_rom",
@@ -227,7 +233,7 @@ opentitan_functest(
         # before checking for the ping_timeout error.
         # The wait-time for the Verilator would be around
         # 32M*8us = 256s (kClockFreqPeripheralHz = 125K).
-        # Thus it is not not recommended to run this test on
+        # Thus it is not recommended to run this test on
         # Verilator as this wait-time looks impractical. It should still
         # be run as part of the DV nightly regression.
         "cw310_test_rom",
@@ -272,7 +278,7 @@ opentitan_functest(
         # before checking for the ping_timeout error.
         # The wait-time for the Verilator would be around
         # 4s (kClockFreqPeripheralHz = 125K).
-        # Thus it is not not recommended to run this test on
+        # Thus it is not recommended to run this test on
         # Verilator as this wait-time looks impractical. It should still
         # be run as part of the DV nightly regression.
         "cw310_test_rom",
@@ -1098,8 +1104,18 @@ opentitan_functest(
 opentitan_functest(
     name = "gpio_pinmux_test",
     srcs = ["gpio_pinmux_test.c"],
+    cw310 = cw310_params(
+        interface = "hyper310",
+        tags = ["manual"],
+        test_cmds = [
+            "--rom-kind=testrom",
+            "--bitstream=\"$(location {bitstream})\"",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+    ),
     targets = [
         "verilator",
+        "cw310_test_rom",
     ],
     test_harness = "//sw/host/tests/chip/gpio",
     verilator = verilator_params(
@@ -1112,7 +1128,6 @@ opentitan_functest(
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/json:gpio",
         "//sw/device/lib/testing/json:pinmux_config",
-        "//sw/device/lib/testing/test_framework:ottf_flow_control",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -1711,6 +1726,8 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -1896,7 +1913,42 @@ opentitan_functest(
 opentitan_functest(
     name = "usbdev_test",
     srcs = ["usbdev_test.c"],
-    targets = ["verilator"],
+    cw310 = cw310_params(
+        tags = ["skip_in_ci"],  # Requires DPI model
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:usb_testutils",
+        "//sw/device/lib/testing:usb_testutils_simpleserial",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "usbdev_stream_test",
+    srcs = ["usbdev_stream_test.c"],
+    cw310 = cw310_params(
+        timeout = "eternal",
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -1904,7 +1956,6 @@ opentitan_functest(
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:usb_testutils",
-        "//sw/device/lib/testing:usb_testutils_simpleserial",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -2046,35 +2097,92 @@ opentitan_functest(
     ],
 )
 
+otp_json(
+    name = "power_virus_systemtest_otp_overlay",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                # Enable flash scrambling and ECC.
+                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
+            },
+        ),
+    ],
+)
+
+otp_image(
+    name = "power_virus_systemtest_otp_img_rma",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [":power_virus_systemtest_otp_overlay"],
+    visibility = ["//visibility:private"],
+)
+
+bitstream_splice(
+    name = "power_virus_systemtest_bitstream",
+    src = "//hw/bitstream:test_rom",
+    data = ":power_virus_systemtest_otp_img_rma",
+    meminfo = "//hw/bitstream:otp_mmi",
+    tags = ["vivado"],
+    update_usr_access = True,
+    visibility = ["//visibility:private"],
+)
+
 opentitan_functest(
     name = "power_virus_systemtest",
     srcs = ["power_virus_systemtest.c"],
+    cw310 = cw310_params(
+        bitstream = ":power_virus_systemtest_bitstream",
+        tags = ["vivado"],
+        test_cmds = [
+            "--rom-kind={rom_kind}",
+            "--bitstream=\"$(location {bitstream})\"",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+    ),
+    dv = dv_params(
+        otp = ":power_virus_systemtest_otp_img_rma",
+    ),
     targets = [
         # TODO(#14814): add more targets
         "cw310_test_rom",
         "dv",
     ],
+    test_harness = "//sw/host/tests/chip/power_virus",
     deps = [
         "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
         "//hw/ip/aes:model",
         "//hw/ip/aes/data:aes_regs",
+        "//hw/ip/csrng/data:csrng_regs",
         "//hw/ip/entropy_src/data:entropy_src_regs",
+        "//hw/ip/gpio/data:gpio_regs",
         "//hw/ip/hmac/data:hmac_regs",
+        "//hw/ip/i2c/data:i2c_regs",
         "//hw/ip/kmac/data:kmac_regs",
+        "//hw/ip/pattgen/data:pattgen_regs",
+        "//hw/ip/pwm/data:pwm_regs",
+        "//hw/ip/spi_host/data:spi_host_regs",
         "//hw/ip/uart/data:uart_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
         "//sw/device/lib/dif:adc_ctrl",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:csrng_shared",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:pattgen",
         "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwm",
+        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/dif:uart",
@@ -2082,9 +2190,119 @@ opentitan_functest(
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:hmac_testutils",
+        "//sw/device/lib/testing:i2c_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:spi_device_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto:rsa_3072_verify_testvectors_hardcoded_header",
+    ],
+)
+
+opentitan_functest(
+    name = "spi_passthru_test",
+    srcs = [
+        "spi_passthru_test.c",
+    ],
+    cw310 = cw310_params(
+        # This test will need hyperdebug once we start using multi-lane
+        # SPI modes.
+        #interface = "hyper310",
+        #tags = ["manual"],
+        test_cmds = [
+            "--rom-kind=testrom",
+            "--bitstream=\"$(location {bitstream})\"",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+    ),
+    targets = [
+        "cw310_test_rom",
+    ],
+    test_harness = "//sw/host/tests/chip/spi_passthru",
+    deps = [
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/json:spi_passthru",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+    ],
+)
+
+otp_json(
+    name = "flash_scrambling_smoketest_otp_overlay",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                # Enable flash scrambling and ECC.
+                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
+            },
+        ),
+    ],
+)
+
+otp_image(
+    name = "flash_scrambling_smoketest_otp_img_rma",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [":flash_scrambling_smoketest_otp_overlay"],
+    visibility = ["//visibility:private"],
+)
+
+opentitan_functest(
+    name = "flash_scrambling_smoketest",
+    srcs = ["example_test_from_flash.c"],
+    dv = dv_params(
+        otp = ":flash_scrambling_smoketest_otp_img_rma",
+    ),
+    targets = [
+        "dv",
+    ],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "test_openocd",
+    srcs = ["example_test_from_flash.c"],
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:rom_otp_test_unlocked0",
+        tags = ["jtag"],
+        test_cmds = OPENTITANTOOL_OPENOCD_TEST_CMDS,
+    ),
+    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+    targets = ["cw310_rom"],
+    test_harness = "//sw/host/tests/chip/jtag",
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "spi_device_ottf_console_test",
+    srcs = ["spi_device_ottf_console_test.c"],
+    cw310 = cw310_params(
+        interface = "hyper310",
+        tags = ["manual"],
+        test_cmds = [
+            "--rom-kind=testrom",
+            "--bitstream=\"$(location {bitstream})\"",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+    ),
+    targets = [
+        "cw310_test_rom",
+    ],
+    test_harness = "//sw/host/tests/chip/spi_device_ottf_console",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

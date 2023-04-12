@@ -21,8 +21,9 @@ class flash_ctrl_rand_ops_vseq extends flash_ctrl_rand_ops_base_vseq;
     cfg.seq_cfg.num_en_mp_regions = 0;
 
     cfg.seq_cfg.set_partition_pc(.sel_data_part_pc(50),
-                                 .sel_info_part_pc(35),
-                                 .sel_info1_part_pc(15));
+                                 .sel_info_part_pc(25),
+                                 .sel_info1_part_pc(15),
+                                 .sel_info2_part_pc(10));
 
     // Enable access to all information partitions.
     foreach (cfg.seq_cfg.mp_info_page_en_pc[i, j]) begin

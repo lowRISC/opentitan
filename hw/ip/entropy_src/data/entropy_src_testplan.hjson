@@ -53,6 +53,14 @@
       tests: ["entropy_src_rng"]
     }
     {
+      name: rng_max_rate
+      desc: '''
+            Verify RNG entropy at maximum production rate
+            '''
+      stage: V2
+      tests: ["entropy_src_rng_max_rate"]
+    }
+    {
       name: health_checks
       desc: '''
             Verify AdaptProp, RepCnt, RepCntSym, Bucket, Markov health check results
@@ -118,6 +126,15 @@
       stage: V2
       tests: ["entropy_src_functional_errors"]
     }
+    {
+      name: external_health_tests
+      desc: '''
+            Verify the external health test (XHT) interface and functionality, including continuous
+            and windowed functionality and different high/low thresholds and watermarks.
+            '''
+      stage: V3
+      tests: ["entropy_src_rng_with_xht_rsps"], // TODO(#16276): Complete XHT verification
+    }
   ]
   covergroups: [
     {
@@ -161,7 +178,7 @@
              Covers that all three fifos (the esrng fifo, the observe fifo, and the esfinal fifo)
              have all been forced into the three error states (write overflow, read underflow,
              and invalid state), and the error has sucessfully generated an alert and that
-             the alert is successfully reported in the the ERR_CODE register.
+             the alert is successfully reported in the ERR_CODE register.
              '''
     }
     {
@@ -247,6 +264,20 @@
       desc: '''
             Covers that the TB has attempted to update DUT configurations while the module is
             enabled, to ensure that the sw_regupd CSR is working
+            '''
+    }
+    {
+      name: sw_disable_cg
+      desc: '''
+            Covers SW attempting to disable entropy_src in different states of the module.
+            '''
+    }
+    {
+      name: enable_delay_cg
+      desc: '''
+            Covers the enable and disable delay mechanism in different states of the module.  This
+            covergroup only gets sampled when the enable input of `entropy_src_enable_delay`
+            changes.
             '''
     }
     {

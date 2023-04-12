@@ -160,8 +160,21 @@ module otbn_rf_bignum
     );
   end
 
-  assign intg_err_o = ((|rd_data_a_err) & rd_en_a_i) |
-                      ((|rd_data_b_err) & rd_en_b_i);
+  logic intg_err_unbuf, intg_err_buf;
+
+  assign intg_err_unbuf = ((|rd_data_a_err) & rd_en_a_i) |
+                          ((|rd_data_b_err) & rd_en_b_i);
+
+  // This primitive is used to place a constraint for synthesis. It is required to
+  // ensure that the signal name will be available in the synthesized netlist.
+  prim_buf #(
+    .Width(1)
+  ) u_prim_buf (
+    .in_i(intg_err_unbuf),
+    .out_o(intg_err_buf)
+  );
+
+  assign intg_err_o = intg_err_buf;
 
   `ASSERT(BlankingBignumRegReadA_A,
           !rd_en_a_i |->  rd_data_a_intg_o == '0,

@@ -18,24 +18,25 @@
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-void flash_ctrl_testutils_wait_for_init(dif_flash_ctrl_state_t *flash_state) {
+status_t flash_ctrl_testutils_wait_for_init(
+    dif_flash_ctrl_state_t *flash_state) {
   dif_flash_ctrl_status_t status;
   do {
-    CHECK_DIF_OK(dif_flash_ctrl_get_status(flash_state, &status));
+    TRY(dif_flash_ctrl_get_status(flash_state, &status));
   } while (status.controller_init_wip);
+  return OK_STATUS();
 }
 
-bool flash_ctrl_testutils_wait_transaction_end(
+status_t flash_ctrl_testutils_wait_transaction_end(
     dif_flash_ctrl_state_t *flash_state) {
   dif_flash_ctrl_output_t output;
-  while (true) {
-    dif_result_t dif_result = dif_flash_ctrl_end(flash_state, &output);
-    CHECK(dif_result != kDifBadArg);
-    CHECK(dif_result != kDifError);
-    if (dif_result == kDifOk) {
-      break;
-    }
-  }
+  dif_result_t dif_result;
+  do {
+    dif_result = dif_flash_ctrl_end(flash_state, &output);
+    TRY_CHECK(dif_result != kDifBadArg);
+    TRY_CHECK(dif_result != kDifError);
+  } while (dif_result != kDifOk);
+
   if (output.operation_error) {
     dif_flash_ctrl_error_codes_t codes = output.error_code.codes;
     uint32_t error_reg = 0;
@@ -53,32 +54,34 @@ bool flash_ctrl_testutils_wait_transaction_end(
         bitfield_bit32_write(error_reg, FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT,
                              codes.shadow_register_error);
   }
-  CHECK_DIF_OK(
-      dif_flash_ctrl_clear_error_codes(flash_state, output.error_code.codes));
-  return output.operation_error == 0;
+  TRY(dif_flash_ctrl_clear_error_codes(flash_state, output.error_code.codes));
+  return output.operation_error == 0 ? OK_STATUS() : INTERNAL();
 }
 
-uint32_t flash_ctrl_testutils_data_region_setup_properties(
+status_t flash_ctrl_testutils_data_region_setup_properties(
     dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
     uint32_t data_region, uint32_t region_size,
-    dif_flash_ctrl_region_properties_t region_properties) {
+    dif_flash_ctrl_region_properties_t region_properties, uint32_t *offset) {
   dif_flash_ctrl_data_region_properties_t data_region_properties = {
       .base = base_page_index,
       .properties = region_properties,
       .size = region_size};
 
-  CHECK_DIF_OK(dif_flash_ctrl_set_data_region_properties(
-      flash_state, data_region, data_region_properties));
-  CHECK_DIF_OK(dif_flash_ctrl_set_data_region_enablement(
-      flash_state, data_region, kDifToggleEnabled));
+  TRY(dif_flash_ctrl_set_data_region_properties(flash_state, data_region,
+                                                data_region_properties));
+  TRY(dif_flash_ctrl_set_data_region_enablement(flash_state, data_region,
+                                                kDifToggleEnabled));
 
-  dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
-  return (base_page_index * device_info.bytes_per_page);
+  if (offset != NULL) {
+    dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
+    *offset = base_page_index * device_info.bytes_per_page;
+  }
+  return OK_STATUS();
 }
 
-uint32_t flash_ctrl_testutils_data_region_setup(
+status_t flash_ctrl_testutils_data_region_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
-    uint32_t data_region, uint32_t region_size) {
+    uint32_t data_region, uint32_t region_size, uint32_t *offset) {
   dif_flash_ctrl_region_properties_t region_properties = {
       .ecc_en = kMultiBitBool4True,
       .high_endurance_en = kMultiBitBool4False,
@@ -87,13 +90,13 @@ uint32_t flash_ctrl_testutils_data_region_setup(
       .rd_en = kMultiBitBool4True,
       .scramble_en = kMultiBitBool4False};
   return flash_ctrl_testutils_data_region_setup_properties(
-      flash_state, base_page_index, data_region, region_size,
-      region_properties);
+      flash_state, base_page_index, data_region, region_size, region_properties,
+      offset);
 }
 
-uint32_t flash_ctrl_testutils_data_region_scrambled_setup(
+status_t flash_ctrl_testutils_data_region_scrambled_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
-    uint32_t data_region, uint32_t region_size) {
+    uint32_t data_region, uint32_t region_size, uint32_t *offset) {
   dif_flash_ctrl_region_properties_t region_properties = {
       .ecc_en = kMultiBitBool4True,
       .high_endurance_en = kMultiBitBool4False,
@@ -102,29 +105,32 @@ uint32_t flash_ctrl_testutils_data_region_scrambled_setup(
       .rd_en = kMultiBitBool4True,
       .scramble_en = kMultiBitBool4True};
   return flash_ctrl_testutils_data_region_setup_properties(
-      flash_state, base_page_index, data_region, region_size,
-      region_properties);
+      flash_state, base_page_index, data_region, region_size, region_properties,
+      offset);
 }
 
-uint32_t flash_ctrl_testutils_info_region_setup_properties(
+status_t flash_ctrl_testutils_info_region_setup_properties(
     dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
-    uint32_t partition_id,
-    dif_flash_ctrl_region_properties_t region_properties) {
+    uint32_t partition_id, dif_flash_ctrl_region_properties_t region_properties,
+    uint32_t *offset) {
   dif_flash_ctrl_info_region_t info_region = {
       .bank = bank, .page = page_id, .partition_id = partition_id};
 
-  CHECK_DIF_OK(dif_flash_ctrl_set_info_region_properties(
-      flash_state, info_region, region_properties));
-  CHECK_DIF_OK(dif_flash_ctrl_set_info_region_enablement(
-      flash_state, info_region, kDifToggleEnabled));
+  TRY(dif_flash_ctrl_set_info_region_properties(flash_state, info_region,
+                                                region_properties));
+  TRY(dif_flash_ctrl_set_info_region_enablement(flash_state, info_region,
+                                                kDifToggleEnabled));
 
-  dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
-  return (page_id * device_info.bytes_per_page);
+  if (offset != NULL) {
+    dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
+    *offset = page_id * device_info.bytes_per_page;
+  }
+  return OK_STATUS();
 }
 
-uint32_t flash_ctrl_testutils_info_region_setup(
+status_t flash_ctrl_testutils_info_region_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
-    uint32_t partition_id) {
+    uint32_t partition_id, uint32_t *offset) {
   dif_flash_ctrl_region_properties_t region_properties = {
       .ecc_en = kMultiBitBool4True,
       .high_endurance_en = kMultiBitBool4False,
@@ -133,12 +139,12 @@ uint32_t flash_ctrl_testutils_info_region_setup(
       .rd_en = kMultiBitBool4True,
       .scramble_en = kMultiBitBool4False};
   return flash_ctrl_testutils_info_region_setup_properties(
-      flash_state, page_id, bank, partition_id, region_properties);
+      flash_state, page_id, bank, partition_id, region_properties, offset);
 }
 
-uint32_t flash_ctrl_testutils_info_region_scrambled_setup(
+status_t flash_ctrl_testutils_info_region_scrambled_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
-    uint32_t partition_id) {
+    uint32_t partition_id, uint32_t *offset) {
   dif_flash_ctrl_region_properties_t region_properties = {
       .ecc_en = kMultiBitBool4True,
       .high_endurance_en = kMultiBitBool4False,
@@ -147,10 +153,10 @@ uint32_t flash_ctrl_testutils_info_region_scrambled_setup(
       .rd_en = kMultiBitBool4True,
       .scramble_en = kMultiBitBool4True};
   return flash_ctrl_testutils_info_region_setup_properties(
-      flash_state, page_id, bank, partition_id, region_properties);
+      flash_state, page_id, bank, partition_id, region_properties, offset);
 }
 
-bool flash_ctrl_testutils_erase_page(
+status_t flash_ctrl_testutils_erase_page(
     dif_flash_ctrl_state_t *flash_state, uint32_t byte_address,
     uint32_t partition_id, dif_flash_ctrl_partition_type_t partition_type) {
   dif_flash_ctrl_transaction_t transaction = {.byte_address = byte_address,
@@ -158,15 +164,14 @@ bool flash_ctrl_testutils_erase_page(
                                               .partition_type = partition_type,
                                               .partition_id = partition_id,
                                               .word_count = 0x0};
-  CHECK_DIF_OK(dif_flash_ctrl_start(flash_state, transaction));
+  TRY(dif_flash_ctrl_start(flash_state, transaction));
   return flash_ctrl_testutils_wait_transaction_end(flash_state);
 }
 
-bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
-                                uint32_t byte_address, uint32_t partition_id,
-                                const uint32_t *data,
-                                dif_flash_ctrl_partition_type_t partition_type,
-                                uint32_t word_count) {
+status_t flash_ctrl_testutils_write(
+    dif_flash_ctrl_state_t *flash_state, uint32_t byte_address,
+    uint32_t partition_id, const uint32_t *data,
+    dif_flash_ctrl_partition_type_t partition_type, uint32_t word_count) {
   // Cannot program partial words.
   // TODO: #13773 for more details.
   // When 13773 is supported, programs to non-scrambled or ecc enabled
@@ -174,7 +179,7 @@ bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
   // enabled pages can support only flash item writes.
   if (byte_address & (sizeof(uint32_t) - 1)) {
     LOG_ERROR("Unaligned address 0x%x", byte_address);
-    return false;
+    return INVALID_ARGUMENT();
   }
   dif_flash_ctrl_transaction_t transaction = {.byte_address = byte_address,
                                               .op = kDifFlashCtrlOpProgram,
@@ -189,7 +194,8 @@ bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
   const uint32_t prog_window_size =
       (uint32_t)FLASH_CTRL_PARAM_REG_BUS_PGM_RES_BYTES / sizeof(uint32_t);
   const uint32_t prog_window_mask = ~(prog_window_size - 1);
-  bool retval = true;
+
+  status_t status = OK_STATUS();
   while (words_written < word_count) {
     // Writes must not cross programming resolution window boundaries, which
     // occur at every prog_window_size words.
@@ -200,33 +206,33 @@ bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
         (words_remaining < window_limit) ? words_remaining : window_limit;
     transaction.byte_address = word_address * sizeof(uint32_t);
     transaction.word_count = words_to_write;
-    CHECK_DIF_OK(dif_flash_ctrl_start(flash_state, transaction));
-    CHECK_DIF_OK(dif_flash_ctrl_prog_fifo_push(flash_state, words_to_write,
-                                               data + words_written));
-    retval &= flash_ctrl_testutils_wait_transaction_end(flash_state);
+    TRY(dif_flash_ctrl_start(flash_state, transaction));
+    TRY(dif_flash_ctrl_prog_fifo_push(flash_state, words_to_write,
+                                      data + words_written));
+    status = flash_ctrl_testutils_wait_transaction_end(flash_state);
     word_address += words_to_write;
     words_written += words_to_write;
   }
 
-  return retval;
+  return status;
 }
 
-bool flash_ctrl_testutils_erase_and_write_page(
+status_t flash_ctrl_testutils_erase_and_write_page(
     dif_flash_ctrl_state_t *flash_state, uint32_t byte_address,
     uint32_t partition_id, const uint32_t *data,
     dif_flash_ctrl_partition_type_t partition_type, uint32_t word_count) {
-  bool retval = flash_ctrl_testutils_erase_page(flash_state, byte_address,
-                                                partition_id, partition_type);
-  retval &= flash_ctrl_testutils_write(flash_state, byte_address, partition_id,
-                                       data, partition_type, word_count);
-  return retval;
+  TRY(flash_ctrl_testutils_erase_page(flash_state, byte_address, partition_id,
+                                      partition_type));
+  TRY(flash_ctrl_testutils_write(flash_state, byte_address, partition_id, data,
+                                 partition_type, word_count));
+  return OK_STATUS();
 }
 
-bool flash_ctrl_testutils_read(dif_flash_ctrl_state_t *flash_state,
-                               uint32_t byte_address, uint32_t partition_id,
-                               uint32_t *data_out,
-                               dif_flash_ctrl_partition_type_t partition_type,
-                               uint32_t word_count, uint32_t delay) {
+status_t flash_ctrl_testutils_read(
+    dif_flash_ctrl_state_t *flash_state, uint32_t byte_address,
+    uint32_t partition_id, uint32_t *data_out,
+    dif_flash_ctrl_partition_type_t partition_type, uint32_t word_count,
+    uint32_t delay) {
   dif_flash_ctrl_transaction_t transaction = {.byte_address = byte_address,
                                               .op = kDifFlashCtrlOpRead,
                                               .partition_type = partition_type,
@@ -234,14 +240,14 @@ bool flash_ctrl_testutils_read(dif_flash_ctrl_state_t *flash_state,
                                               .word_count = word_count};
 
   // Read Page.
-  CHECK_DIF_OK(dif_flash_ctrl_start(flash_state, transaction));
+  TRY(dif_flash_ctrl_start(flash_state, transaction));
   // Optional delay to allow for read fifo fill testing.
   busy_spin_micros(delay);
-  CHECK_DIF_OK(dif_flash_ctrl_read_fifo_pop(flash_state, word_count, data_out));
+  TRY(dif_flash_ctrl_read_fifo_pop(flash_state, word_count, data_out));
   return flash_ctrl_testutils_wait_transaction_end(flash_state);
 }
 
-void flash_ctrl_testutils_default_region_access(
+status_t flash_ctrl_testutils_default_region_access(
     dif_flash_ctrl_state_t *flash_state, bool rd_en, bool prog_en,
     bool erase_en, bool scramble_en, bool ecc_en, bool high_endurance_en) {
   dif_flash_ctrl_region_properties_t default_properties = {
@@ -253,19 +259,20 @@ void flash_ctrl_testutils_default_region_access(
       .high_endurance_en =
           high_endurance_en ? kMultiBitBool4True : kMultiBitBool4False};
 
-  CHECK_DIF_OK(dif_flash_ctrl_set_default_region_properties(
-      flash_state, default_properties));
+  TRY(dif_flash_ctrl_set_default_region_properties(flash_state,
+                                                   default_properties));
+  return OK_STATUS();
 }
 
-bool flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
-                                     uint32_t bank, bool data_only) {
+status_t flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
+                                         uint32_t bank, bool data_only) {
   dif_toggle_t bank_erase_enabled;
-  CHECK_DIF_OK(dif_flash_ctrl_get_bank_erase_enablement(flash_state, bank,
-                                                        &bank_erase_enabled));
+  TRY(dif_flash_ctrl_get_bank_erase_enablement(flash_state, bank,
+                                               &bank_erase_enabled));
 
   if (bank_erase_enabled == kDifToggleDisabled) {
-    CHECK_DIF_OK(dif_flash_ctrl_set_bank_erase_enablement(flash_state, bank,
-                                                          kDifToggleEnabled));
+    TRY(dif_flash_ctrl_set_bank_erase_enablement(flash_state, bank,
+                                                 kDifToggleEnabled));
   }
 
   dif_flash_ctrl_device_info_t flash_info = dif_flash_ctrl_get_device_info();
@@ -279,13 +286,12 @@ bool flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
                                               .partition_type = partition_type,
                                               .partition_id = 0,
                                               .word_count = 0x0};
-  CHECK_DIF_OK(dif_flash_ctrl_start(flash_state, transaction));
-  bool retval = flash_ctrl_testutils_wait_transaction_end(flash_state);
+  TRY(dif_flash_ctrl_start(flash_state, transaction));
+  TRY(flash_ctrl_testutils_wait_transaction_end(flash_state));
 
-  CHECK_DIF_OK(dif_flash_ctrl_set_bank_erase_enablement(flash_state, bank,
-                                                        bank_erase_enabled));
-
-  return retval;
+  TRY(dif_flash_ctrl_set_bank_erase_enablement(flash_state, bank,
+                                               bank_erase_enabled));
+  return OK_STATUS();
 }
 
 enum {
@@ -315,10 +321,11 @@ static uint64_t *const kNvCounters[] = {
     nv_counter_3,
 };
 
-uint32_t flash_ctrl_testutils_counter_get(size_t counter) {
-  CHECK(counter < ARRAYSIZE(kNvCounters));
-  CHECK((uint32_t)&_non_volatile_counter_flash_words ==
-        kNonVolatileCounterFlashWords);
+status_t flash_ctrl_testutils_counter_get(size_t counter, uint32_t *value) {
+  TRY_CHECK(value != NULL);
+  TRY_CHECK(counter < ARRAYSIZE(kNvCounters));
+  TRY_CHECK((uint32_t)&_non_volatile_counter_flash_words ==
+            kNonVolatileCounterFlashWords);
 
   // Use a reverse loop since `flash_ctrl_testutils_counter_set_at_least()` can
   // introduce gaps.
@@ -328,34 +335,37 @@ uint32_t flash_ctrl_testutils_counter_get(size_t counter) {
       break;
     }
   }
-  return i + 1;
+  *value = i + 1;
+  return OK_STATUS();
 }
 
-void flash_ctrl_testutils_counter_increment(dif_flash_ctrl_state_t *flash_state,
-                                            size_t counter) {
-  size_t i = flash_ctrl_testutils_counter_get(counter);
-  CHECK(i < kNonVolatileCounterFlashWords,
-        "Non-volatile counter %u is at its maximum", counter);
+status_t flash_ctrl_testutils_counter_increment(
+    dif_flash_ctrl_state_t *flash_state, size_t counter) {
+  size_t i;
+  TRY(flash_ctrl_testutils_counter_get(counter, &i));
+  TRY_CHECK(i < kNonVolatileCounterFlashWords,
+            "Non-volatile counter %u is at its maximum", counter);
   flash_ctrl_testutils_counter_set_at_least(flash_state, counter, i + 1);
-  CHECK(flash_ctrl_testutils_counter_get(counter) == i + 1,
-        "Counter increment failed");
+  uint32_t value;
+  TRY(flash_ctrl_testutils_counter_get(counter, &value));
+  TRY_CHECK(value == i + 1, "Counter increment failed");
+  return OK_STATUS();
 }
 
-void flash_ctrl_testutils_counter_set_at_least(
+status_t flash_ctrl_testutils_counter_set_at_least(
     dif_flash_ctrl_state_t *flash_state, size_t counter, uint32_t val) {
-  CHECK(val <= kNonVolatileCounterFlashWords,
-        "Non-volatile counter %u new value %u > max value %u", counter, val,
-        kNonVolatileCounterFlashWords);
+  TRY_CHECK(val <= kNonVolatileCounterFlashWords,
+            "Non-volatile counter %u new value %u > max value %u", counter, val,
+            kNonVolatileCounterFlashWords);
   if (val == 0) {
-    return;
+    return OK_STATUS();
   }
   uint32_t new_val[FLASH_CTRL_PARAM_BYTES_PER_WORD / sizeof(uint32_t)] = {0, 0};
-  CHECK(flash_ctrl_testutils_write(flash_state,
-                                   (uint32_t)&kNvCounters[counter][val - 1] -
-                                       TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-                                   0, new_val, kDifFlashCtrlPartitionTypeData,
-                                   ARRAYSIZE(new_val)),
-        "Flash write failed");
+  return flash_ctrl_testutils_write(flash_state,
+                                    (uint32_t)&kNvCounters[counter][val - 1] -
+                                        TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+                                    0, new_val, kDifFlashCtrlPartitionTypeData,
+                                    ARRAYSIZE(new_val));
 }
 
 // At the beginning of the simulation (Verilator, VCS,etc.),
@@ -364,39 +374,41 @@ void flash_ctrl_testutils_counter_set_at_least(
 // In that case, flash_ctrl_testutils_counter_set_at_least() will not increment
 // This function can be used to initialize a NVM counter to zero by filling
 // its flash region with non-zero values.
-void flash_ctrl_testutils_counter_init_zero(dif_flash_ctrl_state_t *flash_state,
-                                            size_t counter) {
+status_t flash_ctrl_testutils_counter_init_zero(
+    dif_flash_ctrl_state_t *flash_state, size_t counter) {
   uint32_t new_val[FLASH_CTRL_PARAM_BYTES_PER_WORD / sizeof(uint32_t)] = {0xaa,
                                                                           0xbb};
   for (int ii = 0; ii < kNonVolatileCounterFlashWords; ii++) {
-    CHECK(flash_ctrl_testutils_erase_and_write_page(
-              flash_state,
-              (uint32_t)&kNvCounters[counter][ii] -
-                  TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-              0, new_val, kDifFlashCtrlPartitionTypeData, ARRAYSIZE(new_val)),
-          "Flash write failed");
+    TRY(flash_ctrl_testutils_erase_and_write_page(
+        flash_state,
+        (uint32_t)&kNvCounters[counter][ii] -
+            TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+        0, new_val, kDifFlashCtrlPartitionTypeData, ARRAYSIZE(new_val)));
   }
+  return OK_STATUS();
 }
 
-void flash_ctrl_testutils_backdoor_init(dif_flash_ctrl_state_t *flash_state) {
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+status_t flash_ctrl_testutils_backdoor_init(
+    dif_flash_ctrl_state_t *flash_state) {
+  TRY(dif_flash_ctrl_init_state(
       flash_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
-  flash_ctrl_testutils_default_region_access(flash_state,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  return flash_ctrl_testutils_default_region_access(flash_state,
+                                                    /*rd_en*/ true,
+                                                    /*prog_en*/ true,
+                                                    /*erase_en*/ true,
+                                                    /*scramble_en*/ false,
+                                                    /*ecc_en*/ false,
+                                                    /*he_en*/ false);
 }
 
-void flash_ctrl_testutils_backdoor_wait_update(
+status_t flash_ctrl_testutils_backdoor_wait_update(
     dif_flash_ctrl_state_t *flash_state, uintptr_t addr, size_t timeout) {
   static uint32_t data = UINT32_MAX;
-  CHECK(flash_ctrl_testutils_write(
+  TRY(flash_ctrl_testutils_write(
       flash_state, (uint32_t)addr - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR, 0,
       &data, kDifFlashCtrlPartitionTypeData, 1));
-  IBEX_SPIN_FOR(UINT32_MAX != *(uint32_t *)addr, timeout);
+  IBEX_TRY_SPIN_FOR(UINT32_MAX != *(uint32_t *)addr, timeout);
+  return OK_STATUS();
 }

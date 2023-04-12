@@ -10,11 +10,11 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/crc32.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
@@ -51,7 +51,7 @@ static uint32_t random_low_threshold(dif_entropy_src_test_t test_id,
 // and then re-enabled to run with the configured health thresholds.
 static void configure_random_health_checks(void) {
   // Generate random values using entropy complex in continuous mode.
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
   dif_entropy_src_health_test_config_t configs[kDifEntropySrcTestNumVariants];
   for (uint32_t test_id = kDifEntropySrcTestRepetitionCount;
        test_id < kDifEntropySrcTestNumVariants; ++test_id) {
@@ -67,18 +67,18 @@ static void configure_random_health_checks(void) {
   }
 
   // Configure health values after disabling the entropy complex.
-  entropy_testutils_stop_all();
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
   for (size_t i = 0; i < ARRAYSIZE(configs); ++i) {
     CHECK_DIF_OK(
         dif_entropy_src_health_test_configure(&entropy_src, configs[i]));
   }
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 }
 
 // Configures the entropy source health check and alert thresholds with the
 // configuration stored in OTP.
 static void configure_health_checks_from_otp(void) {
-  entropy_testutils_stop_all();
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
   dif_entropy_src_health_test_config_t configs[] = {
       [kDifEntropySrcTestRepetitionCount] =
           {
@@ -173,15 +173,11 @@ rom_error_t test_otp_crc_check(void) {
 }
 
 rom_error_t test_rnd_health_config_check(void) {
-  // Don't care lc states should always return `kErrorOk` regardless of what
-  // values are stored in the entropy_src.
-  lifecycle_state_t lc_expect_check_skip[] = {
-      kLcStateTest,
-  };
-  configure_random_health_checks();
-  for (size_t i = 0; i < ARRAYSIZE(lc_expect_check_skip); ++i) {
-    CHECK(rnd_health_config_check(lc_expect_check_skip[i]) == kErrorOk);
-  }
+  // The default OTP image uses the default reset configuration. We test that
+  // first here because the health tests configuration cannot be reset by
+  // toggling the entropy_src enable field. The
+  // `configure_random_health_checks()` function called later reduces the health
+  // test window sizes.
 
   // Other lc states must match the expected CRC stored in OTP.
   lifecycle_state_t lc_expect_check[] = {
@@ -192,12 +188,23 @@ rom_error_t test_rnd_health_config_check(void) {
   };
   configure_health_checks_from_otp();
   for (size_t i = 0; i < ARRAYSIZE(lc_expect_check); ++i) {
+    rom_error_t res = rnd_health_config_check(lc_expect_check[i]);
+    CHECK(res == kErrorOk, "Lifecycle: %d, error: %d", lc_expect_check[i], res);
+  }
+
+  // Don't care lc states should always return `kErrorOk` regardless of what
+  // values are stored in the entropy_src.
+  lifecycle_state_t lc_expect_check_skip[] = {
+      kLcStateTest,
+  };
+  configure_random_health_checks();
+  for (size_t i = 0; i < ARRAYSIZE(lc_expect_check_skip); ++i) {
     CHECK(rnd_health_config_check(lc_expect_check_skip[i]) == kErrorOk);
   }
 
   // Configure entropy source one last time to leave the device in a good end
   // state.
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
   return kErrorOk;
 }
 
@@ -224,9 +231,9 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_entropy_src_init(
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
 
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
   EXECUTE_TEST(result, test_rnd);
   EXECUTE_TEST(result, test_otp_crc_check);
   EXECUTE_TEST(result, test_rnd_health_config_check);
-  return result == kErrorOk;
+  return status_ok(result);
 }

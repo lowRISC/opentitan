@@ -29,11 +29,12 @@ impl UsbBackend {
         for device in rusb::devices().context("USB error")?.iter() {
             let descriptor = match device.device_descriptor() {
                 Ok(desc) => desc,
-                _ => {
+                Err(e) => {
                     deferred_log_messages.push(format!(
-                        "Could not read device descriptor for device at bus={} address={}",
+                        "Could not read device descriptor for device at bus={} address={}: {}",
                         device.bus_number(),
-                        device.address()
+                        device.address(),
+                        e,
                     ));
                     continue;
                 }
@@ -46,22 +47,24 @@ impl UsbBackend {
             }
             let handle = match device.open() {
                 Ok(handle) => handle,
-                _ => {
+                Err(e) => {
                     deferred_log_messages.push(format!(
-                        "Could not open device at bus={} address={}",
+                        "Could not open device at bus={} address={}: {}",
                         device.bus_number(),
-                        device.address()
+                        device.address(),
+                        e,
                     ));
                     continue;
                 }
             };
             let serial_number = match handle.read_serial_number_string_ascii(&descriptor) {
                 Ok(sn) => sn,
-                _ => {
+                Err(e) => {
                     deferred_log_messages.push(format!(
-                        "Could not read serial number from device at bus={} address={}",
+                        "Could not read serial number from device at bus={} address={}: {}",
                         device.bus_number(),
-                        device.address()
+                        device.address(),
+                        e,
                     ));
                     continue;
                 }
@@ -104,9 +107,27 @@ impl UsbBackend {
         })
     }
 
+    pub fn get_vendor_id(&self) -> u16 {
+        self.device.device_descriptor().unwrap().vendor_id()
+    }
+
+    pub fn get_product_id(&self) -> u16 {
+        self.device.device_descriptor().unwrap().product_id()
+    }
+
     /// Gets the usb serial number of the device.
     pub fn get_serial_number(&self) -> &str {
         self.serial_number.as_str()
+    }
+
+    pub fn set_active_configuration(&mut self, config: u8) -> Result<()> {
+        self.handle
+            .set_active_configuration(config)
+            .context("USB error")
+    }
+
+    pub fn claim_interface(&mut self, iface: u8) -> Result<()> {
+        self.handle.claim_interface(iface).context("USB error")
     }
 
     //
@@ -114,10 +135,6 @@ impl UsbBackend {
     // and may have to be refactored, when we convert UsbDevice into a trait, and want to
     // support mocked implementations.
     //
-
-    pub fn claim_interface(&mut self, iface: u8) -> Result<()> {
-        self.handle.claim_interface(iface).context("USB error")
-    }
 
     pub fn active_config_descriptor(&self) -> Result<rusb::ConfigDescriptor> {
         self.device.active_config_descriptor().context("USB error")

@@ -284,7 +284,7 @@ typedef struct dif_otp_ctrl_status {
    * A list of root causes for each error status code.
    *
    * If the error status code `error` is present in `codes`, and
-   * `error <= kDifOtpCtrlStatusHasCauseLast`, then `causes[error]`
+   * `error <= kDifOtpCtrlStatusCodeHasCauseLast`, then `causes[error]`
    * will contain its root cause.
    */
   dif_otp_ctrl_error_t causes[kDifOtpCtrlStatusCodeHasCauseLast + 1];

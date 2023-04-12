@@ -227,8 +227,12 @@ barrett384:
 .section .text.start
 .globl wrap_barrett384
 wrap_barrett384:
+  /* Initialize all-zero register. */
   bn.xor w31, w31, w31
-
+  /* Initialise WDRs before using them */
+  bn.xor w16, w16, w16
+  bn.xor w17, w17, w17
+  bn.xor w18, w18, w18
   /* load first operand from dmem to [w9, w8] */
   li x4, 8
   la x5, inp_a

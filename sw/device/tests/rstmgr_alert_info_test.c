@@ -722,19 +722,21 @@ bool test_main(void) {
       kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
 
   // First check the flash stored value.
-  uint32_t event_idx = flash_ctrl_testutils_counter_get(0);
+  uint32_t event_idx = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &event_idx));
 
   // Enable flash access
-  flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
 
   // Increment flash counter to know where we are.
-  flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
 
   LOG_INFO("Test round %d", event_idx);
 
@@ -773,8 +775,8 @@ bool test_main(void) {
         udiv64_slow(kWdogBarkMicros * kClockFreqAonHz, 1000000, NULL);
     uint64_t bite_cycles =
         udiv64_slow(kWdogBiteMicros * kClockFreqAonHz, 1000000, NULL);
-    aon_timer_testutils_watchdog_config(&aon_timer, bark_cycles, bite_cycles,
-                                        false);
+    CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(&aon_timer, bark_cycles,
+                                                        bite_cycles, false));
 
     CHECK_DIF_OK(dif_uart_alert_force(&uart0, kDifUartAlertFatalFault));
     CHECK_DIF_OK(dif_uart_alert_force(&uart1, kDifUartAlertFatalFault));

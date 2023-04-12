@@ -192,11 +192,11 @@ mod tests {
                             value: 0,
                         },
                         {
-                            name: "CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
+                            name: "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN",
                             value: "0x739",
                         },
                         {
-                            name: "CREATOR_SW_CFG_KEY_IS_VALID",
+                            name: "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN",
                             value: "0x4b4b4b4b4b4ba5a5",
                         },
                         {
@@ -227,11 +227,11 @@ mod tests {
                         value: OtpImgValue::Word(0x0),
                     },
                     OtpImgItem {
-                        name: "CREATOR_SW_CFG_USE_SW_RSA_VERIFY".to_owned(),
+                        name: "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN".to_owned(),
                         value: OtpImgValue::Word(0x739),
                     },
                     OtpImgItem {
-                        name: "CREATOR_SW_CFG_KEY_IS_VALID".to_owned(),
+                        name: "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN".to_owned(),
                         value: OtpImgValue::Word(0x4b4b4b4b4b4ba5a5),
                     },
                     OtpImgItem {
@@ -266,11 +266,11 @@ mod tests {
           value: 0
         },
         {
-          name: \"CREATOR_SW_CFG_USE_SW_RSA_VERIFY\",
+          name: \"CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN\",
           value: 1849
         },
         {
-          name: \"CREATOR_SW_CFG_KEY_IS_VALID\",
+          name: \"CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN\",
           value: \"5425512962855773605\"
         },
         {
@@ -297,15 +297,17 @@ mod tests {
         let otp = OtpImg::from_str(TEST_OTP_JSON).unwrap();
         assert_eq!(otp.read32("CREATOR_SW_CFG_DIGEST").unwrap(), 0x0);
         assert_eq!(
-            otp.read32("CREATOR_SW_CFG_USE_SW_RSA_VERIFY").unwrap(),
+            otp.read32("CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN")
+                .unwrap(),
             0x739
         );
         assert_eq!(
-            otp.read32("CREATOR_SW_CFG_KEY_IS_VALID").unwrap(),
+            otp.read32("CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN").unwrap(),
             0x4b4ba5a5
         );
         assert_eq!(
-            otp.read32_offset("CREATOR_SW_CFG_KEY_IS_VALID", 4).unwrap(),
+            otp.read32_offset("CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN", 4)
+                .unwrap(),
             0x4b4b4b4b
         );
         assert!(otp.read32("CREATOR_RANDOM").is_err());

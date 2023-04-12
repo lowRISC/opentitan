@@ -12,17 +12,18 @@
 #include "external/freertos/include/task.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/coverage.h"
-#include "sw/device/lib/testing/test_framework/ottf_flow_control.h"
+#include "sw/device/lib/testing/test_framework/ottf_console.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
@@ -38,9 +39,6 @@ OT_ASSERT_MEMBER_SIZE(ottf_test_config_t, enable_concurrency, 1);
 // when OTTF concurrency is enabled, and test code is executed within FreeRTOS
 // tasks.
 extern void *pxCurrentTCB;
-
-// UART for communication with host.
-static dif_uart_t uart0;
 
 // A global random number generator testutil handle.
 rand_testutils_rng_t rand_testutils_rng_ctx;
@@ -79,26 +77,11 @@ char *ottf_task_get_self_name(void) {
   return pcTaskGetName(/*xTaskToQuery=*/NULL);
 }
 
-static void init_uart(void) {
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
-  CHECK_DIF_OK(
-      dif_uart_configure(&uart0, (dif_uart_config_t){
-                                     .baudrate = kUartBaudrate,
-                                     .clk_freq_hz = kClockFreqPeripheralHz,
-                                     .parity_enable = kDifToggleDisabled,
-                                     .parity = kDifUartParityEven,
-                                     .tx_enable = kDifToggleEnabled,
-                                     .rx_enable = kDifToggleEnabled,
-                                 }));
-  base_uart_stdout(&uart0);
-}
-
 static void report_test_status(bool result) {
   // Reinitialize UART before print any debug output if the test clobbered it.
   if (kDeviceType != kDeviceSimDV) {
-    if (kOttfTestConfig.can_clobber_uart) {
-      init_uart();
+    if (kOttfTestConfig.console.test_may_clobber) {
+      ottf_console_init();
     }
     LOG_INFO("Finished %s", kOttfTestConfig.file);
   }
@@ -118,17 +101,12 @@ static void test_wrapper(void *task_parameters) {
   report_test_status(result);
 }
 
-dif_uart_t *ottf_console(void) { return &uart0; }
-
 void _ottf_main(void) {
   test_status_set(kTestStatusInTest);
 
-  // Initialize the UART to enable logging for non-DV simulation platforms.
+  // Initialize the console to enable logging for non-DV simulation platforms.
   if (kDeviceType != kDeviceSimDV) {
-    init_uart();
-    if (kOttfTestConfig.enable_uart_flow_control) {
-      ottf_flow_control_enable();
-    }
+    ottf_console_init();
     LOG_INFO("Running %s", kOttfTestConfig.file);
   }
 
@@ -145,7 +123,7 @@ void _ottf_main(void) {
     // Run `test_main()` in a FreeRTOS task, allowing other FreeRTOS tasks to
     // be spawned, if requested in the main test task. Note, we spawn the main
     // test task at a priority level of 0.
-    ottf_task_create(test_wrapper, "test_main", kOttfFreeRtosMinStackSize, 0);
+    ottf_task_create(test_wrapper, "test_main", /*task_stack_depth=*/1024, 0);
     vTaskStartScheduler();
   } else {
     // Otherwise, launch `test_main()` on bare-metal.

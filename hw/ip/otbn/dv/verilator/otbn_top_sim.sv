@@ -67,8 +67,10 @@ module otbn_top_sim (
   logic secure_wipe_running;
 
   otbn_core #(
-    .ImemSizeByte ( ImemSizeByte ),
-    .DmemSizeByte ( DmemSizeByte )
+    .ImemSizeByte             ( ImemSizeByte ),
+    .DmemSizeByte             ( DmemSizeByte ),
+    .SecMuteUrnd              ( 1'b0         ),
+    .SecSkipUrndReseedAtStart ( 1'b0         )
   ) u_otbn_core (
     .clk_i                       ( IO_CLK                     ),
     .rst_ni                      ( IO_RST_N                   ),

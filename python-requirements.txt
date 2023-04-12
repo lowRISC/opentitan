@@ -4,6 +4,7 @@
 
 # Keep sorted.
 hjson==3.1.0
+jsonschema==4.17.3; python_version >= "3.7"
 libcst==0.4.1
 mako==1.1.6
 pluralizer==1.2.0
@@ -15,6 +16,9 @@ rich==12.5.1
 pyyaml==6.0
 tabulate==0.8.10
 typer==0.6.1
+
+# Dependencies: gen-flash-img.py
+pyfinite==1.9.1
 
 # Dependencies: dv_sim
 enlighten==1.10.2

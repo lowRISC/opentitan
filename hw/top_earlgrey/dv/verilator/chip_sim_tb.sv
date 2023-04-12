@@ -181,6 +181,8 @@ module chip_sim_tb (
   // when trace is enabled (#3951).
   sw_test_status_if u_sw_test_status_if (
     .clk_i    (`SIM_SRAM_IF.clk_i),
+    .rst_ni   (`SIM_SRAM_IF.rst_ni),
+    .fetch_en (1'b0),
     .wr_valid (`SIM_SRAM_IF.wr_valid),
     .addr     (`SIM_SRAM_IF.tl_h2d.a_address),
     .data     (`SIM_SRAM_IF.tl_h2d.a_data[15:0])

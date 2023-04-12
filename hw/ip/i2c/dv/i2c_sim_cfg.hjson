@@ -203,6 +203,20 @@
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
                  "+use_intr_handler=1"]
     }
+    {
+      name: "i2c_host_stress_all_with_rand_reset"
+      uvm_test_seq: "i2c_common_vseq"
+      run_opts: ["+run_stress_all_with_rand_reset",
+                 "+stress_seq=i2c_host_stress_all_vseq"]
+      run_timeout_mins: 20
+    }
+    {
+      name: "i2c_target_stress_all_with_rand_reset"
+      uvm_test_seq: "i2c_common_vseq"
+      run_opts: ["+run_stress_all_with_rand_reset",
+                 "+stress_seq=i2c_target_stress_all_vseq"]
+      run_timeout_mins: 20
+    }
   ]
 
   // List of regressions.
@@ -216,7 +230,7 @@
       tests: ["i2c_host_smoke", "i2c_host_override", "i2c_host_perf",
               "i2c_host_fifo_threshold", "i2c_host_fifo_overflow", "i2c_host_fifo_reset_fmt",
               "i2c_host_rx_oversample",  "i2c_host_stretch_timeout",
-              "i2c_host_fifo_fmt_empty", "i2c_host_fifo_reset_rx", "i2c_host_timeout",
+              "i2c_host_fifo_fmt_empty", "i2c_host_fifo_reset_rx", "i2c_host_stretch_timeout",
               "i2c_host_fifo_full",
               "i2c_host_error_intr"]
     }

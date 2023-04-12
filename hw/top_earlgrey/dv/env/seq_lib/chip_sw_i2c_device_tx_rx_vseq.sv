@@ -2,6 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// By default this test will use a randomly selected instance i2c_idx.
+// To make a dedicated test for instance i, where i is in {0,1,2}, the test
+// shuld run with an option:
+//     run_opts: ["+i2c_idx=i"]
+
 class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
   `uvm_object_utils(chip_sw_i2c_device_tx_rx_vseq)
 
@@ -13,7 +18,7 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
 
   rand int i2c_idx;
   constraint i2c_idx_c {
-    i2c_idx == 0;
+    i2c_idx inside {[0:NUM_I2CS-1]};
   }
 
   rand int byte_count;
@@ -54,7 +59,7 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     sw_symbol_backdoor_overwrite("kClockPeriodNanos", clock_period_nanos_arr);
     sw_symbol_backdoor_overwrite("kI2cRiseFallNanos", rise_fall_nanos_arr);
     sw_symbol_backdoor_overwrite("kI2cClockPeriodNanos", i2c_clock_period_nanos_arr);
-    // sw_symbol_backdoor_overwrite("kI2cIdx", i2c_idx_arr);
+    sw_symbol_backdoor_overwrite("kI2cIdx", i2c_idx_arr);
     sw_symbol_backdoor_overwrite("kI2cDeviceAddress0", i2c_device_address_0_arr);
     sw_symbol_backdoor_overwrite("kI2cDeviceMask0", i2c_device_mask_0_arr);
     sw_symbol_backdoor_overwrite("kI2cDeviceAddress1", i2c_device_address_1_arr);
@@ -83,6 +88,8 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     // tHoldStart and tClockStart need to be non-zero to make the start condition detectable.
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tHoldStart = half_period_cycles;
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockStart = half_period_cycles;
+    // tSetupBit need to be non-zero to detect the data bits
+    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tSetupBit = half_period_cycles / 2;
 
     // tClockStop, tSetupStop, and tHoldStop have to be non-zero to make the stop condition
     // detectable.

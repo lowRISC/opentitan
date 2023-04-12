@@ -174,7 +174,8 @@ bool test_main(void) {
     // Prepare rstmgr for a reset.
     rstmgr_testutils_pre_reset(&rstmgr);
 
-    aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
+    CHECK_STATUS_OK(
+        aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
     // Deep sleep.
     pwrmgr_testutils_enable_low_power(&pwrmgr,
                                       kDifPwrmgrWakeupRequestSourceFive, 0);

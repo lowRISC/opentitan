@@ -9,7 +9,7 @@ use std::io::{Read, Write};
 use std::os::unix::io::AsRawFd;
 use std::time::{Duration, Instant, SystemTime};
 
-use crate::io::uart::{Uart, UartError};
+use crate::io::console::{ConsoleDevice, ConsoleError};
 use crate::util::file;
 
 #[derive(Default)]
@@ -33,26 +33,29 @@ pub enum ExitStatus {
     ExitFailure,
 }
 
-// Creates a vtable for impementors of Read and AsRawFd traits.
+// Creates a vtable for implementors of Read and AsRawFd traits.
 pub trait ReadAsRawFd: Read + AsRawFd {}
 impl<T: Read + AsRawFd> ReadAsRawFd for T {}
 
 impl UartConsole {
     const CTRL_C: u8 = 3;
-    const BUFFER_LEN: usize = 1024;
+    const BUFFER_LEN: usize = 4096;
 
     // Runs an interactive console until CTRL_C is received.
-    pub fn interact(
+    pub fn interact<T>(
         &mut self,
-        uart: &dyn Uart,
+        device: &T,
         mut stdin: Option<&mut dyn ReadAsRawFd>,
         mut stdout: Option<&mut dyn Write>,
-    ) -> Result<ExitStatus> {
+    ) -> Result<ExitStatus>
+    where
+        T: ConsoleDevice + ?Sized,
+    {
         if let Some(timeout) = &self.timeout {
             self.deadline = Some(Instant::now() + *timeout);
         }
         loop {
-            match self.interact_once(uart, &mut stdin, &mut stdout)? {
+            match self.interact_once(device, &mut stdin, &mut stdout)? {
                 ExitStatus::None => {}
                 status => return Ok(status),
             }
@@ -67,15 +70,18 @@ impl UartConsole {
         }
     }
 
-    // Read from the uart and process the data read.
-    fn uart_read(
+    // Read from the console device and process the data read.
+    fn uart_read<T>(
         &mut self,
-        uart: &dyn Uart,
+        device: &T,
         timeout: Duration,
         stdout: &mut Option<&mut dyn Write>,
-    ) -> Result<()> {
+    ) -> Result<()>
+    where
+        T: ConsoleDevice + ?Sized,
+    {
         let mut buf = [0u8; 256];
-        let len = uart.read_timeout(&mut buf, timeout)?;
+        let len = device.console_read(&mut buf, timeout)?;
         if len == 0 {
             return Ok(());
         }
@@ -88,13 +94,9 @@ impl UartConsole {
                 self.newline = false;
             }
             self.newline = buf[i] == b'\n';
-            stdout.as_mut().map_or(Ok(()), |out| {
-                out.write_all(if self.newline {
-                    b"\r\n"
-                } else {
-                    &buf[i..i + 1]
-                })
-            })?;
+            stdout
+                .as_mut()
+                .map_or(Ok(()), |out| out.write_all(&buf[i..i + 1]))?;
         }
         stdout.as_mut().map_or(Ok(()), |out| out.flush())?;
 
@@ -106,11 +108,14 @@ impl UartConsole {
         Ok(())
     }
 
-    fn process_input(
+    fn process_input<T>(
         &self,
-        uart: &dyn Uart,
+        device: &T,
         stdin: &mut Option<&mut (dyn ReadAsRawFd)>,
-    ) -> Result<ExitStatus> {
+    ) -> Result<ExitStatus>
+    where
+        T: ConsoleDevice + ?Sized,
+    {
         if let Some(ref mut input) = stdin.as_mut() {
             if file::wait_fd_read_timeout(input.as_raw_fd(), Duration::from_millis(0)).is_ok() {
                 let mut buf = [0u8; 256];
@@ -119,19 +124,22 @@ impl UartConsole {
                     return Ok(ExitStatus::CtrlC);
                 }
                 if len > 0 {
-                    uart.write(&buf[..len])?;
+                    device.console_write(&buf[..len])?;
                 }
             }
         }
         Ok(ExitStatus::None)
     }
 
-    pub fn interact_once(
+    pub fn interact_once<T>(
         &mut self,
-        uart: &dyn Uart,
+        device: &T,
         stdin: &mut Option<&mut (dyn ReadAsRawFd)>,
         stdout: &mut Option<&mut dyn Write>,
-    ) -> Result<ExitStatus> {
+    ) -> Result<ExitStatus>
+    where
+        T: ConsoleDevice + ?Sized,
+    {
         if let Some(deadline) = &self.deadline {
             if Instant::now() > *deadline {
                 return Ok(ExitStatus::Timeout);
@@ -149,7 +157,7 @@ impl UartConsole {
         // better way to approach waiting on the UART and keyboard.
 
         // Check for input on the uart.
-        self.uart_read(uart, Duration::from_millis(10), stdout)?;
+        self.uart_read(device, Duration::from_millis(10), stdout)?;
         if self
             .exit_success
             .as_ref()
@@ -166,7 +174,7 @@ impl UartConsole {
         {
             return Ok(ExitStatus::ExitFailure);
         }
-        self.process_input(uart, stdin)
+        self.process_input(device, stdin)
     }
 
     pub fn captures(&self, status: ExitStatus) -> Option<Captures> {
@@ -183,21 +191,24 @@ impl UartConsole {
         }
     }
 
-    pub fn wait_for(uart: &dyn Uart, rx: &str, timeout: Duration) -> Result<String> {
+    pub fn wait_for<T>(device: &T, rx: &str, timeout: Duration) -> Result<String>
+    where
+        T: ConsoleDevice + ?Sized,
+    {
         let mut console = UartConsole {
             timeout: Some(timeout),
             exit_success: Some(Regex::new(rx)?),
             ..Default::default()
         };
         let mut stdout = std::io::stdout();
-        let result = console.interact(uart, None, Some(&mut stdout))?;
+        let result = console.interact(device, None, Some(&mut stdout))?;
         match result {
             ExitStatus::ExitSuccess => {
                 let cap = console.captures(ExitStatus::ExitSuccess).expect("capture");
                 let s = cap.get(0).expect("capture group").as_str().to_owned();
                 Ok(s)
             }
-            ExitStatus::Timeout => Err(UartError::GenericError("Timed Out".into()).into()),
+            ExitStatus::Timeout => Err(ConsoleError::GenericError("Timed Out".into()).into()),
             _ => Err(anyhow!("Impossible result: {:?}", result)),
         }
     }

@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/crypto/impl/status.h"
 
+#include <array>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -12,6 +14,47 @@
 
 namespace status_unittest {
 namespace {
+
+TEST(Status, OkIsHardenedTrue) {
+  EXPECT_EQ(kCryptoStatusOK, kHardenedBoolTrue);
+}
+
+int HammingDistance(uint32_t a, uint32_t b) {
+  // The hamming distance is the number of bits different between the two words.
+  return bitfield_popcount32(a ^ b);
+}
+
+// Check the Hamming distances of the top-level error codes.
+constexpr int kMinimumHammingDistance = 5;
+TEST(Status, TopLevelStatusHammingDistance) {
+  std::array<crypto_status_t, 5> error_codes = {
+      kCryptoStatusBadArgs, kCryptoStatusInternalError, kCryptoStatusFatalError,
+      kCryptoStatusAsyncIncomplete, kCryptoStatusNotImplemented};
+
+  // Expect the "OK" code to have a significant Hamming distance from 0.
+  EXPECT_GE(HammingDistance(kCryptoStatusOK, 0), kMinimumHammingDistance)
+      << "The 'OK' status code " << kCryptoStatusOK << " is too close to zero.";
+
+  for (const crypto_status_t status1 : error_codes) {
+    // Expect a significant Hamming distance from 0.
+    EXPECT_GE(HammingDistance(status1, 0), kMinimumHammingDistance)
+        << "Error code " << status1 << " is too close to zero.";
+    // Expect an extra significant Hamming distance from the "OK" code.
+    EXPECT_GE(HammingDistance(status1, kCryptoStatusOK),
+              kMinimumHammingDistance)
+        << "Error code " << status1 << " is too close to the 'OK' value ("
+        << kCryptoStatusOK << ").";
+
+    // Expect a significant Hamming distance from all other error codes.
+    for (const crypto_status_t status2 : error_codes) {
+      if (status1 != status2) {
+        EXPECT_GE(HammingDistance(status1, status2), kMinimumHammingDistance)
+            << "Error codes " << status1 << " and " << status2
+            << " are too close to each other.";
+      }
+    }
+  }
+}
 
 TEST(Status, OkIsHardenedOk) {
   EXPECT_EQ(hardened_status_ok(OTCRYPTO_OK), kHardenedBoolTrue);
@@ -72,7 +115,7 @@ TEST(Status, TryInterpretErrors) {
 }
 
 constexpr char kTestModId[3] = {'X', 'Y', 'Z'};
-DECLARE_MODULE_ID(kTestModId[0], kTestModId[1], kTestModId[2]);
+#define MODULE_ID MAKE_MODULE_ID(kTestModId[0], kTestModId[1], kTestModId[2])
 
 TEST(Status, ExtractStatusFieldsBadArgs) {
   const char *code = NULL;

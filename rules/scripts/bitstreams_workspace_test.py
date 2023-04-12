@@ -37,17 +37,37 @@ class TestBitstreamCache(unittest.TestCase):
         cached_files = cache.GetFromCache('abcd')
 
         # This is more of an implementation detail, but it verifies that we hit
-        # the the mocked `os.walk` function as expected.
+        # the mocked `os.walk` function as expected.
         os.walk.assert_called_once_with('cache/abcd')
 
         self.assertEqual(
             dict(cached_files), {
-                'orig': set([os.path.join('cache', 'abcd', BITSTREAM_ORIG)]),
-                'splice': set(
-                    [os.path.join('cache', 'abcd', BITSTREAM_SPLICE)]),
-                'mmi': {
-                    os.path.join('cache', 'abcd', 'rom.mmi'),
-                    os.path.join('cache', 'abcd', 'otp.mmi'),
+                "schemaVersion": 1,
+                "buildId": "abcd",
+                "outputFiles": {
+                    BITSTREAM_ORIG: {
+                        "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+                        "outputInfo": {
+                            "@type": "bitstreamInfo",
+                            "design": "chip_earlgrey_cw310"
+                        }
+                    },
+                    "rom.mmi": {
+                        "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+                        "outputInfo": {
+                            "@type": "memoryMapInfo",
+                            "design": "chip_earlgrey_cw310",
+                            "memoryId": "rom",
+                        }
+                    },
+                    "otp.mmi": {
+                        "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+                        "outputInfo": {
+                            "@type": "memoryMapInfo",
+                            "design": "chip_earlgrey_cw310",
+                            "memoryId": "otp",
+                        }
+                    },
                 },
             })
 
@@ -87,28 +107,23 @@ package(default_visibility = ["//visibility:public"])
 exports_files(glob(["cache/**"]))
 
 filegroup(
-    name = "bitstream_test_rom",
+    name = "chip_earlgrey_cw310_bitstream",
     srcs = ["cache/abcd/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"],
 )
 
 filegroup(
-    name = "bitstream_rom",
-    srcs = ["cache/abcd/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"],
-)
-
-filegroup(
-    name = "otp_mmi",
+    name = "chip_earlgrey_cw310_otp_mmi",
     srcs = ["cache/abcd/otp.mmi"],
 )
 
 filegroup(
-    name = "rom_mmi",
+    name = "chip_earlgrey_cw310_rom_mmi",
     srcs = ["cache/abcd/rom.mmi"],
 )
 ''')
 
         # This is more of an implementation detail, but it verifies that we hit
-        # the the mocked `os.walk` function as expected.
+        # the mocked `os.walk` function as expected.
         os.walk.assert_called_once_with('cache/abcd')
 
 

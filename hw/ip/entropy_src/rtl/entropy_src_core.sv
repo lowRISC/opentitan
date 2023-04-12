@@ -101,6 +101,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic       rng_bit_enable_pfe;
   logic       rng_bit_enable_pfa;
   logic [1:0] rng_bit_sel;
+  logic       rng_enable_q, rng_enable_d;
   logic       entropy_data_reg_en_pfe;
   logic       entropy_data_reg_en_pfa;
   logic       es_data_reg_rd_en;
@@ -499,6 +500,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_flush_q           <= '0;
       sha3_start_mask_q      <= '0;
       fw_ov_corrupted_q      <= 2'b00;
+      rng_enable_q           <= 1'b 0;
     end else begin
       ht_failed_q            <= ht_failed_d;
       ht_done_pulse_q        <= ht_done_pulse_d;
@@ -512,6 +514,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_start_mask_q      <= sha3_start_mask_d;
       mubi_mod_en_dly_q      <= mubi_mod_en_dly_d;
       fw_ov_corrupted_q      <= fw_ov_corrupted_d;
+      rng_enable_q           <= rng_enable_d;
     end
   end
 
@@ -737,9 +740,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //       It is assumed that the source is in a different time domain,
   //       and requires the AsyncOn parameter to be set.
 
-  assign entropy_src_rng_o.rng_enable = es_enable_fo[1] &&
-                                        es_delayed_enable &&
-                                        sfifo_esrng_not_full;
+  // rng_enable is being used in other clock domains. Need to latch the
+  // signal.
+  assign rng_enable_d = es_enable_fo[1] &&
+                        es_delayed_enable &&
+                        sfifo_esrng_not_full;
+
+  assign entropy_src_rng_o.rng_enable = rng_enable_q;
 
   assign es_rng_src_valid = entropy_src_rng_i.rng_valid;
   assign es_rng_bus = entropy_src_rng_i.rng_b;
@@ -981,7 +988,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // fifo controls
-  assign sfifo_esrng_push = (es_enable_fo[5] && es_delayed_enable && es_rng_src_valid);
+  assign sfifo_esrng_push = es_enable_fo[5] && es_delayed_enable && es_rng_src_valid &&
+                            rng_enable_q;
 
   assign sfifo_esrng_clr   = ~es_delayed_enable;
   assign sfifo_esrng_wdata = es_rng_bus;
@@ -2296,7 +2304,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // statistics.
 
   assign pfifo_postht_clr = fw_ov_mode_entropy_insert ? !es_enable_fo[7] : !es_delayed_enable;
+
+  // In firmware override mode with extract & insert enabled, post-health test entropy bits can
+  // only move into the observe FIFO. Once the observe FIFO is full, post-health test entropy is
+  // just discarded.
   assign pfifo_postht_pop = fw_ov_mode_entropy_insert ? pfifo_postht_not_empty :
+                            // In firmware override mode (observe only) or during normal
+                            // operation, post-health test entropy bits continue to flow
+                            // through the hardware pipeline.
                             es_bypass_mode ? pfifo_bypass_push :
                             pfifo_precon_push & pfifo_precon_not_full;
 
@@ -2390,8 +2405,15 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o    ()
   );
 
+  // When bypassing the hardware conditioning - due to a) disabling FIPS mode or b) routing entropy
+  // to the ENTROPY_DATA register (ES_ROUTE) and bypassing the conditioner (ES_TYPE) - nothing is
+  // going into the conditioner.
   assign pfifo_precon_push = es_bypass_mode ? 1'b0 :
+                             // In firmware override mode with extract & insert enabled, only bits
+                             // inserted by firmware continue down the pipeline.
                              fw_ov_mode_entropy_insert ? fw_ov_fifo_wr_pulse :
+                             // Otherwise post-health test entropy bits continue to flow
+                             // downstream. This includes observe-only firmware override mode.
                              pfifo_postht_not_empty;
 
   assign pfifo_precon_wdata = fw_ov_mode_entropy_insert ? fw_ov_wr_data :
@@ -2529,9 +2551,17 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o    ()
   );
 
+  // Unless the hardware conditioning is bypassed - due to a) disabling FIPS mode or b) routing
+  // entropy to the ENTROPY_DATA register (ES_ROUTE) and bypassing the conditioner (ES_TYPE) -
+  // nothing is going into the bypass FIFO.
   assign pfifo_bypass_push = !es_bypass_mode ? 1'b0 :
+                             // In firmware override mode with extract & insert enabled, only bits
+                             // inserted by firmware continue down the pipeline
                              fw_ov_mode_entropy_insert ? fw_ov_fifo_wr_pulse :
+                             // Otherwise post-health test entropy bits continue to flow
+                             // downstream. This includes observe-only firmware override mode.
                              pfifo_postht_not_empty;
+
   assign pfifo_bypass_wdata = fw_ov_mode_entropy_insert ? fw_ov_wr_data :
                               pfifo_postht_rdata;
 

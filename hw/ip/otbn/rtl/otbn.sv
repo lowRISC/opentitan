@@ -19,6 +19,11 @@ module otbn
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
 
+  // Disable URND advance when not in use. Useful for SCA only.
+  parameter bit SecMuteUrnd = 1'b0,
+  // Skip URND re-seed at the start of an operation. Useful for SCA only.
+  parameter bit SecSkipUrndReseedAtStart = 1'b0,
+
   // Default seed and nonce for scrambling
   parameter otp_ctrl_pkg::otbn_key_t   RndCnstOtbnKey   = RndCnstOtbnKeyDefault,
   parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnNonce = RndCnstOtbnNonceDefault
@@ -1073,7 +1078,9 @@ module otbn
     .RegFile(RegFile),
     .DmemSizeByte(DmemSizeByte),
     .ImemSizeByte(ImemSizeByte),
-    .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)
+    .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed),
+    .SecMuteUrnd(SecMuteUrnd),
+    .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart)
   ) u_otbn_core (
     .clk_i,
     .rst_ni                      (rst_n),

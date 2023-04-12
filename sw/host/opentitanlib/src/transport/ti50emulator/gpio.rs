@@ -373,7 +373,7 @@ impl GpioPin for Ti50GpioPin {
             gpio::PinMode::Input => state.pin_mode = Some(PinMode::Input),
             gpio::PinMode::OpenDrain => state.pin_mode = Some(PinMode::OpenDrain),
             gpio::PinMode::PushPull => state.pin_mode = Some(PinMode::PushPull),
-            gpio::PinMode::Alternate => return Err(GpioError::UnsupportedPinMode(mode).into()),
+            _ => return Err(GpioError::UnsupportedPinMode(mode).into()),
         }
         self.host_state.set(state);
         Ok(())

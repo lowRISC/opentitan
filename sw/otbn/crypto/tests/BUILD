@@ -38,6 +38,50 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "div_large_test",
+    srcs = [
+        "div_large_test.s",
+    ],
+    exp = "div_large_test.exp",
+    deps = [
+        "//sw/otbn/crypto:div",
+    ],
+)
+
+otbn_sim_test(
+    name = "div_medium_test",
+    srcs = [
+        "div_medium_test.s",
+    ],
+    exp = "div_medium_test.exp",
+    deps = [
+        "//sw/otbn/crypto:div",
+    ],
+)
+
+otbn_sim_test(
+    name = "div_small_test",
+    srcs = [
+        "div_small_test.s",
+    ],
+    exp = "div_small_test.exp",
+    deps = [
+        "//sw/otbn/crypto:div",
+    ],
+)
+
+otbn_consttime_test(
+    name = "div_consttime",
+    # All secrets are stored in DMEM; timing is permitted to depend on the
+    # number of limbs.
+    secrets = ["dmem"],
+    subroutine = "div",
+    deps = [
+        ":div_small_test",
+    ],
+)
+
+otbn_sim_test(
     name = "field25519_test",
     srcs = [
         "field25519_test.s",
@@ -73,6 +117,38 @@ otbn_consttime_test(
 )
 
 otbn_sim_test(
+    name = "gcd_small_test",
+    srcs = [
+        "gcd_small_test.s",
+    ],
+    exp = "gcd_small_test.exp",
+    deps = [
+        "//sw/otbn/crypto:gcd",
+    ],
+)
+
+otbn_sim_test(
+    name = "gcd_large_test",
+    srcs = [
+        "gcd_large_test.s",
+    ],
+    exp = "gcd_large_test.exp",
+    deps = [
+        "//sw/otbn/crypto:gcd",
+    ],
+)
+
+otbn_consttime_test(
+    name = "gcd_consttime",
+    # All inputs are in DMEM; no registers are secret.
+    secrets = ["dmem"],
+    subroutine = "gcd",
+    deps = [
+        ":gcd_small_test",
+    ],
+)
+
+otbn_sim_test(
     name = "p256_base_mult_test",
     srcs = [
         "p256_base_mult_test.s",
@@ -96,6 +172,25 @@ otbn_consttime_test(
     subroutine = "p256_isoncurve",
     deps = [
         "//sw/otbn/crypto:p256_ecdsa",
+    ],
+)
+
+otbn_consttime_test(
+    name = "p256_key_from_seed_consttime",
+    subroutine = "p256_key_from_seed",
+    deps = [
+        "//sw/otbn/crypto:p256_ecdsa",
+    ],
+)
+
+otbn_sim_test(
+    name = "p256_key_from_seed_test",
+    srcs = [
+        "p256_key_from_seed_test.s",
+    ],
+    exp = "p256_key_from_seed_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p256",
     ],
 )
 
@@ -316,7 +411,111 @@ otbn_consttime_test(
 )
 
 otbn_sim_test(
+    name = "primality_test",
+    timeout = "long",
+    srcs = [
+        "primality_test.s",
+    ],
+    exp = "primality_test.exp",
+    deps = [
+        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:primality",
+    ],
+)
+
+otbn_sim_test(
+    name = "primality_test_witness_test",
+    timeout = "long",
+    srcs = [
+        "primality_test_witness_test.s",
+    ],
+    exp = "primality_test_witness_test.exp",
+    deps = [
+        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:primality",
+    ],
+)
+
+otbn_sim_test(
+    name = "primality_test_witness_negative_test",
+    timeout = "long",
+    srcs = [
+        "primality_test_witness_negative_test.s",
+    ],
+    exp = "primality_test_witness_negative_test.exp",
+    deps = [
+        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:primality",
+    ],
+)
+
+otbn_sim_test(
+    name = "primality_negative_test",
+    timeout = "long",
+    srcs = [
+        "primality_negative_test.s",
+    ],
+    exp = "primality_negative_test.exp",
+    deps = [
+        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:primality",
+    ],
+)
+
+# Miller-Rabin with 1024-bit primes (as in RSA-2048).
+otbn_consttime_test(
+    name = "miller_rabin_consttime_1024",
+    # 4 limbs, x30 = n and x31 = n -1
+    initial_constants = [
+        "x30:4",
+        "x31:3",
+    ],
+    # All secrets are stored in DMEM; timing is permitted to depend on the
+    # number of limbs.
+    secrets = ["dmem"],
+    subroutine = "miller_rabin",
+    deps = [
+        ":primality_test",
+    ],
+)
+
+# Miller-Rabin with 1536-bit primes (as in RSA-3072).
+otbn_consttime_test(
+    name = "miller_rabin_consttime_1536",
+    # 6 limbs, x30 = n and x31 = n -1
+    initial_constants = [
+        "x30:6",
+        "x31:5",
+    ],
+    # All secrets are stored in DMEM; timing is permitted to depend on the
+    # number of limbs.
+    secrets = ["dmem"],
+    subroutine = "miller_rabin",
+    deps = [
+        ":primality_test",
+    ],
+)
+
+# Miller-Rabin with 2048-bit primes (as in RSA-4096).
+otbn_consttime_test(
+    name = "miller_rabin_consttime_2048",
+    # 8 limbs, x30 = n and x31 = n -1
+    initial_constants = [
+        "x30:8",
+        "x31:7",
+    ],
+    # All secrets are stored in DMEM; timing is permitted to depend on the
+    # number of limbs.
+    secrets = ["dmem"],
+    subroutine = "miller_rabin",
+    deps = [
+        ":primality_test",
+    ],
+)
+
+otbn_sim_test(
     name = "rsa_1024_dec_test",
+    timeout = "long",
     srcs = [
         "rsa_1024_dec_test.s",
     ],

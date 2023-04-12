@@ -1,5 +1,6 @@
 ---
 title: "Website Privacy and Cookies Policy"
+layout: "info"
 aliases:
   - /privacy/
 ---
@@ -9,7 +10,7 @@ transparent about our processing of personal information. Accordingly, this
 page explains the kinds of information we may collect about you, and the
 reasons for collecting this information.
 
-# General website information
+## General website information
 
 If you use this website, we will make a record of the information your web
 browser sends to us, typically identifying the type of browser you are using,
@@ -23,12 +24,12 @@ We share this information only with our website hosting service Google Cloud,
 and analytics provider Google Analytics, who are under an obligation not to use
 your information for any other purpose.
 
-# Cookies
+## Cookies
 
 To make this website work properly, we sometimes place small data files called
 "cookies" on your device. Most big websites do this too.
 
-# What are cookies?
+## What are cookies?
 
 A cookie is a small text file that a website (including this website) saves on
 your computer or mobile device when you visit the site. It enables the website,
@@ -38,7 +39,7 @@ period of time, so you don't have to keep re-entering them whenever you come
 back to the site or browse from one page to another. It also enables us to
 analyse how this website is being used.
 
-# How do we use cookies?
+## How do we use cookies?
 
 The following table explains the cookies we use and why we use them.
 
@@ -50,7 +51,7 @@ The following table explains the cookies we use and why we use them.
 | `_gat_gtag_UA_151030466_2` | 1 minute | Limiting the rate at which data is reported. |
 | `AMP_TOKEN` | At most 1 year | Distinguishing users. |
 
-# How to control cookies
+## How to control cookies
 
 You can control and/or delete cookies as you wish - for details, see
 [aboutcookies.org](https://aboutcookies.org). You can delete all cookies that
@@ -59,7 +60,7 @@ being placed. If you do this, however, you may have to manually adjust some
 preferences every time you visit a site and some services and functionalities
 may not work.
 
-# Emails
+## Emails
 
 If you sign up to be on our mailing list via this website, we will ask you for
 the following information:
@@ -88,7 +89,7 @@ we may use third party data processors, for example to automate our handling of
 mailing lists. Any use we make of data processors will require them only to act
 only on our instructions concerning your personal data.
 
-# Lawful basis
+## Lawful basis
 
 It is lawful for us, under the General Data Protection Regulation (GDPR), to
 process the information described in this notice because we have a
@@ -100,7 +101,7 @@ process the information described in this notice because we have a
 
 We do not believe the way in which we are processing them is likely to cause you any harm.
 
-# Transfer of data outside the United Kingdom & Europe
+## Transfer of data outside the United Kingdom & Europe
 
 We may use third party providers, such as [Google
 Groups](https://groups.google.com/forum/#!overview) and
@@ -110,7 +111,7 @@ have yourself signed up to use them. If you do, each provider has their own
 terms and privacy notices and you should refer to their privacy notices for
 information on how your personal data is processed when using their services.
 
-# Your rights
+## Your rights
 
 Under the General Data Protection Regulation you have a number of important
 rights free of charge. In summary, those include rights to:
@@ -134,7 +135,7 @@ rights free of charge. In summary, those include rights to:
 For further information on each of those rights, including the circumstances in
 which they apply, see the [Guidance from the UK Information Commissioner's
 Office (ICO) on individuals rights under the General Data Protection
-Regulation](http://ico.org.uk/for-organisations/guide-to-the-general-data-protection-regulation-gdpr/individual-rights/).
+Regulation](https://ico.org.uk/for-organisations/guide-to-the-general-data-protection-regulation-gdpr/individual-rights/).
 
 If you would like to exercise any of those rights, please:
 
@@ -148,7 +149,7 @@ on the 'unsubscribe' button at the bottom of the email newsletter. It may take
 up to seven days for this to take place.
 
 The [General Data Protection
-Regulation](http://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32016R0679&from=EN)
+Regulation](https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32016R0679&from=EN)
 also gives you right to lodge a complaint with a supervisory authority, in
 particular in the European Union (or European Economic Area) state where you
 work, normally live or where any alleged infringement of data protection laws
@@ -157,7 +158,7 @@ who may be contacted at
 [https://ico.org.uk/make-a-complaint/your-personal-information-concerns/](https://ico.org.uk/make-a-complaint/your-personal-information-concerns/)
 or telephone: 0303 123 1113
 
-# Who we are
+## Who we are
 
 We are lowRISC Community Interest Company is a not-for-profit, private company
 limited by guarantee, registered in England and Wales with Company number

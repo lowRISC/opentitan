@@ -153,6 +153,27 @@ dif_result_t dif_rv_timer_irq_get_state(
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_timer_irq_acknowledge_state(
+    const dif_rv_timer_t *rv_timer, uint32_t hart_id,
+    dif_rv_timer_irq_state_snapshot_t snapshot) {
+  if (rv_timer == NULL) {
+    return kDifBadArg;
+  }
+
+  switch (hart_id) {
+    case 0:
+      mmio_region_write32(rv_timer->base_addr, RV_TIMER_INTR_STATE0_REG_OFFSET,
+                          snapshot);
+
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_timer_irq_is_pending(const dif_rv_timer_t *rv_timer,
                                          dif_rv_timer_irq_t irq,
                                          bool *is_pending) {

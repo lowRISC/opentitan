@@ -3,6 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "spi_device",
+  human_name:         "SPI Device",
+  one_line_desc:      "Serial peripheral interface supporting different device modes, suitable for bulk-load of data into and out of the chip",
+  one_paragraph_desc: '''
+  SPI Device is a configurable, versatile hardware block that implements a generic SPI device mode, plus three additional modes (SPI Flash emulation mode, SPI passthrough mode, and TPM over SPI mode) to support a variety of different applications.
+  For example, generic mode can be used in a raw data transfer protocol termed "Firmware Operation Mode", which is intended to be used to bulk-load data into and out of the chip.
+  TPM over SPI operates in compliance with TPM PC Client Platform, unloading this protocol from a software solution.
+  SPI Flash emulation mode supports many JEDEC standard commands such as Read Status, Read JEDEC ID, Read SFDP, EN4B/EX4B, and multiple other read commands, allowing OpenTitan to provide, for example, verified boot firmware to other external devices.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

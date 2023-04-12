@@ -135,7 +135,7 @@ bool test_main(void) {
         /*locked=*/kDifToggleEnabled));
 
     // Initialize keymgr with otp contents
-    keymgr_testutils_advance_state(&keymgr, NULL);
+    CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, NULL));
 
     // DO NOT REMOVE, DV sync message
     LOG_INFO("Keymgr entered Init State");

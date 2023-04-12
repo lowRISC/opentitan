@@ -719,7 +719,7 @@
       name: rom_e2e_sigverify_key_validity
       desc: '''Verify that ROM only uses authorized keys that are not invalidated.
 
-            - For each key entry in `CREATOR_SW_CFG_KEY_IS_VALID`,
+            - For each key entry in `CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN`,
               - Invalidate the key by setting the entry to a value other than `kHardenedBoolTrue`.
               - Prepare a ROM_EXT image with a valid signature generated using the invalidated key.
               - Verify that boot fails with `BFV:kErrorSigverifyBadKey`
@@ -769,7 +769,7 @@
             - Apply bootstrap pin strapping and reset the chip and load the image.
             - Verify that boot succeeeds. Repeat with the following values:
 
-            | `CREATOR_SW_CFG_USE_SW_RSA_VERIFY` | Result  |
+            | `CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN` | Result  |
             |:----------------------------------:|:-------:|
             | `kHardenedBoolTrue`                | Success |
             | `kHardenedBoolFalse`               | Success |

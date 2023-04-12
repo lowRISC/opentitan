@@ -37,7 +37,7 @@
 #include "sw/device/silicon_creator/rom/boot_policy.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
-#include "sw/device/silicon_creator/rom/sigverify_keys.h"
+#include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
@@ -239,8 +239,8 @@ static rom_error_t rom_verify(const manifest_t *manifest,
          sizeof(boot_measurements.rom_ext));
 
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 2);
-  return sigverify_rsa_verify(&manifest->signature, key, &act_digest, lc_state,
-                              flash_exec);
+  return sigverify_rsa_verify(&manifest->rsa_signature, key, &act_digest,
+                              lc_state, flash_exec);
 }
 
 /* These symbols are defined in

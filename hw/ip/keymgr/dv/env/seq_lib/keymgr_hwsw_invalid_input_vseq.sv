@@ -27,9 +27,18 @@ class keymgr_hwsw_invalid_input_vseq extends keymgr_sw_invalid_input_vseq;
     return 0;
   endfunction
 
+  function void pre_randomize();
+    // Randomly send otp valid or invalid keys.
+    this.otp_key_c.constraint_mode(0);
+    super.pre_randomize();
+  endfunction
+
   task body();
     // invalid HW input may cause unstable data on kmac interface
     $assertoff(0, "tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A");
+    // The following assertion is not relevant for block-level, it was added
+    // to double check OTP root key becomes valid when it is needed
+    $assertoff(0, "tb.dut.u_ctrl.RootKeyValidDuringLatching_A");
     super.body();
   endtask : body
 endclass : keymgr_hwsw_invalid_input_vseq

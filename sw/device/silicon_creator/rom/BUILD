@@ -115,6 +115,8 @@ cc_library(
         ":bootstrap",
         ":rom_epmp",
         ":sigverify_keys",
+        ":sigverify_keys_rsa",
+        ":sigverify_keys_spx",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",
@@ -274,10 +276,15 @@ cc_test(
 
 cc_library(
     name = "sigverify_keys",
-    srcs = ["sigverify_keys.c"],
-    hdrs = ["sigverify_keys.h"],
+    srcs = [
+        "sigverify_keys.c",
+        "sigverify_keys_rsa.h",
+        "sigverify_keys_spx.h",
+    ],
+    hdrs = [
+        "sigverify_keys.h",
+    ],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
@@ -285,8 +292,43 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rnd",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/lib/sigverify:sigverify_without_mock_mod_exp_ibex",
+    ],
+)
+
+cc_library(
+    name = "sigverify_keys_rsa",
+    srcs = [
+        "sigverify_keys_rsa.c",
+    ],
+    hdrs = [
+        "sigverify_keys_rsa.h",
+    ],
+    deps = [
+        ":sigverify_keys",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+    ],
+)
+
+cc_library(
+    name = "sigverify_keys_spx",
+    srcs = [
+        "sigverify_keys_spx.c",
+    ],
+    hdrs = [
+        "sigverify_keys_spx.h",
+    ],
+    deps = [
+        ":sigverify_keys",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/sigverify:spx_key",
     ],
 )
 
@@ -295,6 +337,7 @@ cc_test(
     srcs = ["sigverify_keys_unittest.cc"],
     deps = [
         ":sigverify_keys",
+        ":sigverify_keys_rsa",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",

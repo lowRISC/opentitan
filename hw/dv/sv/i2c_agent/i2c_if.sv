@@ -49,18 +49,15 @@ interface i2c_if(
   endtask
 
   task automatic sample_target_data(timing_cfg_t tc, output bit data);
-    bit sample[16];
-    int idx = 0;
-    int su_idx;
-
+    bit sample[$];
     wait(cb.scl_i == 0);
     while (cb.scl_i == 0) begin
       @(posedge clk_i);
-      sample[idx] = cb.sda_i;
-      idx = (idx + 1) % 16;
+      sample.push_front(cb.sda_i);
+      // Pop queue to make sure size doesnt exceed tSetupBit
+      if (sample.size() > tc.tSetupBit) sample.pop_back();
     end
-    su_idx = (idx + 16 - 1 - tc.tSetupBit) % 16;
-    data = sample[su_idx];
+    data = sample.pop_back();
   endtask // sample_target_data
 
   task automatic wait_for_dly(int dly);
@@ -288,8 +285,17 @@ interface i2c_if(
   endtask: host_data
 
   task automatic host_stop(ref timing_cfg_t tc);
-    wait(scl_i === 1'b1);
+    // Stop is an SDA low to high transition whilst SCL is high. If both are high we cannot indicate
+    // a stop condition for this SCL pulse as that would require a high to low SDA transition which
+    // is the start signal.
+    if (scl_i === 1'b1 && sda_o === 1'b1) begin
+      `uvm_fatal(msg_id, "Cannot begin host_stop when both scl and sda are high")
+    end
+
+    // Ensure SDA Is low before SCL positive edge so a low to high transition can be generated. If
+    // SCL is high already SDA will be low already due to check above.
     sda_o = 1'b0;
+    wait(scl_i === 1'b1);
     wait_for_dly(tc.tClockStop);
     scl_o = 1'b1;
     wait_for_dly(tc.tSetupStop);

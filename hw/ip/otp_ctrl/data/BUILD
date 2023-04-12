@@ -5,15 +5,15 @@
 load("//rules:autogen.bzl", "autogen_hjson_header")
 load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_alert_digest", "otp_image", "otp_json", "otp_partition")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
-load("@bazel_skylib//rules:common_settings.bzl", "int_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "int_flag", "string_flag")
 
 package(default_visibility = ["//visibility:public"])
 
-# These configurations expose the OTP image generation tool's seed override
-# command line arguments to enable dvsim to pass this through Bazel to the
-# underlying OTP image generation tool. This is required to enable dvsim to
-# invoke OTP image generation as part of the Bazel build process, while still
-# enabling the use of multiple seeds needed to achieve DV coverage.
+# These configurations expose the OTP image generation tool's command line
+# arguments to enable dvsim to pass this through Bazel to the underlying OTP
+# image generation script. This is required to enable dvsim to invoke OTP image
+# generation as part of the Bazel build process, while still enabling the use of
+# multiple seeds needed to achieve DV coverage.
 int_flag(
     name = "img_seed",
     build_setting_default = 0,
@@ -27,6 +27,11 @@ int_flag(
 int_flag(
     name = "otp_seed",
     build_setting_default = 0,
+)
+
+string_flag(
+    name = "data_perm",
+    build_setting_default = "",
 )
 
 # This package must be kept in sync with get_otp_images() from //rules:otp.bzl.
@@ -55,11 +60,11 @@ otp_json(
                 # Use software mod_exp implementation for signature
                 # verification. See the definition of `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_USE_SW_RSA_VERIFY": "0x739",
+                "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN": "0x739",
                 # Mark the first three keys as valid and remaining as invalid
                 # since we currently have only three keys. See the definition of
                 # `hardened_byte_bool_t` in sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_KEY_IS_VALID": "0x4b4b4b4b4ba5a5a5",
+                "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": "0x4b4b4b4b4ba5a5a5",
                 # Enable use of entropy for countermeasures. See the definition
                 # of `hardened_bool_t` in sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_RNG_EN": "0x739",
@@ -266,6 +271,43 @@ otp_json(
     seed = "94259314771464387",
 )
 
+# Represents a device in DEV state with the SECRET0 and SECRET1 partitions in
+# locked state. SECRET2 partition is unlocked.
+otp_json(
+    name = "otp_json_dev_individualized",
+    partitions = [
+        otp_partition(
+            name = "SECRET0",
+            items = {
+                "TEST_UNLOCK_TOKEN": "<random>",
+                "TEST_EXIT_TOKEN": "<random>",
+            },
+            lock = True,
+        ),
+        otp_partition(
+            name = "SECRET1",
+            items = {
+                "FLASH_ADDR_KEY_SEED": "<random>",
+                "FLASH_DATA_KEY_SEED": "<random>",
+                "SRAM_DATA_KEY_SEED": "<random>",
+            },
+            lock = True,
+        ),
+        # SECRET2 partition is empty and in unlocked state to allow
+        # personalization to configure the device secrets.
+        otp_partition(
+            name = "SECRET2",
+            lock = False,
+        ),
+        otp_partition(
+            name = "LIFE_CYCLE",
+            count = "5",
+            state = "DEV",
+        ),
+    ],
+    seed = "94259314771464387",
+)
+
 otp_json(
     name = "otp_json_prod",
     partitions = [
@@ -389,6 +431,14 @@ otp_alert_digest(
 otp_image(
     name = "img_dev",
     src = ":otp_json_dev",
+    overlays = STD_OTP_OVERLAYS,
+)
+
+# Represents a device in DEV state with the SECRET0 and SECRET1 partitions in
+# locked state. SECRET2 partition is unlocked.
+otp_image(
+    name = "img_dev_individualized",
+    src = ":otp_json_dev_individualized",
     overlays = STD_OTP_OVERLAYS,
 )
 

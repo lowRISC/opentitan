@@ -6,7 +6,7 @@
 # necessary for building, testing, and packaging OpenTitan.
 #
 # This template can be included from pipelines in other repositories.
-# In this case, set the the REPO_TOP parameter to point to the root of the
+# In this case, set the REPO_TOP parameter to point to the root of the
 # checked out opentitan repository.
 #
 # This template executes:

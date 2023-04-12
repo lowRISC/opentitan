@@ -134,8 +134,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     update_secret_partition();
 
     // Wait for flash_ctrl to finish initializing on every reset
-    // We probably need a parameter to skip this for certain tests
-    csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
+    if (cfg.seq_cfg.wait_init_done) csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
   endtask : reset_flash
 
   // Apply a Reset to the DUT, then do some additional required actions with callback_vseq
@@ -144,7 +143,14 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     bit init_busy;
     if (kind == "HARD") begin
-      cfg.clk_rst_vif.apply_reset();
+      // reset assertion time in clock cycles (from assertion to deassertion).
+      // Limits can be configured to control randomization.
+      // Will be randomized before each apply_reset.
+      uint reset_width_clks;
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(reset_width_clks,
+                                         reset_width_clks inside
+                             {[cfg.seq_cfg.reset_width_clks_lo:cfg.seq_cfg.reset_width_clks_hi]};)
+      cfg.clk_rst_vif.apply_reset(.reset_width_clks(reset_width_clks));
       cfg.clk_rst_vif.wait_clks(cfg.post_reset_delay_clks);
     end
 
@@ -457,7 +463,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t data;
     bit [31:0] intr_st;
     bit        wait_done = 0;
-    int        prog_timeout_ns = 100000; // 100 us
 
     `uvm_info("flash_ctrl_intr_write", $sformatf("num_wd: %0d  crd:%0d", flash_op.num_words,
                                                  cfg.wr_crd), UVM_MEDIUM)
@@ -467,7 +472,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                  cfg.wr_crd = 4 - curr_wr;
                  end,
                  "wait for wr_crd timeout",
-                 prog_timeout_ns, "flash_ctrl_intr_write")
+                 // Defined in the seq_cfg, default is 10ms.
+                 cfg.seq_cfg.prog_timeout_ns, "flash_ctrl_intr_write")
 
     flash_ctrl_start_op(flash_op);
 
@@ -482,7 +488,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                         cfg.intr_vif.pins[FlashCtrlIntrProgLvl] == 1 ||
                         cfg.intr_vif.pins[FlashCtrlIntrOpDone] == 1);,
                    "wait prog intr timeout",
-                   prog_timeout_ns, "flash_ctrl_intr_write")
+                   // Defined in the seq_cfg, default is 10ms.
+                   cfg.seq_cfg.prog_timeout_ns, "flash_ctrl_intr_write")
 
       csr_rd(.ptr(ral.intr_state), .value(data));
       intr_st = data;

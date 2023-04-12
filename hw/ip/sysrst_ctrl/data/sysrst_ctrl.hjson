@@ -3,6 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "sysrst_ctrl",
+  human_name:         "System Reset Controller",
+  one_line_desc:      "Manages board-level reset sequencing, interfaces reset and power manager",
+  one_paragraph_desc: '''
+  System Reset Controller provides basic board-level reset sequencing in response to trusted inputs.
+  It is programmable to accommodate actions triggered by presses of buttons and keyboard key combinations, to control the duration of reset pulses, and to trigger reset or wake-up requests that go to Reset Manager and to Power Manager.
+  System Reset Controller is part of the always-on power and clock domain.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
@@ -128,7 +135,11 @@
       fields: [
         { bits: "TimerWidth-1:0",
           name: "ec_rst_pulse",
-          desc: "Configure the pulse width of ec_rst_l. 10-200ms, each step is 5us(200KHz clock)",
+          desc: '''
+            Configure the debounce timer in number of clock cycles.
+            Each step is 5 us for a 200 kHz clock.
+            The signal must exceed the debounce time by at least one clock cycle to be detected.
+          '''
         }
       ],
     }
@@ -142,7 +153,11 @@
       fields: [
         { bits: "TimerWidth-1:0",
           name: "ulp_ac_debounce_timer",
-          desc: "Configure the debounce timer. 10-200ms, each step is 5us(200KHz clock)",
+          desc: '''
+            Configure the debounce timer for the AC input in number of clock cycles.
+            Each step is 5 us for a 200 kHz clock.
+            The signal must exceed the debounce time by at least one clock cycle to be detected.
+          '''
         }
       ],
     }
@@ -156,7 +171,11 @@
       fields: [
         { bits: "TimerWidth-1:0",
           name: "ulp_lid_debounce_timer",
-          desc: "Configure the debounce timer. 10-200ms, each step is 5us(200KHz clock)",
+          desc: '''
+            Configure the debounce timer for the lid in number of clock cycles.
+            Each step is 5 us for a 200 kHz clock.
+            The signal must exceed the debounce time by at least one clock cycle to be detected.
+          '''
         }
       ],
     }
@@ -170,7 +189,11 @@
       fields: [
         { bits: "TimerWidth-1:0",
           name: "ulp_pwrb_debounce_timer",
-          desc: "Configure the debounce timer. 10-200ms, each step is 5us(200KHz clock)",
+          desc: '''
+            Configure the debounce timer for the power button in number of clock cycles.
+            Each step is 5 us for a 200 kHz clock.
+            The signal must exceed the debounce time by at least one clock cycle to be detected.
+          '''
         }
       ],
     }
@@ -624,7 +647,11 @@
       fields: [
         { bits: "TimerWidth-1:0",
           name: "debounce_timer",
-          desc: "Define the timer value so that the key or input is not oscillating for 0-200ms, each step is 5us(200KHz clock)",
+          desc: '''
+            Define the timer value so that the key or input is not oscillating in clock cycles.
+            Each step is 5 us for a 200 kHz clock.
+            The signal must exceed the debounce time by at least one clock cycle to be detected.
+          '''
         }
       ],
     }
@@ -637,7 +664,11 @@
       fields: [
         { bits:   "TimerWidth-1:0",
           name:   "debounce_timer",
-          desc:   "Define the timer value so that pwrb_in is not oscillating for 0-200ms, each step is 5us(200KHz clock)",
+          desc: '''
+            Define the timer value so that the pwrb_in is not oscillating in clock cycles.
+            Each step is 5 us for a 200 kHz clock.
+            The signal must exceed the debounce time by at least one clock cycle to be detected.
+          ''',
           resval: "2000",
         }
         { bits:   "16",
@@ -648,7 +679,7 @@
       ],
     }
     { name: "AUTO_BLOCK_OUT_CTL",
-      desc: "confiure the key outputs to auto-override and their value",
+      desc: "configure the key outputs to auto-override and their value",
       swaccess: "rw",
       hwaccess: "hro",
       regwen: "REGWEN",

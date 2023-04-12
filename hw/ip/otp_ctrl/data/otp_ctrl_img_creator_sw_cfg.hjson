@@ -17,14 +17,14 @@
                     value: "0x0",
                 },
                 {
-                    name: "CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
+                    name: "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN",
                     // Use software mod_exp implementation for signature
                     // verification. See the definition of `hardened_bool_t` in
                     // sw/device/lib/base/hardened.h.
                     value: "0x739",
                 },
                 {
-                    name: "CREATOR_SW_CFG_KEY_IS_VALID",
+                    name: "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN",
                     // Mark the first three keys as valid and remaining as
                     // invalid since we currently have only three keys. See the
                     // definition of `hardened_byte_bool_t` in
@@ -33,7 +33,10 @@
                 },
                 {
                     name: "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
-                    // Default value for flash scramble / ecc / he_en
+                    // Default values for flash scramble / ecc / he_en. This OTP
+                    // word contains byte-aligned, packed, 4-bit mubi values.
+                    // See the flash_ctrl driver bitfield definitions in
+                    // sw/device/silicon_creator/lib/drivers/flash_ctrl.h.
                     value: "0x0",
                 },
                 {

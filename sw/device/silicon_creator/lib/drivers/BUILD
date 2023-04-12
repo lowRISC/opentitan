@@ -81,7 +81,6 @@ opentitan_functest(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:test_main",
     ],
 )
 
@@ -211,7 +210,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:test_main",
     ],
 )
 
@@ -287,9 +285,46 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_library(
+    name = "kmac",
+    srcs = ["kmac.c"],
+    hdrs = ["kmac.h"],
+    deps = [
+        "//hw/ip/kmac/data:kmac_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+cc_test(
+    name = "kmac_unittest",
+    srcs = ["kmac_unittest.cc"],
+    deps = [
+        ":kmac",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_functest(
+    name = "kmac_functest",
+    srcs = ["kmac_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":kmac",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:error",
     ],
 )
 
@@ -465,7 +500,6 @@ opentitan_functest(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:test_main",
     ],
 )
 
@@ -534,7 +568,6 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:crc32",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:test_main",
     ],
 )
 
@@ -588,7 +621,7 @@ opentitan_functest(
     deps = [
         ":rstmgr",
         "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -626,7 +659,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:test_main",
     ],
 )
 
@@ -677,7 +709,6 @@ opentitan_functest(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:test_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )

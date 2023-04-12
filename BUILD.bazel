@@ -2,8 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:cargo.bzl", "cargo_raze")
-
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
@@ -23,11 +21,4 @@ filegroup(
 alias(
     name = "gen_rust_project",
     actual = "@rules_rust//tools/rust_analyzer:gen_rust_project",
-)
-
-cargo_raze(
-    name = "cargo_raze",
-    cargo = [
-        "third_party/rust/crates/Cargo.toml",
-    ],
 )

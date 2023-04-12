@@ -8,7 +8,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::io::spi::{
-    AssertChipSelect, ClockPolarity, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
+    AssertChipSelect, ClockPolarity, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer,
+    TransferMode,
 };
 use crate::transport::ultradebug::mpsse;
 use crate::transport::ultradebug::Ultradebug;
@@ -103,10 +104,13 @@ impl Target for UltradebugSpi {
         Ok(42)
     }
 
-    fn max_chunk_size(&self) -> Result<usize> {
+    fn get_max_transfer_sizes(&self) -> Result<MaxSizes> {
         // Size of the FTDI read buffer.  We can't perform a read larger than this;
         // the FTDI device simply won't read any more.
-        Ok(65536)
+        Ok(MaxSizes {
+            read: 65536,
+            write: 65536,
+        })
     }
 
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {

@@ -426,9 +426,24 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               ping_timer_en = 1;
             end
           end
+         "alert_test", "ping_timeout_cyc_shadowed", "ping_timer_regwen": begin
+            // Do nothing. Already auto update mirrored value.
+          end
           default: begin
-            // TODO: align all names with shadow post_fix and re-enable this check.
-            //`uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+            // The following regs only need to auto update mirrored value.
+            if (!uvm_re_match("*alert_en_shadowed*", csr_name) ||
+                !uvm_re_match("*alert_class_shadowed*", csr_name) ||
+                !uvm_re_match("class*_ctrl_shadowed", csr_name) ||
+                !uvm_re_match("class*_crashdump_trigger_shadowed", csr_name) ||
+                !uvm_re_match("class*_phase*_cyc_shadowed", csr_name) ||
+                !uvm_re_match("class*_timeout_cyc_shadowed", csr_name) ||
+                !uvm_re_match("class*_accum_thresh_shadowed", csr_name) ||
+                !uvm_re_match("class*_clr_regwen", csr_name) ||
+                !uvm_re_match("class*_regwen", csr_name) ||
+                !uvm_re_match("*alert_regwen_*", csr_name)) begin
+            end else begin
+              `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+            end
           end
         endcase
       end
@@ -515,8 +530,15 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   virtual task check_ping_triggered_cycles();
     int ping_wait_cycs;
     while (ping_wait_cycs <= MAX_PING_WAIT_CYCLES * 2) begin
-      if (cfg.alert_handler_vif.alert_ping_reqs > 0) break;
-      if (cfg.alert_handler_vif.esc_ping_reqs > 0) break;
+    if (cfg.alert_handler_vif.alert_ping_reqs > 0) begin
+      if (cfg.en_cov) begin
+        int alert_id = $clog2(cfg.alert_handler_vif.alert_ping_reqs);
+        cov.ping_with_lpg_cg_wrap[alert_id].alert_ping_with_lpg_cg.sample(
+            cfg.alert_host_cfg[alert_id].en_alert_lpg);
+      end
+      break;
+    end
+    if (cfg.alert_handler_vif.esc_ping_reqs > 0) break;
       cfg.clk_rst_vif.wait_clks(1);
       ping_wait_cycs++;
     end
@@ -707,9 +729,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       automatic int class_i = i;
       begin
         cfg.clk_rst_vif.wait_clks(1);
-        // TODO(#13026): Update `crashdump_triggered`.
-        // crashdump_triggered[class_i] = 0;
-        crashdump_triggered = 0;
+        crashdump_triggered[class_i] = 0;
         if (under_intr_classes[class_i]) begin
           if (cfg.en_cov) cov.clear_intr_cnt_cg.sample(class_i);
           clr_esc_under_intr[class_i] = 1;

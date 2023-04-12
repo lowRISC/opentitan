@@ -72,7 +72,7 @@ struct Opts {
     )]
     rcfile: PathBuf,
 
-    #[structopt(long, default_value = "off")]
+    #[structopt(long, default_value = "warn")]
     logging: LevelFilter,
 
     #[structopt(
@@ -109,6 +109,8 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
     let logging = opts.logging;
     if logging != LevelFilter::Off {
         env_logger::Builder::from_default_env()
+            .format_target(true)
+            .format_module_path(false)
             .filter(None, opts.logging)
             .init();
     }
@@ -146,11 +148,13 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
     }?;
 
     // Extend the argument list with all remaining command line arguments.
-    arguments.extend(args.into_iter());
+    arguments.extend(args);
     let opts = Opts::from_iter(&arguments);
     if opts.logging != logging {
         // Try re-initializing the logger.  Ignore errors.
         let _ = env_logger::Builder::from_default_env()
+            .format_target(true)
+            .format_module_path(false)
             .filter(None, opts.logging)
             .try_init();
     }

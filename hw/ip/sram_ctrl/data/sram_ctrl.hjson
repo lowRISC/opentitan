@@ -3,6 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "sram_ctrl",
+  human_name:         "SRAM Controller",
+  one_line_desc:      "Interfacing on-chip SRAM blocks with system bus, supports lightweight scrambling, integrity and secure wipe",
+  one_paragraph_desc: '''
+  SRAM Controller instantiates on-chip SRAM and makes it accessible through the TileLink on-chip interconnect.
+  SRAM Controller includes a lightweight scrambling mechanism based on the PRINCE cipher to reduce the attack surface on the confidentiality and integrity of data stored in the SRAM.
+  For end-to-end data integrity protection, SRAM Controller stores the integrity bits alongside data words in memory and raises an alert if it detects an integrity fault.
+  SRAM Controller contains an LFSR-based initialization mechanism that overwrites the entire SRAM with pseudorandom data.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

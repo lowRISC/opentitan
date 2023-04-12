@@ -47,6 +47,7 @@ fn sw_strap_set(transport: &TransportWrapper, value: u8) -> Result<()> {
             Some(settings[pinval].0),
             Some(settings[pinval].1),
             Some(settings[pinval].2),
+            None,
         )?;
     }
     Ok(())

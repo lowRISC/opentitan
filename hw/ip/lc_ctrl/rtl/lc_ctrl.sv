@@ -160,7 +160,7 @@ module lc_ctrl
     .hw2reg    ( tap_hw2reg                  ),
     // SEC_CM: BUS.INTEGRITY
     // While the TAP does not have bus integrity, it does have a WE checker
-    // that feeds into intg_err_o - hence this is is wired up to the fatal_bus_integ_error.
+    // that feeds into intg_err_o - hence this is wired up to the fatal_bus_integ_error.
     .intg_err_o( fatal_bus_integ_error_tap_d ),
     .devmode_i ( 1'b1                        )
   );
@@ -466,7 +466,7 @@ module lc_ctrl
 
   assign lc_flash_rma_seed_o = transition_token_q[RmaSeedWidth-1:0];
 
-  // Gate the the vendor specific test ctrl/status bits to zero in production states.
+  // Gate the vendor specific test ctrl/status bits to zero in production states.
   // Buffer the enable signal to prevent optimization of the multibit signal.
   lc_tx_t lc_raw_test_rma;
   lc_tx_t [1:0] lc_raw_test_rma_buf;

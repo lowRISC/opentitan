@@ -8,7 +8,6 @@
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -46,8 +45,8 @@ bool test_main(void) {
   uint32_t rnd_data;
   uint32_t previous_rnd_data = 0;
   for (int i = 0; i < RANDOM_DATA_READS; i++) {
-    rnd_data =
-        rv_core_ibex_testutils_get_rnd_data(&rv_core_ibex, MAX_STATUS_CHECKS);
+    CHECK_STATUS_OK(rv_core_ibex_testutils_get_rnd_data(
+        &rv_core_ibex, MAX_STATUS_CHECKS, &rnd_data));
     CHECK(rnd_data != previous_rnd_data);
     previous_rnd_data = rnd_data;
   }

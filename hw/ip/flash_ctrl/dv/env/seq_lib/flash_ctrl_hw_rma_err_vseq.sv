@@ -94,12 +94,11 @@ class flash_ctrl_hw_rma_err_vseq extends flash_ctrl_hw_rma_vseq;
         end
       end
       begin
-        int state_wait_timeout_ns = 500_000; // 500 us
         string path = {"tb.dut.u_eflash.gen_flash_cores[0].u_core.gen_prog_data",
                        ".u_prog.pack_data[31:0]"};
 
         `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rma_state == StRmaEraseWait);,
-                     , state_wait_timeout_ns)
+                     , cfg.seq_cfg.state_wait_timeout_ns)
         flip_2bits(path);
         cfg.clk_rst_vif.wait_clks(10);
         `DV_CHECK(uvm_hdl_release(path))

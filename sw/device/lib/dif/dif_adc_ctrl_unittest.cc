@@ -59,6 +59,16 @@ TEST_F(ConfigTest, BadWakeUpTime) {
   EXPECT_DIF_BADARG(dif_adc_ctrl_configure(&adc_ctrl_, config_));
 }
 
+TEST_F(ConfigTest, BadNumLowPowerSamples) {
+  config_.num_low_power_samples = 0;
+  EXPECT_DIF_BADARG(dif_adc_ctrl_configure(&adc_ctrl_, config_));
+}
+
+TEST_F(ConfigTest, BadNumNormalPowerSamples) {
+  config_.num_normal_power_samples = 0;
+  EXPECT_DIF_BADARG(dif_adc_ctrl_configure(&adc_ctrl_, config_));
+}
+
 TEST_F(ConfigTest, LowPowerModeSuccess) {
   EXPECT_WRITE32(ADC_CTRL_ADC_EN_CTL_REG_OFFSET, 0);
   EXPECT_WRITE32(ADC_CTRL_ADC_PD_CTL_REG_OFFSET,
@@ -81,8 +91,10 @@ TEST_F(ConfigTest, NormalPowerModeSuccess) {
   EXPECT_WRITE32(ADC_CTRL_ADC_EN_CTL_REG_OFFSET, 0);
   EXPECT_WRITE32(ADC_CTRL_ADC_PD_CTL_REG_OFFSET,
                  {{ADC_CTRL_ADC_PD_CTL_PWRUP_TIME_OFFSET,
-                   config_.power_up_time_aon_cycles}});
-  EXPECT_WRITE32(ADC_CTRL_ADC_LP_SAMPLE_CTL_REG_OFFSET, 0);
+                   config_.power_up_time_aon_cycles},
+                  {ADC_CTRL_ADC_PD_CTL_WAKEUP_TIME_OFFSET, 0x640}});
+  EXPECT_WRITE32(ADC_CTRL_ADC_LP_SAMPLE_CTL_REG_OFFSET,
+                 ADC_CTRL_ADC_LP_SAMPLE_CTL_REG_RESVAL);
   EXPECT_WRITE32(ADC_CTRL_ADC_SAMPLE_CTL_REG_OFFSET,
                  {{ADC_CTRL_ADC_SAMPLE_CTL_NP_SAMPLE_CNT_OFFSET,
                    config_.num_normal_power_samples}});
@@ -95,9 +107,12 @@ TEST_F(ConfigTest, OneshotModeSuccess) {
                  {{ADC_CTRL_ADC_EN_CTL_ONESHOT_MODE_BIT, true}});
   EXPECT_WRITE32(ADC_CTRL_ADC_PD_CTL_REG_OFFSET,
                  {{ADC_CTRL_ADC_PD_CTL_PWRUP_TIME_OFFSET,
-                   config_.power_up_time_aon_cycles}});
-  EXPECT_WRITE32(ADC_CTRL_ADC_LP_SAMPLE_CTL_REG_OFFSET, 0);
-  EXPECT_WRITE32(ADC_CTRL_ADC_SAMPLE_CTL_REG_OFFSET, 0);
+                   config_.power_up_time_aon_cycles},
+                  {ADC_CTRL_ADC_PD_CTL_WAKEUP_TIME_OFFSET, 0x640}});
+  EXPECT_WRITE32(ADC_CTRL_ADC_LP_SAMPLE_CTL_REG_OFFSET,
+                 ADC_CTRL_ADC_LP_SAMPLE_CTL_REG_RESVAL);
+  EXPECT_WRITE32(ADC_CTRL_ADC_SAMPLE_CTL_REG_OFFSET,
+                 ADC_CTRL_ADC_SAMPLE_CTL_REG_RESVAL);
   EXPECT_DIF_OK(dif_adc_ctrl_configure(&adc_ctrl_, config_));
 }
 

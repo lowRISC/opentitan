@@ -25,8 +25,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   // This bit is used for DAI interface to mark if the read access is valid.
   bit dai_read_valid;
 
-  // TODO: currently skip checking if the ECC error is uncorrectable. Support reading is when we
-  // update to mem_bkdr_if.
+  // ICEBOX(#17798): currently scb will skip checking the readout value if the ECC error is
+  // uncorrectable. Because if the error is uncorrectable, current scb does not track all the
+  // backdoor injected values.
+  // This issue proposes to track the otp_memory_array in mem_bkdr_if and once backdoor inject any
+  // value, mem_bkdr_if will update its otp_memory_array.
   bit check_dai_rd_data = 1;
 
   // Status related variables
@@ -865,15 +868,21 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         end
 
         if (addr_phase_write && `gmv(ral.check_trigger_regwen) && item.a_data inside {[1:3]}) begin
+          bit [TL_DW-1] check_timout = `gmv(ral.check_timeout) == 0 ? '1 : `gmv(ral.check_timeout);
           exp_status[OtpCheckPendingIdx] = 1;
           under_chk = 1;
-          if (`gmv(ral.check_timeout) > 0 && `gmv(ral.check_timeout) <= CHK_TIMEOUT_CYC) begin
+          if (check_timout <= CHK_TIMEOUT_CYC) begin
             set_exp_alert("fatal_check_error", 1, `gmv(ral.check_timeout));
             predict_err(OtpTimeoutErrIdx);
           end else begin
             if (get_field_val(ral.check_trigger.consistency, item.a_data)) begin
-              foreach(cfg.ecc_chk_err[i]) begin
-                if (cfg.ecc_chk_err[i] == OtpEccCorrErr) predict_err(i, OtpMacroEccCorrError);
+              foreach (cfg.ecc_chk_err[i]) begin
+                if (cfg.ecc_chk_err[i] == OtpEccCorrErr) begin
+                  predict_err(i, OtpMacroEccCorrError);
+                end else if (cfg.ecc_chk_err[i] == OtpEccUncorrErr) begin
+                  set_exp_alert("fatal_macro_error", 1, check_timout);
+                  predict_err(i, OtpMacroEccUncorrError);
+                end
               end
             end
           end
@@ -1192,7 +1201,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
   endfunction
 
-  // TODO: consider combine it with function predict_err()
   virtual function void predict_no_err(otp_status_e status_err_idx);
     if (cfg.otp_ctrl_vif.under_error_states()) return;
 

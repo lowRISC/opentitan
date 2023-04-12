@@ -100,7 +100,7 @@ module keccak_round
 
   // Complete of Keccak_f
   // State machine asserts `complete_d` when it reaches at the end of round and
-  // operation (Phase3 if Masked). The the stage, the storage still doesn't have
+  // operation (Phase3 if Masked). The stage, the storage still doesn't have
   // the valid states. So precisely it is not completed yet.
   // State generated `complete_d` is latched with the clock and creates a pulse
   // signal one cycle later. The signal is the indication of completion.

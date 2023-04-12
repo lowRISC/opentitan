@@ -11,7 +11,7 @@
 // - it does not have a `.crt` section,
 // - its entrypoint `_rom_ext_start_boot()` is defined here and it doesn't have
 // a `rom_ext_main()` function, and
-// - it has has only the following sections:
+// - it has only the following sections:
 //   - `.manifest`, to be able to boot this program from ROM,
 //   - `.text`, only 2 instructions to trigger an instruction access fault, and
 //   - `.static_critical`, required by the linker script.

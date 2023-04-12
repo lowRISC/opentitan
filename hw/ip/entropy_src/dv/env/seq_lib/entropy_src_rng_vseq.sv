@@ -44,7 +44,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   bit interrupt_handler_active = 0;
 
   // List of states to specfically hit for main_sm transition coverage
-  localparam int NumRareMainFsmStates = 8;
+  localparam int NumRareMainFsmStates = 12;
 
   entropy_src_main_sm_pkg::state_e [NumRareMainFsmStates - 1:0] rare_fsm_states = {
      entropy_src_main_sm_pkg::StartupPass1,
@@ -54,7 +54,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
      entropy_src_main_sm_pkg::BootPostHTChk,
      entropy_src_main_sm_pkg::ContHTStart,
      entropy_src_main_sm_pkg::FWInsertStart,
-     entropy_src_main_sm_pkg::Sha3MsgDone
+     entropy_src_main_sm_pkg::Sha3MsgDone,
+     entropy_src_main_sm_pkg::Sha3Prep,
+     entropy_src_main_sm_pkg::Sha3Process,
+     entropy_src_main_sm_pkg::Sha3Valid,
+     entropy_src_main_sm_pkg::AlertState
   };
 
   // A checklist vector with each bit corresponding to each of the rare_fsm_states above.
@@ -66,8 +70,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // to AlertState) by creating another checklist variable and updating the task
   // targeted_transition_thread()
 
-  bit [NumRareMainFsmStates - 1:0] rare_state_to_idle_checklist = 8'b00000000;
-  bit [NumRareMainFsmStates - 1:0] rare_state_to_idle_backdoor = 8'b00100000;
+  bit [NumRareMainFsmStates - 1:0] rare_state_to_idle_checklist = '{default: 1'b0};
+  bit [NumRareMainFsmStates - 1:0] rare_state_to_idle_backdoor = '{
+    NumRareMainFsmStates - 3: 1'b1, // StartupHTStart
+    default: 1'b0
+  };
 
   constraint dly_to_access_intr_c {
     dly_to_access_intr dist {
@@ -350,7 +357,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   task shutdown_indefinite_seqs();
     // Once the CSR access is done, we can shut down everything else
     // Note: the CSRNG agent needs to be completely shut down before
-    // shutting down the the AST/RNG.  Otherwise the CSRNG pull agent
+    // shutting down the AST/RNG.  Otherwise the CSRNG pull agent
     // will stall waiting for entropy
     `uvm_info(`gfn, "Confirming that CSRNG indefinite seq has started", UVM_HIGH)
     `uvm_info(`gfn, $sformatf("STATE: %s", m_csrng_pull_seq.get_sequence_state().name), UVM_HIGH)
@@ -425,7 +432,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     fork
         m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
         m_csrng_pull_seq.start(p_sequencer.csrng_sequencer_h);
-        m_xht_seq.start(p_sequencer.xht_sequencer);
+        if (!cfg.xht_only_default_rsp) begin
+          m_xht_seq.start(p_sequencer.xht_sequencer);
+        end
     join_none
   endtask
 

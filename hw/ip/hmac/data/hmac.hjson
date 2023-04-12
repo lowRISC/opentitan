@@ -3,6 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "hmac",
+  human_name:         "HMAC Accelerator",
+  one_line_desc:      "Accelerator for SHA-256-based keyed hash message authentication code and the SHA-256 hash function",
+  one_paragraph_desc: '''
+  HMAC Accelerator is a keyed hash based message authentication code generator using [SHA-256][nist-fips-180-4] to check the integrity of an incoming message and optionally a signature signed with the same secret key.
+  This HMAC implementation is not hardened against side-channel analysis (SCA) or fault injection (FI) attacks; it is meant purely for hashing acceleration.
+  If hardened MAC operations are required, either KMAC Accelerator or a software implementation should be used.
+
+  [nist-fips-180-4]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

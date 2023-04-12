@@ -26,12 +26,19 @@ class AnyStringWith(str):
         return self in other
 
 
+class AnyDict(dict):
+
+    def __eq__(self, other):
+        return True
+
+
 class TestCommon(unittest.TestCase):
 
     RUN_ARGS = {
         "check": True,
         "encoding": "ascii",
         "errors": "ignore",
+        "env": AnyDict(),
         "stderr": subprocess.PIPE,
         "stdout": subprocess.PIPE,
     }
@@ -260,9 +267,10 @@ class TestCommon(unittest.TestCase):
             calls_run[1][0],
             (common.BAZEL, "query", AnyStringWith(bazel_test_type.value)))
         mock_test_targets_fn.assert_called_once_with(test_targets_all)
-        self.assertEqual(calls_run[2][0],
-                         (common.BAZEL, "coverage", f"--config={config}",
-                          "--test_output=all", *test_targets))
+        self.assertEqual(
+            calls_run[2][0],
+            (common.BAZEL, "coverage", "--define", "bitstream=skip",
+             f"--config={config}", "--test_output=all", *test_targets))
         mock_get_test_logs_dir.assert_called_once_with(test_targets)
         mock_test_log_dirs_fn.assert_called_once_with(test_log_dirs)
         self.assertEqual(calls_run[3][0],

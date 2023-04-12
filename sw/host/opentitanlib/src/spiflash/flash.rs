@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::io::spi::{Target, Transfer};
+use crate::app::NoProgressBar;
+use crate::io::eeprom::{AddressMode, Transaction, MODE_111};
+use crate::io::spi::Target;
 use crate::spiflash::sfdp::{BlockEraseSize, Sfdp, SupportedAddressModes};
+use crate::transport::ProgressIndicator;
 use anyhow::{ensure, Result};
 use std::convert::TryFrom;
 use thiserror::Error;
@@ -16,12 +19,8 @@ pub enum Error {
     BadEraseAddress(u32, u32),
     #[error("erase length {0} not a multiple of {1} bytes")]
     BadEraseLength(u32, u32),
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum AddressMode {
-    Mode3b,
-    Mode4b,
+    #[error("bad sequence length: {0}")]
+    BadSequenceLength(usize),
 }
 
 impl From<SupportedAddressModes> for AddressMode {
@@ -30,12 +29,6 @@ impl From<SupportedAddressModes> for AddressMode {
             SupportedAddressModes::Mode4b => AddressMode::Mode4b,
             _ => AddressMode::Mode3b,
         }
-    }
-}
-
-impl Default for AddressMode {
-    fn default() -> Self {
-        AddressMode::Mode3b
     }
 }
 
@@ -64,12 +57,20 @@ impl Default for SpiFlash {
 impl SpiFlash {
     // Well known SPI Flash opcodes.
     pub const READ: u8 = 0x03;
+    pub const FAST_READ: u8 = 0x0B;
     pub const PAGE_PROGRAM: u8 = 0x02;
     pub const SECTOR_ERASE: u8 = 0x20;
     pub const CHIP_ERASE: u8 = 0xc7;
     pub const WRITE_ENABLE: u8 = 0x06;
     pub const WRITE_DISABLE: u8 = 0x04;
     pub const READ_STATUS: u8 = 0x05;
+    // Winbond parts use 0x35 and 0x15 for extended status reads.
+    pub const READ_STATUS2: u8 = 0x35;
+    pub const READ_STATUS3: u8 = 0x15;
+    pub const WRITE_STATUS: u8 = 0x01;
+    // Winbond parts use 0x31 and 0x11 for extended status writes.
+    pub const WRITE_STATUS2: u8 = 0x31;
+    pub const WRITE_STATUS3: u8 = 0x11;
     pub const READ_ID: u8 = 0x9f;
     pub const ENTER_4B: u8 = 0xb7;
     pub const EXIT_4B: u8 = 0xe9;
@@ -87,61 +88,62 @@ impl SpiFlash {
     /// The `WEL` bit is the write enable latch.
     pub const STATUS_WEL: u8 = 0x02;
 
-    /// Prepare an opcode and address buffer according to the address_mode.
-    fn opcode_with_address(&self, opcode: u8, address: u32) -> Result<Vec<u8>> {
-        ensure!(
-            address < self.size,
-            Error::AddressOutOfBounds(address, self.size)
-        );
-        let mut buf = vec![opcode];
-        if self.address_mode == AddressMode::Mode4b {
-            buf.push((address >> 24) as u8);
-        }
-        buf.push((address >> 16) as u8);
-        buf.push((address >> 8) as u8);
-        buf.push(address as u8);
-        Ok(buf)
-    }
-
     /// Read `length` bytes of the JEDEC ID from the `spi` target.
     pub fn read_jedec_id(spi: &dyn Target, length: usize) -> Result<Vec<u8>> {
         let mut buf = vec![0u8; length];
-        spi.run_transaction(&mut [
-            Transfer::Write(&[SpiFlash::READ_ID]),
-            Transfer::Read(&mut buf),
-        ])?;
+        spi.run_eeprom_transactions(&mut [Transaction::Read(
+            MODE_111.cmd(SpiFlash::READ_ID),
+            &mut buf,
+        )])?;
         Ok(buf)
     }
 
     /// Read status register from the `spi` target.
     pub fn read_status(spi: &dyn Target) -> Result<u8> {
         let mut buf = [0u8; 1];
-        spi.run_transaction(&mut [
-            Transfer::Write(&[SpiFlash::READ_STATUS]),
-            Transfer::Read(&mut buf),
-        ])?;
+        spi.run_eeprom_transactions(&mut [Transaction::Read(
+            MODE_111.cmd(SpiFlash::READ_STATUS),
+            &mut buf,
+        )])?;
         Ok(buf[0])
+    }
+
+    /// Read the extended status register from the `spi` target.
+    pub fn read_status_ex(spi: &dyn Target, seq: Option<&[u8]>) -> Result<u32> {
+        let seq = seq.unwrap_or(&[Self::READ_STATUS, Self::READ_STATUS2, Self::READ_STATUS3]);
+        ensure!(
+            !seq.is_empty() && seq.len() <= 3,
+            Error::BadSequenceLength(seq.len())
+        );
+        let mut buf = [0u8; 4];
+        for (op, byte) in seq.iter().zip(buf.iter_mut()) {
+            spi.run_eeprom_transactions(&mut [Transaction::Read(
+                MODE_111.cmd(*op),
+                std::slice::from_mut(byte),
+            )])?;
+        }
+        Ok(u32::from_le_bytes(buf))
     }
 
     /// Poll the status register waiting for the busy bit to clear.
     pub fn wait_for_busy_clear(spi: &dyn Target) -> Result<()> {
-        while SpiFlash::read_status(spi)? & SpiFlash::STATUS_WIP != 0 {
-            // Do nothing.
-        }
+        spi.run_eeprom_transactions(&mut [Transaction::WaitForBusyClear])?;
         Ok(())
     }
 
     /// Send the WRITE_ENABLE opcode to the `spi` target.
     pub fn set_write_enable(spi: &dyn Target) -> Result<()> {
-        let wren = [SpiFlash::WRITE_ENABLE];
-        spi.run_transaction(&mut [Transfer::Write(&wren)])?;
+        spi.run_eeprom_transactions(&mut [Transaction::Command(
+            MODE_111.cmd(SpiFlash::WRITE_ENABLE),
+        )])?;
         Ok(())
     }
 
     /// Send the WRITE_DISABLE opcode to the `spi` target.
     pub fn set_write_disable(spi: &dyn Target) -> Result<()> {
-        let wrdi = [SpiFlash::WRITE_DISABLE];
-        spi.run_transaction(&mut [Transfer::Write(&wrdi)])?;
+        spi.run_eeprom_transactions(&mut [Transaction::Command(
+            MODE_111.cmd(SpiFlash::WRITE_DISABLE),
+        )])?;
         Ok(())
     }
 
@@ -150,13 +152,21 @@ impl SpiFlash {
         let mut buf = vec![0u8; 256];
         let mut tries = 0;
         loop {
-            spi.run_transaction(&mut [
-                // READ_SFDP always takes a 3-byte address followed by a dummy
-                // byte regardless of address mode.  To simplify, we always
-                // read from address zero.
-                Transfer::Write(&[SpiFlash::READ_SFDP, 0, 0, 0, 0]),
-                Transfer::Read(&mut buf),
-            ])?;
+            // READ_SFDP always takes a 3-byte address followed by a dummy byte regardless of
+            // address mode.
+            let mut eeprom_transactions = Vec::new();
+            let read_size = spi.get_eeprom_max_transfer_sizes()?.read;
+            for (i, transfer) in buf.chunks_mut(read_size).enumerate() {
+                eeprom_transactions.push(Transaction::Read(
+                    MODE_111.dummy_cycles(8).cmd_addr(
+                        SpiFlash::READ_SFDP,
+                        (i * read_size) as u32,
+                        AddressMode::Mode3b,
+                    ),
+                    transfer,
+                ));
+            }
+            spi.run_eeprom_transactions(&mut eeprom_transactions)?;
 
             // We only want to give SFDP parsing one extra chance for length
             // extension. If parsing fails a second time, just return the error.
@@ -193,11 +203,11 @@ impl SpiFlash {
 
     /// Set the SPI flash addressing mode to either 3b or 4b mode.
     pub fn set_address_mode(&mut self, spi: &dyn Target, mode: AddressMode) -> Result<()> {
-        let opcode = [match mode {
+        let opcode = match mode {
             AddressMode::Mode3b => SpiFlash::EXIT_4B,
             AddressMode::Mode4b => SpiFlash::ENTER_4B,
-        }];
-        spi.run_transaction(&mut [Transfer::Write(&opcode)])?;
+        };
+        spi.run_eeprom_transactions(&mut [Transaction::Command(MODE_111.cmd(opcode))])?;
         self.address_mode = mode;
         Ok(())
     }
@@ -216,7 +226,7 @@ impl SpiFlash {
 
     /// Read into `buffer` from the SPI flash starting at `address`.
     pub fn read(&self, spi: &dyn Target, address: u32, buffer: &mut [u8]) -> Result<&Self> {
-        self.read_with_progress(spi, address, buffer, |_, _| {})
+        self.read_with_progress(spi, address, buffer, &NoProgressBar)
     }
 
     /// Read into `buffer` from the SPI flash starting at `address`.
@@ -226,30 +236,37 @@ impl SpiFlash {
         spi: &dyn Target,
         mut address: u32,
         buffer: &mut [u8],
-        progress: impl Fn(u32, u32),
+        progress: &dyn ProgressIndicator,
     ) -> Result<&Self> {
+        progress.new_stage("", buffer.len());
         // Break the read up according to the maximum chunksize the backend can handle.
-        for chunk in buffer.chunks_mut(spi.max_chunk_size()?) {
-            let op_addr = self.opcode_with_address(SpiFlash::READ, address)?;
-            spi.run_transaction(&mut [Transfer::Write(&op_addr), Transfer::Read(chunk)])?;
+        let chunk_size = spi.get_eeprom_max_transfer_sizes()?.read;
+        for (idx, chunk) in buffer.chunks_mut(chunk_size).enumerate() {
+            progress.progress(idx * chunk_size);
+            spi.run_eeprom_transactions(&mut [Transaction::Read(
+                MODE_111.cmd_addr(SpiFlash::READ, address, self.address_mode),
+                chunk,
+            )])?;
             address += chunk.len() as u32;
-            progress(address, chunk.len() as u32);
         }
+        progress.progress(buffer.len());
         Ok(self)
     }
 
     /// Erase the entire EEPROM via the CHIP_ERASE opcode.
     pub fn chip_erase(&self, spi: &dyn Target) -> Result<&Self> {
-        Self::set_write_enable(spi)?;
-        spi.run_transaction(&mut [Transfer::Write(&[Self::CHIP_ERASE])])?;
-        Self::wait_for_busy_clear(spi)?;
+        spi.run_eeprom_transactions(&mut [
+            Transaction::Command(MODE_111.cmd(SpiFlash::WRITE_ENABLE)),
+            Transaction::Command(MODE_111.cmd(SpiFlash::CHIP_ERASE)),
+            Transaction::WaitForBusyClear,
+        ])?;
         Ok(self)
     }
 
     /// Erase a segment of the SPI flash starting at `address` for `length` bytes.
     /// The address and length must be sector aligned.
     pub fn erase(&self, spi: &dyn Target, address: u32, length: u32) -> Result<&Self> {
-        self.erase_with_progress(spi, address, length, |_, _| {})
+        self.erase_with_progress(spi, address, length, &NoProgressBar)
     }
 
     /// Erase a segment of the SPI flash starting at `address` for `length` bytes.
@@ -260,7 +277,7 @@ impl SpiFlash {
         spi: &dyn Target,
         address: u32,
         length: u32,
-        progress: impl Fn(u32, u32),
+        progress: &dyn ProgressIndicator,
     ) -> Result<&Self> {
         if address % self.erase_size != 0 {
             return Err(Error::BadEraseAddress(address, self.erase_size).into());
@@ -268,16 +285,21 @@ impl SpiFlash {
         if length % self.erase_size != 0 {
             return Err(Error::BadEraseLength(length, self.erase_size).into());
         }
+        progress.new_stage("", length as usize);
         let end = address + length;
         for addr in (address..end).step_by(self.erase_size as usize) {
-            // Issue the write enable first as a separate transaction.
-            SpiFlash::set_write_enable(spi)?;
-            // Then issue the erase transaction.
-            let op_addr = self.opcode_with_address(SpiFlash::SECTOR_ERASE, addr)?;
-            spi.run_transaction(&mut [Transfer::Write(&op_addr)])?;
-            SpiFlash::wait_for_busy_clear(spi)?;
-            progress(addr, self.erase_size);
+            progress.progress((addr - address) as usize);
+            spi.run_eeprom_transactions(&mut [
+                Transaction::Command(MODE_111.cmd(SpiFlash::WRITE_ENABLE)),
+                Transaction::Command(MODE_111.cmd_addr(
+                    SpiFlash::SECTOR_ERASE,
+                    addr,
+                    self.address_mode,
+                )),
+                Transaction::WaitForBusyClear,
+            ])?;
         }
+        progress.progress(length as usize);
         Ok(self)
     }
 
@@ -285,7 +307,7 @@ impl SpiFlash {
     /// The address and buffer length may be arbitrary.  This function will not
     /// erase the segment first.
     pub fn program(&self, spi: &dyn Target, address: u32, buffer: &[u8]) -> Result<&Self> {
-        self.program_with_progress(spi, address, buffer, |_, _| {})
+        self.program_with_progress(spi, address, buffer, &NoProgressBar)
     }
 
     /// Program a segment of the SPI flash starting at `address` with the contents of `buffer`.
@@ -297,8 +319,9 @@ impl SpiFlash {
         spi: &dyn Target,
         mut address: u32,
         buffer: &[u8],
-        progress: impl Fn(u32, u32),
+        progress: &dyn ProgressIndicator,
     ) -> Result<&Self> {
+        progress.new_stage("", buffer.len());
         let mut remain = buffer.len();
         let mut chunk_start = 0usize;
         while remain != 0 {
@@ -313,25 +336,29 @@ impl SpiFlash {
             let chunk = &buffer[chunk_start..chunk_end];
             // Skip this chunk if all bytes are 0xff.
             if !chunk.iter().all(|&x| x == 0xff) {
-                let op_addr = self.opcode_with_address(SpiFlash::PAGE_PROGRAM, address)?;
-                // Issue the write enable first as a separate transaction.
-                SpiFlash::set_write_enable(spi)?;
-                // Then issue the program operation.
-                spi.run_transaction(&mut [Transfer::Write(&op_addr), Transfer::Write(chunk)])?;
-                SpiFlash::wait_for_busy_clear(spi)?;
+                spi.run_eeprom_transactions(&mut [
+                    Transaction::Command(MODE_111.cmd(SpiFlash::WRITE_ENABLE)),
+                    Transaction::Write(
+                        MODE_111.cmd_addr(SpiFlash::PAGE_PROGRAM, address, self.address_mode),
+                        chunk,
+                    ),
+                    Transaction::WaitForBusyClear,
+                ])?;
             }
             address += chunk_size as u32;
             chunk_start += chunk_size;
             remain -= chunk_size;
-            progress(address, chunk_size as u32);
+            progress.progress(buffer.len() - remain);
         }
         Ok(self)
     }
 
     /// Send the software reset sequence to the `spi` target.
     pub fn chip_reset(spi: &dyn Target) -> Result<()> {
-        spi.run_transaction(&mut [Transfer::Write(&[Self::RESET_ENABLE])])?;
-        spi.run_transaction(&mut [Transfer::Write(&[Self::RESET])])?;
+        spi.run_eeprom_transactions(&mut [
+            Transaction::Command(MODE_111.cmd(SpiFlash::RESET_ENABLE)),
+            Transaction::Command(MODE_111.cmd(SpiFlash::RESET)),
+        ])?;
         Ok(())
     }
 }

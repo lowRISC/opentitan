@@ -12,12 +12,13 @@
   //  - Force capability on registers, variables, and nets
   // TODO Trim this flag since +f hurts performance.
   vcs_build_opt_debug_access: "-debug_access+f"
-
+  post_flist_opts: ""
   build_opts: ["-sverilog -full64 -licqueue -ntb_opts uvm-1.2",
                "-timescale={timescale}",
                "-Mdir={build_ex}.csrc",
                "-o {build_ex}",
                "-f {sv_flist}",
+               "{post_flist_opts}",
                // Enable LCA features. It does not require separate licenses.
                "-lca",
                // List multiple tops for the simulation. Prepend each top level with `-top`.

@@ -194,17 +194,17 @@ package spi_device_pkg;
     busy:             1'b 0
   };
 
-  function automatic logic is_cmdinfo_addr_4b(cmd_info_t ci, logic addr_4b_en);
+  function automatic logic is_cmdinfo_addr_4b(addr_mode_e ci_addr_mode, logic addr_4b_en);
     logic result;
-    result = ci.addr_mode == AddrCfg ? addr_4b_en : (ci.addr_mode == Addr4B);
+    result = ci_addr_mode == AddrCfg ? addr_4b_en : (ci_addr_mode == Addr4B);
     return result;
   endfunction : is_cmdinfo_addr_4b
 
   // get_addr_mode removes AddrCfg.
   // It returns {AddrDisabled, Addr3B, Addr4B}
-  function automatic addr_mode_e get_addr_mode(cmd_info_t ci, logic addr_4b_en);
+  function automatic addr_mode_e get_addr_mode(addr_mode_e ci_addr_mode, logic addr_4b_en);
     addr_mode_e result;
-    result = (ci.addr_mode != AddrCfg) ? ci.addr_mode
+    result = (ci_addr_mode != AddrCfg) ? ci_addr_mode
            : (addr_4b_en) ? Addr4B : Addr3B ;
     return result;
   endfunction : get_addr_mode

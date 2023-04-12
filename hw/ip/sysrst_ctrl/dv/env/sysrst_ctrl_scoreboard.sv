@@ -29,8 +29,6 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    // TODO: remove once support alert checking
-    do_alert_check = 0;
     if (!uvm_config_db#(virtual sysrst_ctrl_cov_if)::get(null, "*.env" ,
         "sysrst_ctrl_cov_if", cov_if)) begin
       `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO COVER IF"))
@@ -111,7 +109,6 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
         end
       end
       "intr_enable": begin
-        // FIXME
       end
       "intr_test": begin
         bit intr_test_val = get_field_val(cfg.ral.intr_test.event_detected, item.a_data);
@@ -232,9 +229,22 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       "ulp_status": begin
         do_read_check = 1'b0; // This check is done in sequence
       end
-      "regwen":begin
+      "regwen": begin
       end
-      "alert_test":begin
+      "alert_test": begin
+      end
+      "com_pre_sel_ctl_0", "com_pre_sel_ctl_1", "com_pre_sel_ctl_2", "com_pre_sel_ctl_3": begin
+        // covered in sequence
+      end
+      "com_pre_det_ctl_0", "com_pre_det_ctl_1", "com_pre_det_ctl_2", "com_pre_det_ctl_3": begin
+         if (addr_phase_write) begin
+           string csr_name = csr.get_name();
+           string str_idx = csr_name.getc(csr_name.len - 1);
+           int idx = str_idx.atoi();
+           cov_if.cg_combo_precondition_det_sample (idx,
+             get_field_val(ral.com_pre_det_ctl[idx].precondition_timer, item.a_data)
+           );
+         end
       end
       default: begin
        `uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))

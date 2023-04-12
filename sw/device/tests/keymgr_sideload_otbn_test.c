@@ -61,15 +61,17 @@ static const dif_otbn_err_bits_t kErrBitsOk = 0x0;
 static void run_x25519_app(dif_otbn_t *otbn, uint32_t *result,
                            dif_otbn_err_bits_t expect_err_bits) {
   // Copy the input argument (Montgomery u-coordinate).
-  otbn_testutils_write_data(otbn, sizeof(kEncodedU), &kEncodedU, kOtbnVarEncU);
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(kEncodedU), &kEncodedU,
+                                            kOtbnVarEncU));
 
   // Run the OTBN program and wait for it to complete.
   LOG_INFO("Starting OTBN program...");
-  otbn_testutils_execute(otbn);
-  otbn_testutils_wait_for_done(otbn, expect_err_bits);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
+  CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, expect_err_bits));
 
   // Copy the result (also a 256-bit Montgomery u-coordinate).
-  otbn_testutils_read_data(otbn, 32, kOtbnVarEncResult, result);
+  CHECK_STATUS_OK(
+      otbn_testutils_read_data(otbn, 32, kOtbnVarEncResult, result));
 }
 
 /**
@@ -83,11 +85,12 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
   // TODO(weicai): also check in SV sequence that the key is correct.
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
   sideload_params.dest = kDifKeymgrVersionedKeyDestOtbn;
-  keymgr_testutils_generate_versioned_key(keymgr, sideload_params);
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for OTBN.");
 
   // Load the X25519 application.
-  otbn_testutils_load_app(otbn, kOtbnAppX25519);
+  CHECK_STATUS_OK(otbn_testutils_load_app(otbn, kOtbnAppX25519));
   // Run the OTBN app and retrieve the result.
   uint32_t result[8];
   run_x25519_app(otbn, result, kErrBitsOk);
@@ -108,20 +111,17 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
   // Clear the ERR bits register
   mmio_region_write32(otbn->base_addr, OTBN_ERR_BITS_REG_OFFSET, 0x0);
 
-  keymgr_testutils_generate_versioned_key(
-      keymgr, sideload_params);  // Regenerate the sideload key.
+  CHECK_STATUS_OK(keymgr_testutils_generate_versioned_key(
+      keymgr, sideload_params));  // Regenerate the sideload key.
   LOG_INFO("Keymgr generated HW output for OTBN.");
   uint32_t post_clear_salt_result[8];
-  // TODO (issue #16653) - fix the function call below
-  // and send in kErrBitsOk (error is actually not expected) and uncomment the
-  // equality check on outputs afterwards.
-  run_x25519_app(otbn, post_clear_salt_result, kOtbnInvalidKeyErr);
-  // TODO (issue #16653) - uncomment the equality check on output below.
-  // CHECK_ARRAYS_EQ(result, post_clear_salt_result, ARRAYSIZE(result));
+  run_x25519_app(otbn, post_clear_salt_result, kErrBitsOk);
+  CHECK_ARRAYS_EQ(result, post_clear_salt_result, ARRAYSIZE(result));
 
   // Change the salt to generate a different key.
   sideload_params.salt[0] = ~sideload_params.salt[0];
-  keymgr_testutils_generate_versioned_key(keymgr, sideload_params);
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for OTBN.");
 
   uint32_t modified_salt_result[8];
@@ -133,7 +133,8 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
 
   // Change the salt back to generate the first key again.
   sideload_params.salt[0] = ~sideload_params.salt[0];
-  keymgr_testutils_generate_versioned_key(keymgr, sideload_params);
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for OTBN.");
 
   uint32_t same_key_result[8];
@@ -148,10 +149,11 @@ bool test_main(void) {
   // Initialize keymgr and advance to CreatorRootKey state.
   dif_keymgr_t keymgr;
   dif_kmac_t kmac;
-  keymgr_testutils_startup(&keymgr, &kmac);
+  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
   // Advance to OwnerIntermediateKey state.
-  keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams);
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerIntermediateKey);
+  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+  CHECK_STATUS_OK(keymgr_testutils_check_state(
+      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
   LOG_INFO("Keymgr entered OwnerIntKey State");
 
   // Initialize OTBN.

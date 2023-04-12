@@ -14,6 +14,7 @@ pub mod load_bitstream;
 pub mod pinmux_config;
 
 pub mod rpc;
+pub mod spi_passthru;
 pub mod status;
 
 /// The `execute_test` macro should be used in end-to-end tests to
@@ -37,9 +38,9 @@ pub mod status;
 #[macro_export]
 macro_rules! execute_test {
     ($test:path, $($args:tt)*) => {
-        println!("Starting test {}...", stringify!($test));
+        println!("{}:Starting test {}...", line!(), stringify!($test));
         let result = $test($($args)*);
-        println!("Finished test {}: {:?}", stringify!($test), result);
+        println!("{}:Finished test {}: {:?}", line!(), stringify!($test), result);
         let _ = result?;
     };
 }

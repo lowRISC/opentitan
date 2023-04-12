@@ -1,0 +1,63 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[book]
+authors = ["lowRISC"]
+language = "en"
+multilingual = false
+src = "."
+title = "OpenTitan Documentation"
+
+[output.html]
+site-url = "book/"
+fold = { enable = true}
+git-repository-url = "https://github.com/lowrisc/opentitan"
+edit-url-template = "https://github.com/lowrisc/opentitan/edit/master/{path}"
+curly-quotes = true
+mathjax-support = true
+
+additional-js = [
+    "./util/mdbook/wavejson/default.js",
+    "./util/mdbook/wavejson/wavedrom.min.js",
+    "./util/mdbook/wavejson/wavejson.js",
+    "./util/site-dashboard/dashboard.js",
+    "./util/site-dashboard/ot-nightly-results.js",
+    "./util/site-dashboard/install-dashboards.js",
+]
+
+additional-css = [
+    "./util/mdbook/wavejson/wavejson.css",
+    "./util/site-dashboard/dashboard-mdbook-block.css",
+]
+
+[preprocessor.readme2index]
+command = "./util/mdbook_readme2index.py"
+
+[preprocessor.wavejson]
+command = "./util/mdbook_wavejson.py"
+
+[preprocessor.reggen]
+command = "./util/mdbook_reggen.py"
+# Python RegEx identifying ip block config paths.
+ip-cfg-py-regex = '(ip|ip_autogen)/.+/data/(?!.+_testplan).+\.hjson'
+
+[preprocessor.testplan]
+command = "./util/mdbook_testplan.py"
+# Python RegEx identifying testplan paths.
+testplan-py-regex = '.+_testplan\.hjson'
+
+[preprocessor.otbn]
+command = "./util/mdbook_otbn.py"
+
+[preprocessor.dashboard]
+command = "./util/mdbook_dashboard.py"
+
+[preprocessor.doxygen]
+command = "./util/mdbook_doxygen.py"
+out-dir = "build-site/gen"
+html-out-dir = "gen/doxy"
+dif-src-py-regex = 'dif_\S*\.h'
+
+[preprocessor.block-dashboard]
+command = "./util/mdbook-block-dashboard.py"

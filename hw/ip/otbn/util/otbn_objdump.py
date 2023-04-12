@@ -77,7 +77,7 @@ def transform_disasm_line(line: str, insns_file: InsnsFile) -> str:
     pc = int(match.group(2), 16)
 
     # Extract the encoded values. We know we have an encoding (otherwise the
-    # instruction wouldn't have appeared in the the masks list).
+    # instruction wouldn't have appeared in the masks list).
     assert insn.encoding is not None
     enc_vals = insn.encoding.extract_operands(raw)
 

@@ -61,13 +61,21 @@
     {
       name: sysrst_ctrl_combo_detect_ec_rst
       uvm_test_seq: sysrst_ctrl_combo_detect_ec_rst_vseq
+      // This is a directed test with very few random values.
+      reseed: 5
+    }
+    {
+      name: sysrst_ctrl_combo_detect_ec_rst_with_pre_cond
+      uvm_test_seq: sysrst_ctrl_combo_detect_ec_rst_with_pre_cond_vseq
+      // This is a directed test with very few random values.
+      reseed: 5
     }
     {
       name: sysrst_ctrl_pin_access_test
       uvm_test_seq: sysrst_ctrl_pin_access_vseq
     }
     {
-      name: sysrst_ctrl_override_test
+      name: sysrst_ctrl_pin_override_test
       uvm_test_seq: sysrst_ctrl_pin_override_vseq
     }
     {
@@ -97,6 +105,17 @@
       name: sysrst_ctrl_edge_detect
       uvm_test_seq: sysrst_ctrl_edge_detect_vseq
       run_opts: ["+test_timeout_ns=10_000_000_000"]
+    }
+    {
+      name: sysrst_ctrl_combo_detect_with_pre_cond
+      uvm_test_seq: sysrst_ctrl_combo_detect_with_pre_cond_vseq
+      reseed: 100
+    }
+    {
+      name: sysrst_ctrl_feature_disable
+      uvm_test_seq: sysrst_ctrl_feature_disable_vseq
+      // This is a directed test with few random values
+      reseed: 2
     }
   ]
 

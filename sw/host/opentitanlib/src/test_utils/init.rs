@@ -9,7 +9,7 @@ use serde_annotate::Annotate;
 use std::env::ArgsOs;
 use std::ffi::OsString;
 use std::io::ErrorKind;
-use std::iter::{IntoIterator, Iterator};
+use std::iter::Iterator;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -48,8 +48,12 @@ pub struct InitializeTest {
 impl InitializeTest {
     pub fn init_logging(&self) {
         let level = self.logging;
+        // The tests might use OpenOCD which uses util::printer so we will get
+        // more useful logging if we log the target instead of the module path
         if level != LevelFilter::Off {
             env_logger::Builder::from_default_env()
+                .format_target(true)
+                .format_module_path(false)
                 .filter(None, level)
                 .init();
         }
@@ -94,7 +98,7 @@ impl InitializeTest {
         }?;
 
         // Extend the argument list with all remaining command line arguments.
-        arguments.extend(args.into_iter());
+        arguments.extend(args);
         Ok(arguments)
     }
 
@@ -127,6 +131,9 @@ impl InitializeTest {
     pub fn init_target(&self) -> Result<TransportWrapper> {
         // Create the transport interface.
         let transport = backend::create(&self.backend_opts)?;
+
+        // Set up the default pin configurations as specified in the transport's config file.
+        transport.apply_default_configuration()?;
 
         // Create the UART first to initialize the desired parameters.
         let _uart = self.bootstrap.options.uart_params.create(&transport)?;

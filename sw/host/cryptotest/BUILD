@@ -10,9 +10,9 @@ rust_library(
     name = "cryptotest_parser",
     srcs = ["cryptotest_parser.rs"],
     deps = [
-        "//third_party/rust/crates:lazy_static",
-        "//third_party/rust/crates:regex",
-        "//third_party/rust/crates:thiserror",
+        "@crate_index//:lazy_static",
+        "@crate_index//:regex",
+        "@crate_index//:thiserror",
     ],
 )
 

@@ -49,6 +49,7 @@ def get_otp_images():
 
     img_targets = [
         "//hw/ip/otp_ctrl/data:img_dev",
+        "//hw/ip/otp_ctrl/data:img_dev_individualized",
         "//hw/ip/otp_ctrl/data:img_rma",
         "//hw/ip/otp_ctrl/data:img_test_unlocked0",
         "//hw/ip/otp_ctrl/data:img_prod",
@@ -90,7 +91,7 @@ def _otp_json_impl(ctx):
     for partition in otp["partitions"]:
         if "items" in partition.keys():
             items = partition["items"]
-            partition["items"] = [{"name": k, "value": items[k]} for k in items.keys()]
+            partition["items"] = [{"name": k, "value": v} for k, v in items.items()]
 
     file = ctx.actions.declare_file("{}.json".format(ctx.attr.name))
     ctx.actions.write(file, json.encode_indent(otp))
@@ -161,6 +162,8 @@ def _otp_image(ctx):
         args.add("--lc-seed", ctx.attr.lc_seed[BuildSettingInfo].value)
     if ctx.attr.otp_seed:
         args.add("--otp-seed", ctx.attr.otp_seed[BuildSettingInfo].value)
+    if ctx.attr.data_perm:
+        args.add("--data-perm", ctx.attr.data_perm[BuildSettingInfo].value)
     args.add("--img-cfg", ctx.file.src)
     args.add_all(ctx.files.overlays, before_each = "--add-cfg")
     args.add("--out", "{}/{}.BITWIDTH.vmem".format(output.dirname, ctx.attr.name))
@@ -208,6 +211,10 @@ otp_image = rule(
         "otp_seed": attr.label(
             default = "//hw/ip/otp_ctrl/data:otp_seed",
             doc = "Configuration override seed used to randomize OTP netlist constants.",
+        ),
+        "data_perm": attr.label(
+            default = "//hw/ip/otp_ctrl/data:data_perm",
+            doc = "Post-processing option to trigger permuting bit positions in memfile.",
         ),
         "verbose": attr.bool(
             default = False,

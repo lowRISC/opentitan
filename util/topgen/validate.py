@@ -45,7 +45,6 @@ top_required = {
     'memory': ['l', 'list of memories. At least one memory '
                     'is needed to run the software'],
     'xbar': ['l', 'List of the xbar used in the top'],
-    'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"],
     'pinout': ['g', 'Pinout configuration'],
     'targets': ['l', ' Target configurations'],
     'pinmux': ['g', 'pinmux configuration'],
@@ -66,7 +65,8 @@ top_optional = {
     'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
     'num_cores': ['pn', "number of computing units"],
     'power': ['g', 'power domains supported by the design'],
-    'port': ['g', 'assign special attributes to specific ports']
+    'port': ['g', 'assign special attributes to specific ports'],
+    'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"]
 }
 
 top_added = {}

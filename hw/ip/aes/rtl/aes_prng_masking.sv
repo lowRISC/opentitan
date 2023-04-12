@@ -13,9 +13,12 @@
 // IMPORTANT NOTE:                                                                               //
 //                                   DO NOT USE THIS BLINDLY!                                    //
 //                                                                                               //
-// It has not yet been verified that this initial implementation produces pseudo-random numbers  //
-// of sufficient quality in terms of uniformity and independence, and that it is indeed suitable //
-// for masking purposes.                                                                         //
+// This implementation has been experimentally evaluated with / optimized for the masked AES     //
+// cipher core using the S-Box implementation with first-order domain-oriented masking.          //
+// Other masking schemes and S-Box implementations might have different requirements on the PRNG //
+// in terms of uniformity and independence of the generated pseudo-random numbers. Upon changes  //
+// to these parts of the design, it is thus recommended to again perform experimental            //
+// evaluation. Use with care.                                                                    //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 `include "prim_assert.sv"

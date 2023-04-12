@@ -60,7 +60,7 @@ filegroup(
         "bitstream_skip": ["skip.bit"],
         "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_test_rom"],
         "bitstream_gcp_splice": [":gcp_spliced_test_rom"],
-        "//conditions:default": ["@bitstreams//:bitstream_test_rom"],
+        "//conditions:default": [":gcp_spliced_test_rom"],
     }),
     tags = ["manual"],
 )
@@ -72,7 +72,7 @@ filegroup(
         "bitstream_skip": ["skip.bit"],
         "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_rom"],
         "bitstream_gcp_splice": [":gcp_spliced_rom"],
-        "//conditions:default": ["@bitstreams//:bitstream_rom"],
+        "//conditions:default": [":gcp_spliced_rom"],
     }),
     tags = ["manual"],
 )
@@ -83,7 +83,7 @@ filegroup(
     srcs = select({
         "bitstream_skip": ["skip.bit"],
         "bitstream_vivado": ["//hw/bitstream/vivado:rom_mmi"],
-        "//conditions:default": ["@bitstreams//:rom_mmi"],
+        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_rom_mmi"],
     }),
     tags = ["manual"],
 )
@@ -94,7 +94,7 @@ filegroup(
     srcs = select({
         "bitstream_skip": ["skip.bit"],
         "bitstream_vivado": ["//hw/bitstream/vivado:otp_mmi"],
-        "//conditions:default": ["@bitstreams//:otp_mmi"],
+        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_otp_mmi"],
     }),
     tags = ["manual"],
 )
@@ -107,11 +107,6 @@ filegroup(
             "bitstream_skip": ["skip.bit"],
             "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_rom_otp_" + otp_name],
             "bitstream_gcp_splice": [":gcp_spliced_rom_otp_" + otp_name],
-
-            # FIXME(#13807) By default, this will actually do a local splice
-            # instead of retrieving the pre-spliced bitstream from the cache.
-            # Before we cache OTP-spliced bitstreams, we need to work out the
-            # details of the naming scheme.
             "//conditions:default": [":gcp_spliced_rom_otp_" + otp_name],
         }),
         tags = ["manual"],
@@ -123,7 +118,7 @@ filegroup(
 bitstream_splice(
     name = "gcp_spliced_test_rom",
     testonly = True,
-    src = "@bitstreams//:bitstream_test_rom",
+    src = "@bitstreams//:chip_earlgrey_cw310_bitstream",
     data = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
@@ -135,7 +130,7 @@ bitstream_splice(
 bitstream_splice(
     name = "gcp_spliced_rom",
     testonly = True,
-    src = "@bitstreams//:bitstream_test_rom",
+    src = "@bitstreams//:chip_earlgrey_cw310_bitstream",
     data = "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],

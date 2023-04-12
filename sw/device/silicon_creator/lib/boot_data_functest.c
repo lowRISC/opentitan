@@ -5,11 +5,11 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -340,7 +340,7 @@ rom_error_t write_page_switch_test(void) {
 }
 
 bool test_main(void) {
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
 
   // Initialize the sec_mmio table so that we can run this test with both rom
   // and test_rom.
@@ -359,5 +359,5 @@ bool test_main(void) {
   EXECUTE_TEST(result, write_empty_test);
   EXECUTE_TEST(result, write_page_switch_test);
 
-  return result == kErrorOk;
+  return status_ok(result);
 }

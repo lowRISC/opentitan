@@ -8,6 +8,14 @@
 %>\
 {
   name:               "pwrmgr",
+  human_name:         "Power Manager",
+  one_line_desc:      "Sequences on-chip power, clocks, and resets through different reset and power states",
+  one_paragraph_desc: '''
+  Power Manager sequences on-chip power, clocks, and reset signals on power-on reset (aka cold boot), low power entry and exit, and non-power-on resets.
+  To this end, it can turn power domains on and off, control root resets with Reset Manager, and control root clock enables with AST and Clock Manager.
+  During power up, Power Manager is responsible for triggering OTP sensing, initiating Life Cycle Controller, coordinating with ROM Controller for the startup ROM check, and eventually releasing software to execute.
+  It features several countermeasures to deter fault injection (FI) attacks.
+  '''
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",

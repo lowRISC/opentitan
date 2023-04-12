@@ -77,7 +77,7 @@ static bool otp_ifetch_enabled(void) {
   CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionHwCfg,
                                            kOtpIfetchHwRelativeOffset));
 
-  otp_ctrl_testutils_wait_for_dai(&otp);
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 
   uint32_t value;
   CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(&otp, &value));
@@ -212,10 +212,11 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR), &lc));
 
+  bool debug_func = false;
+  CHECK_STATUS_OK(lc_ctrl_testutils_debug_func_enabled(&lc, &debug_func));
   // For the current configuration (set by the testbench)
   // check that execution exceptions are as expected.
-  do_execute_test(lc_ctrl_testutils_debug_func_enabled(&lc),
-                  otp_ifetch_enabled());
+  do_execute_test(debug_func, otp_ifetch_enabled());
 
   // When the test is complete flag WFI status so
   // the testbench can reset and progress to the next

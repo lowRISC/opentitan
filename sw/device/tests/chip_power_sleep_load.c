@@ -117,7 +117,7 @@ void prepare_to_exit(void) {
   // Check that the system has not been reset due to escalation
   pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0);
 
-  aon_timer_testutils_shutdown(&aon_timer);
+  CHECK_STATUS_OK(aon_timer_testutils_shutdown(&aon_timer));
 
   // Set the test status flag back to "TestStatusInTest"
   test_status_set(kTestStatusInTest);
@@ -360,12 +360,14 @@ bool test_main(void) {
   nmi_state = (dif_rv_core_ibex_nmi_state_t){0};
   CHECK_DIF_OK(
       dif_rv_core_ibex_enable_nmi(&rv_core_ibex, kDifRvCoreIbexNmiSourceWdog));
-  uint32_t count_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(kTimeTillBark);
+  uint32_t count_cycles = 0;
+  CHECK_STATUS_OK(
+      aon_timer_testutils_get_aon_cycles_from_us(kTimeTillBark, &count_cycles));
 
   if (kDeepSleep) {
     // activate in Wakeup mode (no need for IRQ)
-    aon_timer_testutils_wakeup_config(&aon_timer, kTimeTillBark);
+    CHECK_STATUS_OK(
+        aon_timer_testutils_wakeup_config(&aon_timer, kTimeTillBark));
   } else {
     // Unmask the software interrupt so it can be used to bring the CPU out of
     // sleep without having an NMI race WFI.
@@ -382,10 +384,12 @@ bool test_main(void) {
   const uint8_t kNumNormalPowerSamples = 1;
   const uint64_t kPowerUpTime = 30;
   const uint64_t kWakeUpTime = 500;
-  uint32_t power_up_time_aon_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(kPowerUpTime);
-  uint32_t wake_up_time_aon_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(kWakeUpTime);
+  uint32_t power_up_time_aon_cycles = 0;
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(
+      kPowerUpTime, &power_up_time_aon_cycles));
+  uint32_t wake_up_time_aon_cycles = 0;
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(
+      kWakeUpTime, &wake_up_time_aon_cycles));
 
   // ADC configuration
   CHECK_DIF_OK(dif_adc_ctrl_set_enabled(&adc_ctrl, kDifToggleDisabled));

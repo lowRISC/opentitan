@@ -1,6 +1,4 @@
----
-title: "The OpenTitan DIF Library"
----
+# The OpenTitan DIF Library
 
 A DIF is a "Device Interface Function". DIFs are low-level routines for
 accessing the hardware functionality directly, and are agnostic to the
@@ -56,7 +54,7 @@ Additionally, please invoke `util/make_new_dif.py --help` for detailed usage.
 ## Checklists
 
 This directory also contains checklists for each DIF, in markdown format. They
-are linked to from the [Hardware Dashboard]({{< relref "hw" >}}), in the
+are linked to from the [Hardware Dashboard](../../../../hw/README.md), in the
 Development Stage column.
 
 ## DIF Style Guide
@@ -65,7 +63,7 @@ DIFs are very low-level software, so they have a more rigorous coding style than
 other parts of the codebase.
 
 DIFs should follow the [OpenTitan C/C++ style
-guide](https://docs.opentitan.org/doc/rm/c_cpp_coding_style/) where it does not
+guide](../../../../doc/contributing/style_guides/c_cpp_coding_style.md) where it does not
 contradict with the guidelines below.
 
 The guidelines below apply to writing DIFs, and code should be written in a
@@ -152,7 +150,7 @@ The following functions are the basic functionality for initializing and
 handling the lifetime of a handle.
 
 * `dif_result_t dif_<ip>_init(mmio_region_t base_addr, dif_<ip>_t *handle);`
-  initializes `handle` with with the base address of the instantiated IP this
+  initializes `handle` with the base address of the instantiated IP this
   DIF is targeting to use. This DIF is **auto-generated**.
 
 * `dif_result_t dif_<ip>_configure(const dif_<ip>_t *handle, dif_<ip>_config_t

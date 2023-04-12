@@ -33,6 +33,7 @@ py_binary(
     srcs = ["scramble_image.py"],
     deps = [
         ":mem",
+        "//util/design:prince",
         "//util/design:secded_gen",
         requirement("hjson"),
         requirement("pycryptodome"),

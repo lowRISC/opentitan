@@ -113,8 +113,8 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
  */
 crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
                              xof_mode_t xof_mode,
-                             crypto_uint8_buf_t function_name_string,
-                             crypto_uint8_buf_t customization_string,
+                             crypto_const_uint8_buf_t function_name_string,
+                             crypto_const_uint8_buf_t customization_string,
                              size_t required_output_len,
                              crypto_uint8_buf_t *digest);
 

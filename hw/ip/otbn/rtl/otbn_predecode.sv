@@ -60,6 +60,16 @@ module otbn_predecode
   logic alu_bignum_logic_shifter_en;
   logic [3:0] alu_bignum_logic_res_sel;
 
+  flag_group_t flag_group;
+  logic [NFlagGroups-1:0] flag_group_sel;
+  flags_t flag_sel;
+
+  logic [NFlagGroups-1:0] flags_keep;
+  logic [NFlagGroups-1:0] flags_adder_update;
+  logic [NFlagGroups-1:0] flags_logic_update;
+  logic [NFlagGroups-1:0] flags_mac_update;
+  logic [NFlagGroups-1:0] flags_ispr_wr;
+
   logic mac_bignum_op_en;
   logic mac_bignum_acc_rd_en;
 
@@ -72,6 +82,7 @@ module otbn_predecode
   logic branch_insn;
   logic jump_insn;
   logic loop_insn;
+  logic sel_insn;
 
   wsr_e  wsr_addr;
   csr_e  csr_addr;
@@ -113,6 +124,15 @@ module otbn_predecode
   assign shift_amt_a_type_bignum = {imem_rdata_i[29:25], 3'b0};
   assign shift_amt_s_type_bignum = {imem_rdata_i[31:25], imem_rdata_i[14]};
 
+  assign flag_group     = imem_rdata_i[31];
+  assign flag_group_sel = {(flag_group == 1'b1), (flag_group == 1'b0)};
+  assign flag_sel.C = flag_e'(imem_rdata_i[26:25]) == FlagC;
+  assign flag_sel.M = flag_e'(imem_rdata_i[26:25]) == FlagM;
+  assign flag_sel.L = flag_e'(imem_rdata_i[26:25]) == FlagL;
+  assign flag_sel.Z = flag_e'(imem_rdata_i[26:25]) == FlagZ;
+
+  assign flags_keep = ~(flags_adder_update | flags_logic_update | flags_mac_update | flags_ispr_wr);
+
   always_comb begin
     rf_ren_a_base   = 1'b0;
     rf_ren_b_base   = 1'b0;
@@ -137,6 +157,11 @@ module otbn_predecode
     alu_bignum_logic_shifter_en      = 1'b0;
     alu_bignum_logic_res_sel         = '0;
 
+    flags_adder_update = '0;
+    flags_logic_update = '0;
+    flags_mac_update   = '0;
+    flags_ispr_wr      = '0;
+
     mac_bignum_op_en     = 1'b0;
     mac_bignum_acc_rd_en = 1'b0;
 
@@ -150,6 +175,7 @@ module otbn_predecode
     branch_insn = 1'b0;
     jump_insn   = 1'b0;
     loop_insn   = 1'b0;
+    sel_insn    = 1'b0;
 
     ctrl_flow_target_predec_o = '0;
 
@@ -242,13 +268,18 @@ module otbn_predecode
             // No read if destination is x0 unless read is to flags CSR. Both flag groups are in
             // a single ISPR so to write one group the other must be read to write it back
             // unchanged.
-            ispr_rd_en = (imem_rdata_i[11:7] != 5'b0) | (csr_addr == CsrFg0) | (csr_addr == CsrFg1);
-            ispr_wr_en = 1'b1;
+            ispr_rd_en    = (imem_rdata_i[11:7] != 5'b0) | (csr_addr == CsrFg0) |
+                                                           (csr_addr == CsrFg1);
+            ispr_wr_en    = 1'b1;
+            flags_ispr_wr = {(csr_addr == CsrFg1), (csr_addr == CsrFg0)} |
+                            {NFlagGroups{csr_addr == CsrFlags}};
           end else if (imem_rdata_i[14:12] == 3'b010) begin
             // Read and set if source register isn't x0, otherwise read only
             if (imem_rdata_i[19:15] != 5'b0) begin
-              ispr_rd_en = 1'b1;
-              ispr_wr_en = 1'b1;
+              ispr_rd_en    = 1'b1;
+              ispr_wr_en    = 1'b1;
+              flags_ispr_wr = {(csr_addr == CsrFg1), (csr_addr == CsrFg0)} |
+                              {NFlagGroups{csr_addr == CsrFlags}};
             end else begin
               ispr_rd_en = 1'b1;
             end
@@ -271,6 +302,7 @@ module otbn_predecode
               alu_bignum_shift_amt             = shift_amt_a_type_bignum;
               alu_bignum_adder_y_op_a_en       = 1'b1;
               alu_bignum_adder_y_op_shifter_en = 1'b1;
+              flags_adder_update[flag_group]   = 1'b1;
             end
             3'b100: begin
               // BN.ADDI/BN.SUBI
@@ -281,6 +313,7 @@ module otbn_predecode
               alu_bignum_shift_amt             = '0;
               alu_bignum_adder_y_op_a_en       = 1'b1;
               alu_bignum_adder_y_op_shifter_en = 1'b1;
+              flags_adder_update[flag_group]   = 1'b1;
             end
             3'b101: begin
               // BN.ADDM/BN.SUBM
@@ -319,6 +352,7 @@ module otbn_predecode
               alu_bignum_logic_res_sel[AluOpLogicXor] = imem_rdata_i[14:12] == 3'b110;
               alu_bignum_logic_res_sel[AluOpLogicOr]  = imem_rdata_i[14:12] == 3'b100;
               alu_bignum_logic_res_sel[AluOpLogicAnd] = imem_rdata_i[14:12] == 3'b010;
+              flags_logic_update[flag_group]          = 1'b1;
             end
             3'b111, 3'b011: begin // BN.RSHI
               rf_we_bignum            = 1'b1;
@@ -337,6 +371,7 @@ module otbn_predecode
               alu_bignum_shift_amt                    = shift_amt_a_type_bignum;
               alu_bignum_logic_shifter_en             = 1'b1;
               alu_bignum_logic_res_sel[AluOpLogicNot] = 1'b1;
+              flags_logic_update[flag_group]          = 1'b1;
             end
             default: ;
           endcase
@@ -352,6 +387,7 @@ module otbn_predecode
               rf_we_bignum    = 1'b1;
               rf_ren_a_bignum = 1'b1;
               rf_ren_b_bignum = 1'b1;
+              sel_insn        = 1'b1;
             end
             3'b011, 3'b001: begin // BN.CMP[B]
               rf_ren_a_bignum                  = 1'b1;
@@ -361,6 +397,7 @@ module otbn_predecode
               alu_bignum_shift_amt             = shift_amt_a_type_bignum;
               alu_bignum_adder_y_op_a_en       = 1'b1;
               alu_bignum_adder_y_op_shifter_en = 1'b1;
+              flags_adder_update[flag_group]   = 1'b1;
             end
             3'b100, 3'b101: begin  // BN.LID, BN.SID
               rf_ren_a_base        = 1'b1;
@@ -419,7 +456,8 @@ module otbn_predecode
 
           // BN.MULQACC.WO/BN.MULQACC.SO
           if (imem_rdata_i[30] == 1'b1 || imem_rdata_i[29] == 1'b1) begin
-            rf_we_bignum = 1'b1;
+            rf_we_bignum                 = 1'b1;
+            flags_mac_update[flag_group] = 1'b1;
           end
 
           if (imem_rdata_i[12] == 1'b0) begin
@@ -472,6 +510,13 @@ module otbn_predecode
   assign alu_predec_bignum_o.logic_a_en            = alu_bignum_logic_a_en;
   assign alu_predec_bignum_o.logic_shifter_en      = alu_bignum_logic_shifter_en;
   assign alu_predec_bignum_o.logic_res_sel         = alu_bignum_logic_res_sel;
+  assign alu_predec_bignum_o.flag_group_sel        = flag_group_sel;
+  assign alu_predec_bignum_o.flag_sel              = flag_sel;
+  assign alu_predec_bignum_o.flags_keep            = flags_keep;
+  assign alu_predec_bignum_o.flags_adder_update    = flags_adder_update;
+  assign alu_predec_bignum_o.flags_logic_update    = flags_logic_update;
+  assign alu_predec_bignum_o.flags_mac_update      = flags_mac_update;
+  assign alu_predec_bignum_o.flags_ispr_wr         = flags_ispr_wr;
 
   assign mac_predec_bignum_o.op_en     = mac_bignum_op_en;
   assign mac_predec_bignum_o.acc_rd_en = mac_bignum_acc_rd_en;
@@ -530,6 +575,7 @@ module otbn_predecode
   assign ctrl_flow_predec_o.branch_insn = branch_insn;
   assign ctrl_flow_predec_o.jump_insn   = jump_insn;
   assign ctrl_flow_predec_o.loop_insn   = loop_insn;
+  assign ctrl_flow_predec_o.sel_insn    = sel_insn;
 
   logic unused_clk, unused_rst;
 

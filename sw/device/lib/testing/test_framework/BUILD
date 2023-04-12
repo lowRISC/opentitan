@@ -216,17 +216,18 @@ cc_library(
         ":check",
         ":coverage",
         ":freertos_port",
-        ":ottf_flow_control",
+        ":ottf_console",
         ":ottf_start",
         ":ottf_test_config",
         ":status",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:status",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:rand_testutils",
         "//third_party/freertos",
         "@manufacturer_test_hooks//:test_hooks",
@@ -242,7 +243,7 @@ cc_library(
     srcs = ["ujson_ottf.c"],
     hdrs = ["ujson_ottf.h"],
     deps = [
-        ":ottf_flow_control",
+        ":ottf_console",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:print",
@@ -251,16 +252,18 @@ cc_library(
 )
 
 dual_cc_library(
-    name = "ottf_flow_control",
+    name = "ottf_console",
     srcs = dual_inputs(
-        device = ["ottf_flow_control.c"],
+        device = ["ottf_console.c"],
     ),
-    hdrs = ["ottf_flow_control.h"],
+    hdrs = ["ottf_console.h"],
     deps = dual_inputs(
         device = [
             ":check",
             ":ottf_start",
+            ":ottf_test_config",
             "//sw/device/lib/base:mmio",
+            "//sw/device/lib/runtime:print",
             "//sw/device/lib/dif:rv_plic",
             "//sw/device/lib/runtime:ibex",
             "//sw/device/lib/runtime:irq",
@@ -269,14 +272,14 @@ dual_cc_library(
         shared = [
             "//sw/device/lib/base:status",
             "//sw/device/lib/dif:uart",
+            "//sw/device/lib/dif:spi_device",
         ],
     ),
 )
 
 _FLOW_CONTROL_MESSAGE = (
     "Mary had a little lamb, its fleece was white as snow. " +
-    "Everywhere that Mary went the lamb was sure to go." +
-    "\n"
+    "Everywhere that Mary went the lamb was sure to go."
 )
 
 opentitan_functest(
@@ -289,7 +292,7 @@ opentitan_functest(
             "--exec=\"console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control\"",
             "console",
             "--flow-control",
-            "--send=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
+            "--send=\"{}\n\"".format(_FLOW_CONTROL_MESSAGE),
             "--exit-success=\"RESULT:{}\"".format(_FLOW_CONTROL_MESSAGE),
             "--exit-failure=\"PASS|FAIL\"",
         ],
@@ -303,14 +306,14 @@ opentitan_functest(
             "--exec \"console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control\"",
             "console",
             "--flow-control",
-            "--send=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
+            "--send=\"{}\n\"".format(_FLOW_CONTROL_MESSAGE),
             "--exit-success=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
             "--exit-failure=\"PASS|FAIL\"",
         ],
     ),
     deps = [
         ":check",
-        ":ottf_flow_control",
+        ":ottf_console",
         ":ottf_main",
         ":ujson_ottf",
         "//sw/device/lib/base:status",

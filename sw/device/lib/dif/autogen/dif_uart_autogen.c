@@ -113,6 +113,18 @@ dif_result_t dif_uart_irq_get_state(const dif_uart_t *uart,
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_uart_irq_acknowledge_state(
+    const dif_uart_t *uart, dif_uart_irq_state_snapshot_t snapshot) {
+  if (uart == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(uart->base_addr, UART_INTR_STATE_REG_OFFSET, snapshot);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_uart_irq_is_pending(const dif_uart_t *uart, dif_uart_irq_t irq,
                                      bool *is_pending) {
   if (uart == NULL || is_pending == NULL) {

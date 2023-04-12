@@ -4,6 +4,7 @@
 r"""Shared subfunctions.
 """
 import random
+import re
 import textwrap
 from math import ceil, log2
 
@@ -206,13 +207,41 @@ def scatter_bits(mask, bits):
     return scatterword
 
 
-def permute_bits(bits, permutation):
-    '''Permute the bits in a bitstring'''
-    bitlen = len(bits)
+def validate_data_perm_option(word_bit_length, data_perm):
+    '''Validate OTP data permutation option by checking for bijectivity.'''
+    if len(data_perm) != word_bit_length:
+        raise RuntimeError(
+            'Data permutation "{}" is not bijective, since '
+            'it does not have the same length ({}) as the data.'.format(
+                data_perm, word_bit_length))
+    for k in data_perm:
+        if k >= word_bit_length:
+            raise RuntimeError('Data permutation "{}" is not bijective, '
+                               'since the index {} is out of bounds.'.format(
+                                   data_perm, k))
+    if len(set(data_perm)) != word_bit_length:
+        raise RuntimeError(
+            'Data permutation "{}" is not bijective, '
+            'since it contains duplicated indices.'.format(data_perm))
+
+
+def inverse_permute_bits(bit_str, permutation):
+    '''Un-permute the bits in a bitstring (inverse of `permute_bits`).'''
+    bit_str_len = len(bit_str)
+    assert bit_str_len == len(permutation)
+    bit_vector = ["0"] * bit_str_len
+    for i, perm_idx in enumerate(permutation):
+        bit_vector[bit_str_len - perm_idx - 1] = bit_str[bit_str_len - i - 1]
+    return ''.join(bit_vector)
+
+
+def permute_bits(bit_str, permutation):
+    '''Permute the bits in a bitstring.'''
+    bitlen = len(bit_str)
     assert bitlen == len(permutation)
     permword = ''
     for k in permutation:
-        permword = bits[bitlen - k - 1] + permword
+        permword = bit_str[bitlen - k - 1] + permword
     return permword
 
 
@@ -251,10 +280,36 @@ def random_or_hexvalue(dict_obj, key, num_bits):
         try:
             dict_obj[key] = _parse_hex(dict_obj[key])
             if dict_obj[key] >= 2**num_bits:
-                raise RuntimeError(
-                    'Value "{}" is out of range.'
-                    .format(dict_obj[key]))
+                raise RuntimeError('Value "{}" is out of range.'.format(
+                    dict_obj[key]))
         except ValueError:
             raise RuntimeError(
-                'Invalid value "{}". Must be hex or "<random>".'
-                .format(dict_obj[key]))
+                'Invalid value "{}". Must be hex or "<random>".'.format(
+                    dict_obj[key]))
+
+
+def vmem_permutation_string(data_perm):
+    """Check VMEM permutation format and expand the ranges."""
+
+    if not isinstance(data_perm, str):
+        raise TypeError()
+
+    if not data_perm:
+        return ""
+
+    # Check the format first.
+    pattern = r"^((?:\[[0-9]+:[0-9]+\])+(?:,\[[0-9]+:[0-9]+\])*)"
+    match = re.fullmatch(pattern, data_perm)
+    if match is None:
+        raise ValueError()
+    # Expand the ranges.
+    expanded_perm = []
+    groups = match.groups()
+    for group in groups[0].split(","):
+        k1, k0 = [int(x) for x in group[1:-1].split(":")]
+        if k1 > k0:
+            expanded_perm = list(range(k0, k1 + 1)) + expanded_perm
+        else:
+            expanded_perm = list(range(k0, k1 - 1, -1)) + expanded_perm
+
+    return expanded_perm

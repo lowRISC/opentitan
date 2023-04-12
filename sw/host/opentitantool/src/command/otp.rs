@@ -88,7 +88,7 @@ impl CommandDispatch for AlertDigest {
         };
 
         if let Some(output) = &self.output {
-            let mut file = File::create(&output)?;
+            let mut file = File::create(output)?;
             file.write_all(
                 serialize(&img_out)?
                     .to_json()

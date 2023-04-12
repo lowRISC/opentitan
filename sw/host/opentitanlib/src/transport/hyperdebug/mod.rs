@@ -5,6 +5,9 @@
 use anyhow::{bail, ensure, Context, Result};
 use lazy_static::lazy_static;
 use regex::Regex;
+use serde_annotate::Annotate;
+use serialport::TTYPort;
+use std::any::Any;
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
@@ -17,30 +20,37 @@ use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-use crate::collection;
-use crate::io::gpio::GpioPin;
+use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::transport::common::uart::SerialPortUart;
+use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
+use crate::transport::common::uart::{flock_serial, SerialPortExclusiveLock, SerialPortUart};
+use crate::transport::cw310::CW310;
 use crate::transport::{
-    Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
+    Capabilities, Capability, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
 };
 use crate::util::usb::UsbBackend;
 
 pub mod c2d2;
+pub mod dfu;
 pub mod gpio;
 pub mod i2c;
 pub mod spi;
+pub mod ti50;
+
+pub use c2d2::C2d2Flavor;
+pub use dfu::HyperdebugDfu;
+pub use ti50::Ti50Flavor;
 
 /// Implementation of the Transport trait for HyperDebug based on the
 /// Nucleo-L552ZE-Q.
 pub struct Hyperdebug<T: Flavor> {
     spi_interface: BulkInterface,
-    i2c_names: HashMap<String, u8>,
     i2c_interface: BulkInterface,
     uart_ttys: HashMap<String, PathBuf>,
     inner: Rc<Inner>,
+    current_firmware_version: Option<String>,
     phantom: PhantomData<T>,
 }
 
@@ -48,8 +58,26 @@ pub struct Hyperdebug<T: Flavor> {
 /// HyperDebug.  E.g. C2D2 and Servo micro.
 pub trait Flavor {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>>;
+    fn spi_index(_inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
+        bail!(TransportError::InvalidInstance(
+            TransportInterfaceType::Spi,
+            instance.to_string()
+        ))
+    }
+    fn i2c_index(_inner: &Rc<Inner>, instance: &str) -> Result<u8> {
+        bail!(TransportError::InvalidInstance(
+            TransportInterfaceType::I2c,
+            instance.to_string()
+        ))
+    }
     fn get_default_usb_vid() -> u16;
     fn get_default_usb_pid() -> u16;
+    fn load_bitstream(_transport: &impl Transport, _fpga_program: &FpgaProgram) -> Result<()> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+    fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
 }
 
 pub const VID_GOOGLE: u16 = 0x18d1;
@@ -93,6 +121,24 @@ impl<T: Flavor> Hyperdebug<T> {
         let mut uart_ttys: HashMap<String, PathBuf> = HashMap::new();
 
         let config_desc = device.active_config_descriptor()?;
+        let current_firmware_version = if let Some(idx) = config_desc.description_string_index() {
+            if let Ok(current_firmware_version) = device.read_string_descriptor_ascii(idx) {
+                if let Some(released_firmware_version) = dfu::official_firmware_version()? {
+                    if current_firmware_version != released_firmware_version {
+                        log::warn!(
+                            "Current HyperDebug firmware version is {}, newest release is {}, Consider running `opentitantool transport update-firmware`",
+                            current_firmware_version,
+                            released_firmware_version,
+                        );
+                    }
+                }
+                Some(current_firmware_version)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
         // Iterate through each USB interface, discovering e.g. supported UARTs.
         for interface in config_desc.interfaces() {
             for interface_desc in interface.descriptors() {
@@ -162,16 +208,10 @@ impl<T: Flavor> Hyperdebug<T> {
                 }
             }
         }
-        // Eventually, the I2C bus names below should come from the HyperDebug firmware, declaring
-        // what it supports (as is the case with UARTs and SPI busses.)
-        let i2c_names: HashMap<String, u8> = collection! {
-            "0".to_string() => 0,
-        };
         let result = Hyperdebug::<T> {
             spi_interface: spi_interface.ok_or_else(|| {
                 TransportError::CommunicationError("Missing SPI interface".to_string())
             })?,
-            i2c_names,
             i2c_interface: i2c_interface.ok_or_else(|| {
                 TransportError::CommunicationError("Missing I2C interface".to_string())
             })?,
@@ -187,6 +227,7 @@ impl<T: Flavor> Hyperdebug<T> {
                 i2cs: Default::default(),
                 uarts: Default::default(),
             }),
+            current_firmware_version,
             phantom: PhantomData,
         };
         Ok(result)
@@ -273,13 +314,14 @@ impl Inner {
     pub fn cmd_no_output(&self, cmd: &str) -> Result<()> {
         let mut unexpected_output: bool = false;
         self.execute_command(cmd, |line| {
-            log::error!("Unexpected HyperDebug output: {}\n", line);
+            log::warn!("Unexpected HyperDebug output: {}", line);
             unexpected_output = true;
         })?;
         if unexpected_output {
-            bail!(TransportError::CommunicationError(
-                "Unexpected output".to_string()
-            ));
+            bail!(TransportError::CommunicationError(format!(
+                "Unexpected output to {}",
+                cmd
+            )));
         }
         Ok(())
     }
@@ -292,17 +334,14 @@ impl Inner {
         self.execute_command(cmd, |line| {
             if unexpected_output {
                 // Third or subsequent line, report it.
-                log::error!("Unexpected HyperDebug output: {}\n", line);
+                log::warn!("Unexpected HyperDebug output: {}", line);
             } else if result.is_none() {
                 // First line, remember it.
                 result = Some(line.to_string());
             } else {
                 // Second line, report the first as well as this one.
-                log::error!(
-                    "Unexpected HyperDebug output: {}\n",
-                    result.as_ref().unwrap()
-                );
-                log::error!("Unexpected HyperDebug output: {}\n", line);
+                log::warn!("Unexpected HyperDebug output: {}", result.as_ref().unwrap());
+                log::warn!("Unexpected HyperDebug output: {}", line);
                 unexpected_output = true;
             }
         })?;
@@ -312,9 +351,10 @@ impl Inner {
             ));
         }
         match result {
-            None => bail!(TransportError::CommunicationError(
-                "Unexpected output".to_string()
-            )),
+            None => bail!(TransportError::CommunicationError(format!(
+                "No response to command {}",
+                cmd
+            ))),
             Some(str) => Ok(str),
         }
     }
@@ -329,7 +369,7 @@ impl Inner {
     ) -> Result<regex::Captures<'a>> {
         *buf = self.cmd_one_line_output(cmd)?;
         let Some(captures) = regex.captures(buf) else {
-            log::error!("Unexpected HyperDebug output: {}\n", buf);
+            log::warn!("Unexpected HyperDebug output: {}", buf);
             bail!(TransportError::CommunicationError(
                 "Unexpected output".to_string()
             ));
@@ -339,15 +379,16 @@ impl Inner {
 
     /// Send a command to HyperDebug firmware, with a callback to receive any output.
     fn execute_command(&self, cmd: &str, mut callback: impl FnMut(&str)) -> Result<()> {
-        let mut port = serialport::new(
-            self.console_tty
-                .to_str()
-                .ok_or(TransportError::UnicodePathError)?,
-            115_200,
+        let port_name = self
+            .console_tty
+            .to_str()
+            .ok_or(TransportError::UnicodePathError)?;
+        let _lock = SerialPortExclusiveLock::lock(port_name)?;
+        let mut port = TTYPort::open(
+            &serialport::new(port_name, 115_200).timeout(std::time::Duration::from_millis(10)),
         )
-        .timeout(std::time::Duration::from_millis(10))
-        .open()
         .expect("Failed to open port");
+        flock_serial(&port, port_name)?;
 
         // Ideally, we would invoke Linux flock() on the serial
         // device, to detect minicom or another instance of
@@ -358,7 +399,7 @@ impl Inner {
             match port.read(&mut buf) {
                 Ok(rc) => {
                     log::info!(
-                        "Discarded {} characters: {:?}\n",
+                        "Discarded {} characters: {:?}",
                         rc,
                         &std::str::from_utf8(&buf[0..rc])
                     );
@@ -395,7 +436,7 @@ impl Inner {
                         if buf[i] == b'\n' {
                             // Found a complete line, process it
                             let mut line_end = i;
-                            if line_end > line_start && buf[line_end - 1] == 13 {
+                            while line_end > line_start && buf[line_end - 1] == 13 {
                                 line_end -= 1;
                             }
                             let line = std::str::from_utf8(&buf[line_start..line_end])
@@ -443,29 +484,28 @@ impl Inner {
 impl<T: Flavor> Transport for Hyperdebug<T> {
     fn capabilities(&self) -> Result<Capabilities> {
         Ok(Capabilities::new(
-            Capability::UART | Capability::GPIO | Capability::SPI | Capability::I2C,
+            Capability::UART
+                | Capability::GPIO
+                | Capability::GPIO_MONITORING
+                | Capability::SPI
+                | Capability::I2C,
         ))
     }
 
-    // Crate SPI Target instance, or return one from a cache of previously created instances.
-    fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
-        // Execute a "spiget" command to look up the numeric index corresponding to the given
-        // alphanumeric SPI instance name.
-        let mut buf = String::new();
-        let captures = self
-            .inner
-            .cmd_one_line_output_match(&format!("spiget {}", instance), &SPI_REGEX, &mut buf)
-            .map_err(|_| {
-                TransportError::InvalidInstance(TransportInterfaceType::Spi, instance.to_string())
-            })?;
-        let idx = captures.get(1).unwrap().as_str().parse().unwrap();
+    fn apply_default_configuration(&self) -> Result<()> {
+        self.inner.cmd_no_output("reinit")
+    }
 
+    // Create SPI Target instance, or return one from a cache of previously created instances.
+    fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
+        let (enable_cmd, idx) = T::spi_index(&self.inner, instance)?;
         if let Some(instance) = self.inner.spis.borrow().get(&idx) {
             return Ok(Rc::clone(instance));
         }
         let instance: Rc<dyn Target> = Rc::new(spi::HyperdebugSpiTarget::open(
             &self.inner,
             &self.spi_interface,
+            enable_cmd,
             idx,
         )?);
         self.inner
@@ -475,11 +515,9 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         Ok(instance)
     }
 
-    // Crate I2C Target instance, or return one from a cache of previously created instances.
+    // Create I2C Target instance, or return one from a cache of previously created instances.
     fn i2c(&self, instance: &str) -> Result<Rc<dyn Bus>> {
-        let &idx = self.i2c_names.get(instance).ok_or_else(|| {
-            TransportError::InvalidInstance(TransportInterfaceType::I2c, instance.to_string())
-        })?;
+        let idx = T::i2c_index(&self.inner, instance)?;
         if let Some(instance) = self.inner.i2cs.borrow().get(&idx) {
             return Ok(Rc::clone(instance));
         }
@@ -495,7 +533,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         Ok(instance)
     }
 
-    // Crate Uart instance, or return one from a cache of previously created instances.
+    // Create Uart instance, or return one from a cache of previously created instances.
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
         match self.uart_ttys.get(instance) {
             Some(tty) => {
@@ -519,7 +557,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         }
     }
 
-    // Crate GpioPin instance, or return one from a cache of previously created instances.
+    // Create GpioPin instance, or return one from a cache of previously created instances.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(
             match self.inner.gpio.borrow_mut().entry(pinname.to_string()) {
@@ -531,19 +569,156 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             },
         )
     }
+
+    // Create GpioMonitoring instance.
+    fn gpio_monitoring(&self) -> Result<Rc<dyn GpioMonitoring>> {
+        // GpioMonitoring does not carry any state, so returning a new instance every time is
+        // harmless (save for some memory usage).
+        Ok(Rc::new(gpio::HyperdebugGpioMonitoring::open(&self.inner)?))
+    }
+
+    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+        if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
+            dfu::update_firmware(
+                &mut self.inner.usb_device.borrow_mut(),
+                self.current_firmware_version.as_deref(),
+                &update_firmware_action.firmware,
+                update_firmware_action.progress.as_ref(),
+                update_firmware_action.force,
+            )
+        } else if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
+            T::load_bitstream(self, fpga_program).map(|_| None)
+        } else if let Some(clear) = action.downcast_ref::<ClearBitstream>() {
+            T::clear_bitstream(clear).map(|_| None)
+        } else {
+            Err(TransportError::UnsupportedOperation.into())
+        }
+    }
 }
 
-pub struct StandardFlavor {}
+/// A `StandardFlavor` is a plain Hyperdebug board.
+pub struct StandardFlavor;
 
 impl Flavor for StandardFlavor {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(Rc::new(gpio::HyperdebugGpioPin::open(inner, pinname)?))
     }
+
+    fn spi_index(inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
+        match instance.parse() {
+            Err(_) => {
+                // Execute a "spi info" command to look up the numeric index corresponding to the
+                // given alphanumeric SPI instance name.
+                let mut buf = String::new();
+                let captures = inner
+                    .cmd_one_line_output_match(
+                        &format!("spi info {}", instance),
+                        &SPI_REGEX,
+                        &mut buf,
+                    )
+                    .map_err(|_| {
+                        TransportError::InvalidInstance(
+                            TransportInterfaceType::Spi,
+                            instance.to_string(),
+                        )
+                    })?;
+                Ok((
+                    spi::USB_SPI_REQ_ENABLE,
+                    captures.get(1).unwrap().as_str().parse().unwrap(),
+                ))
+            }
+            Ok(n) => Ok((spi::USB_SPI_REQ_ENABLE, n)),
+        }
+    }
+
+    fn i2c_index(inner: &Rc<Inner>, instance: &str) -> Result<u8> {
+        match instance.parse() {
+            Err(_) => {
+                // Execute a "i2c info" command to look up the numeric index corresponding to the
+                // given alphanumeric I2C instance name.
+                let mut buf = String::new();
+                let captures = inner
+                    .cmd_one_line_output_match(
+                        &format!("i2c info {}", instance),
+                        &SPI_REGEX,
+                        &mut buf,
+                    )
+                    .map_err(|_| {
+                        TransportError::InvalidInstance(
+                            TransportInterfaceType::I2c,
+                            instance.to_string(),
+                        )
+                    })?;
+                Ok(captures.get(1).unwrap().as_str().parse().unwrap())
+            }
+            Ok(n) => Ok(n),
+        }
+    }
+
     fn get_default_usb_vid() -> u16 {
         VID_GOOGLE
     }
+
     fn get_default_usb_pid() -> u16 {
         PID_HYPERDEBUG
+    }
+}
+
+/// A `CW310Flavor` is a Hyperdebug attached to a CW310 board.  Furthermore,
+/// both the Hyperdebug and CW310 USB interfaces are attached to the host.
+/// Hyperdebug is used for all IO with the CW310 board except for bitstream
+/// programming.
+pub struct CW310Flavor;
+
+impl Flavor for CW310Flavor {
+    fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
+        StandardFlavor::gpio_pin(inner, pinname)
+    }
+    fn spi_index(inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
+        StandardFlavor::spi_index(inner, instance)
+    }
+    fn i2c_index(inner: &Rc<Inner>, instance: &str) -> Result<u8> {
+        StandardFlavor::i2c_index(inner, instance)
+    }
+    fn get_default_usb_vid() -> u16 {
+        StandardFlavor::get_default_usb_vid()
+    }
+    fn get_default_usb_pid() -> u16 {
+        StandardFlavor::get_default_usb_pid()
+    }
+    fn load_bitstream(transport: &impl Transport, fpga_program: &FpgaProgram) -> Result<()> {
+        if fpga_program.skip() {
+            log::info!("Skip loading the __skip__ bitstream.");
+            return Ok(());
+        }
+
+        // First, try to establish a connection to the native CW310 interface
+        // which we will use for bitstream loading.
+        let cw310 = CW310::new(None, None, None, &[])?;
+
+        // The transport does not provide name resolution for the IO interface
+        // names, so: console=UART2 and RESET=CN10_29 on the Hyp+CW310.
+        // Open the console UART.  We do this first so we get the receiver
+        // started and the uart buffering data for us.
+        let uart = transport.uart("UART2")?;
+        let reset_pin = transport.gpio_pin("CN10_29")?;
+        if fpga_program.check_correct_version(&*uart, &*reset_pin)? {
+            return Ok(());
+        }
+
+        // Program the FPGA bitstream.
+        log::info!("Programming the FPGA bitstream.");
+        let usb = cw310.device.borrow();
+        usb.spi1_enable(false)?;
+        usb.fpga_program(&fpga_program.bitstream, fpga_program.progress.as_ref())?;
+        Ok(())
+    }
+    fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
+        let cw310 = CW310::new(None, None, None, &[])?;
+        let usb = cw310.device.borrow();
+        usb.spi1_enable(false)?;
+        usb.clear_bitstream()?;
+        Ok(())
     }
 }
 

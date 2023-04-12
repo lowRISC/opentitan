@@ -954,7 +954,7 @@ class i2c_base_vseq extends cip_base_vseq #(
         read_acq_fifo(0, acq_fifo_empty);
       end else begin
         for (int i = 0; i < NumI2cIntr; i++) begin
-          i2c_intr_e my_intr = i;
+          i2c_intr_e my_intr = i2c_intr_e'(i);
           if (!expected_intr.exists(my_intr)) begin
             if (cfg.intr_vif.pins[i] !== 0) begin
               `uvm_error("process_target_interrupts",

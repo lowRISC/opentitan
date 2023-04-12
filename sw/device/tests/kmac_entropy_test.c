@@ -10,8 +10,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
-                        .can_clobber_uart = false, );
+
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * Struct to pack timeout values.

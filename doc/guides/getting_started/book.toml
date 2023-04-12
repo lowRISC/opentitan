@@ -1,0 +1,22 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[book]
+authors = ["lowRISC"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Getting Started"
+
+[output.html]
+site-url = "guides/getting_started/"
+git-repository-url = "https://github.com/lowrisc/opentitan"
+edit-url-template = "https://github.com/lowrisc/opentitan/edit/master/doc/guides/getting_started/{path}"
+curly-quotes = true
+
+[preprocessor.readme2index]
+command = "../../../util/mdbook_readme2index.py"
+
+[preprocessor.toolversion]
+command = "../../../util/mdbook_toolversion.py"

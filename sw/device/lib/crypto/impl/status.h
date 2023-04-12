@@ -22,20 +22,23 @@ extern "C" {
  * minimized.
  */
 #define OTCRYPTO_OK HARDENED_OK_STATUS
-#define OTCRYPTO_RECOV_ERR                                      \
-  ((status_t){.value = (int32_t)(0x80000000 | kStatusModuleId | \
+#define OTCRYPTO_RECOV_ERR                                \
+  ((status_t){.value = (int32_t)(0x80000000 | MODULE_ID | \
                                  ((__LINE__ & 0x7ff) << 5) | kAborted)})
-#define OTCRYPTO_FATAL_ERR                                 \
-  ((status_t){.value =                                     \
-                  (int32_t)(0x80000000 | kStatusModuleId | \
+#define OTCRYPTO_FATAL_ERR                           \
+  ((status_t){.value =                               \
+                  (int32_t)(0x80000000 | MODULE_ID | \
                             ((__LINE__ & 0x7ff) << 5) | kFailedPrecondition)})
-#define OTCRYPTO_BAD_ARGS                                  \
-  ((status_t){.value =                                     \
-                  (int32_t)(0x80000000 | kStatusModuleId | \
+#define OTCRYPTO_BAD_ARGS                            \
+  ((status_t){.value =                               \
+                  (int32_t)(0x80000000 | MODULE_ID | \
                             ((__LINE__ & 0x7ff) << 5) | kInvalidArgument)})
-#define OTCRYPTO_ASYNC_INCOMPLETE                               \
-  ((status_t){.value = (int32_t)(0x80000000 | kStatusModuleId | \
+#define OTCRYPTO_ASYNC_INCOMPLETE                         \
+  ((status_t){.value = (int32_t)(0x80000000 | MODULE_ID | \
                                  ((__LINE__ & 0x7ff) << 5) | kUnavailable)})
+#define OTCRYPTO_NOT_IMPLEMENTED                          \
+  ((status_t){.value = (int32_t)(0x80000000 | MODULE_ID | \
+                                 ((__LINE__ & 0x7ff) << 5) | kUnimplemented)})
 
 /**
  * Convert a `status_t` into a `crypto_status_t`.
@@ -60,7 +63,7 @@ extern "C" {
  *   | kResourceExhausted  | kCryptoStatusInternalError   |
  *   | kAborted            | kCryptoStatusInternalError   |
  *   | kOutOfRange         | kCryptoStatusInternalError   |
- *   | kUnimplemented      | kCryptoStatusInternalError   |
+ *   | kUnimplemented      | kCryptoStatusNotImplemented  |
  *   | kUnauthenticated    | kCryptoStatusInternalError   |
  *   | kUnknown            | kCryptoStatusFatalError      |
  *   | kFailedPrecondition | kCryptoStatusFatalError      |

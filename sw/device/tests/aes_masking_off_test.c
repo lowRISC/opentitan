@@ -33,31 +33,9 @@ static const uint8_t kKeyShare1[] = {
 
 OTTF_DEFINE_TEST_CONFIG();
 
-bool test_main(void) {
-  // Test seed generation using CSRNG SW application interface.
-  //
-  // We try to generate the seed leading to an all-zero output of the AES
-  // masking PRNG using the CSRNG SW application interface. Unlike the HW
-  // application interfaces of CSRNG that connect to the EDNs, this interface
-  // allows for probing the internal state of the CSRNG instance after
-  // individual commands. This gives us higher visibility. If for some reason
-  // this phase isn't succesful, we don't even need to try it on the HW
-  // interfaces.
-  LOG_INFO("Testing CSRNG SW application interface");
-
-  // Disable EDN connected to AES as well as CSRNG.
-  const dif_edn_t edn = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
-  CHECK_DIF_OK(dif_edn_stop(&edn));
-  CHECK_DIF_OK(dif_csrng_stop(&csrng));
-
-  // Re-eanble CSRNG.
-  CHECK_DIF_OK(dif_csrng_configure(&csrng));
-
+status_t execute_test(void) {
   // Perform the known-answer testing on the CSRNG SW application interface.
-  aes_testutils_csrng_kat();
+  CHECK_STATUS_OK(aes_testutils_csrng_kat());
 
   // Test AES with masking switched off.
   //
@@ -73,7 +51,7 @@ bool test_main(void) {
   LOG_INFO("Testing AES with masking switched off");
 
   // Initialize EDN and CSRNG to generate the required seed.
-  aes_testutils_masking_prng_zero_output_seed();
+  CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed());
 
   // Initialise AES.
   dif_aes_t aes;
@@ -132,6 +110,31 @@ bool test_main(void) {
   // Check the produced cipher text.
   CHECK_ARRAYS_EQ((uint8_t *)cipher_text[0].data, kAesModesCipherTextEcb128,
                   sizeof(kAesModesCipherTextEcb128));
+  return OK_STATUS();
+}
 
-  return true;
+bool test_main(void) {
+  // Test seed generation using CSRNG SW application interface.
+  //
+  // We try to generate the seed leading to an all-zero output of the AES
+  // masking PRNG using the CSRNG SW application interface. Unlike the HW
+  // application interfaces of CSRNG that connect to the EDNs, this interface
+  // allows for probing the internal state of the CSRNG instance after
+  // individual commands. This gives us higher visibility. If for some reason
+  // this phase isn't succesful, we don't even need to try it on the HW
+  // interfaces.
+  LOG_INFO("Testing CSRNG SW application interface");
+
+  // Disable EDN connected to AES as well as CSRNG.
+  const dif_edn_t edn = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+  const dif_csrng_t csrng = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+  CHECK_DIF_OK(dif_edn_stop(&edn));
+  CHECK_DIF_OK(dif_csrng_stop(&csrng));
+
+  // Re-eanble CSRNG.
+  CHECK_DIF_OK(dif_csrng_configure(&csrng));
+
+  return status_ok(execute_test());
 }

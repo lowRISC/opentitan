@@ -83,10 +83,12 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
 static void config_wdog(const dif_aon_timer_t *aon_timer,
                         const dif_pwrmgr_t *pwrmgr, uint64_t bark_time_us,
                         uint64_t bite_time_us) {
-  uint32_t bark_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(bark_time_us);
-  uint32_t bite_cycles =
-      aon_timer_testutils_get_aon_cycles_from_us(bite_time_us);
+  uint32_t bark_cycles = 0;
+  CHECK_STATUS_OK(
+      aon_timer_testutils_get_aon_cycles_from_us(bark_time_us, &bark_cycles));
+  uint32_t bite_cycles = 0;
+  CHECK_STATUS_OK(
+      aon_timer_testutils_get_aon_cycles_from_us(bite_time_us, &bite_cycles));
 
   LOG_INFO("Wdog will bark after %u us and bite after %u us",
            (uint32_t)bark_time_us, (uint32_t)bite_time_us);
@@ -157,19 +159,21 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // First check the flash stored value
-  uint32_t event_idx = flash_ctrl_testutils_counter_get(0);
+  uint32_t event_idx = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &event_idx));
 
   // Enable flash access
-  flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
 
   // Increment flash counter to know where we are
-  flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
 
   LOG_INFO("Test round %d", event_idx);
   LOG_INFO("RST_IDX[%d] = %d", event_idx, RST_IDX[event_idx]);

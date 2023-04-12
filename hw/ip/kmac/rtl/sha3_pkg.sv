@@ -90,6 +90,14 @@ package sha3_pkg;
      576/MsgWidth   //  9 depth := (1600 - 512*2)
   };
 
+  parameter int unsigned KeccakBitCapacity [5] = '{
+    2 * 128, // capacity for L128
+    2 * 224, // capacity for L224
+    2 * 256, // capacity for L256
+    2 * 384, // capacity for L384
+    2 * 512  // capacity for L512
+  };
+
   parameter int unsigned MaxBlockSize = KeccakRate[0];
 
   parameter int unsigned KeccakEntries = 1600/MsgWidth;

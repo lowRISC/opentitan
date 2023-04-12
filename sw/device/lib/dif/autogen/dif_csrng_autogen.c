@@ -106,6 +106,18 @@ dif_result_t dif_csrng_irq_get_state(const dif_csrng_t *csrng,
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_irq_acknowledge_state(
+    const dif_csrng_t *csrng, dif_csrng_irq_state_snapshot_t snapshot) {
+  if (csrng == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(csrng->base_addr, CSRNG_INTR_STATE_REG_OFFSET, snapshot);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_irq_is_pending(const dif_csrng_t *csrng,
                                       dif_csrng_irq_t irq, bool *is_pending) {
   if (csrng == NULL || is_pending == NULL) {

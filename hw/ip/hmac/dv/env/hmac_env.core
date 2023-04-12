@@ -13,6 +13,7 @@ filesets:
       - lowrisc:dv:test_vectors
     files:
       - hmac_env_pkg.sv
+      - hmac_if.sv
       - hmac_env_cfg.sv: {is_include_file: true}
       - hmac_env_cov.sv: {is_include_file: true}
       - hmac_scoreboard.sv: {is_include_file: true}

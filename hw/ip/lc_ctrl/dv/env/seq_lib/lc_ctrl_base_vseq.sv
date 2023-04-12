@@ -18,21 +18,21 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
+  // In jtag_riscv_agent_cfg, setting the in_reset value to 1 will trigger the dmi_agent to reset.
   virtual task apply_reset(string kind = "HARD");
     if (kind == "HARD") begin
-      fork
-        cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n();
-        super.apply_reset(kind);
-      join
+      cfg.m_jtag_riscv_agent_cfg.in_reset = 1;
+      super.apply_reset(kind);
+      cfg.m_jtag_riscv_agent_cfg.in_reset = 0;
     end
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
     cfg.escalate_injected = 0;
     cfg.otp_vendor_test_status = 0;
-    cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.trst_n = 0;
+    cfg.m_jtag_riscv_agent_cfg.in_reset = 1;
     super.apply_resets_concurrently(reset_duration_ps);
-    cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.trst_n = 1;
+    cfg.m_jtag_riscv_agent_cfg.in_reset = 0;
   endtask
 
   virtual task pre_start();

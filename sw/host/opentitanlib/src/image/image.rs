@@ -100,12 +100,13 @@ impl Image {
     }
 
     /// Updates the signature field in the `Manifest`.
-    pub fn update_signature(&mut self, signature: Signature) -> Result<()> {
+    pub fn update_rsa_signature(&mut self, signature: Signature) -> Result<()> {
         let manifest = self.borrow_manifest_mut()?;
 
         // Convert to a `ManifestSpec` so we can supply the signature as a `BigInt`.
         let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
-        manifest_def.update_signature(ManifestRsaBuffer::from_le_bytes(signature.to_le_bytes())?);
+        manifest_def
+            .update_rsa_signature(ManifestRsaBuffer::from_le_bytes(signature.to_le_bytes())?);
         *manifest = manifest_def.try_into()?;
         Ok(())
     }
@@ -291,11 +292,11 @@ mod tests {
 
         // Ensure the result is identical to the original.
         let (mut orig_bytes, mut res_bytes) = (Vec::<u8>::new(), Vec::<u8>::new());
-        File::open(&testdata!("test_image.bin"))
+        File::open(testdata!("test_image.bin"))
             .unwrap()
             .read_to_end(&mut orig_bytes)
             .unwrap();
-        File::open(&testdata!("test_image_out.bin"))
+        File::open(testdata!("test_image_out.bin"))
             .unwrap()
             .read_to_end(&mut res_bytes)
             .unwrap();

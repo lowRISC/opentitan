@@ -552,6 +552,26 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask // config_and_transmit
 
 
+  virtual task wait_for_fatal_alert_and_reset ();
+    // According to spec, check period will append an 'hFF from the LSF. Add 10 cycle buffers for
+    // register updates
+    int check_wait_cycles = 6 << 8 + 10;
+
+    // Check for the fatal alert on the alert interface.
+    `DV_SPINWAIT_EXIT(
+        wait(cfg.m_alert_agent_cfgs["fatal_fault"].vif.alert_tx_final.alert_p);,
+        cfg.clk_rst_vif.wait_clks(check_wait_cycles);,
+        $sformatf("Timeout waiting for alert %0s", "fatal_check_error"))
+    check_fatal_alert_nonblocking("fatal_fault");
+    // Reset and re-initialize the DUT.
+    // To avoid assertions firing erroneously due to resetting AES prior to the EDN
+    // interface, pull all resets concurrently. See
+    // https://github.com/lowRISC/opentitan/issues/13573 for details.
+    apply_resets_concurrently();
+    dut_init("HARD");
+  endtask
+
+
   ////////////////////////////////////////////////////////////////////////////////////////////
   // the status fsm has two tasks
   // 1 determine the status of the DUT
@@ -578,10 +598,7 @@ class aes_base_vseq extends cip_base_vseq #(
     bit                   is_blocking       = ~cfg_item.do_b2b;
     bit                   done              = 0;
     string                txt               = "";
-    int                   idle_cnt          = 0;
-     // According to spec, check period will append an 'hFF from the LSF. Add 10 cycle buffers for
-    // register updates
-    int                   check_wait_cycles =  6 << 8 + 10;
+    int                   not_idle_cnt      = 0;
 
     txt     = "\n Entering FSM";
     rst_set = 0;
@@ -610,20 +627,9 @@ class aes_base_vseq extends cip_base_vseq #(
             `uvm_fatal(`gfn, $sformatf("\n\t WAS able to clear FATAL ALERT without reset \n\t %s",
                        status2string(status)))
           end else begin
-            // check fatal on the alert if
-            `DV_SPINWAIT_EXIT(
-                 wait(cfg.m_alert_agent_cfgs["fatal_fault"].vif.alert_tx_final.alert_p);,
-                 cfg.clk_rst_vif.wait_clks(check_wait_cycles);,
-                 $sformatf("Timeout waiting for alert %0s", "fatal_check_error"))
-            check_fatal_alert_nonblocking("fatal_fault");
-            // reset dut
+            wait_for_fatal_alert_and_reset();
             rst_set = 1;
             done    = 1;
-            // To avoid assertions firing erroneously due to resetting AES prior to the EDN
-            // interface, pull all resets concurrently. See
-            // https://github.com/lowRISC/opentitan/issues/13573 for details.
-            apply_resets_concurrently();
-            dut_init("HARD");
           end
         end else begin
           `uvm_fatal(`gfn, $sformatf("\n\t Unexpected Fatal alert in AES FSM \n\t %s",
@@ -667,15 +673,21 @@ class aes_base_vseq extends cip_base_vseq #(
           end
 
 
-        end else if ( !(status.idle || status.stall || status.output_valid)) begin
+        end else if (!(status.idle || status.stall || status.output_valid)) begin
           // state 3 //
-          // if not ready for input and no output ready should only occur after reset
-          if (!status.input_ready) begin
-            idle_cnt++;
-            if(idle_cnt == 1000) begin
-              `uvm_fatal(`gfn,
-                  $sformatf("AES REPORTED NOT IDLE, READY or STALLING for 100 consecutive reads"))
+          // Not idle, not stalling, not ready for input and no valid output should only occur when
+          // requesting entropy for reseeding the PRNGs which for example happens directly after
+          // reset.
+          if (!(status.input_ready || aes_requesting_entropy())) begin
+            not_idle_cnt++;
+            if (not_idle_cnt == 1000) begin
+              txt = "\nFor 1000 consecutive reads, AES";
+              txt = {txt, $sformatf("\n- neither reported IDLE, STALL, OUTPUT_VALID, INPUT_READY")};
+              txt = {txt, $sformatf("\n- nor did it fetch entropy")};
+              `uvm_fatal(`gfn, $sformatf("%s", txt))
             end
+          end else begin
+            not_idle_cnt = 0;
           end
           if (!read_output && !return_on_idle) done = 1;
           // else DUT is in operation wait for new output
@@ -922,5 +934,17 @@ class aes_base_vseq extends cip_base_vseq #(
     txt ={txt, $sformatf("\n\t ---| Alert -Fatal:  %0b", status.alert_fatal_fault)};
     return txt;
   endfunction // status2string
+
+
+  function automatic bit aes_requesting_entropy();
+    bit requesting_entropy;
+    if ((cfg.aes_reseed_vif.entropy_clearing_req == 1'b1) ||
+        (cfg.aes_reseed_vif.entropy_masking_req == 1'b1)) begin
+      requesting_entropy = 1'b1;
+    end else begin
+      requesting_entropy = 1'b0;
+    end
+    return requesting_entropy;
+  endfunction
 
 endclass : aes_base_vseq

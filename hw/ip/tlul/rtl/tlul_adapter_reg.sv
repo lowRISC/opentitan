@@ -7,7 +7,7 @@
 /**
  * Tile-Link UL adapter for Register interface
  *
- * TODO(#15822): Note that due to some modules with special needs (like
+ * ICEBOX(#15822): Note that due to some modules with special needs (like
  * the vendored-in RV_DM), this module has been extended so that it
  * supports use cases outside of the generated reg_top module. This makes
  * this adapter and its parameterization options a bit heavy.

@@ -11,8 +11,8 @@ use std::time::Duration;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::app::{self, TransportWrapper};
-use opentitanlib::transport::cw310;
+use opentitanlib::app::{StagedProgressBar, TransportWrapper};
+use opentitanlib::transport::common::fpga::FpgaProgram;
 use opentitanlib::util::rom_detect::RomKind;
 
 /// Load a bitstream into the FPGA.
@@ -42,16 +42,13 @@ impl CommandDispatch for LoadBitstream {
     ) -> Result<Option<Box<dyn Annotate>>> {
         log::info!("Loading bitstream: {:?}", self.filename);
         let bitstream = fs::read(&self.filename)?;
-        let progress = app::progress_bar(bitstream.len() as u64);
-        let pfunc = Box::new(move |_, chunk| {
-            progress.inc(chunk as u64);
-        });
-        let operation = cw310::FpgaProgram {
+        let progress = StagedProgressBar::new();
+        let operation = FpgaProgram {
             bitstream,
             rom_kind: self.rom_kind,
             rom_reset_pulse: self.rom_reset_pulse,
             rom_timeout: self.rom_timeout,
-            progress: Some(pfunc),
+            progress: Box::new(progress),
         };
         transport.dispatch(&operation)
     }

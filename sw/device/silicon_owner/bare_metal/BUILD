@@ -125,7 +125,7 @@ opentitan_multislot_flash_binary(
             "offset": "0x0",
         },
         ":bare_metal_slot_virtual": {
-            "key": "fake_test_key_0",
+            "key": "fake_rom_ext_test_key_0",
             "offset": "0x10000",
         },
     },
@@ -166,7 +166,7 @@ opentitan_multislot_flash_binary(
             "offset": "0x0",
         },
         ":ottf_test_bl0_slot_virtual": {
-            "key": "fake_test_key_0",
+            "key": "fake_rom_ext_test_key_0",
             "offset": "0x10000",
         },
     },

@@ -96,7 +96,9 @@ def _cc_compile_different_output(name, target, ctx, extension, flags, process_al
         if source_file.extension == "c":
             opts += ctx.fragments.cpp.conlyopts
         elif _is_c_or_cc(source_file):
-            opts += ctx.fragments.cpp.cxxopts + ctx.rule.attr.cxxopts
+            opts += ctx.fragments.cpp.cxxopts
+            if hasattr(ctx.rule.attr, "cxxopts"):
+                opts += ctx.rule.attr.cxxopts
 
         c_compile_variables = cc_common.create_compile_variables(
             feature_configuration = feature_configuration,

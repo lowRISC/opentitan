@@ -58,6 +58,14 @@ static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_ecdsa, d0);
 static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_ecdsa, d1);
 static const otbn_addr_t kOtbnVarXR = OTBN_ADDR_T_INIT(p256_ecdsa, x_r);
 
+/**
+ * Hardened values for different modes (see p256_ecdsa.s).
+ */
+enum {
+  kModeSign = 0x15b,
+  kModeVerify = 0x727,
+};
+
 OTTF_DEFINE_TEST_CONFIG();
 
 /**
@@ -233,7 +241,7 @@ static void profile_end(uint64_t t_start, const char *msg) {
 /**
  * Signs a message with ECDSA using the P-256 curve.
  *
- * @param otbn            The OTBN context object.
+ * @param otbn                The OTBN context object.
  * @param msg                 The message to sign (32B).
  * @param private_key_d       The private key (32B).
  * @param[out] signature_r    Signature component r (the x-coordinate of R).
@@ -247,28 +255,39 @@ static void p256_ecdsa_sign(dif_otbn_t *otbn, const uint8_t *msg,
   CHECK(otbn != NULL);
 
   // Write input arguments.
-  uint32_t mode = 1;  // mode 1 => sign
-  otbn_testutils_write_data(otbn, sizeof(mode), &mode, kOtbnVarMode);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, msg, kOtbnVarMsg);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, private_key_d, kOtbnVarD0);
+  uint32_t mode = kModeSign;
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode, kOtbnVarMode));
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, /*len_bytes=*/32, msg, kOtbnVarMsg));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, /*len_bytes=*/32,
+                                            private_key_d, kOtbnVarD0));
+
+  // Write redundant upper bits of d (all-zero for this test).
+  uint8_t d0_high[32] = {0};
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, /*len_bytes=*/32, d0_high,
+                                            kOtbnVarD0 + 32));
 
   // Write second share of d (all-zero for this test).
-  uint8_t d1[32] = {0};
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, d1, kOtbnVarD1);
+  uint8_t d1[64] = {0};
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, /*len_bytes=*/64, d1, kOtbnVarD1));
 
   // Call OTBN to perform operation, and wait for it to complete.
-  otbn_testutils_execute(otbn);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
   otbn_wait_for_done_irq(otbn);
 
   // Read back results.
-  otbn_testutils_read_data(otbn, /*len_bytes=*/32, kOtbnVarR, signature_r);
-  otbn_testutils_read_data(otbn, /*len_bytes=*/32, kOtbnVarS, signature_s);
+  CHECK_STATUS_OK(
+      otbn_testutils_read_data(otbn, /*len_bytes=*/32, kOtbnVarR, signature_r));
+  CHECK_STATUS_OK(
+      otbn_testutils_read_data(otbn, /*len_bytes=*/32, kOtbnVarS, signature_s));
 }
 
 /**
  * Verifies a message with ECDSA using the P-256 curve.
  *
- * @param otbn             The OTBN context object.
+ * @param otbn                 The OTBN context object.
  * @param msg                  The message to verify (32B).
  * @param signature_r          The signature component r (the proof) (32B).
  * @param signature_s          The signature component s (the proof) (32B).
@@ -286,20 +305,27 @@ static void p256_ecdsa_verify(dif_otbn_t *otbn, const uint8_t *msg,
   CHECK(otbn != NULL);
 
   // Write input arguments.
-  uint32_t mode = 2;  // mode 2 => verify
-  otbn_testutils_write_data(otbn, sizeof(mode), &mode, kOtbnVarMode);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, msg, kOtbnVarMsg);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, signature_r, kOtbnVarR);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, signature_s, kOtbnVarS);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, public_key_x, kOtbnVarX);
-  otbn_testutils_write_data(otbn, /*len_bytes=*/32, public_key_y, kOtbnVarY);
+  uint32_t mode = kModeVerify;
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode, kOtbnVarMode));
+  CHECK_STATUS_OK(
+      otbn_testutils_write_data(otbn, /*len_bytes=*/32, msg, kOtbnVarMsg));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, /*len_bytes=*/32, signature_r,
+                                            kOtbnVarR));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, /*len_bytes=*/32, signature_s,
+                                            kOtbnVarS));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, /*len_bytes=*/32,
+                                            public_key_x, kOtbnVarX));
+  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, /*len_bytes=*/32,
+                                            public_key_y, kOtbnVarY));
 
   // Call OTBN to perform operation, and wait for it to complete.
-  otbn_testutils_execute(otbn);
+  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
   otbn_wait_for_done_irq(otbn);
 
   // Read back results.
-  otbn_testutils_read_data(otbn, /*len_bytes=*/32, kOtbnVarXR, signature_x_r);
+  CHECK_STATUS_OK(otbn_testutils_read_data(otbn, /*len_bytes=*/32, kOtbnVarXR,
+                                           signature_x_r));
 }
 
 /**
@@ -334,7 +360,7 @@ static void test_ecdsa_p256_roundtrip(void) {
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
   otbn_init_irq();
-  otbn_testutils_load_app(&otbn, kOtbnAppP256Ecdsa);
+  CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppP256Ecdsa));
   profile_end(t_start_init, "Initialization");
 
   // Sign
@@ -349,7 +375,7 @@ static void test_ecdsa_p256_roundtrip(void) {
   // Securely wipe OTBN data memory and reload app
   LOG_INFO("Wiping OTBN DMEM and reloading app");
   otbn_wipe_dmem(&otbn);
-  otbn_testutils_load_app(&otbn, kOtbnAppP256Ecdsa);
+  CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppP256Ecdsa));
 
   // Verify
   uint8_t signature_x_r[32] = {0};
@@ -371,7 +397,7 @@ static void test_ecdsa_p256_roundtrip(void) {
 }
 
 bool test_main(void) {
-  entropy_testutils_auto_mode_init();
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   test_ecdsa_p256_roundtrip();
 

@@ -39,6 +39,19 @@ impl ProxyI2c {
 }
 
 impl Bus for ProxyI2c {
+    fn get_max_speed(&self) -> Result<u32> {
+        match self.execute_command(I2cRequest::GetMaxSpeed)? {
+            I2cResponse::GetMaxSpeed { speed } => Ok(speed),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+    fn set_max_speed(&self, value: u32) -> Result<()> {
+        match self.execute_command(I2cRequest::SetMaxSpeed { value })? {
+            I2cResponse::SetMaxSpeed => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     fn run_transaction(&self, address: u8, transaction: &mut [Transfer]) -> Result<()> {
         let mut req: Vec<I2cTransferRequest> = Vec::new();
         for transfer in &*transaction {
@@ -72,6 +85,7 @@ impl Bus for ProxyI2c {
                 }
                 Ok(())
             }
+            _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
 }

@@ -12,7 +12,6 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
-#include "sw/device/silicon_creator/lib/test_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -33,13 +32,14 @@ static void increment_flash_counter(void) {
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true, false, false,
-                                             false, false);
-  flash_ctrl_testutils_counter_increment(&flash_ctrl, kFlashCounterId);
-  flash_ctrl_testutils_default_region_access(&flash_ctrl, false, false, false,
-                                             false, false, false);
+  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
+      &flash_ctrl,
+      /*rd_en*/ true,
+      /*prog_en*/ true, false, false, false, false));
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_increment(&flash_ctrl, kFlashCounterId));
+  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
+      &flash_ctrl, false, false, false, false, false, false));
 }
 
 static rom_error_t first_boot_test(void) {
@@ -102,9 +102,11 @@ static rom_error_t third_boot_test(void) {
 }
 
 bool test_main(void) {
-  rom_error_t result = kErrorOk;
+  status_t result = OK_STATUS();
 
-  size_t reboot_counter = flash_ctrl_testutils_counter_get(kFlashCounterId);
+  size_t reboot_counter = 0;
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_counter_get(kFlashCounterId, &reboot_counter));
 
   switch (reboot_counter) {
     case 0: {
@@ -128,7 +130,7 @@ bool test_main(void) {
     case 2: {
       EXECUTE_TEST(result, third_boot_test);
 
-      return result == kErrorOk;
+      return status_ok(result);
     }
   }
   return false;

@@ -55,14 +55,15 @@ bool test_main(void) {
     LOG_INFO("Booting for the first time, setting wdog");
 
     // Configure watchdog sooner then wakeup, but with pause enabled.
-    uint32_t wkup_cycles =
-        aon_timer_testutils_get_aon_cycles_from_us(WKUP_TIME_US);
+    uint32_t wkup_cycles = 0;
+    CHECK_STATUS_OK(
+        aon_timer_testutils_get_aon_cycles_from_us(WKUP_TIME_US, &wkup_cycles));
 
     // The actual expiration of the watchdog is unimportant, as the test
     // mainly checks the count.
     aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX, UINT32_MAX,
                                         true);
-    aon_timer_testutils_wakeup_config(&aon_timer, wkup_cycles);
+    CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(&aon_timer, wkup_cycles));
 
     busy_spin_micros(IDLE_TIME_US);
 

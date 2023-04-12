@@ -120,10 +120,37 @@ impl CommandDispatch for TpmWriteRegister {
     }
 }
 
+/// Write to a given TPM register.
+#[derive(Debug, StructOpt)]
+pub struct TpmExecuteCommand {
+    #[structopt(short = "d", long, help = "Hex encoding of TPM command to execute.")]
+    hexdata: String,
+}
+
+#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct TpmExecuteCommandResponse {
+    hexdata: String,
+}
+
+impl CommandDispatch for TpmExecuteCommand {
+    fn run(
+        &self,
+        context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let tpm = context.downcast_ref::<Box<dyn tpm::Driver>>().unwrap();
+        let resp = tpm.execute_command(&hex::decode(&self.hexdata)?)?;
+        Ok(Some(Box::new(TpmExecuteCommandResponse {
+            hexdata: hex::encode(resp),
+        })))
+    }
+}
+
 /// Commands for interacting with a TPM.  These appear as subcommands of both `opentitantool i2c
 /// tpm` and `opentitantool spi tpm`.
 #[derive(Debug, StructOpt, CommandDispatch)]
 pub enum TpmSubCommand {
     ReadRegister(TpmReadRegister),
     WriteRegister(TpmWriteRegister),
+    ExecuteCommand(TpmExecuteCommand),
 }

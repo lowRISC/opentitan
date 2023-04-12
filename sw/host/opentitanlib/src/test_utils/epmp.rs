@@ -43,19 +43,14 @@ pub enum EpmpError {
 }
 
 /// Represents the different EPMP region kinds.
+#[derive(Default, Copy, Clone, Debug, PartialEq, Eq)]
 #[repr(u8)]
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum EpmpRegionKind {
+    #[default]
     Off = 0,
     Tor = 1,
     Na4 = 2,
     Napot = 3,
-}
-
-impl Default for EpmpRegionKind {
-    fn default() -> Self {
-        EpmpRegionKind::Off
-    }
 }
 
 const EPMP_ADDR_SHIFT: u8 = 3;

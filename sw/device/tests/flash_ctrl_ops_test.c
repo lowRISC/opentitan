@@ -161,8 +161,9 @@ static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
  */
 static void do_info_partition_test(uint32_t partition_number,
                                    const uint32_t *test_data) {
-  uint32_t address = flash_ctrl_testutils_info_region_setup(
-      &flash_state, partition_number, kFlashInfoBank, kPartitionId);
+  uint32_t address = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
+      &flash_state, partition_number, kFlashInfoBank, kPartitionId, &address));
 
   CHECK_DIF_OK(dif_flash_ctrl_set_prog_fifo_watermark(&flash_state, 0));
   CHECK_DIF_OK(dif_flash_ctrl_set_read_fifo_watermark(&flash_state, 8));
@@ -170,16 +171,16 @@ static void do_info_partition_test(uint32_t partition_number,
   clear_irq_variables();
 
   expected_irqs[kDifFlashCtrlIrqOpDone] = true;
-  CHECK(flash_ctrl_testutils_erase_page(&flash_state, address, kPartitionId,
-                                        kDifFlashCtrlPartitionTypeInfo));
+  CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
+      &flash_state, address, kPartitionId, kDifFlashCtrlPartitionTypeInfo));
   compare_and_clear_irq_variables();
 
   expected_irqs[kDifFlashCtrlIrqOpDone] = true;
   expected_irqs[kDifFlashCtrlIrqProgEmpty] = true;
   expected_irqs[kDifFlashCtrlIrqProgLvl] = true;
-  CHECK(flash_ctrl_testutils_write(&flash_state, address, kPartitionId,
-                                   test_data, kDifFlashCtrlPartitionTypeInfo,
-                                   kInfoSize));
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_write(&flash_state, address, kPartitionId, test_data,
+                                 kDifFlashCtrlPartitionTypeInfo, kInfoSize));
 
   compare_and_clear_irq_variables();
 
@@ -187,9 +188,9 @@ static void do_info_partition_test(uint32_t partition_number,
   expected_irqs[kDifFlashCtrlIrqOpDone] = true;
   expected_irqs[kDifFlashCtrlIrqRdLvl] = true;
   expected_irqs[kDifFlashCtrlIrqRdFull] = true;
-  CHECK(flash_ctrl_testutils_read(&flash_state, address, kPartitionId,
-                                  readback_data, kDifFlashCtrlPartitionTypeInfo,
-                                  kInfoSize, 1));
+  CHECK_STATUS_OK(flash_ctrl_testutils_read(
+      &flash_state, address, kPartitionId, readback_data,
+      kDifFlashCtrlPartitionTypeInfo, kInfoSize, 1));
 
   compare_and_clear_irq_variables();
 
@@ -204,9 +205,10 @@ static void do_info_partition_test(uint32_t partition_number,
  * data read via the host interface.
  */
 static void do_bank0_data_partition_test(void) {
-  uint32_t address = flash_ctrl_testutils_data_region_setup(
+  uint32_t address;
+  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
       &flash_state, kRegionBaseBank0Page0Index, kFlashBank0DataRegion,
-      kRegionSize);
+      kRegionSize, &address));
 
   CHECK_DIF_OK(dif_flash_ctrl_set_read_fifo_watermark(&flash_state, 8));
 
@@ -216,9 +218,9 @@ static void do_bank0_data_partition_test(void) {
   expected_irqs[kDifFlashCtrlIrqRdFull] = true;
 
   uint32_t readback_data[kDataSize];
-  CHECK(flash_ctrl_testutils_read(&flash_state, address, kPartitionId,
-                                  readback_data, kDifFlashCtrlPartitionTypeData,
-                                  kDataSize, 1));
+  CHECK_STATUS_OK(flash_ctrl_testutils_read(
+      &flash_state, address, kPartitionId, readback_data,
+      kDifFlashCtrlPartitionTypeData, kDataSize, 1));
 
   compare_and_clear_irq_variables();
   read_and_check_host_if(0, readback_data);
@@ -233,8 +235,7 @@ static void do_bank0_data_partition_test(void) {
  * has been wiped.
  */
 static void do_bank1_data_partition_test(void) {
-  uint32_t address;
-
+  uint32_t address = 0;
   CHECK_DIF_OK(dif_flash_ctrl_set_prog_fifo_watermark(&flash_state, 0));
   CHECK_DIF_OK(dif_flash_ctrl_set_read_fifo_watermark(&flash_state, 8));
 
@@ -244,23 +245,24 @@ static void do_bank1_data_partition_test(void) {
         (i == 0) ? kRegionBaseBank1Page0Index : kRegionBaseBank1Page255Index;
     const uint32_t *test_data = (i == 0) ? kRandomData4 : kRandomData5;
 
-    address = flash_ctrl_testutils_data_region_setup(
-        &flash_state, page_index, kFlashBank1DataRegion, kRegionSize);
+    CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
+        &flash_state, page_index, kFlashBank1DataRegion, kRegionSize,
+        &address));
 
     clear_irq_variables();
 
     expected_irqs[kDifFlashCtrlIrqOpDone] = true;
-    CHECK(flash_ctrl_testutils_erase_page(&flash_state, address, kPartitionId,
-                                          kDifFlashCtrlPartitionTypeData));
+    CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
+        &flash_state, address, kPartitionId, kDifFlashCtrlPartitionTypeData));
 
     compare_and_clear_irq_variables();
 
     expected_irqs[kDifFlashCtrlIrqOpDone] = true;
     expected_irqs[kDifFlashCtrlIrqProgEmpty] = true;
     expected_irqs[kDifFlashCtrlIrqProgLvl] = true;
-    CHECK(flash_ctrl_testutils_write(&flash_state, address, kPartitionId,
-                                     test_data, kDifFlashCtrlPartitionTypeData,
-                                     kDataSize));
+    CHECK_STATUS_OK(flash_ctrl_testutils_write(
+        &flash_state, address, kPartitionId, test_data,
+        kDifFlashCtrlPartitionTypeData, kDataSize));
 
     compare_and_clear_irq_variables();
 
@@ -268,7 +270,7 @@ static void do_bank1_data_partition_test(void) {
     expected_irqs[kDifFlashCtrlIrqOpDone] = true;
     expected_irqs[kDifFlashCtrlIrqRdLvl] = true;
     expected_irqs[kDifFlashCtrlIrqRdFull] = true;
-    CHECK(flash_ctrl_testutils_read(
+    CHECK_STATUS_OK(flash_ctrl_testutils_read(
         &flash_state, address, kPartitionId, readback_data,
         kDifFlashCtrlPartitionTypeData, kDataSize, 1));
 
@@ -283,9 +285,9 @@ static void do_bank1_data_partition_test(void) {
                                                         kDifToggleEnabled));
   expected_irqs[kDifFlashCtrlIrqOpDone] = true;
 
-  address = flash_ctrl_testutils_data_region_setup(
+  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
       &flash_state, kRegionBaseBank1Page0Index, kFlashBank1DataRegion,
-      kRegionSize);
+      kRegionSize, &address));
   dif_flash_ctrl_transaction_t transaction = {
       .byte_address = address,
       .op = kDifFlashCtrlOpBankErase,
@@ -293,7 +295,7 @@ static void do_bank1_data_partition_test(void) {
       .partition_id = 0x0,
       .word_count = 0x0};
   CHECK_DIF_OK(dif_flash_ctrl_start(&flash_state, transaction));
-  CHECK(flash_ctrl_testutils_wait_transaction_end(&flash_state));
+  CHECK_STATUS_OK(flash_ctrl_testutils_wait_transaction_end(&flash_state));
 
   compare_and_clear_irq_variables();
 
@@ -302,14 +304,15 @@ static void do_bank1_data_partition_test(void) {
     uint32_t page_index =
         (i == 0) ? kRegionBaseBank1Page0Index : kRegionBaseBank1Page255Index;
 
-    address = flash_ctrl_testutils_data_region_setup(
-        &flash_state, page_index, kFlashBank1DataRegion, kRegionSize);
+    CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
+        &flash_state, page_index, kFlashBank1DataRegion, kRegionSize,
+        &address));
 
     uint32_t readback_data[kDataSize];
     expected_irqs[kDifFlashCtrlIrqOpDone] = true;
     expected_irqs[kDifFlashCtrlIrqRdLvl] = true;
     expected_irqs[kDifFlashCtrlIrqRdFull] = true;
-    CHECK(flash_ctrl_testutils_read(
+    CHECK_STATUS_OK(flash_ctrl_testutils_read(
         &flash_state, address, kPartitionId, readback_data,
         kDifFlashCtrlPartitionTypeData, kDataSize, 1));
 

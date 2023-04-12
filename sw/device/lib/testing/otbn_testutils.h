@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_OTBN_TESTUTILS_H_
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 
@@ -150,8 +151,10 @@ typedef uint32_t otbn_addr_t;
  *
  * @param otbn The context object.
  * @param app The application to load into OTBN.
+ * @return The result of the operation.
  */
-void otbn_testutils_load_app(const dif_otbn_t *otbn, const otbn_app_t app);
+OT_WARN_UNUSED_RESULT
+status_t otbn_testutils_load_app(const dif_otbn_t *otbn, const otbn_app_t app);
 
 /**
  * Starts the OTBN execute operation.
@@ -159,8 +162,10 @@ void otbn_testutils_load_app(const dif_otbn_t *otbn, const otbn_app_t app);
  * Use `otbn_testutils_wait_for_done()` to wait for execution to complete.
  *
  * @param otbn The context object.
+ * @return The result of the operation.
  */
-void otbn_testutils_execute(const dif_otbn_t *otbn);
+OT_WARN_UNUSED_RESULT
+status_t otbn_testutils_execute(const dif_otbn_t *otbn);
 
 /**
  * Waits for OTBN to be done with the current operation.
@@ -170,9 +175,11 @@ void otbn_testutils_execute(const dif_otbn_t *otbn);
  *
  * @param otbn The context object.
  * @param expected_err_bits Expected error bits.
+ * @return The result of the operation.
  */
-void otbn_testutils_wait_for_done(const dif_otbn_t *otbn,
-                                  dif_otbn_err_bits_t expected_err_bits);
+OT_WARN_UNUSED_RESULT
+status_t otbn_testutils_wait_for_done(const dif_otbn_t *otbn,
+                                      dif_otbn_err_bits_t expected_err_bits);
 
 /**
  * Copies data from the CPU memory to OTBN data memory.
@@ -181,9 +188,11 @@ void otbn_testutils_wait_for_done(const dif_otbn_t *otbn,
  * @param len_bytes Number of bytes to copy.
  * @param dest Address of the destination in OTBN's data memory.
  * @param src Source of the data to copy.
+ * @return The result of the operation.
  */
-void otbn_testutils_write_data(const dif_otbn_t *otbn, size_t len_bytes,
-                               const void *src, otbn_addr_t dest);
+OT_WARN_UNUSED_RESULT
+status_t otbn_testutils_write_data(const dif_otbn_t *otbn, size_t len_bytes,
+                                   const void *src, otbn_addr_t dest);
 
 /**
  * Copies data from OTBN's data memory to CPU memory.
@@ -193,9 +202,11 @@ void otbn_testutils_write_data(const dif_otbn_t *otbn, size_t len_bytes,
  * @param src The address in OTBN data memory to copy from.
  * @param[out] dest The destination of the copied data in main memory
  *                  (preallocated).
+ * @return The result of the operation.
  */
-void otbn_testutils_read_data(const dif_otbn_t *otbn, size_t len_bytes,
-                              otbn_addr_t src, void *dest);
+OT_WARN_UNUSED_RESULT
+status_t otbn_testutils_read_data(const dif_otbn_t *otbn, size_t len_bytes,
+                                  otbn_addr_t src, void *dest);
 
 /**
  * Writes a LOG_INFO message with the contents of each 256b DMEM word.
@@ -203,7 +214,9 @@ void otbn_testutils_read_data(const dif_otbn_t *otbn, size_t len_bytes,
  * @param otbn The context object.
  * @param max_addr The highest address to dump. Set to 0 to output the whole
  *                 DMEM. Must be a multiple of WLEN.
+ * @return The result of the operation.
  */
-void otbn_testutils_dump_dmem(const dif_otbn_t *otbn, uint32_t max_addr);
+OT_WARN_UNUSED_RESULT
+status_t otbn_testutils_dump_dmem(const dif_otbn_t *otbn, uint32_t max_addr);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_OTBN_TESTUTILS_H_

@@ -272,8 +272,8 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "chip_sw_lc_ctrl_scrap_test",
-    srcs = ["chip_sw_lc_ctrl_scrap_test.c"],
+    name = "lc_ctrl_scrap_test",
+    srcs = ["lc_ctrl_scrap_test.c"],
     targets = ["dv"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -283,6 +283,23 @@ opentitan_functest(
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:lc_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "otp_ctrl_vendor_test_csr_access_test",
+    srcs = ["otp_ctrl_vendor_test_csr_access_test.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -814,6 +831,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

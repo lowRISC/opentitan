@@ -9,7 +9,6 @@
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -41,21 +40,22 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static void keymgr_initialize(void) {
   // Initialize keymgr and advance to CreatorRootKey state.
-  keymgr_testutils_startup(&keymgr, &kmac);
+  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
   LOG_INFO("Keymgr entered CreatorRootKey State");
   // Generate identity at CreatorRootKey (to follow same sequence and reuse
   // chip_sw_keymgr_key_derivation_vseq.sv).
-  keymgr_testutils_generate_identity(&keymgr);
+  CHECK_STATUS_OK(keymgr_testutils_generate_identity(&keymgr));
   LOG_INFO("Keymgr generated identity at CreatorRootKey State");
 
   // Advance to OwnerIntermediateKey state.
-  keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams);
-  keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerIntermediateKey);
+  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+  CHECK_STATUS_OK(keymgr_testutils_check_state(
+      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
   LOG_INFO("Keymgr entered OwnerIntKey State");
 }
 
-dif_aes_data_t aes_crypt(dif_aes_t aes, dif_aes_data_t in_data,
-                         enum dif_aes_operation crypt_op) {
+status_t aes_crypt(dif_aes_t aes, dif_aes_data_t in_data,
+                   enum dif_aes_operation crypt_op, dif_aes_data_t *out_data) {
   // Setup ECB encryption/decryption transaction using sideload key.
   dif_aes_transaction_t transaction = {
       .operation = crypt_op,
@@ -82,20 +82,20 @@ dif_aes_data_t aes_crypt(dif_aes_t aes, dif_aes_data_t in_data,
   CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerStart));
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusOutputValid, true, TIMEOUT);
 
-  dif_aes_data_t out_data;
-  CHECK_DIF_OK(dif_aes_read_output(&aes, &out_data));
+  CHECK_DIF_OK(dif_aes_read_output(&aes, out_data));
 
   // Finish the ECB encryption or decryption transaction.
   LOG_INFO("Finished operation with AES sideloaded key.");
   CHECK_DIF_OK(dif_aes_end(&aes));
-  return out_data;
+  return OK_STATUS();
 }
 
 void aes_test(void) {
   // Generate sideload key for AES interface at OwnerIntKey state.
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
   sideload_params.dest = kDifKeymgrVersionedKeyDestAes;
-  keymgr_testutils_generate_versioned_key(&keymgr, sideload_params);
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for Aes at OwnerIntKey State");
 
   // Initialize AES.
@@ -109,7 +109,8 @@ void aes_test(void) {
   memcpy(in_data_plain.data, kPlainText, sizeof(kPlainText));
 
   // Encrypt using sideload key.
-  out_data_cipher = aes_crypt(aes, in_data_plain, kDifAesOperationEncrypt);
+  CHECK_STATUS_OK(
+      aes_crypt(aes, in_data_plain, kDifAesOperationEncrypt, &out_data_cipher));
   // Verify that the ciphertext is different from the plaintext.
   CHECK_ARRAYS_NE(out_data_cipher.data, kPlainText, ARRAYSIZE(kPlainText));
 
@@ -135,7 +136,8 @@ void aes_test(void) {
 
   // Decrypt using sideload key.
   dif_aes_data_t out_data_plain;
-  out_data_plain = aes_crypt(aes, out_data_cipher, kDifAesOperationDecrypt);
+  CHECK_STATUS_OK(aes_crypt(aes, out_data_cipher, kDifAesOperationDecrypt,
+                            &out_data_plain));
   CHECK_ARRAYS_EQ(out_data_plain.data, kPlainText, ARRAYSIZE(kPlainText));
 
   // Clear the key in the keymgr and decrypt the ciphertext again.
@@ -151,17 +153,19 @@ void aes_test(void) {
 
   // Decrypt again after clearing the sideload key and verify that output is not
   // the same as previous.
-  out_data_plain = aes_crypt(aes, out_data_cipher, kDifAesOperationDecrypt);
+  CHECK_STATUS_OK(aes_crypt(aes, out_data_cipher, kDifAesOperationDecrypt,
+                            &out_data_plain));
   CHECK_ARRAYS_NE(out_data_plain.data, kPlainText, ARRAYSIZE(kPlainText));
 
   // Generate the same key again and check that encryption result is identical
   // as the first.
-  keymgr_testutils_generate_versioned_key(&keymgr, sideload_params);
+  CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for Aes at OwnerIntKey State");
 
   dif_aes_data_t out_data_second_cipher;
-  out_data_second_cipher =
-      aes_crypt(aes, in_data_plain, kDifAesOperationEncrypt);
+  CHECK_STATUS_OK(aes_crypt(aes, in_data_plain, kDifAesOperationEncrypt,
+                            &out_data_second_cipher));
 
   //  Verify that the ciphertext is identical to the first one generated.
   CHECK_ARRAYS_EQ(out_data_cipher.data, out_data_second_cipher.data,

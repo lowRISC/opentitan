@@ -134,7 +134,7 @@ impl RsaPublicKey {
         Exponent::from_le_bytes(self.key.e().to_bytes_le()).unwrap()
     }
 
-    /// Computes the OTBN montgomery parameter: -1 / n[0] mod 2^256.
+    /// Computes the OTBN montgomery parameter: -1 / n\[0\] mod 2^256.
     pub fn n0_inv(&self) -> Result<N0Inv> {
         let base = BigInt::from(1u8) << OTBN_BITS;
         let n_neg = BigInt::from_biguint(Minus, self.key.n().to_owned());

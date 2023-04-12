@@ -27,7 +27,7 @@
  * See https://wiki.newae.com/SimpleSerial for details on the protocol.
  *
  * The OTBN-related code was developed based on
- * https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto/ecdsa_p256
+ * https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto/ecc/ecdsa_p256.c
  * and
  * https://github.com/lowRISC/opentitan/blob/master/sw/device/tests/crypto/ecdsa_p256_functest.c
  *
@@ -135,8 +135,8 @@ static const otbn_addr_t kOtbnVarK = OTBN_ADDR_T_INIT(p384_ecdsa_sca, k);
  */
 static void setup_data_pointer(const otbn_addr_t dptr,
                                const otbn_addr_t value) {
-  SS_CHECK(otbn_dmem_write(sizeof(value) / sizeof(uint32_t), &value, dptr) ==
-           kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(
+      otbn_dmem_write(sizeof(value) / sizeof(uint32_t), &value, dptr));
 }
 
 /**
@@ -204,8 +204,8 @@ static void ecc384_set_msg(const uint8_t *msg, size_t msg_len) {
 static void p384_dmem_write(const uint32_t src[kEcc384NumWords],
                             const otbn_addr_t dest) {
   static const uint32_t zero[kEcc384NumWords % kOtbnWideWordNumWords] = {0};
-  SS_CHECK(otbn_dmem_write(kEcc384NumWords, src, dest) == kOtbnErrorOk);
-  SS_CHECK(otbn_dmem_write(ARRAYSIZE(zero), zero, dest) == kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_dmem_write(kEcc384NumWords, src, dest));
+  SS_CHECK_STATUS_OK(otbn_dmem_write(ARRAYSIZE(zero), zero, dest));
 }
 
 /**
@@ -232,23 +232,20 @@ static void p384_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
 
   uint32_t mode = 1;  // mode 1 => sign
   LOG_INFO("Copy data");
-  SS_CHECK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode) ==
-           kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode));
   p384_dmem_write(msg, kOtbnVarMsg);
   p384_dmem_write(private_key_d, kOtbnVarD);
 
-  SS_CHECK(otbn_dmem_write(kEcc384NumWords, k, kOtbnVarK) == kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_dmem_write(kEcc384NumWords, k, kOtbnVarK));
 
   LOG_INFO("Execute");
-  SS_CHECK(otbn_execute() == kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_execute());
   LOG_INFO("Wait for done");
-  SS_CHECK(otbn_busy_wait_for_done() == kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_busy_wait_for_done());
 
   LOG_INFO("Get results");
-  SS_CHECK(otbn_dmem_read(kEcc384NumWords, kOtbnVarR, signature_r) ==
-           kOtbnErrorOk);
-  SS_CHECK(otbn_dmem_read(kEcc384NumWords, kOtbnVarS, signature_s) ==
-           kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc384NumWords, kOtbnVarR, signature_r));
+  SS_CHECK_STATUS_OK(otbn_dmem_read(kEcc384NumWords, kOtbnVarS, signature_s));
   LOG_INFO("r[0]: 0x%02x", signature_r[0]);
   LOG_INFO("s[0]: 0x%02x", signature_s[0]);
 }
@@ -277,7 +274,7 @@ static void ecc_384_ecdsa(const uint8_t *ecc384_secret_k_bytes,
   memcpy(ecc384_secret_k, ecc384_secret_k_bytes, kEcc384NumBytes);
 
   LOG_INFO("SSECDSA starting...");
-  SS_CHECK(otbn_load_app(kOtbnAppP384Ecdsa) == kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP384Ecdsa));
 
   uint32_t ecc384_signature_r[kEcc384NumWords];
   uint32_t ecc384_signature_s[kEcc384NumWords];
@@ -305,8 +302,8 @@ static void ecc_384_ecdsa(const uint8_t *ecc384_secret_k_bytes,
   simple_serial_send_packet('r', ecc384_signature_s_bytes, kEcc384NumBytes);
 
   LOG_INFO("Clearing OTBN memory");
-  SS_CHECK(otbn_dmem_sec_wipe() == kOtbnErrorOk);
-  SS_CHECK(otbn_imem_sec_wipe() == kOtbnErrorOk);
+  SS_CHECK_STATUS_OK(otbn_dmem_sec_wipe());
+  SS_CHECK_STATUS_OK(otbn_imem_sec_wipe());
 }
 
 /**
@@ -314,7 +311,7 @@ static void ecc_384_ecdsa(const uint8_t *ecc384_secret_k_bytes,
  * UART.
  */
 static void simple_serial_main(void) {
-  entropy_testutils_auto_mode_init();
+  SS_CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   sca_init(kScaTriggerSourceOtbn, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
                                       kScaPeripheralOtbn | kScaPeripheralCsrng |

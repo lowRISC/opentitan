@@ -11,10 +11,10 @@ CONST = struct(
     # Must match the definitions in chip.h.
     ROM_EXT = 0x4552544f,
     OWNER = 0x3042544f,
-    MANIFEST_SIZE = 896,
-    ROM_EXT_SIZE_MIN = 896,
+    MANIFEST_SIZE = 8752,
+    ROM_EXT_SIZE_MIN = 8752,
     ROM_EXT_SIZE_MAX = 0x10000,
-    BL0_SIZE_MIN = 896,
+    BL0_SIZE_MIN = 8752,
     BL0_SIZE_MAX = 0x70000,
     DEFAULT_USAGE_CONSTRAINTS = 0xa5a5a5a5,
     # Must match the definitions in lc_ctrl_regs.h.
@@ -115,16 +115,22 @@ def lcv_hw_to_sw(hw_lc_state_val):
     }
     sw_lcv = lcv_map.get(hw_lc_state_val)
     if sw_lcv == None:
-        fail("Could not find software LCV for hardware LCV: 0x{}".format(hex(hw_lc_state_val)))
+        fail("Could not find software LCV for hardware LCV: {}".format(hex(hw_lc_state_val)))
     return sw_lcv
 
 _HEX_MAP = "0123456789abcdef"
 
-def hex(v):
+def hex_digits(v):
+    """Convert an int into a hex string without 0x prefix"""
+
     # First "cast" `v` to a 32-bit unsigned int
     v &= 0xffffffff
     hex_digits = [_HEX_MAP[(v >> i) & 0xf] for i in range(0, 32, 4)]
     return "".join(reversed(hex_digits))
+
+def hex(v):
+    """Convert an int into a hex string with 0x prefix"""
+    return "0x{}".format(hex_digits(v))
 
 _REDACTION_MAP = {
     CONST.SHUTDOWN.REDACT.NONE: 0xffffffff,

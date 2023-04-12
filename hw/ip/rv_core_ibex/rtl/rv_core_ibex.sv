@@ -941,24 +941,14 @@ module rv_core_ibex
     //VCS coverage on
     // pragma coverage on
 
-    // Ensure that when a scramble key is received, it is correctly applied to the icache scrambled
+    // Ensure that when a scramble key is received, it is correctly forwarded to the core.  The core
+    // will then internally ensure that the key is correctly applied to the icache scrambled
     // memory primitives.
-    for (genvar way = 0; way < ibex_pkg::IC_NUM_WAYS; way++) begin : gen_ways
-      `ASSERT(IbexIcacheScrambleKeyAppliedAtTagBank_A,
-          icache_otp_key_i.ack
-          |-> ##[0:10] // upper bound is not exact, but it should not take more than a few cycles
-          u_core.gen_rams.gen_rams_inner[way].gen_scramble_rams.tag_bank.key_valid_i
-          && (u_core.gen_rams.gen_rams_inner[way].gen_scramble_rams.tag_bank.key_i
-              == icache_otp_key_q)
-      )
-      `ASSERT(IbexIcacheScrambleKeyAppliedAtDataBank_A,
-          icache_otp_key_i.ack
-          |-> ##[0:10] // upper bound is not exact, but it should not take more than a few cycles
-          u_core.gen_rams.gen_rams_inner[way].gen_scramble_rams.data_bank.key_valid_i
-          && (u_core.gen_rams.gen_rams_inner[way].gen_scramble_rams.data_bank.key_i
-              == icache_otp_key_q)
-      )
-    end
+    `ASSERT(IbexIcacheScrambleKeyForwardedToCore_A,
+            icache_otp_key_i.ack
+            |-> ##[0:10] // upper bound is not exact, but it should not take more than 10 cycles
+            u_core.scramble_key_valid_i && (u_core.scramble_key_i == icache_otp_key_q)
+    )
 
     // Ensure that when a FENCE.I is executed, a new icache scramble key is requested.
     `ASSERT(IbexIcacheScrambleKeyRequestAfterFenceI_A,

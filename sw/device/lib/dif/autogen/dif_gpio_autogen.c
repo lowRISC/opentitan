@@ -191,6 +191,18 @@ dif_result_t dif_gpio_irq_get_state(const dif_gpio_t *gpio,
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_gpio_irq_acknowledge_state(
+    const dif_gpio_t *gpio, dif_gpio_irq_state_snapshot_t snapshot) {
+  if (gpio == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(gpio->base_addr, GPIO_INTR_STATE_REG_OFFSET, snapshot);
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_gpio_irq_is_pending(const dif_gpio_t *gpio, dif_gpio_irq_t irq,
                                      bool *is_pending) {
   if (gpio == NULL || is_pending == NULL) {

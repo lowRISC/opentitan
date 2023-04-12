@@ -39,7 +39,6 @@ class flash_mem_addr_attrs;
   endfunction
 
   function void incr(addr_t offset);
-    // TODO: Check for overflow
     set_attrs(addr + offset);
   endfunction
 

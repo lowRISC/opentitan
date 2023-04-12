@@ -1,0 +1,9 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+steps:
+- name: 'gcr.io/gold-hybrid-255313/builder'
+  args: ['util/site/build-docs.sh', 'build']
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['-m', 'rsync', '-r', '-d', 'build-site/', 'gs://gold-hybrid-255313-prod']

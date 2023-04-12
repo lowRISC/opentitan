@@ -189,12 +189,14 @@ For more details, please refer to the [Alma tutorial](https://github.com/IAIK/co
 
    ```sh
    ./verify.py --json tmp/circuit.json \
-      --label tmp/labels.txt \
-      --top-module aes_sbox \
-      --vcd tmp/tmp.vcd \
-      --rst-name rst_ni --rst-phase 0 \
-      --probe-duration once --mode transient \
-      --glitch-behavior loose --cycles 6
+     --label tmp/labels.txt \
+     --top-module aes_sbox \
+     --vcd tmp/tmp.vcd \
+     --rst-name rst_ni --rst-phase 0 \
+     --probe-duration once \
+     --mode transient \
+     --glitch-behavior loose \
+     --cycles 6
    ```
 
 ## Details of the provided support files

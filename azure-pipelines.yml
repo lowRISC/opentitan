@@ -128,8 +128,6 @@ jobs:
     displayName: Check trailing whitespace
   - bash: ci/scripts/build-docs.sh
     displayName: Render documentation
-  - bash: ci/scripts/build-site.sh
-    displayName: Render landing site
   - bash: ci/scripts/get-build-type.sh "$SYSTEM_PULLREQUEST_TARGETBRANCH" "$(Build.Reason)"
     displayName: Type of change
     # Check what kinds of changes the PR contains
@@ -192,7 +190,7 @@ jobs:
 - job: sw_build
   displayName: Earl Grey SW Build & Test
   # Build and test Software for Earl Grey toplevel design
-  timeoutInMinutes: 120
+  timeoutInMinutes: 180
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool: ci-public
@@ -222,17 +220,27 @@ jobs:
       #   because //... effectively asks to build //hw:verilator_real and other
       #   targets in //hw:all that depend on it. Note that this is only a
       #   shallow exclusion; tests deeper under //hw will still be found.
+      # * It excludes targets that depend on bitstream_splice rules, since the
+      #   environment does not have access to Vivado.
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
+      TARGET_PATTERN_FILE=$(mktemp)
+      echo //... > "${TARGET_PATTERN_FILE}"
+      echo -//quality/... >> "${TARGET_PATTERN_FILE}"
+      echo -//third_party/riscv-compliance/... >> "${TARGET_PATTERN_FILE}"
+      echo -//hw:all >> "${TARGET_PATTERN_FILE}"
+      ./bazelisk.sh cquery \
+        --noinclude_aspects \
+        --output=starlark \
+        --starlark:expr='"-{}".format(target.label)' \
+        --define DISABLE_VERILATOR_BUILD=true \
+        -- "rdeps(//..., kind(bitstream_splice, //...))" \
+        >> "${TARGET_PATTERN_FILE}"
       ci/bazelisk.sh test \
-      --build_tests_only=false \
-      --test_output=errors \
-      --define DISABLE_VERILATOR_BUILD=true \
-      --build_tag_filters=-vivado \
-      --test_tag_filters=-broken,-cw310,-verilator,-dv \
-      -- //... \
-      -//quality/... \
-      -//third_party/riscv-compliance/... \
-      -//hw:all
+        --build_tests_only=false \
+        --test_output=errors \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --test_tag_filters=-broken,-cw310,-verilator,-dv \
+        --target_pattern_file="${TARGET_PATTERN_FILE}"
     displayName: Build & test SW
   - bash: |
       set -x -e
@@ -251,7 +259,7 @@ jobs:
         - "/sw/***"
 
 - job: chip_englishbreakfast_verilator
-  displayName: Verilated English Breakfast
+  displayName: Verilated English Breakfast (Build)
   # Build Verilator simulation of the English Breakfast toplevel design
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
@@ -277,7 +285,7 @@ jobs:
   displayName: Fast Verilated Earl Grey tests
   # Build and run fast tests on sim_verilator
   pool: ci-public
-  timeoutInMinutes: 120
+  timeoutInMinutes: 240
   dependsOn: lint
   steps:
   - template: ci/checkout-template.yml
@@ -315,7 +323,7 @@ jobs:
 # building more than one top-level design with different parametrizations.
 # Work towards this goal is tracked in issue #4669.
 - job: build_and_execute_verilated_tests_englishbreakfast
-  displayName: Verilated English Breakfast
+  displayName: Verilated English Breakfast (Execute)
   # Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
   pool:
     vmImage: ubuntu-20.04
@@ -334,13 +342,13 @@ jobs:
   - bash: |
       . util/build_consts.sh
       mkdir -p "$BIN_DIR/sw/device/lib/testing/test_rom"
-      cp $(ci/scripts/target-location.sh //sw/device/lib/testing/test_rom:test_rom_fpga_nexysvideo_vmem) \
+      cp $(ci/scripts/target-location.sh //sw/device/lib/testing/test_rom:test_rom_fpga_cw305_vmem) \
         "$BIN_DIR/sw/device/lib/testing/test_rom"
-    displayName: Copy test_rom_fpga_nexysvideo_vmem to $BIN_DIR
+    displayName: Copy test_rom_fpga_cw305_vmem to $BIN_DIR
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
-        - "/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.32.vmem"
+        - "/sw/device/lib/testing/test_rom/test_rom_fpga_cw305.32.vmem"
 
 - job: otbn_standalone_tests
   displayName: Run OTBN Smoke Test
@@ -381,13 +389,13 @@ jobs:
   dependsOn:
     - lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool: ci-public
-  timeoutInMinutes: 180
+  pool: ci-public-eda
+  timeoutInMinutes: 240
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - bash: |
-      ci/scripts/get-bitstream-strategy.sh "@bitstreams//:bitstream_test_rom" ':!/sw/' ':!/*testplan.hjson' ':!/site/' ':!/doc/' ':!/COMMITTERS' ':!/CLA' ':!/*.md' ':!/hw/**/dv/*'
+      ci/scripts/get-bitstream-strategy.sh "@bitstreams//:chip_earlgrey_cw310_bitstream" ':!/sw/' ':!/*testplan.hjson' ':!/site/' ':!/doc/' ':!/COMMITTERS' ':!/CLA' ':!/*.md' ':!/hw/**/dv/*'
     displayName: Configure bitstream strategy
   - bash: |
       set -ex
@@ -408,7 +416,6 @@ jobs:
         # Rename bitstreams to be compatible with subsequent steps
         # TODO(#13807): replace this after choosing a naming scheme
         mv "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"
-        mv "$BIN_DIR/$SUB_PATH/fpga_cw310_rom.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"
       }
 
       . util/build_consts.sh
@@ -440,8 +447,8 @@ jobs:
   dependsOn:
     - lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'), eq(variables['Build.SourceBranchName'], 'master'))
-  pool: ci-public
-  timeoutInMinutes: 180
+  pool: ci-public-eda
+  timeoutInMinutes: 240
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
@@ -478,12 +485,13 @@ jobs:
     artifact: chip_earlgrey_cw310_hyperdebug-build-out
     displayName: Upload artifacts for CW310
     condition: failed()
+
 - job: chip_englishbreakfast_cw305
   displayName: CW305's Bitstream
   # Build CW305 variant of the English Breakfast toplevel design using Vivado
   dependsOn: build_and_execute_verilated_tests_englishbreakfast
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool: ci-public
+  pool: ci-public-eda
   timeoutInMinutes: 120 # 2 hours
   steps:
   - template: ci/checkout-template.yml
@@ -524,7 +532,6 @@ jobs:
         parentDir: "$BIN_DIR/hw/top_earlgrey"
         includeFiles:
           - "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"
-          - "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"
           - "rom.mmi"
           - "otp.mmi"
           - "chip_earlgrey_cw310_hyperdebug/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit"
@@ -552,6 +559,7 @@ jobs:
   - bash: |
       set -e
       . util/build_consts.sh
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/scripts/run-fpga-cw310-tests.sh cw310_test_rom,-jtag || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
 
@@ -664,11 +672,11 @@ jobs:
     inputs:
       command: build
       tags: gcr.io/active-premise-257318/builder
-      Dockerfile: ./site/docs/builder.Dockerfile
+      Dockerfile: ./util/site/site-builder/builder.Dockerfile
       buildContext: .
   - task: Docker@2
     displayName: Build Documentation Redirector Container
     inputs:
       command: build
-      Dockerfile: ./site/redirector/Dockerfile
-      buildContext: ./site/redirector
+      Dockerfile: ./site/redirector/landing/Dockerfile
+      buildContext: ./site/redirector/landing

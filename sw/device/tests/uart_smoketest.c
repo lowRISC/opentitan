@@ -14,7 +14,7 @@
 static const uint8_t kSendData[] = "Smoke test!";
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
-                        .can_clobber_uart = true, );
+                        .console.test_may_clobber = true, );
 
 bool test_main(void) {
   dif_uart_t uart;

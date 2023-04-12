@@ -150,7 +150,7 @@ void ottf_timer_isr(void) {
 }
 
 OT_WEAK
-bool ottf_flow_control_isr(void) { return false; }
+bool ottf_console_flow_control_isr(void) { return false; }
 
 OT_WEAK
 void ottf_external_isr(void) {
@@ -162,7 +162,7 @@ void ottf_external_isr(void) {
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
   if (peripheral == kTopEarlgreyPlicPeripheralUart0 &&
-      ottf_flow_control_isr()) {
+      ottf_console_flow_control_isr()) {
     // Complete the IRQ at PLIC.
     CHECK_DIF_OK(
         dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));

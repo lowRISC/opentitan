@@ -40,7 +40,7 @@ fn test_bootstrap_disabled_requested(opts: &Opts, transport: &TransportWrapper) 
     };
 
     log::info!("Applying pin strapping");
-    transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
     log::info!("Resetting target");
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
@@ -69,7 +69,7 @@ fn test_bootstrap_disabled_not_requested(opts: &Opts, transport: &TransportWrapp
     };
 
     log::info!("Not applying pin strapping");
-    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     log::info!("Resetting target");
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 

@@ -54,8 +54,8 @@ static void set_hung_address(dif_clkmgr_gateable_clock_t clock,
   uint32_t addr =
       (uintptr_t)&hung_data_addr[clock] - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
   uint32_t flash_word[2] = {value, 0};
-  CHECK(flash_ctrl_testutils_write(&flash_ctrl, addr, 0, flash_word,
-                                   kDifFlashCtrlPartitionTypeData, 2));
+  CHECK_STATUS_OK(flash_ctrl_testutils_write(
+      &flash_ctrl, addr, 0, flash_word, kDifFlashCtrlPartitionTypeData, 2));
   CHECK(hung_data_addr[clock] == value, "Unexpected mismatch on read back");
   LOG_INFO("The expected hung address for clock %d is 0x%x at 0x%x", clock,
            value, addr);
@@ -126,7 +126,9 @@ static void test_gateable_clocks_off(const dif_clkmgr_t *clkmgr,
 
   // Bite after enough time has elapsed past the hung csr access.
   uint32_t bite_us = (kDeviceType == kDeviceSimDV) ? 400 : 800;
-  uint32_t bite_cycles = aon_timer_testutils_get_aon_cycles_from_us(bite_us);
+  uint32_t bite_cycles = 0;
+  CHECK_STATUS_OK(
+      aon_timer_testutils_get_aon_cycles_from_us(bite_us, &bite_cycles));
   LOG_INFO("Setting bite reset for %u us (%u cycles)", bite_us, bite_cycles);
 
   // Make sure the CSR is accessible before turning the clock off.
@@ -183,20 +185,23 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
 
   // Enable raw flash access.
-  flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                             /*rd_en*/ true,
-                                             /*prog_en*/ true,
-                                             /*erase_en*/ true,
-                                             /*scramble_en*/ false,
-                                             /*ecc_en*/ false,
-                                             /*he_en*/ false);
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
 
   if (rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor)) {
     rstmgr_testutils_pre_reset(&rstmgr);
 
     // Starting clock.
     dif_clkmgr_gateable_clock_t clock = kTopEarlgreyGateableClocksIoDiv4Peri;
-    LOG_INFO("Next clock to test %d", flash_ctrl_testutils_counter_get(0));
+    uint32_t value = 0;
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &value));
+    LOG_INFO("Next clock to test %d", value);
 
     test_gateable_clocks_off(&clkmgr, &pwrmgr, clock);
 
@@ -205,7 +210,8 @@ bool test_main(void) {
     return false;
   } else if (rstmgr_testutils_is_reset_info(&rstmgr,
                                             kDifRstmgrResetInfoWatchdog)) {
-    dif_clkmgr_gateable_clock_t clock = flash_ctrl_testutils_counter_get(0);
+    dif_clkmgr_gateable_clock_t clock = {0};
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &clock));
     LOG_INFO("Got an expected watchdog reset when reading for clock %d", clock);
 
     size_t actual_size;
@@ -229,10 +235,10 @@ bool test_main(void) {
     LOG_INFO("The expected hung address = 0x%x", expected_hung_address);
     CHECK(cpu_dump[2] == expected_hung_address, "Unexpected hung address");
     // Mark this clock as tested.
-    flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
 
     if (clock < kTopEarlgreyGateableClocksLast) {
-      clock = flash_ctrl_testutils_counter_get(0);
+      CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &clock));
       LOG_INFO("Next clock to test %d", clock);
 
       rstmgr_testutils_pre_reset(&rstmgr);

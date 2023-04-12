@@ -53,6 +53,8 @@ licence_test(
         # Site Assets
         "site/**/assets/scss/**",
         "site/landing/static/js/tiny-slider.js",
+        # MdBook assets (MPL licensed)
+        "site/book-theme/*",
         # Code taken from Chromium, so covered by the BSD licence
         "sw/otbn/crypto/modexp.s",
         "sw/otbn/crypto/p256.s",
@@ -135,10 +137,12 @@ RUST_TARGETS = [
     "//sw/host/opentitansession:opentitansession",
     "//sw/host/opentitantool:opentitantool",
     "//sw/host/tests/chip/gpio:gpio",
+    "//sw/host/tests/chip/power_virus:power_virus",
     "//sw/host/tests/rom/e2e_bootstrap_disabled:e2e_bootstrap_disabled",
     "//sw/host/tests/rom/e2e_bootstrap_entry:e2e_bootstrap_entry",
     "//sw/host/tests/rom/e2e_chip_specific_startup:e2e_chip_specific_startup",
     "//sw/host/tests/rom/sw_strap_value:sw_strap_value",
+    "//sw/host/tests/chip/spi_passthru:spi_passthru",
 ]
 
 rustfmt_test(

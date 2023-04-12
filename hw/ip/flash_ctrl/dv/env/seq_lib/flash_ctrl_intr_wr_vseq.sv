@@ -16,6 +16,9 @@ class flash_ctrl_intr_wr_vseq extends flash_ctrl_otf_base_vseq;
     flash_op_t ctrl;
     int num, bank;
 
+    // Don't select a partition defined as read-only
+    cfg.seq_cfg.avoid_ro_partitions = 1'b1;
+
     flash_program_data_c.constraint_mode(0);
     repeat(100) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rand_op)

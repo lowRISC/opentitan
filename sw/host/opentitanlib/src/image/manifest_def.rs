@@ -24,14 +24,24 @@ pub enum ManifestError {
 }
 
 fixed_size_bigint!(ManifestRsaBuffer, at_most 3072);
+fixed_size_bigint!(ManifestSpxSignature, at_most 256);
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
-struct ManifestBigInt(Option<HexEncoded<ManifestRsaBuffer>>);
+struct ManifestRsaBigInt(Option<HexEncoded<ManifestRsaBuffer>>);
+
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
+struct ManifestSpxSignatureBigInt(Option<HexEncoded<ManifestSpxSignature>>);
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 struct ManifestSmallInt<T: ParseInt + fmt::LowerHex>(Option<HexEncoded<T>>);
 
 impl fmt::LowerHex for ManifestRsaBuffer {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        fmt::LowerHex::fmt(&self.as_biguint(), f)
+    }
+}
+
+impl fmt::LowerHex for ManifestSpxSignature {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         fmt::LowerHex::fmt(&self.as_biguint(), f)
     }
@@ -102,16 +112,24 @@ impl ManifestSpec {
         self.overwrite(other)
     }
 
-    pub fn update_signature(&mut self, signature: ManifestRsaBuffer) {
-        self.signature.0 = Some(HexEncoded(signature))
+    pub fn update_spx_signature(&mut self, spx_signature: ManifestSpxSignature) {
+        self.spx_signature.0 = Some(HexEncoded(spx_signature))
+    }
+
+    pub fn update_rsa_signature(&mut self, rsa_signature: ManifestRsaBuffer) {
+        self.rsa_signature.0 = Some(HexEncoded(rsa_signature))
     }
 
     pub fn update_modulus(&mut self, modulus: ManifestRsaBuffer) {
         self.modulus.0 = Some(HexEncoded(modulus))
     }
 
-    pub fn signature(&self) -> Option<&ManifestRsaBuffer> {
-        self.signature.0.as_ref().map(|v| &v.0)
+    pub fn rsa_signature(&self) -> Option<&ManifestRsaBuffer> {
+        self.rsa_signature.0.as_ref().map(|v| &v.0)
+    }
+
+    pub fn spx_signature(&self) -> Option<&ManifestSpxSignature> {
+        self.spx_signature.0.as_ref().map(|v| &v.0)
     }
 
     pub fn modulus(&self) -> Option<&ManifestRsaBuffer> {
@@ -132,8 +150,23 @@ trait ManifestPacked<T> {
     fn overwrite(&mut self, o: Self);
 }
 
-impl ManifestPacked<ManifestRsaBuffer> for ManifestBigInt {
+impl ManifestPacked<ManifestRsaBuffer> for ManifestRsaBigInt {
     fn unpack(self, name: &'static str) -> Result<ManifestRsaBuffer> {
+        match self.0 {
+            Some(v) => Ok(v.0),
+            None => self.unpack_err(name),
+        }
+    }
+
+    fn overwrite(&mut self, o: Self) {
+        if o.0.is_some() {
+            *self = o;
+        }
+    }
+}
+
+impl ManifestPacked<ManifestSpxSignature> for ManifestSpxSignatureBigInt {
+    fn unpack(self, name: &'static str) -> Result<ManifestSpxSignature> {
         match self.0 {
             Some(v) => Ok(v.0),
             None => self.unpack_err(name),
@@ -185,9 +218,10 @@ impl<T: ParseInt + fmt::LowerHex, const N: usize> ManifestPacked<[T; N]>
 
 manifest_def! {
     pub struct ManifestSpec {
-        signature: ManifestBigInt,
+        spx_signature: ManifestSpxSignatureBigInt,
+        rsa_signature: ManifestRsaBigInt,
         usage_constraints: ManifestUsageConstraintsDef,
-        modulus: ManifestBigInt,
+        modulus: ManifestRsaBigInt,
         address_translation: ManifestSmallInt<u32>,
         identifier: ManifestSmallInt<u32>,
         length: ManifestSmallInt<u32>,
@@ -211,6 +245,32 @@ manifest_def! {
         manuf_state_owner: ManifestSmallInt<u32>,
         life_cycle_state: ManifestSmallInt<u32>,
     }, ManifestUsageConstraints
+}
+
+impl TryFrom<ManifestSpxSignature> for SigverifySpxSignature {
+    type Error = anyhow::Error;
+
+    fn try_from(spx_signature: ManifestSpxSignature) -> Result<SigverifySpxSignature> {
+        if spx_signature.eq(&ManifestSpxSignature::from_le_bytes([0])?) {
+            // In the case where the BigInt fields are defined but == 0 we should just keep it 0.
+            // Without this the conversion to [u32; 8] would fail.
+            Ok(SigverifySpxSignature {
+                data: le_slice_to_arr(&[0]),
+            })
+        } else {
+            // Convert between the BigInt byte representation and the manifest word representation.
+            Ok(SigverifySpxSignature {
+                data: le_slice_to_arr(
+                    spx_signature
+                        .to_le_bytes()
+                        .chunks(4)
+                        .map(|v| Ok(u32::from_le_bytes(le_slice_to_arr(v))))
+                        .collect::<Result<Vec<u32>>>()?
+                        .as_slice(),
+                ),
+            })
+        }
+    }
 }
 
 impl TryFrom<ManifestRsaBuffer> for SigverifyRsaBuffer {
@@ -272,20 +332,37 @@ impl TryFrom<[u32; 8]> for LifecycleDeviceId {
     }
 }
 
-impl TryFrom<SigverifyRsaBuffer> for ManifestBigInt {
+impl TryFrom<SigverifySpxSignature> for ManifestSpxSignatureBigInt {
     type Error = anyhow::Error;
 
-    fn try_from(o: SigverifyRsaBuffer) -> Result<ManifestBigInt> {
+    fn try_from(o: SigverifySpxSignature) -> Result<ManifestSpxSignatureBigInt> {
         (&o).try_into()
     }
 }
 
-impl TryFrom<&SigverifyRsaBuffer> for ManifestBigInt {
+impl TryFrom<&SigverifySpxSignature> for ManifestSpxSignatureBigInt {
     type Error = anyhow::Error;
 
-    fn try_from(o: &SigverifyRsaBuffer) -> Result<ManifestBigInt> {
+    fn try_from(o: &SigverifySpxSignature) -> Result<ManifestSpxSignatureBigInt> {
+        let spx_signature = ManifestSpxSignature::from_le_bytes(o.data.as_bytes())?;
+        Ok(ManifestSpxSignatureBigInt(Some(HexEncoded(spx_signature))))
+    }
+}
+
+impl TryFrom<SigverifyRsaBuffer> for ManifestRsaBigInt {
+    type Error = anyhow::Error;
+
+    fn try_from(o: SigverifyRsaBuffer) -> Result<ManifestRsaBigInt> {
+        (&o).try_into()
+    }
+}
+
+impl TryFrom<&SigverifyRsaBuffer> for ManifestRsaBigInt {
+    type Error = anyhow::Error;
+
+    fn try_from(o: &SigverifyRsaBuffer) -> Result<ManifestRsaBigInt> {
         let rsa = ManifestRsaBuffer::from_le_bytes(o.data.as_bytes())?;
-        Ok(ManifestBigInt(Some(HexEncoded(rsa))))
+        Ok(ManifestRsaBigInt(Some(HexEncoded(rsa))))
     }
 }
 

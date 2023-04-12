@@ -132,7 +132,7 @@ time_in_secs(CORE_TICKS ticks)
 ee_u32 default_num_contexts = 1;
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
-                        .can_clobber_uart = true, );
+                        .console.test_may_clobber = true, );
 dif_uart_t uart;
 
 /* Function : portable_init

@@ -26,6 +26,10 @@ module otbn_core
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
 
+  // Disable URND reseed and advance when not in use. Useful for SCA only.
+  parameter bit SecMuteUrnd = 1'b0,
+  parameter bit SecSkipUrndReseedAtStart = 1'b0,
+
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
 ) (
@@ -94,6 +98,9 @@ module otbn_core
   input logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i
 );
   import prim_mubi_pkg::*;
+
+  // Create a lint error to reduce the risk of accidentally enabling this feature.
+  `ASSERT_STATIC_LINT_ERROR(OtbnSecMuteUrndNonDefault, SecMuteUrnd == 0)
 
   // Fetch request (the next instruction)
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
@@ -207,6 +214,7 @@ module otbn_core
   logic [BaseWordsPerWLEN-1:0] ispr_base_wr_en;
   logic [ExtWLEN-1:0]          ispr_bignum_wdata_intg;
   logic                        ispr_bignum_wr_en;
+  logic [NFlagGroups-1:0]      ispr_flags_wr;
   logic                        ispr_wr_commit;
   logic [ExtWLEN-1:0]          ispr_rdata_intg;
   logic                        ispr_rd_en;
@@ -247,6 +255,8 @@ module otbn_core
   logic sec_wipe_mod_urnd;
   logic sec_wipe_zero;
 
+  logic zero_flags;
+
   logic                     prefetch_en;
   logic                     prefetch_loop_active;
   logic [31:0]              prefetch_loop_iterations;
@@ -270,7 +280,10 @@ module otbn_core
 
   // Start stop control start OTBN execution when requested and deals with any pre start or post
   // stop actions.
-  otbn_start_stop_control u_otbn_start_stop_control (
+  otbn_start_stop_control #(
+    .SecMuteUrnd(SecMuteUrnd),
+    .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart)
+  ) u_otbn_start_stop_control (
     .clk_i,
     .rst_ni,
 
@@ -311,6 +324,10 @@ module otbn_core
   // for valid decoded (i.e. legal) instructions. Duplicate the signal in the source code for
   // consistent grouping of signals with their valid signal.
   assign insn_addr = insn_fetch_resp_addr;
+
+  // For secure wipe and ISPR initialization, flags need to be cleared to 0. This is achieved
+  // through the blanking mechanism controlled by the instruction fetch/predecoder stage.
+  assign zero_flags = sec_wipe_zero | ispr_init;
 
   // Instruction fetch unit
   otbn_instruction_fetch #(
@@ -359,7 +376,9 @@ module otbn_core
     .prefetch_ignore_errs_i    (prefetch_ignore_errs),
 
     .sec_wipe_wdr_en_i  (sec_wipe_wdr_d),
-    .sec_wipe_wdr_addr_i(sec_wipe_addr)
+    .sec_wipe_wdr_addr_i(sec_wipe_addr),
+
+    .zero_flags_i(zero_flags)
   );
 
   // Instruction decoder
@@ -404,8 +423,9 @@ module otbn_core
     .clk_i,
     .rst_ni,
 
-    .start_i      (controller_start),
+    .start_i         (controller_start),
     .locking_o,
+    .err_bit_clear_i (start_i),
 
     .fatal_escalate_en_i(controller_fatal_escalate_en),
     .recov_escalate_en_i(controller_recov_escalate_en),
@@ -505,6 +525,7 @@ module otbn_core
     .ispr_base_wr_en_o       (ispr_base_wr_en),
     .ispr_bignum_wdata_intg_o(ispr_bignum_wdata_intg),
     .ispr_bignum_wr_en_o     (ispr_bignum_wr_en),
+    .ispr_flags_wr_o         (ispr_flags_wr),
     .ispr_wr_commit_o        (ispr_wr_commit),
     .ispr_rdata_intg_i       (ispr_rdata_intg),
     .ispr_rd_en_o            (ispr_rd_en),
@@ -793,6 +814,7 @@ module otbn_core
     .ispr_base_wr_en_i       (ispr_base_wr_en),
     .ispr_bignum_wdata_intg_i(ispr_bignum_wdata_intg),
     .ispr_bignum_wr_en_i     (ispr_bignum_wr_en),
+    .ispr_flags_wr_i         (ispr_flags_wr),
     .ispr_wr_commit_i        (ispr_wr_commit),
     .ispr_init_i             (ispr_init),
     .ispr_rdata_intg_o       (ispr_rdata_intg),
@@ -805,7 +827,6 @@ module otbn_core
     .reg_intg_violation_err_o(alu_bignum_reg_intg_violation_err),
 
     .sec_wipe_mod_urnd_i(sec_wipe_mod_urnd),
-    .sec_wipe_zero_i    (sec_wipe_zero),
 
     .mac_operation_flags_i   (mac_bignum_operation_flags),
     .mac_operation_flags_en_i(mac_bignum_operation_flags_en),
@@ -878,7 +899,11 @@ module otbn_core
 
   // Advance URND either when the start_stop_control commands it or when temporary secure wipe keys
   // are requested.
-  assign urnd_advance = urnd_advance_start_stop_control | req_sec_wipe_urnd_keys_q;
+  // When SecMuteUrnd is enabled, signal urnd_advance_start_stop_control is muted. Therefore, it is
+  // necessary to enable urnd_advance using ispr_predec_bignum.ispr_rd_en[IsprUrnd] whenever URND
+  // data are consumed by the ALU.
+  assign urnd_advance = urnd_advance_start_stop_control | req_sec_wipe_urnd_keys_q |
+                        (SecMuteUrnd & ispr_predec_bignum.ispr_rd_en[IsprUrnd]);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

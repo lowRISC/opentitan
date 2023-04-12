@@ -1,5 +1,0 @@
----
-title: Implementation Guidelines
----
-
-{{% sectionContent %}}

@@ -13,7 +13,6 @@
 #include "sw/device/lib/testing/json/gpio.h"
 #include "sw/device/lib/testing/json/pinmux_config.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf_flow_control.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"

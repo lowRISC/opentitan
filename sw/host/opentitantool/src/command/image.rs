@@ -63,7 +63,7 @@ impl CommandDispatch for AssembleCommand {
         let mut image = ImageAssembler::with_params(self.size, self.mirror);
         image.parse(&self.filename)?;
         let content = image.assemble()?;
-        std::fs::write(&self.output, &content)?;
+        std::fs::write(&self.output, content)?;
         Ok(None)
     }
 }
@@ -152,13 +152,13 @@ impl CommandDispatch for ManifestUpdateCommand {
                     anyhow!("The supplied key_file does not contain a private key")
                 })?;
                 // Compute the digest over the image, sign it and update it.
-                image.update_signature(private_key.sign(&image.compute_digest())?)?;
+                image.update_rsa_signature(private_key.sign(&image.compute_digest())?)?;
             }
         }
 
         if let Some(signature_file) = &self.signature_file {
             let signature = Signature::read_from_file(signature_file)?;
-            image.update_signature(signature)?;
+            image.update_rsa_signature(signature)?;
         }
 
         image.write_to_file(self.output.as_ref().unwrap_or(&self.image))?;
@@ -185,7 +185,7 @@ impl CommandDispatch for ManifestVerifyCommand {
             .modulus()
             .ok_or_else(|| anyhow!("Invalid modulus"))?;
         let signature = manifest
-            .signature()
+            .rsa_signature()
             .ok_or_else(|| anyhow!("Invalid signature"))?;
         let digest = Sha256Digest::from_le_bytes(image.compute_digest().to_le_bytes())?;
         let key = RsaPublicKey::new(Modulus::from_le_bytes(modulus.to_le_bytes())?)?;

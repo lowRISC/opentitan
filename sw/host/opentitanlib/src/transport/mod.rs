@@ -11,14 +11,17 @@ use std::rc::Rc;
 
 use crate::bootstrap::BootstrapOptions;
 use crate::io::emu::Emulator;
-use crate::io::gpio::GpioPin;
+use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
+use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 
 pub mod common;
 pub mod cw310;
+pub mod dediprog;
 pub mod hyperdebug;
+pub mod ioexpander;
 pub mod proxy;
 pub mod ti50emulator;
 pub mod ultradebug;
@@ -32,13 +35,15 @@ bitflags! {
     /// A bitmap of capabilities which may be provided by a transport.
     #[derive(Serialize, Deserialize)]
     pub struct Capability: u32 {
-        const NONE = 0x00000000;
-        const UART = 0x00000001;
-        const SPI = 0x00000002;
-        const GPIO = 0x00000004;
-        const I2C = 0x00000008;
-        const PROXY = 0x00000010;
-        const EMULATOR = 0x00000020;
+        const NONE = 0x00;
+        const UART = 0x01 << 0;
+        const SPI = 0x01 << 1;
+        const GPIO = 0x01 << 2;
+        const I2C = 0x01 << 3;
+        const PROXY = 0x01 << 4;
+        const EMULATOR = 0x01 << 5;
+        const GPIO_MONITORING = 0x01 << 6; // Logic analyzer functionality
+        const JTAG = 0x01 << 7;
     }
 }
 
@@ -94,6 +99,16 @@ pub trait Transport {
     /// transport object.
     fn capabilities(&self) -> Result<Capabilities>;
 
+    /// Resets the transport to power-on condition.  That is, pin/uart/spi configuration reverts
+    /// to default, ongoing operations are cancelled, etc.
+    fn apply_default_configuration(&self) -> Result<()> {
+        Ok(())
+    }
+
+    /// Returns a [`Jtag`] implementation.
+    fn jtag(&self, _opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
+        Err(TransportError::InvalidInterface(TransportInterfaceType::Jtag).into())
+    }
     /// Returns a SPI [`Target`] implementation.
     fn spi(&self, _instance: &str) -> Result<Rc<dyn Target>> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Spi).into())
@@ -109,6 +124,10 @@ pub trait Transport {
     /// Returns a [`GpioPin`] implementation.
     fn gpio_pin(&self, _instance: &str) -> Result<Rc<dyn GpioPin>> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Gpio).into())
+    }
+    /// Returns a [`GpioMonitoring`] implementation, for logic analyzer functionality.
+    fn gpio_monitoring(&self) -> Result<Rc<dyn GpioMonitoring>> {
+        Err(TransportError::InvalidInterface(TransportInterfaceType::GpioMonitoring).into())
     }
     /// Returns a [`Emulator`] implementation.
     fn emulator(&self) -> Result<Rc<dyn Emulator>> {
@@ -129,6 +148,8 @@ pub trait Transport {
 /// Methods available only on the Proxy implementation of the Transport trait.
 pub trait ProxyOps {
     fn bootstrap(&self, options: &BootstrapOptions, payload: &[u8]) -> Result<()>;
+    fn apply_pin_strapping(&self, strapping_name: &str) -> Result<()>;
+    fn remove_pin_strapping(&self, strapping_name: &str) -> Result<()>;
 }
 
 /// Used by Transport implementations dealing with emulated OpenTitan
@@ -138,6 +159,28 @@ pub trait ProxyOps {
 /// SPI to be flashed.)
 pub struct Bootstrap {
     pub image_path: PathBuf,
+}
+
+pub trait ProgressIndicator {
+    // Begins a new stage, indicating "size" of this stage in bytes.  `name` can be the empty
+    // string, for instance if the operation has only a single stage.
+    fn new_stage(&self, name: &str, total: usize);
+    // Indicates how far towards the previously declared `total`.  Operation will be shown as
+    // complete, once the parameter value to this method equals `total`.
+    fn progress(&self, absolute: usize);
+}
+
+/// Command for Transport::dispatch().
+pub struct UpdateFirmware<'a> {
+    /// The firmware to load into the HyperDebug device, None means load an "official" newest
+    /// release of the firmware for the particular debugger device, assuming that the `Transport`
+    /// trait implementation knows how to download such.
+    pub firmware: Option<Vec<u8>>,
+    /// A progress function to provide user feedback, see details of the `Progress` struct.
+    pub progress: Box<dyn ProgressIndicator + 'a>,
+    /// Should updating be attempted, even if the current firmware version matches that of the
+    /// image to be updated to.
+    pub force: bool,
 }
 
 /// An `EmptyTransport` provides no communications backend.

@@ -101,7 +101,7 @@ class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
   // This task is for programming one or more of *out* and *oe* GPIO registers
   // As some of the GPIO pins are already configured and driven as inputs, we need
   // to make sure that DATA_OUT and DATA_OE combination is programmed such that:
-  // - Output driven on pin is same as as GPIO input value, or
+  // - Output driven on pin is same as GPIO input value, or
   // - Outpurt enable on pin is 0
   // By doing either of above two options, we make sure that none of the GPIO pins
   // become unknowns due to multiple drivers with conflicting values.

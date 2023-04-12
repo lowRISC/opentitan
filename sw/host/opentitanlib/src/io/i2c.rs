@@ -46,6 +46,12 @@ pub enum Transfer<'rd, 'wr> {
 
 /// A trait which represents a I2C Bus.
 pub trait Bus {
+    /// Gets the maximum allowed speed of the I2C bus.
+    fn get_max_speed(&self) -> Result<u32>;
+    /// Sets the maximum allowed speed of the I2C bus, typical values are 100_000, 400_000 or
+    /// 1_000_000.
+    fn set_max_speed(&self, max_speed: u32) -> Result<()>;
+
     /// Runs a I2C transaction composed from the slice of [`Transfer`] objects.
     fn run_transaction(&self, addr: u8, transaction: &mut [Transfer]) -> Result<()>;
 }

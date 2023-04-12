@@ -2,17 +2,40 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+class alert_ping_with_lpg_cg_wrap;
+  covergroup alert_ping_with_lpg_cg(string name) with function sample (bit lpg_en);
+    option.per_instance = 1;
+    option.name         = name;
+    lpg_cg: coverpoint lpg_en {
+      bins lpg_en  = {1};
+      bins lpg_dis = {0};
+    }
+  endgroup
+
+  function new(string name);
+    alert_ping_with_lpg_cg = new(name);
+  endfunction
+endclass
+
 class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_cfg));
   `uvm_component_utils(alert_handler_env_cov)
+
+  alert_ping_with_lpg_cg_wrap ping_with_lpg_cg_wrap[NUM_ALERTS];
 
   // covergroups
   covergroup accum_cnt_cg with function sample(int class_index, int cnt);
     class_index_cp: coverpoint class_index {
       bins class_index[NUM_ALERT_CLASSES] = {[0:NUM_ALERT_CLASSES-1]};
     }
+    // Due to the limited simulation time, this only collect accum coverage until 2000. For the
+    // saturation case, design has assertions to cover that.
     accum_cnt_cp: coverpoint cnt {
-      bins accum_cnt[10] = {[0:'hffff]};
-      bins saturate_cnt  = {'hffff};
+      bins accum_cnt_0    = {0};
+      bins accum_cnt_10   = {[1:10]};
+      bins accum_cnt_50   = {[11:50]};
+      bins accum_cnt_100  = {[51:100]};
+      bins accum_cnt_1000 = {[101:1000]};
+      bins accum_cnt_2000 = {[1001:2000]};
     }
     class_cnt_cross: cross class_index_cp, accum_cnt_cp;
   endgroup : accum_cnt_cg
@@ -131,11 +154,9 @@ class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_
     num_cycles_cp: coverpoint num_cycles_between_pings{
       bins less_than_5000_cycs = {[1:4_999]};
       bins less_than_100k_cycs = {[5_000:99_999]};
-      bins less_than_200k_cycs = {[100_000:199_999]};
-      bins less_than_300k_cycs = {[200_000:299_999]};
-      bins less_than_400k_cycs = {[300_000:399_999]};
-      bins less_than_500k_cycs = {[400_000:499_999]};
-      bins more_than_500k_cycs = {[500_000:'hFFFF]};
+      bins less_than_150k_cycs = {[5_000:149_999]};
+      bins less_than_200k_cycs = {[150_000:199_999]};
+      bins more_than_200k_cycs = {[200_000:$]};
     }
   endgroup
 
@@ -155,6 +176,9 @@ class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_
     num_checked_pings_cg = new();
     cycles_between_pings_cg = new();
 
+    foreach (ping_with_lpg_cg_wrap[i]) begin
+      ping_with_lpg_cg_wrap[i] = new($sformatf("ping_with_lpg_cg_wrap[%0d]", i));
+    end
   endfunction : new
 
 endclass
