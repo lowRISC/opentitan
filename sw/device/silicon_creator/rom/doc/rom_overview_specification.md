@@ -11,7 +11,7 @@ These specifications include:
 
 
 
-*   [Signature Verification Module [sigverify]]()
+*   [Signature Verification Module [sigverify]](sigverify.md)
 *   [Boot Policy Module [bootpolicy]]()
 *   [Address space unlock module [unlock]]()
 *   [Bootstrap module [bootstrap]]()
@@ -239,7 +239,7 @@ See the [[bootpolicy]]() specification for details.
         *   If validation fails, exit `main` with kErroMaskRomBootFailed, thus entering ROM.SHUTDOWN.
         *   If validation succeeds proceed to the next step.
 
-See the [[sigverify]]() specification for details.
+See the [[sigverify]](sigverify.md) specification for details.
 
 
 ### ROM.BOOT-ROM\_EXT
