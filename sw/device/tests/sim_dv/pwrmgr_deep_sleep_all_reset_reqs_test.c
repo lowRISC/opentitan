@@ -306,8 +306,8 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
 
 static void low_power_sysrst(const dif_pwrmgr_t *pwrmgr) {
   // Program the pwrmgr to go to deep sleep state (clocks off).
-  pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceOne,
-                                    0);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      pwrmgr, kDifPwrmgrWakeupRequestSourceOne, 0));
   LOG_INFO("Low power set for sysrst");
 
   // Enter in low power mode.
@@ -384,8 +384,8 @@ static void sleep_wdog_bite_test(const dif_aon_timer_t *aon_timer,
 
 static void low_power_wdog(const dif_pwrmgr_t *pwrmgr) {
   // Program the pwrmgr to go to deep sleep state (clocks off).
-  pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceTwo,
-                                    0);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, 0));
   LOG_INFO("Low power set for watch dog");
   wait_for_interrupt();
   // If we arrive here the test must fail.
@@ -399,12 +399,12 @@ static void low_power_por(const dif_pwrmgr_t *pwrmgr) {
                                               kDifToggleEnabled));
 
   // Program the pwrmgr to go to deep sleep state (clocks off).
-  pwrmgr_testutils_enable_low_power(
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       pwrmgr,
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
        kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
        kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
-      0);
+      0));
   LOG_INFO("ready for pad por");
 
   // Enter in low power mode.

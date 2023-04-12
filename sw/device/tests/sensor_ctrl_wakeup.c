@@ -95,8 +95,8 @@ bool test_main(void) {
                                                        kDifToggleEnabled));
 
     // Normal sleep.
-    pwrmgr_testutils_enable_low_power(&pwrmgr, kDifPwrmgrWakeupRequestSourceSix,
-                                      sleep_config);
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceSix, sleep_config));
 
     // Enter low power mode.
     LOG_INFO("Issue WFI to enter sleep");

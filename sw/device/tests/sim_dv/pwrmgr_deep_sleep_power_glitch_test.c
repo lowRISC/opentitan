@@ -44,8 +44,8 @@ bool test_main(void) {
     CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
     // Configure deep sleep.
-    pwrmgr_testutils_enable_low_power(&pwrmgr,
-                                      kDifPwrmgrWakeupRequestSourceFive, 0);
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive, 0));
 
     // This causes core_sleeping to rise and triggers the injection of the
     // power glitch. Enter low power mode.

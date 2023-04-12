@@ -123,11 +123,11 @@ void test_ret_sram_in_normal_sleep(void) {
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
   // Normal sleep.
-  pwrmgr_testutils_enable_low_power(
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       &pwrmgr, /*wakeups=*/kDifPwrmgrWakeupRequestSourceFive,
       /*domain_config=*/kDifPwrmgrDomainOptionCoreClockInLowPower |
           kDifPwrmgrDomainOptionUsbClockInActivePower |
-          kDifPwrmgrDomainOptionMainPowerInLowPower);
+          kDifPwrmgrDomainOptionMainPowerInLowPower));
   // Enter low power mode.
   LOG_INFO("Issue WFI to enter normal sleep");
   wait_for_interrupt();
@@ -144,8 +144,8 @@ void enter_deep_sleep() {
   // set up wakeup timer
   CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(&aon_timer, 20));
   // Deep sleep.
-  pwrmgr_testutils_enable_low_power(&pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
-                                    0);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      &pwrmgr, kDifPwrmgrWakeupRequestSourceFive, 0));
 
   // Enter low power mode.
   LOG_INFO("Issue WFI to enter deep sleep");

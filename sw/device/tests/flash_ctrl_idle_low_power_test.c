@@ -124,8 +124,8 @@ bool test_main(void) {
     // Setting up low power hint and starting watchdog timer followed by
     // a flash operation (page erase) and WFI. This will create a bite
     // interrupt at some time following the start of the flash operation.
-    pwrmgr_testutils_enable_low_power(&pwrmgr, kDifPwrmgrWakeupRequestSourceTwo,
-                                      0);
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, 0));
 
     CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon));
     CHECK_DIF_OK(dif_aon_timer_watchdog_start(&aon, 0x40, 0x80, false, false));

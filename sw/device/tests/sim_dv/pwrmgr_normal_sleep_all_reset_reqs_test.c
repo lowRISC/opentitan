@@ -305,8 +305,8 @@ static void normal_sleep_sysrst(const dif_pwrmgr_t *pwrmgr) {
            kDifPwrmgrDomainOptionCoreClockInLowPower |
            kDifPwrmgrDomainOptionIoClockInLowPower |
            kDifPwrmgrDomainOptionMainPowerInLowPower;
-  pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceOne,
-                                    config);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      pwrmgr, kDifPwrmgrWakeupRequestSourceOne, config));
   LOG_INFO("Normal sleep set for sysrst");
 
   // Enter in low power mode.
@@ -390,8 +390,8 @@ static void normal_sleep_wdog(const dif_pwrmgr_t *pwrmgr) {
            kDifPwrmgrDomainOptionMainPowerInLowPower;
 
   // Enter in low power mode.
-  pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceTwo,
-                                    config);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, config));
   LOG_INFO("Normal sleep set for watchdog");
   wait_for_interrupt();
 }
@@ -410,12 +410,12 @@ static void normal_sleep_por(const dif_pwrmgr_t *pwrmgr) {
            kDifPwrmgrDomainOptionMainPowerInLowPower;
 
   // Program the pwrmgr to go to deep sleep state (clocks off).
-  pwrmgr_testutils_enable_low_power(
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       pwrmgr,
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
        kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
        kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
-      config);
+      config));
   LOG_INFO("ready for pad por");
   // Enter in low power mode.
   wait_for_interrupt();

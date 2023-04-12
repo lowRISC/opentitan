@@ -95,9 +95,9 @@ bool test_main(void) {
 
     busy_spin_micros(delay_micros);
 
-    pwrmgr_testutils_enable_low_power(
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
         &pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
-        kDifPwrmgrDomainOptionUsbClockInActivePower);
+        kDifPwrmgrDomainOptionUsbClockInActivePower));
 
     LOG_INFO("TEST: Issue WFI to enter deep sleep");
     wait_for_interrupt();

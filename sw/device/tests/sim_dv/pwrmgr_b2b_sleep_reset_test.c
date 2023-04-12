@@ -171,12 +171,12 @@ bool test_main(void) {
       aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 
   // Deep sleep.
-  pwrmgr_testutils_enable_low_power(
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       &pwrmgr,
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
        kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
        kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
-      0);
+      0));
 
   // Enter low power mode.
   wait_for_interrupt();

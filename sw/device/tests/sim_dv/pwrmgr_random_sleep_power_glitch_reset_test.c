@@ -250,8 +250,8 @@ static void config_escalate(dif_aon_timer_t *aon_timer,
 
 static void low_power_glitch_reset(const dif_pwrmgr_t *pwrmgr) {
   // Program the pwrmgr to go to deep sleep state (clocks off).
-  pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
-                                    0);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      pwrmgr, kDifPwrmgrWakeupRequestSourceFive, 0));
   // Enter in low power mode.
   wait_for_interrupt();
 }
@@ -263,8 +263,8 @@ static void normal_sleep_glitch_reset(const dif_pwrmgr_t *pwrmgr) {
            kDifPwrmgrDomainOptionCoreClockInLowPower |
            kDifPwrmgrDomainOptionIoClockInLowPower |
            kDifPwrmgrDomainOptionMainPowerInLowPower;
-  pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
-                                    config);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      pwrmgr, kDifPwrmgrWakeupRequestSourceFive, config));
   // Enter in low power mode.
   wait_for_interrupt();
 }
@@ -344,8 +344,8 @@ static void sleep_wdog_bite_test(const dif_aon_timer_t *aon_timer,
 static void low_power_wdog(const dif_pwrmgr_t *pwrmgr) {
   // Program the pwrmgr to go to deep sleep state (clocks off).
   // Enter in low power mode.
-  pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceTwo,
-                                    0);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, 0));
   LOG_INFO("Low power set for watch dog");
   wait_for_interrupt();
   // If we arrive here the test must fail.
@@ -361,8 +361,8 @@ static void normal_sleep_wdog(const dif_pwrmgr_t *pwrmgr) {
            kDifPwrmgrDomainOptionMainPowerInLowPower;
 
   // Enter in low power mode.
-  pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceTwo,
-                                    config);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, config));
   LOG_INFO("Normal sleep set for watchdog");
   wait_for_interrupt();
 }
@@ -374,12 +374,12 @@ static void low_power_por(const dif_pwrmgr_t *pwrmgr) {
                                               kDifToggleEnabled));
 
   // Program the pwrmgr to go to deep sleep state (clocks off).
-  pwrmgr_testutils_enable_low_power(
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       pwrmgr,
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
        kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
        kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
-      0);
+      0));
   // Enter in low power mode.
   wait_for_interrupt();
   // If we arrive here the test must fail.
@@ -400,12 +400,12 @@ static void normal_sleep_por(const dif_pwrmgr_t *pwrmgr) {
            kDifPwrmgrDomainOptionMainPowerInLowPower;
 
   // Program the pwrmgr to go to swallow sleep state (clocks on).
-  pwrmgr_testutils_enable_low_power(
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       pwrmgr,
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
        kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
        kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
-      config);
+      config));
   // Enter in low power mode.
   wait_for_interrupt();
 }

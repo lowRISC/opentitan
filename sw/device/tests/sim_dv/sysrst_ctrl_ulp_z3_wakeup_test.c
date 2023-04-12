@@ -119,8 +119,9 @@ static void go_to_sleep(void) {
   LOG_INFO("Going to sleep.");
   test_status_set(kTestStatusInWfi);
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
-  pwrmgr_testutils_enable_low_power(&pwrmgr, kDifPwrmgrWakeupRequestSourceOne,
-                                    /*pwrmgr_domain_config=*/0);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      &pwrmgr, kDifPwrmgrWakeupRequestSourceOne,
+      /*pwrmgr_domain_config=*/0));
   wait_for_interrupt();
 }
 
