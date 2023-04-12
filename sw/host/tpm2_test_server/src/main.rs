@@ -67,9 +67,11 @@ pub fn main() -> std::io::Result<()> {
         .filter(None, options.logging)
         .init();
     let cmd_addr = SocketAddr::from(([127, 0, 0, 1], options.tpm_port));
-    let platform_addr = SocketAddr::from(([127, 0, 0, 1], options.tpm_port + 1));
     let cmd_listener = TcpListener::bind(cmd_addr)?;
+    let port = cmd_listener.local_addr()?.port();
+    let platform_addr = SocketAddr::from(([127, 0, 0, 1], port + 1));
     let platform_listener = TcpListener::bind(platform_addr)?;
+    log::info!("Listening on ports {} and {}", port, port + 1);
 
     let mut cmd_stream = mio::net::TcpStream::from_std(cmd_listener.accept()?.0);
     let mut platform_stream = mio::net::TcpStream::from_std(platform_listener.accept()?.0);
