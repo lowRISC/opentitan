@@ -388,6 +388,7 @@
       - [Memory Protection](./sw/device/silicon_creator/rom/doc/memory_protection.md)
       - [E2E tests](./sw/device/silicon_creator/rom/doc/e2e_tests.md)
       - [Signing Keys](./sw/device/silicon_creator/rom/keys/README.md)
+      - [Signature Verification](./sw/device/silicon_creator/rom/doc/sigverify.md)
       - [Test Plan](./sw/device/silicon_creator/rom/data/rom_e2e_testplan.hjson)
       - [Signoff Test Plan](./sw/device/silicon_creator/rom/data/rom_manual_testplan.hjson)
       - [Shutdown Specification](./sw/device/silicon_creator/rom/doc/shutdown.md)
