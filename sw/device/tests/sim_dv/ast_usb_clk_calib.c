@@ -38,9 +38,9 @@ static volatile const uint32_t kSoFPeriodUs = 1000;
 
 static void enable_usb_meas_get_code(dif_clkmgr_t *clkmgr,
                                      dif_clkmgr_recov_err_codes_t *codes) {
-  clkmgr_testutils_enable_clock_count(clkmgr, kDifClkmgrMeasureClockUsb,
-                                      device_usb_count - 2,
-                                      device_usb_count + 2);
+  CHECK_STATUS_OK(clkmgr_testutils_enable_clock_count(
+      clkmgr, kDifClkmgrMeasureClockUsb, device_usb_count - 2,
+      device_usb_count + 2));
 
   // Wait for measurements to go through a few cycles.
   busy_spin_micros(5 * aon_clk_period_us);

@@ -117,14 +117,15 @@ const char *clkmgr_testutils_measurement_name(
   return "unexpected clock";
 }
 
-void clkmgr_testutils_enable_clock_count(const dif_clkmgr_t *clkmgr,
-                                         dif_clkmgr_measure_clock_t clock,
-                                         uint32_t lo_threshold,
-                                         uint32_t hi_threshold) {
+status_t clkmgr_testutils_enable_clock_count(const dif_clkmgr_t *clkmgr,
+                                             dif_clkmgr_measure_clock_t clock,
+                                             uint32_t lo_threshold,
+                                             uint32_t hi_threshold) {
   LOG_INFO("Enabling clock count measurement for %s(%d) lo %d hi %d",
            measure_clock_names[clock], clock, lo_threshold, hi_threshold);
-  CHECK_DIF_OK(dif_clkmgr_enable_measure_counts(clkmgr, clock, lo_threshold,
-                                                hi_threshold));
+  TRY(dif_clkmgr_enable_measure_counts(clkmgr, clock, lo_threshold,
+                                       hi_threshold));
+  return OK_STATUS();
 }
 
 void clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
@@ -158,10 +159,10 @@ void clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
     } else {
       count_info = &kNoJitterCountInfos[clk];
     }
-    clkmgr_testutils_enable_clock_count(
+    CHECK_STATUS_OK(clkmgr_testutils_enable_clock_count(
         clkmgr, (dif_clkmgr_measure_clock_t)clk,
         count_info->count - count_info->variability,
-        count_info->count + count_info->variability);
+        count_info->count + count_info->variability));
   }
 }
 

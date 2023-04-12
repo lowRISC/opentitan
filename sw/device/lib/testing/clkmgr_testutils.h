@@ -68,11 +68,13 @@ const char *clkmgr_testutils_measurement_name(dif_clkmgr_measure_clock_t clock);
  * @param clock The clock to be measured.
  * @param lo_threshold Expected minimum cycle count.
  * @param hi_threshold Expected maximum cycle count.
+ * @return The result of the operation.
  */
-void clkmgr_testutils_enable_clock_count(const dif_clkmgr_t *clkmgr,
-                                         dif_clkmgr_measure_clock_t clock,
-                                         uint32_t lo_threshold,
-                                         uint32_t hi_threshold);
+OT_WARN_UNUSED_RESULT
+status_t clkmgr_testutils_enable_clock_count(const dif_clkmgr_t *clkmgr,
+                                             dif_clkmgr_measure_clock_t clock,
+                                             uint32_t lo_threshold,
+                                             uint32_t hi_threshold);
 
 /**
  * Enables all clock measurements with expected thresholds.
