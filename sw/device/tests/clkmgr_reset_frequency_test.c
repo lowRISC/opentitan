@@ -77,7 +77,7 @@ bool test_main(void) {
     LOG_INFO("Back from rstmgr SW reset");
     CHECK(clkmgr_testutils_check_measurement_enables(&clkmgr,
                                                      kDifToggleDisabled));
-    CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
+    CHECK_STATUS_OK(clkmgr_testutils_check_measurement_counts(&clkmgr));
     return true;
   } else {
     dif_rstmgr_reset_info_bitfield_t rst_info;
