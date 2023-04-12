@@ -23,7 +23,9 @@ rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
           .step = kSigverifyRsaKeysStep,
       },
       &rom_key);
-  RETURN_IF_ERROR(error);
+  if (error != kErrorOk) {
+    return kErrorSigverifyBadRsaKey;
+  }
   *key = &((const sigverify_rom_rsa_key_t *)rom_key)->entry.key;
   return error;
 }

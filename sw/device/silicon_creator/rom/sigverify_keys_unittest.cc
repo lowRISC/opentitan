@@ -163,7 +163,8 @@ TEST_P(BadKeyIdTypeTest, BadKeyId) {
   ExpectKeysGet();
 
   const sigverify_rsa_key_t *key;
-  EXPECT_EQ(sigverify_rsa_key_get(0, GetParam(), &key), kErrorSigverifyBadKey);
+  EXPECT_EQ(sigverify_rsa_key_get(0, GetParam(), &key),
+            kErrorSigverifyBadRsaKey);
 }
 
 INSTANTIATE_TEST_SUITE_P(AllLcStates, BadKeyIdTypeTest,
@@ -248,7 +249,7 @@ TEST_P(ValidBasedOnOtp, InvalidInOtp) {
       sigverify_rsa_key_get(
           sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].entry.key.n),
           lc_state, &key),
-      kErrorSigverifyBadKey);
+      kErrorSigverifyBadRsaKey);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -313,7 +314,7 @@ TEST_P(InvalidInState, Get) {
       sigverify_rsa_key_get(
           sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].entry.key.n),
           lc_state, &key),
-      kErrorSigverifyBadKey);
+      kErrorSigverifyBadRsaKey);
 }
 
 INSTANTIATE_TEST_SUITE_P(
