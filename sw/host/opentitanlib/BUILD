@@ -99,6 +99,7 @@ rust_library(
         "src/test_utils/e2e_command.rs",
         "src/test_utils/epmp.rs",
         "src/test_utils/gpio.rs",
+        "src/test_utils/lc_transition.rs",
         "src/test_utils/spi_passthru.rs",
         "src/test_utils/init.rs",
         "src/test_utils/load_bitstream.rs",
