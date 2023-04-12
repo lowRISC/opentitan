@@ -91,6 +91,10 @@
       name:    "cs_aes_halt"
       act:     "rsp"
       package: "entropy_src_pkg"
+      desc:    '''
+               Coordinate activity between CSRNG's AES and Entropy Source's SHA3.
+               When CSRNG gets a request and its AES is not active, it acknowledges and until the request has dropped neither runs its AES nor drops the acknowledge.
+               '''
     }
     { struct:  "mubi8"
       type:    "uni"
