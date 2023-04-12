@@ -7,6 +7,7 @@ pub mod e2e_command;
 pub mod epmp;
 pub mod gpio;
 pub mod init;
+pub mod lc_transition;
 pub mod load_bitstream;
 // The "english breakfast" variant of the chip doesn't have the same
 // set of IO and pinmux constants as the "earlgrey" chip.
