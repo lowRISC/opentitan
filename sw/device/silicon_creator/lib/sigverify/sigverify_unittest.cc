@@ -162,7 +162,7 @@ TEST_P(SigverifyInNonTestStates, BadSignatureOtbn) {
     uint32_t flash_exec = 0;
     EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
                                    &flash_exec),
-              kErrorSigverifyBadEncodedMessage);
+              kErrorSigverifyBadRsaSignature);
     EXPECT_EQ(flash_exec, std::numeric_limits<uint32_t>::max());
   }
 }
@@ -218,7 +218,7 @@ TEST_F(SigverifyInTestStates, BadSignatureIbex) {
     uint32_t flash_exec = 0;
     EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest,
                                    kLcStateTest, &flash_exec),
-              kErrorSigverifyBadEncodedMessage);
+              kErrorSigverifyBadRsaSignature);
     EXPECT_EQ(flash_exec, std::numeric_limits<uint32_t>::max());
   }
 }

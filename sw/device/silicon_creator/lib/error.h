@@ -73,11 +73,12 @@ enum module_ {
   X(kErrorOk,                         0x739), \
   X(kErrorUnknown,                    0xffffffff), \
   \
-  X(kErrorSigverifyBadEncodedMessage, ERROR_(1, kModuleSigverify, kInvalidArgument)), \
-  X(kErrorSigverifyBadKey,            ERROR_(2, kModuleSigverify, kInvalidArgument)), \
-  X(kErrorSigverifyBadRsaKey,         ERROR_(3, kModuleSigverify, kInvalidArgument)), \
-  X(kErrorSigverifyBadSpxKey,         ERROR_(4, kModuleSigverify, kInvalidArgument)), \
-  X(kErrorSigverifyLargeRsaSignature, ERROR_(5, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyBadRsaSignature,   ERROR_(1, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyBadSpxSignature,   ERROR_(2, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyBadKey,            ERROR_(3, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyBadRsaKey,         ERROR_(4, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyBadSpxKey,         ERROR_(5, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyLargeRsaSignature, ERROR_(6, kModuleSigverify, kInvalidArgument)), \
   \
   X(kErrorKeymgrInternal,             ERROR_(1, kModuleKeymgr, kInternal)), \
   \

@@ -41,7 +41,7 @@ CONST = struct(
             STORE_ACCESS = 0x07495202,
         ),
         SIGVERIFY = struct(
-            BAD_ENCODED_MSG = 0x01535603,
+            BAD_RSA_SIGNATURE = 0x01535603,
             BAD_RSA_KEY = 0x04535603,
         ),
         BOOT_POLICY = struct(

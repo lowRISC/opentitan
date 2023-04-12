@@ -148,7 +148,7 @@ static rom_error_t sigverify_encoded_message_check(
     return result;
   }
 
-  return kErrorSigverifyBadEncodedMessage;
+  return kErrorSigverifyBadRsaSignature;
 }
 
 /**
