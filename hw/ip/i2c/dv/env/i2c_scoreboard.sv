@@ -429,6 +429,10 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         wait(exp_rd_q.size() > 0);
         exp_trn = exp_rd_q.pop_front();
       end
+      if (!cfg.en_scb) begin // Skip comparison
+        `uvm_info(`gfn, "Scoreboard disabled", UVM_LOW)
+        continue;
+      end
       // when rx_fifo is overflow, drop the last byte from dut_trn
       if (cfg.seq_cfg.en_rx_overflow && dut_trn.bus_op == BusOpRead) begin
         void'(dut_trn.data_q.pop_back());

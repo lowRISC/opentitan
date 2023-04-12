@@ -216,6 +216,11 @@
                  "+stress_seq=i2c_target_stress_all_vseq"]
       run_timeout_mins: 20
     }
+    {
+      name: "i2c_host_mode_toggle"
+      uvm_test_seq: "i2c_host_mode_toggle_vseq"
+      run_timeout_mins: 2
+    }
   ]
 
   // List of regressions.

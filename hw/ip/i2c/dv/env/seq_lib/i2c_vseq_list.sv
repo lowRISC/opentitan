@@ -33,3 +33,4 @@
 `include "i2c_target_fifo_reset_tx_vseq.sv"
 `include "i2c_target_stress_all_vseq.sv"
 `include "i2c_target_hrst_vseq.sv"
+`include "i2c_host_mode_toggle_vseq.sv"
