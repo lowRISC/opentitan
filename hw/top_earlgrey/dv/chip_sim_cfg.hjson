@@ -224,6 +224,10 @@
                                    echo "--otp-seed $line --lc-seed $line"; \
                                  done < $file; \
                                fi ''']
+
+  // TODO(lowrisc/opentitan#16689): Enable cdc instrumentation.
+  run_opts: ["+cdc_instrumentation_enabled=0"]
+
   // Add run modes.
   run_modes: [
     // Generates OTP images with different LC states with canonical values,
