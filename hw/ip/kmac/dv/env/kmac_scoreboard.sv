@@ -159,15 +159,17 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    fork
-      process_checked_kmac_cmd();
-      detect_kmac_app_start();
-      process_kmac_app_fsm();
-      process_edn();
-      process_kmac_app_req_fifo();
-      process_kmac_app_rsp_fifo();
-      process_sideload_key();
-    join_none
+    if (cfg.en_scb) begin
+      fork
+        process_checked_kmac_cmd();
+        detect_kmac_app_start();
+        process_kmac_app_fsm();
+        process_edn();
+        process_kmac_app_req_fifo();
+        process_kmac_app_rsp_fifo();
+        process_sideload_key();
+      join_none
+    end
   endtask
 
   // This task spins forever and assigns `checked_kmac_cmd` to `unchecked_kmac_cmd`

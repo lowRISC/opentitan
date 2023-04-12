@@ -183,6 +183,7 @@
     {
       name: "{name}_entropy_mode_error"
       uvm_test_seq: kmac_entropy_mode_error_vseq
+      run_opts: ["+en_scb=0"]
       reseed: 20
     }
     {
