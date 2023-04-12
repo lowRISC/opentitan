@@ -642,5 +642,25 @@ TEST_F(StatusTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_spi_host_get_status(&spi_host_, nullptr));
 }
 
+class WriteCommandTest : public SpiHostTest {};
+
+TEST_F(WriteCommandTest, NullArgs) {
+  EXPECT_DIF_BADARG(dif_spi_host_write_command(
+      nullptr, 4, kDifSpiHostWidthStandard, kDifSpiHostDirectionRx, false));
+}
+
+// Checks that arguments are validated.
+TEST_F(WriteCommandTest, ValidArgs) {
+  EXPECT_WRITE32(SPI_HOST_COMMAND_REG_OFFSET,
+                 {{SPI_HOST_COMMAND_LEN_OFFSET, 899},
+                  {SPI_HOST_COMMAND_SPEED_OFFSET, 1},
+                  {SPI_HOST_COMMAND_DIRECTION_OFFSET, 3},
+                  {SPI_HOST_COMMAND_CSAAT_BIT, 1}});
+
+  EXPECT_DIF_OK(
+      dif_spi_host_write_command(&spi_host_, 900, kDifSpiHostWidthDual,
+                                 kDifSpiHostDirectionBidirectional, false));
+}
+
 }  // namespace
 }  // namespace dif_spi_host_unittest
