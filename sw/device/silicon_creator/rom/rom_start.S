@@ -260,6 +260,15 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li   t0, SW_STRAP_2_INSEL
   sw   t0, (SW_STRAP_2_PERIPH * 4)(a0)
 
+  // Spin for a minimum of 5us worth of cycles (assuming 100MHz clock), while we
+  // wait for the RMA strap pull enables to propagate to the physical pads.
+  // Since this is a wait loop, disable the watchdog.
+  csrw mcycle, zero
+  li   t0, 500  // 500 clock cycles with 100MHz clock is 5us.
+.L_rma_strap_pu_spin_cycles_loop:
+  csrr t1, mcycle
+  bltu t1, t0, .L_rma_strap_pu_spin_cycles_loop
+
   // Read the strap GPIOs and check their value.
   li   a0, TOP_EARLGREY_GPIO_BASE_ADDR
   lw   t0, GPIO_DATA_IN_REG_OFFSET(a0)
