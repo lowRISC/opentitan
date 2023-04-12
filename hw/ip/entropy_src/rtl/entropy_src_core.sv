@@ -2817,6 +2817,71 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign unused_entropy_data = (|reg2hw.entropy_data.q);
   assign unused_fw_ov_rd_data = (|reg2hw.fw_ov_rd_data.q);
 
+  //--------------------------------------------
+  // Assertions
+  //--------------------------------------------
+
+`ifdef INC_ASSERT
+  // entropy_src is known to activate Keccak without AES Halt handshakes with CSRNG (#17941).
+  // This code ensures that this does not happen too often (i.e., at most `KAWAH_THRESHOLD` out of
+  // `KAWAH_WINDOW_SIZE` consecutive clock cycles) outside *Firmware Override - Extract & Insert*
+  // mode.  When firmware inserts entropy, it is essentially in control of the SHA3 core
+  // and the current HW implementation cannot make guarantees around AES Halt and Keccak activity.
+  //
+  // When issue #17941 gets resolved and there are assertions (or equivalent checks) in place to
+  // ensure that Keccak is not activated without AES Halt handshakes, this code should be removed.
+
+  // Track activity of Keccak.
+  logic keccak_active;
+  assign keccak_active = u_sha3.u_keccak.keccak_st != sha3_pkg::KeccakStIdle;
+  `ASSERT_KNOWN(KeccakActiveKnown_A, keccak_active)
+
+  // Track state of AES Halt req/ack with CSRNG.
+  logic cs_aes_halt_active;
+  assign cs_aes_halt_active = cs_aes_halt_o.cs_aes_halt_req && cs_aes_halt_i.cs_aes_halt_ack;
+  `ASSERT_KNOWN(CsAesHaltActiveKnown_A, cs_aes_halt_active)
+
+  // Track when Keccak is active without AES Halt ('KAWAH') outside FW entropy insertion mode.
+  localparam int unsigned KAWAH_WINDOW_SIZE = 512;
+  logic [KAWAH_WINDOW_SIZE-1:0] kawah_window_d, kawah_window_q;
+  assign kawah_window_d[0] = keccak_active & ~cs_aes_halt_active & ~fw_ov_mode_entropy_insert;
+  assign kawah_window_d[KAWAH_WINDOW_SIZE-1:1] = kawah_window_q[KAWAH_WINDOW_SIZE-2:0];
+
+  // Count how many cycles Keccak was active without AES Halt in the current window.
+  localparam int unsigned KAWAH_COUNTER_SIZE = $clog2(KAWAH_WINDOW_SIZE);
+  logic [KAWAH_COUNTER_SIZE-1:0] kawah_counter_d, kawah_counter_q;
+  always_comb begin
+    kawah_counter_d = kawah_counter_q;
+    // Increment counter if Keccak is active without AES Halt in the current cycle.
+    if (kawah_window_d[0]) kawah_counter_d += 1;
+    // Decrement counter if Keccak was active without AES Halt in the cycle that falls out of the
+    // sliding window in this cycle.
+    if (kawah_window_q[KAWAH_WINDOW_SIZE-1]) begin
+      // If the counter would underflow, a testbench error has happened (only relevant if reset is
+      // deasserted).
+      `ASSERT_I(KawahCounterNoUnderflow_A, rst_ni !== 1'b1 || kawah_counter_d > 0)
+      kawah_counter_d -= 1;
+    end
+  end
+  // Ensure counter does not overflow.
+  `ASSERT(KawahCounterNoOverflow_A, kawah_counter_d < KAWAH_WINDOW_SIZE - 1)
+
+  // Assert that in the last KAWAH_WINDOW_SIZE clock cycles, Keccak was active without AES Halt for
+  // at most KAWAH_THRESHOLD clock cycles.
+  localparam int unsigned KAWAH_THRESHOLD = 24;
+  `ASSERT(KeccakNotTooActiveWithoutAesHalt_A, kawah_counter_q <= KAWAH_THRESHOLD)
+  `ASSERT_INIT(KawahParametersLegal_A, KAWAH_THRESHOLD < KAWAH_WINDOW_SIZE)
+
+  always_ff @(posedge clk_i, negedge rst_ni) begin
+    if (!rst_ni) begin
+      kawah_counter_q <= '0;
+      kawah_window_q  <= '0;
+    end else begin
+      kawah_counter_q <= kawah_counter_d;
+      kawah_window_q  <= kawah_window_d;
+    end
+  end
+`endif
 
   //--------------------------------------------
   // Assertions
