@@ -103,7 +103,7 @@ rom_error_t sigverify_mod_exp_otbn(const sigverify_rsa_key_t *key,
   // Reject the signature if it is too large (n <= sig): RFC 8017, section
   // 5.2.2, step 1.
   if (memrcmp(key->n.data, sig->data, kSigVerifyRsaNumBytes) <= 0) {
-    return kErrorSigverifyBadSignature;
+    return kErrorSigverifyLargeRsaSignature;
   }
 
   // Run OTBN application.
