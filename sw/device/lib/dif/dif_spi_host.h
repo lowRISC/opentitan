@@ -42,6 +42,12 @@ typedef struct dif_spi_host_config {
   bool cpha;
   /** SPI clock polarity. */
   bool cpol;
+  /** If `EVENT_ENABLE.TXWM` is set, an interrupt will fire when the depth of
+   * the TX FIFO drops below `TX_WATERMARK` words (32b each). */
+  size_t tx_watermark;
+  /** If `EVENT_ENABLE.RXWM` is set, an interrupt will fire when the depth of
+   * the RX FIFO drops below `RX_WATERMARK` words (32b each). */
+  size_t rx_watermark;
 } dif_spi_host_config_t;
 
 /**

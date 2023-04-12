@@ -100,6 +100,8 @@ class SpiHostTest : public Test, public MmioTest {
       .full_cycle = false,
       .cpha = false,
       .cpol = false,
+      .tx_watermark = 0,
+      .rx_watermark = 0,
   };
 };
 
@@ -132,6 +134,9 @@ TEST_F(ConfigTest, Default) {
                      {SPI_HOST_CONFIGOPTS_CPHA_0_BIT, false},
                      {SPI_HOST_CONFIGOPTS_CPOL_0_BIT, false},
                  });
+
+  EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
+  EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
                  {
                      {SPI_HOST_CONTROL_SPIEN_BIT, true},
@@ -170,6 +175,8 @@ TEST_F(ConfigTest, ClockRate) {
                      {SPI_HOST_CONFIGOPTS_CPHA_0_BIT, false},
                      {SPI_HOST_CONFIGOPTS_CPOL_0_BIT, false},
                  });
+  EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
+  EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
                  {
                      {SPI_HOST_CONTROL_SPIEN_BIT, true},
@@ -196,6 +203,8 @@ TEST_F(ConfigTest, ChipSelectOptions) {
                      {SPI_HOST_CONFIGOPTS_CPHA_0_BIT, false},
                      {SPI_HOST_CONFIGOPTS_CPOL_0_BIT, false},
                  });
+  EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
+  EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
                  {
                      {SPI_HOST_CONTROL_SPIEN_BIT, true},
@@ -222,6 +231,36 @@ TEST_F(ConfigTest, SpiOptions) {
                      {SPI_HOST_CONFIGOPTS_CPHA_0_BIT, true},
                      {SPI_HOST_CONFIGOPTS_CPOL_0_BIT, true},
                  });
+  EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
+  EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET, 0);
+  EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
+                 {
+                     {SPI_HOST_CONTROL_SPIEN_BIT, true},
+                 });
+
+  EXPECT_DIF_OK(dif_spi_host_configure(&spi_host_, config_));
+}
+
+// Checks the SPI tx and rx watermark.
+TEST_F(ConfigTest, SpiTxRxWatermark) {
+  config_.tx_watermark = 0x7f;
+  config_.rx_watermark = 0x7e;
+
+  ExpectDeviceReset();
+  EXPECT_WRITE32(SPI_HOST_CONFIGOPTS_REG_OFFSET,
+                 {
+                     {SPI_HOST_CONFIGOPTS_CLKDIV_0_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNIDLE_0_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNTRAIL_0_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNLEAD_0_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_FULLCYC_0_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CPHA_0_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CPOL_0_BIT, false},
+                 });
+  EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
+  EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
+                 {{SPI_HOST_CONTROL_TX_WATERMARK_OFFSET, 0x7f},
+                  {SPI_HOST_CONTROL_RX_WATERMARK_OFFSET, 0x7e}});
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
                  {
                      {SPI_HOST_CONTROL_SPIEN_BIT, true},

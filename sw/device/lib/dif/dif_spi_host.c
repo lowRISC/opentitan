@@ -92,6 +92,14 @@ dif_result_t dif_spi_host_configure(const dif_spi_host_t *spi_host,
   reg = bitfield_bit32_write(reg, SPI_HOST_CONFIGOPTS_CPHA_0_BIT, config.cpha);
   reg = bitfield_bit32_write(reg, SPI_HOST_CONFIGOPTS_CPOL_0_BIT, config.cpol);
   mmio_region_write32(spi_host->base_addr, SPI_HOST_CONFIGOPTS_REG_OFFSET, reg);
+
+  reg = mmio_region_read32(spi_host->base_addr, SPI_HOST_CONTROL_REG_OFFSET);
+  reg = bitfield_field32_write(reg, SPI_HOST_CONTROL_TX_WATERMARK_FIELD,
+                               config.tx_watermark);
+  reg = bitfield_field32_write(reg, SPI_HOST_CONTROL_RX_WATERMARK_FIELD,
+                               config.rx_watermark);
+  mmio_region_write32(spi_host->base_addr, SPI_HOST_CONTROL_REG_OFFSET, reg);
+
   spi_host_enable(spi_host, true);
   return kDifOk;
 }
