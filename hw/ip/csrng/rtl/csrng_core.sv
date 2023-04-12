@@ -1654,5 +1654,33 @@ module csrng_core import csrng_pkg::*; #(
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
   assign unused_int_state_val = (|reg2hw.int_state_val.q);
 
+  //--------------------------------------------
+  // Assertions
+  //--------------------------------------------
+`ifdef INC_ASSERT
+  // Track activity of AES.
+  logic aes_active_d, aes_active_q;
+  assign aes_active_d =
+      (u_csrng_block_encrypt.u_aes_cipher_core.in_valid_i == aes_pkg::SP2V_HIGH &&
+       u_csrng_block_encrypt.u_aes_cipher_core.in_ready_o == aes_pkg::SP2V_HIGH)  ? 1'b1 : // set
+      (u_csrng_block_encrypt.u_aes_cipher_core.out_valid_o == aes_pkg::SP2V_HIGH &&
+       u_csrng_block_encrypt.u_aes_cipher_core.out_ready_i == aes_pkg::SP2V_HIGH) ? 1'b0 : // clear
+      aes_active_q;                                                                        // keep
+
+  // Track state of AES Halt req/ack with entropy_src.
+  logic cs_aes_halt_active;
+  assign cs_aes_halt_active = cs_aes_halt_i.cs_aes_halt_req & cs_aes_halt_o.cs_aes_halt_ack;
+
+  // Assert that when AES Halt is active, AES is not active.
+  `ASSERT(AesNotActiveWhileCsAesHaltActive_A, cs_aes_halt_active |-> !aes_active_d)
+
+  always_ff @(posedge clk_i, negedge rst_ni) begin
+    if (!rst_ni) begin
+      aes_active_q <= '0;
+    end else begin
+      aes_active_q <= aes_active_d;
+    end
+  end
+`endif
 
 endmodule // csrng_core
