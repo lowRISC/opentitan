@@ -385,6 +385,7 @@
       - [Test Plan](./sw/device/silicon_creator/manuf/data/manuf_testplan.hjson)
     - [ROM](./sw/device/silicon_creator/rom/README.md)
       - [ROM Specification](./sw/device/silicon_creator/rom/doc/rom_overview_specification.md)
+      - [Bootstrap](./sw/device/silicon_creator/rom/doc/bootstrap.md)
       - [Memory Protection](./sw/device/silicon_creator/rom/doc/memory_protection.md)
       - [E2E tests](./sw/device/silicon_creator/rom/doc/e2e_tests.md)
       - [Signing Keys](./sw/device/silicon_creator/rom/keys/README.md)

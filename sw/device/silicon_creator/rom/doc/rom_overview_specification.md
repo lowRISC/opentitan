@@ -14,7 +14,7 @@ These specifications include:
 *   [Signature Verification Module [sigverify]]()
 *   [Boot Policy Module [bootpolicy]]()
 *   [Address space unlock module [unlock]]()
-*   [Bootstrap module [bootstrap]]()
+*   [Bootstrap module [bootstrap]](bootstrap.md)
 *   [Bootstrap decoding]()
 *   [Shutdown Module [shutdown]]()
 *   [Chip-Specific Startup [startup]]()
@@ -209,7 +209,7 @@ See the [[pin configuration]]() specification for details.
     *   If they indicate bootstrap mode and if bootstrap is permitted (via OTP `ROM_BOOTSTRAP_EN`), perform the bootstrap protocol as specified in the [Bootstrap Spec].
     *   For all other values, continue booting without bootstrap mode.
 
-See the [[bootstrap]]() specification for details.
+See the [[bootstrap]](bootstrap.md) specification for details.
 
 
 ### ROM.KEYMGR-INIT
