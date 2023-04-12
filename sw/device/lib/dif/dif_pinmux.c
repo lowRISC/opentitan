@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/runtime/hart.h"
 
 #include "pinmux_regs.h"  // Generated.
 
@@ -222,6 +223,8 @@ static dif_pinmux_pad_attr_t dif_pinmux_reg_to_pad_attr(uint32_t reg_value) {
   return pad_attrs;
 }
 
+enum { kDifPinmuxPadAttrSpinWaitMicros = 5 };
+
 dif_result_t dif_pinmux_pad_write_attrs(const dif_pinmux_t *pinmux,
                                         dif_pinmux_index_t pad,
                                         dif_pinmux_pad_kind_t type,
@@ -253,6 +256,8 @@ dif_result_t dif_pinmux_pad_write_attrs(const dif_pinmux_t *pinmux,
     return kDifLocked;
   }
 
+  uint32_t reg_before = mmio_region_read32(pinmux->base_addr, reg_offset);
+
   uint32_t reg_value = bitfield_field32_write(
       0, PINMUX_MIO_PAD_ATTR_0_SLEW_RATE_0_FIELD, attrs_in.slew_rate);
   reg_value = bitfield_field32_write(
@@ -280,8 +285,16 @@ dif_result_t dif_pinmux_pad_write_attrs(const dif_pinmux_t *pinmux,
                                    attrs_in.flags & kDifPinmuxPadAttrOpenDrain);
   mmio_region_write32(pinmux->base_addr, reg_offset, reg_value);
 
+  // Wait for pull enable/disable changes to propagate to the physical pad.
+  dif_pinmux_pad_attr_t attrs_before = dif_pinmux_reg_to_pad_attr(reg_before);
+  if ((attrs_before.flags & kDifPinmuxPadAttrPullResistorEnable) !=
+      (attrs_in.flags & kDifPinmuxPadAttrPullResistorEnable)) {
+    busy_spin_micros(kDifPinmuxPadAttrSpinWaitMicros);
+  }
+
   uint32_t read_value = mmio_region_read32(pinmux->base_addr, reg_offset);
   *attrs_out = dif_pinmux_reg_to_pad_attr(read_value);
+
   if (reg_value != read_value) {
     return kDifError;
   }
@@ -436,8 +449,9 @@ dif_result_t dif_pinmux_pad_sleep_clear_state(const dif_pinmux_t *pinmux,
 dif_result_t dif_pinmux_wakeup_detector_enable(
     const dif_pinmux_t *pinmux, dif_pinmux_index_t detector,
     dif_pinmux_wakeup_config_t config) {
-  // Disable the detector before changing config, and use that function for some
-  // input checking (null pointer, lock status, and detector validity checks).
+  // Disable the detector before changing config, and use that function for
+  // some input checking (null pointer, lock status, and detector validity
+  // checks).
   dif_result_t result = dif_pinmux_wakeup_detector_disable(pinmux, detector);
   if (result != kDifOk) {
     return result;
