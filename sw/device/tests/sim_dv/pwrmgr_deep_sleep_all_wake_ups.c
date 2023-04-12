@@ -74,7 +74,7 @@ bool test_main(void) {
   uint32_t wakeup_count = 0;
   CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &wakeup_count));
 
-  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     LOG_INFO("POR reset");
     execute_test(wakeup_count, /*deep_sleep=*/true);
   } else {

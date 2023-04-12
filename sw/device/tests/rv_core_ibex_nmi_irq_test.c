@@ -294,7 +294,5 @@ bool test_main(void) {
   CHECK(ext_irq_fired == false, "Unexpected external interrupt triggered.");
   // Double check that the system has not been reset due to escalation and that
   // the reset reason is still POR.
-  pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0);
-
-  return true;
+  return UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0));
 }

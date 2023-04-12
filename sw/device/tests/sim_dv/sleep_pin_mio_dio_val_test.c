@@ -248,7 +248,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
 
-  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     uint32_t deep_powerdown_en = rand_testutils_gen32_range(0, 1);
     bool deepsleep = (deep_powerdown_en) ? true : false;
 
@@ -272,8 +272,8 @@ bool test_main(void) {
     result = lowpower_prep(&pwrmgr, &pinmux, deepsleep);
   }
 
-  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr,
-                                        kDifPwrmgrWakeupRequestSourceThree)) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
+          &pwrmgr, kDifPwrmgrWakeupRequestSourceThree)) == true) {
     // TODO: change PINMUX wakeup, not pin detector
     /**
      *  Usually this part won't be hit. UVM testbench checks the PAD output

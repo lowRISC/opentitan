@@ -135,7 +135,7 @@ bool test_main(void) {
 
   // Notice we are clearing rstmgr's RESET_INFO, so after the aon wakeup there
   // is only one bit set.
-  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     dif_pwm_t pwm;
     dif_pinmux_t pinmux;
     // Initialize pwm
@@ -185,8 +185,8 @@ bool test_main(void) {
     LOG_INFO("Issue WFI to enter sleep");
     wait_for_interrupt();
 
-  } else if (pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) {
+  } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
+                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true) {
     LOG_INFO("Wakeup reset");
 
     CHECK(UNWRAP(rstmgr_testutils_is_reset_info(

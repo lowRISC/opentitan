@@ -294,8 +294,8 @@ static void enter_low_power(bool deep_sleep) {
 static void check_wakeup_reason(void) {
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
-  CHECK(pwrmgr_testutils_is_wakeup_reason(
-            &pwrmgr, kDifPwrmgrWakeupRequestSourceFive) == true,
+  CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(
+            &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true,
         "wakeup reason wrong exp:%d  obs:%d", kDifPwrmgrWakeupRequestSourceFive,
         wakeup_reason);
 }
@@ -407,7 +407,7 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
   }
 
   // Power-on reset
-  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0) /*POR reset*/) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     LOG_INFO("POR reset");
 
     // Increment the test_step counter for the next test step
@@ -426,8 +426,9 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
 
     // Enter normal sleep mode.
     enter_low_power(/*deep_sleep=*/false);
-  } else if (pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive) /*AON timer*/) {
+  } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
+                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) ==
+             true /*AON timer*/) {
     // Cleanup after wakeup
     cleanup_wakeup_src();
 

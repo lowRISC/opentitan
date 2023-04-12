@@ -62,7 +62,7 @@ bool test_main(void) {
   IBEX_SPIN_FOR(sensor_ctrl_ast_init_done(&sensor_ctrl), 1000);
   LOG_INFO("TEST: done ast init");
 
-  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     // At POR.
     LOG_INFO("Run clock measurements right after POR");
     CHECK_STATUS_OK(
@@ -102,8 +102,8 @@ bool test_main(void) {
     LOG_INFO("TEST: Issue WFI to enter deep sleep");
     wait_for_interrupt();
 
-  } else if (pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) {
+  } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
+                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true) {
     // Fail if some measurements are enabled.
     bool all_disabled = UNWRAP(clkmgr_testutils_check_measurement_enables(
         &clkmgr, kDifToggleDisabled));

@@ -96,7 +96,7 @@ bool test_main(void) {
   IBEX_SPIN_FOR(sensor_ctrl_ast_init_done(&sensor_ctrl), 1000);
   LOG_INFO("TEST: done ast init");
 
-  CHECK(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0));
+  CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true);
 
   CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,

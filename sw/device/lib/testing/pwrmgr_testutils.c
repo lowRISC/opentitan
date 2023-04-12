@@ -24,12 +24,12 @@ status_t pwrmgr_testutils_enable_low_power(
   return OK_STATUS();
 }
 
-bool pwrmgr_testutils_is_wakeup_reason(const dif_pwrmgr_t *pwrmgr,
-                                       dif_pwrmgr_request_sources_t reasons) {
+status_t pwrmgr_testutils_is_wakeup_reason(
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_request_sources_t reasons) {
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
-  CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(pwrmgr, &wakeup_reason));
+  TRY(dif_pwrmgr_wakeup_reason_get(pwrmgr, &wakeup_reason));
 
-  return (wakeup_reason.request_sources == 0 ||
-          wakeup_reason.types == kDifPwrmgrWakeupTypeRequest) &&
-         wakeup_reason.request_sources == reasons;
+  return OK_STATUS((wakeup_reason.request_sources == 0 ||
+                    wakeup_reason.types == kDifPwrmgrWakeupTypeRequest) &&
+                   wakeup_reason.request_sources == reasons);
 }

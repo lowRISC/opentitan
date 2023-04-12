@@ -216,8 +216,8 @@ void execute_test(uint32_t wakeup_source, bool deep_sleep) {
 void check_wakeup_reason(uint32_t wakeup_source) {
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
-  CHECK(pwrmgr_testutils_is_wakeup_reason(
-            &pwrmgr, kTestWakeupSources[wakeup_source].wakeup_src) == true,
+  CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(
+            &pwrmgr, kTestWakeupSources[wakeup_source].wakeup_src)) == true,
         "wakeup reason wrong exp:%d  obs:%d",
         kTestWakeupSources[wakeup_source].wakeup_src, wakeup_reason);
 }

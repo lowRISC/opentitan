@@ -49,7 +49,7 @@ bool test_main(void) {
   // Enable pwrmgr interrupt
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
-  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     LOG_INFO("POR reset");
 
     for (size_t i = 0; i < PWRMGR_PARAM_NUM_WKUPS; ++i) {
