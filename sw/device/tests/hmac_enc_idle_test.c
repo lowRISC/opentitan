@@ -16,6 +16,7 @@
 #define TIMEOUT (1000 * 1000)
 
 OTTF_DEFINE_TEST_CONFIG();
+static dif_hmac_t hmac;
 static dif_clkmgr_t clkmgr;
 static const dif_clkmgr_hintable_clock_t kHmacClock =
     kTopEarlgreyHintableClocksMainHmac;
@@ -33,7 +34,7 @@ static bool is_hintable_clock_enabled(const dif_clkmgr_t *clkmgr,
   return clock_state == kDifToggleEnabled;
 }
 
-static void initialize_clkmgr(dif_clkmgr_hintable_clock_t clock) {
+static status_t initialize_clkmgr(dif_clkmgr_hintable_clock_t clock) {
   mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_clkmgr_init(addr, &clkmgr));
 
@@ -42,7 +43,7 @@ static void initialize_clkmgr(dif_clkmgr_hintable_clock_t clock) {
   CHECK_DIF_OK(
       dif_clkmgr_hintable_clock_get_hint(&clkmgr, clock, &clock_hint_state));
   CHECK(clock_hint_state == kDifToggleEnabled);
-  CLKMGR_TESTUTILS_CHECK_CLOCK_HINT(clkmgr, clock, kDifToggleEnabled);
+  return CLKMGR_TESTUTILS_CHECK_CLOCK_HINT(clkmgr, clock, kDifToggleEnabled);
 }
 
 // This waits for the process to end with a looming hint, checks the hint status
@@ -50,7 +51,7 @@ static void initialize_clkmgr(dif_clkmgr_hintable_clock_t clock) {
 // completion cannot be done using hmac registers since the clock will be
 // disabled as soon as the process ends, so we just wait for the clkmgr hint
 // status to indicate the clock is off, implying the process actually ended.
-static void handle_end_of_process(dif_clkmgr_hintable_clock_t clock) {
+static status_t handle_end_of_process(dif_clkmgr_hintable_clock_t clock) {
   IBEX_SPIN_FOR(!is_hintable_clock_enabled(&clkmgr, clock), TIMEOUT);
   LOG_INFO("Done");
 
@@ -63,16 +64,10 @@ static void handle_end_of_process(dif_clkmgr_hintable_clock_t clock) {
   // correctness.
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(clkmgr, clock, kDifToggleEnabled,
                                             kDifToggleEnabled);
+  return OK_STATUS();
 }
 
-bool test_main(void) {
-  dif_hmac_t hmac;
-
-  initialize_clkmgr(kHmacClock);
-
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
-  CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
-
+static status_t execute_test() {
   // With the HMAC unit idle, write the HMAC clk hint to 0 within clkmgr to
   // indicate HMAC clk can be gated and verify that the HMAC clk hint status
   // within clkmgr reads 0 (HMAC is disabled).
@@ -86,8 +81,8 @@ bool test_main(void) {
 
   // Use HMAC in SHA256 mode to generate a 256bit key from `kHmacRefLongKey`.
   CHECK_DIF_OK(dif_hmac_mode_sha256_start(&hmac, kHmacTransactionConfig));
-  hmac_testutils_push_message(&hmac, (char *)kHmacRefLongKey,
-                              sizeof(kHmacRefLongKey));
+  TRY(hmac_testutils_push_message(&hmac, (char *)kHmacRefLongKey,
+                                  sizeof(kHmacRefLongKey)));
   LOG_INFO("Pushed message");
   CHECK_STATUS_OK(
       hmac_testutils_check_message_length(&hmac, sizeof(kHmacRefLongKey) * 8));
@@ -97,7 +92,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_hmac_process(&hmac));
   LOG_INFO("Process");
 
-  handle_end_of_process(kHmacClock);
+  CHECK_STATUS_OK(handle_end_of_process(kHmacClock));
 
   dif_hmac_digest_t key_digest;
   CHECK_STATUS_OK(hmac_testutils_finish_polled(&hmac, &key_digest));
@@ -118,8 +113,16 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_hmac_process(&hmac));
   LOG_INFO("Process");
 
-  handle_end_of_process(kHmacClock);
+  CHECK_STATUS_OK(handle_end_of_process(kHmacClock));
 
-  return status_ok(
-      hmac_testutils_finish_and_check_polled(&hmac, &kHmacRefExpectedDigest));
+  return hmac_testutils_finish_and_check_polled(&hmac, &kHmacRefExpectedDigest);
+}
+
+bool test_main(void) {
+  CHECK_STATUS_OK(initialize_clkmgr(kHmacClock));
+
+  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
+  CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
+
+  return status_ok(execute_test());
 }
