@@ -98,9 +98,9 @@ bool test_main(void) {
 
   CHECK(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0));
 
-  clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+  CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
-      /*low_speed=*/false);
+      /*low_speed=*/false));
   busy_spin_micros(delay_micros);
 
   // check results
@@ -108,9 +108,9 @@ bool test_main(void) {
   clkmgr_testutils_disable_clock_counts(&clkmgr);
 
   // Start new round of measurements.
-  clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+  CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
-      /*low_speed=*/false);
+      /*low_speed=*/false));
 
   busy_spin_micros(delay_micros);
 

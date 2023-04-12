@@ -46,9 +46,9 @@ void execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk) {
   LOG_INFO("Recoverable error codes 0x%x", err_codes);
 
   LOG_INFO("Enabling clock count measurements");
-  clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+  CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
-      /*low_speed=*/false);
+      /*low_speed=*/false));
   busy_spin_micros(delay_micros);
   CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
   clkmgr_testutils_disable_clock_counts(&clkmgr);
@@ -67,9 +67,9 @@ void execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk) {
   // clock to settle.
   IBEX_SPIN_FOR(did_extclk_settle(&clkmgr), kSettleDelayMicros);
 
-  clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+  CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/true,
-      /*low_speed=*/!fast_ext_clk);
+      /*low_speed=*/!fast_ext_clk));
   busy_spin_micros(delay_micros);
   CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
   clkmgr_testutils_disable_clock_counts(&clkmgr);
