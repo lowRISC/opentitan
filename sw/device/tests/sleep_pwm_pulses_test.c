@@ -178,8 +178,8 @@ bool test_main(void) {
     CHECK_STATUS_OK(
         aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
     // Deep sleep.
-    pwrmgr_testutils_enable_low_power(&pwrmgr,
-                                      kDifPwrmgrWakeupRequestSourceFive, 0);
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive, 0));
 
     // Enter low power mode.
     LOG_INFO("Issue WFI to enter sleep");

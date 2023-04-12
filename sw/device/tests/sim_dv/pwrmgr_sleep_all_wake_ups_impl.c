@@ -207,8 +207,8 @@ void execute_test(uint32_t wakeup_source, bool deep_sleep) {
                kDifPwrmgrDomainOptionUsbClockInActivePower) |
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
 
-  pwrmgr_testutils_enable_low_power(
-      &pwrmgr, kTestWakeupSources[wakeup_source].wakeup_src, cfg);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      &pwrmgr, kTestWakeupSources[wakeup_source].wakeup_src, cfg));
   LOG_INFO("Issue WFI to enter sleep %d", wakeup_source);
   wait_for_interrupt();
 }

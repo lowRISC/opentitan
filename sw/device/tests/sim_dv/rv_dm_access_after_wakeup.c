@@ -61,8 +61,8 @@ static void put_to_sleep(dif_pwrmgr_t *pwrmgr, bool deep_sleep) {
                kDifPwrmgrDomainOptionUsbClockInActivePower) |
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
 
-  pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceOne,
-                                    cfg);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      pwrmgr, kDifPwrmgrWakeupRequestSourceOne, cfg));
   LOG_INFO("%s",
            deep_sleep ? "Entering deep sleep." : "Entering normal sleep.");
   wait_for_interrupt();

@@ -119,8 +119,8 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   }
 
   // 5. Initiate sleep mode
-  pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceThree,
-                                    pwrmgr_domain_cfg);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      pwrmgr, kDifPwrmgrWakeupRequestSourceThree, pwrmgr_domain_cfg));
   // 6. WFI()
   LOG_INFO("Entering low power mode.");
   wait_for_interrupt();

@@ -81,9 +81,9 @@ bool test_main(void) {
     busy_spin_micros(20);  // 20us
 
     // Enable low power on the next WFI with default settings.
-    pwrmgr_testutils_enable_low_power(
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
         &pwrmgr, kDifPwrmgrWakeupRequestSourceFour,
-        kDifPwrmgrDomainOptionUsbClockInActivePower);
+        kDifPwrmgrDomainOptionUsbClockInActivePower));
 
     // Enter low power mode.
     wait_for_interrupt();

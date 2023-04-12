@@ -356,8 +356,8 @@ void ast_enter_sleep_states_and_check_functionality(
     adc_setup(first_adc_setup);
 
     // set sleep mode
-    pwrmgr_testutils_enable_low_power(&pwrmgr, kDifPwrmgrWakeupRequestSourceTwo,
-                                      pwrmgr_config);
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, pwrmgr_config));
 
     // Enter low power mode.
     LOG_INFO("Issued WFI to enter sleep.");

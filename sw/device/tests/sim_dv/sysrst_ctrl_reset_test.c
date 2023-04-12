@@ -80,8 +80,8 @@ static void check_deep_sleep_wakeup(void) {
   // Setup low power.
   // Wakeup source is from sysrst_ctrl (source one).
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
-  pwrmgr_testutils_enable_low_power(&pwrmgr, kDifPwrmgrWakeupRequestSourceOne,
-                                    0);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      &pwrmgr, kDifPwrmgrWakeupRequestSourceOne, 0));
   // Issue WFI and wait for reset condition.
   test_status_set(kTestStatusInWfi);
   wait_for_interrupt();
@@ -116,8 +116,8 @@ static void check_deep_sleep_reset(void) {
   // Enable low power with wakeup source other than
   // sysrst_ctrl (e.g. source two) as we don't want
   // a wakeup request but instead a reset.
-  pwrmgr_testutils_enable_low_power(&pwrmgr, kDifPwrmgrWakeupRequestSourceTwo,
-                                    0);
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+      &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, 0));
   // Issue WFI and wait for reset condition.
   test_status_set(kTestStatusInWfi);
   wait_for_interrupt();

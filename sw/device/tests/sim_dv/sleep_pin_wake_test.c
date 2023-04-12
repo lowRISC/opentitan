@@ -153,8 +153,8 @@ bool test_main(void) {
                           kDifPwrmgrDomainOptionUsbClockInActivePower;
     }
     // Enter low power
-    pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceThree, pwrmgr_domain_cfg);
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceThree, pwrmgr_domain_cfg));
 
     LOG_INFO("Entering low power mode.");
     wait_for_interrupt();

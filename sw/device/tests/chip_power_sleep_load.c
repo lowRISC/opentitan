@@ -421,7 +421,8 @@ bool test_main(void) {
                 (kUsbSlpOff ? 0 : kDifPwrmgrDomainOptionUsbClockInLowPower) |
                 (kUsbActOff ? 0 : kDifPwrmgrDomainOptionUsbClockInActivePower) |
                 (kDeepSleep ? 0 : kDifPwrmgrDomainOptionMainPowerInLowPower));
-  pwrmgr_testutils_enable_low_power(&pwrmgr, pwrmgr_wakeups, pwrmgr_cfg);
+  CHECK_STATUS_OK(
+      pwrmgr_testutils_enable_low_power(&pwrmgr, pwrmgr_wakeups, pwrmgr_cfg));
   LOG_INFO("Power Manage configured");
 
   CHECK_DIF_OK(dif_gpio_write(&gpio, 2, 1));

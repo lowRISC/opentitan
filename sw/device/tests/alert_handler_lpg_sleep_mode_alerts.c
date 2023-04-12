@@ -281,9 +281,9 @@ static void enter_low_power(bool deep_sleep) {
 
   // Set the wake_up trigger as AON timer module
   // (kDifPwrmgrWakeupRequestSourceFive).
-  pwrmgr_testutils_enable_low_power(
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       &pwrmgr, /*wake_up_request_source*/ kDifPwrmgrWakeupRequestSourceFive,
-      cfg);
+      cfg));
   wait_for_interrupt();
 }
 

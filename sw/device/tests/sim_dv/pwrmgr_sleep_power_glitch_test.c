@@ -44,9 +44,9 @@ bool test_main(void) {
     CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
     // Configure shallow sleep.
-    pwrmgr_testutils_enable_low_power(
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
         &pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
-        kDifPwrmgrDomainOptionMainPowerInLowPower);
+        kDifPwrmgrDomainOptionMainPowerInLowPower));
 
     // This causes core_sleeping to rise and triggers the injection of the
     // power glitch. Enter shallow sleep mode.

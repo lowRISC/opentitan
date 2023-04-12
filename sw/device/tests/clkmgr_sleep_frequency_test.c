@@ -130,11 +130,11 @@ bool test_main(void) {
 
   // Put chip in normal sleep, and keep Core clock running. All io and usb
   // clocks are stopped, but we expect the stoppage won't trigger errors.
-  pwrmgr_testutils_enable_low_power(
+  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       &pwrmgr, /*wakeups=*/kDifPwrmgrWakeupRequestSourceFive,
       /*domain_config=*/kDifPwrmgrDomainOptionCoreClockInLowPower |
           kDifPwrmgrDomainOptionUsbClockInActivePower |
-          kDifPwrmgrDomainOptionMainPowerInLowPower);
+          kDifPwrmgrDomainOptionMainPowerInLowPower));
 
   LOG_INFO("TEST: Issue WFI to enter sleep");
   wait_for_interrupt();

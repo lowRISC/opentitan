@@ -212,8 +212,8 @@ bool test_main(void) {
     // Enable and enter deep sleep.
     CHECK_STATUS_OK(
         aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
-    pwrmgr_testutils_enable_low_power(&pwrmgr,
-                                      kDifPwrmgrWakeupRequestSourceFive, 0);
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive, 0));
     wait_for_interrupt();
     CHECK(false, "Fail to enter in low power mode!");
     OT_UNREACHABLE();
