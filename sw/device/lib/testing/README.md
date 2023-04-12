@@ -20,10 +20,9 @@ code will live in: `sw/device/lib/testing/test\_framework`.
 - `testutils` libraries will be named: `<IP or functionality name>_testutils.<h,c>`
 - All `testutils` function names should take on the following format: `<IP or functionality name>_testutils_<function name>()`.
   This corresponds to the format: `<filename>_<function name>()`.
-- There is no strict return typing required, though ideally most `testutils` functions should return **void** or **bool**.
-  This is because test errors should be checked in `testutils` functions themselves using the `CHECK()` macros defined in `sw/device/lib/testing/check.h`.
-  - Functions that return **bool** to represent an error should be marked with **OT_WARN_UNUSED_RESULT** to avoid mistakenly ignoring errors.
-    Return **false** to represent an error.
+- All `testutils` functions should return **status_t**, if appropriate the `kOk` return can encapsulate a value such as a **bool**.
+  `testutils` functions should never abort, which means that `CHECK*()` macros shall not be used but its siblings `TRY_CHECK*()` defined in `sw/device/lib/testing/check.h` instead.
+- All `testutils` functions should be marked with **OT_WARN_UNUSED_RESULT** to avoid mistakenly ignoring errors.
 - Try to keep `testutils` libraries toplevel agnostic (e.g., don’t include `hw/top_earlgrey/sw/autogen/top_earlgrey.h` if you can avoid it).
   This means `dif_<ip>_init()` DIFs should be invoked in chip-level tests, *not* `testutils`, and the DIF handles should be passed in as parameters to `testutils` functions.
 - Pass-through `sw/device/lib/dif_base.h` types where appropriate.
