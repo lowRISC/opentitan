@@ -65,9 +65,10 @@ bool test_main(void) {
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
     // At POR.
     LOG_INFO("Run clock measurements right after POR");
-    clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
-        &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
-        /*low_speed=*/false);
+    CHECK_STATUS_OK(
+        clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+            &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
+            /*low_speed=*/false));
     busy_spin_micros(delay_micros);
 
     // check results
@@ -85,9 +86,10 @@ bool test_main(void) {
         aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 
     LOG_INFO("Start clock measurements to cause an error for main clk.");
-    clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
-        &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/true,
-        /*low_speed=*/false);
+    CHECK_STATUS_OK(
+        clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+            &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/true,
+            /*low_speed=*/false));
     // Disable writes to measure ctrl registers.
     CHECK_DIF_OK(dif_clkmgr_measure_ctrl_disable(&clkmgr));
 
@@ -121,9 +123,10 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_clkmgr_recov_err_code_clear_codes(&clkmgr, UINT32_MAX));
 
     LOG_INFO("TEST: one more measurement");
-    clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
-        &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
-        /*low_speed=*/false);
+    CHECK_STATUS_OK(
+        clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+            &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
+            /*low_speed=*/false));
     busy_spin_micros(delay_micros);
     CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
     clkmgr_testutils_disable_clock_counts(&clkmgr);

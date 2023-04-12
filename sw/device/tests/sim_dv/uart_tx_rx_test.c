@@ -550,8 +550,8 @@ bool test_main(void) {
   if (kUseExtClk) {
     config_external_clock(&clkmgr);
   }
-  clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
-      &clkmgr, /*jitter_enabled=*/false, kUseExtClk, kUseLowSpeedSel);
+  CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+      &clkmgr, /*jitter_enabled=*/false, kUseExtClk, kUseLowSpeedSel));
 
   // Initialize the UART.
   mmio_region_t chosen_uart_region = mmio_region_from_addr(uart_base_addr);

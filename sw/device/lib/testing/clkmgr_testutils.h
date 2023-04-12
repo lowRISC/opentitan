@@ -87,8 +87,10 @@ status_t clkmgr_testutils_enable_clock_count(const dif_clkmgr_t *clkmgr,
  * @param external_clk If true the external clock is enabled.
  * @param low_speed If true and external clock is enabled, the external
  *                  clock is running at 48 Mhz.
+ * @return The result of the operation.
  */
-void clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+OT_WARN_UNUSED_RESULT
+status_t clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
     const dif_clkmgr_t *clkmgr, bool jitter_enabled, bool external_clk,
     bool low_speed);
 

@@ -128,7 +128,7 @@ status_t clkmgr_testutils_enable_clock_count(const dif_clkmgr_t *clkmgr,
   return OK_STATUS();
 }
 
-void clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+status_t clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
     const dif_clkmgr_t *clkmgr, bool jitter_enabled, bool external_clk,
     bool low_speed) {
   static bool counts_initialized = false;
@@ -136,7 +136,7 @@ void clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
     initialize_expected_counts();
     counts_initialized = true;
   }
-  CHECK(!(external_clk && jitter_enabled));
+  TRY_CHECK(!(external_clk && jitter_enabled));
   for (int clk = 0; clk < ARRAYSIZE(kNoJitterCountInfos); ++clk) {
     const expected_count_info_t *count_info;
     if (jitter_enabled) {
@@ -159,11 +159,12 @@ void clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
     } else {
       count_info = &kNoJitterCountInfos[clk];
     }
-    CHECK_STATUS_OK(clkmgr_testutils_enable_clock_count(
+    TRY(clkmgr_testutils_enable_clock_count(
         clkmgr, (dif_clkmgr_measure_clock_t)clk,
         count_info->count - count_info->variability,
         count_info->count + count_info->variability));
   }
+  return OK_STATUS();
 }
 
 bool clkmgr_testutils_check_measurement_enables(const dif_clkmgr_t *clkmgr,

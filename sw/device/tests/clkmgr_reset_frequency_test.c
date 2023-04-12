@@ -60,9 +60,10 @@ bool test_main(void) {
 
     // Configure the counters to trigger an error by setting them for external
     // clocks.
-    clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
-        &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/true,
-        /*low_speed=*/true);
+    CHECK_STATUS_OK(
+        clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+            &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/true,
+            /*low_speed=*/true));
     busy_spin_micros(delay_micros);
 
     // Check we get errors, but let the counters keep going.
