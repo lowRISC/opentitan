@@ -16,7 +16,7 @@ These specifications include:
 *   [Address space unlock module [unlock]]()
 *   [Bootstrap module [bootstrap]]()
 *   [Bootstrap decoding]()
-*   [Shutdown Module [shutdown]]()
+*   [Shutdown Module [shutdown]](shutdown.md)
 *   [Chip-Specific Startup [startup]]()
 *   [Mask ROM Pin Configuration [pinconfig]]()
 *   [Memory Protection [memprotect]](memory_protection.md)
@@ -174,7 +174,7 @@ See the [[memory protection]](memory_protection.md) specification for details.
 *   Initialize the shutdown module with values from OTP.
 *   Loads alert configurations and alert class configurations from OTP into the alert handler block.
 
-See the [[shutdown]]() specification for details.
+See the [[shutdown]](shutdown.md) specification for details.
 
 
 ### ROM.PINMUX-INIT
@@ -267,4 +267,4 @@ See the [[sigverify]]() specification for details.
     *   Scramble SRAM.
     *   Hang (WFI) and wait for watchdog reset.
 
-See the [[shutdown]]() specification for details.
+See the [[shutdown]](shutdown.md) specification for details.
