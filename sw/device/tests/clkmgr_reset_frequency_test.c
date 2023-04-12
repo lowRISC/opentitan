@@ -75,8 +75,10 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
   } else if (rstmgr_testutils_reset_info_any(&rstmgr, kDifRstmgrResetInfoSw)) {
     LOG_INFO("Back from rstmgr SW reset");
-    CHECK(clkmgr_testutils_check_measurement_enables(&clkmgr,
-                                                     kDifToggleDisabled));
+    bool all_disabled = UNWRAP(clkmgr_testutils_check_measurement_enables(
+        &clkmgr, kDifToggleDisabled));
+    CHECK(all_disabled);
+
     CHECK_STATUS_OK(clkmgr_testutils_check_measurement_counts(&clkmgr));
     return true;
   } else {

@@ -143,7 +143,9 @@ bool test_main(void) {
 
   // Interrupt happened. Check the measurement state.
   CHECK_STATUS_OK(clkmgr_testutils_check_measurement_counts(&clkmgr));
-  CHECK(clkmgr_testutils_check_measurement_enables(&clkmgr, kDifToggleEnabled));
+  bool all_enabled = UNWRAP(
+      clkmgr_testutils_check_measurement_enables(&clkmgr, kDifToggleEnabled));
+  CHECK(all_enabled);
 
   return true;
 }
