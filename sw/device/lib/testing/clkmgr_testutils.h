@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_CLKMGR_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_CLKMGR_TESTUTILS_H_
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -17,11 +18,12 @@
  * @param clock The transactional clock ID.
  * @return The transactional block's clock status.
  */
-inline bool clkmgr_testutils_get_trans_clock_status(
+static inline bool clkmgr_testutils_get_trans_clock_status(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock) {
   dif_toggle_t state;
-  CHECK_DIF_OK(dif_clkmgr_hintable_clock_get_enabled(clkmgr, clock, &state));
-  return state == kDifToggleEnabled;
+  dif_result_t res =
+      dif_clkmgr_hintable_clock_get_enabled(clkmgr, clock, &state);
+  return res == kDifOk && state == kDifToggleEnabled;
 }
 
 /**
@@ -36,17 +38,20 @@ inline bool clkmgr_testutils_get_trans_clock_status(
  * @param clock The transactional clock ID.
  * @param exp_clock_enabled Expected clock status.
  * @param timeout_usec Timeout in microseconds.
+ * @return The result of the operation.
  */
-inline void clkmgr_testutils_check_trans_clock_gating(
+OT_WARN_UNUSED_RESULT
+inline status_t clkmgr_testutils_check_trans_clock_gating(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
     bool exp_clock_enabled, uint32_t timeout_usec) {
-  CHECK_DIF_OK(dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, 0x0));
+  TRY(dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, 0x0));
 
-  IBEX_SPIN_FOR(clkmgr_testutils_get_trans_clock_status(clkmgr, clock) ==
-                    exp_clock_enabled,
-                timeout_usec);
+  IBEX_TRY_SPIN_FOR(clkmgr_testutils_get_trans_clock_status(clkmgr, clock) ==
+                        exp_clock_enabled,
+                    timeout_usec);
 
-  CHECK_DIF_OK(dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, 0x1));
+  TRY(dif_clkmgr_hintable_clock_set_hint(clkmgr, clock, 0x1));
+  return OK_STATUS();
 }
 
 /**
