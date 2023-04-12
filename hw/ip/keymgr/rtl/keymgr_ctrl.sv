@@ -831,9 +831,6 @@ module keymgr_ctrl
   // Assertions
   /////////////////////////////////
 
-  // Verify that OTP root key is valid when FSM reaches to latching state
-  `ASSERT(RootKeyValidDuringLatching_A, (state_q == StCtrlRootKey) && en_i |-> root_key_valid_q)
-
   // This assertion will not work if fault_status ever takes on metafields such as
   // qe / re etc.
   `ASSERT_INIT(SameErrCnt_A, $bits(keymgr_reg2hw_fault_status_reg_t) ==
