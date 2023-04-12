@@ -98,10 +98,10 @@ status_t clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
  * Checks that there are no clock measurement errors.
  *
  * @param clkmgr A clkmgr DIF handle.
- * @return False if any measurement has errors.
+ * @return Return `kInternal` if any measurement has errors, otherwise `kOk(0)`.
  */
 OT_WARN_UNUSED_RESULT
-bool clkmgr_testutils_check_measurement_counts(const dif_clkmgr_t *clkmgr);
+status_t clkmgr_testutils_check_measurement_counts(const dif_clkmgr_t *clkmgr);
 
 /**
  * Check all measurement enables.

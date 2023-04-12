@@ -104,7 +104,7 @@ bool test_main(void) {
   busy_spin_micros(delay_micros);
 
   // check results
-  CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
+  CHECK_STATUS_OK(clkmgr_testutils_check_measurement_counts(&clkmgr));
   CHECK_STATUS_OK(clkmgr_testutils_disable_clock_counts(&clkmgr));
 
   // Start new round of measurements.
@@ -142,7 +142,7 @@ bool test_main(void) {
   CHECK(isr_entered);
 
   // Interrupt happened. Check the measurement state.
-  CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
+  CHECK_STATUS_OK(clkmgr_testutils_check_measurement_counts(&clkmgr));
   CHECK(clkmgr_testutils_check_measurement_enables(&clkmgr, kDifToggleEnabled));
 
   return true;

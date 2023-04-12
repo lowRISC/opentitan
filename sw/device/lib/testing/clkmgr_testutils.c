@@ -193,19 +193,19 @@ status_t clkmgr_testutils_disable_clock_counts(const dif_clkmgr_t *clkmgr) {
   return OK_STATUS();
 }
 
-bool clkmgr_testutils_check_measurement_counts(const dif_clkmgr_t *clkmgr) {
-  bool success = true;
+status_t clkmgr_testutils_check_measurement_counts(const dif_clkmgr_t *clkmgr) {
+  status_t result = OK_STATUS();
   dif_clkmgr_recov_err_codes_t err_codes;
-  CHECK_DIF_OK(dif_clkmgr_recov_err_code_get_codes(clkmgr, &err_codes));
+  TRY(dif_clkmgr_recov_err_code_get_codes(clkmgr, &err_codes));
   if (err_codes != 0) {
     LOG_ERROR("Unexpected recoverable error codes 0x%x", err_codes);
-    success = false;
+    result = INTERNAL();
   } else {
     LOG_INFO("Clock measurements are okay");
   }
   // Clear recoverable errors.
-  CHECK_DIF_OK(dif_clkmgr_recov_err_code_clear_codes(clkmgr, ~0u));
-  return success;
+  TRY(dif_clkmgr_recov_err_code_clear_codes(clkmgr, ~0u));
+  return result;
 }
 
 status_t clkmgr_testutils_enable_external_clock_blocking(

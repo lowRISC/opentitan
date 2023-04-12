@@ -72,7 +72,7 @@ bool test_main(void) {
     busy_spin_micros(delay_micros);
 
     // check results
-    CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
+    CHECK_STATUS_OK(clkmgr_testutils_check_measurement_counts(&clkmgr));
     CHECK_STATUS_OK(clkmgr_testutils_disable_clock_counts(&clkmgr));
 
     // Set wakeup timer to 100 us to have enough down time, and also wait before
@@ -128,7 +128,7 @@ bool test_main(void) {
             &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
             /*low_speed=*/false));
     busy_spin_micros(delay_micros);
-    CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
+    CHECK_STATUS_OK(clkmgr_testutils_check_measurement_counts(&clkmgr));
     CHECK_STATUS_OK(clkmgr_testutils_disable_clock_counts(&clkmgr));
 
     LOG_INFO("TEST: done");
