@@ -39,7 +39,7 @@ bool test_main(void) {
   if (UNWRAP(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor))) {
     LOG_INFO("Powered up for the first time, begin test");
 
-    CHECK(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0));
+    CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true);
 
     CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 

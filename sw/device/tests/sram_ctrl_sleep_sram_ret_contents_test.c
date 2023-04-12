@@ -205,8 +205,8 @@ bool test_main(void) {
     LOG_INFO("wake up from deep sleep with ret_non_scrambled: %x",
              ret_non_scrambled);
 
-    CHECK(pwrmgr_testutils_is_wakeup_reason(&pwrmgr,
-                                            kDifPwrmgrWakeupRequestSourceFive));
+    CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(
+              &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true);
     // data preserved
     retention_sram_check((check_config_t){.do_write = false, .is_equal = true});
 

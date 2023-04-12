@@ -125,7 +125,7 @@ bool test_main(void) {
       (kChannel1MinHighByte << 8) | kChannel1MinLowByte;
 
   // Assuming the chip hasn't slept yet, wakeup reason should be empty.
-  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     LOG_INFO("POR reset.");
     interrupt_expected = false;
     en_plic_irqs(&plic);
@@ -172,8 +172,8 @@ bool test_main(void) {
     LOG_INFO("Issued WFI to enter sleep.");
     test_status_set(kTestStatusInWfi);
     wait_for_interrupt();
-  } else if (pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo)) {
+  } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
+                 &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo)) == true) {
     LOG_INFO("Wakeup reset.");
     interrupt_expected = true;
     en_plic_irqs(&plic);

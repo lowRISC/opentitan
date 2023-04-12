@@ -183,7 +183,7 @@ void ottf_external_isr(void) { interrupt_serviced = true; }
 bool test_main(void) {
   init_peripherals();
 
-  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     LOG_INFO("POR reset");
     CHECK(UNWRAP(
         rstmgr_testutils_reset_info_any(&rstmgr, kDifRstmgrResetInfoPor)));
@@ -220,8 +220,8 @@ bool test_main(void) {
     wait_for_interrupt();
     CHECK(false, "Fail to enter in low power mode!");
     OT_UNREACHABLE();
-  } else if (pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) {
+  } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
+                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true) {
     LOG_INFO("Wakeup reset");
     CHECK(UNWRAP(rstmgr_testutils_is_reset_info(
         &rstmgr, kDifRstmgrResetInfoLowPowerExit)));

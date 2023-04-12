@@ -32,9 +32,11 @@ status_t pwrmgr_testutils_enable_low_power(
  *
  * @param pwrmgr A power manager handle.
  * @param reasons A bit mask of reasons.
+ * @return `kOk(res)` where `res` is true when wakeup reasons matches with
+ * `reasons`, otherwise `kInternal`.
  */
-
-bool pwrmgr_testutils_is_wakeup_reason(const dif_pwrmgr_t *pwrmgr,
-                                       dif_pwrmgr_request_sources_t reasons);
+OT_WARN_UNUSED_RESULT
+status_t pwrmgr_testutils_is_wakeup_reason(
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_request_sources_t reasons);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_PWRMGR_TESTUTILS_H_

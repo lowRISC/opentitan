@@ -86,7 +86,7 @@ bool test_main(void) {
   int wakeup_unit = get_wakeup_unit(wakeup_count);
   bool deep_sleep = get_deep_sleep(wakeup_count);
 
-  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     LOG_INFO("POR reset");
     execute_test(wakeup_unit, deep_sleep);
     check_wakeup_reason(wakeup_unit);

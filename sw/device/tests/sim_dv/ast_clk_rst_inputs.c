@@ -327,7 +327,8 @@ void ast_enter_sleep_states_and_check_functionality(
     deepsleep = false;
   }
 
-  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, kDifNoWakeup)) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, kDifNoWakeup)) ==
+      true) {
     entropy_config(entropy_src_config);
 
     // Verify that the FIFO depth is non-zero via SW - indicating the reception
@@ -369,8 +370,8 @@ void ast_enter_sleep_states_and_check_functionality(
 
     interrupt_serviced = false;
 
-  } else if (pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo)) {
+  } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
+                 &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo)) == true) {
     if (deepsleep) {
       if (read_fifo_depth(&entropy_src) != 0)
         LOG_ERROR("read_fifo_depth after reset=%0d should be 0",

@@ -115,7 +115,7 @@ void prepare_to_exit(void) {
   CHECK(ext_irq_fired == false, "Unexpected external interrupt triggered.");
 
   // Check that the system has not been reset due to escalation
-  pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0);
+  CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true);
 
   CHECK_STATUS_OK(aon_timer_testutils_shutdown(&aon_timer));
 
