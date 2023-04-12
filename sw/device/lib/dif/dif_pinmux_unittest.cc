@@ -133,6 +133,7 @@ TEST_F(PinmuxTest, PadAttributes) {
             kDifLocked);
 
   EXPECT_READ32(PINMUX_MIO_PAD_ATTR_REGWEN_1_REG_OFFSET, 1);
+  EXPECT_READ32(PINMUX_MIO_PAD_ATTR_1_REG_OFFSET, 0);
   EXPECT_WRITE32(PINMUX_MIO_PAD_ATTR_1_REG_OFFSET,
                  {
                      {PINMUX_MIO_PAD_ATTR_1_INVERT_1_BIT, 1},
@@ -157,6 +158,7 @@ TEST_F(PinmuxTest, PadAttributes) {
   EXPECT_EQ(attrs_check.flags, attrs.flags);
 
   EXPECT_READ32(PINMUX_DIO_PAD_ATTR_REGWEN_3_REG_OFFSET, 1);
+  EXPECT_READ32(PINMUX_DIO_PAD_ATTR_3_REG_OFFSET, 0);
   EXPECT_WRITE32(PINMUX_DIO_PAD_ATTR_3_REG_OFFSET,
                  {
                      {PINMUX_DIO_PAD_ATTR_3_INVERT_3_BIT, 1},
