@@ -272,7 +272,6 @@ module secure_subsystem_synth_wrap
     .axi_req_t(slv_req_t),
     .axi_rsp_t(slv_rsp_t)
    ) u_RoT (
-    .mio_in_i('0),
     .mio_attr_o(),
     .dio_attr_o(),
     .adc_req_o(),
