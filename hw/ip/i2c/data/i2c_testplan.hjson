@@ -244,6 +244,22 @@
       stage: V2
       tests: [""]
     }
+    {
+      name: i2c_host_mode_toggle
+      desc: '''
+            Host mode: disable host mode during host mode sequence
+
+            Stimulus:
+              - Host sends an address and data but receives NAK response
+                since agent is reset before transaction is complete and
+                host mode is disabled
+            Checking:
+              - Check if DUT goes to Idle state after Host mode is disabled
+              - Check that transactions process normally after recovery by running a smoketest vseq.
+            '''
+      stage: V2
+      tests: ["i2c_host_mode_toggle"]
+    }
 
     //-----------------------------------------------
     // Tests for I2C DUT in TARGET mode
