@@ -105,7 +105,7 @@ bool test_main(void) {
 
   // check results
   CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
-  clkmgr_testutils_disable_clock_counts(&clkmgr);
+  CHECK_STATUS_OK(clkmgr_testutils_disable_clock_counts(&clkmgr));
 
   // Start new round of measurements.
   CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(

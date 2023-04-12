@@ -73,7 +73,7 @@ bool test_main(void) {
 
     // check results
     CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
-    clkmgr_testutils_disable_clock_counts(&clkmgr);
+    CHECK_STATUS_OK(clkmgr_testutils_disable_clock_counts(&clkmgr));
 
     // Set wakeup timer to 100 us to have enough down time, and also wait before
     // entering deep sleep to have a chance to measure before sleeping.
@@ -129,7 +129,7 @@ bool test_main(void) {
             /*low_speed=*/false));
     busy_spin_micros(delay_micros);
     CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
-    clkmgr_testutils_disable_clock_counts(&clkmgr);
+    CHECK_STATUS_OK(clkmgr_testutils_disable_clock_counts(&clkmgr));
 
     LOG_INFO("TEST: done");
     return true;
