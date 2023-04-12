@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 
 #include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
@@ -19,6 +20,7 @@ enum {
    * Base address of the pinmux registers.
    */
   kBase = TOP_EARLGREY_PINMUX_AON_BASE_ADDR,
+  kPadAttrSpinWaitCycles = 500,  // 500 cycles is 5us with a 100MHz clock
 };
 
 /**
@@ -134,6 +136,12 @@ void pinmux_init(void) {
     enable_pull_down(kInputSwStrap0.pad);
     enable_pull_down(kInputSwStrap1.pad);
     enable_pull_down(kInputSwStrap2.pad);
+    // Wait for pull downs to propagate to the physical pads.
+    CSR_WRITE(CSR_REG_MCYCLE, 0);
+    uint32_t mcycle;
+    do {
+      CSR_READ(CSR_REG_MCYCLE, &mcycle);
+    } while (mcycle < kPadAttrSpinWaitCycles);
     configure_input(kInputSwStrap0);
     configure_input(kInputSwStrap1);
     configure_input(kInputSwStrap2);

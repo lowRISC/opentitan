@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
+#include "sw/device/silicon_creator/lib/base/mock_csr.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
@@ -23,6 +24,7 @@ class PinmuxTest : public rom_test::RomTest {
   uint32_t base_ = TOP_EARLGREY_PINMUX_AON_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
   rom_test::MockOtp otp_;
+  mock_csr::MockCsr csr_;
 };
 
 class InitTest : public PinmuxTest {
@@ -79,6 +81,10 @@ TEST_F(InitTest, WithBootstrap) {
                      {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
   EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc2),
                      {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
+  EXPECT_CSR_WRITE(CSR_REG_MCYCLE, 0);
+  for (size_t i = 0; i < 6; ++i) {
+    EXPECT_CSR_READ(CSR_REG_MCYCLE, i * 100);
+  }
   EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio22),
                      kTopEarlgreyPinmuxInselIoc0)
   EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio23),

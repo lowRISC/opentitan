@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
+load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 
 package(default_visibility = ["//visibility:public"])
@@ -441,8 +441,9 @@ cc_library(
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/runtime:hart",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/drivers:otp",
     ],
@@ -455,6 +456,7 @@ cc_test(
         ":pinmux",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
