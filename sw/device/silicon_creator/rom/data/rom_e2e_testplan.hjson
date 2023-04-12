@@ -676,7 +676,7 @@
               - Log so that test can be reproduced.
             - Apply bootstrap pin strapping and reset the chip.
             - Load the image.
-            - Verify that boot fails with the expected `BFV`: `kErrorSigverifyBadEncodedMessage`.
+            - Verify that boot fails with the expected `BFV`: `kErrorSigverifyBadRsaSignature`.
             - Repeat the steps above for TEST, DEV, PROD, PROD_END, and RMA.
 
             See `rom_e2e_boot_policy_valid`.

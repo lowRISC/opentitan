@@ -2201,7 +2201,7 @@ BOOT_POLICY_VALID_CASES = [
         cw310 = cw310_params(
             bitstream = "bitstream_boot_policy_valid_{}".format(lc_state),
             exit_failure = MSG_PASS if a["desc"] == b["desc"] and a["desc"] == "bad" else DEFAULT_TEST_FAILURE_MSG,
-            exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
+            exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
         key = "multislot",
@@ -2995,17 +2995,17 @@ SIGVERIFY_BAD_CASES = [
     {
         "a": "nothing",
         "b": "bad",
-        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG),
+        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE),
     },
     {
         "a": "bad",
         "b": "nothing",
-        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG),
+        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE),
     },
     {
         "a": "bad",
         "b": "bad",
-        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG),
+        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE),
     },
     {
         "a": "nothing",
@@ -3270,7 +3270,7 @@ otp_json(
     visibility = ["//visibility:private"],
 ) for lc_state, lc_state_val in get_lc_items()]
 
-_SIGVERIFY_FAIL_MSG = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG))
+_SIGVERIFY_FAIL_MSG = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE))
 
 device_id_test_cases = [
     {
