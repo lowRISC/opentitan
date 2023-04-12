@@ -6,7 +6,7 @@
 
 /**
  * This library implements hash computation as specified in FIPS PUB 180-4
- * "Secure Hash Standard (SHS)".
+ * "Secure Hash Standard (SHS)" for the SHA-512 and SHA-384 variants.
  *
  * Terminology within the comments in this library is based (as much as
  * possible) on the terminology of FIPS 180-4.
@@ -18,6 +18,14 @@
  * Upercase W_i denotes the i-th word from the message schedule.
  * Uppercase M_i denotes the i_th message word of the current chunk.
  * Uppercase K_i denotes the i-th round constant.
+ *
+ * Note on SHA-384: SHA-384 uses the same base algorithm as SHA-512. The
+ * only differences are:
+ *    - different intial hash values for each variant
+ *    - for SHA-384 the message digest is truncated to 384 bit
+ *      (only the first 6 final hash values are used)
+ * Both aspects are out of scope of this implementation. Therefore, this
+ * implementation provides the base algorithm for bose variants.
  */
 
 
@@ -25,7 +33,7 @@
 
 
 /**
- * Compute SHA-512 hash
+ * Compute SHA-512 (or SHA-384) hash
  *
  * Updates the SHA-512 state for n subsequent 1024-bit chunks of a
  * pre-formatted message.
