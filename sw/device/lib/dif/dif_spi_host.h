@@ -345,6 +345,25 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_host_get_status(const dif_spi_host_t *spi_host,
                                      dif_spi_host_status_t *status);
 
+/**
+ * Issues a command segment to a spi_host.
+ *
+ * @param spi_host A SPI Host handle.
+ * @param length The number of 1-byte burst for read and write segments, or the
+ * number of cycles for dummy segments.
+ * @param speed Which speed the transmission should use.
+ * @param direction Which direction the operation should use.
+ * @param last_segment If true the chip select line is raised after the
+ * transmission, otherwise it is kept low.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_host_write_command(const dif_spi_host_t *spi_host,
+                                        uint16_t length,
+                                        dif_spi_host_width_t speed,
+                                        dif_spi_host_direction_t direction,
+                                        bool last_segment);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

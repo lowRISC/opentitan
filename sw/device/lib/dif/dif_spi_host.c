@@ -476,3 +476,15 @@ dif_result_t dif_spi_host_get_status(const dif_spi_host_t *spi_host,
 
   return kDifOk;
 }
+
+dif_result_t dif_spi_host_write_command(const dif_spi_host_t *spi_host,
+                                        uint16_t length,
+                                        dif_spi_host_width_t speed,
+                                        dif_spi_host_direction_t direction,
+                                        bool last_segment) {
+  if (spi_host == NULL) {
+    return kDifBadArg;
+  }
+  write_command_reg(spi_host, length, speed, direction, last_segment);
+  return kDifOk;
+}
