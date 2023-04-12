@@ -1,0 +1,12 @@
+diff --git a/src/target/riscv/riscv-013.c b/src/target/riscv/riscv-013.c
+index 4e6c8dc36..c9b4eb64e 100644
+--- a/src/target/riscv/riscv-013.c
++++ b/src/target/riscv/riscv-013.c
+@@ -598,6 +598,7 @@ static int dmi_op_timeout(struct target *target, uint32_t *data_in,
+ 			break;
+ 		} else {
+ 			LOG_ERROR("failed %s at 0x%x, status=%d", op_name, address, status);
++			dtmcontrol_scan(target, DTM_DTMCS_DMIRESET);
+ 			return ERROR_FAIL;
+ 		}
+ 		if (time(NULL) - start > timeout_sec)
