@@ -16,7 +16,7 @@ static const char *measure_clock_names[kDifClkmgrMeasureClockUsb + 1] = {
 extern bool clkmgr_testutils_get_trans_clock_status(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock);
 
-extern void clkmgr_testutils_check_trans_clock_gating(
+extern status_t clkmgr_testutils_check_trans_clock_gating(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
     bool exp_clock_enabled, uint32_t timeout_usec);
 
