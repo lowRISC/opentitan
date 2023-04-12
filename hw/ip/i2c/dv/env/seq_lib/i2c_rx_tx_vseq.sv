@@ -18,9 +18,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         while (!cfg.under_reset && do_interrupt) process_interrupts();
       end
       begin
-        host_send_trans(.max_trans(1),
-                        .trans_type(ReadOnly),
-                        .read(1));
+        host_send_trans(.max_trans(num_trans));
         do_interrupt = 1'b0; // gracefully stop process_interrupts
       end
     join
@@ -60,7 +58,6 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rw_bit)
           rw_bit = (trans_type  == WriteOnly) ? 1'b0 :
                    ((trans_type == ReadOnly)  ? 1'b1 : rw_bit);
-
           // program address for folowing transaction types
           chained_read = fmt_item.read && fmt_item.rcont;
           if ((cur_tran == 1'b1) ||    // first read transaction
