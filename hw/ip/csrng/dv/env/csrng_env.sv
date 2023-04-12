@@ -35,9 +35,10 @@ class csrng_env extends cip_base_env #(
                        ::type_id::create("m_aes_halt_agent", this);
     uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(1)))
         ::set(this, "m_aes_halt_agent*", "cfg", cfg.m_aes_halt_agent_cfg);
-    cfg.m_aes_halt_agent_cfg.agent_type = push_pull_agent_pkg::PullAgent;
-    cfg.m_aes_halt_agent_cfg.if_mode    = dv_utils_pkg::Host;
-    cfg.m_aes_halt_agent_cfg.en_cov     = cfg.en_cov;
+    cfg.m_aes_halt_agent_cfg.agent_type          = push_pull_agent_pkg::PullAgent;
+    cfg.m_aes_halt_agent_cfg.if_mode             = dv_utils_pkg::Host;
+    cfg.m_aes_halt_agent_cfg.pull_handshake_type = push_pull_agent_pkg::FourPhase;
+    cfg.m_aes_halt_agent_cfg.en_cov              = cfg.en_cov;
 
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       string edn_agent_name = $sformatf("m_edn_agent[%0d]", i);
