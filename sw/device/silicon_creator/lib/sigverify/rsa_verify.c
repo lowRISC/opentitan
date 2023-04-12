@@ -124,7 +124,7 @@ static rom_error_t sigverify_encoded_message_check(
 
   // Step 2: Reduce `enc_msg` to produce the value to write to flash_ctrl EXEC
   // register (`flash_exec`) and the return value (`result`).
-  *flash_exec = 0;
+  uint32_t flash_exec_rsa = 0;
   uint32_t diff = 0;
   for (i = 0; launder32(i) < kSigVerifyRsaNumWords; ++i) {
     // Following three statements set `diff` to `UINT32_MAX` if `enc_msg[i]` is
@@ -133,16 +133,17 @@ static rom_error_t sigverify_encoded_message_check(
     diff |= ~diff + 1;          // Set upper bits to 1 if not 0, no change o/w.
     diff |= ~(diff >> 31) + 1;  // Set to all 1s if MSB is set, no change o/w.
 
-    *flash_exec ^= enc_msg_ptr[i];
-    // Set `flash_exec` to `UINT32_MAX` if `enc_msg` is incorrect.
-    *flash_exec |= diff;
+    flash_exec_rsa ^= enc_msg_ptr[i];
+    // Set `flash_exec_rsa` to `UINT32_MAX` if `enc_msg` is incorrect.
+    flash_exec_rsa |= diff;
   }
   HARDENED_CHECK_EQ(i, kSigVerifyRsaNumWords);
 
   // Note: `kSigverifyFlashExec` is defined such that the following operation
   // produces `kErrorOk`.
   rom_error_t result =
-      (*flash_exec << 21 ^ *flash_exec << 10 ^ *flash_exec >> 1) >> 21;
+      (flash_exec_rsa << 21 ^ flash_exec_rsa << 10 ^ flash_exec_rsa >> 1) >> 21;
+  *flash_exec ^= flash_exec_rsa;
   if (launder32(result) == kErrorOk) {
     HARDENED_CHECK_EQ(result, kErrorOk);
     return result;
@@ -196,18 +197,23 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
                                  const hmac_digest_t *act_digest,
                                  lifecycle_state_t lc_state,
                                  uint32_t *flash_exec) {
-  *flash_exec = UINT32_MAX;
   hardened_bool_t use_sw = sigverify_use_sw_rsa_verify(lc_state);
   sigverify_rsa_buffer_t enc_msg;
+  rom_error_t error = kErrorSigverifyBadRsaSignature;
   switch (use_sw) {
     case kHardenedBoolTrue:
-      RETURN_IF_ERROR(sigverify_mod_exp_ibex(key, signature, &enc_msg));
+      error = sigverify_mod_exp_ibex(key, signature, &enc_msg);
       break;
     case kHardenedBoolFalse:
-      RETURN_IF_ERROR(sigverify_mod_exp_otbn(key, signature, &enc_msg));
+      error = sigverify_mod_exp_otbn(key, signature, &enc_msg);
       break;
     default:
       HARDENED_UNREACHABLE();
   }
+  if (launder32(error) != kErrorOk) {
+    *flash_exec ^= UINT32_MAX;
+    return error;
+  }
+  HARDENED_CHECK_EQ(error, kErrorOk);
   return sigverify_encoded_message_check(&enc_msg, act_digest, flash_exec);
 }
