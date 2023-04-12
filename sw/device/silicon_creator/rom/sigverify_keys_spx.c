@@ -23,7 +23,9 @@ rom_error_t sigverify_spx_key_get(uint32_t key_id, lifecycle_state_t lc_state,
           .step = kSigverifySpxKeysStep,
       },
       &rom_key);
-  RETURN_IF_ERROR(error);
+  if (error != kErrorOk) {
+    return kErrorSigverifyBadSpxKey;
+  }
   *key = &((const sigverify_rom_spx_key_t *)rom_key)->entry.key;
   return error;
 }

@@ -42,7 +42,7 @@ CONST = struct(
         ),
         SIGVERIFY = struct(
             BAD_ENCODED_MSG = 0x01535603,
-            BAD_KEY = 0x02535603,
+            BAD_RSA_KEY = 0x04535603,
         ),
         BOOT_POLICY = struct(
             BAD_IDENTIFIER = 0x0142500d,

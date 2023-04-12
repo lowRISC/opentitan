@@ -756,7 +756,7 @@ opentitan_functest(
     name = "sigverify_key_auth",
     cw310 = cw310_params(
         exit_failure = MSG_PASS,
-        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_KEY)),
+        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY)),
     ),
     key = "unauthorized_0",
     ot_flash_binary = ":empty_test_slot_a",
@@ -3102,11 +3102,11 @@ SIGVERIFY_FULL_KEY_SET = FAKE_ALL_KEYS
         cw310 = cw310_params(
             bitstream = ":bitstream_sigverify_key_type_{}".format(lc_state),
             exit_failure = MSG_PASS if key not in LC_KEY_TYPES[lc_state_val] else MSG_TEMPLATE_BFV_LCV.format(
-                hex_digits(CONST.BFV.SIGVERIFY.BAD_KEY),
+                hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY),
                 hex_digits(lc_state_val),
             ),
             exit_success = MSG_PASS if key in LC_KEY_TYPES[lc_state_val] else MSG_TEMPLATE_BFV_LCV.format(
-                hex_digits(CONST.BFV.SIGVERIFY.BAD_KEY),
+                hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY),
                 hex_digits(lc_state_val),
             ),
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
@@ -3181,11 +3181,11 @@ otp_json(
         cw310 = cw310_params(
             bitstream = ":bitstream_sigverify_key_validity_{}".format(lc_state),
             exit_failure = MSG_PASS if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_TEMPLATE_BFV_LCV.format(
-                hex_digits(CONST.BFV.SIGVERIFY.BAD_KEY),
+                hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY),
                 hex_digits(lc_state_val),
             ),
             exit_success = MSG_TEMPLATE_BFV_LCV.format(
-                hex_digits(CONST.BFV.SIGVERIFY.BAD_KEY),
+                hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY),
                 hex_digits(lc_state_val),
             ) if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_PASS,
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
