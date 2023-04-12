@@ -184,12 +184,13 @@ bool clkmgr_testutils_check_measurement_enables(const dif_clkmgr_t *clkmgr,
   return success;
 }
 
-void clkmgr_testutils_disable_clock_counts(const dif_clkmgr_t *clkmgr) {
+status_t clkmgr_testutils_disable_clock_counts(const dif_clkmgr_t *clkmgr) {
   LOG_INFO("Disabling all clock count measurements");
   for (int i = 0; i <= kDifClkmgrMeasureClockUsb; ++i) {
     dif_clkmgr_measure_clock_t clock = (dif_clkmgr_measure_clock_t)i;
-    CHECK_DIF_OK(dif_clkmgr_disable_measure_counts(clkmgr, clock));
+    TRY(dif_clkmgr_disable_measure_counts(clkmgr, clock));
   }
+  return OK_STATUS();
 }
 
 bool clkmgr_testutils_check_measurement_counts(const dif_clkmgr_t *clkmgr) {

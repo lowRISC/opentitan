@@ -118,8 +118,10 @@ bool clkmgr_testutils_check_measurement_enables(const dif_clkmgr_t *clkmgr,
  * Disable all clock measurements.
  *
  * @param clkmgr A clkmgr DIF handle.
+ * @return The result of the operation.
  */
-void clkmgr_testutils_disable_clock_counts(const dif_clkmgr_t *clkmgr);
+OT_WARN_UNUSED_RESULT
+status_t clkmgr_testutils_disable_clock_counts(const dif_clkmgr_t *clkmgr);
 
 /**
  * Switch to use external clock and wait until the switching is done.
