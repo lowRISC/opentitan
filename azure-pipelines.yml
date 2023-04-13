@@ -620,6 +620,7 @@ jobs:
     - sw_build
     - execute_verilated_tests
     - chip_earlgrey_cw310
+    - chip_englishbreakfast_verilator
   condition: and(eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   steps:
   - template: ci/checkout-template.yml
