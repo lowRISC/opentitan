@@ -170,8 +170,14 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   // natively handled by the phy.
   // All other errors do not result in an actual transaction to the flash, and therefore must use
   // the locally available error value.
-  assign data_o = ~err_sel | (err_sel & op_err_o.rd_err) ? flash_data_i :
-                  prim_secded_pkg::prim_secded_inv_39_32_enc({BusWidth{1'b1}});
+  logic [BusFullWidth-1:0] inv_data_integ;
+  tlul_data_integ_enc u_bus_intg (
+    .data_i({BusWidth{1'b1}}),
+    .data_intg_o(inv_data_integ)
+  );
+
+  assign data_o = ~err_sel | (err_sel & op_err_o.rd_err) ? flash_data_i : inv_data_integ;
+
   assign op_err_o = op_err_q | op_err_d;
 
 

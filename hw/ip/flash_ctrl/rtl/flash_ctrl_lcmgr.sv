@@ -877,10 +877,9 @@ module flash_ctrl_lcmgr
 
   end // always_comb
 
-  // TODO: Replace with a wrapper from tlul, that way the module does not need to know what this is
-  prim_secded_inv_39_32_enc u_bus_intg (
+  tlul_data_integ_enc u_bus_intg (
     .data_i(rand_i),
-    .data_o(wdata_o)
+    .data_intg_o(wdata_o)
   );
 
   assign wvalid_o = prog_cnt_en;
