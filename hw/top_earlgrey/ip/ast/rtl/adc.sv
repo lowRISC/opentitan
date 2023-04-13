@@ -11,8 +11,8 @@
 //############################################################################
 
 module adc #(
-  parameter int unsigned AdcCnvtClks = 22, // TODO: Update to actual convertion clock
-  parameter int AdcChannels = 2,           // ADC number of  Channels
+  parameter int unsigned AdcCnvtClks = 19,// 21cc from adc_chnsel_i change to adc_d_val_o assertion
+  parameter int AdcChannels = 2,          // ADC number of  Channels
   parameter int AdcDataWidth = 10
 ) (
   input ast_pkg::awire_t adc_a0_ai,  // ADC A0 Analog Input
@@ -46,13 +46,15 @@ logic chn_selected, chn_selected_d, new_convert, adc_busy;
 
 assign chn_selected = |(adc_chnsel_i);
 
-// TODO: Reset?
-always_ff @( posedge clk_adc_i ) begin
-  chn_selected_d <= chn_selected;
+always_ff @( posedge clk_adc_i, negedge rst_adc_ni ) begin
+  if ( !rst_adc_ni ) begin
+    chn_selected_d <= 1'b0;
+  end else begin
+    chn_selected_d <= chn_selected;
+  end
 end
 
 // New Convertion
-// TODO: Add assertion that channel change always happen on ADC_IDLE!
 assign new_convert = chn_selected && !chn_selected_d && !adc_busy;
 
 ////////////////////////////////////////
@@ -97,10 +99,10 @@ always_ff @( posedge clk_adc_i, negedge rst_adc_ni ) begin
   end else if ( adc_busy ) begin
     adc_busy    <= 1'b0;
     adc_d_val_o <= 1'b1;
-    adc_d_o     <= (adc_chnsel_i == 2'b00) ? adc_d_o :
-                   (adc_chnsel_i == 2'b01) ? adc_d_ch0[10-1:0] :
-                   (adc_chnsel_i == 2'b10) ? adc_d_ch1[10-1:0] :
-                                             {AdcDataWidth{1'b1}};
+    adc_d_o     <= (adc_chnsel_i[1:0] == 2'b00) ? adc_d_o :
+                   (adc_chnsel_i[1:0] == 2'b01) ? adc_d_ch0[10-1:0] :
+                   (adc_chnsel_i[1:0] == 2'b10) ? adc_d_ch1[10-1:0] :
+                                                  {AdcDataWidth{1'b1}};
   end
 end
 
@@ -108,8 +110,17 @@ end
 /////////////////////////
 // ASSERTIONS
 /////////////////////////
-// TODO: Add assertiom adc_en=0 chnsel is 0.
-// TODO: Add assertiom RE of adc_en on 30us chnsel is 0.
-// TODO: Add Assertion for (adc_chnsel_i == 2'b11) @clk_adc_i
+// Add Assertion mux selector is onehot - zero is allowed
+`ASSERT(AdcChnselOneHot, $onehot0(adc_chnsel_i), clk_adc_i, !rst_adc_ni)
+
+// Add Assertion adc_en=0 chnsel is 0.
+`ASSERT(NoChannelWhileDisabled, (adc_en == 0) |-> (adc_chnsel_i == 4'h0), clk_adc_i, !rst_adc_ni)
+
+// Add Assertion RE of adc_en on the first 30us (=6*5us cc) after adc_en rose chnsel is 0.
+`ASSERT(ChannelStableOnAdcEn, $rose(adc_en) |-> (adc_chnsel_i == 4'h0)[*7], clk_adc_i, !rst_adc_ni)
+
+// Add Assertion for (adc_chnsel_i != 2'b11) @clk_adc_i
+`ASSERT(IllegalAdcChannel, (adc_chnsel_i != 4'h3), clk_adc_i, !rst_adc_ni)
+
 
 endmodule : adc

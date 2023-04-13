@@ -44,7 +44,7 @@ package ast_bhv_pkg;
   parameter time RNG_EN_RDLY     = 5us;
 `endif  // of SYNTHESIS
   // ADC
-  parameter int unsigned AdcCnvtClks = 22;
+  parameter int unsigned AdcCnvtClks = 19;
 
 endpackage  // of ast_bhv_pkg
 `endif // of __AST_BHV_PKG_SV
