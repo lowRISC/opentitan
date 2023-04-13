@@ -1,9 +1,9 @@
-# Getting Started
+# Getting started
 
 Welcome!
 This guide will help you get OpenTitan up and running.
 
-## Workflow Options
+## Workflow options
 
 An important preliminary note: to run OpenTitan software, you won't just need to build the software itself.
 You'll also need to somehow simulate the hardware it runs on.
@@ -18,7 +18,7 @@ This uses only free tools, and does not require any additional hardware such as 
 This guide will focus on the Verilator workflow, but indicate when those following FPGA or DV workflows should do something different.
 Just keep in mind, if you're a new user and you don't know you're part of the FPGA or DV crowd, "Verilator" means you!
 
-## Step 0: Clone the OpenTitan Repository
+## Step 0: Clone the OpenTitan repository
 
 Clone the [OpenTitan repository](https://github.com/lowRISC/opentitan):
 ```console
@@ -35,7 +35,7 @@ You can create the environment variable by calling the following command from th
 export REPO_TOP=$PWD/opentitan
 ```
 
-## Step 1: Check System Requirements
+## Step 1: Check system requirements
 
 **OpenTitan installation requires Linux.**
 If you do not have Linux, please stop right here and use the (experimental) [Docker container](https://github.com/lowRISC/opentitan/tree/master/util/container).
@@ -90,7 +90,7 @@ cd $REPO_TOP
 pip3 install --user -r python-requirements.txt
 ```
 
-## Step 4: Install the LowRISC RISC-V Toolchain
+## Step 4: Install the lowRISC RISC-V toolchain
 
 *Skip this step if using the Docker container.*
 
@@ -126,7 +126,7 @@ ls $TOOLCHAIN_PATH/bin/riscv32-unknown-elf-as
 If that prints out the file path without errors, then you've successfully installed the toolchain.
 Otherwise, try to find the `riscv32-unknown-elf-as` file in your file system and make sure `$TOOLCHAIN_PATH` is correctly set.
 
-## Step 5: Set up your Simulation Tool or FPGA
+## Step 5: Set up your simulation tool or FPGA
 
 *Note: If you are using the pre-built Docker container, Verilator is already installed.
 Unless you know you need the FPGA or DV guides, you can skip this step.*
@@ -138,11 +138,11 @@ Follow the guide(s) that applies to you:
 * Option 2 (FPGA setup): [FPGA guide](./setup_fpga.md), or
 * Option 3 (design verification setup): [DV guide](./setup_dv.md)
 
-## Step 6: Build OpenTitan Software
+## Step 6: Build OpenTitan software
 
 Follow the [dedicated guide](./build_sw.md) to build OpenTitan's software and run tests.
 
-## Step 7: Optional Additional Steps
+## Step 7: Optional additional steps
 
 If you have made it this far, congratulations!
 Hopefully you got a "Hello World!" demo running on OpenTitan using either the Verilator or FPGA targets.
@@ -209,7 +209,7 @@ Once a standard installation of Questa has been completed, add `QUESTA_HOME` as 
 As of Questa version 21.4 there are some code incompatibilities with the OpenTitan code-base.
 See issue [#9514](https://github.com/lowRISC/opentitan/issues/9514) for the list of issues and temporary workarounds.
 
-## Step 8: Additional Resources
+## Step 8: Additional resources
 
 As you may have guessed, there are several other pieces of hardware and software, besides a "Hello World!" demo, that are being actively developed for the OpenTitan project.
 If you are interested in these, check out the additional resources below.
