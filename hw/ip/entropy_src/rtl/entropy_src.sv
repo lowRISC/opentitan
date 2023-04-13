@@ -77,8 +77,6 @@ module entropy_src
   entropy_src_xht_req_t core_xht;
   logic core_intr_es_entropy_valid;
   logic core_intr_es_health_test_failed;
-  // TODO: add intrp
-//  logic core_intr_es_ebus_check_failed;
   logic core_intr_es_observe_fifo_ready;
   logic core_intr_es_fatal_err;
   logic [NumAlerts-1:0] core_alert_test;
