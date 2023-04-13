@@ -258,7 +258,7 @@ prim_flop #(
 );
 
 // Replace Latch for the OS code
-assign vcaon_pok_por_lat = rglssm_brout || vcaon_pok_por_src;
+assign vcaon_pok_por_lat = rglssm_brout || por_sync_n;
 assign ast_pwst_o.aon_pok = vcaon_pok_por_lat;
 assign vcaon_pok_por = scan_mode ? scan_reset_n : vcaon_pok_por_lat;
 
@@ -520,6 +520,12 @@ ast_clks_byp u_ast_clks_byp (
   .clk_osc_aon_i ( clk_osc_aon ),
   .clk_osc_aon_val_i ( clk_osc_aon_val ),
   .clk_ast_ext_i ( clk_ast_ext_i ),
+`ifdef AST_BYPASS_CLK
+  .clk_ext_sys_i( clk_sys_ext ),
+  .clk_ext_io_i( clk_io_ext ),
+  .clk_ext_usb_i( clk_usb_ext ),
+  .clk_ext_aon_i( clk_aon_ext ),
+`endif
   .io_clk_byp_req_i ( io_clk_byp_req_i ),
   .all_clk_byp_req_i ( all_clk_byp_req_i ),
   .ext_freq_is_96m_i ( ext_freq_is_96m_i ),
