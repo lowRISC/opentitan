@@ -630,9 +630,3 @@ We use the [OpenTitan GitHub Issue tracker](https://github.com/lowRISC/opentitan
 
 The process for getting started with DV involves many steps, including getting clarity on its purpose, setting up the testbench, documentation, etc.
 These are discussed in the [Getting Started with DV](https://opentitan.org/guides/getting_started/setup_dv.html) document.
-
-## Pending Work Items
-
-These capabilities are currently under active development and will be available sometime in the near future:
-
-*  Provide ability to run regressions.
