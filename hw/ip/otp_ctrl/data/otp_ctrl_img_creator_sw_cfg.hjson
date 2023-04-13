@@ -32,6 +32,14 @@
                     value: "0x4b4b4b4b4ba5a5a5",
                 },
                 {
+                    name: "CREATOR_SW_CFG_SIGVERIFY_SPX_EN",
+                    // Disable SPX+ signature verification. See the definitions
+                    // of `kSigverifySpxDisabledOtp` and
+                    // `kSigverifySpxEnabledOtp` in
+                    // sw/device/silicon_creator/lib/sigverify/spx_verify.h.
+                    value: "0x8d6c8c17",
+                },
+                {
                     name: "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
                     // Default values for flash scramble / ecc / he_en. This OTP
                     // word contains byte-aligned, packed, 4-bit mubi values.

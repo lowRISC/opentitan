@@ -213,6 +213,20 @@ cc_library(
 )
 
 cc_library(
+    name = "spx_verify",
+    srcs = ["spx_verify.c"],
+    hdrs = ["spx_verify.h"],
+    deps = [
+        ":spx_key",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+    ],
+)
+
+cc_library(
     name = "usage_constraints",
     srcs = ["usage_constraints.c"],
     hdrs = ["usage_constraints.h"],
@@ -240,8 +254,7 @@ cc_library(
     hdrs = ["sigverify.h"],
     deps = [
         ":rsa_verify",
-        # Note: Will be replaced by spx_verify when implemented
-        ":spx_key",
+        ":spx_verify",
         ":usage_constraints",
     ],
 )

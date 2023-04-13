@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/lib/sigverify/rsa_verify.h"
+#include "sw/device/silicon_creator/lib/sigverify/spx_verify.h"
 #include "sw/device/silicon_creator/lib/sigverify/usage_constraints.h"
 
 #ifdef __cplusplus
