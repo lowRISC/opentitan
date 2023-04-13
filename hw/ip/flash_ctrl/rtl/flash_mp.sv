@@ -14,6 +14,8 @@ import flash_ctrl_reg_pkg::*; (
   input clk_i,
   input rst_ni,
 
+  input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+
   input mubi4_t flash_disable_i,
 
   // interface selection
@@ -363,8 +365,13 @@ import flash_ctrl_reg_pkg::*; (
                                                                     info_bk_erase_en})
 
   // When no transactions are allowed, the output request should always be 0.
-  // TODO (#17692): temp add ##[0:2] to unblock CI issues.
-  `ASSERT(NoReqWhenErr_A, no_allowed_txn |-> ##[0:2] ~req_o)
+  // The assertion is disabled during escalation since req_o takes a few cycles to
+  // go to 0 if escalation is asserted mid transaction.
+  `ASSERT(NoReqWhenErr_A, no_allowed_txn |-> ~req_o,
+      clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i))
 
+  // This signal is only used in the assertion above.
+  lc_ctrl_pkg::lc_tx_t unused_escalate_en;
+  assign unused_escalate_en = lc_escalate_en_i;
 
 endmodule // flash_erase_ctrl
