@@ -221,7 +221,7 @@ def main(rom_kind: str = typer.Option(...),
     background.run(console_command, "CONSOLE", COLOR_RED)
 
     while not background.empty():
-        background.maybe_print_output(timeout_seconds=1)
+        # background.maybe_print_output(timeout_seconds=1)
 
         proc = background.pop()
 
@@ -240,7 +240,7 @@ def main(rom_kind: str = typer.Option(...),
         # the given success pattern.
         if background.empty() and proc == openocd:
             # wait a little bit so that we can flush the output of all processes
-            background.flush_all(1)
+            # background.flush_all(1)
             openocd.terminate()
             openocd.wait()
             background.forget(openocd)
@@ -255,7 +255,7 @@ def main(rom_kind: str = typer.Option(...),
 
         if returncode != 0:
             # wait a little bit so that we can flush the output of all processes
-            background.flush_all(1)
+            # background.flush_all(1)
             sys.exit(returncode)
 
         background.forget(proc)
