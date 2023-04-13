@@ -65,6 +65,10 @@ otp_json(
                 # since we currently have only three keys. See the definition of
                 # `hardened_byte_bool_t` in sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": "0x4b4b4b4b4ba5a5a5",
+                # Disable SPX+ signature verification. See the definitions of
+                # `kSigverifySpxDisabledOtp` and `kSigverifySpxEnabledOtp` in
+                # sw/device/silicon_creator/lib/sigverify/spx_verify.h.
+                "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": "0x8d6c8c17",
                 # Enable use of entropy for countermeasures. See the definition
                 # of `hardened_bool_t` in sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_RNG_EN": "0x739",
