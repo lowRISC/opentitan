@@ -5,7 +5,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 
 static const char kMessage[] = "test message";
@@ -143,7 +142,7 @@ rom_error_t sigverify_test_exp_65537(void) {
   rom_error_t result =
       sigverify_rsa_verify(&kSignatureExp65537, &kKeyExp65537, &act_digest,
                            kLcStateRma, &flash_exec);
-  CHECK(flash_exec == kSigverifyFlashExec);
+  CHECK(flash_exec == kSigverifyRsaSuccess);
   return result;
 }
 

@@ -7,7 +7,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 
 // The autogen rule that creates this header creates it in a directory named
@@ -33,7 +32,7 @@ rom_error_t sigverify_test(void) {
 
   rom_error_t test_result;
   if (testvec.valid) {
-    CHECK(flash_exec == kSigverifyFlashExec);
+    CHECK(flash_exec == kSigverifyRsaSuccess);
     if (result == kErrorOk) {
       test_result = kErrorOk;
     } else {

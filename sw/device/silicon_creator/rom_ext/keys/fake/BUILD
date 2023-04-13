@@ -31,12 +31,10 @@ cc_test(
     ],
     deps = [
         ":fake",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/sigverify:flash_exec",
         "//sw/device/silicon_creator/lib/sigverify:mod_exp_ibex_device_library",
         "//sw/device/silicon_creator/lib/sigverify:mod_exp_otbn",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",

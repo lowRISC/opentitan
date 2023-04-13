@@ -13,9 +13,9 @@
 /*
  * Shares for producing the `flash_exec` value in encoded message check. First
  * 95 shares are generated using the `sparse-fsm-encode` script while the last
- * share is `kSigverifyFlashExec ^ kShares[0] ^ ... ^ kShares[94]` so that
- * xor'ing all shares produces kSigverifyFlashExec, i.e. the value that unlocks
- * flash execution.
+ * share is `kSigverifySpxSuccess ^ kSigverifyFlashExec ^ kShares[0] ^ ... ^
+ * kShares[94]` so that xor'ing all shares and `kSigverifySpxSuccess` produces
+ * `kSigverifyFlashExec`, i.e. the value that unlocks flash execution.
  *
  * Encoding generated with
  * $ ./util/design/sparse-fsm-encode.py -d 6 -m 95 -n 32 \
@@ -42,7 +42,7 @@ static const uint32_t kSigverifyShares[kSigVerifyRsaNumWords] = {
     0x480d3091, 0x51420446, 0xcc56d97c, 0x7aa57434, 0x7b6097ae, 0x45bca8ae,
     0xb0b1e322, 0x5487b90f, 0x1045e6ef, 0x87ad10f0, 0x4c72b7f0, 0xc527c9a3,
     0x29ed4350, 0xe345625b, 0x57063d83, 0xbb56900a, 0xbfb1be4c, 0x1c454e8f,
-    0xdb27c1b7, 0xbe02c694, 0x2604d74a, 0x4d6516dd, 0x322918ab, 0xd25e8754,
+    0xdb27c1b7, 0xbe02c694, 0x2604d74a, 0x4d6516dd, 0x322918ab, 0x5f320b43,
 };
 
 /**
@@ -139,10 +139,11 @@ static rom_error_t sigverify_encoded_message_check(
   }
   HARDENED_CHECK_EQ(i, kSigVerifyRsaNumWords);
 
-  // Note: `kSigverifyFlashExec` is defined such that the following operation
+  // Note: `kSigverifyRsaSuccess` is defined such that the following operation
   // produces `kErrorOk`.
-  rom_error_t result =
-      (flash_exec_rsa << 21 ^ flash_exec_rsa << 10 ^ flash_exec_rsa >> 1) >> 21;
+  rom_error_t result = ((flash_exec_rsa << 24) ^ (flash_exec_rsa << 5) >> 5 ^
+                        flash_exec_rsa >> 8) >>
+                       21;
   *flash_exec ^= flash_exec_rsa;
   if (launder32(result) == kErrorOk) {
     HARDENED_CHECK_EQ(result, kErrorOk);

@@ -13,7 +13,6 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
-#include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
 #include "sw/device/silicon_creator/lib/sigverify/mock_mod_exp_ibex.h"
 #include "sw/device/silicon_creator/lib/sigverify/mock_mod_exp_otbn.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
@@ -125,7 +124,7 @@ TEST_P(SigverifyInNonTestStates, GoodSignatureIbex) {
   EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
                                  &flash_exec),
             kErrorOk);
-  EXPECT_EQ(flash_exec, kSigverifyFlashExec);
+  EXPECT_EQ(flash_exec, kSigverifyRsaSuccess);
 }
 
 TEST_P(SigverifyInNonTestStates, GoodSignatureOtbn) {
@@ -141,7 +140,7 @@ TEST_P(SigverifyInNonTestStates, GoodSignatureOtbn) {
   EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
                                  &flash_exec),
             kErrorOk);
-  EXPECT_EQ(flash_exec, kSigverifyFlashExec);
+  EXPECT_EQ(flash_exec, kSigverifyRsaSuccess);
 }
 
 TEST_P(SigverifyInNonTestStates, BadSignatureOtbn) {
@@ -202,7 +201,7 @@ TEST_F(SigverifyInTestStates, GoodSignatureIbex) {
   EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, kLcStateTest,
                                  &flash_exec),
             kErrorOk);
-  EXPECT_EQ(flash_exec, kSigverifyFlashExec);
+  EXPECT_EQ(flash_exec, kSigverifyRsaSuccess);
 }
 
 TEST_F(SigverifyInTestStates, BadSignatureIbex) {
