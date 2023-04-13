@@ -27,8 +27,6 @@ module otbn_tracer (
   parameter string MemWritePrefix = "W";
   parameter string MemReadPrefix = "R";
 
-  string trace_output_buffer;
-
   logic [31:0] cycle_count;
 
   // Given a WLEN size word output a hex string with the data split into 32-bit chunks separated
@@ -101,128 +99,144 @@ module otbn_tracer (
   endfunction
 
   // Called by other trace functions to append their trace lines to the output buffer
-  function automatic void output_trace(string prefix, string trace_line);
-    trace_output_buffer = $sformatf("%s%s %s\n", trace_output_buffer, prefix, trace_line);
+  function automatic string output_trace(string work, string prefix, string trace_line);
+    return $sformatf("%s%s %s\n", work, prefix, trace_line);
   endfunction
 
-  function automatic void trace_base_rf();
+  function automatic string trace_base_rf(string work);
     if (otbn_trace.rf_base_rd_en_a) begin
-      output_trace(RegReadPrefix, $sformatf("x%02d: 0x%08x", otbn_trace.rf_base_rd_addr_a,
-                                            otbn_trace.rf_base_rd_data_a));
+      work = output_trace(work, RegReadPrefix,
+                          $sformatf("x%02d: 0x%08x", otbn_trace.rf_base_rd_addr_a,
+                                    otbn_trace.rf_base_rd_data_a));
     end
 
     if (otbn_trace.rf_base_rd_en_b) begin
-      output_trace(RegReadPrefix, $sformatf("x%02d: 0x%08x", otbn_trace.rf_base_rd_addr_b,
-                                            otbn_trace.rf_base_rd_data_b));
+      work = output_trace(work, RegReadPrefix,
+                          $sformatf("x%02d: 0x%08x", otbn_trace.rf_base_rd_addr_b,
+                                    otbn_trace.rf_base_rd_data_b));
     end
 
     if (|otbn_trace.rf_base_wr_en && otbn_trace.rf_base_wr_commit &&
         otbn_trace.rf_base_wr_addr != '0) begin
-      output_trace(RegWritePrefix, $sformatf("x%02d: 0x%08x", otbn_trace.rf_base_wr_addr,
-                                             otbn_trace.rf_base_wr_data));
+      work = output_trace(work, RegWritePrefix,
+                          $sformatf("x%02d: 0x%08x", otbn_trace.rf_base_wr_addr,
+                                    otbn_trace.rf_base_wr_data));
     end
+
+    return work;
   endfunction
 
-  function automatic void trace_bignum_rf();
+  function automatic string trace_bignum_rf(string work);
     if (otbn_trace.rf_bignum_rd_en_a) begin
-      output_trace(RegReadPrefix, $sformatf("w%02d: %s", otbn_trace.rf_bignum_rd_addr_a,
-                                            otbn_wlen_data_str(otbn_trace.rf_bignum_rd_data_a)));
+      work = output_trace(work, RegReadPrefix,
+                          $sformatf("w%02d: %s", otbn_trace.rf_bignum_rd_addr_a,
+                                    otbn_wlen_data_str(otbn_trace.rf_bignum_rd_data_a)));
     end
 
     if (otbn_trace.rf_bignum_rd_en_b) begin
-      output_trace(RegReadPrefix, $sformatf("w%02d: %s", otbn_trace.rf_bignum_rd_addr_b,
-                                            otbn_wlen_data_str(otbn_trace.rf_bignum_rd_data_b)));
+      work = output_trace(work, RegReadPrefix,
+                          $sformatf("w%02d: %s", otbn_trace.rf_bignum_rd_addr_b,
+                                    otbn_wlen_data_str(otbn_trace.rf_bignum_rd_data_b)));
     end
 
     if (|otbn_trace.rf_bignum_wr_en & otbn_trace.rf_bignum_wr_commit) begin
-      output_trace(RegWritePrefix, $sformatf("w%02d: %s", otbn_trace.rf_bignum_wr_addr,
-                                             otbn_wlen_data_str(otbn_trace.rf_bignum_wr_data)));
+      work = output_trace(work, RegWritePrefix,
+                          $sformatf("w%02d: %s", otbn_trace.rf_bignum_wr_addr,
+                                    otbn_wlen_data_str(otbn_trace.rf_bignum_wr_data)));
     end
+
+    return work;
   endfunction
 
-  function automatic void trace_bignum_mem();
+  function automatic string trace_bignum_mem(string work);
     if (otbn_trace.dmem_write) begin
-      output_trace(MemWritePrefix, otbn_dmem_write_str(otbn_trace.dmem_write_addr,
-                                                       otbn_trace.dmem_write_data,
-                                                       otbn_trace.dmem_write_mask));
+      work = output_trace(work, MemWritePrefix,
+                          otbn_dmem_write_str(otbn_trace.dmem_write_addr,
+                                              otbn_trace.dmem_write_data,
+                                              otbn_trace.dmem_write_mask));
     end
 
     if (otbn_trace.dmem_read) begin
-      output_trace(MemReadPrefix, $sformatf("[0x%08x]: %s", otbn_trace.dmem_read_addr,
-                                            otbn_wlen_data_str(otbn_trace.dmem_read_data)));
+      work = output_trace(work, MemReadPrefix,
+                          $sformatf("[0x%08x]: %s", otbn_trace.dmem_read_addr,
+                                    otbn_wlen_data_str(otbn_trace.dmem_read_data)));
     end
+
+    return work;
   endfunction
 
-  function automatic void trace_ispr_accesses();
+  function automatic string trace_ispr_accesses(string work);
     // Iterate through all ISPRs outputting reg reads and writes where ISPR accesses have occurred
     for (int i_ispr = 0; i_ispr < NIspr; i_ispr++) begin
       if (ispr_e'(i_ispr) == IsprFlags) begin
         // Special handling for flags ISPR to provide per flag field output
         for (int i_fg = 0; i_fg < NFlagGroups; i_fg++) begin
           if (otbn_trace.flags_read[i_fg]) begin
-            output_trace(RegReadPrefix,
-                         $sformatf("%s%1d: %s", otbn_ispr_name_str(ispr_e'(i_ispr)), i_fg,
-                                   otbn_flags_str(otbn_trace.flags_read_data[i_fg])));
+            work = output_trace(work, RegReadPrefix,
+                                $sformatf("%s%1d: %s", otbn_ispr_name_str(ispr_e'(i_ispr)), i_fg,
+                                          otbn_flags_str(otbn_trace.flags_read_data[i_fg])));
           end
 
           if (otbn_trace.flags_write[i_fg]) begin
-            output_trace(RegWritePrefix,
-                         $sformatf("%s%1d: %s", otbn_ispr_name_str(ispr_e'(i_ispr)), i_fg,
-                                   otbn_flags_str(otbn_trace.flags_write_data[i_fg])));
+            work = output_trace(work, RegWritePrefix,
+                                $sformatf("%s%1d: %s", otbn_ispr_name_str(ispr_e'(i_ispr)), i_fg,
+                                          otbn_flags_str(otbn_trace.flags_write_data[i_fg])));
           end
         end
       end else begin
         // For all other ISPRs just dump out the full 256-bits of data being read/written
         if (otbn_trace.ispr_read[i_ispr]) begin
-          output_trace(RegReadPrefix,
-                       $sformatf("%s: %s", otbn_ispr_name_str(ispr_e'(i_ispr)),
-                                 otbn_wlen_data_str(otbn_trace.ispr_read_data[i_ispr])));
+          work = output_trace(work, RegReadPrefix,
+                              $sformatf("%s: %s", otbn_ispr_name_str(ispr_e'(i_ispr)),
+                                        otbn_wlen_data_str(otbn_trace.ispr_read_data[i_ispr])));
         end
 
         if (otbn_trace.ispr_write[i_ispr]) begin
-          output_trace(RegWritePrefix,
-                       $sformatf("%s: %s", otbn_ispr_name_str(ispr_e'(i_ispr)),
-                                 otbn_wlen_data_str(otbn_trace.ispr_write_data[i_ispr])));
+          work = output_trace(work, RegWritePrefix,
+                              $sformatf("%s: %s", otbn_ispr_name_str(ispr_e'(i_ispr)),
+                                        otbn_wlen_data_str(otbn_trace.ispr_write_data[i_ispr])));
         end
       end
     end
+    return work;
   endfunction
 
-  function automatic void trace_header();
+  function automatic string trace_header(string work);
     if (otbn_trace.insn_valid) begin
       if (otbn_trace.insn_fetch_err) begin
         // This means that we've seen an IMEM integrity error. Squash the reported instruction bits
         // and ignore any stall: this will be the last cycle of the instruction either way.
-        output_trace(InsnExecutePrefix,
-                     $sformatf("PC: 0x%08x, insn: ??", otbn_trace.insn_addr));
+        work = output_trace(work, InsnExecutePrefix,
+                            $sformatf("PC: 0x%08x, insn: ??", otbn_trace.insn_addr));
       end else begin
         // We have a valid instruction, either stalled or completing its execution
-        output_trace(otbn_trace.insn_stall ? InsnStallPrefix : InsnExecutePrefix,
-                     $sformatf("PC: 0x%08x, insn: 0x%08x", otbn_trace.insn_addr,
-                               otbn_trace.insn_data));
+        work = output_trace(work, otbn_trace.insn_stall ? InsnStallPrefix : InsnExecutePrefix,
+                            $sformatf("PC: 0x%08x, insn: 0x%08x", otbn_trace.insn_addr,
+                                      otbn_trace.insn_data));
       end
     end
 
     if (otbn_trace.secure_wipe_ack_r) begin
-      output_trace(WipeCompletePrefix, "");
+      work = output_trace(work, WipeCompletePrefix, "");
     end else if (otbn_trace.secure_wipe_req || !otbn_trace.initial_secure_wipe_done) begin
-      output_trace(WipeInProgressPrefix, "");
+      work = output_trace(work, WipeInProgressPrefix, "");
     end
+    return work;
   endfunction
 
   import "DPI-C" function void accept_otbn_trace_string(string trace, int unsigned cycle_count);
 
   function automatic void do_trace();
-    trace_output_buffer = "";
+    string work;
 
-    trace_header();
-    trace_bignum_rf();
-    trace_base_rf();
-    trace_bignum_mem();
-    trace_ispr_accesses();
+    work = trace_header(work);
+    work = trace_bignum_rf(work);
+    work = trace_base_rf(work);
+    work = trace_bignum_mem(work);
+    work = trace_ispr_accesses(work);
 
-    if (trace_output_buffer != "") begin
-      accept_otbn_trace_string(trace_output_buffer, cycle_count);
+    if (work != "") begin
+      accept_otbn_trace_string(work, cycle_count);
     end
   endfunction
 
