@@ -49,6 +49,7 @@ def get_otp_images():
 
     img_targets = [
         "//hw/ip/otp_ctrl/data:img_dev",
+        "//hw/ip/otp_ctrl/data:img_dev_initial",
         "//hw/ip/otp_ctrl/data:img_dev_individualized",
         "//hw/ip/otp_ctrl/data:img_rma",
         "//hw/ip/otp_ctrl/data:img_test_unlocked0",
@@ -230,9 +231,18 @@ otp_image = rule(
 
 # This is a set of overlays to generate a generic, standard OTP image.
 # Additional overlays can be applied on top to further customize the OTP.
-STD_OTP_OVERLAYS = [
+# This set overlays does not include any of the SECRET[0-2] partitions.
+STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS = [
     "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
     "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
     "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
     "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
+]
+
+# This is a set of overlays to generate a generic, standard OTP image.
+# Additional overlays can be applied on top to further customize the OTP.
+STD_OTP_OVERLAYS = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
+    "//hw/ip/otp_ctrl/data:otp_json_secret0",
+    "//hw/ip/otp_ctrl/data:otp_json_secret1",
+    "//hw/ip/otp_ctrl/data:otp_json_secret2_unlocked",
 ]

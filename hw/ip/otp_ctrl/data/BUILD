@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:autogen.bzl", "autogen_hjson_header")
-load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_alert_digest", "otp_image", "otp_json", "otp_partition")
+load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS", "otp_alert_digest", "otp_image", "otp_json", "otp_partition")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@bazel_skylib//rules:common_settings.bzl", "int_flag", "string_flag")
 
@@ -194,6 +194,105 @@ otp_json(
     ],
 )
 
+otp_json(
+    name = "otp_json_hw_cfg_empty_and_unlocked",
+    partitions = [
+        otp_partition(
+            name = "HW_CFG",
+            lock = False,
+        ),
+    ],
+)
+
+otp_json(
+    name = "otp_json_secret0",
+    partitions = [
+        otp_partition(
+            name = "SECRET0",
+            items = {
+                "TEST_UNLOCK_TOKEN": "<random>",
+                "TEST_EXIT_TOKEN": "<random>",
+            },
+            lock = True,
+        ),
+    ],
+)
+
+otp_json(
+    name = "otp_json_secret0_empty_and_unlocked",
+    partitions = [
+        otp_partition(
+            name = "SECRET0",
+            lock = False,
+        ),
+    ],
+)
+
+otp_json(
+    name = "otp_json_secret1",
+    partitions = [
+        otp_partition(
+            name = "SECRET1",
+            items = {
+                "FLASH_ADDR_KEY_SEED": "<random>",
+                "FLASH_DATA_KEY_SEED": "<random>",
+                "SRAM_DATA_KEY_SEED": "<random>",
+            },
+            lock = True,
+        ),
+    ],
+)
+
+otp_json(
+    name = "otp_json_secret1_empty_and_unlocked",
+    partitions = [
+        otp_partition(
+            name = "SECRET1",
+            lock = False,
+        ),
+    ],
+)
+
+otp_json(
+    name = "otp_json_secret2",
+    partitions = [
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                "RMA_TOKEN": "<random>",
+                "CREATOR_ROOT_KEY_SHARE0": "<random>",
+                "CREATOR_ROOT_KEY_SHARE1": "<random>",
+            },
+            lock = True,
+        ),
+    ],
+)
+
+otp_json(
+    name = "otp_json_secret2_unlocked",
+    partitions = [
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                "RMA_TOKEN": "<random>",
+                "CREATOR_ROOT_KEY_SHARE0": "<random>",
+                "CREATOR_ROOT_KEY_SHARE1": "<random>",
+            },
+            lock = False,
+        ),
+    ],
+)
+
+otp_json(
+    name = "otp_json_secret2_empty_and_unlocked",
+    partitions = [
+        otp_partition(
+            name = "SECRET2",
+            lock = False,
+        ),
+    ],
+)
+
 # OTP LC STATE-SPECIFIC CONFIGS
 otp_json(
     name = "otp_json_raw",
@@ -237,69 +336,6 @@ otp_json(
     name = "otp_json_dev",
     partitions = [
         otp_partition(
-            name = "SECRET0",
-            items = {
-                "TEST_UNLOCK_TOKEN": "<random>",
-                "TEST_EXIT_TOKEN": "<random>",
-            },
-            lock = True,
-        ),
-        otp_partition(
-            name = "SECRET1",
-            items = {
-                "FLASH_ADDR_KEY_SEED": "<random>",
-                "FLASH_DATA_KEY_SEED": "<random>",
-                "SRAM_DATA_KEY_SEED": "<random>",
-            },
-            lock = True,
-        ),
-        otp_partition(
-            name = "SECRET2",
-            items = {
-                "RMA_TOKEN": "<random>",
-                "CREATOR_ROOT_KEY_SHARE0": "<random>",
-                "CREATOR_ROOT_KEY_SHARE1": "<random>",
-            },
-            lock = False,
-        ),
-        otp_partition(
-            name = "LIFE_CYCLE",
-            count = "5",
-            state = "DEV",
-        ),
-    ],
-    seed = "94259314771464387",
-)
-
-# Represents a device in DEV state with the SECRET0 and SECRET1 partitions in
-# locked state. SECRET2 partition is unlocked.
-otp_json(
-    name = "otp_json_dev_individualized",
-    partitions = [
-        otp_partition(
-            name = "SECRET0",
-            items = {
-                "TEST_UNLOCK_TOKEN": "<random>",
-                "TEST_EXIT_TOKEN": "<random>",
-            },
-            lock = True,
-        ),
-        otp_partition(
-            name = "SECRET1",
-            items = {
-                "FLASH_ADDR_KEY_SEED": "<random>",
-                "FLASH_DATA_KEY_SEED": "<random>",
-                "SRAM_DATA_KEY_SEED": "<random>",
-            },
-            lock = True,
-        ),
-        # SECRET2 partition is empty and in unlocked state to allow
-        # personalization to configure the device secrets.
-        otp_partition(
-            name = "SECRET2",
-            lock = False,
-        ),
-        otp_partition(
             name = "LIFE_CYCLE",
             count = "5",
             state = "DEV",
@@ -311,32 +347,6 @@ otp_json(
 otp_json(
     name = "otp_json_prod",
     partitions = [
-        otp_partition(
-            name = "SECRET0",
-            items = {
-                "TEST_UNLOCK_TOKEN": "<random>",
-                "TEST_EXIT_TOKEN": "<random>",
-            },
-            lock = True,
-        ),
-        otp_partition(
-            name = "SECRET1",
-            items = {
-                "FLASH_ADDR_KEY_SEED": "<random>",
-                "FLASH_DATA_KEY_SEED": "<random>",
-                "SRAM_DATA_KEY_SEED": "<random>",
-            },
-            lock = True,
-        ),
-        otp_partition(
-            name = "SECRET2",
-            items = {
-                "RMA_TOKEN": "<random>",
-                "CREATOR_ROOT_KEY_SHARE0": "<random>",
-                "CREATOR_ROOT_KEY_SHARE1": "<random>",
-            },
-            lock = False,
-        ),
         otp_partition(
             name = "LIFE_CYCLE",
             count = 5,
@@ -350,32 +360,6 @@ otp_json(
     name = "otp_json_prod_end",
     partitions = [
         otp_partition(
-            name = "SECRET0",
-            items = {
-                "TEST_UNLOCK_TOKEN": "<random>",
-                "TEST_EXIT_TOKEN": "<random>",
-            },
-            lock = True,
-        ),
-        otp_partition(
-            name = "SECRET1",
-            items = {
-                "FLASH_ADDR_KEY_SEED": "<random>",
-                "FLASH_DATA_KEY_SEED": "<random>",
-                "SRAM_DATA_KEY_SEED": "<random>",
-            },
-            lock = True,
-        ),
-        otp_partition(
-            name = "SECRET2",
-            items = {
-                "RMA_TOKEN": "<random>",
-                "CREATOR_ROOT_KEY_SHARE0": "<random>",
-                "CREATOR_ROOT_KEY_SHARE1": "<random>",
-            },
-            lock = False,
-        ),
-        otp_partition(
             name = "LIFE_CYCLE",
             count = 5,
             state = "PROD_END",
@@ -387,32 +371,6 @@ otp_json(
 otp_json(
     name = "otp_json_rma",
     partitions = [
-        otp_partition(
-            name = "SECRET0",
-            items = {
-                "TEST_UNLOCK_TOKEN": "<random>",
-                "TEST_EXIT_TOKEN": "<random>",
-            },
-            lock = True,
-        ),
-        otp_partition(
-            name = "SECRET1",
-            items = {
-                "FLASH_ADDR_KEY_SEED": "<random>",
-                "FLASH_DATA_KEY_SEED": "<random>",
-                "SRAM_DATA_KEY_SEED": "<random>",
-            },
-            lock = True,
-        ),
-        otp_partition(
-            name = "SECRET2",
-            items = {
-                "RMA_TOKEN": "<random>",
-                "CREATOR_ROOT_KEY_SHARE0": "<random>",
-                "CREATOR_ROOT_KEY_SHARE1": "<random>",
-            },
-            lock = False,
-        ),
         otp_partition(
             name = "LIFE_CYCLE",
             count = 8,
@@ -429,16 +387,49 @@ otp_alert_digest(
 )
 
 otp_image(
-    name = "img_dev",
+    name = "img_raw",
+    src = ":otp_json_raw",
+    overlays = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS,
+)
+
+otp_image(
+    name = "img_test_unlocked0",
+    src = ":otp_json_test_unlocked0",
+    overlays = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS,
+)
+
+# Represents a DEV state OTP image emulating the state of the device after the
+# exit test token has been applied and before running individualization.
+# TODO: Add initial states for the creator and owner OTP partitions.
+otp_image(
+    name = "img_dev_initial",
     src = ":otp_json_dev",
-    overlays = STD_OTP_OVERLAYS,
+    overlays = [
+        ":otp_json_secret0",
+        ":otp_json_secret1_empty_and_unlocked",
+        ":otp_json_secret2_empty_and_unlocked",
+        ":otp_json_creator_sw_cfg",
+        ":otp_json_owner_sw_cfg",
+        ":otp_json_alert_digest_cfg",
+        ":otp_json_hw_cfg",
+    ],
 )
 
 # Represents a device in DEV state with the SECRET0 and SECRET1 partitions in
 # locked state. SECRET2 partition is unlocked.
 otp_image(
     name = "img_dev_individualized",
-    src = ":otp_json_dev_individualized",
+    src = ":otp_json_dev",
+    overlays = [
+        ":otp_json_secret0",
+        ":otp_json_secret1",
+        ":otp_json_secret2_empty_and_unlocked",
+    ] + STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS,
+)
+
+otp_image(
+    name = "img_dev",
+    src = ":otp_json_dev",
     overlays = STD_OTP_OVERLAYS,
 )
 
@@ -455,20 +446,8 @@ otp_image(
 )
 
 otp_image(
-    name = "img_raw",
-    src = ":otp_json_raw",
-    overlays = STD_OTP_OVERLAYS,
-)
-
-otp_image(
     name = "img_rma",
     src = ":otp_json_rma",
-    overlays = STD_OTP_OVERLAYS,
-)
-
-otp_image(
-    name = "img_test_unlocked0",
-    src = ":otp_json_test_unlocked0",
     overlays = STD_OTP_OVERLAYS,
 )
 
@@ -510,6 +489,8 @@ filegroup(
     name = "otp_imgs",
     srcs = [
         ":img_dev",
+        ":img_dev_individualized",
+        ":img_dev_initial",
         ":img_prod",
         ":img_raw",
         ":img_rma",
