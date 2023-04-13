@@ -14,7 +14,6 @@
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_verify.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
@@ -205,7 +204,7 @@ TEST_P(SigverifyRsaVerify, Ibex) {
   EXPECT_EQ(sigverify_rsa_verify(&GetParam().sig, GetParam().key, &kDigest,
                                  kLcStateProd, &flash_exec),
             kErrorOk);
-  EXPECT_EQ(flash_exec, kSigverifyFlashExec);
+  EXPECT_EQ(flash_exec, kSigverifyRsaSuccess);
 }
 
 INSTANTIATE_TEST_SUITE_P(AllCases, SigverifyRsaVerify,

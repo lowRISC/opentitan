@@ -14,6 +14,14 @@
 extern "C" {
 #endif  // __cplusplus
 
+enum {
+  /**
+   * A non-trivial constant chosen such that `kSigverifySpxSuccess ^
+   * kSigverifyRsaSuccess = kSigverifyFlashExec`.
+   */
+  kSigverifyRsaSuccess = 0x2f06b4e0,
+};
+
 /**
  * Verifies an RSASSA-PKCS1-v1_5 signature.
  *

@@ -239,8 +239,21 @@ static rom_error_t rom_verify(const manifest_t *manifest,
          sizeof(boot_measurements.rom_ext));
 
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 2);
-  return sigverify_rsa_verify(&manifest->rsa_signature, key, &act_digest,
-                              lc_state, flash_exec);
+  // Swap the order of signature verifications randomly.
+  *flash_exec = 0;
+  // FIXME: Enable after //sw/device/tests:rv_core_ibex_rnd_test_fpga_cw310_rom
+  // issue is fixed.
+  if (true || rnd_uint32() < 0x80000000) {
+    HARDENED_RETURN_IF_ERROR(sigverify_rsa_verify(
+        &manifest->rsa_signature, key, &act_digest, lc_state, flash_exec));
+    return sigverify_spx_verify(&manifest->spx_signature, NULL, lc_state,
+                                flash_exec);
+  } else {
+    HARDENED_RETURN_IF_ERROR(sigverify_spx_verify(&manifest->spx_signature,
+                                                  NULL, lc_state, flash_exec));
+    return sigverify_rsa_verify(&manifest->rsa_signature, key, &act_digest,
+                                lc_state, flash_exec);
+  }
 }
 
 /* These symbols are defined in

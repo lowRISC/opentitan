@@ -130,7 +130,6 @@ cc_test(
     deps = [
         ":sigverify_keys",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/silicon_creator/lib/sigverify:flash_exec",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],

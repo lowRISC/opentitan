@@ -263,7 +263,6 @@ cc_test(
     name = "sigverify_unittest",
     srcs = ["sigverify_unittest.cc"],
     deps = [
-        ":flash_exec",
         ":sigverify",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
@@ -280,7 +279,6 @@ opentitan_functest(
         ],
     ),
     deps = [
-        ":flash_exec",
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -297,7 +295,6 @@ opentitan_functest(
         ],
     ),
     deps = [
-        "flash_exec",
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -313,7 +310,6 @@ opentitan_functest(
     ),
     targets = ["cw310_test_rom"],  # Test set is too large to run in simulation
     deps = [
-        "flash_exec",
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
