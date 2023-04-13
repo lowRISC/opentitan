@@ -313,24 +313,42 @@ otp_json(
     seed = "01931961561863975174",
 )
 
-otp_json(
-    name = "otp_json_test_unlocked0",
-    partitions = [
-        otp_partition(
-            name = "CREATOR_SW_CFG",
-            items = {
-                # ROM execution is enabled if this item is set to a non-zero value.
-                "CREATOR_SW_CFG_ROM_EXEC_EN": "0xffffffff",
-            },
-        ),
-        otp_partition(
-            name = "LIFE_CYCLE",
-            count = 1,
-            state = "TEST_UNLOCKED0",
-        ),
-    ],
-    seed = "01931961561863975174",
-)
+[
+    otp_json(
+        name = "otp_json_test_unlocked{}".format(i),
+        partitions = [
+            otp_partition(
+                name = "CREATOR_SW_CFG",
+                items = {
+                    # ROM execution is enabled if this item is set to a non-zero value.
+                    "CREATOR_SW_CFG_ROM_EXEC_EN": "0xffffffff",
+                },
+            ),
+            otp_partition(
+                name = "LIFE_CYCLE",
+                count = (i * 2) + 1,
+                state = "TEST_UNLOCKED{}".format(i),
+            ),
+        ],
+        seed = "01931961561863975174",
+    )
+    for i in range(0, 8)
+]
+
+[
+    otp_json(
+        name = "otp_json_test_locked{}".format(i),
+        partitions = [
+            otp_partition(
+                name = "LIFE_CYCLE",
+                count = (i + 1) * 2,
+                state = "TEST_LOCKED{}".format(i),
+            ),
+        ],
+        seed = "01931961561863975174",
+    )
+    for i in range(0, 7)
+]
 
 otp_json(
     name = "otp_json_dev",
@@ -392,11 +410,23 @@ otp_image(
     overlays = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS,
 )
 
-otp_image(
-    name = "img_test_unlocked0",
-    src = ":otp_json_test_unlocked0",
-    overlays = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS,
-)
+[
+    otp_image(
+        name = "img_test_unlocked{}".format(i),
+        src = ":otp_json_test_unlocked{}".format(i),
+        overlays = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS,
+    )
+    for i in range(0, 8)
+]
+
+[
+    otp_image(
+        name = "img_test_locked{}".format(i),
+        src = ":otp_json_test_locked{}".format(i),
+        overlays = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS,
+    )
+    for i in range(0, 7)
+]
 
 # Represents a DEV state OTP image emulating the state of the device after the
 # exit test token has been applied and before running individualization.
@@ -494,7 +524,21 @@ filegroup(
         ":img_prod",
         ":img_raw",
         ":img_rma",
+        ":img_test_locked0",
+        ":img_test_locked1",
+        ":img_test_locked2",
+        ":img_test_locked3",
+        ":img_test_locked4",
+        ":img_test_locked5",
+        ":img_test_locked6",
         ":img_test_unlocked0",
+        ":img_test_unlocked1",
+        ":img_test_unlocked2",
+        ":img_test_unlocked3",
+        ":img_test_unlocked4",
+        ":img_test_unlocked5",
+        ":img_test_unlocked6",
+        ":img_test_unlocked7",
     ],
 )
 
