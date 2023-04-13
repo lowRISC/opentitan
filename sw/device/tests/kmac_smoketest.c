@@ -10,6 +10,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "kmac_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -174,6 +175,11 @@ void run_sha3_test(dif_kmac_t *kmac) {
         dif_kmac_squeeze(kmac, &operation_state, out, test.digest_len, NULL));
     CHECK_DIF_OK(dif_kmac_end(kmac, &operation_state));
 
+    // Wait for the hardware engine to actually finish. On FPGA, it may take
+    // a while until the DONE command gets actually executed (see SecCmdDelay
+    // SystemVerilog parameter).
+    CHECK_DIF_OK(dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_IDLE_BIT));
+
     for (int j = 0; j < test.digest_len; ++j) {
       CHECK(out[j] == test.digest[j],
             "test %d: mismatch at %d got=0x%x want=0x%x", i, j, out[j],
@@ -210,6 +216,11 @@ void run_sha3_alignment_test(dif_kmac_t *kmac) {
         dif_kmac_squeeze(kmac, &operation_state, &out, sizeof(uint32_t), NULL));
     CHECK_DIF_OK(dif_kmac_end(kmac, &operation_state));
 
+    // Wait for the hardware engine to actually finish. On FPGA, it may take
+    // a while until the DONE command gets actually executed (see SecCmdDelay
+    // SystemVerilog parameter).
+    CHECK_DIF_OK(dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_IDLE_BIT));
+
     CHECK_DIF_OK((out == kExpect),
                  "mismatch at alignment %u got 0x%u want 0x%x", i, out,
                  kExpect);
@@ -230,6 +241,11 @@ void run_sha3_alignment_test(dif_kmac_t *kmac) {
     CHECK_DIF_OK(
         dif_kmac_squeeze(kmac, &operation_state, &out, sizeof(uint32_t), NULL));
     CHECK_DIF_OK(dif_kmac_end(kmac, &operation_state));
+
+    // Wait for the hardware engine to actually finish. On FPGA, it may take
+    // a while until the DONE command gets actually executed (see SecCmdDelay
+    // SystemVerilog parameter).
+    CHECK_DIF_OK(dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_IDLE_BIT));
 
     CHECK_DIF_OK((out == kExpect), "mismatch got 0x%u want 0x%x", out, kExpect);
   }
@@ -254,6 +270,11 @@ void run_shake_test(dif_kmac_t *kmac) {
     CHECK_DIF_OK(
         dif_kmac_squeeze(kmac, &operation_state, out, test.digest_len, NULL));
     CHECK_DIF_OK(dif_kmac_end(kmac, &operation_state));
+
+    // Wait for the hardware engine to actually finish. On FPGA, it may take
+    // a while until the DONE command gets actually executed (see SecCmdDelay
+    // SystemVerilog parameter).
+    CHECK_DIF_OK(dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_IDLE_BIT));
 
     for (int j = 0; j < test.digest_len; ++j) {
       CHECK(out[j] == test.digest[j],

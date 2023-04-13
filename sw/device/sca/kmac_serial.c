@@ -50,11 +50,13 @@ enum {
    * Number of cycles (at `kClockFreqCpuHz`) that Ibex should sleep to minimize
    * noise during SHA3 operations. Caution: This number should be chosen to
    * provide enough time. Otherwise, Ibex might wake up while SHA3 is still busy
-   * and disturb the capture. Currently, we use a start trigger delay of 40
-   * clock cycles and the scope captures 200 clock cycles at kClockFreqCpuHz
-   * (2000 samples).
+   * and disturb the capture. Currently, we use a start trigger delay of 320
+   * clock cycles and the scope captures 160 clock cycles at kClockFreqCpuHz
+   * (3200 samples). On the scope side, an offset of 395 clock cycles (7900
+   * samples) is used to ignore 1) the start trigger delay for the PROCESS
+   * command, and 2) the absorb phase for the fixed prefix.
    */
-  kIbexSha3SleepCycles = 800,
+  kIbexSha3SleepCycles = 1180,
   /**
    * Max number of traces per batch.
    */
