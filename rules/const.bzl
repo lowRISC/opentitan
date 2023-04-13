@@ -20,6 +20,20 @@ CONST = struct(
     # Must match the definitions in lc_ctrl_regs.h.
     LCV = struct(
         TEST_UNLOCKED0 = 0x02108421,
+        TEST_LOCKED0 = 0x4210842,
+        TEST_UNLOCKED1 = 0x6318c63,
+        TEST_LOCKED1 = 0x8421084,
+        TEST_UNLOCKED2 = 0xa5294a5,
+        TEST_LOCKED2 = 0xc6318c6,
+        TEST_UNLOCKED3 = 0xe739ce7,
+        TEST_LOCKED3 = 0x10842108,
+        TEST_UNLOCKED4 = 0x1294a529,
+        TEST_LOCKED4 = 0x14a5294a,
+        TEST_UNLOCKED5 = 0x16b5ad6b,
+        TEST_LOCKED5 = 0x18c6318c,
+        TEST_UNLOCKED6 = 0x1ad6b5ad,
+        TEST_LOCKED6 = 0x1ce739ce,
+        TEST_UNLOCKED7 = 0x1ef7bdef,
         DEV = 0x21084210,
         PROD = 0x2318c631,
         PROD_END = 0x25294a52,
@@ -92,15 +106,25 @@ CONST = struct(
     ),
 )
 
+_DEFAULT_LC_STATES = [
+    CONST.LCV.TEST_UNLOCKED0,
+    CONST.LCV.DEV,
+    CONST.LCV.PROD,
+    CONST.LCV.PROD_END,
+    CONST.LCV.RMA,
+]
+
 def get_lc_items(*want_lc_values):
     """Return a list of key-value pairs from CONST.LCV with lowercased keys.
 
-    If `want_lc_values` is empty, returns an unfiltered dict. Otherwise, only
+    If `want_lc_values` is empty, return the default dict. Otherwise, only
     key-value pairs where the value is in `want_lc_values` are returned.
     """
     lcv_dict = structs.to_dict(CONST.LCV)
-    out = [(k.lower(), v) for k, v in lcv_dict.items() if not want_lc_values or v in want_lc_values]
-    if want_lc_values and len(out) != len(want_lc_values):
+    if not want_lc_values:
+        want_lc_values = _DEFAULT_LC_STATES
+    out = [(k.lower(), v) for k, v in lcv_dict.items() if v in want_lc_values]
+    if len(out) != len(want_lc_values):
         fail("get_lc_items would produce list with incorrect length")
     return out
 
