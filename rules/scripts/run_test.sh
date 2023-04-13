@@ -10,13 +10,13 @@
 # echo "</output>"
 # echo "</test>"
 
-if [[ -z "$OTT_RUN_TEST_OUR_DIR" ]]; then
+if [ -z "$OTT_RUN_TEST_OUR_DIR" ]; then
   echo "OTT_RUN_TEST_OUR_DIR not provided, will not log output"
   $@
 else
   # variables are documented here:
   # https://bazel.build/reference/test-encyclopedia
-  if [[ -z "$TEST_RUN_NUMBER" ]] then
+  if [ -z "$TEST_RUN_NUMBER" ]; then
     RUN_NR=""
   else
     RUN_NR=".$TEST_RUN_NUMBER"
