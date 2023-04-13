@@ -41,7 +41,7 @@ class OtbnTraceUtil : public SimCtrlExtension {
 
   bool SetupTraceLog(const std::string &log_filename) {
     try {
-      log_trace_listener_ = std::make_unique<LogTraceListener>(log_filename);
+      log_trace_listener_.reset(new LogTraceListener(log_filename));
       OtbnTraceSource::get().AddListener(log_trace_listener_.get());
       return true;
     } catch (const std::runtime_error &err) {
