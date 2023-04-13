@@ -241,11 +241,21 @@ cc_library(
 
 cc_library(
     name = "flash_exec",
-    srcs = ["flash_exec.c"],
     hdrs = ["flash_exec.h"],
     deps = [
+        ":rsa_verify",
+        ":spx_verify",
+    ],
+)
+
+cc_test(
+    name = "flash_exec_unittest",
+    srcs = ["flash_exec_unittest.cc"],
+    deps = [
+        ":flash_exec",
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
     ],
 )
 
