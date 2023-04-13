@@ -18,6 +18,7 @@
 // transactions are succesfully received by the device, the test passes.
 
 #include "sw/device/lib/dif/dif_pinmux.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
@@ -119,12 +120,25 @@ bool test_main(void) {
   usb_testutils_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
                                sizeof(config_descriptors), test_descriptor,
                                sizeof(test_descriptor));
+
+  // Proceed only when the device has been configured; this allows host-side
+  // software to establish communication.
   while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured) {
     usb_testutils_poll(&usbdev);
   }
+
+  // Set up two serial ports.
   usb_testutils_simpleserial_init(&simple_serial, &usbdev, 1,
                                   usb_receipt_callback);
 
+  // Send a "Hi!Hi!" sign on message.
+  for (int idx = 0; idx < kExpectedUsbCharsRecved; idx++) {
+    usb_testutils_simpleserial_send_byte(&simple_serial,
+                                         kExpectedUsbRecved[idx]);
+  }
+
+  // Await the same message as a response; this allows a simple 'cat <port>'
+  // command to form the host side because of character echo.
   while (usb_chars_recved_total < kExpectedUsbCharsRecved) {
     usb_testutils_poll(&usbdev);
   }
