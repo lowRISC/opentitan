@@ -44,11 +44,11 @@ enum {
    * Number of cycles (at `kClockFreqCpuHz`) that Ibex should sleep to minimize
    * noise during AES operations. Caution: This number should be chosen to
    * provide enough time. Otherwise, Ibex might wake up while AES is still busy
-   * and disturb the capture. Currently, we use a start trigger delay of 40
-   * clock cycles and the scope captures 90 clock cycles at kClockFreqCpuHz (900
-   * samples).
+   * and disturb the capture. Currently, we use a start trigger delay of 320
+   * clock cycles and the scope captures 60 clock cycles at kClockFreqCpuHz
+   * (1200 samples).
    */
-  kIbexAesSleepCycles = 400,
+  kIbexAesSleepCycles = 680,
   /**
    * Max number of encryption that can be captured with the scope
    * 81 is selected for AES with CW Husky

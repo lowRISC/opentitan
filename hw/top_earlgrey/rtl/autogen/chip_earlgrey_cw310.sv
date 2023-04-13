@@ -993,11 +993,11 @@ module chip_earlgrey_cw310 #(
   top_earlgrey #(
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
-    .SecAesStartTriggerDelay(40),
+    .SecAesStartTriggerDelay(320),
     .SecAesAllowForcingMasks(1'b1),
     .KmacEnMasking(0),
     .KmacSwKeyMasked(1),
-    .SecKmacCmdDelay(40),
+    .SecKmacCmdDelay(320),
     .SecKmacIdleAcceptSwMsg(1'b1),
     .KeymgrKmacEnMasking(0),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),

@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -18,6 +19,8 @@ OTTF_DEFINE_TEST_CONFIG();
 
 const dif_clkmgr_hintable_clock_t kmac_clock =
     kTopEarlgreyHintableClocksMainKmac;
+
+#define TIMEOUT (1000 * 1000)
 
 // Digest lengths in 32-bit words.
 #define DIGEST_LEN_SHA3_256 (256 / 32)
@@ -54,6 +57,14 @@ static void check_clock_state(dif_toggle_t expected_clock_state) {
         "Clock enabled state is not as expected (%d).", expected_clock_state);
 }
 
+static bool is_hintable_clock_enabled(const dif_clkmgr_t *clkmgr,
+                                      dif_clkmgr_hintable_clock_t clock) {
+  dif_toggle_t clock_state;
+  CHECK_DIF_OK(
+      dif_clkmgr_hintable_clock_get_enabled(clkmgr, clock, &clock_state));
+  return clock_state == kDifToggleEnabled;
+}
+
 static void do_sha3_test(void) {
   dif_kmac_operation_state_t kmac_operation_state;
   // Run SHA3 test case using single blocking absorb/squeeze operations.
@@ -77,6 +88,12 @@ static void do_sha3_test(void) {
   check_clock_state(kDifToggleEnabled);
 
   CHECK_DIF_OK(dif_kmac_end(&kmac, &kmac_operation_state));
+
+  // On FPGA, it may take a while until the DONE command gets actually executed
+  // (see SecCmdDelay SystemVerilog parameter). However, once the clock is
+  // disabled, KMAC cannot be accessed anymore. Thus polling the KMAC status
+  // register doesn't work. Instead, wait for the clock to stop.
+  IBEX_SPIN_FOR(!is_hintable_clock_enabled(&clkmgr, kmac_clock), TIMEOUT);
 
   // Check the clock is now stopped.
   check_clock_state(kDifToggleDisabled);
