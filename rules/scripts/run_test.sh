@@ -23,6 +23,6 @@ else
   fi
   OUT_FILE="$OTT_RUN_TEST_OUR_DIR/$TEST_TARGET$RUN_NR.log"
   mkdir -p $(dirname $OUT_FILE)
-  echo "Logging output to $OUT_FILE"
-  $@ 2>&1 | tee $OUT_FILE
+  echo "Logging output to $OUT_FILE, see artefact for the log file"
+  $@ 2>&1 >$OUT_FILE
 fi
