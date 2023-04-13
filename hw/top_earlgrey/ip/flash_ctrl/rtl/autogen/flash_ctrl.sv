@@ -790,9 +790,13 @@ module flash_ctrl
   // Flash memory Properties
   // Memory property is page based and thus should use phy addressing
   // This should move to flash_phy long term
+  lc_ctrl_pkg::lc_tx_t lc_escalate_en;
   flash_mp u_flash_mp (
     .clk_i,
     .rst_ni,
+
+    // This is only used in SVAs, hence we do not have to feed in a copy.
+    .lc_escalate_en_i(lc_escalate_en),
 
     // disable flash through memory protection
     .flash_disable_i(flash_disable[MpDisableIdx]),
@@ -980,7 +984,6 @@ module flash_ctrl
   // Flash Disable and execute enable
   //////////////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t lc_escalate_en;
   prim_lc_sync #(
     .NumCopies(1)
   ) u_lc_escalation_en_sync (
