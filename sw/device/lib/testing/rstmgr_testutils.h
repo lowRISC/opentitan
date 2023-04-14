@@ -15,11 +15,12 @@
  *
  * @param rstmgr A reset manager handle.
  * @param info A bit mask of reset reasons.
- *
- * @return True if the reset_info CSR matches info.
+ * @return `kOk(res)` Where `res` is true if the reset_info CSR matches info or
+ * `kInternal` in case of error.
  */
-bool rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
-                                    dif_rstmgr_reset_info_bitfield_t info);
+OT_WARN_UNUSED_RESULT
+status_t rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
+                                        dif_rstmgr_reset_info_bitfield_t info);
 
 /**
  * Determines if the reset info contains any of the reasons in `info`.

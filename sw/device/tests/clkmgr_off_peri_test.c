@@ -194,7 +194,7 @@ bool test_main(void) {
                                                  /*ecc_en*/ false,
                                                  /*he_en*/ false));
 
-  if (rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor)) {
+  if (UNWRAP(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor))) {
     CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
     // Starting clock.
@@ -208,8 +208,8 @@ bool test_main(void) {
     // This should never be reached.
     LOG_ERROR("This is unreachable since a reset should have been triggered");
     return false;
-  } else if (rstmgr_testutils_is_reset_info(&rstmgr,
-                                            kDifRstmgrResetInfoWatchdog)) {
+  } else if (UNWRAP(rstmgr_testutils_is_reset_info(
+                 &rstmgr, kDifRstmgrResetInfoWatchdog))) {
     dif_clkmgr_gateable_clock_t clock = {0};
     CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &clock));
     LOG_INFO("Got an expected watchdog reset when reading for clock %d", clock);

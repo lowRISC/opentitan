@@ -188,8 +188,8 @@ bool test_main(void) {
                  &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) {
     LOG_INFO("Wakeup reset");
 
-    CHECK(rstmgr_testutils_is_reset_info(&rstmgr,
-                                         kDifRstmgrResetInfoLowPowerExit));
+    CHECK(UNWRAP(rstmgr_testutils_is_reset_info(
+        &rstmgr, kDifRstmgrResetInfoLowPowerExit)));
     LOG_INFO("Aon timer wakeup detected");
     CHECK_STATUS_OK(rstmgr_testutils_post_reset(
         &rstmgr, kDifRstmgrResetInfoLowPowerExit, 0, 0, 0, 0));

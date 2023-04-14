@@ -157,7 +157,7 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
   // Enable cpu dump capture.
   CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
 
-  if (rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor)) {
+  if (UNWRAP(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor))) {
     // Enable watchdog bite reset.
     CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
                                                 kDifPwrmgrResetRequestSourceTwo,
@@ -169,8 +169,8 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
     // This should never be reached.
     LOG_ERROR("This is unreachable since a reset should have been triggered");
     return false;
-  } else if (rstmgr_testutils_is_reset_info(&rstmgr,
-                                            kDifRstmgrResetInfoWatchdog)) {
+  } else if (UNWRAP(rstmgr_testutils_is_reset_info(
+                 &rstmgr, kDifRstmgrResetInfoWatchdog))) {
     // Verify the cpu crash dump.
     dif_rstmgr_cpu_info_dump_segment_t cpu_dump[DIF_RSTMGR_CPU_INFO_MAX_SIZE];
     size_t size_read;

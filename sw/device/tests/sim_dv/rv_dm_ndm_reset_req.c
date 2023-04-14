@@ -196,7 +196,7 @@ static void init_peripherals(void) {
 bool test_main(void) {
   init_peripherals();
 
-  if (rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor)) {
+  if (UNWRAP(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor))) {
     rstmgr_testutils_reason_clear();
 
     // Write arbitrary value to each test register.
@@ -208,7 +208,8 @@ bool test_main(void) {
     // NDM reset is de-asserted.
     // Check reset info to be kDifRstmgrResetInfoNdm.
     LOG_INFO("check reset info");
-    CHECK(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoNdm));
+    CHECK(UNWRAP(
+        rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoNdm)));
 
     // Register value check after reset.
     LOG_INFO("Check registers");

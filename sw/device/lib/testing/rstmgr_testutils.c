@@ -12,11 +12,11 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
-bool rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
-                                    dif_rstmgr_reset_info_bitfield_t info) {
+status_t rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
+                                        dif_rstmgr_reset_info_bitfield_t info) {
   dif_rstmgr_reset_info_bitfield_t actual_info;
   actual_info = rstmgr_testutils_reason_get();
-  return actual_info == info;
+  return OK_STATUS(actual_info == info);
 }
 
 bool rstmgr_testutils_reset_info_any(const dif_rstmgr_t *rstmgr,

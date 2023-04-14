@@ -29,7 +29,7 @@ bool test_main(void) {
   // Notice we are clearing rstmgr's RESET_INFO, so after the power glitch there
   // is only one bit set.
 
-  if (rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor)) {
+  if (UNWRAP(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor))) {
     LOG_INFO("Powered up for the first time, begin test");
 
     CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));

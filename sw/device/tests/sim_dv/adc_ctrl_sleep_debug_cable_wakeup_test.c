@@ -130,7 +130,8 @@ bool test_main(void) {
     interrupt_expected = false;
     en_plic_irqs(&plic);
 
-    CHECK(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor));
+    CHECK(UNWRAP(
+        rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor)));
 
     // Setup ADC configuration.
     configure_adc_ctrl(&adc_ctrl);
@@ -177,8 +178,8 @@ bool test_main(void) {
     interrupt_expected = true;
     en_plic_irqs(&plic);
 
-    CHECK(rstmgr_testutils_is_reset_info(&rstmgr,
-                                         kDifRstmgrResetInfoLowPowerExit));
+    CHECK(UNWRAP(rstmgr_testutils_is_reset_info(
+        &rstmgr, kDifRstmgrResetInfoLowPowerExit)));
     uint16_t adc_value;
     CHECK_DIF_OK(dif_adc_ctrl_get_triggered_value(
         &adc_ctrl, kDifAdcCtrlChannel0, &adc_value));
