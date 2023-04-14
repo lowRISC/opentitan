@@ -178,6 +178,7 @@
     {
       name: "{name}_edn_timeout_error"
       uvm_test_seq: kmac_edn_timeout_error_vseq
+      run_opts: ["+en_scb=0"]
       reseed: 20
     }
     {
