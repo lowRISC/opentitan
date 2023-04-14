@@ -25,6 +25,7 @@ def dual_cc_library(
         on_device_config_setting = "//rules:opentitan_platform",
         srcs = [],
         hdrs = [],
+        copts = [],
         deps = [],
         target_compatible_with = [],
         **kwargs):
@@ -50,6 +51,7 @@ def dual_cc_library(
              "on device" means.
       @param srcs: `cc_library()` sources; may be a list or a `dual_inputs()`.
       @param hdrs: `cc_library()` headers; may be a list or a `dual_inputs()`.
+      @params copts: `cc_library() copts; may be a list or a `dual_inputs()`.
       @param deps: `cc_library()` dependencies; may be a list or a `dual_inputs()`.
       @param **kwargs: Arguments to forward to each `cc_library()`.
 
@@ -61,6 +63,7 @@ def dual_cc_library(
 
     hdrs_d, hdrs_h = _merge_and_split_inputs(hdrs)
     srcs_d, srcs_h = _merge_and_split_inputs(srcs)
+    copts_d, copts_h = _merge_and_split_inputs(copts)
     deps_d, deps_h = _merge_and_split_inputs(deps)
     tgts_d, tgts_h = _merge_and_split_inputs(target_compatible_with)
 
@@ -68,6 +71,7 @@ def dual_cc_library(
         name = dual_cc_device_library_of(name),
         hdrs = hdrs_d,
         srcs = srcs_d,
+        copts = copts_d,
         deps = deps_d,
         target_compatible_with = tgts_d,
         visibility = ["//visibility:private"],
@@ -79,6 +83,7 @@ def dual_cc_library(
         name = off_device_name,
         hdrs = hdrs_h,
         srcs = srcs_h,
+        copts = copts_h,
         deps = deps_h,
         target_compatible_with = tgts_h,
         visibility = ["//visibility:private"],

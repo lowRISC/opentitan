@@ -6,6 +6,7 @@
 
 #include <stdbool.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 
 enum {
@@ -26,21 +27,21 @@ void crc32_init(uint32_t *ctx) { *ctx = UINT32_MAX; }
  * lines 111-112 and 276-279.
  */
 void crc32_add8(uint32_t *ctx, uint8_t byte) {
+#ifdef OT_PLATFORM_RV32
   *ctx ^= byte;
-  for (size_t i = 0; i < 8; ++i) {
-    bool lsb = *ctx & 1;
-    *ctx >>= 1;
-    if (lsb) {
-      *ctx ^= kCrc32Poly;
-    }
-  }
+  asm("crc32.b %0, %1;" : "+r"(*ctx));
+#else
+  static_assert(false, "crc32_add8 does not have a pure C implementation.");
+#endif
 }
 
 void crc32_add32(uint32_t *ctx, uint32_t word) {
-  char *bytes = (char *)&word;
-  for (size_t i = 0; i < sizeof(uint32_t); ++i) {
-    crc32_add8(ctx, bytes[i]);
-  }
+#ifdef OT_PLATFORM_RV32
+  *ctx ^= word;
+  asm("crc32.w %0, %1;" : "+r"(*ctx));
+#else
+  static_assert(false, "crc32_add32 does not have a pure C implementation.");
+#endif
 }
 
 void crc32_add(uint32_t *ctx, const void *buf, size_t len) {

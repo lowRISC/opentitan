@@ -337,14 +337,25 @@ dual_cc_library(
         host = ["mock_crc32.h"],
         shared = ["crc32.h"],
     ),
+    copts = dual_inputs(
+        device = [
+            "-menable-experimental-extensions",
+            "-march=rv32imc_zbr0p93",
+        ],
+    ),
+    target_compatible_with = dual_inputs(
+        # This target cannot be compiled host-side because it uses RISC-V
+        # instructions.
+        device = [OPENTITAN_CPU],
+    ),
     deps = dual_inputs(
         host = [
             "//sw/device/lib/base:global_mock",
-            "//sw/device/silicon_creator/testing:rom_test",
             "@googletest//:gtest",
         ],
         shared = [
             "//sw/device/lib/base:memory",
+            "//sw/device/lib/base:macros",
         ],
     ),
 )
