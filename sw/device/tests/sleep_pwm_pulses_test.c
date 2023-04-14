@@ -169,7 +169,8 @@ bool test_main(void) {
     busy_spin_micros(1 * 1000);
 
     LOG_INFO("POR reset");
-    CHECK(rstmgr_testutils_reset_info_any(&rstmgr, kDifRstmgrResetInfoPor));
+    CHECK(UNWRAP(
+        rstmgr_testutils_reset_info_any(&rstmgr, kDifRstmgrResetInfoPor)));
 
     // Prepare rstmgr for a reset.
     CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
