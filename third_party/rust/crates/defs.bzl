@@ -295,7 +295,7 @@ _NORMAL_DEPENDENCIES = {
             "anyhow": "@crate_index__anyhow-1.0.69//:anyhow",
             "arrayvec": "@crate_index__arrayvec-0.7.2//:arrayvec",
             "atty": "@crate_index__atty-0.2.14//:atty",
-            "bitflags": "@crate_index__bitflags-1.3.2//:bitflags",
+            "bitflags": "@crate_index__bitflags-2.1.0//:bitflags",
             "bitvec": "@crate_index__bitvec-1.0.1//:bitvec",
             "byteorder": "@crate_index__byteorder-1.4.3//:byteorder",
             "chrono": "@crate_index__chrono-0.4.23//:chrono",
@@ -697,6 +697,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/bitflags/1.3.2/download"],
         strip_prefix = "bitflags-1.3.2",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.bitflags-1.3.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__bitflags-2.1.0",
+        sha256 = "c70beb79cbb5ce9c4f8e20849978f34225931f665bb49efa6982875a4d5facb3",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/bitflags/2.1.0/download"],
+        strip_prefix = "bitflags-2.1.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.bitflags-2.1.0.bazel"),
     )
 
     maybe(

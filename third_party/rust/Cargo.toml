@@ -16,7 +16,7 @@ path = "empty_file_to_appease_cargo.rs"
 anyhow = { version = "1.0.57", features=["backtrace"] }
 arrayvec = { version = "0.7", features=["serde"] }
 atty = "0.2"
-bitflags = "1.0"
+bitflags = { version = "2.1", features = ["serde"] }
 bitvec = "1.0.1"
 byteorder = "1.4.3"
 chrono = "0.4"

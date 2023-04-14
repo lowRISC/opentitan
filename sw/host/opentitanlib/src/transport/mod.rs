@@ -33,7 +33,8 @@ pub use errors::{TransportError, TransportInterfaceType};
 
 bitflags! {
     /// A bitmap of capabilities which may be provided by a transport.
-    #[derive(Serialize, Deserialize)]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+    #[serde(transparent)]
     pub struct Capability: u32 {
         const NONE = 0x00;
         const UART = 0x01 << 0;
