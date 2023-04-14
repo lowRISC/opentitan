@@ -5,6 +5,7 @@
 use bitflags::bitflags;
 
 bitflags! {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     pub struct TpmAccess: u8 {
         const ESTABLISHMENT = 0x01;
         const REQUEST_USE = 0x02;

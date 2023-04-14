@@ -28,6 +28,7 @@ pub const MPSSE_CLOCK_FREQUENCY: u32 = 12_000_000;
 
 bitflags! {
     /// Gpio direction for output pinds on an FTDI interface.
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     pub struct GpioDirection: u8 {
         const OUT_0 = 0x01;
         const OUT_1 = 0x02;
