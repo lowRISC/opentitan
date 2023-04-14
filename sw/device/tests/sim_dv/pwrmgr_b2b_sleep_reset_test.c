@@ -161,7 +161,7 @@ bool test_main(void) {
   prgm_push_button_wakeup();
 
   // Prepare rstmgr for a reset.
-  rstmgr_testutils_pre_reset(&rstmgr);
+  CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
   // This is mark for sv sequence to prepare to asserting parallel event.
   LOG_INFO("ready for power down");

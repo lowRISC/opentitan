@@ -488,7 +488,7 @@ bool test_main(void) {
           "entry reset");
       LOG_INFO("Let SV wait timer reset");
       // actually the same test as normal sleep + watchdog
-      rstmgr_testutils_pre_reset(&rstmgr);
+      CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
       sleep_wdog_bite_test(&aon_timer, &pwrmgr, 200);
       normal_sleep_wdog(&pwrmgr);
       timer_on(kEscalationPhase0MicrosCpu);
@@ -500,7 +500,7 @@ bool test_main(void) {
           "with sw_req");
       LOG_INFO("Let SV wait timer reset");
       // Executing the wdog bite reset during sleep test.
-      rstmgr_testutils_pre_reset(&rstmgr);
+      CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
       // Assert reeset req
       CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
@@ -513,7 +513,7 @@ bool test_main(void) {
       LOG_INFO("Booting and setting normal sleep followed by watchdog reset");
       LOG_INFO("Let SV wait timer reset");
       // Executing the wdog bite reset during sleep test.
-      rstmgr_testutils_pre_reset(&rstmgr);
+      CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
       sleep_wdog_bite_test(&aon_timer, &pwrmgr, 200);
       normal_sleep_wdog(&pwrmgr);
       timer_on(kEscalationPhase0MicrosCpu);

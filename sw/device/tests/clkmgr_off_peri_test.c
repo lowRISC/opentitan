@@ -195,7 +195,7 @@ bool test_main(void) {
                                                  /*he_en*/ false));
 
   if (rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor)) {
-    rstmgr_testutils_pre_reset(&rstmgr);
+    CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
     // Starting clock.
     dif_clkmgr_gateable_clock_t clock = kTopEarlgreyGateableClocksIoDiv4Peri;
@@ -241,7 +241,7 @@ bool test_main(void) {
       CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &clock));
       LOG_INFO("Next clock to test %d", clock);
 
-      rstmgr_testutils_pre_reset(&rstmgr);
+      CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
       test_gateable_clocks_off(&clkmgr, &pwrmgr, clock);
 

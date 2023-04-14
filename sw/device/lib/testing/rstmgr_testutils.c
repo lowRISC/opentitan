@@ -61,13 +61,14 @@ status_t rstmgr_testutils_compare_cpu_info(
   return OK_STATUS();
 }
 
-void rstmgr_testutils_pre_reset(const dif_rstmgr_t *rstmgr) {
+status_t rstmgr_testutils_pre_reset(const dif_rstmgr_t *rstmgr) {
   // Clear reset_info.
   rstmgr_testutils_reason_clear();
 
   // Enable alert and cpu dump capture, even if the test doesn't read it.
-  CHECK_DIF_OK(dif_rstmgr_alert_info_set_enabled(rstmgr, kDifToggleEnabled));
-  CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(rstmgr, kDifToggleEnabled));
+  TRY(dif_rstmgr_alert_info_set_enabled(rstmgr, kDifToggleEnabled));
+  TRY(dif_rstmgr_cpu_info_set_enabled(rstmgr, kDifToggleEnabled));
+  return OK_STATUS();
 }
 
 void rstmgr_testutils_post_reset(
@@ -89,7 +90,8 @@ void rstmgr_testutils_post_reset(
         rstmgr, expected_alert_dump, alert_dump_size));
   }
   if (expected_cpu_dump != NULL && cpu_dump_size != 0) {
-    CHECK_STATUS_OK(rstmgr_testutils_compare_cpu_info(rstmgr, expected_cpu_dump, cpu_dump_size));
+    CHECK_STATUS_OK(rstmgr_testutils_compare_cpu_info(rstmgr, expected_cpu_dump,
+                                                      cpu_dump_size));
   }
 }
 

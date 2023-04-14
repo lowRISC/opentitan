@@ -71,8 +71,10 @@ status_t rstmgr_testutils_compare_cpu_info(
  * Prepares the rstmgr for a reset scenario.
  *
  * @param rstmgr A reset manager handle.
+ * @return The result of the operation.
  */
-void rstmgr_testutils_pre_reset(const dif_rstmgr_t *rstmgr);
+OT_WARN_UNUSED_RESULT
+status_t rstmgr_testutils_pre_reset(const dif_rstmgr_t *rstmgr);
 
 /**
  * Checks state after a reset.
