@@ -55,7 +55,8 @@ bool test_main(void) {
   IBEX_SPIN_FOR(sensor_ctrl_ast_init_done(&sensor_ctrl), 1000);
   LOG_INFO("TEST: done ast init");
 
-  if (rstmgr_testutils_reset_info_any(&rstmgr, kDifRstmgrResetInfoPor)) {
+  if (UNWRAP(
+          rstmgr_testutils_reset_info_any(&rstmgr, kDifRstmgrResetInfoPor))) {
     LOG_INFO("POR reset");
 
     // Configure the counters to trigger an error by setting them for external
@@ -73,7 +74,8 @@ bool test_main(void) {
 
     // Trigger a rstmgr SW reset.
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
-  } else if (rstmgr_testutils_reset_info_any(&rstmgr, kDifRstmgrResetInfoSw)) {
+  } else if (UNWRAP(rstmgr_testutils_reset_info_any(&rstmgr,
+                                                    kDifRstmgrResetInfoSw))) {
     LOG_INFO("Back from rstmgr SW reset");
     bool all_disabled = UNWRAP(clkmgr_testutils_check_measurement_enables(
         &clkmgr, kDifToggleDisabled));
