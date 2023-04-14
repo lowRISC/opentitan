@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
+load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 
 package(default_visibility = ["//visibility:public"])
@@ -356,5 +356,25 @@ cc_test(
         dual_cc_device_library_of(":crc32"),
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_functest(
+    name = "crc32_perftest",
+    srcs = ["crc32_perftest.c"],
+    cw310 = cw310_params(
+        tags = [
+            "manual",
+        ],
+    ),
+    targets = ["cw310_test_rom"],
+    deps = [
+        ":crc32",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
     ],
 )
