@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -61,8 +62,10 @@ void alert_info_to_string(const alert_info_t *info);
  * @param alert_handler An alert handler handle.
  * @param config Runtime configuration parameters.
  * @param locked The locked state to set for each configuration.
+ * @return The result of the operation.
  */
-void alert_handler_testutils_configure_all(
+OT_WARN_UNUSED_RESULT
+status_t alert_handler_testutils_configure_all(
     const dif_alert_handler_t *alert_handler, dif_alert_handler_config_t config,
     dif_toggle_t locked);
 

@@ -171,8 +171,8 @@ static void alert_handler_configure(const dif_alert_handler_t *alert_handler) {
       .classes_len = ARRAYSIZE(class_configs),
       .ping_timeout = 10,
   };
-  alert_handler_testutils_configure_all(alert_handler, config,
-                                        kDifToggleEnabled);
+  CHECK_STATUS_OK(alert_handler_testutils_configure_all(alert_handler, config,
+                                                        kDifToggleEnabled));
 }
 
 /**

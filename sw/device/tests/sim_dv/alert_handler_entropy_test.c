@@ -77,8 +77,8 @@ static void alert_handler_config(void) {
       .ping_timeout = 1000,
   };
 
-  alert_handler_testutils_configure_all(&alert_handler, config,
-                                        kDifToggleEnabled);
+  CHECK_STATUS_OK(alert_handler_testutils_configure_all(&alert_handler, config,
+                                                        kDifToggleEnabled));
 }
 
 bool test_main(void) {

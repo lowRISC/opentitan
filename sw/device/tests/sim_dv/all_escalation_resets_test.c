@@ -734,8 +734,8 @@ static void alert_handler_config(void) {
       .ping_timeout = 0,
   };
 
-  alert_handler_testutils_configure_all(&alert_handler, config,
-                                        kDifToggleEnabled);
+  CHECK_STATUS_OK(alert_handler_testutils_configure_all(&alert_handler, config,
+                                                        kDifToggleEnabled));
 
   // Enables all alert handler irqs. This allows us to implicitly check that
   // we do not get spurious IRQs from the classes that are unused.

@@ -115,8 +115,8 @@ static void alert_handler_config(void) {
       .ping_timeout = 1,
   };
 
-  alert_handler_testutils_configure_all(&alert_handler, config,
-                                        kDifToggleEnabled);
+  CHECK_STATUS_OK(alert_handler_testutils_configure_all(&alert_handler, config,
+                                                        kDifToggleEnabled));
   // Enables alert handler irq.
   CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
       &alert_handler, kDifAlertHandlerIrqClassb, kDifToggleEnabled));

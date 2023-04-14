@@ -195,8 +195,8 @@ bool test_main(void) {
   };
 
   // 5. Configure Alerts
-  alert_handler_testutils_configure_all(&alert_handler, config,
-                                        kDifToggleEnabled);
+  CHECK_STATUS_OK(alert_handler_testutils_configure_all(&alert_handler, config,
+                                                        kDifToggleEnabled));
 
   // Checks whether alert handler's ping timer is locked
   bool is_locked;
