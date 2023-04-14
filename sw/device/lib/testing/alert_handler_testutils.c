@@ -58,7 +58,8 @@ status_t alert_handler_testutils_info_parse(
   return OK_STATUS();
 }
 
-void alert_info_to_string(const alert_handler_testutils_info_t *info) {
+void alert_handler_testutils_info_dump(
+    const alert_handler_testutils_info_t *info) {
   LOG_INFO("alert_info:");
   LOG_INFO("esc_state [0]=%x, [1]=%x, [2]=%x, [3]=%x", info->class_esc_state[0],
            info->class_esc_state[1], info->class_esc_state[2],
