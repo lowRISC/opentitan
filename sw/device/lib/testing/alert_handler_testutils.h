@@ -54,7 +54,8 @@ status_t alert_handler_testutils_info_parse(
 /**
  * Displays an alert_handler_testutils_info_t as strings.
  */
-void alert_info_to_string(const alert_handler_testutils_info_t *info);
+void alert_handler_testutils_info_dump(
+    const alert_handler_testutils_info_t *info);
 
 /**
  * Configures alert handler with all required runtime information.

@@ -1089,7 +1089,7 @@ void check_alert_dump() {
   CHECK_STATUS_OK(
       alert_handler_testutils_info_parse(dump, seg_size, &actual_info));
   LOG_INFO("The alert info crash dump:");
-  alert_info_to_string(&actual_info);
+  alert_handler_testutils_info_dump(&actual_info);
   // Check alert cause.
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     if (i == kExpectedAlertNumber) {
