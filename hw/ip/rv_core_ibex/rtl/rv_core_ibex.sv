@@ -551,7 +551,7 @@ module rv_core_ibex
   logic [6:0]  instr_wdata_intg;
   logic [top_pkg::TL_DW-1:0] unused_data;
   // tl_adapter_host_i_ibex only reads instruction. a_data is always 0
-  assign {instr_wdata_intg, unused_data} = prim_secded_pkg::prim_secded_inv_39_32_enc('0);
+  assign {instr_wdata_intg, unused_data} = prim_ot_secded_pkg::prim_secded_inv_39_32_enc('0);
   // SEC_CM: BUS.INTEGRITY
   tlul_adapter_host #(
     .MAX_REQS(NumOutstandingReqs),

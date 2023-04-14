@@ -797,7 +797,7 @@ class otbn_base_vseq extends cip_base_vseq #(
     // that we also need to pick ECC values that match.
     for (int i = 0; i <= ImemSizeByte / 4; i++) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
-      integ_data = prim_secded_pkg::prim_secded_inv_39_32_enc(rnd_data);
+      integ_data = prim_ot_secded_pkg::prim_secded_inv_39_32_enc(rnd_data);
       cfg.write_imem_word(i, integ_data, key, nonce);
     end
   endtask
@@ -822,7 +822,7 @@ class otbn_base_vseq extends cip_base_vseq #(
     for (int i = 0; i <= DmemSizeByte / 4; i++) begin
       for (int j = 0; j < 8; j++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
-        integ_data = prim_secded_pkg::prim_secded_inv_39_32_enc(rnd_data);
+        integ_data = prim_ot_secded_pkg::prim_secded_inv_39_32_enc(rnd_data);
         final_data_arr[j] = integ_data;
       end
       final_data = {>>{final_data_arr}};

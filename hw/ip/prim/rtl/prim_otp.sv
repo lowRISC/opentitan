@@ -310,12 +310,12 @@ module prim_otp
   logic [2**SizeWidth-1:0][Width+EccWidth-1:0] rdata_q;
 
   // Use a standard Hamming ECC for OTP.
-  prim_secded_hamming_22_16_enc u_enc (
+  prim_ot_secded_hamming_22_16_enc u_enc (
     .data_i(wdata_q[cnt_q]),
     .data_o(wdata_ecc)
   );
 
-  prim_secded_hamming_22_16_dec u_dec (
+  prim_ot_secded_hamming_22_16_dec u_dec (
     .data_i     (rdata_ecc),
     .data_o     (rdata_corr),
     .syndrome_o ( ),

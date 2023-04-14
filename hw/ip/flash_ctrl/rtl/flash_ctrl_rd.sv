@@ -173,7 +173,7 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   // All other errors do not result in an actual transaction to the flash, and therefore must use
   // the locally available error value.
   assign data_o = ~err_sel | (err_sel & op_err_o.rd_err) ? flash_data_i :
-                  prim_secded_pkg::prim_secded_inv_39_32_enc({BusWidth{1'b1}});
+                  prim_ot_secded_pkg::prim_secded_inv_39_32_enc({BusWidth{1'b1}});
   assign op_err_o = op_err_q | op_err_d;
 
 

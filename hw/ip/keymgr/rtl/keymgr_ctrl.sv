@@ -272,13 +272,13 @@ module keymgr_ctrl
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       key_state_q <= '0;
-      key_state_ecc_q <= {TotalEccWords{prim_secded_pkg::SecdedInv7264ZeroEcc}};
+      key_state_ecc_q <= {TotalEccWords{prim_ot_secded_pkg::SecdedInv7264ZeroEcc}};
     end else begin
       for (int i = 0; i < CDIs; i++) begin
         for (int j = 0; j < Shares; j++) begin
           for (int k = 0; k < EccWords; k++) begin
             {key_state_ecc_q[i][j][k], key_state_q[i][j][k]} <=
-                prim_secded_pkg::prim_secded_inv_72_64_enc(key_state_ecc_words_d[i][j][k]);
+                prim_ot_secded_pkg::prim_secded_inv_72_64_enc(key_state_ecc_words_d[i][j][k]);
           end
         end
       end

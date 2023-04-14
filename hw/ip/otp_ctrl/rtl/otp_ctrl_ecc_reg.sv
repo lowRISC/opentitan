@@ -79,7 +79,7 @@ module otp_ctrl_ecc_reg #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      ecc_q  <= {Depth{prim_secded_pkg::SecdedInv7264ZeroEcc}};
+      ecc_q  <= {Depth{prim_ot_secded_pkg::SecdedInv7264ZeroEcc}};
       data_q <= '0;
     end else begin
       ecc_q  <= ecc_d;

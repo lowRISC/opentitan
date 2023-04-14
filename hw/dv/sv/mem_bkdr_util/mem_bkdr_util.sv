@@ -78,9 +78,9 @@ class mem_bkdr_util extends uvm_object;
     this.err_detection_scheme = err_detection_scheme;
 
     if (`HAS_ECC) begin
-      import prim_secded_pkg::prim_secded_e;
-      import prim_secded_pkg::get_ecc_data_width;
-      import prim_secded_pkg::get_ecc_parity_width;
+      import prim_ot_secded_pkg::prim_secded_e;
+      import prim_ot_secded_pkg::get_ecc_data_width;
+      import prim_ot_secded_pkg::get_ecc_parity_width;
 
       prim_secded_e secded_eds = prim_secded_e'(err_detection_scheme);
       int non_ecc_bits_per_subword = get_ecc_data_width(secded_eds);
@@ -272,46 +272,46 @@ class mem_bkdr_util extends uvm_object;
     case (err_detection_scheme)
       ErrDetectionNone: ;
       Ecc_22_16: begin
-        data = prim_secded_pkg::prim_secded_22_16_enc(data[15:0]);
+        data = prim_ot_secded_pkg::prim_ot_secded_22_16_enc(data[15:0]);
       end
       EccHamming_22_16: begin
-        data = prim_secded_pkg::prim_secded_hamming_22_16_enc(data[15:0]);
+        data = prim_ot_secded_pkg::prim_ot_secded_hamming_22_16_enc(data[15:0]);
       end
       Ecc_39_32: begin
-        data = prim_secded_pkg::prim_secded_39_32_enc(data[31:0]);
+        data = prim_ot_secded_pkg::prim_ot_secded_39_32_enc(data[31:0]);
       end
       EccHamming_39_32: begin
-        data = prim_secded_pkg::prim_secded_hamming_39_32_enc(data[31:0]);
+        data = prim_ot_secded_pkg::prim_ot_secded_hamming_39_32_enc(data[31:0]);
       end
       Ecc_72_64: begin
-        data = prim_secded_pkg::prim_secded_72_64_enc(data[63:0]);
+        data = prim_ot_secded_pkg::prim_ot_secded_72_64_enc(data[63:0]);
       end
       EccHamming_72_64: begin
-        data = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[63:0]);
+        data = prim_ot_secded_pkg::prim_ot_secded_hamming_72_64_enc(data[63:0]);
       end
       EccHamming_76_68: begin
-        data = prim_secded_pkg::prim_secded_hamming_76_68_enc(data[67:0]);
+        data = prim_ot_secded_pkg::prim_ot_secded_hamming_76_68_enc(data[67:0]);
       end
       EccInv_22_16: begin
-        data = prim_secded_pkg::prim_secded_inv_22_16_enc(data[15:0]);
+        data = prim_ot_secded_pkg::prim_secded_inv_22_16_enc(data[15:0]);
       end
       EccInvHamming_22_16: begin
-        data = prim_secded_pkg::prim_secded_inv_hamming_22_16_enc(data[15:0]);
+        data = prim_ot_secded_pkg::prim_secded_inv_hamming_22_16_enc(data[15:0]);
       end
       EccInv_39_32: begin
-        data = prim_secded_pkg::prim_secded_inv_39_32_enc(data[31:0]);
+        data = prim_ot_secded_pkg::prim_secded_inv_39_32_enc(data[31:0]);
       end
       EccInvHamming_39_32: begin
-        data = prim_secded_pkg::prim_secded_inv_hamming_39_32_enc(data[31:0]);
+        data = prim_ot_secded_pkg::prim_secded_inv_hamming_39_32_enc(data[31:0]);
       end
       EccInv_72_64: begin
-        data = prim_secded_pkg::prim_secded_inv_72_64_enc(data[63:0]);
+        data = prim_ot_secded_pkg::prim_secded_inv_72_64_enc(data[63:0]);
       end
       EccInvHamming_72_64: begin
-        data = prim_secded_pkg::prim_secded_inv_hamming_72_64_enc(data[63:0]);
+        data = prim_ot_secded_pkg::prim_secded_inv_hamming_72_64_enc(data[63:0]);
       end
       EccInvHamming_76_68: begin
-        data = prim_secded_pkg::prim_secded_inv_hamming_76_68_enc(data[67:0]);
+        data = prim_ot_secded_pkg::prim_secded_inv_hamming_76_68_enc(data[67:0]);
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("ECC scheme %0s is unsupported.", err_detection_scheme))
@@ -425,16 +425,16 @@ class mem_bkdr_util extends uvm_object;
     data = read(addr);
     case (err_detection_scheme)
       Ecc_22_16: begin
-        return prim_secded_pkg::prim_secded_22_16_dec(data);
+        return prim_ot_secded_pkg::prim_ot_secded_22_16_dec(data);
       end
       EccHamming_22_16: begin
-        return prim_secded_pkg::prim_secded_hamming_22_16_dec(data);
+        return prim_ot_secded_pkg::prim_ot_secded_hamming_22_16_dec(data);
       end
       EccInv_22_16: begin
-        return prim_secded_pkg::prim_secded_inv_22_16_dec(data);
+        return prim_ot_secded_pkg::prim_secded_inv_22_16_dec(data);
       end
       EccInvHamming_22_16: begin
-        return prim_secded_pkg::prim_secded_inv_hamming_22_16_dec(data);
+        return prim_ot_secded_pkg::prim_secded_inv_hamming_22_16_dec(data);
       end
       default: return 'x;
     endcase
@@ -447,16 +447,16 @@ class mem_bkdr_util extends uvm_object;
     data = read(addr);
     case (err_detection_scheme)
       Ecc_39_32: begin
-        return prim_secded_pkg::prim_secded_39_32_dec(data);
+        return prim_ot_secded_pkg::prim_ot_secded_39_32_dec(data);
       end
       EccHamming_39_32: begin
-        return prim_secded_pkg::prim_secded_hamming_39_32_dec(data);
+        return prim_ot_secded_pkg::prim_ot_secded_hamming_39_32_dec(data);
       end
       EccInv_39_32: begin
-        return prim_secded_pkg::prim_secded_inv_39_32_dec(data);
+        return prim_ot_secded_pkg::prim_secded_inv_39_32_dec(data);
       end
       EccInvHamming_39_32: begin
-        return prim_secded_pkg::prim_secded_inv_hamming_39_32_dec(data);
+        return prim_ot_secded_pkg::prim_secded_inv_hamming_39_32_dec(data);
       end
       default: return 'x;
     endcase
@@ -469,16 +469,16 @@ class mem_bkdr_util extends uvm_object;
     data = read(addr);
     case (err_detection_scheme)
       Ecc_72_64: begin
-        return prim_secded_pkg::prim_secded_72_64_dec(data);
+        return prim_ot_secded_pkg::prim_ot_secded_72_64_dec(data);
       end
       EccHamming_72_64: begin
-        return prim_secded_pkg::prim_secded_hamming_72_64_dec(data);
+        return prim_ot_secded_pkg::prim_ot_secded_hamming_72_64_dec(data);
       end
       EccInv_72_64: begin
-        return prim_secded_pkg::prim_secded_inv_72_64_dec(data);
+        return prim_ot_secded_pkg::prim_secded_inv_72_64_dec(data);
       end
       EccInvHamming_72_64: begin
-        return prim_secded_pkg::prim_secded_inv_hamming_72_64_dec(data);
+        return prim_ot_secded_pkg::prim_secded_inv_hamming_72_64_dec(data);
       end
       default: return 'x;
     endcase

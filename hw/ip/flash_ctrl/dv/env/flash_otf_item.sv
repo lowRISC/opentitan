@@ -136,7 +136,7 @@ class flash_otf_item extends uvm_object;
     foreach(raw_fq[i]) begin
       data = raw_fq[i][FlashDataWidth-1:0];
       if (ecc_en) begin
-        data_with_icv = prim_secded_pkg::prim_secded_hamming_72_64_enc(raw_fq[i][63:0]);
+        data_with_icv = prim_ot_secded_pkg::prim_ot_secded_hamming_72_64_enc(raw_fq[i][63:0]);
         if (add_icv_err) begin
           data_with_icv[67:64] = ~data_with_icv[67:64];
         end
@@ -151,7 +151,7 @@ class flash_otf_item extends uvm_object;
       end
       if (ecc_en) begin
         fq.push_back(
-           prim_secded_pkg::prim_secded_hamming_76_68_enc({data_with_icv[67:64], data[63:0]}));
+           prim_ot_secded_pkg::prim_secded_hamming_76_68_enc({data_with_icv[67:64], data[63:0]}));
       end else begin
         fq.push_back({12'h0, data});
       end
@@ -164,7 +164,7 @@ class flash_otf_item extends uvm_object;
   function void descramble(bit[flash_phy_pkg::KeySize-1:0] addr_key,
                            bit[flash_phy_pkg::KeySize-1:0] data_key);
     bit ecc_err, icv_err;
-    prim_secded_pkg::secded_hamming_76_68_t dec68;
+    prim_ot_secded_pkg::secded_hamming_76_68_t dec68;
     bit [flash_phy_pkg::FullDataWidth-1:0] data; // 76 bits
     bit [71:0]               data_with_icv;
     bit[flash_ctrl_pkg::BusAddrByteW-2:0] addr = mem_addr;
@@ -197,7 +197,7 @@ class flash_otf_item extends uvm_object;
                                         fq.size(), i, addr, scr_en, ecc_en), UVM_MEDIUM)
         end
         if (ecc_en) begin
-          dec68 = prim_secded_pkg::prim_secded_hamming_76_68_dec(fq[i]);
+          dec68 = prim_ot_secded_pkg::prim_secded_hamming_76_68_dec(fq[i]);
         end else begin
           dec68.data = fq[i][67:0];
         end
@@ -212,7 +212,7 @@ class flash_otf_item extends uvm_object;
         // check ecc
         // chec icv
         if (ecc_en) begin
-          data_with_icv = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[63:0]);
+          data_with_icv = prim_ot_secded_pkg::prim_ot_secded_hamming_72_64_enc(data[63:0]);
           icv_err = (data_with_icv[67:64] != data[67:64]);
           ecc_err |= (dec68.err[1] | icv_err);
           if (dec68.err[1] | icv_err) begin

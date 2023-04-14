@@ -625,7 +625,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     end
 
     // calculate truncated integrity
-    {intg_data, data} = prim_secded_pkg::prim_secded_hamming_72_64_enc(data);
+    {intg_data, data} = prim_ot_secded_pkg::prim_ot_secded_hamming_72_64_enc(data);
 
     // program fully via backdoor
     // TODO: review this later.

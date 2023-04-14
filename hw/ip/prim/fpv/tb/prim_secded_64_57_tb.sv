@@ -15,12 +15,12 @@ module prim_secded_64_57_tb (
   input        [63:0] error_inject_i
 );
 
-  prim_secded_64_57_enc prim_secded_64_57_enc (
+  prim_ot_secded_64_57_enc prim_secded_64_57_enc (
     .data_i,
     .data_o(encoded_o)
   );
 
-  prim_secded_64_57_dec prim_secded_64_57_dec (
+  prim_ot_secded_64_57_dec prim_secded_64_57_dec (
     .data_i(encoded_o ^ error_inject_i),
     .data_o,
     .syndrome_o,

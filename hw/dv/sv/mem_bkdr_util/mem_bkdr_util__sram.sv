@@ -62,7 +62,7 @@ function logic [38:0] get_sram_encrypt32_intg_data (
   end
 
   // Calculate the integrity constant
-  integ_data = prim_secded_pkg::prim_secded_inv_39_32_enc(data);
+  integ_data = prim_ot_secded_pkg::prim_secded_inv_39_32_enc(data);
 
   // Calculate the scrambled data
   wdata_arr = {<<{integ_data}};
@@ -133,7 +133,7 @@ virtual function void sram_encrypt_write32_integ(logic [bus_params_pkg::BUS_AW-1
   scr_addr = get_sram_encrypt_addr(addr, nonce);
 
   // Calculate the integrity constant
-  integ_data = prim_secded_pkg::prim_secded_inv_39_32_enc(data);
+  integ_data = prim_ot_secded_pkg::prim_secded_inv_39_32_enc(data);
 
   // flip some bits to inject integrity fault
   integ_data ^= flip_bits;

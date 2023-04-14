@@ -345,7 +345,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   // from packed data to masked/scrambled data based on software configuration).
   // The actual plain data ECC is explicitly captured during this process when
   // it is required.
-  prim_secded_hamming_72_64_enc u_plain_enc (
+  prim_ot_secded_hamming_72_64_enc u_plain_enc (
     .data_i(packed_data),
     .data_o(plain_data_w_ecc)
   );

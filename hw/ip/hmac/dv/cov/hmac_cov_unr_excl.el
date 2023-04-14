@@ -49,13 +49,13 @@ Condition 4 "2745829604" "(vld_rd_rsp && reqfifo_rdata.error) 1 -1" (3 "11")
 ANNOTATION: "VC_COV_UNR"
 Condition 5 "1119953630" "(vld_rd_rsp ? rspfifo_rdata.data : '0) 1 -1" (2 "1")
 ANNOTATION: "VC_COV_UNR"
-Condition 6 "561780173" "((vld_rd_rsp && reqfifo_rdata.error) ? error_blanking_integ : (vld_rd_rsp ? rspfifo_rdata.data_intg : prim_secded_pkg::SecdedInv3932ZeroEcc)) 1 -1" (2 "1")
+Condition 6 "561780173" "((vld_rd_rsp && reqfifo_rdata.error) ? error_blanking_integ : (vld_rd_rsp ? rspfifo_rdata.data_intg : prim_ot_secded_pkg::SecdedInv3932ZeroEcc)) 1 -1" (2 "1")
 ANNOTATION: "VC_COV_UNR"
 Condition 7 "3130851184" "(vld_rd_rsp && reqfifo_rdata.error) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
 Condition 7 "3130851184" "(vld_rd_rsp && reqfifo_rdata.error) 1 -1" (3 "11")
 ANNOTATION: "VC_COV_UNR"
-Condition 8 "2942914969" "(vld_rd_rsp ? rspfifo_rdata.data_intg : prim_secded_pkg::SecdedInv3932ZeroEcc) 1 -1" (2 "1")
+Condition 8 "2942914969" "(vld_rd_rsp ? rspfifo_rdata.data_intg : prim_ot_secded_pkg::SecdedInv3932ZeroEcc) 1 -1" (2 "1")
 ANNOTATION: "VC_COV_UNR"
 Condition 13 "1798941048" "(d_valid && d_error) 1 -1" (1 "01")
 ANNOTATION: "VC_COV_UNR"

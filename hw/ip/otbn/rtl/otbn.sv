@@ -446,7 +446,7 @@ module otbn
   // is asserted the cycle the rdata is being returned no locking was ocurring when the request came
   // in so it is reasonable to proceed with returning the supplied integrity.
   assign imem_rdata_bus =
-    {locking_q ? prim_secded_pkg::SecdedInv3932ZeroEcc : imem_rdata_bus_raw[38:32],
+    {locking_q ? prim_ot_secded_pkg::SecdedInv3932ZeroEcc : imem_rdata_bus_raw[38:32],
      imem_rdata_bus_raw[31:0]};
 
   `ASSERT(ImemRDataBusDisabledWhenCoreAccess_A, imem_access_core |-> !imem_rdata_bus_en_q)
@@ -679,7 +679,7 @@ module otbn
   // in so it is reasonable to proceed with returning the supplied integrity.
   for (genvar i_word = 0; i_word < BaseWordsPerWLEN; ++i_word) begin : g_dmem_rdata_bus
     assign dmem_rdata_bus[i_word*39+:39] =
-      {locking_q ? prim_secded_pkg::SecdedInv3932ZeroEcc : dmem_rdata_bus_raw[i_word*39+32+:7],
+      {locking_q ? prim_ot_secded_pkg::SecdedInv3932ZeroEcc : dmem_rdata_bus_raw[i_word*39+32+:7],
        dmem_rdata_bus_raw[i_word*39+:32]};
   end
 

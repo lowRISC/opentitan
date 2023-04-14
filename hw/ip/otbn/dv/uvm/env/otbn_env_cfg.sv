@@ -305,7 +305,7 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
 
   // Add new known-good integrity bits to data
   function logic [BaseIntgWidth-1:0] add_integrity_32(logic [31:0] data);
-    return prim_secded_pkg::prim_secded_inv_39_32_enc(data);
+    return prim_ot_secded_pkg::prim_secded_inv_39_32_enc(data);
   endfunction
 
   // Fix integrity bits of data

@@ -660,7 +660,7 @@ module flash_phy_rd
   logic [3:0] unused_intg;
   logic [3:0] truncated_intg;
 
-  prim_secded_hamming_72_64_enc u_plain_enc (
+  prim_ot_secded_hamming_72_64_enc u_plain_enc (
     .data_i(data_out_muxed[DataWidth-1:0]),
     .data_o({unused_intg, truncated_intg, unused_data})
   );

@@ -87,7 +87,7 @@ module otbn_rf_bignum
     );
   end else if (RegFile == RegFileFPGA) begin : gen_rf_bignum_fpga
     otbn_rf_bignum_fpga #(
-      .WordZeroVal(prim_secded_pkg::SecdedInv3932ZeroWord)
+      .WordZeroVal(prim_ot_secded_pkg::SecdedInv3932ZeroWord)
     ) u_otbn_rf_bignum_inner (
       .clk_i,
       .rst_ni,

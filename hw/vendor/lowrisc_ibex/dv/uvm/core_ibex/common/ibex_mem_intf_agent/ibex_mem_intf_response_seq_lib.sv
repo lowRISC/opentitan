@@ -100,7 +100,7 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
         end
       end
       // Add integrity bits
-      {req.intg, req.data} = prim_secded_pkg::prim_secded_inv_39_32_enc(req.data);
+      {req.intg, req.data} = prim_ot_secded_pkg::prim_secded_inv_39_32_enc(req.data);
 
       // If data_was_uninitialized is true then we want to force bad integrity bits: invert the
       // correct ones, which we know will break things for the codes we use.

@@ -296,7 +296,7 @@ module tlul_adapter_sram
   logic [DataIntgWidth-1:0] data_intg;
   assign data_intg = (vld_rd_rsp && reqfifo_rdata.error) ? error_blanking_integ    : // TL-UL error
                      (vld_rd_rsp)                        ? rspfifo_rdata.data_intg : // valid read
-                     prim_secded_pkg::SecdedInv3932ZeroEcc;                          // valid write
+                     prim_ot_secded_pkg::SecdedInv3932ZeroEcc;                          // valid write
 
   assign tl_o_int = '{
       d_valid  : d_valid ,
@@ -418,7 +418,7 @@ module tlul_adapter_sram
     always_comb begin
       // If the read mask is set to zero, all read data is zeroed out by the mask.
       // We have to set the ECC bits accordingly since we are using an inverted Hsiao code.
-      rdata_tlword = prim_secded_pkg::SecdedInv3932ZeroWord;
+      rdata_tlword = prim_ot_secded_pkg::SecdedInv3932ZeroWord;
       // Otherwise, if at least one mask bit is nonzero, we are passing through the integrity.
       // In that case we need to feed back the entire word since otherwise the integrity
       // will not calculate correctly.

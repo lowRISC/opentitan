@@ -44,7 +44,7 @@ package otbn_pkg;
 
   // Zero word in the implemented ECC scheme. If changing the ECC scheme, this has to be changed,
   // and vice-versa.
-  localparam logic [BaseIntgWidth-1:0] EccZeroWord     = prim_secded_pkg::SecdedInv3932ZeroWord;
+  localparam logic [BaseIntgWidth-1:0] EccZeroWord     = prim_ot_secded_pkg::SecdedInv3932ZeroWord;
   localparam logic [ExtWLEN-1:0]       EccWideZeroWord = {BaseWordsPerWLEN{EccZeroWord}};
 
   // Size of DMEM scratch area. The total DMEM size is OTBN_DMEM_SIZE + DmemScratchSizeByte. Note

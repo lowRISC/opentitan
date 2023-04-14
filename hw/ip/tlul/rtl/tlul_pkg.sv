@@ -175,7 +175,7 @@ package tlul_pkg;
     tl_h2d_cmd_intg_t cmd;
     cmd = extract_h2d_cmd_intg(tl);
     {cmd_intg, unused_cmd_payload} =
-        prim_secded_pkg::prim_secded_inv_64_57_enc(H2DCmdMaxWidth'(cmd));
+        prim_ot_secded_pkg::prim_secded_inv_64_57_enc(H2DCmdMaxWidth'(cmd));
    return cmd_intg;
   endfunction  // get_cmd_intg
 
@@ -184,7 +184,7 @@ package tlul_pkg;
     logic [DataIntgWidth-1:0] data_intg;
     logic [top_pkg::TL_DW-1:0] unused_data;
     logic [DataIntgWidth + top_pkg::TL_DW - 1 : 0] enc_data;
-    enc_data = prim_secded_pkg::prim_secded_inv_39_32_enc(data);
+    enc_data = prim_ot_secded_pkg::prim_secded_inv_39_32_enc(data);
     data_intg = enc_data[DataIntgWidth + top_pkg::TL_DW - 1 : top_pkg::TL_DW];
     unused_data = enc_data[top_pkg::TL_DW - 1 : 0];
     return data_intg;

@@ -17,7 +17,7 @@ class flash_mem_bkdr_util extends mem_bkdr_util;
 
   // Flash has 2 levels of ECC - first on bits 63:0 applied to bits 71:64.
   virtual function uvm_hdl_data_t get_ecc_computed_data(uvm_hdl_data_t data);
-    data = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[63:0]);
+    data = prim_ot_secded_pkg::prim_ot_secded_hamming_72_64_enc(data[63:0]);
     return super.get_ecc_computed_data(data);
   endfunction
 
@@ -27,7 +27,7 @@ class flash_mem_bkdr_util extends mem_bkdr_util;
     for (int i = 0; i < depth; i++) begin
       uvm_hdl_data_t data;
       `DV_CHECK_STD_RANDOMIZE_FATAL(data, "Randomization failed!", path)
-      data = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[63:0]);
+      data = prim_ot_secded_pkg::prim_ot_secded_hamming_72_64_enc(data[63:0]);
       data = get_ecc_computed_data(data);
       write(i * bytes_per_word, data);
     end
