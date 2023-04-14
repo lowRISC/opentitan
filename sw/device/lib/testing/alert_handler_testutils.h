@@ -78,8 +78,14 @@ status_t alert_handler_testutils_configure_all(
 
 /**
  * Returns the number of cycles corresponding to the given microseconds.
+ *
+ * @param microseconds The number of microseconds.
+ * @param[out] cycles The number of AON clock cycles.
+ * @return The result of the operation.
  */
-uint32_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds);
+OT_WARN_UNUSED_RESULT
+status_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds,
+                                                    uint32_t *cycles);
 
 /**
  * Returns a scaling factor for conversion of time to cycles.

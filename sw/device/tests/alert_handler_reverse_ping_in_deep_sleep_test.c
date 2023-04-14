@@ -107,21 +107,23 @@ static void alert_handler_config(void) {
     loc_alerts[i] = i;
     loc_alert_classes[i] = kDifAlertHandlerClassB;
   }
-
+  uint32_t cycles = 0;
+  CHECK_STATUS_OK(alert_handler_testutils_get_cycles_from_us(
+      kTestParamAlertHandlerPhase0EscalationDurationUsec, &cycles));
   dif_alert_handler_escalation_phase_t esc_phases[] = {
       {
           .phase = kDifAlertHandlerClassStatePhase0,
           .signal = 0,
-          .duration_cycles = alert_handler_testutils_get_cycles_from_us(
-              kTestParamAlertHandlerPhase0EscalationDurationUsec),
+          .duration_cycles = cycles,
       },
   };
 
+  CHECK_STATUS_OK(alert_handler_testutils_get_cycles_from_us(
+      kTestParamAlertHandlerIrqDeadlineUsec, &cycles));
   dif_alert_handler_class_config_t class_config = {
       .auto_lock_accumulation_counter = kDifToggleDisabled,
       .accumulator_threshold = 0,
-      .irq_deadline_cycles = alert_handler_testutils_get_cycles_from_us(
-          kTestParamAlertHandlerIrqDeadlineUsec),
+      .irq_deadline_cycles = cycles,
       .escalation_phases = esc_phases,
       .escalation_phases_len = ARRAYSIZE(esc_phases),
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase1,
@@ -132,6 +134,8 @@ static void alert_handler_config(void) {
 
   dif_alert_handler_class_t classes[] = {kDifAlertHandlerClassA,
                                          kDifAlertHandlerClassB};
+  CHECK_STATUS_OK(alert_handler_testutils_get_cycles_from_us(
+      kTestParamAlertHandlerPingTimeoutUsec, &cycles));
   dif_alert_handler_config_t config = {
       .alerts = alerts,
       .alert_classes = alert_classes,
@@ -142,8 +146,7 @@ static void alert_handler_config(void) {
       .classes = classes,
       .class_configs = class_configs,
       .classes_len = ARRAYSIZE(class_configs),
-      .ping_timeout = alert_handler_testutils_get_cycles_from_us(
-          kTestParamAlertHandlerPingTimeoutUsec),
+      .ping_timeout = cycles,
   };
 
   CHECK_STATUS_OK(alert_handler_testutils_configure_all(&alert_handler, config,

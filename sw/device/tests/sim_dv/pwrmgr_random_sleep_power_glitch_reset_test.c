@@ -170,29 +170,33 @@ static void alert_handler_config(void) {
   dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrAonFatalFault};
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
 
+  uint32_t cycles[3] = {0};
+  CHECK_STATUS_OK(alert_handler_testutils_get_cycles_from_us(
+      kEscalationPhase0Micros, &cycles[0]));
+  CHECK_STATUS_OK(alert_handler_testutils_get_cycles_from_us(
+      kEscalationPhase1Micros, &cycles[1]));
+  CHECK_STATUS_OK(alert_handler_testutils_get_cycles_from_us(
+      kEscalationPhase2Micros, &cycles[2]));
+
   dif_alert_handler_escalation_phase_t esc_phases[] = {
       {.phase = kDifAlertHandlerClassStatePhase0,
        .signal = 0,
        .duration_cycles =
-           alert_handler_testutils_get_cycles_from_us(kEscalationPhase0Micros) *
-           alert_handler_testutils_cycle_rescaling_factor()},
+           cycles[0] * alert_handler_testutils_cycle_rescaling_factor()},
       {.phase = kDifAlertHandlerClassStatePhase1,
        .signal = 1,
        .duration_cycles =
-           alert_handler_testutils_get_cycles_from_us(kEscalationPhase1Micros) *
-           alert_handler_testutils_cycle_rescaling_factor()},
+           cycles[1] * alert_handler_testutils_cycle_rescaling_factor()},
       {.phase = kDifAlertHandlerClassStatePhase2,
        .signal = 3,
        .duration_cycles =
-           alert_handler_testutils_get_cycles_from_us(kEscalationPhase2Micros) *
-           alert_handler_testutils_cycle_rescaling_factor()}};
+           cycles[2] * alert_handler_testutils_cycle_rescaling_factor()}};
 
   dif_alert_handler_class_config_t class_config[] = {{
       .auto_lock_accumulation_counter = kDifToggleDisabled,
       .accumulator_threshold = 0,
       .irq_deadline_cycles =
-          alert_handler_testutils_get_cycles_from_us(kEscalationPhase0Micros) *
-          alert_handler_testutils_cycle_rescaling_factor(),
+          cycles[0] * alert_handler_testutils_cycle_rescaling_factor(),
       .escalation_phases = esc_phases,
       .escalation_phases_len = ARRAYSIZE(esc_phases),
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
@@ -306,10 +310,12 @@ static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
 
   // The `intr_state` takes 3 aon clock cycles to rise plus 2 extra cycles as a
   // precaution.
+
+  uint32_t cycles = 0;
+  CHECK_STATUS_OK(alert_handler_testutils_get_cycles_from_us(
+      kEscalationPhase0Micros, &cycles));
   uint32_t wait_us =
-      bark_time_us +
-      alert_handler_testutils_get_cycles_from_us(kEscalationPhase0Micros) *
-          alert_handler_testutils_cycle_rescaling_factor();
+      bark_time_us + cycles * alert_handler_testutils_cycle_rescaling_factor();
 
   // Wait bark time and check that the bark interrupt requested.
   busy_spin_micros(wait_us);

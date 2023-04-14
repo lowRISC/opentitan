@@ -176,28 +176,34 @@ static void alert_handler_config(void) {
   dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrAonFatalFault};
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
 
+  uint32_t cycles[4] = {0};
+  CHECK_STATUS_OK(alert_handler_testutils_get_cycles_from_us(
+      kEscalationPhase0Micros, &cycles[0]));
+  CHECK_STATUS_OK(alert_handler_testutils_get_cycles_from_us(
+      kEscalationPhase1Micros, &cycles[1]));
+  CHECK_STATUS_OK(alert_handler_testutils_get_cycles_from_us(
+      kEscalationPhase2Micros, &cycles[2]));
+  CHECK_STATUS_OK(alert_handler_testutils_get_cycles_from_us(10, &cycles[3]));
+
   dif_alert_handler_escalation_phase_t esc_phases[] = {
       {.phase = kDifAlertHandlerClassStatePhase0,
        .signal = 0,
        .duration_cycles =
-           alert_handler_testutils_get_cycles_from_us(kEscalationPhase0Micros) *
-           alert_handler_testutils_cycle_rescaling_factor()},
+           cycles[0] * alert_handler_testutils_cycle_rescaling_factor()},
       {.phase = kDifAlertHandlerClassStatePhase1,
        .signal = 1,
        .duration_cycles =
-           alert_handler_testutils_get_cycles_from_us(kEscalationPhase1Micros) *
-           alert_handler_testutils_cycle_rescaling_factor()},
+           cycles[1] * alert_handler_testutils_cycle_rescaling_factor()},
       {.phase = kDifAlertHandlerClassStatePhase2,
        .signal = 3,
        .duration_cycles =
-           alert_handler_testutils_get_cycles_from_us(kEscalationPhase2Micros) *
-           alert_handler_testutils_cycle_rescaling_factor()}};
+           cycles[2] * alert_handler_testutils_cycle_rescaling_factor()}};
 
   dif_alert_handler_class_config_t class_config[] = {{
       .auto_lock_accumulation_counter = kDifToggleDisabled,
       .accumulator_threshold = 0,
-      .irq_deadline_cycles = alert_handler_testutils_get_cycles_from_us(10) *
-                             alert_handler_testutils_cycle_rescaling_factor(),
+      .irq_deadline_cycles =
+          cycles[3] * alert_handler_testutils_cycle_rescaling_factor(),
       .escalation_phases = esc_phases,
       .escalation_phases_len = ARRAYSIZE(esc_phases),
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
