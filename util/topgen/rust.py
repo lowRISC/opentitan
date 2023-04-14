@@ -151,15 +151,14 @@ class RustArrayMapping(object):
         self.mapping[in_name] = out_name
 
     def render_definition(self):
-        template = (
-            "pub const ${mapping.name.as_rust_const()}: "
-            "[${mapping.output_type_name.as_rust_type()}; ${len(mapping.mapping)}] = [\n"
-            "% for in_name, out_name in mapping.mapping.items():\n"
-            "    // ${in_name.as_rust_enum()} ->"
-            " ${mapping.output_type_name.as_rust_type()}::${out_name.as_rust_enum()}\n"
-            "    ${mapping.output_type_name.as_rust_type()}::${out_name.as_rust_enum()},\n"
-            "% endfor\n"
-            "];")
+        template = ("pub const ${mapping.name.as_rust_const()}: "
+                    "[${mapping.output_type_name.as_rust_type()}; ${len(mapping.mapping)}] = [\n"
+                    "% for in_name, out_name in mapping.mapping.items():\n"
+                    "    // ${in_name.as_rust_enum()} ->"
+                    " ${mapping.output_type_name.as_rust_type()}::${out_name.as_rust_enum()}\n"
+                    "    ${mapping.output_type_name.as_rust_type()}::${out_name.as_rust_enum()},\n"
+                    "% endfor\n"
+                    "];")
         return Template(template).render(mapping=self)
 
 
@@ -187,11 +186,11 @@ class RustFileHeader(object):
         if self.skip:
             return Template(("")).render(header=self)
         else:
-            template = (
-                "// Built for ${header.build()}\n"
-                "// https://github.com/lowRISC/opentitan/tree/${header.scm_sha()}\n"
-                "// Tree status: ${header.scm_status()}\n"
-                "// Build date: ${header.time_stamp()}")
+            template = ("\n"
+                        "// Built for ${header.build()}\n"
+                        "// https://github.com/lowRISC/opentitan/tree/${header.scm_sha()}\n"
+                        "// Tree status: ${header.scm_status()}\n"
+                        "// Build date: ${header.time_stamp()}\n")
             return Template(template).render(header=self)
 
 
