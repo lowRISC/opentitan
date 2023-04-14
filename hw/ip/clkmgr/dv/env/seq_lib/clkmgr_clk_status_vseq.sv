@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This tests the transitions of clk_status under various scenarios:
-// - Transitions with ip_clk_en going active, assuming the usb clock is either active or inactive.
-// - Transitions with ip_clk_en going inactive, and assumming any subset of the clocks
-//   remain enabled (per controls in pwrmgr `control` CSR).
+// This tests the transitions of the various clock status outputs for random settings of the
+// various ip_clk_en inputs.
 //
 // The checks are done via SVA in clkmgr_pwrmgr_sva_if.
 class clkmgr_clk_status_vseq extends clkmgr_base_vseq;

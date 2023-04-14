@@ -65,32 +65,43 @@ The CLKMGR RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/REA
 
 It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
 
-### Stimulus strategy
+## Stimulus strategy
 This module is rather simple: the stimulus is just the external pins and the CSR updates.
 There are a couple stages for synchronization of the CSR updates for clock gating controls, but scanmode is used asynchronously.
 These go to the clock gating latches.
 The external pins controlling the external clock selection need no synchronization.
 The tests randomize the inputs and issue CSR updates affecting the specific functions being tested.
 
-#### Test sequences
+### Test sequences
 All test sequences reside in `hw/ip/clkmgr/dv/env/seq_lib`.
 The `clkmgr_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
-All test sequences are extended from `clkmgr_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can use or call.
 Some of the most commonly used tasks / functions are as follows:
 * `clkmgr_init`: Sets the frequencies of the various clocks.
 * `control_ip_clocks`: Turns on or off the input clocks based on the various clock enable and status ports to and from the `pwrmgr` IP.
 
+All test sequences are extended from `clkmgr_base_vseq`, and are described below.
+
+#### clkmgr_peri_vseq
+
 The sequence `clkmgr_peri_vseq` randomizes the stimuli that drive the four peripheral clocks.
 These clocks are mutually independent so they are tested in parallel.
-They depend on the `clk_enables` CSR, which has a dedicated enable for each peripheral clock, the pwrmgr's `<clk>_ip_clk_en` which has a dedicated bit controlling `io`, `main`, and `usb` clocks, and `scanmode_i` which is used asynchronously and also controls all.
-The sequence runs a number of iterations, each randomizing all the above.
+They depend on
+* The `clk_enables` CSR, which has a dedicated enable for each peripheral clock
+* The pwrmgr's `<clk>_ip_clk_en` which has a dedicated bit controlling `io`, `main`, and `usb` clocks
+* The `scanmode_i` input, which is used asynchronously and also controls all.
+
+The sequence runs a number of iterations, each randomizing the above except for `io_ip_clk_en` since that would imply the processor is disabled.
+
+#### clkmgr_trans_vseq
 
 The sequence `clkmgr_trans_vseq` randomizes the stimuli that drive the five transactional unit clocks.
 These are also mutually independent so they are tested in parallel.
-They depend on the `clk_hints` CSR, which has a separate bit for each, `<clk>_ip_clk_en` and `scanmode_i` as in the peripheral clocks.
-They also depend on the `idle_i` input, which also has a separate bit for each unit.
-Any unit's `idle_i` bit is clear when the unit is currently busy, and prevents its clock to be turned off until it becomes idle.
+They depend on the `clk_hints` CSR, which has a separate bit for each, `main_ip_clk_en` and `scanmode_i`, similar to the peripheral clocks.
+They also depend on the `idle_i` input, which also has a separate multi-bit value for each unit.
+Units are considered busy when their corresponding `idle_i` value is not `mubi_pkg::MuBi4True`, and this prevents its clock turning off until it becomes idle.
+
+#### clkmgr_extclk_vseq
 
 The sequence `clkmgr_extclk_vseq` randomizes the stimuli that drive the external clock selection.
 The selection is controlled by software if the `extclk_ctrl.sel` CSR is `prim_mubi_pkg::MuBi4True`, provided the `lc_hw_debug_en_i` input is also set to `lc_ctrl_pkg::On`.
@@ -99,10 +110,25 @@ When the external clock is selected and `scanmode_i` is not set to `prim_mubi_pk
 * If `lc_ctrl_byp_req_i` is on, or
 * If `extclk_ctrl.hi_speed_sel` CSR is `prim_mubi_pkg::MuBi4True`, when the selection is enabled by software.
 
+#### clkmgr_frequency_vseq
+
 The sequence `clkmgr_frequency_vseq` randomly programs the frequency measurement for each clock so its measurement is either okay, slow, or fast.
 It checks the recoverable alerts trigger as expected when a measurement is not okay.
+It also checks the `recov_err_code` CSR sets bits for clocks whose measurement is out of bounds.
+It also checks that loss of calibration stops clock measurements and doesn't trigger errors.
 
-#### Functional coverage
+#### clkmgr_frequency_timeout_vseq
+
+The sequence `clkmgr_frequency_timeout_vseq` programs the frequency measurement for each clock so its measurement is okay.
+It randomly stops one of the clocks, and checks the corresponding bit in the `recov_err_code` show a timeout.
+It also checks the recoverable alerts trigger as expected for a timeout.
+
+#### clkmgr_clk_status_vseq
+
+This checks that the `pwr_o.*_status` outputs track the `pwr_i.*_ip_clk_en` inputs.
+The inputs are set at random and the outputs are checked via SVA.
+
+### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
 
@@ -116,35 +142,37 @@ The following covergroups have been developed to prove that the test intent has 
 
 See more detailed description at `hw/ip/clkmgr/data/clkmgr_testplan.hjson`.
 
-### Self-checking strategy
+## Self-checking strategy
 
 Most of the checking is done using SVA for input to output, or CSR update to output behavior.
 Some of the CLKMGR outputs are gated clocks, which are controlled by both synchronous logic and asynchronous enables.
 These asynchronous enables become synchronous because of the SVA semantics.
 This is fine since the assertions allow some cycles for the expected behavior to occur.
 
-#### Scoreboard
+### Scoreboard
 The `clkmgr_scoreboard` combines CSR updates and signals from the clkmgr vif to instrument some checks and coverage collection.
 The CSR updates are determined using the TLUL analysis port.
 
-The output clocks can be separated into two groups: peripheral ip clocks and transactional unit clocks.
+The CSR controlled output clocks can be separated into two groups: peripheral ip clocks and transactional unit clocks.
 Please refer to the [Test sequences section](#test-sequences) above.
 The clock gating logic is pretty similar across units in each group.
 For each peripheral and transactional clock the scoreboard samples their coverage based on clocking blocks instantiated in `clkmgr_if`.
-
-The external clock control signals with the AST are checked in the scoreboard itself.
-This involves checking that
-* Transitions in the `lc_clk_byp_req` input are followed by corresponding transitions in the `io_clk_byp_req` output.
-  * Transitions in the `all_clk_byp_req` output correspond to the `extclk_ctrl` CSR and the `lc_hw_debug_en` input.
+Most other other functional coverage groups are also sampled in the scoreboard.
 
 The `jitter_en_o` output is checked to match the `jitter_enable` CSR.
 
-#### Assertions
+### Assertions
 * Pwrmgr enable-status assertions: Interface `clkmgr_pwrmgr_sva_if` contains concurrent SVA that checks that edges of the various ip_clk_en are followed by corresponding edges of their clk_status.
   The clocks checked are `main`, `io`, and `usb`.
 * Gated clock assertions: Interface `clkmgr_gated_clock_sva_if` contains concurrent SVA that checks each gated clock is either running or stopped based on their control logic.
-  There is one assertion for each of the four peripheral clock and five hintable clocks.
+  There is one assertion for each of the four peripheral clock and four hintable clocks.
+* Transactional clock assertions: Interface `clkmgr_trans_sva_if` contains concurrent SVA that checks each transactional clock is either running or stopped based on their control logic.
+  There is one assertion for each of the four hintable clocks.
 * Clock divider assertions: Interface `clkmgr_div_sva_if` contains concurrent SVA that checks the `io_div2` and `io_div4` clocks are running at nominal frequency, or are divided by two each in response to the `extclk` logic.
+* External clock assertions: Interface `clkmgr_extclk_sva_if` contains concurrent SVA that checks the external control outputs respond correctly to the various CSR or inputs that control them.
+* Clock gating assertions: Interface `clkmgr_cg_en_sva_if` contains concurrent assertions that check a clock's cg_en output is active when the clock is disabled, and viceversa.
+  As a special case, interface `clkmgr_aon_cg_en_sva_if` checks cg_en is never active for an aon clock.
+* Lost calibration assertions: Interfaces `clkmgr_lost_calib_ctrl_en_sva_if` and `clkmgr_lost_calib_regwen_sva_if` check that losing calibration turns off clock measurements and re-enables measure control writes.
 * TLUL assertions: `clkmgr_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 

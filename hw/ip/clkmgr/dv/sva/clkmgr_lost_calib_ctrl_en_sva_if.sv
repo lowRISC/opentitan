@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This contains SVA assertions to check loosing calibration turns off clock measurements.
+// This contains SVA assertions to check losing calibration turns off clock measurements.
 
 interface clkmgr_lost_calib_ctrl_en_sva_if (
   input logic clk,

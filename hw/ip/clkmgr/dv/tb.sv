@@ -102,7 +102,7 @@ module tb;
     .clk_main_i (clk_main),
     .rst_main_ni(rst_main_n),
     .clk_io_i   (clk_io),
-    // TODO(#17934): differentiate the io resets to check they generate the
+    // ICEBOX(#17934): differentiate the io resets to check they generate the
     // expected side-effects. Probably doable with a very simple test.
     .rst_io_ni  (rst_io_n),
     .rst_io_div2_ni(rst_io_n),
@@ -112,7 +112,7 @@ module tb;
     .clk_aon_i  (clk_aon),
     .rst_aon_ni (rst_aon_n),
 
-    // TODO(#17934): differentiate the root resets as mentioned for rst_io_ni above.
+    // ICEBOX(#17934): differentiate the root resets as mentioned for rst_io_ni above.
     .rst_root_ni(rst_root_io_n),
     .rst_root_io_ni(rst_root_io_n),
     .rst_root_io_div2_ni(rst_root_io_n),
