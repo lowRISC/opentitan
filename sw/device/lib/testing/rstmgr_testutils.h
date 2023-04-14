@@ -60,8 +60,10 @@ status_t rstmgr_testutils_compare_alert_info(
  * @param rstmgr A reset manager handle.
  * @param expected_cpu_dump An array holding the expected cpu dump.
  * @param dump_size The size of the expected_cpu_dump array.
+ * @return The result of the operation.
  */
-void rstmgr_testutils_compare_cpu_info(
+OT_WARN_UNUSED_RESULT
+status_t rstmgr_testutils_compare_cpu_info(
     const dif_rstmgr_t *rstmgr,
     dif_rstmgr_cpu_info_dump_segment_t *expected_cpu_dump, size_t dump_size);
 
