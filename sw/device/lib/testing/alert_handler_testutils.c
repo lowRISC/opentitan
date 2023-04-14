@@ -33,31 +33,32 @@ static uint32_t get_next_n_bits(
   return word;
 }
 
-alert_info_t alert_info_dump_to_struct(
-    const dif_rstmgr_alert_info_dump_segment_t *dump, int dump_size) {
+status_t alert_handler_testutils_info_parse(
+    const dif_rstmgr_alert_info_dump_segment_t *dump, int dump_size,
+    alert_handler_testutils_info_t *info) {
   int word_index = 0;
   int bit_index = 0;
-  alert_info_t info;
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
-    info.class_esc_state[i] = get_next_n_bits(3, dump, &word_index, &bit_index);
+    info->class_esc_state[i] =
+        get_next_n_bits(3, dump, &word_index, &bit_index);
   }
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
-    info.class_esc_cnt[i] = get_next_n_bits(32, dump, &word_index, &bit_index);
+    info->class_esc_cnt[i] = get_next_n_bits(32, dump, &word_index, &bit_index);
   }
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
-    info.class_accum_cnt[i] =
+    info->class_accum_cnt[i] =
         get_next_n_bits(16, dump, &word_index, &bit_index);
   }
-  info.loc_alert_cause = get_next_n_bits(7, dump, &word_index, &bit_index);
-  CHECK(word_index < dump_size);
+  info->loc_alert_cause = get_next_n_bits(7, dump, &word_index, &bit_index);
+  TRY_CHECK(word_index < dump_size);
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
-    info.alert_cause[i] = get_next_n_bits(1, dump, &word_index, &bit_index);
+    info->alert_cause[i] = get_next_n_bits(1, dump, &word_index, &bit_index);
   }
-  CHECK(word_index < dump_size);
-  return info;
+  TRY_CHECK(word_index < dump_size);
+  return OK_STATUS();
 }
 
-void alert_info_to_string(const alert_info_t *info) {
+void alert_info_to_string(const alert_handler_testutils_info_t *info) {
   LOG_INFO("alert_info:");
   LOG_INFO("esc_state [0]=%x, [1]=%x, [2]=%x, [3]=%x", info->class_esc_state[0],
            info->class_esc_state[1], info->class_esc_state[2],
@@ -149,12 +150,4 @@ uint32_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds) {
 
 uint32_t alert_handler_testutils_cycle_rescaling_factor() {
   return kDeviceType == kDeviceSimDV ? 1 : 10;
-}
-
-bool alert_handler_testutils_is_alert_active(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert) {
-  bool is_cause;
-  CHECK_DIF_OK(
-      dif_alert_handler_alert_is_cause(alert_handler, alert, &is_cause));
-  return is_cause;
 }

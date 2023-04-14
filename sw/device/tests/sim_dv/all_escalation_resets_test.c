@@ -1076,7 +1076,7 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
 void check_alert_dump() {
   dif_rstmgr_alert_info_dump_segment_t dump[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
   size_t seg_size;
-  alert_info_t actual_info;
+  alert_handler_testutils_info_t actual_info;
 
   CHECK_DIF_OK(dif_rstmgr_alert_info_dump_read(
       &rstmgr, dump, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &seg_size));
@@ -1086,7 +1086,8 @@ void check_alert_dump() {
     LOG_INFO("DUMP:%d: 0x%x", i, dump[i]);
   }
 
-  actual_info = alert_info_dump_to_struct(dump, seg_size);
+  CHECK_STATUS_OK(
+      alert_handler_testutils_info_parse(dump, seg_size, &actual_info));
   LOG_INFO("The alert info crash dump:");
   alert_info_to_string(&actual_info);
   // Check alert cause.

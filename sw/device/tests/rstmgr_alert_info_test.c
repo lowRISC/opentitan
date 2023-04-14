@@ -184,7 +184,7 @@ static const dif_alert_handler_class_config_t
 
 typedef struct test_alert_info {
   char *test_name;
-  alert_info_t alert_info;
+  alert_handler_testutils_info_t alert_info;
 } test_alert_info_t;
 
 static test_alert_info_t kExpectedInfo[kRoundTotal] = {
@@ -310,7 +310,7 @@ void ottf_external_isr(void) {
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
 }
 
-static void print_alert_cause(alert_info_t info) {
+static void print_alert_cause(alert_handler_testutils_info_t info) {
   for (uint32_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     LOG_INFO("alert_cause[%d]: 0x%x", i, info.alert_cause[i]);
   }
@@ -541,7 +541,7 @@ static void peripheral_init(void) {
 static void collect_alert_dump_and_compare(test_round_t round) {
   dif_rstmgr_alert_info_dump_segment_t dump[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
   size_t seg_size;
-  alert_info_t actual_info;
+  alert_handler_testutils_info_t actual_info;
 
   CHECK_DIF_OK(dif_rstmgr_alert_info_dump_read(
       &rstmgr, dump, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &seg_size));
@@ -552,7 +552,8 @@ static void collect_alert_dump_and_compare(test_round_t round) {
     LOG_INFO("DUMP:%d: 0x%x", i, dump[i]);
   }
 
-  actual_info = alert_info_dump_to_struct(dump, seg_size);
+  CHECK_STATUS_OK(
+      alert_handler_testutils_info_parse(dump, seg_size, &actual_info));
 
   if (round == kRound4) {
     // Check local alert only.
