@@ -56,8 +56,8 @@ bool test_main(void) {
   } else {
     LOG_INFO("Checking reset status.");
     LOG_INFO("EXP: 0x%x", (kDifRstmgrResetInfoPowerUnstable));
-    rstmgr_testutils_post_reset(&rstmgr, kDifRstmgrResetInfoPowerUnstable, 0, 0,
-                                0, 0);
+    CHECK_STATUS_OK(rstmgr_testutils_post_reset(
+        &rstmgr, kDifRstmgrResetInfoPowerUnstable, 0, 0, 0, 0));
     LOG_INFO(
         "Reset status indicates a main power glitch and low power exit reset");
   }

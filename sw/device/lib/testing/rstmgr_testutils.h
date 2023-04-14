@@ -91,8 +91,10 @@ status_t rstmgr_testutils_pre_reset(const dif_rstmgr_t *rstmgr);
  * @param expected_cpu_dump An array with the expected contents of the cpu_info
  *                          CSR.
  * @param cpu_dump_size The size of the expected_cpu_dump array.
+ * @return The result of the operation.
  */
-void rstmgr_testutils_post_reset(
+OT_WARN_UNUSED_RESULT
+status_t rstmgr_testutils_post_reset(
     const dif_rstmgr_t *rstmgr,
     dif_rstmgr_reset_info_bitfield_t expected_reset_info,
     dif_rstmgr_alert_info_dump_segment_t *expected_alert_dump,

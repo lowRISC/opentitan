@@ -191,8 +191,8 @@ bool test_main(void) {
     CHECK(rstmgr_testutils_is_reset_info(&rstmgr,
                                          kDifRstmgrResetInfoLowPowerExit));
     LOG_INFO("Aon timer wakeup detected");
-    rstmgr_testutils_post_reset(&rstmgr, kDifRstmgrResetInfoLowPowerExit, 0, 0,
-                                0, 0);
+    CHECK_STATUS_OK(rstmgr_testutils_post_reset(
+        &rstmgr, kDifRstmgrResetInfoLowPowerExit, 0, 0, 0, 0));
 
     // add another 2ms to give more time to pwm pulses sequences
     busy_spin_micros(2 * 1000);
