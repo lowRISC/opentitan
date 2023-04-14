@@ -26,7 +26,7 @@ bool rstmgr_testutils_reset_info_any(const dif_rstmgr_t *rstmgr,
   return (actual_info & info) != 0;
 }
 
-void rstmgr_testutils_compare_alert_info(
+status_t rstmgr_testutils_compare_alert_info(
     const dif_rstmgr_t *rstmgr,
     dif_rstmgr_alert_info_dump_segment_t *expected_alert_dump,
     size_t dump_size) {
@@ -34,13 +34,14 @@ void rstmgr_testutils_compare_alert_info(
   dif_rstmgr_alert_info_dump_segment_t
       actual_alert_dump[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
 
-  CHECK_DIF_OK(dif_rstmgr_alert_info_dump_read(
+  TRY(dif_rstmgr_alert_info_dump_read(
       rstmgr, actual_alert_dump, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &size_read));
-  CHECK(dump_size == size_read,
-        "The expected alert info dump size (%d) is not equal to "
-        "the observed dump size (%d).",
-        dump_size, size_read);
-  CHECK_ARRAYS_EQ(actual_alert_dump, expected_alert_dump, dump_size);
+  TRY_CHECK(dump_size == size_read,
+            "The expected alert info dump size (%d) is not equal to "
+            "the observed dump size (%d).",
+            dump_size, size_read);
+  TRY_CHECK_ARRAYS_EQ(actual_alert_dump, expected_alert_dump, dump_size);
+  return OK_STATUS();
 }
 
 void rstmgr_testutils_compare_cpu_info(
@@ -83,8 +84,8 @@ void rstmgr_testutils_post_reset(
         expected_reset_info, actual_reset_info);
 
   if (expected_alert_dump != NULL && alert_dump_size != 0) {
-    rstmgr_testutils_compare_alert_info(rstmgr, expected_alert_dump,
-                                        alert_dump_size);
+    CHECK_STATUS_OK(rstmgr_testutils_compare_alert_info(
+        rstmgr, expected_alert_dump, alert_dump_size));
   }
   if (expected_cpu_dump != NULL && cpu_dump_size != 0) {
     rstmgr_testutils_compare_cpu_info(rstmgr, expected_cpu_dump, cpu_dump_size);
