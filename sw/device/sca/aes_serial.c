@@ -38,6 +38,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
+  kAesKeyLengthMax = 32,
   kAesKeyLength = 16,
   kAesTextLength = 16,
   /**
@@ -106,28 +107,11 @@ dif_aes_transaction_t transaction = {
 };
 
 /**
- * Configure key.
- *
- * This function configures the provided key into the AES peripheral. It does
- * not use key shares to simplify side-channel analysis. The second share is
- * all zero. The key must be `kAesKeyLength` bytes long.
- *
- * @param key Key.
- * @param key_len Key length.
- */
-static void aes_key_config(const uint8_t *key, size_t key_len) {
-  SS_CHECK(key_len == kAesKeyLength);
-  dif_aes_key_share_t key_shares;
-  memcpy(key_shares.share0, key, sizeof(key_shares.share0));
-  memset(key_shares.share1, 0, sizeof(key_shares.share1));
-  SS_CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key_shares, NULL));
-}
-
-/**
  * Mask and configure key.
  *
- * This function masks the provided key using a software PRNG and then
- * configures the key into the AES peripheral. The key must be
+ * This function masks the provided key using a software LFSR and then
+ * configures the key into the AES peripheral. The masking can be disabled by
+ * initializing the LFSR to 0 (see `aes_serial_seed_lfsr()`). The key must be
  * `kAesKeyLength` bytes long.
  *
  * @param key Key.
@@ -136,9 +120,16 @@ static void aes_key_config(const uint8_t *key, size_t key_len) {
 static void aes_key_mask_and_config(const uint8_t *key, size_t key_len) {
   SS_CHECK(key_len == kAesKeyLength);
   dif_aes_key_share_t key_shares;
-  prng_rand_bytes((uint8_t *)key_shares.share1, key_len);
+  // Mask the provided key.
   for (int i = 0; i < key_len / 4; ++i) {
+    key_shares.share1[i] =
+        sca_non_linear_layer(sca_linear_layer(sca_next_lfsr(1)));
     key_shares.share0[i] = *((uint32_t *)key + i) ^ key_shares.share1[i];
+  }
+  // Provide random shares for unused key bits.
+  for (int i = key_len; i < kAesKeyLengthMax / 4; ++i) {
+    key_shares.share1[i] = sca_non_linear_layer(sca_next_lfsr(1));
+    key_shares.share0[i] = sca_non_linear_layer(sca_next_lfsr(1));
   }
   SS_CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key_shares, NULL));
 }
@@ -164,7 +155,7 @@ static void aes_manual_trigger(void) {
 static void aes_serial_key_set(const uint8_t *key, size_t key_len) {
   SS_CHECK(key_len == kAesKeyLength);
   memcpy(key_fixed, key, key_len);
-  aes_key_config(key_fixed, key_len);
+  aes_key_mask_and_config(key_fixed, key_len);
   block_ctr = 0;
 }
 
@@ -237,7 +228,7 @@ static void aes_serial_single_encrypt(const uint8_t *plaintext,
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    aes_key_config(key_fixed, kAesKeyLength);
+    aes_key_mask_and_config(key_fixed, kAesKeyLength);
     block_ctr = 1;
   }
 
@@ -283,7 +274,7 @@ static void aes_serial_batch_encrypt(const uint8_t *data, size_t data_len) {
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    aes_key_config(key_fixed, kAesKeyLength);
+    aes_key_mask_and_config(key_fixed, kAesKeyLength);
     block_ctr = num_encryptions;
   }
 
@@ -417,6 +408,18 @@ static void aes_serial_fvsr_key_batch_encrypt(const uint8_t *data,
 }
 
 /**
+ * Simple serial 'l' (seed lfsr) command handler.
+ *
+ * This function only supports 4-byte seeds.
+ *
+ * @param seed A buffer holding the seed.
+ */
+static void aes_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
+  SS_CHECK(seed_len == sizeof(uint32_t));
+  sca_seed_lfsr(read_32(seed));
+}
+
+/**
  * Initializes the AES peripheral.
  */
 static void init_aes(void) {
@@ -444,6 +447,7 @@ bool test_main(void) {
   simple_serial_register_handler('t', aes_serial_fvsr_key_set);
   simple_serial_register_handler('g', aes_serial_fvsr_key_batch_generate);
   simple_serial_register_handler('f', aes_serial_fvsr_key_batch_encrypt);
+  simple_serial_register_handler('l', aes_serial_seed_lfsr);
 
   LOG_INFO("Initializing AES unit.");
   init_aes();
