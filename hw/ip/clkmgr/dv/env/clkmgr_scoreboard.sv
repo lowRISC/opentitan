@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// The scoreboard checks io_clk_byp_req is driven in response to an external clock request,
-// drives io_clk_byp_ack response, checks the jitter_an_o output, and processes CSR checks.
+// The scoreboard checks the jitter_an_o output, and processes CSR checks.
+// It also samples most functional coverage groups.
 class clkmgr_scoreboard extends cip_base_scoreboard #(
   .CFG_T(clkmgr_env_cfg),
   .RAL_T(clkmgr_reg_block),

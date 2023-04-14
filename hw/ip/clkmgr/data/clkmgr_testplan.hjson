@@ -52,17 +52,21 @@
       name: peri_enables
       desc: '''
             Peripheral clocks are disabled if its `clk_enables` bit is off,
-            or `pwr_i.ip_clk_en` is off, and `scanmode_i` is not
-            `lc_ctrl_pkg::On`.
+            or the corresponding `pwr_i.*_ip_clk_en` is off, and `scanmode_i`
+            is not `lc_ctrl_pkg::On`.
 
-            This test runs multiple rounds, and on each one it randomizes
-             `ip_clk_en` and `scanmode_i`, and the initial setting of
-             `clk_enables`, it sends a CSR write to `csr_enables` with this
-             initial value followed by a write that flips all bits.
+            This test runs multiple rounds which do the following:
+            - Randomize `pwr_i.usb_ip_clk_en` and `scanmode_i`, and the initial
+              setting of `clk_enables`.
+            - Send a CSR write to `clk_enables` with its initial value.
+            - Send a CSR write to `clk_enables` that flips all bits.
+
+            It makes no sense to have `pwr_i.io_ip_clk_en` set to zero since
+            that would prevent the CPU from running and sending CSR updates.
 
             **Checks**:
-            - The scoreboard checks the gated clock activities against its
-              model of the expected behavior.
+            - SVA assertions for peripheral clocks enable and disable
+              properties.
             '''
       stage: V2
       tests: ["clkmgr_peri"]
@@ -70,12 +74,11 @@
     {
       name: trans_enables
       desc: '''
-            Transactional unit clocks are disabled if they are not busy and
-            their CSR `clk_hints` bit is off, or `pwr_i.ip_clk_en` is off,
+            Transactional unit clocks are disabled if they are idle and
+            their CSR `clk_hints` bit is off, or `pwr_i.main_ip_clk_en` is off,
             and `scanmode_i` is not `lc_ctrl_pkg::On`.
-            This test randomizes `ip_clk_en`, the initial setting of `idle_i`
-            and the desired value of `clk_hints`. Each round performs this
-            sequence:
+            This test randomizes the initial setting of `idle_i` and the
+            desired value of `clk_hints`. Each round performs this sequence:
             - Writes the desired value to CSR `clk_hints` and checks that the
               CSR `clk_hints_status` reflects CSR `clk_hints` except for the
               units not-idle.
@@ -157,7 +160,7 @@
             - Randomize the `pwr_i.*_ip_clk_en` setting for each clock.
 
             **Check**:
-            - The checks are done in SVA at `clkmbf_pwrmgr_sva_if.sv`.
+            - The checks are done in SVA at `clkmgr_pwrmgr_sva_if.sv`.
             '''
       stage: V2
       tests: ["clkmgr_clk_status"]
@@ -176,7 +179,7 @@
 
             **Check**:
             - The `jitter_en_o` output pin reflects the `jitter_enable` CSR.
-              Test is implemented in the scoreboard, and runs always.
+              Test is implemented in the scoreboard, and is always running.
             '''
       stage: V2
       tests: ["clkmgr_smoke"]
@@ -185,15 +188,23 @@
       name: frequency
       desc: '''This tests the frequency counters measured count functionality.
 
-            These counters compute the number of cycles of some clock relative
-            to the aon timer. It should trigger a recoverable alert when the
-            count is not in the expected interval. This tests programs counts
-            for each counter, with intervals set to trigger correct, fast, and
-            slow counts.
+            These counters compute the number of cycles of each clock relative
+            to the aon timer, and compares it to the corresponding
+            thresholds written into the `*_meas_ctrl_shadowed` CSR. Measurements
+            beyond these thresholds trigger a recoverable alert and set a bit
+            in the `recov_err_code` CSR. Also, if the counters reach their
+            maximum value they don't wrap around.
+
+            If clock calibration is lost, indicated by the `calib_rdy_i` input
+            being `prim_mubi_pkg::MuBi4False`, the measurements stop and no
+            error is triggered.
 
             **Stimulus**:
             - Randomly set slow, correct, and fast interval for each counter
               and test.
+            - Randomly set the `calib_rdy_i` input.
+            - Randomly trigger a clock saturation by forcing its cycle count
+              to be near its maximum value while counting.
 
             **Check**:
             - Slow and fast intervals should cause a recoverable alert.
