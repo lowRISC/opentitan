@@ -32,7 +32,7 @@ bool test_main(void) {
   if (rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor)) {
     LOG_INFO("Powered up for the first time, begin test");
 
-    rstmgr_testutils_pre_reset(&rstmgr);
+    CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
     // This causes core_sleeping to rise and triggers the injection of the
     // power glitch. Notice it does not by itself trigger a low power

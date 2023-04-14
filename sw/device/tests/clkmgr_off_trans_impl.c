@@ -162,7 +162,7 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
     CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
                                                 kDifPwrmgrResetRequestSourceTwo,
                                                 kDifToggleEnabled));
-    rstmgr_testutils_pre_reset(&rstmgr);
+    CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
     test_hintable_clocks_off(&clkmgr, clock);
 

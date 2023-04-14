@@ -183,7 +183,7 @@ bool test_main(void) {
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
     LOG_INFO("POR reset");
     CHECK(rstmgr_testutils_reset_info_any(&rstmgr, kDifRstmgrResetInfoPor));
-    rstmgr_testutils_pre_reset(&rstmgr);
+    CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
     alert_handler_config();
 

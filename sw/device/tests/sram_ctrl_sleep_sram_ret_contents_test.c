@@ -140,7 +140,7 @@ void test_ret_sram_in_normal_sleep(void) {
 // deep sleep, with scrambling -> data preserved
 void enter_deep_sleep() {
   // Prepare rstmgr for a reset.
-  rstmgr_testutils_pre_reset(&rstmgr);
+  CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
   // set up wakeup timer
   CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(&aon_timer, 20));
   // Deep sleep.
@@ -155,7 +155,7 @@ void enter_deep_sleep() {
 
 void set_up_reset_request(void) {
   // Prepare rstmgr for a reset.
-  rstmgr_testutils_pre_reset(&rstmgr);
+  CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
                                               kDifPwrmgrResetRequestSourceTwo,
                                               kDifToggleEnabled));

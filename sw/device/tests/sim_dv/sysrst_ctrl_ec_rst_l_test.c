@@ -129,7 +129,7 @@ static void configure_combo_reset(void) {
                                      .enabled = kDifToggleEnabled,
                                      .override_value = true}));
   // Prepare rstmgr for a reset with sysrst_ctrl (source one).
-  rstmgr_testutils_pre_reset(&rstmgr);
+  CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
                                               kDifPwrmgrResetRequestSourceOne,
                                               kDifToggleEnabled));

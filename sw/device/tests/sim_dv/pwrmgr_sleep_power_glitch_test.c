@@ -41,7 +41,7 @@ bool test_main(void) {
 
     CHECK(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0));
 
-    rstmgr_testutils_pre_reset(&rstmgr);
+    CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
     // Configure shallow sleep.
     pwrmgr_testutils_enable_low_power(

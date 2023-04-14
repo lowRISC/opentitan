@@ -345,7 +345,7 @@ void ast_enter_sleep_states_and_check_functionality(
     CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
     // Setup low power.
-    rstmgr_testutils_pre_reset(&rstmgr);
+    CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
     if (!deepsleep) {
       // read fifo depth before enter sleep mode
