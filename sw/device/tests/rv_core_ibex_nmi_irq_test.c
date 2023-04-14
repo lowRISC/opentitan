@@ -93,8 +93,9 @@ static void alert_handler_config(void) {
       .ping_timeout = 0,
   };
 
-  alert_handler_testutils_configure_all(&alert_handler, config,
-                                        /*lock=*/kDifToggleDisabled);
+  CHECK_STATUS_OK(
+      alert_handler_testutils_configure_all(&alert_handler, config,
+                                            /*lock=*/kDifToggleDisabled));
 }
 
 /**
