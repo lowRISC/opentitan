@@ -28,27 +28,33 @@ typedef enum alert_handler_class_state {
 /**
  * Represents the hardware alert crash dump in a more software-friendly manner.
  */
-typedef struct alert_info {
+typedef struct alert_info_testutils_info {
   bool alert_cause[ALERT_HANDLER_PARAM_N_ALERTS];
   uint8_t loc_alert_cause;                                  // 7bit
   uint16_t class_accum_cnt[ALERT_HANDLER_PARAM_N_CLASSES];  // 4x16bit
   uint32_t class_esc_cnt[ALERT_HANDLER_PARAM_N_CLASSES];    // 4x32bit
   alert_handler_class_state_t
       class_esc_state[ALERT_HANDLER_PARAM_N_CLASSES];  // 4x3bit
-} alert_info_t;
+} alert_handler_testutils_info_t;
 
 /**
- * Converts the hardware alert crash dump into an alert_info_t.
- *
- * This makes it easier to compare and display the different fields.
+ * Converts the hardware alert crash dump into an
+ * `alert_handler_testutils_info_t`. This makes it easier to compare and display
+ * the different fields.
+ * @param dump Buffer containing the dump.
+ * @param dump_size The size of the the `dump` in words.
+ * @param[out] info The parsed info.
+ * @return The result of the operation.
  */
-alert_info_t alert_info_dump_to_struct(
-    const dif_rstmgr_alert_info_dump_segment_t *dump, int dump_size);
+OT_WARN_UNUSED_RESULT
+status_t alert_handler_testutils_info_parse(
+    const dif_rstmgr_alert_info_dump_segment_t *dump, int dump_size,
+    alert_handler_testutils_info_t *info);
 
 /**
- * Displays an alert_info_t as strings.
+ * Displays an alert_handler_testutils_info_t as strings.
  */
-void alert_info_to_string(const alert_info_t *info);
+void alert_info_to_string(const alert_handler_testutils_info_t *info);
 
 /**
  * Configures alert handler with all required runtime information.
