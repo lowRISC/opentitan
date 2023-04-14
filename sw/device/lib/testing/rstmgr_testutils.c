@@ -71,7 +71,7 @@ status_t rstmgr_testutils_pre_reset(const dif_rstmgr_t *rstmgr) {
   return OK_STATUS();
 }
 
-void rstmgr_testutils_post_reset(
+status_t rstmgr_testutils_post_reset(
     const dif_rstmgr_t *rstmgr,
     dif_rstmgr_reset_info_bitfield_t expected_reset_info,
     dif_rstmgr_alert_info_dump_segment_t *expected_alert_dump,
@@ -81,18 +81,19 @@ void rstmgr_testutils_post_reset(
   // Read and compare reset_info.
   dif_rstmgr_reset_info_bitfield_t actual_reset_info;
   actual_reset_info = rstmgr_testutils_reason_get();
-  CHECK(expected_reset_info == actual_reset_info,
-        "Unexpected reset_info CSR mismatch, expected 0x%x, got 0x%x",
-        expected_reset_info, actual_reset_info);
+  TRY_CHECK(expected_reset_info == actual_reset_info,
+            "Unexpected reset_info CSR mismatch, expected 0x%x, got 0x%x",
+            expected_reset_info, actual_reset_info);
 
   if (expected_alert_dump != NULL && alert_dump_size != 0) {
-    CHECK_STATUS_OK(rstmgr_testutils_compare_alert_info(
-        rstmgr, expected_alert_dump, alert_dump_size));
+    TRY(rstmgr_testutils_compare_alert_info(rstmgr, expected_alert_dump,
+                                            alert_dump_size));
   }
   if (expected_cpu_dump != NULL && cpu_dump_size != 0) {
-    CHECK_STATUS_OK(rstmgr_testutils_compare_cpu_info(rstmgr, expected_cpu_dump,
-                                                      cpu_dump_size));
+    TRY(rstmgr_testutils_compare_cpu_info(rstmgr, expected_cpu_dump,
+                                          cpu_dump_size));
   }
+  return OK_STATUS();
 }
 
 dif_rstmgr_reset_info_bitfield_t rstmgr_testutils_reason_get() {
