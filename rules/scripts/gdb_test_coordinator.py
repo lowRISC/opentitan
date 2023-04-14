@@ -227,12 +227,12 @@ def main(rom_kind: str = typer.Option(...),
 
         # If we are defining GDB's success by checking output lines and we've
         # seen all of the expected lines, kill GDB and ignore its return code.
-        if proc == gdb and gdb_alternative_success_mode and gdb_expect_output_sequence == []:
-            print("Terminating GDB now that it has printed the expected lines")
-            gdb.terminate()
-            gdb.wait()
-            background.forget(gdb)
-            continue
+        # if proc == gdb and gdb_alternative_success_mode and gdb_expect_output_sequence == []:
+        #     print("Terminating GDB now that it has printed the expected lines")
+        #     gdb.terminate()
+        #     gdb.wait()
+        #     background.forget(gdb)
+        #     continue
 
         # When OpenOCD is the only remaining process, send it the TERM signal
         # and wait for it to exit. GDB will exit naturally at the end of its
@@ -241,6 +241,7 @@ def main(rom_kind: str = typer.Option(...),
         if background.empty() and proc == openocd:
             # wait a little bit so that we can flush the output of all processes
             # background.flush_all(1)
+            time.sleep(5)
             openocd.terminate()
             openocd.wait()
             background.forget(openocd)
@@ -256,6 +257,7 @@ def main(rom_kind: str = typer.Option(...),
         if returncode != 0:
             # wait a little bit so that we can flush the output of all processes
             # background.flush_all(1)
+            time.sleep(5)
             sys.exit(returncode)
 
         background.forget(proc)
