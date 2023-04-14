@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 
 /**
@@ -41,8 +42,10 @@ bool rstmgr_testutils_reset_info_any(const dif_rstmgr_t *rstmgr,
  * @param rstmgr A reset manager handle.
  * @param expected_alert_dump An array holding the expected alert dump.
  * @param dump_size The size of the expected_alert_dump array.
+ * @return The result of the operation.
  */
-void rstmgr_testutils_compare_alert_info(
+OT_WARN_UNUSED_RESULT
+status_t rstmgr_testutils_compare_alert_info(
     const dif_rstmgr_t *rstmgr,
     dif_rstmgr_alert_info_dump_segment_t *expected_alert_dump,
     size_t dump_size);
