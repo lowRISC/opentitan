@@ -45,22 +45,27 @@ static status_t peripheral_handles_init(void) {
   return OK_STATUS();
 }
 
+/**
+ * Perform software reset.
+ */
+void sw_reset(void) {
+  rstmgr_testutils_reason_clear();
+  CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
+  wait_for_interrupt();
+}
+
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
 
-  dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
-  if (info & kDifRstmgrResetInfoPor) {
+  if (!status_ok(individualize_dev_hw_cfg_end(&otp_ctrl))) {
     CHECK_STATUS_OK(
         individualize_dev_hw_cfg_start(&flash_state, &lc_ctrl, &otp_ctrl));
+    sw_reset();
+  }
 
-    // Issue and wait for reset.
-    rstmgr_testutils_reason_clear();
-    CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
-    wait_for_interrupt();
-  } else if (info == kDifRstmgrResetInfoSw) {
-    CHECK_STATUS_OK(individualize_dev_hw_cfg_end(&otp_ctrl));
-  } else {
-    LOG_FATAL("Unexpected reset reason: %08x", info);
+  if (!status_ok(individualize_dev_secret1_end(&otp_ctrl))) {
+    CHECK_STATUS_OK(individualize_dev_secret1_start(&lc_ctrl, &otp_ctrl));
+    sw_reset();
   }
 
   return true;

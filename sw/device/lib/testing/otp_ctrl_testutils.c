@@ -100,6 +100,7 @@ static status_t otp_ctrl_dai_write_error_check(const dif_otp_ctrl_t *otp) {
       !bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiError)) {
     return OK_STATUS();
   }
+  LOG_ERROR("dai_write_error_check code: 0x%x", status.codes);
   return INTERNAL();
 }
 
