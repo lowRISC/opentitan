@@ -17,10 +17,36 @@
 #include "otp_ctrl_regs.h"
 
 enum {
+  /**
+   * Secret1 Parition OTP fields.
+   */
+  kSecret1FlashAddrKeySeedOffset =
+      OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_OFFSET - OTP_CTRL_PARAM_SECRET1_OFFSET,
+  kSecret1FlashAddrKeySeed64BitWords =
+      OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_SIZE / sizeof(uint64_t),
+
+  kSecret1FlashDataKeySeedOffset =
+      OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_OFFSET - OTP_CTRL_PARAM_SECRET1_OFFSET,
+  kSecret1FlashDataKeySeed64BitWords =
+      OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_SIZE / sizeof(uint64_t),
+
+  kSecret1SramDataKeySeedOffset =
+      OTP_CTRL_PARAM_SRAM_DATA_KEY_SEED_OFFSET - OTP_CTRL_PARAM_SECRET1_OFFSET,
+  kSecret1SramDataKeySeed64Bitwords =
+      OTP_CTRL_PARAM_SRAM_DATA_KEY_SEED_SIZE / sizeof(uint64_t),
+
+  /**
+   * DeviceId offset and length.
+   * The offset is relative to the start of the HW_CFG OTP partition.
+   */
   kHwCfgDeviceIdOffset =
       OTP_CTRL_PARAM_DEVICE_ID_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET,
   kHwCfgDeviceIdWordCount = OTP_CTRL_PARAM_DEVICE_ID_SIZE / sizeof(uint32_t),
 
+  /**
+   * ManufState offset and length.
+   * The offset is relative to the start of the HW_CFG OTP parition.
+   */
   kHwCfgManufStateOffset =
       OTP_CTRL_PARAM_MANUF_STATE_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET,
   kHwCfgManufStateWordCount =
@@ -103,9 +129,9 @@ OT_WARN_UNUSED_RESULT
 static status_t hw_cfg_enable_knobs_set(const dif_otp_ctrl_t *otp) {
 #define HW_CFG_EN_OFFSET(m, i) ((bitfield_field32_t){.mask = m, .index = i})
   static const bitfield_field32_t kSramFetch = HW_CFG_EN_OFFSET(0xff, 0);
-  static const bitfield_field32_t kCsrngAppRead = HW_CFG_EN_OFFSET(0xff, 1);
-  static const bitfield_field32_t kEntropySrcFwRd = HW_CFG_EN_OFFSET(0xff, 2);
-  static const bitfield_field32_t kEntropySrcFwOvr = HW_CFG_EN_OFFSET(0xff, 3);
+  static const bitfield_field32_t kCsrngAppRead = HW_CFG_EN_OFFSET(0xff, 8);
+  static const bitfield_field32_t kEntropySrcFwRd = HW_CFG_EN_OFFSET(0xff, 16);
+  static const bitfield_field32_t kEntropySrcFwOvr = HW_CFG_EN_OFFSET(0xff, 24);
 #undef HW_CFG_EN_OFFSET
 
   uint32_t val =
@@ -221,6 +247,79 @@ status_t individualize_dev_hw_cfg_end(const dif_otp_ctrl_t *otp) {
   // by lc_ctrl. Consider erasing the data from the flash info pages.
   bool is_locked;
   TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionHwCfg,
+                                      &is_locked));
+  uint64_t digest;
+  TRY(dif_otp_ctrl_get_digest(otp, kDifOtpCtrlPartitionHwCfg, &digest));
+
+  return is_locked ? OK_STATUS() : INTERNAL();
+}
+
+OT_WARN_UNUSED_RESULT
+status_t otp_secret_write(const dif_otp_ctrl_t *otp, uint32_t offset,
+                          size_t len) {
+  enum {
+    kBufferSize = 4,
+  };
+  if (len > kBufferSize) {
+    return INTERNAL();
+  }
+
+  TRY(entropy_csrng_reseed(/*disable_trng_inpu=*/kHardenedBoolFalse,
+                           /*seed_material=*/NULL));
+
+  size_t len_in_32bit_words = len * 2;
+  uint64_t data[kBufferSize];
+  TRY(entropy_csrng_generate(/*seed_material=*/NULL, (uint32_t *)data,
+                             len_in_32bit_words));
+
+  bool found_error = false;
+  uint64_t prev_val = 0;
+  for (size_t i = 0; i < len; ++i) {
+    found_error |= data[i] == 0 || data[i] == UINT64_MAX || data[i] == prev_val;
+    prev_val = data[i];
+  }
+  if (found_error) {
+    return INTERNAL();
+  }
+
+  TRY(otp_ctrl_testutils_dai_write64(otp, kDifOtpCtrlPartitionSecret1, offset,
+                                     data, len));
+  return OK_STATUS();
+}
+
+status_t individualize_dev_secret1_start(const dif_lc_ctrl_t *lc_ctrl,
+                                         const dif_otp_ctrl_t *otp) {
+  // Check life cycle in either PROD or DEV.
+  TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
+
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionSecret1,
+                                      &is_locked));
+  if (is_locked) {
+    return OK_STATUS();
+  }
+
+  TRY(entropy_complex_init());
+  TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
+                                /*seed_material=*/NULL));
+
+  TRY(otp_secret_write(otp, kSecret1FlashAddrKeySeedOffset,
+                       kSecret1FlashAddrKeySeed64BitWords));
+  TRY(otp_secret_write(otp, kSecret1FlashDataKeySeedOffset,
+                       kSecret1FlashDataKeySeed64BitWords));
+  TRY(otp_secret_write(otp, kSecret1SramDataKeySeedOffset,
+                       kSecret1SramDataKeySeed64Bitwords));
+
+  TRY(entropy_csrng_uninstantiate());
+  TRY(otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionSecret1,
+                                        /*digest=*/0));
+
+  return OK_STATUS();
+}
+
+status_t individualize_dev_secret1_end(const dif_otp_ctrl_t *otp) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionSecret1,
                                       &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }
