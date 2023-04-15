@@ -108,7 +108,7 @@ set_rule_status -rule {W_DATA} -status {Waived} -expression             \
   (ReceivingFlop =~ "top_earlgrey.u_spi_device.u_readcmd.u_readsram.u_sram_fifo.gen_normal_fifo.storage*")} -comment {SPI readcmd mux}
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression             \
-  {(Signal=~"top_earlgrey.u_spi_device.u_fwmode.u_tx_fifo.fifo_*ptr_*_q*") && \
+  {(Signal=~"top_earlgrey.u_spi_device.u_fwmode.u_rx_fifo.sync_wptr.u_sync_2.gen_generic.u_impl_generic.q_o[3:0]") && \
   (ReceivingFlop =~ "top_earlgrey.u_spi_device.u_reg.u_reg_if.rdata*")} -comment {SPI reg mux}
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression             \
@@ -167,8 +167,6 @@ set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_rv
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_rv_dm.dap.*_q*") && (Signal =~ "IOR*") && (Association =~ "None")} -status {Waived} -comment  {W_DATA issues caused by duplicate clocks on PAD}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.u_spi_tpm.is_*_reg*") && (Signal =~ "top_earlgrey.u_spi_device.u_spi_tpm.sys_clk_tpm_cfg*") && (Association =~ "None")} -status {Waived} -comment {signal is qualified by synchronized pulse}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.u_upload.*_cmdfifo_set*") && (Signal =~ "top_earlgrey.u_spi_device.u_upload.*_cmdfifo_set*") && (Association =~ "None")} -status {Waived} -comment {tool doesn't recognize multiple spi clocks on the same domain}
-set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.*xlvl*") && (Signal =~ "top_earlgrey.u_spi_device.u_fwmode.u_*xf_ctrl.*ptr*") && (Association =~ "None")} -status {Waived} -comment {tool doesn't recognize multiple spi clocks on the same domain}
-set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.sram_rxf_full_q*") && (Signal =~ "top_earlgrey.u_spi_device.u_fwmode.u_*xf_ctrl.*ptr*") && (Association =~ "None")} -status {Waived} -comment {tool doesn't recognize multiple spi clocks on the same domain}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.u_readcmd.u_readbuffer.watermark_crossed*") && (Signal =~ "top_earlgrey.u_spi_device.u_reg.u_read_threshold.q[9:0]*") && (Association =~ "None")} -status {Waived} -comment {tool doesn't recognize multiple spi clocks on the same domain}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.*.i_dmi_jtag_tap.bypass_q*") && (Signal =~ "top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.u_prim_lc_sender_pinmux_hw_debug_en.gen_flops.u_prim_flop.u_secure_anchor_flop.gen_generic.u_impl_generic.q_o*") && (Association =~ "None")} -status {Waived}  -comment {JTAG mux in quasi-static}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.*.i_dmi_jtag_tap.bypass_q*") && (Signal =~ "top_earlgrey.u_pinmux_aon.mio_pad_attr_q*") && (Association =~ "None")} -status {Waived}  -comment {included in waived paths : start signal and receiving signal (flop) have been reviewed and waived in the same error or other errors} -comment {JTAG mux in quasi-static}
