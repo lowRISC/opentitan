@@ -45,13 +45,6 @@ esac
 ################
 
 checkDeps () {
-    # Check for mdbook dep
-    if ! command -v mdbook >/dev/null; then
-        echo "E: mdbook not found, please install from your package manager or with:" >&2
-        echo "E:   $ cargo install mdbook" >&2
-        exit 1
-    fi
-
     # Check for hugo dep
     if ! command -v hugo >/dev/null; then
         echo "E: hugo not found, please install from your package manager" >&2
@@ -167,9 +160,9 @@ buildSite () {
     echo "Doxygen build complete."
 
     # shellcheck disable=SC2086
-    ${book_env} mdbook ${mdbook_args}
+    ${book_env}  ./bazelisk.sh run @crate_index//:mdbook__mdbook -- ${mdbook_args}
     # shellcheck disable=SC2086
-    ${book_guides_env} mdbook ${mdbook_guides_args}
+    ${book_guides_env} ./bazelisk.sh run @crate_index//:mdbook__mdbook -- ${mdbook_guides_args}
     # shellcheck disable=SC2086
     hugo ${hugo_args}
 
