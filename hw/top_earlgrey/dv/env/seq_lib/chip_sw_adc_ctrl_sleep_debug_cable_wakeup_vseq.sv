@@ -7,12 +7,12 @@ class chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  localparam string ADC_CHANNEL0_HDL_PATH = "tb.dut.u_ast.u_adc.u_adc_ana.adc_d_ch0_o";
-  localparam string ADC_CHANNEL1_HDL_PATH = "tb.dut.u_ast.u_adc.u_adc_ana.adc_d_ch1_o";
+  localparam string ADC_CHANNEL_OUT_HDL_PATH = "tb.dut.u_ast.u_adc.adc_d_o[9:0]";
   localparam string ADC_DATA_VALID = "tb.dut.u_ast.u_adc.adc_d_val_o";
   localparam string ADC_POWERDOWN = "tb.dut.u_ast.u_adc.adc_pd_i";
   localparam string ADC_CTRL_WAKEUP_REQ = "tb.dut.top_earlgrey.u_pwrmgr_aon.wakeups_i[1]";
 
+  localparam uint NUM_ADC_CHANNELS = 2;
   localparam uint NUM_LOW_POWER_SAMPLES = 8;
   localparam uint NUM_NORMAL_POWER_SAMPLES = 8;
   localparam uint WAKE_UP_TIME_AON_CYCLES = 16;
@@ -25,17 +25,15 @@ class chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq extends chip_sw_base_vseq;
   localparam bit NOT_IN_RANGE = 0;
 
   event adc_valid_falling_edge_event;
+  event adc_valid_rising_edge_event;
   bit   powerdown_count_enabled;
   int   powerdown_count;
 
   virtual task check_hdl_paths();
     int retval;
-    retval = uvm_hdl_check_path(ADC_CHANNEL0_HDL_PATH);
+    retval = uvm_hdl_check_path(ADC_CHANNEL_OUT_HDL_PATH);
     `DV_CHECK_EQ_FATAL(retval, 1, $sformatf(
-                       "Hierarchical path %0s appears to be invalid.", ADC_CHANNEL0_HDL_PATH))
-    retval = uvm_hdl_check_path(ADC_CHANNEL1_HDL_PATH);
-    `DV_CHECK_EQ_FATAL(retval, 1, $sformatf(
-                       "Hierarchical path %0s appears to be invalid.", ADC_CHANNEL1_HDL_PATH))
+                       "Hierarchical path %0s appears to be invalid.", ADC_CHANNEL_OUT_HDL_PATH))
     retval = uvm_hdl_check_path(ADC_DATA_VALID);
     `DV_CHECK_EQ_FATAL(retval, 1, $sformatf(
                        "Hierarchical path %0s appears to be invalid.", ADC_DATA_VALID))
@@ -79,6 +77,9 @@ class chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq extends chip_sw_base_vseq;
       if (adc_data_valid_last_value == 1 && adc_data_valid == 0) begin
         ->adc_valid_falling_edge_event;
       end
+      else if (adc_data_valid_last_value == 0 && adc_data_valid == 1) begin
+        ->adc_valid_rising_edge_event; // force data_o when valid is asserted (to avoid data_o change while channel selection is not changed)
+      end
       cfg.clk_rst_vif.wait_clks(1);
     end
   endtask
@@ -100,25 +101,20 @@ class chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq extends chip_sw_base_vseq;
     end
   endtask
 
-  virtual task force_adc_channels(input bit channel0_in_range, input bit channel1_in_range);
-    bit [9:0] channel0_data;
-    bit [9:0] channel1_data;
-    if (channel0_in_range == 1) begin
-      `DV_CHECK(std::randomize(channel0_data) with {
-                channel0_data inside {[CHANNEL0_MIN : CHANNEL0_MAX]};});
-    end else begin
-      `DV_CHECK(std::randomize(channel0_data) with {
-                !{channel0_data inside {[CHANNEL0_MIN : CHANNEL0_MAX]}};});
+  bit [9:0] channel0_data;
+  bit [9:0] channel1_data;
+  virtual task force_adc_channels(input bit channel_idx, input bit channel_in_range, input bit force_old_data = 0);
+    if (!force_old_data) begin
+      if (channel_in_range == 1) begin
+        if (channel_idx == 0) begin `DV_CHECK(std::randomize(channel0_data) with {channel0_data inside {[CHANNEL0_MIN : CHANNEL0_MAX]};}); end
+        else begin `DV_CHECK(std::randomize(channel1_data) with {channel1_data inside {[CHANNEL1_MIN : CHANNEL1_MAX]};}); end
+      end else begin
+        if (channel_idx == 0) begin `DV_CHECK(std::randomize(channel0_data) with {!{channel0_data inside {[CHANNEL0_MIN : CHANNEL0_MAX]}};}); end
+        else begin `DV_CHECK(std::randomize(channel1_data) with {!{channel1_data inside {[CHANNEL1_MIN : CHANNEL1_MAX]}};}); end
+      end
     end
-    `DV_CHECK(uvm_hdl_force(ADC_CHANNEL0_HDL_PATH, channel0_data));
-    if (channel1_in_range == 1) begin
-      `DV_CHECK(std::randomize(channel1_data) with {
-                channel1_data inside {[CHANNEL1_MIN : CHANNEL1_MAX]};});
-    end else begin
-      `DV_CHECK(std::randomize(channel1_data) with {
-                !{channel1_data inside {[CHANNEL1_MIN : CHANNEL1_MAX]}};});
-    end
-    `DV_CHECK(uvm_hdl_force(ADC_CHANNEL1_HDL_PATH, channel1_data));
+    `DV_CHECK(uvm_hdl_force(ADC_CHANNEL_OUT_HDL_PATH, (channel_idx ? channel1_data : channel0_data)));
+    `uvm_info(`gtn, $sformatf("force ADC channel%0d with %0d",channel_idx,(channel_idx ? channel1_data : channel0_data)), UVM_NONE)
   endtask
 
   virtual task generate_adc_data();
@@ -128,32 +124,42 @@ class chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq extends chip_sw_base_vseq;
     // Data with a channel 0 glitch.
     bad_sample = $urandom_range(0, NUM_LOW_POWER_SAMPLES - 1);
     for (int i = 0; i < NUM_LOW_POWER_SAMPLES; i++) begin
+      @(adc_valid_rising_edge_event);
       if (i == bad_sample) begin
-        force_adc_channels(NOT_IN_RANGE, IN_RANGE);
+        force_adc_channels(0, NOT_IN_RANGE);
       end else begin
-        force_adc_channels(IN_RANGE, IN_RANGE);
+        force_adc_channels(0, IN_RANGE);
       end
-      repeat (2) @(adc_valid_falling_edge_event);
+      @(adc_valid_rising_edge_event);
+      force_adc_channels(1, IN_RANGE);
     end
 
     // Both channels glitched.
-    force_adc_channels(NOT_IN_RANGE, NOT_IN_RANGE);
-    repeat (2) @(adc_valid_falling_edge_event);
+    for (int idx = 0; idx < NUM_ADC_CHANNELS; idx++) begin
+      @(adc_valid_rising_edge_event);
+      force_adc_channels(idx, NOT_IN_RANGE);
+    end
 
     // Data with a channel 1 glitch.
     bad_sample = $urandom_range(0, NUM_LOW_POWER_SAMPLES - 1);
     for (int i = 0; i < NUM_LOW_POWER_SAMPLES; i++) begin
+      @(adc_valid_rising_edge_event);
+      force_adc_channels(0, IN_RANGE);
+      @(adc_valid_rising_edge_event);
       if (i == bad_sample) begin
-        force_adc_channels(IN_RANGE, NOT_IN_RANGE);
+        force_adc_channels(1, NOT_IN_RANGE);
       end else begin
-        force_adc_channels(IN_RANGE, IN_RANGE);
+        force_adc_channels(1, IN_RANGE);
       end
-      repeat (2) @(adc_valid_falling_edge_event);
     end
 
     // Both channels glitched.
-    force_adc_channels(NOT_IN_RANGE, NOT_IN_RANGE);
-    repeat (NUM_NORMAL_POWER_SAMPLES * 2) @(adc_valid_falling_edge_event);
+    for (int i = 0; i < NUM_NORMAL_POWER_SAMPLES; i++) begin
+      for (int idx = 0; idx < NUM_ADC_CHANNELS; idx++) begin
+        @(adc_valid_rising_edge_event);
+        force_adc_channels(idx, NOT_IN_RANGE,(i>0?1:0));
+      end
+    end
 
     // Check that there is no unexpected wakeup and that there
     // has been a number of powerdown signals following the glitched data.
@@ -163,12 +169,16 @@ class chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq extends chip_sw_base_vseq;
 
     // Data with both channels in range which will trigger a wakeup.
     for (int i = 0; i < NUM_LOW_POWER_SAMPLES; i++) begin
-      force_adc_channels(IN_RANGE, IN_RANGE);
-      repeat (2) @(adc_valid_falling_edge_event);
+      for (int idx = 0; idx < NUM_ADC_CHANNELS; idx++) begin
+        @(adc_valid_rising_edge_event);
+        force_adc_channels(idx, IN_RANGE);
+      end
     end
     for (int i = 0; i < NUM_NORMAL_POWER_SAMPLES; i++) begin
-      force_adc_channels(IN_RANGE, IN_RANGE);
-      repeat (2) @(adc_valid_falling_edge_event);
+      for (int idx = 0; idx < NUM_ADC_CHANNELS; idx++) begin
+        @(adc_valid_rising_edge_event);
+        force_adc_channels(idx, IN_RANGE);
+      end
     end
   endtask
 
