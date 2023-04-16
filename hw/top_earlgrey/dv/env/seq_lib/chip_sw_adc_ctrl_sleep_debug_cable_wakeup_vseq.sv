@@ -29,6 +29,9 @@ class chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq extends chip_sw_base_vseq;
   bit   powerdown_count_enabled;
   int   powerdown_count;
 
+  bit [9:0] channel0_data;
+  bit [9:0] channel1_data;
+
   virtual task check_hdl_paths();
     int retval;
     retval = uvm_hdl_check_path(ADC_CHANNEL_OUT_HDL_PATH);
@@ -78,7 +81,7 @@ class chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq extends chip_sw_base_vseq;
         ->adc_valid_falling_edge_event;
       end
       else if (adc_data_valid_last_value == 0 && adc_data_valid == 1) begin
-        ->adc_valid_rising_edge_event; // force data_o when valid is asserted (to avoid data_o change while channel selection is not changed)
+        ->adc_valid_rising_edge_event; // force data_o when valid is asserted
       end
       cfg.clk_rst_vif.wait_clks(1);
     end
@@ -101,20 +104,29 @@ class chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq extends chip_sw_base_vseq;
     end
   endtask
 
-  bit [9:0] channel0_data;
-  bit [9:0] channel1_data;
-  virtual task force_adc_channels(input bit channel_idx, input bit channel_in_range, input bit force_old_data = 0);
+  virtual task force_adc_channels(input bit channel_idx,
+                                  input bit channel_in_range,
+                                  input bit force_old_data = 0);
     if (!force_old_data) begin
       if (channel_in_range == 1) begin
-        if (channel_idx == 0) begin `DV_CHECK(std::randomize(channel0_data) with {channel0_data inside {[CHANNEL0_MIN : CHANNEL0_MAX]};}); end
-        else begin `DV_CHECK(std::randomize(channel1_data) with {channel1_data inside {[CHANNEL1_MIN : CHANNEL1_MAX]};}); end
+        if (channel_idx == 0) begin
+          `DV_CHECK(std::randomize(channel0_data) with {
+                    channel0_data inside {[CHANNEL0_MIN : CHANNEL0_MAX]};});
+        end else begin
+          `DV_CHECK(std::randomize(channel1_data) with {
+                    channel1_data inside {[CHANNEL1_MIN : CHANNEL1_MAX]};});
+        end
       end else begin
-        if (channel_idx == 0) begin `DV_CHECK(std::randomize(channel0_data) with {!{channel0_data inside {[CHANNEL0_MIN : CHANNEL0_MAX]}};}); end
-        else begin `DV_CHECK(std::randomize(channel1_data) with {!{channel1_data inside {[CHANNEL1_MIN : CHANNEL1_MAX]}};}); end
+        if (channel_idx == 0) begin
+          `DV_CHECK(std::randomize(channel0_data) with {
+                    !{channel0_data inside {[CHANNEL0_MIN : CHANNEL0_MAX]}};});
+        end else begin
+          `DV_CHECK(std::randomize(channel1_data) with {
+                    !{channel1_data inside {[CHANNEL1_MIN : CHANNEL1_MAX]}};});
+        end
       end
     end
-    `DV_CHECK(uvm_hdl_force(ADC_CHANNEL_OUT_HDL_PATH, (channel_idx ? channel1_data : channel0_data)));
-    `uvm_info(`gtn, $sformatf("force ADC channel%0d with %0d",channel_idx,(channel_idx ? channel1_data : channel0_data)), UVM_NONE)
+    `DV_CHECK(uvm_hdl_force(ADC_CHANNEL_OUT_HDL_PATH, (channel_idx?channel1_data:channel0_data)));
   endtask
 
   virtual task generate_adc_data();
