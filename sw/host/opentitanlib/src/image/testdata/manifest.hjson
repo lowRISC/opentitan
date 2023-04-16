@@ -21,7 +21,7 @@
  */
 {
   /**
-   * SPX signature.
+   * SPHINCS+ signature.
    */
   spx_signature: "0xA54D06061A27A2F6AE70F6A1FA51A840F62B64864E20DD713F633420802359DA"
   /**

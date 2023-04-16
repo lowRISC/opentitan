@@ -24,7 +24,7 @@ pub enum ManifestError {
 }
 
 fixed_size_bigint!(ManifestRsaBuffer, at_most 3072);
-fixed_size_bigint!(ManifestSpxSignature, at_most 256);
+fixed_size_bigint!(ManifestSpxSignature, at_most 62848);
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 struct ManifestRsaBigInt(Option<HexEncoded<ManifestRsaBuffer>>);
