@@ -507,6 +507,7 @@ logic clk_src_sys, clk_src_io, clk_src_usb, clk_src_aon;
 
 ast_clks_byp u_ast_clks_byp (
   .vcaon_pok_i ( vcaon_pok ),
+  .vcaon_pok_por_i ( vcaon_pok_por ),
   .deep_sleep_i ( deep_sleep ),
   .clk_src_sys_en_i ( clk_src_sys_en_i ),
   .clk_osc_sys_i ( clk_osc_sys ),
