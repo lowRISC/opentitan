@@ -15,27 +15,39 @@ extern "C" {
 
 enum {
   /**
-   * Length of an SPX public key in bits.
+   * Size of an SPX public key in bits.
    */
   kSigverifySpxKeyNumBits = kSpxPkBytes * 8,
   /**
-   * Length of an SPX public key in bytes.
+   * Size of an SPX public key in bytes.
    */
-  kSigVerifySpxKeyBytes = kSigverifySpxKeyNumBits / 8,
+  kSigverifySpxKeyNumBytes = kSigverifySpxKeyNumBits / 8,
   /**
-   * Length of an SPX public key in words.
+   * Size of an SPX public key in words.
    */
-  kSigVerifySpxKeyWords = kSigVerifySpxKeyBytes / sizeof(uint32_t),
+  kSigverifySpxKeyNumWords = kSigverifySpxKeyNumBytes / sizeof(uint32_t),
   /**
-   * Length of an SPX signature in bits.
+   * Size of an SPX root node in bits.
+   */
+  kSigverifySpxRootNumBits = kSpxN * 8,
+  /**
+   * Size of an SPX root node in bytes.
+   */
+  kSigverifySpxRootNumBytes = kSigverifySpxRootNumBits / 8,
+  /**
+   * Size of an SPX root node in words.
+   */
+  kSigverifySpxRootNumWords = kSigverifySpxRootNumBytes / sizeof(uint32_t),
+  /**
+   * Size of an SPX signature in bits.
    */
   kSigverifySpxSigNumBits = kSpxBytes * 8,
   /**
-   * Length of an SPX signature in bytes.
+   * Size of an SPX signature in bytes.
    */
   kSigverifySpxSigNumBytes = kSigverifySpxSigNumBits / 8,
   /**
-   * Length of an SPX signature in words.
+   * Size of an SPX signature in words.
    */
   kSigverifySpxSigNumWords = kSigverifySpxSigNumBytes / sizeof(uint32_t),
 };
@@ -44,6 +56,9 @@ enum {
  * An SPX signature.
  */
 typedef struct sigverify_spx_signature {
+  /**
+   * A `kSigverifySpxSigNumWords` base 2^32 digit integer, little-endian.
+   */
   uint32_t data[kSigverifySpxSigNumWords];
 } sigverify_spx_signature_t;
 
@@ -52,10 +67,20 @@ typedef struct sigverify_spx_signature {
  */
 typedef struct sigverify_spx_key {
   /**
-   * A `kSigVerifySpxNumWords` base 2^32 digit integer, little-endian.
+   * A `kSigverifySpxKeyNumWords` base 2^32 digit integer, little-endian.
    */
-  uint32_t data[kSigVerifySpxKeyWords];
+  uint32_t data[kSigverifySpxKeyNumWords];
 } sigverify_spx_key_t;
+
+/**
+ * An SPX root node.
+ */
+typedef struct sigverify_spx_root {
+  /**
+   * A `kSigverifySpxRootNumWords` base 2^32 digit integer, little-endian.
+   */
+  uint32_t data[kSigverifySpxRootNumWords];
+} sigverify_spx_root_t;
 
 /**
  * Gets the ID of an SPX public key.

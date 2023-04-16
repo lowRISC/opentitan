@@ -60,7 +60,7 @@ pub struct Manifest {
     pub entry_point: u32,
 }
 
-/// A type that holds 1964 32-bit words for SPX signtures.
+/// A type that holds 1964 32-bit words for SPHINCS+ signtures.
 #[repr(C)]
 #[derive(FromBytes, AsBytes, Debug)]
 pub struct SigverifySpxSignature {
@@ -137,7 +137,7 @@ pub fn check_manifest_layout() {
     assert_eq!(offset_of!(Manifest, usage_constraints), 8240);
     assert_eq!(offset_of!(Manifest, modulus), 8288);
     assert_eq!(offset_of!(Manifest, address_translation), 8672);
-    assert_eq!(offset_of!(Manifest, identifier), 88676);
+    assert_eq!(offset_of!(Manifest, identifier), 8676);
     assert_eq!(offset_of!(Manifest, length), 8680);
     assert_eq!(offset_of!(Manifest, version_major), 8684);
     assert_eq!(offset_of!(Manifest, version_minor), 8688);

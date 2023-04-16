@@ -122,7 +122,7 @@ enum {
  */
 typedef struct manifest {
   /**
-   * SPX signature of the image.
+   * SPHINCS+ signature of the image.
    *
    * TODO(#17824): Make this optional.
    */
