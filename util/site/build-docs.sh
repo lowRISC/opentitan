@@ -166,6 +166,14 @@ buildSite () {
     # shellcheck disable=SC2086
     hugo ${hugo_args}
 
+    # Build Rust Documentation
+    rust_doc_dir="${build_dir}/gen/rustdoc/"
+    mkdir -p "$rust_doc_dir"
+    ./bazelisk.sh build sw/host/opentitanlib:opentitanlib_doc
+    cp -rf bazel-out/k8-fastbuild/bin/sw/host/opentitanlib/opentitanlib_doc.rustdoc/* "$rust_doc_dir"
+    # The files from bazel-out aren't writable. This ensures those that were copied are.
+    chmod +w -R "$rust_doc_dir"
+
     # Block diagram stats
     mkdir -p "${build_dir}/reports"
     python3 "${proj_root}/util/site/fetch_block_stats.py" "${build_dir}/reports/earlgrey-stats.json"
