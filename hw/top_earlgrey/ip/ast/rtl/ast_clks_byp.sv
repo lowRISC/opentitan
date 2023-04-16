@@ -14,6 +14,7 @@
 
 module ast_clks_byp (
   input vcaon_pok_i,                        // VCAON POK
+  input vcaon_pok_por_i,                    // VCAON POK POR
   input deep_sleep_i,                       // Deep Sleep (main regulator & switch are off)
   input clk_src_sys_en_i,                   // SYS Source Clock Enable
   input clk_osc_sys_i,                      // SYS Oscillator Clock
@@ -480,7 +481,7 @@ logic sys_clk_byp_en, io_clk_byp_en, usb_clk_byp_en, aon_clk_byp_en;
 logic rst_clk_osc_n, rst_clk_ext_n;
 
 assign rst_clk_osc_n = vcaon_pok;
-assign rst_clk_ext_n = vcaon_pok;
+assign rst_clk_ext_n = vcaon_pok_por_i;
 
 // DV Hooks for IO clocks
 logic io_clk_byp_select, io_clk_byp_sel_buf, io_clk_osc_en_buf, io_clk_byp_en_buf;
