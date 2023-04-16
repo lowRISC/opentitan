@@ -21,6 +21,10 @@ module tb;
   `include "chip_hier_macros.svh"  // TODO: Deprecate this.
 
   // interfaces
+`ifdef ANALOGSIM
+  ast_pkg::awire_t cc1;
+  ast_pkg::awire_t cc2;
+`endif
 
   // Legacy clk_rst_if to satisfy our CIP base classes. DO NOT USE it in test sequences.
   //
@@ -75,8 +79,13 @@ module tb;
     .POR_N(dut.chip_if.dios[top_earlgrey_pkg::DioPadPorN]),
     .USB_P(dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbP]),
     .USB_N(dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbN]),
+`ifdef ANALOGSIM
+    .CC1(cc1),
+    .CC2(cc2),
+`else
     .CC1(dut.chip_if.dios[top_earlgrey_pkg::DioPadCc1]),
     .CC2(dut.chip_if.dios[top_earlgrey_pkg::DioPadCc2]),
+`endif
     .FLASH_TEST_VOLT(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestVolt]),
     .FLASH_TEST_MODE0(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestMode0]),
     .FLASH_TEST_MODE1(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestMode1]),
