@@ -18,17 +18,6 @@ ENV LANGUAGE en_US:en
 
 RUN mkdir -p /tools
 
-############
-### rust ###
-############
-
-# Install cargo and mdbook
-ENV RUSTUP_HOME "/tools/.rustup"
-ENV CARGO_HOME "/tools/.cargo"
-ENV PATH "/tools/.cargo/bin:${PATH}"
-RUN curl -so- https://sh.rustup.rs | bash -s -- -y \
-    && cargo install mdbook
-
 ##############
 ### python ###
 ##############
