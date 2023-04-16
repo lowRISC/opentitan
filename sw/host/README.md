@@ -1,3 +1,3 @@
 # Host Software
 
-**TODO**
+- [Generated documentation for `opentitanlib`](https://opentitan.org/gen/rustdoc/opentitanlib)
