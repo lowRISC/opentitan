@@ -111,13 +111,13 @@ impl Image {
         Ok(())
     }
 
-    /// Updates the modulus field in the `Manifest`.
-    pub fn update_modulus(&mut self, modulus: Modulus) -> Result<()> {
+    /// Updates the rsa_modulus field in the `Manifest`.
+    pub fn update_modulus(&mut self, rsa_modulus: Modulus) -> Result<()> {
         let manifest = self.borrow_manifest_mut()?;
 
-        // Convert to a `ManifestSpec` so we can supply the modulus as a `BigInt`.
+        // Convert to a `ManifestSpec` so we can supply the rsa_modulus as a `BigInt`.
         let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
-        manifest_def.update_modulus(ManifestRsaBuffer::from_le_bytes(modulus.to_le_bytes())?);
+        manifest_def.update_modulus(ManifestRsaBuffer::from_le_bytes(rsa_modulus.to_le_bytes())?);
         *manifest = manifest_def.try_into()?;
         Ok(())
     }

@@ -201,7 +201,7 @@ static rom_error_t rom_verify(const manifest_t *manifest,
 
   const sigverify_rsa_key_t *key;
   HARDENED_RETURN_IF_ERROR(sigverify_rsa_key_get(
-      sigverify_rsa_key_id_get(&manifest->modulus), lc_state, &key));
+      sigverify_rsa_key_id_get(&manifest->rsa_modulus), lc_state, &key));
 
   uint32_t clobber_value = rnd_uint32();
   for (size_t i = 0; i < ARRAYSIZE(boot_measurements.rom_ext.data); ++i) {
