@@ -65,8 +65,9 @@ static status_t external_isr(void) {
             "IRQ from incorrect peripheral: exp = %d(spi_host0), found = %d",
             kTopEarlgreyPlicPeripheralSpiHost0, peripheral);
 
-  irq_fired = (dif_spi_host_irq_t)(
-      plic_irq_id - (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiHost0Error);
+  irq_fired = (dif_spi_host_irq_t)(plic_irq_id -
+                                   (dif_rv_plic_irq_id_t)
+                                       kTopEarlgreyPlicIrqIdSpiHost0Error);
 
   TRY(dif_spi_host_irq_acknowledge(&spi_host, irq_fired));
 
@@ -84,6 +85,42 @@ static status_t check_irq_eq(uint32_t irq) {
     irq_global_ctrl(true);
   }
   TRY_CHECK(irq_fired == irq);
+  return OK_STATUS();
+}
+
+static status_t ready_event_irq(void) {
+  enum { kDataSize = 250, kCommands = 5 };
+  static_assert(kDataSize % kCommands == 0, "Must be multiple.");
+
+  uint8_t data[kDataSize];
+  memset(data, 0xA5, kDataSize);
+  dif_spi_host_status_t status;
+
+  irq_fired = UINT32_MAX;
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtReady, true));
+
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(status.ready);
+  TRY_CHECK(!status.active);
+
+  // Overwhelm the cmd fifo to make the `STATUS.ready` goes low.
+  TRY(dif_spi_host_fifo_write(&spi_host, data, kDataSize));
+  for (size_t i = 0; i < kCommands; ++i) {
+    TRY(dif_spi_host_write_command(&spi_host, kDataSize / kCommands,
+                                   kDifSpiHostWidthStandard,
+                                   kDifSpiHostDirectionTx, true));
+  }
+
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(!status.ready);
+  TRY_CHECK(status.active);
+
+  // Wait for the event irq and check that it was triggered by `STATUS.ready`.
+  TRY(check_irq_eq(kDifSpiHostIrqSpiEvent));
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(status.ready);
+
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtReady, false));
   return OK_STATUS();
 }
 
@@ -126,7 +163,7 @@ static status_t test_init(void) {
       &spi_host, (dif_spi_host_config_t){
                      .spi_clock = 1000000,
                      .peripheral_clock_freq_hz = kClockFreqPeripheralHz,
-                     .rx_watermark = 512,
+                     .rx_watermark = 128,
                      .tx_watermark = 64,
                  }));
   TRY(dif_spi_host_output_set_enabled(&spi_host, true));
@@ -150,5 +187,6 @@ bool test_main(void) {
   CHECK_STATUS_OK(test_init());
   test_result = OK_STATUS();
   EXECUTE_TEST(test_result, active_event_irq);
+  EXECUTE_TEST(test_result, ready_event_irq);
   return status_ok(test_result);
 }
