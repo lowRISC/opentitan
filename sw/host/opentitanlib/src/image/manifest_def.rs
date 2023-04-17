@@ -120,8 +120,8 @@ impl ManifestSpec {
         self.rsa_signature.0 = Some(HexEncoded(rsa_signature))
     }
 
-    pub fn update_modulus(&mut self, modulus: ManifestRsaBuffer) {
-        self.modulus.0 = Some(HexEncoded(modulus))
+    pub fn update_modulus(&mut self, rsa_modulus: ManifestRsaBuffer) {
+        self.rsa_modulus.0 = Some(HexEncoded(rsa_modulus))
     }
 
     pub fn rsa_signature(&self) -> Option<&ManifestRsaBuffer> {
@@ -132,8 +132,8 @@ impl ManifestSpec {
         self.spx_signature.0.as_ref().map(|v| &v.0)
     }
 
-    pub fn modulus(&self) -> Option<&ManifestRsaBuffer> {
-        self.modulus.0.as_ref().map(|v| &v.0)
+    pub fn rsa_modulus(&self) -> Option<&ManifestRsaBuffer> {
+        self.rsa_modulus.0.as_ref().map(|v| &v.0)
     }
 }
 
@@ -221,7 +221,7 @@ manifest_def! {
         spx_signature: ManifestSpxSignatureBigInt,
         rsa_signature: ManifestRsaBigInt,
         usage_constraints: ManifestUsageConstraintsDef,
-        modulus: ManifestRsaBigInt,
+        rsa_modulus: ManifestRsaBigInt,
         address_translation: ManifestSmallInt<u32>,
         identifier: ManifestSmallInt<u32>,
         length: ManifestSmallInt<u32>,

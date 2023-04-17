@@ -181,14 +181,14 @@ impl CommandDispatch for ManifestVerifyCommand {
     ) -> Result<Option<Box<dyn Annotate>>> {
         let image = image::Image::read_from_file(&self.image)?;
         let manifest: ManifestSpec = image.borrow_manifest()?.try_into()?;
-        let modulus = manifest
-            .modulus()
-            .ok_or_else(|| anyhow!("Invalid modulus"))?;
+        let rsa_modulus = manifest
+            .rsa_modulus()
+            .ok_or_else(|| anyhow!("Invalid rsa_modulus"))?;
         let signature = manifest
             .rsa_signature()
             .ok_or_else(|| anyhow!("Invalid signature"))?;
         let digest = Sha256Digest::from_le_bytes(image.compute_digest().to_le_bytes())?;
-        let key = RsaPublicKey::new(Modulus::from_le_bytes(modulus.to_le_bytes())?)?;
+        let key = RsaPublicKey::new(Modulus::from_le_bytes(rsa_modulus.to_le_bytes())?)?;
         let signature = Signature::from_le_bytes(signature.to_le_bytes())?;
         key.verify(&digest, &signature)?;
         Ok(None)
