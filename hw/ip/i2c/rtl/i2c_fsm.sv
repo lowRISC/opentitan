@@ -1296,7 +1296,7 @@ module i2c_fsm import i2c_pkg::*;
       // The same treatment is not given to the host mode because it already attempts to
       // gracefully terminate.  If the host cannot gracefully terminate for whatever reason,
       // (the other side is holding SCL low), we may need to forcefully reset the module.
-      // TODO: It may be worth having a force stop condition to force the host back to
+      // ICEBOX(#18004): It may be worth having a force stop condition to force the host back to
       // Idle in case graceful termination is not possible.
       state_d = Idle;
     end else if (start_det) begin
