@@ -16,7 +16,11 @@ module secure_subsystem_asynch_synth_wrap
    import tlul2axi_pkg::*;
    import dm_ot::*;
    import lc_ctrl_pkg::*;
-   import secure_subsystem_synth_pkg::*;
+`ifdef ALSAQR 
+   import secure_subsystem_alsaqr_synth_pkg::*;
+`else
+   import secure_subsystem_carfield_synth_pkg::*; 
+`endif
    import top_earlgrey_pkg::*;
 #(
    parameter SramCtrlMainMemInitFile = "",
