@@ -18,9 +18,9 @@ set u_pll clkgen/pll
 set u_div2 top_*/u_clkmgr_aon/u_no_scan_io_div2_div
 create_generated_clock -name clk_io_div2 -source [get_pin ${u_pll}/CLKOUT0] -divide_by 2 [get_pin ${u_div2}/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
 
-set u_div4 top_*/u_clkmgr_aon/u_no_scan_io_div4_div
-create_generated_clock -name clk_io_div4 -source [get_pin ${u_pll}/CLKOUT0] -divide_by 4 [get_pin ${u_div4}/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
-
+# TODO uncomment below line and integrate u_div4 in path to make constraint more generic
+# set u_div4 top_*/u_clkmgr_aon/u_no_scan_io_div4_div
+create_generated_clock -name clk_io_div4 -divide_by 4 -source [get_pins top_earlgrey/u_clkmgr_aon/u_no_scan_io_div4_div/gen_div.clk_int_reg/C] [get_pins top_earlgrey/u_clkmgr_aon/u_no_scan_io_div4_div/gen_div.clk_int_reg/Q]
 
 # the step-down mux is implemented with a LUT right now and the mux switches on the falling edge.
 # therefore, Vivado propagates both clock edges down the clock network.
