@@ -21,7 +21,7 @@ interface lc_ctrl_if (
 
   `include "uvm_macros.svh"
 
-  logic tdo_oe;  // TODO: add assertions
+  logic tdo_oe;
   otp_lc_data_t otp_i;
   otp_device_id_t otp_device_id_i = 0;
   otp_device_id_t otp_manuf_state_i = 0;

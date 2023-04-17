@@ -533,7 +533,6 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     bit [1:0] err_bits = 0;
     // Clear any previous data
     cfg.m_otp_prog_pull_agent_cfg.clear_d_user_data();
-    // TODO: tailor constraint to LC state transitions for V3
     if (err_inj.otp_prog_err) `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_bits, err_bits == 3;)
     foreach (err_bits[i]) cfg.m_otp_prog_pull_agent_cfg.add_d_user_data(err_bits[i]);
   endfunction
@@ -802,7 +801,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   // Deassert after an number of clock cycles if assert clocks > 0
   // Otherwise leave asserted
   protected virtual task send_escalate(int index, int assert_clocks = 0);
-    // TODO - replace with calls to escalate agent when driver implemented
+    // ICEBOX(#18007) - replace with calls to escalate agent when driver implemented
     `uvm_info(`gfn, $sformatf("send_escalate: index=%0d assert_clocks=%0d", index, assert_clocks),
               UVM_LOW)
     cfg.escalate_injected = 1;
@@ -829,7 +828,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   // Clear escalate assertion
   protected virtual task clear_escalate(int index);
-    // TODO - replace with calls to escalate agent when driver implemented
+    // ICEBOX(#18007) - replace with calls to escalate agent when driver implemented
     case (index)
       0: begin
         cfg.m_esc_scrap_state0_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
