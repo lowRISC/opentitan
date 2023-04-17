@@ -461,8 +461,21 @@ def _scramble_flash_vmem_impl(ctx):
         ctx.executable._tool,
     ]
     if ctx.file.otp:
-        arguments.extend(["--in-otp-vmem", ctx.file.otp.path])
-        inputs.append(ctx.file.otp)
+        arguments.extend([
+            "--in-otp-vmem",
+            ctx.file.otp.path,
+            "--in-otp-mmap",
+            ctx.file.otp_mmap.path,
+        ])
+        inputs.extend([
+            ctx.file.otp,
+            ctx.file.otp_mmap,
+        ])
+        if ctx.attr.otp_seed != None:
+            arguments.extend([
+                "--otp-seed",
+                str(ctx.attr.otp_seed[BuildSettingInfo].value),
+            ])
         if ctx.attr.otp_data_perm:
             arguments.extend([
                 "--otp-data-perm",
@@ -485,6 +498,14 @@ scramble_flash_vmem = rv_rule(
     implementation = _scramble_flash_vmem_impl,
     attrs = {
         "otp": attr.label(allow_single_file = True),
+        "otp_mmap": attr.label(
+            allow_single_file = True,
+            default = "//hw/ip/otp_ctrl/data:otp_ctrl_mmap.hjson",
+            doc = "OTP memory map configuration HJSON file.",
+        ),
+        "otp_seed": attr.label(
+            doc = "Configuration override seed used to randomize OTP netlist constants.",
+        ),
         "vmem": attr.label(allow_single_file = True),
         "otp_data_perm": attr.label(
             default = "//hw/ip/otp_ctrl/data:data_perm",

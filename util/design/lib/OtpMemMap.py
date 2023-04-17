@@ -10,9 +10,10 @@ import logging as log
 import random
 from math import ceil, log2
 
-from lib.common import check_bool, check_int, random_or_hexvalue
 from mubi.prim_mubi import is_width_valid, mubi_value_as_int
 from tabulate import tabulate
+
+from lib.common import check_bool, check_int, random_or_hexvalue
 
 DIGEST_SUFFIX = "_DIGEST"
 DIGEST_SIZE = 8
