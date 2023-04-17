@@ -12,28 +12,14 @@ interface kmac_cov_if
    );
 
   `include "dv_fcov_macros.svh"
-  typedef enum logic [5:0] {
-      StIdle = 6'b011111,
 
-      StActive = 6'b000100,
-
-      StPhase1 = 6'b101101,
-
-      StPhase2Cycle1 = 6'b000011,
-
-      StPhase2Cycle2 = 6'b011000,
-
-      StPhase2Cycle3 = 6'b101010,
-
-      StError = 6'b110001,
-
-      StTerminalError = 6'b110110
-  } keccak_st_e;
+  import sha3_pkg::*;
 
   covergroup cmd_process_cg @(sw_cmd_process == 1);
     kmac_keccak_state: coverpoint keccak_st {
-      bins active = {StActive, StPhase1, StPhase2Cycle1, StPhase2Cycle2, StPhase2Cycle3};
-      bins inactive = {StIdle};
+      bins active = {KeccakStActive, KeccakStPhase1, KeccakStPhase2Cycle1, KeccakStPhase2Cycle2,
+                     KeccakStPhase2Cycle3};
+      bins inactive = {KeccakStIdle};
     }
 
     // TODO: check with designer, this might be unreachable.
