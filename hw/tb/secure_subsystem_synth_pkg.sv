@@ -1,4 +1,4 @@
-g// Copyright 2023 ETH Zurich and University of Bologna.
+// Copyright 2023 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -10,8 +10,8 @@ g// Copyright 2023 ETH Zurich and University of Bologna.
 
 `include "axi/typedef.svh"
 
-package secure_subsystem_carfield_synth_pkg;
-   
+package secure_subsystem_synth_pkg;
+`ifndef ALSAQR 
   localparam SynthAxiAddrWidth    = 48;
   localparam SynthAxiOutIdWidth   = 2;
   localparam SynthAxiUserWidth    = 1;
@@ -44,11 +44,7 @@ package secure_subsystem_carfield_synth_pkg;
   localparam SynthAsyncAxiOutBWidth  = (2**SynthLogDepth)*axi_pkg::b_width(SynthAxiOutIdWidth, SynthAxiUserWidth);
   localparam SynthAsyncAxiOutArWidth = (2**SynthLogDepth)*axi_pkg::ar_width(SynthAxiAddrWidth, SynthAxiOutIdWidth, SynthAxiUserWidth);
   localparam SynthAsyncAxiOutRWidth  = (2**SynthLogDepth)*axi_pkg::r_width(SynthAxiDataWidth, SynthAxiOutIdWidth, SynthAxiUserWidth);
-
-endpackage
-
-package secure_subsystem_alsaqr_synth_pkg;
-   
+`else
   localparam SynthAxiAddrWidth    = 64;
   localparam SynthAxiOutIdWidth   = 8;
   localparam SynthAxiUserWidth    = 1;
@@ -76,10 +72,10 @@ package secure_subsystem_alsaqr_synth_pkg;
    
   localparam SynthLogDepth = 3;
 
-  localparam SynthAsyncAxiOutAwWidth = (2**SynthLogDepth)*axi_pkg::aw_width(SynthAxiAddrWidth, SynthAxiOutIdWidth, SynthAxiUserWidth);
-  localparam SynthAsyncAxiOutWWidth  = (2**SynthLogDepth)*axi_pkg::w_width(SynthAxiDataWidth, SynthAxiUserWidth);
-  localparam SynthAsyncAxiOutBWidth  = (2**SynthLogDepth)*axi_pkg::b_width(SynthAxiOutIdWidth, SynthAxiUserWidth);
-  localparam SynthAsyncAxiOutArWidth = (2**SynthLogDepth)*axi_pkg::ar_width(SynthAxiAddrWidth, SynthAxiOutIdWidth, SynthAxiUserWidth);
-  localparam SynthAsyncAxiOutRWidth  = (2**SynthLogDepth)*axi_pkg::r_width(SynthAxiDataWidth, SynthAxiOutIdWidth, SynthAxiUserWidth);
-
+  localparam SynthAsyncAxiOutAwWidth = (2**SynthLogDepth)*$bits(synth_axi_out_aw_chan_t);
+  localparam SynthAsyncAxiOutWWidth  = (2**SynthLogDepth)*$bits(synth_axi_out_w_chan_t);
+  localparam SynthAsyncAxiOutBWidth  = (2**SynthLogDepth)*$bits(synth_axi_out_b_chan_t);
+  localparam SynthAsyncAxiOutArWidth = (2**SynthLogDepth)*$bits(synth_axi_out_ar_chan_t);
+  localparam SynthAsyncAxiOutRWidth  = (2**SynthLogDepth)*$bits(synth_axi_out_r_chan_t);
+`endif
 endpackage
