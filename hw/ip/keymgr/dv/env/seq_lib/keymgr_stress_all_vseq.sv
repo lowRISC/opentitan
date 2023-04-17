@@ -25,7 +25,7 @@ class keymgr_stress_all_vseq extends keymgr_base_vseq;
                           "keymgr_random_vseq",
                           "keymgr_direct_to_disabled_vseq",
                           "keymgr_sw_invalid_input_vseq",
-                          // TODO, add this later
+                          // ICEBOX(#18013), add this later
                           // "keymgr_hwsw_invalid_input_vseq",
                           "keymgr_lc_disable_vseq"
                           };

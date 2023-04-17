@@ -75,11 +75,6 @@ class keymgr_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.wait_clks(2);
   endtask
 
-  virtual task dut_shutdown();
-    // check for pending keymgr operations and wait for them to complete
-    // TODO
-  endtask
-
   // setup basic keymgr features
   virtual task keymgr_init();
     // Any OP except advance at StReset will trigger OP error, test these OPs here
