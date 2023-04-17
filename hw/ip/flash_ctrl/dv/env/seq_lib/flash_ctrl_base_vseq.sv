@@ -113,14 +113,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask : pre_start
 
-  virtual task hw_info_cfg_update();
-  endtask
-
-  virtual task dut_shutdown();
-    // check for pending flash_ctrl operations and wait for them to complete
-    // TODO
-  endtask : dut_shutdown
-
+  // Place holder for override
+  virtual task hw_info_cfg_update(); endtask
+  
   // Reset the Flash Device
   virtual task reset_flash();
     // Set all flash partitions to 1s.
@@ -323,7 +318,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Wait for prog fifo to not be full.
   virtual task wait_flash_ctrl_prog_fifo_not_full();
-    // TODO: if intr enabled, then check interrupt, else check status.
+    // if intr enabled, 'flash_ctrl_intr_write' task is used.
     bit prog_full;
     csr_spinwait(.ptr(ral.status.prog_full),
                  .compare_op(CompareOpNe),
@@ -332,7 +327,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Wait for rd fifo to not be empty.
   virtual task wait_flash_ctrl_rd_fifo_not_empty();
-    // TODO: if intr enabled, then check interrupt, else check status.
+    // if intr enabled, 'flash_ctrl_intr_read' task is used.
     bit read_empty;
     csr_spinwait(.ptr(ral.status.rd_empty),
                  .compare_op(CompareOpNe),

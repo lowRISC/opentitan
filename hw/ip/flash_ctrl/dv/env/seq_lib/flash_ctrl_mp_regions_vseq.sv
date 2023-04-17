@@ -215,8 +215,6 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
       //clean scb mem
       cfg.reset_scb_mem();
 
-      // TODO Add FlashPartInfo1,FlashPartInfo2 support and change to
-      // !(flash_op.partition inside {FlashPartData});)
       `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(flash_op,
                                             flash_op.partition == FlashPartInfo;)
       `uvm_info(`gfn, $sformatf("BANK ERASE PART %0p", flash_op), UVM_LOW)
