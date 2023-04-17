@@ -25,6 +25,7 @@ py_binary(
     deps = [
         ":secded_gen",
         "//util/design/lib:common",
+        "//util/design/lib:otp_mem_map",
         "//util/design/lib:present",
         requirement("pyfinite"),
     ],

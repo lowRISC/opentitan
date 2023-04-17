@@ -50,6 +50,8 @@ autogen_hjson_header(
     ],
 )
 
+exports_files(["otp_ctrl_mmap.hjson"])
+
 otp_json(
     name = "otp_json_creator_sw_cfg",
     partitions = [
