@@ -478,10 +478,11 @@ assign ext_freq_is_96m = extfreq_is_96m;
 ////////////////////////////////////////
 logic sys_clk_osc_en, io_clk_osc_en, usb_clk_osc_en, aon_clk_osc_en;
 logic sys_clk_byp_en, io_clk_byp_en, usb_clk_byp_en, aon_clk_byp_en;
-logic rst_clk_osc_n, rst_clk_ext_n;
+logic rst_clk_osc_n, rst_clk_ext_n, aon_rst_clk_ext_n;
 
 assign rst_clk_osc_n = vcaon_pok;
 assign rst_clk_ext_n = vcaon_pok_por_i;
+assign aon_rst_clk_ext_n = vcaon_pok;
 
 // DV Hooks for IO clocks
 logic io_clk_byp_select, io_clk_byp_sel_buf, io_clk_osc_en_buf, io_clk_byp_en_buf;
@@ -542,7 +543,7 @@ prim_buf u_rst_clk_osc_aon (
 );
 
 prim_buf u_rst_clk_ext_aon (
-  .in_i ( rst_clk_ext_n ),
+  .in_i ( aon_rst_clk_ext_n ),
   .out_o ( rst_clk_ext_aon_n )
 );
 
