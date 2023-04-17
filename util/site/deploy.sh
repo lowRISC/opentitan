@@ -90,7 +90,7 @@ deploy_site_builder () {
     # Build the image locally using podman for speed
     tag="gcr.io/${PROJECT}/builder" # https://cloud.google.com/container-registry/docs/pushing-and-pulling#tag
     pushd ${proj_root}
-    podman build -t "${tag}" -f "${proj_root}/util/site/site-builder/builder.Dockerfile" .
+    podman build -t "${tag}" -f "${proj_root}/util/container/Dockerfile" .
     popd
     gcloud auth print-access-token | podman login -u oauth2accesstoken --password-stdin gcr.io && \
         podman push "${tag}"
