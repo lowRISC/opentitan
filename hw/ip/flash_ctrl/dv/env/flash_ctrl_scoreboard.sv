@@ -318,8 +318,8 @@ class flash_ctrl_scoreboard #(
                end
             end
             default: begin
-            // TODO: Uncomment once func cover is implemented
-            // `uvm_info(`gfn, $sformatf("Not for func coverage: %0s", csr.get_full_name()))
+               `uvm_info(`gfn, $sformatf("Not for func coverage: %0s",
+                                         csr.get_full_name()),UVM_HIGH)
             end
           endcase
         end
@@ -364,8 +364,7 @@ class flash_ctrl_scoreboard #(
               do_read_check = 1'b0;
             end
             default: begin
-              // TODO: uncomment when all CSRs are specified
-              // `uvm_fatal(`gfn, $sformatf("CSR access not processed: %0s", csr.get_full_name()))
+              `uvm_fatal(`gfn, $sformatf("CSR access not processed: %0s", csr.get_full_name()))
             end
           endcase
           // On reads, if do_read_check, is set, then check mirrored_value against item.d_data

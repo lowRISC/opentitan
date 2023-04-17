@@ -54,8 +54,6 @@ class flash_otf_item extends uvm_object;
   endfunction
 
   function void get_from_phy(flash_phy_prim_item item, string rw);
-    // TB has 3 Infos while rtl has 1.
-    // TODO: align below routine with both dv and rtl data struct.
     this.cmd.partition = flash_dv_part_e'(item.req.part);
     if (item.req.pg_erase_req) this.cmd.erase_type = FlashErasePage;
     if (item.req.bk_erase_req) this.cmd.erase_type = FlashEraseBank;
