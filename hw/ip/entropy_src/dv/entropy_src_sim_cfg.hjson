@@ -74,8 +74,8 @@
 
     {
       name: entropy_src_rng_max_rate
-      reseed: 50
-      uvm_test: entropy_src_rng_test
+      reseed: 400
+      uvm_test: entropy_src_rng_max_rate_test
       uvm_test_seq: entropy_src_rng_vseq
       // Set the delay constraint of the RNG agent to at most 1, so that the agent delivers entropy
       // at the highest possible rate.
