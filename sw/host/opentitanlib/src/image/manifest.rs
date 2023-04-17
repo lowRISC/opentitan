@@ -29,13 +29,13 @@ use zerocopy::FromBytes;
 //      -- -I./ -Isw/device/lib/base/freestanding
 // TODO: Generate some constants as hex if possible, replacing manually for now.
 
-pub const CHIP_MANIFEST_SIZE: u32 = 8752;
+pub const CHIP_MANIFEST_SIZE: u32 = 8784;
 pub const MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL: u32 = 0xa5a5a5a5;
 pub const CHIP_ROM_EXT_IDENTIFIER: u32 = 0x4552544f;
 pub const CHIP_BL0_IDENTIFIER: u32 = 0x3042544f;
-pub const CHIP_ROM_EXT_SIZE_MIN: u32 = 8752;
+pub const CHIP_ROM_EXT_SIZE_MIN: u32 = 8784;
 pub const CHIP_ROM_EXT_SIZE_MAX: u32 = 0x10000;
-pub const CHIP_BL0_SIZE_MIN: u32 = 8752;
+pub const CHIP_BL0_SIZE_MIN: u32 = 8784;
 pub const CHIP_BL0_SIZE_MAX: u32 = 0x70000;
 
 /// Manifest for boot stage images stored in flash.
@@ -45,6 +45,7 @@ pub struct Manifest {
     pub spx_signature: SigverifySpxSignature,
     pub rsa_signature: SigverifyRsaBuffer,
     pub usage_constraints: ManifestUsageConstraints,
+    pub spx_key: SigverifySpxKey,
     pub rsa_modulus: SigverifyRsaBuffer,
     pub address_translation: u32,
     pub identifier: u32,
@@ -73,6 +74,13 @@ impl Default for SigverifySpxSignature {
             data: [0; 1964usize],
         }
     }
+}
+
+/// A type that holds 8 32-bit words for SPHINCS+ public keys.
+#[repr(C)]
+#[derive(FromBytes, AsBytes, Debug, Default)]
+pub struct SigverifySpxKey {
+    pub data: [u32; 8usize],
 }
 
 /// A type that holds 96 32-bit words for RSA-3072.
@@ -135,18 +143,19 @@ pub fn check_manifest_layout() {
     assert_eq!(offset_of!(Manifest, spx_signature), 0);
     assert_eq!(offset_of!(Manifest, rsa_signature), 7856);
     assert_eq!(offset_of!(Manifest, usage_constraints), 8240);
-    assert_eq!(offset_of!(Manifest, rsa_modulus), 8288);
-    assert_eq!(offset_of!(Manifest, address_translation), 8672);
-    assert_eq!(offset_of!(Manifest, identifier), 8676);
-    assert_eq!(offset_of!(Manifest, length), 8680);
-    assert_eq!(offset_of!(Manifest, version_major), 8684);
-    assert_eq!(offset_of!(Manifest, version_minor), 8688);
-    assert_eq!(offset_of!(Manifest, security_version), 8692);
-    assert_eq!(offset_of!(Manifest, timestamp), 8696);
-    assert_eq!(offset_of!(Manifest, binding_value), 8704);
-    assert_eq!(offset_of!(Manifest, max_key_version), 8736);
-    assert_eq!(offset_of!(Manifest, code_start), 8740);
-    assert_eq!(offset_of!(Manifest, code_end), 8744);
-    assert_eq!(offset_of!(Manifest, entry_point), 8748);
+    assert_eq!(offset_of!(Manifest, spx_key), 8288);
+    assert_eq!(offset_of!(Manifest, rsa_modulus), 8320);
+    assert_eq!(offset_of!(Manifest, address_translation), 8704);
+    assert_eq!(offset_of!(Manifest, identifier), 8708);
+    assert_eq!(offset_of!(Manifest, length), 8712);
+    assert_eq!(offset_of!(Manifest, version_major), 8716);
+    assert_eq!(offset_of!(Manifest, version_minor), 8720);
+    assert_eq!(offset_of!(Manifest, security_version), 8724);
+    assert_eq!(offset_of!(Manifest, timestamp), 8728);
+    assert_eq!(offset_of!(Manifest, binding_value), 8736);
+    assert_eq!(offset_of!(Manifest, max_key_version), 8768);
+    assert_eq!(offset_of!(Manifest, code_start), 8772);
+    assert_eq!(offset_of!(Manifest, code_end), 8776);
+    assert_eq!(offset_of!(Manifest, entry_point), 8780);
     assert_eq!(size_of::<Manifest>(), CHIP_MANIFEST_SIZE as usize);
 }

@@ -25,12 +25,16 @@ pub enum ManifestError {
 
 fixed_size_bigint!(ManifestRsaBuffer, at_most 3072);
 fixed_size_bigint!(ManifestSpxSignature, at_most 62848);
+fixed_size_bigint!(ManifestSpxKey, at_most 256);
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 struct ManifestRsaBigInt(Option<HexEncoded<ManifestRsaBuffer>>);
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 struct ManifestSpxSignatureBigInt(Option<HexEncoded<ManifestSpxSignature>>);
+
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
+struct ManifestSpxKeyBigInt(Option<HexEncoded<ManifestSpxKey>>);
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 struct ManifestSmallInt<T: ParseInt + fmt::LowerHex>(Option<HexEncoded<T>>);
@@ -42,6 +46,12 @@ impl fmt::LowerHex for ManifestRsaBuffer {
 }
 
 impl fmt::LowerHex for ManifestSpxSignature {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        fmt::LowerHex::fmt(&self.as_biguint(), f)
+    }
+}
+
+impl fmt::LowerHex for ManifestSpxKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         fmt::LowerHex::fmt(&self.as_biguint(), f)
     }
@@ -116,6 +126,10 @@ impl ManifestSpec {
         self.spx_signature.0 = Some(HexEncoded(spx_signature))
     }
 
+    pub fn update_spx_key(&mut self, spx_key: ManifestSpxKey) {
+        self.spx_key.0 = Some(HexEncoded(spx_key))
+    }
+
     pub fn update_rsa_signature(&mut self, rsa_signature: ManifestRsaBuffer) {
         self.rsa_signature.0 = Some(HexEncoded(rsa_signature))
     }
@@ -130,6 +144,10 @@ impl ManifestSpec {
 
     pub fn spx_signature(&self) -> Option<&ManifestSpxSignature> {
         self.spx_signature.0.as_ref().map(|v| &v.0)
+    }
+
+    pub fn spx_key(&self) -> Option<&ManifestSpxKey> {
+        self.spx_key.0.as_ref().map(|v| &v.0)
     }
 
     pub fn rsa_modulus(&self) -> Option<&ManifestRsaBuffer> {
@@ -167,6 +185,21 @@ impl ManifestPacked<ManifestRsaBuffer> for ManifestRsaBigInt {
 
 impl ManifestPacked<ManifestSpxSignature> for ManifestSpxSignatureBigInt {
     fn unpack(self, name: &'static str) -> Result<ManifestSpxSignature> {
+        match self.0 {
+            Some(v) => Ok(v.0),
+            None => self.unpack_err(name),
+        }
+    }
+
+    fn overwrite(&mut self, o: Self) {
+        if o.0.is_some() {
+            *self = o;
+        }
+    }
+}
+
+impl ManifestPacked<ManifestSpxKey> for ManifestSpxKeyBigInt {
+    fn unpack(self, name: &'static str) -> Result<ManifestSpxKey> {
         match self.0 {
             Some(v) => Ok(v.0),
             None => self.unpack_err(name),
@@ -221,6 +254,7 @@ manifest_def! {
         spx_signature: ManifestSpxSignatureBigInt,
         rsa_signature: ManifestRsaBigInt,
         usage_constraints: ManifestUsageConstraintsDef,
+        spx_key: ManifestSpxKeyBigInt,
         rsa_modulus: ManifestRsaBigInt,
         address_translation: ManifestSmallInt<u32>,
         identifier: ManifestSmallInt<u32>,
@@ -262,6 +296,32 @@ impl TryFrom<ManifestSpxSignature> for SigverifySpxSignature {
             Ok(SigverifySpxSignature {
                 data: le_slice_to_arr(
                     spx_signature
+                        .to_le_bytes()
+                        .chunks(4)
+                        .map(|v| Ok(u32::from_le_bytes(le_slice_to_arr(v))))
+                        .collect::<Result<Vec<u32>>>()?
+                        .as_slice(),
+                ),
+            })
+        }
+    }
+}
+
+impl TryFrom<ManifestSpxKey> for SigverifySpxKey {
+    type Error = anyhow::Error;
+
+    fn try_from(spx_key: ManifestSpxKey) -> Result<SigverifySpxKey> {
+        if spx_key.eq(&ManifestSpxKey::from_le_bytes([0])?) {
+            // In the case where the BigInt fields are defined but == 0 we should just keep it 0.
+            // Without this the conversion to [u32; 8] would fail.
+            Ok(SigverifySpxKey {
+                data: le_slice_to_arr(&[0]),
+            })
+        } else {
+            // Convert between the BigInt byte representation and the manifest word representation.
+            Ok(SigverifySpxKey {
+                data: le_slice_to_arr(
+                    spx_key
                         .to_le_bytes()
                         .chunks(4)
                         .map(|v| Ok(u32::from_le_bytes(le_slice_to_arr(v))))
@@ -346,6 +406,23 @@ impl TryFrom<&SigverifySpxSignature> for ManifestSpxSignatureBigInt {
     fn try_from(o: &SigverifySpxSignature) -> Result<ManifestSpxSignatureBigInt> {
         let spx_signature = ManifestSpxSignature::from_le_bytes(o.data.as_bytes())?;
         Ok(ManifestSpxSignatureBigInt(Some(HexEncoded(spx_signature))))
+    }
+}
+
+impl TryFrom<SigverifySpxKey> for ManifestSpxKeyBigInt {
+    type Error = anyhow::Error;
+
+    fn try_from(o: SigverifySpxKey) -> Result<ManifestSpxKeyBigInt> {
+        (&o).try_into()
+    }
+}
+
+impl TryFrom<&SigverifySpxKey> for ManifestSpxKeyBigInt {
+    type Error = anyhow::Error;
+
+    fn try_from(o: &SigverifySpxKey) -> Result<ManifestSpxKeyBigInt> {
+        let spx_key = ManifestSpxKey::from_le_bytes(o.data.as_bytes())?;
+        Ok(ManifestSpxKeyBigInt(Some(HexEncoded(spx_key))))
     }
 }
 

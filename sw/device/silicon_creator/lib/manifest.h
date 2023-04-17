@@ -152,6 +152,10 @@ typedef struct manifest {
    */
   manifest_usage_constraints_t usage_constraints;
   /**
+   * SPHINCS+ public key of the signer.
+   */
+  sigverify_spx_key_t spx_key;
+  /**
    * Modulus of the signer's 3072-bit RSA public key.
    */
   sigverify_rsa_buffer_t rsa_modulus;
@@ -221,19 +225,20 @@ typedef struct manifest {
 OT_ASSERT_MEMBER_OFFSET(manifest_t, spx_signature, 0);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_signature, 7856);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 8240);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_modulus, 8288);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 8672);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 8676);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 8680);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 8684);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, version_minor, 8688);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, security_version, 8692);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, timestamp, 8696);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 8704);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 8736);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 8740);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 8744);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 8748);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, spx_key, 8288);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_modulus, 8320);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 8704);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 8708);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 8712);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 8716);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_minor, 8720);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, security_version, 8724);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, timestamp, 8728);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 8736);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 8768);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 8772);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 8776);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 8780);
 OT_ASSERT_SIZE(manifest_t, CHIP_MANIFEST_SIZE);
 
 /**
