@@ -79,3 +79,6 @@ ansi_term = "0.12"
 once_cell = "1.12"
 pest = "2.2"
 pest_derive = "2.2"
+
+# documentation generation tools
+mdbook = "0.4.28"

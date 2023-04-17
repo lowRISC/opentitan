@@ -33,6 +33,7 @@ rust_library(
         "getrandom",
         "libc",
         "rand_chacha",
+        "small_rng",
         "std",
         "std_rng",
     ],
