@@ -188,6 +188,69 @@ package sha3_pkg;
     endcase
   endfunction : sparse2logic
 
+
+  //////////////////////
+  // Keccak Round FSM //
+  //////////////////////
+
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
+  //      -s 1363425333 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 5
+  //
+  localparam int KeccakFsmWidth = 6;
+  typedef enum logic [KeccakFsmWidth-1:0] {
+    KeccakStIdle = 6'b011111,
+
+    // Active state is used in Unmasked version only.
+    // It handles keccak round in a cycle
+    KeccakStActive = 6'b000100,
+
+    // Phase1 --> Phase2Cycle1 --> Phase2Cycle2 --> Phase2Cycle3
+    // Activated only in Masked version.
+    // Phase1 processes Theta, Rho, Pi steps in a cycle and stores the states
+    // into storage. It only moves to Phase2 once the randomness required for
+    // Phase2 is available.
+    KeccakStPhase1 = 6'b101101,
+
+    // Chi Stage 1 for first lane halves. Unconditionally move to Phase2Cycle2.
+    KeccakStPhase2Cycle1 = 6'b000011,
+
+    // Chi Stage 2 and Iota for first lane halves. Chi Stage 1 for second
+    // lane halves. We only move forward if the fresh randomness required for
+    // remasking is available. Otherwise, keep computing Phase2Cycle1.
+    KeccakStPhase2Cycle2 = 6'b011000,
+
+    // Chi Stage 2 and Iota for second lane halves.
+    // This state doesn't require random value as it is XORed into the states
+    // in Phase1 and Phase2Cycle2. When doing the last round (MaxRound -1)
+    // it completes the process and goes back to Idle. If not, it repeats
+    // the phases again.
+    KeccakStPhase2Cycle3 = 6'b101010,
+
+    // Error state. Not clearly defined yet.
+    // Intention is if any unexpected input in the process, state moves to
+    // here and report through the error fifo with debugging information.
+    KeccakStError = 6'b110001,
+
+    KeccakStTerminalError = 6'b110110
+  } keccak_st_e;
+
+
   //////////////////
   // Error Report //
   //////////////////
