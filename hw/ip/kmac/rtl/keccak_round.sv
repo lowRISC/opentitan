@@ -64,6 +64,8 @@ module keccak_round
   input  prim_mubi_pkg::mubi4_t clear_i     // Clear internal state to '0
 );
 
+  import sha3_pkg::*;
+
   /////////////////////
   // Control signals //
   /////////////////////
@@ -131,64 +133,8 @@ module keccak_round
   // state inputs
   assign rnd_eq_end = (int'(round) == MaxRound - 1);
 
-  // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
-  //      -s 1363425333 --language=sv
-  //
-  // Hamming distance histogram:
-  //
-  //  0: --
-  //  1: --
-  //  2: --
-  //  3: |||||||||||||||||||| (57.14%)
-  //  4: ||||||||||||||| (42.86%)
-  //  5: --
-  //  6: --
-  //
-  // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 4
-  // Minimum Hamming weight: 1
-  // Maximum Hamming weight: 5
-  //
-  localparam int StateWidth = 6;
-  typedef enum logic [StateWidth-1:0] {
-      StIdle = 6'b011111,
-
-      // Active state is used in Unmasked version only.
-      // It handles keccak round in a cycle
-      StActive = 6'b000100,
-
-      // Phase1 --> Phase2Cycle1 --> Phase2Cycle2 --> Phase2Cycle3
-      // Activated only in Masked version.
-      // Phase1 processes Theta, Rho, Pi steps in a cycle and stores the states
-      // into storage. It only moves to Phase2 once the randomness required for
-      // Phase2 is available.
-      StPhase1 = 6'b101101,
-
-      // Chi Stage 1 for first lane halves. Unconditionally move to Phase2Cycle2.
-      StPhase2Cycle1 = 6'b000011,
-
-      // Chi Stage 2 and Iota for first lane halves. Chi Stage 1 for second
-      // lane halves. We only move forward if the fresh randomness required for
-      // remasking is available. Otherwise, keep computing Phase2Cycle1.
-      StPhase2Cycle2 = 6'b011000,
-
-      // Chi Stage 2 and Iota for second lane halves.
-      // This state doesn't require random value as it is XORed into the states
-      // in Phase1 and Phase2Cycle2. When doing the last round (MaxRound -1)
-      // it completes the process and goes back to Idle. If not, it repeats
-      // the phases again.
-      StPhase2Cycle3 = 6'b101010,
-
-      // Error state. Not clearly defined yet.
-      // Intention is if any unexpected input in the process, state moves to
-      // here and report through the error fifo with debugging information.
-      StError = 6'b110001,
-
-      StTerminalError = 6'b110110
-  } keccak_st_e;
   keccak_st_e keccak_st, keccak_st_d;
-  `PRIM_FLOP_SPARSE_FSM(u_state_regs, keccak_st_d, keccak_st, keccak_st_e, StIdle)
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, keccak_st_d, keccak_st, keccak_st_e, KeccakStIdle)
 
   // Next state logic and output logic
   // SEC_CM: FSM.SPARSE
@@ -213,10 +159,10 @@ module keccak_round
     sparse_fsm_error_o = 1'b 0;
 
     unique case (keccak_st)
-      StIdle: begin
+      KeccakStIdle: begin
         if (valid_i) begin
           // State machine allows Sponge Absorbing only in Idle state.
-          keccak_st_d = StIdle;
+          keccak_st_d = KeccakStIdle;
 
           xor_message    = 1'b 1;
           update_storage = 1'b 1;
@@ -225,37 +171,37 @@ module keccak_round
           // Opt2. storage resets regardless of states but clear_i
           // Both are added in the design at this time. Will choose the
           // direction later.
-          keccak_st_d = StIdle;
+          keccak_st_d = KeccakStIdle;
 
           rst_storage = 1'b 1;
         end else if (EnMasking && run_i) begin
           // Masked version of Keccak handling
-          keccak_st_d = StPhase1;
+          keccak_st_d = KeccakStPhase1;
         end else if (!EnMasking && run_i) begin
           // Unmasked version of Keccak handling
-          keccak_st_d = StActive;
+          keccak_st_d = KeccakStActive;
         end else begin
-          keccak_st_d = StIdle;
+          keccak_st_d = KeccakStIdle;
         end
       end
 
-      StActive: begin
+      KeccakStActive: begin
         // Run Keccak single round logic until it reaches MaxRound - 1
         update_storage = 1'b 1;
 
         if (rnd_eq_end) begin
-          keccak_st_d = StIdle;
+          keccak_st_d = KeccakStIdle;
 
           rst_rnd_num = 1'b 1;
           complete_d  = 1'b 1;
         end else begin
-          keccak_st_d = StActive;
+          keccak_st_d = KeccakStActive;
 
           inc_rnd_num = 1'b 1;
         end
       end
 
-      StPhase1: begin
+      KeccakStPhase1: begin
         // Theta, Rho and Pi
         phase_sel = MuBi4False;
         cycle =  2'h 0;
@@ -268,14 +214,14 @@ module keccak_round
         // paired with fresh data or vice versa. This could lead to undesired
         // SCA leakage.
         if (rand_early_i || rand_valid_i) begin
-          keccak_st_d = StPhase2Cycle1;
+          keccak_st_d = KeccakStPhase2Cycle1;
           update_storage = 1'b 1;
         end else begin
-          keccak_st_d = StPhase1;
+          keccak_st_d = KeccakStPhase1;
         end
       end
 
-      StPhase2Cycle1: begin
+      KeccakStPhase2Cycle1: begin
         // Chi Stage 1 for first lane halves.
         phase_sel = MuBi4True;
         cycle =  2'h 1;
@@ -284,10 +230,10 @@ module keccak_round
         keccak_rand_consumed = 1'b 1;
 
         // Unconditionally move to next phase/cycle.
-        keccak_st_d = StPhase2Cycle2;
+        keccak_st_d = KeccakStPhase2Cycle2;
       end
 
-      StPhase2Cycle2: begin
+      KeccakStPhase2Cycle2: begin
         // Chi Stage 1 for second lane halves.
         // Chi Stage 2 and Iota for first lane halves.
         phase_sel = MuBi4True;
@@ -306,14 +252,14 @@ module keccak_round
           // Update first lane halves.
           update_storage = 1'b 1;
 
-          keccak_st_d = StPhase2Cycle3;
+          keccak_st_d = KeccakStPhase2Cycle3;
         end else begin
           cycle =  2'h 1;
-          keccak_st_d = StPhase2Cycle2;
+          keccak_st_d = KeccakStPhase2Cycle2;
         end
       end
 
-      StPhase2Cycle3: begin
+      KeccakStPhase2Cycle3: begin
         // Chi Stage 2 and Iota for second lane halves.
         phase_sel = MuBi4True;
         cycle =  2'h 3;
@@ -322,29 +268,29 @@ module keccak_round
         update_storage = 1'b 1;
 
         if (rnd_eq_end) begin
-          keccak_st_d = StIdle;
+          keccak_st_d = KeccakStIdle;
 
           rst_rnd_num    = 1'b 1;
           complete_d     = 1'b 1;
         end else begin
-          keccak_st_d = StPhase1;
+          keccak_st_d = KeccakStPhase1;
 
           inc_rnd_num = 1'b 1;
         end
       end
 
-      StError: begin
-        keccak_st_d = StError;
+      KeccakStError: begin
+        keccak_st_d = KeccakStError;
       end
 
-      StTerminalError: begin
+      KeccakStTerminalError: begin
         //this state is terminal
         keccak_st_d = keccak_st;
         sparse_fsm_error_o = 1'b 1;
       end
 
       default: begin
-        keccak_st_d = StTerminalError;
+        keccak_st_d = KeccakStTerminalError;
         sparse_fsm_error_o = 1'b 1;
       end
     endcase
@@ -353,14 +299,14 @@ module keccak_round
     // Unconditionally jump into the terminal error state
     // if the life cycle controller triggers an escalation.
     if (lc_escalate_en_i != lc_ctrl_pkg::Off) begin
-      keccak_st_d = StTerminalError;
+      keccak_st_d = KeccakStTerminalError;
     end
   end
 
   // Ready indicates the keccak_round is able to receive new message.
   // While keccak_round is processing the data, it blocks the new message to be
   // XORed into the current state.
-  assign ready_o = (keccak_st == StIdle) ? 1'b 1 : 1'b 0;
+  assign ready_o = (keccak_st == KeccakStIdle) ? 1'b 1 : 1'b 0;
 
   ////////////////////////////
   // Keccak state registers //
@@ -420,8 +366,8 @@ module keccak_round
     rst_storage_error = 1'b 0;
 
     if (rst_storage) begin
-      // FSM should be in StIdle and clear_i should be high
-      if ((keccak_st != StIdle) ||
+      // FSM should be in KeccakStIdle and clear_i should be high
+      if ((keccak_st != KeccakStIdle) ||
         prim_mubi_pkg::mubi4_test_false_loose(clear_i)) begin
         rst_storage_error = 1'b 1;
       end
@@ -499,19 +445,19 @@ module keccak_round
   `ASSUME(OneHot0ValidAndRun_A, $onehot0({valid_i, run_i}), clk_i, !rst_ni)
 
   // valid_i, run_i only asserted in Idle state
-  `ASSUME(ValidRunAssertStIdle_A, valid_i || run_i |-> keccak_st == StIdle, clk_i, !rst_ni)
+  `ASSUME(ValidRunAssertStIdle_A, valid_i || run_i |-> keccak_st == KeccakStIdle, clk_i, !rst_ni)
 
   // clear_i is assumed to be asserted in Idle state
   `ASSUME(ClearAssertStIdle_A,
     prim_mubi_pkg::mubi4_test_true_strict(clear_i)
-     |-> keccak_st == StIdle, clk_i, !rst_ni)
+     |-> keccak_st == KeccakStIdle, clk_i, !rst_ni)
 
   // EnMasking controls the valid states
   if (EnMasking) begin : gen_mask_st_chk
-    `ASSERT(EnMaskingValidStates_A, keccak_st != StActive, clk_i, !rst_ni)
+    `ASSERT(EnMaskingValidStates_A, keccak_st != KeccakStActive, clk_i, !rst_ni)
   end else begin : gen_unmask_st_chk
     `ASSERT(UnmaskValidStates_A, !(keccak_st
-        inside {StPhase1, StPhase2Cycle1, StPhase2Cycle2, StPhase2Cycle3}),
+        inside {KeccakStPhase1, KeccakStPhase2Cycle1, KeccakStPhase2Cycle2, KeccakStPhase2Cycle3}),
         clk_i, !rst_ni)
   end
 
