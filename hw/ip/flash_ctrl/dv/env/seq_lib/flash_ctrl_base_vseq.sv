@@ -51,6 +51,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Check permission and page range of info partition
   // Set exp recov_err alert if check fails
+  // Make sure your flash_op has right otf_addr associated with addr
   function bit check_info_part(flash_op_t flash_op, string str);
     bit drop = 0;
     int bank, page, end_page, loop;
@@ -1425,18 +1426,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         data = cfg.mem_bkdr_util_h[FlashPartInfo][0].read(addr);
         item.dq.push_back(data[31:0]);
         item.dq.push_back(data[63:32]);
-        // only scr/ecc enable counts.
-        if (page != 3) begin
-          item.region.scramble_en = prim_mubi_pkg::mubi4_and_hi(
-                                    flash_ctrl_pkg::CfgAllowRead.scramble_en,
-                                    mubi4_t'(~cfg.ovrd_scr_dis));
-          item.region.ecc_en = prim_mubi_pkg::mubi4_and_hi(
-                               flash_ctrl_pkg::CfgAllowRead.ecc_en,
-                               mubi4_t'(~cfg.ovrd_ecc_dis));
-        end else begin
-          item.region.scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
-          item.region.ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
-        end
+        item.region.scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
+        item.region.ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
         item.scramble(otp_addr_key, otp_data_key, addr, dis);
         cfg.mem_bkdr_util_h[FlashPartInfo][0].write(addr, item.fq[0]);
         mem_addr = addr >> 3;
