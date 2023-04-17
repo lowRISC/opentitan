@@ -146,6 +146,12 @@ alias(
 )
 
 alias(
+    name = "mdbook",
+    actual = "@crate_index__mdbook-0.4.28//:mdbook",
+    tags = ["manual"],
+)
+
+alias(
     name = "memoffset",
     actual = "@crate_index__memoffset-0.6.5//:memoffset",
     tags = ["manual"],
@@ -219,13 +225,13 @@ alias(
 
 alias(
     name = "proc-macro2",
-    actual = "@crate_index__proc-macro2-1.0.51//:proc_macro2",
+    actual = "@crate_index__proc-macro2-1.0.56//:proc_macro2",
     tags = ["manual"],
 )
 
 alias(
     name = "quote",
-    actual = "@crate_index__quote-1.0.23//:quote",
+    actual = "@crate_index__quote-1.0.26//:quote",
     tags = ["manual"],
 )
 
@@ -334,5 +340,12 @@ alias(
 alias(
     name = "zerocopy",
     actual = "@crate_index__zerocopy-0.5.0//:zerocopy",
+    tags = ["manual"],
+)
+
+# Binaries
+alias(
+    name = "mdbook__mdbook",
+    actual = "@crate_index__mdbook-0.4.28//:mdbook__bin",
     tags = ["manual"],
 )

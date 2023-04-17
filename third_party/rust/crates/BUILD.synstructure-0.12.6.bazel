@@ -43,8 +43,8 @@ rust_library(
     ],
     version = "0.12.6",
     deps = [
-        "@crate_index__proc-macro2-1.0.51//:proc_macro2",
-        "@crate_index__quote-1.0.23//:quote",
+        "@crate_index__proc-macro2-1.0.56//:proc_macro2",
+        "@crate_index__quote-1.0.26//:quote",
         "@crate_index__syn-1.0.107//:syn",
         "@crate_index__unicode-xid-0.2.4//:unicode_xid",
     ],

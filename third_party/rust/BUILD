@@ -10,6 +10,11 @@ crates_vendor(
             patch_args = ["-p1"],
             patches = ["@//third_party/rust/patches:libudev-sys-0.1.4.patch"],
         )],
+        "mdbook": [crate.annotation(
+            gen_binaries = True,
+            patch_args = ["-p1"],
+            patches = ["@//third_party/rust/patches:mdbook-landing-page-links.patch"],
+        )],
     },
     cargo_lockfile = "//third_party/rust:Cargo.lock",
     manifests = ["//third_party/rust:Cargo.toml"],
