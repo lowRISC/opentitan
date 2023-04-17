@@ -60,6 +60,7 @@ cc_test(
         dual_cc_device_library_of(":alert"),
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib:crc32",
         "@googletest//:gtest_main",
     ],
 )
