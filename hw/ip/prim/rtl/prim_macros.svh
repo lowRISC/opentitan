@@ -4,6 +4,22 @@
 
 // Some generally useful macros for RTL.
 
+// Determine if __actual equals __expected with a margin of __allowed_less and __allowed_more, i.e.,
+// if __actual is in the interval [__expected - __allowed_less, __expected + __allowed_more], where
+// lower and upper bounds are inclusive.
+//
+// The caller is responsible for ensuring that the data types are such that
+// (1) __actual + __allowed_less
+// (2) __expected + __allowed_more
+// are well defined and do not overflow and
+// (3) (1) >= __expected
+// (4) __actual <= (2)
+// are well defined and meaningful.  Subtractions are deliberately not used, in order to prevent
+// underflows.
+`define WITHIN_MARGIN(__actual, __expected, __allowed_less, __allowed_more) \
+  (((__actual) + (__allowed_less) >= (__expected)) &&                       \
+   ((__actual) <= (__expected) + (__allowed_more)))
+
 // Coverage pragmas, used around code for which we want to disable coverage collection.
 // Don't forget to add a closing ON pragma after the code to be skipped.
 //
