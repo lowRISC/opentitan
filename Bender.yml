@@ -779,7 +779,9 @@ sources:
       - hw/top_earlgrey/rtl/jtag_id_pkg.sv
 #     - hw/top_earlgrey/rtl/autogen/top_earlgrey.sv
       - hw/tb/top_earlgrey.sv
+      - hw/tb/secure_subsystem_synth_pkg.sv
       - hw/tb/secure_subsystem_synth_wrap.sv
+      - hw/tb/secure_subsystem_asynch_synth_wrap.sv
 
 ##### testbench
 
@@ -788,4 +790,4 @@ sources:
       - hw/tb/jtag_intf.sv
       - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
       - hw/tb/testbench.sv
-          
+      - hw/tb/testbench_asynch.sv          
