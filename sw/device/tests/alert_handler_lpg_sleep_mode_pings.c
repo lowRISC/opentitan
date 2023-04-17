@@ -19,6 +19,7 @@
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -206,15 +207,9 @@ static uint16_t alert_handler_num_fired_alerts(void) {
   // Indicates if any of the alerts or local alerts is fired.
   uint16_t accumulator = 0;
   // Loop over all alert_cause regs
-  for (int jj = 0; jj < ALERT_HANDLER_PARAM_N_ALERTS; jj++) {
-    // TODO(#16356)
-    // On FPGA, this alert cannot be cleared somehow. Needs to be
-    // investigated. alert #37 => flashctrl_alert
-    if ((jj == 37) && (kDeviceType == kDeviceFpgaCw310)) {
-      continue;
-    }
+  for (size_t alert = 0; alert < ALERT_HANDLER_PARAM_N_ALERTS; alert++) {
     CHECK_DIF_OK(
-        dif_alert_handler_alert_is_cause(&alert_handler, jj, &is_cause));
+        dif_alert_handler_alert_is_cause(&alert_handler, alert, &is_cause));
     accumulator += is_cause;
   }
   return accumulator;
@@ -401,16 +396,14 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
         is_locked,
         "The alert handler should be locked after waking up from normal sleep");
 
-    /**
-     * Check if sleep/wakeup cycle caused any spurious alerts.
-     *
-     * Phase#1: No alerts or loc_alerts shall be fired
-     * (ping_timeout_cnt = 256). End the test if any alerts or loc_alerts is
-     * fired.
-     *
-     * Phase #2: N/A (As the ping_timeout_cnt = 2 in this phase, the ping-fail
-     * alerts will come continuosly)
-     */
+    // Check if sleep/wakeup cycle caused any spurious alerts.
+    //
+    // Phase#1: No alerts or loc_alerts shall be fired
+    // `ping_timeout_cnt = 256`. End the test if any alerts or loc_alerts is
+    // fired.
+    //
+    // Phase #2: N/A (As the `ping_timeout_cnt = 2` in this phase, the ping-fail
+    // alerts will come continuosly)
     num_fired_alerts = alert_handler_num_fired_alerts();
     num_fired_loc_alerts = alert_handler_num_fired_loc_alerts();
     if (test_phase == 1) {
@@ -420,16 +413,14 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
             "Phase #1: Expected_num_fired_loc_alerts is 0");
     }
 
-    /**
-     * Check that ping mechanism still works as expected after sleep/wakeup
-     * cycle
-     *
-     * Phase #1: No alerts or loc_alerts shall be fired
-     *
-     * Phase #2: new alerts shall be fired
-     * Phase #2: kDifAlertHandlerLocalAlertAlertPingFail shall be fired
-     * Phase #2: kDifAlertHandlerLocalAlertEscalationPingFail shall be fired.
-     */
+    // Check that ping mechanism still works as expected after sleep/wakeup
+    // cycle
+    //
+    // Phase #1: No alerts or loc_alerts shall be fired
+    //
+    // Phase #2: new alerts shall be fired
+    // Phase #2: `kDifAlertHandlerLocalAlertAlertPingFail` shall be fired
+    // Phase #2: `kDifAlertHandlerLocalAlertEscalationPingFail` shall be fired.
     if (test_phase == 1) {
       // Wait for new pings
       wait_enough_for_alert_ping();
@@ -475,12 +466,11 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
     // Set the AON timer to send a wakeup signal in ~100-150us.
     CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(
         &aon_timer, rand_testutils_gen32_range(20, 30)));
-    /**
-     * Enter the normal sleep or deep sleep mode
-     * Deep sleep mode is time consuming in DV, and normal sleep mode is more
-     * important for the test. Therefore, the test goes to the deep sleep mode
-     * only once while transitioning from phase #1 to phase #2.
-     */
+
+    // Enter the normal sleep or deep sleep mode
+    // Deep sleep mode is time consuming in DV, and normal sleep mode is more
+    // important for the test. Therefore, the test goes to the deep sleep mode
+    // only once while transitioning from phase #1 to phase #2.
     sleep_mode = (test_step_cnt == rnd_num_iterations);
     enter_low_power(/*deep_sleep=*/sleep_mode);
   }
@@ -501,6 +491,15 @@ void ottf_external_isr(void) {
   CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
 }
 
+/**
+ * Resets the chip.
+ */
+static void chip_sw_reset(void) {
+  CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
+  busy_spin_micros(100);
+  CHECK(false, "Should have reset before this line");
+}
+
 bool test_main(void) {
   bool is_cause;
   bool is_locked;
@@ -509,6 +508,18 @@ bool test_main(void) {
   uint16_t num_fired_loc_alerts;
 
   init_test_components();
+
+  dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
+  rstmgr_testutils_reason_clear();
+
+  // We need to initialize the info FLASH partitions storing the Creator and
+  // Owner secrets to avoid getting the flash controller into a fatal error
+  // state.
+  if (kDeviceType == kDeviceFpgaCw310 && rst_info & kDifRstmgrResetInfoPor) {
+    CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
+                                                &kOwnerSecret));
+    chip_sw_reset();
+  }
 
   // TEST PHASE #1 (ping-timeout = 256)
   // To ensure that the ping mechanism won't send spurious failure.
