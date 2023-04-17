@@ -309,8 +309,6 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
 
       flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));
 
-      // TODO: randomly enable interrupts.
-
       // Send num_flash_ops_per_cfg number of ops with this configuration.
       for (int j = 1; j <= num_flash_ops_per_cfg; j++) begin
         data_q_t exp_data;
@@ -357,7 +355,8 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
             if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_erase_check(flash_op, exp_data);
           end
           default: begin
-            // TODO: V2 test item.
+            // FlashOpInvalid
+            // covered by flash_ctrl_invalid_op_vseq
           end
         endcase
       end
