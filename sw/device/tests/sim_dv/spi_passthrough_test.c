@@ -447,11 +447,12 @@ bool test_main(void) {
   LOG_INFO("Test setup complete.");
 
   while (true) {
-    uint8_t spi_device_cmdfifo_occupancy;
+    bool cmdfifo_not_empty_irq_pending;
     irq_global_ctrl(/*en=*/false);
-    CHECK_DIF_OK(dif_spi_device_get_flash_command_fifo_occupancy(
-        &spi_device, &spi_device_cmdfifo_occupancy));
-    if (spi_device_cmdfifo_occupancy == 0) {
+    CHECK_DIF_OK(dif_spi_device_irq_is_pending(
+        &spi_device.dev, kDifSpiDeviceIrqUploadCmdfifoNotEmpty,
+        &cmdfifo_not_empty_irq_pending));
+    if (!cmdfifo_not_empty_irq_pending) {
       wait_for_interrupt();
     }
     irq_global_ctrl(/*en=*/true);
