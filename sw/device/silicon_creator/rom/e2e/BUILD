@@ -3804,11 +3804,41 @@ test_suite(
     tests = ["rom_ext_upgrade_interrupt_{}".format(lc_state) for lc_state, _ in get_lc_items()],
 )
 
+[
+    opentitan_gdb_fpga_cw310_test(
+        name = "amaury_test_" + lc_state,
+        timeout = "short",
+        gdb_script = """
+            target extended-remote :3333
+
+            echo :::: Done.\\n
+        """,
+        gdb_script_symlinks = {
+            "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
+        },
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
+        rom_kind = "Rom",
+        tags = [
+            "cw310_rom",
+            "vivado",
+            "flaky",
+        ] + maybe_skip_in_ci(lc_state_val),
+    )
+    for lc_state, lc_state_val in get_lc_items(CONST.LCV.TEST_UNLOCKED0)
+]
+
+test_suite(
+    name = "amaury_test",
+    tags = ["manual"],
+    tests = ["amaury_test_{}".format(lc_state) for lc_state, _ in get_lc_items(CONST.LCV.TEST_UNLOCKED0)],
+)
+
 test_suite(
     name = "amaury",
     tests = [
+        "amaury_test",
         #"rom_e2e_debug_test",
-        "rom_e2e_asm_interrupt_handler",
+        # "rom_e2e_asm_interrupt_handler",
         #"rom_e2e_jtag_inject_tests",
         #"rom_e2e_asm_watchdog",
     ],
