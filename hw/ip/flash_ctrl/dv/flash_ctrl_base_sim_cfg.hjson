@@ -283,7 +283,7 @@
       uvm_test_seq: flash_ctrl_oversize_error_vseq
       run_opts: ["+scb_otf_en=1", "+ecc_mode=2", "+serr_pct=0",
                  "+otf_num_hr=1000", "+otf_num_rw=100",
-		 "+otf_wr_pct=4", "+otf_rd_pct=4"]
+                 "+otf_wr_pct=4", "+otf_rd_pct=4"]
       reseed: 5
     }
     {
@@ -308,7 +308,7 @@
     {
       name: flash_ctrl_intr_rd_slow_flash
       uvm_test_seq: flash_ctrl_intr_rd_vseq
-      run_opts: ["+scb_otf_en=1", "+flash_read_latency=50", "+flash_program_latency=500"]
+      run_opts: ["+scb_otf_en=1", "+flash_read_latency=50", "+flash_program_latency=500", "+test_timeout_ns=500_000_000"]
       reseed: 40
     }
     {
@@ -423,7 +423,7 @@
     {
       name: flash_ctrl_rma_err
       uvm_test_seq: flash_ctrl_hw_rma_err_vseq
-      run_opts: ["+flash_program_latency=5", "+test_timeout_ns=300_000_000_000"]
+      run_opts: ["+flash_program_latency=5", "+flash_erase_latency=50", "+test_timeout_ns=300_000_000_000"]
       reseed: 3
     }
     {
