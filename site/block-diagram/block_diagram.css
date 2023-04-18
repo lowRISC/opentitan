@@ -229,6 +229,7 @@
     text-transform: uppercase;
     padding: 0;
     margin: 0;
+    margin-top: calc(-1 * var(--padding));
 }
 
 .domain.always-on .domain-title {
