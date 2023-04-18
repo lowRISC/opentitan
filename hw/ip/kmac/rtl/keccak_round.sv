@@ -345,7 +345,7 @@ module keccak_round
     if (xor_message) begin
       for (int j = 0 ; j < Share ; j++) begin
         for (int unsigned i = 0 ; i < DInEntry ; i++) begin
-          // TODO: handle If Width is not integer divisable by DInWidth
+          // ICEBOX(#18029): handle If Width is not integer divisable by DInWidth
           // Currently it is not allowed to have partial write
           // Please see the Assertion `WidthDivisableByDInWidth_A`
           if (addr_i == i[DInAddr-1:0]) begin
