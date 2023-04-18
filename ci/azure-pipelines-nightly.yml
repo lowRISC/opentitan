@@ -79,3 +79,8 @@ jobs:
     artifact: test_logs
     displayName: "Upload logs"
     condition: succeededOrFailed()
+  - bash: |
+      lsusb -t
+      lsusb -v
+    displayName: "USB device list"
+    condition: succeededOrFailed()
