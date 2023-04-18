@@ -72,16 +72,16 @@ jobs:
         //sw/device/silicon_creator/rom/e2e:amaury
     displayName: "Run all ROM E2E tests"
   - bash: |
-      tar -C $(Pipeline.Workspace)/run_logs -czf $(Pipeline.Workspace)/logs.tar.gz .
+      tar -C $(Pipeline.Workspace)/run_logs -czf $(Pipeline.Workspace)/$(Build.BuildNumber).tar.gz .
     displayName: "Pack up logs"
     condition: succeededOrFailed()
-  - publish: $(Pipeline.Workspace)/logs.tar.gz
+  - publish: $(Pipeline.Workspace)/$(Build.BuildNumber).tar.gz
     artifact: test_logs
     displayName: "Upload logs"
     condition: succeededOrFailed()
   - bash: |
-      lsusb -t
-      lsusb -v
+      sudo lsusb -t
+      sudo lsusb -v
     displayName: "USB device list"
     condition: succeededOrFailed()
   - bash: |
