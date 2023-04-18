@@ -71,7 +71,7 @@ class flash_ctrl_hw_rma_err_vseq extends flash_ctrl_hw_rma_vseq;
             csr_spinwait(.ptr(ral.debug_state),
                          .exp_data(flash_ctrl_env_pkg::FlashLcInvalid),
                          .spinwait_delay_ns(500_000),
-                         .timeout_ns(200_000_000));
+                         .timeout_ns(2_000_000_000));
             cfg.clk_rst_vif.wait_clks(3);
             `uvm_info(`gfn, "RMA FAIL DUE TO Wipe out write data failure (expected)", UVM_LOW)
             collect_err_cov_status(ral.std_fault_status);

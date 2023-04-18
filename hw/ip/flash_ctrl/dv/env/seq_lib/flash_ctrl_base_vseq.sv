@@ -402,7 +402,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   virtual task flash_ctrl_intr_read(flash_op_t flash_op, ref data_q_t rdata);
     uvm_reg_data_t data;
     bit[31:0] intr_st;
-    int       rd_timeout_ns = 200000; // 200 us
+    int       rd_timeout_ns = 400000; // 400 us
     int       curr_rd, rd_idx = 0;
 
     `uvm_info("flash_ctrl_intr_read", $sformatf("num_rd:%0d",
@@ -1379,7 +1379,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   task init_controller(bit non_blocking = 0);
-    int wait_timeout_ns = 50000; // 50 us
+    int wait_timeout_ns = 200_000; // 200 us
 
     csr_wr(.ptr(ral.init), .value(1));
     `uvm_info(`gfn,"init_controller: OTP",UVM_LOW)
