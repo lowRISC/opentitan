@@ -24,7 +24,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     files:
-      #- lint/prim_generic_usb_diff_rx.waiver
+      - lint/prim_generic_usb_diff_rx.waiver
     file_type: waiver
 
   files_veriblelint_waiver:

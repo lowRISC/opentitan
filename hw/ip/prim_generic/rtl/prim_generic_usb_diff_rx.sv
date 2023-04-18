@@ -21,16 +21,26 @@ module prim_generic_usb_diff_rx #(
   output logic       input_o        // output of differential input buffer
 );
 
-  assign input_o = (input_en_i) ? input_pi & ~input_ni : 1'b0;
-
-  logic unused_pullup_p_en, unused_pullup_n_en;
   logic [CalibW-1:0] unused_calibration;
   logic unused_core_pok;
-
   assign unused_calibration = calibration_i;
+  assign unused_core_pok = core_pok_h_i;
+
+  wire input_p, input_n;
+  assign input_p = input_pi;
+  assign input_n = input_ni;
+
+`ifdef VERILATOR
+  logic unused_pullup_p_en, unused_pullup_n_en;
   assign unused_pullup_p_en = pullup_p_en_i;
   assign unused_pullup_n_en = pullup_n_en_i;
-  assign unused_core_pok = core_pok_h_i;
+`else
+  // pullup / pulldown termination
+  assign (weak0, weak1) input_p = pullup_p_en_i ? 1'b1 : 1'bz;
+  assign (weak0, weak1) input_n = pullup_n_en_i ? 1'b1 : 1'bz;
+`endif
+
+  assign input_o = (input_en_i) ? input_p & ~input_n : 1'b0;
 
   prim_buf obs_buf (
     .in_i  (input_o),
