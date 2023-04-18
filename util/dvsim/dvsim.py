@@ -40,8 +40,7 @@ import NcLauncher
 from CfgFactory import make_cfg
 from Deploy import RunTest
 from Timer import Timer
-from utils import (TS_FORMAT, TS_FORMAT_LONG, VERBOSE, rm_path,
-                   run_cmd_with_timeout)
+from utils import TS_FORMAT, TS_FORMAT_LONG, VERBOSE, rm_path
 
 # TODO: add dvsim_cfg.hjson to retrieve this info
 version = 0.1
@@ -62,21 +61,8 @@ def resolve_scratch_root(arg_scratch_root, proj_root):
         if scratch_root is None:
             arg_scratch_root = default_scratch_root
         else:
-            # Scratch space could be mounted in a filesystem (such as NFS) on a network drive.
-            # If the network is down, it could cause the access access check to hang. So run a
-            # simple ls command with a timeout to prevent the hang.
-            (out, status) = run_cmd_with_timeout(cmd="ls -d " + scratch_root,
-                                                 timeout=1,
-                                                 exit_on_failure=0)
-            if status == 0 and out != "":
-                arg_scratch_root = scratch_root
-            else:
-                arg_scratch_root = default_scratch_root
-                log.warning(
-                    "Env variable $SCRATCH_ROOT=\"{}\" is not accessible.\n"
-                    "Using \"{}\" instead.".format(scratch_root,
-                                                   arg_scratch_root))
-    else:
+            arg_scratch_root = scratch_root
+
         arg_scratch_root = os.path.realpath(arg_scratch_root)
 
     try:
