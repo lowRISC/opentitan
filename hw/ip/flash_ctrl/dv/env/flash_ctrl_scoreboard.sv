@@ -364,7 +364,8 @@ class flash_ctrl_scoreboard #(
               do_read_check = 1'b0;
             end
             default: begin
-              `uvm_fatal(`gfn, $sformatf("CSR access not processed: %0s", csr.get_full_name()))
+              // Do nothing.
+              // This is place holder for default csr test.
             end
           endcase
           // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
