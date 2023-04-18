@@ -60,12 +60,7 @@ def resolve_scratch_root(arg_scratch_root, proj_root):
         else:
             arg_scratch_root = scratch_root
 
-    try:
-        os.makedirs(arg_scratch_root, exist_ok=True)
-    except PermissionError as e:
-        log.fatal("Failed to create scratch root {}:\n{}.".format(
-            arg_scratch_root, e))
-        sys.exit(1)
+    os.makedirs(arg_scratch_root, exist_ok=True)
 
     if not os.access(arg_scratch_root, os.W_OK):
         log.fatal("Scratch root {} is not writable!".format(arg_scratch_root))
