@@ -84,3 +84,7 @@ jobs:
       lsusb -v
     displayName: "USB device list"
     condition: succeededOrFailed()
+  - bash: |
+      env
+    displayName: "Display environment"
+    condition: succeededOrFailed()
