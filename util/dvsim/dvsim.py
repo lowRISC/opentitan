@@ -49,19 +49,36 @@ version = 0.1
 _LIST_CATEGORIES = ["build_modes", "run_modes", "tests", "regressions"]
 
 
-# Function to resolve the scratch root directory among the available options:
-# If set on the command line, then use that as a preference.
-# Else, check if $SCRATCH_ROOT env variable exists and is a directory.
-# Else use the default (<proj_root>/scratch)
-def resolve_scratch_root(scratch_root, proj_root):
-    if scratch_root:
-        return scratch_root
+def resolve_scratch_root(scratch_root: str, proj_root: str) -> Path:
+    '''Pick a scratch root. This might be given as an to the program argument
+    (in which case, it's an argument to the function). Otherwise, select from
+    the following, in decreasing order of preference:
 
-    scratch_root = os.environ.get('SCRATCH_ROOT')
-    if scratch_root:
-        return scratch_root
+       $SCRATCH_ROOT
+       $BUILD_ROOT/build-scratch
+       <proj_root>/scratch
+    '''
 
-    return os.path.realpath(proj_root + "/scratch")
+    if not proj_root:
+        raise ValueError('The computed project root is an empty string')
+
+    env = os.environ
+    pairs = [
+        (scratch_root, ''),
+        (env.get('SCRATCH_ROOT'), ''),
+        (env.get('BUILD_ROOT'), 'build-scratch'),
+        (proj_root, 'scratch')
+    ]
+    for root, subdir in pairs:
+        if not root:
+            continue
+
+        # Note that the combined path will just be root if subdir is empty.
+        return Path(root).resolve() / subdir
+
+    # We shouldn't be able to get here, because we know that proj_root (the
+    # root of the last item in pairs) is not falsy.
+    raise RuntimeError("Couldn't resolve scratch root.")
 
 
 def read_max_parallel(arg):
