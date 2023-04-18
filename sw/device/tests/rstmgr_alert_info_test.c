@@ -20,6 +20,7 @@
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
@@ -753,6 +754,14 @@ bool test_main(void) {
 
   // TODO(#13098): Change to equality after #13277 is merged.
   if (rst_info & kDifRstmgrResetInfoPor) {
+    // We need to initialize the info FLASH partitions storing the Creator and
+    // Owner secrets to avoid getting the flash controller into a fatal error
+    // state.
+    if (kDeviceType == kDeviceFpgaCw310 && rst_info & kDifRstmgrResetInfoPor) {
+      CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
+                                                  &kOwnerSecret));
+    }
+
     global_test_round = kRound1;
     prgm_alert_handler_round1();
 

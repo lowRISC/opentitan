@@ -1964,9 +1964,6 @@ opentitan_functest(
 opentitan_functest(
     name = "rstmgr_alert_info_test",
     srcs = ["rstmgr_alert_info_test.c"],
-    cw310 = cw310_params(
-        tags = ["broken"],  # FIXME #16576 fails in non-CI environments
-    ),
     targets = [
         "cw310_test_rom",
         "verilator",
@@ -1999,6 +1996,7 @@ opentitan_functest(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
