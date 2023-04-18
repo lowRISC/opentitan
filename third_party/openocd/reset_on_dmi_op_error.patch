@@ -1,8 +1,8 @@
 diff --git a/src/target/riscv/riscv-013.c b/src/target/riscv/riscv-013.c
-index 4e6c8dc36..7d51c6a7d 100644
+index 4e6c8dc36..41127c240 100644
 --- a/src/target/riscv/riscv-013.c
 +++ b/src/target/riscv/riscv-013.c
-@@ -538,6 +538,31 @@ static dmi_status_t dmi_scan(struct target *target, uint32_t *address_in,
+@@ -538,6 +538,33 @@ static dmi_status_t dmi_scan(struct target *target, uint32_t *address_in,
  	return buf_get_u32(in, DTM_DMI_OP_OFFSET, DTM_DMI_OP_LENGTH);
  }
  
@@ -22,6 +22,8 @@ index 4e6c8dc36..7d51c6a7d 100644
 +		if (dtmcontrol == 0xffffffff) {
 +			LOG_DEBUG("OTT rv_dm is stuck, wait until it is live again");
 +		}
++		else
++			break;
 +		if(tries-- == 0) {
 +			LOG_DEBUG("OTT rv_dm is still stuck, giving up");
 +			return ERROR_FAIL;
@@ -34,7 +36,7 @@ index 4e6c8dc36..7d51c6a7d 100644
  /**
   * @param target
   * @param data_in  The data we received from the target.
-@@ -598,7 +623,9 @@ static int dmi_op_timeout(struct target *target, uint32_t *data_in,
+@@ -598,7 +625,9 @@ static int dmi_op_timeout(struct target *target, uint32_t *data_in,
  			break;
  		} else {
  			LOG_ERROR("failed %s at 0x%x, status=%d", op_name, address, status);
@@ -45,7 +47,7 @@ index 4e6c8dc36..7d51c6a7d 100644
  		}
  		if (time(NULL) - start > timeout_sec)
  			return ERROR_TIMEOUT_REACHED;
-@@ -630,7 +657,9 @@ static int dmi_op_timeout(struct target *target, uint32_t *data_in,
+@@ -630,7 +659,9 @@ static int dmi_op_timeout(struct target *target, uint32_t *data_in,
  					LOG_ERROR("Failed %s (NOP) at 0x%x; status=%d", op_name, address,
  							status);
  				}
