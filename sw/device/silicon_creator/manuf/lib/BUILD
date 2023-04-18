@@ -9,6 +9,7 @@ load(
     "opentitan_functest",
 )
 load("//rules:const.bzl", "CONST", "get_lc_items")
+load("//rules:lc.bzl", "lc_raw_unlock_token")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -143,6 +144,10 @@ opentitan_functest(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
+)
+
+lc_raw_unlock_token(
+    name = "lc_raw_unlock_token",
 )
 
 # We bootstrap code into flash in LC states where CPU execution is enabled. In
