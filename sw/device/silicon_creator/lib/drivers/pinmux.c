@@ -20,7 +20,6 @@ enum {
    * Base address of the pinmux registers.
    */
   kBase = TOP_EARLGREY_PINMUX_AON_BASE_ADDR,
-  kPadAttrSpinWaitCycles = 500,  // 500 cycles is 5us with a 100MHz clock
 };
 
 /**
@@ -141,7 +140,7 @@ void pinmux_init(void) {
     uint32_t mcycle;
     do {
       CSR_READ(CSR_REG_MCYCLE, &mcycle);
-    } while (mcycle < kPadAttrSpinWaitCycles);
+    } while (mcycle < PINMUX_PAD_ATTR_PROP_CYCLES);
     configure_input(kInputSwStrap0);
     configure_input(kInputSwStrap1);
     configure_input(kInputSwStrap2);

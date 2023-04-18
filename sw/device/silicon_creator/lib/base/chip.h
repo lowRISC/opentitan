@@ -44,6 +44,15 @@
 #define TEST_ROM_IDENTIFIER 0x54534554
 
 /**
+ * Pinmux pull up/down wait delay.
+ *
+ * After enabling the pull-up/down on a pin, we need to wait for ~5us for the
+ * configuration to propagate to the physical pads. 5us is 500 clock cycles
+ * assuming a 100MHz clock.
+ */
+#define PINMUX_PAD_ATTR_PROP_CYCLES 500
+
+/**
  * Pinmux peripheral input values for software strap pins.
  */
 #define SW_STRAP_0_PERIPH 22
