@@ -50,19 +50,15 @@ _LIST_CATEGORIES = ["build_modes", "run_modes", "tests", "regressions"]
 # If set on the command line, then use that as a preference.
 # Else, check if $SCRATCH_ROOT env variable exists and is a directory.
 # Else use the default (<proj_root>/scratch)
-# Try to create the directory if it does not already exist.
-def resolve_scratch_root(arg_scratch_root, proj_root):
-    default_scratch_root = proj_root + "/scratch"
+def resolve_scratch_root(scratch_root, proj_root):
+    if scratch_root:
+        return scratch_root
+
     scratch_root = os.environ.get('SCRATCH_ROOT')
-    if not arg_scratch_root:
-        if scratch_root is None:
-            arg_scratch_root = default_scratch_root
-        else:
-            arg_scratch_root = scratch_root
+    if scratch_root:
+        return scratch_root
 
-    os.makedirs(arg_scratch_root, exist_ok=True)
-
-    return arg_scratch_root
+    return proj_root + "/scratch"
 
 
 def read_max_parallel(arg):
@@ -663,6 +659,10 @@ def main():
     args.branch = resolve_branch(args.branch)
     proj_root_src, proj_root = resolve_proj_root(args)
     args.scratch_root = resolve_scratch_root(args.scratch_root, proj_root)
+
+    # Make sure our scratch root actually exists
+    os.makedirs(args.scratch_root, exist_ok=True)
+
     log.info("[proj_root]: %s", proj_root)
 
     # Create an empty FUSESOC_IGNORE file in scratch_root. This ensures that
