@@ -76,8 +76,6 @@ def resolve_scratch_root(arg_scratch_root, proj_root):
                     "Env variable $SCRATCH_ROOT=\"{}\" is not accessible.\n"
                     "Using \"{}\" instead.".format(scratch_root,
                                                    arg_scratch_root))
-    else:
-        arg_scratch_root = os.path.realpath(arg_scratch_root)
 
     try:
         os.makedirs(arg_scratch_root, exist_ok=True)
