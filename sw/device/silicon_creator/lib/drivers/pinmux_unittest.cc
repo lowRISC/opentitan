@@ -5,8 +5,10 @@
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 
 #include "gtest/gtest.h"
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
+#include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/mock_csr.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
@@ -70,6 +72,12 @@ class InitTest : public PinmuxTest {
            static_cast<uint32_t>(index) * sizeof(uint32_t);
   };
 };
+
+TEST_F(InitTest, PadAttrPropagationDelay) {
+  const uint64_t kCpuClockPeriodNs = 1'000'000'000 / kClockFreqCpuHz;
+  const uint64_t kCpuCyclesIn5Micros = 5000 / kCpuClockPeriodNs;
+  EXPECT_EQ(PINMUX_PAD_ATTR_PROP_CYCLES, kCpuCyclesIn5Micros);
+}
 
 TEST_F(InitTest, WithBootstrap) {
   // The inputs that will be configured.

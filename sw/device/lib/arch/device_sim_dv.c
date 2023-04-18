@@ -7,7 +7,7 @@
 #include "sw/device/lib/arch/device.h"
 
 /**
- * Device-specific symbol definitions for the Verilator device.
+ * Device-specific symbol definitions for the DV simulation device.
  */
 
 const device_type_t kDeviceType = kDeviceSimDV;
