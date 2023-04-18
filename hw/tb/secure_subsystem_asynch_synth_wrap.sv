@@ -10,7 +10,7 @@
 
 `include "axi/typedef.svh"
 
-module secure_subsystem_asynch_synth_wrap
+module secure_subsystem_synth_wrap
    import axi_pkg::*;
    import jtag_pkg::*;
    import tlul2axi_pkg::*;
@@ -123,6 +123,8 @@ module secure_subsystem_asynch_synth_wrap
    
    logic es_rng_fips;
 
+   logic s_rst_n, s_init_n;
+
    assign dio_in_i[1:0]   = '0;
    assign dio_in_i[15:6]  = '0;
  
@@ -171,8 +173,8 @@ module secure_subsystem_asynch_synth_wrap
 
    axi_dw_converter #(
       .AxiMaxReads        ( 8                   ),
-      .AxiSlvPortDataWidth( AxiDataWidth        ),
-      .AxiMstPortDataWidth( AxiOtDataWidth      ),
+      .AxiSlvPortDataWidth( AxiOtDataWidth      ),
+      .AxiMstPortDataWidth( AxiDataWidth        ),
       .AxiAddrWidth       ( AxiAddrWidth        ),
       .AxiIdWidth         ( AxiOutIdWidth       ),
       .aw_chan_t          ( axi_out_aw_chan_t   ),
@@ -188,7 +190,7 @@ module secure_subsystem_asynch_synth_wrap
       .axi_slv_resp_t     ( axi_ot_out_resp_t   )
    )  i_axi_dw_converter (
       .clk_i,
-      .rst_ni     ( s_rst_n    ),
+      .rst_ni     ( rst_ni     ),
       // slave port
       .slv_req_i  ( ot_axi_req ),
       .slv_resp_o ( ot_axi_rsp ),

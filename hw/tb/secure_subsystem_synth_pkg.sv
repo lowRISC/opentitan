@@ -14,12 +14,12 @@ package secure_subsystem_synth_pkg;
 `ifndef ALSAQR 
   localparam SynthAxiAddrWidth    = 48;
   localparam SynthAxiOutIdWidth   = 2;
-  localparam SynthAxiUserWidth    = 1;
+  localparam SynthAxiUserWidth    = 2;
   localparam SynthAxiDataWidth    = 64;
 
   localparam SynthOtAxiAddrWidth  = 48;
   localparam SynthOtAxiOutIdWidth = 2;
-  localparam SynthOtAxiUserWidth  = 1;
+  localparam SynthOtAxiUserWidth  = 2;
   localparam SynthOtAxiDataWidth  = 32;
    
   typedef logic [SynthAxiAddrWidth-1:0]     synth_axi_addr_t;
