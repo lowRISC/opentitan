@@ -95,8 +95,6 @@
 /**
  * Lay the root out vertically. Various grids are used for horizontal layout
  * within the block diagram.
- *
- * Block diagrams can be given a `.block-diagram-title`.
  */
 .block-diagram {
     display: flex;
@@ -106,12 +104,6 @@
 
     background-color: var(--diagram-bg);
     color: var(--diagram-fg);
-}
-
-.block-diagram .block-diagram-title {
-    font-size: var(--font-size);
-    font-weight: bold;
-    text-transform: uppercase;
 }
 
 /********
