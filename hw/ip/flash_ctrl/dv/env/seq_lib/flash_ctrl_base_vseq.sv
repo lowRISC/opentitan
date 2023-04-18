@@ -109,7 +109,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     if (cfg.skip_init == 0) begin
        csr_wr(.ptr(ral.init), .value(1));
        `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rd_buf_en == 1 || cfg.skip_init_buf_en == 1);,
-                    "Timed out waiting for rd_buf_en",
+                    $sformatf("Timed out waiting for rd_buf_en (%0d)",
+                              cfg.wait_rd_buf_en_timeout_ns),
                     cfg.wait_rd_buf_en_timeout_ns)
     end
   endtask : pre_start
