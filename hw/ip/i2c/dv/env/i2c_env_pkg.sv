@@ -63,6 +63,12 @@ package i2c_env_pkg;
     ReadDataAckStop    = 6
   } glitch_e;
 
+  typedef enum int {
+    Standard,
+    Fast,
+    FastPlus
+  } speed_mode_e;
+
   parameter uint I2C_FMT_FIFO_DEPTH = i2c_reg_pkg::FifoDepth;
   parameter uint I2C_RX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;
   parameter uint I2C_TX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;
