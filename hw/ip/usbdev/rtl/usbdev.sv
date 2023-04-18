@@ -412,12 +412,6 @@ module usbdev
     for (int i = 0; i < NEndpoints; i++) begin
       hw2reg.configin[i].rdy.de = clear_rdybit[i];
       hw2reg.configin[i].rdy.d  = 1'b0;
-    end
-  end
-
-  // Update the pending bit by copying the ready bit that is about to clear
-  always_comb begin : proc_map_pend
-    for (int i = 0; i < NEndpoints; i++) begin
       hw2reg.configin[i].pend.de = update_pend[i];
       hw2reg.configin[i].pend.d  = reg2hw.configin[i].rdy.q | reg2hw.configin[i].pend.q;
     end

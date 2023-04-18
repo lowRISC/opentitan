@@ -780,7 +780,7 @@ sources:
 #     - hw/top_earlgrey/rtl/autogen/top_earlgrey.sv
       - hw/tb/top_earlgrey.sv
       - hw/tb/secure_subsystem_synth_pkg.sv
-      - hw/tb/secure_subsystem_synth_wrap.sv
+#      - hw/tb/secure_subsystem_synth_wrap.sv
       - hw/tb/secure_subsystem_asynch_synth_wrap.sv
 
 ##### testbench

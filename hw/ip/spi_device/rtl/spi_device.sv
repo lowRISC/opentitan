@@ -1212,11 +1212,11 @@ module spi_device
 
     mem_b_l2m = '{ default: '0 };
 
-    sub_sram_m2l[IoModeFw] = '{
+    /*sub_sram_m2l[IoModeFw] = '{
       rvalid: 1'b 0,
       rdata: '0,
       rerror: '{uncorr: 1'b 0, corr: 1'b 0}
-    };
+    };*/
 
     flash_sram_m2l = '{
       rvalid: 1'b 0,
@@ -1235,7 +1235,7 @@ module spi_device
         // SRAM:: Remember this has glitch
         // switch should happen only when clock gate is disabled.
         mem_b_l2m = sub_sram_l2m[IoModeFw];
-        sub_sram_m2l[IoModeFw] = mem_b_m2l;
+        //sub_sram_m2l[IoModeFw] = mem_b_m2l;
       end
 
       FlashMode, PassThrough: begin
