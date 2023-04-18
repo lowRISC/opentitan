@@ -8,6 +8,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /**
  * @file
  * @brief This header contains declarations of device-specific information.
@@ -187,5 +191,9 @@ uint64_t to_cpu_cycles(uint64_t usec);
  * This function is a NOP unless we are building for an FPGA.
  */
 void device_fpga_version_print(void);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_ARCH_DEVICE_H_
