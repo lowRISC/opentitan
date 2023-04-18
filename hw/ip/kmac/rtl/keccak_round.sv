@@ -460,12 +460,4 @@ module keccak_round
         inside {KeccakStPhase1, KeccakStPhase2Cycle1, KeccakStPhase2Cycle2, KeccakStPhase2Cycle3}),
         clk_i, !rst_ni)
   end
-
-  // If message is fed, it shall start from 0
-  // TODO: Handle the case `addr_i` changes prior to `valid_i`
-  //`ASSUME(MsgStartFrom0_A, valid_i |->
-  //                         (addr_i == 0) || (addr_i == $past(addr_i) + 1),
-  //        clk_i,!rst_ni)
-
-
 endmodule
