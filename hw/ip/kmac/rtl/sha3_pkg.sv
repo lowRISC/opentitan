@@ -138,7 +138,7 @@ package sha3_pkg;
     // completed. The main indicator is `absorbed` signal.
     StAbsorb_sparse = 6'b100001,
 
-    // TODO: Implement StAbort later after context-switching discussion.
+    // Reserved state for context-switching. See #3479.
     // Abort stage can be moved from StAbsorb stage. It basically holds the
     // keccak round operation and opens up the internal state variable to the
     // software. This stage is for the software to pause current operation and
