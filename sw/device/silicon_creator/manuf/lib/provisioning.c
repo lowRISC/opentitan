@@ -25,15 +25,20 @@ enum {
 
   kCreatorSeedSizeInBytes = 32,
   kCreatorSeedSizeInWords = kCreatorSeedSizeInBytes / sizeof(uint32_t),
+  kOwnerSeedSizeInWords = kCreatorSeedSizeInWords,
 
-  /** Flash Secret partition ID. */
+  /** Flash Secrets partition ID. Used for both Creator and Owner secrets. */
   kFlashInfoPartitionId = 0,
 
-  /** Secret partition flash bank ID. */
+  /** Secrets partition flash bank ID. Used for both Creator and Owner secrets.
+   */
   kFlashInfoBankId = 0,
 
   /** Creator Secret flash info page ID. */
   kFlashInfoPageIdCreatorSecret = 1,
+
+  /** Owner Secret flash info page ID. */
+  kFlashInfoPageIdOwnerSecret = 2,
 
   kOtpDefaultBlankValue = 0,
 };
@@ -77,6 +82,51 @@ static status_t otp_partition_secret2_is_locked(const dif_otp_ctrl_t *otp,
 }
 
 /**
+ * Configures secret value to flash info partition.
+ *
+ * Entropy is extracted from the CSRNG instance and programmed into the target
+ * flash info page.
+ *
+ * @param flash_state Flash controller instance.
+ * @param page_id Region page index.
+ * @param bank_id The required bank.
+ * @param partition_id The partition index.
+ * @param len The number of uint32_t words to program starting at the begining
+ * of the target flash info page.
+ * @return OK_STATUS on success.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t flash_ctrl_secret_write(dif_flash_ctrl_state_t *flash_state,
+                                        uint32_t page_id, uint32_t bank_id,
+                                        uint32_t partition_id, size_t len) {
+  TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
+                                /*seed_material=*/NULL));
+
+  uint32_t seed[kCreatorSeedSizeInWords];
+  TRY(entropy_csrng_generate(/*seed_material=*/NULL, seed, len));
+  TRY(entropy_csrng_uninstantiate());
+
+  uint32_t address = 0;
+  TRY(flash_ctrl_testutils_info_region_scrambled_setup(
+      flash_state, page_id, bank_id, partition_id, &address));
+
+  TRY(flash_ctrl_testutils_erase_and_write_page(
+      flash_state, address, partition_id, seed, kDifFlashCtrlPartitionTypeInfo,
+      len));
+
+  uint32_t seed_result[kCreatorSeedSizeInWords];
+  TRY(flash_ctrl_testutils_read(flash_state, address, partition_id, seed_result,
+                                kDifFlashCtrlPartitionTypeInfo, len,
+                                /*delay=*/0));
+  bool found_error = false;
+  for (size_t i = 0; i < len; ++i) {
+    found_error |=
+        seed[i] == 0 || seed[i] == UINT32_MAX || seed[i] != seed_result[i];
+  }
+  return found_error ? INTERNAL() : OK_STATUS();
+}
+
+/**
  * Configures the Silicon Creator Secret Seed in flash.
  *
  * Entropy is extracted from the CSRNG instance and programmed into the Silicon
@@ -90,33 +140,32 @@ static status_t otp_partition_secret2_is_locked(const dif_otp_ctrl_t *otp,
 OT_WARN_UNUSED_RESULT
 static status_t flash_ctrl_creator_secret_write(
     dif_flash_ctrl_state_t *flash_state) {
-  TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
-                                /*seed_material=*/NULL));
+  TRY(flash_ctrl_secret_write(flash_state, kFlashInfoPageIdCreatorSecret,
+                              kFlashInfoBankId, kFlashInfoPartitionId,
+                              kCreatorSeedSizeInWords));
+  return OK_STATUS();
+}
 
-  uint32_t creator_seed[kCreatorSeedSizeInWords];
-  TRY(entropy_csrng_generate(/*seed_material=*/NULL, creator_seed,
-                             kCreatorSeedSizeInWords));
-  TRY(entropy_csrng_uninstantiate());
-
-  uint32_t address = 0;
-  TRY(flash_ctrl_testutils_info_region_scrambled_setup(
-      flash_state, kFlashInfoPageIdCreatorSecret, kFlashInfoBankId,
-      kFlashInfoPartitionId, &address));
-
-  TRY(flash_ctrl_testutils_erase_and_write_page(
-      flash_state, address, kFlashInfoPartitionId, creator_seed,
-      kDifFlashCtrlPartitionTypeInfo, kCreatorSeedSizeInWords));
-
-  uint32_t creator_seed_result[kCreatorSeedSizeInWords];
-  TRY(flash_ctrl_testutils_read(
-      flash_state, address, kFlashInfoPartitionId, creator_seed_result,
-      kDifFlashCtrlPartitionTypeInfo, kCreatorSeedSizeInWords, /*delay=*/0));
-  bool found_error = false;
-  for (size_t i = 0; i < kCreatorSeedSizeInWords; ++i) {
-    found_error |= creator_seed[i] == 0 || creator_seed[i] == UINT32_MAX ||
-                   creator_seed[i] != creator_seed_result[i];
-  }
-  return found_error ? INTERNAL() : OK_STATUS();
+/**
+ * Configures the Silicon Owner Secret Seed in flash.
+ *
+ * Entropy is extracted from the CSRNG instance and programmed into the Silicon
+ * Owner Seed flash info page. This value needs to be configured when the device
+ * is in PROD, PROD_END, DEV or RMA lifecyle state.
+ *
+ * A preliminary value is configured as part of the provisioning flow, but the
+ * expectation is that the Silicon Owner will rotate this value as part of
+ * ownership transfer.
+ *
+ * @param flash_state Flash controller instance.
+ * @return OK_STATUS on success.
+ */
+OT_WARN_UNUSED_RESULT status_t
+flash_ctrl_owner_secret_write(dif_flash_ctrl_state_t *flash_state) {
+  TRY(flash_ctrl_secret_write(flash_state, kFlashInfoPageIdOwnerSecret,
+                              kFlashInfoBankId, kFlashInfoPartitionId,
+                              kOwnerSeedSizeInWords));
+  return OK_STATUS();
 }
 
 /**
@@ -183,6 +232,7 @@ status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
   // the entropy_src health checks in FIPS mode.
   TRY(entropy_complex_init());
   TRY(flash_ctrl_creator_secret_write(flash_state));
+  TRY(flash_ctrl_owner_secret_write(flash_state));
   TRY(otp_partition_secret2_configure(otp));
   return OK_STATUS();
 }
