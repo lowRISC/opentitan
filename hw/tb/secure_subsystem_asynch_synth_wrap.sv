@@ -21,7 +21,7 @@ module secure_subsystem_synth_wrap
 #(
    parameter SramCtrlMainMemInitFile = "",
    parameter OtpCtrlMemInitFile      = "../sw/bare-metal/opentitan/otp/otp-img.mem",
-   parameter RomCtrlBootRomInitFile  = "../sw/bare-metal/opentitan/bootrom/fake_rom.vmem",
+   parameter RomCtrlBootRomInitFile  = "../sw/bare-metal/opentitan/bootrom/boot_rom.vmem",
    parameter FlashCtrlMemInitFile    = "", 
  
    parameter int unsigned AxiAddrWidth          = SynthAxiAddrWidth,
