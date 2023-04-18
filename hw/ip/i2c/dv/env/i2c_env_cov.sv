@@ -142,10 +142,10 @@ endgroup
 class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
   `uvm_component_utils(i2c_env_cov)
 
-  i2c_fifo_level_cg fmt_fifo_level_cg;
-  i2c_fifo_level_cg rx_fifo_level_cg;
   i2c_interrupts_cg interrupts_cg;
   i2c_fifo_reset_cg fifo_reset_cg;
+  i2c_fifo_level_cg fmt_fifo_level_cg;
+  i2c_fifo_level_cg rx_fifo_level_cg;
   i2c_operating_mode_cg openting_mode_cg;
 
   function new(string name, uvm_component parent);
