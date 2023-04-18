@@ -46,19 +46,28 @@ version = 0.1
 _LIST_CATEGORIES = ["build_modes", "run_modes", "tests", "regressions"]
 
 
-# Function to resolve the scratch root directory among the available options:
-# If set on the command line, then use that as a preference.
-# Else, check if $SCRATCH_ROOT env variable exists and is a directory.
-# Else use the default (<proj_root>/scratch)
+# Pick a scratch root. This might be given as an argument (in which case, it's
+# an argument to the function). Otherwise, select from the following, in
+# decreasing order of preference:
+#
+#    $SCRATCH_ROOT
+#    $BUILD_ROOT/build-scratch
+#    <proj_root>/scratch
 def resolve_scratch_root(scratch_root, proj_root):
-    if scratch_root:
-        return scratch_root
-
-    scratch_root = os.environ.get('SCRATCH_ROOT')
-    if scratch_root:
-        return scratch_root
-
-    return proj_root + "/scratch"
+    env = os.environ
+    pairs = [
+        (scratch_root, None),
+        (env.get('SCRATCH_ROOT'), None),
+        (env.get('BUILD_ROOT'), 'build-scratch'),
+        (proj_root, 'scratch')
+    ]
+    for root, subdir in pairs:
+        if not root:
+            continue
+        if subdir:
+            return os.path.join(root, subdir)
+        else:
+            return root
 
 
 def read_max_parallel(arg):
