@@ -264,7 +264,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // wait for the RMA strap pull enables to propagate to the physical pads.
   // Since this is a wait loop, disable the watchdog.
   csrw mcycle, zero
-  li   t0, 500  // 500 clock cycles with 100MHz clock is 5us.
+  li   t0, PINMUX_PAD_ATTR_PROP_CYCLES
 .L_rma_strap_pu_spin_cycles_loop:
   csrr t1, mcycle
   bltu t1, t0, .L_rma_strap_pu_spin_cycles_loop
