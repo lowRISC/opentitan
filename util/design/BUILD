@@ -32,6 +32,20 @@ py_binary(
 )
 
 py_binary(
+    name = "gen-lc-state-enc",
+    srcs = ["gen-lc-state-enc.py"],
+    data = ["//hw/ip/lc_ctrl/data:lc_ctrl_state.hjson"],
+    imports = ["."],
+    deps = [
+        ":secded_gen",
+        "//util/design/lib:common",
+        "//util/design/lib:lc_st_enc",
+        requirement("hjson"),
+        requirement("mako"),
+    ],
+)
+
+py_binary(
     name = "gen-otp-img",
     srcs = ["gen-otp-img.py"],
     imports = ["."],
