@@ -29,6 +29,16 @@ class jtag_item extends uvm_sequence_item;
   // If the same IR was selected earlier, allow the driver to skip resending the IR again. If IR is
   // different than what was sent before, then the new IR is sent.
   rand bit skip_reselected_ir;
+  // This field is used to transition TAP FSM to PauseIr state during an active request
+  rand uint ir_pause_count;
+  // This field is used to transition TAP FSM to PauseDr state during an active request
+  rand uint dr_pause_count;
+  // This field is used to indicate the CaptureDr cycle on which the
+  // pause state is introduced
+  rand uint dr_pause_cycle;
+  // This field is used to indicate the CaptureIr cycle on which the
+  // pause state is introduced
+  rand uint ir_pause_cycle;
 
   constraint ir_len_c {
     ir_len <= JTAG_IRW;
@@ -47,6 +57,34 @@ class jtag_item extends uvm_sequence_item;
     skip_reselected_ir dist {0:/3, 1:/7};
   }
 
+  constraint ir_pause_count_c {
+    ir_pause_count dist {0:/80, [1:40]:/ 20};
+  }
+
+  constraint dr_pause_count_c {
+    dr_pause_count dist {0:/ 80, [1:40]:/ 20};
+  }
+
+  constraint dr_pause_cycle_c {
+    if (dr_pause_count > 0 && dr_len > 3) {
+      dr_pause_cycle inside {[1:dr_len-3]};
+    } else {
+      dr_pause_cycle == 0;
+    }
+    solve dr_len before dr_pause_cycle;
+    solve dr_pause_count before dr_pause_cycle;
+  }
+
+  constraint ir_pause_cycle_c {
+    if (ir_pause_count > 0 && ir_len > 3) {
+      ir_pause_cycle inside {[1:ir_len-3]};
+    } else {
+      ir_pause_cycle == 0;
+    }
+    solve ir_len before ir_pause_cycle;
+    solve ir_pause_count before ir_pause_cycle;
+  }
+
   `uvm_object_utils_begin(jtag_item)
     `uvm_field_int(ir_len, UVM_DEFAULT)
     `uvm_field_int(dr_len, UVM_DEFAULT)
@@ -55,6 +93,8 @@ class jtag_item extends uvm_sequence_item;
     `uvm_field_int(dout,   UVM_DEFAULT)
     `uvm_field_enum(dv_utils_pkg::bus_op_e, bus_op, UVM_DEFAULT)
     `uvm_field_int(skip_reselected_ir, UVM_DEFAULT)
+    `uvm_field_int(ir_pause_count, UVM_NOCOMPARE | UVM_DEFAULT)
+    `uvm_field_int(dr_pause_count, UVM_NOCOMPARE | UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
