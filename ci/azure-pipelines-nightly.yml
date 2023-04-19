@@ -61,6 +61,8 @@ jobs:
       set -x
       module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/bazelisk.sh test \
+        --test_env=OTT_RUN_TEST_OUR_DIR=$(Pipeline.Workspace)/run_logs//$(Build.BuildNumber)/ \
+        --run_under=//rules/scripts:run_test \
         --define DISABLE_VERILATOR_BUILD=true \
         --define bitstream=gcp_splice \
         --test_tag_filters=-verilator,-dv,-broken \
@@ -68,3 +70,11 @@ jobs:
         --test_output=errors \
         //sw/device/silicon_creator/rom/e2e/...
     displayName: "Run all ROM E2E tests"
+  - bash: |
+      tar -C $(Pipeline.Workspace)/run_logs -czf $(Pipeline.Workspace)/$(Build.BuildNumber).tar.gz .
+    displayName: "Pack up logs"
+    condition: succeededOrFailed()
+  - publish: $(Pipeline.Workspace)/$(Build.BuildNumber).tar.gz
+    artifact: test_logs
+    displayName: "Upload logs"
+    condition: succeededOrFailed()
