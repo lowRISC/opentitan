@@ -55,11 +55,6 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     if (do_lc_ctrl_init) lc_ctrl_init();
   endtask
 
-  virtual task dut_shutdown();
-    // check for pending lc_ctrl operations and wait for them to complete
-    // TODO
-  endtask
-
   // Drive OTP input `lc_state` and `lc_cnt`.
   virtual task drive_otp_i(bit rand_otp_i = 1);
     if (rand_otp_i) begin
