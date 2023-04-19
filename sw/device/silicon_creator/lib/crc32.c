@@ -4,28 +4,11 @@
 
 #include "sw/device/silicon_creator/lib/crc32.h"
 
-#include <stdbool.h>
-
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 
-enum {
-  /**
-   * CRC32 polynomial.
-   */
-  kCrc32Poly = 0xedb88320,
-};
-
 void crc32_init(uint32_t *ctx) { *ctx = UINT32_MAX; }
 
-/**
- * Computes the CRC32 of a buffer as expected by Python's `zlib.crc32()`. The
- * implementation below is basically a simplified, i.e. byte-by-byte and without
- * a lookup table, version of zlib's crc32, which also matches IEEE 802.3
- * CRC-32. See
- * https://github.com/madler/zlib/blob/2fa463bacfff79181df1a5270fb67cc679a53e71/crc32.c,
- * lines 111-112 and 276-279.
- */
 void crc32_add8(uint32_t *ctx, uint8_t byte) {
 #ifdef OT_PLATFORM_RV32
   *ctx ^= byte;

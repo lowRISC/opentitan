@@ -55,7 +55,8 @@ void crc32_add(uint32_t *ctx, const void *buf, size_t len);
 uint32_t crc32_finish(const uint32_t *ctx);
 
 /**
- * Computes the CRC32 of a buffer.
+ * Computes the CRC32 of a buffer as defined by IEEE 802.3 CRC-32. It also
+ * matches Python's `zlib.crc32()`.
  *
  * @param buf A buffer, little-endian.
  * @param len Size of the buffer.
