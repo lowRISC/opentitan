@@ -1,5 +1,5 @@
 diff --git a/src/target/riscv/riscv-013.c b/src/target/riscv/riscv-013.c
-index 4e6c8dc36..41127c240 100644
+index 4e6c8dc36..94d178d06 100644
 --- a/src/target/riscv/riscv-013.c
 +++ b/src/target/riscv/riscv-013.c
 @@ -538,6 +538,33 @@ static dmi_status_t dmi_scan(struct target *target, uint32_t *address_in,
@@ -20,16 +20,16 @@ index 4e6c8dc36..41127c240 100644
 +	while(1) {
 +		uint32_t dtmcontrol = dtmcontrol_scan(target, DTM_DTMCS_DMIRESET);
 +		if (dtmcontrol == 0xffffffff) {
-+			LOG_DEBUG("OTT rv_dm is stuck, wait until it is live again");
++			LOG_ERROR("OTT rv_dm is stuck, wait until it is live again");
 +		}
 +		else
 +			break;
 +		if(tries-- == 0) {
-+			LOG_DEBUG("OTT rv_dm is still stuck, giving up");
++			LOG_ERROR("OTT rv_dm is still stuck, giving up");
 +			return ERROR_FAIL;
 +		}
 +	}
-+	LOG_DEBUG("OTT rv_dm dmireset");
++	LOG_ERROR("OTT rv_dm dmireset");
 +	return ERROR_OK;
 +}
 +
