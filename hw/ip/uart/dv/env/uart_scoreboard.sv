@@ -213,21 +213,37 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
         if (write && channel == AddrChannel) begin
           uart_item tx_item = uart_item::type_id::create("tx_item");
 
-          tx_item.data = item.a_data;
-          if (tx_q.size() < UART_FIFO_DEPTH) begin
-            tx_q.push_back(tx_item);
-            `uvm_info(`gfn, $sformatf("After push one item, tx_q size: %0d", tx_q.size), UVM_HIGH)
-          end else begin
-            `uvm_info(`gfn, $sformatf(
-                "Drop tx item: %0h, tx_q size: %0d, uart_tx_clk_pulses: %0d",
-                csr.get_mirrored_value(), tx_q.size(), uart_tx_clk_pulses), UVM_MEDIUM)
-          end
           fork begin
-            int loc_tx_q_size = tx_q.size();
+            int loc_tx_q_size;
+            bit dec_q_size;
+
+            // Don't update tx_q til next negedge. The TX FIFO doesn't get written til the cycle
+            // after the write transaction so an immediate read of 'fifo_status' after the write
+            // doesn't see the increased depth. Waiting here ensures this is modeled correctly.
+            cfg.clk_rst_vif.wait_n_clks(1);
+
+            tx_item.data = item.a_data;
+            if (tx_q.size() < UART_FIFO_DEPTH) begin
+              tx_q.push_back(tx_item);
+              `uvm_info(`gfn, $sformatf("After push one item, tx_q size: %0d", tx_q.size), UVM_HIGH)
+            end else begin
+              `uvm_info(`gfn, $sformatf(
+                  "Drop tx item: %0h, tx_q size: %0d, uart_tx_clk_pulses: %0d",
+                  csr.get_mirrored_value(), tx_q.size(), uart_tx_clk_pulses), UVM_MEDIUM)
+            end
+
+            loc_tx_q_size = tx_q.size();
+            dec_q_size = 1'b0;
             // remove 1 when it's abort to be popped for transfer
-            if (tx_enabled && tx_processing_item_q.size == 0 && tx_q.size > 0) loc_tx_q_size--;
-            // use negedge to avoid race condition
-            cfg.clk_rst_vif.wait_n_clks(NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK);
+            if (tx_enabled && tx_processing_item_q.size == 0 && tx_q.size > 0) begin
+              // Must decide if we're reducing the queue size used for watermark modelling now based
+              // upon the tx_q size immediately after the push. The actual watermark prediction
+              // occurs after update delay
+              dec_q_size = 1'b1;
+            end
+
+            // use negedge to avoid race condition with -1 as we've already waited a cycle above.
+            cfg.clk_rst_vif.wait_n_clks(NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK - 1);
             if (ral.ctrl.slpbk.get_mirrored_value()) begin
               // if sys loopback is on, tx item isn't sent to uart pin but rx fifo
               uart_item tx_item = tx_q.pop_front();
@@ -238,6 +254,14 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             end else if (tx_enabled && tx_processing_item_q.size == 0 && tx_q.size > 0) begin
               tx_processing_item_q.push_back(tx_q.pop_front());
             end
+
+            if (dec_q_size) begin
+              // Predict before decrement to model scenario where watermark triggers due to going
+              // above then immediate dropping below the threshold as TX item gets immediate popped.
+              predict_tx_watermark_intr(loc_tx_q_size);
+              loc_tx_q_size--;
+            end
+
             predict_tx_watermark_intr(loc_tx_q_size);
           end join_none
         end // write && channel == AddrChannel
