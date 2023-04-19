@@ -6,9 +6,35 @@ use anyhow::Result;
 use nix::libc::c_int;
 use nix::poll;
 use std::convert::TryInto;
-use std::io;
+use std::fs::File;
+use std::io::{self, Read, Write};
 use std::os::unix::io::{AsRawFd, RawFd};
+use std::path::Path;
 use std::time::Duration;
+
+/// Trait for data types that can be streamed to a reader.
+pub trait FromReader: Sized {
+    /// Reads in an instance of `Self`.
+    fn from_reader(r: impl Read) -> Result<Self>;
+
+    /// Reads an instance of `Self` from a file at `path`.
+    fn read_from_file(path: &Path) -> Result<Self> {
+        let file = File::open(path)?;
+        Self::from_reader(file)
+    }
+}
+
+/// Trait for data types that can be written to a writer.
+pub trait ToWriter: Sized {
+    /// Writes out `self`.
+    fn to_writer(&self, w: &mut impl Write) -> Result<()>;
+
+    /// Writes `self` to a file at `path`.
+    fn write_to_file(self, path: &Path) -> Result<()> {
+        let mut file = File::create(path)?;
+        self.to_writer(&mut file)
+    }
+}
 
 /// Waits for an event on `fd` or for `timeout` to expire.
 pub fn wait_timeout(fd: RawFd, events: poll::PollFlags, timeout: Duration) -> Result<()> {
