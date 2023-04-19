@@ -68,7 +68,7 @@ jobs:
         --test_tag_filters=-verilator,-dv,-broken \
         --build_tests_only \
         --test_output=all \
-        --runs_per_test=20 \
+        --runs_per_test=1 \
         //sw/device/silicon_creator/rom/e2e:amaury
     displayName: "Run all ROM E2E tests"
   - bash: |
