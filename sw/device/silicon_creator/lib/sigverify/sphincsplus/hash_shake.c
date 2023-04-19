@@ -53,8 +53,11 @@ rom_error_t spx_hash_initialize(spx_ctx_t *ctx) {
 }
 
 rom_error_t spx_hash_message(const uint8_t *R, const uint8_t *pk,
-                             const uint8_t *m, unsigned long long mlen,
-                             uint8_t *digest, uint64_t *tree,
+                             const uint8_t *msg_prefix_1,
+                             size_t msg_prefix_1_len,
+                             const uint8_t *msg_prefix_2,
+                             size_t msg_prefix_2_len, const uint8_t *msg,
+                             size_t msg_len, uint8_t *digest, uint64_t *tree,
                              uint32_t *leaf_idx) {
   uint32_t buf[kSpxDigestWords] = {0};
   unsigned char *bufp = (unsigned char *)buf;
@@ -62,7 +65,9 @@ rom_error_t spx_hash_message(const uint8_t *R, const uint8_t *pk,
   HARDENED_RETURN_IF_ERROR(kmac_shake256_start());
   kmac_shake256_absorb(R, kSpxN);
   kmac_shake256_absorb(pk, kSpxPkBytes);
-  kmac_shake256_absorb(m, mlen);
+  kmac_shake256_absorb(msg_prefix_1, msg_prefix_1_len);
+  kmac_shake256_absorb(msg_prefix_2, msg_prefix_2_len);
+  kmac_shake256_absorb(msg, msg_len);
   kmac_shake256_squeeze_start();
   HARDENED_RETURN_IF_ERROR(kmac_shake256_squeeze_end(buf, kSpxDigestWords));
 

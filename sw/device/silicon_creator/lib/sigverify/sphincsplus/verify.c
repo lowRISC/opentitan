@@ -21,8 +21,10 @@
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/wots.h"
 
 static_assert(kSpxD <= UINT8_MAX, "kSpxD must fit into a uint8_t.");
-rom_error_t spx_verify(const uint8_t *sig, const uint8_t *m, size_t mlen,
-                       const uint8_t *pk, uint32_t *root) {
+rom_error_t spx_verify(const uint8_t *sig, const uint8_t *msg_prefix_1,
+                       size_t msg_prefix_1_len, const uint8_t *msg_prefix_2,
+                       size_t msg_prefix_2_len, const uint8_t *msg,
+                       size_t msg_len, const uint8_t *pk, uint32_t *root) {
   spx_ctx_t ctx;
   memcpy(ctx.pub_seed, pk, kSpxN);
 
@@ -42,8 +44,9 @@ rom_error_t spx_verify(const uint8_t *sig, const uint8_t *m, size_t mlen,
   uint8_t mhash[kSpxForsMsgBytes];
   uint64_t tree;
   uint32_t idx_leaf;
-  HARDENED_RETURN_IF_ERROR(
-      spx_hash_message(sig, pk, m, mlen, mhash, &tree, &idx_leaf));
+  HARDENED_RETURN_IF_ERROR(spx_hash_message(
+      sig, pk, msg_prefix_1, msg_prefix_1_len, msg_prefix_2, msg_prefix_2_len,
+      msg, msg_len, mhash, &tree, &idx_leaf));
   sig += kSpxN;
 
   // Layer correctly defaults to 0, so no need to set_layer_addr.
