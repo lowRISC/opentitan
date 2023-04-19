@@ -76,14 +76,23 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       if (req.skip_reselected_ir && req.ir == selected_ir && req.ir_len == selected_ir_len) begin
         `uvm_info(`gfn, $sformatf("UpdateIR for 0x%0h skipped", selected_ir), UVM_HIGH)
       end else begin
-        drive_jtag_ir(req.ir_len, req.ir);
+        drive_jtag_ir(req.ir_len, req.ir, req.ir_pause_count, req.ir_pause_cycle);
       end
     end
-    if (req.dr_len) drive_jtag_dr(req.dr_len, req.dr, rsp.dout);
+    if (req.dr_len) drive_jtag_dr(req.dr_len,
+                                  req.dr,
+                                  rsp.dout,
+                                  req.dr_pause_count,
+                                  req.dr_pause_cycle);
     cfg.vif.tck_en <= 1'b0;
   endtask
 
-  task drive_jtag_ir(int len, bit [JTAG_DRW-1:0] ir);
+  task drive_jtag_ir(int len,
+                     bit [JTAG_DRW-1:0] ir,
+                     uint pause_count = 0,
+                     uint pause_cycle = 0);
+    logic [JTAG_DRW-1:0] dout;
+    `uvm_info(`gfn, $sformatf("ir: 0x%0h, len: %0d", ir, len), UVM_MEDIUM)
     // Assume starting in RTI state
     // SelectDR
     `HOST_CB.tms <= 1'b1;
@@ -105,6 +114,15 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       // ExitIR if end of addr
       `HOST_CB.tms <= (i == len - 1) ? 1'b1 : 1'b0;
       `HOST_CB.tdi <= ir[i];
+      // Move to PauseIR state if pause_count is non-zero
+      if (pause_count > 0 && i == pause_cycle) begin
+        `uvm_info(`gfn,
+           $sformatf("jtag_pause in drive_jtag_ir with pause_count : %0d, pause_cycle:%0d",
+                    pause_count,
+                    pause_cycle),
+           UVM_MEDIUM)
+        jtag_pause(pause_count, dout);
+      end
     end
     @(`HOST_CB);
     // UpdateIR
@@ -121,7 +139,11 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
 
   task drive_jtag_dr(input  int                  len,
                      input  logic [JTAG_DRW-1:0] dr,
-                     output logic [JTAG_DRW-1:0] dout);
+                     output logic [JTAG_DRW-1:0] dout,
+                     input uint                  pause_count,
+                     input uint                  pause_cycle);
+    bit pause_injected = 0;
+    `uvm_info(`gfn, $sformatf("dr: 0x%0h, len: %0d", dr, len), UVM_MEDIUM)
     // assume starting in RTI
     // go to SelectDR
     `HOST_CB.tms <= 1'b1;
@@ -139,7 +161,20 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       // stay in ShiftDR
       `HOST_CB.tms <= 1'b0;
       `HOST_CB.tdi <= dr[i];
-      dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
+      // Skip sampling dout in case of pause, since FSM moves to ShiftDr state in next cycle
+      dout = !pause_injected ? {`HOST_CB.tdo, dout[JTAG_DRW-1:1]} : dout;
+      // Move to PauseDR state if pause_count is non-zero
+      if (pause_count > 0 && i == pause_cycle) begin
+        `uvm_info(`gfn,
+           $sformatf("jtag_pause in drive_jtag_dr with pause_count : %0d, pause_cycle:%0d",
+                    pause_count,
+                    pause_cycle),
+           UVM_MEDIUM)
+        jtag_pause(pause_count, dout);
+        pause_injected = 1;
+      end else begin
+        pause_injected = 0;
+      end
     end
     @(`HOST_CB);
     // go to Exit1DR
@@ -157,6 +192,27 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     `HOST_CB.tdi <= 1'b0;
     @(`HOST_CB);
     dout >>= (JTAG_DRW - len);
+  endtask
+
+  // Task to drive TMS such that JTAG state machine moves to
+  // - PauseIR state if current state is ShiftIR
+  // - PauseDR state if current state is ShiftDR
+  // And then move back to ShiftIr/ShiftDr state after pause_count cycles
+  task jtag_pause(uint pause_count, ref logic [JTAG_DRW-1:0] dout);
+    // Move to Exit1Ir/Exit1Dr state
+    `HOST_CB.tms <= 1'b1;
+    @(`HOST_CB);
+    dout = {`HOST_CB.tdo, dout[JTAG_DRW-1:1]};
+    // Remain in PauseIR/PauseDR state for pause_count cycles
+    `HOST_CB.tms <= 1'b0;
+    repeat(pause_count) begin
+      @(`HOST_CB);
+    end
+    // Move to Exit2Ir/Exit2Dr state
+    `HOST_CB.tms <= 1'b1;
+    @(`HOST_CB);
+    // Move to ShiftIr/ShiftDr state
+    `HOST_CB.tms <= 1'b0;
   endtask
 
 endclass
