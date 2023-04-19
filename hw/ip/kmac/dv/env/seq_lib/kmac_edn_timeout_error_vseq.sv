@@ -18,7 +18,7 @@ class kmac_edn_timeout_error_vseq extends kmac_app_vseq;
   }
 
   constraint kmac_err_type_c {
-    kmac_err_type dist {kmac_pkg::ErrWaitTimerExpired :/ 4, kmac_pkg::ErrNone :/ 1};
+    kmac_err_type dist {kmac_pkg::ErrWaitTimerExpired :/ 9, kmac_pkg::ErrNone :/ 1};
     kmac_err_type == kmac_pkg::ErrWaitTimerExpired -> entropy_fast_process == 0;
   }
 
@@ -32,6 +32,7 @@ class kmac_edn_timeout_error_vseq extends kmac_app_vseq;
     if (cfg.enable_masking) disable_asserts();
     cfg.en_scb = 0;
     check_keymgr_rsp_nonblocking();
+    kmac_err_type.rand_mode(0);
   endtask
 
   virtual function void disable_asserts();
