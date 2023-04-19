@@ -4,7 +4,9 @@
 //
 // This runs a test with external clock enabled via software for either fast
 // or slow speed. It checks the expected frequencies via the clock count
-// measurement feature.
+// measurement feature. After the measurements are made, the external clock is
+// disabled and the clock counts are measured to confirm the frequencies are
+// back to what is expected when the external clock is not enabled.
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -43,15 +45,7 @@ void execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk) {
 
   CHECK_DIF_OK(dif_clkmgr_recov_err_code_clear_codes(&clkmgr, UINT32_MAX));
   CHECK_DIF_OK(dif_clkmgr_recov_err_code_get_codes(&clkmgr, &err_codes));
-  LOG_INFO("Recoverable error codes 0x%x", err_codes);
-
-  LOG_INFO("Enabling clock count measurements");
-  CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
-      &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
-      /*low_speed=*/false));
-  busy_spin_micros(delay_micros);
-  CHECK_STATUS_OK(clkmgr_testutils_check_measurement_counts(&clkmgr));
-  CHECK_STATUS_OK(clkmgr_testutils_disable_clock_counts(&clkmgr));
+  CHECK(err_codes == 0, "Unexpected non-zero clkmgr recoverable error code");
 
   // Configure external clock:
   // - at low speed (48 MHz) both main and io clocks count are the nominal
@@ -63,12 +57,29 @@ void execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk) {
       dif_clkmgr_external_clock_set_enabled(&clkmgr,
                                             /*is_low_speed=*/!fast_ext_clk));
 
-  // Wait a few AON cycles for glitches from the transition to external
-  // clock to settle.
+  // Wait for the external clock to become active.
   IBEX_SPIN_FOR(did_extclk_settle(&clkmgr), kSettleDelayMicros);
+  LOG_INFO("External clock enabled");
 
   CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
       &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/true,
+      /*low_speed=*/!fast_ext_clk));
+  busy_spin_micros(delay_micros);
+
+  CHECK_STATUS_OK(clkmgr_testutils_check_measurement_counts(&clkmgr));
+  CHECK_STATUS_OK(clkmgr_testutils_disable_clock_counts(&clkmgr));
+
+  // Disable the external clock and check the frequencies are as expected
+  // when driven by the AST oscillators.
+  LOG_INFO("Disabling external clock");
+  CHECK_DIF_OK(dif_clkmgr_external_clock_set_disabled(&clkmgr));
+
+  // Wait for the external clock to become inactive.
+  IBEX_SPIN_FOR(!did_extclk_settle(&clkmgr), kSettleDelayMicros);
+  LOG_INFO("External clock disabled");
+
+  CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
+      &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/false,
       /*low_speed=*/!fast_ext_clk));
   busy_spin_micros(delay_micros);
   CHECK_STATUS_OK(clkmgr_testutils_check_measurement_counts(&clkmgr));
