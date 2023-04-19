@@ -31,6 +31,18 @@ enum {
 };
 
 /**
+ * Get whether SPHINCS+ signature verification is enabled in OTP.
+ *
+ * This function returns the value of the `CREATOR_SW_CFG_SIGVERIFY_SPX_EN` OTP
+ * item unless the lifecycle state of the device is `TEST_UNLOCKED`. For
+ * `TEST_UNLOCKED` this function always returns `kSigverifySpxDisabledOtp`.
+ *
+ * @param lc_state Life cycle state of the device.
+ * @return Result of the operation.
+ */
+uint32_t sigverify_spx_verify_enabled(lifecycle_state_t lc_state);
+
+/**
  * Verifies a SPHINCS+ signature.
  *
  * @param signature Signature to be verified.
