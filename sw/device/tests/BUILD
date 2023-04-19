@@ -1729,6 +1729,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:spi_device_testutils",
         "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing:spi_host_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
