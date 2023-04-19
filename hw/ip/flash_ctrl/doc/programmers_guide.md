@@ -41,6 +41,15 @@ A controller operation can encounter a much greater variety of errors, see [`ERR
 When such an error is encountered, as reflected by [`OP_STATUS`](../data/flash_ctrl.hjson#op_status) when the operation is complete, software can examine the [`ERR_ADDR`](../data/flash_ctrl.hjson#err_addr) to determine the error location.
 Once the address is discovered, further steps can be taken to triage the issue.
 
+### Hardware Initiated Reads
+
+If the root secrets have been provisioned in OTP and the life cycle state is in either DEV, PROD* or RMA, the special info pages holding the creator and owner seeds will be read out automatically by the flash controller and sent to the keymanager upon flash initialization (see [life cycle controller documentation](../../lc_ctrl/doc/theory_of_operation.md#life-cycle-access-control-signals) and [OTP controller documentation](../../otp_ctrl/doc/theory_of_operation.md#life-cycle-interfaces) for more details).
+Hence, it is important that these pages are initialized with valid data, since otherwise the hardware will likely encounter ECC errors during the automatic readout.
+
+Note that by default, hardware assumes that scrambling and ECC is enabled on these special info pages.
+If software decides to not use scrambling or ECC on these partitions at the time of provisioning, software should disable these features in the [`HW_INFO_CFG_OVERRIDE`](../data/flash_ctrl.hjson#hw_info_cfg_override) register accordingly when initializing the flash controller.
+Otherwise, a configuration mismatch between hardware interface and the software side will lead to corrupted seed values and ECC errors upon automatic readout.
+
 ### Correctable ECC Errors
 Correctable ECC errors are by nature not fatal errors and do not stop operation.
 Instead, if the error is correctable, the flash controller fixes the issue and registers the last address where a single bit error was seen.
