@@ -326,9 +326,9 @@ module usbdev_reg_top (
   logic usbstat_host_lost_qs;
   logic [2:0] usbstat_link_state_qs;
   logic usbstat_sense_qs;
-  logic [2:0] usbstat_av_depth_qs;
+  logic [3:0] usbstat_av_depth_qs;
   logic usbstat_av_full_qs;
-  logic [2:0] usbstat_rx_depth_qs;
+  logic [3:0] usbstat_rx_depth_qs;
   logic usbstat_rx_empty_qs;
   logic avbuffer_we;
   logic [4:0] avbuffer_wd;
@@ -2759,9 +2759,9 @@ module usbdev_reg_top (
     .qs     (usbstat_sense_qs)
   );
 
-  //   F[av_depth]: 18:16
+  //   F[av_depth]: 19:16
   prim_subreg_ext #(
-    .DW    (3)
+    .DW    (4)
   ) u_usbstat_av_depth (
     .re     (usbstat_re),
     .we     (1'b0),
@@ -2789,9 +2789,9 @@ module usbdev_reg_top (
     .qs     (usbstat_av_full_qs)
   );
 
-  //   F[rx_depth]: 26:24
+  //   F[rx_depth]: 27:24
   prim_subreg_ext #(
-    .DW    (3)
+    .DW    (4)
   ) u_usbstat_rx_depth (
     .re     (usbstat_re),
     .we     (1'b0),
@@ -8489,9 +8489,9 @@ module usbdev_reg_top (
         reg_rdata_next[11] = usbstat_host_lost_qs;
         reg_rdata_next[14:12] = usbstat_link_state_qs;
         reg_rdata_next[15] = usbstat_sense_qs;
-        reg_rdata_next[18:16] = usbstat_av_depth_qs;
+        reg_rdata_next[19:16] = usbstat_av_depth_qs;
         reg_rdata_next[23] = usbstat_av_full_qs;
-        reg_rdata_next[26:24] = usbstat_rx_depth_qs;
+        reg_rdata_next[27:24] = usbstat_rx_depth_qs;
         reg_rdata_next[31] = usbstat_rx_empty_qs;
       end
 

@@ -755,7 +755,7 @@ dif_result_t dif_usbdev_status_get_available_fifo_depth(
 
   uint32_t reg_val =
       mmio_region_read32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET);
-  // Note: Size of available FIFO depth is 3 bits.
+  // Note: Size of available FIFO depth is 4 bits.
   *depth = bitfield_field32_read(reg_val, USBDEV_USBSTAT_AV_DEPTH_FIELD);
 
   return kDifOk;
@@ -782,7 +782,7 @@ dif_result_t dif_usbdev_status_get_rx_fifo_depth(const dif_usbdev_t *usbdev,
 
   uint32_t reg_val =
       mmio_region_read32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET);
-  // Note: Size of RX FIFO depth is 3 bits.
+  // Note: Size of RX FIFO depth is 4 bits.
   *depth = bitfield_field32_read(reg_val, USBDEV_USBSTAT_RX_DEPTH_FIELD);
 
   return kDifOk;

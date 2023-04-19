@@ -434,7 +434,7 @@
                 '''
         }
         {
-          bits: "18:16",
+          bits: "19:16",
           name: "av_depth",
           desc: '''
                 Number of buffers in the Available Buffer FIFO.
@@ -450,7 +450,7 @@
                 '''
         }
         {
-          bits: "26:24",
+          bits: "27:24",
           name: "rx_depth",
           desc: '''
                 Number of buffers in the Received Buffer FIFO.

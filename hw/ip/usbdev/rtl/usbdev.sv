@@ -102,11 +102,11 @@ module usbdev
 
   // AV fifo just stores buffer numbers
   localparam int AVFifoWidth = NBufWidth;
-  localparam int AVFifoDepth = 4;
+  localparam int AVFifoDepth = 8;
 
   // RX fifo stores              buf# +  size(0-MaxPktSizeByte)  + EP# + Type
   localparam int RXFifoWidth = NBufWidth + (1+SizeWidth)         +  4  + 1;
-  localparam int RXFifoDepth = 4;
+  localparam int RXFifoDepth = 8;
 
   usbdev_reg2hw_t reg2hw, reg2hw_regtop;
   usbdev_hw2reg_t hw2reg, hw2reg_regtop;
