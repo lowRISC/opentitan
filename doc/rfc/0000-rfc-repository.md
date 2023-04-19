@@ -7,7 +7,7 @@
 
 This RFC proposes storing OpenTitan RFCs as files in a Git repo, and using
 an open source development workflow for the RFC process. RFCs would be
-stored in the RFC repo as text files. RFCs would be proposed, reviewed, and
+stored in the RFC repo as text files. They would be proposed, reviewed, and
 accepted/rejected using GitHub pull requests (PRs). The goal is to ensure
 project decisions are better documented, and to make the RFC process more
 visible and transparent. The workflow proposed here will already be familiar to
@@ -53,43 +53,66 @@ documents, where:
 
 RFCs can be very important documentation artefacts. They show exactly what
 decisions have been made and the factors used to come to those decisions. As an
-open source project, we can make this process and the artefacts more open. This
-RFC proposes applying our open source development model to the RFC process.
+open source project, we're able to make this process and the documentation
+artefacts more open. This RFC proposes applying our open source development
+model to the RFC process.
 
 We would do this by having RFCs:
 
 * Written as Markdown text documents.
 * Stored and tracked in a Git repo.
 * Proposed through GitHub PRs.
-* Reviewed and accepted/rejected through GitHub.
+* Reviewed and accepted/rejected through GitHub reviews.
 
 The workflow for proposing and reviewing would then be the same as contributing
-any code or documentation to OpenTitan.
+code or documentation to OpenTitan.
 
 ### RFC file structure
 
-Having a repo of RFCs like this brings them closer to any other kind of
-documentation. To make best use of RFCs as documentation, this RFC also
-proposes adding some structure to RFCs:
+Having RFCs as files brings them closer to our other kinds of documentation. To
+make best use of RFCs as documentation, this RFC also proposes adding some
+structure to RFCs:
 
 * RFCs are dated (and authored if necessary).
 * RFCs are based on some template file to help the author fully consider all
   aspects of their proposal.
 * RFCs are assigned numeric IDs when accepted.
-* RFC numbers should start at 0001 and increase monotonically with date
-  accepted.
-* There should be no gaps in RFC numbers.
+* RFC numbers will start at 0001 and increase monotonically with date
+  accepted without gaps.
 
 Having RFCs as plain documentation lets us reference them when, for example:
 
 * Justifying the need for an issue or PR in OpenTitan.
 * Explaining why something was designed as it was in documentation.
-* Pointing to similar or conflicting RFCs to new proposals.
+* Pointing to similar or conflicting RFCs for new proposals or ideas.
+
+### Historic RFCs
+
+Historic RFCs accepted before this proposal should be converted to Markdown and
+included in the RFC repository for consistency. This should happen before
+further RFCs are added to preserve the ordering by date.
+
+### Tracking RFC implementation progress
+
+When an RFC is accepted, a link to a "tracking issue" should be added to the
+front-matter of the RFC document alongside the date it was accepted. This
+tracking issue should be a GitHub issue in the OpenTitan repo where the RFC will
+need to be implemented.
+
+This RFC proposes no format for these tracking issues, but they should:
+
+* Show the progress of the RFC's implementation.
+* Track any issues or updates encountered since the RFC was accepted.
+* Track follow-up RFCs that may need to be proposed to continue any unresolved
+  or future work from the RFC.
 
 ## Drawbacks
 
-* Some RFCs have private reasoning which cannot be submitted to a public repo.
-* RFC comments are still locked into GitHub's system, so are not portable.
+* Some RFCs may have private motivations which cannot be submitted to a public
+  repo.
+* Some RFC comments may need to reference private use-cases which cannot be
+  included in a public review.
+* RFC comments are still locked into GitHub's system, so those are not portable.
 
 ## Rationale and alternatives
 
@@ -129,8 +152,8 @@ do.
 We could instead store our RFCs as documentation files mixed into the monorepo's
 OpenTitan documentation. This would give us the documentation benefits, but RFC
 PRs would get lost amongst the faster moving development PRs. We would also lose
-a seperation of concerns, though we've already lost that for regular development
-by using a monorepo there.
+a seperation of concerns, though as we use a monorepo already, the boundary of
+what should be included together may be large enough to include RFCs.
 
 ## Prior Art
 
@@ -149,15 +172,8 @@ by using a monorepo there.
       importance of open decision making.
 
 As a meta point, this RFC was written using a modified version of Rust's RFC
-template. I think the headings used here make for good prompts to ensure all
-aspects of a decision are considered.
-
-## Unresolved questions
-
-* Should historic RFCs be brought into the repo?
-* How do we keep track of the progress of an RFC's implementation?
-* Where do we store the full content of private RFCs?
-* Can we have a seperate repository, or do we use a directory in the monorepo?
+template. I found the headings used made for good prompts to ensure more sides
+of the proposal were considered.
 
 ## Future possibilities
 
