@@ -58,7 +58,7 @@ interface clkmgr_extclk_sva_if
           $fell(
               extclk_sel_enabled
           ) |=> ##[FallCyclesMin:FallCyclesMax]
-              extclk_sel_enabled || (all_clk_byp_req_o != MuBi4False),
+              extclk_sel_enabled || (all_clk_byp_req_o == MuBi4False),
           clk_i, !rst_ni || disable_sva)
 
   logic hi_speed_enabled;
