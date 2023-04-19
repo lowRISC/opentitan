@@ -61,42 +61,6 @@ module clkmgr_bind;
     .gated_clk(clocks_o.clk_usb_peri)
   );
 
-  bind clkmgr clkmgr_gated_clock_sva_if clkmgr_aes_hintable_sva_if (
-    .clk(clocks_o.clk_main_powerup),
-    .rst_n(rst_main_ni),
-    .ip_clk_en(pwr_i.main_ip_clk_en),
-    .sw_clk_en(reg2hw.clk_hints.clk_main_aes_hint.q || !idle_i[0]),
-    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
-    .gated_clk(clocks_o.clk_main_aes)
-  );
-
-  bind clkmgr clkmgr_gated_clock_sva_if clkmgr_hmac_hintable_sva_if (
-    .clk(clocks_o.clk_main_powerup),
-    .rst_n(rst_main_ni),
-    .ip_clk_en(pwr_i.main_ip_clk_en),
-    .sw_clk_en(reg2hw.clk_hints.clk_main_hmac_hint.q || !idle_i[1]),
-    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
-    .gated_clk(clocks_o.clk_main_hmac)
-  );
-
-  bind clkmgr clkmgr_gated_clock_sva_if clkmgr_kmac_hintable_sva_if (
-    .clk(clocks_o.clk_main_powerup),
-    .rst_n(rst_main_ni),
-    .ip_clk_en(pwr_i.main_ip_clk_en),
-    .sw_clk_en(reg2hw.clk_hints.clk_main_kmac_hint.q || !idle_i[2]),
-    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
-    .gated_clk(clocks_o.clk_main_kmac)
-  );
-
-  bind clkmgr clkmgr_gated_clock_sva_if clkmgr_otbn_hintable_sva_if (
-    .clk(clocks_o.clk_main_powerup),
-    .rst_n(rst_main_ni),
-    .ip_clk_en(pwr_i.main_ip_clk_en),
-    .sw_clk_en(reg2hw.clk_hints.clk_main_otbn_hint.q || !idle_i[3]),
-    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
-    .gated_clk(clocks_o.clk_main_otbn)
-  );
-
   // Assertions for transactional clocks.
   bind clkmgr clkmgr_trans_sva_if clkmgr_aes_trans_sva_if (
     .clk(clk_main_i),
