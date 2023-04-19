@@ -38,6 +38,7 @@
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
+#include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
@@ -195,13 +196,28 @@ static rom_error_t rom_init(void) {
  */
 static rom_error_t rom_verify(const manifest_t *manifest,
                               uint32_t *flash_exec) {
+  // Used for invalidating signatures if the security version of the manifest is
+  // smaller than the minimum required security version.
+  const uint32_t extra_word = UINT32_MAX;
+  const uint32_t *anti_rollback = NULL;
+  size_t anti_rollback_len = 0;
+  if (launder32(manifest->security_version) <
+      boot_data.min_security_version_rom_ext) {
+    anti_rollback = &extra_word;
+    anti_rollback_len = sizeof(extra_word);
+  }
+
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 1);
   *flash_exec = 0;
   HARDENED_RETURN_IF_ERROR(boot_policy_manifest_check(manifest, &boot_data));
 
-  const sigverify_rsa_key_t *key;
+  const sigverify_rsa_key_t *rsa_key;
   HARDENED_RETURN_IF_ERROR(sigverify_rsa_key_get(
-      sigverify_rsa_key_id_get(&manifest->rsa_modulus), lc_state, &key));
+      sigverify_rsa_key_id_get(&manifest->rsa_modulus), lc_state, &rsa_key));
+
+  const sigverify_spx_key_t *spx_key;
+  HARDENED_RETURN_IF_ERROR(sigverify_spx_key_get(
+      sigverify_spx_key_id_get(&manifest->spx_key), lc_state, &spx_key));
 
   uint32_t clobber_value = rnd_uint32();
   for (size_t i = 0; i < ARRAYSIZE(boot_measurements.rom_ext.data); ++i) {
@@ -209,13 +225,7 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   }
 
   hmac_sha256_init();
-  // Invalidate the digest if the security version of the manifest is smaller
-  // than the minimum required security version.
-  if (launder32(manifest->security_version) <
-      boot_data.min_security_version_rom_ext) {
-    uint32_t extra_word = UINT32_MAX;
-    hmac_sha256_update(&extra_word, sizeof(extra_word));
-  }
+  hmac_sha256_update(anti_rollback, anti_rollback_len);
   HARDENED_CHECK_GE(manifest->security_version,
                     boot_data.min_security_version_rom_ext);
 
@@ -245,13 +255,17 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   // issue is fixed.
   if (true || rnd_uint32() < 0x80000000) {
     HARDENED_RETURN_IF_ERROR(sigverify_rsa_verify(
-        &manifest->rsa_signature, key, &act_digest, lc_state, flash_exec));
-    return sigverify_spx_verify(&manifest->spx_signature, NULL, lc_state,
-                                flash_exec);
+        &manifest->rsa_signature, rsa_key, &act_digest, lc_state, flash_exec));
+    return sigverify_spx_verify(
+        &manifest->spx_signature, spx_key, lc_state, &usage_constraints_from_hw,
+        sizeof(usage_constraints_from_hw), anti_rollback, anti_rollback_len,
+        digest_region.start, digest_region.length, flash_exec);
   } else {
-    HARDENED_RETURN_IF_ERROR(sigverify_spx_verify(&manifest->spx_signature,
-                                                  NULL, lc_state, flash_exec));
-    return sigverify_rsa_verify(&manifest->rsa_signature, key, &act_digest,
+    HARDENED_RETURN_IF_ERROR(sigverify_spx_verify(
+        &manifest->spx_signature, spx_key, lc_state, &usage_constraints_from_hw,
+        sizeof(usage_constraints_from_hw), anti_rollback, anti_rollback_len,
+        digest_region.start, digest_region.length, flash_exec));
+    return sigverify_rsa_verify(&manifest->rsa_signature, rsa_key, &act_digest,
                                 lc_state, flash_exec);
   }
 }

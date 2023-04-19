@@ -162,6 +162,7 @@ opentitan_rom_binary(
         ":rom_common",
         ":rom_start",
         "//sw/device/silicon_creator/rom/keys/fake",
+        "//sw/device/silicon_creator/rom/keys/fake/spx:fake",
     ],
 )
 
