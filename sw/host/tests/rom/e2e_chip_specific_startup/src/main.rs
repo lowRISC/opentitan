@@ -293,7 +293,8 @@ fn check_sram(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
     log::info!("lc_state = {:#x}", lc_state);
     assert!(cs.sram.scr_key_valid);
     match lc_state {
-        DifLcCtrlState::Dev
+        DifLcCtrlState::TestUnlocked0
+        | DifLcCtrlState::Dev
         | DifLcCtrlState::Prod
         | DifLcCtrlState::ProdEnd
         | DifLcCtrlState::Rma => {
