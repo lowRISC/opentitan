@@ -16,10 +16,12 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/spi_flash_testutils.h"
+#include "sw/device/lib/testing/spi_host_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "spi_host_regs.h"  // Generated.
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
@@ -40,6 +42,8 @@ static dif_rv_plic_t plic;
 
 enum {
   kHart = kTopEarlgreyPlicTargetIbex0,
+  kTxWatermark = 64,
+  kRxWatermark = 64,
 };
 
 /**
@@ -89,7 +93,7 @@ static status_t check_irq_eq(uint32_t irq) {
 }
 
 static status_t ready_event_irq(void) {
-  enum { kDataSize = 250, kCommands = 5 };
+  enum { kDataSize = 260, kCommands = 5 };
   static_assert(kDataSize % kCommands == 0, "Must be multiple.");
 
   uint8_t data[kDataSize];
@@ -121,6 +125,8 @@ static status_t ready_event_irq(void) {
   TRY_CHECK(status.ready);
 
   TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtReady, false));
+  IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
+                    1000);
   return OK_STATUS();
 }
 
@@ -149,7 +155,138 @@ static status_t active_event_irq(void) {
   TRY_CHECK(!status.active);
 
   TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtIdle, false));
+  IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
+                    1000);
+  return OK_STATUS();
+}
 
+static status_t tx_empty_event_irq(void) {
+  uint8_t data[256];
+  memset(data, 0xA5, sizeof(data));
+
+  irq_fired = UINT32_MAX;
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtTxEmpty, true));
+
+  dif_spi_host_status_t status;
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(status.tx_empty);
+
+  // Issue a command and check that the `STATUS.tx_empty` goes low.
+  TRY(dif_spi_host_fifo_write(&spi_host, data, sizeof(data)));
+  TRY(dif_spi_host_write_command(&spi_host, sizeof(data),
+                                 kDifSpiHostWidthStandard,
+                                 kDifSpiHostDirectionTx, true));
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(!status.tx_empty);
+
+  // Wait for the irq and check that it was triggered by `STATUS.tx_empty`.
+  check_irq_eq(kDifSpiHostIrqSpiEvent);
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(status.tx_empty);
+
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtTxEmpty, false));
+  IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
+                    1000);
+  return OK_STATUS();
+}
+
+static status_t tx_wm_event_irq(void) {
+  uint8_t data[kTxWatermark * sizeof(uint32_t) + 1];
+  memset(data, 0xA5, sizeof(data));
+
+  irq_fired = UINT32_MAX;
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtTxWm, true));
+
+  dif_spi_host_status_t status;
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(status.tx_water_mark);
+
+  // Issue a command and check that the `STATUS.txwm` goes low.
+  TRY(dif_spi_host_fifo_write(&spi_host, data, sizeof(data)));
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(status.tx_queue_depth > kTxWatermark, "%d", status.tx_queue_depth);
+  TRY_CHECK(!status.tx_water_mark);
+
+  TRY(dif_spi_host_write_command(&spi_host, sizeof(data),
+                                 kDifSpiHostWidthStandard,
+                                 kDifSpiHostDirectionTx, true));
+
+  // Wait for the event irq and check that it was triggered by `STATUS.txwm`.
+  check_irq_eq(kDifSpiHostIrqSpiEvent);
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(status.tx_water_mark);
+
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtTxWm, false));
+  IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
+                    1000);
+  return OK_STATUS();
+}
+
+static status_t dummy_read_from_flash(uint32_t address, uint32_t len) {
+  enum {
+    kAddressSize = 3,
+    kDummyBytes = 8,
+  };
+
+  // Issue a command and check that the `STATUS.rx_full` goes low.
+  uint8_t opcode = kSpiDeviceFlashOpReadNormal;
+  TRY(dif_spi_host_fifo_write(&spi_host, &opcode, sizeof(opcode)));
+  TRY(dif_spi_host_write_command(&spi_host, sizeof(opcode),
+                                 kDifSpiHostWidthStandard,
+                                 kDifSpiHostDirectionTx, false));
+  TRY(dif_spi_host_fifo_write(&spi_host, &address, kAddressSize));
+  TRY(dif_spi_host_write_command(&spi_host, kAddressSize,
+                                 kDifSpiHostWidthStandard,
+                                 kDifSpiHostDirectionTx, false));
+  TRY(dif_spi_host_write_command(&spi_host, kDummyBytes,
+                                 kDifSpiHostWidthStandard,
+                                 kDifSpiHostDirectionDummy, false));
+  TRY(dif_spi_host_write_command(&spi_host, len, kDifSpiHostWidthStandard,
+                                 kDifSpiHostDirectionRx, true));
+  return OK_STATUS();
+}
+
+static status_t rx_full_event_irq(void) {
+  enum { kRxFifoLen = SPI_HOST_PARAM_RX_DEPTH * sizeof(uint32_t) };
+  irq_fired = UINT32_MAX;
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtRxFull, true));
+
+  dif_spi_host_status_t status;
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(!status.rx_full);
+
+  TRY(dummy_read_from_flash(/*address=*/0x00, /*len=*/kRxFifoLen));
+
+  // Wait for the event irq and check that it was triggered by `STATUS.rx_full`.
+  check_irq_eq(kDifSpiHostIrqSpiEvent);
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(status.rx_full);
+
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtRxFull, false));
+  IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
+                    1000);
+  return spi_host_testutils_flush(&spi_host);
+}
+
+static status_t rx_wm_event_irq(void) {
+  enum { kRxWmLen = kRxWatermark * sizeof(uint32_t) };
+
+  irq_fired = UINT32_MAX;
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtRxWm, true));
+
+  dif_spi_host_status_t status;
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(!status.rx_water_mark);
+
+  TRY(dummy_read_from_flash(/*address=*/0x00, /*len=*/kRxWmLen));
+
+  check_irq_eq(kDifSpiHostIrqSpiEvent);
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(status.rx_water_mark);
+
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtRxWm, false));
+  IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
+                    1000);
   return OK_STATUS();
 }
 
@@ -163,8 +300,8 @@ static status_t test_init(void) {
       &spi_host, (dif_spi_host_config_t){
                      .spi_clock = 1000000,
                      .peripheral_clock_freq_hz = kClockFreqPeripheralHz,
-                     .rx_watermark = 128,
-                     .tx_watermark = 64,
+                     .rx_watermark = kTxWatermark,
+                     .tx_watermark = kRxWatermark,
                  }));
   TRY(dif_spi_host_output_set_enabled(&spi_host, true));
 
@@ -188,5 +325,9 @@ bool test_main(void) {
   test_result = OK_STATUS();
   EXECUTE_TEST(test_result, active_event_irq);
   EXECUTE_TEST(test_result, ready_event_irq);
+  EXECUTE_TEST(test_result, tx_empty_event_irq);
+  EXECUTE_TEST(test_result, tx_wm_event_irq);
+  EXECUTE_TEST(test_result, rx_full_event_irq);
+  EXECUTE_TEST(test_result, rx_wm_event_irq);
   return status_ok(test_result);
 }
