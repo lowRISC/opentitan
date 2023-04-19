@@ -318,7 +318,7 @@ import flash_ctrl_reg_pkg::*; (
   assign erase_done_o = erase_done_i | txn_err;
   assign error_o = txn_err;
 
-  // if no onigoing erase operation, immediately return
+  // if no ongoing erase operation, immediately return
   // if ongoing erase operation, wait for flash phy return
   logic erase_valid;
   assign erase_valid = pg_erase_o | bk_erase_o;

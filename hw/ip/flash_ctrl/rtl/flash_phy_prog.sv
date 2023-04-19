@@ -14,7 +14,7 @@
 //   Flash modules usually have a limit to how many times adjacent words can be programmed.
 //   If a programming beat is longer than a flash word, it would be best to compact those
 //   beats into multiples of the flash word size to improve performance and reduce
-//   unecessary programmings
+//   unnecessary programmings
 //
 // - Observe minimum block cipher sizes for scrambling / descrambling and ECC.
 //   Scrambling algorithms and ECC work on a specific chunk of data.  When these features
@@ -134,7 +134,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
     end
   end
 
-  // indication to upper layer prescence of error
+  // indication to upper layer presence of error
   assign intg_err_o = data_invalid_q;
 
   // if integrity failure is seen, fake communication with flash
@@ -339,7 +339,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   // integrity ECC calculation
   // This instance can technically be merged with the instance above, but is
   // kept separate for the sake of convenience
-  // The plain data ecc is calculated continously from packed data (which changes
+  // The plain data ecc is calculated continuously from packed data (which changes
   // from packed data to masked/scrambled data based on software configuration).
   // The actual plain data ECC is explicitly captured during this process when
   // it is required.

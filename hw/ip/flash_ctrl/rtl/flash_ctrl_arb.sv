@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Flash Controllber Arbiter for read
+// Flash Controller Arbiter for read
 //
 
 `include "prim_assert.sv"
 
-// flash read and erase functionality is shared betewen the hardware (life cycle
+// flash read and erase functionality is shared between the hardware (life cycle
 // and key manager) and software interfaces.
 //
 // This module arbitrates and muxes the controls between the two interfaces.
@@ -131,11 +131,11 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
 
     unique case (state_q)
       StReset: begin
-        // until the flash phy is done with its own iniitlization,
+        // until the flash phy is done with its own initialization,
         // no flash controller activity is allowed to commence
         if (!flash_phy_busy_i) begin
           // after flash is ready, the HW interface always takes
-          // precedence for flash control initiliazation
+          // precedence for flash control initialization
           state_d = StHw;
         end
       end
