@@ -61,7 +61,7 @@ jobs:
       set -x
       module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/bazelisk.sh test \
-        --test_env=OTT_RUN_TEST_OUR_DIR=$(Pipeline.Workspace)/run_logs/ \
+        --test_env=OTT_RUN_TEST_OUR_DIR=$(Pipeline.Workspace)/run_logs//$(Build.BuildNumber)/ \
         --run_under=//rules/scripts:run_test \
         --define DISABLE_VERILATOR_BUILD=true \
         --define bitstream=gcp_splice \
