@@ -309,7 +309,7 @@ OwnerIdentitySeed =
 // ASYM_KDF is a KDF function compliant to the Asymmetric Key
 // requirements defined in the Attestation specification document.
 OwnerIdentity_Private = ASYM_KDF(OwnerIdentitySeed)
-CLEAR_BEFORE_NEXT_BOOT_STAGE(OwnerRootSeed, OwnerIdentity_Private)
+CLEAR_BEFORE_NEXT_BOOT_STAGE(OwnerIdentitySeed, OwnerIdentity_Private)
 ```
 
 <table>
