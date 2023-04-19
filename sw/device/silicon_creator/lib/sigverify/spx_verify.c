@@ -46,12 +46,13 @@ rom_error_t sigverify_spx_verify(const sigverify_spx_signature_t *signature,
     uint32_t otp_val = sigverify_spx_verify_enabled(lc_state);
     // Note: `kSigverifySpxSuccess` is defined such that the following operation
     // produces `kErrorOk`.
-    error = (((otp_val << 29) ^ ((otp_val << 29) >> 5) ^
-              ((otp_val << 21) >> 10))) >>
-            21;
+    error = sigverify_spx_success_to_ok(otp_val);
   }
   if (error != kErrorOk) {
     return kErrorSigverifyBadSpxSignature;
   }
   return error;
 }
+
+// Extern declarations for the inline functions in the header.
+extern uint32_t sigverify_spx_success_to_ok(uint32_t result);
