@@ -391,7 +391,7 @@ module flash_ctrl
     .prog_fifo_wdata_o(prog_fifo_wdata),
     .prog_fifo_wready_i(prog_fifo_wready),
 
-    // flash phy initilization ongoing
+    // flash phy initialization ongoing
     .flash_phy_busy_i(flash_phy_busy),
 
     // clear fifos

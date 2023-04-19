@@ -267,8 +267,8 @@ module flash_phy_rd
   // Flash read stage determines if the transactions are accepted.
   //
   // The response fifo is written to when a transaction initiates a flash read OR when a match
-  // is hit. The information written is just the allocated buffer that would have satisifed the
-  // transaction, as well as bits that indiate which part of the buffer is the right return data
+  // is hit. The information written is just the allocated buffer that would have satisfied the
+  // transaction, as well as bits that indicate which part of the buffer is the right return data
   //
   // This allows a hit transaction to match in-order, and unblock later transactions to begin
   // reading from the flash primitive
@@ -594,7 +594,7 @@ module flash_phy_rd
   // if no de-scramble required, return data on read complete
   // if data is all empty (erased), also return data on read complete
   // if descramble is required, return data when descrambler finishes
-  // if descramble is not required, but there are transctions ahead, return from fifo when ready
+  // if descramble is not required, but there are transactions ahead, return from fifo when ready
   assign data_valid = forward | ~hint_forward & fifo_data_ready;
 
 
@@ -728,7 +728,7 @@ module flash_phy_rd
   // data_hazard and wip should be mutually exclusive
   `ASSERT(ExclusiveProgHazard_A, (data_hazard & buf_wip) == 0)
 
-  // unless the pipeline is idle, we should not have non-read trasnactions
+  // unless the pipeline is idle, we should not have non-read transactions
   `ASSERT(IdleCheck_A, !idle_o |-> {prog_i,pg_erase_i,bk_erase_i} == '0)
 
   // Whenever forward is true, hint_descram should always be 0
