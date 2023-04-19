@@ -8,7 +8,7 @@
 
 #include "otp_ctrl_regs.h"
 
-static uint32_t sigverify_spx_verify_enabled(lifecycle_state_t lc_state) {
+uint32_t sigverify_spx_verify_enabled(lifecycle_state_t lc_state) {
   switch (launder32(lc_state)) {
     case kLcStateTest:
       HARDENED_CHECK_EQ(lc_state, kLcStateTest);
