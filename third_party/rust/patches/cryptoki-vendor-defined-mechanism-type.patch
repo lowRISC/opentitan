@@ -1,0 +1,19 @@
+diff --git a/cryptoki/src/mechanism/mod.rs b/cryptoki/src/mechanism/mod.rs
+index f00d0ef..b4e346e 100644
+--- a/cryptoki/src/mechanism/mod.rs
++++ b/cryptoki/src/mechanism/mod.rs
+@@ -637,8 +637,12 @@ impl TryFrom<CK_MECHANISM_TYPE> for MechanismType {
+             CKM_SHA384_RSA_PKCS => Ok(MechanismType::SHA384_RSA_PKCS),
+             CKM_SHA512_RSA_PKCS => Ok(MechanismType::SHA512_RSA_PKCS),
+             other => {
+-                error!("Mechanism type {} is not supported.", other);
+-                Err(Error::NotSupported)
++                if mechanism_type >= CKM_VENDOR_DEFINED {
++                    Ok(MechanismType { val: other })
++                } else {
++                    error!("Mechanism type {} is not supported.", other);
++                    Err(Error::NotSupported)
++                }
+             }
+         }
+     }

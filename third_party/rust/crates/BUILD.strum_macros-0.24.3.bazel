@@ -6,16 +6,16 @@
 #     bazel run //third_party/rust:crate_index
 ###############################################################################
 
-load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
 
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # Apache-2.0 OR MIT
+#     "TODO",  # MIT
 # ])
 
-rust_library(
-    name = "pkcs8",
+rust_proc_macro(
+    name = "strum_macros",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -27,30 +27,24 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "alloc",
-        "pem",
-        "pem-rfc7468",
-        "pkcs1",
-        "std",
-        "zeroize",
-    ],
     crate_root = "src/lib.rs",
     edition = "2018",
+    proc_macro_deps = [
+        "@crate_index__rustversion-1.0.12//:rustversion",
+    ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=pkcs8",
+        "crate-name=strum_macros",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.7.6",
+    version = "0.24.3",
     deps = [
-        "@crate_index__der-0.4.5//:der",
-        "@crate_index__pem-rfc7468-0.2.4//:pem_rfc7468",
-        "@crate_index__pkcs1-0.2.4//:pkcs1",
-        "@crate_index__spki-0.4.1//:spki",
-        "@crate_index__zeroize-1.4.3//:zeroize",
+        "@crate_index__heck-0.4.1//:heck",
+        "@crate_index__proc-macro2-1.0.56//:proc_macro2",
+        "@crate_index__quote-1.0.26//:quote",
+        "@crate_index__syn-1.0.107//:syn",
     ],
 )

@@ -12,11 +12,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # Apache-2.0 OR MIT
+#     "TODO",  # Apache-2.0 WITH LLVM-exception
 # ])
 
 rust_library(
-    name = "indexmap",
+    name = "target_lexicon",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,33 +29,29 @@ rust_library(
         ],
     ),
     crate_features = [
-        "serde",
-        "std",
+        "default",
     ],
     crate_root = "src/lib.rs",
-    edition = "2021",
+    edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=indexmap",
+        "crate-name=target-lexicon",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.9.2",
+    version = "0.12.6",
     deps = [
-        "@crate_index__hashbrown-0.12.3//:hashbrown",
-        "@crate_index__indexmap-1.9.2//:build_script_build",
-        "@crate_index__serde-1.0.152//:serde",
+        "@crate_index__target-lexicon-0.12.6//:build_script_build",
     ],
 )
 
 cargo_build_script(
-    name = "indexmap_build_script",
+    name = "target-lexicon_build_script",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "serde",
-        "std",
+        "default",
     ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
@@ -69,26 +65,23 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    edition = "2021",
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=indexmap",
+        "crate-name=target-lexicon",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.9.2",
+    version = "0.12.6",
     visibility = ["//visibility:private"],
-    deps = [
-        "@crate_index__autocfg-1.1.0//:autocfg",
-    ],
 )
 
 alias(
     name = "build_script_build",
-    actual = "indexmap_build_script",
+    actual = "target-lexicon_build_script",
     tags = ["manual"],
 )

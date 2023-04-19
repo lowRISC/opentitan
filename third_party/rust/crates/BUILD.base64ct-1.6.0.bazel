@@ -27,8 +27,12 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "alloc",
+        "std",
+    ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
@@ -37,5 +41,5 @@ rust_library(
         "noclippy",
         "norustfmt",
     ],
-    version = "1.1.1",
+    version = "1.6.0",
 )

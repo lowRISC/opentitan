@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT OR Apache-2.0
+#     "TODO",  # Apache-2.0 OR MIT
 # ])
 
 rust_library(
-    name = "inventory",
+    name = "pem_rfc7468",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -27,19 +27,21 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_root = "src/lib.rs",
-    edition = "2018",
-    proc_macro_deps = [
-        "@crate_index__ctor-0.1.26//:ctor",
-        "@crate_index__ghost-0.1.7//:ghost",
+    crate_features = [
+        "alloc",
     ],
+    crate_root = "src/lib.rs",
+    edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=inventory",
+        "crate-name=pem-rfc7468",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.2.3",
+    version = "0.6.0",
+    deps = [
+        "@crate_index__base64ct-1.6.0//:base64ct",
+    ],
 )

@@ -30,8 +30,10 @@ rust_library(
     crate_features = [
         "alloc",
         "block-buffer",
+        "const-oid",
         "core-api",
         "default",
+        "oid",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -47,6 +49,7 @@ rust_library(
     version = "0.10.6",
     deps = [
         "@crate_index__block-buffer-0.10.3//:block_buffer",
+        "@crate_index__const-oid-0.9.2//:const_oid",
         "@crate_index__crypto-common-0.1.6//:crypto_common",
     ],
 )
