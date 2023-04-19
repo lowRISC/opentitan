@@ -105,7 +105,7 @@ module tb;
     .clk_i (clk),
     .rst_ni(rst_n),
 
-    // TODO: connect this to a different clock
+    // ICEBOX (#18007): connect this to a different clock
     .clk_kmac_i (clk),
     .rst_kmac_ni(rst_n),
 
