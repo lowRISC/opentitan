@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT OR Apache-2.0
+#     "TODO",  # CC0-1.0 OR MIT-0
 # ])
 
 rust_library(
-    name = "cc",
+    name = "dunce",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -27,22 +27,15 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "jobserver",
-        "parallel",
-    ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=cc",
+        "crate-name=dunce",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.0.79",
-    deps = [
-        "@crate_index__jobserver-0.1.26//:jobserver",
-    ],
+    version = "1.0.3",
 )

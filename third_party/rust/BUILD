@@ -30,6 +30,19 @@ crates_vendor(
                 )
             """,
         )],
+        "pqcrypto-internals": [crate.annotation(
+            additive_build_file_content = """
+                filegroup(name="include", srcs=glob(["include/*", "include/**"]))
+            """,
+        )],
+        "pqcrypto-sphincsplus": [crate.annotation(
+            build_script_data = [
+                "@crate_index__pqcrypto-internals-0.2.4//:include",
+            ],
+            build_script_env = {
+                "DEP_PQCRYPTO_INTERNALS_INCLUDEPATH": "../crate_index__pqcrypto-internals-0.2.4/include",
+            },
+        )],
     },
     cargo_lockfile = "//third_party/rust:Cargo.lock",
     manifests = ["//third_party/rust:Cargo.toml"],

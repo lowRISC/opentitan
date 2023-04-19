@@ -248,6 +248,18 @@ alias(
 )
 
 alias(
+    name = "pqcrypto-sphincsplus",
+    actual = "@crate_index__pqcrypto-sphincsplus-0.6.4//:pqcrypto_sphincsplus",
+    tags = ["manual"],
+)
+
+alias(
+    name = "pqcrypto-traits",
+    actual = "@crate_index__pqcrypto-traits-0.3.4//:pqcrypto_traits",
+    tags = ["manual"],
+)
+
+alias(
     name = "proc-macro-error",
     actual = "@crate_index__proc-macro-error-1.0.4//:proc_macro_error",
     tags = ["manual"],

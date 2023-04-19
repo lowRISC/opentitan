@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "cc",
+    name = "pqcrypto_traits",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,21 +28,18 @@ rust_library(
         ],
     ),
     crate_features = [
-        "jobserver",
-        "parallel",
+        "default",
+        "std",
     ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=cc",
+        "crate-name=pqcrypto-traits",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.0.79",
-    deps = [
-        "@crate_index__jobserver-0.1.26//:jobserver",
-    ],
+    version = "0.3.4",
 )
