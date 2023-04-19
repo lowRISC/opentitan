@@ -8,6 +8,9 @@
 //   .lc_owner_seed_sw_rw_en_i
 //   .lc_iso_part_sw_rd_en_i
 //   .lc_iso_part_sw_wr_en_i
+// The sequence randomizes hw_info_cfg_override.
+// Therefore, sw_info_access needs to sync with hw_info_cfg
+// to avoid unexpected fatal error
 class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
   `uvm_object_utils(flash_ctrl_info_part_access_vseq)
   `uvm_object_new
@@ -26,6 +29,11 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
     ral.hw_info_cfg_override.scramble_dis.set(cfg.ovrd_scr_dis);
     ral.hw_info_cfg_override.ecc_dis.set(cfg.ovrd_ecc_dis);
     csr_update(ral.hw_info_cfg_override);
+    `uvm_info("hw_info_cfg_update", $sformatf("ovrd_scr_dis: %0d  ovrd_ecc_dis:%0d",
+                                              cfg.ovrd_scr_dis, cfg.ovrd_ecc_dis),
+              UVM_MEDIUM)
+    // Update secret partition after hw_info_cfg update
+    update_secret_partition();
   endtask // hw_info_cfg_update
 
   virtual task body();
@@ -83,7 +91,7 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
   task do_flash_op_info_part(flash_sec_part_e part, flash_op_e op, bit is_valid);
     data_q_t flash_op_data;
     flash_op_t flash_op;
-    bit scr_en;
+    bit scr_en, ecc_en;
 
     flash_op.op = op;
     flash_op.erase_type = FlashErasePage;
@@ -107,15 +115,22 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
       default: `uvm_error(`gfn, $sformatf("%s partition is not supported in this task",
                                           part.name))
     endcase
-
+    flash_op.otf_addr = flash_op.addr[OTFBankId-1:0];
     flash_op_data = '{};
-    `uvm_info(`gfn, $sformatf("iter%0d:info:%s is_valid:%0b op:%p",
-                              round, part.name, is_valid, flash_op), UVM_MEDIUM)
     if (part == FlashIsolPart) begin
       scr_en = 1;
+      ecc_en = 1;
     end else begin
-      scr_en = (flash_ctrl_pkg::CfgAllowRead.scramble_en == MuBi4True);
+      scr_en = (prim_mubi_pkg::mubi4_and_hi(flash_ctrl_pkg::CfgAllowRead.scramble_en,
+                                           mubi4_t'(~cfg.ovrd_scr_dis)) == MuBi4True);
+      ecc_en = (prim_mubi_pkg::mubi4_and_hi(flash_ctrl_pkg::CfgAllowRead.ecc_en,
+                                           mubi4_t'(~cfg.ovrd_ecc_dis)) == MuBi4True);
     end
+
+    `uvm_info(`gfn, $sformatf("iter%0d:info:%s is_valid:%0b op:%p scr:%0b ecc:%0b",
+                              round, part.name, is_valid, flash_op, scr_en, ecc_en),
+              UVM_MEDIUM)
+
     case (op)
       FlashOpErase: begin
         if (!is_valid) set_otf_exp_alert("recov_err");
@@ -133,7 +148,7 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
         end
         // This task issues flash_ctrl.control write 32 times
         cfg.flash_mem_bkdr_init(flash_op.partition, FlashMemInitSet);
-        flash_ctrl_write_extra(flash_op, flash_op_data, is_valid, scr_en);
+        flash_ctrl_write_extra(flash_op, flash_op_data, is_valid, scr_en, ecc_en);
       end
       FlashOpRead: begin
         if (!is_valid) set_otf_exp_alert("recov_err");
@@ -147,7 +162,7 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
         flash_ctrl_start_op(flash_op);
         flash_ctrl_read(flash_op.num_words, flash_op_data, 1);
         wait_flash_op_done();
-        cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data, is_valid, scr_en);
+        cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data, is_valid, scr_en, ecc_en);
       end
       default: `uvm_error(`gfn, $sformatf("%s op is not supported in this task",
                                           op.name))
@@ -157,8 +172,17 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
   task init_sec_info_part();
     flash_bank_mp_info_page_cfg_t info_regions = '{default: MuBi4True};
     for (int i = 1; i < 4; i++) begin
-      info_regions.scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
-      info_regions.ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
+      if (i < 3) begin
+         info_regions.scramble_en = prim_mubi_pkg::mubi4_and_hi(
+                                    flash_ctrl_pkg::CfgAllowRead.scramble_en,
+                                    mubi4_t'(~cfg.ovrd_scr_dis));
+         info_regions.ecc_en = prim_mubi_pkg::mubi4_and_hi(
+                               flash_ctrl_pkg::CfgAllowRead.ecc_en,
+                               mubi4_t'(~cfg.ovrd_ecc_dis));
+      end else begin
+        info_regions.scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
+        info_regions.ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
+      end
       flash_ctrl_mp_info_page_cfg(0, 0, i, info_regions);
     end
   endtask // init_info_part

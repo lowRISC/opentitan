@@ -254,7 +254,7 @@ import flash_ctrl_reg_pkg::*; (
     hw_page_cfg = hw_page_cfg_pre;
     hw_page_cfg.scramble_en = prim_mubi_pkg::mubi4_and_hi(hw_page_cfg_pre.scramble_en,
                                                           mubi4_t'(~hw_info_scramble_dis_i));
-    hw_page_cfg.ecc_en = prim_mubi_pkg::mubi4_and_hi(hw_page_cfg_pre.scramble_en,
+    hw_page_cfg.ecc_en = prim_mubi_pkg::mubi4_and_hi(hw_page_cfg_pre.ecc_en,
                                                      mubi4_t'(~hw_info_ecc_dis_i));
   end
 

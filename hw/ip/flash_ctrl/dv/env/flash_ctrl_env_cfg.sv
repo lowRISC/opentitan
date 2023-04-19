@@ -668,10 +668,13 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   virtual function void flash_mem_bkdr_read_check(flash_op_t flash_op,
                                                   const ref data_q_t exp_data,
                                                   input bit check_match = 1,
-                                                  bit scr_en = 0);
+                                                  bit scr_en = 0,
+                                                  int ecc_en = 2);
     data_q_t data;
     flash_otf_item item;
 
+    // Default value of ecc_en in this function should be the same as scr_en
+    if (ecc_en == 2) ecc_en = scr_en;
     // If scramble is enabled, read data and descramble before return.
     if (scr_en) begin
       `uvm_create_obj(flash_otf_item, item)
@@ -680,7 +683,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       flash_op.otf_addr[BusAddrByteW-2:OTFHostId] = 'h0;
 
       item.region.scramble_en = MuBi4True;
-      item.region.ecc_en = MuBi4True;
+      item.region.ecc_en = (ecc_en)? MuBi4True : MuBi4False;
       item.mem_addr = flash_op.otf_addr>>3;
       item.descramble(otp_addr_key, otp_data_key);
       foreach (item.dq[i]) data[i] = item.dq[i];
