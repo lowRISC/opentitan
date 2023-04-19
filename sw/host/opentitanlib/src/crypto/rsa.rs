@@ -5,10 +5,10 @@
 use anyhow::{anyhow, bail, Result};
 use num_bigint_dig::{traits::ModInverse, BigInt, BigUint, Sign::Minus};
 use rand::rngs::OsRng;
-use rsa::{
-    pkcs8::FromPrivateKey, pkcs8::FromPublicKey, pkcs8::ToPrivateKey, pkcs8::ToPublicKey,
-    PublicKey, PublicKeyParts,
-};
+use rsa::pkcs1::{DecodeRsaPublicKey, EncodeRsaPublicKey};
+use rsa::pkcs8::{DecodePrivateKey, EncodePrivateKey};
+use rsa::{pkcs1v15::Pkcs1v15Sign, PublicKey, PublicKeyParts};
+use sha2::Sha256;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::ops::Deref;
@@ -58,7 +58,7 @@ pub enum Error {
 }
 
 /// Ensure the components of `key` have the correct bit length.
-fn validate_key(key: impl rsa::PublicKeyParts) -> Result<()> {
+fn validate_key(key: &impl rsa::PublicKeyParts) -> Result<()> {
     if key.n().bits() != MODULUS_BIT_LEN || key.e() != &BigUint::from(65537u32) {
         bail!(Error::InvalidPublicKey)
     } else {
@@ -89,7 +89,7 @@ impl RsaPublicKey {
     /// Construct a new public key from a PKCS1 encoded DER file.
     pub fn from_pkcs1_der_file<P: Into<PathBuf>>(der_file: P) -> Result<RsaPublicKey> {
         let der_file = der_file.into();
-        match rsa::RsaPublicKey::read_public_key_der_file(&der_file) {
+        match rsa::RsaPublicKey::read_pkcs1_der_file(&der_file) {
             Ok(key) => {
                 validate_key(&key)?;
                 Ok(Self { key })
@@ -105,7 +105,7 @@ impl RsaPublicKey {
     pub fn to_pkcs1_der_file<P: Into<PathBuf>>(&self, der_file: P) -> Result<()> {
         let der_file = der_file.into();
         self.key
-            .write_public_key_der_file(&der_file)
+            .write_pkcs1_der_file(&der_file)
             .map_err(|_| Error::WriteFailed(der_file))?;
         Ok(())
     }
@@ -156,7 +156,7 @@ impl RsaPublicKey {
     pub fn verify(&self, digest: &Sha256Digest, signature: &Signature) -> Result<()> {
         self.key
             .verify(
-                rsa::PaddingScheme::new_pkcs1v15_sign(Some(rsa::Hash::SHA2_256)),
+                Pkcs1v15Sign::new::<Sha256>(),
                 digest.to_be_bytes().as_slice(),
                 signature.to_be_bytes().as_slice(),
             )
@@ -210,10 +210,7 @@ impl RsaPrivateKey {
     pub fn sign(&self, digest: &Sha256Digest) -> Result<Signature> {
         let signature = self
             .key
-            .sign(
-                rsa::PaddingScheme::new_pkcs1v15_sign(Some(rsa::Hash::SHA2_256)),
-                &digest.to_be_bytes(),
-            )
+            .sign(Pkcs1v15Sign::new::<Sha256>(), &digest.to_be_bytes())
             .map_err(|_| Error::SignFailed)?;
         Ok(Signature::from_be_bytes(signature)?)
     }
