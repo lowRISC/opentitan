@@ -44,6 +44,19 @@ rom_error_t sigverify_spx_verify(const sigverify_spx_signature_t *signature,
                                  lifecycle_state_t lc_state,
                                  uint32_t *flash_exec);
 
+/**
+ * Transforms `kSigverifySpxSuccess` into `kErrorOk`.
+ *
+ * Callers should transform the result to a suitable error value if it is not
+ * `kErrorOk` for ease of debugging.
+ *
+ * @param v A value.
+ * @return `kErrorOk` if `v` is `kSigverifySpxSuccess`.
+ */
+inline uint32_t sigverify_spx_success_to_ok(uint32_t v) {
+  return (((v << 29) ^ ((v << 29) >> 5) ^ ((v << 21) >> 10))) >> 21;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
