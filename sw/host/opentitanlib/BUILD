@@ -185,7 +185,7 @@ rust_library(
         ":e2e_command",
         ":pinmux_config",
         ":spi_passthru",
-        "@hyperdebug_firmware//file",
+        "@hyperdebug_firmware//:hyperdebug/ec.bin",
     ],
     crate_features = [
         "include_hyperdebug_firmware",
@@ -203,7 +203,7 @@ rust_library(
         "gpio": "$(location :gpio)",
         "pinmux_config": "$(location :pinmux_config)",
         "spi_passthru": "$(location :spi_passthru)",
-        "hyperdebug_firmware": "$(location @hyperdebug_firmware//file)",
+        "hyperdebug_firmware": "$(location @hyperdebug_firmware//:hyperdebug/ec.bin)",
     },
     deps = [
         "//sw/host/opentitanlib/bindgen",
@@ -256,7 +256,6 @@ rust_test(
         ":e2e_command",
         ":gpio",
         ":pinmux_config",
-        "@hyperdebug_firmware//file",
         "src/bootstrap/simple.bin",
         "src/spiflash/SFDP_MX66L1G.bin",
     ],
