@@ -1,0 +1,57 @@
+diff --git a/src/target/riscv/riscv-013.c b/src/target/riscv/riscv-013.c
+index 4e6c8dc36..63c01715d 100644
+--- a/src/target/riscv/riscv-013.c
++++ b/src/target/riscv/riscv-013.c
+@@ -538,6 +538,28 @@ static dmi_status_t dmi_scan(struct target *target, uint32_t *address_in,
+ 	return buf_get_u32(in, DTM_DMI_OP_OFFSET, DTM_DMI_OP_LENGTH);
+ }
+ 
++/**
++ * The OpenTitan rv_dm can get stuck in certain circumstances. This can easily
++ * be detected because tdo is stuck at one so reading DTMCS returns all ones,
++ * a clearly invalid value. Also the rv_dm never sends back an operation status
++ * other than 0 (success) or 3 (busy). When this happens, continue reading until it gets
++ * unstuck and performs a hard dmi reset.
++ */
++static int opentitan_recover(struct target *target)
++{
++	/* wait until the dm is unstuck */
++	const int kNumTries = 100;
++	for(int try = 0; try < kNumTries; try++) {
++		uint32_t dtmcontrol = dtmcontrol_scan(target, DTM_DTMCS_DMIRESET);
++		if (dtmcontrol != 0xffffffff) {
++			LOG_ERROR("OpenTitan rv_dm unstuck after %d resets", try + 1);
++			return ERROR_OK;
++		}
++	}
++	LOG_ERROR("OpenTitan rv_dm still stuck after %d resets", kNumTries);
++	return ERROR_FAIL;
++}
++
+ /**
+  * @param target
+  * @param data_in  The data we received from the target.
+@@ -598,7 +620,10 @@ static int dmi_op_timeout(struct target *target, uint32_t *data_in,
+ 			break;
+ 		} else {
+ 			LOG_ERROR("failed %s at 0x%x, status=%d", op_name, address, status);
+-			return ERROR_FAIL;
++			int err = opentitan_recover(target);
++			if (err != ERROR_OK) {
++				return err;
++			}
+ 		}
+ 		if (time(NULL) - start > timeout_sec)
+ 			return ERROR_TIMEOUT_REACHED;
+@@ -630,7 +655,10 @@ static int dmi_op_timeout(struct target *target, uint32_t *data_in,
+ 					LOG_ERROR("Failed %s (NOP) at 0x%x; status=%d", op_name, address,
+ 							status);
+ 				}
+-				return ERROR_FAIL;
++				int err = opentitan_recover(target);
++				if (err != ERROR_OK) {
++					return err;
++				}
+ 			}
+ 			if (time(NULL) - start > timeout_sec)
+ 				return ERROR_TIMEOUT_REACHED;
