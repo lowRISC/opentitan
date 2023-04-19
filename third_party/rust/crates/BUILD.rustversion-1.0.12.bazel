@@ -6,6 +6,7 @@
 #     bazel run //third_party/rust:crate_index
 ###############################################################################
 
+load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
 load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
 
 package(default_visibility = ["//visibility:public"])
@@ -15,7 +16,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_proc_macro(
-    name = "typetag_impl",
+    name = "rustversion",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -32,15 +33,49 @@ rust_proc_macro(
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=typetag-impl",
+        "crate-name=rustversion",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.1.8",
+    version = "1.0.12",
     deps = [
-        "@crate_index__proc-macro2-1.0.56//:proc_macro2",
-        "@crate_index__quote-1.0.26//:quote",
-        "@crate_index__syn-1.0.107//:syn",
+        "@crate_index__rustversion-1.0.12//:build_script_build",
     ],
+)
+
+cargo_build_script(
+    name = "rustversion_build_script",
+    srcs = glob(["**/*.rs"]),
+    crate_name = "build_script_build",
+    crate_root = "build/build.rs",
+    data = glob(
+        include = ["**"],
+        exclude = [
+            "**/* *",
+            "BUILD",
+            "BUILD.bazel",
+            "WORKSPACE",
+            "WORKSPACE.bazel",
+        ],
+    ),
+    edition = "2018",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-bazel",
+        "crate-name=rustversion",
+        "manual",
+        "noclippy",
+        "norustfmt",
+    ],
+    version = "1.0.12",
+    visibility = ["//visibility:private"],
+)
+
+alias(
+    name = "build_script_build",
+    actual = "rustversion_build_script",
+    tags = ["manual"],
 )

@@ -12,11 +12,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT/Apache-2.0
+#     "TODO",  # Apache-2.0
 # ])
 
 rust_library(
-    name = "num_bigint_dig",
+    name = "cryptoki_sys",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,55 +28,26 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "i128",
-        "prime",
-        "rand",
-        "serde",
-        "std",
-        "u64_digit",
-        "zeroize",
-    ],
     crate_root = "src/lib.rs",
-    edition = "2015",
+    edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=num-bigint-dig",
+        "crate-name=cryptoki-sys",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.7.0",
+    version = "0.1.4",
     deps = [
-        "@crate_index__byteorder-1.4.3//:byteorder",
-        "@crate_index__lazy_static-1.4.0//:lazy_static",
-        "@crate_index__libm-0.2.6//:libm",
-        "@crate_index__num-bigint-dig-0.7.0//:build_script_build",
-        "@crate_index__num-integer-0.1.45//:num_integer",
-        "@crate_index__num-iter-0.1.43//:num_iter",
-        "@crate_index__num-traits-0.2.15//:num_traits",
-        "@crate_index__rand-0.8.5//:rand",
-        "@crate_index__serde-1.0.152//:serde",
-        "@crate_index__smallvec-1.10.0//:smallvec",
-        "@crate_index__zeroize-1.4.3//:zeroize",
+        "@crate_index__cryptoki-sys-0.1.4//:build_script_build",
+        "@crate_index__libloading-0.7.4//:libloading",
     ],
 )
 
 cargo_build_script(
-    name = "num-bigint-dig_build_script",
+    name = "cryptoki-sys_build_script",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-        "default",
-        "i128",
-        "prime",
-        "rand",
-        "serde",
-        "std",
-        "u64_digit",
-        "zeroize",
-    ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -89,26 +60,36 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    edition = "2015",
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=num-bigint-dig",
+        "crate-name=cryptoki-sys",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.7.0",
+    version = "0.1.4",
     visibility = ["//visibility:private"],
     deps = [
-        "@crate_index__autocfg-0.1.8//:autocfg",
+        "@crate_index__target-lexicon-0.12.6//:target_lexicon",
     ],
 )
 
 alias(
     name = "build_script_build",
-    actual = "num-bigint-dig_build_script",
+    actual = "cryptoki-sys_build_script",
     tags = ["manual"],
+)
+
+# Additive BUILD file content
+
+filegroup(
+    name = "binding_srcs",
+    srcs = [
+        "src/bindings/x86_64-unknown-linux-gnu.rs",
+        "src/lib.rs",
+    ],
 )

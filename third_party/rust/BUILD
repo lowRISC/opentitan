@@ -15,6 +15,21 @@ crates_vendor(
             patch_args = ["-p1"],
             patches = ["@//third_party/rust/patches:mdbook-landing-page-links.patch"],
         )],
+        "cryptoki": [crate.annotation(
+            patch_args = ["-p2"],
+            patches = ["@//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch"],
+        )],
+        "cryptoki-sys": [crate.annotation(
+            additive_build_file_content = """
+                filegroup(
+                    name = "binding_srcs",
+                    srcs = [
+                        "src/lib.rs",
+                        "src/bindings/x86_64-unknown-linux-gnu.rs",
+                    ],
+                )
+            """,
+        )],
     },
     cargo_lockfile = "//third_party/rust:Cargo.lock",
     manifests = ["//third_party/rust:Cargo.toml"],

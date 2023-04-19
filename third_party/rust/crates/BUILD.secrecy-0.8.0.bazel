@@ -6,7 +6,7 @@
 #     bazel run //third_party/rust:crate_index
 ###############################################################################
 
-load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -14,8 +14,8 @@ package(default_visibility = ["//visibility:public"])
 #     "TODO",  # Apache-2.0 OR MIT
 # ])
 
-rust_proc_macro(
-    name = "ctor",
+rust_library(
+    name = "secrecy",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -27,19 +27,22 @@ rust_proc_macro(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "alloc",
+        "default",
+    ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=ctor",
+        "crate-name=secrecy",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.1.26",
+    version = "0.8.0",
     deps = [
-        "@crate_index__quote-1.0.26//:quote",
-        "@crate_index__syn-1.0.107//:syn",
+        "@crate_index__zeroize-1.6.0//:zeroize",
     ],
 )

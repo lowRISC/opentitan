@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "typetag",
+    name = "inventory",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,23 +28,18 @@ rust_library(
         ],
     ),
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     proc_macro_deps = [
-        "@crate_index__typetag-impl-0.1.8//:typetag_impl",
+        "@crate_index__ctor-0.2.0//:ctor",
+        "@crate_index__ghost-0.1.7//:ghost",
     ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=typetag",
+        "crate-name=inventory",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.1.8",
-    deps = [
-        "@crate_index__erased-serde-0.3.24//:erased_serde",
-        "@crate_index__inventory-0.2.3//:inventory",
-        "@crate_index__once_cell-1.17.1//:once_cell",
-        "@crate_index__serde-1.0.152//:serde",
-    ],
+    version = "0.3.5",
 )

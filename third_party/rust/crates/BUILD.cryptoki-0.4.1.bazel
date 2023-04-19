@@ -6,16 +6,16 @@
 #     bazel run //third_party/rust:crate_index
 ###############################################################################
 
-load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # Apache-2.0 OR MIT
+#     "TODO",  # Apache-2.0
 # ])
 
-rust_proc_macro(
-    name = "zeroize_derive",
+rust_library(
+    name = "cryptoki",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,19 +29,23 @@ rust_proc_macro(
     ),
     crate_root = "src/lib.rs",
     edition = "2018",
+    proc_macro_deps = [
+        "@crate_index__derivative-2.2.0//:derivative",
+        "@crate_index__paste-1.0.12//:paste",
+    ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=zeroize_derive",
+        "crate-name=cryptoki",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.3.3",
+    version = "0.4.1",
     deps = [
-        "@crate_index__proc-macro2-1.0.56//:proc_macro2",
-        "@crate_index__quote-1.0.26//:quote",
-        "@crate_index__syn-1.0.107//:syn",
-        "@crate_index__synstructure-0.12.6//:synstructure",
+        "@crate_index__bitflags-1.3.2//:bitflags",
+        "@crate_index__cryptoki-sys-0.1.4//:cryptoki_sys",
+        "@crate_index__libloading-0.7.4//:libloading",
+        "@crate_index__log-0.4.17//:log",
     ],
 )
