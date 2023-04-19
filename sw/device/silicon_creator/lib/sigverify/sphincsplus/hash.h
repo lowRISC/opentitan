@@ -34,7 +34,7 @@ rom_error_t spx_hash_initialize(spx_ctx_t *ctx);
 /**
  * Hash the input message and derive the leaf index.
  *
- * Computes H(R, pk, m), where R is the random number included in the SPHINCS+
+ * Computes H(R, pk, msg), where R is the random number included in the SPHINCS+
  * signature and H is the underlying hash function (Hmsg in the SPHINCS+
  * paper). Outputs the message digest and the index of the leaf. The index is
  * split in the tree index and the leaf index, for convenient copying to an
@@ -42,8 +42,12 @@ rom_error_t spx_hash_initialize(spx_ctx_t *ctx);
  *
  * @param R Per-signature random number.
  * @param pk Public key.
- * @param m Input message.
- * @param mlen Input message length.
+ * @param msg_prefix_1 Optional message prefix.
+ * @param msg_prefix_1_len Length of the first prefix.
+ * @param msg_prefix_2 Optional message prefix.
+ * @param msg_prefix_2_len Length of the second prefix.
+ * @param msg Input message.
+ * @param msg_len Input message length.
  * @param[out] digest Output buffer for message digest.
  * @param[out] tree Tree index.
  * @param[out] leaf_idx Leaf index.
@@ -51,8 +55,11 @@ rom_error_t spx_hash_initialize(spx_ctx_t *ctx);
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t spx_hash_message(const uint8_t *R, const uint8_t *pk,
-                             const uint8_t *m, unsigned long long mlen,
-                             uint8_t *digest, uint64_t *tree,
+                             const uint8_t *msg_prefix_1,
+                             size_t msg_prefix_1_len,
+                             const uint8_t *msg_prefix_2,
+                             size_t msg_prefix_2_len, const uint8_t *msg,
+                             size_t msg_len, uint8_t *digest, uint64_t *tree,
                              uint32_t *leaf_idx);
 
 #ifdef __cplusplus

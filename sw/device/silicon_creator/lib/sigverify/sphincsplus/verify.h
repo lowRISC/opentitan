@@ -41,16 +41,22 @@ enum {
  * key; the final comparison is left to the caller.
  *
  * @param sig Input signature (`kSpxVerifySigBytes` bytes long).
- * @param m Input message.
- * @param mlen Length of message (bytes).
+ * @param msg_prefix_1 Optional message prefix.
+ * @param msg_prefix_1_len Length of the first prefix.
+ * @param msg_prefix_2 Optional message prefix.
+ * @param msg_prefix_2_len Length of the second prefix.
+ * @param msg Input message.
+ * @param msg_len Legth of message (bytes).
  * @param pk Public key (`kSpxVerifyPkBytes` bytes long).
  * @param[out] root Buffer for computed tree root (`kSpxVerifyRootNumWords`
  *                  words long).
  * @return Error code indicating if the operation succeeded.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t spx_verify(const uint8_t *sig, const uint8_t *m, size_t mlen,
-                       const uint8_t *pk, uint32_t *root);
+rom_error_t spx_verify(const uint8_t *sig, const uint8_t *msg_prefix_1,
+                       size_t msg_prefix_1_len, const uint8_t *msg_prefix_2,
+                       size_t msg_prefix_2_len, const uint8_t *msg,
+                       size_t msg_len, const uint8_t *pk, uint32_t *root);
 
 /**
  * Extract the public key root.
