@@ -256,6 +256,57 @@ TEST_F(HintableClockTest, GetEnabledError) {
       &clkmgr_, CLKMGR_PARAM_NUM_HINTABLE_CLOCKS, &state));
 }
 
+class ExternalClkTest : public ClkMgrTest {};
+
+TEST_F(ExternalClkTest, EnableError) {
+  EXPECT_DIF_BADARG(dif_clkmgr_external_clock_set_enabled(nullptr, true));
+  EXPECT_DIF_BADARG(dif_clkmgr_external_clock_set_enabled(nullptr, false));
+}
+
+TEST_F(ExternalClkTest, DisableError) {
+  EXPECT_DIF_BADARG(dif_clkmgr_external_clock_set_disabled(nullptr));
+}
+
+TEST_F(ExternalClkTest, Enable) {
+#define EXTCLK_CTRL_REG_VALUE(enable_, low_speed_)                     \
+  {{                                                                   \
+       .offset = CLKMGR_EXTCLK_CTRL_SEL_OFFSET,                        \
+       .value = enable_ ? kMultiBitBool4True : kMultiBitBool4False,    \
+   },                                                                  \
+   {                                                                   \
+       .offset = CLKMGR_EXTCLK_CTRL_HI_SPEED_SEL_OFFSET,               \
+       .value = low_speed_ ? kMultiBitBool4False : kMultiBitBool4True, \
+   }}
+  {  // low speed
+    EXPECT_WRITE32(CLKMGR_EXTCLK_CTRL_REG_OFFSET,
+                   EXTCLK_CTRL_REG_VALUE(true, true));
+    EXPECT_DIF_OK(dif_clkmgr_external_clock_set_enabled(&clkmgr_, true));
+  }
+  {  // high speed
+    EXPECT_WRITE32(CLKMGR_EXTCLK_CTRL_REG_OFFSET,
+                   EXTCLK_CTRL_REG_VALUE(true, false));
+    EXPECT_DIF_OK(dif_clkmgr_external_clock_set_enabled(&clkmgr_, false));
+  }
+}
+
+TEST_F(ExternalClkTest, Disable) {
+  EXPECT_WRITE32(CLKMGR_EXTCLK_CTRL_REG_OFFSET,
+                 EXTCLK_CTRL_REG_VALUE(false, false));
+  EXPECT_DIF_OK(dif_clkmgr_external_clock_set_disabled(&clkmgr_));
+}
+#undef EXTCLK_CTRL_REG_VALUE
+
+TEST_F(ExternalClkTest, Switch) {
+  EXPECT_READ32(CLKMGR_EXTCLK_STATUS_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_READ32(CLKMGR_EXTCLK_STATUS_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_READ32(CLKMGR_EXTCLK_STATUS_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_DIF_OK(dif_clkmgr_wait_for_ext_clk_switch(&clkmgr_));
+}
+
+TEST_F(ExternalClkTest, SwitchError) {
+  EXPECT_DIF_BADARG(dif_clkmgr_wait_for_ext_clk_switch(nullptr));
+}
+
 class MeasureCtrlTest : public ClkMgrTest {};
 
 TEST_F(MeasureCtrlTest, Disable) {
