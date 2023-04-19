@@ -452,13 +452,13 @@ package usbdev_reg_pkg;
       logic        d;
     } sense;
     struct packed {
-      logic [2:0]  d;
+      logic [3:0]  d;
     } av_depth;
     struct packed {
       logic        d;
     } av_full;
     struct packed {
-      logic [2:0]  d;
+      logic [3:0]  d;
     } rx_depth;
     struct packed {
       logic        d;
@@ -584,9 +584,9 @@ package usbdev_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    usbdev_hw2reg_intr_state_reg_t intr_state; // [241:208]
-    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [207:200]
-    usbdev_hw2reg_usbstat_reg_t usbstat; // [199:176]
+    usbdev_hw2reg_intr_state_reg_t intr_state; // [243:210]
+    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [209:202]
+    usbdev_hw2reg_usbstat_reg_t usbstat; // [201:176]
     usbdev_hw2reg_rxfifo_reg_t rxfifo; // [175:159]
     usbdev_hw2reg_rxenable_out_mreg_t [11:0] rxenable_out; // [158:135]
     usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [134:111]
