@@ -514,7 +514,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     const lc_cnt_e LcCntIn = lc_cnt_e'(cfg.lc_ctrl_vif.otp_i.count);
     // Incremented LcCntIn - next() works because of encoding method
     const lc_cnt_e LcCntInInc = LcCntIn.next();
-    // TODO needs expanding for JTAG registers
+    // ICEBOX(#18078) - unclear what this TODO refers to (needs expanding for JTAG registers)
     const
     lc_state_e
     LcTargetState = encode_lc_state(
