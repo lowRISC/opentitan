@@ -19,41 +19,41 @@ class chip_sw_power_idle_load_vseq extends chip_sw_base_vseq;
 
       begin : GPIO_CHECK
         // Check IOA2 = 0
-        `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "GPIO active");,
-                     "timeout waiting for S/W sync GPIO1",
-                     cfg.sw_test_timeout_ns)
-        `DV_SPINWAIT(wait(cfg.chip_vif.gpios_if.pins[2] == '0);,
-                     $sformatf("Timed out waiting for IOA2 == %0h", 0),
-                     timeout_ns)
+        `DV_WAIT(cfg.sw_logger_vif.printed_log == "GPIO active",
+                 "timeout waiting for SW sync GPIO (1)",
+                 cfg.sw_test_timeout_ns)
+        `DV_WAIT(cfg.chip_vif.gpios_if.pins[2] == '0,
+                 $sformatf("Timed out waiting for IOA2 == %0h", 0),
+                 timeout_ns)
         // Check IOA2 = 1
-        `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "all H/W is active");,
-                     "timeout waiting for S/W sync GPIO2",
-                     cfg.sw_test_timeout_ns)
-        `DV_SPINWAIT(wait(cfg.chip_vif.gpios_if.pins[2] == '1);,
-                     $sformatf("Timed out waiting for IOA2 == %0h", 1),
-                     timeout_ns)
+        `DV_WAIT(cfg.sw_logger_vif.printed_log == "all HW is active",
+                 "timeout waiting for SW sync GPIO (2)",
+                 cfg.sw_test_timeout_ns)
+        `DV_WAIT(cfg.chip_vif.gpios_if.pins[2] == '1,
+                 $sformatf("Timed out waiting for IOA2 == %0h", 1),
+                 timeout_ns)
         // Check IOA2 = 0
-        `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Prepare to exit");,
-                     "timeout waiting for S/W sync GPIO3",
-                     cfg.sw_test_timeout_ns)
-        `DV_SPINWAIT(wait(cfg.chip_vif.gpios_if.pins[2] == '0);,
-                     $sformatf("Timed out waiting for IOA2 == %0h", 0),
-                     timeout_ns)
+        `DV_WAIT(cfg.sw_logger_vif.printed_log == "Prepare to exit",
+                 "timeout waiting for SW sync GPIO (3)",
+                 cfg.sw_test_timeout_ns)
+        `DV_WAIT(cfg.chip_vif.gpios_if.pins[2] == '0,
+                 $sformatf("Timed out waiting for IOA2 == %0h", 0),
+                 timeout_ns)
       end : GPIO_CHECK
 
       begin : PWM_CHECK
-        `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "PWM active");,
-                     "timeout waiting for S/W sync PWM1",
-                     cfg.sw_test_timeout_ns)
+        `DV_WAIT(cfg.sw_logger_vif.printed_log == "PWM active",
+                 "timeout waiting for SW sync PWM (1)",
+                 cfg.sw_test_timeout_ns)
         foreach (cfg.m_pwm_monitor_cfg[i]) begin
           cfg.m_pwm_monitor_cfg[i].active = 1;
         end
         fork
           collect_pwm_data();   // this is infinite task
         join_none
-        `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Prepare to exit");,
-                     "timeout waiting for S/W PWM2",
-                     cfg.sw_test_timeout_ns)
+        `DV_WAIT(cfg.sw_logger_vif.printed_log == "Prepare to exit",
+                 "timeout waiting for SW PWM (2)",
+                 cfg.sw_test_timeout_ns)
         foreach (cfg.m_pwm_monitor_cfg[i]) begin
           cfg.m_pwm_monitor_cfg[i].active = 0;
         end
