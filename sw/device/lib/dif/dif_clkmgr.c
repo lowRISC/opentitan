@@ -190,6 +190,25 @@ dif_result_t dif_clkmgr_external_clock_set_enabled(const dif_clkmgr_t *clkmgr,
   return kDifOk;
 }
 
+dif_result_t dif_clkmgr_external_clock_set_disabled(
+    const dif_clkmgr_t *clkmgr) {
+  uint32_t extclk_ctrl_reg = 0;
+
+  if (clkmgr == NULL) {
+    return kDifBadArg;
+  }
+
+  extclk_ctrl_reg = bitfield_field32_write(
+      extclk_ctrl_reg, CLKMGR_EXTCLK_CTRL_SEL_FIELD, kMultiBitBool4False);
+  // This value is irrelevant when the external clock is disabled.
+  extclk_ctrl_reg = bitfield_field32_write(
+      extclk_ctrl_reg, CLKMGR_EXTCLK_CTRL_HI_SPEED_SEL_FIELD,
+      kMultiBitBool4True);
+  mmio_region_write32(clkmgr->base_addr, CLKMGR_EXTCLK_CTRL_REG_OFFSET,
+                      extclk_ctrl_reg);
+  return kDifOk;
+}
+
 dif_result_t dif_clkmgr_measure_ctrl_disable(const dif_clkmgr_t *clkmgr) {
   if (clkmgr == NULL) {
     return kDifBadArg;

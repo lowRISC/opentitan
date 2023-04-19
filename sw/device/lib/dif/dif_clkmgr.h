@@ -264,6 +264,15 @@ dif_result_t dif_clkmgr_external_clock_set_enabled(const dif_clkmgr_t *clkmgr,
                                                    bool is_low_speed);
 
 /**
+ * Disable chip to use the external clock.
+ *
+ * @param clkmgr Clock Manager Handle.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_external_clock_set_disabled(const dif_clkmgr_t *clkmgr);
+
+/**
  * Determine if the transition to using external clock is complete.
  *
  * @param clkmgr Clock Manager Handle.
