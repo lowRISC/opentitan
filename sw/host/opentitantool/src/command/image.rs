@@ -18,6 +18,7 @@ use opentitanlib::crypto::rsa::{Modulus, RsaPrivateKey, RsaPublicKey, Signature}
 use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::image::image::{self, ImageAssembler};
 use opentitanlib::image::manifest_def::ManifestSpec;
+use opentitanlib::util::file::{FromReader, ToWriter};
 use opentitanlib::util::parse_int::ParseInt;
 
 /// Bootstrap the target device.
