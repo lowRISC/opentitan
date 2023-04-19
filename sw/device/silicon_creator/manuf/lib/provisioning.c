@@ -15,6 +15,11 @@
 #include "otp_ctrl_regs.h"
 
 enum {
+  /**
+   * RootKey sizes and offsets.
+   *
+   * The RootKey is stored in OTP, and is used to derive CreatorRootKey.
+   */
   kRootKeyShareSizeInBytes = OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_SIZE,
   kRootKeyShareSizeIn32BitWords = kRootKeyShareSizeInBytes / sizeof(uint32_t),
   kRootKeyShareSizeIn64BitWords = kRootKeyShareSizeInBytes / sizeof(uint64_t),
@@ -23,25 +28,50 @@ enum {
   kRootKeyOffsetShare1 = OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE1_OFFSET -
                          OTP_CTRL_PARAM_SECRET2_OFFSET,
 
+  /**
+   * Creator and Owner seed sizes.
+   *
+   * Both seeds are stored in flash. The Creator Seed is used to derive
+   * CreatorRootKey, and also referred to as the `DiversificationKey` in the
+   * "Identities and Root Keys" OpenTitan specification. The Owner Seed is used
+   * to derive the OwnerIntermediateKey, and is also referred to as the
+   * `OwnerRootSecret` in the aforementioned spec.
+   */
   kCreatorSeedSizeInBytes = 32,
   kCreatorSeedSizeInWords = kCreatorSeedSizeInBytes / sizeof(uint32_t),
   kOwnerSeedSizeInWords = kCreatorSeedSizeInWords,
 
-  /** Flash Secrets partition ID. Used for both Creator and Owner secrets. */
+  /**
+   * Flash secrets partition ID.
+   *
+   * Used for both Creator and Owner secrets.
+   */
   kFlashInfoPartitionId = 0,
 
-  /** Secrets partition flash bank ID. Used for both Creator and Owner secrets.
+  /**
+   * Flash secrets bank ID.
+   *
+   * Used for both Creator and Owner secrets.
    */
   kFlashInfoBankId = 0,
 
-  /** Creator Secret flash info page ID. */
+  /**
+   * Creator Secret flash info page ID.
+   *
+   * Used to store the Creator Seed (i.e., DiversificationKey).
+   */
   kFlashInfoPageIdCreatorSecret = 1,
 
-  /** Owner Secret flash info page ID. */
+  /**
+   * Owner Secret flash info page ID.
+   *
+   * Used to store the Owner Seed (i.e., OwnerRootSecret).
+   */
   kFlashInfoPageIdOwnerSecret = 2,
 
   kOtpDefaultBlankValue = 0,
 };
+
 static_assert(OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_SIZE ==
                   OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE1_SIZE,
               "Detected Root key share size mismatch");
@@ -216,8 +246,10 @@ static status_t otp_partition_secret2_configure(const dif_otp_ctrl_t *otp) {
 status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
                                            const dif_lc_ctrl_t *lc_ctrl,
                                            const dif_otp_ctrl_t *otp) {
-  // Check life cycle in either PROD or DEV.
+  // Check life cycle in either PROD, PROD_END, or DEV.
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
+
+  // TODO(#17393): check SECRET1 and HW_CFG OTP partitions are locked.
 
   // Skip if SECRET2 partition is locked. We won't be able to configure the
   // secret info flash page nor the OTP secrets if the OTP SECRET2 partition is

@@ -64,7 +64,7 @@ status_t entropy_csrng_instantiate(
 /**
  * Reseed the SW CSRNG.
  *
- * @param disable_trng_intput Set to kHardenedTrue to disable the entropy
+ * @param disable_trng_input Set to kHardenedTrue to disable the entropy
  * provided by hardware.
  * @param seed_material Data used to reseed the CSRNG. XOR'ed with entropy
  * provided by hardware when `disable_trng_input` is set to `kHardenedFalse`,
