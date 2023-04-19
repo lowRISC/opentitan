@@ -40,6 +40,7 @@ enum RootCommandHierarchy {
     Otp(command::otp::Otp),
     Rsa(command::rsa::Rsa),
     Spi(command::spi::SpiCommand),
+    Spx(command::spx::Spx),
     Transport(command::transport::TransportCommand),
     Version(command::version::Version),
 
