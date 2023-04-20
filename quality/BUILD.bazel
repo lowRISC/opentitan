@@ -132,6 +132,8 @@ RUST_TARGETS = [
     "//sw/device/lib/ujson/rust:roundtrip_test",
     "//sw/host/cryptotest:cryptotest_parser",
     "//sw/host/cryptotest:cryptotest_parser_test",
+    "//sw/host/hsmtool:hsmlib",
+    "//sw/host/hsmtool:hsmlib_test",
     "//sw/host/opentitanlib:opentitanlib",
     "//sw/host/opentitanlib:opentitanlib_test",
     "//sw/host/opentitansession:opentitansession",
