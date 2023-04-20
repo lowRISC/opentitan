@@ -70,7 +70,7 @@ end
 tc_clk_gating #(     
 ) u_cg_1 (
   .clk_i(clk_gp[1]),
-xg  .en_i(stage_q[1]),
+  .en_i(stage_q[1]),
   .test_en_i(1'b0),
   .clk_o(clk_glitch_off[1])
 );
