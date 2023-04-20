@@ -324,12 +324,14 @@ void seed_lfsr(uint32_t seed) { lfsr_state = seed; }
 /**
  * step PRNG for masking key.
  */
-uint32_t next_lfsr(void) {
+uint32_t next_lfsr(uint16_t n) {
   const uint32_t lfsr_out = lfsr_state;
-  bool lfsr_bit = lfsr_state & 0x00000001;
-  lfsr_state = lfsr_state >> 1;
-  if (lfsr_bit) {
-    lfsr_state ^= 0x80000057;
+  for (size_t i = 0; i < n; i++) {
+    bool lfsr_bit = lfsr_state & 0x00000001;
+    lfsr_state = lfsr_state >> 1;
+    if (lfsr_bit) {
+      lfsr_state ^= 0x80000057;
+    }
   }
   return lfsr_out;
 }

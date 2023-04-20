@@ -167,6 +167,6 @@ void seed_lfsr(uint32_t seed);
 /**
  * step PRNG for masking key.
  */
-uint32_t next_lfsr(void);
+uint32_t next_lfsr(uint16_t n);
 
 #endif  // OPENTITAN_SW_DEVICE_SCA_LIB_SCA_H_
