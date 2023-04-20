@@ -144,6 +144,10 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
           collect_err_cov_status(ral.std_fault_status);
           csr_rd_check(.ptr(ral.std_fault_status.arb_fsm_err), .compare_value(1));
         end
+        if (!uvm_re_match("*_tl_gate.*", if_proxy.path)) begin
+          collect_err_cov_status(ral.std_fault_status);
+          csr_rd_check(.ptr(ral.std_fault_status.reg_intg_err), .compare_value(1));
+        end
       end
       SecCmPrimOnehot: begin
         // Do nothing.

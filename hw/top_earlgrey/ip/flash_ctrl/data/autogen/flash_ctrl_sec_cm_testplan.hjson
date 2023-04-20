@@ -47,7 +47,7 @@
             For read path, inject error to
             tb.dut.u_eflash.gen_flash_cores[*].u_core.u_rd.gen_bufs[0].
             u_rd_buf.data_i
-	    read data error will trigger fault_status.phy_storage_err
+            read data error will trigger fault_status.phy_storage_err
             and err_code.rd_err.
             For write path, inject error to tb.dut.u_prog_fifo.wdata_i
             This will trigger fatal_std_err.prog_intg_err and
@@ -297,13 +297,13 @@
       name: sec_cm_mem_tl_lc_gate_fsm_sparse
       desc: "Verify the countermeasure(s) MEM_TL_LC_GATE.FSM.SPARSE."
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_sec_cm"]
     }
     {
       name: sec_cm_prog_tl_lc_gate_fsm_sparse
       desc: "Verify the countermeasure(s) PROG_TL_LC_GATE.FSM.SPARSE."
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_sec_cm"]
     }
   ]
 }
