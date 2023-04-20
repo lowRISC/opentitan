@@ -5,16 +5,30 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 #include "otp_ctrl_regs.h"
 
 enum {
+  /**
+   * RMA unlock token sizes and offsets.
+   */
+  kRmaUnlockTokenSizeInBytes = OTP_CTRL_PARAM_RMA_TOKEN_SIZE,
+  kRmaUnlockTokenSizeIn32BitWords =
+      kRmaUnlockTokenSizeInBytes / sizeof(uint32_t),
+  kRmaUnlockTokenSizeIn64BitWords =
+      kRmaUnlockTokenSizeInBytes / sizeof(uint64_t),
+  kRmaUnlockTokenOffset =
+      OTP_CTRL_PARAM_RMA_TOKEN_OFFSET - OTP_CTRL_PARAM_SECRET2_OFFSET,
+
   /**
    * RootKey sizes and offsets.
    *
@@ -190,8 +204,9 @@ static status_t flash_ctrl_creator_secret_write(
  * @param flash_state Flash controller instance.
  * @return OK_STATUS on success.
  */
-OT_WARN_UNUSED_RESULT status_t
-flash_ctrl_owner_secret_write(dif_flash_ctrl_state_t *flash_state) {
+OT_WARN_UNUSED_RESULT
+static status_t flash_ctrl_owner_secret_write(
+    dif_flash_ctrl_state_t *flash_state) {
   TRY(flash_ctrl_secret_write(flash_state, kFlashInfoPageIdOwnerSecret,
                               kFlashInfoBankId, kFlashInfoPartitionId,
                               kOwnerSeedSizeInWords));
@@ -199,8 +214,53 @@ flash_ctrl_owner_secret_write(dif_flash_ctrl_state_t *flash_state) {
 }
 
 /**
- * Configures the Silicon Creator seed secret shares in the SECRET2 OTP
- * partition.
+ * Hashes a lifecycle transition token to prepare it to be written to OTP.
+ *
+ * According to the Lifecycle Controller's specification:
+ *
+ * "All 128bit lock and unlock tokens are passed through a cryptographic one way
+ * function in hardware before the life cycle controller compares them to the
+ * provisioned values ...", and
+ * "The employed one way function is a 128bit cSHAKE hash with the function name
+ * “” and customization string “LC_CTRL”".
+ *
+ * @param raw_token The raw token to be hashed.
+ * @param token_size The expected hashed token size in bytes.
+ * @param[out] hashed_token The hashed token.
+ * @return Result of the hash operation.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t hash_lc_transition_token(uint64_t *raw_token, size_t token_size,
+                                         uint64_t *hashed_token) {
+  crypto_const_uint8_buf_t input = {
+      .data = (uint8_t *)raw_token,
+      .len = token_size,
+  };
+  crypto_const_uint8_buf_t function_name_string = {
+      .data = (uint8_t *)"",
+      .len = 0,
+  };
+  crypto_const_uint8_buf_t customization_string = {
+      .data = (uint8_t *)"LC_CTRL",
+      .len = 7,
+  };
+  crypto_uint8_buf_t output = {
+      .data = (uint8_t *)hashed_token,
+      .len = token_size,
+  };
+
+  // TODO(#17393): switch this `CHECK(...)` with a `TRY(...)` when #17803 is
+  // resolved.
+  CHECK(otcrypto_xof(input, kXofModeSha3Cshake128, function_name_string,
+                     customization_string, token_size,
+                     &output) == kCryptoStatusOK);
+
+  return OK_STATUS();
+}
+
+/**
+ * Configures the RMA unlock token and Silicon Creator seed secret shares in the
+ * SECRET2 OTP partition.
  *
  * Entropy is extracted from the CSRNG instance and programmed into the SECRET2
  * OTP partition. The data needs to be programmed before the OTP SECRET2
@@ -208,18 +268,28 @@ flash_ctrl_owner_secret_write(dif_flash_ctrl_state_t *flash_state) {
  * lifecyle state.
  *
  * @param otp OTP controller instance.
+ * @param[out] rma_unlock_token RMA unlock token to export export from the chip.
  * @return OK_STATUS on success.
  */
 OT_WARN_UNUSED_RESULT
-static status_t otp_partition_secret2_configure(const dif_otp_ctrl_t *otp) {
+static status_t otp_partition_secret2_configure(const dif_otp_ctrl_t *otp,
+                                                uint64_t *rma_unlock_token) {
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
+
+  TRY(entropy_csrng_generate(/*seed_material=*/NULL,
+                             (uint32_t *)rma_unlock_token,
+                             kRmaUnlockTokenSizeIn32BitWords));
+  TRY(entropy_csrng_reseed(/*disable_trng_input=*/kHardenedBoolFalse,
+                           /*seed_material=*/NULL));
+  uint64_t hashed_rma_unlock_token[kRmaUnlockTokenSizeIn64BitWords];
+  TRY(hash_lc_transition_token(rma_unlock_token, kRmaUnlockTokenSizeInBytes,
+                               hashed_rma_unlock_token));
 
   uint64_t share0[kRootKeyShareSizeIn64BitWords];
   TRY(entropy_csrng_generate(/*seed_material=*/NULL, (uint32_t *)share0,
                              kRootKeyShareSizeIn32BitWords));
-
-  TRY(entropy_csrng_reseed(/*disable_trng_inpu=*/kHardenedBoolFalse,
+  TRY(entropy_csrng_reseed(/*disable_trng_input=*/kHardenedBoolFalse,
                            /*seed_material=*/NULL));
 
   uint64_t share1[kRootKeyShareSizeIn64BitWords];
@@ -229,13 +299,15 @@ static status_t otp_partition_secret2_configure(const dif_otp_ctrl_t *otp) {
 
   TRY(shares_check(share0, share1, kRootKeyShareSizeIn64BitWords));
 
+  TRY(otp_ctrl_testutils_dai_write64(
+      otp, kDifOtpCtrlPartitionSecret2, kRmaUnlockTokenOffset,
+      hashed_rma_unlock_token, kRmaUnlockTokenSizeIn64BitWords));
   TRY(otp_ctrl_testutils_dai_write64(otp, kDifOtpCtrlPartitionSecret2,
                                      kRootKeyOffsetShare0, share0,
                                      kRootKeyShareSizeIn64BitWords));
   TRY(otp_ctrl_testutils_dai_write64(otp, kDifOtpCtrlPartitionSecret2,
                                      kRootKeyOffsetShare1, share1,
                                      kRootKeyShareSizeIn64BitWords));
-  TRY(shares_check(share0, share1, kRootKeyShareSizeIn64BitWords));
 
   TRY(otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionSecret2,
                                         /*digest=*/0));
@@ -263,9 +335,12 @@ status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
   // Re-initialize the entropy complex in continous mode. This also configures
   // the entropy_src health checks in FIPS mode.
   TRY(entropy_complex_init());
+
+  // Provision secrets in flash and OTP.
+  uint64_t rma_unlock_token[kRmaUnlockTokenSizeIn64BitWords];
   TRY(flash_ctrl_creator_secret_write(flash_state));
   TRY(flash_ctrl_owner_secret_write(flash_state));
-  TRY(otp_partition_secret2_configure(otp));
+  TRY(otp_partition_secret2_configure(otp, rma_unlock_token));
   return OK_STATUS();
 }
 
