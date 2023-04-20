@@ -49,7 +49,7 @@ The following utilities provide generic helper tasks and functions to perform ac
 ### UVM RAL Model
 The DMA RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
 ```console
 $ $REPO_TOP/util/regtool.py $REPO_TOP/hw/ip/dma/data/dma.hjson -s --outdir <path_to_directory>
 ```
