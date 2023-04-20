@@ -34,25 +34,33 @@ fixed_size_bigint!(N0Inv, at_most OTBN_BITS);
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("Invalid public key")]
-    InvalidPublicKey,
+    InvalidPublicKey(#[source] Option<anyhow::Error>),
     #[error("Invalid DER file: {der}")]
     InvalidDerFile {
         der: PathBuf,
         #[source]
         source: anyhow::Error,
     },
-    #[error("Read failed: {0}")]
-    ReadFailed(PathBuf),
-    #[error("Write failed: {0}")]
-    WriteFailed(PathBuf),
+    #[error("Read failed: {file}")]
+    ReadFailed {
+        file: PathBuf,
+        #[source]
+        source: anyhow::Error,
+    },
+    #[error("Write failed: {file}")]
+    WriteFailed {
+        file: PathBuf,
+        #[source]
+        source: anyhow::Error,
+    },
     #[error("Generate failed")]
-    GenerateFailed,
+    GenerateFailed(#[source] anyhow::Error),
     #[error("Invalid signature")]
-    InvalidSignature,
+    InvalidSignature(#[source] anyhow::Error),
     #[error("Sign failed")]
-    SignFailed,
+    SignFailed(#[source] anyhow::Error),
     #[error("Verification failed")]
-    VerifyFailed,
+    VerifyFailed(#[source] anyhow::Error),
     #[error("Failed to compute key component")]
     KeyComponentComputeFailed,
 }
@@ -60,7 +68,7 @@ pub enum Error {
 /// Ensure the components of `key` have the correct bit length.
 fn validate_key(key: &impl rsa::PublicKeyParts) -> Result<()> {
     if key.n().bits() != MODULUS_BIT_LEN || key.e() != &BigUint::from(65537u32) {
-        bail!(Error::InvalidPublicKey)
+        bail!(Error::InvalidPublicKey(None))
     } else {
         Ok(())
     }
@@ -82,7 +90,7 @@ impl RsaPublicKey {
                 BigUint::from_bytes_le(n.to_le_bytes().as_slice()),
                 BigUint::from(65537u32),
             )
-            .map_err(|_| Error::InvalidPublicKey)?,
+            .map_err(|e| Error::InvalidPublicKey(Some(anyhow!(e))))?,
         })
     }
 
@@ -106,7 +114,10 @@ impl RsaPublicKey {
         let der_file = der_file.into();
         self.key
             .write_pkcs1_der_file(&der_file)
-            .map_err(|_| Error::WriteFailed(der_file))?;
+            .map_err(|e| Error::WriteFailed {
+                file: der_file.to_owned(),
+                source: anyhow!(e),
+            })?;
         Ok(())
     }
 
@@ -160,7 +171,7 @@ impl RsaPublicKey {
                 digest.to_be_bytes().as_slice(),
                 signature.to_be_bytes().as_slice(),
             )
-            .map_err(|_| anyhow!(Error::VerifyFailed))
+            .map_err(|e| anyhow!(Error::VerifyFailed(anyhow!(e))))
     }
 }
 
@@ -178,7 +189,7 @@ impl RsaPrivateKey {
         let mut rng = OsRng;
         Ok(Self {
             key: rsa::RsaPrivateKey::new_with_exp(&mut rng, 3072, &BigUint::from(65537u32))
-                .map_err(|_| Error::GenerateFailed)?,
+                .map_err(|e| Error::GenerateFailed(anyhow!(e)))?,
         })
     }
 
@@ -202,7 +213,10 @@ impl RsaPrivateKey {
         let der_file = der_file.into();
         self.key
             .write_pkcs8_der_file(&der_file)
-            .map_err(|_| Error::WriteFailed(der_file))?;
+            .map_err(|e| Error::WriteFailed {
+                file: der_file,
+                source: anyhow!(e),
+            })?;
         Ok(())
     }
 
@@ -211,7 +225,7 @@ impl RsaPrivateKey {
         let signature = self
             .key
             .sign(Pkcs1v15Sign::new::<Sha256>(), &digest.to_be_bytes())
-            .map_err(|_| Error::SignFailed)?;
+            .map_err(|e| Error::SignFailed(anyhow!(e)))?;
         Ok(Signature::from_be_bytes(signature)?)
     }
 }
@@ -219,7 +233,10 @@ impl RsaPrivateKey {
 impl Signature {
     /// Creates an `Signature` from a given input file.
     pub fn read_from_file(path: &Path) -> Result<Signature> {
-        let err = |_| Error::ReadFailed(path.to_owned());
+        let err = |e: std::io::Error| Error::ReadFailed {
+            file: path.to_owned(),
+            source: anyhow!(e),
+        };
         let mut file = File::open(path).map_err(err)?;
         let mut buf = Vec::<u8>::new();
         file.read_to_end(&mut buf).map_err(err)?;
@@ -228,7 +245,10 @@ impl Signature {
 
     /// Write out the `Signature` to a file at the given `path`.
     pub fn write_to_file(&self, path: &Path) -> Result<()> {
-        let err = |_| Error::WriteFailed(path.to_owned());
+        let err = |e: std::io::Error| Error::WriteFailed {
+            file: path.to_owned(),
+            source: anyhow!(e),
+        };
         let mut file = File::create(path).map_err(err)?;
         file.write_all(self.to_le_bytes().as_mut_slice())
             .map_err(err)?;
