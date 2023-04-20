@@ -523,7 +523,8 @@ module top_earlgrey #(
   // define inter-module signals
   ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl;
   prim_ram_1p_pkg::ram_1p_cfg_t       ast_ram_1p_cfg;
-  prim_ram_2p_pkg::ram_2p_cfg_t       ast_ram_2p_cfg;
+  prim_ram_2p_pkg::ram_2p_cfg_t       spi_ram_2p_cfg;
+  prim_ram_2p_pkg::ram_2p_cfg_t       usb_ram_2p_cfg;
   prim_rom_pkg::rom_cfg_t       ast_rom_cfg;
   alert_pkg::alert_crashdump_t       alert_handler_crashdump;
   prim_esc_pkg::esc_rx_t [3:0] alert_handler_esc_rx;
@@ -745,7 +746,8 @@ module top_earlgrey #(
   assign ast_lc_dft_en_o = lc_ctrl_lc_dft_en;
   assign ast_obs_ctrl = obs_ctrl_i;
   assign ast_ram_1p_cfg = ram_1p_cfg_i;
-  assign ast_ram_2p_cfg = ram_2p_cfg_i;
+  assign usb_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_fcfg, ram_2p_cfg_i.b_ram_fcfg};
+  assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
   assign ast_rom_cfg = rom_cfg_i;
 
   // define partial inter-module tie-off
@@ -1185,7 +1187,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[5:5] ),
 
       // Inter-module signals
-      .ram_cfg_i(ast_ram_2p_cfg),
+      .ram_cfg_i(spi_ram_2p_cfg),
       .passthrough_o(spi_device_passthrough_req),
       .passthrough_i(spi_device_passthrough_rsp),
       .mbist_en_i('0),
@@ -1654,7 +1656,7 @@ module top_earlgrey #(
       .usb_aon_bus_reset_i(usbdev_usb_aon_bus_reset),
       .usb_aon_sense_lost_i(usbdev_usb_aon_sense_lost),
       .usb_aon_wake_detect_active_i(pinmux_aon_usbdev_wake_detect_active),
-      .ram_cfg_i(ast_ram_2p_cfg),
+      .ram_cfg_i(usb_ram_2p_cfg),
       .tl_i(usbdev_tl_req),
       .tl_o(usbdev_tl_rsp),
 
