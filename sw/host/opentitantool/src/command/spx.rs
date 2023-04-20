@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::path::{Path, PathBuf};
@@ -12,14 +12,29 @@ use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::crypto::spx::{SpxKeypair, SpxPublicKey, SpxPublicKeyPart, SpxSignature};
 use opentitanlib::image::image::Image;
-use opentitanlib::util::file::{FromReader, ToWriter};
+use opentitanlib::util::file::{FromReader, PemSerilizable, ToWriter};
 
 /// Given the path to a public key, returns the public key. Given
 /// the path to a full keypair, extracts the public key from the private
 /// key and returns the public key.
 fn load_pub_or_priv_key(path: &Path) -> Result<SpxPublicKey> {
-    SpxPublicKey::read_from_file(path)
+    Ok(match SpxPublicKey::read_pem_file(path) {
+        Ok(pk) => pk,
+        Err(e1) => match SpxKeypair::read_pem_file(path) {
+            Ok(kp) => kp.into_public_key(),
+            Err(e2) => {
+                return Err(anyhow!(
+                    "\n\
+                        Reading as public key: {}\n\
+                        Reading as keypair: {}",
+                    e1,
+                    e2
+                ))
+            }
+        },
+    })
 }
+
 #[derive(Annotate, serde::Serialize)]
 pub struct SpxPublicKeyInfo {
     pub public_key_num_bits: usize,
@@ -72,11 +87,11 @@ impl CommandDispatch for SpxKeyGenerateCommand {
         let private_key = SpxKeypair::generate();
         let mut file = self.output_dir.to_owned();
         file.push(&self.basename);
-        file.set_extension("key");
-        private_key.clone().write_to_file(&file)?;
+        file.set_extension("pem");
+        private_key.write_pem_file(&file)?;
 
-        file.set_extension("pub.key");
-        private_key.into_public_key().write_to_file(&file)?;
+        file.set_extension("pub.pem");
+        private_key.into_public_key().write_pem_file(&file)?;
 
         Ok(None)
     }
@@ -111,7 +126,7 @@ impl CommandDispatch for SpxSignCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let image = Image::read_from_file(&self.image)?;
-        let keypair = SpxKeypair::read_from_file(&self.keypair)?;
+        let keypair = SpxKeypair::read_pem_file(&self.keypair)?;
         let signature = image.map_signed_region(|b| keypair.sign(b));
         if let Some(output) = &self.output {
             signature.clone().write_to_file(output)?;
@@ -139,7 +154,7 @@ impl CommandDispatch for SpxVerifyCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let image = Image::read_from_file(&self.image)?;
-        let keypair = SpxKeypair::read_from_file(&self.key_file)?;
+        let keypair = load_pub_or_priv_key(&self.key_file)?;
         let signature = SpxSignature::read_from_file(&self.signature)?;
         image.map_signed_region(|b| keypair.verify(b, &signature))?;
         Ok(None)
