@@ -68,6 +68,7 @@ using testing::Test;
 class SpiHostTest : public Test, public MmioTest {
  protected:
   void ExpectDeviceReset() {
+    EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
     // Place IP into reset.
     EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
                    {
@@ -137,6 +138,7 @@ TEST_F(ConfigTest, Default) {
 
   EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET, 0);
+  EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
                  {
                      {SPI_HOST_CONTROL_SPIEN_BIT, true},
@@ -177,6 +179,7 @@ TEST_F(ConfigTest, ClockRate) {
                  });
   EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET, 0);
+  EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
                  {
                      {SPI_HOST_CONTROL_SPIEN_BIT, true},
@@ -205,6 +208,7 @@ TEST_F(ConfigTest, ChipSelectOptions) {
                  });
   EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET, 0);
+  EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
                  {
                      {SPI_HOST_CONTROL_SPIEN_BIT, true},
@@ -233,6 +237,7 @@ TEST_F(ConfigTest, SpiOptions) {
                  });
   EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET, 0);
+  EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
                  {
                      {SPI_HOST_CONTROL_SPIEN_BIT, true},
@@ -261,6 +266,7 @@ TEST_F(ConfigTest, SpiTxRxWatermark) {
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
                  {{SPI_HOST_CONTROL_TX_WATERMARK_OFFSET, 0x7f},
                   {SPI_HOST_CONTROL_RX_WATERMARK_OFFSET, 0x7e}});
+  EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
                  {
                      {SPI_HOST_CONTROL_SPIEN_BIT, true},

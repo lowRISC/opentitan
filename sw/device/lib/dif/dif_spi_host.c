@@ -29,9 +29,11 @@ dif_result_t spi_host_fifo_read_alias(const dif_spi_host_t *spi_host, void *dst,
 
 static void spi_host_reset(const dif_spi_host_t *spi_host) {
   // Set the software reset request bit.
+  uint32_t reg =
+      mmio_region_read32(spi_host->base_addr, SPI_HOST_CONTROL_REG_OFFSET);
   mmio_region_write32(
       spi_host->base_addr, SPI_HOST_CONTROL_REG_OFFSET,
-      bitfield_bit32_write(0, SPI_HOST_CONTROL_SW_RST_BIT, true));
+      bitfield_bit32_write(reg, SPI_HOST_CONTROL_SW_RST_BIT, true));
 
   // Wait for the spi host to go inactive.
   bool active;
@@ -57,9 +59,11 @@ static void spi_host_reset(const dif_spi_host_t *spi_host) {
 }
 
 static void spi_host_enable(const dif_spi_host_t *spi_host, bool enable) {
+  uint32_t reg =
+      mmio_region_read32(spi_host->base_addr, SPI_HOST_CONTROL_REG_OFFSET);
   mmio_region_write32(
       spi_host->base_addr, SPI_HOST_CONTROL_REG_OFFSET,
-      bitfield_bit32_write(0, SPI_HOST_CONTROL_SPIEN_BIT, enable));
+      bitfield_bit32_write(reg, SPI_HOST_CONTROL_SPIEN_BIT, enable));
 }
 
 dif_result_t dif_spi_host_configure(const dif_spi_host_t *spi_host,
