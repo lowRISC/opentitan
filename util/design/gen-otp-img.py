@@ -12,7 +12,6 @@ import random
 from pathlib import Path
 
 import hjson
-
 from lib.common import vmem_permutation_string, wrapped_docstring
 from lib.OtpMemImg import OtpMemImg
 
@@ -180,6 +179,20 @@ def main():
                         The mapping must be bijective - otherwise this will generate
                         an error.
                         ''')
+    parser.add_argument('--header-template',
+                        type=Path,
+                        metavar='<path>',
+                        help='''
+                        Template file used to generate C header version of the OTP image.
+                        This flag is only required when --header-out is set.
+                        ''')
+    parser.add_argument('--header-out',
+                        type=Path,
+                        metavar='<path>',
+                        help='''
+                        C header output path. Requires the --header-template flag to be
+                        set. The --out flag is ignored when this flag is set.
+                        ''')
 
     args = parser.parse_args()
 
@@ -236,8 +249,16 @@ def main():
 
     dt = datetime.datetime.now(datetime.timezone.utc)
     dtstr = dt.strftime("%a, %d %b %Y %H:%M:%S %Z")
-    memfile_header = '// Generated on {} with\n// $ gen-otp-img.py {}\n//\n'.format(
+    file_header = '// Generated on {} with\n// $ gen-otp-img.py {}\n//\n'.format(
         dtstr, argstr)
+
+    if args.header_out:
+        file_body = otp_mem_img.generate_headerfile(file_header,
+                                                    args.header_template)
+        log.info(f'Generating header file: {args.header_out}')
+        with open(args.header_out, 'wb') as outfile:
+            outfile.write(file_body.encode('utf-8'))
+        exit(0)
 
     memfile_body, bitness = otp_mem_img.streamout_memfile()
 
@@ -246,7 +267,7 @@ def main():
 
     # Use binary mode and a large buffer size to improve performance.
     with open(memfile_path, 'wb', buffering=2097152) as outfile:
-        outfile.write(memfile_header.encode('utf-8'))
+        outfile.write(file_header.encode('utf-8'))
         outfile.write(memfile_body.encode('utf-8'))
 
 
