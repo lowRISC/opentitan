@@ -49,7 +49,17 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
   virtual task dut_init(string reset_kind = "HARD");
     bit lc_at_prod;
 
-    randomize_dft_straps();
+    // Release DFT straps after they are sampled
+    fork
+        begin randomize_dft_straps(); end
+        begin
+
+           wait (cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+           cfg.chip_vif.dft_straps_if.disconnect();
+           `uvm_info(`gfn, "DICONNECTED DFT STRAPS", UVM_NONE)
+        end
+    join_none
+
     `DV_CHECK_STD_RANDOMIZE_FATAL(select_jtag)
     cfg.chip_vif.tap_straps_if.drive(select_jtag);
     cfg.chip_vif.set_tdo_pull(0);
@@ -206,8 +216,8 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
       `DV_CHECK_FATAL(uvm_hdl_force(path_tb_jtag_tdi,    exp_jtag_req.tdi))
       `DV_CHECK_FATAL(uvm_hdl_force(path_dft_tap_rsp,    exp_jtag_rsp))
 
-      // avoid race condition
-      #1ps;
+      // Wait for jtag signals to be driven
+      cfg.clk_rst_vif.wait_clks(10);
 
       // check jtag
       `DV_CHECK_FATAL(uvm_hdl_read(path_dft_tap_req, act_jtag_req))
@@ -260,24 +270,30 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     end
   endtask
 
+  // Randomize DFT straps for rma and unlock between (0,2,3) for dev and prod (0,1,2,3).
+  // It is problematic to run the test with some DFT values, for some vendors.
+  bit [1:0] dft_straps_val;
+  bit partner;
   virtual function void randomize_dft_straps();
-    bit [1:0] val = $urandom;
-
-    `uvm_info(`gfn, $sformatf("Drive dft straps to %0d", val), UVM_LOW)
-    cfg.chip_vif.dft_straps_if.drive(val);
+    if ($value$plusargs("PARTNER_N=%b",partner))
+    begin
+        randomize(dft_straps_val) with {dft_straps_val inside {0,2,3};};
+    end else begin
+        randomize(dft_straps_val) with {dft_straps_val inside {0,1,2,3};};
+    end
+    `uvm_info(`gfn, $sformatf("LC state is = %0s, DFT straps = %2b\n",
+              cur_lc_state.name(),dft_straps_val), UVM_LOW)
+    cfg.chip_vif.dft_straps_if.drive(dft_straps_val);
   endfunction
 
+  // Compare DFT strap to driven values, interface is disconnected and loses actual value.
   virtual function void check_dft_straps();
-    bit [1:0] exp_val, act_val;
-
-    if (is_lc_in_unlocked_or_rma()) begin
-      exp_val = cfg.chip_vif.dft_straps_if.sample();
-    end else begin
-      exp_val = 0;
+    bit [1:0] act_val;
+    if (!is_lc_in_unlocked_or_rma()) begin
+      dft_straps_val = 0;
     end
     `DV_CHECK_FATAL(uvm_hdl_read(path_dft_strap_test_o, act_val))
-
-    `DV_CHECK_EQ(act_val, exp_val)
+    `DV_CHECK_EQ(act_val, dft_straps_val)
   endfunction
 
   virtual function bit is_lc_in_unlocked_or_rma();
@@ -285,4 +301,5 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
         LcStTestUnlocked0, LcStTestUnlocked1, LcStTestUnlocked2, LcStTestUnlocked3,
         LcStTestUnlocked4, LcStTestUnlocked5, LcStTestUnlocked6, LcStTestUnlocked7};
   endfunction
+
 endclass
