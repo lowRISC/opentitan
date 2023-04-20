@@ -20,4 +20,11 @@ module i2c_bind;
     .d2h    (tl_o)
   );
 
+  bind i2c i2c_protocol_cov u_i2c_protocol_cov(
+    .clk (clk_i),
+    .rst_n (rst_ni),
+    .scl (cio_scl_i),
+    .sda (cio_sda_i)
+  );
+
 endmodule

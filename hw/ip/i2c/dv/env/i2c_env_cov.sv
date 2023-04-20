@@ -303,6 +303,22 @@ covergroup i2c_acq_fifo_cg
     ignore_bins read_req_nack_before_stop = ({2'b01, 1'b1} => {2'b10, 1'b0});
   }
 endgroup : i2c_acq_fifo_cg
+// Cover different back to back transactions issued by or received by DUT
+// in host and target modes
+covergroup i2c_b2b_txn_cg with function sample(bit[7:0] past_addr, bit[7:0] addr, bit en);
+     option.per_instance = 1;
+     B2B_txn_cp : coverpoint {past_addr[0], addr[0], (past_addr[7:1] != addr[7:1])} iff (en) {
+       bins b2b_write_same_addr = {3'b000};
+       bins b2b_write_different_addr = {3'b001};
+       bins read_after_write_same_addr = {3'b010};
+       bins read_after_write_different_addr = {3'b011};
+       bins write_after_read_same_addr = {3'b100};
+       bins write_after_read_different_addr = {3'b101};
+       bins b2b_read_same_addr = {3'b110};
+       bins b2b_read_different_addr = {3'b111};
+     }
+endgroup
+
 class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
   `uvm_component_utils(i2c_env_cov)
 
@@ -315,6 +331,10 @@ class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
   i2c_scl_sda_override_cg scl_sda_override_cg;
   i2c_fmt_fifo_cg fmt_fifo_cg;
   i2c_acq_fifo_cg acq_fifo_cg;
+  i2c_b2b_txn_cg    b2b_txn_host_cg;
+  i2c_b2b_txn_cg    b2b_txn_target_cg;
+  bit got_first_addr;
+  bit [7:0] past_addr;
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
@@ -327,6 +347,20 @@ class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
     scl_sda_override_cg = new();
     fmt_fifo_cg = new();
     acq_fifo_cg = new();
+    b2b_txn_host_cg = new();
+    b2b_txn_target_cg = new();
+    got_first_addr = 0;
   endfunction : new
+
+  function void sample_i2c_b2b_cg(bit[7:0] addr, bit host_mode);
+    if(got_first_addr) begin
+      b2b_txn_host_cg.sample(past_addr, addr, host_mode);
+      b2b_txn_target_cg.sample(past_addr, addr, !host_mode);
+      past_addr = addr;
+    end else begin
+      got_first_addr = 1;
+      past_addr = addr;
+    end
+  endfunction
 
 endclass : i2c_env_cov
