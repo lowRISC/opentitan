@@ -26,36 +26,78 @@ logic [1:0] clk_glitch_off;
 assign clk_gp = {clk1_i, clk0_i};
 assign stage_d = {sel_i & !stage_q[0], !sel_i & !stage_q[1]};
 
-generate
-  genvar i;
-  for (i = 0; i < 2; i = i++) begin: gen_two_flops
-    always_ff @(posedge clk_gp[i] or negedge rst_ni) begin: stage1
-      if (!rst_ni) begin
-        intq[i] <= 1'b0;
-      end else begin
-        intq[i] <= stage_d[i];
-      end
-    end
 
-    always_ff @(negedge clk_gp[i] or negedge rst_ni) begin: stage2
-      if (!rst_ni) begin
-        stage_q[i] <= 1'b0;
-      end else begin
-        stage_q[i] <= intq[i];
-      end
-    end
-
-    tc_clk_gating #(
-      
-    ) u_cg (
-      .clk_i(clk_gp[i]),
-      .en_i(stage_q[i]),
-      .test_en_i(1'b0),
-      .clk_o(clk_glitch_off[i])
-    );
-
+always_ff @(posedge clk_gp[0] or negedge rst_ni) begin
+  if (!rst_ni) begin
+    intq[0] <= 1'b0;
+  end else begin
+    intq[0] <= stage_d[0];
   end
-endgenerate
+end
+
+always_ff @(negedge clk_gp[0] or negedge rst_ni) begin
+  if (!rst_ni) begin
+    stage_q[0] <= 1'b0;
+  end else begin
+    stage_q[0] <= intq[0];
+  end
+end
+
+tc_clk_gating #(     
+) u_cg_0 (
+  .clk_i(clk_gp[0]),
+  .en_i(stage_q[0]),
+  .test_en_i(1'b0),
+  .clk_o(clk_glitch_off[0])
+);
+
+always_ff @(posedge clk_gp[1] or negedge rst_ni) begin
+  if (!rst_ni) begin
+    intq[1] <= 1'b0;
+  end else begin
+    intq[1] <= stage_d[1];
+  end
+end
+
+always_ff @(negedge clk_gp[1] or negedge rst_ni) begin
+  if (!rst_ni) begin
+    stage_q[1] <= 1'b0;
+  end else begin
+    stage_q[1] <= intq[1];
+  end
+end
+
+tc_clk_gating #(     
+) u_cg_1 (
+  .clk_i(clk_gp[1]),
+xg  .en_i(stage_q[1]),
+  .test_en_i(1'b0),
+  .clk_o(clk_glitch_off[1])
+);
+
+always_ff @(posedge clk_gp[2] or negedge rst_ni) begin
+  if (!rst_ni) begin
+    intq[2] <= 1'b0;
+  end else begin
+    intq[2] <= stage_d[2];
+  end
+end
+
+always_ff @(negedge clk_gp[2] or negedge rst_ni) begin
+  if (!rst_ni) begin
+    stage_q[2] <= 1'b0;
+  end else begin
+    stage_q[2] <= intq[2];
+  end
+end
+
+tc_clk_gating #(     
+) u_cg_2 (
+  .clk_i(clk_gp[2]),
+  .en_i(stage_q[2]),
+  .test_en_i(1'b0),
+  .clk_o(clk_glitch_off[2])
+);
 
 assign clk_o = |clk_glitch_off;
 
