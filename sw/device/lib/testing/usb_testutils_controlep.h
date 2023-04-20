@@ -11,6 +11,13 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/testing/usb_testutils.h"
 
+// DPI test numbers
+typedef enum usb_testutils_test_number {
+  kUsbTestNumberSmoke = 0,
+  kUsbTestNumberStreams,
+  kUsbTestNumberIso
+} usb_testutils_test_number_t;
+
 typedef enum usb_testutils_ctstate {
   kUsbTestutilsCtIdle,
   kUsbTestutilsCtWaitIn,      // Queued IN data stage, waiting ack
@@ -126,7 +133,7 @@ status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
   USB_EP_DSCR_LEN,                 /* bLength                              */ \
       5,                           /* bDescriptorType                      */ \
       (ep) | (((in) << 7) & 0x80), /* bEndpointAddress, top bit set for IN */ \
-      0x02,                        /* bmAttributes (0x02=bulk, data)       */ \
+      kUsbTransferTypeBulk,        /* bmAttributes (0x02=bulk, data)       */ \
       (maxsize)&0xff,              /* wMaxPacketSize[0]                    */ \
       (maxsize) >> 8,              /* wMaxPacketSize[1]                    */ \
       (interval)                   /* bInterval                            */

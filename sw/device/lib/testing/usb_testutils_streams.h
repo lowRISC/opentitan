@@ -221,6 +221,7 @@ struct usb_testutils_streams_ctx {
  *
  * @param  ctx       Context state for streaming test
  * @param  nstreams  Number of streams
+ * @param  xfr_types Transfer types to be used for the individual streams
  * @param  num_bytes Number of bytes to be transferred by each stream
  * @param  flags     Stream/test flags to be used for each stream
  * @param  verbose   Whether to perform verbose logging for each stream
@@ -228,7 +229,9 @@ struct usb_testutils_streams_ctx {
  */
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
-                                    unsigned nstreams, uint32_t num_bytes,
+                                    unsigned nstreams,
+                                    usb_testutils_transfer_type_t xfr_types[],
+                                    uint32_t num_bytes,
                                     usbdev_stream_flags_t flags, bool verbose);
 
 /**
@@ -258,6 +261,7 @@ bool usb_testutils_streams_completed(const usb_testutils_streams_ctx_t *ctx);
  *
  * @param  ctx       Context state for streaming test
  * @param  id        Stream identifier (0-based)
+ * @param  xfr_type  Transfer type to be usd for this stream
  * @param  ep_in     Endpoint to be used for IN traffic (to host)
  * @param  ep_out    Endpoint to be used for OUT traffic (from host)
  * @param  num_bytes Number of bytes to be transferred by stream
@@ -267,6 +271,7 @@ bool usb_testutils_streams_completed(const usb_testutils_streams_ctx_t *ctx);
  */
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_stream_init(usb_testutils_streams_ctx_t *ctx, uint8_t id,
+                                   usb_testutils_transfer_type_t xfr_type,
                                    uint8_t ep_in, uint8_t ep_out,
                                    uint32_t num_bytes,
                                    usbdev_stream_flags_t flags, bool verbose);

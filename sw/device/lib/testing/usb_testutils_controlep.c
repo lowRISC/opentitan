@@ -403,8 +403,9 @@ status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
                                       const uint8_t *test_dscr,
                                       size_t test_dscr_len) {
   ctctx->ctx = ctx;
-  TRY(usb_testutils_endpoint_setup(ctx, (uint8_t)ep, kUsbdevOutMessage, ctctx,
-                                   ctrl_tx_done, ctrl_rx, NULL, ctrl_reset));
+  TRY(usb_testutils_endpoint_setup(
+      ctx, ep, kUsbTransferTypeControl, kUsbTransferTypeControl,
+      kUsbdevOutMessage, ctctx, ctrl_tx_done, ctrl_rx, NULL, ctrl_reset));
   ctctx->ep = ep;
   ctctx->ctrlstate = kUsbTestutilsCtIdle;
   ctctx->cfg_dscr = cfg_dscr;

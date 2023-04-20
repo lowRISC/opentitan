@@ -218,9 +218,11 @@ bool test_main(void) {
                (generating ? kUsbdevStreamFlagCheck : 0U) |
                (retrying ? kUsbdevStreamFlagRetry : 0U) |
                (recving ? kUsbdevStreamFlagSend : 0U) |
+               // Note: the 'max_packets' test flag is not required by the DPI
                (max_packets ? kUsbdevStreamFlagMaxPackets : 0U);
 
   // Initialize the test descriptor
+  // Note: the 'max packets' test flag is not required by the DPI model
   const uint8_t desc[] = {
       USB_TESTUTILS_TEST_DSCR(1, NUM_STREAMS | (uint8_t)test_flags, 0, 0, 0)};
   memcpy(test_descriptor, desc, sizeof(test_descriptor));
@@ -242,9 +244,17 @@ bool test_main(void) {
     CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
   }
 
+  // Describe the transfer type of each stream;
+  // Note: for now we support only Bulk Transfer streams but this should change
+  // in future, eg. in response to test configuration.
+  usb_testutils_transfer_type_t xfr_types[USBUTILS_STREAMS_MAX];
+  for (unsigned s = 0U; s < nstreams; s++) {
+    xfr_types[s] = kUsbTransferTypeBulk;
+  }
+
   // Initialise the state of the streams
-  CHECK_STATUS_OK(usb_testutils_streams_init(ctx, nstreams, transfer_bytes,
-                                             test_flags, verbose));
+  CHECK_STATUS_OK(usb_testutils_streams_init(
+      ctx, nstreams, xfr_types, transfer_bytes, test_flags, verbose));
 
   if (verbose) {
     LOG_INFO("Commencing data transfer...");
