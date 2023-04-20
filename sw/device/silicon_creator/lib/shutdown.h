@@ -87,6 +87,7 @@ typedef enum shutdown_error_redact {
 typedef enum shutdown_log_prefix {
   kShutdownLogPrefixBootFault = LOG_PREFIX_('B', 'F', 'V'),
   kShutdownLogPrefixLifecycle = LOG_PREFIX_('L', 'C', 'V'),
+  kShutdownLogPrefixVersion = LOG_PREFIX_('V', 'E', 'R'),
 } shutdown_log_prefix_t;
 
 /**

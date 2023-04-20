@@ -23,6 +23,13 @@ genrule(
     stamp = 1,  # this provides volatile-status.txt
 )
 
+genrule(
+    name = "scm_revision_file",
+    outs = ["scm_revision.txt"],
+    cmd = """awk '/BUILD_SCM_REVISION/ { print $$2 }' bazel-out/volatile-status.txt > $@""",
+    stamp = 1,  # this provides volatile-status.txt
+)
+
 py_binary(
     name = "otbn_build",
     srcs = ["otbn_build.py"],

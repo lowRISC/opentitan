@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules:autogen.bzl", "autogen_chip_info")
 load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 
@@ -272,6 +273,8 @@ filegroup(
     ],
 )
 
+autogen_chip_info(name = "chip_info")
+
 dual_cc_library(
     name = "shutdown",
     srcs = dual_inputs(
@@ -289,6 +292,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            ":chip_info",
             ":error",
             ":epmp_defs",
             "//sw/device/lib/base:hardened",

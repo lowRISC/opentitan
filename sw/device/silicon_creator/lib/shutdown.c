@@ -15,6 +15,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/silicon_creator/lib/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
@@ -379,14 +380,19 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
   uart_ctrl_reg = bitfield_bit32_write(uart_ctrl_reg, UART_CTRL_TX_BIT, true);
   abs_mmio_write32(kUartBase + UART_CTRL_REG_OFFSET, uart_ctrl_reg);
 
+  // Extract the commit hash from the `chip_info` at the top of ROM.
+  uint64_t chip_info_version = kChipInfo.scm_revision;
+  uint32_t chip_info_version_truncated = chip_info_version >> 32;
+
   // Print the error message and the raw life cycle state as reported by the
   // hardware.
   shutdown_print(kShutdownLogPrefixBootFault, redacted_error);
   shutdown_print(kShutdownLogPrefixLifecycle, raw_state);
+  shutdown_print(kShutdownLogPrefixVersion, chip_info_version_truncated);
 
 #ifdef OT_PLATFORM_RV32
   // Wait until UART TX is complete.
-  static_assert(2 * kErrorMsgLen <= kUartFifoSize,
+  static_assert(3 * kErrorMsgLen <= kUartFifoSize,
                 "Total message length must be less than TX FIFO size.");
   CSR_WRITE(CSR_REG_MCYCLE, 0);
   uint32_t mcycle;
