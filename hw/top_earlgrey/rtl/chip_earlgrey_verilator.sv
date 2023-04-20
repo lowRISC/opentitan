@@ -580,7 +580,8 @@ module chip_earlgrey_verilator (
     // Memory attributes
     // This is different between verilator and the rest of the platforms right now
     .ram_1p_cfg_i                 ('0),
-    .ram_2p_cfg_i                 ('0),
+    .spi_ram_2p_cfg_i             ('0),
+    .usb_ram_2p_cfg_i             ('0),
     .rom_cfg_i                    ('0),
 
     // DFT signals

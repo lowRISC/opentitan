@@ -569,7 +569,8 @@ module chip_${top["name"]}_${target["name"]} #(
   ast_pkg::dpm_rm_t ast_ram_2p_lcfg;
 
   prim_ram_1p_pkg::ram_1p_cfg_t ram_1p_cfg;
-  prim_ram_2p_pkg::ram_2p_cfg_t ram_2p_cfg;
+  prim_ram_2p_pkg::ram_2p_cfg_t spi_ram_2p_cfg;
+  prim_ram_2p_pkg::ram_2p_cfg_t usb_ram_2p_cfg;
   prim_rom_pkg::rom_cfg_t rom_cfg;
 
   // conversion from ast structure to memory centric structures
@@ -584,23 +585,32 @@ module chip_${top["name"]}_${target["name"]} #(
               }
   };
 
-  assign ram_2p_cfg = '{
-    a_ram_fcfg: '{
+  // this maps as follows:
+  // assign usb_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_fcfg, ram_2p_cfg_i.b_ram_fcfg};
+  assign usb_ram_2p_cfg = '{
+    a_ram_lcfg: '{
                    cfg_en: ast_ram_2p_fcfg.marg_en_a,
                    cfg:    ast_ram_2p_fcfg.marg_a
                  },
+    b_ram_lcfg: '{
+                   cfg_en: ast_ram_2p_fcfg.marg_en_b,
+                   cfg:    ast_ram_2p_fcfg.marg_b
+                 },
+    default: '0
+  };
+
+  // this maps as follows:
+  // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
+  assign spi_ram_2p_cfg = '{
     a_ram_lcfg: '{
                    cfg_en: ast_ram_2p_lcfg.marg_en_a,
                    cfg:    ast_ram_2p_lcfg.marg_a
                  },
-    b_ram_fcfg: '{
-                   cfg_en: ast_ram_2p_fcfg.marg_en_b,
-                   cfg:    ast_ram_2p_fcfg.marg_b
-                 },
     b_ram_lcfg: '{
                    cfg_en: ast_ram_2p_lcfg.marg_en_b,
                    cfg:    ast_ram_2p_lcfg.marg_b
-                 }
+                 },
+    default: '0
   };
 
   assign rom_cfg = '{
@@ -1000,7 +1010,9 @@ module chip_${top["name"]}_${target["name"]} #(
 
     // Memory attributes
     .ram_1p_cfg_i                 ( ram_1p_cfg                 ),
-    .ram_2p_cfg_i                 ( ram_2p_cfg                 ),
+    .spi_ram_2p_cfg_i             ( spi_ram_2p_cfg             ),
+    .usb_ram_2p_cfg_i             ( usb_ram_2p_cfg             ),
+
     .rom_cfg_i                    ( rom_cfg                    ),
 
     // DFT signals
@@ -1176,7 +1188,8 @@ module chip_${top["name"]}_${target["name"]} #(
 
     // Memory attributes
     .ram_1p_cfg_i    ( '0 ),
-    .ram_2p_cfg_i    ( '0 ),
+    .spi_ram_2p_cfg_i( '0 ),
+    .usb_ram_2p_cfg_i( '0 ),
     .rom_cfg_i       ( '0 ),
 
     // DFT signals
