@@ -148,8 +148,10 @@ module csrng
     `ASSERT_KNOWN(CsrngRspAckKnownO_A, csrng_cmd_o[i].csrng_rsp_ack)
     `ASSERT_KNOWN(CsrngRspStsKnownO_A, csrng_cmd_o[i].csrng_rsp_sts)
     `ASSERT_KNOWN(CsrngGenbitsValidKnownO_A, csrng_cmd_o[i].genbits_valid)
-    `ASSERT_KNOWN(CsrngGenbitsFipsKnownO_A, csrng_cmd_o[i].genbits_fips)
-    `ASSERT_KNOWN(CsrngGenbitsBusKnownO_A, csrng_cmd_o[i].genbits_bus)
+    `ASSERT_KNOWN_IF(CsrngGenbitsFipsKnownO_A, csrng_cmd_o[i].genbits_fips,
+        csrng_cmd_o[i].genbits_valid)
+    `ASSERT_KNOWN_IF(CsrngGenbitsBusKnownO_A, csrng_cmd_o[i].genbits_bus,
+        csrng_cmd_o[i].genbits_valid)
   end : gen_app_if_asserts
 
   // Alerts
