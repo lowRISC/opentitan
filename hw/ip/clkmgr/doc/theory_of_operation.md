@@ -183,10 +183,14 @@ For example, software should ensure that Aes / Otbn activities have completed be
 
 ### Clock Division
 
-Not all clocks are the same frequency as the source.
-In cases where there is a frequency mismatch, the clock manager supports clock dividers to step down the frequency.
-The divided frequency is not assumed to be synchronous with its source and are thus treated like another asynchronous branch.
+Not all peripherals run at the full IO clock speed, hence the IO clock is divided down by 2x and 4x in normal operation.
+This division ratio can be modified to 1x and 2x when switching to an external clock, since the external clock may be slower than the internal clock source.
+See also [external clock switch support](#external-clock-switch-support).
+
+The divided clock is not assumed to be synchronous with its source and is thus treated like another asynchronous branch.
 Further, the clock dividers are hardwired and have no software control, this is to further ensure there are no simple paths for faulty or malicious software to tamper.
+
+Note that for debug purposes, `ast` can also request a change in the clock division ratio via a dedicated hardware interface (`div_step_down_req_i`).
 
 ### Wait-for-Interrupt Support
 
