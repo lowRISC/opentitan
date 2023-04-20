@@ -58,7 +58,8 @@ Since the DUT does not require any response thus agent driver is fairly simple.
 
 ### UVM RAL Model
 The PATTGEN RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
-It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
 
 #### Test sequences
 All test sequences reside in `hw/ip/pattgen/dv/env/seq_lib`.

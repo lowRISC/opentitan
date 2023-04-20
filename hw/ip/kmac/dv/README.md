@@ -98,7 +98,7 @@ These interfaces are used to send in message data to the KMAC, and to receive an
 ### UVM RAL Model
 The KMAC RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
 
 ### Reference models
 The KMAC testbench utilizes a [C++ reference model](https://github.com/lowRISC/opentitan/blob/master/hw/ip/kmac/dv/dpi/vendor/kerukuro_digestpp/README.md) for various hashing operations (SHA3, SHAKE, CSHAKE, KMAC) to check the DUT's digest output for correctness.
