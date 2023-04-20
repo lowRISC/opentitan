@@ -15,6 +15,7 @@ pub mod rom_detect;
 pub mod unknown;
 pub mod usb;
 pub mod usr_access;
+pub mod vmem;
 pub mod voltage;
 
 /// The `collection` macro provides syntax for hash and set literals.
