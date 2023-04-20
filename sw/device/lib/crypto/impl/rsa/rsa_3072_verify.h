@@ -154,6 +154,22 @@ status_t rsa_3072_verify(const rsa_3072_int_t *signature,
                          const rsa_3072_constants_t *constants,
                          hardened_bool_t *result);
 
+/**
+ * Encrypts data with an RSA-3072 public key; blocks until complete.
+ *
+ * The key exponent must be 65537; no other exponents are supported.
+ *
+ * @param plaintext Message to be encrypted.
+ * @param public_key Key to check the signature against.
+ * @param constants Precomputed Montgomery constants for the public_key.
+ * @param[out] ciphertext Encrypted version of the message.
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_3072_encrypt_public(const rsa_3072_int_t *plaintext,
+                                 const rsa_3072_public_key_t *public_key,
+                                 const rsa_3072_constants_t *constants,
+                                 rsa_3072_int_t *ciphertext);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

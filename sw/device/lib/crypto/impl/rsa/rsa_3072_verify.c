@@ -231,3 +231,19 @@ status_t rsa_3072_verify(const rsa_3072_int_t *signature,
   // Wait for OTBN operations to complete and signature to be verified.
   return rsa_3072_verify_finalize(message, result);
 }
+
+status_t rsa_3072_encrypt_public(const rsa_3072_int_t *plaintext,
+                                 const rsa_3072_public_key_t *public_key,
+                                 const rsa_3072_constants_t *constants,
+                                 rsa_3072_int_t *ciphertext) {
+  // Initiate OTBN modular exponentiation.
+  HARDENED_TRY(rsa_3072_verify_start(plaintext, public_key, constants));
+
+  // Spin here waiting for OTBN to complete.
+  HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Read ciphertext out of OTBN dmem.
+  HARDENED_TRY(read_rsa_3072_int_from_otbn(kOtbnVarRsaOutBuf, ciphertext));
+
+  return OTCRYPTO_OK;
+}
