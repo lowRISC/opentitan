@@ -3,7 +3,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:autogen.bzl", "autogen_hjson_header")
-load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS", "otp_alert_digest", "otp_image", "otp_json", "otp_partition")
+load(
+    "//rules:otp.bzl",
+    "STD_OTP_OVERLAYS",
+    "STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS",
+    "otp_alert_digest",
+    "otp_image",
+    "otp_json",
+    "otp_partition",
+)
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@bazel_skylib//rules:common_settings.bzl", "int_flag", "string_flag")
 
@@ -44,6 +52,8 @@ filegroup(
     name = "all_files",
     srcs = glob(["**"]),
 )
+
+exports_files(["otp_ctrl_img.h.tpl"])
 
 autogen_hjson_header(
     name = "otp_ctrl_regs",
