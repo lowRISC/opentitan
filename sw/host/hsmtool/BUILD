@@ -23,6 +23,8 @@ rust_library(
         "src/util/attribute/object_class.rs",
         "src/util/escape.rs",
         "src/util/helper.rs",
+        "src/util/key/mod.rs",
+        "src/util/key/rsa.rs",
         "src/util/mod.rs",
         "src/util/signing.rs",
     ],
@@ -53,6 +55,9 @@ rust_library(
 rust_test(
     name = "hsmlib_test",
     crate = ":hsmlib",
+    data = glob([
+        "src/util/key/testdata/**",
+    ]),
 )
 
 rust_doc(
