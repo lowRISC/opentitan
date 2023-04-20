@@ -78,8 +78,9 @@ status_t usb_testutils_simpleserial_send_byte(usb_testutils_ss_ctx_t *ssctx,
 status_t usb_testutils_simpleserial_init(usb_testutils_ss_ctx_t *ssctx,
                                          usb_testutils_ctx_t *ctx, uint8_t ep,
                                          void (*got_byte)(uint8_t)) {
-  TRY(usb_testutils_endpoint_setup(ctx, ep, kUsbdevOutStream, ssctx, ss_tx_done,
-                                   ss_rx, ss_flush, NULL));
+  TRY(usb_testutils_endpoint_setup(ctx, ep, kUsbTransferTypeBulk,
+                                   kUsbTransferTypeBulk, kUsbdevOutStream,
+                                   ssctx, ss_tx_done, ss_rx, ss_flush, NULL));
   ssctx->ctx = ctx;
   ssctx->ep = ep;
   ssctx->sending = false;

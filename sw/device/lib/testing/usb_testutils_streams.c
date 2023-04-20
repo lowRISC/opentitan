@@ -286,6 +286,7 @@ bool usb_testutils_stream_completed(const usb_testutils_streams_ctx_t *ctx,
 
 // Initialize a stream, preparing it for use
 status_t usb_testutils_stream_init(usb_testutils_streams_ctx_t *ctx, uint8_t id,
+                                   usb_testutils_transfer_type_t xfr_type,
                                    uint8_t ep_in, uint8_t ep_out,
                                    uint32_t transfer_bytes,
                                    usbdev_stream_flags_t flags, bool verbose) {
@@ -334,16 +335,17 @@ status_t usb_testutils_stream_init(usb_testutils_streams_ctx_t *ctx, uint8_t id,
   // transfers
   usb_testutils_rx_handler_t rx = (ep_in == ep_out) ? strm_rx : rx_show;
 
-  s->tx_ep = ep_in;
-  CHECK_STATUS_OK(usb_testutils_endpoint_setup(
-      ctx->usbdev, ep_in, kUsbdevOutStream, s, strm_tx_done, rx, NULL, NULL));
-
   s->rx_ep = ep_out;
-  if (ep_out != ep_in) {
-    // Set up the endpoint for OUT transfers (FROM host)
-    CHECK_STATUS_OK(usb_testutils_endpoint_setup(
-        ctx->usbdev, ep_out, kUsbdevOutStream, s, NULL, strm_rx, NULL, NULL));
-  }
+  s->tx_ep = ep_in;
+
+  // Set up the endpoint for IN transfers (TO host)
+  CHECK_STATUS_OK(usb_testutils_in_endpoint_setup(ctx->usbdev, ep_in, xfr_type,
+                                                  s, strm_tx_done, NULL, NULL));
+
+  // Set up the endpoint for OUT transfers (FROM host)
+  CHECK_STATUS_OK(usb_testutils_out_endpoint_setup(
+      ctx->usbdev, ep_out, xfr_type, kUsbdevOutStream, s, strm_rx, NULL));
+
   return OK_STATUS();
 }
 
@@ -431,7 +433,9 @@ status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
 }
 
 status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
-                                    unsigned nstreams, uint32_t num_bytes,
+                                    unsigned nstreams,
+                                    usb_testutils_transfer_type_t xfr_types[],
+                                    uint32_t num_bytes,
                                     usbdev_stream_flags_t flags, bool verbose) {
   TRY_CHECK(nstreams <= USBUTILS_STREAMS_MAX);
   TRY_CHECK(nstreams <= UINT8_MAX);
@@ -445,8 +449,8 @@ status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
     const uint8_t ep_in = id + 1U;
     // Which endpoint are we using for the OUT transfers from the host?
     const uint8_t ep_out = id + 1U;
-    TRY(usb_testutils_stream_init(ctx, id, ep_in, ep_out, num_bytes, flags,
-                                  verbose));
+    TRY(usb_testutils_stream_init(ctx, id, xfr_types[id], ep_in, ep_out,
+                                  num_bytes, flags, verbose));
   }
 
   // Decide how many buffers each endpoint may queue up for transmission;
