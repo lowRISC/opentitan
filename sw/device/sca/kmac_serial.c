@@ -221,7 +221,8 @@ static dif_result_t kmac_msg_start(dif_kmac_mode_kmac_t mode, size_t l,
   // Uniform sharing is achieved by XORing a random number into both shares.
   mmio_region_write32(kmac.base_addr, KMAC_KEY_LEN_REG_OFFSET, key_len);
   for (int i = 0; i < ARRAYSIZE(k->share0); ++i) {
-    const uint32_t a = next_lfsr();
+    // Run LFSR for 32 steps to ensure that all state bits are updated.
+    const uint32_t a = next_lfsr(32);
     mmio_region_write32(kmac.base_addr,
                         KMAC_KEY_SHARE0_0_REG_OFFSET + i * sizeof(uint32_t),
                         k->share0[i] ^ a);
