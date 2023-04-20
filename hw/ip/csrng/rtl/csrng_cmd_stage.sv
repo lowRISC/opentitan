@@ -82,7 +82,6 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic                    cmd_gen_cnt_last;
   logic                    cmd_final_ack;
   logic [GenBitsCntrWidth-1:0] cmd_gen_cnt; // max_number_of_bits_per_request = 2^13
-  logic                        genbits_fips;
 
   // Flops.
   logic                    cmd_ack_q, cmd_ack_d;
@@ -394,8 +393,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   assign sfifo_genbits_pop = genbits_vld_o && genbits_rdy_i;
 
   assign genbits_vld_o = cs_enable_i && sfifo_genbits_not_empty;
-  assign {genbits_fips,genbits_bus_o} = sfifo_genbits_rdata;
-  assign genbits_fips_o = genbits_vld_o && genbits_fips;
+  assign {genbits_fips_o, genbits_bus_o} = sfifo_genbits_rdata;
 
 
   assign sfifo_genbits_err =

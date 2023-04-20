@@ -968,7 +968,7 @@ module csrng_core import csrng_pkg::*; #(
     // genbits
     assign csrng_cmd_o[hai].genbits_valid = genbits_stage_vld[hai];
     assign csrng_cmd_o[hai].genbits_fips = genbits_stage_fips[hai];
-    assign csrng_cmd_o[hai].genbits_bus = genbits_stage_vld[hai] ? genbits_stage_bus[hai] : '0;
+    assign csrng_cmd_o[hai].genbits_bus = genbits_stage_bus[hai];
     assign genbits_stage_rdy[hai] = csrng_cmd_i[hai].genbits_ready;
   end : gen_app_if
 
