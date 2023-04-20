@@ -149,6 +149,10 @@
                     size: "4"
                 }
                 {
+                    name: "CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE",
+                    size: "4"
+                }
+                {
                     name: "CREATOR_SW_CFG_RNG_EN",
                     size: "4"
                 }
