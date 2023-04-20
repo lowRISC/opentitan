@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_library(
     name = "hsmlib",
     srcs = [
+        "src/error.rs",
         "src/lib.rs",
         "src/util/attribute/attr.rs",
         "src/util/attribute/attribute_type.rs",
@@ -21,7 +22,9 @@ rust_library(
         "src/util/attribute/mod.rs",
         "src/util/attribute/object_class.rs",
         "src/util/escape.rs",
+        "src/util/helper.rs",
         "src/util/mod.rs",
+        "src/util/signing.rs",
     ],
     crate_name = "hsmtool",
     proc_macro_deps = [
@@ -29,14 +32,19 @@ rust_library(
     ],
     deps = [
         "@crate_index//:anyhow",
+        "@crate_index//:clap",
         "@crate_index//:cryptoki",
         "@crate_index//:cryptoki-sys",
+        "@crate_index//:hex",
         "@crate_index//:indexmap",
         "@crate_index//:num_enum",
         "@crate_index//:once_cell",
+        "@crate_index//:rand",
         "@crate_index//:regex",
+        "@crate_index//:rsa",
         "@crate_index//:serde",
         "@crate_index//:serde_json",
+        "@crate_index//:sha2",
         "@crate_index//:strum",
         "@crate_index//:thiserror",
     ],
