@@ -625,9 +625,22 @@
             '''
     }
     {
-      name: i2c_protocol_transitions_cg
+      name: i2c_protocol_cov_cg
       desc: '''
-            Cover bus state transitions supported in I2C protocol including valid and invalid transitions
+            Cover protocol transitions supported by I2C with single host
+            * Cross protocol transitions with mode of operation of DUT (Host or Target)
+            Cover host mode and target mode enable bits
+            Cover number of bytes transferred in write and read operation
+            * Cover number of bytes as buckets instead of covering every value of number of bytes
+            Cross number of bytes transferred and mode of operation
+            Cover mistimed Start or Stop glitches in target mode
+            '''
+    }
+    {
+      name: i2c_b2b_txn_cg
+      desc: '''
+            Cover combination of back to back read and write transfers covered in test suite
+            Instantiate a separate covergroup for host and target mode of operation
             '''
     }
   ]

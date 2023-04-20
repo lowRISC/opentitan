@@ -115,6 +115,10 @@ class i2c_scoreboard extends cip_base_scoreboard #(
               begin
                 target_mode_wr_obs_fifo.get(obs_wr_item);
                 if (!skip_target_txn_comp) begin
+                  if (cfg.en_cov) begin
+                    cov.sample_i2c_b2b_cg(obs_wr_item.addr,
+                                          ral.ctrl.enablehost.get_mirrored_value());
+                  end
                   obs_wr_item.tran_id = obs_wr_id++;
                   target_mode_wr_exp_fifo.get(exp_wr_item);
                   str = (exp_wr_item.start) ? "addr" : (exp_wr_item.stop) ? "stop" : "wr";
@@ -135,6 +139,9 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         forever begin
           target_mode_rd_obs_fifo.get(obs_rd_item);
           if (!skip_target_rd_comp) begin
+            if (cfg.en_cov) begin
+              cov.sample_i2c_b2b_cg(obs_rd_item.addr, ral.ctrl.enablehost.get_mirrored_value());
+            end
             obs_rd_item.pname = "obs_rd";
             obs_rd_item.tran_id = num_obs_rd++;
             if (read_rnd_data) begin
@@ -527,12 +534,18 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     forever begin
       if (dir == BusOpWrite) begin
         wr_item_fifo.get(dut_trn);
+        if (cfg.en_cov) begin
+          cov.sample_i2c_b2b_cg(dut_trn.addr, ral.ctrl.enablehost.get_mirrored_value());
+        end
         wait(exp_wr_q.size() > 0);
         lastidx = dut_trn.data_q.size();
         cfg.lastbyte = dut_trn.data_q[lastidx - 1];
         exp_trn = exp_wr_q.pop_front();
       end else begin  // BusOpRead
         rd_item_fifo.get(dut_trn);
+        if (cfg.en_cov) begin
+          cov.sample_i2c_b2b_cg(dut_trn.addr, ral.ctrl.enablehost.get_mirrored_value());
+        end
         wait(exp_rd_q.size() > 0);
         exp_trn = exp_rd_q.pop_front();
       end
