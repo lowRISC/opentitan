@@ -54,7 +54,7 @@ It does not offer any functionality yet.
 ### UVM RAL Model
 The USBDEV RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
 
 ### Reference models
 There are no reference models in use currently.

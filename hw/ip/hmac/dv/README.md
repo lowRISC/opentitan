@@ -54,7 +54,7 @@ TL host interface into HMAC device.
 ### UVM RAL Model
 The HMAC RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
 
 ### Reference models
 To check the correctness of the output for SHA256 and HMAC, the testbench uses

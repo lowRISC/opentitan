@@ -57,7 +57,7 @@ These baud rates are supported: 9600, 115200, 230400, 1Mbps(1048576), 2Mbps(2097
 ### UVM RAL Model
 The UART RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
 
 ### Stimulus strategy
 #### Test sequences

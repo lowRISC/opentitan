@@ -103,7 +103,7 @@ This interface contains the necessary Lifecycle and OTP structs to enable and di
 ### UVM RAL Model
 The SRAM_CTRL RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
 
 Besides default RAL that provides the access to CSRs, there is another RAL for SRAM memory.
 This RAL is in `sram_ctrl_prim_ral_pkg.sv`, it is added manually and enabled with all the common CSR and memory tests, such as mem_walk, tl_errors, tl_intg_err, etc.

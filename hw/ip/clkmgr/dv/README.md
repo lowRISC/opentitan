@@ -63,7 +63,7 @@ CLKMGR testbench instantiates (already handled in CIP base env) [tl_agent](../..
 ### UVM RAL Model
 The CLKMGR RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
 
 ## Stimulus strategy
 This module is rather simple: the stimulus is just the external pins and the CSR updates.

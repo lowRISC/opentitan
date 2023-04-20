@@ -197,7 +197,7 @@ and the incoming device transactions where it will capture the response items an
 ### UVM RAL Model
 The SPI_HOST RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
 
 ### Stimulus strategy
 #### Test sequences

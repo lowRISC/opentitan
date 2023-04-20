@@ -85,7 +85,7 @@ ${'###'} UVC/agent 2
 ${'###'} UVM RAL Model
 The ${name.upper()} RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
+It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}).
 
 % endif
 ${'###'} Reference models
