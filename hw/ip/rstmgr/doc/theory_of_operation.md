@@ -134,6 +134,12 @@ The reset manager then checks as follows:
 
 - If all reset conditions are satisfied, wait for the reset release to gracefully complete the cycle.
 
+### Reset Indications for Alert Handler
+
+The alert handler needs to know the status of the various reset domains in the system to avoid false alert indications due to the ping mechanism.
+To that end, the reset manager outputs a 4bit MuBi signal for each reset domain that indicates whether its reset is active.
+For more information on this mechanism, see [alert handler documentation](../../../top_earlgrey/ip_autogen/alert_handler/doc/theory_of_operation.md#low-power-management-of-alert-channels).
+
 ## Hardware Interfaces
 
 ### Parameters

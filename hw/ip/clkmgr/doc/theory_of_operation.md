@@ -156,6 +156,12 @@ For a detailed breakdown between `por` and `life cycle` resets, please see the [
 The following diagram enhances the block diagram to illustrate the overall reset domains of the clock manager.
 ![Clock Manager Block Diagram](../doc/clkmgr_rst_domain.svg)
 
+### Clock Gated Indications for Alert Handler
+
+The alert handler needs to know the status of the various clock domains in the system to avoid false alert indications due to the ping mechanism.
+To that end, the clock manager outputs a 4bit MuBi signal for each clock domain that indicates whether its clock is active.
+For more information on this mechanism, see [alert handler documentation](../../../top_earlgrey/ip_autogen/alert_handler/doc/theory_of_operation.md#low-power-management-of-alert-channels).
+
 ## Hardware Interfaces
 
 * [Interface Tables](../../../top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson#interfaces)
