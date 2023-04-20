@@ -186,6 +186,14 @@ module rv_core_ibex
   logic [ 3:0] rvfi_mem_wmask;
   logic [31:0] rvfi_mem_rdata;
   logic [31:0] rvfi_mem_wdata;
+  logic [31:0] rvfi_ext_mip;
+  logic        rvfi_ext_nmi;
+  logic        rvfi_ext_nmi_int;
+  logic        rvfi_ext_debug_req;
+  logic        rvfi_ext_debug_mode;
+  logic        rvfi_ext_rf_wr_suppress;
+  logic [63:0] rvfi_ext_mcycle;
+  logic        rvfi_ext_ic_scr_key_valid;
 `endif
 
   // core sleeping
@@ -480,6 +488,16 @@ module rv_core_ibex
     .rvfi_mem_wmask,
     .rvfi_mem_rdata,
     .rvfi_mem_wdata,
+    .rvfi_ext_mip,
+    .rvfi_ext_nmi,
+    .rvfi_ext_nmi_int,
+    .rvfi_ext_debug_req,
+    .rvfi_ext_debug_mode,
+    .rvfi_ext_rf_wr_suppress,
+    .rvfi_ext_mcycle,
+    .rvfi_ext_mhpmcounters(),
+    .rvfi_ext_mhpmcountersh(),
+    .rvfi_ext_ic_scr_key_valid,
 `endif
     // SEC_CM: FETCH.CTRL.LC_GATED
 `ifndef FAKE            

@@ -11,7 +11,7 @@
 `include "axi/typedef.svh"
 
 package secure_subsystem_synth_pkg;
-`ifndef ALSAQR 
+/*`ifndef ALSAQR 
   localparam SynthAxiAddrWidth    = 48;
   localparam SynthAxiOutIdWidth   = 2;
   localparam SynthAxiUserWidth    = 2;
@@ -44,7 +44,7 @@ package secure_subsystem_synth_pkg;
   localparam SynthAsyncAxiOutBWidth  = (2**SynthLogDepth)*axi_pkg::b_width(SynthAxiOutIdWidth, SynthAxiUserWidth);
   localparam SynthAsyncAxiOutArWidth = (2**SynthLogDepth)*axi_pkg::ar_width(SynthAxiAddrWidth, SynthAxiOutIdWidth, SynthAxiUserWidth);
   localparam SynthAsyncAxiOutRWidth  = (2**SynthLogDepth)*axi_pkg::r_width(SynthAxiDataWidth, SynthAxiOutIdWidth, SynthAxiUserWidth);
-`else
+`else*/
   localparam SynthAxiAddrWidth    = 64;
   localparam SynthAxiOutIdWidth   = 8;
   localparam SynthAxiUserWidth    = 1;
@@ -77,5 +77,5 @@ package secure_subsystem_synth_pkg;
   localparam SynthAsyncAxiOutBWidth  = (2**SynthLogDepth)*$bits(synth_axi_out_b_chan_t);
   localparam SynthAsyncAxiOutArWidth = (2**SynthLogDepth)*$bits(synth_axi_out_ar_chan_t);
   localparam SynthAsyncAxiOutRWidth  = (2**SynthLogDepth)*$bits(synth_axi_out_r_chan_t);
-`endif
+//`endif
 endpackage

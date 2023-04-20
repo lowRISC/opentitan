@@ -297,6 +297,7 @@ module secure_subsystem_synth_wrap
       .flash_bist_enable_i(lc_ctrl_pkg::Off),
       .flash_power_down_h_i('0),
       .flash_power_ready_h_i(1'b1),
+      .flash_test_voltage_h_io(),
       .dft_hold_tap_sel_i('0),
       .pwrmgr_ast_rsp_i(5'b11111),
       .otp_ctrl_otp_ast_pwr_seq_h_i('0),
