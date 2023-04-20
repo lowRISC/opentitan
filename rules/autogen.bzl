@@ -65,35 +65,34 @@ autogen_hjson_header = rule(
     },
 )
 
-def _chip_info(ctx):
-    header = ctx.actions.declare_file("chip_info.h")
+def _chip_info_src(ctx):
+    out_source = ctx.actions.declare_file("chip_info.c")
     ctx.actions.run(
-        outputs = [header],
+        outputs = [
+            out_source,
+        ],
         inputs = [
             ctx.file.version,
             ctx.executable._tool,
         ],
         arguments = [
             "-o",
-            header.dirname,
+            out_source.dirname,
             "--ot_version_file",
             ctx.file.version.path,
         ],
         executable = ctx.executable._tool,
     )
+
     return [
-        CcInfo(compilation_context = cc_common.create_compilation_context(
-            includes = depset([header.dirname]),
-            headers = depset([header]),
-        )),
-        DefaultInfo(files = depset([header])),
+        DefaultInfo(files = depset([out_source])),
     ]
 
-autogen_chip_info = rule(
-    implementation = _chip_info,
+autogen_chip_info_src = rule(
+    implementation = _chip_info_src,
     attrs = {
         "version": attr.label(
-            default = "//util:ot_version_file",
+            default = "//util:scm_revision_file",
             allow_single_file = True,
         ),
         "_tool": attr.label(
@@ -103,6 +102,26 @@ autogen_chip_info = rule(
         ),
     },
 )
+
+def autogen_chip_info(name):
+    """Generates a cc_library named `name` that defines chip info."""
+
+    # Generate a C source file that defines the chip info struct. This is an
+    # implementation detail and should not be depended on externally.
+    chip_info_src_target = name + "_gen_src"
+    autogen_chip_info_src(name = chip_info_src_target)
+
+    # Package up the generated source file with its corresponding header file
+    # and dependencies. Any target that wants access to the chip info should
+    # depend on this.
+    native.cc_library(
+        name = name,
+        srcs = [chip_info_src_target],
+        hdrs = ["//sw/device/silicon_creator/lib:chip_info.h"],
+        deps = [
+            "//sw/device/lib/base:macros",
+        ],
+    )
 
 def _cryptotest_hjson_external(ctx):
     """

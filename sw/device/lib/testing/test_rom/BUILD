@@ -5,15 +5,10 @@
 load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_rom_binary")
 load("//rules:opentitan_test.bzl", "opentitan_functest")
 load("//rules:exclude_files.bzl", "exclude_files")
-load("//rules:autogen.bzl", "autogen_chip_info")
 load("//rules:linker.bzl", "ld_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
-
-autogen_chip_info(
-    name = "chip_info",
-)
 
 ld_library(
     name = "linker_script",
@@ -120,7 +115,6 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":chip_info",
         ":target_test_rom_lib",
         ":test_rom_manifest",
         "//hw/ip/csrng/data:csrng_regs",
@@ -153,6 +147,7 @@ cc_library(
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
         "//sw/device/silicon_creator/lib/base:static_critical_epmp_state",

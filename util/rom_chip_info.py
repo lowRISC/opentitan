@@ -6,26 +6,39 @@ r"""Generates chip_info.h for ROM build
 """
 
 import argparse
+import hashlib
 import logging as log
 import sys
-from datetime import datetime
 from pathlib import Path
 
-header_template = r"""
+
+def generate_chip_info_c_source(scm_revision: int) -> str:
+    """Return the contents of a C source file that defines `kChipInfo`.
+
+    Args:
+        scm_revision: SHA1 sum identifying the current SCM revision.
+    """
+
+    SHA1_DIGEST_SIZE_BITS = hashlib.sha1().digest_size * 8
+    assert scm_revision.bit_length() <= SHA1_DIGEST_SIZE_BITS
+
+    # Truncate the SCM revision to the top N bits.
+    SCM_REVISION_SIZE_BITS = 64
+    shift_amount = SHA1_DIGEST_SIZE_BITS - SCM_REVISION_SIZE_BITS
+    scm_revision >>= shift_amount
+
+    return f"""
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
 // --------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! ---------//
 
-#ifndef _F_CHIPINFO_H__
-#define _F_CHIPINFO_H__
+#include "sw/device/silicon_creator/lib/chip_info.h"
 
-static const char chip_info[128] __attribute__((section(".chip_info"))) =
-  "Version: {%version%}, Build Date: {%build_date%}";
-
-#endif  // _F_CHIPINFO_H__
-
+const chip_info_t kChipInfo __attribute__((section(".chip_info"))) = {{
+    .scm_revision = (uint64_t){scm_revision:#0x},
+}};
 """
 
 
@@ -57,24 +70,18 @@ def main():
         log.error(
             "Missing ot_version, provide --ot_version or --ot_version_file.")
         raise SystemExit(sys.exc_info()[1])
+    version = int(version, base=16)
+    log.info("Version: %x" % (version, ))
 
     outdir = Path(args.outdir)
 
     outdir.mkdir(parents=True, exist_ok=True)
-    out_path = outdir / "chip_info.h"
+    source_out_path = outdir / "chip_info.c"
 
-    now = datetime.now()
-    wall_time = now.strftime("%Y-%m-%d %H:%M:%S")
+    output = generate_chip_info_c_source(version)
 
-    log.info("Version: %s" % (version, ))
-    log.info("Build Date: %s" % (wall_time, ))
-
-    output = header_template
-    output = output.replace('{%version%}', version, 1)
-    output = output.replace('{%build_date%}', wall_time, 1)
-
-    with out_path.open(mode='w', encoding='UTF-8') as fout:
-        fout.write(output + "\n")
+    with source_out_path.open(mode='w', encoding='UTF-8') as fout:
+        fout.write(output)
 
 
 if __name__ == "__main__":
