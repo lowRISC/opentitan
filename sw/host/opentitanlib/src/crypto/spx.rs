@@ -11,7 +11,7 @@ use pqcrypto_traits::sign::PublicKey;
 use pqcrypto_traits::sign::SecretKey;
 
 use crate::util::bigint::fixed_size_bigint;
-use crate::util::file::{FromReader, ToWriter};
+use crate::util::file::{FromReader, PemSerilizable, ToWriter};
 
 // Signature and key sizes taken from Table 8 on page 57 of the SPHINCS+ Round 3 Specification:
 // https://sphincs.org/data/sphincs+-round3-specification.pdf
@@ -99,6 +99,12 @@ impl FromReader for SpxKeypair {
     }
 }
 
+impl PemSerilizable for SpxKeypair {
+    fn label() -> &'static str {
+        "RAW SPHINCS+ PRIVATE KEY"
+    }
+}
+
 /// Wrapper for a SPHINCS+ public key.
 #[derive(Clone)]
 pub struct SpxPublicKey(spx::PublicKey);
@@ -121,6 +127,12 @@ impl FromReader for SpxPublicKey {
         let mut buf = [0u8; PUBLIC_KEY_BYTE_LEN];
         r.read_exact(&mut buf)?;
         Ok(SpxPublicKey(spx::PublicKey::from_bytes(&buf)?))
+    }
+}
+
+impl PemSerilizable for SpxPublicKey {
+    fn label() -> &'static str {
+        "RAW SPHINCS+ PUBLIC KEY"
     }
 }
 
