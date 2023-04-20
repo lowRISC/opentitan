@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{ensure, Result};
 use nix::libc::c_int;
 use nix::poll;
+use pem_rfc7468::{Decoder, Encoder, LineEnding};
+use thiserror::Error;
+
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::{self, Read, Write};
@@ -12,12 +15,64 @@ use std::os::unix::io::{AsRawFd, RawFd};
 use std::path::Path;
 use std::time::Duration;
 
+/// Error type for errors related to PEM serialization.
+#[derive(Debug, Error)]
+enum PemError {
+    #[error("PEM type error; expecting {0:?} but got {1:?}")]
+    LabelError(String, String),
+}
+
+/// Trait for data that can be written to and read from PEM files.
+pub trait PemSerilizable: ToWriter + FromReader {
+    /// The label for the PEM file.
+    ///
+    /// Appears around the base64 encoded data.
+    /// -----BEGIN MY_LABEL-----
+    /// ...
+    /// -----END MY_LABEL-----
+    fn label() -> &'static str;
+
+    /// Write to PEM file with label from `Self::label()`.
+    fn write_pem_file(&self, path: &Path) -> Result<()> {
+        const MAX_PEM_SIZE: usize = 4096;
+
+        let mut bytes = Vec::<u8>::new();
+        self.to_writer(&mut bytes)?;
+
+        let mut buf = [0u8; MAX_PEM_SIZE];
+        let mut encoder = Encoder::new(Self::label(), LineEnding::LF, &mut buf)?;
+        encoder.encode(&bytes)?;
+        let len = encoder.finish()?;
+
+        let mut file = File::create(path)?;
+        Ok(file.write_all(&buf[..len])?)
+    }
+
+    /// Read in from PEM file, ensuring the label matches `Self::label()`.
+    fn read_pem_file(path: &Path) -> Result<Self> {
+        let mut file = File::open(path)?;
+        let mut pem = Vec::<u8>::new();
+        file.read_to_end(&mut pem)?;
+
+        let mut decoder = Decoder::new(&pem)?;
+        ensure!(
+            decoder.type_label() == Self::label(),
+            PemError::LabelError(decoder.type_label().to_owned(), Self::label().to_owned()),
+        );
+
+        let mut buf = Vec::new();
+        decoder.decode_to_end(&mut buf)?;
+
+        Self::from_reader(buf.as_slice())
+    }
+}
+
 /// Trait for data types that can be streamed to a reader.
 pub trait FromReader: Sized {
     /// Reads in an instance of `Self`.
     fn from_reader(r: impl Read) -> Result<Self>;
 
-    /// Reads an instance of `Self` from a file at `path`.
+    /// Reads an instance of `Self` from a binary file at `path`.
     fn read_from_file(path: &Path) -> Result<Self> {
         let file = File::open(path)?;
         Self::from_reader(file)
@@ -29,7 +84,7 @@ pub trait ToWriter: Sized {
     /// Writes out `self`.
     fn to_writer(&self, w: &mut impl Write) -> Result<()>;
 
-    /// Writes `self` to a file at `path`.
+    /// Writes `self` to a file at `path` in binary format.
     fn write_to_file(self, path: &Path) -> Result<()> {
         let mut file = File::create(path)?;
         self.to_writer(&mut file)
