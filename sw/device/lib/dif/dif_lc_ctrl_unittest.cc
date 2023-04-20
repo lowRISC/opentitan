@@ -156,10 +156,12 @@ TEST_F(StateTest, NullArgs) {
 class MutexTest : public LcCtrlTest {};
 
 TEST_F(MutexTest, Acquire) {
+  EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REGWEN_REG_OFFSET, true);
   EXPECT_WRITE32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8True);
   EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8True);
   EXPECT_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc_));
 
+  EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REGWEN_REG_OFFSET, true);
   EXPECT_WRITE32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8True);
   EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET, kMultiBitBool8False);
   EXPECT_EQ(dif_lc_ctrl_mutex_try_acquire(&lc_), kDifUnavailable);
@@ -177,6 +179,13 @@ TEST_F(MutexTest, Release) {
 TEST_F(MutexTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_lc_ctrl_mutex_try_acquire(nullptr));
   EXPECT_DIF_BADARG(dif_lc_ctrl_mutex_release(nullptr));
+}
+
+TEST_F(MutexTest, LockMutexClaim) {
+  EXPECT_WRITE32(LC_CTRL_CLAIM_TRANSITION_IF_REGWEN_REG_OFFSET, false);
+  EXPECT_DIF_OK(dif_lc_ctrl_sw_mutex_lock(&lc_));
+  EXPECT_READ32(LC_CTRL_CLAIM_TRANSITION_IF_REGWEN_REG_OFFSET, false);
+  EXPECT_EQ(dif_lc_ctrl_mutex_try_acquire(&lc_), kDifLocked);
 }
 
 class ConfigureTest : public LcCtrlTest {};

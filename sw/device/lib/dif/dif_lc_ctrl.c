@@ -239,6 +239,12 @@ dif_result_t dif_lc_ctrl_mutex_try_acquire(const dif_lc_ctrl_t *lc) {
     return kDifBadArg;
   }
 
+  // Check that mutex claim via SW is not locked.
+  if (mmio_region_read32(lc->base_addr,
+                         LC_CTRL_CLAIM_TRANSITION_IF_REGWEN_REG_OFFSET) == 0) {
+    return kDifLocked;
+  }
+
   mmio_region_write32(lc->base_addr, LC_CTRL_CLAIM_TRANSITION_IF_REG_OFFSET,
                       kMultiBitBool8True);
   uint32_t reg =
@@ -431,6 +437,18 @@ dif_result_t dif_lc_ctrl_get_otp_vendor_test_reg(const dif_lc_ctrl_t *lc,
 
   *settings = mmio_region_read32(lc->base_addr,
                                  LC_CTRL_OTP_VENDOR_TEST_CTRL_REG_OFFSET);
+
+  return kDifOk;
+}
+
+dif_result_t dif_lc_ctrl_sw_mutex_lock(const dif_lc_ctrl_t *lc) {
+  if (lc == NULL) {
+    return kDifBadArg;
+  }
+
+  // Clear CLAIM_TRANSITION_IF_REGWEN to lock mutex claim from TL-UL side.
+  mmio_region_write32(lc->base_addr,
+                      LC_CTRL_CLAIM_TRANSITION_IF_REGWEN_REG_OFFSET, 0);
 
   return kDifOk;
 }

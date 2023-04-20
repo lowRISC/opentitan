@@ -433,6 +433,16 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_lc_ctrl_get_otp_vendor_test_reg(const dif_lc_ctrl_t *lc,
                                                  uint32_t *settings);
 
+/**
+ * Clears LC_CTRL_CLAIM_TRANSITION_IF_REGWEN to lock ability to claim mutex over
+ * TL-UL, effectively disabling SW-initiated lifecycle transitions.
+ *
+ * @param lc A lifecycle handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_lc_ctrl_sw_mutex_lock(const dif_lc_ctrl_t *lc);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
