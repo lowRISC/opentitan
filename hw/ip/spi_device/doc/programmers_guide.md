@@ -40,6 +40,20 @@ The SRAM begins at `0x1000`, which in the figure is `0x000`.
 The regions starting from `0xF00` to `0xFFF` are assigned to TPM Read/Write FIFOs.
 They are not used in this version of IP.
 
+## SPI Mode Changes
+
+The clock for port B of the dual-port SRAM comes from different sources, depending on which SPI mode is selected.
+For the generic mode, the peripheral clock is used, while for flash and passthrough mode, the SPI clock is used.
+Since the SPI clock is not active when the SPI interface is idle, the design cannot make use of a glitch-free clock mux that would require a continuously running clock.
+Therefore, software has to use the [`CONTROL.sram_clk_en`](../data/spi_device.hjson#control) register to gate the clock while switching between modes with different dual-port SRAM clock sources.
+
+For any mode change that involves switching to a different clock source, the following programming sequence must be followed:
+
+1. Check if SPI line is idle.
+2. Clear [`CONTROL.sram_clk_en`](../data/spi_device.hjson#control) to 0.
+3. Change to the new mode
+4. Set [`CONTROL.sram_clk_en`](../data/spi_device.hjson#control) to 1.
+
 ## TPM over SPI
 
 ### Initialization
