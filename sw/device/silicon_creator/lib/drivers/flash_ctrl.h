@@ -134,6 +134,16 @@ typedef enum flash_ctrl_info_page {
   (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 2 }
 
 /**
+ * Bitfields for `CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE` OTP item.
+ *
+ * Defined here to be able to use in tests.
+ */
+#define FLASH_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_SCRAMBLE_DIS \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 0 }
+#define FLASH_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_ECC_DIS \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 1 }
+
+/**
  * The following constants represent the expected number of sec_mmio
  * register writes performed by functions in provided in this module. See
  * `SEC_MMIO_WRITE_INCREMENT()` for more details.

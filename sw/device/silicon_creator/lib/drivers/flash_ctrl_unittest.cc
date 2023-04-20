@@ -114,6 +114,11 @@ uint32_t CfgToOtp(flash_ctrl_cfg_t cfg) {
 }
 
 TEST_P(InitTest, Initialize) {
+  EXPECT_CALL(
+      otp_,
+      read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE_OFFSET))
+      .WillOnce(Return(0));
+
   EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_INIT_REG_OFFSET,
                      {{FLASH_CTRL_INIT_VAL_BIT, true}});
 
