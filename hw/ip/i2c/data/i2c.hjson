@@ -21,7 +21,7 @@
       version:            "1.0",
       life_stage:         "L1",
       design_stage:       "D2S",
-      verification_stage: "V1",
+      verification_stage: "V2",
       dif_stage:          "S2",
       notes:              ""
     }

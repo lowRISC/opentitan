@@ -175,26 +175,26 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
-Documentation | [DV_DOC_COMPLETED][]                    | Not Started |
-Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Not Started |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
-Testbench     | [SIM_TB_ENV_COMPLETED][]                | Not Started |
-Tests         | [SIM_ALL_TESTS_PASSING][]               | Not Started |
-Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | Not Started |
-Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | Not Started |
-Tests         | [SIM_FW_SIMULATED][]                    | Not Started |
-Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Not Started |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | Not Started |
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Not Started |
-Coverage      | [FPV_CODE_COVERAGE_V2][]                | Not Started |
-Coverage      | [FPV_COI_COVERAGE_V2][]                 | Not Started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
-Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
-Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
-Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        | [I2C Testplan](../data/i2c_testplan.hjson)
+Documentation | [DV_DOC_COMPLETED][]                    | Done        | [I2C_DV doc](../dv/README.md)
+Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        | Missing covergroups added from PR #18654
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
+Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | N/A         |
+Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
+Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |
+Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
+Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
+Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
+Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        | Above 90% for 5cec7755e (2023 June 12) and 431ad2b51 (2023 June 19)
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        | Improved FSM coverage with PR #18335 and added waiver file in PR #18728
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        | In the nightlies 5cec7755e (2023 June 12) and 431ad2b51 (2023 June 19) functional coverage is above 90%
+Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
+Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Done        | Only prim and tlul sub-modules used
+Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
+Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
+Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Done        | After merge of PR #18088
+Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          ../../../../doc/project_governance/checklist/README.md#design_deltas_captured_v2
 [DV_DOC_COMPLETED]:                   ../../../../doc/project_governance/checklist/README.md#dv_doc_completed
