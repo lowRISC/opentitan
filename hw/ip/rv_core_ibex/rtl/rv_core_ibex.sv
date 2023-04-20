@@ -283,8 +283,6 @@ module rv_core_ibex
     .lc_en_o(pwrmgr_cpu_en)
   );
 
-  // TODO: This is a hoaky fix, we really should converge everthing
-  // through rv_plic.
   // timer interrupts do not come from
   // rv_plic and may not be synchronous to the ibex core
   logic irq_timer_sync;
