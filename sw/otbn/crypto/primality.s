@@ -168,11 +168,9 @@ miller_rabin_round:
   andi     x2, x2, 1
   beq      x2, x0, miller_rabin_round
 
-  /* Check if b is a witness to primality for w.
+  /* Check if b is a witness to primality for w (tail-call).
        w21 <= all 1s if w is possibly prime, otherwise 0 */
-  jal      x1, test_witness
-
-  ret
+  jal      x0, test_witness
 
 
 /**
@@ -332,9 +330,13 @@ test_witness:
       /* w22 <= (w24 - FG0.C) mod 2^256 = next limb of (w - 1) */
       bn.subb  w22, w25, w31
 
-   /* Loop through the bits of this limb. */
+   /* Loop through the bits of this limb. The code is separated in order to
+      make it more readable and to make loop instruction counting easier, even
+      though this is the only call site. We use unconditional branches instead
+      of jal/ret to avoid consuming the call stack unnecessarily. */
     loopi   256, 2
-      jal      x1, test_witness_step
+      jal      x0, test_witness_step
+_test_witness_step_done:
       nop
 
     /* Update the loop counter.
@@ -473,7 +475,8 @@ test_witness_step:
   bn.and   w2, w2, w24
   bn.or    w21, w21, w2
 
-  ret
+  /* Unconditional branch back to `test_witness`. */
+  jal      x0, _test_witness_step_done
 
 /**
  * Fully reduce modulo a candidate prime w.
