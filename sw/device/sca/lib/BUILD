@@ -40,6 +40,7 @@ cc_library(
     srcs = ["sca.c"],
     hdrs = ["sca.h"],
     deps = [
+        "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",

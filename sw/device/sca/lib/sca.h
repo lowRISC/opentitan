@@ -183,4 +183,40 @@ void sca_seed_lfsr(uint32_t seed);
  */
 uint32_t sca_next_lfsr(uint16_t num_steps);
 
+/**
+ * Applies a linear layer.
+ *
+ * This function feeds the input through a linear permutation layer. This is
+ * suitable to ensure 1) that adjacent output bits of the software LFSR do not
+ * go into the same S-Box (see `sca_non_linear_layer()`) and 2) that the output
+ * of S-Box(n) is not always going to be equal to the output of S-Box(n+1) in
+ * the subsequent cycle. For details on how this can be achieved, refer to the
+ * corresponding hardware implementation in hw/ip/prim/rtl/prim_lfsr.sv.
+ *
+ * @param input The input value.
+ *
+ * @return The output of the linear layer.
+ *
+ */
+uint32_t sca_linear_layer(uint32_t input);
+
+/**
+ * Applies a non-linear layer.
+ *
+ * This function feeds the input through a non-linear layer. It is suitable to
+ * improve the statistical properties of the software LFSR usable for key
+ * masking, see `sca_seed_lfsr()` and `sca_next_lfsr()`. Internally, a LUT-based
+ * AES S-Box is applied to the invididual bytes of the input word.
+ *
+ * In addition, the ouput bytes are XORed with the sbox[0]. This is useful to
+ * ensure an all-zero seed (used to switch off key masking) also results in an
+ * all-zero output of the non-linear layer.
+ *
+ * @param input The input value.
+ *
+ * @return The output of the non-linear layer.
+ *
+ */
+uint32_t sca_non_linear_layer(uint32_t input);
+
 #endif  // OPENTITAN_SW_DEVICE_SCA_LIB_SCA_H_

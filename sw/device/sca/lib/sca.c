@@ -4,6 +4,7 @@
 
 #include "sw/device/sca/lib/sca.h"
 
+#include "hw/ip/aes/model/aes.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
@@ -325,4 +326,44 @@ uint32_t sca_next_lfsr(uint16_t num_steps) {
     }
   }
   return lfsr_out;
+}
+
+uint32_t sca_linear_layer(uint32_t input) {
+  uint32_t output =
+      // output[7:0]
+      (((input >> 0) & 0x1) << 7) | (((input >> 6) & 0x1) << 6) |
+      (((input >> 11) & 0x1) << 5) | (((input >> 14) & 0x1) << 4) |
+      (((input >> 1) & 0x1) << 3) | (((input >> 7) & 0x1) << 2) |
+      (((input >> 10) & 0x1) << 1) | (((input >> 13) & 0x1) << 0) |
+      // output[15:8]
+      (((input >> 2) & 0x1) << 15) | (((input >> 4) & 0x1) << 14) |
+      (((input >> 9) & 0x1) << 13) | (((input >> 12) & 0x1) << 12) |
+      (((input >> 3) & 0x1) << 11) | (((input >> 5) & 0x1) << 10) |
+      (((input >> 8) & 0x1) << 9) | (((input >> 15) & 0x1) << 8) |
+      // output[23:16]
+      (((input >> 16) & 0x1) << 23) | (((input >> 22) & 0x1) << 22) |
+      (((input >> 27) & 0x1) << 21) | (((input >> 30) & 0x1) << 20) |
+      (((input >> 17) & 0x1) << 19) | (((input >> 23) & 0x1) << 18) |
+      (((input >> 26) & 0x1) << 17) | (((input >> 29) & 0x1) << 16) |
+      // output[31:24]
+      (((input >> 18) & 0x1) << 31) | (((input >> 20) & 0x1) << 30) |
+      (((input >> 25) & 0x1) << 29) | (((input >> 28) & 0x1) << 28) |
+      (((input >> 19) & 0x1) << 27) | (((input >> 21) & 0x1) << 26) |
+      (((input >> 24) & 0x1) << 25) | (((input >> 31) & 0x1) << 24);
+
+  return output;
+}
+
+uint32_t sca_non_linear_layer(uint32_t input) {
+  uint32_t output;
+  if (input != 0) {
+    // Perform the AES S-Box look ups bytewise.
+    output = (sbox[(input >> 24) & 0xFF] << 24) |
+             (sbox[(input >> 16) & 0xFF] << 16) |
+             (sbox[(input >> 8) & 0xFF] << 8) | sbox[input & 0xFF];
+  } else {
+    output = input;
+  }
+
+  return output;
 }
