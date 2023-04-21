@@ -400,9 +400,15 @@ class otbn_scoreboard extends cip_base_scoreboard #(
             pending_start_tl_trans = 1'b0;
           end
 
-          // Has the status changed to locked? This should be accompanied by a fatal alert
+          // Has the status changed to locked?
           if (item.status == otbn_pkg::StatusLocked) begin
-            expect_alert("fatal");
+            if (cfg.escalate_vif.req == lc_ctrl_pkg::On) begin
+              // If RMA entry is requested, we expect OTBN to acknowledge it when it locks.
+              expect_rma_ack();
+            end else begin
+              // Otherwise, we expect a fatal alert.
+              expect_alert("fatal");
+            end
           end
           // Has the status changed from executing to idle with a nonzero err_bits?
           // If so, we should see a recoverable alert. Note that we are not expecting to catch
@@ -578,6 +584,12 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     fork
       wait_for_expected_alert(alert_name, 400);
     join_none
+  endfunction
+
+  // Called when we expect an RMA acknowledge.
+  protected function void expect_rma_ack();
+    // There's currently no reason for the acknowledge to come later, so we expect it immediately.
+    `DV_CHECK_EQ(cfg.escalate_vif.ack, lc_ctrl_pkg::On)
   endfunction
 
   // Called when we see something that makes us think an alert should happen
