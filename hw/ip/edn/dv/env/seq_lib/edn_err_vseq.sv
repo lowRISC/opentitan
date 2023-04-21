@@ -32,6 +32,7 @@ class edn_err_vseq extends edn_base_vseq;
     string        reg_name, fld_name;
     uvm_reg       csr;
     uvm_reg_field fld;
+    bit [31:0]    backdoor_err_code_val;
 
     fifo_err_path[0] = '{"write": "push", "read": "pop", "state": "full"};
     fifo_err_path[1] = '{"write": "full", "read": "not_empty", "state": "not_empty"};
@@ -81,18 +82,30 @@ class edn_err_vseq extends edn_base_vseq;
         end
         force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld,
                             1'b1, cfg.which_fifo_err);
+        if (cfg.en_cov) begin
+          csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+          cov_vif.cg_error_sample(.err_code(backdoor_err_code_val));
+        end
       end
       edn_ack_sm_err, edn_main_sm_err: begin
         fld = csr.get_field_by_name(fld_name);
         path = cfg.edn_vif.sm_err_path(fld_name.substr(0, last_index-1));
         force_path_err(path, 6'b0, fld, 1'b1);
+        if (cfg.en_cov) begin
+          csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+          cov_vif.cg_error_sample(.err_code(backdoor_err_code_val));
+        end
       end
       edn_cntr_err: begin
         fld = csr.get_field_by_name(fld_name);
         path = cfg.edn_vif.cntr_err_path();
         force_path_err(path, 6'b000001, fld, 1'b1);
         // Verify EDN.MAIN_SM.CTR.LOCAL_ESC
-        csr_rd_check(.ptr(ral.err_code.edn_main_sm_err), .compare_value(1'b1));
+        csr_rd_check(.ptr(ral.err_code.edn_cntr_err), .compare_value(1'b1));
+        if (cfg.en_cov) begin
+          csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+          cov_vif.cg_error_sample(.err_code(backdoor_err_code_val));
+        end
       end
       fifo_write_err, fifo_read_err, fifo_state_err: begin
         fld = csr.get_field_by_name(fld_name);
@@ -104,6 +117,10 @@ class edn_err_vseq extends edn_base_vseq;
         value1 = fifo_err_value[0][path_key];
         value2 = fifo_err_value[1][path_key];
         force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
+        if (cfg.en_cov) begin
+          csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+          cov_vif.cg_error_sample(.err_code(backdoor_err_code_val));
+        end
       end
       sfifo_rescmd_err_test, sfifo_gencmd_err_test, edn_ack_sm_err_test, edn_main_sm_err_test,
       edn_cntr_err_test, fifo_write_err_test, fifo_read_err_test, fifo_state_err_test: begin
@@ -115,6 +132,10 @@ class edn_err_vseq extends edn_base_vseq;
         if (cfg.which_err_code == edn_cntr_err_test) begin
           // Verify EDN.MAIN_SM.CTR.LOCAL_ESC
           csr_rd_check(.ptr(ral.err_code.edn_main_sm_err), .compare_value(1'b1));
+          if (cfg.en_cov) begin
+            csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+            cov_vif.cg_error_sample(.err_code(backdoor_err_code_val));
+          end
           // Clear interrupt_enable
           csr_wr(.ptr(ral.intr_enable), .value(32'd0));
           ral.ctrl.edn_enable.set(prim_mubi_pkg::MuBi4False);

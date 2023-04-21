@@ -66,6 +66,9 @@ class edn_alert_vseq extends edn_base_vseq;
     exp_recov_alert_sts = 32'b0;
     exp_recov_alert_sts[ral.recov_alert_sts.edn_bus_cmp_alert.get_lsb_pos()] = 1;
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(exp_recov_alert_sts));
+    if (cfg.en_cov) begin
+      cov_vif.cg_alert_sample(.recov_alert_sts(exp_recov_alert_sts));
+    end
   endtask // edn_bus_cmp_alert
 
   task body();
@@ -103,6 +106,9 @@ class edn_alert_vseq extends edn_base_vseq;
     exp_recov_alert_sts = 32'b0;
     exp_recov_alert_sts[fld.get_lsb_pos()] = 1;
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(exp_recov_alert_sts));
+    if (cfg.en_cov) begin
+      cov_vif.cg_alert_sample(.recov_alert_sts(exp_recov_alert_sts));
+    end
 
     // Write valid values
     ral.ctrl.edn_enable.set(prim_mubi_pkg::MuBi4True);

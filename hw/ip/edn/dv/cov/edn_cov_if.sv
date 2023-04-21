@@ -63,9 +63,9 @@ interface edn_cov_if (
     }
   endgroup : edn_endpoints_cg
 
-  covergroup edn_cs_cmds_cg with function sample(bit[3:0]    clen,
-                                                 bit[3:0]    flags,
-                                                 bit[18:0]   glen
+  covergroup edn_cs_cmds_cg with function sample(bit[3:0]  clen,
+                                                 bit[3:0]  flags,
+                                                 bit[18:0] glen
                                                 );
     option.name         = "edn_cs_cmds_cg";
     option.per_instance = 1;
@@ -89,9 +89,25 @@ interface edn_cov_if (
     cr_clen_flags_glen:   cross cp_clen, cp_flags, cp_glen;
   endgroup : edn_cs_cmds_cg
 
+  covergroup edn_error_cg with function sample(err_code_test_e err_test);
+    option.name         = "edn_error_cg";
+    option.per_instance = 1;
+
+    cp_error_test: coverpoint err_test;
+  endgroup : edn_error_cg
+
+  covergroup edn_alert_cg with function sample(recov_alert_bit_e recov_alert);
+    option.name         = "edn_alert_cg";
+    option.per_instance = 1;
+
+    cp_recov_alert_cg: coverpoint recov_alert;
+  endgroup : edn_alert_cg
+
   `DV_FCOV_INSTANTIATE_CG(edn_cfg_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_endpoints_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_cs_cmds_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(edn_error_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(edn_alert_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(edn_env_cfg cfg);
@@ -102,9 +118,35 @@ interface edn_cov_if (
   endfunction
 
   function automatic void cg_cs_cmds_sample(bit[3:0] clen, bit[3:0] flags, bit[18:0] glen);
-    edn_cs_cmds_cg_inst.sample(clen,
-                               flags,
-                               glen);
+    edn_cs_cmds_cg_inst.sample(clen, flags, glen);
   endfunction
+
+  function automatic void cg_error_sample(bit[31:0] err_code);
+    err_code_test_e enum_val;
+    enum_val = enum_val.first();
+    forever begin
+      if(err_code[enum_val]) begin
+        edn_error_cg_inst.sample(enum_val);
+      end
+      if (enum_val == enum_val.last) begin
+        break;
+      end
+      enum_val = enum_val.next();
+    end
+  endfunction : cg_error_sample
+
+  function automatic void cg_alert_sample(bit[31:0] recov_alert_sts);
+    recov_alert_bit_e enum_val;
+    enum_val = enum_val.first();
+    forever begin
+      if(recov_alert_sts[enum_val]) begin
+        edn_alert_cg_inst.sample(enum_val);
+      end
+      if (enum_val == enum_val.last) begin
+        break;
+      end
+      enum_val = enum_val.next();
+    end
+  endfunction : cg_alert_sample
 
 endinterface : edn_cov_if
