@@ -325,7 +325,7 @@ enum {
   /**
    * UART TX FIFO size.
    */
-  kUartFifoSize = 32,
+  kUartFifoSize = 128,
 };
 
 /**
