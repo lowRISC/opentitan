@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use cryptoki::object::Attribute;
+use cryptoki::object::{Attribute, ObjectHandle};
 use cryptoki::session::Session;
 use rand::prelude::*;
 use std::convert::AsRef;
@@ -43,6 +43,19 @@ pub fn no_object_exists(session: &Session, id: Option<&str>, label: Option<&str>
         Err(HsmError::ObjectExists(id.unwrap_or("").into(), label.unwrap_or("").into()).into())
     } else {
         Ok(())
+    }
+}
+
+pub fn find_one_object(session: &Session, search: &[Attribute]) -> Result<ObjectHandle> {
+    let mut object = session.find_objects(search)?;
+    if object.is_empty() {
+        let spec = AttributeMap::from(search);
+        Err(HsmError::ObjectNotFound(serde_json::to_string(&spec)?).into())
+    } else if object.len() > 1 {
+        let spec = AttributeMap::from(search);
+        Err(HsmError::TooManyObjects(object.len(), serde_json::to_string(&spec)?).into())
+    } else {
+        Ok(object.remove(0))
     }
 }
 

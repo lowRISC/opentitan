@@ -301,7 +301,7 @@ impl AttributeMap {
         let mut map = AttributeMap::from(attrs.as_slice());
         for (&a, i) in all.iter().zip(info.iter()) {
             if matches!(i, AttributeInfo::Sensitive) {
-                map.insert(a.into(), AttrData::SensitiveDataRedacted);
+                map.insert(a.into(), AttrData::None);
             }
         }
         Ok(map)

@@ -13,9 +13,11 @@ use crate::util::attribute::{
 };
 use crate::util::escape::{as_hex, escape, unescape};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 #[serde(untagged)]
 pub enum AttrData {
+    #[default]
+    None,
     Bool(bool),
     Ulong(u64),
     CertificateType(CertificateType),
@@ -24,7 +26,6 @@ pub enum AttrData {
     ObjectClass(ObjectClass),
     Str(String),
     List(Vec<AttrData>),
-    SensitiveDataRedacted,
 }
 
 impl From<bool> for AttrData {
@@ -117,6 +118,9 @@ impl TryFrom<&AttrData> for Vec<u8> {
 }
 
 impl AttrData {
+    pub fn is_none(&self) -> bool {
+        self == &AttrData::None
+    }
     pub fn from_ascii_bytes(v: &[u8]) -> Self {
         AttrData::Str(escape(v))
     }
