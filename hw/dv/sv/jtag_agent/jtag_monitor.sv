@@ -118,7 +118,7 @@ class jtag_monitor extends dv_base_monitor #(
           jtag_state = `MON_CB.tms ? JtagUpdateIrState : JtagShiftIrState;
         end
         JtagUpdateIrState: begin
-          jtag_state = `MON_CB.tms ? JtagSelectIrState : JtagIdleState;
+          jtag_state = `MON_CB.tms ? JtagSelectDrState : JtagIdleState;
 
           // Send IR packet to analysis port
           if (cfg.vif.trst_n) begin
