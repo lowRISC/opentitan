@@ -19,12 +19,14 @@ OTTF_DEFINE_TEST_CONFIG();
 /**
  * AST CLK OUTPUTS TEST
  *
- * This test measure clock counts with clkmgr frequency measurements, performing
- * 100 measurements per round. Measurement errors (fast or slow clocks) are
- * recorded as recoverable error in clkmgr.
+ * This test measures clock counts with clkmgr frequency measurements,
+ * performing 100 measurements per round. Measurement errors (fast or slow
+ * clocks) are recorded as recoverable error in clkmgr.
  *
- * After 100 measurements, test kicks in low-power mode, where
- * 3 clocks are off and measurement should not report spurious errors.
+ * After 100 measurements, this configures the clock counters per external
+ * clock and low speed settings before entering low-power mode, where all but
+ * the aon clock are off. The expectation is that main and io clocks will
+ * report errors, but div2 and div4 should not.
  *
  * When the dut wakes up, another 100 measurements are done before the
  * test finishes.
@@ -85,11 +87,11 @@ bool test_main(void) {
     CHECK_STATUS_OK(
         aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 
-    LOG_INFO("Start clock measurements to cause an error for main clk.");
+    LOG_INFO("Start clock measurements to cause an error for main and io clk.");
     CHECK_STATUS_OK(
         clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
             &clkmgr, /*jitter_enabled=*/false, /*external_clk=*/true,
-            /*low_speed=*/false));
+            /*low_speed=*/true));
     // Disable writes to measure ctrl registers.
     CHECK_DIF_OK(dif_clkmgr_measure_ctrl_disable(&clkmgr));
 
@@ -115,10 +117,13 @@ bool test_main(void) {
     LOG_INFO("Check for all clock measurements disabled done");
 
     // Check we have a measurement error for the main clock.
+    dif_clkmgr_recov_err_codes_t expected_err_codes =
+        kDifClkmgrRecovErrTypeMainMeas | kDifClkmgrRecovErrTypeIoMeas;
     dif_clkmgr_recov_err_codes_t err_codes;
     CHECK_DIF_OK(dif_clkmgr_recov_err_code_get_codes(&clkmgr, &err_codes));
-    CHECK(err_codes == kDifClkmgrRecovErrTypeMainMeas,
-          "expected main clk measurement error, but got 0x%x", err_codes);
+    CHECK(err_codes == expected_err_codes,
+          "expected main and io clk measurement error 0x%x, but got 0x%x",
+          expected_err_codes, err_codes);
 
     // Clear measurement errors.
     CHECK_DIF_OK(dif_clkmgr_recov_err_code_clear_codes(&clkmgr, UINT32_MAX));
