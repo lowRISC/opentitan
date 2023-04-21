@@ -423,6 +423,22 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
                                      dif_otp_ctrl_status_t *status);
 
 /**
+ * Calculates a `relative_address` with respect to a `partition` start
+ * address.
+ *
+ * @param partition The partition to use to calculate the reference start
+ * address.
+ * @param abs_address Input address relative to the OTP memory start address.
+ * @param[out] relative_address The result relative address with respect to the
+ * `partition` start address.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otp_ctrl_relative_address(dif_otp_ctrl_partition_t partition,
+                                           uint32_t abs_address,
+                                           uint32_t *relative_address);
+
+/**
  * Schedules a read on the Direct Access Interface.
  *
  * Reads are performed relative to a partition; `address` should be given
