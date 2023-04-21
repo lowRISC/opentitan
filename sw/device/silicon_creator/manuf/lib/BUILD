@@ -126,10 +126,17 @@ opentitan_functest(
     srcs = ["provisioning_functest.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_dev_individualized",
+        clear_bitstream = True,
+        test_cmds = [
+            "--rom-kind=rom",
+            "--bitstream=\"$(location {bitstream})\"",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
     ),
     targets = [
         "cw310_rom",
     ],
+    test_harness = "//sw/host/tests/manuf/provisioning",
     deps = [
         ":provisioning",
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
