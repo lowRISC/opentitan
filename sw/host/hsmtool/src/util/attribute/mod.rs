@@ -32,7 +32,7 @@
 //!
 //! The `cryptoki` APIs typically use `&[Attribute]` when passing
 //! attributes to its functions.  For the purpose of building and
-//! [de]serializing an Attribute list, a map is more convenient
+//! (de)serializing an Attribute list, a map is more convenient
 //! structure and `AttributeMap` and `AttrData` fill that role.
 
 mod attr;

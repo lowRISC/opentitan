@@ -10,6 +10,9 @@ use serde::{Deserialize, Serialize};
 use serde_annotate::{Annotate, ColorProfile};
 use std::any::Any;
 
+use crate::util::attribute::AttrData;
+
+mod rsa;
 mod token;
 
 #[typetag::serde(tag = "command")]
@@ -25,6 +28,8 @@ pub trait Dispatch {
 #[derive(clap::Subcommand, Debug, Serialize, Deserialize)]
 pub enum Commands {
     #[command(subcommand)]
+    Rsa(rsa::Rsa),
+    #[command(subcommand)]
     Token(token::Token),
 }
 
@@ -37,6 +42,7 @@ impl Dispatch for Commands {
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         match self {
+            Commands::Rsa(x) => x.run(context, pkcs11, session),
             Commands::Token(x) => x.run(context, pkcs11, session),
         }
     }
@@ -45,13 +51,31 @@ impl Dispatch for Commands {
 #[derive(Debug, Serialize)]
 pub struct BasicResult {
     success: bool,
+    #[serde(skip_serializing_if = "AttrData::is_none")]
+    id: AttrData,
+    #[serde(skip_serializing_if = "AttrData::is_none")]
+    label: AttrData,
+    #[serde(skip_serializing_if = "Option::is_none")]
     error: Option<String>,
+}
+
+impl Default for BasicResult {
+    fn default() -> Self {
+        BasicResult {
+            success: true,
+            id: AttrData::None,
+            label: AttrData::None,
+            error: None,
+        }
+    }
 }
 
 impl BasicResult {
     pub fn from_error(e: &anyhow::Error) -> Box<dyn Annotate> {
         Box::new(BasicResult {
             success: false,
+            id: AttrData::None,
+            label: AttrData::None,
             error: Some(format!("{:?}", e)),
         })
     }

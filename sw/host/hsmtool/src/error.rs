@@ -9,7 +9,7 @@ use thiserror::Error;
 pub enum HsmError {
     #[error("Token {0:?} not found")]
     TokenNotFound(String),
-    #[error("Unknown user {0:?}.  Expecting one of {{so, user}}")]
+    #[error("Unknown user {0:?}. Expecting one of {{so, user}}")]
     UnknownUser(String),
     #[error("Key error:  {0}")]
     KeyError(String),
@@ -17,7 +17,7 @@ pub enum HsmError {
     ObjectExists(String, String),
     #[error("Bad hash size: expected {0} bytes, but got {1} bytes")]
     HashSizeError(usize, usize),
-    #[error("No search criteria.  Specify an id or label")]
+    #[error("No search criteria. Specify an id or label")]
     NoSearchCriteria,
     #[error("Session required")]
     SessionRequired,
@@ -25,4 +25,8 @@ pub enum HsmError {
     Unsupported(String),
     #[error(transparent)]
     AttributeError(#[from] AttributeError),
+    #[error("Object not found for search {0}")]
+    ObjectNotFound(String),
+    #[error("Expected exactly one object. Found {0} objects for search {1}")]
+    TooManyObjects(usize, String),
 }
