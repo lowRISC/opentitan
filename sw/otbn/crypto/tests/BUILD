@@ -565,6 +565,8 @@ otbn_sim_test(
     ],
     exp = "relprime_f4_test.exp",
     deps = [
+        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
     ],
 )
