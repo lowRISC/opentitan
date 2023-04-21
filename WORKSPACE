@@ -95,6 +95,10 @@ coremark_repos()
 load("//third_party/xkcp:repos.bzl", "xkcp_repos")
 xkcp_repos()
 
+# HSM related repositories (SoftHSM2, etc)
+load("//third_party/hsm:repos.bzl", "hsm_repos")
+hsm_repos()
+
 # Bitstreams from https://storage.googleapis.com/opentitan-bitstreams/
 load("//rules:bitstreams.bzl", "bitstreams_repo")
 bitstreams_repo(name = "bitstreams")

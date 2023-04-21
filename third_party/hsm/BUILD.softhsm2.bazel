@@ -1,0 +1,50 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_foreign_cc//foreign_cc:cmake.bzl", "cmake")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "all_srcs",
+    srcs = glob(["**"]),
+)
+
+cmake(
+    name = "softhsm2",
+    build_args = ["-j"],
+    cache_entries = {
+        "ENABLE_GOST": "OFF",
+        "ENABLE_P11_KIT": "OFF",
+        "ENABLE_STATIC": "OFF",
+        "ENABLE_ECC": "ON",
+        "WITH_CRYPTO_BACKEND": "openssl",
+
+        # This build is for tests only.
+        # "CMAKE_BUILD_TYPE": "Debug",
+
+        # SoftHSM wants to dump a bunch of nonsense into /etc, which is
+        # not relevant to our use-case. To discard it, we set all of these
+        # variables, which determine where all those files *would* land,
+        # to the CMake build directory.
+        "CMAKE_INSTALL_LOCALSTATEDIR": ".",
+        "CMAKE_INSTALL_SYSCONFDIR": ".",
+        "PROJECT_BINARY_DIR": ".",
+    },
+    # Set up SoftHSM to provide useful debug messages during testing.
+    copts = [
+        # Uncomment this for verbose logging from SoftHSM.
+        # "-DDEBUG_LOG_STDERR",
+        # "-DSOFTHSM_LOG_FUNCTION_NAME",
+    ],
+    lib_source = ":all_srcs",
+    out_binaries = ["softhsm2-util"],
+    out_shared_libs = ["softhsm/libsofthsm2.so"],
+)
+
+filegroup(
+    name = "gen_dir",
+    srcs = [":softhsm2"],
+    output_group = "gen_dir",
+)
