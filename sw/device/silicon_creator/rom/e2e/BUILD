@@ -21,11 +21,12 @@ load(
 )
 load("//rules:manifest.bzl", "manifest")
 load("//rules:opentitan_gdb_test.bzl", "IBEX_GPRS", "gdb_commands_copy_registers", "gdb_commands_restore_registers", "gdb_commands_set_registers", "get_gdb_readable_csr_names", "get_gdb_settable_csr_names", "opentitan_gdb_fpga_cw310_test")
-load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_alert_digest", "otp_image", "otp_json", "otp_partition")
+load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_alert_digest", "otp_image", "otp_json", "otp_partition", "otp_sigverify_rsa_key_en_value")
 load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
 load("//rules:splice.bzl", "bitstream_splice")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@bazel_skylib//lib:structs.bzl", "structs")
+load("//rules:rom_keys.bzl", "EARLGREY_KEYMAP", "KEY_ROLE", "get_keys_for_lcv", "get_keys_for_roles", "get_rom_slots", "keymap_for_keyset")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -56,25 +57,23 @@ SLOTS = {
     "b": "0x80000",
 }
 
+# key map used by the ROM for the tests, we specify that we want
+# to use the "fake" keyset
+ROM_E2E_KEYMAP = keymap_for_keyset(EARLGREY_KEYMAP, "fake")
+
 # list of all the production/dev/test keys, finally list of all keys
 # all the keys listed must be defined in /rules/opentitan.bzl
-FAKE_TEST_KEYS = ["fake_test_key_0"]
+ALL_KEYS = get_keys_for_roles(ROM_E2E_KEYMAP)
 
-FAKE_DEV_KEYS = ["fake_dev_key_0"]
+# Specify the ROM key slot
+ROM_KEY_SLOT = get_rom_slots(ROM_E2E_KEYMAP)
 
-FAKE_PROD_KEYS = ["fake_prod_key_0"]
-
-FAKE_ALL_KEYS = FAKE_TEST_KEYS + FAKE_DEV_KEYS + FAKE_PROD_KEYS
-
-# list of all acceptable keys in each LC state
+# List of all acceptable keys in each LC state
 # see secure boot documentation
-LC_KEY_TYPES = {
-    CONST.LCV.TEST_UNLOCKED0: FAKE_TEST_KEYS + FAKE_PROD_KEYS,
-    CONST.LCV.DEV: FAKE_DEV_KEYS + FAKE_PROD_KEYS,
-    CONST.LCV.PROD: FAKE_PROD_KEYS,
-    CONST.LCV.PROD_END: FAKE_PROD_KEYS,
-    CONST.LCV.RMA: FAKE_TEST_KEYS + FAKE_PROD_KEYS,
-}
+LC_KEY_TYPES = get_keys_for_lcv(ROM_E2E_KEYMAP)
+
+# list of the keys to test when doing a full key set test
+SIGVERIFY_FULL_KEY_SET = get_rom_slots(ROM_E2E_KEYMAP)
 
 # Default OTP in TEST_UNLOCKED state
 otp_json(
@@ -223,7 +222,7 @@ opentitan_functest(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
-    key = FAKE_TEST_KEYS[0],
+    key = ALL_KEYS[KEY_ROLE.TEST][0],
     ot_flash_binary = ":empty_test_slot_a",
     targets = [
         "cw310_rom",
@@ -397,7 +396,7 @@ opentitan_functest(
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
     ),
-    key = FAKE_TEST_KEYS[0],
+    key = ALL_KEYS[KEY_ROLE.TEST][0],
     ot_flash_binary = ":empty_test_slot_a",
     targets = ["cw310_rom"],
 )
@@ -638,7 +637,7 @@ opentitan_multislot_flash_binary(
     testonly = True,
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
-            "key": FAKE_TEST_KEYS[0],
+            "key": ALL_KEYS[KEY_ROLE.TEST][0],
             "offset": SLOTS["b"],
         },
     },
@@ -660,7 +659,7 @@ opentitan_multislot_flash_binary(
     testonly = True,
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": {
-            "key": FAKE_TEST_KEYS[0],
+            "key": ALL_KEYS[KEY_ROLE.TEST][0],
             "offset": SLOTS["b"],
         },
     },
@@ -682,7 +681,7 @@ opentitan_multislot_flash_binary(
     testonly = True,
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
-            "key": FAKE_TEST_KEYS[0],
+            "key": ALL_KEYS[KEY_ROLE.TEST][0],
             "offset": SLOTS["a"],
         },
     },
@@ -714,7 +713,7 @@ opentitan_multislot_flash_binary(
     testonly = True,
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
-            "key": FAKE_TEST_KEYS[0],
+            "key": ALL_KEYS[KEY_ROLE.TEST][0],
             "offset": SLOTS["b"],
         },
     },
@@ -1665,7 +1664,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             t["name"],
             slot,
         ): {
-            "key": FAKE_TEST_KEYS[0],
+            "key": ALL_KEYS[KEY_ROLE.TEST][0],
             "offset": offset,
         },
     },
@@ -2074,24 +2073,24 @@ test_suite(
     ],
 )
 
-# list of keys that will be used to build various flash images
-# it must contain at least one key of each type and contains all
+# List of keys that will be used to build various flash images.
+# It must contain at least one key of each type and contains all
 # the keys used in SIGVERIFY_LCS_2_VALID_KEY
 SIGVERIFY_LC_KEYS = [
-    FAKE_TEST_KEYS[0],
-    FAKE_DEV_KEYS[0],
-    FAKE_PROD_KEYS[0],
+    ALL_KEYS[KEY_ROLE.TEST][0],
+    ALL_KEYS[KEY_ROLE.DEV][0],
+    ALL_KEYS[KEY_ROLE.PROD][0],
 ]
 
-# provide a valid key for each LC state
-# this key must be present in SIGVERIFY_LC_KEYS to ensure
-# that the proper flush images are built
+# Provide a valid key for each LC state.
+# This key must be present in SIGVERIFY_LC_KEYS to ensure
+# that the proper flash images are built
 SIGVERIFY_LCS_2_VALID_KEY = {
-    "test_unlocked0": FAKE_TEST_KEYS[0],
-    "dev": FAKE_DEV_KEYS[0],
-    "prod": FAKE_PROD_KEYS[0],
-    "prod_end": FAKE_PROD_KEYS[0],
-    "rma": FAKE_PROD_KEYS[0],
+    "test_unlocked0": ALL_KEYS[KEY_ROLE.TEST][0],
+    "dev": ALL_KEYS[KEY_ROLE.DEV][0],
+    "prod": ALL_KEYS[KEY_ROLE.PROD][0],
+    "prod_end": ALL_KEYS[KEY_ROLE.PROD][0],
+    "rma": ALL_KEYS[KEY_ROLE.PROD][0],
 }
 
 [
@@ -3105,9 +3104,6 @@ test_suite(
     for lc_state, lc_state_val in get_lc_items()
 ]
 
-# list of the keys to test when doing a full key set test
-SIGVERIFY_FULL_KEY_SET = FAKE_ALL_KEYS
-
 [
     opentitan_functest(
         name = "sigverify_key_type_{}_{}".format(
@@ -3149,60 +3145,91 @@ test_suite(
     ],
 )
 
-otp_json(
-    name = "otp_json_sigverify_key_validity",
-    partitions = [
-        otp_partition(
-            name = "CREATOR_SW_CFG",
-            items = {
-                "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": "0x4b4b4b4b4bff004b",
-            },
-        ),
-    ],
-)
+# Provide a list of (lc_state,lc_state_val) to test for each key
+# in the key_validity_test.
+# This key must be present in SIGVERIFY_LC_KEYS.
+# To avoid redundant tests between key_validity and key_type, we only generate one LC state per key
+# and not all possible combinations of LC state and key
+SIGVERIFY_VALID_KEY_2_LCS = {
+    key: [
+        [(lc_state, lc_state_val) for (lc_state, lc_state_val) in get_lc_items() if key in LC_KEY_TYPES[lc_state_val]][0],
+    ]
+    for key in SIGVERIFY_FULL_KEY_SET
+}
 
+# A collection for key validity status to avoid ugly "True" and "False"
+# in target names
+SIGVERY_VALID_STATUS = [
+    ("valid", True),
+    ("invalid", False),
+]
+
+# Generate an OTP overlay where all keys in SIGVERIFY_FULL_KEY_SET are
+# valid except one which can be marked as valid or invalid
+[
+    otp_json(
+        name = "otp_json_sigverify_key_validity_{}_{}".format(key, valid_name),
+        partitions = [
+            otp_partition(
+                name = "CREATOR_SW_CFG",
+                items = {
+                    "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": otp_sigverify_rsa_key_en_value([
+                        rom_key_slot != key or valid
+                        for rom_key_slot in ROM_KEY_SLOT
+                    ]),
+                },
+            ),
+        ],
+    )
+    for key in SIGVERIFY_FULL_KEY_SET
+    for (valid_name, valid) in SIGVERY_VALID_STATUS
+]
+
+# Generate an OTP image for each key where the LC state is such that the key
+# is appropriate for this key and the key is marked as either valid or invalid.
 [
     otp_image(
-        name = "otp_img_sigverify_key_validity_{}".format(lc_state),
+        name = "otp_img_sigverify_key_validity_{}_{}_{}".format(key, valid_name, lc_state),
         src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
-        overlays = STD_OTP_OVERLAYS + [":otp_json_sigverify_key_validity"],
+        overlays = STD_OTP_OVERLAYS + [":otp_json_sigverify_key_validity_{}_{}".format(key, valid_name)],
     )
-    for lc_state, _ in get_lc_items()
+    for key in SIGVERIFY_FULL_KEY_SET
+    for (valid_name, valid) in SIGVERY_VALID_STATUS
+    for lc_state, lc_state_val in SIGVERIFY_VALID_KEY_2_LCS[key]
 ]
 
 [
     bitstream_splice(
-        name = "bitstream_sigverify_key_validity_{}".format(
-            lc_state,
-        ),
+        name = "bitstream_sigverify_key_validity_{}_{}_{}".format(key, valid_name, lc_state),
         src = "//hw/bitstream:rom",
-        data = ":otp_img_sigverify_key_validity_{}".format(
-            lc_state,
-        ),
+        data = ":otp_img_sigverify_key_validity_{}_{}_{}".format(key, valid_name, lc_state),
         meminfo = "//hw/bitstream:otp_mmi",
         tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
-    for lc_state, lc_state_val in get_lc_items()
+    for key in SIGVERIFY_FULL_KEY_SET
+    for (valid_name, valid) in SIGVERY_VALID_STATUS
+    for lc_state, lc_state_val in SIGVERIFY_VALID_KEY_2_LCS[key]
 ]
 
 [
     opentitan_functest(
-        name = "sigverify_key_validity_{}_{}".format(
-            lc_state,
+        name = "sigverify_key_validity_{}_{}_{}".format(
             key,
+            valid_name,
+            lc_state,
         ),
         cw310 = cw310_params(
-            bitstream = ":bitstream_sigverify_key_validity_{}".format(lc_state),
-            exit_failure = MSG_PASS if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_TEMPLATE_BFV_LCV.format(
+            bitstream = ":bitstream_sigverify_key_validity_{}_{}_{}".format(key, valid_name, lc_state),
+            exit_failure = MSG_PASS if not valid else MSG_TEMPLATE_BFV_LCV.format(
                 hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY),
                 hex_digits(lc_state_val),
             ),
             exit_success = MSG_TEMPLATE_BFV_LCV.format(
                 hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY),
                 hex_digits(lc_state_val),
-            ) if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_PASS,
+            ) if not valid else MSG_PASS,
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
         key = key,
@@ -3211,20 +3238,19 @@ otp_json(
             "cw310_rom",
         ],
     )
-    for lc_state, lc_state_val in get_lc_items()
-    for key in LC_KEY_TYPES[lc_state_val]
+    for key in SIGVERIFY_FULL_KEY_SET
+    for (valid_name, valid) in SIGVERY_VALID_STATUS
+    for lc_state, lc_state_val in SIGVERIFY_VALID_KEY_2_LCS[key]
 ]
 
 test_suite(
     name = "rom_e2e_sigverify_key_validity",
     tags = ["manual"],
     tests = [
-        "sigverify_key_validity_{}_{}".format(
-            lc_state,
-            key,
-        )
-        for lc_state, lc_state_val in get_lc_items()
-        for key in LC_KEY_TYPES[lc_state_val]
+        "sigverify_key_validity_{}_{}_{}".format(key, valid_name, lc_state)
+        for key in SIGVERIFY_FULL_KEY_SET
+        for (valid_name, valid) in SIGVERY_VALID_STATUS
+        for lc_state, lc_state_val in SIGVERIFY_VALID_KEY_2_LCS[key]
     ],
 )
 

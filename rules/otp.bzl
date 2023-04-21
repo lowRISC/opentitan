@@ -38,6 +38,7 @@ format expected by the image generation tool.
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//rules:host.bzl", "host_tools_transition")
+load("//rules:const.bzl", "CONST", "hex_digits")
 
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
@@ -260,3 +261,22 @@ STD_OTP_OVERLAYS = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
     "//hw/ip/otp_ctrl/data:otp_json_secret1",
     "//hw/ip/otp_ctrl/data:otp_json_secret2_unlocked",
 ]
+
+def otp_sigverify_rsa_key_en_value(slots):
+    """
+    Return the value of CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN given the value
+    of each slot. Each slot can either be True or False (will be converted to
+    the hardened value), or a numeric value that fits into an 8-bit integer.
+    The returned value is a hex-string that can be used with opt_json. The slots
+    must be provided as an array.
+    """
+    slots_array = slots
+    s = "0x"
+    for (idx, val) in reversed(enumerate(slots_array)):
+        v = val
+        if type(v) == "bool":
+            v = CONST.BYTE_TRUE if val else CONST.BYTE_FALSE
+        if type(v) != "int" or v < 0 or v > 255:
+            fail("the value of the key slot enable in CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN must be an 8-bit integer")
+        s += hex_digits(v, 8)
+    return s
