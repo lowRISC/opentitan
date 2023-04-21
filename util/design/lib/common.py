@@ -1,16 +1,17 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Shared subfunctions.
-"""
+r'''Common utilities used by various util/design scripts.'''
+
 import random
 import re
 import textwrap
 from math import ceil, log2
+from pathlib import Path
 
 
 def wrapped_docstring():
-    '''Return a text-wrapped version of the module docstring'''
+    '''Return a text-wrapped version of the module docstring.'''
     paras = []
     para = []
     for line in __doc__.strip().split('\n'):
@@ -27,11 +28,27 @@ def wrapped_docstring():
     return '\n\n'.join(textwrap.fill(p) for p in paras)
 
 
+def path_to_include_guard(filepath: str) -> str:
+    '''Generates C header include guard from file path.
+
+    Args:
+        filepath: Input file path.
+    Returns:
+        String repesenting include guard encoded format.
+    '''
+    header = Path(filepath)
+    dir = re.sub(r'[^\w]', '_', str(header.parent)).upper()
+    stem = re.sub(r'[^\w]', '_', str(header.stem)).upper()
+    return f'OPENTITAN_{dir}_{stem}_H_'
+
+
 def check_bool(x):
-    """check_bool checks if input 'x' either a bool or
-       one of the following strings: ["true", "false"]
-        It returns value as Bool type.
-    """
+    '''check_bool checks if input 'x' either a bool or one of the following
+    strings: ["true", "false"]
+
+    Returns:
+        Value 'x' as Bool type.
+    '''
     if isinstance(x, bool):
         return x
     if not x.lower() in ["true", "false"]:
@@ -41,18 +58,20 @@ def check_bool(x):
 
 
 def check_int(x):
-    """check_int checks if input 'x' is decimal integer.
-        It returns value as an int type.
-    """
+    '''check_int checks if input 'x' is decimal integer.
+
+    Returns:
+        Value 'x' as an int type.
+    '''
     if isinstance(x, int):
         return x
     if not x.isdecimal():
-        raise RuntimeError("{} is not a decimal number".format(x))
+        raise RuntimeError("{} is not a decimal number.".format(x))
     return int(x)
 
 
 def as_snake_case_prefix(name):
-    """ Convert PascalCase name into snake_case name"""
+    '''Convert PascalCase name into snake_case name.'''
     outname = ""
     for c in name:
         if c.isupper() and len(outname) > 0:
@@ -62,14 +81,14 @@ def as_snake_case_prefix(name):
 
 
 def get_random_data_hex_literal(width):
-    """ Fetch 'width' random bits and return them as hex literal"""
+    '''Fetch 'width' random bits and return them as hex literal.'''
     width = int(width)
     literal_str = hex(random.getrandbits(width))
     return blockify(literal_str, width, 64)
 
 
 def blockify(s, size, limit):
-    """ Make sure the output does not exceed a certain size per line"""
+    '''Make sure the output does not exceed a certain size per line.'''
 
     str_idx = 2
     remain = size % (limit * 4)
@@ -93,8 +112,8 @@ def blockify(s, size, limit):
 
 
 def get_random_perm_hex_literal(numel):
-    """ Compute a random permutation of 'numel' elements and
-    return as packed hex literal"""
+    '''Compute a random permutation of 'numel' elements and
+    return as packed hex literal.'''
     num_elements = int(numel)
     width = int(ceil(log2(num_elements)))
     idx = [x for x in range(num_elements)]
@@ -289,7 +308,7 @@ def random_or_hexvalue(dict_obj, key, num_bits):
 
 
 def vmem_permutation_string(data_perm):
-    """Check VMEM permutation format and expand the ranges."""
+    '''Check VMEM permutation format and expand the ranges.'''
 
     if not isinstance(data_perm, str):
         raise TypeError()

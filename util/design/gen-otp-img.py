@@ -253,9 +253,10 @@ def main():
         dtstr, argstr)
 
     if args.header_out:
-        file_body = otp_mem_img.generate_headerfile(file_header,
-                                                    args.header_template)
         log.info(f'Generating header file: {args.header_out}')
+        file_body = otp_mem_img.generate_headerfile(args.header_out,
+                                                    file_header,
+                                                    args.header_template)
         with open(args.header_out, 'wb') as outfile:
             outfile.write(file_body.encode('utf-8'))
         exit(0)
