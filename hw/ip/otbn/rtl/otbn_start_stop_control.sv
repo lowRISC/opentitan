@@ -187,16 +187,25 @@ module otbn_start_stop_control
         if (stop && !rma_request) begin
           state_d = OtbnStartStopStateLocked;
         end else if (start_i || rma_request) begin
-          urnd_reseed_req_o = ~SecSkipUrndReseedAtStart | rma_request;
-          ispr_init_o       = 1'b1;
-          state_reset_o     = 1'b1;
-          state_d           = OtbnStartStopStateUrndRefresh;
+          ispr_init_o   = 1'b1;
+          state_reset_o = 1'b1;
+          if (rma_request) begin
+            // Do not reseed URND before secure wipe for RMA, as the entropy complex may not be able
+            // to provide entropy at this point.
+            state_d = OtbnStartStopSecureWipeWdrUrnd;
+            // As we don't reseed URND, there's no point in doing two rounds of wiping, so we
+            // pretend that the first round is already the second round.
+            wipe_after_urnd_refresh_d = MuBi4True;
+          end else begin // start_i
+            urnd_reseed_req_o = ~SecSkipUrndReseedAtStart;
+            state_d           = OtbnStartStopStateUrndRefresh;
+          end
         end
       end
       OtbnStartStopStateUrndRefresh: begin
         urnd_reseed_req_o = ~skip_reseed_q;
         if (stop) begin
-          if (mubi4_test_false_strict(wipe_after_urnd_refresh_q) && !rma_request) begin
+          if (mubi4_test_false_strict(wipe_after_urnd_refresh_q)) begin
             // We are told to stop and don't have to wipe after the current URND refresh is ack'd,
             // so we lock immediately.
             state_d = OtbnStartStopStateLocked;
