@@ -309,27 +309,35 @@ class OTBNSim:
                 self.state.zero_insn_cnt_next = True
 
         if self.state.wipe_cycles == 1:
+            # This is the penultimate clock cycle of a wipe round.
             if self.state.first_round_of_wipe:
-                # Request URND refresh before second round.
+                # This is the first round.
                 self.state.wsrs.URND.running = False
-                self.state._urnd_client.request()
-            else:
-                # Wipe all registers and set STATUS on the penultimate cycle.
+                if not self.state.rma_req:
+                    # If not wiping because of an RMA request, request an URND
+                    # refresh.
+                    self.state._urnd_client.request()
+            if (not self.state.first_round_of_wipe) or self.state.rma_req:
+                # This is the second wipe round or the only round of a wipe
+                # during an RMA request, so wipe all registers and set STATUS.
                 next_status = Status.IDLE if is_good else Status.LOCKED
                 self.state.ext_regs.write('STATUS', next_status, True)
                 self.state.wipe()
 
-        # On the final cycle, set the next state to IDLE or LOCKED. If an
-        # initial secure wipe was in progress, it is now done (if the wipe was
-        # good).
         if self.state.wipe_cycles == 0:
-            if self.state.first_round_of_wipe:
-                # Once the URND refresh is acknowledged, do second round of wipe.
+            # This is the final clock cycle of a wipe round.
+            if self.state.first_round_of_wipe and not self.state.rma_req:
+                # This is the first wipe round and since there's no RMA request,
+                # a second round must follow after URND refresh acknowledgment.
                 if self.state.wsrs.URND.running:
                     self.state.first_round_of_wipe = False
                     self.state.set_fsm_state(self.state.get_fsm_state())
             else:
+                # This is the second wipe round or the only wipe round during an
+                # RMA request. If the wipe was good, set the next state to IDLE;
+                # otherwise set it to LOCKED.
                 if is_good:
+                    assert not self.state.rma_req
                     next_state = FsmState.IDLE
                     if self.state.init_sec_wipe_is_running():
                         self.state.complete_init_sec_wipe()
