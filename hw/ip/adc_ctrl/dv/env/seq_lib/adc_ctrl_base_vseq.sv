@@ -21,11 +21,6 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
     if (do_adc_ctrl_init) adc_ctrl_init();
   endtask
 
-  virtual task dut_shutdown();
-    // check for pending adc_ctrl operations and wait for them to complete
-    // TODO
-  endtask
-
   // setup basic adc_ctrl features
   virtual task adc_ctrl_init();
     `uvm_info(`gfn, "Initializating adc_ctrl, nothing to do at the moment", UVM_MEDIUM)
