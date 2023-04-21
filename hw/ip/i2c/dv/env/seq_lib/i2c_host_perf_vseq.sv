@@ -21,6 +21,10 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
 
   uint num_bits = 0;
 
+  constraint num_trans_c {
+    num_trans  == 10;
+  }
+
   constraint scl_frequency_c {
     solve speed_mode before scl_frequency;
     if(speed_mode == Standard){
@@ -42,10 +46,13 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
     thd_sta == cfg.seq_cfg.get_thdsta_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
     tsu_sto == cfg.seq_cfg.get_tsusto_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
     tsu_dat == cfg.seq_cfg.get_tsudat_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
-    thd_dat == cfg.seq_cfg.get_thddat_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
     tsu_sta == cfg.seq_cfg.get_tsusta_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
     t_buf   == cfg.seq_cfg.get_tbuf_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
-
+    if (cfg.seq_cfg.get_thddat_min(speed_mode, cfg.clk_rst_vif.clk_period_ps) > 0) {
+      thd_dat == cfg.seq_cfg.get_thddat_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
+    } else {
+      thd_dat == 1;
+    }
     solve speed_mode before tlow, t_r, t_f, thd_sta, tsu_sto, tsu_dat, thd_dat,
                             tsu_sta, t_buf, thigh;
 
