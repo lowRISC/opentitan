@@ -58,6 +58,7 @@ excl_paths=(
     '.*/vendor/.*'
     COMMITTERS
     hw/ip/usbdev/pmod/tusb1106pmod-kicad/fp-info-cache
+    'signing/softhsm/tokens/.*'
     site/landing/data/partner_quotes.json
 )
 excl_re=""

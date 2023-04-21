@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Miguel Young de la Sota <mcyoung@google.com>
+Date: Wed, 15 Dec 2021 16:04:25 -0500
+Subject: Disable filename logging
+
+
+diff --git a/src/lib/common/log.h b/src/lib/common/log.h
+index cf91aaf..2615a5f 100644
+--- a/src/lib/common/log.h
++++ b/src/lib/common/log.h
+@@ -41,7 +41,6 @@
+ #include <string>
+ 
+ /* Unset this define if you don't want to log the source file name and line number */
+-#define SOFTHSM_LOG_FILE_AND_LINE
+ 
+ /* Set this define to log the function name */
+ /* #define SOFTHSM_LOG_FUNCTION_NAME */
+-- 
+2.34.1.173.g76aa8bc2d0-goog
+

@@ -152,6 +152,8 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @remotejdk11_linux//... \
     @riscv-compliance//... \
     @rules_foreign_cc//toolchains/... \
+    @ninja_1.10.2_linux//... \
+    @cmake-3.22.2-linux-x86_64//... \
     @rust_analyzer_1.67.0_tools//... \
     @rust_linux_x86_64__x86_64-unknown-linux-gnu__nightly_tools//... \
     @rust_linux_x86_64__riscv32imc-unknown-none-elf__nightly_tools//...
