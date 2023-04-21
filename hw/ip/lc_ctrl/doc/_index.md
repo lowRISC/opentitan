@@ -373,8 +373,8 @@ Parameter                      | Default (Max)         | Top Earlgrey   | Descri
 
 Signal                       | Direction        | Type                                     | Description
 -----------------------------|------------------|------------------------------------------|---------------
-`jtag_i`                     | `input`          | `jtag_pkg::jtag_req_t`                   | JTAG input signals for life cycle TAP.
-`jtag_o`                     | `output`         | `jtag_pkg::jtag_rsp_t`                   | JTAG output signals for life cycle TAP.
+`jtag_i`                     | `input`          | `jtag_ot_pkg::jtag_req_t`                   | JTAG input signals for life cycle TAP.
+`jtag_o`                     | `output`         | `jtag_ot_pkg::jtag_rsp_t`                   | JTAG output signals for life cycle TAP.
 `esc_scrap_state0_tx_i`      | `input`          | `prim_esc_pkg::esc_tx_t`                 | Escalation input from alert handler. Moves the life cycle state into an invalid state upon assertion.
 `esc_scrap_state0_rx_o`      | `output`         | `prim_esc_pkg::esc_rx_t`                 | Escalation feedback to alert handler
 `esc_scrap_state1_tx_i`      | `input`          | `prim_esc_pkg::esc_tx_t`                 | Escalation input from alert handler. Moves the life cycle state into an invalid state upon assertion.

@@ -21,7 +21,7 @@ filesets:
       - lowrisc:prim:sparse_fsm
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:flash_ctrl_pkg
-      - lowrisc:ip:jtag_pkg
+      - lowrisc:ip:jtag_ot_pkg
       - "fileset_top    ? (lowrisc:systems:flash_ctrl)"
       - "fileset_topgen ? (lowrisc:systems:topgen)"
     files:

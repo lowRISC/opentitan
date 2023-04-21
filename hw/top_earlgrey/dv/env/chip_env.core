@@ -16,7 +16,7 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:dv:digestpp_dpi
       - lowrisc:dv:aes_model_dpi
-      - lowrisc:ip:jtag_pkg
+      - lowrisc:ip:jtag_ot_pkg
       - lowrisc:dv:jtag_riscv_agent
       - lowrisc:dv:jtag_dmi_agent
       - lowrisc:dv:lc_ctrl_dv_utils

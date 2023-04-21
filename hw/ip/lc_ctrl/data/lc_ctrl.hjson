@@ -149,7 +149,7 @@
       type:    "req_rsp"
       name:    "jtag"
       act:     "rsp"
-      package: "jtag_pkg"
+      package: "jtag_ot_pkg"
     }
     // Escalation inputs from alert handler
     { struct:  "esc_tx"

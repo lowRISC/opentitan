@@ -20,7 +20,7 @@ package chip_env_pkg;
   import dv_lib_pkg::*;
   import dv_utils_pkg::*;
   import flash_ctrl_pkg::*;
-  import jtag_pkg::*;
+  import jtag_ot_pkg::*;
   import jtag_agent_pkg::*;
   import jtag_riscv_agent_pkg::*;
   import jtag_dmi_agent_pkg::*;

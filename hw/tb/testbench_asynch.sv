@@ -14,7 +14,7 @@
 module testbench_asynch ();
 
    import lc_ctrl_pkg::*;
-   import jtag_pkg::*;
+   import jtag_ot_pkg::*;
    import jtag_ot_test::*;
    import dm_ot::*;
    import tlul2axi_pkg::*;
@@ -155,8 +155,8 @@ module testbench_asynch ();
 
    JTAG_DV jtag_mst (clk_sys);
    
-   jtag_pkg::jtag_req_t jtag_i;
-   jtag_pkg::jtag_rsp_t jtag_o;
+   jtag_ot_pkg::jtag_req_t jtag_i;
+   jtag_ot_pkg::jtag_rsp_t jtag_o;
       
    axi_out_req_t   ot_axi_req;
    axi_out_resp_t  ot_axi_rsp;

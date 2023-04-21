@@ -18,7 +18,7 @@ filesets:
       - lowrisc:prim:lc_or_hardened
       - lowrisc:prim:pad_wrapper_pkg
       - lowrisc:prim:pad_attr
-      - lowrisc:ip:jtag_pkg
+      - lowrisc:ip:jtag_ot_pkg
       - lowrisc:ip:usbdev
       # pinmux_wkup.sv depends on pinmux_reg_pkg.sv
       - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"

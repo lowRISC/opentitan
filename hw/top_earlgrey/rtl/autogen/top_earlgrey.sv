@@ -138,8 +138,8 @@ module top_earlgrey #(
   output tlul2axi_pkg::slv_req_t       axi_req_o,
   input  tlul2axi_pkg::slv_rsp_t       axi_rsp_i,
   input  logic       irq_ibex_i,
-  input  jtag_pkg::jtag_req_t       jtag_req_i,
-  output jtag_pkg::jtag_rsp_t       jtag_rsp_o,
+  input  jtag_ot_pkg::jtag_req_t       jtag_req_i,
+  output jtag_ot_pkg::jtag_rsp_t       jtag_rsp_o,
   input  edn_pkg::edn_req_t       ast_edn_req_i,
   output edn_pkg::edn_rsp_t       ast_edn_rsp_o,
   output lc_ctrl_pkg::lc_tx_t       ast_lc_dft_en_o,
@@ -591,8 +591,8 @@ module top_earlgrey #(
   kmac_pkg::app_rsp_t [2:0] kmac_app_rsp;
   logic       kmac_en_masking;
   prim_mubi_pkg::mubi4_t [3:0] clkmgr_aon_idle;
-  jtag_pkg::jtag_req_t       pinmux_aon_lc_jtag_req;
-  jtag_pkg::jtag_rsp_t       pinmux_aon_lc_jtag_rsp;
+  jtag_ot_pkg::jtag_req_t       pinmux_aon_lc_jtag_req;
+  jtag_ot_pkg::jtag_rsp_t       pinmux_aon_lc_jtag_rsp;
   lc_ctrl_pkg::lc_tx_t       pinmux_aon_pinmux_hw_debug_en;
   otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
   otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
@@ -740,8 +740,8 @@ module top_earlgrey #(
   logic       rv_core_ibex_irq_timer;
   logic [31:0] rv_core_ibex_hart_id;
   logic [31:0] rv_core_ibex_boot_addr;
-  jtag_pkg::jtag_req_t       pinmux_aon_dft_jtag_req;
-  jtag_pkg::jtag_rsp_t       pinmux_aon_dft_jtag_rsp;
+  jtag_ot_pkg::jtag_req_t       pinmux_aon_dft_jtag_req;
+  jtag_ot_pkg::jtag_rsp_t       pinmux_aon_dft_jtag_rsp;
   otp_ctrl_part_pkg::otp_hw_cfg_t       otp_ctrl_otp_hw_cfg;
   prim_mubi_pkg::mubi8_t       csrng_otp_en_csrng_sw_app_read;
   prim_mubi_pkg::mubi8_t       entropy_src_otp_en_entropy_src_fw_read;
@@ -1922,7 +1922,7 @@ module top_earlgrey #(
       .lc_jtag_o(pinmux_aon_lc_jtag_req),
       .lc_jtag_i(pinmux_aon_lc_jtag_rsp),
       .rv_jtag_o(),
-      .rv_jtag_i(jtag_pkg::JTAG_RSP_DEFAULT),
+      .rv_jtag_i(jtag_ot_pkg::JTAG_RSP_DEFAULT),
       .dft_jtag_o(pinmux_aon_dft_jtag_req),
       .dft_jtag_i(pinmux_aon_dft_jtag_rsp),
       .dft_strap_test_o(dft_strap_test_o),

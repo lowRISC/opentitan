@@ -8,8 +8,8 @@ class flash_ctrl_connect_vseq extends flash_ctrl_base_vseq;
   `uvm_object_new
 
   task body();
-    jtag_pkg::jtag_req_t jtag_src_req, jtag_dst_req;
-    jtag_pkg::jtag_rsp_t jtag_src_rsp, jtag_dst_rsp;
+    jtag_ot_pkg::jtag_req_t jtag_src_req, jtag_dst_req;
+    jtag_ot_pkg::jtag_rsp_t jtag_src_rsp, jtag_dst_rsp;
     string   flash_path = "tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic";
     string   dut_path = "tb.dut";
     bit      lc_nvm_debug_en;

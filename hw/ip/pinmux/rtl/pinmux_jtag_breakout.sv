@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module pinmux_jtag_breakout (
-  input  jtag_pkg::jtag_req_t req_i,
-  output jtag_pkg::jtag_rsp_t rsp_o,
+  input  jtag_ot_pkg::jtag_req_t req_i,
+  output jtag_ot_pkg::jtag_rsp_t rsp_o,
 
   output logic tck_o,
   output logic trst_no,

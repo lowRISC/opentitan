@@ -107,7 +107,7 @@
       type:    "req_rsp"
       name:    "lc_jtag"
       act:     "req"
-      package: "jtag_pkg"
+      package: "jtag_ot_pkg"
       desc:    '''
                Qualified JTAG signals for life cycle controller TAP.
                ''',}
@@ -116,7 +116,7 @@
       type:    "req_rsp"
       name:    "rv_jtag"
       act:     "req"
-      package: "jtag_pkg"
+      package: "jtag_ot_pkg"
       desc:    '''
                Qualified JTAG signals for RISC-V processor TAP.
                ''',}
@@ -125,7 +125,7 @@
       type:    "req_rsp"
       name:    "dft_jtag"
       act:     "req"
-      package: "jtag_pkg"
+      package: "jtag_ot_pkg"
       desc:    '''
                Qualified JTAG signals for DFT TAP.
                ''',}

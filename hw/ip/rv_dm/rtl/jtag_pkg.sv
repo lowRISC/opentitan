@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-package jtag_pkg;
+package jtag_ot_pkg;
 
   typedef struct packed {
     logic tck;
@@ -21,4 +21,4 @@ package jtag_pkg;
 
   parameter jtag_rsp_t JTAG_RSP_DEFAULT = '0;
 
-endpackage : jtag_pkg
+endpackage : jtag_ot_pkg

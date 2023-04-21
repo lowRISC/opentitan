@@ -12,7 +12,7 @@
 
 module secure_subsystem_synth_wrap
    import axi_pkg::*;
-   import jtag_pkg::*;
+   import jtag_ot_pkg::*;
    import tlul2axi_pkg::*;
    import dm_ot::*;
    import lc_ctrl_pkg::*;
@@ -107,8 +107,8 @@ module secure_subsystem_synth_wrap
    axi_ot_out_req_t     ot_axi_req;
    axi_ot_out_resp_t    ot_axi_rsp;
 
-   jtag_pkg::jtag_req_t jtag_i;
-   jtag_pkg::jtag_rsp_t jtag_o;
+   jtag_ot_pkg::jtag_req_t jtag_i;
+   jtag_ot_pkg::jtag_rsp_t jtag_o;
 
    entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
    entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;

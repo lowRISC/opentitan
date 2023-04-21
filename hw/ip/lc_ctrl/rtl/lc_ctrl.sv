@@ -36,8 +36,8 @@ module lc_ctrl
   input  tlul_pkg::tl_h2d_t                          tl_i,
   output tlul_pkg::tl_d2h_t                          tl_o,
   // JTAG TAP.
-  input  jtag_pkg::jtag_req_t                        jtag_i,
-  output jtag_pkg::jtag_rsp_t                        jtag_o,
+  input  jtag_ot_pkg::jtag_req_t                        jtag_i,
+  output jtag_ot_pkg::jtag_rsp_t                        jtag_o,
   // This bypasses the clock inverter inside the JTAG TAP for scanmmode.
   input                                              scan_rst_ni,
   input  prim_mubi_pkg::mubi4_t                      scanmode_i,

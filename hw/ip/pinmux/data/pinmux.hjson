@@ -74,19 +74,19 @@
       type:    "req_rsp"
       name:    "lc_jtag"
       act:     "req"
-      package: "jtag_pkg"
+      package: "jtag_ot_pkg"
     }
     { struct:  "jtag"
       type:    "req_rsp"
       name:    "rv_jtag"
       act:     "req"
-      package: "jtag_pkg"
+      package: "jtag_ot_pkg"
     }
     { struct:  "jtag"
       type:    "req_rsp"
       name:    "dft_jtag"
       act:     "req"
-      package: "jtag_pkg"
+      package: "jtag_ot_pkg"
     }
     // Testmode signals to AST
     { struct:  "dft_strap_test_req",

@@ -50,8 +50,8 @@ module rv_dm
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
-  input  jtag_pkg::jtag_req_t jtag_i,
-  output jtag_pkg::jtag_rsp_t jtag_o
+  input  jtag_ot_pkg::jtag_req_t jtag_i,
+  output jtag_ot_pkg::jtag_rsp_t jtag_o
 );
 
   ///////////////////////////
@@ -295,8 +295,8 @@ module rv_dm
   assign debug_req_o = debug_req & debug_req_en;
 
   // Gating of JTAG signals
-  jtag_pkg::jtag_req_t jtag_in_int;
-  jtag_pkg::jtag_rsp_t jtag_out_int;
+  jtag_ot_pkg::jtag_req_t jtag_in_int;
+  jtag_ot_pkg::jtag_rsp_t jtag_out_int;
 
   assign jtag_in_int = (lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnJtagIn]))  ? jtag_i : '0;
   assign jtag_o = (lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnJtagOut])) ? jtag_out_int : '0;

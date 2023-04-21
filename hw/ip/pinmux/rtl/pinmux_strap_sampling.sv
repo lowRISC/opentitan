@@ -41,12 +41,12 @@ module pinmux_strap_sampling
   // Hold tap strap select
   input                            dft_hold_tap_sel_i,
   // Qualified JTAG signals for TAPs
-  output jtag_pkg::jtag_req_t      lc_jtag_o,
-  input  jtag_pkg::jtag_rsp_t      lc_jtag_i,
-  output jtag_pkg::jtag_req_t      rv_jtag_o,
-  input  jtag_pkg::jtag_rsp_t      rv_jtag_i,
-  output jtag_pkg::jtag_req_t      dft_jtag_o,
-  input  jtag_pkg::jtag_rsp_t      dft_jtag_i
+  output jtag_ot_pkg::jtag_req_t      lc_jtag_o,
+  input  jtag_ot_pkg::jtag_rsp_t      lc_jtag_i,
+  output jtag_ot_pkg::jtag_req_t      rv_jtag_o,
+  input  jtag_ot_pkg::jtag_rsp_t      rv_jtag_i,
+  output jtag_ot_pkg::jtag_req_t      dft_jtag_o,
+  input  jtag_ot_pkg::jtag_rsp_t      dft_jtag_i
 );
 
 
@@ -301,8 +301,8 @@ module pinmux_strap_sampling
 
   logic jtag_en;
   tap_strap_t tap_strap;
-  jtag_pkg::jtag_req_t jtag_req, lc_jtag_req, rv_jtag_req, dft_jtag_req;
-  jtag_pkg::jtag_rsp_t jtag_rsp, lc_jtag_rsp, rv_jtag_rsp, dft_jtag_rsp;
+  jtag_ot_pkg::jtag_req_t jtag_req, lc_jtag_req, rv_jtag_req, dft_jtag_req;
+  jtag_ot_pkg::jtag_rsp_t jtag_rsp, lc_jtag_rsp, rv_jtag_rsp, dft_jtag_rsp;
 
   // This muxes the JTAG signals to the correct TAP, based on the
   // sampled straps. Further, the individual JTAG signals are gated

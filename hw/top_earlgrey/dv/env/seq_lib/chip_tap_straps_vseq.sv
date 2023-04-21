@@ -193,8 +193,8 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
   // DFT tap is a dummy block in open-source. Only do connectivity test here.
   virtual task test_dft_tap(bit dft_tap_en);
     virtual jtag_if jtag_vif = cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif;
-    jtag_pkg::jtag_req_t exp_jtag_req, act_jtag_req;
-    jtag_pkg::jtag_rsp_t exp_jtag_rsp;
+    jtag_ot_pkg::jtag_req_t exp_jtag_req, act_jtag_req;
+    jtag_ot_pkg::jtag_rsp_t exp_jtag_rsp;
 
     `uvm_info(`gfn, $sformatf("Testing DFT tap with dft_tap_en: %0d", dft_tap_en), UVM_LOW)
     repeat ($urandom_range(10, 5)) begin

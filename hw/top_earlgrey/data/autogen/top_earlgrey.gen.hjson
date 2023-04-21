@@ -1619,7 +1619,7 @@
         {
           name: jtag
           struct: jtag
-          package: jtag_pkg
+          package: jtag_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -3781,7 +3781,7 @@
           name: lc_jtag
           desc: Qualified JTAG signals for life cycle controller TAP.
           struct: jtag
-          package: jtag_pkg
+          package: jtag_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -3795,7 +3795,7 @@
           name: rv_jtag
           desc: Qualified JTAG signals for RISC-V processor TAP.
           struct: jtag
-          package: jtag_pkg
+          package: jtag_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -3806,7 +3806,7 @@
           name: dft_jtag
           desc: Qualified JTAG signals for DFT TAP.
           struct: jtag
-          package: jtag_pkg
+          package: jtag_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -5172,7 +5172,7 @@
           name: jtag
           desc: JTAG signals for the RISC-V TAP.
           struct: jtag
-          package: jtag_pkg
+          package: jtag_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -15635,7 +15635,7 @@
       {
         name: jtag
         struct: jtag
-        package: jtag_pkg
+        package: jtag_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17153,7 +17153,7 @@
         name: lc_jtag
         desc: Qualified JTAG signals for life cycle controller TAP.
         struct: jtag
-        package: jtag_pkg
+        package: jtag_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -17167,7 +17167,7 @@
         name: rv_jtag
         desc: Qualified JTAG signals for RISC-V processor TAP.
         struct: jtag
-        package: jtag_pkg
+        package: jtag_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -17178,7 +17178,7 @@
         name: dft_jtag
         desc: Qualified JTAG signals for DFT TAP.
         struct: jtag
-        package: jtag_pkg
+        package: jtag_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -18012,7 +18012,7 @@
         name: jtag
         desc: JTAG signals for the RISC-V TAP.
         struct: jtag
-        package: jtag_pkg
+        package: jtag_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -20193,7 +20193,7 @@
         netname: irq_ibex
       }
       {
-        package: jtag_pkg
+        package: jtag_ot_pkg
         struct: jtag_req
         signame: jtag_req_i
         width: 1
@@ -20205,7 +20205,7 @@
         netname: jtag_req
       }
       {
-        package: jtag_pkg
+        package: jtag_ot_pkg
         struct: jtag_rsp
         signame: jtag_rsp_o
         width: 1
@@ -21470,7 +21470,7 @@
         default: prim_mubi_pkg::MUBI4_DEFAULT
       }
       {
-        package: jtag_pkg
+        package: jtag_ot_pkg
         struct: jtag_req
         signame: pinmux_aon_lc_jtag_req
         width: 1
@@ -21481,7 +21481,7 @@
         default: ""
       }
       {
-        package: jtag_pkg
+        package: jtag_ot_pkg
         struct: jtag_rsp
         signame: pinmux_aon_lc_jtag_rsp
         width: 1
@@ -21489,7 +21489,7 @@
         end_idx: -1
         act: req
         suffix: rsp
-        default: jtag_pkg::JTAG_RSP_DEFAULT
+        default: jtag_ot_pkg::JTAG_RSP_DEFAULT
       }
       {
         package: lc_ctrl_pkg
@@ -23095,7 +23095,7 @@
         default: ""
       }
       {
-        package: jtag_pkg
+        package: jtag_ot_pkg
         struct: jtag_req
         signame: pinmux_aon_dft_jtag_req
         width: 1
@@ -23104,7 +23104,7 @@
         default: ""
       }
       {
-        package: jtag_pkg
+        package: jtag_ot_pkg
         struct: jtag_rsp
         signame: pinmux_aon_dft_jtag_rsp
         width: 1

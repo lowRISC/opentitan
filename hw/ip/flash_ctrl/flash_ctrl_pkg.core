@@ -12,7 +12,7 @@ filesets:
       - lowrisc:prim:util
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:pwrmgr_pkg
-      - lowrisc:ip:jtag_pkg
+      - lowrisc:ip:jtag_ot_pkg
       - lowrisc:ip:edn_pkg
       - "fileset_partner  ? (partner:systems:ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"

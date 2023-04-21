@@ -14,7 +14,7 @@
 module testbench ();
 
    import lc_ctrl_pkg::*;
-   import jtag_pkg::*;
+   import jtag_ot_pkg::*;
    import jtag_ot_test::*;
    import dm_ot::*;
    import tlul2axi_pkg::*;
@@ -105,8 +105,8 @@ module testbench ();
 
    JTAG_DV jtag_mst (clk_sys);
    
-   jtag_pkg::jtag_req_t jtag_i;
-   jtag_pkg::jtag_rsp_t jtag_o;
+   jtag_ot_pkg::jtag_req_t jtag_i;
+   jtag_ot_pkg::jtag_rsp_t jtag_o;
    
    entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
    entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;

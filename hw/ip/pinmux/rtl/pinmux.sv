@@ -43,12 +43,12 @@ module pinmux
   // DFT indication to stop tap strap sampling
   input                            dft_hold_tap_sel_i,
   // Qualified JTAG signals for TAPs
-  output jtag_pkg::jtag_req_t      lc_jtag_o,
-  input  jtag_pkg::jtag_rsp_t      lc_jtag_i,
-  output jtag_pkg::jtag_req_t      rv_jtag_o,
-  input  jtag_pkg::jtag_rsp_t      rv_jtag_i,
-  output jtag_pkg::jtag_req_t      dft_jtag_o,
-  input  jtag_pkg::jtag_rsp_t      dft_jtag_i,
+  output jtag_ot_pkg::jtag_req_t      lc_jtag_o,
+  input  jtag_ot_pkg::jtag_rsp_t      lc_jtag_i,
+  output jtag_ot_pkg::jtag_req_t      rv_jtag_o,
+  input  jtag_ot_pkg::jtag_rsp_t      rv_jtag_i,
+  output jtag_ot_pkg::jtag_req_t      dft_jtag_o,
+  input  jtag_ot_pkg::jtag_rsp_t      dft_jtag_i,
   // Direct USB connection
   input                            usbdev_dppullup_en_i,
   input                            usbdev_dnpullup_en_i,

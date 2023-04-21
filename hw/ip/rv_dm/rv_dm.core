@@ -8,7 +8,7 @@ description: "RISC-V debug module"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:jtag_pkg
+      - lowrisc:ip:jtag_ot_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:lc_sync
