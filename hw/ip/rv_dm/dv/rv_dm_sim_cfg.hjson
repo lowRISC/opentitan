@@ -79,6 +79,11 @@
       reseed: 2
     }
     {
+      name: rv_dm_tap_fsm
+      uvm_test_seq: rv_dm_tap_fsm_vseq
+      reseed: 1
+    }
+    {
       name: rv_dm_jtag_dtm_csr_hw_reset
       uvm_test_seq: rv_dm_jtag_dtm_csr_vseq
       build_mode: "cover_reg_top"
@@ -154,6 +159,15 @@
       name: rv_dm_autoincr_sba_tl_access
       uvm_test_seq: rv_dm_autoincr_sba_tl_access_vseq
       reseed: 20
+    }
+    {
+      name: "rv_dm_tap_fsm_rand_reset"
+      uvm_test_seq: "rv_dm_common_vseq"
+      build_mode: "cover_reg_top"
+      run_opts: ["+run_stress_all_with_rand_reset",
+                 "+stress_seq=rv_dm_tap_fsm_vseq",
+                 "+en_scb=0"]
+      reseed: 40
     }
   ]
 

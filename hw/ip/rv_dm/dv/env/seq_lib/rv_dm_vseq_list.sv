@@ -8,3 +8,4 @@
 `include "rv_dm_jtag_dtm_csr_vseq.sv"
 `include "rv_dm_jtag_dmi_csr_vseq.sv"
 `include "rv_dm_sba_tl_access_vseq_lib.sv"
+`include "rv_dm_tap_fsm_vseq.sv"

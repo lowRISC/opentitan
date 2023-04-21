@@ -17,6 +17,8 @@ package jtag_agent_pkg;
   // parameters
   parameter uint JTAG_IRW = 32; // max IR width
   parameter uint JTAG_DRW = 64; // max DR width
+  // Number of consecutive cycles of tsm==1 to reset the JTAG state machine
+  parameter uint JTAG_TEST_LOGIC_RESET_CYCLES = 5;
 
   typedef enum bit [3:0] {
     JtagResetState,

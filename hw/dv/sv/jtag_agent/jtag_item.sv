@@ -39,6 +39,20 @@ class jtag_item extends uvm_sequence_item;
   // This field is used to indicate the CaptureIr cycle on which the
   // pause state is introduced
   rand uint ir_pause_cycle;
+  // This field is used to enable dummy IR transaction
+  rand bit dummy_ir;
+  // This field is used to enable dummy DR transaction
+  rand bit dummy_dr;
+  // This field is used to indicate if IR transaction exit happens via PauseIR state
+  rand bit exit_via_pause_ir;
+  // This field is used to indicate if DR transaction exit happens via PauseDR state
+  rand bit exit_via_pause_dr;
+  // This field is used to indicate if at the end of IR transaction FSM moves to RunTestIdle state
+  rand bit exit_to_rti_ir;
+  // This field is used to indicate if at the end of DR transaction FSM moves to RunTestIdle state
+  rand bit exit_to_rti_dr;
+  // This field is used to reset TAP FSM to TestLogicReset state
+  rand bit reset_tap_fsm;
 
   constraint ir_len_c {
     ir_len <= JTAG_IRW;
@@ -46,6 +60,18 @@ class jtag_item extends uvm_sequence_item;
 
   constraint dr_len_c {
     dr_len <= JTAG_DRW;
+  }
+
+  constraint exit_to_rti_ir_c {
+    soft exit_to_rti_ir == 1;
+  }
+
+  constraint exit_to_rti_dr_c {
+    soft exit_to_rti_dr == 1;
+  }
+
+  constraint reset_tap_fsm_c {
+    soft reset_tap_fsm == 0;
   }
 
   // At least one of them should be non-zero.
@@ -83,6 +109,22 @@ class jtag_item extends uvm_sequence_item;
     }
     solve ir_len before ir_pause_cycle;
     solve ir_pause_count before ir_pause_cycle;
+  }
+
+  constraint dummy_ir_c {
+    dummy_ir dist { 0 := 99, 1 := 1};
+  }
+
+  constraint dummy_dr_c {
+    soft dummy_dr == 0;
+  }
+
+  constraint exit_via_pause_ir_c {
+    exit_via_pause_ir dist { 0 := 90, 1 := 10};
+  }
+
+  constraint exit_via_pause_dr_c {
+    exit_via_pause_dr dist { 0 := 90, 1 := 10};
   }
 
   `uvm_object_utils_begin(jtag_item)

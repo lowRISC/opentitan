@@ -342,7 +342,7 @@
             This test should verify that the standardized JTAG TAP FSM is working correctly.
             '''
       stage: V2
-      tests: [] // TODO(#17032)
+      tests: ["rv_dm_tap_fsm", "rv_dm_tap_fsm_rand_reset"]
     }
     {
       name: stress_all
