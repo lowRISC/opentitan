@@ -309,9 +309,9 @@ module prim_alert_sender
     // check propagation of sigint issues to output within three cycles
     // shift sequence to the right to avoid reset effects.
     `ASSERT(SigIntPing_A, ##1 PingSigInt_S |->
-        ##3 alert_tx_o.alert_p == alert_tx_o.alert_n)
+        ##[3:4] alert_tx_o.alert_p == alert_tx_o.alert_n)
     `ASSERT(SigIntAck_A, ##1 AckSigInt_S |->
-        ##3 alert_tx_o.alert_p == alert_tx_o.alert_n)
+        ##[3:4] alert_tx_o.alert_p == alert_tx_o.alert_n)
   `endif
 
     // Test in-band FSM reset request (via signal integrity error)
@@ -325,10 +325,10 @@ module prim_alert_sender
     // handshakes can take indefinite time if blocked due to sigint on outgoing
     // lines (which is not visible here). thus, we only check whether the
     // handshake is correctly initiated and defer the full handshake checking to the testbench.
-    // TODO: add the staggered cases as well
     `ASSERT(PingHs_A, ##1 $changed(alert_rx_i.ping_p) &&
         (alert_rx_i.ping_p ^ alert_rx_i.ping_n) ##2 state_q == Idle |=>
-        $rose(alert_tx_o.alert_p), clk_i, !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
+        ##[0:1] $rose(alert_tx_o.alert_p), clk_i,
+        !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
   end else begin : gen_sync_assert
     sequence PingSigInt_S;
       alert_rx_i.ping_p == alert_rx_i.ping_n;

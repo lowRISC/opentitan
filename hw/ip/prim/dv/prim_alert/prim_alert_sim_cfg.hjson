@@ -26,6 +26,9 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 20
 
+  // TODO(lowrisc/opentitan#16689): Enable cdc instrumentation
+  run_opts: ["+cdc_instrumentation_enabled=0"]
+
   build_modes: [
     {
       name: sync_alert

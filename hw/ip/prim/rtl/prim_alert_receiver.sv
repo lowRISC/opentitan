@@ -301,15 +301,13 @@ module prim_alert_receiver
         !(state_q inside {InitReq, InitAckWait}) &&
         mubi4_test_false_loose(init_trig_i)
         |->
-        integ_fail_o)
-    // TODO: need to add skewed cases as well, the assertions below assume no skew at the moment
-    // ping response
+        ##[0:1] integ_fail_o)
     `ASSERT(PingResponse1_A,
         ##1 $rose(alert_tx_i.alert_p) &&
         (alert_tx_i.alert_p ^ alert_tx_i.alert_n) ##2
         state_q == Idle && ping_pending_q
         |->
-        ping_ok_o,
+        ##[0:1] ping_ok_o,
         clk_i, !rst_ni || integ_fail_o || mubi4_test_true_strict(init_trig_i))
     // alert
     `ASSERT(Alert_A,
