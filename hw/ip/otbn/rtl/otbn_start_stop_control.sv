@@ -178,7 +178,14 @@ module otbn_start_stop_control
       OtbnStartStopStateInitial: begin
         secure_wipe_running_o = 1'b1;
         urnd_reseed_req_o     = 1'b1;
-        if (urnd_reseed_ack_i) begin
+        if (rma_request) begin
+          // If we get an RMA request before the URND got reseeded, proceed with the initial secure
+          // wipe, as the entropy complex may not be able to provide entropy at this point.
+          state_d = OtbnStartStopSecureWipeWdrUrnd;
+          // As we don't reseed URND, there's no point in doing two rounds of wiping, so we pretend
+          // that the first round is already the second round.
+          wipe_after_urnd_refresh_d = MuBi4True;
+        end else if (urnd_reseed_ack_i) begin
           urnd_advance_o = 1'b1;
           state_d        = OtbnStartStopSecureWipeWdrUrnd;
         end
