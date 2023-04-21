@@ -559,6 +559,28 @@ otbn_consttime_test(
 )
 
 otbn_sim_test(
+    name = "relprime_f4_test",
+    srcs = [
+        "relprime_f4_test.s",
+    ],
+    exp = "relprime_f4_test.exp",
+    deps = [
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_consttime_test(
+    name = "relprime_f4_consttime_test",
+    # All secrets are stored in DMEM; timing is permitted to depend on the
+    # number of limbs.
+    secrets = ["dmem"],
+    subroutine = "relprime_f4",
+    deps = [
+        ":relprime_f4_test",
+    ],
+)
+
+otbn_sim_test(
     name = "rsa_1024_dec_test",
     timeout = "long",
     srcs = [
