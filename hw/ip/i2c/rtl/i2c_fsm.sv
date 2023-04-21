@@ -1228,7 +1228,7 @@ module i2c_fsm import i2c_pkg::*;
           tcount_sel = tClockStart;
         end
       end
-      // AcquireAckHold: target pulls SDA low whilREe SCL is pulled low
+      // AcquireAckHold: target pulls SDA low while SCL is pulled low
       AcquireAckHold : begin
         if (tcount_q == 20'd1) begin
           // If there is no space for the current entry, stretch clocks and
@@ -1299,7 +1299,7 @@ module i2c_fsm import i2c_pkg::*;
 
     // When a start is detected, always go to the acquire start state.
     // Differences in repeated start / start handling are done in the
-    // other fsm.
+    // other FSM.
     if (!target_idle && !target_enable_i) begin
       // If the target function is currently not idle but target_enable is suddenly dropped,
       // (maybe because the host locked up and we want to cycle back to an initial state),
