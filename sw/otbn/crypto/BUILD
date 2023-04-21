@@ -42,9 +42,23 @@ otbn_library(
 )
 
 otbn_library(
+    name = "lcm",
+    srcs = [
+        "lcm.s",
+    ],
+)
+
+otbn_library(
     name = "modexp",
     srcs = [
         "modexp.s",
+    ],
+)
+
+otbn_library(
+    name = "mul",
+    srcs = [
+        "mul.s",
     ],
 )
 
