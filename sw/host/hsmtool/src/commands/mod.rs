@@ -12,6 +12,7 @@ use std::any::Any;
 
 use crate::util::attribute::AttrData;
 
+mod object;
 mod rsa;
 mod token;
 
@@ -28,6 +29,8 @@ pub trait Dispatch {
 #[derive(clap::Subcommand, Debug, Serialize, Deserialize)]
 pub enum Commands {
     #[command(subcommand)]
+    Object(object::Object),
+    #[command(subcommand)]
     Rsa(rsa::Rsa),
     #[command(subcommand)]
     Token(token::Token),
@@ -42,6 +45,7 @@ impl Dispatch for Commands {
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         match self {
+            Commands::Object(x) => x.run(context, pkcs11, session),
             Commands::Rsa(x) => x.run(context, pkcs11, session),
             Commands::Token(x) => x.run(context, pkcs11, session),
         }

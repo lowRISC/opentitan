@@ -10,6 +10,11 @@ rust_library(
     name = "hsmlib",
     srcs = [
         "src/commands/mod.rs",
+        "src/commands/object/destroy.rs",
+        "src/commands/object/list.rs",
+        "src/commands/object/mod.rs",
+        "src/commands/object/show.rs",
+        "src/commands/object/update.rs",
         "src/commands/rsa/decrypt.rs",
         "src/commands/rsa/encrypt.rs",
         "src/commands/rsa/export.rs",
