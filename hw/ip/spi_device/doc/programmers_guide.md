@@ -49,10 +49,12 @@ Therefore, software has to use the [`CONTROL.sram_clk_en`](../data/spi_device.hj
 
 For any mode change that involves switching to a different clock source, the following programming sequence must be followed:
 
-1. Check if SPI line is idle.
+1. Software should ensure that the SPI clock is inactive, e.g. by holding the upstream SPI host in reset or signal it to hold off.
 2. Clear [`CONTROL.sram_clk_en`](../data/spi_device.hjson#control) to 0.
-3. Change to the new mode
+3. Change to the new SPI mode
 4. Set [`CONTROL.sram_clk_en`](../data/spi_device.hjson#control) to 1.
+
+**Note: This is a limitation of the current `spi_device` that is planned to be removed in a future revision.**
 
 ## TPM over SPI
 
