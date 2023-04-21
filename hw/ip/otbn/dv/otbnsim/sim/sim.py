@@ -216,7 +216,7 @@ class OTBNSim:
         '''Step the simulation when executing code'''
 
         # The initial secure wipe *must* be done when executing code.
-        assert(self.state.init_sec_wipe_is_done())
+        assert self.state.init_sec_wipe_is_done()
 
         self.state.wsrs.URND.step()
 
