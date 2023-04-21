@@ -21,17 +21,8 @@ module prim_rom import prim_rom_pkg::*; #(
 );
    
 `ifdef TARGET_SYNTHESIS
- `ifndef FAKE
-/*
-  logic [Width-1:0] rdata_secure, rdata_debug;
-  assign rdata_o = fake_i ? rdata_debug : rdata_secure;
+ `ifdef TARGET_XILINX
 
-  xilinx_rom_fake_bank_8192x40 fake_rom_mem_i (
-                                              .clk  (clk_i),
-                                              .a (addr_i),
-                                              .spo (rdata_debug)
-                                              );
-  */
   xilinx_rom_bank_8192x40 rom_mem_i (
                                     .clk  (clk_i),
                                     .a (addr_i),
@@ -40,28 +31,22 @@ module prim_rom import prim_rom_pkg::*; #(
      
   logic  unused; 
   assign unused = ^req_i & ^cfg_i & rst_ni;
- `else 
-  
-  logic unused; 
-  assign rdata_o = '0;
-  assign unused = ^{clk_i, addr_i, req_i, cfg_i}; 
- `endif 
-  /*   tc_sram #(
-     .NumWords(Depth),
-     .DataWidth(Width),
-     .NumPorts(32'd1),
-     .MemInitFile(MemInitFile)
-    // .PrintSimCfg(PrintSimCfg)
-  ) rom_primitive (
+ `endif //  `ifdef TARGET_XILINX
+   
+ `ifdef TARGET_SYNOPSYS 
+  secure_boot_rom #(
+     .Depth(Depth),
+     .Width(Width),
+     .Aw(Aw)
+  ) u_bootrom (
      .clk_i,
      .rst_ni,
      .req_i,
      .addr_i,
-     .wdata_i(1'b0),
-     .rdata_o,
-     .we_i(1'b0),
-     .be_i('1)
-  );*/
+     .rdata_o
+  );  
+ `endif
+
 `else
   logic unused_cfg;
   assign unused_cfg = ^cfg_i;

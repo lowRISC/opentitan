@@ -633,10 +633,6 @@ module lc_ctrl
   // LC FSM //
   ////////////
    
-`ifdef TARGET_SYNTHESIS
-  assign lc_hw_debug_en_o = lc_ctrl_pkg::On;
-`endif
-   
   lc_ctrl_fsm #(
     .RndCnstLcKeymgrDivInvalid     ( RndCnstLcKeymgrDivInvalid     ),
     .RndCnstLcKeymgrDivTestDevRma  ( RndCnstLcKeymgrDivTestDevRma  ),
@@ -686,9 +682,7 @@ module lc_ctrl
     .lc_raw_test_rma_o      ( lc_raw_test_rma                  ),
     .lc_dft_en_o,
     .lc_nvm_debug_en_o,
- `ifndef TARGET_SYNTHESIS
     .lc_hw_debug_en_o,
- `endif
     .lc_cpu_en_o,
     .lc_creator_seed_sw_rw_en_o,
     .lc_owner_seed_sw_rw_en_o,

@@ -17,18 +17,6 @@
 
 int main(int argc, char **argv) {
 
-
-  #ifdef TARGET_SYNTHESIS                
-  int baud_rate = 115200;
-  int test_freq = 50000000;
-  #else
-  //set_flls();
-  int baud_rate = 115200;
-  int test_freq = 100000000;
-  #endif
-  uart_set_cfg(0,(test_freq/baud_rate)>>4);
-  
-
   volatile int * debug_mode;
   volatile int * payload_1, * payload_2, * payload_3, * address, * start;
   

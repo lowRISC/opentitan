@@ -80,7 +80,37 @@ module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
   logic [TotalWidth-1:0]   rdata_sram ;
   logic [1:0]              rerror_q, rerror_d;
  
-`ifndef TARGET_SYNTHESIS
+`ifdef TARGET_SYNTHESIS
+  `ifdef TARGET_XILINX
+  logic [7:0]                    wea;
+  logic [63:0]                   dina;
+  logic                          unused;
+ 
+  assign wea  = 8'b00000000;
+  assign dina = 64'h00000000_00000000;
+  xilinx_rom_bank_1024x22 otp_mem_i (
+                                 .clk (clk_i),
+                                 .a   (addr_q),
+                                 .spo (rdata_sram)
+                                 ) ;
+  assign unused = ^req_q & ^write_q & ^wdata_q & ^wmask_q;
+  `endif   
+  `ifdef TARGET_SYNOPSYS
+  otp_rom #(
+    .Width(TotalWidth),
+    .Depth(Depth),
+    .Aw(Aw)
+  ) u_otp (
+    .clk_i,
+    .rst_ni,
+    .req_i   ( req_q      ),
+    .addr_i  ( addr_q     ),
+    .rdata_o ( rdata_sram )
+  );
+  logic  unused;
+  assign unused = ^wdata_q & ^wmask_q & ^write_q;
+  `endif 
+`else 
   prim_ram_1p #(
     .MemInitFile     (MemInitFile),
     .Width           (TotalWidth),
@@ -98,21 +128,8 @@ module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
     .rdata_o  (rdata_sram),
     .cfg_i
   );
-`else 
-  logic [7:0]                    wea;
-  logic [63:0]                   dina;
-  logic                          unused;
+`endif 
  
-  assign wea  = 8'b00000000;
-  assign dina = 64'h00000000_00000000;
-  xilinx_rom_bank_1024x22 otp_mem_i (
-                                 .clk (clk_i),
-                                 .a   (addr_q),
-                                 .spo (rdata_sram)
-                                 ) ;
-  assign unused = ^req_q & ^write_q & ^wdata_q & ^wmask_q;
-`endif
-   
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       rvalid_sram_q <= 1'b0;

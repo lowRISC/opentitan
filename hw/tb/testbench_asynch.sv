@@ -256,7 +256,7 @@ module testbench_asynch ();
 
 /////////////////////////////// DUT ///////////////////////////////
   
-  secure_subsystem_asynch_synth_wrap #(
+  secure_subsystem_synth_wrap #(
       .OtpCtrlMemInitFile    ("../sw/bare-metal/opentitan/otp/otp-img.mem"      ),
       .RomCtrlBootRomInitFile("../sw/bare-metal/opentitan/bootrom/boot_rom.vmem")
   ) dut (

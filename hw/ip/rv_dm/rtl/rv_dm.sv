@@ -168,20 +168,13 @@ module rv_dm
   } rv_dm_pm_en_e;
 
   lc_ctrl_pkg::lc_tx_t [LcEnLastPos-1:0] lc_hw_debug_en;
- 
-  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_fpga;
-  assign lc_hw_debug_en_fpga = lc_ctrl_pkg::On;
    
   prim_lc_sync #(
     .NumCopies(int'(LcEnLastPos))
   ) u_lc_en_sync (
     .clk_i,
     .rst_ni,
-`ifdef TARGET_SYNTHESIS                  
-    .lc_en_i(lc_hw_debug_en_fpga),
-`else              
     .lc_en_i(lc_hw_debug_en_i),
-`endif     
     .lc_en_o(lc_hw_debug_en)
   );
 

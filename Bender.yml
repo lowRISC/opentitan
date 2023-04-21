@@ -330,6 +330,7 @@ sources:
       
 ##### rom_ctrl
 
+      - hw/ip/rom_ctrl/rtl/boot_rom.sv
       - hw/ip/rom_ctrl/rtl/rom_ctrl_pkg.sv
       - hw/ip/rom_ctrl/rtl/rom_ctrl_reg_pkg.sv     
       - hw/ip/rom_ctrl/rtl/rom_ctrl_compare.sv
@@ -395,6 +396,7 @@ sources:
 
 ##### otp_ctrl
 
+      - hw/ip/otp_ctrl/rtl/otp_rom.sv
       - hw/ip/otp_ctrl/rtl/otp_ctrl_part_pkg.sv.tpl
       - hw/ip/otp_ctrl/rtl/otp_ctrl_part_pkg.sv
       - hw/ip/otp_ctrl/rtl/otp_ctrl_prim_reg_top.sv
