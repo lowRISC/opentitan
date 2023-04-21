@@ -208,6 +208,12 @@ class i2c_scoreboard extends cip_base_scoreboard #(
       case (csr.get_name())
         "ctrl": begin
           host_init = ral.ctrl.enablehost.get_mirrored_value();
+          if (cfg.en_cov) begin
+            cov.openting_mode_cg.sample(.ip_mode(host_init),
+                                        .tb_mode(!host_init),
+                               // TODO update after host perf timing updates go in to base sequence
+                                        .scl_frequency(0));
+          end
         end
 
         "target_id": begin
@@ -329,6 +335,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           // these fields are WO
           bit fmtrst_val = bit'(get_field_val(ral.fifo_ctrl.fmtrst, item.a_data));
           bit rxrst_val = bit'(get_field_val(ral.fifo_ctrl.rxrst, item.a_data));
+          bit acqrst_val = bit'(get_field_val(ral.fifo_ctrl.acqrst, item.a_data));
+          bit txrst_val = bit'(get_field_val(ral.fifo_ctrl.txrst, item.a_data));
           if (rxrst_val) begin
             rd_item_fifo.flush();
             exp_rd_q.delete();
@@ -345,6 +353,18 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             cov.rx_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[RxThreshold]),
                                         .fifolvl(`gmv(ral.fifo_status.rxlvl)),
                                         .rst(rxrst_val));
+          end
+          if (cfg.en_cov) begin
+            cov.fifo_reset_cg.sample(.fmtrst(fmtrst_val),
+                                     .rxrst (rxrst_val),
+                                     .acqrst(acqrst_val),
+                                     .txrst (txrst_val),
+                                     .fmt_threshold(cfg.intr_vif.pins[FmtThreshold]),
+                                     .rx_threshold (cfg.intr_vif.pins[RxThreshold]),
+                                     .fmt_overflow (cfg.intr_vif.pins[FmtOverflow]),
+                                     .rx_overflow  (cfg.intr_vif.pins[RxOverflow]),
+                                     .acq_overflow (cfg.intr_vif.pins[AcqFull]),
+                                     .tx_overflow  (cfg.intr_vif.pins[TxOverflow]));
           end
         end
 
@@ -436,6 +456,11 @@ class i2c_scoreboard extends cip_base_scoreboard #(
               cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
               cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
             end
+          end
+          if (cfg.en_cov) begin
+            cov.interrupts_cg.sample(.intr_state(intr_en),
+                                     .intr_enable(ral.intr_enable.get_mirrored_value()),
+                                     .intr_test(ral.intr_test.get_mirrored_value()));
           end
         end
 
