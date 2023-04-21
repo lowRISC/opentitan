@@ -23,6 +23,9 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  // Enable cdc instrumentation
+  run_opts: ["+cdc_instrumentation_enabled=1"]
+
   // Add PRIM_LSFR specific exclusion files.
   vcs_cov_excl_files: ["{proj_root}/hw/ip/prim/dv/prim_lfsr/data/prim_lfsr_cov_excl.el"]
 
