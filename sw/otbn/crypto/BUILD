@@ -128,6 +128,13 @@ otbn_binary(
 )
 
 otbn_library(
+    name = "rsa_keygen",
+    srcs = [
+        "rsa_keygen.s",
+    ],
+)
+
+otbn_library(
     name = "rsa_verify",
     srcs = [
         "rsa_verify.s",
