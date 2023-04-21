@@ -1836,7 +1836,7 @@
     }
     {
       name: smoke
-      tests: ["xbar_chip_smoke",
+      tests: ["xbar_smoke",
               "chip_sw_uart_tx_rx",
               "chip_sw_spi_host_tx_rx",
               "chip_sw_spi_device_pass_through",
