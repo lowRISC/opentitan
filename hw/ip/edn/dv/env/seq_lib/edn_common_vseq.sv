@@ -28,12 +28,25 @@ class edn_common_vseq extends edn_base_vseq;
   endtask : sec_cm_inject_fault
 
   virtual task check_sec_cm_fi_resp(sec_cm_pkg::sec_cm_base_if_proxy if_proxy);
+    bit [31:0] backdoor_err_code_val;
     if (!uvm_re_match("*.cnt_q*", if_proxy.path)) begin
       csr_rd_check(.ptr(ral.err_code.edn_cntr_err), .compare_value(1'b1));
+      if (cfg.en_cov) begin
+        csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+        cov_vif.cg_error_sample(.err_code(backdoor_err_code_val));
+      end
     end else if (!uvm_re_match("*.u_edn_ack_sm_ep*", if_proxy.path)) begin
       csr_rd_check(.ptr(ral.err_code.edn_ack_sm_err), .compare_value(1'b1));
+      if (cfg.en_cov) begin
+        csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+        cov_vif.cg_error_sample(.err_code(backdoor_err_code_val));
+      end
     end else if (!uvm_re_match("*.u_edn_main_sm*", if_proxy.path)) begin
       csr_rd_check(.ptr(ral.err_code.edn_main_sm_err), .compare_value(1'b1));
+      if (cfg.en_cov) begin
+        csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+        cov_vif.cg_error_sample(.err_code(backdoor_err_code_val));
+      end
     end
 
     // Check main_sm_state goes to error st.
