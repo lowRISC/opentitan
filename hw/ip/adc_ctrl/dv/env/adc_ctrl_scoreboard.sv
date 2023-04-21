@@ -240,9 +240,6 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
                              cfg.ral.intr_state.match_done, item.a_data));
         end
       end
-      "intr_enable": begin
-        // FIXME
-      end
       "intr_test": begin
         // Model intr_test functionality
         bit intr_test_val = get_field_val(cfg.ral.intr_test.match_done, item.a_data);
@@ -256,7 +253,6 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
         end
       end
       "adc_intr_status": begin
-        // TODO: update modeling for One Shot mode
         do_read_check = 1;
         if (addr_phase_write) begin
           ->m_adc_intr_status_wr_ev;
@@ -266,9 +262,6 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
         if (addr_phase_read) begin
           `DV_CHECK(csr.predict(.value(m_expected_adc_intr_status), .kind(UVM_PREDICT_READ)))
         end
-      end
-      "adc_intr_ctl": begin
-        // FIXME
       end
       "adc_wakeup_ctl": begin
         if (addr_phase_write) begin
@@ -338,7 +331,6 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
           "adc_chn1_filter_ctl_4", "adc_chn1_filter_ctl_5", "adc_chn1_filter_ctl_6",
           "adc_chn1_filter_ctl_7"
           : begin
-        // FIXME
       end
 
       "adc_chn_val_0": begin
@@ -398,7 +390,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
       end
 
       default: begin
-        //`uvm_error(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        // Do nothing
       end
     endcase
 
