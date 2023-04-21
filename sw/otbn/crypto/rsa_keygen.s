@@ -39,9 +39,6 @@
  * equivalent number modulo F4. For the final 16-bit chunks, we need to
  * subtract because 2^16 mod F4 = -1 rather than 1.
  *
- * TODO: make sure there's a test case for this that covers something equal to
- * 2^16 mod F4, to ensure that the final borrow bit is handled correctly.
- *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  x16: dptr_x, pointer to first limb of x in dmem
