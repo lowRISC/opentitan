@@ -258,6 +258,53 @@ TEST_F(StatusTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_otp_ctrl_get_status(&otp_, nullptr));
 }
 
+struct RelativeAddressParams {
+  dif_otp_ctrl_partition_t partition;
+  uint32_t abs_address;
+  dif_result_t expected_result;
+  uint32_t expected_relative_address;
+};
+
+class RelativeAddress
+    : public OtpTest,
+      public testing::WithParamInterface<RelativeAddressParams> {};
+
+TEST_P(RelativeAddress, RelativeAddress) {
+  uint32_t got_relative_address;
+  dif_result_t got_result = dif_otp_ctrl_relative_address(
+      GetParam().partition, GetParam().abs_address, &got_relative_address);
+  EXPECT_EQ(got_result, GetParam().expected_result);
+  EXPECT_EQ(got_relative_address, GetParam().expected_relative_address);
+}
+
+INSTANTIATE_TEST_SUITE_P(AllPartitions, RelativeAddress,
+                         testing::Values(
+                             RelativeAddressParams{
+                                 kDifOtpCtrlPartitionCreatorSwCfg,
+                                 OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET + 4,
+                                 kDifOk,
+                                 4,
+                             },
+                             RelativeAddressParams{
+                                 kDifOtpCtrlPartitionCreatorSwCfg,
+                                 OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET + 1,
+                                 kDifUnaligned,
+                                 0,
+                             },
+                             RelativeAddressParams{
+                                 kDifOtpCtrlPartitionCreatorSwCfg,
+                                 OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET - 4,
+                                 kDifOutOfRange,
+                                 0,
+                             },
+                             RelativeAddressParams{
+                                 kDifOtpCtrlPartitionCreatorSwCfg,
+                                 OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET +
+                                     OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE,
+                                 kDifOutOfRange,
+                                 0,
+                             }));
+
 class DaiReadTest : public OtpTest {};
 
 TEST_F(DaiReadTest, Read32) {

@@ -427,6 +427,32 @@ static const partition_info_t kPartitions[] = {
         },
 };
 
+dif_result_t dif_otp_ctrl_relative_address(dif_otp_ctrl_partition_t partition,
+                                           uint32_t abs_address,
+                                           uint32_t *relative_address) {
+  *relative_address = 0;
+
+  if (partition >= ARRAYSIZE(kPartitions)) {
+    return kDifBadArg;
+  }
+
+  if ((abs_address & kPartitions[partition].align_mask) != 0) {
+    return kDifUnaligned;
+  }
+
+  if (abs_address < kPartitions[partition].start_addr) {
+    return kDifOutOfRange;
+  }
+
+  *relative_address = abs_address - kPartitions[partition].start_addr;
+  if (*relative_address >= kPartitions[partition].len) {
+    *relative_address = 0;
+    return kDifOutOfRange;
+  }
+
+  return kDifOk;
+}
+
 dif_result_t dif_otp_ctrl_dai_read_start(const dif_otp_ctrl_t *otp,
                                          dif_otp_ctrl_partition_t partition,
                                          uint32_t address) {
