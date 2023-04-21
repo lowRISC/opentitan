@@ -90,7 +90,7 @@ The notion of WFI is exported from the processor.
 For Ibex, this is currently in the form of `core_sleeping_o`.
 
 In response to the low power entry request, the fast FSM disables all second level clock gating.
-Before proceeding, the fast FSM explicitly separates the handling between a normal low power entry and a [reset request](#reset-request-handlig).
+Before proceeding, the fast FSM explicitly separates the handling between a normal low power entry and a [reset request](#reset-request-handling).
 
 For low power entry, there are two cases, [fall through handling](#fall-through-handling) and [abort handling](#abort-handling).
 If none of these exception cases are matched for low power entry, the fast FSM then asserts appropriate resets as necessary and requests the slow FSM to take over.
