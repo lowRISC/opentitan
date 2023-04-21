@@ -14,6 +14,7 @@ filegroup(
 cc_library(
     name = "model",
     hdrs = [
+        "model/aes.h",
         "model/aes_modes.h",
     ],
 )
