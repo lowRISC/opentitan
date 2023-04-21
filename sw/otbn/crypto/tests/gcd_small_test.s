@@ -15,7 +15,7 @@ main:
   bn.xor  w31, w31, w31
 
   /* Input/output limb count (1). */
-  li      x9, 1
+  li      x30, 1
 
   /* dmem[y] <= gcd(dmem[x], dmem[y]) */
   la      x10, x

@@ -13,9 +13,9 @@
  * Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]      x3: dptr_a, pointer to input a in DMEM
- * @param[in]      x9: n, number of 256-bit limbs
  * @param[in]     x23: 23, constant
  * @param[in]     x24: 24, constant
+ * @param[in]     x30: n, number of 256-bit limbs
  * @param[in]     w23: b, input whose LSB will be the new MSB of a
  * @param[in]     w31: all-zero
  * @param[out] dmem[dptr_a..dptr_a+n*32]: a', result
@@ -25,8 +25,8 @@
  */
 bignum_rshift1:
    /* Get a pointer to the end of the input.
-        x3 <= x3 + x9 << 5 = dptr_a + n*32 */
-   slli      x2, x9, 5
+        x3 <= x3 + x30 << 5 = dptr_a + n*32 */
+   slli      x2, x30, 5
    add       x3, x3, x2
 
    /* x2 <= 32 */
@@ -36,7 +36,7 @@ bignum_rshift1:
         x2 = 32
         x3 = dptr_a + ((n-i) * 32)
         w23 = if i == 0 then b else a[n-i] */
-   loop      x9, 5
+   loop      x30, 5
      /* x3 <= x3 - 32 = dptr_a + (n-1-i)*32 */
      sub     x3, x3, x2
      /* w24 <= dmem[x3] = a[n-1-i] */
@@ -64,9 +64,9 @@ bignum_rshift1:
  * Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]      x3: dptr_a, pointer to input a in DMEM
- * @param[in]      x9: n, number of 256-bit limbs
  * @param[in]     x23: 23, constant
  * @param[in]     x24: 24, constant
+ * @param[in]     x30: n, number of 256-bit limbs
  * @param[in]     w31: all-zero
  * @param[out]    w23: highest limb of original a value
  *
@@ -79,7 +79,7 @@ bignum_lshift256:
        w23 = if i == 0 then 0 else a[i-1]
        dmem[dptr_a..dptr_a+i*32] = (a << 256) mod 2^(i*32) */
   bn.mov    w23, w31
-  loop      x9, 3
+  loop      x30, 3
     /* w24 <= a[i] */
     bn.lid    x24, 0(x3)
     /* a[i] <= w23 = a[i-1] */
@@ -127,11 +127,11 @@ bignum_lshift256:
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]    x8: i, number of limbs to shift y (i < n)
- * @param[in]    x9: n, number of 256-bit limbs for operands r and y
  * @param[in]   x10: dptr_r, pointer to first operand r in dmem (n*32 bytes)
  * @param[in]   x11: dptr_y, pointer to second operand y in dmem (n*32 bytes)
  * @param[in]   x24: 24, constant
  * @param[in]   x25: 25, constant
+ * @param[in]   x30: n, number of 256-bit limbs for operands r and y
  * @param[in]   w27: y_upper, highest limb of y
  * @param[in]   w31: all-zero
  * @param[out]  w23: mask, 0 if the subtraction was performed and -1 otherwise
@@ -165,18 +165,18 @@ cond_sub_shifted:
        x2 = dptr_r + x5*32
        x4 = dptr_y + k*32
        x5 = (k + i <= n) ? k + i : n
-       x9 = n
+       x30 = n
        FG0.C = r mod 2^(k *256)) < (y << (i*256)) mod 2^(k*256)
   */
-  loop    x9, 9
+  loop    x30, 9
     /* Load the next limb of the shifted y.
          w24 <= y[k] */
     bn.lid    x24, 0(x4++)
 
-    /* Check if k+i == n (x5 == x9) and skip to the only-borrow case if so. This
+    /* Check if k+i == n (x5 == x30) and skip to the only-borrow case if so. This
        branch only depends on limb indices, so it does not break constant-time
        properties. */
-    beq       x5, x9, _cond_sub_shifted_high_limb
+    beq       x5, x30, _cond_sub_shifted_high_limb
 
     /* r[k+i], FG0.C <= r[k+i] - y[k] - FG0.C */
     bn.lid    x25, 0(x2)
@@ -211,8 +211,8 @@ cond_sub_shifted:
 
   /* Calculate the number of iterations for the copy loop. Since i < n, this
      will always be nonzero.
-       x4 <= x9 - x8 = n - i */
-  sub       x5, x9, x8
+       x4 <= x30 - x8 = n - i */
+  sub       x5, x30, x8
 
   /* Clear flags. */
   bn.add    w31, w31, w31
@@ -258,10 +258,10 @@ cond_sub_shifted:
  *
  * Flags have no meaning outside the scope of this subroutine.
  *
- * @param[in]  x9: n, number of 256-bit limbs for inputs x and y
  * @param[in] x10: dptr_x, pointer to numerator x in dmem
  * @param[in] x11: dptr_y, pointer to denominator y in dmem
  * @param[in] x12: dptr_q, pointer to buffer for quotient q in dmem
+ * @param[in] x30: n, number of 256-bit limbs for inputs x and y
  * @param[in] w31: all-zero
  * @param[out] dmem[dptr_q..dptr_q+n*32]: q, quotient
  * @param[out] dmem[dptr_x..dptr_x+n*32]: r, remainder
@@ -275,12 +275,12 @@ div:
        dmem[dptr_q..dptr_q+n*32] = 0  */
   addi      x2, x12, 0
   li        x3, 31
-  loop      x9, 1
+  loop      x30, 1
     bn.sid    x3, 0(x2++)
 
   /* Initialize loop counter.
-       x8 <= x9 = n */
-  addi      x8, x9, 0
+       x8 <= x30 = n */
+  addi      x8, x30, 0
 
   /* Initialize constants for loop.
        x23 = 23
@@ -305,7 +305,7 @@ div:
        q * y + r = x
        r < y << ((i+1)*256)
   */
-  loop      x9, 17
+  loop      x30, 17
     /* Decrement counter.
          x8 <= x8 - 1 = i */
     addi      x5, x0, 1

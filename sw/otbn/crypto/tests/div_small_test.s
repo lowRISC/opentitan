@@ -13,7 +13,7 @@ main:
   bn.xor    w31, w31, w31
 
   /* Load the number of limbs for this test. */
-  li        x9, 1
+  li        x30, 1
 
   /* Load DMEM pointers. */
   la        x10, numerator

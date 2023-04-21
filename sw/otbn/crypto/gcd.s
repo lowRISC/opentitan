@@ -12,11 +12,11 @@
  *
  * Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]    x9: n, number of 256-bit limbs for inputs a and b
  * @param[in]    x3: dptr_a, pointer to input a in DMEM
  * @param[in]    x4: dptr_b, pointer to input b in DMEM
  * @param[in]   x23: 23, constant
  * @param[in]   x24: 24, constant
+ * @param[in]   x30: n, number of 256-bit limbs for inputs a and b
  * @param[in]   w31: all-zero
  * @param[in] FG1.L: selection flag
  * @param[out] dmem[dptr_a:dptr_a+n*32]: a', result
@@ -29,7 +29,7 @@ gcd_cond_sub:
   bn.add    w31, w31, w31
 
   /* Loop through each limb. */
-  loop      x9, 5
+  loop      x30, 5
     /* w23 <= dmem[x3] = a[i] */
     bn.lid    x23, 0(x3)
     /* w24 <= dmem[x4] = b[i] */
@@ -54,9 +54,9 @@ gcd_cond_sub:
  * Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]   x3: dptr_a, pointer to input a in DMEM
- * @param[in]   x9: n, number of 256-bit limbs for input a
  * @param[in]  x23: 23, constant
  * @param[in]  x24: 24, constant
+ * @param[in]  x30: n, number of 256-bit limbs for input a
  * @param[in]   w31: all-zero
  * @param[out] dmem[dptr_a:dptr_a+n*32]: a', result
  *
@@ -64,9 +64,9 @@ gcd_cond_sub:
  * clobbered flag groups: FG0
  */
 gcd_cond_rshift1:
-  /* x22 <= x9 - 1 = n - 1 */
+  /* x22 <= x30 - 1 = n - 1 */
   addi      x22, x0, 1
-  sub       x22, x9, x22
+  sub       x22, x30, x22
 
   /* Get a pointer to the second limb of the input.
        x4 <= x3 + 32 = dptr_a + 32 */
@@ -116,10 +116,10 @@ gcd_cond_rshift1:
  * Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]   x3: dptr_a, pointer to input a in DMEM
- * @param[in]   x9: n, number of 256-bit limbs for input a
  * @param[in]  x23: 23, constant
  * @param[in]  x24: 24, constant
  * @param[in]  x25: 25, constant
+ * @param[in]  x30: n, number of 256-bit limbs for input a
  * @param[in]  w20: ctr
  * @param[in]  w31: all-zero
  * @param[out] dmem[dptr_a:dptr_a+n*32]: a', result
@@ -141,7 +141,7 @@ gcd_cond_lshift1:
        w23 = i == 0 ? 0 : a[i-1]
        x3 = dptr_a + (i * 32)
   */
-  loop      x9, 5
+  loop      x30, 5
     /* w24 <= dmem[x3] = a[i] */
     bn.lid    x24, 0(x3)
     /* w25 <= (a << 1)[i] */
@@ -190,9 +190,9 @@ gcd_cond_lshift1:
  *
  * Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]      x9: n, number of 256-bit limbs for x, y, and g
  * @param[in]     x10: dptr_x, pointer to input x in DMEM
  * @param[in]     x11: dptr_y, pointer to input y in DMEM
+ * @param[in]     x30: n, number of 256-bit limbs for x, y, and g
  * @param[in]     w31: all-zero
  * @param[out] dmem[dptr_y:dptr_y+n*32]: g, result
  *
@@ -207,8 +207,8 @@ gcd:
 
   /* Compute the number of iterations. The inputs x and y have n * 256 bits
      each, so the sum of their number of bits is n * 2 * 256 = n << 9.
-       x21 <= x9 << 9 = num_iters */
-  slli      x21, x9, 9
+       x21 <= x30 << 9 = num_iters */
+  slli      x21, x30, 9
 
   /* Set up constants for loop.
       x23 <= 23
@@ -236,7 +236,7 @@ gcd:
         FG0.C <= y < x = !(x >= y) */
     addi      x3, x10, 0
     addi      x4, x11, 0
-    loop      x9, 3
+    loop      x30, 3
       bn.lid    x23, 0(x3++)
       bn.lid    x24, 0(x4++)
       bn.cmpb   w23, w24
@@ -294,8 +294,8 @@ gcd:
 
   /* Compute the maximum value of the shift. This is the number of bits in each
      input, since the gcd cannot be greater than either of its operands.
-       x21 <= x9 << 8 = n * 256 */
-  slli      x21, x9, 8
+       x21 <= x30 << 8 = n * 256 */
+  slli      x21, x30, 8
 
   /* Shift y left to obtain the final result.
        dmem[dptr_y] <= y << w20 = y << shift */

@@ -13,7 +13,7 @@ main:
   bn.xor    w31, w31, w31
 
   /* Load the number of limbs for this test. */
-  li        x9, 8
+  li        x30, 8
 
   /* Load DMEM pointers. */
   la        x10, numerator
@@ -31,7 +31,7 @@ main:
        [w10..w17] <= dmem[numerator] = remainder */
   li        x2, 0
   li        x3, 10
-  loop      x9, 4
+  loop      x30, 4
     bn.lid    x2, 0(x12++)
     addi      x2, x2, 1
     bn.lid    x3, 0(x10++)
