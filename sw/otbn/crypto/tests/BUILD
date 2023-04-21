@@ -149,6 +149,51 @@ otbn_consttime_test(
 )
 
 otbn_sim_test(
+    name = "lcm_test",
+    srcs = [
+        "lcm_test.s",
+    ],
+    exp = "lcm_test.exp",
+    deps = [
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
+        "//sw/otbn/crypto:mul",
+    ],
+)
+
+otbn_consttime_test(
+    name = "lcm_consttime",
+    # All inputs are in DMEM; no registers are secret.
+    secrets = ["dmem"],
+    subroutine = "lcm",
+    deps = [
+        ":lcm_test",
+    ],
+)
+
+otbn_sim_test(
+    name = "mul_test",
+    srcs = [
+        "mul_test.s",
+    ],
+    exp = "mul_test.exp",
+    deps = [
+        "//sw/otbn/crypto:mul",
+    ],
+)
+
+otbn_consttime_test(
+    name = "mul_consttime",
+    # All inputs are in DMEM; no registers are secret.
+    secrets = ["dmem"],
+    subroutine = "bignum_mul",
+    deps = [
+        ":mul_test",
+    ],
+)
+
+otbn_sim_test(
     name = "p256_base_mult_test",
     srcs = [
         "p256_base_mult_test.s",
