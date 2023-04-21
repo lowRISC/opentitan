@@ -971,7 +971,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   prim_fifo_sync #(
     .Width(RngBusWidth),
     .Pass(0),
-    .Depth(2)
+    .Depth(2),
+    .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_esrng (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
@@ -2678,7 +2679,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   prim_fifo_sync #(
     .Width(1+SeedLen),
     .Pass(0),
-    .Depth(EsFifoDepth)
+    .Depth(EsFifoDepth),
+    .OutputZeroIfEmpty(1'b0)
   ) u_prim_fifo_sync_esfinal (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),

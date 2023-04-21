@@ -245,14 +245,17 @@ module entropy_src
 
   // Entropy Interface
   `ASSERT_KNOWN(EsHwIfEsAckKnownO_A, entropy_src_hw_if_o.es_ack)
-  `ASSERT_KNOWN(EsHwIfEsBitsKnownO_A, entropy_src_hw_if_o.es_bits)
-  `ASSERT_KNOWN(EsHwIfEsFipsKnownO_A, entropy_src_hw_if_o.es_fips)
+  `ASSERT_KNOWN_IF(EsHwIfEsBitsKnownO_A, entropy_src_hw_if_o.es_bits,
+      entropy_src_hw_if_o.es_ack)
+  `ASSERT_KNOWN_IF(EsHwIfEsFipsKnownO_A, entropy_src_hw_if_o.es_fips,
+      entropy_src_hw_if_o.es_ack)
 
   // RNG Interface
   `ASSERT_KNOWN(EsRngEnableKnownO_A, entropy_src_rng_o.rng_enable)
 
   // External Health Test Interface
-  `ASSERT_KNOWN(EsXhtEntropyBitKnownO_A, entropy_src_xht_o.entropy_bit)
+  `ASSERT_KNOWN_IF(EsXhtEntropyBitKnownO_A, entropy_src_xht_o.entropy_bit,
+      entropy_src_xht_o.entropy_bit_valid)
   `ASSERT_KNOWN(EsXhtEntropyBitValidKnownO_A, entropy_src_xht_o.entropy_bit_valid)
   `ASSERT_KNOWN(EsXhtClearKnownO_A, entropy_src_xht_o.clear)
   `ASSERT_KNOWN(EsXhtActiveKnownO_A, entropy_src_xht_o.active)
