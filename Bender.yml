@@ -67,8 +67,6 @@ sources:
       - hw/ip/prim/rtl/prim_assert_dummy_macros.svh
       - hw/ip/prim/rtl/prim_assert_sec_cm.svh
       - hw/ip/prim/rtl/prim_assert_standard_macros.svh
-      - hw/ip/prim/rtl/prim_assert.sv
-      - hw/ip/prim/rtl/prim_assert_yosys_macros.svh
       - hw/ip/prim/rtl/prim_blanker.sv
       - hw/ip/prim/rtl/prim_cdc_rand_delay.sv
       - hw/ip/prim/rtl/prim_clock_meas.sv
@@ -290,7 +288,7 @@ sources:
       - hw/ip/rv_core_ibex/rtl/rv_core_ibex_pkg.sv
       - hw/ip/rv_core_ibex/rtl/rv_core_ibex_reg_pkg.sv
       - hw/ip/rv_core_ibex/rtl/rv_core_ibex_cfg_reg_top.sv
-      - target: any(rtl,test)
+      - target: test
         files:
           - hw/vendor/lowrisc_ibex/rtl/ibex_tracer.sv
           - hw/vendor/lowrisc_ibex/rtl/ibex_top_tracing.sv
@@ -400,7 +398,6 @@ sources:
       - hw/ip/otp_ctrl/rtl/otp_ctrl_part_pkg.sv.tpl
       - hw/ip/otp_ctrl/rtl/otp_ctrl_part_pkg.sv
       - hw/ip/otp_ctrl/rtl/otp_ctrl_prim_reg_top.sv
-      - hw/ip/prim_generic/rtl/prim_generic_otp.sv
       - hw/ip/otp_ctrl/rtl/otp_ctrl_core_reg_top.sv
       - hw/ip/otp_ctrl/rtl/otp_ctrl_dai.sv
       - hw/ip/otp_ctrl/rtl/otp_ctrl_ecc_reg.sv
@@ -424,9 +421,6 @@ sources:
 
 ##### lc_ctrl
 
-      - hw/ip/prim_generic/rtl/prim_generic_clock_inv.sv
-      - hw/ip/prim_generic/rtl/prim_generic_clock_mux2.sv
-      
       - hw/ip/lc_ctrl/rtl/lc_ctrl_reg_top.sv
       - hw/ip/lc_ctrl/rtl/lc_ctrl_fsm.sv
       - hw/ip/lc_ctrl/rtl/lc_ctrl_kmac_if.sv
@@ -463,9 +457,7 @@ sources:
       - hw/ip/flash_ctrl/rtl/flash_phy_prog.sv
       - hw/ip/flash_ctrl/rtl/flash_phy_scramble.sv
       - hw/ip/flash_ctrl/rtl/flash_phy_rd.sv
-      - hw/ip/prim_generic/rtl/prim_generic_flash.sv
       - hw/ip/flash_ctrl/rtl/flash_phy.sv
-      #- hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl.sv
       - hw/ip/flash_ctrl/rtl/flash_ctrl.sv
 
 ###### uart
@@ -761,8 +753,10 @@ sources:
       - hw/ip/tlul2axi/test/axi_typedef.svh
       - hw/ip/tlul2axi/test/tlul_intf.sv
       - hw/ip/tlul2axi/test/tlul_assign.svh
-      - hw/ip/tlul2axi/test/tlul_functions.sv
-      - hw/ip/tlul2axi/test/tlul2axi_testbench.sv
+      - target: test
+        files:
+          - hw/ip/tlul2axi/test/tlul_functions.sv
+          - hw/ip/tlul2axi/test/tlul2axi_testbench.sv
 
 ##### pwm
 
@@ -785,9 +779,11 @@ sources:
 
 ##### testbench
 
-      - hw/tb/uart.sv
-#      - hw/tb/spi_flash/S25fs256s/model/s25fs256s.v
-      - hw/tb/jtag_intf.sv
-      - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
-      - hw/tb/testbench.sv
-      - hw/tb/testbench_asynch.sv          
+      -  target: test
+         files:
+           - hw/tb/uart.sv
+#          - hw/tb/spi_flash/S25fs256s/model/s25fs256s.v
+           - hw/tb/jtag_intf.sv
+           - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
+           - hw/tb/testbench.sv
+           - hw/tb/testbench_asynch.sv          
