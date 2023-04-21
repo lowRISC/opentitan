@@ -160,13 +160,27 @@ typedef void (*sca_callee)(void);
 void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles);
 
 /**
- * seed PRNG for masking key.
+ * Seeds the software LFSR usable e.g. for key masking.
+ *
+ * This functions seeds the Galois XOR type LFSR with the provided seed value.
+ * Note that the LFSR itself has very low diffusion.
+ *
+ * @param seed The new seed value.
  */
-void seed_lfsr(uint32_t seed);
+void sca_seed_lfsr(uint32_t seed);
 
 /**
- * step PRNG for masking key.
+ * Steps the software LFSR usable e.g. for key masking `num_steps` times.
+ *
+ * This function steps the Galois XOR type LFSR n times. Note that the LFSR
+ * itself has very low diffusion. To improve the statistical properties, the
+ * multiple steps can be run. For example, by running 32 steps it can be
+ * ensured that each state bit depends on at least two previous state bits.
+ *
+ * @param num_steps The number of steps to run.
+
+ * @return The current state of the LFSR.
  */
-uint32_t next_lfsr(uint16_t n);
+uint32_t sca_next_lfsr(uint16_t num_steps);
 
 #endif  // OPENTITAN_SW_DEVICE_SCA_LIB_SCA_H_

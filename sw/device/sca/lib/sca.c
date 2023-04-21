@@ -311,26 +311,17 @@ void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles) {
       &clkmgr, CLKMGR_CLK_ENABLES_CLK_IO_DIV4_PERI_EN_BIT, kDifToggleEnabled));
 }
 
-/**
- * PRNG for masking key.
- */
-static uint32_t lfsr_state = 0xdeadbeef;
+static uint32_t sca_lfsr_state = 0xdeadbeef;
 
-/**
- * seed PRNG for masking key.
- */
-void seed_lfsr(uint32_t seed) { lfsr_state = seed; }
+void sca_seed_lfsr(uint32_t seed) { sca_lfsr_state = seed; }
 
-/**
- * step PRNG for masking key.
- */
-uint32_t next_lfsr(uint16_t n) {
-  const uint32_t lfsr_out = lfsr_state;
-  for (size_t i = 0; i < n; i++) {
-    bool lfsr_bit = lfsr_state & 0x00000001;
-    lfsr_state = lfsr_state >> 1;
+uint32_t sca_next_lfsr(uint16_t num_steps) {
+  const uint32_t lfsr_out = sca_lfsr_state;
+  for (size_t i = 0; i < num_steps; ++i) {
+    bool lfsr_bit = sca_lfsr_state & 0x00000001;
+    sca_lfsr_state = sca_lfsr_state >> 1;
     if (lfsr_bit) {
-      lfsr_state ^= 0x80000057;
+      sca_lfsr_state ^= 0x80000057;
     }
   }
   return lfsr_out;
