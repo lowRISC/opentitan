@@ -61,6 +61,11 @@ _MANUF_LC_TRANSITION_TEST_CMDS_WBOOTSTRAP = _MANUF_LC_TRANSITION_TEST_CMDS + [
 ]
 
 cc_library(
+    name = "otp_img_types",
+    hdrs = ["otp_img_types.h"],
+)
+
+cc_library(
     name = "individualize",
     srcs = ["individualize.c"],
     hdrs = [

@@ -9,31 +9,15 @@ ${fileheader}
 #ifndef ${include_guard}
 #define ${include_guard}
 
-#include <stdint.h>
+// See the following include file for details on the types used in this header
+// file.
+#include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 
 #include "otp_ctrl_regs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
-typedef enum otp_val_type {
-  kOptValTypeUint32,
-  kOptValTypeUint32Buff,
-  kOptValTypeUint64,
-  kOptValTypeUint64Buff,
-  kOptValTypeUint64Rnd,
-} otp_val_type_t;
-
-typedef struct otp_kv {
-  otp_val_type_t type;
-  uint32_t offset;
-  uint32_t num_values;
-  union {
-    const uint32_t *value32;
-    const uint64_t *value4;
-  };
-} otp_kv_t;
 
 <%
   def ToPascalCase(in_str):
@@ -106,6 +90,15 @@ typedef struct otp_kv {
       return f"{ref_name} = &{ToConstLabelValue(item['name'])}"
     else:
       return f"{ref_name} = {ToConstLabelValue(item['name'])}"
+
+  def ToOtpValType(alignment):
+    '''Returns an `otp_val_type_t` enum value based on the struct alignment.'''
+    if alignment == 4:
+      return "kOptValTypeUint32Buff"
+    elif alignment == 8:
+      return "kOptValTypeUint64Buff"
+    else:
+      raise f"Invalid alignment: {alignment}"
 %>
 
 // OTP values
@@ -133,6 +126,7 @@ ${ConstTypeDefinition(item, data[partition_name]["alignment"])}
 static otp_kv_t ${"kOtpKv" + ToPascalCase(partition_name)}[] = {
   % for item in data[partition_name]["items"]:
   {
+    .type = ${ToOtpValType(alignment)},
     .offset = ${"OTP_CTRL_PARAM_" + item["name"] + "_OFFSET"},
     .num_values = ${int(item["num_items"])},
     ${RefValue(item, alignment)},
