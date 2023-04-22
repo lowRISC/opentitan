@@ -243,9 +243,9 @@
 
   covergroups: [
     {
-      name: adc_ctrl_power_mode_cg
+      name: adc_ctrl_testmode_cg
       desc: '''
-        Cover power mode configuration
+        Cover all operation modes of adc controller
       '''
     }
     {
