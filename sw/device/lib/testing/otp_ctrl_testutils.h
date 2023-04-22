@@ -71,6 +71,12 @@ static status_t otp_ctrl_testutils_dai_read64(
  * Writes `len` number of 32bit words from buffer into otp `partition` starting
  * at `start_address` using the DAI interface.
  *
+ * For software partitions (`kDifOtpCtrlPartitionCreatorSwCfg` or
+ * `kDifOtpCtrlPartitionOwnerSwCfg`), the function will attempt to read the
+ * target OTP offsets and skip the write if the existing value matches the
+ * expected one. This is possible due to the fact that software partitions are
+ * not scrambled nor ECC protected.
+ *
  * @param otp otp_ctrl instance.
  * @param partition OTP partition.
  * @param start_address Address relative to the start of the `partition`. Must
