@@ -108,15 +108,32 @@ status_t otp_ctrl_testutils_dai_write32(const dif_otp_ctrl_t *otp,
                                         dif_otp_ctrl_partition_t partition,
                                         uint32_t start_address,
                                         const uint32_t *buffer, size_t len) {
+  // Software partitions don't have scrambling or ECC enabled, so it is possible
+  // to read the value and compare it against the expected value before
+  // performing the write.
+  bool check_before_write = (partition == kDifOtpCtrlPartitionCreatorSwCfg ||
+                             partition == kDifOtpCtrlPartitionOwnerSwCfg);
   uint32_t stop_address = start_address + (len * sizeof(uint32_t));
   for (uint32_t addr = start_address, i = 0; addr < stop_address;
        addr += sizeof(uint32_t), ++i) {
+    uint32_t read_data;
+    if (check_before_write) {
+      TRY(otp_ctrl_testutils_dai_read32(otp, partition, addr, &read_data));
+      if (read_data == buffer[i]) {
+        continue;
+      }
+      if (read_data != 0) {
+        LOG_ERROR("OTP partition: %d addr[0x%x] got: 0x%08x, expected: 0x%08x",
+                  partition, addr, read_data, buffer[i]);
+        return INTERNAL();
+      }
+    }
+
     TRY(otp_ctrl_testutils_wait_for_dai(otp));
     TRY(dif_otp_ctrl_dai_program32(otp, partition, addr, buffer[i]));
     TRY(otp_ctrl_testutils_wait_for_dai(otp));
     TRY(otp_ctrl_dai_write_error_check(otp));
 
-    uint32_t read_data;
     TRY(otp_ctrl_testutils_dai_read32(otp, partition, addr, &read_data));
     if (read_data != buffer[i]) {
       return INTERNAL();
