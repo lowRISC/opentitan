@@ -21,12 +21,20 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // Drive sw_strap pins only when the ROM / test ROM code is active
   virtual task set_and_release_sw_strap_nonblocking();
+    sw_test_status_e prev_status = SwTestStatusUnderReset;
     fork begin
       forever begin
-        wait (cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
-        cfg.chip_vif.sw_straps_if.drive({3{cfg.use_spi_load_bootstrap}});
-        wait (cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
-        cfg.chip_vif.sw_straps_if.disconnect();
+        wait (cfg.sw_test_status_vif.sw_test_status != prev_status);
+        case (cfg.sw_test_status_vif.sw_test_status)
+          SwTestStatusInBootRom: begin
+            cfg.chip_vif.sw_straps_if.drive({3{cfg.use_spi_load_bootstrap}});
+          end
+          SwTestStatusInTest: begin
+            cfg.chip_vif.sw_straps_if.disconnect();
+          end
+          default: ;
+        endcase
+        prev_status = cfg.sw_test_status_vif.sw_test_status;
       end
     end join_none
   endtask
