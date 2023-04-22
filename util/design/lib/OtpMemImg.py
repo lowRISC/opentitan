@@ -507,7 +507,6 @@ class OtpMemImg(OtpMemMap):
         data = [0] * otp_size
         annotation = [''] * otp_size
         for part in self.config['partitions']:
-            print(part)
             part_data, part_annotation = self.streamout_partition(part)
             assert part['offset'] <= otp_size, \
                 'Partition offset out of bounds'
