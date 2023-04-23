@@ -127,6 +127,16 @@ class strong_random():
             j = self.randbelow(i + 1)
             x[i], x[j] = x[j], x[i]
 
+    def choice(self, x):
+        """Randomly chooses an element from a list x.
+
+        Uses randbelow() to select an integer smaller than len(x) and returns
+        the corresponding element.
+        """
+
+        i = self.randbelow(len(x))
+        return (x[i])
+
 
 # ----------------------------------------------------------------------
 # Create one instance, and export its methods as module-level functions.
@@ -140,3 +150,4 @@ printstatus = _inst.printstatus
 getrandbits = _inst.getrandbits
 randbelow = _inst.randbelow
 shuffle = _inst.shuffle
+choice = _inst.choice
