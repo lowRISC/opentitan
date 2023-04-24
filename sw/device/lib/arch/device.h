@@ -125,11 +125,11 @@ extern const uint32_t kUartNCOValue;
  * Helper macro to calculate the time it takes to transmit the entire UART TX
  * FIFO in CPU cycles.
  *
- * This macro assumes 10 bits per byte (no parity bits) and a 32 byte deep TX
+ * This macro assumes 10 bits per byte (no parity bits) and a 128 byte deep TX
  * FIFO.
  */
 #define CALCULATE_UART_TX_FIFO_CPU_CYCLES(baud_rate_, cpu_freq_) \
-  ((cpu_freq_)*10 * 32 / (baud_rate_))
+  ((cpu_freq_)*10 * 128 / (baud_rate_))
 
 /**
  * The time it takes to transmit the entire UART TX fifo in CPU cycles.
