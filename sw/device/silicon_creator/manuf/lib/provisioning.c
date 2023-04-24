@@ -15,17 +15,12 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "otp_ctrl_regs.h"
+#include "otp_ctrl_regs.h"  // Generated.
 
 enum {
   /**
-   * RMA unlock token sizes and offsets.
+   * RMA unlock token OTP offset.
    */
-  kRmaUnlockTokenSizeInBytes = OTP_CTRL_PARAM_RMA_TOKEN_SIZE,
-  kRmaUnlockTokenSizeIn32BitWords =
-      kRmaUnlockTokenSizeInBytes / sizeof(uint32_t),
-  kRmaUnlockTokenSizeIn64BitWords =
-      kRmaUnlockTokenSizeInBytes / sizeof(uint64_t),
   kRmaUnlockTokenOffset =
       OTP_CTRL_PARAM_RMA_TOKEN_OFFSET - OTP_CTRL_PARAM_SECRET2_OFFSET,
 
@@ -230,7 +225,7 @@ static status_t flash_ctrl_owner_secret_write(
  * @return Result of the hash operation.
  */
 OT_WARN_UNUSED_RESULT
-static status_t hash_lc_transition_token(uint64_t *raw_token, size_t token_size,
+static status_t hash_lc_transition_token(uint32_t *raw_token, size_t token_size,
                                          uint64_t *hashed_token) {
   crypto_const_uint8_buf_t input = {
       .data = (uint8_t *)raw_token,
@@ -272,19 +267,19 @@ static status_t hash_lc_transition_token(uint64_t *raw_token, size_t token_size,
  * @return OK_STATUS on success.
  */
 OT_WARN_UNUSED_RESULT
-static status_t otp_partition_secret2_configure(const dif_otp_ctrl_t *otp,
-                                                uint64_t *rma_unlock_token) {
+static status_t otp_partition_secret2_configure(
+    const dif_otp_ctrl_t *otp, wrapped_rma_unlock_token_t *rma_unlock_token) {
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
   // Generate and hash RMA unlock token.
-  TRY(entropy_csrng_generate(/*seed_material=*/NULL,
-                             (uint32_t *)rma_unlock_token,
+  TRY(entropy_csrng_generate(/*seed_material=*/NULL, rma_unlock_token->data,
                              kRmaUnlockTokenSizeIn32BitWords));
   TRY(entropy_csrng_reseed(/*disable_trng_input=*/kHardenedBoolFalse,
                            /*seed_material=*/NULL));
   uint64_t hashed_rma_unlock_token[kRmaUnlockTokenSizeIn64BitWords];
-  TRY(hash_lc_transition_token(rma_unlock_token, kRmaUnlockTokenSizeInBytes,
+  TRY(hash_lc_transition_token(rma_unlock_token->data,
+                               kRmaUnlockTokenSizeInBytes,
                                hashed_rma_unlock_token));
 
   // Generate RootKey shares.
@@ -318,9 +313,9 @@ static status_t otp_partition_secret2_configure(const dif_otp_ctrl_t *otp,
   return OK_STATUS();
 }
 
-status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
-                                           const dif_lc_ctrl_t *lc_ctrl,
-                                           const dif_otp_ctrl_t *otp) {
+status_t provisioning_device_secrets_start(
+    dif_flash_ctrl_state_t *flash_state, const dif_lc_ctrl_t *lc_ctrl,
+    const dif_otp_ctrl_t *otp, wrapped_rma_unlock_token_t *wrapped_token) {
   // Check life cycle in either PROD, PROD_END, or DEV.
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
 
@@ -340,10 +335,9 @@ status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
   TRY(entropy_complex_init());
 
   // Provision secrets in flash and OTP.
-  uint64_t rma_unlock_token[kRmaUnlockTokenSizeIn64BitWords];
   TRY(flash_ctrl_creator_secret_write(flash_state));
   TRY(flash_ctrl_owner_secret_write(flash_state));
-  TRY(otp_partition_secret2_configure(otp, rma_unlock_token));
+  TRY(otp_partition_secret2_configure(otp, wrapped_token));
   return OK_STATUS();
 }
 

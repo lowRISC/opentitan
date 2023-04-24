@@ -52,15 +52,24 @@ bool test_main(void) {
   if (info & kDifRstmgrResetInfoPor) {
     LOG_INFO("provisioning start");
 
-    CHECK_STATUS_OK(
-        provisioning_device_secrets_start(&flash_state, &lc_ctrl, &otp_ctrl));
+    wrapped_rma_unlock_token_t wrapped_token = {
+        .data = {0}, .ecc_pk_device_x = {0}, .ecc_pk_device_y = {0}};
+    CHECK_STATUS_OK(provisioning_device_secrets_start(
+        &flash_state, &lc_ctrl, &otp_ctrl, &wrapped_token));
+
+    // TODO(#17393): store data in non-volatile flash region to persist across a
+    // reset and LOG output data with ujson framework.
+    for (size_t i = 0; i < 4; ++i) {
+      LOG_INFO("RMA unlock token (%d): %x", i,
+               (uint32_t *)(wrapped_token.data)[i]);
+    }
 
     // Issue and wait for reset.
     rstmgr_testutils_reason_clear();
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
     wait_for_interrupt();
   } else if (info == kDifRstmgrResetInfoSw) {
-    LOG_INFO("provisining check status");
+    LOG_INFO("provisioning check status");
     CHECK_STATUS_OK(provisioning_device_secrets_end(&otp_ctrl));
   } else {
     LOG_FATAL("Unexpected reset reason: %08x", info);
