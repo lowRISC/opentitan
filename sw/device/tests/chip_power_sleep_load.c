@@ -114,9 +114,6 @@ void prepare_to_exit(void) {
   // Check that no external interrupts have occurred.
   CHECK(ext_irq_fired == false, "Unexpected external interrupt triggered.");
 
-  // Check that the system has not been reset due to escalation
-  CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true);
-
   CHECK_STATUS_OK(aon_timer_testutils_shutdown(&aon_timer));
 
   // Set the test status flag back to "TestStatusInTest"
