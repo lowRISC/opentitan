@@ -5,12 +5,12 @@ r"""Contains life cycle state encoding class which is
 used to generate new life cycle encodings.
 """
 import logging as log
-import random
 from collections import OrderedDict
 from Crypto.Hash import cSHAKE128
 
 from lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
                         is_valid_codeword, random_or_hexvalue, scatter_bits)
+from topgen import strong_random
 
 # Seed diversification constant for LcStEnc (this enables to use
 # the same seed for different classes)
@@ -22,6 +22,8 @@ LC_STATE_TYPES = {
     'lc_state': ['0', 'A{}', 'B{}'],
     'lc_cnt': ['0', 'C{}', 'D{}']
 }
+
+ENTROPY_BUFFER_SIZE_BYTES = 1000
 
 
 def _is_incremental_codeword(word1, word2):
@@ -79,7 +81,7 @@ def _get_new_state_word_pair(config, existing_words):
         # the Hamming weight is in range.
         width = config['secded']['data_width']
         ecc_width = config['secded']['ecc_width']
-        base = random.getrandbits(width)
+        base = strong_random.getrandbits(width)
         base = format(base, '0' + str(width) + 'b')
         base_cand_ecc = ecc_encode(config, base)
         # disallow all-zero and all-one states
@@ -97,7 +99,7 @@ def _get_new_state_word_pair(config, existing_words):
                 # there are valid candidates, draw one at random.
                 # otherwise we just start over.
                 if incr_cands_ecc:
-                    incr_cand_ecc = random.choice(incr_cands_ecc)
+                    incr_cand_ecc = strong_random.choice(incr_cands_ecc)
                     log.info('word {}: {}|{} -> {}|{}'.format(
                         int(len(existing_words) / 2),
                         base_cand_ecc[ecc_width:], base_cand_ecc[0:ecc_width],
@@ -181,15 +183,15 @@ def _validate_tokens(config):
     '''Validates and hashes the tokens'''
     config.setdefault('token_size', 128)
     config['token_size'] = check_int(config['token_size'])
-    # This needs to be byte aligned
-    if config['token_size'] % 8:
-        raise ValueError('Size of token {} must be byte aligned'
-                         .format(token['name']))
 
     num_bytes = config['token_size'] // 8
 
     hashed_tokens = []
     for token in config['tokens']:
+        # This needs to be byte aligned
+        if config['token_size'] % 8:
+            raise ValueError('Size of token {} must be byte aligned'
+                             .format(token['name']))
         random_or_hexvalue(token, 'value', config['token_size'])
         hashed_token = OrderedDict()
         hashed_token['name'] = token['name'] + 'Hashed'
@@ -284,8 +286,14 @@ class LcStEnc():
         log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 
-        # Re-initialize with seed to make results reproducible.
-        random.seed(LC_SEED_DIVERSIFIER + int(config['seed']))
+        if config['entropy_buffer']:
+            # Load entropy from a file
+            strong_random.load(config['entropy_buffer'])
+        else:
+            # Re-initialize with seed to make results reproducible.
+            # Generate entropy buffer from the seed.
+            strong_random.generate_from_seed(ENTROPY_BUFFER_SIZE_BYTES,
+                                             LC_SEED_DIVERSIFIER + int(config['seed']))
 
         log.info('Checking SECDED.')
         _validate_secded(config)

@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "common",
     srcs = ["common.py"],
+    imports = ["../../"],
     deps = [
         "//util/topgen",
     ],
@@ -17,6 +18,7 @@ py_library(
 py_library(
     name = "lc_st_enc",
     srcs = ["LcStEnc.py"],
+    imports = ["../../"],
     deps = [
         ":common",
         "//util/topgen",
@@ -33,7 +35,10 @@ py_library(
     # includes within this module yet. Adding `util/design` to the imports path,
     # temporarily resovles this issue until the entire hw/ subtree can be
     # Bazelfied.
-    imports = ["../"],
+    imports = [
+        "../",
+        "../../",
+    ],
     deps = [
         ":common",
         "//util/design/mubi:prim_mubi",
