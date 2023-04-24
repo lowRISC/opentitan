@@ -140,7 +140,7 @@ otp_json(
                 "OWNER_SW_CFG_DIGEST": "0x0",
                 # Enable bootstrap. See `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
-                "OWNER_SW_CFG_ROM_BOOTSTRAP_EN": "0x739",
+                "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": "0x1d4",
                 # Set to 0x739 to use the ROM_EXT hash measurement as the key
                 # manager attestation binding value.
                 "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": "0x0",
@@ -522,7 +522,7 @@ otp_json(
     partitions = [
         otp_partition(
             name = "OWNER_SW_CFG",
-            items = {"OWNER_SW_CFG_ROM_BOOTSTRAP_EN": "0x1d4"},
+            items = {"OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": "0x739"},
         ),
     ],
 )

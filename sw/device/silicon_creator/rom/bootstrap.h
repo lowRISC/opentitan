@@ -14,7 +14,7 @@ extern "C" {
 /**
  * Checks whether bootstrap is requested.
  *
- * The return value of this function also depends on the `ROM_BOOTSTRAP_EN` OTP
+ * The return value of this function also depends on the `ROM_BOOTSTRAP_DIS` OTP
  * item.
  *
  * @return Whether bootstrap is requested.
