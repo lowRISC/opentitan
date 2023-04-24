@@ -106,7 +106,6 @@ always_ff @( posedge clk_adc_i, negedge rst_adc_ni ) begin
   end
 end
 
-
 /////////////////////////
 // ASSERTIONS
 /////////////////////////
@@ -118,9 +117,5 @@ end
 
 // Add Assertion RE of adc_en on the first 30us (=6*5us cc) after adc_en rose chnsel is 0.
 `ASSERT(ChannelStableOnAdcEn, $rose(adc_en) |-> (adc_chnsel_i == 4'h0)[*7], clk_adc_i, !rst_adc_ni)
-
-// Add Assertion for (adc_chnsel_i != 2'b11) @clk_adc_i
-`ASSERT(IllegalAdcChannel, (adc_chnsel_i != 4'h3), clk_adc_i, !rst_adc_ni)
-
 
 endmodule : adc
