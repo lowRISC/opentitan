@@ -457,7 +457,7 @@ otp_json(
             name = "CREATOR_SW_CFG",
             items = {
                 "CREATOR_SW_CFG_RMA_SPIN_EN": hex(CONST.TRUE),
-                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "10",
+                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0x2000000",
             },
         ),
         otp_partition(

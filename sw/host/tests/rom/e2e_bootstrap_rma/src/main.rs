@@ -133,15 +133,6 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
         .reset_target(opts.init.bootstrap.options.reset_delay, true)
         .context("failed to reset target")?;
 
-    // Remove the RMA_BOOTSTRAP strapping to bring the device out of the RMA spin loop.
-    // TODO: Transition to RMA requires the EDN to be initialised to wipe OTBN.
-    // Once <https://github.com/lowRISC/opentitan/issues/17944> is resolved, the RMA
-    // strapping should be kept and the delay removed.
-    rma_bootstrap_strapping
-        .remove()
-        .context("failed to remove strapping RMA_BOOTSTRAP")?;
-    std::thread::sleep(Duration::from_secs(1));
-
     log::info!("Connecting to JTAG interface");
 
     let jtag = transport.jtag(&opts.jtag).context("failed to get JTAG")?;
@@ -242,6 +233,11 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
     // No longer need the JTAG interface, shut down gracefully.
     jtag.disconnect()
         .context("failed to disconnect from JTAG")?;
+
+    // Remove the RMA strapping so that future resets bring up normally.
+    rma_bootstrap_strapping
+        .remove()
+        .context("failed to remove strapping RMA_BOOTSTRAP")?;
 
     // Remove the strapping in case this state survives to another test.
     tap_strapping
