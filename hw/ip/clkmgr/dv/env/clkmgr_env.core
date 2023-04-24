@@ -10,6 +10,7 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
     files:
+      - clkmgr_csrs_if.sv
       - clkmgr_env_pkg.sv
       - clkmgr_env_cfg.sv: {is_include_file: true}
       - clkmgr_env_cov.sv: {is_include_file: true}

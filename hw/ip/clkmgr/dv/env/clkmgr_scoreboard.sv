@@ -39,6 +39,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       sample_peri_covs();
       sample_trans_covs();
       sample_freq_measurement_covs();
+      sample_fatal_err_cov();
+      sample_recov_err_cov();
     join_none
   endtask
 
@@ -216,6 +218,44 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         @(posedge cfg.clkmgr_vif.usb_freq_measurement.valid or posedge cfg.clkmgr_vif.usb_timeout_err) begin
           sample_freq_measurement_cov(ClkMesrUsb, cfg.clkmgr_vif.usb_freq_measurement,
                                       cfg.clkmgr_vif.usb_timeout_err);
+        end
+    join_none
+  endtask
+
+  task sample_recov_err_cov();
+    fork
+      forever
+        @cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr if (cfg.en_cov) begin
+          cov.recov_err_cg.sample(
+              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[10],
+              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[9],
+              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[8],
+              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[7],
+              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[6],
+              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[5],
+              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[4],
+              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[3],
+              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[2],
+              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[1],
+              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[0]);
+          `uvm_info(`gfn, $sformatf(
+                    "Recoverable errors sampled: 0x%x", cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr),
+                    UVM_MEDIUM)
+        end
+    join_none
+  endtask
+
+  task sample_fatal_err_cov();
+    fork
+      forever
+        @cfg.clkmgr_csrs_vif.csrs_cb.fatal_err_csr if (cfg.en_cov) begin
+          cov.fatal_err_cg.sample(
+              cfg.clkmgr_csrs_vif.csrs_cb.fatal_err_csr[2],
+              cfg.clkmgr_csrs_vif.csrs_cb.fatal_err_csr[1],
+              cfg.clkmgr_csrs_vif.csrs_cb.fatal_err_csr[0]);
+          `uvm_info(`gfn, $sformatf(
+                    "Fatal errors sampled: 0x%x", cfg.clkmgr_csrs_vif.csrs_cb.fatal_err_csr),
+                    UVM_MEDIUM)
         end
     join_none
   endtask

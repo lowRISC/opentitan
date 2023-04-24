@@ -117,6 +117,42 @@ class clkmgr_env_cov extends cip_base_env_cov #(
     extclk_cross: cross csr_sel_cp, csr_low_speed_cp, hw_debug_en_cp, byp_req_cp, scanmode_cp;
   endgroup
 
+  // This collects coverage for recoverable errors.
+  covergroup recov_err_cg with function sample (
+      bit usb_timeout,
+      bit main_timeout,
+      bit io_div4_timeout,
+      bit io_div2_timeout,
+      bit io_timeout,
+      bit usb_measure,
+      bit main_measure,
+      bit io_div4_measure,
+      bit io_div2_measure,
+      bit io_measure,
+      bit shadow_update
+  );
+    shadow_update_cp: coverpoint shadow_update;
+    io_measure_cp: coverpoint io_measure;
+    io_div2_measure_cp: coverpoint io_div2_measure;
+    io_div4_measure_cp: coverpoint io_div4_measure;
+    main_measure_cp: coverpoint main_measure;
+    usb_measure_cp: coverpoint usb_measure;
+    io_timeout_cp: coverpoint io_timeout;
+    io_div2_timeout_cp: coverpoint io_div2_timeout;
+    io_div4_timeout_cp: coverpoint io_div4_timeout;
+    main_timeout_cp: coverpoint main_timeout;
+    usb_timeout_cp: coverpoint usb_timeout;
+  endgroup
+
+  // This collects coverage for fatal errors.
+  covergroup fatal_err_cg with function sample (
+      bit shadow_storage, bit idle_cnt, bit reg_integ
+  );
+    reg_integ_cp: coverpoint reg_integ;
+    idle_cnt_cp: coverpoint idle_cnt;
+    shadow_storage_cp: coverpoint shadow_storage;
+  endgroup
+
   function new(string name, uvm_component parent);
     super.new(name, parent);
     // The peripheral covergoups.
@@ -134,6 +170,8 @@ class clkmgr_env_cov extends cip_base_env_cov #(
       freq_measure_cg_wrap[i] = new(clk_mesr.name);
     end
     extclk_cg = new();
+    recov_err_cg = new();
+    fatal_err_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);

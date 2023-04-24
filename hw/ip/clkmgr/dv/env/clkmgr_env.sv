@@ -53,6 +53,11 @@ class clkmgr_env extends cip_base_env #(
     if (!uvm_config_db#(virtual clkmgr_if)::get(this, "", "clkmgr_vif", cfg.clkmgr_vif)) begin
       `uvm_fatal(`gfn, "failed to get clkmgr_vif from uvm_config_db")
     end
+    if (!uvm_config_db#(virtual clkmgr_csrs_if)::get(
+            this, "", "clkmgr_csrs_vif", cfg.clkmgr_csrs_vif
+        )) begin
+      `uvm_fatal(`gfn, "failed to get clkmgr_csrs_vif from uvm_config_db")
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
