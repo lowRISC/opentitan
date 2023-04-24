@@ -108,6 +108,6 @@ class pwrmgr_common_vseq extends pwrmgr_base_vseq;
       default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
     endcase  // case (if_proxy.sec_cm_type)
     // This makes sure errors are not injected too close together to avoid confusion.
-    cfg.aon_clk_rst_vif.wait_clks(10);
+    cfg.slow_clk_rst_vif.wait_clks(10);
   endtask : check_sec_cm_fi_resp
 endclass

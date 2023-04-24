@@ -207,7 +207,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       // Escalation resets are cleared when reset goes active.
       clear_escalation_reset();
       clear_ndm_reset();
-      cfg.aon_clk_rst_vif.apply_reset();
     join
     // And wait until the responders settle with all okay from the AST.
     `DV_WAIT(
@@ -221,9 +220,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.slow_clk_rst_vif.drive_rst_pin(0);
     cfg.esc_clk_rst_vif.drive_rst_pin(0);
     cfg.lc_clk_rst_vif.drive_rst_pin(0);
-    cfg.aon_clk_rst_vif.drive_rst_pin(0);
     super.apply_resets_concurrently(cfg.slow_clk_rst_vif.clk_period_ps);
-    cfg.aon_clk_rst_vif.drive_rst_pin(1);
     cfg.esc_clk_rst_vif.drive_rst_pin(1);
     cfg.lc_clk_rst_vif.drive_rst_pin(1);
     cfg.slow_clk_rst_vif.drive_rst_pin(1);
@@ -242,7 +239,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
               ), UVM_MEDIUM)
     cfg.esc_clk_rst_vif.set_freq_mhz(cfg.clk_rst_vif.clk_freq_mhz);
     cfg.lc_clk_rst_vif.set_freq_mhz(cfg.clk_rst_vif.clk_freq_mhz);
-    cfg.aon_clk_rst_vif.set_freq_mhz(cfg.clk_rst_vif.clk_freq_mhz);
     set_ndmreset_req('0);
     control_assertions(0);
   endtask
@@ -790,21 +786,21 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       cfg.pwrmgr_vif.rom_ctrl.done = get_rand_mubi4_val(
           .t_weight(0), .f_weight(1), .other_weight(1)
       );
-      cfg.aon_clk_rst_vif.wait_clks(10);
+      cfg.slow_clk_rst_vif.wait_clks(10);
       cfg.pwrmgr_vif.rom_ctrl.good = get_rand_mubi4_val(
           .t_weight(1), .f_weight(1), .other_weight(1)
       );
       cfg.pwrmgr_vif.rom_ctrl.done = get_rand_mubi4_val(
           .t_weight(0), .f_weight(1), .other_weight(1)
       );
-      cfg.aon_clk_rst_vif.wait_clks(5);
+      cfg.slow_clk_rst_vif.wait_clks(5);
       cfg.pwrmgr_vif.rom_ctrl.good = get_rand_mubi4_val(
           .t_weight(1), .f_weight(1), .other_weight(1)
       );
       cfg.pwrmgr_vif.rom_ctrl.done = get_rand_mubi4_val(
           .t_weight(0), .f_weight(1), .other_weight(1)
       );
-      cfg.aon_clk_rst_vif.wait_clks(5);
+      cfg.slow_clk_rst_vif.wait_clks(5);
       cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
       cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
     end

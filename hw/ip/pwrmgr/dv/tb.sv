@@ -17,7 +17,6 @@ module tb;
   wire clk_esc, rst_esc_n;
   wire clk_lc, rst_lc_n;
   wire clk_slow, rst_slow_n;
-  wire aon_clk, aon_rst_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
@@ -33,10 +32,6 @@ module tb;
   clk_rst_if esc_clk_rst_if (
     .clk  (clk_esc),
     .rst_n(rst_esc_n)
-  );
-  clk_rst_if aon_clk_rst_if (
-    .clk  (aon_clk),
-    .rst_n(aon_rst_n)
   );
   clk_rst_if slow_clk_rst_if (
     .clk  (clk_slow),
@@ -127,12 +122,10 @@ module tb;
     esc_clk_rst_if.set_active();
     lc_clk_rst_if.set_active();
     slow_clk_rst_if.set_active();
-    aon_clk_rst_if.set_active();
 
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "esc_clk_rst_vif", esc_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "lc_clk_rst_vif", lc_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "aon_clk_rst_vif", aon_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "slow_clk_rst_vif", slow_clk_rst_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);

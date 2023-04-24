@@ -30,11 +30,6 @@ class pwrmgr_env extends cip_base_env #(
         )) begin
       `uvm_fatal(`gfn, "failed to get lc_clk_rst_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "aon_clk_rst_vif", cfg.aon_clk_rst_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get aon_clk_rst_vif from uvm_config_db")
-    end
     if (!uvm_config_db#(virtual pwrmgr_if)::get(this, "", "pwrmgr_vif", cfg.pwrmgr_vif)) begin
       `uvm_fatal(`gfn, "failed to get pwrmgr_vif from uvm_config_db")
     end
