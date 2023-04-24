@@ -277,6 +277,7 @@ static status_t otp_partition_secret2_configure(const dif_otp_ctrl_t *otp,
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
+  // Generate and hash RMA unlock token.
   TRY(entropy_csrng_generate(/*seed_material=*/NULL,
                              (uint32_t *)rma_unlock_token,
                              kRmaUnlockTokenSizeIn32BitWords));
@@ -286,6 +287,7 @@ static status_t otp_partition_secret2_configure(const dif_otp_ctrl_t *otp,
   TRY(hash_lc_transition_token(rma_unlock_token, kRmaUnlockTokenSizeInBytes,
                                hashed_rma_unlock_token));
 
+  // Generate RootKey shares.
   uint64_t share0[kRootKeyShareSizeIn64BitWords];
   TRY(entropy_csrng_generate(/*seed_material=*/NULL, (uint32_t *)share0,
                              kRootKeyShareSizeIn32BitWords));
@@ -299,6 +301,7 @@ static status_t otp_partition_secret2_configure(const dif_otp_ctrl_t *otp,
 
   TRY(shares_check(share0, share1, kRootKeyShareSizeIn64BitWords));
 
+  // Provision RMA unlock token and RootKey shares into OTP.
   TRY(otp_ctrl_testutils_dai_write64(
       otp, kDifOtpCtrlPartitionSecret2, kRmaUnlockTokenOffset,
       hashed_rma_unlock_token, kRmaUnlockTokenSizeIn64BitWords));
