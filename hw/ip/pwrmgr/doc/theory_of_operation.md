@@ -145,9 +145,7 @@ There are 4 reset requests in the system
 
 Flash brownout is handled separately and described in [flash handling section](#flash-handling) below.
 
-Peripheral requested resets such as watchdog are handled directly by the power manager, while the non-debug module reset is handled by the reset controller.
-This separation is because the non-debug reset does not affect the life cycle controller, non-volatile storage controllers and alert states.
-There is thus no need to sequence its operation like the others.
+Note that the non-debug module reset is handled similarly to a peripheral requested reset, except that the non-debug module reset won't affect the debug module state and associated TAP muxing logic inside the pinmux.
 
 The power controller only observes reset requests in two states - the slow FSM `Low Power` state and the fast FSM `Active` state.
 When a reset request is received during slow FSM `Low Power` state, the system begins its usual power up sequence even if a wakeup has not been received.
