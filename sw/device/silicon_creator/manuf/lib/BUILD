@@ -117,6 +117,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:ecc",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/dif:flash_ctrl",
