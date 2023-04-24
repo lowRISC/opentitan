@@ -51,9 +51,6 @@ logic [7-1:0] fast_cnt;
 logic [(1<<EntropyRateWidth)-1:0] erate_cnt, dev_rate;
 
 // Sync dev_rate_i to Device clock
-// A simplified synchrnization is used instead of a pulse synchronize.
-// The rate might go through a different value for one clk_dev_i cycle.
-// In most cases the rate will be set ahead of the dev_en_i
 logic [EntropyRateWidth-1:0] dev_rate_sync;
 
 prim_multibit_sync #(
