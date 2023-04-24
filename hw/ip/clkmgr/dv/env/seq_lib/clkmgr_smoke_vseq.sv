@@ -95,7 +95,6 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
       idle[trans] = prim_mubi_pkg::MuBi4True;
       cfg.clkmgr_vif.update_idle(idle);
       // Some cycles for the logic to settle.
-      // TODO: Temporary update to account for idle counts
       cfg.clk_rst_vif.wait_clks(IDLE_SYNC_CYCLES);
       csr_rd(.ptr(descriptor.value_bit), .value(bit_value));
       if (!cfg.under_reset) begin

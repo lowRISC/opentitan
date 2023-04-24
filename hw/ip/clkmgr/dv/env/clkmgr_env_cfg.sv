@@ -12,11 +12,12 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(
   // ext component cfgs
 
   // ext interfaces
-  virtual clkmgr_if  clkmgr_vif;
-  virtual clk_rst_if main_clk_rst_vif;
-  virtual clk_rst_if io_clk_rst_vif;
-  virtual clk_rst_if usb_clk_rst_vif;
-  virtual clk_rst_if aon_clk_rst_vif;
+  virtual clkmgr_if      clkmgr_vif;
+  virtual clkmgr_csrs_if clkmgr_csrs_vif;
+  virtual clk_rst_if     main_clk_rst_vif;
+  virtual clk_rst_if     io_clk_rst_vif;
+  virtual clk_rst_if     usb_clk_rst_vif;
+  virtual clk_rst_if     aon_clk_rst_vif;
 
   virtual clk_rst_if root_io_clk_rst_vif;
   virtual clk_rst_if root_main_clk_rst_vif;

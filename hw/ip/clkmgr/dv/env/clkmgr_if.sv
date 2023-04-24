@@ -218,11 +218,6 @@ interface clkmgr_if (
     io_clk_byp_ack = value;
   endfunction
 
-  // TODO:: this fix is not right since there are now 3 status
-  function automatic logic get_clk_status();
-    return pwr_o.main_status;
-  endfunction
-
   function automatic void force_high_starting_count(clk_mesr_e clk);
     `uvm_info("clkmgr_if", $sformatf("Forcing count of %0s to all 1.", clk.name()), UVM_MEDIUM)
     case (clk)
