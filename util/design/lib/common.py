@@ -2,12 +2,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 r'''Common utilities used by various util/design scripts.'''
-
-import random
+import os
+import sys
 import re
 import textwrap
 from math import ceil, log2
 from pathlib import Path
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
+
+from topgen import strong_random # noqa : E402
 
 
 def wrapped_docstring():
@@ -83,7 +86,7 @@ def as_snake_case_prefix(name):
 def get_random_data_hex_literal(width):
     '''Fetch 'width' random bits and return them as hex literal.'''
     width = int(width)
-    literal_str = hex(random.getrandbits(width))
+    literal_str = hex(strong_random.getrandbits(width))
     return blockify(literal_str, width, 64)
 
 
@@ -117,7 +120,7 @@ def get_random_perm_hex_literal(numel):
     num_elements = int(numel)
     width = int(ceil(log2(num_elements)))
     idx = [x for x in range(num_elements)]
-    random.shuffle(idx)
+    strong_random.shuffle(idx)
     literal_str = ""
     for k in idx:
         literal_str += format(k, '0' + str(width) + 'b')
@@ -292,7 +295,7 @@ def random_or_hexvalue(dict_obj, key, num_bits):
 
     # Generate a random number of requested size in this case.
     if dict_obj[key] == '<random>':
-        dict_obj[key] = random.getrandbits(num_bits)
+        dict_obj[key] = strong_random.getrandbits(num_bits)
     # Otherwise attempt to convert this number to an int.
     # Check that the range is correct.
     else:

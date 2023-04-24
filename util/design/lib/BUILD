@@ -9,6 +9,9 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "common",
     srcs = ["common.py"],
+    deps = [
+        "//util/topgen",
+    ],
 )
 
 py_library(
@@ -16,6 +19,7 @@ py_library(
     srcs = ["LcStEnc.py"],
     deps = [
         ":common",
+        "//util/topgen",
         requirement("pycryptodome"),
     ],
 )
@@ -33,6 +37,7 @@ py_library(
     deps = [
         ":common",
         "//util/design/mubi:prim_mubi",
+        "//util/topgen",
         requirement("tabulate"),
     ],
 )
