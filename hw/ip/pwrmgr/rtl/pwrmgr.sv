@@ -159,8 +159,8 @@ module pwrmgr
 `endif
 
   `ASSERT(PwrmgrSecCmEscToLCReset_A, u_fsm.reset_reqs_i[ResetEscIdx] &&
-          u_fsm.state_q == FastPwrStateActive |-> ##[0:2] pwr_rst_o.rst_lc_req == 2'b11,
-          clk_slow_i, !rst_slow_ni)
+          u_fsm.state_q == FastPwrStateActive |-> ##4 pwr_rst_o.rst_lc_req == 2'b11,
+          clk_i, !rst_ni)
 
   always_ff @(posedge clk_lc or negedge rst_lc_n) begin
     if (!rst_lc_n) begin

@@ -93,7 +93,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       // at low power state, do not use clk_rst_vif, cause it is off.
       fork
         begin
-          cfg.aon_clk_rst_vif.wait_clks(cycles_before_reset);
+          cfg.slow_clk_rst_vif.wait_clks(cycles_before_reset);
           cfg.pwrmgr_vif.update_resets(resets);
 
           if (power_glitch_reset) begin
@@ -105,7 +105,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
         end
 
         begin
-          cfg.aon_clk_rst_vif.wait_clks(cycles_before_wakeup);
+          cfg.slow_clk_rst_vif.wait_clks(cycles_before_wakeup);
           cfg.pwrmgr_vif.update_wakeups(wakeups);
           `uvm_info(`gfn, $sformatf("Sending wakeup=%b", wakeups), UVM_MEDIUM)
         end

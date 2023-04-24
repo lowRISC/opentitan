@@ -23,8 +23,6 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
   // ext interfaces
   virtual clk_rst_if esc_clk_rst_vif;
   virtual clk_rst_if lc_clk_rst_vif;
-  // same as main_clk but don't have a clk_gate
-  virtual clk_rst_if aon_clk_rst_vif;
   virtual clk_rst_if slow_clk_rst_vif;
   virtual pwrmgr_if pwrmgr_vif;
   virtual pwrmgr_clock_enables_sva_if pwrmgr_clock_enables_sva_vif;
