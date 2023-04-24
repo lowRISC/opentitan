@@ -96,6 +96,25 @@ module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
   assign unused = ^req_q & ^write_q & ^wdata_q & ^wmask_q;
   `endif   
   `ifdef TARGET_SYNOPSYS
+    `ifdef ALSAQR
+  gf22_efuse_wrap #(
+    .Depth                (Depth),
+    .Width                (TotalWidth),
+    .MemInitFile          (MemInitFile)
+  ) u_gf22_efuse_wrap (
+    .clk_i,
+    .rst_ni,
+    .VQPS_EFUSE ( 1'b1       ),
+    .VDD_EFUSE  ( 1'b1       ),
+    .VSS_EFUSE  ( 1'b0       ),
+    .req_i      ( req_q      ),
+    .write_i    ( write_q    ),
+    .addr_i     ( addr_q     ),
+    .wdata_i    ( wdata_q    ),
+    .rdata_o    ( rdata_sram ),
+    .rvalid_o   (            )
+  );
+    `else
   otp_rom #(
     .Width(TotalWidth),
     .Depth(Depth),
@@ -109,6 +128,7 @@ module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
   );
   logic  unused;
   assign unused = ^wdata_q & ^wmask_q & ^write_q;
+    `endif 
   `endif 
 `else 
   prim_ram_1p #(
