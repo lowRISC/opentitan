@@ -206,7 +206,7 @@ See the [[pin configuration]]() specification for details.
 
 
 *   Read the value of the strapping pins.
-    *   If they indicate bootstrap mode and if bootstrap is permitted (via OTP `ROM_BOOTSTRAP_EN`), perform the bootstrap protocol as specified in the [Bootstrap Spec].
+    *   If they indicate bootstrap mode and if bootstrap is permitted (via OTP `ROM_BOOTSTRAP_DIS`), perform the bootstrap protocol as specified in the [Bootstrap Spec].
     *   For all other values, continue booting without bootstrap mode.
 
 See the [[bootstrap]](bootstrap.md) specification for details.

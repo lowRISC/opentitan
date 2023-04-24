@@ -120,9 +120,9 @@ static uint32_t pad_attr_mask_get() {
  *     * IOC4 -> UART TX (output)
  */
 static void pinmux_init_test(void) {
-  uint32_t bootstrap_en =
-      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_EN_OFFSET);
-  if (bootstrap_en == kHardenedBoolTrue) {
+  uint32_t bootstrap_dis =
+      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET);
+  if (bootstrap_dis != kHardenedBoolTrue) {
     uint32_t attr_mask = pad_attr_mask_get();
 
     // GPIO 22 (input 22) -> IOC0 (MIO pad 22)

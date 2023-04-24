@@ -333,16 +333,16 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
 }
 
 hardened_bool_t bootstrap_requested(void) {
-  uint32_t res =
-      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_EN_OFFSET);
-  if (launder32(res) != kHardenedBoolTrue) {
+  uint32_t bootstrap_dis =
+      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET);
+  if (launder32(bootstrap_dis) == kHardenedBoolTrue) {
     return kHardenedBoolFalse;
   }
-  HARDENED_CHECK_EQ(res, kHardenedBoolTrue);
+  HARDENED_CHECK_NE(bootstrap_dis, kHardenedBoolTrue);
 
   // A single read is sufficient since we expect strong pull-ups on the strap
   // pins.
-  res ^= SW_STRAP_BOOTSTRAP;
+  uint32_t res = launder32(kHardenedBoolTrue) ^ SW_STRAP_BOOTSTRAP;
   res ^=
       abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET) &
       SW_STRAP_MASK;

@@ -23,7 +23,6 @@
       desc: '''Verify that ROM can boot a ROM_EXT with default OTP values (all zeroes).
 
             - Create an OTP with all zeros except:
-                - OWNER_SW_CFG_ROM_BOOTSTRAP_EN set to 0x739 (true)
                 - CREATOR_SW_CFG_ROM_EXEC_EN set to 0xffffffff (enabled)
                 - LC_STATE in the TEST_UNLOCKED0 state
                 - LIFE_CYCLE count value set to 1
@@ -153,7 +152,7 @@
       name: rom_e2e_bootstrap_enabled_requested
       desc: '''Verify that ROM enters bootstrap when enabled in OTP and requested.
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - Apply bootstrap pin strapping.
             - Reset the chip.
@@ -169,7 +168,7 @@
       name: rom_e2e_bootstrap_enabled_not_requested
       desc: '''Verify that ROM does not enter bootstrap when enabled in OTP but not requested.
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - Do not apply bootstrap pin strapping.
             - Reset the chip.
@@ -186,7 +185,7 @@
       name: rom_e2e_bootstrap_disabled_requested
       desc: '''Verify that ROM does not enter bootstrap when disabled in OTP but requested.
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolFalse` (`0x1d4`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolFalse` (`0x1d4`).
 
             - Apply bootstrap pin strapping.
             - Reset the chip.
@@ -204,7 +203,7 @@
       name: rom_e2e_bootstrap_disabled_not_requested
       desc: '''Verify that ROM does not enter bootstrap when disabled in OTP and not requested.
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolFalse` (`0x1d4`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolFalse` (`0x1d4`).
 
             - Do not apply bootstrap pin strapping.
             - Reset the chip.
@@ -222,7 +221,7 @@
       name: rom_e2e_bootstrap_read_status
       desc: '''Verify that bootstrap handles `READ_STATUS` correctly.
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - Apply bootstrap pin strapping.
             - Reset the chip.
@@ -239,7 +238,7 @@
       name: rom_e2e_bootstrap_watchdog_disabled
       desc: '''Verify that watchdog is disabled upon entering bootstrap.
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
             `OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES` OTP item must be `0x30d40`
 
             - For TEST, DEV, PROD, PROD_END, and RMA life cycle states:
@@ -261,7 +260,7 @@
       name: rom_e2e_bootstrap_read_id
       desc: '''Verify the JEDEC ID used during bootstrap.
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - Apply bootstrap pin strapping.
             - Reset the chip.
@@ -280,7 +279,7 @@
       name: rom_e2e_bootstrap_read_sfdp
       desc: '''Verify the SFDP table used during bootstrap.
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - Apply bootstrap pin strapping.
             - Reset the chip.
@@ -299,7 +298,7 @@
       name: rom_e2e_bootstrap_write_enable_disable
       desc: '''Verify that bootstrap handles `WRITE_ENABLE` (`0x06`) and `WRITE_DISABLE` (`0x04`).
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - Apply bootstrap pin strapping.
             - Reset the chip.
@@ -318,7 +317,7 @@
       name: rom_e2e_bootstrap_phase1_reset
       desc: '''Verify that bootstrap phase 1 ignores `RESET` (`0x99`).
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - Apply bootstrap pin strapping.
             - Reset the chip.
@@ -334,7 +333,7 @@
       name: rom_e2e_bootstrap_phase1_page_program
       desc: '''Verify that bootstrap phase 1 ignores `PAGE_PROGRAM` (`0x02`).
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - Apply bootstrap pin strapping.
             - Reset the chip.
@@ -357,7 +356,7 @@
       name: rom_e2e_bootstrap_phase1_erase
       desc: '''Verify that bootstrap phase 1 handles erase commands correctly.
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - For `erase` in {`SECTOR_ERASE` (`0x20`), `CHIP_ERASE` (`0xc7`)}:
               - Apply bootstrap pin strapping and reset the chip.
@@ -385,7 +384,7 @@
       name: rom_e2e_bootstrap_phase1_read
       desc: '''Verify that phase 1 of bootstrap ignores `READ` (`0x03`).
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - Apply bootstrap pin strapping and reset the chip.
             - Send `CHIP_ERASE` (`0xc7`).
@@ -411,7 +410,7 @@
       name: rom_e2e_bootstrap_phase2_reset
       desc: '''Verify that bootstrap phase 2 handles `RESET` (`0x99`) correctly.
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - For `erase` in {`SECTOR_ERASE` (`0x20`), `CHIP_ERASE` (`0xc7`)}:
               - Apply bootstrap pin strapping and reset the chip.
@@ -430,7 +429,7 @@
       name: rom_e2e_bootstrap_phase2_page_program
       desc: '''Verify that bootstrap phase 2 handles `PAGE_PROGRAM` (`0x02`) correctly.
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - Apply bootstrap pin strapping and reset the chip.
             - Send `CHIP_ERASE` (`0xc7`).
@@ -449,7 +448,7 @@
       name: rom_e2e_bootstrap_phase2_erase
       desc: '''Verify that bootstrap phase 2 handles erase commands correctly.
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - For `erase` in {`SECTOR_ERASE` (`0x20`), `CHIP_ERASE` (`0xc7`)}:
               - Apply bootstrap pin strapping and reset the chip.
@@ -471,7 +470,7 @@
       name: rom_e2e_bootstrap_phase2_read
       desc: '''Verify that phase 2 of bootstrap ignores `READ` (`0x03`).
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - Apply bootstrap pin strapping and reset the chip.
             - Send `CHIP_ERASE` (`0xc7`).
@@ -493,7 +492,7 @@
       name: rom_e2e_bootstrap_shutdown
       desc: '''Verify that invalid addresses trigger shutdown.
 
-            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS` OTP item must not be `kHardenedBoolTrue` (`0x739`).
 
             - For `command` in {`SECTOR_ERASE` (`0xc7`) and `PAGE_PROGRAM` (`0x02`)}
               - Apply bootstrap pin strapping and reset the chip.
@@ -1105,7 +1104,7 @@
       name: rom_e2e_c_init
       desc: '''Verify that ROM initializes various peripherals properly.
 
-            - Pinmux: UART pins, SW straps if `OWNER_SW_CFG_ROM_BOOTSTRAP_EN == kHardenedBoolTrue`
+            - Pinmux: UART pins, SW straps if `OWNER_SW_CFG_ROM_BOOTSTRAP_DIS != kHardenedBoolTrue`
             - UART
             - Bits 0-5 of the `cpuctrl` CSR: `CREATOR_SW_CFG_CPUCTRL`
             '''

@@ -168,7 +168,7 @@
                     size: "4"
                 }
                 {
-                    name: "ROM_BOOTSTRAP_EN",
+                    name: "ROM_BOOTSTRAP_DIS",
                     size: "4"
                 }
                 {

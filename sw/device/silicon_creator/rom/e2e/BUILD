@@ -83,12 +83,6 @@ otp_json(
     name = "otp_json_default",
     partitions = [
         otp_partition(
-            name = "OWNER_SW_CFG",
-            items = {
-                "OWNER_SW_CFG_ROM_BOOTSTRAP_EN": "0x739",
-            },
-        ),
-        otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
                 "CREATOR_SW_CFG_ROM_EXEC_EN": "0xffffffff",
@@ -1260,7 +1254,7 @@ otp_json(
             name = "OWNER_SW_CFG",
             items = {
                 # Enable bootstrap.
-                "OWNER_SW_CFG_ROM_BOOTSTRAP_EN": hex(CONST.TRUE),
+                "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": hex(CONST.FALSE),
                 # Report errors without any redaction.
                 "OWNER_SW_CFG_ROM_ERROR_REPORTING": hex(CONST.SHUTDOWN.REDACT.NONE),
                 # Enable class A alerts.

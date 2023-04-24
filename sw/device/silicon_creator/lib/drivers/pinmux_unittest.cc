@@ -81,8 +81,9 @@ TEST_F(InitTest, PadAttrPropagationDelay) {
 
 TEST_F(InitTest, WithBootstrap) {
   // The inputs that will be configured.
-  EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_EN_OFFSET))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(otp_,
+              read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET))
+      .WillOnce(Return(kHardenedBoolFalse));
   EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc0),
                      {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
   EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc1),
@@ -111,8 +112,9 @@ TEST_F(InitTest, WithBootstrap) {
 
 TEST_F(InitTest, WithoutBootstrap) {
   // The inputs that will be configured.
-  EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_EN_OFFSET))
-      .WillOnce(Return(kHardenedBoolFalse));
+  EXPECT_CALL(otp_,
+              read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET))
+      .WillOnce(Return(kHardenedBoolTrue));
   EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInUart0Rx),
                      kTopEarlgreyPinmuxInselIoc3);
 
