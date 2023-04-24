@@ -583,6 +583,21 @@ otbn_consttime_test(
 )
 
 otbn_sim_test(
+    name = "rsa_keygen_checkpq_test",
+    # This test is very long because it runs multiple primality tests.
+    timeout = "eternal",
+    srcs = [
+        "rsa_keygen_checkpq_test.s",
+    ],
+    exp = "rsa_keygen_checkpq_test.exp",
+    deps = [
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_sim_test(
     name = "rsa_1024_dec_test",
     timeout = "long",
     srcs = [
