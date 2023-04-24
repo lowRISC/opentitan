@@ -17,22 +17,6 @@ pub mod usb;
 pub mod usr_access;
 pub mod voltage;
 
-/// The `collection` macro provides syntax for hash and set literals.
-#[macro_export]
-macro_rules! collection {
-    // map-like
-    ($($k:expr => $v:expr),* $(,)?) => {{
-        use std::iter::{Iterator, IntoIterator};
-        Iterator::collect(IntoIterator::into_iter([$(($k, $v),)*]))
-    }};
-
-    // set-like
-    ($($v:expr),* $(,)?) => {{
-        use std::iter::{Iterator, IntoIterator};
-        Iterator::collect(IntoIterator::into_iter([$($v),*]))
-    }};
-}
-
 /// The `testdata` macro can be used in tests to reference testdata directories.
 #[macro_export]
 #[cfg(test)]
