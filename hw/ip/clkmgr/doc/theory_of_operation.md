@@ -214,6 +214,9 @@ When the life cycle controller requests external clock, a request signal `lc_clk
 `clkmgr` then forwards the request to `ast` through `io_clk_byp_req_o`, which performs the actual clock switch and is acknowledged through `io_clk_byp_ack_i`.
 When the clock switch is complete, the clock dividers are stepped down by a factor of 2 and the life cycle controller is acknowledged through `lc_clk_byp_ack_o`.
 
+Note that this division factor change is done since the external clock is expected to be 48MHz while the nominal frequency of the internal clock is 96MHz.
+I.e. this division factor change keeps the nominal frequencies of the div_2 and div_4 clocks stable at 48Mhz and 24MHz, respectively.
+See [Clock Frequency Summary](#clock-frequency-summary) for more details.
 
 #### Software Requested External Clocks
 
