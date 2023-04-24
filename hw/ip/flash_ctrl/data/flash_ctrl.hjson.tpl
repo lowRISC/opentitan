@@ -1166,7 +1166,7 @@
               this field.
               If the hardware rules hardwires scramble to enable, we can disable via software if needed.
 
-              By default this field if false.
+              By default this field is false.
             ''',
             resval: false
           }
@@ -1178,7 +1178,7 @@
               this field.
               If the hardware rules hardwires ECC to enable, we can disable via software if needed.
 
-              By default this field if false.
+              By default this field is false.
             ''',
             resval: false
           }
