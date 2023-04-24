@@ -18,6 +18,8 @@
     // Can be overridden on the command line with the --seed switch.
     seed: "10556718629619452145"
 
+    entropy_buffer: null
+
     otp: {
         width: "2", // bytes
         depth: "1024"

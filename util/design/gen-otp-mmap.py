@@ -8,6 +8,7 @@ map definition file (hjson).
 import argparse
 import logging as log
 import random
+import sys
 from pathlib import Path
 
 import hjson
@@ -49,25 +50,39 @@ def main():
                         type=int,
                         metavar='<seed>',
                         help='Custom seed for RNG to compute default values.')
+    parser.add_argument(
+        "--entropy-buffer",
+        type=str,
+        metavar="<entropy buffer file path>",
+        help="A file with entropy.")
 
     args = parser.parse_args()
 
     with open(MMAP_DEFINITION_FILE, 'r') as infile:
         config = hjson.load(infile)
 
-        # If specified, override the seed for random netlist constant computation.
-        if args.seed:
-            log.warning('Commandline override of seed with {}.'.format(
-                args.seed))
-            config['seed'] = args.seed
-        # Otherwise, we either take it from the .hjson if present, or
-        # randomly generate a new seed if not.
+        if args.entropy_buffer:
+            if args.seed:
+                log.error("'entropy_buffer' option cannot be used with 'seed' option")
+                # error out
+                raise SystemExit(sys.exc_info()[1])
+            else:
+                # generate entropy from a buffer
+                config['entropy_buffer'] = args.entropy_buffer
         else:
-            random.seed()
-            new_seed = random.getrandbits(64)
-            if config.setdefault('seed', new_seed) == new_seed:
-                log.warning(
-                    'No seed specified, setting to {}.'.format(new_seed))
+            # If specified, override the seed for random netlist constant computation.
+            if args.seed:
+                log.warning('Commandline override of seed with {}.'.format(
+                    args.seed))
+                config['seed'] = args.seed
+            # Otherwise, we either take it from the .hjson if present, or
+            # randomly generate a new seed if not.
+            else:
+                random.seed()
+                new_seed = random.getrandbits(64)
+                if config.setdefault('seed', new_seed) == new_seed:
+                    log.warning(
+                        'No seed specified, setting to {}.'.format(new_seed))
 
         try:
             otp_mmap = OtpMemMap(config)
