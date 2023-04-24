@@ -59,6 +59,13 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       // error. This error is permitted and can be ignored.
       wait_lc_ready(.allow_err(1));
 
+      // TEST_LOCKED* LC states do not allow ROM code execution -> IO clock calibration values aren't
+      // copied from OTP to AST -> internal clock isn't calibrated -> use external clock
+      // to perform LC transition
+      // activate the external source clock with 48MHz
+      switch_to_external_clock();
+
+      // perform the first LC state transition using LC JTAG
       jtag_lc_state_transition(DecLcStTestLocked1, DecLcStTestUnlocked2, {<<8{lc_unlock_token}});
 
       // LC state transition requires a chip reset.
