@@ -265,7 +265,7 @@
                     size: "4"
                 }
                 {
-                    name: "OWNER_SW_CFG_ROM_BOOTSTRAP_EN",
+                    name: "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS",
                     size: "4"
                 }
                 {

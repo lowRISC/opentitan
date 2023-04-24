@@ -41,7 +41,7 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      32bit       |        CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST        |     0x15C      |     4      |
 |         |                |            |      64bit       | [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0) |     0x358      |     8      |
 |    2    |  OWNER_SW_CFG  |    800     |      32bit       |           OWNER_SW_CFG_ROM_ERROR_REPORTING            |     0x360      |     4      |
-|         |                |            |      32bit       |             OWNER_SW_CFG_ROM_BOOTSTRAP_EN             |     0x364      |     4      |
+|         |                |            |      32bit       |            OWNER_SW_CFG_ROM_BOOTSTRAP_DIS             |     0x364      |     4      |
 |         |                |            |      32bit       |            OWNER_SW_CFG_ROM_ALERT_CLASS_EN            |     0x368      |     4      |
 |         |                |            |      32bit       |           OWNER_SW_CFG_ROM_ALERT_ESCALATION           |     0x36C      |     4      |
 |         |                |            |      32bit       |         OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION         |     0x370      |    320     |
