@@ -852,6 +852,37 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `uvm_info(`gfn, "LC transition request succeeded successfully!", UVM_LOW)
   endtask
 
+  // Acquire the LC_CTRL transition interface mutex by LC JTAG
+  protected task claim_transition_interface();
+    `uvm_info(`gfn, "Claiming LC controller transition interface by JTAG...", UVM_MEDIUM)
+    jtag_riscv_agent_pkg::jtag_write_csr(
+        ral.lc_ctrl.claim_transition_if.get_offset(),
+        p_sequencer.jtag_sequencer_h,
+        prim_mubi_pkg::MuBi8True);
+  endtask : claim_transition_interface
+
+  // Bypass IO clock with the external clock
+  // using LC_CTRL.CTRL_TRANSITION.EXT_CLOCK_EN
+  task switch_to_external_clock();
+    // activate the external source clock with 48MHz
+    `uvm_info(`gfn, "Setting external clock to 48MHz...", UVM_MEDIUM)
+    cfg.chip_vif.ext_clk_if.set_freq_mhz(48);
+    cfg.chip_vif.ext_clk_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
+
+    // switch OTP to use external clock instead of internal clock
+    // wait for LC to be ready, acquire the transition interface mutex and
+    // enable external clock
+    wait_lc_ready();
+    claim_transition_interface();
+
+    // switch to external clock via LC controller
+    `uvm_info(`gfn, "Switching to external clock via JTAG...", UVM_MEDIUM)
+    jtag_riscv_agent_pkg::jtag_write_csr(
+      ral.lc_ctrl.transition_ctrl.get_offset(),
+      p_sequencer.jtag_sequencer_h,
+      1);
+  endtask : switch_to_external_clock
+
   // Use JTAG interface to program OTP fields.
   virtual task jtag_otp_program32(int addr,
                                   bit [31:0] data);
