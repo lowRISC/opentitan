@@ -86,14 +86,14 @@ static bool usb_testutils_transfer_next_part(
   return true;
 }
 
-void usb_testutils_poll(usb_testutils_ctx_t *ctx) {
+status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   uint32_t istate;
 
   // Collect a set of interrupts
-  CHECK_DIF_OK(dif_usbdev_irq_get_state(ctx->dev, &istate));
+  TRY(dif_usbdev_irq_get_state(ctx->dev, &istate));
 
   if (!istate) {
-    return;
+    return OK_STATUS();
   }
 
   // Process IN completions first so we get the fact that send completed
@@ -101,14 +101,13 @@ void usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   // This is also important for device IN performance
   if (istate & (1u << kDifUsbdevIrqPktSent)) {
     uint16_t sentep;
-    CHECK_DIF_OK(dif_usbdev_get_tx_sent(ctx->dev, &sentep));
+    TRY(dif_usbdev_get_tx_sent(ctx->dev, &sentep));
     TRC_C('a' + sentep);
     unsigned ep = 0u;
     while (sentep && ep < USBDEV_NUM_ENDPOINTS) {
       if (sentep & (1u << ep)) {
         // Free up the buffer and optionally callback
-        CHECK_DIF_OK(
-            dif_usbdev_clear_tx_status(ctx->dev, ctx->buffer_pool, ep));
+        TRY(dif_usbdev_clear_tx_status(ctx->dev, ctx->buffer_pool, ep));
 
         // If we have a larger transfer in progress, continue with that
         usb_testutils_transfer_t *transfer = &ctx->in[ep].transfer;
@@ -139,21 +138,21 @@ void usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   }
 
   // Keep buffers available for packet reception
-  CHECK_DIF_OK(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
+  TRY(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
 
   if (istate & (1u << kDifUsbdevIrqPktReceived)) {
     // TODO: we run the risk of starving the IN side here if the rx_callback(s)
     // are time-consuming
     while (true) {
       bool is_empty;
-      CHECK_DIF_OK(dif_usbdev_status_get_rx_fifo_empty(ctx->dev, &is_empty));
+      TRY(dif_usbdev_status_get_rx_fifo_empty(ctx->dev, &is_empty));
       if (is_empty) {
         break;
       }
 
       dif_usbdev_rx_packet_info_t packet_info;
       dif_usbdev_buffer_t buffer;
-      CHECK_DIF_OK(dif_usbdev_recv(ctx->dev, &packet_info, &buffer));
+      TRY(dif_usbdev_recv(ctx->dev, &packet_info, &buffer));
 
       unsigned ep = packet_info.endpoint;
       if (ctx->out[ep].rx_callback) {
@@ -162,8 +161,7 @@ void usb_testutils_poll(usb_testutils_ctx_t *ctx) {
         // Note: this could happen following endpoint removal
         TRC_S("USB: unexpected RX ");
         TRC_I(ep, 8);
-        CHECK_DIF_OK(
-            dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
+        TRY(dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
       }
     }
   }
@@ -184,12 +182,12 @@ void usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   }
 
   // Clear the interrupts that we've received and handled
-  CHECK_DIF_OK(dif_usbdev_irq_acknowledge_state(ctx->dev, istate));
+  TRY(dif_usbdev_irq_acknowledge_state(ctx->dev, istate));
 
   // Record bus frame
   if ((istate & (1u << kDifUsbdevIrqFrame))) {
     // The first bus frame is 1
-    CHECK_DIF_OK(dif_usbdev_status_get_frame(ctx->dev, &ctx->frame));
+    TRY(dif_usbdev_status_get_frame(ctx->dev, &ctx->frame));
     ctx->got_frame = true;
   }
 
@@ -245,6 +243,7 @@ void usb_testutils_poll(usb_testutils_ctx_t *ctx) {
     ctx->flushed = 0;
   }
   // TODO Errors? What Errors?
+  return OK_STATUS();
 }
 
 bool usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,

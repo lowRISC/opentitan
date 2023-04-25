@@ -125,7 +125,7 @@ bool test_main(void) {
   // Proceed only when the device has been configured; this allows host-side
   // software to establish communication.
   while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured) {
-    usb_testutils_poll(&usbdev);
+    CHECK_STATUS_OK(usb_testutils_poll(&usbdev));
   }
 
   // Set up two serial ports.
@@ -141,7 +141,7 @@ bool test_main(void) {
   // Await the same message as a response; this allows a simple 'cat <port>'
   // command to form the host side because of character echo.
   while (usb_chars_recved_total < kExpectedUsbCharsRecved) {
-    usb_testutils_poll(&usbdev);
+    CHECK_STATUS_OK(usb_testutils_poll(&usbdev));
   }
 
   base_printf("\r\n");

@@ -317,8 +317,10 @@ bool usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,
  * Call regularly to poll the usbdev interface
  *
  * @param ctx usb test utils context pointer
+ * @return The result of the operation
  */
-void usb_testutils_poll(usb_testutils_ctx_t *ctx);
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_poll(usb_testutils_ctx_t *ctx);
 
 /**
  * Finalize the usbdev interface

@@ -227,7 +227,7 @@ bool test_main(void) {
                                config_descriptors, sizeof(config_descriptors),
                                test_descriptor, sizeof(test_descriptor));
   while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured) {
-    usb_testutils_poll(ctx->usbdev);
+    CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
   }
 
   // Initialise the state of the streams

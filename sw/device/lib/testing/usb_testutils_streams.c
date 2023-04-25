@@ -467,7 +467,7 @@ status_t usb_testutils_streams_service(usb_testutils_streams_ctx_t *ctx) {
 
     // We must keep polling regularly in order to handle detection of packet
     // transmission as well as perform packet reception and checking
-    usb_testutils_poll(ctx->usbdev);
+    CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
   }
   return OK_STATUS();
 }
