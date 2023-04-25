@@ -2145,7 +2145,6 @@ bitstream_splice(
     src = "//hw/bitstream:test_rom",
     data = ":power_virus_systemtest_otp_img_rma",
     meminfo = "//hw/bitstream:otp_mmi",
-    tags = ["vivado"],
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )
@@ -2155,7 +2154,6 @@ opentitan_functest(
     srcs = ["power_virus_systemtest.c"],
     cw310 = cw310_params(
         bitstream = ":power_virus_systemtest_bitstream",
-        tags = ["vivado"],
         test_cmds = [
             "--rom-kind={rom_kind}",
             "--bitstream=\"$(location {bitstream})\"",
