@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "usb_testutils_diags.h"
@@ -182,8 +183,10 @@ typedef enum usb_testutils_out_transfer_mode {
  * @param tx_done(void *ep_ctx) callback once send has been Acked
  * @param flush(void *ep_ctx) called every 16ms based USB host timebase
  * @param reset(void *ep_ctx) called when an USB link reset is detected
+ * @return The result of the operation
  */
-void usb_testutils_in_endpoint_setup(
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_in_endpoint_setup(
     usb_testutils_ctx_t *ctx, uint8_t ep, void *ep_ctx,
     void (*tx_done)(void *, usb_testutils_xfr_result_t), void (*flush)(void *),
     void (*reset)(void *));
