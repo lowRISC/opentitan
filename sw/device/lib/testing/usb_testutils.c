@@ -275,7 +275,7 @@ bool usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,
   return true;
 }
 
-void usb_testutils_in_endpoint_setup(
+status_t usb_testutils_in_endpoint_setup(
     usb_testutils_ctx_t *ctx, uint8_t ep, void *ep_ctx,
     void (*tx_done)(void *, usb_testutils_xfr_result_t), void (*flush)(void *),
     void (*reset)(void *)) {
@@ -289,12 +289,11 @@ void usb_testutils_in_endpoint_setup(
       .direction = USBDEV_ENDPOINT_DIR_IN,
   };
 
-  CHECK_DIF_OK(
-      dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleDisabled));
+  TRY(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleDisabled));
 
   // Enable IN traffic from device to host
-  CHECK_DIF_OK(
-      dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleEnabled));
+  TRY(dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleEnabled));
+  return OK_STATUS();
 }
 
 void usb_testutils_out_endpoint_setup(
@@ -337,7 +336,8 @@ void usb_testutils_endpoint_setup(
     void (*tx_done)(void *, usb_testutils_xfr_result_t),
     void (*rx)(void *, dif_usbdev_rx_packet_info_t, dif_usbdev_buffer_t),
     void (*flush)(void *), void (*reset)(void *)) {
-  usb_testutils_in_endpoint_setup(ctx, ep, ep_ctx, tx_done, flush, reset);
+  CHECK_STATUS_OK(
+      usb_testutils_in_endpoint_setup(ctx, ep, ep_ctx, tx_done, flush, reset));
 
   // Note: register the link reset handler only on the IN endpoint so that it
   // does not get invoked twice
