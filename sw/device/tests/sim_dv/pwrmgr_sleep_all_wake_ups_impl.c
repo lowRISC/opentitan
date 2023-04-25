@@ -55,7 +55,7 @@ static void prgm_sysrst_ctrl_wakeup(void *dif) {
 static void prgm_adc_ctrl_wakeup(void *dif) {
   dif_adc_ctrl_config_t cfg = {
       .mode = kDifAdcCtrlLowPowerScanMode,
-      .power_up_time_aon_cycles = 6,
+      .power_up_time_aon_cycles = 7,
       .wake_up_time_aon_cycles = 100,
       .num_low_power_samples = 2,
       .num_normal_power_samples = 8,

@@ -269,7 +269,7 @@ module adc_ctrl_reg_top (
   logic unused_aon_adc_pd_ctl_wdata;
 
   always_comb begin
-    aon_adc_pd_ctl_qs = 32'h64060;
+    aon_adc_pd_ctl_qs = 32'h64070;
     aon_adc_pd_ctl_qs[0] = aon_adc_pd_ctl_lp_mode_qs_int;
     aon_adc_pd_ctl_qs[7:4] = aon_adc_pd_ctl_pwrup_time_qs_int;
     aon_adc_pd_ctl_qs[31:8] = aon_adc_pd_ctl_wakeup_time_qs_int;
@@ -277,7 +277,7 @@ module adc_ctrl_reg_top (
 
   prim_reg_cdc #(
     .DataWidth(32),
-    .ResetVal(32'h64060),
+    .ResetVal(32'h64070),
     .BitMask(32'hfffffff1),
     .DstWrReq(0)
   ) u_adc_pd_ctl_cdc (
@@ -1481,7 +1481,7 @@ module adc_ctrl_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h6)
+    .RESVAL  (4'h7)
   ) u_adc_pd_ctl_pwrup_time (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
