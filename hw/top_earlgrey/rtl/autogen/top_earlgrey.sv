@@ -80,6 +80,7 @@ module top_earlgrey #(
   // parameters for csrng
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
   // parameters for entropy_src
+  parameter int EntropySrcEsFifoDepth = 4,
   parameter bit EntropySrcStub = 0,
   // parameters for edn0
   // parameters for edn1
@@ -2395,6 +2396,7 @@ module top_earlgrey #(
   );
   entropy_src #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[54:53]),
+    .EsFifoDepth(EntropySrcEsFifoDepth),
     .Stub(EntropySrcStub)
   ) u_entropy_src (
 
