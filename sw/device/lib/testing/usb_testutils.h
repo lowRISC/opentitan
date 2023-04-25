@@ -264,17 +264,6 @@ OT_WARN_UNUSED_RESULT
 status_t usb_testutils_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
 
 /**
- * Returns an indication of whether an endpoint is currently halted because
- * of the occurrence of an error.
- *
- * @param ctx usb test utils context pointer
- * @param ep endpoint number
- * @return true iff the endpoint is halted as a result of an error condition
- */
-inline bool usb_testutils_endpoint_halted(usb_testutils_ctx_t *ctx,
-                                          dif_usbdev_endpoint_id_t endpoint);
-
-/**
  * Initialize the usbdev interface
  *
  * Does not connect the device, since the default endpoint is not yet enabled.
