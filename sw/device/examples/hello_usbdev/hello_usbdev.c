@@ -217,7 +217,7 @@ void _ottf_main(void) {
   usb_testutils_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
                                sizeof(config_descriptors), NULL, 0);
   while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured) {
-    usb_testutils_poll(&usbdev);
+    CHECK_STATUS_OK(usb_testutils_poll(&usbdev));
   }
   usb_testutils_simpleserial_init(&simple_serial0, &usbdev, 1,
                                   usb_receipt_callback_0);
@@ -227,7 +227,7 @@ void _ottf_main(void) {
   bool say_hello = true;
   bool pass_signaled = false;
   while (true) {
-    usb_testutils_poll(&usbdev);
+    CHECK_STATUS_OK(usb_testutils_poll(&usbdev));
 
     gpio_state = demo_gpio_to_log_echo(&gpio, gpio_state);
     demo_spi_to_log_echo(&spi);
