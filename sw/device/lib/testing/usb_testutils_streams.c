@@ -333,14 +333,14 @@ status_t usb_testutils_stream_init(usb_testutils_streams_ctx_t *ctx, uint8_t id,
       (ep_in == ep_out) ? strm_rx : rx_show;
 
   s->tx_ep = ep_in;
-  usb_testutils_endpoint_setup(ctx->usbdev, ep_in, kUsbdevOutStream, s,
-                               strm_tx_done, rx, NULL, NULL);
+  CHECK_STATUS_OK(usb_testutils_endpoint_setup(
+      ctx->usbdev, ep_in, kUsbdevOutStream, s, strm_tx_done, rx, NULL, NULL));
 
   s->rx_ep = ep_out;
   if (ep_out != ep_in) {
     // Set up the endpoint for OUT transfers (FROM host)
-    usb_testutils_endpoint_setup(ctx->usbdev, ep_out, kUsbdevOutStream, s, NULL,
-                                 strm_rx, NULL, NULL);
+    CHECK_STATUS_OK(usb_testutils_endpoint_setup(
+        ctx->usbdev, ep_out, kUsbdevOutStream, s, NULL, strm_rx, NULL, NULL));
   }
   return OK_STATUS();
 }

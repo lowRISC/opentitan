@@ -222,8 +222,10 @@ status_t usb_testutils_out_endpoint_setup(
           called when a packet is received
  * @param flush(void *ep_ctx) called every 16ms based USB host timebase
  * @param reset(void *ep_ctx) called when an USB link reset is detected
+ * @return The result of the operation
  */
-void usb_testutils_endpoint_setup(
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_endpoint_setup(
     usb_testutils_ctx_t *ctx, uint8_t ep,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
     void (*tx_done)(void *, usb_testutils_xfr_result_t),

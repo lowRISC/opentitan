@@ -330,19 +330,17 @@ status_t usb_testutils_out_endpoint_setup(
   return OK_STATUS();
 }
 
-void usb_testutils_endpoint_setup(
+status_t usb_testutils_endpoint_setup(
     usb_testutils_ctx_t *ctx, uint8_t ep,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
     void (*tx_done)(void *, usb_testutils_xfr_result_t),
     void (*rx)(void *, dif_usbdev_rx_packet_info_t, dif_usbdev_buffer_t),
     void (*flush)(void *), void (*reset)(void *)) {
-  CHECK_STATUS_OK(
-      usb_testutils_in_endpoint_setup(ctx, ep, ep_ctx, tx_done, flush, reset));
+  TRY(usb_testutils_in_endpoint_setup(ctx, ep, ep_ctx, tx_done, flush, reset));
 
   // Note: register the link reset handler only on the IN endpoint so that it
   // does not get invoked twice
-  CHECK_STATUS_OK(
-      usb_testutils_out_endpoint_setup(ctx, ep, out_mode, ep_ctx, rx, NULL));
+  return usb_testutils_out_endpoint_setup(ctx, ep, out_mode, ep_ctx, rx, NULL);
 }
 
 void usb_testutils_in_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep) {
@@ -410,8 +408,8 @@ void usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
 
   // Set up context
   for (int i = 0; i < USBDEV_NUM_ENDPOINTS; i++) {
-    usb_testutils_endpoint_setup(ctx, i, kUsbdevOutDisabled, NULL, NULL, NULL,
-                                 NULL, NULL);
+    CHECK_STATUS_OK(usb_testutils_endpoint_setup(ctx, i, kUsbdevOutDisabled,
+                                                 NULL, NULL, NULL, NULL, NULL));
   }
 
   // All about polling...

@@ -400,8 +400,9 @@ void usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
                                   const uint8_t *test_dscr,
                                   size_t test_dscr_len) {
   ctctx->ctx = ctx;
-  usb_testutils_endpoint_setup(ctx, ep, kUsbdevOutMessage, ctctx, ctrl_tx_done,
-                               ctrl_rx, NULL, ctrl_reset);
+  CHECK_STATUS_OK(usb_testutils_endpoint_setup(ctx, ep, kUsbdevOutMessage,
+                                               ctctx, ctrl_tx_done, ctrl_rx,
+                                               NULL, ctrl_reset));
   ctctx->ep = ep;
   ctctx->ctrlstate = kUsbTestutilsCtIdle;
   ctctx->cfg_dscr = cfg_dscr;
