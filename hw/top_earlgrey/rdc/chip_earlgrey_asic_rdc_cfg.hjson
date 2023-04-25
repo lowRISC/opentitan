@@ -34,6 +34,9 @@
   // Main RDC waiver file. It includes waivers per module
   rdc_waiver_file: "{proj_root}/hw/top_earlgrey/rdc/rdc_waivers.tcl"
 
+  // AST.lib
+  ast_lib: "{proj_root}/hw/top_earlgrey/ip/ast/lib/ast.lib"
+
   // Technology path for this module (empty for open-source runs)
   foundry_root: ""
 

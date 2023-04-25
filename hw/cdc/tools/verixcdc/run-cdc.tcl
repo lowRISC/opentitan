@@ -61,11 +61,12 @@ set ri_print_module_nand2_counts true
 set ri_max_total_range_bits 20
 set ri_prefer_liberty true
 
-############################
+########################
 ## Apply Liberty File ##
+########################
 
 read_liberty $AST_LIB -db_dir ./RI_compiled_libs/verix_libs
-############################
+
 
 #########################
 ## Analyze & Elaborate ##

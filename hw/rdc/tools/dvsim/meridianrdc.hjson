@@ -4,11 +4,12 @@
 {
   // Environment variables that are needed in the RDC script
   exports: [
-    { CONSTRAINT:         "{sdc_file}" },
-    { FOUNDRY_CONSTRAINT: "{foundry_sdc_file}" },
-    { RDC_WAIVER_FILE:    "{rdc_waiver_file}" }
-    { ENV_FILE:           "{env_file}" }
-    { RESET_SCENARIO_FILE: "{reset_scenario_file}"}
+    { CONSTRAINT:          "{sdc_file}" },
+    { FOUNDRY_CONSTRAINT:  "{foundry_sdc_file}" },
+    { RDC_WAIVER_FILE:     "{rdc_waiver_file}" },
+    { ENV_FILE:            "{env_file}" },
+    { RESET_SCENARIO_FILE: "{reset_scenario_file}"},
+    { AST_LIB:             "{ast_lib}" },
   ]
 
   // Tool invocation
