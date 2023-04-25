@@ -330,7 +330,9 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx);
  * required to be restarted with, for example, a different bus configuration.
  *
  * @param ctx initialized usb test utils context pointer
+ * @return The result of the operation
  */
-void usb_testutils_fin(usb_testutils_ctx_t *ctx);
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_fin(usb_testutils_ctx_t *ctx);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_H_
