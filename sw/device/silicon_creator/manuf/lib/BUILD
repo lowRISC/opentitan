@@ -134,8 +134,8 @@ opentitan_functest(
     srcs = ["provisioning_functest.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_dev_individualized",
-        clear_bitstream = True,
         test_cmds = [
+            "--clear-bitstream",
             "--rom-kind=rom",
             "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
