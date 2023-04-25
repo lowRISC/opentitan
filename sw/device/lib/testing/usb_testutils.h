@@ -201,8 +201,10 @@ status_t usb_testutils_in_endpoint_setup(
  * @param rx(void *ep_ctx, usbbufid_t buf, int size, int setup)
           called when a packet is received
  * @param reset(void *ep_ctx) called when an USB link reset is detected
+ * @return The result of the operation
  */
-void usb_testutils_out_endpoint_setup(
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_out_endpoint_setup(
     usb_testutils_ctx_t *ctx, uint8_t ep,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
     void (*rx)(void *, dif_usbdev_rx_packet_info_t, dif_usbdev_buffer_t),

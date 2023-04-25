@@ -296,7 +296,7 @@ status_t usb_testutils_in_endpoint_setup(
   return OK_STATUS();
 }
 
-void usb_testutils_out_endpoint_setup(
+status_t usb_testutils_out_endpoint_setup(
     usb_testutils_ctx_t *ctx, uint8_t ep,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
     void (*rx)(void *, dif_usbdev_rx_packet_info_t, dif_usbdev_buffer_t),
@@ -310,8 +310,7 @@ void usb_testutils_out_endpoint_setup(
       .direction = USBDEV_ENDPOINT_DIR_OUT,
   };
 
-  CHECK_DIF_OK(
-      dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleDisabled));
+  TRY(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleDisabled));
 
   // Enable/disable the endpoint and reception of OUT packets?
   dif_toggle_t enabled = kDifToggleEnabled;
@@ -325,9 +324,10 @@ void usb_testutils_out_endpoint_setup(
     nak = kDifToggleEnabled;
   }
 
-  CHECK_DIF_OK(dif_usbdev_endpoint_enable(ctx->dev, endpoint, enabled));
-  CHECK_DIF_OK(dif_usbdev_endpoint_out_enable(ctx->dev, ep, enabled));
-  CHECK_DIF_OK(dif_usbdev_endpoint_set_nak_out_enable(ctx->dev, ep, nak));
+  TRY(dif_usbdev_endpoint_enable(ctx->dev, endpoint, enabled));
+  TRY(dif_usbdev_endpoint_out_enable(ctx->dev, ep, enabled));
+  TRY(dif_usbdev_endpoint_set_nak_out_enable(ctx->dev, ep, nak));
+  return OK_STATUS();
 }
 
 void usb_testutils_endpoint_setup(
@@ -341,7 +341,8 @@ void usb_testutils_endpoint_setup(
 
   // Note: register the link reset handler only on the IN endpoint so that it
   // does not get invoked twice
-  usb_testutils_out_endpoint_setup(ctx, ep, out_mode, ep_ctx, rx, NULL);
+  CHECK_STATUS_OK(
+      usb_testutils_out_endpoint_setup(ctx, ep, out_mode, ep_ctx, rx, NULL));
 }
 
 void usb_testutils_in_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep) {
