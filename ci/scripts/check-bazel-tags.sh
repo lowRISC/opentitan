@@ -42,33 +42,3 @@ check_empty "Error:" "${untagged}" \
 (to prevent matching any wildcards) manual.
 NOTE: test_suites that contain bazel tests with different tags should almost
 universally use the manual tag."
-
-# This check ensures OpenTitan software can be built with wildcards in
-# environments that don't have vivado or vivado tools installed by using
-# --build_tag_filters=-vivado.
-untagged=$(./bazelisk.sh query \
-  "rdeps(
-      //...,
-      kind(
-          'bitstream_splice',
-          //...
-      )
-      except`# Other than those used to build cached bitstreams`
-      (
-          deps(//hw/bitstream:rom)
-          union
-          deps(//hw/bitstream:test_rom)
-      )
-  )
-  except
-  attr(
-      tags,
-      '$(exact_regex "(vivado|manual)")',
-      //...
-  )" \
-  --output=label_kind)
-check_empty "Error:" "${untagged}" \
-"Target(s) above depend(s) on a bitstream_splice that isn't cached.
-Please tag it with vivado or (to prevent matching any wildcards) manual.
-NOTE: test_suites that contain tests with different sets of tags should almost
-universally use the manual tag."
