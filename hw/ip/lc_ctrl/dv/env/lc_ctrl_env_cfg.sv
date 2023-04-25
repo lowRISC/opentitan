@@ -108,6 +108,9 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
     jtag_csr = 0;
 
     alert_max_delay = 2000;
+
+    // only support 1 outstanding TL items in tlul_adapter
+    m_tl_agent_cfg.max_outstanding_req = 1;
   endfunction
 
   virtual function void set_test_phase(lc_ctrl_test_phase_e test_phase);
