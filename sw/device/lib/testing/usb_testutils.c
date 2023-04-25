@@ -387,9 +387,9 @@ status_t usb_testutils_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep) {
   return usb_testutils_out_endpoint_remove(ctx, ep);
 }
 
-void usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
-                        bool en_diff_rcvr, bool tx_use_d_se0) {
-  CHECK(ctx != NULL);
+status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
+                            bool en_diff_rcvr, bool tx_use_d_se0) {
+  TRY_CHECK(ctx != NULL);
   ctx->dev = &usbdev;
   ctx->buffer_pool = &buffer_pool;
 
@@ -398,8 +398,7 @@ void usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   ctx->got_frame = false;
   ctx->frame = 0u;
 
-  CHECK_DIF_OK(
-      dif_usbdev_init(mmio_region_from_addr(USBDEV_BASE_ADDR), ctx->dev));
+  TRY(dif_usbdev_init(mmio_region_from_addr(USBDEV_BASE_ADDR), ctx->dev));
 
   dif_usbdev_config_t config = {
       .have_differential_receiver = dif_bool_to_toggle(en_diff_rcvr),
@@ -408,25 +407,26 @@ void usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
       .pin_flip = dif_bool_to_toggle(pinflip),
       .clock_sync_signals = kDifToggleEnabled,
   };
-  CHECK_DIF_OK(dif_usbdev_configure(ctx->dev, ctx->buffer_pool, config));
+  TRY(dif_usbdev_configure(ctx->dev, ctx->buffer_pool, config));
 
   // Set up context
   for (int i = 0; i < USBDEV_NUM_ENDPOINTS; i++) {
-    CHECK_STATUS_OK(usb_testutils_endpoint_setup(ctx, i, kUsbdevOutDisabled,
-                                                 NULL, NULL, NULL, NULL, NULL));
+    TRY(usb_testutils_endpoint_setup(ctx, i, kUsbdevOutDisabled, NULL, NULL,
+                                     NULL, NULL, NULL));
   }
 
   // All about polling...
-  CHECK_DIF_OK(dif_usbdev_irq_disable_all(ctx->dev, NULL));
+  TRY(dif_usbdev_irq_disable_all(ctx->dev, NULL));
 
   // Provide buffers for any packet reception
-  CHECK_DIF_OK(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
+  TRY(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
 
   // Preemptively enable SETUP reception on endpoint zero for the
   // Default Control Pipe; all other settings for that endpoint will be applied
   // once the callback handlers are registered by a call to _endpoint_setup()
-  CHECK_DIF_OK(
-      dif_usbdev_endpoint_setup_enable(ctx->dev, 0, kDifToggleEnabled));
+  TRY(dif_usbdev_endpoint_setup_enable(ctx->dev, 0, kDifToggleEnabled));
+
+  return OK_STATUS();
 }
 
 void usb_testutils_fin(usb_testutils_ctx_t *ctx) {

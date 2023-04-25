@@ -211,8 +211,8 @@ void _ottf_main(void) {
   CHECK_DIF_OK(dif_spi_device_send(&spi, "SPI!", 4, /*bytes_sent=*/NULL));
 
   // The TI phy always uses a differential TX interface
-  usb_testutils_init(&usbdev, pinflip, differential_xcvr,
-                     differential_xcvr && !uphy);
+  CHECK_STATUS_OK(usb_testutils_init(&usbdev, pinflip, differential_xcvr,
+                                     differential_xcvr && !uphy));
 
   usb_testutils_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
                                sizeof(config_descriptors), NULL, 0);
