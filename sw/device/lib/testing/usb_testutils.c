@@ -428,14 +428,15 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   return OK_STATUS();
 }
 
-void usb_testutils_fin(usb_testutils_ctx_t *ctx) {
+status_t usb_testutils_fin(usb_testutils_ctx_t *ctx) {
   // Remove the endpoints in reverse order so that Endpoint Zero goes down last
   for (int ep = USBDEV_NUM_ENDPOINTS - 1; ep >= 0; ep--) {
-    CHECK_STATUS_OK(usb_testutils_endpoint_remove(ctx, ep));
+    TRY(usb_testutils_endpoint_remove(ctx, ep));
   }
 
   // Disconnect from the bus
-  CHECK_DIF_OK(dif_usbdev_interface_enable(ctx->dev, kDifToggleDisabled));
+  TRY(dif_usbdev_interface_enable(ctx->dev, kDifToggleDisabled));
+  return OK_STATUS();
 }
 
 // `extern` declarations to give the inline functions in the
