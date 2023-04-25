@@ -2187,6 +2187,13 @@ p256_generate_k:
  *
  * This routine runs in constant time.
  *
+ * We are aware that MSB of the intermediate values here may leak 1-bit of
+ * secret seed. We observed this with formal masking analysis tool and FPGA
+ * experiments. The algorithm runs with 64-bit excess randomness, so we don't
+ * expect that to be possible to use that leakage and retrieve secret values.
+ * We also verified that the leakage disappeared after running the routine on
+ * 320-bit instead of 321-bit.
+ *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  [w21, w20]: s0, first share of seed (320 bits)
@@ -2204,6 +2211,7 @@ boolean_to_arithmetic:
        [w11, w10] <= s1 mod 2^320 = x1 */
   bn.rshi   w21, w21, w31 >> 64
   bn.rshi   w21, w31, w21 >> 192
+  bn.rshi   w31, w31, w31 >> 192 # dummy instruction to flush ALU datapath
   bn.rshi   w11, w11, w31 >> 64
   bn.rshi   w11, w31, w11 >> 192
 
@@ -2222,6 +2230,7 @@ boolean_to_arithmetic:
        [w4, w3] <= [w4, w3] - [w2, w1] = ((s0 ^ gamma) - gamma) mod 2^512 */
   bn.sub    w3, w3, w1
   bn.subb   w4, w4, w2
+  bn.sub    w31, w31, w31 # dummy instruction to clear flags
 
   /* Truncate subtraction result to 321 bits.
        [w4, w3] <= [w4, w3] mod 2^321 = T */
@@ -2243,14 +2252,25 @@ boolean_to_arithmetic:
   /* [w21, w20] <= [w21, w20] - [w2, w1] = ((s0 ^ G) - G) mod 2^512 */
   bn.sub    w20, w20, w1
   bn.subb   w21, w21, w2
+  bn.sub    w31, w31, w31 # dummy instruction to clear flags
 
   /* [w21, w20] <= [w21, w20] mod 2^321 = A */
   bn.rshi   w21, w21, w31 >> 65
   bn.rshi   w21, w31, w21 >> 191
 
+  /* apply fresh mask to w20 and w21 before xoring with w3 and w4 */
+  bn.wsrr   w28, 1
+  bn.wsrr   w29, 1
+  bn.xor    w20, w28, w20
+  bn.xor    w21, w29, w21
+
   /* [w21, w20] <= [w21, w20] ^ [w4, w3] = A ^ T2 = x0 */
   bn.xor    w20, w20, w3
   bn.xor    w21, w21, w4
+
+  /* remove fresh mask */
+  bn.xor    w20, w28, w20
+  bn.xor    w21, w29, w21
 
   ret
 
