@@ -360,29 +360,31 @@ status_t usb_testutils_in_endpoint_remove(usb_testutils_ctx_t *ctx,
   return OK_STATUS();
 }
 
-void usb_testutils_out_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep) {
+status_t usb_testutils_out_endpoint_remove(usb_testutils_ctx_t *ctx,
+                                           uint8_t ep) {
   // Disable OUT traffic
   dif_usbdev_endpoint_id_t endpoint = {
       .number = ep,
       .direction = USBDEV_ENDPOINT_DIR_OUT,
   };
-  CHECK_DIF_OK(
-      dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleDisabled));
+  TRY(dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleDisabled));
 
   // Return the rest of the OUT endpoint configuration to its default state
-  CHECK_DIF_OK(dif_usbdev_endpoint_set_nak_out_enable(ctx->dev, endpoint.number,
-                                                      kDifToggleDisabled));
-  CHECK_DIF_OK(dif_usbdev_endpoint_out_enable(ctx->dev, endpoint.number,
-                                              kDifToggleDisabled));
+  TRY(dif_usbdev_endpoint_set_nak_out_enable(ctx->dev, endpoint.number,
+                                             kDifToggleDisabled));
+  TRY(dif_usbdev_endpoint_out_enable(ctx->dev, endpoint.number,
+                                     kDifToggleDisabled));
 
   // Remove callback handlers
   ctx->out[ep].rx_callback = NULL;
   ctx->out[ep].reset = NULL;
+
+  return OK_STATUS();
 }
 
 void usb_testutils_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep) {
   CHECK_STATUS_OK(usb_testutils_in_endpoint_remove(ctx, ep));
-  usb_testutils_out_endpoint_remove(ctx, ep);
+  CHECK_STATUS_OK(usb_testutils_out_endpoint_remove(ctx, ep));
 }
 
 void usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
