@@ -96,10 +96,8 @@ module entropy_src_main_sm
               state_d = Idle;
             end
           end else begin
-            // TODO (P1): This line seems to implicitly assume that the HT window
-            // is the same size as the output seed.  If the health test window is
-            // smaller than the output seed then only the first part of the seed
-            // is checked.
+            // Window sizes other than 384 bits (the seed length) are currently not tested nor
+            // supported in bypass or boot-time mode.
             state_d = BootPostHTChk;
             rst_alert_cntr_o = 1'b1;
           end
