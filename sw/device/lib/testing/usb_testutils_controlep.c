@@ -139,8 +139,8 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
           CHECK_DIF_OK(
               dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
 
-          if (!usb_testutils_transfer_send(ctx, 0U, ctctx->cfg_dscr, len,
-                                           flags)) {
+          if (UNWRAP(usb_testutils_transfer_send(ctx, 0U, ctctx->cfg_dscr, len,
+                                                 flags)) == false) {
             return kUsbTestutilsCtError;
           }
         } else {

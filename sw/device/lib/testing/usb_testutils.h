@@ -307,11 +307,12 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
  * @param data       buffer of data to be transferred
  * @param length     number of bytes to be transferred
  * @param flags      flags modifying the transfer operation
- * @return           true iff the data has been accepted for transmission
+ * @return           `Ok(res)` Where `res` is true if the data has been accepted
+ * for transmission.
  */
-bool usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,
-                                 const uint8_t *data, uint32_t length,
-                                 usb_testutils_xfr_flags_t flags);
+status_t usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,
+                                     const uint8_t *data, uint32_t length,
+                                     usb_testutils_xfr_flags_t flags);
 
 /**
  * Call regularly to poll the usbdev interface
