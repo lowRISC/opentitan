@@ -287,9 +287,11 @@ inline bool usb_testutils_endpoint_halted(usb_testutils_ctx_t *ctx,
  *                     input
  * @param tx_use_d_se0 boolean to indicate if PHY uses D/SE0 for TX instead of
  *                     Dp/Dn
+ * @return The result of the operation
  */
-void usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
-                        bool en_diff_rcvr, bool tx_use_d_se0);
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
+                            bool en_diff_rcvr, bool tx_use_d_se0);
 
 /**
  * Send a larger data transfer from the given endpoint
