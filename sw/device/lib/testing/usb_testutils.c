@@ -343,19 +343,21 @@ status_t usb_testutils_endpoint_setup(
   return usb_testutils_out_endpoint_setup(ctx, ep, out_mode, ep_ctx, rx, NULL);
 }
 
-void usb_testutils_in_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep) {
+status_t usb_testutils_in_endpoint_remove(usb_testutils_ctx_t *ctx,
+                                          uint8_t ep) {
   // Disable IN traffic
   dif_usbdev_endpoint_id_t endpoint = {
       .number = ep,
       .direction = USBDEV_ENDPOINT_DIR_IN,
   };
-  CHECK_DIF_OK(
-      dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleDisabled));
+  TRY(dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleDisabled));
 
   // Remove callback handlers
   ctx->in[ep].tx_done_callback = NULL;
   ctx->in[ep].flush = NULL;
   ctx->in[ep].reset = NULL;
+
+  return OK_STATUS();
 }
 
 void usb_testutils_out_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep) {
@@ -379,7 +381,7 @@ void usb_testutils_out_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep) {
 }
 
 void usb_testutils_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep) {
-  usb_testutils_in_endpoint_remove(ctx, ep);
+  CHECK_STATUS_OK(usb_testutils_in_endpoint_remove(ctx, ep));
   usb_testutils_out_endpoint_remove(ctx, ep);
 }
 
