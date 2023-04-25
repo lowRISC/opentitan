@@ -63,7 +63,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   localparam int EighthRegWidth = 4;
   localparam int SeedLen = 384;
   localparam int ObserveFifoWidth = 32;
-  localparam int ObserveFifoDepth = 64;
   localparam int PreCondWidth = 64;
   localparam int Clog2ObserveFifoDepth = $clog2(ObserveFifoDepth);
   localparam int EsEnableCopies = 20;
