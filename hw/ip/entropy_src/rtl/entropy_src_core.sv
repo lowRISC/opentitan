@@ -1145,6 +1145,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign health_test_window = es_bypass_mode ? health_test_bypass_window : health_test_fips_window;
 
+  // Window sizes other than 384 bits (the seed length) are currently not tested nor supported in
+  // bypass or boot-time mode.
+  `ASSERT(EsBootTimeHtWindowSizeSupported_A,
+      main_sm_enable && es_bypass_mode && !fw_ov_mode_entropy_insert
+      |-> health_test_bypass_window == HalfRegWidth'(SeedLen/4))
+
   //------------------------------
   // repcnt one-way thresholds
   //------------------------------

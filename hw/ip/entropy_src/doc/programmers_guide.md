@@ -70,6 +70,8 @@ To this end, firmware has to either:
 - set the `ES_TYPE` and `ES_ROUTE` fields in [`ENTROPY_CONTROL`](../data/entropy_src.hjson#entropy_control) to `kMultiBitBool4True` (this causes the ENTROPY_SRC block to not pass any entropy to the block hardware interface), or
 - set the `FIPS_ENABLE` field in the [`CONF`](../data/entropy_src.hjson#conf) register to `kMultiBitBool4False` to disable FIPS mode and enable the bypass or boot-time mode.
 
+Note that in bypass or boot-time mode, health test window sizes other than 384 bits (the seed length) are currently not tested nor supported.
+
 ### Reading Entropy Output
 
 Firmware can read the entropy output of the ENTROPY_SRC block from the [`ENTROPY_DATA`](../data/entropy_src.hjson#entropy_data) register.
