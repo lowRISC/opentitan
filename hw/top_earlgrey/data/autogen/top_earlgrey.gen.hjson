@@ -6605,6 +6605,14 @@
       param_list:
       [
         {
+          name: EsFifoDepth
+          desc: Number of 384-bit entries in the esfinal FIFO
+          type: int
+          default: "4"
+          expose: "true"
+          name_top: EntropySrcEsFifoDepth
+        }
+        {
           name: Stub
           desc: Stub out the core of entropy_src logic
           type: bit
