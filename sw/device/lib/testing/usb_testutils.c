@@ -246,15 +246,15 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   return OK_STATUS();
 }
 
-bool usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,
-                                 const uint8_t *data, uint32_t length,
-                                 usb_testutils_xfr_flags_t flags) {
+status_t usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,
+                                     const uint8_t *data, uint32_t length,
+                                     usb_testutils_xfr_flags_t flags) {
   CHECK(ep < USBDEV_NUM_ENDPOINTS);
 
   usb_testutils_transfer_t *transfer = &ctx->in[ep].transfer;
   if (transfer->buffer) {
     // If there is an in-progress transfer, then we cannot accept another
-    return false;
+    return OK_STATUS(false);
   }
 
   // Describe this transfer
@@ -267,11 +267,11 @@ bool usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,
   if (!usb_testutils_transfer_next_part(ctx, ep, transfer)) {
     // Forget about the attempted transfer
     transfer->buffer = NULL;
-    return false;
+    return OK_STATUS(false);
   }
 
   // Buffer transfer is underway...
-  return true;
+  return OK_STATUS(true);
 }
 
 status_t usb_testutils_in_endpoint_setup(
