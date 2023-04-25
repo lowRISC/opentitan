@@ -118,7 +118,7 @@
             ADC power up time, measured in always on clock cycles.
             After power up time is reached, the ADC controller needs one additional cycle before an ADC channel is selected for access.
           '''
-          resval: "6",
+          resval: "7",
         }
         { bits: "31:8",
           name: "wakeup_time",

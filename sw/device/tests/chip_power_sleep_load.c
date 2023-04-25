@@ -396,7 +396,7 @@ bool test_main(void) {
                      .mode = kDifAdcCtrlLowPowerScanMode,
                      .num_low_power_samples = kNumLowPowerSamples,
                      .num_normal_power_samples = kNumNormalPowerSamples,
-                     .power_up_time_aon_cycles = power_up_time_aon_cycles,
+                     .power_up_time_aon_cycles = power_up_time_aon_cycles + 1,
                      .wake_up_time_aon_cycles = wake_up_time_aon_cycles}));
   CHECK_DIF_OK(dif_adc_ctrl_set_enabled(&adc_ctrl, kDifToggleEnabled));
 
