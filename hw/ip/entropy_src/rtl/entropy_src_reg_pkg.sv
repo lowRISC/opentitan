@@ -7,6 +7,7 @@
 package entropy_src_reg_pkg;
 
   // Param list
+  parameter int unsigned ObserveFifoDepth = 64;
   parameter int NumAlerts = 2;
 
   // Address widths within the block

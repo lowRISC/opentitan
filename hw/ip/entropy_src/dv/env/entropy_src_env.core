@@ -7,6 +7,7 @@ description: "ENTROPY_SRC DV UVM environment"
 filesets:
   files_dv:
     depend:
+      - lowrisc:ip:entropy_src
       - lowrisc:ip:entropy_src_pkg
       - lowrisc:ip:entropy_src_main_sm_pkg
       - lowrisc:dv:ralgen
