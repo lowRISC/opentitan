@@ -258,8 +258,10 @@ status_t usb_testutils_out_endpoint_remove(usb_testutils_ctx_t *ctx,
  *
  * @param ctx usb test utils context pointer
  * @param ep endpoint number
+ * @return The result of the operation
  */
-void usb_testutils_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
 
 /**
  * Returns an indication of whether an endpoint is currently halted because
