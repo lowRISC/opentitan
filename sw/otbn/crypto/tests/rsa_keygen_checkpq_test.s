@@ -41,25 +41,68 @@ main:
   /* Zeroize the buffer for q so that, if we never get to checking it and
      writing any real data there, we don't get DMEM integrity errors when we
      try to load it to registers. */
-  la        x2, rsa_q
-  li        x3, 31
-  loop      x30, 1
-    bn.sid   x3, 0(x2++)
+  la        x2, zero
+  jal       x1, copy_to_rsa_q
 
-  /* Test the checks for p. */
-  jal       x1, test_check_p
+  /* Check a value of p that is too small. */
+  la        x16, too_small
+  jal       x1, test_bad_p
 
-  /* Test the checks for q. */
-  jal       x1, test_check_q
+  /* Check a value of p such that GCD(p-1, 65537) != 1. */
+  la        x16, not_relprime
+  jal       x1, test_bad_p
+
+  /* Check a value of p that is not prime. */
+  la        x16, not_prime
+  jal       x1, test_bad_p
+
+  /* Check a value of p that is acceptable. */
+  la        x16, good_p
+  jal       x1, check_p
+  jal       x1, last_check_to_x2
+
+  /* Copy the good value of p into dmem[rsa_p] for the q checks. */
+  la        x3, rsa_p
+  loop      x30, 2
+    bn.lid   x20, 0(x16++)
+    bn.sid   x20, 0(x3++)
+
+  /* If x2 != 0, the check failed; point to zeroes and exit. */
+  la        x16, zero
+  bne       x2, x0, _program_exit
+
+  /* Check a value of q that is too small. */
+  la        x2, too_small
+  jal       x1, test_bad_q
+
+  /* Check a value of q that is too close to p. */
+  la        x2, too_close
+  jal       x1, test_bad_q
+
+  /* Check a value of q that is acceptable. */
+  la        x2, good_q
+  jal       x1, copy_to_rsa_q
+  jal       x1, check_q
+  jal       x1, last_check_to_x2
+
+  /* If x2 == 0, the check passed; jump to exit without zeroing q. */
+  beq      x2, x0, _program_exit_load_p
+
+  /* If we get here, the good value of q failed; zeroize rsa_q. */
+  la        x2, zero
+  jal       x1, copy_to_rsa_q
+
+_program_exit_load_p:
+  /* This jump point sets x16=rsa_p so p is loaded from that buffer instead of
+     whatever's in x16. */
+  la        x16, rsa_p
 
 _program_exit:
-
-  /* Load the selected value of p into registers.
-       w0,w1,w2,w3 <= dmem[rsa_p..rsa_p+(4*32)] */
-  la         x2, rsa_p
+  /* Load the selected value of p (or bad value) into registers.
+       w0,w1,w2,w3 <= dmem[x16..x16+(4*32)] */
   li         x3, 0
   loop       x30, 2
-    bn.lid     x3, 0(x2++)
+    bn.lid     x3, 0(x16++)
     addi       x3, x3, 1
 
   /* Load the selected value of q into registers.
@@ -71,168 +114,73 @@ _program_exit:
 
   ecall
 
-
 /**
- * Test the checks on p.
+ * Copy the value to dmem[rsa_q].
  *
- * If a bad value for p suceeds, this function will overwrite dmem[rsa_p] with
- * the bad value and exit early so that it's clear which test failed.
- *
- * If a good value for p fails, the function will overwrite dmem[rsa_p] with
- * zeroes and exit early.
+ * @param[in] x2: pointer to value to copy
+ * @param[in] x30: number of limbs
  */
-test_check_p:
-  /* Set pointer. */
-  la        x16, rsa_p
-
-  /* Check a value of p that is too small. */
-  la        x2, too_small
-  la        x3, rsa_p
+copy_to_rsa_q:
+  la        x3, rsa_q
   loop      x30, 2
     bn.lid   x20, 0(x2++)
     bn.sid   x20, 0(x3++)
-  jal       x1, check_p
-  jal       x1, exit_if_check_passed
-
-  /* Check a value of p such that GCD(p-1, 65537) != 1. */
-  la        x2, not_relprime
-  la        x3, rsa_p
-  loop      x30, 2
-    bn.lid   x20, 0(x2++)
-    bn.sid   x20, 0(x3++)
-  jal       x1, check_p
-  jal       x1, exit_if_check_passed
-
-  /* Check a value of p that is not prime. */
-  la        x2, not_prime
-  la        x3, rsa_p
-  loop      x30, 2
-    bn.lid   x20, 0(x2++)
-    bn.sid   x20, 0(x3++)
-  jal       x1, check_p
-  jal       x1, exit_if_check_passed
-
-  /* Check a value of p that is acceptable. */
-  la        x2, good_p
-  la        x3, rsa_p
-  loop      x30, 2
-    bn.lid   x20, 0(x2++)
-    bn.sid   x20, 0(x3++)
-  jal       x1, check_p
-
-  la        x16, rsa_p
-  jal       x1, exit_if_check_failed
-
   ret
 
 /**
- * Test the checks on q.
+ * Test a bad value for p.
  *
- * If a bad value for q suceeds, this function will overwrite dmem[rsa_p] with
- * the bad value and exit early so that it's clear which test failed.
- *
- * Most of the checks for q are the same as p; for the sake of test time we
- * only include one of the checks that p and q have in common here.
- *
- * If a good value for q fails, the function will overwrite dmem[rsa_p] with
- * zeroes and exit early.
+ * @param[in] x16: pointer to value for test
  */
-test_check_q:
-  /* Check a value of q that is too small. */
-  la        x2, too_small
-  la        x3, rsa_q
-  loop      x30, 2
-    bn.lid   x20, 0(x2++)
-    bn.sid   x20, 0(x3++)
-  jal       x1, check_q
-  jal       x1, exit_if_check_passed
+test_bad_p:
+  /* Run checks and ensure they failed. */
+  jal       x1, check_p
+  jal       x1, last_check_to_x2
 
-  /* Check a value of q that is too close to p. */
-  la        x2, too_close
-  la        x3, rsa_q
-  loop      x30, 2
-    bn.lid   x20, 0(x2++)
-    bn.sid   x20, 0(x3++)
-  jal       x1, check_q
-  jal       x1, exit_if_check_passed
-
-  /* Check a value of q that is acceptable. */
-  la        x2, good_q
-  la        x3, rsa_q
-  loop      x30, 2
-    bn.lid   x20, 0(x2++)
-    bn.sid   x20, 0(x3++)
-  jal       x1, check_q
-
-  la        x16, rsa_q
-  jal       x1, exit_if_check_failed
-
-  ret
-
-/**
- * Jump to the end of the program if the previous check passed.
- *
- * @param[in] w24: result of last check.
- */
-exit_if_check_passed:
-  /* Compare the result of the check to the "check passed" all-1s value.
-       FG0.Z <= (w24 == 2^256-1) */
-  bn.not   w20, w31
-  bn.cmp   w20, w24
-
-  /* Get the FG0.Z flag into a register.
-       x2 <= (CSRs[FG0] >> 3) & 1 = FG0.Z */
-  csrrs    x2, 0x7c0, x0
-  srli     x2, x2, 3
-  andi     x2, x2, 1
-
-  /* If the flag is set, the check passed, so jump to the exit sequence.*/
-  bne      x2, x0, _program_exit
+  /* If x2 == 0, the check passed, so jump to the exit sequence. */
+  beq      x2, x0, _program_exit
 
   /* If we get here, all is well; return to the caller. */
   ret
 
 /**
- * Jump to the end of the program if the previous check failed.
+ * Test a bad value for q.
  *
- * Also overwrites the pointed-to register with zeroes.
- *
- * @param[in] x16: pointer to DMEM buffer to zero on failure
- * @param[in] x30: number of limbs
- * @param[in] w24: result of last check
- * @param[in] w31: all-zero
+ * @param[in] x2: pointer to value for test
  */
-exit_if_check_failed:
-  /* Compare the result of the check to the "check passed" all-1s value.
-       FG0.Z <= (w24 == 2^256-1) */
-  bn.not   w20, w31
-  bn.cmp   w20, w24
+test_bad_q:
+  /* Copy the test value into dmem[rsa_q]. */
+  jal       x1, copy_to_rsa_q
 
-  /* Get the FG0.Z flag into a register.
-       x2 <= (CSRs[FG0] >> 3) & 1 = FG0.Z */
-  csrrs    x2, 0x7c0, x0
-  srli     x2, x2, 3
-  andi     x2, x2, 1
+  /* Run checks and ensure they failed. */
+  jal       x1, check_q
+  jal       x1, last_check_to_x2
 
-  /* If the flag is unset, the check failed, so exit. */
-  beq      x2, x0, zero_data_and_exit
+  /* If x2 == 0, the check passed, so jump to the exit sequence. */
+  beq      x2, x0, _program_exit_load_p
 
   /* If we get here, all is well; return to the caller. */
   ret
 
 /**
- * Zero a DMEM buffer and then jump to the exit sequence.
+ * Get the result of the last check in a register.
  *
- * @param[in] x16: pointer to the DMEM buffer to zero out
- * @param[in] x30: number of limbs
- * @param[in] w31: all-zero
+ * The result is nonzero if the check FAILED, and zero if it passed.
+ *
+ * @param[in] w24: result of last check (all-1 or all-0).
+ * @param[in] w31: all-zero.
+ * @param[out] x2: 0 if w24 == 0, otherwise nonzero
  */
-zero_data_and_exit:
-  li       x2, 31
-  loop     x30, 1
-    bn.sid   x2, 0(x16++)
-  jal      x0, _program_exit
+last_check_to_x2:
+  /* Compare the result of the check to zero.
+       FG0.Z <= (w24 == 0) */
+  bn.cmp   w24, w31
 
+  /* Get the FG0.Z flag into a register.
+       x2 <= CSRs[FG0] & 8 = FG0.Z << 3 */
+  csrrs    x2, 0x7c0, x0
+  andi     x2, x2, 8
+  ret
 
 .data
 
@@ -574,3 +522,10 @@ good_q:
   .word 0x582f38e2
   .word 0xd3d5562b
   .word 0xb863a172
+
+/**
+ * Zeroes to point to for the "good value failed" case.
+ */
+.balign 32
+zero:
+.zero 128

@@ -2,12 +2,160 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
+/* Public interface. */
+.globl rsa_keygen
+
 /* Exposed for testing purposes only. */
 .globl relprime_f4
 .globl check_p
 .globl check_q
 .globl modinv_f4
 
+/**
+ * Generate a random RSA key pair.
+ *
+ * For the official specification, see FIPS 186-5 section A.1.3. For the
+ * purposes of this implementation, the RSA public exponent e is always 65537
+ * (aka the Fermat number "F4", 2^16 + 1).
+ *
+ * This implementation supports only RSA-2048, RSA-3072, and RSA-4096. Do not
+ * use with other RSA sizes; in particular, using this implementation for
+ * RSA-1024 would require more primality test rounds.
+ *
+ * This implementation also takes some inspiration from BoringSSL's RSA key
+ * generation:
+ * https://boringssl.googlesource.com/boringssl/+/dcabfe2d8940529a69e007660fa7bf6c15954ecc/crypto/fipsmodule/rsa/rsa_impl.c#1162
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  x30: number of 256-bit limbs for p and q (key size in bits / 512)
+ * @param[in]  w31: all-zero
+ * @param[out] dmem[rsa_n..rsa_n+(n*2*32)] RSA public key modulus (n)
+ * @param[out] dmem[rsa_d..rsa_d+(n*2*32)] RSA private exponent (d)
+ *
+ * clobbered registers: x2 to x15, x17 to x26, x31,
+ *                      w2, w3, w4..w[4+(n-1)], w20 to w30
+ * clobbered flag groups: FG0, FG1
+ */
+rsa_keygen:
+  /* Compute (<# of limbs> - 1), a helpful constant for later computations.
+       x31 <= x30 - 1 */
+  addi     x2, x0, 1
+  sub      x31, x30, x2
+
+  /* Initialize wide-register pointers.
+       x20 <= 20
+       x21 <= 21 */
+  li       x20, 20
+  li       x21, 21
+
+  /* Generate the first prime, p.
+       dmem[rsa_p..rsa_p+(n*32)] <= p */
+  jal      x1, generate_p
+  /* Generate the second prime, q.
+       dmem[rsa_q..rsa_q+(n*32)] <= q */
+  jal      x1, generate_q
+
+  /* Multiply p and q to get the public modulus n.
+       dmem[rsa_n..rsa_n+(n*2*32)] <= p * q */
+  la       x10, rsa_p
+  la       x11, rsa_q
+  la       x12, rsa_n
+  jal      x1, bignum_mul
+
+  /* Derive the private exponent d from p and q (tail-call). */
+  jal      x0, derive_d
+
+/**
+ * Derive the private RSA exponent d.
+ *
+ * Returns d = (65537^-1) mod LCM(p-1, q-1).
+ *
+ * This function overwrites p and q, and requires that they are continuous in
+ * memory (specifically, it expects to be able to use 512 bytes of space
+ * following the label `rsa_pq`).
+ *
+ * Flags: Flags are not set in this subroutine.
+ *
+ * @param[in] dmem[rsa_p..rsa_p+(n*32)]: first prime p
+ * @param[in] dmem[rsa_q..rsa_q+(n*32)]: second prime q
+ * @param[in]  x20: 20, constant
+ * @param[in]  x21: 21, constant
+ * @param[in]  x30: number of 256-bit limbs for p and q
+ * @param[in]  w31: all-zero
+ * @param[out] dmem[rsa_d..rsa_d+(n*2*32)]: result, private exponent d
+ *
+ * clobbered registers: x2 to x8, x10 to x15, x20 to x26, x31, w20 to w28
+ * clobbered flag groups: FG0, FG1
+ */
+derive_d:
+  /* Load pointers to p, q, and the result buffer. */
+  la       x10, rsa_p
+  la       x11, rsa_q
+
+  /* Subtract 1 from p in-place (no carry from lowest limb since p is odd).
+       dmem[rsa_p..rsa_p+(n*32)] <= p - 1 */
+  bn.lid   x20, 0(x10)
+  bn.subi  w20, w20, 1
+  bn.sid   x20, 0(x10)
+
+  /* Subtract 1 from q in-place (no carry from lowest limb since p is odd).
+       dmem[rsa_q..rsa_q+(n*32)] <= q - 1 */
+  bn.lid   x20, 0(x11)
+  bn.subi  w20, w20, 1
+  bn.sid   x20, 0(x11)
+
+  /* Compute the LCM of (p-1) and (q-1) and store in the scratchpad.
+       dmem[tmp_scratchpad] <= LCM(p-1,q-1) */
+  la       x12, tmp_scratchpad
+  jal      x1, lcm
+
+  /* Update the number of limbs for modinv.
+       x30 <= n*2 */
+  add      x30, x30, x30
+
+  /* Compute d = (65537^-1) mod LCM(p-1,q-1). The modular inverse
+     routine requires two working buffers, which we construct from `tmp_data`
+     and the required-contiguous `rsa_p` and `rsa_q` buffers.
+       dmem[rsa_d..rsa_d+(n*2*32)] <= (65537^-1) mod dmem[x12..x12+(n*2*32)] */
+  la       x13, rsa_d
+  la       x14, tmp_data
+  la       x15, rsa_pq
+  jal      x1, modinv_f4
+
+  /* x30 <= (n*2) >> 1 = n */
+  srli     x30, x30, 1
+
+  /* Get a pointer to the nth limb of d (halfway through the number).
+       x3 <= rsa_d + n*32 */
+  slli     x2, x30, 5
+  la       x3, rsa_d
+  add      x3, x3, x2
+
+  /* Check that d > 2^(n*256), i.e. that the highest n limbs are nonzero. We
+     need to retry if it's too small (see FIPS 186-5 section A.1.1), although
+     in practice this is unlikely. We do this by ORing the n highest limbs.
+       FG0.Z <= (d >> (n*256)) == 0 */
+  bn.mov   w23, w31
+  loop     x30, 2
+    /* w20 <= d[n+i] */
+    bn.lid   x20, 0(x3++)
+    /* w23 <= w23 | w20 */
+    bn.or   w23, w23, w20
+
+  /* Get the FG0.Z flag into a register.
+       x2 <= (CSRs[FG0] >> 3) & 1 = FG0.Z */
+  csrrs    x2, 0x7c0, x0
+  srli     x2, x2, 3
+  andi     x2, x2, 1
+
+  /* If the flag is set, the high limbs are zero and we should start from
+     scratch, generating a new p and q. Note that x30 MUST be set to n here,
+     not n*2, to meet the rsa_keygen preconditions. */
+  bne      x2, x0, rsa_keygen
+
+  /* If we get here, d is OK; return. */
+  ret
 
 /**
  * Compute the inverse of 65537 modulo a given number.
@@ -807,7 +955,7 @@ check_p:
      and middle of the 512-byte `tmp` buffer.
        x14 <= tmp
        x15 <= tmp + 256 */
-  la       x14, tmp
+  la       x14, tmp_scratchpad
   li       x2, 256
   add      x15, x14, x2
 
@@ -1132,24 +1280,45 @@ relprime_f4:
 
 .section .scratchpad
 
-/* Secret RSA `p` parameter (prime). Up to 2048 bits. */
+/* Extra label marking the start of p || q in memory. The `derive_d` function
+   uses this to get a 512-byte working buffer, which means p and q must be
+   continuous in memory (but it's OK if their order is reversed). */
 .balign 32
+rsa_pq:
+
+/* Secret RSA `p` parameter (prime). Up to 2048 bits. */
 .globl rsa_p
 rsa_p:
 .zero 256
 
 /* Secret RSA `q` parameter (prime). Up to 2048 bits. */
-.balign 32
 .globl rsa_q
 rsa_q:
 .zero 256
 
-/* Temporary working buffer (512 bytes). */
+/* Temporary working buffer (4096 bits). */
 .balign 32
-tmp:
+tmp_scratchpad:
 .zero 512
 
 .section .data
+
+/* RSA modulus n = p*q (up to 4096 bits). */
+.balign 32
+.globl rsa_n
+rsa_n:
+.zero 512
+
+/* RSA private exponent d (up to 4096 bits). */
+.balign 32
+.globl rsa_d
+rsa_d:
+.zero 512
+
+/* Temporary working buffer (4096 bits). */
+.balign 32
+tmp_data:
+.zero 512
 
 /* Montgomery constant m0' (256 bits). */
 .balign 32

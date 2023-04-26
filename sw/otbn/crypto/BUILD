@@ -142,6 +142,22 @@ otbn_library(
     ],
 )
 
+otbn_binary(
+    name = "run_rsa_keygen",
+    srcs = [
+        "run_rsa_keygen.s",
+    ],
+    deps = [
+        ":div",
+        ":gcd",
+        ":lcm",
+        ":montmul",
+        ":mul",
+        ":primality",
+        ":rsa_keygen",
+    ],
+)
+
 otbn_library(
     name = "rsa_verify",
     srcs = [

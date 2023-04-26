@@ -565,7 +565,11 @@ otbn_sim_test(
     ],
     exp = "relprime_f4_test.exp",
     deps = [
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
         "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
     ],
@@ -591,7 +595,11 @@ otbn_sim_test(
     ],
     exp = "rsa_keygen_checkpq_test.exp",
     deps = [
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
         "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
     ],
