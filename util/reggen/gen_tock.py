@@ -95,12 +95,12 @@ def first_line(s: str) -> str:
 def format_comment(s: str) -> str:
     """Formats a string to comment wrapped to a 100 character line width
 
-    Returns wrapped string including newline and // comment characters.
+    Returns wrapped string including newline and /// comment characters.
     """
     comment = textwrap.wrap(s,
                             width=97,
-                            initial_indent='// ',
-                            subsequent_indent='// ')
+                            initial_indent='/// ',
+                            subsequent_indent='/// ')
     return '\n'.join(comment) + '\n'
 
 
@@ -118,6 +118,24 @@ def data_type(name: str, val: int, as_hex: bool) -> str:
         return "i32"
 
     return "u32"
+
+
+filler_no = 0
+
+
+def possibly_gen_filler(regout: TextIO, highest_address: Set[int], next_address: int) -> None:
+    r"""Tock requires any gaps between registers do be declared as a reserved field.
+    """
+
+    global filler_no
+    if len(highest_address) == 0:
+        hiaddr = 0
+    else:
+        hiaddr = sorted(highest_address)[-1]
+    if hiaddr >= next_address:
+        return
+    filler_no += 1
+    genout(regout, "(0x{:04x} => _reserved{}),\n", hiaddr, filler_no)
 
 
 def gen_const(outstr: TextIO,
@@ -214,6 +232,7 @@ def gen_const_register(regout: TextIO, fieldout: TextIO, reg: Register,
                        block: IpBlock, rnames: Set[str],
                        existing_defines: Set[str], access_type: Set[str],
                        highest_address: Set[int]) -> None:
+    possibly_gen_filler(regout, highest_address, reg.offset)
     if not block.no_auto_intr and reg.name.startswith('INTR_'):
         rname = "INTR"
     else:
@@ -231,6 +250,7 @@ def gen_const_register(regout: TextIO, fieldout: TextIO, reg: Register,
 def gen_const_window(regout: TextIO, win: Window, block: IpBlock,
                      rnames: Set[str], existing_defines: Set[str],
                      access_type: Set[str], highest_address: Set[int]) -> None:
+    possibly_gen_filler(regout, highest_address, win.offset)
     genout(regout, format_comment('Memory area: ' + first_line(win.desc)))
     a = access(win)
     access_type.add(a)
@@ -277,6 +297,7 @@ def gen_const_multireg(regout: TextIO, fieldout: TextIO,
                        access_type: Set[str],
                        highest_address: Set[int]) -> None:
     reg = multireg.regs[0]
+    possibly_gen_filler(regout, highest_address, reg.offset)
     rname = reg.name.upper()
     if rname.endswith("_0"):
         rname = rname[:-2]
