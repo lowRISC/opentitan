@@ -890,7 +890,6 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
-      regwen:   "TRANSITION_REGWEN",
       tags: [ // To update this register, SW needs to claim the associated hardware mutex via
               // CLAIM_TRANSITION_IF, so can not auto predict its value.
               "excl:CsrNonInitTests:CsrExclCheck"],
