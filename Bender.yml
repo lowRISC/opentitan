@@ -15,9 +15,9 @@ export_include_dirs:
        - hw/ip/tlul2axi/test
  
 sources:
-      defines:
-        RVFI: true
-      files:
+      #defines:
+        #RVFI: true
+      #files:
       
 ###### dbg_rv
 
