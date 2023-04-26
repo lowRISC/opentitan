@@ -36,7 +36,7 @@ pub trait SpxPublicKeyPart {
     /// Verify a message signature, returning Ok(()) if the signature matches.
     fn verify(&self, message: &[u8], sig: &SpxSignature) -> Result<()> {
         spx::verify_detached_signature(
-            &spx::DetachedSignature::from_bytes(&sig.0.to_be_bytes())?,
+            &spx::DetachedSignature::from_bytes(&sig.0.to_le_bytes())?,
             message,
             self.pk(),
         )?;
@@ -61,7 +61,7 @@ impl SpxKeypair {
     /// Sign `message` using the secret key.
     pub fn sign(&self, message: &[u8]) -> SpxSignature {
         let sm = spx::detached_sign(message, &self.sk);
-        SpxSignature(Signature::from_be_bytes(sm.as_bytes()).unwrap())
+        SpxSignature(Signature::from_le_bytes(sm.as_bytes()).unwrap())
     }
 
     /// Consumes this keypair and returns the corrisponding public key.
