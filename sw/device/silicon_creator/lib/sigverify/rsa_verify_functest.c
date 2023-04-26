@@ -4,8 +4,7 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
+#include "sw/device/silicon_creator/lib/sigverify/rsa_verify.h"
 
 static const char kMessage[] = "test message";
 
@@ -126,7 +125,7 @@ void compute_digest(void) {
   hmac_sha256_final(&act_digest);
 }
 
-rom_error_t sigverify_test_exp_3(void) {
+rom_error_t rsa_verify_test_exp_3(void) {
   uint32_t flash_exec = 0;
   // Signature verification should fail when using exponent 3.
   if (sigverify_rsa_verify(&kSignatureExp3, &kKeyExp3, &act_digest, kLcStateRma,
@@ -137,7 +136,7 @@ rom_error_t sigverify_test_exp_3(void) {
   return kErrorOk;
 }
 
-rom_error_t sigverify_test_exp_65537(void) {
+rom_error_t rsa_verify_test_exp_65537(void) {
   uint32_t flash_exec = 0;
   rom_error_t result =
       sigverify_rsa_verify(&kSignatureExp65537, &kKeyExp65537, &act_digest,
@@ -146,7 +145,7 @@ rom_error_t sigverify_test_exp_65537(void) {
   return result;
 }
 
-rom_error_t sigverify_test_negative(void) {
+rom_error_t rsa_verify_test_negative(void) {
   uint32_t flash_exec = 0;
   // Signature verification should fail when using the wrong signature.
   if (sigverify_rsa_verify(&kSignatureExp65537, &kKeyExp3, &act_digest,
@@ -164,8 +163,8 @@ bool test_main(void) {
 
   compute_digest();
 
-  EXECUTE_TEST(result, sigverify_test_exp_3);
-  EXECUTE_TEST(result, sigverify_test_exp_65537);
-  EXECUTE_TEST(result, sigverify_test_negative);
+  EXECUTE_TEST(result, rsa_verify_test_exp_3);
+  EXECUTE_TEST(result, rsa_verify_test_exp_65537);
+  EXECUTE_TEST(result, rsa_verify_test_negative);
   return status_ok(result);
 }
