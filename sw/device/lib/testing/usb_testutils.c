@@ -129,7 +129,7 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
         // Notify that we've sent the single packet, or larger buffer transfer
         // is now complete
         if (done && ctx->in[ep].tx_done_callback) {
-          ctx->in[ep].tx_done_callback(ctx->in[ep].ep_ctx, res);
+          TRY(ctx->in[ep].tx_done_callback(ctx->in[ep].ep_ctx, res));
         }
         sentep &= ~(1u << ep);
       }
@@ -156,7 +156,7 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
 
       unsigned ep = packet_info.endpoint;
       if (ctx->out[ep].rx_callback) {
-        ctx->out[ep].rx_callback(ctx->out[ep].ep_ctx, packet_info, buffer);
+        TRY(ctx->out[ep].rx_callback(ctx->out[ep].ep_ctx, packet_info, buffer));
       } else {
         // Note: this could happen following endpoint removal
         TRC_S("USB: unexpected RX ");
@@ -173,10 +173,10 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
       // impacted, and then the OUT endpoint before advancing to the next
       // endpoint number in case the order is important to the client(s)
       if (ctx->in[ep].reset) {
-        ctx->in[ep].reset(ctx->in[ep].ep_ctx);
+        TRY(ctx->in[ep].reset(ctx->in[ep].ep_ctx));
       }
       if (ctx->out[ep].reset) {
-        ctx->out[ep].reset(ctx->out[ep].ep_ctx);
+        TRY(ctx->out[ep].reset(ctx->out[ep].ep_ctx));
       }
     }
   }
@@ -234,7 +234,7 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
     if (ctx->flushed == 0) {
       for (unsigned ep = 0; ep < USBDEV_NUM_ENDPOINTS; ep++) {
         if (ctx->in[ep].flush) {
-          ctx->in[ep].flush(ctx->in[ep].ep_ctx);
+          TRY(ctx->in[ep].flush(ctx->in[ep].ep_ctx));
         }
       }
       ctx->flushed = 1;
@@ -276,8 +276,9 @@ status_t usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,
 
 status_t usb_testutils_in_endpoint_setup(
     usb_testutils_ctx_t *ctx, uint8_t ep, void *ep_ctx,
-    void (*tx_done)(void *, usb_testutils_xfr_result_t), void (*flush)(void *),
-    void (*reset)(void *)) {
+    usb_testutils_tx_done_handler_t tx_done,
+    usb_testutils_tx_flush_handler_t flush,
+    usb_testutils_reset_handler_t reset) {
   ctx->in[ep].ep_ctx = ep_ctx;
   ctx->in[ep].tx_done_callback = tx_done;
   ctx->in[ep].flush = flush;
@@ -298,8 +299,7 @@ status_t usb_testutils_in_endpoint_setup(
 status_t usb_testutils_out_endpoint_setup(
     usb_testutils_ctx_t *ctx, uint8_t ep,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
-    void (*rx)(void *, dif_usbdev_rx_packet_info_t, dif_usbdev_buffer_t),
-    void (*reset)(void *)) {
+    usb_testutils_rx_handler_t rx, usb_testutils_reset_handler_t reset) {
   ctx->out[ep].ep_ctx = ep_ctx;
   ctx->out[ep].rx_callback = rx;
   ctx->out[ep].reset = reset;
@@ -332,9 +332,9 @@ status_t usb_testutils_out_endpoint_setup(
 status_t usb_testutils_endpoint_setup(
     usb_testutils_ctx_t *ctx, uint8_t ep,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
-    void (*tx_done)(void *, usb_testutils_xfr_result_t),
-    void (*rx)(void *, dif_usbdev_rx_packet_info_t, dif_usbdev_buffer_t),
-    void (*flush)(void *), void (*reset)(void *)) {
+    usb_testutils_tx_done_handler_t tx_done, usb_testutils_rx_handler_t rx,
+    usb_testutils_tx_flush_handler_t flush,
+    usb_testutils_reset_handler_t reset) {
   TRY(usb_testutils_in_endpoint_setup(ctx, ep, ep_ctx, tx_done, flush, reset));
 
   // Note: register the link reset handler only on the IN endpoint so that it

@@ -10,43 +10,45 @@
 
 #define MAX_GATHER 16
 
-static void ss_rx(void *ssctx_v, dif_usbdev_rx_packet_info_t packet_info,
-                  dif_usbdev_buffer_t buffer) {
+static status_t ss_rx(void *ssctx_v, dif_usbdev_rx_packet_info_t packet_info,
+                      dif_usbdev_buffer_t buffer) {
   usb_testutils_ss_ctx_t *ssctx = (usb_testutils_ss_ctx_t *)ssctx_v;
   usb_testutils_ctx_t *ctx = ssctx->ctx;
 
   while (packet_info.length--) {
     uint8_t data;
     size_t bytes_written;
-    CHECK_DIF_OK(dif_usbdev_buffer_read(ctx->dev, ctx->buffer_pool, &buffer,
-                                        &data, sizeof(data), &bytes_written));
+    TRY(dif_usbdev_buffer_read(ctx->dev, ctx->buffer_pool, &buffer, &data,
+                               sizeof(data), &bytes_written));
     ssctx->got_byte(data);
   }
+  return OK_STATUS();
 }
 
-static void ss_tx_done(void *ssctx_v, usb_testutils_xfr_result_t result) {
+static status_t ss_tx_done(void *ssctx_v, usb_testutils_xfr_result_t result) {
   usb_testutils_ss_ctx_t *ssctx = (usb_testutils_ss_ctx_t *)ssctx_v;
 
   ssctx->sending = false;
+  return OK_STATUS();
 }
 
 // Called periodically by the main loop to ensure characters don't
 // stick around too long
-static void ss_flush(void *ssctx_v) {
+static status_t ss_flush(void *ssctx_v) {
   usb_testutils_ss_ctx_t *ssctx = (usb_testutils_ss_ctx_t *)ssctx_v;
   usb_testutils_ctx_t *ctx = ssctx->ctx;
   if (ssctx->cur_cpos <= 0 || ssctx->sending) {
-    return;
+    return OK_STATUS();
   }
   if ((ssctx->cur_cpos & 0x3) != 0) {
     size_t bytes_written;
-    CHECK_DIF_OK(
-        dif_usbdev_buffer_write(ctx->dev, &ssctx->cur_buf, ssctx->chold.data_b,
+    TRY(dif_usbdev_buffer_write(ctx->dev, &ssctx->cur_buf, ssctx->chold.data_b,
                                 ssctx->cur_cpos & 0x3, &bytes_written));
   }
-  CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ssctx->ep, &ssctx->cur_buf));
+  TRY(dif_usbdev_send(ctx->dev, ssctx->ep, &ssctx->cur_buf));
   ssctx->sending = true;
   ssctx->cur_cpos = -1;  // given it to the hardware
+  return OK_STATUS();
 }
 
 // Simple send byte will gather data for a while and send
