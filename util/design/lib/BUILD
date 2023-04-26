@@ -50,6 +50,7 @@ py_library(
 py_library(
     name = "otp_mem_img",
     srcs = ["OtpMemImg.py"],
+    imports = ["../../"],
     deps = [
         ":common",
         ":lc_st_enc",
