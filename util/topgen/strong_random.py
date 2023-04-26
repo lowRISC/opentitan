@@ -8,6 +8,7 @@ from a file.
 """
 
 import logging as log
+import random
 import sys
 from math import ceil as _ceil
 from math import log as _log
@@ -43,6 +44,16 @@ class strong_random():
                     log.error("Read value not in range 0 - 255.")
                     sys.exit(1)
         self.buffername = input_file
+
+    def generate_from_seed(self, buffer_size, seed):
+        """Load entropy buffer from an external file.
+
+        Currently only supports numpy array of 8-bit values.
+        """
+
+        random.seed(seed)
+        for i in range(buffer_size):
+            self.buffer.append(random.getrandbits(8))
 
     def size(self):
         """Size of the buffer.
@@ -144,6 +155,7 @@ class strong_random():
 
 _inst = strong_random()
 load = _inst.load
+generate_from_seed = _inst.generate_from_seed
 size = _inst.size
 isempty = _inst.isempty
 printstatus = _inst.printstatus
