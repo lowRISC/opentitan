@@ -214,8 +214,10 @@ void _ottf_main(void) {
   CHECK_STATUS_OK(usb_testutils_init(&usbdev, pinflip, differential_xcvr,
                                      differential_xcvr && !uphy));
 
-  usb_testutils_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
-                               sizeof(config_descriptors), NULL, 0);
+  CHECK_STATUS_OK(usb_testutils_controlep_init(
+      &usbdev_control, &usbdev, 0, config_descriptors,
+      sizeof(config_descriptors), NULL, 0));
+
   while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured) {
     CHECK_STATUS_OK(usb_testutils_poll(&usbdev));
   }

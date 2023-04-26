@@ -223,9 +223,10 @@ bool test_main(void) {
   CHECK_STATUS_OK(usb_testutils_init(ctx->usbdev, /*pinflip=*/false,
                                      /*en_diff_rcvr=*/false,
                                      /*tx_use_d_se0=*/false));
-  usb_testutils_controlep_init(&usbdev_control, ctx->usbdev, 0,
-                               config_descriptors, sizeof(config_descriptors),
-                               test_descriptor, sizeof(test_descriptor));
+  CHECK_STATUS_OK(usb_testutils_controlep_init(
+      &usbdev_control, ctx->usbdev, 0, config_descriptors,
+      sizeof(config_descriptors), test_descriptor, sizeof(test_descriptor)));
+
   while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured) {
     CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
   }
