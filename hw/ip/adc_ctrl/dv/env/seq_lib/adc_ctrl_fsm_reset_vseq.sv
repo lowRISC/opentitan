@@ -39,7 +39,7 @@ class adc_ctrl_fsm_reset_vseq extends adc_ctrl_base_vseq;
   constraint counters_c {
     pwrup_time inside {[0 : 2 ** ADC_CTRL_PWRUP_TIME_WIDTH - 1]};
     wakeup_time inside {[0 : 2 ** ADC_CTRL_WAKEUP_TIME_WIDTH - 1]};
-    np_sample_cnt inside {[1 : 2 ** ADC_CTRL_SAMPLE_CTL_WIDTH - 1]};
+    np_sample_cnt dist {[1 : 35] := 1, [36 : 2 ** ADC_CTRL_SAMPLE_CTL_WIDTH - 1] := 3};
     lp_sample_cnt inside {[1 : 2 ** ADC_CTRL_LP_SAMPLE_CTL_WIDTH - 1]};
 
     // Set up backdoor load values
@@ -49,10 +49,13 @@ class adc_ctrl_fsm_reset_vseq extends adc_ctrl_base_vseq;
       wakeup_time_load_val == 0;
     }
 
-    if (np_sample_cnt > 20) {
-      np_sample_cnt_load_val inside {[np_sample_cnt - 3 : np_sample_cnt - 1]};
+    if (np_sample_cnt > 35) {
+      np_sample_cnt_load_val dist{
+        (2 ** ADC_CTRL_SAMPLE_CTL_WIDTH - 1) := 1,
+        [np_sample_cnt - 3 : np_sample_cnt - 1] := 4
+      };
     } else {
-      np_sample_cnt_load_val == 0;
+      np_sample_cnt_load_val inside {[0:32]};
     }
 
     if (lp_sample_cnt > 3) {
