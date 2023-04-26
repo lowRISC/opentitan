@@ -59,7 +59,7 @@ bool test_main(void) {
 
     // TODO(#17393): store data in non-volatile flash region to persist across a
     // reset and LOG output data with ujson framework.
-    for (size_t i = 0; i < 4; ++i) {
+    for (size_t i = 0; i < kRmaUnlockTokenSizeIn32BitWords; ++i) {
       LOG_INFO("RMA unlock token (%d): %x", i,
                (uint32_t *)(wrapped_token.data)[i]);
     }

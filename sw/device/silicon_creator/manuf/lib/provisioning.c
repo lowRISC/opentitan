@@ -7,6 +7,7 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/ecc/p256_common.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -108,7 +109,7 @@ static const crypto_key_config_t kEcdhPrivateKeyConfig = {
 };
 
 // ECDH shared secret configuration.
-static const crypto_key_config_t kEcdhSharedKeyConfig = {
+static const crypto_key_config_t kRmaUnlockTokenAesKeyConfig = {
     .version = kCryptoLibVersion1,
     .key_mode = kKeyModeAesEcb,
     .key_length = kP256CoordBytes,
@@ -122,14 +123,12 @@ static const crypto_key_config_t kEcdhSharedKeyConfig = {
  * for exporting the RMA unlock token.
  *
  * @param[in,out] aes_key RMA unlock token AES encryption key buffer.
- * @param aes_key_length Length of the RMA unlock token AES encryption key.
  * @param[out] wrapped_token Wrapped RMA unlock token struct that stores the
  *                           ECDH device public key and encrypted RMA token.
  * @return OK_STATUS on success.
  */
 OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
-    uint32_t *aes_key, size_t aes_key_length,
-    wrapped_rma_unlock_token_t *wrapped_token) {
+    crypto_blinded_key_t *aes_key, wrapped_rma_unlock_token_t *wrapped_token) {
   // ECDH private key.
   uint32_t sk_device_keyblob[keyblob_num_words(kEcdhPrivateKeyConfig)];
   crypto_blinded_key_t sk_device = {
@@ -159,16 +158,44 @@ OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
   CHECK(otcrypto_ecdh_keygen(&kCurveP256, &sk_device, &pk_device) ==
         kCryptoStatusOK);
 
-  // ECDH shared secret (i.e., AES-ECB key).
-  crypto_blinded_key_t k_shared = {
-      .config = kEcdhSharedKeyConfig,
-      .keyblob_length = aes_key_length,
-      .keyblob = aes_key,
-  };
-
   // TODO(#17393): switch this `CHECK()` with a `TRY()` when #17803 is resolved.
   CHECK(otcrypto_ecdh(&sk_device, &kRmaUnlockTokenExportKeyPkHsm, &kCurveP256,
-                      &k_shared) == kCryptoStatusOK);
+                      aes_key) == kCryptoStatusOK);
+
+  return OK_STATUS();
+}
+
+OT_WARN_UNUSED_RESULT
+static status_t encrypt_rma_unlock_token(
+    crypto_blinded_key_t *aes_key, wrapped_rma_unlock_token_t *wrapped_token) {
+  // Construct IV, which since we are using ECB mode, is empty.
+  crypto_uint8_buf_t iv = {
+      .data = NULL,
+      .len = 0,
+  };
+
+  // Construct plaintext buffer.
+  crypto_const_uint8_buf_t plaintext = {
+      .data = (const unsigned char *)wrapped_token->data,
+      .len = kRmaUnlockTokenSizeInBytes,
+  };
+
+  // Construct ciphertext buffer. (No need for padding since RMA unlock token
+  // is 128-bits already.)
+  uint32_t ciphertext_data[kRmaUnlockTokenSizeInBytes];
+  crypto_uint8_buf_t ciphertext = {
+      .data = (unsigned char *)ciphertext_data,
+      .len = kRmaUnlockTokenSizeInBytes,
+  };
+
+  // Run encryption and check the result.
+  // TODO(#17393): switch this `CHECK()` with a `TRY()` when #17803 is resolved.
+  CHECK(otcrypto_aes(aes_key, iv, kBlockCipherModeEcb, kAesOperationEncrypt,
+                     plaintext, kAesPaddingNull,
+                     ciphertext) == kCryptoStatusOK);
+
+  // Copy encrypted RMA unlock token to the output buffer.
+  memcpy(wrapped_token->data, ciphertext.data, kRmaUnlockTokenSizeInBytes);
 
   return OK_STATUS();
 }
@@ -422,17 +449,22 @@ status_t provisioning_device_secrets_start(
   TRY(entropy_complex_init());
 
   // Generate AES encryption key and IV for exporting the RMA unlock token.
-  uint32_t rma_unlock_token_aes_key[keyblob_num_words(kEcdhSharedKeyConfig)];
-  TRY(gen_rma_unlock_token_aes_key(rma_unlock_token_aes_key,
-                                   sizeof(rma_unlock_token_aes_key),
-                                   wrapped_token));
+  // AES key (i.e., ECDH shared secret).
+  uint32_t aes_key_buf[keyblob_num_words(kRmaUnlockTokenAesKeyConfig)];
+  crypto_blinded_key_t token_aes_key = {
+      .config = kRmaUnlockTokenAesKeyConfig,
+      .keyblob_length = sizeof(aes_key_buf),
+      .keyblob = aes_key_buf,
+  };
+  TRY(gen_rma_unlock_token_aes_key(&token_aes_key, wrapped_token));
 
   // Provision secrets in flash and OTP.
   TRY(flash_ctrl_creator_secret_write(flash_state));
   TRY(flash_ctrl_owner_secret_write(flash_state));
   TRY(otp_partition_secret2_configure(otp, wrapped_token));
 
-  // TODO(#17393): encrypt the RMA unlock token with AES.
+  // Encrypt the RMA unlock token with AES.
+  TRY(encrypt_rma_unlock_token(&token_aes_key, wrapped_token));
 
   return OK_STATUS();
 }
