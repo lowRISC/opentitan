@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/testing/usb_testutils.h"
 
 typedef enum usb_testutils_ctstate {
@@ -58,12 +59,15 @@ typedef struct usb_testutils_controlep_ctx {
  * @param cfg_dscr_len length of cfg_dscr
  * @param test_dscr optional test descriptor, or NULL
  * @param test_dscr_len length of test_dscr
+ * @return The result of the operation
  */
-void usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
-                                  usb_testutils_ctx_t *ctx, int ep,
-                                  const uint8_t *cfg_dscr, size_t cfg_dscr_len,
-                                  const uint8_t *test_dscr,
-                                  size_t test_dscr_len);
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
+                                      usb_testutils_ctx_t *ctx, int ep,
+                                      const uint8_t *cfg_dscr,
+                                      size_t cfg_dscr_len,
+                                      const uint8_t *test_dscr,
+                                      size_t test_dscr_len);
 
 /***********************************************************************/
 /* Below this point are macros used to construct the USB configuration */

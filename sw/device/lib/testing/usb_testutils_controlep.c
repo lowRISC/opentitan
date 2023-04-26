@@ -394,21 +394,23 @@ static void ctrl_reset(void *ctctx_v) {
   ctctx->ctrlstate = kUsbTestutilsCtIdle;
 }
 
-void usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
-                                  usb_testutils_ctx_t *ctx, int ep,
-                                  const uint8_t *cfg_dscr, size_t cfg_dscr_len,
-                                  const uint8_t *test_dscr,
-                                  size_t test_dscr_len) {
+status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
+                                      usb_testutils_ctx_t *ctx, int ep,
+                                      const uint8_t *cfg_dscr,
+                                      size_t cfg_dscr_len,
+                                      const uint8_t *test_dscr,
+                                      size_t test_dscr_len) {
   ctctx->ctx = ctx;
-  CHECK_STATUS_OK(usb_testutils_endpoint_setup(ctx, ep, kUsbdevOutMessage,
-                                               ctctx, ctrl_tx_done, ctrl_rx,
-                                               NULL, ctrl_reset));
+  TRY(usb_testutils_endpoint_setup(ctx, ep, kUsbdevOutMessage, ctctx,
+                                   ctrl_tx_done, ctrl_rx, NULL, ctrl_reset));
   ctctx->ep = ep;
   ctctx->ctrlstate = kUsbTestutilsCtIdle;
   ctctx->cfg_dscr = cfg_dscr;
   ctctx->cfg_dscr_len = cfg_dscr_len;
   ctctx->test_dscr = test_dscr;
   ctctx->test_dscr_len = test_dscr_len;
-  CHECK_DIF_OK(dif_usbdev_interface_enable(ctx->dev, kDifToggleEnabled));
+  TRY(dif_usbdev_interface_enable(ctx->dev, kDifToggleEnabled));
   ctctx->device_state = kUsbTestutilsDeviceDefault;
+
+  return OK_STATUS();
 }

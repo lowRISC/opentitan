@@ -118,9 +118,9 @@ bool test_main(void) {
   CHECK_STATUS_OK(usb_testutils_init(&usbdev, /*pinflip=*/false,
                                      /*en_diff_rcvr=*/false,
                                      /*tx_use_d_se0=*/false));
-  usb_testutils_controlep_init(&usbdev_control, &usbdev, 0, config_descriptors,
-                               sizeof(config_descriptors), test_descriptor,
-                               sizeof(test_descriptor));
+  CHECK_STATUS_OK(usb_testutils_controlep_init(
+      &usbdev_control, &usbdev, 0, config_descriptors,
+      sizeof(config_descriptors), test_descriptor, sizeof(test_descriptor)));
 
   // Proceed only when the device has been configured; this allows host-side
   // software to establish communication.
