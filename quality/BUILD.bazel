@@ -57,6 +57,7 @@ licence_test(
         "site/book-theme/*",
         # Code taken from Chromium, so covered by the BSD licence
         "sw/otbn/crypto/modexp.s",
+        "sw/otbn/crypto/montmul.s",
         "sw/otbn/crypto/p256.s",
         "sw/otbn/crypto/rsa_verify.s",
         "sw/otbn/crypto/handwritten/rsa_verify_3072.s",

@@ -56,6 +56,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "montmul",
+    srcs = [
+        "montmul.s",
+    ],
+)
+
+otbn_library(
     name = "mul",
     srcs = [
         "mul.s",
@@ -124,6 +131,7 @@ otbn_binary(
     ],
     deps = [
         ":modexp",
+        ":montmul",
     ],
 )
 
