@@ -14,8 +14,9 @@ use structopt::StructOpt;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 
-use opentitanlib::crypto::rsa::{Modulus, RsaPrivateKey, RsaPublicKey, Signature};
+use opentitanlib::crypto::rsa::{Modulus, RsaPrivateKey, RsaPublicKey, Signature as RsaSignature};
 use opentitanlib::crypto::sha256::Sha256Digest;
+use opentitanlib::crypto::spx::{self, SpxKey, SpxPublicKey, SpxPublicKeyPart, SpxSignature};
 use opentitanlib::image::image::{self, ImageAssembler};
 use opentitanlib::image::manifest_def::ManifestSpec;
 use opentitanlib::util::file::{FromReader, ToWriter};
@@ -100,16 +101,22 @@ pub struct ManifestUpdateCommand {
     )]
     manifest: Option<PathBuf>,
 
-    #[structopt(long, help = "Sign the image with the given key_file")]
-    sign: bool,
-    #[structopt(short, long, help = "Filename for a signature file")]
-    signature_file: Option<PathBuf>,
+    #[structopt(long, help = "Filename for an external RSA signature file")]
+    rsa_signature: Option<PathBuf>,
+    #[structopt(short, long, help = "Filename for an external SPHINCS+ signature file")]
+    spx_signature: Option<PathBuf>,
     #[structopt(
-        short,
         long,
-        help = "Filename for the key file corresponding to the signature"
+        help = "Filename for the RSA PKCS8 key corresponding to the signature",
+        long_help = "Passing a private key indicates the key will be used for signing."
     )]
-    key_file: Option<PathBuf>,
+    rsa_key: Option<PathBuf>,
+    #[structopt(
+        long,
+        help = "Filename for the SPHINCS+ key corresponding to the signature",
+        long_help = "Passing a private key indicates the key will be used for signing."
+    )]
+    spx_key: Option<PathBuf>,
     #[structopt(
         short,
         long,
@@ -118,7 +125,7 @@ pub struct ManifestUpdateCommand {
     output: Option<PathBuf>,
 }
 
-fn load_key(key_file: &Path) -> Result<(RsaPublicKey, Option<RsaPrivateKey>)> {
+fn load_rsa_key(key_file: &Path) -> Result<(RsaPublicKey, Option<RsaPrivateKey>)> {
     match RsaPublicKey::from_pkcs1_der_file(key_file) {
         Ok(key) => Ok((key, None)),
         Err(_) => match RsaPrivateKey::from_pkcs8_der_file(key_file) {
@@ -145,21 +152,31 @@ impl CommandDispatch for ManifestUpdateCommand {
             image.overwrite_manifest(def)?;
         }
 
-        if let Some(key_file) = &self.key_file {
-            let (keypub, keypriv) = load_key(key_file)?;
+        if let Some(rsa_key) = &self.rsa_key {
+            let (keypub, keypriv) = load_rsa_key(rsa_key)?;
             image.update_modulus(keypub.modulus())?;
-            if self.sign {
-                let private_key = keypriv.ok_or_else(|| {
-                    anyhow!("The supplied key_file does not contain a private key")
-                })?;
+            if let Some(private_key) = keypriv {
                 // Compute the digest over the image, sign it and update it.
                 image.update_rsa_signature(private_key.sign(&image.compute_digest())?)?;
             }
         }
 
-        if let Some(signature_file) = &self.signature_file {
-            let signature = Signature::read_from_file(signature_file)?;
+        if let Some(spx_key) = &self.spx_key {
+            let spx_key = spx::load_spx_key(spx_key)?;
+            image.update_spx_key(&spx_key)?;
+            if let SpxKey::Private(sk) = spx_key {
+                image.update_spx_signature(image.map_signed_region(|buf| sk.sign(buf)).0)?;
+            }
+        }
+
+        if let Some(rsa_signature) = &self.rsa_signature {
+            let signature = RsaSignature::read_from_file(rsa_signature)?;
             image.update_rsa_signature(signature)?;
+        }
+
+        if let Some(spx_signature) = &self.spx_signature {
+            let signature = SpxSignature::read_from_file(spx_signature)?;
+            image.update_spx_signature(signature.0)?;
         }
 
         image.write_to_file(self.output.as_ref().unwrap_or(&self.image))?;
@@ -172,6 +189,8 @@ impl CommandDispatch for ManifestUpdateCommand {
 pub struct ManifestVerifyCommand {
     #[structopt(name = "IMAGE", help = "Filename for the image to verify")]
     image: PathBuf,
+    #[structopt(short, long, help = "Run verification for SPHINCS+")]
+    spx: bool,
 }
 
 impl CommandDispatch for ManifestVerifyCommand {
@@ -182,16 +201,32 @@ impl CommandDispatch for ManifestVerifyCommand {
     ) -> Result<Option<Box<dyn Annotate>>> {
         let image = image::Image::read_from_file(&self.image)?;
         let manifest: ManifestSpec = image.borrow_manifest()?.try_into()?;
+
+        // Verify RSA signature.
         let rsa_modulus = manifest
             .rsa_modulus()
-            .ok_or_else(|| anyhow!("Invalid rsa_modulus"))?;
-        let signature = manifest
+            .ok_or_else(|| anyhow!("Invalid RSA modulus"))?;
+        let rsa_sig = manifest
             .rsa_signature()
-            .ok_or_else(|| anyhow!("Invalid signature"))?;
+            .ok_or_else(|| anyhow!("Invalid RSA signature"))?;
         let digest = Sha256Digest::from_le_bytes(image.compute_digest().to_le_bytes())?;
-        let key = RsaPublicKey::new(Modulus::from_le_bytes(rsa_modulus.to_le_bytes())?)?;
-        let signature = Signature::from_le_bytes(signature.to_le_bytes())?;
-        key.verify(&digest, &signature)?;
+        let rsa_key = RsaPublicKey::new(Modulus::from_le_bytes(rsa_modulus.to_le_bytes())?)?;
+        let rsa_sig = RsaSignature::from_le_bytes(rsa_sig.to_le_bytes())?;
+        rsa_key.verify(&digest, &rsa_sig)?;
+
+        if self.spx {
+            let spx_key = manifest
+                .spx_key()
+                .ok_or_else(|| anyhow!("Invalid SPHINCS+ key"))?;
+            let spx_sig = manifest
+                .spx_signature()
+                .ok_or_else(|| anyhow!("Invalid SPHINCS+ signature"))?;
+
+            let spx_sig = SpxSignature(spx::Signature::from_le_bytes(spx_sig.to_le_bytes())?);
+            let spx_key = SpxPublicKey::from_bytes(&spx_key.to_be_bytes())?;
+            image.map_signed_region(|m| spx_key.verify(m, &spx_sig))?;
+        }
+
         Ok(None)
     }
 }

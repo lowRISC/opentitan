@@ -2,37 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use serde_annotate::Annotate;
 use std::any::Any;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::crypto::spx::{SpxKeypair, SpxPublicKey, SpxPublicKeyPart, SpxSignature};
+use opentitanlib::crypto::spx::{self, SpxKeypair, SpxPublicKeyPart, SpxSignature};
 use opentitanlib::util::file::{FromReader, PemSerilizable, ToWriter};
-
-/// Given the path to a public key, returns the public key. Given
-/// the path to a full keypair, extracts the public key from the private
-/// key and returns the public key.
-fn load_pub_or_priv_key(path: &Path) -> Result<SpxPublicKey> {
-    Ok(match SpxPublicKey::read_pem_file(path) {
-        Ok(pk) => pk,
-        Err(e1) => match SpxKeypair::read_pem_file(path) {
-            Ok(kp) => kp.into_public_key(),
-            Err(e2) => {
-                return Err(anyhow!(
-                    "\n\
-                        Reading as public key: {}\n\
-                        Reading as keypair: {}",
-                    e1,
-                    e2
-                ))
-            }
-        },
-    })
-}
 
 #[derive(Annotate, serde::Serialize)]
 pub struct SpxPublicKeyInfo {
@@ -57,7 +36,7 @@ impl CommandDispatch for SpxKeyShowCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let key = load_pub_or_priv_key(&self.key_file)?;
+        let key = spx::load_spx_key(&self.key_file)?;
 
         Ok(Some(Box::new(SpxPublicKeyInfo {
             public_key_num_bits: key.pk_len() * 8,
@@ -157,7 +136,7 @@ impl CommandDispatch for SpxVerifyCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let message = std::fs::read(&self.message)?;
-        let keypair = load_pub_or_priv_key(&self.key_file)?;
+        let keypair = spx::load_spx_key(&self.key_file)?;
         let signature = SpxSignature::read_from_file(&self.signature)?;
         keypair.verify(&message, &signature)?;
         Ok(None)
