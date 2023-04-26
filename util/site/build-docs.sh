@@ -149,6 +149,7 @@ hugo_args+=" --baseURL ${base_url}"
 ############
 
 buildSite () {
+    echo "Build Directory : ${build_dir}"
     mkdir -p "${build_dir}"
     mkdir -p "${build_dir}/gen/doxy"
 
@@ -177,6 +178,18 @@ buildSite () {
     # Block diagram stats
     mkdir -p "${build_dir}/reports"
     python3 "${proj_root}/util/site/fetch_block_stats.py" "${build_dir}/reports/earlgrey-stats.json"
+
+    # CLEANUP
+    # Remove (larger) files from the ${build_dir} that do not need to be deployed
+    # -------
+    # Remove some unneeded files/directories that mdbook copies to the output dir
+    # TODO handle this with a .ignore file or other mechanism
+    for f in .git .github build-site site bazel-bin bazel-out bazel-testlogs bazel-opentitan; do
+        rm -rf "${build_dir}/book/${f}"
+    done
+    rm -rf "${build_dir}/gen/api-xml" # Remove the intermediate XML that doxygen uses to generate HTML.
+    rm -rf "${build_dir}/book/sw/vendor/wycheproof/testvectors"
+    # -------
 }
 buildSite
 
