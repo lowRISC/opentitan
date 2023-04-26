@@ -36,7 +36,6 @@ class chip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
-    lc_ctrl_state_pkg::lc_state_e lc_state;
     callback_vseq.pre_apply_reset();
     // Note: The JTAG reset does not have a dedicated pad and is muxed with other chip IOs.
     // These IOs have pad attributes that are driven from registers, and as long as
