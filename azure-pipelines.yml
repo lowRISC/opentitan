@@ -172,9 +172,6 @@ jobs:
   - bash:  ci/scripts/check_bazel_target_names.py
     displayName: Check Bazel target names (Experimental)
     continueOnError: True
-  - bash:  ci/scripts/check_bazel_deprecated_tags.py
-    displayName: Check for deprecated Bazel tags (Experimental)
-    continueOnError: True
   - bash: ci/scripts/check-generated.sh
     displayName: Check Generated
     # Ensure all generated files are clean and up-to-date
