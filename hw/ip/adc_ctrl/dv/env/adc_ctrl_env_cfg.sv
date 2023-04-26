@@ -29,6 +29,8 @@ class adc_ctrl_env_cfg extends cip_base_env_cfg #(
   // Wakeup control bits
   bit [ADC_CTRL_NUM_FILTERS-1:0] adc_wakeup_ctl = 0;
 
+  // For longtest, adjust large time value to avoid test timeout
+  bit                           fast_mode = 0;
 
   // Power up / wake up time
   rand int pwrup_time;

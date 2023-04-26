@@ -65,6 +65,10 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
     uvm_reg_field min_v_fld, max_v_fld, cond_fld, en_fld;
     string regname;
     `uvm_info(`gfn, "Configuring adc_ctrl", UVM_MEDIUM)
+    if (cfg.fast_mode) begin
+      if (cfg.wakeup_time > 1000) cfg.wakeup_time = 1000;
+    end
+
     for (int channel = 0; channel < ADC_CTRL_CHANNELS; channel++) begin
       for (int filter = 0; filter < ADC_CTRL_NUM_FILTERS; filter++) begin
         regname = $sformatf("adc_chn%0d_filter_ctl_%0d", channel, filter);
