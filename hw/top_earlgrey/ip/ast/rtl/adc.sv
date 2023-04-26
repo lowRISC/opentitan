@@ -116,6 +116,6 @@ end
 `ASSERT(NoChannelWhileDisabled, (adc_en == 0) |-> (adc_chnsel_i == 4'h0), clk_adc_i, !rst_adc_ni)
 
 // Add Assertion RE of adc_en on the first 30us (=6*5us cc) after adc_en rose chnsel is 0.
-`ASSERT(ChannelStableOnAdcEn, $rose(adc_en) |-> (adc_chnsel_i == 4'h0)[*7], clk_adc_i, !rst_adc_ni)
+`ASSERT(ChannelStableOnAdcEn, $rose(adc_en) |-> (adc_chnsel_i == 4'h0)[*6], clk_adc_i, !rst_adc_ni)
 
 endmodule : adc
