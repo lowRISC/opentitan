@@ -11,6 +11,7 @@
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
+#include "sw/device/lib/testing/json/provisioning_data.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
 
@@ -24,38 +25,6 @@ enum {
   kRmaUnlockTokenSizeIn64BitWords =
       kRmaUnlockTokenSizeInBytes / sizeof(uint64_t),
 };
-
-/**
- * Wrapped (encrypted) RMA unlock token.
- *
- * The RMA unlock token is encrypted with AES using an ECDH emphemeral key. The
- * key wrapping process works as follows:
- *
- * - An HSM generates an ECDH-P256 keypair (`sk_hsm`, `pk_hsm`), where the
- *   public component, `pk_hsm`, is baked into the provisioning test program.
- * - During provisioning, the device generates an additional ECDH-P256 keypair
- *   (`sk_device`, `pk_device`).
- * - The device then generates an emphemeral shared AES key (`k_shared`) using
- *   `sk_device` and `pk_hsm`.
- * - The device encrypts the raw RMA unlock token using AES and the shared
- *   secret key, `k_shared`.
- * - The device transmits the encrypted RMA unlock token, along with the
- *   device-generated `pk_device`, to the host (e.g. ATE), allowing the RMA
- *   unlock token to be decrypted using the shared secret (`k_shared`) derived
- *   by the HSM.
- */
-typedef struct wrapped_rma_unlock_token {
-  /**
-   * Encrypted RMA unlock token to export from the device.
-   */
-  uint32_t data[kRmaUnlockTokenSizeIn32BitWords];
-  /**
-   * Device generated ECDH public key matching the private key used to generate
-   * an emphemeral AES ECB key.
-   */
-  uint32_t ecc_pk_device_x[kP256CoordWords];
-  uint32_t ecc_pk_device_y[kP256CoordWords];
-} wrapped_rma_unlock_token_t;
 
 /**
  * Run device personalization.
@@ -80,12 +49,14 @@ typedef struct wrapped_rma_unlock_token {
  * @param flash_state Flash controller instance.
  * @param lc_ctrl Lifecycle controller instance.
  * @param otp OTP controller instance.
- * @param[out] wrapped_token Wrapped RMA unlock token.
+ * @param[out] export_data UJSON struct of data to export from the device.
  * @return OK_STATUS on success.
  */
-status_t provisioning_device_secrets_start(
-    dif_flash_ctrl_state_t *flash_state, const dif_lc_ctrl_t *lc_ctrl,
-    const dif_otp_ctrl_t *otp, wrapped_rma_unlock_token_t *wrapped_token);
+status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
+                                           const dif_lc_ctrl_t *lc_ctrl,
+                                           const dif_otp_ctrl_t *otp,
+                                           manuf_provisioning_t *export_data);
+
 /**
  * Checks device personalization end state.
  *

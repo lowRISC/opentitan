@@ -175,6 +175,7 @@ cc_library(
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/manuf/keys",
     ],
@@ -208,7 +209,10 @@ opentitan_functest(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/silicon_creator/manuf/keys/fake",
     ],
 )
