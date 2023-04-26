@@ -5,6 +5,8 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/impl/ecc/p256_common.h"
+#include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -14,6 +16,7 @@
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/silicon_creator/manuf/keys/manuf_keys.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
 
@@ -84,6 +87,91 @@ enum {
 static_assert(OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_SIZE ==
                   OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE1_SIZE,
               "Detected Root key share size mismatch");
+static_assert(OTP_CTRL_PARAM_RMA_TOKEN_SIZE <= 16,
+              "RMA token is larger than 128 bits (i.e., one AES block), do not "
+              "use AES-ECB to encrypt it.");
+
+// ECC curve to use with ECDH keygen.
+static const ecc_curve_t kCurveP256 = {
+    .curve_type = kEccCurveTypeNistP256,
+    .domain_parameter = NULL,
+};
+
+// ECDH private key configuration.
+static const crypto_key_config_t kEcdhPrivateKeyConfig = {
+    .version = kCryptoLibVersion1,
+    .key_mode = kKeyModeEcdh,
+    .key_length = kP256ScalarBytes,
+    .hw_backed = kHardenedBoolFalse,
+    .diversification_hw_backed = NULL,
+    .security_level = kSecurityLevelHigh,
+};
+
+// ECDH shared secret configuration.
+static const crypto_key_config_t kEcdhSharedKeyConfig = {
+    .version = kCryptoLibVersion1,
+    .key_mode = kKeyModeAesEcb,
+    .key_length = kP256CoordBytes,
+    .hw_backed = kHardenedBoolFalse,
+    .diversification_hw_backed = NULL,
+    .security_level = kSecurityLevelHigh,
+};
+
+/**
+ * Generate ECDH keypair for use in generating an ephemeral AES encryption key
+ * for exporting the RMA unlock token.
+ *
+ * @param[in,out] aes_key RMA unlock token AES encryption key buffer.
+ * @param aes_key_length Length of the RMA unlock token AES encryption key.
+ * @param[out] wrapped_token Wrapped RMA unlock token struct that stores the
+ *                           ECDH device public key and encrypted RMA token.
+ * @return OK_STATUS on success.
+ */
+OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
+    uint32_t *aes_key, size_t aes_key_length,
+    wrapped_rma_unlock_token_t *wrapped_token) {
+  // ECDH private key.
+  uint32_t sk_device_keyblob[keyblob_num_words(kEcdhPrivateKeyConfig)];
+  crypto_blinded_key_t sk_device = {
+      .config = kEcdhPrivateKeyConfig,
+      .keyblob_length = sizeof(sk_device_keyblob),
+      .keyblob = sk_device_keyblob,
+      .checksum = 0,
+  };
+
+  // ECDH public key.
+  ecc_public_key_t pk_device = {
+      .x =
+          {
+              .key_mode = kKeyModeEcdh,
+              .key_length = kP256CoordWords * sizeof(uint32_t),
+              .key = wrapped_token->ecc_pk_device_x,
+          },
+      .y =
+          {
+              .key_mode = kKeyModeEcdh,
+              .key_length = kP256CoordWords * sizeof(uint32_t),
+              .key = wrapped_token->ecc_pk_device_y,
+          },
+  };
+
+  // TODO(#17393): switch this `CHECK()` with a `TRY()` when #17803 is resolved.
+  CHECK(otcrypto_ecdh_keygen(&kCurveP256, &sk_device, &pk_device) ==
+        kCryptoStatusOK);
+
+  // ECDH shared secret (i.e., AES-ECB key).
+  crypto_blinded_key_t k_shared = {
+      .config = kEcdhSharedKeyConfig,
+      .keyblob_length = aes_key_length,
+      .keyblob = aes_key,
+  };
+
+  // TODO(#17393): switch this `CHECK()` with a `TRY()` when #17803 is resolved.
+  CHECK(otcrypto_ecdh(&sk_device, &kRmaUnlockTokenExportKeyPkHsm, &kCurveP256,
+                      &k_shared) == kCryptoStatusOK);
+
+  return OK_STATUS();
+}
 
 /**
  * Performs sanity check of buffers holding a masked secret.
@@ -244,8 +332,7 @@ static status_t hash_lc_transition_token(uint32_t *raw_token, size_t token_size,
       .len = token_size,
   };
 
-  // TODO(#17393): switch this `CHECK(...)` with a `TRY(...)` when #17803 is
-  // resolved.
+  // TODO(#17393): switch this `CHECK()` with a `TRY()` when #17803 is resolved.
   CHECK(otcrypto_xof(input, kXofModeSha3Cshake128, function_name_string,
                      customization_string, token_size,
                      &output) == kCryptoStatusOK);
@@ -334,10 +421,19 @@ status_t provisioning_device_secrets_start(
   // the entropy_src health checks in FIPS mode.
   TRY(entropy_complex_init());
 
+  // Generate AES encryption key and IV for exporting the RMA unlock token.
+  uint32_t rma_unlock_token_aes_key[keyblob_num_words(kEcdhSharedKeyConfig)];
+  TRY(gen_rma_unlock_token_aes_key(rma_unlock_token_aes_key,
+                                   sizeof(rma_unlock_token_aes_key),
+                                   wrapped_token));
+
   // Provision secrets in flash and OTP.
   TRY(flash_ctrl_creator_secret_write(flash_state));
   TRY(flash_ctrl_owner_secret_write(flash_state));
   TRY(otp_partition_secret2_configure(otp, wrapped_token));
+
+  // TODO(#17393): encrypt the RMA unlock token with AES.
+
   return OK_STATUS();
 }
 
