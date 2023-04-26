@@ -129,8 +129,8 @@ bool test_main(void) {
   }
 
   // Set up two serial ports.
-  usb_testutils_simpleserial_init(&simple_serial, &usbdev, 1,
-                                  usb_receipt_callback);
+  CHECK_STATUS_OK(usb_testutils_simpleserial_init(&simple_serial, &usbdev, 1,
+                                                  usb_receipt_callback));
 
   // Send a "Hi!Hi!" sign on message.
   for (int idx = 0; idx < kExpectedUsbCharsRecved; idx++) {

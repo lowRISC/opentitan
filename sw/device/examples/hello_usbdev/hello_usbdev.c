@@ -221,10 +221,11 @@ void _ottf_main(void) {
   while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured) {
     CHECK_STATUS_OK(usb_testutils_poll(&usbdev));
   }
-  usb_testutils_simpleserial_init(&simple_serial0, &usbdev, 1,
-                                  usb_receipt_callback_0);
-  usb_testutils_simpleserial_init(&simple_serial1, &usbdev, 2,
-                                  usb_receipt_callback_1);
+
+  CHECK_STATUS_OK(usb_testutils_simpleserial_init(&simple_serial0, &usbdev, 1,
+                                                  usb_receipt_callback_0));
+  CHECK_STATUS_OK(usb_testutils_simpleserial_init(&simple_serial1, &usbdev, 2,
+                                                  usb_receipt_callback_1));
 
   bool say_hello = true;
   bool pass_signaled = false;
