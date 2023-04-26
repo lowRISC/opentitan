@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 use std::io::{Read, Write};
+use std::path::Path;
 
 use anyhow::Result;
 
@@ -42,6 +43,38 @@ pub trait SpxPublicKeyPart {
         )?;
         Ok(())
     }
+}
+
+#[derive(Clone)]
+pub enum SpxKey {
+    Public(SpxPublicKey),
+    Private(SpxKeypair),
+}
+
+impl SpxPublicKeyPart for SpxKey {
+    fn pk(&self) -> &spx::PublicKey {
+        match self {
+            SpxKey::Public(k) => k.pk(),
+            SpxKey::Private(k) => k.pk(),
+        }
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum SpxError {
+    #[error("SPHINCS+ key load error\nPublic key: {0}\nKey pair: {1}")]
+    LoadError(anyhow::Error, anyhow::Error),
+}
+
+/// Given the path to either a SPHINCS+ public key or full keypair returns the appropriate `SpxKey`.
+pub fn load_spx_key(key_file: &Path) -> Result<SpxKey> {
+    Ok(match SpxKeypair::read_pem_file(key_file) {
+        Ok(sk) => SpxKey::Private(sk),
+        Err(e1) => match SpxPublicKey::read_pem_file(key_file) {
+            Ok(pk) => SpxKey::Public(pk),
+            Err(e2) => Err(SpxError::LoadError(e1, e2))?,
+        },
+    })
 }
 
 /// A SPHINCS+ keypair consisting of the public and secret keys.
@@ -109,6 +142,12 @@ impl PemSerilizable for SpxKeypair {
 #[derive(Clone)]
 pub struct SpxPublicKey(spx::PublicKey);
 
+impl SpxPublicKey {
+    pub fn from_bytes(b: &[u8]) -> Result<Self> {
+        Ok(SpxPublicKey(spx::PublicKey::from_bytes(b)?))
+    }
+}
+
 impl SpxPublicKeyPart for SpxPublicKey {
     fn pk(&self) -> &spx::PublicKey {
         &self.0
@@ -138,7 +177,7 @@ impl PemSerilizable for SpxPublicKey {
 
 /// Wrapper for a SPHINCS+ signature.
 #[derive(Clone)]
-pub struct SpxSignature(Signature);
+pub struct SpxSignature(pub Signature);
 
 impl ToWriter for SpxSignature {
     fn to_writer(&self, w: &mut impl Write) -> Result<()> {

@@ -19,7 +19,7 @@ use std::time::Duration;
 #[derive(Debug, Error)]
 enum PemError {
     #[error("PEM type error; expecting {0:?} but got {1:?}")]
-    LabelError(String, String),
+    LabelError(&'static str, String),
 }
 
 /// Trait for data that can be written to and read from PEM files.
@@ -57,7 +57,7 @@ pub trait PemSerilizable: ToWriter + FromReader {
         let mut decoder = Decoder::new(&pem)?;
         ensure!(
             decoder.type_label() == Self::label(),
-            PemError::LabelError(decoder.type_label().to_owned(), Self::label().to_owned()),
+            PemError::LabelError(Self::label(), decoder.type_label().to_owned()),
         );
 
         let mut buf = Vec::new();
