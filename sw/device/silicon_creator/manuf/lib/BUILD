@@ -66,6 +66,18 @@ cc_library(
 )
 
 cc_library(
+    name = "otp_img",
+    srcs = ["otp_img.c"],
+    hdrs = ["otp_img.h"],
+    deps = [
+        ":otp_img_types",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+    ],
+)
+
+cc_library(
     name = "individualize",
     srcs = ["individualize.c"],
     hdrs = [
@@ -104,6 +116,41 @@ opentitan_functest(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
+    name = "individualize_preop",
+    srcs = ["individualize_preop.c"],
+    hdrs = [
+        "individualize_preop.h",
+    ],
+    deps = [
+        ":otp_img",
+        "//hw/ip/otp_ctrl/data/sku_earlgrey_a0:otp_img_sku_earlgrey_a0_stage_individualize",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/testing:lc_ctrl_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+    ],
+)
+
+opentitan_functest(
+    name = "individualize_preop_functest",
+    srcs = ["individualize_preop_functest.c"],
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:rom_otp_test_unlocked0",
+    ),
+    targets = [
+        "cw310_rom",
+    ],
+    deps = [
+        ":individualize_preop",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
