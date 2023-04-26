@@ -225,6 +225,7 @@ struct usb_testutils_streams_ctx {
  * @param  verbose   Whether to perform verbose logging for each stream
  * @return The result status of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
                                     unsigned nstreams, uint32_t num_bytes,
                                     usbdev_stream_flags_t flags, bool verbose);
@@ -239,6 +240,7 @@ status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
  * @param  ctx       Context state for streaming test
  * @return The result status of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t usb_testutils_streams_service(usb_testutils_streams_ctx_t *ctx);
 
 /**
@@ -247,6 +249,7 @@ status_t usb_testutils_streams_service(usb_testutils_streams_ctx_t *ctx);
  *
  * @param  ctx       Context state for streaming test
  */
+OT_WARN_UNUSED_RESULT
 bool usb_testutils_streams_completed(const usb_testutils_streams_ctx_t *ctx);
 
 /**
@@ -261,6 +264,7 @@ bool usb_testutils_streams_completed(const usb_testutils_streams_ctx_t *ctx);
  * @param  verbose   Whether to perform verbose logging for this stream
  * @return The result status of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t usb_testutils_stream_init(usb_testutils_streams_ctx_t *ctx, uint8_t id,
                                    uint8_t ep_in, uint8_t ep_out,
                                    uint32_t num_bytes,
@@ -276,6 +280,7 @@ status_t usb_testutils_stream_init(usb_testutils_streams_ctx_t *ctx, uint8_t id,
  * @param  id        Stream identifier (0-based)
  * @return The result status of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
                                       uint8_t id);
 
@@ -285,6 +290,7 @@ status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
  * @param  ctx       Context state for streaming test
  * @param  id        Stream identifier (0-based)
  */
+OT_WARN_UNUSED_RESULT
 bool usb_testutils_stream_completed(const usb_testutils_streams_ctx_t *ctx,
                                     uint8_t id);
 
