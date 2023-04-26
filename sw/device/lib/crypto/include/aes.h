@@ -145,7 +145,8 @@ crypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
  * since doing so could expose a padding oracle (especially in CBC mode).
  *
  * @param key Pointer to the blinded key struct with key shares.
- * @param iv Initialization vector, used for CBC, CFB, OFB, CTR modes.
+ * @param iv Initialization vector, used for CBC, CFB, OFB, CTR modes. May be
+ *           NULL if mode is ECB.
  * @param aes_mode Required AES mode of operation.
  * @param aes_operation Required AES operation (encrypt or decrypt).
  * @param cipher_input Input data to be ciphered.

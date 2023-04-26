@@ -251,8 +251,8 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
                              aes_padding_t aes_padding,
                              crypto_uint8_buf_t cipher_output) {
   // Check for NULL pointers in input pointers and data buffers.
-  if (key == NULL || iv.data == NULL || cipher_input.data == NULL ||
-      cipher_output.data == NULL) {
+  if (key == NULL || (aes_mode != kBlockCipherModeEcb && iv.data == NULL) ||
+      cipher_input.data == NULL || cipher_output.data == NULL) {
     return kCryptoStatusBadArgs;
   }
 
@@ -273,14 +273,20 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
   }
 
   // Check for bad lengths:
-  //   - IV must be exactly one block long.
+  //   - IV must be exactly one block long in all modes except ECB
   //   - Input length must be nonzero.
   //   - Output length must match number of input blocks.
-  if (launder32(iv.len) != kAesBlockNumBytes || cipher_input.len == 0 ||
+  if (aes_mode != launder32(kAesCipherModeEcb)) {
+    HARDENED_CHECK_NE(aes_mode, kAesCipherModeEcb);
+    if (launder32(iv.len) != kAesBlockNumBytes) {
+      return kCryptoStatusBadArgs;
+    }
+    HARDENED_CHECK_EQ(iv.len, kAesBlockNumBytes);
+  }
+  if (cipher_input.len == 0 ||
       launder32(cipher_output.len) != input_nblocks * kAesBlockNumBytes) {
     return kCryptoStatusBadArgs;
   }
-  HARDENED_CHECK_EQ(iv.len, kAesBlockNumBytes);
   HARDENED_CHECK_EQ(cipher_output.len, input_nblocks * kAesBlockNumBytes);
 
   // Load the IV.
