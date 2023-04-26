@@ -119,6 +119,7 @@ cc_library(
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:ecc",
         "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
@@ -127,6 +128,7 @@ cc_library(
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/manuf/keys",
     ],
 )
 
@@ -159,6 +161,7 @@ opentitan_functest(
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/manuf/keys/fake",
     ],
 )
 
