@@ -463,7 +463,7 @@ otbn_sim_test(
     ],
     exp = "primality_test.exp",
     deps = [
-        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:primality",
     ],
 )
@@ -476,7 +476,7 @@ otbn_sim_test(
     ],
     exp = "primality_test_witness_test.exp",
     deps = [
-        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:primality",
     ],
 )
@@ -489,7 +489,7 @@ otbn_sim_test(
     ],
     exp = "primality_test_witness_negative_test.exp",
     deps = [
-        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:primality",
     ],
 )
@@ -502,7 +502,7 @@ otbn_sim_test(
     ],
     exp = "primality_negative_test.exp",
     deps = [
-        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:primality",
     ],
 )
@@ -565,7 +565,7 @@ otbn_sim_test(
     ],
     exp = "relprime_f4_test.exp",
     deps = [
-        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:primality",
         "//sw/otbn/crypto:rsa_keygen",
     ],
@@ -591,6 +591,7 @@ otbn_sim_test(
     exp = "rsa_1024_dec_test.exp",
     deps = [
         "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
     ],
 )
 
@@ -602,6 +603,7 @@ otbn_sim_test(
     exp = "rsa_1024_enc_test.exp",
     deps = [
         "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
     ],
 )
 
