@@ -57,6 +57,7 @@ class lc_ctrl_regwen_during_op_vseq extends lc_ctrl_smoke_vseq;
         cfg.en_scb_ral_update_write = 0;
         csr_wr(.ptr(ral.transition_ctrl), .value(write_val));
         csr_wr(.ptr(ral.transition_target), .value(write_val));
+        csr_wr(.ptr(ral.transition_cmd), .value(write_val));
         csr_wr(.ptr(ral.otp_vendor_test_ctrl), .value(write_val));
         csr_wr(.ptr(ral.transition_token[0]), .value(write_val));
         csr_wr(.ptr(ral.transition_token[1]), .value(write_val));
@@ -69,6 +70,7 @@ class lc_ctrl_regwen_during_op_vseq extends lc_ctrl_smoke_vseq;
         // written above
         csr_rd_check(.ptr(ral.transition_ctrl), .compare_value(`gmv(ral.transition_ctrl)));
         csr_rd_check(.ptr(ral.transition_target), .compare_value(`gmv(ral.transition_target)));
+        csr_rd_check(.ptr(ral.transition_cmd), .compare_value(`gmv(ral.transition_cmd)));
         csr_rd_check(.ptr(ral.otp_vendor_test_ctrl),
                      .compare_value(`gmv(ral.otp_vendor_test_ctrl)));
         csr_rd_check(.ptr(ral.transition_token[0]), .compare_value(`gmv(ral.transition_token[0])));
