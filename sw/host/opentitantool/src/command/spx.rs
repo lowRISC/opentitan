@@ -11,7 +11,6 @@ use structopt::StructOpt;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::crypto::spx::{SpxKeypair, SpxPublicKey, SpxPublicKeyPart, SpxSignature};
-use opentitanlib::image::image::Image;
 use opentitanlib::util::file::{FromReader, PemSerilizable, ToWriter};
 
 /// Given the path to a public key, returns the public key. Given
@@ -125,9 +124,9 @@ impl CommandDispatch for SpxSignCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let bytes = std::fs::read(&self.message)?;
+        let message = std::fs::read(&self.message)?;
         let keypair = SpxKeypair::read_pem_file(&self.keypair)?;
-        let signature = keypair.sign(&bytes);
+        let signature = keypair.sign(&message);
         if let Some(output) = &self.output {
             signature.write_to_file(output)?;
             return Ok(None);
@@ -142,8 +141,11 @@ impl CommandDispatch for SpxSignCommand {
 pub struct SpxVerifyCommand {
     #[structopt(name = "KEY", help = "Key file")]
     key_file: PathBuf,
-    #[structopt(name = "IMAGE", help = "Image file to verify the signature against")]
-    image: PathBuf,
+    #[structopt(
+        name = "MESSAGE",
+        help = "Message file to verify the signature against"
+    )]
+    message: PathBuf,
     #[structopt(name = "SIGNATURE", help = "SPHINCS+ signature file to verify")]
     signature: PathBuf,
 }
@@ -154,10 +156,10 @@ impl CommandDispatch for SpxVerifyCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let image = Image::read_from_file(&self.image)?;
+        let message = std::fs::read(&self.message)?;
         let keypair = load_pub_or_priv_key(&self.key_file)?;
         let signature = SpxSignature::read_from_file(&self.signature)?;
-        image.map_signed_region(|b| keypair.verify(b, &signature))?;
+        keypair.verify(&message, &signature)?;
         Ok(None)
     }
 }
