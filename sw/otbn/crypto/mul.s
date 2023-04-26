@@ -35,7 +35,7 @@
  * @param[out] dmem[x12..x12+(n*2*32)]: result, a*b
  *
  * clobbered registers: x2 to x8, x20 to x23, w20 to w23
- * clobbered flag groups: None
+ * clobbered flag groups: FG0
  */
 bignum_mul:
   /* Zeroize output buffer.
