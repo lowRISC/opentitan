@@ -242,6 +242,21 @@ cc_library(
     ],
 )
 
+opentitan_functest(
+    name = "spx_verify_functest",
+    srcs = ["spx_verify_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+        tags = [
+            "manual",
+        ],
+    ),
+    deps = [
+        ":spx_verify",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 cc_library(
     name = "usage_constraints",
     srcs = ["usage_constraints.c"],
