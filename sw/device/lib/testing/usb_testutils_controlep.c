@@ -284,7 +284,7 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
   return kUsbTestutilsCtError;
 }
 
-static void ctrl_tx_done(void *ctctx_v, usb_testutils_xfr_result_t result) {
+static status_t ctrl_tx_done(void *ctctx_v, usb_testutils_xfr_result_t result) {
   usb_testutils_controlep_ctx_t *ctctx =
       (usb_testutils_controlep_ctx_t *)ctctx_v;
   usb_testutils_ctx_t *ctx = ctctx->ctx;
@@ -292,33 +292,34 @@ static void ctrl_tx_done(void *ctctx_v, usb_testutils_xfr_result_t result) {
   switch (ctctx->ctrlstate) {
     case kUsbTestutilsCtAddrStatIn:
       // Now the status was sent on device 0 can switch to new device ID
-      CHECK_DIF_OK(dif_usbdev_address_set(ctx->dev, ctctx->new_dev));
+      TRY(dif_usbdev_address_set(ctx->dev, ctctx->new_dev));
       TRC_I(ctctx->new_dev, 8);
       ctctx->ctrlstate = kUsbTestutilsCtIdle;
       // We now have a device address on the USB
       ctctx->device_state = kUsbTestutilsDeviceAddressed;
-      return;
+      return OK_STATUS();
     case kUsbTestutilsCtStatIn:
       ctctx->ctrlstate = kUsbTestutilsCtIdle;
-      return;
+      return OK_STATUS();
     case kUsbTestutilsCtWaitIn:
       ctctx->ctrlstate = kUsbTestutilsCtStatOut;
-      return;
+      return OK_STATUS();
 
     default:
       break;
   }
   TRC_S("USB: unexpected IN ");
   TRC_I((ctctx->ctrlstate << 24), 32);
+  return OK_STATUS();
 }
 
-static void ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
-                    dif_usbdev_buffer_t buffer) {
+static status_t ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
+                        dif_usbdev_buffer_t buffer) {
   usb_testutils_controlep_ctx_t *ctctx =
       (usb_testutils_controlep_ctx_t *)ctctx_v;
   usb_testutils_ctx_t *ctx = ctctx->ctx;
-  CHECK_DIF_OK(dif_usbdev_endpoint_out_enable(ctx->dev, /*endpoint=*/0,
-                                              kDifToggleEnabled));
+  TRY(dif_usbdev_endpoint_out_enable(ctx->dev, /*endpoint=*/0,
+                                     kDifToggleEnabled));
 
   TRC_C('0' + ctctx->ctrlstate);
   size_t bytes_written;
@@ -329,8 +330,8 @@ static void ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
       // Waiting to be set up
       if (packet_info.is_setup && (packet_info.length == 8)) {
         alignas(uint32_t) uint8_t bp[8];
-        CHECK_DIF_OK(dif_usbdev_buffer_read(ctx->dev, ctx->buffer_pool, &buffer,
-                                            bp, sizeof(bp), &bytes_written));
+        TRY(dif_usbdev_buffer_read(ctx->dev, ctx->buffer_pool, &buffer, bp,
+                                   sizeof(bp), &bytes_written));
         int bmRequestType = bp[0];
         int bRequest = bp[1];
         int wValue = (bp[3] << 8) | bp[2];
@@ -341,7 +342,7 @@ static void ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
         ctctx->ctrlstate = setup_req(ctctx, ctx, bmRequestType, bRequest,
                                      wValue, wIndex, wLength);
         if (ctctx->ctrlstate != kUsbTestutilsCtError) {
-          return;
+          return OK_STATUS();
         }
 
         TRC_C(':');
@@ -354,10 +355,9 @@ static void ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
     case kUsbTestutilsCtStatOut:
       // Have sent some data, waiting STATUS stage
       if (!packet_info.is_setup && (packet_info.length == 0)) {
-        CHECK_DIF_OK(
-            dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
+        TRY(dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
         ctctx->ctrlstate = kUsbTestutilsCtIdle;
-        return;
+        return OK_STATUS();
       }
       // anything else is unexpected
       break;
@@ -371,27 +371,27 @@ static void ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
       .direction = USBDEV_ENDPOINT_DIR_IN,
   };
   // Enable responding with STALL. Will be cleared by the HW upon next SETUP.
-  CHECK_DIF_OK(
-      dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleEnabled));
+  TRY(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleEnabled));
   endpoint.direction = USBDEV_ENDPOINT_DIR_OUT;
-  CHECK_DIF_OK(
-      dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleEnabled));
+  TRY(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleEnabled));
   TRC_S("USB: unCT ");
   TRC_I((ctctx->ctrlstate << 24) | ((int)packet_info.is_setup << 16) |
             packet_info.length,
         32);
   if (buffer.type != kDifUsbdevBufferTypeStale) {
     // Return the unused buffer.
-    CHECK_DIF_OK(dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
+    TRY(dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
   }
   ctctx->ctrlstate = kUsbTestutilsCtIdle;
+  return OK_STATUS();
 }
 
 // Callback for the USB link reset
-static void ctrl_reset(void *ctctx_v) {
+static status_t ctrl_reset(void *ctctx_v) {
   usb_testutils_controlep_ctx_t *ctctx =
       (usb_testutils_controlep_ctx_t *)ctctx_v;
   ctctx->ctrlstate = kUsbTestutilsCtIdle;
+  return OK_STATUS();
 }
 
 status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,

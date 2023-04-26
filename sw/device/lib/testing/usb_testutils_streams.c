@@ -167,7 +167,8 @@ static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
 }
 
 // Callback for successful buffer transmission
-static void strm_tx_done(void *stream_v, usb_testutils_xfr_result_t result) {
+static status_t strm_tx_done(void *stream_v,
+                             usb_testutils_xfr_result_t result) {
   usbdev_stream_t *s = (usbdev_stream_t *)stream_v;
   usb_testutils_streams_ctx_t *ctx = s->ctx;
   usb_testutils_ctx_t *usbdev = ctx->usbdev;
@@ -182,7 +183,7 @@ static void strm_tx_done(void *stream_v, usb_testutils_xfr_result_t result) {
              nqueued, ctx->tx_queued_total);
   }
 
-  CHECK(nqueued > 0);
+  TRY_CHECK(nqueued > 0);
 
   // Note: since buffer transmission and completion signalling both occur within
   // the foreground code (polling, not interrupt-driven) there is no issue of
@@ -199,23 +200,23 @@ static void strm_tx_done(void *stream_v, usb_testutils_xfr_result_t result) {
     ctx->tx_bufs_queued[tx_ep] = --nqueued;
 
     if (nqueued) {
-      CHECK_DIF_OK(
-          dif_usbdev_send(usbdev->dev, tx_ep, &ctx->tx_bufs[tx_ep][0u]));
+      TRY(dif_usbdev_send(usbdev->dev, tx_ep, &ctx->tx_bufs[tx_ep][0u]));
     }
   }
+  return OK_STATUS();
 }
 
 // Callback for buffer reception
-static void strm_rx(void *stream_v, dif_usbdev_rx_packet_info_t packet_info,
-                    dif_usbdev_buffer_t buf) {
+static status_t strm_rx(void *stream_v, dif_usbdev_rx_packet_info_t packet_info,
+                        dif_usbdev_buffer_t buf) {
   usbdev_stream_t *s = (usbdev_stream_t *)stream_v;
   usb_testutils_streams_ctx_t *ctx = s->ctx;
   usb_testutils_ctx_t *usbdev = ctx->usbdev;
 
-  CHECK(packet_info.endpoint == s->rx_ep);
+  TRY_CHECK(packet_info.endpoint == s->rx_ep);
 
   // We do not expect to receive SETUP packets to this endpoint
-  CHECK(!packet_info.is_setup);
+  TRY_CHECK(!packet_info.is_setup);
 
   if (s->verbose) {
     LOG_INFO("Stream %u: Received buffer of %u bytes(s)", s->id,
@@ -242,33 +243,36 @@ static void strm_rx(void *stream_v, dif_usbdev_rx_packet_info_t packet_info,
 #endif
         //  Use the standard interface
         default:
-          CHECK_DIF_OK(dif_usbdev_buffer_read(usbdev->dev, usbdev->buffer_pool,
-                                              &buf, data, len, &bytes_read));
+          TRY(dif_usbdev_buffer_read(usbdev->dev, usbdev->buffer_pool, &buf,
+                                     data, len, &bytes_read));
           break;
       }
     } else {
       // Just discard the data, without reading it; peak OUT performance
-      CHECK_DIF_OK(
-          dif_usbdev_buffer_return(usbdev->dev, usbdev->buffer_pool, &buf));
+      TRY(dif_usbdev_buffer_return(usbdev->dev, usbdev->buffer_pool, &buf));
     }
   }
 
   s->rx_bytes += packet_info.length;
+
+  return OK_STATUS();
 }
 
 // Callback for unexpected data reception (IN endpoint)
-static void rx_show(void *stream_v, dif_usbdev_rx_packet_info_t packet_info,
-                    dif_usbdev_buffer_t buf) {
+static status_t rx_show(void *stream_v, dif_usbdev_rx_packet_info_t packet_info,
+                        dif_usbdev_buffer_t buf) {
   usbdev_stream_t *s = (usbdev_stream_t *)stream_v;
   usb_testutils_streams_ctx_t *ctx = s->ctx;
   usb_testutils_ctx_t *usbdev = ctx->usbdev;
   uint8_t data[0x100U];
   size_t bytes_read;
-  CHECK_DIF_OK(dif_usbdev_buffer_read(usbdev->dev, usbdev->buffer_pool, &buf,
-                                      data, packet_info.length, &bytes_read));
+  TRY(dif_usbdev_buffer_read(usbdev->dev, usbdev->buffer_pool, &buf, data,
+                             packet_info.length, &bytes_read));
   LOG_INFO("rx_show packet of %u byte(s) - read %u", packet_info.length,
            bytes_read);
   buffer_dump(data, bytes_read);
+
+  return OK_STATUS();
 }
 
 // Returns an indication of whether a stream has completed its data transfer
@@ -329,8 +333,7 @@ status_t usb_testutils_stream_init(usb_testutils_streams_ctx_t *ctx, uint8_t id,
   //
   // Note: We install the rx_show handler to catch any misdirected data
   // transfers
-  void (*rx)(void *, dif_usbdev_rx_packet_info_t, dif_usbdev_buffer_t) =
-      (ep_in == ep_out) ? strm_rx : rx_show;
+  usb_testutils_rx_handler_t rx = (ep_in == ep_out) ? strm_rx : rx_show;
 
   s->tx_ep = ep_in;
   CHECK_STATUS_OK(usb_testutils_endpoint_setup(

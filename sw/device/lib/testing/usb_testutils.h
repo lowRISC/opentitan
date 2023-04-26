@@ -56,6 +56,18 @@ typedef enum {
   kUsbTestutilsXfrEmployZLP = 0x400u,
 } usb_testutils_xfr_flags_t;
 
+/* Called once send has been Acked */
+typedef status_t (*usb_testutils_tx_done_handler_t)(void *,
+                                                    usb_testutils_xfr_result_t);
+/* Called when a packet is received*/
+typedef status_t (*usb_testutils_rx_handler_t)(void *,
+                                               dif_usbdev_rx_packet_info_t,
+                                               dif_usbdev_buffer_t);
+/* Called every 16ms based USB host timebase*/
+typedef status_t (*usb_testutils_tx_flush_handler_t)(void *);
+/*Called when an USB link reset is detected*/
+typedef status_t (*usb_testutils_reset_handler_t)(void *);
+
 // In-progress larger buffer transfer to/from host
 typedef struct usb_testutils_transfer {
   /**
@@ -120,15 +132,15 @@ struct usb_testutils_ctx {
     /**
      * Callback for transmission of IN packet
      */
-    void (*tx_done_callback)(void *, usb_testutils_xfr_result_t);
+    usb_testutils_tx_done_handler_t tx_done_callback;
     /**
      * Callback for periodically flushing IN data to host
      */
-    void (*flush)(void *);
+    usb_testutils_tx_flush_handler_t flush;
     /**
      * Callback for link reset
      */
-    void (*reset)(void *);
+    usb_testutils_reset_handler_t reset;
     /**
      * Current in-progress transfer, if any
      */
@@ -146,12 +158,11 @@ struct usb_testutils_ctx {
     /**
      * Callback for reception of IN packet
      */
-    void (*rx_callback)(void *, dif_usbdev_rx_packet_info_t,
-                        dif_usbdev_buffer_t);
+    usb_testutils_rx_handler_t rx_callback;
     /**
      * Callback for link reset
      */
-    void (*reset)(void *);
+    usb_testutils_reset_handler_t reset;
   } out[USBDEV_NUM_ENDPOINTS];
 };
 
@@ -180,16 +191,17 @@ typedef enum usb_testutils_out_transfer_mode {
  * @param ctx usb test utils context pointer
  * @param ep endpoint number
  * @param ep_ctx context pointer for callee
- * @param tx_done(void *ep_ctx) callback once send has been Acked
- * @param flush(void *ep_ctx) called every 16ms based USB host timebase
- * @param reset(void *ep_ctx) called when an USB link reset is detected
+ * @param tx_done callback once send has been Acked
+ * @param flush called every 16ms based USB host timebase
+ * @param reset called when an USB link reset is detected
  * @return The result of the operation
  */
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_in_endpoint_setup(
     usb_testutils_ctx_t *ctx, uint8_t ep, void *ep_ctx,
-    void (*tx_done)(void *, usb_testutils_xfr_result_t), void (*flush)(void *),
-    void (*reset)(void *));
+    usb_testutils_tx_done_handler_t tx_done,
+    usb_testutils_tx_flush_handler_t flush,
+    usb_testutils_reset_handler_t reset);
 
 /**
  * Call to set up OUT endpoint.
@@ -198,17 +210,15 @@ status_t usb_testutils_in_endpoint_setup(
  * @param ep endpoint number
  * @param out_mode the transfer mode for OUT transactions
  * @param ep_ctx context pointer for callee
- * @param rx(void *ep_ctx, usbbufid_t buf, int size, int setup)
-          called when a packet is received
- * @param reset(void *ep_ctx) called when an USB link reset is detected
+ * @param rx called when a packet is received
+ * @param reset called when an USB link reset is detected
  * @return The result of the operation
  */
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_out_endpoint_setup(
     usb_testutils_ctx_t *ctx, uint8_t ep,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
-    void (*rx)(void *, dif_usbdev_rx_packet_info_t, dif_usbdev_buffer_t),
-    void (*reset)(void *));
+    usb_testutils_rx_handler_t rx, usb_testutils_reset_handler_t reset);
 
 /**
  * Call to set up a pair of IN and OUT endpoints.
@@ -217,20 +227,19 @@ status_t usb_testutils_out_endpoint_setup(
  * @param ep endpoint number
  * @param out_mode the transfer mode for OUT transactions
  * @param ep_ctx context pointer for callee
- * @param tx_done(void *ep_ctx) callback once send has been Acked
- * @param rx(void *ep_ctx, usbbufid_t buf, int size, int setup)
-          called when a packet is received
- * @param flush(void *ep_ctx) called every 16ms based USB host timebase
- * @param reset(void *ep_ctx) called when an USB link reset is detected
+ * @param tx_done callback once send has been Acked
+ * @param rx called when a packet is received
+ * @param flush called every 16ms based USB host timebase
+ * @param reset called when an USB link reset is detected
  * @return The result of the operation
  */
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_endpoint_setup(
     usb_testutils_ctx_t *ctx, uint8_t ep,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
-    void (*tx_done)(void *, usb_testutils_xfr_result_t),
-    void (*rx)(void *, dif_usbdev_rx_packet_info_t, dif_usbdev_buffer_t),
-    void (*flush)(void *), void (*reset)(void *));
+    usb_testutils_tx_done_handler_t tx_done, usb_testutils_rx_handler_t rx,
+    usb_testutils_tx_flush_handler_t flush,
+    usb_testutils_reset_handler_t reset);
 
 /**
  * Remove an IN endpoint.
