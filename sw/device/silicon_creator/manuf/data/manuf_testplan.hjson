@@ -185,6 +185,36 @@
     }
 
     {
+      name: manuf_ft_sku_individualization_preop
+      desc: '''Configure device fuses before switching the device to an operational lc_state.
+
+            This includes configuration of the CREATOR_SW and OWNER_SW partition.
+
+            The test steps are expected to be executed from flash. In silicon, the program is loaded
+            using the ROM bootstrap protocol. It is recommended to use the same approach on the FPGA,
+            and enable it as a configuration option in DV.
+
+            - Pre-load OTP with a TEST_UNLCOKED* lc_state in pre-silicon
+              environments. Advance to state in silicon.
+            - Load test program into flash and start execution.
+            - Configure CREATOR_SW_CFG OTP words according to device SKU configuration.
+            - Configure OWNER_SW_CFG OTP words according to device SKU configuration.
+            - Perform reset triggered by software.
+            - Load test program again into flash and start execution.
+            - Send response to host with test result serialized in JSON format.
+            - Check status response on the host side.
+
+            **Note**: Tests are easier to integrate with Automated Test Equipment (ATE) if all
+            device-host interfaces are unidirectional. This influences the type of physical
+            interface selection (e.g. SPI versus UART). Make sure the interface design takes
+            this constraint into consideration.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+
+    {
       name: manuf_ft_sku_individualization
       desc: '''Configure device fuses.
 
@@ -208,8 +238,6 @@
               - DEVICE_ID
               - MANUF_STATE
             - Lock HW_CFG OPT partition.
-            - Configure CREATOR_SW_CFG OTP words according to device SKU configuration.
-            - Configure OWNER_SW_CFG OTP words according to device SKU configuration.
             - Perform reset trigered by software.
             - Initialize entropy_src in FIPS mode. Check health status after setting appropriate
               health test parameters. Configure SW csrng instance to generate enough data to
