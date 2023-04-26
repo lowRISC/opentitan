@@ -96,8 +96,13 @@ pub struct BootstrapOptions {
         help = "Whether to reset target and clear UART RX buffer after bootstrap. For CW310 only."
     )]
     pub clear_uart: Option<bool>,
-    #[structopt(long, parse(try_from_str=parse_duration), default_value = "100ms", help = "Duration of the reset delay")]
+    #[structopt(long, parse(try_from_str=parse_duration), default_value = "100ms", help = "Duration of the reset pulse")]
     pub reset_delay: Duration,
+    #[structopt(
+        long,
+        help = "If set, leave the reset signal asserted after completed bootstrapping."
+    )]
+    pub leave_in_reset: bool,
     #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the inter-frame delay")]
     pub inter_frame_delay: Option<Duration>,
     #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the flash-erase delay")]
@@ -112,6 +117,7 @@ pub struct Bootstrap<'a> {
     pub spi_params: &'a SpiParams,
     reset_pin: Rc<dyn GpioPin>,
     reset_delay: Duration,
+    leave_in_reset: bool,
 }
 
 impl<'a> Bootstrap<'a> {
@@ -163,6 +169,7 @@ impl<'a> Bootstrap<'a> {
             spi_params: &options.spi_params,
             reset_pin: transport.gpio_pin("RESET")?,
             reset_delay: options.reset_delay,
+            leave_in_reset: options.leave_in_reset,
         }
         .do_update(updater, transport, payload, progress)
     }
@@ -187,7 +194,12 @@ impl<'a> Bootstrap<'a> {
         let result = updater.update(self, transport, payload, progress);
 
         if perform_bootstrap_reset {
-            log::info!("Releasing bootstrap pins...");
+            if self.leave_in_reset {
+                log::info!("Releasing bootstrap pins, leaving device in reset...");
+                transport.pin_strapping("RESET")?.apply()?;
+            } else {
+                log::info!("Releasing bootstrap pins...");
+            }
             rom_boot_strapping.remove()?;
         }
 

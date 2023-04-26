@@ -357,8 +357,10 @@ impl UpdateProtocol for Rescue {
 
         // Reset, in order to leave rescue mode.
         container.reset_pin.write(false)?; // Low active
-        std::thread::sleep(container.reset_delay);
-        container.reset_pin.write(true)?; // Release reset
+        if !container.leave_in_reset {
+            std::thread::sleep(container.reset_delay);
+            container.reset_pin.write(true)?; // Release reset
+        }
         progress.progress(frames.len() * Frame::DATA_LEN);
         eprintln!("Success!");
         Ok(())
