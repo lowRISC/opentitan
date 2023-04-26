@@ -47,7 +47,7 @@ extern "C" {
     # Print 4 numbers per line. This is why the step is set to 4 in the
     # iterator.
     if len(values) > 4:
-      for i in range(0, len(values) - 4, 4):
+      for i in range(0, len(values), 4):
         end = min(len(values), i + 4)
         out.append(", ".join(values[i:end]) + ",")
     else:

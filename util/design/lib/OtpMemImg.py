@@ -179,12 +179,10 @@ def _int_to_hex_array(val: int, size: int, alignment: int) -> List[str]:
         raise ValueError(len(bytes_hex))
 
     word_list = []
-    start = 0
-    stop = len(bytes_hex)
-    step = alignment
-    for i in range(start, stop, step):
-        word_list.append("".join(bytes_hex[i:i + step]))
+    for i in range(0, len(bytes_hex), alignment):
+        word_list.append("".join(bytes_hex[i:i + alignment]))
 
+    word_list.reverse()
     return [f"0x{y}" for y in word_list]
 
 
