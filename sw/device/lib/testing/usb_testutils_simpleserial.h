@@ -30,10 +30,12 @@ typedef struct usb_testutils_ss_ctx {
  *
  * @param ssctx instance context
  * @param c byte to send
- * @return true iff the character was accepted for transmission
+ * @return `kOk(res)` Where `res` is true if the character was accepted for
+ * transmission
  */
-bool usb_testutils_simpleserial_send_byte(usb_testutils_ss_ctx_t *ssctx,
-                                          uint8_t c);
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_simpleserial_send_byte(usb_testutils_ss_ctx_t *ssctx,
+                                              uint8_t c);
 
 /**
  * Initialize a simpleserial endpoint

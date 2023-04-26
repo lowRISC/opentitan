@@ -134,8 +134,8 @@ bool test_main(void) {
 
   // Send a "Hi!Hi!" sign on message.
   for (int idx = 0; idx < kExpectedUsbCharsRecved; idx++) {
-    usb_testutils_simpleserial_send_byte(&simple_serial,
-                                         kExpectedUsbRecved[idx]);
+    CHECK_STATUS_OK(usb_testutils_simpleserial_send_byte(
+        &simple_serial, kExpectedUsbRecved[idx]));
   }
 
   // Await the same message as a response; this allows a simple 'cat <port>'
