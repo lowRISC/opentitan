@@ -70,7 +70,6 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_DIGEST": "0x0",
                 # Use software mod_exp implementation for signature
                 # verification. See the definition of `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
@@ -131,13 +130,29 @@ otp_json(
     ],
 )
 
+# CREATOR_SW_CFG configuration for TEST_UNLOCKED lifecycle device states.
+# Configures OTP values required to enable ROM execution. All other values are
+# configured with the `otp_json_creator_sw_cfg` rule.
+otp_json(
+    name = "otp_json_creator_sw_cfg_test_unlocked",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                # ROM execution is enabled if this item is set to a non-zero
+                # value.
+                "CREATOR_SW_CFG_ROM_EXEC_EN": "0xffffffff",
+            },
+        ),
+    ],
+)
+
 otp_json(
     name = "otp_json_owner_sw_cfg",
     partitions = [
         otp_partition(
             name = "OWNER_SW_CFG",
             items = {
-                "OWNER_SW_CFG_DIGEST": "0x0",
                 # Enable bootstrap. See `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
                 "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": "0x1d4",
@@ -213,16 +228,6 @@ otp_json(
 )
 
 otp_json(
-    name = "otp_json_hw_cfg_empty_and_unlocked",
-    partitions = [
-        otp_partition(
-            name = "HW_CFG",
-            lock = False,
-        ),
-    ],
-)
-
-otp_json(
     name = "otp_json_secret0",
     partitions = [
         otp_partition(
@@ -262,16 +267,6 @@ otp_json(
 )
 
 otp_json(
-    name = "otp_json_secret1_empty_and_unlocked",
-    partitions = [
-        otp_partition(
-            name = "SECRET1",
-            lock = False,
-        ),
-    ],
-)
-
-otp_json(
     name = "otp_json_secret2",
     partitions = [
         otp_partition(
@@ -296,16 +291,6 @@ otp_json(
                 "CREATOR_ROOT_KEY_SHARE0": "<random>",
                 "CREATOR_ROOT_KEY_SHARE1": "<random>",
             },
-            lock = False,
-        ),
-    ],
-)
-
-otp_json(
-    name = "otp_json_secret2_empty_and_unlocked",
-    partitions = [
-        otp_partition(
-            name = "SECRET2",
             lock = False,
         ),
     ],
@@ -422,17 +407,26 @@ otp_alert_digest(
     otp_img = ":otp_json_owner_sw_cfg",
 )
 
+# The RAW OTP image only contains the LIFE_CYCLE partition, which is set to RAW
+# state. All other partitions are left with default values to ensure the state
+# of OTP is representative of post-silicon scenarios.
 otp_image(
     name = "img_raw",
     src = ":otp_json_raw",
-    overlays = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS,
 )
 
 [
+    # TEST_UNLOCKED images are expected to only have the SECRET0 partition
+    # configured, as well as ROM execution enabled in the CREATOR_SW partition.
+    # All other partitions are left with default values to ensure the state of
+    # OTP is representative of post-silicon scenarios.
     otp_image(
         name = "img_test_unlocked{}".format(i),
         src = ":otp_json_test_unlocked{}".format(i),
-        overlays = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS,
+        overlays = [
+            ":otp_json_secret0",
+            ":otp_json_creator_sw_cfg_test_unlocked",
+        ],
     )
     for i in range(0, 8)
 ]
@@ -448,18 +442,18 @@ otp_image(
 
 # Represents a DEV state OTP image emulating the state of the device after the
 # exit test token has been applied and before running individualization.
-# TODO: Add initial states for the creator and owner OTP partitions.
+# The following partitions are missing to ensure the image is initialize with
+# default values: SECRET1, SECRET2, HW_CFG.
+# The following partitions are expected to be configured in previous lifecycle
+# stages: SECRET0, CREATOR_SW, OWNER_SW.
 otp_image(
     name = "img_dev_initial",
     src = ":otp_json_dev",
     overlays = [
         ":otp_json_secret0",
-        ":otp_json_secret1_empty_and_unlocked",
-        ":otp_json_secret2_empty_and_unlocked",
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
         ":otp_json_alert_digest_cfg",
-        ":otp_json_hw_cfg_empty_and_unlocked",
     ],
 )
 
@@ -471,7 +465,6 @@ otp_image(
     overlays = [
         ":otp_json_secret0",
         ":otp_json_secret1",
-        ":otp_json_secret2_empty_and_unlocked",
     ] + STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS,
 )
 
