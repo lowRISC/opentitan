@@ -110,8 +110,8 @@ pub struct SpxSignResult {
 
 #[derive(Debug, StructOpt)]
 pub struct SpxSignCommand {
-    #[structopt(name = "IMAGE", help = "The filename for the image to sign")]
-    image: PathBuf,
+    #[structopt(name = "MESSAGE", help = "The filename for the message to sign")]
+    message: PathBuf,
 
     #[structopt(name = "KEY_FILE", help = "The file contianing SPHICS+ keypair")]
     keypair: PathBuf,
@@ -125,11 +125,12 @@ impl CommandDispatch for SpxSignCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let image = Image::read_from_file(&self.image)?;
+        let bytes = std::fs::read(&self.message)?;
         let keypair = SpxKeypair::read_pem_file(&self.keypair)?;
-        let signature = image.map_signed_region(|b| keypair.sign(b));
+        let signature = keypair.sign(&bytes);
         if let Some(output) = &self.output {
-            signature.clone().write_to_file(output)?;
+            signature.write_to_file(output)?;
+            return Ok(None);
         }
         Ok(Some(Box::new(SpxSignResult {
             signature: signature.to_string(),
