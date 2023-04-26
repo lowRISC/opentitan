@@ -52,29 +52,27 @@ static status_t ss_flush(void *ssctx_v) {
 }
 
 // Simple send byte will gather data for a while and send
-bool usb_testutils_simpleserial_send_byte(usb_testutils_ss_ctx_t *ssctx,
-                                          uint8_t c) {
+status_t usb_testutils_simpleserial_send_byte(usb_testutils_ss_ctx_t *ssctx,
+                                              uint8_t c) {
   usb_testutils_ctx_t *ctx = ssctx->ctx;
   if (ssctx->cur_cpos == -1) {
-    CHECK_DIF_OK(
-        dif_usbdev_buffer_request(ctx->dev, ctx->buffer_pool, &ssctx->cur_buf));
+    TRY(dif_usbdev_buffer_request(ctx->dev, ctx->buffer_pool, &ssctx->cur_buf));
     ssctx->cur_cpos = 0;
   } else if (ssctx->cur_cpos >= MAX_GATHER && ssctx->sending) {
-    return false;
+    return OK_STATUS(false);
   }
   ssctx->chold.data_b[ssctx->cur_cpos++ & 0x3] = c;
   if ((ssctx->cur_cpos & 0x3) == 0) {
     size_t bytes_written;
-    CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &ssctx->cur_buf,
-                                         ssctx->chold.data_b, /*src_len=*/4,
-                                         &bytes_written));
+    TRY(dif_usbdev_buffer_write(ctx->dev, &ssctx->cur_buf, ssctx->chold.data_b,
+                                /*src_len=*/4, &bytes_written));
     if (ssctx->cur_cpos >= MAX_GATHER && !ssctx->sending) {
-      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ssctx->ep, &ssctx->cur_buf));
+      TRY(dif_usbdev_send(ctx->dev, ssctx->ep, &ssctx->cur_buf));
       ssctx->sending = true;
       ssctx->cur_cpos = -1;  // given it to the hardware
     }
   }
-  return true;
+  return OK_STATUS(true);
 }
 
 status_t usb_testutils_simpleserial_init(usb_testutils_ss_ctx_t *ssctx,

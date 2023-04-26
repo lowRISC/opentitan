@@ -103,7 +103,7 @@ static void usb_receipt_callback_1(uint8_t c) {
  */
 static void usb_send_str(const char *string, usb_testutils_ss_ctx_t *ss_ctx) {
   for (int i = 0; string[i] != 0; ++i) {
-    usb_testutils_simpleserial_send_byte(ss_ctx, string[i]);
+    CHECK_STATUS_OK(usb_testutils_simpleserial_send_byte(ss_ctx, string[i]));
   }
 }
 
@@ -254,8 +254,10 @@ void _ottf_main(void) {
         uint32_t usb_stat = REG32(USBDEV_BASE_ADDR + USBDEV_USBSTAT_REG_OFFSET);
         LOG_INFO("I%04x-%08x", usb_irq_state, usb_stat);
       } else {
-        usb_testutils_simpleserial_send_byte(&simple_serial0, rcv_char);
-        usb_testutils_simpleserial_send_byte(&simple_serial1, rcv_char + 1);
+        CHECK_STATUS_OK(
+            usb_testutils_simpleserial_send_byte(&simple_serial0, rcv_char));
+        CHECK_STATUS_OK(usb_testutils_simpleserial_send_byte(&simple_serial1,
+                                                             rcv_char + 1));
       }
     }
     if (say_hello && usb_chars_recved_total > 2) {
