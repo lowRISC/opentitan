@@ -14,6 +14,7 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -88,9 +89,10 @@ enum {
 static_assert(OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_SIZE ==
                   OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE1_SIZE,
               "Detected Root key share size mismatch");
-static_assert(OTP_CTRL_PARAM_RMA_TOKEN_SIZE <= 16,
-              "RMA token is larger than 128 bits (i.e., one AES block), do not "
-              "use AES-ECB to encrypt it.");
+static_assert(OTP_CTRL_PARAM_RMA_TOKEN_SIZE == 16,
+              "RMA token is not 128 bits (i.e., one AES block), re-evaluate "
+              "padding / AES mode. Additionally, update ujson struct "
+              "definition for the wrapped RMA unlock token.");
 
 // ECC curve to use with ECDH keygen.
 static const ecc_curve_t kCurveP256 = {
@@ -427,9 +429,10 @@ static status_t otp_partition_secret2_configure(
   return OK_STATUS();
 }
 
-status_t provisioning_device_secrets_start(
-    dif_flash_ctrl_state_t *flash_state, const dif_lc_ctrl_t *lc_ctrl,
-    const dif_otp_ctrl_t *otp, wrapped_rma_unlock_token_t *wrapped_token) {
+status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
+                                           const dif_lc_ctrl_t *lc_ctrl,
+                                           const dif_otp_ctrl_t *otp,
+                                           manuf_provisioning_t *export_data) {
   // Check life cycle in either PROD, PROD_END, or DEV.
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
 
@@ -456,15 +459,18 @@ status_t provisioning_device_secrets_start(
       .keyblob_length = sizeof(aes_key_buf),
       .keyblob = aes_key_buf,
   };
-  TRY(gen_rma_unlock_token_aes_key(&token_aes_key, wrapped_token));
+  TRY(gen_rma_unlock_token_aes_key(&token_aes_key,
+                                   &export_data->wrapped_rma_unlock_token));
 
   // Provision secrets in flash and OTP.
   TRY(flash_ctrl_creator_secret_write(flash_state));
   TRY(flash_ctrl_owner_secret_write(flash_state));
-  TRY(otp_partition_secret2_configure(otp, wrapped_token));
+  TRY(otp_partition_secret2_configure(otp,
+                                      &export_data->wrapped_rma_unlock_token));
 
   // Encrypt the RMA unlock token with AES.
-  TRY(encrypt_rma_unlock_token(&token_aes_key, wrapped_token));
+  TRY(encrypt_rma_unlock_token(&token_aes_key,
+                               &export_data->wrapped_rma_unlock_token));
 
   return OK_STATUS();
 }

@@ -60,3 +60,10 @@ cc_library(
     hdrs = ["spi_passthru.h"],
     deps = ["//sw/device/lib/ujson"],
 )
+
+cc_library(
+    name = "provisioning_data",
+    srcs = ["provisioning_data.c"],
+    hdrs = ["provisioning_data.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
