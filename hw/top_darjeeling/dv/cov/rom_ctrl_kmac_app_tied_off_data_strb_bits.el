@@ -9,7 +9,7 @@
 // ExclMode: default
 //==================================================
 CHECKSUM: "4058717612 3443767180"
-INSTANCE: tb.dut.top_earlgrey.u_kmac
+INSTANCE: tb.dut.top_darjeeling.u_kmac
 ANNOTATION: "[UNR] rom_ctrl -> KMAC app intf: Tied off data and strobe bits."
 Toggle app_i[2].strb "logic app_i[2].strb[7:0]"
 ANNOTATION: "[UNR] rom_ctrl -> KMAC app intf: Tied off data and strobe bits."
@@ -63,7 +63,7 @@ Toggle app_i[2].data [61] "logic app_i[2].data[63:0]"
 ANNOTATION: "[UNR] rom_ctrl -> KMAC app intf: Tied off data and strobe bits."
 Toggle app_i[2].data [62] "logic app_i[2].data[63:0]"
 CHECKSUM: "180068024 3922028773"
-INSTANCE: tb.dut.top_earlgrey.u_rom_ctrl
+INSTANCE: tb.dut.top_darjeeling.u_rom_ctrl
 ANNOTATION: "[UNR] rom_ctrl -> KMAC app intf: Tied off data and strobe bits."
 Toggle kmac_data_o.strb "logic kmac_data_o.strb[7:0]"
 ANNOTATION: "[UNR] rom_ctrl -> KMAC app intf: Tied off data and strobe bits."

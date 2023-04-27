@@ -23,7 +23,7 @@ class chip_sw_otp_ctrl_escalation_vseq extends chip_sw_base_vseq;
     cfg.en_scb_tl_err_chk = 0;
 
     // Let SW know the expected alert.
-    sw_alert_num = {TopEarlgreyAlertIdOtpCtrlFatalMacroError};
+    sw_alert_num = {TopDarjeelingAlertIdOtpCtrlFatalMacroError};
     sw_symbol_backdoor_overwrite("kExpectedAlertNumber", sw_alert_num);
 
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Ready for fault injection",

@@ -74,7 +74,7 @@ class chip_sw_data_integrity_vseq extends chip_sw_base_vseq;
     // And corrupt the data.
     `uvm_info(`gfn, $sformatf(
               "Corrupting memory at address 0x%x, for alert %0d", error_ram_address,
-              TopEarlgreyAlertIdRvCoreIbexFatalHwErr), UVM_MEDIUM)
+              TopDarjeelingAlertIdRvCoreIbexFatalHwErr), UVM_MEDIUM)
     if (fault_target == FaultTargetRetSramData) begin
       // Double check again that the address range is correct.
       error_ram_size = ral.sram_ctrl_ret_aon_ram.get_addr_mask() + 1;

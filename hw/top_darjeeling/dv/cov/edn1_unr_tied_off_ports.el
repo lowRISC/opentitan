@@ -9,7 +9,7 @@
 // ExclMode: default
 //==================================================
 CHECKSUM: "2576807815 1068541917"
-INSTANCE: tb.dut.top_earlgrey.u_edn1
+INSTANCE: tb.dut.top_darjeeling.u_edn1
 ANNOTATION: "[UNR] Tied off and unused."
 Toggle edn_i[1].edn_req "logic edn_i[1].edn_req"
 ANNOTATION: "[UNR] Tied off and unused."

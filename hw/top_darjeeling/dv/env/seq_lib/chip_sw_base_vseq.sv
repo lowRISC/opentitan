@@ -1012,7 +1012,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     bit [TL_DW-1:0] status;
     bit [TL_DW-1:0] err_mask = 0;
     bit idle = 0;
-    int base_addr = top_earlgrey_pkg::TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR;
+    int base_addr = top_darjeeling_pkg::TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR;
     jtag_riscv_agent_pkg::jtag_write_csr(base_addr +
                                          ral.otp_ctrl_core.direct_access_address.get_offset(),
                                          p_sequencer.jtag_sequencer_h,
@@ -1085,7 +1085,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // Before rma wipe for data partition started (256 pages),
   // this task force total page to 9 pages. So rma process is completed faster.
   virtual task enable_small_rma();
-    string path = "tb.dut.top_earlgrey.u_flash_ctrl.u_flash_hw_if";
+    string path = "tb.dut.top_darjeeling.u_flash_ctrl.u_flash_hw_if";
     string mypath;
     logic [2:0] rma_wipe_idx;
     logic [3:0] rma_ack;

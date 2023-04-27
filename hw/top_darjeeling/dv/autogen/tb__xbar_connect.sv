@@ -7,16 +7,16 @@
 // This file must be `included in `hw/top_<toplevel>/dv/tb/tb.sv.
 
 `define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name) \
-     force ``tl_name``_tl_if.d2h = dut.top_earlgrey.u_``inst_name``.``sig_name``_i; \
-     force dut.top_earlgrey.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
-     force dut.top_earlgrey.u_``inst_name``.clk_i = 0; \
+     force ``tl_name``_tl_if.d2h = dut.top_darjeeling.u_``inst_name``.``sig_name``_i; \
+     force dut.top_darjeeling.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
+     force dut.top_darjeeling.u_``inst_name``.clk_i = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
 `define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name) \
-     force ``tl_name``_tl_if.h2d = dut.top_earlgrey.u_``inst_name``.``sig_name``_i; \
-     force dut.top_earlgrey.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
-     force dut.top_earlgrey.u_``inst_name``.clk_i = 0; \
+     force ``tl_name``_tl_if.h2d = dut.top_darjeeling.u_``inst_name``.``sig_name``_i; \
+     force dut.top_darjeeling.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
+     force dut.top_darjeeling.u_``inst_name``.clk_i = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
@@ -97,27 +97,27 @@ initial begin
   if (xbar_mode) begin
     // only enable assertions in xbar as many pins are unconnected
     $assertoff(0, tb);
-    $asserton(0, tb.dut.top_earlgrey.u_xbar_main);
-    $asserton(0, tb.dut.top_earlgrey.u_xbar_peri);
+    $asserton(0, tb.dut.top_darjeeling.u_xbar_main);
+    $asserton(0, tb.dut.top_darjeeling.u_xbar_peri);
 
 
     // These are all zero-time: anything that consumes time go at the end.
 
     // bypass clkmgr, force clocks directly
-    force tb.dut.top_earlgrey.u_xbar_main.clk_main_i = clk_main;
-    force tb.dut.top_earlgrey.u_xbar_main.clk_fixed_i = clk_io_div4;
-    force tb.dut.top_earlgrey.u_xbar_main.clk_usb_i = clk_usb;
-    force tb.dut.top_earlgrey.u_xbar_main.clk_spi_host0_i = clk_io;
-    force tb.dut.top_earlgrey.u_xbar_main.clk_spi_host1_i = clk_io_div2;
-    force tb.dut.top_earlgrey.u_xbar_peri.clk_peri_i = clk_io_div4;
+    force tb.dut.top_darjeeling.u_xbar_main.clk_main_i = clk_main;
+    force tb.dut.top_darjeeling.u_xbar_main.clk_fixed_i = clk_io_div4;
+    force tb.dut.top_darjeeling.u_xbar_main.clk_usb_i = clk_usb;
+    force tb.dut.top_darjeeling.u_xbar_main.clk_spi_host0_i = clk_io;
+    force tb.dut.top_darjeeling.u_xbar_main.clk_spi_host1_i = clk_io_div2;
+    force tb.dut.top_darjeeling.u_xbar_peri.clk_peri_i = clk_io_div4;
 
     // bypass rstmgr, force resets directly
-    force tb.dut.top_earlgrey.u_xbar_main.rst_main_ni = rst_n;
-    force tb.dut.top_earlgrey.u_xbar_main.rst_fixed_ni = rst_n;
-    force tb.dut.top_earlgrey.u_xbar_main.rst_usb_ni = rst_n;
-    force tb.dut.top_earlgrey.u_xbar_main.rst_spi_host0_ni = rst_n;
-    force tb.dut.top_earlgrey.u_xbar_main.rst_spi_host1_ni = rst_n;
-    force tb.dut.top_earlgrey.u_xbar_peri.rst_peri_ni = rst_n;
+    force tb.dut.top_darjeeling.u_xbar_main.rst_main_ni = rst_n;
+    force tb.dut.top_darjeeling.u_xbar_main.rst_fixed_ni = rst_n;
+    force tb.dut.top_darjeeling.u_xbar_main.rst_usb_ni = rst_n;
+    force tb.dut.top_darjeeling.u_xbar_main.rst_spi_host0_ni = rst_n;
+    force tb.dut.top_darjeeling.u_xbar_main.rst_spi_host1_ni = rst_n;
+    force tb.dut.top_darjeeling.u_xbar_peri.rst_peri_ni = rst_n;
 
 `ifndef GATE_LEVEL
     `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h)

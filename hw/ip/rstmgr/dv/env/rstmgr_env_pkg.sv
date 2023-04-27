@@ -33,7 +33,7 @@ package rstmgr_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault", "fatal_cnsty_fault"};
   parameter uint NUM_ALERTS = 2;
 
-  // Sorted instances of rstmgr_leaf_rst modules in top_earlgrey's rstmgr.
+  // Sorted instances of rstmgr_leaf_rst modules in {top_chip}'s rstmgr.
   // This can be generated from the source using
   //   grep -A 5 rstmgr_leaf_rst <path to rstmgr.sv> | \
   //     egrep '^[ ]+\) u_' | sed 's/[ )(]//g' | sort | \

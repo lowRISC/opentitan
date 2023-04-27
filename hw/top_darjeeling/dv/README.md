@@ -1,8 +1,8 @@
-# OpenTitan Earl Grey Chip DV Document
+# OpenTitan Darjeeling Chip DV Document
 
 ## Goals
 * **DV**
-  * Verify `top_earlgrey` features by running dynamic simulations with a SV/UVM based testbench.
+  * Verify `top_darjeeling` features by running dynamic simulations with a SV/UVM based testbench.
   * Verify the integration of all pre-verified IPs instantiated in the chip.
   * Verify the integration and the internal design of non-pre-verified IPs instantiated in the chip.
   * Verify system level scenarios for correctness of our design assumptions and behavior.
@@ -16,20 +16,20 @@
 ## Current status
 * [Design & verification stage](../../README.md)
   * [HW development stages](../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/top_earlgrey/dv/latest/report.html)
+* [Simulation results](https://reports.opentitan.org/hw/top_darjeeling/dv/latest/report.html)
 
 ## Design features
-For detailed information on `top_earlgrey` design features, please see the [Earl Grey Top Level Specification](../doc/specification.md).
+For detailed information on `top_darjeeling` design features, please see the [Darjeeling Top Level Specification](../doc/specification.md).
 
 ## Testbench architecture
-The `top_earlgrey` chip level testbench has been constructed based on the [CIP testbench architecture](../../dv/sv/cip_lib/README.md).
+The `top_darjeeling` chip level testbench has been constructed based on the [CIP testbench architecture](../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
 TBD
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/top_earlgrey/dv/tb/tb.sv`.
-It instantiates the `top_earlgrey` DUT module `hw/top_earlgrey/rtl/autogen/chip_earlgrey_asic.sv`.
+Top level testbench is located at `hw/ip/top_darjeeling/dv/tb/tb.sv`.
+It instantiates the `top_darjeeling` DUT module `hw/top_darjeeling/rtl/autogen/chip_darjeeling_asic.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../dv/sv/common_ifs/README.md)
   * Main clock as well as USB clock
@@ -122,11 +122,11 @@ It creates the following analysis ports to retrieve the data monitored by corres
 * assert prop 2:
 
 ## Building and running tests
-DV simulations for `top_earlgrey` are run with the [`dvsim`]() tool.
+DV simulations for `top_darjeeling` are run with the [`dvsim`]() tool.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 The basic UART transmit and receive test can be run with the following command:
 ```console
-$ ./util/dvsim/dvsim.py hw/top_earlgrey/dv/chip_sim_cfg.hjson -i chip_sw_uart_tx_rx
+$ ./util/dvsim/dvsim.py hw/top_darjeeling/dv/chip_sim_cfg.hjson -i chip_sw_uart_tx_rx
 ```
 For a list of available tests  to run, please see the 'Tests' column in the [testplan](#testplan) below.
 

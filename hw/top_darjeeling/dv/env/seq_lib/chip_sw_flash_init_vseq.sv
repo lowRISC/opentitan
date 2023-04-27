@@ -8,17 +8,17 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   localparam string FLASH_DATA_KEY_PATH =
-    "tb.dut.top_earlgrey.u_flash_ctrl.u_flash_hw_if.data_key_o";
+    "tb.dut.top_darjeeling.u_flash_ctrl.u_flash_hw_if.data_key_o";
   localparam string FLASH_ADDR_KEY_PATH =
-    "tb.dut.top_earlgrey.u_flash_ctrl.u_flash_hw_if.addr_key_o";
+    "tb.dut.top_darjeeling.u_flash_ctrl.u_flash_hw_if.addr_key_o";
   localparam string FLASH_INIT_BUSY_PATH =
-    "tb.dut.top_earlgrey.u_flash_ctrl.u_flash_hw_if.init_busy_o";
-  localparam string KEYMGR_SEEDS_PATH = "tb.dut.top_earlgrey.u_flash_ctrl.u_flash_hw_if.seeds_o";
+    "tb.dut.top_darjeeling.u_flash_ctrl.u_flash_hw_if.init_busy_o";
+  localparam string KEYMGR_SEEDS_PATH = "tb.dut.top_darjeeling.u_flash_ctrl.u_flash_hw_if.seeds_o";
   localparam string FLASH_LC_SEED_HW_RD_EN_PATH =
-    "tb.dut.top_earlgrey.u_flash_ctrl.lc_seed_hw_rd_en_i";
+    "tb.dut.top_darjeeling.u_flash_ctrl.lc_seed_hw_rd_en_i";
 
   localparam string SRAM_CTRL_RET_HDL_PATH =
-    "tb.dut.top_earlgrey.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr";
+    "tb.dut.top_darjeeling.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr";
   localparam string SRAM_CTRL_RET_NONCE_PATH = {SRAM_CTRL_RET_HDL_PATH, ".nonce_i"};
   localparam string SRAM_CTRL_RET_KEY_PATH = {SRAM_CTRL_RET_HDL_PATH, ".key_i"};
 
@@ -265,9 +265,9 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
         // full 64bit bus might contain x's.
         if (lc_seed_hw_rd_en == lc_ctrl_pkg::Off) begin
           `DV_CHECK_EQ(creator_seed,
-              top_earlgrey_rnd_cnst_pkg::RndCnstFlashCtrlAllSeeds[SEED_WIDTH-1:0]);
+              top_darjeeling_rnd_cnst_pkg::RndCnstFlashCtrlAllSeeds[SEED_WIDTH-1:0]);
           `DV_CHECK_EQ(owner_seed,
-              top_earlgrey_rnd_cnst_pkg::RndCnstFlashCtrlAllSeeds[SEED_WIDTH +: SEED_WIDTH]);
+              top_darjeeling_rnd_cnst_pkg::RndCnstFlashCtrlAllSeeds[SEED_WIDTH +: SEED_WIDTH]);
         end else begin
           `DV_CHECK_EQ(creator_seed, expected_creator_seed[SEED_WIDTH-1:0]);
           `DV_CHECK_EQ(owner_seed, expected_owner_seed[SEED_WIDTH-1:0]);

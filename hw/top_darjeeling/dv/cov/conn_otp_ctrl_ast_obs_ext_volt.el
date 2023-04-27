@@ -9,11 +9,11 @@
 // ExclMode: default
 //==================================================
 CHECKSUM: "1202717726 1014860158"
-INSTANCE: tb.dut.top_earlgrey
+INSTANCE: tb.dut.top_darjeeling
 ANNOTATION: "[LOW_RISK] Covered via connectivity. Cannot be covered in open source DV due to behavioral models of AST and OTP. Must be covered in vendor closed source DV."
 Toggle otp_ext_voltage_h_io "net otp_ext_voltage_h_io"
 CHECKSUM: "708483626 3106053973"
-INSTANCE: tb.dut.top_earlgrey.u_otp_ctrl
+INSTANCE: tb.dut.top_darjeeling.u_otp_ctrl
 ANNOTATION: "[LOW_RISK] Covered via connectivity. Cannot be covered in open source DV due to behavioral models of AST and OTP. Must be covered in vendor closed source DV."
 Toggle otp_ext_voltage_h_io "net otp_ext_voltage_h_io"
 ANNOTATION: "[LOW_RISK] Covered via connectivity. Cannot be covered in open source DV due to behavioral models of AST and OTP. Must be covered in vendor closed source DV."

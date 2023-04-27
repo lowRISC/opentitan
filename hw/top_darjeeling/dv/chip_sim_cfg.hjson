@@ -6,7 +6,10 @@
   name: chip
 
   // Top level dut name (sv module).
-  dut: chip_earlgrey_asic
+  dut: chip_darjeeling_asic
+
+  // The name of the top level of this chip configuration.
+  top_chip: top_darjeeling
 
   // Top level testbench name (sv module).
   tb: tb
@@ -18,10 +21,10 @@
   fusesoc_core: lowrisc:dv:chip_sim:0.1
 
   // Testplan hjson file, excluding the connectivity tests.
-  testplan: "{proj_root}/hw/top_earlgrey/data/chip_testplan.hjson:-conn:-no_dv"
+  testplan: "{proj_root}/hw/{top_chip}/data/chip_testplan.hjson:-conn:-no_dv"
 
   // RAL spec - used to generate the RAL model.
-  ral_spec: "{proj_root}/hw/top_earlgrey/data/top_earlgrey.hjson"
+  ral_spec: "{proj_root}/hw/{top_chip}/data/{top_chip}.hjson"
 
   // Add additional tops for simulation.
   sim_tops: ["clkmgr_bind",
@@ -29,12 +32,12 @@
              "rstmgr_bind",
              "sec_cm_prim_onehot_check_bind",
              "sec_cm_prim_sparse_fsm_flop_bind",
-             "top_earlgrey_error_injection_ifs_bind",
-             "top_earlgrey_bind",
+             "{top_chip}_error_injection_ifs_bind",
+             "{top_chip}_bind",
              "xbar_main_bind",
              "xbar_peri_bind"]
 
-  top_dv_path: "{proj_root}/hw/top_earlgrey/dv"
+  top_dv_path: "{proj_root}/hw/{top_chip}/dv"
 
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
@@ -167,7 +170,7 @@
         // TODO: find where in run phase we are using this pkg. It fails during ibex TLUL integrity
         // check.
         // '''cd {proj_root} && ./util/topgen.py -t {ral_spec} \
-        //        -o hw/top_earlgrey --rnd_cnst_seed {seed}
+        //        -o hw/{top_chip} --rnd_cnst_seed {seed}
         // ''',
         // Generate LC encoding
         "cd {proj_root} && ./util/design/gen-lc-state-enc.py --seed {seed}",
@@ -395,7 +398,7 @@
   // `//sw/device/tests:example_test_from_flash:1`.
   //
   // To calculate the value of `+sw_test_timeout_ns` run dvsim by:
-  // $ util/dvsim/dvsim.py hw/top_earlgrey/dv/top_earlgrey_sim_cfgs.hjson \
+  // $ util/dvsim/dvsim.py hw/{top_chip}/dv/{top_chip}_sim_cfgs.hjson \
   //       -i TEST_NAME --fixed-seed=1
   // Run this a few times and take the worst case runtime, then  increase this
   // value by 20% and use the relationship that 5 minutes of runtime is roughly
@@ -1160,7 +1163,7 @@
     {
       name: chip_sw_alert_test
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests/autogen:alert_test:1"]
+      sw_images: ["//sw/device/tests/autogen/{top_chip}:alert_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -1482,7 +1485,7 @@
     {
       name: chip_sw_coremark
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//third_party/coremark/top_earlgrey:coremark_test:1"]
+      sw_images: ["//third_party/coremark/{top_chip}:coremark_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+en_uart_logger=1",
                  "+sw_test_timeout_ns=100_000_000"]
@@ -1519,7 +1522,7 @@
     {
       name: chip_plic_all_irqs
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests/autogen:plic_all_irqs_test:1"]
+      sw_images: ["//sw/device/tests/autogen/{top_chip}:plic_all_irqs_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {

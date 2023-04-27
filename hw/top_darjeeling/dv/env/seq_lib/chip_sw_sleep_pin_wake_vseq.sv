@@ -7,7 +7,7 @@
 //
 // In this test, the vseq should assert the designated PAD to wake the device
 // up from the sleep/ deep sleep state. The connections between the PADs and
-// the interfaces are hard-coded. Refer tb/tb.sv chip_earlgrey_asic
+// the interfaces are hard-coded. Refer tb/tb.sv chip_darjeeling_asic
 // instantiation.
 //
 // Two approaches are possible here:
@@ -39,7 +39,7 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
   }
 
   // SW-randomized values.
-  top_earlgrey_pkg::pad_type_e pad_type;
+  top_darjeeling_pkg::pad_type_e pad_type;
   int unsigned pad_idx;
   logic [DioCount-1:0]  periph_to_dio_oe;
   logic [MioOutCount-1:0]  periph_to_mio_oe;
@@ -62,7 +62,7 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
 
     // SW sends a log with chosen mode, pad formatted as below:
     //   Pad Selection: {pad_type} / {pad_idx}
-    pad_type = top_earlgrey_pkg::pad_type_e'(cfg.sw_logger_vif.printed_arg[0]);
+    pad_type = top_darjeeling_pkg::pad_type_e'(cfg.sw_logger_vif.printed_arg[0]);
     pad_idx  = cfg.sw_logger_vif.printed_arg[1];
     `uvm_info(`gfn, $sformatf("%0s[%0d] is chosen for wakeup", pad_type.name(), pad_idx), UVM_LOW)
 
@@ -97,8 +97,8 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
       // disconnect the mios_if too soon, then it will result in X-prop from the pinmux's (which is
       // in the AON domain) wakeup detection logic. So, we need to disconnect the pin from mios_if
       // at the same time the sw_straps_if is driven.
-      if (pad_type == top_earlgrey_pkg::MioPad &&
-          pad_idx inside {[top_earlgrey_pkg::MioPadIoc2:top_earlgrey_pkg::MioPadIoc0]}) begin
+      if (pad_type == top_darjeeling_pkg::MioPad &&
+          pad_idx inside {[top_darjeeling_pkg::MioPadIoc2:top_darjeeling_pkg::MioPadIoc0]}) begin
         @(cfg.chip_vif.sw_straps_if.pins_oe);
         drive_pad(pad_type, pad_idx, 1'bz);
       end
@@ -112,17 +112,17 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     drive_pad(pad_type, pad_idx, 1'bz);
   endtask
 
-  function void drive_pad(top_earlgrey_pkg::pad_type_e pad_type, int unsigned pad_idx, logic value);
+  function void drive_pad(top_darjeeling_pkg::pad_type_e pad_type, int unsigned pad_idx, logic value);
     `uvm_info(`gfn, $sformatf("Driving %0s[%0d] to %0b", pad_type.name(), pad_idx, value), UVM_LOW)
     case (pad_type)
-      top_earlgrey_pkg::DioPad: begin
-        `DV_CHECK(pad_idx inside {[0:top_earlgrey_pkg::DioCount-1]})
+      top_darjeeling_pkg::DioPad: begin
+        `DV_CHECK(pad_idx inside {[0:top_darjeeling_pkg::DioCount-1]})
         // DIO from the pinmux peripheral side needs to be mapped to the pad side. This mapping is
         // provided by chip_common_pkg::DioToDioPadMap.
         if (value === 1'bz) cfg.chip_vif.dios_if.drive_en_pin(DioToDioPadMap[pad_idx], 0);
         else                cfg.chip_vif.dios_if.drive_pin(DioToDioPadMap[pad_idx], value);
       end
-      top_earlgrey_pkg::MioPad: begin
+      top_darjeeling_pkg::MioPad: begin
         `DV_CHECK(pad_idx inside {[0:MioPadCount-1]})
         if (value === 1'bz) cfg.chip_vif.mios_if.drive_en_pin(pad_idx, 0);
         else                cfg.chip_vif.mios_if.drive_pin(pad_idx, value);

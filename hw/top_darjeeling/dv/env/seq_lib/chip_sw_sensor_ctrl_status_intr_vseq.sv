@@ -16,7 +16,7 @@ class chip_sw_sensor_ctrl_status_intr_vseq extends chip_sw_base_vseq;
     localparam string VIOB_POK_PATH = "tb.dut.u_ast.ast_pwst_o.io_pok[1]";
   `endif
 
-  localparam string SLEEPING_PATH = "tb.dut.top_earlgrey.u_rv_core_ibex.u_core_sleeping_buf.out_o";
+  localparam string SLEEPING_PATH = "tb.dut.top_darjeeling.u_rv_core_ibex.u_core_sleeping_buf.out_o";
   string io_paths[2] = '{VIOA_POK_PATH, VIOB_POK_PATH};
   int iterations = 10;
 

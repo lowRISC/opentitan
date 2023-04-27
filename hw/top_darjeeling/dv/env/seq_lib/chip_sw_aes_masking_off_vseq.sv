@@ -201,7 +201,7 @@ class chip_sw_aes_masking_off_vseq extends chip_sw_base_vseq;
     super.body();
 
     // Set path to the AES cipher core.
-    aes_cipher_core_path = "tb.dut.top_earlgrey.u_aes.u_aes_core.u_aes_cipher_core";
+    aes_cipher_core_path = "tb.dut.top_darjeeling.u_aes.u_aes_core.u_aes_cipher_core";
 
     // Initialize block counter. We will do 4 blocks.
     block_ctr = 0;

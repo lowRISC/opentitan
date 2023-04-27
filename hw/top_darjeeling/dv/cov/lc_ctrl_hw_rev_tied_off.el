@@ -10,7 +10,7 @@
 // ExclMode: default
 //==================================================
 CHECKSUM: "3497701341 3193573764"
-INSTANCE: tb.dut.top_earlgrey.u_lc_ctrl
+INSTANCE: tb.dut.top_darjeeling.u_lc_ctrl
 ANNOTATION: "[UNR]: LcCtrlSiliconCreatorId and LcCtrlProductId and LcCtrlRevisionId are tied off to design parameters."
 Toggle hw_rev_o.silicon_creator_id "logic hw_rev_o.silicon_creator_id[15:0]"
 ANNOTATION: "[UNR]: LcCtrlSiliconCreatorId and LcCtrlProductId and LcCtrlRevisionId are tied off to design parameters."

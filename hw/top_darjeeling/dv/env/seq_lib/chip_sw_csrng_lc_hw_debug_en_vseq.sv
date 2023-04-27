@@ -11,7 +11,7 @@ class chip_sw_csrng_lc_hw_debug_en_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   localparam string LC_CTRL_TRANS_SUCCESS_PATH =
-    "tb.dut.top_earlgrey.u_lc_ctrl.u_lc_ctrl_fsm.trans_success_o";
+    "tb.dut.top_darjeeling.u_lc_ctrl.u_lc_ctrl_fsm.trans_success_o";
 
   localparam logic [255:0] DEVICE_ID =
       256'hFA53B8058E157CB69F1F413E87242971B6B52A656A1CAB7FEBF21E5BF1F45EDD;

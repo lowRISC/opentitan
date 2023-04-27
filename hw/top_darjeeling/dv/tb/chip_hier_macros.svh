@@ -5,7 +5,7 @@
 `ifndef DUT_HIER
   `define DUT_HIER            tb.dut
 `endif
-`define CHIP_HIER             `DUT_HIER.top_earlgrey
+`define CHIP_HIER             `DUT_HIER.top_darjeeling
 
 `define ALERT_HANDLER_HIER    `CHIP_HIER.u_alert_handler
 `define CLKMGR_HIER           `CHIP_HIER.u_clkmgr_aon

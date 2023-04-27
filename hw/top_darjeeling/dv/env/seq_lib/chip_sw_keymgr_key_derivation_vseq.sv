@@ -78,26 +78,26 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   localparam gen_out_data_t GenSWOutData = '{
       SwKeyVersion,
       Salt,
-      top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrNoneSeed,
-      top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrSoftOutputSeed};
+      top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrNoneSeed,
+      top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrSoftOutputSeed};
 
   localparam gen_out_data_t GenKmacOutData = '{
       SwKeyVersion,
       Salt,
-      top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrKmacSeed,
-      top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrHardOutputSeed};
+      top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrKmacSeed,
+      top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrHardOutputSeed};
 
   localparam gen_out_data_t GenAesOutData = '{
       SwKeyVersion,
       Salt,
-      top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrAesSeed,
-      top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrHardOutputSeed};
+      top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrAesSeed,
+      top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrHardOutputSeed};
 
   localparam gen_out_data_t GenOtbnOutData = '{
       SwKeyVersion,
       Salt,
-      top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrOtbnSeed,
-      top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrHardOutputSeed};
+      top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrOtbnSeed,
+      top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrHardOutputSeed};
 
   bit lc_at_prod;
 
@@ -110,7 +110,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task body();
-    string path_internal_key = "tb.dut.top_earlgrey.u_keymgr.u_ctrl.key_o.key";
+    string path_internal_key = "tb.dut.top_darjeeling.u_keymgr.u_ctrl.key_o.key";
     key_shares_t new_key;
     bit [keymgr_pkg::KeyWidth-1:0] cur_unmasked_key;
     bit [keymgr_pkg::KeyWidth-1:0] new_unmasked_key;
@@ -129,7 +129,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     check_internal_key(cur_unmasked_key, creator_data, new_unmasked_key);
 
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Keymgr generated identity at CreatorRootKey State")
-    check_gen_id(new_unmasked_key, top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrCreatorIdentitySeed);
+    check_gen_id(new_unmasked_key, top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrCreatorIdentitySeed);
 
     // wait and check Keymgr entered OwnerIntKey State
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Keymgr entered OwnerIntKey State");
@@ -142,12 +142,12 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task check_op_in_owner_int_state(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key);
-    string path_otbn_key = "tb.dut.top_earlgrey.u_keymgr.otbn_key_o";
+    string path_otbn_key = "tb.dut.top_darjeeling.u_keymgr.otbn_key_o";
     bit [keymgr_pkg::KeyWidth-1:0]     exp_digest;
     bit [keymgr_pkg::KeyWidth-1:0]     unused_key;
 
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Keymgr generated identity at OwnerIntKey State")
-    check_gen_id(unmasked_key, top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrOwnerIntIdentitySeed);
+    check_gen_id(unmasked_key, top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrOwnerIntIdentitySeed);
 
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Keymgr generated SW output at OwnerIntKey State")
     get_sw_shares(exp_digest);
@@ -178,13 +178,13 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     end
 
     // The next operation is disable, and key will be wiped and changed every cycle.
-    $assertoff(0, "tb.dut.top_earlgrey.u_kmac.u_kmac_core.KeyDataStable_M");
+    $assertoff(0, "tb.dut.top_darjeeling.u_kmac.u_kmac_core.KeyDataStable_M");
   endtask
 
   virtual task check_kmac_sideload(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key,
                                    output bit [keymgr_pkg::KeyWidth-1:0] sideload_kmac_key);
     keymgr_pkg::hw_key_req_t hw_key;
-    string path_kmac_key = "tb.dut.top_earlgrey.u_keymgr.kmac_key_o";
+    string path_kmac_key = "tb.dut.top_darjeeling.u_keymgr.kmac_key_o";
     `DV_WAIT(cfg.sw_logger_vif.printed_log ==
           "Keymgr generated HW output for Kmac at OwnerIntKey State")
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_kmac_key))
@@ -197,7 +197,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   virtual task check_aes_sideload(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key,
                                   output bit [keymgr_pkg::KeyWidth-1:0] sideload_aes_key);
     keymgr_pkg::hw_key_req_t hw_key;
-    string path_aes_key = "tb.dut.top_earlgrey.u_keymgr.aes_key_o";
+    string path_aes_key = "tb.dut.top_darjeeling.u_keymgr.aes_key_o";
     `DV_WAIT(cfg.sw_logger_vif.printed_log ==
           "Keymgr generated HW output for Aes at OwnerIntKey State")
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_aes_key))
@@ -221,7 +221,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   virtual task get_creator_data(output bit [keymgr_pkg::AdvDataWidth-1:0] creator_data_out);
     adv_creator_data_t creator_data;
     creator_data.SoftwareBinding = CreatorSwBinding;
-    creator_data.HardwareRevisionSecret = top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrRevisionSeed;
+    creator_data.HardwareRevisionSecret = top_darjeeling_rnd_cnst_pkg::RndCnstKeymgrRevisionSeed;
 
     for (int i = 0; i < keymgr_pkg::DevIdWidth / TL_DW; i++) begin
       bit [TL_DW-1:0] rdata;
@@ -234,10 +234,10 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     // this test uses either PROD or RMA state
     if (lc_at_prod) begin
       creator_data.HealthMeasurement =
-          top_earlgrey_rnd_cnst_pkg::RndCnstLcCtrlLcKeymgrDivProduction;
+          top_darjeeling_rnd_cnst_pkg::RndCnstLcCtrlLcKeymgrDivProduction;
     end else begin
       creator_data.HealthMeasurement =
-          top_earlgrey_rnd_cnst_pkg::RndCnstLcCtrlLcKeymgrDivTestDevRma;
+          top_darjeeling_rnd_cnst_pkg::RndCnstLcCtrlLcKeymgrDivTestDevRma;
     end
 
     for (int i = 0; i < keymgr_pkg::KeyWidth / TL_DW; i++) begin

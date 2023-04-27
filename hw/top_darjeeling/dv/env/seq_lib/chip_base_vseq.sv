@@ -94,15 +94,15 @@ class chip_base_vseq #(
       cfg.mem_bkdr_util_h[Rom].rom_encrypt_write32_integ(
           addr,
           rnd_data,
-          top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrKey,
-          top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce,
+          top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrlScrKey,
+          top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrlScrNonce,
           1'b1); // Enable scrambling.
     end
 
     // Update the ROM digest.
     cfg.mem_bkdr_util_h[Rom].update_rom_digest(
-        top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrKey,
-        top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce);
+        top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrlScrKey,
+        top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrlScrNonce);
   endfunction
 
   // Iniitializes the DUT.

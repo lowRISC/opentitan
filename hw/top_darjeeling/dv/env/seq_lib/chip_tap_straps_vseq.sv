@@ -8,14 +8,14 @@
 // Verify in PROD state, only the LC tap can be selected.
 // Verify in DEV state, only the LC tap and RISC-V taps can be selected.
 // Verify DFT test mode straps are sampled and output to AST via
-// top_earlgrey.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
+// top_darjeeling.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
 // Verify pimux.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED* and
 // RMA, regardless of the value on DFT SW straps.
 
 class chip_tap_straps_vseq extends chip_sw_base_vseq;
-  string path_dft_strap_test_o = "tb.dut.top_earlgrey.dft_strap_test_o";
-  string path_dft_tap_req = "tb.dut.top_earlgrey.u_dft_tap_breakout.req_i";
-  string path_dft_tap_rsp = "tb.dut.top_earlgrey.u_dft_tap_breakout.rsp_o";
+  string path_dft_strap_test_o = "tb.dut.top_darjeeling.dft_strap_test_o";
+  string path_dft_tap_req = "tb.dut.top_darjeeling.u_dft_tap_breakout.req_i";
+  string path_dft_tap_rsp = "tb.dut.top_darjeeling.u_dft_tap_breakout.rsp_o";
   string path_tb_jtag_tck = "tb.dut.chip_if.jtag_if.tck";
   string path_tb_jtag_tms = "tb.dut.chip_if.jtag_if.tms";
   string path_tb_jtag_trst_n = "tb.dut.chip_if.jtag_if.trst_n";

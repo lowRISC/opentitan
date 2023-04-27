@@ -9,13 +9,13 @@
 // ExclMode: default
 //==================================================
 CHECKSUM: "2715753694 4000582234"
-INSTANCE: tb.dut.top_earlgrey.u_spi_host0
+INSTANCE: tb.dut.top_darjeeling.u_spi_host0
 ANNOTATION: "[UNR] Tied off."
 Toggle passthrough_i.sck_en "logic passthrough_i.sck_en"
 ANNOTATION: "[UNR] Tied off."
 Toggle passthrough_i.csb_en "logic passthrough_i.csb_en"
 CHECKSUM: "2715753694 4000582234"
-INSTANCE: tb.dut.top_earlgrey.u_spi_host1
+INSTANCE: tb.dut.top_darjeeling.u_spi_host1
 ANNOTATION: "[UNR] Tied off."
 Toggle passthrough_i.csb "logic passthrough_i.csb"
 ANNOTATION: "[UNR] Tied off."
@@ -31,7 +31,7 @@ Toggle passthrough_i.passthrough_en "logic passthrough_i.passthrough_en"
 ANNOTATION: "[UNR] Tied off."
 Toggle passthrough_i.csb_en "logic passthrough_i.csb_en"
 CHECKSUM: "1457336862 944375913"
-INSTANCE: tb.dut.top_earlgrey.u_spi_device
+INSTANCE: tb.dut.top_darjeeling.u_spi_device
 ANNOTATION: "[UNR] Tied off."
 Toggle passthrough_o.csb_en "logic passthrough_o.csb_en"
 ANNOTATION: "[UNR] Tied off."

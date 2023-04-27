@@ -10,7 +10,7 @@ module tb;
   import chip_env_pkg::*;
   import chip_common_pkg::*;
   import top_pkg::*;
-  import top_earlgrey_pkg::*;
+  import top_darjeeling_pkg::*;
   import chip_test_pkg::*;
   import xbar_test_pkg::*;
   import mem_bkdr_util_pkg::mem_bkdr_util;
@@ -50,7 +50,7 @@ module tb;
     .rst_n(passive_rst_n)
   );
   // Reset driver for pad tests.
-  assign passive_rst_n = dut.chip_if.dios[top_earlgrey_pkg::DioPadPorN];
+  assign passive_rst_n = dut.chip_if.dios[top_darjeeling_pkg::DioPadPorN];
 
   // The interface only drives the clock.
   initial passive_clk_rst_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
@@ -77,12 +77,12 @@ module tb;
 
   // TODO: Absorb this functionality into chip_if.
   bind dut ast_supply_if ast_supply_if (
-    .clk(top_earlgrey.clk_aon_i),
+    .clk(top_darjeeling.clk_aon_i),
 `ifdef GATE_LEVEL
     .core_sleeping_trigger(0),
     .low_power_trigger(0)
 `else
-    .core_sleeping_trigger(top_earlgrey.rv_core_ibex_pwrmgr.core_sleeping),
+    .core_sleeping_trigger(top_darjeeling.rv_core_ibex_pwrmgr.core_sleeping),
     .low_power_trigger(`PWRMGR_HIER.pwr_rst_o.reset_cause == pwrmgr_pkg::LowPwrEntry)
 `endif
   );
@@ -97,10 +97,10 @@ module tb;
     assign alert_if[i].alert_rx = `ALERT_HANDLER_HIER.alert_rx_o[i];
   end
 
-  bind chip_earlgrey_asic chip_if chip_if();
+  bind chip_darjeeling_asic chip_if chip_if();
 
 `ifdef DISABLE_ROM_INTEGRITY_CHECK
-  chip_earlgrey_asic #(
+  chip_darjeeling_asic #(
     // This is to be used carefully, and should never be on for synthesis.
     // It causes many rom features to be disabled, including the very slow
     // integrity check, so full chip simulation runs don't do it for each
@@ -108,87 +108,87 @@ module tb;
     .SecRomCtrlDisableScrambling(1'b1)
 ) dut (
 `else
-  chip_earlgrey_asic dut (
+  chip_darjeeling_asic dut (
 `endif
     // Dedicated Pads
-    .POR_N(dut.chip_if.dios[top_earlgrey_pkg::DioPadPorN]),
-    .USB_P(dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbP]),
-    .USB_N(dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbN]),
+    .POR_N(dut.chip_if.dios[top_darjeeling_pkg::DioPadPorN]),
+    .USB_P(dut.chip_if.dios[top_darjeeling_pkg::DioPadUsbP]),
+    .USB_N(dut.chip_if.dios[top_darjeeling_pkg::DioPadUsbN]),
 `ifdef ANALOGSIM
     .CC1(cc1),
     .CC2(cc2),
 `else
-    .CC1(dut.chip_if.dios[top_earlgrey_pkg::DioPadCc1]),
-    .CC2(dut.chip_if.dios[top_earlgrey_pkg::DioPadCc2]),
+    .CC1(dut.chip_if.dios[top_darjeeling_pkg::DioPadCc1]),
+    .CC2(dut.chip_if.dios[top_darjeeling_pkg::DioPadCc2]),
 `endif
-    .FLASH_TEST_VOLT(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestVolt]),
-    .FLASH_TEST_MODE0(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestMode0]),
-    .FLASH_TEST_MODE1(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestMode1]),
-    .OTP_EXT_VOLT(dut.chip_if.dios[top_earlgrey_pkg::DioPadOtpExtVolt]),
-    .SPI_HOST_D0(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostD0]),
-    .SPI_HOST_D1(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostD1]),
-    .SPI_HOST_D2(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostD2]),
-    .SPI_HOST_D3(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostD3]),
-    .SPI_HOST_CLK(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostClk]),
-    .SPI_HOST_CS_L(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostCsL]),
-    .SPI_DEV_D0(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiDevD0]),
-    .SPI_DEV_D1(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiDevD1]),
-    .SPI_DEV_D2(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiDevD2]),
-    .SPI_DEV_D3(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiDevD3]),
-    .SPI_DEV_CLK(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiDevClk]),
-    .SPI_DEV_CS_L(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiDevCsL]),
-    .IOR8(dut.chip_if.dios[top_earlgrey_pkg::DioPadIor8]),
-    .IOR9(dut.chip_if.dios[top_earlgrey_pkg::DioPadIor9]),
+    .FLASH_TEST_VOLT(dut.chip_if.dios[top_darjeeling_pkg::DioPadFlashTestVolt]),
+    .FLASH_TEST_MODE0(dut.chip_if.dios[top_darjeeling_pkg::DioPadFlashTestMode0]),
+    .FLASH_TEST_MODE1(dut.chip_if.dios[top_darjeeling_pkg::DioPadFlashTestMode1]),
+    .OTP_EXT_VOLT(dut.chip_if.dios[top_darjeeling_pkg::DioPadOtpExtVolt]),
+    .SPI_HOST_D0(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiHostD0]),
+    .SPI_HOST_D1(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiHostD1]),
+    .SPI_HOST_D2(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiHostD2]),
+    .SPI_HOST_D3(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiHostD3]),
+    .SPI_HOST_CLK(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiHostClk]),
+    .SPI_HOST_CS_L(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiHostCsL]),
+    .SPI_DEV_D0(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiDevD0]),
+    .SPI_DEV_D1(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiDevD1]),
+    .SPI_DEV_D2(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiDevD2]),
+    .SPI_DEV_D3(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiDevD3]),
+    .SPI_DEV_CLK(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiDevClk]),
+    .SPI_DEV_CS_L(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiDevCsL]),
+    .IOR8(dut.chip_if.dios[top_darjeeling_pkg::DioPadIor8]),
+    .IOR9(dut.chip_if.dios[top_darjeeling_pkg::DioPadIor9]),
     .AST_MISC(dut.chip_if.ast_misc),
 
     // Muxed Pads
-    .IOA0(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa0]),
-    .IOA1(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa1]),
-    .IOA2(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa2]),
-    .IOA3(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa3]),
-    .IOA4(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa4]),
-    .IOA5(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa5]),
-    .IOA6(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa6]),
-    .IOA7(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa7]),
-    .IOA8(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa8]),
-    .IOB0(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob0]),
-    .IOB1(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob1]),
-    .IOB2(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob2]),
-    .IOB3(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob3]),
-    .IOB4(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob4]),
-    .IOB5(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob5]),
-    .IOB6(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob6]),
-    .IOB7(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob7]),
-    .IOB8(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob8]),
-    .IOB9(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob9]),
-    .IOB10(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob10]),
-    .IOB11(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob11]),
-    .IOB12(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob12]),
-    .IOC0(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc0]),
-    .IOC1(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc1]),
-    .IOC2(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc2]),
-    .IOC3(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc3]),
-    .IOC4(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc4]),
-    .IOC5(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc5]),
-    .IOC6(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc6]),
-    .IOC7(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc7]),
-    .IOC8(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc8]),
-    .IOC9(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc9]),
-    .IOC10(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc10]),
-    .IOC11(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc11]),
-    .IOC12(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc12]),
-    .IOR0(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor0]),
-    .IOR1(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor1]),
-    .IOR2(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor2]),
-    .IOR3(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor3]),
-    .IOR4(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor4]),
-    .IOR5(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor5]),
-    .IOR6(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor6]),
-    .IOR7(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor7]),
-    .IOR10(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor10]),
-    .IOR11(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor11]),
-    .IOR12(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor12]),
-    .IOR13(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor13])
+    .IOA0(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoa0]),
+    .IOA1(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoa1]),
+    .IOA2(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoa2]),
+    .IOA3(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoa3]),
+    .IOA4(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoa4]),
+    .IOA5(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoa5]),
+    .IOA6(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoa6]),
+    .IOA7(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoa7]),
+    .IOA8(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoa8]),
+    .IOB0(dut.chip_if.mios[top_darjeeling_pkg::MioPadIob0]),
+    .IOB1(dut.chip_if.mios[top_darjeeling_pkg::MioPadIob1]),
+    .IOB2(dut.chip_if.mios[top_darjeeling_pkg::MioPadIob2]),
+    .IOB3(dut.chip_if.mios[top_darjeeling_pkg::MioPadIob3]),
+    .IOB4(dut.chip_if.mios[top_darjeeling_pkg::MioPadIob4]),
+    .IOB5(dut.chip_if.mios[top_darjeeling_pkg::MioPadIob5]),
+    .IOB6(dut.chip_if.mios[top_darjeeling_pkg::MioPadIob6]),
+    .IOB7(dut.chip_if.mios[top_darjeeling_pkg::MioPadIob7]),
+    .IOB8(dut.chip_if.mios[top_darjeeling_pkg::MioPadIob8]),
+    .IOB9(dut.chip_if.mios[top_darjeeling_pkg::MioPadIob9]),
+    .IOB10(dut.chip_if.mios[top_darjeeling_pkg::MioPadIob10]),
+    .IOB11(dut.chip_if.mios[top_darjeeling_pkg::MioPadIob11]),
+    .IOB12(dut.chip_if.mios[top_darjeeling_pkg::MioPadIob12]),
+    .IOC0(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc0]),
+    .IOC1(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc1]),
+    .IOC2(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc2]),
+    .IOC3(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc3]),
+    .IOC4(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc4]),
+    .IOC5(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc5]),
+    .IOC6(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc6]),
+    .IOC7(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc7]),
+    .IOC8(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc8]),
+    .IOC9(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc9]),
+    .IOC10(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc10]),
+    .IOC11(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc11]),
+    .IOC12(dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc12]),
+    .IOR0(dut.chip_if.mios[top_darjeeling_pkg::MioPadIor0]),
+    .IOR1(dut.chip_if.mios[top_darjeeling_pkg::MioPadIor1]),
+    .IOR2(dut.chip_if.mios[top_darjeeling_pkg::MioPadIor2]),
+    .IOR3(dut.chip_if.mios[top_darjeeling_pkg::MioPadIor3]),
+    .IOR4(dut.chip_if.mios[top_darjeeling_pkg::MioPadIor4]),
+    .IOR5(dut.chip_if.mios[top_darjeeling_pkg::MioPadIor5]),
+    .IOR6(dut.chip_if.mios[top_darjeeling_pkg::MioPadIor6]),
+    .IOR7(dut.chip_if.mios[top_darjeeling_pkg::MioPadIor7]),
+    .IOR10(dut.chip_if.mios[top_darjeeling_pkg::MioPadIor10]),
+    .IOR11(dut.chip_if.mios[top_darjeeling_pkg::MioPadIor11]),
+    .IOR12(dut.chip_if.mios[top_darjeeling_pkg::MioPadIor12]),
+    .IOR13(dut.chip_if.mios[top_darjeeling_pkg::MioPadIor13])
   );
 
   `define SIM_SRAM_IF u_sim_sram.u_sim_sram_if
@@ -222,9 +222,9 @@ module tb;
     .clk_i            (dut.chip_if.usb_clk),
     .rst_ni           (dut.chip_if.usb_rst_n),
 
-    .usb_vbus         (dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc7]),
-    .usb_p            (dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbP]),
-    .usb_n            (dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbN])
+    .usb_vbus         (dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc7]),
+    .usb_p            (dut.chip_if.dios[top_darjeeling_pkg::DioPadUsbP]),
+    .usb_n            (dut.chip_if.dios[top_darjeeling_pkg::DioPadUsbN])
   );
 
   // Instantiate & connect the USB DPI model for top-level testing.
@@ -241,8 +241,8 @@ module tb;
     .usb_dp_p2d_o     (u_usb20_if.usb_dp_p2d),
     .usb_dn_p2d_o     (u_usb20_if.usb_dn_p2d),
 
-    .usb_p            (dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbP]),
-    .usb_n            (dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbN])
+    .usb_p            (dut.chip_if.dios[top_darjeeling_pkg::DioPadUsbP]),
+    .usb_n            (dut.chip_if.dios[top_darjeeling_pkg::DioPadUsbN])
   );
 
   sim_sram u_sim_sram (
@@ -339,7 +339,7 @@ module tb;
           .depth ($size(`FLASH0_DATA_MEM_HIER)),
           .n_bits($bits(`FLASH0_DATA_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
-          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_EFLASH_BASE_ADDR));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Data], `FLASH0_DATA_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 0 info", UVM_MEDIUM)
@@ -349,7 +349,7 @@ module tb;
           .depth ($size(`FLASH0_INFO_MEM_HIER)),
           .n_bits($bits(`FLASH0_INFO_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
-          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_EFLASH_BASE_ADDR));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Info], `FLASH0_INFO_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 1 data", UVM_MEDIUM)
@@ -359,8 +359,8 @@ module tb;
           .depth ($size(`FLASH1_DATA_MEM_HIER)),
           .n_bits($bits(`FLASH1_DATA_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
-          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR +
-              top_earlgrey_pkg::TOP_EARLGREY_EFLASH_SIZE_BYTES / flash_ctrl_pkg::NumBanks));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_EFLASH_BASE_ADDR +
+              top_darjeeling_pkg::TOP_DARJEELING_EFLASH_SIZE_BYTES / flash_ctrl_pkg::NumBanks));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Data], `FLASH1_DATA_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 1 info", UVM_MEDIUM)
@@ -370,8 +370,8 @@ module tb;
           .depth ($size(`FLASH1_INFO_MEM_HIER)),
           .n_bits($bits(`FLASH1_INFO_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
-          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR +
-              top_earlgrey_pkg::TOP_EARLGREY_EFLASH_SIZE_BYTES / flash_ctrl_pkg::NumBanks));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_EFLASH_BASE_ADDR +
+              top_darjeeling_pkg::TOP_DARJEELING_EFLASH_SIZE_BYTES / flash_ctrl_pkg::NumBanks));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Info], `FLASH1_INFO_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for I cache way 0 tag", UVM_MEDIUM)
@@ -428,7 +428,7 @@ module tb;
           .depth ($size(`RAM_MAIN_MEM_HIER)),
           .n_bits($bits(`RAM_MAIN_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_RAM_MAIN_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_MAIN_BASE_ADDR));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMain0], `RAM_MAIN_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RAM RET", UVM_MEDIUM)
@@ -438,7 +438,7 @@ module tb;
           .depth ($size(`RAM_RET_MEM_HIER)),
           .n_bits($bits(`RAM_RET_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_RAM_RET_AON_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_RET_AON_BASE_ADDR));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet0], `RAM_RET_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for ROM", UVM_MEDIUM)
@@ -452,7 +452,7 @@ module tb;
 `else
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
 `endif
-          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_ROM_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM_BASE_ADDR));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom], `ROM_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTBN IMEM", UVM_MEDIUM)
@@ -519,45 +519,45 @@ module tb;
       // See chip_padctrl_attributes_vseq for more details.
       forever @dut.chip_if.chip_padctrl_attributes_test_sva_disable begin
         if (dut.chip_if.chip_padctrl_attributes_test_sva_disable) begin
-          $assertoff(0, dut.top_earlgrey.u_flash_ctrl);
-          $assertoff(0, dut.top_earlgrey.u_gpio);
-          $assertoff(0, dut.top_earlgrey.u_i2c0);
-          $assertoff(0, dut.top_earlgrey.u_i2c1);
-          $assertoff(0, dut.top_earlgrey.u_i2c2);
-          $assertoff(0, dut.top_earlgrey.u_pinmux_aon);
-          $assertoff(0, dut.top_earlgrey.u_spi_device);
-          $assertoff(0, dut.top_earlgrey.u_spi_host0);
-          $assertoff(0, dut.top_earlgrey.u_spi_host1);
-          $assertoff(0, dut.top_earlgrey.u_sysrst_ctrl_aon);
-          $assertoff(0, dut.top_earlgrey.u_uart0);
-          $assertoff(0, dut.top_earlgrey.u_uart1);
-          $assertoff(0, dut.top_earlgrey.u_uart2);
-          $assertoff(0, dut.top_earlgrey.u_uart3);
-          $assertoff(0, dut.top_earlgrey.u_usbdev);
+          $assertoff(0, dut.top_darjeeling.u_flash_ctrl);
+          $assertoff(0, dut.top_darjeeling.u_gpio);
+          $assertoff(0, dut.top_darjeeling.u_i2c0);
+          $assertoff(0, dut.top_darjeeling.u_i2c1);
+          $assertoff(0, dut.top_darjeeling.u_i2c2);
+          $assertoff(0, dut.top_darjeeling.u_pinmux_aon);
+          $assertoff(0, dut.top_darjeeling.u_spi_device);
+          $assertoff(0, dut.top_darjeeling.u_spi_host0);
+          $assertoff(0, dut.top_darjeeling.u_spi_host1);
+          $assertoff(0, dut.top_darjeeling.u_sysrst_ctrl_aon);
+          $assertoff(0, dut.top_darjeeling.u_uart0);
+          $assertoff(0, dut.top_darjeeling.u_uart1);
+          $assertoff(0, dut.top_darjeeling.u_uart2);
+          $assertoff(0, dut.top_darjeeling.u_uart3);
+          $assertoff(0, dut.top_darjeeling.u_usbdev);
         end else begin
-          $asserton(0, dut.top_earlgrey.u_flash_ctrl);
-          $asserton(0, dut.top_earlgrey.u_gpio);
-          $asserton(0, dut.top_earlgrey.u_i2c0);
-          $asserton(0, dut.top_earlgrey.u_i2c1);
-          $asserton(0, dut.top_earlgrey.u_i2c2);
-          $asserton(0, dut.top_earlgrey.u_pinmux_aon);
-          $asserton(0, dut.top_earlgrey.u_spi_device);
-          $asserton(0, dut.top_earlgrey.u_spi_host0);
-          $asserton(0, dut.top_earlgrey.u_spi_host1);
-          $asserton(0, dut.top_earlgrey.u_sysrst_ctrl_aon);
-          $asserton(0, dut.top_earlgrey.u_uart0);
-          $asserton(0, dut.top_earlgrey.u_uart1);
-          $asserton(0, dut.top_earlgrey.u_uart2);
-          $asserton(0, dut.top_earlgrey.u_uart3);
-          $asserton(0, dut.top_earlgrey.u_usbdev);
+          $asserton(0, dut.top_darjeeling.u_flash_ctrl);
+          $asserton(0, dut.top_darjeeling.u_gpio);
+          $asserton(0, dut.top_darjeeling.u_i2c0);
+          $asserton(0, dut.top_darjeeling.u_i2c1);
+          $asserton(0, dut.top_darjeeling.u_i2c2);
+          $asserton(0, dut.top_darjeeling.u_pinmux_aon);
+          $asserton(0, dut.top_darjeeling.u_spi_device);
+          $asserton(0, dut.top_darjeeling.u_spi_host0);
+          $asserton(0, dut.top_darjeeling.u_spi_host1);
+          $asserton(0, dut.top_darjeeling.u_sysrst_ctrl_aon);
+          $asserton(0, dut.top_darjeeling.u_uart0);
+          $asserton(0, dut.top_darjeeling.u_uart1);
+          $asserton(0, dut.top_darjeeling.u_uart2);
+          $asserton(0, dut.top_darjeeling.u_uart3);
+          $asserton(0, dut.top_darjeeling.u_usbdev);
         end
       end
       // See chip_sw_sleep_pin_mio_dio_val_vseq for more details.
       forever @dut.chip_if.chip_sw_sleep_pin_mio_dio_val_sva_disable begin
         if (dut.chip_if.chip_sw_sleep_pin_mio_dio_val_sva_disable) begin
-          $assertoff(0, dut.top_earlgrey.u_spi_device);
+          $assertoff(0, dut.top_darjeeling.u_spi_device);
         end else begin
-          $asserton(0, dut.top_earlgrey.u_spi_device);
+          $asserton(0, dut.top_darjeeling.u_spi_device);
         end
       end
     join

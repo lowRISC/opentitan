@@ -15,8 +15,8 @@ class chip_sw_sysrst_ctrl_reset_vseq extends chip_sw_base_vseq;
   localparam string PAD_LIDOPEN_PATH = "tb.dut.IOC9";
   localparam string PAD_ECRST_PATH = "tb.dut.IOR8";
   localparam string PAD_FLASHWP_PATH = "tb.dut.IOR9";
-  localparam string PWRMGR_RSTREQ_PATH = "tb.dut.top_earlgrey.u_pwrmgr_aon.rstreqs_i[0]";
-  localparam string RST_AON_NI_PATH = "tb.dut.top_earlgrey.u_sysrst_ctrl_aon.rst_aon_ni";
+  localparam string PWRMGR_RSTREQ_PATH = "tb.dut.top_darjeeling.u_pwrmgr_aon.rstreqs_i[0]";
+  localparam string RST_AON_NI_PATH = "tb.dut.top_darjeeling.u_sysrst_ctrl_aon.rst_aon_ni";
 
   localparam uint TIMEOUT_VALUE = 5000000;
 

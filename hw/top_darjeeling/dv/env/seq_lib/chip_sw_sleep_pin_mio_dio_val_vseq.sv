@@ -14,8 +14,8 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     RetSkip // Skip the test
   } pad_ret_t;
 
-  pad_ret_t [top_earlgrey_pkg::MioPadCount-1:0] mio_pad_ret;
-  pad_ret_t [top_earlgrey_pkg::DioCount-1:0]    dio_pad_ret;
+  pad_ret_t [top_darjeeling_pkg::MioPadCount-1:0] mio_pad_ret;
+  pad_ret_t [top_darjeeling_pkg::DioCount-1:0]    dio_pad_ret;
 
   // Fetch the pad and retention type under test.
   //
@@ -79,7 +79,7 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
   // The eligibility for check is determined by the members mio_pad_ret and dio_pad_ret fetched from
   // the SW test.
   function void check_pad_retention_out();
-    for (int i = 0; i < top_earlgrey_pkg::MioPadCount; i++) begin
+    for (int i = 0; i < top_darjeeling_pkg::MioPadCount; i++) begin
       string msg = $sformatf("for MIO[%0d]", i);
 
       case (mio_pad_ret[i])
@@ -96,11 +96,11 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
       endcase
     end
 
-    for (int i = 0; i < top_earlgrey_pkg::DioCount; i++) begin
+    for (int i = 0; i < top_darjeeling_pkg::DioCount; i++) begin
       string msg = $sformatf("for DIO[%0d]", i);
-      // Note that dios_if enumerates the DIOs in chip_earlgrey_asic, which is different from the
-      // DIOs enumerated in pinmux. The former is provided by top_earlgrey_pkg::dio_pad_e and the
-      // latter, by top_earlgrey_pkg::dio_e. The chip_common_pkg::DioToDioPadMap maps the pinmux's
+      // Note that dios_if enumerates the DIOs in chip_darjeeling_asic, which is different from the
+      // DIOs enumerated in pinmux. The former is provided by top_darjeeling_pkg::dio_pad_e and the
+      // latter, by top_darjeeling_pkg::dio_e. The chip_common_pkg::DioToDioPadMap maps the pinmux's
       // enumeration to the chip level's enumeration.
       int mapped_idx = DioToDioPadMap[i];
 
@@ -120,8 +120,8 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
   endfunction : check_pad_retention_out
 
   task check_pads_retention_type();
-    logic [top_earlgrey_pkg::MioPadCount-1:0] mio_pads;
-    logic [top_earlgrey_pkg::DioCount-1:0]    dio_pads;
+    logic [top_darjeeling_pkg::MioPadCount-1:0] mio_pads;
+    logic [top_darjeeling_pkg::DioCount-1:0]    dio_pads;
 
     // How to check 0, 1, High-Z
     //

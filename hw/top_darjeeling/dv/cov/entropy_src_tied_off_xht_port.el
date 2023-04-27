@@ -9,7 +9,7 @@
 // ExclMode: default
 //==================================================
 CHECKSUM: "1444016650 3016063865"
-INSTANCE: tb.dut.top_earlgrey.u_entropy_src
+INSTANCE: tb.dut.top_darjeeling.u_entropy_src
 ANNOTATION: "[UNR] Tied off / unconnected port."
 Toggle entropy_src_xht_i.test_cnt_hi "logic entropy_src_xht_i.test_cnt_hi[15:0]"
 ANNOTATION: "[UNR] Tied off / unconnected port."

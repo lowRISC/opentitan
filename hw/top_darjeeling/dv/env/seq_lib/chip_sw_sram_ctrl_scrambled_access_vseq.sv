@@ -17,17 +17,17 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
   // to avoid the location of the scramble buffer. This will have been allocated by the
   // compiler close to the start of the RAM.
   // For both, an offset that is at the midpoint of the SRAM should suffice.
-  localparam uint BACKDOOR_RET_OFFSET = (top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / 8);
-  localparam uint BACKDOOR_MAIN_OFFSET = (top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES / 8);
+  localparam uint BACKDOOR_RET_OFFSET = (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / 8);
+  localparam uint BACKDOOR_MAIN_OFFSET = (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES / 8);
 
   localparam string MAIN_INDEX = "0";
   localparam string MAIN_REQ_INDEX = "3";
   localparam string RET_INDEX = "1";
   localparam string RET_REQ_INDEX = "4";
 
-  localparam string SRAM_CTRL_RET_HDL_PATH = "tb.dut.top_earlgrey.u_sram_ctrl_ret_aon";
-  localparam string SRAM_CTRL_MAIN_HDL_PATH = "tb.dut.top_earlgrey.u_sram_ctrl_main";
-  localparam string OTP_CTRL_KDI_HDL_PATH = "tb.dut.top_earlgrey.u_otp_ctrl.u_otp_ctrl_kdi";
+  localparam string SRAM_CTRL_RET_HDL_PATH = "tb.dut.top_darjeeling.u_sram_ctrl_ret_aon";
+  localparam string SRAM_CTRL_MAIN_HDL_PATH = "tb.dut.top_darjeeling.u_sram_ctrl_main";
+  localparam string OTP_CTRL_KDI_HDL_PATH = "tb.dut.top_darjeeling.u_otp_ctrl.u_otp_ctrl_kdi";
 
   localparam string KEY_VALID_PATH = ".u_reg_regs.u_status_scr_key_valid.qs[0]";
 
@@ -137,7 +137,7 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
   virtual task ret_backdoor_write(int addr);
     int retval;
     bit scr_key_valid;
-    int offset = addr - top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
+    int offset = addr - top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
     forever begin
       retval = uvm_hdl_read(SRAM_CTRL_RET_SCR_KEY_VALID_PATH, scr_key_valid);
       `DV_CHECK_EQ(retval, 1, $sformatf(
@@ -164,7 +164,7 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
   virtual task main_backdoor_write(int addr);
     int retval;
     bit scr_key_valid;
-    int offset = addr - top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR;
+    int offset = addr - top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR;
     forever begin
       retval = uvm_hdl_read(SRAM_CTRL_MAIN_SCR_KEY_VALID_PATH, scr_key_valid);
       `DV_CHECK_EQ(retval, 1, $sformatf(

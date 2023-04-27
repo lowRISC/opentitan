@@ -3,13 +3,13 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:chip_sim:0.1"
-description: "Earlgrey chip DV sim target"
+description: "Darjeeling chip DV sim target"
 filesets:
   files_rtl:
     depend:
-      - "!gatelevel ? (lowrisc:systems:top_earlgrey)"
-      - lowrisc:systems:top_earlgrey_pkg
-      - "!gatelevel ? (lowrisc:systems:chip_earlgrey_asic)"
+      - "!gatelevel ? (lowrisc:systems:top_darjeeling)"
+      - lowrisc:systems:top_darjeeling_pkg
+      - "!gatelevel ? (lowrisc:systems:chip_darjeeling_asic)"
       - lowrisc:ibex:ibex_tracer
     files:
     file_type: systemVerilogSource
@@ -21,9 +21,9 @@ filesets:
       - lowrisc:dv:clkmgr_sva
       - lowrisc:dv:pwrmgr_sva
       - lowrisc:dv:rstmgr_sva
-      - lowrisc:dv:top_earlgrey_sva
-      - lowrisc:dv:top_earlgrey_xbar_main_bind
-      - lowrisc:dv:top_earlgrey_xbar_peri_bind
+      - lowrisc:dv:top_darjeeling_sva
+      - lowrisc:dv:top_darjeeling_xbar_main_bind
+      - lowrisc:dv:top_darjeeling_xbar_peri_bind
       - lowrisc:dv:xbar_test
       - lowrisc:dv:xbar_macros
       - lowrisc:dv:sim_sram

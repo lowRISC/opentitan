@@ -227,15 +227,15 @@ class chip_sw_rom_e2e_jtag_debug_vseq extends chip_sw_base_vseq;
     logic [BUS_DW-1:0] test_addrs[$];
     logic [BUS_DW-1:0] test_data[$];
     addr_range_t sram_main = '{
-        start_addr: top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
-        end_addr: top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
-                  top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES - 1
+        start_addr: top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
+        end_addr: top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
+                  top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES - 1
 
     };
     addr_range_t sram_ret = '{
-        start_addr: top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
-        end_addr: top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
-                  top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1
+        start_addr: top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+        end_addr: top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
+                  top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1
 
     };
 

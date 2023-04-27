@@ -251,7 +251,7 @@ package dv_utils_pkg;
       string cmd = $sformatf(
           // use `--wide` to avoid truncating the output, in case of long symbol name
           // `\s%0s$` ensures we are looking for an exact match, with no pre- or postfixes.
-          "/usr/bin/readelf -s --wide %0s | grep \"\\s%0s$\" | awk \'{print $2\" \"$3}\' > %0s",
+          "readelf -s --wide %0s | grep \"\\s%0s$\" | awk \'{print $2\" \"$3}\' > %0s",
           elf_file, escaped_symbol, out_file);
 
       // TODO #3838: shell pipes are bad 'mkay?

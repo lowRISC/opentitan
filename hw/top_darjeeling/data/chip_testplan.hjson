@@ -12,7 +12,7 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_wo_intg_testplan.hjson",
                      "hw/ip/tlul/data/tlul_testplan.hjson",
                      "sw/device/silicon_creator/rom/data/rom_e2e_testplan.hjson",
-                     "hw/top_earlgrey/data/chip_conn_testplan.hjson"]
+                     "hw/top_darjeeling/data/chip_conn_testplan.hjson"]
 
   testpoints: [
     ///////////////////////////////////////////////////////////////////////////
@@ -504,8 +504,8 @@
             Verify in PROD state, only the LC tap can be selected.
             Verify in DEV state, only the LC tap and RISC-V taps can be selected.
             Verify DFT test mode straps are sampled and output to AST via
-            top_earlgrey.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
-            Verify top_earlgrey.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED*
+            top_darjeeling.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
+            Verify top_darjeeling.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED*
             and RMA, regardless of the value on DFT SW straps.
             Verify loss of DFT functionality when DFT straps are deasserted on the next POR cycle.
 
@@ -2778,7 +2778,7 @@
             - Allow escalation to go through reset.
             - Use the rstmgr alert info and the fault CSRs to check the alert cause is right.
             - Keep state across resets in flash to check that no NMI or regular ISR interrupt run
-              for kTopEarlgreyAlertIdLcCtrlFatalProgError.
+              for kTopDarjeelingAlertIdLcCtrlFatalProgError.
 	    - Verify that, after escalation reset, the alert handler cause and the fault register are cleared.
             - Verify after the escalation reset that the alert info captured the correct alert.
             '''

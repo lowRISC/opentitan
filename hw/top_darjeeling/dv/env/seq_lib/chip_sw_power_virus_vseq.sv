@@ -155,7 +155,7 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     logic pwm_core_cntr_en;
 
     // Wait for max-power indicator GPIO pin (IOB8) to go up.
-    wait (cfg.chip_vif.mios[top_earlgrey_pkg::MioPadIob8]);
+    wait (cfg.chip_vif.mios[top_darjeeling_pkg::MioPadIob8]);
     // Wait for 16 clock cycles.
     cfg.clk_rst_vif.wait_clks(16);
 
@@ -202,8 +202,8 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
   virtual task body();
     // Turn off the FIFO data output assertion, as spi_device issues a read
     // before it knows whether it needs the data.
-    $assertoff(0, "tb.dut.top_earlgrey.u_spi_device.u_readcmd.u_readsram.u_sram_fifo.DataKnown_A");
-    $assertoff(0, "tb.dut.top_earlgrey.u_spi_device.u_readcmd.u_readsram.u_fifo.DataKnown_A");
+    $assertoff(0, "tb.dut.top_darjeeling.u_spi_device.u_readcmd.u_readsram.u_sram_fifo.DataKnown_A");
+    $assertoff(0, "tb.dut.top_darjeeling.u_spi_device.u_readcmd.u_readsram.u_fifo.DataKnown_A");
     super.body();
 
     // Wait for configurations to be computed and max power epoch to start.

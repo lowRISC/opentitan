@@ -96,24 +96,24 @@ package chip_common_pkg;
   } chip_jtag_tap_e;
 
   // This maps the DIO on the pinmux / peripheral side to the DIO on the pad side, both of
-  // which have different enum numbering in top_earlgrey_pkg.sv.
-  parameter top_earlgrey_pkg::dio_pad_e DioToDioPadMap [top_earlgrey_pkg::DioCount] = '{
-    top_earlgrey_pkg::DioPadUsbP,       /* DioUsbdevUsbDp */
-    top_earlgrey_pkg::DioPadUsbN,       /* DioUsbdevUsbDn */
-    top_earlgrey_pkg::DioPadSpiHostD0,  /* DioSpiHost0Sd0 */
-    top_earlgrey_pkg::DioPadSpiHostD1,  /* DioSpiHost0Sd1 */
-    top_earlgrey_pkg::DioPadSpiHostD2,  /* DioSpiHost0Sd2 */
-    top_earlgrey_pkg::DioPadSpiHostD3,  /* DioSpiHost0Sd3 */
-    top_earlgrey_pkg::DioPadSpiDevD0,   /* DioSpiDeviceSd0 */
-    top_earlgrey_pkg::DioPadSpiDevD1,   /* DioSpiDeviceSd1 */
-    top_earlgrey_pkg::DioPadSpiDevD2,   /* DioSpiDeviceSd2 */
-    top_earlgrey_pkg::DioPadSpiDevD3,   /* DioSpiDeviceSd3 */
-    top_earlgrey_pkg::DioPadIor8,       /* DioSysrstCtrlAonEcRstL */
-    top_earlgrey_pkg::DioPadIor9,       /* DioSysrstCtrlAonFlashWpL */
-    top_earlgrey_pkg::DioPadSpiDevClk,  /* DioSpiDeviceSck */
-    top_earlgrey_pkg::DioPadSpiDevCsL,  /* DioSpiDeviceCsb */
-    top_earlgrey_pkg::DioPadSpiHostClk, /* DioSpiHost0Sck */
-    top_earlgrey_pkg::DioPadSpiHostCsL  /* DioSpiHost0Csb */
+  // which have different enum numbering in top_darjeeling_pkg.sv.
+  parameter top_darjeeling_pkg::dio_pad_e DioToDioPadMap [top_darjeeling_pkg::DioCount] = '{
+    top_darjeeling_pkg::DioPadUsbP,       /* DioUsbdevUsbDp */
+    top_darjeeling_pkg::DioPadUsbN,       /* DioUsbdevUsbDn */
+    top_darjeeling_pkg::DioPadSpiHostD0,  /* DioSpiHost0Sd0 */
+    top_darjeeling_pkg::DioPadSpiHostD1,  /* DioSpiHost0Sd1 */
+    top_darjeeling_pkg::DioPadSpiHostD2,  /* DioSpiHost0Sd2 */
+    top_darjeeling_pkg::DioPadSpiHostD3,  /* DioSpiHost0Sd3 */
+    top_darjeeling_pkg::DioPadSpiDevD0,   /* DioSpiDeviceSd0 */
+    top_darjeeling_pkg::DioPadSpiDevD1,   /* DioSpiDeviceSd1 */
+    top_darjeeling_pkg::DioPadSpiDevD2,   /* DioSpiDeviceSd2 */
+    top_darjeeling_pkg::DioPadSpiDevD3,   /* DioSpiDeviceSd3 */
+    top_darjeeling_pkg::DioPadIor8,       /* DioSysrstCtrlAonEcRstL */
+    top_darjeeling_pkg::DioPadIor9,       /* DioSysrstCtrlAonFlashWpL */
+    top_darjeeling_pkg::DioPadSpiDevClk,  /* DioSpiDeviceSck */
+    top_darjeeling_pkg::DioPadSpiDevCsL,  /* DioSpiDeviceCsb */
+    top_darjeeling_pkg::DioPadSpiHostClk, /* DioSpiHost0Sck */
+    top_darjeeling_pkg::DioPadSpiHostCsL  /* DioSpiHost0Csb */
   };
 
   typedef struct packed {

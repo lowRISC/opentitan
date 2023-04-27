@@ -7,7 +7,7 @@ class chip_sw_flash_ctrl_lc_rw_en_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  localparam string FLASH_CTRL_HDL_PATH = "tb.dut.top_earlgrey.u_flash_ctrl";
+  localparam string FLASH_CTRL_HDL_PATH = "tb.dut.top_darjeeling.u_flash_ctrl";
   localparam string RW_EN_PATHS[5] = '{
       {FLASH_CTRL_HDL_PATH, ".lc_creator_seed_sw_rw_en_i"},
       {FLASH_CTRL_HDL_PATH, ".lc_owner_seed_sw_rw_en_i"},

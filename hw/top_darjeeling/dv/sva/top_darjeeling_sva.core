@@ -2,17 +2,17 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:top_earlgrey_sva:0.1"
-description: "TOP_EARLGREY assertion modules and bind file."
+name: "lowrisc:dv:top_darjeeling_sva:0.1"
+description: "TOP_DARJEELING assertion modules and bind file."
 filesets:
   files_dv:
     depend:
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:prim:assert
-      - lowrisc:systems:top_earlgrey
+      - lowrisc:systems:top_darjeeling
     files:
       - clk_ctrl_and_main_pd_sva_if.sv
-      - top_earlgrey_bind.sv
+      - top_darjeeling_bind.sv
     file_type: systemVerilogSource
 
 targets:
@@ -23,4 +23,4 @@ targets:
     <<: *default_target
     filesets:
       - files_dv
-    toplevel: top_earlgrey_bind
+    toplevel: top_darjeeling_bind

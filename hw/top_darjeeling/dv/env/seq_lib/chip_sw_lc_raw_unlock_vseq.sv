@@ -27,7 +27,7 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
   virtual task clkmgr_switch_to_ext_clk();
     bit [TL_DW-1:0] status;
     bit ack = 0;
-    int base_addr = top_earlgrey_pkg::TOP_EARLGREY_CLKMGR_AON_BASE_ADDR;
+    int base_addr = top_darjeeling_pkg::TOP_DARJEELING_CLKMGR_AON_BASE_ADDR;
     bit [TL_DW-1:0] extcl_en = (
       prim_mubi_pkg::MuBi4True << ral.clkmgr_aon.extclk_ctrl.sel.get_lsb_pos() |
       prim_mubi_pkg::MuBi4False << ral.clkmgr_aon.extclk_ctrl.hi_speed_sel.get_lsb_pos()

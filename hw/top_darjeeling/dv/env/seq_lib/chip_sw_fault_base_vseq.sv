@@ -6,7 +6,7 @@
 // User can set following parameters
 // if_path : hierarchical path to inject fault
 // alert_id : alert to be triggerred. Use enum
-//            defined in hw/top_earlgrey/rtl/autogen/top_earlgrey_pkg.sv
+//            defined in hw/top_darjeeling/rtl/autogen/top_darjeeling_pkg.sv
 
 class chip_sw_fault_base_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_fault_base_vseq)

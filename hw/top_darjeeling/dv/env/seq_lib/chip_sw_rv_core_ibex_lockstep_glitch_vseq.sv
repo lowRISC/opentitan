@@ -520,9 +520,9 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       if (glitch_lockstep_core) begin
         // The path to the core unfortunately has to be duplicated for `$assertoff()` because that
         // system task only accepts literal strings.
-        $assertoff(0, "tb.dut.top_earlgrey.u_rv_core_ibex.u_core.gen_lockstep.u_ibex_lockstep");
+        $assertoff(0, "tb.dut.top_darjeeling.u_rv_core_ibex.u_core.gen_lockstep.u_ibex_lockstep");
       end else begin
-        $assertoff(0, "tb.dut.top_earlgrey.u_rv_core_ibex.u_core.u_ibex_core");
+        $assertoff(0, "tb.dut.top_darjeeling.u_rv_core_ibex.u_core.u_ibex_core");
       end
     end
 
@@ -545,15 +545,15 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
         "ic_tag_rdata_i",
         "ic_data_rdata_i": begin
           $assertoff(0,
-              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_rv_core_ibex__corei.gen_device");
+              "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_host_rv_core_ibex__corei.gen_device");
           $assertoff(0,
-              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_device_rom_ctrl__rom.gen_host");
+              "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_device_rom_ctrl__rom.gen_host");
           $assertoff(0,
-              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_device_rv_dm__mem.gen_host");
+              "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_device_rv_dm__mem.gen_host");
           $assertoff(0,
-              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_device_sram_ctrl_main__ram.gen_host");
+              "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_device_sram_ctrl_main__ram.gen_host");
           $assertoff(0,
-              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_device_flash_ctrl__mem.gen_host");
+              "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_device_flash_ctrl__mem.gen_host");
         end
         "data_req_o",
         "data_we_o",
@@ -561,20 +561,20 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
         "data_addr_o",
         "data_wdata_o": begin
           $assertoff(0,
-              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_rv_core_ibex__cored.gen_device");
+              "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_host_rv_core_ibex__cored.gen_device");
         end
         // The RF read data obtained on Port b may feed into data_wdata_o even if Ibex isn't doing
         // a store.
         "rf_rdata_b_ecc_i": begin
           if (glitched_inp_used) begin
             $assertoff(0,
-                "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_rv_core_ibex__cored.gen_device");
+                "tb.dut.top_darjeeling.u_xbar_main.tlul_assert_host_rv_core_ibex__cored.gen_device");
           end
         end
         // There are several SVAs inside ibex_top ensuring correct behavior of crash dump. When
         // glitching crash dump it's expected that one or multiple of these SVAs will fire.
         "crash_dump_o": begin
-          $assertoff(0, "tb.dut.top_earlgrey.u_rv_core_ibex.u_core");
+          $assertoff(0, "tb.dut.top_darjeeling.u_rv_core_ibex.u_core");
         end
         default: ;
       endcase
@@ -743,7 +743,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     super.body();
 
     // Set paths to the core and the shadow core inside the lockstep instance.
-    ibex_top_path = "tb.dut.top_earlgrey.u_rv_core_ibex.u_core";
+    ibex_top_path = "tb.dut.top_darjeeling.u_rv_core_ibex.u_core";
     core_path = $sformatf("%s.u_ibex_core", ibex_top_path);
     lockstep_path = $sformatf("%s.gen_lockstep.u_ibex_lockstep", ibex_top_path);
     lockstep_core_path = $sformatf("%s.u_shadow_core", lockstep_path);
