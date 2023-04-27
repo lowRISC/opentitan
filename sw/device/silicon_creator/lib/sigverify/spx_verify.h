@@ -73,7 +73,7 @@ rom_error_t sigverify_spx_verify(
  * @return `kErrorOk` if `v` is `kSigverifySpxSuccess`.
  */
 inline uint32_t sigverify_spx_success_to_ok(uint32_t v) {
-  return (((v << 29) ^ ((v << 29) >> 5) ^ ((v << 21) >> 10))) >> 21;
+  return (v << 22 ^ v << 8 ^ v << 1) >> 20;
 }
 
 #ifdef __cplusplus
