@@ -1516,8 +1516,8 @@
             - After wake up from normal sleep mode, clear all alert cause registers and check that
               all alerts are still firing after waking up.
             - Repeat the previous steps for random number of iterations.
-            - Fatal alerts from flash_ctrl, sram_ctrl and lc_ctrl are omitted because they disable
-              the CPU and require a reset for the system to continue to function.
+            - Fatal alerts from flash_ctrl, otp_ctrl, sram_ctrl, and lc_ctrl are omitted because
+              they disable the CPU and require a reset for the system to continue to function.
             '''
       stage: V2
       tests: ["chip_sw_alert_handler_lpg_sleep_mode_alerts"]
