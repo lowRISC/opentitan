@@ -24,6 +24,7 @@ crc = "3.0"
 deser-hjson = "1.0.2"
 directories = "4.0.1"
 env_logger = "0.10"
+elliptic-curve = { version = "0.13.4", features = ["pkcs8", "sec1", "std"] }
 erased-serde = "0.3.12"
 hex = "0.4.3"
 humantime = "2.1.0"

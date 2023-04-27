@@ -305,6 +305,7 @@ _NORMAL_DEPENDENCIES = {
             "cryptoki-sys": "@crate_index__cryptoki-sys-0.1.4//:cryptoki_sys",
             "deser-hjson": "@crate_index__deser-hjson-1.1.0//:deser_hjson",
             "directories": "@crate_index__directories-4.0.1//:directories",
+            "elliptic-curve": "@crate_index__elliptic-curve-0.13.4//:elliptic_curve",
             "env_logger": "@crate_index__env_logger-0.10.0//:env_logger",
             "erased-serde": "@crate_index__erased-serde-0.3.24//:erased_serde",
             "hex": "@crate_index__hex-0.4.3//:hex",
@@ -660,6 +661,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__base16ct-0.2.0",
+        sha256 = "4c7f02d4ea65f2c1853089ffd8d2787bdbc63de2f0d29dedbcf8ccdfa0ccd4cf",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/base16ct/0.2.0/download"],
+        strip_prefix = "base16ct-0.2.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.base16ct-0.2.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__base64-0.13.1",
         sha256 = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8",
         type = "tar.gz",
@@ -980,6 +991,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__crypto-bigint-0.5.2",
+        sha256 = "cf4c2f4e1afd912bc40bfd6fed5d9dc1f288e0ba01bfcc835cc5bc3eb13efe15",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/crypto-bigint/0.5.2/download"],
+        strip_prefix = "crypto-bigint-0.5.2",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.crypto-bigint-0.5.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__crypto-common-0.1.6",
         sha256 = "1bfb12502f3fc46cca1bb51ac28df9d618d813cdc3d2f25b9fe775a34af26bb3",
         type = "tar.gz",
@@ -1156,6 +1177,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__elliptic-curve-0.13.4",
+        sha256 = "75c71eaa367f2e5d556414a8eea812bc62985c879748d6403edabd9cb03f16e7",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/elliptic-curve/0.13.4/download"],
+        strip_prefix = "elliptic-curve-0.13.4",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.elliptic-curve-0.13.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__encode_unicode-0.3.6",
         sha256 = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f",
         type = "tar.gz",
@@ -1222,6 +1253,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/fastrand/1.9.0/download"],
         strip_prefix = "fastrand-1.9.0",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.fastrand-1.9.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__ff-0.13.0",
+        sha256 = "ded41244b729663b1e574f1b4fb731469f69f79c17667b5d776b16cda0479449",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/ff/0.13.0/download"],
+        strip_prefix = "ff-0.13.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.ff-0.13.0.bazel"),
     )
 
     maybe(
@@ -1412,6 +1453,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/glob/0.3.1/download"],
         strip_prefix = "glob-0.3.1",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.glob-0.3.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__group-0.13.0",
+        sha256 = "f0f9ef7462f7c099f518d754361858f86d8a07af53ba9af0fe635bbccb151a63",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/group/0.13.0/download"],
+        strip_prefix = "group-0.13.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.group-0.13.0.bazel"),
     )
 
     maybe(
