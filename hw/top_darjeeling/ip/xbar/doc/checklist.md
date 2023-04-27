@@ -43,7 +43,7 @@ Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item ha
 Documentation | [MISSING_FUNC][]          | N/A         |
 Documentation | [FEATURE_FROZEN][]        | Done        |
 RTL           | [FEATURE_COMPLETE][]      | Done        |
-RTL           | [PORT_FROZEN][]           | Done        | Targeting for current top_earlgrey( Port can be changed later based on top_earlgrey config)
+RTL           | [PORT_FROZEN][]           | Done        | Targeting for current top_darjeeling( Port can be changed later based on top_darjeeling config)
 RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
 RTL           | [REVIEW_TODO][]           | Done        | PR [#837][] is pending
 RTL           | [STYLE_X][]               | Done        |

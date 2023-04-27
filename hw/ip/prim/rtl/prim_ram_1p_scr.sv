@@ -5,7 +5,7 @@
 // This is a draft implementation of a low-latency memory scrambling mechanism.
 //
 // The module is implemented as a primitive, in the same spirit as similar prim_ram_1p_adv wrappers.
-// Hence, it can be conveniently instantiated by comportable IPs (such as OTBN) or in top_earlgrey
+// Hence, it can be conveniently instantiated by comportable IPs (such as OTBN) or in {top_chip}
 // for the main system memory.
 //
 // The currently implemented architecture uses a reduced-round PRINCE cipher primitive in CTR mode

@@ -22,5 +22,5 @@
              "{proj_root}/hw/ip/rv_core_ibex/syn/rv_core_ibex_syn_cfg.hjson",
              // Top-level synthesis flows.
              // TODO: align Verilator and ASIC versions.
-             "{proj_root}/hw/top_earlgrey/syn/chip_earlgrey_asic_syn_cfg.hjson"]
+             "{proj_root}/hw/{top_chip}/syn/chip_earlgrey_asic_syn_cfg.hjson"]
 }

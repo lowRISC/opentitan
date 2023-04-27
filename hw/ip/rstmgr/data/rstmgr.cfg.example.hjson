@@ -12,7 +12,7 @@
   // 0: it is a hardwired design reset inside rstmgr (roots and por)
   //
   // type: the reset type [ext, top]
-  // ext: the reset is coming in from the ports, external to earlgrey
+  // ext: the reset is coming in from the ports, external to {top_chip}
   // int: the reset is only used inside rstmgr
   // top: the reset is output from rstmgr to top level struct
   //

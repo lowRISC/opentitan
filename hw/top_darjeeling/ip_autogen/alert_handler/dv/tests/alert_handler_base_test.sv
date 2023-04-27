@@ -18,4 +18,3 @@ class alert_handler_base_test extends cip_base_test #(
   // the run_phase; as such, nothing more needs to be done
 
 endclass : alert_handler_base_test
-

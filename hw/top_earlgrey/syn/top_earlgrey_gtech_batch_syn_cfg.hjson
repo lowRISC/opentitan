@@ -23,5 +23,5 @@
              "{proj_root}/hw/ip/rv_core_ibex/syn/rv_core_ibex_gtech_syn_cfg.hjson",
              // Top-level GTECH synthesis flows.
              // TODO: align Verilator and ASIC versions.
-             "{proj_root}/hw/top_earlgrey/syn/top_earlgrey_gtech_syn_cfg.hjson"]
+             "{proj_root}/hw/{top_chip}/syn/{top_chip}_gtech_syn_cfg.hjson"]
 }

@@ -4,19 +4,19 @@
 {
 
   // This is the primary cfg hjson for DV linting. It imports ALL individual lint
-  // cfgs of the IPs DV environments and the full chip DV environment for top_earlgrey.
+  // cfgs of the IPs DV environments and the full chip DV environment for top_darjeeling.
   // This enables to run them all as a regression in one shot.
-  name: top_earlgrey_dv_batch
+  name: top_darjeeling_dv_batch
+
+  flow: lint
 
   import_cfgs:      [// common server configuration for results upload
                      "{proj_root}/hw/data/common_project_cfg.hjson"
                      // tool-specific configuration
                      "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
 
-  flow: "lint"
-
   // Different dashboard output path for each tool
-  rel_path: "hw/top_earlgrey/dv/lint/{tool}/summary"
+  rel_path: "hw/top_darjeeling/dv/lint/{tool}/summary"
 
   use_cfgs: [{    name: aes
                   fusesoc_core: lowrisc:dv:aes_sim
@@ -24,14 +24,14 @@
                   rel_path: "hw/ip/aes/dv/lint/{tool}"
              },
              {    name: alert_handler
-                  fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_sim
+                  fusesoc_core: lowrisc:opentitan:top_darjeeling_alert_handler_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/top_earlgrey/ip_autogen/alert_handler/dv/lint/{tool}"
+                  rel_path: "hw/top_darjeeling/ip_autogen/alert_handler/dv/lint/{tool}"
              },
              {    name: aon_timer
                   fusesoc_core: lowrisc:dv:aon_timer_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/top_earlgrey/ip/aon_timer/dv/lint/{tool}"
+                  rel_path: "hw/top_darjeeling/ip/aon_timer/dv/lint/{tool}"
              },
              {    name: clkmgr
                   fusesoc_core: lowrisc:dv:clkmgr_sim
@@ -181,19 +181,19 @@
                   rel_path: "hw/ip/usbdev/dv/lint/{tool}"
              },
              {    name: xbar_main
-                  fusesoc_core: lowrisc:dv:top_earlgrey_xbar_main_sim
+                  fusesoc_core: lowrisc:dv:top_darjeeling_xbar_main_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/top_earlgrey/ip/xbar_main/dv/lint/{tool}"
+                  rel_path: "hw/top_darjeeling/ip/xbar_main/dv/lint/{tool}"
              },
              {    name: xbar_peri
-                  fusesoc_core: lowrisc:dv:top_earlgrey_xbar_peri_sim
+                  fusesoc_core: lowrisc:dv:top_darjeeling_xbar_peri_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/top_earlgrey/ip/xbar_peri/dv/lint/{tool}"
+                  rel_path: "hw/top_darjeeling/ip/xbar_peri/dv/lint/{tool}"
              },
              {    name: chip
                   fusesoc_core: lowrisc:dv:chip_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/top_earlgrey/dv/lint/{tool}"
+                  rel_path: "hw/top_darjeeling/dv/lint/{tool}"
                   overrides: [
                     {
                       name: design_level

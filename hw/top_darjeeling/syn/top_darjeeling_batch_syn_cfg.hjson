@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   // This is a cfg hjson group for synthesis.
-  // It includes all synthesis setups used in top_earlgrey.
-  name: top_earlgrey_batch_syn
+  // It includes all synthesis setups used in top_darjeeling.
+  name: top_darjeeling_batch_syn
 
   import_cfgs: [// Project wide common cfg file
                 "{proj_root}/hw/data/common_project_cfg.hjson"]
@@ -22,5 +22,5 @@
              "{proj_root}/hw/ip/rv_core_ibex/syn/rv_core_ibex_syn_cfg.hjson",
              // Top-level synthesis flows.
              // TODO: align Verilator and ASIC versions.
-             "{proj_root}/hw/top_earlgrey/syn/chip_earlgrey_asic_syn_cfg.hjson"]
+             "{proj_root}/hw/{top_chip}/syn/chip_darjeeling_asic_syn_cfg.hjson"]
 }

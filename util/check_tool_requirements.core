@@ -8,14 +8,14 @@ description: "Check tool requirements"
 filesets:
   files_check_tool_requirements:
     files:
-      - ./util/check_tool_requirements.py : { copyto: util/check_tool_requirements.py }
-      - ./tool_requirements.py : { copyto: tool_requirements.py }
+      - ./check_tool_requirements.py : { copyto: check_tool_requirements.py }
+      - ./tool_requirements.py : { copyto: ../tool_requirements.py }
 
 scripts:
   check_tool_requirements_verible:
     cmd:
       - python3
-      - util/check_tool_requirements.py
+      - check_tool_requirements.py
       - 'verible'
     # TODO: Use this syntax once https://github.com/olofk/fusesoc/issues/353 is
     # fixed. Remove the filesets from the default target, and also remove the
@@ -25,7 +25,7 @@ scripts:
   check_tool_requirements_verilator:
     cmd:
       - python3
-      - util/check_tool_requirements.py
+      - check_tool_requirements.py
       - 'verilator'
 
 targets:

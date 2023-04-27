@@ -649,8 +649,9 @@ def generate_top_only(top_only_dict, out_path, topname, alt_hjson_path):
         generate_regfile_from_path(hjson_path, genrtl_dir)
 
 
-def generate_top_ral(top: Dict[str, object], name_to_block: Dict[str, IpBlock],
-                     dv_base_names: List[str], out_path: str):
+def generate_top_ral(topname: str, top: Dict[str, object],
+                     name_to_block: Dict[str, IpBlock], dv_base_names: List[str],
+                     out_path: str):
     # construct top ral block
     regwidth = int(top["datawidth"])
     assert regwidth % 8 == 0
@@ -720,7 +721,7 @@ def generate_top_ral(top: Dict[str, object], name_to_block: Dict[str, IpBlock],
         if t not in inst_to_block.values():
             del name_to_block[t]
 
-    chip = Top(regwidth, name_to_block, inst_to_block, if_addrs, mems, attrs)
+    chip = Top(topname, regwidth, name_to_block, inst_to_block, if_addrs, mems, attrs)
 
     # generate the top ral model with template
     return gen_dv(chip, dv_base_names, str(out_path))
@@ -1227,7 +1228,7 @@ def main():
         # the other files (e.g. RTL files) generated through topgen.
         shutil.rmtree(out_path_gen, ignore_errors=True)
 
-        exit_code = generate_top_ral(completecfg, name_to_block,
+        exit_code = generate_top_ral(topname, completecfg, name_to_block,
                                      args.dv_base_names, out_path)
         sys.exit(exit_code)
 
@@ -1421,7 +1422,7 @@ def main():
         # Auto-generate tests in "sw/device/tests/autogen" area.
         gencmd = warnhdr + GENCMD.format(topname=topname)
         for fname in ["plic_all_irqs_test.c", "alert_test.c", "BUILD"]:
-            outfile = SRCTREE_TOP / "sw/device/tests/autogen" / fname
+            outfile = SRCTREE_TOP / f"sw/device/tests/autogen/top_{topname}" / fname
             render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
                             outfile,
                             helper=c_helper,

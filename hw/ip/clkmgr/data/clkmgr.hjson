@@ -4,7 +4,7 @@
 
 // ICEBOX: This module is only a draft implementation that covers most of the clkmgr
 // functionality but is incomplete. The chip actually uses
-// hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson
+// hw/{top_chip}/ip/clkmgr/data/autogen/clkmgr.hjson
 
 # CLKMGR register template
 #

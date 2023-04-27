@@ -45,7 +45,7 @@
   overrides: [
     {
       name: cover_reg_top_vcs_cov_cfg_file
-      value: "-cm_hier {proj_root}/hw/top_earlgrey/ip_autogen/alert_handler/dv/cov/alert_handler_cover_reg_top.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg"
+      value: "-cm_hier {proj_root}/hw/{top_chip}/ip_autogen/alert_handler/dv/cov/alert_handler_cover_reg_top.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg"
     }
   ]
 

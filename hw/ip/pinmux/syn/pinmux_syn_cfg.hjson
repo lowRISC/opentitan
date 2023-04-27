@@ -22,5 +22,5 @@
   sdc_file: "{proj_root}/hw/ip/pinmux/syn/constraints.sdc"
 
   // Technology specific timing constraints for this module
-  foundry_sdc_file: "{foundry_root}/top_earlgrey/syn/foundry.constraints.sdc"
+  foundry_sdc_file: "{foundry_root}/{top_chip}/syn/foundry.constraints.sdc"
 }

@@ -9,9 +9,9 @@
 # absolutely needed. See #4244 for the audit / discussion about which ports
 # should have nonzero values.
 set UPF_ISO_LC_OFF_PORTS_CLAMP1 {
-  top_earlgrey/u_aon_timer_aon/lc_escalate_en_i[3] \
-  top_earlgrey/u_aon_timer_aon/lc_escalate_en_i[1] \
-  top_earlgrey/u_pinmux_aon/lc_escalate_en_i[3]    \
-  top_earlgrey/u_pinmux_aon/lc_escalate_en_i[1]    \
-  top_earlgrey/u_pinmux_aon/lc_check_byp_en_i[3]   \
-  top_earlgrey/u_pinmux_aon/lc_check_byp_en_i[1]   }
+  top_darjeeling/u_aon_timer_aon/lc_escalate_en_i[3] \
+  top_darjeeling/u_aon_timer_aon/lc_escalate_en_i[1] \
+  top_darjeeling/u_pinmux_aon/lc_escalate_en_i[3]    \
+  top_darjeeling/u_pinmux_aon/lc_escalate_en_i[1]    \
+  top_darjeeling/u_pinmux_aon/lc_check_byp_en_i[3]   \
+  top_darjeeling/u_pinmux_aon/lc_check_byp_en_i[1]   }

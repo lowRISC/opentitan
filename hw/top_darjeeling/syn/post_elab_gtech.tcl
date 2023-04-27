@@ -8,4 +8,3 @@
 # Remove generic views of ram macros
 remove_design prim_generic_ram_1p_Width*
 remove_design prim_generic_ram_2p_Width*
-

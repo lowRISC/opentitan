@@ -4,7 +4,7 @@
 {
 
   // This is the fpga cfg hjson for RTL linting.
-  name: top_earlgrey_fpga_batch
+  name: top_darjeeling_fpga_batch
 
   flow: lint
 
@@ -14,15 +14,15 @@
                      "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
 
   // Different dashboard output path for each tool
-  rel_path: "hw/top_earlgrey/lint/{tool}"
+  rel_path: "hw/top_darjeeling/lint/{tool}"
 
   // Severities to be printed in the summary report
   report_severities: ["warning", "error"]
 
-  use_cfgs: [{    name: chip_earlgrey_cw310
-                  fusesoc_core: lowrisc:systems:chip_earlgrey_cw310
+  use_cfgs: [{    name: chip_darjeeling_cw310
+                  fusesoc_core: lowrisc:systems:chip_darjeeling_cw310
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/chip_earlgrey_asic/lint/{tool}"
+                  rel_path: "hw/chip_darjeeling_asic/lint/{tool}"
                   overrides: [
                     {
                       name: design_level

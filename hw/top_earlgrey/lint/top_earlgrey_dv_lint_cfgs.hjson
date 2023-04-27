@@ -8,12 +8,12 @@
   // This enables to run them all as a regression in one shot.
   name: top_earlgrey_dv_batch
 
+  flow: lint
+
   import_cfgs:      [// common server configuration for results upload
                      "{proj_root}/hw/data/common_project_cfg.hjson"
                      // tool-specific configuration
                      "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
-
-  flow: "lint"
 
   // Different dashboard output path for each tool
   rel_path: "hw/top_earlgrey/dv/lint/{tool}/summary"

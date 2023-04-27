@@ -19,16 +19,16 @@
     }
     // Since this synthesizes the design at chip level,
     // we need to instruct the parser script to explicitly
-    // expand the top_earlgrey submodule.
+    // expand the {top_chip} submodule.
     {
       name: expand_modules
-      value: "top_earlgrey"
+      value: "{top_chip}"
     }
   ]
 
   // Timing constraints for this module
-  sdc_file: "{proj_root}/hw/top_earlgrey/syn/chip_earlgrey_asic.sdc"
+  sdc_file: "{proj_root}/hw/{top_chip}/syn/chip_earlgrey_asic.sdc"
 
   // Technology specific timing constraints for this module
-  foundry_sdc_file: "{foundry_root}/top_earlgrey/syn/foundry.constraints.sdc"
+  foundry_sdc_file: "{foundry_root}/{top_chip}/syn/foundry.constraints.sdc"
 }

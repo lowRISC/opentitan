@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   // Top level dut name (sv module).
-  name: top_earlgrey
+  name: top_darjeeling
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:systems:top_earlgrey:0.1
+  fusesoc_core: lowrisc:systems:top_darjeeling:0.1
 
   import_cfgs: [// Project wide common GTECH synthesis config file
                 "{proj_root}/hw/syn/tools/dvsim/common_gtech_syn_cfg.hjson"]
@@ -18,7 +18,7 @@
     }
     { // Deletes black-boxed hierarchies before writing out the unmapped netlist
       name: post_elab_script
-      value: "{proj_root}/hw/top_earlgrey/syn/post_elab_gtech.tcl"
+      value: "{proj_root}/hw/{top_chip}/syn/post_elab_gtech.tcl"
     }
   ]
 }

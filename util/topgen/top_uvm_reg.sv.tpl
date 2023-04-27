@@ -126,7 +126,7 @@ ${make_ral_pkg_window_class(block_dv_base_names.mem, 'chip', window)}
         if top.attrs.get(inst_name) == 'reggen_only':
           hdl_path = 'tb.dut.u_' + inst_name
         else:
-          hdl_path = 'tb.dut.top_earlgrey.u_' + inst_name
+          hdl_path = 'tb.dut.top_' + top.name + '.u_' + inst_name
         qual_if_name = (inst_name, if_name)
         base_addr = top.if_addrs[qual_if_name]
         base_addr_txt = sv_base_addr(top, qual_if_name)

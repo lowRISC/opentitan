@@ -5,666 +5,666 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
-// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson \
-//                -o hw/top_earlgrey/ \
+// util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson \
+//                -o hw/top_darjeeling/ \
 //                --rnd_cnst_seed 4881560218908238235
 
-package top_earlgrey_pkg;
+package top_darjeeling_pkg;
   /**
-   * Peripheral base address for uart0 in top earlgrey.
+   * Peripheral base address for uart0 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_UART0_BASE_ADDR = 32'h40000000;
+  parameter int unsigned TOP_DARJEELING_UART0_BASE_ADDR = 32'h40000000;
 
   /**
-   * Peripheral size in bytes for uart0 in top earlgrey.
+   * Peripheral size in bytes for uart0 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_UART0_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_DARJEELING_UART0_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for uart1 in top earlgrey.
+   * Peripheral base address for uart1 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_UART1_BASE_ADDR = 32'h40010000;
+  parameter int unsigned TOP_DARJEELING_UART1_BASE_ADDR = 32'h40010000;
 
   /**
-   * Peripheral size in bytes for uart1 in top earlgrey.
+   * Peripheral size in bytes for uart1 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_UART1_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_DARJEELING_UART1_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for uart2 in top earlgrey.
+   * Peripheral base address for uart2 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_UART2_BASE_ADDR = 32'h40020000;
+  parameter int unsigned TOP_DARJEELING_UART2_BASE_ADDR = 32'h40020000;
 
   /**
-   * Peripheral size in bytes for uart2 in top earlgrey.
+   * Peripheral size in bytes for uart2 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_UART2_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_DARJEELING_UART2_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for uart3 in top earlgrey.
+   * Peripheral base address for uart3 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_UART3_BASE_ADDR = 32'h40030000;
+  parameter int unsigned TOP_DARJEELING_UART3_BASE_ADDR = 32'h40030000;
 
   /**
-   * Peripheral size in bytes for uart3 in top earlgrey.
+   * Peripheral size in bytes for uart3 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_UART3_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_DARJEELING_UART3_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for gpio in top earlgrey.
+   * Peripheral base address for gpio in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_GPIO_BASE_ADDR = 32'h40040000;
+  parameter int unsigned TOP_DARJEELING_GPIO_BASE_ADDR = 32'h40040000;
 
   /**
-   * Peripheral size in bytes for gpio in top earlgrey.
+   * Peripheral size in bytes for gpio in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_GPIO_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_DARJEELING_GPIO_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for spi_device in top earlgrey.
+   * Peripheral base address for spi_device in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SPI_DEVICE_BASE_ADDR = 32'h40050000;
+  parameter int unsigned TOP_DARJEELING_SPI_DEVICE_BASE_ADDR = 32'h40050000;
 
   /**
-   * Peripheral size in bytes for spi_device in top earlgrey.
+   * Peripheral size in bytes for spi_device in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SPI_DEVICE_SIZE_BYTES = 32'h2000;
+  parameter int unsigned TOP_DARJEELING_SPI_DEVICE_SIZE_BYTES = 32'h2000;
 
   /**
-   * Peripheral base address for i2c0 in top earlgrey.
+   * Peripheral base address for i2c0 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_I2C0_BASE_ADDR = 32'h40080000;
+  parameter int unsigned TOP_DARJEELING_I2C0_BASE_ADDR = 32'h40080000;
 
   /**
-   * Peripheral size in bytes for i2c0 in top earlgrey.
+   * Peripheral size in bytes for i2c0 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_I2C0_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_I2C0_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for i2c1 in top earlgrey.
+   * Peripheral base address for i2c1 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_I2C1_BASE_ADDR = 32'h40090000;
+  parameter int unsigned TOP_DARJEELING_I2C1_BASE_ADDR = 32'h40090000;
 
   /**
-   * Peripheral size in bytes for i2c1 in top earlgrey.
+   * Peripheral size in bytes for i2c1 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_I2C1_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_I2C1_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for i2c2 in top earlgrey.
+   * Peripheral base address for i2c2 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_I2C2_BASE_ADDR = 32'h400A0000;
+  parameter int unsigned TOP_DARJEELING_I2C2_BASE_ADDR = 32'h400A0000;
 
   /**
-   * Peripheral size in bytes for i2c2 in top earlgrey.
+   * Peripheral size in bytes for i2c2 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_I2C2_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_I2C2_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for pattgen in top earlgrey.
+   * Peripheral base address for pattgen in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_PATTGEN_BASE_ADDR = 32'h400E0000;
+  parameter int unsigned TOP_DARJEELING_PATTGEN_BASE_ADDR = 32'h400E0000;
 
   /**
-   * Peripheral size in bytes for pattgen in top earlgrey.
+   * Peripheral size in bytes for pattgen in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_PATTGEN_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_DARJEELING_PATTGEN_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for rv_timer in top earlgrey.
+   * Peripheral base address for rv_timer in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RV_TIMER_BASE_ADDR = 32'h40100000;
+  parameter int unsigned TOP_DARJEELING_RV_TIMER_BASE_ADDR = 32'h40100000;
 
   /**
-   * Peripheral size in bytes for rv_timer in top earlgrey.
+   * Peripheral size in bytes for rv_timer in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RV_TIMER_SIZE_BYTES = 32'h200;
+  parameter int unsigned TOP_DARJEELING_RV_TIMER_SIZE_BYTES = 32'h200;
 
   /**
-   * Peripheral base address for core device on otp_ctrl in top earlgrey.
+   * Peripheral base address for core device on otp_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR = 32'h40130000;
+  parameter int unsigned TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR = 32'h40130000;
 
   /**
-   * Peripheral size in bytes for core device on otp_ctrl in top earlgrey.
+   * Peripheral size in bytes for core device on otp_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_OTP_CTRL_CORE_SIZE_BYTES = 32'h2000;
+  parameter int unsigned TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES = 32'h2000;
 
   /**
-   * Peripheral base address for prim device on otp_ctrl in top earlgrey.
+   * Peripheral base address for prim device on otp_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR = 32'h40132000;
+  parameter int unsigned TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR = 32'h40132000;
 
   /**
-   * Peripheral size in bytes for prim device on otp_ctrl in top earlgrey.
+   * Peripheral size in bytes for prim device on otp_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_OTP_CTRL_PRIM_SIZE_BYTES = 32'h20;
+  parameter int unsigned TOP_DARJEELING_OTP_CTRL_PRIM_SIZE_BYTES = 32'h20;
 
   /**
-   * Peripheral base address for lc_ctrl in top earlgrey.
+   * Peripheral base address for lc_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_LC_CTRL_BASE_ADDR = 32'h40140000;
+  parameter int unsigned TOP_DARJEELING_LC_CTRL_BASE_ADDR = 32'h40140000;
 
   /**
-   * Peripheral size in bytes for lc_ctrl in top earlgrey.
+   * Peripheral size in bytes for lc_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_LC_CTRL_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_DARJEELING_LC_CTRL_SIZE_BYTES = 32'h100;
 
   /**
-   * Peripheral base address for alert_handler in top earlgrey.
+   * Peripheral base address for alert_handler in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR = 32'h40150000;
+  parameter int unsigned TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR = 32'h40150000;
 
   /**
-   * Peripheral size in bytes for alert_handler in top earlgrey.
+   * Peripheral size in bytes for alert_handler in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES = 32'h800;
+  parameter int unsigned TOP_DARJEELING_ALERT_HANDLER_SIZE_BYTES = 32'h800;
 
   /**
-   * Peripheral base address for spi_host0 in top earlgrey.
+   * Peripheral base address for spi_host0 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SPI_HOST0_BASE_ADDR = 32'h40300000;
+  parameter int unsigned TOP_DARJEELING_SPI_HOST0_BASE_ADDR = 32'h40300000;
 
   /**
-   * Peripheral size in bytes for spi_host0 in top earlgrey.
+   * Peripheral size in bytes for spi_host0 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SPI_HOST0_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_DARJEELING_SPI_HOST0_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for spi_host1 in top earlgrey.
+   * Peripheral base address for spi_host1 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SPI_HOST1_BASE_ADDR = 32'h40310000;
+  parameter int unsigned TOP_DARJEELING_SPI_HOST1_BASE_ADDR = 32'h40310000;
 
   /**
-   * Peripheral size in bytes for spi_host1 in top earlgrey.
+   * Peripheral size in bytes for spi_host1 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SPI_HOST1_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_DARJEELING_SPI_HOST1_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for usbdev in top earlgrey.
+   * Peripheral base address for usbdev in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_USBDEV_BASE_ADDR = 32'h40320000;
+  parameter int unsigned TOP_DARJEELING_USBDEV_BASE_ADDR = 32'h40320000;
 
   /**
-   * Peripheral size in bytes for usbdev in top earlgrey.
+   * Peripheral size in bytes for usbdev in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_USBDEV_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_DARJEELING_USBDEV_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for pwrmgr_aon in top earlgrey.
+   * Peripheral base address for pwrmgr_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_PWRMGR_AON_BASE_ADDR = 32'h40400000;
+  parameter int unsigned TOP_DARJEELING_PWRMGR_AON_BASE_ADDR = 32'h40400000;
 
   /**
-   * Peripheral size in bytes for pwrmgr_aon in top earlgrey.
+   * Peripheral size in bytes for pwrmgr_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_PWRMGR_AON_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_PWRMGR_AON_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for rstmgr_aon in top earlgrey.
+   * Peripheral base address for rstmgr_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RSTMGR_AON_BASE_ADDR = 32'h40410000;
+  parameter int unsigned TOP_DARJEELING_RSTMGR_AON_BASE_ADDR = 32'h40410000;
 
   /**
-   * Peripheral size in bytes for rstmgr_aon in top earlgrey.
+   * Peripheral size in bytes for rstmgr_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RSTMGR_AON_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_RSTMGR_AON_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for clkmgr_aon in top earlgrey.
+   * Peripheral base address for clkmgr_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_CLKMGR_AON_BASE_ADDR = 32'h40420000;
+  parameter int unsigned TOP_DARJEELING_CLKMGR_AON_BASE_ADDR = 32'h40420000;
 
   /**
-   * Peripheral size in bytes for clkmgr_aon in top earlgrey.
+   * Peripheral size in bytes for clkmgr_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_CLKMGR_AON_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for sysrst_ctrl_aon in top earlgrey.
+   * Peripheral base address for sysrst_ctrl_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR = 32'h40430000;
+  parameter int unsigned TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR = 32'h40430000;
 
   /**
-   * Peripheral size in bytes for sysrst_ctrl_aon in top earlgrey.
+   * Peripheral size in bytes for sysrst_ctrl_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SYSRST_CTRL_AON_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_DARJEELING_SYSRST_CTRL_AON_SIZE_BYTES = 32'h100;
 
   /**
-   * Peripheral base address for adc_ctrl_aon in top earlgrey.
+   * Peripheral base address for adc_ctrl_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR = 32'h40440000;
+  parameter int unsigned TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR = 32'h40440000;
 
   /**
-   * Peripheral size in bytes for adc_ctrl_aon in top earlgrey.
+   * Peripheral size in bytes for adc_ctrl_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_ADC_CTRL_AON_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_ADC_CTRL_AON_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for pwm_aon in top earlgrey.
+   * Peripheral base address for pwm_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_PWM_AON_BASE_ADDR = 32'h40450000;
+  parameter int unsigned TOP_DARJEELING_PWM_AON_BASE_ADDR = 32'h40450000;
 
   /**
-   * Peripheral size in bytes for pwm_aon in top earlgrey.
+   * Peripheral size in bytes for pwm_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_PWM_AON_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_PWM_AON_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for pinmux_aon in top earlgrey.
+   * Peripheral base address for pinmux_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_PINMUX_AON_BASE_ADDR = 32'h40460000;
+  parameter int unsigned TOP_DARJEELING_PINMUX_AON_BASE_ADDR = 32'h40460000;
 
   /**
-   * Peripheral size in bytes for pinmux_aon in top earlgrey.
+   * Peripheral size in bytes for pinmux_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_PINMUX_AON_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_DARJEELING_PINMUX_AON_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for aon_timer_aon in top earlgrey.
+   * Peripheral base address for aon_timer_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR = 32'h40470000;
+  parameter int unsigned TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR = 32'h40470000;
 
   /**
-   * Peripheral size in bytes for aon_timer_aon in top earlgrey.
+   * Peripheral size in bytes for aon_timer_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_AON_TIMER_AON_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_DARJEELING_AON_TIMER_AON_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for ast in top earlgrey.
+   * Peripheral base address for ast in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_AST_BASE_ADDR = 32'h40480000;
+  parameter int unsigned TOP_DARJEELING_AST_BASE_ADDR = 32'h40480000;
 
   /**
-   * Peripheral size in bytes for ast in top earlgrey.
+   * Peripheral size in bytes for ast in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_AST_SIZE_BYTES = 32'h400;
+  parameter int unsigned TOP_DARJEELING_AST_SIZE_BYTES = 32'h400;
 
   /**
-   * Peripheral base address for sensor_ctrl in top earlgrey.
+   * Peripheral base address for sensor_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR = 32'h40490000;
+  parameter int unsigned TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR = 32'h40490000;
 
   /**
-   * Peripheral size in bytes for sensor_ctrl in top earlgrey.
+   * Peripheral size in bytes for sensor_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_DARJEELING_SENSOR_CTRL_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.
+   * Peripheral base address for regs device on sram_ctrl_ret_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR = 32'h40500000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR = 32'h40500000;
 
   /**
-   * Peripheral size in bytes for regs device on sram_ctrl_ret_aon in top earlgrey.
+   * Peripheral size in bytes for regs device on sram_ctrl_ret_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES = 32'h20;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES = 32'h20;
 
   /**
-   * Peripheral base address for ram device on sram_ctrl_ret_aon in top earlgrey.
+   * Peripheral base address for ram device on sram_ctrl_ret_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR = 32'h40600000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR = 32'h40600000;
 
   /**
-   * Peripheral size in bytes for ram device on sram_ctrl_ret_aon in top earlgrey.
+   * Peripheral size in bytes for ram device on sram_ctrl_ret_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for core device on flash_ctrl in top earlgrey.
+   * Peripheral base address for core device on flash_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR = 32'h41000000;
+  parameter int unsigned TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR = 32'h41000000;
 
   /**
-   * Peripheral size in bytes for core device on flash_ctrl in top earlgrey.
+   * Peripheral size in bytes for core device on flash_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_CORE_SIZE_BYTES = 32'h200;
+  parameter int unsigned TOP_DARJEELING_FLASH_CTRL_CORE_SIZE_BYTES = 32'h200;
 
   /**
-   * Peripheral base address for prim device on flash_ctrl in top earlgrey.
+   * Peripheral base address for prim device on flash_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR = 32'h41008000;
+  parameter int unsigned TOP_DARJEELING_FLASH_CTRL_PRIM_BASE_ADDR = 32'h41008000;
 
   /**
-   * Peripheral size in bytes for prim device on flash_ctrl in top earlgrey.
+   * Peripheral size in bytes for prim device on flash_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_FLASH_CTRL_PRIM_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for mem device on flash_ctrl in top earlgrey.
+   * Peripheral base address for mem device on flash_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR = 32'h20000000;
+  parameter int unsigned TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR = 32'h20000000;
 
   /**
-   * Peripheral size in bytes for mem device on flash_ctrl in top earlgrey.
+   * Peripheral size in bytes for mem device on flash_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES = 32'h100000;
+  parameter int unsigned TOP_DARJEELING_FLASH_CTRL_MEM_SIZE_BYTES = 32'h100000;
 
   /**
-   * Peripheral base address for regs device on rv_dm in top earlgrey.
+   * Peripheral base address for regs device on rv_dm in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RV_DM_REGS_BASE_ADDR = 32'h41200000;
+  parameter int unsigned TOP_DARJEELING_RV_DM_REGS_BASE_ADDR = 32'h41200000;
 
   /**
-   * Peripheral size in bytes for regs device on rv_dm in top earlgrey.
+   * Peripheral size in bytes for regs device on rv_dm in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES = 32'h4;
+  parameter int unsigned TOP_DARJEELING_RV_DM_REGS_SIZE_BYTES = 32'h4;
 
   /**
-   * Peripheral base address for mem device on rv_dm in top earlgrey.
+   * Peripheral base address for mem device on rv_dm in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RV_DM_MEM_BASE_ADDR = 32'h10000;
+  parameter int unsigned TOP_DARJEELING_RV_DM_MEM_BASE_ADDR = 32'h10000;
 
   /**
-   * Peripheral size in bytes for mem device on rv_dm in top earlgrey.
+   * Peripheral size in bytes for mem device on rv_dm in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_DARJEELING_RV_DM_MEM_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for rv_plic in top earlgrey.
+   * Peripheral base address for rv_plic in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RV_PLIC_BASE_ADDR = 32'h48000000;
+  parameter int unsigned TOP_DARJEELING_RV_PLIC_BASE_ADDR = 32'h48000000;
 
   /**
-   * Peripheral size in bytes for rv_plic in top earlgrey.
+   * Peripheral size in bytes for rv_plic in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RV_PLIC_SIZE_BYTES = 32'h8000000;
+  parameter int unsigned TOP_DARJEELING_RV_PLIC_SIZE_BYTES = 32'h8000000;
 
   /**
-   * Peripheral base address for aes in top earlgrey.
+   * Peripheral base address for aes in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_AES_BASE_ADDR = 32'h41100000;
+  parameter int unsigned TOP_DARJEELING_AES_BASE_ADDR = 32'h41100000;
 
   /**
-   * Peripheral size in bytes for aes in top earlgrey.
+   * Peripheral size in bytes for aes in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_AES_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_DARJEELING_AES_SIZE_BYTES = 32'h100;
 
   /**
-   * Peripheral base address for hmac in top earlgrey.
+   * Peripheral base address for hmac in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_HMAC_BASE_ADDR = 32'h41110000;
+  parameter int unsigned TOP_DARJEELING_HMAC_BASE_ADDR = 32'h41110000;
 
   /**
-   * Peripheral size in bytes for hmac in top earlgrey.
+   * Peripheral size in bytes for hmac in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_HMAC_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_DARJEELING_HMAC_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for kmac in top earlgrey.
+   * Peripheral base address for kmac in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_KMAC_BASE_ADDR = 32'h41120000;
+  parameter int unsigned TOP_DARJEELING_KMAC_BASE_ADDR = 32'h41120000;
 
   /**
-   * Peripheral size in bytes for kmac in top earlgrey.
+   * Peripheral size in bytes for kmac in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_KMAC_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_DARJEELING_KMAC_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for otbn in top earlgrey.
+   * Peripheral base address for otbn in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_OTBN_BASE_ADDR = 32'h41130000;
+  parameter int unsigned TOP_DARJEELING_OTBN_BASE_ADDR = 32'h41130000;
 
   /**
-   * Peripheral size in bytes for otbn in top earlgrey.
+   * Peripheral size in bytes for otbn in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_OTBN_SIZE_BYTES = 32'h10000;
+  parameter int unsigned TOP_DARJEELING_OTBN_SIZE_BYTES = 32'h10000;
 
   /**
-   * Peripheral base address for keymgr in top earlgrey.
+   * Peripheral base address for keymgr in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_KEYMGR_BASE_ADDR = 32'h41140000;
+  parameter int unsigned TOP_DARJEELING_KEYMGR_BASE_ADDR = 32'h41140000;
 
   /**
-   * Peripheral size in bytes for keymgr in top earlgrey.
+   * Peripheral size in bytes for keymgr in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_KEYMGR_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_DARJEELING_KEYMGR_SIZE_BYTES = 32'h100;
 
   /**
-   * Peripheral base address for csrng in top earlgrey.
+   * Peripheral base address for csrng in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_CSRNG_BASE_ADDR = 32'h41150000;
+  parameter int unsigned TOP_DARJEELING_CSRNG_BASE_ADDR = 32'h41150000;
 
   /**
-   * Peripheral size in bytes for csrng in top earlgrey.
+   * Peripheral size in bytes for csrng in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_CSRNG_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_CSRNG_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for entropy_src in top earlgrey.
+   * Peripheral base address for entropy_src in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR = 32'h41160000;
+  parameter int unsigned TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR = 32'h41160000;
 
   /**
-   * Peripheral size in bytes for entropy_src in top earlgrey.
+   * Peripheral size in bytes for entropy_src in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_ENTROPY_SRC_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_DARJEELING_ENTROPY_SRC_SIZE_BYTES = 32'h100;
 
   /**
-   * Peripheral base address for edn0 in top earlgrey.
+   * Peripheral base address for edn0 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_EDN0_BASE_ADDR = 32'h41170000;
+  parameter int unsigned TOP_DARJEELING_EDN0_BASE_ADDR = 32'h41170000;
 
   /**
-   * Peripheral size in bytes for edn0 in top earlgrey.
+   * Peripheral size in bytes for edn0 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_EDN0_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_EDN0_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for edn1 in top earlgrey.
+   * Peripheral base address for edn1 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_EDN1_BASE_ADDR = 32'h41180000;
+  parameter int unsigned TOP_DARJEELING_EDN1_BASE_ADDR = 32'h41180000;
 
   /**
-   * Peripheral size in bytes for edn1 in top earlgrey.
+   * Peripheral size in bytes for edn1 in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_EDN1_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_EDN1_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for regs device on sram_ctrl_main in top earlgrey.
+   * Peripheral base address for regs device on sram_ctrl_main in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR = 32'h411C0000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR = 32'h411C0000;
 
   /**
-   * Peripheral size in bytes for regs device on sram_ctrl_main in top earlgrey.
+   * Peripheral size in bytes for regs device on sram_ctrl_main in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES = 32'h20;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_SIZE_BYTES = 32'h20;
 
   /**
-   * Peripheral base address for ram device on sram_ctrl_main in top earlgrey.
+   * Peripheral base address for ram device on sram_ctrl_main in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR = 32'h10000000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR = 32'h10000000;
 
   /**
-   * Peripheral size in bytes for ram device on sram_ctrl_main in top earlgrey.
+   * Peripheral size in bytes for ram device on sram_ctrl_main in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h20000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h20000;
 
   /**
-   * Peripheral base address for regs device on rom_ctrl in top earlgrey.
+   * Peripheral base address for regs device on rom_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR = 32'h411E0000;
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR = 32'h411E0000;
 
   /**
-   * Peripheral size in bytes for regs device on rom_ctrl in top earlgrey.
+   * Peripheral size in bytes for regs device on rom_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL_REGS_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for rom device on rom_ctrl in top earlgrey.
+   * Peripheral base address for rom device on rom_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR = 32'h8000;
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR = 32'h8000;
 
   /**
-   * Peripheral size in bytes for rom device on rom_ctrl in top earlgrey.
+   * Peripheral size in bytes for rom device on rom_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES = 32'h8000;
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL_ROM_SIZE_BYTES = 32'h8000;
 
   /**
-   * Peripheral base address for cfg device on rv_core_ibex in top earlgrey.
+   * Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR = 32'h411F0000;
+  parameter int unsigned TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR = 32'h411F0000;
 
   /**
-   * Peripheral size in bytes for cfg device on rv_core_ibex in top earlgrey.
+   * Peripheral size in bytes for cfg device on rv_core_ibex in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_DARJEELING_RV_CORE_IBEX_CFG_SIZE_BYTES = 32'h100;
 
   /**
-   * Memory base address for ram_ret_aon in top earlgrey.
+   * Memory base address for ram_ret_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RAM_RET_AON_BASE_ADDR = 32'h40600000;
+  parameter int unsigned TOP_DARJEELING_RAM_RET_AON_BASE_ADDR = 32'h40600000;
 
   /**
-   * Memory size for ram_ret_aon in top earlgrey.
+   * Memory size for ram_ret_aon in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_DARJEELING_RAM_RET_AON_SIZE_BYTES = 32'h1000;
 
   /**
-   * Memory base address for eflash in top earlgrey.
+   * Memory base address for eflash in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_EFLASH_BASE_ADDR = 32'h20000000;
+  parameter int unsigned TOP_DARJEELING_EFLASH_BASE_ADDR = 32'h20000000;
 
   /**
-   * Memory size for eflash in top earlgrey.
+   * Memory size for eflash in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_EFLASH_SIZE_BYTES = 32'h100000;
+  parameter int unsigned TOP_DARJEELING_EFLASH_SIZE_BYTES = 32'h100000;
 
   /**
-   * Memory base address for ram_main in top earlgrey.
+   * Memory base address for ram_main in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RAM_MAIN_BASE_ADDR = 32'h10000000;
+  parameter int unsigned TOP_DARJEELING_RAM_MAIN_BASE_ADDR = 32'h10000000;
 
   /**
-   * Memory size for ram_main in top earlgrey.
+   * Memory size for ram_main in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_RAM_MAIN_SIZE_BYTES = 32'h20000;
+  parameter int unsigned TOP_DARJEELING_RAM_MAIN_SIZE_BYTES = 32'h20000;
 
   /**
-   * Memory base address for rom in top earlgrey.
+   * Memory base address for rom in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_BASE_ADDR = 32'h8000;
+  parameter int unsigned TOP_DARJEELING_ROM_BASE_ADDR = 32'h8000;
 
   /**
-   * Memory size for rom in top earlgrey.
+   * Memory size for rom in top darjeeling.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_SIZE_BYTES = 32'h8000;
+  parameter int unsigned TOP_DARJEELING_ROM_SIZE_BYTES = 32'h8000;
 
 
   // Enumeration of alert modules
   typedef enum int unsigned {
-    TopEarlgreyAlertPeripheralUart0 = 0,
-    TopEarlgreyAlertPeripheralUart1 = 1,
-    TopEarlgreyAlertPeripheralUart2 = 2,
-    TopEarlgreyAlertPeripheralUart3 = 3,
-    TopEarlgreyAlertPeripheralGpio = 4,
-    TopEarlgreyAlertPeripheralSpiDevice = 5,
-    TopEarlgreyAlertPeripheralI2c0 = 6,
-    TopEarlgreyAlertPeripheralI2c1 = 7,
-    TopEarlgreyAlertPeripheralI2c2 = 8,
-    TopEarlgreyAlertPeripheralPattgen = 9,
-    TopEarlgreyAlertPeripheralRvTimer = 10,
-    TopEarlgreyAlertPeripheralOtpCtrl = 11,
-    TopEarlgreyAlertPeripheralLcCtrl = 12,
-    TopEarlgreyAlertPeripheralSpiHost0 = 13,
-    TopEarlgreyAlertPeripheralSpiHost1 = 14,
-    TopEarlgreyAlertPeripheralUsbdev = 15,
-    TopEarlgreyAlertPeripheralPwrmgrAon = 16,
-    TopEarlgreyAlertPeripheralRstmgrAon = 17,
-    TopEarlgreyAlertPeripheralClkmgrAon = 18,
-    TopEarlgreyAlertPeripheralSysrstCtrlAon = 19,
-    TopEarlgreyAlertPeripheralAdcCtrlAon = 20,
-    TopEarlgreyAlertPeripheralPwmAon = 21,
-    TopEarlgreyAlertPeripheralPinmuxAon = 22,
-    TopEarlgreyAlertPeripheralAonTimerAon = 23,
-    TopEarlgreyAlertPeripheralSensorCtrl = 24,
-    TopEarlgreyAlertPeripheralSramCtrlRetAon = 25,
-    TopEarlgreyAlertPeripheralFlashCtrl = 26,
-    TopEarlgreyAlertPeripheralRvDm = 27,
-    TopEarlgreyAlertPeripheralRvPlic = 28,
-    TopEarlgreyAlertPeripheralAes = 29,
-    TopEarlgreyAlertPeripheralHmac = 30,
-    TopEarlgreyAlertPeripheralKmac = 31,
-    TopEarlgreyAlertPeripheralOtbn = 32,
-    TopEarlgreyAlertPeripheralKeymgr = 33,
-    TopEarlgreyAlertPeripheralCsrng = 34,
-    TopEarlgreyAlertPeripheralEntropySrc = 35,
-    TopEarlgreyAlertPeripheralEdn0 = 36,
-    TopEarlgreyAlertPeripheralEdn1 = 37,
-    TopEarlgreyAlertPeripheralSramCtrlMain = 38,
-    TopEarlgreyAlertPeripheralRomCtrl = 39,
-    TopEarlgreyAlertPeripheralRvCoreIbex = 40,
-    TopEarlgreyAlertPeripheralCount
+    TopDarjeelingAlertPeripheralUart0 = 0,
+    TopDarjeelingAlertPeripheralUart1 = 1,
+    TopDarjeelingAlertPeripheralUart2 = 2,
+    TopDarjeelingAlertPeripheralUart3 = 3,
+    TopDarjeelingAlertPeripheralGpio = 4,
+    TopDarjeelingAlertPeripheralSpiDevice = 5,
+    TopDarjeelingAlertPeripheralI2c0 = 6,
+    TopDarjeelingAlertPeripheralI2c1 = 7,
+    TopDarjeelingAlertPeripheralI2c2 = 8,
+    TopDarjeelingAlertPeripheralPattgen = 9,
+    TopDarjeelingAlertPeripheralRvTimer = 10,
+    TopDarjeelingAlertPeripheralOtpCtrl = 11,
+    TopDarjeelingAlertPeripheralLcCtrl = 12,
+    TopDarjeelingAlertPeripheralSpiHost0 = 13,
+    TopDarjeelingAlertPeripheralSpiHost1 = 14,
+    TopDarjeelingAlertPeripheralUsbdev = 15,
+    TopDarjeelingAlertPeripheralPwrmgrAon = 16,
+    TopDarjeelingAlertPeripheralRstmgrAon = 17,
+    TopDarjeelingAlertPeripheralClkmgrAon = 18,
+    TopDarjeelingAlertPeripheralSysrstCtrlAon = 19,
+    TopDarjeelingAlertPeripheralAdcCtrlAon = 20,
+    TopDarjeelingAlertPeripheralPwmAon = 21,
+    TopDarjeelingAlertPeripheralPinmuxAon = 22,
+    TopDarjeelingAlertPeripheralAonTimerAon = 23,
+    TopDarjeelingAlertPeripheralSensorCtrl = 24,
+    TopDarjeelingAlertPeripheralSramCtrlRetAon = 25,
+    TopDarjeelingAlertPeripheralFlashCtrl = 26,
+    TopDarjeelingAlertPeripheralRvDm = 27,
+    TopDarjeelingAlertPeripheralRvPlic = 28,
+    TopDarjeelingAlertPeripheralAes = 29,
+    TopDarjeelingAlertPeripheralHmac = 30,
+    TopDarjeelingAlertPeripheralKmac = 31,
+    TopDarjeelingAlertPeripheralOtbn = 32,
+    TopDarjeelingAlertPeripheralKeymgr = 33,
+    TopDarjeelingAlertPeripheralCsrng = 34,
+    TopDarjeelingAlertPeripheralEntropySrc = 35,
+    TopDarjeelingAlertPeripheralEdn0 = 36,
+    TopDarjeelingAlertPeripheralEdn1 = 37,
+    TopDarjeelingAlertPeripheralSramCtrlMain = 38,
+    TopDarjeelingAlertPeripheralRomCtrl = 39,
+    TopDarjeelingAlertPeripheralRvCoreIbex = 40,
+    TopDarjeelingAlertPeripheralCount
   } alert_peripheral_e;
 
   // Enumeration of alerts
   typedef enum int unsigned {
-    TopEarlgreyAlertIdUart0FatalFault = 0,
-    TopEarlgreyAlertIdUart1FatalFault = 1,
-    TopEarlgreyAlertIdUart2FatalFault = 2,
-    TopEarlgreyAlertIdUart3FatalFault = 3,
-    TopEarlgreyAlertIdGpioFatalFault = 4,
-    TopEarlgreyAlertIdSpiDeviceFatalFault = 5,
-    TopEarlgreyAlertIdI2c0FatalFault = 6,
-    TopEarlgreyAlertIdI2c1FatalFault = 7,
-    TopEarlgreyAlertIdI2c2FatalFault = 8,
-    TopEarlgreyAlertIdPattgenFatalFault = 9,
-    TopEarlgreyAlertIdRvTimerFatalFault = 10,
-    TopEarlgreyAlertIdOtpCtrlFatalMacroError = 11,
-    TopEarlgreyAlertIdOtpCtrlFatalCheckError = 12,
-    TopEarlgreyAlertIdOtpCtrlFatalBusIntegError = 13,
-    TopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert = 14,
-    TopEarlgreyAlertIdOtpCtrlRecovPrimOtpAlert = 15,
-    TopEarlgreyAlertIdLcCtrlFatalProgError = 16,
-    TopEarlgreyAlertIdLcCtrlFatalStateError = 17,
-    TopEarlgreyAlertIdLcCtrlFatalBusIntegError = 18,
-    TopEarlgreyAlertIdSpiHost0FatalFault = 19,
-    TopEarlgreyAlertIdSpiHost1FatalFault = 20,
-    TopEarlgreyAlertIdUsbdevFatalFault = 21,
-    TopEarlgreyAlertIdPwrmgrAonFatalFault = 22,
-    TopEarlgreyAlertIdRstmgrAonFatalFault = 23,
-    TopEarlgreyAlertIdRstmgrAonFatalCnstyFault = 24,
-    TopEarlgreyAlertIdClkmgrAonRecovFault = 25,
-    TopEarlgreyAlertIdClkmgrAonFatalFault = 26,
-    TopEarlgreyAlertIdSysrstCtrlAonFatalFault = 27,
-    TopEarlgreyAlertIdAdcCtrlAonFatalFault = 28,
-    TopEarlgreyAlertIdPwmAonFatalFault = 29,
-    TopEarlgreyAlertIdPinmuxAonFatalFault = 30,
-    TopEarlgreyAlertIdAonTimerAonFatalFault = 31,
-    TopEarlgreyAlertIdSensorCtrlRecovAlert = 32,
-    TopEarlgreyAlertIdSensorCtrlFatalAlert = 33,
-    TopEarlgreyAlertIdSramCtrlRetAonFatalError = 34,
-    TopEarlgreyAlertIdFlashCtrlRecovErr = 35,
-    TopEarlgreyAlertIdFlashCtrlFatalStdErr = 36,
-    TopEarlgreyAlertIdFlashCtrlFatalErr = 37,
-    TopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert = 38,
-    TopEarlgreyAlertIdFlashCtrlRecovPrimFlashAlert = 39,
-    TopEarlgreyAlertIdRvDmFatalFault = 40,
-    TopEarlgreyAlertIdRvPlicFatalFault = 41,
-    TopEarlgreyAlertIdAesRecovCtrlUpdateErr = 42,
-    TopEarlgreyAlertIdAesFatalFault = 43,
-    TopEarlgreyAlertIdHmacFatalFault = 44,
-    TopEarlgreyAlertIdKmacRecovOperationErr = 45,
-    TopEarlgreyAlertIdKmacFatalFaultErr = 46,
-    TopEarlgreyAlertIdOtbnFatal = 47,
-    TopEarlgreyAlertIdOtbnRecov = 48,
-    TopEarlgreyAlertIdKeymgrRecovOperationErr = 49,
-    TopEarlgreyAlertIdKeymgrFatalFaultErr = 50,
-    TopEarlgreyAlertIdCsrngRecovAlert = 51,
-    TopEarlgreyAlertIdCsrngFatalAlert = 52,
-    TopEarlgreyAlertIdEntropySrcRecovAlert = 53,
-    TopEarlgreyAlertIdEntropySrcFatalAlert = 54,
-    TopEarlgreyAlertIdEdn0RecovAlert = 55,
-    TopEarlgreyAlertIdEdn0FatalAlert = 56,
-    TopEarlgreyAlertIdEdn1RecovAlert = 57,
-    TopEarlgreyAlertIdEdn1FatalAlert = 58,
-    TopEarlgreyAlertIdSramCtrlMainFatalError = 59,
-    TopEarlgreyAlertIdRomCtrlFatal = 60,
-    TopEarlgreyAlertIdRvCoreIbexFatalSwErr = 61,
-    TopEarlgreyAlertIdRvCoreIbexRecovSwErr = 62,
-    TopEarlgreyAlertIdRvCoreIbexFatalHwErr = 63,
-    TopEarlgreyAlertIdRvCoreIbexRecovHwErr = 64,
-    TopEarlgreyAlertIdCount
+    TopDarjeelingAlertIdUart0FatalFault = 0,
+    TopDarjeelingAlertIdUart1FatalFault = 1,
+    TopDarjeelingAlertIdUart2FatalFault = 2,
+    TopDarjeelingAlertIdUart3FatalFault = 3,
+    TopDarjeelingAlertIdGpioFatalFault = 4,
+    TopDarjeelingAlertIdSpiDeviceFatalFault = 5,
+    TopDarjeelingAlertIdI2c0FatalFault = 6,
+    TopDarjeelingAlertIdI2c1FatalFault = 7,
+    TopDarjeelingAlertIdI2c2FatalFault = 8,
+    TopDarjeelingAlertIdPattgenFatalFault = 9,
+    TopDarjeelingAlertIdRvTimerFatalFault = 10,
+    TopDarjeelingAlertIdOtpCtrlFatalMacroError = 11,
+    TopDarjeelingAlertIdOtpCtrlFatalCheckError = 12,
+    TopDarjeelingAlertIdOtpCtrlFatalBusIntegError = 13,
+    TopDarjeelingAlertIdOtpCtrlFatalPrimOtpAlert = 14,
+    TopDarjeelingAlertIdOtpCtrlRecovPrimOtpAlert = 15,
+    TopDarjeelingAlertIdLcCtrlFatalProgError = 16,
+    TopDarjeelingAlertIdLcCtrlFatalStateError = 17,
+    TopDarjeelingAlertIdLcCtrlFatalBusIntegError = 18,
+    TopDarjeelingAlertIdSpiHost0FatalFault = 19,
+    TopDarjeelingAlertIdSpiHost1FatalFault = 20,
+    TopDarjeelingAlertIdUsbdevFatalFault = 21,
+    TopDarjeelingAlertIdPwrmgrAonFatalFault = 22,
+    TopDarjeelingAlertIdRstmgrAonFatalFault = 23,
+    TopDarjeelingAlertIdRstmgrAonFatalCnstyFault = 24,
+    TopDarjeelingAlertIdClkmgrAonRecovFault = 25,
+    TopDarjeelingAlertIdClkmgrAonFatalFault = 26,
+    TopDarjeelingAlertIdSysrstCtrlAonFatalFault = 27,
+    TopDarjeelingAlertIdAdcCtrlAonFatalFault = 28,
+    TopDarjeelingAlertIdPwmAonFatalFault = 29,
+    TopDarjeelingAlertIdPinmuxAonFatalFault = 30,
+    TopDarjeelingAlertIdAonTimerAonFatalFault = 31,
+    TopDarjeelingAlertIdSensorCtrlRecovAlert = 32,
+    TopDarjeelingAlertIdSensorCtrlFatalAlert = 33,
+    TopDarjeelingAlertIdSramCtrlRetAonFatalError = 34,
+    TopDarjeelingAlertIdFlashCtrlRecovErr = 35,
+    TopDarjeelingAlertIdFlashCtrlFatalStdErr = 36,
+    TopDarjeelingAlertIdFlashCtrlFatalErr = 37,
+    TopDarjeelingAlertIdFlashCtrlFatalPrimFlashAlert = 38,
+    TopDarjeelingAlertIdFlashCtrlRecovPrimFlashAlert = 39,
+    TopDarjeelingAlertIdRvDmFatalFault = 40,
+    TopDarjeelingAlertIdRvPlicFatalFault = 41,
+    TopDarjeelingAlertIdAesRecovCtrlUpdateErr = 42,
+    TopDarjeelingAlertIdAesFatalFault = 43,
+    TopDarjeelingAlertIdHmacFatalFault = 44,
+    TopDarjeelingAlertIdKmacRecovOperationErr = 45,
+    TopDarjeelingAlertIdKmacFatalFaultErr = 46,
+    TopDarjeelingAlertIdOtbnFatal = 47,
+    TopDarjeelingAlertIdOtbnRecov = 48,
+    TopDarjeelingAlertIdKeymgrRecovOperationErr = 49,
+    TopDarjeelingAlertIdKeymgrFatalFaultErr = 50,
+    TopDarjeelingAlertIdCsrngRecovAlert = 51,
+    TopDarjeelingAlertIdCsrngFatalAlert = 52,
+    TopDarjeelingAlertIdEntropySrcRecovAlert = 53,
+    TopDarjeelingAlertIdEntropySrcFatalAlert = 54,
+    TopDarjeelingAlertIdEdn0RecovAlert = 55,
+    TopDarjeelingAlertIdEdn0FatalAlert = 56,
+    TopDarjeelingAlertIdEdn1RecovAlert = 57,
+    TopDarjeelingAlertIdEdn1FatalAlert = 58,
+    TopDarjeelingAlertIdSramCtrlMainFatalError = 59,
+    TopDarjeelingAlertIdRomCtrlFatal = 60,
+    TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 61,
+    TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 62,
+    TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 63,
+    TopDarjeelingAlertIdRvCoreIbexRecovHwErr = 64,
+    TopDarjeelingAlertIdCount
   } alert_id_e;
 
   // Enumeration of IO power domains.

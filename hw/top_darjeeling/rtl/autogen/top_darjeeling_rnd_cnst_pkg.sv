@@ -5,12 +5,12 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
-// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson \
-//                -o hw/top_earlgrey/ \
+// util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson \
+//                -o hw/top_darjeeling/ \
 //                --rnd_cnst_seed 4881560218908238235
 
 
-package top_earlgrey_rnd_cnst_pkg;
+package top_darjeeling_rnd_cnst_pkg;
 
   ////////////////////////////////////////////
   // otp_ctrl
@@ -379,4 +379,4 @@ package top_earlgrey_rnd_cnst_pkg;
     64'h2F4520C3_2D5E0D6D
   };
 
-endpackage : top_earlgrey_rnd_cnst_pkg
+endpackage : top_darjeeling_rnd_cnst_pkg

@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  flow: lint
 
   // This is the primary cfg hjson for FPV linting. It imports ALL individual lint
   // cfgs of the IPs FPV environments.
   // This enables to run them all as a regression in one shot.
-  name: top_earlgrey_fpv_batch
+  name: top_darjeeling_fpv_batch
+
+  flow: lint
 
   import_cfgs:      [// common server configuration for results upload
                      "{proj_root}/hw/data/common_project_cfg.hjson"
@@ -15,17 +16,17 @@
                      "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
 
   // Different dashboard output path for each tool
-  rel_path: "hw/top_earlgrey/fpv/lint/{tool}/summary"
+  rel_path: "hw/top_darjeeling/fpv/lint/{tool}/summary"
 
   use_cfgs: [{
               name: alert_handler_esc_timer_fpv
-              fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_esc_timer_fpv
+              fusesoc_core: lowrisc:opentitan:top_darjeeling_alert_handler_esc_timer_fpv
               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
               rel_path: "hw/ip/alert_handler/alert_handler_esc_timer_fpv/lint/{tool}"
              }
              {
               name: alert_handler_ping_timer_fpv
-              fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_ping_timer_fpv
+              fusesoc_core: lowrisc:opentitan:top_darjeeling_alert_handler_ping_timer_fpv
               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
               rel_path: "hw/ip/alert_handler/alert_handler_ping_timer_fpv/lint/{tool}"
              }
@@ -138,10 +139,10 @@
                rel_path: "hw/ip/pinmux/fpv/lint/{tool}"
              }
              {
-               name: top_earlgrey_rv_plic_fpv
-               fusesoc_core: lowrisc:opentitan:top_earlgrey_rv_plic_fpv
+               name: top_darjeeling_rv_plic_fpv
+               fusesoc_core: lowrisc:opentitan:top_darjeeling_rv_plic_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/top_earlgrey/ip_autogen/rv_plic/fpv/lint/{tool}"
+               rel_path: "hw/top_darjeeling/ip_autogen/rv_plic/fpv/lint/{tool}"
              }
              {
                name: sha3pad_fpv

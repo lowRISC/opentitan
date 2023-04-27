@@ -5,12 +5,12 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
-// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson \
-//                -o hw/top_earlgrey/ \
+// util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson \
+//                -o hw/top_darjeeling/ \
 //                --rnd_cnst_seed 4881560218908238235
 
 
-module chip_earlgrey_asic #(
+module chip_darjeeling_asic #(
   parameter bit SecRomCtrlDisableScrambling = 1'b0
 ) (
   // Dedicated Pads
@@ -89,7 +89,7 @@ module chip_earlgrey_asic #(
   inout IOR13  // MIO Pad 46
 );
 
-  import top_earlgrey_pkg::*;
+  import top_darjeeling_pkg::*;
   import prim_pad_wrapper_pkg::*;
 
   ////////////////////////////
@@ -1089,11 +1089,11 @@ module chip_earlgrey_asic #(
   //////////////////////
   // Top-level design //
   //////////////////////
-  top_earlgrey #(
+  top_darjeeling #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
     .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
-  ) top_earlgrey (
+  ) top_darjeeling (
     // ast connections
     .por_n_i                      ( por_n                      ),
     .clk_main_i                   ( ast_base_clks.clk_sys      ),
@@ -1188,4 +1188,4 @@ module chip_earlgrey_asic #(
 
 
 
-endmodule : chip_earlgrey_asic
+endmodule : chip_darjeeling_asic
