@@ -30,6 +30,7 @@ rust_library(
     ),
     crate_features = [
         "more_lengths",
+        "zeroize",
     ],
     crate_root = "src/lib.rs",
     edition = "2015",
@@ -45,6 +46,7 @@ rust_library(
     deps = [
         "@crate_index__generic-array-0.14.6//:build_script_build",
         "@crate_index__typenum-1.16.0//:typenum",
+        "@crate_index__zeroize-1.6.0//:zeroize",
     ],
 )
 
@@ -53,6 +55,7 @@ cargo_build_script(
     srcs = glob(["**/*.rs"]),
     crate_features = [
         "more_lengths",
+        "zeroize",
     ],
     crate_name = "build_script_build",
     crate_root = "build.rs",

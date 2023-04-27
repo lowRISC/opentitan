@@ -110,6 +110,12 @@ alias(
 )
 
 alias(
+    name = "elliptic-curve",
+    actual = "@crate_index__elliptic-curve-0.13.4//:elliptic_curve",
+    tags = ["manual"],
+)
+
+alias(
     name = "env_logger",
     actual = "@crate_index__env_logger-0.10.0//:env_logger",
     tags = ["manual"],
