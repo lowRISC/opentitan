@@ -373,7 +373,7 @@ def main(
         ..., help="Command for testing commits with cached bitstreams."),
     slow_command: Optional[str] = typer.Option(
         None, help="Command that tests remaining commits in second phase."),
-    git_binary: str = typer.Option("/usr/bin/git", help="Path to Git binary."),
+    git_binary: str = typer.Option("git", help="Path to Git binary."),
     verbose: bool = typer.Option(
         False, help="Log stdout/stderr of every git command."),
 ):

@@ -21,7 +21,7 @@ class TestGenerateCompilationDb(unittest.TestCase):
         action = matching_actions[0]
 
         self.assertEqual(action.arguments, [
-            '/usr/bin/gcc', '-Wall', '-iquote', '.', '-isystem',
+            'gcc', '-Wall', '-iquote', '.', '-isystem',
             'external/googletest/googlemock', '-fno-canonical-system-headers',
             '-c', 'sw/device/lib/crypto/otbn_util.c', '-o',
             'bazel-out/k8-fastbuild/bin/sw/device/' +
@@ -149,7 +149,7 @@ BAZEL_AQUERY_RESULTS_SMALL = r"""
     "actionKey": "e0abcf3f57dcd54d61576eb49b6a4911ed9fc6af72d3dd61548d6e396e8736c4",
     "mnemonic": "CppCompile",
     "configurationId": 1,
-    "arguments": ["/usr/bin/gcc", "-Wall", "-iquote", ".", "-isystem",
+    "arguments": ["gcc", "-Wall", "-iquote", ".", "-isystem",
         "external/googletest/googlemock", "-fno-canonical-system-headers", "-c",
         "sw/device/lib/crypto/otbn_util.c", "-o",
         "bazel-out/k8-fastbuild/bin/sw/device/lib/crypto/_objs/otbn_util/otbn_util.pic.o"],
