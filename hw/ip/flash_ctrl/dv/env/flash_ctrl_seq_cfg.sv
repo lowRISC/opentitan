@@ -73,6 +73,10 @@ class flash_ctrl_seq_cfg extends uvm_object;
   bit op_readonly_on_info1_partition;  // Make info1 partition read-only.
   bit op_readonly_on_info2_partition;  // Make info2 partition read-only.
 
+  // Vendor flash model hook
+  bit use_vendor_flash = 0;
+  string vendor_flash_path = "";  // Use to indicate a vendor flash hierarchical path.
+
   uint op_erase_type_bank_pc;
   uint op_prog_type_repair_pc;
   uint op_max_words;
