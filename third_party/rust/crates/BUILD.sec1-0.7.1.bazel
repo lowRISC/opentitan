@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT OR Apache-2.0
+#     "TODO",  # Apache-2.0 OR MIT
 # ])
 
 rust_library(
-    name = "digest",
+    name = "sec1",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,30 +29,32 @@ rust_library(
     ),
     crate_features = [
         "alloc",
-        "block-buffer",
-        "const-oid",
-        "core-api",
         "default",
-        "mac",
-        "oid",
+        "der",
+        "pem",
+        "pkcs8",
+        "point",
         "std",
         "subtle",
+        "zeroize",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=digest",
+        "crate-name=sec1",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.10.6",
+    version = "0.7.1",
     deps = [
-        "@crate_index__block-buffer-0.10.3//:block_buffer",
-        "@crate_index__const-oid-0.9.2//:const_oid",
-        "@crate_index__crypto-common-0.1.6//:crypto_common",
+        "@crate_index__base16ct-0.2.0//:base16ct",
+        "@crate_index__der-0.7.5//:der",
+        "@crate_index__generic-array-0.14.6//:generic_array",
+        "@crate_index__pkcs8-0.10.2//:pkcs8",
         "@crate_index__subtle-2.4.1//:subtle",
+        "@crate_index__zeroize-1.6.0//:zeroize",
     ],
 )

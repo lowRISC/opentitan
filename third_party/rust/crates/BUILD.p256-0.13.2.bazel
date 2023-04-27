@@ -11,12 +11,15 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT OR Apache-2.0
+#     "TODO",  # Apache-2.0 OR MIT
 # ])
 
 rust_library(
-    name = "digest",
+    name = "p256",
     srcs = glob(["**/*.rs"]),
+    aliases = {
+        "@crate_index__ecdsa-0.16.6//:ecdsa": "ecdsa_core",
+    },
     compile_data = glob(
         include = ["**"],
         exclude = [
@@ -29,30 +32,32 @@ rust_library(
     ),
     crate_features = [
         "alloc",
-        "block-buffer",
-        "const-oid",
-        "core-api",
+        "arithmetic",
         "default",
-        "mac",
-        "oid",
+        "digest",
+        "ecdsa",
+        "ecdsa-core",
+        "pem",
+        "pkcs8",
+        "sha2",
+        "sha256",
         "std",
-        "subtle",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=digest",
+        "crate-name=p256",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.10.6",
+    version = "0.13.2",
     deps = [
-        "@crate_index__block-buffer-0.10.3//:block_buffer",
-        "@crate_index__const-oid-0.9.2//:const_oid",
-        "@crate_index__crypto-common-0.1.6//:crypto_common",
-        "@crate_index__subtle-2.4.1//:subtle",
+        "@crate_index__ecdsa-0.16.6//:ecdsa",
+        "@crate_index__elliptic-curve-0.13.4//:elliptic_curve",
+        "@crate_index__primeorder-0.13.1//:primeorder",
+        "@crate_index__sha2-0.10.6//:sha2",
     ],
 )
