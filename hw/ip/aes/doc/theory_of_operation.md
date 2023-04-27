@@ -29,8 +29,8 @@ The AES unit automatically starts the encryption/decryption of the next data blo
 The order in which the input registers are written does not matter.
 Every input register must be written at least once for the AES unit to automatically start encryption/decryption.
 This is the default behavior.
-It can be disabled by setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](../data/aes.hjson#ctrl_shadowed) to `1`.
-In this case, the AES unit only starts the encryption/decryption once the START bit in [`TRIGGER`](../data/aes.hjson#trigger) is set to `1` (automatically cleared to `0` once the next encryption/decryption is started).
+It can be disabled by setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) to `1`.
+In this case, the AES unit only starts the encryption/decryption once the START bit in [`TRIGGER`](registers.md#trigger) is set to `1` (automatically cleared to `0` once the next encryption/decryption is started).
 
 Similarly, the AES unit indicates via a status register when having new output data available to be read by the processor.
 Also, there is a back-pressure mechanism for the output data.
@@ -40,7 +40,7 @@ It only continues once the previous output data has been read and the correspond
 The order in which the output registers are read does not matter.
 Every output register must be read at least once for the AES unit to continue.
 This is the default behavior.
-It can be disabled by setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](../data/aes.hjson#ctrl_shadowed) to `1`.
+It can be disabled by setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) to `1`.
 In this case, the AES unit never stalls and just overwrites previous output data, independent of whether it has been read or not.
 
 
@@ -69,23 +69,6 @@ Support for data segment sizes other than 128 bits would require a substantial a
 The initialization vector (IV) register and the register to hold the previous input data are used in CBC, CFB, OFB and CTR modes only.
 
 
-## Hardware Interfaces
-
-* [Interface Tables](../data/aes.hjson#interfaces)
-
-The table below lists other signals of the AES unit.
-
-Signal             | Direction        | Type                   | Description
--------------------|------------------|------------------------|---------------
-`idle_o`           | `output`         | `logic`                | Idle indication signal for clock manager.
-`lc_escalate_en_i` | `input`          | `lc_ctrl_pkg::lc_tx_t` | Life cycle escalation enable coming from [life cycle controller](../../lc_ctrl/README.md). This signal moves the main controller FSM within the AES unit into the terminal error state. The AES unit needs to be reset.
-`edn_o`            | `output`         | `edn_pkg::edn_req_t`   | Entropy request to [entropy distribution network (EDN)](../../edn/README.md) for reseeding internal pseudo-random number generators (PRNGs) used for register clearing and masking.
-`edn_i`            | `input`          | `edn_pkg::edn_rsp_t`   | [EDN](../../edn/README.md) acknowledgment and entropy input for reseeding internal PRNGs.
-`keymgr_key_i`     | `input`          | `keymgr_pgk::hw_key_req_t` | Key sideload request coming from [key manager](../../keymgr/README.md).
-
-Note that the `edn_o` and `edn_i` signals used to interface [EDN](../../edn/README.md) follow a REQ/ACK protocol.
-The entropy distributed by EDN is obtained from the [cryptographically secure random number generator (CSRNG)](../../csrng/README.md).
-
 ## Design Details
 
 This section discusses different design details of the AES module.
@@ -110,7 +93,7 @@ Phrases in italics apply to peculiarities of different block cipher modes.
 For a general introduction into these cipher modes, refer to [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf).
 
 1. The configuration and initial key is provided to the AES unit via a set of control and status registers (CSRs) accessible by the processor via TL-UL bus interface.
-   The processor must first provide the configuration to the [`CTRL_SHADOWED`](../data/aes.hjson#ctrl_shadowed) register.
+   The processor must first provide the configuration to the [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) register.
    Then follows the initial key.
    Each key register must be written at least once.
    The order in which the registers are written does not matter.
@@ -137,8 +120,8 @@ For a general introduction into these cipher modes, refer to [Recommendation for
     The IV is ready if -- since the last IV update (either done by the processor or the AES unit itself) -- all IV registers have been written at least once or none of them.
     The AES unit will not automatically start the next encryption/decryption with a partially updated IV._
 
-    By setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](../data/aes.hjson#ctrl_shadowed) to `1`, the AES unit can be operated in manual mode.
-    In manual mode, the AES unit starts encryption/decryption whenever the START bit in [`TRIGGER`](../data/aes.hjson#trigger) is set to `1`, irrespective of the status of the IV and input data registers.
+    By setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) to `1`, the AES unit can be operated in manual mode.
+    In manual mode, the AES unit starts encryption/decryption whenever the START bit in [`TRIGGER`](registers.md#trigger) is set to `1`, irrespective of the status of the IV and input data registers.
 
 1. Once the State and Full Key registers have been loaded, the AES cipher core starts the encryption/decryption by adding the first round key to the initial state (all blocks in both data paths are bypassed).
    The result is stored back in the State register.
@@ -275,10 +258,10 @@ By default, the AES unit is controlled entirely by the processor.
 The processor writes both input data as well as the initial key to dedicated registers via the system bus interconnect.
 
 Alternatively, the processor can configure the AES unit to use an initial key provided by the [key manager](../../keymgr/README.md) via key sideload interface without exposing the key to the processor or other hosts attached to the system bus interconnect.
-To this end, the processor has to set the SIDELOAD bit in [`CTRL_SHADOWED`](../data/aes.hjson#ctrl_shadowed) to `1`.
-Any write operations of the processor to the Initial Key registers [`KEY_SHARE0_0`](../data/aes.hjson#key_share0_0) - [`KEY_SHARE1_7`](../data/aes.hjson#key_share1_7) are then ignored.
+To this end, the processor has to set the SIDELOAD bit in [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) to `1`.
+Any write operations of the processor to the Initial Key registers [`KEY_SHARE0_0`](registers.md#key_share0) - [`KEY_SHARE1_7`](registers.md#key_share1) are then ignored.
 In normal/automatic mode, the AES unit only starts encryption/decryption if the sideload key is marked as valid.
-To update the sideload key, the processor has to 1) wait for the AES unit to become idle, 2) wait for the key manager to update the sideload key and assert the valid signal, and 3) write to the [`CTRL_SHADOWED`](../data/aes.hjson#ctrl_shadowed) register to start a new message.
+To update the sideload key, the processor has to 1) wait for the AES unit to become idle, 2) wait for the key manager to update the sideload key and assert the valid signal, and 3) write to the [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) register to start a new message.
 After using a sideload key, the processor has to trigger the clearing of all key registers inside the AES unit (see [De-Initialization](#de-initialization) below).
 
 
@@ -315,9 +298,9 @@ Alternatively, the two original versions of the masked Canright S-Box can be cho
 These are fully combinational (one S-Box evaluation every cycle) and have lower area footprint, but they are significantly less resistant to SCA.
 They are mainly included for reference but their usage is discouraged due to potential vulnerabilities to the correlation-enhanced collision attack as described by [Moradi et al.: "Correlation-Enhanced Power Analysis Collision Attack".](https://eprint.iacr.org/2010/297.pdf)
 
-The masking PRNG is reseeded with fresh entropy via [EDN](../../edn/README.md) automatically 1) whenever a new key is provided (see [`CTRL_AUX_SHADOWED.KEY_TOUCH_FORCES_RESEED`](../data/aes.hjson#ctrl_aux_shadowed)) and 2) based on a block counter.
-The rate at which this block counter initiates automatic reseed operations can be configured via [`CTRL_SHADOWED.PRNG_RESEED_RATE`](../data/aes.hjson#ctrl_shadowed).
-In addition software can manually initiate a reseed operation via [`TRIGGER.PRNG_RESEED`](../data/aes.hjson#trigger).
+The masking PRNG is reseeded with fresh entropy via [EDN](../../edn/README.md) automatically 1) whenever a new key is provided (see [`CTRL_AUX_SHADOWED.KEY_TOUCH_FORCES_RESEED`](registers.md#ctrl_aux_shadowed)) and 2) based on a block counter.
+The rate at which this block counter initiates automatic reseed operations can be configured via [`CTRL_SHADOWED.PRNG_RESEED_RATE`](registers.md#ctrl_shadowed--prng_reseed_rate).
+In addition software can manually initiate a reseed operation via [`TRIGGER.PRNG_RESEED`](registers.md#trigger--prng_reseed).
 
 Note that the masking can be enabled/disabled via compile-time Verilog parameter.
 It may be acceptable to disable the masking when using the AES cipher core for random number generation e.g. inside [CSRNG.](../../csrng/README.md)
@@ -398,7 +381,7 @@ To protect against FI attacks on the control path, the AES unit implements the f
 
 If any of these countermeasures detects a fault, a fatal alert is triggered, the internal FSMs go into a terminal error state, the AES unit does not release further data and locks up until reset.
 Since the AES unit has no ability to reset itself, a system-supplied reset is required before the AES unit can become operational again.
-Such a condition is reported in [`STATUS.ALERT_FATAL_FAULT`](../data/aes.hjson#status).
+Such a condition is reported in [`STATUS.ALERT_FATAL_FAULT`](registers.md#status--alert_fatal_fault).
 Details on where the fault has been detected are not provided.
 
 ### Data Path
