@@ -4,8 +4,12 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/rom/keys/fake/spx/dev_key_0_spx.h"
+#include "sw/device/silicon_creator/rom/keys/fake/spx/dev_key_1_spx.h"
 #include "sw/device/silicon_creator/rom/keys/fake/spx/prod_key_0_spx.h"
+#include "sw/device/silicon_creator/rom/keys/fake/spx/prod_key_1_spx.h"
+#include "sw/device/silicon_creator/rom/keys/fake/spx/prod_key_2_spx.h"
 #include "sw/device/silicon_creator/rom/keys/fake/spx/test_key_0_spx.h"
+#include "sw/device/silicon_creator/rom/keys/fake/spx/test_key_1_spx.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 
 #include "otp_ctrl_regs.h"
@@ -14,7 +18,7 @@
  * Number of SPX public keys.
  */
 enum {
-  kSigverifySpxKeysCnt_ = 3,
+  kSigverifySpxKeysCnt_ = 7,
 };
 const size_t kSigverifySpxKeysCnt = kSigverifySpxKeysCnt_;
 
@@ -24,7 +28,7 @@ const size_t kSigverifySpxKeysCnt = kSigverifySpxKeysCnt_;
  * This must be coprime with and less than `kSigverifyNumSpxKeys`.
  * Note: Step size is not applicable when `kSigverifyNumSpxKeys` is 1.
  */
-const size_t kSigverifySpxKeysStep = 1;
+const size_t kSigverifySpxKeysStep = 5;
 
 /**
  * Fake public keys for signature verification in tests.
@@ -43,6 +47,13 @@ const sigverify_rom_spx_key_t kSigverifySpxKeys[kSigverifySpxKeysCnt_] = {
     {
         .entry =
             {
+                .key = TEST_KEY_1_SPX,
+                .key_type = kSigverifyKeyTypeTest,
+            },
+    },
+    {
+        .entry =
+            {
                 .key = DEV_KEY_0_SPX,
                 .key_type = kSigverifyKeyTypeDev,
             },
@@ -50,7 +61,28 @@ const sigverify_rom_spx_key_t kSigverifySpxKeys[kSigverifySpxKeysCnt_] = {
     {
         .entry =
             {
+                .key = DEV_KEY_1_SPX,
+                .key_type = kSigverifyKeyTypeDev,
+            },
+    },
+    {
+        .entry =
+            {
                 .key = PROD_KEY_0_SPX,
+                .key_type = kSigverifyKeyTypeProd,
+            },
+    },
+    {
+        .entry =
+            {
+                .key = PROD_KEY_1_SPX,
+                .key_type = kSigverifyKeyTypeProd,
+            },
+    },
+    {
+        .entry =
+            {
+                .key = PROD_KEY_2_SPX,
                 .key_type = kSigverifyKeyTypeProd,
             },
     },
