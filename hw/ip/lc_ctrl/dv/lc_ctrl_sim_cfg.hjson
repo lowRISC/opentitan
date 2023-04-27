@@ -106,6 +106,12 @@
     }
 
     {
+      name: lc_ctrl_claim_transition_if
+      uvm_test_seq: lc_ctrl_claim_transition_if_vseq
+      reseed: 10
+    }
+
+    {
       name: lc_ctrl_jtag_smoke
       uvm_test_seq: lc_ctrl_smoke_vseq
       run_opts: ["+jtag_csr=1", "+create_jtag_riscv_map=1"]
