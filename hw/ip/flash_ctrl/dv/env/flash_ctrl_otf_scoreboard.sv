@@ -422,18 +422,19 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
         rcv.mem_part = cfg.flash_ctrl_mem_vif[bank].mem_part;
         rcv.mem_info_sel = cfg.flash_ctrl_mem_vif[bank].mem_info_sel;
         @(negedge cfg.flash_ctrl_mem_vif[bank].clk_i);
-        if (rcv.mem_part == FlashPartData) begin
-          `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].data_mem_req, 1,,, name)
-        end else begin
-          case (rcv.mem_info_sel)
-            0: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info0_mem_req, 1,,, name)
-            1: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info1_mem_req, 1,,, name)
-            2: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info2_mem_req, 1,,, name)
-            default: `uvm_error(name, $sformatf("bank%0d infosel%0d doesn't exists",
-                                                bank, rcv.mem_info_sel))
-          endcase
+        if (cfg.seq_cfg.use_vendor_flash == 0) begin
+          if (rcv.mem_part == FlashPartData) begin
+            `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].data_mem_req, 1,,, name)
+          end else begin
+            case (rcv.mem_info_sel)
+              0: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info0_mem_req, 1,,, name)
+              1: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info1_mem_req, 1,,, name)
+              2: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info2_mem_req, 1,,, name)
+              default: `uvm_error(name, $sformatf("bank%0d infosel%0d doesn't exists",
+                                                  bank, rcv.mem_info_sel))
+            endcase
+          end
         end
-
         // collect ref data
         eg_exp_lm_fifo[bank].get(exp);
         lm_wdata_comp(exp, rcv, bank);
@@ -488,6 +489,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
         @(negedge cfg.flash_ctrl_mem_vif[bank].clk_i);
       end
    end else begin
+     bit skip_comp = 0;
      entry.bank = bank;
      entry.addr = (rcv.mem_addr<<3);
      entry.part = cfg.get_part(rcv.mem_part, rcv.mem_info_sel);
@@ -496,7 +498,11 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
        if (data_mem[bank].exists(rcv.mem_addr)) begin
          corrupt_entry[entry] = 1;
          rd_data = data_mem[bank][rcv.mem_addr];
-         exp.req.prog_full_data &= rd_data;
+         if (cfg.seq_cfg.use_vendor_flash == 0) begin
+           exp.req.prog_full_data &= rd_data;
+         end else begin
+           skip_comp = 1;
+         end
          data_mem[bank].delete(rcv.mem_addr);
        end
        data_mem[bank][rcv.mem_addr] = exp.req.prog_full_data;
@@ -508,7 +514,11 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
        if (info_mem[bank][rcv.mem_info_sel].exists(rcv.mem_addr)) begin
          corrupt_entry[entry] = 1;
          rd_data = info_mem[bank][rcv.mem_info_sel][rcv.mem_addr];
-         exp.req.prog_full_data &= rd_data;
+         if (cfg.seq_cfg.use_vendor_flash == 0) begin
+           exp.req.prog_full_data &= rd_data;
+         end else begin
+           skip_comp = 1;
+         end
          info_mem[bank][rcv.mem_info_sel].delete(rcv.mem_addr);
        end
        info_mem[bank][rcv.mem_info_sel][rcv.mem_addr] = exp.req.prog_full_data;
@@ -517,7 +527,9 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
      if (rcv.mem_wdata == exp.req.prog_full_data) begin
        `dv_info($sformatf("wdata match %x", rcv.mem_wdata), UVM_MEDIUM, name)
      end else begin
-       `DV_CHECK_EQ(rcv.mem_wdata, exp.req.prog_full_data,,, name)
+       if (!skip_comp) begin
+         `DV_CHECK_EQ(rcv.mem_wdata, exp.req.prog_full_data,,, name)
+       end
      end
    end
   endtask // lm_wdata_cmp

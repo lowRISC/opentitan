@@ -78,15 +78,20 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
         sec_cm_restore_fault(if_proxy);
       end
 
-      // when a fault occurs at the reg_we_check, it's treated as a TL intg error
-      if (if_proxy.sec_cm_type == SecCmPrimOnehot &&
-          !uvm_re_match("*u_prim_reg_we_check*", if_proxy.path)) begin
-        if (!uvm_re_match("*u_eflash*", if_proxy.path)) prim_tl_intg_error = 1;
-        check_tl_intg_error_response();
+      if (cfg.seq_cfg.use_vendor_flash == 1 &&
+          cfg.seq_cfg.vendor_flash_path != "" &&
+          !uvm_re_match(cfg.seq_cfg.vendor_flash_path, if_proxy.path) == 1) begin
+         wait_alert_trigger("fatal_prim_flash_alert", .wait_complete(1));
       end else begin
-        check_sec_cm_fi_resp(if_proxy);
+        // when a fault occurs at the reg_we_check, it's treated as a TL intg error
+        if (if_proxy.sec_cm_type == SecCmPrimOnehot &&
+            !uvm_re_match("*u_prim_reg_we_check*", if_proxy.path)) begin
+          if (!uvm_re_match("*u_eflash*", if_proxy.path)) prim_tl_intg_error = 1;
+          check_tl_intg_error_response();
+        end else begin
+          check_sec_cm_fi_resp(if_proxy);
+        end
       end
-
       sec_cm_fi_ctrl_svas(if_proxy, .enable(1));
       // issue hard reset for fatal alert to recover
       prim_tl_intg_error = 0;
@@ -99,7 +104,7 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
       repeat ($urandom_range(5, 10))
         wait_alert_trigger("fatal_prim_flash_alert");
     end else begin
-      super.check_tl_intg_error_response();
+         super.check_tl_intg_error_response();
     end
   endtask // check_tl_intg_error_response
 
@@ -120,7 +125,11 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
       // skip debug_state check because state is corrupted.
       flash_dis = 0;
     end
-
+    if (cfg.seq_cfg.use_vendor_flash == 1 &&
+        cfg.seq_cfg.vendor_flash_path != "" &&
+        !uvm_re_match(cfg.seq_cfg.vendor_flash_path, if_proxy.path) == 1) begin
+      flash_dis = 0;
+    end
     case (if_proxy.sec_cm_type)
       SecCmPrimCount: begin
         if (!uvm_re_match("*.u_host_rsp_fifo.*", if_proxy.path) |
