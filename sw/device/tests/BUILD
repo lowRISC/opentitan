@@ -183,22 +183,10 @@ opentitan_functest(
 opentitan_functest(
     name = "alert_handler_reverse_ping_in_deep_sleep_test",
     srcs = ["alert_handler_reverse_ping_in_deep_sleep_test.c"],
-    cw310 = cw310_params(
-        timeout = "moderate",
-        tags = ["broken"],  # FIXME #16822 Test hangs on isolated runs
-    ),
     targets = [
-        # The test requires to run for > 0.2s, thus not recommended for
-        # Verilator as this will slow down CI too much. It should still
-        # be run as part of the DV nightly regression.
-        "verilator",
         "cw310_test_rom",
         "dv",
     ],
-    verilator = verilator_params(
-        timeout = "eternal",
-        tags = ["broken"],  # FIXME #16822 Test hangs on isolated runs
-    ),
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -206,6 +194,7 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -215,6 +204,7 @@ opentitan_functest(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
