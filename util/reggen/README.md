@@ -96,6 +96,7 @@ name | required | string | name of the component
 clocking | required | list | clocking for the device
 bus_interfaces | required | list | bus interfaces for the device
 registers | required | list | list of register definition groups and offset control groups
+human_name | optional | string | human-readable name of the component
 one_line_desc | optional | string | one-line description of the component
 one_paragraph_desc | optional | string | one-paragraph description of the component
 revisions | optional | list | list with revision records
