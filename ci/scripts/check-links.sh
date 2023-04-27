@@ -18,6 +18,7 @@ ci/bazelisk.sh run @lychee//:lychee -- hw/ sw/ doc/ util/ \
     --exclude-path hw/ip_templates/ \
     --exclude-path hw/dv/doc/dv_doc_template.md \
     --exclude-path doc/rust_for_c_devs.md \
+    --exclude-path hw/top_darjeeling/ip/pinmux/doc/autogen/targets.md \
     --exclude-path hw/top_earlgrey/ip/pinmux/doc/autogen/targets.md \
     || {
       echo -n "##vso[task.logissue type=error]"
