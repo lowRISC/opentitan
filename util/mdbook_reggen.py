@@ -49,10 +49,10 @@ def main() -> None:
             chapter["content"], [],
             "file at {}/{}".format(context["root"], chapter["source_path"]))
         buffer = io.StringIO()
-        buffer.write("# Hardware Interfaces and Registers\n")
-        buffer.write("## Interfaces\n")
+        buffer.write("# Hardware Interfaces\n")
         gen_cfg_md.gen_cfg_md(block, buffer)
 
+        buffer.write("# Registers\n")
         gen_md.gen_md(block, buffer)
         chapter["content"] = buffer.getvalue()
 

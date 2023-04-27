@@ -4,7 +4,7 @@
 """Generate markdown documentation for the registers of an IpBlock."""
 
 import json
-from typing import List, TextIO, Dict, Any
+from typing import List, TextIO, Dict, Any, Optional
 
 from reggen.ip_block import IpBlock
 from reggen.md_helpers import (
@@ -21,7 +21,6 @@ def gen_md(block: IpBlock, output: TextIO) -> int:
     assert block.reg_blocks
     # Handle the case where there's just one interface.
     if len(block.reg_blocks) == 1:
-        output.write(title("Registers", 2))
         rb = next(iter(block.reg_blocks.values()))
         gen_md_reg_block(output, rb, block.name, block.regwidth)
         return 0
@@ -30,19 +29,20 @@ def gen_md(block: IpBlock, output: TextIO) -> int:
     # correspondingly, more than one reg block.
     for iface_name, rb in block.reg_blocks.items():
         assert iface_name
-        output.write(title("Registers visible under device interface " + coderef(iface_name), 2))
-        gen_md_reg_block(output, rb, block.name, block.regwidth)
+        gen_md_reg_block(output, rb, block.name, block.regwidth, iface_name)
 
     return 0
 
 
-def gen_md_reg_block(output: TextIO, rb: RegBlock, comp: str, width: int) -> None:
+def gen_md_reg_block(
+    output: TextIO, rb: RegBlock, comp: str, width: int, iface_name: Optional[str] = None
+) -> None:
     if len(rb.entries) == 0:
         output.write('This interface does not expose any registers.')
         return
 
     # Generate overview table.
-    gen_md_register_summary(output, rb.entries, comp, width)
+    gen_md_register_summary(output, rb.entries, comp, width, iface_name)
 
     # Generate detailed entries.
     for x in rb.entries:
@@ -56,10 +56,13 @@ def gen_md_reg_block(output: TextIO, rb: RegBlock, comp: str, width: int) -> Non
 
 
 def gen_md_register_summary(output: TextIO, entries: List[object],
-                            comp: str, width: int) -> None:
+                            comp: str, width: int, iface_name: Optional[str] = None) -> None:
+
+    heading = "Summary" if iface_name is None \
+        else "Summary of the " + coderef(iface_name) + " interface's registers"
+    output.write(title(heading, 2))
 
     bytew = width // 8
-    output.write(title("Summary", 3))
 
     header = ["Name", "Offset", "Length", "Description"]
     rows: List[List[str]] = []
@@ -94,7 +97,7 @@ def gen_md_window(output: TextIO, win: Window, comp: str, regwidth: int) -> None
     end_addr = start_addr + 4 * win.items - 4
 
     output.write(
-        title(wname, 4) +
+        title(wname, 3) +
         win.desc +
         "\n\n" +
         list_item(
@@ -120,7 +123,7 @@ def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str, width: 
 
     # Information
     output.write(
-        title(reg_def.name, 3) +
+        title(reg_def.name, 2) +
         regref_to_link(reg_def.desc) +
         "\n" +
         list_item("Reset default: " + mono(f"{reg_def.resval:#x}")) +
@@ -128,14 +131,14 @@ def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str, width: 
     )
 
     # Instances
-    output.write("\n" + title("Instances", 4))
+    output.write("\n" + title("Instances", 3))
     output.write(table(
         ["Name", "Offset"],
         [[reg.name, hex(reg.offset)] for reg in mreg.regs],
     ))
 
     # Fields
-    output.write("\n" + title("Fields", 4))
+    output.write("\n" + title("Fields", 3))
 
     # Generate bit-field wavejson.
     gen_md_reg_picture(output, reg_def, width)
@@ -146,7 +149,7 @@ def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str, width: 
 
 def gen_md_register(output: TextIO, reg: Register, comp: str, width: int) -> None:
     output.write(
-        title(reg.name, 3) +
+        title(reg.name, 2) +
         regref_to_link(reg.desc) +
         "\n" +
         list_item("Offset: " + mono(f"{reg.offset:#x}")) +
@@ -159,7 +162,7 @@ def gen_md_register(output: TextIO, reg: Register, comp: str, width: int) -> Non
         )
 
     # Fields
-    output.write("\n" + title("Fields", 4))
+    output.write("\n" + title("Fields", 3))
 
     # Generate bit-field wavejson.
     gen_md_reg_picture(output, reg, width)
@@ -292,7 +295,7 @@ def gen_md_reg_fields(output: TextIO, reg: Register, width: int) -> None:
     for field in reversed(reg.fields):
         fname = field.name
 
-        output.write(title(f"{reg.name} . {fname}", 4))
+        output.write(title(f"{reg.name} . {fname}", 3))
 
         if field.desc is not None:
             output.write(regref_to_link(field.desc) + "\n")

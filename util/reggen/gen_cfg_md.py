@@ -140,4 +140,4 @@ def gen_cfg_md(cfgs: IpBlock, output: TextIO) -> None:
     output.write("\n")
 
     for (table_title, header, rows) in tables:
-        output.write(title(table_title, 3) + table(header, rows))
+        output.write(title(table_title, 2) + table(header, rows))
