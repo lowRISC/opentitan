@@ -58,6 +58,20 @@
       tests: ["lc_ctrl_regwen_during_op"]
     }
     {
+      name: rand_wr_claim_transition_if
+      desc: '''
+            `claim_transition_if` only accept `Mubi8True` or 0 value.
+            This test will write random value to this register.
+            **Checks**:
+            - When write value `Mubi8True` to `claim_transition_if` register, the
+              `transition_regwen` is set to 1.
+            - When write any other value to `claim_transition_if` register, the `transition_regwen`
+              register remains value 0.
+            '''
+      stage: V2
+      tests: ["lc_ctrl_claim_transition_if"]
+    }
+    {
       name: lc_prog_failure
       desc: '''
             This test checks lc_program failure by setting the error bit after otp program request.
