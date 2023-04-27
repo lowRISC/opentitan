@@ -7,6 +7,8 @@ load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
 load(
     "//rules:opentitan.bzl",
+    "RSA_ONLY_KEYSETS",
+    "RSA_ONLY_ROM_EXT_KEYSETS",
     "opentitan_flash_binary",
     "opentitan_multislot_flash_binary",
 )
@@ -121,11 +123,11 @@ opentitan_multislot_flash_binary(
     name = "rom_ext_virtual_bare_metal_virtual",
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
-            "key": "fake_test_key_0",
+            "key": RSA_ONLY_KEYSETS[0],
             "offset": "0x0",
         },
         ":bare_metal_slot_virtual": {
-            "key": "fake_rom_ext_test_key_0",
+            "key": RSA_ONLY_ROM_EXT_KEYSETS[0],
             "offset": "0x10000",
         },
     },
@@ -138,7 +140,7 @@ opentitan_functest(
     cw310 = cw310_params(
         exit_success = BOOT_SUCCESS_MSG,
     ),
-    key = "multislot",
+    keyset = "multislot",
     ot_flash_binary = ":rom_ext_virtual_bare_metal_virtual",
     signed = True,
     targets = ["cw310_rom"],
@@ -162,11 +164,11 @@ opentitan_multislot_flash_binary(
     name = "rom_ext_virtual_ottf_bl0_virtual",
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
-            "key": "fake_test_key_0",
+            "key": RSA_ONLY_KEYSETS[0],
             "offset": "0x0",
         },
         ":ottf_test_bl0_slot_virtual": {
-            "key": "fake_rom_ext_test_key_0",
+            "key": RSA_ONLY_ROM_EXT_KEYSETS[0],
             "offset": "0x10000",
         },
     },
@@ -174,7 +176,7 @@ opentitan_multislot_flash_binary(
 
 opentitan_functest(
     name = "rom_ext_virtual_ottf_bl0_virtual_test",
-    key = "multislot",
+    keyset = "multislot",
     ot_flash_binary = ":rom_ext_virtual_ottf_bl0_virtual",
     signed = True,
     targets = ["cw310_rom"],

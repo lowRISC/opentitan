@@ -3,6 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@//rules:opentitan_test.bzl", "dv_params", "opentitan_functest")
+load(
+    "@//rules:const.bzl",
+    "CONST",
+)
+load(
+    "@//rules:opentitan.bzl",
+    "get_keysets_for_lc_state",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -134,7 +142,10 @@ opentitan_functest(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
-    key = "fake_test_key_0",
+    keyset = get_keysets_for_lc_state(
+        CONST.LCV.TEST_UNLOCKED0,
+        spx = None,
+    )[0],
     targets = [
         "cw310_rom",
         "cw310_test_rom",
@@ -169,7 +180,10 @@ opentitan_functest(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
-    key = "fake_test_key_0",
+    keyset = get_keysets_for_lc_state(
+        CONST.LCV.TEST_UNLOCKED0,
+        spx = None,
+    )[0],
     targets = [
         "cw310_rom",
         "cw310_test_rom",
