@@ -24,9 +24,9 @@ set_property -dict { PACKAGE_PIN  E18  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [ge
 
 ## Preserve prim_prince modules and setup multi-cycle paths
 ## These are no longer required, but kept here as a reference
-## set_property KEEP_HIERARCHY TRUE [get_cells top_earlgrey/u_flash_eflash/gen_flash_banks[*].i_core/u_scramble/u_cipher]
-## set_multicycle_path -setup 2 -through [get_pins -of_objects [get_cells top_earlgrey/u_flash_eflash/gen_flash_banks[*].i_core/u_scramble/u_cipher]]
-## set_multicycle_path -hold 1  -through [get_pins -of_objects [get_cells top_earlgrey/u_flash_eflash/gen_flash_banks[*].i_core/u_scramble/u_cipher]]
+## set_property KEEP_HIERARCHY TRUE [get_cells top_darjeeling/u_flash_eflash/gen_flash_banks[*].i_core/u_scramble/u_cipher]
+## set_multicycle_path -setup 2 -through [get_pins -of_objects [get_cells top_darjeeling/u_flash_eflash/gen_flash_banks[*].i_core/u_scramble/u_cipher]]
+## set_multicycle_path -hold 1  -through [get_pins -of_objects [get_cells top_darjeeling/u_flash_eflash/gen_flash_banks[*].i_core/u_scramble/u_cipher]]
 
 #set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets IO_SDCK_IBUF]; # SDCK clock to be ignored
 

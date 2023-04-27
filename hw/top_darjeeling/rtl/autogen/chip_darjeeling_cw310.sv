@@ -5,12 +5,12 @@
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 //
-// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson \
-//                -o hw/top_earlgrey/ \
+// util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson \
+//                -o hw/top_darjeeling/ \
 //                --rnd_cnst_seed 4881560218908238235
 
 
-module chip_earlgrey_cw310 #(
+module chip_darjeeling_cw310 #(
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
   parameter BootRomInitFile = "test_rom_fpga_cw310.32.vmem",
@@ -98,7 +98,7 @@ module chip_earlgrey_cw310 #(
   inout IOR13  // MIO Pad 46
 );
 
-  import top_earlgrey_pkg::*;
+  import top_darjeeling_pkg::*;
   import prim_pad_wrapper_pkg::*;
 
   ////////////////////////////
@@ -988,7 +988,7 @@ module chip_earlgrey_cw310 #(
 // TODO: align this with ASIC version to minimize the duplication.
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
 // otherwise Verilator / FPGA will hang.
-  top_earlgrey #(
+  top_darjeeling #(
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(320),
@@ -1011,7 +1011,7 @@ module chip_earlgrey_cw310 #(
     .RvCoreIbexSecureIbex(0),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
-  ) top_earlgrey (
+  ) top_darjeeling (
     .por_n_i                      ( por_n                 ),
     .clk_main_i                   ( ast_base_clks.clk_sys ),
     .clk_io_i                     ( ast_base_clks.clk_io  ),
@@ -1133,7 +1133,7 @@ module chip_earlgrey_cw310 #(
       default: trigger_sel = clkmgr_pkg::HintMainAes;
     endcase;
   end
-  assign clk_trans_idle = top_earlgrey.clkmgr_aon_idle[trigger_sel];
+  assign clk_trans_idle = top_darjeeling.clkmgr_aon_idle[trigger_sel];
 
   logic clk_io_div4_trigger_en, manual_in_io_clk_trigger_en;
   logic clk_io_div4_trigger_oe, manual_in_io_clk_trigger_oe;
@@ -1156,4 +1156,4 @@ module chip_earlgrey_cw310 #(
   assign manual_out_io_trigger = manual_in_io_clk_trigger_en &
       prim_mubi_pkg::mubi4_test_false_strict(manual_in_io_clk_idle);
 
-endmodule : chip_earlgrey_cw310
+endmodule : chip_darjeeling_cw310

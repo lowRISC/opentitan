@@ -68,11 +68,11 @@ create_generated_clock -name rv_jtag_tck -source [get_ports IOR3] -divide_by 1 [
 set lc_jtag_tck_inv_pin  \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I]]]
+      [get_pins top_darjeeling/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I]]]
 set rv_jtag_tck_inv_pin  \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I]]]
+      [get_pins top_darjeeling/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I]]]
 
 set_clock_sense -negative ${lc_jtag_tck_inv_pin}
 set_clock_sense -negative ${rv_jtag_tck_inv_pin}
@@ -139,7 +139,7 @@ set_output_delay -clock clk_spi -clock_fall -max ${spi_dev_out_setup} ${spi_dev_
 set_clock_sense -positive \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_spi_device/u_passthrough/u_pt_sck_cg/gen_xilinx.u_impl_xilinx/gen_gate.gen_bufgce.u_bufgce/I0] \
+      [get_pins top_darjeeling/u_spi_device/u_passthrough/u_pt_sck_cg/gen_xilinx.u_impl_xilinx/gen_gate.gen_bufgce.u_bufgce/I0] \
     ] \
   ] \
   -clocks clk_spi
@@ -147,7 +147,7 @@ set_clock_sense -positive \
 set_clock_sense -negative \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
+      [get_pins top_darjeeling/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
     ] \
   ] \
   -clocks clk_spi
@@ -155,7 +155,7 @@ set_clock_sense -negative \
 set_clock_sense -positive \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
+      [get_pins top_darjeeling/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
     ] \
   ] \
   -clocks clk_spi
@@ -172,7 +172,7 @@ create_clock -add -name clk_spi_tpm -period ${spi_tpm_period} [get_ports SPI_DEV
 set_clock_sense -negative \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
+      [get_pins top_darjeeling/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
     ] \
   ] \
   -clocks clk_spi_tpm
@@ -180,7 +180,7 @@ set_clock_sense -negative \
 set_clock_sense -positive \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
+      [get_pins top_darjeeling/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
     ] \
   ] \
   -clocks clk_spi_tpm
@@ -229,7 +229,7 @@ set_input_delay  -clock clk_spi_pt -clock_fall -max ${spi_host_in_delay_max} \
 
 ## SPI Host constraints
 # SPI Host clock origin buffer
-set spi_host_0_peri [get_pins top_earlgrey/u_clkmgr_aon/u_clk_io_peri_cg/gen_xilinx.u_impl_xilinx/gen_gate.gen_bufgce.u_bufgce/O]
+set spi_host_0_peri [get_pins top_darjeeling/u_clkmgr_aon/u_clk_io_peri_cg/gen_xilinx.u_impl_xilinx/gen_gate.gen_bufgce.u_bufgce/O]
 
 # Even though it's 2x the max possible frequency, keep the peripheral clock
 # frequency for the output. This will enable shifting the latch edge for hold

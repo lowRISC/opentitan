@@ -2,19 +2,19 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:systems:chip_earlgrey_cw310:0.1"
-description: "Earl Grey toplevel for the ChipWhisperer CW310 board"
+name: "lowrisc:systems:chip_darjeeling_cw310:0.1"
+description: "Darjeeling toplevel for the ChipWhisperer CW310 board"
 filesets:
   files_rtl_cw310:
     depend:
-      - lowrisc:systems:top_earlgrey:0.1
-      - lowrisc:systems:top_earlgrey_pkg
+      - lowrisc:systems:top_darjeeling:0.1
+      - lowrisc:systems:top_darjeeling_pkg
       - lowrisc:systems:ast
       - lowrisc:systems:padring
     files:
       - rtl/clkgen_xil7series.sv
       - rtl/usr_access_xil7series.sv
-      - rtl/autogen/chip_earlgrey_cw310.sv
+      - rtl/autogen/chip_darjeeling_cw310.sv
     file_type: systemVerilogSource
 
   files_constraints:
@@ -40,7 +40,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/chip_earlgrey_cw310.waiver
+      - lint/chip_darjeeling_cw310.waiver
     file_type: waiver
 
 parameters:
@@ -78,7 +78,7 @@ targets:
     filesets:
       - files_rtl_cw310
       - files_ascentlint_waiver
-    toplevel: chip_earlgrey_cw310
+    toplevel: chip_darjeeling_cw310
     parameters:
       - IBEX_CUSTOM_PMP_RESET_VALUES
       - AST_BYPASS_CLK=true
@@ -89,7 +89,7 @@ targets:
       - files_rtl_cw310
       - files_constraints
       - files_tcl
-    toplevel: chip_earlgrey_cw310
+    toplevel: chip_darjeeling_cw310
     parameters:
       - BootRomInitFile
       - OtpCtrlMemInitFile

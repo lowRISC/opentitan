@@ -2,6 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# waiver file for chip_earlgrey_cw310
+# waiver file for chip_darjeeling_cw310
 
-set ri_blackbox_modules {clkgen_xil7series usr_access_xil7series top_earlgrey ast}
+set ri_blackbox_modules {clkgen_xil7series usr_access_xil7series top_darjeeling ast}
