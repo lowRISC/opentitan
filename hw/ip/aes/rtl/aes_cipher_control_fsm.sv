@@ -185,7 +185,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
 
             // Make the masking PRNG advance. The current pseudo-random data is used to mask the
             // input data.
-            prng_update_o = dec_key_gen_i ? 1'b0 : SecMasking;
+            prng_update_o = SecMasking;
 
             // Init key expand
             key_expand_clear_o = 1'b1;
@@ -247,6 +247,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
             aes_cipher_ctrl_ns   = CIPHER_CTRL_ROUND;
           end
         end else begin
+          prng_update_o      = SecMasking;
           state_we_o         = ~dec_key_gen_q_i;
           rnd_ctr_d          = rnd_ctr_q + 4'b0001;
           cyc_ctr_d          = 3'd0;

@@ -161,6 +161,7 @@ module aes_cipher_core import aes_pkg::*;
   logic                               state_sel_err;
 
   sp2v_e                              sub_bytes_en;
+  logic                               sub_bytes_prd_we;
   sp2v_e                              sub_bytes_out_req;
   sp2v_e                              sub_bytes_out_ack;
   logic                               sub_bytes_err;
@@ -196,6 +197,7 @@ module aes_cipher_core import aes_pkg::*;
   logic                   [7:0][31:0] key_expand_out [NumShares];
   ciph_op_e                           key_expand_op;
   sp2v_e                              key_expand_en;
+  logic                               key_expand_prd_we;
   sp2v_e                              key_expand_out_req;
   sp2v_e                              key_expand_out_ack;
   logic                               key_expand_err;
@@ -229,6 +231,8 @@ module aes_cipher_core import aes_pkg::*;
   logic                               prd_masking_upd;
   logic                               prd_masking_rsd_req;
   logic                               prd_masking_rsd_ack;
+
+  logic               [3:0][3:0][7:0] data_in_mask;
 
   // Generate clearing signals of appropriate widths. If masking is enabled, the two shares of
   // the registers must be cleared with different pseudo-random data.
@@ -353,8 +357,16 @@ module aes_cipher_core import aes_pkg::*;
   // on a row basis.
   localparam int unsigned WidthPRDRow = 4*WidthPRDSBox;
   for (genvar i = 0; i < 4; i++) begin : gen_in_mask
-    assign data_in_mask_o[i] = aes_prd_get_lsbs(prd_masking[i * WidthPRDRow +: WidthPRDRow]);
+    assign data_in_mask[i] = aes_prd_get_lsbs(prd_masking[i * WidthPRDRow +: WidthPRDRow]);
   end
+
+  // Rotate the data input masks by two LFSR chunks to ensure the data input masks are independent
+  // from the PRD fed to the S-Boxes/SubBytes operation.
+  assign data_in_mask_o = {data_in_mask[1], data_in_mask[0], data_in_mask[3], data_in_mask[2]};
+
+  // Make sure that whenever the data/mask inputs of the S-Boxes update, the internally buffered
+  // PRD is updated in sync.
+  assign sub_bytes_prd_we = (state_we == SP2V_HIGH) ? 1'b1 : 1'b0;
 
   // Cipher data path
   aes_sub_bytes #(
@@ -363,6 +375,7 @@ module aes_cipher_core import aes_pkg::*;
     .clk_i     ( clk_i             ),
     .rst_ni    ( rst_ni            ),
     .en_i      ( sub_bytes_en      ),
+    .prd_we_i  ( sub_bytes_prd_we  ),
     .out_req_o ( sub_bytes_out_req ),
     .out_ack_i ( sub_bytes_out_ack ),
     .op_i      ( op_i              ),
@@ -451,6 +464,10 @@ module aes_cipher_core import aes_pkg::*;
     end
   end
 
+  // Make sure that whenever the data/mask inputs of the S-Boxes update, the internally buffered
+  // PRD is updated in sync.
+  assign key_expand_prd_we = (key_full_we == SP2V_HIGH) ? 1'b1 : 1'b0;
+
   // Key expand data path
   aes_key_expand #(
     .AES192Enable ( AES192Enable ),
@@ -462,6 +479,7 @@ module aes_cipher_core import aes_pkg::*;
     .cfg_valid_i ( cfg_valid          ),
     .op_i        ( key_expand_op      ),
     .en_i        ( key_expand_en      ),
+    .prd_we_i    ( key_expand_prd_we  ),
     .out_req_o   ( key_expand_out_req ),
     .out_ack_i   ( key_expand_out_ack ),
     .clear_i     ( key_expand_clear   ),
@@ -869,7 +887,7 @@ module aes_cipher_core import aes_pkg::*;
     end
     for (genvar i = 0; i < 4; i++) begin : gen_unused_prd_masking
       assign unused_prd_masking[i * WidthPRDRow +: WidthPRDRow] =
-          aes_prd_concat_bits(data_in_mask_o[i], unused_prd_msbs[i]);
+          aes_prd_concat_bits(data_in_mask[i], unused_prd_msbs[i]);
     end
     assign unused_prd_masking[WidthPRDMasking-1 -: WidthPRDKey] = prd_key_expand;
     `ASSERT(AesMskgPrdExtraction, prd_masking == unused_prd_masking)

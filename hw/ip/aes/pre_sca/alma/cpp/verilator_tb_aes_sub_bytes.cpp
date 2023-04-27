@@ -27,9 +27,11 @@ int main(int argc, char **argv) {
   tb.m_core.out_ack_i = 3;  // SP2V_HIGH, always ack
   tb.m_core.op_i = 0;       // encrypt
 
-  tb.m_core.en_i = 4;  // SP2V_LOW, disable
+  tb.m_core.en_i = 4;      // SP2V_LOW, disable
+  tb.m_core.prd_we_i = 1;  // Present new PRD in next cycle.
   tb.tick();
-  tb.m_core.en_i = 3;  // SP2V_HIGH, enable
+  tb.m_core.en_i = 3;      // SP2V_HIGH, enable
+  tb.m_core.prd_we_i = 0;  // Keep previous PRD.
   tb.tick();
 
   while (tb.m_core.out_req_o != 3) {
