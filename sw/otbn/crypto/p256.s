@@ -2190,10 +2190,10 @@ p256_generate_k:
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  [w21, w20]: s0, first share of seed (320 bits)
- * @param[in]  [w23, w22]: s1, second share of seed (320 bits)
+ * @param[in]  [w11, w10]: s1, second share of seed (320 bits)
  * @param[in]         w31: all-zero
  * @param[out] [w21, w20]: result x0 (321 bits)
- * @param[out] [w23, w22]: result x1 (320 bits)
+ * @param[out] [w11, w10]: result x1 (320 bits)
  *
  * clobbered registers: w1 to w5, w20 to w23
  * clobbered flag groups: FG0
@@ -2201,11 +2201,11 @@ p256_generate_k:
 boolean_to_arithmetic:
   /* Mask out excess bits from seed shares.
        [w21, w20] <= s0 mod 2^320
-       [w23, w22] <= s1 mod 2^320 = x1 */
+       [w11, w10] <= s1 mod 2^320 = x1 */
   bn.rshi   w21, w21, w31 >> 64
   bn.rshi   w21, w31, w21 >> 192
-  bn.rshi   w23, w23, w31 >> 64
-  bn.rshi   w23, w31, w23 >> 192
+  bn.rshi   w11, w11, w31 >> 64
+  bn.rshi   w11, w31, w11 >> 192
 
   /* Fetch 321 bits of randomness from URND.
        [w2, w1] <= gamma */
@@ -2232,9 +2232,9 @@ boolean_to_arithmetic:
   bn.xor    w3, w3, w20
   bn.xor    w4, w4, w21
 
-  /* [w2, w1] <= [w2, w1] ^ [w23, w22] = gamma ^ s1 = G */
-  bn.xor    w1, w1, w22
-  bn.xor    w2, w2, w23
+  /* [w2, w1] <= [w2, w1] ^ [w11, w10] = gamma ^ s1 = G */
+  bn.xor    w1, w1, w10
+  bn.xor    w2, w2, w11
 
   /* [w21, w20] <= [w21, w20] ^ [w2, w1] = s0 ^ G */
   bn.xor    w20, w20, w1
@@ -2290,10 +2290,10 @@ boolean_to_arithmetic:
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  [w21, w20]: seed0, first share of seed (320 bits)
- * @param[in]  [w23, w22]: seed1, second share of seed (320 bits)
+ * @param[in]  [w11, w10]: seed1, second share of seed (320 bits)
  * @param[in]         w31: all-zero
  * @param[out] [w21, w20]: d0, first share of private key d (320 bits)
- * @param[out] [w23, w22]: d1, second share of private key d (320 bits)
+ * @param[out] [w11, w10]: d1, second share of private key d (320 bits)
  *
  * clobbered registers: x2, x3, w1 to w4, w20 to w29
  * clobbered flag groups: FG0
@@ -2305,7 +2305,7 @@ p256_key_from_seed:
 
   /* At this point, we have arithmetic shares modulo 2^321:
        [w21, w20] : x0
-       [w23, w22] : x1
+       [w11, w10] : x1
 
      We know that x1=seed1, and seed and x1 are at most 320 bits. Therefore,
      the highest bit of x0 holds a carry bit modulo 2^320:
@@ -2343,15 +2343,15 @@ p256_key_from_seed:
   bn.rshi   w29, w31, w29 >> 192
 
   /* [w25,w24] <= (x1 - (n << 64)) mod 2^512 */
-  bn.sub    w24, w22, w28
-  bn.subb   w25, w23, w29
+  bn.sub    w24, w10, w28
+  bn.subb   w25, w11, w29
 
   /* Compute d1. Because 2^320 < 2 * (n << 64), a conditional subtraction is
      sufficient to reduce. Similarly to the carry bit, the conditional bit here
      is not very sensitive because the shares are large relative to n.
-       [w23,w22] <= x1 mod (n << 64) = d1 */
-  bn.sel    w22, w22, w24, FG0.C
-  bn.sel    w23, w23, w25, FG0.C
+       [w11,w10] <= x1 mod (n << 64) = d1 */
+  bn.sel    w10, w10, w24, FG0.C
+  bn.sel    w11, w11, w25, FG0.C
 
   /* Isolate the carry bit and shift it back into position.
        w25 <= x0[320] << 64 */
