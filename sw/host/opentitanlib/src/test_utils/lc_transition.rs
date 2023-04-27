@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::iter;
 use std::rc::Rc;
 use std::thread;
 use std::time::Duration;
@@ -41,10 +42,49 @@ pub enum LcTransitionError {
 }
 impl_serializable_error!(LcTransitionError);
 
+/// Perform a lifecycle transition through the JTAG interface to the LC CTRL.
+///
+/// Requires the `jtag` to be already connected to the LC TAP.
+/// The device will be reset into the new lifecycle state.
+///
+/// # Examples
+///
+/// ```rust
+/// let init: InitializedTest;
+/// let transport = init.init_target().unwrap();
+///
+/// // Set TAP strapping to the LC controller.
+/// let tap_lc_strapping = transport.pin_strapping("PINMUX_TAP_LC").unwrap();
+/// tap_lc_strapping.apply().expect("failed to apply strapping");
+///
+/// // Reset into the new strapping.
+/// transport.reset_target(init.bootstrap.options.reset_delay, true).unwrap();
+///
+/// // Connect to the LC controller TAP.
+/// let jtag = transport.jtag(jtag_opts).unwrap();
+/// jtag.connect(JtagTap::LcTap).expect("failed to connect to LC TAP");
+///
+/// let test_exit_token = DifLcCtrlToken::from([0xff; 16]);
+///
+/// lc_transition::trigger_lc_transition(
+///     &transport,
+///     jtag.clone(),
+///     DifLcCtrlState::Prod,
+///     Some(test_exit_token.into_register_values()),
+///     true,
+///     init.bootstrap.options.reset_delay,
+/// ).expect("failed to trigger transition to prod");
+///
+/// assert_eq!(
+///     jtag.read_lc_ctrl_reg(&LcCtrlReg::LCState).unwrap(),
+///     DifLcCtrlState::Prod.redundant_encoding(),
+/// );
+/// ```
 pub fn trigger_lc_transition(
     transport: &TransportWrapper,
     jtag: Rc<dyn Jtag>,
     target_lc_state: DifLcCtrlState,
+    token: Option<[u32; 4]>,
     use_external_clk: bool,
     reset_delay: Duration,
 ) -> Result<()> {
@@ -85,7 +125,19 @@ pub fn trigger_lc_transition(
         return Err(LcTransitionError::TargetProgrammingFailed(target_lc_state_programmed).into());
     }
 
-    // TODO: program the transition token for conditional transitions.
+    // If the transition requires a token, write it to the multi-register.
+    if let Some(token_words) = token {
+        let token_regs = [
+            &LcCtrlReg::TransitionToken0,
+            &LcCtrlReg::TransitionToken1,
+            &LcCtrlReg::TransitionToken2,
+            &LcCtrlReg::TransitionToken3,
+        ];
+
+        for (reg, value) in iter::zip(token_regs, token_words) {
+            jtag.write_lc_ctrl_reg(reg, value)?;
+        }
+    }
 
     // Configure external clock.
     if use_external_clk {

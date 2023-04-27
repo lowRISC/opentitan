@@ -46,6 +46,7 @@ fn manuf_scrap(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         transport,
         jtag.clone(),
         DifLcCtrlState::Scrap,
+        None,
         /*use_external_clk=*/ false,
         opts.init.bootstrap.options.reset_delay,
     )?;
