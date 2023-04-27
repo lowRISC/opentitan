@@ -11,9 +11,10 @@ import re
 import sys
 from pathlib import Path
 
-from reggen import (gen_cheader, gen_dv, gen_fpv, gen_html, gen_json, gen_rtl,
-                    gen_rust, gen_sec_cm_testplan, gen_selfdoc, gen_tock,
-                    version)
+from reggen import (
+    gen_cfg_md, gen_cheader, gen_dv, gen_fpv, gen_md, gen_json, gen_rtl,
+    gen_rust, gen_sec_cm_testplan, gen_selfdoc, gen_tock, version,
+)
 from reggen.countermeasure import CounterMeasure
 from reggen.ip_block import IpBlock
 
@@ -43,7 +44,7 @@ def main():
                         help='input file in Hjson type')
     parser.add_argument('-d',
                         action='store_true',
-                        help='Output register documentation (html)')
+                        help='Output register documentation (markdown)')
     parser.add_argument('-a',
                         '--alias',
                         type=Path,
@@ -65,9 +66,12 @@ def main():
     parser.add_argument('--tock',
                         action='store_true',
                         help='Output Tock constants')
+    parser.add_argument('--interfaces',
+                        action='store_true',
+                        help='Output interfaces documentation (markdown)')
     parser.add_argument('--doc',
                         action='store_true',
-                        help='Output source file documentation (gfm)')
+                        help='Output source file documentation (markdown)')
     parser.add_argument('-j',
                         action='store_true',
                         help='Output as formatted JSON')
@@ -150,11 +154,12 @@ def main():
     # the output needs a directory, it is a default path relative to the source
     # file (used when --outdir is not given).
     arg_to_format = [('j', ('json', None)), ('c', ('compact', None)),
-                     ('d', ('html', None)), ('doc', ('doc', None)),
+                     ('d', ('registers', None)), ('doc', ('doc', None)),
                      ('r', ('rtl', 'rtl')), ('s', ('dv', 'dv')),
                      ('f', ('fpv', 'fpv/vip')), ('cdefines', ('cdh', None)),
                      ('sec_cm_testplan', ('sec_cm_testplan', 'data')),
-                     ('rust', ('rs', None)), ('tock', ('trs', None))]
+                     ('rust', ('rs', None)), ('tock', ('trs', None)),
+                     ('interfaces', ('interfaces', None))]
     fmt = None
     dirspec = None
     for arg_name, spec in arg_to_format:
@@ -290,8 +295,10 @@ def main():
             src_lic += '\n' + found_spdx
 
         with outfile:
-            if fmt == 'html':
-                return gen_html.gen_html(obj, outfile)
+            if fmt == 'registers':
+                return gen_md.gen_md(obj, outfile)
+            elif fmt == 'interfaces':
+                return gen_cfg_md.gen_cfg_md(obj, outfile)
             elif fmt == 'cdh':
                 return gen_cheader.gen_cdefines(obj, outfile, src_lic,
                                                 src_copy)
