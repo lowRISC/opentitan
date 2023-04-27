@@ -571,11 +571,50 @@ void SpikeCosim::initial_proc_setup(uint32_t start_pc, uint32_t start_mtvec,
 }
 
 void SpikeCosim::set_mip(uint32_t mip) {
+  uint32_t new_mip = mip;
+  uint32_t old_mip = processor->get_state()->mip->read();
+
   processor->get_state()->mip->write_with_mask(0xffffffff, mip);
+
+  if (processor->get_state()->debug_mode ||
+      (processor->halt_request == processor_t::HR_REGULAR) ||
+      (!get_field(processor->get_csr(CSR_MSTATUS), MSTATUS_MIE) &&
+       processor->get_state()->prv == PRV_M)) {
+    // Return now if new MIP won't trigger an interrupt handler either because
+    // we're in or heading to debug mode or interrupts are disabled.
+    return;
+  }
+
+  uint32_t old_enabled_irq = old_mip & processor->get_state()->mie->read();
+  uint32_t new_enabled_irq = new_mip & processor->get_state()->mie->read();
+
+  // Check to see if new MIP will trigger an interrupt (which occurs when new
+  // MIP produces an enabled interrupt for the first time).
+  if ((old_enabled_irq == 0) && (new_enabled_irq != 0)) {
+    // Early interrupt handle if the interrupt is triggered.
+    early_interrupt_handle();
+  }
+}
+
+void SpikeCosim::early_interrupt_handle() {
+  // Execute a spike step on the assumption an interrupt will occur so no new
+  // instruction is executed just the state altered to reflect the interrupt.
+  uint32_t initial_spike_pc = (processor->get_state()->pc & 0xffffffff);
+  processor->step(1);
+
+  if (processor->get_state()->last_inst_pc != PC_INVALID) {
+    std::stringstream err_str;
+    err_str << "Attempted step for interrupt, expecting no instruction would "
+            << "be executed but saw one. PC before: " << std::hex
+            << initial_spike_pc
+            << " PC after: " << (processor->get_state()->pc & 0xffffffff);
+    errors.emplace_back(err_str.str());
+  }
 }
 
 void SpikeCosim::set_nmi(bool nmi) {
-  if (nmi && !nmi_mode && !processor->get_state()->debug_mode) {
+  if (nmi && !nmi_mode && !processor->get_state()->debug_mode &&
+      processor->halt_request != processor_t::HR_REGULAR) {
     processor->get_state()->nmi = true;
     nmi_mode = true;
 
@@ -585,11 +624,14 @@ void SpikeCosim::set_nmi(bool nmi) {
     mstack.mpie = get_field(processor->get_csr(CSR_MSTATUS), MSTATUS_MPIE);
     mstack.epc = processor->get_csr(CSR_MEPC);
     mstack.cause = processor->get_csr(CSR_MCAUSE);
+
+    early_interrupt_handle();
   }
 }
 
 void SpikeCosim::set_nmi_int(bool nmi_int) {
-  if (nmi_int && !nmi_mode && !processor->get_state()->debug_mode) {
+  if (nmi_int && !nmi_mode && !processor->get_state()->debug_mode &&
+      processor->halt_request != processor_t::HR_REGULAR) {
     processor->get_state()->nmi_int = true;
     nmi_mode = true;
 
@@ -599,6 +641,8 @@ void SpikeCosim::set_nmi_int(bool nmi_int) {
     mstack.mpie = get_field(processor->get_csr(CSR_MSTATUS), MSTATUS_MPIE);
     mstack.epc = processor->get_csr(CSR_MEPC);
     mstack.cause = processor->get_csr(CSR_MCAUSE);
+
+    early_interrupt_handle();
   }
 }
 
@@ -690,7 +734,30 @@ void SpikeCosim::fixup_csr(int csr_num, uint32_t csr_val) {
       if (any_interrupt && int_interrupt) {
         new_val |= 0x7fffffe0;
       }
+#ifdef OLD_SPIKE
+      processor->set_csr(csr_num, new_val);
+#else
+      processor->put_csr(csr_num, new_val);
+#endif
+      break;
+    }
+    case CSR_MTVEC: {
+      uint32_t mtvec_and_mask = 0xffffff00;
+      uint32_t mtvec_or_mask = 0x1;
 
+      // For Ibex, mtvec.MODE is set to vectored and
+      // mtvec.BASE must be 256-byte aligned
+      reg_t new_val = (csr_val & mtvec_and_mask) | mtvec_or_mask;
+#ifdef OLD_SPIKE
+      processor->set_csr(csr_num, new_val);
+#else
+      processor->put_csr(csr_num, new_val);
+#endif
+      break;
+    }
+    case CSR_MISA: {
+      // For Ibex, misa is hardwired
+      reg_t new_val = 0x40901104;
 #ifdef OLD_SPIKE
       processor->set_csr(csr_num, new_val);
 #else

@@ -147,6 +147,7 @@ module ibex_core import ibex_pkg::*; #(
   output logic [31:0]                  rvfi_ext_mhpmcounters [10],
   output logic [31:0]                  rvfi_ext_mhpmcountersh [10],
   output logic                         rvfi_ext_ic_scr_key_valid,
+  output logic                         rvfi_ext_irq_valid,
   `endif
 
   // CPU Control Signals
@@ -1232,6 +1233,7 @@ module ibex_core import ibex_pkg::*; #(
   logic [31:0] rvfi_mem_addr_q;
   logic        rvfi_trap_id;
   logic        rvfi_trap_wb;
+  logic        rvfi_irq_valid;
   logic [63:0] rvfi_stage_order_d;
   logic        rvfi_id_done;
   logic        rvfi_wb_done;
@@ -1257,6 +1259,7 @@ module ibex_core import ibex_pkg::*; #(
   logic [31:0]     rvfi_ext_stage_mhpmcounters     [RVFI_STAGES][10];
   logic [31:0]     rvfi_ext_stage_mhpmcountersh    [RVFI_STAGES][10];
   logic            rvfi_ext_stage_ic_scr_key_valid [RVFI_STAGES];
+  logic            rvfi_ext_stage_irq_valid        [RVFI_STAGES+1];
 
 
   logic        rvfi_stage_valid_d   [RVFI_STAGES];
@@ -1307,6 +1310,7 @@ module ibex_core import ibex_pkg::*; #(
   assign rvfi_ext_mhpmcounters     = rvfi_ext_stage_mhpmcounters     [RVFI_STAGES-1];
   assign rvfi_ext_mhpmcountersh    = rvfi_ext_stage_mhpmcountersh    [RVFI_STAGES-1];
   assign rvfi_ext_ic_scr_key_valid = rvfi_ext_stage_ic_scr_key_valid [RVFI_STAGES-1];
+  assign rvfi_ext_irq_valid        = rvfi_ext_stage_irq_valid        [RVFI_STAGES];
 
   // When an instruction takes a trap the `rvfi_trap` signal will be set. Instructions that take
   // traps flush the pipeline so ordinarily wouldn't be seen to be retire. The RVFI tracking
@@ -1394,7 +1398,8 @@ module ibex_core import ibex_pkg::*; #(
   assign new_debug_req = (debug_req_i & ~debug_mode);
   assign new_nmi = irq_nm_i & ~nmi_mode & ~debug_mode;
   assign new_nmi_int = id_stage_i.controller_i.irq_nm_int & ~nmi_mode & ~debug_mode;
-  assign new_irq = irq_pending_o & csr_mstatus_mie & ~nmi_mode & ~debug_mode;
+  assign new_irq = irq_pending_o & (csr_mstatus_mie || (priv_mode_id == PRIV_LVL_U)) & ~nmi_mode &
+                   ~debug_mode;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -1403,16 +1408,35 @@ module ibex_core import ibex_pkg::*; #(
       captured_nmi       <= 1'b0;
       captured_nmi_int   <= 1'b0;
       captured_debug_req <= 1'b0;
+      rvfi_irq_valid     <= 1'b0;
     end else  begin
       // Capture when ID stage has emptied out and something occurs that will cause a trap and we
       // haven't yet captured
+      //
+      // When we already captured a trap, and there is upcoming nmi interrupt or
+      // a debug request then recapture as nmi or debug request are supposed to
+      // be serviced.
       if (~instr_valid_id & (new_debug_req | new_irq | new_nmi | new_nmi_int) &
-          ~captured_valid) begin
+          ((~captured_valid) |
+           (new_debug_req & ~captured_debug_req) |
+           (new_nmi & ~captured_nmi & ~captured_debug_req))) begin
         captured_valid     <= 1'b1;
         captured_nmi       <= irq_nm_i;
         captured_nmi_int   <= id_stage_i.controller_i.irq_nm_int;
         captured_mip       <= cs_registers_i.mip;
         captured_debug_req <= debug_req_i;
+      end
+
+      // When the pipeline has emptied in preparation for handling a new interrupt send
+      // a notification up the RVFI pipeline. This is used by the cosim to deal with cases where an
+      // interrupt occurs before another interrupt or debug request but both occur before the first
+      // instruction of the handler is executed and retired (where the cosim will see all the
+      // interrupts and debug requests at once with no way to determine which occurred first).
+      if (~instr_valid_id & ~new_debug_req & (new_irq | new_nmi | new_nmi_int) & ready_wb &
+          ~captured_valid) begin
+        rvfi_irq_valid <= 1'b1;
+      end else begin
+        rvfi_irq_valid <= 1'b0;
       end
 
       // Capture cleared out as soon as a new instruction appears in ID
@@ -1434,7 +1458,7 @@ module ibex_core import ibex_pkg::*; #(
       rvfi_ext_stage_nmi[0]       <= '0;
       rvfi_ext_stage_nmi_int[0]   <= '0;
       rvfi_ext_stage_debug_req[0] <= '0;
-    end else if (if_stage_i.instr_valid_id_d & if_stage_i.instr_new_id_d) begin
+    end else if ((if_stage_i.instr_valid_id_d & if_stage_i.instr_new_id_d) | rvfi_irq_valid) begin
       rvfi_ext_stage_mip[0]       <= instr_valid_id | ~captured_valid ? cs_registers_i.mip :
                                                                         captured_mip;
       rvfi_ext_stage_nmi[0]       <= instr_valid_id | ~captured_valid ? irq_nm_i :
@@ -1444,6 +1468,29 @@ module ibex_core import ibex_pkg::*; #(
                                            captured_nmi_int;
       rvfi_ext_stage_debug_req[0] <= instr_valid_id | ~captured_valid ? debug_req_i        :
                                                                         captured_debug_req;
+    end
+  end
+
+
+  // rvfi_irq_valid signals an interrupt event to the cosim. These should only occur when the RVFI
+  // pipe is empty so just send it straigh through.
+  for (genvar i = 0; i < RVFI_STAGES + 1; i = i + 1) begin : g_rvfi_irq_valid
+    if (i == 0) begin : g_rvfi_irq_valid_first_stage
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          rvfi_ext_stage_irq_valid[i] <= 1'b0;
+        end else begin
+          rvfi_ext_stage_irq_valid[i] <= rvfi_irq_valid;
+        end
+      end
+    end else begin : g_rvfi_irq_valid_other_stages
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          rvfi_ext_stage_irq_valid[i] <= 1'b0;
+        end else begin
+          rvfi_ext_stage_irq_valid[i] <= rvfi_ext_stage_irq_valid[i-1];
+        end
+      end
     end
   end
 
@@ -1488,7 +1535,6 @@ module ibex_core import ibex_pkg::*; #(
         if (i == 0) begin
           if (rvfi_id_done) begin
             rvfi_stage_halt[i]      <= '0;
-            // TODO: Sort this out for writeback stage
             rvfi_stage_trap[i]                 <= rvfi_trap_id;
             rvfi_stage_intr[i]                 <= rvfi_intr_d;
             rvfi_stage_order[i]                <= rvfi_stage_order_d;
@@ -1510,10 +1556,6 @@ module ibex_core import ibex_pkg::*; #(
             rvfi_stage_mem_rdata[i]            <= rvfi_mem_rdata_d;
             rvfi_stage_mem_wdata[i]            <= rvfi_mem_wdata_d;
             rvfi_stage_mem_addr[i]             <= rvfi_mem_addr_d;
-            rvfi_ext_stage_mip[i+1]            <= rvfi_ext_stage_mip[i];
-            rvfi_ext_stage_nmi[i+1]            <= rvfi_ext_stage_nmi[i];
-            rvfi_ext_stage_nmi_int[i+1]        <= rvfi_ext_stage_nmi_int[i];
-            rvfi_ext_stage_debug_req[i+1]      <= rvfi_ext_stage_debug_req[i];
             rvfi_ext_stage_debug_mode[i]       <= debug_mode;
             rvfi_ext_stage_mcycle[i]           <= cs_registers_i.mcycle_counter_i.counter_val_o;
             rvfi_ext_stage_ic_scr_key_valid[i] <= cs_registers_i.cpuctrlsts_ic_scr_key_valid_q;
@@ -1523,6 +1565,17 @@ module ibex_core import ibex_pkg::*; #(
               rvfi_ext_stage_mhpmcounters[i][k]  <= cs_registers_i.mhpmcounter[k+3][31:0];
               rvfi_ext_stage_mhpmcountersh[i][k] <= cs_registers_i.mhpmcounter[k+3][63:32];
             end
+          end
+
+          // Some of the rvfi_ext_* signals are used to provide an interrupt notification (signalled
+          // via rvfi_ext_irq_valid) when there isn't a valid retired instruction as well as
+          // providing information along with a retired instruction. Move these up the rvfi pipeline
+          // for both cases.
+          if (rvfi_id_done | rvfi_ext_stage_irq_valid[i]) begin
+            rvfi_ext_stage_mip[i+1]       <= rvfi_ext_stage_mip[i];
+            rvfi_ext_stage_nmi[i+1]       <= rvfi_ext_stage_nmi[i];
+            rvfi_ext_stage_nmi_int[i+1]   <= rvfi_ext_stage_nmi_int[i];
+            rvfi_ext_stage_debug_req[i+1] <= rvfi_ext_stage_debug_req[i];
           end
         end else begin
           if (rvfi_wb_done) begin
@@ -1554,15 +1607,22 @@ module ibex_core import ibex_pkg::*; #(
             rvfi_stage_rd_wdata[i]  <= rvfi_rd_wdata_d;
             rvfi_stage_mem_rdata[i] <= rvfi_mem_rdata_d;
 
-            rvfi_ext_stage_mip[i+1]            <= rvfi_ext_stage_mip[i];
-            rvfi_ext_stage_nmi[i+1]            <= rvfi_ext_stage_nmi[i];
-            rvfi_ext_stage_nmi_int[i+1]        <= rvfi_ext_stage_nmi_int[i];
-            rvfi_ext_stage_debug_req[i+1]      <= rvfi_ext_stage_debug_req[i];
             rvfi_ext_stage_debug_mode[i]       <= rvfi_ext_stage_debug_mode[i-1];
             rvfi_ext_stage_mcycle[i]           <= rvfi_ext_stage_mcycle[i-1];
             rvfi_ext_stage_ic_scr_key_valid[i] <= rvfi_ext_stage_ic_scr_key_valid[i-1];
             rvfi_ext_stage_mhpmcounters[i]     <= rvfi_ext_stage_mhpmcounters[i-1];
             rvfi_ext_stage_mhpmcountersh[i]    <= rvfi_ext_stage_mhpmcountersh[i-1];
+          end
+
+          // Some of the rvfi_ext_* signals are used to provide an interrupt notification (signalled
+          // via rvfi_ext_irq_valid) when there isn't a valid retired instruction as well as
+          // providing information along with a retired instruction. Move these up the rvfi pipeline
+          // for both cases.
+          if (rvfi_wb_done | rvfi_ext_stage_irq_valid[i]) begin
+            rvfi_ext_stage_mip[i+1]       <= rvfi_ext_stage_mip[i];
+            rvfi_ext_stage_nmi[i+1]       <= rvfi_ext_stage_nmi[i];
+            rvfi_ext_stage_nmi_int[i+1]   <= rvfi_ext_stage_nmi_int[i];
+            rvfi_ext_stage_debug_req[i+1] <= rvfi_ext_stage_debug_req[i];
           end
         end
       end
@@ -1785,7 +1845,6 @@ module ibex_core import ibex_pkg::*; #(
           g_pmp.pmp_i.region_match_all[PMP_D][i_region] & data_req_out)
       // pmp_cfg[5:6] is reserved and because of that the width of it inside cs_registers module
       // is 6-bit.
-      // TODO: Cover writes to the reserved bits
       `DV_FCOV_SIGNAL(logic, warl_check_pmpcfg,
           fcov_csr_write &&
           (cs_registers_i.g_pmp_registers.g_pmp_csrs[i_region].u_pmp_cfg_csr.wr_data_i !=

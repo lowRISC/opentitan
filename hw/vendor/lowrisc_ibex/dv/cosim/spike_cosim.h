@@ -83,6 +83,8 @@ class SpikeCosim : public simif_t, public Cosim {
   void initial_proc_setup(uint32_t start_pc, uint32_t start_mtvec,
                           uint32_t mhpm_counter_num);
 
+  void early_interrupt_handle();
+
   unsigned int insn_cnt;
 
  public:

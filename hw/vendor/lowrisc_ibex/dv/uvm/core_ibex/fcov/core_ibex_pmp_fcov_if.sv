@@ -268,6 +268,12 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
               (binsof(cp_req_type_iside) intersect {PMP_ACC_EXEC} &&
                binsof(cp_region_priv_bits) intersect {X, XW, XR, XWR, LX, LXW, LXR, LXWR} &&
                binsof(pmp_iside_req_err) intersect {1});
+            illegal_bins illegal_deny_exec_machine_unlocked =
+              // Ensuring in machine mode when MML is low, we are in X allowed configuration
+              (binsof(cp_region_priv_bits) intersect {R, W, WR} &&
+               binsof(cp_req_type_iside) intersect {PMP_ACC_EXEC} &&
+               binsof(cp_priv_lvl_iside) intersect {PRIV_LVL_M} &&
+               binsof(pmp_iside_req_err) intersect {1});
             illegal_bins illegal_machine_deny_exec =
               // Ensuring MML is high and we are in a X allowed configuration in Machine Mode
               (binsof(cp_region_priv_bits) intersect {NONE, MML_XM_XU, MML_XRM_XU, MML_XRM,
@@ -319,6 +325,12 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
             // Ensuring MML is low and we are in a X allowed configuration
             (binsof(cp_region_priv_bits) intersect {X, XW, XR, XWR, LX, LXW, LXR, LXWR} &&
              binsof(cp_req_type_iside2) intersect {PMP_ACC_EXEC} &&
+             binsof(pmp_iside2_req_err) intersect {1});
+          illegal_bins illegal_deny_exec_machine_unlocked =
+            // Ensuring in machine mode when MML is low, we are in X allowed configuration
+            (binsof(cp_region_priv_bits) intersect {R, W, WR} &&
+             binsof(cp_req_type_iside2) intersect {PMP_ACC_EXEC} &&
+             binsof(cp_priv_lvl_iside2) intersect {PRIV_LVL_M} &&
              binsof(pmp_iside2_req_err) intersect {1});
           illegal_bins illegal_machine_deny_exec =
             // Ensuring MML is high and we are in a X allowed configuration in Machine Mode

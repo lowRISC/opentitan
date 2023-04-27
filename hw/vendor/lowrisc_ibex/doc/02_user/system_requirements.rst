@@ -8,6 +8,7 @@ The following tools are known to work with the RTL code of Ibex.
 Please `file an issue <https://github.com/lowRISC/ibex/issues>`_ if you experience problems with any of the listed tools, or if you have successfully used a tool with Ibex which is not listed here.
 
 - Synopsys Design Compiler
+- Cadence Genus
 - Xilinx Vivado, version |tool_requirements.vivado| and up.
 - Verilator, version |tool_requirements.verilator| and up.
 - Synopsys VCS, version at least |tool_requirements.vcs|.

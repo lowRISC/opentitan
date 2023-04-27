@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class ibex_rvfi_seq_item extends uvm_sequence_item;
+  bit        irq_only;
   bit        trap;
   bit [31:0] pc;
   bit [4:0]  rd_addr;

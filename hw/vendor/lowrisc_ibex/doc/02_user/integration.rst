@@ -7,7 +7,83 @@ The main module is named ``ibex_top`` and can be found in ``ibex_top.sv``.
 Note that the core logic is split-out from the register file and RAMs under ``ibex_top``.
 This is to facilitate a dual-core lockstep implementation (see :ref:`security`).
 
-Below, the instantiation template is given and the parameters and interfaces are described.
+Register File
+-------------
+
+Ibex comes with three different register file implementations that can be selected using the enumerated parameter ``RegFile`` defined in :file:`rtl/ibex_pkg.sv`.
+Depending on the target technology, either the flip-flop-based ("ibex_pkg::RegFileFF", default), the latch-based ("ibex_pkg::RegFileLatch") or an FPGA-targeted ("ibex_pkg::RegFileFPGA") implementation should be selected.
+For more information about the three register file implementations and their trade-offs, check out :ref:`register-file`.
+
+Identification CSRs
+-------------------
+
+The RISC-V Privileged Architecture specifies several read-only CSRs that identify the vendor and micro-architecture of a CPU.
+These are ``mvendorid``, ``marchid`` and ``mimpid``.
+The fixed, read-only values for these CSRs are defined in :file:`rtl/ibex_pkg.sv`.
+Implementers should carefully consider appropriate values for these registers.
+Ibex, as an open source implementation, has an assigned architecture ID (``marchid``) of 22.
+(Allocations are specified in `marchid.md of the riscv-isa-manual repository <https://github.com/riscv/riscv-isa-manual/blob/master/marchid.md>`_.)
+If significant changes are made to the micro-architecture a different architecture ID should be used.
+The vendor ID and implementation ID (``mvendorid`` and ``mimpid``) both read as 0 by default, meaning non-implemented.
+Implementers may wish to use other values here.
+Please see the RISC-V Privileged Architecture specification for more details on what these IDs represent and how they should be chosen.
+
+.. _integration-prims:
+
+Primitives
+----------
+
+Ibex uses a number of primitive modules (that are held outside the :file:`rtl/` which contains the Ibex RTL).
+Full implementations of these primitives are provided in the Ibex repository but implementors may wish to provide their own implementations.
+Some of the primitives are only used for specific Ibex configurations so can be ignored/removed if you're not using one of those configurations.
+
+The mandatory primitives (used by all configurations) are:
+ * ``prim_buf`` - A buffer, used to ensure security critical logic isn't optimized out in synthesis (by applying suitable constraints to prim_buf).
+   In configurations where ``SecureIbex == 0`` it must exist but can be implemented as a straight passthrough.
+ * ``prim_clock_gating`` - A clock gate.
+
+The configuration dependent primitives are:
+ * ``prim_clock_mux2`` - A clock mux, used by the lockstep duplicate core.
+   Required where ``SecureIbex == 1``.
+ * ``prim_flop`` - A flip flop, used to ensure security critical logic isn't optimized out in synthesis (by applying suitable constraints to prim_flop).
+   Required where ``SecureIbex == 1``.
+ * ``prim_ram_1p`` - A single ported RAM.
+   Required where ``ICache == 1``.
+ * ``prim_ram_1p_scr`` - A single ported RAM which scrambles its contents with cryptographic primitives.
+   Required where ``ICache == 1`` and ``SecureIbex == 1``.
+ * ``prim_lfsr`` - Linear feedback shift register, used for pseudo random number generation for dummy instruction insertion.
+   Required where ``SecureIbex == 1``.
+ * ``prim_onehot_check`` - Checks a onehot signal is correct, for detecting fault injection attacks.
+   Required where ``SecureIbex == 1``.
+ * ``prim_secded_X`` - Various primitives to encode and decode SECDED (single error correct, double error detect) error detection and correction codes.
+   Required where ``SecureIbex == 1``.
+
+Primitives exclusively used by other primitives:
+ * ``prim_present`` / ``prim_prince`` / ``prim_subst_perm`` - Cryptographic primitives used by ``prim_ram_1p_scr``.
+ * ``prim_ram_1p_adv`` - Wrapper around ``prim_ram_1p`` that adds support for ECC, used by ``prim_ram_1p_scr``.
+
+.. _integration-fusesoc-files:
+
+RTL File List
+-------------
+
+Ibex flows use `FuseSoC <https://github.com/olofk/fusesoc>`_ to gather needed RTL files and run builds.
+If you want to use Ibex without FuseSoC the following FuseSoC command will copy all the needed files into a build directory.
+
+.. code-block:: bash
+
+  fusesoc --cores-root . run --target=lint --setup --build-root ./build/ibex_out lowrisc:ibex:ibex_top
+
+FuseSoC uses Python and it can be installed using pip.
+
+.. code-block:: bash
+
+  pip3 install -U -r python-requirements.txt
+
+Ibex uses a `custom fork of FuseSoC <https://github.com/lowRISC/fusesoc/tree/ot>`_, so you must install it via this method rather than installing FuseSoC separately.
+
+The RTL will be in :file:`./build/ibex_out/src` which is further divided into different sub-directories.
+A file list containing paths to all of the RTL files can be found in :file:`./build/ibex_out/ibex-verilator/lowrisc_ibex_ibex_top_0.1.vc`.
 
 Instantiation Template
 ----------------------
@@ -122,26 +198,23 @@ Parameters
 |                              |                     |            | "ibex_pkg::RegFileFPGA": Register file for FPGA targets               |
 |                              |                     |            | "ibex_pkg::RegFileLatch": Latch-based register file for ASIC targets  |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``BranchTargetALU``          | bit                 | 0          | *EXPERIMENTAL* - Enables branch target ALU removing a stall           |
-|                              |                     |            | cycle from taken branches                                             |
+| ``BranchTargetALU``          | bit                 | 0          | Enables branch target ALU removing a stall cycle from taken branches  |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``WritebackStage``           | bit                 | 0          | *EXPERIMENTAL* - Enables third pipeline stage (writeback)             |
-|                              |                     |            | improving performance of loads and stores                             |
+| ``WritebackStage``           | bit                 | 0          | Enables third pipeline stage (writeback) improving performance of     |
+|                              |                     |            | loads and stores                                                      |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``ICache``                   | bit                 | 0          | *EXPERIMENTAL* Enable instruction cache instead of prefetch           |
-|                              |                     |            | buffer                                                                |
+| ``ICache``                   | bit                 | 0          | Enable instruction cache instead of prefetch buffer                   |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``ICacheECC``                | bit                 | 0          | *EXPERIMENTAL* Enable SECDED ECC protection in ICache (if             |
-|                              |                     |            | ICache == 1)                                                          |
+| ``ICacheECC``                | bit                 | 0          | Enable SECDED ECC protection in ICache (if  ICache == 1)              |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``ICacheScramble``           | bit                 | 0          | *EXPERIMENTAL* Enabling this parameter replaces tag and data RAMs of  |
-|                              |                     |            | ICache with scrambling RAM primitives.                                |
+| ``ICacheScramble``           | bit                 | 0          | Enabling this parameter replaces tag and data RAMs of ICache with     |
+|                              |                     |            | scrambling RAM primitives.                                            |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
 | ``BranchPrediction``         | bit                 | 0          | *EXPERIMENTAL* Enable Static branch prediction                        |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
-| ``SecureIbex``               | bit                 | 0          | *EXPERIMENTAL* Enable various additional features targeting           |
-|                              |                     |            | secure code execution. Note: SecureIbex == 1'b1 and                   |
-|                              |                     |            | RV32M == ibex_pkg::RV32MNone is an illegal combination.               |
+| ``SecureIbex``               | bit                 | 0          | Enable various additional features targeting secure code execution.   |
+|                              |                     |            | Note: SecureIbex == 1'b1 and  RV32M == ibex_pkg::RV32MNone is an      |
+|                              |                     |            | illegal combination.                                                  |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
 | ``RndCnstLfsrSeed``          | lfsr_seed_t         | see above  | Set the starting seed of the LFSR used to generate dummy instructions |
 |                              |                     |            | (only relevant when SecureIbex == 1'b1)                               |

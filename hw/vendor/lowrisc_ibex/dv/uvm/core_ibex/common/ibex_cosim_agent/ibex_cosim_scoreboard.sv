@@ -116,6 +116,16 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
     forever begin
       rvfi_port.get(rvfi_instr);
 
+      if (rvfi_instr.irq_only) begin
+        // RVFI item is only notifying about new interrupts, not a retired instruction, so provide
+        // cosim with interrupt information and loop back to await the next item.
+        riscv_cosim_set_nmi(cosim_handle, rvfi_instr.nmi);
+        riscv_cosim_set_nmi_int(cosim_handle, rvfi_instr.nmi_int);
+        riscv_cosim_set_mip(cosim_handle, rvfi_instr.mip);
+
+        continue;
+      end
+
       if (iside_error_queue.size() > 0) begin
         // Remove entries from iside_error_queue where the instruction never reaches the RVFI
         // interface because it was flushed.
@@ -131,10 +141,12 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
         end
       end
 
+      // Note these must be called in this order to ensure debug vs nmi vs normal interrupt are
+      // handled with the correct priority when they occur together.
+      riscv_cosim_set_debug_req(cosim_handle, rvfi_instr.debug_req);
       riscv_cosim_set_nmi(cosim_handle, rvfi_instr.nmi);
       riscv_cosim_set_nmi_int(cosim_handle, rvfi_instr.nmi_int);
       riscv_cosim_set_mip(cosim_handle, rvfi_instr.mip);
-      riscv_cosim_set_debug_req(cosim_handle, rvfi_instr.debug_req);
       riscv_cosim_set_mcycle(cosim_handle, rvfi_instr.mcycle);
 
       // Set performance counters through a pseudo-backdoor write

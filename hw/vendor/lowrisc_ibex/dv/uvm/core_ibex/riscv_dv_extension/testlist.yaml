@@ -614,6 +614,7 @@
     +randomize_csr=1
     +enable_unaligned_load_store=1
     +suppress_pmp_setup=1
+    +enable_interrupt=1
   rtl_test: core_ibex_mem_error_test
   sim_opts: >
     +enable_mem_intg_err=1

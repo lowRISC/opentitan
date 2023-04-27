@@ -1,3 +1,41 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+###############################################################################
+######## EXAMPLE OF VARIABLE DUMPING ############
+# This target depends on the vendored in code in $(GEN_DIR). It also depends on the
+# values of the following Makefile variables (we want to regenerate things if,
+# for example, the simulator changes).
+
+# To achieve this variable tracking, we dump each of the variables to a Makefile
+# fragment and try to load it up the next time around. This done with the
+# utility function "dump-vars" at the end of the recipe.
+#
+# To create the dependency, we must do the following two things before each
+# target:
+#
+# First, load up the saved variable values from the last time around. If this
+# fails, it's no problem: we'll assume that the previous run either doesn't
+# exist or something went wrong.
+  # ig-build-vars-path := $(BUILD-DIR)/.instr_gen.vars.mk
+  # -include $(ig-build-vars-path)
+
+# Next, compare the current variables to those we just loaded. This uses the
+# utility function "vars-prereq". It creates a variable which evaluates to the
+# (phony) FORCE if the two sets of variables do not match.
+#
+# Note that we define it with '=', not ':=', so we don't evaluate if we're not
+# trying to run the instr_gen_build target.
+  # instr-gen-build-vars-prereq = \
+  #   $(call vars-prereq, \
+  #      gen, \
+  #      building instruction generator, \
+  #      $(instr-gen-build-var-deps))
+
+# Finally, $(instr-gen-build-vars-prereq) becomes a dependency of our target.
+################## END EXAMPLE ###################
+
 ###############################################################################
 # Utility functions.
 #

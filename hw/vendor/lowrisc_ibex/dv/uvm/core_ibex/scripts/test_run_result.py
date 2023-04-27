@@ -16,6 +16,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class TestType(Enum):
+    """Type of the test."""
+
+    RISCVDV = 0
+    DIRECTED = 1
+
+
 class Failure_Modes(Enum):
     """Descriptive enum for the mode in which a test fails"""
 
@@ -43,6 +50,7 @@ class TestRunResult(scripts_lib.testdata_cls):
     failure_message: Optional[str] = None
     timeout_s: Optional[int] = None
 
+    testtype: Optional[TestType] = None
     testdotseed: Optional[str] = None
     testname: Optional[str] = None        # Name of test
     seed: Optional[int] = None            # Seed of test
@@ -55,6 +63,9 @@ class TestRunResult(scripts_lib.testdata_cls):
     gen_opts: Optional[str] = None
     rtl_test: Optional[str] = None
     sim_opts: Optional[str] = None
+
+    # Directed Test specific parameters
+    directed_data: Optional[dict] = None
 
     dir_test: Optional[pathlib.Path] = None
     assembly: Optional[pathlib.Path] = None         # Path to assembly file

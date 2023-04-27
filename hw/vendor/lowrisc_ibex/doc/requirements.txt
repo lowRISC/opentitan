@@ -1,7 +1,5 @@
 setuptools_scm
-# sphinxcontrib-wavedrom isn't yet ready for Sphinx 4. Relax this requirements
-# once https://github.com/bavovanachte/sphinx-wavedrom/pull/32 is released.
-sphinx~=3.0
+sphinx~=4.2
 sphinx_rtd_theme
 sphinxcontrib-wavedrom
 wavedrom>=1.9.0rc1

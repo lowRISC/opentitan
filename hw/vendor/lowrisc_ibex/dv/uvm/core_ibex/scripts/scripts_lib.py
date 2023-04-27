@@ -8,6 +8,7 @@ import shlex
 import subprocess
 import sys
 import pickle
+import yaml
 import pathlib3x as pathlib
 from io import IOBase
 from typing import Dict, TextIO, Optional, Union, List
@@ -245,6 +246,17 @@ def format_to_str(arg: any) -> str:
         return ''
     else:
         raise TypeError("Couldn't format element to str!")
+
+
+def read_yaml(yaml_file: pathlib.Path):
+    """Read YAML file to a dictionary."""
+    with yaml_file.open("r") as f:
+        try:
+            yaml_data = yaml.safe_load(f)
+        except yaml.YAMLError as exc:
+            logging.error(exc)
+            sys.exit(1)
+    return yaml_data
 
 
 class testdata_cls():
