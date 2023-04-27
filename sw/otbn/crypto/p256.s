@@ -2201,11 +2201,11 @@ p256_generate_k:
 boolean_to_arithmetic:
   /* Mask out excess bits from seed shares.
        [w21, w20] <= s0 mod 2^320
-       [w23, w22] <= s1 mod 2^320 = x1 */
+       [w11, w10] <= s1 mod 2^320 = x1 */
   bn.rshi   w21, w21, w31 >> 64
   bn.rshi   w21, w31, w21 >> 192
-  bn.rshi   w23, w23, w31 >> 64
-  bn.rshi   w23, w31, w23 >> 192
+  bn.rshi   w11, w11, w31 >> 64
+  bn.rshi   w11, w31, w11 >> 192
 
   /* Fetch 321 bits of randomness from URND.
        [w2, w1] <= gamma */
@@ -2232,9 +2232,9 @@ boolean_to_arithmetic:
   bn.xor    w3, w3, w20
   bn.xor    w4, w4, w21
 
-  /* [w2, w1] <= [w2, w1] ^ [w23, w22] = gamma ^ s1 = G */
-  bn.xor    w1, w1, w22
-  bn.xor    w2, w2, w23
+  /* [w2, w1] <= [w2, w1] ^ [w11, w10] = gamma ^ s1 = G */
+  bn.xor    w1, w1, w10
+  bn.xor    w2, w2, w11
 
   /* [w21, w20] <= [w21, w20] ^ [w2, w1] = s0 ^ G */
   bn.xor    w20, w20, w1
@@ -2343,15 +2343,15 @@ p256_key_from_seed:
   bn.rshi   w29, w31, w29 >> 192
 
   /* [w25,w24] <= (x1 - (n << 64)) mod 2^512 */
-  bn.sub    w24, w22, w28
-  bn.subb   w25, w23, w29
+  bn.sub    w24, w10, w28
+  bn.subb   w25, w11, w29
 
   /* Compute d1. Because 2^320 < 2 * (n << 64), a conditional subtraction is
      sufficient to reduce. Similarly to the carry bit, the conditional bit here
      is not very sensitive because the shares are large relative to n.
-       [w23,w22] <= x1 mod (n << 64) = d1 */
-  bn.sel    w22, w22, w24, FG0.C
-  bn.sel    w23, w23, w25, FG0.C
+       [w11,w10] <= x1 mod (n << 64) = d1 */
+  bn.sel    w10, w10, w24, FG0.C
+  bn.sel    w11, w11, w25, FG0.C
 
   /* Isolate the carry bit and shift it back into position.
        w25 <= x0[320] << 64 */
