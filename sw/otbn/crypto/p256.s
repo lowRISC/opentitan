@@ -2207,26 +2207,26 @@ boolean_to_arithmetic:
   bn.rshi   w11, w11, w31 >> 64
   bn.rshi   w11, w31, w11 >> 192
 
-  /* Fetch 321 bits of randomness from URND.
+  /* Fetch 320 bits of randomness from URND.
        [w2, w1] <= gamma */
   bn.wsrr   w1, 2
   bn.wsrr   w2, 2
-  bn.rshi   w2, w31, w2 >> 191
+  bn.rshi   w2, w31, w2 >> 192
 
   /* [w4, w3] <= [w21, w20] ^ [w2, w1] = s0 ^ gamma */
   bn.xor    w3, w20, w1
   bn.xor    w4, w21, w2
 
-  /* Subtract gamma. This may result in bits above 2^321, but these will be
+  /* Subtract gamma. This may result in bits above 2^320, but these will be
      stripped off in the next step.
        [w4, w3] <= [w4, w3] - [w2, w1] = ((s0 ^ gamma) - gamma) mod 2^512 */
   bn.sub    w3, w3, w1
   bn.subb   w4, w4, w2
 
-  /* Truncate subtraction result to 321 bits.
+  /* Truncate subtraction result to 320 bits.
        [w4, w3] <= [w4, w3] mod 2^321 = T */
-  bn.rshi   w4, w4, w31 >> 65
-  bn.rshi   w4, w31, w4 >> 191
+  bn.rshi   w4, w4, w31 >> 64
+  bn.rshi   w4, w31, w4 >> 192
 
   /* [w4, w3] <= [w4, w3] ^ [w21, w20] = T2 */
   bn.xor    w3, w3, w20
@@ -2245,8 +2245,8 @@ boolean_to_arithmetic:
   bn.subb   w21, w21, w2
 
   /* [w21, w20] <= [w21, w20] mod 2^321 = A */
-  bn.rshi   w21, w21, w31 >> 65
-  bn.rshi   w21, w31, w21 >> 191
+  bn.rshi   w21, w21, w31 >> 64
+  bn.rshi   w21, w31, w21 >> 192
 
   /* [w21, w20] <= [w21, w20] ^ [w4, w3] = A ^ T2 = x0 */
   bn.xor    w20, w20, w3
