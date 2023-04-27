@@ -53,7 +53,7 @@ The tool raises an error if *Required* keys are missing.
 *Optional* keys may be provided in the input files.
 The tool also may insert the optional keys with default value.
 
-<!-- BEGIN DOCGEN python3 util/selfdoc.py tlgen -->
+<!-- BEGIN CMDGEN util/selfdoc.py tlgen -->
 
 
 The tables describe each key and the type of the value. The following
@@ -134,7 +134,7 @@ size_byte | required | int | Memory space of the device. It is required for the 
 
 
 
-<!-- END DOCGEN -->
+<!-- END CMDGEN -->
 
 ## Fabrication process
 

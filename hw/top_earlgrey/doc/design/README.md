@@ -379,7 +379,7 @@ The choice of memory, or lack thereof at location 0x0 confers two exclusive bene
 
 For the purpose of `top_earlgrey`, the first option has been chosen to benefit software development and testing
 
-<!-- BEGIN DOCGEN util/design/gen-top-docs.py -t hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson -g mmap -->
+<!-- BEGIN CMDGEN util/design/gen-top-docs.py -t hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson -g mmap -->
 | Name              | Type          | Byte Address      |
 |:------------------|:--------------|:------------------|
 | uart0             | uart          | 0x40000000 (regs) |
@@ -433,7 +433,7 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 |                   |               | 0x411e0000 (regs) |
 | rv_core_ibex      | rv_core_ibex  | 0x411F0000 (cfg)  |
 
-<!-- END DOCGEN -->
+<!-- END CMDGEN -->
 
 
 ## Entropy Distribution Network
@@ -449,7 +449,7 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 
 ### Pinout
 
-<!-- BEGIN DOCGEN util/design/gen-top-docs.py -t hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson -g pinout -->
+<!-- BEGIN CMDGEN util/design/gen-top-docs.py -t hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson -g pinout -->
 | ID   | Name             | Bank   | Type         | Connection Type   | Description                                |
 |:-----|:-----------------|:-------|:-------------|:------------------|:-------------------------------------------|
 | 0    | POR_N            | VCC    | InputStd     | manual            | System reset                               |
@@ -523,7 +523,7 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 45   | IOR12            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
 | 46   | IOR13            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
 
-<!-- END DOCGEN -->
+<!-- END CMDGEN -->
 
 # RTL Implementation Notes
 

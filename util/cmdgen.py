@@ -26,31 +26,31 @@ logger = logging.getLogger(__name__)
 # START and END marker tags use the HTML-style comments '<!-- -->'
 START_MARKER_PATTERN = re.compile(
     r"""^<!--            \s*
-        BEGIN \s* DOCGEN \s*
+        BEGIN \s* CMDGEN \s*
         (?P<cmd>.+)      \s* # The command to generate content
         -->$""",
     flags=(re.M | re.X))
 END_MARKER_PATTERN = re.compile(
     r"""^<!--            \s*
-        END \s* DOCGEN   \s*
+        END \s* CMDGEN   \s*
         -->$""",
     flags=(re.M | re.X))
 
 
-def docgen_rewrite_md(filepath: Path, dry_run: bool):
+def cmdgen_rewrite_md(filepath: Path, dry_run: bool):
     '''Find all matching blocks in a file, and re-generate their contents.
 
     START_MARKER_PATTERN and END_MARKER_PATTERN define the delimiters.
-    For example, DOCGEN blocks are defined within a file as follows...
+    For example, CMDGEN blocks are defined within a file as follows...
     """
-    <!-- BEGIN DOCGEN python3 util/selfdoc.py reggen -->
-                       `----------------------------`
-                                    `cmd`
+    <!-- BEGIN CMDGEN util/selfdoc.py reggen -->
+                       `--------------------`
+                                `cmd`
 
     ...generated_content...
 
 
-    <!-- END DOCGEN -->
+    <!-- END CMDGEN -->
     """
 
     '''
@@ -107,7 +107,7 @@ def docgen_rewrite_md(filepath: Path, dry_run: bool):
 
 
 def main():
-    '''Run DOCGEN for all markdown files in the OpenTitan project.'''
+    '''Run CMDGEN for all markdown files in the OpenTitan project.'''
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run",
                         help="Print commands but do not execute",
@@ -120,7 +120,7 @@ def main():
 
     repo_root = Path(__file__).parents[1].resolve()
     for f in repo_root.rglob('**/*.md'):  # Recursively find all .md files
-        docgen_rewrite_md(f, args.dry_run)
+        cmdgen_rewrite_md(f, args.dry_run)
 
 
 if __name__ == '__main__':
