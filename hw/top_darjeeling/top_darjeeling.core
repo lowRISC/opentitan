@@ -2,17 +2,17 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:systems:top_earlgrey:0.1"
-description: "Technology-independent Earl Grey toplevel"
+name: "lowrisc:systems:top_darjeeling:0.1"
+description: "Technology-independent Darjeeling toplevel"
 filesets:
   files_rtl_generic:
     depend:
       - lowrisc:ip:uart:0.1
-      - lowrisc:opentitan:top_earlgrey_alert_handler
+      - lowrisc:opentitan:top_darjeeling_alert_handler
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
-      - lowrisc:opentitan:top_earlgrey_rv_plic
+      - lowrisc:opentitan:top_darjeeling_rv_plic
       - lowrisc:ip:pinmux
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
@@ -38,8 +38,8 @@ filesets:
       - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:usbdev
-      - lowrisc:top_earlgrey:xbar_main
-      - lowrisc:top_earlgrey:xbar_peri
+      - lowrisc:top_darjeeling:xbar_main
+      - lowrisc:top_darjeeling:xbar_peri
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pwrmgr
       - lowrisc:ip:aon_timer
@@ -52,12 +52,12 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:usb_diff_rx
       - lowrisc:prim:mubi
-      - lowrisc:systems:top_earlgrey_pkg
+      - lowrisc:systems:top_darjeeling_pkg
       - "fileset_partner  ? (partner:systems:ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
     files:
-      - rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv
-      - rtl/autogen/top_earlgrey.sv
+      - rtl/autogen/top_darjeeling_rnd_cnst_pkg.sv
+      - rtl/autogen/top_darjeeling.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -66,7 +66,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/top_earlgrey.vlt
+      - lint/top_darjeeling.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
@@ -75,7 +75,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/top_earlgrey.waiver
+      - lint/top_darjeeling.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
@@ -84,7 +84,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/top_earlgrey.vbw
+      - lint/top_darjeeling.vbw
     file_type: veribleLintWaiver
 
 
@@ -104,7 +104,7 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl_generic
-    toplevel: top_earlgrey
+    toplevel: top_darjeeling
     parameters:
       - IBEX_CUSTOM_PMP_RESET_VALUES
 
@@ -112,7 +112,7 @@ targets:
     default_tool: icarus
     filesets:
       - files_rtl_generic
-    toplevel: top_earlgrey
+    toplevel: top_darjeeling
 
   lint:
     <<: *default_target
@@ -133,8 +133,8 @@ targets:
     default_tool: icarus
     parameters:
       - SYNTHESIS=true
-    toplevel: top_earlgrey
+    toplevel: top_darjeeling
 
   formal:
     <<: *default_target
-    toplevel: top_earlgrey
+    toplevel: top_darjeeling

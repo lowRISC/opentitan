@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module chip_earlgrey_verilator (
+module chip_darjeeling_verilator (
   // Clock and Reset
   input clk_i,
   input rst_ni,
@@ -44,7 +44,7 @@ module chip_earlgrey_verilator (
   output logic cio_usbdev_tx_use_d_se0_d2p_o
 );
 
-  import top_earlgrey_pkg::*;
+  import top_darjeeling_pkg::*;
 
 
   logic IO_JTCK, IO_JTMS, IO_JTRST_N, IO_JTDI, IO_JTDO;
@@ -223,7 +223,7 @@ module chip_earlgrey_verilator (
   // reset is not used below becuase verilator uses only sync resets
   // and also does not under 'x'.
   // if we allow the divider below to reset, clk_aon will be silenced,
-  // and as a result all the clk_aon logic inside top_earlgrey does not
+  // and as a result all the clk_aon logic inside top_darjeeling does not
   // get reset
   prim_clock_div #(
     .Divisor(4)
@@ -499,12 +499,12 @@ module chip_earlgrey_verilator (
   logic [rstmgr_pkg::PowerDomains-1:0] por_n;
   assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
 
-  top_earlgrey #(
+  top_darjeeling #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
     .SecAesAllowForcingMasks(1'b1),
     .SramCtrlMainInstrExec(1),
     .SramCtrlRetAonInstrExec(0)
-  ) top_earlgrey (
+  ) top_darjeeling (
     // update por / reset connections, this is not quite right here
     .por_n_i                      (por_n             ),
     .clk_main_i                   (clk_i             ),
@@ -593,4 +593,4 @@ module chip_earlgrey_verilator (
     .scanmode_i                   ( scanmode                   )
   );
 
-endmodule : chip_earlgrey_verilator
+endmodule : chip_darjeeling_verilator

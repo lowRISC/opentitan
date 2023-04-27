@@ -1,22 +1,22 @@
-# OpenTitan Earl Grey Chip Datasheet
+# OpenTitan Darjeeling Chip Datasheet
 
 # Overview
 
-![Top Level Block Diagram](top_earlgrey_block_diagram.svg)
+![Top Level Block Diagram](top_darjeeling_block_diagram.svg)
 
-The OpenTitan Earl Grey chip is a low-power secure microcontroller that is designed for several use cases requiring hardware security.
+The OpenTitan Darjeeling chip is a low-power secure microcontroller that is designed for several use cases requiring hardware security.
 The block diagram is shown above and shows the system configuration, including the Ibex processor and all of the memories and comportable IPs.
 
 As can be seen in the block diagram, the system is split into a fast processor core domain that runs on a 100MHz jittery clock, and a peripheral domain that runs at 24MHz.
 Further, a portion of the peripheral domain, the analog sensor top and the padring can stay always-on.
 The rest of the system can be shut off as part of the sleep mode.
 
-The OpenTitan Earl Grey chip provides the following features:
+The OpenTitan Darjeeling chip provides the following features:
 
 <table>
 <thead style='font-size:100%'>
   <tr>
-    <th colspan="2">OpenTitan Earl Grey Features</th>
+    <th colspan="2">OpenTitan Darjeeling Features</th>
   </tr>
 </thead>
 <tbody style='font-size:90%;line-height:110%'>
@@ -111,5 +111,5 @@ The OpenTitan Earl Grey chip provides the following features:
 
 # Detailed Specification
 
-For more detailed documentation including the pinout and system address map, see [OpenTitan Earl Grey Chip Specification](./design/README.md).
-The [OpenTitan Earl Grey Chip DV Document](../dv/README.md) describes the chip-level DV environment and contains the chip-level test plan.
+For more detailed documentation including the pinout and system address map, see [OpenTitan Darjeeling Chip Specification](./design/README.md).
+The [OpenTitan Darjeeling Chip DV Document](../dv/README.md) describes the chip-level DV environment and contains the chip-level test plan.

@@ -26,7 +26,7 @@ module chip_sim_tb (
   logic cio_usbdev_dp_p2d, cio_usbdev_dp_d2p, cio_usbdev_dp_en_d2p;
   logic cio_usbdev_dn_p2d, cio_usbdev_dn_d2p, cio_usbdev_dn_en_d2p;
 
-  chip_earlgrey_verilator u_dut (
+  chip_darjeeling_verilator u_dut (
     .clk_i,
     .rst_ni,
 
@@ -160,7 +160,7 @@ module chip_sim_tb (
     .tx_use_d_se0_d2p(cio_usbdev_tx_use_d_se0_d2p)
   );
 
-  `define RV_CORE_IBEX      u_dut.top_earlgrey.u_rv_core_ibex
+  `define RV_CORE_IBEX      u_dut.top_darjeeling.u_rv_core_ibex
   `define SIM_SRAM_IF       u_sim_sram.u_sim_sram_if
 
   // Detect SW test termination.

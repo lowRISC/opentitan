@@ -1,11 +1,11 @@
-# OpenTitan Earl Grey Chip Specification
+# OpenTitan Darjeeling Chip Specification
 
-This document describes the OpenTitan Earl Grey chip functionality in detail.
-For an overview, refer to the [OpenTitan Earl Grey Chip Datasheet](../specification.md).
+This document describes the OpenTitan Darjeeling chip functionality in detail.
+For an overview, refer to the [OpenTitan Darjeeling Chip Datasheet](../specification.md).
 
 # Theory of Operations
 
-The netlist `chip_earlgrey_asic` contains the features listed above and is intended for ASIC synthesis, whereas the netlist `chip_earlgrey_cw310` provides an emulation environment for the `cw310` FPGA board.
+The netlist `chip_darjeeling_asic` contains the features listed above and is intended for ASIC synthesis, whereas the netlist `chip_darjeeling_cw310` provides an emulation environment for the `cw310` FPGA board.
 The code for Ibex is developed in its own [lowRISC repo](https://github.com/lowrisc/ibex), and is [*vendored in*](../../../../doc/contributing/hw/vendor.md) to this repository.
 Surrounding Ibex is a suite of *Comportable* peripherals that follow the [Comportability Guidelines](../../../../doc/contributing/hw/comportability/README.md) for lowRISC peripheral IP.
 Each of these IP has its own specification.
@@ -21,7 +21,7 @@ This section also contains a brief overview of some of the features of the final
 
 Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](../../ip/ast/README.md)) from this point onwards in the document.
 
-`ast` supplies a number of clocks into `top_earlgrey`.
+`ast` supplies a number of clocks into `top_darjeeling`.
 - sys: main jittery system clock used for higher performance blocks and security (processory, memory and crypto blocks).
 - io: a fixed clock used for peripheral blocks such as timers and I/O functionality, such as SPI or I2C.
 - usb: a fixed clock used specifically for usb operations.
@@ -30,11 +30,11 @@ Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](
 These clocks are then divided down and distributed to the rest of the system.
 See [clock manager](../../../ip/clkmgr/README.md)) for more details.
 
-`ast` also supplies a number of power-okay signals to `top_earlgrey`, and these are used as asynchronous root resets.
+`ast` also supplies a number of power-okay signals to `top_darjeeling`, and these are used as asynchronous root resets.
 - vcaon_pok: The always on domain of the system is ready.
 - vcmain_pok: The main operating domain of the system is ready.
 
-When one of these power-okay signals drop, the corresponding domain in `top_earlgrey` is reset.
+When one of these power-okay signals drop, the corresponding domain in `top_darjeeling` is reset.
 Please refer to [reset manager](../../../ip/rstmgr/README.md)) for more details.
 Resets throughout the design are asynchronous active low as per the Comportability specification.
 
@@ -47,35 +47,35 @@ There are multiple avenues to load valid code into the flash:
 
 #### AST Clocking and Reset Relationship
 
-While the ast supplies clocks and resets to the `top_earlgrey`, it also contains additional functions that interact with the design.
+While the ast supplies clocks and resets to the `top_darjeeling`, it also contains additional functions that interact with the design.
 These include the `RNG`, `ADC`, jittery clock controls and an assortment of other sensors.
 The operating clocks and resets for these interfaces are supplied by the device in order to ensure correct synchronous operations.
 The clock mapping is shown below:
 
-| AST Port         | `top_earlgrey` Clock     |
-|------------------|--------------------------|
-| clk_ast_adc_i    | aon                      |
-| clk_ast_alert_i  | io_div4                  |
-| clk_ast_es_i     | sys                      |
-| clk_ast_rng_i    | sys                      |
-| clk_ast_tlul_i   | io_div4                  |
-| clk_ast_usb_i    | usb                      |
+| AST Port         | `top_darjeeling` Clock     |
+|------------------|----------------------------|
+| clk_ast_adc_i    | aon                        |
+| clk_ast_alert_i  | io_div4                    |
+| clk_ast_es_i     | sys                        |
+| clk_ast_rng_i    | sys                        |
+| clk_ast_tlul_i   | io_div4                    |
+| clk_ast_usb_i    | usb                        |
 
 The reset clock domain is identical to the table above, and the power domain mapping is shown below
 
 
-| AST Port         | `top_earlgrey` Power Domain |
-|------------------|-----------------------------|
-| rst_ast_adc_i    | always-on                   |
-| rst_ast_alert_i  | main                        |
-| rst_ast_es_i     | main                        |
-| rst_ast_rng_i    | main                        |
-| rst_ast_tlul_i   | main                        |
-| rst_ast_usb_i    | main                        |
+| AST Port         | `top_darjeeling` Power Domain |
+|------------------|-------------------------------|
+| rst_ast_adc_i    | always-on                     |
+| rst_ast_alert_i  | main                          |
+| rst_ast_es_i     | main                          |
+| rst_ast_rng_i    | main                          |
+| rst_ast_tlul_i   | main                          |
+| rst_ast_usb_i    | main                          |
 
 ### System Reset Handling and Flash
 
-Since `top_earlgrey` contains flash, it is important to examine the memory's relationship with resets.
+Since `top_darjeeling` contains flash, it is important to examine the memory's relationship with resets.
 
 For flash, resets that occur during a stateful operation (program or erase) must be carefully handled to ensure the flash memory is not damaged.
 There are three reset scenarios:
@@ -111,7 +111,7 @@ Attached to the Ibex core are a debug module (DM) and interrupt module (PLIC).
 
 #### JTAG / Debug module
 
-One feature available for Earl Grey processor core is debug access.
+One feature available for Darjeeling processor core is debug access.
 By interfacing with JTAG pins, logic in the debug module allows the core to enter debug mode (per RISC-V 0.13 debug spec), and gives the design the ability to inject code either into the device - by emulating an instruction - or into memory.
 Full details can be found in the [rv_dm specification](../../../ip/rv_dm/README.md).
 
@@ -123,7 +123,7 @@ See the details in the [rv_plic specification](../../ip_autogen/rv_plic/README.m
 
 #### Performance
 
-Ibex currently achieves a [CoreMark](https://www.eembc.org/coremark/) per MHz of 2.36 on the earlgrey verilator system.
+Ibex currently achieves a [CoreMark](https://www.eembc.org/coremark/) per MHz of 2.36 on the darjeeling verilator system.
 Performance improvements are ongoing, including the following items being considered:
 
 1. Adding a new ALU to calculate branch targets to remove a cycle of latency on taken conditional branches (currently the single ALU is used to compute the branch condition then the branch target the cycle following if the branch is taken).
@@ -152,13 +152,13 @@ The details of this check will come at a later date.
 For verification execute-time reasons, this RSA check will be overridable in the FPGA and verification platforms (details TBD).
 This is part of the *Secure Boot Process* that will be detailed in a security section in the future.
 
-Earl Grey contains 1024kB of embedded-flash (e-flash) memory for code storage.
+Darjeeling contains 1024kB of embedded-flash (e-flash) memory for code storage.
 This is intended to house the boot loader mentioned above, as well as the operating system and application that layers on top.
 At this time there is no operating system provided; applications are simple proof of concept code to show that the chip can do with a bare-metal framework.
 
 Embedded-flash is the intended technology for a silicon design implementing the full OpenTitan device.
 It has interesting and challenging parameters that are unique to the technology that the silicon is implemented in.
-Earl Grey, as an FPGA proof of concept, will model these parameters in its emulation of the memory in order to prepare for the replacement with the silicon flash macros that will come.
+Darjeeling, as an FPGA proof of concept, will model these parameters in its emulation of the memory in order to prepare for the replacement with the silicon flash macros that will come.
 This includes the read-speeds, the page-sized erase and program interfaces, the two-bank update scheme, and the non-volatile nature of the memory.
 Since by definition these details can't be finalized until a silicon technology node is chosen, these can only be emulated in the FPGA environment.
 We will choose parameters that are considered roughly equivalent of the state of the art embedded-flash macros on the market today.
@@ -178,7 +178,7 @@ The base address of the ROM, Flash, and SRAM are given in the address map sectio
 
 ### Secure boot
 
-Earlgrey follows the [Secure Boot](../../../../doc/security/specs/secure_boot/README.md) specification. The `ROM` has 3 key slots
+Darjeeling follows the [Secure Boot](../../../../doc/security/specs/secure_boot/README.md) specification. The `ROM` has 3 key slots
 which are allocated as follows:
 
 | Slot | Role | Name |
@@ -193,7 +193,7 @@ which are allocated as follows:
 
 ### Peripherals
 
-Earl Grey contains a suite of "peripherals", or subservient execution units connected to the Ibex processor by means of a bus interconnect.
+Darjeeling contains a suite of "peripherals", or subservient execution units connected to the Ibex processor by means of a bus interconnect.
 Each of these peripherals follows an interface scheme dictated in the [Comportability Specification.](../../../../doc/contributing/hw/comportability/README.md).
 That specification details how the processor communicates with the peripheral (via TLUL interconnect); how the peripheral communicates with the chip IO (via fixed or multiplexable IO); how the peripheral communicates with the processor (interrupts); and how the peripheral communicates security events (via alerts).
 See that specification for generic details on this scheme.
@@ -205,7 +205,7 @@ See that specification for generic details on this scheme.
 The pin multiplexor's purpose is to route between peripherals and the available multiplexable IO of the chip.
 At this time, the pin multiplexor is provided, but it is not used to its full potential.
 In addition, the multiplexor device manages control or pad attributes like drive strength, technology (OD, OS, etc), pull up, pull down, etc., of the chip's external IO.
-It is notable that there are many differences between an FPGA implementation of Earl Grey and an ASIC version when it comes to pins and pads.
+It is notable that there are many differences between an FPGA implementation of Darjeeling and an ASIC version when it comes to pins and pads.
 Some pad attributes with analog characteristics like drive strength, slew rate and Open Drain technology are not supported on all platforms.
 
 The pin multiplexor is a peripheral on the TLUL bus, with collections of registers that provide software configurability.
@@ -256,10 +256,10 @@ See the [USB device specification](../../../ip/usbdev/README.md) for more detail
 
 ##### I2C host
 
-In order to be able to command I2C devices on systems where Earl Grey will be included, I2C host functionality will be required.
+In order to be able to command I2C devices on systems where Darjeeling will be included, I2C host functionality will be required.
 This will include standard, full, and fast mode, up to 1Mbaud.
 More details of the I2C host module will come in a later specification update.
-The pins of the I2C host will be available to connect to any of the multiplexable IO (MIO) of the Earl Grey device.
+The pins of the I2C host will be available to connect to any of the multiplexable IO (MIO) of the Darjeeling device.
 More than one I2C host module might be instantiated in the top level.
 
 #### Security Peripherals
@@ -369,7 +369,7 @@ Interconnecting the processor and peripheral and memory units is a bus network b
 See the [OpenTitan bus specification](../../../ip/tlul/README.md) for more details.
 
 #### Topology
-`top_earlgrey` has a two-level hierarchy for its bus network.
+`top_darjeeling` has a two-level hierarchy for its bus network.
 Close to the CPU is the high-speed cluster, with low access latency.
 Farther from the CPU, through a low-speed bridge, is the low-speed cluster, with higher access latency.
 
@@ -392,9 +392,9 @@ The choice of memory, or lack thereof at location 0x0 confers two exclusive bene
 - If there are no memories at location 0x0, then null pointers will immediately error and be noticed by software (the xbar will fail to decode and route)
 - If SRAM is placed at 0, accesses to data located within 2KB of 0x0 can be accomplished with a single instruction and thus reduce code size.
 
-For the purpose of `top_earlgrey`, the first option has been chosen to benefit software development and testing
+For the purpose of `top_darjeeling`, the first option has been chosen to benefit software development and testing
 
-<!-- BEGIN CMDGEN util/design/gen-top-docs.py -t hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson -g mmap -->
+<!-- BEGIN CMDGEN util/design/gen-top-docs.py -t hw/top_darjeeling/data/autogen/top_darjeeling.gen.hjson -g mmap -->
 | Name              | Type          | Byte Address      |
 |:------------------|:--------------|:------------------|
 | uart0             | uart          | 0x40000000 (regs) |
@@ -453,7 +453,7 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 
 ## Entropy Distribution Network
 
-`top_earlgrey` has two [EDN](../../../ip/edn/README.md) instances, which are connected to one [CSRNG](../../../ip/csrng/README.md) instance (which in turn is connected to one [Entropy Source](../../../ip/entropy_src/README.md) instance).
+`top_darjeeling` has two [EDN](../../../ip/edn/README.md) instances, which are connected to one [CSRNG](../../../ip/csrng/README.md) instance (which in turn is connected to one [Entropy Source](../../../ip/entropy_src/README.md) instance).
 The first EDN instance, `u_edn0`, has eight endpoints, which are connected to: Key Manager, OTP Controller, Analog Sensor Top, KMAC Accelerator, Alert Handler, AES Accelerator, the `URND` port of OTBN, and the Ibex RISC-V Core.
 The second EDN instance, `u_edn1`, has one endpoint that is connected to the `RND` port of OTBN and seven endpoints that are tied off.
 The second EDN instance, `u_edn1` is intended to be configured to deliver highest-quality entropy, e.g., for the generation of cryptographic secrets.
@@ -464,7 +464,7 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 
 ### Pinout
 
-<!-- BEGIN CMDGEN util/design/gen-top-docs.py -t hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson -g pinout -->
+<!-- BEGIN CMDGEN util/design/gen-top-docs.py -t hw/top_darjeeling/data/autogen/top_darjeeling.gen.hjson -g pinout -->
 | ID   | Name             | Bank   | Type         | Connection Type   | Description                                |
 |:-----|:-----------------|:-------|:-------------|:------------------|:-------------------------------------------|
 | 0    | POR_N            | VCC    | InputStd     | manual            | System reset                               |
@@ -542,8 +542,8 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 
 # RTL Implementation Notes
 
-At this time, the top-level netlist for earlgrey is a combination of hand-written SystemVerilog RTL with auto-generated sections for wiring of comportability interfaces.
-There is a script for this auto-generation, centered around the top-level descriptor file `top_earlgrey.hjson` found in the repository.
+At this time, the top-level netlist for darjeeling is a combination of hand-written SystemVerilog RTL with auto-generated sections for wiring of comportability interfaces.
+There is a script for this auto-generation, centered around the top-level descriptor file `top_darjeeling.hjson` found in the repository.
 A full definition of this descriptor file, its features, and related scripting is forthcoming.
 This tooling generates the interconnecting crossbar (via `TLUL`) as well as the instantiations at the top level.
 It also feeds into this document generation to ensure that the chosen address locations are documented automatically using the data in the source files.
@@ -551,9 +551,9 @@ It also feeds into this document generation to ensure that the chosen address lo
 ## Top Level vs Chip Targets
 
 It should first be **NOTED** that there is some subtlety on the notion of hierarchy within the top level.
-There is netlist automation to create the module `top_earlgrey` as indicated in sections of this specification that follow.
+There is netlist automation to create the module `top_darjeeling` as indicated in sections of this specification that follow.
 **On top** of that module, hierarchically in the repo, are chip level instantiation targets directed towards a particular use case.
-This includes `chip_earlgrey_cw310` for use in FPGA, and `chip_earlgrey_asic` for use (eventually) in a silicon implementation.
+This includes `chip_darjeeling_cw310` for use in FPGA, and `chip_darjeeling_asic` for use (eventually) in a silicon implementation.
 These chip level targets will include the actual pads as needed by the target platform.
 At the time of this writing the two are not in perfect synchronization, but the intention will be for them to be as identical as possible.
 Where appropriate, including the block diagram below, notes will be provided where the hierarchy subtleties are explained.
@@ -562,7 +562,7 @@ Where appropriate, including the block diagram below, notes will be provided whe
 
 **TODO: This section needs to be updated once pin updates are complete.**
 
-In the FPGA platform, the logic for the JTAG and the SPI device are multiplexed within `chip_earlgrey_cw310`.
+In the FPGA platform, the logic for the JTAG and the SPI device are multiplexed within `chip_darjeeling_cw310`.
 This is done for ease of programming by the external host.
 
 ## References

@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:chip_verilator_sim:0.1"
+name: "lowrisc:dv:chip_earlgrey_verilator_sim:0.1"
 description: "Earl Grey toplevel for simulation with Verilator"
 filesets:
   files_sim_verilator:

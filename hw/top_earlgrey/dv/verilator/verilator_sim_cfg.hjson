@@ -18,7 +18,7 @@
   fusesoc_core: "lowrisc:systems:{name}:0.1"
 
   // Testplan hjson file.
-  # testplan: "{proj_root}/hw/top_earlgrey/data/chip_testplan.hjson"
+  # testplan: "{proj_root}/hw/{top_chip}/data/chip_testplan.hjson"
 
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file

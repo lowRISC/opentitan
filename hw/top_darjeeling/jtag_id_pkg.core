@@ -4,7 +4,7 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 
 name: "lowrisc:constants:jtag_id_pkg"
-description: "jtag id for top_earlgrey"
+description: "jtag id for top_darjeeling"
 filesets:
   files_rtl:
     depend:

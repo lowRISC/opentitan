@@ -7,7 +7,7 @@ CAPI=2:
 # support for "interfaces" or a similar concept.
 # Tracked in https://github.com/olofk/fusesoc/issues/235
 name: "lowrisc:constants:top_pkg"
-description: "Toplevel-wide constants for Earl Grey"
+description: "Toplevel-wide constants for Darjeeling"
 filesets:
   files_rtl:
     files:

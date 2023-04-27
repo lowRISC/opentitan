@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Simulator executable
-VERILATOR=build/lowrisc_systems_chip_earlgrey_verilator_0.1/sim-verilator/Vchip_earlgrey_verilator
+VERILATOR=build/lowrisc_systems_chip_darjeeling_verilator_0.1/sim-verilator/Vchip_darjeeling_verilator
 
 # Code to load
 ROMCODE=build-bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem
@@ -18,8 +18,8 @@ VFILE_DIR=.
 SIM_CYCLES=757000
 
 # Expected output
-EXPECT_USB=hw/top_earlgrey/util/opentitan_earlgrey_usbdev_expected-usb
-EXPECT_UART=hw/top_earlgrey/util/opentitan_earlgrey_usbdev_expected-uart
+EXPECT_USB=hw/top_darjeeling/util/opentitan_darjeeling_usbdev_expected-usb
+EXPECT_UART=hw/top_darjeeling/util/opentitan_darjeeling_usbdev_expected-uart
 
 # Expected differences in output between expected and actual
 IGNORE_EX_UART="-I Build.Date -I Version -I Built.at"

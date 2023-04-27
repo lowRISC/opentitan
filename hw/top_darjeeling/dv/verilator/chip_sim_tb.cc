@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
   simctrl.SetTop(&top, &top.clk_i, &top.rst_ni,
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
 
-  std::string top_scope("TOP.chip_sim_tb.u_dut.top_earlgrey");
+  std::string top_scope("TOP.chip_sim_tb.u_dut.top_darjeeling");
   std::string ram1p_adv_scope(
       "u_prim_ram_1p_adv.u_mem."
       "gen_generic.u_impl_generic");
@@ -62,12 +62,12 @@ int main(int argc, char **argv) {
   // release clocks to the entire design.  This allows for synchronous resets
   // to appropriately propagate.
   // The reset duration must be appropriately sized to the divider for clk_aon
-  // in chip_earlgrey_verilator.sv.  It must be at least 2 cycles of clk_aon.
+  // in chip_darjeeling_verilator.sv.  It must be at least 2 cycles of clk_aon.
   simctrl.SetInitialResetDelay(20000);
   simctrl.SetResetDuration(10);
 
-  std::cout << "Simulation of OpenTitan Earl Grey" << std::endl
-            << "=================================" << std::endl
+  std::cout << "Simulation of OpenTitan Darjeeling" << std::endl
+            << "==================================" << std::endl
             << std::endl;
 
   return simctrl.Exec(argc, argv).first;

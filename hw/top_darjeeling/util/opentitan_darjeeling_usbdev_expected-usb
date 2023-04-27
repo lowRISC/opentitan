@@ -1,4 +1,4 @@
-   0        1 Pullup change to DP Pulled up SingleEnded
+0        1 Pullup change to DP Pulled up SingleEnded
 mon:     8224 --     8336: (H) SOP, PID SOF 001 (CRC5 1d OK), EOP
 mon:     8376 --     8488: (H) SOP, PID SETUP 0.0 (CRC5 02 OK), EOP
 mon:     8520 --     8892: (H) SOP, PID DATA0, EOP

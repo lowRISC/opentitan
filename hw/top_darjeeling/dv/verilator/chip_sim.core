@@ -2,8 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:chip_verilator_sim:0.1"
-description: "Earl Grey toplevel for simulation with Verilator"
+name: "lowrisc:dv:chip_darjeeling_verilator_sim:0.1"
+description: "Darjeeling toplevel for simulation with Verilator"
 filesets:
   files_sim_verilator:
     depend:
@@ -18,7 +18,7 @@ filesets:
       - lowrisc:dv:sim_sram
       - lowrisc:dv:sw_test_status
       - lowrisc:dv:dv_test_status
-      - lowrisc:systems:chip_earlgrey_verilator
+      - lowrisc:systems:chip_darjeeling_verilator
     files:
       - chip_sim_tb.sv: { file_type: systemVerilogSource }
       - chip_sim_tb.cc: { file_type: cppSource }
