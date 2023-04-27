@@ -13,17 +13,16 @@ key_from_seed_test:
   bn.xor    w31, w31, w31
 
   /* Load shares of seed from DMEM.
-       [w21,w20] <= dmem[seed0]
-       [w23,w33] <= dmem[seed1] */
+       [w20,w21] <= dmem[seed0]
+       [w10,w11] <= dmem[seed1] */
   li        x2, 20
   la        x3, seed0
-  bn.lid    x2, 0(x3++)
-  li        x2, 21
   bn.lid    x2++, 0(x3)
+  bn.lid    x2, 32(x3)
+  li        x2, 10
   la        x3, seed1
-  bn.lid    x2, 0(x3++)
-  li        x2, 23
-  bn.lid    x2, 0(x3)
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2, 32(x3)
 
   /* Generate the derived secret key. */
   jal       x1, p256_key_from_seed
