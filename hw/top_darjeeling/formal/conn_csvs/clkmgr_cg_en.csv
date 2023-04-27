@@ -1,0 +1,33 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Connectivity of clkmgr cg_en_o
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# clkmgr cg_en_o
+CONNECTION, CLKMGR_IO_DIV4_PERI_ALERT_0_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_peri, top_earlgrey.u_alert_handler, lpg_cg_en_i[0]
+CONNECTION, CLKMGR_IO_DIV4_PERI_ALERT_1_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_peri, top_earlgrey.u_alert_handler, lpg_cg_en_i[1]
+CONNECTION, CLKMGR_IO_DIV4_PERI_ALERT_2_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_peri, top_earlgrey.u_alert_handler, lpg_cg_en_i[2]
+CONNECTION, CLKMGR_IO_DIV4_PERI_ALERT_3_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_peri, top_earlgrey.u_alert_handler, lpg_cg_en_i[3]
+CONNECTION, CLKMGR_IO_DIV4_PERI_ALERT_4_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_peri, top_earlgrey.u_alert_handler, lpg_cg_en_i[4]
+CONNECTION, CLKMGR_IO_DIV4_TIMERS_ALERT_5_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_timers, top_earlgrey.u_alert_handler, lpg_cg_en_i[5]
+CONNECTION, CLKMGR_IO_DIV4_SECURE_ALERT_6_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_secure, top_earlgrey.u_alert_handler, lpg_cg_en_i[6]
+CONNECTION, CLKMGR_IO_PERI_ALERT_7_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_peri, top_earlgrey.u_alert_handler, lpg_cg_en_i[7]
+CONNECTION, CLKMGR_IO_DIV2_PERI_ALERT_8_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div2_peri, top_earlgrey.u_alert_handler, lpg_cg_en_i[8]
+CONNECTION, CLKMGR_USB_PERI_ALERT_9_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.usb_peri, top_earlgrey.u_alert_handler, lpg_cg_en_i[9]
+CONNECTION, CLKMGR_IO_DIV4_POWERUP_ALERT_10_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_powerup, top_earlgrey.u_alert_handler, lpg_cg_en_i[10]
+CONNECTION, CLKMGR_IO_DIV4_POWERUP_ALERT_11_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_powerup, top_earlgrey.u_alert_handler, lpg_cg_en_i[11]
+CONNECTION, CLKMGR_IO_DIV4_POWERUP_ALERT_12_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_secure, top_earlgrey.u_alert_handler, lpg_cg_en_i[12]
+CONNECTION, CLKMGR_IO_DIV4_SECURE_ALERT_13_C_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_peri, top_earlgrey.u_alert_handler, lpg_cg_en_i[13]
+CONNECTION, CLKMGR_IO_DIV4_PERI_ALERT_14_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_timers, top_earlgrey.u_alert_handler, lpg_cg_en_i[14]
+CONNECTION, CLKMGR_IO_DIV4_TIMERS_ALERT_15_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_infra, top_earlgrey.u_alert_handler, lpg_cg_en_i[15]
+CONNECTION, CLKMGR_IO_DIV4_INFRA_ALERT_16_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_infra, top_earlgrey.u_alert_handler, lpg_cg_en_i[16]
+CONNECTION, CLKMGR_IO_DIV4_INFRA_ALERT_17_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.main_infra, top_earlgrey.u_alert_handler, lpg_cg_en_i[17]
+CONNECTION, CLKMGR_MAIN_INFRA_ALERT_18_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.main_infra, top_earlgrey.u_alert_handler, lpg_cg_en_i[18]
+CONNECTION, CLKMGR_MAIN_INFRA_ALERT_19_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.main_secure, top_earlgrey.u_alert_handler, lpg_cg_en_i[19]
+CONNECTION, CLKMGR_MAIN_SECURE_ALERT_20_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.main_aes, top_earlgrey.u_alert_handler, lpg_cg_en_i[20]
+CONNECTION, CLKMGR_MAIN_AES_ALERT_21_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.main_hmac, top_earlgrey.u_alert_handler, lpg_cg_en_i[21]

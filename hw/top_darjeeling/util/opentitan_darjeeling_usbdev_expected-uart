@@ -1,0 +1,9 @@
+I00000 test_rom.c:54] Version:    opentitan-earlgrey_silver_release_v5-2931-g929a928fb
+Build Date: 2022-01-21, 12:59:36
+
+I00001 test_rom.c:70] Boot ROM initialisation has completed, jump into flash!
+I00000 hello_usbdev.c:145] Hello, USB!
+I00001 hello_usbdev.c:146] Built at: Jan 28 2022, 21:24:06
+I00002 demos.c:18] Watch the LEDs!
+I00003 hello_usbdev.c:158] PHY settings: pinflip=0 differential=0 USB Phy=0
+Hi!Hi!I00004 hello_usbdev.c:221] PASS!

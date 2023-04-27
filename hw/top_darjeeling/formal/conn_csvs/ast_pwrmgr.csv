@@ -1,0 +1,24 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+#################################
+# Pwr signals from AST to Pwrmgr
+#################################
+CONNECTION, AST_CLK_SYS_VAL_OUT, u_ast, clk_src_sys_val_o,   top_earlgrey.u_pwrmgr_aon,   pwr_ast_i.core_clk_val
+CONNECTION, AST_CLK_AON_VAL_OUT, u_ast, clk_src_aon_val_o,   top_earlgrey.u_pwrmgr_aon,   pwr_ast_i.slow_clk_val
+CONNECTION, AST_CLK_USB_VAL_OUT, u_ast, clk_src_usb_val_o,   top_earlgrey.u_pwrmgr_aon,   pwr_ast_i.usb_clk_val
+CONNECTION, AST_CLK_IO_VAL_OUT,  u_ast, clk_src_io_val_o,    top_earlgrey.u_pwrmgr_aon,   pwr_ast_i.io_clk_val
+CONNECTION, AST_MAIN_POK_OUT,    u_ast, ast_pwst_o.main_pok, top_earlgrey.u_pwrmgr_aon,   pwr_ast_i.main_pok
+
+#################################
+# Pwr signals from Pwrmgr to AST
+#################################
+CONNECTION, AST_CLK_SYS_EN_IN,   top_earlgrey.u_pwrmgr_aon, pwr_ast_o.core_clk_en,        u_ast, clk_src_sys_en_i
+CONNECTION, AST_CLK_USB_EN_IN,   top_earlgrey.u_pwrmgr_aon, pwr_ast_o.usb_clk_en ,        u_ast, clk_src_usb_en_i
+CONNECTION, AST_CLK_IO_EN_IN,    top_earlgrey.u_pwrmgr_aon, pwr_ast_o.io_clk_en  ,        u_ast, clk_src_io_en_i

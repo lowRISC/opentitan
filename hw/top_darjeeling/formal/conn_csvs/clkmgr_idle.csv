@@ -1,0 +1,14 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# clkmgr idle connectivity
+CONNECTION, CLKMGR_IDLE0, top_earlgrey.u_aes,  idle_o, top_earlgrey.u_clkmgr_aon, idle_i[0]
+CONNECTION, CLKMGR_IDLE1, top_earlgrey.u_hmac, idle_o, top_earlgrey.u_clkmgr_aon, idle_i[1]
+CONNECTION, CLKMGR_IDLE2, top_earlgrey.u_kmac, idle_o, top_earlgrey.u_clkmgr_aon, idle_i[2]
+CONNECTION, CLKMGR_IDLE3, top_earlgrey.u_otbn, idle_o, top_earlgrey.u_clkmgr_aon, idle_i[3]

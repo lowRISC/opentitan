@@ -1,0 +1,64 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# Verify that lc_ctrl's lc_escalate_en_o signal is correctly connected to IPs.
+CONNECTION, LC_ESCALATE_EN_OTP,       top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_otp_ctrl,          lc_escalate_en_i
+CONNECTION, LC_ESCALATE_EN_AON_TIMER, top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_aon_timer_aon,     lc_escalate_en_i
+CONNECTION, LC_ESCALATE_EN_SRAM_MAIN, top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_sram_ctrl_main,    lc_escalate_en_i
+CONNECTION, LC_ESCALATE_EN_SRAM_RET,  top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_sram_ctrl_ret_aon, lc_escalate_en_i
+CONNECTION, LC_ESCALATE_EN_FLASH,     top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_flash_ctrl,        lc_escalate_en_i
+CONNECTION, LC_ESCALATE_EN_AES,       top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_aes,               lc_escalate_en_i
+CONNECTION, LC_ESCALATE_EN_KMAC,      top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_kmac,              lc_escalate_en_i
+CONNECTION, LC_ESCALATE_EN_OTBN,      top_earlgrey.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.u_otbn,              lc_escalate_en_i
+
+# Verify that lc_ctrl's keymanager enable signal and diversification value are correctly connected to the keymgr.
+CONNECTION, LC_KEYMGR_EN_KEYMGR, top_earlgrey.u_lc_ctrl,  lc_keymgr_en_o,  top_earlgrey.u_keymgr, lc_keymgr_en_i
+CONNECTION, LC_KEYMGR_DIV_KEYMGR, top_earlgrey.u_lc_ctrl, lc_keymgr_div_o, top_earlgrey.u_keymgr, lc_keymgr_div_i
+
+# Verify that lc_ctrl's lc_nvm_debug_en_o signal is correctly connected to flash_ctrl.
+CONNECTION, LC_NVM_DEBUG_EN_FLASH_CTRL, top_earlgrey.u_lc_ctrl, lc_nvm_debug_en_o, top_earlgrey.u_flash_ctrl, lc_nvm_debug_en_i
+
+# Verify that the lc_ctrl's lc_cpu_en_o signal is correctly connected to rv_core_ibex.
+CONNECTION, LC_CPU_EN_RV_CORE_IBEX, top_earlgrey.u_lc_ctrl, lc_cpu_en_o, top_earlgrey.u_rv_core_ibex, lc_cpu_en_i
+
+# Verify that lc_ctrl's lc_hw_debug_en_o signal is correctly connected to IPs.
+CONNECTION, LC_HW_DEBUG_EN_PWRMGR,         top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_pwrmgr_aon,        lc_hw_debug_en_i
+CONNECTION, LC_HW_DEBUG_EN_CLKMGR,         top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_clkmgr_aon,        lc_hw_debug_en_i
+CONNECTION, LC_HW_DEBUG_EN_PINMUX,         top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_pinmux_aon,        lc_hw_debug_en_i
+CONNECTION, LC_HW_DEBUG_EN_SRAM_CTRL_MAIN, top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_sram_ctrl_main,    lc_hw_debug_en_i
+CONNECTION, LC_HW_DEBUG_EN_RV_DM,          top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_rv_dm,             lc_hw_debug_en_i
+CONNECTION, LC_HW_DEBUG_EN_CSRNG,          top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_csrng,             lc_hw_debug_en_i
+
+# Verify that lc_ctrl's lc_dft_en_o signal is correctly connected to IPs.
+CONNECTION, LC_DFT_EN_OTP,    top_earlgrey.u_lc_ctrl, lc_dft_en_o, top_earlgrey.u_otp_ctrl,   lc_dft_en_i
+CONNECTION, LC_DFT_EN_PWRMGR, top_earlgrey.u_lc_ctrl, lc_dft_en_o, top_earlgrey.u_pwrmgr_aon, lc_dft_en_i
+CONNECTION, LC_DFT_EN_PINMUX, top_earlgrey.u_lc_ctrl, lc_dft_en_o, top_earlgrey.u_pinmux_aon, lc_dft_en_i
+CONNECTION, LC_DFT_EN_AST,    top_earlgrey.u_lc_ctrl, lc_dft_en_o, u_ast,                     lc_dft_en_i
+
+# Verify lc_ctrl's RMA request connections.
+CONNECTION, LC_RMA_SEED_FLASH_CTRL,  top_earlgrey.u_lc_ctrl,    lc_flash_rma_seed_o, top_earlgrey.u_flash_ctrl, rma_seed_i
+CONNECTION, LC_RMA_REQ_FLASH_CTRL,   top_earlgrey.u_lc_ctrl,    lc_flash_rma_req_o,  top_earlgrey.u_flash_ctrl, rma_req_i
+CONNECTION, FLASH_CTRL_RMA_ACK_OTBN, top_earlgrey.u_flash_ctrl, rma_ack_o,           top_earlgrey.u_otbn,       lc_rma_req_i
+CONNECTION, OTBN_RMA_ACK_LC,         top_earlgrey.u_otbn,       lc_rma_ack_o,        top_earlgrey.u_lc_ctrl,    lc_flash_rma_ack_i
+
+# Verify lc_ctrl's clock bypass request connections.
+CONNECTION, LC_CLK_BYP_REQ_CLKMGR,  top_earlgrey.u_lc_ctrl,     lc_clk_byp_req_o,    top_earlgrey.u_clkmgr_aon, lc_clk_byp_req_i
+CONNECTION, CLKMGR_CLK_BYP_ACK_LC,  top_earlgrey.u_clkmgr_aon,  lc_clk_byp_ack_o,    top_earlgrey.u_lc_ctrl,    lc_clk_byp_ack_i
+
+# Verify lc_ctrl's check bypass signal is correctly connected to OTP (used when programming a life cycle transition).
+CONNECTION, LC_CHECK_BYP_EN_OTP,  top_earlgrey.u_lc_ctrl,  lc_check_byp_en_o,    top_earlgrey.u_otp_ctrl, lc_check_byp_en_i
+
+# Verify lc_ctrl's access control modulation signals are correctly connected to flash and OTP.
+CONNECTION, LC_CREATOR_SEED_SW_RW_EN_OTP,   top_earlgrey.u_lc_ctrl, lc_creator_seed_sw_rw_en_o, top_earlgrey.u_otp_ctrl,   lc_creator_seed_sw_rw_en_i
+CONNECTION, LC_SEED_HW_RD_EN_OTP,           top_earlgrey.u_lc_ctrl, lc_seed_hw_rd_en_o,         top_earlgrey.u_otp_ctrl,   lc_seed_hw_rd_en_i
+CONNECTION, LC_CREATOR_SEED_SW_RW_EN_FLASH, top_earlgrey.u_lc_ctrl, lc_creator_seed_sw_rw_en_o, top_earlgrey.u_flash_ctrl, lc_creator_seed_sw_rw_en_i
+CONNECTION, LC_SEED_HW_RD_EN_FLASH,         top_earlgrey.u_lc_ctrl, lc_seed_hw_rd_en_o,         top_earlgrey.u_flash_ctrl, lc_seed_hw_rd_en_i
+CONNECTION, LC_OWNER_SEED_SW_RW_EN_FLASH,   top_earlgrey.u_lc_ctrl, lc_owner_seed_sw_rw_en_o,   top_earlgrey.u_flash_ctrl, lc_owner_seed_sw_rw_en_i
+CONNECTION, LC_ISO_PART_SW_RD_EN_FLASH,     top_earlgrey.u_lc_ctrl, lc_iso_part_sw_rd_en_o,     top_earlgrey.u_flash_ctrl, lc_iso_part_sw_rd_en_i
+CONNECTION, LC_ISO_PART_SW_WR_EN_FLASH,     top_earlgrey.u_lc_ctrl, lc_iso_part_sw_wr_en_o,     top_earlgrey.u_flash_ctrl, lc_iso_part_sw_wr_en_i

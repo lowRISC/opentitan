@@ -1,0 +1,61 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for top_earlgrey
+
+# dedicated reset drivers / muxes
+set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
+set_clock_drivers prim_clock_buf prim_clock_mux2
+
+# All leaf resets have a reset multiplex
+waive -rules RESET_MUX -location {top_earlgrey.sv} -regexp {Asynchronous reset .*rstmgr_aon_resets\.rst.* is driven by a multiplexer} \
+      -comment "This is dedicated reset infrastructure, and hence permissible"
+
+waive -rules RESET_MUX -location {rstmgr.sv rstmgr_por.sv rstmgr_ctrl.sv} -regexp {Asynchronous reset '(resets_o\.)?rst_[A-Za-z_0-9]+_n(\[[0-9:]+\])?' is driven by a multiplexer} \
+      -comment "This is dedicated reset infrastructure, and hence permissible"
+
+waive -rules RESET_MUX -location {rstmgr.sv} -regexp {Asynchronous reset 'scan_rst_ni' reaches a multiplexer} \
+      -comment "This is dedicated reset infrastructure, and hence permissible"
+
+waive -rules RESET_MUX -location {spi_device.sv} -regexp {Asynchronous reset '(rst_ni|rst_spi_n)' reaches a multiplexer} \
+      -comment "This is dedicated reset infrastructure, and hence permissible"
+
+waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.clk_io_div2_peri' is connected to 'spi_device' port 'scan_clk_i', and used as a clock} \
+      -comment "This connection is a scan clock connection."
+
+waive -rules CLOCK_MUX -location {clkmgr.sv top_earlgrey.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
+      -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
+
+# scan reset is a legal asynchronous reset
+waive -rules RESET_USE -location {top_earlgrey.sv} -regexp {'scan_rst_ni' is connected to .* port 'scan_rst_ni', and used as an asynchronous reset or set 'rst_.*ni' at} \
+      -comment "Scan reset is a legal asynchronous reset"
+
+# intentionally unused
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_earlgrey.sv} -regexp {.*cio_otp_ctrl_test_(en_)?d2p\[7:1\].* is not read} \
+      -comment "otp test bus made deliberately larger on purpose"
+
+## xbar
+#waive -rules HIER_NET_NOT_READ -location {tlul_xbar.sv} -regexp {a_source.* is not read from} \
+#      -comment "upper bits of a_source are shifted off when going through M:1 sockets"
+#waive -rules LINE_LENGTH -location {xbar_main.sv} -regexp {Line length of .* exceeds 100 character limit} \
+#      -comment "This is a generated file and it is hence permissible to have line lengths that exceed this limit"
+
+# Possible tool shortcomings
+
+waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.clk_io_div4_secure' is connected to 'pwrmgr' port 'clk_esc_i', and used as a clock 'clk_i' at tlul_socket_1n.sv} \
+      -comment "The tool for reasons unknown is unable to trace through a prim buf wrap cell to understand the clock is being used as a clock. If a direct assign is used, the error goes away."
+
+waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.clk_io_div4_powerup' is connected to 'pwrmgr' port 'clk_lc_i', and used as a clock 'clk_i' at tlul_socket_1n.sv} \
+      -comment "The tool for reasons unknown is unable to trace through a prim buf wrap cell to understand the clock is being used as a clock. If a direct assign is used, the error goes away."
+
+# Most SAME_NAME_TYPE issues have been fixed. There are however some that overlap due to similar terminology.
+# Since these functions / parameters / signals live in different scopes, this is acceptable, and we can waive them.
+waive -rules SAME_NAME_TYPE -location {aes_sbox_canright_pkg.sv} -msg {'theta' is used as a reg here, and as a function at} \
+      -comment {This is acceptable, since these are used in different hierarchies.}
+waive -rules SAME_NAME_TYPE -location {keccak_round.sv} -msg {'L' is used as a parameter here, and as a reg at} \
+      -comment {This is acceptable, since these are used in different hierarchies.}
+waive -rules SAME_NAME_TYPE -location {spi_device.sv} -msg {'spi_device' is used as a module here, and as a reg at } \
+      -comment {This is acceptable, since these are used in different hierarchies.}
+waive -rules SAME_NAME_TYPE -location {tlul_socket_m1.sv} -msg {'M' is used as a parameter here, and as a reg at} \
+      -comment {This is acceptable, since these are used in different hierarchies.}

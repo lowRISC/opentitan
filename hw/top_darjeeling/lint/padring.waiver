@@ -1,0 +1,21 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for padring
+
+waive -rules {HIER_BRANCH_NOT_READ HIER_NET_NOT_READ} \
+      -location {padring.sv} \
+      -regexp   {Net 'pok_i.*' in module 'padring'.*is not read from} \
+      -comment "SNS and RTO cells are not read from in the converted LIB/DB model, resulting in these warnings."
+
+waive -rules {HIER_BRANCH_NOT_READ HIER_NET_NOT_READ} \
+      -location {padring.sv} \
+      -regexp   {Connected net '(SNS|RTO)'.*is not read from in module.*} \
+      -comment "Some ports are not read from in the converted LIB/DB model, resulting in these warnings."
+
+waive -rules {HIER_BRANCH_NOT_READ} \
+      -location {padring.sv} \
+      -regexp   {Net 'clk_scan_i' in module 'padring'.*} \
+      -comment "This net is not read from if no scan role is defined for the pads (which is the case in the opensource view)."
+

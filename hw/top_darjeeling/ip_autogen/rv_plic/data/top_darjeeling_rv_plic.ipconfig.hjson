@@ -1,0 +1,12 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_earlgrey_rv_plic
+  param_values:
+  {
+    src: 185
+    target: 1
+    prio: 3
+  }
+}

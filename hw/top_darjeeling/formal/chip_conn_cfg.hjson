@@ -1,0 +1,47 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_earlgrey_asic
+
+  import_cfgs: [// common server configuration for results upload
+                "{proj_root}/hw/formal/tools/dvsim/common_conn_cfg.hjson"]
+
+  fusesoc_core: lowrisc:systems:chip_earlgrey_asic:0.1
+
+  bbox_cmd: "[list aon_osc io_osc sys_osc usb_osc]"
+  conn_csvs_dir: "{proj_root}/hw/top_earlgrey/formal/conn_csvs"
+  conn_csvs: ["{conn_csvs_dir}/analog_sigs.csv",
+              "{conn_csvs_dir}/aon_timer_rst.csv",
+              "{conn_csvs_dir}/ast_infra.csv",
+              "{conn_csvs_dir}/ast_entropy_src_cfg.csv",
+              "{conn_csvs_dir}/ast_mem_cfg.csv",
+              "{conn_csvs_dir}/ast_scanmode.csv",
+              "{conn_csvs_dir}/ast_clkmgr.csv",
+              "{conn_csvs_dir}/ast_rstmgr.csv",
+              "{conn_csvs_dir}/ast_otp.csv",
+              "{conn_csvs_dir}/ast_pwrmgr.csv",
+              "{conn_csvs_dir}/ast_flash.csv",
+              "{conn_csvs_dir}/clkmgr_cg_en.csv",
+              "{conn_csvs_dir}/clkmgr_idle.csv",
+              "{conn_csvs_dir}/clkmgr_infra.csv",
+              "{conn_csvs_dir}/clkmgr_peri.csv",
+              "{conn_csvs_dir}/clkmgr_powerup.csv",
+              "{conn_csvs_dir}/clkmgr_secure.csv",
+              "{conn_csvs_dir}/clkmgr_timers.csv",
+              "{conn_csvs_dir}/clkmgr_trans.csv",
+              "{conn_csvs_dir}/jtag.csv",
+              "{conn_csvs_dir}/lc_ctrl_broadcast.csv",
+              "{conn_csvs_dir}/otp_lc_vendor_test.csv",
+              "{conn_csvs_dir}/pwrmgr_rstmgr.csv",
+              "{conn_csvs_dir}/rstmgr_resets_o.csv",
+              "{conn_csvs_dir}/rstmgr_rst_en.csv",
+              "{conn_csvs_dir}/rstmgr_crashdump.csv"]
+
+  // TODO: reduce run time and turn on coverage
+  cov: false
+
+  rel_path: "hw/top_earlgrey/{sub_flow}/{tool}"
+
+  publish_report: true
+}

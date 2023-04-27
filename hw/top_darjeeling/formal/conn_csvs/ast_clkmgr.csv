@@ -1,0 +1,35 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+#################################
+# Signals from AST to Clkmgr
+#################################
+CONNECTION, AST_CLK_SYS_OUT,     u_ast, clk_src_sys_o,     top_earlgrey.u_clkmgr_aon,     clk_main_i
+CONNECTION, AST_CLK_AON_OUT,     u_ast, clk_src_aon_o,     top_earlgrey.u_clkmgr_aon,     clk_aon_i
+CONNECTION, AST_CLK_USB_OUT,     u_ast, clk_src_usb_o,     top_earlgrey.u_clkmgr_aon,     clk_usb_i
+CONNECTION, AST_CLK_IO_OUT,      u_ast, clk_src_io_o,      top_earlgrey.u_clkmgr_aon,     clk_io_i
+
+CONNECTION, AST_ALL_BYP_ACK_OUT, u_ast, all_clk_byp_ack_o, top_earlgrey.u_clkmgr_aon, all_clk_byp_ack_i
+CONNECTION, AST_IO_BYP_ACK_OUT,  u_ast, io_clk_byp_ack_o,  top_earlgrey.u_clkmgr_aon, io_clk_byp_ack_i
+
+#################################
+# Signals from Clkmgr to AST
+#################################
+CONNECTION, AST_CLK_ADC_IN,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_peri,         u_ast, clk_ast_adc_i
+CONNECTION, AST_CLK_ALERT_IN,   top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure,   u_ast, clk_ast_alert_i
+CONNECTION, AST_CLK_ES_IN,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure,      u_ast, clk_ast_es_i
+CONNECTION, AST_CLK_RNG_IN,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure,      u_ast, clk_ast_rng_i
+CONNECTION, AST_CLK_TLUL_IN,    top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_infra,    u_ast, clk_ast_tlul_i
+CONNECTION, AST_CLK_USB_IN,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_usb_peri,         u_ast, clk_ast_usb_i
+CONNECTION, AST_CLK_SNS_IN,     top_earlgrey.u_clkmgr_aon, clocks_o,                      u_ast, sns_clks_i
+CONNECTION, AST_CLK_JEN_IN,     top_earlgrey.u_clkmgr_aon, jitter_en_o,                   u_ast, clk_src_sys_jen_i
+
+CONNECTION, AST_ALL_BYP_REQ_IN, top_earlgrey.u_clkmgr_aon, all_clk_byp_req_o,             u_ast, all_clk_byp_req_i,
+CONNECTION, AST_IO_BYP_REQ_IN,  top_earlgrey.u_clkmgr_aon, io_clk_byp_req_o,              u_ast, io_clk_byp_req_i,
+CONNECTION, AST_HISPEED_SEL_IN, top_earlgrey.u_clkmgr_aon, hi_speed_sel_o,                u_ast, ext_freq_is_96m_i,

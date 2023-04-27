@@ -1,0 +1,126 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:ast:0.1"
+description: "Analog Sensor Top generic views"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - lowrisc:prim:clock_buf
+      - lowrisc:prim:clock_div
+      - lowrisc:prim:clock_gating
+      - lowrisc:prim:clock_inv
+      - lowrisc:prim:lc_dec
+      - lowrisc:prim:lfsr
+      - lowrisc:ip:pinmux_reg
+      - lowrisc:ip:pinmux_component
+      - lowrisc:prim:assert
+      - lowrisc:prim:prim_pkg
+      - lowrisc:prim:mubi
+      - lowrisc:prim:multibit_sync
+      - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:ip:edn_pkg
+      - lowrisc:ip_interfaces:alert_handler_reg
+      - lowrisc:ip:rstmgr_pkg
+      - lowrisc:systems:clkmgr_pkg
+    files:
+      - rtl/ast_reg_pkg.sv
+      - rtl/ast_pkg.sv
+      - rtl/ast_bhv_pkg.sv
+      - rtl/ast.sv
+      - rtl/ast_reg_top.sv
+      - rtl/adc.sv
+      - rtl/adc_ana.sv
+      - rtl/vcc_pgd.sv
+      - rtl/vio_pgd.sv
+      - rtl/vcaon_pgd.sv
+      - rtl/vcmain_pgd.sv
+      - rtl/ast_alert.sv
+      - rtl/aon_clk.sv
+      - rtl/aon_osc.sv
+      - rtl/io_clk.sv
+      - rtl/io_osc.sv
+      - rtl/sys_clk.sv
+      - rtl/sys_osc.sv
+      - rtl/usb_clk.sv
+      - rtl/usb_osc.sv
+      - rtl/gfr_clk_mux2.sv
+      - rtl/ast_clks_byp.sv
+      - rtl/rglts_pdm_3p3v.sv
+      - rtl/ast_pulse_sync.sv
+      - rtl/ast_entropy.sv
+      - rtl/dev_entropy.sv
+      - rtl/rng.sv
+      - rtl/ast_dft.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/ast.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/ast.waiver
+    file_type: waiver
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+  AST_BYPASS_CLK:
+    datatype: bool
+    paramtype: vlogdefine
+  ANALOGSIM:
+    datatype: bool
+    paramtype: vlogdefine
+
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - files_rtl
+    toplevel: ast
+    parameters:
+     - SYNTHESIS
+     - AST_BYPASS_CLK
+     - ANALOGSIM
+
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  sim:
+    <<: *default_target
+    default_tool: vcs
+    filesets:
+      - files_rtl
+    tools:
+      vcs:
+        vcs_options: [-sverilog -ntb_opts uvm-1.2 -CFLAGS --std=c99 -CFLAGS -fno-extended-identifiers -CFLAGS --std=c++11 -timescale=1ns/1ps -l vcs.log]
+    toplevel: ast

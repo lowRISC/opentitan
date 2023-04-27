@@ -1,0 +1,42 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Top level dut name (sv module).
+  name: chip_earlgrey_asic
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:systems:chip_earlgrey_asic:0.1
+
+  import_cfgs: [// Project wide common synthesis config file
+                "{proj_root}/hw/rdc/tools/dvsim/common_rdc_cfg.hjson"]
+
+  tool: meridianrdc
+
+  // Overrides
+  overrides: [
+    {
+      name: design_level
+      value: "top"
+    }
+  ]
+
+  // Timing constraints for this module
+  sdc_file: "{proj_root}/hw/top_earlgrey/syn/chip_earlgrey_asic.sdc"
+
+  // Meridian environment file with additional definitions (may have to
+  // populate later)
+  env_file: "{proj_root}/hw/top_earlgrey/rdc/chip_earlgrey_asic.env"
+
+  // Reset Scenario file
+  reset_scenario_file: "{proj_root}/hw/top_earlgrey/rdc/chip_earlgrey_asic_scenario.tcl"
+
+  // Main RDC waiver file. It includes waivers per module
+  rdc_waiver_file: "{proj_root}/hw/top_earlgrey/rdc/rdc_waivers.tcl"
+
+  // Technology path for this module (empty for open-source runs)
+  foundry_root: ""
+
+  // Technology specific timing constraints for this module (empty for open-source runs)
+  foundry_sdc_file: ""
+}

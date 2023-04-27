@@ -1,0 +1,67 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// This batch script runs all IP blocks that used FPV to verify.
+{
+  flow: formal
+
+  sub_flow: fpv
+
+  // This is the primary cfg hjson for FPV. It imports ALL individual FPV
+  // cfgs of the IPs and the full chip used in top_earlgrey. This enables to run
+  // them all as a regression in one shot.
+  name: top_earlgrey_ip_fpv
+
+  import_cfgs: [// common server configuration for results upload
+                "{proj_root}/hw/data/common_project_cfg.hjson"]
+
+  rel_path: "hw/top_earlgrey/formal/ip/summary"
+
+  use_cfgs: [
+             {
+               name: pinmux_fpv
+               dut: pinmux_tb
+               fusesoc_core: lowrisc:fpv:pinmux_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/pinmux/{sub_flow}/{tool}"
+               defines: "FPV_ALERT_NO_SIGINT_ERR"
+               exp_fail_hjson: "{proj_root}/hw/ip/pinmux/fpv/pinmux_expected_failure.hjson"
+               cov: true
+             }
+
+             // Use chip_eargrey_asic parameters to verify pinmux.
+             {
+               name: pinmux_chip_fpv
+               dut: pinmux_tb
+               fusesoc_core: lowrisc:systems:pinmux_chip_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/top_earlgrey/ip/pinmux/{sub_flow}/{tool}"
+               defines: "FPV_ALERT_NO_SIGINT_ERR"
+               cov: true
+               exp_fail_hjson: "{proj_root}/hw/top_earlgrey/ip/pinmux/fpv/pinmux_expected_failure.hjson"
+               overrides: [
+                 {
+                   name:  design_level
+                   value: "top"
+                 }
+               ]
+             }
+
+             {
+               name: rv_plic_fpv
+               dut: rv_plic_tb
+               fusesoc_core: lowrisc:opentitan:top_earlgrey_rv_plic_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/top_earlgrey/ip_autogen/rv_plic/{sub_flow}/{tool}"
+               cov: true
+               exp_fail_hjson: "{proj_root}/hw/top_earlgrey/ip_autogen/rv_plic/fpv/rv_plic_expected_failure.hjson"
+               overrides: [
+                 {
+                   name:  design_level
+                   value: "top"
+                 }
+               ]
+             }
+            ]
+}

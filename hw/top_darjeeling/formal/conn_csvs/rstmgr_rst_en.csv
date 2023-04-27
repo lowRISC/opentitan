@@ -1,0 +1,35 @@
+# Copyright lowRISC contributors.,
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Connectivity of rstmgr rst_en_o
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# rstmgr rst_en_o
+CONNECTION, RSTMGR_LC_IO_DIV4_D0_ALERT_0_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc_io_div4[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[0]
+CONNECTION, RSTMGR_SPI_DEVICE_D0_ALERT_1_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.spi_device[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[1]
+CONNECTION, RSTMGR_I2C0_D0_ALERT_2_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.i2c0[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[2]
+CONNECTION, RSTMGR_I2C1_D0_ALERT_3_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.i2c1[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[3]
+CONNECTION, RSTMGR_I2C2_D0_ALERT_4_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.i2c2[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[4]
+CONNECTION, RSTMGR_LC_IO_DIV4_D0_ALERT_5_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc_io_div4[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[5]
+CONNECTION, RSTMGR_LC_IO_DIV4_D0_ALERT_6_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc_io_div4[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[6]
+CONNECTION, RSTMGR_SPI_HOST0_D0_ALERT_7_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.spi_host0[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[7]
+CONNECTION, RSTMGR_SPI_HOST1_D0_ALERT_8_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.spi_host1[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[8]
+CONNECTION, RSTMGR_USB_D0_ALERT_9_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.usb[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[9]
+CONNECTION, RSTMGR_POR_IO_DIV4_AON_ALERT_10_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.por_io_div4[0], top_earlgrey.u_alert_handler, lpg_rst_en_i[10]
+CONNECTION, RSTMGR_LC_IO_DIV4_ALERT_11_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc_io_div4[0], top_earlgrey.u_alert_handler, lpg_rst_en_i[11]
+CONNECTION, RSTMGR_LC_IO_DIV4_AON_ALERT_12_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc_io_div4[0], top_earlgrey.u_alert_handler, lpg_rst_en_i[12]
+CONNECTION, RSTMGR_LC_IO_DIV4_AON_ALERT_13_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc_io_div4[0], top_earlgrey.u_alert_handler, lpg_rst_en_i[13]
+CONNECTION, RSTMGR_LC_IO_DIV4_AON_ALERT_14_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc_io_div4[0], top_earlgrey.u_alert_handler, lpg_rst_en_i[14]
+CONNECTION, RSTMGR_LC_IO_DIV4_AON_ALERT_15_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc_io_div4[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[15]
+CONNECTION, RSTMGR_LC_IO_DIV4_AON_ALERT_16_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc_io_div4[0], top_earlgrey.u_alert_handler, lpg_rst_en_i[16]
+CONNECTION, RSTMGR_LC_D0_ALERT_17_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[17]
+CONNECTION, RSTMGR_SYS_D0_ALERT_18_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.sys[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[18]
+CONNECTION, RSTMGR_LC_D0_ALERT_19_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[19]
+CONNECTION, RSTMGR_LC_D0_ALERT_20_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[20]
+CONNECTION, RSTMGR_LC_D0_ALERT_21_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[21]
+CONNECTION, RSTMGR_LC_D0_ALERT_22_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[22]
+CONNECTION, RSTMGR_LC_D0_ALERT_23_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[23]

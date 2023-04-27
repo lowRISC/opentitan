@@ -1,0 +1,16 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# clkmgr trans clock connectivity
+CONNECTION,CLKMGR_TRANS_AES,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_aes,       top_earlgrey.u_aes,clk_i
+CONNECTION,CLKMGR_TRANS_AES_EDN,  top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_aes,       top_earlgrey.u_aes,clk_edn_i
+CONNECTION,CLKMGR_TRANS_HMAC,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_hmac,      top_earlgrey.u_hmac,clk_i
+CONNECTION,CLKMGR_TRANS_KMAC,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_kmac,      top_earlgrey.u_kmac,clk_i
+CONNECTION,CLKMGR_TRANS_KMAC_EDN, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_kmac,      top_earlgrey.u_kmac,clk_edn_i
+CONNECTION,CLKMGR_TRANS_OTBN,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_otbn,      top_earlgrey.u_otbn,clk_i

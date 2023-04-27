@@ -1,0 +1,12 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# Verify that the correct resets are connected to the AON timer.
+CONNECTION, AON_TIMER_RST,     top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[0], top_earlgrey.u_aon_timer_aon, rst_ni,
+CONNECTION, AON_TIMER_RST_AON, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_aon_n[0],     top_earlgrey.u_aon_timer_aon, rst_aon_ni

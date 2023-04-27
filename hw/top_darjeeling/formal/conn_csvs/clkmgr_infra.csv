@@ -1,0 +1,41 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# clkmgr infra clock connectivity
+# flash_ctrl
+CONNECTION, CLKMGR_INFRA_CLK_FLASH_CTRL_CLK_OTP, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_earlgrey.u_flash_ctrl, clk_otp_i
+CONNECTION, CLKMGR_INFRA_CLK_FLASH_CTRL_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_infra,    top_earlgrey.u_flash_ctrl, clk_i
+
+#rv_dm
+CONNECTION, CLKMGR_INFRA_CLK_RV_DM_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_infra, top_earlgrey.u_rv_dm, clk_i
+
+#rom_ctrl
+CONNECTION, CLKMGR_INFRA_CLK_ROM_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_infra, top_earlgrey.u_rom_ctrl, clk_i
+
+#rv_core_ibex
+CONNECTION, CLKMGR_INFRA_CLK_RV_CORE_IBEX_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_infra, top_earlgrey.u_rv_core_ibex, clk_i
+CONNECTION, CLKMGR_INFRA_CLK_RV_CORE_IBEX_EDN_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_infra, top_earlgrey.u_rv_core_ibex, clk_edn_i
+
+#sram main
+CONNECTION, CLKMGR_INFRA_CLK_SRAM_CTRL_MAIN_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_infra,    top_earlgrey.u_sram_ctrl_main, clk_i
+CONNECTION, CLKMGR_INFRA_CLK_SRAM_CTRL_MAIN_OTP_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_earlgrey.u_sram_ctrl_main, clk_otp_i
+
+#sram retention
+CONNECTION, CLKMGR_INFRA_CLK_SRAM_CTRL_RET_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_earlgrey.u_sram_ctrl_ret_aon, clk_i
+CONNECTION, CLKMGR_INFRA_CLK_SRAM_CTRL_RET_OTP_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_earlgrey.u_sram_ctrl_ret_aon, clk_otp_i
+
+#sysrst_ctrl
+CONNECTION, CLKMGR_INFRA_CLK_SYSRST_CTRL_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_earlgrey.u_sysrst_ctrl_aon, clk_i
+
+#xbar
+CONNECTION, CLKMGR_INFRA_CLK_XBAR_MAIN_MAIN_CLK,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_infra,    top_earlgrey.u_xbar_main, clk_main_i
+CONNECTION, CLKMGR_INFRA_CLK_XBAR_MAIN_FIXED_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_earlgrey.u_xbar_main, clk_fixed_i
+CONNECTION, CLKMGR_INFRA_CLK_XBAR_MAIN_SPI_HOST0_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_infra,      top_earlgrey.u_xbar_main, clk_spi_host0_i
+CONNECTION, CLKMGR_INFRA_CLK_XBAR_MAIN_SPI_HOST1_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div2_infra, top_earlgrey.u_xbar_main, clk_spi_host1_i
+CONNECTION, CLKMGR_INFRA_CLK_XBAR_PERI_PERI_CLK,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_earlgrey.u_xbar_peri, clk_peri_i

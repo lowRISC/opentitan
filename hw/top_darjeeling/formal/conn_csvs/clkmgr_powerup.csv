@@ -1,0 +1,28 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# clkmgr powerup clock connectivity
+CONNECTION, CLKMGR_POWERUP_CLK_CLKMGR_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.u_clkmgr_aon, clk_i
+
+CONNECTION, CLKMGR_POWERUP_CLK_PINMUX_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.u_pinmux_aon, clk_i
+CONNECTION, CLKMGR_POWERUP_CLK_PINMUX_AON_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_powerup,     top_earlgrey.u_pinmux_aon, clk_aon_i
+
+CONNECTION, CLKMGR_POWERUP_CLK_PWM_CORE_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_powerup,     top_earlgrey.u_pwm_aon, clk_core_i
+
+CONNECTION, CLKMGR_POWERUP_CLK_PWRMGR_CLK,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.u_pwrmgr_aon, clk_i
+CONNECTION, CLKMGR_POWERUP_CLK_PWRMGR_LC_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.u_pwrmgr_aon, clk_lc_i
+CONNECTION, CLKMGR_POWERUP_CLK_PWRMGR_SLOW_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_powerup,     top_earlgrey.u_pwrmgr_aon, clk_slow_i
+
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_POR_CLK,  top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.u_rstmgr_aon, clk_por_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_AON_CLK,  top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_powerup,     top_earlgrey.u_rstmgr_aon, clk_aon_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_MAIN_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_powerup,    top_earlgrey.u_rstmgr_aon, clk_main_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_IO_CLK,   top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_powerup,      top_earlgrey.u_rstmgr_aon, clk_io_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_USB_CLK,  top_earlgrey.u_clkmgr_aon, clocks_o.clk_usb_powerup,     top_earlgrey.u_rstmgr_aon, clk_usb_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_IO2_CLK,  top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div2_powerup, top_earlgrey.u_rstmgr_aon, clk_io_div2_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_IO4_CLK,  top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_powerup,  top_earlgrey.u_rstmgr_aon, clk_io_div4_i

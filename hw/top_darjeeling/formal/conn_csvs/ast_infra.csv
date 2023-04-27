@@ -1,0 +1,38 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+#################################
+# Pad connections to/from AST
+#################################
+CONNECTION, AST_PAD0,            u_ast,                      ast2pad_t0_ao,                                       , IOA2,
+CONNECTION, AST_PAD1,            u_ast,                      ast2pad_t1_ao,                                       , IOA3,
+CONNECTION, AST_PINMUX,          u_ast,                      ast2padmux_o,              top_earlgrey.u_sensor_ctrl, ast2pinmux_i,
+CONNECTION, PAD_AST,                  ,                      "{AST_MISC, IOC3, IOC2, IOC1, IOB2, IOB1, IOB0, IOA5, IOA4}", u_ast, padmux2ast_i,
+
+#################################
+# Other clocks
+#################################
+CONNECTION, AST_CLK_EXT_IN,           ,                      IOC6,                      u_ast,                   clk_ast_ext_i
+CONNECTION, AST_CLK_SPI_SNS_IN,       ,                      SPI_DEV_CLK,               u_ast,                   sns_spi_ext_clk_i
+
+#################################
+# Other resets
+#################################
+CONNECTION, AST_RST_POR_IN,           ,                      POR_N,                     u_ast,                   por_ni
+
+#################################
+# Other power related signals
+#################################
+
+CONNECTION, AST_USB_REF_IN,      top_earlgrey.u_usbdev,      usb_ref_pulse_o,           u_ast,                   usb_ref_pulse_i
+CONNECTION, AST_USB_REF_VAL_IN,  top_earlgrey.u_usbdev,      usb_ref_val_o,             u_ast,                   usb_ref_val_i
+CONNECTION, AST_OTP_PWR_SEQ_IN,  top_earlgrey.u_otp_ctrl,    otp_ast_pwr_seq_o,         u_ast,                   otp_power_seq_i
+CONNECTION, AST_MAIN_PD_IN,      top_earlgrey.u_pwrmgr_aon,  pwr_ast_o.main_pd_n,       u_ast,                   main_pd_ni
+CONNECTION, AST_MAIN_ISO_EN_IN,  top_earlgrey.u_pwrmgr_aon,  pwr_ast_o.pwr_clamp_env,   u_ast,                   main_env_iso_en_i
+CONNECTION, AST_OTP_PWR_SEQ_OUT, u_ast,                      otp_power_seq_h_o,         top_earlgrey.u_otp_ctrl, otp_ast_pwr_seq_h_i

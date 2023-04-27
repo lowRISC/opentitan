@@ -1,0 +1,140 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:top_earlgrey:0.1"
+description: "Technology-independent Earl Grey toplevel"
+filesets:
+  files_rtl_generic:
+    depend:
+      - lowrisc:ip:uart:0.1
+      - lowrisc:opentitan:top_earlgrey_alert_handler
+      - lowrisc:ip:gpio
+      - lowrisc:ip:rv_core_ibex
+      - lowrisc:ip:rv_dm
+      - lowrisc:opentitan:top_earlgrey_rv_plic
+      - lowrisc:ip:pinmux
+      - lowrisc:ip:rv_timer
+      - lowrisc:ip:tlul
+      - lowrisc:ip:spi_device
+      - lowrisc:ip:spi_host
+      - lowrisc:ip:i2c
+      - lowrisc:ip:pattgen
+      - lowrisc:ip:pwm
+      - lowrisc:ip:aes
+      - lowrisc:ip:entropy_src
+      - lowrisc:ip:csrng
+      - lowrisc:ip:edn
+      - lowrisc:ip:hmac
+      - lowrisc:ip:kmac
+      - lowrisc:ip:otbn
+      - lowrisc:prim:ram_1p_scr
+      - lowrisc:prim:flash
+      - lowrisc:ip:flash_ctrl
+      - lowrisc:ip:sram_ctrl
+      - lowrisc:ip:keymgr
+      - lowrisc:constants:top_pkg
+      - lowrisc:constants:jtag_id_pkg
+      - lowrisc:ip:otp_ctrl
+      - lowrisc:ip:lc_ctrl
+      - lowrisc:ip:usbdev
+      - lowrisc:top_earlgrey:xbar_main
+      - lowrisc:top_earlgrey:xbar_peri
+      - lowrisc:ip:rstmgr
+      - lowrisc:ip:pwrmgr
+      - lowrisc:ip:aon_timer
+      - lowrisc:ip:adc_ctrl
+      - lowrisc:ip:sysrst_ctrl
+      - lowrisc:ip:rom_ctrl
+      - lowrisc:systems:clkmgr
+      - lowrisc:systems:sensor_ctrl
+      - lowrisc:tlul:headers
+      - lowrisc:prim:all
+      - lowrisc:prim:usb_diff_rx
+      - lowrisc:prim:mubi
+      - lowrisc:systems:top_earlgrey_pkg
+      - "fileset_partner  ? (partner:systems:ast_pkg)"
+      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
+    files:
+      - rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv
+      - rtl/autogen/top_earlgrey.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/top_earlgrey.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/top_earlgrey.waiver
+    file_type: waiver
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/top_earlgrey.vbw
+    file_type: veribleLintWaiver
+
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+  IBEX_CUSTOM_PMP_RESET_VALUES:
+    datatype: bool
+    default: true
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - files_rtl_generic
+    toplevel: top_earlgrey
+    parameters:
+      - IBEX_CUSTOM_PMP_RESET_VALUES
+
+  sim:
+    default_tool: icarus
+    filesets:
+      - files_rtl_generic
+    toplevel: top_earlgrey
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  syn:
+    <<: *default_target
+    # TODO: set default to DC once
+    # this option is available
+    # olofk/edalize#89
+    default_tool: icarus
+    parameters:
+      - SYNTHESIS=true
+    toplevel: top_earlgrey
+
+  formal:
+    <<: *default_target
+    toplevel: top_earlgrey

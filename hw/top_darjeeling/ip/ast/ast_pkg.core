@@ -1,0 +1,20 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:ast_pkg"
+description: "Analog sensor top (AST) wrapper package"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:constants:top_pkg
+      - lowrisc:ip:lc_ctrl_pkg
+    files:
+      - rtl/ast_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

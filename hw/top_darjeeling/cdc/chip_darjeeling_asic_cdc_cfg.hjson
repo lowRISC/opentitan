@@ -1,0 +1,44 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Top level dut name (sv module).
+  name: chip_earlgrey_asic
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:systems:chip_earlgrey_asic:0.1
+
+  import_cfgs: [// Project wide common synthesis config file
+                "{proj_root}/hw/cdc/tools/dvsim/common_cdc_cfg.hjson"]
+
+  tool: verixcdc
+
+  // Overrides
+  overrides: [
+    {
+      name: design_level
+      value: "top"
+    }
+  ]
+
+  // Timing constraints for this module
+  sdc_file: "{proj_root}/hw/top_earlgrey/syn/chip_earlgrey_asic.sdc"
+
+  // Verix environment file with additional definitions (may have to populate later)
+  env_file: ""
+
+  // Main CDC waiver file
+  cdc_waiver_file: "{proj_root}/hw/top_earlgrey/cdc/cdc_waivers.tcl"
+
+  // CDC customized env file for ast integration
+  cdc_user_env: "{proj_root}/hw/top_earlgrey/cdc/top_user.env"
+
+  // AST.lib
+  ast_lib: "{proj_root}/hw/top_earlgrey/ip/ast/lib/ast.lib"
+
+  // Technology path for this module (empty for open-source runs)
+  foundry_root: ""
+
+  // Technology specific timing constraints for this module (empty for open-source runs)
+  foundry_sdc_file: ""
+}

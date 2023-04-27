@@ -1,0 +1,16 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+CONNECTION, OTP_EXT_VOLT,     , OTP_EXT_VOLT,     top_earlgrey.u_otp_ctrl.u_otp             , ext_voltage_io,
+CONNECTION, FLASH_TEST_MODE_O,, "{FLASH_TEST_MODE1, FLASH_TEST_MODE0}", top_earlgrey.u_flash_ctrl.u_eflash.u_flash, flash_test_mode_a_io,
+CONNECTION, FLASH_TEST_MODE_I,  top_earlgrey.u_flash_ctrl.u_eflash.u_flash, flash_test_mode_a_io, , "{FLASH_TEST_MODE1, FLASH_TEST_MODE0}",
+CONNECTION, FLASH_TEST_VOLT_O,, FLASH_TEST_VOLT,  top_earlgrey.u_flash_ctrl.u_eflash.u_flash, flash_test_voltage_h_io,
+CONNECTION, FLASH_TEST_VOLT_I,  top_earlgrey.u_flash_ctrl.u_eflash.u_flash, flash_test_voltage_h_io, , FLASH_TEST_VOLT,
+CONNECTION, AST_CC1,          , CC1,              u_ast,                                      adc_a0_ai,
+CONNECTION, AST_CC2,          , CC2,              u_ast,                                      adc_a1_ai,

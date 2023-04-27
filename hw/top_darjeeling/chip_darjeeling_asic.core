@@ -1,0 +1,86 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:chip_earlgrey_asic:0.1"
+description: "Earl Grey chip level"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:systems:top_earlgrey:0.1
+      - lowrisc:systems:top_earlgrey_pkg
+      - lowrisc:systems:padring
+      - "fileset_partner ? (partner:systems:ast)"
+      - "fileset_partner ? (partner:systems:scan_role_pkg)"
+      - "!fileset_partner ? (lowrisc:systems:ast)"
+      - "!fileset_partner ? (lowrisc:systems:scan_role_pkg)"
+    files:
+      - rtl/autogen/chip_earlgrey_asic.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/chip_earlgrey_asic.waiver
+    file_type: waiver
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+  IBEX_CUSTOM_PMP_RESET_VALUES:
+    datatype: bool
+    default: true
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - files_rtl
+    toplevel: chip_earlgrey_asic
+    parameters:
+      - IBEX_CUSTOM_PMP_RESET_VALUES
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  syn:
+    <<: *default_target
+    # TODO: set default to DC once
+    # this option is available
+    # olofk/edalize#89
+    default_tool: icarus
+    parameters:
+      - SYNTHESIS=true
+    toplevel: chip_earlgrey_asic
+
+  formal:
+    <<: *default_target
+    toplevel: chip_earlgrey_asic

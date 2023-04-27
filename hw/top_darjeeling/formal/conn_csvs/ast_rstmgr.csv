@@ -1,0 +1,21 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+#################################
+# Signals from Rstmgr to AST
+#################################
+# index 0: rstmgr_pkg::DomainAonSel
+# index 1: rstmgr_pkg::Domain0Sel
+CONNECTION, AST_RST_ADC_IN,     top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_aon_n[0],     u_ast, rst_ast_adc_ni
+CONNECTION, AST_RST_ALERT_IN,   top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[1],  u_ast, rst_ast_alert_ni
+CONNECTION, AST_RST_ES_IN,      top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_n[1],         u_ast, rst_ast_es_ni
+CONNECTION, AST_RST_RNG_IN,     top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_n[1],         u_ast, rst_ast_rng_ni
+CONNECTION, AST_RST_TLUL_IN,    top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[1], u_ast, rst_ast_tlul_ni
+CONNECTION, AST_RST_USB_IN,     top_earlgrey.u_rstmgr_aon, resets_o.rst_usb_n[1],         u_ast, rst_ast_usb_ni
+CONNECTION, AST_RST_SNS_IN,     top_earlgrey.u_rstmgr_aon, resets_o,                      u_ast, sns_rsts_i

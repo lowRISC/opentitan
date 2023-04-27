@@ -1,0 +1,309 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Security countermeasures testplan extracted from the IP Hjson using reggen.
+//
+// This testplan is auto-generated only the first time it is created. This is
+// because this testplan needs to be hand-editable. It is possible that these
+// testpoints can go out of date if the spec is updated with new
+// countermeasures. When `reggen` is invoked when this testplan already exists,
+// It checks if the list of testpoints is up-to-date and enforces the user to
+// make further manual updates.
+//
+// These countermeasures and their descriptions can be found here:
+// .../flash_ctrl/data/flash_ctrl.hjson
+//
+// It is possible that the testing of some of these countermeasures may already
+// be covered as a testpoint in a different testplan. This duplication is ok -
+// the test would have likely already been developed. We simply map those tests
+// to the testpoints below using the `tests` key.
+//
+// Please ensure that this testplan is imported in:
+// .../flash_ctrl/data/flash_ctrl_testplan.hjson
+{
+  testpoints: [
+    {
+      name: sec_cm_reg_bus_integrity
+      desc: '''Verify the countermeasure(s) REG.BUS.INTEGRITY.
+            This entry is covered by tl_access_test
+            (hw/dv/tools/dvsim/tests/tl_access_tests.hjson)
+            '''
+      stage: V2S
+      tests: ["flash_ctrl_tl_intg_err"]
+    }
+    {
+      name: sec_cm_host_bus_integrity
+      desc: '''Verify the countermeasure(s) HOST.BUS.INTEGRITY.
+            This entry is covered by tl_access_test
+            (hw/dv/tools/dvsim/tests/tl_access_tests.hjson)
+            '''
+      stage: V2S
+      tests: ["flash_ctrl_tl_intg_err"]
+    }
+    {
+      name: sec_cm_mem_bus_integrity
+      desc: '''Verify the countermeasure(s) MEM.BUS.INTEGRITY.
+            For read path, inject error to
+            tb.dut.u_eflash.gen_flash_cores[*].u_core.u_rd.gen_bufs[0].
+            u_rd_buf.data_i
+            read data error will trigger fault_status.phy_storage_err
+            and err_code.rd_err.
+            For write path, inject error to tb.dut.u_prog_fifo.wdata_i
+            This will trigger fatal_std_err.prog_intg_err and
+            err_code.prog_err
+            '''
+      stage: V2S
+      tests: ["flash_ctrl_rd_intg", "flash_ctrl_wr_intg"]
+    }
+    {
+      name: sec_cm_scramble_key_sideload
+      desc: '''Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD.
+      The scrambling key is sideloaded from OTP and thus unreadable by SW.
+      TBD
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_smoke"]
+    }
+    {
+      name: sec_cm_lc_ctrl_intersig_mubi
+      desc: '''Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI.
+        - Creator info partition can be read, written, erased when lc_creator_seed_sw_rw_en is true.
+          Owner info partition can be read, written, erased when lc_owner_seed_sw_rw_en is true.
+          Isolated info partition can be written whwen lc_iso_part_sw_wr_en is true,
+          and can be read when lc_iso_part_sw_rd_en is true.
+          Run test for each partition and check whether each partition can be accessed
+          only when each lc_ctrl input is valid.
+          If lc_ctrl inputs are invalid, the access to the secret info region will trigger
+          recoverable fatal alert.
+        - lc_seed_hw_rd_en is covered by flash_ctrl_otp_reset test.
+        - lc_escalate_en_i is covered by flash_ctrl_disable test. See 'flash_ctrl_disable`
+          from the flash_ctrl_testpan.hjson
+        - lc_nvm_debug_en_i is covered by flash_ctrl_connect. See 'flash_ctrl_connect'
+          from the flash_ctrl_testplan.hjson
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_sec_info_access", "flash_ctrl_disable",
+             "flash_ctrl_connect", "flash_ctrl_otp_reset"]
+    }
+    {
+      name: sec_cm_ctrl_config_regwen
+      desc: "Verify the countermeasure(s) CTRL.CONFIG.REGWEN."
+      stage: V2S
+      tests: ["flash_ctrl_config_regwen"]
+    }
+    {
+      name: sec_cm_data_regions_config_regwen
+      desc: "Verify the countermeasure(s) DATA_REGIONS.CONFIG.REGWEN."
+      stage: V2S
+      tests: ["flash_ctrl_csr_rw"]
+    }
+    {
+      name: sec_cm_data_regions_config_shadow
+      desc: "Verify the countermeasure(s) DATA_REGIONS.CONFIG.SHADOW."
+      stage: V2S
+      tests: ["flash_ctrl_shadow_reg_errors"]
+    }
+    {
+      name: sec_cm_info_regions_config_regwen
+      desc: "Verify the countermeasure(s) INFO_REGIONS.CONFIG.REGWEN."
+      stage: V2S
+      tests: ["flash_ctrl_csr_rw"]
+    }
+    {
+      name: sec_cm_info_regions_config_shadow
+      desc: "Verify the countermeasure(s) INFO_REGIONS.CONFIG.SHADOW."
+      stage: V2S
+      tests: ["flash_ctrl_shadow_reg_errors"]
+    }
+    {
+      name: sec_cm_bank_config_regwen
+      desc: "Verify the countermeasure(s) BANK.CONFIG.REGWEN."
+      stage: V2S
+      tests: ["flash_ctrl_csr_rw"]
+    }
+    {
+      name: sec_cm_bank_config_shadow
+      desc: "Verify the countermeasure(s) BANK.CONFIG.SHADOW."
+      stage: V2S
+      tests: ["flash_ctrl_shadow_reg_errors"]
+    }
+    {
+      name: sec_cm_mem_ctrl_global_esc
+      desc: '''Verify the countermeasure(s) MEM.CTRL.GLOBAL_ESC.
+      Send a few flash access commands and
+      disable flash access by setting lc_escalate_en to lc_ctrl_pkg::On.
+      Check
+       - Ctrl initiated traffic : mp error
+       - Host initiated traffic : tlul errors
+       - Outstanding traffic:
+         Program or erase will be completed.
+         Read will be dropped.
+       - Debug state is changed to 'flash_ctrl_env_pkg::FlashLcDisabled' state
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_disable"]
+    }
+    {
+      name: sec_cm_mem_ctrl_local_esc
+      desc: '''Verify the countermeasure(s) MEM.CTRL.LOCAL_ESC.
+      Send a few flash access commands and
+      disable flash access by triggering std_fault.
+      Check
+       - Ctrl initiated traffic : mp error
+       - Host initiated traffic : tlul errors
+       - Outstanding traffic:
+         Program or erase will be completed.
+         Read will be dropped.
+       - Debug state is changed to 'flash_ctrl_env_pkg::FlashLcDisabled' state
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_rd_intg", "flash_ctrl_access_after_disable"]
+    }
+    {
+      name: sec_cm_mem_disable_config_mubi
+      desc: "Verify the countermeasure(s) MEM_DISABLE.CONFIG.MUBI."
+      stage: V2S
+      tests: ["flash_ctrl_disable"]
+    }
+    {
+      name: sec_cm_exec_config_redun
+      desc: "Verify the countermeasure(s) EXEC.CONFIG.REDUN."
+      stage: V2S
+      tests: ["flash_ctrl_fetch_code"]
+    }
+    {
+      name: sec_cm_mem_scramble
+      desc: "Verify the countermeasure(s) MEM.SCRAMBLE."
+      stage: V2S
+      tests: ["flash_ctrl_rw"]
+    }
+    {
+      name: sec_cm_mem_integrity
+      desc: "Verify the countermeasure(s) MEM.INTEGRITY."
+      stage: V2S
+      tests: ["flash_ctrl_rw_serr", "flash_ctrl_rw_derr", "flash_ctrl_integrity"]
+    }
+    {
+      name: sec_cm_rma_entry_mem_sec_wipe
+      desc: '''Verify the countermeasure(s) RMA_ENTRY.MEM.SEC_WIPE.
+      RMA entry wipes flash memory with random data.
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_hw_rma"]
+    }
+    {
+      name: sec_cm_ctrl_fsm_sparse
+      desc: '''Verify the countermeasure(s) CTRL.FSM.SPARSE.
+      Error is injected by global test.
+      Follwing state machines are in this category.
+        - tb.dut.u_ctrl_arb.state_q :
+          Error from this state machine will trigger std_fault_status.arb_fsm_err.
+        - tb.dut.u_flash_hw_if.state_q, tb.dut.u_flash_hw_if.rma_state_q
+          Error from these state machines will trigger std_fault_status.lcmgr_err.
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_sec_cm"]
+    }
+    {
+      name: sec_cm_phy_fsm_sparse
+      desc: '''Verify the countermeasure(s) PHY.FSM.SPARSE.
+      Error is injected by global test on
+      tb.dut.u_eflash.gen_flash_cores[*].u_core.state_q.
+      Error from this state machine will trigger std_fault_status.phy_fsm_err.
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_sec_cm"]
+    }
+    {
+      name: sec_cm_phy_prog_fsm_sparse
+      desc: '''Verify the countermeasure(s) PHY_PROG.FSM.SPARSE.
+      Error is injected by global test on
+      tb.dut.u_eflash.gen_flash_cores[*].u_core.gen_prog_data.u_prog.state_q.
+      Error from this state machine will trigger std_fault_status.phy_fsm_err.
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_sec_cm"]
+    }
+    {
+      name: sec_cm_ctr_redun
+      desc: '''Verify the countermeasure(s) CTR.REDUN.
+      Error is injected by global test.
+      Follwing counters are in this category.
+        - tb.dut.u_flash_hw_if.seed_cnt_q
+        - tb.dut.u_flash_hw_if.addr_cnt_q
+        - tb.dut.u_flash_hw_if.page_cnt
+        - tb.dut.u_flash_hw_if.word_cnt
+        - tb.dut.u_flash_hw_if.rma_wipe_idx
+      Error from these counters will trigger std_fault_status.lcmgr_err.
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_sec_cm"]
+    }
+    {
+      name: sec_cm_phy_arbiter_ctrl_redun
+      desc: '''Verify the countermeasure(s) PHY_ARBITER.CTRL.REDUN.
+
+      The phy arbiter for controller and host is redundant.
+      The arbiter has two instance underneath that are constantly compared to each other.
+      tb.dut.u_eflash.gen_flash_cores[0].u_core.u_host_arb.gen_input_bufs[0].u_req_buf.out_o[1:0]
+      tb.dut.u_eflash.gen_flash_cores[0].u_core.u_host_arb.gen_input_bufs[1].u_req_buf.out_o[1:0]
+
+      Make output of both mismatch and check fault_status.arb_err is triggered.
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_phy_arb_redun"]
+    }
+    {
+      name: sec_cm_phy_host_grant_ctrl_consistency
+      desc: '''Verify the countermeasure(s) PHY_HOST_GRANT.CTRL.CONSISTENCY.
+
+      A host transaction was granted to the muxed partition, this is illegal.
+      @ tb.dut.u_eflash.gen_flash_cores[0].u_core.host_gnt,
+      force tb.dut.u_eflash.gen_flash_cores[0].u_core.muxed_part = 1 and check
+      fault_status.host_gnt_err.
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_phy_host_grant_err"]
+    }
+    {
+      name: sec_cm_phy_ack_ctrl_consistency
+      desc: '''Verify the countermeasure(s) PHY_ACK.CTRL.CONSISTENCY.
+
+      Trigger tb.dut.u_eflash.gen_flash_cores[0].u_core.spurious_ack_o as follows:
+      @ tb.dut.u_eflash.gen_flash_cores[0].u_core.ctrl_fsm_idle
+      force tb.dut.u_eflash.gen_flash_cores[0].u_core.ctrl_rsp_vld = 1 or
+      @ tb.dut.u_eflash.gen_flash_cores[0].u_core.host_outstanding[1:0] == 0
+      force tb.dut.u_eflash.gen_flash_cores[0].u_core.host_req_done_o = 1
+      Check fault_status.spurious_ack
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_phy_ack_consistency"]
+    }
+    {
+      name: sec_cm_fifo_ctr_redun
+      desc: '''Verify the countermeasure(s) FIFO.CTR.REDUN.
+      Error is injected by global test.
+      Follwing fifos are in this category.
+        - dut.u_to_rd_fifo,
+        - dut.u_eflash.gen_flash_cores[*].u_core.u_rd.u_rsp_order_fifo,
+        - dut.u_eflash.gen_flash_cores[*].u_core.u_rd.u_rd_storage
+      Error from these fifos will trigger std_fault_status.fifo_err.
+      '''
+      stage: V2S
+      tests: ["flash_ctrl_sec_cm"]
+    }
+    {
+      name: sec_cm_mem_tl_lc_gate_fsm_sparse
+      desc: "Verify the countermeasure(s) MEM_TL_LC_GATE.FSM.SPARSE."
+      stage: V2S
+      tests: ["flash_ctrl_sec_cm"]
+    }
+    {
+      name: sec_cm_prog_tl_lc_gate_fsm_sparse
+      desc: "Verify the countermeasure(s) PROG_TL_LC_GATE.FSM.SPARSE."
+      stage: V2S
+      tests: ["flash_ctrl_sec_cm"]
+    }
+  ]
+}

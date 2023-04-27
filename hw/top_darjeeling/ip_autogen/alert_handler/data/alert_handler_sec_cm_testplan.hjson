@@ -1,0 +1,156 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Security countermeasures testplan extracted from the IP Hjson using reggen.
+//
+// This testplan is auto-generated only the first time it is created. This is
+// because this testplan needs to be hand-editable. It is possible that these
+// testpoints can go out of date if the spec is updated with new
+// countermeasures. When `reggen` is invoked when this testplan already exists,
+// It checks if the list of testpoints is up-to-date and enforces the user to
+// make further manual updates.
+//
+// These countermeasures and their descriptions can be found here:
+// .../alert_handler/data/alert_handler.hjson
+//
+// It is possible that the testing of some of these countermeasures may already
+// be covered as a testpoint in a different testplan. This duplication is ok -
+// the test would have likely already been developed. We simply map those tests
+// to the testpoints below using the `tests` key.
+//
+// Please ensure that this testplan is imported in:
+// .../alert_handler/data/alert_handler_testplan.hjson
+{
+  testpoints: [
+    {
+      name: sec_cm_bus_integrity
+      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
+      stage: V2S
+      tests: ["alert_handler_tl_intg_err"]
+    }
+    {
+      name: sec_cm_config_shadow
+      desc: "Verify the countermeasure(s) CONFIG.SHADOW."
+      stage: V2S
+      tests: ["alert_handler_shadow_reg_errors"]
+    }
+    {
+      name: sec_cm_ping_timer_config_regwen
+      desc: "Verify the countermeasure(s) PING_TIMER.CONFIG.REGWEN."
+      stage: V2S
+      tests: ["alert_handler_smoke"]
+    }
+    {
+      name: sec_cm_alert_config_regwen
+      desc: "Verify the countermeasure(s) ALERT.CONFIG.REGWEN."
+      stage: V2S
+      tests: ["alert_handler_smoke"]
+    }
+    {
+      name: sec_cm_alert_loc_config_regwen
+      desc: "Verify the countermeasure(s) ALERT_LOC.CONFIG.REGWEN."
+      stage: V2S
+      tests: ["alert_handler_smoke"]
+    }
+    {
+      name: sec_cm_class_config_regwen
+      desc: "Verify the countermeasure(s) CLASS.CONFIG.REGWEN."
+      stage: V2S
+      tests: ["alert_handler_smoke"]
+    }
+    {
+      name: sec_cm_alert_intersig_diff
+      desc: "Verify the countermeasure(s) ALERT.INTERSIG.DIFF."
+      stage: V2S
+      tests: ["alert_handler_sig_int_fail"]
+    }
+    {
+      name: sec_cm_lpg_intersig_mubi
+      desc: "Verify the countermeasure(s) LPG.INTERSIG.MUBI."
+      stage: V2S
+      tests: ["alert_handler_lpg"]
+    }
+    {
+      name: sec_cm_esc_intersig_diff
+      desc: "Verify the countermeasure(s) ESC.INTERSIG.DIFF."
+      stage: V2S
+      tests: ["alert_handler_sig_int_fail"]
+    }
+    {
+      name: sec_cm_alert_rx_intersig_bkgn_chk
+      desc: "Verify the countermeasure(s) ALERT_RX.INTERSIG.BKGN_CHK."
+      stage: V2S
+      tests: ["alert_handler_entropy"]
+    }
+    {
+      name: sec_cm_esc_tx_intersig_bkgn_chk
+      desc: "Verify the countermeasure(s) ESC_TX.INTERSIG.BKGN_CHK."
+      stage: V2S
+      tests: ["alert_handler_entropy"]
+    }
+    {
+      name: sec_cm_esc_rx_intersig_bkgn_chk
+      desc: "Verify the countermeasure(s) ESC_RX.INTERSIG.BKGN_CHK."
+      stage: V2S
+      // This test entry is only valid with prim_esc_receiver module, which is not included in the
+      // alert_handler testbench. Thus this test point will be checked in `prim_esc` testbench and
+      // top-level testbench.
+      tests: ["N/A"]
+    }
+    {
+      name: sec_cm_esc_timer_fsm_sparse
+      desc: "Verify the countermeasure(s) ESC_TIMER.FSM.SPARSE."
+      stage: V2S
+      tests: ["alert_handler_sec_cm"]
+    }
+    {
+      name: sec_cm_ping_timer_fsm_sparse
+      desc: "Verify the countermeasure(s) PING_TIMER.FSM.SPARSE."
+      stage: V2S
+      tests: ["alert_handler_sec_cm"]
+    }
+    {
+      name: sec_cm_esc_timer_fsm_local_esc
+      desc: "Verify the countermeasure(s) ESC_TIMER.FSM.LOCAL_ESC."
+      stage: V2S
+      tests: ["alert_handler_sec_cm"]
+    }
+    {
+      name: sec_cm_ping_timer_fsm_local_esc
+      desc: "Verify the countermeasure(s) PING_TIMER.FSM.LOCAL_ESC."
+      stage: V2S
+      tests: ["alert_handler_sec_cm"]
+    }
+    {
+      name: sec_cm_esc_timer_fsm_global_esc
+      desc: "Verify the countermeasure(s) ESC_TIMER.FSM.GLOBAL_ESC."
+      stage: V2S
+      tests: ["alert_handler_sec_cm"]
+    }
+    {
+      name: sec_cm_accu_ctr_redun
+      desc: "Verify the countermeasure(s) ACCU.CTR.REDUN."
+      stage: V2S
+      tests: ["alert_handler_sec_cm"]
+    }
+    {
+      name: sec_cm_esc_timer_ctr_redun
+      desc: "Verify the countermeasure(s) ESC_TIMER.CTR.REDUN."
+      stage: V2S
+      tests: ["alert_handler_sec_cm"]
+    }
+    {
+      name: sec_cm_ping_timer_ctr_redun
+      desc: "Verify the countermeasure(s) PING_TIMER.CTR.REDUN."
+      stage: V2S
+      tests: ["alert_handler_sec_cm"]
+    }
+    {
+      name: sec_cm_ping_timer_lfsr_redun
+      desc: "Verify the countermeasure(s) PING_TIMER.LFSR.REDUN."
+      stage: V2S
+      tests: ["alert_handler_sec_cm"]
+    }
+  ]
+}

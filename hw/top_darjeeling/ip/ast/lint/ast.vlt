@@ -1,0 +1,17 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// waiver file for ast
+
+`verilator_config
+
+// ast_clks_byp.sv has an always_latch block which doesn't actually do anything
+// because the enable signal (!scan_mode_i) is always true. Verilator notices
+// and complains, but we're doing this on purpose.
+lint_off -rule NOLATCH -file "*/rtl/ast_clks_byp.sv"
+
+// Manually mark a clock enable: if we don't tell Verilator we're doing it on
+// purpose, it will warn us that there's a path from "normal" logic through to
+// a clock signal.
+clock_enable -module "ast_clks_byp" -var "clk_ext_en"

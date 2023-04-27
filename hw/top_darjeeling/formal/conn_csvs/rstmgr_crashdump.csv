@@ -1,0 +1,12 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# rstmgr crashdump connectivity
+CONNECTION, ALERT_HANDLER_RSTMGR_CRASHDUMP, top_earlgrey.u_alert_handler,  crashdump_o, top_earlgrey.u_rstmgr_aon, alert_dump_i
+CONNECTION, RV_CORE_IBEX_RSTMGR_CRASHDUMP, top_earlgrey.u_rv_core_ibex, crash_dump_o, top_earlgrey.u_rstmgr_aon, cpu_dump_i

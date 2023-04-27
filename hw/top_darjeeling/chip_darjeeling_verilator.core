@@ -1,0 +1,46 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:chip_earlgrey_verilator:0.1"
+description: "Earl Grey toplevel for simulation with Verilator"
+filesets:
+  files_sim_verilator:
+    depend:
+      - lowrisc:systems:top_earlgrey:0.1
+      - lowrisc:systems:top_earlgrey_pkg
+      - lowrisc:ibex:ibex_tracer
+      - lowrisc:prim:clock_div
+      - lowrisc:systems:ast
+      - lowrisc:systems:scan_role_pkg
+
+    files:
+      - rtl/chip_earlgrey_verilator.sv: { file_type: systemVerilogSource }
+
+parameters:
+  AST_BYPASS_CLK:
+    datatype: bool
+    paramtype: vlogdefine
+  IBEX_CUSTOM_PMP_RESET_VALUES:
+    datatype: bool
+    default: true
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - files_sim_verilator
+    parameters:
+      - IBEX_CUSTOM_PMP_RESET_VALUES
+      - AST_BYPASS_CLK=true
+    toplevel: chip_earlgrey_verilator
+
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

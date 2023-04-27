@@ -1,0 +1,14 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# ast -> entropy_src connectivity
+CONNECTION, AST_ENTROPY_SRC_RNG_VAL, u_ast, rng_val_o, top_earlgrey.u_entropy_src, entropy_src_rng_i.rng_valid
+CONNECTION, AST_ENTROPY_SRC_RNG_B, u_ast, rng_b_o, top_earlgrey.u_entropy_src, entropy_src_rng_i.rng_b
+CONNECTION, AST_ENTROPY_SRC_RNG_FIPS, top_earlgrey.u_entropy_src, rng_fips_o, u_ast, rng_fips_i,
+CONNECTION, AST_ENTROPY_SRC_RNG_EN, top_earlgrey.u_entropy_src, entropy_src_rng_o.rng_enable, u_ast, rng_en_i

@@ -1,0 +1,12 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+{
+  unreachable:
+  [
+    rv_plic_tb.dut.FpvSecCmRegWeOnehotCheck_A:precondition1
+    rv_plic_tb.dut.u_reg.u_prim_reg_we_check.u_prim_onehot_check.Onehot0Check_A:precondition1
+    rv_plic_tb.dut.u_reg.u_prim_reg_we_check.u_prim_onehot_check.gen_enable_check.gen_not_strict.EnableCheck_A:precondition1
+  ]
+}

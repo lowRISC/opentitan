@@ -1,0 +1,218 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: chip_earlgrey_verilator
+
+  // Top level dut name (sv module).
+  dut: "{name}"
+
+  // Top level testbench name (sv module).
+  tb: "{name}"
+
+  // Default simulator used to sign off.
+  tool: verilator
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: "lowrisc:systems:{name}:0.1"
+
+  // Testplan hjson file.
+  # testplan: "{proj_root}/hw/top_earlgrey/data/chip_testplan.hjson"
+
+  // Import additional common sim cfg files.
+  import_cfgs: [// Project wide common sim cfg file
+                "{proj_root}/hw/dv/tools/dvsim/verilator.hjson",
+               ]
+
+  overrides: [
+    // Use FuseSoC to build the Verilator executable. Skip the SV file list
+    // generation step entirely.
+    {
+      name: sv_flist_gen_cmd
+      value: ""
+    }
+    {
+      name: sv_flist_gen_opts
+      value: []
+    }
+    {
+      name: sv_flist_gen_dir
+      value: "{build_dir}"
+    }
+    // This defaults to 'ip' in `hw/data/common_project_cfg.hjson`. Override
+    // since we are building the top level.
+    {
+      name: design_level
+      value: top
+    }
+  ]
+
+  // Common run parameters. Each test entry can override any of these as needed.
+  reseed: 1
+  sw_build_device: sim_verilator
+
+  // Add run modes.
+  run_modes: [
+    {
+      name: sw_test_mode
+      sw_images: ["//sw/device/lib/testing/test_rom:test_rom:0",
+                  "//hw/ip/otp_ctrl/data:img_rma:3"]
+      run_opts: [
+        // The following shell snippet converts the SW images specification to what's
+        // needed as a run time switch to Verilator.
+        '''{eval_cmd} \
+        opts=;  \
+        types=(rom flash otbn otp); \
+        exts=(scr.39.vmem elf elf vmem); \
+        images=`echo {sw_images}`; \
+        for image in $images; do \
+          basename=`echo $image | cut -d: -f 2`;  \
+          index=`echo $image | cut -d: -f 3`; \
+          opts="$opts --meminit=${types[$index]},{run_dir}/$basename""_{sw_build_device}.${exts[$index]}"; \
+        done; \
+        echo "$opts"''',
+      ]
+    }
+  ]
+
+  // All tests are SW based, so enable this by default.
+  en_run_modes: ["sw_test_mode"]
+
+  // List of test specifications.
+  //
+  // If you are adding a test that has been generated from a Bazel
+  // `opentitan_functest` macro, you can specify the test using its Bazel label
+  // followed by an index separated with a ':', which is used by the testbench
+  // to know what type of image is it:
+  // - 0 for Boot ROM,
+  // - 1 for SW test (loaded in flash),
+  // - 2 for OTBN test,
+  // - 3 for OTP.
+  // This allows an arbitrary number of SW images to be supplied to the TB.
+  //
+  // For example, if the Bazel label for a test is:
+  // `//sw/device/tests:example_test_from_flash`, then you would specify this as
+  // `//sw/device/tests:example_test_from_flash:1`.
+  tests: [
+    {
+      name: aes_smoketest
+      sw_images: ["//sw/device/tests:aes_smoketest:1"]
+    }
+    {
+      name: aon_timer_smoketest
+      sw_images: ["//sw/device/tests:aon_timer_smoketest:1"]
+    }
+    {
+      name: clkmgr_smoketest
+      sw_images: ["//sw/device/tests:clkmgr_smoketest:1"]
+    }
+    // TODO(lowrisc/opentitan#7505): Debug CSRNG generate bits mismatch.
+    // {
+    //  name: csrng_smoketest
+    //  sw_images: ["//sw/device/tests:csrng_smoketest:1"]
+    // }
+    // TODO(lowrisc/opentitan#10092): Remove dependency on uncontrolled environment.
+    {
+      name: entropy_src_smoketest
+      sw_images: ["//sw/device/tests:entropy_src_smoketest:1"]
+    }
+    {
+      name: gpio_smoketest
+      sw_images: ["//sw/device/tests:gpio_smoketest:1"]
+    }
+    {
+      name: hmac_smoketest
+      sw_images: ["//sw/device/tests:hmac_smoketest:1"]
+    }
+    {
+      name: kmac_smoketest
+      sw_images: ["//sw/device/tests:kmac_smoketest:1"]
+    }
+    {
+      name: kmac_mode_cshake_test
+      sw_images: ["//sw/device/tests:kmac_mode_cshake_test:1"]
+    }
+    {
+      name: kmac_mode_kmac_test
+      sw_images: ["//sw/device/tests:kmac_mode_kmac_test:1"]
+    }
+    {
+      name: crt_test
+      sw_images: ["//sw/device/tests:crt_test:1"]
+    }
+    {
+      name: otbn_smoketest_rtl
+      sw_images: ["//sw/device/tests:otbn_smoketest:1"]
+    }
+    {
+      name: otp_ctrl_smoketest
+      sw_images: ["//sw/device/tests:otp_ctrl_smoketest:1"]
+    }
+    {
+      name: rv_plic_smoketest
+      sw_images: ["//sw/device/tests:rv_plic_smoketest:1"]
+    }
+    // TODO(#6656): AST is not instantiated in chip_earlgrey_verilator.
+    // {
+    //   name: pwrmgr_smoketest
+    //   sw_images: ["//sw/device/tests:pwrmgr_smoketest:1"]
+    // }
+    {
+      name: rstmgr_smoketest
+      sw_images: ["//sw/device/tests:rstmgr_smoketest:1"]
+    }
+    {
+      name: rv_timer_smoketest
+      sw_images: ["//sw/device/tests:rv_timer_smoketest:1"]
+    }
+    {
+      name: uart_smoketest
+      sw_images: ["//sw/device/tests:uart_smoketest:1"]
+    }
+    {
+      name: flash_ctrl_test
+      sw_images: ["//sw/device/tests:flash_ctrl_test:1"]
+    }
+    {
+      name: pmp_smoketest_napot
+      sw_images: ["//sw/device/tests:pmp_smoketest_napot:1"]
+    }
+    {
+      name: pmp_smoketest_tor
+      sw_images: ["//sw/device/tests:pmp_smoketest_tor:1"]
+    }
+    {
+      name: usbdev_test
+      sw_images: ["//sw/device/tests:usbdev_test:1"]
+    }
+    {
+      name: sw_silicon_creator_lib_driver_hmac_functest
+      sw_images: ["//sw/device/silicon_creator/testing:sw_silicon_creator_lib_driver_hmac_functest:1"]
+    }
+    {
+      name: sw_silicon_creator_lib_driver_uart_functest
+      sw_images: ["//sw/device/silicon_creator/testing:sw_silicon_creator_lib_driver_uart_functest:1"]
+    }
+    {
+      name: sw_silicon_creator_lib_driver_alert_functest
+      sw_images: ["//sw/device/silicon_creator/testing:sw_silicon_creator_lib_driver_alert_functest:1"]
+    }
+    {
+      name: sw_silicon_creator_lib_driver_watchdog_functest
+      sw_images: ["//sw/device/silicon_creator/testing:sw_silicon_creator_lib_driver_watchdog_functest:1"]
+    }
+    {
+      name: sw_silicon_creator_lib_boot_data_functest
+      sw_images: ["//sw/device/silicon_creator/testing:sw_silicon_creator_lib_boot_data_functest:1"]
+    }
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: smoke
+      tests: []
+    }
+  ]
+}

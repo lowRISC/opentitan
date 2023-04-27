@@ -1,0 +1,43 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# AST DFT module emits some configuration bits for single and dual port memories in the chip. These
+# cannot be covered functionally in the open source repo, since they are not used by the generic
+# memory models. TThese signals are excluded from coverage collection AFTER they have been added to
+# this checker.
+#
+#  The source path (within AST) is inferred manually from the RTL. The destination paths are
+#  obtained by running a basic chip level simulation with the plusarg "+show_mem_paths=1".
+
+# Dual port RAMs.
+# To spi_device.
+CONNECTION, AST_DFT_SPI_DEVICE_RAM_2P_CFG, u_ast.u_ast_dft, "{10'h0, dpram_rml_o}", top_earlgrey.u_spi_device.u_memory_2p.u_mem, cfg_i
+
+# To usbdev.
+CONNECTION, AST_DFT_USBDEV_RAM_2P_CFG, u_ast.u_ast_dft, "{10'h0, dpram_rmf_o}", top_earlgrey.u_usbdev.gen_no_stubbed_memory.u_memory_2p.i_prim_ram_2p_async_adv.u_mem, cfg_i
+
+# Single port RAMs.
+# To otbn.
+CONNECTION, AST_DFT_OTBN_IMEM_RAM_1P_CFG, u_ast.u_ast_dft, "{spram_rm_o, sprgf_rm_o}", top_earlgrey.u_otbn.u_imem.u_prim_ram_1p_adv.u_mem, cfg_i
+CONNECTION, AST_DFT_OTBN_DMEM_RAM_1P_CFG, u_ast.u_ast_dft, "{spram_rm_o, sprgf_rm_o}", top_earlgrey.u_otbn.u_dmem.u_prim_ram_1p_adv.u_mem, cfg_i
+
+# To rv_core_ibex.
+CONNECTION, AST_DFT_RV_CORE_IBEX_TAG0_RAM_1P_CFG, u_ast.u_ast_dft, "{spram_rm_o, sprgf_rm_o}", top_earlgrey.u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[0].gen_scramble_rams.tag_bank.u_prim_ram_1p_adv.u_mem, cfg_i
+CONNECTION, AST_DFT_RV_CORE_IBEX_TAG1_RAM_1P_CFG, u_ast.u_ast_dft, "{spram_rm_o, sprgf_rm_o}", top_earlgrey.u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[1].gen_scramble_rams.tag_bank.u_prim_ram_1p_adv.u_mem, cfg_i
+CONNECTION, AST_DFT_RV_CORE_IBEX_DATA0_RAM_1P_CFG, u_ast.u_ast_dft,"{spram_rm_o, sprgf_rm_o}", top_earlgrey.u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[0].gen_scramble_rams.data_bank.u_prim_ram_1p_adv.u_mem, cfg_i
+CONNECTION, AST_DFT_RV_CORE_IBEX_DATA1_RAM_1P_CFG, u_ast.u_ast_dft, "{spram_rm_o, sprgf_rm_o}", top_earlgrey.u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[1].gen_scramble_rams.data_bank.u_prim_ram_1p_adv.u_mem, cfg_i
+
+# To sram_ctrl (main).
+CONNECTION, AST_DFT_SRAM_MAIN_RAM_1P_CFG, u_ast.u_ast_dft, "{spram_rm_o, sprgf_rm_o}", top_earlgrey.u_sram_ctrl_main.u_prim_ram_1p_scr.u_prim_ram_1p_adv.u_mem, cfg_i
+
+# To sram_ctrl (ret).
+CONNECTION, AST_DFT_SRAM_RET_RAM_1P_CFG, u_ast.u_ast_dft, "{spram_rm_o, sprgf_rm_o}", top_earlgrey.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr.u_prim_ram_1p_adv.u_mem, cfg_i
+
+# To rom.
+CONNECTION, AST_DFT_ROM_CFG, u_ast.u_ast_dft, sprom_rm_o,top_earlgrey.u_rom_ctrl.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom, cfg_i

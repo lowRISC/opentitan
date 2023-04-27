@@ -1,0 +1,14 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# pwrmgr rstmgr connections
+CONNECTION, PWRMGR_RST_LC_REQ,    top_earlgrey.u_pwrmgr_aon, pwr_rst_o.rst_lc_req,  top_earlgrey.u_rstmgr_aon, pwr_i.rst_lc_req
+CONNECTION, PWRMGR_RST_SYS_REQ,   top_earlgrey.u_pwrmgr_aon, pwr_rst_o.rst_sys_req, top_earlgrey.u_rstmgr_aon, pwr_i.rst_sys_req
+CONNECTION, RSTMGR_RST_LC_SRC_N,  top_earlgrey.u_rstmgr_aon, pwr_o.rst_lc_src_n,    top_earlgrey.u_pwrmgr_aon, pwr_rst_i.rst_lc_src_n
+CONNECTION, RSTMGR_RST_SYS_SRC_N, top_earlgrey.u_rstmgr_aon, pwr_o.rst_sys_src_n,   top_earlgrey.u_pwrmgr_aon, pwr_rst_i.rst_sys_src_n
