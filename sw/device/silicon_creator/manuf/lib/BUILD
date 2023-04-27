@@ -9,6 +9,11 @@ load(
     "cw310_params",
     "opentitan_functest",
 )
+load(
+    "//rules:opentitan.bzl",
+    "RSA_ONLY_KEYSETS",
+    "filter_keysets_for_lc_state",
+)
 load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
 
@@ -102,6 +107,7 @@ opentitan_functest(
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_dev_initial",
     ),
+    keyset = RSA_ONLY_KEYSETS[1],
     targets = [
         "cw310_rom",
     ],
@@ -198,6 +204,7 @@ opentitan_functest(
     data = [
         "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der",
     ],
+    keyset = RSA_ONLY_KEYSETS[1],
     targets = [
         "cw310_rom",
     ],
@@ -244,6 +251,7 @@ lc_raw_unlock_token(
             ],
         ),
         data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        keyset = RSA_ONLY_KEYSETS[0] if (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS else filter_keysets_for_lc_state(RSA_ONLY_KEYSETS, lc_val)[0],
         targets = ["cw310_rom"],
         test_harness = "//sw/host/tests/manuf/manuf_scrap",
         deps = [

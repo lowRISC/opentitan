@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:const.bzl", "CONST", "lcv_hw_to_sw")
 load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
@@ -19,6 +20,7 @@ load(
     _opentitan_transition = "opentitan_transition",
 )
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("@bazel_skylib//lib:structs.bzl", "structs")
 
 """Rules to build OpenTitan for the RISC-V target"""
 
@@ -43,15 +45,161 @@ PER_DEVICE_DEPS = {
     "fpga_cw310": ["@//sw/device/lib/arch:fpga_cw310"],
 }
 
-# Default keys used to sign ROM_EXT and BL0 images for testing.
-DEFAULT_SIGNING_KEYS = {
-    "fake_test_key_0": "@//sw/device/silicon_creator/rom/keys/fake:test_private_key_0",
-    "fake_dev_key_0": "@//sw/device/silicon_creator/rom/keys/fake:dev_private_key_0",
-    "fake_prod_key_0": "@//sw/device/silicon_creator/rom/keys/fake:prod_private_key_0",
-    "unauthorized_0": "@//sw/device/silicon_creator/rom/keys:unauthorized_private_key_0",
-    "fake_rom_ext_test_key_0": "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0",
-    "fake_rom_ext_dev_key_0": "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_dev_private_key_0",
-}
+def create_key_(name, label, hw_lc_states):
+    return struct(
+        name = name,
+        label = label,
+        hw_lc_states = hw_lc_states,
+    )
+
+def create_test_key(name, label):
+    return create_key_(name, label, [
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.TEST_UNLOCKED1,
+        CONST.LCV.TEST_UNLOCKED2,
+        CONST.LCV.TEST_UNLOCKED3,
+        CONST.LCV.TEST_UNLOCKED4,
+        CONST.LCV.TEST_UNLOCKED5,
+        CONST.LCV.TEST_UNLOCKED6,
+        CONST.LCV.TEST_UNLOCKED7,
+        CONST.LCV.RMA,
+    ])
+
+def create_dev_key(name, label):
+    return create_key_(name, label, [
+        CONST.LCV.DEV,
+    ])
+
+def create_prod_key(name, label):
+    return create_key_(name, label, [
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.TEST_UNLOCKED1,
+        CONST.LCV.TEST_UNLOCKED2,
+        CONST.LCV.TEST_UNLOCKED3,
+        CONST.LCV.TEST_UNLOCKED4,
+        CONST.LCV.TEST_UNLOCKED5,
+        CONST.LCV.TEST_UNLOCKED6,
+        CONST.LCV.TEST_UNLOCKED7,
+        CONST.LCV.DEV,
+        CONST.LCV.PROD,
+        CONST.LCV.PROD_END,
+        CONST.LCV.RMA,
+    ])
+
+def create_keyset(rsa_key, spx_key):
+    return struct(
+        rsa = rsa_key,
+        spx = spx_key,
+    )
+
+# Keys available in the repo
+SILICON_CREATOR_KEYS = struct(
+    RSA = struct(
+        FAKE = struct(
+            TEST = [
+                create_test_key("rsa_fake_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake:test_private_key_0"),
+            ],
+            DEV = [
+                create_dev_key("rsa_fake_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake:dev_private_key_0"),
+            ],
+            PROD = [
+                create_prod_key("rsa_fake_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake:prod_private_key_0"),
+            ],
+        ),
+        REAL = None,
+        UNAUTHORIZED = [
+            create_key_("rsa_unauthorized_0", "@//sw/device/silicon_creator/rom/keys:unauthorized_private_key_0", []),
+        ],
+    ),
+    SPX = struct(
+        FAKE = struct(
+            TEST = [
+                create_test_key("spx_fake_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:test_key_0_spx"),
+            ],
+            DEV = [
+                create_dev_key("spx_fake_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:dev_key_0_spx"),
+            ],
+            PROD = [
+                create_prod_key("spx_fake_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx"),
+            ],
+        ),
+        REAL = None,
+        UNAUTHORIZED = [
+            create_key_("spx_unauthorized_0", "@//sw/device/silicon_creator/rom/keys/spx:unauthorized_0_spx", []),
+        ],
+    ),
+)
+
+SILICON_OWNER_KEYS = struct(
+    RSA = struct(
+        FAKE = struct(
+            TEST = [
+                create_test_key("rsa_fake_rom_ext_test_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0"),
+            ],
+            DEV = [
+                create_dev_key("rsa_fake_rom_ext_dev_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_dev_private_key_0"),
+            ],
+            PROD = None,
+        ),
+        REAL = None,
+        UNAUTHORIZED = None,
+    ),
+)
+
+def flatten(l):
+    return [item for ll in l for item in ll]
+
+def key_allowed_in_lc_state(key, hw_lc_state_val):
+    all_hw_lc_state_vals = structs.to_dict(CONST.LCV).values()
+    if not hw_lc_state_val in all_hw_lc_state_vals:
+        fail("Wrong life cycle state value: '{}', must be one of {}. Did you pass a string instead of the integer value?".format(hw_lc_state_val, all_hw_lc_state_vals))
+    return hw_lc_state_val in key.hw_lc_states
+
+def get_keysets_for_lc_state(hw_lc_state, rsa = SILICON_CREATOR_KEYS.RSA.FAKE, spx = SILICON_CREATOR_KEYS.SPX.FAKE):
+    # [(rsa_key, spx_key), ...]
+    if rsa and spx:
+        rsa = flatten(structs.to_dict(s = rsa).values())
+        spx = flatten(structs.to_dict(s = spx).values())
+    elif rsa and not spx:
+        rsa = flatten(structs.to_dict(s = rsa).values())
+        spx = [None] * len(rsa)
+    elif not rsa and spx:
+        spx = flatten(structs.to_dict(s = spx).values())
+        rsa = [None] * len(spx)
+    else:
+        fail("No keys were provided")
+
+    if len(rsa) != len(spx):
+        fail("Lists have different lengths")
+    keys = zip(rsa, spx)
+    res = [
+        create_keyset(rsa, spx)
+        for rsa, spx in keys
+        if (rsa == None or key_allowed_in_lc_state(rsa, hw_lc_state)) and (spx == None or key_allowed_in_lc_state(spx, hw_lc_state))
+    ]
+    return res
+
+def filter_keysets_for_lc_state(keysets, hw_lc_state):
+    return [k for k in keysets if (not k.rsa or key_allowed_in_lc_state(k.rsa, hw_lc_state)) and (not k.spx or key_allowed_in_lc_state(k.spx, hw_lc_state))]
+
+RSA_ONLY_KEYSETS = [
+    create_keyset(SILICON_CREATOR_KEYS.RSA.FAKE.TEST[0], None),
+    create_keyset(SILICON_CREATOR_KEYS.RSA.FAKE.DEV[0], None),
+    create_keyset(SILICON_CREATOR_KEYS.RSA.FAKE.PROD[0], None),
+    create_keyset(SILICON_CREATOR_KEYS.RSA.UNAUTHORIZED[0], None),
+]
+
+RSA_SPX_KEYSETS = [
+    create_keyset(SILICON_CREATOR_KEYS.RSA.FAKE.TEST[0], SILICON_CREATOR_KEYS.SPX.FAKE.TEST[0]),
+    create_keyset(SILICON_CREATOR_KEYS.RSA.FAKE.DEV[0], SILICON_CREATOR_KEYS.SPX.FAKE.DEV[0]),
+    create_keyset(SILICON_CREATOR_KEYS.RSA.FAKE.PROD[0], SILICON_CREATOR_KEYS.SPX.FAKE.PROD[0]),
+    create_keyset(SILICON_CREATOR_KEYS.RSA.UNAUTHORIZED[0], SILICON_CREATOR_KEYS.SPX.UNAUTHORIZED[0]),
+]
+
+RSA_ONLY_ROM_EXT_KEYSETS = [
+    create_keyset(SILICON_OWNER_KEYS.RSA.FAKE.TEST[0], None),
+    create_keyset(SILICON_OWNER_KEYS.RSA.FAKE.DEV[0], None),
+]
 
 def _obj_transform_impl(ctx):
     cc_toolchain = find_cc_toolchain(ctx).cc
@@ -234,24 +382,31 @@ bin_to_archive = rv_rule(
 )
 
 def _sign_bin_impl(ctx):
+    inputs = [
+        ctx.file.bin,
+        ctx.file.rsa_key,
+        ctx.file._opentitantool,
+    ]
+    manifest_args = []
+    if ctx.file.manifest:
+        manifest_args = ["--manifest={}".format(ctx.file.manifest.path)]
+        inputs.append(ctx.file.manifest)
+
+    key_suffix = ctx.attr.rsa_key_name
+    spx_args = []
+    if ctx.file.spx_key:
+        key_suffix = "{0}.{1}".format(ctx.attr.rsa_key_name, ctx.attr.spx_key_name)
+        spx_args = ["--spx-key={}".format(ctx.file.spx_key.path)]
+        inputs.append(ctx.file.spx_key)
+
     signed_image = ctx.actions.declare_file(
         "{0}.{1}.signed.bin".format(
             # Remove ".bin" from file basename.
             ctx.file.bin.basename.replace("." + ctx.file.bin.extension, ""),
-            ctx.attr.key_name,
+            key_suffix,
         ),
     )
     outputs = [signed_image]
-
-    inputs = [
-        ctx.file.bin,
-        ctx.file.key,
-        ctx.file._opentitantool,
-    ]
-    manifest = []
-    if ctx.file.manifest:
-        manifest = ["--manifest={}".format(ctx.file.manifest.path)]
-        inputs.append(ctx.file.manifest)
 
     ctx.actions.run(
         outputs = outputs,
@@ -261,10 +416,10 @@ def _sign_bin_impl(ctx):
             "image",
             "manifest",
             "update",
-            "--rsa-key={}".format(ctx.file.key.path),
+            "--rsa-key={}".format(ctx.file.rsa_key.path),
             "--output={}".format(signed_image.path),
             ctx.file.bin.path,
-        ] + manifest,
+        ] + manifest_args + spx_args,
         executable = ctx.file._opentitantool.path,
     )
     return [DefaultInfo(
@@ -276,11 +431,14 @@ sign_bin = rv_rule(
     implementation = _sign_bin_impl,
     attrs = {
         "bin": attr.label(allow_single_file = True),
-        "key": attr.label(
-            default = "@//sw/device/silicon_creator/rom/keys:test_private_key_0",
+        "rsa_key": attr.label(
             allow_single_file = True,
         ),
-        "key_name": attr.string(),
+        "rsa_key_name": attr.string(),
+        "spx_key": attr.label(
+            allow_single_file = True,
+        ),
+        "spx_key_name": attr.string(),
         "manifest": attr.label(allow_single_file = True),
         # TODO(lowRISC/opentitan:#11199): explore other options to side-step the
         # need for this transition, in order to build the ROM_EXT signer tool.
@@ -893,7 +1051,7 @@ def opentitan_multislot_flash_binary(
             signed_dev_binary = "{}_{}_bin_signed_{}".format(
                 src,
                 device,
-                configs["key"],
+                configs["key"] if type(configs["key"]) == "string" else configs["key"].rsa.name,
                 testonly = testonly,
             )
             signed_dev_binaries[signed_dev_binary] = configs["offset"]
@@ -951,7 +1109,7 @@ def opentitan_flash_binary(
         name,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
-        signing_keys = DEFAULT_SIGNING_KEYS,
+        signing_keysets = RSA_ONLY_KEYSETS + RSA_ONLY_ROM_EXT_KEYSETS,
         signed = True,
         sim_otp = None,
         testonly = False,
@@ -961,14 +1119,14 @@ def opentitan_flash_binary(
 
     This macro is mostly a wrapper around the `opentitan_binary` macro, but also
     creates artifacts for each of the keys in `PER_DEVICE_DEPS`, and if signing
-    is enabled, each of the keys in `signing_keys`. The actual artifacts created
+    is enabled, each of the keys in `signing_keysets`. The actual artifacts created
     artifacts created are outputs of the rules emitted by the `opentitan_binary`
     macro and those listed below.
     Args:
       @param name: The name of this rule.
       @param devices: List of devices to build the target for.
       @param platform: The target platform for the artifacts.
-      @param signing_keys: The signing keys for to sign each BIN file with.
+      @param signing_keysets: The signing keys to sign each BIN file with.
       @param signed: Whether or not to emit signed binary/VMEM files.
       @param sim_otp: OTP image that contains flash scrambling keys / enablement flag
                       (only relevant for VMEM files built for sim targets).
@@ -1021,25 +1179,40 @@ def opentitan_flash_binary(
         if signed:
             if manifest == None:
                 fail("A 'manifest' must be provided in order to sign flash images.")
-            for (key_name, key) in signing_keys.items():
-                # Sign the Binary.
-                signed_bin_name = "{}_bin_signed_{}".format(devname, key_name)
-                dev_targets.append(":" + signed_bin_name)
-                sign_bin(
-                    name = signed_bin_name,
-                    bin = bin_name,
-                    key = key,
-                    key_name = key_name,
-                    manifest = manifest,
-                    testonly = testonly,
-                )
+            for keyset in signing_keysets:
+                if keyset.spx:
+                    # Sign the binary using RSA and SPX+.
+                    signed_bin_name = "{}_bin_signed_{}_{}".format(devname, keyset.rsa.name, keyset.spx.name)
+                    dev_targets.append(":" + signed_bin_name)
+                    sign_bin(
+                        name = signed_bin_name,
+                        bin = bin_name,
+                        rsa_key = keyset.rsa.label,
+                        rsa_key_name = keyset.rsa.name,
+                        spx_key = keyset.spx.label,
+                        spx_key_name = keyset.spx.name,
+                        manifest = manifest,
+                        testonly = testonly,
+                    )
+                else:
+                    # Sign the binary using RSA only.
+                    signed_bin_name = "{}_bin_signed_{}".format(devname, keyset.rsa.name)
+                    dev_targets.append(":" + signed_bin_name)
+                    sign_bin(
+                        name = signed_bin_name,
+                        bin = bin_name,
+                        rsa_key = keyset.rsa.label,
+                        rsa_key_name = keyset.rsa.name,
+                        manifest = manifest,
+                        testonly = testonly,
+                    )
 
                 # We only need to generate VMEM files for sim devices.
                 if device in ["sim_dv", "sim_verilator"]:
                     # Generate a VMEM64 from the signed binary.
                     signed_vmem_name = "{}_vmem64_signed_{}".format(
                         devname,
-                        key_name,
+                        keyset.rsa.name,
                     )
                     dev_targets.append(":" + signed_vmem_name)
                     bin_to_vmem(
@@ -1053,7 +1226,7 @@ def opentitan_flash_binary(
                     # Scramble / compute ECC for signed VMEM64.
                     scr_signed_vmem_name = "{}_scr_vmem64_signed_{}".format(
                         devname,
-                        key_name,
+                        keyset.rsa.name,
                     )
                     dev_targets.append(":" + scr_signed_vmem_name)
                     scramble_flash_vmem(

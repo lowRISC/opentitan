@@ -2,7 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@//rules:opentitan.bzl", "opentitan_flash_binary", "opentitan_rom_binary")
+load(
+    "@//rules:opentitan.bzl",
+    "RSA_ONLY_KEYSETS",
+    "opentitan_flash_binary",
+    "opentitan_rom_binary",
+)
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@bazel_skylib//lib:collections.bzl", "collections")
 
@@ -271,7 +276,7 @@ def opentitan_functest(
         manifest = "@//sw/device/silicon_creator/rom_ext:manifest_standard",
         slot = "silicon_creator_a",
         test_harness = "@//sw/host/opentitantool",
-        key = "fake_prod_key_0",
+        keyset = RSA_ONLY_KEYSETS[0],
         logging = "info",
         dv = None,
         verilator = None,
@@ -301,7 +306,7 @@ def opentitan_functest(
       @param manifest: Partially populated manifest to set boot stage/slot configs.
       @param slot: What slot to build the image for.
       @param test_harness: The binary on the host side that runs the test.
-      @param key: Which signed test image (by key) to use.
+      @param keyset: Which signed test image (by key set) to use.
       @param dv: DV test parameters.
       @param verilator: Verilator test parameters.
       @param cw310: CW310 test parameters.
@@ -477,8 +482,17 @@ def opentitan_functest(
             # Multislot flash binaries could have different slots / stages
             # signed with different keys. Therefore, the key name will not be
             # part of the target name for such images.
-            if key != "multislot":
-                flash += "_{}".format(key)
+            if keyset != "multislot":
+                if type(keyset) == "string":
+                    suffix = keyset
+                else:
+                    suffix_parts = []
+                    if keyset.rsa:
+                        suffix_parts.append(keyset.rsa.name)
+                    if keyset.spx:
+                        suffix_parts.append(keyset.spx.name)
+                    suffix = "_".join(suffix_parts)
+                flash += "_{}".format(suffix)
 
         # If test is to be run in ROM we load the same image into flash as a
         # as a placeholder (since execution will never reach flash). Moreover,
