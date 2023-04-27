@@ -8,6 +8,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
+#include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -214,31 +215,6 @@ static void check_data(const char *msg, const uint8_t *actual,
 }
 
 /**
- * Starts a profiling section.
- *
- * Call this function at the start of a section that should be profiled, and
- * call `profile_end()` at the end of it to display the results.
- *
- * @return The cycle counter when starting the profiling.
- */
-static uint64_t profile_start(void) { return ibex_mcycle_read(); }
-
-/**
- * Ends a profiling section.
- *
- * The time since `profile_start()` is printed as log message.
- *
- * @param t_start Start timestamp, as returned from profile_start().
- * @param msg Name of the operation (for logging purposes).
- */
-static void profile_end(uint64_t t_start, const char *msg) {
-  uint64_t t_end = ibex_mcycle_read();
-  uint32_t cycles = t_end - t_start;
-  uint32_t time_us = cycles / 100;
-  LOG_INFO("%s took %u cycles or %u us @ 100 MHz.", msg, cycles, time_us);
-}
-
-/**
  * Signs a message with ECDSA using the P-256 curve.
  *
  * @param otbn                The OTBN context object.
@@ -361,7 +337,7 @@ static void test_ecdsa_p256_roundtrip(void) {
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
   otbn_init_irq();
   CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppP256Ecdsa));
-  profile_end(t_start_init, "Initialization");
+  profile_end_and_print(t_start_init, "Initialization");
 
   // Sign
   uint8_t signature_r[32] = {0};
@@ -370,7 +346,7 @@ static void test_ecdsa_p256_roundtrip(void) {
   LOG_INFO("Signing");
   uint64_t t_start_sign = profile_start();
   p256_ecdsa_sign(&otbn, kIn, kPrivateKeyD, signature_r, signature_s);
-  profile_end(t_start_sign, "Sign");
+  profile_end_and_print(t_start_sign, "Sign");
 
   // Securely wipe OTBN data memory and reload app
   LOG_INFO("Wiping OTBN DMEM and reloading app");
@@ -389,7 +365,7 @@ static void test_ecdsa_p256_roundtrip(void) {
   // either OTBN or the host CPU needs to do as part of the signature
   // verification.
   check_data("signature_x_r", signature_r, signature_x_r, 32);
-  profile_end(t_start_verify, "Verify");
+  profile_end_and_print(t_start_verify, "Verify");
 
   // Securely wipe OTBN data memory
   LOG_INFO("Wiping OTBN DMEM");

@@ -8,26 +8,9 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
-#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-
-/**
- * Start a cycle-count timing profile.
- */
-static uint64_t profile_start() { return ibex_mcycle_read(); }
-
-/**
- * End a cycle-count timing profile.
- *
- * Call `profile_start()` first.
- */
-static uint32_t profile_end(uint64_t t_start) {
-  uint64_t t_end = ibex_mcycle_read();
-  uint64_t cycles = t_end - t_start;
-  CHECK(cycles <= UINT32_MAX);
-  return (uint32_t)cycles;
-}
 
 /**
  * Static mask to use for testing.
@@ -123,8 +106,7 @@ uint32_t call_aes_gcm_encrypt(aes_gcm_test_t test) {
   uint64_t t_start = profile_start();
   crypto_status_t err = otcrypto_aes_encrypt_gcm(
       &key, plaintext, iv, aad, tag_len, &actual_ciphertext, &actual_tag);
-  uint32_t cycles = profile_end(t_start);
-  LOG_INFO("aes_gcm_encrypt took %d cycles", cycles);
+  uint32_t cycles = profile_end_and_print(t_start, "aes_gcm_encrypt");
 
   // Check for errors and that the tag and plaintext match expected values.
   CHECK(err == kCryptoStatusOK);
@@ -195,8 +177,7 @@ uint32_t call_aes_gcm_decrypt(aes_gcm_test_t test, bool tag_valid) {
   uint64_t t_start = profile_start();
   crypto_status_t err = otcrypto_aes_decrypt_gcm(
       &key, ciphertext, iv, aad, tag_len, tag, &actual_plaintext, &success);
-  uint32_t cycles = profile_end(t_start);
-  LOG_INFO("aes_gcm_decrypt took %d cycles", cycles);
+  uint32_t cycles = profile_end_and_print(t_start, "aes_gcm_decrypt");
 
   // Check the results.
   CHECK(err == kCryptoStatusOK);
