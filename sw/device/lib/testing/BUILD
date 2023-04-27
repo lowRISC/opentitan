@@ -259,6 +259,16 @@ cc_library(
 )
 
 cc_library(
+    name = "profile",
+    srcs = ["profile.c"],
+    hdrs = ["profile.h"],
+    deps = [
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "pwrmgr_testutils",
     srcs = ["pwrmgr_testutils.c"],
     hdrs = ["pwrmgr_testutils.h"],

@@ -7,6 +7,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
+#include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -189,34 +190,6 @@ static void check_data(const uint8_t *actual, const uint8_t *expected,
   }
 }
 
-static uint64_t t_start;
-static uint64_t t_end;
-
-/**
- * Starts a profiling section.
- *
- * Call this function at the start of a section that should be profiled, and
- * call `profile_end()` at the end of it to display the results.
- *
- * Profiling section may not overlap, i.e. `profile_start()`/`profile_end()`
- * pairs may not be nested.
- */
-static void profile_start(void) { t_start = ibex_mcycle_read(); }
-
-/**
- * Ends a profiling section.
- *
- * The time since `profile_start()` is printed as log message.
- *
- * @param msg Name of the operation (for logging purposes).
- */
-static void profile_end(const char *msg) {
-  t_end = ibex_mcycle_read();
-  uint32_t cycles = t_end - t_start;
-  uint32_t time_us = cycles / 100;
-  LOG_INFO("%s took %u cycles or %u us @ 100 MHz.", msg, cycles, time_us);
-}
-
 /**
  * Performs a RSA roundtrip test.
  *
@@ -242,27 +215,27 @@ static void rsa_roundtrip(uint32_t size_bytes, const uint8_t *modulus,
   dif_otbn_t otbn;
 
   // Initialize
-  profile_start();
+  uint64_t t_start = profile_start();
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
   CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppRsa));
-  profile_end("Initialization");
+  profile_end_and_print(t_start, "Initialization");
 
   // Encrypt
   LOG_INFO("Encrypting");
-  profile_start();
+  t_start = profile_start();
   rsa_encrypt(&otbn, modulus, in, out_encrypted, size_bytes);
   check_data(out_encrypted, encrypted_expected, size_bytes);
-  profile_end("Encryption");
+  profile_end_and_print(t_start, "Encryption");
 
   if (kTestDecrypt) {
     // Decrypt
     LOG_INFO("Decrypting");
-    profile_start();
+    t_start = profile_start();
     rsa_decrypt(&otbn, modulus, private_exponent, encrypted_expected,
                 out_decrypted, size_bytes);
     check_data(out_decrypted, in, size_bytes);
-    profile_end("Decryption");
+    profile_end_and_print(t_start, "Decryption");
   }
 }
 

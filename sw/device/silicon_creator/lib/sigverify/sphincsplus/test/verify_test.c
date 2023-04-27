@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -31,23 +32,6 @@ enum {
    */
   kNumNegativeTests = 1,
 };
-
-/**
- * Start a cycle-count timing profile.
- */
-static uint64_t profile_start() { return ibex_mcycle_read(); }
-
-/**
- * End a cycle-count timing profile.
- *
- * Call `profile_start()` first.
- */
-static uint32_t profile_end(uint64_t t_start) {
-  uint64_t t_end = ibex_mcycle_read();
-  uint64_t cycles = t_end - t_start;
-  CHECK(cycles <= UINT32_MAX);
-  return (uint32_t)cycles;
-}
 
 /**
  * Run the SPHINCS+ verification procedure on the current test.

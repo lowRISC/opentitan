@@ -38,6 +38,7 @@ opentitan_functest(
         ":sphincsplus_shake_128s_simple_testvectors_hardcoded_header",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:verify",
     ],
