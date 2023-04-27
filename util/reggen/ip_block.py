@@ -84,13 +84,13 @@ OPTIONAL_FIELDS = {
         's', "Set to true to suppress automatic "
         "generation of alert test registers. "
         "Defaults to true if no alert_list is present. "
-        "Otherwise this defaults to false. "
+        "Otherwise this defaults to false."
     ],
     'no_auto_intr_regs': [
         's', "Set to true to suppress automatic "
         "generation of interrupt registers. "
         "Defaults to true if no interrupt_list is present. "
-        "Otherwise this defaults to false. "
+        "Otherwise this defaults to false."
     ],
     'param_list': ['lp', "list of parameters of the IP"],
     'regwidth': ['d', "width of registers in bits (default 32)"],
