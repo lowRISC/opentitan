@@ -404,7 +404,7 @@ module lc_ctrl_fsm
       // Initiate OTP transaction. Note that the concurrent
       // LC state check is continuously checking whether the
       // new LC state remains valid. Once the ack returns we are
-      // done with the transition and can go into the terminal PosTransSt.
+      // done with the transition and can go into the terminal PostTransSt.
       TransProgSt: begin
         otp_prog_req_o = 1'b1;
 
