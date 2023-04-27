@@ -135,6 +135,10 @@ void ecc256_en_masks(const uint8_t *enable, size_t enable_len) {
 void ecc256_set_seed(const uint8_t *seed, size_t seed_len) {
   SS_CHECK(seed_len == kEcc256SeedNumBytes);
   memcpy(ecc256_seed, seed, seed_len);
+  // Run PRNG once to synch with capture side. There it is used also to
+  // generate the fixed seed.
+  uint32_t temp[kEcc256SeedNumWords];
+  prng_rand_bytes((unsigned char *)temp, kEcc256SeedNumBytes);
 }
 
 /**
