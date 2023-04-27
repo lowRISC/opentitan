@@ -13,8 +13,12 @@ cc_library(
     ],
     hdrs = [
         "dev_key_0_spx.h",
+        "dev_key_1_spx.h",
         "prod_key_0_spx.h",
+        "prod_key_1_spx.h",
+        "prod_key_2_spx.h",
         "test_key_0_spx.h",
+        "test_key_1_spx.h",
     ],
     deps = [
         "//sw/device/lib/base:macros",
