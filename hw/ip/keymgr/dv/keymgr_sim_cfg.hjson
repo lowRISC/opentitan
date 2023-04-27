@@ -50,6 +50,9 @@
   uvm_test: keymgr_base_test
   uvm_test_seq: keymgr_base_vseq
 
+  // Enable cdc instrumentation.
+  run_opts: ["+cdc_instrumentation_enabled=1"]
+
   // List of test specifications.
   tests: [
     {
