@@ -245,7 +245,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
           // according to issue #841, interrupt will have one clock cycle delay
           // add an extra cycle for synchronizers from clk_edn to clk
-          cfg.clk_rst_vif.wait_n_clks(2);
+          cfg.clk_rst_vif.wait_n_clks(1);
           if (!under_reset) begin
             `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[class_i], intr_en[class_i],
                             $sformatf("Interrupt class_%s, is_local_err %0b, local_alert_type %s",
