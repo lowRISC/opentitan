@@ -19,6 +19,7 @@ module aes_key_expand import aes_pkg::*;
   input  logic                   cfg_valid_i,
   input  ciph_op_e               op_i,
   input  sp2v_e                  en_i,
+  input  logic                   prd_we_i,
   output sp2v_e                  out_req_o,
   input  sp2v_e                  out_ack_i,
   input  logic                   clear_i,
@@ -47,6 +48,7 @@ module aes_key_expand import aes_pkg::*;
   logic      [31:0] rot_word_in [NumShares];
   logic      [31:0] rot_word_out [NumShares];
   logic             use_rot_word;
+  logic             prd_we, prd_we_force, prd_we_inhibit;
   logic      [31:0] sub_word_in, sub_word_out;
   logic       [3:0] sub_word_out_req;
   logic      [31:0] sw_in_mask, sw_out_mask;
@@ -212,6 +214,17 @@ module aes_key_expand import aes_pkg::*;
   logic [3:0][WidthPRDSBox+19:0] in_prd;
   logic [3:0]             [19:0] out_prd;
 
+  // Make sure that whenever the data/mask inputs of the S-Boxes update, the internally buffered
+  // PRD is updated in sync. There are two special cases we need to handle here:
+  // - For AES-256, the initial round is short (no round key computation). But the data/mask inputs
+  //   are updated either way. Thus, we need to force a PRD update as well.
+  // - For AES-192 in FWD mode, the data/mask inputs aren't updated in Round 1, 4, 7 and 10. Thus,
+  //   we need to inhibit PRD updates triggred at the end of Round 0, 3, 6 and 9.
+  assign prd_we_force = (key_len_i == AES_256) & (rnd == 0);
+  assign prd_we_inhibit = (key_len_i == AES_192) & (op_i == CIPH_FWD) &
+      (rnd == 0 || rnd == 3 || rnd == 6 || rnd == 9);
+  assign prd_we = (prd_we_i & ~prd_we_inhibit) | prd_we_force;
+
   for (genvar i = 0; i < 4; i++) begin : gen_sbox
     // Rotate the randomness produced by the S-Boxes. The LSBs are taken from the masking PRNG
     // (prd_i) whereas the MSBs are produced by the other S-Box instances.
@@ -223,6 +236,7 @@ module aes_key_expand import aes_pkg::*;
       .clk_i     ( clk_i                  ),
       .rst_ni    ( rst_ni                 ),
       .en_i      ( en == SP2V_HIGH        ),
+      .prd_we_i  ( prd_we                 ),
       .out_req_o ( sub_word_out_req[i]    ),
       .out_ack_i ( out_ack == SP2V_HIGH   ),
       .op_i      ( CIPH_FWD               ),
