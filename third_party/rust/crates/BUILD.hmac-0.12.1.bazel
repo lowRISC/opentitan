@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "digest",
+    name = "hmac",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,31 +28,20 @@ rust_library(
         ],
     ),
     crate_features = [
-        "alloc",
-        "block-buffer",
-        "const-oid",
-        "core-api",
-        "default",
-        "mac",
-        "oid",
-        "std",
-        "subtle",
+        "reset",
     ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=digest",
+        "crate-name=hmac",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.10.6",
+    version = "0.12.1",
     deps = [
-        "@crate_index__block-buffer-0.10.3//:block_buffer",
-        "@crate_index__const-oid-0.9.2//:const_oid",
-        "@crate_index__crypto-common-0.1.6//:crypto_common",
-        "@crate_index__subtle-2.4.1//:subtle",
+        "@crate_index__digest-0.10.6//:digest",
     ],
 )

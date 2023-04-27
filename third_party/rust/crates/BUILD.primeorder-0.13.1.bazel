@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT OR Apache-2.0
+#     "TODO",  # Apache-2.0 OR MIT
 # ])
 
 rust_library(
-    name = "digest",
+    name = "primeorder",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -27,32 +27,18 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "alloc",
-        "block-buffer",
-        "const-oid",
-        "core-api",
-        "default",
-        "mac",
-        "oid",
-        "std",
-        "subtle",
-    ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=digest",
+        "crate-name=primeorder",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.10.6",
+    version = "0.13.1",
     deps = [
-        "@crate_index__block-buffer-0.10.3//:block_buffer",
-        "@crate_index__const-oid-0.9.2//:const_oid",
-        "@crate_index__crypto-common-0.1.6//:crypto_common",
-        "@crate_index__subtle-2.4.1//:subtle",
+        "@crate_index__elliptic-curve-0.13.4//:elliptic_curve",
     ],
 )
