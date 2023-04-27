@@ -78,7 +78,7 @@ class core_ibex_scoreboard extends uvm_scoreboard;
       // https://github.com/lowRISC/ibex/pull/1848#discussion_r995903762
       begin
         forever begin
-          @(posedge cfg.ibex_dut_vif.double_fault_seen);
+          @(posedge cfg.ibex_dut_vif.dut_cb.double_fault_seen);
           double_fault_pulse_seen = 1'b1;
           cfg.ibex_clk_vif.wait_clks(1);
         end

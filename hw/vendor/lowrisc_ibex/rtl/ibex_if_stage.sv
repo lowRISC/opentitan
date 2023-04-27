@@ -11,6 +11,7 @@
  */
 
 `include "prim_assert.sv"
+`include "dv_fcov_macros.svh"
 
 module ibex_if_stage import ibex_pkg::*; #(
   parameter int unsigned DmHaltAddr        = 32'h1A110800,

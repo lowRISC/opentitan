@@ -132,8 +132,8 @@ class irq_new_seq extends core_base_new_seq #(irq_seq_item);
   bit no_timer;
   bit no_software;
 
-  int unsigned max_delay = 500;
-  int unsigned min_delay = 50;
+  int unsigned max_delay = 1000;
+  int unsigned min_delay = 300;
 
   rand int interval = min_delay;
 

@@ -4,13 +4,13 @@
 
 import argparse
 import re
-import logging
 from typing import Dict, List, Tuple
+import pathlib3x as pathlib
 
-# Import riscv_trace_csv and lib from _DV_SCRIPTS before putting sys.path back
-# as it started.
-from setup_imports import _CORE_IBEX_RISCV_DV_EXTENSION, _RISCV_DV
-import lib as riscvdv_lib  # type: ignore
+import scripts_lib
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 TestEntry = Dict[str, object]
@@ -30,13 +30,12 @@ def read_test_dot_seed(arg: str) -> TestAndSeed:
     return (match.group(1), int(match.group(2), 10))
 
 
-def get_test_entry(testname: str) -> TestEntry:
-    matched_list = []  # type: TestEntries
-    testlist = _CORE_IBEX_RISCV_DV_EXTENSION/'testlist.yaml'
+def get_test_entry(testname: str, testlist: pathlib.Path) -> TestEntry:
 
-    riscvdv_lib.process_regression_list(testlist, 'all', 0, matched_list, _RISCV_DV)
+    yaml_data = scripts_lib.read_yaml(testlist)
 
-    for entry in matched_list:
-        if entry['test'] == testname:
+    for entry in yaml_data:
+        if entry.get('test') == testname:
             return entry
+
     raise RuntimeError('No matching test entry for {!r}'.format(testname))

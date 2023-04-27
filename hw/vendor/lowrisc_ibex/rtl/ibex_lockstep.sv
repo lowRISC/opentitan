@@ -437,6 +437,7 @@ module ibex_lockstep import ibex_pkg::*; #(
     .rvfi_ext_mhpmcounters     (),
     .rvfi_ext_mhpmcountersh    (),
     .rvfi_ext_ic_scr_key_valid (),
+    .rvfi_ext_irq_valid        (),
 `endif
 
     .fetch_enable_i         (shadow_inputs_q[0].fetch_enable),

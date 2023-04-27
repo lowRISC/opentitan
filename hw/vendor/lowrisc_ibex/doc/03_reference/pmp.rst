@@ -3,7 +3,7 @@
 Physical Memory Protection (PMP)
 ================================
 
-The Physical Memory Protection (PMP) unit implements region-based memory access checking in-accordance with the RISC-V Privileged Specification, version 1.11 and includes the Trusted Execution Environment (TEE) working group proposal `PMP Enhancements for memory access and execution prevention on Machine mode (Smepmp) version 0.9.3 <https://github.com/riscv/riscv-tee/blob/61455747230a26002d741f64879dd78cc9689323/Smepmp/Smepmp.pdf>`_.
+The Physical Memory Protection (PMP) unit implements region-based memory access checking in-accordance with the RISC-V Privileged Specification, version 1.12 and implements the `PMP Enhancements for memory access and execution prevention on Machine mode (Smepmp) version 1.0  <https://github.com/riscv/riscv-tee/blob/191b563b08b31cc2974d604a3b670d8666a2e093/Smepmp/Smepmp.pdf>`_ extension.
 The following configuration parameters are available to control PMP checking:
 
 +----------------+---------------+----------------------------------------------------------+
@@ -36,9 +36,9 @@ When the granularity is greater than zero, NA4 mode is not available and will be
 PMP Enhancements
 ----------------
 
-These are described in more detail in `PMP Enhancements for memory access and execution prevention on Machine mode (Smepmp) version 0.9.3 <https://github.com/riscv/riscv-tee/blob/61455747230a26002d741f64879dd78cc9689323/Smepmp/Smepmp.pdf>`_.
+These are described in more detail in `PMP Enhancements for memory access and execution prevention on Machine mode (Smepmp) version 1.0 <https://github.com/riscv/riscv-tee/blob/191b563b08b31cc2974d604a3b670d8666a2e093/Smepmp/Smepmp.pdf>`_.
 If Ibex is configured to include PMP (PMPEnable is not zero) the PMP enhancements are always included.
-Use of the enhanced behavior is optional, if no writes to ``mseccfg`` occur PMP behavior will remain exactly as specified in the RISC-V privileged specification.
+Use of the enhanced behavior is optional, if no writes to ``mseccfg`` occur PMP behavior will remain exactly as if Smepmp was not implemented.
 The enhancements add:
 
 * A new CSR ``mseccfg`` providing functionality to allow locked regions to be modified and to implement default deny for M-mode accesses.

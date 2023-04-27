@@ -27,10 +27,11 @@ class ibex_rvfi_monitor extends uvm_monitor;
 
     forever begin
       // Wait for a retired instruction
-      while(!vif.monitor_cb.valid) vif.wait_clks(1);
+      while(!(vif.monitor_cb.valid || vif.monitor_cb.ext_irq_valid)) vif.wait_clks(1);
 
       // Read instruction details from RVFI interface
       trans_collected                  = ibex_rvfi_seq_item::type_id::create("trans_collected");
+      trans_collected.irq_only         = !vif.monitor_cb.valid && vif.monitor_cb.ext_irq_valid;
       trans_collected.trap             = vif.monitor_cb.trap;
       trans_collected.pc               = vif.monitor_cb.pc_rdata;
       trans_collected.rd_addr          = vif.monitor_cb.rd_addr;

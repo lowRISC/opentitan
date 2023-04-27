@@ -15,7 +15,7 @@ import riscvdv_interface
 from scripts_lib import run_one, format_to_cmd
 from test_entry import read_test_dot_seed, get_test_entry
 from metadata import RegressionMetadata
-from test_run_result import TestRunResult, Failure_Modes
+from test_run_result import TestRunResult, Failure_Modes, TestType
 
 import logging
 logger = logging.getLogger(__name__)
@@ -31,7 +31,13 @@ def _main() -> int:
     md = RegressionMetadata.construct_from_metadata_dir(args.dir_metadata)
     trr = TestRunResult.construct_from_metadata_dir(args.dir_metadata, f"{tds[0]}.{tds[1]}")
 
-    testopts = get_test_entry(trr.testname)  # From testlist.yaml
+    if (trr.testtype == TestType.RISCVDV):
+        testopts = get_test_entry(trr.testname, md.ibex_riscvdv_testlist)
+    elif (trr.testtype == TestType.DIRECTED):
+        testopts = trr.directed_data
+
+    trr.rtl_test = testopts['rtl_test']
+    trr.timeout_s = testopts.get('timeout_s') or md.run_rtl_timeout_s
 
     if not os.path.exists(trr.binary):
         raise RuntimeError(
@@ -46,15 +52,13 @@ def _main() -> int:
     if sim_opts_raw:
         sim_opts += sim_opts_raw.replace('\n', '')
 
-    trr.timeout_s = (testopts.get('timeout_s') if (testopts.get('timeout_s') is not None) else
-                     md.run_rtl_timeout_s)
     trr.rtl_log         = trr.dir_test / 'rtl_sim.log'
     trr.rtl_trace       = trr.dir_test / 'trace_core_00000000.log'
     trr.iss_cosim_trace = trr.dir_test / f'{md.iss}_cosim_trace_core_00000000.log'
     subst_vars_dict = {
         'cwd': md.ibex_root,
-        'test_name': testopts['test'],
-        'rtl_test': testopts['rtl_test'],
+        'test_name': trr.testname,
+        'rtl_test': trr.rtl_test,
         'seed': str(trr.seed),
         'binary': trr.binary,
         'test_dir': trr.dir_test,

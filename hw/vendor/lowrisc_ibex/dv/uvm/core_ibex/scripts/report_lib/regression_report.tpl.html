@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+<html>
+  <head><title>Ibex Regression Results</title></head>
+  <body>
+    <h1>Ibex Regression Results</h1>
+    <h2>Date/Time run: ${run_datetime.strftime('%A %d %B %Y %H:%M %Z')}</h2>
+    <h2>Git Commit: <a href='https://www.github.com/lowRISC/ibex/tree/${sha1}'>${sha1[:7]}</a></h2>
+    <table border=1>
+        <tr><th>Test Name</th><th>Passing</th><th>Total</th><th>Pass Rate</th></tr>
+        % for test in test_summaries:
+          <tr>
+            <td>${test['name']}</td>
+            <td>${test['passing']}</td>
+            <td>${test['total_tests']}</td>
+            <td style='${pct_style(test['pass_rate'])}'>${pct_str(test['pass_rate'])}</td>
+          </tr>
+        % endfor
+      <tr>
+        <td><b>Total</b></td>
+        <td>${passing_tests_acc}</td>
+        <td>${total_tests_acc}</td>
+        <td style='${pct_style(pass_rate_acc)}'>${pct_str(pass_rate_acc)}</td>
+      </tr>
+    </table>
+
+    % if cov_summary:
+      <h2>Coverage</h2>
+      <table border=1>
+        <tr><th>Functional</th><th>Block</th><th>Branch</th><th>Statement</th><th>Expression</th><th>Toggle</th><th>FSM</th><th>Assertion</th></tr>
+        <tr>
+          <td style='${pct_style(cov_summary['covergroup'])}'>${pct_str(cov_summary['covergroup'])}</td>
+          <td style='${pct_style(cov_summary['block'])}'>${pct_str(cov_summary['block'])}</td>
+          <td style='${pct_style(cov_summary['branch'])}'>${pct_str(cov_summary['branch'])}</td>
+          <td style='${pct_style(cov_summary['statement'])}'>${pct_str(cov_summary['statement'])}</td>
+          <td style='${pct_style(cov_summary['expression'])}'>${pct_str(cov_summary['expression'])}</td>
+          <td style='${pct_style(cov_summary['toggle'])}'>${pct_str(cov_summary['toggle'])}</td>
+          <td style='${pct_style(cov_summary['fsm'])}'>${pct_str(cov_summary['fsm'])}</td>
+          <td style='${pct_style(cov_summary['assertion'])}'>${pct_str(cov_summary['assertion'])}</td>
+        </tr>
+      </table>
+    % endif
+
+    <h2>Test Failure Details</h2>
+    % for test in all_tests:
+      % if not test.passed:
+        <pre>${gen_test_run_result_text(test)}</pre>
+      % endif
+    % endfor
+  </body>
+</html>
