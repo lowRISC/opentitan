@@ -36,33 +36,19 @@ module lc_ctrl_kmac_if
   // Data and Handshake Synchronizers //
   //////////////////////////////////////
 
-  logic kmac_req, kmac_ack;
-  lc_token_t kmac_transition_token;
-  logic token_hash_req;
 
   // The transition_token_i register is guaranteed to remain stable once a life cycle
   // transition has been initiated.
   // Hence no further synchronization registers are required on the outgoing data.
-  // We just instantiate this synchronizer instance to facilitate CDC tooling (i.e., we
-  // make sure the CDC paths go through a prim_sync_reqack_data instance).
-  prim_sync_reqack_data #(
-    .Width(LcTokenWidth),
-    .DataSrc2Dst(1'b1)
-  ) u_prim_sync_reqack_data_out (
-    .clk_src_i  ( clk_i                 ),
-    .rst_src_ni ( rst_ni                ),
-    .clk_dst_i  ( clk_kmac_i            ),
-    .rst_dst_ni ( rst_kmac_ni           ),
-    .req_chk_i  ( token_hash_req_chk_i  ),
-    .src_req_i  ( token_hash_req        ),
-    .src_ack_o  (                       ), // not connected
-    .dst_req_o  (                       ), // not connected
-    .dst_ack_i  ( kmac_ack              ),
-    .data_i     ( transition_token_i    ),
-    .data_o     ( kmac_transition_token )
-  );
+  lc_token_t kmac_transition_token;
+  assign kmac_transition_token = transition_token_i;
+
+  // SRC domain cannot change data while waiting for ACK.
+  `ASSERT(DataStable_A, token_hash_req_i && !token_hash_ack_o |-> $stable(transition_token_i))
 
   // Second synchronizer instance for handshake and return data synchronization.
+  logic kmac_req, kmac_ack;
+  logic token_hash_req;
   logic token_hash_ack_d, token_hash_ack_q;
   logic token_hash_err_q, token_hash_err_d;
   lc_token_t hashed_token_q, hashed_token_d;
