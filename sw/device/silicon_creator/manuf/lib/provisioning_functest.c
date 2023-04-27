@@ -48,32 +48,36 @@ static status_t peripheral_handles_init(void) {
   return OK_STATUS();
 }
 
+status_t provisioning_test(ujson_t *uj) {
+  LOG_INFO("Provisioning device.");
+  manuf_provisioning_t export_data = {
+      .wrapped_rma_unlock_token =
+          {
+              .data = {0},
+              .ecc_pk_device_x = {0},
+              .ecc_pk_device_y = {0},
+          },
+  };
+  TRY(provisioning_device_secrets_start(&flash_state, &lc_ctrl, &otp_ctrl,
+                                        &export_data));
+  RESP_OK(ujson_serialize_manuf_provisioning_t, uj, &export_data);
+  return OK_STATUS();
+}
+
 bool test_main(void) {
   ujson_t uj = ujson_ottf_console();
   CHECK_STATUS_OK(peripheral_handles_init());
 
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
   if (info & kDifRstmgrResetInfoPor) {
-    LOG_INFO("provisioning start");
-
-    manuf_provisioning_t export_data = {
-        .wrapped_rma_unlock_token =
-            {
-                .data = {0},
-                .ecc_pk_device_x = {0},
-                .ecc_pk_device_y = {0},
-            },
-    };
-    CHECK_STATUS_OK(provisioning_device_secrets_start(&flash_state, &lc_ctrl,
-                                                      &otp_ctrl, &export_data));
-    CHECK_STATUS_OK(ujson_serialize_manuf_provisioning_t(&uj, &export_data));
-
+    CHECK_STATUS_OK(provisioning_test(&uj));
     // Issue and wait for reset.
     rstmgr_testutils_reason_clear();
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
     wait_for_interrupt();
   } else if (info == kDifRstmgrResetInfoSw) {
-    LOG_INFO("provisioning check status");
+    LOG_INFO("Provisioning complete.");
+    LOG_INFO("Checking status ...");
     CHECK_STATUS_OK(provisioning_device_secrets_end(&otp_ctrl));
   } else {
     LOG_FATAL("Unexpected reset reason: %08x", info);
