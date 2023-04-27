@@ -10,3 +10,8 @@ filegroup(
         "//hw/ip/sram_ctrl/data:all_files",
     ],
 )
+
+filegroup(
+    name = "cores",
+    srcs = glob(["**/*.core"]),
+)

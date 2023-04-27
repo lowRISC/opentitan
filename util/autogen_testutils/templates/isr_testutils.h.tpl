@@ -12,14 +12,13 @@ ${autogen_banner}
  * @brief Default ISRs for each IP
  */
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 % for ip in ips_with_difs:
   % if ip.irqs:
     #include "sw/device/lib/dif/dif_${ip.name_snake}.h"
   % endif
 % endfor
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h" // Generated.
 
 /**
  * A handle to a PLIC ISR context struct.
@@ -75,7 +74,7 @@ typedef struct plic_isr_ctx {
     void isr_testutils_${ip.name_snake}_isr(
       plic_isr_ctx_t plic_ctx,
       ${ip.name_snake}_isr_ctx_t ${ip.name_snake}_ctx,
-      top_earlgrey_plic_peripheral_t *peripheral_serviced,
+      top_${top_name}_plic_peripheral_t *peripheral_serviced,
       dif_${ip.name_snake}_irq_t *irq_serviced);
 
   % endif

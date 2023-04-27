@@ -94,3 +94,12 @@ py_binary(
         requirement("pluralizer"),
     ],
 )
+
+filegroup(
+    name = "cores",
+    srcs = [
+        "check_tool_requirements.core",
+        "topgen.core",
+        "topgen-reg-only.core",
+    ],
+)

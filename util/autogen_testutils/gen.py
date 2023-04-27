@@ -18,7 +18,7 @@ from mako.template import Template
 REPO_TOP = Path(__file__).resolve().parent.parent.parent
 
 
-def gen_testutils(ips_with_difs: List[Ip]) -> None:
+def gen_testutils(top_name: str, ips_with_difs: List[Ip]) -> None:
     """Generate testutils libraries that are rendered from Mako templates.
 
     Args:
@@ -48,7 +48,8 @@ def gen_testutils(ips_with_difs: List[Ip]) -> None:
             testutils_template = Template(testutils_template_path.read_text())
             testutils = autogen_testutils_dir / testutils_template_path.stem
             testutils.write_text(
-                testutils_template.render(ips_with_difs=ips_with_difs,
+                testutils_template.render(top_name=top_name,
+                                          ips_with_difs=ips_with_difs,
                                           autogen_banner=get_autogen_banner(
                                               "util/autogen_testutils.py",
                                               comment=comment_syntax)))

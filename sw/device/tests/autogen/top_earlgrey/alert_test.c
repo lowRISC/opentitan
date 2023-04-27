@@ -8,6 +8,7 @@
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 // util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
 // -o hw/top_earlgrey
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_aes.h"
@@ -48,7 +49,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
 #include "alert_handler_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

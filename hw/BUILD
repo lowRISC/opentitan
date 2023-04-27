@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 
 # This configuration exposes fusesoc's "verilator_options" option to the
@@ -18,6 +17,7 @@ string_list_flag(
         "--threads",
         "4",
     ],
+    visibility = [":__subpackages__"],
 )
 
 # This configuration exposes fusesoc's "make_options" to enable parallel
@@ -30,43 +30,17 @@ string_list_flag(
         "-j",
         "4",
     ],
-)
-
-fusesoc_build(
-    name = "verilator_real",
-    srcs = [
-        ":all_files",
-    ],
-    cores = [
-        "//:cores",
-    ],
-    data = ["//hw/ip/otbn:all_files"],
-    make_options = ":make_options",
-    output_groups = {
-        "binary": ["sim-verilator/Vchip_sim_tb"],
-    },
-    systems = ["lowrisc:dv:chip_verilator_sim"],
-    tags = [
-        "manual",
-        "verilator",
-    ],
-    target = "sim",
-    verilator_options = ":verilator_options",
-)
-
-filegroup(
-    name = "verilator_bin",
-    srcs = [":verilator_real"],
-    output_group = "binary",
+    visibility = [":__subpackages__"],
 )
 
 # This is used in CI steps that do not want to run Verilator tests, and thus
-# do not want to build the Verilated model. This causes the //hw:verilator
+# do not want to build the Verilated model. This causes the //hw/top_{chip}:verilator
 # target to not emit any files, which will break any tests that rely on this;
 # builds will succeed, tests will fail.
 config_setting(
     name = "disable_verilator_build",
     values = {"define": "DISABLE_VERILATOR_BUILD=true"},
+    visibility = [":__subpackages__"],
 )
 
 genrule(
@@ -80,25 +54,7 @@ genrule(
         echo 'exit 1' >> $$script
         chmod +x $@
     """,
-)
-
-alias(
-    name = "verilator",
-    actual = select({
-        ":disable_verilator_build": ":verilator_stub",
-        "//conditions:default": ":verilator_bin",
-    }),
-    tags = ["verilator"],
-    visibility = ["//visibility:public"],
-)
-
-genrule(
-    name = "fusesoc_ignore",
-    outs = ["FUSESOC_IGNORE"],
-    cmd = """
-        touch $@
-    """,
-    visibility = ["//visibility:public"],
+    visibility = [":__subpackages__"],
 )
 
 # TODO(lowRISC/opentitan#7972): Globbing all of the //hw/... hierarchy together
@@ -106,20 +62,17 @@ genrule(
 # relationships between verilog components.
 filegroup(
     name = "all_files",
-    srcs = glob(
-        ["**"],
-        # TODO(lowRISC/opentitan#15882): make Verilator work with foundry repo present.
-        exclude = ["foundry/**"],
-    ) + [
+    srcs = [
+        "//hw/cdc:all_files",
+        "//hw/data:all_files",
+        "//hw/dv:all_files",
+        "//hw/formal:all_files",
         "//hw/ip:all_files",
-        "//hw/top_earlgrey:all_files",
+        "//hw/ip_templates:all_files",
+        "//hw/lint:all_files",
+        "//hw/rdc:all_files",
+        "//hw/syn:all_files",
+        "//hw/vendor:all_files",
     ],
-    visibility = ["//visibility:public"],
-)
-
-pkg_files(
-    name = "package",
-    srcs = ["verilator_bin"],
-    prefix = "earlgrey/verilator",
-    visibility = ["//visibility:public"],
+    visibility = [":__subpackages__"],
 )

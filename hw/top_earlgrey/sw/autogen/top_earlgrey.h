@@ -1358,14 +1358,13 @@ typedef enum top_earlgrey_alert_id {
 extern const top_earlgrey_alert_peripheral_t
     top_earlgrey_alert_for_peripheral[65];
 
-#define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
-
-// PERIPH_INSEL ranges from 0 to NUM_MIO_PADS + 2 -1}
+// PERIPH_INSEL ranges from 0 to TOP_EARLGREY_NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1
-#define NUM_MIO_PADS 47
-#define NUM_DIO_PADS 16
+#define TOP_EARLGREY_NUM_MIO_PADS 47
+#define TOP_EARLGREY_NUM_DIO_PADS 16
 
-#define PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
+#define TOP_EARLGREY_PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
+#define TOP_EARLGREY_PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
 
 /**
  * Pinmux Peripheral Input.

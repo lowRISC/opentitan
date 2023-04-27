@@ -8,6 +8,8 @@ cc_library(
     name = "device",
     hdrs = ["device.h"],
     deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
     ],
 )

@@ -132,16 +132,17 @@ ${helper.alert_alerts.render()}
  */
 ${helper.alert_mapping.render_declaration()}
 
-#define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
-
-// PERIPH_INSEL ranges from 0 to NUM_MIO_PADS + 2 -1}
+// PERIPH_INSEL ranges from 0 to TOP_${top["name"].upper()}_NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1
-#define NUM_MIO_PADS ${top["pinmux"]["io_counts"]["muxed"]["pads"]}
-#define NUM_DIO_PADS ${top["pinmux"]["io_counts"]["dedicated"]["inouts"] + \
+#define TOP_${top["name"].upper()}_NUM_MIO_PADS ${
+                       top["pinmux"]["io_counts"]["muxed"]["pads"]}
+#define TOP_${top["name"].upper()}_NUM_DIO_PADS ${
+                       top["pinmux"]["io_counts"]["dedicated"]["inouts"] + \
                        top["pinmux"]["io_counts"]["dedicated"]["inputs"] + \
-                       top["pinmux"]["io_counts"]["dedicated"]["outputs"] }
+                       top["pinmux"]["io_counts"]["dedicated"]["outputs"]}
 
-#define PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
+#define TOP_${top["name"].upper()}_PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
+#define TOP_${top["name"].upper()}_PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
 
 /**
  * Pinmux Peripheral Input.

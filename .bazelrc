@@ -67,8 +67,8 @@ coverage:ot_coverage --nocache_test_results
 # `--config=ot_coverage_off_target`.
 build:ot_coverage_off_target --config='ot_coverage'
 build:ot_coverage_off_target --collect_code_coverage
-coverage:ot_coverage_off_target --repo_env='GCOV=/usr/bin/llvm-profdata'
-coverage:ot_coverage_off_target --repo_env='BAZEL_LLVM_COV=/usr/bin/llvm-cov'
+coverage:ot_coverage_off_target --repo_env='GCOV=llvm-profdata'
+coverage:ot_coverage_off_target --repo_env='BAZEL_LLVM_COV=llvm-cov'
 
 # Configuration for measuring on-target coverage. Enable with
 # `--config=ot_coverage_on_target`.

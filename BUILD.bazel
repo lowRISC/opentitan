@@ -9,15 +9,6 @@ exports_files([
     "python-requirements.txt",
 ])
 
-filegroup(
-    name = "cores",
-    srcs = [
-        "check_tool_requirements.core",
-        "topgen.core",
-        "topgen-reg-only.core",
-    ],
-)
-
 alias(
     name = "gen_rust_project",
     actual = "@rules_rust//tools/rust_analyzer:gen_rust_project",

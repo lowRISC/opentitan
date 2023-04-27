@@ -5,10 +5,11 @@
 //
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
-// util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
-// -o hw/top_earlgrey
+// util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
+// -o hw/top_darjeeling
 #include <limits.h>
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
@@ -42,7 +43,6 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_adc_ctrl_t adc_ctrl_aon;
 static dif_alert_handler_t alert_handler;
@@ -75,7 +75,7 @@ static dif_uart_t uart2;
 static dif_uart_t uart3;
 static dif_usbdev_t usbdev;
 static dif_rv_plic_t plic;
-static const top_earlgrey_plic_target_t kHart = kTopEarlgreyPlicTargetIbex0;
+static const top_darjeeling_plic_target_t kHart = kTopDarjeelingPlicTargetIbex0;
 
 /**
  * Flag indicating which peripheral is under test.
@@ -83,7 +83,7 @@ static const top_earlgrey_plic_target_t kHart = kTopEarlgreyPlicTargetIbex0;
  * Declared volatile because it is referenced in the main program flow as well
  * as the ISR.
  */
-static volatile top_earlgrey_plic_peripheral_t peripheral_expected;
+static volatile top_darjeeling_plic_peripheral_t peripheral_expected;
 
 /**
  * Flags indicating the IRQ expected to have triggered and serviced within the
@@ -156,17 +156,17 @@ void ottf_external_isr(void) {
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kHart, &plic_irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
+  top_darjeeling_plic_peripheral_t peripheral = (top_darjeeling_plic_peripheral_t)
+      top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
   CHECK(peripheral == peripheral_expected,
         "Interrupt from incorrect peripheral: exp = %d, obs = %d",
         peripheral_expected, peripheral);
 
   switch (peripheral) {
-    case kTopEarlgreyPlicPeripheralAdcCtrlAon: {
+    case kTopDarjeelingPlicPeripheralAdcCtrlAon: {
       dif_adc_ctrl_irq_t irq = (dif_adc_ctrl_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAdcCtrlAonMatchDone);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdAdcCtrlAonMatchDone);
       CHECK(irq == adc_ctrl_irq_expected,
             "Incorrect adc_ctrl_aon IRQ triggered: exp = %d, obs = %d",
             adc_ctrl_irq_expected, irq);
@@ -185,10 +185,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralAlertHandler: {
+    case kTopDarjeelingPlicPeripheralAlertHandler: {
       dif_alert_handler_irq_t irq = (dif_alert_handler_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdAlertHandlerClassa);
       CHECK(irq == alert_handler_irq_expected,
             "Incorrect alert_handler IRQ triggered: exp = %d, obs = %d",
             alert_handler_irq_expected, irq);
@@ -207,10 +207,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralAonTimerAon: {
+    case kTopDarjeelingPlicPeripheralAonTimerAon: {
       dif_aon_timer_irq_t irq = (dif_aon_timer_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired);
       CHECK(irq == aon_timer_irq_expected,
             "Incorrect aon_timer_aon IRQ triggered: exp = %d, obs = %d",
             aon_timer_irq_expected, irq);
@@ -229,10 +229,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralCsrng: {
+    case kTopDarjeelingPlicPeripheralCsrng: {
       dif_csrng_irq_t irq = (dif_csrng_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdCsrngCsCmdReqDone);
       CHECK(irq == csrng_irq_expected,
             "Incorrect csrng IRQ triggered: exp = %d, obs = %d",
             csrng_irq_expected, irq);
@@ -251,10 +251,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralEdn0: {
+    case kTopDarjeelingPlicPeripheralEdn0: {
       dif_edn_irq_t irq = (dif_edn_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdEdn0EdnCmdReqDone);
       CHECK(irq == edn_irq_expected,
             "Incorrect edn0 IRQ triggered: exp = %d, obs = %d",
             edn_irq_expected, irq);
@@ -273,10 +273,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralEdn1: {
+    case kTopDarjeelingPlicPeripheralEdn1: {
       dif_edn_irq_t irq = (dif_edn_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdEdn1EdnCmdReqDone);
       CHECK(irq == edn_irq_expected,
             "Incorrect edn1 IRQ triggered: exp = %d, obs = %d",
             edn_irq_expected, irq);
@@ -295,10 +295,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralEntropySrc: {
+    case kTopDarjeelingPlicPeripheralEntropySrc: {
       dif_entropy_src_irq_t irq = (dif_entropy_src_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdEntropySrcEsEntropyValid);
       CHECK(irq == entropy_src_irq_expected,
             "Incorrect entropy_src IRQ triggered: exp = %d, obs = %d",
             entropy_src_irq_expected, irq);
@@ -317,10 +317,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralFlashCtrl: {
+    case kTopDarjeelingPlicPeripheralFlashCtrl: {
       dif_flash_ctrl_irq_t irq = (dif_flash_ctrl_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdFlashCtrlProgEmpty);
       CHECK(irq == flash_ctrl_irq_expected,
             "Incorrect flash_ctrl IRQ triggered: exp = %d, obs = %d",
             flash_ctrl_irq_expected, irq);
@@ -339,10 +339,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralGpio: {
+    case kTopDarjeelingPlicPeripheralGpio: {
       dif_gpio_irq_t irq = (dif_gpio_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdGpioGpio0);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdGpioGpio0);
       CHECK(irq == gpio_irq_expected,
             "Incorrect gpio IRQ triggered: exp = %d, obs = %d",
             gpio_irq_expected, irq);
@@ -361,10 +361,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralHmac: {
+    case kTopDarjeelingPlicPeripheralHmac: {
       dif_hmac_irq_t irq = (dif_hmac_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdHmacHmacDone);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdHmacHmacDone);
       CHECK(irq == hmac_irq_expected,
             "Incorrect hmac IRQ triggered: exp = %d, obs = %d",
             hmac_irq_expected, irq);
@@ -383,10 +383,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralI2c0: {
+    case kTopDarjeelingPlicPeripheralI2c0: {
       dif_i2c_irq_t irq = (dif_i2c_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c0FmtThreshold);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdI2c0FmtThreshold);
       CHECK(irq == i2c_irq_expected,
             "Incorrect i2c0 IRQ triggered: exp = %d, obs = %d",
             i2c_irq_expected, irq);
@@ -405,10 +405,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralI2c1: {
+    case kTopDarjeelingPlicPeripheralI2c1: {
       dif_i2c_irq_t irq = (dif_i2c_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c1FmtThreshold);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdI2c1FmtThreshold);
       CHECK(irq == i2c_irq_expected,
             "Incorrect i2c1 IRQ triggered: exp = %d, obs = %d",
             i2c_irq_expected, irq);
@@ -427,10 +427,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralI2c2: {
+    case kTopDarjeelingPlicPeripheralI2c2: {
       dif_i2c_irq_t irq = (dif_i2c_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c2FmtThreshold);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdI2c2FmtThreshold);
       CHECK(irq == i2c_irq_expected,
             "Incorrect i2c2 IRQ triggered: exp = %d, obs = %d",
             i2c_irq_expected, irq);
@@ -449,10 +449,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralKeymgr: {
+    case kTopDarjeelingPlicPeripheralKeymgr: {
       dif_keymgr_irq_t irq = (dif_keymgr_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdKeymgrOpDone);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdKeymgrOpDone);
       CHECK(irq == keymgr_irq_expected,
             "Incorrect keymgr IRQ triggered: exp = %d, obs = %d",
             keymgr_irq_expected, irq);
@@ -471,10 +471,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralKmac: {
+    case kTopDarjeelingPlicPeripheralKmac: {
       dif_kmac_irq_t irq = (dif_kmac_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdKmacKmacDone);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdKmacKmacDone);
       CHECK(irq == kmac_irq_expected,
             "Incorrect kmac IRQ triggered: exp = %d, obs = %d",
             kmac_irq_expected, irq);
@@ -493,10 +493,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralOtbn: {
+    case kTopDarjeelingPlicPeripheralOtbn: {
       dif_otbn_irq_t irq = (dif_otbn_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdOtbnDone);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdOtbnDone);
       CHECK(irq == otbn_irq_expected,
             "Incorrect otbn IRQ triggered: exp = %d, obs = %d",
             otbn_irq_expected, irq);
@@ -515,10 +515,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralOtpCtrl: {
+    case kTopDarjeelingPlicPeripheralOtpCtrl: {
       dif_otp_ctrl_irq_t irq = (dif_otp_ctrl_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdOtpCtrlOtpOperationDone);
       CHECK(irq == otp_ctrl_irq_expected,
             "Incorrect otp_ctrl IRQ triggered: exp = %d, obs = %d",
             otp_ctrl_irq_expected, irq);
@@ -537,10 +537,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralPattgen: {
+    case kTopDarjeelingPlicPeripheralPattgen: {
       dif_pattgen_irq_t irq = (dif_pattgen_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdPattgenDoneCh0);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdPattgenDoneCh0);
       CHECK(irq == pattgen_irq_expected,
             "Incorrect pattgen IRQ triggered: exp = %d, obs = %d",
             pattgen_irq_expected, irq);
@@ -559,10 +559,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralPwrmgrAon: {
+    case kTopDarjeelingPlicPeripheralPwrmgrAon: {
       dif_pwrmgr_irq_t irq = (dif_pwrmgr_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdPwrmgrAonWakeup);
       CHECK(irq == pwrmgr_irq_expected,
             "Incorrect pwrmgr_aon IRQ triggered: exp = %d, obs = %d",
             pwrmgr_irq_expected, irq);
@@ -581,10 +581,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralRvTimer: {
+    case kTopDarjeelingPlicPeripheralRvTimer: {
       dif_rv_timer_irq_t irq = (dif_rv_timer_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdRvTimerTimerExpiredHart0Timer0);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdRvTimerTimerExpiredHart0Timer0);
       CHECK(irq == rv_timer_irq_expected,
             "Incorrect rv_timer IRQ triggered: exp = %d, obs = %d",
             rv_timer_irq_expected, irq);
@@ -603,10 +603,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralSensorCtrl: {
+    case kTopDarjeelingPlicPeripheralSensorCtrl: {
       dif_sensor_ctrl_irq_t irq = (dif_sensor_ctrl_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSensorCtrlIoStatusChange);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdSensorCtrlIoStatusChange);
       CHECK(irq == sensor_ctrl_irq_expected,
             "Incorrect sensor_ctrl IRQ triggered: exp = %d, obs = %d",
             sensor_ctrl_irq_expected, irq);
@@ -625,10 +625,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralSpiDevice: {
+    case kTopDarjeelingPlicPeripheralSpiDevice: {
       dif_spi_device_irq_t irq = (dif_spi_device_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiDeviceGenericRxFull);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdSpiDeviceGenericRxFull);
       CHECK(irq == spi_device_irq_expected,
             "Incorrect spi_device IRQ triggered: exp = %d, obs = %d",
             spi_device_irq_expected, irq);
@@ -647,10 +647,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralSpiHost0: {
+    case kTopDarjeelingPlicPeripheralSpiHost0: {
       dif_spi_host_irq_t irq = (dif_spi_host_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiHost0Error);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdSpiHost0Error);
       CHECK(irq == spi_host_irq_expected,
             "Incorrect spi_host0 IRQ triggered: exp = %d, obs = %d",
             spi_host_irq_expected, irq);
@@ -669,10 +669,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralSpiHost1: {
+    case kTopDarjeelingPlicPeripheralSpiHost1: {
       dif_spi_host_irq_t irq = (dif_spi_host_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiHost1Error);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdSpiHost1Error);
       CHECK(irq == spi_host_irq_expected,
             "Incorrect spi_host1 IRQ triggered: exp = %d, obs = %d",
             spi_host_irq_expected, irq);
@@ -691,10 +691,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralSysrstCtrlAon: {
+    case kTopDarjeelingPlicPeripheralSysrstCtrlAon: {
       dif_sysrst_ctrl_irq_t irq = (dif_sysrst_ctrl_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdSysrstCtrlAonEventDetected);
       CHECK(irq == sysrst_ctrl_irq_expected,
             "Incorrect sysrst_ctrl_aon IRQ triggered: exp = %d, obs = %d",
             sysrst_ctrl_irq_expected, irq);
@@ -713,10 +713,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralUart0: {
+    case kTopDarjeelingPlicPeripheralUart0: {
       dif_uart_irq_t irq = (dif_uart_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart0TxWatermark);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdUart0TxWatermark);
       CHECK(irq == uart_irq_expected,
             "Incorrect uart0 IRQ triggered: exp = %d, obs = %d",
             uart_irq_expected, irq);
@@ -735,10 +735,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralUart1: {
+    case kTopDarjeelingPlicPeripheralUart1: {
       dif_uart_irq_t irq = (dif_uart_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart1TxWatermark);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdUart1TxWatermark);
       CHECK(irq == uart_irq_expected,
             "Incorrect uart1 IRQ triggered: exp = %d, obs = %d",
             uart_irq_expected, irq);
@@ -757,10 +757,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralUart2: {
+    case kTopDarjeelingPlicPeripheralUart2: {
       dif_uart_irq_t irq = (dif_uart_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart2TxWatermark);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdUart2TxWatermark);
       CHECK(irq == uart_irq_expected,
             "Incorrect uart2 IRQ triggered: exp = %d, obs = %d",
             uart_irq_expected, irq);
@@ -779,10 +779,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralUart3: {
+    case kTopDarjeelingPlicPeripheralUart3: {
       dif_uart_irq_t irq = (dif_uart_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart3TxWatermark);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdUart3TxWatermark);
       CHECK(irq == uart_irq_expected,
             "Incorrect uart3 IRQ triggered: exp = %d, obs = %d",
             uart_irq_expected, irq);
@@ -801,10 +801,10 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralUsbdev: {
+    case kTopDarjeelingPlicPeripheralUsbdev: {
       dif_usbdev_irq_t irq = (dif_usbdev_irq_t)(
           plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUsbdevPktReceived);
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdUsbdevPktReceived);
       CHECK(irq == usbdev_irq_expected,
             "Incorrect usbdev IRQ triggered: exp = %d, obs = %d",
             usbdev_irq_expected, irq);
@@ -838,97 +838,97 @@ void ottf_external_isr(void) {
 static void peripherals_init(void) {
   mmio_region_t base_addr;
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_adc_ctrl_init(base_addr, &adc_ctrl_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_aon_timer_init(base_addr, &aon_timer_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_CSRNG_BASE_ADDR);
   CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_EDN0_BASE_ADDR);
   CHECK_DIF_OK(dif_edn_init(base_addr, &edn0));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_EDN1_BASE_ADDR);
   CHECK_DIF_OK(dif_edn_init(base_addr, &edn1));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR);
   CHECK_DIF_OK(dif_entropy_src_init(base_addr, &entropy_src));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_flash_ctrl_init(base_addr, &flash_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_GPIO_BASE_ADDR);
   CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_HMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_I2C0_BASE_ADDR);
   CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c0));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C1_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_I2C1_BASE_ADDR);
   CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c1));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_I2C2_BASE_ADDR);
   CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c2));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_KEYMGR_BASE_ADDR);
   CHECK_DIF_OK(dif_keymgr_init(base_addr, &keymgr));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_kmac_init(base_addr, &kmac));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR);
   CHECK_DIF_OK(dif_otbn_init(base_addr, &otbn));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_otp_ctrl_init(base_addr, &otp_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PATTGEN_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_PATTGEN_BASE_ADDR);
   CHECK_DIF_OK(dif_pattgen_init(base_addr, &pattgen));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_RV_TIMER_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_timer_init(base_addr, &rv_timer));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR);
   CHECK_DIF_OK(dif_sensor_ctrl_init(base_addr, &sensor_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_DEVICE_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_device_init(base_addr, &spi_device));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_host_init(base_addr, &spi_host0));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_HOST1_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_host_init(base_addr, &spi_host1));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR);
   CHECK_DIF_OK(dif_uart_init(base_addr, &uart0));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_UART1_BASE_ADDR);
   CHECK_DIF_OK(dif_uart_init(base_addr, &uart1));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART2_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_UART2_BASE_ADDR);
   CHECK_DIF_OK(dif_uart_init(base_addr, &uart2));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART3_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_UART3_BASE_ADDR);
   CHECK_DIF_OK(dif_uart_init(base_addr, &uart3));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_USBDEV_BASE_ADDR);
   CHECK_DIF_OK(dif_usbdev_init(base_addr, &usbdev));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
 }
 
@@ -1091,7 +1091,7 @@ static void peripheral_irqs_enable(void) {
  * expected IRQ from the expected peripheral triggered.
  */
 static void peripheral_irqs_trigger(void) {
-  peripheral_expected = kTopEarlgreyPlicPeripheralAdcCtrlAon;
+  peripheral_expected = kTopDarjeelingPlicPeripheralAdcCtrlAon;
   for (dif_adc_ctrl_irq_t irq = kDifAdcCtrlIrqMatchDone;
        irq <= kDifAdcCtrlIrqMatchDone; ++irq) {
     adc_ctrl_irq_expected = irq;
@@ -1104,7 +1104,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from adc_ctrl_aon is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralAlertHandler;
+  peripheral_expected = kTopDarjeelingPlicPeripheralAlertHandler;
   for (dif_alert_handler_irq_t irq = kDifAlertHandlerIrqClassa;
        irq <= kDifAlertHandlerIrqClassd; ++irq) {
     alert_handler_irq_expected = irq;
@@ -1117,7 +1117,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from alert_handler is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralAonTimerAon;
+  peripheral_expected = kTopDarjeelingPlicPeripheralAonTimerAon;
   for (dif_aon_timer_irq_t irq = kDifAonTimerIrqWkupTimerExpired;
        irq <= kDifAonTimerIrqWdogTimerBark; ++irq) {
     aon_timer_irq_expected = irq;
@@ -1130,7 +1130,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from aon_timer_aon is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralCsrng;
+  peripheral_expected = kTopDarjeelingPlicPeripheralCsrng;
   for (dif_csrng_irq_t irq = kDifCsrngIrqCsCmdReqDone;
        irq <= kDifCsrngIrqCsFatalErr; ++irq) {
     csrng_irq_expected = irq;
@@ -1143,7 +1143,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from csrng is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralEdn0;
+  peripheral_expected = kTopDarjeelingPlicPeripheralEdn0;
   for (dif_edn_irq_t irq = kDifEdnIrqEdnCmdReqDone;
        irq <= kDifEdnIrqEdnFatalErr; ++irq) {
     edn_irq_expected = irq;
@@ -1156,7 +1156,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from edn0 is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralEdn1;
+  peripheral_expected = kTopDarjeelingPlicPeripheralEdn1;
   for (dif_edn_irq_t irq = kDifEdnIrqEdnCmdReqDone;
        irq <= kDifEdnIrqEdnFatalErr; ++irq) {
     edn_irq_expected = irq;
@@ -1169,7 +1169,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from edn1 is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralEntropySrc;
+  peripheral_expected = kTopDarjeelingPlicPeripheralEntropySrc;
   for (dif_entropy_src_irq_t irq = kDifEntropySrcIrqEsEntropyValid;
        irq <= kDifEntropySrcIrqEsFatalErr; ++irq) {
     entropy_src_irq_expected = irq;
@@ -1182,7 +1182,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from entropy_src is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralFlashCtrl;
+  peripheral_expected = kTopDarjeelingPlicPeripheralFlashCtrl;
   for (dif_flash_ctrl_irq_t irq = kDifFlashCtrlIrqProgEmpty;
        irq <= kDifFlashCtrlIrqCorrErr; ++irq) {
     flash_ctrl_irq_expected = irq;
@@ -1195,7 +1195,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from flash_ctrl is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralGpio;
+  peripheral_expected = kTopDarjeelingPlicPeripheralGpio;
   for (dif_gpio_irq_t irq = kDifGpioIrqGpio0;
        irq <= kDifGpioIrqGpio31; ++irq) {
     gpio_irq_expected = irq;
@@ -1208,7 +1208,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from gpio is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralHmac;
+  peripheral_expected = kTopDarjeelingPlicPeripheralHmac;
   for (dif_hmac_irq_t irq = kDifHmacIrqHmacDone;
        irq <= kDifHmacIrqHmacErr; ++irq) {
     hmac_irq_expected = irq;
@@ -1221,7 +1221,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from hmac is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralI2c0;
+  peripheral_expected = kTopDarjeelingPlicPeripheralI2c0;
   for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold;
        irq <= kDifI2cIrqHostTimeout; ++irq) {
     i2c_irq_expected = irq;
@@ -1234,7 +1234,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from i2c0 is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralI2c1;
+  peripheral_expected = kTopDarjeelingPlicPeripheralI2c1;
   for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold;
        irq <= kDifI2cIrqHostTimeout; ++irq) {
     i2c_irq_expected = irq;
@@ -1247,7 +1247,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from i2c1 is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralI2c2;
+  peripheral_expected = kTopDarjeelingPlicPeripheralI2c2;
   for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold;
        irq <= kDifI2cIrqHostTimeout; ++irq) {
     i2c_irq_expected = irq;
@@ -1260,7 +1260,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from i2c2 is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralKeymgr;
+  peripheral_expected = kTopDarjeelingPlicPeripheralKeymgr;
   for (dif_keymgr_irq_t irq = kDifKeymgrIrqOpDone;
        irq <= kDifKeymgrIrqOpDone; ++irq) {
     keymgr_irq_expected = irq;
@@ -1273,7 +1273,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from keymgr is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralKmac;
+  peripheral_expected = kTopDarjeelingPlicPeripheralKmac;
   for (dif_kmac_irq_t irq = kDifKmacIrqKmacDone;
        irq <= kDifKmacIrqKmacErr; ++irq) {
     kmac_irq_expected = irq;
@@ -1286,7 +1286,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from kmac is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralOtbn;
+  peripheral_expected = kTopDarjeelingPlicPeripheralOtbn;
   for (dif_otbn_irq_t irq = kDifOtbnIrqDone;
        irq <= kDifOtbnIrqDone; ++irq) {
     otbn_irq_expected = irq;
@@ -1299,7 +1299,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from otbn is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralOtpCtrl;
+  peripheral_expected = kTopDarjeelingPlicPeripheralOtpCtrl;
   for (dif_otp_ctrl_irq_t irq = kDifOtpCtrlIrqOtpOperationDone;
        irq <= kDifOtpCtrlIrqOtpError; ++irq) {
     otp_ctrl_irq_expected = irq;
@@ -1312,7 +1312,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from otp_ctrl is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralPattgen;
+  peripheral_expected = kTopDarjeelingPlicPeripheralPattgen;
   for (dif_pattgen_irq_t irq = kDifPattgenIrqDoneCh0;
        irq <= kDifPattgenIrqDoneCh1; ++irq) {
     pattgen_irq_expected = irq;
@@ -1325,7 +1325,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from pattgen is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralPwrmgrAon;
+  peripheral_expected = kTopDarjeelingPlicPeripheralPwrmgrAon;
   for (dif_pwrmgr_irq_t irq = kDifPwrmgrIrqWakeup;
        irq <= kDifPwrmgrIrqWakeup; ++irq) {
     pwrmgr_irq_expected = irq;
@@ -1338,7 +1338,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from pwrmgr_aon is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralRvTimer;
+  peripheral_expected = kTopDarjeelingPlicPeripheralRvTimer;
   for (dif_rv_timer_irq_t irq = kDifRvTimerIrqTimerExpiredHart0Timer0;
        irq <= kDifRvTimerIrqTimerExpiredHart0Timer0; ++irq) {
     rv_timer_irq_expected = irq;
@@ -1351,7 +1351,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from rv_timer is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralSensorCtrl;
+  peripheral_expected = kTopDarjeelingPlicPeripheralSensorCtrl;
   for (dif_sensor_ctrl_irq_t irq = kDifSensorCtrlIrqIoStatusChange;
        irq <= kDifSensorCtrlIrqInitStatusChange; ++irq) {
     sensor_ctrl_irq_expected = irq;
@@ -1364,7 +1364,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from sensor_ctrl is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralSpiDevice;
+  peripheral_expected = kTopDarjeelingPlicPeripheralSpiDevice;
   for (dif_spi_device_irq_t irq = kDifSpiDeviceIrqGenericRxFull;
        irq <= kDifSpiDeviceIrqTpmHeaderNotEmpty; ++irq) {
     spi_device_irq_expected = irq;
@@ -1377,7 +1377,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from spi_device is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralSpiHost0;
+  peripheral_expected = kTopDarjeelingPlicPeripheralSpiHost0;
   for (dif_spi_host_irq_t irq = kDifSpiHostIrqError;
        irq <= kDifSpiHostIrqSpiEvent; ++irq) {
     spi_host_irq_expected = irq;
@@ -1390,7 +1390,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from spi_host0 is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralSpiHost1;
+  peripheral_expected = kTopDarjeelingPlicPeripheralSpiHost1;
   for (dif_spi_host_irq_t irq = kDifSpiHostIrqError;
        irq <= kDifSpiHostIrqSpiEvent; ++irq) {
     spi_host_irq_expected = irq;
@@ -1403,7 +1403,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from spi_host1 is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralSysrstCtrlAon;
+  peripheral_expected = kTopDarjeelingPlicPeripheralSysrstCtrlAon;
   for (dif_sysrst_ctrl_irq_t irq = kDifSysrstCtrlIrqEventDetected;
        irq <= kDifSysrstCtrlIrqEventDetected; ++irq) {
     sysrst_ctrl_irq_expected = irq;
@@ -1419,7 +1419,7 @@ static void peripheral_irqs_trigger(void) {
   // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
   // from the logging facility.
   if (kDeviceType == kDeviceSimDV) {
-    peripheral_expected = kTopEarlgreyPlicPeripheralUart0;
+    peripheral_expected = kTopDarjeelingPlicPeripheralUart0;
     for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
          irq <= kDifUartIrqRxParityErr; ++irq) {
       uart_irq_expected = irq;
@@ -1433,7 +1433,7 @@ static void peripheral_irqs_trigger(void) {
     }
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralUart1;
+  peripheral_expected = kTopDarjeelingPlicPeripheralUart1;
   for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
        irq <= kDifUartIrqRxParityErr; ++irq) {
     uart_irq_expected = irq;
@@ -1446,7 +1446,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from uart1 is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralUart2;
+  peripheral_expected = kTopDarjeelingPlicPeripheralUart2;
   for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
        irq <= kDifUartIrqRxParityErr; ++irq) {
     uart_irq_expected = irq;
@@ -1459,7 +1459,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from uart2 is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralUart3;
+  peripheral_expected = kTopDarjeelingPlicPeripheralUart3;
   for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
        irq <= kDifUartIrqRxParityErr; ++irq) {
     uart_irq_expected = irq;
@@ -1472,7 +1472,7 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from uart3 is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralUsbdev;
+  peripheral_expected = kTopDarjeelingPlicPeripheralUsbdev;
   for (dif_usbdev_irq_t irq = kDifUsbdevIrqPktReceived;
        irq <= kDifUsbdevIrqLinkOutErr; ++irq) {
     usbdev_irq_expected = irq;
@@ -1505,7 +1505,7 @@ bool test_main(void) {
   peripherals_init();
   check_hart_id((uint32_t)kHart);
   rv_plic_testutils_irq_range_enable(
-      &plic, kHart, kTopEarlgreyPlicIrqIdNone + 1, kTopEarlgreyPlicIrqIdLast);
+      &plic, kHart, kTopDarjeelingPlicIrqIdNone + 1, kTopDarjeelingPlicIrqIdLast);
   peripheral_irqs_clear();
   peripheral_irqs_enable();
   peripheral_irqs_trigger();

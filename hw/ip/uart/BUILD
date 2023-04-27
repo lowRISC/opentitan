@@ -10,3 +10,8 @@ filegroup(
         "//hw/ip/uart/data:all_files",
     ],
 )
+
+filegroup(
+    name = "cores",
+    srcs = glob(["**/*.core"]),
+)

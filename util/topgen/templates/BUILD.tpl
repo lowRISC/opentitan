@@ -24,7 +24,7 @@ opentitan_functest(
         # often times out in 3600s on 4 cores
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_${top["name"]}/sw/autogen:top_${top["name"]}",
         "//sw/device/lib/base:mmio",
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
         "//sw/device/lib/dif:${n}",
@@ -40,7 +40,7 @@ opentitan_functest(
     name = "alert_test",
     srcs = ["alert_test.c"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_${top["name"]}/sw/autogen:top_${top["name"]}",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
 % for n in sorted(alert_peripheral_names + ["alert_handler"]):

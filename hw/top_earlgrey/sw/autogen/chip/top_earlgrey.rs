@@ -2201,13 +2201,13 @@ pub const TOP_EARLGREY_ALERT_FOR_PERIPHERAL: [TopEarlgreyAlertPeripheral; 65] = 
     TopEarlgreyAlertPeripheral::RvCoreIbex,
 ];
 
-// PERIPH_INSEL ranges from 0 to NUM_MIO_PADS + 2 -1}
+// PERIPH_INSEL ranges from 0 to TOP_EARLGREY_NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1
-pub const NUM_MIO_PADS: usize = 47;
-pub const NUM_DIO_PADS: usize = 16;
+pub const TOP_EARLGREY_NUM_MIO_PADS: usize = 47;
+pub const TOP_EARLGREY_NUM_DIO_PADS: usize = 16;
 
-pub const PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET: usize = 2;
-pub const PINMUX_PERIPH_OUTSEL_IDX_OFFSET: usize = 3;
+pub const TOP_EARLGREY_PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET: usize = 2;
+pub const TOP_EARLGREY_PINMUX_PERIPH_OUTSEL_IDX_OFFSET: usize = 3;
 
 /// Pinmux Peripheral Input.
 #[repr(u32)]

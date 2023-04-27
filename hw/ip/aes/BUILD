@@ -11,6 +11,11 @@ filegroup(
     ],
 )
 
+filegroup(
+    name = "cores",
+    srcs = glob(["**/*.core"]),
+)
+
 cc_library(
     name = "model",
     hdrs = [

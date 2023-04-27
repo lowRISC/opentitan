@@ -13,6 +13,7 @@
  * @brief Default ISRs for each IP
  */
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
@@ -37,8 +38,6 @@
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 /**
  * A handle to a PLIC ISR context struct.

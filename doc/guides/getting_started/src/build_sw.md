@@ -313,18 +313,18 @@ We try to always keep the main branch healthy, but the project is in active deve
 If your `bazelisk.sh` build failed trying to run a test on Verilator, the first step is to see if you can build the chip simulation on its own:
 
 ```console
-./bazelisk.sh build //hw:verilator
+./bazelisk.sh build //hw/{top_chip}:verilator
 ```
 This build can take a long time; it's creating a simulation for the entire OpenTitan SoC.
 Expect up to an hour for a successful build, depending on your machine.
 
-If the `//hw:verilator` build above ran for a while and then failed with a bunch of warnings about various `.sv` files, it may have run out of RAM.
+If the `//hw/{top_chip}:verilator` build above ran for a while and then failed with a bunch of warnings about various `.sv` files, it may have run out of RAM.
 At the time of writing, our CI has 7GB of RAM, so that should be sufficient.
 If your system is close to that limit, you may want to exit web browsers or other RAM-intensive applications while the Verilator build runs.
 
-If the `//hw:verilator` build failed pretty much immediately, try running `util/check_tool_requirements.py` to make sure you meet the tool requirements.
+If the `//hw/{top_chip}:verilator` build failed pretty much immediately, try running `util/check_tool_requirements.py` to make sure you meet the tool requirements.
 
-If the `//hw:verilator` build succeeeded, but running a particular test fails, try running a different test (you can find many options under `sw/device/tests/`).
+If the `//hw/{top_chip}:verilator` build succeeeded, but running a particular test fails, try running a different test (you can find many options under `sw/device/tests/`).
 If that works, then it may be a problem with the specific test you're running.
 See if you can build, but not run, the test with `./bazelisk.sh build` instead of `./bazelisk.sh test`.
 If the test fails to build, that indicates some issue with the source code or possibly the RISC-V toolchain installation.

@@ -11,9 +11,9 @@ pkg_tar(
     name = "opentitan",
     testonly = True,
     srcs = [
-        "//hw:package",
         "//hw/bitstream/vivado:package",
         "//hw/ip/otp_ctrl/data:package",
+        "//hw/top_earlgrey:package",
         "//sw/device/examples/hello_world:package",
         "//sw/device/lib/testing/test_rom:package",
         "//sw/device/silicon_creator/rom:package_fake",

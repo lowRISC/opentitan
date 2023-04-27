@@ -104,15 +104,17 @@ ${helper.plic_mapping.render_definition()}
 /// `${helper.alert_sources.name.as_rust_type()}`.
 ${helper.alert_mapping.render_definition()}
 
-// PERIPH_INSEL ranges from 0 to NUM_MIO_PADS + 2 -1}
+// PERIPH_INSEL ranges from 0 to TOP_${top["name"].upper()}_NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1
-pub const NUM_MIO_PADS: usize = ${top["pinmux"]["io_counts"]["muxed"]["pads"]};
-pub const NUM_DIO_PADS: usize = ${top["pinmux"]["io_counts"]["dedicated"]["inouts"] + \
+pub const TOP_${top["name"].upper()}_NUM_MIO_PADS: usize = ${
+                       top["pinmux"]["io_counts"]["muxed"]["pads"]};
+pub const TOP_${top["name"].upper()}_NUM_DIO_PADS: usize = ${
+                       top["pinmux"]["io_counts"]["dedicated"]["inouts"] + \
                        top["pinmux"]["io_counts"]["dedicated"]["inputs"] + \
-                       top["pinmux"]["io_counts"]["dedicated"]["outputs"] };
+                       top["pinmux"]["io_counts"]["dedicated"]["outputs"]};
 
-pub const PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET: usize = 2;
-pub const PINMUX_PERIPH_OUTSEL_IDX_OFFSET: usize = 3;
+pub const TOP_${top["name"].upper()}_PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET: usize = 2;
+pub const TOP_${top["name"].upper()}_PINMUX_PERIPH_OUTSEL_IDX_OFFSET: usize = 3;
 
 /// Pinmux Peripheral Input.
 ${helper.pinmux_peripheral_in.render(gen_cast=True)}

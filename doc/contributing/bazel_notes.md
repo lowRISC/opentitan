@@ -232,7 +232,7 @@ Bazel is aware of all dependency relationships, and knows what prerequisites to 
 - Build FPGA bitstream with (production) ROM, see [here](../guides/getting_started/src/setup_fpga.md#build-an-fpga-bitstream).
 - Build Verilator simulation binary:
   ```console
-  bazel build //hw:verilator
+  bazel build //hw/{top_chip}:verilator
   ```
 
 # Miscellaneous

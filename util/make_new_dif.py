@@ -202,7 +202,7 @@ def main():
 
     # Render testutils templates.
     if args.mode == "regen" or "autogen" in args.only:
-        gen_testutils(ips)
+        gen_testutils(topcfg['name'], ips)
 
 
 if __name__ == "__main__":

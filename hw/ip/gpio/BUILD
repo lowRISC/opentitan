@@ -10,3 +10,8 @@ filegroup(
         "//hw/ip/gpio/data:all_files",
     ],
 )
+
+filegroup(
+    name = "cores",
+    srcs = glob(["**/*.core"]),
+)

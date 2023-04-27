@@ -102,8 +102,8 @@ def dv_params(
     required_data = [
         dvsim_config,
         "@//util/dvsim",
-        "@//hw:all_files",
-        "@//hw:fusesoc_ignore",
+        "@//hw/top_earlgrey:all_files",
+        "@//hw/top_earlgrey:fusesoc_ignore",
     ]
     required_tags = ["dv"]
     kwargs.update(
@@ -162,14 +162,14 @@ def verilator_params(
     ]
     required_test_cmds = [
         "--interface=verilator",
-        "--verilator-bin=$(location @//hw:verilator)",
+        "--verilator-bin=$(location @//hw/top_earlgrey:verilator)",
         "--verilator-rom=$(location {rom})",
         "--verilator-flash=$(location {flash})",
         "--verilator-otp=$(location {otp})",
     ]
     required_data = [
-        "@//hw:verilator",
-        "@//hw:fusesoc_ignore",
+        "@//hw/top_earlgrey:verilator",
+        "@//hw/top_earlgrey:fusesoc_ignore",
     ]
     required_tags = ["verilator", "cpu:5"]
     kwargs.update(

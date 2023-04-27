@@ -12,7 +12,7 @@ filegroup(
 )
 
 rust_library(
-    name = "top_earlgrey",
+    name = "top_darjeeling",
     srcs = [":all_files"],
     crate_root = "mod.rs",
 )

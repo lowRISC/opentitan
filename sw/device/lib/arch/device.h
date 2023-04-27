@@ -10,6 +10,9 @@
 
 #include "sw/device/lib/base/macros.h"
 
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus

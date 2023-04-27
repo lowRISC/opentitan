@@ -15,6 +15,7 @@ $ util/autogen_testutils.py
 
 import argparse
 import glob
+import logging
 import sys
 from pathlib import Path
 
@@ -50,6 +51,7 @@ def main():
     topcfg = hjson.loads(topcfg_text, use_decimal=True)
     templated_modules = topgen_lib.get_templated_modules(topcfg)
     ipgen_modules = topgen_lib.get_ipgen_modules(topcfg)
+    reggen_top_modules = topgen_lib.get_top_reggen_modules(topcfg)
 
     # Define autogen DIF directory.
     autogen_dif_directory = REPO_TOP / "sw/device/lib/dif/autogen"
@@ -67,10 +69,11 @@ def main():
         # NOTE: ip.name_long_* not needed for auto-generated files which
         # are the only files (re-)generated in batch mode.
         ips_with_difs.append(
-            Ip(ip_name_snake, "AUTOGEN", templated_modules, ipgen_modules))
+            Ip(ip_name_snake, "AUTOGEN", templated_modules, ipgen_modules,
+               reggen_top_modules))
 
     # Auto-generate testutils files.
-    gen_testutils(ips_with_difs)
+    gen_testutils(topcfg['name'], ips_with_difs)
 
 
 if __name__ == "__main__":

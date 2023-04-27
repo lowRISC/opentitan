@@ -7,6 +7,7 @@
 
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
@@ -33,8 +34,6 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 void isr_testutils_adc_ctrl_isr(
     plic_isr_ctx_t plic_ctx, adc_ctrl_isr_ctx_t adc_ctrl_ctx,

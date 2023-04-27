@@ -7,6 +7,6 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
     name = "all_files",
     srcs = glob(["**"]) + [
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:all_files",
+        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:all_files",
     ],
 )

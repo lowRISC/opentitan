@@ -28,7 +28,7 @@ check_empty () {
 untagged=$(./bazelisk.sh query \
   "rdeps(
       //...,
-      //hw:verilator
+      //hw/top_earlgrey:verilator
   )
   except
   attr(
@@ -38,7 +38,7 @@ untagged=$(./bazelisk.sh query \
   )" \
   --output=label_kind)
 check_empty "Error:" "${untagged}" \
-"Target(s) above depend(s) on //hw:verilator; please tag it with verilator or
+"Target(s) above depend(s) on //hw/{top_chip}:verilator; please tag it with verilator or
 (to prevent matching any wildcards) manual.
 NOTE: test_suites that contain bazel tests with different tags should almost
 universally use the manual tag."

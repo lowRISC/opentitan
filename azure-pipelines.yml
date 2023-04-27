@@ -226,9 +226,9 @@ jobs:
       # * It excludes the tests from //third_party/riscv-compliance because
       #   they're already covered by `execute_fpga_tests_cw310`.
       # * It excludes //hw:all to avoid building Verilator, which is pulled in
-      #   because //... effectively asks to build //hw:verilator_real and other
-      #   targets in //hw:all that depend on it. Note that this is only a
-      #   shallow exclusion; tests deeper under //hw will still be found.
+      #   because //... effectively asks to build //hw/top_earlgrey:verilator_real
+      #   and other targets in //hw:all that depend on it. Note that this is only
+      #   a shallow exclusion; tests deeper under //hw will still be found.
       # * It excludes targets that depend on bitstream_splice rules, since the
       #   environment does not have access to Vivado.
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
@@ -320,9 +320,9 @@ jobs:
   - bash: |
       . util/build_consts.sh
       mkdir -p "$BIN_DIR/hw/top_earlgrey/"
-      cp $(ci/scripts/target-location.sh //hw:verilator) \
+      cp $(ci/scripts/target-location.sh //hw/top_earlgrey:verilator) \
         "$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
-    displayName: Copy //hw:verilator to $BIN_DIR
+    displayName: Copy //hw/top_earlgrey:verilator to $BIN_DIR
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:

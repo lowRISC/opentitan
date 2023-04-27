@@ -10,3 +10,8 @@ filegroup(
         "//hw/ip/rv_timer/data:all_files",
     ],
 )
+
+filegroup(
+    name = "cores",
+    srcs = glob(["**/*.core"]),
+)

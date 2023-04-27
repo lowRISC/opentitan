@@ -38,8 +38,8 @@ OTTF_DEFINE_TEST_CONFIG();
  * the expected and measured values.
  */
 
-/* NUM_MIO_PADS */
-/* NUM_DIO_PADS */
+/* TOP_EARLGREY_NUM_MIO_PADS */
+/* TOP_EARLGREY_NUM_DIO_PADS */
 
 /* DioOptOut: Some of DIO PADs are input only or does not need to be tested as
  * they are alive in deep powerdown state. This lists out the PADs. Its entry
@@ -101,8 +101,8 @@ typedef enum {
  */
 enum { kNumOptOutMio = 0 };
 
-static uint8_t kMioPads[NUM_MIO_PADS] = {0};
-static uint8_t kDioPads[NUM_DIO_PADS] = {0};
+static uint8_t kMioPads[TOP_EARLGREY_NUM_MIO_PADS] = {0};
+static uint8_t kDioPads[TOP_EARLGREY_NUM_DIO_PADS] = {0};
 
 // PLIC structures
 static dif_pwrmgr_t pwrmgr;
@@ -169,10 +169,10 @@ void draw_pinmux_ret(const uint32_t num_pins, uint8_t *arr,
  */
 void print_chosen_values(void) {
   LOG_INFO("BEGIN Chosen Retention Types");
-  for (int i = 0; i < NUM_MIO_PADS; ++i) {
+  for (int i = 0; i < TOP_EARLGREY_NUM_MIO_PADS; ++i) {
     LOG_INFO("MIO [%d]: %x", i, kMioPads[i]);
   }
-  for (int i = 0; i < NUM_DIO_PADS; ++i) {
+  for (int i = 0; i < TOP_EARLGREY_NUM_DIO_PADS; ++i) {
     LOG_INFO("DIO [%d]: %x", i, kDioPads[i]);
   }
   LOG_INFO("END Chosen Retention Types");
@@ -192,7 +192,7 @@ void configure_pad_retention_types(dif_pinmux_t *pinmux) {
 
   // TODO: for loop of writing values to PINMUX CSRs.
   for (io = 0; io < 2; io++) {
-    max_pads = (io) ? NUM_DIO_PADS : NUM_MIO_PADS;
+    max_pads = (io) ? TOP_EARLGREY_NUM_DIO_PADS : TOP_EARLGREY_NUM_MIO_PADS;
     pad_kind = (io) ? kDifPinmuxPadKindDio : kDifPinmuxPadKindMio;
     for (int i = 0; i < max_pads; i++) {
       pad_mode = (io) ? (dif_pinmux_sleep_mode_t)(kDioPads[i])
@@ -211,8 +211,9 @@ bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, bool deepsleep) {
 
   LOG_INFO("Selecting PADs retention modes...");
 
-  draw_pinmux_ret(NUM_DIO_PADS, kDioPads, kOptOutDio, kNumOptOutDio);
-  draw_pinmux_ret(NUM_MIO_PADS, kMioPads, NULL, kNumOptOutMio);
+  draw_pinmux_ret(TOP_EARLGREY_NUM_DIO_PADS, kDioPads, kOptOutDio,
+                  kNumOptOutDio);
+  draw_pinmux_ret(TOP_EARLGREY_NUM_MIO_PADS, kMioPads, NULL, kNumOptOutMio);
 
   print_chosen_values();
 
