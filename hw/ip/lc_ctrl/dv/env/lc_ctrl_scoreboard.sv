@@ -82,7 +82,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         if (cfg.err_inj.otp_secrets_valid_mubi_err && lc_state_e'(cfg.lc_ctrl_vif.otp_i.state)
             inside {LcStProd, LcStProdEnd, LcStDev}) begin
           exp_lc_o.lc_seed_hw_rd_en_o = cfg.otp_secrets_valid;
-          exp_lc_o.lc_creator_seed_sw_rw_en_o = ~cfg.otp_secrets_valid;
+          exp_lc_o.lc_creator_seed_sw_rw_en_o = lc_tx_t'(~cfg.otp_secrets_valid);
         end
 
         if (cfg.escalate_injected) begin
