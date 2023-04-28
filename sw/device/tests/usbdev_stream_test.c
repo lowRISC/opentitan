@@ -281,8 +281,14 @@ bool test_main(void) {
   LOG_INFO("USB sent 0x%x byte(s), received and checked 0x%x byte(s)", tx_bytes,
            rx_bytes);
 
-  CHECK(tx_bytes == nstreams * transfer_bytes,
-        "Unexpected count of byte(s) sent to USB host");
+  if (sending) {
+    CHECK(tx_bytes == nstreams * transfer_bytes,
+          "Unexpected count of byte(s) sent to USB host");
+  }
+  if (recving) {
+    CHECK(rx_bytes == nstreams * transfer_bytes,
+          "Unexpected count of byte(s) received from USB host");
+  }
 
   return true;
 }

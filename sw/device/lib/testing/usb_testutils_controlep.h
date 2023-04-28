@@ -15,7 +15,8 @@
 typedef enum usb_testutils_test_number {
   kUsbTestNumberSmoke = 0,
   kUsbTestNumberStreams,
-  kUsbTestNumberIso
+  kUsbTestNumberIso,
+  kUsbTestNumberMixed
 } usb_testutils_test_number_t;
 
 typedef enum usb_testutils_ctstate {
