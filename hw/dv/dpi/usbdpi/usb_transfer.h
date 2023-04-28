@@ -14,12 +14,21 @@
 #endif
 
 // Maximal length of a byte sequence to be transmitted/receive without
-// interruption or pause (Start Of Frame, Setup packet, OUT Data packet
-// and End Of Frame all back-to-back?)
-#define USBDPI_MAX_DATA (3U + 3U + 1U + USBDEV_MAX_PACKET_SIZE + 2U + 1U)
+// interruption or pause (Start Of Frame, Setup packet, OUT Data packet,
+// all back-to-back)
+#define USBDPI_MAX_DATA                          \
+  (3U +                              /* SOF */   \
+   3U +                              /* SETUP */ \
+   1U + USBDEV_MAX_PACKET_SIZE + 2U) /* DATA PID, field, CRC16 */
 
 // Special value that denotes that this transfer does not include a data stage
 #define USBDPI_NO_DATA_STAGE ((uint8_t)~0U)
+
+// USB Transfer Types (Standard Endpoint Descriptor)
+#define USB_TRANSFER_TYPE_CONTROL 0U
+#define USB_TRANSFER_TYPE_ISOCHRONOUS 1U
+#define USB_TRANSFER_TYPE_BULK 2U
+#define USB_TRANSFER_TYPE_INTERRUPT 3U
 
 /**
  * Forwards reference to usbpdi state context
@@ -218,6 +227,6 @@ inline uint32_t transfer_length(const usbdpi_transfer_t *transfer) {
  * @param  transfer  Transfer descriptor
  * @param  out       Stream to receive diagnostic output
  */
-void transfer_dump(usbdpi_transfer_t *transfer, FILE *out);
+void transfer_dump(const usbdpi_transfer_t *transfer, FILE *out);
 
 #endif  // OPENTITAN_HW_DV_DPI_USBDPI_USB_TRANSFER_H_
