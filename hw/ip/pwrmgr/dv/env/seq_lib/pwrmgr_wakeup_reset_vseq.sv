@@ -25,10 +25,9 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
 
   // Cause some delays for the rom_ctrl done and good inputs. Simple, enough to hold the
   // transition to active state.
-  // Consider adding SVA to monitor fast state transitions are compliant
-  // with "ROM Integrity Checks" at
-  // https://docs.opentitan.org/hw/ip/pwrmgr/doc/#fast-clock-domain-fsm
-  // TODO(maturana) https://github.com/lowRISC/opentitan/issues/10241
+  // ICEBOX(lowrisc/opentitan#18236) Consider adding checks to monitor fast state transitions are
+  // compliant with "ROM Integrity Checks" at
+  // https://opentitan.org/book/hw/ip/pwrmgr/doc/theory_of_operation.html#rom-integrity-checks
   virtual task twirl_rom_response();
     cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4False;
     cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
