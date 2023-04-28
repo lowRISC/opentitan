@@ -13,14 +13,16 @@ void usbdpi_test_init(usbdpi_ctx_t *ctx) {
   // Test-specific initialization code
   bool ok = false;
   switch (ctx->test_number) {
-    case 0:
+    case kUsbTestNumberSmoke:
       // The simple smoke test (usbdev_test) does not require any parameters
       // or special initialization at present
       ok = true;
       break;
 
-    // Initialize streaming test
-    case 1: {
+    // Initialize streaming, or ISO streaming test
+    case kUsbTestNumberMixed:
+    case kUsbTestNumberIso:
+    case kUsbTestNumberStreams: {
       // Number of concurrent byte streams
       const unsigned nstreams = ctx->test_arg[0] & 0xfU;
       // Poll device for IN packets in streaming test?
@@ -32,8 +34,34 @@ void usbdpi_test_init(usbdpi_ctx_t *ctx) {
       // Attempt to send OUT packets to device
       bool send = (ctx->test_arg[0] & 0x80U) != 0U;
 
+      // Isochronous streams?
+      bool iso = (ctx->test_number == kUsbTestNumberIso);
+
       if (nstreams <= USBDPI_MAX_STREAMS) {
-        ok = streams_init(ctx, nstreams, retrieve, checking, retrying, send);
+        uint8_t xfr_types[USBDPI_MAX_STREAMS];
+
+        // Complete the transfer types
+        if (ctx->test_number == kUsbTestNumberMixed) {
+          // The transfer types are specified in additional test arguments;
+          // 2 bits per stream, with the USB-defined standard coding, lowest-
+          // numbered stream in the LSBs.
+          uint32_t mixed_types = (ctx->test_arg[3] << 16) |
+                                 (ctx->test_arg[2] << 8) | ctx->test_arg[1];
+          for (unsigned id = 0U; id < nstreams; id++) {
+            xfr_types[id] = (mixed_types & 3U);
+            // Control Transfer endpoints are not yet supported.
+            assert(xfr_types[id] != USB_TRANSFER_TYPE_CONTROL);
+            mixed_types >>= 2;
+          }
+        } else {
+          // For Iso and Stream tests, all streams have the same transfer type.
+          for (unsigned id = 0U; id < nstreams; id++) {
+            xfr_types[id] =
+                iso ? USB_TRANSFER_TYPE_ISOCHRONOUS : USB_TRANSFER_TYPE_BULK;
+          }
+        }
+        ok = streams_init(ctx, nstreams, xfr_types, retrieve, checking,
+                          retrying, send);
       }
     } break;
 
@@ -89,9 +117,12 @@ usbdpi_test_step_t usbdpi_test_seq_next(usbdpi_ctx_t *ctx,
     // At this point we have discovered which test we are to perform
     default:
       switch (ctx->test_number) {
-        // Streaming test (usbdev_stream_test)
-        case 1:
-          switch (next_step) {
+        // Streaming test (usbdev_stream_test), Iso (usbdev_iso_test) and
+        // Mixed (usbdev_mixed_test)
+        case kUsbTestNumberMixed:
+        case kUsbTestNumberIso:
+        case kUsbTestNumberStreams:
+          switch (step) {
             case STEP_GET_TEST_CONFIG:
               next_step = STEP_STREAM_SERVICE;
               break;

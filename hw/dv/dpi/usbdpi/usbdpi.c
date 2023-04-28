@@ -29,7 +29,7 @@ static const char *hs_states[] = {
     "HS_DS_SENDACK 4", "HS_DONEDADR 5",  "HS_REQDATA 6",       "HS_WAITDATA 7",
     "HS_SENDACK 8",    "HS_WAIT_PKT 9",  "HS_ACKIFDATA 10",    "HS_SENDHI 11",
     "HS_EMPTYDATA 12", "HS_WAITACK2 13", "HS_STREAMOUT 14",    "HS_STREAMIN 15",
-    "HS_NEXTFRAME 16"};
+    "HS_NEXTFRAME 16", "HS_ERROR 17"};
 
 static const char *decode_usb[] = {"SE0", "0-K", "1-J", "SE1"};
 
@@ -179,9 +179,9 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
         printf(
             "[usbdpi] frame 0x%x tick_bits 0x%x error state %s hs %s and "
             "device "
-            "drives\n",
+            "drives 0x%x\n",
             ctx->frame, ctx->tick_bits, st_states[ctx->state],
-            hs_states[ctx->hostSt]);
+            hs_states[ctx->hostSt], d2p);
         // TODO: stop the test
         break;
 
@@ -194,7 +194,8 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
         break;
 
       case ST_IDLE:
-        // Nothing to do
+        // Device is trying to transmit and we're not transmitting, so switch to
+        // receiving a packet.
         ctx->state = ST_GET;
         break;
 
@@ -260,6 +261,11 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
         ctx->bus_state = kUsbControlStatusOutAck;
         break;
 
+      // Isochronous Transfers
+      case kUsbIsoInToken:
+        ctx->bus_state = kUsbIsoInData;
+        break;
+
       // Bulk Transfers
       case kUsbBulkOut:
         ctx->bus_state = kUsbBulkOutAck;
@@ -268,6 +274,16 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
         ctx->bus_state = kUsbBulkInData;
         break;
 
+      // Interrupt Transfers
+      case kUsbInterruptOut:
+        ctx->bus_state = kUsbInterruptOutAck;
+        break;
+      case kUsbInterruptInToken:
+        ctx->bus_state = kUsbInterruptInData;
+        break;
+
+      // TODO - this shall become an error condition; we're not expecting
+      //        a transmission from the device, and thus no EOP either
       default:
         break;
     }
@@ -284,13 +300,15 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
 void usbdpi_data_callback(void *ctx_v, usbmon_data_type_t type, uint8_t d) {
   usbdpi_ctx_t *ctx = (usbdpi_ctx_t *)ctx_v;
   assert(ctx);
-  if (!ctx->recving) {
-    ctx->recving = transfer_alloc(ctx);
-  }
 
   // We are interested only in the packets from device to host
   if (ctx->state != ST_GET) {
     return;
+  }
+
+  // Ensure that we have a buffer available for packet reception
+  if (!ctx->recving) {
+    ctx->recving = transfer_alloc(ctx);
   }
 
   usbdpi_transfer_t *tr = ctx->recving;
@@ -598,7 +616,7 @@ void getTestConfig(usbdpi_ctx_t *ctx, uint16_t desc_len) {
       ctx->hostSt = HS_REQDATA;
       break;
     case HS_REQDATA:
-      // TODO - we must wait before trying the IN because we currently
+      // TODO: we must wait before trying the IN because we currently
       // do not retry after a NAK response, but the CPU software can be tardy
       if (ctx->tick_bits >= ctx->wait &&
           ctx->bus_state == kUsbControlSetupAck) {
@@ -619,14 +637,11 @@ void getTestConfig(usbdpi_ctx_t *ctx, uint16_t desc_len) {
           case USB_PID_DATA1: {
             usbdpi_transfer_t *rx = ctx->recving;
             assert(rx);
-            // TODO - check the length of the received data field!
+            // TODO: check the length of the received data field!
             uint8_t *dp = transfer_data_field(rx);
             assert(dp);
             // Validate the first part of the test descriptor
             printf("[usbdpi] Test descriptor 0x%.8X\n", get_le32(dp));
-
-            transfer_dump(rx, stdout);
-
             // Check the header signature
             const uint8_t test_sig_head[] = {0x7eu, 0x57u, 0xc0u, 0xf1u};
             const uint8_t test_sig_tail[] = {0x1fu, 0x0cu, 0x75u, 0xe7u};
@@ -651,7 +666,7 @@ void getTestConfig(usbdpi_ctx_t *ctx, uint16_t desc_len) {
           } break;
 
           case USB_PID_NAK:
-            // TODO - we should retry the request in this case
+            // TODO: we should retry the request in this case
             printf("[usbdpi] Unable to retrieve test config\n");
             assert(!"DPI is unable to retrieve test config");
             ctx->hostSt = HS_NEXTFRAME;
@@ -1173,11 +1188,9 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     // Host state machine advances when the bit-level activity is idle
     case ST_IDLE: {
       // Ensure that a buffer is available for constructing a transfer
-      usbdpi_transfer_t *tr = ctx->sending;
-      if (!tr) {
-        tr = transfer_alloc(ctx);
-        assert(tr);
-        ctx->sending = tr;
+      if (!ctx->sending) {
+        ctx->sending = transfer_alloc(ctx);
+        assert(ctx->sending);
       }
 
       switch (ctx->step) {
@@ -1303,7 +1316,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
       break;
 
     case ST_SEND: {
-      usbdpi_transfer_t *sending = ctx->sending;
+      const usbdpi_transfer_t *sending = ctx->sending;
       assert(sending);
       if ((ctx->linebits & 0x3f) == 0x3f &&
           !INSERT_ERR_BITSTUFF) {  // sent 6 ones
@@ -1344,7 +1357,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
         ctx->driving = set_driving(ctx, d2p, P2D_DP, true);  // J
       }
       if (ctx->bit == 8) {
-        usbdpi_transfer_t *sending = ctx->sending;
+        const usbdpi_transfer_t *sending = ctx->sending;
         assert(sending);
         // Stop driving: host pulldown to SE0 unless there is a pullup on DP
         ctx->driving =
@@ -1383,9 +1396,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
 void usbdpi_diags(void *ctx_void, svBitVecVal *diags) {
   usbdpi_ctx_t *ctx = (usbdpi_ctx_t *)ctx_void;
 
-  // Check for overflow, which would cause confusion in waveform interpretation;
-  // if an assertion fires, the mapping from fields to svBitVecVal will need
-  // to be changed, both here and in usbdpi.sv
+  // Check for overflow, which would cause confusion in waveform interpretation.
   assert(ctx->state <= 0xfU);
   assert(ctx->hostSt <= 0x1fU);
   assert(ctx->bus_state <= 0x3fU);

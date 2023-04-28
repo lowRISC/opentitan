@@ -169,7 +169,9 @@ void transfer_send(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer) {
   assert(transfer->num_bytes > 0U &&
          transfer->num_bytes <= sizeof(transfer->data));
 
-  // Set this as the current in-progress transfer
+  // Set this as the current in-progress transfer, checking that we're not
+  // losing track of a buffer by doing so.
+  assert(!ctx->sending || ctx->sending == transfer);
   ctx->sending = transfer;
 
   // Prepare for transmission of the first byte, following the implicit SYNC
@@ -189,7 +191,9 @@ void transfer_status(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer,
 
   transfer->data_start = USBDPI_NO_DATA_STAGE;
 
-  // Set this as the current in-progress transfer
+  // Set this as the current in-progress transfer, checking that we're not
+  // losing track of a buffer by doing so.
+  assert(!ctx->sending || ctx->sending == transfer);
   ctx->sending = transfer;
 
   // Prepare for transmission of the first byte, following the implicit SYNC
@@ -199,7 +203,7 @@ void transfer_status(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer,
 }
 
 // Diagnostic utility function to dump out the contents of a transfer descriptor
-void transfer_dump(usbdpi_transfer_t *transfer, FILE *out) {
+void transfer_dump(const usbdpi_transfer_t *transfer, FILE *out) {
   fprintf(out, "[usbdpi] Transfer descriptor at %p\n", transfer);
   fprintf(out, "[usbdpi] num_bytes 0x%x data_start 0x%x\n", transfer->num_bytes,
           transfer->data_start);
