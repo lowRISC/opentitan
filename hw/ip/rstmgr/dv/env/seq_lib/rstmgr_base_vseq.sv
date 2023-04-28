@@ -91,6 +91,15 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   mubi4_t scanmode;
   int scanmode_on_weight = 8;
 
+  // This is used to randomize the delays for the clocks to start and stop.
+  typedef struct {
+    bit [5:0] io_delay;
+    bit [5:0] io_div2_delay;
+    bit [5:0] io_div4_delay;
+    bit [5:0] main_delay;
+    bit [5:0] usb_delay;
+  } clock_delays_in_ns_t;
+
   // What to expect when testing resets.
   string reset_name[reset_e] = '{
     ResetPOR: "POR",
@@ -323,19 +332,22 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   local task control_all_clocks(bit enable);
-    if (enable) begin
-      cfg.io_clk_rst_vif.start_clk();
-      cfg.io_div2_clk_rst_vif.start_clk();
-      cfg.io_div4_clk_rst_vif.start_clk();
-      cfg.main_clk_rst_vif.start_clk();
-      cfg.usb_clk_rst_vif.start_clk();
-    end else begin
-      cfg.io_clk_rst_vif.stop_clk();
-      cfg.io_div2_clk_rst_vif.stop_clk();
-      cfg.io_div4_clk_rst_vif.stop_clk();
-      cfg.main_clk_rst_vif.stop_clk();
-      cfg.usb_clk_rst_vif.stop_clk();
-    end
+    // Randomize the delays for each clock turning on or off.
+    clock_delays_in_ns_t delays;
+    `DV_CHECK_STD_RANDOMIZE_FATAL(delays)
+    if (enable) fork
+      #(delays.io_delay * 1ns) cfg.io_clk_rst_vif.start_clk();
+      #(delays.io_div2_delay * 1ns) cfg.io_div2_clk_rst_vif.start_clk();
+      #(delays.io_div4_delay * 1ns) cfg.io_div4_clk_rst_vif.start_clk();
+      #(delays.main_delay * 1ns) cfg.main_clk_rst_vif.start_clk();
+      #(delays.usb_delay * 1ns) cfg.usb_clk_rst_vif.start_clk();
+    join else fork
+      #(delays.io_delay * 1ns) cfg.io_clk_rst_vif.stop_clk();
+      #(delays.io_div2_delay * 1ns) cfg.io_div2_clk_rst_vif.stop_clk();
+      #(delays.io_div4_delay * 1ns) cfg.io_div4_clk_rst_vif.stop_clk();
+      #(delays.main_delay * 1ns) cfg.main_clk_rst_vif.stop_clk();
+      #(delays.usb_delay * 1ns) cfg.usb_clk_rst_vif.stop_clk();
+    join
   endtask
 
   // Happens with hardware resets.
@@ -349,7 +361,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     set_pwrmgr_rst_reqs(.rst_lc_req('1), .rst_sys_req('1));
     cfg.clk_rst_vif.stop_clk();
     if (reset_cause == pwrmgr_pkg::LowPwrEntry) begin
-      // TODO: randomize the clocks off setting.
       control_all_clocks(.enable(0));
     end
   endtask
@@ -445,8 +456,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_shutdown();
-    // check for pending rstmgr operations and wait for them to complete
-    // TODO
+    // No checks seem needed.
   endtask
 
   local task start_clocks();

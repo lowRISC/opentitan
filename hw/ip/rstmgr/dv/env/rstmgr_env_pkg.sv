@@ -30,7 +30,6 @@ package rstmgr_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  // TODO: add the names of alerts in order
   parameter string LIST_OF_ALERTS[] = {"fatal_fault", "fatal_cnsty_fault"};
   parameter uint NUM_ALERTS = 2;
 
@@ -47,7 +46,6 @@ package rstmgr_env_pkg;
     "u_d0_lc_io",
     "u_d0_lc_io_div2",
     // There are 4 rstmgr_leaf_rst instances with security checks disabled.
-    // TODO(#15093) Perhaps adjust it depending on this issue.
     // "u_d0_lc_io_div4",
     // "u_d0_lc_io_div4_shadowed",
     "u_d0_lc_usb",
