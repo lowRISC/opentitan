@@ -20,6 +20,7 @@
  * @param sideload Whether to configure KMAC to read a sideloaded key.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t kmac_testutils_config(dif_kmac_t *kmac, bool sideload);
 
 /**
@@ -40,6 +41,7 @@ status_t kmac_testutils_config(dif_kmac_t *kmac, bool sideload);
  * output_len).
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t kmac_testutils_kmac(const dif_kmac_t *kmac, dif_kmac_mode_kmac_t mode,
                              const dif_kmac_key_t *key,
                              const char *custom_string,
