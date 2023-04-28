@@ -159,8 +159,9 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
   // Convert key/mask to keyblob array.
   size_t keyblob_words = keyblob_num_words(kConfigCtr128);
   uint32_t keyblob[keyblob_words] = {0};
-  keyblob_from_key_and_mask(test_key.data(), test_mask.data(), kConfigCtr128,
-                            keyblob);
+  EXPECT_EQ(hardened_status_ok(keyblob_from_key_and_mask(
+                test_key.data(), test_mask.data(), kConfigCtr128, keyblob)),
+            kHardenedBoolTrue);
 
   // Construct blinded key.
   crypto_blinded_key_t key = {
@@ -201,8 +202,9 @@ TEST(Keyblob, RemaskDoesNotChangKey) {
   // Convert key and first mask to keyblob array.
   size_t keyblob_words = keyblob_num_words(kConfigCtr128);
   uint32_t keyblob[keyblob_words] = {0};
-  keyblob_from_key_and_mask(test_key.data(), test_mask0.data(), kConfigCtr128,
-                            keyblob);
+  EXPECT_EQ(hardened_status_ok(keyblob_from_key_and_mask(
+                test_key.data(), test_mask0.data(), kConfigCtr128, keyblob)),
+            kHardenedBoolTrue);
 
   // Construct blinded key.
   crypto_blinded_key_t key = {
@@ -247,8 +249,9 @@ TEST(Keyblob, RemaskWithZero) {
   // Convert key and first mask to keyblob array.
   size_t keyblob_words = keyblob_num_words(kConfigCtr128);
   uint32_t keyblob[keyblob_words] = {0};
-  keyblob_from_key_and_mask(test_key.data(), test_mask0.data(), kConfigCtr128,
-                            keyblob);
+  EXPECT_EQ(hardened_status_ok(keyblob_from_key_and_mask(
+                test_key.data(), test_mask0.data(), kConfigCtr128, keyblob)),
+            kHardenedBoolTrue);
 
   // Construct blinded key.
   crypto_blinded_key_t key = {
