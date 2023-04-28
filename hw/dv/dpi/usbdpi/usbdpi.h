@@ -21,6 +21,7 @@ typedef uint32_t svBitVecVal;
 #endif
 #include "usb_monitor.h"
 #include "usb_transfer.h"
+#include "usb_utils.h"
 #include "usbdpi_stream.h"
 
 // Shall we employ a proper simulation of the frame interval (1ms)?
@@ -144,7 +145,7 @@ typedef uint32_t svBitVecVal;
 // Maximum number of simultaneous transfer descriptors
 //   (The host model may simply avoid polling for further IN transfers
 //    whilst there are no further desciptors available)
-#define USBDPI_MAX_TRANSFERS 0x10U
+#define USBDPI_MAX_TRANSFERS 0x20U
 
 // Time intervals for common transactions, in bits
 // (allowing for bit stuffing and bus turnaround etc; for setting timeouts)
@@ -236,7 +237,8 @@ typedef enum {
   HS_WAITACK2 = 13,
   HS_STREAMOUT = 14,
   HS_STREAMIN = 15,
-  HS_NEXTFRAME = 16
+  HS_NEXTFRAME = 16,
+  HS_ERROR = 17,
 } usbdpi_host_state_t;
 
 typedef enum usbdpi_bus_state {
@@ -254,15 +256,23 @@ typedef enum usbdpi_bus_state {
   kUsbControlDataInAck,
   kUsbControlStatusOut,
   kUsbControlStatusOutAck,
-  kUsbIsoToken,
-  kUsbIsoDataIn,
-  kUsbIsoDataOut,
 
+  // Isochronous Transfers
+  kUsbIsoOut,
+  kUsbIsoInToken,
+  kUsbIsoInData,
+
+  // Bulk Transfers
   kUsbBulkOut,
   kUsbBulkOutAck,
   kUsbBulkInToken,
   kUsbBulkInData,
-  kUsbBulkInAck,
+
+  // Interrupt transfers
+  kUsbInterruptOut,
+  kUsbInterruptOutAck,
+  kUsbInterruptInToken,
+  kUsbInterruptInData,
 } usbdpi_bus_state_t;
 
 /**

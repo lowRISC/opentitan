@@ -95,7 +95,8 @@ module usbdpi #(
     HS_WAITACK2 = 13,
     HS_STREAMOUT = 14,
     HS_STREAMIN = 15,
-    HS_NEXTFRAME = 16
+    HS_NEXTFRAME = 16,
+    HS_ERROR = 17
   } usbdpi_host_state_t;
 
   // Bus state
@@ -115,15 +116,23 @@ module usbdpi #(
     kUsbControlDataInAck,
     kUsbControlStatusOut,
     kUsbControlStatusOutAck,  // 0xc
-    kUsbIsoToken,
-    kUsbIsoDataIn,
-    kUsbIsoDataOut,
 
+    // Isochronous Transfers
+    kUsbIsoOut,
+    kUsbIsoInToken,
+    kUsbIsoInData,
+
+    // Bulk Transfers
     kUsbBulkOut,  // 0x10
     kUsbBulkOutAck,
     kUsbBulkInToken,
     kUsbBulkInData,
-    kUsbBulkInAck
+
+    // Interrupt transfers
+    kUsbInterruptOut,  // 0x14
+    kUsbInterruptOutAck,
+    kUsbInterruptInToken,
+    kUsbInterruptInData
   } usbdpi_bus_state_t;
 
   // USB monitor state
