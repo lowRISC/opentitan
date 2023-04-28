@@ -23,6 +23,7 @@ dif_entropy_src_config_t entropy_testutils_config_default(void);
  * The entropy source must have been initialized separately before calling this
  * function.
  */
+OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_auto_mode_init(void);
 
 /**
@@ -31,6 +32,7 @@ status_t entropy_testutils_auto_mode_init(void);
  * Initializes entropy_src, csrng, EDN0 and EDN1 with default boot time
  * configuration to enable entropy distribution for testing purposes.
  */
+OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_boot_mode_init(void);
 
 /**
@@ -45,6 +47,7 @@ status_t entropy_testutils_boot_mode_init(void);
  * registers instead of the CSRNG block.
  * @param bypass_conditioner Set to true to bypass the entropy_src conditioner.
  */
+OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_fw_override_enable(dif_entropy_src_t *entropy_src,
                                               uint8_t buffer_threshold,
                                               bool firmware_override_enable,
@@ -56,6 +59,7 @@ status_t entropy_testutils_fw_override_enable(dif_entropy_src_t *entropy_src,
  * @param entropy_src Entropy source handle.
  * @param state Entropy source target FSM state.
  */
+OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
                                           dif_entropy_src_main_fsm_t state);
 
@@ -64,6 +68,7 @@ status_t entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
  *
  * Stops EDN and CSRNG instances before stopping the entropy source.
  */
+OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_stop_all(void);
 
 /**
@@ -80,6 +85,7 @@ status_t entropy_testutils_stop_all(void);
  * @param edn1 EDN1 handle.
  * @return The result of the operation wrapped on a status_t.
  */
+OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_error_check(const dif_entropy_src_t *entropy_src,
                                        const dif_csrng_t *csrng,
                                        const dif_edn_t *edn0,

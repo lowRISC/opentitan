@@ -39,7 +39,7 @@ status_t entropy_testutils_auto_mode_init(void) {
   const dif_edn_t edn1 = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
 
-  entropy_testutils_stop_all();
+  TRY(entropy_testutils_stop_all());
 
   // re-eanble entropy src and csrng
   setup_entropy_src(&entropy_src);
@@ -144,7 +144,7 @@ status_t entropy_testutils_boot_mode_init(void) {
   const dif_edn_t edn1 = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
 
-  entropy_testutils_stop_all();
+  TRY(entropy_testutils_stop_all());
 
   setup_entropy_src(&entropy_src);
   TRY(dif_csrng_configure(&csrng));
