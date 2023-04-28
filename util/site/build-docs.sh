@@ -160,19 +160,23 @@ buildSite () {
     echo "Doxygen build complete."
 
     # shellcheck disable=SC2086
-    ${book_env}  ./bazelisk.sh run @crate_index//:mdbook__mdbook -- ${mdbook_args}
+    ${book_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @crate_index//:mdbook__mdbook -- ${mdbook_args}
     # shellcheck disable=SC2086
-    ${book_guides_env} ./bazelisk.sh run @crate_index//:mdbook__mdbook -- ${mdbook_guides_args}
+    ${book_guides_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @crate_index//:mdbook__mdbook -- ${mdbook_guides_args}
     # shellcheck disable=SC2086
     hugo ${hugo_args}
 
     # Build Rust Documentation
-    rust_doc_dir="${build_dir}/gen/rustdoc/"
-    mkdir -p "$rust_doc_dir"
-    ./bazelisk.sh build sw/host/opentitanlib:opentitanlib_doc
-    cp -rf bazel-out/k8-fastbuild/bin/sw/host/opentitanlib/opentitanlib_doc.rustdoc/* "$rust_doc_dir"
+    local rustdoc_dir="${build_dir}/gen/rustdoc/"
+    mkdir -p "${rustdoc_dir}"
+    local bazel_out target_rustdoc target_rustdoc_output_path
+    bazel_out="$(./bazelisk.sh info output_path 2>/dev/null)"
+    target_rustdoc="sw/host/opentitanlib:opentitanlib_doc"
+    target_rustdoc_output_path="${bazel_out}/k8-fastbuild/bin/$(echo ${target_rustdoc} | tr ':' '/').rustdoc" #TODO : get the target's path using cquery
+    ./bazelisk.sh build --experimental_convenience_symlinks=ignore "${target_rustdoc}"
+    cp -rf "${target_rustdoc_output_path}"/* "${rustdoc_dir}"
     # The files from bazel-out aren't writable. This ensures those that were copied are.
-    chmod +w -R "$rust_doc_dir"
+    chmod +w -R "${rustdoc_dir}"
 
     # Block diagram stats
     mkdir -p "${build_dir}/reports"
@@ -183,7 +187,7 @@ buildSite () {
     # -------
     # Remove some unneeded files/directories that mdbook copies to the output dir
     # TODO handle this with a .ignore file or other mechanism
-    for f in .git .github build-site site bazel-bin bazel-out bazel-testlogs bazel-opentitan; do
+    for f in .git .github build-site site; do
         rm -rf "${build_dir}/book/${f}"
     done
     rm -rf "${build_dir}/gen/api-xml" # Remove the intermediate XML that doxygen uses to generate HTML.
