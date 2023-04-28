@@ -433,7 +433,7 @@
   - [Bazel Notes](./doc/contributing/bazel_notes.md)
   - [Using the Container](./util/container/README.md)
 
-- [Contributing to Hardware]()
+- [Contributing to Hardware](./doc/contributing/hw/README.md)
   - [Comportability](./doc/contributing/hw/comportability/README.md)
   - [Hardware Design](./doc/contributing/hw/design.md)
   - [Design Methodology](./doc/contributing/hw/methodology.md)
@@ -441,12 +441,12 @@
   - [Linting](./hw/lint/README.md)
   - [Synthesis Flow](./hw/syn/README.md)
 
-- [Contributing to Verification]()
+- [Contributing to Verification](./doc/contributing/dv/README.md)
   - [Verification Methodology](./doc/contributing/dv/methodology/README.md)
   - [Security Countermeasure Verification Framework](./doc/contributing/dv/sec_cm_dv_framework/README.md)
   - [Assertions](./hw/formal/README.md)
 
-- [Contributing to Software]()
+- [Contributing to Software](./doc/contributing/sw/README.md)
   - [Device Interface Functions](./doc/contributing/sw/device_interface_functions.md)
   - [Writing and Building Software for OTBN](./doc/contributing/sw/otbn_sw.md)
 
@@ -459,7 +459,7 @@
   - [OTBN Assembly](./doc/contributing/style_guides/otbn_style_guide.md)
   - [Guidance for Volatile](./doc/contributing/style_guides/guidance_for_volatile.md)
 
-- [Developing on an FPGA]()
+- [Developing on an FPGA](./doc/contributing/fpga/README.md)
   - [Get a Board](./doc/contributing/fpga/get_a_board.md)
   - [FPGA Reference Manual](./doc/contributing/fpga/ref_manual_fpga.md)
 
