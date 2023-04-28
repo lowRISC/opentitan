@@ -72,7 +72,7 @@ name:
 
   // TODO(lowrisc/opentitan#16689): Enable cdc instrumentation
   run_opts: ["+otbn_elf_dir={otbn_elf_dir}",
-             "+cdc_instrumentation_enabled=0"]
+             "+cdc_instrumentation_enabled=1"]
 
   // The default build mode, used for the tests explicitly listed below does not
   // require any pre-build steps.

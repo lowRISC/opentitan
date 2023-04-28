@@ -24,6 +24,9 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 5
 
+  // TODO(lowrisc/opentitan#16689): Enable cdc instrumentation.
+  run_opts: ["+cdc_instrumentation_enabled=1"]
+
   // List of test specifications.
   tests: [
     {

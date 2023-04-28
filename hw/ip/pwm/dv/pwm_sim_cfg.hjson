@@ -61,6 +61,9 @@
   uvm_test: pwm_base_test
   uvm_test_seq: pwm_base_vseq
 
+  // TODO(lowrisc/opentitan#16689): Enable cdc instrumentation.
+  run_opts: ["+cdc_instrumentation_enabled=1"]
+
   // List of test specifications.
   tests: [
     {
