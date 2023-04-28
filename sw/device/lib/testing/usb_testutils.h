@@ -308,6 +308,7 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
  * @return           `Ok(res)` Where `res` is true if the data has been accepted
  * for transmission.
  */
+OT_WARN_UNUSED_RESULT
 status_t usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,
                                      const uint8_t *data, uint32_t length,
                                      usb_testutils_xfr_flags_t flags);
