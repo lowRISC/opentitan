@@ -89,6 +89,7 @@ static const keymgr_testutils_secret_t kOwnerSecret = {.value = {
  * @param owner_secret The owner secret to be programmed to flash.
  *
  */
+OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_flash_init(
     dif_flash_ctrl_state_t *flash,
     const keymgr_testutils_secret_t *creator_secret,
@@ -120,6 +121,7 @@ status_t keymgr_testutils_flash_init(
  * @param keymgr A key manager handle, may be uninitialized.
  * @param kmac A KMAC handle, may be uninitialized.
  */
+OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac);
 
 /**
@@ -128,6 +130,7 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac);
  * @param keymgr A key manager handle.
  * @param params The binding and max key version value for the next state.
  */
+OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_advance_state(
     const dif_keymgr_t *keymgr, const dif_keymgr_state_params_t *params);
 
@@ -137,6 +140,7 @@ status_t keymgr_testutils_advance_state(
  * @param keymgr A key manager handle.
  * @param exp_state The expected key manager state.
  */
+OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_check_state(const dif_keymgr_t *keymgr,
                                       const dif_keymgr_state_t exp_state);
 
@@ -145,6 +149,7 @@ status_t keymgr_testutils_check_state(const dif_keymgr_t *keymgr,
  *
  * @param keymgr A key manager handle.
  */
+OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_generate_identity(const dif_keymgr_t *keymgr);
 
 /**
@@ -153,12 +158,14 @@ status_t keymgr_testutils_generate_identity(const dif_keymgr_t *keymgr);
  * @param keymgr A key manager handle.
  * @param params Key generation parameters.
  */
+OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_generate_versioned_key(
     const dif_keymgr_t *keymgr, const dif_keymgr_versioned_key_params_t params);
 
 /**
  * Issues a keymgr disable and wait for it to complete
  */
+OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_disable(const dif_keymgr_t *keymgr);
 
 /**
@@ -167,6 +174,7 @@ status_t keymgr_testutils_disable(const dif_keymgr_t *keymgr);
  *
  * @param keymgr A key manager handle.
  */
+OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_wait_for_operation_done(const dif_keymgr_t *keymgr);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_TESTUTILS_H_
