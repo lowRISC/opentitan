@@ -8,6 +8,8 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
   `uvm_object_utils(pwrmgr_disable_rom_integrity_check_vseq)
   `uvm_object_new
 
+  rand bit held_by_done;
+
   constraint wakeups_c {wakeups == 0;}
   constraint wakeups_en_c {wakeups_en == 0;}
 
@@ -22,18 +24,23 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
     check_reset_status('0);
 
     for (int i = 0; i < 5; ++i) begin
-      `uvm_info(`gfn, $sformatf("Starting new round%0d", i), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("Starting new round %0d", i), UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
       setup_interrupt(.enable(en_intr));
 
       // set lc ctrl input to random value
       cfg.pwrmgr_vif.lc_hw_debug_en = get_rand_lc_tx_val(
-          .t_weight(0), .f_weight(1), .other_weight(4)
+          .t_weight(0), .f_weight(2), .other_weight(2)
       );
-      cfg.pwrmgr_vif.lc_dft_en = get_rand_lc_tx_val(.t_weight(0), .f_weight(1), .other_weight(4));
-      cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
-      cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
-      `uvm_info(`gfn, "Set done True, good False", UVM_MEDIUM)
+      cfg.pwrmgr_vif.lc_dft_en = get_rand_lc_tx_val(.t_weight(0), .f_weight(2), .other_weight(2));
+      cfg.pwrmgr_vif.rom_ctrl.done = get_rand_mubi4_val(
+          .t_weight(held_by_done ? 0 : 2), .f_weight(2), .other_weight(2));
+      cfg.pwrmgr_vif.rom_ctrl.good = get_rand_mubi4_val(
+          .t_weight(held_by_done ? 2 : 0), .f_weight(2), .other_weight(2));
+
+      `uvm_info(`gfn, $sformatf(
+                "Set done 0x%x, good 0x%x", cfg.pwrmgr_vif.rom_ctrl.done,
+                cfg.pwrmgr_vif.rom_ctrl.good), UVM_MEDIUM)
       enabled_resets = resets_en & resets;
       `uvm_info(`gfn, $sformatf(
                 "Enabled resets=0x%x, power_reset=%b, escalation=%b, sw_reset=%b, ndm_reset=%b",
@@ -69,7 +76,12 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
         `DV_CHECK_NE(cfg.pwrmgr_vif.fast_state, pwrmgr_pkg::FastPwrStateActive)
       end
 
-      `uvm_info(`gfn, "Set lc ctrl input On", UVM_MEDIUM)
+      // Set done to True.
+      `uvm_info(`gfn, "Set rom_ctrl.done input True", UVM_MEDIUM)
+      cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
+      cfg.slow_clk_rst_vif.wait_clks(2);
+
+      `uvm_info(`gfn, "Set lc ctrl inputs On", UVM_MEDIUM)
       cfg.pwrmgr_vif.lc_hw_debug_en = lc_ctrl_pkg::On;
       cfg.pwrmgr_vif.lc_dft_en = lc_ctrl_pkg::On;
 

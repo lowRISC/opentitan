@@ -190,8 +190,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_shutdown();
-    // check for pending pwrmgr operations and wait for them to complete
-    // TODO
+    // There are no known checks to perform here.
   endtask
 
   virtual task apply_reset(string kind = "HARD");

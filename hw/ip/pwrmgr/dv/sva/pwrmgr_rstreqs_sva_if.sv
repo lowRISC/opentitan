@@ -45,16 +45,17 @@ interface pwrmgr_rstreqs_sva_if
   always_comb reset_or_disable = !rst_ni || !rst_slow_ni || disable_sva;
 
   // Reset ins to outs.
-  // TODO: check reset_cause output is set.
   for (genvar rst = 0; rst < NumRstReqs; ++rst) begin : gen_hw_resets
     `ASSERT(HwResetOn_A,
             $rose(
                 rstreqs_i[rst] && reset_en[rst]
-            ) |-> `MAIN_RST_CYCLES rstreqs[rst], clk_slow_i, reset_or_disable)
+            ) |-> `MAIN_RST_CYCLES rstreqs[rst] && reset_cause == HwReq, clk_slow_i,
+            reset_or_disable)
     `ASSERT(HwResetOff_A,
             $fell(
                 rstreqs_i[rst] && reset_en[rst]
-            ) |-> `MAIN_RST_CYCLES !rstreqs[rst], clk_slow_i, reset_or_disable)
+            ) |-> `MAIN_RST_CYCLES !rstreqs[rst] && reset_cause != HwReq, clk_slow_i,
+            reset_or_disable)
   end
 
   // This is used to ignore main_rst_req_i (wired to rst_main_n) if it happens during low power,
@@ -93,6 +94,9 @@ interface pwrmgr_rstreqs_sva_if
               esc_rst_req_i
           ) |-> `ESC_RST_CYCLES !rstreqs[ResetEscIdx], clk_i, reset_or_disable)
 
-  // Software initiated resets do not affect rstreqs since rstmgr generate them.
-  // TODO: Check they set reset_cause == HwReq.
+  // Software initiated resets do not affect rstreqs since rstmgr generates them.
+  `ASSERT(SwResetSetCause_A,
+          $rose(sw_rst_req_i) |-> MAIN_RST_CYCLES (reset_cause == HwReq), clk_i,
+          reset_or_disable)
+
 endinterface
