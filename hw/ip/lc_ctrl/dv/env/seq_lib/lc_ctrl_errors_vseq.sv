@@ -36,6 +36,8 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   bit fatal_state_alert_received;
   bit fatal_bus_integ_alert_received;
   bit assertions_disabled;
+  // Discussed in issue #18201.
+  bit disable_cdc_jtag_assertion;
 
 
   `uvm_object_utils_begin(lc_ctrl_errors_vseq)
@@ -151,9 +153,11 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     end
 
     // Reenable assertions before next sequence
-    `DV_ASSERT_CTRL_REQ("OtpProgH_DataStableWhenBidirectionalAndReq_A", 1)
-    `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", 1)
-    `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 1)
+    `DV_ASSERT_CTRL_REQ("OtpProgH_DataStableWhenBidirectionalAndReq_A",
+                        disable_cdc_jtag_assertion ? 0 : 1)
+    `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", disable_cdc_jtag_assertion ? 0 : 1)
+    `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A",
+                        disable_cdc_jtag_assertion ? 0 : 1)
     `DV_ASSERT_CTRL_REQ("KmacIfSyncReqAckAckNeedsReq", 1)
     `DV_ASSERT_CTRL_REQ("StateRegs_A", 1)
     `DV_ASSERT_CTRL_REQ("FsmStateRegs_A", 1)
@@ -178,6 +182,12 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   endtask
 
   virtual task pre_start();
+    if (cfg.jtag_csr) begin
+      bit cdc_instrumentation_enabled;
+      void'($value$plusargs("cdc_instrumentation_enabled=%d", cdc_instrumentation_enabled));
+      if (cdc_instrumentation_enabled) disable_cdc_jtag_assertion = 1;
+    end
+
     // Align cfg.err_inj with the sequence before body starts
     update_err_inj_cfg();
     mubi_assertion_controls();
@@ -441,9 +451,11 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 0)
       `DV_ASSERT_CTRL_REQ("KmacIfSyncReqAckAckNeedsReq", 0)
     end else begin
-      `DV_ASSERT_CTRL_REQ("OtpProgH_DataStableWhenBidirectionalAndReq_A", 1)
-      `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", 1)
-      `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A", 1)
+      `DV_ASSERT_CTRL_REQ("OtpProgH_DataStableWhenBidirectionalAndReq_A",
+                          disable_cdc_jtag_assertion ? 0 : 1)
+      `DV_ASSERT_CTRL_REQ("OtpProgReqHighUntilAck_A", disable_cdc_jtag_assertion ? 0 : 1)
+      `DV_ASSERT_CTRL_REQ("OtpProgAckAssertedOnlyWhenReqAsserted_A",
+                          disable_cdc_jtag_assertion ? 0 : 1)
       `DV_ASSERT_CTRL_REQ("KmacIfSyncReqAckAckNeedsReq", 1)
     end
 
