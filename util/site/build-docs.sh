@@ -93,7 +93,6 @@ getURLs () {
 getURLs
 
 # Export some environment variables that tools will pick up
-export HUGO_PARAMS_DOCSURL="${base_url}/book" # hugo
 export URL_ROOT="${base_url}/book" # earlgrey_diagram
 
 # Build up doxygen command
