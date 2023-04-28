@@ -99,8 +99,8 @@ static void config_wdog(const dif_aon_timer_t *aon_timer,
                                               kDifToggleEnabled));
 
   // Setup the wdog bark and bite timeouts.
-  aon_timer_testutils_watchdog_config(aon_timer, bark_cycles, bite_cycles,
-                                      false);
+  CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(aon_timer, bark_cycles,
+                                                      bite_cycles, false));
 }
 
 /**

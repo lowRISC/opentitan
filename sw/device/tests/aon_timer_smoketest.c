@@ -40,7 +40,8 @@ static void aon_timer_test_watchdog_timer(dif_aon_timer_t *aon) {
   // Test the watchdog timer functionality by setting a single cycle "bark"
   // counter. Delay to compensate for AON Timer 200kHz clock (less should
   // suffice, but to be on a cautious side - lets keep it at 100 for now).
-  aon_timer_testutils_watchdog_config(aon, 1, UINT32_MAX, false);
+  CHECK_STATUS_OK(
+      aon_timer_testutils_watchdog_config(aon, 1, UINT32_MAX, false));
   busy_spin_micros(100);
 
   // Make sure that the timer has expired.

@@ -509,8 +509,9 @@ static void set_aon_timers() {
       bite_cycles);
 
   // Setup the wdog bark and bite timeouts.
-  aon_timer_testutils_watchdog_config(&aon_timer, bark_cycles, bite_cycles,
-                                      /*pause_in_sleep=*/false);
+  CHECK_STATUS_OK(
+      aon_timer_testutils_watchdog_config(&aon_timer, bark_cycles, bite_cycles,
+                                          /*pause_in_sleep=*/false));
 }
 
 /**

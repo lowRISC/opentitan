@@ -163,7 +163,8 @@ void set_up_reset_request(void) {
   CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
 
   // Enter low power mode.
-  aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX, 20, false);
+  CHECK_STATUS_OK(
+      aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX, 20, false));
   LOG_INFO("wait for reset");
   wait_for_interrupt();
   CHECK(false, "Should have a reset to CPU and ret_sram before this line");

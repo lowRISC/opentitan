@@ -114,10 +114,11 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
     // Change the default value since the expectation is different.
     irq = kDifAonTimerIrqWkupTimerExpired;
     // Setup the wdog bark interrupt.
-    aon_timer_testutils_watchdog_config(aon_timer,
-                                        /*bark_cycles=*/count_cycles,
-                                        /*bite_cycles=*/count_cycles * 4,
-                                        /*pause_in_sleep=*/false);
+    CHECK_STATUS_OK(
+        aon_timer_testutils_watchdog_config(aon_timer,
+                                            /*bark_cycles=*/count_cycles,
+                                            /*bite_cycles=*/count_cycles * 4,
+                                            /*pause_in_sleep=*/false));
   }
   // Capture the current tick to measure the time the IRQ will take.
   uint32_t start_tick = tick_count_get();

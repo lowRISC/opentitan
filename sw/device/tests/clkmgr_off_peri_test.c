@@ -138,8 +138,8 @@ static void test_gateable_clocks_off(const dif_clkmgr_t *clkmgr,
   // Save the expected hung address to check against cpu_info's LAST_DATA_ADDR.
   set_hung_address(clock, peri_context[clock].address);
   // Set bite timer.
-  aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX, bite_cycles,
-                                      false);
+  CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX,
+                                                      bite_cycles, false));
   // Disable the peripheral's clock.
   CHECK_DIF_OK(
       dif_clkmgr_gateable_clock_set_enabled(clkmgr, clock, kDifToggleDisabled));

@@ -18,6 +18,7 @@
  * @param[out] cycles The number of AON clock cycles.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds,
                                                     uint32_t *cycles);
 
@@ -29,6 +30,7 @@ status_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds,
  * @param[out] microseconds The number of microseconds.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles,
                                                     uint32_t *microseconds);
 
@@ -39,6 +41,7 @@ status_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles,
  * @param cycles The number of AON clock cycles.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
                                            uint32_t cycles);
 
@@ -54,6 +57,7 @@ status_t aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
  * @param pause_in_sleep Don't increment while sleeping.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,
                                              uint32_t bark_cycles,
                                              uint32_t bite_cycles,
@@ -70,6 +74,7 @@ status_t aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,
  * @param aon_timer An Always-On Timer handle.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t aon_timer_testutils_shutdown(const dif_aon_timer_t *aon_timer);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AON_TIMER_TESTUTILS_H_
