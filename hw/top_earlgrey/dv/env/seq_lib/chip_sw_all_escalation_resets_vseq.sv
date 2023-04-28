@@ -80,6 +80,20 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     `uvm_error(`gfn, $sformatf("%0s does not have a matched ip_index", ip_name))
   endfunction
 
+  // Returns the first character index in the string argument that represents
+  // the separator (an asterisk, *) between an IP and an associated
+  // counter-measure. If no asterisk is found, returns a negative number.
+  function int find_separator(string str);
+    string sep_char = "*";
+    byte sep = sep_char.getc(0);
+    for (int i = 0; i < str.len(); i = i + 1) begin
+      if (str.getc(i) == sep) begin
+        return i;
+      end
+    end
+    return -1;
+  endfunction
+
   virtual task body();
     sec_cm_pkg::sec_cm_base_if_proxy if_proxy;
     ip_fatal_alert_t ip_alert;
@@ -98,7 +112,16 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
       int excluded_ip_idxs[$];
       `DV_GET_QUEUE_PLUSARG(excluded_ips, avoid_inject_fatal_error_for_ips)
       foreach (excluded_ips[i]) begin
-        excluded_ip_idxs.push_back(get_ip_index_from_name(excluded_ips[i], "prim_reg_we_check"));
+        int sep_idx = find_separator(excluded_ips[i]);
+        if (sep_idx >= 0) begin
+          int str_len = excluded_ips[i].len();
+          actual_ip = excluded_ips[i].substr(0, sep_idx-1);
+          sec_cm = excluded_ips[i].substr(sep_idx + 1, str_len - 1);
+        end else begin
+          actual_ip = excluded_ips[i];
+          sec_cm = "prim_reg_we_check";
+        end
+        excluded_ip_idxs.push_back(get_ip_index_from_name(actual_ip, sec_cm));
       end
       `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(ip_index, !(ip_index inside {excluded_ip_idxs});)
     end
