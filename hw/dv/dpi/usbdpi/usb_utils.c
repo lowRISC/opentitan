@@ -5,6 +5,7 @@
 #include "usb_utils.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 static const char *pid_names[] = {
     "Rsvd",     //         0000b
