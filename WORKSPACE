@@ -34,6 +34,10 @@ lint_repos()
 load("//third_party/lint:deps.bzl", "lint_deps")
 lint_deps()
 
+# Lychee link checker.
+load("//third_party/lychee:repos.bzl", "lychee_repos")
+lychee_repos()
+
 # Python Toolchain + PIP Dependencies
 load("//third_party/python:repos.bzl", "python_repos")
 python_repos()

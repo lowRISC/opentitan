@@ -142,20 +142,5 @@ sw/vendor/rustup/rustup-init.sh -y \
     --default-toolchain "${RUST_VERSION}"
 export PATH=$HOME/.cargo/bin:$PATH
 
-# Install lychee
-LYCHEE_VERSION="v0.11.1"
-LYCHEE_BASE_URL="https://github.com/lycheeverse/lychee/releases/download"
-LYCHEE_TARBALL="lychee-${LYCHEE_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
-LYCHEE_URL="${LYCHEE_BASE_URL}/${LYCHEE_VERSION}/${LYCHEE_TARBALL}"
-LYCHEE_DOWNLOAD="$TMPDIR/lychee.tar.gz"
-
-curl -f -Ls -o "$LYCHEE_DOWNLOAD" "${LYCHEE_URL}" || {
-    error "Failed to download lychee from ${LYCHEE_URL}"
-}
-sudo mkdir -p /tools/lychee
-sudo chmod 777 /tools/lychee
-tar -C /tools/lychee -xf "$LYCHEE_DOWNLOAD"
-export PATH=/tools/lychee:$PATH
-
 # Propagate PATH changes to all subsequent steps of the job
 echo "##vso[task.setvariable variable=PATH]$PATH"
