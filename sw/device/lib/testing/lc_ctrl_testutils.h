@@ -17,6 +17,7 @@
  * human readable string. The function errors out in locked/invalid life
  * cycle states where the CPU should not be executing code.
  */
+OT_WARN_UNUSED_RESULT
 status_t lc_ctrl_testutils_lc_state_log(const dif_lc_ctrl_state_t *state);
 
 /**
@@ -26,6 +27,7 @@ status_t lc_ctrl_testutils_lc_state_log(const dif_lc_ctrl_state_t *state);
  * example, SRAM code execution is enabled when Lifecycle Controller is
  * in one of these states and OTP_IFETCH is disabled.
  */
+OT_WARN_UNUSED_RESULT
 status_t lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl,
                                               bool *debug_enabled);
 
@@ -35,6 +37,7 @@ status_t lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl,
  * This function will read out lc_transition_cnt register and check the value
  * against exp_lc_count value.
  */
+OT_WARN_UNUSED_RESULT
 status_t lc_ctrl_testutils_check_transition_count(const dif_lc_ctrl_t *lc_ctrl,
                                                   uint8_t exp_lc_count);
 
@@ -44,6 +47,7 @@ status_t lc_ctrl_testutils_check_transition_count(const dif_lc_ctrl_t *lc_ctrl,
  * This function will read out lc_state register and check the value
  * against exp_lc_state value.
  */
+OT_WARN_UNUSED_RESULT
 status_t lc_ctrl_testutils_check_lc_state(const dif_lc_ctrl_t *lc_ctrl,
                                           dif_lc_ctrl_state_t exp_lc_state);
 
