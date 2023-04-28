@@ -46,6 +46,14 @@ py_binary(
     srcs = ["rom_chip_info.py"],
 )
 
+py_test(
+    name = "rom_chip_info_test",
+    srcs = [
+        "rom_chip_info.py",
+        "rom_chip_info_test.py",
+    ],
+)
+
 py_binary(
     name = "regtool",
     srcs = ["regtool.py"],
