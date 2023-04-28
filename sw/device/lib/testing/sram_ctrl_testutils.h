@@ -35,6 +35,7 @@ void sram_ctrl_testutils_write(uintptr_t address,
  *
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl);
 
 /**
@@ -42,6 +43,7 @@ status_t sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl);
  *
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_SRAM_CTRL_TESTUTILS_H_
