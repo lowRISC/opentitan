@@ -209,8 +209,9 @@ static void execute_test(dif_aon_timer_t *aon_timer) {
       bite_cycles);
 
   // Setup the wdog bark and bite timeouts.
-  aon_timer_testutils_watchdog_config(aon_timer, bark_cycles, bite_cycles,
-                                      /*pause_in_sleep=*/false);
+  CHECK_STATUS_OK(
+      aon_timer_testutils_watchdog_config(aon_timer, bark_cycles, bite_cycles,
+                                          /*pause_in_sleep=*/false));
 
   // Trigger the alert handler to escalate.
   dif_pwrmgr_alert_t alert = kDifPwrmgrAlertFatalFault;

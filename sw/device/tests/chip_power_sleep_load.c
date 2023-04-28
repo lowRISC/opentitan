@@ -371,8 +371,8 @@ bool test_main(void) {
     irq_software_ctrl(/*en=*/true);
 
     // activate in Watchdog mode & IRQ
-    aon_timer_testutils_watchdog_config(&aon_timer, count_cycles, UINT32_MAX,
-                                        false);
+    CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(
+        &aon_timer, count_cycles, UINT32_MAX, false));
   }
   LOG_INFO("AON Timer active");
 

@@ -255,8 +255,8 @@ bool test_main(void) {
           &pwrmgr, kDifPwrmgrReqTypeReset, kDifPwrmgrResetRequestSourceTwo,
           kDifToggleEnabled));
       // Setup the watchdog bark and bite timeouts.
-      aon_timer_testutils_watchdog_config(&aon_timer, bark_cycles, bite_cycles,
-                                          false);
+      CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(
+          &aon_timer, bark_cycles, bite_cycles, false));
       // Enable cpu info.
       CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
 

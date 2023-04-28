@@ -61,8 +61,8 @@ bool test_main(void) {
 
     // The actual expiration of the watchdog is unimportant, as the test
     // mainly checks the count.
-    aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX, UINT32_MAX,
-                                        true);
+    CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX,
+                                                        UINT32_MAX, true));
     CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(&aon_timer, wkup_cycles));
 
     busy_spin_micros(IDLE_TIME_US);

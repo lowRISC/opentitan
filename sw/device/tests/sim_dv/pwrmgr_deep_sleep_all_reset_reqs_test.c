@@ -253,8 +253,8 @@ static void trigger_escalate(dif_aon_timer_t *aon_timer,
       (uint32_t)kWdogBiteMicros, (uint32_t)bite_cycles);
 
   // Setup the wdog bark and bite timeouts.
-  aon_timer_testutils_watchdog_config(aon_timer, bark_cycles, bite_cycles,
-                                      false);
+  CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(aon_timer, bark_cycles,
+                                                      bite_cycles, false));
 
   // Trigger the alert handler to escalate.
   dif_pwrmgr_alert_t alert = kDifPwrmgrAlertFatalFault;
@@ -336,8 +336,8 @@ static void config_wdog(const dif_aon_timer_t *aon_timer,
   LOG_INFO("Wdog will bark after %u us and bite after %u us",
            (uint32_t)bark_time_us, (uint32_t)bite_time_us);
   // Setup the wdog bark and bite timeouts.
-  aon_timer_testutils_watchdog_config(aon_timer, bark_cycles, bite_cycles,
-                                      false);
+  CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(aon_timer, bark_cycles,
+                                                      bite_cycles, false));
   // Set wdog as a reset source.
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
                                               kDifPwrmgrResetRequestSourceTwo,
