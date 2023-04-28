@@ -112,8 +112,8 @@ bool test_main(void) {
   // `kHmacRefLongKey`.
   CHECK_DIF_OK(dif_hmac_mode_hmac_start(
       hmac_ctx.hmac, (uint8_t *)&key_digest.digest[0], kHmacTransactionConfig));
-  hmac_testutils_push_message(hmac_ctx.hmac, kHmacRefData,
-                              sizeof(kHmacRefData));
+  CHECK_STATUS_OK(hmac_testutils_push_message(hmac_ctx.hmac, kHmacRefData,
+                                              sizeof(kHmacRefData)));
   CHECK_STATUS_OK(hmac_testutils_check_message_length(
       hmac_ctx.hmac, sizeof(kHmacRefData) * 8));
   CHECK_DIF_OK(dif_hmac_process(hmac_ctx.hmac));

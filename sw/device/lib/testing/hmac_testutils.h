@@ -90,6 +90,7 @@ extern const dif_hmac_digest_t kHmacRefExpectedDigest;
  * @param hmac An HMAC handle.
  * @param expected_sent_bits Expected size of hashed data in bits.
  */
+OT_WARN_UNUSED_RESULT
 status_t hmac_testutils_check_message_length(const dif_hmac_t *hmac,
                                              uint64_t expected_sent_bits);
 
@@ -100,6 +101,7 @@ status_t hmac_testutils_check_message_length(const dif_hmac_t *hmac,
  *
  * @param hmac An HMAC handle.
  */
+OT_WARN_UNUSED_RESULT
 status_t hmac_testutils_fifo_empty_polled(const dif_hmac_t *hmac);
 
 /**
@@ -110,6 +112,7 @@ status_t hmac_testutils_fifo_empty_polled(const dif_hmac_t *hmac);
  * @param hmac An HMAC handle.
  * @param digest_out HMAC final digest.
  */
+OT_WARN_UNUSED_RESULT
 status_t hmac_testutils_finish_polled(const dif_hmac_t *hmac,
                                       dif_hmac_digest_t *digest_out);
 
@@ -122,6 +125,7 @@ status_t hmac_testutils_finish_polled(const dif_hmac_t *hmac,
  * @param hmac An HMAC handle.
  * @param expected Expected HMAC final digest.
  */
+OT_WARN_UNUSED_RESULT
 status_t hmac_testutils_finish_and_check_polled(
     const dif_hmac_t *hmac, const dif_hmac_digest_t *expected);
 
@@ -135,6 +139,7 @@ status_t hmac_testutils_finish_and_check_polled(
  * @param data Data to be hashed.
  * @param len Size of the data to be hashed.
  */
+OT_WARN_UNUSED_RESULT
 status_t hmac_testutils_push_message(const dif_hmac_t *hmac, const char *data,
                                      size_t len);
 
