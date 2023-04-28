@@ -23,7 +23,8 @@ module lc_ctrl
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2),
-  parameter lc_token_mux_t  RndCnstInvalidTokens         = {TokenMuxBits{1'b1}}
+  parameter lc_token_mux_t  RndCnstInvalidTokens         = {TokenMuxBits{1'b1}},
+  parameter bit             SecVolatileRawUnlockEn       = 0
 ) (
   // Life cycle controller clock
   input                                              clk_i,
@@ -298,6 +299,7 @@ module lc_ctrl
 
   // OTP Vendor control bits
   logic use_ext_clock_d, use_ext_clock_q;
+  mubi8_t volatile_raw_unlock_d, volatile_raw_unlock_q;
   logic [CsrOtpTestCtrlWidth-1:0] otp_vendor_test_ctrl_d, otp_vendor_test_ctrl_q;
   logic [CsrOtpTestStatusWidth-1:0] otp_vendor_test_status;
 
@@ -329,7 +331,8 @@ module lc_ctrl
     tap_hw2reg.claim_transition_if = tap_claim_transition_if_q;
     hw2reg.claim_transition_if = sw_claim_transition_if_q;
     if (mubi8_test_true_strict(tap_claim_transition_if_q)) begin
-      tap_hw2reg.transition_ctrl   = use_ext_clock_q;
+      tap_hw2reg.transition_ctrl.ext_clock_en = use_ext_clock_q;
+      tap_hw2reg.transition_ctrl.volatile_raw_unlock = volatile_raw_unlock_q;
       tap_hw2reg.transition_token  = transition_token_q;
       tap_hw2reg.transition_target = transition_target_q;
       // SEC_CM: TRANSITION.CONFIG.REGWEN
@@ -337,7 +340,8 @@ module lc_ctrl
       tap_hw2reg.otp_vendor_test_ctrl     = otp_vendor_test_ctrl_q;
       tap_hw2reg.otp_vendor_test_status   = otp_vendor_test_status;
     end else if (mubi8_test_true_strict(sw_claim_transition_if_q)) begin
-      hw2reg.transition_ctrl   = use_ext_clock_q;
+      hw2reg.transition_ctrl.ext_clock_en = use_ext_clock_q;
+      hw2reg.transition_ctrl.volatile_raw_unlock = volatile_raw_unlock_q;
       hw2reg.transition_token  = transition_token_q;
       hw2reg.transition_target = transition_target_q;
       // SEC_CM: TRANSITION.CONFIG.REGWEN
@@ -355,6 +359,7 @@ module lc_ctrl
     transition_cmd            = 1'b0;
     otp_vendor_test_ctrl_d    = otp_vendor_test_ctrl_q;
     use_ext_clock_d           = use_ext_clock_q;
+    volatile_raw_unlock_d     = volatile_raw_unlock_q;
 
     // Note that the mutex claims from the TAP and SW side could arrive within the same cycle.
     // In that case we give priority to the TAP mutex claim in order to avoid a race condition.
@@ -376,9 +381,18 @@ module lc_ctrl
         transition_cmd = tap_reg2hw.transition_cmd.q &
                          tap_reg2hw.transition_cmd.qe;
 
-        if (tap_reg2hw.transition_ctrl.qe) begin
-          use_ext_clock_d |= tap_reg2hw.transition_ctrl.q;
+        if (tap_reg2hw.transition_ctrl.ext_clock_en.qe) begin
+          use_ext_clock_d |= tap_reg2hw.transition_ctrl.ext_clock_en.q;
         end
+
+        // ------ VOLATILE_TEST_UNLOCKED CODE SECTION START ------
+        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
+        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
+        // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+        if (tap_reg2hw.transition_ctrl.volatile_raw_unlock.qe) begin
+          volatile_raw_unlock_d = mubi8_t'(tap_reg2hw.transition_ctrl.volatile_raw_unlock.q);
+        end
+        // ------ VOLATILE_TEST_UNLOCKED CODE SECTION END ------
 
         for (int k = 0; k < LcTokenWidth/32; k++) begin
           if (tap_reg2hw.transition_token[k].qe) begin
@@ -400,9 +414,18 @@ module lc_ctrl
         transition_cmd = reg2hw.transition_cmd.q &
                          reg2hw.transition_cmd.qe;
 
-        if (reg2hw.transition_ctrl.qe) begin
-          use_ext_clock_d |= reg2hw.transition_ctrl.q;
+        if (reg2hw.transition_ctrl.ext_clock_en.qe) begin
+          use_ext_clock_d |= reg2hw.transition_ctrl.ext_clock_en.q;
         end
+
+        // ------ VOLATILE_TEST_UNLOCKED CODE SECTION START ------
+        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
+        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
+        // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+        if (reg2hw.transition_ctrl.volatile_raw_unlock.qe) begin
+          volatile_raw_unlock_d = mubi8_t'(reg2hw.transition_ctrl.volatile_raw_unlock.q);
+        end
+        // ------ VOLATILE_TEST_UNLOCKED CODE SECTION END ------
 
         for (int k = 0; k < LcTokenWidth/32; k++) begin
           if (reg2hw.transition_token[k].qe) begin
@@ -463,6 +486,26 @@ module lc_ctrl
       use_ext_clock_q           <= use_ext_clock_d;
     end
   end
+
+  // ------ VOLATILE_TEST_UNLOCKED CODE SECTION START ------
+  // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
+  // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
+  // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+  // If not enabled, this register will become a constant.
+  if (SecVolatileRawUnlockEn) begin : gen_volatile_raw_unlock_reg
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_volatile_raw_unlock_reg
+      if (!rst_ni) begin
+        volatile_raw_unlock_q     <= MuBi8False;
+      end else begin
+        volatile_raw_unlock_q     <= volatile_raw_unlock_d;
+      end
+    end
+  end else begin : gen_volatile_raw_unlock_const
+    logic unused_volatile_raw_unlock;
+    assign unused_volatile_raw_unlock = ^volatile_raw_unlock_d;
+    assign volatile_raw_unlock_q = MuBi8False;
+  end
+  // ------ VOLATILE_TEST_UNLOCKED CODE SECTION END ------
 
   assign lc_flash_rma_seed_o = transition_token_q[RmaSeedWidth-1:0];
 
@@ -650,6 +693,7 @@ module lc_ctrl
     .secrets_valid_i        ( otp_lc_data_i.secrets_valid      ),
     .lc_cnt_i               ( lc_cnt_e'(otp_lc_data_i.count)   ),
     .use_ext_clock_i        ( use_ext_clock_q                  ),
+    .volatile_raw_unlock_i  ( volatile_raw_unlock_q            ),
     .test_unlock_token_i    ( otp_lc_data_i.test_unlock_token  ),
     .test_exit_token_i      ( otp_lc_data_i.test_exit_token    ),
     .test_tokens_valid_i    ( otp_lc_data_i.test_tokens_valid  ),

@@ -1533,6 +1533,7 @@
       }
       param_decl:
       {
+        SecVolatileRawUnlockEn: "1"
         ChipGen: 16'h 0000
         ChipRev: 16'h 0000
         IdcodeValue: jtag_id_pkg::JTAG_IDCODE
@@ -1549,6 +1550,24 @@
       memory: {}
       param_list:
       [
+        {
+          name: SecVolatileRawUnlockEn
+          desc:
+            '''
+            Disable (0) or enable (1) volatile RAW UNLOCK capability.
+            If enabled, it is possible to perform a volatile RAW -> TEST_UNLOCKED0 transition
+            without programming the OTP. This is a useful fallback mode in case the OTP is
+            not working correctly.
+
+            IMPORTANT NOTE: This should only be used in test chips. The parameter must be set
+            to 0 in production tapeouts since this weakens the security posture of the RAW 
+            UNLOCK mechanism.
+            '''
+          type: bit
+          default: "1"
+          expose: "true"
+          name_top: SecLcCtrlVolatileRawUnlockEn
+        }
         {
           name: RndCnstLcKeymgrDivInvalid
           desc: Compile-time random bits for lc state group diversification value

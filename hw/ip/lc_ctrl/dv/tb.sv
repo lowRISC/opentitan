@@ -26,6 +26,7 @@ module tb;
     LcKeymgrDivWidth'({(LcKeymgrDivWidth/8){8'h5a}});
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction =
     LcKeymgrDivWidth'({(LcKeymgrDivWidth/8){8'ha5}});
+  parameter bit SecVolatileRawUnlockEn = 1;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -100,7 +101,8 @@ module tb;
     .RndCnstLcKeymgrDivTestDevRma(RndCnstLcKeymgrDivTestDevRma),
     .RndCnstLcKeymgrDivProduction(RndCnstLcKeymgrDivProduction),
     .ChipGen(LcCtrlChipGen[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0]),
-    .ChipRev(LcCtrlChipRev[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0])
+    .ChipRev(LcCtrlChipRev[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0]),
+    .SecLcCtrlVolatileRawUnlockEn(SecLcCtrlVolatileRawUnlockEn)
   ) dut (
     .clk_i (clk),
     .rst_ni(rst_n),

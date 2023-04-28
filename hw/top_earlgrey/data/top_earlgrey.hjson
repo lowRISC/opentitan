@@ -304,6 +304,10 @@
       reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "lc"},
       base_addr: "0x40140000",
       param_decl: {
+        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
+        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR 
+        // PRODUCTION DEVICES.
+        SecVolatileRawUnlockEn: "1",
         ChipGen: "16'h 0000",
         ChipRev: "16'h 0000",
         IdcodeValue: "jtag_id_pkg::JTAG_IDCODE",
