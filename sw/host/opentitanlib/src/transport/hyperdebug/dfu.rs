@@ -27,17 +27,31 @@ pub struct HyperdebugDfu {
 }
 
 impl HyperdebugDfu {
-    /// Establish connection with a particular Nucleo-L552ZE board already in DFU bootloader mode.
+    /// Establish connection with a particular Nucleo-L552ZE board possibly already in DFU
+    /// bootloader mode.
     pub fn open(
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
     ) -> Result<Self> {
+        // Look for a device with given USB serial, carrying either the VID:DID of STM32 DFU
+        // bootloader, or that of HyperDebug in ordinary mode.  This allows scripts to start with
+        // `opentitantool --interface hyperdebug_dfu transport update-firmware`, knowing that it
+        // will put the desired firmware on the HyperDebug, both in the case of previous
+        // interrupted update, as well as the ordinary case of outdated or current HyperDebug
+        // firmware already running.
         let usb_backend = UsbBackend::new(
             usb_vid.unwrap_or(VID_ST_MICROELECTRONICS),
             usb_pid.unwrap_or(PID_DFU_BOOTLOADER),
             usb_serial,
-        )?;
+        )
+        .or_else(|_| {
+            UsbBackend::new(
+                usb_vid.unwrap_or(super::VID_GOOGLE),
+                usb_pid.unwrap_or(super::PID_HYPERDEBUG),
+                usb_serial,
+            )
+        })?;
         Ok(Self {
             usb_backend: RefCell::new(usb_backend),
         })
