@@ -94,7 +94,7 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
     TRY(dif_flash_ctrl_init_state(
         &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
-    keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret);
+    TRY(keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret));
 
     // Lock otp secret partition.
     dif_otp_ctrl_t otp;
@@ -130,27 +130,27 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
                         keymgr));
 
     // Advance to Initialized state.
-    keymgr_testutils_check_state(keymgr, kDifKeymgrStateReset);
-    keymgr_testutils_advance_state(keymgr, NULL);
-    keymgr_testutils_check_state(keymgr, kDifKeymgrStateInitialized);
+    TRY(keymgr_testutils_check_state(keymgr, kDifKeymgrStateReset));
+    TRY(keymgr_testutils_advance_state(keymgr, NULL));
+    TRY(keymgr_testutils_check_state(keymgr, kDifKeymgrStateInitialized));
     LOG_INFO("Keymgr entered Init State");
 
     // Advance to CreatorRootKey state.
     if (is_using_test_rom) {
       LOG_INFO("Using test_rom, setting inputs and advancing state...");
-      keymgr_testutils_advance_state(keymgr, &kCreatorParams);
+      TRY(keymgr_testutils_advance_state(keymgr, &kCreatorParams));
     } else {
       LOG_INFO("Using rom, only advancing state...");
       TRY(dif_keymgr_advance_state_raw(keymgr));
-      keymgr_testutils_wait_for_operation_done(keymgr);
+      TRY(keymgr_testutils_wait_for_operation_done(keymgr));
     }
-    keymgr_testutils_check_state(keymgr, kDifKeymgrStateCreatorRootKey);
+    TRY(keymgr_testutils_check_state(keymgr, kDifKeymgrStateCreatorRootKey));
     LOG_INFO("Keymgr entered CreatorRootKey State");
 
     // Identity generation is not really necessary for all tests, but it is
     // added to make sure each test using this function is also compatible with
     // the DV_WAIT sequences from keymgr_key_derivation vseq
-    keymgr_testutils_generate_identity(keymgr);
+    TRY(keymgr_testutils_generate_identity(keymgr));
     LOG_INFO("Keymgr generated identity at CreatorRootKey State");
   }
   return OK_STATUS();

@@ -529,6 +529,7 @@ typedef struct dif_keymgr_max_key_version {
  * @param version Struct with the max versions set.
  * @return dif_result_t
  */
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_read_max_key_version(
     const dif_keymgr_t *keymgr, dif_keymgr_max_key_version_t *versions);
 #ifdef __cplusplus
