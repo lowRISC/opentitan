@@ -51,6 +51,7 @@ typedef struct spi_flash_testutils_parameter_header {
  * @param[out] id A pointer to where to store the ID.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_read_id(dif_spi_host_t *spih,
                                      spi_flash_testutils_jedec_id_t *id);
 
@@ -63,6 +64,7 @@ status_t spi_flash_testutils_read_id(dif_spi_host_t *spih,
  * @param length The number of bytes to write into `buffer`.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_read_sfdp(dif_spi_host_t *spih, uint32_t address,
                                        void *buffer, size_t length);
 
@@ -83,6 +85,7 @@ typedef enum spi_flash_status_bit {
  * @param length The result length (1 to 3 bytes).
  * @return status_t containing either the status register value or an error.
  */
+OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_read_status(dif_spi_host_t *spih, uint8_t opcode,
                                          size_t length);
 
@@ -99,6 +102,7 @@ status_t spi_flash_testutils_read_status(dif_spi_host_t *spih, uint8_t opcode,
  * @param length The status length (1 to 3 bytes).
  * @return status_t containing either OK or an error.
  */
+OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_write_status(dif_spi_host_t *spih, uint8_t opcode,
                                           uint32_t status, size_t length);
 /**
@@ -108,6 +112,7 @@ status_t spi_flash_testutils_write_status(dif_spi_host_t *spih, uint8_t opcode,
  * @param spih A SPI host handle.
  * @return status_t containing either OK or an error.
  */
+OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_wait_until_not_busy(dif_spi_host_t *spih);
 
 /**
@@ -116,6 +121,7 @@ status_t spi_flash_testutils_wait_until_not_busy(dif_spi_host_t *spih);
  * @param spih A SPI host handle.
  * @return status_t containing either OK or an error.
  */
+OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_issue_write_enable(dif_spi_host_t *spih);
 
 /**
@@ -127,6 +133,7 @@ status_t spi_flash_testutils_issue_write_enable(dif_spi_host_t *spih);
  * @param spih A SPI host handle.
  * @return status_t containing either OK or an error.
  */
+OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_erase_chip(dif_spi_host_t *spih);
 
 /**
@@ -143,6 +150,7 @@ status_t spi_flash_testutils_erase_chip(dif_spi_host_t *spih);
  * @param addr_is_4b True if `address` is 4 bytes long, else 3 bytes.
  * @return status_t containing either OK or an error.
  */
+OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_erase_op(dif_spi_host_t *spih, uint8_t opcode,
                                       uint32_t address, bool addr_is_4b);
 
@@ -158,6 +166,7 @@ status_t spi_flash_testutils_erase_op(dif_spi_host_t *spih, uint8_t opcode,
  * @param addr_is_4b True if `address` is 4 bytes long, else 3 bytes.
  * @return status_t containing either OK or an error.
  */
+OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_erase_sector(dif_spi_host_t *spih,
                                           uint32_t address, bool addr_is_4b);
 
@@ -180,6 +189,7 @@ status_t spi_flash_testutils_erase_sector(dif_spi_host_t *spih,
  * @param addr_is_4b True if `address` is 4 bytes long, else 3 bytes.
  * @return status_t containing either OK or an error.
  */
+OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
                                         const void *payload, size_t length,
                                         uint32_t address, bool addr_is_4b);
@@ -202,6 +212,7 @@ status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
  * @param addr_is_4b True if `address` is 4 bytes long, else 3 bytes.
  * @return status_t containing either OK or an error.
  */
+OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_program_page(dif_spi_host_t *spih,
                                           const void *payload, size_t length,
                                           uint32_t address, bool addr_is_4b);
@@ -220,6 +231,7 @@ status_t spi_flash_testutils_program_page(dif_spi_host_t *spih,
  * @param dummy The number of dummy cycles required after the address phase.
  * @return status_t containing either OK or an error.
  */
+OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
                                      void *payload, size_t length,
                                      uint32_t address, bool addr_is_4b,
@@ -235,6 +247,7 @@ status_t spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
  * @param enable Whether to enable or disable quad mode.
  * @return status_t containing either OK or an error.
  */
+OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
                                          bool enable);
 
