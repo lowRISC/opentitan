@@ -44,6 +44,7 @@ inline bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t flag) {
  *
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t aes_testutils_masking_prng_zero_output_seed(void);
 
 /**
@@ -55,6 +56,7 @@ status_t aes_testutils_masking_prng_zero_output_seed(void);
  *
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t aes_testutils_csrng_kat(void);
 #endif
 
