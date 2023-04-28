@@ -96,6 +96,9 @@ class chip_sw_rv_dm_access_after_wakeup_vseq extends chip_sw_base_vseq;
 
     // We must reset the agent side also to stay synchronized with the design
     cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n(2);
+    // Wait for JTAG agent to come out of reset
+    cfg.clk_rst_vif.wait_clks(5);
+    // Reactivate DMI
     activate_jtag_dmi();
     exp_data = $urandom();
     csr_wr(
