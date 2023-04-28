@@ -34,6 +34,7 @@ bool rv_core_ibex_testutils_is_rnd_data_valid(
  * @param[out] rnd The random data read from the entropy source.
  * @return The result of the operation
  */
+OT_WARN_UNUSED_RESULT
 status_t rv_core_ibex_testutils_get_rnd_data(
     const dif_rv_core_ibex_t *rv_core_ibex, uint32_t timeout_usec,
     uint32_t *rnd);
