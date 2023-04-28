@@ -95,11 +95,11 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
       `uvm_info(`gfn, $sformatf("sw_rst_regwen set to 0x%0h", sw_rst_regwen), UVM_LOW)
       rstmgr_csr_rd_check_unpack(.ptr(ral.sw_rst_regwen), .compare_value(sw_rst_regwen));
 
-      // TODO: verify this is tested by common CSR tests.
+      // This is probably also tested by common CSR tests.
       // Check sw_rst_regwen can not be set to all ones again because it is rw0c.
-      // rstmgr_csr_wr_unpack(.ptr(ral.sw_rst_regwen), .value({NumSwResets{1'b1}}));
-      // rstmgr_csr_rd_check_unpack(.ptr(ral.sw_rst_regwen), .compare_value(sw_rst_regwen),
-      //     .err_msg("Expected sw_rst_regwen block raising individual bits because rw0c"));
+      rstmgr_csr_wr_unpack(.ptr(ral.sw_rst_regwen), .value({NumSwResets{1'b1}}));
+      rstmgr_csr_rd_check_unpack(.ptr(ral.sw_rst_regwen), .compare_value(sw_rst_regwen),
+           .err_msg("Expected sw_rst_regwen block raising individual bits because rw0c"));
 
       // Check that the regwen disabled bits block corresponding updated to ctrl_n.
       rstmgr_csr_wr_unpack(.ptr(ral.sw_rst_ctrl_n), .value(sw_rst_regwen));

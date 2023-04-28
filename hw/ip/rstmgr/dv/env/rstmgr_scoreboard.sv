@@ -99,6 +99,34 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
     return suffix.atoi();
   endfunction
 
+  local function bit blocked_by_regwen(string ral_name);
+    bit blocked = 0;
+
+    if (ral_name == "alert_info_ctrl")
+      blocked = `gmv(ral.alert_regwen) == 0;
+    if (ral_name == "cpu_info_ctrl")
+      blocked = `gmv(ral.cpu_regwen) == 0;
+    // And only the various "sw_rst_ctrl_n may be blocked, so ignore all others.
+    if (uvm_re_match({sw_rst_ctrl_n_preffix, "*"}, ral_name))
+      return 0;
+    case (ral_name[sw_rst_ctrl_n_preffix.len()])
+      "0": blocked = `gmv(ral.sw_rst_regwen[0]) == 0;
+      "1": blocked = `gmv(ral.sw_rst_regwen[1]) == 0;
+      "2": blocked = `gmv(ral.sw_rst_regwen[2]) == 0;
+      "3": blocked = `gmv(ral.sw_rst_regwen[3]) == 0;
+      "4": blocked = `gmv(ral.sw_rst_regwen[4]) == 0;
+      "5": blocked = `gmv(ral.sw_rst_regwen[5]) == 0;
+      "6": blocked = `gmv(ral.sw_rst_regwen[6]) == 0;
+      "7": blocked = `gmv(ral.sw_rst_regwen[7]) == 0;
+      default:
+        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", ral_name))
+    endcase
+    `uvm_info(`gfn, $sformatf(
+              "blocked_by_regwen: csr = %0s is %0sblocked", ral_name, blocked ? "" : "not "),
+              UVM_MEDIUM)
+    return blocked;
+  endfunction
+
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg        csr;
     bit            do_read_check = 1'b1;
@@ -118,15 +146,16 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
-    // if incoming access is a write to a valid csr, then make updates right away
+    // If incoming access is a write to a valid csr and is not blocked by a regwen, make
+    // updates right away.
     if (addr_phase_write) begin
-      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      if (!blocked_by_regwen(csr.get_name()))
+        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
     // process the csr req:
     // for write, update local variable and fifo at address phase,
     // for read, update predication at address phase and compare at data phase.
-    // TODO Add support for reading registers with separate write-enable.
     case (csr.get_name())
       // add individual case item for each csr
       "alert_test": begin
@@ -141,10 +170,11 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
       end
       "alert_regwen": begin
         // RW0C.
-        // do_read_check = 1'b0;
       end
       "alert_info_ctrl": begin
         // The en bit is cleared by the hardware.
+        // TODO(lowrisc/opentitan#18258): Should be possible to check this CSR,
+        // like cpu_info_ctrl, but something is weird for this one.
         do_read_check = 1'b0;
       end
       "alert_info_attr": begin
@@ -160,11 +190,9 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
       end
       "cpu_regwen": begin
         // RW0C.
-        // do_read_check = 1'b0;
       end
       "cpu_info_ctrl": begin
         // The en bit is cleared by the hardware.
-        do_read_check = 1'b0;
       end
       "cpu_info_attr": begin
         // Read only.
@@ -185,15 +213,13 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
         if (!uvm_re_match({sw_rst_ctrl_n_preffix, "*"}, csr.get_name())) begin
           `uvm_info(`gfn, $sformatf("write to %0s with 0x%x", csr.get_name(), item.a_data),
                     UVM_MEDIUM)
-          do_read_check = 1'b0;
           if (cfg.en_cov && addr_phase_write) begin
-            logic enable;
             int i = get_index_from_multibit_name(csr.get_name());
-            enable = ral.sw_rst_regwen[i].get();
+            logic enable = ral.sw_rst_regwen[i].get();
             cov.sw_rst_cg_wrap[i].sample(enable, item.a_data);
           end
         end else if (!uvm_re_match("sw_rst_regwen_*", csr.get_name())) begin
-          // Nothing yet.
+          // RW0C, so check.
         end else begin
           `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
         end
@@ -203,8 +229,19 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (data_phase_read) begin
       if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, $sformatf(
-                     "reg name: %0s", csr.get_full_name()))
+        uvm_reg_data_t mirrored_value = csr.get_mirrored_value();
+        case (csr.get_name())
+          "alert_info_ctrl",
+          "cpu_info_ctrl": begin
+            // Override bit 0 since it can be cleared by hardware.
+            `DV_CHECK_EQ((mirrored_value | 1), (item.d_data | 1), $sformatf(
+                         "reg name: %0s, before masking: mirrored value 0x%x, data read 0x%x",
+                         csr.get_full_name(), mirrored_value, item.d_data))
+          end
+          default:
+            `DV_CHECK_EQ(mirrored_value, item.d_data, $sformatf(
+                         "reg name: %0s", csr.get_full_name()))
+        endcase
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
