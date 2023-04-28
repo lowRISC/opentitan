@@ -247,7 +247,7 @@ def gen_md_reg_fields(output: TextIO, reg: Register, width: int) -> None:
 
     def reserved_row(msb: int, lsb: int) -> List[str]:
         return (
-            ([f"{nextbit}:{msb + 1}"] if msb != lsb else [str(nextbit)]) +
+            ([f"{msb}:{lsb}"] if msb != lsb else [str(msb)]) +
             (["", "", ""] if not field_sections else ["", ""]) +
             ["Reserved"]
         )
