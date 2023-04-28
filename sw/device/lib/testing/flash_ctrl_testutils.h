@@ -15,6 +15,7 @@
  *
  * @param flash_state A flash_ctrl state handle.
  */
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_wait_for_init(
     dif_flash_ctrl_state_t *flash_state);
 
@@ -44,6 +45,7 @@ status_t flash_ctrl_testutils_wait_transaction_end(
  * @param[out] offset The byte address offset of the region.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_data_region_setup_properties(
     dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
     uint32_t data_region, uint32_t region_size,
@@ -59,6 +61,7 @@ status_t flash_ctrl_testutils_data_region_setup_properties(
  * @param[out] offset The byte address offset of the region.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_data_region_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
     uint32_t data_region, uint32_t region_size, uint32_t *offset);
@@ -73,6 +76,7 @@ status_t flash_ctrl_testutils_data_region_setup(
  * @param[out] offset The byte address offset of the region.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_data_region_scrambled_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t base_page_index,
     uint32_t data_region, uint32_t region_size, uint32_t *offset);
@@ -88,6 +92,7 @@ status_t flash_ctrl_testutils_data_region_scrambled_setup(
  * @param[out] offset The byte address offset of the region.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_info_region_setup_properties(
     dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
     uint32_t partition_id, dif_flash_ctrl_region_properties_t region_properties,
@@ -103,6 +108,7 @@ status_t flash_ctrl_testutils_info_region_setup_properties(
  * @param[out] offset The byte address offset of the region.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_info_region_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
     uint32_t partition_id, uint32_t *offset);
@@ -117,6 +123,7 @@ status_t flash_ctrl_testutils_info_region_setup(
  * @param[out] offset The byte address offset of the region.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_info_region_scrambled_setup(
     dif_flash_ctrl_state_t *flash_state, uint32_t page_id, uint32_t bank,
     uint32_t partition_id, uint32_t *offset);
@@ -206,6 +213,7 @@ status_t flash_ctrl_testutils_read(
  * @param ecc_en Default ECC enable.
  * @param high_endurance_en Default high endurance enable
  */
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_default_region_access(
     dif_flash_ctrl_state_t *flash_state, bool rd_en, bool prog_en,
     bool erase_en, bool scramble_en, bool ecc_en, bool high_endurance_en);
@@ -235,6 +243,7 @@ enum {
  * @value[out] Value of the non-volatile counter
  * @return the result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_counter_get(size_t counter, uint32_t *value);
 
 /**
@@ -243,6 +252,7 @@ status_t flash_ctrl_testutils_counter_get(size_t counter, uint32_t *value);
  * @param flash_state A flash_ctrl state handle.
  * @param counter Counter ID, [0, 2].
  */
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_counter_increment(
     dif_flash_ctrl_state_t *flash_state, size_t counter);
 
@@ -258,6 +268,7 @@ status_t flash_ctrl_testutils_counter_increment(
  * @param counter Counter ID, [0, 2].
  * @param val Counter value.
  */
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_counter_set_at_least(
     dif_flash_ctrl_state_t *flash_state, size_t counter, uint32_t val);
 
@@ -288,6 +299,7 @@ void flash_ctrl_testutils_set_counter(dif_flash_ctrl_state_t *flash_state,
  * @param counter The ID of the NVM counter, [0, 2].
  * @param The result of the operation.
  **/
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_counter_init_zero(
     dif_flash_ctrl_state_t *flash_state, size_t counter);
 
@@ -298,6 +310,7 @@ status_t flash_ctrl_testutils_counter_init_zero(
  * @param flash_state A flash_ctrl handle.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_backdoor_init(
     dif_flash_ctrl_state_t *flash_state);
 
@@ -313,6 +326,7 @@ status_t flash_ctrl_testutils_backdoor_init(
  * will write to.
  * @param timeout Timeout.
  */
+OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_backdoor_wait_update(
     dif_flash_ctrl_state_t *flash_state, uintptr_t addr, size_t timeout);
 

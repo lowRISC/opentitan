@@ -345,7 +345,7 @@ status_t flash_ctrl_testutils_counter_increment(
   TRY(flash_ctrl_testutils_counter_get(counter, &i));
   TRY_CHECK(i < kNonVolatileCounterFlashWords,
             "Non-volatile counter %u is at its maximum", counter);
-  flash_ctrl_testutils_counter_set_at_least(flash_state, counter, i + 1);
+  TRY(flash_ctrl_testutils_counter_set_at_least(flash_state, counter, i + 1));
   uint32_t value;
   TRY(flash_ctrl_testutils_counter_get(counter, &value));
   TRY_CHECK(value == i + 1, "Counter increment failed");
