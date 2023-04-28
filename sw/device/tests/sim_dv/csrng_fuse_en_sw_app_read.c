@@ -43,8 +43,9 @@ static const uint32_t kOtpCsrngFwReadBitOffset =
  * CTR DRBG Known-Answer-Test (KAT) for GENERATE command.
  */
 static void test_fuse_enable(const dif_csrng_t *csrng) {
-  csrng_testutils_fips_instantiate_kat(csrng, /*fail_expected=*/false);
-  csrng_testutils_fips_generate_kat(csrng);
+  CHECK_STATUS_OK(
+      csrng_testutils_fips_instantiate_kat(csrng, /*fail_expected=*/false));
+  CHECK_STATUS_OK(csrng_testutils_fips_generate_kat(csrng));
 }
 
 /**
@@ -52,7 +53,8 @@ static void test_fuse_enable(const dif_csrng_t *csrng) {
  */
 static void test_fuse_disable(const dif_csrng_t *csrng) {
   LOG_INFO("%s", __func__);
-  csrng_testutils_fips_instantiate_kat(csrng, /*fail_expected=*/true);
+  CHECK_STATUS_OK(
+      csrng_testutils_fips_instantiate_kat(csrng, /*fail_expected=*/true));
 }
 
 /**

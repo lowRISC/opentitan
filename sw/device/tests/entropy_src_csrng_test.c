@@ -151,7 +151,8 @@ static void irq_block_wait(irq_flag_id_t isr_id) {
  */
 static void csrng_generate_output_check(void) {
   uint32_t output[kTestParamFifoBufferSize] = {0};
-  csrng_testutils_cmd_generate_run(&csrng, output, ARRAYSIZE(output));
+  CHECK_STATUS_OK(
+      csrng_testutils_cmd_generate_run(&csrng, output, ARRAYSIZE(output)));
 
   uint32_t prev_data = 0;
   for (size_t i = 0; i < ARRAYSIZE(output); ++i) {
@@ -171,7 +172,7 @@ static void test_csrng_sw_entropy_req_interrupt(
       &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
-  csrng_testutils_cmd_ready_wait(&csrng);
+  CHECK_STATUS_OK(csrng_testutils_cmd_ready_wait(&csrng));
   plic_interrupts_enable();
   CHECK_DIF_OK(dif_csrng_instantiate(&csrng, kDifCsrngEntropySrcToggleEnable,
                                      seed_material));
@@ -183,8 +184,8 @@ static void test_csrng_sw_entropy_req_interrupt(
   irq_block_wait(kTestIrqFlagIdCsrngEntropyReq);
   csrng_generate_output_check();
 
-  csrng_testutils_cmd_status_check(&csrng);
-  csrng_testutils_recoverable_alerts_check(&csrng);
+  CHECK_STATUS_OK(csrng_testutils_cmd_status_check(&csrng));
+  CHECK_STATUS_OK(csrng_testutils_recoverable_alerts_check(&csrng));
 }
 
 /**
@@ -304,7 +305,7 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   CHECK_DIF_OK(dif_edn_uninstantiate(&edn1));
   irq_block_wait(kTestIrqFlagIdEdn1CmdDone);
 
-  csrng_testutils_recoverable_alerts_check(&csrng);
+  CHECK_STATUS_OK(csrng_testutils_recoverable_alerts_check(&csrng));
   CHECK_STATUS_OK(
       entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
 }

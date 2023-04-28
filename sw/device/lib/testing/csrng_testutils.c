@@ -61,7 +61,7 @@ status_t csrng_testutils_kat_instantiate(
   TRY(dif_csrng_uninstantiate(csrng));
 
   // Instantiate CSRNG - use the provided seed material only.
-  csrng_testutils_cmd_ready_wait(csrng);
+  TRY(csrng_testutils_cmd_ready_wait(csrng));
   TRY(dif_csrng_instantiate(csrng, kDifCsrngEntropySrcToggleDisable,
                             seed_material));
 
@@ -80,7 +80,7 @@ status_t csrng_testutils_kat_generate(
   // Run the generate and check the output.
   uint32_t got[kNumOutputWordsMax];
   for (int i = 0; i < num_generates; ++i) {
-    csrng_testutils_cmd_generate_run(csrng, got, output_len);
+    TRY(csrng_testutils_cmd_generate_run(csrng, got, output_len));
   }
   TRY_CHECK(memcmp(got, expected_output, output_len) == 0);
 
@@ -94,7 +94,7 @@ status_t csrng_testutils_kat_reseed(
   LOG_INFO("CSRNG KAT reseed");
 
   // Reseed CSRNG - use the provided seed material only.
-  csrng_testutils_cmd_ready_wait(csrng);
+  TRY(csrng_testutils_cmd_ready_wait(csrng));
   TRY(csrng_send_app_cmd(
       csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
       (csrng_app_cmd_t){
