@@ -111,6 +111,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       if (cfg.use_spi_load_bootstrap) begin
         `uvm_info(`gfn, "Initializing SPI flash bootstrap", UVM_MEDIUM)
         spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
+        cfg.use_spi_load_bootstrap = 1'b0;
       end else begin
         cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
             {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"});

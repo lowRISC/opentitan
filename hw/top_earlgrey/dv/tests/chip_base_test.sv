@@ -48,7 +48,8 @@ class chip_base_test extends cip_base_test #(
     // Knob to set the sw_test_timeout_ns (set to 12ms by default).
     void'($value$plusargs("sw_test_timeout_ns=%0d", cfg.sw_test_timeout_ns));
 
-    // Knob to use SPI to load image via ROM bootstrap.
+    // Knob to use SPI to load image via ROM bootstrap on first boot.
+    // cfg.use_spi_load_bootstrap will be reset to 0 upon completion.
     void'($value$plusargs("use_spi_load_bootstrap=%0b", cfg.use_spi_load_bootstrap));
 
     // Knob to indicate what build device to use (DV, Verilator or FPGA).
