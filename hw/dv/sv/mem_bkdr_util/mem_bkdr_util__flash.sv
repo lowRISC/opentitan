@@ -73,9 +73,7 @@ virtual function void flash_write_scrambled(
                                                .old_key_schedule(0), .ciphertext(scrambled_data));
   masked_data = scrambled_data[FlashNumRoundsHalf-1] ^ mask;
   // ecc functions used are hardcoded to a fixed sized.
-  err_detection_scheme = EccHamming_72_64;
-  ecc_72 = get_ecc_computed_data(data[63:0]);
-  err_detection_scheme = EccHamming_76_68;
-  ecc_76 = get_ecc_computed_data({ecc_72[67:64], masked_data[63:0]});
+  ecc_72 = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[63:0]);
+  ecc_76 = prim_secded_pkg::prim_secded_hamming_76_68_enc({ecc_72[67:64], masked_data[63:0]});
   write(byte_addr, ecc_76);
 endfunction
