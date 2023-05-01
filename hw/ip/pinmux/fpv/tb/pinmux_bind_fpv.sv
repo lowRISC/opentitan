@@ -8,7 +8,8 @@ module pinmux_bind_fpv;
 
   bind pinmux pinmux_assert_fpv #(
     .TargetCfg(TargetCfg),
-    .AlertAsyncOn(AlertAsyncOn)
+    .AlertAsyncOn(AlertAsyncOn),
+    .SecVolatileRawUnlockEn(SecVolatileRawUnlockEn)
   ) i_pinmux_assert_fpv (
     .clk_i,
     .rst_ni,
@@ -20,6 +21,7 @@ module pinmux_bind_fpv;
     .usb_wkup_req_o,
     .sleep_en_i,
     .strap_en_i,
+    .strap_en_override_i,
     .lc_dft_en_i,
     .lc_hw_debug_en_i,
     .lc_check_byp_en_i,

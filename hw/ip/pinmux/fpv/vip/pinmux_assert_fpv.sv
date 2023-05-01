@@ -13,7 +13,8 @@ module pinmux_assert_fpv
   import prim_pad_wrapper_pkg::*;
 #(
   parameter target_cfg_t TargetCfg = DefaultTargetCfg,
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit SecVolatileRawUnlockEn = 0
 ) (
   input  clk_i,
   input  rst_ni,
@@ -25,6 +26,7 @@ module pinmux_assert_fpv
   input logic usb_wkup_req_o,
   input  sleep_en_i,
   input  strap_en_i,
+  input  strap_en_override_i,
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_check_byp_en_i,
@@ -642,16 +644,19 @@ module pinmux_assert_fpv
            $past(lc_dft_en_i, 2) == lc_ctrl_pkg::On) || dft_jtag_o == 0)
 
   `ASSERT(TapStrap_A, ##2 ((!dft_hold_tap_sel_i && $past(lc_dft_en_i, 2) == lc_ctrl_pkg::On) ||
-          $past(strap_en_i) && !dft_hold_tap_sel_i) &&
+          $past(strap_en_i || SecVolatileRawUnlockEn && $past($rose(strap_en_override_i), 2)) &&
+          !dft_hold_tap_sel_i) &&
           u_pinmux_strap_sampling.pinmux_hw_debug_en_q == lc_ctrl_pkg::On |=>
           u_pinmux_strap_sampling.tap_strap ==
           $past({mio_in_i[TargetCfg.tap_strap1_idx], mio_in_i[TargetCfg.tap_strap0_idx]}))
 
   `ASSERT(TapStrap0_A, ##2 ((!dft_hold_tap_sel_i && $past(lc_dft_en_i, 2) == lc_ctrl_pkg::On) ||
-          $past(strap_en_i) && !dft_hold_tap_sel_i) |=>
+          $past(strap_en_i || SecVolatileRawUnlockEn && $past($rose(strap_en_override_i), 2)) &&
+          !dft_hold_tap_sel_i) |=>
           u_pinmux_strap_sampling.tap_strap[0] == $past(mio_in_i[TargetCfg.tap_strap0_idx]))
 
-  `ASSERT(TapStrapStable_A, ##1 dft_hold_tap_sel_i && !$past(strap_en_i) |=>
+  `ASSERT(TapStrapStable_A, ##1 dft_hold_tap_sel_i && !$past(strap_en_i ||
+          SecVolatileRawUnlockEn && $past($rose(strap_en_override_i), 2)) |=>
           $stable(u_pinmux_strap_sampling.tap_strap))
 
   // ------ JTAG pinmux output assertions ------
@@ -668,8 +673,9 @@ module pinmux_assert_fpv
                         mio_oe_o[TargetCfg.tdo_idx]})
 
   // ------ DFT strap_test_o assertions ------
-  `ASSERT(DftStrapTestO_A, ##1 strap_en_i ##1
-          $past(lc_dft_en_i, 2) == lc_ctrl_pkg::On && !dft_hold_tap_sel_i |=>
+  `ASSERT(DftStrapTestO_A, ##1 strap_en_i || SecVolatileRawUnlockEn &&
+          $past($rose(strap_en_override_i), 2) ##1 $past(lc_dft_en_i, 2) == lc_ctrl_pkg::On &&
+          !dft_hold_tap_sel_i |=>
           dft_strap_test_o.valid &&
           dft_strap_test_o.straps == $past({mio_in_i[TargetCfg.dft_strap1_idx],
                                             mio_in_i[TargetCfg.dft_strap0_idx]}))

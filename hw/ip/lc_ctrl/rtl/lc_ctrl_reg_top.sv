@@ -153,8 +153,10 @@ module lc_ctrl_reg_top (
   logic transition_cmd_wd;
   logic transition_ctrl_re;
   logic transition_ctrl_we;
-  logic transition_ctrl_qs;
-  logic transition_ctrl_wd;
+  logic transition_ctrl_ext_clock_en_qs;
+  logic transition_ctrl_ext_clock_en_wd;
+  logic transition_ctrl_volatile_raw_unlock_qs;
+  logic transition_ctrl_volatile_raw_unlock_wd;
   logic transition_token_0_re;
   logic transition_token_0_we;
   logic [31:0] transition_token_0_qs;
@@ -535,25 +537,42 @@ module lc_ctrl_reg_top (
 
   // R[transition_ctrl]: V(True)
   logic transition_ctrl_qe;
-  logic [0:0] transition_ctrl_flds_we;
+  logic [1:0] transition_ctrl_flds_we;
   assign transition_ctrl_qe = &transition_ctrl_flds_we;
   // Create REGWEN-gated WE signal
   logic transition_ctrl_gated_we;
   assign transition_ctrl_gated_we = transition_ctrl_we & transition_regwen_qs;
+  //   F[ext_clock_en]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_transition_ctrl (
+  ) u_transition_ctrl_ext_clock_en (
     .re     (transition_ctrl_re),
     .we     (transition_ctrl_gated_we),
-    .wd     (transition_ctrl_wd),
-    .d      (hw2reg.transition_ctrl.d),
+    .wd     (transition_ctrl_ext_clock_en_wd),
+    .d      (hw2reg.transition_ctrl.ext_clock_en.d),
     .qre    (),
     .qe     (transition_ctrl_flds_we[0]),
-    .q      (reg2hw.transition_ctrl.q),
+    .q      (reg2hw.transition_ctrl.ext_clock_en.q),
     .ds     (),
-    .qs     (transition_ctrl_qs)
+    .qs     (transition_ctrl_ext_clock_en_qs)
   );
-  assign reg2hw.transition_ctrl.qe = transition_ctrl_qe;
+  assign reg2hw.transition_ctrl.ext_clock_en.qe = transition_ctrl_qe;
+
+  //   F[volatile_raw_unlock]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_transition_ctrl_volatile_raw_unlock (
+    .re     (transition_ctrl_re),
+    .we     (transition_ctrl_gated_we),
+    .wd     (transition_ctrl_volatile_raw_unlock_wd),
+    .d      (hw2reg.transition_ctrl.volatile_raw_unlock.d),
+    .qre    (),
+    .qe     (transition_ctrl_flds_we[1]),
+    .q      (reg2hw.transition_ctrl.volatile_raw_unlock.q),
+    .ds     (),
+    .qs     (transition_ctrl_volatile_raw_unlock_qs)
+  );
+  assign reg2hw.transition_ctrl.volatile_raw_unlock.qe = transition_ctrl_qe;
 
 
   // Subregister 0 of Multireg transition_token
@@ -1170,7 +1189,9 @@ module lc_ctrl_reg_top (
   assign transition_ctrl_re = addr_hit[6] & reg_re & !reg_error;
   assign transition_ctrl_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign transition_ctrl_wd = reg_wdata[0];
+  assign transition_ctrl_ext_clock_en_wd = reg_wdata[0];
+
+  assign transition_ctrl_volatile_raw_unlock_wd = reg_wdata[1];
   assign transition_token_0_re = addr_hit[7] & reg_re & !reg_error;
   assign transition_token_0_we = addr_hit[7] & reg_we & !reg_error;
 
@@ -1297,7 +1318,8 @@ module lc_ctrl_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[0] = transition_ctrl_qs;
+        reg_rdata_next[0] = transition_ctrl_ext_clock_en_qs;
+        reg_rdata_next[1] = transition_ctrl_volatile_raw_unlock_qs;
       end
 
       addr_hit[7]: begin

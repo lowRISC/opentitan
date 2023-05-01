@@ -14,4 +14,9 @@ localparam int TL_DUW=14;   // d_user
 localparam int TL_DBW=(TL_DW>>3);
 localparam int TL_SZW=$clog2($clog2(TL_DBW)+1);
 
+// NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
+// THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
+// PRODUCTION DEVICES.
+localparam int SecVolatileRawUnlockEn = 1;
+
 endpackage

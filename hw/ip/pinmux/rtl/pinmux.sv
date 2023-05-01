@@ -15,7 +15,8 @@ module pinmux
   // Taget-specific pinmux configuration passed down from the
   // target-specific top-level.
   parameter target_cfg_t TargetCfg = DefaultTargetCfg,
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit SecVolatileRawUnlockEn = 0
 ) (
   input                            clk_i,
   input                            rst_ni,
@@ -32,6 +33,18 @@ module pinmux
   // from pwrmgr, running on clk_i
   input                            sleep_en_i,
   input                            strap_en_i,
+  // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
+  // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
+  // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
+  // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+  // ---------------------------------------------------------------
+  // Strap sampling override that is only used when SecVolatileRawUnlockEn = 1, Otherwise this input
+  // is unused. This needs to be synchronized since it is coming from a different clock domain.
+  // This signal goes from 0 -> 1 and then stays high, since we only ever re-sample once. The
+  // synchronization logic can therefore just detect the edge to create the sampling pulse
+  // internally.
+  input                            strap_en_override_i,
+  // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
   // LC signals for TAP qualification
   input  lc_ctrl_pkg::lc_tx_t      lc_dft_en_i,
   input  lc_ctrl_pkg::lc_tx_t      lc_hw_debug_en_i,
@@ -261,6 +274,35 @@ module pinmux
   // Strap Sampling Logic //
   //////////////////////////
 
+  logic strap_en;
+  if (SecVolatileRawUnlockEn) begin : gen_strap_override
+    logic strap_en_override_d, strap_en_override_q;
+    prim_flop_2sync #(
+      .Width(1),
+      .ResetValue(0)
+    ) u_prim_flop_2sync (
+      .clk_i,
+      .rst_ni,
+      .d_i(strap_en_override_i),
+      .q_o(strap_en_override_d)
+    );
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_strap_override_reg
+      if(!rst_ni) begin
+        strap_en_override_q <= 1'b0;
+      end else begin
+        strap_en_override_q <= strap_en_override_d;
+      end
+    end
+
+    // Detect a change from 0 -> 1 on the override signal (it will stay at 1 afterwards).
+    assign strap_en = strap_en_i || (strap_en_override_d && !strap_en_override_q);
+  end else begin : gen_no_strap_override
+    logic unused_strap_en_override;
+    assign unused_strap_en_override = strap_en_override_i;
+    assign strap_en = strap_en_i;
+  end
+
   // Local versions of the input signals
   logic [NMioPads-1:0] mio_out, mio_oe, mio_in;
   logic [NDioPads-1:0] dio_out, dio_oe, dio_in;
@@ -292,7 +334,7 @@ module pinmux
     .in_core_o      ( {dio_in,   mio_in}   ),
     .attr_core_i    ( {dio_attr, mio_attr} ),
     // Strap and JTAG signals
-    .strap_en_i,
+    .strap_en_i     ( strap_en ),
     .lc_dft_en_i,
     .lc_hw_debug_en_i,
     .lc_escalate_en_i,

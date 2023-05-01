@@ -26,6 +26,14 @@ module tb;
     LcKeymgrDivWidth'({(LcKeymgrDivWidth/8){8'h5a}});
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction =
     LcKeymgrDivWidth'({(LcKeymgrDivWidth/8){8'ha5}});
+  // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
+  // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
+  // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
+  // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+  // ---------------------------------------------------------------
+  // TODO(#18250): The SecVolatileRawUnlockEn configuration should be tested separately for PROD.
+  parameter bit SecVolatileRawUnlockEn = 1;
+  // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
 
   // macro includes
   `include "uvm_macros.svh"
@@ -100,7 +108,8 @@ module tb;
     .RndCnstLcKeymgrDivTestDevRma(RndCnstLcKeymgrDivTestDevRma),
     .RndCnstLcKeymgrDivProduction(RndCnstLcKeymgrDivProduction),
     .ChipGen(LcCtrlChipGen[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0]),
-    .ChipRev(LcCtrlChipRev[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0])
+    .ChipRev(LcCtrlChipRev[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0]),
+    .SecVolatileRawUnlockEn(SecVolatileRawUnlockEn)
   ) dut (
     .clk_i (clk),
     .rst_ni(rst_n),
@@ -126,6 +135,7 @@ module tb;
 
     .pwr_lc_i(pwr_lc[LcPwrInitReq]),
     .pwr_lc_o(pwr_lc[LcPwrDoneRsp:LcPwrIdleRsp]),
+    .strap_en_override_o( /** TODO: hook this signal up */ ),
 
     .lc_otp_vendor_test_o(otp_vendor_test_ctrl),
     .lc_otp_vendor_test_i(otp_vendor_test_status),

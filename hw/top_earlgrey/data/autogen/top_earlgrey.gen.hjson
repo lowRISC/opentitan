@@ -1533,6 +1533,7 @@
       }
       param_decl:
       {
+        SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn
         ChipGen: 16'h 0000
         ChipRev: 16'h 0000
         IdcodeValue: jtag_id_pkg::JTAG_IDCODE
@@ -1549,6 +1550,24 @@
       memory: {}
       param_list:
       [
+        {
+          name: SecVolatileRawUnlockEn
+          desc:
+            '''
+            Disable (0) or enable (1) volatile RAW UNLOCK capability.
+            If enabled, it is possible to perform a volatile RAW -> TEST_UNLOCKED0 transition
+            without programming the OTP. This is a useful fallback mode in case the OTP is
+            not working correctly.
+
+            IMPORTANT NOTE: This should only be used in test chips. The parameter must be set
+            to 0 in production tapeouts since this weakens the security posture of the RAW
+            UNLOCK mechanism.
+            '''
+          type: bit
+          default: top_pkg::SecVolatileRawUnlockEn
+          expose: "true"
+          name_top: SecLcCtrlVolatileRawUnlockEn
+        }
         {
           name: RndCnstLcKeymgrDivInvalid
           desc: Compile-time random bits for lc state group diversification value
@@ -2019,6 +2038,27 @@
           width: 1
           default: "'0"
           inst_name: lc_ctrl
+          index: -1
+        }
+        {
+          name: strap_en_override
+          desc:
+            '''
+            This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
+            The signal stays at 1 until reset.
+            Note that this is only used in test chips when SecVolatileRawUnlockEn = 1.
+            Otherwise this signal is tied off to 0.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: lc_ctrl
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: lc_ctrl_strap_en_override
           index: -1
         }
         {
@@ -3675,15 +3715,34 @@
         Aon
       ]
       attr: templated
+      param_decl:
+      {
+        SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_aon_i: clkmgr_aon_clocks.clk_aon_powerup
       }
-      param_decl: {}
       memory: {}
       param_list:
       [
+        {
+          name: SecVolatileRawUnlockEn
+          desc:
+            '''
+            Disable (0) or enable (1) volatile RAW UNLOCK capability.
+            If enabled, the strap_en_override_i input can be used to re-sample the straps at runtime.
+
+            IMPORTANT NOTE: This should only be used in test chips. The parameter must be set
+            to 0 in production tapeouts since this weakens the security posture of the RAW
+            UNLOCK mechanism.
+            '''
+          type: bit
+          default: top_pkg::SecVolatileRawUnlockEn
+          expose: "true"
+          name_top: SecPinmuxAonVolatileRawUnlockEn
+        }
         {
           name: TargetCfg
           desc: Target specific pinmux configuration.
@@ -3872,6 +3931,25 @@
           inst_name: pinmux_aon
           package: ""
           top_signame: pwrmgr_aon_strap
+          index: -1
+        }
+        {
+          name: strap_en_override
+          desc:
+            '''
+            This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
+            The signal must stay at 1 until reset.
+            Note that this is only used in test chips when SecVolatileRawUnlockEn = 1.
+            Otherwise this signal is unused.
+            '''
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          default: 1'b0
+          inst_name: pinmux_aon
+          package: ""
+          top_signame: lc_ctrl_strap_en_override
           index: -1
         }
         {
@@ -8188,6 +8266,10 @@
       lc_ctrl.lc_keymgr_div:
       [
         keymgr.lc_keymgr_div
+      ]
+      lc_ctrl.strap_en_override:
+      [
+        pinmux_aon.strap_en_override
       ]
       lc_ctrl.lc_dft_en:
       [
@@ -16060,6 +16142,27 @@
         index: -1
       }
       {
+        name: strap_en_override
+        desc:
+          '''
+          This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
+          The signal stays at 1 until reset.
+          Note that this is only used in test chips when SecVolatileRawUnlockEn = 1.
+          Otherwise this signal is tied off to 0.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: lc_ctrl
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: lc_ctrl_strap_en_override
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -17266,6 +17369,25 @@
         inst_name: pinmux_aon
         package: ""
         top_signame: pwrmgr_aon_strap
+        index: -1
+      }
+      {
+        name: strap_en_override
+        desc:
+          '''
+          This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
+          The signal must stay at 1 until reset.
+          Note that this is only used in test chips when SecVolatileRawUnlockEn = 1.
+          Otherwise this signal is unused.
+          '''
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        default: 1'b0
+        inst_name: pinmux_aon
+        package: ""
+        top_signame: lc_ctrl_strap_en_override
         index: -1
       }
       {
@@ -21540,6 +21662,17 @@
         act: req
         suffix: ""
         default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        signame: lc_ctrl_strap_en_override
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
       }
       {
         package: lc_ctrl_pkg
