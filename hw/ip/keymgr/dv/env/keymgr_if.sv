@@ -89,6 +89,8 @@ interface keymgr_if(input clk, input rst_n);
 
   string msg_id = "keymgr_if";
 
+  int edn_tolerance_cycs = 20;
+
   task automatic init(bit rand_otp_key, bit invalid_otp_key);
     // Keymgr only latches OTP key once, so this scb does not support change OTP key on the
     // fly. Will write a direct sequence to cover otp key change on the fly.
@@ -304,6 +306,10 @@ interface keymgr_if(input clk, input rst_n);
     aes_sideload_status  <= SideLoadClear;
     kmac_sideload_status <= SideLoadClear;
     otbn_sideload_status <= SideLoadClear;
+  endfunction
+
+  function automatic void update_edn_toleranc_cycs(int edn_clk, int main_clk);
+    if ((main_clk/edn_clk) > 5) edn_tolerance_cycs = (main_clk/edn_clk) * 4;
   endfunction
 
   logic valid_done_window;
@@ -618,13 +624,16 @@ interface keymgr_if(input clk, input rst_n);
     end
   end
 
-  // consider async handshaking and a few cycles to start the req. allow no more than 20 tolerance
-  // error on the cnt
+  // consider async handshaking and a few cycles to start the req. allow no more than
+  // `edn_tolerance_cycs` tolerance error on the cnt.
+  // `edn_tolerance_cycs` default value is 20, but if the frequency difference between edn and main
+  // clock is too big, the testbench will scale it up to a larger value.
   `ASSERT(CheckEdn1stReq, $rose(edn_req_sync) && edn_req_cnt == 0 && start_edn_req |->
-          (edn_wait_cnt > edn_interval) && (edn_wait_cnt - edn_interval < 20),
+          (edn_wait_cnt > edn_interval) && (edn_wait_cnt - edn_interval < edn_tolerance_cycs),
           clk, !rst_n || !en_chk)
 
-  `ASSERT(CheckEdn2ndReq, $rose(edn_req_sync) && edn_req_cnt == 1 |-> edn_wait_cnt < 20,
+  `ASSERT(CheckEdn2ndReq, $rose(edn_req_sync) && edn_req_cnt == 1 |->
+          edn_wait_cnt < edn_tolerance_cycs,
           clk, !rst_n || !en_chk)
 
   `undef ASSERT_IFF_KEYMGR_LEGAL
