@@ -1101,7 +1101,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       new_intrs = interrupt_vif.pins & ~known_intr_state;
       handle_new_interrupts(new_intrs, 0);
       for (i = i.first(); i < i.last(); i = i.next()) begin
-        cov.intr_pins_cg.sample(i, interrupt_vif.pins[i]);
+        if (cfg.en_cov)
+          cov.intr_pins_cg.sample(i, interrupt_vif.pins[i]);
         if (new_intrs[i]) begin
           `uvm_info(`gfn, $sformatf("INTERRUPT RECEIVED: %0s", i.name), UVM_FULL)
         end
@@ -1741,16 +1742,18 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           entropy_src_intr_e i;
           new_events = item.d_data & ~known_intr_state;
           to_handle = new_events & ~intr_en_mask;
-          for (i = i.first(); i < i.last(); i = i.next()) begin
-            // Don't sample int_cg if this was triggered as a test, only if it showed up
-            // in normal operation.
-            if(!intr_test_active) begin
-              cov.intr_cg.sample(i, intr_en_mask[i], item.d_data[i]);
-            end
-            if(intr_test_active) begin
-              cov.intr_test_cg.sample(i, intr_test[i], intr_en_mask[i], item.d_data[i]);
-            end
-            // Sample cov.inter_pins_cg in process_interrupts()
+          if (cfg.en_cov) begin
+            for (i = i.first(); i < i.last(); i = i.next()) begin
+              // Don't sample int_cg if this was triggered as a test, only if it showed up
+              // in normal operation.
+              if(!intr_test_active) begin
+                cov.intr_cg.sample(i, intr_en_mask[i], item.d_data[i]);
+              end
+              if(intr_test_active) begin
+                cov.intr_test_cg.sample(i, intr_test[i], intr_en_mask[i], item.d_data[i]);
+              end
+              // Sample cov.inter_pins_cg in process_interrupts()
+            end // for (i = i.first(); i < i.last(); i = i.next())
           end
           handle_new_interrupts(to_handle, 1);
         end
