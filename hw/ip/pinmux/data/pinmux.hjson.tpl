@@ -192,6 +192,18 @@
     },
     { struct:  "logic",
       type:    "uni",
+      name:    "strap_en_override",
+      act:     "rcv",
+      desc:    '''
+               This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
+               The signal must stay at 1 until reset.
+               Note that this is only used in test chips when SecVolatileRawUnlockEn = 1.
+               Otherwise this signal is unused.
+               ''',
+      default: "1'b0"
+    },
+    { struct:  "logic",
+      type:    "uni",
       name:    "pin_wkup_req",
       act:     "req",
       package: "",
@@ -308,6 +320,21 @@
   ]
 
   param_list: [
+    // Secure parameters
+    { name:    "SecVolatileRawUnlockEn",
+      type:    "bit",
+      default: "1'b0",
+      desc:    '''
+        Disable (0) or enable (1) volatile RAW UNLOCK capability.
+        If enabled, the strap_en_override_i input can be used to re-sample the straps at runtime.
+
+        IMPORTANT NOTE: This should only be used in test chips. The parameter must be set
+        to 0 in production tapeouts since this weakens the security posture of the RAW
+        UNLOCK mechanism.
+      '''
+      local:   "false",
+      expose:  "true"
+    },
     { name: "AttrDw",
       desc: "Pad attribute data width",
       type: "int",

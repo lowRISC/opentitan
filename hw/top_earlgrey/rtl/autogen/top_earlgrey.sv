@@ -28,6 +28,7 @@ module top_earlgrey #(
   // parameters for otp_ctrl
   parameter OtpCtrlMemInitFile = "",
   // parameters for lc_ctrl
+  parameter bit SecLcCtrlVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter logic [15:0] LcCtrlChipGen = 16'h 0000,
   parameter logic [15:0] LcCtrlChipRev = 16'h 0000,
   parameter logic [31:0] LcCtrlIdcodeValue = jtag_id_pkg::JTAG_IDCODE,
@@ -46,6 +47,7 @@ module top_earlgrey #(
   // parameters for adc_ctrl_aon
   // parameters for pwm_aon
   // parameters for pinmux_aon
+  parameter bit SecPinmuxAonVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter pinmux_pkg::target_cfg_t PinmuxAonTargetCfg = pinmux_pkg::DefaultTargetCfg,
   // parameters for aon_timer_aon
   // parameters for sensor_ctrl
@@ -591,6 +593,7 @@ module top_earlgrey #(
   otp_ctrl_pkg::lc_otp_vendor_test_req_t       lc_ctrl_lc_otp_vendor_test_req;
   otp_ctrl_pkg::lc_otp_vendor_test_rsp_t       lc_ctrl_lc_otp_vendor_test_rsp;
   lc_ctrl_pkg::lc_keymgr_div_t       lc_ctrl_lc_keymgr_div;
+  logic       lc_ctrl_strap_en_override;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
@@ -1441,6 +1444,7 @@ module top_earlgrey #(
   );
   lc_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[18:16]),
+    .SecVolatileRawUnlockEn(SecLcCtrlVolatileRawUnlockEn),
     .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestDevRma(RndCnstLcCtrlLcKeymgrDivTestDevRma),
     .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction),
@@ -1492,6 +1496,7 @@ module top_earlgrey #(
       .otp_device_id_i(lc_ctrl_otp_device_id),
       .otp_manuf_state_i(lc_ctrl_otp_manuf_state),
       .hw_rev_o(),
+      .strap_en_override_o(lc_ctrl_strap_en_override),
       .tl_i(lc_ctrl_tl_req),
       .tl_o(lc_ctrl_tl_rsp),
       .scanmode_i,
@@ -1896,6 +1901,7 @@ module top_earlgrey #(
   );
   pinmux #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[30:30]),
+    .SecVolatileRawUnlockEn(SecPinmuxAonVolatileRawUnlockEn),
     .TargetCfg(PinmuxAonTargetCfg)
   ) u_pinmux_aon (
       // [30]: fatal_fault
@@ -1918,6 +1924,7 @@ module top_earlgrey #(
       .dft_hold_tap_sel_i(dft_hold_tap_sel_i),
       .sleep_en_i(pwrmgr_aon_low_power),
       .strap_en_i(pwrmgr_aon_strap),
+      .strap_en_override_i(lc_ctrl_strap_en_override),
       .pin_wkup_req_o(pwrmgr_aon_wakeups[2]),
       .usbdev_dppullup_en_i(usbdev_usb_dp_pullup),
       .usbdev_dnpullup_en_i(usbdev_usb_dn_pullup),

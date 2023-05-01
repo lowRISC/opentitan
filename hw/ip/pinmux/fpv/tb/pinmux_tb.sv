@@ -22,7 +22,8 @@ module pinmux_tb
   parameter int DioUsbdevDp = 9,
   parameter int DioUsbdevDn = 10,
   parameter int MioInUsbdevSense = 11,
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit SecVolatileRawUnlockEn = 1
 ) (
   input  clk_i,
   input  rst_ni,
@@ -34,6 +35,7 @@ module pinmux_tb
   output logic usb_wkup_req_o,
   input  sleep_en_i,
   input  strap_en_i,
+  input  strap_en_override_i,
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_check_byp_en_i,
@@ -97,7 +99,8 @@ module pinmux_tb
 
   pinmux #(
     .TargetCfg(PinmuxTargetCfg),
-    .AlertAsyncOn(AlertAsyncOn)
+    .AlertAsyncOn(AlertAsyncOn),
+    .SecVolatileRawUnlockEn(SecVolatileRawUnlockEn)
   ) dut (.*);
 
 endmodule : pinmux_tb
