@@ -167,11 +167,17 @@ interface csrng_cov_if (
                                                bit [3:0] lc_hw_debug_en,
                                                mubi4_t   sw_app_enable,
                                                mubi4_t   read_int_state,
-                                               bit       regwen
+                                               bit       regwen,
+                                               bit [3:0] enable
                                               );
     option.name         = "csrng_cfg_cg";
     option.per_instance = 1;
 
+    cp_enable: coverpoint enable {
+      bins mubi_true  = { MuBi4True };
+      bins mubi_false = { MuBi4False };
+      bins mubi_inval = { [0:$] } with (!(item inside { MuBi4True, MuBi4False }));
+    }
     cp_sw_app_read:    coverpoint otp_en_cs_sw_app_read {
       bins mubi_true  = { MuBi8True };
       bins mubi_false = { MuBi8False };
@@ -287,7 +293,12 @@ interface csrng_cov_if (
     }
 
     cp_acmd: coverpoint acmd {
-      illegal_bins illegal = { INV, GENB, GENU };
+      bins  Instantiate   = { INS };
+      bins  Reseed        = { RES };
+      bins  Generate      = { GEN };
+      bins  Update        = { UPD };
+      bins  Uninstantiate = { UNI };
+      bins  Reserved      = { INV, GENB, GENU };
     }
 
     cp_clen: coverpoint clen {
@@ -308,8 +319,9 @@ interface csrng_cov_if (
     }
 
     cp_flags: coverpoint flags {
-      bins false         = { MuBi4False };
-      bins true          = { MuBi4True };
+      bins mubi_false = { MuBi4False };
+      bins mubi_true  = { MuBi4True };
+      bins mubi_inval = { [0:$] } with (!(item inside { MuBi4True, MuBi4False }));
     }
 
     cp_glen: coverpoint glen {
@@ -318,16 +330,24 @@ interface csrng_cov_if (
       ignore_bins zero = { 0 };
     }
 
-    app_acmd_cross: cross cp_app, cp_acmd;
+    app_acmd_cross: cross cp_app, cp_acmd {
+      ignore_bins invalid = binsof(cp_acmd) intersect { INV, GENB, GENU };
+    }
 
     acmd_clen_cross: cross cp_acmd, cp_clen {
-      ignore_bins invalid = binsof(cp_acmd) intersect { UNI } &&
+      ignore_bins invalid = binsof(cp_acmd) intersect { UNI, INV, GENB, GENU } &&
                             binsof(cp_clen) intersect { [1:$] };
     }
 
-    acmd_flags_cross: cross cp_acmd, cp_flags;
-    acmd_glen_cross:  cross cp_acmd, cp_glen;
-    flags_clen_acmd_cross:  cross cp_acmd, cp_flags, cp_clen {
+    acmd_flags_cross: cross cp_acmd, cp_flags {
+      ignore_bins invalid = binsof(cp_acmd) intersect { INV, GENB, GENU };
+    }
+
+    acmd_glen_cross: cross cp_acmd, cp_glen {
+      ignore_bins invalid = binsof(cp_acmd) intersect { INV, GENB, GENU };
+    }
+
+    flags_clen_acmd_cross: cross cp_acmd, cp_flags, cp_clen {
       // Use only Entropy Source seed
       bins ins_only_entropy_src_seed = binsof(cp_flags) intersect { MuBi4False } &&
                                        binsof(cp_clen)  intersect { 0 } &&
@@ -357,9 +377,68 @@ interface csrng_cov_if (
                                binsof(cp_clen)  intersect { [1:$] } &&
                                binsof(cp_acmd)  intersect { RES };
       // Since other modes are not related with flag0, ignore them in this cross.
-      ignore_bins ignore = binsof(cp_acmd) intersect { UPD, UNI, GEN };
+      ignore_bins ignore_other_cmds = binsof(cp_acmd) intersect { UPD, UNI, GEN, INV, GENB, GENU };
+      // Ignore invalid MuBi values for flags.
+      ignore_bins ignore_invalid_mubi = !binsof(cp_flags) intersect { MuBi4True, MuBi4False };
     }
   endgroup : csrng_cmds_cg
+
+  // Covergroup to sample otp_en_cs_sw_app_read feature
+  covergroup csrng_otp_en_sw_app_read_cg with function sample(
+    bit read_int_state_val_reg,
+    bit read_genbits_reg,
+    bit [7:0] otp_en_cs_sw_app_read,
+    bit [3:0] read_int_state,
+    bit [3:0] sw_app_enable
+  );
+    option.per_instance  = 1;
+    option.name          = "csrng_otp_en_sw_app_read_cg";
+    // Coverpoint for register read to INT_STATE_VAL
+    cp_read_int_state_val: coverpoint read_int_state_val_reg {
+      bins read = { 1'b1 };
+    }
+    // Coverpoint for register read to GENBITS
+    cp_read_genbits_reg: coverpoint read_genbits_reg {
+      bins read = { 1'b1 };
+    }
+    // Cover values of OTP_EN_CSRNG_SW_APP_READ signal
+    cp_otp_en_cs_sw_app_read: coverpoint otp_en_cs_sw_app_read {
+      bins mubi_true  = { MuBi8True };
+      bins mubi_false = { MuBi8False };
+      bins mubi_inval = { [0:$] } with (!(item inside { MuBi8True, MuBi8False }));
+    }
+    // Cover values of field CTRL.SW_APP_ENABLE
+    cp_sw_app_read: coverpoint sw_app_enable {
+      bins mubi_true  = { MuBi4True };
+      bins mubi_false = { MuBi4False };
+      bins mubi_inval = { [0:$] } with (!(item inside { MuBi4True, MuBi4False }));
+    }
+    // Cover values of field CTRL.READ_INT_STATE
+    cp_read_int_state: coverpoint read_int_state {
+      bins mubi_true  = { MuBi4True };
+      bins mubi_false = { MuBi4False };
+      bins mubi_inval = { [0:$] } with (!(item inside { MuBi4True, MuBi4False }));
+    }
+    // Cover a scenario where INT_STATE_VAL register is read with a combination of
+    // CTRL.READ_INT_STATE field and OTP_EN_CS_SW_APP_READ pin values
+    cross_read_int_state_x_otp_en_cs_sw_app_read: cross cp_read_int_state,
+                                             cp_otp_en_cs_sw_app_read iff (read_int_state_val_reg);
+
+    // Cover a scenario where GENBITS register is read with a combination of
+    // CTRL.SW_APP_ENABLE field and OTP_EN_CS_SW_APP_READ pin values
+    cross_sw_app_enable_x_otp_en_cs_sw_app_read: cross cp_sw_app_read, cp_otp_en_cs_sw_app_read
+                                                    iff(read_genbits_reg);
+  endgroup
+
+  covergroup csrng_genbits_cg with function sample(bit genbits_fips, bit genbits_valid);
+    option.per_instance  = 1;
+    option.name          = "csrng_genbits_cg";
+    // Coverpoint for indicating FIPS/CC compliant bits on genbits register
+    genbits_fips_cp: coverpoint genbits_fips iff (genbits_valid) {
+      bins fips_compliant = { 1'b1 };
+      bins fips_non_compliant = { 1'b0 };
+    }
+  endgroup
 
   `DV_FCOV_INSTANTIATE_CG(csrng_sfifo_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cfg_cg, en_full_cov)
@@ -368,6 +447,8 @@ interface csrng_cov_if (
   `DV_FCOV_INSTANTIATE_CG(csrng_err_code_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_err_code_test_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_recov_alert_sts_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(csrng_otp_en_sw_app_read_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(csrng_genbits_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(csrng_env_cfg cfg);
@@ -375,7 +456,8 @@ interface csrng_cov_if (
                              cfg.lc_hw_debug_en,
                              cfg.sw_app_enable,
                              cfg.read_int_state,
-                             cfg.regwen
+                             cfg.regwen,
+                             cfg.enable
                             );
   endfunction
 
@@ -406,6 +488,26 @@ interface csrng_cov_if (
 
   function automatic void cg_recov_alert_sample(bit [31:0] recov_alert);
     csrng_recov_alert_sts_cg_inst.sample(recov_alert_bit_e'($clog2(recov_alert)));
+  endfunction
+
+  function automatic void cg_csrng_otp_en_sw_app_read_sample(
+    bit read_int_state_val_reg,
+    bit read_genbits_reg,
+    bit [7:0] otp_en_cs_sw_app_read,
+    bit [3:0] read_int_state,
+    bit [3:0] sw_app_enable
+  );
+    csrng_otp_en_sw_app_read_cg_inst.sample(
+      read_int_state_val_reg,
+      read_genbits_reg,
+      otp_en_cs_sw_app_read,
+      read_int_state,
+      sw_app_enable
+    );
+  endfunction
+
+  function automatic void cg_csrng_genbits_sample(bit genbits_fips, bit genbits_valid);
+    csrng_genbits_cg_inst.sample(genbits_fips, genbits_valid);
   endfunction
 
 endinterface : csrng_cov_if
