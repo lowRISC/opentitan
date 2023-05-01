@@ -5,7 +5,7 @@
 load("//rules:repo.bzl", "http_archive_or_local")
 
 def lychee_repos(local = None):
-    LYCHEE_VERSION = "v0.11.1"
+    LYCHEE_VERSION = "v0.12.0"
 
     url = "/".join([
         "https://github.com/lycheeverse/lychee/releases/download",
@@ -21,5 +21,5 @@ def lychee_repos(local = None):
 package(default_visibility = ["//visibility:public"])
 exports_files(glob(["**"]))
 """,
-        sha256 = "2cb75e6bcaf97f049d4e0260433938a77c60d39bd347d704502ae96c1e6f481c",
+        sha256 = "83f9857c233f753d2bd874486d818ff0f64b91fefef5b6fff96d9973a518080a",
     )
