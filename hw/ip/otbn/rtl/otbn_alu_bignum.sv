@@ -170,6 +170,10 @@ module otbn_alu_bignum
     .out_o (selected_flags)
   );
 
+  `ASSERT(BlankingSelectedFlags_A, expected_flag_group_sel == '0 |-> selected_flags == '0, clk_i,
+    !rst_ni || alu_predec_error_o  || !operation_commit_i)
+
+
   logic                  flag_mux_in [FlagsWidth];
   logic [FlagsWidth-1:0] flag_mux_sel;
   assign flag_mux_in = '{selected_flags.C,
@@ -192,6 +196,9 @@ module otbn_alu_bignum
     .sel_i (flag_mux_sel),
     .out_o (selection_flag_o)
   );
+
+  `ASSERT(BlankingSelectionFlag_A, expected_flag_sel == '0 |-> selection_flag_o == '0, clk_i,
+    !rst_ni || alu_predec_error_o  || !operation_commit_i)
 
   //////////////////
   // Flags Update //
