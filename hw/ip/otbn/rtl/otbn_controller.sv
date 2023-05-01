@@ -1038,6 +1038,10 @@ module otbn_controller
     .out_o(rf_bignum_rd_data_b_intg_blanked)
   );
 
+  `ASSERT(BlankingBignumRdDataBSel,
+    ~(insn_valid_i & insn_dec_bignum_i.sel_insn) |-> rf_bignum_rd_data_b_intg_blanked == '0,
+    clk_i, !rst_ni || ctrl_predec_error || !insn_executing)
+
   assign selection_result =
     ~ctrl_flow_predec_i.sel_insn | alu_bignum_selection_flag_i ? rf_bignum_rd_data_a_intg_i :
                                                                  rf_bignum_rd_data_b_intg_blanked;
