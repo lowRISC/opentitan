@@ -35,10 +35,6 @@
       tests: ["csrng_intr"]
     }
     {
-      //TODO For the following untested features add it to the test or create explicit coverpoints in csrng_cmd_cg:
-      //TODO - Invalid MuBi values for flag0 are currently untested.
-      //TODO - Illegal commands are currently untested.
-      //TODO - Fatal alerts are currently untested.
       name: alerts
       desc: '''
             Verify recov_alert asserts when recov_alert_sts becomes non-zero.
@@ -69,9 +65,6 @@
       tests: ["csrng_err"]
     }
     {
-      //TODO For the following untested features add it to the test or create explicit coverpoints in csrng_cmd_cg:
-      //TODO - Verification of otp_en_csrng_sw_app_read is currently untested.
-      //TODO - FIPS bit going low from entropy source is currently untested.
       name: cmds
       desc: '''
             Verify all csrng commands req/status behave as predicted on all applications: HW0, HW1 and SW.
@@ -110,7 +103,6 @@
 
   covergroups: [
     {
-      //TODO Configuration for enable is currently not covered.
       name: csrng_cfg_cg
       desc: '''
             Covers that all csrng configuration options have been tested.
@@ -181,6 +173,24 @@
             - hw0_cmd_push_cross, hw1_cmd_push_cross, sw_cmd_push_cross : command FIFO fill status x command FIFO write valid x command FIFO write ready
             - hw0_cmd_pop_cross, hw1_cmd_pop_cross, sw_cmd_pop_cross : command FIFO fill status x command FIFO read ready
             - hw0_genbits_pop_cross, hw1_genbits_pop_cross, sw_genbits_pop_cross : genbits FIFO fill status x genbits FIFO read valid x genbits FIFO read ready
+            '''
+    }
+    {
+      name: csrng_otp_en_sw_app_read_cg
+      desc: '''
+            Covers otp_en_csrng_sw_app_read feature
+            - read_int_state_val_cp : Covers read of INT_STATE_VAL register
+            - read_genbits_reg_cp : Covers for read of GENBITS register
+            - cp_sw_app_read : Covers values supported by otp_en_csrng_sw_app_read
+            - cp_read_int_state_x_sw_app_enable : Cross register read of INT_STATE_VAL in combination with read_int_state field and otp_en_csrng_sw_app_read
+            - cp_read_genbits_x_sw_app_enable : Cross register read of GENBITS  in combination with read_int_state field and otp_en_csrng_sw_app_read
+            '''
+    }
+    {
+      name: csrng_genbits_cg
+      desc: '''
+            Covers FIPS/CC bit in genbits_vld register
+            genbits_fips_cp: Covers GENBITS_FIPS in GENBITS_VLD register
             '''
     }
   ]
