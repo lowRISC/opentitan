@@ -60,7 +60,6 @@ class keymgr_base_vseq extends cip_base_vseq #(
     op_before_enable_keymgr();
 
     cfg.keymgr_vif.init(do_rand_otp_key, do_invalid_otp_key);
-
     delay_after_reset_before_access_csr();
 
     if (do_keymgr_init) keymgr_init();
@@ -71,9 +70,14 @@ class keymgr_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task delay_after_reset_before_access_csr();
+    bit cdc_instrumentation_enabled;
+    void'($value$plusargs("cdc_instrumentation_enabled=%d", cdc_instrumentation_enabled));
+
     // Add 2 cycles for design to synchronize life cycle value from async domain to update cfg_en
     // otherwise, some register programming will be gated
     cfg.clk_rst_vif.wait_clks(2);
+
+    if (cdc_instrumentation_enabled) cfg.clk_rst_vif.wait_clks(1);
   endtask
 
   // setup basic keymgr features
