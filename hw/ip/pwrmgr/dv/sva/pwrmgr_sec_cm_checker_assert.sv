@@ -85,7 +85,7 @@ module pwrmgr_sec_cm_checker_assert
   `ASSERT(RstreqChkEsctimeout_A,
           $rose(
               slow_esc_rst_req
-          ) ##1 slow_esc_rst_req |-> ##[0:2] pwr_rst_o.rstreqs[ResetEscIdx],
+          ) ##1 slow_esc_rst_req |-> ##[0:10] pwr_rst_o.rstreqs[ResetEscIdx],
           clk_i, reset_or_disable)
 
 // sec_cm_fsm_terminal
@@ -94,14 +94,14 @@ module pwrmgr_sec_cm_checker_assert
 
   `ASSERT(RstreqChkFsmterm_A,
           $rose(slow_fsm_invalid) || $rose(fast_fsm_invalid)
-          |=> ##[1:10] $rose(pwr_rst_o.rst_lc_req & pwr_rst_o.rst_sys_req),
+          |-> ##[0:10] $rose(pwr_rst_o.rst_lc_req & pwr_rst_o.rst_sys_req),
           clk_i, reset_or_disable)
 
 // sec_cm_ctrl_flow_global_esc
 // if esc_rst_req is set, pwr_rst_o.rstreqs[ResetEscIdx] should be asserted.
   `ASSERT(RstreqChkGlbesc_A,
           $rose(slow_esc_rst_req) ##1 slow_esc_rst_req |->
-          ##[0:2] (pwr_rst_o.rstreqs[ResetEscIdx] | !rst_esc_ni),
+          ##[0:10] (pwr_rst_o.rstreqs[ResetEscIdx] | !rst_esc_ni),
           clk_i, reset_or_disable)
 
 // sec_cm_main_pd_rst_local_esc

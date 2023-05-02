@@ -148,14 +148,21 @@ module pwrmgr
   // see the pwr_rst_o to latch.
 `ifdef SIMULATION
   // In simulation mode, the prim_cdc_rand_delay module inserts a random one cycle delay to the
-  // two flop synchronizers.
-  // This assertion also adds a two-cycle buffer to handle the scenario where the escalation request
-  // yields to a pending low power reset request.
-  `ASSERT(PwrmgrSecCmEscToFsmResetReq_A, esc_rst_req_d |-> ##[1:5] (u_fsm.reset_reqs_i > 0),
-          clk_slow_i, !rst_slow_ni)
+  // two flop synchronizers. There are two CDCs in the path from escalation reset to the fast fsm
+  // receiving it, one to the slow clock, and one back to the fast one. And there are additional
+  // cycles in the fast fsm to generate outputs.
+  `ASSERT(PwrmgrSecCmEscToSlowResetReq_A,
+          esc_rst_req_d |-> ##[1:5] slow_peri_reqs_masked.rstreqs[ResetEscIdx], clk_slow_i,
+          !rst_slow_ni)
+  `ASSERT(PwrmgrSecCmFsmEscToResetReq_A,
+          slow_peri_reqs_masked.rstreqs[ResetEscIdx] |-> ##[1:4] u_fsm.reset_reqs_i[ResetEscIdx],
+          clk_i, !rst_ni)
 `else
-  `ASSERT(PwrmgrSecCmEscToFsmResetReq_A, esc_rst_req_d |-> ##3 u_fsm.reset_reqs_i[ResetEscIdx],
-          clk_slow_i, !rst_slow_ni)
+  `ASSERT(PwrmgrSecCmEscToSlowResetReq_A,
+          esc_rst_req_d |-> ##[2:3] slow_peri_reqs.rstreqs[ResetEscIdx], clk_slow_i, !rst_slow_ni)
+  `ASSERT(PwrmgrSlowResetReqToFsmResetReq_A,
+          slow_peri_reqs_masked.rstreqs[ResetEscIdx] |-> ##1 u_fsm.reset_reqs_i[ResetEscIdx],
+          clk_i, !rst_ni)
 `endif
 
   `ASSERT(PwrmgrSecCmEscToLCReset_A, u_fsm.reset_reqs_i[ResetEscIdx] &&
