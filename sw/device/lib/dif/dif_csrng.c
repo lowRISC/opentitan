@@ -468,21 +468,9 @@ dif_result_t dif_csrng_get_recoverable_alerts(const dif_csrng_t *csrng,
     return kDifBadArg;
   }
 
-  *alerts = 0;
-  uint32_t reg =
+  *alerts =
       mmio_region_read32(csrng->base_addr, CSRNG_RECOV_ALERT_STS_REG_OFFSET);
-  *alerts =
-      bitfield_bit32_copy(*alerts, kDifCsrngRecoverableAlertBadEnable, reg,
-                          CSRNG_RECOV_ALERT_STS_ENABLE_FIELD_ALERT_BIT);
-  *alerts =
-      bitfield_bit32_copy(*alerts, kDifCsrngRecoverableAlertBadSwAppEnable, reg,
-                          CSRNG_RECOV_ALERT_STS_SW_APP_ENABLE_FIELD_ALERT_BIT);
-  *alerts =
-      bitfield_bit32_copy(*alerts, kDifCsrngRecoverableAlertBadIntState, reg,
-                          CSRNG_RECOV_ALERT_STS_READ_INT_STATE_FIELD_ALERT_BIT);
-  *alerts =
-      bitfield_bit32_copy(*alerts, kDifCsrngRecoverableAlertRepeatedGenBits,
-                          reg, CSRNG_RECOV_ALERT_STS_CS_BUS_CMP_ALERT_BIT);
+
   return kDifOk;
 }
 
