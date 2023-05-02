@@ -10,12 +10,13 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::eeprom::AddressMode;
 use opentitanlib::io::spi::{Target, Transfer};
-use opentitanlib::spiflash::{Sfdp, SpiFlash};
+use opentitanlib::spiflash::{ReadMode, Sfdp, SpiFlash};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::spi_passthru::{
     ConfigJedecId, SfdpData, SpiFlashEraseSector, SpiFlashReadSfdp, SpiFlashWrite, SpiMailboxMap,
     SpiMailboxWrite, SpiPassthruSwapMap, StatusRegister, UploadInfo,
 };
+use opentitanlib::transport::Capability;
 use opentitanlib::uart::console::UartConsole;
 
 const FLASH_STATUS_WIP: u32 = 0x01;
@@ -282,7 +283,22 @@ fn test_write_status(opts: &Opts, transport: &TransportWrapper, opcode: u8) -> R
     Ok(())
 }
 
-fn test_read_flash(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) -> Result<()> {
+    log::info!("using read mode {:?}", mode);
+    let capability = match mode {
+        ReadMode::Standard => Ok(()),
+        ReadMode::Fast => Ok(()),
+        ReadMode::Dual => transport.capabilities()?.request(Capability::SPI_DUAL).ok(),
+        ReadMode::Quad => transport.capabilities()?.request(Capability::SPI_QUAD).ok(),
+    };
+    if capability.is_err() {
+        log::warn!(
+            "Needed capability for {:?} not available.  Skipping test!",
+            mode
+        );
+        return Ok(());
+    }
+
     let uart = transport.uart("console")?;
     let spi = transport.spi(&opts.spi)?;
 
@@ -292,7 +308,11 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     };
     let sfdp_data = sfdp_read.execute(&*uart)?;
     let sfdp = Sfdp::try_from(sfdp_data.data.as_slice())?;
-    let spi_flash = SpiFlash::from_sfdp(sfdp);
+    let spi_flash = {
+        let mut flash = SpiFlash::from_sfdp(sfdp);
+        flash.read_mode = mode;
+        flash
+    };
 
     // Put increasing count at 0x1000.
     let address_inc = 0x1000u32;
@@ -387,7 +407,10 @@ fn main() -> Result<()> {
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
     uart.clear_rx_buffer()?;
 
-    execute_test!(test_read_flash, &opts, &transport);
+    execute_test!(test_read_flash, &opts, &transport, ReadMode::Standard);
+    execute_test!(test_read_flash, &opts, &transport, ReadMode::Fast);
+    execute_test!(test_read_flash, &opts, &transport, ReadMode::Dual);
+    execute_test!(test_read_flash, &opts, &transport, ReadMode::Quad);
     execute_test!(test_jedec_id, &opts, &transport);
     execute_test!(test_enter_exit_4b_mode, &opts, &transport);
     execute_test!(test_write_enable_disable, &opts, &transport);
