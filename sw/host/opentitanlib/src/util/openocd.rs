@@ -398,4 +398,59 @@ impl Jtag for OpenOcdServer {
 
         Ok(())
     }
+
+    fn resume_at(&self, addr: u32) -> Result<()> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
+        let cmd = format!("resume 0x{:x}", addr);
+        let response = self.send_tcl_cmd(&cmd)?;
+        if !response.is_empty() {
+            bail!("unexpected response: '{response}'");
+        }
+
+        Ok(())
+    }
+
+    fn reset(&self, run: bool) -> Result<()> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
+        let cmd = format!("reset {}", if run { "run" } else { "halt" });
+        let response = self.send_tcl_cmd(&cmd)?;
+        if !response.is_empty() {
+            bail!("unexpected response: '{response}'");
+        }
+
+        Ok(())
+    }
+
+    fn step(&self) -> Result<()> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
+        let response = self.send_tcl_cmd("step")?;
+        if !response.is_empty() {
+            bail!("unexpected response: '{response}'");
+        }
+
+        Ok(())
+    }
+
+    fn step_at(&self, addr: u32) -> Result<()> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
+        let cmd = format!("step 0x{:x}", addr);
+        let response = self.send_tcl_cmd(&cmd)?;
+        if !response.is_empty() {
+            bail!("unexpected response: '{response}'");
+        }
+
+        Ok(())
+    }
 }
