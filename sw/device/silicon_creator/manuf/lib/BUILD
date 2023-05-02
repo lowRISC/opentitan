@@ -192,8 +192,12 @@ opentitan_functest(
             "--rom-kind=rom",
             "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
+            "--hsm-ecdh-sk=\"$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)\"",
         ],
     ),
+    data = [
+        "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der",
+    ],
     targets = [
         "cw310_rom",
     ],
