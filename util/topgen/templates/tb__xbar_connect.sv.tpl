@@ -79,10 +79,8 @@ initial begin
     $asserton(0, tb.dut.top_${top["name"]}.u_xbar_${xbar["name"]});
 % endfor
 
-% for c in clk_freq.keys():
-    clk_rst_if_${c}.set_active(.drive_rst_n_val(0));
-    clk_rst_if_${c}.set_freq_khz(${clk_freq[c]} / 1000);
-% endfor
+
+    // These are all zero-time: anything that consumes time go at the end.
 
     // bypass clkmgr, force clocks directly
 % for xbar in top["xbar"]:
@@ -116,6 +114,19 @@ sig_name = inst_sig_list[0][2]
     % endif
   % endfor
 % endfor
+
+
+    // And this can consume time, so they go at the end of this block.
+
+    // Wait for a negedge of rst_n, or else we will have clock edges before
+    // reset, which could capture 'X values.
+    xbar_clk_rst_if.wait_for_reset(.wait_posedge(1'b0));
+
+% for c in clk_freq.keys():
+    clk_rst_if_${c}.set_active(.drive_rst_n_val(0));
+    clk_rst_if_${c}.set_freq_khz(${clk_freq[c]} / 1000);
+% endfor
+
   end
 end
 

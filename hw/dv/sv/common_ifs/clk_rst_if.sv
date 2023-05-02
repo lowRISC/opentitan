@@ -302,10 +302,13 @@ interface clk_rst_if #(
     if (drive_clk) begin
       fork
         begin
-          wait_for_reset(.wait_posedge(1'b0));
+          // Only wait for reset if driving it, otherwise it may never come.
+          if (drive_rst_n) begin
+            wait_for_reset(.wait_posedge(1'b0));
 
-          // Wait a short time after reset before starting to drive the clock.
-          #1ps;
+            // Wait a short time after reset before starting to drive the clock.
+            #1ps;
+          end
           o_clk = 1'b0;
 
           done = 1'b1;
