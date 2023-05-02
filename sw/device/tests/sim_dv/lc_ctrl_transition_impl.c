@@ -89,12 +89,13 @@ bool execute_lc_ctrl_transition_test(bool use_ext_clk) {
       token.data[i] = kLcExitToken[i];
     }
     CHECK_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc));
+    LOG_INFO("Acquired lc_ctrl mutex by software");
     CHECK_DIF_OK(
         dif_lc_ctrl_configure(&lc, kDifLcCtrlStateDev, use_ext_clk, &token),
         "LC transition configuration failed!");
     CHECK_DIF_OK(dif_lc_ctrl_transition(&lc), "LC transition failed!");
-
-    LOG_INFO("Waiting for LC transtition done and reboot.");
+    CHECK_DIF_OK(dif_lc_ctrl_mutex_release(&lc));
+    LOG_INFO("Waiting for LC transition done and reboot.");
     wait_for_interrupt();
 
   } else {
