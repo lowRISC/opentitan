@@ -105,6 +105,7 @@ rust_library(
         "src/test_utils/init.rs",
         "src/test_utils/lc_transition.rs",
         "src/test_utils/load_bitstream.rs",
+        "src/test_utils/load_sram_program.rs",
         "src/test_utils/mod.rs",
         "src/test_utils/poll.rs",
         "src/test_utils/rpc.rs",
@@ -211,6 +212,7 @@ rust_library(
     },
     deps = [
         "//sw/host/opentitanlib/bindgen",
+        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
         "@crate_index//:bitflags",
