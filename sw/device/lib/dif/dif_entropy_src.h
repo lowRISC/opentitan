@@ -121,11 +121,14 @@ typedef struct dif_entropy_src_config {
    * If set, raw entropy will be sent to CSRNG, bypassing the conditioner block
    * and disabling the FIPS flag. Note that the FIPS flag is different from
    * running the block in FIPS mode. FIPS mode refers to running the entropy_src
-   * in continuous mode.
+   * in continuous mode. Also note that if `fips_enable` is set to `True`, then
+   * at most one of either `route_to_firmware` or `bypass_conditioner` may be
+   * set, but not both.
    */
   bool bypass_conditioner;
   /**
-   * Specifies which single-bit-mode to use, if any at all.
+   * Specifies which single-bit-mode to use, if any at all. `fips_enable` must
+   * be false to use any single-bit-mode`.
    */
   dif_entropy_src_single_bit_mode_t single_bit_mode;
   /**

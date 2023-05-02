@@ -57,6 +57,19 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
     return kDifBadArg;
   }
 
+  // Check valid configuration if FIPS mode is selected.
+  // FIPS qualified entropy is only valid in non-single bit mode.
+  if (config.fips_enable &&
+      (config.single_bit_mode < kDifEntropySrcSingleBitModeDisabled)) {
+    return kDifBadArg;
+  }
+  // FIPS qualified entropy cannot be generated if both `route_to_firmware` and
+  // `bypass_conditioner` are enabled.
+  if (config.fips_enable && config.route_to_firmware &&
+      config.bypass_conditioner) {
+    return kDifBadArg;
+  }
+
   if (!mmio_region_read32(entropy_src->base_addr,
                           ENTROPY_SRC_REGWEN_REG_OFFSET)) {
     return kDifLocked;
