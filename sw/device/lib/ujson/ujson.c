@@ -12,6 +12,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/ujson/private_status.h"
+#include "sw/device/silicon_creator/lib/crc32.h"
 
 static bool is_space(int c) { return c == ' ' || (unsigned)c - '\t' < 5; }
 
@@ -21,7 +22,12 @@ ujson_t ujson_init(void *context, status_t (*getc)(void *),
   return u;
 }
 
+void ujson_crc32_reset(ujson_t *uj) { crc32_init(&uj->crc32); }
+
+uint32_t ujson_crc32_finish(ujson_t *uj) { return crc32_finish(&uj->crc32); }
+
 status_t ujson_putbuf(ujson_t *uj, const char *buf, size_t len) {
+  crc32_add(&uj->crc32, buf, len);
   return uj->putbuf(uj->io_context, buf, len);
 }
 
@@ -31,7 +37,11 @@ status_t ujson_getc(ujson_t *uj) {
     uj->buffer = -1;
     return OK_STATUS(buffer);
   } else {
-    return uj->getc(uj->io_context);
+    status_t s = uj->getc(uj->io_context);
+    if (!status_err(s)) {
+      crc32_add8(&uj->crc32, (uint8_t)s.value);
+    }
+    return s;
   }
 }
 
