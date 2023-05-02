@@ -709,6 +709,28 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "sha256_test",
+    srcs = [
+        "sha256_test.s",
+    ],
+    exp = "sha256_test.exp",
+    deps = [
+        "//sw/otbn/crypto:sha256",
+    ],
+)
+
+otbn_consttime_test(
+    name = "sha256_consttime",
+    # All secrets are stored in DMEM; timing is permitted to depend on the
+    # number of message chunks.
+    secrets = ["dmem"],
+    subroutine = "sha256",
+    deps = [
+        ":sha256_test",
+    ],
+)
+
+otbn_sim_test(
     name = "sha512_test",
     srcs = [
         "sha512_test.s",

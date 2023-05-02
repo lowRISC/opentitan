@@ -251,6 +251,13 @@ otbn_binary(
 )
 
 otbn_library(
+    name = "sha256",
+    srcs = [
+        "sha256.s",
+    ],
+)
+
+otbn_library(
     name = "sha512",
     srcs = [
         "sha512.s",
