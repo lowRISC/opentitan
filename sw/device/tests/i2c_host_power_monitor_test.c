@@ -64,6 +64,34 @@ static status_t read_product_id(void) {
   return OK_STATUS();
 }
 
+static status_t read_write_1byte(void) {
+  uint8_t reg = kAccumConfigReg, read_data = 0;
+
+  // Write config=1.
+  uint8_t write_data[2] = {kAccumConfigReg, 0x01};
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(write_data), write_data,
+                          true));
+
+  // Check the write worked.
+  read_data = 0;
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(read_data), &reg, true));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), &read_data));
+  TRY_CHECK(read_data == 0x01, "Unexpected value %x", read_data);
+
+  // Write config=0.
+  write_data[1] = 0x00;
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(write_data), write_data,
+                          true));
+
+  // Check the write worked.
+  read_data = 0x01;
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(reg), &reg, true));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), &read_data));
+  TRY_CHECK(read_data == 0x00, "Unexpected value %x", read_data);
+
+  return OK_STATUS();
+}
+
 static status_t test_init(void) {
   mmio_region_t base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
@@ -98,6 +126,7 @@ bool test_main(void) {
     CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, speeds[i]));
     EXECUTE_TEST(test_result, read_manufacture_id);
     EXECUTE_TEST(test_result, read_product_id);
+    EXECUTE_TEST(test_result, read_write_1byte);
   }
 
   return status_ok(test_result);
