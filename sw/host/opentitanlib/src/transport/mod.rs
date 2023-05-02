@@ -47,6 +47,8 @@ bitflags! {
         const GPIO_MONITORING = 0x01 << 6; // Logic analyzer functionality
         const JTAG = 0x01 << 7;
         const UART_NONBLOCKING = 0x01 << 8;
+        const SPI_DUAL = 0x01 << 9;
+        const SPI_QUAD = 0x01 << 10;
     }
 }
 

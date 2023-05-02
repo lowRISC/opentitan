@@ -489,6 +489,8 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 | Capability::GPIO
                 | Capability::GPIO_MONITORING
                 | Capability::SPI
+                | Capability::SPI_DUAL
+                | Capability::SPI_QUAD
                 | Capability::I2C,
         ))
     }
