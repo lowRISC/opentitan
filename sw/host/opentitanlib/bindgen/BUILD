@@ -11,6 +11,7 @@ cc_library(
     name = "difs",
     hdrs = ["difs.h"],
     deps = [
+        "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:rstmgr",
     ],
@@ -34,6 +35,10 @@ rust_bindgen_library(
 rust_bindgen_library(
     name = "dif",
     bindgen_flags = [
+        "--allowlist-var=CLKMGR_.*_BIT",
+        "--allowlist-var=CLKMGR_.*_REG_OFFSET",
+        "--allowlist-var=CLKMGR_.*_MASK",
+        "--allowlist-var=CLKMGR_.*_OFFSET",
         "--allowlist-type=dif_lc_ctrl_state",
         "--allowlist-type=dif_lc_ctrl_token",
         "--allowlist-var=LC_CTRL_.*_BIT",
