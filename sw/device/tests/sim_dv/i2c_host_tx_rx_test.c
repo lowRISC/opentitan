@@ -290,7 +290,7 @@ bool test_main(void) {
 
   // Read data from i2c device.
   CHECK(!rx_irq_seen);
-  CHECK_STATUS_OK(i2c_testutils_rd(&i2c, device_addr, byte_count));
+  CHECK_STATUS_OK(i2c_testutils_issue_read(&i2c, device_addr, byte_count));
 
   // Make sure all data has been read back.
   do {
