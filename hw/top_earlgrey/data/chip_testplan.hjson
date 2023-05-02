@@ -3481,6 +3481,21 @@
               "chip_sw_lc_walkthrough_testunlocks"]
     }
     {
+      name: chip_sw_lc_ctrl_volatile_raw_unlock
+      desc: '''Configure VOLATILE_RAW_UNLOCK via LC TAP interface and enable CPU execution.
+
+             - Pre-load OTP image with RAW lc_state.
+             - Initiate the LC transition to test_unlocked0 state using the
+               VOLATILE_RAW_UNLOCK mode of operation.
+             - As part of the transition to test_unlocked0, switch the TAP interface to rv_dm.
+             - Enable ROM execution via rv_dm, and perform POR.
+             - Initiate a second transition to test_unlocked0 using VOLATILE_RAW_UNLOCK.
+             - Verify that the CPU is able to execute.
+             '''
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_volatile_raw_unlock"]
+    }
+    {
       name: chip_sw_power_max_load
       desc: '''Concurrency test modeling maximum load conditions.
 

@@ -720,6 +720,70 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
   endtask
 
+  // Use JTAG interface to transit LC_CTRL from RAW to TEST_UNLOCKED* states
+  // using the VOLATILE_RAW_UNLOCK mode of operation.
+  virtual task jtag_lc_state_volatile_raw_unlock(chip_jtag_tap_e target_strap);
+    bit [TL_DW-1:0] current_lc_state;
+    bit [TL_DW-1:0] transition_ctrl;
+    int max_attempt = 5_000;
+    dec_lc_state_e dest_state = DecLcStTestUnlocked0;
+
+    wait_lc_ready();
+    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
+                                        p_sequencer.jtag_sequencer_h,
+                                        current_lc_state);
+    `DV_CHECK_EQ(DecLcStRaw, current_lc_state)
+
+    `uvm_info(`gfn, $sformatf("Start LC transition request to %0s state", dest_state.name),
+                              UVM_LOW)
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.claim_transition_if.get_offset(),
+                                         p_sequencer.jtag_sequencer_h,
+                                         prim_mubi_pkg::MuBi8True);
+
+    `uvm_info(`gfn, "Switching to VOLATILE_RAW_UNLOCK via JTAG...", UVM_LOW)
+    jtag_riscv_agent_pkg::jtag_write_csr(
+      ral.lc_ctrl.transition_ctrl.get_offset(),
+      p_sequencer.jtag_sequencer_h,
+      2);
+
+    jtag_riscv_agent_pkg::jtag_read_csr(
+      ral.lc_ctrl.transition_ctrl.get_offset(),
+      p_sequencer.jtag_sequencer_h,
+      transition_ctrl);
+    `DV_CHECK_FATAL(transition_ctrl & (1 << 1), {"VOLATILE_RAW_UNLOCK is not supported by this ",
+                    "top level. Check the SecVolatileRawUnlockEn parameter configuration."})
+
+    begin
+      bit [TL_DW-1:0] token_csr_vals[4] = {<< 32 {{>> 8 {RndCnstRawUnlockTokenHashed}}}};
+      foreach (token_csr_vals[index]) begin
+        jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_token[index].get_offset(),
+                                             p_sequencer.jtag_sequencer_h,
+                                             token_csr_vals[index]);
+      end
+    end
+
+    // Switch strap configuration before requesting volatile raw unlock. This is to
+    // switch to rv_dm in test_unlocked0.
+    cfg.chip_vif.tap_straps_if.drive(target_strap);
+
+    `uvm_info(`gfn, "Sent LC transition request", UVM_LOW)
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_target.get_offset(),
+                                         p_sequencer.jtag_sequencer_h,
+                                         {DecLcStateNumRep{DecLcStTestUnlocked0}});
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.transition_cmd.get_offset(),
+                                         p_sequencer.jtag_sequencer_h,
+                                         1);
+
+    if (target_strap == JtagTapLc) begin
+      wait_lc_transition_successful(.max_attempt(max_attempt));
+      jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.claim_transition_if.get_offset(),
+                                         p_sequencer.jtag_sequencer_h,
+                                         prim_mubi_pkg::MuBi8False);
+    end else begin
+      cfg.clk_rst_vif.wait_clks($urandom_range(10000, 20000));
+    end
+  endtask
+
   // Use JTAG interface to transit LC_CTRL from one state to the valid next state.
   // Currently support the following transitions:
   // 1). RAW state -> test unlock state N
