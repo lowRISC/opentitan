@@ -462,8 +462,8 @@ TEST_F(AlertTest, Get) {
                     {CSRNG_RECOV_ALERT_STS_CS_BUS_CMP_ALERT_BIT, true},
                 });
   EXPECT_DIF_OK(dif_csrng_get_recoverable_alerts(&csrng_, &out));
-  EXPECT_EQ(out, BitSet(kDifCsrngRecoverableAlertBadEnable,
-                        kDifCsrngRecoverableAlertRepeatedGenBits));
+  EXPECT_EQ(out, kDifCsrngRecoverableAlertBadEnable |
+                     kDifCsrngRecoverableAlertRepeatedGenBits);
 }
 
 TEST_F(AlertTest, Clear) {

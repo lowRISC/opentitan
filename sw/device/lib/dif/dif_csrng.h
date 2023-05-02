@@ -16,6 +16,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 
+#include "csrng_regs.h"  // Generated
 #include "sw/device/lib/dif/autogen/dif_csrng_autogen.h"
 
 #ifdef __cplusplus
@@ -286,22 +287,38 @@ typedef enum dif_csrng_recoverable_alert {
    * Indicates a bad value was written to the ENABLE field of the control
    * register.
    */
-  kDifCsrngRecoverableAlertBadEnable,
+  kDifCsrngRecoverableAlertBadEnable =
+      1U << CSRNG_RECOV_ALERT_STS_ENABLE_FIELD_ALERT_BIT,
   /**
    * Indicates a bad value was written to the SW_APP_ENABLE field of the control
    * register.
    */
-  kDifCsrngRecoverableAlertBadSwAppEnable,
+  kDifCsrngRecoverableAlertBadSwAppEnable =
+      1U << CSRNG_RECOV_ALERT_STS_SW_APP_ENABLE_FIELD_ALERT_BIT,
   /**
    * Indicates a bad value was written to the READ_INT_STATE field of the
    * control register.
    */
-  kDifCsrngRecoverableAlertBadIntState,
+  kDifCsrngRecoverableAlertBadIntState =
+      1U << CSRNG_RECOV_ALERT_STS_READ_INT_STATE_FIELD_ALERT_BIT,
+  /**
+   * Indicates the FLAG0 field in the Application Command is set to a value
+   * other than kMultiBitBool4True or kMultiBitBool4False.
+   */
+  kDifCsrngRecoverableAlertBadFlag0 =
+      1U << CSRNG_RECOV_ALERT_STS_ACMD_FLAG0_FIELD_ALERT_BIT,
   /**
    * Indicates the genbits bus saw two identical values, indicating a possible
    * attack.
    */
-  kDifCsrngRecoverableAlertRepeatedGenBits,
+  kDifCsrngRecoverableAlertRepeatedGenBits =
+      1U << CSRNG_RECOV_ALERT_STS_CS_BUS_CMP_ALERT_BIT,
+  /**
+   * Indicates an unsupported CSRNG command is being processed, causing the main
+   * FSM to hang unless the module enable field is set to the disabled state.
+   */
+  kDifCsrngRecoverableAlertBadCsrngCmd =
+      1U << CSRNG_RECOV_ALERT_STS_CS_MAIN_SM_ALERT_BIT,
 } dif_csrng_recoverable_alert_t;
 
 /**

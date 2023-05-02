@@ -205,6 +205,7 @@ cc_library(
     ],
     deps = [
         ":base",
+        "//hw/ip/csrng/data:csrng_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
