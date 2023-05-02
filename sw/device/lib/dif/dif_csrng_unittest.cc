@@ -346,6 +346,11 @@ TEST_F(GetInternalStateTest, GetInternalStateOk) {
                      {CSRNG_INT_STATE_NUM_INT_STATE_NUM_OFFSET,
                       static_cast<uint32_t>(instance_id)},
                  });
+  EXPECT_READ32(CSRNG_INT_STATE_NUM_REG_OFFSET,
+                {
+                    {CSRNG_INT_STATE_NUM_INT_STATE_NUM_OFFSET,
+                     static_cast<uint32_t>(instance_id)},
+                });
 
   dif_csrng_internal_state_t expected = {
       .reseed_counter = 1,
@@ -371,6 +376,23 @@ TEST_F(GetInternalStateTest, GetInternalStateOk) {
   EXPECT_THAT(got.v, ElementsAreArray(expected.v));
   EXPECT_EQ(got.instantiated, expected.instantiated);
   EXPECT_EQ(got.fips_compliance, expected.fips_compliance);
+}
+
+TEST_F(GetInternalStateTest, BadIntStateNumWrite) {
+  EXPECT_WRITE32(CSRNG_INT_STATE_NUM_REG_OFFSET,
+                 {
+                     {CSRNG_INT_STATE_NUM_INT_STATE_NUM_OFFSET,
+                      static_cast<uint32_t>(kCsrngInternalStateIdSw)},
+                 });
+  EXPECT_READ32(CSRNG_INT_STATE_NUM_REG_OFFSET,
+                {
+                    {CSRNG_INT_STATE_NUM_INT_STATE_NUM_OFFSET, 0},
+                });
+
+  dif_csrng_internal_state_t got;
+  EXPECT_EQ(
+      dif_csrng_get_internal_state(&csrng_, kCsrngInternalStateIdSw, &got),
+      kDifError);
 }
 
 TEST_F(GetInternalStateTest, GetInternalStateBadArgs) {
