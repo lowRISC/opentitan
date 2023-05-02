@@ -1,6 +1,6 @@
 {
     "high-speed-crossbar": {
-        "name": "High Speed CrossBar",
+        "name": "High Speed Crossbar",
         "data_file": "hw/ip/tlul/data/tlul.prj.hjson",
         "href": "/hw/ip/tlul#top",
         "report": "/hw/top_earlgrey/ip/xbar_main/dv/autogen"
@@ -198,7 +198,7 @@
         "report": "/hw/ip/aon_timer/dv"
     },
     "clkrst-managers": {
-        "name": "CLK/RST Mangers",
+        "name": "CLK/RST Managers",
         "data_file": "hw/ip/clkmgr/data/clkmgr.hjson",
         "href": "/hw/ip/clkmgr#top",
         "report": "/hw/ip/clkmgr/dv"
