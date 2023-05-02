@@ -107,11 +107,11 @@ module clkmgr_byp
   );
 
   // software switch request handling
-  mubi4_t dft_en;
-  assign dft_en = lc_ctrl_pkg::lc_to_mubi4(en);
+  mubi4_t debug_en;
+  assign debug_en = lc_ctrl_pkg::lc_to_mubi4(en);
 
   mubi4_t all_clk_byp_req_d;
-  assign all_clk_byp_req_d = mubi4_and_hi(byp_req_i, dft_en);
+  assign all_clk_byp_req_d = mubi4_and_hi(byp_req_i, debug_en);
 
   prim_mubi4_sender #(
     .AsyncOn(1),
