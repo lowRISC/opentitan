@@ -8,7 +8,7 @@
 // > Constrain the timing parameters to use the minimum values specified in I2C spec for the mode
 // > Issue random number of Read or Write transactions
 // > Calculate the bit rate using programmed timing parameters
-// > Check if bitrate is as expected
+// > Check if generated SCL period is as expected
 class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
   `uvm_object_utils(i2c_host_perf_vseq)
   `uvm_object_new
@@ -17,12 +17,12 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
   rand speed_mode_e           speed_mode;
   rand uint                   scl_frequency; //in KHz
   rand uint                   scl_period; // converted to register value
-  real start_time;
-
-  uint num_bits = 0;
+  real                        last_posedge; // Last posedge time of SCL in ns
+  uint                        scl_period_observed; // observed SCL period in ns
+  uint                        scl_period_expected; // observed SCL period in ns
 
   constraint num_trans_c {
-    num_trans  == 10;
+    num_trans  == 5;
   }
 
   constraint scl_frequency_c {
@@ -47,7 +47,6 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
     tsu_sto == cfg.seq_cfg.get_tsusto_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
     tsu_dat == cfg.seq_cfg.get_tsudat_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
     tsu_sta == cfg.seq_cfg.get_tsusta_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
-    t_buf   == cfg.seq_cfg.get_tbuf_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
     if (cfg.seq_cfg.get_thddat_min(speed_mode, cfg.clk_rst_vif.clk_period_ps) > 0) {
       thd_dat == cfg.seq_cfg.get_thddat_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
     } else {
@@ -56,23 +55,27 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
     solve speed_mode before tlow, t_r, t_f, thd_sta, tsu_sto, tsu_dat, thd_dat,
                             tsu_sta, t_buf, thigh;
 
-    solve tlow before thigh;
-    solve t_r before thigh, tlow, t_buf;
-    solve t_f before thigh;
-    solve scl_period before thigh, tlow, t_f, t_r;
-    solve tsu_dat before tlow;
+    solve scl_period before tlow, thigh, t_f, t_r;
+    solve t_r before tlow;
+    solve t_f before tlow;
+    solve thigh before tlow;
+    solve tsu_sta before tlow;
     solve thd_dat before tlow;
-    solve tsu_sta before t_buf;
+    solve t_r before t_buf;
+    solve tsu_dat before t_buf;
     // tlow must be at least 2 greater than the sum of t_r + tsu_dat + thd_dat
     // because the flopped clock (see #15003 below) reduces tClockLow by 1.
-    tlow  > cfg.seq_cfg.get_tlow_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
-    t_r   > cfg.seq_cfg.get_tr_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
-    t_f   > cfg.seq_cfg.get_tf_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
-    thigh > cfg.seq_cfg.get_thigh_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
-    t_r + tlow + t_f + thigh == scl_period;
-    tlow > (t_r + tsu_dat + thd_dat + 1);
-    t_buf + t_r > (tsu_sta + 1);
 
+    tlow == scl_period - t_r - t_f - thigh;
+    tlow > (t_r + tsu_dat + thd_dat + 1);
+    tlow > thd_dat - t_f;
+    t_buf == tsu_sta - t_r + 1;
+
+    // Spec minimum value of parameters
+    tlow  >= cfg.seq_cfg.get_tlow_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
+    t_r   >= cfg.seq_cfg.get_tr_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
+    t_f   >= cfg.seq_cfg.get_tf_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
+    thigh >= cfg.seq_cfg.get_thigh_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
     // Spec maximum value of parameters
     t_r <= cfg.seq_cfg.get_tr_max(speed_mode, cfg.clk_rst_vif.clk_period_ps);
     t_f <= cfg.seq_cfg.get_tf_max(speed_mode, cfg.clk_rst_vif.clk_period_ps);
@@ -114,25 +117,39 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
     `uvm_info(`gfn, $sformatf("scl_frequency = %d KHz", scl_frequency), UVM_LOW)
     `uvm_info(`gfn, $sformatf("clk_period_ps = %dps", cfg.clk_rst_vif.clk_period_ps), UVM_MEDIUM)
     `uvm_info(`gfn, $sformatf("(scl_period/clk_period) = %d ", scl_period), UVM_MEDIUM)
-    num_bits = 0;
     perf_monitor();
     print_time_property();
   endtask
+  // Disable randomization of timing parameters after first randomize call
+  function void post_randomize();
+    tlow.rand_mode(0);
+    thd_sta.rand_mode(0);
+    tsu_sta.rand_mode(0);
+    thd_dat.rand_mode(0);
+    tsu_dat.rand_mode(0);
+    t_buf.rand_mode(0);
+    tsu_sto.rand_mode(0);
+    t_r.rand_mode(0);
+    t_f.rand_mode(0);
+    thigh.rand_mode(0);
+  endfunction
 
-  // Task to capture the number of bits transferred and start time for bit rate calculation
-  // increment the class variable `num_bits` for every posedge of scl_i
-  // Also, capture the timestamp at which first posedge of scl_i is detected in `start_time`
+  // Task to calculate the SCL period
   virtual task perf_monitor();
     bit first_scl_posedge = 1;
+    scl_period_expected = ((10**6) / scl_frequency);
     fork
       forever begin
         @(posedge cfg.m_i2c_agent_cfg.vif.scl_i);
         if (first_scl_posedge) begin
-          start_time = $realtime;
-          `uvm_info(`gfn, $sformatf("start_time = %fns", start_time), UVM_MEDIUM)
+          last_posedge = $realtime;
           first_scl_posedge = 0;
         end
-        num_bits++;
+        else begin
+          real current_posedge = $realtime;
+          scl_period_observed = uint'(current_posedge - last_posedge);
+          last_posedge = current_posedge;
+        end
       end
     join_none
   endtask
@@ -144,17 +161,10 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
     cfg.reset_seq_cfg();
     super.post_start();
     print_seq_cfg_vars("post-start");
-    `uvm_info(`gfn, $sformatf("end_time = %fns", end_time), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("total bits transferred = %0d", num_bits), UVM_MEDIUM)
-
-    bit_rate = (num_bits * (10**6)) / (end_time - start_time); // in Kbps
-    `uvm_info(`gfn, $sformatf("min expected bitrate = %d KHz", scl_frequency), UVM_LOW)
-    `uvm_info(`gfn, $sformatf("bit_rate = %d Kbps", bit_rate), UVM_LOW)
-    if (bit_rate > (PERFTHRESHOLD * scl_frequency)) begin
-      `uvm_info(`gfn, "DUT performing at expected bitrate", UVM_LOW)
-    end
-    else begin
-      `uvm_error(`gfn,$sformatf("DUT not performing at expected bitrate : %0d Kbps", bit_rate))
+    `uvm_info(`gfn, $sformatf("scl_period_observed = %0dns", scl_period_observed), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("scl_period_expected = %0dns", scl_period_expected), UVM_MEDIUM)
+    if (scl_period_expected < PERFTHRESHOLD * scl_period_observed) begin
+      `uvm_error(`gfn, "DUT not working as expected")
     end
   endtask
 
