@@ -405,6 +405,11 @@ dif_result_t dif_csrng_get_internal_state(
   uint32_t reg = bitfield_field32_write(
       0, CSRNG_INT_STATE_NUM_INT_STATE_NUM_FIELD, instance_id);
   mmio_region_write32(csrng->base_addr, CSRNG_INT_STATE_NUM_REG_OFFSET, reg);
+  uint32_t actual_reg =
+      mmio_region_read32(csrng->base_addr, CSRNG_INT_STATE_NUM_REG_OFFSET);
+  if (reg != actual_reg) {
+    return kDifError;
+  }
 
   // Read the internal state.
   state->reseed_counter =
