@@ -23,3 +23,21 @@ rust_binary(
         "@crate_index//:structopt",
     ],
 )
+
+rust_binary(
+    name = "sram_load",
+    srcs = [
+        "src/sram_load.rs",
+    ],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
+        "//sw/host/opentitanlib",
+        "//third_party/rust/crates:regex",
+        "@crate_index//:anyhow",
+        "@crate_index//:humantime",
+        "@crate_index//:lazy_static",
+        "@crate_index//:log",
+        "@crate_index//:serde_json",
+        "@crate_index//:structopt",
+    ],
+)

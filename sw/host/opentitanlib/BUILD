@@ -211,8 +211,8 @@ rust_library(
         "hyperdebug_firmware": "$(location @hyperdebug_firmware//:hyperdebug/ec.bin)",
     },
     deps = [
-        "//sw/host/opentitanlib/bindgen",
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
+        "//sw/host/opentitanlib/bindgen",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
         "@crate_index//:bitflags",

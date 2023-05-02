@@ -2381,6 +2381,42 @@ SRAM_JTAG_INJECTION_GDB_SCRIPT = """
     )
 ]
 
+[
+    # We are using a bitstream with disabled execution so the content of the flash
+    # does not matter but opentitan_functest() is unhappy if we don't provide one.
+    # Since execution in the ROM is disabled, bootstrap is not possible so we need
+    # to make sure that the test does not try to bootstrap
+    opentitan_functest(
+        name = "sram_program_testutil_fpga_cw310_test_otp_{}".format(lc_state),
+        srcs = ["empty_test.c"],
+        cw310 = cw310_params(
+            bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
+            logging = "debug",
+            tags = ["cw310_rom"],
+            test_cmds = [
+                "--rom-kind=rom",
+                "--bitstream=\"$(rootpath {bitstream})\"",
+                "--vmem=\"$(rootpath //sw/device/examples/sram_program:sram_program_fpga_cw310_vmem)\"",
+            ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        ),
+        data = [
+            "//sw/device/examples/sram_program:sram_program_fpga_cw310_vmem",
+        ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        targets = ["cw310_rom"],
+        test_harness = "//sw/host/tests/chip/jtag:sram_load",
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+        ],
+    )
+    for lc_state, _ in get_lc_items(
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.DEV,
+        CONST.LCV.RMA,
+    )
+]
+
 test_suite(
     name = "rom_e2e_jtag_inject_tests",
     tags = ["manual"],
