@@ -4,24 +4,67 @@
 
 #include "sw/device/silicon_creator/lib/crc32.h"
 
+#include <stdbool.h>
+
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 
-#ifndef OT_PLATFORM_RV32
-static_assert(false, "CRC32 functions do not have a pure C implementation.");
-#endif
-
+#ifdef OT_PLATFORM_RV32
 static uint32_t crc32_internal_add8(uint32_t ctx, uint8_t byte) {
   ctx ^= byte;
-  asm("crc32.b %0, %1;" : "+r"(ctx));
+  asm(".option push;"
+      ".option arch, +zbr0p93;"
+      "crc32.b %0, %1;"
+      ".option pop;"
+      : "+r"(ctx));
   return ctx;
 }
 
 static uint32_t crc32_internal_add32(uint32_t ctx, uint32_t word) {
   ctx ^= word;
-  asm("crc32.w %0, %1;" : "+r"(ctx));
+  asm(".option push;"
+      ".option arch, +zbr0p93;"
+      "crc32.w %0, %1;"
+      ".option pop;"
+      : "+r"(ctx));
   return ctx;
 }
+#else
+enum {
+  /**
+   * CRC32 polynomial.
+   */
+  kCrc32Poly = 0xedb88320,
+};
+
+/**
+ * Computes the CRC32 of a buffer as expected by Python's `zlib.crc32()`. The
+ * implementation below is basically a simplified, i.e. byte-by-byte and without
+ * a lookup table, version of zlib's crc32, which also matches IEEE 802.3
+ * CRC-32. See
+ * https://github.com/madler/zlib/blob/2fa463bacfff79181df1a5270fb67cc679a53e71/crc32.c,
+ * lines 111-112 and 276-279.
+ */
+static uint32_t crc32_internal_add8(uint32_t ctx, uint8_t byte) {
+  ctx ^= byte;
+  for (size_t i = 0; i < 8; ++i) {
+    bool lsb = ctx & 1;
+    ctx >>= 1;
+    if (lsb) {
+      ctx ^= kCrc32Poly;
+    }
+  }
+  return ctx;
+}
+
+static uint32_t crc32_internal_add32(uint32_t ctx, uint32_t word) {
+  char *bytes = (char *)&word;
+  for (size_t i = 0; i < sizeof(uint32_t); ++i) {
+    ctx = crc32_internal_add8(ctx, bytes[i]);
+  }
+  return ctx;
+}
+#endif
 
 void crc32_init(uint32_t *ctx) { *ctx = UINT32_MAX; }
 
