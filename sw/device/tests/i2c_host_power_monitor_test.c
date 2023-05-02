@@ -109,6 +109,31 @@ static status_t read_write_2bytes(void) {
   return OK_STATUS();
 }
 
+static status_t read_write_block(void) {
+  uint8_t reg = kOcLimitNReg, read_data[8] = {0};
+  uint8_t rnd_data[sizeof(read_data)];
+  uint8_t write_data[sizeof(read_data) + 1];
+
+  // Init buffer with random data.
+  for (int i = 0; i < sizeof(rnd_data); ++i) {
+    uint32_t rand;
+    TRY(rv_core_ibex_testutils_get_rnd_data(&rv_core_ibex, 1000, &rand));
+    rnd_data[i] = rand & 0xFF;
+  }
+  write_data[0] = reg;
+  memcpy(&write_data[1], rnd_data, sizeof(rnd_data));
+  // Write new value.
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(write_data), write_data,
+                          true));
+
+  // Check the new value.
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(reg), &reg, true));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), read_data));
+  TRY_CHECK_ARRAYS_EQ(read_data, rnd_data, sizeof(read_data));
+
+  return OK_STATUS();
+}
+
 static status_t test_init(void) {
   mmio_region_t base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
@@ -145,6 +170,7 @@ bool test_main(void) {
     EXECUTE_TEST(test_result, read_product_id);
     EXECUTE_TEST(test_result, read_write_1byte);
     EXECUTE_TEST(test_result, read_write_2bytes);
+    EXECUTE_TEST(test_result, read_write_block);
   }
 
   return status_ok(test_result);
