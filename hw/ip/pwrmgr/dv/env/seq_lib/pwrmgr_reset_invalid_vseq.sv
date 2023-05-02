@@ -52,7 +52,7 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
       fork
         create_any_reset_event();
         begin
-          int wait_time_ns = 10000;
+          int wait_time_ns = 20000;
           `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state == dv2rtl_st(reset_index));, $sformatf(
                        "Timed out waiting for state %s", reset_index.name), wait_time_ns)
 

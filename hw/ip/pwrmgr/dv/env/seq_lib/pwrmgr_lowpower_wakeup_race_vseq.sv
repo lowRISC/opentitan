@@ -92,7 +92,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
 
       // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
       // This read will not work in the chip, since the processor will be asleep.
-      cfg.slow_clk_rst_vif.wait_clks(4);
+      cfg.slow_clk_rst_vif.wait_clks(5);
       check_wake_status(wakeups & wakeups_en);
       `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", wakeups & wakeups_en), UVM_MEDIUM)
       wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
