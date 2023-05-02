@@ -1081,7 +1081,6 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests:rv_core_ibex_rnd_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      // Timeout based on a 10min dvsim runtime.
       run_opts: ["+sw_test_timeout_ns=10_000_000"]
     }
     {
