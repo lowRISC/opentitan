@@ -68,14 +68,13 @@ typetag = "0.2"
 zerocopy = "0.5.0"
 
 # hsmtool dependencies
-clap = { version = "4.1", features = ["derive"] }
+clap = { version = "4.1", features = ["derive", "env"] }
 cryptoki = "0.4.1"
 # Possible tagging/release error in the cryptoki crates. Pin to a version of
 # cryptoki-sys known to work.
 # https://github.com/parallaxsecond/rust-cryptoki/issues/134#issuecomment-1516540075
 cryptoki-sys = "=0.1.4"
 indexmap = { version = "1.9", features = ["serde"] }
-pem-rfc7468 = { version = "0.7", features = ["std"] }
 secrecy = "0.8"
 strum = { version = "0.24", features = ["derive"] }
 
