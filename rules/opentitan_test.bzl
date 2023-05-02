@@ -21,9 +21,6 @@ DEFAULT_TEST_FAILURE_MSG = "({})|({})".format(
 )
 
 OPENTITANTOOL_OPENOCD_TEST_CMDS = [
-    "--rom-kind=rom",
-    "--bitstream=\"$(rootpath {bitstream})\"",
-    "--bootstrap=\"$(rootpath {flash})\"",
     "--openocd=\"$(rootpath //third_party/openocd:openocd_bin)\"",
     "--openocd-adapter-config=\"$(rootpath //third_party/openocd:jtag_adapter_cfg)\"",
     "--openocd-riscv-target-config=\"$(rootpath //util/openocd/target:lowrisc-earlgrey.cfg)\"",

@@ -2286,7 +2286,11 @@ opentitan_functest(
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_test_unlocked0",
         tags = ["jtag"],
-        test_cmds = OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        test_cmds = [
+            "--rom-kind=rom",
+            "--bitstream=\"$(rootpath {bitstream})\"",
+            "--bootstrap=\"$(rootpath {flash})\"",
+        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
     targets = ["cw310_rom"],
