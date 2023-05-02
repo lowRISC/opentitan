@@ -41,7 +41,8 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
   // SW-randomized values.
   top_earlgrey_pkg::pad_type_e pad_type;
   int unsigned pad_idx;
-
+  logic [DioCount-1:0]  periph_to_dio_oe;
+  logic [MioOutCount-1:0]  periph_to_mio_oe;
   virtual task body();
     string printed_log;
     super.body();
@@ -68,6 +69,11 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     // Enable weak pulls on MIOs as well to avoid assertion errors.
     cfg.chip_vif.disconnect_all_interfaces(.disconnect_default_pulls(0));
 
+    periph_to_dio_oe = '0;
+    periph_to_mio_oe = '0;    
+    // Disabling output enables for pads so they can be driven on without contradictions.
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_oe_i(SignalProbeForce, periph_to_dio_oe));
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeForce, periph_to_mio_oe));    
     drive_pad(pad_type, pad_idx, 0);
     `DV_WAIT(cfg.chip_vif.pwrmgr_low_power);
     #(exit_delay * 1ns);
@@ -80,6 +86,8 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     fork
       begin
         `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
+        // Drive 0 on the pad, so that the mios and sw_straps are identical.
+        cfg.chip_vif.mios_if.drive_pin(pad_idx, 0);
         cfg.chip_vif.sw_straps_if.drive(0);
       end
       // On low power exit, the ROM restarts execution. The testbench at some point, drives the SW
