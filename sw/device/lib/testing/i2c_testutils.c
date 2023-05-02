@@ -95,8 +95,8 @@ status_t i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr,
   return OK_STATUS();
 }
 
-status_t i2c_testutils_rd(const dif_i2c_t *i2c, uint8_t addr,
-                          uint8_t byte_count) {
+status_t i2c_testutils_issue_read(const dif_i2c_t *i2c, uint8_t addr,
+                                  uint8_t byte_count) {
   dif_i2c_fmt_flags_t flags = kDefaultFlags;
   uint8_t data_frame;
   uint8_t fifo_level;

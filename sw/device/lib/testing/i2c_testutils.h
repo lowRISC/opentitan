@@ -27,7 +27,7 @@ status_t i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr,
                           bool skip_stop);
 
 /**
- * Construct an I2C read as an I2C host.
+ * Construct and issue an I2C read operation as an I2C host.
  *
  * @param i2c An I2C DIF handle.
  * @param addr The device address for the transaction.
@@ -35,8 +35,8 @@ status_t i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t i2c_testutils_rd(const dif_i2c_t *i2c, uint8_t addr,
-                          uint8_t byte_count);
+status_t i2c_testutils_issue_read(const dif_i2c_t *i2c, uint8_t addr,
+                                  uint8_t byte_count);
 
 /**
  * Check that the target I2C device received the start of a transaction.
