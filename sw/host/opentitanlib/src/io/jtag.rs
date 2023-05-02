@@ -111,6 +111,10 @@ pub trait Jtag {
     /// If run is true, the target will start running code immediately
     /// after reset, otherwise it will be halted immediately.
     fn reset(&self, run: bool) -> Result<()>;
+
+    /// Read/write a RISC-V register
+    fn read_riscv_reg(&self, reg: &RiscvReg) -> Result<u32>;
+    fn write_riscv_reg(&self, reg: &RiscvReg, val: u32) -> Result<()>;
 }
 
 /// Available JTAG TAPs (software TAPS) in OpenTitan.
@@ -120,4 +124,32 @@ pub enum JtagTap {
     RiscvTap,
     /// Lifecycle Controller's TAP.
     LcTap,
+}
+
+/// List of useful RISC-V general purpose registers
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+pub enum RiscvGpr {
+    GP,
+    SP,
+}
+
+/// List of useful RISC-V control and status registers
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+pub enum RiscvCsr {
+    DPC,
+    PMPCFG0,
+    PMPCFG1,
+    PMPCFG2,
+    PMPCFG3,
+    PMPADDR0,
+    PMPADDR15,
+}
+
+/// Available registers for RISC-V TAP
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+pub enum RiscvReg {
+    /// General Purpose Register
+    GprByName(RiscvGpr),
+    /// Control and Status Register
+    CsrByName(RiscvCsr),
 }

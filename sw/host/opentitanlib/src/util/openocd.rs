@@ -19,7 +19,7 @@ use thiserror::Error;
 
 use crate::dif::lc_ctrl::LcCtrlReg;
 use crate::impl_serializable_error;
-use crate::io::jtag::{Jtag, JtagError, JtagParams, JtagTap};
+use crate::io::jtag::{Jtag, JtagError, JtagParams, JtagTap, RiscvCsr, RiscvGpr, RiscvReg};
 use crate::util::parse_int::ParseInt;
 use crate::util::printer;
 
@@ -292,6 +292,60 @@ impl OpenOcdServer {
             }
         }
     }
+
+    // Convert a RISC-V register name into a name that can be used
+    // with read_register32.
+    fn riscv_reg_name(&self, reg: &RiscvReg) -> &'static str {
+        match reg {
+            RiscvReg::GprByName(gpr) => match gpr {
+                RiscvGpr::GP => "gp",
+                RiscvGpr::SP => "sp",
+            },
+            RiscvReg::CsrByName(csr) => match csr {
+                RiscvCsr::DPC => "dpc",
+                RiscvCsr::PMPCFG0 => "pmpcfg0",
+                RiscvCsr::PMPCFG1 => "pmpcfg1",
+                RiscvCsr::PMPCFG2 => "pmpcfg2",
+                RiscvCsr::PMPCFG3 => "pmpcfg3",
+                RiscvCsr::PMPADDR0 => "pmpaddr0",
+                RiscvCsr::PMPADDR15 => "pmpaddr15",
+            },
+        }
+    }
+
+    /// Read a register: this function does not attempt to translate the
+    /// name or number of the register. If force is set, bypass OpenOCD's
+    /// register cache.
+    fn read_register<T: ParseInt>(&self, reg_name: &str, force: bool) -> Result<T> {
+        let cmd = format!(
+            "get_reg {} {{ {} }}",
+            if force { "-force" } else { "" },
+            reg_name,
+        );
+        let response = self.send_tcl_cmd(cmd.as_str())?;
+        // the expected output format is 'reg_name 0xabcdef', e.g 'pc 0x10009858'
+        let (out_reg_name, value) = response
+            .trim()
+            .split_once(' ')
+            .context("expected response of the form 'reg value', got '{response}'")?;
+        ensure!(
+            out_reg_name == reg_name,
+            "OpenOCD returned the value for register '{out_reg_name}' instead of '{reg_name}"
+        );
+        T::from_str(value).context(format!(
+            "expected value to be an hexadecimal string, got '{value}'"
+        ))
+    }
+
+    fn write_register<T: ToString>(&self, reg_name: &str, value: T) -> Result<()> {
+        let cmd = format!("set_reg {{ {reg_name} {} }}", T::to_string(&value));
+        let response = self.send_tcl_cmd(cmd.as_str())?;
+        if !response.is_empty() {
+            bail!("unexpected response: '{response}'");
+        }
+
+        Ok(())
+    }
 }
 
 impl Drop for OpenOcdServer {
@@ -452,5 +506,21 @@ impl Jtag for OpenOcdServer {
         }
 
         Ok(())
+    }
+
+    fn read_riscv_reg(&self, reg: &RiscvReg) -> Result<u32> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
+        self.read_register::<u32>(self.riscv_reg_name(reg), true)
+    }
+
+    fn write_riscv_reg(&self, reg: &RiscvReg, val: u32) -> Result<()> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
+        self.write_register(self.riscv_reg_name(reg), val)
     }
 }
