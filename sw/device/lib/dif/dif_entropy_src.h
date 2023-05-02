@@ -216,11 +216,13 @@ typedef struct dif_entropy_src_health_test_config {
    */
   dif_entropy_src_test_t test_type;
   /**
-   * The high threshold for the health test.
+   * The high threshold for the health test (contains both FIPS and bypass
+   * thresholds).
    */
   uint32_t high_threshold;
   /**
-   * The low threshold for the health test.
+   * The low threshold for the health test (contains both FIPS and bypass
+   * thresholds).
    *
    * If the corresponding health test has no low threshold, set to 0, otherwise
    * `dif_entropy_src_health_test_configure()` will return `kDifBadArg`.
@@ -248,14 +250,16 @@ typedef struct dif_entropy_src_health_test_stats {
    */
   uint16_t high_watermark[kDifEntropySrcTestNumVariants];
   /**
-   * Low watermark indicating the lowest value emitted by a particular test.
+   * Low watermark indicating the lowest value emitted by a particular test
+   * (contains both FIPS and bypass watermarks).
    *
    * Note, some health tests do not emit a low watermark as there is no low
    * threshold. For these tests, this value will always be UINT16_MAX.
    */
   uint16_t low_watermark[kDifEntropySrcTestNumVariants];
   /**
-   * The number of times a particular test has failed above the high threshold.
+   * The number of times a particular test has failed above the high threshold
+   * (contains both FIPS and bypass watermarks).
    */
   uint32_t high_fails[kDifEntropySrcTestNumVariants];
   /**
