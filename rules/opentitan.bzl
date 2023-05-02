@@ -1132,7 +1132,8 @@ def opentitan_ram_binary(
     Emits rules:
       For each device in per_device_deps entry:
         rules emitted by `opentitan_binary` named: see `opentitan_binary` macro
-      bin_to_archive named: <name>
+      bin_to_archive            named: <name>
+      bin_to_vmem               named: <name>_<device>_vmem
     """
     deps = kwargs.pop("deps", [])
     hdrs = kwargs.pop("hdrs", [])
