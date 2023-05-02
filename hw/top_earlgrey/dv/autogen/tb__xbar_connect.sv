@@ -100,16 +100,8 @@ initial begin
     $asserton(0, tb.dut.top_earlgrey.u_xbar_main);
     $asserton(0, tb.dut.top_earlgrey.u_xbar_peri);
 
-    clk_rst_if_main.set_active(.drive_rst_n_val(0));
-    clk_rst_if_main.set_freq_khz(100000000 / 1000);
-    clk_rst_if_io.set_active(.drive_rst_n_val(0));
-    clk_rst_if_io.set_freq_khz(96000000 / 1000);
-    clk_rst_if_usb.set_active(.drive_rst_n_val(0));
-    clk_rst_if_usb.set_freq_khz(48000000 / 1000);
-    clk_rst_if_io_div2.set_active(.drive_rst_n_val(0));
-    clk_rst_if_io_div2.set_freq_khz(48000000 / 1000);
-    clk_rst_if_io_div4.set_active(.drive_rst_n_val(0));
-    clk_rst_if_io_div4.set_freq_khz(24000000 / 1000);
+
+    // These are all zero-time: anything that consumes time go at the end.
 
     // bypass clkmgr, force clocks directly
     force tb.dut.top_earlgrey.u_xbar_main.clk_main_i = clk_main;
@@ -180,6 +172,25 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(sysrst_ctrl_aon, sysrst_ctrl_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(adc_ctrl_aon, adc_ctrl_aon, tl)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast, tl)
+
+
+    // And this can consume time, so they go at the end of this block.
+
+    // Wait for a negedge of rst_n, or else we will have clock edges before
+    // reset, which could capture 'X values.
+    xbar_clk_rst_if.wait_for_reset(.wait_posedge(1'b0));
+
+    clk_rst_if_main.set_active(.drive_rst_n_val(0));
+    clk_rst_if_main.set_freq_khz(100000000 / 1000);
+    clk_rst_if_io.set_active(.drive_rst_n_val(0));
+    clk_rst_if_io.set_freq_khz(96000000 / 1000);
+    clk_rst_if_usb.set_active(.drive_rst_n_val(0));
+    clk_rst_if_usb.set_freq_khz(48000000 / 1000);
+    clk_rst_if_io_div2.set_active(.drive_rst_n_val(0));
+    clk_rst_if_io_div2.set_freq_khz(48000000 / 1000);
+    clk_rst_if_io_div4.set_active(.drive_rst_n_val(0));
+    clk_rst_if_io_div4.set_freq_khz(24000000 / 1000);
+
   end
 end
 
