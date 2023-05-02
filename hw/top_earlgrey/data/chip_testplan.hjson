@@ -930,8 +930,12 @@
             Use the clkmgr count measurement feature to verify clock division.
             '''
       stage: V2
-      tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast",
-              "chip_sw_clkmgr_external_clk_src_for_sw_slow",
+      tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0",
+              "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",
+              "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",
               "chip_sw_clkmgr_external_clk_src_for_lc"]
     }
     {
@@ -959,8 +963,12 @@
             X-ref with chip_sw_uart_tx_rx_alt_clk_freq, which needs to deal with this as well.
             '''
       stage: V2
-      tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast",
-              "chip_sw_clkmgr_external_clk_src_for_sw_slow"]
+      tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0",
+              "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",
+              "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma"]
     }
     {
       name: chip_sw_clkmgr_jitter
@@ -1753,8 +1761,12 @@
         "chip_tap_straps_prod",                        // lc_dft_en_o, lc_hw_debug_en_o: pinmux
         "chip_tap_straps_rma",                         // lc_dft_en_o, lc_hw_debug_en_o: pinmux
         "chip_sw_rom_ctrl_integrity_check",            // lc_dft_en_o, lc_hw_debug_en_o: pwrmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_fast", // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_slow", // lc_hw_debug_en_o: clkmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0", // lc_hw_debug_en_o: clkmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0", // lc_hw_debug_en_o: clkmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",            // lc_hw_debug_en_o: clkmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",            // lc_hw_debug_en_o: clkmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",            // lc_hw_debug_en_o: clkmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",            // lc_hw_debug_en_o: clkmgr
         "chip_sw_sram_ctrl_execution_main",            // lc_hw_debug_en_o: sram_ctrl main
         "chip_rv_dm_lc_disabled"                       // lc_hw_debug_en_o: rv_dm
         "chip_sw_keymgr_key_derivation",               // lc_keymgr_en_o: keymgr
