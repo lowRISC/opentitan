@@ -1,0 +1,12 @@
+# Expected value from
+#   https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/SHA256.pdf
+#
+# H[0] = 248D6A61
+# H[1] = D20638B8
+# H[2] = E5C02693
+# H[3] = 0C3E6039
+# H[4] = A33CE459
+# H[5] = 64FF2167
+# H[6] = F6ECEDD4
+# H[7] = 19DB06C1
+w0 = 0x248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1
