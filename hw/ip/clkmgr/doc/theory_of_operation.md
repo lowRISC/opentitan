@@ -203,7 +203,7 @@ It may be added for future more complex systems where there is a need to tightly
 
 Clock manager supports the ability to request root clocks switch to an external clock.
 There are two occasions where this is required:
--  Life cycle transition from `Raw` / `Test_locked` to `Test_unlocked` [states](../../lc_ctrl/README.md#clk_byp_req).
+-  Life cycle transition from `RAW` / `TEST_LOCKED*` to `TEST_UNLOCKED*` [states](../../lc_ctrl/README.md#clk_byp_req).
 -  Software request for external clocks during normal functional mode.
 
 
@@ -246,12 +246,12 @@ There is currently no support in hardware to dynamically synchronize a threshold
 
 The table below summarises the valid modes and the settings required.
 
-| Mode                                            | `lc_clk_byp_req_i`     | `extclk_ctrl.sel` | `extclk_ctrl.hi_speed_sel`  | life cycle state        |
-| -------------                                   | ---------------------  | ----------------- | ----------------------------| ----------------------- |
-| Life cycle in RAW, TEST* and RMA states         | `lc_ctrl_pkg::On`      | `kMultiBit4False` | Don't care                  | Controlled by `lc_ctrl` |
-| Internal Clocks                                 | `lc_ctrl_pkg::Off`     | `kMultiBit4False` | Don't care                  | All                     |
-| Software external high speed                    | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4True`            | TEST_UNLOCKED, RMA      |
-| Software external low speed                     | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4False`           | TEST_UNLOCKED, RMA      |
+| Mode                                            | `lc_clk_byp_req_i`     | `extclk_ctrl.sel` | `extclk_ctrl.hi_speed_sel`  | life cycle state               |
+| -------------                                   | ---------------------  | ----------------- | ----------------------------| -------------------------------|
+| Life cycle in `RAW`, `TEST*` and `RMA` states   | `lc_ctrl_pkg::On`      | `kMultiBit4False` | Don't care                  | Controlled by `lc_ctrl`        |
+| Internal Clocks                                 | `lc_ctrl_pkg::Off`     | `kMultiBit4False` | Don't care                  | All                            |
+| Software external high speed                    | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4True`            | `TEST_UNLOCKED*`, `DEV`, `RMA` |
+| Software external low speed                     | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4False`           | `TEST_UNLOCKED*`, `DEV`, `RMA` |
 
 The table below summarizes the frequencies in each mode.
 This table assumes that the internal clock source is 96MHz.
