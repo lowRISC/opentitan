@@ -353,6 +353,16 @@ dual_cc_library(
     ),
 )
 
+cc_test(
+    name = "crc32_unittest",
+    srcs = ["crc32_unittest.cc"],
+    deps = [
+        dual_cc_device_library_of(":crc32"),
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 opentitan_functest(
     name = "crc32_functest",
     srcs = ["crc32_functest.c"],
