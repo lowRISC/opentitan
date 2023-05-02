@@ -126,12 +126,9 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
                       entropy_conf_reg);
 
   // Configure health test window.
-  // Conditioning bypass is hardcoded to disabled (see above). If we want to
-  // expose the ES_TYPE field in the future, we need to also configure the
-  // health test window size for bypass mode. Note however that the only
-  // supported bypass window size is the default value of 0x60 at the moment,
-  // hence even if the ES_TYPE field is exposed in the future, we should not
-  // change the bypass window size as this may break.
+  // Note: the only supported bypass window size is the default value of 0x60 at
+  // the moment, hence even if `bypass_conditioner` is set, we should not change
+  // the bypass window size.
   uint32_t health_test_window_sizes =
       bitfield_field32_write(ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_RESVAL,
                              ENTROPY_SRC_HEALTH_TEST_WINDOWS_FIPS_WINDOW_FIELD,
@@ -241,8 +238,6 @@ dif_result_t dif_entropy_src_health_test_configure(
       return kDifBadArg;
   }
 
-  // Conditioning bypass is hardcoded to disabled (see above). Therefore we only
-  // configure FIPS mode thresholds.
   mmio_region_write32(entropy_src->base_addr, high_thresholds_reg_offset,
                       config.high_threshold);
   if (low_thresholds_reg_offset != -1) {
@@ -364,8 +359,6 @@ dif_result_t dif_entropy_src_get_health_test_stats(
         return kDifError;
     }
 
-    // Conditioning bypass is hardcoded to disabled (see above). Therefore we
-    // only read FIPS mode stats.
     stats->high_watermark[i] =
         mmio_region_read32(entropy_src->base_addr, high_watermarks_reg_offset);
     stats->low_watermark[i] =
