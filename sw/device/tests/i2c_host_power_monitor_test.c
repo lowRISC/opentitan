@@ -92,6 +92,23 @@ static status_t read_write_1byte(void) {
   return OK_STATUS();
 }
 
+static status_t read_write_2bytes(void) {
+  uint8_t reg = kOcLimitNReg, read_data[2] = {0};
+
+  // Write new value.
+  uint8_t write_data[3] = {kOcLimitNReg, 0xCA, 0xFE};
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(write_data), write_data,
+                          true));
+
+  // Check the new value.
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(reg), &reg, true));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), read_data));
+  TRY_CHECK(read_data[1] == 0xFE && read_data[0] == 0xCA,
+            "Unexpected value %02x%02x", read_data[1], read_data[0]);
+
+  return OK_STATUS();
+}
+
 static status_t test_init(void) {
   mmio_region_t base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
@@ -127,6 +144,7 @@ bool test_main(void) {
     EXECUTE_TEST(test_result, read_manufacture_id);
     EXECUTE_TEST(test_result, read_product_id);
     EXECUTE_TEST(test_result, read_write_1byte);
+    EXECUTE_TEST(test_result, read_write_2bytes);
   }
 
   return status_ok(test_result);
