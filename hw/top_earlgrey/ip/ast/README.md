@@ -1067,9 +1067,10 @@ controller.
 
 ## ADC Usage Flow
 
-1.  Activate the ADC by negating 'adc_pd_i'
+1.  Activate the ADC by negating 'adc_pd_i'.
+    This is sampled on the rising edge of 'clk_ast_adc_i'.
 
-2.  Wait 30 uS for the ADC to wake up.
+2.  Wait 30 uS for the ADC to wake up after 'adc_pd_i' is latched.
 
 3.  Select an analog channel to measure by setting the corresponding bit
  in 'adc_chnsel_i' bus. This triggers a measurement.
@@ -1085,13 +1086,18 @@ controller.
 7.  Deactivate the ADC by setting 'adc_pd_i' to save power.
 
 ```wavejson
-{ signal: [ {node: '.a..b........', phase:0.2},
-{name: 'adc_pd_i' , wave: '10|..|.....|....|..1'}, {name:
-'clk_ast_adc_i', wave: 'p.|..|.....|....|...'}, {name:
-'adc_chnsel_i' , wave: '0.|.3|..04.|....|0..'}, {name:
-'adc_d_val_o' , wave: '0.|..|.1.0.|.1..|.0.'}, {name: 'adc_d_o' ,
-wave: 'x.|..|.3.x.|.4..|.x.', data: ['ch0', 'ch1', 'ch1']}, ],
-edge: [ 'a<->b wakeup time', ] }
+{ signal: [
+  {name: 'clk_ast_adc_i', wave: 'p..|..|.....|....|....'},
+  {name: 'adc_pd_i' ,     wave: '10.|..|.....|....|..1.'},
+  {name: 'adc_en'       , wave: '0.1|..|.....|....|...0',
+   node:                        '..a...................'},
+  {name: 'adc_chnsel_i' , wave: '0..|.3|..04.|....|0...',
+   node:                        '.....b................'},
+  {name: 'adc_d_val_o'  , wave: '0..|..|.1.0.|.1..|.0..'},
+  {name: 'adc_d_o'      , wave: 'x..|..|.3.x.|.4..|.x..', data: ['ch0', 'ch1', 'ch1']},
+ ],
+ edge: ['a->b wakeup time']
+}
 ```
 
 # Random Number Generator
