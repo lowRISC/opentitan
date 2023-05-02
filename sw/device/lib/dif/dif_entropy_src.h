@@ -420,11 +420,21 @@ typedef enum dif_entropy_src_alert_cause {
    */
   kDifEntropySrcAlertThresholdConfig = 1U << 14,
   /**
+   * Triggered when the packer FIFO has been written but was full at the time
+   * and we are in FW_OV_MODE and FW_OV_ENTROPY_INSERT modes.
+   */
+  kDifEntropySrcAlertFirmwareOverrideWrite = 1U << 15,
+  /**
+   * Triggered when FW_OV_SHA3_START has been set to kMultiBitBool4False,
+   * without waiting for the bypass packer FIFO to clear.
+   */
+  kDifEntropySrcAlertFirmwareOverrideDisable = 1U << 16,
+  /**
    * All alert reasons.
    *
    * This is useful when clearing all recoverable alerts at once.
    */
-  kDifEntropySrcAlertAllAlerts = (1U << 15) - 1,
+  kDifEntropySrcAlertAllAlerts = (1U << 17) - 1,
 } dif_entropy_src_alert_cause_t;
 
 /**

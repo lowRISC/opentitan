@@ -815,7 +815,7 @@ TEST_F(ClearRecoverableAlertsTest, NullHandle) {
 }
 
 TEST_F(ClearRecoverableAlertsTest, BadAlerts) {
-  uint32_t alerts = 1U << 15;
+  uint32_t alerts = 1U << 17;
   EXPECT_DIF_BADARG(
       dif_entropy_src_clear_recoverable_alerts(&entropy_src_, alerts));
 }
