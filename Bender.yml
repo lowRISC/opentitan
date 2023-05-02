@@ -496,7 +496,8 @@ sources:
       - hw/ip/usbdev/rtl/usb_fs_nb_in_pe.sv
       - hw/ip/usbdev/rtl/usb_fs_nb_pe.sv
       - hw/ip/usbdev/rtl/usb_fs_tx_mux.sv
-      - hw/ip/usbdev/rtl/usbdev.sv
+#      - hw/ip/usbdev/rtl/usbdev.sv
+      - hw/ip/usbdev/rtl/usbdev_empty.sv
 
 ##### i2c
 
@@ -698,7 +699,8 @@ sources:
       - hw/ip/spi_device/rtl/spi_tpm.sv
       - hw/ip/spi_device/rtl/spid_addr_4b.sv
       - hw/ip/spi_device/rtl/spid_upload.sv
-      - hw/ip/spi_device/rtl/spi_device.sv
+#      - hw/ip/spi_device/rtl/spi_device.sv
+      - hw/ip/spi_device/rtl/spi_device_empty.sv
 
 ###### spi_host
 
