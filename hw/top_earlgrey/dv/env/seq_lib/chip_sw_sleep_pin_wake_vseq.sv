@@ -70,10 +70,10 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     cfg.chip_vif.disconnect_all_interfaces(.disconnect_default_pulls(0));
 
     periph_to_dio_oe = '0;
-    periph_to_mio_oe = '0;    
+    periph_to_mio_oe = '0;
     // Disabling output enables for pads so they can be driven on without contradictions.
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_oe_i(SignalProbeForce, periph_to_dio_oe));
-    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeForce, periph_to_mio_oe));    
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeForce, periph_to_mio_oe));
     drive_pad(pad_type, pad_idx, 0);
     `DV_WAIT(cfg.chip_vif.pwrmgr_low_power);
     #(exit_delay * 1ns);
