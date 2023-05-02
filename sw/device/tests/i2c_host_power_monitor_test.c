@@ -38,7 +38,7 @@ enum {
   kOcLimitNReg = 0x30,
   // Registers values
   kManufacturerId = 0x54,
-
+  kProductId = 0x7b,
 };
 /**
  * Declared volatile because it is referenced in the main program flow as well
@@ -53,6 +53,14 @@ static status_t read_manufacture_id(void) {
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
   TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data));
   TRY_CHECK(data == kManufacturerId, "Unexpected value %x", data);
+  return OK_STATUS();
+}
+
+static status_t read_product_id(void) {
+  uint8_t reg = kProductId, data = 0;
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data));
+  TRY_CHECK(data == kProductId, "Unexpected value %x", data);
   return OK_STATUS();
 }
 
@@ -89,6 +97,7 @@ bool test_main(void) {
   for (size_t i = 0; i < ARRAYSIZE(speeds); ++i) {
     CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, speeds[i]));
     EXECUTE_TEST(test_result, read_manufacture_id);
+    EXECUTE_TEST(test_result, read_product_id);
   }
 
   return status_ok(test_result);
