@@ -16,3 +16,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:ecc",
     ],
 )
+
+exports_files([
+    "rma_unlock_token_export_key.sk_hsm.der",
+])
