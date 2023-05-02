@@ -26,7 +26,13 @@ rv_core_ibex_check_rnd_read_possible_while_status_invalid();
 
 enum {
   kRandomDataReads = 32,
-  kMaxStatusChecks = 1024,
+  // Timeout (in microseconds) when polling random data or the validity of
+  // random data.  Can currently take up to 80 ms on the FPGA and up to 2.5 s
+  // in Verilator (in simulated time; empirically determined at the time
+  // of commit) due to the rather slow rate of emulated entropy.  In DV, the
+  // emulated entropy rate gets constrained by overriding `rng_srate_value_max`
+  // so that the overall test does not exceed the default timeout of 60 minutes.
+  kTimeoutUsec = 2500000,
 };
 
 bool test_main(void) {
@@ -50,7 +56,7 @@ bool test_main(void) {
   uint32_t previous_rnd_data = 0;
   for (int i = 0; i < kRandomDataReads; i++) {
     CHECK_STATUS_OK(rv_core_ibex_testutils_get_rnd_data(
-        &rv_core_ibex, kMaxStatusChecks, &rnd_data));
+        &rv_core_ibex, kTimeoutUsec, &rnd_data));
     CHECK(rnd_data != previous_rnd_data);
     previous_rnd_data = rnd_data;
   }
@@ -68,7 +74,7 @@ bool test_main(void) {
   // Check to see that we can really do an RND while status is invalid before
   // and after.
   IBEX_SPIN_FOR(rv_core_ibex_testutils_is_rnd_data_valid(&rv_core_ibex),
-                kMaxStatusChecks);
+                kTimeoutUsec);
   uint32_t status_value =
       rv_core_ibex_check_rnd_read_possible_while_status_invalid();
   CHECK(status_value == 0);
