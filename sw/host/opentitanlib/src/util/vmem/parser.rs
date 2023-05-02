@@ -82,8 +82,9 @@ impl VmemParser {
                 Token::Eof => break,
                 Token::Addr(addr) => {
                     // Add a new section to the `Vmem` at this address.
+                    // Here we translate between a "word index" to a byte address.
                     vmem.sections.push(Section {
-                        addr,
+                        addr: addr * 4,
                         data: Vec::new(),
                     });
                 }
@@ -227,7 +228,7 @@ mod test {
                     data: vec![0xAB, 0xCD, 0xEF],
                 },
                 Section {
-                    addr: 0x42,
+                    addr: 0x108,
                     data: vec![0x12, 0x34],
                 },
             ],

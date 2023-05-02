@@ -80,8 +80,8 @@ mod test {
 
     #[test]
     fn vmem_data() {
-        let vmem = Vmem::from_str("@42 12 23 34 @84 @96 45").unwrap();
-        let expected = [(0x42, 0x12), (0x46, 0x23), (0x4a, 0x34), (0x96, 0x45)]
+        let vmem = Vmem::from_str("@10 12 23 34 @20 @26 45").unwrap();
+        let expected = [(0x40, 0x12), (0x44, 0x23), (0x48, 0x34), (0x98, 0x45)]
             .map(|(addr, value)| Data { addr, value });
 
         let data: Vec<_> = vmem.data_addrs().collect();
