@@ -2,6 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// This sequence requires to define following variable in c test.
+// static volatile const uint8_t kExternalClockEnable;
+// Default is 0.
+// If this variable is set to 1, c test takes lc_ctrl_mutex and
+// do lc state transition.
 class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_lc_ctrl_transition_vseq)
 
@@ -34,12 +39,14 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
 
   virtual task body();
     super.body();
-
     `uvm_info(`gfn, $sformatf("Will run for %d iterations", num_trans), UVM_MEDIUM)
     for (int trans_i = 1; trans_i <= num_trans; trans_i++) begin
-      // sw_symbol_backdoor_overwrite takes an array as the input.
+      // sw_symbol_backdoor takes arrays as the input.
       bit [7:0] trans_i_array[] = {trans_i};
       bit [TL_DW-1:0] ext_clock_en;
+      bit [7:0] ext_clock_en_array[1];
+
+      sw_symbol_backdoor_read("kExternalClockEnable", ext_clock_en_array);
       sw_symbol_backdoor_overwrite("kTestIterationCount", trans_i_array);
 
       if (trans_i > 1) begin
@@ -59,55 +66,95 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       // error. This error is permitted and can be ignored.
       wait_lc_ready(.allow_err(1));
 
-      // TEST_LOCKED* LC states do not allow ROM code execution -> IO clock calibration values aren't
-      // copied from OTP to AST -> internal clock isn't calibrated -> use external clock
-      // to perform LC transition
-      // activate the external source clock with 48MHz
-      switch_to_external_clock();
-
-      // perform the first LC state transition using LC JTAG
-      jtag_lc_state_transition(DecLcStTestLocked1, DecLcStTestUnlocked2, {<<8{lc_unlock_token}});
-
-      // LC state transition requires a chip reset.
-      `uvm_info(`gfn, $sformatf("Applying reset after lc transition for trans %d", trans_i),
-                UVM_MEDIUM)
-      apply_reset();
-
-      // Wait for SW to finish power on set up.
-      `DV_WAIT(cfg.sw_logger_vif.printed_log == "Waiting for LC transtition done and reboot.")
-
       fork
-        begin : isolation_fork
-          bit external_clock_was_activated = 1'b0;
-          // Detect windows when the AST selects ext_clk to drive the io_clk, to verify the external
-          // clock, and not the io oscillator, is actually used for these lc_ctrl transitions.
-          fork
-            begin
-              `uvm_info(`gfn, "Start detection of ext_clk active window", UVM_MEDIUM)
-              cfg.ast_ext_clk_vif.span_external_clock_active_window();
-              external_clock_was_activated = 1'b1;
-            end
-          join_none
+        begin
+          // TEST_LOCKED* LC states do not allow ROM code execution -> IO clock calibration values aren't
+          // copied from OTP to AST -> internal clock isn't calibrated -> use external clock
+          // to perform LC transition
+          // activate the external source clock with 48MHz
+          switch_to_external_clock();
 
-          // Wait for LC_CTRL state transition finish from TLUL interface.
-          wait_lc_status(LcTransitionSuccessful);
+          // Check external clock is switched.
+          csr_spinwait(.ptr(ral.lc_ctrl.status.ext_clock_switched), .exp_data(1'b1),
+                       .backdoor(1), .timeout_ns(100_000));
+          `DV_CHECK(cfg.ast_ext_clk_vif.is_ext_clk_in_use(),
+                    "external clock should be ready before state transition");
+
+          // perform the first LC state transition using LC JTAG
+          `uvm_info(`gfn, "Performing state transition", UVM_MEDIUM)
+          jtag_lc_state_transition(DecLcStTestLocked1, DecLcStTestUnlocked2,
+                                   {<<8{lc_unlock_token}});
 
           // JTAG read out if LC_CTRL is configured to use external clock.
           jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.transition_ctrl.get_offset(),
                                               p_sequencer.jtag_sequencer_h, ext_clock_en);
-
-          // LC_CTRL state transition requires a chip reset.
+          `DV_CHECK(ext_clock_en,
+                    "jtag read lc_ctrl.transition_ctrl should be 1");
+          // LC state transition requires a chip reset.
+          // After reset state goes to Unlocked2 state.
+          `uvm_info(`gfn, $sformatf("Applying reset after lc transition for trans %d", trans_i),
+                    UVM_MEDIUM)
           apply_reset();
-          `uvm_info(`gfn, "Second apply_reset done", UVM_MEDIUM)
-
-          `DV_CHECK(external_clock_was_activated == ext_clock_en, $sformatf(
-                    "External clock should be %0s", ext_clock_en ? "on" : "off"));
-          external_clock_was_activated = 1'b0;
-
-          disable fork;
+        end // fork begin
+        begin
+          `uvm_info(`gfn, "Start detection of ext_clk active window", UVM_MEDIUM)
+          cfg.ast_ext_clk_vif.span_external_clock_active_window();
         end
       join
 
+      // Wait for SW to finish power on set up.
+      `DV_WAIT(cfg.sw_logger_vif.printed_log == "Waiting for LC transition done and reboot.")
+
+      if (ext_clock_en_array[0]) begin
+        fork
+          begin : isolation_fork
+             bit external_clock_was_activated = 1'b0;
+            // Detect windows when the AST selects ext_clk to drive the io_clk,
+            // to verify the external clock, and not the io oscillator,
+            // is actually used for these lc_ctrl transitions.
+            fork
+              begin
+                `uvm_info(`gfn, "Start detection of ext_clk active window", UVM_MEDIUM)
+                cfg.ast_ext_clk_vif.span_external_clock_active_window();
+                external_clock_was_activated = 1'b1;
+              end
+            join_none
+
+            // Get the interface back to jtag.
+            claim_transition_interface();
+
+            // Wait for LC_CTRL state transition finish from TLUL interface.
+            wait_lc_status(LcTransitionSuccessful);
+
+            // JTAG read out if LC_CTRL is configured to use external clock.
+            jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.transition_ctrl.get_offset(),
+                                                p_sequencer.jtag_sequencer_h, ext_clock_en);
+
+            `uvm_info(`gfn,
+                      $sformatf("Before second apply_reset, ext_clock_en=%x, from array=%p",
+                                ext_clock_en, ext_clock_en_array), UVM_MEDIUM)
+            `DV_CHECK(ext_clock_en_array[0] == ext_clock_en);
+
+            // LC_CTRL state transition requires a chip reset.
+            apply_reset();
+            `uvm_info(`gfn, "Second apply_reset done", UVM_MEDIUM)
+
+            `DV_CHECK(external_clock_was_activated == ext_clock_en,
+                      $sformatf("External clock should be %0s", ext_clock_en ? "on" : "off"));
+            external_clock_was_activated = 1'b0;
+
+            disable fork;
+          end
+        join
+      end else begin
+        // Wait for LC_CTRL state transition finish from TLUL interface.
+        wait_lc_status(LcTransitionSuccessful);
+
+        // LC_CTRL state transition requires a chip reset.
+        // After reset state goes to Dev State.
+        apply_reset();
+        `uvm_info(`gfn, "Second apply_reset done", UVM_MEDIUM)
+      end
       // Wait for SW test finishes with a pass/fail status.
       `DV_WAIT(
           cfg.sw_test_status_vif.sw_test_status inside {SwTestStatusPassed, SwTestStatusFailed})

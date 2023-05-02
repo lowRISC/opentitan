@@ -9,6 +9,9 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+// Track the value of the external clock enable CSR written by software.
+static volatile const uint8_t kExternalClockEnable = 0x0;
+
 bool test_main(void) {
-  return execute_lc_ctrl_transition_test(/*use_ext_clk=*/false);
+  return execute_lc_ctrl_transition_test(/*use_ext_clk=*/kExternalClockEnable);
 }

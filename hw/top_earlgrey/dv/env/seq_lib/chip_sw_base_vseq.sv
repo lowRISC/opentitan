@@ -604,6 +604,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                                 input bit does_not_exist_ok = 0);
 
     sw_symbol_backdoor_access(symbol, data, sw_type, does_not_exist_ok, 0);
+    `uvm_info(`gfn, $sformatf("sw_symbol_backdoor_read gets %p", data), UVM_MEDIUM)
   endfunction
 
   // Backdoor-override a const symbol in SW to modify the behavior of the test.

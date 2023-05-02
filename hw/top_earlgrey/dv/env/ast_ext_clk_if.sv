@@ -8,7 +8,7 @@ interface ast_ext_clk_if ();
   import uvm_pkg::*;
 
   // A timeout in case something holds the expected change.
-  localparam int WaitForExctClkSelChangeInNs = 100_000;
+  localparam int WaitForExctClkSelChangeInNs = 10_000_000;
 
   // This task returns once the external clock has gone through an active cycle.
   // Notice it will fail if the active cycle has already started.
@@ -24,7 +24,7 @@ interface ast_ext_clk_if ();
   endtask
 
   // Returns 1 if the external clock is in use.
-  function automatic bit is_ext_clk_in_use();
+  function automatic logic is_ext_clk_in_use();
     return u_ast.u_ast_clks_byp.u_io_clk_byp_en.out_o;
   endfunction
 

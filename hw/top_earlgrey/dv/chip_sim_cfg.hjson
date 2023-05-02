@@ -1521,7 +1521,7 @@
       uvm_test_seq: chip_sw_lc_ctrl_transition_vseq
       sw_images: ["//sw/device/tests/sim_dv:clkmgr_external_clk_src_for_lc_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+chip_clock_source=ChipClockSourceExternal48Mhz", "+calibrate_usb_clk=1"]
+      run_opts: ["+chip_clock_source=ChipClockSourceExternal48Mhz"]
     }
     {
       name: chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0
