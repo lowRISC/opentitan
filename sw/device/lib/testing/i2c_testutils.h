@@ -130,4 +130,26 @@ OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_connect_i2c_to_pinmux_pins(const dif_pinmux_t *pinmux,
                                                   uint8_t kI2cIdx);
 
+/**
+ * Return whether the fifo is empty.
+ *
+ * @param i2c An I2C DIF handle.
+ * @return `kOk(dir)` Where `dir` is true if the fifo is empty. Or an error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t i2c_testutils_fifo_empty(const dif_i2c_t *i2c);
+
+/**
+ * Issue an i2c read transaction and read the fifo.
+ *
+ * @param i2c  An I2C DIF handle.
+ * @param addr The device address for the transaction.
+ * @param byte_count The number of bytes to be read.
+ * @param[out] data Buffer to receive the fifo data.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
+                            uint8_t byte_count, uint8_t *data);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_I2C_TESTUTILS_H_
