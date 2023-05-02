@@ -23,6 +23,8 @@ typedef struct ujson {
   status_t (*getc)(void *);
   /** An internal single character buffer for ungetting a character. */
   int16_t buffer;
+  /** Holds the rolling CRC32 of characters that are sent and received.*/
+  uint32_t crc32;
 } ujson_t;
 
 // clang-format off
@@ -32,6 +34,7 @@ typedef struct ujson {
     .putbuf_ = (putbuf_),                    \
     .getc = (getc_),                         \
     .buffer = -1,                            \
+    .crc32 = UINT32_MAX,                     \
   }
 // clang-format on
 
@@ -72,6 +75,24 @@ status_t ujson_ungetc(ujson_t *uj, char ch);
  * @return OK or an error.
  */
 status_t ujson_putbuf(ujson_t *uj, const char *buf, size_t len);
+
+/**
+ * Resets the CRC32 calculation to an initial state.
+ *
+ * @param uj A ujson IO context.
+ */
+void ujson_crc32_reset(ujson_t *uj);
+
+/**
+ * Returns the finished value of a CRC32 calculation.
+ *
+ * Note the state is un-altered by this function.
+ * One must reset before starting a new calculation.
+ *
+ * @param uj A ujson IO context.
+ * @return The final value for the CRC32 calculation.
+ */
+uint32_t ujson_crc32_finish(ujson_t *uj);
 
 /**
  * Compares two strings for equality.
