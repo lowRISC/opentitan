@@ -88,6 +88,7 @@ bool execute_lc_ctrl_transition_test(bool use_ext_clk) {
     for (int i = 0; i < LC_TOKEN_SIZE; i++) {
       token.data[i] = kLcExitToken[i];
     }
+    // Acquire the mutex, and release it after triggering the transition.
     CHECK_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc));
     LOG_INFO("Acquired lc_ctrl mutex by software");
     CHECK_DIF_OK(
