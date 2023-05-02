@@ -12,6 +12,7 @@
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
@@ -117,6 +118,24 @@ status_t i2c_testutils_issue_read(const dif_i2c_t *i2c, uint8_t addr,
   TRY(dif_i2c_write_byte_raw(i2c, byte_count, flags));
 
   // TODO: Check for errors / status.
+  return OK_STATUS();
+}
+
+status_t i2c_testutils_fifo_empty(const dif_i2c_t *i2c) {
+  dif_i2c_status_t status;
+  TRY(dif_i2c_get_status(i2c, &status));
+  return OK_STATUS(status.rx_fifo_empty);
+}
+
+status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
+                            uint8_t byte_count, uint8_t *data) {
+  TRY(i2c_testutils_issue_read(i2c, addr, byte_count));
+
+  while (byte_count-- != 0) {
+    IBEX_TRY_SPIN_FOR(TRY(i2c_testutils_fifo_empty(i2c)) == false, 5000);
+    TRY(dif_i2c_read_byte(i2c, data++));
+  }
+
   return OK_STATUS();
 }
 
