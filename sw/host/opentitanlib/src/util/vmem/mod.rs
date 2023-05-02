@@ -60,6 +60,21 @@ impl Vmem {
     pub fn data_addrs(&self) -> impl Iterator<Item = Data> + '_ {
         self.sections().flat_map(|section| section.data_addrs())
     }
+
+    /// Merge all continguous sections together in one section
+    pub fn merge_sections(&mut self) {
+        let mut res: Vec<Section> = Vec::new();
+        // we modify in place as much as possible to avoid copying data uselessly
+        for mut sec in std::mem::take(&mut self.sections) {
+            match res.last_mut() {
+                Some(ref mut last) if { last.addr + last.data.len() as u32 * 4 == sec.addr } => {
+                    last.data.append(&mut sec.data)
+                }
+                _ => res.push(sec),
+            }
+        }
+        self.sections = res
+    }
 }
 
 impl Section {
