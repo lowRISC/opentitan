@@ -2281,7 +2281,7 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "test_openocd",
+    name = "openocd_test",
     srcs = ["example_test_from_flash.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_test_unlocked0",
@@ -2294,7 +2294,7 @@ opentitan_functest(
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
     targets = ["cw310_rom"],
-    test_harness = "//sw/host/tests/chip/jtag",
+    test_harness = "//sw/host/tests/chip/jtag:openocd_test",
     deps = [
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",

@@ -7,9 +7,9 @@ load("@rules_rust//rust:defs.bzl", "rust_binary")
 package(default_visibility = ["//visibility:public"])
 
 rust_binary(
-    name = "jtag",
+    name = "openocd_test",
     srcs = [
-        "src/main.rs",
+        "src/openocd_test.rs",
     ],
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",

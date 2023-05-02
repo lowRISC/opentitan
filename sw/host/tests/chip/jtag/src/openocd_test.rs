@@ -12,7 +12,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boolean::MultiBitBool8;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::execute_test;
-use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::io::jtag::{JtagParams, JtagTap, RiscvCsr, RiscvGpr, RiscvReg};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
@@ -38,8 +38,7 @@ fn reset(transport: &TransportWrapper, strappings: &[&str], reset_delay: Duratio
 }
 
 fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    // Reset the device and confirm that its lifecycle state is now RMA by
-    // reading the "LCV:" line from the UART.
+    // Reset the device
     let uart = transport.uart("console")?;
 
     reset(transport, &[], opts.init.bootstrap.options.reset_delay)?;
@@ -138,6 +137,51 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     assert_eq!(test_data, test_data2);
     // restore RAM
     jtag.write_memory(test_ram_addr, &ram)?;
+
+    //
+    // Test register read/writes
+    //
+    let orig_sp = jtag.read_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP))?;
+    log::info!("SP: {:x}", orig_sp);
+    let orig_pc = jtag.read_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC))?;
+    log::info!("PC: {:x}", orig_pc);
+    jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP), 0xdeadbeef)?;
+    jtag.write_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC), 0xcc00ffee)?;
+    log::info!(
+        "SP: {:x}",
+        jtag.read_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP))?
+    );
+    log::info!(
+        "PC: {:x}",
+        jtag.read_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC))?
+    );
+    // restore
+    jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP), orig_sp)?;
+    jtag.write_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC), orig_pc)?;
+
+    //
+    // Test reset
+    //
+    jtag.reset(/* run */ false)?;
+    // the reset address is 0x8080
+    assert_eq!(
+        jtag.read_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC))?,
+        0x8080
+    );
+    jtag.step()?;
+    // the first instruction is a jump to 0x8180
+    assert_eq!(
+        jtag.read_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC))?,
+        0x8180
+    );
+    jtag.reset(/* run */ true)?;
+    jtag.halt()?;
+    // at this point the target must have execute at least one instruction so it should
+    // not be at the reset vector anymore
+    assert_ne!(
+        jtag.read_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC))?,
+        0x8080
+    );
     jtag.resume()?;
 
     jtag.disconnect()?;
