@@ -506,7 +506,11 @@ opentitan_functest(
         tags = [
             "jtag",
         ],
-        test_cmds = OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        test_cmds = [
+            "--rom-kind=rom",
+            "--bitstream=\"$(rootpath {bitstream})\"",
+            "--bootstrap=\"$(rootpath {flash})\"",
+        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
     key = LC_KEY_TYPES[CONST.LCV.PROD][0],
