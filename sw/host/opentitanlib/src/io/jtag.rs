@@ -94,11 +94,23 @@ pub trait Jtag {
     fn write_memory(&self, addr: u32, buf: &[u8]) -> Result<()>;
     fn write_memory32(&self, addr: u32, buf: &[u32]) -> Result<()>;
 
-    /// Send a HALT command over Jtag.
+    /// Halt execution.
     fn halt(&self) -> Result<()>;
 
-    /// Send a RESUME command over Jtag.
+    /// Resume execution at its current code position.
     fn resume(&self) -> Result<()>;
+    /// Resume execution at the specified address.
+    fn resume_at(&self, addr: u32) -> Result<()>;
+
+    /// Single-step the target at its current code position.
+    fn step(&self) -> Result<()>;
+    /// Single-step the target at the specified address.
+    fn step_at(&self, addr: u32) -> Result<()>;
+
+    /// Reset the target as hard as possible.
+    /// If run is true, the target will start running code immediately
+    /// after reset, otherwise it will be halted immediately.
+    fn reset(&self, run: bool) -> Result<()>;
 }
 
 /// Available JTAG TAPs (software TAPS) in OpenTitan.
