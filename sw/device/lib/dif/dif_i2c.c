@@ -143,10 +143,10 @@ dif_result_t dif_i2c_compute_timing(dif_i2c_timing_config_t timing_config,
       round_up_divide(scl_period_nanos, timing_config.clock_period_nanos);
 
   // Lengthen the SCL high period to accommodate the desired SCL period.
-  uint16_t lengthened_high_cycles = scl_period_cycles -
-                                    config->scl_time_low_cycles -
-                                    config->rise_cycles - config->fall_cycles;
-  if (lengthened_high_cycles > config->scl_time_high_cycles) {
+  int32_t lengthened_high_cycles = scl_period_cycles -
+                                   config->scl_time_low_cycles -
+                                   config->rise_cycles - config->fall_cycles;
+  if (lengthened_high_cycles > (int32_t)config->scl_time_high_cycles) {
     config->scl_time_high_cycles = lengthened_high_cycles;
   }
 
