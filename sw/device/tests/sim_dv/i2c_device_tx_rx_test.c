@@ -253,8 +253,8 @@ bool test_main(void) {
                                                // junk
 
   uint8_t received_data[kI2cByteCount];
-  CHECK_STATUS_OK(i2c_testutils_target_check_wr(&i2c, kI2cByteCount, &addr,
-                                                received_data, NULL));
+  CHECK_STATUS_OK(i2c_testutils_target_check_write(&i2c, kI2cByteCount, &addr,
+                                                   received_data, NULL));
   check_addr(addr, id0, id1);
 
   for (uint8_t i = 0; i < kI2cByteCount; ++i) {
