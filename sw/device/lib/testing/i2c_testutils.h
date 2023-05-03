@@ -22,7 +22,7 @@
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr,
+status_t i2c_testutils_write(const dif_i2c_t *i2c, uint8_t addr,
                           uint8_t byte_count, const uint8_t *data,
                           bool skip_stop);
 
