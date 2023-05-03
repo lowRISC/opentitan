@@ -173,6 +173,9 @@ impl OpenOcdServer {
         // Cleanup TAP selection.
         self.jtag_tap.set(None);
 
+        // Close the connection.
+        drop(self.openocd_server_process.take());
+
         Ok(())
     }
 
