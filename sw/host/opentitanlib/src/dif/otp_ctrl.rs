@@ -78,6 +78,23 @@ bitflags! {
         const SECRET2_ERROR         = 0b1 << dif::OTP_CTRL_STATUS_SECRET2_ERROR_BIT;
         const TIMEOUT_ERROR         = 0b1 << dif::OTP_CTRL_STATUS_TIMEOUT_ERROR_BIT;
         const VENDOR_TEST_ERROR     = 0b1 << dif::OTP_CTRL_STATUS_VENDOR_TEST_ERROR_BIT;
+
+        const ERRORS =
+            Self::BUS_INTEG_ERROR.bits() |
+            Self::CREATOR_SW_CFG_ERROR.bits() |
+            Self::DAI_ERROR.bits() |
+            Self::HW_CFG_ERROR.bits() |
+            Self::KEY_DERIV_FSM_ERROR.bits() |
+            Self::LCI_ERROR.bits() |
+            Self::LFSR_FSM_ERROR.bits() |
+            Self::LIFE_CYCLE_ERROR.bits() |
+            Self::OWNER_SW_CFG_ERROR.bits() |
+            Self::SCRAMBLING_FSM_ERROR.bits() |
+            Self::SECRET0_ERROR.bits() |
+            Self::SECRET1_ERROR.bits() |
+            Self::SECRET2_ERROR.bits() |
+            Self::TIMEOUT_ERROR.bits() |
+            Self::VENDOR_TEST_ERROR.bits();
     }
 }
 
