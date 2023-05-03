@@ -1174,4 +1174,19 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     else otf_scb_h.info_mem[bank][part>>1][mem_addr] = item.fq[0];
   endfunction : update_otf_mem_read_zone
 
+  // Update memory with random data through backdoor.
+  // Data can be either scrambled or attached calculated ecc if config in the address
+  // is enabled.
+  virtual task preload_mem();
+    for (int j = 0; j < NumBanks; j++) begin
+      for (int i = 0; i < InfoTypeSize[0]; i++)
+        load_otf_mem_page(flash_ctrl_env_pkg::FlashPartInfo, j, i);
+      for (int i = 0; i < InfoTypeSize[1]; i++)
+        load_otf_mem_page(flash_ctrl_env_pkg::FlashPartInfo1, j, i);
+      for (int i = 0; i < InfoTypeSize[2]; i++)
+        load_otf_mem_page(flash_ctrl_env_pkg::FlashPartInfo2, j, i);
+      for (int i = 0; i < PagesPerBank; i++)
+        load_otf_mem_page(flash_ctrl_env_pkg::FlashPartData, j, i);
+    end
+  endtask
 endclass

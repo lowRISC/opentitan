@@ -417,6 +417,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
       if (mem_mon_off == 0) begin
         `uvm_info("mem_if", "got posedge wr", UVM_MEDIUM)
         `uvm_create_obj(flash_otf_mem_entry, rcv)
+        #1ps;
         rcv.mem_addr = cfg.flash_ctrl_mem_vif[bank].mem_addr;
         rcv.mem_wdata = cfg.flash_ctrl_mem_vif[bank].mem_wdata;
         rcv.mem_part = cfg.flash_ctrl_mem_vif[bank].mem_part;

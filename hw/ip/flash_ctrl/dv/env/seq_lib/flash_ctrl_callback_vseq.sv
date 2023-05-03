@@ -16,4 +16,7 @@ class flash_ctrl_callback_vseq extends cip_base_vseq #(
     // Do nothing but can be overridden in closed source environment.
   endtask
 
+  virtual task update_env_mp_info();
+    // Do nothing but can be overridden in closed source environment.
+  endtask
 endclass : flash_ctrl_callback_vseq

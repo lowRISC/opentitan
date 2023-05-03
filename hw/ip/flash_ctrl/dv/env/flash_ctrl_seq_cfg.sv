@@ -76,6 +76,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Vendor flash model hook
   bit use_vendor_flash = 0;
   string vendor_flash_path = "";  // Use to indicate a vendor flash hierarchical path.
+  bit exclude_info2 = 0;
 
   uint op_erase_type_bank_pc;
   uint op_prog_type_repair_pc;
