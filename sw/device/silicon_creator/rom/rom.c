@@ -251,9 +251,7 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 2);
   // Swap the order of signature verifications randomly.
   *flash_exec = 0;
-  // FIXME: Enable after //sw/device/tests:rv_core_ibex_rnd_test_fpga_cw310_rom
-  // issue is fixed.
-  if (true || rnd_uint32() < 0x80000000) {
+  if (rnd_uint32() < 0x80000000) {
     HARDENED_RETURN_IF_ERROR(sigverify_rsa_verify(
         &manifest->rsa_signature, rsa_key, &act_digest, lc_state, flash_exec));
     return sigverify_spx_verify(
