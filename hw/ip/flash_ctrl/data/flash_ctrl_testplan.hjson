@@ -113,7 +113,7 @@
             Perform following sequences of operations: read/program/read and read/erase/read in
             order to test read buffer eviction properly. Read should be executed by both Software
             and Host interface. All combinations should be tested. Covergroup for this hazardous
-            behavior is rd_buff_evict_cg.
+            behavior is eviction_cg.
             '''
       stage: V2
       tests: ["flash_ctrl_rd_buff_evict"]
@@ -436,14 +436,6 @@
             Covers that all possible fifo statuses generate interrupts for operations READ/PROGRAM.
             Covers both boundary values 0 and 31. Also covers acceptable distributions within
             ranges.
-            '''
-    }
-    {
-      name: rd_buff_evict_cg
-      desc: '''
-            Covers that all possible combinations for following sequences of operations
-            READ/PROGRAM/READ and READ/ERASE/READ are executed. Software Interface can perform all
-            three operations READ/PROGRAM/ERASE while Host Interface can perform direct READ.
             '''
     }
     {
