@@ -179,7 +179,7 @@ status_t i2c_testutils_target_check_read(const dif_i2c_t *i2c, uint8_t *addr,
   return i2c_testutils_target_check_end(i2c, cont_byte);
 }
 
-status_t i2c_testutils_target_wr(const dif_i2c_t *i2c, uint8_t byte_count) {
+status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint8_t byte_count) {
   uint8_t acq_fifo_lvl;
   TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
   TRY_CHECK(acq_fifo_lvl + 2 + byte_count <= I2C_PARAM_FIFO_DEPTH);

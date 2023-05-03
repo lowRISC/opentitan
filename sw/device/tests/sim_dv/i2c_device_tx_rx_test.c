@@ -245,7 +245,7 @@ bool test_main(void) {
   check_addr(addr, id0, id1);
 
   // Read data from i2c device.
-  CHECK_STATUS_OK(i2c_testutils_target_wr(&i2c, kI2cByteCount));
+  CHECK_STATUS_OK(i2c_testutils_target_write(&i2c, kI2cByteCount));
   do {
     CHECK_DIF_OK(
         dif_i2c_get_fifo_levels(&i2c, NULL, NULL, &tx_fifo_lvl, &acq_fifo_lvl));
