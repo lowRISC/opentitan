@@ -167,6 +167,9 @@ module lc_ctrl_fsm
   // Strap sample override signal.
   logic set_strap_en_override;
 
+  // Registers whether volatile unlock has been successful
+  prim_mubi_pkg::mubi8_t volatile_raw_unlock_success_d, volatile_raw_unlock_success_q;
+
   // SEC_CM: MAIN.CTRL_FLOW.CONSISTENCY
   always_comb begin : p_fsm
     // FSM default state assignments.
@@ -198,6 +201,7 @@ module lc_ctrl_fsm
     // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
     // ---------------------------------------------------------------
     set_strap_en_override = 1'b0;
+    volatile_raw_unlock_success_d = volatile_raw_unlock_success_q;
     // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
 
     // These signals remain asserted once set to On.
@@ -238,8 +242,8 @@ module lc_ctrl_fsm
         // Note that if the volatile unlock mechanism is available,
         // we have to stop fetching the OTP value after a volatile unlock has succeeded.
         // Otherwise we unconditionally fetch from OTP in this state.
-        if (!(SecVolatileRawUnlockEn && lc_state_q == LcStTestUnlocked0 && lc_cnt_q == LcCnt1) ||
-            !trans_success_o) begin
+        if (!(SecVolatileRawUnlockEn && lc_state_q == LcStTestUnlocked0 && lc_cnt_q != LcCnt0) ||
+            prim_mubi_pkg::mubi8_test_false_loose(volatile_raw_unlock_success_q)) begin
           // Continuously fetch LC state vector from OTP.
           // The state is locked in once a transition is started.
           lc_state_d    = lc_state_i;
@@ -265,13 +269,21 @@ module lc_ctrl_fsm
               !trans_invalid_error_o) begin
             // 128bit token check (without passing it through the KMAC)
             if (unhashed_token_i == RndCnstRawUnlockTokenHashed) begin
-              // we stay in Idle, but update the life cycle state register (volatile).
+              // We stay in Idle, but update the life cycle state register (volatile).
               lc_state_d = LcStTestUnlocked0;
-              lc_cnt_d = LcCnt1;
+              // If the count is 0, we set it to 1 - otherwise we just leave it as is so that the
+              // register value is in sync with what has been programmed to OTP already (there may
+              // have been unsuccessul raw unlock attempts before that already incremented it).
+              lc_cnt_d = (lc_cnt_q == LcCnt0) ? LcCnt1 : lc_cnt_q;
               // Re-sample the DFT straps in the pinmux.
               // This signal will be delayed by several cycles so that the LC_CTRL signals
               // have time to propagate.
               set_strap_en_override = 1'b1;
+              // We have to remember that the transition was successful in order to correctly
+              // disable the continuos sampling of the life cycle state vector coming from OTP.
+              volatile_raw_unlock_success_d = prim_mubi_pkg::MuBi8True;
+              // Indicate that the transition was successful.
+              trans_success_o = 1'b1;
             end else begin
               token_invalid_error_o = 1'b1;
               fsm_state_d = PostTransSt;
@@ -564,22 +576,26 @@ module lc_ctrl_fsm
     // that the life cycle signals have time to propagate (for good measure).
     localparam int NumStrapDelayRegs = 10;
     logic [NumStrapDelayRegs-1:0] strap_en_override_q;
-    always_ff @(posedge clk_i or negedge rst_ni) begin : p_strap_delay_regs
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_volatile_raw_unlock_reg
       if(!rst_ni) begin
         strap_en_override_q <= '0;
+        volatile_raw_unlock_success_q <= prim_mubi_pkg::MuBi8False;
       end else begin
         strap_en_override_q <= {strap_en_override_q[NumStrapDelayRegs-2:0],
                                 // This is a set-reg that will stay high until the next reset.
                                 set_strap_en_override || strap_en_override_q[0]};
+        volatile_raw_unlock_success_q <= volatile_raw_unlock_success_d;
       end
     end
 
     assign strap_en_override_o = strap_en_override_q[NumStrapDelayRegs-1];
   end else begin : gen_no_strap_delay_regs
     // In this case we tie the strap sampling off.
-    logic unused_set_strap_en_override;
-    assign unused_set_strap_en_override = set_strap_en_override;
+    logic unused_sigs;
+    assign unused_sigs = ^{set_strap_en_override,
+                           volatile_raw_unlock_success_d};
     assign strap_en_override_o = 1'b0;
+    assign volatile_raw_unlock_success_q = prim_mubi_pkg::MuBi8False;
   end
   // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
 
