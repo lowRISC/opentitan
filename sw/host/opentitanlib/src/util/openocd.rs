@@ -138,6 +138,13 @@ impl OpenOcdServer {
 
         log::info!("Connecting to OpenOCD tcl interface...");
 
+        let output = Command::new("lsof").arg("-i").arg(format!("tcp:{}", self.opts.openocd_port)).output()?;
+        println!("status: {}", output.status);
+        io::stdout().write_all(&output.stdout).unwrap();
+        io::stderr().write_all(&output.stderr).unwrap();
+
+        assert!(output.status.success());
+
         let addr = format!("localhost:{}", self.opts.openocd_port);
         let stream = Self::wait_for_socket(addr, self.opts.openocd_timeout)
             .context("failed to connect to OpenOCD socket")?;
