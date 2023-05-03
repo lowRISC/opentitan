@@ -13,6 +13,7 @@ path = "empty_file_to_appease_cargo.rs"
 # Keep sorted.
 # Please avoid version numbers that only have one component.
 [dependencies]
+aes = "0.8.2"
 anyhow = { version = "1.0.57", features=["backtrace"] }
 arrayvec = { version = "0.7", features=["serde"] }
 atty = "0.2"
