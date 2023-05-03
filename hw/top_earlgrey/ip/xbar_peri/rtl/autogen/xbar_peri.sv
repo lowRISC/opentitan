@@ -12,9 +12,12 @@
 //     -> uart1
 //     -> uart2
 //     -> uart3
-//     -> i2c0
-//     -> i2c1
-//     -> i2c2
+//     -> asf_29
+//       -> i2c0
+//     -> asf_30
+//       -> i2c1
+//     -> asf_31
+//       -> i2c2
 //     -> pattgen
 //     -> gpio
 //     -> spi_device
@@ -38,7 +41,9 @@
 
 module xbar_peri (
   input clk_peri_i,
+  input clk_i2c_i,
   input rst_peri_ni,
+  input rst_i2c_i,
 
   // Host interfaces
   input  tlul_pkg::tl_h2d_t tl_main_i,
@@ -121,6 +126,21 @@ module xbar_peri (
   // Create steering signal
   logic [4:0] dev_sel_s1n_28;
 
+  tl_h2d_t tl_asf_29_us_h2d ;
+  tl_d2h_t tl_asf_29_us_d2h ;
+  tl_h2d_t tl_asf_29_ds_h2d ;
+  tl_d2h_t tl_asf_29_ds_d2h ;
+
+  tl_h2d_t tl_asf_30_us_h2d ;
+  tl_d2h_t tl_asf_30_us_d2h ;
+  tl_h2d_t tl_asf_30_ds_h2d ;
+  tl_d2h_t tl_asf_30_ds_d2h ;
+
+  tl_h2d_t tl_asf_31_us_h2d ;
+  tl_d2h_t tl_asf_31_us_d2h ;
+  tl_h2d_t tl_asf_31_ds_h2d ;
+  tl_d2h_t tl_asf_31_ds_d2h ;
+
 
 
   assign tl_uart0_o = tl_s1n_28_ds_h2d[0];
@@ -135,14 +155,14 @@ module xbar_peri (
   assign tl_uart3_o = tl_s1n_28_ds_h2d[3];
   assign tl_s1n_28_ds_d2h[3] = tl_uart3_i;
 
-  assign tl_i2c0_o = tl_s1n_28_ds_h2d[4];
-  assign tl_s1n_28_ds_d2h[4] = tl_i2c0_i;
+  assign tl_asf_29_us_h2d = tl_s1n_28_ds_h2d[4];
+  assign tl_s1n_28_ds_d2h[4] = tl_asf_29_us_d2h;
 
-  assign tl_i2c1_o = tl_s1n_28_ds_h2d[5];
-  assign tl_s1n_28_ds_d2h[5] = tl_i2c1_i;
+  assign tl_asf_30_us_h2d = tl_s1n_28_ds_h2d[5];
+  assign tl_s1n_28_ds_d2h[5] = tl_asf_30_us_d2h;
 
-  assign tl_i2c2_o = tl_s1n_28_ds_h2d[6];
-  assign tl_s1n_28_ds_d2h[6] = tl_i2c2_i;
+  assign tl_asf_31_us_h2d = tl_s1n_28_ds_h2d[6];
+  assign tl_s1n_28_ds_d2h[6] = tl_asf_31_us_d2h;
 
   assign tl_pattgen_o = tl_s1n_28_ds_h2d[7];
   assign tl_s1n_28_ds_d2h[7] = tl_pattgen_i;
@@ -206,6 +226,15 @@ module xbar_peri (
 
   assign tl_s1n_28_us_h2d = tl_main_i;
   assign tl_main_o = tl_s1n_28_us_d2h;
+
+  assign tl_i2c0_o = tl_asf_29_ds_h2d;
+  assign tl_asf_29_ds_d2h = tl_i2c0_i;
+
+  assign tl_i2c1_o = tl_asf_30_ds_h2d;
+  assign tl_asf_30_ds_d2h = tl_i2c1_i;
+
+  assign tl_i2c2_o = tl_asf_31_ds_h2d;
+  assign tl_asf_31_ds_d2h = tl_i2c2_i;
 
   always_comb begin
     // default steering to generate error response if address is not within the range
@@ -336,6 +365,45 @@ end
     .tl_d_o       (tl_s1n_28_ds_h2d),
     .tl_d_i       (tl_s1n_28_ds_d2h),
     .dev_select_i (dev_sel_s1n_28)
+  );
+  tlul_fifo_async #(
+    .ReqDepth        (1),
+    .RspDepth        (1)
+  ) u_asf_29 (
+    .clk_h_i      (clk_peri_i),
+    .rst_h_ni     (rst_peri_ni),
+    .clk_d_i      (clk_i2c_i),
+    .rst_d_ni     (rst_i2c_i),
+    .tl_h_i       (tl_asf_29_us_h2d),
+    .tl_h_o       (tl_asf_29_us_d2h),
+    .tl_d_o       (tl_asf_29_ds_h2d),
+    .tl_d_i       (tl_asf_29_ds_d2h)
+  );
+  tlul_fifo_async #(
+    .ReqDepth        (1),
+    .RspDepth        (1)
+  ) u_asf_30 (
+    .clk_h_i      (clk_peri_i),
+    .rst_h_ni     (rst_peri_ni),
+    .clk_d_i      (clk_i2c_i),
+    .rst_d_ni     (rst_i2c_i),
+    .tl_h_i       (tl_asf_30_us_h2d),
+    .tl_h_o       (tl_asf_30_us_d2h),
+    .tl_d_o       (tl_asf_30_ds_h2d),
+    .tl_d_i       (tl_asf_30_ds_d2h)
+  );
+  tlul_fifo_async #(
+    .ReqDepth        (1),
+    .RspDepth        (1)
+  ) u_asf_31 (
+    .clk_h_i      (clk_peri_i),
+    .rst_h_ni     (rst_peri_ni),
+    .clk_d_i      (clk_i2c_i),
+    .rst_d_ni     (rst_i2c_i),
+    .tl_h_i       (tl_asf_31_us_h2d),
+    .tl_h_o       (tl_asf_31_us_d2h),
+    .tl_d_o       (tl_asf_31_ds_h2d),
+    .tl_d_i       (tl_asf_31_ds_d2h)
   );
 
 endmodule

@@ -7,11 +7,14 @@
 xbar_peri dut();
 
 `DRIVE_CLK(clk_peri_i)
+`DRIVE_CLK(clk_i2c_i)
 
 initial force dut.clk_peri_i = clk_peri_i;
+initial force dut.clk_i2c_i = clk_i2c_i;
 
 // TODO, all resets tie together
 initial force dut.rst_peri_ni = rst_n;
+initial force dut.rst_i2c_i = rst_n;
 
 // Host TileLink interface connections
 `CONNECT_TL_HOST_IF(main, dut, clk_peri_i, rst_n)
@@ -21,9 +24,9 @@ initial force dut.rst_peri_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(uart1, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(uart2, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(uart3, dut, clk_peri_i, rst_n)
-`CONNECT_TL_DEVICE_IF(i2c0, dut, clk_peri_i, rst_n)
-`CONNECT_TL_DEVICE_IF(i2c1, dut, clk_peri_i, rst_n)
-`CONNECT_TL_DEVICE_IF(i2c2, dut, clk_peri_i, rst_n)
+`CONNECT_TL_DEVICE_IF(i2c0, dut, clk_i2c_i, rst_n)
+`CONNECT_TL_DEVICE_IF(i2c1, dut, clk_i2c_i, rst_n)
+`CONNECT_TL_DEVICE_IF(i2c2, dut, clk_i2c_i, rst_n)
 `CONNECT_TL_DEVICE_IF(pattgen, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(pwm_aon, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(gpio, dut, clk_peri_i, rst_n)

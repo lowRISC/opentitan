@@ -68,9 +68,9 @@ tl_if uart0_tl_if(clk_io_div4, rst_n);
 tl_if uart1_tl_if(clk_io_div4, rst_n);
 tl_if uart2_tl_if(clk_io_div4, rst_n);
 tl_if uart3_tl_if(clk_io_div4, rst_n);
-tl_if i2c0_tl_if(clk_io_div4, rst_n);
-tl_if i2c1_tl_if(clk_io_div4, rst_n);
-tl_if i2c2_tl_if(clk_io_div4, rst_n);
+tl_if i2c0_tl_if(clk_io_div2, rst_n);
+tl_if i2c1_tl_if(clk_io_div2, rst_n);
+tl_if i2c2_tl_if(clk_io_div2, rst_n);
 tl_if pattgen_tl_if(clk_io_div4, rst_n);
 tl_if pwm_aon_tl_if(clk_io_div4, rst_n);
 tl_if gpio_tl_if(clk_io_div4, rst_n);
@@ -118,6 +118,7 @@ initial begin
     force tb.dut.top_earlgrey.u_xbar_main.clk_spi_host0_i = clk_io;
     force tb.dut.top_earlgrey.u_xbar_main.clk_spi_host1_i = clk_io_div2;
     force tb.dut.top_earlgrey.u_xbar_peri.clk_peri_i = clk_io_div4;
+    force tb.dut.top_earlgrey.u_xbar_peri.clk_i2c_i = clk_io_div2;
 
     // bypass rstmgr, force resets directly
     force tb.dut.top_earlgrey.u_xbar_main.rst_main_ni = rst_n;
@@ -126,6 +127,7 @@ initial begin
     force tb.dut.top_earlgrey.u_xbar_main.rst_spi_host0_ni = rst_n;
     force tb.dut.top_earlgrey.u_xbar_main.rst_spi_host1_ni = rst_n;
     force tb.dut.top_earlgrey.u_xbar_peri.rst_peri_ni = rst_n;
+    force tb.dut.top_earlgrey.u_xbar_peri.rst_i2c_i = rst_n;
 
     `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h)
     `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__cored, rv_core_ibex, cored_tl_h)

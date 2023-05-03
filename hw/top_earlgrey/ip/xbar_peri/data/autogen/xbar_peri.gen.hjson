@@ -11,6 +11,7 @@
   clock_srcs:
   {
     clk_peri_i: io_div4
+    clk_i2c_i: io_div2
   }
   clock_group: infra
   reset: rst_peri_ni
@@ -21,10 +22,16 @@
       name: lc_io_div4
       domain: "0"
     }
+    rst_i2c_i:
+    {
+      name: lc_io_div2
+      domain: "0"
+    }
   }
   clock_connections:
   {
     clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
+    clk_i2c_i: clkmgr_aon_clocks.clk_io_div2_infra
   }
   domain:
   [
@@ -152,8 +159,8 @@
     {
       name: i2c0
       type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
+      clock: clk_i2c_i
+      reset: rst_i2c_i
       pipeline: false
       inst_type: i2c
       addr_range:
@@ -170,8 +177,8 @@
     {
       name: i2c1
       type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
+      clock: clk_i2c_i
+      reset: rst_i2c_i
       pipeline: false
       inst_type: i2c
       addr_range:
@@ -188,8 +195,8 @@
     {
       name: i2c2
       type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
+      clock: clk_i2c_i
+      reset: rst_i2c_i
       pipeline: false
       inst_type: i2c
       addr_range:

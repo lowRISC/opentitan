@@ -1088,7 +1088,7 @@ module rstmgr
   ) u_d0_i2c0 (
     .clk_i,
     .rst_ni,
-    .leaf_clk_i(clk_io_div4_i),
+    .leaf_clk_i(clk_io_div2_i),
     .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
     .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[I2C0].q),
     .scan_rst_ni,
@@ -1122,7 +1122,7 @@ module rstmgr
   ) u_d0_i2c1 (
     .clk_i,
     .rst_ni,
-    .leaf_clk_i(clk_io_div4_i),
+    .leaf_clk_i(clk_io_div2_i),
     .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
     .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[I2C1].q),
     .scan_rst_ni,
@@ -1156,7 +1156,7 @@ module rstmgr
   ) u_d0_i2c2 (
     .clk_i,
     .rst_ni,
-    .leaf_clk_i(clk_io_div4_i),
+    .leaf_clk_i(clk_io_div2_i),
     .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
     .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[I2C2].q),
     .scan_rst_ni,

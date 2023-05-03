@@ -4,9 +4,9 @@
 { name: "peri",
   type: "xbar",
   clock_primary: "clk_peri_i", // Main clock, used in sockets
-  other_clock_list: [] // Secondary clocks used by specific nodes
+  other_clock_list: ["clk_i2c_i"] // Secondary clocks used by specific nodes
   reset_primary: "rst_peri_ni", // Main reset, used in sockets
-  other_reset_list: [] // Secondary resets used by specific nodes
+  other_reset_list: ["rst_i2c_i"] // Secondary resets used by specific nodes
 
   nodes: [
     { name:  "main",
@@ -43,20 +43,20 @@
     },
     { name:      "i2c0",
       type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
+      clock:     "clk_i2c_i",
+      reset:     "rst_i2c_i",
       pipeline:  false
     },
     { name:      "i2c1",
       type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
+      clock:     "clk_i2c_i",
+      reset:     "rst_i2c_i",
       pipeline:  false
     },
     { name:      "i2c2",
       type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
+      clock:     "clk_i2c_i",
+      reset:     "rst_i2c_i",
       pipeline:  false
     },
     { name:      "pattgen",
