@@ -231,13 +231,28 @@ set_input_delay  -clock clk_spi_pt -clock_fall -max ${spi_host_in_delay_max} \
 # SPI Host clock origin buffer
 set spi_host_0_peri [get_pins top_earlgrey/u_clkmgr_aon/u_clk_io_peri_cg/gen_xilinx.u_impl_xilinx/gen_gate.gen_bufgce.u_bufgce/O]
 
-# Even though it's 2x the max possible frequency, keep the peripheral clock
-# frequency for the output. This will enable shifting the latch edge for hold
-# analysis by the proper amount to effect "half-cycle sampling" of SPI.
-create_generated_clock -name clk_spi_host0 -divide_by 1 -add \
+create_generated_clock -name clk_spi_host0 -divide_by 2 -add \
   -source ${spi_host_0_peri} \
   -master_clock [get_clocks -of_objects ${spi_host_0_peri}] \
   [get_ports SPI_HOST_CLK]
+
+# Multi-cycle path to adjust the hold edge, since launch and capture edges are
+# opposite in the SPI_HOST_CLK domain.
+set_multicycle_path -setup 1 -start \
+    -from [get_clocks -of_objects ${spi_host_0_peri}] \
+    -to [get_clocks clk_spi_host0]
+set_multicycle_path -hold 1 -start \
+    -from [get_clocks -of_objects ${spi_host_0_peri}] \
+    -to [get_clocks clk_spi_host0]
+
+# set multicycle path for data going from SPI_HOST_CLK to logic
+# the SPI host logic will read these paths at "full cycle"
+set_multicycle_path -setup -end 2 \
+    -from [get_clocks clk_spi_host0] \
+    -to [get_clocks -of_objects ${spi_host_0_peri}]
+set_multicycle_path -hold -end 2 \
+    -from [get_clocks clk_spi_host0] \
+    -to [get_clocks -of_objects ${spi_host_0_peri}]
 
 set spi_host_0_data [get_ports {SPI_HOST_D0 SPI_HOST_D1 SPI_HOST_D2 SPI_HOST_D3 SPI_HOST_CS_L}]
 set_output_delay -clock clk_spi_host0 -min ${spi_host_out_hold} \
@@ -248,17 +263,6 @@ set_input_delay  -clock clk_spi_host0 -clock_fall -min ${spi_host_in_delay_min} 
     ${spi_host_0_data} -add_delay
 set_input_delay  -clock clk_spi_host0 -clock_fall -max ${spi_host_in_delay_max} \
     ${spi_host_0_data} -add_delay
-
-# The setup analysis is already correct for half-cycle sampling: If the first
-# posedge of the peripheral clock represents the negedge of SPI_HOST_CLK, then
-# the next posedge of the peripheral clock is when data should be latched, the
-# posedge of SPI_HOST_CLK.
-# However, the latch edge for hold analysis represents the same edge and needs
-# to be advanced by one cycle of the peripheral clock (half a cycle of
-# SPI_HOST_CLK).
-set_multicycle_path -hold -end \
-  -from [get_clocks -of_objects ${spi_host_0_peri}] \
-  -to [get_clocks clk_spi_host0] 1
 
 ## Set asynchronous clock groups
 set_clock_groups -asynchronous \
