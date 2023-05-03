@@ -156,7 +156,7 @@ status_t i2c_testutils_target_check_end(const dif_i2c_t *i2c,
   return OK_STATUS(true);
 }
 
-status_t i2c_testutils_target_rd(const dif_i2c_t *i2c, uint8_t byte_count,
+status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint8_t byte_count,
                                  const uint8_t *data) {
   uint8_t tx_fifo_lvl, acq_fifo_lvl;
   TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, &tx_fifo_lvl, &acq_fifo_lvl));

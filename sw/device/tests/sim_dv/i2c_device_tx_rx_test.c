@@ -226,7 +226,7 @@ bool test_main(void) {
   uint8_t tx_fifo_lvl;
   CHECK_DIF_OK(dif_i2c_get_fifo_levels(&i2c, NULL, NULL, &tx_fifo_lvl, NULL));
   IBEX_SPIN_FOR(!(tx_fifo_lvl > 0 && tx_empty_irq_seen == false), 100);
-  CHECK_STATUS_OK(i2c_testutils_target_rd(&i2c, kI2cByteCount, expected_data));
+  CHECK_STATUS_OK(i2c_testutils_target_read(&i2c, kI2cByteCount, expected_data));
   tx_empty_irq_seen = false;
 
   LOG_INFO("Data written to fifo");

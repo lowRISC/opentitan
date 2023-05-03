@@ -73,7 +73,7 @@ status_t i2c_testutils_target_check_end(const dif_i2c_t *i2c,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t i2c_testutils_target_rd(const dif_i2c_t *i2c, uint8_t byte_count,
+status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint8_t byte_count,
                                  const uint8_t *data);
 
 /**
