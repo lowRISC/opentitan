@@ -34,6 +34,7 @@ module lc_ctrl_fsm
   input  lc_tx_t                secrets_valid_i,
   // Defines whether we switch to an external clock when initiating a transition.
   input                         use_ext_clock_i,
+  output logic                  ext_clock_switched_o,
   // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
   // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
   // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
@@ -108,17 +109,20 @@ module lc_ctrl_fsm
 
   // We use multiple copies of these signals in the
   // FSM checks below.
-  lc_tx_t [2:0] lc_clk_byp_ack;
+  lc_tx_t [3:0] lc_clk_byp_ack;
   lc_tx_t [1:0] lc_flash_rma_ack;
 
   prim_lc_sync #(
-    .NumCopies(3)
+    .NumCopies(4)
   ) u_prim_lc_sync_clk_byp_ack (
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_clk_byp_ack_i),
     .lc_en_o(lc_clk_byp_ack)
   );
+
+  // Indication for CSRs
+  assign ext_clock_switched_o = lc_tx_test_true_strict(lc_clk_byp_ack[3]);
 
   prim_lc_sync #(
     .NumCopies(2)
@@ -337,7 +341,7 @@ module lc_ctrl_fsm
                                LcStRma}) begin
           if (use_ext_clock_i) begin
             lc_clk_byp_req = On;
-            if (lc_clk_byp_ack[0] == On) begin
+            if (lc_tx_test_true_strict(lc_clk_byp_ack[0])) begin
               fsm_state_d = CntIncrSt;
             end
           end else begin

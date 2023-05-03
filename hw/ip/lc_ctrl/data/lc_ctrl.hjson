@@ -561,6 +561,13 @@
                 '''
         }
         { bits: "2"
+          name: "EXT_CLOCK_SWITCHED"
+          desc: '''
+                This bit is set to 1 if the clock manager has successfully switched to the external clock due to
+                !!EXT_CLOCK_EN being set to 1.
+                '''
+        }
+        { bits: "3"
           name: "TRANSITION_SUCCESSFUL"
           desc: '''
                 This bit is set to 1 if the last life cycle transition request was successful.
@@ -568,7 +575,7 @@
                 moves the life cycle state into POST_TRANSITION.
                 '''
         }
-        { bits: "3"
+        { bits: "4"
           name: "TRANSITION_COUNT_ERROR"
           desc: '''
                 This bit is set to 1 if the !!LC_TRANSITION_CNT has reached its maximum.
@@ -577,7 +584,7 @@
                 moves the life cycle state into POST_TRANSITION.
                 '''
         }
-        { bits: "4"
+        { bits: "5"
           name: "TRANSITION_ERROR"
           desc: '''
                 This bit is set to 1 if the last transition command requested an invalid state transition
@@ -585,7 +592,7 @@
                 moves the life cycle state into POST_TRANSITION.
                 '''
         }
-        { bits: "5"
+        { bits: "6"
           name: "TOKEN_ERROR"
           desc: '''
                 This bit is set to 1 if the token supplied for a conditional transition was invalid.
@@ -593,7 +600,7 @@
                 moves the life cycle state into POST_TRANSITION.
                 '''
         }
-        { bits: "6"
+        { bits: "7"
           name: "FLASH_RMA_ERROR"
           desc: '''
                 This bit is set to 1 if flash failed to correctly respond to an RMA request.
@@ -601,7 +608,7 @@
                 moves the life cycle state into POST_TRANSITION.
                 '''
         }
-        { bits: "7"
+        { bits: "8"
           name: "OTP_ERROR"
           desc: '''
                 This bit is set to 1 if an error occurred during an OTP programming operation.
@@ -609,7 +616,7 @@
                 fatal_prog_error alert.
                 '''
         }
-        { bits: "8"
+        { bits: "9"
           name: "STATE_ERROR"
           desc: '''
                 This bit is set to 1 if either the controller FSM state or the life cycle state is invalid or
@@ -617,14 +624,14 @@
                 automatically to INVALID and raise a fatal_state_error alert.
                 '''
         }
-        { bits: "9"
+        { bits: "10"
           name: "BUS_INTEG_ERROR"
           desc: '''
                 This bit is set to 1 if a fatal bus integrity fault is detected.
                 This error triggers a fatal_bus_integ_error alert.
                 '''
         }
-        { bits: "10"
+        { bits: "11"
           name: "OTP_PARTITION_ERROR"
           desc: '''
                 This bit is set to 1 if the life cycle partition in OTP is in error state.

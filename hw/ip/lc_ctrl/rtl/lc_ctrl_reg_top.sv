@@ -131,6 +131,7 @@ module lc_ctrl_reg_top (
   logic status_re;
   logic status_initialized_qs;
   logic status_ready_qs;
+  logic status_ext_clock_switched_qs;
   logic status_transition_successful_qs;
   logic status_transition_count_error_qs;
   logic status_transition_error_qs;
@@ -310,7 +311,22 @@ module lc_ctrl_reg_top (
     .qs     (status_ready_qs)
   );
 
-  //   F[transition_successful]: 2:2
+  //   F[ext_clock_switched]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_ext_clock_switched (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.ext_clock_switched.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_ext_clock_switched_qs)
+  );
+
+  //   F[transition_successful]: 3:3
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_transition_successful (
@@ -325,7 +341,7 @@ module lc_ctrl_reg_top (
     .qs     (status_transition_successful_qs)
   );
 
-  //   F[transition_count_error]: 3:3
+  //   F[transition_count_error]: 4:4
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_transition_count_error (
@@ -340,7 +356,7 @@ module lc_ctrl_reg_top (
     .qs     (status_transition_count_error_qs)
   );
 
-  //   F[transition_error]: 4:4
+  //   F[transition_error]: 5:5
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_transition_error (
@@ -355,7 +371,7 @@ module lc_ctrl_reg_top (
     .qs     (status_transition_error_qs)
   );
 
-  //   F[token_error]: 5:5
+  //   F[token_error]: 6:6
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_token_error (
@@ -370,7 +386,7 @@ module lc_ctrl_reg_top (
     .qs     (status_token_error_qs)
   );
 
-  //   F[flash_rma_error]: 6:6
+  //   F[flash_rma_error]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_flash_rma_error (
@@ -385,7 +401,7 @@ module lc_ctrl_reg_top (
     .qs     (status_flash_rma_error_qs)
   );
 
-  //   F[otp_error]: 7:7
+  //   F[otp_error]: 8:8
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_otp_error (
@@ -400,7 +416,7 @@ module lc_ctrl_reg_top (
     .qs     (status_otp_error_qs)
   );
 
-  //   F[state_error]: 8:8
+  //   F[state_error]: 9:9
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_state_error (
@@ -415,7 +431,7 @@ module lc_ctrl_reg_top (
     .qs     (status_state_error_qs)
   );
 
-  //   F[bus_integ_error]: 9:9
+  //   F[bus_integ_error]: 10:10
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_bus_integ_error (
@@ -430,7 +446,7 @@ module lc_ctrl_reg_top (
     .qs     (status_bus_integ_error_qs)
   );
 
-  //   F[otp_partition_error]: 10:10
+  //   F[otp_partition_error]: 11:11
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_otp_partition_error (
@@ -1290,15 +1306,16 @@ module lc_ctrl_reg_top (
       addr_hit[1]: begin
         reg_rdata_next[0] = status_initialized_qs;
         reg_rdata_next[1] = status_ready_qs;
-        reg_rdata_next[2] = status_transition_successful_qs;
-        reg_rdata_next[3] = status_transition_count_error_qs;
-        reg_rdata_next[4] = status_transition_error_qs;
-        reg_rdata_next[5] = status_token_error_qs;
-        reg_rdata_next[6] = status_flash_rma_error_qs;
-        reg_rdata_next[7] = status_otp_error_qs;
-        reg_rdata_next[8] = status_state_error_qs;
-        reg_rdata_next[9] = status_bus_integ_error_qs;
-        reg_rdata_next[10] = status_otp_partition_error_qs;
+        reg_rdata_next[2] = status_ext_clock_switched_qs;
+        reg_rdata_next[3] = status_transition_successful_qs;
+        reg_rdata_next[4] = status_transition_count_error_qs;
+        reg_rdata_next[5] = status_transition_error_qs;
+        reg_rdata_next[6] = status_token_error_qs;
+        reg_rdata_next[7] = status_flash_rma_error_qs;
+        reg_rdata_next[8] = status_otp_error_qs;
+        reg_rdata_next[9] = status_state_error_qs;
+        reg_rdata_next[10] = status_bus_integ_error_qs;
+        reg_rdata_next[11] = status_otp_partition_error_qs;
       end
 
       addr_hit[2]: begin

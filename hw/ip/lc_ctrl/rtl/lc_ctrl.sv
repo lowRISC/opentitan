@@ -302,6 +302,7 @@ module lc_ctrl
   assign hw_rev_o = '{chip_gen: ChipGen, chip_rev: ChipRev};
 
   // OTP Vendor control bits
+  logic ext_clock_switched;
   logic use_ext_clock_d, use_ext_clock_q;
   logic volatile_raw_unlock_d, volatile_raw_unlock_q;
   logic [CsrOtpTestCtrlWidth-1:0] otp_vendor_test_ctrl_d, otp_vendor_test_ctrl_q;
@@ -311,6 +312,7 @@ module lc_ctrl
     hw2reg = '0;
     hw2reg.status.initialized            = lc_done_d;
     hw2reg.status.ready                  = lc_idle_d;
+    hw2reg.status.ext_clock_switched     = ext_clock_switched;
     hw2reg.status.transition_successful  = trans_success_q;
     hw2reg.status.transition_count_error = trans_cnt_oflw_error_q;
     hw2reg.status.transition_error       = trans_invalid_error_q;
@@ -713,6 +715,7 @@ module lc_ctrl
     .secrets_valid_i        ( otp_lc_data_i.secrets_valid      ),
     .lc_cnt_i               ( lc_cnt_e'(otp_lc_data_i.count)   ),
     .use_ext_clock_i        ( use_ext_clock_q                  ),
+    .ext_clock_switched_o   ( ext_clock_switched               ),
     .volatile_raw_unlock_i  ( volatile_raw_unlock_q            ),
     .strap_en_override_o,
     .test_unlock_token_i    ( otp_lc_data_i.test_unlock_token  ),
