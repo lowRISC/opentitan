@@ -52,7 +52,7 @@ impl OpenOcdServer {
     /// Delay between polls to the OpenOCD server to prevent thrashing.
     const POLL_DELAY: Duration = Duration::from_millis(100);
     /// How long to wait for OpenOCD to get ready to accept a TCL connection.
-    const OPENOCD_TCL_READY_TMO: Duration = Duration::from_secs(2);
+    const OPENOCD_TCL_READY_TMO: Duration = Duration::from_secs(5);
 
     /// Create a new OpenOcdServer with the given JTAG options without starting OpenOCD.
     pub fn new(opts: &JtagParams) -> Result<OpenOcdServer> {
@@ -73,7 +73,9 @@ impl OpenOcdServer {
             let mut byte = 0u8;
             // FIXME the read could block indefinitely, this is just a hack
             let n = stdout.read(std::slice::from_mut(&mut byte))?;
-            assert_eq!(n, 1);
+            if n != 0 {
+                bail!("OpenOCD stopped before being ready?");
+            }
             if byte == b'\n' {
                 let string = String::from_utf8_lossy(&s[..]);
                 log::info!(target: concat!(module_path!(), "::stdout"), "{}", string);
