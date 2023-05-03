@@ -67,6 +67,7 @@ rust_library(
         "src/crypto/spx.rs",
         "src/dif/clkmgr.rs",
         "src/dif/lc_ctrl.rs",
+        "src/dif/otp_ctrl.rs",
         "src/dif/rstmgr.rs",
         "src/dif/mod.rs",
         "src/image/image.rs",
