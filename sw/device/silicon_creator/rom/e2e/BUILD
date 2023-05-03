@@ -3818,3 +3818,172 @@ test_suite(
     tags = ["manual"],
     tests = ["rom_ext_upgrade_interrupt_{}".format(lc_state) for lc_state, _ in get_lc_items()],
 )
+
+# We check the OTP item in these lifecycle states.
+SPX_OTP_LC_STATES = [
+    "prod",
+    "prod_end",
+    "dev",
+    "rma",
+]
+
+# SPHINCS+ is disabled uncoditionally in these lifecycle states
+SPX_DISABLED_LC_STATES = [
+    "test_unlocked0",
+    "test_unlocked1",
+    "test_unlocked2",
+    "test_unlocked3",
+    "test_unlocked4",
+    "test_unlocked5",
+    "test_unlocked6",
+    "test_unlocked7",
+]
+
+# Any value other than SPX_DISABLED enables SPHINCS+.
+SIGVERIFY_SPX_CASES = [
+    {
+        "name": "enabled_zero",
+        "spx_en": 0,
+        "exit_success": dicts.add(
+            {
+                lc_state: "spx_en=0x00000000, spx_key_en=0x4ba5a5a5a5a5a5a5"
+                for lc_state in SPX_OTP_LC_STATES
+            },
+            {
+                lc_state: "spx_en=0x8d6c8c17, spx_key_en=0x4ba5a5a5a5a5a5a5"
+                for lc_state in SPX_DISABLED_LC_STATES
+            },
+        ),
+    },
+    {
+        "name": "enabled_true",
+        "spx_en": CONST.TRUE,
+        "exit_success": dicts.add(
+            {
+                lc_state: "spx_en=0x00000739, spx_key_en=0x4ba5a5a5a5a5a5a5"
+                for lc_state in SPX_OTP_LC_STATES
+            },
+            {
+                lc_state: "spx_en=0x8d6c8c17, spx_key_en=0x4ba5a5a5a5a5a5a5"
+                for lc_state in SPX_DISABLED_LC_STATES
+            },
+        ),
+    },
+    {
+        "name": "disabled",
+        "spx_en": CONST.SPX_DISABLED,
+        "exit_success": {
+            lc_state: "spx_en=0x8d6c8c17, spx_key_en=0x4ba5a5a5a5a5a5a5"
+            for lc_state in SPX_OTP_LC_STATES + SPX_DISABLED_LC_STATES
+        },
+    },
+]
+
+opentitan_flash_binary(
+    name = "empty_test_sigverify_spx",
+    testonly = True,
+    srcs = ["empty_test.c"],
+    devices = [
+        "fpga_cw310",
+        "sim_dv",
+    ],
+    local_defines = [
+        shell.quote("EMPTY_TEST_MSG=\"spx_en=0x%08x, spx_key_en=0x%08x%08x\", " +
+                    "otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_SPX_EN_OFFSET), " +
+                    "otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN_OFFSET + sizeof(uint32_t)), " +
+                    "otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN_OFFSET)"),
+    ],
+    signed = True,
+    signing_keysets = RSA_SPX_KEYSETS,
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+    ],
+)
+
+[
+    otp_json(
+        name = "otp_json_sigverify_spx_{}".format(t["name"]),
+        partitions = [
+            otp_partition(
+                name = "CREATOR_SW_CFG",
+                items = {
+                    "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": hex(t["spx_en"]),
+                    "CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN": "0x4ba5a5a5a5a5a5a5",
+                },
+            ),
+        ],
+    )
+    for t in SIGVERIFY_SPX_CASES
+]
+
+[
+    otp_image(
+        name = "otp_img_sigverify_spx_{}_{}".format(
+            lc_state,
+            t["name"],
+        ),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        overlays = STD_OTP_OVERLAYS + [":otp_json_sigverify_spx_{}".format(t["name"])],
+        visibility = ["//visibility:private"],
+    )
+    for lc_state, _ in get_lc_items()
+    for t in SIGVERIFY_SPX_CASES
+]
+
+[
+    bitstream_splice(
+        name = "bitstream_sigverify_spx_{}_{}".format(
+            lc_state,
+            t["name"],
+        ),
+        src = "//hw/bitstream:rom",
+        data = ":otp_img_sigverify_spx_{}_{}".format(
+            lc_state,
+            t["name"],
+        ),
+        meminfo = "//hw/bitstream:otp_mmi",
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+    )
+    for lc_state, _ in get_lc_items()
+    for t in SIGVERIFY_SPX_CASES
+]
+
+[
+    opentitan_functest(
+        name = "sigverify_spx_{}_{}".format(
+            lc_state,
+            t["name"],
+        ),
+        cw310 = cw310_params(
+            bitstream = ":bitstream_sigverify_spx_{}_{}".format(
+                lc_state,
+                t["name"],
+            ),
+            exit_success = t["exit_success"][lc_state],
+            tags = maybe_skip_in_ci(lc_state_val),
+        ),
+        keyset = get_keysets_for_lc_state(lc_state_val)[0],
+        ot_flash_binary = ":empty_test_sigverify_spx",
+        targets = ["cw310_rom"],
+    )
+    for lc_state, lc_state_val in get_lc_items()
+    for t in SIGVERIFY_SPX_CASES
+]
+
+test_suite(
+    name = "rom_e2e_sigverify_spx",
+    tags = ["manual"],
+    tests = [
+        "sigverify_spx_{}_{}".format(
+            lc_state,
+            t["name"],
+        )
+        for lc_state, _ in get_lc_items()
+        for t in SIGVERIFY_SPX_CASES
+    ],
+)
