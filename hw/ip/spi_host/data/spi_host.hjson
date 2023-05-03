@@ -183,6 +183,8 @@
         { bits: "28",
           name: "TXEMPTY",
           desc: '''When high, indicates that the transmit data fifo is empty.
+                   Note, one transmit item can be pending in the internal transmit datapath (inside the spi_host_byte_select module).
+                   This means the transmit data fifo is empty and TXEMTPY will be high, while there is still one packet that needs to be transmitted.
                    '''
           resval: "0x0"
         },
@@ -244,9 +246,10 @@
         },
         { bits: "7:0",
           name: "TXQD",
-          desc: '''Transmit queue depth. Indicates how many unsent 32-bit words
-                   are currently in the TX FIFO.  When active, this result may
-                   be an overestimate due to synchronization delays,
+          desc: '''Transmit queue depth.
+                   Indicates how many unsent 32-bit words are currently in the TX FIFO.
+                   When active, this result may be an overestimate due to synchronization delays.
+                   It may also be an underestimate by 1 because of one pending transmit packet in the internal transmit datapath (inside the spi_host_byte_select module).
                 ''',
           resval: "0x0"
         }
