@@ -537,6 +537,24 @@
         { bits: "9:8"
           name: "SIGNAL"
           desc: "Host issued a START before transmitting ABYTE, a STOP or a RESTART after the preceeding ABYTE"
+          enum: [
+            { value: "0",
+              name: "NONE",
+              desc: "ABYTE contains ordinary data byte as received"
+            },
+            { value: "1",
+              name: "START",
+              desc: "ABYTE contains the 8-bit I2C address (R/W in lsb)"
+            },
+            { value: "2",
+              name: "STOP",
+              desc: "ABYTE contains junk"
+            },
+            { value: "3",
+              name: "RESTART",
+              desc: "ABYTE contains junk, START with address will follow"
+            },
+          ]
         }
       ]
       tags: [// Updated by the hw. Exclude from init and write-checks.
