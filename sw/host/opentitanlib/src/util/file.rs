@@ -12,7 +12,7 @@ use std::convert::TryInto;
 use std::fs::File;
 use std::io::{self, Read, Write};
 use std::os::unix::io::{AsRawFd, RawFd};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 /// Error type for errors related to PEM serialization.
@@ -71,10 +71,11 @@ pub trait PemSerilizable: ToWriter + FromReader {
 pub trait FromReader: Sized {
     /// Reads in an instance of `Self`.
     fn from_reader(r: impl Read) -> Result<Self>;
+}
 
-    /// Reads an instance of `Self` from a binary file at `path`.
-    fn read_from_file(path: &Path) -> Result<Self> {
-        let file = File::open(path)?;
+impl<T: FromReader> FileReadable for T {
+    fn read_from_file<P: Into<PathBuf>>(path: P) -> Result<Self> {
+        let file = File::open(path.into())?;
         Self::from_reader(file)
     }
 }
@@ -83,12 +84,23 @@ pub trait FromReader: Sized {
 pub trait ToWriter: Sized {
     /// Writes out `self`.
     fn to_writer(&self, w: &mut impl Write) -> Result<()>;
+}
 
-    /// Writes `self` to a file at `path` in binary format.
-    fn write_to_file(self, path: &Path) -> Result<()> {
-        let mut file = File::create(path)?;
+impl<T: ToWriter> FileWritable for T {
+    fn write_to_file<P: Into<PathBuf>>(&self, path: P) -> Result<()> {
+        let mut file = File::create(path.into())?;
         self.to_writer(&mut file)
     }
+}
+
+pub trait FileReadable: Sized {
+    /// Construct an instalce of `Self` from the contents of `file`.
+    fn read_from_file<P: Into<PathBuf>>(file: P) -> Result<Self>;
+}
+
+pub trait FileWritable: Sized {
+    /// Write `self` to a `file`.
+    fn write_to_file<P: Into<PathBuf>>(&self, file: P) -> Result<()>;
 }
 
 /// Waits for an event on `fd` or for `timeout` to expire.

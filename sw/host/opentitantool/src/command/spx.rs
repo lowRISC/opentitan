@@ -4,18 +4,18 @@
 
 use anyhow::Result;
 use serde_annotate::Annotate;
+use signature::{Keypair, Signer, Verifier};
 use std::any::Any;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::crypto::spx::{self, SpxKeypair, SpxPublicKeyPart, SpxSignature};
-use opentitanlib::util::file::{FromReader, PemSerilizable, ToWriter};
+use opentitanlib::crypto::spx::{self, Signature, SpxKeypair};
+use opentitanlib::util::file::{FileReadable, FileWritable, PemSerilizable};
 
 #[derive(Annotate, serde::Serialize)]
 pub struct SpxPublicKeyInfo {
-    pub public_key_num_bits: usize,
     #[annotate(format=hex)]
     pub public_key: Vec<u8>,
 }
@@ -39,8 +39,7 @@ impl CommandDispatch for SpxKeyShowCommand {
         let key = spx::load_spx_key(&self.key_file)?;
 
         Ok(Some(Box::new(SpxPublicKeyInfo {
-            public_key_num_bits: key.pk_len() * 8,
-            public_key: key.pk_as_bytes().to_vec(),
+            public_key: key.verifying_key().as_bytes(),
         })))
     }
 }
@@ -69,7 +68,7 @@ impl CommandDispatch for SpxKeyGenerateCommand {
         private_key.write_pem_file(&file)?;
 
         file.set_extension("pub.pem");
-        private_key.into_public_key().write_pem_file(&file)?;
+        private_key.verifying_key().write_pem_file(&file)?;
 
         Ok(None)
     }
@@ -137,8 +136,8 @@ impl CommandDispatch for SpxVerifyCommand {
     ) -> Result<Option<Box<dyn Annotate>>> {
         let message = std::fs::read(&self.message)?;
         let keypair = spx::load_spx_key(&self.key_file)?;
-        let signature = SpxSignature::read_from_file(&self.signature)?;
-        keypair.verify(&message, &signature)?;
+        let signature = Signature::read_from_file(&self.signature)?;
+        keypair.verifying_key().verify(&message, &signature)?;
         Ok(None)
     }
 }

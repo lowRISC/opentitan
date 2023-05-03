@@ -6,6 +6,8 @@ use std::path::Path;
 
 use anyhow::Result;
 
+use signature::{Keypair, Signer, Verifier};
+
 use pqcrypto_sphincsplus::sphincsshake256128ssimple as spx;
 use pqcrypto_traits::sign::DetachedSignature;
 use pqcrypto_traits::sign::PublicKey;
@@ -21,41 +23,19 @@ const SECRET_KEY_BYTE_LEN: usize = 64;
 const SIGNATURE_BIT_LEN: usize = 7856 * 8;
 fixed_size_bigint!(Signature, at_most SIGNATURE_BIT_LEN);
 
-/// Trait for implementing public key operations.
-pub trait SpxPublicKeyPart {
-    /// Returns the public key component.
-    fn pk(&self) -> &spx::PublicKey;
-
-    fn pk_as_bytes(&self) -> &[u8] {
-        self.pk().as_bytes()
-    }
-
-    fn pk_len(&self) -> usize {
-        self.pk_as_bytes().len()
-    }
-
-    /// Verify a message signature, returning Ok(()) if the signature matches.
-    fn verify(&self, message: &[u8], sig: &SpxSignature) -> Result<()> {
-        spx::verify_detached_signature(
-            &spx::DetachedSignature::from_bytes(&sig.0.to_le_bytes())?,
-            message,
-            self.pk(),
-        )?;
-        Ok(())
-    }
-}
-
 #[derive(Clone)]
 pub enum SpxKey {
     Public(SpxPublicKey),
     Private(SpxKeypair),
 }
 
-impl SpxPublicKeyPart for SpxKey {
-    fn pk(&self) -> &spx::PublicKey {
+impl Keypair for SpxKey {
+    type VerifyingKey = SpxPublicKey;
+
+    fn verifying_key(&self) -> Self::VerifyingKey {
         match self {
-            SpxKey::Public(k) => k.pk(),
-            SpxKey::Private(k) => k.pk(),
+            SpxKey::Public(pk) => pk.clone(),
+            SpxKey::Private(sk) => sk.verifying_key(),
         }
     }
 }
@@ -90,22 +70,20 @@ impl SpxKeypair {
         let (pk, sk) = spx::keypair();
         SpxKeypair { pk, sk }
     }
+}
 
-    /// Sign `message` using the secret key.
-    pub fn sign(&self, message: &[u8]) -> SpxSignature {
-        let sm = spx::detached_sign(message, &self.sk);
-        SpxSignature(Signature::from_le_bytes(sm.as_bytes()).unwrap())
-    }
+impl Keypair for SpxKeypair {
+    type VerifyingKey = SpxPublicKey;
 
-    /// Consumes this keypair and returns the corrisponding public key.
-    pub fn into_public_key(self) -> SpxPublicKey {
+    fn verifying_key(&self) -> Self::VerifyingKey {
         SpxPublicKey(self.pk)
     }
 }
 
-impl SpxPublicKeyPart for SpxKeypair {
-    fn pk(&self) -> &spx::PublicKey {
-        &self.pk
+impl Signer<Signature> for SpxKeypair {
+    fn try_sign(&self, msg: &[u8]) -> std::result::Result<Signature, signature::Error> {
+        let sm = spx::detached_sign(msg, &self.sk);
+        Ok(Signature::from_le_bytes(sm.as_bytes()).unwrap())
     }
 }
 
@@ -113,6 +91,10 @@ impl ToWriter for SpxKeypair {
     fn to_writer(&self, w: &mut impl Write) -> Result<()> {
         // Write out the keypair as a fixed length byte-string consisting of the public key
         // concatenated with the secret key.
+        //
+        // Note: The SPHINCS+ secret key contains the public key, but since pqcrypto doesn't expose
+        // any way to transmute between key types we duplicate the public portion rather than
+        // splicing the raw bytes.
         w.write_all(self.pk.as_bytes())?;
         w.write_all(self.sk.as_bytes())?;
         Ok(())
@@ -146,11 +128,24 @@ impl SpxPublicKey {
     pub fn from_bytes(b: &[u8]) -> Result<Self> {
         Ok(SpxPublicKey(spx::PublicKey::from_bytes(b)?))
     }
+
+    pub fn as_bytes(&self) -> Vec<u8> {
+        self.0.as_bytes().to_owned()
+    }
 }
 
-impl SpxPublicKeyPart for SpxPublicKey {
-    fn pk(&self) -> &spx::PublicKey {
-        &self.0
+impl Verifier<Signature> for SpxPublicKey {
+    fn verify(
+        &self,
+        msg: &[u8],
+        signature: &Signature,
+    ) -> std::result::Result<(), signature::Error> {
+        spx::verify_detached_signature(
+            &spx::DetachedSignature::from_bytes(&signature.0.to_le_bytes()).unwrap(),
+            msg,
+            &self.0,
+        )
+        .map_err(signature::Error::from_source)
     }
 }
 
@@ -175,28 +170,18 @@ impl PemSerilizable for SpxPublicKey {
     }
 }
 
-/// Wrapper for a SPHINCS+ signature.
-#[derive(Clone)]
-pub struct SpxSignature(pub Signature);
-
-impl ToWriter for SpxSignature {
+impl ToWriter for Signature {
     fn to_writer(&self, w: &mut impl Write) -> Result<()> {
-        w.write_all(&self.0.to_le_bytes())?;
+        w.write_all(&self.to_le_bytes())?;
         Ok(())
     }
 }
 
-impl FromReader for SpxSignature {
+impl FromReader for Signature {
     fn from_reader(mut r: impl Read) -> Result<Self> {
         let mut buf = [0u8; SIGNATURE_BIT_LEN / 8];
         let len = r.read(&mut buf)?;
-        Ok(SpxSignature(Signature::from_le_bytes(&buf[..len])?))
-    }
-}
-
-impl ToString for SpxSignature {
-    fn to_string(&self) -> String {
-        self.0.to_string()
+        Ok(Signature::from_le_bytes(&buf[..len])?)
     }
 }
 
@@ -210,6 +195,6 @@ mod test {
 
         let keypair = SpxKeypair::generate();
         let sig = keypair.sign(msg);
-        assert!(keypair.verify(msg, &sig).is_ok());
+        assert!(keypair.verifying_key().verify(msg, &sig).is_ok());
     }
 }

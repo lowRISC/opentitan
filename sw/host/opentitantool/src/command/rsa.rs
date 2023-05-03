@@ -5,6 +5,7 @@
 use anyhow::{bail, Result};
 use regex::Regex;
 use serde_annotate::Annotate;
+use signature::{Keypair, Signer, Verifier};
 use std::any::Any;
 use std::fs::File;
 use std::io::Write;
@@ -17,18 +18,17 @@ use opentitanlib::crypto::rsa::{
     Exponent, Modulus, N0Inv, RsaPrivateKey, RsaPublicKey, Signature, RR,
 };
 use opentitanlib::crypto::sha256::Sha256Digest;
+use opentitanlib::util::file::{FileReadable, FileWritable, PemSerilizable};
 use opentitanlib::util::parse_int::ParseInt;
 
 /// Given the path to a public key, returns the public key. Given
 /// the path to a private key, extracts the public key from the private
 /// key and returns the public key.
 fn load_pub_or_priv_key(path: &PathBuf) -> Result<RsaPublicKey> {
-    if let Ok(key) = RsaPublicKey::from_pkcs1_der_file(path) {
+    if let Ok(key) = RsaPublicKey::read_from_file(path) {
         return Ok(key);
     }
-    Ok(RsaPublicKey::from_private_key(
-        &RsaPrivateKey::from_pkcs8_der_file(path)?,
-    ))
+    Ok(RsaPrivateKey::read_from_file(path)?.verifying_key())
 }
 
 #[derive(serde::Serialize)]
@@ -68,7 +68,7 @@ impl CommandDispatch for RsaKeyShowCommand {
         let key = load_pub_or_priv_key(&self.der_file)?;
 
         Ok(Some(Box::new(RsaKeyInfo {
-            key_num_bits: key.modulus_num_bits(),
+            key_num_bits: key.bit_length(),
             modulus: key.modulus(),
             public_exponent: key.exponent(),
             n0_inv: key.n0_inv()?,
@@ -98,10 +98,10 @@ impl CommandDispatch for RsaKeyGenerateCommand {
         let mut der_file = self.output_dir.to_owned();
         der_file.push(&self.basename);
         der_file.set_extension("der");
-        private_key.to_pkcs8_der_file(&der_file)?;
+        private_key.write_to_file(&der_file)?;
 
         der_file.set_extension("pub.der");
-        RsaPublicKey::from_private_key(&private_key).to_pkcs1_der_file(&der_file)?;
+        private_key.verifying_key().write_to_file(&der_file)?;
 
         Ok(None)
     }
@@ -265,7 +265,7 @@ pub struct RsaSignCommand {
 
     #[structopt(
         name = "DER_FILE",
-        parse(try_from_str=RsaPrivateKey::from_pkcs8_der_file),
+        parse(try_from_str=RsaPrivateKey::read_from_file),
         help = "RSA private key file in PKCS#1 DER format"
     )]
     private_key: RsaPrivateKey,
@@ -286,13 +286,13 @@ impl CommandDispatch for RsaSignCommand {
     ) -> Result<Option<Box<dyn Annotate>>> {
         let digest = if let Some(input) = &self.input {
             let bytes = std::fs::read(input)?;
-            Sha256Digest::from_le_bytes(bytes)?
+            Sha256Digest::from_be_bytes(bytes)?
         } else {
             self.digest.clone().unwrap()
         };
-        let signature = self.private_key.sign(&digest)?;
+        let signature = self.private_key.sign(&digest.to_be_bytes());
         if let Some(output) = &self.output {
-            signature.write_to_file(output)?;
+            signature.write_pem_file(output)?;
         }
         Ok(Some(Box::new(RsaSignResult {
             digest: digest.to_string(),
@@ -323,10 +323,10 @@ impl CommandDispatch for RsaVerifyCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let key = RsaPublicKey::from_pkcs1_der_file(&self.der_file)?;
+        let key = RsaPublicKey::read_from_file(&self.der_file)?;
         let digest = Sha256Digest::from_str(&self.digest)?;
         let signature = Signature::from_str(&self.signature)?;
-        key.verify(&digest, &signature)?;
+        key.verify(&digest.to_be_bytes(), &signature)?;
         Ok(None)
     }
 }

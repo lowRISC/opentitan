@@ -4,6 +4,8 @@
 
 use anyhow::{anyhow, ensure, Result};
 use serde_annotate::Annotate;
+use sha2::Digest;
+use signature::{DigestSigner, DigestVerifier, Keypair, Signer, Verifier};
 use std::any::Any;
 use std::convert::TryInto;
 use std::fs::File;
@@ -15,11 +17,10 @@ use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 
 use opentitanlib::crypto::rsa::{Modulus, RsaPrivateKey, RsaPublicKey, Signature as RsaSignature};
-use opentitanlib::crypto::sha256::Sha256Digest;
-use opentitanlib::crypto::spx::{self, SpxKey, SpxPublicKey, SpxPublicKeyPart, SpxSignature};
+use opentitanlib::crypto::spx::{self, Signature as SpxSignature, SpxKey, SpxPublicKey};
 use opentitanlib::image::image::{self, ImageAssembler};
 use opentitanlib::image::manifest_def::ManifestSpec;
-use opentitanlib::util::file::{FromReader, ToWriter};
+use opentitanlib::util::file::{FileReadable, FileWritable};
 use opentitanlib::util::parse_int::ParseInt;
 
 /// Bootstrap the target device.
@@ -126,10 +127,10 @@ pub struct ManifestUpdateCommand {
 }
 
 fn load_rsa_key(key_file: &Path) -> Result<(RsaPublicKey, Option<RsaPrivateKey>)> {
-    match RsaPublicKey::from_pkcs1_der_file(key_file) {
+    match RsaPublicKey::read_from_file(key_file) {
         Ok(key) => Ok((key, None)),
-        Err(_) => match RsaPrivateKey::from_pkcs8_der_file(key_file) {
-            Ok(key) => Ok((RsaPublicKey::from_private_key(&key), Some(key))),
+        Err(_) => match RsaPrivateKey::read_from_file(key_file) {
+            Ok(key) => Ok((key.verifying_key(), Some(key))),
             Err(e) => Err(e),
         },
     }
@@ -157,15 +158,15 @@ impl CommandDispatch for ManifestUpdateCommand {
             image.update_modulus(keypub.modulus())?;
             if let Some(private_key) = keypriv {
                 // Compute the digest over the image, sign it and update it.
-                image.update_rsa_signature(private_key.sign(&image.compute_digest())?)?;
+                image.update_rsa_signature(private_key.try_sign_digest(image.compute_digest())?)?;
             }
         }
 
         if let Some(spx_key) = &self.spx_key {
             let spx_key = spx::load_spx_key(spx_key)?;
-            image.update_spx_key(&spx_key)?;
+            image.update_spx_key(&spx_key.verifying_key())?;
             if let SpxKey::Private(sk) = spx_key {
-                image.update_spx_signature(image.map_signed_region(|buf| sk.sign(buf)).0)?;
+                image.update_spx_signature(image.map_signed_region(|buf| sk.sign(buf)))?;
             }
         }
 
@@ -176,7 +177,7 @@ impl CommandDispatch for ManifestUpdateCommand {
 
         if let Some(spx_signature) = &self.spx_signature {
             let signature = SpxSignature::read_from_file(spx_signature)?;
-            image.update_spx_signature(signature.0)?;
+            image.update_spx_signature(signature)?;
         }
 
         image.write_to_file(self.output.as_ref().unwrap_or(&self.image))?;
@@ -209,10 +210,10 @@ impl CommandDispatch for ManifestVerifyCommand {
         let rsa_sig = manifest
             .rsa_signature()
             .ok_or_else(|| anyhow!("Invalid RSA signature"))?;
-        let digest = Sha256Digest::from_le_bytes(image.compute_digest().to_le_bytes())?;
+        let digest = image.compute_digest();
         let rsa_key = RsaPublicKey::new(Modulus::from_le_bytes(rsa_modulus.to_le_bytes())?)?;
         let rsa_sig = RsaSignature::from_le_bytes(rsa_sig.to_le_bytes())?;
-        rsa_key.verify(&digest, &rsa_sig)?;
+        rsa_key.verify_digest(digest, &rsa_sig)?;
 
         if self.spx {
             let spx_key = manifest
@@ -222,7 +223,7 @@ impl CommandDispatch for ManifestVerifyCommand {
                 .spx_signature()
                 .ok_or_else(|| anyhow!("Invalid SPHINCS+ signature"))?;
 
-            let spx_sig = SpxSignature(spx::Signature::from_le_bytes(spx_sig.to_le_bytes())?);
+            let spx_sig = spx::Signature::from_le_bytes(spx_sig.to_le_bytes())?;
             let spx_key = SpxPublicKey::from_bytes(&spx_key.to_be_bytes())?;
             image.map_signed_region(|m| spx_key.verify(m, &spx_sig))?;
         }
@@ -261,10 +262,10 @@ impl CommandDispatch for DigestCommand {
         let digest = image.compute_digest();
         if let Some(bin) = &self.bin {
             let mut file = File::create(bin)?;
-            file.write_all(&digest.to_le_bytes())?;
+            file.write_all(&digest.clone().finalize())?;
         }
         Ok(Some(Box::new(DigestResponse {
-            digest: digest.to_be_bytes(),
+            digest: digest.finalize().to_vec(),
         })))
     }
 }

@@ -4,6 +4,7 @@
 
 use anyhow::{ensure, Result};
 use memoffset::offset_of;
+use sha2::Digest;
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -13,11 +14,8 @@ use thiserror::Error;
 
 use zerocopy::LayoutVerified;
 
-use crate::crypto::rsa::Modulus;
-use crate::crypto::rsa::Signature as RsaSignature;
-use crate::crypto::sha256;
-use crate::crypto::spx::Signature as SpxSignature;
-use crate::crypto::spx::SpxPublicKeyPart;
+use crate::crypto::rsa::{Modulus, Signature as RsaSignature};
+use crate::crypto::spx::{Signature as SpxSignature, SpxPublicKey};
 use crate::image::manifest::Manifest;
 use crate::image::manifest_def::{
     ManifestRsaBuffer, ManifestSpec, ManifestSpxKey, ManifestSpxSignature,
@@ -134,11 +132,11 @@ impl Image {
     }
 
     /// Updates the spx_key field in the `Manifest`.
-    pub fn update_spx_key(&mut self, key: &impl SpxPublicKeyPart) -> Result<()> {
+    pub fn update_spx_key(&mut self, key: &SpxPublicKey) -> Result<()> {
         let manifest = self.borrow_manifest_mut()?;
 
         let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
-        manifest_def.update_spx_key(ManifestSpxKey::from_le_bytes(key.pk_as_bytes())?);
+        manifest_def.update_spx_key(ManifestSpxKey::from_le_bytes(key.as_bytes())?);
 
         *manifest = manifest_def.try_into()?;
         Ok(())
@@ -177,8 +175,10 @@ impl Image {
     }
 
     /// Compute the SHA256 digest for the signed portion of the `Image`.
-    pub fn compute_digest(&self) -> sha256::Sha256Digest {
-        self.map_signed_region(|v| sha256::sha256(v))
+    pub fn compute_digest(&self) -> sha2::Sha256 {
+        let mut hasher = sha2::Sha256::new();
+        self.map_signed_region(|v| hasher.update(v));
+        hasher
     }
 }
 
@@ -256,6 +256,7 @@ impl ImageAssembler {
 mod tests {
     use super::*;
     use crate::testdata;
+    use crate::util::file::{FileReadable, FileWritable};
 
     #[test]
     fn test_assemble_concat() -> Result<()> {
@@ -315,9 +316,9 @@ mod tests {
     #[test]
     fn test_load_image() {
         // Read and write back image.
-        let image = Image::read_from_file(&testdata!("test_image.bin")).unwrap();
+        let image = Image::read_from_file(testdata!("test_image.bin")).unwrap();
         image
-            .write_to_file(&testdata!("test_image_out.bin"))
+            .write_to_file(testdata!("test_image_out.bin"))
             .unwrap();
 
         // Ensure the result is identical to the original.

@@ -248,6 +248,7 @@ rust_library(
         "@crate_index//:serialport",
         "@crate_index//:sha2",
         "@crate_index//:shellwords",
+        "@crate_index//:signature",
         "@crate_index//:structopt",
         "@crate_index//:thiserror",
         "@crate_index//:typetag",

@@ -7,17 +7,15 @@ use num_bigint_dig::{traits::ModInverse, BigInt, BigUint, Sign::Minus};
 use rand::rngs::OsRng;
 use rsa::pkcs1::{DecodeRsaPublicKey, EncodeRsaPublicKey};
 use rsa::pkcs8::{DecodePrivateKey, EncodePrivateKey};
-use rsa::{pkcs1v15::Pkcs1v15Sign, PublicKey, PublicKeyParts};
-use sha2::Sha256;
-use std::fs::File;
+use rsa::{pkcs1v15::Pkcs1v15Sign, PublicKey as _, PublicKeyParts};
+use sha2::{Digest, Sha256};
+use signature::{DigestSigner, DigestVerifier, Keypair, Signer, Verifier};
 use std::io::{Read, Write};
-use std::ops::Deref;
 use std::ops::Shl;
-use std::path::{Path, PathBuf};
-use thiserror::Error;
+use std::path::PathBuf;
 
-use crate::crypto::sha256::Sha256Digest;
 use crate::util::bigint::fixed_size_bigint;
+use crate::util::file::{FileReadable, FileWritable, FromReader, PemSerilizable, ToWriter};
 
 const MODULUS_BIT_LEN: usize = 3072;
 const EXPONENT_BIT_LEN: usize = 17;
@@ -31,36 +29,10 @@ fixed_size_bigint!(Signature, at_most SIGNATURE_BIT_LEN);
 fixed_size_bigint!(RR, at_most RR_BIT_LEN);
 fixed_size_bigint!(N0Inv, at_most OTBN_BITS);
 
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("Invalid public key")]
-    InvalidPublicKey,
-    #[error("Invalid DER file: {der}")]
-    InvalidDerFile {
-        der: PathBuf,
-        #[source]
-        source: anyhow::Error,
-    },
-    #[error("Read failed: {0}")]
-    ReadFailed(PathBuf),
-    #[error("Write failed: {0}")]
-    WriteFailed(PathBuf),
-    #[error("Generate failed")]
-    GenerateFailed,
-    #[error("Invalid signature")]
-    InvalidSignature,
-    #[error("Sign failed")]
-    SignFailed,
-    #[error("Verification failed")]
-    VerifyFailed,
-    #[error("Failed to compute key component")]
-    KeyComponentComputeFailed,
-}
-
 /// Ensure the components of `key` have the correct bit length.
 fn validate_key(key: &impl rsa::PublicKeyParts) -> Result<()> {
     if key.n().bits() != MODULUS_BIT_LEN || key.e() != &BigUint::from(65537u32) {
-        bail!(Error::InvalidPublicKey)
+        bail!("Invalid public key")
     } else {
         Ok(())
     }
@@ -69,7 +41,7 @@ fn validate_key(key: &impl rsa::PublicKeyParts) -> Result<()> {
 /// RSA Public Key used in OpenTitan signing operations.
 ///
 /// This is a wrapper for handling RSA public keys as they're used in OpenTitan images.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct RsaPublicKey {
     key: rsa::RsaPublicKey,
 }
@@ -81,45 +53,8 @@ impl RsaPublicKey {
             key: rsa::RsaPublicKey::new(
                 BigUint::from_bytes_le(n.to_le_bytes().as_slice()),
                 BigUint::from(65537u32),
-            )
-            .map_err(|_| Error::InvalidPublicKey)?,
+            )?,
         })
-    }
-
-    /// Construct a new public key from a PKCS1 encoded DER file.
-    pub fn from_pkcs1_der_file<P: Into<PathBuf>>(der_file: P) -> Result<RsaPublicKey> {
-        let der_file = der_file.into();
-        match rsa::RsaPublicKey::read_pkcs1_der_file(&der_file) {
-            Ok(key) => {
-                validate_key(&key)?;
-                Ok(Self { key })
-            }
-            Err(err) => bail!(Error::InvalidDerFile {
-                der: der_file,
-                source: anyhow!(err),
-            }),
-        }
-    }
-
-    /// Write public key to a PKCS1 encoded DER file.
-    pub fn to_pkcs1_der_file<P: Into<PathBuf>>(&self, der_file: P) -> Result<()> {
-        let der_file = der_file.into();
-        self.key
-            .write_pkcs1_der_file(&der_file)
-            .map_err(|_| Error::WriteFailed(der_file))?;
-        Ok(())
-    }
-
-    /// Extract the public key components from a given private key.
-    pub fn from_private_key(private_key: &RsaPrivateKey) -> Self {
-        Self {
-            key: rsa::RsaPublicKey::from(&private_key.key),
-        }
-    }
-
-    /// Bit length for this key.
-    pub fn modulus_num_bits(&self) -> usize {
-        self.key.n().bits()
     }
 
     /// Modulus for this key.
@@ -141,33 +76,73 @@ impl RsaPublicKey {
         let n0_inv = n_neg
             .mod_inverse(&base)
             .and_then(|v| v.to_biguint())
-            .ok_or(Error::KeyComponentComputeFailed)?;
+            .ok_or(anyhow!("Failed to compute n0_inv"))?;
         Ok(N0Inv::from_le_bytes(n0_inv.to_bytes_le())?)
     }
 
     /// The montgomery parameter RR.
     pub fn rr(&self) -> RR {
-        let rr = BigUint::from(1u8).shl(2 * self.modulus_num_bits()) % self.key.n();
+        let rr = BigUint::from(1u8).shl(2 * self.bit_length()) % self.key.n();
         // `rr` < `n`, so `rr` will always fit in `RR` and thus `unwrap()` here is safe.
         RR::from_le_bytes(rr.to_bytes_le()).unwrap()
     }
 
-    /// Verify a `signature` is valid for a given `digest` under this key.
-    pub fn verify(&self, digest: &Sha256Digest, signature: &Signature) -> Result<()> {
-        self.key
-            .verify(
-                Pkcs1v15Sign::new::<Sha256>(),
-                digest.to_be_bytes().as_slice(),
-                signature.to_be_bytes().as_slice(),
-            )
-            .map_err(|_| anyhow!(Error::VerifyFailed))
+    /// The bit-length of this key.
+    pub fn bit_length(&self) -> usize {
+        self.key.n().bits()
+    }
+}
+
+impl DigestVerifier<sha2::Sha256, Signature> for RsaPublicKey {
+    fn verify_digest(
+        &self,
+        digest: sha2::Sha256,
+        signature: &Signature,
+    ) -> std::result::Result<(), signature::Error> {
+        self.key.verify(
+            Pkcs1v15Sign::new::<Sha256>(),
+            &digest.finalize(),
+            signature.to_be_bytes().as_slice(),
+        )?;
+        Ok(())
+    }
+}
+
+impl Verifier<Signature> for RsaPublicKey {
+    fn verify(
+        &self,
+        msg: &[u8],
+        signature: &Signature,
+    ) -> std::result::Result<(), signature::Error> {
+        self.key.verify(
+            Pkcs1v15Sign::new::<Sha256>(),
+            msg,
+            signature.to_be_bytes().as_slice(),
+        )?;
+        Ok(())
+    }
+}
+
+impl FileReadable for RsaPublicKey {
+    fn read_from_file<P: Into<PathBuf>>(file: P) -> Result<Self> {
+        // Construct a new public key from a PKCS1 encoded DER file.
+        let key = rsa::RsaPublicKey::read_pkcs1_der_file(file.into())?;
+        validate_key(&key)?;
+        Ok(Self { key })
+    }
+}
+
+impl FileWritable for RsaPublicKey {
+    fn write_to_file<P: Into<PathBuf>>(&self, file: P) -> Result<()> {
+        self.key.write_pkcs1_der_file(file.into())?;
+        Ok(())
     }
 }
 
 /// RSA Private Key used in OpenTitan signing operations.
 ///
 /// This is a wrapper for handling RSA priavate keys as they're used in OpenTitan images.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct RsaPrivateKey {
     key: rsa::RsaPrivateKey,
 }
@@ -177,77 +152,74 @@ impl RsaPrivateKey {
     pub fn new() -> Result<Self> {
         let mut rng = OsRng;
         Ok(Self {
-            key: rsa::RsaPrivateKey::new_with_exp(&mut rng, 3072, &BigUint::from(65537u32))
-                .map_err(|_| Error::GenerateFailed)?,
+            key: rsa::RsaPrivateKey::new_with_exp(&mut rng, 3072, &BigUint::from(65537u32))?,
         })
     }
+}
 
-    /// Construct a new private key from a PKCS8 encoded DER file.
-    pub fn from_pkcs8_der_file<P: Into<PathBuf>>(der_file: P) -> Result<Self> {
-        let der_file = der_file.into();
-        match rsa::RsaPrivateKey::read_pkcs8_der_file(&der_file) {
-            Ok(key) => {
-                validate_key(&key)?;
-                Ok(Self { key })
-            }
-            Err(err) => bail!(Error::InvalidDerFile {
-                der: der_file,
-                source: anyhow!(err),
-            }),
+impl FileReadable for RsaPrivateKey {
+    fn read_from_file<P: Into<PathBuf>>(file: P) -> Result<Self> {
+        // Construct a new private key from a PKCS8 encoded DER file.
+        let key = rsa::RsaPrivateKey::read_pkcs8_der_file(file.into())?;
+        validate_key(&key)?;
+        Ok(Self { key })
+    }
+}
+
+impl FileWritable for RsaPrivateKey {
+    fn write_to_file<P: Into<PathBuf>>(&self, file: P) -> Result<()> {
+        // Write private key to a PKCS8 encoded DER file.
+        self.key.write_pkcs8_der_file(file.into())?;
+        Ok(())
+    }
+}
+
+impl Keypair for RsaPrivateKey {
+    type VerifyingKey = RsaPublicKey;
+
+    fn verifying_key(&self) -> Self::VerifyingKey {
+        RsaPublicKey {
+            key: self.key.to_public_key(),
         }
     }
+}
 
-    /// Write private key to a PKCS8 encoded DER file.
-    pub fn to_pkcs8_der_file<P: Into<PathBuf>>(&self, der_file: P) -> Result<()> {
-        let der_file = der_file.into();
-        self.key
-            .write_pkcs8_der_file(&der_file)
-            .map_err(|_| Error::WriteFailed(der_file))?;
-        Ok(())
-    }
-
-    /// Signs a SHA256 `digest` using PKCS1v15 padding scheme.
-    pub fn sign(&self, digest: &Sha256Digest) -> Result<Signature> {
+impl DigestSigner<sha2::Sha256, Signature> for RsaPrivateKey {
+    fn try_sign_digest(
+        &self,
+        digest: sha2::Sha256,
+    ) -> std::result::Result<Signature, signature::Error> {
         let signature = self
             .key
-            .sign(Pkcs1v15Sign::new::<Sha256>(), &digest.to_be_bytes())
-            .map_err(|_| Error::SignFailed)?;
-        Ok(Signature::from_be_bytes(signature)?)
+            .sign(Pkcs1v15Sign::new::<Sha256>(), &digest.finalize())?;
+        Ok(Signature::from_be_bytes(signature).unwrap())
     }
 }
 
-impl Signature {
-    /// Creates an `Signature` from a given input file.
-    pub fn read_from_file(path: &Path) -> Result<Signature> {
-        let err = |_| Error::ReadFailed(path.to_owned());
-        let mut file = File::open(path).map_err(err)?;
+impl Signer<Signature> for RsaPrivateKey {
+    fn try_sign(&self, msg: &[u8]) -> std::result::Result<Signature, signature::Error> {
+        let signature = self.key.sign(Pkcs1v15Sign::new::<Sha256>(), msg)?;
+        Ok(Signature::from_be_bytes(signature).unwrap())
+    }
+}
+
+impl FromReader for Signature {
+    fn from_reader(mut r: impl Read) -> Result<Self> {
         let mut buf = Vec::<u8>::new();
-        file.read_to_end(&mut buf).map_err(err)?;
+        r.read_to_end(&mut buf)?;
         Ok(Signature::from_le_bytes(buf.as_slice())?)
     }
+}
 
-    /// Write out the `Signature` to a file at the given `path`.
-    pub fn write_to_file(&self, path: &Path) -> Result<()> {
-        let err = |_| Error::WriteFailed(path.to_owned());
-        let mut file = File::create(path).map_err(err)?;
-        file.write_all(self.to_le_bytes().as_mut_slice())
-            .map_err(err)?;
+impl ToWriter for Signature {
+    fn to_writer(&self, w: &mut impl Write) -> Result<()> {
+        w.write_all(self.to_le_bytes().as_mut_slice())?;
         Ok(())
     }
 }
 
-impl Deref for RsaPublicKey {
-    type Target = rsa::RsaPublicKey;
-
-    fn deref(&self) -> &Self::Target {
-        &self.key
-    }
-}
-
-impl Deref for RsaPrivateKey {
-    type Target = rsa::RsaPrivateKey;
-
-    fn deref(&self) -> &Self::Target {
-        &self.key
+impl PemSerilizable for Signature {
+    fn label() -> &'static str {
+        "RSA Signature"
     }
 }
