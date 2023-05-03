@@ -79,8 +79,8 @@ set rv_jtag_tck_inv_pin  \
     [get_nets -segments -of_objects \
       [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I]]]
 
-set_clock_sense -negative ${lc_jtag_tck_pin}
-set_clock_sense -negative ${rv_jtag_tck_pin}
+set_clock_sense -negative ${lc_jtag_tck_inv_pin}
+set_clock_sense -negative ${rv_jtag_tck_inv_pin}
 
 ## Set asynchronous clock groups
 set_clock_groups -group ${clks_10_unbuf} -group ${clks_48_unbuf} -group ${clks_aon_unbuf} -group clk_io_div2 -group clk_io_div4 -group [get_clocks {lc_jtag_tck rv_jtag_tck}] -group {clk_spi clk_spi_in clk_spi_out} -group sys_clk_pin -asynchronous
