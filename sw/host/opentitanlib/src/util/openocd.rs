@@ -142,7 +142,6 @@ impl OpenOcdServer {
         let stream = Self::wait_for_socket(addr, self.opts.openocd_timeout)
             .context("failed to connect to OpenOCD socket")?;
 
-        stream.set_linger(Some(Duration::from_secs(0)))?;
         self.openocd_socket_stream.set(Some(stream));
 
         // Test the connection by asking for OpenOCD's version.

@@ -52,7 +52,7 @@ fn stress_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         jtag.halt()?;
         jtag.resume()?;
         jtag.disconnect()?;
-        //thread::sleep(Duration::from_millis(500));
+        thread::sleep(Duration::from_millis(500));
     }
     Ok(())
 }
