@@ -38,7 +38,7 @@ fn reset(transport: &TransportWrapper, strappings: &[&str], reset_delay: Duratio
     Ok(())
 }
 
-fn stress_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn _stress_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // repeat the same test 50 times (stay below timeout)
     for i in 0..20 {
         log::info!("Attempt {}: reset and connect OpenOCD", i);
@@ -53,6 +53,15 @@ fn stress_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         jtag.resume()?;
         jtag.disconnect()?;
         thread::sleep(Duration::from_millis(500));
+    }
+    Ok(())
+}
+
+fn stress_openocd2(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    // repeat the same test 50 times (stay below timeout)
+    for i in 0..20 {
+        log::info!("Attempt {}", i);
+        test_openocd(opts, transport)?;
     }
     Ok(())
 }
@@ -246,7 +255,7 @@ fn main() -> Result<()> {
     let transport = opts.init.init_target()?;
 
     execute_test!(test_openocd, &opts, &transport);
-    execute_test!(stress_openocd, &opts, &transport);
+    execute_test!(stress_openocd2, &opts, &transport);
 
     Ok(())
 }
