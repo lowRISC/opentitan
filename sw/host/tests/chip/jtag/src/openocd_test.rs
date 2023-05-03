@@ -7,6 +7,7 @@ use std::time::Duration;
 use anyhow::Result;
 use regex::Regex;
 use structopt::StructOpt;
+use std::thread;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boolean::MultiBitBool8;
@@ -51,6 +52,7 @@ fn stress_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         jtag.halt()?;
         jtag.resume()?;
         jtag.disconnect()?;
+        thread::sleep(Duration::from_millis(500));
     }
     Ok(())
 }
