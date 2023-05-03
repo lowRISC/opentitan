@@ -1,1 +1,21 @@
-../top_earlgrey/clkgen_xil7series.core
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# TODO: long term this should be merged into AST.
+
+name: "lowrisc:systems:clkgen_xil7series"
+description: "Clock generation infrastructure for Xilinx 7-Series FPGAs."
+filesets:
+  files_rtl:
+    files:
+      - rtl/clkgen_xil7series.sv
+      # piggy-back here for now
+      - rtl/usr_access_xil7series.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
