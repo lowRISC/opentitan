@@ -4,4 +4,5 @@
 
 pub mod clkmgr;
 pub mod lc_ctrl;
+pub mod otp_ctrl;
 pub mod rstmgr;
