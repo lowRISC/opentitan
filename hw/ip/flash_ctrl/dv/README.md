@@ -115,8 +115,6 @@ The following covergroups have been developed to prove that the test intent has 
   Check if request of erase suspension occurred.
 * msgfifo_level_cg
   Covers all possible fifo status to generate interrupt for read / program.
-* rd_buff_evict_cg
-  Check sequence of operation to trigger read eviction.
 * eviction_cg
   Check whether eviction happens at all 4 caches with write / erase operation.
   Also check each address belongs to randomly enabled scramble and ecc.
