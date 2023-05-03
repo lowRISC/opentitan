@@ -124,6 +124,7 @@ package chip_env_pkg;
   typedef enum int {
     LcInitialized,
     LcReady,
+    LcExtClockSwitched,
     LcTransitionSuccessful,
     LcTransitionCntError,
     LcTransitionError,
