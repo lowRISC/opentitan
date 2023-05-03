@@ -309,7 +309,7 @@ interface keymgr_if(input clk, input rst_n);
   endfunction
 
   function automatic void update_edn_toleranc_cycs(int edn_clk, int main_clk);
-    if ((main_clk/edn_clk) > 5) edn_tolerance_cycs = (main_clk/edn_clk) * 4;
+    if ((main_clk/edn_clk) * 10 > edn_tolerance_cycs) edn_tolerance_cycs = (main_clk/edn_clk) * 10;
   endfunction
 
   logic valid_done_window;
