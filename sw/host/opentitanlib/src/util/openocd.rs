@@ -52,7 +52,7 @@ impl OpenOcdServer {
     /// Delay between polls to the OpenOCD server to prevent thrashing.
     const POLL_DELAY: Duration = Duration::from_millis(100);
     /// How long to wait for OpenOCD to get ready to accept a TCL connection.
-    const OPENOCD_TCL_READY_TMO: Duration = Duration::from_secs(5);
+    const OPENOCD_TCL_READY_TMO: Duration = Duration::from_secs(30);
 
     /// Create a new OpenOcdServer with the given JTAG options without starting OpenOCD.
     pub fn new(opts: &JtagParams) -> Result<OpenOcdServer> {
