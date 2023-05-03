@@ -43,4 +43,7 @@
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
+
+  // Enable cdc instrumentation.
+  run_opts: ["+cdc_instrumentation_enabled=1"]
 }
