@@ -68,5 +68,5 @@ jobs:
         --test_tag_filters=-verilator,-dv,-broken \
         --build_tests_only \
         --test_output=errors \
-        //sw/device/tests:test_openocd
+        //sw/device/silicon_creator/rom/e2e:amaury
     displayName: "OpenOCD / rv_dm stress test"
