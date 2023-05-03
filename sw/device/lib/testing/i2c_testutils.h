@@ -23,8 +23,8 @@
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_write(const dif_i2c_t *i2c, uint8_t addr,
-                          uint8_t byte_count, const uint8_t *data,
-                          bool skip_stop);
+                             uint8_t byte_count, const uint8_t *data,
+                             bool skip_stop);
 
 /**
  * Construct and issue an I2C read operation as an I2C host.
@@ -74,7 +74,7 @@ status_t i2c_testutils_target_check_end(const dif_i2c_t *i2c,
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint8_t byte_count,
-                                 const uint8_t *data);
+                                   const uint8_t *data);
 
 /**
  * Check completion of an I2C read as an I2C device.
@@ -88,8 +88,8 @@ status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint8_t byte_count,
  * an error.
  */
 OT_WARN_UNUSED_RESULT
-status_t i2c_testutils_target_check_rd(const dif_i2c_t *i2c, uint8_t *addr,
-                                       uint8_t *cont_byte);
+status_t i2c_testutils_target_check_read(const dif_i2c_t *i2c, uint8_t *addr,
+                                         uint8_t *cont_byte);
 
 /**
  * Prepare for an I2C write as an I2C device.

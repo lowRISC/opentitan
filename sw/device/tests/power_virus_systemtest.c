@@ -1085,8 +1085,8 @@ static void comms_data_load_task(void *task_parameters) {
   dif_i2c_status_t i2c_status;
   for (size_t i = 0; i < ARRAYSIZE(i2c_handles); ++i) {
     CHECK_STATUS_OK(i2c_testutils_write(i2c_handles[i], /*addr=*/i + 1,
-                                     I2C_PARAM_FIFO_DEPTH - 1, kI2cMessage,
-                                     /*skip_stop=*/false));
+                                        I2C_PARAM_FIFO_DEPTH - 1, kI2cMessage,
+                                        /*skip_stop=*/false));
   }
 
   // Load data into SPI host (1; as 0 is used in passthrough mode) FIFO.

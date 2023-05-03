@@ -61,8 +61,8 @@ const i2c_connect_conf_t i2c_conf[] = {
                      kTopEarlgreyPinmuxOutselI2c2Sda}}};
 
 status_t i2c_testutils_write(const dif_i2c_t *i2c, uint8_t addr,
-                          uint8_t byte_count, const uint8_t *data,
-                          bool skip_stop) {
+                             uint8_t byte_count, const uint8_t *data,
+                             bool skip_stop) {
   dif_i2c_fmt_flags_t flags = kDefaultFlags;
   uint8_t data_frame;
 
@@ -157,7 +157,7 @@ status_t i2c_testutils_target_check_end(const dif_i2c_t *i2c,
 }
 
 status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint8_t byte_count,
-                                 const uint8_t *data) {
+                                   const uint8_t *data) {
   uint8_t tx_fifo_lvl, acq_fifo_lvl;
   TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, &tx_fifo_lvl, &acq_fifo_lvl));
   // Check there's space in tx_fifo and acq_fifo
@@ -171,8 +171,8 @@ status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint8_t byte_count,
   return OK_STATUS();
 }
 
-status_t i2c_testutils_target_check_rd(const dif_i2c_t *i2c, uint8_t *addr,
-                                       uint8_t *cont_byte) {
+status_t i2c_testutils_target_check_read(const dif_i2c_t *i2c, uint8_t *addr,
+                                         uint8_t *cont_byte) {
   int32_t dir = TRY(i2c_testutils_target_check_start(i2c, addr));
   TRY_CHECK(dir == kI2cRead);
   // TODO: Check for errors / status.
