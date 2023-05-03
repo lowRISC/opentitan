@@ -431,6 +431,7 @@ The SPI_HOST supports interrupts for the following SPI events:
 - `RXFULL`: The SPI_HOST has run out of room in the RXFIFO.
 - `RXWM`: The number of 32-bit words in the RXFIFO currently exceeds the value set in [`CONTROL.RX_WATERMARK`](../data/spi_host.hjson#control).
 - `TXEMPTY`: The SPI_HOST has transmitted all the data in the TX FIFO.
+  Note the transmit FIFO may be empty while there is still one packet pending in the internal transmit datapath (inside the `spi_host_byte_select` module).
 - `TXWM`: The number of 32-bit words in the TX FIFO currently is currently less than the value set in [`CONTROL.TX_WATERMARK`](../data/spi_host.hjson#control)
 
 Most SPI events signal a particular condition that persists until it is fixed, and these conditions can be detected by polling the corresponding field in the [`STATUS`](../data/spi_host.hjson#status) register.
