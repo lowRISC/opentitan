@@ -591,3 +591,23 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
     ],
 )
+
+opentitan_functest(
+    name = "manuf_cp_test_lock_functest",
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
+    cw310 = cw310_params(
+        bitstream = ":bitstream_otp_ctrl_functest",
+        tags = ["jtag"],
+        test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
+    ),
+    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+    targets = ["cw310_rom"],
+    test_harness = "//sw/host/tests/manuf/manuf_cp_test_lock",
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+    ],
+)
