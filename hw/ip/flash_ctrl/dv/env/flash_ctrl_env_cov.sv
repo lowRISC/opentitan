@@ -74,15 +74,16 @@ class flash_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(flash_ctrl_env_cfg));
     `DV_FCOV_EXPR_SEEN(host_gnt_err,    err_val[FlashFaultHostGntErr])
   endgroup
 
-  covergroup fifo_lvl_cg with function sample (bit[4:0] prog, bit[4:0] rd);
-    prog_lvl_cp: coverpoint prog {
+  covergroup msgfifo_level_cg with function sample (bit[4:0] prog, bit[4:0] rd, bit prog_lvl_int,
+                                               bit rd_lvl_int);
+    prog_lvl_cp: coverpoint prog iff (prog_lvl_int) {
       bins prog_lvl[] = {[1:3]};
     }
 
-    rd_lvl_cp: coverpoint rd {
+    rd_lvl_cp: coverpoint rd iff (rd_lvl_int) {
       bins rd_lvl[] = {[1:15]};
     }
-  endgroup : fifo_lvl_cg
+  endgroup : msgfifo_level_cg
 
   covergroup eviction_cg with function sample (int idx, bit[1:0] op,
                                                bit [1:0] scr_ecc);
@@ -116,7 +117,7 @@ class flash_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(flash_ctrl_env_cfg));
     control_cg = new();
     erase_susp_cg = new();
     sw_error_cg = new();
-    fifo_lvl_cg = new();
+    msgfifo_level_cg = new();
     eviction_cg = new();
     fetch_code_cg = new();
     rma_init_cg = new();

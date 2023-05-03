@@ -349,7 +349,9 @@ class flash_ctrl_scoreboard #(
                   cov.intr_cg.sample(i, intr_en[i], item.d_data[i]);
                   cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
                 end
-                cov.fifo_lvl_cg.sample(data[4:0], data[12:8]);
+                cov.msgfifo_level_cg.sample(data[4:0], data[12:8],
+                                            cfg.intr_vif.pins[FlashCtrlIntrProgLvl],
+                                            cfg.intr_vif.pins[FlashCtrlIntrRdLvl]);
               end
               // Skip read check on intr_state CSR, since it is WO.
               do_read_check = 1'b0;
