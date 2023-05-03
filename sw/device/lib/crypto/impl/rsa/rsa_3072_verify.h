@@ -11,41 +11,12 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
-enum {
-  /* Length of the RSA-3072 modulus is 3072 bits */
-  kRsa3072NumBits = 3072,
-  /* Length of the RSA-3072 modulus in bytes */
-  kRsa3072NumBytes = kRsa3072NumBits / 8,
-  /* Length of the RSA-3072 modulus in words */
-  kRsa3072NumWords = kRsa3072NumBytes / sizeof(uint32_t),
-};
-
-/**
- * A type that holds an element of the RSA-3072 finite field (i.e. a 3072-bit
- * number).
- *
- * This type can be used for RSA-3072 signatures, keys, and intermediate values
- * during modular exponentiation.
- */
-typedef struct rsa_3072_int_t {
-  uint32_t data[kRsa3072NumWords];
-} rsa_3072_int_t;
-
-/**
- * A type that holds an RSA-3072 public key.
- *
- * The public key consists of a 3072-bit modulus n and a public exponent e.
- */
-typedef struct rsa_3072_public_key_t {
-  rsa_3072_int_t n;
-  uint32_t e;
-} rsa_3072_public_key_t;
 
 /**
  * A type that holds precomputed Montgomery constants for a RSA-3072 public
