@@ -127,7 +127,7 @@ The following sections give details on how the SPI_HOST can be used to control a
 For simplicity, this section describes how to interact one device, attached to CSB[0], and as such references are made to the multi-registers [`CONFIGOPTS`](../data/spi_host.hjson#configopts) and [`COMMAND`](../data/spi_host.hjson#command).
 To configure timing and send commands to devices on other CSB lines, instead use the `CONFIGOPTS` multi-register corresponding to desired CSB line.
 
-The most common differences between target devices are the requirements for a specific SPI clock phase or polarity, CPOL and CPHA, which were described in the previous section [SPI Protocol Basics](#spi-protocol-basics).
+The most common differences between target devices are the requirements for a specific SPI clock polarity and phase, CPOL and CPHA, which were described in the previous section [SPI Protocol Basics](#spi-protocol-basics).
 These clock parameters can be set via the [`CONFIGOPTS.CPOL`](../data/spi_host.hjson#configopts) or [`CONFIGOPTS.CPHA`](../data/spi_host.hjson#configopts) register fields.
 Likewise, as also described in the previous section, if device setup times require a full clock cycle before sampling the output, Full-Cycle Mode can be enabled by asserting the [`CONFIGOPTS.FULLCYC`](../data/spi_host.hjson#configopts) bit.
 
