@@ -425,7 +425,7 @@ module lc_ctrl_fsm
       FlashRmaSt: begin
         if (trans_target_i == {DecLcStateNumRep{DecLcStRma}}) begin
           lc_flash_rma_req = On;
-          if (lc_flash_rma_ack[0] == On) begin
+          if (lc_tx_test_true_strict(lc_flash_rma_ack[0])) begin
             fsm_state_d = TokenCheck0St;
           end
         end else begin
@@ -445,9 +445,11 @@ module lc_ctrl_fsm
           // If any of these RMA are conditions are true,
           // all of them must be true at the same time.
           if ((trans_target_i != {DecLcStateNumRep{DecLcStRma}} &&
-               lc_flash_rma_req_o == Off && lc_flash_rma_ack[1] == Off) ||
+               lc_tx_test_false_strict(lc_flash_rma_req_o) &&
+               lc_tx_test_false_strict(lc_flash_rma_ack[1])) ||
               (trans_target_i == {DecLcStateNumRep{DecLcStRma}} &&
-               lc_flash_rma_req_o == On && lc_flash_rma_ack[1] == On)) begin
+               lc_tx_test_true_strict(lc_flash_rma_req_o) &&
+               lc_tx_test_true_strict(lc_flash_rma_ack[1]))) begin
             if (hashed_token_i == hashed_token_mux &&
                 !token_hash_err_i &&
                 &hashed_token_valid_mux) begin
@@ -635,24 +637,24 @@ module lc_ctrl_fsm
     {hashed_tokens_lower[RawUnlockTokenIdx],
      hashed_tokens_upper[RawUnlockTokenIdx]} = RndCnstRawUnlockTokenHashed;
     // This mux has two separate halves, steered with separately buffered life cycle signals.
-    if (test_tokens_valid[0] == On) begin
+    if (lc_tx_test_true_strict(test_tokens_valid[0])) begin
       hashed_tokens_lower[TestUnlockTokenIdx] = test_unlock_token_lower;
     end
-    if (test_tokens_valid[1] == On) begin
+    if (lc_tx_test_true_strict(test_tokens_valid[1])) begin
       hashed_tokens_upper[TestUnlockTokenIdx] = test_unlock_token_upper;
     end
     // This mux has two separate halves, steered with separately buffered life cycle signals.
-    if (test_tokens_valid[2] == On) begin
+    if (lc_tx_test_true_strict(test_tokens_valid[2])) begin
       hashed_tokens_lower[TestExitTokenIdx] = test_exit_token_lower;
     end
-    if (test_tokens_valid[3] == On) begin
+    if (lc_tx_test_true_strict(test_tokens_valid[3])) begin
       hashed_tokens_upper[TestExitTokenIdx] = test_exit_token_upper;
     end
     // This mux has two separate halves, steered with separately buffered life cycle signals.
-    if (rma_token_valid[0] == On) begin
+    if (lc_tx_test_true_strict(rma_token_valid[0])) begin
       hashed_tokens_lower[RmaTokenIdx] = rma_token_lower;
     end
-    if (rma_token_valid[1] == On) begin
+    if (lc_tx_test_true_strict(rma_token_valid[1])) begin
       hashed_tokens_upper[RmaTokenIdx] = rma_token_upper;
     end
   end
@@ -666,17 +668,17 @@ module lc_ctrl_fsm
     hashed_tokens_valid0                     = '0;
     hashed_tokens_valid0[ZeroTokenIdx]       = 1'b1; // always valid
     hashed_tokens_valid0[RawUnlockTokenIdx]  = 1'b1; // always valid
-    hashed_tokens_valid0[TestUnlockTokenIdx] = (test_tokens_valid[4] == On);
-    hashed_tokens_valid0[TestExitTokenIdx]   = (test_tokens_valid[5] == On);
-    hashed_tokens_valid0[RmaTokenIdx]        = (rma_token_valid[2] == On);
+    hashed_tokens_valid0[TestUnlockTokenIdx] = lc_tx_test_true_strict(test_tokens_valid[4]);
+    hashed_tokens_valid0[TestExitTokenIdx]   = lc_tx_test_true_strict(test_tokens_valid[5]);
+    hashed_tokens_valid0[RmaTokenIdx]        = lc_tx_test_true_strict(rma_token_valid[2]);
     hashed_tokens_valid0[InvalidTokenIdx]    = 1'b0; // always invalid
     // Second mux
     hashed_tokens_valid1                     = '0;
     hashed_tokens_valid1[ZeroTokenIdx]       = 1'b1; // always valid
     hashed_tokens_valid1[RawUnlockTokenIdx]  = 1'b1; // always valid
-    hashed_tokens_valid1[TestUnlockTokenIdx] = (test_tokens_valid[6] == On);
-    hashed_tokens_valid1[TestExitTokenIdx]   = (test_tokens_valid[7] == On);
-    hashed_tokens_valid1[RmaTokenIdx]        = (rma_token_valid[3] == On);
+    hashed_tokens_valid1[TestUnlockTokenIdx] = lc_tx_test_true_strict(test_tokens_valid[6]);
+    hashed_tokens_valid1[TestExitTokenIdx]   = lc_tx_test_true_strict(test_tokens_valid[7]);
+    hashed_tokens_valid1[RmaTokenIdx]        = lc_tx_test_true_strict(rma_token_valid[3]);
     hashed_tokens_valid1[InvalidTokenIdx]    = 1'b0; // always invalid
   end
 
@@ -791,24 +793,24 @@ module lc_ctrl_fsm
   ////////////////
 
   `ASSERT(EscStaysOnOnceAsserted_A,
-      lc_escalate_en_o == On
+      lc_tx_test_true_strict(lc_escalate_en_o)
       |=>
-      lc_escalate_en_o == On)
+      lc_tx_test_true_strict(lc_escalate_en_o))
 
   `ASSERT(ClkBypStaysOnOnceAsserted_A,
-      lc_clk_byp_req_o == On
+      lc_tx_test_true_strict(lc_clk_byp_req_o)
       |=>
-      lc_clk_byp_req_o == On)
+      lc_tx_test_true_strict(lc_clk_byp_req_o))
 
   `ASSERT(FlashRmaStaysOnOnceAsserted_A,
-      lc_flash_rma_req_o == On
+      lc_tx_test_true_strict(lc_flash_rma_req_o)
       |=>
-      lc_flash_rma_req_o == On)
+      lc_tx_test_true_strict(lc_flash_rma_req_o))
 
   `ASSERT(NoClkBypInProdStates_A,
       lc_state_q inside {LcStProd, LcStProdEnd, LcStDev}
       |=>
-      lc_clk_byp_req_o == Off)
+      lc_tx_test_false_strict(lc_clk_byp_req_o))
 
   `ASSERT(SecCmCFITerminal0_A,
       fsm_state_q == PostTransSt

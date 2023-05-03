@@ -315,18 +315,18 @@ module lc_ctrl_signal_decode
   `ASSERT(SignalsAreOffWhenNotEnabled_A,
       !lc_state_valid_i
       |=>
-      lc_raw_test_rma_o == Off &&
-      lc_dft_en_o == Off &&
-      lc_nvm_debug_en_o == Off &&
-      lc_hw_debug_en_o == Off &&
-      lc_cpu_en_o == Off &&
-      lc_creator_seed_sw_rw_en_o == Off &&
-      lc_owner_seed_sw_rw_en_o == Off &&
-      lc_iso_part_sw_rd_en_o == Off &&
-      lc_iso_part_sw_wr_en_o == Off &&
-      lc_seed_hw_rd_en_o == Off &&
-      lc_keymgr_en_o == Off &&
-      lc_dft_en_o == Off &&
+      lc_tx_test_false_strict(lc_raw_test_rma_o) &&
+      lc_tx_test_false_strict(lc_dft_en_o) &&
+      lc_tx_test_false_strict(lc_nvm_debug_en_o) &&
+      lc_tx_test_false_strict(lc_hw_debug_en_o) &&
+      lc_tx_test_false_strict(lc_cpu_en_o) &&
+      lc_tx_test_false_strict(lc_creator_seed_sw_rw_en_o) &&
+      lc_tx_test_false_strict(lc_owner_seed_sw_rw_en_o) &&
+      lc_tx_test_false_strict(lc_iso_part_sw_rd_en_o) &&
+      lc_tx_test_false_strict(lc_iso_part_sw_wr_en_o) &&
+      lc_tx_test_false_strict(lc_seed_hw_rd_en_o) &&
+      lc_tx_test_false_strict(lc_keymgr_en_o) &&
+      lc_tx_test_false_strict(lc_dft_en_o) &&
       lc_keymgr_div_o == RndCnstLcKeymgrDivInvalid)
 
 
@@ -344,7 +344,7 @@ module lc_ctrl_signal_decode
                             TokenCheck1St,
                             PostTransSt})
       |=>
-      lc_escalate_en_o == On)
+      lc_tx_test_true_strict(lc_escalate_en_o))
 
   `ASSERT(StateInScrap_A,
       lc_state_valid_i &&
@@ -378,6 +378,6 @@ module lc_ctrl_signal_decode
                            LcStProdEnd,
                            LcStRma})
       |=>
-      lc_escalate_en_o == On)
+      lc_tx_test_true_strict(lc_escalate_en_o))
 
 endmodule : lc_ctrl_signal_decode

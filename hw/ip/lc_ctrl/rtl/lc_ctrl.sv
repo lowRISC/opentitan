@@ -544,10 +544,10 @@ module lc_ctrl
     .lc_en_o(lc_raw_test_rma_buf)
   );
 
-  assign lc_otp_vendor_test_o.ctrl = (lc_raw_test_rma_buf[0] == On) ?
-                                     otp_vendor_test_ctrl_q         : '0;
-  assign otp_vendor_test_status    = (lc_raw_test_rma_buf[1] == On) ?
-                                     lc_otp_vendor_test_i.status    : '0;
+  assign lc_otp_vendor_test_o.ctrl = (lc_tx_test_true_strict(lc_raw_test_rma_buf[0])) ?
+                                     otp_vendor_test_ctrl_q                           : '0;
+  assign otp_vendor_test_status    = (lc_tx_test_true_strict(lc_raw_test_rma_buf[1])) ?
+                                     lc_otp_vendor_test_i.status                      : '0;
 
   //////////////////
   // Alert Sender //
