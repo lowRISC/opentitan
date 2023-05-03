@@ -12,7 +12,7 @@ Hence the following programming sequences apply to both SW running on the device
 3. Claim exclusive access to the transition interface by writing `kMuBi8True` to the [`CLAIM_TRANSITION_IF`](../data/lc_ctrl.hjson#claim_transition_if) register, and reading it back. If the value read back equals to `kMuBi8True`, the hardware mutex has successfully been claimed and SW can proceed to step 4. If the value read back equals to 0, the mutex has already been claimed by the other interface (either CSR or TAP), and SW should try claiming the mutex again.
 Note that all transition interface registers are protected by the hardware-governed [`TRANSITION_REGWEN`](../data/lc_ctrl.hjson#transition_regwen) register, which will only be set to 1 if the mutex has been claimed successfully.
 
-4. If required, software can switch to the external clock via the [`OTP_VENDOR_TEST_CTRL.EXT_CLK_EN`](../data/lc_ctrl.hjson#otp_vendor_test_ctrl#ext_clk_en) register in `RAW`, `TEST*` and `RMA` life cycle states.
+4. If required, software can switch to the external clock via the [`TRANSITION_CTRL.EXT_CLK_EN`](../data/lc_ctrl.hjson#otp_vendor_test_ctrl#ext_clk_en) register in `RAW`, `TEST*` and `RMA` life cycle states.
    This setting is ignored in the `PROD*` and `DEV` states.
 
 5. Write the desired target state to [`TRANSITION_TARGET`](../data/lc_ctrl.hjson#transition_target). For conditional transitions, the corresponding token has to be written to [`TRANSITION_TOKEN`](../data/lc_ctrl.hjson#transition_token). For all unconditional transitions, the token registers have to be set to zero.
@@ -45,20 +45,23 @@ On production silicon this option will be disabled.
    If the value read back equals to `kMuBi8True`, the hardware mutex has successfully been claimed and SW can proceed to step 4. If the value read back equals to 0, the mutex has already been claimed by the other interface (either CSR or TAP), and SW should try claiming the mutex again.
    Note that all transition interface registers are protected by the hardware-governed [`TRANSITION_REGWEN`](../data/lc_ctrl.hjson#transition_regwen) register, which will only be set to 1 if the mutex has been claimed successfully.
 
-4. To request a volatile `RAW` -> `TEST_UNLOCKED0` transition SW should set the [`OTP_VENDOR_TEST_CTRL.VOLATILE_RAW_UNLOCK`](../data/lc_ctrl.hjson#otp_vendor_test_ctrl#volatile_raw_unlock) to 1.
+4. To request a volatile `RAW` -> `TEST_UNLOCKED0` transition SW should set the [`TRANSITION_CTRL.VOLATILE_RAW_UNLOCK`](../data/lc_ctrl.hjson#otp_vendor_test_ctrl#volatile_raw_unlock) to 1.
    Software can check whether volatile unlock is supported by reading the register after writing 1 to it.
    If the mechanism is available, the register reads back as 1, otherwise it reads back 0.
 
-5. If required, software can switch to the external clock via the [`OTP_VENDOR_TEST_CTRL.EXT_CLK_EN`](../data/lc_ctrl.hjson#otp_vendor_test_ctrl#ext_clk_en) register.
+5. If required, software can switch to the external clock via the [`TRANSITION_CTRL.EXT_CLK_EN`](../data/lc_ctrl.hjson#otp_vendor_test_ctrl#ext_clk_en) register.
 
 6. Write `TEST_UNLOCKED0` to [`TRANSITION_TARGET`](../data/lc_ctrl.hjson#transition_target).
    The [`TRANSITION_TOKEN`](../data/lc_ctrl.hjson#transition_token) needs to be set to the **hashed** unlock token value, since the value written will not be passed through KMAC in this case.
 
 7. An optional, but recommended step is to read back and verify the values written in steps 4. - 6. before proceeding with step 8.
 
-8. Write 1 to the [`TRANSITION_CMD.START`](../data/lc_ctrl.hjson#transition_cmd) register to initiate the life cycle transition.
+8. If the goal is to gain access to either of the TAPs that are only available in `TEST_UNLOCKED*` life cycle states, the hardware straps should be applied before proceeding to the next step.
+   The pinmux will resample them if the volatile unlock operation is successful and steer the TAP selection demux accordingly.
 
-9. Poll the [`STATUS`](../data/lc_ctrl.hjson#status) register and wait until either [`STATUS.TRANSITION_SUCCESSFUL`](../data/lc_ctrl.hjson#status) or any of the error bits is asserted.
+9. Write 1 to the [`TRANSITION_CMD.START`](../data/lc_ctrl.hjson#transition_cmd) register to initiate the life cycle transition.
+
+10. Poll the [`STATUS`](../data/lc_ctrl.hjson#status) register and wait until either [`STATUS.TRANSITION_SUCCESSFUL`](../data/lc_ctrl.hjson#status) or any of the error bits is asserted.
    The [`TRANSITION_REGWEN`](../data/lc_ctrl.hjson#transition_regwen) register will be set to 0 while a transition is in progress in order to prevent any accidental modifications of the transition interface registers during this phase.
 
 Note that if a volatile `RAW` unlock operation has been performed, it is not necessary to reset the chip and the life cycle controller accepts further transition commands.
