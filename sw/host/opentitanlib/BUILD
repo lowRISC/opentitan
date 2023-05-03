@@ -102,6 +102,7 @@ rust_library(
         "src/test_utils/bootstrap.rs",
         "src/test_utils/e2e_command.rs",
         "src/test_utils/epmp.rs",
+        "src/test_utils/extclk.rs",
         "src/test_utils/gpio.rs",
         "src/test_utils/init.rs",
         "src/test_utils/lc_transition.rs",

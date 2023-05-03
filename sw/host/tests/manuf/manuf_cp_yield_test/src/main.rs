@@ -11,10 +11,9 @@
 use anyhow::Context;
 use structopt::StructOpt;
 
-use opentitanlib::chip::boolean::MultiBitBool4;
-use opentitanlib::dif::clkmgr::{ClkmgrExtclkCtrl, ClkmgrReg};
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::test_utils::extclk::{ClockSpeed, ExternalClock};
 use opentitanlib::test_utils::init::InitializeTest;
 use top_earlgrey::top_earlgrey_memory;
 
@@ -47,20 +46,7 @@ fn main() -> anyhow::Result<()> {
     jtag.connect(JtagTap::RiscvTap)
         .context("failed to connect to RISCV TAP over JTAG")?;
 
-    // Enable the external clock through JTAG.
-
-    let clkmgr_base_addr = top_earlgrey_memory::TOP_EARLGREY_CLKMGR_AON_BASE_ADDR as u32;
-
-    // Enable writing to the external clock register.
-    let extclk_ctrl_regwen_addr = clkmgr_base_addr + ClkmgrReg::ExtclkCtrlRegwen as u32;
-    jtag.write_memory32(extclk_ctrl_regwen_addr, &[1])
-        .context("failed to set EXTCLK_CTRL_REGWEN")?;
-
-    // Enable the external clock.
-    let extclk_ctrl_addr = clkmgr_base_addr + ClkmgrReg::ExtclkCtrl as u32;
-    let extclk_enable = ClkmgrExtclkCtrl::SEL.emplace(u8::from(MultiBitBool4::True) as u32);
-    jtag.write_memory32(extclk_ctrl_addr, &[extclk_enable])
-        .context("failed to set EXTCLK_CTRL_SET bitfield")?;
+    ExternalClock::enable(&*jtag, ClockSpeed::High).context("failed to enable external clock")?;
 
     // Read and write memory to verify connection.
 

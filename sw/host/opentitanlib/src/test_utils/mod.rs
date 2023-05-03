@@ -5,6 +5,7 @@
 pub mod bootstrap;
 pub mod e2e_command;
 pub mod epmp;
+pub mod extclk;
 pub mod gpio;
 pub mod init;
 pub mod lc_transition;
