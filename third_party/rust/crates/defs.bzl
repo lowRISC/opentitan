@@ -291,6 +291,7 @@ def aliases(
 _NORMAL_DEPENDENCIES = {
     "third_party/rust": {
         _COMMON_CONDITION: {
+            "aes": "@crate_index__aes-0.8.2//:aes",
             "ansi_term": "@crate_index__ansi_term-0.12.1//:ansi_term",
             "anyhow": "@crate_index__anyhow-1.0.69//:anyhow",
             "arrayvec": "@crate_index__arrayvec-0.7.2//:arrayvec",
@@ -518,6 +519,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/adler/1.0.2/download"],
         strip_prefix = "adler-1.0.2",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.adler-1.0.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__aes-0.8.2",
+        sha256 = "433cfd6710c9986c576a25ca913c39d66a6474107b406f34f91d4a8923395241",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/aes/0.8.2/download"],
+        strip_prefix = "aes-0.8.2",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.aes-0.8.2.bazel"),
     )
 
     maybe(
@@ -818,6 +829,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/chrono/0.4.23/download"],
         strip_prefix = "chrono-0.4.23",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.chrono-0.4.23.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__cipher-0.4.4",
+        sha256 = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/cipher/0.4.4/download"],
+        strip_prefix = "cipher-0.4.4",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.cipher-0.4.4.bazel"),
     )
 
     maybe(
@@ -1764,6 +1785,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/inotify-sys/0.1.5/download"],
         strip_prefix = "inotify-sys-0.1.5",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.inotify-sys-0.1.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__inout-0.1.3",
+        sha256 = "a0c10553d664a4d0bcff9f4215d0aac67a639cc68ef660840afe309b807bc9f5",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/inout/0.1.3/download"],
+        strip_prefix = "inout-0.1.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.inout-0.1.3.bazel"),
     )
 
     maybe(

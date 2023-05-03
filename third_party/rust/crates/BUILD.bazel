@@ -26,6 +26,12 @@ filegroup(
 
 # Workspace Member Dependencies
 alias(
+    name = "aes",
+    actual = "@crate_index__aes-0.8.2//:aes",
+    tags = ["manual"],
+)
+
+alias(
     name = "ansi_term",
     actual = "@crate_index__ansi_term-0.12.1//:ansi_term",
     tags = ["manual"],
