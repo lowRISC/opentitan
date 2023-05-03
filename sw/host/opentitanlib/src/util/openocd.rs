@@ -51,6 +51,8 @@ impl_serializable_error!(OpenOcdServerError);
 impl OpenOcdServer {
     /// Delay between polls to the OpenOCD server to prevent thrashing.
     const POLL_DELAY: Duration = Duration::from_millis(100);
+    /// How long to wait for OpenOCD to get ready to accept a TCL connection.
+    const OPENOCD_TCL_READY_TMO: Duration = Duration::from_secs(2);
 
     /// Create a new OpenOcdServer with the given JTAG options without starting OpenOCD.
     pub fn new(opts: &JtagParams) -> Result<OpenOcdServer> {
@@ -62,6 +64,31 @@ impl OpenOcdServer {
             openocd_accumulated_stderr: Default::default(),
             jtag_tap: Default::default(),
         })
+    }
+
+    fn wait_until_message(stdout: &mut impl Read, msg: &str, timeout: Duration) -> Result<()>{
+        let mut s : Vec<u8> = Vec::new();
+        let start = Instant::now();
+        loop {
+            let mut byte = 0u8;
+            // FIXME the read could block indefinitely, this is just a hack
+            let n = stdout.read(std::slice::from_mut(&mut byte))?;
+            assert_eq!(n, 1);
+            if byte == b'\n' {
+                let string = String::from_utf8_lossy(&s[..]);
+                log::info!(target: concat!(module_path!(), "::stdout"), "{}", string);
+                if string == msg {
+                    return Ok(())
+                }
+                s.clear();
+            }
+            else {
+                s.push(byte);
+            }
+            if start.elapsed() >= timeout {
+                bail!("timeout");
+            }
+        }
     }
 
     /// Spawn the OpenOCD server and connect to it.
@@ -122,28 +149,33 @@ impl OpenOcdServer {
             let args = cmd.get_args().collect::<Vec<_>>().join(OsStr::new(" "));
             format!("failed to spawn openocd: {program:?} {args:?}",)
         })?;
-        // printer stdout and stderr
         let stdout = child.stdout.take().unwrap();
-        let stderr = child.stderr.take().unwrap();
-        let a = self.openocd_accumulated_stdout.clone();
+        let mut stderr = child.stderr.take().unwrap();
+
+        // Wait until we see 'Info : Listening on port XXX for tcl connections' before actually connecting
+        log::info!("Waiting for OpenOCD to be ready to accept a TCL connection...");
+        Self::wait_until_message(&mut stderr, &format!("Info : Listening on port {} for tcl connections", self.opts.openocd_port), Self::OPENOCD_TCL_READY_TMO)
+            .context("OpenOCD was not ready in time to accept a connection")?;
+        // Printer stdout and stderr
         let b = self.openocd_accumulated_stderr.clone();
-        std::thread::spawn(move || {
-            printer::accumulate(stdout, concat!(module_path!(), "::stdout"), a)
-        });
+        let a = self.openocd_accumulated_stdout.clone();
         std::thread::spawn(move || {
             printer::accumulate(stderr, concat!(module_path!(), "::stderr"), b)
+        });
+        std::thread::spawn(move || {
+            printer::accumulate(stdout, concat!(module_path!(), "::stdout"), a)
         });
 
         self.openocd_server_process.replace(Some(child));
 
         log::info!("Connecting to OpenOCD tcl interface...");
-
+/*
         let output = Command::new("lsof").arg("-i").arg(format!("tcp:{}", self.opts.openocd_port)).output()?;
         println!("status: {}", output.status);
         io::stdout().write_all(&output.stdout).unwrap();
         io::stderr().write_all(&output.stderr).unwrap();
 
-        assert!(output.status.success());
+        assert!(output.status.success());*/
 
         let addr = format!("localhost:{}", self.opts.openocd_port);
         let stream = Self::wait_for_socket(addr, self.opts.openocd_timeout)
