@@ -276,7 +276,7 @@ bool test_main(void) {
   // Write expected data to i2c device.
   CHECK(!fmt_irq_seen);
   CHECK_STATUS_OK(
-      i2c_testutils_wr(&i2c, device_addr, byte_count, expected_data, false));
+      i2c_testutils_write(&i2c, device_addr, byte_count, expected_data, false));
 
   uint8_t tx_fifo_lvl, rx_fifo_lvl;
 

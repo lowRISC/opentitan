@@ -60,7 +60,7 @@ const i2c_connect_conf_t i2c_conf[] = {
      .pins_outsel = {kTopEarlgreyPinmuxOutselI2c2Scl,
                      kTopEarlgreyPinmuxOutselI2c2Sda}}};
 
-status_t i2c_testutils_wr(const dif_i2c_t *i2c, uint8_t addr,
+status_t i2c_testutils_write(const dif_i2c_t *i2c, uint8_t addr,
                           uint8_t byte_count, const uint8_t *data,
                           bool skip_stop) {
   dif_i2c_fmt_flags_t flags = kDefaultFlags;
