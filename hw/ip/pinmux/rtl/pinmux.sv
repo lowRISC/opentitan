@@ -297,6 +297,11 @@ module pinmux
 
     // Detect a change from 0 -> 1 on the override signal (it will stay at 1 afterwards).
     assign strap_en = strap_en_i || (strap_en_override_d && !strap_en_override_q);
+
+    // The strap sampling override shall be set to high exactly once.
+    `ASSUME(LcCtrlStrapSampleOverrideOnce_A,
+        $rose(strap_en_override_i) |-> always strap_en_override_i)
+
   end else begin : gen_no_strap_override
     logic unused_strap_en_override;
     assign unused_strap_en_override = strap_en_override_i;
@@ -625,4 +630,9 @@ module pinmux
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+
+  // The strap sampling enable input shall be pulsed high for exactly one cycle after cold boot.
+  `ASSUME(PwrMgrStrapSampleOnce0_A, strap_en_i |=> !strap_en_i)
+  `ASSUME(PwrMgrStrapSampleOnce1_A, $fell(strap_en_i) |-> always !strap_en_i)
+
 endmodule : pinmux
