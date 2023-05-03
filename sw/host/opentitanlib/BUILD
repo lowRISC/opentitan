@@ -110,6 +110,7 @@ rust_library(
         "src/test_utils/load_bitstream.rs",
         "src/test_utils/load_sram_program.rs",
         "src/test_utils/mod.rs",
+        "src/test_utils/otp_ctrl.rs",
         "src/test_utils/poll.rs",
         "src/test_utils/rpc.rs",
         "src/test_utils/spi_passthru.rs",
