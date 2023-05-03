@@ -62,11 +62,11 @@ jobs:
       module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/bazelisk.sh test \
         --test_output=all \
-        --runs_per_test=10 \
+        --runs_per_test=50 \
         --define DISABLE_VERILATOR_BUILD=true \
         --define bitstream=gcp_splice \
         --test_tag_filters=-verilator,-dv,-broken \
         --build_tests_only \
         --test_output=errors \
         //sw/device/tests:test_openocd
-    displayName: "Run all ROM E2E tests"
+    displayName: "OpenOCD / rv_dm stress test"
