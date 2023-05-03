@@ -115,9 +115,9 @@ status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint8_t byte_count);
  * an error.
  */
 OT_WARN_UNUSED_RESULT
-status_t i2c_testutils_target_check_wr(const dif_i2c_t *i2c, uint8_t byte_count,
-                                       uint8_t *addr, uint8_t *bytes,
-                                       uint8_t *cont_byte);
+status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
+                                          uint8_t byte_count, uint8_t *addr,
+                                          uint8_t *bytes, uint8_t *cont_byte);
 
 /**
  * Initialize the pinmux.
