@@ -37,6 +37,24 @@ fn reset(transport: &TransportWrapper, strappings: &[&str], reset_delay: Duratio
     Ok(())
 }
 
+fn stress_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    // repeat the same test 50 times (stay below timeout)
+    for i in 0..20 {
+        log::info!("Attempt {}: reset and connect OpenOCD", i);
+        reset(
+            transport,
+            &["PINMUX_TAP_RISCV"],
+            opts.init.bootstrap.options.reset_delay,
+        )?;
+        let jtag = transport.jtag(&opts.jtag)?;
+        jtag.connect(JtagTap::RiscvTap)?;
+        jtag.halt()?;
+        jtag.resume()?;
+        jtag.disconnect()?;
+    }
+    Ok(())
+}
+
 fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Reset the device
     let uart = transport.uart("console")?;
@@ -226,6 +244,7 @@ fn main() -> Result<()> {
     let transport = opts.init.init_target()?;
 
     execute_test!(test_openocd, &opts, &transport);
+    execute_test!(stress_openocd, &opts, &transport);
 
     Ok(())
 }

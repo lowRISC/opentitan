@@ -61,10 +61,12 @@ jobs:
       set -x
       module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/bazelisk.sh test \
+        --test_output=all \
+        --runs_per_test=10 \
         --define DISABLE_VERILATOR_BUILD=true \
         --define bitstream=gcp_splice \
         --test_tag_filters=-verilator,-dv,-broken \
         --build_tests_only \
         --test_output=errors \
-        //sw/device/silicon_creator/rom/e2e/...
+        //sw/device/tests:test_openocd
     displayName: "Run all ROM E2E tests"
