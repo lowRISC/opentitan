@@ -147,7 +147,7 @@ module lc_ctrl_state_decode
         // We can't have a personalized device that is
         // still in RAW or any of the test states.
         // SEC_CM: MANUF.STATE.BKGN_CHK
-        if ((secrets_valid_i == On) &&
+        if (lc_tx_test_true_strict(secrets_valid_i) &&
             !(lc_state_i inside {LcStDev,
                                  LcStProd,
                                  LcStProdEnd,
