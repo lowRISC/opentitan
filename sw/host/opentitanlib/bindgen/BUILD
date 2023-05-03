@@ -13,6 +13,7 @@ cc_library(
     deps = [
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
     ],
 )
@@ -43,6 +44,9 @@ rust_bindgen_library(
         "--allowlist-type=dif_lc_ctrl_token",
         "--allowlist-var=LC_CTRL_.*_BIT",
         "--allowlist-var=LC_CTRL_.*_REG_OFFSET",
+        "--allowlist-var=OTP_CTRL_.*_BIT",
+        "--allowlist-var=OTP_CTRL_.*_OFFSET",
+        "--allowlist-var=OTP_CTRL_.*_SIZE",
         "--allowlist-type=dif_rstmgr_reset_info",
     ],
     cc_lib = ":difs",
