@@ -73,7 +73,7 @@ impl OpenOcdServer {
             let mut byte = 0u8;
             // FIXME the read could block indefinitely, this is just a hack
             let n = stdout.read(std::slice::from_mut(&mut byte))?;
-            if n != 0 {
+            if n != 1 {
                 bail!("OpenOCD stopped before being ready?");
             }
             if byte == b'\n' {
