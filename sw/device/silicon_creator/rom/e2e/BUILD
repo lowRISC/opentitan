@@ -4024,4 +4024,5 @@ test_suite(
         "rom_e2e_asm_interrupt_handler",
         "rom_e2e_jtag_inject_tests",
         "rom_e2e_asm_watchdog",
+    ]
 )
