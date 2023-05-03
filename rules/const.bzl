@@ -17,6 +17,9 @@ CONST = struct(
     BL0_SIZE_MIN = 8784,
     BL0_SIZE_MAX = 0x70000,
     DEFAULT_USAGE_CONSTRAINTS = 0xa5a5a5a5,
+    # Must match the definition in spx_verify.h
+    SPX_DISABLED = 0x8d6c8c17,
+    SPX_SUCCESS = 0x8d6c8c17,
     # Must match the definitions in lc_ctrl_regs.h.
     LCV = struct(
         TEST_UNLOCKED0 = 0x02108421,
