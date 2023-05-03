@@ -152,4 +152,13 @@ OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
                             uint8_t byte_count, uint8_t *data);
 
+/**
+ * Set the i2c timing parameters based on the desired speed mode.
+ *
+ * @param i2c An I2C DIF handle.
+ * @param speed The speed mode.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed);
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_I2C_TESTUTILS_H_

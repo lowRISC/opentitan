@@ -247,3 +247,50 @@ status_t i2c_testutils_connect_i2c_to_pinmux_pins(const dif_pinmux_t *pinmux,
                                i2c_conf[kI2cIdx].pins_outsel[1]));
   return OK_STATUS();
 }
+
+status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed) {
+  uint32_t speed_khz = 0;
+  switch (speed) {
+    case kDifI2cSpeedStandard:
+      LOG_INFO("Setting i2c to %s mode.", "Standard (100kHz)");
+      speed_khz = 100;
+      break;
+    case kDifI2cSpeedFast:
+      LOG_INFO("Setting i2c to %s mode.", "Fast (400kHz)");
+      speed_khz = 400;
+      break;
+    case kDifI2cSpeedFastPlus:
+      LOG_INFO("Setting i2c to %s mode.", "FastPlus (1000kHz)");
+      speed_khz = 1000;
+      break;
+  }
+  // I2C speed parameters.
+  dif_i2c_timing_config_t timing_config = {
+      .lowest_target_device_speed = speed,
+      .clock_period_nanos =
+          udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL),
+      .sda_rise_nanos = 400,
+      .sda_fall_nanos = 110,
+      .scl_period_nanos = 1000000 / speed_khz};
+
+  dif_i2c_status_t status;
+  TRY(dif_i2c_get_status(i2c, &status));
+  if (status.enable_host) {
+    TRY(dif_i2c_host_set_enabled(i2c, kDifToggleDisabled));
+  }
+  dif_i2c_config_t config;
+  TRY(dif_i2c_compute_timing(timing_config, &config));
+
+  LOG_INFO("period:%d nanos, cycles={fall=%d, rise=%d, hi=%d, lo=%d}",
+           timing_config.clock_period_nanos, config.fall_cycles,
+           config.rise_cycles, config.scl_time_high_cycles,
+           config.scl_time_low_cycles);
+
+  TRY(dif_i2c_configure(i2c, config));
+  // Reenable if it was enabled before.
+  if (status.enable_host) {
+    TRY(dif_i2c_host_set_enabled(i2c, kDifToggleEnabled));
+  }
+
+  return OK_STATUS();
+}
