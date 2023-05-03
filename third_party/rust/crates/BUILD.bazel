@@ -356,6 +356,12 @@ alias(
 )
 
 alias(
+    name = "signature",
+    actual = "@crate_index__signature-2.1.0//:signature",
+    tags = ["manual"],
+)
+
+alias(
     name = "structopt",
     actual = "@crate_index__structopt-0.3.26//:structopt",
     tags = ["manual"],

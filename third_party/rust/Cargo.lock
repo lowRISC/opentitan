@@ -320,6 +320,7 @@ dependencies = [
  "serialport",
  "sha2",
  "shellwords",
+ "signature",
  "structopt",
  "strum",
  "syn 1.0.107",

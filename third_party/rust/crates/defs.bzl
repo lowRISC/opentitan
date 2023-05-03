@@ -344,6 +344,7 @@ _NORMAL_DEPENDENCIES = {
             "serialport": "@crate_index__serialport-4.2.0//:serialport",
             "sha2": "@crate_index__sha2-0.10.6//:sha2",
             "shellwords": "@crate_index__shellwords-1.1.0//:shellwords",
+            "signature": "@crate_index__signature-2.1.0//:signature",
             "structopt": "@crate_index__structopt-0.3.26//:structopt",
             "strum": "@crate_index__strum-0.24.1//:strum",
             "syn": "@crate_index__syn-1.0.107//:syn",
