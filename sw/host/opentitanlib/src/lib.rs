@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![feature(min_specialization)]
+#![feature(tcp_linger)]
 pub mod app;
 pub mod backend;
 pub mod bootstrap;
