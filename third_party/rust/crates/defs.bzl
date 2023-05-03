@@ -1598,6 +1598,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__hkdf-0.12.3",
+        sha256 = "791a029f6b9fc27657f6f188ec6e5e43f6911f6f878e0dc5501396e09809d437",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/hkdf/0.12.3/download"],
+        strip_prefix = "hkdf-0.12.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.hkdf-0.12.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__hmac-0.12.1",
         sha256 = "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e",
         type = "tar.gz",
