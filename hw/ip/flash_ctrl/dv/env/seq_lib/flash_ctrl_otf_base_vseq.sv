@@ -1338,6 +1338,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       cfg.mp_info[0][0][1] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
       cfg.mp_info[0][0][2] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
 
+      // Add callback to customize mp info
+      callback_vseq.update_env_mp_info();
+
       flash_ctrl_mp_info_page_cfg(i, j, k, cfg.mp_info[i][j][k]);
       `uvm_info("otf_info_cfg", $sformatf("bank:type:page:[%0d][%0d][%0d] = %p",
                                           i, j, k, cfg.mp_info[i][j][k]), UVM_MEDIUM)
