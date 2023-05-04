@@ -12,7 +12,7 @@ This module conforms to the [Comportable guideline for peripheral functionality.
 The Entropy Distribution Network (EDN) block provides both hardware and software interfaces to the [CSRNG IP](../csrng/README.md) module.
 A primary objective of the EDN block is to provide a simpler hardware interface for the peripheral blocks to use, in which case they do not have to directly interface with the CSRNG module.
 - The EDN block provides a set of registers for firmware to manage a CSRNG application interface port.
-- There are four request/acknowledge hardware interfaces.
+- There are eight request/acknowledge hardware interfaces.
 - Each hardware interface supports a fixed bus width of 32 bits.
 - The EDN block has an "auto request mode" where `generate` and `reseed` CSRNG application commands can be programmed to be done continuously in hardware.
 - There is also a "boot-time request mode",  where a single TL-UL configuration write will trigger a proper CSRNG application command sequence to fetch the pre-FIPS entropy for tasks immediately at boot-time or after reset.
@@ -31,7 +31,7 @@ For example, CSRNG will return 128 bits on the `genbits` bus.
 A peripheral block will connect with a 32-bit data bus.
 The EDN block will move the first 32 bits from the returned `genbits` bus, and hold on to the remaining data until another request asks for more data.
 Furthermore, if data is not consumed immediately, the interface to the CSRNG will indicate back pressure to the CSRNG block.
-Each of the four interfaces can request data such that any `genbits` bus return can supply any requesting peripheral block.
+Each of the hardware interfaces can request data such that any `genbits` bus return can supply any requesting peripheral block.
 
 At most one hardware peripheral block can connect to each EDN peripheral port.
 Hardware peripherals request more data from the EDN by asserting the `req` signal.
