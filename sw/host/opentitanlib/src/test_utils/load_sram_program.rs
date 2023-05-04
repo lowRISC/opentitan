@@ -9,13 +9,52 @@ use std::str::FromStr;
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use structopt::StructOpt;
 use thiserror::Error;
 
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
+use crate::util::parse_int::ParseInt;
 use crate::util::vmem::Vmem;
 
 use top_earlgrey::top_earlgrey_memory;
+
+/// Command-line parameters.
+#[derive(Debug, StructOpt, Clone)]
+pub struct SramProgramParams {
+    /// Path to the VMEM file to load.
+    #[structopt(long)]
+    pub vmem: PathBuf,
+
+    /// Address where to load the VMEM file.
+    #[structopt(long, parse(try_from_str = ParseInt::from_str))]
+    pub load_addr: u32,
+
+    /// Address of the top of the stack.
+    #[structopt(long, parse(try_from_str = ParseInt::from_str))]
+    pub stack_pointer: u32,
+
+    /// Size of the stack.
+    #[structopt(long, parse(try_from_str = ParseInt::from_str))]
+    pub stack_size: u32,
+
+    /// Value of the global pointer
+    #[structopt(long, parse(try_from_str = ParseInt::from_str))]
+    pub global_pointer: u32,
+}
+
+impl SramProgramParams {
+    pub fn load_and_execute(&self, jtag: &Rc<dyn Jtag>) -> Result<()> {
+        load_and_execute_sram_program(
+            jtag,
+            &self.vmem,
+            self.load_addr,
+            self.stack_pointer,
+            self.stack_size,
+            self.global_pointer,
+        )
+    }
+}
 
 /// Errors related to loading an SRAM program.
 #[derive(Error, Debug, Deserialize, Serialize)]
@@ -92,17 +131,17 @@ pub fn prepare_epmp_for_sram(jtag: &Rc<dyn Jtag>) -> Result<()> {
 
 /// Fills the stack with a known value (0xdeadbeef). This can be useful if SRAM scrambling
 /// is enabled to make sure that the core can read from the stack without errors.
-pub fn setup_stack(jtag: &Rc<dyn Jtag>, top_stack_addr: u32, stack_size: u32) -> Result<()> {
+pub fn setup_stack(jtag: &Rc<dyn Jtag>, stack_pointer: u32, stack_size: u32) -> Result<()> {
     // the stack size must be a multiple of 4
     assert_eq!(0, stack_size % 4);
     log::info!(
         "Setting up stack at [{:x}:{:x}]",
-        top_stack_addr - stack_size,
-        top_stack_addr
+        stack_pointer - stack_size,
+        stack_pointer
     );
     // it's much more efficient to write all the data at once
     let stack = vec![0xdeadbeefu32; (stack_size / 4) as usize];
-    jtag.write_memory32(top_stack_addr - stack_size, &stack)
+    jtag.write_memory32(stack_pointer - stack_size, &stack)
 }
 
 /// This function loads and execute a SRAM program. It takes care of all the details regarding
@@ -112,7 +151,7 @@ pub fn load_and_execute_sram_program(
     jtag: &Rc<dyn Jtag>,
     vmem_filename: &PathBuf,
     sram_load_addr: u32,
-    top_stack_addr: u32,
+    stack_pointer: u32,
     stack_size: u32,
     global_pointer: u32,
 ) -> Result<()> {
@@ -124,11 +163,19 @@ pub fn load_and_execute_sram_program(
     load_sram_program(jtag, &vmem, sram_load_addr)?;
     log::info!("Preparing ePMP for execution");
     prepare_epmp_for_sram(jtag)?;
-    setup_stack(jtag, top_stack_addr, stack_size)?;
-    log::info!("set SP to {:x}", top_stack_addr);
-    jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP), top_stack_addr)?;
+    setup_stack(jtag, stack_pointer, stack_size)?;
+    log::info!("set SP to {:x}", stack_pointer);
+    jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP), stack_pointer)?;
     log::info!("set GP to {:x}", global_pointer);
     jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::GP), global_pointer)?;
+    // to avoid unexpected behaviors, we always make sure that the return addreess
+    // points to the bottom of the stack where we insert a ebreak instruction
+    let ret_addr = stack_pointer - stack_size;
+    log::info!("set RA to {:x}", ret_addr);
+    jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::RA), ret_addr)?;
+    log::info!("write EBEREAK at {:x}", ret_addr);
+    jtag.write_memory32(ret_addr, &[0x100073])?;
+    // OpenOCD takes care of invalidating the cache when resuming execution
     log::info!("resume execution at {:x}", sram_load_addr);
     jtag.resume_at(sram_load_addr)?;
     Ok(())

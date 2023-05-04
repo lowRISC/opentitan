@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::path::PathBuf;
 use std::time::Duration;
 
 use anyhow::Result;
@@ -13,7 +12,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::load_sram_program;
+use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use opentitanlib::uart::console::UartConsole;
 
 // use top_earlgrey::top_earlgrey_memory;
@@ -24,9 +23,8 @@ struct Opts {
     init: InitializeTest,
     #[structopt(flatten)]
     jtag: JtagParams,
-    /// Path to the program to load
-    #[structopt(long)]
-    vmem: PathBuf,
+    #[structopt(flatten)]
+    sram_program: SramProgramParams,
 }
 
 fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
@@ -42,21 +40,8 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     jtag.connect(JtagTap::RiscvTap)?;
     log::info!("Halting core");
     jtag.halt()?;
-    // TODO don't hardcore this value, it depends on the linker script, there has
-    // to be a better way
-    let sram_load_addr = 0x10001fc4u32; // TODO don't hardcore that
-    let sram_stack_top = 0x10020000u32;
-    let sram_stack_size = 128;
-    let global_pointer = sram_load_addr + 2048;
 
-    load_sram_program::load_and_execute_sram_program(
-        &jtag,
-        &opts.vmem,
-        sram_load_addr,
-        sram_stack_top,
-        sram_stack_size,
-        global_pointer,
-    )?;
+    opts.sram_program.load_and_execute(&jtag)?;
 
     const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
     let mut console = UartConsole {
