@@ -6,6 +6,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::str::FromStr;
+use std::time::Duration;
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -44,7 +45,11 @@ pub struct SramProgramParams {
 }
 
 impl SramProgramParams {
-    pub fn load_and_execute(&self, jtag: &Rc<dyn Jtag>) -> Result<()> {
+    pub fn load_and_execute(
+        &self,
+        jtag: &Rc<dyn Jtag>,
+        exec_mode: ExecutionMode,
+    ) -> Result<ExecutionResult> {
         load_and_execute_sram_program(
             jtag,
             &self.vmem,
@@ -52,13 +57,40 @@ impl SramProgramParams {
             self.stack_pointer,
             self.stack_size,
             self.global_pointer,
+            exec_mode,
         )
     }
+}
+
+/// Execution mode for a SRAM program.
+pub enum ExecutionMode {
+    /// Jump to the loading address and let the program run forever.
+    Jump,
+    /// Jump at the loading address and immediately halt execution.
+    JumpAndHalt,
+    /// Make a "call" to the loading address and wait until the function returns
+    /// (or wait forever if None)
+    Call(Duration),
+}
+
+/// Result of execution of a SRAM program.
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ExecutionResult {
+    /// (JumpAndHalt only) Execution is halted at the beginning.
+    HaltedAtStart,
+    /// (Jump only) Execution is ongoing.
+    Executing,
+    /// (Call only) Execution successfully returned.
+    CallReturned,
+    /// (Call only) Execution halted before returning to the caller or because of the timeout.
+    CallFailed,
 }
 
 /// Errors related to loading an SRAM program.
 #[derive(Error, Debug, Deserialize, Serialize)]
 pub enum LoadSramProgramError {
+    #[error("SRAM program execution timed out")]
+    Executiontimeout,
     #[error("Generic error {0}")]
     Generic(String),
 }
@@ -154,7 +186,8 @@ pub fn load_and_execute_sram_program(
     stack_pointer: u32,
     stack_size: u32,
     global_pointer: u32,
-) -> Result<()> {
+    exec_mode: ExecutionMode,
+) -> Result<ExecutionResult> {
     log::info!("Loading VMEM file {}", vmem_filename.display());
     let vmem_content = fs::read_to_string(vmem_filename)?;
     let mut vmem = Vmem::from_str(&vmem_content)?;
@@ -176,7 +209,29 @@ pub fn load_and_execute_sram_program(
     log::info!("write EBEREAK at {:x}", ret_addr);
     jtag.write_memory32(ret_addr, &[0x100073])?;
     // OpenOCD takes care of invalidating the cache when resuming execution
-    log::info!("resume execution at {:x}", sram_load_addr);
-    jtag.resume_at(sram_load_addr)?;
-    Ok(())
+    match exec_mode {
+        ExecutionMode::Jump => {
+            log::info!("resume execution at {:x}", sram_load_addr);
+            jtag.resume_at(sram_load_addr)?;
+            Ok(ExecutionResult::Executing)
+        }
+        ExecutionMode::JumpAndHalt => {
+            log::info!("set DPC to {:x}", sram_load_addr);
+            jtag.write_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC), sram_load_addr)?;
+            Ok(ExecutionResult::HaltedAtStart)
+        }
+        ExecutionMode::Call(tmo) => {
+            log::info!("resume execution at {:x}", sram_load_addr);
+            jtag.resume_at(sram_load_addr)?;
+            jtag.wait_halt(tmo)?;
+            jtag.halt()?;
+            // read PC to see if it returned or not
+            let pc = jtag.read_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC))?;
+            if pc == ret_addr {
+                Ok(ExecutionResult::CallReturned)
+            } else {
+                Ok(ExecutionResult::CallFailed)
+            }
+        }
+    }
 }

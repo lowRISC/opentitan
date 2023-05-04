@@ -12,7 +12,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::load_sram_program::SramProgramParams;
+use opentitanlib::test_utils::load_sram_program::{ExecutionMode, SramProgramParams};
 use opentitanlib::uart::console::UartConsole;
 
 // use top_earlgrey::top_earlgrey_memory;
@@ -41,7 +41,8 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     log::info!("Halting core");
     jtag.halt()?;
 
-    opts.sram_program.load_and_execute(&jtag)?;
+    opts.sram_program
+        .load_and_execute(&jtag, ExecutionMode::Jump)?;
 
     const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
     let mut console = UartConsole {
