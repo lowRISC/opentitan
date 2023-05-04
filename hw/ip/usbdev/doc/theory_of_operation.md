@@ -9,8 +9,8 @@ The block diagram shows a high level view of the USB device including the main r
 
 ## Clocking
 
-The USB Full-Speed interface runs at a data rate of 12 MHz.
-The interface runs at four times this frequency and must be clocked from an accurate 48 MHz clock source.
+The USB Full-Speed interface runs at a data rate of 12 Mbit/s.
+The interface runs at four times this bit rate and must be clocked from an accurate 48 MHz clock source.
 The USB specification for a Full-Speed device requires the average bit rate is 12 Mbps +/- 0.25%, so the clock needs to support maximum error of 2,500 ppm.
 The maximum allowable integrated jitter is +/- 1 ns over 1 to 7 bit periods.
 
