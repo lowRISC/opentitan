@@ -120,9 +120,18 @@ class aon_timer_base_vseq extends cip_base_vseq #(
     cfg.aon_clk_rst_vif.drive_rst_pin(1);
   endtask
 
-  task wait_for_interrupt();
+  task wait_for_interrupt(bit intr_state_read = 1);
     if (cfg.aon_clk_rst_vif.rst_n && !cfg.aon_intr_vif.pins) begin
+      uvm_reg_data_t intr_state_value;
+
       @(negedge cfg.aon_clk_rst_vif.rst_n or cfg.aon_intr_vif.pins);
+
+      if (intr_state_read) begin
+        // Wait 2 clocks to ensure interrupt is visible on intr_state read
+        cfg.aon_clk_rst_vif.wait_clks(2);
+        csr_utils_pkg::csr_rd(ral.intr_state, intr_state_value);
+      end
+
       // If we are getting an interrupt, let's asssume sleep signal immediately goes low.
       if (cfg.aon_intr_vif.pins) begin
         cfg.sleep_vif.drive(0);
