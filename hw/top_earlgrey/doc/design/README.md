@@ -435,6 +435,16 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 
 <!-- END DOCGEN -->
 
+
+## Entropy Distribution Network
+
+`top_earlgrey` has two [EDN](../../../ip/edn/README.md) instances, which are connected to one [CSRNG](../../../ip/csrng/README.md) instance (which in turn is connected to one [Entropy Source](../../../ip/entropy_src/README.md) instance).
+The first EDN instance, `u_edn0`, has eight endpoints, which are connected to: Key Manager, OTP Controller, Analog Sensor Top, KMAC Accelerator, Alert Handler, AES Accelerator, the `URND` port of OTBN, and the Ibex RISC-V Core.
+The second EDN instance, `u_edn1`, has one endpoint that is connected to the `RND` port of OTBN and seven endpoints that are tied off.
+The second EDN instance, `u_edn1` is intended to be configured to deliver highest-quality entropy, e.g., for the generation of cryptographic secrets.
+The first EDN instance, `u_edn0` is intended to be configured to deliver entropy at a higher rate and thus slightly lower quality.
+
+
 ## Hardware Interfaces
 
 ### Pinout
