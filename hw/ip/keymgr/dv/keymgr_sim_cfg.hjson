@@ -43,8 +43,16 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
-  // Add UART specific exclusion files.
+  // Add keymgr specific exclusion files.
   vcs_cov_excl_files: ["{proj_root}/hw/ip/keymgr/dv/cov/keymgr_cov_excl.el"]
+
+  overrides: [
+    {
+      name: default_vcs_cov_cfg_file
+      value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{proj_root}/hw/ip/keymgr/dv/cov/keymgr_cover.cfg"
+    }
+  ]
+
 
   // Default UVM test and seq class name.
   uvm_test: keymgr_base_test
