@@ -194,7 +194,8 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
         fork
           wait (under_reset);
           run_wkup_timer();
-          run_wdog_timer();
+          run_wdog_bark_timer();
+          run_wdog_bite_timer();
         join_any
 
         // run_wkup_timer and run_wdog_timer never return so if we've got here then we've gone into
@@ -248,25 +249,32 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
         begin
           // trying to count how many cycles we need to count
           uint count = 0;
-          // We are catching the enable signal too early. It takes one cycle to save to the register
-          // one more cycle to propagate to hw from the read port of it.
-          cfg.aon_clk_rst_vif.wait_clks(2);
-          while (count <= wkup_num) begin
-            @cfg.aon_clk_rst_vif.cb;
+          // It takes 4 aon clks from the write enabling the watchdog to take effect due to the CDC
+          // logic.
+          cfg.aon_clk_rst_vif.wait_clks(4);
+          while (count < wkup_num) begin
+            cfg.aon_clk_rst_vif.wait_clks(1);
             // reset the cycle counter when we update the cycle count needed
             count = wkup_num_update_due ? 0 : (count + 1);
             `uvm_info(`gfn, $sformatf("WKUP Timer count: %d", count), UVM_HIGH)
           end
           `uvm_info(`gfn, $sformatf("WKUP Timer expired check for interrupts"), UVM_HIGH)
+          intr_status_exp[WKUP] = 1'b1;
           // Interrupt should happen N+1 clock ticks after count == wkup_num.
           cfg.aon_clk_rst_vif.wait_clks(prescaler+1);
-          intr_status_exp[WKUP] = 1'b1;
+          // Wait a further 5 clocks for the interrupt to propagate through logic in the clk domain
+          // to become visible on the top-level pins.
+          cfg.clk_rst_vif.wait_clks(5);
+          // Check interrupt pin
           `DV_CHECK_CASE_EQ(intr_status_exp[WKUP],
+                            cfg.intr_vif.sample_pin(.idx(WKUP)))
+          // Check wakeup pin
+          `DV_CHECK_CASE_EQ(1,
                             cfg.aon_intr_vif.sample_pin(.idx(1)))
           `uvm_info(`gfn, $sformatf("WKUP Timer check passed."), UVM_HIGH)
         end
         begin
-          wait (!wkup_en || cfg.aon_clk_rst_vif.rst_n);
+          wait (!wkup_en || !cfg.aon_clk_rst_vif.rst_n);
           `uvm_info(`gfn, $sformatf("WKUP Timer disabled, quit scoring"), UVM_HIGH)
           wkup_en = 0;
         end
@@ -275,39 +283,85 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  virtual task run_wdog_timer();
+  virtual task run_wdog_bark_timer();
     forever begin
       wait (wdog_en);
       fork
         begin
           // trying to count how many cycles we need to count
           uint count = 0;
-          // We are catching the enable signal too early. It takes one cycle to save to the register
-          // one more cycle to propagate to hw from the read port of it.
-          cfg.aon_clk_rst_vif.wait_clks(2);
-          while (count <= wdog_bark_num || count <= wdog_bite_num) begin
-            @cfg.aon_clk_rst_vif.cb;
+          // It takes 4 aon clks from the write enabling the watchdog to take effect due to the CDC
+          // logic.
+          cfg.aon_clk_rst_vif.wait_clks(4);
+          while (count < wdog_bark_num) begin
+            cfg.aon_clk_rst_vif.wait_clks(1);
             // reset the cycle counter when we update the cycle count needed
             count = wdog_num_update_due ? 0 : (count + 1);
-            `uvm_info(`gfn, $sformatf("WDOG Timer count: %d", count), UVM_HIGH)
+            `uvm_info(`gfn, $sformatf("WDOG Bark Timer count: %d", count), UVM_HIGH)
           end
-          `uvm_info(`gfn, $sformatf("WDOG Timer expired check for interrupts"), UVM_HIGH)
-          if (count > wdog_bark_num) intr_status_exp[WDOG] = 1'b1;
-          if (count > wdog_bite_num) wdog_rst_req_exp = 1'b1;
+          `uvm_info(`gfn, $sformatf("WDOG Bark Timer expired check for interrupts"), UVM_HIGH)
+          intr_status_exp[WDOG] = 1'b1;
           // Propagation delay of one cycle from aon_core to interrupt pins.
           cfg.aon_clk_rst_vif.wait_clks(1);
+          // Wait a further 5 clocks for the interrupt to propagate through logic in the clk domain
+          // to become visible on the top-level pins.
+          cfg.clk_rst_vif.wait_clks(5);
+          // Check interrupt and reset_req pins
+          `DV_CHECK_CASE_EQ(intr_status_exp[WDOG],
+                            cfg.intr_vif.sample_pin(.idx(WDOG)))
+
+          // Check wakeup pin
           `DV_CHECK_CASE_EQ(intr_status_exp[WDOG],
                             cfg.aon_intr_vif.sample_pin(.idx(1)))
+          `uvm_info(`gfn,
+                    $sformatf("WDOG INTR Bark: %d",
+                              intr_status_exp[WDOG]),
+                    UVM_HIGH)
+        end
+        begin
+          wait (!wdog_en || !cfg.aon_clk_rst_vif.rst_n);
+          `uvm_info(`gfn, $sformatf("WDOG Timer disabled, quit scoring"), UVM_HIGH)
+          wdog_en = 0;
+        end
+      join_any
+      disable fork;
+    end
+  endtask
+
+  virtual task run_wdog_bite_timer();
+    forever begin
+      wait (wdog_en);
+      fork
+        begin
+          // trying to count how many cycles we need to count
+          uint count = 0;
+          // It takes 4 aon clks from the write enabling the watchdog to take effect due to the CDC
+          // logic.
+          cfg.aon_clk_rst_vif.wait_clks(4);
+          while (count < wdog_bite_num) begin
+            cfg.aon_clk_rst_vif.wait_clks(1);
+            // reset the cycle counter when we update the cycle count needed
+            count = wdog_num_update_due ? 0 : (count + 1);
+            `uvm_info(`gfn, $sformatf("WDOG Bite Timer count: %d", count), UVM_HIGH)
+          end
+          `uvm_info(`gfn, $sformatf("WDOG Bite Timer expired check for interrupts"), UVM_HIGH)
+          wdog_rst_req_exp = 1'b1;
+          // Propagation delay of one cycle from aon_core to interrupt pins.
+          cfg.aon_clk_rst_vif.wait_clks(1);
+          // Wait a further 5 clocks for the interrupt to propagate through logic in the clk domain
+          // to become visible on the top-level pins.
+          cfg.clk_rst_vif.wait_clks(5);
+          // Check reset_req pin
           `DV_CHECK_CASE_EQ(wdog_rst_req_exp,
                             cfg.aon_intr_vif.sample_pin(.idx(0)))
+
           `uvm_info(`gfn,
-                    $sformatf("WDOG INTR Bark: %d, Bite: %d",
-                              intr_status_exp[WDOG],
+                    $sformatf("WDOG INTR Bite: %d",
                               wdog_rst_req_exp),
                     UVM_HIGH)
         end
         begin
-          wait (!wdog_en || cfg.aon_clk_rst_vif.rst_n);
+          wait (!wdog_en || !cfg.aon_clk_rst_vif.rst_n);
           `uvm_info(`gfn, $sformatf("WDOG Timer disabled, quit scoring"), UVM_HIGH)
           wdog_en = 0;
         end
