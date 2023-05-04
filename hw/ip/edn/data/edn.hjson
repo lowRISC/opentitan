@@ -480,7 +480,7 @@
       ]
     },
     { name: "MAIN_SM_STATE",
-      desc: "Main state machine state debug register",
+      desc: "Main state machine state observation register",
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
