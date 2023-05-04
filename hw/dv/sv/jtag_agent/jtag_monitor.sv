@@ -34,6 +34,7 @@ class jtag_monitor extends dv_base_monitor #(
 
     forever begin
       @(`MON_CB);
+      if(!cfg.vif.tck_en) continue;
       if (!cfg.vif.trst_n) begin
         jtag_state = JtagResetState;
         wait(cfg.vif.trst_n == 1);
