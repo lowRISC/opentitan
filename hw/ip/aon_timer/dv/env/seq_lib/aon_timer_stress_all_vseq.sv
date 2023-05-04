@@ -8,7 +8,7 @@ class aon_timer_stress_all_vseq extends aon_timer_base_vseq;
   `uvm_object_new
 
   constraint num_trans_c {
-    num_trans inside {[3:6]};
+    num_trans inside {[15:20]};
   }
 
   task body();
