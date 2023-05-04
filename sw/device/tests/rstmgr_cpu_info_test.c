@@ -147,6 +147,9 @@ typedef struct rstmgr_cpu_info_test_exp_prev_state {
  * Checks the 'current' section of the cpu info dump against the given expected
  * values.
  *
+ * In some cases the PCs may differ from the expected ones due to pipeline
+ * stalls.
+ *
  * @param obs_state The cpu info crash dump's current state values.
  * @param exp_state The expected values of the current state.
  */
@@ -155,9 +158,14 @@ static void check_state(dif_rv_core_ibex_crash_dump_state_t obs_state,
   CHECK(exp_state.mtval == obs_state.mtval,
         "Last Exception Access Addr: Expected 0x%x != Observed 0x%x",
         exp_state.mtval, obs_state.mtval);
-  CHECK(exp_state.mcpc == obs_state.mcpc,
-        "Current PC: Expected 0x%x != Observed 0x%x", exp_state.mcpc,
-        obs_state.mcpc);
+  LOG_INFO("exp_mcpc=0x%x, exp_mnpc=0x%x, obs_mcpc=0x%x, obs_mnpc=0x%x",
+           exp_state.mcpc, exp_state.mnpc, obs_state.mcpc, obs_state.mnpc);
+  // Check the current pc is either the expected or expected + 4, since the
+  // pipeline may have stalled.
+  CHECK(
+      exp_state.mcpc == obs_state.mcpc || exp_state.mcpc + 4 == obs_state.mcpc,
+      "Current PC: Observed 0x%x not within 4 bytes of Expected 0x%x",
+      obs_state.mcpc, exp_state.mcpc);
   CHECK(exp_state.mnpc == obs_state.mnpc,
         "Next PC: Expected 0x%x != Observed 0x%x", exp_state.mnpc,
         obs_state.mnpc);
@@ -278,8 +286,9 @@ bool test_main(void) {
 
       // After #15219 was merged, the execution stops more predictably
       // once fetch_en is dropped due to a double fault.
-      // The current pc should now always be the instruction after the
-      // instruction that issues the illegal load.
+      // The current pc should now be the instruction that issues the
+      // illegal load or the next instruction, depending on whether the
+      // pipeline stalled.
       // The next pc is always the exception handler, because that's
       // where execution would have gone if it had not halted
       check_state(dump.fault_state,
@@ -288,7 +297,7 @@ bool test_main(void) {
                       .mpec_l = (uint32_t)kDoubleFaultSecondAddrLower,
                       .mpec_u = (uint32_t)kDoubleFaultSecondAddrUpper,
                       .mdaa = (uint32_t)kIllegalAddr2,
-                      .mcpc = (uint32_t)kDoubleFaultSecondAddrLower + 4,
+                      .mcpc = (uint32_t)kDoubleFaultSecondAddrLower,
                       .mnpc = (uint32_t)&_ottf_interrupt_vector,
                   });
 
