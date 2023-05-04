@@ -377,6 +377,15 @@ TEST_F(CommandTest, GenerateBadArgs) {
   EXPECT_DIF_BADARG(dif_edn_generate_start(&edn_, /*len=*/0));
 }
 
+TEST_F(CommandTest, GenerateOutOfRange) {
+  enum {
+    // The maximum allowed is 0x800 128-bit blocks. Multiply by 4 to get the
+    // number of uint32 words and add one to trigger the error.
+    kGenerateLenOutOfRange = 0x800 * 4 + 1,
+  };
+  EXPECT_DIF_OUTOFRANGE(dif_edn_generate_start(&edn_, kGenerateLenOutOfRange));
+}
+
 TEST_F(CommandTest, UninstantiateOk) {
   EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
                  0x00000005 | kMultiBitBool4False << 8);

@@ -230,6 +230,16 @@ OT_WARN_UNUSED_RESULT
 static status_t csrng_send_app_cmd(uint32_t reg_address,
                                    entropy_csrng_cmd_t cmd,
                                    bool check_completion) {
+  enum {
+    // This is to maintain full compliance with NIST SP 800-90A, which requires
+    // the max generate output to be constrained to gen < 2 ^ 12 bits or 0x800
+    // 128-bit blocks.
+    kMaxGenerateSizeIn128BitBlocks = 0x800,
+  };
+  if (cmd.generate_len > kMaxGenerateSizeIn128BitBlocks) {
+    return OUT_OF_RANGE();
+  }
+
   uint32_t reg;
   bool cmd_ready;
   do {
