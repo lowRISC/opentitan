@@ -15,7 +15,7 @@
  * It is not possible to predict the specific cycle count that a DAI operation
  * takes, thus arbitrary value of 100us is used.
  */
-const uint8_t kOtpDaiTimeoutUs = 100;
+const uint16_t kOtpDaiTimeoutUs = 5000;
 
 /**
  * Checks whether the DAI operation has finished.
