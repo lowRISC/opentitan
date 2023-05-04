@@ -49,10 +49,11 @@ Since boot-time request mode EDN streams may be FIPS non-compliant, firmware mus
 
 #### Multiple EDNs in Boot-time Request Mode
 
-If many endpoints require boot-time entropy multiple boot-time EDNs may be required, as the EDN has a fixed maximum number of peripheral ports.
+If many endpoints require boot-time entropy, multiple boot-time EDNs may be required, as the EDN has a fixed maximum number of peripheral ports.
 Since physical entropy generation takes time, there exists a mechanism to prioritize the EDNs, to match the boot priority of each group of attached endpoints.
 To establish an order to the instantiation of each EDN, enable them one at a time.
-To ensure that the most recently enabled EDN will get next priority for physical entropy, poll the `BOOT_INST_ACK` field in the [`SUM_STS`](../data/edn.hjson#sum_sts) register before enabling the following EDN.
+To ensure that the most recently enabled EDN will get next priority for physical entropy, poll the [`MAIN_SM_STATE`](../data/edn.hjson#main_sm_state) CSR until EDN's state machine has moved past the `BootInsAckWait` state (at which point CSRNG has acknowledged the Instantiate command sent by that EDN).
+Once that has happened, the next EDN can be enabled.
 
 If using boot-time request mode, the CSRNG seed material used for the first-activated EDN is the special pre-FIPS seed, which is specifically tested quickly to improve latency.
 The first random values distributed from this EDN will therefore be available roughly 2ms after reset.
