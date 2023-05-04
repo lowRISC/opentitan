@@ -53,7 +53,7 @@ jobs:
   displayName: "ROM E2E Tests"
   timeoutInMinutes: 180
   dependsOn: checkout
-  pool: FPGA
+  pool: FPGA-2
   steps:
   - template: ../ci/checkout-template.yml
   - template: ../ci/install-package-dependencies.yml
