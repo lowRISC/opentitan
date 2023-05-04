@@ -99,6 +99,9 @@ pub trait Jtag {
     /// Halt execution.
     fn halt(&self) -> Result<()>;
 
+    /// Wait until the target halt. This does NOT halt the target on timeout.
+    fn wait_halt(&self, timeout: Duration) -> Result<()>;
+
     /// Resume execution at its current code position.
     fn resume(&self) -> Result<()>;
     /// Resume execution at the specified address.

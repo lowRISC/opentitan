@@ -445,6 +445,19 @@ impl Jtag for OpenOcdServer {
         Ok(())
     }
 
+    fn wait_halt(&self, timeout: Duration) -> Result<()> {
+        ensure!(
+            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.get().unwrap())
+        );
+        let cmd = format!("wait_halt {}", timeout.as_millis());
+        let response = self.send_tcl_cmd(cmd.as_str())?;
+        if !response.is_empty() {
+            bail!("unexpected response: '{response}'");
+        }
+        Ok(())
+    }
+
     fn resume(&self) -> Result<()> {
         ensure!(
             matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
