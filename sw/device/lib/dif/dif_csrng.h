@@ -398,6 +398,8 @@ dif_result_t dif_csrng_update(const dif_csrng_t *csrng,
  *
  * @param csrng A CSRNG handle.
  * @param len Number of uint32_t words to generate.
+ * @return The result of the operation. KDifOutOfRange if the `len` parameter
+ * results in a 128bit block level size greater than 0x800.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_generate_start(const dif_csrng_t *csrng, size_t len);

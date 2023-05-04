@@ -44,6 +44,16 @@ dif_result_t csrng_send_app_cmd(mmio_region_t base_addr, ptrdiff_t offset,
     return kDifBadArg;
   }
 
+  enum {
+    // This is to maintain full compliance with NIST SP 800-90A, which requires
+    // the max generate output to be constrained to gen < 2 ^ 12 bits or 0x800
+    // 128-bit blocks.
+    kMaxGenerateSizeIn128BitBlocks = 0x800,
+  };
+  if (cmd.generate_len > kMaxGenerateSizeIn128BitBlocks) {
+    return kDifOutOfRange;
+  }
+
   mmio_region_write32(base_addr, offset,
                       csrng_cmd_header_build(cmd.id, cmd.entropy_src_enable,
                                              cmd_len, cmd.generate_len));

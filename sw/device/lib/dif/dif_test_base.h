@@ -35,4 +35,9 @@
  */
 #define ASSERT_DIF_BADARG(expr_) ASSERT_EQ(expr_, kDifBadArg)
 
+/**
+ * Creates a test expectataion for `expr` to evaluate to `kDifOutOfRange`.
+ */
+#define EXPECT_DIF_OUTOFRANGE(expr_) EXPECT_EQ(expr_, kDifOutOfRange)
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_TEST_BASE_H_

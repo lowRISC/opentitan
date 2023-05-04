@@ -125,7 +125,8 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len);
  * There is not additional entropy loaded from hardware.
  * @param buf A buffer to fill with words from the CSRNG output buffer.
  * @param len The number of words to read into `buf`.
- * @return Operation status in `status_t` format.
+ * @return Operation status in `status_t` format. OutOfRange if the `len`
+ * parameter results in a 128bit block level size greater than 0x800.
  */
 OT_WARN_UNUSED_RESULT
 status_t entropy_csrng_generate(const entropy_seed_material_t *seed_material,
