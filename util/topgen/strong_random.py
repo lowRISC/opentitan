@@ -32,7 +32,8 @@ class strong_random():
         """
 
         if self.buffername == input_file:
-            log.error("Entropy buffer " + input_file + " can't be loaded twice.")
+            log.error("Entropy buffer " + input_file +
+                      " can't be loaded twice.")
             sys.exit(1)
 
         with open(input_file, 'r') as fp:
@@ -46,11 +47,13 @@ class strong_random():
         self.buffername = input_file
 
     def generate_from_seed(self, buffer_size, seed):
-        """Load entropy buffer from an external file.
+        """Load entropy buffer from Python's default RNG.
 
-        Currently only supports numpy array of 8-bit values.
+        This is used when no entropy buffer file is loaded. Currently only
+        supports numpy array of 8-bit values.
         """
-
+        self.buffer.clear()
+        self.buffername = ""
         random.seed(seed)
         for i in range(buffer_size):
             self.buffer.append(random.getrandbits(8))
@@ -89,8 +92,7 @@ class strong_random():
             log.error("Entropy buffer empty.")
             sys.exit(1)
         else:
-            random_byte = self.buffer.pop(0)
-            return (random_byte)
+            return self.buffer.pop(0)
 
     def getrandbits(self, n_bits):
         """Fetches n_bits next bits from a buffer.
