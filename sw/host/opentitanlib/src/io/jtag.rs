@@ -133,6 +133,7 @@ pub enum JtagTap {
 pub enum RiscvGpr {
     GP,
     SP,
+    RA,
 }
 
 /// List of useful RISC-V control and status registers
