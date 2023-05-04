@@ -123,12 +123,13 @@ typedef struct dif_entropy_src_config {
    * running the block in FIPS mode. FIPS mode refers to running the entropy_src
    * in continuous mode. Also note that if `fips_enable` is set to `True`, then
    * at most one of either `route_to_firmware` or `bypass_conditioner` may be
-   * set, but not both.
+   * set, but will result in disabling the FIPS mode of operation from a
+   * hardware perspective.
    */
   bool bypass_conditioner;
   /**
-   * Specifies which single-bit-mode to use, if any at all. `fips_enable` must
-   * be false to use any single-bit-mode`.
+   * Specifies which single-bit-mode to use, if any at all. FIPS mode of
+   * operation is disabled in single-bit-mode of operation is selected.
    */
   dif_entropy_src_single_bit_mode_t single_bit_mode;
   /**
