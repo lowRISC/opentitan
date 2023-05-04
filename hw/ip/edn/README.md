@@ -83,6 +83,7 @@ Boot request mode is an example where the FIPS signal will not be ever be set, a
 ## Example Topology
 In general, the OpenTitan random number subsystem consists of one `entropy_src`, one CSRNG, and one or more EDNs.
 The `entropy_src` only supports one connection to a CSRNG, but the CSRNG has multiple application interface ports for connecting to EDN's or other hardware blocks.
-The diagram below shows an example topology where two EDN modules are used to distribute `genbits` from the CSRNG to peripheral modules.
+In the example below, two EDN modules are used to distribute `genbits` from the CSRNG to peripheral modules.
+(Note that this is just an example; consult the specification of a specific top-level design for the specific configuration used there.)
 
 ![EDN Example Topology Diagram](./doc/edn_top_diag.svg)
