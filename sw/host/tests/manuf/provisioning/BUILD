@@ -24,6 +24,7 @@ rust_binary(
     },
     deps = [
         "//sw/host/opentitanlib",
+        "@crate_index//:aes",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
         "@crate_index//:elliptic-curve",
