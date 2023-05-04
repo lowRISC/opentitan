@@ -8,7 +8,6 @@ memory for simulations and FPGA emulation.
 
 import copy
 import logging as log
-import random
 from pathlib import Path
 from typing import List, Tuple
 
@@ -18,6 +17,7 @@ from lib.OtpMemMap import OtpMemMap
 from lib.Present import Present
 from mako.template import Template
 from mubi.prim_mubi import mubi_value_as_int
+from topgen import strong_random
 
 # Seed diversification constant for OtpMemImg (this enables to use
 # the same seed for different classes)
@@ -34,6 +34,8 @@ _OTP_SW_WRITE_BYTE_ALIGNMENT = {
     'SECRET1': 8,
     'SECRET2': 8,
 }
+
+ENTROPY_BUFFER_SIZE_BYTES = 10000
 
 
 def _present_64bit_encrypt(plain, key):
@@ -221,7 +223,8 @@ class OtpMemImg(OtpMemMap):
         log.info('')
 
         # Re-initialize with seed to make results reproducible.
-        random.seed(OTP_IMG_SEED_DIVERSIFIER + img_config['seed'])
+        strong_random.generate_from_seed(ENTROPY_BUFFER_SIZE_BYTES,
+                                         OTP_IMG_SEED_DIVERSIFIER + int(img_config['seed']))
 
         if 'partitions' not in img_config:
             raise RuntimeError('Missing partitions key in configuration.')

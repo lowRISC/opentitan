@@ -5,13 +5,12 @@
 r"""OTP memory map class, used to create the associated RTL and
 documentation, and to create OTP memory images for preloading.
 """
-
 import logging as log
-import random
 from math import ceil, log2
 
 from mubi.prim_mubi import is_width_valid, mubi_value_as_int
 from tabulate import tabulate
+from topgen import strong_random
 
 from lib.common import check_bool, check_int, random_or_hexvalue
 
@@ -24,6 +23,8 @@ OTP_SEED_DIVERSIFIER = 177149201092001677687
 
 # This must match the rtl parameter ScrmblBlockWidth / 8
 SCRAMBLE_BLOCK_WIDTH = 8
+
+ENTROPY_BUFFER_SIZE_BYTES = 2000
 
 
 def _validate_otp(otp):
@@ -352,7 +353,10 @@ class OtpMemMap():
         config["seed"] = check_int(config["seed"])
 
         # Initialize RNG.
-        random.seed(OTP_SEED_DIVERSIFIER + int(config['seed']))
+        # Generate entropy buffer from the seed.
+        strong_random.generate_from_seed(
+            ENTROPY_BUFFER_SIZE_BYTES,
+            OTP_SEED_DIVERSIFIER + int(config['seed']))
         log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 

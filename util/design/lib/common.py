@@ -2,12 +2,17 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 r'''Common utilities used by various util/design scripts.'''
-
+import os
 import random
 import re
+import sys
 import textwrap
 from math import ceil, log2
 from pathlib import Path
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
+
+from topgen import strong_random  # noqa : E402
 
 
 def wrapped_docstring():
@@ -292,7 +297,7 @@ def random_or_hexvalue(dict_obj, key, num_bits):
 
     # Generate a random number of requested size in this case.
     if dict_obj[key] == '<random>':
-        dict_obj[key] = random.getrandbits(num_bits)
+        dict_obj[key] = strong_random.getrandbits(num_bits)
     # Otherwise attempt to convert this number to an int.
     # Check that the range is correct.
     else:
