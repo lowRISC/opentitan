@@ -118,8 +118,8 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
         // INTR_EN register does not exists in AON timer because the interrupts are
         // enabled as long as timers are enabled.
         if (cfg.en_cov && data_phase_read) begin
-          cov.intr_cg.sample(WKUP, wkup_en, item.d_data);
-          cov.intr_cg.sample(WDOG, wdog_en, item.d_data);
+          cov.intr_cg.sample(WKUP, wkup_en, item.d_data[WKUP]);
+          cov.intr_cg.sample(WDOG, wdog_en, item.d_data[WDOG]);
         end
       end
       "wkup_ctrl": begin
