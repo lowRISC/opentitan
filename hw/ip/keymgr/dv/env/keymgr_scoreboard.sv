@@ -737,8 +737,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             end
           end
         end else begin // Not sw_share
-          // TODO
+          // ICEBOX(#18344): explicitly list all the unchecked regs here.
           do_read_check = 1'b0;
+          $display("cindydebygljakljel %0s", csr.get_name());
         end
       end
     endcase
