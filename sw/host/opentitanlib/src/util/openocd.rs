@@ -300,6 +300,7 @@ impl OpenOcdServer {
             RiscvReg::GprByName(gpr) => match gpr {
                 RiscvGpr::GP => "gp",
                 RiscvGpr::SP => "sp",
+                RiscvGpr::RA => "ra",
             },
             RiscvReg::CsrByName(csr) => match csr {
                 RiscvCsr::DPC => "dpc",
