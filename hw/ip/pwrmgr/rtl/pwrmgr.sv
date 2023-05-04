@@ -144,22 +144,28 @@ module pwrmgr
     .esc_tx_i(esc_rst_tx_i)
   );
 
-  // These assertions use formal to approve that once esc_rst_req is latched, we always expect to
-  // see the pwr_rst_o to latch.
+  // These assertions use formal or simulation to prove that once esc_rst_req is latched, we expect
+  // to see the lc reset requests in pwr_rst_o. The one exception is when escalation requests are
+  // cancelled while the CPU fetch is disabled, meaning the fast fsm is inactive.
 `ifdef SIMULATION
   // In simulation mode, the prim_cdc_rand_delay module inserts a random one cycle delay to the
   // two flop synchronizers. There are two CDCs in the path from escalation reset to the fast fsm
   // receiving it, one to the slow clock, and one back to the fast one. And there are additional
   // cycles in the fast fsm to generate outputs.
   `ASSERT(PwrmgrSecCmEscToSlowResetReq_A,
-          esc_rst_req_d |-> ##[1:5] slow_peri_reqs_masked.rstreqs[ResetEscIdx], clk_slow_i,
-          !rst_slow_ni)
+          esc_rst_req_d |-> ##[2:5] (
+              (!esc_rst_req_d && (fetch_en_o != lc_ctrl_pkg::On)) ||
+              slow_peri_reqs_masked.rstreqs[ResetEscIdx]
+          ), clk_slow_i, !rst_slow_ni)
   `ASSERT(PwrmgrSecCmFsmEscToResetReq_A,
           slow_peri_reqs_masked.rstreqs[ResetEscIdx] |-> ##[1:4] u_fsm.reset_reqs_i[ResetEscIdx],
           clk_i, !rst_ni)
 `else
   `ASSERT(PwrmgrSecCmEscToSlowResetReq_A,
-          esc_rst_req_d |-> ##[2:3] slow_peri_reqs.rstreqs[ResetEscIdx], clk_slow_i, !rst_slow_ni)
+          esc_rst_req_d |-> ##[2:3] (
+              (!esc_rst_req_d && (fetch_en_o != lc_ctrl_pkg::On)) ||
+              slow_peri_reqs_masked.rstreqs[ResetEscIdx]
+          ), clk_slow_i, !rst_slow_ni)
   `ASSERT(PwrmgrSlowResetReqToFsmResetReq_A,
           slow_peri_reqs_masked.rstreqs[ResetEscIdx] |-> ##1 u_fsm.reset_reqs_i[ResetEscIdx],
           clk_i, !rst_ni)
