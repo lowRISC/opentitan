@@ -36,13 +36,13 @@ enum {
 };
 
 uint32_t kRmaUnlockTokenEcdhPkHsmX[kEcdhPrivateKeySizeIn32BitWords] = {
-    0xae84bc49, 0xb1d23256, 0x52e4a956, 0x6016d4ad,
-    0x535515c5, 0x35cb49fd, 0xe872db0c, 0x26e70570,
+    0x26e70570, 0xe872db0c, 0x35cb49fd, 0x535515c5,
+    0x6016d4ad, 0x52e4a956, 0xb1d23256, 0xae84bc49,
 };
 
 uint32_t kRmaUnlockTokenEcdhPkHsmY[kEcdhPrivateKeySizeIn32BitWords] = {
-    0xff3a5694, 0xa26923ee, 0xd46a8e82, 0x930fef81,
-    0x3a87ea35, 0xdacdec5f, 0xaf387b76, 0x6f009f88,
+    0x6f009f88, 0xaf387b76, 0xdacdec5f, 0x3a87ea35,
+    0x930fef81, 0xd46a8e82, 0xa26923ee, 0xff3a5694,
 };
 
 // TODO: update the .checksum fields once cryptolib uses this field.
