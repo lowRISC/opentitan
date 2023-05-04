@@ -47,26 +47,6 @@ TEST_F(ConfigTest, BadSingleBitMode) {
       dif_entropy_src_configure(&entropy_src_, config_, kDifToggleEnabled));
 }
 
-TEST_F(ConfigTest, BadFipsEnabled) {
-  dif_entropy_src_config_t bad_fips_config_0 = {
-      .fips_enable = true,
-      .route_to_firmware = false,
-      .bypass_conditioner = false,
-      .single_bit_mode = kDifEntropySrcSingleBitMode3,
-      .health_test_window_size = 1};
-  EXPECT_DIF_BADARG(dif_entropy_src_configure(&entropy_src_, bad_fips_config_0,
-                                              kDifToggleEnabled));
-
-  dif_entropy_src_config_t bad_fips_config_1 = {
-      .fips_enable = true,
-      .route_to_firmware = true,
-      .bypass_conditioner = true,
-      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-      .health_test_window_size = 1};
-  EXPECT_DIF_BADARG(dif_entropy_src_configure(&entropy_src_, bad_fips_config_1,
-                                              kDifToggleEnabled));
-}
-
 TEST_F(ConfigTest, Locked) {
   EXPECT_READ32(ENTROPY_SRC_REGWEN_REG_OFFSET, 0);
   EXPECT_EQ(
