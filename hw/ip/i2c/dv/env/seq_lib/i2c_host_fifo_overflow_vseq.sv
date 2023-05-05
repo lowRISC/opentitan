@@ -39,7 +39,7 @@ class i2c_host_fifo_overflow_vseq extends i2c_rx_tx_vseq;
     bit check_rx_overflow;
     bit rxempty = 1'b0;
 
-    initialization(.mode(Host));
+    initialization();
     `uvm_info(`gfn, "\n--> start of i2c_host_fifo_overflow_vseq", UVM_DEBUG)
     for (int i = 1; i <= num_trans; i++) begin
       check_fmt_overflow = 1'b1; // set to gracefully stop process_fmt_overflow_intr

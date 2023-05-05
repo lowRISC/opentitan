@@ -35,7 +35,7 @@ class i2c_host_fifo_reset_rx_vseq extends i2c_rx_tx_vseq;
   endtask : pre_start
 
   virtual task body();
-    initialization(.mode(Host));
+    initialization();
     read = 1'b0;
     `uvm_info(`gfn, "\n--> start of i2c_host_fifo_reset_rx_vseq", UVM_DEBUG)
     fork

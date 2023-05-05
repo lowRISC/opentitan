@@ -240,18 +240,19 @@ class i2c_base_vseq extends cip_base_vseq #(
     print_seq_cfg_vars("post-start");
   endtask : post_start
 
-  // TODO remove input arguments
-  virtual task initialization(if_mode_e mode = Host);
+  virtual task initialization();
     wait(cfg.m_i2c_agent_cfg.vif.rst_ni);
-    if (mode == Host) begin
-      i2c_init(Host);
-      agent_init(Device);
-    end else begin
+    // Use if_mode variable in agent_cfg as it is set in test
+    if (cfg.m_i2c_agent_cfg.if_mode == Host) begin
       i2c_init(Device);
       agent_init(Host);
+      `uvm_info(`gfn, "\n  initialization is done, DUT/AGENT = Target/Host", UVM_LOW)
+    end else begin
+      i2c_init(Host);
+      agent_init(Device);
+      `uvm_info(`gfn, "\n  initialization is done, DUT/AGENT = Host/Target", UVM_LOW)
     end
-    `uvm_info(`gfn, $sformatf("\n  initialization is done, DUT/AGENT = %s",
-        (mode == Host) ? "Host/Target" : "Target/Host"), UVM_LOW)
+
   endtask : initialization
 
   // 'cfg.m_i2c_agent_cfg.if_mode' is set by plusarg.

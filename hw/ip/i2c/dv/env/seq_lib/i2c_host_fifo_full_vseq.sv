@@ -32,7 +32,7 @@ class i2c_host_fifo_full_vseq extends i2c_rx_tx_vseq;
   endtask : pre_start
 
   virtual task body();
-    initialization(.mode(Host));
+    initialization();
     `uvm_info(`gfn, "\n--> start of i2c_host_fifo_full_vseq", UVM_DEBUG)
     fork
       begin

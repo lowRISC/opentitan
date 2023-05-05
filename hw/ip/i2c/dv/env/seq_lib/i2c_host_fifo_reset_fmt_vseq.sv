@@ -20,7 +20,7 @@ class i2c_host_fifo_reset_fmt_vseq extends i2c_rx_tx_vseq;
   virtual task body();
     bit [7:0] wr_data[$];
     last_tran = 1'b1;
-    initialization(.mode(Host));
+    initialization();
     fmt_item = new("fmt_item");
     `uvm_info(`gfn, "\n--> start of i2c_host_fifo_reset_fmt_vseq", UVM_DEBUG)
     `uvm_info(`gfn, $sformatf("number of runs is %0d ", num_runs), UVM_HIGH)

@@ -30,7 +30,7 @@ class i2c_host_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   virtual task body();
     bit check_fmt_threshold, check_rx_threshold;
 
-    initialization(.mode(Host));
+    initialization();
     `uvm_info(`gfn, "\n--> start of i2c_host_fifo_watermark_vseq", UVM_DEBUG)
     for (int i = 1; i <= num_trans; i++) begin
       check_fmt_threshold = 1'b1;

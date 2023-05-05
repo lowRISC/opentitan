@@ -66,7 +66,7 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
     skip_start = 0;
 
     // Intialize dut in device mode and agent in host mode
-    initialization(Device);
+    initialization();
     `uvm_info("cfg_summary",
               $sformatf("target_addr0:0x%x target_addr1:0x%x illegal_addr:0x%x num_trans:%0d",
                         target_addr0, target_addr1, illegal_addr, num_trans), UVM_MEDIUM)
