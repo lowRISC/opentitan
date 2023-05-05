@@ -63,7 +63,10 @@ typedef enum xof_mode {
  * Representation is internal to the hash implementation; initialize
  * with #otcrypto_hash_init.
  */
-typedef struct hash_context hash_context_t;
+typedef struct hash_context {
+  hash_mode_t mode;
+  uint32_t data[52];
+} hash_context_t;
 
 /**
  * Performs the required hash function on the input data.

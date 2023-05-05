@@ -332,13 +332,30 @@ static void state_shred(sha512_state_t *state) {
   state->total_len.upper = 0;
 }
 
+/**
+ * Copy the final digest as a byte-string.
+ *
+ * SHA-512 intermediate computations use words in little-endian format, but the
+ * FIPS 180-4 spec requires big-endian words (see section 3.1). Therefore, to
+ * get the right final byte-order, we need to reverse each word in the state.
+ *
+ * @param state Context object.
+ * @param[out] digest Destination buffer for digest.
+ */
+static void digest_get(sha512_state_t *state, uint8_t *digest) {
+  for (size_t i = 0; i < kSha512StateWords; i++) {
+    state->H[i] = __builtin_bswap32(state->H[i]);
+  }
+  // TODO(#17711): this can be `hardened_memcpy` if `digest` is aligned.
+  memcpy(digest, state->H, kSha512StateBytes);
+}
+
 status_t sha512_final(sha512_state_t *state, uint8_t *digest) {
   // Construct padding.
   HARDENED_TRY(process_message(state, NULL, 0, kHardenedBoolTrue));
 
   // Copy the digest and then destroy the state.
-  // TODO(#17711): this can be `hardened_memcpy` if `digest` is aligned.
-  memcpy(digest, state->H, kSha512StateBytes);
+  digest_get(state, digest);
   state_shred(state);
   return OTCRYPTO_OK;
 }
@@ -349,8 +366,7 @@ status_t sha512(const uint8_t *msg, const size_t msg_len, uint8_t *digest) {
 
   // Process data with padding enabled.
   HARDENED_TRY(process_message(&state, msg, msg_len, kHardenedBoolTrue));
-  // TODO(#17711): this can be `hardened_memcpy` if `digest` is aligned.
-  memcpy(digest, state.H, kSha512StateBytes);
+  digest_get(&state, digest);
   state_shred(&state);
   return OTCRYPTO_OK;
 }

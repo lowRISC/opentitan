@@ -44,7 +44,7 @@
 #define TRANSFER_BYTES_VERILATOR 0x2400U
 
 // This is about the amount that we can transfer within a 1 hour 'eternal' test
-//#define TRANSFER_BYTES_LONG (0xD0U << 20)
+// #define TRANSFER_BYTES_LONG (0xD0U << 20)
 
 /**
  * Configuration values for USB.
