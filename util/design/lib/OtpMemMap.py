@@ -358,7 +358,7 @@ class OtpMemMap():
             strong_random.load(config['entropy_buffer'])
         else:
             # Generate entropy buffer from the seed.
-            strong_random.generate_from_seed(
+            strong_random.unsecure_generate_from_seed(
                 ENTROPY_BUFFER_SIZE_BYTES,
                 OTP_SEED_DIVERSIFIER + int(config['seed']))
             log.info('Seed: {0:x}'.format(config['seed']))

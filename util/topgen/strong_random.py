@@ -46,7 +46,7 @@ class strong_random():
                     sys.exit(1)
         self.buffername = input_file
 
-    def generate_from_seed(self, buffer_size, seed):
+    def unsecure_generate_from_seed(self, buffer_size, seed):
         """Load entropy buffer from Python's default RNG.
 
         This is used when no entropy buffer file is loaded. Currently only
@@ -157,7 +157,7 @@ class strong_random():
 
 _inst = strong_random()
 load = _inst.load
-generate_from_seed = _inst.generate_from_seed
+unsecure_generate_from_seed = _inst.unsecure_generate_from_seed
 size = _inst.size
 isempty = _inst.isempty
 printstatus = _inst.printstatus
