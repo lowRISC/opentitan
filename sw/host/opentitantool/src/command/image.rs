@@ -152,21 +152,30 @@ impl CommandDispatch for ManifestUpdateCommand {
             image.overwrite_manifest(def)?;
         }
 
-        if let Some(rsa_key) = &self.rsa_key {
-            let (keypub, keypriv) = load_rsa_key(rsa_key)?;
-            image.update_modulus(keypub.modulus())?;
-            if let Some(private_key) = keypriv {
-                // Compute the digest over the image, sign it and update it.
-                image.update_rsa_signature(private_key.sign(&image.compute_digest())?)?;
+        // Update the public key fields of the manifest before signing the image. Otherwise we have
+        // to repeat the first signing operation.
+        let mut rsa_private_key: Option<RsaPrivateKey> = None;
+        if let Some(key) = &self.rsa_key {
+            let (public, private) = load_rsa_key(key)?;
+            image.update_modulus(public.modulus())?;
+            if let Some(private) = private {
+                rsa_private_key = Some(private);
             }
         }
-
-        if let Some(spx_key) = &self.spx_key {
-            let spx_key = spx::load_spx_key(spx_key)?;
-            image.update_spx_key(&spx_key)?;
-            if let SpxKey::Private(sk) = spx_key {
-                image.update_spx_signature(image.map_signed_region(|buf| sk.sign(buf)).0)?;
+        let mut spx_private_key: Option<SpxKey> = None;
+        if let Some(key) = &self.spx_key {
+            let key = spx::load_spx_key(key)?;
+            image.update_spx_key(&key)?;
+            if let SpxKey::Private(private) = key {
+                spx_private_key = Some(SpxKey::Private(private));
             }
+        }
+        // Sign the image
+        if let Some(key) = rsa_private_key {
+            image.update_rsa_signature(key.sign(&image.compute_digest())?)?;
+        }
+        if let Some(SpxKey::Private(key)) = spx_private_key {
+            image.update_spx_signature(image.map_signed_region(|buf| key.sign(buf)).0)?;
         }
 
         if let Some(rsa_signature) = &self.rsa_signature {
