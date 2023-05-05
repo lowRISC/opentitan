@@ -72,6 +72,8 @@ pub trait Jtag {
     fn connect(&self, tap: JtagTap) -> Result<()>;
     /// Disconnect from the TAP.
     fn disconnect(&self) -> Result<()>;
+    /// Get TAP we are currently connected too.
+    fn get_tap(&self) -> Option<JtagTap>;
 
     // Commands
 

@@ -363,6 +363,10 @@ impl Jtag for OpenOcdServer {
         self.stop()
     }
 
+    fn get_tap(&self) -> Option<JtagTap> {
+        self.jtag_tap.get()
+    }
+
     fn read_lc_ctrl_reg(&self, reg: &LcCtrlReg) -> Result<u32> {
         ensure!(
             matches!(self.jtag_tap.get().unwrap(), JtagTap::LcTap),
