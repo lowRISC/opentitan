@@ -292,7 +292,7 @@ class LcStEnc():
             strong_random.load(config['entropy_buffer'])
         else:
             # Re-initialize with seed to make results reproducible.
-            strong_random.generate_from_seed(
+            strong_random.unsecure_generate_from_seed(
                 ENTROPY_BUFFER_SIZE_BYTES,
                 LC_SEED_DIVERSIFIER + int(config['seed']))
 
