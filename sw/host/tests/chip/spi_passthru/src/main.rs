@@ -10,7 +10,8 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::eeprom::AddressMode;
 use opentitanlib::io::spi::{Target, Transfer};
-use opentitanlib::spiflash::{ReadMode, Sfdp, SpiFlash};
+use opentitanlib::spiflash::sfdp::SectorErase;
+use opentitanlib::spiflash::{EraseMode, ReadMode, Sfdp, SpiFlash};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::spi_passthru::{
     ConfigJedecId, SfdpData, SpiFlashEraseSector, SpiFlashReadSfdp, SpiFlashWrite, SpiMailboxMap,
@@ -200,28 +201,75 @@ fn test_chip_erase(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
-fn test_sector_erase(opts: &Opts, transport: &TransportWrapper, address: u32) -> Result<()> {
+fn test_sector_erase(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    address: u32,
+    size: u32,
+    force_4b: bool,
+) -> Result<()> {
     let uart = transport.uart("console")?;
     let spi = transport.spi(&opts.spi)?;
     let mut flash = SpiFlash {
         // Double the flash size so we can test 3b and 4b addresses.
         size: 32 * 1024 * 1024,
+        // Use block erase mode, causing SpiFlah::erase to select the best type
+        // of erase opcode based on address alignment and size.
+        erase_mode: EraseMode::Block,
+        // Since we aren't creating SpiFlash from an SFDP table, fill in the
+        // erase information with typical SFDP-supplied values.
+        erase: vec![
+            SectorErase {
+                size: 65536,
+                opcode: if force_4b {
+                    SpiFlash::BLOCK_ERASE_64K_4B
+                } else {
+                    SpiFlash::BLOCK_ERASE_64K
+                },
+                time: None,
+            },
+            SectorErase {
+                size: 32768,
+                opcode: if force_4b {
+                    SpiFlash::BLOCK_ERASE_32K_4B
+                } else {
+                    SpiFlash::BLOCK_ERASE_64K
+                },
+                time: None,
+            },
+            SectorErase {
+                size: 4096,
+                opcode: if force_4b {
+                    SpiFlash::SECTOR_ERASE_4B
+                } else {
+                    SpiFlash::BLOCK_ERASE_64K
+                },
+                time: None,
+            },
+        ],
         ..Default::default()
     };
 
+    let expected_opcode = flash
+        .erase
+        .iter()
+        .find(|e| e.size == size)
+        .expect("erase size")
+        .opcode;
+
     // Make sure we're in a mode appropriate for the address.
-    let mode = if address < 0x1000000 {
-        AddressMode::Mode3b
-    } else {
+    let mode = if force_4b || address >= 0x1000000 {
         AddressMode::Mode4b
+    } else {
+        AddressMode::Mode3b
     };
     flash.set_address_mode(&*spi, mode)?;
     let info = UploadInfo::execute(&*uart, || {
-        flash.erase(&*spi, address, flash.erase.last().unwrap().size)?;
+        flash.erase(&*spi, address, size)?;
         Ok(())
     })?;
 
-    assert_eq!(info.opcode, SpiFlash::SECTOR_ERASE);
+    assert_eq!(info.opcode, expected_opcode);
     assert_eq!(info.has_address, true);
     assert_eq!(info.addr_4b, mode == AddressMode::Mode4b);
     assert_eq!(info.address, address);
@@ -417,8 +465,65 @@ fn main() -> Result<()> {
     execute_test!(test_read_status_extended, &opts, &transport);
     execute_test!(test_read_sfdp, &opts, &transport);
     execute_test!(test_chip_erase, &opts, &transport);
-    execute_test!(test_sector_erase, &opts, &transport, 0x0000_4000);
-    execute_test!(test_sector_erase, &opts, &transport, 0x0100_4000);
+    // Test each of the erase opcodes based on the erase size.
+    // Automatically switch into 4B mode based on the address.
+    execute_test!(
+        test_sector_erase,
+        &opts,
+        &transport,
+        0x0000_4000,
+        4096,
+        false
+    );
+    execute_test!(
+        test_sector_erase,
+        &opts,
+        &transport,
+        0x0100_4000,
+        4096,
+        false
+    );
+    execute_test!(
+        test_sector_erase,
+        &opts,
+        &transport,
+        0x0001_0000,
+        65536,
+        false
+    );
+    execute_test!(
+        test_sector_erase,
+        &opts,
+        &transport,
+        0x0100_8000,
+        32768,
+        false
+    );
+    // Test each of the ERASE_*_4B opcodes.
+    execute_test!(
+        test_sector_erase,
+        &opts,
+        &transport,
+        0x0000_4000,
+        4096,
+        true
+    );
+    execute_test!(
+        test_sector_erase,
+        &opts,
+        &transport,
+        0x0001_0000,
+        65536,
+        true
+    );
+    execute_test!(
+        test_sector_erase,
+        &opts,
+        &transport,
+        0x0100_8000,
+        32768,
+        true
+    );
     execute_test!(test_page_program, &opts, &transport, 0x0000_4000);
     execute_test!(test_page_program, &opts, &transport, 0x0100_4000);
     execute_test!(test_write_status, &opts, &transport, SpiFlash::WRITE_STATUS);

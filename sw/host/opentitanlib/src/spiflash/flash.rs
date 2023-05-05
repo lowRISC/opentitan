@@ -172,6 +172,11 @@ impl SpiFlash {
     pub const FAST_QUAD_READ: u8 = 0x6b;
     pub const PAGE_PROGRAM: u8 = 0x02;
     pub const SECTOR_ERASE: u8 = 0x20;
+    pub const BLOCK_ERASE_32K: u8 = 0x52;
+    pub const BLOCK_ERASE_64K: u8 = 0xD8;
+    pub const SECTOR_ERASE_4B: u8 = 0x21;
+    pub const BLOCK_ERASE_32K_4B: u8 = 0x5C;
+    pub const BLOCK_ERASE_64K_4B: u8 = 0xDC;
     pub const CHIP_ERASE: u8 = 0xc7;
     pub const WRITE_ENABLE: u8 = 0x06;
     pub const WRITE_DISABLE: u8 = 0x04;
