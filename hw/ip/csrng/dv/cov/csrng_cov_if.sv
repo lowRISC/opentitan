@@ -274,7 +274,7 @@ interface csrng_cov_if (
                                                 acmd_e                 acmd,
                                                 bit[3:0]               clen,
                                                 bit[3:0]               flags,
-                                                bit[18:0]              glen
+                                                bit[11:0]              glen
                                                );
     option.name         = "csrng_cmds_cg";
     option.per_instance = 1;

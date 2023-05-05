@@ -12,7 +12,7 @@ class csrng_item extends uvm_sequence_item;
   rand acmd_e       acmd;
   rand mubi4_t      flags;
   rand bit [3:0]    clen;
-  rand bit [18:0]   glen;
+  rand bit [11:0]   glen;
   rand bit [31:0]   cmd_data_q[$];
 
   bit               fips;
