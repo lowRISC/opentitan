@@ -287,10 +287,14 @@ class LcStEnc():
         log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 
-        # Re-initialize with seed to make results reproducible.
-        strong_random.generate_from_seed(
-            ENTROPY_BUFFER_SIZE_BYTES,
-            LC_SEED_DIVERSIFIER + int(config['seed']))
+        if 'entropy_buffer' in config:
+            # Load entropy from a file, if the file exists.
+            strong_random.load(config['entropy_buffer'])
+        else:
+            # Re-initialize with seed to make results reproducible.
+            strong_random.generate_from_seed(
+                ENTROPY_BUFFER_SIZE_BYTES,
+                LC_SEED_DIVERSIFIER + int(config['seed']))
 
         log.info('Checking SECDED.')
         _validate_secded(config)

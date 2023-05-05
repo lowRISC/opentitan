@@ -353,12 +353,16 @@ class OtpMemMap():
         config["seed"] = check_int(config["seed"])
 
         # Initialize RNG.
-        # Generate entropy buffer from the seed.
-        strong_random.generate_from_seed(
-            ENTROPY_BUFFER_SIZE_BYTES,
-            OTP_SEED_DIVERSIFIER + int(config['seed']))
-        log.info('Seed: {0:x}'.format(config['seed']))
-        log.info('')
+        if 'entropy_buffer' in config:
+            # Load entropy from a file, if the file exists.
+            strong_random.load(config['entropy_buffer'])
+        else:
+            # Generate entropy buffer from the seed.
+            strong_random.generate_from_seed(
+                ENTROPY_BUFFER_SIZE_BYTES,
+                OTP_SEED_DIVERSIFIER + int(config['seed']))
+            log.info('Seed: {0:x}'.format(config['seed']))
+            log.info('')
 
         if "otp" not in config:
             raise RuntimeError("Missing otp configuration.")
