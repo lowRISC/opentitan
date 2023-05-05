@@ -545,7 +545,7 @@ jobs:
 - job: execute_test_rom_fpga_tests_cw310
   displayName: CW310 Test ROM Tests
   pool: FPGA
-  timeoutInMinutes: 45
+  timeoutInMinutes: 60
   dependsOn:
     - chip_earlgrey_cw310
     - sw_build
@@ -568,7 +568,7 @@ jobs:
 - job: execute_rom_fpga_jtag_tests_cw310
   displayName: Experimental CW310 ROM JTAG Tests
   pool: FPGA
-  timeoutInMinutes: 45
+  timeoutInMinutes: 60
   dependsOn:
     - chip_earlgrey_cw310
     - sw_build
@@ -593,7 +593,7 @@ jobs:
 - job: execute_rom_fpga_tests_cw310
   displayName: CW310 ROM Tests
   pool: FPGA
-  timeoutInMinutes: 45
+  timeoutInMinutes: 60
   dependsOn:
     - chip_earlgrey_cw310
     - sw_build
