@@ -43,6 +43,9 @@
 // This is appropriate for a Verilator chip simulation with 15 min timeout
 #define TRANSFER_BYTES_VERILATOR 0x2400U
 
+// For top-level DV simulation (regression runs, deterministic behavior)
+#define TRANSFER_BYTES_DVSIM 0x800U
+
 // This is about the amount that we can transfer within a 1 hour 'eternal' test
 // #define TRANSFER_BYTES_LONG (0xD0U << 20)
 
@@ -189,8 +192,16 @@ bool test_main(void) {
 
   // Decide upon the number of bytes to be transferred for the entire test
   uint32_t transfer_bytes = TRANSFER_BYTES_FPGA;
-  if (kDeviceType == kDeviceSimVerilator) {
-    transfer_bytes = TRANSFER_BYTES_VERILATOR;
+  switch (kDeviceType) {
+    case kDeviceSimVerilator:
+      transfer_bytes = TRANSFER_BYTES_VERILATOR;
+      break;
+    case kDeviceSimDV:
+      transfer_bytes = TRANSFER_BYTES_DVSIM;
+      break;
+    default:
+      CHECK(kDeviceType == kDeviceFpgaCw310);
+      break;
   }
   transfer_bytes = (transfer_bytes + nstreams - 1) / nstreams;
   LOG_INFO(" - %u stream(s), 0x%x bytes each", nstreams, transfer_bytes);

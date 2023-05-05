@@ -78,6 +78,7 @@
 `include "chip_sw_csrng_lc_hw_debug_en_vseq.sv"
 `include "chip_sw_usb_ast_clk_calib_vseq.sv"
 `include "chip_sw_usbdev_dpi_vseq.sv"
+`include "chip_sw_usbdev_stream_vseq.sv"
 `include "chip_sw_i2c_tx_rx_vseq.sv"
 `include "chip_sw_i2c_host_tx_rx_vseq.sv"
 `include "chip_sw_i2c_device_tx_rx_vseq.sv"
