@@ -8,7 +8,6 @@ the ECC code specified.
 """
 import argparse
 import logging as log
-import random
 from pathlib import Path
 
 import hjson
@@ -75,14 +74,10 @@ def main():
             log.warning('Commandline override of seed with {}.'.format(
                 args.seed))
             config['seed'] = args.seed
-        # Otherwise, we either take it from the .hjson if present, or
-        # randomly generate a new seed if not.
+        # Otherwise we make sure a seed exists in the HJSON config file.
         else:
-            random.seed()
-            new_seed = random.getrandbits(64)
-            if config.setdefault('seed', new_seed) == new_seed:
-                log.warning(
-                    'No seed specified, setting to {}.'.format(new_seed))
+            log.error('Seed not found in configuration HJSON.')
+            exit(1)
 
         # validate config and generate encoding
         try:
