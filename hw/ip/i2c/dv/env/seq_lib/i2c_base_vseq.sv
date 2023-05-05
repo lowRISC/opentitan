@@ -269,7 +269,6 @@ class i2c_base_vseq extends cip_base_vseq #(
         m_base_seq.start(p_sequencer.i2c_sequencer_h);
       join_none
     end
-    // TODO: initialization for the agent running in Host mode
   endtask : agent_init
 
   virtual task i2c_init(if_mode_e mode = Host);
@@ -289,7 +288,6 @@ class i2c_base_vseq extends cip_base_vseq #(
       ral.ctrl.enabletarget.set(1'b1);
       ral.ctrl.llpbk.set(1'b0);
       csr_update(ral.ctrl);
-      // TODO: more initialization for the host running Target mode
       ral.target_id.address0.set(target_addr0);
       ral.target_id.mask0.set(7'h7f);
       ral.target_id.address1.set(target_addr1);
@@ -298,6 +296,9 @@ class i2c_base_vseq extends cip_base_vseq #(
       // Host timeout control
       ral.host_timeout_ctrl.set(this.host_timeout_ctrl);
       csr_update(ral.host_timeout_ctrl);
+      print_time_property();
+      get_timing_values();
+      program_registers();
     end
 
     // clear fifos

@@ -70,8 +70,6 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
     `uvm_info("cfg_summary",
               $sformatf("target_addr0:0x%x target_addr1:0x%x illegal_addr:0x%x num_trans:%0d",
                         target_addr0, target_addr1, illegal_addr, num_trans), UVM_MEDIUM)
-    print_time_property();
-
     fork
       begin
         `uvm_info(`gfn, $sformatf("num_trans:%0d", num_trans), UVM_MEDIUM)
