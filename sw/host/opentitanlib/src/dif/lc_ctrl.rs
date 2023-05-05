@@ -159,6 +159,7 @@ bitflags! {
     pub struct LcCtrlStatus: u32 {
         const INITIALIZED            = 0b1 << bindgen::dif::LC_CTRL_STATUS_INITIALIZED_BIT;
         const READY                  = 0b1 << bindgen::dif::LC_CTRL_STATUS_READY_BIT;
+        const EXT_CLOCK_SWITCHED     = 0b1 << bindgen::dif::LC_CTRL_STATUS_EXT_CLOCK_SWITCHED_BIT;
         const TRANSITION_SUCCESSFUL  = 0b1 << bindgen::dif::LC_CTRL_STATUS_TRANSITION_SUCCESSFUL_BIT;
         const TRANSITION_COUNT_ERROR = 0b1 << bindgen::dif::LC_CTRL_STATUS_TRANSITION_COUNT_ERROR_BIT;
         const TRANSITION_ERROR       = 0b1 << bindgen::dif::LC_CTRL_STATUS_TRANSITION_ERROR_BIT;
@@ -170,9 +171,6 @@ bitflags! {
         const OTP_PARTITION_ERROR    = 0b1 << bindgen::dif::LC_CTRL_STATUS_OTP_PARTITION_ERROR_BIT;
 
         const ERRORS =
-            Self::INITIALIZED.bits() |
-            Self::READY.bits() |
-            Self::TRANSITION_SUCCESSFUL.bits() |
             Self::TRANSITION_COUNT_ERROR.bits() |
             Self::TRANSITION_ERROR.bits() |
             Self::TOKEN_ERROR.bits() |
