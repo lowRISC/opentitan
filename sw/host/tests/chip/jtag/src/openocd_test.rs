@@ -40,29 +40,28 @@ fn reset(transport: &TransportWrapper, strappings: &[&str], reset_delay: Duratio
 
 fn stress_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // repeat the same test 50 times (stay below timeout)
-    for i in 0..20 {
-        log::info!("Attempt {}: reset and connect OpenOCD", i);
-        reset(
-            transport,
-            &["PINMUX_TAP_RISCV"],
-            opts.init.bootstrap.options.reset_delay,
-        )?;
-        let jtag = transport.jtag(&opts.jtag)?;
-        jtag.connect(JtagTap::RiscvTap)?;
-        jtag.halt()?;
-        // write the whole SRAM
-        let base = top_earlgrey_memory::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32;
-        let size = top_earlgrey_memory::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES;
-        let data : Vec<u32> = (0..(size / 4)).map(|x| x as u32).collect();
-        jtag.write_memory32(base, &data)?;
-        // read it back
-        let mut data2 = vec![0u32; size / 4];
-        jtag.read_memory32(base, &mut data2)?;
+    log::info!("Reset chip");
+    reset(
+        transport,
+        &["PINMUX_TAP_RISCV"],
+        opts.init.bootstrap.options.reset_delay,
+    )?;
+    let jtag = transport.jtag(&opts.jtag)?;
+    log::info!("Connect to RISC-V");
+    jtag.connect(JtagTap::RiscvTap)?;
+    jtag.halt()?;
+    // write the whole SRAM
+    let base = top_earlgrey_memory::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32;
+    let size = top_earlgrey_memory::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES;
+    let data : Vec<u32> = (0..(size / 4)).map(|x| x as u32).collect();
+    log::info!("Write the whole SRAM");
+    jtag.write_memory32(base, &data)?;
+    // read it back
+    let mut data2 = vec![0u32; size / 4];
+    log::info!("Read back SRAM");
+    jtag.read_memory32(base, &mut data2)?;
 
-        jtag.resume()?;
-        jtag.disconnect()?;
-        thread::sleep(Duration::from_millis(500));
-    }
+    jtag.disconnect()?;
     Ok(())
 }
 
