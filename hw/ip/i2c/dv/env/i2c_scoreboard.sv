@@ -385,6 +385,19 @@ class i2c_scoreboard extends cip_base_scoreboard #(
               cov.intr_test_cg.sample(intr, item.a_data[i], intr_en[i], intr_exp[i]);
             end
           end
+          if (cfg.en_cov) begin
+            cov.interrupts_cg.sample(.intr_state(ral.intr_state.get_mirrored_value()),
+                                     .intr_enable(ral.intr_enable.get_mirrored_value()),
+                                     .intr_test(item.a_data));
+          end
+        end
+
+        "intr_enable" : begin
+          if (cfg.en_cov) begin
+            cov.interrupts_cg.sample(.intr_state(ral.intr_state.get_mirrored_value()),
+                                     .intr_enable(item.a_data),
+                                     .intr_test(ral.intr_test.get_mirrored_value()));
+          end
         end
 
         "txdata": begin
@@ -465,8 +478,22 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             end
           end
           if (cfg.en_cov) begin
-            cov.interrupts_cg.sample(.intr_state(intr_en),
+            cov.interrupts_cg.sample(.intr_state(item.a_data),
                                      .intr_enable(ral.intr_enable.get_mirrored_value()),
+                                     .intr_test(ral.intr_test.get_mirrored_value()));
+          end
+        end
+        "intr_test" : begin
+          if (cfg.en_cov) begin
+            cov.interrupts_cg.sample(.intr_state(ral.intr_state.get_mirrored_value()),
+                                     .intr_enable(ral.intr_enable.get_mirrored_value()),
+                                     .intr_test(item.a_data));
+          end
+        end
+        "intr_enable" : begin
+          if (cfg.en_cov) begin
+            cov.interrupts_cg.sample(.intr_state(ral.intr_state.get_mirrored_value()),
+                                     .intr_enable(item.a_data),
                                      .intr_test(ral.intr_test.get_mirrored_value()));
           end
         end
