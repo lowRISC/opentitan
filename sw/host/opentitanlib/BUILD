@@ -20,6 +20,12 @@ ujson_rust(
 )
 
 ujson_rust(
+    name = "i2c_target",
+    srcs = ["//sw/device/lib/testing/json:i2c_target"],
+    defines = ["opentitanlib=crate"],
+)
+
+ujson_rust(
     name = "pinmux_config",
     srcs = ["//sw/device/lib/testing/json:pinmux_config"],
     defines = ["opentitanlib=crate"],
@@ -105,6 +111,7 @@ rust_library(
         "src/test_utils/epmp.rs",
         "src/test_utils/extclk.rs",
         "src/test_utils/gpio.rs",
+        "src/test_utils/i2c_target.rs",
         "src/test_utils/init.rs",
         "src/test_utils/lc_transition.rs",
         "src/test_utils/load_bitstream.rs",
@@ -191,6 +198,7 @@ rust_library(
     compile_data = [
         ":config",
         ":gpio",
+        ":i2c_target",
         ":e2e_command",
         ":pinmux_config",
         ":spi_passthru",
@@ -210,6 +218,7 @@ rust_library(
     rustc_env = {
         "e2e_command": "$(location :e2e_command)",
         "gpio": "$(location :gpio)",
+        "i2c_target": "$(location :i2c_target)",
         "pinmux_config": "$(location :pinmux_config)",
         "spi_passthru": "$(location :spi_passthru)",
         "hyperdebug_firmware": "$(location @hyperdebug_firmware//:hyperdebug/ec.bin)",

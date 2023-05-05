@@ -30,6 +30,13 @@ cc_library(
 )
 
 cc_library(
+    name = "i2c_target",
+    srcs = ["i2c_target.c"],
+    hdrs = ["i2c_target.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "pinmux",
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],

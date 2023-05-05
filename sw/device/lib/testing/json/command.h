@@ -14,6 +14,9 @@ extern "C" {
     value(_, ChipStartup) \
     value(_, GpioSet) \
     value(_, GpioGet) \
+    value(_, I2cTargetAddress) \
+    value(_, I2cReadTransaction) \
+    value(_, I2cWriteTransaction) \
     value(_, PinmuxConfig) \
     value(_, SpiConfigureJedecId) \
     value(_, SpiReadStatus) \

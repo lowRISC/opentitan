@@ -7,6 +7,7 @@ pub mod e2e_command;
 pub mod epmp;
 pub mod extclk;
 pub mod gpio;
+pub mod i2c_target;
 pub mod init;
 pub mod lc_transition;
 pub mod load_bitstream;
