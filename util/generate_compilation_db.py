@@ -34,6 +34,7 @@ import subprocess
 import sys
 from typing import Dict, List, Tuple
 
+
 logger = logging.getLogger('generate_compilation_db')
 
 
@@ -141,9 +142,8 @@ class PathBuilder:
             self.top_dir, f"bazel-{os.path.basename(self.top_dir)}")
 
 
-def build_compile_commands(
-        paths: PathBuilder,
-        device_build: bool) -> Tuple[List[Dict], List[Dict]]:
+def build_compile_commands(paths: PathBuilder, device_build: bool
+                           ) -> Tuple[List[Dict], List[Dict]]:
     bazel_aquery_command = [
         paths.bazelisk_script,
         'aquery',
@@ -194,12 +194,60 @@ def build_compile_commands(
 
 
 def main(args):
+    # These C compiler flags are required for on-device targets.
+    REQUIRED_DEVICE_CC_FLAGS = set([
+        "-Wall",
+        "-Werror",
+        "-Wextra",
+        "-Wgnu",
+        "-Wimplicit-fallthrough",
+        "-Winvalid-pch",
+        "-Wno-covered-switch-default",
+        "-Wno-error=unused-function",
+        "-Wno-gnu-zero-variadic-macro-arguments",
+        "-Wno-missing-field-initializers",
+        "-Wno-sign-compare",
+        "-Wno-unused-parameter",
+        "-Wstrict-prototypes",
+        "-Wswitch-default",
+        "-Wconversion",
+    ])
+
     paths = PathBuilder(os.path.realpath(__file__))
 
-    device_commands, device_unittest_commands = build_compile_commands(
-        paths, device_build=True)
-    host_commands, host_unittest_commands = build_compile_commands(
-        paths, device_build=False)
+    device_commands = []
+    device_unittest_commands = []
+    host_commands = []
+    host_unittest_commands = []
+
+    if not args.audit_device_cc_flags:
+        device_commands, device_unittest_commands = build_compile_commands(
+            paths, device_build=True)
+        host_commands, host_unittest_commands = build_compile_commands(
+            paths, device_build=False)
+    else:
+        all_device_commands, _ = build_compile_commands(paths,
+                                                        device_build=True)
+
+        troubled_sources = []
+
+        for command in all_device_commands:
+            arguments = command["arguments"]
+            source_file = command["file"]
+            assert "-march=rv32imc" in arguments
+
+            missing_flags = REQUIRED_DEVICE_CC_FLAGS - set(arguments)
+            if not missing_flags:
+                continue
+
+            troubled_sources.append(source_file)
+
+            command["missing_cc_flags"] = sorted(list(missing_flags))
+            device_commands.append(command)
+
+        logger.warning(
+            "Audit found %d sources that are missing required flags",
+            len(set(troubled_sources)))
 
     # In case there are conflicting host and device commands for "*_unittest.cc"
     # sources, we strategically place the host commands first. Conversely, we
@@ -222,6 +270,12 @@ if __name__ == '__main__':
     parser.add_argument('--target',
                         default='//...',
                         help='Bazel target. Default is "//...".')
+    parser.add_argument(
+        '--audit_device_cc_flags',
+        action='store_true',
+        help=
+        'When specified, only non-test device sources missing required flags will be emitted.'
+    )
     parser.add_argument(
         '--out',
         help='Path of output file for compilation DB. Defaults to stdout.')
