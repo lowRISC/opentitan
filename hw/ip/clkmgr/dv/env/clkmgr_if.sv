@@ -54,9 +54,9 @@ interface clkmgr_if (
   prim_mubi_pkg::mubi4_t hi_speed_sel;
 
   // Internal DUT signals.
-  // TODO: This is a core env component (i.e. reusable entity) that makes hierarchical references
-  // into the DUT. A better strategy would be to bind this interface to the DUT in tb.sv and use
-  // relative paths instead.
+  // ICEBOX(lowrisc/opentitan#18379): This is a core env component (i.e. reusable entity) that
+  // makes hierarchical references into the DUT. A better strategy would be to bind this interface
+  // to the DUT in tb.sv and use relative paths instead.
 `ifndef CLKMGR_HIER
   `define CLKMGR_HIER tb.dut
 `endif

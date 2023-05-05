@@ -358,16 +358,9 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       end
       "recov_err_code": begin
         do_read_check = 1'b0;
-        if (cfg.en_cov) begin
-          // The frequency measurement tests always check if an expected alert occurred.
-          // TODO(maturana) Insert coverage.
-        end
       end
       "fatal_err_code": begin
         do_read_check = 1'b0;
-        if (cfg.en_cov) begin
-          // TODO(maturana) Insert coverage.
-        end
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
