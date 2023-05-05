@@ -25,6 +25,7 @@ filesets:
       - seq_lib/lc_ctrl_base_vseq.sv: {is_include_file: true}
       - seq_lib/lc_ctrl_common_vseq.sv: {is_include_file: true}
       - seq_lib/lc_ctrl_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_volatile_unlock_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/lc_ctrl_prog_failure_vseq.sv: {is_include_file: true}
       - seq_lib/lc_ctrl_state_failure_vseq.sv: {is_include_file: true}
       - seq_lib/lc_ctrl_errors_vseq.sv: {is_include_file: true}

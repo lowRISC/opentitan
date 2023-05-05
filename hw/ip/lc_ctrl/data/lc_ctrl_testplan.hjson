@@ -181,6 +181,27 @@
       tests: ["lc_ctrl_jtag_priority"]
     }
     {
+      name: lc_ctrl_volatile_unlock
+      desc: '''
+            This test covers lc_ctrl volatile_raw_unlock functionality.
+
+            **Stimulus**:
+            - Claim the mutex.
+            - Set volatile_raw_unlock to 1.
+            - Trigger a lc_transition.
+            - Trigger a second lc_transition without reset.
+
+            **Checks**:
+            - If the current state is RawState, and transition state is TestUnlocked0, and if the
+              input token is correct, expect the transition to be sucessful.
+            - Check status and volatile_raw_unlock output.
+            - If the raw unlock transition is successful, check the second lc_transition can be
+              performed without any error.
+            '''
+      stage: V2
+      tests: ["lc_ctrl_volatile_unlock_smoke"]
+    }
+    {
       name: stress_all
       desc: '''
             - Combine above sequences in one test to run sequentially, except csr sequence.
