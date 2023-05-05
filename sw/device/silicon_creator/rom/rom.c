@@ -304,7 +304,7 @@ static void rom_pre_boot_check(void) {
   // Check cached life cycle state against the value reported by hardware.
   lifecycle_state_t lc_state_check = lifecycle_state_get();
   if (launder32(lc_state_check) != lc_state) {
-    HARDENED_UNREACHABLE();
+    HARDENED_TRAP();
   }
   HARDENED_CHECK_EQ(lc_state_check, lc_state);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 3);
@@ -312,7 +312,7 @@ static void rom_pre_boot_check(void) {
   // Check cached boot data.
   rom_error_t boot_data_ok = boot_data_check(&boot_data);
   if (launder32(boot_data_ok) != kErrorOk) {
-    HARDENED_UNREACHABLE();
+    HARDENED_TRAP();
   }
   HARDENED_CHECK_EQ(boot_data_ok, kErrorOk);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 4);
@@ -326,7 +326,7 @@ static void rom_pre_boot_check(void) {
   // (bits 6 and 7) in the check.
   cpuctrl_csr = bitfield_bit32_write(cpuctrl_csr, 8, false);
   if (launder32(cpuctrl_csr) != cpuctrl_otp) {
-    HARDENED_UNREACHABLE();
+    HARDENED_TRAP();
   }
   HARDENED_CHECK_EQ(cpuctrl_csr, cpuctrl_otp);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 5);
@@ -397,7 +397,7 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolFalse);
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
 
   // Unlock execution of ROM_EXT executable code (text) sections.
