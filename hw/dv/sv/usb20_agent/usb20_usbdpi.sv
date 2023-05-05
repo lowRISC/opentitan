@@ -89,36 +89,54 @@ module usb20_usbdpi (
     end
   end
 
-  // Count of SE0 cycles (1/4 bit intervals). This is just an approximate
-  // detection of EOP for the purpose of ascertaining when the device is
-  // relinquishing the bus; it will also count during bus resets.
-  logic [2:0] se0_cnt;
+  // Count of 8 SE0 cycles (1/4 bit intervals), followed by a count of 4 Idle
+  // (J) cycles. This is just an approximate detection of EOP for the purpose
+  // of ascertaining when the device is relinquishing the bus.
+  //
+  // TODO: In time the DPI model should be modified such that it neither
+  // requires nor trusts output enables from the device.
+  logic [3:0] se0_cnt;
+  logic [1:0] idle_cnt;
   always @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       se0_cnt <= 'b0;
+      idle_cnt <= 'b0;
     end else if (enable) begin
+      // Count SE0 cycles to detect EOP
       if (usb_p === 1'b0 && usb_n === 1'b0) begin
         se0_cnt <= se0_cnt + 1'b1;
       end else begin
         se0_cnt <= 'b0;
       end
+      // Count of Idle (J) cycles because the DPI model needs to see the
+      // SE0,SE0,J sequence to perform its own EOP detection.
+      if (usb_p == idle_p && usb_n == idle_n) begin
+        idle_cnt <= idle_cnt + |{idle_cnt, se0_cnt[3]};
+      end else begin
+        idle_cnt <= 'b0;
+      end
     end
   end
 
-  // Assume that the device is driving if the DPI model is not
+  // 4 idle cycles (1/4 bit intervals) detected after se0_cnt detected 8
+  // SE0 cycles (1/4 bit intervals)
+  wire eop = &idle_cnt;
+
+  // Assume that the device is driving if the DPI model is not;
+  // Note: that we need to ensure the DPI model sees the SE0,SE0,J sequence
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       usb_dp_en_d2p_last <= 1'b0;
       usb_dn_en_d2p_last <= 1'b0;
     end else if (enable & usb_sense_p2d_o & usb_pullup_detect) begin
       // Detect the end of EOP when the device has been transmitting
-      if (&{usb_dp_en_d2p_last, se0_cnt}) begin
+      if (usb_dp_en_d2p_last & eop) begin
         usb_dp_en_d2p_last <= 1'b0;
       end else begin
         usb_dp_en_d2p_last <= usb_dp_en_d2p;
       end
       // Detect the end of EOP when the device has been transmitting
-      if ({usb_dn_en_d2p_last, se0_cnt}) begin
+      if (usb_dn_en_d2p_last & eop) begin
         usb_dn_en_d2p_last <= 1'b0;
       end else begin
         usb_dn_en_d2p_last <= usb_dn_en_d2p;
