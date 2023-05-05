@@ -3591,7 +3591,7 @@
     {
       name: chip_sw_exit_test_unlocked_bootstrap
       desc: '''End to end test to ensure rom boot strap can be performed after
-      transitioning from TEST states to PROD staets. .
+      transitioning from TEST state to PROD state.
 
       - Pre-load the device into TEST_UNLOCKED state and ROM_EXEC_EN = 0.
       - In the same power cycle, advance device to PROD, PROD_END or DEV through LC JTAG request and
