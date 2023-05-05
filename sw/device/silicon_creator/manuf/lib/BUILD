@@ -297,14 +297,12 @@ opentitan_functest(
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_test_unlocked0",
-        tags = [
-            "jtag",
-        ],
-        test_cmds = OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        tags = ["jtag"],
+        test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
     targets = ["cw310_rom"],
-    test_harness = "//sw/host/tests/manuf/manuf_cp_yield_test:manuf_cp_yield_test",
+    test_harness = "//sw/host/tests/manuf/manuf_cp_yield_test",
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
