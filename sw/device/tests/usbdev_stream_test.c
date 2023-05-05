@@ -221,7 +221,7 @@ bool test_main(void) {
   // simulation has finished all of the printing, which takes a while
   // if `--trace` was passed in.
   CHECK_STATUS_OK(usb_testutils_init(ctx->usbdev, /*pinflip=*/false,
-                                     /*en_diff_rcvr=*/false,
+                                     /*en_diff_rcvr=*/true,
                                      /*tx_use_d_se0=*/false));
   CHECK_STATUS_OK(usb_testutils_controlep_init(
       &usbdev_control, ctx->usbdev, 0, config_descriptors,
