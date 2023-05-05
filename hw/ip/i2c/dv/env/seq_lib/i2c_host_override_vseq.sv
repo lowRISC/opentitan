@@ -10,7 +10,9 @@ class i2c_host_override_vseq extends i2c_base_vseq;
   local rand bit sdaval;
   local rand bit txovrden;
 
-  constraint txovrden_c { txovrden dist {1 :/ 3, 0 :/ 1}; }
+  constraint txovrden_c { txovrden dist {1 := 1, 0 := 1}; }
+  constraint sclval_c { sclval dist {1 := 1, 0 := 1}; }
+  constraint sdaval_c { sdaval dist {1 := 1, 0 := 1}; }
 
   task pre_start();
     super.pre_start();
@@ -25,7 +27,9 @@ class i2c_host_override_vseq extends i2c_base_vseq;
     initialization(.mode(Host));
     `uvm_info(`gfn, "\n--> start of i2c_host_override_vseq", UVM_DEBUG)
     for (uint i = 1; i <= num_trans; i++) begin
+      bit [TL_DW-1:0] reg_val;
       `uvm_info(`gfn, $sformatf("\n  run simulation %0d/%0d", i, num_trans), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("override val = %0d",{txovrden,sclval,sdaval}), UVM_MEDIUM)
       // program to enable OVRD reg
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(sclval)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(sdaval)
@@ -47,6 +51,8 @@ class i2c_host_override_vseq extends i2c_base_vseq;
               cfg.m_i2c_agent_cfg.vif.sda_i, sdaval), UVM_DEBUG)
         end
       end
+      // Read override register values
+      csr_rd(.ptr(ral.ovrd), .value(reg_val));
     end
     `uvm_info(`gfn, "\n--> end of i2c_host_override_vseq", UVM_DEBUG)
   endtask : body
