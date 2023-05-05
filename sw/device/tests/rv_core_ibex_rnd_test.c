@@ -26,6 +26,7 @@ rv_core_ibex_check_rnd_read_possible_while_status_invalid();
 
 enum {
   kRandomDataReads = 32,
+  kInvalidReadAttempts = 8,
   // Timeout (in microseconds) when polling random data or the validity of
   // random data.  Can currently take up to 80 ms on the FPGA and up to 2.5 s
   // in Verilator (in simulated time; empirically determined at the time
@@ -62,8 +63,12 @@ bool test_main(void) {
   }
 
   // Ensure `RND_STATUS` indicate invalid data immediately after `RND_DATA`
-  // read.
-  CHECK(rv_core_ibex_rnd_read_and_immediately_check_status() == 0);
+  // read. Make multiple attempts in a loop to avoid icache effects.
+  bool quick_reads_success = true;
+  for (int i = 0; i < kInvalidReadAttempts; ++i) {
+    quick_reads_success &= rv_core_ibex_rnd_read_and_immediately_check_status();
+  }
+  CHECK(!quick_reads_success);
 
   // Perform repeated reads from `RND_DATA` without `RND_STATUS` polling to
   // check read when invalid doesn't block.
@@ -72,11 +77,13 @@ bool test_main(void) {
   }
 
   // Check to see that we can really do an RND while status is invalid before
-  // and after.
+  // and after. Also make multiple attempts in a loop to avoid icache effects.
   IBEX_SPIN_FOR(rv_core_ibex_testutils_is_rnd_data_valid(&rv_core_ibex),
                 kTimeoutUsec);
-  uint32_t status_value =
-      rv_core_ibex_check_rnd_read_possible_while_status_invalid();
+  uint32_t status_value = UINT32_MAX;
+  for (int i = 0; i < kInvalidReadAttempts; ++i) {
+    status_value &= rv_core_ibex_check_rnd_read_possible_while_status_invalid();
+  }
   CHECK(status_value == 0);
 
   return true;
