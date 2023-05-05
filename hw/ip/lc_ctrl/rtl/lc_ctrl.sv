@@ -481,7 +481,7 @@ module lc_ctrl
       // In case of a volatile RAW unlock, this bit has to be cleared when the volatile
       // unlock is followed by a real transition.
       // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
-      if (SecVolatileRawUnlockEn && transition_cmd) begin
+      if (SecVolatileRawUnlockEn && transition_cmd && !volatile_raw_unlock_q) begin
         trans_success_q <= 1'b0;
       end else begin
         trans_success_q <= trans_success_d | trans_success_q;
