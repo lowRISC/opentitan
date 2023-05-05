@@ -264,6 +264,16 @@ otbn_library(
     ],
 )
 
+otbn_binary(
+    name = "run_sha512",
+    srcs = [
+        "run_sha512.s",
+    ],
+    deps = [
+        ":sha512",
+    ],
+)
+
 otbn_library(
     name = "x25519",
     srcs = [

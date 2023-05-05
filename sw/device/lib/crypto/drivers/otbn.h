@@ -21,8 +21,10 @@ extern "C" {
 enum {
   /* Length of an OTBN wide word in bits */
   kOtbnWideWordNumBits = 256,
+  /* Length of an OTBN wide word in bytes */
+  kOtbnWideWordNumBytes = kOtbnWideWordNumBits / 8,
   /* Length of an OTBN wide word in words */
-  kOtbnWideWordNumWords = kOtbnWideWordNumBits / (sizeof(uint32_t) * 8),
+  kOtbnWideWordNumWords = kOtbnWideWordNumBytes / sizeof(uint32_t),
 };
 
 /**
