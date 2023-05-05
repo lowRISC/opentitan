@@ -558,3 +558,38 @@ test_suite(
         for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
     ],
 )
+
+otp_image(
+    name = "otp_img_otp_ctrl_functest",
+    src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked0",
+    visibility = ["//visibility:private"],
+)
+
+bitstream_splice(
+    name = "bitstream_otp_ctrl_functest",
+    src = "//hw/bitstream:rom",
+    data = "otp_img_otp_ctrl_functest",
+    meminfo = "//hw/bitstream:otp_mmi",
+    update_usr_access = True,
+    visibility = ["//visibility:private"],
+)
+
+opentitan_functest(
+    name = "otp_ctrl_functest",
+    srcs = ["//sw/device/silicon_creator/manuf/lib:empty_functest.c"],
+    cw310 = cw310_params(
+        bitstream = ":bitstream_otp_ctrl_functest",
+        tags = ["jtag"],
+        test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
+    ),
+    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+    targets = ["cw310_rom"],
+    test_harness = "//sw/host/tests/manuf/otp_ctrl:otp_ctrl",
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+    ],
+)

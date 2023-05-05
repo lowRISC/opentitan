@@ -14,5 +14,10 @@ bool test_main(void) {
 #ifdef EMPTY_TEST_MSG
   LOG_INFO(EMPTY_TEST_MSG);
 #endif
+  // Wait in a loop so that OpenOCD can connect to the TAP without the ROM
+  // resetting the chip.
+  while (1) {
+    // Do nothing
+  }
   return true;
 }
