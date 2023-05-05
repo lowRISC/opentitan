@@ -39,7 +39,7 @@ class i2c_host_stress_all_vseq extends i2c_rx_tx_vseq;
   virtual task body();
     `uvm_info(`gfn, "\n\n=> start i2c_host_stress_all_vseq", UVM_DEBUG)
     print_seq_names(seq_names);
-    initialization(.mode(Host));
+    initialization();
     for (int i = 1; i <= seq_names.size(); i++) begin
       seq_run_hist[seq_names[i-1]] = 0;
     end

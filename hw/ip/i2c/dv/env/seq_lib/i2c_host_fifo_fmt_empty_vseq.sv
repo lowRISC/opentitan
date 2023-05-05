@@ -18,7 +18,7 @@ class i2c_host_fifo_fmt_empty_vseq extends i2c_rx_tx_vseq;
 
   virtual task body();
      bit do_interrupt;
-    initialization(.mode(Host));
+    initialization();
     `uvm_info(`gfn, "\n--> start of sequence", UVM_DEBUG)
     fork
       begin

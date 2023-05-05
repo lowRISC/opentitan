@@ -38,7 +38,7 @@ class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
     `uvm_info(`gfn, "\n--> start of i2c_host_stretch_timeout_vseq", UVM_DEBUG)
     cfg.m_i2c_agent_cfg.host_stretch_test_mode = 1;
 
-    initialization(.mode(Host));
+    initialization();
     for (int i = 1; i <= num_trans; i++) begin
       cnt_wr_stretch = 0;
       cnt_rd_stretch = 0;

@@ -46,7 +46,7 @@ class i2c_host_rx_oversample_vseq extends i2c_rx_tx_vseq;
   }
 
   virtual task body();
-    initialization(.mode(Host));
+    initialization();
     print_time_property();
     for(int i = 0; i < num_runs; i++) begin
       bit do_interrupt = 1'b1;

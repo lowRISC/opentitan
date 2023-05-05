@@ -24,7 +24,7 @@ class i2c_host_override_vseq extends i2c_base_vseq;
   endtask : pre_start
 
   task body();
-    initialization(.mode(Host));
+    initialization();
     `uvm_info(`gfn, "\n--> start of i2c_host_override_vseq", UVM_DEBUG)
     for (uint i = 1; i <= num_trans; i++) begin
       bit [TL_DW-1:0] reg_val;
