@@ -55,6 +55,10 @@ enum {
  * A type that holds the SHA-512 message length.
  *
  * The length may be up to 128 bits.
+ *
+ * IMPORTANT: Every member of this struct should be a word-aligned type and
+ * have a size divisible by `sizeof(uint32_t)`; otherwise `sha512_state_t` will
+ * not be suitable for `hardened_memcpy()`.
  */
 typedef struct sha512_message_length {
   /**
@@ -67,6 +71,13 @@ typedef struct sha512_message_length {
   uint64_t upper;
 } sha512_message_length_t;
 
+/**
+ * A type that holds the context for an ongoing SHA-512 operation.
+ *
+ * IMPORTANT: Every member of this struct should be a word-aligned type and
+ * have a size divisible by `sizeof(uint32_t)`; otherwise `sha512_state_t` will
+ * not be suitable for `hardened_memcpy()`.
+ */
 typedef struct sha512_state {
   /**
    * Working state for a SHA-512 or SHA-384 computation.

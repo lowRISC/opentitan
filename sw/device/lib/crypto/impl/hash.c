@@ -6,12 +6,56 @@
 
 #include <stdbool.h>
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
+#include "sw/device/lib/crypto/impl/sha2/sha512.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('h', 'a', 's')
+
+/**
+ * Ensure that the hash context is large enough for the SHA-512 state struct.
+ */
+static_assert(sizeof(hash_context_t) >= sizeof(sha512_state_t),
+              "hash_context_t must be big enough to hold sha512_state_t");
+/**
+ * Ensure that the SHA-512 state struct is suitable for `hardened_memcpy()`.
+ */
+static_assert(sizeof(sha512_state_t) % sizeof(uint32_t) == 0,
+              "Size of sha512_state_t must be a multiple of the word size for "
+              "`hardened_memcpy()`");
+
+/**
+ * Save a SHA-512 state to a generic hash context.
+ *
+ * @param[out] ctx Generic hash context to copy to.
+ * @param state SHA-512 context object.
+ */
+static void sha512_state_save(hash_context_t *const restrict ctx,
+                              sha512_state_t *restrict state) {
+  // As per the `hardened_memcpy()` documentation, it is OK to cast to
+  // `uint32_t *` here as long as `state` is word-aligned, which it must be
+  // because all its fields are.
+  hardened_memcpy(ctx->data, (uint32_t *)state,
+                  sizeof(sha512_state_t) / sizeof(uint32_t));
+}
+
+/**
+ * Restore a SHA-512 state from a generic hash context.
+ *
+ * @param ctx Generic hash context to restore from.
+ * @param[out] state Destination SHA-512 context object.
+ */
+static void sha512_state_restore(hash_context_t *const restrict ctx,
+                                 sha512_state_t *restrict state) {
+  // As per the `hardened_memcpy()` documentation, it is OK to cast to
+  // `uint32_t *` here as long as `state` is word-aligned, which it must be
+  // because all its fields are.
+  hardened_memcpy((uint32_t *)state, ctx->data,
+                  sizeof(sha512_state_t) / sizeof(uint32_t));
+}
 
 /**
  * Return the digest size (in bytes) for given hashing mode.
@@ -21,10 +65,9 @@
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-static crypto_status_t get_digest_size(hash_mode_t hash_mode,
-                                       size_t *digest_len) {
+static status_t get_digest_size(hash_mode_t hash_mode, size_t *digest_len) {
   if (digest_len == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Below `digest_len` is in bytes, therefore magic values are obtained
@@ -49,9 +92,9 @@ static crypto_status_t get_digest_size(hash_mode_t hash_mode,
       *digest_len = 512 / 8;
       break;
     default:
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -92,10 +135,8 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
 
   // Check `digest->len` is consistent with `hash_mode`
   size_t expected_digest_len;
-  crypto_status_t err_status = get_digest_size(hash_mode, &expected_digest_len);
-  if (err_status != kCryptoStatusOK) {
-    return err_status;
-  } else if (expected_digest_len != digest->len) {
+  OTCRYPTO_TRY_INTERPRET(get_digest_size(hash_mode, &expected_digest_len));
+  if (expected_digest_len != digest->len) {
     return kCryptoStatusBadArgs;
   }
 
@@ -120,8 +161,9 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
       // TODO: (#16410) Connect SHA2-384 implementation
       return kCryptoStatusNotImplemented;
     case kHashModeSha512:
-      // TODO: (#16410) Connect SHA2-512 implementation
-      return kCryptoStatusNotImplemented;
+      OTCRYPTO_TRY_INTERPRET(
+          sha512(input_message.data, input_message.len, digest->data));
+      break;
     default:
       // Unrecognized hash mode.
       return kCryptoStatusBadArgs;
@@ -175,18 +217,87 @@ crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
 
 crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
                                    hash_mode_t hash_mode) {
-  // TODO: Implement streaming hash functions.
-  return kCryptoStatusNotImplemented;
+  ctx->mode = hash_mode;
+  switch (hash_mode) {
+    case kHashModeSha256:
+      // TODO: (#16410) Connect SHA2-256 streaming implementation
+      return kCryptoStatusNotImplemented;
+    case kHashModeSha384:
+      // TODO: (#16410) Connect SHA2-384 implementation
+      return kCryptoStatusNotImplemented;
+    case kHashModeSha512: {
+      sha512_state_t state;
+      sha512_init(&state);
+      sha512_state_save(ctx, &state);
+      break;
+    }
+    default:
+      // Unrecognized or unsupported hash mode.
+      return kCryptoStatusBadArgs;
+  }
+
+  return kCryptoStatusOK;
 }
 
 crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
                                      crypto_const_uint8_buf_t input_message) {
-  // TODO: Implement streaming hash functions.
-  return kCryptoStatusNotImplemented;
+  if (input_message.data == NULL && input_message.len != 0) {
+    return kCryptoStatusBadArgs;
+  }
+
+  switch (ctx->mode) {
+    case kHashModeSha256:
+      // TODO: (#16410) Connect SHA2-256 streaming implementation
+      return kCryptoStatusNotImplemented;
+    case kHashModeSha384:
+      // TODO: (#16410) Connect SHA2-384 implementation
+      return kCryptoStatusNotImplemented;
+    case kHashModeSha512: {
+      sha512_state_t state;
+      sha512_state_restore(ctx, &state);
+      OTCRYPTO_TRY_INTERPRET(
+          sha512_update(&state, input_message.data, input_message.len));
+      sha512_state_save(ctx, &state);
+      break;
+    }
+    default:
+      // Unrecognized or unsupported hash mode.
+      return kCryptoStatusBadArgs;
+  }
+
+  return kCryptoStatusOK;
 }
 
 crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
                                     crypto_uint8_buf_t *digest) {
-  // TODO: Implement streaming hash functions.
-  return kCryptoStatusNotImplemented;
+  if (digest == NULL || digest->data == NULL) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // Check `digest->len` is consistent with `ctx->mode`
+  size_t expected_digest_len;
+  OTCRYPTO_TRY_INTERPRET(get_digest_size(ctx->mode, &expected_digest_len));
+  if (expected_digest_len != digest->len) {
+    return kCryptoStatusBadArgs;
+  }
+
+  switch (ctx->mode) {
+    case kHashModeSha256:
+      // TODO: (#16410) Connect SHA2-256 streaming implementation
+      return kCryptoStatusNotImplemented;
+    case kHashModeSha384:
+      // TODO: (#16410) Connect SHA2-384 implementation
+      return kCryptoStatusNotImplemented;
+    case kHashModeSha512: {
+      sha512_state_t state;
+      sha512_state_restore(ctx, &state);
+      OTCRYPTO_TRY_INTERPRET(sha512_final(&state, digest->data));
+      break;
+    }
+    default:
+      // Unrecognized or unsupported hash mode.
+      return kCryptoStatusBadArgs;
+  }
+
+  return kCryptoStatusOK;
 }

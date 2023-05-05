@@ -222,6 +222,19 @@ opentitan_functest(
     ],
 )
 
+opentitan_functest(
+    name = "sha512_functest",
+    srcs = ["sha512_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 py_binary(
     name = "ecdsa_p256_verify_set_testvectors",
     srcs = ["ecdsa_p256_verify_set_testvectors.py"],
