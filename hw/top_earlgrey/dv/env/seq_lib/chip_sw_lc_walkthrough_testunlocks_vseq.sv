@@ -31,6 +31,7 @@ class chip_sw_lc_walkthrough_testunlocks_vseq extends chip_sw_base_vseq;
   virtual task body();
     bit [TokenWidthBit-1:0] otp_exit_token_bits, otp_unlock_token_bits;
     dec_lc_state_e curr_state = DecLcStTestLocked0;
+    int                    iter = 0;
     super.body();
 
     otp_exit_token_bits = dec_otp_token_from_lc_csrs(lc_exit_token);
@@ -51,13 +52,22 @@ class chip_sw_lc_walkthrough_testunlocks_vseq extends chip_sw_base_vseq;
     apply_reset();
 
     repeat (NumIterations) begin
+      `uvm_info(`gfn, $sformatf("iter: %0d / %0d state: %s",
+                                iter++, NumIterations, curr_state.name), UVM_MEDIUM)
       `DV_WAIT(string'(cfg.sw_logger_vif.printed_log) ==
-            $sformatf("Waiting for LC transtition %0d done and reboot.", curr_state))
+            $sformatf("Waiting for LC transtition %0d done and reboot.", curr_state),,
+               50_000_000)
       wait_lc_status(LcTransitionSuccessful);
       apply_reset();
 
       `uvm_info(`gfn, $sformatf("Current state %0s", curr_state.name), UVM_LOW)
       wait_lc_ready(.allow_err(1));
+      if (curr_state inside {DecLcStTestLocked0, DecLcStTestLocked1, DecLcStTestLocked2,
+                             DecLcStTestLocked3, DecLcStTestLocked4, DecLcStTestLocked5,
+                             DecLcStTestLocked6}) begin
+        switch_to_external_clock();
+      end
+      switch_to_external_clock();
       jtag_lc_state_transition(curr_state, dec_lc_state_e'(curr_state + 1), {<<8{lc_unlock_token}});
       apply_reset();
       curr_state = dec_lc_state_e'(curr_state + 2);
