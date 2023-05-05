@@ -38,7 +38,7 @@ fn reset(transport: &TransportWrapper, strappings: &[&str], reset_delay: Duratio
     Ok(())
 }
 
-fn _stress_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn stress_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // repeat the same test 50 times (stay below timeout)
     for i in 0..20 {
         log::info!("Attempt {}: reset and connect OpenOCD", i);
@@ -50,6 +50,15 @@ fn _stress_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         let jtag = transport.jtag(&opts.jtag)?;
         jtag.connect(JtagTap::RiscvTap)?;
         jtag.halt()?;
+        // write the whole SRAM
+        let base = top_earlgrey_memory::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32;
+        let size = top_earlgrey_memory::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES;
+        let data : Vec<u32> = (0..(size / 4)).map(|x| x as u32).collect();
+        jtag.write_memory32(base, &data)?;
+        // read it back
+        let mut data2 = vec![0u32; size / 4];
+        jtag.read_memory32(base, &mut data2)?;
+
         jtag.resume()?;
         jtag.disconnect()?;
         thread::sleep(Duration::from_millis(500));
@@ -57,14 +66,6 @@ fn _stress_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
-fn stress_openocd2(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    // repeat the same test 50 times (stay below timeout)
-    for i in 0..20 {
-        log::info!("Attempt {}", i);
-        test_openocd(opts, transport)?;
-    }
-    Ok(())
-}
 
 fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Reset the device
@@ -255,7 +256,7 @@ fn main() -> Result<()> {
     let transport = opts.init.init_target()?;
 
     execute_test!(test_openocd, &opts, &transport);
-    execute_test!(stress_openocd2, &opts, &transport);
+    execute_test!(stress_openocd, &opts, &transport);
 
     Ok(())
 }
