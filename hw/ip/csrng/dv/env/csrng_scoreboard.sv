@@ -68,8 +68,11 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
   virtual protected task handle_disable();
     forever begin
-      `DV_WAIT(cfg.under_reset == 0)
-      csr_spinwait(.ptr(ral.ctrl.enable), .exp_data(MuBi4False), .backdoor(1));
+      wait(cfg.under_reset == 0)
+      csr_spinwait(.ptr(ral.ctrl.enable),
+                   .exp_data(MuBi4False),
+                   .backdoor(1),
+                   .timeout_ns(1_000_000_000) /* practically forever */);
       `uvm_info(`gfn, "CSRNG disabled, clearing scoreboard state.", UVM_MEDIUM)
       entropy_src_fifo.flush();
       hw_genbits = '0;
@@ -84,7 +87,10 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         es_data[i] = '0;
         fips[i] = '0;
       end
-      csr_spinwait(.ptr(ral.ctrl.enable), .exp_data(MuBi4True), .backdoor(1));
+      csr_spinwait(.ptr(ral.ctrl.enable),
+                   .exp_data(MuBi4True),
+                   .backdoor(1),
+                   .timeout_ns(1_000_000_000) /* practically forever */);
     end
   endtask
 
@@ -96,11 +102,16 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       fork
         wait(es_item_q[app].size() > 0);
         begin
-          csr_spinwait(.ptr(ral.ctrl.enable), .exp_data(MuBi4False), .backdoor(1));
+          csr_spinwait(.ptr(ral.ctrl.enable),
+                       .exp_data(MuBi4False),
+                       .backdoor(1),
+                       .timeout_ns(1_000_000_000) /* practically forever */);
           disabled = 1;
         end
       join_any
-      disable fork;
+      disable fork;,
+      "timeout waiting for an item in the entropy source queue or for CSRNG getting disabled",
+      1_000_000_000 /* 1e9 ns = 1 s; practically forever */
     )
   endtask
 

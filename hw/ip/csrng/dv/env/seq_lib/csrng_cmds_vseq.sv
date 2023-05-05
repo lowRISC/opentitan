@@ -197,7 +197,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
           cfg.randomize_disable_enable_clks();
           cfg.num_disable_enable -= 1;
         end
-        `DV_WAIT(cmds_sent == cmds_gen)
+        wait(cmds_sent == cmds_gen)
         `uvm_info(`gfn, "All commands sent, completing test.", UVM_LOW)
       end
     join_any
