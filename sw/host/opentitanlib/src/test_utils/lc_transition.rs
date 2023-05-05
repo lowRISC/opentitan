@@ -4,7 +4,6 @@
 
 use std::iter;
 use std::rc::Rc;
-use std::thread;
 use std::time::Duration;
 
 use anyhow::{bail, Context, Result};
@@ -113,7 +112,7 @@ pub fn trigger_lc_transition(
         return Err(LcTransitionError::FailedToClaimMutex.into());
     }
 
-    // Program the target LC state, i.e., Scrap.
+    // Program the target LC state.
     jtag.write_lc_ctrl_reg(
         &LcCtrlReg::TransitionTarget,
         target_lc_state.redundant_encoding(),
@@ -151,23 +150,13 @@ pub fn trigger_lc_transition(
 
     // Initiate LC transition and poll status register until transition is completed.
     jtag.write_lc_ctrl_reg(&LcCtrlReg::TransitionCmd, LcCtrlTransitionCmd::START.bits())?;
-    let one_millis = Duration::from_millis(1);
-    loop {
-        let status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
-        let status =
-            LcCtrlStatus::from_bits(status).ok_or(LcTransitionError::InvalidState(status))?;
 
-        if status.contains(LcCtrlStatus::TRANSITION_SUCCESSFUL) {
-            break;
-        }
-
-        let expected_status =
-            LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY | LcCtrlStatus::TRANSITION_SUCCESSFUL;
-        if status != expected_status {
-            return Err(LcTransitionError::TransitionFailed(status).into());
-        }
-        thread::sleep(one_millis);
-    }
+    wait_for_status(
+        &jtag,
+        Duration::from_secs(3),
+        LcCtrlStatus::TRANSITION_SUCCESSFUL,
+    )
+    .context("failed waiting for TRANSITION_SUCCESSFUL status.")?;
 
     // Check we have entered the post transition state.
     let post_transition_lc_state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
