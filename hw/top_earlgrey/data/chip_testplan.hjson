@@ -319,7 +319,7 @@
               correcly.
             '''
       stage: V3
-      tests: []
+      tests: ["chip_sw_usbdev_stream"]
     }
     {
       name: chip_sw_usb_vbus
