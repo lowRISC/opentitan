@@ -273,7 +273,7 @@ module spid_readsram
 
       StActive: begin
         // Assume the SRAM logic is faster than update of current_address_i.
-        // TODO: Put assertion.
+        // ICEBOX(#18352): Put assertion.
         addr_sel = AddrContinuous; // Pointing to next_address to check mailbox hit
         if (!sram_fifo_full) begin
           st_d = StPush;
@@ -341,7 +341,7 @@ module spid_readsram
     .err_o    ()
   );
 
-  // TODO: Handle SRAM integrity errors
+  // ICEBOX(#18353): Handle SRAM integrity errors
   sram_err_t unused_sram_rerror;
   assign unused_sram_rerror = sram_m2l_i.rerror;
 

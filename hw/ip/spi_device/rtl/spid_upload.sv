@@ -503,7 +503,7 @@ module spid_upload
   // Instance //
   //////////////
 
-  // TODO: Merge two FIFOs into one.
+  // TODO(#18354): Merge two FIFOs into one.
   // Design a module that has one SRAM Read port / one SRAM write port
   // and compile-time configurable # of FIFO ports + N of SramBase Address
   // (Preferrably variable width)

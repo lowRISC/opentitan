@@ -201,7 +201,7 @@ module spi_device
 
   logic abort;  // Abort current operations (txf only at this time)
                 // Think how FW knows abort is done.
-  //logic abort_done; // TODO: Not implemented yet
+  //logic abort_done; // ICEBOX(#18357): Not implemented yet
 
   logic sys_csb_syncd;
 
@@ -248,12 +248,10 @@ module spi_device
   logic rxf_full_syncd, txf_empty_syncd; // sync signals
 
   // SPI S2P signals
-  // io_mode: Determine s2p/p2s behavior. As of now, only fwmode exists.
-  // TODO: Add FlashMode IO, passthrough IO
-  // based on the SPI protocol, the mode should be changed at the negedge of
-  // SPI_CLK. The sub_iomode value is changed based on the input of SPI,
-  // it is latched by clk_spi_out.
-  // TODO: Add this path to DC constraint
+  // io_mode: Determine s2p/p2s behavior.
+  // io_mode is changed at the negedge of SPI_CLK (based on the SPI protocol).
+  // sub_iomode is changed based on the input of SPI, and latched by clk_spi_out.
+  // TODO(#18359): Add this path (sub_iomode) to CDC constraint
   io_mode_e           io_mode, io_mode_outclk;
   io_mode_e           sub_iomode[IoModeEnd];
   logic               s2p_data_valid;
@@ -701,11 +699,6 @@ module spi_device
     .intr_o                 (intr_readbuf_flip_o              )
   );
 
-  // cmdaddr_notempty is a level signal. Issue has been discussed in
-  //   https://github.com/lowRISC/opentitan/issues/15282.
-  //
-  // TODO: Remove `prim_intr_hw` and ditect connect from status(level)
-  // assign intr_o = (status | test) & enable;
   prim_intr_hw #(
     .Width (1       ),
     .IntrT ("Status")
