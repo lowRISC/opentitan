@@ -57,7 +57,7 @@ static status_t read_manufacture_id(void) {
 }
 
 static status_t read_product_id(void) {
-  uint8_t reg = kProductId, data = 0;
+  uint8_t reg = kProductIdReg, data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
   TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data));
   TRY_CHECK(data == kProductId, "Unexpected value %x", data);
