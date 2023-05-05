@@ -15,11 +15,17 @@ use crate::impl_serializable_error;
 pub struct I2cParams {
     #[structopt(long, help = "I2C instance", default_value = "0")]
     pub bus: String,
+
+    #[structopt(long, help = "I2C bus speed (typically: 100000, 400000, 1000000)")]
+    pub speed: Option<u32>,
 }
 
 impl I2cParams {
     pub fn create(&self, transport: &TransportWrapper) -> Result<Rc<dyn Bus>> {
         let i2c = transport.i2c(&self.bus)?;
+        if let Some(speed) = self.speed {
+            i2c.set_max_speed(speed)?;
+        }
         Ok(i2c)
     }
 }
