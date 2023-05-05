@@ -31,9 +31,15 @@ class csrng_item extends uvm_sequence_item;
     flags inside {MuBi4True, MuBi4False};
   }
 
-  // TODO: Try glen > 32, glen = 0 on GEN cmd
   constraint c_glen {
-    glen inside {[1:32]};
+    glen dist {
+      // TODO(#18350): Add a bin for 0 (with 5% chance, like for 4095?).
+      [1:32]      :/ 75,
+      [33:128]    :/ 10,
+      [129:1024]  :/ 5,
+      [1025:4094] :/ 5,
+      4095        := 5
+    };
   }
 
    //--------------------------------------------------------------------

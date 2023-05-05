@@ -83,7 +83,9 @@ class csrng_base_vseq extends cip_base_vseq #(
         if (edn_under_reset()) break;
         csr_rd(.ptr(ptr), .value(act_data));
         if (act_data == exp_data) break;
-      end
+      end,
+      "timeout waiting for a CSR to contain an expected value or for EDN to be reset",
+      1_000_000_000 /* 1e9 ns = 1 s; practically forever */
     )
   endtask
 
