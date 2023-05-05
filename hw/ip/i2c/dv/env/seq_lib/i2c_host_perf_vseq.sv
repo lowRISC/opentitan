@@ -132,6 +132,7 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
     t_r.rand_mode(0);
     t_f.rand_mode(0);
     thigh.rand_mode(0);
+    cfg.scl_frequency = scl_frequency;
   endfunction
 
   // Task to calculate the SCL period
