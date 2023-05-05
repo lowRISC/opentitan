@@ -218,8 +218,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           if (cfg.en_cov) begin
             cov.openting_mode_cg.sample(.ip_mode(host_init),
                                         .tb_mode(!host_init),
-                               // TODO update after host perf timing updates go in to base sequence
-                                        .scl_frequency(0));
+                                        .scl_frequency(cfg.scl_frequency));
           end
         end
 

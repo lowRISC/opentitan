@@ -51,6 +51,9 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   int        sent_ack_stop = 0;
   int        rcvd_ack_stop = 0;
 
+  // Timing parameter related settings
+  uint                   scl_frequency = 100; //in KHz
+
   i2c_scoreboard scb_h;
   virtual    i2c_dv_if i2c_dv_vif;
 
