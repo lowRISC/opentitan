@@ -194,17 +194,17 @@ Below is a description of the fields of this header:
     </td>
   </tr>
   <tr>
-    <td>24:12</td>
+    <td>23:12</td>
     <td>glen</td>
     <td> Generate Length: Only defined for the generate command, this field is the total number of cryptographic entropy blocks requested.
          Each unit represents 128 bits of entropy returned.
-         The NIST reference name is <tt>max_number_of_bit_per_request</tt>, and this field size supports the maximum size of 2<sup>19</sup> bits.
-         For the maximum size, this field should be set to 4096, resulting in a <tt>max_number_of_bit_per_request</tt> value of 4096 x 128 bits.
-         For a smaller example, a value of 8 would return a total of 1024 bits.
+         This field allows values between 1 and 4095.
+         A value of 1 returns 1 * 128 bits of entropy.
+         A value of 4095 returns 4095 * 128 bits of entropy, which is less than the 2<sup>19</sup> bits allowed by NIST (referenced to as <tt>max_number_of_bit_per_request</tt>).
     </td>
   </tr>
   <tr>
-    <td>31:25</td>
+    <td>31:24</td>
     <td>resv</td>
     <td> Unused and reserved.
     </td>

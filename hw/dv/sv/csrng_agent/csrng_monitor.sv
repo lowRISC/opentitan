@@ -71,7 +71,7 @@ class csrng_monitor extends dv_base_monitor #(
               end else begin
                 cs_item.flags = MuBi4False;
               end
-              cs_item.glen  = item.h_data[30:12];
+              cs_item.glen  = item.h_data[23:12];
               cs_item.cmd_data_q.delete();
             end else begin
               cs_item.cmd_data_q.push_back(item.h_data);
@@ -125,7 +125,7 @@ class csrng_monitor extends dv_base_monitor #(
           cs_item.flags = MuBi4False;
         end
         if (cs_item.acmd == csrng_pkg::GEN) begin
-          cs_item.glen = cfg.vif.mon_cb.cmd_req.csrng_req_bus[30:12];
+          cs_item.glen = cfg.vif.mon_cb.cmd_req.csrng_req_bus[23:12];
         end
 
         `DV_SPINWAIT_EXIT(

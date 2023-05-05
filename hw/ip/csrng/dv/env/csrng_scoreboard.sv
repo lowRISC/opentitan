@@ -181,7 +181,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             else begin
               cs_item[SW_APP].flags = MuBi4False;
             end
-            cs_item[SW_APP].glen  = item.a_data[30:12];
+            cs_item[SW_APP].glen  = item.a_data[23:12];
 
             more_cmd_data = cs_item[SW_APP].clen;
           end
@@ -414,7 +414,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   function void ctr_drbg_generate(uint app,
-                                  bit [18:0] glen,
+                                  bit [11:0] glen,
                                   bit [CSRNG_BUS_WIDTH-1:0] additional_input = 'h0);
 
     bit [GENBITS_BUS_WIDTH-1:0]   genbits, hw_genbits;
