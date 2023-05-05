@@ -501,7 +501,6 @@ module spi_passthrough
   end
 
   // Based on AddrCnt, the logic swap.
-  // TODO: Handle the DualIO, QuadIO cases
   logic addr_swap;
   assign addr_swap = cfg_addr_mask_i[addrcnt_outclk]
                    ? cfg_addr_value_i[addrcnt_outclk]
@@ -605,7 +604,6 @@ module spi_passthrough
     if (!rst_ni) begin
       mbyte_cnt <= '0;
     end else if (mbyte_set) begin
-      // TODO: check addr enable and update mbyte_cnt to 3 or 1
       mbyte_cnt <= 2'h 3;
     end else if (st == StMByte) begin
       mbyte_cnt <= mbyte_cnt - 1'b 1;

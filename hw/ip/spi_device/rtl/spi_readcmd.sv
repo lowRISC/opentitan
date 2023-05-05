@@ -376,7 +376,6 @@ module spi_readcmd
     addr_d = addr_q; // default value. In 3B mode, upper most byte is 0
     addr_latch_en = 1'b0;
 
-    // TODO: Handle the case of IO command
     if (addr_ready_in_word) begin
       // Return word based address, but should not latch
       addr_d = {addr_q[23:0], s2p_byte_i[5:0], 2'b00};
@@ -438,7 +437,6 @@ module spi_readcmd
       // already counts one beat.
       addr_cnt_d = (cmdinfo_addr_mode == Addr4B) ? 5'd 31 : 5'd 23;
 
-      // TODO: Dual IO/ Quad IO case
     end else if (addr_cnt_q == '0) begin
       addr_cnt_d = addr_cnt_q;
     end else if (addr_shift_en) begin
@@ -559,7 +557,6 @@ module spi_readcmd
   end
 
   // readbuf_flip
-  // TODO: implement. Below is temporary.
   assign readbuf_flip = (main_st == MainOutput && addr_q[9:0] == '1);
 
   //- END:   Double Buffering -------------------------------------------------
@@ -613,7 +610,6 @@ module spi_readcmd
       MainAddress: begin
         addr_shift_en = 1'b 1;
 
-        // TODO: DualIO/ QuadIO case
         if (addr_ready_in_word) begin
           sram_req = 1'b 1;
         end
@@ -645,8 +641,6 @@ module spi_readcmd
             2'b 1?: begin
               // Regardless of Dummy
               main_st_d = MainMByte;
-
-              // TODO: Set MByte latency (3 or 1)
             end
 
             default: begin
@@ -698,7 +692,6 @@ module spi_readcmd
 
           // sent all words
           bitcnt_update = 1'b 1;
-          // TODO: FIFO pop here?
           fifo_pop = 1'b 1;
         end
       end
@@ -739,7 +732,7 @@ module spi_readcmd
 
     .sram_read_req_i   (sram_req),
     .addr_latched_i    (addr_latched),
-    .current_address_i (addr_d), // TODO: Change it
+    .current_address_i (addr_d),
 
     .mailbox_en_i,
     .mailbox_addr_i,

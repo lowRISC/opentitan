@@ -167,8 +167,6 @@ module spi_tpm
     12'h F00, // F03:F00 DID_VID
     12'h F04  // F04:F04 RID
   };
-  // TODO: internal reset (sys_rst_ni & csb_i)
-  // Do we really need the csb reset for TPM?
 
   ////////////////
   // Definition //
@@ -1038,9 +1036,9 @@ module spi_tpm
 
           if (~|sck_wrfifo_wdepth) begin
             // Write command and FIFO is empty. Ready to push
-            // TODO: Change the state machine to send start byte at
-            //       cmdaddr_bitcnt == 5'h 17 if write command and FIFO is
-            //       empty, then the state can go to StWrite directly.
+            // ICEBOX(#18354): Change the state machine to send start byte at
+            //                 cmdaddr_bitcnt == 5'h 17 if write command and FIFO is
+            //                 empty, then the state can go to StWrite directly.
             sck_st_d = StStartByte;
           end else begin
             // FIFO is not empty. Move to StWait and waits for the empty write
@@ -1084,9 +1082,9 @@ module spi_tpm
         sck_p2s_valid = 1'b 1;
         sck_data_sel  = SelRdFifo;
 
-        // TODO: RdFifo rready (sck --> isck)
+        // ICEBOX(#18354): RdFifo rready (sck --> isck)
 
-        // TODO: check xfer_size handling
+        // ICEBOX(#18354): check xfer_size handling
         if (isck_p2s_sent && xfer_size_met) begin
           sck_st_d = StEnd;
         end
@@ -1107,7 +1105,7 @@ module spi_tpm
         wrdata_shift_en = 1'b 1;
         // Processed by the logic. Does not have to do
 
-        // TODO: check xfer_size handling
+        // ICEBOX(#18354): check xfer_size handling
         if (sck_wrfifo_wvalid && xfer_size_met) begin
           sck_st_d = StEnd;
         end
@@ -1122,8 +1120,8 @@ module spi_tpm
       end // StInvalid
 
       StEnd: begin // TERMINAL_STATE
-        // TODO: Check if open pull-up cancel the transaction?
-        //       If yes, then drive 0x00 for the read command
+        // TODO(##18355): Check if open pull-up cancel the transaction?
+        // If yes, then drive 0x00 for the read command
         if (cmd_type == Read) begin
           sck_p2s_valid = 1'b 1;
           sck_data_sel  = SelWait; // drive 0x00
