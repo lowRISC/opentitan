@@ -111,6 +111,8 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
     set_leaf_reset(.path({path, ".sw_rst_req_i"}), .value(0), .cycles(0));
     set_leaf_reset(.path({path, ".child_rst_ni"}), .value(1), .cycles(0));
 
+    cfg.scoreboard.set_exp_alert("fatal_cnsty_fault", 1, 20);
+
     // assert child reset
     set_leaf_reset(.path({path, ".child_rst_ni"}), .value(0), .cycles(cycles_to_child_reset));
   endtask : send_unexpected_child_reset
@@ -122,6 +124,9 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
       set_leaf_reset(.path({path, ".sw_rst_req_i"}), .value(1), .cycles(cycles_to_sw_reset));
       set_leaf_reset(.path({path, ".child_rst_ni"}), .value(0), .cycles(cycles_to_child_reset));
     join
+
+    cfg.scoreboard.set_exp_alert("fatal_cnsty_fault", 1, 20);
+
     set_leaf_reset(.path({path, ".child_rst_ni"}), .value(1), .cycles(cycles_to_child_release));
   endtask : send_unexpected_child_release
 

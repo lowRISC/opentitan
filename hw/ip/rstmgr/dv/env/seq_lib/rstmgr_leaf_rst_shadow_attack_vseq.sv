@@ -27,6 +27,7 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
     // Disable cascading reset assertions, since forcing related signals causes failures.
     cfg.rstmgr_cascading_sva_vif.disable_sva = 1'b1;
     `uvm_info(`gfn, $sformatf("Starting leaf attack between %s and %s", npath, gpath), UVM_MEDIUM)
+    cfg.scoreboard.set_exp_alert("fatal_cnsty_fault", 1, 20);
     add_glitch(gpath);
     wait_and_check(npath);
     remove_glitch(gpath);

@@ -1256,7 +1256,7 @@ module rstmgr
   );
 
   // once dump is captured, no more information is captured until
-  // re-eanbled by software.
+  // re-enabled by software.
   assign hw2reg.alert_info_ctrl.en.d  = 1'b0;
   assign hw2reg.alert_info_ctrl.en.de = dump_capture_halt;
   assign hw2reg.cpu_info_ctrl.en.d  = 1'b0;

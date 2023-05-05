@@ -6,6 +6,9 @@ class rstmgr_env_cfg extends cip_base_env_cfg #(
   .RAL_T(rstmgr_reg_block)
 );
 
+  // This scoreboard handle is used to flag expected errors.
+  rstmgr_scoreboard  scoreboard;
+
   // ext component cfgs
 
   `uvm_object_utils_begin(rstmgr_env_cfg)
