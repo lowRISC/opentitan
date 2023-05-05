@@ -18,14 +18,9 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
 
   `uvm_component_new
 
-  function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-    // TODO: remove once support alert checking
-    do_alert_check = 0;
-  endfunction
-
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+    cfg.scoreboard = this;
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -172,9 +167,8 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
         // RW0C.
       end
       "alert_info_ctrl": begin
-        // The en bit is cleared by the hardware.
-        // TODO(lowrisc/opentitan#18258): Should be possible to check this CSR,
-        // like cpu_info_ctrl, but something is weird for this one.
+        // The en bit is cleared by any hardware reset, but other bits are only cleared by POR.
+        // ICEBOX(lowrisc/opentitan#18258): Should be possible to check this CSR.
         do_read_check = 1'b0;
       end
       "alert_info_attr": begin
@@ -192,7 +186,9 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
         // RW0C.
       end
       "cpu_info_ctrl": begin
-        // The en bit is cleared by the hardware.
+        // The en bit is cleared by any hardware reset, but other bits are only cleared by POR.
+        // ICEBOX(lowrisc/opentitan#18258): Should be possible to check this CSR.
+        do_read_check = 1'b0;
       end
       "cpu_info_attr": begin
         // Read only.

@@ -81,6 +81,7 @@ package rstmgr_env_pkg;
 
   // types
   typedef logic [NumSwResets-1:0] sw_rst_t;
+  typedef class rstmgr_scoreboard;
 
   typedef logic [$bits(alert_crashdump_t)-1:0] linearized_alert_dump_t;
 
