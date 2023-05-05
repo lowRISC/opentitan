@@ -19,6 +19,8 @@ use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, JtagTap};
 use crate::test_utils::poll;
 
+use top_earlgrey::top_earlgrey_memory;
+
 /// Errors related to performing an LcTransition.
 #[derive(Error, Debug, Deserialize, Serialize)]
 pub enum LcTransitionError {
@@ -174,11 +176,23 @@ pub fn trigger_lc_transition(
 }
 
 pub fn wait_for_status(jtag: &Rc<dyn Jtag>, timeout: Duration, status: LcCtrlStatus) -> Result<()> {
+    let jtag_tap = jtag.get_tap().unwrap();
+
     // Wait for LC controller to be ready.
     poll::poll_until(timeout, Duration::from_millis(50), || {
-        let polled_status = jtag
-            .read_lc_ctrl_reg(&LcCtrlReg::Status)
-            .context("failed to read status register")?;
+        let polled_status = match jtag_tap {
+            JtagTap::LcTap => jtag.read_lc_ctrl_reg(&LcCtrlReg::Status).unwrap(),
+            JtagTap::RiscvTap => {
+                let mut status = [0u32];
+                jtag.read_memory32(
+                    top_earlgrey_memory::TOP_EARLGREY_LC_CTRL_BASE_ADDR as u32
+                        + LcCtrlReg::Status as u32,
+                    &mut status,
+                )?;
+                status[0]
+            }
+        };
+
         let polled_status =
             LcCtrlStatus::from_bits(polled_status).context("status has invalid bits set")?;
 
