@@ -236,7 +236,7 @@ class spi_monitor extends dv_base_monitor#(
     cfg.extract_cmd_info_from_opcode(item.opcode,
         // output
         num_addr_bytes, item.write_command, item.num_lanes, item.dummy_cycles);
-    `uvm_info(`gfn, $sformatf("sampled flash opcode: 0x%0h", item.opcode), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("sampled flash opcode: 0x%0h", item.opcode), UVM_HIGH)
 
     sample_address(num_addr_bytes, item.address_q);
 
