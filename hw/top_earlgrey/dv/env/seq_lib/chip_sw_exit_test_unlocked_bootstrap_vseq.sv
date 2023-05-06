@@ -51,6 +51,8 @@ class chip_sw_exit_test_unlocked_bootstrap_vseq extends chip_sw_base_vseq;
     // Now program ROM_EXEC_EN for next power cycle.
     cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
 
+    // Add delay before drive jtag after strap switch.
+    cfg.clk_rst_vif.wait_clks(5);
     jtag_dm_activation_seq.start(p_sequencer.jtag_sequencer_h);
     `uvm_info(`gfn, $sformatf("rv_dm_activated: %0d", cfg.m_jtag_riscv_agent_cfg.rv_dm_activated),
               UVM_LOW)
