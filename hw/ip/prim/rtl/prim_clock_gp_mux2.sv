@@ -75,30 +75,6 @@ tc_clk_gating #(
   .clk_o(clk_glitch_off[1])
 );
 
-always_ff @(posedge clk_gp[2] or negedge rst_ni) begin
-  if (!rst_ni) begin
-    intq[2] <= 1'b0;
-  end else begin
-    intq[2] <= stage_d[2];
-  end
-end
-
-always_ff @(negedge clk_gp[2] or negedge rst_ni) begin
-  if (!rst_ni) begin
-    stage_q[2] <= 1'b0;
-  end else begin
-    stage_q[2] <= intq[2];
-  end
-end
-
-tc_clk_gating #(     
-) u_cg_2 (
-  .clk_i(clk_gp[2]),
-  .en_i(stage_q[2]),
-  .test_en_i(1'b0),
-  .clk_o(clk_glitch_off[2])
-);
-
 assign clk_o = |clk_glitch_off;
 
 endmodule
