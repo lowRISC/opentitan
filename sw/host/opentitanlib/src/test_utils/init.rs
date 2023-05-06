@@ -138,9 +138,6 @@ impl InitializeTest {
         // Create the UART first to initialize the desired parameters.
         let _uart = self.bootstrap.options.uart_params.create(&transport)?;
 
-        // Load a bitstream.
-        Self::print_result("load_bitstream", self.load_bitstream.init(&transport))?;
-
         // Bootstrap an rv32 test program.
         Self::print_result("bootstrap", self.bootstrap.init(&transport))?;
         Ok(transport)

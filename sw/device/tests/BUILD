@@ -2324,6 +2324,29 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "openocd_ila_stress_test",
+    srcs = ["example_test_from_flash.c"],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        bitstream = "//hw/bitstream:rom_otp_test_unlocked0",
+        tags = ["jtag"],
+        test_cmds = [
+            "--rom-kind=rom",
+            "--bitstream=\"$(rootpath {bitstream})\"",
+            "--bootstrap=\"$(rootpath {flash})\"",
+        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+    ),
+    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+    logging = "info",
+    targets = ["cw310_rom"],
+    test_harness = "//sw/host/tests/chip/jtag:openocd_ila_stress_test",
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "spi_device_ottf_console_test",
     srcs = ["spi_device_ottf_console_test.c"],
     cw310 = cw310_params(
