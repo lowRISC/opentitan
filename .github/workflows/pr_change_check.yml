@@ -1,0 +1,40 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: 'Check for and block unauthorized changes'
+
+on:
+  pull_request_target:
+
+permissions:
+  contents: read
+  # Needed to read comments for authorizations
+  pull-requests: read
+
+jobs:
+  check-changes:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Determine changed files
+        run: |
+          pr_ref="refs/pull/${{ github.event.number }}/merge"
+          echo $pr_ref
+          git fetch origin "$pr_ref"
+          git diff --name-only \
+            "origin/${{ github.base_ref }}" \
+            FETCH_HEAD > $HOME/changed_files
+
+      - name: Show files changed
+        run: cat $HOME/changed_files
+
+      - name: Check for blocked changes
+        run: |
+          ./ci/scripts/check-pr-changes-allowed.py $HOME/changed_files \
+            --gh-repo ${{ github.repository }} \
+            --gh-token ${{ secrets.GITHUB_TOKEN }} \
+            --pr-number ${{ github.event.number }}

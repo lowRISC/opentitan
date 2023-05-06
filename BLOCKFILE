@@ -1,0 +1,21 @@
+# If a PR changes a file that matches a pattern in this file it will be blocked
+# from merged by CI. The patterns as glob-like patterns matched using python
+# fnmatch. In particular note there is no special handling for '/' so '*' can
+# match multiple directory levels e.g. 'this/is/*/a/path' matches both
+# 'this/is/a/foo/path' and 'this/is/a/foo/bar/path'.
+#
+# Anyone on the COMMITTERS list can authorize a change by adding a comment
+# with:
+#
+# CHANGE AUTHORIZED: path/to/file
+#
+# To the PR. If there are multiple changes to authorize, one authorization
+# is required per file and there is one authorization per line in the
+# comment.
+#
+# At least two committers must authorize the change to pass.
+
+# Ensure changes to block system must be authorized
+BLOCKFILE
+.github/workflows/pr_change_check.yml
+ci/scripts/check-pr-changes-allowed.py
