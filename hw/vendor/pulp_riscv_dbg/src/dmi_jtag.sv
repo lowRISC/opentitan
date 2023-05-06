@@ -353,4 +353,70 @@ module dmi_jtag #(
     .core_dmi_valid_i     ( dmi_resp_valid_i )
   );
 
+  //////////////////////////////////////////////////
+  // Trigger and synchronization SHIM for ILA.
+  //////////////////////////////////////////////////
+
+  // This taps the JTAG signals and syncs them over into the clock domain where the ILA sits
+  // (we just use the DMI clock for that).
+  localparam int SyncWidth = 17;
+  logic [SyncWidth-1:0] ila_tap;
+  logic [SyncWidth-1:0] ila_sync;
+
+  // All signals here are in the JTAG TCK domain.
+  // Note that td_o and tdo_oe_o get launched on the falling edge, so depending on
+  // the trigger signal they may appear shifted by one cycle in the ILA waves.
+  assign ila_tap = {
+    tck_i,
+    tms_i,
+    trst_ni,
+    td_i,
+    td_o,
+    tdo_oe_o,
+    testmode_i,
+    tck,
+    jtag_dmi_clear,
+    update,
+    capture,
+    shift,
+    tdi,
+    dtmcs_select,
+    dtmcs_q[0],
+    dmi_select,
+    dmi_tdo
+  };
+
+
+  prim_flop_2sync #(
+    .Width(SyncWidth)
+  ) u_prim_flop_2sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(ila_tap),
+    .q_o(ila_sync)
+  );
+
+  // assumptions TCK >> T(clk_i), so we are oversampling.
+  // we delay the TCK signal so that we can be sure the other synced signals are stable if
+  // we use TCK edges as trigger/filter conditions in the ILA capturing logic.
+  localparam int DelayCycles = 10;
+  logic [DelayCycles-1:0] tck_d, tck_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_del_regs
+    if (!rst_ni) begin
+      tck_q <= '0;
+    end else begin
+      // tck_i is mapped to the highest index in ila_sync
+      tck_q <= {tck_q[DelayCycles-2:0], ila_sync[SyncWidth-1]};
+    end
+  end
+
+  // note: data capture filtes based on edge, posedge, negedge, level
+  // etc can be configured in the ILA at runtime.
+  localparam int IlaWidth = 24;
+  ila_0 u_ila_0 (
+    .clk(clk_i),
+    .probe0(IlaWidth'({tck_q[DelayCycles-1], ila_sync}))
+  );
+
 endmodule : dmi_jtag
