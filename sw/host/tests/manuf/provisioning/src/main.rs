@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashSet;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -15,8 +16,11 @@ use p256::NistP256;
 use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
 use opentitanlib::execute_test;
+use opentitanlib::io::jtag::{JtagParams, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::test_utils::lc_transition::{trigger_lc_transition, wait_for_status};
 use opentitanlib::test_utils::rpc::UartRecv;
 use opentitanlib::uart::console::UartConsole;
 
@@ -35,18 +39,26 @@ struct Opts {
     )]
     timeout: Duration,
 
+    #[structopt(flatten)]
+    jtag_params: JtagParams,
+
     #[structopt(long, help = "HSM generated ECDH private key DER file.")]
     hsm_ecdh_sk: PathBuf,
 }
 
 fn provisioning(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    // Reset the chip, select the LC TAP, we will connect to it later.
+    transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+
     // Get UART, set flow control, and wait for for test to start running.
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Provisioning complete.", opts.timeout)?;
 
     // Wait for exported data to be transimitted over the console.
     let export_data = ManufProvisioning::recv(&*uart, opts.timeout, false)?;
+    log::info!("{:x?}", export_data);
 
     // Load HSM-generated EC private key.
     let hsm_sk = SecretKey::<NistP256>::read_pkcs8_der_file(&opts.hsm_ecdh_sk)?;
@@ -74,18 +86,51 @@ fn provisioning(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     for ciphertext_word in export_data.wrapped_rma_unlock_token.data {
         ciphertext.extend(&ciphertext_word.to_le_bytes());
     }
-    let mut plaintext = GenericArray::from_mut_slice(ciphertext.as_mut_slice());
+    let plaintext = GenericArray::from_mut_slice(ciphertext.as_mut_slice());
 
     // Decrypt the RMA unlock token, and convert it to a fixed array of 32-bit words.
-    let aes_ecb_cipher = Aes256Dec::new(&aes_key);
-    aes_ecb_cipher.decrypt_block(&mut plaintext);
+    let aes_ecb_cipher = Aes256Dec::new(aes_key);
+    aes_ecb_cipher.decrypt_block(plaintext);
     let mut rma_unlock_token = [0u32; 4];
     for (i, word) in rma_unlock_token.iter_mut().enumerate() {
         *word = u32::from_le_bytes(plaintext[(i * 4)..((i * 4) + 4)].try_into().unwrap());
     }
-    log::info!("Decrypted Token: {:#x?}", rma_unlock_token);
 
-    // TODO(#17393): Try to issue an LC transition to RMA to verify unlock token.
+    // Connect to JTAG LC TAP.
+    let jtag = transport.jtag(&opts.jtag_params)?;
+    jtag.connect(JtagTap::LcTap)?;
+
+    // Check the current LC state is Dev.
+    // We must wait for the lc_ctrl to initialize before the LC state is exposed.
+    wait_for_status(&jtag, Duration::from_secs(3), LcCtrlStatus::INITIALIZED)?;
+    assert_eq!(
+        jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?,
+        DifLcCtrlState::Dev.redundant_encoding(),
+        "Invalid initial LC state.",
+    );
+
+    // Issue an LC transition to RMA to verify unlock token.
+    trigger_lc_transition(
+        transport,
+        jtag.clone(),
+        DifLcCtrlState::Rma,
+        Some(rma_unlock_token),
+        /*use_external_clk=*/ false,
+        opts.init.bootstrap.options.reset_delay,
+    )?;
+
+    // Check the LC state is RMA.
+    // We must wait for the lc_ctrl to initialize before the LC state is exposed.
+    let valid_lc_states = HashSet::from([
+        DifLcCtrlState::Prod.redundant_encoding(),
+        DifLcCtrlState::ProdEnd.redundant_encoding(),
+        DifLcCtrlState::Rma.redundant_encoding(),
+    ]);
+    let current_lc_state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
+    wait_for_status(&jtag, Duration::from_secs(3), LcCtrlStatus::INITIALIZED)?;
+    assert!(valid_lc_states.contains(&current_lc_state));
+
+    jtag.disconnect()?;
 
     Ok(())
 }
@@ -93,8 +138,9 @@ fn provisioning(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
-
     let transport = opts.init.init_target()?;
+
     execute_test!(provisioning, &opts, &transport);
+
     Ok(())
 }
