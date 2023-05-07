@@ -1779,6 +1779,30 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "i2c_host_clock_stretching_test",
+    srcs = ["i2c_host_clock_stretching_test.c"],
+    cw310 = cw310_params(
+        tags = ["skip_in_ci"],  # Requires the Bob in CI.
+    ),
+    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:i2c",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:i2c_testutils",
+        "//sw/device/lib/testing:rv_core_ibex_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "sensor_ctrl_alert_test",
     srcs = ["sensor_ctrl_alerts.c"],
     verilator = verilator_params(
