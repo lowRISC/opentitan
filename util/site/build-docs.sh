@@ -180,7 +180,7 @@ buildSite () {
     # -------
     # Remove some unneeded files/directories that mdbook copies to the output dir
     # TODO handle this with a .ignore file or other mechanism
-    for f in .git .github build-site site; do
+    for f in .git .github build-site; do
         rm -rf "${build_dir}/book/${f}"
     done
     rm -rf "${build_dir}/gen/api-xml" # Remove the intermediate XML that doxygen uses to generate HTML.
