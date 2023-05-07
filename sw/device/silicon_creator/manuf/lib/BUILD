@@ -193,21 +193,20 @@ opentitan_functest(
     srcs = ["provisioning_functest.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_dev_individualized",
+        tags = ["jtag"],
         test_cmds = [
             "--clear-bitstream",
             "--rom-kind=rom",
             "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
             "--hsm-ecdh-sk=\"$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)\"",
-        ],
+        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
     data = [
         "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der",
-    ],
+    ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
     keyset = RSA_ONLY_KEYSETS[1],
-    targets = [
-        "cw310_rom",
-    ],
+    targets = ["cw310_rom"],
     test_harness = "//sw/host/tests/manuf/provisioning",
     deps = [
         ":provisioning",
@@ -225,6 +224,7 @@ opentitan_functest(
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/manuf/keys/fake",
     ],
 )
