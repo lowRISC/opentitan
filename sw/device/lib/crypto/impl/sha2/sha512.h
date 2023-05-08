@@ -14,6 +14,18 @@ extern "C" {
 
 enum {
   /**
+   * SHA-384 digest size in bits.
+   */
+  kSha384DigestBits = 384,
+  /**
+   * SHA-384 digest size in bytes.
+   */
+  kSha384DigestBytes = kSha384DigestBits / 8,
+  /**
+   * SHA-384 digest size in words.
+   */
+  kSha384DigestWords = kSha384DigestBytes / sizeof(uint32_t),
+  /**
    * SHA-512 message block size in bits.
    */
   kSha512MessageBlockBits = 1024,
@@ -97,6 +109,78 @@ typedef struct sha512_state {
    */
   sha512_message_length_t total_len;
 } sha512_state_t;
+
+/**
+ * A type that holds the context for an ongoing SHA-384 operation.
+ *
+ * Since SHA-384 uses the same internal process as SHA-512, just with a
+ * different initial value, the context structs are the same.
+ */
+typedef sha512_state_t sha384_state_t;
+
+/**
+ * One-shot SHA-384 hash computation.
+ *
+ * Returns OTCRYPTO_ASYNC_INCOMPLETE if OTBN is busy.
+ *
+ * @param msg Input message
+ * @param msg_len Input message length in bytes
+ * @param[out] digest Output buffer for digest.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t sha384(const uint8_t *msg, const size_t msg_len, uint8_t *digest);
+
+/**
+ * Set up a SHA-384 hash computation.
+ *
+ * Initializes the hash state; doesn't process anything.
+ *
+ * This interface expects the following sequence of calls:
+ * - one call to sha384_init()
+ * - zero or more calls to sha384_update()
+ * - one call to sha384_final()
+ *
+ * @param[out] state Hash context object to initialize.
+ * @return Result of the operation (OK or error).
+ */
+void sha384_init(sha384_state_t *state);
+
+/**
+ * Process new message data for a SHA-384 hash computation.
+ *
+ * Incorporates the new message data into the hash context.
+ *
+ * Returns OTCRYPTO_ASYNC_INCOMPLETE if OTBN is busy.
+ *
+ * @param state Hash context object; updated in-place.
+ * @param msg Input message.
+ * @param msg_len Input message length in bytes.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t sha384_update(sha384_state_t *state, const uint8_t *msg,
+                       const size_t msg_len);
+
+/**
+ * Finish a SHA-384 hash computation.
+ *
+ * Incorporates the new message data into the hash context, constructs the
+ * message padding and performs the final hash computation.
+ *
+ * The caller must ensure that at least `kSha384DigestBytes` bytes of space are
+ * available at the location pointed to by `digest`.
+ *
+ * Returns OTCRYPTO_ASYNC_INCOMPLETE if OTBN is busy.
+ *
+ * @param state Hash context object.
+ * @param msg Input message
+ * @param msg_len Input message length in bytes
+ * @param[out] digest Output buffer for digest.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t sha384_final(sha384_state_t *state, uint8_t *digest);
 
 /**
  * One-shot SHA-512 hash computation.
