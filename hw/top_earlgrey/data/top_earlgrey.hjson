@@ -310,7 +310,7 @@
         SecVolatileRawUnlockEn: "top_pkg::SecVolatileRawUnlockEn",
         ChipGen: "16'h 0000",
         ChipRev: "16'h 0000",
-        IdcodeValue: "jtag_id_pkg::JTAG_IDCODE",
+        IdcodeValue: "jtag_id_pkg::LC_CTRL_JTAG_IDCODE",
       },
     },
     { name: "alert_handler",
@@ -622,7 +622,7 @@
       clock_group: "infra",
       reset_connections: {rst_ni: "sys"},
       param_decl: {
-        IdcodeValue: "jtag_id_pkg::JTAG_IDCODE",
+        IdcodeValue: "jtag_id_pkg::RV_DM_JTAG_IDCODE",
       }
       // Note that this module also contains a bus host.
       base_addrs: {mem: "0x00010000", regs: "0x41200000"}

@@ -5,13 +5,26 @@
 
 package jtag_id_pkg;
 
-  // This is the open source facing JTAG value that should be replaced
-  // by manufacturers of each OpenTitan
-  localparam logic [31:0] JTAG_IDCODE = {
-    4'h0,     // Version
-    16'h4F54, // Part Number: "OT"
-    11'h426,  // TODO: This should be replaced with Lowrisc Identity
-    1'b1      // (fixed)
+  // lowRISC JEDEC Manufacturer ID, bank 13 0xEF
+  localparam logic [10:0] JEDEC_MANUFACTURER_ID = {4'd12, 7'b110_1111};
+  localparam logic [3:0] JTAG_VERSION = 4'h1;
+
+  // These are the open source facing JTAG values that silicon creators may wish to replace We have
+  // two TAPs, one for rv_dm and the other for lc_ctrl, they each have their own JTAG_IDCODE.  They
+  // only differ in part number.
+
+  localparam logic [31:0] RV_DM_JTAG_IDCODE = {
+    JTAG_VERSION,          // Version
+    16'h1,                 // Part Number
+    JEDEC_MANUFACTURER_ID, // Manufacturer ID
+    1'b1                   // (fixed)
+  };
+
+  localparam logic [31:0] LC_CTRL_JTAG_IDCODE = {
+    JTAG_VERSION,          // Version
+    16'h2,                 // Part Number
+    JEDEC_MANUFACTURER_ID, // Manufacturer ID
+    1'b1                   // (fixed)
   };
 
 endpackage : jtag_id_pkg

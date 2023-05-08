@@ -1536,7 +1536,7 @@
         SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn
         ChipGen: 16'h 0000
         ChipRev: 16'h 0000
-        IdcodeValue: jtag_id_pkg::JTAG_IDCODE
+        IdcodeValue: jtag_id_pkg::LC_CTRL_JTAG_IDCODE
       }
       clock_connections:
       {
@@ -1628,7 +1628,7 @@
           name: IdcodeValue
           desc: JTAG ID code.
           type: logic [31:0]
-          default: jtag_id_pkg::JTAG_IDCODE
+          default: jtag_id_pkg::LC_CTRL_JTAG_IDCODE
           expose: "true"
           name_top: LcCtrlIdcodeValue
         }
@@ -5123,7 +5123,7 @@
       }
       param_decl:
       {
-        IdcodeValue: jtag_id_pkg::JTAG_IDCODE
+        IdcodeValue: jtag_id_pkg::RV_DM_JTAG_IDCODE
       }
       base_addrs:
       {
@@ -5145,7 +5145,7 @@
           name: IdcodeValue
           desc: RISC-V debug module JTAG ID code.
           type: logic [31:0]
-          default: jtag_id_pkg::JTAG_IDCODE
+          default: jtag_id_pkg::RV_DM_JTAG_IDCODE
           expose: "true"
           name_top: RvDmIdcodeValue
         }
