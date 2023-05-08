@@ -418,15 +418,15 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
           // suffix to the image name.
           if ("signed" inside {sw_image_flags[i]}) begin
             // Options match DEFAULT_SIGNING_KEYS in `rules/opentitan.bzl`.
-            if ("fake_dev_key_0" inside {sw_image_flags[i]}) begin
-              sw_images[i] = $sformatf("%0s.fake_dev_key_0.signed", sw_images[i]);
-            end else if ("fake_prod_key_0" inside {sw_image_flags[i]}) begin
-              sw_images[i] = $sformatf("%0s.fake_prod_key_0.signed", sw_images[i]);
+            if ("rsa_fake_dev_key_0" inside {sw_image_flags[i]}) begin
+              sw_images[i] = $sformatf("%0s.rsa_fake_dev_key_0.signed", sw_images[i]);
+            end else if ("rsa_fake_prod_key_0" inside {sw_image_flags[i]}) begin
+              sw_images[i] = $sformatf("%0s.rsa_fake_prod_key_0.signed", sw_images[i]);
             end else begin
               // We default to "fake_test_key_0" if no key name is provided in the
               // SW image tags (or if the key name provided is "fake_test_key_0"),
               // as this works in the RMA LC state, which is the default OTP image.
-              sw_images[i] = $sformatf("%0s.fake_test_key_0.signed", sw_images[i]);
+              sw_images[i] = $sformatf("%0s.rsa_fake_test_key_0.signed", sw_images[i]);
             end
           end
         end else if (i == SwTypeOtp) begin
