@@ -4,7 +4,7 @@
 
 load(
     "@//rules:opentitan.bzl",
-    "RSA_ONLY_KEYSETS",
+    "RSA_ONLY_KEY_STRUCTS",
     "opentitan_flash_binary",
     "opentitan_rom_binary",
 )
@@ -276,7 +276,7 @@ def opentitan_functest(
         manifest = "@//sw/device/silicon_creator/rom_ext:manifest_standard",
         slot = "silicon_creator_a",
         test_harness = "@//sw/host/opentitantool",
-        keyset = RSA_ONLY_KEYSETS[0],
+        key_struct = RSA_ONLY_KEY_STRUCTS[0],
         logging = "info",
         dv = None,
         verilator = None,
@@ -306,7 +306,7 @@ def opentitan_functest(
       @param manifest: Partially populated manifest to set boot stage/slot configs.
       @param slot: What slot to build the image for.
       @param test_harness: The binary on the host side that runs the test.
-      @param keyset: Which signed test image (by key set) to use.
+      @param key_struct: Which signed test image (by key set) to use.
       @param dv: DV test parameters.
       @param verilator: Verilator test parameters.
       @param cw310: CW310 test parameters.
@@ -482,15 +482,15 @@ def opentitan_functest(
             # Multislot flash binaries could have different slots / stages
             # signed with different keys. Therefore, the key name will not be
             # part of the target name for such images.
-            if keyset != "multislot":
-                if type(keyset) == "string":
-                    suffix = keyset
+            if key_struct != "multislot":
+                if type(key_struct) == "string":
+                    suffix = key_struct
                 else:
                     suffix_parts = []
-                    if keyset.rsa:
-                        suffix_parts.append(keyset.rsa.name)
-                    if keyset.spx:
-                        suffix_parts.append(keyset.spx.name)
+                    if key_struct.rsa:
+                        suffix_parts.append(key_struct.rsa.name)
+                    if key_struct.spx:
+                        suffix_parts.append(key_struct.spx.name)
                     suffix = "_".join(suffix_parts)
                 flash += "_{}".format(suffix)
 

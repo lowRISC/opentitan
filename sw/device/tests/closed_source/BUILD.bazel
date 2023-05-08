@@ -9,7 +9,7 @@ load(
 )
 load(
     "@//rules:opentitan.bzl",
-    "get_keysets_for_lc_state",
+    "get_key_structs_for_lc_state",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -142,7 +142,7 @@ opentitan_functest(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
-    keyset = get_keysets_for_lc_state(
+    key_struct = get_key_structs_for_lc_state(
         CONST.LCV.TEST_UNLOCKED0,
         spx = None,
     )[0],
@@ -180,7 +180,7 @@ opentitan_functest(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
-    keyset = get_keysets_for_lc_state(
+    key_struct = get_key_structs_for_lc_state(
         CONST.LCV.TEST_UNLOCKED0,
         spx = None,
     )[0],

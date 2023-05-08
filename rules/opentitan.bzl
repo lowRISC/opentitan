@@ -86,7 +86,7 @@ def create_prod_key(name, label):
         CONST.LCV.RMA,
     ])
 
-def create_keyset(rsa_key, spx_key):
+def create_key_struct(rsa_key, spx_key):
     return struct(
         rsa = rsa_key,
         spx = spx_key,
@@ -155,7 +155,7 @@ def key_allowed_in_lc_state(key, hw_lc_state_val):
         fail("Wrong life cycle state value: '{}', must be one of {}. Did you pass a string instead of the integer value?".format(hw_lc_state_val, all_hw_lc_state_vals))
     return hw_lc_state_val in key.hw_lc_states
 
-def get_keysets_for_lc_state(hw_lc_state, rsa = SILICON_CREATOR_KEYS.RSA.FAKE, spx = SILICON_CREATOR_KEYS.SPX.FAKE):
+def get_key_structs_for_lc_state(hw_lc_state, rsa = SILICON_CREATOR_KEYS.RSA.FAKE, spx = SILICON_CREATOR_KEYS.SPX.FAKE):
     # [(rsa_key, spx_key), ...]
     if rsa and spx:
         rsa = flatten(structs.to_dict(s = rsa).values())
@@ -173,32 +173,32 @@ def get_keysets_for_lc_state(hw_lc_state, rsa = SILICON_CREATOR_KEYS.RSA.FAKE, s
         fail("Lists have different lengths")
     keys = zip(rsa, spx)
     res = [
-        create_keyset(rsa, spx)
+        create_key_struct(rsa, spx)
         for rsa, spx in keys
         if (rsa == None or key_allowed_in_lc_state(rsa, hw_lc_state)) and (spx == None or key_allowed_in_lc_state(spx, hw_lc_state))
     ]
     return res
 
-def filter_keysets_for_lc_state(keysets, hw_lc_state):
-    return [k for k in keysets if (not k.rsa or key_allowed_in_lc_state(k.rsa, hw_lc_state)) and (not k.spx or key_allowed_in_lc_state(k.spx, hw_lc_state))]
+def filter_key_structs_for_lc_state(key_structs, hw_lc_state):
+    return [k for k in key_structs if (not k.rsa or key_allowed_in_lc_state(k.rsa, hw_lc_state)) and (not k.spx or key_allowed_in_lc_state(k.spx, hw_lc_state))]
 
-RSA_ONLY_KEYSETS = [
-    create_keyset(SILICON_CREATOR_KEYS.RSA.FAKE.TEST[0], None),
-    create_keyset(SILICON_CREATOR_KEYS.RSA.FAKE.DEV[0], None),
-    create_keyset(SILICON_CREATOR_KEYS.RSA.FAKE.PROD[0], None),
-    create_keyset(SILICON_CREATOR_KEYS.RSA.UNAUTHORIZED[0], None),
+RSA_ONLY_KEY_STRUCTS = [
+    create_key_struct(SILICON_CREATOR_KEYS.RSA.FAKE.TEST[0], None),
+    create_key_struct(SILICON_CREATOR_KEYS.RSA.FAKE.DEV[0], None),
+    create_key_struct(SILICON_CREATOR_KEYS.RSA.FAKE.PROD[0], None),
+    create_key_struct(SILICON_CREATOR_KEYS.RSA.UNAUTHORIZED[0], None),
 ]
 
-RSA_SPX_KEYSETS = [
-    create_keyset(SILICON_CREATOR_KEYS.RSA.FAKE.TEST[0], SILICON_CREATOR_KEYS.SPX.FAKE.TEST[0]),
-    create_keyset(SILICON_CREATOR_KEYS.RSA.FAKE.DEV[0], SILICON_CREATOR_KEYS.SPX.FAKE.DEV[0]),
-    create_keyset(SILICON_CREATOR_KEYS.RSA.FAKE.PROD[0], SILICON_CREATOR_KEYS.SPX.FAKE.PROD[0]),
-    create_keyset(SILICON_CREATOR_KEYS.RSA.UNAUTHORIZED[0], SILICON_CREATOR_KEYS.SPX.UNAUTHORIZED[0]),
+RSA_SPX_KEY_STRUCTS = [
+    create_key_struct(SILICON_CREATOR_KEYS.RSA.FAKE.TEST[0], SILICON_CREATOR_KEYS.SPX.FAKE.TEST[0]),
+    create_key_struct(SILICON_CREATOR_KEYS.RSA.FAKE.DEV[0], SILICON_CREATOR_KEYS.SPX.FAKE.DEV[0]),
+    create_key_struct(SILICON_CREATOR_KEYS.RSA.FAKE.PROD[0], SILICON_CREATOR_KEYS.SPX.FAKE.PROD[0]),
+    create_key_struct(SILICON_CREATOR_KEYS.RSA.UNAUTHORIZED[0], SILICON_CREATOR_KEYS.SPX.UNAUTHORIZED[0]),
 ]
 
-RSA_ONLY_ROM_EXT_KEYSETS = [
-    create_keyset(SILICON_OWNER_KEYS.RSA.FAKE.TEST[0], None),
-    create_keyset(SILICON_OWNER_KEYS.RSA.FAKE.DEV[0], None),
+RSA_ONLY_ROM_EXT_KEY_STRUCTS = [
+    create_key_struct(SILICON_OWNER_KEYS.RSA.FAKE.TEST[0], None),
+    create_key_struct(SILICON_OWNER_KEYS.RSA.FAKE.DEV[0], None),
 ]
 
 def _obj_transform_impl(ctx):
@@ -1109,7 +1109,7 @@ def opentitan_flash_binary(
         name,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
-        signing_keysets = RSA_ONLY_KEYSETS + RSA_ONLY_ROM_EXT_KEYSETS,
+        signing_key_structs = RSA_ONLY_KEY_STRUCTS + RSA_ONLY_ROM_EXT_KEY_STRUCTS,
         signed = True,
         sim_otp = None,
         testonly = False,
@@ -1119,14 +1119,14 @@ def opentitan_flash_binary(
 
     This macro is mostly a wrapper around the `opentitan_binary` macro, but also
     creates artifacts for each of the keys in `PER_DEVICE_DEPS`, and if signing
-    is enabled, each of the keys in `signing_keysets`. The actual artifacts created
+    is enabled, each of the keys in `signing_key_structs`. The actual artifacts created
     artifacts created are outputs of the rules emitted by the `opentitan_binary`
     macro and those listed below.
     Args:
       @param name: The name of this rule.
       @param devices: List of devices to build the target for.
       @param platform: The target platform for the artifacts.
-      @param signing_keysets: The signing keys to sign each BIN file with.
+      @param signing_key_structs: The signing keys to sign each BIN file with.
       @param signed: Whether or not to emit signed binary/VMEM files.
       @param sim_otp: OTP image that contains flash scrambling keys / enablement flag
                       (only relevant for VMEM files built for sim targets).
@@ -1179,30 +1179,30 @@ def opentitan_flash_binary(
         if signed:
             if manifest == None:
                 fail("A 'manifest' must be provided in order to sign flash images.")
-            for keyset in signing_keysets:
-                if keyset.spx:
+            for key_struct in signing_key_structs:
+                if key_struct.spx:
                     # Sign the binary using RSA and SPX+.
-                    signed_bin_name = "{}_bin_signed_{}_{}".format(devname, keyset.rsa.name, keyset.spx.name)
+                    signed_bin_name = "{}_bin_signed_{}_{}".format(devname, key_struct.rsa.name, key_struct.spx.name)
                     dev_targets.append(":" + signed_bin_name)
                     sign_bin(
                         name = signed_bin_name,
                         bin = bin_name,
-                        rsa_key = keyset.rsa.label,
-                        rsa_key_name = keyset.rsa.name,
-                        spx_key = keyset.spx.label,
-                        spx_key_name = keyset.spx.name,
+                        rsa_key = key_struct.rsa.label,
+                        rsa_key_name = key_struct.rsa.name,
+                        spx_key = key_struct.spx.label,
+                        spx_key_name = key_struct.spx.name,
                         manifest = manifest,
                         testonly = testonly,
                     )
                 else:
                     # Sign the binary using RSA only.
-                    signed_bin_name = "{}_bin_signed_{}".format(devname, keyset.rsa.name)
+                    signed_bin_name = "{}_bin_signed_{}".format(devname, key_struct.rsa.name)
                     dev_targets.append(":" + signed_bin_name)
                     sign_bin(
                         name = signed_bin_name,
                         bin = bin_name,
-                        rsa_key = keyset.rsa.label,
-                        rsa_key_name = keyset.rsa.name,
+                        rsa_key = key_struct.rsa.label,
+                        rsa_key_name = key_struct.rsa.name,
                         manifest = manifest,
                         testonly = testonly,
                     )
@@ -1212,7 +1212,7 @@ def opentitan_flash_binary(
                     # Generate a VMEM64 from the signed binary.
                     signed_vmem_name = "{}_vmem64_signed_{}".format(
                         devname,
-                        keyset.rsa.name,
+                        key_struct.rsa.name,
                     )
                     dev_targets.append(":" + signed_vmem_name)
                     bin_to_vmem(
@@ -1226,7 +1226,7 @@ def opentitan_flash_binary(
                     # Scramble / compute ECC for signed VMEM64.
                     scr_signed_vmem_name = "{}_scr_vmem64_signed_{}".format(
                         devname,
-                        keyset.rsa.name,
+                        key_struct.rsa.name,
                     )
                     dev_targets.append(":" + scr_signed_vmem_name)
                     scramble_flash_vmem(

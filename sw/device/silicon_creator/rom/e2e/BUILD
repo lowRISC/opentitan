@@ -16,12 +16,12 @@ load(
 load("//rules:const.bzl", "CONST", "error_redact", "get_lc_items", "hex", "hex_digits", "lcv_hw_to_sw")
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEYSETS",
-    "RSA_SPX_KEYSETS",
+    "RSA_ONLY_KEY_STRUCTS",
+    "RSA_SPX_KEY_STRUCTS",
     "SILICON_CREATOR_KEYS",
     "bin_to_vmem",
-    "filter_keysets_for_lc_state",
-    "get_keysets_for_lc_state",
+    "filter_key_structs_for_lc_state",
+    "get_key_structs_for_lc_state",
     "key_allowed_in_lc_state",
     "opentitan_flash_binary",
     "opentitan_multislot_flash_binary",
@@ -208,7 +208,7 @@ opentitan_functest(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
-    keyset = RSA_ONLY_KEYSETS[0],
+    key_struct = RSA_ONLY_KEY_STRUCTS[0],
     ot_flash_binary = ":empty_test_slot_a",
     targets = [
         "cw310_rom",
@@ -380,7 +380,7 @@ opentitan_functest(
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
     ),
-    keyset = RSA_ONLY_KEYSETS[0],
+    key_struct = RSA_ONLY_KEY_STRUCTS[0],
     ot_flash_binary = ":empty_test_slot_a",
     targets = ["cw310_rom"],
 )
@@ -502,7 +502,7 @@ opentitan_functest(
         ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    keyset = get_keysets_for_lc_state(
+    key_struct = get_key_structs_for_lc_state(
         CONST.LCV.PROD,
         spx = None,
     )[0],
@@ -562,7 +562,7 @@ opentitan_functest(
                 "--otp-unprogrammed",
             ],
         ),
-        keyset = get_keysets_for_lc_state(
+        key_struct = get_key_structs_for_lc_state(
             lc_state_val,
             spx = None,
         )[0],
@@ -616,7 +616,7 @@ opentitan_multislot_flash_binary(
     testonly = True,
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
-            "key": RSA_ONLY_KEYSETS[0],
+            "key": RSA_ONLY_KEY_STRUCTS[0],
             "offset": SLOTS["b"],
         },
     },
@@ -628,7 +628,7 @@ opentitan_functest(
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
     ),
-    keyset = "multislot",
+    key_struct = "multislot",
     ot_flash_binary = ":rom_ext_b_flash_b_image",
     targets = ["cw310_rom"],
 )
@@ -638,7 +638,7 @@ opentitan_multislot_flash_binary(
     testonly = True,
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": {
-            "key": RSA_ONLY_KEYSETS[0],
+            "key": RSA_ONLY_KEY_STRUCTS[0],
             "offset": SLOTS["b"],
         },
     },
@@ -650,7 +650,7 @@ opentitan_functest(
         exit_failure = MSG_STARTING_ROM_EXT,
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
     ),
-    keyset = "multislot",
+    key_struct = "multislot",
     ot_flash_binary = ":rom_ext_a_flash_b_image",
     targets = ["cw310_rom"],
 )
@@ -660,7 +660,7 @@ opentitan_multislot_flash_binary(
     testonly = True,
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
-            "key": RSA_ONLY_KEYSETS[0],
+            "key": RSA_ONLY_KEY_STRUCTS[0],
             "offset": SLOTS["a"],
         },
     },
@@ -672,7 +672,7 @@ opentitan_functest(
         exit_failure = MSG_STARTING_ROM_EXT,
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
     ),
-    keyset = "multislot",
+    key_struct = "multislot",
     ot_flash_binary = ":rom_ext_b_flash_a_image",
     targets = ["cw310_rom"],
 )
@@ -692,7 +692,7 @@ opentitan_multislot_flash_binary(
     testonly = True,
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
-            "key": RSA_ONLY_KEYSETS[0],
+            "key": RSA_ONLY_KEY_STRUCTS[0],
             "offset": SLOTS["b"],
         },
     },
@@ -704,7 +704,7 @@ opentitan_functest(
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
     ),
-    keyset = "multislot",
+    key_struct = "multislot",
     ot_flash_binary = ":rom_ext_v_flash_b_image",
     targets = ["cw310_rom"],
 )
@@ -739,7 +739,7 @@ opentitan_functest(
         exit_failure = MSG_PASS,
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY)),
     ),
-    keyset = "rsa_unauthorized_0",
+    key_struct = "rsa_unauthorized_0",
     ot_flash_binary = ":empty_test_slot_a",
     targets = ["cw310_rom"],
 )
@@ -837,11 +837,11 @@ SEC_VERS = [
     testonly = True,
     srcs = {
         ":empty_test_slot_a_sec_ver_{}".format(sec_ver_a): {
-            "key": RSA_ONLY_KEYSETS[2],
+            "key": RSA_ONLY_KEY_STRUCTS[2],
             "offset": SLOTS["a"],
         },
         ":empty_test_slot_b_sec_ver_{}".format(sec_ver_b): {
-            "key": RSA_ONLY_KEYSETS[2],
+            "key": RSA_ONLY_KEY_STRUCTS[2],
             "offset": SLOTS["b"],
         },
     },
@@ -901,7 +901,7 @@ BOOT_POLICY_NEWER_CASES = [
             exit_success = t["exit_success"].format(hex_digits(lc_state_val)),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        keyset = "multislot",
+        key_struct = "multislot",
         ot_flash_binary = ":sec_ver_{}_{}_image".format(
             t["a"],
             t["b"],
@@ -993,7 +993,7 @@ otp_json(
             exit_success = t["exit_success"],
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        keyset = "multislot",
+        key_struct = "multislot",
         ot_flash_binary = ":sec_ver_{}_{}_image".format(
             t["a"],
             t["b"],
@@ -1123,7 +1123,7 @@ WATCHDOG_OTP = {
             bitstream = WATCHDOG_BITSTREAM[otp_config].format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        keyset = get_keysets_for_lc_state(
+        key_struct = get_key_structs_for_lc_state(
             lc_state_val,
             spx = None,
         )[0],
@@ -1222,7 +1222,7 @@ ALERT_LC_STATES = get_lc_items(
             bitstream = ":bitstream_alert_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        keyset = get_keysets_for_lc_state(
+        key_struct = get_key_structs_for_lc_state(
             CONST.LCV.PROD,
             spx = None,
         )[0],
@@ -1349,7 +1349,7 @@ otp_alert_digest(
             bitstream = ":bitstream_shutdown_alert_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        keyset = get_keysets_for_lc_state(
+        key_struct = get_key_structs_for_lc_state(
             CONST.LCV.PROD,
             spx = None,
         )[0],
@@ -1474,7 +1474,7 @@ opentitan_flash_binary(
             exit_success = t["exit_success"][lc_state],
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        keyset = get_keysets_for_lc_state(
+        key_struct = get_key_structs_for_lc_state(
             lc_state_val,
             spx = None,
         )[0],
@@ -1658,7 +1658,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             t["name"],
             slot,
         ): {
-            "key": RSA_ONLY_KEYSETS[0],
+            "key": RSA_ONLY_KEY_STRUCTS[0],
             "offset": offset,
         },
     },
@@ -1741,7 +1741,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             exit_success = t["exit_success"],
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        keyset = "multislot",
+        key_struct = "multislot",
         ot_flash_binary = "boot_policy_bad_manifest_{}_{}_img".format(
             t["name"],
             slot,
@@ -1918,7 +1918,7 @@ BOOT_DATA_RECOVERY_CASES = [
                 case["lc_state"].upper(),
             )),
         ),
-        keyset = "rsa_fake_prod_key_0",
+        key_struct = "rsa_fake_prod_key_0",
         ot_flash_binary = ":rom_e2e_boot_data_recovery_{}_{}".format(
             case["lc_state"],
             case["default_boot_data"],
@@ -2044,7 +2044,7 @@ SHUTDOWN_WATCHDOG_CASES = [
                 t["lc_state"].upper(),
             )),
         ),
-        keyset = get_keysets_for_lc_state(
+        key_struct = get_key_structs_for_lc_state(
             t["lc_state_val"],
             spx = None,
         )[0],
@@ -2156,11 +2156,11 @@ BOOT_POLICY_VALID_CASES = [
         testonly = True,
         srcs = {
             ":empty_test_slot_a{}".format(a["suffix"]): {
-                "key": RSA_ONLY_KEYSETS[2],
+                "key": RSA_ONLY_KEY_STRUCTS[2],
                 "offset": SLOTS["a"],
             },
             ":empty_test_slot_b{}".format(b["suffix"]): {
-                "key": RSA_ONLY_KEYSETS[2],
+                "key": RSA_ONLY_KEY_STRUCTS[2],
                 "offset": SLOTS["b"],
             },
         },
@@ -2204,7 +2204,7 @@ BOOT_POLICY_VALID_CASES = [
             exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        keyset = "multislot",
+        key_struct = "multislot",
         ot_flash_binary = ":boot_policy_valid_img_a_{}_b_{}".format(
             a["desc"],
             b["desc"],
@@ -2455,7 +2455,7 @@ test_suite(
             bitstream = "//hw/bitstream:rom_otp_" + lc_state,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        keyset = filter_keysets_for_lc_state(RSA_ONLY_KEYSETS, lc_state_val)[0],
+        key_struct = filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_state_val)[0],
         local_defines = [
             "EXPECT_DEBUG={}".format(1 if lc_state_val in [
                 CONST.LCV.TEST_UNLOCKED0,
@@ -3070,11 +3070,11 @@ SIGVERIFY_BAD_CASES = [
             otp = ":otp_img_sigverify_always_{}".format(lc_state),
             rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
         ),
-        keyset = "multislot",
+        key_struct = "multislot",
         ot_flash_binary = ":sigverify_always_img_a_{}_b_{}_{}".format(
             case["a"],
             case["b"],
-            filter_keysets_for_lc_state(RSA_ONLY_KEYSETS, lc_state_val)[0].rsa.name,
+            filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_state_val)[0].rsa.name,
         ),
         targets = [
             "dv",
@@ -3149,14 +3149,14 @@ test_suite(
             ),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        keyset = key,
+        key_struct = key,
         ot_flash_binary = "empty_test_slot_a",
         targets = [
             "cw310_rom",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
-    for key in RSA_ONLY_KEYSETS
+    for key in RSA_ONLY_KEY_STRUCTS
 ]
 
 test_suite(
@@ -3168,7 +3168,7 @@ test_suite(
             key_name,
         )
         for lc_state, _ in get_lc_items()
-        for key_name in [key.rsa.name for key in RSA_ONLY_KEYSETS]
+        for key_name in [key.rsa.name for key in RSA_ONLY_KEY_STRUCTS]
     ],
 )
 
@@ -3228,14 +3228,14 @@ otp_json(
             ) if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_PASS,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        keyset = key,
+        key_struct = key,
         ot_flash_binary = "empty_test_slot_a",
         targets = [
             "cw310_rom",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
-    for key in filter_keysets_for_lc_state(RSA_ONLY_KEYSETS, lc_state_val)
+    for key in filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_state_val)
 ]
 
 test_suite(
@@ -3247,7 +3247,7 @@ test_suite(
             key.rsa.name,
         )
         for lc_state, lc_state_val in get_lc_items()
-        for key in filter_keysets_for_lc_state(RSA_ONLY_KEYSETS, lc_state_val)
+        for key in filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_state_val)
     ],
 )
 
@@ -3492,7 +3492,7 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
         exit_success = t["exit_success"],
         tags = maybe_skip_in_ci(t["lc_state_val"]),
     ),
-    keyset = get_keysets_for_lc_state(
+    key_struct = get_key_structs_for_lc_state(
         t["lc_state_val"],
         spx = None,
     )[0],
@@ -3838,7 +3838,7 @@ otp_json(
             clear_bitstream = True,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        keyset = get_keysets_for_lc_state(
+        key_struct = get_key_structs_for_lc_state(
             lc_state_val,
             spx = None,
         )[0],
@@ -3941,7 +3941,7 @@ opentitan_flash_binary(
                     "otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN_OFFSET)"),
     ],
     signed = True,
-    signing_keysets = RSA_SPX_KEYSETS,
+    signing_key_structs = RSA_SPX_KEY_STRUCTS,
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -4015,7 +4015,7 @@ opentitan_flash_binary(
             exit_success = t["exit_success"][lc_state],
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        keyset = get_keysets_for_lc_state(lc_state_val)[0],
+        key_struct = get_key_structs_for_lc_state(lc_state_val)[0],
         ot_flash_binary = ":empty_test_sigverify_spx",
         targets = ["cw310_rom"],
     )
