@@ -6,7 +6,6 @@ r"""Top Module Generator
 """
 import argparse
 import logging as log
-import os
 import random
 import shutil
 import sys
@@ -29,7 +28,6 @@ from reggen.inter_signal import InterSignal
 from reggen.ip_block import IpBlock
 from reggen.countermeasure import CounterMeasure
 from reggen.lib import check_list
-from topgen import entropy_buffer_generator as ebg
 from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
@@ -66,9 +64,7 @@ TOPGEN_TEMPLATE_PATH = Path(__file__).parent / "topgen/templates"
 # This buffer will not be created If a different one is provided by args.entropy_buffer.
 # Module strong_random fetches entropy from the buffer to generate random bit-vectors
 # and permutations.
-BUFFER_SIZE = 20000
-
-PATH_TO_BUFFER = "util/topgen/entropy_buffer.txt"
+ENTROPY_BUFFER_SIZE_BYTES = 20000
 
 
 def ipgen_render(template_name: str, topname: str, params: Dict,
@@ -1090,7 +1086,9 @@ def main():
         metavar="<seed>",
         help="Custom seed for RNG to compute netlist constants.")
     parser.add_argument(
-        "--entropy_buffer",
+        "--entropy-buffer",
+        type=str,
+        metavar="<entropy buffer file path>",
         help="A file with entropy.")
     # Miscellaneous: only return the list of blocks and exit.
     parser.add_argument("--get_blocks",
@@ -1156,7 +1154,7 @@ def main():
     # Initialize RNG for compile-time netlist constants.
     if args.entropy_buffer:
         if args.rnd_cnst_seed:
-            log.error("'entropy_buffer' option cannot be used with 'rnd_cnst_seed option'")
+            log.error("'entropy-buffer' option cannot be used with 'rnd_cnst_seed option'")
             # error out
             raise SystemExit(sys.exc_info()[1])
         else:
@@ -1176,8 +1174,9 @@ def main():
             if topcfg.setdefault("rnd_cnst_seed", new_seed) == new_seed:
                 log.warning(
                     "No rnd_cnst_seed specified, setting to {}.".format(new_seed))
-        ebg.gen_buffer(BUFFER_SIZE, SRCTREE_TOP / PATH_TO_BUFFER, False, topcfg["rnd_cnst_seed"])
-        strong_random.load(SRCTREE_TOP / PATH_TO_BUFFER)
+        strong_random.unsecure_generate_from_seed(
+            ENTROPY_BUFFER_SIZE_BYTES,
+            topcfg["rnd_cnst_seed"])
 
     # TODO, long term, the levels of dependency should be automatically determined instead
     # of hardcoded.  The following are a few examples:
@@ -1226,11 +1225,6 @@ def main():
                                                       out_path_gen, pass_idx)
 
     topname = topcfg["name"]
-
-    if not args.entropy_buffer:
-        # Delete entropy buffer since it is no longer needed.
-        # This buffer can always be re-generated from the seed using entropy_buffer_generator
-        os.remove(SRCTREE_TOP / PATH_TO_BUFFER)
 
     # Create the chip-level RAL only
     if args.top_ral:
