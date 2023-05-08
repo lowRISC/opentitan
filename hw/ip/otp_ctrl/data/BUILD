@@ -7,13 +7,18 @@ load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS",
+    "alert",
+    "otp_alert_classification",
     "otp_alert_digest",
+    "otp_bytestring",
+    "otp_hex",
     "otp_image",
     "otp_json",
     "otp_partition",
 )
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@bazel_skylib//rules:common_settings.bzl", "int_flag", "string_flag")
+load("//rules:const.bzl", "CONST", "EARLGREY_ALERTS", "EARLGREY_LOC_ALERTS")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -73,18 +78,27 @@ otp_json(
                 # Use software mod_exp implementation for signature
                 # verification. See the definition of `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN": "0x739",
+                "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN": otp_hex(CONST.TRUE),
                 # Mark the first three keys as valid and remaining as invalid
                 # since we currently have only three keys. See the definition of
                 # `hardened_byte_bool_t` in sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": "0x4b4b4b4b4ba5a5a5",
+                "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": otp_bytestring([
+                    CONST.BYTE_TRUE,  # key0
+                    CONST.BYTE_TRUE,  # key1
+                    CONST.BYTE_TRUE,  # key2
+                    CONST.BYTE_FALSE,  # key3
+                    CONST.BYTE_FALSE,  # key4
+                    CONST.BYTE_FALSE,  # key5
+                    CONST.BYTE_FALSE,  # key6
+                    CONST.BYTE_FALSE,  # key7
+                ]),
                 # Disable SPX+ signature verification. See the definitions of
                 # `kSigverifySpxDisabledOtp` and `kSigverifySpxEnabledOtp` in
                 # sw/device/silicon_creator/lib/sigverify/spx_verify.h.
                 "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": "0x8d6c8c17",
                 # Enable use of entropy for countermeasures. See the definition
                 # of `hardened_bool_t` in sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_RNG_EN": "0x739",
+                "CREATOR_SW_CFG_RNG_EN": otp_hex(CONST.TRUE),
                 # ROM execution is enabled if this item is set to a non-zero
                 # value.
                 "CREATOR_SW_CFG_ROM_EXEC_EN": "0xffffffff",
@@ -92,7 +106,7 @@ otp_json(
                 # See:
                 # https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html#cpu-control-register-cpuctrl
                 "CREATOR_SW_CFG_CPUCTRL": "0x1",
-                "CREATOR_SW_CFG_JITTER_EN": "0x9",
+                "CREATOR_SW_CFG_JITTER_EN": otp_hex(CONST.MUBI4_FALSE),
                 # Value of the min_security_version_rom_ext field of the
                 # default boot data.
                 "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": "0x0",
@@ -102,15 +116,15 @@ otp_json(
                 # Enable the default boot data in PROD and PROD_END life cycle
                 # states. See the definition of `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": "0x739",
+                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(CONST.TRUE),
                 # Enable AST initialization.
-                "CREATOR_SW_CFG_AST_INIT_EN": "0x6",
+                "CREATOR_SW_CFG_AST_INIT_EN": otp_hex(CONST.MUBI4_TRUE),
                 # TODO: This enables a busyloop in the ROM to give time to
                 # trigger an RMA lifecycle transition via JTAG.  The current
                 # value of 10 cycles is useful for test code which verifies
                 # the path through the ROM.  This value is not useful for a
                 # real chip.
-                "CREATOR_SW_CFG_RMA_SPIN_EN": "0x739",
+                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.TRUE),
                 "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "10",
                 # Entropy source health check default values. This needs to be
                 # populated when `CREATOR_SW_CFG_RNG_EN` is set to true.
@@ -155,27 +169,54 @@ otp_json(
             items = {
                 # Enable bootstrap. See `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
-                "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": "0x1d4",
+                "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.FALSE),
                 # Set to 0x739 to use the ROM_EXT hash measurement as the key
                 # manager attestation binding value.
                 "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": "0x0",
                 # Report errors without any redaction.
-                "OWNER_SW_CFG_ROM_ERROR_REPORTING": "0xe2290aa5",
+                "OWNER_SW_CFG_ROM_ERROR_REPORTING": otp_hex(CONST.SHUTDOWN.REDACT.NONE),
                 # Set the enables to kAlertEnableNone.
                 # See `alert_enable_t` in
                 # sw/device/silicon_creator/lib/drivers/alert.h
-                "OWNER_SW_CFG_ROM_ALERT_CLASS_EN": "0xa9a9a9a9",
-                # Set the esclation policies to kAlertEscalateNone.
+                "OWNER_SW_CFG_ROM_ALERT_CLASS_EN": otp_bytestring([
+                    CONST.ALERT.NONE,  # Class A
+                    CONST.ALERT.NONE,  # Class B
+                    CONST.ALERT.NONE,  # Class C
+                    CONST.ALERT.NONE,  # Class D
+                ]),
+                # Set the escalation policies to kAlertEscalateNone.
                 # See `alert_escalate_t` in
                 # sw/device/silicon_creator/lib/drivers/alert.h
-                "OWNER_SW_CFG_ROM_ALERT_ESCALATION": "0xd1d1d1d1",
-                # Set the classifiactions to kAlertClassX.
+                "OWNER_SW_CFG_ROM_ALERT_ESCALATION": otp_bytestring([
+                    CONST.ALERT.ESC_NONE,  # Class A
+                    CONST.ALERT.ESC_NONE,  # Class B
+                    CONST.ALERT.ESC_NONE,  # Class C
+                    CONST.ALERT.ESC_NONE,  # Class D
+                ]),
+                # Set the classifications to kAlertClassX.
                 # See `alert_class_t` in
                 # sw/device/silicon_creator/lib/drivers/alert.h
-                "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": ["0x94949494"] * 80,
-                # Set the classifiactions to kAlertClassX. See `alert_class_t` in
+                "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": otp_alert_classification(
+                    alert_list = EARLGREY_ALERTS,
+                    default = alert(
+                        dev = "X",
+                        prod = "X",
+                        prod_end = "X",
+                        rma = "X",
+                    ),
+                ),
+
+                # Set the classifications to kAlertClassX. See `alert_class_t` in
                 # sw/device/silicon_creator/lib/drivers/alert.h
-                "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": ["0x94949494"] * 16,
+                "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": otp_alert_classification(
+                    alert_list = EARLGREY_LOC_ALERTS,
+                    default = alert(
+                        dev = "X",
+                        prod = "X",
+                        prod_end = "X",
+                        rma = "X",
+                    ),
+                ),
                 # Set the alert accumulation thresholds to 0 per class.
                 "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH": ["0x00000000"] * 4,
                 # Set the alert timeout cycles to 0 per class.
@@ -494,7 +535,7 @@ otp_json(
     partitions = [
         otp_partition(
             name = "OWNER_SW_CFG",
-            items = {"OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": "0x739"},
+            items = {"OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.TRUE)},
         ),
     ],
 )
