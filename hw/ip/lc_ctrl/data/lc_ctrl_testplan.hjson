@@ -226,5 +226,11 @@
         lc_ctrl_fsm states and arcs
       '''
     }
+    {
+      name: volatile_raw_unlock_cg
+      desc: '''
+        Cover volatile_raw_unlock transition success and fail cases.
+      '''
+    }
   ]
 }

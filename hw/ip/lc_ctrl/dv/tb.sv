@@ -135,7 +135,7 @@ module tb;
 
     .pwr_lc_i(pwr_lc[LcPwrInitReq]),
     .pwr_lc_o(pwr_lc[LcPwrDoneRsp:LcPwrIdleRsp]),
-    .strap_en_override_o( /** TODO: hook this signal up */ ),
+    .strap_en_override_o(lc_ctrl_if.strap_en_override_o),
 
     .lc_otp_vendor_test_o(otp_vendor_test_ctrl),
     .lc_otp_vendor_test_i(otp_vendor_test_status),

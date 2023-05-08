@@ -53,6 +53,8 @@ interface lc_ctrl_if (
   logic [OtpTestCtrlWidth-1:0] otp_vendor_test_ctrl_o;
   logic [OtpTestStatusWidth-1:0] otp_vendor_test_status_i;
 
+  logic strap_en_override_o;
+
   event lc_fsm_state_backdoor_write_ev;
   event lc_fsm_state_backdoor_read_ev;
   event kmac_fsm_state_backdoor_write_ev;
