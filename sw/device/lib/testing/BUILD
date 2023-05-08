@@ -141,6 +141,20 @@ cc_library(
 )
 
 cc_library(
+    name = "nv_counter_testutils",
+    srcs = ["nv_counter_testutils.c"],
+    hdrs = ["nv_counter_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":flash_ctrl_testutils",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "hmac_testutils",
     srcs = ["hmac_testutils.c"],
     hdrs = ["hmac_testutils.h"],

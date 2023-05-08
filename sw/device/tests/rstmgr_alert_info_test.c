@@ -21,6 +21,7 @@
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
