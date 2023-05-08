@@ -15,7 +15,7 @@ is_clean() {
 }
 
 # Clean up the repo so that we can check further auto-generated stuff
-cleanup() {
+destructive_cleanup() {
     git clean -fxd >/dev/null
     git reset --hard >/dev/null
 }
@@ -28,7 +28,7 @@ gen_and_check_clean() {
         echo -n "##vso[task.logissue type=error]"
         echo "Failed to auto-generate $thing. (command: '$*')"
         echo
-        cleanup
+        destructive_cleanup
         return 1
     }
 
@@ -36,7 +36,7 @@ gen_and_check_clean() {
         echo -n "##vso[task.logissue type=error]"
         echo "Auto-generated $thing not up-to-date. Regenerate with '$*'."
         echo
-        cleanup
+        destructive_cleanup
         return 1
     }
 }
@@ -49,7 +49,23 @@ gen_hw_and_check_clean() {
 # Check generated files are up to date
 
 bad=0
-cleanup
+
+# Although this is a CI script, users might be tempted to run it locally.
+# Protect their uncommitted changes before any calls to `destructive_cleanup`.
+if [ "${OT_DESTRUCTIVE}" != "1" ]; then
+    cat >&2 <<EOM
+Aborted $0 because OT_DESTRUCTIVE != 1.
+
+Setting OT_DESTRUCTIVE=1 will enable this script to delete uncommitted changes
+from the working tree.
+
+Never set OT_DESTRUCTIVE=1 automatically, except to define the CI environment.
+The intent is to protect users from losing uncommitted changes, so it should be
+the user's responsibility to set it.
+EOM
+    exit 1
+fi
+destructive_cleanup
 
 gen_hw_and_check_clean "Register headers" regs         || bad=1
 gen_hw_and_check_clean "tops"             top          || bad=1

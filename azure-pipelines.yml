@@ -172,7 +172,9 @@ jobs:
   - bash:  ci/scripts/check_bazel_target_names.py
     displayName: Check Bazel target names (Experimental)
     continueOnError: True
-  - bash: ci/scripts/check-generated.sh
+  # Define OT_DESTRUCTIVE=1 to enable ci/scripts/check-generated.sh to delete
+  # uncommitted changes.
+  - bash: OT_DESTRUCTIVE=1 ci/scripts/check-generated.sh
     displayName: Check Generated
     # Ensure all generated files are clean and up-to-date
   - bash: ci/bazelisk.sh test //quality:buildifier_check --test_output=streamed
