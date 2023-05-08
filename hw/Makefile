@@ -46,11 +46,19 @@ IPS ?= aes           \
 
 TOPS ?= top_earlgrey
 
+USE_BUFFER ?= 0
+
 # conditional flags
 VERBOSE ?= 0
 toolflags ?=
 ifeq ($(VERBOSE),1)
   toolflags      += -v
+endif
+
+ifeq ($(USE_BUFFER),1)
+  ENTROPY_BUFFER := --entropy-buffer ./util/topgen_entropy_buffer.txt
+  LC_BUFFER      := --entropy-buffer ./util/design/lc_entropy_buffer.txt
+  OTP_MMAP_BUFER := --entropy-buffer ./util/design/otp_mmap_entropy_buffer.txt
 endif
 
 dir_hjson = data
@@ -105,13 +113,13 @@ $(ips_reg): %_reg: | $(REG_OUTPUT_DV_DIR)
 .PHONY: otp-mmap
 $(filter otp_ctrl_reg,$(ips_reg)): otp-mmap
 otp-mmap:
-	cd ${PRJ_DIR} && ./util/design/gen-otp-mmap.py
+	cd ${PRJ_DIR} && ./util/design/gen-otp-mmap.py ${OTP_MMAP_BUFER}
 
 # Register generation for lc_ctrl also depends on running gen-lc-state-enc.py
 .PHONY: lc-state-enc
 $(filter lc_ctrl_reg,$(ips_reg)): lc-state-enc
 lc-state-enc:
-	cd ${PRJ_DIR} && ./util/design/gen-lc-state-enc.py
+	cd ${PRJ_DIR} && ./util/design/gen-lc-state-enc.py ${LC_BUFFER}
 
 regs-header: $(ips_reg_header)
 
@@ -149,11 +157,11 @@ topgen_rust_pkg: topgen_rust
 
 top: $(tops_gen) $(tops_reg)
 $(tops_gen): %_gen:
-	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags}
+	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags} ${ENTROPY_BUFFER}
 
 $(tops_reg): %_reg:
 	mkdir -p ${REG_OUTPUT_DV_DIR}/$*
-	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -r -o ${REG_OUTPUT_DV_DIR}/$* ${toolflags}
+	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -r -o ${REG_OUTPUT_DV_DIR}/$* ${toolflags} ${ENTROPY_BUFFER}
 
 
 .PHONY: all
