@@ -31,7 +31,7 @@ module top_earlgrey #(
   parameter bit SecLcCtrlVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter logic [15:0] LcCtrlChipGen = 16'h 0000,
   parameter logic [15:0] LcCtrlChipRev = 16'h 0000,
-  parameter logic [31:0] LcCtrlIdcodeValue = jtag_id_pkg::JTAG_IDCODE,
+  parameter logic [31:0] LcCtrlIdcodeValue = jtag_id_pkg::LC_CTRL_JTAG_IDCODE,
   // parameters for alert_handler
   // parameters for spi_host0
   // parameters for spi_host1
@@ -58,7 +58,7 @@ module top_earlgrey #(
   parameter int FlashCtrlProgFifoDepth = 4,
   parameter int FlashCtrlRdFifoDepth = 16,
   // parameters for rv_dm
-  parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::JTAG_IDCODE,
+  parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
   // parameters for rv_plic
   // parameters for aes
   parameter bit SecAesMasking = 1,
