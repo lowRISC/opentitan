@@ -19,14 +19,16 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     TestPhaseCheckWipe = 2
   } test_phases_e;
 
-  localparam string CHIP_GEN_PATH = "tb.dut.top_earlgrey.LcCtrlChipGen";
-  localparam string CHIP_REV_PATH = "tb.dut.top_earlgrey.LcCtrlChipRev";
+  localparam string SILICON_CREATOR_ID_PATH = "tb.dut.top_earlgrey.LcCtrlSiliconCreatorId";
+  localparam string PRODUCT_ID_PATH = "tb.dut.top_earlgrey.LcCtrlProductId";
+  localparam string REVISION_ID_PATH = "tb.dut.top_earlgrey.LcCtrlRevisionId";
 
   localparam string LC_CTRL_TRANS_SUCCESS_PATH =
     "tb.dut.top_earlgrey.u_lc_ctrl.u_lc_ctrl_fsm.trans_success_o";
 
-  bit [15:0] chip_gen = 16'h 0000;
-  bit [15:0] chip_rev = 16'h 0000;
+  bit [15:0] silicon_creator_id = 16'h 0000;
+  bit [15:0] product_id = 16'h 0000;
+  bit [7:0] revision_id = 16'h 0000;
 
   bit [TokenWidthByte*8-1:0] rma_unlock_token_vector;
   rand bit [7:0] rma_unlock_token[TokenWidthByte];
@@ -75,10 +77,12 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
       .en_entropy_src_fw_over(prim_mubi_pkg::MuBi8True));
 
     // Read current chip revision and generation parameter values.
-    retval = uvm_hdl_read(CHIP_GEN_PATH, chip_gen);
-    `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", CHIP_GEN_PATH))
-    retval = uvm_hdl_read(CHIP_REV_PATH, chip_rev);
-    `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", CHIP_REV_PATH))
+    retval = uvm_hdl_read(SILICON_CREATOR_ID_PATH, silicon_creator_id);
+    `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", SILICON_CREATOR_ID_PATH))
+    retval = uvm_hdl_read(PRODUCT_ID_PATH, product_id);
+    `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", PRODUCT_ID_PATH))
+    retval = uvm_hdl_read(REVISION_ID_PATH, revision_id);
+    `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", REVISION_ID_PATH))
   endtask
 
   virtual task pre_start();
@@ -110,9 +114,12 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     wait_lc_initialized(.allow_err(1));
 
     // Check Revision
-    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.hw_rev.get_offset(),
+    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.hw_revision0.get_offset(),
                                         p_sequencer.jtag_sequencer_h, word);
-    `DV_CHECK_EQ(word, {chip_gen, chip_rev})
+    `DV_CHECK_EQ(word, {silicon_creator_id, product_id})
+    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.hw_revision1.get_offset(),
+                                        p_sequencer.jtag_sequencer_h, word);
+    `DV_CHECK_EQ(word, {revision_id})
 
     // Check Device ID
     for (int k = 0; k < lc_ctrl_reg_pkg::NumDeviceIdWords; k++) begin

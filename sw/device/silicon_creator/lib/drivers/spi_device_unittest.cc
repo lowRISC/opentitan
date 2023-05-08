@@ -51,17 +51,18 @@ TEST_F(InitTest, Init) {
           {SPI_DEVICE_JEDEC_CC_NUM_CC_OFFSET, kSpiDeviceJedecContCodeCount},
       });
   lifecycle_hw_rev_t hw_rev{
-      .chip_gen = 1,
-      .chip_rev = 3,
+      .silicon_creator_id = 5,  // TODO: unused in the mapping at the moment
+      .product_id = 1,
+      .revision_id = 3,
   };
   EXPECT_CALL(lifecycle_, HwRev(NotNull())).WillOnce(SetArgPointee<0>(hw_rev));
 
   EXPECT_ABS_WRITE32(
       base_ + SPI_DEVICE_JEDEC_ID_REG_OFFSET,
       {
-          {SPI_DEVICE_DEV_ID_CHIP_REV_FIELD.index, hw_rev.chip_rev},
+          {SPI_DEVICE_DEV_ID_CHIP_REV_FIELD.index, hw_rev.revision_id},
           {SPI_DEVICE_DEV_ID_ROM_BOOTSTRAP_BIT, 1},
-          {SPI_DEVICE_DEV_ID_CHIP_GEN_FIELD.index, hw_rev.chip_gen},
+          {SPI_DEVICE_DEV_ID_CHIP_GEN_FIELD.index, hw_rev.product_id},
           {SPI_DEVICE_DEV_ID_DENSITY_FIELD.index,
            (uint32_t)bitfield_count_trailing_zeroes32(
                FLASH_CTRL_PARAM_REG_NUM_BANKS *

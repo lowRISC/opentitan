@@ -47,19 +47,28 @@ TEST_F(LifecycleTest, DeviceId) {
 }
 
 TEST_F(LifecycleTest, HwRev) {
-  uint16_t exp_chip_gen = 0xa5;
-  uint16_t exp_chip_rev = 0xc3;
+  uint16_t exp_silicon_creator_id = 0xa5;
+  uint16_t exp_product_id = 0xc3;
+  uint8_t exp_revision_id = 0x96;
 
-  EXPECT_SEC_READ32(base_ + LC_CTRL_HW_REV_REG_OFFSET,
-                    {
-                        {LC_CTRL_HW_REV_CHIP_GEN_OFFSET, exp_chip_gen},
-                        {LC_CTRL_HW_REV_CHIP_REV_OFFSET, exp_chip_rev},
-                    });
+  EXPECT_SEC_READ32(
+      base_ + LC_CTRL_HW_REVISION0_REG_OFFSET,
+      {
+          {LC_CTRL_HW_REVISION0_SILICON_CREATOR_ID_OFFSET,
+           exp_silicon_creator_id},
+          {LC_CTRL_HW_REVISION0_PRODUCT_ID_OFFSET, exp_product_id},
+      });
+  EXPECT_SEC_READ32(
+      base_ + LC_CTRL_HW_REVISION1_REG_OFFSET,
+      {
+          {LC_CTRL_HW_REVISION1_REVISION_ID_OFFSET, exp_revision_id},
+      });
 
   lifecycle_hw_rev_t hw_rev;
   lifecycle_hw_rev_get(&hw_rev);
-  EXPECT_EQ(hw_rev.chip_gen, exp_chip_gen);
-  EXPECT_EQ(hw_rev.chip_rev, exp_chip_rev);
+  EXPECT_EQ(hw_rev.silicon_creator_id, exp_silicon_creator_id);
+  EXPECT_EQ(hw_rev.product_id, exp_product_id);
+  EXPECT_EQ(hw_rev.revision_id, exp_revision_id);
 }
 
 struct ValidStateTestCase {

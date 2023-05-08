@@ -29,8 +29,9 @@ module top_earlgrey #(
   parameter OtpCtrlMemInitFile = "",
   // parameters for lc_ctrl
   parameter bit SecLcCtrlVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
-  parameter logic [15:0] LcCtrlChipGen = 16'h 0000,
-  parameter logic [15:0] LcCtrlChipRev = 16'h 0000,
+  parameter logic [15:0] LcCtrlSiliconCreatorId = 16'h 4001,
+  parameter logic [15:0] LcCtrlProductId = 16'h 0001,
+  parameter logic [7:0] LcCtrlRevisionId = 8'h 01,
   parameter logic [31:0] LcCtrlIdcodeValue = jtag_id_pkg::LC_CTRL_JTAG_IDCODE,
   // parameters for alert_handler
   // parameters for spi_host0
@@ -1452,8 +1453,9 @@ module top_earlgrey #(
     .RndCnstLcKeymgrDivTestDevRma(RndCnstLcCtrlLcKeymgrDivTestDevRma),
     .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction),
     .RndCnstInvalidTokens(RndCnstLcCtrlInvalidTokens),
-    .ChipGen(LcCtrlChipGen),
-    .ChipRev(LcCtrlChipRev),
+    .SiliconCreatorId(LcCtrlSiliconCreatorId),
+    .ProductId(LcCtrlProductId),
+    .RevisionId(LcCtrlRevisionId),
     .IdcodeValue(LcCtrlIdcodeValue)
   ) u_lc_ctrl (
       // [16]: fatal_prog_error
