@@ -332,13 +332,22 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
                           .value(predict_otp_vendor_test_status()), .kind(UVM_PREDICT_READ)))
         end
 
-        "hw_rev": begin
+        "hw_revision0": begin
           `DV_CHECK_FATAL(
-              ral.hw_rev.chip_rev.predict(
-              .value(LcCtrlChipRev[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0]), .kind(UVM_PREDICT_READ)))
+              ral.hw_revision0.silicon_creator_id.predict(
+              .value(LcCtrlSiliconCreatorId[lc_ctrl_reg_pkg::SiliconCreatorIdWidth-1:0]),
+              .kind(UVM_PREDICT_READ)))
           `DV_CHECK_FATAL(
-              ral.hw_rev.chip_gen.predict(
-              .value(LcCtrlChipGen[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0]), .kind(UVM_PREDICT_READ)))
+              ral.hw_revision0.product_id.predict(
+              .value(LcCtrlProductId[lc_ctrl_reg_pkg::ProductIdWidth-1:0]),
+              .kind(UVM_PREDICT_READ)))
+        end
+
+        "hw_revision1": begin
+          `DV_CHECK_FATAL(
+              ral.hw_revision1.revision_id.predict(
+              .value(LcCtrlRevisionId[lc_ctrl_reg_pkg::RevisionIdWidth-1:0]),
+              .kind(UVM_PREDICT_READ)))
         end
 
         default: begin

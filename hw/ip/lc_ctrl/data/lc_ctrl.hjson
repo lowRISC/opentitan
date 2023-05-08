@@ -94,23 +94,42 @@
       randtype:  "data",
     }
     // Hardware revision, meant to be overridden at the top-level
-    { name:    "HwRevFieldWidth",
-      desc:    "Width of hardware revision fields.",
+    { name:    "SiliconCreatorIdWidth",
+      desc:    "Width of SiliconCreatorId revision field.",
       type:    "int",
       default: "16",
       local:   "true",
     }
-    { name:    "ChipGen",
+    { name:    "ProductIdWidth",
+      desc:    "Width of ProductId revision field.",
+      type:    "int",
+      default: "16",
+      local:   "true",
+    }
+    { name:    "RevisionIdWidth",
+      desc:    "Width of RevisionId revision field.",
+      type:    "int",
+      default: "8",
+      local:   "true",
+    }
+    { name:    "SiliconCreatorId",
       desc:    "Chip generation number.",
       type:    "logic [15:0]",
-      default: "16'h FFFF",
+      default: "'0",
       local:   "false",
       expose:  "true"
     }
-    { name:    "ChipRev",
+    { name:    "ProductId",
       desc:    "Chip revision number.",
       type:    "logic [15:0]",
-      default: "16'h FFFF",
+      default: "'0",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "RevisionId",
+      desc:    "Chip revision number.",
+      type:    "logic [7:0]",
+      default: "'0",
       local:   "false",
       expose:  "true"
     }
@@ -1137,11 +1156,9 @@
     ///////////////////////
     // Hardware Revision //
     ///////////////////////
-    { name:     "HW_REV",
+    { name:     "HW_REVISION0",
       desc:     '''
-                This register holds the 32bit hardware revision,
-                which is split into two 16bit fields holding the
-                CHIP_GEN and CHIP_REV numbers.
+                This register holds the SILICON_CREATOR_ID and the PRODUCT_ID.
                 '''
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1149,13 +1166,63 @@
       tags: [ // The value of this register is fixed and determined by HW.
               "excl:CsrAllTests:CsrExclCheck"],
       fields: [
-        { bits: "16+HwRevFieldWidth-1:16",
-          name: "CHIP_GEN"
-          desc: "Chip generation number."
+        { bits: "SiliconCreatorIdWidth+ProductIdWidth-1:ProductIdWidth",
+          name: "SILICON_CREATOR_ID"
+          desc: '''
+                ID of the silicon creator.
+                Assigned by the OpenTitan project.
+                Zero is an invalid value.
+                The encoding must follow the following range constraints:
+
+                0x0000: invalid value
+                0x0001 - 0x3FFF: reserved for use in the open-source OpenTitan project
+                0x4000 - 0x7FFF: reserved for real integrations of OpenTitan
+                0x8000 - 0xFFFF: reserved for future use
+                '''
         }
-        { bits: "HwRevFieldWidth-1:0",
-          name: "CHIP_REV"
-          desc: "Chip revision number."
+        { bits: "ProductIdWidth-1:0",
+          name: "PRODUCT_ID"
+          desc: '''
+                Used to identify a class of devices.
+                Assigned by the Silicon Creator.
+                Zero is an invalid value.
+                The encoding must follow the following range constraints:
+
+                0x0000: invalid value
+                0x0001 - 0x3FFF: reserved for discrete chip products
+                0x4000 - 0x7FFF: reserved for integrated IP products
+                0x8000 - 0xFFFF: reserved for future use
+                '''
+        }
+      ]
+    }
+    ///////////////////////
+    { name:     "HW_REVISION1",
+      desc:     '''
+                This register holds the REVISION_ID.
+                '''
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext:    "true",
+      tags: [ // The value of this register is fixed and determined by HW.
+              "excl:CsrAllTests:CsrExclCheck"],
+      fields: [
+        { bits: "RevisionIdWidth-1:0",
+          name: "REVISION_ID"
+          desc: '''
+                Product revision ID. Assigned by the Silicon Creator.
+                The encoding is not specified other than that different tapeouts must be assigned different revision numbers.
+                I.e., each base or metal layer respin must be reflected so that software can rely on it to modify firmware and driver behavior.
+                Zero is an invalid value.
+                '''
+        }
+        { bits: "31:RevisionIdWidth",
+          name: "RESERVED"
+          resval: 0
+          desc: '''
+                Reserved bits.
+                Set to zero.
+                '''
         }
       ]
     }

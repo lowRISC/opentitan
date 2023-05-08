@@ -1534,8 +1534,9 @@
       param_decl:
       {
         SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn
-        ChipGen: 16'h 0000
-        ChipRev: 16'h 0000
+        SiliconCreatorId: 16'h 4001
+        ProductId: 16'h 0001
+        RevisionId: 8'h 01
         IdcodeValue: jtag_id_pkg::LC_CTRL_JTAG_IDCODE
       }
       clock_connections:
@@ -1609,20 +1610,28 @@
           randwidth: 1024
         }
         {
-          name: ChipGen
+          name: SiliconCreatorId
           desc: Chip generation number.
           type: logic [15:0]
-          default: 16'h 0000
+          default: 16'h 4001
           expose: "true"
-          name_top: LcCtrlChipGen
+          name_top: LcCtrlSiliconCreatorId
         }
         {
-          name: ChipRev
+          name: ProductId
           desc: Chip revision number.
           type: logic [15:0]
-          default: 16'h 0000
+          default: 16'h 0001
           expose: "true"
-          name_top: LcCtrlChipRev
+          name_top: LcCtrlProductId
+        }
+        {
+          name: RevisionId
+          desc: Chip revision number.
+          type: logic [7:0]
+          default: 8'h 01
+          expose: "true"
+          name_top: LcCtrlRevisionId
         }
         {
           name: IdcodeValue

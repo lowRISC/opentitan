@@ -49,7 +49,7 @@ struct Opts {
 
     #[structopt(
         long, parse(try_from_str=u8::from_str),
-        default_value = "0x08",
+        default_value = "0x19",
         help = "JEDEC manufacturer product ID",
     )]
     jedec_product: u8,

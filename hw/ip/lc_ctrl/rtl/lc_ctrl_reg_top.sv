@@ -55,9 +55,9 @@ module lc_ctrl_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [33:0] reg_we_check;
+  logic [34:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(34)
+    .OneHotWidth(35)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -190,9 +190,12 @@ module lc_ctrl_reg_top (
   logic [4:0] lc_transition_cnt_qs;
   logic lc_id_state_re;
   logic [31:0] lc_id_state_qs;
-  logic hw_rev_re;
-  logic [15:0] hw_rev_chip_rev_qs;
-  logic [15:0] hw_rev_chip_gen_qs;
+  logic hw_revision0_re;
+  logic [15:0] hw_revision0_product_id_qs;
+  logic [15:0] hw_revision0_silicon_creator_id_qs;
+  logic hw_revision1_re;
+  logic [7:0] hw_revision1_revision_id_qs;
+  logic [23:0] hw_revision1_reserved_qs;
   logic device_id_0_re;
   logic [31:0] device_id_0_qs;
   logic device_id_1_re;
@@ -797,35 +800,67 @@ module lc_ctrl_reg_top (
   );
 
 
-  // R[hw_rev]: V(True)
-  //   F[chip_rev]: 15:0
+  // R[hw_revision0]: V(True)
+  //   F[product_id]: 15:0
   prim_subreg_ext #(
     .DW    (16)
-  ) u_hw_rev_chip_rev (
-    .re     (hw_rev_re),
+  ) u_hw_revision0_product_id (
+    .re     (hw_revision0_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.hw_rev.chip_rev.d),
+    .d      (hw2reg.hw_revision0.product_id.d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (hw_rev_chip_rev_qs)
+    .qs     (hw_revision0_product_id_qs)
   );
 
-  //   F[chip_gen]: 31:16
+  //   F[silicon_creator_id]: 31:16
   prim_subreg_ext #(
     .DW    (16)
-  ) u_hw_rev_chip_gen (
-    .re     (hw_rev_re),
+  ) u_hw_revision0_silicon_creator_id (
+    .re     (hw_revision0_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.hw_rev.chip_gen.d),
+    .d      (hw2reg.hw_revision0.silicon_creator_id.d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (hw_rev_chip_gen_qs)
+    .qs     (hw_revision0_silicon_creator_id_qs)
+  );
+
+
+  // R[hw_revision1]: V(True)
+  //   F[revision_id]: 7:0
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_hw_revision1_revision_id (
+    .re     (hw_revision1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_revision1.revision_id.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (hw_revision1_revision_id_qs)
+  );
+
+  //   F[reserved]: 31:8
+  prim_subreg_ext #(
+    .DW    (24)
+  ) u_hw_revision1_reserved (
+    .re     (hw_revision1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.hw_revision1.reserved.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (hw_revision1_reserved_qs)
   );
 
 
@@ -1102,7 +1137,7 @@ module lc_ctrl_reg_top (
 
 
 
-  logic [33:0] addr_hit;
+  logic [34:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == LC_CTRL_ALERT_TEST_OFFSET);
@@ -1122,23 +1157,24 @@ module lc_ctrl_reg_top (
     addr_hit[14] = (reg_addr == LC_CTRL_LC_STATE_OFFSET);
     addr_hit[15] = (reg_addr == LC_CTRL_LC_TRANSITION_CNT_OFFSET);
     addr_hit[16] = (reg_addr == LC_CTRL_LC_ID_STATE_OFFSET);
-    addr_hit[17] = (reg_addr == LC_CTRL_HW_REV_OFFSET);
-    addr_hit[18] = (reg_addr == LC_CTRL_DEVICE_ID_0_OFFSET);
-    addr_hit[19] = (reg_addr == LC_CTRL_DEVICE_ID_1_OFFSET);
-    addr_hit[20] = (reg_addr == LC_CTRL_DEVICE_ID_2_OFFSET);
-    addr_hit[21] = (reg_addr == LC_CTRL_DEVICE_ID_3_OFFSET);
-    addr_hit[22] = (reg_addr == LC_CTRL_DEVICE_ID_4_OFFSET);
-    addr_hit[23] = (reg_addr == LC_CTRL_DEVICE_ID_5_OFFSET);
-    addr_hit[24] = (reg_addr == LC_CTRL_DEVICE_ID_6_OFFSET);
-    addr_hit[25] = (reg_addr == LC_CTRL_DEVICE_ID_7_OFFSET);
-    addr_hit[26] = (reg_addr == LC_CTRL_MANUF_STATE_0_OFFSET);
-    addr_hit[27] = (reg_addr == LC_CTRL_MANUF_STATE_1_OFFSET);
-    addr_hit[28] = (reg_addr == LC_CTRL_MANUF_STATE_2_OFFSET);
-    addr_hit[29] = (reg_addr == LC_CTRL_MANUF_STATE_3_OFFSET);
-    addr_hit[30] = (reg_addr == LC_CTRL_MANUF_STATE_4_OFFSET);
-    addr_hit[31] = (reg_addr == LC_CTRL_MANUF_STATE_5_OFFSET);
-    addr_hit[32] = (reg_addr == LC_CTRL_MANUF_STATE_6_OFFSET);
-    addr_hit[33] = (reg_addr == LC_CTRL_MANUF_STATE_7_OFFSET);
+    addr_hit[17] = (reg_addr == LC_CTRL_HW_REVISION0_OFFSET);
+    addr_hit[18] = (reg_addr == LC_CTRL_HW_REVISION1_OFFSET);
+    addr_hit[19] = (reg_addr == LC_CTRL_DEVICE_ID_0_OFFSET);
+    addr_hit[20] = (reg_addr == LC_CTRL_DEVICE_ID_1_OFFSET);
+    addr_hit[21] = (reg_addr == LC_CTRL_DEVICE_ID_2_OFFSET);
+    addr_hit[22] = (reg_addr == LC_CTRL_DEVICE_ID_3_OFFSET);
+    addr_hit[23] = (reg_addr == LC_CTRL_DEVICE_ID_4_OFFSET);
+    addr_hit[24] = (reg_addr == LC_CTRL_DEVICE_ID_5_OFFSET);
+    addr_hit[25] = (reg_addr == LC_CTRL_DEVICE_ID_6_OFFSET);
+    addr_hit[26] = (reg_addr == LC_CTRL_DEVICE_ID_7_OFFSET);
+    addr_hit[27] = (reg_addr == LC_CTRL_MANUF_STATE_0_OFFSET);
+    addr_hit[28] = (reg_addr == LC_CTRL_MANUF_STATE_1_OFFSET);
+    addr_hit[29] = (reg_addr == LC_CTRL_MANUF_STATE_2_OFFSET);
+    addr_hit[30] = (reg_addr == LC_CTRL_MANUF_STATE_3_OFFSET);
+    addr_hit[31] = (reg_addr == LC_CTRL_MANUF_STATE_4_OFFSET);
+    addr_hit[32] = (reg_addr == LC_CTRL_MANUF_STATE_5_OFFSET);
+    addr_hit[33] = (reg_addr == LC_CTRL_MANUF_STATE_6_OFFSET);
+    addr_hit[34] = (reg_addr == LC_CTRL_MANUF_STATE_7_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1179,7 +1215,8 @@ module lc_ctrl_reg_top (
                (addr_hit[30] & (|(LC_CTRL_PERMIT[30] & ~reg_be))) |
                (addr_hit[31] & (|(LC_CTRL_PERMIT[31] & ~reg_be))) |
                (addr_hit[32] & (|(LC_CTRL_PERMIT[32] & ~reg_be))) |
-               (addr_hit[33] & (|(LC_CTRL_PERMIT[33] & ~reg_be)))));
+               (addr_hit[33] & (|(LC_CTRL_PERMIT[33] & ~reg_be))) |
+               (addr_hit[34] & (|(LC_CTRL_PERMIT[34] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -1236,23 +1273,24 @@ module lc_ctrl_reg_top (
   assign lc_state_re = addr_hit[14] & reg_re & !reg_error;
   assign lc_transition_cnt_re = addr_hit[15] & reg_re & !reg_error;
   assign lc_id_state_re = addr_hit[16] & reg_re & !reg_error;
-  assign hw_rev_re = addr_hit[17] & reg_re & !reg_error;
-  assign device_id_0_re = addr_hit[18] & reg_re & !reg_error;
-  assign device_id_1_re = addr_hit[19] & reg_re & !reg_error;
-  assign device_id_2_re = addr_hit[20] & reg_re & !reg_error;
-  assign device_id_3_re = addr_hit[21] & reg_re & !reg_error;
-  assign device_id_4_re = addr_hit[22] & reg_re & !reg_error;
-  assign device_id_5_re = addr_hit[23] & reg_re & !reg_error;
-  assign device_id_6_re = addr_hit[24] & reg_re & !reg_error;
-  assign device_id_7_re = addr_hit[25] & reg_re & !reg_error;
-  assign manuf_state_0_re = addr_hit[26] & reg_re & !reg_error;
-  assign manuf_state_1_re = addr_hit[27] & reg_re & !reg_error;
-  assign manuf_state_2_re = addr_hit[28] & reg_re & !reg_error;
-  assign manuf_state_3_re = addr_hit[29] & reg_re & !reg_error;
-  assign manuf_state_4_re = addr_hit[30] & reg_re & !reg_error;
-  assign manuf_state_5_re = addr_hit[31] & reg_re & !reg_error;
-  assign manuf_state_6_re = addr_hit[32] & reg_re & !reg_error;
-  assign manuf_state_7_re = addr_hit[33] & reg_re & !reg_error;
+  assign hw_revision0_re = addr_hit[17] & reg_re & !reg_error;
+  assign hw_revision1_re = addr_hit[18] & reg_re & !reg_error;
+  assign device_id_0_re = addr_hit[19] & reg_re & !reg_error;
+  assign device_id_1_re = addr_hit[20] & reg_re & !reg_error;
+  assign device_id_2_re = addr_hit[21] & reg_re & !reg_error;
+  assign device_id_3_re = addr_hit[22] & reg_re & !reg_error;
+  assign device_id_4_re = addr_hit[23] & reg_re & !reg_error;
+  assign device_id_5_re = addr_hit[24] & reg_re & !reg_error;
+  assign device_id_6_re = addr_hit[25] & reg_re & !reg_error;
+  assign device_id_7_re = addr_hit[26] & reg_re & !reg_error;
+  assign manuf_state_0_re = addr_hit[27] & reg_re & !reg_error;
+  assign manuf_state_1_re = addr_hit[28] & reg_re & !reg_error;
+  assign manuf_state_2_re = addr_hit[29] & reg_re & !reg_error;
+  assign manuf_state_3_re = addr_hit[30] & reg_re & !reg_error;
+  assign manuf_state_4_re = addr_hit[31] & reg_re & !reg_error;
+  assign manuf_state_5_re = addr_hit[32] & reg_re & !reg_error;
+  assign manuf_state_6_re = addr_hit[33] & reg_re & !reg_error;
+  assign manuf_state_7_re = addr_hit[34] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -1291,6 +1329,7 @@ module lc_ctrl_reg_top (
     reg_we_check[31] = 1'b0;
     reg_we_check[32] = 1'b0;
     reg_we_check[33] = 1'b0;
+    reg_we_check[34] = 1'b0;
   end
 
   // Read data return
@@ -1380,71 +1419,76 @@ module lc_ctrl_reg_top (
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[15:0] = hw_rev_chip_rev_qs;
-        reg_rdata_next[31:16] = hw_rev_chip_gen_qs;
+        reg_rdata_next[15:0] = hw_revision0_product_id_qs;
+        reg_rdata_next[31:16] = hw_revision0_silicon_creator_id_qs;
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[31:0] = device_id_0_qs;
+        reg_rdata_next[7:0] = hw_revision1_revision_id_qs;
+        reg_rdata_next[31:8] = hw_revision1_reserved_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[31:0] = device_id_1_qs;
+        reg_rdata_next[31:0] = device_id_0_qs;
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[31:0] = device_id_2_qs;
+        reg_rdata_next[31:0] = device_id_1_qs;
       end
 
       addr_hit[21]: begin
-        reg_rdata_next[31:0] = device_id_3_qs;
+        reg_rdata_next[31:0] = device_id_2_qs;
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[31:0] = device_id_4_qs;
+        reg_rdata_next[31:0] = device_id_3_qs;
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[31:0] = device_id_5_qs;
+        reg_rdata_next[31:0] = device_id_4_qs;
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[31:0] = device_id_6_qs;
+        reg_rdata_next[31:0] = device_id_5_qs;
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[31:0] = device_id_7_qs;
+        reg_rdata_next[31:0] = device_id_6_qs;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[31:0] = manuf_state_0_qs;
+        reg_rdata_next[31:0] = device_id_7_qs;
       end
 
       addr_hit[27]: begin
-        reg_rdata_next[31:0] = manuf_state_1_qs;
+        reg_rdata_next[31:0] = manuf_state_0_qs;
       end
 
       addr_hit[28]: begin
-        reg_rdata_next[31:0] = manuf_state_2_qs;
+        reg_rdata_next[31:0] = manuf_state_1_qs;
       end
 
       addr_hit[29]: begin
-        reg_rdata_next[31:0] = manuf_state_3_qs;
+        reg_rdata_next[31:0] = manuf_state_2_qs;
       end
 
       addr_hit[30]: begin
-        reg_rdata_next[31:0] = manuf_state_4_qs;
+        reg_rdata_next[31:0] = manuf_state_3_qs;
       end
 
       addr_hit[31]: begin
-        reg_rdata_next[31:0] = manuf_state_5_qs;
+        reg_rdata_next[31:0] = manuf_state_4_qs;
       end
 
       addr_hit[32]: begin
-        reg_rdata_next[31:0] = manuf_state_6_qs;
+        reg_rdata_next[31:0] = manuf_state_5_qs;
       end
 
       addr_hit[33]: begin
+        reg_rdata_next[31:0] = manuf_state_6_qs;
+      end
+
+      addr_hit[34]: begin
         reg_rdata_next[31:0] = manuf_state_7_qs;
       end
 

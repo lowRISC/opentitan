@@ -44,8 +44,11 @@ package lc_ctrl_env_pkg;
   parameter uint KMAC_FSM_WIDTH = 8;
 
   // Revision registers
-  parameter uint LcCtrlChipGen = `BUILD_SEED;
-  parameter uint LcCtrlChipRev = {LcCtrlChipGen[30:0], (LcCtrlChipGen[31] ^ LcCtrlChipGen[30])};
+  parameter uint LcCtrlSiliconCreatorId = `BUILD_SEED;
+  parameter uint LcCtrlProductId = {LcCtrlSiliconCreatorId[30:0],
+                                    (LcCtrlSiliconCreatorId[31] ^ LcCtrlSiliconCreatorId[30])};
+  parameter uint LcCtrlRevisionId = {LcCtrlProductId[30:0],
+                                    (LcCtrlProductId[31] ^ LcCtrlProductId[30])};
 
   typedef struct packed {
     lc_ctrl_pkg::lc_tx_t lc_dft_en_o;

@@ -77,7 +77,8 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     foreach (ral.device_id[i]) csr_rd(ral.device_id[i], val);
     foreach (ral.manuf_state[i]) csr_rd(ral.manuf_state[i], val);
     // Hardware revision reg
-    csr_rd(ral.hw_rev, val);
+    csr_rd(ral.hw_revision0, val);
+    csr_rd(ral.hw_revision1, val);
   endtask
 
 

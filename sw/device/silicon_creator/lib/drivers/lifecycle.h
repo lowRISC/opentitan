@@ -70,11 +70,13 @@ typedef struct lifecycle_device_id {
 /**
  * Hardware revision.
  *
- * Consists of a 16-bit chip generation and a 16-bit chip revision.
+ * Consists of a 16-bit silicon creator ID,
+ * a 16-bit product ID and an 8bit revision ID.
  */
 typedef struct lifecycle_hw_rev {
-  uint16_t chip_gen;
-  uint16_t chip_rev;
+  uint16_t silicon_creator_id;
+  uint16_t product_id;
+  uint8_t revision_id;
 } lifecycle_hw_rev_t;
 
 /**

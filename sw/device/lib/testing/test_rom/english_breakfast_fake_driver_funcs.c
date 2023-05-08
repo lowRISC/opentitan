@@ -17,8 +17,9 @@
 
 void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
   *hw_rev = (lifecycle_hw_rev_t){
-      .chip_gen = 0,
-      .chip_rev = 0,
+      .silicon_creator_id = 0,
+      .product_id = 0,
+      .revision_id = 0,
   };
 }
 

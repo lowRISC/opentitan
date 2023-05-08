@@ -280,8 +280,9 @@ typedef struct dif_lc_ctrl_token {
  * A 32-bit hardware revision number.
  */
 typedef struct {
-  uint16_t chip_gen;
-  uint16_t chip_rev;
+  uint16_t silicon_creator_id;
+  uint16_t product_id;
+  uint8_t revision_id;
 } dif_lc_ctrl_hw_rev_t;
 
 /**

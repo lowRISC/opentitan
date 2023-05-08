@@ -54,8 +54,10 @@ package lc_ctrl_pkg;
   typedef logic [LcKeymgrDivWidth-1:0] lc_keymgr_div_t;
 
   typedef struct packed {
-    logic [lc_ctrl_reg_pkg::HwRevFieldWidth-1:0] chip_gen;
-    logic [lc_ctrl_reg_pkg::HwRevFieldWidth-1:0] chip_rev;
+    logic [lc_ctrl_reg_pkg::SiliconCreatorIdWidth-1:0] silicon_creator_id;
+    logic [lc_ctrl_reg_pkg::ProductIdWidth-1:0]        product_id;
+    logic [lc_ctrl_reg_pkg::RevisionIdWidth-1:0]       revision_id;
+    logic [32-lc_ctrl_reg_pkg::RevisionIdWidth-1:0]    reserved;
   } lc_hw_rev_t;
 
   /////////////////////////////////////////////

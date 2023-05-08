@@ -107,8 +107,9 @@ module tb;
     .RndCnstLcKeymgrDivInvalid(RndCnstLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestDevRma(RndCnstLcKeymgrDivTestDevRma),
     .RndCnstLcKeymgrDivProduction(RndCnstLcKeymgrDivProduction),
-    .ChipGen(LcCtrlChipGen[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0]),
-    .ChipRev(LcCtrlChipRev[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0]),
+    .SiliconCreatorId(LcCtrlSiliconCreatorId[lc_ctrl_reg_pkg::SiliconCreatorIdWidth-1:0]),
+    .ProductId(LcCtrlProductId[lc_ctrl_reg_pkg::ProductIdWidth-1:0]),
+    .RevisionId(LcCtrlRevisionId[lc_ctrl_reg_pkg::RevisionIdWidth-1:0]),
     .SecVolatileRawUnlockEn(SecVolatileRawUnlockEn)
   ) dut (
     .clk_i (clk),
@@ -247,10 +248,17 @@ module tb;
 
   // Assertions
   // HW Revision
-  `ASSERT(HWChipGen_A, hw_rev_o.chip_gen == LcCtrlChipGen[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0],
-          clk, ~rst_n)
-  `ASSERT(HWChipRev_A, hw_rev_o.chip_rev == LcCtrlChipRev[lc_ctrl_reg_pkg::HwRevFieldWidth-1:0],
-          clk, ~rst_n)
+  `ASSERT(HwRevSiliconCreatorId_A, hw_rev_o.silicon_creator_id ==
+                       LcCtrlSiliconCreatorId[lc_ctrl_reg_pkg::SiliconCreatorIdWidth-1:0],
+                       clk, ~rst_n)
+  `ASSERT(HwRevProductId_A, hw_rev_o.product_id ==
+                       LcCtrlProductId[lc_ctrl_reg_pkg::ProductIdWidth-1:0],
+                       clk, ~rst_n)
+  `ASSERT(HwRevRevisionId_A, hw_rev_o.revision_id ==
+                       LcCtrlRevisionId[lc_ctrl_reg_pkg::RevisionIdWidth-1:0],
+                       clk, ~rst_n)
+  `ASSERT(HwRevReserved_A, hw_rev_o.reserved == '0,
+                       clk, ~rst_n)
 
 
   // Assertion controls

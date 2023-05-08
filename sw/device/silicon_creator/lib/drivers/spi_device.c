@@ -520,11 +520,12 @@ void spi_device_init(void) {
   // generation fields of the device ID (3 and 4 bits, respectively).
   lifecycle_hw_rev_t hw_rev;
   lifecycle_hw_rev_get(&hw_rev);
+  // TODO: hw_rev mapping may have to be updated.
   reg = bitfield_field32_write(0, SPI_DEVICE_DEV_ID_CHIP_REV_FIELD,
-                               hw_rev.chip_rev);
+                               hw_rev.revision_id);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_DEV_ID_ROM_BOOTSTRAP_BIT, true);
   reg = bitfield_field32_write(reg, SPI_DEVICE_DEV_ID_CHIP_GEN_FIELD,
-                               hw_rev.chip_gen);
+                               hw_rev.product_id);
   reg = bitfield_field32_write(reg, SPI_DEVICE_DEV_ID_DENSITY_FIELD,
                                kSpiDeviceJedecDensity);
   reg = bitfield_field32_write(reg, SPI_DEVICE_JEDEC_ID_MF_FIELD,

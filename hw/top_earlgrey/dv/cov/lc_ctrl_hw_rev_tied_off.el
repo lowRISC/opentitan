@@ -11,7 +11,11 @@
 //==================================================
 CHECKSUM: "3497701341 3193573764"
 INSTANCE: tb.dut.top_earlgrey.u_lc_ctrl
-ANNOTATION: "[UNR]: LcCtrlChipGen and LcCtrlChipRev are tied off to design parameters."
-Toggle hw_rev_o.chip_gen "logic hw_rev_o.chip_gen[15:0]"
-ANNOTATION: "[UNR]: LcCtrlChipGen and LcCtrlChipRev are tied off to design parameters."
-Toggle hw_rev_o.chip_rev "logic hw_rev_o.chip_rev[15:0]"
+ANNOTATION: "[UNR]: LcCtrlSiliconCreatorId and LcCtrlProductId and LcCtrlRevisionId are tied off to design parameters."
+Toggle hw_rev_o.silicon_creator_id "logic hw_rev_o.silicon_creator_id[15:0]"
+ANNOTATION: "[UNR]: LcCtrlSiliconCreatorId and LcCtrlProductId and LcCtrlRevisionId are tied off to design parameters."
+Toggle hw_rev_o.product_id "logic hw_rev_o.product_id[15:0]"
+ANNOTATION: "[UNR]: LcCtrlSiliconCreatorId and LcCtrlProductId and LcCtrlRevisionId are tied off to design parameters."
+Toggle hw_rev_o.revision_id "logic hw_rev_o.revision_id[7:0]"
+ANNOTATION: "[UNR]: LcCtrlSiliconCreatorId and LcCtrlProductId and LcCtrlRevisionId are tied off to design parameters."
+Toggle hw_rev_o.reserved "logic hw_rev_o.reserved[23:0]"
