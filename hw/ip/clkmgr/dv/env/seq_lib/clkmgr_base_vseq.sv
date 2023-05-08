@@ -372,7 +372,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   // This checks that when calibration is lost regwen should be re-enabled and measurements
   // disabled.
   task calibration_lost_checks();
-    ral.measure_ctrl_regwen.predict(1);
+    void'(ral.measure_ctrl_regwen.predict(1));
     csr_rd_check(.ptr(ral.measure_ctrl_regwen), .compare_value(1));
     foreach (ExpectedCounts[clk]) begin
       clk_mesr_e clk_mesr = clk_mesr_e'(clk);
