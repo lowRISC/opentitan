@@ -22,7 +22,9 @@ class i2c_target_perf_vseq extends i2c_target_smoke_vseq;
 
     thigh     == 3;
     tlow      == 8;
-    t_buf     == 1;
+    // tHoldStop must be at least 2 cycles which implies, t_r + t_buf - tsu_sta >= 2
+    // in order for stop condition to propogate to internal FSM via prim flop
+    t_buf     == tsu_sta - t_r + 2;
   }
 
 endclass
