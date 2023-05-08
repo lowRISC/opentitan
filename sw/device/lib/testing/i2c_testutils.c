@@ -42,10 +42,16 @@ const i2c_connect_conf_t i2c_conf[] = {
     {.pins_mio_out = {kTopEarlgreyPinmuxMioOutIoa7,
                       kTopEarlgreyPinmuxMioOutIoa8},
      .pins_insel = {kTopEarlgreyPinmuxInselIoa7, kTopEarlgreyPinmuxInselIoa8},
-     .pins_peripheral_in = {kTopEarlgreyPinmuxPeripheralInI2c0Scl,
-                            kTopEarlgreyPinmuxPeripheralInI2c0Sda},
-     .pins_outsel = {kTopEarlgreyPinmuxOutselI2c0Scl,
-                     kTopEarlgreyPinmuxOutselI2c0Sda}},
+     .pins_peripheral_in =
+         {
+             kTopEarlgreyPinmuxPeripheralInI2c0Sda,
+             kTopEarlgreyPinmuxPeripheralInI2c0Scl,
+         },
+     .pins_outsel =
+         {
+             kTopEarlgreyPinmuxOutselI2c0Sda,
+             kTopEarlgreyPinmuxOutselI2c0Scl,
+         }},
     {.pins_mio_out = {kTopEarlgreyPinmuxMioOutIob9,
                       kTopEarlgreyPinmuxMioOutIob10},
      .pins_insel = {kTopEarlgreyPinmuxInselIob9, kTopEarlgreyPinmuxInselIob10},

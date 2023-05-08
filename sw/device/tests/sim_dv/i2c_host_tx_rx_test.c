@@ -153,15 +153,15 @@ void config_i2c_with_index(void) {
 
       CHECK_DIF_OK(dif_pinmux_input_select(
           &pinmux, kTopEarlgreyPinmuxPeripheralInI2c0Scl,
-          kTopEarlgreyPinmuxInselIoa7));
+          kTopEarlgreyPinmuxInselIoa8));
       CHECK_DIF_OK(dif_pinmux_input_select(
           &pinmux, kTopEarlgreyPinmuxPeripheralInI2c0Sda,
-          kTopEarlgreyPinmuxInselIoa8));
-      CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                            kTopEarlgreyPinmuxMioOutIoa7,
-                                            kTopEarlgreyPinmuxOutselI2c0Scl));
+          kTopEarlgreyPinmuxInselIoa7));
       CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
                                             kTopEarlgreyPinmuxMioOutIoa8,
+                                            kTopEarlgreyPinmuxOutselI2c0Scl));
+      CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
+                                            kTopEarlgreyPinmuxMioOutIoa7,
                                             kTopEarlgreyPinmuxOutselI2c0Sda));
       break;
     case 1:

@@ -521,12 +521,12 @@ interface chip_if;
 
   // {ioa7, ioa8}, {iob9, iob10}, {iob11, iob12} are the i2c connections
   localparam int AssignedI2cSclIos [NUM_I2CS]  = {
-    top_earlgrey_pkg::MioPadIoa7,
+    top_earlgrey_pkg::MioPadIoa8,
     top_earlgrey_pkg::MioPadIob9,
     top_earlgrey_pkg::MioPadIob11
   };
   localparam int AssignedI2cSdaIos [NUM_I2CS] = {
-    top_earlgrey_pkg::MioPadIoa8,
+    top_earlgrey_pkg::MioPadIoa7,
     top_earlgrey_pkg::MioPadIob10,
     top_earlgrey_pkg::MioPadIob12
   };

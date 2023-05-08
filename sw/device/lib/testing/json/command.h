@@ -17,6 +17,7 @@ extern "C" {
     value(_, I2cTargetAddress) \
     value(_, I2cReadTransaction) \
     value(_, I2cWriteTransaction) \
+    value(_, I2cWriteTransactionSlow) \
     value(_, PinmuxConfig) \
     value(_, SpiConfigureJedecId) \
     value(_, SpiReadStatus) \
