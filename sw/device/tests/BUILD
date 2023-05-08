@@ -2388,8 +2388,8 @@ opentitan_functest(
         "i2c_target_test.c",
     ],
     cw310 = cw310_params(
-        # This test will need hyperdebug once we start using multi-lane
-        # SPI modes.
+        # This test needs hyperdebug to serve as I2C host to OpenTitan's
+        # I2C target device.
         interface = "hyper310",
         tags = ["manual"],
         test_cmds = [

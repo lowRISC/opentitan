@@ -43,8 +43,8 @@ set_property -dict { PACKAGE_PIN R26  IOSTANDARD LVCMOS33 } [get_ports { IOA5 }]
 # GPIO (PMOD1)
 set_property -dict { PACKAGE_PIN R25  IOSTANDARD LVCMOS33 } [get_ports { IOA6 }]; # PMOD1_IO5 (INT)
 # I2C (PMOD1)
-set_property -dict { PACKAGE_PIN P23  IOSTANDARD LVCMOS33 } [get_ports { IOA7 }]; # PMOD1_IO7 (SCL)
-set_property -dict { PACKAGE_PIN T23  IOSTANDARD LVCMOS33 }  [get_ports { IOA8 }]; # PMOD1_IO8 (SDA)
+set_property -dict { PACKAGE_PIN T23  IOSTANDARD LVCMOS33 } [get_ports { IOA7 }]; # PMOD1_IO8 (SDA)
+set_property -dict { PACKAGE_PIN P23  IOSTANDARD LVCMOS33 } [get_ports { IOA8 }]; # PMOD1_IO7 (SCL)
 
 ## IOB bank
 # Aux SPI host
