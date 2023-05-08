@@ -223,6 +223,19 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "sha384_functest",
+    srcs = ["sha384_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "sha512_functest",
     srcs = ["sha512_functest.c"],
     verilator = verilator_params(

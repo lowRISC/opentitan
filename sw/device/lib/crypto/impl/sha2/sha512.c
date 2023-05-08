@@ -41,6 +41,13 @@ typedef struct sha512_otbn_ctx {
   size_t num_blocks;
 } sha512_otbn_ctx_t;
 
+// Initial state for SHA-384 (see FIPS 180-4, section 5.3.4).
+static const uint32_t kSha384InitialState[] = {
+    0xcbbb9d5d, 0xc1059ed8, 0x629a292a, 0x367cd507, 0x9159015a, 0x3070dd17,
+    0x152fecd8, 0xf70e5939, 0x67332667, 0xffc00b31, 0x8eb44a87, 0x68581511,
+    0xdb0c2e0d, 0x64f98fa7, 0x47b5481d, 0xbefa4fa4,
+};
+
 // Initial state for SHA-512 (see FIPS 180-4, section 5.3.5).
 static const uint32_t kSha512InitialState[kSha512StateWords] = {
     0x6a09e667, 0xf3bcc908, 0xbb67ae85, 0x84caa73b, 0x3c6ef372, 0xfe94f82b,
@@ -65,6 +72,16 @@ static const otbn_addr_t kOtbnVarSha512NChunks =
 void sha512_init(sha512_state_t *state) {
   // Set the initial state.
   hardened_memcpy(state->H, kSha512InitialState, kSha512StateWords);
+  // Set the partial block to 0 (the value is ignored).
+  memset(state->partial_block, 0, sizeof(state->partial_block));
+  // Set the message length so far to 0.
+  state->total_len.lower = 0;
+  state->total_len.upper = 0;
+}
+
+void sha384_init(sha512_state_t *state) {
+  // Set the initial state.
+  hardened_memcpy(state->H, kSha384InitialState, kSha512StateWords);
   // Set the partial block to 0 (the value is ignored).
   memset(state->partial_block, 0, sizeof(state->partial_block));
   // Set the message length so far to 0.
@@ -333,7 +350,7 @@ static void state_shred(sha512_state_t *state) {
 }
 
 /**
- * Copy the final digest as a byte-string.
+ * Copy the final SHA-512 digest as a byte-string.
  *
  * SHA-512 intermediate computations use words in little-endian format, but the
  * FIPS 180-4 spec requires big-endian words (see section 3.1). Therefore, to
@@ -342,12 +359,31 @@ static void state_shred(sha512_state_t *state) {
  * @param state Context object.
  * @param[out] digest Destination buffer for digest.
  */
-static void digest_get(sha512_state_t *state, uint8_t *digest) {
+static void sha512_digest_get(sha512_state_t *state, uint8_t *digest) {
+  // Reverse the bytes in each word to match FIPS 180-4.
   for (size_t i = 0; i < kSha512StateWords; i++) {
     state->H[i] = __builtin_bswap32(state->H[i]);
   }
   // TODO(#17711): this can be `hardened_memcpy` if `digest` is aligned.
-  memcpy(digest, state->H, kSha512StateBytes);
+  memcpy(digest, state->H, kSha512DigestBytes);
+}
+
+/**
+ * Copy the final SHA-384 digest as a byte-string.
+ *
+ * The SHA-384 digest is formed the same was as SHA-512, but truncated to 384
+ * bits.
+ *
+ * @param state Context object.
+ * @param[out] digest Destination buffer for digest.
+ */
+static void sha384_digest_get(sha512_state_t *state, uint8_t *digest) {
+  // Reverse the bytes in each word to match FIPS 180-4.
+  for (size_t i = 0; i < kSha512StateWords; i++) {
+    state->H[i] = __builtin_bswap32(state->H[i]);
+  }
+  // TODO(#17711): this can be `hardened_memcpy` if `digest` is aligned.
+  memcpy(digest, state->H, kSha384DigestBytes);
 }
 
 status_t sha512_final(sha512_state_t *state, uint8_t *digest) {
@@ -355,7 +391,7 @@ status_t sha512_final(sha512_state_t *state, uint8_t *digest) {
   HARDENED_TRY(process_message(state, NULL, 0, kHardenedBoolTrue));
 
   // Copy the digest and then destroy the state.
-  digest_get(state, digest);
+  sha512_digest_get(state, digest);
   state_shred(state);
   return OTCRYPTO_OK;
 }
@@ -366,7 +402,34 @@ status_t sha512(const uint8_t *msg, const size_t msg_len, uint8_t *digest) {
 
   // Process data with padding enabled.
   HARDENED_TRY(process_message(&state, msg, msg_len, kHardenedBoolTrue));
-  digest_get(&state, digest);
+  sha512_digest_get(&state, digest);
+  state_shred(&state);
+  return OTCRYPTO_OK;
+}
+
+status_t sha384_update(sha384_state_t *state, const uint8_t *msg,
+                       const size_t msg_len) {
+  // An update for SHA-384 is exactly the same as for SHA-512.
+  return sha512_update(state, msg, msg_len);
+}
+
+status_t sha384_final(sha384_state_t *state, uint8_t *digest) {
+  // Construct padding.
+  HARDENED_TRY(process_message(state, NULL, 0, kHardenedBoolTrue));
+
+  // Copy the digest and then destroy the state.
+  sha384_digest_get(state, digest);
+  state_shred(state);
+  return OTCRYPTO_OK;
+}
+
+status_t sha384(const uint8_t *msg, const size_t msg_len, uint8_t *digest) {
+  sha384_state_t state;
+  sha384_init(&state);
+
+  // Process data with padding enabled.
+  HARDENED_TRY(process_message(&state, msg, msg_len, kHardenedBoolTrue));
+  sha384_digest_get(&state, digest);
   state_shred(&state);
   return OTCRYPTO_OK;
 }

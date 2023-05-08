@@ -18,14 +18,49 @@
 /**
  * Ensure that the hash context is large enough for the SHA-512 state struct.
  */
+static_assert(sizeof(hash_context_t) >= sizeof(sha384_state_t),
+              "hash_context_t must be big enough to hold sha384_state_t");
 static_assert(sizeof(hash_context_t) >= sizeof(sha512_state_t),
               "hash_context_t must be big enough to hold sha512_state_t");
 /**
  * Ensure that the SHA-512 state struct is suitable for `hardened_memcpy()`.
  */
+static_assert(sizeof(sha384_state_t) % sizeof(uint32_t) == 0,
+              "Size of sha384_state_t must be a multiple of the word size for "
+              "`hardened_memcpy()`");
 static_assert(sizeof(sha512_state_t) % sizeof(uint32_t) == 0,
               "Size of sha512_state_t must be a multiple of the word size for "
               "`hardened_memcpy()`");
+
+/**
+ * Save a SHA-384 state to a generic hash context.
+ *
+ * @param[out] ctx Generic hash context to copy to.
+ * @param state SHA-384 context object.
+ */
+static void sha384_state_save(hash_context_t *const restrict ctx,
+                              sha384_state_t *restrict state) {
+  // As per the `hardened_memcpy()` documentation, it is OK to cast to
+  // `uint32_t *` here as long as `state` is word-aligned, which it must be
+  // because all its fields are.
+  hardened_memcpy(ctx->data, (uint32_t *)state,
+                  sizeof(sha384_state_t) / sizeof(uint32_t));
+}
+
+/**
+ * Restore a SHA-384 state from a generic hash context.
+ *
+ * @param ctx Generic hash context to restore from.
+ * @param[out] state Destination SHA-384 context object.
+ */
+static void sha384_state_restore(hash_context_t *const restrict ctx,
+                                 sha384_state_t *restrict state) {
+  // As per the `hardened_memcpy()` documentation, it is OK to cast to
+  // `uint32_t *` here as long as `state` is word-aligned, which it must be
+  // because all its fields are.
+  hardened_memcpy((uint32_t *)state, ctx->data,
+                  sizeof(sha384_state_t) / sizeof(uint32_t));
+}
 
 /**
  * Save a SHA-512 state to a generic hash context.
@@ -158,8 +193,9 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
       OTCRYPTO_TRY_INTERPRET(sha256(input_message, digest));
       break;
     case kHashModeSha384:
-      // TODO: (#16410) Connect SHA2-384 implementation
-      return kCryptoStatusNotImplemented;
+      OTCRYPTO_TRY_INTERPRET(
+          sha384(input_message.data, input_message.len, digest->data));
+      break;
     case kHashModeSha512:
       OTCRYPTO_TRY_INTERPRET(
           sha512(input_message.data, input_message.len, digest->data));
@@ -222,9 +258,12 @@ crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
     case kHashModeSha256:
       // TODO: (#16410) Connect SHA2-256 streaming implementation
       return kCryptoStatusNotImplemented;
-    case kHashModeSha384:
-      // TODO: (#16410) Connect SHA2-384 implementation
-      return kCryptoStatusNotImplemented;
+    case kHashModeSha384: {
+      sha384_state_t state;
+      sha384_init(&state);
+      sha384_state_save(ctx, &state);
+      break;
+    }
     case kHashModeSha512: {
       sha512_state_t state;
       sha512_init(&state);
@@ -249,9 +288,14 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
     case kHashModeSha256:
       // TODO: (#16410) Connect SHA2-256 streaming implementation
       return kCryptoStatusNotImplemented;
-    case kHashModeSha384:
-      // TODO: (#16410) Connect SHA2-384 implementation
-      return kCryptoStatusNotImplemented;
+    case kHashModeSha384: {
+      sha384_state_t state;
+      sha384_state_restore(ctx, &state);
+      OTCRYPTO_TRY_INTERPRET(
+          sha384_update(&state, input_message.data, input_message.len));
+      sha384_state_save(ctx, &state);
+      break;
+    }
     case kHashModeSha512: {
       sha512_state_t state;
       sha512_state_restore(ctx, &state);
@@ -285,9 +329,12 @@ crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
     case kHashModeSha256:
       // TODO: (#16410) Connect SHA2-256 streaming implementation
       return kCryptoStatusNotImplemented;
-    case kHashModeSha384:
-      // TODO: (#16410) Connect SHA2-384 implementation
-      return kCryptoStatusNotImplemented;
+    case kHashModeSha384: {
+      sha384_state_t state;
+      sha384_state_restore(ctx, &state);
+      OTCRYPTO_TRY_INTERPRET(sha384_final(&state, digest->data));
+      break;
+    }
     case kHashModeSha512: {
       sha512_state_t state;
       sha512_state_restore(ctx, &state);
