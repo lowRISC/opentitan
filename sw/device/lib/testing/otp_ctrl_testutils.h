@@ -51,9 +51,9 @@ status_t otp_ctrl_testutils_lock_partition(const dif_otp_ctrl_t *otp,
  * @return OK_STATUS on successful read.
  */
 OT_WARN_UNUSED_RESULT
-static status_t otp_ctrl_testutils_dai_read32(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint32_t address, uint32_t *result);
+status_t otp_ctrl_testutils_dai_read32(const dif_otp_ctrl_t *otp,
+                                       dif_otp_ctrl_partition_t partition,
+                                       uint32_t address, uint32_t *result);
 
 /**
  * Reads a 64bit value from OTP using the DAI interface.
@@ -66,9 +66,9 @@ static status_t otp_ctrl_testutils_dai_read32(
  * @return OK_STATUS on successful read.
  */
 OT_WARN_UNUSED_RESULT
-static status_t otp_ctrl_testutils_dai_read64(
-    const dif_otp_ctrl_t *otp, dif_otp_ctrl_partition_t partition,
-    uint32_t address, uint64_t *result);
+status_t otp_ctrl_testutils_dai_read64(const dif_otp_ctrl_t *otp,
+                                       dif_otp_ctrl_partition_t partition,
+                                       uint32_t address, uint64_t *result);
 
 /**
  * Writes `len` number of 32bit words from buffer into otp `partition` starting
