@@ -2311,7 +2311,6 @@ opentitan_functest(
         test_cmds = [
             "--rom-kind=rom",
             "--bitstream=\"$(rootpath {bitstream})\"",
-            "--bootstrap=\"$(rootpath {flash})\"",
         ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
