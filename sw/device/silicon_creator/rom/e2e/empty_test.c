@@ -9,6 +9,7 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
+#include "sw/device/silicon_creator/lib/sigverify/spx_verify.h"
 
 #include "otp_ctrl_regs.h"
 

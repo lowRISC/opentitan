@@ -129,6 +129,7 @@ opentitan_functest(
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
     ],
 )
 
@@ -148,6 +149,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
     ],
 ) for slot in SLOTS]
 
@@ -500,7 +502,10 @@ opentitan_functest(
         ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    keyset = RSA_ONLY_KEYSETS[0],
+    keyset = get_keysets_for_lc_state(
+        CONST.LCV.PROD,
+        spx = None,
+    )[0],
     targets = ["cw310_rom"],
     test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
     deps = [
@@ -557,6 +562,10 @@ opentitan_functest(
                 "--otp-unprogrammed",
             ],
         ),
+        keyset = get_keysets_for_lc_state(
+            lc_state_val,
+            spx = None,
+        )[0],
         signed = True,
         targets = ["cw310_rom"],
         test_harness = "//sw/host/tests/rom/e2e_chip_specific_startup",
@@ -819,6 +828,7 @@ SEC_VERS = [
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
     ],
 ) for slot in SLOTS for sec_ver in SEC_VERS]
 
@@ -1113,7 +1123,12 @@ WATCHDOG_OTP = {
             bitstream = WATCHDOG_BITSTREAM[otp_config].format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
+        keyset = get_keysets_for_lc_state(
+            lc_state_val,
+            spx = None,
+        )[0],
         ot_flash_binary = ":test_watchdog_{}".format(WATCHDOG_TEST_CASES[otp_config][lc_state]),
+        signed = True,
         targets = [
             "cw310_rom",
             "verilator",
@@ -1395,6 +1410,7 @@ opentitan_flash_binary(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
     ],
 )
 
@@ -1458,7 +1474,12 @@ opentitan_flash_binary(
             exit_success = t["exit_success"][lc_state],
             tags = maybe_skip_in_ci(lc_state_val),
         ),
+        keyset = get_keysets_for_lc_state(
+            lc_state_val,
+            spx = None,
+        )[0],
         ot_flash_binary = ":empty_test_sigverify_mod_exp",
+        signed = True,
         targets = ["cw310_rom"],
     )
     for lc_state, lc_state_val in get_lc_items()
@@ -1622,6 +1643,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
     ],
 ) for t in BOOT_POLICY_BAD_MANIFEST_CASES for slot in SLOTS]
 
@@ -1875,6 +1897,7 @@ BOOT_DATA_RECOVERY_CASES = [
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
     ],
 ) for case in BOOT_DATA_RECOVERY_CASES]
 
@@ -1927,26 +1950,28 @@ SHUTDOWN_WATCHDOG_BITE_THRESHOLDS = [
 
 SHUTDOWN_WATCHDOG_CASES = [
     {
-        "lc_state": lc_state,
+        "lc_state": lc_state[0],
+        "lc_state_val": lc_state[1],
         "exit_success": "Returning after 1 seconds",
         "bite_threshold": bite_threshold,
     }
-    for lc_state in [
-        "test_unlocked0",
-        "rma",
-    ]
+    for lc_state in get_lc_items(
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.RMA,
+    )
     for bite_threshold in SHUTDOWN_WATCHDOG_BITE_THRESHOLDS
 ] + [
     {
-        "lc_state": lc_state,
+        "lc_state": lc_state[0],
+        "lc_state_val": lc_state[1],
         "exit_success": "Returning after 1 seconds" if bite_threshold == 0 else "I00000[^\r\n]*\r\nROM:[0-9a-f]{8}\r\n",
         "bite_threshold": bite_threshold,
     }
-    for lc_state in [
-        "dev",
-        "prod",
-        "prod_end",
-    ]
+    for lc_state in get_lc_items(
+        CONST.LCV.DEV,
+        CONST.LCV.PROD,
+        CONST.LCV.PROD_END,
+    )
     for bite_threshold in SHUTDOWN_WATCHDOG_BITE_THRESHOLDS
 ]
 
@@ -2019,6 +2044,10 @@ SHUTDOWN_WATCHDOG_CASES = [
                 t["lc_state"].upper(),
             )),
         ),
+        keyset = get_keysets_for_lc_state(
+            t["lc_state_val"],
+            spx = None,
+        )[0],
         local_defines = [
             "HANG_SECS=1",
         ],
@@ -2390,6 +2419,7 @@ SRAM_JTAG_INJECTION_GDB_SCRIPT = """
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
         ],
     )
     for lc_state, _ in get_lc_items(
@@ -2867,6 +2897,7 @@ REDACT.update({"INVALID": 0x0})
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
@@ -3178,7 +3209,7 @@ otp_json(
     opentitan_functest(
         name = "sigverify_key_validity_{}_{}".format(
             lc_state,
-            key,
+            key.rsa.name,
         ),
         cw310 = cw310_params(
             bitstream = ":bitstream_sigverify_key_validity_{}".format(lc_state),
@@ -3199,7 +3230,7 @@ otp_json(
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
-    for key in [key.rsa.name for key in RSA_ONLY_KEYSETS]
+    for key in filter_keysets_for_lc_state(RSA_ONLY_KEYSETS, lc_state_val)
 ]
 
 test_suite(
@@ -3456,6 +3487,10 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
         exit_success = t["exit_success"],
         tags = maybe_skip_in_ci(t["lc_state_val"]),
     ),
+    keyset = get_keysets_for_lc_state(
+        t["lc_state_val"],
+        spx = None,
+    )[0],
     manifest = manifest(
         dict(
             t["manifest"],
@@ -3469,6 +3504,7 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
     ],
 ) for t in test_cases]
 
@@ -3797,6 +3833,10 @@ otp_json(
             clear_bitstream = True,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
+        keyset = get_keysets_for_lc_state(
+            lc_state_val,
+            spx = None,
+        )[0],
         manifest = ":manifest_rom_ext_upgrade_interrupt",
         targets = [
             "cw310_rom",
@@ -3846,11 +3886,11 @@ SIGVERIFY_SPX_CASES = [
         "spx_en": 0,
         "exit_success": dicts.add(
             {
-                lc_state: "spx_en=0x00000000, spx_key_en=0x4ba5a5a5a5a5a5a5"
+                lc_state: "spx_en=0x00000000, spx_en_otp=0x00000000, spx_key_en=0x4ba5a5a5a5a5a5a5"
                 for lc_state in SPX_OTP_LC_STATES
             },
             {
-                lc_state: "spx_en=0x8d6c8c17, spx_key_en=0x4ba5a5a5a5a5a5a5"
+                lc_state: "spx_en=0x8d6c8c17, spx_en_otp=0x00000000, spx_key_en=0x4ba5a5a5a5a5a5a5"
                 for lc_state in SPX_DISABLED_LC_STATES
             },
         ),
@@ -3860,11 +3900,11 @@ SIGVERIFY_SPX_CASES = [
         "spx_en": CONST.TRUE,
         "exit_success": dicts.add(
             {
-                lc_state: "spx_en=0x00000739, spx_key_en=0x4ba5a5a5a5a5a5a5"
+                lc_state: "spx_en=0x00000739, spx_en_otp=0x00000739, spx_key_en=0x4ba5a5a5a5a5a5a5"
                 for lc_state in SPX_OTP_LC_STATES
             },
             {
-                lc_state: "spx_en=0x8d6c8c17, spx_key_en=0x4ba5a5a5a5a5a5a5"
+                lc_state: "spx_en=0x8d6c8c17, spx_en_otp=0x00000739, spx_key_en=0x4ba5a5a5a5a5a5a5"
                 for lc_state in SPX_DISABLED_LC_STATES
             },
         ),
@@ -3873,7 +3913,7 @@ SIGVERIFY_SPX_CASES = [
         "name": "disabled",
         "spx_en": CONST.SPX_DISABLED,
         "exit_success": {
-            lc_state: "spx_en=0x8d6c8c17, spx_key_en=0x4ba5a5a5a5a5a5a5"
+            lc_state: "spx_en=0x8d6c8c17, spx_en_otp=0x8d6c8c17, spx_key_en=0x4ba5a5a5a5a5a5a5"
             for lc_state in SPX_OTP_LC_STATES + SPX_DISABLED_LC_STATES
         },
     },
@@ -3888,7 +3928,8 @@ opentitan_flash_binary(
         "sim_dv",
     ],
     local_defines = [
-        shell.quote("EMPTY_TEST_MSG=\"spx_en=0x%08x, spx_key_en=0x%08x%08x\", " +
+        shell.quote("EMPTY_TEST_MSG=\"spx_en=0x%08x, spx_en_otp=0x%08x, spx_key_en=0x%08x%08x\", " +
+                    "sigverify_spx_verify_enabled(lifecycle_state_get()), " +
                     "otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_SPX_EN_OFFSET), " +
                     "otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN_OFFSET + sizeof(uint32_t)), " +
                     "otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN_OFFSET)"),
@@ -3901,6 +3942,7 @@ opentitan_flash_binary(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
     ],
 )
 
