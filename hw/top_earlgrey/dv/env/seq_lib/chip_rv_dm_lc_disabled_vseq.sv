@@ -38,7 +38,7 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
 
   virtual task pre_start();
     // Select RV_DM TAP via the TAP straps.
-    cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
+    cfg.select_jtag = JtagTapRvDm;
     super.pre_start();
     max_outstanding_accesses = 1;
   endtask
