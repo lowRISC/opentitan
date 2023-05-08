@@ -121,3 +121,7 @@ nonhermetic_repo(name = "nonhermetic")
 # Binary firmware image for HyperDebug
 load("//third_party/hyperdebug:repos.bzl", "hyperdebug_repos")
 hyperdebug_repos()
+
+# Bazel skylib library
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+bazel_skylib_workspace()
