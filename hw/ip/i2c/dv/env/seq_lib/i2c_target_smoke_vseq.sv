@@ -18,6 +18,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
 
     solve t_r, tsu_dat, thd_dat before tlow;
     solve t_r                   before t_buf;
+    solve tsu_sta               before t_buf;
     solve t_f, thigh            before t_sda_unstable, t_sda_interference;
     if (program_incorrect_regs) {
       // force derived timing parameters to be negative (incorrect DUT config)
@@ -40,6 +41,9 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
       t_sda_unstable     inside {[0 : t_r + thigh + t_f - 1]};
       t_sda_interference inside {[0 : t_r + thigh + t_f - 1]};
       t_scl_interference inside {[0 : t_r + thigh + t_f - 1]};
+      // tHoldStop must be at least 2 cycles which implies, t_r + t_buf - tsu_sta >= 2
+      // in order for stop condition to propogate to internal FSM via prim flop
+      t_buf >= tsu_sta - t_r + 2;
     }
   }
 
