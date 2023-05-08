@@ -289,18 +289,22 @@ impl OpenOcdServer {
         })
     }
 
-    fn write_memory_impl<T: ToString>(&self, addr: u32, buf: &[T]) -> Result<()> {
-        // Convert data to space-separated strings.
-        let data: Vec<_> = buf.iter().map(ToString::to_string).collect();
-        let data_str = &data[..].join(" ");
-        // See [read_memory] about physical addresses
-        let cmd = format!(
-            "write_memory 0x{addr:x} {width} {{ {data_str} }} phys",
-            width = 8 * size_of::<T>()
-        );
-        let response = self.send_tcl_cmd(cmd.as_str())?;
-        if !response.is_empty() {
-            bail!("unexpected response: '{response}'");
+    fn write_memory_impl<T: ToString>(&self, addr: u32, bigbuf: &[T]) -> Result<()> {
+        const CHUNK_SIZE: usize = 1024;
+        for (idx, buf) in bigbuf.chunks(CHUNK_SIZE).enumerate() {
+            // Convert data to space-separated strings.
+            let data: Vec<_> = buf.iter().map(ToString::to_string).collect();
+            let data_str = &data[..].join(" ");
+            // See [read_memory] about physical addresses
+            let cmd = format!(
+                "write_memory 0x{chunk_addr:x} {width} {{ {data_str} }} phys",
+                chunk_addr = addr + (idx * CHUNK_SIZE * size_of::<T>()) as u32,
+                width = 8 * size_of::<T>()
+            );
+            let response = self.send_tcl_cmd(cmd.as_str())?;
+            if !response.is_empty() {
+                bail!("unexpected response: '{response}'");
+            }
         }
 
         Ok(())
