@@ -35,21 +35,21 @@ main:
 /* Message (already padded). */
 .balign 32
 msg:
-.word 0x61626364
-.word 0x62636465
-.word 0x63646566
-.word 0x64656667
-.word 0x65666768
-.word 0x66676869
-.word 0x6768696A
-.word 0x68696A6B
-.word 0x696A6B6C
-.word 0x6A6B6C6D
-.word 0x6B6C6D6E
-.word 0x6C6D6E6F
-.word 0x6D6E6F70
-.word 0x6E6F7071
-.word 0x80000000
+.word 0x64636261
+.word 0x65646362
+.word 0x66656463
+.word 0x67666564
+.word 0x68676665
+.word 0x69686766
+.word 0x6A696867
+.word 0x6B6A6968
+.word 0x6C6B6A69
+.word 0x6D6C6B6A
+.word 0x6E6D6C6B
+.word 0x6F6E6D6C
+.word 0x706F6E6D
+.word 0x71706F6E
+.word 0x00000080
 .word 0x00000000
 .word 0x00000000
 .word 0x00000000
@@ -66,7 +66,7 @@ msg:
 .word 0x00000000
 .word 0x00000000
 .word 0x00000000
-.word 0x000001C0
+.word 0xC0010000
 
 /**
  * Starting hash state (initial values for SHA-256).

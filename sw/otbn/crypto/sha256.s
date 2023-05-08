@@ -11,6 +11,9 @@
  * The caller must have already padded the message and initialized the hash state
  * before calling this function.
  *
+ * This routine expects the message in the same byte-order as FIPS 180-4 (fully
+ * big-endian).
+ *
  * This routine runs in constant time.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
@@ -20,7 +23,7 @@
  * @param[in]  dmem[state]: Initial hash state (256 bits)
  * @param[out] dmem[state]: Final hash state (256 bits)
  *
- * clobbered registers: x2, x3, x10 to x12, x21, x22, w20 to w28, w30
+ * clobbered registers: x2, x3, x10 to x12, x21 to x23, w20 to w30
  * clobbered flag groups: FG0
  */
 sha256:
@@ -34,9 +37,11 @@ sha256:
 
   /* Initialize constant wide-register pointers.
        x21 <= 21
-       x22 <= 22 */
+       x22 <= 22
+       x23 <= 23 */
   li       x21, 21
   li       x22, 22
+  li       x23, 23
 
   /* Load the current hash state.
        w30 <= dmem[state] */
@@ -44,12 +49,23 @@ sha256:
   la       x3, state
   bn.lid   x2, 0(x3)
 
+  /* Load the specialized mask for byte-swaps.
+       w29 <= 0x000000ff000000ff000000ff... */
+  la       x2, bswap32_mask
+  li       x3, 29
+  bn.lid   x3, 0(x2)
+
   /* Repeat the compression function for each chunk of the message. */
-  loop     x30, 4
-    /* Load the next 512 bits of the message.
-         w21, w21 <= dmem[x10..x10+64] */
-    bn.lid   x21, 0(x10++)
-    bn.lid   x22, 0(x10++)
+  loop     x30, 8
+    /* Load the next 512 bits of the message and reverse word-endianness.
+         w21 <= bswap32(dmem[x10])
+         w22 <= bswap32(dmem[x10 + 32]) */
+    bn.lid   x23, 0(x10++)
+    jal      x1, bswap32_w23
+    bn.movr  x21, x23
+    bn.lid   x23, 0(x10++)
+    jal      x1, bswap32_w23
+    bn.movr  x22, x23
 
     /* Run the per-block function and update the hash state.
          w30 <= sha256_process_block(w30, w22 || w21) */
@@ -64,6 +80,40 @@ sha256:
 
   ret
 
+/**
+ * Flip the bytes in each 32-bit word of a 256-bit value.
+ *
+ * This is useful for big-endian/little-endian conversions. FIPS 180-4 uses
+ * big-endian integer representation, and OTBN uses little-endian.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in,out]   w23: Wide register to flip (modified in-place).
+ * @param[in]       w29: Byte-swap mask (0x000000ff, repeated 8x).
+ *
+ * clobbered registers: w23 to w27
+ * clobbered flag groups: FG0
+ */
+bswap32_w23:
+  /* Isolate each byte of each 32-bit word.
+       w24 <= byte 0 of each word = a
+       w25 <= byte 1 of each word = b
+       w26 <= byte 2 of each word = c
+       w27 <= byte 3 of each word = d */
+  bn.and   w24, w29, w23
+  bn.and   w25, w29, w23 >> 8
+  bn.and   w26, w29, w23 >> 16
+  bn.and   w27, w29, w23 >> 24
+
+  /* Shift/or the bytes back in reversed order.
+       w23 <= a || b || c || d */
+  bn.or    w23, w25, w24 << 8
+  bn.or    w23, w26, w23 << 8
+  bn.or    w23, w27, w23 << 8
+
+  ret
 
 /**
  * Performs the core SHA-256 hash computation from FIPS 180-4, section 6.2.2.
@@ -364,6 +414,18 @@ sha256_W:
 .zero 256
 
 .data
+
+/* Specialized mask for wide word byte-swaps. */
+.balign 32
+bswap32_mask:
+.word 0x000000ff
+.word 0x000000ff
+.word 0x000000ff
+.word 0x000000ff
+.word 0x000000ff
+.word 0x000000ff
+.word 0x000000ff
+.word 0x000000ff
 
 /* Round constants (from FIPS 180-4 section 4.2.2). */
 .balign 32
