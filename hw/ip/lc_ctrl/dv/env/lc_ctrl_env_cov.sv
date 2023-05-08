@@ -35,6 +35,14 @@ class lc_ctrl_env_cov extends cip_base_env_cov #(
 
   // covergroups
 
+  // Volatile raw unlock coverpoint
+  covergroup volatile_raw_unlock_cg with function sample(bit success);
+    volatile_raw_unlock_cp: coverpoint success {
+      bins success = {1};
+      bins fail    = {0};
+    }
+  endgroup : volatile_raw_unlock_cg
+
   // Error injections
   covergroup err_inj_cg;
 
@@ -110,6 +118,7 @@ class lc_ctrl_env_cov extends cip_base_env_cov #(
   function new(string name, uvm_component parent);
     super.new(name, parent);
     err_inj_cg = new();
+    volatile_raw_unlock_cg = new();
   endfunction : new
 
   virtual function void sample_cov();
