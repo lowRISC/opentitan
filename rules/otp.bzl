@@ -37,7 +37,9 @@ format expected by the image generation tool.
 """
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("//rules:host.bzl", "host_tools_transition")
+load("//rules:const.bzl", "CONST", "hex", "hex_digits")
 
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
@@ -348,3 +350,62 @@ STD_OTP_OVERLAYS = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
     "//hw/ip/otp_ctrl/data:otp_json_secret1",
     "//hw/ip/otp_ctrl/data:otp_json_secret2_unlocked",
 ]
+
+def otp_hex(v):
+    return hex(v)
+
+def otp_bytestring(byte_list):
+    val = 0
+    for b in reversed(byte_list):
+        if b >= (1 << 8):
+            fail("All elements in the byte list must be <= 0xff")
+        val = (val << 8) | b
+    return hex(val, width = 8 * len(byte_list))
+
+def alert(prod, prod_end, dev, rma):
+    """Given an alert class for each LC state, returns the oty_bytestring encoding"""
+    return otp_bytestring([getattr(CONST.ALERT, "CLASS_{}".format(c)) for c in (prod, prod_end, dev, rma)])
+
+def otp_alert_classification(alert_list, default = None, **kwargs):
+    """Create an array specifying the alert classifications.
+
+    This function creates an array of bytestrings that specifies the alert
+    classification for each alert within each lifecycle state.
+
+    Args:
+        alert_list: list of all supported alerts in the order required by the
+            OTP. Alert lists can be found in const.bzl.
+        default: default classification for all alerts that are not specified
+            in kwargs. If kwargs does not include all alerts, a value must be
+            specified for default.
+        kwargs: a mapping of the format 'alert_name = alert_class_bytestring'.
+            The alert_class_bytestring can be generated with the `alert` macro.
+
+    Returns:
+        Alert classification specification as a list of num_alerts bytestrings.
+
+    Example usage:
+        otp_earlgrey_alert_classification(
+            alert_list = CONST.EARLGREY_ALERTS,
+            default = alert(prod = "X", prod_end = "X", dev = "X", rma = "X"),
+            uart0_fatal_fault = alert(prod = "A", prod_end = "B", dev = "C", rma = "D"),
+            uart1_fatal_fault = alert(prod = "A", prod_end = "B", dev = "C", rma = "D"),
+            ...
+        )
+    """
+
+    alert_set = sets.make(alert_list)
+    provided_alerts = sets.make(kwargs.keys())
+
+    # Provided alerts must not have any unknown alerts
+    unknown_alerts = sets.difference(provided_alerts, alert_set)
+    if sets.length(unknown_alerts) > 0:
+        fail("Some provided alerts are not known by this macro: {}".format(unknown_alerts))
+
+    # If a default is not provided, the provided alerts must match exactly with the alert_set
+    if default == None:
+        extra_alerts = sets.difference(alert_set, provided_alerts)
+        if sets.length(extra_alerts) > 0:
+            fail("Some alerts were not specified and no default was provided: {}".format(extra_alerts))
+
+    return [kwargs.get(alert, default = default) for alert in alert_list]
