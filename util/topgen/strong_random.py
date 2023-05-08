@@ -35,7 +35,8 @@ class strong_random():
             log.error("Entropy buffer " + input_file +
                       " can't be loaded twice.")
             sys.exit(1)
-
+        # Clear buffer before loading a file.
+        self.buffer.clear()
         with open(input_file, 'r') as fp:
             for line in fp:
                 x = int(line)
