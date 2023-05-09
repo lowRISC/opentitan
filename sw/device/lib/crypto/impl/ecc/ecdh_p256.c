@@ -33,8 +33,6 @@ static const otbn_addr_t kOtbnVarEcdhD1 = OTBN_ADDR_T_INIT(p256_ecdh, d1);
 static const uint32_t kOtbnEcdhModeWords = 1;
 static const uint32_t kOtbnEcdhModeKeypairRandom = 0x3f1;
 static const uint32_t kOtbnEcdhModeSharedKey = 0x5ec;
-static const uint32_t kOtbnEcdhModeKeypairFromSeed = 0x29f;
-static const uint32_t kOtbnEcdhModeSharedKeyFromSeed = 0x74b;
 
 status_t ecdh_p256_keypair_start(void) {
   // Load the ECDSA/P-256 app. Fails if OTBN is non-idle.

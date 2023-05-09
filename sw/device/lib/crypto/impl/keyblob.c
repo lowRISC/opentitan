@@ -95,8 +95,9 @@ void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
  */
 static status_t ensure_symmetric(const crypto_key_config_t config) {
   // Get the key type from the top 16 bits of the full mode.
-  key_type_t key_type = (key_type_t)(launder32(config.key_mode) >> 16);
-  int32_t result = launder32(OTCRYPTO_OK.value ^ key_type);
+  key_type_t key_type =
+      (key_type_t)(launder32((uint32_t)config.key_mode) >> 16);
+  int32_t result = (int32_t)launder32((uint32_t)(OTCRYPTO_OK.value ^ key_type));
   switch (launder32(key_type)) {
     case kKeyTypeAes:
       HARDENED_CHECK_EQ(key_type, kKeyTypeAes);
