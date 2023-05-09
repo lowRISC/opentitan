@@ -224,10 +224,12 @@ static dif_result_t kmac_msg_start(dif_kmac_mode_kmac_t mode, size_t l,
     // Run LFSR for 32 steps to ensure that all state bits are updated.
     const uint32_t a = sca_next_lfsr(32);
     mmio_region_write32(kmac.base_addr,
-                        KMAC_KEY_SHARE0_0_REG_OFFSET + i * sizeof(uint32_t),
+                        KMAC_KEY_SHARE0_0_REG_OFFSET +
+                            (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
                         k->share0[i] ^ a);
     mmio_region_write32(kmac.base_addr,
-                        KMAC_KEY_SHARE1_0_REG_OFFSET + i * sizeof(uint32_t),
+                        KMAC_KEY_SHARE1_0_REG_OFFSET +
+                            (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
                         k->share1[i] ^ a);
   }
 
@@ -399,8 +401,9 @@ static dif_result_t kmac_get_digest(uint32_t *out, size_t len) {
       return kDifError;
     }
 
-    uint32_t offset =
-        KMAC_STATE_REG_OFFSET + kmac_operation_state.offset * sizeof(uint32_t);
+    ptrdiff_t offset =
+        KMAC_STATE_REG_OFFSET +
+        (ptrdiff_t)kmac_operation_state.offset * (ptrdiff_t)sizeof(uint32_t);
     for (size_t i = 0; i < n; ++i) {
       // Read both shares from state register and combine using XOR.
       uint32_t share0 = mmio_region_read32(kmac.base_addr, offset);

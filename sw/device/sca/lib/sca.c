@@ -18,6 +18,7 @@
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 
 #include "clkmgr_regs.h"  // Generated
@@ -73,9 +74,12 @@ static dif_edn_t edn1;
  * Initializes the UART peripheral.
  */
 static void sca_init_uart(void) {
+  CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
+  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
+        "kClockFreqPeripheralHz must fit in uint32_t");
   const dif_uart_config_t uart_config = {
-      .baudrate = kUartBaudrate,
-      .clk_freq_hz = kClockFreqPeripheralHz,
+      .baudrate = (uint32_t)kUartBaudrate,
+      .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
       .parity_enable = kDifToggleDisabled,
       .parity = kDifUartParityEven,
       .tx_enable = kDifToggleEnabled,
@@ -358,9 +362,9 @@ uint32_t sca_non_linear_layer(uint32_t input) {
   uint32_t output;
   if (input != 0) {
     // Perform the AES S-Box look ups bytewise.
-    output = (sbox[(input >> 24) & 0xFF] << 24) |
-             (sbox[(input >> 16) & 0xFF] << 16) |
-             (sbox[(input >> 8) & 0xFF] << 8) | sbox[input & 0xFF];
+    output = (uint32_t)(sbox[(input >> 24) & 0xFF] << 24) |
+             (uint32_t)(sbox[(input >> 16) & 0xFF] << 16) |
+             (uint32_t)(sbox[(input >> 8) & 0xFF] << 8) | sbox[input & 0xFF];
   } else {
     output = input;
   }

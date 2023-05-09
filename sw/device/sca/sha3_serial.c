@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <stddef.h>
+
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_kmac.h"
@@ -72,14 +74,6 @@ static dif_kmac_t kmac;
  * KMAC operation state.
  */
 static dif_kmac_operation_state_t kmac_operation_state;
-
-/**
- * KMAC key.
- *
- * Used for caching the key in the 'k' (set key) command packet until it is used
- * when handling a 'p' (absorb) command.
- */
-static dif_kmac_key_t kmac_key;
 
 /**
  * SHA3 fixed message.
@@ -324,8 +318,9 @@ static dif_result_t sha3_get_digest(uint32_t *out, size_t len) {
       return kDifError;
     }
 
-    uint32_t offset =
-        KMAC_STATE_REG_OFFSET + kmac_operation_state.offset * sizeof(uint32_t);
+    ptrdiff_t offset =
+        KMAC_STATE_REG_OFFSET +
+        (ptrdiff_t)kmac_operation_state.offset * (ptrdiff_t)sizeof(uint32_t);
     for (size_t i = 0; i < n; ++i) {
       // Read both shares from state register and combine using XOR.
       uint32_t share0 = mmio_region_read32(kmac.base_addr, offset);

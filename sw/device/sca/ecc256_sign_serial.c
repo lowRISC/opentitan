@@ -294,6 +294,10 @@ static void simple_serial_main(void) {
 }
 
 bool test_main(void) {
+  (void)kOtbnVarX;
+  (void)kOtbnVarY;
+  (void)kOtbnVarXR;
+
   simple_serial_main();
   return true;
 }

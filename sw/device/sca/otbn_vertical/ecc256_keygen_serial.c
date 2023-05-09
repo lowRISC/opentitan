@@ -171,7 +171,6 @@ static void p256_run_keygen(uint32_t mode, const uint32_t *share0,
 
 void ecc256_ecdsa_secret_keygen_batch(const uint8_t *data, size_t data_len) {
   uint32_t num_traces = 0;
-  uint32_t out[kEcc256SeedNumWords];
   uint32_t batch_digest[kEcc256SeedNumWords];
   uint8_t dummy[kEcc256SeedNumBytes];
   SS_CHECK(data_len == sizeof(num_traces));
