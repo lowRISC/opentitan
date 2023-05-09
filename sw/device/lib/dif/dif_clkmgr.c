@@ -269,7 +269,7 @@ dif_result_t dif_clkmgr_enable_measure_counts(const dif_clkmgr_t *clkmgr,
   uint32_t measure_en_reg = 0;
   measure_en_reg =
       bitfield_field32_write(measure_en_reg, en_field, kMultiBitBool4True);
-  mmio_region_write32(clkmgr->base_addr, en_offset, measure_en_reg);
+  mmio_region_write32(clkmgr->base_addr, (ptrdiff_t)en_offset, measure_en_reg);
 
   uint32_t measure_ctrl_reg = 0;
   measure_ctrl_reg =
@@ -277,8 +277,10 @@ dif_result_t dif_clkmgr_enable_measure_counts(const dif_clkmgr_t *clkmgr,
   measure_ctrl_reg =
       bitfield_field32_write(measure_ctrl_reg, hi_field, hi_threshold);
   // Two writes, because these registers are shadowed.
-  mmio_region_write32(clkmgr->base_addr, reg_offset, measure_ctrl_reg);
-  mmio_region_write32(clkmgr->base_addr, reg_offset, measure_ctrl_reg);
+  mmio_region_write32(clkmgr->base_addr, (ptrdiff_t)reg_offset,
+                      measure_ctrl_reg);
+  mmio_region_write32(clkmgr->base_addr, (ptrdiff_t)reg_offset,
+                      measure_ctrl_reg);
 
   return kDifOk;
 }
@@ -312,7 +314,8 @@ dif_result_t dif_clkmgr_disable_measure_counts(
     default:
       return kDifBadArg;
   }
-  mmio_region_write32(clkmgr->base_addr, en_offset, kMultiBitBool4False);
+  mmio_region_write32(clkmgr->base_addr, (ptrdiff_t)en_offset,
+                      kMultiBitBool4False);
   return kDifOk;
 }
 
@@ -343,7 +346,8 @@ dif_result_t dif_clkmgr_measure_counts_get_enable(
     default:
       return kDifBadArg;
   }
-  multi_bit_bool_t en_val = mmio_region_read32(clkmgr->base_addr, en_offset);
+  multi_bit_bool_t en_val =
+      mmio_region_read32(clkmgr->base_addr, (ptrdiff_t)en_offset);
   *state = dif_multi_bit_bool_to_toggle(en_val);
 
   return kDifOk;
@@ -379,7 +383,8 @@ dif_result_t dif_clkmgr_measure_counts_get_thresholds(
       return kDifBadArg;
 #undef PICK_THRESHOLD_FIELDS
   }
-  uint32_t thresholds_val = mmio_region_read32(clkmgr->base_addr, reg_offset);
+  uint32_t thresholds_val =
+      mmio_region_read32(clkmgr->base_addr, (ptrdiff_t)reg_offset);
   *min_threshold = bitfield_field32_read(thresholds_val, lo_field);
   *max_threshold = bitfield_field32_read(thresholds_val, hi_field);
 

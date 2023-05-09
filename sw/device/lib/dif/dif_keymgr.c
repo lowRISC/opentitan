@@ -293,7 +293,7 @@ dif_result_t dif_keymgr_advance_state(const dif_keymgr_t *keymgr,
 
     // Check if MAX_*_KEY_VER register is locked.
     uint32_t reg_max_key_ver_wen = mmio_region_read32(
-        keymgr->base_addr, max_key_ver_reg_info.wen_reg_offset);
+        keymgr->base_addr, (ptrdiff_t)max_key_ver_reg_info.wen_reg_offset);
     if (!bitfield_bit32_read(reg_max_key_ver_wen,
                              max_key_ver_reg_info.wen_bit_index)) {
       return kDifLocked;
@@ -309,10 +309,10 @@ dif_result_t dif_keymgr_advance_state(const dif_keymgr_t *keymgr,
 
     // Write and lock (rw0c) the max key version.
     mmio_region_write32_shadowed(keymgr->base_addr,
-                                 max_key_ver_reg_info.reg_offset,
+                                 (ptrdiff_t)max_key_ver_reg_info.reg_offset,
                                  params->max_key_version);
-    mmio_region_write32(keymgr->base_addr, max_key_ver_reg_info.wen_reg_offset,
-                        0);
+    mmio_region_write32(keymgr->base_addr,
+                        (ptrdiff_t)max_key_ver_reg_info.wen_reg_offset, 0);
   } else if (params != NULL) {
     return kDifBadArg;
   }
@@ -400,7 +400,8 @@ dif_result_t dif_keymgr_get_status_codes(
 
   // Bit 0 of `dif_keymgr_status_codes_t` indicates whether the key manager is
   // idle or not.
-  *status_codes = bitfield_bit32_write(0, 0, is_idle);
+  *status_codes =
+      (dif_keymgr_status_codes_t)bitfield_bit32_write(0, 0, is_idle);
 
   if (has_error) {
     // Read and clear ERR_CODE register (rw1c).
@@ -417,8 +418,8 @@ dif_result_t dif_keymgr_get_status_codes(
     if (reg_err_code > kErrorBitfield.mask || reg_err_code == 0) {
       return kDifError;
     }
-    *status_codes =
-        bitfield_field32_write(*status_codes, kErrorBitfield, reg_err_code);
+    *status_codes = (dif_keymgr_status_codes_t)bitfield_field32_write(
+        *status_codes, kErrorBitfield, reg_err_code);
   }
 
   return kDifOk;

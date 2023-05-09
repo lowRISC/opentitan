@@ -83,7 +83,7 @@ static bool cpu_capture_is_locked(mmio_region_t base_addr) {
 static bool rstmgr_software_reset_is_locked(
     mmio_region_t base_addr, dif_rstmgr_peripheral_t peripheral) {
   return !mmio_region_read32(
-      base_addr, RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + 4 * peripheral);
+      base_addr, RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + 4 * (ptrdiff_t)peripheral);
 }
 
 /**
@@ -94,7 +94,8 @@ static void rstmgr_software_reset_hold(mmio_region_t base_addr,
                                        bool hold) {
   bool value = hold ? false : true;
   mmio_region_write32(
-      base_addr, RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + 4 * peripheral, value);
+      base_addr, RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + 4 * (ptrdiff_t)peripheral,
+      value);
 }
 
 /**
@@ -117,7 +118,8 @@ dif_result_t dif_rstmgr_reset(const dif_rstmgr_t *handle) {
 
   // Set bits to stop holding all peripherals in the reset state.
   for (uint32_t i = 0; i < RSTMGR_PARAM_NUM_SW_RESETS; i++) {
-    mmio_region_write32(base_addr, RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + i * 4,
+    mmio_region_write32(base_addr,
+                        RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + (ptrdiff_t)i * 4,
                         UINT32_MAX);
   }
 
@@ -132,8 +134,9 @@ dif_result_t dif_rstmgr_reset_lock(const dif_rstmgr_t *handle,
 
   mmio_region_t base_addr = handle->base_addr;
 
-  mmio_region_write32(base_addr,
-                      RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + 4 * peripheral, 0);
+  mmio_region_write32(
+      base_addr, RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + 4 * (ptrdiff_t)peripheral,
+      0);
 
   return kDifOk;
 }
@@ -248,7 +251,7 @@ dif_result_t dif_rstmgr_alert_info_dump_read(
       mmio_region_read32(base_addr, RSTMGR_ALERT_INFO_CTRL_REG_OFFSET);
 
   // Read the entire alert info crash dump, one 32bit data segment at the time.
-  for (int i = 0; i < dump_size_actual; ++i) {
+  for (uint32_t i = 0; i < dump_size_actual; ++i) {
     control_reg = bitfield_field32_write(control_reg,
                                          RSTMGR_ALERT_INFO_CTRL_INDEX_FIELD, i);
 
@@ -336,7 +339,7 @@ dif_result_t dif_rstmgr_cpu_info_dump_read(
       mmio_region_read32(base_addr, RSTMGR_CPU_INFO_CTRL_REG_OFFSET);
 
   // Read the entire cpu info crash dump, one 32bit data segment at the time.
-  for (int i = 0; i < dump_size_actual; ++i) {
+  for (uint32_t i = 0; i < dump_size_actual; ++i) {
     control_reg = bitfield_field32_write(control_reg,
                                          RSTMGR_CPU_INFO_CTRL_INDEX_FIELD, i);
 
@@ -392,8 +395,9 @@ dif_result_t dif_rstmgr_software_reset_is_held(
   }
 
   // When the bit is cleared - peripheral is held in reset.
-  *asserted = !mmio_region_read32(
-      handle->base_addr, RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + 4 * peripheral);
+  *asserted =
+      !mmio_region_read32(handle->base_addr, RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET +
+                                                 4 * (ptrdiff_t)peripheral);
 
   return kDifOk;
 }

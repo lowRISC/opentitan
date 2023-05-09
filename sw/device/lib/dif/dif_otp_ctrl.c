@@ -22,7 +22,7 @@
  * trigger regwen.
  */
 static bool checks_are_locked(const dif_otp_ctrl_t *otp, bool check_config) {
-  uintptr_t reg_offset = check_config
+  ptrdiff_t reg_offset = check_config
                              ? OTP_CTRL_CHECK_REGWEN_REG_OFFSET
                              : OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET;
   size_t regwen_bit =
@@ -240,7 +240,8 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
       continue;
     }
 
-    status->codes = bitfield_bit32_write(status->codes, i, true);
+    status->codes =
+        bitfield_bit32_write(status->codes, (bitfield_bit32_index_t)i, true);
 
     bitfield_field32_t field;
     switch (i) {
@@ -779,8 +780,8 @@ dif_result_t dif_otp_ctrl_read_blocking(const dif_otp_ctrl_t *otp,
     return kDifOutOfRange;
   }
 
-  ptrdiff_t reg_offset = OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                         kPartitions[partition].start_addr + address;
+  uint32_t reg_offset = OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+                        kPartitions[partition].start_addr + address;
   mmio_region_memcpy_from_mmio32(otp->base_addr, reg_offset, buf,
                                  len * sizeof(uint32_t));
   return kDifOk;

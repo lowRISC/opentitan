@@ -238,7 +238,8 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
   // Write entropy seed registers.
   for (int i = 0; i < kDifKmacEntropySeedWords; ++i) {
     mmio_region_write32(kmac->base_addr,
-                        KMAC_ENTROPY_SEED_0_REG_OFFSET + i * sizeof(uint32_t),
+                        KMAC_ENTROPY_SEED_0_REG_OFFSET +
+                            (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
                         config.entropy_seed[i]);
   }
 
@@ -532,10 +533,12 @@ dif_result_t dif_kmac_mode_kmac_start(
   mmio_region_write32(kmac->base_addr, KMAC_KEY_LEN_REG_OFFSET, key_len);
   for (int i = 0; i < ARRAYSIZE(k->share0); ++i) {
     mmio_region_write32(kmac->base_addr,
-                        KMAC_KEY_SHARE0_0_REG_OFFSET + i * sizeof(uint32_t),
+                        KMAC_KEY_SHARE0_0_REG_OFFSET +
+                            (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
                         k->share0[i]);
     mmio_region_write32(kmac->base_addr,
-                        KMAC_KEY_SHARE1_0_REG_OFFSET + i * sizeof(uint32_t),
+                        KMAC_KEY_SHARE1_0_REG_OFFSET +
+                            (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
                         k->share1[i]);
   }
 
@@ -742,8 +745,9 @@ dif_result_t dif_kmac_squeeze(const dif_kmac_t *kmac,
     DIF_RETURN_IF_ERROR(
         dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_SQUEEZE_BIT));
 
-    uint32_t offset =
-        KMAC_STATE_REG_OFFSET + operation_state->offset * sizeof(uint32_t);
+    ptrdiff_t offset =
+        KMAC_STATE_REG_OFFSET +
+        (ptrdiff_t)operation_state->offset * (ptrdiff_t)sizeof(uint32_t);
     for (size_t i = 0; i < n; ++i) {
       // Read both shares from state register and combine using XOR.
       uint32_t share0 = mmio_region_read32(base, offset);

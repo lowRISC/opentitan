@@ -34,7 +34,7 @@ static bool dif_pinmux_get_reg_offset(dif_pinmux_index_t index,
   if (index >= num_pads) {
     return false;
   }
-  *reg_offset = reg_base + index * sizeof(uint32_t);
+  *reg_offset = reg_base + (ptrdiff_t)(index * sizeof(uint32_t));
   return true;
 }
 
@@ -60,7 +60,7 @@ static bool dif_pinmux_get_sleep_status_bit(dif_pinmux_pad_kind_t kind,
   if (index >= num_pads) {
     return false;
   }
-  *reg_offset = index / 32 + reg_base;
+  *reg_offset = (ptrdiff_t)index / 32 + reg_base;
   *bit = index % 32;
   return true;
 }
@@ -107,7 +107,7 @@ static bool dif_pinmux_get_lock_reg_offset(dif_pinmux_index_t index,
     return false;
   }
 
-  *reg_offset = reg_base + index * sizeof(uint32_t);
+  *reg_offset = reg_base + (ptrdiff_t)index * (ptrdiff_t)sizeof(uint32_t);
   return true;
 }
 
@@ -162,7 +162,7 @@ dif_result_t dif_pinmux_input_select(const dif_pinmux_t *pinmux,
     return kDifLocked;
   }
   ptrdiff_t reg_offset =
-      PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET + (peripheral_input << 2);
+      PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET + (ptrdiff_t)(peripheral_input << 2);
   uint32_t reg_value =
       bitfield_field32_write(0, PINMUX_MIO_PERIPH_INSEL_0_IN_0_FIELD, insel);
   mmio_region_write32(pinmux->base_addr, reg_offset, reg_value);
@@ -185,7 +185,8 @@ dif_result_t dif_pinmux_output_select(const dif_pinmux_t *pinmux,
   if (is_locked) {
     return kDifLocked;
   }
-  ptrdiff_t reg_offset = PINMUX_MIO_OUTSEL_0_REG_OFFSET + (mio_pad_output << 2);
+  ptrdiff_t reg_offset =
+      PINMUX_MIO_OUTSEL_0_REG_OFFSET + (ptrdiff_t)(mio_pad_output << 2);
   uint32_t reg_value =
       bitfield_field32_write(0, PINMUX_MIO_OUTSEL_0_OUT_0_FIELD, outsel);
   mmio_region_write32(pinmux->base_addr, reg_offset, reg_value);
@@ -194,10 +195,11 @@ dif_result_t dif_pinmux_output_select(const dif_pinmux_t *pinmux,
 
 static dif_pinmux_pad_attr_t dif_pinmux_reg_to_pad_attr(uint32_t reg_value) {
   dif_pinmux_pad_attr_t pad_attrs = {0};
-  pad_attrs.slew_rate =
-      bitfield_field32_read(reg_value, PINMUX_MIO_PAD_ATTR_0_SLEW_RATE_0_FIELD);
-  pad_attrs.drive_strength = bitfield_field32_read(
-      reg_value, PINMUX_MIO_PAD_ATTR_0_DRIVE_STRENGTH_0_FIELD);
+  pad_attrs.slew_rate = (dif_pinmux_pad_slew_rate_t)bitfield_field32_read(
+      reg_value, PINMUX_MIO_PAD_ATTR_0_SLEW_RATE_0_FIELD);
+  pad_attrs.drive_strength =
+      (dif_pinmux_pad_drive_strength_t)bitfield_field32_read(
+          reg_value, PINMUX_MIO_PAD_ATTR_0_DRIVE_STRENGTH_0_FIELD);
   if (bitfield_bit32_read(reg_value, PINMUX_MIO_PAD_ATTR_0_INVERT_0_BIT)) {
     pad_attrs.flags |= kDifPinmuxPadAttrInvertLevel;
   }
@@ -504,8 +506,8 @@ dif_result_t dif_pinmux_wakeup_detector_enable(
       return kDifBadArg;
   }
 
-  ptrdiff_t reg_offset =
-      PINMUX_WKUP_DETECTOR_0_REG_OFFSET + detector * sizeof(uint32_t);
+  ptrdiff_t reg_offset = PINMUX_WKUP_DETECTOR_0_REG_OFFSET +
+                         (ptrdiff_t)detector * (ptrdiff_t)sizeof(uint32_t);
   uint32_t reg_value = bitfield_field32_write(
       0, PINMUX_WKUP_DETECTOR_0_MODE_0_FIELD, reg_mode_value);
   reg_value = bitfield_bit32_write(
@@ -515,21 +517,21 @@ dif_result_t dif_pinmux_wakeup_detector_enable(
   mmio_region_write32(pinmux->base_addr, reg_offset, reg_value);
 
   if (set_count) {
-    reg_offset =
-        PINMUX_WKUP_DETECTOR_CNT_TH_0_REG_OFFSET + detector * sizeof(uint32_t);
+    reg_offset = PINMUX_WKUP_DETECTOR_CNT_TH_0_REG_OFFSET +
+                 (ptrdiff_t)detector * (ptrdiff_t)sizeof(uint32_t);
     reg_value = bitfield_field32_write(
         0, PINMUX_WKUP_DETECTOR_CNT_TH_0_TH_0_FIELD, config.counter_threshold);
     mmio_region_write32(pinmux->base_addr, reg_offset, reg_value);
   }
 
-  reg_offset =
-      PINMUX_WKUP_DETECTOR_PADSEL_0_REG_OFFSET + detector * sizeof(uint32_t);
+  reg_offset = PINMUX_WKUP_DETECTOR_PADSEL_0_REG_OFFSET +
+               (ptrdiff_t)detector * (ptrdiff_t)sizeof(uint32_t);
   reg_value = bitfield_field32_write(
       0, PINMUX_WKUP_DETECTOR_PADSEL_0_SEL_0_FIELD, config.pad_select);
   mmio_region_write32(pinmux->base_addr, reg_offset, reg_value);
 
-  reg_offset =
-      PINMUX_WKUP_DETECTOR_EN_0_REG_OFFSET + detector * sizeof(uint32_t);
+  reg_offset = PINMUX_WKUP_DETECTOR_EN_0_REG_OFFSET +
+               (ptrdiff_t)detector * (ptrdiff_t)sizeof(uint32_t);
   reg_value = bitfield_bit32_write(0, PINMUX_WKUP_DETECTOR_EN_0_EN_0_BIT, true);
   mmio_region_write32(pinmux->base_addr, reg_offset, reg_value);
   return kDifOk;
@@ -553,8 +555,8 @@ dif_result_t dif_pinmux_wakeup_detector_disable(const dif_pinmux_t *pinmux,
     return kDifLocked;
   }
 
-  ptrdiff_t reg_offset =
-      PINMUX_WKUP_DETECTOR_EN_0_REG_OFFSET + sizeof(uint32_t) * detector;
+  ptrdiff_t reg_offset = PINMUX_WKUP_DETECTOR_EN_0_REG_OFFSET +
+                         (ptrdiff_t)sizeof(uint32_t) * (ptrdiff_t)detector;
   mmio_region_write32(pinmux->base_addr, reg_offset, 0);
   return kDifOk;
 }

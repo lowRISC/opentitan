@@ -35,7 +35,7 @@ static bool uart_rx_empty(const dif_uart_t *uart) {
 static uint8_t uart_rx_fifo_read(const dif_uart_t *uart) {
   uint32_t reg = mmio_region_read32(uart->base_addr, UART_RDATA_REG_OFFSET);
 
-  return bitfield_field32_read(reg, UART_RDATA_RDATA_FIELD);
+  return (uint8_t)bitfield_field32_read(reg, UART_RDATA_RDATA_FIELD);
 }
 
 static void uart_tx_fifo_write(const dif_uart_t *uart, uint8_t byte) {
@@ -414,7 +414,8 @@ dif_result_t dif_uart_loopback_set(const dif_uart_t *uart,
 
 dif_result_t dif_uart_enable_rx_timeout(const dif_uart_t *uart,
                                         uint32_t duration_ticks) {
-  if (uart == NULL || (duration_ticks & ~UART_TIMEOUT_CTRL_VAL_MASK) != 0) {
+  if (uart == NULL ||
+      (duration_ticks & ~(uint32_t)UART_TIMEOUT_CTRL_VAL_MASK) != 0) {
     return kDifBadArg;
   }
 

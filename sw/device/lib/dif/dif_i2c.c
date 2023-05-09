@@ -18,7 +18,8 @@
  * As usual, a divisor of 0 is still Undefined Behavior.
  */
 static uint16_t round_up_divide(uint32_t a, uint32_t b) {
-  return ((a - 1) / b) + 1;
+  const uint32_t result = ((a - 1) / b) + 1;
+  return (uint16_t)result;
 }
 
 /**
@@ -147,7 +148,10 @@ dif_result_t dif_i2c_compute_timing(dif_i2c_timing_config_t timing_config,
                                    config->scl_time_low_cycles -
                                    config->rise_cycles - config->fall_cycles;
   if (lengthened_high_cycles > (int32_t)config->scl_time_high_cycles) {
-    config->scl_time_high_cycles = lengthened_high_cycles;
+    if (lengthened_high_cycles < 0 || lengthened_high_cycles > UINT16_MAX) {
+      return kDifOutOfRange;
+    }
+    config->scl_time_high_cycles = (uint16_t)lengthened_high_cycles;
   }
 
   return kDifOk;
@@ -251,7 +255,7 @@ dif_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
     return kDifBadArg;
   }
 
-  ptrdiff_t rx_level_value;
+  uint32_t rx_level_value;
   switch (rx_level) {
     case kDifI2cLevel1Byte:
       rx_level_value = I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL1;
@@ -272,7 +276,7 @@ dif_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
       return kDifBadArg;
   }
 
-  ptrdiff_t fmt_level_value;
+  uint32_t fmt_level_value;
   switch (fmt_level) {
     case kDifI2cLevel1Byte:
       fmt_level_value = I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL1;
@@ -396,11 +400,13 @@ dif_result_t dif_i2c_override_sample_pins(const dif_i2c_t *i2c,
 
   uint32_t samples = mmio_region_read32(i2c->base_addr, I2C_VAL_REG_OFFSET);
   if (scl_samples != NULL) {
-    *scl_samples = bitfield_field32_read(samples, I2C_VAL_SCL_RX_FIELD);
+    *scl_samples =
+        (uint16_t)bitfield_field32_read(samples, I2C_VAL_SCL_RX_FIELD);
   }
 
   if (sda_samples != NULL) {
-    *sda_samples = bitfield_field32_read(samples, I2C_VAL_SDA_RX_FIELD);
+    *sda_samples =
+        (uint16_t)bitfield_field32_read(samples, I2C_VAL_SDA_RX_FIELD);
   }
 
   return kDifOk;
@@ -419,17 +425,19 @@ dif_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
       mmio_region_read32(i2c->base_addr, I2C_FIFO_STATUS_REG_OFFSET);
   if (fmt_fifo_level != NULL) {
     *fmt_fifo_level =
-        bitfield_field32_read(values, I2C_FIFO_STATUS_FMTLVL_FIELD);
+        (uint8_t)bitfield_field32_read(values, I2C_FIFO_STATUS_FMTLVL_FIELD);
   }
   if (rx_fifo_level != NULL) {
-    *rx_fifo_level = bitfield_field32_read(values, I2C_FIFO_STATUS_RXLVL_FIELD);
+    *rx_fifo_level =
+        (uint8_t)bitfield_field32_read(values, I2C_FIFO_STATUS_RXLVL_FIELD);
   }
   if (tx_fifo_level != NULL) {
-    *tx_fifo_level = bitfield_field32_read(values, I2C_FIFO_STATUS_TXLVL_FIELD);
+    *tx_fifo_level =
+        (uint8_t)bitfield_field32_read(values, I2C_FIFO_STATUS_TXLVL_FIELD);
   }
   if (acq_fifo_level != NULL) {
     *acq_fifo_level =
-        bitfield_field32_read(values, I2C_FIFO_STATUS_ACQLVL_FIELD);
+        (uint8_t)bitfield_field32_read(values, I2C_FIFO_STATUS_ACQLVL_FIELD);
   }
 
   return kDifOk;
@@ -442,7 +450,7 @@ dif_result_t dif_i2c_read_byte(const dif_i2c_t *i2c, uint8_t *byte) {
 
   uint32_t values = mmio_region_read32(i2c->base_addr, I2C_RDATA_REG_OFFSET);
   if (byte != NULL) {
-    *byte = bitfield_field32_read(values, I2C_RDATA_RDATA_FIELD);
+    *byte = (uint8_t)bitfield_field32_read(values, I2C_RDATA_RDATA_FIELD);
   }
 
   return kDifOk;
@@ -547,7 +555,7 @@ dif_result_t dif_i2c_acquire_byte(const dif_i2c_t *i2c, uint8_t *byte,
   uint32_t acq_byte =
       mmio_region_read32(i2c->base_addr, I2C_ACQDATA_REG_OFFSET);
   if (byte != NULL) {
-    *byte = bitfield_field32_read(acq_byte, I2C_ACQDATA_ABYTE_FIELD);
+    *byte = (uint8_t)bitfield_field32_read(acq_byte, I2C_ACQDATA_ABYTE_FIELD);
   }
   if (signal != NULL) {
     *signal = bitfield_field32_read(acq_byte, I2C_ACQDATA_SIGNAL_FIELD);
