@@ -53,8 +53,8 @@
 #define UPPER_MASK 0x80000000UL /* most significant w-r bits */
 #define LOWER_MASK 0x7fffffffUL /* least significant r bits */
 
-static uint32_t mt[N];  /* the array for the state vector  */
-static int mti = N + 1; /* mti==N+1 means mt[N] is not initialized */
+static uint32_t mt[N];       /* the array for the state vector  */
+static uint32_t mti = N + 1; /* mti==N+1 means mt[N] is not initialized */
 
 /* initializes mt[N] with a seed */
 static void init_genrand(uint32_t s) {
@@ -74,8 +74,8 @@ static void init_genrand(uint32_t s) {
 /* init_key is the array for initializing keys */
 /* key_length is its length */
 /* slight change for C++, 2004/2/26 */
-static void init_by_array(uint32_t init_key[], int32_t key_length) {
-  int32_t i, j, k;
+static void init_by_array(uint32_t init_key[], uint32_t key_length) {
+  uint32_t i, j, k;
   init_genrand(19650218UL);
   i = 1;
   j = 0;
@@ -171,7 +171,7 @@ uint8_t prng_rand_byte(void) {
      */
     rand = genrand_int32() >> 23;
   } while (rand > 255);
-  return rand;
+  return (uint8_t)rand;
 }
 
 void prng_rand_bytes(uint8_t *buffer, size_t buffer_len) {
