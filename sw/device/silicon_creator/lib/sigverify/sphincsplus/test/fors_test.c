@@ -15,7 +15,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 // Test signature and message. Populate before running test.
-static uint8_t kTestSig[kSpxForsBytes] = {0};
+static uint32_t kTestSig[kSpxForsWords] = {0};
 static uint8_t kTestMsg[kSpxForsMsgBytes] = {0};
 
 // Test context.
@@ -55,8 +55,9 @@ bool test_main() {
   LOG_INFO("Starting FORS test...");
 
   // Populate signature with {0, 1, 2, 3, ... }.
+  unsigned char *test_sig_bytes = (unsigned char *)kTestSig;
   for (size_t i = 0; i < kSpxForsBytes; i++) {
-    kTestSig[i] = i & 255;
+    test_sig_bytes[i] = i & 255;
   }
 
   // Populate message with { ..., 3, 2, 1, 0}.

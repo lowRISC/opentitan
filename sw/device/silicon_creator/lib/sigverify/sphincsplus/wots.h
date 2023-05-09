@@ -33,7 +33,7 @@ extern "C" {
  * @return Error code indicating if the operation succeeded.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t wots_pk_from_sig(const uint8_t *sig, const uint8_t *msg,
+rom_error_t wots_pk_from_sig(const uint32_t *sig, const uint32_t *msg,
                              const spx_ctx_t *ctx, spx_addr_t *addr,
                              uint32_t *pk);
 

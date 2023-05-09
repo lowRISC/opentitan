@@ -54,7 +54,7 @@ rom_error_t spx_hash_initialize(spx_ctx_t *ctx);
  * @return Error code indicating if the operation succeeded.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t spx_hash_message(const uint8_t *R, const uint8_t *pk,
+rom_error_t spx_hash_message(const uint32_t *R, const uint32_t *pk,
                              const uint8_t *msg_prefix_1,
                              size_t msg_prefix_1_len,
                              const uint8_t *msg_prefix_2,

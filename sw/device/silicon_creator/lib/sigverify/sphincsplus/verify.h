@@ -25,13 +25,21 @@ enum {
    */
   kSpxVerifyRootNumWords = kSpxNWords,
   /**
-   * Size of SPHINCS+ signature.
+   * Size of SPHINCS+ signature in bytes.
    */
   kSpxVerifySigBytes = kSpxBytes,
   /**
-   * Size of SPHINCS+ public key.
+   * Size of SPHINCS+ signature in words.
+   */
+  kSpxVerifySigWords = kSpxBytes / sizeof(uint32_t),
+  /**
+   * Size of SPHINCS+ public key in bytes.
    */
   kSpxVerifyPkBytes = kSpxPkBytes,
+  /**
+   * Size of SPHINCS+ public key in words.
+   */
+  kSpxVerifyPkWords = kSpxPkWords,
 };
 
 /**
@@ -53,10 +61,10 @@ enum {
  * @return Error code indicating if the operation succeeded.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t spx_verify(const uint8_t *sig, const uint8_t *msg_prefix_1,
+rom_error_t spx_verify(const uint32_t *sig, const uint8_t *msg_prefix_1,
                        size_t msg_prefix_1_len, const uint8_t *msg_prefix_2,
                        size_t msg_prefix_2_len, const uint8_t *msg,
-                       size_t msg_len, const uint8_t *pk, uint32_t *root);
+                       size_t msg_len, const uint32_t *pk, uint32_t *root);
 
 /**
  * Extract the public key root.
@@ -65,7 +73,7 @@ rom_error_t spx_verify(const uint8_t *sig, const uint8_t *msg_prefix_1,
  * @param[out] root Buffer for the public key root (`kSpxVerifyRootNumWords`
  *                  words long).
  */
-void spx_public_key_root(const uint8_t *pk, uint32_t *root);
+void spx_public_key_root(const uint32_t *pk, uint32_t *root);
 
 #ifdef __cplusplus
 }

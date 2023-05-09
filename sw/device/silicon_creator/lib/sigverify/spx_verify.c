@@ -71,12 +71,11 @@ rom_error_t sigverify_spx_verify(
   rom_error_t error = kErrorSigverifyBadSpxSignature;
   if (launder32(spx_en) != kSigverifySpxDisabledOtp) {
     sigverify_spx_root_t expected_root;
-    spx_public_key_root((const uint8_t *)key, (uint32_t *)&expected_root);
+    spx_public_key_root(key->data, expected_root.data);
     sigverify_spx_root_t actual_root;
-    HARDENED_RETURN_IF_ERROR(
-        spx_verify((const uint8_t *)signature, msg_prefix_1, msg_prefix_1_len,
-                   msg_prefix_2, msg_prefix_2_len, msg, msg_len,
-                   (const uint8_t *)key, (uint32_t *)&actual_root));
+    HARDENED_RETURN_IF_ERROR(spx_verify(
+        signature->data, msg_prefix_1, msg_prefix_1_len, msg_prefix_2,
+        msg_prefix_2_len, msg, msg_len, key->data, actual_root.data));
 
     size_t i = 0;
     for (; launder32(i) < kSigverifySpxRootNumWords; ++i) {

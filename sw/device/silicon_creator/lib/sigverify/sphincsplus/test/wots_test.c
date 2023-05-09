@@ -17,11 +17,13 @@ OTTF_DEFINE_TEST_CONFIG();
 
 enum {
   kSpxWotsMsgBytes = ((kSpxWotsLen1 * kSpxWotsLogW + 7) / 8),
+  kSpxWotsMsgWords =
+      (kSpxWotsMsgBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
 };
 
 // Test signature and message. Populate before running test.
-static uint8_t kTestSig[kSpxWotsBytes] = {0};
-static uint8_t kTestMsg[kSpxWotsMsgBytes] = {0};
+static uint32_t kTestSig[kSpxWotsWords] = {0};
+static uint32_t kTestMsg[kSpxWotsMsgWords] = {0};
 
 // Test context.
 static spx_ctx_t kTestCtx = {
@@ -84,13 +86,15 @@ bool test_main() {
   LOG_INFO("Starting WOTS test...");
 
   // Populate signature with {0, 1, 2, 3, ... }.
+  unsigned char *test_sig_bytes = (unsigned char *)kTestSig;
   for (size_t i = 0; i < kSpxWotsBytes; i++) {
-    kTestSig[i] = i & 255;
+    test_sig_bytes[i] = i & 255;
   }
 
   // Populate message with { ..., 3, 2, 1, 0}.
+  unsigned char *test_msg_bytes = (unsigned char *)kTestMsg;
   for (size_t i = 0; i < kSpxWotsMsgBytes; i++) {
-    kTestMsg[i] = (kSpxWotsMsgBytes - i) & 255;
+    test_msg_bytes[i] = (kSpxWotsMsgBytes - i) & 255;
   }
 
   EXECUTE_TEST(result, pk_from_sig_test);
