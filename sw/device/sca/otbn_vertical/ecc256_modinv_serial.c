@@ -72,14 +72,6 @@ static const otbn_addr_t kOtbnVarModInvAlpha =
     OTBN_ADDR_T_INIT(p256_mod_inv_sca, alpha);
 
 /**
- * Fixed-message indicator.
- *
- * Used in the 'b' (batch capture) command for indicating whether to use fixed
- * or random message.
- */
-static bool run_fixed = true;
-
-/**
  * Callback wrapper for OTBN manual trigger function.
  */
 static void otbn_manual_trigger(void) { SS_CHECK_STATUS_OK(otbn_execute()); }

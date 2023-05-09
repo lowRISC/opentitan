@@ -111,7 +111,7 @@ static void simple_serial_receive_packet(uint8_t *cmd, uint8_t *data,
       if (*data_len == data_buf_len) {
         break;
       }
-      data[*data_len] = hex_byte[0] << 4 | hex_byte[1];
+      data[*data_len] = (uint8_t)(hex_byte[0] << 4) | hex_byte[1];
       ++*data_len;
     } while (true);
   }
