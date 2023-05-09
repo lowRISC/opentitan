@@ -187,7 +187,6 @@ for (unsigned i = 0U; i < 100U; i++) {
 }
 #endif
 
-#if 1
     // LOG_INFO("usb_testutils: bus reset");
     TRC_S("USB: Bus reset");
     // Link reset
@@ -202,8 +201,6 @@ for (unsigned i = 0U; i < 100U; i++) {
         TRY(ctx->out[ep].reset(ctx->out[ep].ep_ctx));
       }
     }
-#else
-#endif
   }
 
   // Clear the interrupts that we've received and handled
@@ -256,7 +253,7 @@ for (unsigned i = 0U; i < 100U; i++) {
   }
 #endif
 
-  // Report link events to the registered callback handler, if any
+  // Report all link events to the registered callback handler, if any
   if (ctx->link_callback) {
     const dif_usbdev_irq_state_snapshot_t irqs_link =
         (1u << kDifUsbdevIrqPowered) | (1u << kDifUsbdevIrqDisconnected) |
