@@ -47,6 +47,11 @@ def handle_objs(merged_library: Path, obj_files: List[str]) -> None:
         merged_library: Path where to save the merged library.
         obj_files: A list of object files.
     """
+    # Remove `pic.o` files.
+    # Note: Bazel started generating these since
+    # 4ff2301bf37230f75ac6fb2e288f111489e383e4.
+    obj_files = [o for o in obj_files if not o.endswith(".pic.o")]
+
     # Note: We allow unresolved symbols and multiple definitions because this library is
     # used only for generating a coverage report and we link only and all instrumented
     # object files.
