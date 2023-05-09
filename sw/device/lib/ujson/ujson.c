@@ -89,7 +89,7 @@ status_t ujson_consume(ujson_t *uj, char ch) {
 }
 
 status_t ujson_consume_maybe(ujson_t *uj, char ch) {
-  char got = TRY(consume_whitespace(uj));
+  char got = (char)TRY(consume_whitespace(uj));
   if (ch != got) {
     ujson_ungetc(uj, got);
     return OK_STATUS(0);
@@ -98,16 +98,16 @@ status_t ujson_consume_maybe(ujson_t *uj, char ch) {
 }
 
 status_t ujson_parse_qs(ujson_t *uj, char *str, size_t len) {
-  int ch;
+  char ch;
   int n = 0;
   len--;  // One char for the nul terminator.
   TRY(ujson_consume(uj, '"'));
   while (true) {
-    ch = TRY(ujson_getc(uj));
+    ch = (char)TRY(ujson_getc(uj));
     if (ch == '\"')
       break;
     if (ch == '\\') {
-      ch = TRY(ujson_getc(uj));
+      ch = (char)TRY(ujson_getc(uj));
       switch (ch) {
         case '"':
         case '\\':
@@ -129,7 +129,7 @@ status_t ujson_parse_qs(ujson_t *uj, char *str, size_t len) {
           ch = '\t';
           break;
         case 'u':
-          ch = TRY(consume_hex(uj));
+          ch = (char)TRY(consume_hex(uj));
           break;
         default:
           return OUT_OF_RANGE();
@@ -146,12 +146,12 @@ status_t ujson_parse_qs(ujson_t *uj, char *str, size_t len) {
 }
 
 status_t ujson_parse_integer(ujson_t *uj, void *result, size_t rsz) {
-  char ch = TRY(consume_whitespace(uj));
+  char ch = (char)TRY(consume_whitespace(uj));
   bool neg = false;
 
   if (ch == '-') {
     neg = true;
-    ch = TRY(ujson_getc(uj));
+    ch = (char)TRY(ujson_getc(uj));
   }
   int64_t value = 0;
 
@@ -176,7 +176,7 @@ status_t ujson_parse_integer(ujson_t *uj, void *result, size_t rsz) {
 }
 
 status_t ujson_deserialize_bool(ujson_t *uj, bool *value) {
-  char got = TRY(consume_whitespace(uj));
+  char got = (char)TRY(consume_whitespace(uj));
   if (got == 't') {
     TRY(ujson_consume(uj, 'r'));
     TRY(ujson_consume(uj, 'u'));
@@ -280,7 +280,7 @@ static status_t ujson_serialize_integer64(ujson_t *uj, uint64_t value,
     // We've banned __udivdi3; do division with the replacement function.
     uint64_t remainder;
     value = udiv64_slow(value, 10, &remainder);
-    *--end = '0' + remainder;
+    *--end = '0' + (char)remainder;
     ++len;
   } while (value);
   if (neg) {
@@ -380,7 +380,8 @@ status_t ujson_deserialize_status_t(ujson_t *uj, status_t *value) {
     TRY(ujson_deserialize_uint32_t(uj, &arg));
   }
   TRY(ujson_consume(uj, '}'));
-  *value = status_create((absl_status_t)code, module_id, __FILE__, arg);
+  *value =
+      status_create((absl_status_t)code, module_id, __FILE__, (int32_t)arg);
   return OK_STATUS();
 }
 
