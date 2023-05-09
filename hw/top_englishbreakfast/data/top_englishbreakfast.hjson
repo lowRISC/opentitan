@@ -393,14 +393,6 @@
       }
       attr: "templated",
     },
-    { name: "rv_dm",
-      type: "rv_dm",
-      clock_srcs: {clk_i: "main"},
-      clock_group: "infra",
-      reset_connections: {rst_ni: "lc"},
-      // Note that this module also contains a bus host.
-      base_addrs: {mem: "0x00010000", regs: "0x41200000"}
-    },
     { name: "rv_plic",
       type: "rv_plic",
       clock_srcs: {clk_i: "main"},
@@ -478,8 +470,8 @@
                    BranchPredictor: "0",
                    DbgTriggerEn: "1",
                    SecureIbex: "0",
-                   DmHaltAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]",
-                   DmExceptionAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]",
+                   DmHaltAddr: "0",
+                   DmExceptionAddr: "0",
                    PipeLine: "0"
                   }
       clock_srcs: {clk_i: "main",
@@ -593,15 +585,9 @@
       // an empty list.
       'clkmgr_aon.idle'         : [],
 
-      // Pinmux JTAG signals
-      'pinmux_aon.rv_jtag' : ['rv_dm.jtag'],
-
       // rv_plic connections
       'rv_plic.msip' : ['rv_core_ibex.irq_software'],
       'rv_plic.irq'  : ['rv_core_ibex.irq_external'],
-
-      // rv_dm connections
-      'rv_dm.debug_req': ['rv_core_ibex.debug_req'],
 
       // rv_timer connections
 
