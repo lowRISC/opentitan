@@ -18,7 +18,7 @@ module tb;
   wire                          clk_aon, rst_aon_n;
   wire                          lc_escalate_en_bit;
   lc_ctrl_pkg::lc_tx_t          lc_escalate_en;
-  wire                          wkup_expired, wdog_bark;
+  wire                          wkup_expired, wdog_bark, wdog_bark_nmi;
   wire                          wkup_req, rst_req;
   wire                          sleep;
 
@@ -58,11 +58,13 @@ module tb;
     .lc_escalate_en_i          (lc_escalate_en),
     .intr_wkup_timer_expired_o (wkup_expired),
     .intr_wdog_timer_bark_o    (wdog_bark),
-    .nmi_wdog_timer_bark_o     (/*TODO*/),
+    .nmi_wdog_timer_bark_o     (wdog_bark_nmi),
     .wkup_req_o                (wkup_req),
     .aon_timer_rst_req_o       (rst_req),
     .sleep_mode_i              (sleep)
   );
+
+  `ASSERT(wdog_bark_intr_is_nmi, wdog_bark === wdog_bark_nmi, clk, rst_n)
 
   initial begin
     // Configure interfaces
