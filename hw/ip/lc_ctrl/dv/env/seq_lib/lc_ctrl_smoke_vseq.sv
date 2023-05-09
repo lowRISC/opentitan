@@ -127,7 +127,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
     kmac_pkg::rsp_digest_t kmac_digest;
     // No token for InvalidTokenIdx
     lc_ctrl_state_pkg::lc_token_t tokens_a[NumTokens-1];
-    tokens_a[ZeroTokenIdx]       = 0;
+    tokens_a[ZeroTokenIdx]       = lc_ctrl_state_pkg::AllZeroTokenHashed;
     tokens_a[RawUnlockTokenIdx]  = lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed;
     tokens_a[TestUnlockTokenIdx] = cfg.lc_ctrl_vif.otp_i.test_unlock_token;
     tokens_a[TestExitTokenIdx]   = cfg.lc_ctrl_vif.otp_i.test_exit_token;
