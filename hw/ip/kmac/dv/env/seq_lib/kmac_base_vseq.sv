@@ -284,11 +284,6 @@ class kmac_base_vseq extends cip_base_vseq #(
     if (do_kmac_init) kmac_init();
   endtask
 
-  virtual task dut_shutdown();
-    // check for pending kmac operations and wait for them to complete
-    // TODO
-  endtask
-
   virtual task pre_start();
     super.pre_start();
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(static_entropy_mode,
@@ -520,9 +515,6 @@ class kmac_base_vseq extends cip_base_vseq #(
     // stream into chunks of 32-bits (size of the PREFIX csr)
     prefix_bytes = {encoded_fname, encoded_custom_str};
     for (int i = 0; i < (fname_len + custom_str_len) / 4 + 2 ; i++) begin
-      // TODO - Xcelium currently does not support `with` operator,
-      //        workaround needs to be used.
-      //prefix_arr[i] = {<< byte {prefix_bytes with [i*4 +: 4]}};
       bit [7:0] prefix_word_arr[] = new[4];
       for (int j = i*4; (j < i*4 + 4) && (j < prefix_bytes.size()); j++) begin
         prefix_word_arr[j % 4] = prefix_bytes[j];
@@ -688,8 +680,6 @@ class kmac_base_vseq extends cip_base_vseq #(
       `uvm_info(`gfn, $sformatf("data_mask = 0x%0x", data_mask), UVM_HIGH)
 
       // Write to the msgfifo
-      //
-      // TODO: randomize non/blocking?
       tl_access(.addr(ral.get_addr_from_offset(fifo_addr)),
                 .write(1),
                 .data(data_word),

@@ -234,7 +234,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   endtask
 
   // This task will check for any sideload keys that have been provided
-  // TODO: use this for error case instead
+  // ICEBOX: use this for error case instead
   virtual task process_sideload_key();
   /*
     @(negedge cfg.under_reset);
@@ -666,7 +666,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           if (item.a_data[KmacFifoEmpty]) intr_fifo_empty = 0;
           if (item.a_data[KmacErr])       intr_kmac_err = 0;
         end else if (data_phase_read) begin
-          // TODO: check below
+          // ICEBOX: check below
           do_read_check = 0;
           if (item.d_data[KmacDone]) begin
             sha3_absorb = 0;
@@ -756,7 +756,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       "cmd": begin
         // Writing to CMD will always result in the KMAC doing something
         //
-        // TODO - handle error cases
+        // ICEBOX - handle error cases
         if (addr_phase_write) begin
           bit [KmacCmdIdx:0] kmac_cmd = item.a_data[KmacCmdIdx:0];
 
@@ -971,7 +971,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         end
       end
       "key_len": begin
-        // TODO need to do error checking
+        // ICEBOX need to do error checking
         if (addr_phase_write) begin
           key_len = key_len_e'(item.a_data);
         end
@@ -984,7 +984,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             // track in which SHA state does the error happen.
             kmac_pkg::err_t err_chk_mask = '1;
             err_chk_mask.info[kmac_st_idx +: 2] = 0;
-            // TODO: add some direct sequence to check this error information.
+            // ICEBOX: add some direct sequence to check this error information.
             do_read_check = 0;
             `DV_CHECK_EQ(csr.get_mirrored_value() & err_chk_mask, item.d_data & err_chk_mask,
                          $sformatf("reg name: %0s", csr.get_full_name()))
@@ -1060,7 +1060,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           kmac_err.info   = {8'h0, 8'(app_st), 8'(app_mux_sel)};
           predict_err(.is_kmac_err(1));
         end else if (checked_kmac_cmd != CmdStart) begin
-          // TODO
+          // ICEBOX
           //
           // If we get here we are writing to the msgfifo in an invalid state.
           // Implement error checking here.

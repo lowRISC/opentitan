@@ -22,7 +22,6 @@ interface kmac_cov_if
       bins inactive = {KeccakStIdle};
     }
 
-    // TODO: check with designer, this might be unreachable.
     kmac_msgfifo_full: coverpoint msgfifo_full {
       bins full     = {1};
       bins not_full = {0};

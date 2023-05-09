@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Trigger KeyNotValid error by not providing valid keymgr key during kmac transaction.
-// TODO(#10704): current RTL only supports this error in app mode.
+// ICEBOX(#10704): current RTL only supports this error in app mode.
 class kmac_key_error_vseq extends kmac_app_vseq;
 
   `uvm_object_utils(kmac_key_error_vseq)
@@ -54,13 +54,13 @@ class kmac_key_error_vseq extends kmac_app_vseq;
       // Wait randomly time before check status and issue err_processed.
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 10_000));
 
-      // TODO(#10835): Check with designer if sha3_idle should be set to 0.
+      // ICEBOX(#10835): Check with designer if sha3_idle should be set to 0.
       csr_rd_check(.ptr(ral.status), .compare_value(ral.status.get_reset()));
       csr_rd_check(.ptr(ral.err_code), .compare_value(kmac_err));
       check_err();
     end
 
-    // TODO: enable scb and run normal sequence, then add this sequence to stress_all sequence.
+    // ICEBOX: enable scb and run normal sequence, then add this sequence to stress_all sequence.
     // cfg.en_scb = 1;
     // super.body();
   endtask

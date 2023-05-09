@@ -60,7 +60,7 @@ class kmac_lc_escalation_vseq extends kmac_app_vseq;
       // Check if kmac will accept any SW request.
       kmac_sw_lock_check();
 
-      // TODO: Add checking for kmac app request.
+      // Checking for kmac app request.
       kmac_app_lock_check();
     end
   endtask
@@ -74,7 +74,7 @@ class kmac_lc_escalation_vseq extends kmac_app_vseq;
   virtual task check_lc_escalate_status();
     csr_rd_check(.ptr(ral.status.alert_fatal_fault), .compare_value(1'b1));
     csr_rd_check(.ptr(ral.status.sha3_idle), .compare_value(1'b0));
-    // TODO(#10804): confirm with designer if we need an error code here.
+    // ICEBOX(#10804): confirm with designer if we need an error code here.
     // csr_rd_check(.ptr(ral.err_code), .compare_value(?));
   endtask
 

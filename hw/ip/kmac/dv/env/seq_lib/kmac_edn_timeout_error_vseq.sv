@@ -45,7 +45,7 @@ class kmac_edn_timeout_error_vseq extends kmac_app_vseq;
   virtual task post_start();
     super.post_start();
 
-    // TODO: enable scb and run normal sequence, then add this sequence to stress_all sequence.
+    // ICEBOX: enable scb and run normal sequence, then add this sequence to stress_all sequence.
     // cfg.en_scb = 1;
   endtask
 
