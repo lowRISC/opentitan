@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
@@ -35,7 +36,7 @@ void boot_measurements_test(void) {
       (const char *)manifest + offsetof(manifest_t, usage_constraints);
   const char *manifest_end = (const char *)manifest + sizeof(manifest_t);
   const char *image_end = (const char *)manifest + manifest->length;
-  size_t signed_region_size = image_end - signed_region_start;
+  ptrdiff_t signed_region_size = image_end - signed_region_start;
 
   CHECK_WORD_ALIGNED(manifest);
   CHECK_WORD_ALIGNED(signed_region_start);
@@ -51,8 +52,10 @@ void boot_measurements_test(void) {
                  .digest_endianness = kDifHmacEndiannessLittle,
                  .message_endianness = kDifHmacEndiannessLittle,
              }));
+  CHECK(signed_region_size >= 0 && signed_region_size <= SIZE_MAX,
+        "signed_region_size must fit in a size_t");
   CHECK_STATUS_OK(hmac_testutils_push_message(&hmac, signed_region_start,
-                                              signed_region_size));
+                                              (size_t)signed_region_size));
   CHECK_DIF_OK(dif_hmac_process(&hmac));
   dif_hmac_digest_t act_digest;
   CHECK_STATUS_OK(hmac_testutils_finish_polled(&hmac, &act_digest));
