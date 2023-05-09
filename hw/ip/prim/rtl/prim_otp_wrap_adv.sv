@@ -114,7 +114,9 @@ module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
     .rdata_o    ( rdata_sram ),
     .rvalid_o   (            )
   );
-    `else
+    `endif 
+  `endif 
+ `else // !`ifdef TARGET_SYNTHESIS
   otp_rom #(
     .Width(TotalWidth),
     .Depth(Depth),
@@ -128,10 +130,7 @@ module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
   );
   logic  unused;
   assign unused = ^wdata_q & ^wmask_q & ^write_q;
-    `endif 
-  `endif 
-`else 
-  prim_ram_1p #(
+  /*prim_ram_1p #(
     .MemInitFile     (MemInitFile),
     .Width           (TotalWidth),
     .Depth           (Depth),
@@ -147,7 +146,7 @@ module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
     .wmask_i  (wmask_q),
     .rdata_o  (rdata_sram),
     .cfg_i
-  );
+  );*/
 `endif 
  
   always_ff @(posedge clk_i or negedge rst_ni) begin
