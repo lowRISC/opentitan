@@ -42,7 +42,7 @@ dif_result_t dif_aes_alert_force(const dif_aes_t *aes, dif_aes_alert_t alert) {
   }
 
   uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
-  mmio_region_write32(aes->base_addr, AES_ALERT_TEST_REG_OFFSET,
+  mmio_region_write32(aes->base_addr, (ptrdiff_t)AES_ALERT_TEST_REG_OFFSET,
                       alert_test_reg);
 
   return kDifOk;

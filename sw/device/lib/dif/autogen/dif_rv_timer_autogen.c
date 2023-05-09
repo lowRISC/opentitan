@@ -47,7 +47,8 @@ dif_result_t dif_rv_timer_alert_force(const dif_rv_timer_t *rv_timer,
   }
 
   uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
-  mmio_region_write32(rv_timer->base_addr, RV_TIMER_ALERT_TEST_REG_OFFSET,
+  mmio_region_write32(rv_timer->base_addr,
+                      (ptrdiff_t)RV_TIMER_ALERT_TEST_REG_OFFSET,
                       alert_test_reg);
 
   return kDifOk;
@@ -141,8 +142,8 @@ dif_result_t dif_rv_timer_irq_get_state(
 
   switch (hart_id) {
     case 0:
-      *snapshot = mmio_region_read32(rv_timer->base_addr,
-                                     RV_TIMER_INTR_STATE0_REG_OFFSET);
+      *snapshot = mmio_region_read32(
+          rv_timer->base_addr, (ptrdiff_t)RV_TIMER_INTR_STATE0_REG_OFFSET);
 
       break;
     default:
@@ -162,8 +163,8 @@ dif_result_t dif_rv_timer_irq_acknowledge_state(
 
   switch (hart_id) {
     case 0:
-      mmio_region_write32(rv_timer->base_addr, RV_TIMER_INTR_STATE0_REG_OFFSET,
-                          snapshot);
+      mmio_region_write32(rv_timer->base_addr,
+                          (ptrdiff_t)RV_TIMER_INTR_STATE0_REG_OFFSET, snapshot);
 
       break;
     default:
@@ -190,7 +191,8 @@ dif_result_t dif_rv_timer_irq_is_pending(const dif_rv_timer_t *rv_timer,
   if (!rv_timer_get_irq_reg_offset(kDifRvTimerIntrRegState, irq, &reg_offset)) {
     return kDifBadArg;
   }
-  uint32_t intr_state_reg = mmio_region_read32(rv_timer->base_addr, reg_offset);
+  uint32_t intr_state_reg =
+      mmio_region_read32(rv_timer->base_addr, (ptrdiff_t)reg_offset);
 
   *is_pending = bitfield_bit32_read(intr_state_reg, index);
 
@@ -207,7 +209,8 @@ dif_result_t dif_rv_timer_irq_acknowledge_all(const dif_rv_timer_t *rv_timer,
   // Writing to the register clears the corresponding bits (Write-one clear).
   switch (hart_id) {
     case 0:
-      mmio_region_write32(rv_timer->base_addr, RV_TIMER_INTR_STATE0_REG_OFFSET,
+      mmio_region_write32(rv_timer->base_addr,
+                          (ptrdiff_t)RV_TIMER_INTR_STATE0_REG_OFFSET,
                           UINT32_MAX);
 
       break;
@@ -236,7 +239,8 @@ dif_result_t dif_rv_timer_irq_acknowledge(const dif_rv_timer_t *rv_timer,
   if (!rv_timer_get_irq_reg_offset(kDifRvTimerIntrRegState, irq, &reg_offset)) {
     return kDifBadArg;
   }
-  mmio_region_write32(rv_timer->base_addr, reg_offset, intr_state_reg);
+  mmio_region_write32(rv_timer->base_addr, (ptrdiff_t)reg_offset,
+                      intr_state_reg);
 
   return kDifOk;
 }
@@ -258,7 +262,8 @@ dif_result_t dif_rv_timer_irq_force(const dif_rv_timer_t *rv_timer,
   if (!rv_timer_get_irq_reg_offset(kDifRvTimerIntrRegTest, irq, &reg_offset)) {
     return kDifBadArg;
   }
-  mmio_region_write32(rv_timer->base_addr, reg_offset, intr_test_reg);
+  mmio_region_write32(rv_timer->base_addr, (ptrdiff_t)reg_offset,
+                      intr_test_reg);
 
   return kDifOk;
 }
@@ -282,7 +287,7 @@ dif_result_t dif_rv_timer_irq_get_enabled(const dif_rv_timer_t *rv_timer,
     return kDifBadArg;
   }
   uint32_t intr_enable_reg =
-      mmio_region_read32(rv_timer->base_addr, reg_offset);
+      mmio_region_read32(rv_timer->base_addr, (ptrdiff_t)reg_offset);
 
   bool is_enabled = bitfield_bit32_read(intr_enable_reg, index);
   *state = is_enabled ? kDifToggleEnabled : kDifToggleDisabled;
@@ -309,11 +314,12 @@ dif_result_t dif_rv_timer_irq_set_enabled(const dif_rv_timer_t *rv_timer,
     return kDifBadArg;
   }
   uint32_t intr_enable_reg =
-      mmio_region_read32(rv_timer->base_addr, reg_offset);
+      mmio_region_read32(rv_timer->base_addr, (ptrdiff_t)reg_offset);
 
   bool enable_bit = (state == kDifToggleEnabled) ? true : false;
   intr_enable_reg = bitfield_bit32_write(intr_enable_reg, index, enable_bit);
-  mmio_region_write32(rv_timer->base_addr, reg_offset, intr_enable_reg);
+  mmio_region_write32(rv_timer->base_addr, (ptrdiff_t)reg_offset,
+                      intr_enable_reg);
 
   return kDifOk;
 }
@@ -330,8 +336,8 @@ dif_result_t dif_rv_timer_irq_disable_all(
   if (snapshot != NULL) {
     switch (hart_id) {
       case 0:
-        *snapshot = mmio_region_read32(rv_timer->base_addr,
-                                       RV_TIMER_INTR_ENABLE0_REG_OFFSET);
+        *snapshot = mmio_region_read32(
+            rv_timer->base_addr, (ptrdiff_t)RV_TIMER_INTR_ENABLE0_REG_OFFSET);
 
         break;
       default:
@@ -342,8 +348,8 @@ dif_result_t dif_rv_timer_irq_disable_all(
   // Disable all interrupts.
   switch (hart_id) {
     case 0:
-      mmio_region_write32(rv_timer->base_addr, RV_TIMER_INTR_ENABLE0_REG_OFFSET,
-                          0u);
+      mmio_region_write32(rv_timer->base_addr,
+                          (ptrdiff_t)RV_TIMER_INTR_ENABLE0_REG_OFFSET, 0u);
 
       break;
     default:
@@ -363,7 +369,8 @@ dif_result_t dif_rv_timer_irq_restore_all(
 
   switch (hart_id) {
     case 0:
-      mmio_region_write32(rv_timer->base_addr, RV_TIMER_INTR_ENABLE0_REG_OFFSET,
+      mmio_region_write32(rv_timer->base_addr,
+                          (ptrdiff_t)RV_TIMER_INTR_ENABLE0_REG_OFFSET,
                           *snapshot);
 
       break;
