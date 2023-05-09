@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_DATATYPES_H_
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/status.h"
 
 /**
  * @file
@@ -34,7 +35,8 @@ extern "C" {
  *     Hamming distance with the other valid status codes
  *   - The final 5 bits are an Abseil-compatible error code
  */
-typedef enum crypto_status {
+typedef status_t crypto_status_t;
+typedef enum crypto_status_value {
   // Status is OK; no errors.
   kCryptoStatusOK = 0x739,
   // Invalid input arguments; wrong length or invalid type.
@@ -48,7 +50,23 @@ typedef enum crypto_status {
   // TODO: remove all instances of this error before release; it is to track
   // implementations that are not yet complete.
   kCryptoStatusNotImplemented = 0x80001fec,
-} crypto_status_t;
+} crypto_status_value_t;
+
+/*
+// Status is OK; no errors.
+const crypto_status_t kCryptoStatusOK = { .value = 0x739};
+// Invalid input arguments; wrong length or invalid type.
+const crypto_status_t kCryptoStatusBadArgs = { .value = 0x8000b073};
+// Error after which it is OK to retry (e.g. timeout).
+const crypto_status_t kCryptoStatusInternalError = { .value = 0x80005c3a};
+// Error after which it is not OK to retry (e.g. integrity check).
+const crypto_status_t kCryptoStatusFatalError = { .value = 0x8000f5c9};
+// An asynchronous operation is still in progress.
+const crypto_status_t kCryptoStatusAsyncIncomplete = { .value = 0x8000ae1e};
+// TODO: remove all instances of this error before release; it is to track
+// implementations that are not yet complete.
+const crypto_status_t kCryptoStatusNotImplemented = { .value = 0x80001fec};
+*/
 
 /**
  * Struct to handle crypto data buffer with pointer and length.

@@ -196,18 +196,18 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
                               hash_mode_t hash_mode,
                               crypto_uint8_buf_t *digest) {
   if (input_message.data == NULL && input_message.len != 0) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   if (digest == NULL || digest->data == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Check `digest->len` is consistent with `hash_mode`
   size_t expected_digest_len;
   OTCRYPTO_TRY_INTERPRET(get_digest_size(hash_mode, &expected_digest_len));
   if (expected_digest_len != digest->len) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   switch (hash_mode) {
@@ -237,10 +237,10 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
       break;
     default:
       // Unrecognized hash mode.
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
@@ -251,7 +251,7 @@ crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
                              crypto_uint8_buf_t *digest) {
   // TODO: (#16410) Add error checks
   if (required_output_len != digest->len) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // According to NIST SP 800-185 Section 3.2, cSHAKE call should use SHAKE, if
@@ -280,10 +280,10 @@ crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
           input_message, function_name_string, customization_string, digest));
       break;
     default:
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
@@ -310,16 +310,16 @@ crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
     }
     default:
       // Unrecognized or unsupported hash mode.
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
                                      crypto_const_uint8_buf_t input_message) {
   if (input_message.data == NULL && input_message.len != 0) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   switch (ctx->mode) {
@@ -349,23 +349,23 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
     }
     default:
       // Unrecognized or unsupported hash mode.
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
                                     crypto_uint8_buf_t *digest) {
   if (digest == NULL || digest->data == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Check `digest->len` is consistent with `ctx->mode`
   size_t expected_digest_len;
   OTCRYPTO_TRY_INTERPRET(get_digest_size(ctx->mode, &expected_digest_len));
   if (expected_digest_len != digest->len) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   switch (ctx->mode) {
@@ -384,13 +384,13 @@ crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
     case kHashModeSha512: {
       sha512_state_t state;
       sha512_state_restore(ctx, &state);
-      OTCRYPTO_TRY_INTERPRET(sha512_final(&state, digest->data));
+      HARDENED_TRY(sha512_final(&state, digest->data));
       break;
     }
     default:
       // Unrecognized or unsupported hash mode.
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
