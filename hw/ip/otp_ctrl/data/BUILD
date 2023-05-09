@@ -321,13 +321,6 @@ otp_json(
         name = "otp_json_test_unlocked{}".format(i),
         partitions = [
             otp_partition(
-                name = "CREATOR_SW_CFG",
-                items = {
-                    # ROM execution is enabled if this item is set to a non-zero value.
-                    "CREATOR_SW_CFG_ROM_EXEC_EN": "0xffffffff",
-                },
-            ),
-            otp_partition(
                 name = "LIFE_CYCLE",
                 count = (i * 2) + 1,
                 state = "TEST_UNLOCKED{}".format(i),
