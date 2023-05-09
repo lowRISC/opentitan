@@ -369,7 +369,7 @@ static size_t write_status(buffer_sink_t out, status_t value, bool as_json) {
   size_t len = 0;
 
   len += out.sink(out.data, "{\"", as_json ? 2 : 0);
-  len += out.sink(out.data, start, end - start);
+  len += out.sink(out.data, start, (size_t)(end - start));
   len += out.sink(out.data, "\"", as_json ? 1 : 0);
 
   len += out.sink(out.data, ":", 1);
@@ -377,11 +377,11 @@ static size_t write_status(buffer_sink_t out, status_t value, bool as_json) {
     // All error codes include the module identifier.
     len += out.sink(out.data, "[", 1);
     len += out.sink(out.data, mod, sizeof(mod));
-    len += write_digits(out, arg, 0, 0, 10, kDigitsLow);
+    len += write_digits(out, (uint32_t)arg, 0, 0, 10, kDigitsLow);
     len += out.sink(out.data, "]", 1);
   } else {
     // Ok codes include only the arg
-    len += write_digits(out, arg, 0, 0, 10, kDigitsLow);
+    len += write_digits(out, (uint32_t)arg, 0, 0, 10, kDigitsLow);
   }
   len += out.sink(out.data, "}", as_json ? 1 : 0);
   return len;
