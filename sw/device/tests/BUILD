@@ -2061,8 +2061,8 @@ opentitan_functest(
     name = "usbdev_suspend_test",
     srcs = ["usbdev_suspend_test.c"],
     cw310 = cw310_params(
-        tags = ["skip_in_ci"],  # Requires DPI model
         timeout = "eternal",
+        tags = ["skip_in_ci"],  # Requires DPI model
     ),
     targets = [
         "verilator",
@@ -2086,9 +2086,11 @@ opentitan_functest(
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing:usb_testutils",
         "//sw/device/lib/testing:usb_testutils_streams",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
 

@@ -137,6 +137,7 @@ module usbdpi #(
 
   // USB monitor state
   // Note: MUST be kept consistent with usbdpi_monitor_state_t in usb_monitor.c
+  // to aid in reading waveform traces.
   typedef enum bit [1:0] {
     MS_IDLE = 0,
     MS_GET_PID,
@@ -144,18 +145,23 @@ module usbdpi #(
   } usb_monitor_state_t;
 
   // USB driver state
-  // Note: MUST be kept consistent with usbdpi_drv_state_t in usbdpi.h
+  // Note: MUST be kept consistent with usbdpi_drv_state_t in usbdpi.h to
+  // aid in reading waveform traces.
   typedef enum bit [3:0] {
-    ST_IDLE = 0,
-    ST_SEND = 1,
-    ST_GET = 2,
-    ST_SYNC = 3,
-    ST_EOP = 4,
-    ST_EOP0 = 5,
-    ST_RESUME = 6
+    ST_DISCONNECT = 0,
+    ST_RESET,
+    ST_IDLE,
+    ST_SEND,
+    ST_GET,
+    ST_SYNC,
+    ST_EOP,
+    ST_EOP0,
+    ST_RESUME
   } usbdpi_drv_state_t;
 
   // Test steps
+  // Note: MUST be kept consistent with usbdpi_test_step_t in usbdpi_test.h to
+  // aid in reading waveform traces.
   typedef enum bit [6:0] {
 
     STEP_BUS_RESET = 7'h0,

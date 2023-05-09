@@ -20,10 +20,10 @@ typedef enum usb_testutils_test_number {
 // Suspend Test phases (see usbdev_suspend_test.c)
 typedef enum {
   kSuspendPhaseSuspend = 0u,
-  kSuspendPhaseSleepActivity,
+  kSuspendPhaseSleepResume,
   kSuspendPhaseSleepReset,
   kSuspendPhaseSleepDisconnect,
-  kSuspendPhaseDeepActivity,
+  kSuspendPhaseDeepResume,
   kSuspendPhaseDeepReset,
   kSuspendPhaseDeepDisconnect,
 } usbdev_suspend_phase_t;

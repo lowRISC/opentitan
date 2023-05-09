@@ -174,13 +174,15 @@ extern "C" {
 
 // USBDPI driver states
 typedef enum {
-  ST_IDLE = 0,
-  ST_SEND = 1,
-  ST_GET = 2,
-  ST_SYNC = 3,
-  ST_EOP = 4,
-  ST_EOP0 = 5,
-  ST_RESUME = 6,
+  ST_DISCONNECT = 0,
+  ST_RESET,
+  ST_IDLE,
+  ST_SEND,
+  ST_GET,
+  ST_SYNC,
+  ST_EOP,
+  ST_EOP0,
+  ST_RESUME,
 } usbdpi_drv_state_t;
 
 // Host states
@@ -340,6 +342,10 @@ struct usbdpi_ctx {
    * Current time in USB bit intervals
    */
   uint32_t tick_bits;
+  /**
+   * Time at which VBUS/SENSE shall be asserted
+   */
+  uint32_t sense_time;
   /**
    * End time of bus reset (following device attachment)
    */

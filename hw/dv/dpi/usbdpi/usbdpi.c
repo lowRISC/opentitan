@@ -20,8 +20,9 @@
 #include "usbdpi_test.h"
 
 // Indexed directly by ctx->state (ST_)
-static const char *st_states[] = {"ST_IDLE 0", "ST_SEND 1", "ST_GET 2",
-                                  "ST_SYNC 3", "ST_EOP 4",  "ST_EOP0 5", "ST_RESUME"};
+static const char *st_states[] = {
+    "ST_DISCONNECT 0", "ST_RESET 1", "ST_IDLE 2", "ST_SEND 3",  "ST_GET 4",
+    "ST_SYNC 5",       "ST_EOP 6",   "ST_EOP0 7", "ST_RESUME 8"};
 
 // Indexed directly by ct-x>hostSt (HS_)
 static const char *hs_states[] = {
@@ -77,6 +78,15 @@ static void tryTX(usbdpi_ctx_t *ctx, uint8_t endpoint, bool expect_status);
 static void usbdpi_data_callback(void *ctx_v, usbmon_data_type_t type,
                                  uint8_t d);
 
+// Disconnect VBUS/power and prepare to (re)connect.
+static void bus_disconnect(usbdpi_ctx_t *ctx, uint32_t delay) {
+  // Determine the time at which VBUS/SENSE should be (re)applied.
+  ctx->sense_time = ctx->tick_bits + delay;
+
+  // Disconnect the VBUS signal/power
+  ctx->driving &= ~P2D_SENSE;
+}
+
 // Initialize the state of the DPI model appropriately for when the device
 // connects to the bus
 static void bus_reset(usbdpi_ctx_t *ctx) {
@@ -91,12 +101,24 @@ static void bus_reset(usbdpi_ctx_t *ctx) {
   }
 
   ctx->baudrate_set_successfully = 0;
-  ctx->state = ST_IDLE;
 
-  ctx->step = STEP_BUS_RESET;
   ctx->hostSt = HS_NEXTFRAME;
 
-  // TODO - perhaps we want to differentiate between Idle and Disconnected?
+  // Hold the bus in reset by driving to SE0; Reset Signaling should
+  // assert this bus state for a minimum of 10ms but simulation time
+  // is expensive...
+  //
+  // A Bus Reset may be detected after 2.5us
+  const unsigned usec = 12u;
+  ctx->reset_time = ctx->tick_bits + 3 * usec;
+
+  // This Reset Recovery interval combined with the delay in frame_start()
+  // means that we'll allow a bus frame to elapse between removing the Bus Reset
+  // and attempting to send SOF and the first SETUP packet
+  ctx->recovery_time = ctx->tick_bits + FRAME_INTERVAL / 2;
+  ctx->state = ST_RESET;
+
+  // TODO: perhaps we want to differentiate between Idle and Disconnected?
   ctx->bus_state = kUsbIdle;
 }
 
@@ -118,21 +140,9 @@ void *usbdpi_create(const char *name, int loglevel) {
   // ctx->driving = 0;
   // ctx->baudrate_set_successfully = 0;
 
-  // Initialize state for each endpoint and direction
-  for (unsigned ep = 0U; ep < USBDPI_MAX_ENDPOINTS; ep++) {
-    // First DATAx received shall be DATA0
-    ctx->ep_in[ep].next_data = USB_PID_DATA0;
-
-    // First DATAx transmitted shall be DATA0 because it must follow a SETUP
-    // transaction
-    ctx->ep_out[ep].next_data = USB_PID_DATA0;
-  }
-
-  ctx->state = ST_IDLE;
-  ctx->hostSt = HS_NEXTFRAME;
   ctx->loglevel = loglevel;
 
-  ctx->step = STEP_BUS_RESET;
+  bus_disconnect(ctx, SENSE_AT);
 
   char cwd[FILENAME_MAX];
   char *cwd_rv;
@@ -189,7 +199,7 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
     }
   }
 
-  // TODO - check the timing of the device responses to ensure compliance with
+  // TODO: check the timing of the device responses to ensure compliance with
   // the specification; the response time of acknowledgements, for example, has
   // a hard real time requirement that is specified in terms of bit intervals
   if (d2p & (D2P_DP_EN | D2P_DN_EN | D2P_D_EN)) {
@@ -210,27 +220,28 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
 
       // Device to host transmission; collect the bits
       case ST_GET:
-        // TODO - perform bit-level decoding and packet construction here rather
+        // TODO: perform bit-level decoding and packet construction here rather
         // than relying upon usb_monitor to do that
-        // TODO - synchronize with the device transmission and check that the
+        // TODO: synchronize with the device transmission and check that the
         // signals remain stable across all 4 cycles of the bit interval
         break;
 
       case ST_RESUME:
         printf(
-          "[usbdpi] Device traffic during resume signaling; tick_bits 0x%x error state %s hs %s and device drives 0x%x\n", ctx->tick_bits, st_states[ctx->state], hs_states[ctx->hostSt], d2p);
+            "[usbdpi] Device traffic during resume signaling; tick_bits 0x%x "
+            "error state %s hs %s and device drives 0x%x\n",
+            ctx->tick_bits, st_states[ctx->state], hs_states[ctx->hostSt], d2p);
         break;
 
       case ST_IDLE:
-        // Nothing to do
+        // Device is trying to transmit
+        ctx->state = ST_GET;
         break;
 
       default:
         assert(!"Invalid/unknown state");
         break;
     }
-
-    ctx->state = ST_GET;
   } else {
     if (ctx->state == ST_GET) {
       ctx->state = ST_IDLE;
@@ -251,7 +262,7 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
     ctx->last_pu = d2p & D2P_PU;
   }
 
-  // TODO - prime candidate for a function
+  // TODO: prime candidate for a function
   if (ctx->loglevel & LOG_BIT) {
     char raw_str[D2P_BITS + 1];
     {
@@ -1126,17 +1137,24 @@ uint32_t inv_driving(usbdpi_ctx_t *ctx, uint32_t d2p) {
   return ctx->driving ^ (P2D_DP | P2D_DN | P2D_D);
 }
 
-// Change state to commence a new bus frame immediately.
+// Change state to commence a new bus frame, after half a frame interval; this
+// is a compromise between simulating a full Reset Recovery Time and starting
+// the DPI traffic too early for the sw to be ready.
 static void frame_start(usbdpi_ctx_t *ctx) {
   // uint32_t gives us 396s of simulation time when counting FS bit intervals
   // which should be more than enough.
-  if (ctx->tick_bits >= FRAME_INTERVAL) {
-    ctx->frame_start = ctx->tick_bits - FRAME_INTERVAL;
+  if (ctx->tick_bits >= FRAME_INTERVAL / 2) {
+    ctx->frame_start = ctx->tick_bits - FRAME_INTERVAL / 2;
   } else {
-    ctx->tick_bits = ctx->frame_start + FRAME_INTERVAL;
+    // Wind the clock forwards such that half a frame interval has elapsed.
+    ctx->tick_bits = ctx->frame_start + FRAME_INTERVAL / 2;
+    ctx->tick = ctx->tick_bits << 2;
   }
-  ctx->framepend = true;
+
+  // We are ready for the next frame to start
+  ctx->hostSt = HS_NEXTFRAME;
   ctx->state = ST_IDLE;
+  ctx->framepend = true;
 }
 
 uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
@@ -1163,32 +1181,21 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
               (ctx->state != ST_IDLE) && (ctx->state != ST_GET), ctx->driving,
               d2p, &(ctx->lastrxpid));
 
-  if (ctx->tick_bits == SENSE_AT) {
-    ctx->driving |= P2D_SENSE;
-  }
-
-  // Device presence indicated by pull up?
-  if ((d2p & D2P_PU) == 0) {
-    ctx->reset_time = ctx->tick + 2 * 48;
-    ctx->recovery_time = ctx->tick + 4 * 48;
-    return ctx->driving;
-  }
-
-  // Are we still holding the bus in reset?
-  if (ctx->tick < ctx->reset_time) {
-    // SE0
-    ctx->driving &= ~(P2D_DN | P2D_DP | P2D_D);
-    return ctx->driving;
-  }
-
-  // Are we allowed to start transmitting yet; device recovery time elapsed?
-  if (ctx->tick < ctx->recovery_time) {
-    // In the event that the device disconnected, we must start anew in
-    // anticipation of a reconnection
-    bus_reset(ctx);
-
-    ctx->frame_start = ctx->tick_bits;
-    return ctx->driving;
+  if (ctx->state == ST_DISCONNECT) {
+    // Is it time to assert the VBUS/SENSE?
+    if (ctx->tick_bits == ctx->sense_time) {
+      ctx->driving |= P2D_SENSE;
+      // Remain in DISCONNECT until we detect the presence of the device
+    }
+    // Device presence indicated by pull up?
+    if (d2p & D2P_PU) {
+      bus_reset(ctx);
+    }
+  } else {
+    if ((d2p & D2P_PU) == 0) {
+      // Device not present; by ready for (re)connection...
+      bus_disconnect(ctx, FRAME_INTERVAL / 2);
+    }
   }
 
   // Time to commence a new bus frame?
@@ -1231,24 +1238,28 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
             ctx->num_tries = 0U;
             ctx->hostSt = HS_STARTFRAME;
           } else {
-            // This normally means that we did not get the expected response to a
-            // Control Transfer stage (Data/Status), so retry if we haven't
+            // This normally means that we did not get the expected response to
+            // a Control Transfer stage (Data/Status), so retry if we haven't
             // already exhausted our retry attempts.
             if (ctx->num_tries++ >= USBDPI_MAX_RETRIES) {
               ctx->num_tries = 0U;
               assert(!"USBDPI: no response to Control Transfer");
             } else {
-              printf("[usbdpi] Warning: DPI Host not ready to start new frame\n");
-              // For now we'll just start the Control Transfer again, because this
-              // means sending a SETUP packet which should reset the device
-              // behavior; later we may want to mimic more accurately a real host.
+              printf(
+                  "[usbdpi] Warning: DPI Host not ready to start new frame\n");
+              // For now we'll just start the Control Transfer again, because
+              // this means sending a SETUP packet which should reset the device
+              // behavior; later we may want to mimic more accurately a real
+              // host.
               ctx->hostSt = HS_STARTFRAME;
             }
           }
         }
         break;
 
-      // Bus frames are not honored during resume signaling
+      // Bus frames are not honored during Reset Signaling or Resume Signaling
+      case ST_DISCONNECT:
+      case ST_RESET:
       case ST_RESUME:
         break;
 
@@ -1275,15 +1286,14 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
 
       switch (ctx->step) {
         case STEP_BUS_DISCONNECT:
-          // Disconnect the VBUS signal/power
-          ctx->driving &= ~P2D_SENSE;
+          bus_disconnect(ctx, FRAME_INTERVAL / 2);
           break;
 
         case STEP_BUS_RESET:
           if (ctx->hostSt == HS_STARTFRAME) {
             bus_reset(ctx);
-            // Hold the bus in reset by driving to SE0
-            ctx->driving &= ~(P2D_DP | P2D_DN | P2D_D);
+            // After Reset Signaling below and then a Reset Recovery interval,
+            // we'll start with a new bus frame.
           }
           break;
 
@@ -1493,6 +1503,18 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
       ctx->bit <<= 1;
       break;
 
+    case ST_RESET:
+      // Reset signaling requires at least 10ms of SE0
+      if (ctx->tick_bits < ctx->reset_time) {
+        ctx->driving = set_driving(ctx, d2p, 0, true);  // SE0
+      } else if (ctx->tick_bits < ctx->recovery_time) {
+        // Reset Recovery time should be a further 10ms according to the spec.
+        ctx->driving = set_driving(ctx, d2p, P2D_DP, true);  // J
+      } else {
+        frame_start(ctx);
+      }
+      break;
+
     case ST_RESUME:
       // Resume signaling requires at least 20ms of K
       if (ctx->tick_bits < ctx->resume_SE0_end_time) {
@@ -1502,7 +1524,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
         //   (equivalent to 16 HS bit intervals) of SE0, followed by one LS bit
         //   interval of J
         if (ctx->tick_bits < ctx->resume_SE0_end_time) {
-          ctx->driving = set_driving(ctx, d2p, P2D_DN, true);  // SE0
+          ctx->driving = set_driving(ctx, d2p, 0, true);  // SE0
         } else if (ctx->tick_bits < ctx->resume_J_end_time) {
           ctx->driving = set_driving(ctx, d2p, P2D_DP, true);  // J
         } else {
@@ -1514,6 +1536,10 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
 
     case ST_GET:
       // Device is driving the bus; nothing to do here
+      break;
+
+    case ST_DISCONNECT:
+      // Nothing to be done...just waiting.
       break;
 
     default:

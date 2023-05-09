@@ -10,7 +10,7 @@
 
 #define AML_HACK 1
 
-// Timeout constants for Suspend/Resume test
+// Timeout constants for Suspend/Resume test in microseconds
 //   (these may differ depending upon whether the RTL has been modified to
 //    reduce the simulation time!)
 #if AML_HACK
@@ -146,12 +146,9 @@ usbdpi_test_step_t usbdpi_test_seq_next(usbdpi_ctx_t *ctx,
       break;
 
     case STEP_SET_TEST_STATUS:
-      next_step = STEP_BUS_DISCONNECT;
-      break;
-
-    case STEP_BUS_DISCONNECT:
-      // deassert VBUS
-      ctx->driving &= ~P2D_SENSE;
+      // Transition to the Idle state after reporting test status, where we
+      // shall remain until the software concludes the test.
+      next_step = STEP_IDLE;
       break;
 
     // At this point we have discovered which test we are to perform
@@ -179,12 +176,19 @@ usbdpi_test_step_t usbdpi_test_seq_next(usbdpi_ctx_t *ctx,
 
         // Suspend/Resume/Disconnect/Reconnect testing
         case kUsbTestNumberSuspend:
+          // This text remains in each state for a number of test steps
+          next_step = step;
+          // Most tests count 'substep' up to a time interval before performing
+          // the appropriate action/changing state.
           switch (step) {
             case STEP_GET_TEST_CONFIG:
-              if (ctx->test_phase) {
-                next_step = STEP_SUSPEND_LONG;
-              } else {
+              if (ctx->test_phase == kSuspendPhaseSuspend) {
+                // Simple Suspend-Resume test during normal traffic
                 next_step = STEP_SUSPEND;
+              } else {
+                // Longer suspends lead the test software to enter a low power
+                // mode (Normal Sleep or Deep Sleep)
+                next_step = STEP_SUSPEND_LONG;
               }
               ctx->substep = 0u;
               break;
@@ -195,16 +199,12 @@ usbdpi_test_step_t usbdpi_test_seq_next(usbdpi_ctx_t *ctx,
               if (++ctx->substep >= test_frames(kSuspendTimeout)) {
                 next_step = STEP_ACTIVE;
                 ctx->substep = 0u;
-              } else {
-                next_step = STEP_SUSPEND;
               }
               break;
 
             case STEP_ACTIVE:
               if (++ctx->substep >= test_frames(kActiveInterval)) {
                 next_step = STEP_BUS_RESET;
-              } else {
-                next_step = STEP_ACTIVE;
               }
               break;
 
@@ -215,8 +215,8 @@ usbdpi_test_step_t usbdpi_test_seq_next(usbdpi_ctx_t *ctx,
               if (++ctx->substep >= test_frames(kSleepTimeout)) {
                 switch (ctx->test_phase) {
                   // Leave Suspended state by Resume Signaling
-                  case kSuspendPhaseSleepActivity:
-                  case kSuspendPhaseDeepActivity:
+                  case kSuspendPhaseSleepResume:
+                  case kSuspendPhaseDeepResume:
                     next_step = STEP_RESUME;
                     break;
 
@@ -235,8 +235,6 @@ usbdpi_test_step_t usbdpi_test_seq_next(usbdpi_ctx_t *ctx,
                     break;
                 }
                 ctx->substep = 0u;
-              } else {
-                next_step = STEP_SUSPEND_LONG;
               }
               break;
 
@@ -244,23 +242,23 @@ usbdpi_test_step_t usbdpi_test_seq_next(usbdpi_ctx_t *ctx,
               if (++ctx->substep >= test_frames(kResumeInterval)) {
                 // Advance the test phase
                 switch (ctx->test_phase) {
-                  case kSuspendPhaseSleepActivity:
+                  case kSuspendPhaseSleepResume:
                     ctx->test_phase = kSuspendPhaseSleepReset;
                     break;
                   default:
-                    assert(ctx->test_phase == kSuspendPhaseDeepActivity);
+                    assert(ctx->test_phase == kSuspendPhaseDeepResume);
                     ctx->test_phase = kSuspendPhaseDeepReset;
                     break;
                 }
                 // Disconnect the device to signal successful test completion
                 next_step = STEP_SUSPEND_LONG;
-              } else {
-                next_step = STEP_RESUME;
               }
               break;
 
             default:
-              // TODO: any more states that we need to cover here?
+              printf("[usbdpi] Unexpected/invalid state 0x%x in Suspend test",
+                     step);
+              assert(!"Unexpected/invalid state in Suspend test");
               break;
           }
           break;
