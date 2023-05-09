@@ -296,37 +296,6 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "manuf_cp_yield_test_functest",
-    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-    cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_otp_test_unlocked0",
-        tags = ["jtag"],
-        test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
-    ),
-    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom"],
-    test_harness = "//sw/host/tests/manuf/manuf_cp_yield_test",
-    deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-    ],
-)
-
-cc_library(
-    name = "isolated_flash_partition",
-    srcs = ["isolated_flash_partition.c"],
-    hdrs = ["isolated_flash_partition.h"],
-    deps = [
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-    ],
-)
-
 # This is the same as rom_otp_test_unlocked* but with ROM execution disabled.
 [
     otp_image(
@@ -354,6 +323,37 @@ cc_library(
     )
     for i in range(0, 8)
 ]
+
+opentitan_functest(
+    name = "manuf_cp_yield_test_functest",
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
+    cw310 = cw310_params(
+        bitstream = ":bitstream_rom_exec_disabled_test_unlocked0",
+        tags = ["jtag"],
+        test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
+    ),
+    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+    targets = ["cw310_rom"],
+    test_harness = "//sw/host/tests/manuf/manuf_cp_yield_test",
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+    ],
+)
+
+cc_library(
+    name = "isolated_flash_partition",
+    srcs = ["isolated_flash_partition.c"],
+    hdrs = ["isolated_flash_partition.h"],
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+    ],
+)
 
 opentitan_ram_binary(
     name = "sram_device_info_flash_wr_functest",

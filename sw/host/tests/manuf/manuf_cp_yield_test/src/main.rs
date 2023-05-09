@@ -17,7 +17,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
-//use opentitanlib::test_utils::extclk::{ClockSpeed, ExternalClock};
+use opentitanlib::test_utils::extclk::{ClockSpeed, ExternalClock};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::wait_for_status;
 use top_earlgrey::top_earlgrey_memory;
@@ -42,8 +42,7 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     jtag.connect(JtagTap::RiscvTap)
         .context("failed to connect to RISCV TAP over JTAG")?;
 
-    // TODO(#18403): switching to external clock does not succeed. Clkmgr fails to ACK switch.
-    //ExternalClock::enable(&*jtag, ClockSpeed::High).context("failed to enable external clock")?;
+    ExternalClock::enable(&*jtag, ClockSpeed::High).context("failed to enable external clock")?;
 
     // Read and write memory to verify connection.
 
