@@ -107,7 +107,7 @@ dif_result_t dif_lc_ctrl_get_attempts(const dif_lc_ctrl_t *lc, uint8_t *count) {
   uint32_t reg =
       mmio_region_read32(lc->base_addr, LC_CTRL_LC_TRANSITION_CNT_REG_OFFSET);
   uint8_t value =
-      bitfield_field32_read(reg, LC_CTRL_LC_TRANSITION_CNT_CNT_FIELD);
+      (uint8_t)bitfield_field32_read(reg, LC_CTRL_LC_TRANSITION_CNT_CNT_FIELD);
   if (value == LC_CTRL_LC_TRANSITION_CNT_CNT_MASK) {
     return kDifError;
   }
@@ -223,12 +223,12 @@ dif_result_t dif_lc_ctrl_get_hw_rev(const dif_lc_ctrl_t *lc,
 
   uint32_t reg =
       mmio_region_read32(lc->base_addr, LC_CTRL_HW_REVISION0_REG_OFFSET);
-  hw_rev->silicon_creator_id =
-      bitfield_field32_read(reg, LC_CTRL_HW_REVISION0_SILICON_CREATOR_ID_FIELD);
-  hw_rev->product_id =
-      bitfield_field32_read(reg, LC_CTRL_HW_REVISION0_PRODUCT_ID_FIELD);
-  hw_rev->revision_id =
-      bitfield_field32_read(reg, LC_CTRL_HW_REVISION1_REVISION_ID_FIELD);
+  hw_rev->silicon_creator_id = (uint16_t)bitfield_field32_read(
+      reg, LC_CTRL_HW_REVISION0_SILICON_CREATOR_ID_FIELD);
+  hw_rev->product_id = (uint16_t)bitfield_field32_read(
+      reg, LC_CTRL_HW_REVISION0_PRODUCT_ID_FIELD);
+  hw_rev->revision_id = (uint8_t)bitfield_field32_read(
+      reg, LC_CTRL_HW_REVISION1_REVISION_ID_FIELD);
   return kDifOk;
 }
 

@@ -40,9 +40,9 @@ dif_result_t dif_pwm_configure(const dif_pwm_t *pwm, dif_pwm_config_t config) {
   // `DC_RESN` = log2(`beats_per_pulse_cycle`) - 1
   //
   // To compute the log2, we can find the index of the most-significant 1-bit,
-  // the lastly, substract 1.
-  uint32_t dc_resn_val =
-      30 - bitfield_count_leading_zeroes32(config.beats_per_pulse_cycle);
+  // the lastly, subtract 1.
+  uint32_t dc_resn_val = 30u - (uint32_t)bitfield_count_leading_zeroes32(
+                                   config.beats_per_pulse_cycle);
   config_reg =
       bitfield_field32_write(config_reg, PWM_CFG_DC_RESN_FIELD, dc_resn_val);
 
@@ -69,7 +69,7 @@ dif_result_t dif_pwm_configure_channel(const dif_pwm_t *pwm,
 
   // Get "beats_per_pulse_cycle" from the PWM config register.
   // There are 2 ^ (`duty_cycle_resolution` + 1) "beats" per "pulse cycle".
-  uint8_t duty_cycle_resolution = bitfield_field32_read(
+  uint8_t duty_cycle_resolution = (uint8_t)bitfield_field32_read(
       mmio_region_read32(pwm->base_addr, PWM_CFG_REG_OFFSET),
       PWM_CFG_DC_RESN_FIELD);
   uint32_t beats_per_pulse_cycle = 1U << (duty_cycle_resolution + 1);
@@ -83,7 +83,8 @@ dif_result_t dif_pwm_configure_channel(const dif_pwm_t *pwm,
 
   // There are 2 ^ 16 "phase counter ticks" in one "pulse cycle", and therefore
   // 2 ^ (16 - `duty_cycle_resolution` - 1) "phase counter ticks" in one "beat".
-  uint16_t phase_cntr_ticks_per_beat = 1U << (16 - duty_cycle_resolution - 1);
+  uint16_t phase_cntr_ticks_per_beat =
+      (uint16_t)(1 << (16 - duty_cycle_resolution - 1));
   uint32_t duty_cycle_reg =
       bitfield_field32_write(0, PWM_DUTY_CYCLE_0_A_0_FIELD,
                              phase_cntr_ticks_per_beat * config.duty_cycle_a);
@@ -223,7 +224,7 @@ dif_result_t dif_pwm_channel_get_enabled(const dif_pwm_t *pwm,
     return kDifBadArg;
   }
 
-  uint32_t channel_bit = bitfield_count_trailing_zeroes32(channel);
+  uint32_t channel_bit = (uint32_t)bitfield_count_trailing_zeroes32(channel);
 
   if (channel_bit >= PWM_PARAM_N_OUTPUTS) {
     return kDifBadArg;

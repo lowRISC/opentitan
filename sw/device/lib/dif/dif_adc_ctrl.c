@@ -350,7 +350,7 @@ dif_result_t dif_adc_ctrl_get_triggered_value(const dif_adc_ctrl_t *adc_ctrl,
   case kDifAdcCtrlChannel##channel_:                                              \
     value_reg = mmio_region_read32(                                               \
         adc_ctrl->base_addr, ADC_CTRL_ADC_CHN_VAL_##channel_##_REG_OFFSET);       \
-    *value = bitfield_field32_read(                                               \
+    *value = (uint16_t)bitfield_field32_read(                                     \
         value_reg,                                                                \
         ADC_CTRL_ADC_CHN_VAL_##channel_##_ADC_CHN_VALUE_INTR_##channel_##_FIELD); \
     break;
@@ -379,7 +379,7 @@ dif_result_t dif_adc_ctrl_get_latest_value(const dif_adc_ctrl_t *adc_ctrl,
   case kDifAdcCtrlChannel##channel_:                                         \
     value_reg = mmio_region_read32(                                          \
         adc_ctrl->base_addr, ADC_CTRL_ADC_CHN_VAL_##channel_##_REG_OFFSET);  \
-    *value = bitfield_field32_read(                                          \
+    *value = (uint16_t)bitfield_field32_read(                                \
         value_reg,                                                           \
         ADC_CTRL_ADC_CHN_VAL_##channel_##_ADC_CHN_VALUE_##channel_##_FIELD); \
     break;
@@ -424,7 +424,7 @@ dif_result_t dif_adc_ctrl_irq_clear_causes(const dif_adc_ctrl_t *adc_ctrl,
     return kDifBadArg;
   }
 
-  uint32_t filter_causes = (~kDifAdcCtrlIrqCauseOneshot) & causes;
+  uint32_t filter_causes = (~(uint32_t)kDifAdcCtrlIrqCauseOneshot) & causes;
   if (filter_causes) {
     mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_FILTER_STATUS_REG_OFFSET,
                         filter_causes);

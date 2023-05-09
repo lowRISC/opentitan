@@ -162,21 +162,21 @@ dif_result_t dif_alert_handler_configure_alert(
   }
 
   // Check if configuration is locked.
-  ptrdiff_t regwen_offset =
-      ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + alert * sizeof(uint32_t);
+  ptrdiff_t regwen_offset = ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET +
+                            (ptrdiff_t)alert * (ptrdiff_t)sizeof(uint32_t);
   if (!mmio_region_read32(alert_handler->base_addr, regwen_offset)) {
     return kDifLocked;
   }
 
   // Classify the alert.
   ptrdiff_t class_reg_offset = ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET +
-                               alert * sizeof(uint32_t);
+                               (ptrdiff_t)alert * (ptrdiff_t)sizeof(uint32_t);
   mmio_region_write32_shadowed(alert_handler->base_addr, class_reg_offset,
                                classification);
 
   // Enable the alert.
-  ptrdiff_t enable_reg_offset =
-      ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET + alert * sizeof(uint32_t);
+  ptrdiff_t enable_reg_offset = ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET +
+                                (ptrdiff_t)alert * (ptrdiff_t)sizeof(uint32_t);
   mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
                                0x1);
 
@@ -527,8 +527,8 @@ dif_result_t dif_alert_handler_lock_alert(
     return kDifBadArg;
   }
 
-  ptrdiff_t regwen_offset =
-      ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + alert * sizeof(uint32_t);
+  ptrdiff_t regwen_offset = ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET +
+                            (ptrdiff_t)alert * (ptrdiff_t)sizeof(uint32_t);
   mmio_region_write32(alert_handler->base_addr, regwen_offset, 0);
 
   return kDifOk;
@@ -542,8 +542,8 @@ dif_result_t dif_alert_handler_is_alert_locked(
     return kDifBadArg;
   }
 
-  ptrdiff_t regwen_offset =
-      ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET + alert * sizeof(uint32_t);
+  ptrdiff_t regwen_offset = ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET +
+                            (ptrdiff_t)alert * (ptrdiff_t)sizeof(uint32_t);
   *is_locked = !mmio_region_read32(alert_handler->base_addr, regwen_offset);
 
   return kDifOk;
@@ -657,8 +657,8 @@ dif_result_t dif_alert_handler_alert_is_cause(
     return kDifBadArg;
   }
 
-  ptrdiff_t cause_reg_offset =
-      ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET + alert * sizeof(uint32_t);
+  ptrdiff_t cause_reg_offset = ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET +
+                               (ptrdiff_t)alert * (ptrdiff_t)sizeof(uint32_t);
   *is_cause = mmio_region_read32(alert_handler->base_addr, cause_reg_offset);
 
   return kDifOk;
@@ -670,8 +670,8 @@ dif_result_t dif_alert_handler_alert_acknowledge(
     return kDifBadArg;
   }
 
-  ptrdiff_t cause_reg_offset =
-      ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET + alert * sizeof(uint32_t);
+  ptrdiff_t cause_reg_offset = ALERT_HANDLER_ALERT_CAUSE_0_REG_OFFSET +
+                               (ptrdiff_t)alert * (ptrdiff_t)sizeof(uint32_t);
   mmio_region_write32(alert_handler->base_addr, cause_reg_offset, 0x1);
 
   return kDifOk;
@@ -804,7 +804,7 @@ dif_result_t dif_alert_handler_get_accumulator(
 #undef ALERT_CLASS_ACCUM_CASE_
 
   uint32_t reg = mmio_region_read32(alert_handler->base_addr, reg_offset);
-  *num_alerts = bitfield_field32_read(reg, field);
+  *num_alerts = (uint16_t)bitfield_field32_read(reg, field);
 
   return kDifOk;
 }

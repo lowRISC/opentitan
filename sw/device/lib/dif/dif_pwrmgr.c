@@ -288,7 +288,8 @@ dif_result_t dif_pwrmgr_get_domain_config(const dif_pwrmgr_t *pwrmgr,
 
   uint32_t reg_val =
       mmio_region_read32(pwrmgr->base_addr, PWRMGR_CONTROL_REG_OFFSET);
-  *config = bitfield_field32_read(reg_val, kDomainConfigBitfield);
+  *config = (dif_pwrmgr_domain_config_t)bitfield_field32_read(
+      reg_val, kDomainConfigBitfield);
 
   return kDifOk;
 }

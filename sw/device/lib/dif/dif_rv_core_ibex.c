@@ -33,7 +33,7 @@ static_assert(kDifRvCoreIbexErrorStatusRecoverableInternal ==
               "Layout of RV_CORE_IBEX_ERR_STATUS_REG register changed.");
 
 typedef struct ibex_addr_translation_regs {
-  uint32_t maching;
+  uint32_t matching;
   uint32_t remap;
   uint32_t en;
   uint32_t lock;
@@ -45,7 +45,7 @@ static const ibex_addr_translation_regs_t kRegsMap
         [kDifRvCoreIbexAddrTranslationSlot_0]
             [kDifRvCoreIbexAddrTranslationDBus] =
                 {
-                    .maching = RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_REG_OFFSET,
+                    .matching = RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_REG_OFFSET,
                     .remap = RV_CORE_IBEX_DBUS_REMAP_ADDR_0_REG_OFFSET,
                     .en = RV_CORE_IBEX_DBUS_ADDR_EN_0_REG_OFFSET,
                     .lock = RV_CORE_IBEX_DBUS_REGWEN_0_REG_OFFSET,
@@ -53,7 +53,7 @@ static const ibex_addr_translation_regs_t kRegsMap
         [kDifRvCoreIbexAddrTranslationSlot_0]
             [kDifRvCoreIbexAddrTranslationIBus] =
                 {
-                    .maching = RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_REG_OFFSET,
+                    .matching = RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_REG_OFFSET,
                     .remap = RV_CORE_IBEX_IBUS_REMAP_ADDR_0_REG_OFFSET,
                     .en = RV_CORE_IBEX_IBUS_ADDR_EN_0_REG_OFFSET,
                     .lock = RV_CORE_IBEX_IBUS_REGWEN_0_REG_OFFSET,
@@ -61,7 +61,7 @@ static const ibex_addr_translation_regs_t kRegsMap
         [kDifRvCoreIbexAddrTranslationSlot_1]
             [kDifRvCoreIbexAddrTranslationDBus] =
                 {
-                    .maching = RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_REG_OFFSET,
+                    .matching = RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_REG_OFFSET,
                     .remap = RV_CORE_IBEX_DBUS_REMAP_ADDR_1_REG_OFFSET,
                     .en = RV_CORE_IBEX_DBUS_ADDR_EN_1_REG_OFFSET,
                     .lock = RV_CORE_IBEX_DBUS_REGWEN_1_REG_OFFSET,
@@ -69,7 +69,7 @@ static const ibex_addr_translation_regs_t kRegsMap
         [kDifRvCoreIbexAddrTranslationSlot_1]
             [kDifRvCoreIbexAddrTranslationIBus] =
                 {
-                    .maching = RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_REG_OFFSET,
+                    .matching = RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_REG_OFFSET,
                     .remap = RV_CORE_IBEX_IBUS_REMAP_ADDR_1_REG_OFFSET,
                     .en = RV_CORE_IBEX_IBUS_ADDR_EN_1_REG_OFFSET,
                     .lock = RV_CORE_IBEX_IBUS_REGWEN_1_REG_OFFSET,
@@ -118,13 +118,14 @@ dif_result_t dif_rv_core_ibex_configure_addr_translation(
 
   const ibex_addr_translation_regs_t regs = kRegsMap[slot][bus];
 
-  if (mmio_region_read32(rv_core_ibex->base_addr, regs.lock) == 0) {
+  if (mmio_region_read32(rv_core_ibex->base_addr, (ptrdiff_t)regs.lock) == 0) {
     return kDifLocked;
   }
 
   uint32_t mask = to_napot(addr_map.matching_addr, addr_map.size);
-  mmio_region_write32(rv_core_ibex->base_addr, regs.maching, mask);
-  mmio_region_write32(rv_core_ibex->base_addr, regs.remap, addr_map.remap_addr);
+  mmio_region_write32(rv_core_ibex->base_addr, (ptrdiff_t)regs.matching, mask);
+  mmio_region_write32(rv_core_ibex->base_addr, (ptrdiff_t)regs.remap,
+                      addr_map.remap_addr);
   icache_invalidate();
   return kDifOk;
 }
@@ -138,10 +139,10 @@ dif_result_t dif_rv_core_ibex_enable_addr_translation(
     return kDifBadArg;
   }
   const ibex_addr_translation_regs_t regs = kRegsMap[slot][bus];
-  if (mmio_region_read32(rv_core_ibex->base_addr, regs.lock) == 0) {
+  if (mmio_region_read32(rv_core_ibex->base_addr, (ptrdiff_t)regs.lock) == 0) {
     return kDifLocked;
   }
-  mmio_region_write32(rv_core_ibex->base_addr, regs.en, 1);
+  mmio_region_write32(rv_core_ibex->base_addr, (ptrdiff_t)regs.en, 1);
   icache_invalidate();
   return kDifOk;
 }
@@ -155,10 +156,10 @@ dif_result_t dif_rv_core_ibex_disable_addr_translation(
     return kDifBadArg;
   }
   const ibex_addr_translation_regs_t regs = kRegsMap[slot][bus];
-  if (mmio_region_read32(rv_core_ibex->base_addr, regs.lock) == 0) {
+  if (mmio_region_read32(rv_core_ibex->base_addr, (ptrdiff_t)regs.lock) == 0) {
     return kDifLocked;
   }
-  mmio_region_write32(rv_core_ibex->base_addr, regs.en, 0);
+  mmio_region_write32(rv_core_ibex->base_addr, (ptrdiff_t)regs.en, 0);
   icache_invalidate();
   return kDifOk;
 }
@@ -177,11 +178,11 @@ dif_result_t dif_rv_core_ibex_read_addr_translation(
   const ibex_addr_translation_regs_t regs = kRegsMap[slot][bus];
 
   const uint32_t reg =
-      mmio_region_read32(rv_core_ibex->base_addr, regs.maching);
+      mmio_region_read32(rv_core_ibex->base_addr, (ptrdiff_t)regs.matching);
   addr_map->matching_addr = from_napot(reg, &addr_map->size);
 
   addr_map->remap_addr =
-      mmio_region_read32(rv_core_ibex->base_addr, regs.remap);
+      mmio_region_read32(rv_core_ibex->base_addr, (ptrdiff_t)regs.remap);
 
   return kDifOk;
 }
@@ -197,8 +198,8 @@ dif_result_t dif_rv_core_ibex_lock_addr_translation(
   const ibex_addr_translation_regs_t regs = kRegsMap[slot][bus];
 
   // Only locks in case it is not locked already.
-  if (mmio_region_read32(rv_core_ibex->base_addr, regs.lock) == 1) {
-    mmio_region_write32(rv_core_ibex->base_addr, regs.lock, 0);
+  if (mmio_region_read32(rv_core_ibex->base_addr, (ptrdiff_t)regs.lock) == 1) {
+    mmio_region_write32(rv_core_ibex->base_addr, (ptrdiff_t)regs.lock, 0);
   }
 
   return kDifOk;
@@ -221,7 +222,7 @@ dif_result_t dif_rv_core_ibex_clear_error_status(
     const dif_rv_core_ibex_t *rv_core_ibex,
     dif_rv_core_ibex_error_status_t error_status) {
   if (rv_core_ibex == NULL ||
-      (error_status & ~kDifRvCoreIbexErrorStatusAll) != 0) {
+      (error_status & ~(uint32_t)kDifRvCoreIbexErrorStatusAll) != 0) {
     return kDifBadArg;
   }
 
@@ -233,7 +234,7 @@ dif_result_t dif_rv_core_ibex_clear_error_status(
 
 dif_result_t dif_rv_core_ibex_enable_nmi(const dif_rv_core_ibex_t *rv_core_ibex,
                                          dif_rv_core_ibex_nmi_source_t nmi) {
-  if (rv_core_ibex == NULL || nmi & ~kDifRvCoreIbexNmiSourceAll) {
+  if (rv_core_ibex == NULL || nmi & ~(uint32_t)kDifRvCoreIbexNmiSourceAll) {
     return kDifBadArg;
   }
 
@@ -279,7 +280,7 @@ dif_result_t dif_rv_core_ibex_get_nmi_state(
 
 dif_result_t dif_rv_core_ibex_clear_nmi_state(
     const dif_rv_core_ibex_t *rv_core_ibex, dif_rv_core_ibex_nmi_source_t nmi) {
-  if (rv_core_ibex == NULL || nmi & ~kDifRvCoreIbexNmiSourceAll) {
+  if (rv_core_ibex == NULL || nmi & ~(uint32_t)kDifRvCoreIbexNmiSourceAll) {
     return kDifBadArg;
   }
 
