@@ -193,6 +193,7 @@ status_t flash_ctrl_testutils_erase_and_write_page(
  * @param data_out The data read from the page.
  * @param partition_type The partition type, data or info.
  * @param word_count The number of uint32_t words to read.
+ * @param delay_micros Optional delay (in us) for read FIFO fill testing.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT

@@ -232,7 +232,7 @@ status_t flash_ctrl_testutils_read(
     dif_flash_ctrl_state_t *flash_state, uint32_t byte_address,
     uint32_t partition_id, uint32_t *data_out,
     dif_flash_ctrl_partition_type_t partition_type, uint32_t word_count,
-    uint32_t delay) {
+    uint32_t delay_micros) {
   dif_flash_ctrl_transaction_t transaction = {.byte_address = byte_address,
                                               .op = kDifFlashCtrlOpRead,
                                               .partition_type = partition_type,
@@ -242,7 +242,7 @@ status_t flash_ctrl_testutils_read(
   // Read Page.
   TRY(dif_flash_ctrl_start(flash_state, transaction));
   // Optional delay to allow for read fifo fill testing.
-  busy_spin_micros(delay);
+  busy_spin_micros(delay_micros);
   TRY(dif_flash_ctrl_read_fifo_pop(flash_state, word_count, data_out));
   return flash_ctrl_testutils_wait_transaction_end(flash_state);
 }
