@@ -274,8 +274,8 @@ interface i2c_if(
 
   task automatic host_data(ref timing_cfg_t tc, input bit bit_i);
     wait(scl_i === 1'b0);
-    sda_o = bit_i;
     wait_for_dly(tc.tClockLow);
+    sda_o = bit_i;
     wait_for_dly(tc.tSetupBit);
     wait(scl_i === 1'b1);
     wait_for_dly(tc.tClockPulse);
