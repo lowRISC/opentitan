@@ -11,6 +11,7 @@
 module spi_host
   import spi_host_reg_pkg::*;
 #(
+  parameter bit                             Stub                      = 1'b0,
   parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
   // Number of cycles a differential skew is tolerated on the alert signal
   parameter int unsigned                    AlertSkewCycles           = 1,
@@ -58,6 +59,13 @@ module spi_host
   import spi_host_cmd_pkg::*;
 
   localparam int CSW = prim_util_pkg::vbits(NumCS);
+
+  logic rst_n;
+  if (Stub) begin : gen_stubbed_reset
+    assign rst_n = '0;
+  end else begin : gen_no_stubbed_reset
+    assign rst_n = rst_ni;
+  end
 
   spi_host_reg2hw_t reg2hw;
   spi_host_hw2reg_t hw2reg;
@@ -307,7 +315,7 @@ module spi_host
     .NumCS(NumCS)
   ) u_cmd_queue (
     .clk_i,
-    .rst_ni,
+    .rst_ni               (rst_n),
     .command_i            (command),
     .command_csid_i       (command_csid),
     .command_valid_i      (command_valid),
@@ -334,7 +342,8 @@ module spi_host
     .EnableRacl             ( EnableRacl             ),
     .RaclErrorRsp           ( RaclErrorRsp           ),
     .RaclPolicySelWinRXDATA ( RaclPolicySelWinRXDATA ),
-    .RaclPolicySelWinTXDATA ( RaclPolicySelWinTXDATA )
+    .RaclPolicySelWinTXDATA ( RaclPolicySelWinTXDATA ),
+    .Stub                   (Stub)
   ) u_window (
     .clk_i,
     .rst_ni,
@@ -434,7 +443,7 @@ module spi_host
     .SwapBytes(~ByteOrder)
   ) u_data_fifos (
     .clk_i,
-    .rst_ni,
+    .rst_ni            (rst_n),
 
     .tx_data_i                  (tx_data),
     .tx_be_i                    (tx_be),
@@ -481,7 +490,7 @@ module spi_host
     .NumCS(NumCS)
   ) u_spi_core (
     .clk_i,
-    .rst_ni,
+    .rst_ni          (rst_n),
 
     .command_i             (core_command),
     .command_csid_i        (core_command_csid),
@@ -609,8 +618,8 @@ module spi_host
   assign status_spi_event = |(event_vector & event_mask);
 
   // Flop trigger signal to avoid glitches on the output
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
       lsio_trigger_o <= 1'b0;
     end else begin
       lsio_trigger_o <= tx_wm | rx_wm;
