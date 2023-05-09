@@ -32,7 +32,7 @@ static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .is_only_irq = true};
 
 static bool get_wakeup_status(void) {
-  dif_pwrmgr_request_sources_t wake_req = -1;
+  dif_pwrmgr_request_sources_t wake_req = ~0u;
   CHECK_DIF_OK(dif_pwrmgr_get_current_request_sources(
       &pwrmgr, kDifPwrmgrReqTypeWakeup, &wake_req));
   return (wake_req > 0);

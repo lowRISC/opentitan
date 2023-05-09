@@ -141,6 +141,13 @@ void init_peripherals(void) {
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
 }
 
+static uint32_t udiv64_slow_into_u32(uint64_t a, uint64_t b,
+                                     uint64_t *rem_out) {
+  const uint64_t result = udiv64_slow(a, b, rem_out);
+  CHECK(result <= UINT32_MAX, "Result of division must fit in uint32_t");
+  return (uint32_t)result;
+}
+
 /**
  * Program the alert handler to escalate on alerts upto phase 2 (i.e. reset) but
  * the phase 1 (i.e. wipe secrets) should occur and last during the time the
@@ -153,22 +160,22 @@ static void alert_handler_config(void) {
   dif_alert_handler_escalation_phase_t esc_phases[] = {
       {.phase = kDifAlertHandlerClassStatePhase0,
        .signal = 0,
-       .duration_cycles = udiv64_slow(
+       .duration_cycles = udiv64_slow_into_u32(
            kEscalationPhase0Micros * kClockFreqPeripheralHz, 1000000, NULL)},
       {.phase = kDifAlertHandlerClassStatePhase1,
        .signal = 1,
-       .duration_cycles = udiv64_slow(
+       .duration_cycles = udiv64_slow_into_u32(
            kEscalationPhase1Micros * kClockFreqPeripheralHz, 1000000, NULL)},
       {.phase = kDifAlertHandlerClassStatePhase2,
        .signal = 3,
-       .duration_cycles = udiv64_slow(
+       .duration_cycles = udiv64_slow_into_u32(
            kEscalationPhase2Micros * kClockFreqPeripheralHz, 1000000, NULL)}};
 
   dif_alert_handler_class_config_t class_config[] = {{
       .auto_lock_accumulation_counter = kDifToggleDisabled,
       .accumulator_threshold = 0,
       .irq_deadline_cycles =
-          udiv64_slow(10 * kClockFreqPeripheralHz, 1000000, NULL),
+          udiv64_slow_into_u32(10 * kClockFreqPeripheralHz, 1000000, NULL),
       .escalation_phases = esc_phases,
       .escalation_phases_len = ARRAYSIZE(esc_phases),
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,

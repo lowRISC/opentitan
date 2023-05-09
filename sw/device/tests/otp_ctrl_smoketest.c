@@ -39,7 +39,7 @@ bool test_main(void) {
   };
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
 
-  for (int i = 0; i < ARRAYSIZE(kTestData); i += sizeof(uint32_t)) {
+  for (uint32_t i = 0; i < ARRAYSIZE(kTestData); i += sizeof(uint32_t)) {
     uint32_t word;
     memcpy(&word, &kTestData[i], sizeof(word));
 
