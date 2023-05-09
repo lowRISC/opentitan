@@ -17,9 +17,11 @@ bool test_main(void) {
 
     // Call AES-GCM encrypt.
     uint32_t cycles = call_aes_gcm_encrypt(test);
+    (void)cycles;
 
     // Call AES-GCM decrypt.
     cycles = call_aes_gcm_decrypt(test, /*tag_valid=*/true);
+    (void)cycles;
 
     LOG_INFO("Finished AES-GCM test %d.", i + 1);
   }

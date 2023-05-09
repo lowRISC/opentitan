@@ -75,7 +75,6 @@ status_t sha512_streaming_test(const unsigned char *msg, size_t msg_len,
   TRY_CHECK(otcrypto_hash_init(&ctx, kHashModeSha512) == kCryptoStatusOK);
 
   // Send the message 5 bytes at a time.
-  size_t num_updates = msg_len / 5;
   while (msg_len > 0) {
     // Construct a buffer for the next update.
     size_t len = (msg_len <= 5) ? msg_len : 5;
