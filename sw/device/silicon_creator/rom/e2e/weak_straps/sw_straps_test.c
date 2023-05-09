@@ -23,7 +23,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 status_t test_sw_strap_read(ujson_t *uj) {
   uint32_t strap = pinmux_testutils_read_straps(&pinmux, &gpio);
-  return RESP_OK_STATUS(uj, strap);
+  return RESP_OK_STATUS(uj, (int32_t)strap);
 }
 
 status_t command_processor(ujson_t *uj) {

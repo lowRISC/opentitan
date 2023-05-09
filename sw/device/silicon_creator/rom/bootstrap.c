@@ -195,7 +195,7 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
     data += word_count * sizeof(uint32_t);
     // Wrap to the beginning of the current page since PAGE_PROGRAM modifies
     // a single page only.
-    addr &= ~kFlashProgPageMask;
+    addr &= ~(uint32_t)kFlashProgPageMask;
   }
   rom_error_t err_1 = kErrorOk;
   if (rem_word_count > 0) {
