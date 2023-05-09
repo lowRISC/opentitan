@@ -43,8 +43,8 @@ dif_result_t dif_clkmgr_alert_force(const dif_clkmgr_t *clkmgr,
   }
 
   uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
-  mmio_region_write32(clkmgr->base_addr, CLKMGR_ALERT_TEST_REG_OFFSET,
-                      alert_test_reg);
+  mmio_region_write32(clkmgr->base_addr,
+                      (ptrdiff_t)CLKMGR_ALERT_TEST_REG_OFFSET, alert_test_reg);
 
   return kDifOk;
 }

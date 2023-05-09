@@ -51,7 +51,8 @@ dif_result_t dif_rv_core_ibex_alert_force(
 
   uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
   mmio_region_write32(rv_core_ibex->base_addr,
-                      RV_CORE_IBEX_ALERT_TEST_REG_OFFSET, alert_test_reg);
+                      (ptrdiff_t)RV_CORE_IBEX_ALERT_TEST_REG_OFFSET,
+                      alert_test_reg);
 
   return kDifOk;
 }

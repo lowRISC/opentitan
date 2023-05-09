@@ -41,7 +41,8 @@ dif_result_t dif_sram_ctrl_alert_force(const dif_sram_ctrl_t *sram_ctrl,
   }
 
   uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
-  mmio_region_write32(sram_ctrl->base_addr, SRAM_CTRL_ALERT_TEST_REG_OFFSET,
+  mmio_region_write32(sram_ctrl->base_addr,
+                      (ptrdiff_t)SRAM_CTRL_ALERT_TEST_REG_OFFSET,
                       alert_test_reg);
 
   return kDifOk;

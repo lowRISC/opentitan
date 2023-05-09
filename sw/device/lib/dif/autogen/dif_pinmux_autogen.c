@@ -40,8 +40,8 @@ dif_result_t dif_pinmux_alert_force(const dif_pinmux_t *pinmux,
   }
 
   uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
-  mmio_region_write32(pinmux->base_addr, PINMUX_ALERT_TEST_REG_OFFSET,
-                      alert_test_reg);
+  mmio_region_write32(pinmux->base_addr,
+                      (ptrdiff_t)PINMUX_ALERT_TEST_REG_OFFSET, alert_test_reg);
 
   return kDifOk;
 }
