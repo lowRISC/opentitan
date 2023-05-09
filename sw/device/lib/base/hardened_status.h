@@ -28,17 +28,20 @@ extern "C" {
 /**
  * Hardened version of the `TRY` macro from `status.h`.
  *
+ * Additionally forces the error bit to 1 if `hardened_status_ok` does not
+ * pass.
+ *
  * @param expr_ An expression that evaluates to a `status_t`.
  * @return The enclosed OK value.
  */
-#define HARDENED_TRY(expr_)                                 \
-  ({                                                        \
-    status_t status_ = expr_;                               \
-    if (hardened_status_ok(status_) != kHardenedBoolTrue) { \
-      return status_;                                       \
-    }                                                       \
-    HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue);    \
-    status_.value;                                          \
+#define HARDENED_TRY(expr_)                                            \
+  ({                                                                   \
+    status_t status_ = expr_;                                          \
+    if (hardened_status_ok(status_) != kHardenedBoolTrue) {            \
+      return (status_t){.value = status_.value | (int32_t)0x80000000}; \
+    }                                                                  \
+    HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue);               \
+    status_.value;                                                     \
   })
 
 /**

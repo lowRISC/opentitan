@@ -132,6 +132,18 @@ cc_library(
     ],
 )
 
+# Status-code unit tests with debugging information ON.
+cc_test(
+    name = "status_debug_unittest",
+    srcs = ["status_debug_unittest.cc"],
+    defines = ["OTCRYPTO_STATUS_DEBUG"],
+    deps = [
+        ":status",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# Status-code unit tests with debugging information OFF.
 cc_test(
     name = "status_unittest",
     srcs = ["status_unittest.cc"],

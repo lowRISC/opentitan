@@ -17,11 +17,17 @@ extern "C" {
  * Values in `status_t` that are guaranteed to correspond to each
  * `crypto_status_t` value.
  *
+ * If `OTCRYPTO_STATUS_DEBUG` is set, full line-number and module information
+ * is included to ease debugging. Otherwise, we use the cryptolib error codes
+ * directly.
+ *
  * Note: These values bypass `status_create` to avoid having a function call in
  * error cases, where we may be under attack and complexity should be
  * minimized.
  */
 #define OTCRYPTO_OK HARDENED_OK_STATUS
+#ifdef OTCRYPTO_STATUS_DEBUG
+
 #define OTCRYPTO_RECOV_ERR                                \
   ((status_t){.value = (int32_t)(0x80000000 | MODULE_ID | \
                                  ((__LINE__ & 0x7ff) << 5) | kAborted)})
@@ -39,6 +45,19 @@ extern "C" {
 #define OTCRYPTO_NOT_IMPLEMENTED                          \
   ((status_t){.value = (int32_t)(0x80000000 | MODULE_ID | \
                                  ((__LINE__ & 0x7ff) << 5) | kUnimplemented)})
+#else
+
+#define OTCRYPTO_RECOV_ERR \
+  ((status_t){.value = (int32_t)kCryptoStatusInternalError})
+#define OTCRYPTO_FATAL_ERR \
+  ((status_t){.value = (int32_t)kCryptoStatusFatalError})
+#define OTCRYPTO_BAD_ARGS ((status_t){.value = (int32_t)kCryptoStatusBadArgs})
+#define OTCRYPTO_ASYNC_INCOMPLETE \
+  ((status_t){.value = (int32_t)kCryptoStatusAsyncIncomplete})
+#define OTCRYPTO_NOT_IMPLEMENTED \
+  ((status_t){.value = (int32_t)kCryptoStatusNotImplemented})
+
+#endif
 
 /**
  * Convert a `status_t` into a `crypto_status_t`.
