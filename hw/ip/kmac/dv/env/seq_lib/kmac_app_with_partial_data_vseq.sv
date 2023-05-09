@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// TODO(#10996): Based on kmac_app sequence, drive partial data by sending `strb` value that is not
+// ICEBOX(#10996): Based on kmac_app sequence, drive partial data by sending `strb` value that is not
 // always equal to `8'hFF`.
 class kmac_app_with_partial_data_vseq extends kmac_app_vseq;
 

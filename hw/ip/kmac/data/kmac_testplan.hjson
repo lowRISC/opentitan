@@ -161,10 +161,6 @@
               - If squeezing data, issue Start/Process after issuing Run
             - Incorrect KMAC configurations (e.g. set KMAC strength as 512).
             - Provide software inputs during operation of the application interface
-
-            // TODO: Not all of these errors have been supported yet, and more errors might be
-            //       added later.
-            //       So this might be split into several error tests later on.
             '''
       stage: V2
       tests: ["{name}_error"]

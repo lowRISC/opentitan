@@ -15,8 +15,6 @@
 
 extern "C" {
 
-// TODO(udi) might need to implement endian conversion
-
 //////////////////////
 // HELPER FUNCTIONS //
 //////////////////////
