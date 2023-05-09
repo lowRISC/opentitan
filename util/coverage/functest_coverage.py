@@ -56,8 +56,11 @@ def handle_objs(merged_library: Path, obj_files: List[str]) -> None:
     # used only for generating a coverage report and we link only and all instrumented
     # object files.
     # TODO(#16761): Try to remove these flags.
-    run(LLD_TARGET, "--warn-unresolved-symbols", "-zmuldefs", "-o",
-        str(merged_library), *obj_files)
+    fake_entry_point = "0x0"
+    run(LLD_TARGET, "--unresolved-symbols=ignore-all", "-e", fake_entry_point,
+        "--defsym", "__llvm_profile_register_names_function=0", "--defsym",
+        "__llvm_profile_register_function=0", "--defsym",
+        "__llvm_profile_runtime=0", "-o", str(merged_library), *obj_files)
 
 
 def handle_test_targets(test_targets: List[str]) -> List[str]:
