@@ -188,7 +188,6 @@ OT_SECTION(".data.sram_function_test")
 OT_NOINLINE
 static void sram_function_test(void) {
   uint32_t pc = 0;
-  uint32_t accum = 0;
   asm("auipc %[pc], 0;" : [pc] "=r"(pc));
   LOG_INFO("PC: %p, SRAM: [%p, %p)", pc, kSramStart, kSramEnd);
   CHECK(pc >= kSramStart && pc < kSramEnd, "PC is outside the main SRAM");
@@ -208,8 +207,6 @@ static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_rstmgr_t rstmgr;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t plic;
-
-static const char *we_check = "prim_reg_we_check";
 
 static void rv_core_ibex_fault_checker(bool enable) {
   dif_rv_core_ibex_error_status_t codes;
@@ -458,7 +455,7 @@ static void alert_handler_config(void) {
   // handler, hence deadline_cycles is set to zero. Rather, it triggers
   // escalation right away if an alert event is seen, hence threshold = 0;
   uint32_t deadline_cycles = 0;
-  uint32_t threshold = 0;
+  uint16_t threshold = 0;
   LOG_INFO("Configuring class %d with %d cycles and %d occurrences",
            alert_class_to_use, deadline_cycles, threshold);
   dif_alert_handler_class_config_t class_config[] = {{

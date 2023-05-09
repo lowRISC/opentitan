@@ -202,9 +202,9 @@ void execute_test(uint32_t wakeup_source, bool deep_sleep) {
       kTestWakeupSources[wakeup_source].dif_handle);
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
-  cfg = cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
-               kDifPwrmgrDomainOptionUsbClockInLowPower |
-               kDifPwrmgrDomainOptionUsbClockInActivePower) |
+  cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
+                kDifPwrmgrDomainOptionUsbClockInLowPower |
+                kDifPwrmgrDomainOptionUsbClockInActivePower)) |
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
 
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
@@ -223,7 +223,7 @@ void check_wakeup_reason(uint32_t wakeup_source) {
 }
 
 static bool get_wakeup_status(void) {
-  dif_pwrmgr_request_sources_t wake_req = -1;
+  dif_pwrmgr_request_sources_t wake_req = ~0u;
   CHECK_DIF_OK(dif_pwrmgr_get_current_request_sources(
       &pwrmgr, kDifPwrmgrReqTypeWakeup, &wake_req));
   return (wake_req > 0);

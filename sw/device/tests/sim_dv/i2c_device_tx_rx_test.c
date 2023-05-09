@@ -115,8 +115,6 @@ const i2c_conf_t i2c_configuration[] = {
  * This function overrides the default OTTF external ISR.
  */
 void ottf_external_isr(void) {
-  uint32_t i2c_irq_fmt_threshold_id;
-
   plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
                              .hart_id = kTopEarlgreyPlicTargetIbex0};
 
@@ -220,7 +218,7 @@ bool test_main(void) {
   // Controlling the randomization from C side is a bit slow, but might be
   // easier for portability to a different setup later.
   for (uint32_t i = 0; i < kI2cByteCount; ++i) {
-    expected_data[i] = rand_testutils_gen32_range(0, 0xff);
+    expected_data[i] = (uint8_t)rand_testutils_gen32_range(0, 0xff);
   };
 
   uint8_t tx_fifo_lvl;
