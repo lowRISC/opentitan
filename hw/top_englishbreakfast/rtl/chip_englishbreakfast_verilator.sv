@@ -160,9 +160,10 @@ module chip_englishbreakfast_verilator (
   top_englishbreakfast #(
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
-    .SecAesStartTriggerDelay(40),
+    .SecAesStartTriggerDelay(320),
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
+    .UsbdevStub(1'b1),
     .RvCoreIbexICache(0),
     .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
