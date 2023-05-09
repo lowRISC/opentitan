@@ -41,7 +41,8 @@ dif_result_t dif_adc_ctrl_alert_force(const dif_adc_ctrl_t *adc_ctrl,
   }
 
   uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
-  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_ALERT_TEST_REG_OFFSET,
+  mmio_region_write32(adc_ctrl->base_addr,
+                      (ptrdiff_t)ADC_CTRL_ALERT_TEST_REG_OFFSET,
                       alert_test_reg);
 
   return kDifOk;
@@ -88,8 +89,8 @@ dif_result_t dif_adc_ctrl_irq_get_state(
     return kDifBadArg;
   }
 
-  *snapshot =
-      mmio_region_read32(adc_ctrl->base_addr, ADC_CTRL_INTR_STATE_REG_OFFSET);
+  *snapshot = mmio_region_read32(adc_ctrl->base_addr,
+                                 (ptrdiff_t)ADC_CTRL_INTR_STATE_REG_OFFSET);
 
   return kDifOk;
 }
@@ -102,8 +103,8 @@ dif_result_t dif_adc_ctrl_irq_acknowledge_state(
     return kDifBadArg;
   }
 
-  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_INTR_STATE_REG_OFFSET,
-                      snapshot);
+  mmio_region_write32(adc_ctrl->base_addr,
+                      (ptrdiff_t)ADC_CTRL_INTR_STATE_REG_OFFSET, snapshot);
 
   return kDifOk;
 }
@@ -121,8 +122,8 @@ dif_result_t dif_adc_ctrl_irq_is_pending(const dif_adc_ctrl_t *adc_ctrl,
     return kDifBadArg;
   }
 
-  uint32_t intr_state_reg =
-      mmio_region_read32(adc_ctrl->base_addr, ADC_CTRL_INTR_STATE_REG_OFFSET);
+  uint32_t intr_state_reg = mmio_region_read32(
+      adc_ctrl->base_addr, (ptrdiff_t)ADC_CTRL_INTR_STATE_REG_OFFSET);
 
   *is_pending = bitfield_bit32_read(intr_state_reg, index);
 
@@ -136,8 +137,8 @@ dif_result_t dif_adc_ctrl_irq_acknowledge_all(const dif_adc_ctrl_t *adc_ctrl) {
   }
 
   // Writing to the register clears the corresponding bits (Write-one clear).
-  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_INTR_STATE_REG_OFFSET,
-                      UINT32_MAX);
+  mmio_region_write32(adc_ctrl->base_addr,
+                      (ptrdiff_t)ADC_CTRL_INTR_STATE_REG_OFFSET, UINT32_MAX);
 
   return kDifOk;
 }
@@ -156,7 +157,8 @@ dif_result_t dif_adc_ctrl_irq_acknowledge(const dif_adc_ctrl_t *adc_ctrl,
 
   // Writing to the register clears the corresponding bits (Write-one clear).
   uint32_t intr_state_reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_INTR_STATE_REG_OFFSET,
+  mmio_region_write32(adc_ctrl->base_addr,
+                      (ptrdiff_t)ADC_CTRL_INTR_STATE_REG_OFFSET,
                       intr_state_reg);
 
   return kDifOk;
@@ -175,8 +177,8 @@ dif_result_t dif_adc_ctrl_irq_force(const dif_adc_ctrl_t *adc_ctrl,
   }
 
   uint32_t intr_test_reg = bitfield_bit32_write(0, index, val);
-  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_INTR_TEST_REG_OFFSET,
-                      intr_test_reg);
+  mmio_region_write32(adc_ctrl->base_addr,
+                      (ptrdiff_t)ADC_CTRL_INTR_TEST_REG_OFFSET, intr_test_reg);
 
   return kDifOk;
 }
@@ -194,8 +196,8 @@ dif_result_t dif_adc_ctrl_irq_get_enabled(const dif_adc_ctrl_t *adc_ctrl,
     return kDifBadArg;
   }
 
-  uint32_t intr_enable_reg =
-      mmio_region_read32(adc_ctrl->base_addr, ADC_CTRL_INTR_ENABLE_REG_OFFSET);
+  uint32_t intr_enable_reg = mmio_region_read32(
+      adc_ctrl->base_addr, (ptrdiff_t)ADC_CTRL_INTR_ENABLE_REG_OFFSET);
 
   bool is_enabled = bitfield_bit32_read(intr_enable_reg, index);
   *state = is_enabled ? kDifToggleEnabled : kDifToggleDisabled;
@@ -216,12 +218,13 @@ dif_result_t dif_adc_ctrl_irq_set_enabled(const dif_adc_ctrl_t *adc_ctrl,
     return kDifBadArg;
   }
 
-  uint32_t intr_enable_reg =
-      mmio_region_read32(adc_ctrl->base_addr, ADC_CTRL_INTR_ENABLE_REG_OFFSET);
+  uint32_t intr_enable_reg = mmio_region_read32(
+      adc_ctrl->base_addr, (ptrdiff_t)ADC_CTRL_INTR_ENABLE_REG_OFFSET);
 
   bool enable_bit = (state == kDifToggleEnabled) ? true : false;
   intr_enable_reg = bitfield_bit32_write(intr_enable_reg, index, enable_bit);
-  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_INTR_ENABLE_REG_OFFSET,
+  mmio_region_write32(adc_ctrl->base_addr,
+                      (ptrdiff_t)ADC_CTRL_INTR_ENABLE_REG_OFFSET,
                       intr_enable_reg);
 
   return kDifOk;
@@ -238,11 +241,12 @@ dif_result_t dif_adc_ctrl_irq_disable_all(
   // Pass the current interrupt state to the caller, if requested.
   if (snapshot != NULL) {
     *snapshot = mmio_region_read32(adc_ctrl->base_addr,
-                                   ADC_CTRL_INTR_ENABLE_REG_OFFSET);
+                                   (ptrdiff_t)ADC_CTRL_INTR_ENABLE_REG_OFFSET);
   }
 
   // Disable all interrupts.
-  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_INTR_ENABLE_REG_OFFSET, 0u);
+  mmio_region_write32(adc_ctrl->base_addr,
+                      (ptrdiff_t)ADC_CTRL_INTR_ENABLE_REG_OFFSET, 0u);
 
   return kDifOk;
 }
@@ -255,8 +259,8 @@ dif_result_t dif_adc_ctrl_irq_restore_all(
     return kDifBadArg;
   }
 
-  mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_INTR_ENABLE_REG_OFFSET,
-                      *snapshot);
+  mmio_region_write32(adc_ctrl->base_addr,
+                      (ptrdiff_t)ADC_CTRL_INTR_ENABLE_REG_OFFSET, *snapshot);
 
   return kDifOk;
 }

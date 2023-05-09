@@ -118,6 +118,9 @@ def gen_cdefine_register(outstr: TextIO,
                          width: int,
                          rnames: Set[str],
                          existing_defines: Set[str]) -> None:
+    def uint_literal(n: int) -> str:
+        return hex(n) + 'u'
+
     rname = reg.name
     offset = reg.offset
 
@@ -129,7 +132,7 @@ def gen_cdefine_register(outstr: TextIO,
     genout(
         outstr,
         gen_define(defname + '_REG_RESVAL', [],
-                   hex(reg.resval), existing_defines))
+                   uint_literal(reg.resval), existing_defines))
 
     for field in reg.fields:
         dname = defname + '_' + as_define(field.name)
@@ -147,7 +150,7 @@ def gen_cdefine_register(outstr: TextIO,
                 mask = field.bits.bitmask() >> field.bits.lsb
                 genout(
                     outstr,
-                    gen_define(dname + '_MASK', [], hex(mask),
+                    gen_define(dname + '_MASK', [], uint_literal(mask),
                                existing_defines))
                 genout(
                     outstr,

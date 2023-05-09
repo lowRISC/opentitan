@@ -13,14 +13,14 @@
     1. ip: See util/make_new_dif.py for the definition of the `ip` obj.
 </%doc>
 
-<%def name="mmio_region_read32(intr_reg_offet)">mmio_region_read32(
+<%def name="mmio_region_read32(intr_reg_offset)">mmio_region_read32(
     ${ip.name_snake}->base_addr,
-    ${intr_reg_offet});
+    (ptrdiff_t)${intr_reg_offset});
 </%def>
 
-<%def name="mmio_region_write32(intr_reg_offet, value)">mmio_region_write32(
+<%def name="mmio_region_write32(intr_reg_offset, value)">mmio_region_write32(
     ${ip.name_snake}->base_addr,
-    ${intr_reg_offet},
+    (ptrdiff_t)${intr_reg_offset},
     ${value});
 </%def>
 

@@ -49,7 +49,8 @@ dif_result_t dif_aon_timer_alert_force(const dif_aon_timer_t *aon_timer,
   }
 
   uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
-  mmio_region_write32(aon_timer->base_addr, AON_TIMER_ALERT_TEST_REG_OFFSET,
+  mmio_region_write32(aon_timer->base_addr,
+                      (ptrdiff_t)AON_TIMER_ALERT_TEST_REG_OFFSET,
                       alert_test_reg);
 
   return kDifOk;
@@ -101,8 +102,8 @@ dif_result_t dif_aon_timer_irq_get_state(
     return kDifBadArg;
   }
 
-  *snapshot =
-      mmio_region_read32(aon_timer->base_addr, AON_TIMER_INTR_STATE_REG_OFFSET);
+  *snapshot = mmio_region_read32(aon_timer->base_addr,
+                                 (ptrdiff_t)AON_TIMER_INTR_STATE_REG_OFFSET);
 
   return kDifOk;
 }
@@ -115,8 +116,8 @@ dif_result_t dif_aon_timer_irq_acknowledge_state(
     return kDifBadArg;
   }
 
-  mmio_region_write32(aon_timer->base_addr, AON_TIMER_INTR_STATE_REG_OFFSET,
-                      snapshot);
+  mmio_region_write32(aon_timer->base_addr,
+                      (ptrdiff_t)AON_TIMER_INTR_STATE_REG_OFFSET, snapshot);
 
   return kDifOk;
 }
@@ -134,8 +135,8 @@ dif_result_t dif_aon_timer_irq_is_pending(const dif_aon_timer_t *aon_timer,
     return kDifBadArg;
   }
 
-  uint32_t intr_state_reg =
-      mmio_region_read32(aon_timer->base_addr, AON_TIMER_INTR_STATE_REG_OFFSET);
+  uint32_t intr_state_reg = mmio_region_read32(
+      aon_timer->base_addr, (ptrdiff_t)AON_TIMER_INTR_STATE_REG_OFFSET);
 
   *is_pending = bitfield_bit32_read(intr_state_reg, index);
 
@@ -150,8 +151,8 @@ dif_result_t dif_aon_timer_irq_acknowledge_all(
   }
 
   // Writing to the register clears the corresponding bits (Write-one clear).
-  mmio_region_write32(aon_timer->base_addr, AON_TIMER_INTR_STATE_REG_OFFSET,
-                      UINT32_MAX);
+  mmio_region_write32(aon_timer->base_addr,
+                      (ptrdiff_t)AON_TIMER_INTR_STATE_REG_OFFSET, UINT32_MAX);
 
   return kDifOk;
 }
@@ -170,7 +171,8 @@ dif_result_t dif_aon_timer_irq_acknowledge(const dif_aon_timer_t *aon_timer,
 
   // Writing to the register clears the corresponding bits (Write-one clear).
   uint32_t intr_state_reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(aon_timer->base_addr, AON_TIMER_INTR_STATE_REG_OFFSET,
+  mmio_region_write32(aon_timer->base_addr,
+                      (ptrdiff_t)AON_TIMER_INTR_STATE_REG_OFFSET,
                       intr_state_reg);
 
   return kDifOk;
@@ -189,8 +191,8 @@ dif_result_t dif_aon_timer_irq_force(const dif_aon_timer_t *aon_timer,
   }
 
   uint32_t intr_test_reg = bitfield_bit32_write(0, index, val);
-  mmio_region_write32(aon_timer->base_addr, AON_TIMER_INTR_TEST_REG_OFFSET,
-                      intr_test_reg);
+  mmio_region_write32(aon_timer->base_addr,
+                      (ptrdiff_t)AON_TIMER_INTR_TEST_REG_OFFSET, intr_test_reg);
 
   return kDifOk;
 }

@@ -44,7 +44,8 @@ dif_result_t dif_entropy_src_alert_force(const dif_entropy_src_t *entropy_src,
   }
 
   uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
-  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_ALERT_TEST_REG_OFFSET,
+  mmio_region_write32(entropy_src->base_addr,
+                      (ptrdiff_t)ENTROPY_SRC_ALERT_TEST_REG_OFFSET,
                       alert_test_reg);
 
   return kDifOk;
@@ -105,7 +106,7 @@ dif_result_t dif_entropy_src_irq_get_state(
   }
 
   *snapshot = mmio_region_read32(entropy_src->base_addr,
-                                 ENTROPY_SRC_INTR_STATE_REG_OFFSET);
+                                 (ptrdiff_t)ENTROPY_SRC_INTR_STATE_REG_OFFSET);
 
   return kDifOk;
 }
@@ -118,8 +119,8 @@ dif_result_t dif_entropy_src_irq_acknowledge_state(
     return kDifBadArg;
   }
 
-  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_INTR_STATE_REG_OFFSET,
-                      snapshot);
+  mmio_region_write32(entropy_src->base_addr,
+                      (ptrdiff_t)ENTROPY_SRC_INTR_STATE_REG_OFFSET, snapshot);
 
   return kDifOk;
 }
@@ -138,7 +139,7 @@ dif_result_t dif_entropy_src_irq_is_pending(
   }
 
   uint32_t intr_state_reg = mmio_region_read32(
-      entropy_src->base_addr, ENTROPY_SRC_INTR_STATE_REG_OFFSET);
+      entropy_src->base_addr, (ptrdiff_t)ENTROPY_SRC_INTR_STATE_REG_OFFSET);
 
   *is_pending = bitfield_bit32_read(intr_state_reg, index);
 
@@ -153,8 +154,8 @@ dif_result_t dif_entropy_src_irq_acknowledge_all(
   }
 
   // Writing to the register clears the corresponding bits (Write-one clear).
-  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_INTR_STATE_REG_OFFSET,
-                      UINT32_MAX);
+  mmio_region_write32(entropy_src->base_addr,
+                      (ptrdiff_t)ENTROPY_SRC_INTR_STATE_REG_OFFSET, UINT32_MAX);
 
   return kDifOk;
 }
@@ -173,7 +174,8 @@ dif_result_t dif_entropy_src_irq_acknowledge(
 
   // Writing to the register clears the corresponding bits (Write-one clear).
   uint32_t intr_state_reg = bitfield_bit32_write(0, index, true);
-  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_INTR_STATE_REG_OFFSET,
+  mmio_region_write32(entropy_src->base_addr,
+                      (ptrdiff_t)ENTROPY_SRC_INTR_STATE_REG_OFFSET,
                       intr_state_reg);
 
   return kDifOk;
@@ -193,7 +195,8 @@ dif_result_t dif_entropy_src_irq_force(const dif_entropy_src_t *entropy_src,
   }
 
   uint32_t intr_test_reg = bitfield_bit32_write(0, index, val);
-  mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_INTR_TEST_REG_OFFSET,
+  mmio_region_write32(entropy_src->base_addr,
+                      (ptrdiff_t)ENTROPY_SRC_INTR_TEST_REG_OFFSET,
                       intr_test_reg);
 
   return kDifOk;
@@ -213,7 +216,7 @@ dif_result_t dif_entropy_src_irq_get_enabled(
   }
 
   uint32_t intr_enable_reg = mmio_region_read32(
-      entropy_src->base_addr, ENTROPY_SRC_INTR_ENABLE_REG_OFFSET);
+      entropy_src->base_addr, (ptrdiff_t)ENTROPY_SRC_INTR_ENABLE_REG_OFFSET);
 
   bool is_enabled = bitfield_bit32_read(intr_enable_reg, index);
   *state = is_enabled ? kDifToggleEnabled : kDifToggleDisabled;
@@ -235,12 +238,13 @@ dif_result_t dif_entropy_src_irq_set_enabled(
   }
 
   uint32_t intr_enable_reg = mmio_region_read32(
-      entropy_src->base_addr, ENTROPY_SRC_INTR_ENABLE_REG_OFFSET);
+      entropy_src->base_addr, (ptrdiff_t)ENTROPY_SRC_INTR_ENABLE_REG_OFFSET);
 
   bool enable_bit = (state == kDifToggleEnabled) ? true : false;
   intr_enable_reg = bitfield_bit32_write(intr_enable_reg, index, enable_bit);
   mmio_region_write32(entropy_src->base_addr,
-                      ENTROPY_SRC_INTR_ENABLE_REG_OFFSET, intr_enable_reg);
+                      (ptrdiff_t)ENTROPY_SRC_INTR_ENABLE_REG_OFFSET,
+                      intr_enable_reg);
 
   return kDifOk;
 }
@@ -255,13 +259,13 @@ dif_result_t dif_entropy_src_irq_disable_all(
 
   // Pass the current interrupt state to the caller, if requested.
   if (snapshot != NULL) {
-    *snapshot = mmio_region_read32(entropy_src->base_addr,
-                                   ENTROPY_SRC_INTR_ENABLE_REG_OFFSET);
+    *snapshot = mmio_region_read32(
+        entropy_src->base_addr, (ptrdiff_t)ENTROPY_SRC_INTR_ENABLE_REG_OFFSET);
   }
 
   // Disable all interrupts.
   mmio_region_write32(entropy_src->base_addr,
-                      ENTROPY_SRC_INTR_ENABLE_REG_OFFSET, 0u);
+                      (ptrdiff_t)ENTROPY_SRC_INTR_ENABLE_REG_OFFSET, 0u);
 
   return kDifOk;
 }
@@ -275,7 +279,7 @@ dif_result_t dif_entropy_src_irq_restore_all(
   }
 
   mmio_region_write32(entropy_src->base_addr,
-                      ENTROPY_SRC_INTR_ENABLE_REG_OFFSET, *snapshot);
+                      (ptrdiff_t)ENTROPY_SRC_INTR_ENABLE_REG_OFFSET, *snapshot);
 
   return kDifOk;
 }
