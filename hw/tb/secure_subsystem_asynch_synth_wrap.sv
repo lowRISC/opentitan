@@ -18,12 +18,7 @@ module secure_subsystem_synth_wrap
    import lc_ctrl_pkg::*;
    import secure_subsystem_synth_pkg::*;
    import top_earlgrey_pkg::*;
-#(
-   parameter SramCtrlMainMemInitFile = "",
-   parameter OtpCtrlMemInitFile      = "../sw/bare-metal/opentitan/otp/otp-img.mem",
-   parameter RomCtrlBootRomInitFile  = "../sw/bare-metal/opentitan/bootrom/boot_rom.vmem",
-   parameter FlashCtrlMemInitFile    = "", 
- 
+#( 
    parameter int unsigned AxiAddrWidth          = SynthAxiAddrWidth,
    parameter int unsigned AxiDataWidth          = SynthAxiDataWidth,
    parameter int unsigned AxiUserWidth          = SynthAxiUserWidth,
@@ -234,10 +229,6 @@ module secure_subsystem_synth_wrap
 
    
    top_earlgrey #(
-      .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
-      .SramCtrlMainMemInitFile(SramCtrlMainMemInitFile),
-      .RomCtrlBootRomInitFile(RomCtrlBootRomInitFile),
-      .FlashCtrlMemInitFile(FlashCtrlMemInitFile),
       .axi_req_t(axi_ot_out_req_t),
       .axi_rsp_t(axi_ot_out_resp_t)
    ) u_RoT (

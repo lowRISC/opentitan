@@ -30,7 +30,7 @@ module top_earlgrey #(
   // parameters for pattgen
   // parameters for rv_timer
   // parameters for otp_ctrl
-  parameter OtpCtrlMemInitFile = "../hw/top_earlgrey/sw/tests/hello_test/otp-img.mem",
+  parameter OtpCtrlMemInitFile = "",
   // parameters for lc_ctrl
   parameter logic [15:0] LcCtrlChipGen = 16'h 0000,
   parameter logic [15:0] LcCtrlChipRev = 16'h 0000,
@@ -91,7 +91,7 @@ module top_earlgrey #(
   parameter SramCtrlMainMemInitFile = "",
   parameter bit SramCtrlMainInstrExec = 1,
   // parameters for rom_ctrl
-  parameter RomCtrlBootRomInitFile = "../hw/top_earlgrey/sw/tests/hello_test/bootrom.vmem",
+  parameter RomCtrlBootRomInitFile = "",
   parameter bit SecRomCtrlDisableScrambling = 1'b0,
   // parameters for rv_core_ibex
   parameter bit RvCoreIbexPMPEnable = 1,
