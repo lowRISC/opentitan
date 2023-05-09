@@ -16,11 +16,16 @@ extern "C" {
  * Values in `status_t` that are guaranteed to correspond to each
  * `crypto_status_t` value.
  *
+ * If `OTCRYPTO_STATUS_DEBUG` is set, full line-number and module information
+ * is included to ease debugging. Otherwise, we use the cryptolib error codes
+ * directly.
+ *
  * Note: These values bypass `status_create` to avoid having a function call in
  * error cases, where we may be under attack and complexity should be
  * minimized.
  */
 #define OTCRYPTO_OK ((status_t){.value = kHardenedBoolTrue})
+#ifdef OTCRYPTO_STATUS_DEBUG
 
 #define OTCRYPTO_RECOV_ERR                                \
   ((status_t){.value = (int32_t)(0x80000000 | MODULE_ID | \
@@ -39,41 +44,17 @@ extern "C" {
 #define OTCRYPTO_NOT_IMPLEMENTED                          \
   ((status_t){.value = (int32_t)(0x80000000 | MODULE_ID | \
                                  ((__LINE__ & 0x7ff) << 5) | kUnimplemented)})
+#else
 
-/**
- * Convert a `status_t` into a `crypto_status_t`.
- *
- * For OK statuses, this routine will only convert to `kCryptoStatusOK` if the
- * the hardened value is correct. An OK status with a different value will be
- * rejected and result in `kCryptoStatusInternalError`.
- *
- * The status mapping is as follows:
- *
- *   | status code         | cryptolib status code        |
- *   |---------------------|------------------------------|
- *   | kOk                 | kCryptoStatusOK OR           |
- *   |                     |   kCryptoStatusInternalError |
- *   | kInvalidArgument    | kCryptoStatusBadArgs         |
- *   | kUnavailable        | kCryptoStatusAsyncIncomplete |
- *   | kCancelled          | kCryptoStatusInternalError   |
- *   | kDeadlineExceeded   | kCryptoStatusInternalError   |
- *   | kNotFound           | kCryptoStatusInternalError   |
- *   | kAlreadyExists      | kCryptoStatusInternalError   |
- *   | kPermissionDenied   | kCryptoStatusInternalError   |
- *   | kResourceExhausted  | kCryptoStatusInternalError   |
- *   | kAborted            | kCryptoStatusInternalError   |
- *   | kOutOfRange         | kCryptoStatusInternalError   |
- *   | kUnimplemented      | kCryptoStatusNotImplemented  |
- *   | kUnauthenticated    | kCryptoStatusInternalError   |
- *   | kUnknown            | kCryptoStatusFatalError      |
- *   | kFailedPrecondition | kCryptoStatusFatalError      |
- *   | kInternal           | kCryptoStatusFatalError      |
- *   | kDataLoss           | kCryptoStatusFatalError      |
- *
- * @param status Initial `status_t` value.
- * @return Equivalent `crypto_status_t` error code.
- */
-crypto_status_t crypto_status_interpret(status_t status);
+#define OTCRYPTO_RECOV_ERR ((status_t){.value = kCryptoStatusInternalError})
+#define OTCRYPTO_FATAL_ERR ((status_t){.value = kCryptoStatusFatalError})
+#define OTCRYPTO_BAD_ARGS ((status_t){.value = kCryptoStatusBadArgs})
+#define OTCRYPTO_ASYNC_INCOMPLETE \
+  ((status_t){.value = kCryptoStatusAsyncIncomplete})
+#define OTCRYPTO_NOT_IMPLEMENTED \
+  ((status_t){.value = kCryptoStatusNotImplemented})
+
+#endif
 
 /**
  * Hardened version of the `TRY` macro from `status.h`.
@@ -92,25 +73,6 @@ crypto_status_t crypto_status_interpret(status_t status);
     }                                                    \
     if (launder32(status_.value) != kHardenedBoolTrue) { \
       return OTCRYPTO_FATAL_ERR;                         \
-    }                                                    \
-    HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue); \
-    status_.value;                                       \
-  })
-
-/**
- * Checks a `status_t` and returns a `crypto_status_t` on error.
- *
- * This is equvalent to `HARDENED_TRY` except that in the error case, it
- * converts the error to `crypto_status_t` before returning.
- *
- * @param expr_ An expression that evaluates to a `status_t`.
- * @return The enclosed OK value.
- */
-#define OTCRYPTO_TRY_INTERPRET(expr_)                    \
-  ({                                                     \
-    status_t status_ = expr_;                            \
-    if (launder32(status_.value) != kHardenedBoolTrue) { \
-      return crypto_status_interpret(status_);           \
     }                                                    \
     HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue); \
     status_.value;                                       \
