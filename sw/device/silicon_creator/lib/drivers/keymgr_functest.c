@@ -95,8 +95,6 @@ const uint32_t kMaxVerBl0 = 2;
 
 OTTF_DEFINE_TEST_CONFIG();
 
-static dif_flash_ctrl_state_t flash;
-
 static void init_flash(void) {
   dif_flash_ctrl_state_t flash;
 

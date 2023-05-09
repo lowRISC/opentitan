@@ -43,7 +43,7 @@ void spx_addr_tree_set(spx_addr_t *addr, uint64_t tree) {
 }
 
 void spx_addr_type_set(spx_addr_t *addr, spx_addr_type_t type) {
-  spx_addr_set_byte(addr, kSpxOffsetType, type);
+  spx_addr_set_byte(addr, kSpxOffsetType, (unsigned char)type);
 }
 
 void spx_addr_subtree_copy(spx_addr_t *out, const spx_addr_t *in) {

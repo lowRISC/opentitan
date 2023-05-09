@@ -87,11 +87,11 @@ void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
   uint32_t reg0 = sec_mmio_read32(kBase + LC_CTRL_HW_REVISION0_REG_OFFSET);
   uint32_t reg1 = sec_mmio_read32(kBase + LC_CTRL_HW_REVISION1_REG_OFFSET);
   *hw_rev = (lifecycle_hw_rev_t){
-      .silicon_creator_id = bitfield_field32_read(
+      .silicon_creator_id = (uint16_t)bitfield_field32_read(
           reg0, LC_CTRL_HW_REVISION0_SILICON_CREATOR_ID_FIELD),
-      .product_id =
-          bitfield_field32_read(reg0, LC_CTRL_HW_REVISION0_PRODUCT_ID_FIELD),
-      .revision_id =
-          bitfield_field32_read(reg1, LC_CTRL_HW_REVISION1_REVISION_ID_FIELD),
+      .product_id = (uint16_t)bitfield_field32_read(
+          reg0, LC_CTRL_HW_REVISION0_PRODUCT_ID_FIELD),
+      .revision_id = (uint8_t)bitfield_field32_read(
+          reg1, LC_CTRL_HW_REVISION1_REVISION_ID_FIELD),
   };
 }

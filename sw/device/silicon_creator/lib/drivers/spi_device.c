@@ -121,7 +121,7 @@ static_assert(kBfptTablePointer % sizeof(uint32_t) == 0,
  */
 #define BFPT_FIELD_VALUE(upper, lower, value) \
   ((uint32_t)~BFPT_FIELD_MASK(upper, lower) | \
-   (BFPT_FIELD_MASK(upper, lower) & ((value) << (lower))))
+   (BFPT_FIELD_MASK(upper, lower) & ((uint32_t)(value) << (uint32_t)(lower))))
 
 // Note: Words below are numbered starting from 1 to match JESD216F. Some fields
 // that are not supported by OpenTitan are merged for the sake of conciseness.
