@@ -124,16 +124,16 @@ void initialize_expected_counts() {
 const char *clkmgr_testutils_measurement_name(
     dif_clkmgr_measure_clock_t clock) {
   switch (clock) {
-  kDifClkmgrMeasureClockIo:
-    return "io";
-  kDifClkmgrMeasureClockIoDiv2:
-    return "io_div2";
-  kDifClkmgrMeasureClockIoDiv4:
-    return "io_div4";
-  kDifClkmgrMeasureClockMain:
-    return "main";
-  kDifClkmgrMeasureClockUsb:
-    return "usb";
+    case kDifClkmgrMeasureClockIo:
+      return "io";
+    case kDifClkmgrMeasureClockIoDiv2:
+      return "io_div2";
+    case kDifClkmgrMeasureClockIoDiv4:
+      return "io_div4";
+    case kDifClkmgrMeasureClockMain:
+      return "main";
+    case kDifClkmgrMeasureClockUsb:
+      return "usb";
     default:
       LOG_ERROR("Unexpected clock measurement %d", clock);
   }
