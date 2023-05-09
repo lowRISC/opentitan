@@ -238,11 +238,13 @@ opentitan_functest(
 opentitan_functest(
     name = "sha512_functest",
     srcs = ["sha512_functest.c"],
+    defines = ["OTCRYPTO_STATUS_DEBUG"],
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
         "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],

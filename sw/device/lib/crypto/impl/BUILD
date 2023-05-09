@@ -6,6 +6,13 @@ package(default_visibility = ["//visibility:public"])
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 
+config_setting(
+    name = "crypto_status_debug",
+    define_values = {
+        "crypto_status_debug": "true"
+    },
+)
+
 cc_library(
     name = "aes",
     srcs = ["aes.c"],
@@ -122,10 +129,15 @@ cc_library(
 
 cc_library(
     name = "status",
-    srcs = ["status.c"],
     hdrs = [
         "status.h",
     ],
+    # Turn debugging on only if the `crypto_status_debug` command-line option
+    # is set.
+    defines = select({
+        ":crypto_status_debug": ["OTCRYPTO_STATUS_DEBUG"],
+        "//conditions:default": [],
+    }),
     deps = [
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/include:datatypes",
@@ -135,6 +147,17 @@ cc_library(
 cc_test(
     name = "status_unittest",
     srcs = ["status_unittest.cc"],
+    deps = [
+        ":status",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# Status-code unit tests with debugging information always on.
+cc_test(
+    name = "status_debug_unittest",
+    srcs = ["status_debug_unittest.cc"],
+    defines = ["OTCRYPTO_STATUS_DEBUG"],
     deps = [
         ":status",
         "@googletest//:gtest_main",

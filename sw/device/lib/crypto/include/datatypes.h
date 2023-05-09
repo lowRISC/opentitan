@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_DATATYPES_H_
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/status.h"
 
 /**
  * @file
@@ -33,22 +34,31 @@ extern "C" {
  *     cryptolib status codes, it is a hardened value created to have high
  *     Hamming distance with the other valid status codes
  *   - The final 5 bits are an Abseil-compatible error code
+ *
+ * The hardened values for error codes were generated with:
+ * $ ./util/design/sparse-fsm-encode.py -d 5 -m 5 -n 11 \
+ *      -s 4232058530 --language=sv --avoid-zero
+ *
+ * Use the same seed value and a larger `-m` argument to generate new values
+ * without changing all error codes. Remove the seed (-s argument) to generate
+ * completely new 11-bit values.
  */
-typedef enum crypto_status {
+typedef status_t crypto_status_t;
+typedef enum crypto_status_value {
   // Status is OK; no errors.
-  kCryptoStatusOK = 0x739,
+  kCryptoStatusOK = (int32_t)0x739,
   // Invalid input arguments; wrong length or invalid type.
-  kCryptoStatusBadArgs = 0x8000b073,
+  kCryptoStatusBadArgs = (int32_t)0x8000fea0 | kInvalidArgument,
   // Error after which it is OK to retry (e.g. timeout).
-  kCryptoStatusInternalError = 0x80005c3a,
+  kCryptoStatusInternalError = (int32_t)0x80005340 | kAborted,
   // Error after which it is not OK to retry (e.g. integrity check).
-  kCryptoStatusFatalError = 0x8000f5c9,
+  kCryptoStatusFatalError = (int32_t)0x80006d80 | kFailedPrecondition,
   // An asynchronous operation is still in progress.
-  kCryptoStatusAsyncIncomplete = 0x8000ae1e,
+  kCryptoStatusAsyncIncomplete = (int32_t)0x8000ea40 | kUnavailable,
   // TODO: remove all instances of this error before release; it is to track
   // implementations that are not yet complete.
-  kCryptoStatusNotImplemented = 0x80001fec,
-} crypto_status_t;
+  kCryptoStatusNotImplemented = (int32_t)0x80008d20 | kUnimplemented,
+} crypto_status_value_t;
 
 /**
  * Struct to handle crypto data buffer with pointer and length.
