@@ -688,8 +688,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                           p_sequencer.jtag_sequencer_h,
                                           status_val);
 
-      // Ensure that none of the other status bits are set.
-      `DV_CHECK_EQ(status_val >> dummy.num(), 0,
+      // Ensure that none of the other status bits are set. This failure is
+      // idicative of the jtag agent trying to access the TAP interface while
+      // the dut is exiting reset. Try monitoring the reset, or inserting
+      // a delay before calling this function.
+      `DV_CHECK_EQ((status_val) >> dummy.num(), 0,
                    $sformatf("Unexpected status error %0h", status_val))
       if (status_val[expect_status]) begin
         `uvm_info(`gfn, $sformatf("LC status %0s.", expect_status.name), UVM_LOW)
@@ -714,6 +717,12 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
   endtask
 
+  virtual task wait_lc_ext_clk_switched(bit allow_err = 1, int max_attempt = 5000);
+    cfg.m_jtag_riscv_agent_cfg.allow_errors = allow_err;
+    wait_lc_status(LcExtClockSwitched, max_attempt);
+    cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
+  endtask
+
   virtual task wait_lc_transition_successful(bit allow_err = 1, int max_attempt = 5000);
     cfg.m_jtag_riscv_agent_cfg.allow_errors = allow_err;
     wait_lc_status(LcTransitionSuccessful, max_attempt);
@@ -725,6 +734,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual task jtag_lc_state_volatile_raw_unlock(chip_jtag_tap_e target_strap);
     bit [TL_DW-1:0] current_lc_state;
     bit [TL_DW-1:0] transition_ctrl;
+    bit use_ext_clk = 1'b0;
     int max_attempt = 5_000;
     dec_lc_state_e dest_state = DecLcStTestUnlocked0;
 
@@ -740,11 +750,19 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                          p_sequencer.jtag_sequencer_h,
                                          prim_mubi_pkg::MuBi8True);
 
+    if (cfg.chip_clock_source != ChipClockSourceInternal) begin
+      `uvm_info(`gfn, $sformatf("Setting external clock to %d MHz...", cfg.chip_clock_source),
+                UVM_LOW)
+      cfg.chip_vif.ext_clk_if.set_freq_mhz(cfg.chip_clock_source);
+      cfg.chip_vif.ext_clk_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
+      use_ext_clk = 1'b1;
+    end
+
     `uvm_info(`gfn, "Switching to VOLATILE_RAW_UNLOCK via JTAG...", UVM_LOW)
     jtag_riscv_agent_pkg::jtag_write_csr(
       ral.lc_ctrl.transition_ctrl.get_offset(),
       p_sequencer.jtag_sequencer_h,
-      2);
+      (2 | use_ext_clk));
 
     jtag_riscv_agent_pkg::jtag_read_csr(
       ral.lc_ctrl.transition_ctrl.get_offset(),
@@ -752,6 +770,12 @@ class chip_sw_base_vseq extends chip_base_vseq;
       transition_ctrl);
     `DV_CHECK_FATAL(transition_ctrl & (1 << 1), {"VOLATILE_RAW_UNLOCK is not supported by this ",
                     "top level. Check the SecVolatileRawUnlockEn parameter configuration."})
+
+    // The status bit propagated from the clkmgr does not seem to toggle when
+    // checked with `wait_lc_ext_clk_switched()`, so we only check that the ext_clk
+    // bit in the `transition_ctrl` register is sticky.
+    // Check expected external clock value.
+    `DV_CHECK(transition_ctrl & 1'b1 == use_ext_clk);
 
     begin
       bit [TL_DW-1:0] token_csr_vals[4] = {<< 32 {{>> 8 {RndCnstRawUnlockTokenHashed}}}};
@@ -930,18 +954,18 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // Bypass IO clock with the external clock
   // using LC_CTRL.CTRL_TRANSITION.EXT_CLOCK_EN
   task switch_to_external_clock();
-    // activate the external source clock with 48MHz
-    `uvm_info(`gfn, "Setting external clock to 48MHz...", UVM_MEDIUM)
-    cfg.chip_vif.ext_clk_if.set_freq_mhz(48);
+    `uvm_info(`gfn, $sformatf("Setting external clock to %d MHz...", cfg.chip_clock_source),
+              UVM_MEDIUM)
+    cfg.chip_vif.ext_clk_if.set_freq_mhz(cfg.chip_clock_source);
     cfg.chip_vif.ext_clk_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
 
-    // switch OTP to use external clock instead of internal clock
-    // wait for LC to be ready, acquire the transition interface mutex and
-    // enable external clock
+    // Switch OTP to use external clock instead of internal clock.
+    // Wait for LC to be ready, acquire the transition interface mutex and
+    // enable external clock.
     wait_lc_ready();
     claim_transition_interface();
 
-    // switch to external clock via LC controller
+    // Switch to external clock via LC controller.
     `uvm_info(`gfn, "Switching to external clock via JTAG...", UVM_MEDIUM)
     jtag_riscv_agent_pkg::jtag_write_csr(
       ral.lc_ctrl.transition_ctrl.get_offset(),

@@ -20,7 +20,7 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
   // reset jtag interface
   virtual task reset_jtag_tap();
     cfg.m_jtag_riscv_agent_cfg.in_reset = 1;
-    #1000ns;
+    #2000ns;
     cfg.m_jtag_riscv_agent_cfg.in_reset = 0;
   endtask
 
@@ -62,6 +62,7 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
     cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 0;
     apply_reset();
+    reset_jtag_tap();
 
     // Second VOLATILE_RAW_UNLOCK does not change the TAP interface to rv_dm
     // so that we can check the completion status through that interface.
