@@ -284,4 +284,20 @@
     }                                              \
   } while (false)
 
+/**
+ * Checks that the `status_t` represents a error value.
+ *
+ * Prints a human-readable error message if the status represents an non-error.
+ *
+ * @param expr An expression which evaluates to a `status_t`.
+ */
+#define CHECK_STATUS_NOT_OK(expr, ...)           \
+  do {                                           \
+    status_t status_ = expr;                     \
+    if (status_ok(status_)) {                    \
+      LOG_ERROR("CHECK-STATUS-ok: %r", status_); \
+      test_status_set(kTestStatusFailed);        \
+    }                                            \
+  } while (false)
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_CHECK_H_
