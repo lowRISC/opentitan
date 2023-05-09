@@ -29,6 +29,13 @@ struct Opts {
 
     #[structopt(flatten)]
     jtag: JtagParams,
+
+    #[structopt(
+        long, parse(try_from_str = DifLcCtrlState::parse_lc_state_str),
+        default_value = "test_unlocked0",
+        help = "LC state to expect the chip to be initialized in."
+    )]
+    initial_lc_state: DifLcCtrlState,
 }
 
 fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
@@ -56,7 +63,7 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     )?;
     assert_eq!(
         encoded_lc_state[0],
-        DifLcCtrlState::TestUnlocked0.redundant_encoding()
+        opts.initial_lc_state.redundant_encoding()
     );
 
     // Without resetting, change TAP strapping to the LC and reconnect.
@@ -70,7 +77,7 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
 
     // Read and write LC state register to verify connection.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
-    assert_eq!(state, DifLcCtrlState::TestUnlocked0.redundant_encoding());
+    assert_eq!(state, opts.initial_lc_state.redundant_encoding());
 
     jtag.disconnect().context("failed to disconnect JTAG")?;
 
