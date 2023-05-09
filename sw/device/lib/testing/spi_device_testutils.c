@@ -117,7 +117,10 @@ status_t spi_device_testutils_configure_passthrough(
           .payload_dir_to_host = true,
       },
   };
-  for (int i = 0; i < ARRAYSIZE(read_commands); ++i) {
+  static_assert(ARRAYSIZE(read_commands) <= UINT8_MAX,
+                "Length of read_commands must fit in uint8_t or we must change "
+                "the type of i.");
+  for (uint8_t i = 0; i < ARRAYSIZE(read_commands); ++i) {
     uint8_t slot = i + kSpiDeviceReadCommandSlotBase;
     if (bitfield_bit32_read(filters, slot)) {
       TRY(dif_spi_device_set_passthrough_command_filter(
@@ -238,8 +241,10 @@ status_t spi_device_testutils_configure_passthrough(
       },
 
   };
-  for (int i = 0; i < ARRAYSIZE(write_commands); ++i) {
-    uint8_t slot = i + kSpiDeviceWriteCommandSlotBase;
+  static_assert(ARRAYSIZE(write_commands) <= UINT8_MAX,
+                "Length of write_commands must fit into uint8_t");
+  for (uint8_t i = 0; i < ARRAYSIZE(write_commands); ++i) {
+    uint8_t slot = i + (uint8_t)kSpiDeviceWriteCommandSlotBase;
     if (bitfield_bit32_read(filters, slot) || upload_write_commands) {
       TRY(dif_spi_device_set_passthrough_command_filter(
           spi_device, write_commands[i].opcode, kDifToggleEnabled));

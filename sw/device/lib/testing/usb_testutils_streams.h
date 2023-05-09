@@ -39,9 +39,10 @@
 
 // Simple LFSR for 8-bit sequences
 // Note: zero is an isolated state that shall be avoided
-#define LFSR_ADVANCE(lfsr) \
-  (((lfsr) << 1) ^         \
-   ((((lfsr) >> 1) ^ ((lfsr) >> 2) ^ ((lfsr) >> 3) ^ ((lfsr) >> 7)) & 1U))
+#define LFSR_ADVANCE(lfsr)                                    \
+  (uint8_t)((uint8_t)((lfsr) << 1) ^ (uint8_t)((lfsr) >> 1) ^ \
+            (uint8_t)((lfsr) >> 2) ^ (uint8_t)((lfsr) >> 3) ^ \
+            (uint8_t)((lfsr) >> 7) & 1u)
 
 // Test/stream flags
 typedef enum {
@@ -292,6 +293,6 @@ status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
  */
 OT_WARN_UNUSED_RESULT
 bool usb_testutils_stream_completed(const usb_testutils_streams_ctx_t *ctx,
-                                    uint8_t id);
+                                    size_t id);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_STREAMS_H_

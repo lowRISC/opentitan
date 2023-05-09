@@ -12,6 +12,7 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
 /**
@@ -114,7 +115,11 @@ char *ottf_task_get_self_name(void);
     LOG_INFO("Starting test " #test_function_ "...");                    \
     uint64_t t_start_ = ibex_mcycle_read();                              \
     status_t local_status = INTO_STATUS(test_function_());               \
-    uint32_t cycles_ = ibex_mcycle_read() - t_start_;                    \
+    uint64_t t_end_ = ibex_mcycle_read();                                \
+    CHECK(t_end_ <= UINT32_MAX);                                         \
+    CHECK(t_start_ <= t_end_);                                           \
+    uint32_t cycles_ = (uint32_t)t_end_ - (uint32_t)t_start_;            \
+    CHECK(kClockFreqCpuHz <= UINT32_MAX, "");                            \
     uint32_t clock_mhz = (uint32_t)kClockFreqCpuHz / 1000000;            \
     uint32_t micros = cycles_ / clock_mhz;                               \
     if (status_ok(local_status)) {                                       \

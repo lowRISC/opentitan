@@ -107,7 +107,8 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
     while (sentep && ep < USBDEV_NUM_ENDPOINTS) {
       if (sentep & (1u << ep)) {
         // Free up the buffer and optionally callback
-        TRY(dif_usbdev_clear_tx_status(ctx->dev, ctx->buffer_pool, ep));
+        TRY(dif_usbdev_clear_tx_status(ctx->dev, ctx->buffer_pool,
+                                       (uint8_t)ep));
 
         // If we have a larger transfer in progress, continue with that
         usb_testutils_transfer_t *transfer = &ctx->in[ep].transfer;
@@ -115,7 +116,7 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
         bool done = true;
         if (transfer->buffer) {
           if (transfer->next_valid || !transfer->last) {
-            if (usb_testutils_transfer_next_part(ctx, ep, transfer)) {
+            if (usb_testutils_transfer_next_part(ctx, (uint8_t)ep, transfer)) {
               done = false;
             } else {
               res = kUsbTestutilsXfrResultFailed;
@@ -409,7 +410,9 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   TRY(dif_usbdev_configure(ctx->dev, ctx->buffer_pool, config));
 
   // Set up context
-  for (int i = 0; i < USBDEV_NUM_ENDPOINTS; i++) {
+  static_assert(USBDEV_NUM_ENDPOINTS <= UINT8_MAX,
+                "USBDEV_NUM_ENDPOINTS must fit into uint8_t");
+  for (uint8_t i = 0; i < USBDEV_NUM_ENDPOINTS; i++) {
     TRY(usb_testutils_endpoint_setup(ctx, i, kUsbdevOutDisabled, NULL, NULL,
                                      NULL, NULL, NULL));
   }
@@ -430,7 +433,11 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
 
 status_t usb_testutils_fin(usb_testutils_ctx_t *ctx) {
   // Remove the endpoints in reverse order so that Endpoint Zero goes down last
-  for (int ep = USBDEV_NUM_ENDPOINTS - 1; ep >= 0; ep--) {
+  static_assert(USBDEV_NUM_ENDPOINTS <= UINT8_MAX,
+                "USBDEV_NUM_ENDPOINTS must fit into uint8_t");
+  static_assert(USBDEV_NUM_ENDPOINTS > 0,
+                "USBDEV_NUM_ENDPOINTS - 1 must not overflow");
+  for (uint8_t ep = USBDEV_NUM_ENDPOINTS - 1; ep >= 0; ep--) {
     TRY(usb_testutils_endpoint_remove(ctx, ep));
   }
 

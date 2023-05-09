@@ -211,7 +211,6 @@ static status_t strm_rx(void *stream_v, dif_usbdev_rx_packet_info_t packet_info,
                         dif_usbdev_buffer_t buf) {
   usbdev_stream_t *s = (usbdev_stream_t *)stream_v;
   usb_testutils_streams_ctx_t *ctx = s->ctx;
-  usb_testutils_ctx_t *usbdev = ctx->usbdev;
 
   TRY_CHECK(packet_info.endpoint == s->rx_ep);
 
@@ -277,7 +276,7 @@ static status_t rx_show(void *stream_v, dif_usbdev_rx_packet_info_t packet_info,
 
 // Returns an indication of whether a stream has completed its data transfer
 bool usb_testutils_stream_completed(const usb_testutils_streams_ctx_t *ctx,
-                                    uint8_t id) {
+                                    size_t id) {
   // Locate the stream context information
   const usbdev_stream_t *s = &ctx->streams[id];
 
@@ -389,7 +388,8 @@ status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
         if (num_bytes > tx_left) {
           num_bytes = tx_left;
         }
-        buffer_fill(ctx, s, &buf, num_bytes);
+        TRY_CHECK(num_bytes <= UINT8_MAX, "num_bytes must fit in uint8_t");
+        buffer_fill(ctx, s, &buf, (uint8_t)num_bytes);
       } else {
         // Construct a signature to send to the host-side software,
         // identifying the stream and its properties
@@ -434,16 +434,17 @@ status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
                                     unsigned nstreams, uint32_t num_bytes,
                                     usbdev_stream_flags_t flags, bool verbose) {
   TRY_CHECK(nstreams <= USBUTILS_STREAMS_MAX);
+  TRY_CHECK(nstreams <= UINT8_MAX);
 
   // Remember the stream count
   ctx->nstreams = nstreams;
 
   // Initialize the state of each stream
-  for (unsigned id = 0U; id < nstreams; id++) {
+  for (uint8_t id = 0; id < nstreams; id++) {
     // Which endpoint are we using for the IN transfers to the host?
-    const uint8_t ep_in = 1u + id;
+    const uint8_t ep_in = id + 1;
     // Which endpoint are we using for the OUT transfers from the host?
-    const uint8_t ep_out = 1u + id;
+    const uint8_t ep_out = id + 1;
     TRY(usb_testutils_stream_init(ctx, id, ep_in, ep_out, num_bytes, flags,
                                   verbose));
   }
@@ -451,21 +452,24 @@ status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
   // Decide how many buffers each endpoint may queue up for transmission;
   // we must ensure that there are buffers available for reception, and we
   // do not want any endpoint to starve another
-  for (unsigned s = 0U; s < nstreams; s++) {
+  for (uint8_t s = 0; s < nstreams; s++) {
     // This is slightly overspending the available buffers, leaving the
     //   endpoints to vie for the final few buffers, so it's important that
     //   we limit the total number of buffers across all endpoints too
     unsigned ep = ctx->streams[s].tx_ep;
     ctx->tx_bufs_queued[ep] = 0U;
     ctx->tx_bufs_limit[ep] =
-        (USBUTILS_STREAMS_TXBUF_MAX + nstreams - 1) / nstreams;
+        (uint8_t)((uint32_t)USBUTILS_STREAMS_TXBUF_MAX + nstreams - 1) /
+        nstreams;
   }
   ctx->tx_queued_total = 0U;
   return OK_STATUS();
 }
 
 status_t usb_testutils_streams_service(usb_testutils_streams_ctx_t *ctx) {
-  for (unsigned id = 0U; id < ctx->nstreams; id++) {
+  TRY_CHECK(ctx->nstreams <= UINT8_MAX);
+
+  for (uint8_t id = 0U; id < ctx->nstreams; id++) {
     TRY(usb_testutils_stream_service(ctx, id));
 
     // We must keep polling regularly in order to handle detection of packet
@@ -477,9 +481,10 @@ status_t usb_testutils_streams_service(usb_testutils_streams_ctx_t *ctx) {
 
 bool usb_testutils_streams_completed(const usb_testutils_streams_ctx_t *ctx) {
   // See whether any streams still have more work to do
-  unsigned id = 0U;
-  while (id < ctx->nstreams && usb_testutils_stream_completed(ctx, id)) {
-    id++;
+  for (size_t id = 0; id < ctx->nstreams; id++) {
+    if (!usb_testutils_stream_completed(ctx, id)) {
+      return false;
+    }
   }
-  return (id >= ctx->nstreams);
+  return true;
 }

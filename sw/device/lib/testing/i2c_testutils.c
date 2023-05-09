@@ -87,7 +87,7 @@ status_t i2c_testutils_write(const dif_i2c_t *i2c, uint8_t addr,
 
   // First write the address.
   flags.start = true;
-  data_frame = (addr << 1) | kI2cWrite;
+  data_frame = (uint8_t)(addr << 1) | (uint8_t)kI2cWrite;
   TRY(dif_i2c_write_byte_raw(i2c, data_frame, flags));
 
   // Once address phase is through, blast the rest as generic data.
@@ -106,13 +106,12 @@ status_t i2c_testutils_issue_read(const dif_i2c_t *i2c, uint8_t addr,
                                   uint8_t byte_count) {
   dif_i2c_fmt_flags_t flags = kDefaultFlags;
   uint8_t data_frame;
-  uint8_t fifo_level;
 
   // The current function doesn't check for space in the FIFOs
 
   // First write the address.
   flags.start = true;
-  data_frame = (addr << 1) | kI2cRead;
+  data_frame = (uint8_t)(addr << 1) | (uint8_t)kI2cRead;
   TRY(dif_i2c_write_byte_raw(i2c, data_frame, flags));
 
   // Schedule the read transaction by writing flags to the fifo.
@@ -236,13 +235,6 @@ status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
 
 status_t i2c_testutils_connect_i2c_to_pinmux_pins(const dif_pinmux_t *pinmux,
                                                   uint8_t kI2cIdx) {
-  top_earlgrey_pinmux_mio_out_t i2c_pinmux_out1_id, i2c_pinmux_out2_id;
-  top_earlgrey_pinmux_insel_t i2c_pinmux_in1_id, i2c_pinmux_in2_id;
-  top_earlgrey_pinmux_peripheral_in_t i2c_pinmux_insel_scl_id,
-      i2c_pinmux_insel_sda_id;
-  top_earlgrey_pinmux_outsel_t i2c_pinmux_outsel_scl_id,
-      i2c_pinmux_outsel_sda_id;
-
   TRY(dif_pinmux_input_select(pinmux, i2c_conf[kI2cIdx].pins_peripheral_in[0],
                               i2c_conf[kI2cIdx].pins_insel[0]));
   TRY(dif_pinmux_input_select(pinmux, i2c_conf[kI2cIdx].pins_peripheral_in[1],
@@ -274,7 +266,7 @@ status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed) {
   dif_i2c_timing_config_t timing_config = {
       .lowest_target_device_speed = speed,
       .clock_period_nanos =
-          udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL),
+          (uint32_t)udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL),
       .sda_rise_nanos = 400,
       .sda_fall_nanos = 110,
       .scl_period_nanos = 1000000 / speed_khz};

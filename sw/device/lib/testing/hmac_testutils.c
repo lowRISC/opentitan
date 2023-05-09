@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/testing/hmac_testutils.h"
 
+#include <stdbool.h>
+
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -82,14 +84,17 @@ static bool check_fifo_empty(const dif_hmac_t *hmac) {
 }
 
 status_t hmac_testutils_fifo_empty_polled(const dif_hmac_t *hmac) {
-  IBEX_TRY_SPIN_FOR(check_fifo_empty(hmac), HMAC_TESTUTILS_FIFO_EMPTY_USEC);
+  uint32_t usec;
+  TRY(compute_hmac_testutils_fifo_empty_usec(&usec));
+  IBEX_TRY_SPIN_FOR(check_fifo_empty(hmac), usec);
   return OK_STATUS();
 }
 
 status_t hmac_testutils_finish_polled(const dif_hmac_t *hmac,
                                       dif_hmac_digest_t *digest_out) {
-  IBEX_TRY_SPIN_FOR(dif_hmac_finish(hmac, digest_out) == kDifOk,
-                    HMAC_TESTUTILS_FINISH_TIMEOUT_USEC);
+  uint32_t usec;
+  TRY(compute_hmac_testutils_finish_timeout_usec(&usec));
+  IBEX_TRY_SPIN_FOR(dif_hmac_finish(hmac, digest_out) == kDifOk, usec);
   return OK_STATUS();
 }
 
@@ -108,8 +113,8 @@ status_t hmac_testutils_push_message(const dif_hmac_t *hmac, const char *data,
   size_t sent_bytes;
 
   while (dp - data < len) {
-    dif_result_t res =
-        dif_hmac_fifo_push(hmac, dp, len - (dp - data), &sent_bytes);
+    const size_t offset = (size_t)(dp - data);
+    dif_result_t res = dif_hmac_fifo_push(hmac, dp, len - offset, &sent_bytes);
     TRY_CHECK(res == kDifOk || res == kDifIpFifoFull, "HMAC error = %d", res);
 
     // Wait until the FIFO is drained before pushing more data. This helps
