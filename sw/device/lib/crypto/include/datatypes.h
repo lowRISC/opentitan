@@ -23,22 +23,31 @@ extern "C" {
 /**
  * Enum to handle return values of the crypto API.
  *
- * Values are hardened.
+ * Values are built to be bit-compatible with OpenTitan's internal `status_t`
+ * datatypes. The highest (sign) bit indicates if the value is an error (1) or
+ * not (0). For non-error statuses, the rest can be anything; in cryptolib
+ * status codes it is always `kHardenedBoolTrue`. For errors:
+ *   - The next 15 bits are a module identifier, which is always 0 in the
+ *     cryptolib status codes
+ *   - The next 11 bits are a line number or other information; in the
+ *     cryptolib status codes, it is a hardened value created to have high
+ *     Hamming distance with the other valid status codes
+ *   - The final 5 bits are an Abseil-compatible error code
  */
 typedef enum crypto_status {
   // Status is OK; no errors.
   kCryptoStatusOK = 0x739,
   // Invalid input arguments; wrong length or invalid type.
-  kCryptoStatusBadArgs = 0xb07,
+  kCryptoStatusBadArgs = 0x8000b073,
   // Error after which it is OK to retry (e.g. timeout).
-  kCryptoStatusInternalError = 0x5c3,
+  kCryptoStatusInternalError = 0x80005c3a,
   // Error after which it is not OK to retry (e.g. integrity check).
-  kCryptoStatusFatalError = 0xf5c,
+  kCryptoStatusFatalError = 0x8000f5c9,
   // An asynchronous operation is still in progress.
-  kCryptoStatusAsyncIncomplete = 0xae1,
+  kCryptoStatusAsyncIncomplete = 0x8000ae1e,
   // TODO: remove all instances of this error before release; it is to track
   // implementations that are not yet complete.
-  kCryptoStatusNotImplemented = 0xff,
+  kCryptoStatusNotImplemented = 0x80001fec,
 } crypto_status_t;
 
 /**
