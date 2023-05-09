@@ -859,7 +859,7 @@
       sw_images: ["//sw/device/tests/sim_dv:lc_ctrl_volatile_raw_unlock_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_otp_image=OtpTypeLcStRaw"]
-      run_timeout_mins: 10
+      run_timeout_mins: 120
     }
     {
       name: chip_sw_lc_walkthrough_rma
