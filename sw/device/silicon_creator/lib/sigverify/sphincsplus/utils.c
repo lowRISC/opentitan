@@ -22,9 +22,9 @@ uint64_t spx_utils_bytes_to_u64(const uint8_t *in, size_t inlen) {
   return retval;
 }
 
-rom_error_t spx_utils_compute_root(const uint8_t *leaf, uint32_t leaf_idx,
+rom_error_t spx_utils_compute_root(const uint32_t *leaf, uint32_t leaf_idx,
                                    uint32_t idx_offset,
-                                   const uint8_t *auth_path,
+                                   const uint32_t *auth_path,
                                    uint8_t tree_height, const spx_ctx_t *ctx,
                                    spx_addr_t *addr, uint32_t *root) {
   // Initialize working buffer.
@@ -41,7 +41,7 @@ rom_error_t spx_utils_compute_root(const uint8_t *leaf, uint32_t leaf_idx,
     memcpy(buffer, leaf, kSpxN);
     memcpy(buffer_second, auth_path, kSpxN);
   }
-  auth_path += kSpxN;
+  auth_path += kSpxNWords;
 
   for (uint8_t i = 0; i < tree_height - 1; i++) {
     leaf_idx >>= 1;
@@ -63,7 +63,7 @@ rom_error_t spx_utils_compute_root(const uint8_t *leaf, uint32_t leaf_idx,
 
     // Copy the auth path while KMAC is processing for performance reasons.
     memcpy(auth_dst, auth_path, kSpxN);
-    auth_path += kSpxN;
+    auth_path += kSpxNWords;
 
     // Get the `thash` output.
     HARDENED_RETURN_IF_ERROR(kmac_shake256_squeeze_end(hash_dst, kSpxNWords));
@@ -74,5 +74,5 @@ rom_error_t spx_utils_compute_root(const uint8_t *leaf, uint32_t leaf_idx,
   idx_offset >>= 1;
   spx_addr_tree_height_set(addr, tree_height);
   spx_addr_tree_index_set(addr, leaf_idx + idx_offset);
-  return thash((unsigned char *)buffer, 2, ctx, addr, root);
+  return thash(buffer, 2, ctx, addr, root);
 }

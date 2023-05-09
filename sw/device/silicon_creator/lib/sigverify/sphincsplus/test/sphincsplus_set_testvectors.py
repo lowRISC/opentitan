@@ -30,6 +30,26 @@ def hex_to_hexbytes(x):
     return out
 
 
+def hex_to_hexwords(x):
+    '''Convert a hex string little-endian 32-bit words as hex strings.'''
+    if x.startswith('0x'):
+        x = x[2:]
+
+    # Double-check that length is divisible by 8.
+    if len(x) % 8 != 0:
+        raise ValueError(f'Hex string with length {len(x)} is not divisible by'
+                         f'word size (32 bits): {x}')
+
+    out = []
+    for i in range(0, len(x), 8):
+        # Reverse the order of bytes in each word.
+        word = '0x'
+        for j in range(i + 8, i, -2):
+            word += x[j - 2:j]
+        out.append(word)
+    return out
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--hjsonfile', '-j',
@@ -56,9 +76,9 @@ def main() -> int:
 
     # Convert the values to hexadecimal bytes.
     for t in testvecs:
-        t['sig_hexbytes'] = hex_to_hexbytes(t['sig_hex'])
+        t['sig_hexwords'] = hex_to_hexwords(t['sig_hex'])
         t['msg_hexbytes'] = hex_to_hexbytes(t['msg_hex'])
-        t['pk_hexbytes'] = hex_to_hexbytes(t['pk_hex'])
+        t['pk_hexwords'] = hex_to_hexwords(t['pk_hex'])
 
     with args.template as template:
         with args.headerfile as header:

@@ -35,7 +35,7 @@ static_assert(sizeof(uint8_t) <= kSpxWotsLogW,
  * @param[out] Output buffer (`kSpxNWords` words).
  * @return Error code indicating if the operation succeeded.
  */
-OT_WARN_UNUSED_RESULT static rom_error_t gen_chain(const uint8_t *in,
+OT_WARN_UNUSED_RESULT static rom_error_t gen_chain(const uint32_t *in,
                                                    uint8_t start,
                                                    const spx_ctx_t *ctx,
                                                    spx_addr_t *addr,
@@ -137,14 +137,14 @@ static void wots_checksum(const uint8_t *msg_base_w, uint8_t *csum_base_w) {
  * @param msg Input message.
  * @param[out] lengths Resulting chain lengths.
  */
-static void chain_lengths(const uint8_t *msg, uint8_t *lengths) {
-  base_w(msg, kSpxWotsLen1, lengths);
+static void chain_lengths(const uint32_t *msg, uint8_t *lengths) {
+  base_w((unsigned char *)msg, kSpxWotsLen1, lengths);
   wots_checksum(lengths, &lengths[kSpxWotsLen1]);
 }
 
 static_assert(kSpxWotsLen - 1 <= UINT8_MAX,
               "Maximum chain value must fit into a `uint8_t`");
-rom_error_t wots_pk_from_sig(const uint8_t *sig, const uint8_t *msg,
+rom_error_t wots_pk_from_sig(const uint32_t *sig, const uint32_t *msg,
                              const spx_ctx_t *ctx, spx_addr_t *addr,
                              uint32_t *pk) {
   uint8_t lengths[kSpxWotsLen];
@@ -152,9 +152,9 @@ rom_error_t wots_pk_from_sig(const uint8_t *sig, const uint8_t *msg,
 
   for (uint8_t i = 0; i < kSpxWotsLen; i++) {
     spx_addr_chain_set(addr, i);
-    size_t pk_idx = i * kSpxNWords;
+    size_t word_offset = i * kSpxNWords;
     HARDENED_RETURN_IF_ERROR(
-        gen_chain(sig + i * kSpxN, lengths[i], ctx, addr, &pk[pk_idx]));
+        gen_chain(sig + word_offset, lengths[i], ctx, addr, pk + word_offset));
   }
 
   return kErrorOk;

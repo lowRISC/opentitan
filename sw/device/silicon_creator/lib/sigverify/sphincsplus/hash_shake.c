@@ -52,7 +52,7 @@ rom_error_t spx_hash_initialize(spx_ctx_t *ctx) {
   return kmac_shake256_configure();
 }
 
-rom_error_t spx_hash_message(const uint8_t *R, const uint8_t *pk,
+rom_error_t spx_hash_message(const uint32_t *R, const uint32_t *pk,
                              const uint8_t *msg_prefix_1,
                              size_t msg_prefix_1_len,
                              const uint8_t *msg_prefix_2,
@@ -63,8 +63,8 @@ rom_error_t spx_hash_message(const uint8_t *R, const uint8_t *pk,
   unsigned char *bufp = (unsigned char *)buf;
 
   HARDENED_RETURN_IF_ERROR(kmac_shake256_start());
-  kmac_shake256_absorb(R, kSpxN);
-  kmac_shake256_absorb(pk, kSpxPkBytes);
+  kmac_shake256_absorb_words(R, kSpxNWords);
+  kmac_shake256_absorb_words(pk, kSpxPkWords);
   kmac_shake256_absorb(msg_prefix_1, msg_prefix_1_len);
   kmac_shake256_absorb(msg_prefix_2, msg_prefix_2_len);
   kmac_shake256_absorb(msg, msg_len);

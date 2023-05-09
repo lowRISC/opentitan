@@ -16,8 +16,8 @@ extern "C" {
 
 // A test vector for SPHINCS+ signature verification.
 typedef struct spx_verify_test_vector {
-  uint8_t sig[kSpxVerifySigBytes];  // Signature to verify.
-  uint8_t pk[kSpxVerifyPkBytes];    // Public key.
+  uint32_t sig[kSpxVerifySigWords];  // Signature to verify.
+  uint32_t pk[kSpxVerifyPkWords];    // Public key.
   size_t msg_len;                   // Length of message.
   uint8_t *msg;                     // Message.
 } spx_verify_test_vector_t;
@@ -42,14 +42,14 @@ static const spx_verify_test_vector_t spx_verify_tests[${len(tests)}] = {
     {
         .sig =
             {
-  % for i in range(0, len(t["sig_hexbytes"]), 10):
-                ${', '.join(t["sig_hexbytes"][i:i + 10])},
+  % for i in range(0, len(t["sig_hexwords"]), 4):
+                ${', '.join(t["sig_hexwords"][i:i + 4])},
   % endfor
             },
         .pk =
             {
-  % for i in range(0, len(t["pk_hexbytes"]), 10):
-                ${', '.join(t["pk_hexbytes"][i:i + 10])},
+  % for i in range(0, len(t["pk_hexwords"]), 4):
+                ${', '.join(t["pk_hexwords"][i:i + 4])},
   % endfor
             },
         .msg_len = ${t["msg_len"]},

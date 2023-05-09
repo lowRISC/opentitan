@@ -49,9 +49,9 @@ uint64_t spx_utils_bytes_to_u64(const uint8_t *in, size_t inlen);
  * @return Error code indicating if the operation succeeded.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t spx_utils_compute_root(const uint8_t *leaf, uint32_t leaf_idx,
+rom_error_t spx_utils_compute_root(const uint32_t *leaf, uint32_t leaf_idx,
                                    uint32_t idx_offset,
-                                   const uint8_t *auth_path,
+                                   const uint32_t *auth_path,
                                    uint8_t tree_height, const spx_ctx_t *ctx,
                                    spx_addr_t *addr, uint32_t *root);
 
