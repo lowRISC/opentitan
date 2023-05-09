@@ -46,7 +46,8 @@ static const char *stringify_severity(log_severity_t severity) {
  */
 void base_log_internal_core(log_fields_t log, ...) {
   size_t file_name_len =
-      ((char *)memchr(log.file_name, '\0', PTRDIFF_MAX)) - log.file_name;
+      (size_t)(((const char *)memchr(log.file_name, '\0', PTRDIFF_MAX)) -
+               log.file_name);
   const char *base_name = memrchr(log.file_name, '/', file_name_len);
   if (base_name == NULL) {
     base_name = log.file_name;

@@ -29,6 +29,7 @@ dual_cc_library(
         shared = [
             "//sw/device/lib/base:math",
             "//sw/device/lib/base:stdasm",
+            "//sw/device/lib/base:macros",
         ],
     ),
 )
