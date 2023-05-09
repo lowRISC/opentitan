@@ -8,9 +8,10 @@
 #include "sw/device/lib/base/status.h"
 
 hardened_bool_t hardened_status_ok(status_t s) {
-  if (launder32(s.value) >= 0 && launder32(s.value) == kHardenedBoolTrue) {
+  const int32_t laundered_value = (int32_t)launder32((uint32_t)s.value);
+  if (laundered_value == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ((hardened_bool_t)s.value, kHardenedBoolTrue);
-    return s.value;
+    return kHardenedBoolTrue;
   }
   return kHardenedBoolFalse;
 }

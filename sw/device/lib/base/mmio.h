@@ -77,7 +77,7 @@ inline mmio_region_t mmio_region_from_addr(uintptr_t address) {
  */
 OT_WARN_UNUSED_RESULT
 inline uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset) {
-  return ((volatile uint8_t *)base.base)[offset / sizeof(uint8_t)];
+  return ((volatile uint8_t *)base.base)[(size_t)offset / sizeof(uint8_t)];
 }
 
 /**
@@ -93,7 +93,7 @@ inline uint8_t mmio_region_read8(mmio_region_t base, ptrdiff_t offset) {
  */
 OT_WARN_UNUSED_RESULT
 inline uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset) {
-  return ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)];
+  return ((volatile uint32_t *)base.base)[(size_t)offset / sizeof(uint32_t)];
 }
 
 /**
@@ -109,7 +109,7 @@ inline uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset) {
  */
 inline void mmio_region_write8(mmio_region_t base, ptrdiff_t offset,
                                uint8_t value) {
-  ((volatile uint8_t *)base.base)[offset / sizeof(uint8_t)] = value;
+  ((volatile uint8_t *)base.base)[(size_t)offset / sizeof(uint8_t)] = value;
 }
 
 /**
@@ -125,8 +125,8 @@ inline void mmio_region_write8(mmio_region_t base, ptrdiff_t offset,
  */
 inline void mmio_region_write8_shadowed(mmio_region_t base, ptrdiff_t offset,
                                         uint8_t value) {
-  ((volatile uint8_t *)base.base)[offset / sizeof(uint8_t)] = value;
-  ((volatile uint8_t *)base.base)[offset / sizeof(uint8_t)] = value;
+  ((volatile uint8_t *)base.base)[(size_t)offset / sizeof(uint8_t)] = value;
+  ((volatile uint8_t *)base.base)[(size_t)offset / sizeof(uint8_t)] = value;
 }
 
 /**
@@ -142,7 +142,7 @@ inline void mmio_region_write8_shadowed(mmio_region_t base, ptrdiff_t offset,
  */
 inline void mmio_region_write32(mmio_region_t base, ptrdiff_t offset,
                                 uint32_t value) {
-  ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
+  ((volatile uint32_t *)base.base)[(size_t)offset / sizeof(uint32_t)] = value;
 }
 
 /**
@@ -158,8 +158,8 @@ inline void mmio_region_write32(mmio_region_t base, ptrdiff_t offset,
  */
 inline void mmio_region_write32_shadowed(mmio_region_t base, ptrdiff_t offset,
                                          uint32_t value) {
-  ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
-  ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
+  ((volatile uint32_t *)base.base)[(size_t)offset / sizeof(uint32_t)] = value;
+  ((volatile uint32_t *)base.base)[(size_t)offset / sizeof(uint32_t)] = value;
 }
 #else   // OT_PLATFORM_RV32
 /**
