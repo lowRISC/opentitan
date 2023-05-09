@@ -147,15 +147,18 @@ void _ottf_main(void) {
 
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
-  CHECK_DIF_OK(
-      dif_uart_configure(&uart, (dif_uart_config_t){
-                                    .baudrate = kUartBaudrate,
-                                    .clk_freq_hz = kClockFreqPeripheralHz,
-                                    .parity_enable = kDifToggleDisabled,
-                                    .parity = kDifUartParityEven,
-                                    .tx_enable = kDifToggleEnabled,
-                                    .rx_enable = kDifToggleEnabled,
-                                }));
+  CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
+  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
+        "kClockFreqPeripheralHz must fit in uint32_t");
+  CHECK_DIF_OK(dif_uart_configure(
+      &uart, (dif_uart_config_t){
+                 .baudrate = (uint32_t)kUartBaudrate,
+                 .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                 .parity_enable = kDifToggleDisabled,
+                 .parity = kDifUartParityEven,
+                 .tx_enable = kDifToggleEnabled,
+                 .rx_enable = kDifToggleEnabled,
+             }));
   base_uart_stdout(&uart);
 
   CHECK_DIF_OK(dif_spi_device_init_handle(
@@ -246,7 +249,7 @@ void _ottf_main(void) {
       CHECK_DIF_OK(dif_uart_bytes_receive(&uart, 1, &rcv_char, NULL));
       CHECK_DIF_OK(dif_uart_byte_send_polled(&uart, rcv_char));
 
-      CHECK_DIF_OK(dif_gpio_write_all(&gpio, rcv_char << 8));
+      CHECK_DIF_OK(dif_gpio_write_all(&gpio, (uint32_t)rcv_char << 8));
 
       if (rcv_char == '/') {
         uint32_t usb_irq_state =

@@ -19,7 +19,7 @@ void demo_gpio_startup(dif_gpio_t *gpio) {
 
   // Give a LED pattern as startup indicator for 5 seconds.
   CHECK_DIF_OK(dif_gpio_write_all(gpio, 0x00ff));
-  for (int i = 0; i < 32; ++i) {
+  for (dif_gpio_pin_t i = 0; i < 32; ++i) {
     busy_spin_micros(5 * 1000);  // 5 ms
     CHECK_DIF_OK(dif_gpio_write(gpio, 8 + (i % 8), (i / 8) % 2));
   }
