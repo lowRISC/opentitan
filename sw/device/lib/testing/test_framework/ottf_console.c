@@ -73,15 +73,19 @@ void ottf_console_init(void) {
       }
       CHECK_DIF_OK(
           dif_uart_init(mmio_region_from_addr(base_addr), &ottf_console_uart));
-      CHECK_DIF_OK(dif_uart_configure(&ottf_console_uart,
-                                      (dif_uart_config_t){
-                                          .baudrate = kUartBaudrate,
-                                          .clk_freq_hz = kClockFreqPeripheralHz,
-                                          .parity_enable = kDifToggleDisabled,
-                                          .parity = kDifUartParityEven,
-                                          .tx_enable = kDifToggleEnabled,
-                                          .rx_enable = kDifToggleEnabled,
-                                      }));
+      CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
+      CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
+            "kClockFreqPeripheralHz must fit in uint32_t");
+      CHECK_DIF_OK(dif_uart_configure(
+          &ottf_console_uart,
+          (dif_uart_config_t){
+              .baudrate = (uint32_t)kUartBaudrate,
+              .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+              .parity_enable = kDifToggleDisabled,
+              .parity = kDifUartParityEven,
+              .tx_enable = kDifToggleEnabled,
+              .rx_enable = kDifToggleEnabled,
+          }));
       base_uart_stdout(&ottf_console_uart);
 
       // Initialize/Configure console flow control (if requested).
@@ -167,7 +171,7 @@ void ottf_console_flow_control_enable(void) {
 static status_t manage_flow_control(const dif_uart_t *uart,
                                     ottf_console_flow_control_t ctrl) {
   if (flow_control_state == kOttfConsoleFlowControlNone) {
-    return OK_STATUS(flow_control_state);
+    return OK_STATUS((int32_t)flow_control_state);
   }
   if (ctrl == kOttfConsoleFlowControlAuto) {
     uint32_t avail;
@@ -179,13 +183,13 @@ static status_t manage_flow_control(const dif_uart_t *uart,
                flow_control_state != kOttfConsoleFlowControlPause) {
       ctrl = kOttfConsoleFlowControlPause;
     } else {
-      return OK_STATUS(flow_control_state);
+      return OK_STATUS((int32_t)flow_control_state);
     }
   }
   uint8_t byte = (uint8_t)ctrl;
   CHECK_DIF_OK(dif_uart_bytes_send(uart, &byte, 1, NULL));
   flow_control_state = ctrl;
-  return OK_STATUS(flow_control_state);
+  return OK_STATUS((int32_t)flow_control_state);
 }
 
 bool ottf_console_flow_control_isr(void) {

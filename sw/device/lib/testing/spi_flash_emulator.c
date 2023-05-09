@@ -99,7 +99,7 @@ static status_t read_and_prepare_sfdp(dif_spi_host_t *spih,
     quad_enable = read_32(data + offset + 14 * sizeof(uint32_t));
     quad_enable = bitfield_field32_read(quad_enable, SPI_FLASH_QUAD_ENABLE);
   }
-  return OK_STATUS(quad_enable);
+  return OK_STATUS((int32_t)quad_enable);
 }
 
 static status_t prepare_jedec_id(dif_spi_device_handle_t *spid) {
@@ -120,7 +120,7 @@ status_t spi_flash_emulator(dif_spi_host_t *spih,
   LOG_INFO("Configuring spi_flash_emulator.");
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleDisabled));
   TRY(prepare_jedec_id(spid));
-  uint8_t quad_enable = TRY(read_and_prepare_sfdp(spih, spid));
+  uint8_t quad_enable = (uint8_t)TRY(read_and_prepare_sfdp(spih, spid));
   LOG_INFO("Setting the EEPROM's QE bit via mechanism %d", quad_enable);
   TRY(spi_flash_testutils_quad_enable(spih, quad_enable, /*enabled=*/true));
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleEnabled));

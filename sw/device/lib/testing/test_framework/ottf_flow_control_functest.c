@@ -35,7 +35,7 @@ status_t ottf_flow_control_test(ujson_t *uj) {
   // Receive a line of text into a buffer.
   uint8_t buf[256] = {0};
   for (size_t i = 0; i < sizeof(buf) - 1; ++i) {
-    char ch = TRY(ujson_getc(uj));
+    char ch = (char)TRY(ujson_getc(uj));
     if (ch == '\n') {
       break;
     }

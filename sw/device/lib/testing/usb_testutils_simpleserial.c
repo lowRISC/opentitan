@@ -45,7 +45,7 @@ static status_t ss_flush(void *ssctx_v) {
     TRY(dif_usbdev_buffer_write(ctx->dev, &ssctx->cur_buf, ssctx->chold.data_b,
                                 ssctx->cur_cpos & 0x3, &bytes_written));
   }
-  TRY(dif_usbdev_send(ctx->dev, ssctx->ep, &ssctx->cur_buf));
+  TRY(dif_usbdev_send(ctx->dev, (uint8_t)ssctx->ep, &ssctx->cur_buf));
   ssctx->sending = true;
   ssctx->cur_cpos = -1;  // given it to the hardware
   return OK_STATUS();
@@ -67,7 +67,7 @@ status_t usb_testutils_simpleserial_send_byte(usb_testutils_ss_ctx_t *ssctx,
     TRY(dif_usbdev_buffer_write(ctx->dev, &ssctx->cur_buf, ssctx->chold.data_b,
                                 /*src_len=*/4, &bytes_written));
     if (ssctx->cur_cpos >= MAX_GATHER && !ssctx->sending) {
-      TRY(dif_usbdev_send(ctx->dev, ssctx->ep, &ssctx->cur_buf));
+      TRY(dif_usbdev_send(ctx->dev, (uint8_t)ssctx->ep, &ssctx->cur_buf));
       ssctx->sending = true;
       ssctx->cur_cpos = -1;  // given it to the hardware
     }
@@ -78,8 +78,8 @@ status_t usb_testutils_simpleserial_send_byte(usb_testutils_ss_ctx_t *ssctx,
 status_t usb_testutils_simpleserial_init(usb_testutils_ss_ctx_t *ssctx,
                                          usb_testutils_ctx_t *ctx, int ep,
                                          void (*got_byte)(uint8_t)) {
-  TRY(usb_testutils_endpoint_setup(ctx, ep, kUsbdevOutStream, ssctx, ss_tx_done,
-                                   ss_rx, ss_flush, NULL));
+  TRY(usb_testutils_endpoint_setup(ctx, (uint8_t)ep, kUsbdevOutStream, ssctx,
+                                   ss_tx_done, ss_rx, ss_flush, NULL));
   ssctx->ctx = ctx;
   ssctx->ep = ep;
   ssctx->sending = false;

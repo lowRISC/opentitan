@@ -39,9 +39,10 @@
 
 // Simple LFSR for 8-bit sequences
 // Note: zero is an isolated state that shall be avoided
-#define LFSR_ADVANCE(lfsr) \
-  (((lfsr) << 1) ^         \
-   ((((lfsr) >> 1) ^ ((lfsr) >> 2) ^ ((lfsr) >> 3) ^ ((lfsr) >> 7)) & 1U))
+#define LFSR_ADVANCE(lfsr)                                    \
+  (uint8_t)((uint8_t)((lfsr) << 1) ^ (uint8_t)((lfsr) >> 1) ^ \
+            (uint8_t)((lfsr) >> 2) ^ (uint8_t)((lfsr) >> 3) ^ \
+            (uint8_t)((lfsr) >> 7) & 1u)
 
 // Test/stream flags
 typedef enum {

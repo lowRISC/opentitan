@@ -15,7 +15,7 @@ static status_t ottf_putbuf(void *io, const char *buf, size_t len) {
   for (size_t i = 0; i < len; ++i) {
     TRY(dif_uart_byte_send_polled(uart, buf[i]));
   }
-  return OK_STATUS(len);
+  return OK_STATUS((int32_t)len);
 }
 
 static status_t ottf_getc(void *io) {

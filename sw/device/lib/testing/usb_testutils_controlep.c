@@ -106,7 +106,7 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
   // Endpoint for SetFeature/ClearFeature/GetStatus requests
   dif_usbdev_endpoint_id_t endpoint = {
       .number = (uint8_t)wIndex,
-      .direction = ((bmRequestType & 0x80U) != 0U),
+      .direction = ((bmRequestType & 0x80) != 0U),
   };
   dif_usbdev_buffer_t buffer;
   CHECK_DIF_OK(dif_usbdev_buffer_request(ctx->dev, ctx->buffer_pool, &buffer));
@@ -116,11 +116,11 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
         // Device descriptor
         len = sizeof(dev_dscr);
         if (wLength < len) {
-          len = wLength;
+          len = (size_t)wLength;
         }
         CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, dev_dscr, len,
                                              &bytes_written));
-        CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+        CHECK_DIF_OK(dif_usbdev_send(ctx->dev, (uint8_t)ctctx->ep, &buffer));
         return kUsbTestutilsCtWaitIn;
       } else if ((wValue & 0xff00) == 0x200) {
         usb_testutils_xfr_flags_t flags = kUsbTestutilsXfrDoubleBuffered;
@@ -128,7 +128,7 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
         // Configuration descriptor
         len = ctctx->cfg_dscr_len;
         if (wLength < len) {
-          len = wLength;
+          len = (size_t)wLength;
         } else if (wLength > len) {
           // Since we're not sending as much as requested, we may need to use
           // a Zero Length Packet to mark the end of the data stage
@@ -146,7 +146,7 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
         } else {
           CHECK_DIF_OK(dif_usbdev_buffer_write(
               ctx->dev, &buffer, ctctx->cfg_dscr, len, &bytes_written));
-          CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+          CHECK_DIF_OK(dif_usbdev_send(ctx->dev, (uint8_t)ctctx->ep, &buffer));
         }
         return kUsbTestutilsCtWaitIn;
       }
@@ -156,15 +156,15 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
       TRC_S("SA");
       ctctx->new_dev = wValue & 0x7f;
       // send zero length packet for status phase
-      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, (uint8_t)ctctx->ep, &buffer));
       return kUsbTestutilsCtAddrStatIn;
 
     case kUsbSetupReqSetConfiguration:
       TRC_S("SC");
       // only ever expect this to be 1 since there is one config descriptor
-      ctctx->usb_config = wValue;
+      ctctx->usb_config = (uint8_t)wValue;
       // send zero length packet for status phase
-      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, (uint8_t)ctctx->ep, &buffer));
       if (wValue) {
         ctctx->device_state = kUsbTestutilsDeviceConfigured;
       } else {
@@ -176,12 +176,12 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
     case kUsbSetupReqGetConfiguration:
       len = sizeof(ctctx->usb_config);
       if (wLength < len) {
-        len = wLength;
+        len = (size_t)wLength;
       }
       // return the value that was set
       CHECK_DIF_OK(dif_usbdev_buffer_write(
           ctx->dev, &buffer, &ctctx->usb_config, len, &bytes_written));
-      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, (uint8_t)ctctx->ep, &buffer));
       return kUsbTestutilsCtWaitIn;
 
     case kUsbSetupReqSetFeature:
@@ -189,7 +189,7 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
         CHECK_DIF_OK(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint,
                                                       kDifToggleEnabled));
         // send zero length packet for status phase
-        CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+        CHECK_DIF_OK(dif_usbdev_send(ctx->dev, (uint8_t)ctctx->ep, &buffer));
         return kUsbTestutilsCtStatIn;
       }
       return kUsbTestutilsCtError;  // unknown
@@ -199,7 +199,7 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
         CHECK_DIF_OK(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint,
                                                       kDifToggleDisabled));
         // send zero length packet for status phase
-        CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+        CHECK_DIF_OK(dif_usbdev_send(ctx->dev, (uint8_t)ctctx->ep, &buffer));
       }
       return kUsbTestutilsCtStatIn;
 
@@ -217,42 +217,42 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
         stat = 0;
       }
       if (wLength < len) {
-        len = wLength;
+        len = (size_t)wLength;
       }
       // return the value that was set
       CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, (uint8_t *)&stat,
                                            len, &bytes_written));
-      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, (uint8_t)ctctx->ep, &buffer));
       return kUsbTestutilsCtWaitIn;
 
     case kUsbSetupReqSetInterface:
       // Don't support alternate interfaces, so just ignore
       // send zero length packet for status phase
-      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, (uint8_t)ctctx->ep, &buffer));
       return kUsbTestutilsCtStatIn;
 
     case kUsbSetupReqGetInterface:
       zero = 0;
       len = 1;
       if (wLength < len) {
-        len = wLength;
+        len = (size_t)wLength;
       }
       // Don't support interface, so return zero
       CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, (uint8_t *)&zero,
                                            len, &bytes_written));
-      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, (uint8_t)ctctx->ep, &buffer));
       return kUsbTestutilsCtWaitIn;
 
     case kUsbSetupReqSynchFrame:
       zero = 0;
       len = 2;
       if (wLength < len) {
-        len = wLength;
+        len = (size_t)wLength;
       }
       // Don't support synch_frame so return zero
       CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, (uint8_t *)&zero,
                                            len, &bytes_written));
-      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+      CHECK_DIF_OK(dif_usbdev_send(ctx->dev, (uint8_t)ctctx->ep, &buffer));
       return kUsbTestutilsCtWaitIn;
 
     default:
@@ -267,11 +267,12 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
             // Test config descriptor
             len = ctctx->test_dscr_len;
             if (wLength < len) {
-              len = wLength;
+              len = (size_t)wLength;
             }
             CHECK_DIF_OK(dif_usbdev_buffer_write(
                 ctx->dev, &buffer, ctctx->test_dscr, len, &bytes_written));
-            CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+            CHECK_DIF_OK(
+                dif_usbdev_send(ctx->dev, (uint8_t)ctctx->ep, &buffer));
             return kUsbTestutilsCtWaitIn;
           } break;
           case kVendorSetupReqTestStatus: {
@@ -292,7 +293,7 @@ static status_t ctrl_tx_done(void *ctctx_v, usb_testutils_xfr_result_t result) {
   switch (ctctx->ctrlstate) {
     case kUsbTestutilsCtAddrStatIn:
       // Now the status was sent on device 0 can switch to new device ID
-      TRY(dif_usbdev_address_set(ctx->dev, ctctx->new_dev));
+      TRY(dif_usbdev_address_set(ctx->dev, (uint8_t)ctctx->new_dev));
       TRC_I(ctctx->new_dev, 8);
       ctctx->ctrlstate = kUsbTestutilsCtIdle;
       // We now have a device address on the USB
@@ -401,7 +402,7 @@ status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
                                       const uint8_t *test_dscr,
                                       size_t test_dscr_len) {
   ctctx->ctx = ctx;
-  TRY(usb_testutils_endpoint_setup(ctx, ep, kUsbdevOutMessage, ctctx,
+  TRY(usb_testutils_endpoint_setup(ctx, (uint8_t)ep, kUsbdevOutMessage, ctctx,
                                    ctrl_tx_done, ctrl_rx, NULL, ctrl_reset));
   ctctx->ep = ep;
   ctctx->ctrlstate = kUsbTestutilsCtIdle;
