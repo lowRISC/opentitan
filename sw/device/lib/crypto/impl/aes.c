@@ -143,7 +143,7 @@ static status_t aes_padding_apply(aes_padding_t padding_mode,
   switch (launder32(padding_mode)) {
     case kAesPaddingPkcs7:
       // Pads with value same as the number of padding bytes.
-      memset(padding, padding_len, padding_len);
+      memset(padding, (uint8_t)padding_len, padding_len);
       padding_written = kHardenedBoolTrue;
       break;
     case kAesPaddingIso9797M2:
@@ -371,7 +371,7 @@ static status_t aes_gcm_key_construct(const crypto_blinded_key_t *blinded_key,
                     kHardenedBoolTrue);
 
   // Check the key mode.
-  if (launder32(blinded_key->config.key_mode) != kKeyModeAesGcm) {
+  if (launder32((uint32_t)blinded_key->config.key_mode) != kKeyModeAesGcm) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(blinded_key->config.key_mode, kKeyModeAesGcm);
@@ -562,7 +562,7 @@ crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
                     kHardenedBoolTrue);
 
   // Check the key mode.
-  if (launder32(hash_subkey->config.key_mode) != kKeyModeAesGcm) {
+  if (launder32((uint32_t)hash_subkey->config.key_mode) != kKeyModeAesGcm) {
     return kCryptoStatusBadArgs;
   }
   HARDENED_CHECK_EQ(hash_subkey->config.key_mode, kKeyModeAesGcm);

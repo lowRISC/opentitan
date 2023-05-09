@@ -97,8 +97,9 @@ static status_t check_offset_len(uint32_t offset_bytes, size_t num_words,
  * @return Result of the operation.
  */
 static status_t otbn_assert_idle(void) {
-  uint32_t status = launder32(~kOtbnStatusIdle);
-  status_t res = (status_t){.value = launder32(OTCRYPTO_OK.value ^ status)};
+  uint32_t status = launder32(~(uint32_t)kOtbnStatusIdle);
+  status_t res = (status_t){
+      .value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value ^ status)};
   status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
   res.value ^= ~status;
   if (launder32(hardened_status_ok(res)) == kHardenedBoolTrue) {
@@ -186,7 +187,8 @@ status_t otbn_execute(void) {
 
 status_t otbn_busy_wait_for_done(void) {
   uint32_t status = launder32(UINT32_MAX);
-  status_t res = (status_t){.value = launder32(OTCRYPTO_OK.value ^ status)};
+  status_t res = (status_t){
+      .value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value ^ status)};
   do {
     status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
   } while (launder32(status) != kOtbnStatusIdle &&
@@ -289,8 +291,9 @@ status_t otbn_load_app(const otbn_app_t app) {
   // Ensure OTBN is idle.
   HARDENED_TRY(otbn_assert_idle());
 
-  const size_t imem_num_words = app.imem_end - app.imem_start;
-  const size_t data_num_words = app.dmem_data_end - app.dmem_data_start;
+  const size_t imem_num_words = (size_t)(app.imem_end - app.imem_start);
+  const size_t data_num_words =
+      (size_t)(app.dmem_data_end - app.dmem_data_start);
 
   HARDENED_TRY(otbn_imem_sec_wipe());
   HARDENED_TRY(otbn_dmem_sec_wipe());
