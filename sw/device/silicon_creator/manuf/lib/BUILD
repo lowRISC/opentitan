@@ -312,3 +312,14 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
     ],
 )
+
+cc_library(
+    name = "isolated_flash_partition",
+    srcs = ["isolated_flash_partition.c"],
+    hdrs = ["isolated_flash_partition.h"],
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+    ],
+)
