@@ -50,7 +50,6 @@ typedef struct node {
   dif_alert_handler_class_t class;
 } node_t;
 
-static volatile uint32_t global_alert_called;
 static const dif_alert_handler_escalation_phase_t kEscProfiles[] = {
     // TODO:
     // this first/second duration must be long enough to

@@ -198,8 +198,6 @@ static void restore_fault_checker(fault_checker_t *fault_checker) {
   fault_checker->type = (char *)nv_fault_checker[2];
 }
 
-static const char *no_name = "unidentified";
-
 // It would be handy to generate these.
 static const char *adc_ctrl_inst_name = "adc_ctrl";
 static const char *aes_inst_name = "aes";
@@ -721,7 +719,7 @@ static void alert_handler_config(void) {
   // handler, hence deadline_cycles is set to zero. Rather, it triggers
   // escalation right away if an alert event is seen, hence threshold = 0;
   uint32_t deadline_cycles = 0;
-  uint32_t threshold = 0;
+  uint16_t threshold = 0;
   LOG_INFO("Configuring class %d with %d cycles and %d occurrences",
            alert_class_to_use, deadline_cycles, threshold);
   dif_alert_handler_class_config_t class_config[] = {{
@@ -1106,8 +1104,9 @@ void check_alert_dump() {
     LOG_INFO("DUMP:%d: 0x%x", i, dump[i]);
   }
 
+  CHECK(seg_size <= INT_MAX, "seg_size must fit in int");
   CHECK_STATUS_OK(
-      alert_handler_testutils_info_parse(dump, seg_size, &actual_info));
+      alert_handler_testutils_info_parse(dump, (int)seg_size, &actual_info));
   LOG_INFO("The alert info crash dump:");
   alert_handler_testutils_info_dump(&actual_info);
   // Check alert cause.

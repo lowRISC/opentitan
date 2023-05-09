@@ -166,15 +166,6 @@ static void override_setup(uint8_t pins_to_override) {
   }
 }
 
-// Disables the overrides. Allows the outputs to pass-through the
-// values from the relevant input pins.
-static void override_disable(void) {
-  for (int i = 0; i < kOutputNumPads; ++i) {
-    CHECK_DIF_OK(dif_sysrst_ctrl_output_pin_override_set_enabled(
-        &sysrst_ctrl, kSysrstCtrlOutputs[i], kDifToggleDisabled));
-  }
-}
-
 // Sets the values of the output overrides as required.
 static void set_output_overrides(uint8_t override_value) {
   for (int i = 0; i < kOutputNumPads; ++i) {

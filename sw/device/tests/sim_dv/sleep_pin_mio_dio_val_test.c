@@ -100,13 +100,11 @@ typedef enum {
  * If certain MIOs need to be skipped due to tied functionality, specify here.
  */
 enum { kNumOptOutMio = 0 };
-static const uint8_t kOptOutMio[kNumOptOutMio] = {};
 
 static uint8_t kMioPads[NUM_MIO_PADS] = {0};
 static uint8_t kDioPads[NUM_DIO_PADS] = {0};
 
 // PLIC structures
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 static dif_pwrmgr_t pwrmgr;
 static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
@@ -142,11 +140,11 @@ void ottf_external_isr(void) {
  */
 void draw_pinmux_ret(const uint32_t num_pins, uint8_t *arr,
                      const uint8_t *optout, const uint8_t num_optout) {
-  for (int i = 0; i < num_pins; i += 16) {
+  for (uint32_t i = 0; i < num_pins; i += 16) {
     uint32_t val = rand_testutils_gen32();
     uint32_t min_idx = (i + 16 < num_pins) ? i + 16 : num_pins;
 
-    for (int j = i; j < min_idx; j++) {
+    for (uint32_t j = i; j < min_idx; j++) {
       /* Bit slice 2b at a time and if it is 3, redraw */
       arr[j] = (val >> ((j & 0xF) * 2)) & 0x3;
       if (arr[j] == 3) {
@@ -157,6 +155,7 @@ void draw_pinmux_ret(const uint32_t num_pins, uint8_t *arr,
 
   // OptOut processing after draw.
   for (int i = 0; i < num_optout; i++) {
+    CHECK(optout != NULL, "optout must be non-NULL");
     arr[optout[i]] = 2;  // High-Z always
   }
 }
@@ -213,7 +212,7 @@ bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, bool deepsleep) {
   LOG_INFO("Selecting PADs retention modes...");
 
   draw_pinmux_ret(NUM_DIO_PADS, kDioPads, kOptOutDio, kNumOptOutDio);
-  draw_pinmux_ret(NUM_MIO_PADS, kMioPads, kOptOutMio, kNumOptOutMio);
+  draw_pinmux_ret(NUM_MIO_PADS, kMioPads, NULL, kNumOptOutMio);
 
   print_chosen_values();
 

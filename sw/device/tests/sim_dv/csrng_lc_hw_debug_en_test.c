@@ -200,7 +200,7 @@ static dif_lc_ctrl_state_t lc_next_state(void) {
       break;
     default:
       CHECK(false, "Unexpected case index: %d", index);
-      break;
+      return kDifLcCtrlStateInvalid;
   }
   return next_state;
 }

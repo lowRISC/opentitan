@@ -27,12 +27,6 @@ static dif_i2c_t i2c;
 static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
 
-static const dif_i2c_fmt_flags_t default_flags = {.start = false,
-                                                  .stop = false,
-                                                  .read = false,
-                                                  .read_cont = false,
-                                                  .suppress_nak_irq = false};
-
 OTTF_DEFINE_TEST_CONFIG();
 
 /**
@@ -262,15 +256,15 @@ bool test_main(void) {
   en_i2c_irqs(&i2c);
 
   // Randomize variables.
-  uint8_t byte_count = rand_testutils_gen32_range(30, 64);
-  uint8_t device_addr = rand_testutils_gen32_range(0, 16);
+  uint8_t byte_count = (uint8_t)rand_testutils_gen32_range(30, 64);
+  uint8_t device_addr = (uint8_t)rand_testutils_gen32_range(0, 16);
   uint8_t expected_data[byte_count];
   LOG_INFO("Loopback %d bytes with device %d", byte_count, device_addr);
 
   // Controlling the randomization from C side is a bit slow, but might be
   // easier for portability to a different setup later.
   for (uint32_t i = 0; i < byte_count; ++i) {
-    expected_data[i] = rand_testutils_gen32_range(0, 0xff);
+    expected_data[i] = (uint8_t)rand_testutils_gen32_range(0, 0xff);
   };
 
   // Write expected data to i2c device.

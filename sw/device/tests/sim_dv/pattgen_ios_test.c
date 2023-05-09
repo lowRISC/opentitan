@@ -115,7 +115,7 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
 
   LOG_INFO("pinmux_init begin");
-  for (int i = 0; i < kPattOuts; ++i) {
+  for (uint8_t i = 0; i < kPattOuts; ++i) {
     CHECK_DIF_OK(
         dif_pinmux_output_select(&pinmux, kPinmuxMioOut[i], kPinmuxOutsel[i]));
   }
@@ -169,7 +169,7 @@ bool test_main(void) {
   // Make sure both interrupts are triggered when both channels are enabled.
   // Because interrupt from each channel can be triggered at different time,
   // 'wait_for_interrupt' is not sufficient
-  uint32_t state;
+  uint32_t state = 0;
   while (state != kChannelEnable) {
     CHECK_DIF_OK(dif_pattgen_irq_get_state(&pattgen, &state));
   }

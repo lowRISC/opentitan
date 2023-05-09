@@ -222,6 +222,7 @@ bool test_main(void) {
     }
     default:
       LOG_FATAL("Invalid kSPIHostIdx: %d", kSPIHostIdx);
+      return false;
   }
   CHECK_DIF_OK(dif_spi_host_init(mmio_region_from_addr(base_addr), &spi_host));
   init_spi_host(&spi_host, (uint32_t)clkHz);

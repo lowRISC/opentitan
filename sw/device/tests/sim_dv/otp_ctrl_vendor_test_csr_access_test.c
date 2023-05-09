@@ -39,7 +39,6 @@ static void init_peripherals(void) {
  * `chip_sw_otp_ctrl_vendor_test_csr_access_vseq.sv`.
  */
 bool test_main(void) {
-  dif_lc_ctrl_state_t state;
   init_peripherals();
   return true;
 }

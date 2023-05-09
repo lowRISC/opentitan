@@ -21,7 +21,6 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 // PLIC structures
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 static dif_pwrmgr_t pwrmgr;
 static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
@@ -58,7 +57,6 @@ void ottf_external_isr(void) {
 }
 
 bool test_main(void) {
-  dif_pinmux_index_t detector;
   dif_pinmux_wakeup_config_t wakeup_cfg;
 
   // Default Deep Power Down

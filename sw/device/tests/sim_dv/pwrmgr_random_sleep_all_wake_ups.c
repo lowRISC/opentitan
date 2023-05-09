@@ -52,7 +52,7 @@ static void delay_n_clear(uint32_t delay_in_us) {
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_clear(&pwrmgr));
 }
 
-int get_wakeup_unit(uint32_t count) { return count / 2; }
+uint32_t get_wakeup_unit(uint32_t count) { return count / 2; }
 
 bool get_deep_sleep(uint32_t count) { return (count % 2) == 1; }
 
@@ -84,7 +84,7 @@ bool test_main(void) {
 
   uint32_t wakeup_count = 0;
   CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &wakeup_count));
-  int wakeup_unit = get_wakeup_unit(wakeup_count);
+  uint32_t wakeup_unit = get_wakeup_unit(wakeup_count);
   bool deep_sleep = get_deep_sleep(wakeup_count);
 
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {

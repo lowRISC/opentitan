@@ -114,9 +114,11 @@ static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
 
   // The `intr_state` takes 3 aon clock cycles to rise plus 2 extra cycles as a
   // precaution.
-  uint32_t wait_us =
+  uint64_t wait_us_u64 =
       bark_time_us +
       udiv64_slow(5 * 1000000 + kClockFreqAonHz - 1, kClockFreqAonHz, NULL);
+  CHECK(wait_us_u64 <= UINT32_MAX, "wait_us_u64 must fit in uint32_t");
+  uint32_t wait_us = (uint32_t)wait_us_u64;
 
   // Wait bark time and check that the bark interrupt requested.
   busy_spin_micros(wait_us);

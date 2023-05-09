@@ -53,13 +53,6 @@ static const dif_pinmux_index_t kInputPads[] = {
     kTopEarlgreyPinmuxInselIoc7, kTopEarlgreyPinmuxInselIoc9,
 };
 
-static const dif_sysrst_ctrl_pin_t kSysrstCtrlInputs[] = {
-    kDifSysrstCtrlPinKey0In,           kDifSysrstCtrlPinKey1In,
-    kDifSysrstCtrlPinKey2In,           kDifSysrstCtrlPinPowerButtonIn,
-    kDifSysrstCtrlPinAcPowerPresentIn, kDifSysrstCtrlPinLidOpenIn,
-    kDifSysrstCtrlPinEcResetInOut,     kDifSysrstCtrlPinFlashWriteProtectInOut,
-};
-
 void test_phase_sync() {
   test_status_set(kTestStatusInTest);
   test_status_set(kTestStatusInWfi);
