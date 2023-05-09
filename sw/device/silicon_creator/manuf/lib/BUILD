@@ -13,9 +13,12 @@ load(
     "//rules:opentitan.bzl",
     "RSA_ONLY_KEYSETS",
     "filter_keysets_for_lc_state",
+    "opentitan_ram_binary",
 )
 load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
+load("//rules:otp.bzl", "otp_image")
+load("//rules:splice.bzl", "bitstream_splice")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -323,3 +326,85 @@ cc_library(
         "//sw/device/lib/testing:flash_ctrl_testutils",
     ],
 )
+
+# This is the same as rom_otp_test_unlocked* but with ROM execution disabled.
+[
+    otp_image(
+        name = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
+        src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked{}".format(i),
+        overlays = [
+            "//hw/ip/otp_ctrl/data:otp_json_secret0",
+            "//hw/ip/otp_ctrl/data:otp_json_exec_disabled",
+        ],
+        visibility = ["//visibility:private"],
+    )
+    for i in range(0, 8)
+]
+
+# Bitstream with ROM and above OTP image that is in the test_unlocked* LC state
+# with ROM execution disabled.
+[
+    bitstream_splice(
+        name = "bitstream_rom_exec_disabled_test_unlocked{}".format(i),
+        src = "//hw/bitstream:rom",
+        data = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
+        meminfo = "//hw/bitstream:otp_mmi",
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+    )
+    for i in range(0, 8)
+]
+
+opentitan_ram_binary(
+    name = "sram_device_info_flash_wr_functest",
+    srcs = ["sram_device_info_flash_wr_functest.c"],
+    hdrs = ["sram_device_info_flash_wr_functest.h"],
+    archive_symbol_prefix = "sram_device_info_flash_wr_functest",
+    deps = [
+        ":isolated_flash_partition",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/examples/sram_program:sram_program_linker_script",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:status",
+    ],
+)
+
+[
+    opentitan_functest(
+        name = "manuf_cp_device_info_flash_wr_test_unlocked{}_functest".format(i),
+        srcs = ["empty_functest.c"],
+        cw310 = cw310_params(
+            bitstream = "bitstream_rom_exec_disabled_test_unlocked{}".format(i),
+            tags = ["cw310_rom"],
+            test_cmds = [
+                "--rom-kind=rom",
+                "--bitstream=\"$(rootpath {bitstream})\"",
+                "--vmem=\"$(rootpath :sram_device_info_flash_wr_functest_fpga_cw310_vmem)\"",
+                "--adapter-speed-khz=400",
+                # the following values come from the sram linker script
+                "--load-addr=0x10001fc4",
+                "--stack-pointer=0x10020000",
+                "--stack-size=1024",
+                "--global-pointer=0x100027C4",  # sram_load_addr + 2048;
+            ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        ),
+        data = [
+            ":sram_device_info_flash_wr_functest_fpga_cw310_vmem",
+        ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        targets = ["cw310_rom"],
+        test_harness = "//sw/host/tests/manuf/manuf_cp_device_info_flash_wr",
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for i in range(0, 8)
+]
