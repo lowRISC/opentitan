@@ -154,7 +154,7 @@ void ghash_init_subkey(const uint32_t *hash_subkey, ghash_context_t *ctx) {
   // processor represents bytes with the MSB on the left and NIST uses a fully
   // little-endian polynomial representation with the MSB on the right, we have
   // to reverse the bits of the indices.
-  for (size_t i = 2; i < 16; i += 2) {
+  for (uint8_t i = 2; i < 16; i += 2) {
     // Find the product corresponding to (i >> 1) * H and multiply by x to
     // shift 1; this will be i * H.
     galois_mulx(&ctx->tbl[reverse_bits(i >> 1)], &ctx->tbl[reverse_bits(i)]);

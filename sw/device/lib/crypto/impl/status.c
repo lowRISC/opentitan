@@ -13,7 +13,7 @@ crypto_status_t crypto_status_interpret(status_t status) {
   hardened_bool_t is_ok = hardened_status_ok(status);
   if (launder32(is_ok) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(is_ok, kHardenedBoolTrue);
-    return launder32(status.value);
+    return launder32((crypto_status_t)status.value);
   }
   HARDENED_CHECK_NE(is_ok, kHardenedBoolTrue);
 
