@@ -862,6 +862,26 @@
       run_timeout_mins: 120
     }
     {
+      name: chip_sw_lc_ctrl_volatile_raw_unlock_ext_clk_48mhz
+      uvm_test_seq: chip_sw_lc_volatile_raw_unlock_vseq
+      sw_images: ["//sw/device/tests/sim_dv:lc_ctrl_volatile_raw_unlock_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: [
+        "+use_otp_image=OtpTypeLcStRaw",
+        "+chip_clock_source=ChipClockSourceExternal48Mhz"]
+      run_timeout_mins: 120
+    }
+    {
+      name: chip_sw_lc_ctrl_volatile_raw_unlock_ext_clk_96mhz
+      uvm_test_seq: chip_sw_lc_volatile_raw_unlock_vseq
+      sw_images: ["//sw/device/tests/sim_dv:lc_ctrl_volatile_raw_unlock_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: [
+        "+use_otp_image=OtpTypeLcStRaw",
+        "+chip_clock_source=ChipClockSourceExternal96Mhz"]
+      run_timeout_mins: 120
+    }
+    {
       name: chip_sw_lc_walkthrough_rma
       uvm_test_seq: chip_sw_lc_walkthrough_vseq
       sw_images: ["//sw/device/tests/sim_dv:lc_walkthrough_test:1"]

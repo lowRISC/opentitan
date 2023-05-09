@@ -3491,9 +3491,13 @@
              - Enable ROM execution via rv_dm, and perform POR.
              - Initiate a second transition to test_unlocked0 using VOLATILE_RAW_UNLOCK.
              - Verify that the CPU is able to execute.
+
+             Test ext_clk injection before enabling ROM execution.
              '''
       stage: V2
       tests: ["chip_sw_lc_ctrl_volatile_raw_unlock",
+              "chip_sw_lc_ctrl_volatile_raw_unlock_ext_clk_48mhz",
+              "chip_sw_lc_ctrl_volatile_raw_unlock_ext_clk_96mhz",
               "rom_volatile_raw_unlock"]
     }
     {
