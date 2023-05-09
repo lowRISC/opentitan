@@ -144,7 +144,8 @@ static rom_error_t otbn_cmd_run(otbn_cmd_t cmd, rom_error_t error) {
   uint32_t reg = 0;
   do {
     reg = abs_mmio_read32(kBase + OTBN_INTR_STATE_REG_OFFSET);
-    res ^= bitfield_bit32_read(reg, OTBN_INTR_COMMON_DONE_BIT) << kResDoneBit;
+    res ^= (uint32_t)bitfield_bit32_read(reg, OTBN_INTR_COMMON_DONE_BIT)
+           << kResDoneBit;
   } while (launder32(reg) != kIntrStateDone);
   HARDENED_CHECK_EQ(reg, kIntrStateDone);
   abs_mmio_write32(kBase + OTBN_INTR_STATE_REG_OFFSET, kIntrStateDone);
@@ -224,8 +225,9 @@ rom_error_t otbn_load_app(const otbn_app_t app) {
   HARDENED_RETURN_IF_ERROR(otbn_dmem_sec_wipe());
   HARDENED_RETURN_IF_ERROR(otbn_imem_sec_wipe());
 
-  const size_t imem_num_words = app.imem_end - app.imem_start;
-  const size_t data_num_words = app.dmem_data_end - app.dmem_data_start;
+  const size_t imem_num_words = (size_t)(app.imem_end - app.imem_start);
+  const size_t data_num_words =
+      (size_t)(app.dmem_data_end - app.dmem_data_start);
 
   // IMEM always starts at 0.
   otbn_addr_t imem_start_addr = 0;

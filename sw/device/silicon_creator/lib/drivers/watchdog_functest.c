@@ -23,10 +23,16 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rstmgr_regs.h"
 
+static uint32_t compute_ticks_per_ms(uint64_t hz) {
+  const uint64_t kTicksPerMs = udiv64_slow(hz, 1000, NULL);
+  CHECK(kTicksPerMs <= UINT32_MAX, "kTicksPerMs exceeds UINT32_MAX");
+  return (uint32_t)kTicksPerMs;
+}
+
 // Tests that we can pet the watchdog and avoid a reset.
 static rom_error_t watchdog_pet_test(void) {
   // Set watchdog bite threshold to 5ms.
-  uint32_t bite_threshold = 5 * udiv64_slow(kClockFreqAonHz, 1000, NULL);
+  uint32_t bite_threshold = 5 * compute_ticks_per_ms(kClockFreqAonHz);
   uint32_t bark_threshold = 9 * bite_threshold / 8;
   LOG_INFO("bite threshold = %d", bite_threshold);
   LOG_INFO("bark threshold = %d", bark_threshold);
@@ -49,7 +55,7 @@ static rom_error_t watchdog_pet_test(void) {
 // Tests that we can configure the watchdog in a disabled state.
 static rom_error_t watchdog_configure_disabled_test(void) {
   // Set watchdog bite threshold to 1ms.
-  uint32_t threshold = 1 * udiv64_slow(kClockFreqAonHz, 1000, NULL);
+  uint32_t threshold = 1 * compute_ticks_per_ms(kClockFreqAonHz);
   LOG_INFO("threshold = %d", threshold);
   watchdog_configure((watchdog_config_t){
       .bite_threshold = threshold,
@@ -65,7 +71,7 @@ static rom_error_t watchdog_configure_disabled_test(void) {
 // Tests that if we neglect the dog, it will bite and reset the chip.
 static rom_error_t watchdog_bite_test(void) {
   // Set watchdog bite threshold to 5ms.
-  uint32_t bite_threshold = 5 * udiv64_slow(kClockFreqAonHz, 1000, NULL);
+  uint32_t bite_threshold = 5 * compute_ticks_per_ms(kClockFreqAonHz);
   uint32_t bark_threshold = 9 * bite_threshold / 8;
   LOG_INFO("bite threshold = %d", bite_threshold);
   LOG_INFO("bark threshold = %d", bark_threshold);

@@ -401,7 +401,6 @@ static rom_error_t spx_success_to_ok_test_impl(uint32_t v, bool eq) {
 }
 
 static rom_error_t spx_success_to_ok_test(void) {
-  rom_error_t error = kErrorOk;
   bool failed = false;
   failed |=
       spx_success_to_ok_test_impl(kSigverifySpxDisabledOtp, true) != kErrorOk;
@@ -505,6 +504,8 @@ static rom_error_t spx_verify_enabled_good_signature_test(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
+  (void)kPrivKey;  // Use `kPrivKey` to avoid unused variable warning.
+
   status_t error = OK_STATUS();
 
   EXECUTE_TEST(error, spx_success_to_ok_test);

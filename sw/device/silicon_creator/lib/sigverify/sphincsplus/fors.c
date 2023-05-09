@@ -41,7 +41,7 @@ static void message_to_indices(const uint8_t *m, uint32_t *indices) {
   for (size_t i = 0; i < kSpxForsTrees; i++) {
     indices[i] = 0;
     for (size_t j = 0; j < kSpxForsHeight; j++) {
-      indices[i] ^= ((m[offset >> 3] >> (offset & 0x7)) & 0x1) << j;
+      indices[i] ^= ((m[offset >> 3] >> (offset & 0x7u)) & 0x1u) << j;
       offset++;
     }
   }

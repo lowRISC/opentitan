@@ -41,7 +41,7 @@ static uint32_t random_low_threshold(dif_entropy_src_test_t test_id,
       break;
     default:
       CHECK(false, "Unexpected dif_entropy_src_test_t %d", test_id);
-      break;
+      return 0;
   }
   return result;
 }
@@ -135,8 +135,8 @@ static void configure_health_checks_from_otp(void) {
   // time. We skip enabling csrng and edn0/1 in this case.
   dif_entropy_src_config_t entropy_src_config =
       entropy_testutils_config_default();
-  entropy_src_config.alert_threshold =
-      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ALERT_THRESHOLD_OFFSET);
+  entropy_src_config.alert_threshold = (uint16_t)otp_read32(
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ALERT_THRESHOLD_OFFSET);
   CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, entropy_src_config,
                                          kDifToggleEnabled));
 }

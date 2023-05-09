@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 
 #include <array>
+#include <limits>
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
@@ -209,7 +210,8 @@ TEST_F(DmemWriteTest, FailureOutOfRange) {
 
 TEST_F(DmemWriteTest, FailureOverflowNumWords) {
   // Try to trigger an integer overflow with `num_words`.
-  size_t num_words = (SIZE_MAX / sizeof(uint32_t)) + 1;
+  size_t num_words =
+      (std::numeric_limits<size_t>::max() / sizeof(uint32_t)) + 1;
   otbn_addr_t dest_addr = 0;
 
   EXPECT_EQ(otbn_dmem_write(num_words, NULL, dest_addr),
@@ -219,7 +221,7 @@ TEST_F(DmemWriteTest, FailureOverflowNumWords) {
 TEST_F(DmemWriteTest, FailureOverflowOffset) {
   // Try to trigger an integer overflow with `dest_addr`.
   std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
-  otbn_addr_t dest_addr = SIZE_MAX;
+  otbn_addr_t dest_addr = std::numeric_limits<uint32_t>::max();
 
   EXPECT_EQ(otbn_dmem_write(test_data.size(), test_data.data(), dest_addr),
             kErrorOtbnBadOffsetLen);

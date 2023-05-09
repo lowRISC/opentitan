@@ -351,7 +351,7 @@ static void shutdown_print(shutdown_log_prefix_t prefix, uint32_t val) {
   // `kHexStrLen` is laundered so that it is loaded to a register at every
   // iteration.
   for (size_t i = 0; i < launder32(kHexStrLen); ++i) {
-    uint8_t nibble = bitfield_field32_read(
+    uint8_t nibble = (uint8_t)bitfield_field32_read(
         val, (bitfield_field32_t){.mask = 0xf, .index = (7 - i) * 4});
     abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, kHexTable[nibble]);
   }

@@ -236,7 +236,11 @@ rom_error_t read_single_page_1_test(void) {
   RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data));
   uint64_t end = ibex_mcycle_read();
   RETURN_IF_ERROR(compare_boot_data(&boot_data, &kTestBootData));
-  uint32_t cycles = end - start;
+  if (end - start > UINT32_MAX) {
+    LOG_FATAL("boot_data_read() took more than UINT32_MAX cycles");
+    return kErrorUnknown;
+  }
+  uint32_t cycles = (uint32_t)(end - start);
   LOG_INFO("boot_data_read() took %u cycles", cycles);
   return kErrorOk;
 }
@@ -270,7 +274,9 @@ rom_error_t read_full_page_1_test(void) {
   RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data));
   uint64_t end = ibex_mcycle_read();
   RETURN_IF_ERROR(compare_boot_data(&boot_data, &kTestBootData));
-  uint32_t cycles = end - start;
+
+  CHECK(end - start <= UINT32_MAX, "Cycle count must fit in uint32_t");
+  uint32_t cycles = (uint32_t)(end - start);
   LOG_INFO("boot_data_read() took %u cycles", cycles);
   return kErrorOk;
 }

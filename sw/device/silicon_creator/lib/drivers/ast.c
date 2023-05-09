@@ -87,8 +87,8 @@ hardened_bool_t ast_init_done(void) {
   // the result of each attempt. `res` should be `kHardenedBoolTrue` if all
   // attempts return true.
   hardened_bool_t res = 0x631;
-  res |= done_bit_get() << 3;
-  res |= done_bit_get() << 8;
+  res |= (hardened_bool_t)done_bit_get() << 3;
+  res |= (hardened_bool_t)done_bit_get() << 8;
 
   if (res != kHardenedBoolTrue) {
     return kHardenedBoolFalse;
