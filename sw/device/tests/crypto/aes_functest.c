@@ -18,7 +18,6 @@ static const uint32_t kKeyMask[8] = {
 };
 
 static const size_t kAesBlockBytes = 128 / 8;
-static const size_t kAesBlockWords = kAesBlockBytes / sizeof(uint32_t);
 
 static crypto_key_config_t make_key_config(const aes_test_t *test) {
   key_mode_t key_mode;
@@ -53,7 +52,8 @@ static crypto_key_config_t make_key_config(const aes_test_t *test) {
       .key_mode = key_mode,
       .key_length = test->key_len,
       .hw_backed = kHardenedBoolFalse,
-      .diversification_hw_backed = NULL,
+      .diversification_hw_backed =
+          (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
       .security_level = kSecurityLevelLow,
   };
 }
