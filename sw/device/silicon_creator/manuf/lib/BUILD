@@ -324,23 +324,37 @@ opentitan_functest(
     for i in range(0, 8)
 ]
 
-opentitan_functest(
+[
+    opentitan_functest(
+        name = "manuf_cp_yield_test_functest_{}".format(lc_state.lower()),
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
+        cw310 = cw310_params(
+            bitstream = ":bitstream_rom_exec_disabled_{}".format(lc_state.lower()),
+            tags = ["jtag"],
+            test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS + [
+                "--initial-lc-state=\"{}\"".format(lc_state),
+            ],
+        ),
+        data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        targets = ["cw310_rom"],
+        test_harness = "//sw/host/tests/manuf/manuf_cp_yield_test",
+        deps = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
+    )
+    for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
+]
+
+test_suite(
     name = "manuf_cp_yield_test_functest",
-    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-    cw310 = cw310_params(
-        bitstream = ":bitstream_rom_exec_disabled_test_unlocked0",
-        tags = ["jtag"],
-        test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
-    ),
-    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom"],
-    test_harness = "//sw/host/tests/manuf/manuf_cp_yield_test",
-    deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+    tags = ["manual"],
+    tests = [
+        ":manuf_cp_yield_test_functest_{}".format(lc_state.lower())
+        for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
     ],
 )
 
