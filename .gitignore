@@ -31,6 +31,11 @@ mrdc.his
 # FPGA splice intermediate files
 *.jou
 
+# FPGA files for splicing a local bitstream
+hw/bitstream/local_chip_earlgrey_cw310.bit
+hw/bitstream/local_rom.mmi
+hw/bitstream/local_otp.mmi
+
 # Simulation Results
 *.log
 vdCovLog/
