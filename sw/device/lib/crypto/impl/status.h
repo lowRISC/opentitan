@@ -62,32 +62,10 @@ extern "C" {
 /**
  * Convert a `status_t` into a `crypto_status_t`.
  *
- * For OK statuses, this routine will only convert to `kCryptoStatusOK` if the
- * `hardened_status_ok` passes. An OK status with a different value will be
- * rejected and result in `kCryptoStatusInternalError`.
- *
- * The status mapping is as follows:
- *
- *   | status code         | cryptolib status code        |
- *   |---------------------|------------------------------|
- *   | kOk                 | kCryptoStatusOK OR           |
- *   |                     |   kCryptoStatusInternalError |
- *   | kInvalidArgument    | kCryptoStatusBadArgs         |
- *   | kUnavailable        | kCryptoStatusAsyncIncomplete |
- *   | kCancelled          | kCryptoStatusInternalError   |
- *   | kDeadlineExceeded   | kCryptoStatusInternalError   |
- *   | kNotFound           | kCryptoStatusInternalError   |
- *   | kAlreadyExists      | kCryptoStatusInternalError   |
- *   | kPermissionDenied   | kCryptoStatusInternalError   |
- *   | kResourceExhausted  | kCryptoStatusInternalError   |
- *   | kAborted            | kCryptoStatusInternalError   |
- *   | kOutOfRange         | kCryptoStatusInternalError   |
- *   | kUnimplemented      | kCryptoStatusNotImplemented  |
- *   | kUnauthenticated    | kCryptoStatusInternalError   |
- *   | kUnknown            | kCryptoStatusFatalError      |
- *   | kFailedPrecondition | kCryptoStatusFatalError      |
- *   | kInternal           | kCryptoStatusFatalError      |
- *   | kDataLoss           | kCryptoStatusFatalError      |
+ * Use the OTCRYPTO_* macros and turn off OTCRYPTO_STATUS_DEBUG to ensure valid
+ * `crypto_status_t` results. Otherwise, it is possible to get values that are
+ * not members of the enum; since cryptolib status codes are bit-compatible
+ * with `status_t`, we just cast and return them.
  *
  * @param status Initial `status_t` value.
  * @return Equivalent `crypto_status_t` error code.

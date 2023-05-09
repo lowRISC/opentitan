@@ -36,21 +36,6 @@ TEST(Status, ErrorMacrosNotHardenedOk) {
   EXPECT_EQ(hardened_status_ok(OTCRYPTO_ASYNC_INCOMPLETE), kHardenedBoolFalse);
 }
 
-// Run this test only if extra debugging information is off.
-#ifndef OTCRYPTO_STATUS_DEBUG
-TEST(Status, InterpretErrorMacros) {
-  // Error macros should translate to the crypto status implied by their name.
-  EXPECT_EQ(crypto_status_interpret(OTCRYPTO_OK), kCryptoStatusOK);
-  EXPECT_EQ(crypto_status_interpret(OTCRYPTO_BAD_ARGS), kCryptoStatusBadArgs);
-  EXPECT_EQ(crypto_status_interpret(OTCRYPTO_RECOV_ERR),
-            kCryptoStatusInternalError);
-  EXPECT_EQ(crypto_status_interpret(OTCRYPTO_FATAL_ERR),
-            kCryptoStatusFatalError);
-  EXPECT_EQ(crypto_status_interpret(OTCRYPTO_ASYNC_INCOMPLETE),
-            kCryptoStatusAsyncIncomplete);
-}
-#endif
-
 __attribute__((noinline)) crypto_status_t try_interpret(status_t status) {
   OTCRYPTO_TRY_INTERPRET(status);
   return kCryptoStatusOK;
@@ -64,15 +49,6 @@ TEST(Status, TryInterpretOk) {
 TEST(Status, TryInterpretNonHardenedOk) {
   // Non-hardened OK should result in an error.
   EXPECT_NE(try_interpret(OK_STATUS()), kCryptoStatusOK);
-}
-
-TEST(Status, TryInterpretErrors) {
-  // Error macros should result in non-OK statuses.
-  EXPECT_EQ(try_interpret(OTCRYPTO_BAD_ARGS), kCryptoStatusBadArgs);
-  EXPECT_EQ(try_interpret(OTCRYPTO_RECOV_ERR), kCryptoStatusInternalError);
-  EXPECT_EQ(try_interpret(OTCRYPTO_FATAL_ERR), kCryptoStatusFatalError);
-  EXPECT_EQ(try_interpret(OTCRYPTO_ASYNC_INCOMPLETE),
-            kCryptoStatusAsyncIncomplete);
 }
 
 constexpr char kTestModId[3] = {'X', 'Y', 'Z'};

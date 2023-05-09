@@ -8,13 +8,22 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
+/**
+ * Call `HARDENED_TRY` on the status, and return it if the try passes.
+ *
+ * `HARDENED_TRY` forces the error bit to 1 if the value doesn't pass the
+ * hardened check, so this routine ensures that values which are not exactly
+ * the hardened-OK value will be errors.
+ *
+ * @param status Status to check
+ * @return Same status with error bit always set if `HARDENED_TRY` failed.
+ */
+static status_t do_hardened_try(status_t status) {
+  HARDENED_TRY(status);
+  return status;
+}
+
 crypto_status_t crypto_status_interpret(status_t status) {
-  // Force the error bit to 1 if `hardened_status_ok` does not pass. Cryptolib
-  // status codes are bit-compatible with `status_t`, so we can simply cast the
-  // `value` parameter and return.
-  if (hardened_status_ok(status) != kHardenedBoolTrue) {
-    return (crypto_status_t)(status.value | 0x80000000);
-  }
-  HARDENED_CHECK_EQ(status.value, kHardenedBoolTrue);
-  return (crypto_status_t)status.value;
+  status = do_hardened_try(status);
+  return (crypto_status_t) status.value;
 }
