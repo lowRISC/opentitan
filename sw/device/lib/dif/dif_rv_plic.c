@@ -35,7 +35,7 @@ typedef struct plic_reg_info {
  * the offset for a specific IRQ source ID (ID 32 would be IE01, ...).
  */
 static ptrdiff_t plic_offset_from_reg0(dif_rv_plic_irq_id_t irq) {
-  uint8_t register_index = irq / RV_PLIC_PARAM_REG_WIDTH;
+  uint8_t register_index = (uint8_t)(irq / RV_PLIC_PARAM_REG_WIDTH);
   return register_index * sizeof(uint32_t);
 }
 
@@ -56,7 +56,7 @@ static uint8_t plic_irq_bit_index(dif_rv_plic_irq_id_t irq) {
  */
 static ptrdiff_t plic_irq_enable_base_for_target(dif_rv_plic_target_t target) {
   ptrdiff_t range = RV_PLIC_IE0_MULTIREG_COUNT * sizeof(uint32_t);
-  return RV_PLIC_IE0_0_REG_OFFSET + (range * target);
+  return RV_PLIC_IE0_0_REG_OFFSET + (range * (ptrdiff_t)target);
 }
 
 /**
@@ -64,14 +64,14 @@ static ptrdiff_t plic_irq_enable_base_for_target(dif_rv_plic_target_t target) {
  */
 static ptrdiff_t plic_software_irq_base_for_target(
     dif_rv_plic_target_t target) {
-  return RV_PLIC_MSIP0_REG_OFFSET + (target * sizeof(uint32_t));
+  return RV_PLIC_MSIP0_REG_OFFSET + (ptrdiff_t)(target * sizeof(uint32_t));
 }
 
 /**
  * Get the address of the first target N threshold register (THRESHOLDN).
  */
 static ptrdiff_t plic_threshold_base_for_target(dif_rv_plic_target_t target) {
-  return RV_PLIC_THRESHOLD0_REG_OFFSET + (target * sizeof(uint32_t));
+  return RV_PLIC_THRESHOLD0_REG_OFFSET + (ptrdiff_t)(target * sizeof(uint32_t));
 }
 
 /**
@@ -79,7 +79,7 @@ static ptrdiff_t plic_threshold_base_for_target(dif_rv_plic_target_t target) {
  */
 static ptrdiff_t plic_claim_complete_base_for_target(
     dif_rv_plic_target_t target) {
-  return RV_PLIC_CC0_REG_OFFSET + (target * sizeof(uint32_t));
+  return RV_PLIC_CC0_REG_OFFSET + (ptrdiff_t)(target * sizeof(uint32_t));
 }
 
 /**
@@ -112,7 +112,7 @@ static plic_reg_info_t plic_irq_pending_reg_info(dif_rv_plic_irq_id_t irq) {
  * source specific PRIO register offset.
  */
 static ptrdiff_t plic_priority_reg_offset(dif_rv_plic_irq_id_t irq) {
-  ptrdiff_t offset = irq * sizeof(uint32_t);
+  ptrdiff_t offset = (ptrdiff_t)(irq * sizeof(uint32_t));
   return RV_PLIC_PRIO0_REG_OFFSET + offset;
 }
 
@@ -122,7 +122,7 @@ dif_result_t dif_rv_plic_reset(const dif_rv_plic_t *plic) {
   }
 
   // Clear all of the priority registers.
-  for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
+  for (uint32_t i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     ptrdiff_t offset = plic_priority_reg_offset(i);
     mmio_region_write32(plic->base_addr, offset, 0);
   }
@@ -132,8 +132,8 @@ dif_result_t dif_rv_plic_reset(const dif_rv_plic_t *plic) {
        ++target) {
     // Clear interrupt enable registers.
     ptrdiff_t offset = plic_irq_enable_base_for_target(target);
-    for (int i = 0; i < RV_PLIC_IE0_MULTIREG_COUNT; ++i) {
-      ptrdiff_t multireg_offset = offset + (i * sizeof(uint32_t));
+    for (size_t i = 0; i < RV_PLIC_IE0_MULTIREG_COUNT; ++i) {
+      ptrdiff_t multireg_offset = offset + (ptrdiff_t)(i * sizeof(uint32_t));
       mmio_region_write32(plic->base_addr, multireg_offset, 0);
     }
 

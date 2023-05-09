@@ -111,7 +111,7 @@ dif_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
   // From the HWIP spec: "Order of the secret key is: key[255:0] = {KEY0, KEY1,
   // KEY2, ... , KEY7};"
   for (size_t i = 0; i < HMAC_PARAM_NUM_WORDS; ++i) {
-    const uint32_t word_offset = i * sizeof(uint32_t);
+    const ptrdiff_t word_offset = (ptrdiff_t)(i * sizeof(uint32_t));
     mmio_region_write32(hmac->base_addr, HMAC_KEY_7_REG_OFFSET - word_offset,
                         read_32((char *)key + word_offset));
   }
@@ -258,7 +258,8 @@ dif_result_t dif_hmac_finish(const dif_hmac_t *hmac,
   // DIGEST1, DIGEST2, ... , DIGEST7};"
   for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i) {
     digest->digest[i] = mmio_region_read32(
-        hmac->base_addr, HMAC_DIGEST_7_REG_OFFSET - i * sizeof(uint32_t));
+        hmac->base_addr,
+        HMAC_DIGEST_7_REG_OFFSET - (ptrdiff_t)(i * sizeof(uint32_t)));
   }
 
   // Disable HMAC and SHA256 until the next transaction, clearing the current

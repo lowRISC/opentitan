@@ -34,7 +34,7 @@ static const ptrdiff_t kHartRegisterSpacing = 0x100;
  * `hart`.
  */
 static ptrdiff_t reg_for_hart(uint32_t hart, ptrdiff_t reg_offset) {
-  return kHartRegisterSpacing * hart + reg_offset;
+  return kHartRegisterSpacing * (ptrdiff_t)hart + reg_offset;
 }
 
 /**
@@ -163,7 +163,7 @@ dif_result_t dif_rv_timer_counter_write(const dif_rv_timer_t *timer,
                       ctrl_reg_cleared);
 
   // Write the new count.
-  uint32_t lower_count = count;
+  uint32_t lower_count = (uint32_t)count;
   uint32_t upper_count = count >> 32;
   mmio_region_write32(timer->base_addr,
                       reg_for_hart(hart_id, RV_TIMER_TIMER_V_LOWER0_REG_OFFSET),
@@ -185,15 +185,15 @@ dif_result_t dif_rv_timer_arm(const dif_rv_timer_t *timer, uint32_t hart_id,
     return kDifBadArg;
   }
 
-  uint32_t lower = threshold;
+  uint32_t lower = (uint32_t)threshold;
   uint32_t upper = threshold >> 32;
 
   ptrdiff_t lower_reg =
       reg_for_hart(hart_id, RV_TIMER_COMPARE_LOWER0_0_REG_OFFSET) +
-      (sizeof(uint64_t) * comp_id);
+      (ptrdiff_t)(sizeof(uint64_t) * comp_id);
   ptrdiff_t upper_reg =
       reg_for_hart(hart_id, RV_TIMER_COMPARE_UPPER0_0_REG_OFFSET) +
-      (sizeof(uint64_t) * comp_id);
+      (ptrdiff_t)(sizeof(uint64_t) * comp_id);
 
   // First, set the upper register to the largest value possible without setting
   // off the alarm; this way, we can set the lower register without setting

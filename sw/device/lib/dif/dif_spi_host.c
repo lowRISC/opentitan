@@ -77,7 +77,7 @@ dif_result_t dif_spi_host_configure(const dif_spi_host_t *spi_host,
 
   uint32_t divider =
       ((config.peripheral_clock_freq_hz / config.spi_clock) / 2) - 1;
-  if (divider & ~SPI_HOST_CONFIGOPTS_CLKDIV_0_MASK) {
+  if (divider & ~(uint32_t)SPI_HOST_CONFIGOPTS_CLKDIV_0_MASK) {
     return kDifBadArg;
   }
 
@@ -205,7 +205,7 @@ static void enqueue_byte(queue_t *queue, uint8_t data) {
 }
 
 static void enqueue_word(queue_t *queue, uint32_t data) {
-  if (queue->length % sizeof(uint32_t) == 0) {
+  if (queue->length % (int32_t)sizeof(uint32_t) == 0) {
     write_32(data, queue->data + queue->length);
     queue->length += 4;
   } else {
@@ -311,7 +311,7 @@ static void issue_address(const dif_spi_host_t *spi_host,
   wait_tx_fifo(spi_host);
   // The address appears on the wire in big-endian order.
   uint32_t address = bitfield_byteswap32(segment->address.address);
-  uint32_t length;
+  uint16_t length;
   if (segment->address.mode == kDifSpiHostAddrMode4b) {
     length = 4;
     mmio_region_write32(spi_host->base_addr, SPI_HOST_TXDATA_REG_OFFSET,
@@ -332,8 +332,9 @@ static void issue_dummy(const dif_spi_host_t *spi_host,
     // We only want to program a dummy segment if the number of cycles is
     // greater than zero.  Programming a zero to the hardware results in a
     // dummy segment of 512 bits.
-    write_command_reg(spi_host, segment->dummy.length, segment->dummy.width,
-                      kDifSpiHostDirectionDummy, last_segment);
+    write_command_reg(spi_host, (uint16_t)segment->dummy.length,
+                      segment->dummy.width, kDifSpiHostDirectionDummy,
+                      last_segment);
   }
 }
 
@@ -349,14 +350,15 @@ static dif_result_t issue_data_phase(const dif_spi_host_t *spi_host,
       width = segment->tx.width;
       length = segment->tx.length;
       direction = kDifSpiHostDirectionTx;
-      spi_host_fifo_write_alias(spi_host, segment->tx.buf, segment->tx.length);
+      spi_host_fifo_write_alias(spi_host, segment->tx.buf,
+                                (uint16_t)segment->tx.length);
       break;
     case kDifSpiHostSegmentTypeBidirectional:
       width = segment->bidir.width;
       length = segment->bidir.length;
       direction = kDifSpiHostDirectionBidirectional;
       spi_host_fifo_write_alias(spi_host, segment->bidir.txbuf,
-                                segment->bidir.length);
+                                (uint16_t)segment->bidir.length);
       break;
     case kDifSpiHostSegmentTypeRx:
       width = segment->rx.width;
@@ -369,7 +371,7 @@ static dif_result_t issue_data_phase(const dif_spi_host_t *spi_host,
       // represent a data transfer.
       return kDifBadArg;
   }
-  write_command_reg(spi_host, length, width, direction, last_segment);
+  write_command_reg(spi_host, (uint16_t)length, width, direction, last_segment);
   return kDifOk;
 }
 
@@ -415,11 +417,12 @@ dif_result_t dif_spi_host_transaction(const dif_spi_host_t *spi_host,
     dif_spi_host_segment_t *segment = &segments[i];
     switch (segment->type) {
       case kDifSpiHostSegmentTypeRx:
-        spi_host_fifo_read_alias(spi_host, segment->rx.buf, segment->rx.length);
+        spi_host_fifo_read_alias(spi_host, segment->rx.buf,
+                                 (uint16_t)segment->rx.length);
         break;
       case kDifSpiHostSegmentTypeBidirectional:
         spi_host_fifo_read_alias(spi_host, segment->bidir.rxbuf,
-                                 segment->bidir.length);
+                                 (uint16_t)segment->bidir.length);
         break;
       default:
           /* do nothing */;
@@ -431,7 +434,7 @@ dif_result_t dif_spi_host_transaction(const dif_spi_host_t *spi_host,
 dif_result_t dif_spi_host_event_set_enabled(const dif_spi_host_t *spi_host,
                                             dif_spi_host_events_t event,
                                             bool enable) {
-  if (spi_host == NULL || (event & ~kDifSpiHostEvtAll) != 0) {
+  if (spi_host == NULL || (event & ~(uint32_t)kDifSpiHostEvtAll) != 0) {
     return kDifBadArg;
   }
 

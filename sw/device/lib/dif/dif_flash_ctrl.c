@@ -25,17 +25,20 @@
  */
 OT_WARN_UNUSED_RESULT
 static ptrdiff_t get_data_region_mp_reg_offset(uint32_t region) {
-  return FLASH_CTRL_MP_REGION_CFG_0_REG_OFFSET + region * sizeof(uint32_t);
+  return FLASH_CTRL_MP_REGION_CFG_0_REG_OFFSET +
+         (ptrdiff_t)region * (ptrdiff_t)sizeof(uint32_t);
 }
 
 OT_WARN_UNUSED_RESULT
 static ptrdiff_t get_data_region_reg_offset(uint32_t region) {
-  return FLASH_CTRL_MP_REGION_0_REG_OFFSET + region * sizeof(uint32_t);
+  return FLASH_CTRL_MP_REGION_0_REG_OFFSET +
+         (ptrdiff_t)region * (ptrdiff_t)sizeof(uint32_t);
 }
 
 OT_WARN_UNUSED_RESULT
 static ptrdiff_t get_data_region_lock_reg_offset(uint32_t region) {
-  return FLASH_CTRL_REGION_CFG_REGWEN_0_REG_OFFSET + region * sizeof(uint32_t);
+  return FLASH_CTRL_REGION_CFG_REGWEN_0_REG_OFFSET +
+         (ptrdiff_t)region * (ptrdiff_t)sizeof(uint32_t);
 }
 
 // The info region register tables have contents that depend on a particular
@@ -104,14 +107,14 @@ OT_WARN_UNUSED_RESULT
 static ptrdiff_t get_info_region_mp_reg_offset(
     dif_flash_ctrl_info_region_t region) {
   return kInfoConfigOffsets[region.partition_id][region.bank] +
-         region.page * sizeof(uint32_t);
+         (ptrdiff_t)region.page * (ptrdiff_t)sizeof(uint32_t);
 }
 
 OT_WARN_UNUSED_RESULT
 static ptrdiff_t get_info_region_lock_reg_offset(
     dif_flash_ctrl_info_region_t region) {
   return kInfoLockOffsets[region.partition_id][region.bank] +
-         region.page * sizeof(uint32_t);
+         (ptrdiff_t)region.page * (ptrdiff_t)sizeof(uint32_t);
 }
 
 OT_WARN_UNUSED_RESULT
@@ -940,7 +943,7 @@ dif_result_t dif_flash_ctrl_lock_data_region_properties(
     return kDifOk;
   }
 
-  uint32_t lock_reg_offset = get_data_region_lock_reg_offset(region);
+  ptrdiff_t lock_reg_offset = get_data_region_lock_reg_offset(region);
   uint32_t reg = bitfield_bit32_write(
       0, FLASH_CTRL_REGION_CFG_REGWEN_0_REGION_0_BIT, false);
   mmio_region_write32(handle->dev.base_addr, lock_reg_offset, reg);
@@ -963,7 +966,7 @@ dif_result_t dif_flash_ctrl_lock_info_region_properties(
     return kDifOk;
   }
 
-  uint32_t lock_reg_offset = get_info_region_lock_reg_offset(region);
+  ptrdiff_t lock_reg_offset = get_info_region_lock_reg_offset(region);
   uint32_t reg = bitfield_bit32_write(
       0, FLASH_CTRL_BANK0_INFO0_REGWEN_0_REGION_0_BIT, false);
   mmio_region_write32(handle->dev.base_addr, lock_reg_offset, reg);
@@ -977,7 +980,7 @@ dif_result_t dif_flash_ctrl_data_region_is_locked(
       region >= FLASH_CTRL_PARAM_NUM_REGIONS) {
     return kDifBadArg;
   }
-  uint32_t lock_reg_offset = get_data_region_lock_reg_offset(region);
+  ptrdiff_t lock_reg_offset = get_data_region_lock_reg_offset(region);
   uint32_t reg = mmio_region_read32(handle->dev.base_addr, lock_reg_offset);
   *locked_out =
       !bitfield_bit32_read(reg, FLASH_CTRL_REGION_CFG_REGWEN_0_REGION_0_BIT);
@@ -995,7 +998,7 @@ dif_result_t dif_flash_ctrl_info_region_is_locked(
     return kDifBadArg;
   }
 
-  uint32_t lock_reg_offset = get_info_region_lock_reg_offset(region);
+  ptrdiff_t lock_reg_offset = get_info_region_lock_reg_offset(region);
   uint32_t reg = mmio_region_read32(handle->dev.base_addr, lock_reg_offset);
   *locked_out =
       !bitfield_bit32_read(reg, FLASH_CTRL_BANK0_INFO0_REGWEN_0_REGION_0_BIT);
@@ -1190,7 +1193,7 @@ dif_result_t dif_flash_ctrl_get_ecc_errors(
     return kDifBadArg;
   }
   bitfield_field32_t error_count_field;
-  uint32_t last_addr_reg_offset;
+  ptrdiff_t last_addr_reg_offset;
 #if FLASH_CTRL_PARAM_REG_NUM_BANKS > 2
 #error "Revise this function to handle more banks."
 #endif
