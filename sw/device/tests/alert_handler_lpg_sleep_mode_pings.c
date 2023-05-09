@@ -43,7 +43,6 @@ static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_rv_core_ibex_t ibex;
 static dif_flash_ctrl_state_t flash_ctrl;
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
 /**
  * Initialize the peripherals used in this test.
@@ -122,7 +121,7 @@ static void alert_handler_config(uint32_t ping_timeout) {
 
   // Enable all incoming alerts and configure them to classa.
   // This alert should never fire because we do not expect any incoming alerts.
-  for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
+  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     alerts[i] = i;
     alert_classes[i] = kDifAlertHandlerClassA;
   }
@@ -188,15 +187,14 @@ static void alert_handler_config(uint32_t ping_timeout) {
  * Clear all alert_cause and local_alert_cause registers
  */
 static void alert_handler_clear_cause_regs(void) {
-  bool is_cause;
   // Loop over all alert_cause regs
-  for (int jj = 0; jj < ALERT_HANDLER_PARAM_N_ALERTS; jj++) {
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler, jj));
+  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; i++) {
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler, i));
   }
 
   // Loop over all loc_alert_cause regs
-  for (int jj = 0; jj < 7; jj++) {
-    CHECK_DIF_OK(dif_alert_handler_local_alert_acknowledge(&alert_handler, jj));
+  for (dif_alert_handler_local_alert_t i = 0; i < 7; i++) {
+    CHECK_DIF_OK(dif_alert_handler_local_alert_acknowledge(&alert_handler, i));
   }
 }
 
@@ -226,9 +224,9 @@ static uint16_t alert_handler_num_fired_loc_alerts(void) {
   // Loop over all loc_alert_cause regs
   // Keep the result for kDifAlertHandlerLocalAlertAlertPingFail in a seperate
   // variable
-  for (int jj = 0; jj < 7; jj++) {
+  for (dif_alert_handler_local_alert_t i = 0; i < 7; i++) {
     CHECK_DIF_OK(
-        dif_alert_handler_local_alert_is_cause(&alert_handler, jj, &is_cause));
+        dif_alert_handler_local_alert_is_cause(&alert_handler, i, &is_cause));
     accumulator += is_cause;
   }
   return accumulator;
@@ -241,9 +239,9 @@ static uint16_t alert_handler_num_fired_loc_alerts(void) {
 static void enter_low_power(bool deep_sleep) {
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
-  cfg = cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
-               kDifPwrmgrDomainOptionUsbClockInLowPower |
-               kDifPwrmgrDomainOptionUsbClockInActivePower) |
+  cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
+                kDifPwrmgrDomainOptionUsbClockInLowPower |
+                kDifPwrmgrDomainOptionUsbClockInActivePower)) |
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
 
   // Set the wake_up trigger as AON timer module
@@ -502,12 +500,6 @@ static void chip_sw_reset(void) {
 }
 
 bool test_main(void) {
-  bool is_cause;
-  bool is_locked;
-  bool sleep_mode;
-  uint16_t num_fired_alerts;
-  uint16_t num_fired_loc_alerts;
-
   init_test_components();
 
   dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();

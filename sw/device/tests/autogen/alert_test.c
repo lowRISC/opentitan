@@ -235,7 +235,7 @@ static void alert_handler_config(void) {
 
   // Enable all incoming alerts and configure them to classa.
   // This alert should never fire because we do not expect any incoming alerts.
-  for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
+  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     alerts[i] = i;
     alert_classes[i] = kDifAlertHandlerClassA;
   }
@@ -281,7 +281,7 @@ static void trigger_alert_test(void) {
   dif_alert_handler_alert_t exp_alert;
 
   // Write adc_ctrl's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_adc_ctrl_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_adc_ctrl_alert_force(&adc_ctrl_aon, kDifAdcCtrlAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -296,7 +296,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write aes's alert_test reg and check alert_cause.
-  for (int i = 0; i < 2; ++i) {
+  for (dif_aes_alert_t i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_aes_alert_force(&aes, kDifAesAlertRecovCtrlUpdateErr + i));
 
     // Verify that alert handler received it.
@@ -311,7 +311,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write aon_timer's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_aon_timer_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_aon_timer_alert_force(&aon_timer_aon, kDifAonTimerAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -326,7 +326,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write clkmgr's alert_test reg and check alert_cause.
-  for (int i = 0; i < 2; ++i) {
+  for (dif_clkmgr_alert_t i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_clkmgr_alert_force(&clkmgr_aon, kDifClkmgrAlertRecovFault + i));
 
     // Verify that alert handler received it.
@@ -341,7 +341,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write csrng's alert_test reg and check alert_cause.
-  for (int i = 0; i < 2; ++i) {
+  for (dif_csrng_alert_t i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_csrng_alert_force(&csrng, kDifCsrngAlertRecovAlert + i));
 
     // Verify that alert handler received it.
@@ -356,7 +356,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write edn's alert_test reg and check alert_cause.
-  for (int i = 0; i < 2; ++i) {
+  for (dif_edn_alert_t i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_edn_alert_force(&edn0, kDifEdnAlertRecovAlert + i));
 
     // Verify that alert handler received it.
@@ -371,7 +371,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write edn's alert_test reg and check alert_cause.
-  for (int i = 0; i < 2; ++i) {
+  for (dif_edn_alert_t i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_edn_alert_force(&edn1, kDifEdnAlertRecovAlert + i));
 
     // Verify that alert handler received it.
@@ -386,7 +386,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write entropy_src's alert_test reg and check alert_cause.
-  for (int i = 0; i < 2; ++i) {
+  for (dif_entropy_src_alert_t i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_entropy_src_alert_force(&entropy_src, kDifEntropySrcAlertRecovAlert + i));
 
     // Verify that alert handler received it.
@@ -401,7 +401,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write flash_ctrl's alert_test reg and check alert_cause.
-  for (int i = 0; i < 5; ++i) {
+  for (dif_flash_ctrl_alert_t i = 0; i < 5; ++i) {
     CHECK_DIF_OK(dif_flash_ctrl_alert_force(&flash_ctrl, kDifFlashCtrlAlertRecovErr + i));
 
     // Verify that alert handler received it.
@@ -416,7 +416,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write gpio's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_gpio_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_gpio_alert_force(&gpio, kDifGpioAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -431,7 +431,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write hmac's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_hmac_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_hmac_alert_force(&hmac, kDifHmacAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -446,7 +446,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write i2c's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_i2c_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_i2c_alert_force(&i2c0, kDifI2cAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -461,7 +461,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write i2c's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_i2c_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_i2c_alert_force(&i2c1, kDifI2cAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -476,7 +476,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write i2c's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_i2c_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_i2c_alert_force(&i2c2, kDifI2cAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -491,7 +491,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write keymgr's alert_test reg and check alert_cause.
-  for (int i = 0; i < 2; ++i) {
+  for (dif_keymgr_alert_t i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_keymgr_alert_force(&keymgr, kDifKeymgrAlertRecovOperationErr + i));
 
     // Verify that alert handler received it.
@@ -506,7 +506,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write kmac's alert_test reg and check alert_cause.
-  for (int i = 0; i < 2; ++i) {
+  for (dif_kmac_alert_t i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_kmac_alert_force(&kmac, kDifKmacAlertRecovOperationErr + i));
 
     // Verify that alert handler received it.
@@ -521,7 +521,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write lc_ctrl's alert_test reg and check alert_cause.
-  for (int i = 0; i < 3; ++i) {
+  for (dif_lc_ctrl_alert_t i = 0; i < 3; ++i) {
     CHECK_DIF_OK(dif_lc_ctrl_alert_force(&lc_ctrl, kDifLcCtrlAlertFatalProgError + i));
 
     // Verify that alert handler received it.
@@ -536,7 +536,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write otbn's alert_test reg and check alert_cause.
-  for (int i = 0; i < 2; ++i) {
+  for (dif_otbn_alert_t i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_otbn_alert_force(&otbn, kDifOtbnAlertFatal + i));
 
     // Verify that alert handler received it.
@@ -551,7 +551,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write otp_ctrl's alert_test reg and check alert_cause.
-  for (int i = 0; i < 5; ++i) {
+  for (dif_otp_ctrl_alert_t i = 0; i < 5; ++i) {
     CHECK_DIF_OK(dif_otp_ctrl_alert_force(&otp_ctrl, kDifOtpCtrlAlertFatalMacroError + i));
 
     // Verify that alert handler received it.
@@ -566,7 +566,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write pattgen's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_pattgen_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_pattgen_alert_force(&pattgen, kDifPattgenAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -581,7 +581,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write pinmux's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_pinmux_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_pinmux_alert_force(&pinmux_aon, kDifPinmuxAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -596,7 +596,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write pwm's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_pwm_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_pwm_alert_force(&pwm_aon, kDifPwmAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -611,7 +611,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write pwrmgr's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_pwrmgr_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_pwrmgr_alert_force(&pwrmgr_aon, kDifPwrmgrAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -626,7 +626,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write rom_ctrl's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_rom_ctrl_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_rom_ctrl_alert_force(&rom_ctrl, kDifRomCtrlAlertFatal + i));
 
     // Verify that alert handler received it.
@@ -641,7 +641,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write rstmgr's alert_test reg and check alert_cause.
-  for (int i = 0; i < 2; ++i) {
+  for (dif_rstmgr_alert_t i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_rstmgr_alert_force(&rstmgr_aon, kDifRstmgrAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -656,7 +656,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write rv_core_ibex's alert_test reg and check alert_cause.
-  for (int i = 0; i < 4; ++i) {
+  for (dif_rv_core_ibex_alert_t i = 0; i < 4; ++i) {
     CHECK_DIF_OK(dif_rv_core_ibex_alert_force(&rv_core_ibex, kDifRvCoreIbexAlertFatalSwErr + i));
 
     // Verify that alert handler received it.
@@ -671,7 +671,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write rv_plic's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_rv_plic_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_rv_plic_alert_force(&rv_plic, kDifRvPlicAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -686,7 +686,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write rv_timer's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_rv_timer_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_rv_timer_alert_force(&rv_timer, kDifRvTimerAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -701,7 +701,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write sensor_ctrl's alert_test reg and check alert_cause.
-  for (int i = 0; i < 2; ++i) {
+  for (dif_sensor_ctrl_alert_t i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_sensor_ctrl_alert_force(&sensor_ctrl, kDifSensorCtrlAlertRecovAlert + i));
 
     // Verify that alert handler received it.
@@ -716,7 +716,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write spi_device's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_spi_device_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_spi_device_alert_force(&spi_device, kDifSpiDeviceAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -731,7 +731,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write spi_host's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_spi_host_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_spi_host_alert_force(&spi_host0, kDifSpiHostAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -746,7 +746,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write spi_host's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_spi_host_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_spi_host_alert_force(&spi_host1, kDifSpiHostAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -761,7 +761,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write sram_ctrl's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_sram_ctrl_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_sram_ctrl_alert_force(&sram_ctrl_main, kDifSramCtrlAlertFatalError + i));
 
     // Verify that alert handler received it.
@@ -776,7 +776,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write sram_ctrl's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_sram_ctrl_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_sram_ctrl_alert_force(&sram_ctrl_ret_aon, kDifSramCtrlAlertFatalError + i));
 
     // Verify that alert handler received it.
@@ -791,7 +791,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write sysrst_ctrl's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_sysrst_ctrl_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_sysrst_ctrl_alert_force(&sysrst_ctrl_aon, kDifSysrstCtrlAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -806,7 +806,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write uart's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_uart_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_uart_alert_force(&uart0, kDifUartAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -821,7 +821,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write uart's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_uart_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_uart_alert_force(&uart1, kDifUartAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -836,7 +836,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write uart's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_uart_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_uart_alert_force(&uart2, kDifUartAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -851,7 +851,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write uart's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_uart_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_uart_alert_force(&uart3, kDifUartAlertFatalFault + i));
 
     // Verify that alert handler received it.
@@ -866,7 +866,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write usbdev's alert_test reg and check alert_cause.
-  for (int i = 0; i < 1; ++i) {
+  for (dif_usbdev_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_usbdev_alert_force(&usbdev, kDifUsbdevAlertFatalFault + i));
 
     // Verify that alert handler received it.

@@ -222,7 +222,7 @@ static status_t tx_wm_event_irq(void) {
   return OK_STATUS();
 }
 
-static status_t dummy_read_from_flash(uint32_t address, uint32_t len) {
+static status_t dummy_read_from_flash(uint32_t address, uint16_t len) {
   enum {
     kAddressSize = 3,
     kDummyBytes = 8,
@@ -255,6 +255,7 @@ static status_t rx_full_event_irq(void) {
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(!status.rx_full);
 
+  static_assert(kRxFifoLen <= UINT16_MAX, "kRxFifoLen must fit in uint16_t");
   TRY(dummy_read_from_flash(/*address=*/0x00, /*len=*/kRxFifoLen));
 
   // Wait for the event irq and check that it was triggered by `STATUS.rx_full`.
@@ -296,13 +297,16 @@ static status_t test_init(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR);
   TRY(dif_spi_host_init(base_addr, &spi_host));
 
+  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
+        "kClockFreqPeripheralHz must fit in uint32_t");
   TRY(dif_spi_host_configure(
-      &spi_host, (dif_spi_host_config_t){
-                     .spi_clock = 1000000,
-                     .peripheral_clock_freq_hz = kClockFreqPeripheralHz,
-                     .rx_watermark = kTxWatermark,
-                     .tx_watermark = kRxWatermark,
-                 }));
+      &spi_host,
+      (dif_spi_host_config_t){
+          .spi_clock = 1000000,
+          .peripheral_clock_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+          .rx_watermark = kTxWatermark,
+          .tx_watermark = kRxWatermark,
+      }));
   TRY(dif_spi_host_output_set_enabled(&spi_host, true));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);

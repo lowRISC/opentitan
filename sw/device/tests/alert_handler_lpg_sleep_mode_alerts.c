@@ -42,64 +42,9 @@ static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_rv_core_ibex_t ibex;
 static dif_flash_ctrl_state_t flash_ctrl;
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
 // This location will be update from SV to contain the expected alert.
 static volatile const uint8_t kExpectedAlertNumber = 0;
-
-// List of all fatal alerts
-static const uint32_t fatal_alerts_list[] = {
-    kTopEarlgreyAlertIdUart0FatalFault,
-    kTopEarlgreyAlertIdUart1FatalFault,
-    kTopEarlgreyAlertIdUart2FatalFault,
-    kTopEarlgreyAlertIdUart3FatalFault,
-    kTopEarlgreyAlertIdGpioFatalFault,
-    kTopEarlgreyAlertIdSpiDeviceFatalFault,
-    kTopEarlgreyAlertIdI2c0FatalFault,
-    kTopEarlgreyAlertIdI2c1FatalFault,
-    kTopEarlgreyAlertIdI2c2FatalFault,
-    kTopEarlgreyAlertIdPattgenFatalFault,
-    kTopEarlgreyAlertIdRvTimerFatalFault,
-    // kTopEarlgreyAlertIdOtpCtrlFatalMacroError,
-    // kTopEarlgreyAlertIdOtpCtrlFatalCheckError,
-    kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError,
-    // kTopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert,
-    // kTopEarlgreyAlertIdLcCtrlFatalProgError,
-    // kTopEarlgreyAlertIdLcCtrlFatalStateError,
-    kTopEarlgreyAlertIdLcCtrlFatalBusIntegError,
-    kTopEarlgreyAlertIdSpiHost0FatalFault,
-    kTopEarlgreyAlertIdSpiHost1FatalFault,
-    kTopEarlgreyAlertIdUsbdevFatalFault,
-    kTopEarlgreyAlertIdPwrmgrAonFatalFault,
-    kTopEarlgreyAlertIdRstmgrAonFatalFault,
-    // kTopEarlgreyAlertIdRstmgrAonFatalCnstyFault,
-    kTopEarlgreyAlertIdClkmgrAonFatalFault,
-    kTopEarlgreyAlertIdSysrstCtrlAonFatalFault,
-    kTopEarlgreyAlertIdAdcCtrlAonFatalFault,
-    kTopEarlgreyAlertIdPwmAonFatalFault,
-    kTopEarlgreyAlertIdPinmuxAonFatalFault,
-    kTopEarlgreyAlertIdAonTimerAonFatalFault,
-    kTopEarlgreyAlertIdSensorCtrlFatalAlert,
-    kTopEarlgreyAlertIdSramCtrlRetAonFatalError,
-    kTopEarlgreyAlertIdFlashCtrlFatalStdErr,
-    // kTopEarlgreyAlertIdFlashCtrlFatalErr,
-    // kTopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert,
-    kTopEarlgreyAlertIdRvDmFatalFault,
-    // kTopEarlgreyAlertIdRvPlicFatalFault,
-    kTopEarlgreyAlertIdAesFatalFault,
-    kTopEarlgreyAlertIdHmacFatalFault,
-    kTopEarlgreyAlertIdKmacFatalFaultErr,
-    kTopEarlgreyAlertIdOtbnFatal,
-    kTopEarlgreyAlertIdKeymgrFatalFaultErr,
-    kTopEarlgreyAlertIdCsrngFatalAlert,
-    kTopEarlgreyAlertIdEntropySrcFatalAlert,
-    kTopEarlgreyAlertIdEdn0FatalAlert,
-    kTopEarlgreyAlertIdEdn1FatalAlert,
-    kTopEarlgreyAlertIdSramCtrlMainFatalError,
-    kTopEarlgreyAlertIdRomCtrlFatal,
-    // kTopEarlgreyAlertIdRvCoreIbexFatalSwErr,
-    kTopEarlgreyAlertIdRvCoreIbexFatalHwErr,
-};
 
 /**
  * Initialize the peripherals used in this test.
@@ -152,7 +97,7 @@ static void alert_handler_config(uint32_t ping_timeout) {
 
   // Enable all incoming alerts and configure them to classa.
   // This alert should never fire because we do not expect any incoming alerts.
-  for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
+  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     alerts[i] = i;
     alert_classes[i] = kDifAlertHandlerClassA;
   }
@@ -221,15 +166,15 @@ static void alert_handler_config(uint32_t ping_timeout) {
  * Clear all alert_cause and local_alert_cause registers
  */
 static void alert_handler_clear_cause_regs(void) {
-  bool is_cause;
   // Loop over all alert_cause regs
-  for (int jj = 0; jj < ALERT_HANDLER_PARAM_N_ALERTS; jj++) {
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler, jj));
+  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; i++) {
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler, i));
   }
 
   // Loop over all loc_alert_cause regs
-  for (int jj = 0; jj < ALERT_HANDLER_PARAM_N_LOC_ALERT; jj++) {
-    CHECK_DIF_OK(dif_alert_handler_local_alert_acknowledge(&alert_handler, jj));
+  for (dif_alert_handler_local_alert_t i = 0;
+       i < ALERT_HANDLER_PARAM_N_LOC_ALERT; i++) {
+    CHECK_DIF_OK(dif_alert_handler_local_alert_acknowledge(&alert_handler, i));
   }
 }
 
@@ -242,11 +187,11 @@ static uint16_t alert_handler_num_fired_alerts(void) {
   // Indicates if any of the alerts or local alerts is fired.
   uint16_t accumulator = 0;
   // Loop over all alert_cause regs
-  for (int jj = 0; jj < ALERT_HANDLER_PARAM_N_ALERTS; jj++) {
+  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; i++) {
     CHECK_DIF_OK(
-        dif_alert_handler_alert_is_cause(&alert_handler, jj, &is_cause));
+        dif_alert_handler_alert_is_cause(&alert_handler, i, &is_cause));
     if (is_cause) {
-      LOG_INFO("Alert %d fired", jj);
+      LOG_INFO("Alert %d fired", i);
     }
     accumulator += is_cause;
   }
@@ -262,9 +207,10 @@ static uint16_t alert_handler_num_fired_loc_alerts(void) {
   // Indicates if any of the alerts or local alerts is fired.
   uint16_t accumulator = 0;
   // Loop over all loc_alert_cause regs
-  for (int jj = 0; jj < ALERT_HANDLER_PARAM_N_LOC_ALERT; jj++) {
+  for (dif_alert_handler_local_alert_t i = 0;
+       i < ALERT_HANDLER_PARAM_N_LOC_ALERT; i++) {
     CHECK_DIF_OK(
-        dif_alert_handler_local_alert_is_cause(&alert_handler, jj, &is_cause));
+        dif_alert_handler_local_alert_is_cause(&alert_handler, i, &is_cause));
     accumulator += is_cause;
   }
   return accumulator;
@@ -277,9 +223,9 @@ static uint16_t alert_handler_num_fired_loc_alerts(void) {
 static void enter_low_power(bool deep_sleep) {
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
-  cfg = cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
-               kDifPwrmgrDomainOptionUsbClockInLowPower |
-               kDifPwrmgrDomainOptionUsbClockInActivePower) |
+  cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
+                kDifPwrmgrDomainOptionUsbClockInLowPower |
+                kDifPwrmgrDomainOptionUsbClockInActivePower)) |
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
 
   // Set the wake_up trigger as AON timer module
@@ -288,19 +234,6 @@ static void enter_low_power(bool deep_sleep) {
       &pwrmgr, /*wake_up_request_source*/ kDifPwrmgrWakeupRequestSourceFive,
       cfg));
   wait_for_interrupt();
-}
-
-/**
- * Verifies that wakeup source is the AON timer
- * (kDifPwrmgrWakeupRequestSourceFive).
- */
-static void check_wakeup_reason(void) {
-  dif_pwrmgr_wakeup_reason_t wakeup_reason;
-  CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
-  CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-            &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true,
-        "wakeup reason wrong exp:%d  obs:%d", kDifPwrmgrWakeupRequestSourceFive,
-        wakeup_reason);
 }
 
 /**
@@ -397,7 +330,6 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
   // To keep the test results
   bool is_cause;
   bool is_locked;
-  bool sleep_mode;
   uint16_t num_fired_alerts;
   uint16_t num_fired_loc_alerts;
 
@@ -503,12 +435,6 @@ void ottf_external_isr(void) {
 }
 
 bool test_main(void) {
-  bool is_cause;
-  bool is_locked;
-  bool sleep_mode;
-  uint16_t num_fired_alerts;
-  uint16_t num_fired_loc_alerts;
-
   init_test_components();
 
   // TEST PHASE #1 (ping-timeout = 256)

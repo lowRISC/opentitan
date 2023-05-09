@@ -61,7 +61,7 @@ bool test_main(void) {
   // TODO: current HW CFG value is randomly genenrated from the HJSON file,
   // plan to backdoor inject.
   uint32_t otp_device_id;
-  for (int i = 0; i < kNumDeviceId; i++) {
+  for (uint32_t i = 0; i < kNumDeviceId; i++) {
     otp_ctrl_dai_read_32(&otp, kDifOtpCtrlPartitionHwCfg, i * 4,
                          &otp_device_id);
 

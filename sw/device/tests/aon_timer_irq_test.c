@@ -121,7 +121,7 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
                                             /*pause_in_sleep=*/false));
   }
   // Capture the current tick to measure the time the IRQ will take.
-  uint32_t start_tick = tick_count_get();
+  uint32_t start_tick = (uint32_t)tick_count_get();
   uint32_t time_elapsed = 0;
 
   // Disable interrupts to be certain interrupt doesn't occur between while
@@ -138,7 +138,7 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
       // to a known place avoiding missed wakeup issues.
       irq_global_ctrl(true);
       irq_global_ctrl(false);
-      time_elapsed = irq_tick - start_tick;
+      time_elapsed = (uint32_t)irq_tick - start_tick;
     } while (peripheral != kTopEarlgreyPlicPeripheralAonTimerAon &&
              time_elapsed < sleep_range_h);
   }
@@ -230,12 +230,13 @@ bool test_main(void) {
       udiv64_slow(kMaxCycles * (uint64_t)1000000, kClockFreqCpuHz, NULL);
 
   // no error in the reference time measurement.
-  uint64_t irq_time =
-      rand_testutils_gen32_range(low_time_range, high_time_range);
+  uint64_t irq_time = rand_testutils_gen32_range((uint32_t)low_time_range,
+                                                 (uint32_t)high_time_range);
   execute_test(&aon_timer, irq_time,
                /*expected_irq=*/kDifAonTimerIrqWkupTimerExpired);
 
-  irq_time = rand_testutils_gen32_range(low_time_range, high_time_range);
+  irq_time = rand_testutils_gen32_range((uint32_t)low_time_range,
+                                        (uint32_t)high_time_range);
   execute_test(&aon_timer, irq_time,
                /*expected_irq=*/kDifAonTimerIrqWdogTimerBark);
 

@@ -15,8 +15,6 @@ OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
 
 static const char test_str[] = "This is a SPI device OTTF console test.";
 
-static dif_spi_device_handle_t ottf_console_spi_device;
-
 bool test_main(void) {
   LOG_INFO("%s", test_str);
 

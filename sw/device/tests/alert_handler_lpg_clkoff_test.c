@@ -429,8 +429,6 @@ enum {
 bool test_main(void) {
   init_peripherals();
 
-  // A generic loop variable
-  int ii;
   // To keep the test results
   bool is_cause;
 

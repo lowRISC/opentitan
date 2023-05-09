@@ -30,9 +30,11 @@ static uint32_t software_intr_triggered = 0;
 static void plic_configure_irqs(dif_rv_plic_t *plic) {
   // Set IRQ priorities to MAX and Enable the IRQ
   for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
-    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(plic, i, kDifRvPlicMaxPriority));
+    const dif_rv_plic_irq_id_t irq_id = (dif_rv_plic_irq_id_t)i;
     CHECK_DIF_OK(
-        dif_rv_plic_irq_set_enabled(plic, i, kPlicTarget, kDifToggleEnabled));
+        dif_rv_plic_irq_set_priority(plic, irq_id, kDifRvPlicMaxPriority));
+    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, irq_id, kPlicTarget,
+                                             kDifToggleEnabled));
   }
 
   // Set Ibex IRQ priority threshold level

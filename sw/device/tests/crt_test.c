@@ -45,15 +45,18 @@ static dif_uart_t uart0;
 static void init_uart(void) {
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
-  CHECK_DIF_OK(
-      dif_uart_configure(&uart0, (dif_uart_config_t){
-                                     .baudrate = kUartBaudrate,
-                                     .clk_freq_hz = kClockFreqPeripheralHz,
-                                     .parity_enable = kDifToggleDisabled,
-                                     .parity = kDifUartParityEven,
-                                     .tx_enable = kDifToggleEnabled,
-                                     .rx_enable = kDifToggleEnabled,
-                                 }));
+  CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
+  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
+        "kClockFreqPeripheralHz must fit in uint32_t");
+  CHECK_DIF_OK(dif_uart_configure(
+      &uart0, (dif_uart_config_t){
+                  .baudrate = (uint32_t)kUartBaudrate,
+                  .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                  .parity_enable = kDifToggleDisabled,
+                  .parity = kDifUartParityEven,
+                  .tx_enable = kDifToggleEnabled,
+                  .rx_enable = kDifToggleEnabled,
+              }));
   base_uart_stdout(&uart0);
 }
 
@@ -229,11 +232,12 @@ void _ottf_main(void) {
   CHECK(data_init_start_addr % sizeof(uint32_t) == 0,
         "_data_init_start not word-aligned: 0x%08x", data_init_start_addr);
 
-  CHECK(bad_bss_index == -1, "found non-zero .bss byte at *0x%08x == 0x%02x",
-        bss_start_addr + bad_bss_index, (uint32_t)bss[bad_bss_index]);
+  CHECK(bad_bss_index == -1,
+        "found non-zero .bss byte at *(0x%08x + %d) == 0x%02x", bss_start_addr,
+        bad_bss_index, (uint32_t)bss[bad_bss_index]);
   CHECK(bad_data_index == -1,
-        "found bad .data byte at *0x%08x == 0x%02x, expected 0x%02x",
-        data_start_addr + bad_data_index, (uint32_t)data_init[bad_data_index]);
+        "found bad .data byte at *(0x%08x + %d) == 0x%02x", data_start_addr,
+        bad_data_index, (uint32_t)data_init[bad_data_index]);
 
   // Unit test CRT utility functions.
   test_crt_section_clear();

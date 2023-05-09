@@ -394,7 +394,7 @@ static void prgm_alert_handler_round3(void) {
   // for all possible alerts and will see the timeout more often.
   dif_alert_handler_class_t alert_class;
 
-  for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
+  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     if (i == kTopEarlgreyAlertIdSpiHost0FatalFault) {
       alert_class = kDifAlertHandlerClassB;
     } else if (i == kTopEarlgreyAlertIdUart0FatalFault) {
@@ -419,8 +419,11 @@ static void prgm_alert_handler_round3(void) {
   dif_alert_handler_escalation_phase_t class_d_esc[3];
 
   if (kDeviceType == kDeviceFpgaCw310) {
-    uint32_t cpu_freq = kClockFreqCpuHz;
-    uint32_t peri_freq = kClockFreqPeripheralHz;
+    CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
+    CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
+          "kClockFreqPeripheralHz must fit in uint32_t");
+    uint32_t cpu_freq = (uint32_t)kClockFreqCpuHz;
+    uint32_t peri_freq = (uint32_t)kClockFreqPeripheralHz;
     uint32_t cycles = kUartTxFifoCpuCycles * (cpu_freq / peri_freq);
     class_d_esc[0] = kEscProfiles[kDifAlertHandlerClassD][0];
     class_d_esc[1] = kEscProfiles[kDifAlertHandlerClassD][1];
@@ -461,11 +464,8 @@ static void prgm_alert_handler_round3(void) {
  */
 
 static void prgm_alert_handler_round4(void) {
-  dif_alert_handler_alert_t alerts[ALERT_HANDLER_PARAM_N_ALERTS];
-  dif_alert_handler_class_t alert_classes[ALERT_HANDLER_PARAM_N_ALERTS];
-
   // Enable all alerts to enable ping associate with them.
-  for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
+  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
         &alert_handler, i, kDifAlertHandlerClassA, kDifToggleEnabled,
         kDifToggleEnabled));
@@ -553,8 +553,9 @@ static void collect_alert_dump_and_compare(test_round_t round) {
     LOG_INFO("DUMP:%d: 0x%x", i, dump[i]);
   }
 
+  CHECK(seg_size <= INT_MAX, "seg_size must fit in int");
   CHECK_STATUS_OK(
-      alert_handler_testutils_info_parse(dump, seg_size, &actual_info));
+      alert_handler_testutils_info_parse(dump, (int)seg_size, &actual_info));
 
   if (round == kRound4) {
     // Check local alert only.
@@ -782,10 +783,10 @@ bool test_main(void) {
     prgm_alert_handler_round2();
 
     // Setup the aon_timer the wdog bark and bite timeouts.
-    uint64_t bark_cycles =
-        udiv64_slow(kWdogBarkMicros * kClockFreqAonHz, 1000000, NULL);
-    uint64_t bite_cycles =
-        udiv64_slow(kWdogBiteMicros * kClockFreqAonHz, 1000000, NULL);
+    uint32_t bark_cycles =
+        (uint32_t)udiv64_slow(kWdogBarkMicros * kClockFreqAonHz, 1000000, NULL);
+    uint32_t bite_cycles =
+        (uint32_t)udiv64_slow(kWdogBiteMicros * kClockFreqAonHz, 1000000, NULL);
     CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(&aon_timer, bark_cycles,
                                                         bite_cycles, false));
 

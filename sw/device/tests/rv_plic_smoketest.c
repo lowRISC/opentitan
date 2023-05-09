@@ -86,15 +86,18 @@ void ottf_external_isr(void) {
 
 static void uart_initialise(mmio_region_t base_addr, dif_uart_t *uart) {
   CHECK_DIF_OK(dif_uart_init(base_addr, uart));
-  CHECK_DIF_OK(
-      dif_uart_configure(uart, (dif_uart_config_t){
-                                   .baudrate = kUartBaudrate,
-                                   .clk_freq_hz = kClockFreqPeripheralHz,
-                                   .parity_enable = kDifToggleDisabled,
-                                   .parity = kDifUartParityEven,
-                                   .tx_enable = kDifToggleEnabled,
-                                   .rx_enable = kDifToggleEnabled,
-                               }));
+  CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
+  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
+        "kClockFreqPeripheralHz must fit in uint32_t");
+  CHECK_DIF_OK(dif_uart_configure(
+      uart, (dif_uart_config_t){
+                .baudrate = (uint32_t)kUartBaudrate,
+                .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                .parity_enable = kDifToggleDisabled,
+                .parity = kDifUartParityEven,
+                .tx_enable = kDifToggleEnabled,
+                .rx_enable = kDifToggleEnabled,
+            }));
 }
 
 /**

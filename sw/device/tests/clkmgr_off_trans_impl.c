@@ -172,12 +172,12 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
   } else if (UNWRAP(rstmgr_testutils_is_reset_info(
                  &rstmgr, kDifRstmgrResetInfoWatchdog))) {
     // Verify the cpu crash dump.
-    dif_rstmgr_cpu_info_dump_segment_t cpu_dump[DIF_RSTMGR_CPU_INFO_MAX_SIZE];
-    size_t size_read;
     LOG_INFO("Got an expected watchdog reset when reading for clock %d", clock);
     // TODO: Enable reading the CPU dump once the following issue is resolved
     // (https://github.com/lowRISC/opentitan/issues/13022)
     /*
+    dif_rstmgr_cpu_info_dump_segment_t cpu_dump[DIF_RSTMGR_CPU_INFO_MAX_SIZE];
+    size_t size_read;
     CHECK_DIF_OK(dif_rstmgr_cpu_info_dump_read(
         &rstmgr, cpu_dump, DIF_RSTMGR_CPU_INFO_MAX_SIZE, &size_read));
     LOG_INFO("Read cpu dump");

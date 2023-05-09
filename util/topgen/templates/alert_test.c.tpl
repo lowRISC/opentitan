@@ -52,7 +52,7 @@ static void alert_handler_config(void) {
 
   // Enable all incoming alerts and configure them to classa.
   // This alert should never fire because we do not expect any incoming alerts.
-  for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
+  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     alerts[i] = i;
     alert_classes[i] = kDifAlertHandlerClassA;
   }
@@ -99,7 +99,7 @@ static void trigger_alert_test(void) {
   % for p in helper.alert_peripherals:
 
   // Write ${p.name}'s alert_test reg and check alert_cause.
-  for (int i = 0; i < ${p.num_alerts}; ++i) {
+  for (dif_${p.name}_alert_t i = 0; i < ${p.num_alerts}; ++i) {
     CHECK_DIF_OK(dif_${p.name}_alert_force(&${p.inst_name}, ${p.dif_alert_name} + i));
 
     // Verify that alert handler received it.

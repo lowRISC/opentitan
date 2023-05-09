@@ -45,7 +45,8 @@ static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
       mmio_region_from_addr(TOP_EARLGREY_EFLASH_BASE_ADDR + addr);
   uint32_t host_data[kDataSize];
   for (int i = 0; i < kDataSize; ++i) {
-    host_data[i] = mmio_region_read32(flash_addr, i * sizeof(uint32_t));
+    host_data[i] =
+        mmio_region_read32(flash_addr, i * (ptrdiff_t)sizeof(uint32_t));
   }
   CHECK_ARRAYS_EQ(host_data, check_data, kDataSize);
 }

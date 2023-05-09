@@ -39,8 +39,10 @@ static void write_read_check(mmio_region_t base_addr_region,
                              const char *sram_name) {
   uint32_t rw_data_32;
   for (int i = 0; i < SRAM_CTRL_TEST_DATA_SIZE_WORDS; ++i) {
-    mmio_region_write32(base_addr_region, i * sizeof(uint32_t), kRandomData[i]);
-    rw_data_32 = mmio_region_read32(base_addr_region, i * sizeof(uint32_t));
+    mmio_region_write32(base_addr_region, i * (ptrdiff_t)sizeof(uint32_t),
+                        kRandomData[i]);
+    rw_data_32 =
+        mmio_region_read32(base_addr_region, i * (ptrdiff_t)sizeof(uint32_t));
     CHECK(rw_data_32 == kRandomData[i],
           "Memory Write/Read Mismatch for %s, index %d, data read = %08x "
           "data_expected = %08x.",

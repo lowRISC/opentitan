@@ -861,15 +861,18 @@ static void configure_kmac(void) {
 }
 
 static void configure_uart(dif_uart_t *uart) {
-  CHECK_DIF_OK(
-      dif_uart_configure(uart, (dif_uart_config_t){
-                                   .baudrate = kUartBaudrate,
-                                   .clk_freq_hz = kClockFreqPeripheralHz,
-                                   .parity_enable = kDifToggleEnabled,
-                                   .parity = kDifUartParityEven,
-                                   .tx_enable = kDifToggleDisabled,
-                                   .rx_enable = kDifToggleDisabled,
-                               }));
+  CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
+  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
+        "kClockFreqPeripheralHz must fit in uint32_t");
+  CHECK_DIF_OK(dif_uart_configure(
+      uart, (dif_uart_config_t){
+                .baudrate = (uint32_t)kUartBaudrate,
+                .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                .parity_enable = kDifToggleEnabled,
+                .parity = kDifUartParityEven,
+                .tx_enable = kDifToggleDisabled,
+                .rx_enable = kDifToggleDisabled,
+            }));
   CHECK_DIF_OK(
       dif_uart_loopback_set(uart, kDifUartLoopbackSystem, kDifToggleEnabled));
 }
@@ -894,17 +897,21 @@ static void configure_i2c(dif_i2c_t *i2c, uint8_t device_addr_0,
 }
 
 static void configure_spi_host(const dif_spi_host_t *spi_host, bool enable) {
+  CHECK(kClockFreqHiSpeedPeripheralHz <= UINT32_MAX,
+        "kClockFreqHiSpeedPeripheralHz must fit in uint32_t");
+
   CHECK_DIF_OK(dif_spi_host_configure(
-      spi_host, (dif_spi_host_config_t){
-                    .spi_clock = kClockFreqHiSpeedPeripheralHz / 2,
-                    .peripheral_clock_freq_hz = kClockFreqHiSpeedPeripheralHz,
-                    .chip_select =
-                        {
-                            .idle = 2,
-                            .trail = 2,
-                            .lead = 2,
-                        },
-                }));
+      spi_host,
+      (dif_spi_host_config_t){
+          .spi_clock = (uint32_t)kClockFreqHiSpeedPeripheralHz / 2,
+          .peripheral_clock_freq_hz = (uint32_t)kClockFreqHiSpeedPeripheralHz,
+          .chip_select =
+              {
+                  .idle = 2,
+                  .trail = 2,
+                  .lead = 2,
+              },
+      }));
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(spi_host, /*enabled=*/enable));
   // dif_spi_host_configure() sets CTRL.SPIEN bit to true.
   // Adding this explicit control to be able set CTRL.SPIEN pin later
@@ -994,7 +1001,7 @@ static void complete_kmac_operations(uint32_t *digest) {
   CHECK_DIF_OK(dif_kmac_poll_status(&kmac, KMAC_STATUS_SHA3_SQUEEZE_BIT));
 
   // Read both shares of digest from state register and combine using XOR.
-  uint32_t digest_offset = KMAC_STATE_REG_OFFSET;
+  ptrdiff_t digest_offset = KMAC_STATE_REG_OFFSET;
   for (size_t i = 0; i < kKmacDigestLength; ++i) {
     uint32_t share0 = mmio_region_read32(kmac.base_addr, digest_offset);
     uint32_t share1 = mmio_region_read32(
@@ -1082,8 +1089,9 @@ static void comms_data_load_task(void *task_parameters) {
   }
 
   // Load data into I2C FIFOs.
-  dif_i2c_status_t i2c_status;
-  for (size_t i = 0; i < ARRAYSIZE(i2c_handles); ++i) {
+  static_assert(ARRAYSIZE(i2c_handles) < UINT8_MAX,
+                "Length of i2c_handles must fit in uint8_t");
+  for (uint8_t i = 0; i < ARRAYSIZE(i2c_handles); ++i) {
     CHECK_STATUS_OK(i2c_testutils_write(i2c_handles[i], /*addr=*/i + 1,
                                         I2C_PARAM_FIFO_DEPTH - 1, kI2cMessage,
                                         /*skip_stop=*/false));
@@ -1282,7 +1290,9 @@ static void max_power_task(void *task_parameters) {
     };
 
     // Read data from I2C RX FIFO.
-    for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
+    static_assert(ARRAYSIZE(i2c_handles) < UINT8_MAX,
+                  "Length of i2c_handles must fit in uint8_t");
+    for (uint8_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
       CHECK_STATUS_OK(
           i2c_testutils_issue_read(i2c_handles[ii], /*addr=*/ii + 1,
                                    /*byte_count=*/I2C_PARAM_FIFO_DEPTH - 1));
@@ -1321,7 +1331,7 @@ static void check_otp_csr_configs(void) {
 
 bool test_main(void) {
   peripheral_clock_period_ns =
-      udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL);
+      (uint32_t)udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL);
   // Note: DO NOT change this message string without updating the DV testbench.
   LOG_INFO("Computed peripheral clock period.");
 

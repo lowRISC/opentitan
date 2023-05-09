@@ -391,13 +391,16 @@ bool test_main(void) {
   // ADC configuration
   CHECK_DIF_OK(dif_adc_ctrl_set_enabled(&adc_ctrl, kDifToggleDisabled));
   CHECK_DIF_OK(dif_adc_ctrl_reset(&adc_ctrl));
+  CHECK(power_up_time_aon_cycles < UINT8_MAX,
+        "power_up_time_aon_cycles must fit into uint8_t");
   CHECK_DIF_OK(dif_adc_ctrl_configure(
-      &adc_ctrl, (dif_adc_ctrl_config_t){
-                     .mode = kDifAdcCtrlLowPowerScanMode,
-                     .num_low_power_samples = kNumLowPowerSamples,
-                     .num_normal_power_samples = kNumNormalPowerSamples,
-                     .power_up_time_aon_cycles = power_up_time_aon_cycles + 1,
-                     .wake_up_time_aon_cycles = wake_up_time_aon_cycles}));
+      &adc_ctrl,
+      (dif_adc_ctrl_config_t){
+          .mode = kDifAdcCtrlLowPowerScanMode,
+          .num_low_power_samples = kNumLowPowerSamples,
+          .num_normal_power_samples = kNumNormalPowerSamples,
+          .power_up_time_aon_cycles = (uint8_t)power_up_time_aon_cycles + 1,
+          .wake_up_time_aon_cycles = wake_up_time_aon_cycles}));
   CHECK_DIF_OK(dif_adc_ctrl_set_enabled(&adc_ctrl, kDifToggleEnabled));
 
   LOG_INFO("ADC Controller active");

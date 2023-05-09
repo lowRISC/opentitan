@@ -73,8 +73,6 @@ static void aes_test(const dif_aes_t *aes) {
  * Configure the kmac to use entropy from edn to request entropy.
  */
 static void kmac_test(dif_kmac_t *kmac) {
-  dif_kmac_operation_state_t kmac_operation_state;
-
   LOG_INFO("%s", __func__);
 
   dif_kmac_config_t config = (dif_kmac_config_t){

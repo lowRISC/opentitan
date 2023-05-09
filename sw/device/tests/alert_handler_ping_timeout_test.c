@@ -71,7 +71,7 @@ static void alert_handler_config(void) {
   // Enable all incoming alerts and configure them to class A.
   dif_alert_handler_alert_t alerts[ALERT_HANDLER_PARAM_N_ALERTS];
   dif_alert_handler_class_t alert_classes[ALERT_HANDLER_PARAM_N_ALERTS];
-  for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
+  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     alerts[i] = i;
     alert_classes[i] = kDifAlertHandlerClassA;
   }

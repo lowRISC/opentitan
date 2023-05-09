@@ -56,11 +56,13 @@ static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
   uint64_t bite_time_us = bark_time_us * 2;
   config_wdog(aon_timer, pwrmgr, bark_time_us, bite_time_us);
 
+  CHECK(bark_time_us <= UINT32_MAX, "bark_time_us must fit in a uint32_t");
+
   // The `intr_state` takes 3 aon clock cycles to rise plus 2 extra cycles as a
   // precaution.
-  uint32_t wait_us =
-      bark_time_us +
-      udiv64_slow(5 * 1000000 + kClockFreqAonHz - 1, kClockFreqAonHz, NULL);
+  uint32_t wait_us = (uint32_t)bark_time_us +
+                     (uint32_t)udiv64_slow(5 * 1000000 + kClockFreqAonHz - 1,
+                                           kClockFreqAonHz, NULL);
 
   // Wait bark time and check that the bark interrupt requested.
   busy_spin_micros(wait_us);

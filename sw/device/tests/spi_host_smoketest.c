@@ -65,9 +65,9 @@ status_t test_read_sfdp(void) {
   CHECK(sfdp.header.signature == kSfdpSignature,
         "Expected to find the SFDP signature!");
 
-  uint32_t bfpt_offset = sfdp.param.table_pointer[0] |
-                         sfdp.param.table_pointer[1] << 8 |
-                         sfdp.param.table_pointer[2] << 16;
+  uint32_t bfpt_offset = (uint32_t)sfdp.param.table_pointer[0] |
+                         (uint32_t)(sfdp.param.table_pointer[1] << 8) |
+                         (uint32_t)(sfdp.param.table_pointer[2] << 16);
   sfdp.bfpt = (uint32_t *)(sfdp.data + bfpt_offset);
   return OK_STATUS();
 }
@@ -93,7 +93,8 @@ status_t test_enable_quad_mode(void) {
   if (sfdp.param.length < 14) {
     return INVALID_ARGUMENT();
   }
-  uint8_t mech = bitfield_field32_read(sfdp.bfpt[14], SPI_FLASH_QUAD_ENABLE);
+  uint8_t mech =
+      (uint8_t)bitfield_field32_read(sfdp.bfpt[14], SPI_FLASH_QUAD_ENABLE);
   LOG_INFO("Setting the EEPROM's QE bit via mechanism %d", mech);
   TRY(spi_flash_testutils_quad_enable(&spi_host, mech, /*enabled=*/true));
   return OK_STATUS();
@@ -185,12 +186,15 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host));
 
-  CHECK_DIF_OK(dif_spi_host_configure(
-                   &spi_host,
-                   (dif_spi_host_config_t){
-                       .spi_clock = 1000000,
-                       .peripheral_clock_freq_hz = kClockFreqPeripheralHz,
-                   }),
+  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
+        "kClockFreqPeripheralHz must fit in uint32_t");
+
+  CHECK_DIF_OK(dif_spi_host_configure(&spi_host,
+                                      (dif_spi_host_config_t){
+                                          .spi_clock = 1000000,
+                                          .peripheral_clock_freq_hz =
+                                              (uint32_t)kClockFreqPeripheralHz,
+                                      }),
                "SPI_HOST config failed!");
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host, true));
 

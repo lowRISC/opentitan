@@ -232,8 +232,11 @@ bool test_main(void) {
     LOG_INFO("PREV_EXC_ADDR  = 0x%x", cpu_dump[5]);
     LOG_INFO("PREV_EXC_PC    = 0x%x", cpu_dump[6]);
     LOG_INFO("PREV_VALID     = 0x%x", cpu_dump[7]);
-    uint32_t expected_hung_address = hung_data_addr[clock];
-    LOG_INFO("The expected hung address = 0x%x", expected_hung_address);
+    uint64_t expected_hung_address = hung_data_addr[clock];
+    CHECK(expected_hung_address < UINT32_MAX,
+          "expected_hung_address must fit in uint32_t");
+    LOG_INFO("The expected hung address = 0x%x",
+             (uint32_t)expected_hung_address);
     CHECK(cpu_dump[2] == expected_hung_address, "Unexpected hung address");
     // Mark this clock as tested.
     CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
