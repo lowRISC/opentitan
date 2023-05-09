@@ -48,7 +48,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*rom_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdRomCtrlFatal},
     '{"*rstmgr*prim_reg_we_check*", TopEarlgreyAlertIdRstmgrAonFatalFault},
     // TopEarlgreyAlertIdRstmgrAonFatalCnstyFault cannot use this test.
-    // TODO TopEarlgreyAlertIdRvCoreIbexFatalSwErr
+    '{"*rv_core_ibex*sw_fatal_err*", TopEarlgreyAlertIdRvCoreIbexFatalSwErr},
     '{"*rv_core_ibex*prim_reg_we_check*", TopEarlgreyAlertIdRvCoreIbexFatalHwErr},
     '{"*rv_dm*prim_reg_we_check*", TopEarlgreyAlertIdRvDmFatalFault},
     '{"*rv_plic*prim_reg_we_check*", TopEarlgreyAlertIdRvPlicFatalFault},
@@ -156,6 +156,12 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     sw_symbol_backdoor_overwrite("kExpectedAlertNumber", sw_alert_num);
 
     ip_alert = ip_alerts[ip_index];
+
+    if (ip_alert.alert_num == TopEarlgreyAlertIdRvCoreIbexFatalSwErr) begin
+      `uvm_info(`gfn, "Testing Software fatal alert, no fault to inject", UVM_MEDIUM)
+      return;
+    end
+
     if_proxy = sec_cm_pkg::find_sec_cm_if_proxy(.path(ip_alert.ip_inst_regex), .is_regex(1));
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Ready for fault injection",
              "Timeout waiting for fault injection request.")

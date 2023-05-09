@@ -172,6 +172,7 @@ static const char *sparse_fsm_check = "prim_sparse_fsm_flop";
 static const char *we_check = "prim_reg_we_check";
 static const char *rst_cnsty_check = "rst_cnsty_check";
 static const char *flash_fatal_check = "flash_fatal_check";
+static const char *sw_alert_check = "sw_fatal_alert_check";
 
 static void save_fault_checker(fault_checker_t *fault_checker) {
   uint32_t function_addr = (uint32_t)(fault_checker->function);
@@ -447,12 +448,14 @@ static void rv_core_ibex_fault_checker(bool enable, const char *ip_inst,
                                        const char *type) {
   dif_rv_core_ibex_error_status_t codes;
   CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-  // TODO determine which bit is set by onehot_checker:
-  // kDifRvCoreIbexErrorStatusRegisterTransmissionIntegrity or
-  // kDifRvCoreIbexErrorStatusFatalResponseIntegrity or
-  // kDifRvCoreIbexErrorStatusFatalInternalError
+  // For a we_check an error code
+  // (kDifRvCoreIbexErrorStatusRegisterTransmissionIntegrity) is reported. If
+  // triggering a software fatal alert no error code should be seen.
   uint32_t expected_codes =
-      enable ? kDifRvCoreIbexErrorStatusRegisterTransmissionIntegrity : 0;
+      (type == we_check) && enable
+          ? kDifRvCoreIbexErrorStatusRegisterTransmissionIntegrity
+          : 0;
+
   CHECK(codes == expected_codes, "For %s got codes 0x%x, expected 0x%x",
         ip_inst, codes, expected_codes);
 }
@@ -948,7 +951,11 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
       fault_checker_t fc = {rstmgr_fault_checker, rstmgr_inst_name, we_check};
       fault_checker = fc;
     } break;
-    // TODO kTopEarlgreyAlertIdRvCoreIbexFatalSwErr write to fatal_sw_err
+    case kTopEarlgreyAlertIdRvCoreIbexFatalSwErr: {
+      fault_checker_t fc = {rv_core_ibex_fault_checker, rv_core_ibex_inst_name,
+                            sw_alert_check};
+      fault_checker = fc;
+    } break;
     case kTopEarlgreyAlertIdRvCoreIbexFatalHwErr: {
       fault_checker_t fc = {rv_core_ibex_fault_checker, rv_core_ibex_inst_name,
                             we_check};
@@ -1043,6 +1050,11 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
   // Trigger the SV side to inject fault.
   // DO NOT CHANGE THIS: it is used to notify the SV side.
   LOG_INFO("Ready for fault injection");
+
+  if (kExpectedAlertNumber == kTopEarlgreyAlertIdRvCoreIbexFatalSwErr) {
+    CHECK_DIF_OK(dif_rv_core_ibex_trigger_sw_fatal_err_alert(&rv_core_ibex));
+    LOG_INFO("Software fatal alert triggered");
+  }
 
   // OTP ecc macro error test requires otp to read backdoor injected error
   // macro.
