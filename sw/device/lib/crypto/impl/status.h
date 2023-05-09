@@ -47,11 +47,13 @@ extern "C" {
                                  ((__LINE__ & 0x7ff) << 5) | kUnimplemented)})
 #else
 
-#define OTCRYPTO_RECOV_ERR ((status_t) { .value = kCryptoStatusInternalError})
-#define OTCRYPTO_FATAL_ERR ((status_t) { .value = kCryptoStatusFatalError})
-#define OTCRYPTO_BAD_ARGS ((status_t) { .value = kCryptoStatusBadArgs})
-#define OTCRYPTO_ASYNC_INCOMPLETE ((status_t) {.value = kCryptoStatusAsyncIncomplete})
-#define OTCRYPTO_NOT_IMPLEMENTED ((status_t) {.value = kCryptoStatusNotImplemented})
+#define OTCRYPTO_RECOV_ERR ((status_t){.value = kCryptoStatusInternalError})
+#define OTCRYPTO_FATAL_ERR ((status_t){.value = kCryptoStatusFatalError})
+#define OTCRYPTO_BAD_ARGS ((status_t){.value = kCryptoStatusBadArgs})
+#define OTCRYPTO_ASYNC_INCOMPLETE \
+  ((status_t){.value = kCryptoStatusAsyncIncomplete})
+#define OTCRYPTO_NOT_IMPLEMENTED \
+  ((status_t){.value = kCryptoStatusNotImplemented})
 
 #endif
 

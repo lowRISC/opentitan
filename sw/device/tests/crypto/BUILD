@@ -241,6 +241,7 @@ opentitan_functest(
     verilator = verilator_params(
         timeout = "long",
     ),
+    defines = ["OTCRYPTO_STATUS_DEBUG"],
     deps = [
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/runtime:log",
