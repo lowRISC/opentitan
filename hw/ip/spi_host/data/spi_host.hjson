@@ -73,6 +73,13 @@
   ]
   regwidth: "32",
   param_list: [
+    { name:    "Stub",
+      type:    "bit",
+      default: "0",
+      desc:    "Stub out the core of spi_host logic"
+      local:   "false",
+      expose:  "true"
+    },
     { name: "ByteOrder",
       desc: '''Byte order to use when transmitting or receiving data.  If ByteOrder = 0,
                the IP uses a Big-Endian ordering for the bytes in DATA.

@@ -3264,6 +3264,15 @@
       param_list:
       [
         {
+          name: Stub
+          desc: Stub out the core of spi_host logic
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SpiHost0Stub
+        }
+        {
           name: NumCS
           desc: The number of active-low chip select (cs_n) lines to create.
           type: int
@@ -3378,6 +3387,15 @@
       memory: {}
       param_list:
       [
+        {
+          name: Stub
+          desc: Stub out the core of spi_host logic
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SpiHost1Stub
+        }
         {
           name: NumCS
           desc: The number of active-low chip select (cs_n) lines to create.
