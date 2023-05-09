@@ -40,10 +40,11 @@ class TestFunc(unittest.TestCase):
 
         functest_coverage.handle_objs(merged_library, obj_files)
 
-        mock_run.assert_called_once_with("<lld_target>",
-                                         AnyStringWith("unresolved"),
-                                         "-zmuldefs", "-o",
-                                         str(merged_library), *obj_files)
+        mock_run.assert_called_once_with(
+            "<lld_target>", AnyStringWith("unresolved"), "-e", "0x0",
+            "--defsym", '__llvm_profile_register_names_function=0', '--defsym',
+            '__llvm_profile_register_function=0', '--defsym',
+            '__llvm_profile_runtime=0', '-o', str(merged_library), *obj_files)
 
     @patch("functest_coverage.run")
     def test_handle_test_targets(self, mock_run):
