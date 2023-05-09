@@ -52,22 +52,6 @@ static dif_rv_core_ibex_t ibex;
 static dif_flash_ctrl_state_t flash_ctrl;
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
-static plic_isr_ctx_t plic_ctx = {
-    .rv_plic = &plic,
-    .hart_id = kPlicTarget,
-};
-
-// Depends on the clock domain, sometimes alert handler will trigger a spurious
-// alert after the alert timeout. (Issue #2321)
-// So we allow class A interrupt to fire after the real timeout interrupt is
-// triggered.
-static alert_handler_isr_ctx_t alert_handler_ctx = {
-    .alert_handler = &alert_handler,
-    .plic_alert_handler_start_irq_id = kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-    .expected_irq = kDifAlertHandlerIrqClassb,
-    .is_only_irq = false,
-};
-
 /**
  * Initialize the peripherals used in this test.
  */
@@ -391,8 +375,6 @@ void ottf_external_isr(void) {
 bool test_main(void) {
   init_peripherals();
 
-  // A generic loop variable
-  int ii;
   // To keep the test results
   bool is_cause;
   // To keep the random wait time

@@ -58,11 +58,6 @@ static dif_aon_timer_t aon_timer;
 static dif_alert_handler_t alert_handler;
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
-static plic_isr_ctx_t plic_ctx = {
-    .rv_plic = &plic,
-    .hart_id = kPlicTarget,
-};
-
 static volatile bool interrupt_serviced = false;
 
 /**
@@ -102,7 +97,7 @@ static void alert_handler_config(void) {
 
   // Enable all incoming alerts and configure them to classa.
   // This alert should never fire because we do not expect any incoming alerts.
-  for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
+  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     alerts[i] = i;
     alert_classes[i] = kDifAlertHandlerClassA;
   }
@@ -110,7 +105,8 @@ static void alert_handler_config(void) {
   // Enable alert ping fail local alert and configure that to classb.
   dif_alert_handler_local_alert_t loc_alerts[ALERT_HANDLER_PARAM_N_LOC_ALERT];
   dif_alert_handler_class_t loc_alert_classes[ALERT_HANDLER_PARAM_N_LOC_ALERT];
-  for (int i = 0; i < ALERT_HANDLER_PARAM_N_LOC_ALERT; ++i) {
+  for (dif_alert_handler_local_alert_t i = 0;
+       i < ALERT_HANDLER_PARAM_N_LOC_ALERT; ++i) {
     loc_alerts[i] = i;
     loc_alert_classes[i] = kDifAlertHandlerClassB;
   }
@@ -170,7 +166,8 @@ static void alert_handler_config(void) {
  * Ensure there were no local alerts fired.
  */
 static void check_local_alerts(void) {
-  for (int i = 0; i < ALERT_HANDLER_PARAM_N_LOC_ALERT; ++i) {
+  for (dif_alert_handler_local_alert_t i = 0;
+       i < ALERT_HANDLER_PARAM_N_LOC_ALERT; ++i) {
     bool is_cause;
     CHECK_DIF_OK(
         dif_alert_handler_local_alert_is_cause(&alert_handler, i, &is_cause));
