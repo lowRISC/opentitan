@@ -29,10 +29,10 @@ index 237acb33f..9e37253b3 100644
  #define INSTR_PROF_VISIBILITY COMPILER_RT_VISIBILITY
  #include "profile/InstrProfData.inc"
 @@ -219,7 +218,6 @@ void __llvm_profile_set_filename(const char *Name);
-  * program initialization time. Support for transferring the mmap'd profile
-  * counts to a new file has not been implemented.
+  * copying the old profile file to new profile file and this function is usually
+  * used when the proess doesn't have permission to open file.
   */
--void __llvm_profile_set_file_object(FILE *File, int EnableMerge);
+-int __llvm_profile_set_file_object(FILE *File, int EnableMerge);
  
  /*! \brief Register to write instrumentation data to file at exit. */
  int __llvm_profile_register_write_file_atexit(void);
@@ -53,8 +53,8 @@ index 0e59148e2..4fd2a5170 100644
 --- a/lib/profile/InstrProfilingPlatformOther.c
 +++ b/lib/profile/InstrProfilingPlatformOther.c
 @@ -10,8 +10,7 @@
-     !(defined(__sun__) && defined(__svr4__)) && !defined(__NetBSD__) &&        \
-     !defined(_WIN32)
+     !defined(__Fuchsia__) && !(defined(__sun__) && defined(__svr4__)) &&       \
+     !defined(__NetBSD__) && !defined(_WIN32) && !defined(_AIX)
  
 -#include <stdlib.h>
 -#include <stdio.h>
