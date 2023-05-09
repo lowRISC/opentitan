@@ -39,11 +39,6 @@ static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
 // variable via backdoor_overwrite.
 static volatile const uint8_t kRounds = 2;
 
-// SW testcode randomly chooses the value for 8 GPIO pins (pins are fixed) then
-// invert the value for retention. SW will sends the value to SV testbench via
-// LOG_INFO().
-static const uint8_t kGpioVal = 0x00;
-
 // To wakeup and maintain GPIO, for now test enters to normal sleep only.
 static const bool deepPowerdown = false;
 
@@ -95,7 +90,7 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   LOG_INFO("Current Test Round: %1d", round);
 
   // 1. Randomly choose GPIO value
-  gpio_val = rand_testutils_gen32_range(0, 255);
+  gpio_val = (uint8_t)rand_testutils_gen32_range(0, 255);
 
   // 2. Drive GPIO with the chosen value.
   CHECK_DIF_OK(dif_gpio_write_masked(gpio, (dif_gpio_mask_t)0x000000FF,
@@ -115,7 +110,8 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
     pad_mode = ((gpio_val >> i) & 0x1) ? kDifPinmuxSleepModeLow
                                        : kDifPinmuxSleepModeHigh;
     CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(
-        pinmux, kTopEarlgreyPinmuxMioOutIoa0 + i, pad_kind, pad_mode));
+        pinmux, (dif_pinmux_index_t)(kTopEarlgreyPinmuxMioOutIoa0 + i),
+        pad_kind, pad_mode));
   }
 
   // 5. Initiate sleep mode
@@ -128,7 +124,8 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   // 7. Turn-off retention.
   for (int i = 0; i < kNumGpioPads; i++) {
     CHECK_DIF_OK(dif_pinmux_pad_sleep_clear_state(
-        pinmux, kTopEarlgreyPinmuxMioOutIoa0 + i, pad_kind));
+        pinmux, (dif_pinmux_index_t)(kTopEarlgreyPinmuxMioOutIoa0 + i),
+        pad_kind));
   }
 }
 
@@ -147,18 +144,18 @@ void gpio_init(const dif_pinmux_t *pinmux, const dif_gpio_t *gpio) {
   // Configure PINMUX to GPIO
   for (int i = 0; i < kNumGpioPads; i++) {
     CHECK_DIF_OK(dif_pinmux_input_select(
-        pinmux, kTopEarlgreyPinmuxPeripheralInGpioGpio0 + i,
-        kTopEarlgreyPinmuxInselIoa0 + i));
-    CHECK_DIF_OK(
-        dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoa0 + i,
-                                 kTopEarlgreyPinmuxOutselGpioGpio0 + i));
+        pinmux,
+        (dif_pinmux_index_t)(kTopEarlgreyPinmuxPeripheralInGpioGpio0 + i),
+        (dif_pinmux_index_t)(kTopEarlgreyPinmuxInselIoa0 + i)));
+    CHECK_DIF_OK(dif_pinmux_output_select(
+        pinmux, (dif_pinmux_index_t)(kTopEarlgreyPinmuxMioOutIoa0 + i),
+        (dif_pinmux_index_t)(kTopEarlgreyPinmuxOutselGpioGpio0 + i)));
   }
 }
 
 bool test_main(void) {
   bool result = true;
 
-  dif_pinmux_index_t detector;
   dif_pinmux_wakeup_config_t wakeup_cfg;
 
   // Default Deep Power Down

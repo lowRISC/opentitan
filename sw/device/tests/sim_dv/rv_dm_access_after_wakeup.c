@@ -56,9 +56,9 @@ void ottf_external_isr(void) {
 static void put_to_sleep(dif_pwrmgr_t *pwrmgr, bool deep_sleep) {
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(pwrmgr, &cfg));
-  cfg = cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
-               kDifPwrmgrDomainOptionUsbClockInLowPower |
-               kDifPwrmgrDomainOptionUsbClockInActivePower) |
+  cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
+                kDifPwrmgrDomainOptionUsbClockInLowPower |
+                kDifPwrmgrDomainOptionUsbClockInActivePower)) |
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
 
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(

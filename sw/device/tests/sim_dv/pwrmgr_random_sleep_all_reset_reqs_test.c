@@ -240,8 +240,8 @@ static void config_escalate(dif_aon_timer_t *aon_timer,
       udiv64_slow(kWdogBiteMicros * kClockFreqAonHz, 1000000, NULL) *
       alert_handler_testutils_cycle_rescaling_factor();
 
-  CHECK(bite_cycles < UINT32_MAX,
-        "The value %u can't fit into the 32 bits timer counter.", bite_cycles);
+  CHECK(bark_cycles <= UINT32_MAX, "bark_cycles must fit into uint32_t");
+  CHECK(bite_cycles <= UINT32_MAX, "bite_cycles must fit into uint32_t");
 
   LOG_INFO(
       "Wdog will bark after %u/%u us/cycles and bite after %u/%u us/cycles",
@@ -249,8 +249,8 @@ static void config_escalate(dif_aon_timer_t *aon_timer,
       (uint32_t)kWdogBiteMicros, (uint32_t)bite_cycles);
 
   // Setup the wdog bark and bite timeouts.
-  CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(aon_timer, bark_cycles,
-                                                      bite_cycles, false));
+  CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(
+      aon_timer, (uint32_t)bark_cycles, (uint32_t)bite_cycles, false));
 
   // Trigger the alert handler to escalate.
   dif_pwrmgr_alert_t alert = kDifPwrmgrAlertFatalFault;
@@ -350,34 +350,6 @@ static void config_wdog(const dif_aon_timer_t *aon_timer,
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
                                               kDifPwrmgrResetRequestSourceTwo,
                                               kDifToggleEnabled));
-}
-
-/**
- * Execute the aon timer wdog bite reset test.
- */
-static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
-                           const dif_pwrmgr_t *pwrmgr, uint64_t bark_time_us) {
-  uint64_t bite_time_us = bark_time_us * 2;
-  config_wdog(aon_timer, pwrmgr, bark_time_us, bite_time_us);
-
-  // The `intr_state` takes 3 aon clock cycles to rise plus 2 extra cycles as a
-  // precaution.
-  uint32_t wait_us =
-      bark_time_us +
-      udiv64_slow(5 * 1000000 + kClockFreqAonHz - 1, kClockFreqAonHz, NULL);
-
-  // Wait bark time and check that the bark interrupt requested.
-  busy_spin_micros(wait_us);
-  bool is_pending = false;
-  CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
-      aon_timer, kDifAonTimerIrqWdogTimerBark, &is_pending));
-  CHECK(is_pending, "Wdog bark irq did not rise after %u microseconds",
-        wait_us);
-
-  // Wait for the remaining time to the wdog bite.
-  busy_spin_micros(wait_us);
-  // If we arrive here the test must fail.
-  CHECK(false, "Timeout waiting for Wdog bite reset!");
 }
 
 /**

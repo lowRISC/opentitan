@@ -180,7 +180,7 @@ void handle_write_status(uint32_t status, uint8_t offset, uint8_t opcode) {
       &payload));
 
   status &= (0xffu << offset);
-  status |= (payload << offset);
+  status |= ((uint32_t)(payload) << offset);
   CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(&spi_device, status));
 
   CHECK_STATUS_OK(spi_flash_testutils_issue_write_enable(&spi_host0));

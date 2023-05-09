@@ -151,7 +151,7 @@ static void pinmux_connect_uart_to_pads(uint32_t rx_pin_in_idx,
   uint32_t reg_value = rx_pin_in_idx;
   // We've got one insel configuration field per register. Hence, we have to
   // convert the enumeration index into a byte address using << 2.
-  uint32_t reg_offset = rx_uart_idx << 2;
+  ptrdiff_t reg_offset = (ptrdiff_t)rx_uart_idx << 2;
   uint32_t mask = PINMUX_MIO_PERIPH_INSEL_0_IN_0_MASK;
   mmio_region_write32(reg32, reg_offset, reg_value & mask);
 
@@ -160,7 +160,7 @@ static void pinmux_connect_uart_to_pads(uint32_t rx_pin_in_idx,
   reg_value = tx_uart_idx;
   // We've got one insel configuration field per register. Hence, we have to
   // convert the enumeration index into a byte address using << 2.
-  reg_offset = tx_pin_out_idx << 2;
+  reg_offset = (ptrdiff_t)tx_pin_out_idx << 2;
   mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
   mmio_region_write32(reg32, reg_offset, reg_value & mask);
 }
@@ -287,15 +287,18 @@ static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
   LOG_INFO("Initializing the UART.");
 
   CHECK_DIF_OK(dif_uart_init(base_addr, uart));
-  CHECK_DIF_OK(
-      dif_uart_configure(uart, (dif_uart_config_t){
-                                   .baudrate = kUartBaudrate,
-                                   .clk_freq_hz = kClockFreqPeripheralHz,
-                                   .parity_enable = kDifToggleDisabled,
-                                   .parity = kDifUartParityEven,
-                                   .tx_enable = kDifToggleEnabled,
-                                   .rx_enable = kDifToggleEnabled,
-                               }));
+  CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
+  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
+        "kClockFreqPeripheralHz must fit in uint32_t");
+  CHECK_DIF_OK(dif_uart_configure(
+      uart, (dif_uart_config_t){
+                .baudrate = (uint32_t)kUartBaudrate,
+                .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                .parity_enable = kDifToggleDisabled,
+                .parity = kDifUartParityEven,
+                .tx_enable = kDifToggleEnabled,
+                .rx_enable = kDifToggleEnabled,
+            }));
 
   // Set the TX and RX watermark to 16 bytes.
   CHECK_DIF_OK(dif_uart_watermark_tx_set(uart, kDifUartWatermarkByte16));

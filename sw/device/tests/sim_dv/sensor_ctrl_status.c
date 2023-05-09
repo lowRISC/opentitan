@@ -85,7 +85,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_sensor_ctrl_irq_set_enabled(
       &sensor_ctrl, kDifSensorCtrlIrqIoStatusChange, kDifToggleEnabled));
 
-  last_io_status = -1 & io_mask;
+  last_io_status = io_mask;
   for (uint32_t i = 0; i < iterations; ++i) {
     LOG_INFO("Waiting for IO change");
     wait_for_interrupt();

@@ -32,7 +32,7 @@ static void alert_handler_config(void) {
 
   // Enable all incoming alerts and configure them to classa.
   // This alert should never fire because we do not expect any incoming alerts.
-  for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
+  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     alerts[i] = i;
     alert_classes[i] = kDifAlertHandlerClassA;
   }
@@ -40,7 +40,8 @@ static void alert_handler_config(void) {
   // Enable all local alerts and configure them to classb.
   dif_alert_handler_alert_t loc_alerts[ALERT_HANDLER_PARAM_N_LOC_ALERT];
   dif_alert_handler_class_t loc_alert_classes[ALERT_HANDLER_PARAM_N_LOC_ALERT];
-  for (int i = 0; i < ALERT_HANDLER_PARAM_N_LOC_ALERT; ++i) {
+  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_LOC_ALERT;
+       ++i) {
     loc_alerts[i] = i;
     loc_alert_classes[i] = kDifAlertHandlerClassB;
   }

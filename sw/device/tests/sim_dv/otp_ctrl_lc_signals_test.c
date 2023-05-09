@@ -93,17 +93,18 @@ static void init_peripherals(void) {
  * access to fail with a DAI access error. If exp_result is set to
  * kExpectPassed, the test expects the test to pass without errors.
  */
-static void otp_write_test(int32_t address, const uint8_t *buffer,
+static void otp_write_test(uint32_t address, const uint8_t *buffer,
                            uint32_t size, exp_test_result_t exp_result) {
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
-  for (int i = address; i < address + size; i += sizeof(uint64_t)) {
+  for (uint32_t i = address; i < address + size; i += sizeof(uint64_t)) {
     uint64_t word;
     memcpy(&word, &buffer[i], sizeof(word));
     CHECK_DIF_OK(
         dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret2, i, word));
     CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
-    CHECK_STATUS_OK(
-        otp_ctrl_testutils_dai_access_error_check(&otp, exp_result, address));
+    CHECK(address <= INT32_MAX, "address must fit into int32_t");
+    CHECK_STATUS_OK(otp_ctrl_testutils_dai_access_error_check(
+        &otp, exp_result, (int32_t)address));
   }
 }
 
@@ -116,16 +117,17 @@ static void otp_write_test(int32_t address, const uint8_t *buffer,
  * expects the test to pass without errors and the read data to match with the
  * data in the buffer.
  */
-static void otp_read_test(int32_t address, const uint8_t *buffer, uint32_t size,
-                          exp_test_result_t exp_result) {
+static void otp_read_test(uint32_t address, const uint8_t *buffer,
+                          uint32_t size, exp_test_result_t exp_result) {
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
-  for (int i = address; i < address + size; i += sizeof(uint64_t)) {
+  for (uint32_t i = address; i < address + size; i += sizeof(uint64_t)) {
     uint64_t got, exp;
     CHECK_DIF_OK(
         dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionSecret2, i));
     CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
-    CHECK_STATUS_OK(
-        otp_ctrl_testutils_dai_access_error_check(&otp, exp_result, address));
+    CHECK(address <= INT32_MAX, "address must fit into int32_t");
+    CHECK_STATUS_OK(otp_ctrl_testutils_dai_access_error_check(
+        &otp, exp_result, (int32_t)address));
 
     // Check whether the read data matches.
     memcpy(&exp, &buffer[i], sizeof(exp));
@@ -145,7 +147,7 @@ static void otp_read_test(int32_t address, const uint8_t *buffer, uint32_t size,
 /**
  * Test wrapper function that first calls the write and then the read test.
  */
-static void otp_write_read_test(test_mode_t test_mode, int32_t address,
+static void otp_write_read_test(test_mode_t test_mode, uint32_t address,
                                 const uint8_t *buffer, uint32_t size,
                                 exp_test_result_t exp_result) {
   if (test_mode == kWriteMode || test_mode == kWriteReadMode) {

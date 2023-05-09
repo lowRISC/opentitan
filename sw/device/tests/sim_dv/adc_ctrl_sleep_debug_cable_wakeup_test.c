@@ -116,13 +116,13 @@ bool test_main(void) {
                                             kDifToggleEnabled));
 
   uint16_t channel0_filter0_max =
-      (kChannel0MaxHighByte << 8) | kChannel0MaxLowByte;
+      (uint16_t)(kChannel0MaxHighByte << 8) | kChannel0MaxLowByte;
   uint16_t channel0_filter0_min =
-      (kChannel0MinHighByte << 8) | kChannel0MinLowByte;
+      (uint16_t)(kChannel0MinHighByte << 8) | kChannel0MinLowByte;
   uint16_t channel1_filter0_max =
-      (kChannel1MaxHighByte << 8) | kChannel1MaxLowByte;
+      (uint16_t)(kChannel1MaxHighByte << 8) | kChannel1MaxLowByte;
   uint16_t channel1_filter0_min =
-      (kChannel1MinHighByte << 8) | kChannel1MinLowByte;
+      (uint16_t)(kChannel1MinHighByte << 8) | kChannel1MinLowByte;
 
   // Assuming the chip hasn't slept yet, wakeup reason should be empty.
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {

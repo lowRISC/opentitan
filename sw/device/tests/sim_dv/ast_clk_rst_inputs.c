@@ -48,8 +48,6 @@ static volatile const uint8_t kChannel1MaxHighByte;
 static volatile const uint8_t kChannel1MinLowByte;
 static volatile const uint8_t kChannel1MinHighByte;
 
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
-
 static dif_sensor_ctrl_t sensor_ctrl;
 static dif_alert_handler_t alert_handler;
 static dif_aon_timer_t aon_timer;
@@ -58,22 +56,12 @@ static dif_rv_plic_t plic;
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_entropy_src_t entropy_src;
-static dif_pwrmgr_wakeup_reason_t wakeup_reason;
 
 static dif_clkmgr_t clkmgr;
 static dif_adc_ctrl_t adc_ctrl;
 
 static volatile bool interrupt_serviced = false;
 static bool first_adc_setup = true;
-
-static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
-
-static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
-    .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-    .expected_irq = kDifPwrmgrIrqWakeup,
-    .is_only_irq = true};
 
 enum {
   /**
@@ -215,12 +203,13 @@ static void configure_adc_ctrl(const dif_adc_ctrl_t *adc_ctrl) {
   CHECK_DIF_OK(dif_adc_ctrl_set_enabled(adc_ctrl, kDifToggleDisabled));
   CHECK_DIF_OK(dif_adc_ctrl_reset(adc_ctrl));
   CHECK_DIF_OK(dif_adc_ctrl_configure(
-      adc_ctrl, (dif_adc_ctrl_config_t){
-                    .mode = kDifAdcCtrlLowPowerScanMode,
-                    .num_low_power_samples = kNumLowPowerSamples,
-                    .num_normal_power_samples = kNumNormalPowerSamples,
-                    .power_up_time_aon_cycles = power_up_time_aon_cycles + 1,
-                    .wake_up_time_aon_cycles = wake_up_time_aon_cycles}));
+      adc_ctrl,
+      (dif_adc_ctrl_config_t){
+          .mode = kDifAdcCtrlLowPowerScanMode,
+          .num_low_power_samples = kNumLowPowerSamples,
+          .num_normal_power_samples = kNumNormalPowerSamples,
+          .power_up_time_aon_cycles = (uint8_t)power_up_time_aon_cycles + 1,
+          .wake_up_time_aon_cycles = wake_up_time_aon_cycles}));
 }
 
 static void en_plic_irqs(dif_rv_plic_t *plic) {
@@ -246,13 +235,13 @@ void adc_setup(bool first_adc_setup) {
                                             kDifToggleEnabled));
 
   uint16_t channel0_filter0_max =
-      (kChannel0MaxHighByte << 8) | kChannel0MaxLowByte;
+      ((uint16_t)(kChannel0MaxHighByte << 8)) | kChannel0MaxLowByte;
   uint16_t channel0_filter0_min =
-      (kChannel0MinHighByte << 8) | kChannel0MinLowByte;
+      ((uint16_t)(kChannel0MinHighByte << 8)) | kChannel0MinLowByte;
   uint16_t channel1_filter0_max =
-      (kChannel1MaxHighByte << 8) | kChannel1MaxLowByte;
+      ((uint16_t)(kChannel1MaxHighByte << 8)) | kChannel1MaxLowByte;
   uint16_t channel1_filter0_min =
-      (kChannel1MinHighByte << 8) | kChannel1MinLowByte;
+      ((uint16_t)(kChannel1MinHighByte << 8)) | kChannel1MinLowByte;
 
   if (first_adc_setup) {
     // Setup ADC configuration.
@@ -312,8 +301,7 @@ void ast_enter_sleep_states_and_check_functionality(
     dif_pwrmgr_domain_config_t pwrmgr_config,
     dif_entropy_src_config_t entropy_src_config, uint32_t alert_idx) {
   bool deepsleep;
-  int read_fifo_depth_val;
-  bool clock_check_status;
+  uint32_t read_fifo_depth_val = 0;
   uint32_t unhealthy_fifos, errors, alerts;
 
   const dif_edn_t edn0 = {
@@ -523,11 +511,6 @@ void ottf_external_isr(void) {
 }
 
 bool test_main() {
-  uint32_t event_idx;
-  int idx = 1;
-  int read_fifo_depth_val;
-
-  bool deepsleep;
   dif_pwrmgr_domain_config_t pwrmgr_config;
 
   const dif_entropy_src_config_t entropy_src_config = {
