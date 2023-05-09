@@ -53,23 +53,6 @@ config_setting(
     },
 )
 
-config_setting(
-    name = "bitstream_custom",
-    define_values = {
-        "bitstream": "custom",
-    },
-)
-
-filegroup(
-    name = "the_bitstream",
-    srcs = select({
-        "bitstream_custom": ["mybistream.bit"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_bitstream"],
-    }),
-    tags = ["manual"],
-)
-
-
 filegroup(
     name = "test_rom",
     testonly = True,
@@ -135,7 +118,7 @@ filegroup(
 bitstream_splice(
     name = "gcp_spliced_test_rom",
     testonly = True,
-    src = ":the_bitstream",
+    src = "@bitstreams//:chip_earlgrey_cw310_bitstream",
     data = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
@@ -147,7 +130,7 @@ bitstream_splice(
 bitstream_splice(
     name = "gcp_spliced_rom",
     testonly = True,
-    src = ":the_bitstream",
+    src = "@bitstreams//:chip_earlgrey_cw310_bitstream",
     data = "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
