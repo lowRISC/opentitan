@@ -35,14 +35,14 @@ module clkmgr_trans
   // Note this value is specifically chosen.
   // The binary value is 1010, which is a balanced 4-bit value
   // that should in theory be resistant to all 0 or all 1 attacks.
-  localparam int TransIdleCnt = 10;
+  localparam int unsigned TransIdleCnt = 10;
   localparam int IdleCntWidth = $clog2(TransIdleCnt + 1);
 
   logic [IdleCntWidth-1:0] idle_cnt;
   logic idle_valid;
   logic sw_hint_synced;
   logic local_en;
-  assign idle_valid = (idle_cnt == TransIdleCnt);
+  assign idle_valid = (idle_cnt == IdleCntWidth'(TransIdleCnt));
   assign local_en = sw_hint_synced | ~idle_valid;
 
   prim_flop_2sync #(
