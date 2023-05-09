@@ -38,6 +38,7 @@ enum {
   kProductIdReg = 0xDD,
   kRxDelayReg = 0xDC,
   kTxDelayReg = 0xDB,
+  kCache63BitsReg = 0xCF,
   // Registers values
   kManufacturerId = 0xA1,
   kProductId = 0xA2,
@@ -161,6 +162,49 @@ static status_t rx_stretch_timeout(void) {
     TRY(dif_i2c_reset_rx_fifo(&i2c));
   }
 
+  TRY(dif_i2c_reset_rx_fifo(&i2c));
+
+  return OK_STATUS();
+}
+
+static status_t tx_stretch(void) {
+  enum { kTimeoutMillis = 1, kTxSize = 63 };
+
+  // Set the delay that will make the target to stretch the clock.
+  {
+    uint8_t write_buffer[2] = {kTxDelayReg, kTimeoutMillis};
+    TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(write_buffer),
+                            write_buffer, true));
+  }
+
+  // Init buffer with random data.
+  uint8_t rnd_data[kTxSize];
+  for (int i = 0; i < sizeof(rnd_data); ++i) {
+    uint32_t rand;
+    TRY(rv_core_ibex_testutils_get_rnd_data(&rv_core_ibex, 1000, &rand));
+    rnd_data[i] = rand & 0xFF;
+  }
+  uint8_t write_buffer[kTxSize + 1];
+  write_buffer[0] = kCache63BitsReg;
+  memcpy(&write_buffer[1], rnd_data, sizeof(rnd_data));
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(write_buffer), write_buffer,
+                          false));
+  // The transmission may take a long time due to the clock stretching.
+  busy_spin_micros((kTimeoutMillis * kTxSize) * 1000);
+
+  uint8_t reg = kCache63BitsReg;
+  uint8_t read_data[kTxSize] = {0};
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(reg), &reg, true));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), read_data));
+  TRY_CHECK_ARRAYS_EQ(read_data, rnd_data, sizeof(read_data));
+
+  // Reset the delay to disable clock stretching.
+  {
+    uint8_t write_buffer[2] = {kTxDelayReg, 0};
+    TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(write_buffer),
+                            write_buffer, true));
+  }
+
   return OK_STATUS();
 }
 
@@ -204,6 +248,7 @@ bool test_main(void) {
     EXECUTE_TEST(test_result, read_manufacture_id);
     EXECUTE_TEST(test_result, read_product_id);
     EXECUTE_TEST(test_result, rx_stretch_timeout);
+    EXECUTE_TEST(test_result, tx_stretch);
   }
 
   return status_ok(test_result) && status_ok(isr_result);
