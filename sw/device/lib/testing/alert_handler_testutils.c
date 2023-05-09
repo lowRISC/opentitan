@@ -47,9 +47,10 @@ status_t alert_handler_testutils_info_parse(
   }
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
     info->class_accum_cnt[i] =
-        get_next_n_bits(16, dump, &word_index, &bit_index);
+        (uint16_t)get_next_n_bits(16, dump, &word_index, &bit_index);
   }
-  info->loc_alert_cause = get_next_n_bits(7, dump, &word_index, &bit_index);
+  info->loc_alert_cause =
+      (uint8_t)get_next_n_bits(7, dump, &word_index, &bit_index);
   TRY_CHECK(word_index < dump_size);
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     info->alert_cause[i] = get_next_n_bits(1, dump, &word_index, &bit_index);

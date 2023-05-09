@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/testing/csrng_testutils.h"
 
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -66,9 +67,10 @@ status_t csrng_testutils_kat_instantiate(
                             seed_material));
 
   // Check the internal state of created CSRNG instance.
-  const dif_csrng_internal_state_t kZeroState = {};
+  dif_csrng_internal_state_t zero_state;
+  memset(&zero_state, 0, sizeof(zero_state));
   return csrng_testutils_check_internal_state(
-      csrng, fail_expected ? &kZeroState : expected_state);
+      csrng, fail_expected ? &zero_state : expected_state);
 }
 
 status_t csrng_testutils_kat_generate(

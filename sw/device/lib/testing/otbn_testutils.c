@@ -66,8 +66,8 @@ static void check_app_address_ranges(const otbn_app_t *app) {
 status_t otbn_testutils_load_app(const dif_otbn_t *otbn, const otbn_app_t app) {
   check_app_address_ranges(&app);
 
-  const size_t imem_size = app.imem_end - app.imem_start;
-  const size_t data_size = app.dmem_data_end - app.dmem_data_start;
+  const size_t imem_size = (size_t)(app.imem_end - app.imem_start);
+  const size_t data_size = (size_t)(app.dmem_data_end - app.dmem_data_start);
 
   // Memory images and offsets must be multiples of 32b words.
   TRY_CHECK(imem_size % sizeof(uint32_t) == 0);
@@ -106,7 +106,8 @@ status_t otbn_dump_dmem(const dif_otbn_t *otbn, uint32_t max_addr) {
     max_addr = dif_otbn_get_dmem_size_bytes(otbn);
   }
 
-  for (int i = 0; i < max_addr; i += kOtbnWlenBytes) {
+  TRY_CHECK(max_addr <= UINT32_MAX, "max_addr must fit in uint32_t");
+  for (uint32_t i = 0; i < max_addr; i += kOtbnWlenBytes) {
     uint32_t data[kOtbnWlenBytes / sizeof(uint32_t)];
     TRY(dif_otbn_dmem_read(otbn, i, data, kOtbnWlenBytes));
     LOG_INFO("DMEM @%04d: 0x%08x%08x%08x%08x%08x%08x%08x%08x",

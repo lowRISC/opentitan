@@ -9,8 +9,10 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_hmac.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 /**
  * Timeouts to be used for different HMAC operations.
@@ -32,8 +34,13 @@
  *
  * single HMAC block compression takes 80 cycles.
  */
-#define HMAC_TESTUTILS_FIFO_EMPTY_USEC \
-  (udiv64_slow((80 + 10) * 1000000, kClockFreqCpuHz, NULL) + 1)
+static inline status_t compute_hmac_testutils_fifo_empty_usec(
+    uint32_t *out_usec) {
+  uint64_t result = udiv64_slow((80 + 10) * 1000000, kClockFreqCpuHz, NULL) + 1;
+  TRY_CHECK(result <= UINT32_MAX, "timeout must fit in uint32_t");
+  *out_usec = result;
+  return OK_STATUS();
+}
 
 /**
  * HMAC done timeout.
@@ -41,8 +48,14 @@
  * Final hash calculation takes 360 cycles, which consists of one block
  * compression and extra HMAC computation.
  */
-#define HMAC_TESTUTILS_FINISH_TIMEOUT_USEC \
-  (udiv64_slow((360 + 10) * 1000000, kClockFreqCpuHz, NULL) + 1)
+static inline status_t compute_hmac_testutils_finish_timeout_usec(
+    uint32_t *out_usec) {
+  uint64_t result =
+      udiv64_slow((360 + 10) * 1000000, kClockFreqCpuHz, NULL) + 1;
+  TRY_CHECK(result <= UINT32_MAX, "timeout must fit in uint32_t");
+  *out_usec = result;
+  return OK_STATUS();
+}
 
 /**
  * Reference key and tag for testing from NIST.

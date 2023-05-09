@@ -16,7 +16,8 @@
  * FreeRTOSConfig.h, and a call to pvPortMalloc() fails.
  */
 void vApplicationMallocFailedHook(void) {
-  LOG_INFO("FreeRTOS malloc failed. Increase heap size in FreeRTOSConfig.h");
+  LOG_INFO("%s",
+           "FreeRTOS malloc failed. Increase heap size in FreeRTOSConfig.h");
   irq_global_ctrl(false);
   abort();
 }
@@ -26,7 +27,8 @@ void vApplicationMallocFailedHook(void) {
  * FreeRTOSConfig.h, and a task detects a stack overflow.
  */
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
-  LOG_INFO("FreeRTOS stack overflow. Increase stack size of task: %s");
+  LOG_INFO("FreeRTOS stack overflow. Increase stack size of task: %s",
+           pcTaskName);
   irq_global_ctrl(false);
   abort();
 }

@@ -39,7 +39,8 @@ status_t spi_flash_testutils_read_id(dif_spi_host_t *spih,
     ++page;
   }
   TRY_CHECK(page + 3 <= sizeof(buffer));
-  id->continuation_len = page;
+  TRY_CHECK(page <= UINT8_MAX);
+  id->continuation_len = (uint8_t)page;
   id->manufacturer_id = buffer[page];
   id->device_id = buffer[page + 1];
   id->device_id |= (uint16_t)buffer[page + 2] << 8;
@@ -110,7 +111,7 @@ status_t spi_flash_testutils_read_status(dif_spi_host_t *spih, uint8_t opcode,
   };
   TRY(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
                                ARRAYSIZE(transaction)));
-  return OK_STATUS(status);
+  return OK_STATUS((int32_t)status);
 }
 
 status_t spi_flash_testutils_write_status(dif_spi_host_t *spih, uint8_t opcode,
@@ -140,7 +141,7 @@ status_t spi_flash_testutils_write_status(dif_spi_host_t *spih, uint8_t opcode,
 
 status_t spi_flash_testutils_wait_until_not_busy(dif_spi_host_t *spih) {
   TRY_CHECK(spih != NULL);
-  uint32_t status;
+  int32_t status;
 
   do {
     status = TRY(
@@ -322,7 +323,7 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
       // QE is bit1 of status reg 2.
       // Set/clear via two-byte reads/writes via SR1 opcodes.
       // Writing only one byte to SR1 clears SR2.
-      status = TRY(spi_flash_testutils_read_status(
+      status = (uint32_t)TRY(spi_flash_testutils_read_status(
           spih, kSpiDeviceFlashOpReadStatus1, 2));
       status = bitfield_bit32_write(status, 9, enabled);
       TRY(spi_flash_testutils_write_status(spih, kSpiDeviceFlashOpWriteStatus1,
@@ -330,7 +331,7 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
       break;
     case 2:
       // QE is bit6 of status reg 1.
-      status = TRY(spi_flash_testutils_read_status(
+      status = (uint32_t)TRY(spi_flash_testutils_read_status(
           spih, kSpiDeviceFlashOpReadStatus1, 1));
       status = bitfield_bit32_write(status, 6, enabled);
       TRY(spi_flash_testutils_write_status(spih, kSpiDeviceFlashOpWriteStatus1,
@@ -339,7 +340,7 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
     case 3:
       // QE is bit7 of status reg 2.
       // Use "status register 2" opcodes.
-      status = TRY(spi_flash_testutils_read_status(
+      status = (uint32_t)TRY(spi_flash_testutils_read_status(
           spih, kSpiDeviceFlashOpReadStatus2, 1));
       status = bitfield_bit32_write(status, 7, enabled);
       TRY(spi_flash_testutils_write_status(spih, kSpiDeviceFlashOpWriteStatus2,
@@ -349,7 +350,7 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
       // QE is bit1 of status reg 2.
       // Set/clear via two-byte reads/writes via SR1 opcodes.
       // Writing only one byte to SR1 does not affcet SR2.
-      status = TRY(spi_flash_testutils_read_status(
+      status = (uint32_t)TRY(spi_flash_testutils_read_status(
           spih, kSpiDeviceFlashOpReadStatus1, 2));
       status = bitfield_bit32_write(status, 9, enabled);
       TRY(spi_flash_testutils_write_status(spih, kSpiDeviceFlashOpWriteStatus1,
@@ -359,11 +360,11 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
       // QE is bit1 of status reg 2.
       // Requires reading status reg via SR1/SR2 opcodes.
       // Set/clear via two-byte reads/writes via SR1 opcodes.
-      status = TRY(spi_flash_testutils_read_status(
+      status = (uint32_t)TRY(spi_flash_testutils_read_status(
           spih, kSpiDeviceFlashOpReadStatus1, 1));
-      status |= TRY(spi_flash_testutils_read_status(
-                    spih, kSpiDeviceFlashOpReadStatus2, 1))
-                << 8;
+      status |= (uint32_t)(TRY(spi_flash_testutils_read_status(
+                               spih, kSpiDeviceFlashOpReadStatus2, 1))
+                           << 8);
       status = bitfield_bit32_write(status, 9, enabled);
       TRY(spi_flash_testutils_write_status(spih, kSpiDeviceFlashOpWriteStatus1,
                                            status, 2));
@@ -372,7 +373,7 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
       // QE is bit1 of status reg 2.
       // Requires reading status reg via SR1/SR2/SR3 opcodes.
       // Set/clear via one-byte writes via SR2 opcode.
-      status = TRY(spi_flash_testutils_read_status(
+      status = (uint32_t)TRY(spi_flash_testutils_read_status(
           spih, kSpiDeviceFlashOpReadStatus2, 1));
       status = bitfield_bit32_write(status, 1, enabled);
       TRY(spi_flash_testutils_write_status(spih, kSpiDeviceFlashOpWriteStatus2,
