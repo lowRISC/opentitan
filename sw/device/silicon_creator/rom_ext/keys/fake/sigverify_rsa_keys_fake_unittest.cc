@@ -99,8 +99,10 @@ const RsaVerifyTestCase kRsaVerifyTestCases[2]{
     // message: "test"
     {
         .key = &kSigverifyRsaKeys[0].key,
-        // echo -n "test" | openssl dgst -sha256 -keyform DER -sign \
-        // rom_ext_test_key_0_rsa_3072_exp_f4.der -hex
+        /*
+         * echo -n "test" | openssl dgst -sha256 -keyform DER -sign \
+         *   rom_ext_test_key_0_rsa_3072_exp_f4.der -hex
+         */
         .sig =
             {
                 0x0a43b030, 0xa82d7c33, 0xb9b1228a, 0x5a0f8892, 0xaa58c077,
@@ -127,8 +129,10 @@ const RsaVerifyTestCase kRsaVerifyTestCases[2]{
     },
     {
         .key = &kSigverifyRsaKeys[1].key,
-        // echo -n "test" | openssl dgst -sha256 -keyform DER -sign \
-        // rom_ext_dev_key_0_rsa_3072_exp_f4.der -hex
+        /*
+         * echo -n "test" | openssl dgst -sha256 -keyform DER -sign \
+         *   rom_ext_dev_key_0_rsa_3072_exp_f4.der -hex
+         */
         .sig =
             {
                 0x6e317a1c, 0x9068313e, 0x3f9610c1, 0x261cb66b, 0x0d6f49c6,
