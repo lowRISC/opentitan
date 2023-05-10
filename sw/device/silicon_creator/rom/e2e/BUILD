@@ -73,22 +73,6 @@ otp_json(
             name = "CREATOR_SW_CFG",
             items = {
                 "CREATOR_SW_CFG_ROM_EXEC_EN": "0xffffffff",
-                # Enable use of entropy for countermeasures. See the definition
-                # of `hardened_bool_t` in sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_RNG_EN": "0x739",
-                # Entropy source health check default values. This needs to be
-                # populated when `CREATOR_SW_CFG_RNG_EN` is set to true.
-                "CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS": "0xffffffff",
-                "CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS": "0xffffffff",
-                "CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS": "0xffffffff",
-                "CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS": "0x0",
-                "CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS": "0xffffffff",
-                "CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS": "0xffffffff",
-                "CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS": "0x0",
-                "CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS": "0xffffffff",
-                "CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS": "0x0",
-                "CREATOR_SW_CFG_RNG_ALERT_THRESHOLD": "0xfffd0002",
-                "CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST": "0x8264cf75",
             },
         ),
         otp_partition(
