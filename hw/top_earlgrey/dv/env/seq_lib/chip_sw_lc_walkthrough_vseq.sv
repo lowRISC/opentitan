@@ -29,6 +29,10 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
 
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset();
+    // Wait for `rom_ctrl` to complete the ROM check. This will give the dut
+    // enough time to configure the TAP interface before any JTAG agents send
+    // any commands.
+    wait_rom_check_done();
     set_otp_creator_sw_cfg_rom_exec_en(1);
   endtask
 
