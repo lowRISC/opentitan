@@ -34,10 +34,19 @@ module spi_cmdparse
   output io_mode_e io_mode_o,
 
   // Activate downstream modules
+  // sel_dp_o is a function of registered outputs, latched on posedge SCK
+  // cmd_only_* pins are combinatorial functions of inputs, selecting modules
+  //   before the 8th posedge SCK, for example. They are available for commands
+  //   that may complete with only the command's 8 cycles and no more. They must
+  //   NOT be used to drive direct outputs, nor calculate inputs for flops on
+  //   negedge SCK.
   // cmd_info_o is a registered output, latched at 8th posedge SCK
   output sel_datapath_e          sel_dp_o,
+  output sel_datapath_e          cmd_only_sel_dp_o,
   output cmd_info_t              cmd_info_o,
   output logic [CmdInfoIdxW-1:0] cmd_info_idx_o,
+  output cmd_info_t              cmd_only_info_o,
+  output logic [CmdInfoIdxW-1:0] cmd_only_info_idx_o,
 
   // CFG: Intercept
   input cfg_intercept_en_status_i,
@@ -136,6 +145,10 @@ module spi_cmdparse
   assign sel_dp_o = sel_dp;
   `ASSERT_KNOWN(SelDpKnown_A, sel_dp_o)
 
+  sel_datapath_e cmd_only_sel_dp;
+  assign cmd_only_sel_dp_o = cmd_only_sel_dp;
+  `ASSERT_KNOWN(CmdOnlySelDpKnown_A, cmd_only_sel_dp_o)
+
   // FSM asserts latching enable signal for cmd_info in 8th opcode cycle.
   logic                   latch_cmdinfo;
   cmd_info_t              cmd_info_d,     cmd_info_q;
@@ -233,6 +246,8 @@ module spi_cmdparse
   // cmd_info & cmd_info_idx are registered output in the cmdparse module.
   // The upload module in SPI_DEVICE uses cmd_info to determine if the address
   // field exists or not.
+  assign cmd_info_o     = cmd_info_q;
+  assign cmd_info_idx_o = cmd_info_idx_q;
 
   // The cmd_info value arrives to the rest of the module one clock late. It
   // results in the upload module to assume the command does not have the
@@ -240,13 +255,17 @@ module spi_cmdparse
 
   // This commit pulls in the cmd_info one clock early. It leads to longer
   // datapath as cmdparse cannot register the data.
-  always_comb begin : cmd_info_output
-    cmd_info_o     = cmd_info_q;
-    cmd_info_idx_o = cmd_info_idx_q;
+  always_comb begin : cmd_only_info_output
+    cmd_only_info_o = '{
+      payload_dir: payload_dir_e'(PayloadIn),
+      addr_mode: addr_mode_e'(0),
+      default: '0
+    };
+    cmd_only_info_idx_o = '0;
 
     if ((st == StIdle) && module_active && data_valid_i) begin
-      cmd_info_o     = cmd_info_d;
-      cmd_info_idx_o = cmd_info_idx_d;
+      cmd_only_info_o     = cmd_info_d;
+      cmd_only_info_idx_o = cmd_info_idx_d;
     end
   end
 
@@ -287,6 +306,7 @@ module spi_cmdparse
     st_d = st;
 
     sel_dp = DpNone;
+    cmd_only_sel_dp = DpNone;
 
     latch_cmdinfo = 1'b 0;
 
@@ -343,36 +363,21 @@ module spi_cmdparse
 
             upload: begin
               st_d = StUpload;
-
-              // Reason to select dp here is for Opcode-only commands such as
-              // ChipErase. As no further SCK is given after 8th bit, need to
-              // write the command to FIFO at the same cycle.
-              //
-              // May sel_dp have glitch. As Opcode isn't yet fully stable, it
-              // has a chance to select datapath to Upload and back to None.
-              // If we can write opcode in negedge of SCK, then selecting DP
-              // at 8th posedge of SCK is also possible.
-              //
-              // If not, then we may end up latch `sel_dp` at negedge of SCK.
-              // Then when 8th bit is visible here (`data_valid_i`), the
-              // sel_dp may change. But the output of sel_dp affects only when
-              // 8th negedge of SCK.
-
-              sel_dp = DpUpload;
+              cmd_only_sel_dp = DpUpload;
             end
 
             opcode_en4b, opcode_ex4b: begin
               st_d = StAddr4B;
 
               // opcode only commands. Need to assert DP before transition
-              sel_dp = (opcode_en4b) ? DpEn4B : DpEx4B ;
+              cmd_only_sel_dp = (opcode_en4b) ? DpEn4B : DpEx4B ;
             end
 
             opcode_wren, opcode_wrdi: begin
               st_d = StWrEn;
 
               // opcode only commands. Need to assert DP before transition
-              sel_dp = (opcode_wren) ? DpWrEn : DpWrDi ;
+              cmd_only_sel_dp = (opcode_wren) ? DpWrEn : DpWrDi ;
             end
 
             default: begin

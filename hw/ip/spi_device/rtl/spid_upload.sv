@@ -61,6 +61,7 @@ module spid_upload
   input sys_csb_deasserted_pulse_i,
 
   input sel_datapath_e sel_dp_i,
+  input sel_datapath_e cmd_only_sel_dp_i,
 
   // Sram access: (CMDFIFO/ ADDRFIFO/ PAYLOADBUFFER)
   output sram_l2m_t sck_sram_o,
@@ -99,8 +100,8 @@ module spid_upload
 
   input logic cfg_addr_4b_en_i,
 
-  input cmd_info_t              cmd_info_i,
-  input logic [CmdInfoIdxW-1:0] cmd_info_idx_i,
+  input cmd_info_t              cmd_only_info_i,
+  input logic [CmdInfoIdxW-1:0] cmd_only_info_idx_i,
 
   output io_mode_e io_mode_o,
 
@@ -131,6 +132,9 @@ module spid_upload
   // Upload works in Flash and Passthrough both.
   spi_mode_e unused_spi_mode;
   assign unused_spi_mode = spi_mode_i;
+
+  sel_datapath_e unused_sel_dp;
+  assign unused_sel_dp = sel_dp_i;
 
   assign p2s_valid_o = 1'b 0;
   assign p2s_data_o  = '0;
@@ -207,16 +211,16 @@ module spid_upload
 
   logic unused_cmdinfo;
   assign unused_cmdinfo = ^{
-    cmd_info_i.valid,         // cmdparse checks the valid bit
-    cmd_info_i.addr_swap_en,
-    cmd_info_i.dummy_en,
-    cmd_info_i.dummy_size,
-    cmd_info_i.mbyte_en,
-    cmd_info_i.opcode,
-    cmd_info_i.payload_dir,
-    cmd_info_i.payload_en,
-    cmd_info_i.payload_swap_en,
-    cmd_info_i.upload
+    cmd_only_info_i.valid,         // cmdparse checks the valid bit
+    cmd_only_info_i.addr_swap_en,
+    cmd_only_info_i.dummy_en,
+    cmd_only_info_i.dummy_size,
+    cmd_only_info_i.mbyte_en,
+    cmd_only_info_i.opcode,
+    cmd_only_info_i.payload_dir,
+    cmd_only_info_i.payload_en,
+    cmd_only_info_i.payload_swap_en,
+    cmd_only_info_i.upload
   };
 
   // Address latch
@@ -227,14 +231,14 @@ module spid_upload
 
   // unused
   logic unused_cmdinfo_idx;
-  assign unused_cmdinfo_idx = ^cmd_info_idx_i;
+  assign unused_cmdinfo_idx = ^cmd_only_info_idx_i;
 
   //////////////
   // Datapath //
   //////////////
 
   // Command info process
-  assign cmdinfo_addr_mode = get_addr_mode(cmd_info_i.addr_mode, cfg_addr_4b_en_i);
+  assign cmdinfo_addr_mode = get_addr_mode(cmd_only_info_i.addr_mode, cfg_addr_4b_en_i);
   assign cmdinfo_addr_en   = cmdinfo_addr_mode != AddrDisabled;
 
   assign cmdinfo_addr_4b_en = cmdinfo_addr_mode == Addr4B;
@@ -447,7 +451,7 @@ module spid_upload
 
     unique case (st_q)
       StIdle: begin
-        if (s2p_valid_i && sel_dp_i == DpUpload) begin
+        if (s2p_valid_i && cmd_only_sel_dp_i == DpUpload) begin
           if (cmdinfo_addr_en) begin
             st_d = StAddress;
 
@@ -462,7 +466,7 @@ module spid_upload
 
           // Assume cmdfifo_wready is 1 always (need to add assumption)
 
-          if (cmd_info_i.busy) begin
+          if (cmd_only_info_i.busy) begin
             // Set BUSY
             set_busy_o = 1'b 1;
           end

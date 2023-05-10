@@ -270,7 +270,7 @@ module spi_device
   logic [31:0] readbuf_addr_busclk;
 
   // CMD interface
-  sel_datapath_e cmd_dp_sel, cmd_dp_sel_outclk;
+  sel_datapath_e cmd_dp_sel, cmd_only_dp_sel;
 
   // Mailbox in Passthrough needs to take SPI if readcmd hits mailbox address
   logic intercept_en;
@@ -306,6 +306,10 @@ module spi_device
   // and latches the cmd_info and broadcast to submodules
   cmd_info_t                  cmd_info_broadcast;
   logic [CmdInfoIdxW-1:0]     cmd_info_idx_broadcast;
+  // Combinatorial output of selected cmd_info, to be used with modules that
+  // need the values before the 8th posedge of the command.
+  cmd_info_t                  cmd_only_info_broadcast;
+  logic [CmdInfoIdxW-1:0]     cmd_only_info_idx_broadcast;
 
   // CSb edge detector in the system clock and SPI input clock
   // SYS clock assertion can be detected but no usage for the event yet.
@@ -1160,11 +1164,6 @@ module spi_device
     else            io_mode_outclk <= io_mode;
   end
 
-  always_ff @(posedge clk_spi_out_buf or negedge rst_spi_n) begin
-    if (!rst_spi_n) cmd_dp_sel_outclk <= DpNone;
-    else            cmd_dp_sel_outclk <= cmd_dp_sel;
-  end
-
   // SCK clock domain MUX for SRAM access for Flash and Passthrough
   always_comb begin
     flash_sram_l2m = '{ default: '0 };
@@ -1191,8 +1190,14 @@ module spi_device
       end
 
       default: begin
-        // DpNone, DpReadStatus, DpReadJEDEC
-        flash_sram_l2m = '{default: '0 };
+        if (cmd_only_dp_sel == DpUpload) begin
+          // Be ready to upload commands on the 8th command bit, when directed
+          flash_sram_l2m = sub_sram_l2m[IoModeUpload];
+          sub_sram_m2l[IoModeUpload] = flash_sram_m2l;
+        end else begin
+          // DpNone, DpReadStatus, DpReadJEDEC
+          flash_sram_l2m = '{default: '0 };
+        end
       end
     endcase
   end
@@ -1237,7 +1242,7 @@ module spi_device
         mem_b_l2m = flash_sram_l2m;
         flash_sram_m2l = mem_b_m2l;
 
-        unique case (cmd_dp_sel_outclk)
+        unique case (cmd_dp_sel)
           DpNone: begin
             io_mode = sub_iomode[IoModeCmdParse];
 
@@ -1460,9 +1465,12 @@ module spi_device
 
     .io_mode_o    (sub_iomode[IoModeCmdParse]),
 
-    .sel_dp_o       (cmd_dp_sel),
-    .cmd_info_o     (cmd_info_broadcast),
-    .cmd_info_idx_o (cmd_info_idx_broadcast),
+    .sel_dp_o          (cmd_dp_sel),
+    .cmd_only_sel_dp_o (cmd_only_dp_sel),
+    .cmd_info_o        (cmd_info_broadcast),
+    .cmd_info_idx_o    (cmd_info_idx_broadcast),
+    .cmd_only_info_o     (cmd_only_info_broadcast),
+    .cmd_only_info_idx_o (cmd_only_info_idx_broadcast),
 
     .cfg_intercept_en_status_i (cfg_intercept_en.status),
     .cfg_intercept_en_jedec_i  (cfg_intercept_en.jedec),
@@ -1536,8 +1544,8 @@ module spi_device
   assign hw2reg.flash_status.busy.d   = readstatus_d[0];
   assign hw2reg.flash_status.status.d = readstatus_d[23:1];
 
-  assign sck_status_wr_set = (cmd_dp_sel == DpWrEn);
-  assign sck_status_wr_clr = (cmd_dp_sel == DpWrDi);
+  assign sck_status_wr_set = (cmd_only_dp_sel == DpWrEn);
+  assign sck_status_wr_clr = (cmd_only_dp_sel == DpWrDi);
 
   spid_status u_spid_status (
     .clk_i  (clk_spi_in_buf),
@@ -1634,7 +1642,8 @@ module spi_device
     .sck_csb_asserted_pulse_i   (sck_csb_asserted_pulse),
     .sys_csb_deasserted_pulse_i (sys_csb_deasserted_pulse),
 
-    .sel_dp_i (cmd_dp_sel),
+    .sel_dp_i          (cmd_dp_sel),
+    .cmd_only_sel_dp_i (cmd_only_dp_sel),
 
     .sck_sram_o (sub_sram_l2m[IoModeUpload]),
     .sck_sram_i (sub_sram_m2l[IoModeUpload]),
@@ -1669,8 +1678,8 @@ module spi_device
 
     .cfg_addr_4b_en_i (cfg_addr_4b_en),
 
-    .cmd_info_i     (cmd_info_broadcast),
-    .cmd_info_idx_i (cmd_info_idx_broadcast),
+    .cmd_only_info_i     (cmd_only_info_broadcast),
+    .cmd_only_info_idx_i (cmd_only_info_idx_broadcast),
 
     .io_mode_o (sub_iomode[IoModeUpload]),
 
@@ -1723,8 +1732,8 @@ module spi_device
   // End:   Upload ---------------------------------------------------
 
   // Begin: Address 3B/4B Tracker ====================================
-  assign cmd_en4b_pulse = cmd_dp_sel == DpEn4B;
-  assign cmd_ex4b_pulse = cmd_dp_sel == DpEx4B;
+  assign cmd_en4b_pulse = cmd_only_dp_sel == DpEn4B;
+  assign cmd_ex4b_pulse = cmd_only_dp_sel == DpEx4B;
   spid_addr_4b u_spid_addr_4b (
     .sys_clk_i  (clk_i ),
     .sys_rst_ni (rst_ni),
