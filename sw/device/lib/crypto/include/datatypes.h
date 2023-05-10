@@ -34,22 +34,30 @@ extern "C" {
  *     cryptolib status codes, it is a hardened value created to have high
  *     Hamming distance with the other valid status codes
  *   - The final 5 bits are an Abseil-compatible error code
+ *
+ * The hardened values for error codes were generated with:
+ * $ ./util/design/sparse-fsm-encode.py -d 5 -m 5 -n 11 \
+ *      -s 4232058530 --language=sv --avoid-zero
+ *
+ * Use the same seed value and a larger `-m` argument to generate new values
+ * without changing all error codes. Remove the seed (-s argument) to generate
+ * completely new 11-bit values.
  */
 typedef status_t crypto_status_t;
 typedef enum crypto_status_value {
   // Status is OK; no errors.
-  kCryptoStatusOK = 0x739,
+  kCryptoStatusOK = (int32_t) 0x739,
   // Invalid input arguments; wrong length or invalid type.
-  kCryptoStatusBadArgs = 0x8000b073,
+  kCryptoStatusBadArgs = (int32_t) 0x8000fea3,
   // Error after which it is OK to retry (e.g. timeout).
-  kCryptoStatusInternalError = 0x80005c3a,
+  kCryptoStatusInternalError = (int32_t) 0x8000534a,
   // Error after which it is not OK to retry (e.g. integrity check).
-  kCryptoStatusFatalError = 0x8000f5c9,
+  kCryptoStatusFatalError = (int32_t) 0x80006d89,
   // An asynchronous operation is still in progress.
-  kCryptoStatusAsyncIncomplete = 0x8000ae1e,
+  kCryptoStatusAsyncIncomplete = (int32_t) 0x8000ea4e,
   // TODO: remove all instances of this error before release; it is to track
   // implementations that are not yet complete.
-  kCryptoStatusNotImplemented = 0x80001fec,
+  kCryptoStatusNotImplemented = (int32_t) 0x80008d2c,
 } crypto_status_value_t;
 
 /*

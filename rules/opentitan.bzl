@@ -1164,6 +1164,10 @@ def opentitan_flash_binary(
             testonly = testonly,
         )
 
+        for k in kwargs.keys():
+          print(k)
+        print('defines' in kwargs)
+
         # Generate ELF, Binary, Disassembly, and (maybe) sim_dv logs database
         dev_targets.extend(opentitan_binary(
             name = devname,

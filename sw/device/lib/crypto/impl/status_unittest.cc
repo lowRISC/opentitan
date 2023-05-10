@@ -19,7 +19,7 @@ TEST(Status, OkIsHardenedTrue) {
   EXPECT_EQ(kCryptoStatusOK, kHardenedBoolTrue);
 }
 
-int HammingDistance(uint32_t a, uint32_t b) {
+int HammingDistance(int32_t a, int32_t b) {
   // The hamming distance is the number of bits different between the two words.
   return bitfield_popcount32(a ^ b);
 }
@@ -28,8 +28,7 @@ int HammingDistance(uint32_t a, uint32_t b) {
 constexpr int kMinimumHammingDistance = 5;
 TEST(Status, TopLevelStatusHammingDistance) {
   std::array<crypto_status_t, 5> error_codes = {
-      kCryptoStatusBadArgs, kCryptoStatusInternalError, kCryptoStatusFatalError,
-      kCryptoStatusAsyncIncomplete, kCryptoStatusNotImplemented};
+    OTCRYPTO_BAD_ARGS, OTCRYPTO_RECOV_ERR, OTCRYPTO_FATAL_ERR, OTCRYPTO_ASYNC_INCOMPLETE, OTCRYPTO_NOT_IMPLEMENTED};
 
   // Expect the "OK" code to have a significant Hamming distance from 0.
   EXPECT_GE(HammingDistance(kCryptoStatusOK, 0), kMinimumHammingDistance)
@@ -37,19 +36,19 @@ TEST(Status, TopLevelStatusHammingDistance) {
 
   for (const crypto_status_t status1 : error_codes) {
     // Expect a significant Hamming distance from 0.
-    EXPECT_GE(HammingDistance(status1, 0), kMinimumHammingDistance)
-        << "Error code " << status1 << " is too close to zero.";
+    EXPECT_GE(HammingDistance(status1.value, 0), kMinimumHammingDistance)
+        << "Error code " << status1.value << " is too close to zero.";
     // Expect an extra significant Hamming distance from the "OK" code.
-    EXPECT_GE(HammingDistance(status1, kCryptoStatusOK),
+    EXPECT_GE(HammingDistance(status1.value, kCryptoStatusOK),
               kMinimumHammingDistance)
-        << "Error code " << status1 << " is too close to the 'OK' value ("
+        << "Error code " << status1.value << " is too close to the 'OK' value ("
         << kCryptoStatusOK << ").";
 
     // Expect a significant Hamming distance from all other error codes.
     for (const crypto_status_t status2 : error_codes) {
-      if (status1 != status2) {
-        EXPECT_GE(HammingDistance(status1, status2), kMinimumHammingDistance)
-            << "Error codes " << status1 << " and " << status2
+      if (status1.value != status2.value) {
+        EXPECT_GE(HammingDistance(status1.value, status2.value), kMinimumHammingDistance)
+            << "Error codes " << status1.value << " and " << status2.value
             << " are too close to each other.";
       }
     }
@@ -78,43 +77,27 @@ TEST(Status, ErrorMacrosNotHardenedOk) {
   EXPECT_EQ(hardened_status_ok(OTCRYPTO_ASYNC_INCOMPLETE), kHardenedBoolFalse);
 }
 
-// Run this test only if extra debugging information is off.
-#ifndef OTCRYPTO_STATUS_DEBUG
-TEST(Status, InterpretErrorMacros) {
-  // Error macros should translate to the crypto status implied by their name.
-  EXPECT_EQ(crypto_status_interpret(OTCRYPTO_OK), kCryptoStatusOK);
-  EXPECT_EQ(crypto_status_interpret(OTCRYPTO_BAD_ARGS), kCryptoStatusBadArgs);
-  EXPECT_EQ(crypto_status_interpret(OTCRYPTO_RECOV_ERR),
-            kCryptoStatusInternalError);
-  EXPECT_EQ(crypto_status_interpret(OTCRYPTO_FATAL_ERR),
-            kCryptoStatusFatalError);
-  EXPECT_EQ(crypto_status_interpret(OTCRYPTO_ASYNC_INCOMPLETE),
-            kCryptoStatusAsyncIncomplete);
-}
-#endif
-
 __attribute__((noinline)) crypto_status_t try_interpret(status_t status) {
   OTCRYPTO_TRY_INTERPRET(status);
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 TEST(Status, TryInterpretOk) {
   // Hardened OK should result in an OK status.
-  EXPECT_EQ(try_interpret(OTCRYPTO_OK), kCryptoStatusOK);
+  EXPECT_EQ(hardened_status_ok(try_interpret(OTCRYPTO_OK)), kHardenedBoolTrue);
 }
 
 TEST(Status, TryInterpretNonHardenedOk) {
   // Non-hardened OK should result in an error.
-  EXPECT_NE(try_interpret(OK_STATUS()), kCryptoStatusOK);
+  EXPECT_EQ(status_ok(try_interpret(OK_STATUS())), false);
 }
 
 TEST(Status, TryInterpretErrors) {
   // Error macros should result in error statuses.
-  EXPECT_EQ(try_interpret(OTCRYPTO_BAD_ARGS), kCryptoStatusBadArgs);
-  EXPECT_EQ(try_interpret(OTCRYPTO_RECOV_ERR), kCryptoStatusInternalError);
-  EXPECT_EQ(try_interpret(OTCRYPTO_FATAL_ERR), kCryptoStatusFatalError);
-  EXPECT_EQ(try_interpret(OTCRYPTO_ASYNC_INCOMPLETE),
-            kCryptoStatusAsyncIncomplete);
+  EXPECT_EQ(status_ok(try_interpret(OTCRYPTO_BAD_ARGS)), false);
+  EXPECT_EQ(status_ok(try_interpret(OTCRYPTO_RECOV_ERR)), false);
+  EXPECT_EQ(status_ok(try_interpret(OTCRYPTO_FATAL_ERR)), false);
+  EXPECT_EQ(status_ok(try_interpret(OTCRYPTO_ASYNC_INCOMPLETE)), false);
 }
 
 }  // namespace

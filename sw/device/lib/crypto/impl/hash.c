@@ -392,5 +392,5 @@ crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
       return OTCRYPTO_BAD_ARGS;
   }
 
-  return OTCRYPTO_BAD_ARGS;
+  return OTCRYPTO_OK;
 }

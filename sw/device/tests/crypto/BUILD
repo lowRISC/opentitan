@@ -242,8 +242,10 @@ opentitan_functest(
         timeout = "long",
     ),
     defines = ["OTCRYPTO_STATUS_DEBUG"],
+    foo = "bar",
     deps = [
         "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
