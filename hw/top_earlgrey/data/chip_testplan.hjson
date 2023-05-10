@@ -3493,7 +3493,8 @@
              - Verify that the CPU is able to execute.
              '''
       stage: V2
-      tests: ["chip_sw_lc_ctrl_volatile_raw_unlock"]
+      tests: ["chip_sw_lc_ctrl_volatile_raw_unlock",
+              "rom_volatile_raw_unlock"]
     }
     {
       name: chip_sw_power_max_load
