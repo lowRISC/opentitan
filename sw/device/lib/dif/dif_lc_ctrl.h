@@ -40,6 +40,11 @@ typedef enum dif_lc_ctrl_status_code {
    */
   kDifLcCtrlStatusCodeReady,
   /**
+   * Indicates that the clock manager has successfully switched to the
+   * external clock.
+   */
+  kDifLcCtrlStatusExtClockSwitched,
+  /**
    * Indicates that the last lifecycle transition succeeded.
    */
   kDifLcCtrlStatusCodeSuccess,

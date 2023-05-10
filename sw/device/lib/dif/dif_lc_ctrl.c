@@ -136,6 +136,11 @@ dif_result_t dif_lc_ctrl_get_status(const dif_lc_ctrl_t *lc,
         bitfield_bit32_write(status_word, kDifLcCtrlStatusCodeReady, true);
   }
 
+  if (bitfield_bit32_read(reg, LC_CTRL_STATUS_EXT_CLOCK_SWITCHED_BIT)) {
+    status_word = bitfield_bit32_write(status_word,
+                                       kDifLcCtrlStatusExtClockSwitched, true);
+  }
+
   if (bitfield_bit32_read(reg, LC_CTRL_STATUS_TRANSITION_SUCCESSFUL_BIT)) {
     status_word =
         bitfield_bit32_write(status_word, kDifLcCtrlStatusCodeSuccess, true);
