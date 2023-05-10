@@ -258,4 +258,13 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
  */
 OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_enter_4byte_address_mode(dif_spi_host_t *spih);
+
+/**
+ * Disables 4-bytes addressing mode.
+ *
+ * @param spih A SPI host handle.
+ * @return status_t containing either OK or an error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t spi_flash_testutils_exit_4byte_address_mode(dif_spi_host_t *spih);
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_SPI_FLASH_TESTUTILS_H_

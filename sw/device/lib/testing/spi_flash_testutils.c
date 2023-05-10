@@ -394,3 +394,12 @@ status_t spi_flash_testutils_enter_4byte_address_mode(dif_spi_host_t *spih) {
   TRY(dif_spi_host_transaction(spih, /*cs_id=*/0, &op, 1));
   return OK_STATUS();
 }
+
+status_t spi_flash_testutils_exit_4byte_address_mode(dif_spi_host_t *spih) {
+  dif_spi_host_segment_t op = {
+      .type = kDifSpiHostSegmentTypeOpcode,
+      .opcode = kSpiDeviceFlashOpExit4bAddr,
+  };
+  TRY(dif_spi_host_transaction(spih, /*cs_id=*/0, &op, 1));
+  return OK_STATUS();
+}
