@@ -20,3 +20,10 @@ rust_binary(
         "@crate_index//:structopt",
     ],
 )
+
+py_binary(
+    name = "gen_test_exit_token",
+    srcs = [
+        "gen_test_exit_token.py",
+    ],
+)
