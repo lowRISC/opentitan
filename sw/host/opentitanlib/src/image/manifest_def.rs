@@ -213,6 +213,26 @@ impl ManifestPacked<ManifestSpxKey> for ManifestSpxKeyBigInt {
     }
 }
 
+impl ManifestPacked<[ManifestExtTableEntry; 8]> for [ManifestExtTableEntryDef; 8] {
+    fn unpack(self, _name: &'static str) -> Result<[ManifestExtTableEntry; 8]> {
+        Ok(self.map(|v| ManifestExtTableEntry {
+            identifier: *v.identifier.0.unwrap(),
+            offset: *v.offset.0.unwrap(),
+        }))
+    }
+
+    fn overwrite(&mut self, o: Self) {
+        for i in 0..self.len() {
+            if o[i].identifier.0.is_some() {
+                self[i].identifier = o[i].identifier.clone()
+            }
+            if o[i].offset.0.is_some() {
+                self[i].offset = o[i].offset.clone()
+            }
+        }
+    }
+}
+
 impl<T: ParseInt + fmt::LowerHex> ManifestPacked<T> for ManifestSmallInt<T> {
     fn unpack(self, name: &'static str) -> Result<T> {
         match self.0 {
@@ -269,6 +289,7 @@ manifest_def! {
         code_start: ManifestSmallInt<u32>,
         code_end: ManifestSmallInt<u32>,
         entry_point: ManifestSmallInt<u32>,
+        extensions: [ManifestExtTableEntryDef; 8],
     }, Manifest
 }
 
@@ -280,6 +301,12 @@ manifest_def! {
         manuf_state_owner: ManifestSmallInt<u32>,
         life_cycle_state: ManifestSmallInt<u32>,
     }, ManifestUsageConstraints
+}
+
+#[derive(Clone, Default, Deserialize, Serialize, Debug)]
+pub struct ManifestExtTableEntryDef {
+    identifier: ManifestSmallInt<u32>,
+    offset: ManifestSmallInt<u32>,
 }
 
 impl TryFrom<ManifestSpxSignature> for SigverifySpxSignature {
@@ -475,6 +502,27 @@ impl From<&Timestamp> for [ManifestSmallInt<u32>; 2] {
 impl From<&LifecycleDeviceId> for [ManifestSmallInt<u32>; 8] {
     fn from(o: &LifecycleDeviceId) -> [ManifestSmallInt<u32>; 8] {
         o.device_id.map(|v| ManifestSmallInt(Some(HexEncoded(v))))
+    }
+}
+
+impl From<&ManifestExtTableEntry> for ManifestExtTableEntryDef {
+    fn from(o: &ManifestExtTableEntry) -> ManifestExtTableEntryDef {
+        ManifestExtTableEntryDef {
+            identifier: ManifestSmallInt(Some(HexEncoded(o.identifier))),
+            offset: ManifestSmallInt(Some(HexEncoded(o.offset))),
+        }
+    }
+}
+
+impl From<[ManifestExtTableEntry; 8]> for ManifestExtTable {
+    fn from(o: [ManifestExtTableEntry; 8]) -> ManifestExtTable {
+        ManifestExtTable { entries: o }
+    }
+}
+
+impl From<&ManifestExtTable> for [ManifestExtTableEntryDef; 8] {
+    fn from(o: &ManifestExtTable) -> [ManifestExtTableEntryDef; 8] {
+        o.entries.map(|v| (&v).into())
     }
 }
 
