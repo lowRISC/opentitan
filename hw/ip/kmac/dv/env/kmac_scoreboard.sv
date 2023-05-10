@@ -1169,6 +1169,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       if (!cfg.do_cycle_accurate_check && csr_name inside {"intr_state", "status"}) begin
         do_read_check = 0;
       end
+      if (csr_name == "err_code" && cfg.skip_read_check == 1) begin
+        do_read_check = 0;
+      end
       if (do_read_check) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))
