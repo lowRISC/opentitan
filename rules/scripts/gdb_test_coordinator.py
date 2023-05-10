@@ -39,26 +39,30 @@ class BackgroundProcessGroup:
             command: List[str],
             label: str,
             style: ConsoleStyle,
-            callback: Callable[[str], None] = None) -> subprocess.Popen:
+            callback: Callable[[str], None] = None,
+            capture_stdout = True) -> subprocess.Popen:
         proc = subprocess.Popen(command,
-                                # stdout=subprocess.PIPE,
+                                stdout=subprocess.PIPE if capture_stdout else None,
                                 stderr=subprocess.STDOUT,
                                 encoding='utf-8')
         self.procs_queue.append(proc)
         self.names[proc] = label
 
-        # # Register the new process with our selector. The `echo` closure may be
-        # # called multiple times by `maybe_print_output`.
-        # def echo(line):
-        #     if line == "":
-        #         return
-        #     self.console.print(f"[{label}] ", style=style, end='')
-        #     print(line, flush=True)
-        #
-        #     if callback is not None:
-        #         callback(line)
-        #
-        # self.selector.register(proc.stdout, selectors.EVENT_READ, echo)
+        # Register the new process with our selector. The `echo` closure may be
+        # called multiple times by `maybe_print_output`.
+        def echo(line):
+            if line == "":
+                return
+            self.console.print(f"[{label}] ", style=style, end='')
+            print(line, flush=True)
+
+            if callback is not None:
+                callback(line)
+
+        if capture_stdout:
+            self.selector.register(proc.stdout, selectors.EVENT_READ, echo)
+        else:
+            assert callback is not None, "cannot have a callback without capturing the output"
         return proc
 
     def empty(self) -> bool:
@@ -75,45 +79,45 @@ class BackgroundProcessGroup:
 
     def forget(self, proc: subprocess.Popen) -> None:
         assert proc not in self.procs_queue
-        # self.maybe_print_output(
-        #     timeout_seconds=1)  # Flush any remaining lines.
-        # self.selector.unregister(proc.stdout)
+        self.maybe_print_output(
+            timeout_seconds=1)  # Flush any remaining lines.
+        self.selector.unregister(proc.stdout)
         self.names.pop(proc, None)
 
-    # def _block_for_output(self,
-    #                       timeout_seconds: int) -> List[Tuple[TextIO, str]]:
-    #     out = []
-    #     events = self.selector.select(timeout=timeout_seconds)
-    #     for key, mask in events:
-    #         line = key.fileobj.readline().rstrip()
-    #         callback = key.data
-    #         callback(line)
-    #         out.append((key.fileobj, line))
-    #     return out
-    #
-    # def maybe_print_output(self, timeout_seconds: int) -> None:
-    #     self._block_for_output(timeout_seconds)
-    #
-    # def flush_all(self, timeout_seconds: int) -> None:
-    #     now = time.time_ns()
-    #     while time.time_ns() <= now + timeout_seconds * 1000000000:
-    #         self.maybe_print_output(timeout_seconds)
-    #
-    # def block_until_line_contains(self,
-    #                               proc: subprocess.Popen,
-    #                               output_fragment: str,
-    #                               num_seconds: int = 5) -> bool:
-    #     """Block until `proc.stdout` emits a line containing `output_fragment`.
-    #
-    #     Returns True iff a matching line was seen. Keeps trying for up to
-    #     `num_seconds` seconds.
-    #     """
-    #     start_time = time.monotonic()
-    #     while time.monotonic() <= start_time + num_seconds:
-    #         for fileobj, line in self._block_for_output(1):
-    #             if fileobj == proc.stdout and output_fragment in line:
-    #                 return True
-    #     return False
+    def _block_for_output(self,
+                          timeout_seconds: int) -> List[Tuple[TextIO, str]]:
+        out = []
+        events = self.selector.select(timeout=timeout_seconds)
+        for key, mask in events:
+            line = key.fileobj.readline().rstrip()
+            callback = key.data
+            callback(line)
+            out.append((key.fileobj, line))
+        return out
+
+    def maybe_print_output(self, timeout_seconds: int) -> None:
+        self._block_for_output(timeout_seconds)
+
+    def flush_all(self, timeout_seconds: int) -> None:
+        now = time.time_ns()
+        while time.time_ns() <= now + timeout_seconds * 1000000000:
+            self.maybe_print_output(timeout_seconds)
+
+    def block_until_line_contains(self,
+                                  proc: subprocess.Popen,
+                                  output_fragment: str,
+                                  num_seconds: int = 5) -> bool:
+        """Block until `proc.stdout` emits a line containing `output_fragment`.
+
+        Returns True iff a matching line was seen. Keeps trying for up to
+        `num_seconds` seconds.
+        """
+        start_time = time.monotonic()
+        while time.monotonic() <= start_time + num_seconds:
+            for fileobj, line in self._block_for_output(1):
+                if fileobj == proc.stdout and output_fragment in line:
+                    return True
+        return False
 
 
 app = typer.Typer(pretty_exceptions_enable=False)
@@ -217,22 +221,23 @@ def main(rom_kind: str = typer.Option(...),
     gdb = background.run(gdb_command,
                          "GDB",
                          COLOR_GREEN,
-                         callback=gdb_maybe_consume_expected_line)
+                         callback=gdb_maybe_consume_expected_line,
+                         capture_stdout=True)
     background.run(console_command, "CONSOLE", COLOR_RED)
 
     while not background.empty():
-        # background.maybe_print_output(timeout_seconds=1)
+        background.maybe_print_output(timeout_seconds=1)
 
         proc = background.pop()
 
         # If we are defining GDB's success by checking output lines and we've
         # seen all of the expected lines, kill GDB and ignore its return code.
-        # if proc == gdb and gdb_alternative_success_mode and gdb_expect_output_sequence == []:
-        #     print("Terminating GDB now that it has printed the expected lines")
-        #     gdb.terminate()
-        #     gdb.wait()
-        #     background.forget(gdb)
-        #     continue
+        if proc == gdb and gdb_alternative_success_mode and gdb_expect_output_sequence == []:
+            print("Terminating GDB now that it has printed the expected lines")
+            gdb.terminate()
+            gdb.wait()
+            background.forget(gdb)
+            continue
 
         # When OpenOCD is the only remaining process, send it the TERM signal
         # and wait for it to exit. GDB will exit naturally at the end of its
@@ -240,7 +245,7 @@ def main(rom_kind: str = typer.Option(...),
         # the given success pattern.
         if background.empty() and proc == openocd:
             # wait a little bit so that we can flush the output of all processes
-            # background.flush_all(1)
+            background.flush_all(1)
             time.sleep(5)
             openocd.terminate()
             openocd.wait()
@@ -256,7 +261,7 @@ def main(rom_kind: str = typer.Option(...),
 
         if returncode != 0:
             # wait a little bit so that we can flush the output of all processes
-            # background.flush_all(1)
+            background.flush_all(1)
             time.sleep(5)
             sys.exit(returncode)
 
