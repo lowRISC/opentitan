@@ -12,6 +12,8 @@ use opentitanlib::io::i2c::Transfer;
 use opentitanlib::test_utils::e2e_command::TestCommand;
 use opentitanlib::test_utils::i2c_target::{I2cTargetAddress, I2cTransaction};
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
+use opentitanlib::test_utils::status::Status;
 use opentitanlib::uart::console::UartConsole;
 
 #[derive(Debug, StructOpt)]
@@ -104,6 +106,35 @@ fn test_write_transaction_slow(
     Ok(())
 }
 
+fn test_wakeup_normal_sleep(opts: &Opts, transport: &TransportWrapper, address: u8) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let i2c = transport.i2c(&opts.i2c)?;
+    TestCommand::EnterNormalSleep.send(&*uart)?;
+    std::thread::sleep(Duration::from_secs(2));
+    let mut buf = [0u8; 8];
+    log::info!("Issuing read transaction to sleeping chip. Expecting transaction error.");
+    let result = i2c.run_transaction(address, &mut [Transfer::Read(&mut buf)]);
+    log::info!("Transaction error: {}", result.is_err());
+    Status::recv(&*uart, Duration::from_secs(5), false)?;
+    log::info!("Chip is awake.  Reissuing read transaction.");
+    test_read_transaction(opts, transport, address)
+}
+
+fn test_wakeup_deep_sleep(opts: &Opts, transport: &TransportWrapper, address: u8) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let i2c = transport.i2c(&opts.i2c)?;
+    TestCommand::EnterDeepSleep.send(&*uart)?;
+    std::thread::sleep(Duration::from_secs(2));
+    let mut buf = [0u8; 8];
+    log::info!("Issuing read transaction to sleeping chip. Expecting transaction error.");
+    let result = i2c.run_transaction(address, &mut [Transfer::Read(&mut buf)]);
+    log::info!("Transaction error: {}", result.is_err());
+    Status::recv(&*uart, Duration::from_secs(5), false)?;
+    log::info!("Chip is awake.  Reissuing read transaction.");
+    test_set_target_address(opts, transport)?;
+    test_read_transaction(opts, transport, address)
+}
+
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
@@ -122,5 +153,7 @@ fn main() -> Result<()> {
     execute_test!(test_read_transaction, &opts, &transport, 0x73);
     execute_test!(test_write_transaction, &opts, &transport, 0x33);
     execute_test!(test_write_transaction_slow, &opts, &transport, 0x33);
+    execute_test!(test_wakeup_normal_sleep, &opts, &transport, 0x33);
+    execute_test!(test_wakeup_deep_sleep, &opts, &transport, 0x33);
     Ok(())
 }
