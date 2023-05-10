@@ -194,7 +194,7 @@ def main(rom_kind: str = typer.Option(...),
             gdb_expect_output_sequence.pop(0)
 
     # Wait until we've finished loading the bitstream.
-    subprocess.run(load_bitstream_command, check=True)
+    subprocess.run(load_bitstream_command, check=True) # @Andreas: for ILA comment this line
 
     # Run OpenOCD, GDB, and the OpenTitanTool console in the background. Wait
     # until OpenOCD has fired up its GDB server before launching the GDB client
