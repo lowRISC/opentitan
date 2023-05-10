@@ -14,6 +14,8 @@ extern "C" {
     value(_, ChipStartup) \
     value(_, GpioSet) \
     value(_, GpioGet) \
+    value(_, EnterNormalSleep) \
+    value(_, EnterDeepSleep) \
     value(_, I2cTargetAddress) \
     value(_, I2cReadTransaction) \
     value(_, I2cWriteTransaction) \
