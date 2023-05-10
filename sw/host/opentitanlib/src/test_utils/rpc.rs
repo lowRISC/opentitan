@@ -38,6 +38,8 @@ impl<T: DeserializeOwned> UartRecv for T {
     {
         let mut console = UartConsole {
             timeout: Some(timeout),
+            timestamp: true,
+            newline: true,
             exit_success: Some(Regex::new(r"RESP_OK:(.*)\r")?),
             exit_failure: Some(Regex::new(r"RESP_ERR:(.*)\r")?),
             ..Default::default()
@@ -50,6 +52,7 @@ impl<T: DeserializeOwned> UartRecv for T {
             None
         };
         let result = console.interact(uart, None, out)?;
+        println!();
         match result {
             ExitStatus::ExitSuccess => {
                 let cap = console

@@ -184,9 +184,9 @@ impl UartConsole {
         for i in 0..len {
             if self.timestamp && self.newline {
                 let t = humantime::format_rfc3339_millis(SystemTime::now());
-                stdout
-                    .as_mut()
-                    .map_or(Ok(()), |out| out.write_fmt(format_args!("[{}]", t)))?;
+                stdout.as_mut().map_or(Ok(()), |out| {
+                    out.write_fmt(format_args!("[{}  console]", t))
+                })?;
                 self.newline = false;
             }
             self.newline = buf[i] == b'\n';
@@ -294,12 +294,15 @@ impl UartConsole {
         T: ConsoleDevice + ?Sized,
     {
         let mut console = UartConsole {
+            timestamp: true,
+            newline: true,
             timeout: Some(timeout),
             exit_success: Some(Regex::new(rx)?),
             ..Default::default()
         };
         let mut stdout = std::io::stdout();
         let result = console.interact(device, None, Some(&mut stdout))?;
+        println!();
         match result {
             ExitStatus::ExitSuccess => {
                 let cap = console.captures(ExitStatus::ExitSuccess).expect("capture");
