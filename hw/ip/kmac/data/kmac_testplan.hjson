@@ -385,13 +385,6 @@
             '''
    }
    {
-      name: edn_cg
-      desc: '''
-            Covers that EDN entropy can be received by KMAC while keccak rounds are active/inactive,
-            crossed with a few entropy configuration values (fast entropy, etc...).
-            '''
-    }
-    {
       name: error_cg
       desc: '''
             Covers all error scenarios:

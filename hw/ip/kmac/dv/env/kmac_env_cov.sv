@@ -194,14 +194,6 @@ class app_cg_wrap;
 endclass
 
 
-// Covers whether we see an EDN response while keccak rounds are active/inactive.
-// Create this covergroup outside of the class as its instantiation relies on a field in the
-// env.cfg.
-covergroup edn_cg with function sample(bit in_keccak_rounds);
-  edn_in_keccak: coverpoint in_keccak_rounds;
-endgroup
-
-
 class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
   `uvm_component_utils(kmac_env_cov)
 
@@ -212,8 +204,6 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
 
   config_masked_cg config_masked_cg;
   config_unmasked_cg config_unmasked_cg;
-
-  edn_cg edn_cg;
 
   app_cg_wrap app_cg_wrappers[kmac_pkg::NumAppIntf];
 
@@ -310,6 +300,11 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
                                            sha3_pkg::keccak_strength_e kstrength);
     kmac_err_code: coverpoint kmac_err {
       ignore_bins ignore = {kmac_pkg::ErrNone};
+      // Covered by direct sequence, if scb enabled for those seq, can remove it from this list.
+      illegal_bins il = {kmac_pkg::ErrShadowRegUpdate,
+                         kmac_pkg::ErrWaitTimerExpired,
+                         kmac_pkg::ErrIncorrectEntropyMode,
+                         kmac_pkg::ErrSwHashingWithoutEntropyReady};
     }
 
     cmd: coverpoint kcmd {
@@ -436,7 +431,6 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
     // See cip_base_env_cov for details
     if (cfg.enable_masking) begin
       config_masked_cg = new();
-      edn_cg = new();
     end else begin
       config_unmasked_cg = new();
     end
