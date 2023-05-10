@@ -242,16 +242,6 @@ otp_json(
 )
 
 otp_json(
-    name = "otp_json_secret0_empty_and_unlocked",
-    partitions = [
-        otp_partition(
-            name = "SECRET0",
-            lock = False,
-        ),
-    ],
-)
-
-otp_json(
     name = "otp_json_secret1",
     partitions = [
         otp_partition(
@@ -428,7 +418,10 @@ otp_image(
     otp_image(
         name = "img_test_locked{}".format(i),
         src = ":otp_json_test_locked{}".format(i),
-        overlays = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS,
+        overlays = [
+            ":otp_json_secret0",
+            ":otp_json_creator_sw_cfg_test_unlocked",
+        ],
     )
     for i in range(0, 7)
 ]
