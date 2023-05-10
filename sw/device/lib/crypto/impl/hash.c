@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
+#include "sw/device/lib/crypto/impl/sha2/sha256.h"
 #include "sw/device/lib/crypto/impl/sha2/sha512.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
@@ -16,21 +17,55 @@
 #define MODULE_ID MAKE_MODULE_ID('h', 'a', 's')
 
 /**
- * Ensure that the hash context is large enough for the SHA-512 state struct.
+ * Ensure that the hash context is large enough for all SHA2 state structs.
  */
+static_assert(sizeof(hash_context_t) >= sizeof(sha256_state_t),
+              "hash_context_t must be big enough to hold sha256_state_t");
 static_assert(sizeof(hash_context_t) >= sizeof(sha384_state_t),
               "hash_context_t must be big enough to hold sha384_state_t");
 static_assert(sizeof(hash_context_t) >= sizeof(sha512_state_t),
               "hash_context_t must be big enough to hold sha512_state_t");
 /**
- * Ensure that the SHA-512 state struct is suitable for `hardened_memcpy()`.
+ * Ensure that all SHA2 state structs are suitable for `hardened_memcpy()`.
  */
+static_assert(sizeof(sha256_state_t) % sizeof(uint32_t) == 0,
+              "Size of sha256_state_t must be a multiple of the word size for "
+              "`hardened_memcpy()`");
 static_assert(sizeof(sha384_state_t) % sizeof(uint32_t) == 0,
               "Size of sha384_state_t must be a multiple of the word size for "
               "`hardened_memcpy()`");
 static_assert(sizeof(sha512_state_t) % sizeof(uint32_t) == 0,
               "Size of sha512_state_t must be a multiple of the word size for "
               "`hardened_memcpy()`");
+/**
+ * Save a SHA-256 state to a generic hash context.
+ *
+ * @param[out] ctx Generic hash context to copy to.
+ * @param state SHA-256 context object.
+ */
+static void sha256_state_save(hash_context_t *restrict ctx,
+                              const sha256_state_t *restrict state) {
+  // As per the `hardened_memcpy()` documentation, it is OK to cast to
+  // `uint32_t *` here as long as `state` is word-aligned, which it must be
+  // because all its fields are.
+  hardened_memcpy(ctx->data, (uint32_t *)state,
+                  sizeof(sha256_state_t) / sizeof(uint32_t));
+}
+
+/**
+ * Restore a SHA-256 state from a generic hash context.
+ *
+ * @param ctx Generic hash context to restore from.
+ * @param[out] state Destination SHA-256 context object.
+ */
+static void sha256_state_restore(const hash_context_t *restrict ctx,
+                                 sha256_state_t *restrict state) {
+  // As per the `hardened_memcpy()` documentation, it is OK to cast to
+  // `uint32_t *` here as long as `state` is word-aligned, which it must be
+  // because all its fields are.
+  hardened_memcpy((uint32_t *)state, ctx->data,
+                  sizeof(sha256_state_t) / sizeof(uint32_t));
+}
 
 /**
  * Save a SHA-384 state to a generic hash context.
@@ -38,8 +73,8 @@ static_assert(sizeof(sha512_state_t) % sizeof(uint32_t) == 0,
  * @param[out] ctx Generic hash context to copy to.
  * @param state SHA-384 context object.
  */
-static void sha384_state_save(hash_context_t *const restrict ctx,
-                              sha384_state_t *restrict state) {
+static void sha384_state_save(hash_context_t *restrict ctx,
+                              const sha384_state_t *restrict state) {
   // As per the `hardened_memcpy()` documentation, it is OK to cast to
   // `uint32_t *` here as long as `state` is word-aligned, which it must be
   // because all its fields are.
@@ -53,7 +88,7 @@ static void sha384_state_save(hash_context_t *const restrict ctx,
  * @param ctx Generic hash context to restore from.
  * @param[out] state Destination SHA-384 context object.
  */
-static void sha384_state_restore(hash_context_t *const restrict ctx,
+static void sha384_state_restore(const hash_context_t *restrict ctx,
                                  sha384_state_t *restrict state) {
   // As per the `hardened_memcpy()` documentation, it is OK to cast to
   // `uint32_t *` here as long as `state` is word-aligned, which it must be
@@ -68,8 +103,8 @@ static void sha384_state_restore(hash_context_t *const restrict ctx,
  * @param[out] ctx Generic hash context to copy to.
  * @param state SHA-512 context object.
  */
-static void sha512_state_save(hash_context_t *const restrict ctx,
-                              sha512_state_t *restrict state) {
+static void sha512_state_save(hash_context_t *restrict ctx,
+                              const sha512_state_t *restrict state) {
   // As per the `hardened_memcpy()` documentation, it is OK to cast to
   // `uint32_t *` here as long as `state` is word-aligned, which it must be
   // because all its fields are.
@@ -83,7 +118,7 @@ static void sha512_state_save(hash_context_t *const restrict ctx,
  * @param ctx Generic hash context to restore from.
  * @param[out] state Destination SHA-512 context object.
  */
-static void sha512_state_restore(hash_context_t *const restrict ctx,
+static void sha512_state_restore(const hash_context_t *restrict ctx,
                                  sha512_state_t *restrict state) {
   // As per the `hardened_memcpy()` documentation, it is OK to cast to
   // `uint32_t *` here as long as `state` is word-aligned, which it must be
@@ -139,8 +174,8 @@ static status_t get_digest_size(hash_mode_t hash_mode, size_t *digest_len) {
  * @param[out] digest Output digest.
  */
 OT_WARN_UNUSED_RESULT
-static status_t sha256(crypto_const_uint8_buf_t message,
-                       crypto_uint8_buf_t *digest) {
+static status_t hmac_sha256(crypto_const_uint8_buf_t message,
+                            crypto_uint8_buf_t *digest) {
   HARDENED_CHECK_EQ(digest->len, kHmacDigestNumBytes);
 
   // Initialize the hardware.
@@ -190,7 +225,7 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
       break;
     case kHashModeSha256:
       // Call the HMAC block driver in SHA-256 mode.
-      OTCRYPTO_TRY_INTERPRET(sha256(input_message, digest));
+      OTCRYPTO_TRY_INTERPRET(hmac_sha256(input_message, digest));
       break;
     case kHashModeSha384:
       OTCRYPTO_TRY_INTERPRET(
@@ -255,9 +290,12 @@ crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
                                    hash_mode_t hash_mode) {
   ctx->mode = hash_mode;
   switch (hash_mode) {
-    case kHashModeSha256:
-      // TODO: (#16410) Connect SHA2-256 streaming implementation
-      return kCryptoStatusNotImplemented;
+    case kHashModeSha256: {
+      sha256_state_t state;
+      sha256_init(&state);
+      sha256_state_save(ctx, &state);
+      break;
+    }
     case kHashModeSha384: {
       sha384_state_t state;
       sha384_init(&state);
@@ -285,9 +323,14 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
   }
 
   switch (ctx->mode) {
-    case kHashModeSha256:
-      // TODO: (#16410) Connect SHA2-256 streaming implementation
-      return kCryptoStatusNotImplemented;
+    case kHashModeSha256: {
+      sha256_state_t state;
+      sha256_state_restore(ctx, &state);
+      OTCRYPTO_TRY_INTERPRET(
+          sha256_update(&state, input_message.data, input_message.len));
+      sha256_state_save(ctx, &state);
+      break;
+    }
     case kHashModeSha384: {
       sha384_state_t state;
       sha384_state_restore(ctx, &state);
@@ -326,9 +369,12 @@ crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
   }
 
   switch (ctx->mode) {
-    case kHashModeSha256:
-      // TODO: (#16410) Connect SHA2-256 streaming implementation
-      return kCryptoStatusNotImplemented;
+    case kHashModeSha256: {
+      sha256_state_t state;
+      sha256_state_restore(ctx, &state);
+      OTCRYPTO_TRY_INTERPRET(sha256_final(&state, digest->data));
+      break;
+    }
     case kHashModeSha384: {
       sha384_state_t state;
       sha384_state_restore(ctx, &state);
