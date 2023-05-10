@@ -293,6 +293,85 @@ typedef struct manifest_digest_region {
   size_t length;
 } manifest_digest_region_t;
 
+/**
+ * Required manifest extension header.
+ */
+typedef struct manifest_ext_header {
+  /**
+   * Identifier.
+   *
+   * A high HW constant with a realively high HD from other extensions'
+   * identifiers.
+   */
+  uint32_t identifier;
+  /**
+   * Name.
+   *
+   * 4 ASCII characters for ease of debugging.
+   */
+  uint32_t name;
+} manifest_ext_header_t;
+
+/**
+ * Extension identifiers and names.
+ */
+enum {
+  /**
+   * Identifiers.
+   *
+   * These are high HW constants with a relatively high HD from each other.
+   */
+  kManifestExtIdSpxKey = 0x94ac01ec,
+  kManifestExtIdSpxSignature = 0xad77f84a,
+  /**
+   * ASCII "EXT0.
+   */
+  kManifestExtNameSpxKey = 0x30545845,
+  /**
+   * ASCII "EXT1.
+   */
+  kManifestExtNameSpxSignature = 0x31545845,
+};
+
+/**
+ * Manifest extension: SPHINCS+ public key.
+ */
+typedef struct manifest_ext_spx_key {
+  /**
+   * Required manifest header.
+   */
+  manifest_ext_header_t header;
+  /**
+   * SPHINCS+ public key used to sign the image.
+   */
+  sigverify_spx_key_t key;
+} manifest_ext_spx_key_t;
+
+/**
+ * Manifest extension: SPHINCS+ signature.
+ */
+typedef struct manifest_ext_spx_signature {
+  /**
+   * Required manifest header.
+   */
+  manifest_ext_header_t header;
+  /**
+   * SPHINCS+ signature of the image.
+   */
+  sigverify_spx_key_t signature;
+} manifest_ext_spx_signature_t;
+
+/**
+ * Table of manifest extensions.
+ *
+ * Columns: Table index, type name, extenstion name, identifier, signed or not.
+ */
+// clang-format off
+#define MANIFEST_EXTENSIONS(X) \
+  X(0, manifest_ext_spx_key_t,       spx_key,       kManifestExtIdSpxKey,       true ) \
+  X(1, manifest_ext_spx_signature_t, spx_signature, kManifestExtIdSpxSignature, false)
+// clang-format on
+
 #if defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 /**
  * Checks the fields of a manifest.
@@ -380,6 +459,40 @@ inline epmp_region_t manifest_code_region_get(const manifest_t *manifest) {
 inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
   return (uintptr_t)manifest + manifest->entry_point;
 }
+
+#define DEFINE_GETTER(index_, type_, name_, id_, _)                            \
+  inline rom_error_t manifest_get_ext_##name_(const manifest_t *manifest,      \
+                                              const type_ **name_) {           \
+    enum {                                                                     \
+      kMinSize = CHIP_MANIFEST_SIZE,                                           \
+      kMaxSize = CHIP_ROM_EXT_SIZE_MAX - sizeof(type_),                        \
+    };                                                                         \
+    const manifest_ext_table_entry_t *entry =                                  \
+        &manifest->extensions.entries[index_];                                 \
+    uint32_t table_id = entry->identifier;                                     \
+    uint32_t offset = entry->offset;                                           \
+    if (launder32(table_id) == id_) {                                          \
+      HARDENED_CHECK_EQ(table_id, id_);                                        \
+      if (launder32(offset) >= kMinSize && launder32(offset) < kMaxSize) {     \
+        HARDENED_CHECK_GE(offset, kMinSize);                                   \
+        HARDENED_CHECK_LT(offset, kMaxSize);                                   \
+        uintptr_t ext_address = (uintptr_t)((char *)manifest + entry->offset); \
+        uint32_t header_id =                                                   \
+            ((manifest_ext_header_t *)ext_address)->identifier;                \
+        if (launder32(header_id) == id_) {                                     \
+          HARDENED_CHECK_EQ(header_id, id_);                                   \
+          *name_ = (const type_ *)ext_address;                                 \
+        }                                                                      \
+      }                                                                        \
+    }                                                                          \
+    return kErrorManifestBadExtension;                                         \
+  }
+
+/**
+ * Getters for manifest extensions.
+ */
+MANIFEST_EXTENSIONS(DEFINE_GETTER)
+
 #else   // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 /**
  * Declarations for the functions above that should be defined in tests.
@@ -388,6 +501,11 @@ rom_error_t manifest_check(const manifest_t *manifest);
 manifest_digest_region_t manifest_digest_region_get(const manifest_t *manifest);
 epmp_region_t manifest_code_region_get(const manifest_t *manifest);
 uintptr_t manifest_entry_point_get(const manifest_t *manifest);
+rom_error_t manifest_get_ext_spx_key(const manifest_t *manifest,
+                                     const manifest_ext_spx_key_t **spx_key);
+rom_error_t manifest_get_ext_spx_signature(
+    const manifest_t *manifest,
+    const manifest_ext_spx_signature_t **spx_signature);
 #endif  // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 
 #ifdef __cplusplus

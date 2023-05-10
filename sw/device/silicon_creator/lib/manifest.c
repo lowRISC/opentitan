@@ -26,3 +26,8 @@ extern manifest_digest_region_t manifest_digest_region_get(
     const manifest_t *manifest);
 extern epmp_region_t manifest_code_region_get(const manifest_t *manifest);
 extern uintptr_t manifest_entry_point_get(const manifest_t *manifest);
+extern rom_error_t manifest_get_ext_spx_key(
+    const manifest_t *manifest, const manifest_ext_spx_key_t **spx_key);
+extern rom_error_t manifest_get_ext_spx_signature(
+    const manifest_t *manifest,
+    const manifest_ext_spx_signature_t **spx_signature);
