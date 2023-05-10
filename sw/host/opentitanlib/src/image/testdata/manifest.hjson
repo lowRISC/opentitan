@@ -134,7 +134,7 @@
    * Unix timestamp that gives the creation time of the image, seconds since
    * 00:00:00 on January 1, 1970 UTC (the Unix Epoch).
    */
-  timestamp: "0x00000000"
+  timestamp: ["0x00000000", "0x00000000"]
   /**
    * Binding value used by key manager to derive secret values.
    *

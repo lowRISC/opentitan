@@ -192,7 +192,7 @@ typedef struct manifest {
    * Unix timestamp that gives the creation time of the image, seconds since
    * 00:00:00 on January 1, 1970 UTC (the Unix Epoch).
    */
-  uint64_t timestamp;
+  uint32_t timestamp[2];
   /**
    * Binding value used by key manager to derive secret values.
    *
