@@ -104,6 +104,33 @@ enum {
 };
 
 /**
+ * Manifest extensions table entry.
+ *
+ * An extension with index `i` exists if the `identifier` of the `i`th entry in
+ * the extension table matches the `identifier` of the extension and its
+ * `offset` is greater than zero.
+ */
+typedef struct manifest_ext_table_entry {
+  /**
+   * Extension identifier.
+   *
+   * Must match the `identifier` value in the extension's header.
+   */
+  uint32_t identifier;
+  /**
+   * Offset of this extension relative to the start of the manifest.
+   */
+  uint32_t offset;
+} manifest_ext_table_entry_t;
+
+/**
+ * Manifest extensions table.
+ */
+typedef struct manifest_ext_table {
+  manifest_ext_table_entry_t entries[CHIP_MANIFEST_EXT_TABLE_ENTRY_COUNT];
+} manifest_ext_table_t;
+
+/**
  * Manifest for boot stage images stored in flash.
  *
  * OpenTitan secure boot, at a minimum, consists of three boot stages: ROM,
@@ -225,6 +252,10 @@ typedef struct manifest {
    * the manifest in bytes.
    */
   uint32_t entry_point;
+  /**
+   * Extensions.
+   */
+  manifest_ext_table_t extensions;
 } manifest_t;
 
 OT_ASSERT_MEMBER_OFFSET(manifest_t, spx_signature, 0);
@@ -245,6 +276,7 @@ OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 8772);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 8776);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 8780);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 8784);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, extensions, 8788);
 OT_ASSERT_SIZE(manifest_t, CHIP_MANIFEST_SIZE);
 
 /**
