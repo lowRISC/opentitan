@@ -26,6 +26,8 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
   int unsigned data_open_cnt[2];
   int unsigned instr_open_cnt[2];
 
+  bit seen_top_level_alert;
+
   function automatic bit cpu_is_executing_code();
     return cfg.sw_test_status_vif.sw_test_status inside {SwTestStatusInBootRom, SwTestStatusInTest};
   endfunction
@@ -664,6 +666,13 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       `uvm_info(`gfn, "Expecting an internal major alert due to glitched output.", UVM_LOW)
     end
 
+    if (exp_alert_major_internal) begin
+      seen_top_level_alert = 1'b0;
+      // Give the rv_core_ibex_fatal_hw_err alert a few more cycles to propagate out compared to the
+      // alert signal at the ibex top level.
+      check_alert_occurs("rv_core_ibex_fatal_hw_err", max_delay_clks + 5);
+    end
+
     // Check that `alert_major_internal_o` of `ibex_lockstep` matches our expectation. Depending on
     // the glitched signal and core it may take several clock cycles for a potential alert to fire.
     // We wait for at most max_delay_clks cycles.
@@ -686,11 +695,36 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     `DV_CHECK_EQ_FATAL(alert_major_internal, exp_alert_major_internal,
                        "Major alert did not match expectation.")
 
+    `DV_WAIT(!exp_alert_major_internal || seen_top_level_alert);
+
     // Complete the test at this point (i.e., before the binary has completed execution), because
     // the glitch may cause all sorts of problems.  This test currently only checks that the
     // lockstep module outputs a major alert.
     dv_test_status_pkg::dv_test_status(1); // Test passed.
     $finish();
+  endtask
+
+  task check_alert_occurs(string alert_name, int timeout);
+    fork begin
+      `DV_CHECK_FATAL(cfg.m_alert_agent_cfgs.exists(alert_name))
+
+      `uvm_info(`gfn, $sformatf("Checking for alert %s, expected in not more than %0d cycles",
+        alert_name, timeout), UVM_LOW)
+
+      for (int i = 0; i <= timeout; i++) begin
+        if (cfg.m_alert_agent_cfgs[alert_name].vif.get_alert()) begin
+          `uvm_info(`gfn, $sformatf("Alert %s has been seen", alert_name), UVM_LOW)
+          seen_top_level_alert = 1'b1;
+        end
+
+        cfg.chip_vif.cpu_clk_rst_if.wait_n_clks(1);
+      end
+
+      if (!seen_top_level_alert) begin
+        `DV_CHECK_FATAL(1'b0,
+          $sformatf("Alert %s was not seen within %0d cycles", alert_name, timeout))
+      end
+    end join_none
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
