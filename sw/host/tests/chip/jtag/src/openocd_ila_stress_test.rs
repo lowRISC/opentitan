@@ -252,7 +252,7 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 
-    const NUM_ITERATIONS: u32 = 50;
+    const NUM_ITERATIONS: u32 = 2000;
 
     for i in 0..NUM_ITERATIONS {
         log::info!("Starting iteration {:?}", i);
