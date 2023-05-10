@@ -63,6 +63,9 @@ module dmi_jtag #(
 
   assign dmi_clear = jtag_dmi_clear || (dtmcs_select && update && dtmcs_q.dmihardreset);
 
+  logic dmistat_nonzero;
+  assign dmistat_nonzero = (dtmcs_q.dmistat != 2'b00);
+
   // -------------------------------
   // Debug Module Control and Status
   // -------------------------------
@@ -111,6 +114,9 @@ module dmi_jtag #(
   dm::dmi_resp_t dmi_resp;
   logic          dmi_resp_valid;
   logic          dmi_resp_ready;
+
+  logic dmi_resp_valid_no_success;
+  assign dmi_resp_valid_no_success = dmi_resp_valid & (dmi_resp.resp != dm::DTM_SUCCESS);
 
   typedef struct packed {
     logic [6:0]  address;
@@ -359,7 +365,7 @@ module dmi_jtag #(
 
   // This taps the JTAG signals and syncs them over into the clock domain where the ILA sits
   // (we just use the DMI clock for that).
-  localparam int SyncWidth = 17;
+  localparam int SyncWidth = 41;
   logic [SyncWidth-1:0] ila_tap;
   logic [SyncWidth-1:0] ila_sync;
 
@@ -381,7 +387,12 @@ module dmi_jtag #(
     shift,
     tdi,
     dtmcs_select,
-    dtmcs_q[0],
+    dtmcs_q[17:0],
+    error_q[1:0],
+    dmistat_nonzero,
+    dmi_resp_valid,
+    dmi_resp.resp[1:0],
+    dmi_resp_valid_no_success,
     dmi_select,
     dmi_tdo
   };
@@ -413,7 +424,7 @@ module dmi_jtag #(
 
   // note: data capture filtes based on edge, posedge, negedge, level
   // etc can be configured in the ILA at runtime.
-  localparam int IlaWidth = 24;
+  localparam int IlaWidth = 42;
   ila_0 u_ila_0 (
     .clk(clk_i),
     .probe0(IlaWidth'({tck_q[DelayCycles-1], ila_sync}))
