@@ -21,6 +21,4 @@ interface spi_host_cov_if
   // Control register cover points //
   ///////////////////////////////////
 
-  // TODO add covergroups and coverpoints
-
 endinterface
