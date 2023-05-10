@@ -362,9 +362,19 @@ def otp_bytestring(byte_list):
         val = (val << 8) | b
     return hex(val, width = 8 * len(byte_list))
 
-def alert(prod, prod_end, dev, rma):
-    """Given an alert class for each LC state, returns the oty_bytestring encoding"""
-    return otp_bytestring([getattr(CONST.ALERT, "CLASS_{}".format(c)) for c in (prod, prod_end, dev, rma)])
+def _parse_str_list(s):
+    """Parse a string with comma delimiters as a list of strings, ignoring spaces.
+
+    This function is a workaround when lists need to be provided as arguments in
+    a compact form in a BUILD file. Leaving the argument as a list causes
+    buildifier to reformat it onto multiple lines whereas a string is kept as
+    one line. This function can be removed once buildifier supports exempting
+    regions from auto-formatting.
+
+    Example:
+    _parse_str_list("  a, b,    c, d") -> ["a", "b", "c", "d"]
+    """
+    return s.replace(" ", "").split(",")
 
 def otp_alert_classification(alert_list, default = None, **kwargs):
     """Create an array specifying the alert classifications.
@@ -378,34 +388,74 @@ def otp_alert_classification(alert_list, default = None, **kwargs):
         default: default classification for all alerts that are not specified
             in kwargs. If kwargs does not include all alerts, a value must be
             specified for default.
-        kwargs: a mapping of the format 'alert_name = alert_class_bytestring'.
-            The alert_class_bytestring can be generated with the `alert` macro.
+        kwargs: a mapping of the format 'alert_name = alert_class_string'.
+            alert_name is an alert in the alert_list argument.
+            alert_class_string is a comma-delimited string that can contain
+            spaces and is intended to be parsed by the _parse_str_list macro.
+            This string must indicate exactly 4 alert classes for the prod,
+            prod_end, dev, and rma LC states in that order.
 
     Returns:
-        Alert classification specification as a list of num_alerts bytestrings.
+        Alert classification specification as a list of bytestrings.
 
     Example usage:
-        otp_earlgrey_alert_classification(
-            alert_list = CONST.EARLGREY_ALERTS,
-            default = alert(prod = "X", prod_end = "X", dev = "X", rma = "X"),
-            uart0_fatal_fault = alert(prod = "A", prod_end = "B", dev = "C", rma = "D"),
-            uart1_fatal_fault = alert(prod = "A", prod_end = "B", dev = "C", rma = "D"),
-            ...
-        )
+        otp_alert_classification(
+            alert_list = EARLGREY_ALERTS,
+            # The ordering is alert("prod, prod_end, dev, rma)
+            default = "                   X, X, X, X",
+            gpio_fatal_fault = "          X, X, X, X",
+            i2c0_fatal_fault = "          X, X, X, X",
+            otp_ctrl_fatal_macro_error = "X, X, X, X",
+        ),
     """
 
+    def _parse_alert_class_string(s):
+        classes = _parse_str_list(s)
+        if len(classes) != 4:
+            fail("Exactly 4 classes must be specified (for prod, prod_end, dev, and rma LC states)")
+        alert_class_bytes = [getattr(CONST.ALERT, "CLASS_{}".format(c)) for c in classes]
+        return otp_bytestring(alert_class_bytes)
+
+    provided_alerts = dict()
+    for alert, class_str in kwargs.items():
+        provided_alerts[alert] = _parse_alert_class_string(class_str)
+
     alert_set = sets.make(alert_list)
-    provided_alerts = sets.make(kwargs.keys())
+    provided_alert_set = sets.make(provided_alerts.keys())
 
     # Provided alerts must not have any unknown alerts
-    unknown_alerts = sets.difference(provided_alerts, alert_set)
+    unknown_alerts = sets.difference(provided_alert_set, alert_set)
     if sets.length(unknown_alerts) > 0:
         fail("Some provided alerts are not known by this macro: {}".format(unknown_alerts))
 
     # If a default is not provided, the provided alerts must match exactly with the alert_set
     if default == None:
-        extra_alerts = sets.difference(alert_set, provided_alerts)
+        extra_alerts = sets.difference(alert_set, provided_alert_set)
         if sets.length(extra_alerts) > 0:
             fail("Some alerts were not specified and no default was provided: {}".format(extra_alerts))
 
-    return [kwargs.get(alert, default = default) for alert in alert_list]
+    return [provided_alerts.get(alert, default = _parse_alert_class_string(default)) for alert in alert_list]
+
+def otp_per_class_bytes(A, B, C, D):
+    """Create a bytestring of per-alert-class byte values."""
+    return otp_bytestring([A, B, C, D])
+
+def otp_per_class_ints(A, B, C, D):
+    """Create a list of per-alert-class int values."""
+    return [otp_hex(x) for x in (A, B, C, D)]
+
+def otp_per_class_lists(A, B, C, D):
+    """Create a list of per-alert-class parameters.
+
+    Args:
+        A, B, C, D: a comma-delimited string indicating the parameters for each
+            alert class.
+
+    Returns:
+        The parameters of the provided lists are all joined together. This macro
+        returns one list of strings.
+    """
+    cfg_list = list()
+    for x in (A, B, C, D):
+        cfg_list.extend([otp_hex(int(i, base = 16)) for i in _parse_str_list(x)])
+    return cfg_list
