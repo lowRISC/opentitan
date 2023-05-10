@@ -57,7 +57,9 @@ module tb;
     .rst_n(rst_n)
   );
 
-  `define I2C_HIER tb.dut.i2c_core
+  `ifndef I2C_HIER
+    `define I2C_HIER tb.dut.i2c_core
+  `endif
 
   assign i2c_dv_if.i2c_state = `I2C_HIER.u_i2c_fsm.state_q;
 
