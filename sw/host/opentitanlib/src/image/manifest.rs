@@ -29,7 +29,8 @@ use zerocopy::FromBytes;
 //      -- -I./ -Isw/device/lib/base/freestanding
 // TODO: Generate some constants as hex if possible, replacing manually for now.
 
-pub const CHIP_MANIFEST_SIZE: u32 = 8788;
+pub const CHIP_MANIFEST_SIZE: u32 = 8852;
+pub const CHIP_MANIFEST_EXT_TABLE_COUNT: u32 = 8;
 pub const MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL: u32 = 0xa5a5a5a5;
 pub const CHIP_ROM_EXT_IDENTIFIER: u32 = 0x4552544f;
 pub const CHIP_BL0_IDENTIFIER: u32 = 0x3042544f;
@@ -60,6 +61,7 @@ pub struct Manifest {
     pub code_start: u32,
     pub code_end: u32,
     pub entry_point: u32,
+    pub extensions: ManifestExtTable,
 }
 
 /// A type that holds 1964 32-bit words for SPHINCS+ signtures.
@@ -77,11 +79,35 @@ impl Default for SigverifySpxSignature {
     }
 }
 
+/// Extension header.
+#[repr(C)]
+#[derive(FromBytes, AsBytes, Debug, Default)]
+pub struct ManifestExtHeader {
+    pub identifier: u32,
+    pub name: u32,
+}
+
+/// SPHINCS+ signature manifest extension.
+#[repr(C)]
+#[derive(FromBytes, AsBytes, Debug, Default)]
+pub struct ManifestExtSpxSignature {
+    pub header: ManifestExtHeader,
+    pub signature: SigverifySpxSignature,
+}
+
 /// A type that holds 8 32-bit words for SPHINCS+ public keys.
 #[repr(C)]
 #[derive(FromBytes, AsBytes, Debug, Default)]
 pub struct SigverifySpxKey {
     pub data: [u32; 8usize],
+}
+
+/// SPHINCS+ public key manifest extension.
+#[repr(C)]
+#[derive(FromBytes, AsBytes, Debug, Default)]
+pub struct ManifestExtSpxKey {
+    pub header: ManifestExtHeader,
+    pub key: SigverifySpxKey,
 }
 
 /// A type that holds 96 32-bit words for RSA-3072.
@@ -142,6 +168,19 @@ pub struct KeymgrBindingValue {
     pub data: [u32; 8usize],
 }
 
+#[repr(C)]
+#[derive(FromBytes, AsBytes, Debug, Default, Copy, Clone)]
+pub struct ManifestExtTableEntry {
+    pub identifier: u32,
+    pub offset: u32,
+}
+
+#[repr(C)]
+#[derive(FromBytes, AsBytes, Debug, Default, Copy, Clone)]
+pub struct ManifestExtTable {
+    pub entries: [ManifestExtTableEntry; CHIP_MANIFEST_EXT_TABLE_COUNT as usize],
+}
+
 /// Checks the layout of the manifest struct.
 ///
 /// Implemented as a function because using `offset_of!` at compile-time
@@ -166,5 +205,6 @@ pub fn check_manifest_layout() {
     assert_eq!(offset_of!(Manifest, code_start), 8776);
     assert_eq!(offset_of!(Manifest, code_end), 8780);
     assert_eq!(offset_of!(Manifest, entry_point), 8784);
+    assert_eq!(offset_of!(Manifest, extensions), 8788);
     assert_eq!(size_of::<Manifest>(), CHIP_MANIFEST_SIZE as usize);
 }

@@ -167,4 +167,14 @@
    * the manifest in bytes.
    */
   entry_point: "0x00000000"
+  extensions: [
+    {identifier: "0x00000000", offset: "0x00000000"},
+    {identifier: "0x00000000", offset: "0x00000000"},
+    {identifier: "0x00000000", offset: "0x00000000"},
+    {identifier: "0x00000000", offset: "0x00000000"},
+    {identifier: "0x00000000", offset: "0x00000000"},
+    {identifier: "0x00000000", offset: "0x00000000"},
+    {identifier: "0x00000000", offset: "0x00000000"},
+    {identifier: "0x00000000", offset: "0x00000000"},
+  ]
 }
