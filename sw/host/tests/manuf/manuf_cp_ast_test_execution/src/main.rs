@@ -49,7 +49,10 @@ fn connect_riscv_jtag(opts: &Opts, transport: &TransportWrapper) -> Result<Rc<dy
     jtag.connect(JtagTap::RiscvTap)?;
     // This test is supposed to be run with ROM execution disabled but just in case
     // we reset the core to make sure we are in a known state. This disables the watchdog.
-    jtag.reset(false)?;
+    jtag.reset(true)?;
+    std::thread::sleep(Duration::from_secs(2));
+    jtag.halt()?;
+    //jtag.reset(false)?;
     log::info!("target reset and halted");
     Ok(jtag)
 }
