@@ -56,6 +56,7 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl/sha2:sha256",
         "//sw/device/lib/crypto/impl/sha2:sha512",
         "//sw/device/lib/crypto/include:datatypes",
     ],
