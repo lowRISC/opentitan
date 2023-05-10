@@ -253,19 +253,50 @@
   } while (false)
 
 /**
+ * Prints `status_t` using a format compatible with DV.
+ *
+ * The %r specifier supported by the software print module is no compatible with
+ * the DV environment.
+ *
+ * If you landed here after reviewing a DV error log: Please read the status.h
+ * documentation for more details on how `status_t` encodes the module id, line
+ * number and error code.
+ *
+ * @param expr An expression which evaluates to a `status_t`.
+ *
+ */
+#define _LOG_ERROR_STATUS_DV(expr)                                         \
+  do {                                                                     \
+    status_t status_ = expr;                                               \
+    const char *msg;                                                       \
+    char mod_id[3] = {0};                                                  \
+    int line;                                                              \
+    if (status_extract(status_, &msg, &line, mod_id)) {                    \
+      LOG_ERROR("CHECK-STATUS-fail: %c%c%c:%d = %s", mod_id[0], mod_id[1], \
+                mod_id[2], line, msg);                                     \
+    } else {                                                               \
+      LOG_ERROR("CHECK-STATUS-fail: 0x%08x", status_);                     \
+    }                                                                      \
+  } while (false)
+
+/**
  * Unwrap a `status_t` when it represents a non-error value, otherwise prints a
  * human-readable error message and abort.
  *
  * @param expr An expression which evaluates to a `status_t`.
  */
-#define UNWRAP(expr, ...)                          \
-  ({                                               \
-    status_t status_ = expr;                       \
-    if (!status_ok(status_)) {                     \
-      LOG_ERROR("CHECK-STATUS-fail: %r", status_); \
-      test_status_set(kTestStatusFailed);          \
-    }                                              \
-    status_.value;                                 \
+#define UNWRAP(expr, ...)                            \
+  ({                                                 \
+    status_t status_ = expr;                         \
+    if (!status_ok(status_)) {                       \
+      if (kDeviceLogBypassUartAddress) {             \
+        _LOG_ERROR_STATUS_DV(status_);               \
+      } else {                                       \
+        LOG_ERROR("CHECK-STATUS-fail: %r", status_); \
+      }                                              \
+      test_status_set(kTestStatusFailed);            \
+    }                                                \
+    status_.value;                                   \
   })
 
 /**
@@ -275,13 +306,17 @@
  *
  * @param expr An expression which evaluates to a `status_t`.
  */
-#define CHECK_STATUS_OK(expr, ...)                 \
-  do {                                             \
-    status_t status_ = expr;                       \
-    if (!status_ok(status_)) {                     \
-      LOG_ERROR("CHECK-STATUS-fail: %r", status_); \
-      test_status_set(kTestStatusFailed);          \
-    }                                              \
+#define CHECK_STATUS_OK(expr, ...)                   \
+  do {                                               \
+    status_t status_ = expr;                         \
+    if (!status_ok(status_)) {                       \
+      if (kDeviceLogBypassUartAddress) {             \
+        _LOG_ERROR_STATUS_DV(status_);               \
+      } else {                                       \
+        LOG_ERROR("CHECK-STATUS-fail: %r", status_); \
+      }                                              \
+      test_status_set(kTestStatusFailed);            \
+    }                                                \
   } while (false)
 
 /**
@@ -291,13 +326,17 @@
  *
  * @param expr An expression which evaluates to a `status_t`.
  */
-#define CHECK_STATUS_NOT_OK(expr, ...)           \
-  do {                                           \
-    status_t status_ = expr;                     \
-    if (status_ok(status_)) {                    \
-      LOG_ERROR("CHECK-STATUS-ok: %r", status_); \
-      test_status_set(kTestStatusFailed);        \
-    }                                            \
+#define CHECK_STATUS_NOT_OK(expr, ...)               \
+  do {                                               \
+    status_t status_ = expr;                         \
+    if (status_ok(status_)) {                        \
+      if (kDeviceLogBypassUartAddress) {             \
+        _LOG_ERROR_STATUS_DV(status_);               \
+      } else {                                       \
+        LOG_ERROR("CHECK-STATUS-fail: %r", status_); \
+      }                                              \
+      test_status_set(kTestStatusFailed);            \
+    }                                                \
   } while (false)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_CHECK_H_
