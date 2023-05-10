@@ -17,7 +17,8 @@
 */
 
 module dmi_jtag #(
-  parameter logic [31:0] IdcodeValue = 32'h00000001
+  parameter logic [31:0] IdcodeValue = 32'h00000001,
+  parameter logic DebugIla = 1'b0
 ) (
   input  logic         clk_i,      // DMI Clock
   input  logic         rst_ni,     // Asynchronous reset active low
@@ -398,14 +399,16 @@ module dmi_jtag #(
   };
 
 
-  prim_flop_2sync #(
-    .Width(SyncWidth)
-  ) u_prim_flop_2sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(ila_tap),
-    .q_o(ila_sync)
-  );
+  if (DebugIla) begin : gen_debug_sync
+    prim_flop_2sync #(
+      .Width(SyncWidth)
+    ) u_prim_flop_2sync (
+      .clk_i,
+      .rst_ni,
+      .d_i(ila_tap),
+      .q_o(ila_sync)
+    );
+  end
 
   // assumptions TCK >> T(clk_i), so we are oversampling.
   // we delay the TCK signal so that we can be sure the other synced signals are stable if
@@ -413,21 +416,25 @@ module dmi_jtag #(
   localparam int DelayCycles = 10;
   logic [DelayCycles-1:0] tck_d, tck_q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_del_regs
-    if (!rst_ni) begin
-      tck_q <= '0;
-    end else begin
-      // tck_i is mapped to the highest index in ila_sync
-      tck_q <= {tck_q[DelayCycles-2:0], ila_sync[SyncWidth-1]};
+  if (DebugIla) begin : gen_tck_regs
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_del_regs
+      if (!rst_ni) begin
+        tck_q <= '0;
+      end else begin
+        // tck_i is mapped to the highest index in ila_sync
+        tck_q <= {tck_q[DelayCycles-2:0], ila_sync[SyncWidth-1]};
+      end
     end
   end
 
   // note: data capture filtes based on edge, posedge, negedge, level
   // etc can be configured in the ILA at runtime.
   localparam int IlaWidth = 42;
-  ila_0 u_ila_0 (
-    .clk(clk_i),
-    .probe0(IlaWidth'({tck_q[DelayCycles-1], ila_sync}))
-  );
+  if (DebugIla) begin : gen_ila
+    ila_0 u_ila_0 (
+      .clk(clk_i),
+      .probe0(IlaWidth'({tck_q[DelayCycles-1], ila_sync}))
+    );
+  end
 
 endmodule : dmi_jtag

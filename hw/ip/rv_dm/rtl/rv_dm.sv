@@ -334,7 +334,8 @@ module rv_dm
 
   // JTAG TAP
   dmi_jtag #(
-    .IdcodeValue    (IdcodeValue)
+    .IdcodeValue    (IdcodeValue),
+    .DebugIla       (1'b1)
   ) dap (
     .clk_i            (clk_i),
     .rst_ni           (rst_ni),
