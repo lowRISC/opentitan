@@ -186,6 +186,7 @@ interface lc_ctrl_if (
     endcase
   endfunction
 
+  `ASSERT(StrapEnHigh_A, strap_en_override_o |=> strap_en_override_o, clk, !rst_n)
 endinterface
 
 `undef LC_CTRL_FSM_PATH
