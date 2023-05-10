@@ -258,11 +258,12 @@ manifest_def! {
         rsa_modulus: ManifestRsaBigInt,
         address_translation: ManifestSmallInt<u32>,
         identifier: ManifestSmallInt<u32>,
+        signed_region_end: ManifestSmallInt<u32>,
         length: ManifestSmallInt<u32>,
         version_major: ManifestSmallInt<u32>,
         version_minor: ManifestSmallInt<u32>,
         security_version: ManifestSmallInt<u32>,
-        timestamp: ManifestSmallInt<u64>,
+        timestamp: [ManifestSmallInt<u32>; 2],
         binding_value: [ManifestSmallInt<u32>; 8],
         max_key_version: ManifestSmallInt<u32>,
         code_start: ManifestSmallInt<u32>,
@@ -384,6 +385,14 @@ impl TryFrom<[u32; 8]> for KeymgrBindingValue {
     }
 }
 
+impl TryFrom<[u32; 2]> for Timestamp {
+    type Error = anyhow::Error;
+
+    fn try_from(words: [u32; 2]) -> Result<Timestamp> {
+        Ok(Timestamp { data: words })
+    }
+}
+
 impl TryFrom<[u32; 8]> for LifecycleDeviceId {
     type Error = anyhow::Error;
 
@@ -454,6 +463,11 @@ where
 
 impl From<&KeymgrBindingValue> for [ManifestSmallInt<u32>; 8] {
     fn from(o: &KeymgrBindingValue) -> [ManifestSmallInt<u32>; 8] {
+        o.data.map(|v| ManifestSmallInt(Some(HexEncoded(v))))
+    }
+}
+impl From<&Timestamp> for [ManifestSmallInt<u32>; 2] {
+    fn from(o: &Timestamp) -> [ManifestSmallInt<u32>; 2] {
         o.data.map(|v| ManifestSmallInt(Some(HexEncoded(v))))
     }
 }

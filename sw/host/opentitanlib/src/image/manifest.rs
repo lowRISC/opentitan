@@ -53,7 +53,7 @@ pub struct Manifest {
     pub version_major: u32,
     pub version_minor: u32,
     pub security_version: u32,
-    pub timestamp: u64,
+    pub timestamp: Timestamp,
     pub binding_value: KeymgrBindingValue,
     pub max_key_version: u32,
     pub code_start: u32,
@@ -126,6 +126,13 @@ impl Default for ManifestUsageConstraints {
             life_cycle_state: MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL,
         }
     }
+}
+
+/// Manifest timestamp
+#[repr(C)]
+#[derive(FromBytes, AsBytes, Debug, Default)]
+pub struct Timestamp {
+    pub data: [u32; 2usize],
 }
 
 #[repr(C)]
