@@ -17,6 +17,15 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
       solve next_state_is_testunlock0 before next_state;
    }
 
+  // Drive OTP input `lc_state` and `lc_cnt`.
+  virtual task drive_otp_i(bit rand_otp_i = 1);
+    lc_state = LcStRaw;
+    lc_cnt   = LcCnt0;
+    cfg.lc_ctrl_vif.init(.lc_state(lc_state), .lc_cnt(lc_cnt), .otp_device_id(cfg.otp_device_id),
+                         .otp_manuf_state(cfg.otp_manuf_state),
+                         .otp_vendor_test_status(cfg.otp_vendor_test_status));
+  endtask
+
   task body();
     fork
       run_clk_byp_rsp(clk_byp_error_rsp);
@@ -24,7 +33,6 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
     join_none
 
     `DV_CHECK_RANDOMIZE_FATAL(this)
-    drive_otp_i(0);
     if (lc_cnt != LcCnt24) begin
       lc_ctrl_state_pkg::lc_token_t token_val = lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed;
       csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
