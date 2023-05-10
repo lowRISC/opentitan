@@ -723,6 +723,17 @@ interface chip_if;
   assign probed_cpu_csrs.mcause =
       `CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_mcause_csr.rd_data_o;
 
+  // Probed Ibex PC.
+  typedef struct packed {
+    logic [31:0] pc_if;
+    logic [31:0] pc_id;
+    logic [31:0] pc_wb;
+  } probed_cpu_pc_t;
+  wire probed_cpu_pc_t probed_cpu_pc;
+  assign probed_cpu_pc.pc_if = `CPU_CORE_HIER.u_ibex_core.pc_if;
+  assign probed_cpu_pc.pc_id = `CPU_CORE_HIER.u_ibex_core.pc_id;
+  assign probed_cpu_pc.pc_wb = `CPU_CORE_HIER.u_ibex_core.pc_wb;
+
   // Stub CPU envorinment.
   //
   // The initial value is sought from a plusarg. It can however, be set by the sequence on the fly

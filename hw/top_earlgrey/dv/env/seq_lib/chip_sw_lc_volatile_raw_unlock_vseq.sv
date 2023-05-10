@@ -7,7 +7,12 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
+  // Mapped to plusarg to indicate that the test is run with a production ROM
+  // image.
+  bit rom_prod_mode = 1'b0;
+
   virtual task pre_start();
+    void'($value$plusargs("rom_prod_mode=%0d", rom_prod_mode));
     cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
     super.pre_start();
   endtask
@@ -35,8 +40,15 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
     jtag_lc_state_volatile_raw_unlock(JtagTapRvDm);
     reset_jtag_tap();
 
-    // In RAW state the ROM should halt as RomExecEn is not set yet.
-    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRomHalt)
+    if (rom_prod_mode) begin
+      // The production ROM is not instrumented to report `sw_test_status`, so
+      // we wait for the PC to advance before continuing with the test. The
+      // PC was taken from the ROM disassembly.
+      `DV_WAIT(cfg.chip_vif.probed_cpu_pc.pc_wb >= 8194)
+    end else begin
+      // In RAW state the ROM should halt as RomExecEn is not set yet.
+      `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRomHalt)
+    end
 
     // Use the frontend interface to configure the RomExecEn OTP value. A
     // reset is required to have otp_ctrl sample the new OTP value.
