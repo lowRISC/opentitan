@@ -24,7 +24,6 @@
   ral_spec: "{proj_root}/hw/ip/spi_host/data/spi_host.hjson"
 
   // Import additional common sim cfg files.
-  // TODO: remove imported cfgs that do not apply.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
@@ -124,7 +123,6 @@
       name: spi_host_spien
       uvm_test_seq: spi_host_spien_vseq
     }
-    // TODO: add more tests here
   ]
 
   // List of regressions.
