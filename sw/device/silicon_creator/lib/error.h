@@ -84,6 +84,7 @@ enum module_ {
   \
   X(kErrorManifestBadEntryPoint,      ERROR_(1, kModuleManifest, kInternal)), \
   X(kErrorManifestBadCodeRegion,      ERROR_(2, kModuleManifest, kInternal)), \
+  X(kErrorManifestBadSignedRegion,    ERROR_(3, kModuleManifest, kInternal)), \
   \
   X(kErrorAlertBadIndex,              ERROR_(1, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadClass,              ERROR_(2, kModuleAlertHandler, kInvalidArgument)), \
