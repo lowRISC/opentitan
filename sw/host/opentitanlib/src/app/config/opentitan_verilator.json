@@ -18,9 +18,18 @@
       { "name": "IOR12", "alias_of": "12" },
       { "name": "IOR13", "alias_of": "13" }
 
+      // SW_STRAPs
       { "name": "IOC0", "alias_of": "22" }
       { "name": "IOC1", "alias_of": "23" }
       { "name": "IOC2", "alias_of": "24" }
+
+      // TAP_STRAPs
+      { "name": "IOC5", "alias_of": "27" }
+      { "name": "IOC8", "alias_of": "30" }
+
+      // Hack: RESET isn't connected to the GPIO block on verilator, but we
+      // need a pin named RESET.  Connect to an invalid pin.
+      { "name": "RESET", "alias_of": "255" }
   ],
   "spi": [
     {
