@@ -202,25 +202,25 @@
       tests: ["spi_host_stress_all"]
     }
     {
-        name: spien
-        desc: '''
-          Check that with mid-transaction writes to CONTROL.SPIEN, the block behaves according
-          to the documentation.
-          - Writing a zero to this register temporarily suspends any previously
-            submitted transactions.
-          - If the block is re-enabled by writing a one to CONTROL.SPIEN, any previously
-            executing commands will continue from wherever they left off.
+      name: spien
+      desc: '''
+            Check that with mid-transaction writes to CONTROL.SPIEN, the block behaves according
+            to the documentation.
+            - Writing a zero to this register temporarily suspends any previously
+              submitted transactions.
+            - If the block is re-enabled by writing a one to CONTROL.SPIEN, any previously
+              executing commands will continue from wherever they left off.
 
-          Stimulus:
-            - Issue a transaction
-            - De-assert CONTROL.SPIEN after the command byte is receieved
-            - Re-assert after a randomized delay
-          Checking:
-            - Ensure transactions are transmitted/received correctly, even with a large
-              temporary suspension in the middle.
-          '''
-        stage: V2
-        tests: ["spi_host_spien"]
+            Stimulus:
+              - Issue a transaction
+              - De-assert CONTROL.SPIEN after the command byte is receieved
+              - Re-assert after a randomized delay
+            Checking:
+              - Ensure transactions are transmitted/received correctly, even with a large
+                temporary suspension in the middle.
+            '''
+      stage: V2
+      tests: ["spi_host_spien"]
     }
     {
       name: stall
@@ -290,7 +290,7 @@
             '''
     }
     {
-      name:config_opts_cg
+      name: config_opts_cg
       desc: '''
             Collect coverage on the config opts register, some important crosses:
 
