@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::{ensure, Context, Result};
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde_annotate::Annotate;
@@ -107,8 +107,8 @@ impl Transport for Verilator {
     }
 
     fn gpio_pin(&self, instance: &str) -> Result<Rc<dyn GpioPin>> {
-        let pin = u8::from_str(instance)?;
-        ensure!(pin < 32, GpioError::InvalidPinNumber(pin));
+        let pin = u8::from_str(instance).with_context(|| format!("can't convert {instance:?}"))?;
+        ensure!(pin < 32 || pin == 255, GpioError::InvalidPinNumber(pin));
         let mut inner = self.inner.borrow_mut();
         Ok(Rc::clone(inner.gpio.pins.entry(pin).or_insert_with(|| {
             VerilatorGpioPin::new(Rc::clone(&self.inner), pin)
