@@ -10,6 +10,6 @@
 /**
  * Type alias for the SRAM program entrypoint.
  */
-typedef void sram_main(void);
+typedef bool sram_main(void);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_SRAM_DEVICE_INFO_FLASH_WR_FUNCTEST_H_

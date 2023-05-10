@@ -33,7 +33,6 @@ enum {
 status_t isolated_flash_partition_read(dif_flash_ctrl_state_t *flash_ctrl_state,
                                        size_t num_words,
                                        uint32_t *wafer_auth_secret) {
-  // Enable read access to the flash isolated partition.
   uint32_t byte_address = 0;
   TRY(flash_ctrl_testutils_info_region_setup_properties(
       flash_ctrl_state, /*page_id=*/kFlashInfoPageIdWaferAuthSecret,
@@ -46,33 +45,18 @@ status_t isolated_flash_partition_read(dif_flash_ctrl_state_t *flash_ctrl_state,
           .rd_en = kMultiBitBool4True,
           .scramble_en = kMultiBitBool4False},
       &byte_address));
-
   TRY(flash_ctrl_testutils_read(
       flash_ctrl_state, byte_address,
       /*partition_id=*/kFlashInfoPartitionId, wafer_auth_secret,
       /*partition_type=*/kDifFlashCtrlPartitionTypeInfo, num_words,
       /*delay_micros=*/0));
 
-  // Disable read access to the flash isolated partition.
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
-      flash_ctrl_state, /*page_id=*/kFlashInfoPageIdWaferAuthSecret,
-      /*bank=*/kFlashInfoBankId, /*partition_id=*/kFlashInfoPartitionId,
-      (dif_flash_ctrl_region_properties_t){
-          .ecc_en = kMultiBitBool4True,
-          .high_endurance_en = kMultiBitBool4False,
-          .erase_en = kMultiBitBool4False,
-          .prog_en = kMultiBitBool4False,
-          .rd_en = kMultiBitBool4False,
-          .scramble_en = kMultiBitBool4False},
-      NULL));
-
   return OK_STATUS();
 }
 
 status_t isolated_flash_partition_write(
-    dif_flash_ctrl_state_t *flash_ctrl_state, uint32_t *wafer_auth_secret,
+    dif_flash_ctrl_state_t *flash_ctrl_state, const uint32_t *wafer_auth_secret,
     size_t num_words) {
-  // Enable write access to the flash isolated partition.
   uint32_t byte_address = 0;
   TRY(flash_ctrl_testutils_info_region_setup_properties(
       flash_ctrl_state, /*page_id=*/kFlashInfoPageIdWaferAuthSecret,
@@ -80,29 +64,15 @@ status_t isolated_flash_partition_write(
       (dif_flash_ctrl_region_properties_t){
           .ecc_en = kMultiBitBool4True,
           .high_endurance_en = kMultiBitBool4False,
-          .erase_en = kMultiBitBool4False,
+          .erase_en = kMultiBitBool4True,
           .prog_en = kMultiBitBool4True,
           .rd_en = kMultiBitBool4False,
           .scramble_en = kMultiBitBool4False},
       &byte_address));
-
-  TRY(flash_ctrl_testutils_write(
+  TRY(flash_ctrl_testutils_erase_and_write_page(
       flash_ctrl_state, byte_address,
       /*partition_id=*/kFlashInfoPartitionId, wafer_auth_secret,
-      /*partition_type=*/kDifFlashCtrlPartitionTypeInfo, num_words));
-
-  // Disable write access to the flash isolated partition.
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
-      flash_ctrl_state, /*page_id=*/kFlashInfoPageIdWaferAuthSecret,
-      /*bank=*/kFlashInfoBankId, /*partition_id=*/kFlashInfoPartitionId,
-      (dif_flash_ctrl_region_properties_t){
-          .ecc_en = kMultiBitBool4True,
-          .high_endurance_en = kMultiBitBool4False,
-          .erase_en = kMultiBitBool4False,
-          .prog_en = kMultiBitBool4False,
-          .rd_en = kMultiBitBool4False,
-          .scramble_en = kMultiBitBool4False},
-      NULL));
+      kDifFlashCtrlPartitionTypeInfo, num_words));
 
   return OK_STATUS();
 }

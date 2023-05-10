@@ -43,7 +43,7 @@ status_t isolated_flash_partition_read(dif_flash_ctrl_state_t *flash_ctrl_state,
  * @return OK_STATUS on success.
  */
 status_t isolated_flash_partition_write(
-    dif_flash_ctrl_state_t *flash_ctrl_state, uint32_t *wafer_auth_secret,
+    dif_flash_ctrl_state_t *flash_ctrl_state, const uint32_t *wafer_auth_secret,
     size_t num_words);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_ISOLATED_FLASH_PARTITION_H_
