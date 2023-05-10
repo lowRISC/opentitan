@@ -415,6 +415,75 @@ module pinmux_strap_sampling
     end
   end
 
+  localparam int unsigned OnesCountWidth = 7;
+  logic [OnesCountWidth-1:0] tdi_ones_count_d, tdi_ones_count_q,
+                             tdo_ones_count_d, tdo_ones_count_q;
+  always_ff @(posedge jtag_req.tck, negedge jtag_req.trst_n) begin
+    if (!jtag_req.trst_n) begin
+      tdi_ones_count_q <= '0;
+      tdo_ones_count_q <= '0;
+    end else begin
+      tdi_ones_count_q <= tdi_ones_count_d;
+      // TDO changes on negative edge of TCK, but we sample it on positive edge of TCK to prevent
+      // races.
+      tdo_ones_count_q <= tdo_ones_count_d;
+    end
+  end
+
+  assign tdi_ones_count_d =
+      // Clear if TDI is zero.
+      ~jtag_req.tdi ? '0 :
+      // Saturate instead of overflowing.
+      (tdi_ones_count_q == '1) ? '1 :
+      // Increment if TDI is one.
+      ~jtag_req.tdi ? tdi_ones_count_q + 1 :
+      // Otherwise hold.
+      tdi_ones_count_q;
+
+  assign tdo_ones_count_d =
+      // Clear if TDO is enabled and zero.
+      (oe_padring_o[TargetCfg.tdo_idx] & ~out_padring_o[TargetCfg.tdo_idx]) ? '0 :
+      // Saturate instead of overflowing.
+      (tdo_ones_count_q == '1) ? '1 :
+      // Increment if TDO is enabled and one.
+      (oe_padring_o[TargetCfg.tdo_idx] & out_padring_o[TargetCfg.tdo_idx]) ? tdo_ones_count_q + 1 :
+      // Otherwise hold.
+      tdo_ones_count_q;
+
+  localparam int unsigned SyncWidth = OnesCountWidth + OnesCountWidth + 6;
+  logic [SyncWidth-1:0] ila_jtag_domain, ila_pinmux_domain;
+  assign ila_jtag_domain = {
+    tdi_ones_count_q[OnesCountWidth-1:0],
+    tdo_ones_count_q[OnesCountWidth-1:0],
+    out_padring_o[TargetCfg.tdo_idx],
+    oe_padring_o[TargetCfg.tdo_idx],
+    rv_jtag_rsp.tdo,
+    rv_jtag_rsp.tdo_oe,
+    lc_jtag_rsp.tdo,
+    lc_jtag_rsp.tdo_oe
+  };
+  prim_flop_2sync #(
+    .Width (SyncWidth)
+  ) u_prim_flop_2sync (
+    .clk_i,
+    .rst_ni,
+    .d_i  (ila_jtag_domain),
+    .q_o  (ila_pinmux_domain)
+  );
+
+  ila_1 u_ila_1 (
+    .clk    (clk_i),
+    .probe0 ({
+      tap_strap_q[NTapStraps-1:0],
+      dft_strap_q[NDFTStraps-1:0],
+      dft_strap_valid_q,
+      strap_en_q,
+      tap_sampling_en,
+      jtag_en,
+      ila_pinmux_domain[SyncWidth-1:0]
+    })
+  );
+
   ////////////////
   // Assertions //
   ////////////////
