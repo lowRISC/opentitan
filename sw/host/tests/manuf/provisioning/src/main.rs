@@ -100,13 +100,17 @@ fn provisioning(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let jtag = transport.jtag(&opts.jtag_params)?;
     jtag.connect(JtagTap::LcTap)?;
 
-    // Check the current LC state is Dev.
+    // Check the current LC state is Dev or Prod.
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
     wait_for_status(&jtag, Duration::from_secs(3), LcCtrlStatus::INITIALIZED)?;
-    assert_eq!(
-        jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?,
+    let valid_lc_states = HashSet::from([
         DifLcCtrlState::Dev.redundant_encoding(),
-        "Invalid initial LC state.",
+        DifLcCtrlState::Prod.redundant_encoding(),
+    ]);
+    let current_lc_state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
+    assert!(
+        valid_lc_states.contains(&current_lc_state),
+        "Invalid initial LC state (must be in Dev or Prod to test transition to RMA).",
     );
 
     // Issue an LC transition to RMA to verify unlock token.
@@ -121,14 +125,12 @@ fn provisioning(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // Check the LC state is RMA.
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
-    let valid_lc_states = HashSet::from([
-        DifLcCtrlState::Prod.redundant_encoding(),
-        DifLcCtrlState::ProdEnd.redundant_encoding(),
-        DifLcCtrlState::Rma.redundant_encoding(),
-    ]);
-    let current_lc_state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
     wait_for_status(&jtag, Duration::from_secs(3), LcCtrlStatus::INITIALIZED)?;
-    assert!(valid_lc_states.contains(&current_lc_state));
+    assert_eq!(
+        jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?,
+        DifLcCtrlState::Rma.redundant_encoding(),
+        "Did not transition to RMA.",
+    );
 
     jtag.disconnect()?;
 
