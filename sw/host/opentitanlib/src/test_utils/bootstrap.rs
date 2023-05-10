@@ -31,7 +31,11 @@ impl Bootstrap {
     pub fn load(&self, transport: &TransportWrapper, file: &Path) -> Result<()> {
         let payload = std::fs::read(file)?;
         let progress = StagedProgressBar::new();
-        bootstrap::Bootstrap::update_with_progress(transport, &self.options, &payload, &progress)?;
+        let mut options = self.options.clone();
+        if options.clear_uart.is_none() {
+            options.clear_uart = Some(true);
+        }
+        bootstrap::Bootstrap::update_with_progress(transport, &options, &payload, &progress)?;
         Ok(())
     }
 }
