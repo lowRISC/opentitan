@@ -635,3 +635,13 @@
     return SIGNAL_PATH_;                                                                      \
   endfunction
 `endif
+
+// Usage:`OTDBG(( string ))
+// This macro has unque keyword 'OTDBG'and timestemp only.
+// Use for the temporary print to distinguish from `uvm_info.
+// Do not leave this macro in other source files in the remote repo.
+`ifndef OTDBG
+  `define OTDBG(x) \
+  $write($sformatf("%t:OTDBG:",$time));\
+  $display($sformatf x);
+`endif
