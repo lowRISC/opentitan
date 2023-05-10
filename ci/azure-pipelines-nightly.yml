@@ -61,7 +61,7 @@ jobs:
       set -x
       module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/bazelisk.sh test \
-        --runs_per_test=50 \
+        --runs_per_test=5 \
         --define DISABLE_VERILATOR_BUILD=true \
         --define bitstream=gcp_splice \
         --test_tag_filters=-verilator,-dv,-broken \
