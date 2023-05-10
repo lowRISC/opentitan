@@ -39,8 +39,8 @@ class BackgroundProcessGroup:
             command: List[str],
             label: str,
             style: ConsoleStyle,
-            callback: Callable[[str], None] = None,
-            capture_stdout = True) -> subprocess.Popen:
+            capture_stdout,
+            callback: Callable[[str], None] = None) -> subprocess.Popen:
         proc = subprocess.Popen(command,
                                 stdout=subprocess.PIPE if capture_stdout else None,
                                 stderr=subprocess.STDOUT,
@@ -62,7 +62,7 @@ class BackgroundProcessGroup:
         if capture_stdout:
             self.selector.register(proc.stdout, selectors.EVENT_READ, echo)
         else:
-            assert callback is not None, "cannot have a callback without capturing the output"
+            assert callback is None, "cannot have a callback without capturing the output"
         return proc
 
     def empty(self) -> bool:
@@ -81,7 +81,8 @@ class BackgroundProcessGroup:
         assert proc not in self.procs_queue
         self.maybe_print_output(
             timeout_seconds=1)  # Flush any remaining lines.
-        self.selector.unregister(proc.stdout)
+        if proc.stdout is not None:
+            self.selector.unregister(proc.stdout)
         self.names.pop(proc, None)
 
     def _block_for_output(self,
@@ -204,7 +205,7 @@ def main(rom_kind: str = typer.Option(...),
     # until OpenOCD has fired up its GDB server before launching the GDB client
     # to avoid a subtle race condition.
     background = BackgroundProcessGroup()
-    openocd = background.run(openocd_command, "OPENOCD", COLOR_PURPLE)
+    openocd = background.run(openocd_command, "OPENOCD", COLOR_PURPLE, capture_stdout=False)
     # For some reason, we don't reliably see the "starting gdb server" line when
     # OpenOCD's GDB server is ready. It could be a buffering issue internal to
     # OpenOCD or perhaps this script.
@@ -223,7 +224,7 @@ def main(rom_kind: str = typer.Option(...),
                          COLOR_GREEN,
                          callback=gdb_maybe_consume_expected_line,
                          capture_stdout=True)
-    background.run(console_command, "CONSOLE", COLOR_RED)
+    background.run(console_command, "CONSOLE", COLOR_RED, capture_stdout = True)
 
     while not background.empty():
         background.maybe_print_output(timeout_seconds=1)
