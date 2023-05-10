@@ -170,6 +170,10 @@ impl CommandDispatch for ManifestUpdateCommand {
                 spx_private_key = Some(SpxKey::Private(private));
             }
         }
+
+        // Update `signed_area_end` after adding all the signed extensions.
+        image.update_signed_region()?;
+
         // Sign the image
         if let Some(key) = rsa_private_key {
             image.update_rsa_signature(key.sign(&image.compute_digest())?)?;

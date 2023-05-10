@@ -29,13 +29,13 @@ use zerocopy::FromBytes;
 //      -- -I./ -Isw/device/lib/base/freestanding
 // TODO: Generate some constants as hex if possible, replacing manually for now.
 
-pub const CHIP_MANIFEST_SIZE: u32 = 8784;
+pub const CHIP_MANIFEST_SIZE: u32 = 8788;
 pub const MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL: u32 = 0xa5a5a5a5;
 pub const CHIP_ROM_EXT_IDENTIFIER: u32 = 0x4552544f;
 pub const CHIP_BL0_IDENTIFIER: u32 = 0x3042544f;
-pub const CHIP_ROM_EXT_SIZE_MIN: u32 = 8784;
+pub const CHIP_ROM_EXT_SIZE_MIN: u32 = 8788;
 pub const CHIP_ROM_EXT_SIZE_MAX: u32 = 0x10000;
-pub const CHIP_BL0_SIZE_MIN: u32 = 8784;
+pub const CHIP_BL0_SIZE_MIN: u32 = 8788;
 pub const CHIP_BL0_SIZE_MAX: u32 = 0x70000;
 
 /// Manifest for boot stage images stored in flash.
@@ -49,6 +49,7 @@ pub struct Manifest {
     pub rsa_modulus: SigverifyRsaBuffer,
     pub address_translation: u32,
     pub identifier: u32,
+    pub signed_region_end: u32,
     pub length: u32,
     pub version_major: u32,
     pub version_minor: u32,
@@ -154,15 +155,16 @@ pub fn check_manifest_layout() {
     assert_eq!(offset_of!(Manifest, rsa_modulus), 8320);
     assert_eq!(offset_of!(Manifest, address_translation), 8704);
     assert_eq!(offset_of!(Manifest, identifier), 8708);
-    assert_eq!(offset_of!(Manifest, length), 8712);
-    assert_eq!(offset_of!(Manifest, version_major), 8716);
-    assert_eq!(offset_of!(Manifest, version_minor), 8720);
-    assert_eq!(offset_of!(Manifest, security_version), 8724);
-    assert_eq!(offset_of!(Manifest, timestamp), 8728);
-    assert_eq!(offset_of!(Manifest, binding_value), 8736);
-    assert_eq!(offset_of!(Manifest, max_key_version), 8768);
-    assert_eq!(offset_of!(Manifest, code_start), 8772);
-    assert_eq!(offset_of!(Manifest, code_end), 8776);
-    assert_eq!(offset_of!(Manifest, entry_point), 8780);
+    assert_eq!(offset_of!(Manifest, signed_region_end), 8712);
+    assert_eq!(offset_of!(Manifest, length), 8716);
+    assert_eq!(offset_of!(Manifest, version_major), 8720);
+    assert_eq!(offset_of!(Manifest, version_minor), 8724);
+    assert_eq!(offset_of!(Manifest, security_version), 8728);
+    assert_eq!(offset_of!(Manifest, timestamp), 8732);
+    assert_eq!(offset_of!(Manifest, binding_value), 8740);
+    assert_eq!(offset_of!(Manifest, max_key_version), 8772);
+    assert_eq!(offset_of!(Manifest, code_start), 8776);
+    assert_eq!(offset_of!(Manifest, code_end), 8780);
+    assert_eq!(offset_of!(Manifest, entry_point), 8784);
     assert_eq!(size_of::<Manifest>(), CHIP_MANIFEST_SIZE as usize);
 }

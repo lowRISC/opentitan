@@ -168,6 +168,11 @@ typedef struct manifest {
    */
   uint32_t identifier;
   /**
+   * Offset of the end of the signed region relative to the start of the
+   * manifest.
+   */
+  uint32_t signed_region_end;
+  /**
    * Length of the image including the manifest in bytes.
    *
    * Note that the length includes the signature but the signature is excluded
@@ -229,16 +234,17 @@ OT_ASSERT_MEMBER_OFFSET(manifest_t, spx_key, 8288);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_modulus, 8320);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 8704);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 8708);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 8712);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 8716);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, version_minor, 8720);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, security_version, 8724);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, timestamp, 8728);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 8736);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 8768);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 8772);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 8776);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 8780);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, signed_region_end, 8712);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 8716);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 8720);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_minor, 8724);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, security_version, 8728);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, timestamp, 8732);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 8740);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 8772);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 8776);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 8780);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 8784);
 OT_ASSERT_SIZE(manifest_t, CHIP_MANIFEST_SIZE);
 
 /**
@@ -268,6 +274,11 @@ typedef struct manifest_digest_region {
  * @return Result of the operation.
  */
 inline rom_error_t manifest_check(const manifest_t *manifest) {
+  // Signed region must be inside the image.
+  if (manifest->signed_region_end > manifest->length) {
+    return kErrorManifestBadSignedRegion;
+  }
+
   // Executable region must be empty, inside the image, located after the
   // manifest, and word aligned.
   if (manifest->code_start >= manifest->code_end ||
@@ -301,13 +312,12 @@ inline rom_error_t manifest_check(const manifest_t *manifest) {
 inline manifest_digest_region_t manifest_digest_region_get(
     const manifest_t *manifest) {
   enum {
-    // TODO(#17824): This should depend on `CREATOR_SW_CFG_SIGVERIFY_SPX_EN`.
     kDigestRegionOffset = offsetof(manifest_t, usage_constraints) +
                           sizeof(manifest->usage_constraints),
   };
   return (manifest_digest_region_t){
       .start = (const char *)manifest + kDigestRegionOffset,
-      .length = manifest->length - kDigestRegionOffset,
+      .length = manifest->signed_region_end - kDigestRegionOffset,
   };
 }
 

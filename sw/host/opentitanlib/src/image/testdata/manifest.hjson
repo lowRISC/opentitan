@@ -110,6 +110,10 @@
    */
   identifier: "0x00000000"
   /**
+   * Offset to the end of the signed region relative to the start of the manifest.
+   */
+  signed_region_end: "0x00000000"
+  /**
    * Length of the image including the manifest in bytes.
    *
    * Note that the length includes the signature but the signature is excluded

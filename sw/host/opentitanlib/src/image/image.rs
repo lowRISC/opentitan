@@ -168,6 +168,15 @@ impl Image {
         Ok(self.size)
     }
 
+    /// Updates the `signed_reion_end` field
+    pub fn update_signed_region(&mut self) -> Result<usize> {
+        // TODO(#18496): Should depend on extensions.
+        let signed_region_end = self.size as u32;
+        let m = self.borrow_manifest_mut()?;
+        m.signed_region_end = signed_region_end;
+        Ok(self.size)
+    }
+
     /// Operates on the signed region of the image.
     pub fn map_signed_region<F, R>(&self, f: F) -> R
     where
