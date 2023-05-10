@@ -43,6 +43,7 @@ typedef struct spi_flash_testutils_parameter_header {
 // JESD216F, section 6.4.18:
 // The Quad Enable mechanism is bits 20:23 of the 15th dword.
 #define SPI_FLASH_QUAD_ENABLE ((bitfield_field32_t){.mask = 7, .index = 20})
+#define SPI_FLASH_ADDRESS_MODE ((bitfield_field32_t){.mask = 3, .index = 17})
 
 /**
  * Read out the JEDEC ID from the SPI flash.

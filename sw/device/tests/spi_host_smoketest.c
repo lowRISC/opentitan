@@ -151,6 +151,35 @@ status_t test_quad_read(void) {
   return OK_STATUS();
 }
 
+static bool is_4_bytes_address_mode_supported() {
+  enum { kSupportOnly3Bytes, kSupport3and4Bytes, kSupportOnly4Bytes };
+  uint8_t address_mode =
+      bitfield_field32_read(sfdp.bfpt[0], SPI_FLASH_ADDRESS_MODE);
+  return (address_mode == kSupport3and4Bytes ||
+          address_mode == kSupportOnly4Bytes);
+}
+
+status_t test_4bytes_address(void) {
+  enum { kAddress = 0x01000100, kSectorSize = 4096 };
+  static_assert(kAddress % kSectorSize,
+                "Should be at the beginning of the sector.");
+
+  TRY(spi_flash_testutils_enter_4byte_address_mode(&spi_host));
+
+  TRY(spi_flash_testutils_program_page(&spi_host, kGettysburgPrelude,
+                                       sizeof(kGettysburgPrelude), kAddress,
+                                       /*addr_is_4b=*/true));
+
+  uint8_t buf[256];
+  TRY(spi_flash_testutils_read_op(&spi_host, kSpiDeviceFlashOpReadNormal, buf,
+                                  sizeof(buf), kAddress,
+                                  /*addr_is_4b=*/true,
+                                  /*width=*/1,
+                                  /*dummy=*/0));
+  TRY_CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
+  return spi_flash_testutils_exit_4byte_address_mode(&spi_host);
+}
+
 bool test_main(void) {
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host));
@@ -170,6 +199,9 @@ bool test_main(void) {
   EXECUTE_TEST(result, test_chip_erase);
   EXECUTE_TEST(result, test_enable_quad_mode);
   EXECUTE_TEST(result, test_page_program);
+  if (is_4_bytes_address_mode_supported()) {
+    EXECUTE_TEST(result, test_4bytes_address);
+  }
   EXECUTE_TEST(result, test_fast_read);
   EXECUTE_TEST(result, test_dual_read);
   EXECUTE_TEST(result, test_quad_read);
