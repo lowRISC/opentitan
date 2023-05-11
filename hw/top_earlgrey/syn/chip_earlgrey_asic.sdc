@@ -73,11 +73,11 @@ if {$FOUNDRY_ROOT != ""} {
     set USB_OE_PIN u_oe_flop/gen_*u_impl*/q_o[0]
 }
 
-set_max_delay 3 -from [get_ports USB_N] -to [get_pins ${USBDEV_IOMUX_PATH}/${USB_N_PIN}]
-set_max_delay 3 -from [get_ports USB_P] -to [get_pins ${USBDEV_IOMUX_PATH}/${USB_P_PIN}]
-set_max_delay 3 -from [get_ports USB_*] -to [get_pins ${USBDEV_IOMUX_PATH}/${USB_PIN}]
-set_max_delay 3 -from [get_pins ${USBDEV_OUTREG_PATH}/${USB_D_PIN}] -to [get_ports USB_*]
-set_max_delay 3 -from [get_pins ${USBDEV_OUTREG_PATH}/${USB_OE_PIN}] -to [get_ports USB_*]
+set_max_delay 5 -from [get_ports USB_N] -to [get_pins ${USBDEV_IOMUX_PATH}/${USB_N_PIN}]
+set_max_delay 5 -from [get_ports USB_P] -to [get_pins ${USBDEV_IOMUX_PATH}/${USB_P_PIN}]
+set_max_delay 5 -from [get_ports USB_*] -to [get_pins ${USBDEV_IOMUX_PATH}/${USB_PIN}]
+set_max_delay 5 -from [get_pins ${USBDEV_OUTREG_PATH}/${USB_D_PIN}] -to [get_ports USB_*]
+set_max_delay 5 -from [get_pins ${USBDEV_OUTREG_PATH}/${USB_OE_PIN}] -to [get_ports USB_*]
 
 #####################
 # IO clk            #
@@ -112,8 +112,8 @@ append_to_collection IO_BANKS [get_ports IOC*]
 append_to_collection IO_BANKS [get_ports IOR*]
 
 # constrain muxed IOs running on IO_DIV2_CLK and IO_DIV4_CLK
-set IO_IN_DEL_FRACTION 0.45
-set IO_OUT_DEL_FRACTION 0.45
+set IO_IN_DEL_FRACTION 0.4
+set IO_OUT_DEL_FRACTION 0.4
 
 # IO_DIV2_CLK
 set IO_DIV2_IN_DEL    [expr ${IO_IN_DEL_FRACTION} * ${IO_TCK_PERIOD} * 2.0]
@@ -134,7 +134,7 @@ set_output_delay ${IO_DIV4_OUT_DEL} ${IO_BANKS} -clock IO_DIV4_CLK -add_delay
 #####################
 
 # MIO paths that go into sysrst_ctrl and fan out into MIOs or dedicated sysrst_ctrl outputs are async in nature, hence we constrain them using a max delay.
-set SYSRST_MAXDELAY 50.0
+set SYSRST_MAXDELAY 70.0
 set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey/u_sysrst_ctrl_aon/*] ${SYSRST_MAXDELAY}
 
 #####################
