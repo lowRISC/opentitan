@@ -47,21 +47,22 @@ fn connect_riscv_jtag(opts: &Opts, transport: &TransportWrapper) -> Result<Rc<dy
     let jtag = transport.jtag(&opts.jtag)?;
     log::info!("Connecting to RISC-V TAP");
     jtag.connect(JtagTap::RiscvTap)?;
+
     // This test is supposed to be run with ROM execution disabled but just in case
     // we reset the core to make sure we are in a known state. This disables the watchdog.
-    jtag.reset(true)?;
-    std::thread::sleep(Duration::from_secs(2));
-    jtag.halt()?;
-    //jtag.reset(false)?;
-    log::info!("target reset and halted");
+    jtag.reset(false)?;
+    log::info!("Target reset and halted.");
+
     Ok(jtag)
 }
 
 fn manuf_cp_ast_text_execution_write_otp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let jtag = connect_riscv_jtag(opts, transport)?;
-    let uart = transport.uart("console")?;
+
     // Make sure to remove any messages from the ROM.
+    let uart = transport.uart("console")?;
     uart.clear_rx_buffer()?;
+
     // Load SRAM program to write the OTP.
     match opts
         .sram_program
@@ -70,7 +71,14 @@ fn manuf_cp_ast_text_execution_write_otp(opts: &Opts, transport: &TransportWrapp
         ExecutionResult::Executing => log::info!("program successfully started"),
         res => bail!("program execution failed: {:?}", res),
     }
-    // TODO read OTP here
+
+    // Disconnect JTAG.
+    transport
+        .pin_strapping("PINMUX_TAP_RISCV")?
+        .remove()
+        .context("failed to apply RISCV TAP strapping")?;
+    jtag.disconnect()?;
+
     // Wait for test status pass over the UART.
     let mut console = UartConsole {
         timeout: Some(opts.timeout),
@@ -81,7 +89,6 @@ fn manuf_cp_ast_text_execution_write_otp(opts: &Opts, transport: &TransportWrapp
     };
     let mut stdout = std::io::stdout();
     let result = console.interact(&*uart, None, Some(&mut stdout))?;
-    jtag.disconnect()?;
     match result {
         ExitStatus::None | ExitStatus::CtrlC => Ok(()),
         ExitStatus::Timeout => {
@@ -110,10 +117,18 @@ fn manuf_cp_ast_text_execution_write_otp(opts: &Opts, transport: &TransportWrapp
 
 fn manuf_cp_ast_text_execution_read_otp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let jtag = connect_riscv_jtag(opts, transport)?;
-    let uart = transport.uart("console")?;
+
     // Make sure to remove any messages from the ROM.
+    let uart = transport.uart("console")?;
     uart.clear_rx_buffer()?;
-    // TODO read OTP
+
+    // TODO(#17388): read Device ID in HW_CFG OTP partition.
+
+    // Disconnect JTAG.
+    transport
+        .pin_strapping("PINMUX_TAP_RISCV")?
+        .remove()
+        .context("failed to apply RISCV TAP strapping")?;
     jtag.disconnect()?;
 
     Ok(())

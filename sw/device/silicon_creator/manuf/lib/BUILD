@@ -303,64 +303,6 @@ opentitan_functest(
     ],
 )
 
-opentitan_ram_binary(
-    name = "sram_exec_test",
-    srcs = ["sram_exec_test.c"],
-    hdrs = ["sram_exec_test.h"],
-    archive_symbol_prefix = "sram_exec_test",
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/examples/sram_program:sram_program_linker_script",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:status",
-    ],
-)
-
-# We are using a bitstream with disabled execution so the content of the flash
-# does not matter but opentitan_functest() is unhappy if we don't provide one.
-# Since execution in the ROM is disabled, bootstrap is not possible so we need
-# to make sure that the test does not try to bootstrap
-#
-# FIXME: for now it seems running the expected test fails because the OTP reading
-# fails after reading 6 words, probably some init is missing. If we run it after the
-# ROM booted normally, it works. Until we find the problem, use an idle functest.
-opentitan_functest(
-    name = "manuf_cp_ast_test_execution_functest",
-    srcs = ["idle_functest.c"],
-    cw310 = cw310_params(
-        #bitstream = ":bitstream_rom_exec_disabled_test_unlocked0",
-        bitstream = "//hw/bitstream:rom_otp_test_unlocked0",
-        tags = ["cw310_rom"],
-        test_cmds = [
-            "--rom-kind=rom",
-            "--bitstream=\"$(rootpath {bitstream})\"",
-            "--bootstrap=\"$(rootpath {flash})\"",
-            "--vmem=\"$(rootpath :sram_exec_test_fpga_cw310_vmem)\"",
-            # the following values come from the sram linker script
-            "--load-addr=0x10001fc4",
-            "--stack-pointer=0x10020000",
-            "--stack-size=1024",
-            "--global-pointer=0x100027C4",  # sram_load_addr + 2048;
-        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
-    ),
-    data = [
-        ":sram_exec_test_fpga_cw310_vmem",
-    ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom"],
-    test_harness = "//sw/host/tests/manuf/manuf_cp_ast_test_execution",
-    deps = [
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
 otp_json(
     name = "otp_json_fixed_secret0",
     partitions = [
@@ -547,5 +489,60 @@ test_suite(
         )
         for init_lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
         for target_lc_state, _ in _PROD_LC_ITEMS
+    ],
+)
+
+opentitan_ram_binary(
+    name = "sram_exec_test",
+    srcs = ["sram_exec_test.c"],
+    hdrs = ["sram_exec_test.h"],
+    archive_symbol_prefix = "sram_exec_test",
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/examples/sram_program:sram_program_linker_script",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:status",
+    ],
+)
+
+# We are using a bitstream with disabled execution so the content of the flash
+# does not matter but opentitan_functest() is unhappy if we don't provide one.
+# Additionally, ROM execution is disabled in the OTP image we use so we do not
+# attempt to bootstrap.
+opentitan_functest(
+    name = "manuf_cp_ast_test_execution_functest",
+    srcs = ["idle_functest.c"],
+    cw310 = cw310_params(
+        bitstream = ":bitstream_rom_exec_disabled_test_unlocked0",
+        tags = ["jtag"],
+        test_cmds = [
+            "--clear-bitstream",
+            "--rom-kind=rom",
+            "--bitstream=\"$(rootpath {bitstream})\"",
+            "--vmem=\"$(rootpath :sram_exec_test_fpga_cw310_vmem)\"",
+            # the following values come from the sram linker script
+            "--load-addr=0x10001fc4",
+            "--stack-pointer=0x10020000",
+            "--stack-size=1024",
+            "--global-pointer=0x100027C4",  # sram_load_addr + 2048;
+        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+    ),
+    data = [
+        ":sram_exec_test_fpga_cw310_vmem",
+    ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
+    targets = ["cw310_rom"],
+    test_harness = "//sw/host/tests/manuf/manuf_cp_ast_test_execution",
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

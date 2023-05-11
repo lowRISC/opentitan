@@ -11,44 +11,119 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"  // Generated.
+
+enum {
+  /**
+   * Device ID OTP offset and sizes.
+   */
+  kDeviceIdOffset =
+      OTP_CTRL_PARAM_DEVICE_ID_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET,
+  kDeviceIdSizeInBytes = OTP_CTRL_PARAM_DEVICE_ID_SIZE,
+  kDeviceIdSizeIn32BitWords = kDeviceIdSizeInBytes / sizeof(uint32_t),
+};
 
 static dif_uart_t uart0;
 static dif_pinmux_t pinmux;
 static dif_otp_ctrl_t otp;
 
-static const uint8_t kNumDeviceId = 8;
+static const uint32_t kTestDeviceId[kDeviceIdSizeIn32BitWords] = {
+    0xdeadbeef, 0x12345678, 0xabcdef12, 0xcafebeef,
+    0x87654321, 0x21fedcba, 0xa1b2c3d4, 0xacdc4321,
+};
 
-static const char kTestDeviceID[] = "abcdefghijklmno";
-static_assert(ARRAYSIZE(kTestDeviceID) % sizeof(uint32_t) == 0,
-              "kTestDeviceID must be a word array");
-static_assert(ARRAYSIZE(kTestDeviceID) <= 32,
-              "kTestDeviceID must be less than 32 bytes");
+/**
+ * Initialize all DIF handles used in this program.
+ */
+static status_t peripheral_handles_init(void) {
+  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+                      &pinmux));
+  TRY(dif_otp_ctrl_init(
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  TRY(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
+                    &uart0));
+  return OK_STATUS();
+}
 
-static status_t log_device_id() {
-  // Read the Device_ID from OTP (except all zeroes).
-  uint32_t otp_device_id;
-  for (int i = 0; i < kNumDeviceId; i++) {
-    TRY(otp_ctrl_testutils_dai_read32(&otp, kDifOtpCtrlPartitionHwCfg, i * 4,
-                                      &otp_device_id));
-
-    LOG_INFO("Device_ID_%d = %08x", i, otp_device_id);
+static status_t otp_ctrl_read_hw_cfg_device_id(uint32_t *device_id) {
+  for (size_t i = kDeviceIdOffset; i < kDeviceIdSizeIn32BitWords; ++i) {
+    TRY(otp_ctrl_testutils_dai_read32(&otp, kDifOtpCtrlPartitionHwCfg,
+                                      kDeviceIdOffset + (i * 4),
+                                      &device_id[i]));
+    LOG_INFO("Device ID (%d) = %08x", i, device_id[i]);
   }
   return OK_STATUS();
 }
 
-status_t write_otp() {
-  // Configure the pinmux.
-  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
-                      &pinmux));
-  pinmux_testutils_init(&pinmux);
+/**
+ * Check the Device ID has not yet been provisioned in OTP.
+ *
+ * The HW_CFG partition should be unlocked and the device ID should be all zero.
+ */
+static status_t check_device_id_is_unprovisioned() {
+  // Check HW_CFG is unlocked.
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(&otp, kDifOtpCtrlPartitionHwCfg,
+                                      &is_locked));
+  CHECK(!is_locked);
 
-  // Initialize UART.
-  TRY(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
-                    &uart0));
-  TRY(dif_uart_configure(&uart0, (dif_uart_config_t){
+  // Check Device ID is all zeros.
+  uint32_t expected_device_id[kDeviceIdSizeIn32BitWords] = {0};
+  uint32_t actual_device_id[kDeviceIdSizeIn32BitWords] = {0};
+  TRY(otp_ctrl_read_hw_cfg_device_id(actual_device_id));
+  CHECK_ARRAYS_EQ(actual_device_id, expected_device_id,
+                  kDeviceIdSizeIn32BitWords);
+  return OK_STATUS();
+}
+
+/**
+ * Check the Device ID has been provisioned in OTP, but not locked.
+ */
+static status_t check_device_id_is_provisioned() {
+  // Check HW_CFG is still unlocked.
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(&otp, kDifOtpCtrlPartitionHwCfg,
+                                      &is_locked));
+  CHECK(!is_locked);
+
+  // Check Device ID matches what is expected.
+  uint32_t actual_device_id[kDeviceIdSizeIn32BitWords] = {0};
+  TRY(otp_ctrl_read_hw_cfg_device_id(actual_device_id));
+  CHECK_ARRAYS_EQ(actual_device_id, kTestDeviceId, kDeviceIdSizeIn32BitWords);
+  return OK_STATUS();
+}
+
+/**
+ * Provisions a Device ID into the HW_CFG OTP partition.
+ */
+static status_t provisioning_device_id_start() {
+  LOG_INFO("Provisioning Device ID in OTP.");
+  check_device_id_is_unprovisioned();
+  TRY(otp_ctrl_testutils_dai_write32(&otp, kDifOtpCtrlPartitionHwCfg,
+                                     kDeviceIdOffset, kTestDeviceId,
+                                     kDeviceIdSizeIn32BitWords));
+  return OK_STATUS();
+}
+
+/**
+ * Provisions a Device ID into the HW_CFG OTP partition.
+ */
+static status_t provisioning_device_id_end() {
+  LOG_INFO("Provisioning complete.");
+  check_device_id_is_provisioned();
+  return OK_STATUS();
+}
+
+void sram_main() {
+  CHECK_STATUS_OK(peripheral_handles_init());
+  // Initialize UART console.
+  pinmux_testutils_init(&pinmux);
+  CHECK_DIF_OK(
+      dif_uart_configure(&uart0, (dif_uart_config_t){
                                      .baudrate = kUartBaudrate,
                                      .clk_freq_hz = kClockFreqPeripheralHz,
                                      .parity_enable = kDifToggleDisabled,
@@ -58,36 +133,8 @@ status_t write_otp() {
                                  }));
   base_uart_stdout(&uart0);
 
-  LOG_INFO("Initializing OTP...");
-  TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  CHECK_STATUS_OK(provisioning_device_id_start());
+  CHECK_STATUS_OK(provisioning_device_id_end());
 
-  dif_otp_ctrl_config_t config = {
-      .check_timeout = 100000,
-      .integrity_period_mask = 0x3ffff,
-      .consistency_period_mask = 0x3ffffff,
-  };
-  TRY(dif_otp_ctrl_configure(&otp, config));
-
-  // Read the Device_ID from OTP (except all zeroes).
-  log_device_id();
-  // Program the Device_ID.
-  for (int i = 0; i < ARRAYSIZE(kTestDeviceID); i += sizeof(uint32_t)) {
-    uint32_t word;
-    memcpy(&word, &kTestDeviceID[i], sizeof(word));
-
-    TRY(otp_ctrl_testutils_wait_for_dai(&otp));
-    TRY(dif_otp_ctrl_dai_program32(&otp, kDifOtpCtrlPartitionHwCfg, i * 4,
-                                   word));
-  }
-  // Read the Device_ID from OTP (except correct data).
-  log_device_id();
-
-  return OK_STATUS();
-}
-
-void sram_main() {
-  status_t res = write_otp();
-  LOG_INFO("result: %x", res);
   test_status_set(kTestStatusPassed);
 }
