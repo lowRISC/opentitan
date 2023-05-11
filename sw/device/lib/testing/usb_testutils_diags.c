@@ -70,16 +70,18 @@ void usbutils_funcpt_report(void) {
         unsigned file_idx = (datum >> 16) & 0x7fffU;
         const char *file =
             (file_idx < num_files) ? funcpt_file[file_idx] : "<Unknown>";
-        uint16_t pt = (uint16_t)usbutils_fpt_log[idx + 2U];
+        uint16_t pt = (uint16_t)datum;
 
-        // Datum value recorded with the function point.
+        // Value recorded with the function point; for some function points this
+        // may be the address of a string literal (indicated by MSB being set).
         uint32_t d = usbutils_fpt_log[idx + 3U];
-
-        //        LOG_INFO("%u.%uus : %s : %04x datum 0x%08x", elapsed_us,
-        //        fract_us, file, pt, d);
-        const char *s = (datum >> 31) ? (char *)d : ".";
-        LOG_INFO("%u.%uus : %s : 0x%04x (%u) datum 0x%08x (%s)", elapsed_us,
-                 fract_us, file, pt, pt, d, s);
+        if (datum >> 31) {
+          LOG_INFO("%u.%uus : %s : 0x%04x (%u) - %s", elapsed_us,
+                   fract_us, file, pt, pt, (const char *)d);
+        } else {
+          LOG_INFO("%u.%uus : %s : 0x%04x (%u) datum 0x%08x", elapsed_us,
+                   fract_us, file, pt, pt, d);
+        }
       }
       idx = (idx >= USBUTILS_FUNCPT_LOG_SIZE - 4U) ? 0U : (idx + 4U);
     } while (idx != oldest_idx);
@@ -87,6 +89,50 @@ void usbutils_funcpt_report(void) {
 }
 #endif
 
+// TODO: Experiment to see whether we can gather packet data from the sense pins
+void usbutils_gather(dif_usbdev_t *dev, uint8_t *buf, size_t n) {
+  volatile uint32_t *psense = (volatile uint32_t *)((uintptr_t)dev->base_addr.base + 0x7cu);
+  uint8_t *ep = buf + (n & ~7u);
+  uint8_t *p = buf;
+
+  while ((*psense & 3u) != 2u) {
+    // Wait for non-Idle signaling
+  }
+  // Burst capture as fast as we can :)
+  while (p < ep) {
+    p[0] = (uint8_t)*psense;
+    p[1] = (uint8_t)*psense;
+    p[2] = (uint8_t)*psense;
+    p[3] = (uint8_t)*psense;
+    p[4] = (uint8_t)*psense;
+    p[5] = (uint8_t)*psense;
+    p[6] = (uint8_t)*psense;
+    p[7] = (uint8_t)*psense;
+    p += 8;
+  }
+
+  char text[121];
+  unsigned idx = 0u;
+  for (unsigned i = 0u; i < n; i++) {
+    switch (buf[i] & 3u) {
+      // Idle (J)
+      case 1u: text[idx] = '-'; break;
+      // K
+      case 2u: text[idx] = '_'; break;
+      // SE
+      case 0U: text[idx] = 'E'; break;
+      // What?
+      default: text[idx] = 'x'; break;
+    }
+    if (++idx >= sizeof(text) - 1 || i >= n) {
+      text[idx] = '\0';
+      LOG_INFO("%s", text);
+      idx = 0u;
+    }
+  }
+}
+
 #if USBUTILS_ENABLE_TRC
 extern void usbutils_log_text(const char *s);
 #endif
+

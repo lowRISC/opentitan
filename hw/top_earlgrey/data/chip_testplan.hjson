@@ -361,7 +361,13 @@
             - Re-enable data transfer and ensure data correctness.
             '''
       stage: V3
-      tests: ["chip_sw_usbdev_suspend"]
+      tests: ["chip_sw_usbdev_suspend",
+              "chip_sw_usbdev_sleep_resume",
+              "chip_sw_usbdev_deep_resume",
+              "chip_sw_usbdev_sleep_reset",
+              "chip_sw_usbdev_sleep_disconnect",
+              "chip_sw_usbdev_deep_reset",
+              "chip_sw_usbdev_deep_disconnect"]
     }
     {
       name: chip_usb_sof

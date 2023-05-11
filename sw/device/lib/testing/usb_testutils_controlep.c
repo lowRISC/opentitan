@@ -13,7 +13,7 @@
 #define USBUTILS_FUNCPT_FILE USBUTILS_FUNCPT_FILE_USB_CONTROLEP
 
 // Device descriptor
-static uint8_t dev_dscr[] = {
+static const uint8_t dev_dscr[] = {
     18,    // bLength
     1,     // bDescriptorType
     0x00,  // bcdUSB[0]
@@ -123,8 +123,10 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
         if (wLength < len) {
           len = wLength;
         }
+USBUTILS_FUNCPT(0xdede, (wLength << 16) | len);
         CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, dev_dscr, len,
                                              &bytes_written));
+        CHECK(bytes_written == len);
         CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
         return kUsbTestutilsCtWaitIn;
       } else if ((wValue & 0xff00) == 0x200) {
@@ -162,6 +164,10 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
       ctctx->new_dev = (uint8_t)(wValue & 0x7fU);
       // send zero length packet for status phase
       CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+      // Note: this is slightly conservative, because at this point the packet
+      // has not been sent, but we cannot know accurately when the IN packet is
+      // collected.
+      ctctx->time_setaddr = ibex_timeout_init(2000u);
       return kUsbTestutilsCtAddrStatIn;
 
     case kUsbSetupReqSetConfiguration:
@@ -298,6 +304,9 @@ static status_t ctrl_tx_done(void *ctctx_v, usb_testutils_xfr_result_t result) {
     case kUsbTestutilsCtAddrStatIn:
       // Now the status was sent on device 0 can switch to new device ID
       TRY(dif_usbdev_address_set(ctx->dev, ctctx->new_dev));
+      // We are required to respond to the new device address within 2ms of the
+      // the zero length Status packet being ACKnowledged by the host.
+      TRY_CHECK(!ibex_timeout_check(&ctctx->time_setaddr));
       TRC_I(ctctx->new_dev, 8);
       ctctx->ctrlstate = kUsbTestutilsCtIdle;
       // We now have a device address on the USB
@@ -335,14 +344,28 @@ static status_t ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
       // Waiting to be set up
       if (packet_info.is_setup && (packet_info.length == 8)) {
         alignas(uint32_t) uint8_t bp[8];
+#if 1
+        dif_result_t res =
+            dif_usbdev_buffer_read(ctx->dev, ctx->buffer_pool, &buffer, bp,
+                                   sizeof(bp), &bytes_written);
+        if (res != kDifOk) {
+          LOG_INFO("res %d\n", (int)res);
+          LOG_INFO(" - id %d offset %d remaining_bytes %d type %d", buffer.id,
+                   buffer.offset, buffer.remaining_bytes, buffer.type);
+        }
+#else
+        // TODO: this is throwing an error sometimes upon entering DeepResume
+        // phase after a SleepDisconnect!
         TRY(dif_usbdev_buffer_read(ctx->dev, ctx->buffer_pool, &buffer, bp,
                                    sizeof(bp), &bytes_written));
+#endif
         uint8_t bmRequestType = bp[0];
         uint8_t bRequest = bp[1];
         uint16_t wValue = (uint16_t)((bp[3] << 8) | bp[2]);
         uint16_t wIndex = (uint16_t)((bp[5] << 8) | bp[4]);
         uint16_t wLength = (uint16_t)((bp[7] << 8) | bp[6]);
         TRC_C('0' + bRequest);
+        USBUTILS_FUNCPT(0x5e79, (bmRequestType << 8) | bRequest);
 
         ctctx->ctrlstate = setup_req(ctctx, ctx, bmRequestType, bRequest,
                                      wValue, wIndex, wLength);
@@ -379,10 +402,13 @@ static status_t ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
   TRY(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleEnabled));
   endpoint.direction = USBDEV_ENDPOINT_DIR_OUT;
   TRY(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleEnabled));
+
   TRC_S("USB: unCT ");
   TRC_I((ctctx->ctrlstate << 24) | ((int)packet_info.is_setup << 16) |
             packet_info.length,
         32);
+  USBUTILS_FUNCPT(0x57A1, (ctctx->ctrlstate << 24) | ((int)packet_info.is_setup << 16) | packet_info.length);
+
   if (buffer.type != kDifUsbdevBufferTypeStale) {
     // Return the unused buffer.
     TRY(dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
@@ -396,6 +422,9 @@ static status_t ctrl_reset(void *ctctx_v) {
   usb_testutils_controlep_ctx_t *ctctx =
       (usb_testutils_controlep_ctx_t *)ctctx_v;
   ctctx->ctrlstate = kUsbTestutilsCtIdle;
+  // We have lost any device address that we were assigned; the device has
+  // cleared its own copy of the device address automatically.
+  ctctx->device_state = kUsbTestutilsDeviceDefault;
   return OK_STATUS();
 }
 
