@@ -239,7 +239,7 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
     // We always fill `block`; process it.
     HARDENED_TRY(process_block(&ctx, &block));
     // Check if `additional_block` was used, and process it if so.
-    if (padding_len >= kSha256MessageBlockBytes) {
+    if (padding_len > kSha256MessageBlockBytes) {
       HARDENED_TRY(process_block(&ctx, &additional_block));
     }
   }
