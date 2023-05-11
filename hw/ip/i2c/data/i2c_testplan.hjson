@@ -290,6 +290,23 @@
       tests: ["i2c_target_unexp_stop"]
     }
     {
+      name: target_glitch
+      desc: '''
+            Test I2C FSM state transitions in target mode of operation.
+
+            Stimulus:
+              - Configure DUT/Agent in Target/Host mode respectively
+              - Program timing parameters
+              - Assert start_det and stop_det variables in i2c_fsm.sv
+                to trigger transition to AcquireStart and Idle states
+            Checking:
+              - Ensure DUT captures ACQ FIFO data as expected
+              - After every glitch, issue a simple transaction to check if DUT is behaving as expected
+            '''
+      stage: V2
+      tests: ["i2c_target_glitch"]
+    }
+    {
       name: target_stress_all
       desc: '''
             Support vseq (context) switching with random reset in between.

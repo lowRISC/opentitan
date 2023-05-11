@@ -57,11 +57,29 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
               process_reset();
               req.clear_all();
             end
+            begin
+              // Agent hot reset. It only resets I2C agent.
+              // The DUT funtions normally without reset.
+              // This event only happens in directed test case so cannot set the timeout.
+              // It will be killed by disable fork when 'drive_*_item' is finished.
+              wait(cfg.driver_rst);
+              `uvm_info(`gfn, "drvdbg agent reset", UVM_MEDIUM)
+              req.clear_all();
+            end
           join_any
           disable fork;
         end: iso_fork
       join
       seq_item_port.item_done();
+      // When agent reset happens, flush all sequence items from sequencer request queue,
+      // before it starts a new sequence.
+      if (cfg.driver_rst) begin
+        i2c_item dummy;
+        do begin
+          seq_item_port.try_next_item(dummy);
+          if (dummy != null) seq_item_port.item_done();
+        end while (dummy != null);
+      end
     end
   endtask : get_and_drive
 

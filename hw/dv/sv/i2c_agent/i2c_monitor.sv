@@ -259,12 +259,12 @@ class i2c_monitor extends dv_base_monitor #(
   endtask : monitor_ready_to_end
 
   // Handle agent reset and set stop bit to indicate completion of the current transaction
-  task handle_agent_rst(input string task_name);
+  task handle_monitor_rst(input string task_name);
     int wait_timeout_ns = 1_000_000; // 1 ms
-    if (cfg.agent_rst) begin
+    if (cfg.monitor_rst) begin
       @(cfg.vif.cb);
       mon_dut_item.clear_all();
-      `DV_WAIT((!cfg.agent_rst), , wait_timeout_ns, $sformatf("%s:agent reset de-assert",
+      `DV_WAIT((!cfg.monitor_rst), , wait_timeout_ns, $sformatf("%s:monitor reset de-assert",
                task_name));
       cfg.got_stop = 1;
       `uvm_info(`gfn, $sformatf("monitor forceout from %s", task_name), UVM_MEDIUM)
@@ -312,8 +312,8 @@ class i2c_monitor extends dv_base_monitor #(
          end
          begin // agent reset thread
            bit rst_detected = 0;
-           wait(cfg.agent_rst);
-           handle_agent_rst("target_addr");
+           wait(cfg.monitor_rst);
+           handle_monitor_rst("target_addr");
            do_skip = 1; // Skip processing rest of the transaction
          end
        join_any
@@ -374,8 +374,8 @@ class i2c_monitor extends dv_base_monitor #(
         begin
           // This is undeterministic event so cannot set the timeout,
           // but this thread will be terminated by the other thread.
-          wait((cfg.allow_ack_stop & mon_rstart) | cfg.agent_rst);
-          handle_agent_rst("target_read");
+          wait((cfg.allow_ack_stop & mon_rstart) | cfg.monitor_rst);
+          handle_monitor_rst("target_read");
         end
       join_any
       disable fork;
@@ -416,8 +416,8 @@ class i2c_monitor extends dv_base_monitor #(
           end
         end
         begin
-          wait(cfg.agent_rst);
-          handle_agent_rst("target_write");
+          wait(cfg.monitor_rst);
+          handle_monitor_rst("target_write");
         end
       join_any
       disable fork;

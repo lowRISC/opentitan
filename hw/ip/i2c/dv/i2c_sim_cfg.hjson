@@ -118,6 +118,12 @@
       uvm_test_seq: i2c_host_stress_all_vseq
     }
     {
+      name: i2c_target_glitch
+      uvm_test_seq: i2c_glitch_vseq
+      run_opts: ["+i2c_agent_mode=Host", "+en_scb=0"]
+      reseed: 2 // Directed testcase
+    }
+    {
       name: i2c_target_smoke
       uvm_test_seq: i2c_target_smoke_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=100_000_000"]
