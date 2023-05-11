@@ -20,10 +20,32 @@
  */
 static const unsigned char kTwoBlockMessage[] =
     "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+static const size_t kTwoBlockMessageLen = sizeof(kTwoBlockMessage) - 1;
 static const uint8_t kTwoBlockExpDigest[] = {
     0x24, 0x8d, 0x6a, 0x61, 0xd2, 0x06, 0x38, 0xb8, 0xe5, 0xc0, 0x26,
     0x93, 0x0c, 0x3e, 0x60, 0x39, 0xa3, 0x3c, 0xe4, 0x59, 0x64, 0xff,
     0x21, 0x67, 0xf6, 0xec, 0xed, 0xd4, 0x19, 0xdb, 0x06, 0xc1};
+
+/**
+ * Test that is exactly one block in length.
+ *
+ * SHA256(0x102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f)
+ *  = 0xfdeab9acf3710362bd2658cdc9a29e8f9c757fcf9811603a8c447cd1d9151108
+ */
+static const uint8_t kExactBlockMessage[] = {
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a,
+    0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
+    0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20,
+    0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b,
+    0x2c, 0x2d, 0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36,
+    0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,
+};
+static const size_t kExactBlockMessageLen = sizeof(kExactBlockMessage);
+static const uint8_t kExactBlockExpDigest[] = {
+    0xfd, 0xea, 0xb9, 0xac, 0xf3, 0x71, 0x03, 0x62, 0xbd, 0x26, 0x58,
+    0xcd, 0xc9, 0xa2, 0x9e, 0x8f, 0x9c, 0x75, 0x7f, 0xcf, 0x98, 0x11,
+    0x60, 0x3a, 0x8c, 0x44, 0x7c, 0xd1, 0xd9, 0x15, 0x11, 0x08,
+};
 
 /**
  * Call the `otcrypto_hash` API and check the resulting digest.
@@ -83,15 +105,39 @@ static status_t empty_test(void) {
 }
 
 /**
- * Test streaming API with a two-block message.
+ * Test streaming API with a one-block message in one update.
  */
-static status_t streaming_test(void) {
+static status_t one_update_streaming_test(void) {
+  hash_context_t ctx;
+  TRY_CHECK(otcrypto_hash_init(&ctx, kHashModeSha256) == kCryptoStatusOK);
+
+  crypto_const_uint8_buf_t msg_buf = {
+      .data = kExactBlockMessage,
+      .len = kExactBlockMessageLen,
+  };
+  TRY_CHECK(otcrypto_hash_update(&ctx, msg_buf) == kCryptoStatusOK);
+
+  uint8_t act_digest[ARRAYSIZE(kExactBlockExpDigest)];
+  crypto_uint8_buf_t digest_buf = {
+      .data = act_digest,
+      .len = sizeof(act_digest),
+  };
+  TRY_CHECK(otcrypto_hash_final(&ctx, &digest_buf) == kCryptoStatusOK);
+  TRY_CHECK_ARRAYS_EQ(act_digest, kExactBlockExpDigest,
+                      ARRAYSIZE(kExactBlockExpDigest));
+  return OK_STATUS();
+}
+
+/**
+ * Test streaming API with a two-block message in multiple updates.
+ */
+static status_t multiple_update_streaming_test(void) {
   hash_context_t ctx;
   TRY_CHECK(otcrypto_hash_init(&ctx, kHashModeSha256) == kCryptoStatusOK);
 
   // Send 0 bytes, then 1, then 2, etc. until message is done.
   const unsigned char *next = kTwoBlockMessage;
-  size_t len = sizeof(kTwoBlockMessage) - 1;
+  size_t len = kTwoBlockMessageLen;
   size_t update_size = 0;
   while (len > 0) {
     update_size = len <= update_size ? len : update_size;
@@ -121,6 +167,7 @@ bool test_main(void) {
   status_t test_result = OK_STATUS();
   EXECUTE_TEST(test_result, simple_test);
   EXECUTE_TEST(test_result, empty_test);
-  EXECUTE_TEST(test_result, streaming_test);
+  EXECUTE_TEST(test_result, one_update_streaming_test);
+  EXECUTE_TEST(test_result, multiple_update_streaming_test);
   return status_ok(test_result);
 }
