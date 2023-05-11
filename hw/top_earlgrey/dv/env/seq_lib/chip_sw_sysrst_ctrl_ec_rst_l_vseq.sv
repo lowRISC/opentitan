@@ -11,7 +11,7 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
   localparam bit [1:0] OUTPUT_ALL_SET = 2'b11;
   localparam bit [1:0] OUTPUT_NONE_SET = 2'b00;
   localparam uint TIMEOUT_VALUE = 5000000;
-  localparam int EC_RST_TIMER = 512;
+  localparam uint EC_RST_TIMER = 2000 - 10; // Default value of sysrst_ctrl.EC_RST_CTL
 
   localparam string PWRMGR_RSTREQ_PATH = "tb.dut.top_earlgrey.u_pwrmgr_aon.rstreqs_i[0]";
   localparam string RST_AON_NI_PATH = "tb.dut.top_earlgrey.u_sysrst_ctrl_aon.rst_aon_ni";
@@ -72,7 +72,6 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
     int timeout_count = 0;
     `DV_WAIT(cfg.chip_vif.ec_rst_l_if.pins[0] === 0)
     // wait until ec_rst is de-active and check the length.
-    `DV_SPINWAIT(
     forever begin
       if (cfg.chip_vif.ec_rst_l_if.sample_pin(0) == 0) begin
         timeout_count++;
@@ -84,7 +83,7 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
       end
       // Some amount of delay between samples of ec_rst.
       #(AON_CYCLE_PERIOD);
-    end)
+    end
     `DV_CHECK(timeout_count > min_exp_cycles) // check ec_rst length
   endtask
 
