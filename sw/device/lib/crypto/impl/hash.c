@@ -288,6 +288,10 @@ crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
 
 crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
                                    hash_mode_t hash_mode) {
+  if (ctx == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   ctx->mode = hash_mode;
   switch (hash_mode) {
     case kHashModeSha256: {
@@ -318,7 +322,7 @@ crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
 
 crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
                                      crypto_const_uint8_buf_t input_message) {
-  if (input_message.data == NULL && input_message.len != 0) {
+  if (ctx == NULL || (input_message.data == NULL && input_message.len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -357,7 +361,7 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
 
 crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
                                     crypto_uint8_buf_t *digest) {
-  if (digest == NULL || digest->data == NULL) {
+  if (ctx == NULL || digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 

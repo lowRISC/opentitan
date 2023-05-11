@@ -814,6 +814,10 @@ def opentitan_binary(
     side_targets = []
 
     native_binary_name = "{}.elf".format(name)
+    if 'status' in name:
+      print('\n\n\n\n\n\n')
+      print(kwargs)
+      print('\n\n\n\n\n\n')
     native.cc_binary(
         name = native_binary_name,
         deps = deps,
@@ -1163,10 +1167,6 @@ def opentitan_flash_binary(
             device = device,
             testonly = testonly,
         )
-
-        for k in kwargs.keys():
-          print(k)
-        print('defines' in kwargs)
 
         # Generate ELF, Binary, Disassembly, and (maybe) sim_dv logs database
         dev_targets.extend(opentitan_binary(

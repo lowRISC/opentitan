@@ -270,6 +270,7 @@ def opentitan_functest(
         targets = VALID_TARGETS,
         args = [],
         data = [],
+        defines = [],
         test_in_rom = False,
         ot_flash_binary = None,
         signed = True,
@@ -321,8 +322,6 @@ def opentitan_functest(
         sh_test                named: {name}_fpga_cw310
         test_suite             named: {name}
     """
-    print(kwargs)
-
     deps = kwargs.pop("deps", [])
     all_tests = []
     target_params = {}
@@ -394,7 +393,6 @@ def opentitan_functest(
 
     # Generate SW artifacts for the tests.
     if not ot_flash_binary:
-        print(kwargs)
         # Set the linker script for the specified slot.
         if slot not in _FLASH_SLOTS:
             fail("Invalid slot: {}. Valid slots are: silicon_creator_{a,b,virtual}".format(slot))
@@ -419,6 +417,7 @@ def opentitan_functest(
             devices = devices_to_build_for,
             manifest = manifest,
             testonly = True,
+            defines = defines,
             **kwargs
         )
 
@@ -619,26 +618,6 @@ def opentitan_functest(
             # For more see https://bazel.build/reference/be/general#test_suite.tags
         ],
     )
-opentitan_functest = rule(
-  implementation = _opentitan_functest_impl,
-  attrs = {
-    '''
-        targets = VALID_TARGETS,
-        args = [],
-        data = [],
-        test_in_rom = False,
-        ot_flash_binary = None,
-        signed = True,
-        manifest = "@//sw/device/silicon_creator/rom_ext:manifest_standard",
-        slot = "silicon_creator_a",
-        test_harness = "@//sw/host/opentitantool",
-        keyset = RSA_ONLY_KEYSETS[0],
-        logging = "info",
-        dv = None,
-        verilator = None,
-        cw310 = None,
-        **kwargs):
-        '''
 
 def _manual_test_impl(ctx):
     executable = ctx.actions.declare_file("manual_test_wrapper")

@@ -46,7 +46,7 @@ status_t sha512_test(const unsigned char *msg, const size_t msg_len,
                      const uint8_t *expected_digest) {
   // Construct a buffer for the message.
   crypto_const_uint8_buf_t input_message = {
-      .data = msg,
+      .data = NULL, // msg,
       .len = msg_len,
   };
 
@@ -90,16 +90,14 @@ status_t sha512_streaming_test(const unsigned char *msg, size_t msg_len,
   // Allocate space for the computed digest.
   uint8_t actual_digest_data[512 / 8];
   crypto_uint8_buf_t actual_digest = {
-      .data = NULL, // (unsigned char *)actual_digest_data,
+      .data = (unsigned char *)actual_digest_data,
       .len = sizeof(actual_digest_data),
   };
-  status_t err = otcrypto_hash_final(&ctx, &actual_digest);
-  LOG_INFO("Err: 0x%08x", err);
-  // TRY(otcrypto_hash_final(&ctx, &actual_digest));
+  TRY(otcrypto_hash_final(&ctx, &actual_digest));
 
   // Check that the expected and actual digests match.
-  //TRY_CHECK_ARRAYS_EQ(actual_digest_data, expected_digest,
-  //                    ARRAYSIZE(actual_digest_data));
+  TRY_CHECK_ARRAYS_EQ(actual_digest_data, expected_digest,
+                      ARRAYSIZE(actual_digest_data));
 
   return OTCRYPTO_OK;
 }
