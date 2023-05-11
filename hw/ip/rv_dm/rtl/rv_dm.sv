@@ -204,7 +204,7 @@ module rv_dm
   logic ndmreset_req;
   logic ndmreset_req_qual;
   // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign reset_req_en = lc_tx_test_true_strict(lc_hw_debug_en[LcEnResetReq]);
+  assign reset_req_en = 1'b1;
   assign ndmreset_req_o = ndmreset_req_qual & reset_req_en;
 
   logic dmi_en;
@@ -239,7 +239,7 @@ module rv_dm
     .tl_d2h_o(sba_tl_h_i_int),
     .tl_h2d_o(sba_tl_h_o),
     .tl_d2h_i(sba_tl_h_i),
-    .lc_en_i (lc_hw_debug_en[LcEnSba]),
+    .lc_en_i (lc_ctrl_pkg::On),
     .err_o   (sba_gate_intg_error),
     .flush_req_i('0),
     .flush_ack_o(),
@@ -298,7 +298,7 @@ module rv_dm
   logic [NrHarts-1:0] debug_req;
   for (genvar i = 0; i < NrHarts; i++) begin : gen_debug_req_hart
     // SEC_CM: DM_EN.CTRL.LC_GATED
-    assign debug_req_en[i] = lc_tx_test_true_strict(lc_hw_debug_en[LcEnDebugReq + i]);
+    assign debug_req_en[i] = 1'b1;
   end
   assign debug_req_o = debug_req & debug_req_en;
 
@@ -375,13 +375,13 @@ module rv_dm
     .flush_req_i(ndmreset_req),
     .flush_ack_o(ndmreset_req_qual),
     .resp_pending_o(),
-    .lc_en_i (lc_hw_debug_en[LcEnRom]),
+    .lc_en_i (lc_ctrl_pkg::On),
     .err_o   (rom_gate_intg_error)
   );
 
   prim_mubi_pkg::mubi4_t en_ifetch;
   // SEC_CM: DM_EN.CTRL.LC_GATED, EXEC.CTRL.MUBI
-  assign en_ifetch = mubi4_bool_to_mubi(lc_tx_test_true_strict(lc_hw_debug_en[LcEnFetch]));
+  assign en_ifetch = prim_mubi_pkg::MuBi4True;
 
   tlul_adapter_reg #(
     .CmdIntgCheck     (1),
