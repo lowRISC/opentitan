@@ -110,12 +110,32 @@ end
 // ASSERTIONS
 /////////////////////////
 // Add Assertion mux selector is onehot - zero is allowed
-`ASSERT(AdcChnselOneHot, $onehot0(adc_chnsel_i), clk_adc_i, !rst_adc_ni)
+`ASSERT(AdcChnselOneHot_A, $onehot0(adc_chnsel_i), clk_adc_i, !rst_adc_ni)
 
 // Add Assertion adc_en=0 chnsel is 0.
-`ASSERT(NoChannelWhileDisabled, (adc_en == 0) |-> (adc_chnsel_i == 4'h0), clk_adc_i, !rst_adc_ni)
+`ASSERT(NoChannelWhileDisabled_A, (adc_en == 0) |-> (adc_chnsel_i == 4'h0), clk_adc_i, !rst_adc_ni)
 
-// Add Assertion RE of adc_en on the first 30us (=6*5us cc) after adc_en rose chnsel is 0.
-`ASSERT(ChannelStableOnAdcEn, $rose(adc_en) |-> (adc_chnsel_i == 4'h0)[*6], clk_adc_i, !rst_adc_ni)
+// The power up time period is 30us throughout which the adc_chnsel_i needs to be stable at 0.
+// Since we are dealing with a time period here, and not clock cycles, we need to make sure
+// that we sample and check enough clock ticks in order to guarantee the timing is met.
+// Assuming that the clk_adc_i period is 200kHz, this SVA makes sure that:
+//
+//    a) the signal adc_chnsel_i was 0 before adc_pd_i fell. this is achieved by sampling
+//       and checking on clock edges (-1) ... 0 in the illustration below.
+//    b) the signal adc_chnsel_i remained at 0 for at least 30us after adc_pd_i fell.
+//       this is achieved by sampling and checking on clock edges 0 ... 6 which cover a
+//       time period of 6 x 5us as shown in the illustration below.
+//                         ____  ____  ____  ____  ____  ____  ____  ____  ____  ____  ____
+// clk_ast_adc_i         : |  |__|  |__|  |__|  |__|  |__|  |__|  |__|  |__|  |__|  |__|  |__
+//                         ___________
+// adc_pd_i              : |         |_______________________________________________________
+//
+// adc_chnsel_i          : xxxxxx___________________________________________________xxxxxxxxx
+//
+// ChannelStableOnAdcEn_A:       |      |      |      |      |      |      |      |
+//                              -1      0      1      2      3      4      5      6
+//                                       <------------ 6 x 5us = 30us ----------->
+`ASSERT(ChannelStableOnAdcEn_A,
+        $fell(adc_pd_i) |-> ($past(adc_chnsel_i) == 4'h0)[*8], clk_adc_i, !rst_adc_ni)
 
 endmodule : adc
