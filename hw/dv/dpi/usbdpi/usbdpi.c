@@ -85,11 +85,16 @@ static void bus_disconnect(usbdpi_ctx_t *ctx, uint32_t delay) {
 
   // Disconnect the VBUS signal/power
   ctx->driving &= ~P2D_SENSE;
+
+  ctx->state = ST_DISCONNECT;
 }
 
 // Initialize the state of the DPI model appropriately for when the device
-// connects to the bus
-static void bus_reset(usbdpi_ctx_t *ctx) {
+// connects to the bus; we issue only a short reset at PoR to reduce the
+// simulation time. When performing a Bus Reset whilst the device is in Deep
+// Sleep, the bus reset should be long enough to be visible to the repowered
+// usbdev too (not just aon_wake), as it would be with a physical host.
+static void bus_reset(usbdpi_ctx_t *ctx, bool long_reset) {
   // Initialize state for each endpoint and direction
   for (unsigned ep = 0U; ep < USBDPI_MAX_ENDPOINTS; ep++) {
     // First DATAx received shall be DATA0
@@ -107,18 +112,50 @@ static void bus_reset(usbdpi_ctx_t *ctx) {
   // Hold the bus in reset by driving to SE0; Reset Signaling should
   // assert this bus state for a minimum of 10ms but simulation time
   // is expensive...
-  //
-  // A Bus Reset may be detected after 2.5us; usbdev responds after 3us of
-  // continuous assertion, sampled asynchronously on its own usec timer, so we
-  // need at least to exceed 4us.
-  const unsigned usec = 12u;
-  ctx->reset_time = ctx->tick_bits + 5 * usec;
+
+  if (long_reset) {
+    // It takes the chip/sw about 2ms to resume from Deep Sleep
+    ctx->reset_time = ctx->tick_bits + 4 * FRAME_INTERVAL;
+  } else {
+    // A Bus Reset may be detected after 2.5us; usbdev responds after 3us of
+    // continuous assertion, sampled asynchronously on its own usec timer, so we
+    // need at least to exceed 4us.
+    const unsigned usec = 12u;
+    ctx->reset_time = ctx->tick_bits + 5 * usec;
+
+    // TODO: for now we want to be sure that the AON/Wakeup module can see the
+    // reset
+    ctx->reset_time = ctx->tick_bits + 1000u;
+  }
 
   // This Reset Recovery interval combined with the delay in frame_start()
   // means that we'll allow a bus frame to elapse between removing the Bus Reset
   // and attempting to send SOF and the first SETUP packet
-  ctx->recovery_time = ctx->tick_bits + FRAME_INTERVAL / 2;
+  ctx->recovery_time = ctx->reset_time + FRAME_INTERVAL / 2;
   ctx->state = ST_RESET;
+
+  // TODO: perhaps we want to differentiate between Idle and Disconnected?
+  ctx->bus_state = kUsbIdle;
+}
+
+// Resume Signaling
+static void bus_resume(usbdpi_ctx_t *ctx) {
+  ctx->hostSt = HS_NEXTFRAME;
+
+  // It appears that resume signaling is non-specific; 'non-Idle bus state for
+  // at least 20ms' is the specified requirement, so we choose the simple option
+  // of driving K constantly before the required Low Speed SE0,SE0,J sequence.
+  //
+  // We do not, however, signal for anywhere near that long. Our chip must be
+  // able to resume execution and the software be ready once again to
+  // communicate, but simulations are slow.
+
+  ctx->resume_end_time = ctx->tick_bits + 4 * FRAME_INTERVAL;
+  ctx->resume_SE0_end_time =
+      ctx->resume_end_time + 16;  // 2 Low Speed bit times
+  ctx->resume_J_end_time = ctx->resume_SE0_end_time + 8;  // 1 LS bit
+
+  ctx->state = ST_RESUME;
 
   // TODO: perhaps we want to differentiate between Idle and Disconnected?
   ctx->bus_state = kUsbIdle;
@@ -1191,7 +1228,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     }
     // Device presence indicated by pull up?
     if (d2p & D2P_PU) {
-      bus_reset(ctx);
+      bus_reset(ctx, false);
     }
   } else {
     if ((d2p & D2P_PU) == 0) {
@@ -1293,7 +1330,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
 
         case STEP_BUS_RESET:
           if (ctx->hostSt == HS_STARTFRAME) {
-            bus_reset(ctx);
+            bus_reset(ctx, true);
             // After Reset Signaling below and then a Reset Recovery interval,
             // we'll start with a new bus frame.
           }
@@ -1419,11 +1456,9 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
 
         // Resume Signaling
         case STEP_RESUME:
-          // TODO: It appears that resume signaling is non-specific; non-Idle
-          // bus state for at least 20ms is the specified requirement, so we
-          // choose the simple option of driving K constantly before the
-          // required Low Speed SE0,SE0,J sequence.
-          ctx->state = ST_RESUME;
+          if (ctx->hostSt == HS_STARTFRAME) {
+            bus_resume(ctx);
+          }
           break;
 
         case STEP_IDLE:
@@ -1519,7 +1554,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
 
     case ST_RESUME:
       // Resume signaling requires at least 20ms of K
-      if (ctx->tick_bits < ctx->resume_SE0_end_time) {
+      if (ctx->tick_bits < ctx->resume_end_time) {
         ctx->driving = set_driving(ctx, d2p, P2D_DN, true);  // K
       } else {
         // Resume signaling terminates with two LS bit intervals
@@ -1530,7 +1565,6 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
         } else if (ctx->tick_bits < ctx->resume_J_end_time) {
           ctx->driving = set_driving(ctx, d2p, P2D_DP, true);  // J
         } else {
-          // Start the new frame immediately
           frame_start(ctx);
         }
       }

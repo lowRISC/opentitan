@@ -37,7 +37,7 @@
 //  ... Bus Reset ->
 // Power On Reset -> Configuration ->
 //                 [from prev] ... -> DPI drops SOF -> Suspend -> Activate AON
-//                -> Normal Sleep -> DPI produces wake stimulus -> Resume
+//                -> Normal Sleep -> DPI produces wake stimulus -> Wakeup
 //                -> Deactivate AON ... [to next]
 //
 // [PhaseDeepResume]
@@ -47,7 +47,7 @@
 //  ... Bus Reset ->
 // Power On Reset -> Configuration ->
 //                 [from prev] ... -> DPI drops SOF -> Suspend -> Actvivate AON
-//                -> Deep Sleep -> DPI produces wake stimulus -> Resume
+//                -> Deep Sleep -> DPI produces wake stimulus -> Wakeup
 //                -> Deactivate AON .. [to next]
 //
 // Test Complete
@@ -97,6 +97,7 @@
 #include "sw/device/lib/testing/usb_testutils_controlep.h"
 #include "sw/device/lib/testing/usb_testutils_streams.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#include "sw/device/tests/usbdev_suspend_test.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
@@ -108,7 +109,7 @@
 // TODO: this must match the setting in the DPI model, but we do not have the
 // ability to share header files.
 // TODO: also note that this shall always be 1 for physical hosts.
-#define FULL_FRAME 1
+#define FULL_FRAME 0
 
 #if FULL_FRAME
 #define USBDPI_FRAME_INTERVAL 1000  // 1ms frame time
@@ -125,58 +126,27 @@
 #define TIMEOUT_WAKEUP_RESUME 3000u
 #define TIMEOUT_FINISH_MISSED 2000u
 
+// How long should we wait on FPGA for configuration to occur?
+#define TIMEOUT_FPGA_CONFIG 10U * 1000U * 1000U
+
 /**
  * Durations that are specified in terms of bus frames, however long those
  * simulated bus frames happen to be (ie. these intervals are determined by
  * the DPI host behavior rather than the USB protocol specification)
  */
-#define FRAMES_INITIATE_SUSPEND 2u
+
+#define FRAMES_CONFIG_DELAY 2u
+
+#define FRAMES_SUSPEND_MISSED 2u
 
 #define FRAMES_INITIATE_RESUME 2u
 
-#define FRAMES_LONG_SUSPEND 2u
+/**
+ * Number of frame delays to wait after device signals Suspend, before we
+ */
+#define FRAMES_WAIT_ENTER_SLEEP 1u
 
 #define USB_EVENT_REPORT(s) USBUTILS_TRACE(__LINE__, (s))
-
-/**
- * Test phases; named according to the event that we are expecting to occur.
- */
-typedef enum {
-  /**
-   * First test phase just tests regular Suspend/Resume signaling; after we've
-   * resumed, we expect a Bus Reset from the DPI/Host.
-   */
-  kSuspendPhaseSuspend = 0u,
-  /**
-   * This test phase instructs the DPI model to put the DUT into Suspend long
-   * enough that this software will attempt to put the device into its Normal
-   * Sleep state and exercise the AON/Wakeup module, stopping the clocks but not
-   * powering down.
-   */
-  kSuspendPhaseSleepResume,
-  /*
-   * The AON/Wakeup module will cause us to awaken in response to a bus reset.
-   */
-  kSuspendPhaseSleepReset,
-  /**
-   * As above, but this time we're expecting a VBUS/SENSE loss.
-   */
-  kSuspendPhaseSleepDisconnect,
-  /**
-   * Mirrors Resume detection for normal sleep, but this time we enter Deep
-   * Sleep and the power is removed too.
-   */
-  kSuspendPhaseDeepResume,
-  /**
-   * Mirrors Bus Reset detection for normal sleep, but this time we enter Deep
-   * Sleep and the power is removed too.
-   */
-  kSuspendPhaseDeepReset,
-  /**
-   * As above, but this time we're expecting a VBUS/SENSE loss.
-   */
-  kSuspendPhaseDeepDisconnect,
-} usbdev_suspend_phase_t;
 
 /**
  * Test states
@@ -185,42 +155,70 @@ typedef enum {
   /**
    *
    */
-  kSuspendTestReset = 0u,
+  kSuspendStateReset = 0u,
   /**
    * Waiting for the DPI/Host to suspend the device, for normal Suspend/Resume
    * behavior, not involving AON/Wakeup functionality.
    */
-  kSuspendTestWaitSuspend,
-  kSuspendTestWaitResume,
-  kSuspendTestWaitBusReset,
+  kSuspendStateWaitSuspend,
+  kSuspendStateWaitResume,
+  kSuspendStateWaitBusReset,
   /**
    * Waiting for the DPI/Host to suspend the device, expecting a longer suspend
    * period, during which we put the device into Normal/Deep Sleep using the
    * AON/Wakeup functionality.
    */
-  kSuspendTestWaitLongSuspend,
+  kSuspendStateWaitLongSuspend,
   /**
-   *
+   * Waiting whilst Suspended, until we decide to enter Normal/Deep Sleep.
+   * The DPI model is not expected to resume communication during this time.
    */
-  kSuspendTestWaitSuspendTimeout,
+  kSuspendStateWaitSuspendTimeout,
   /**
    * We have instructed the AON/Wakeup module to wake over control of the USB
-   * signals; it does not do so immediately...
+   * signals. It does not do so immediately because it lives in a slower clock
+   * domain, but the delay should be very short.
    */
-  kSuspendTestActivatedAON,
-  kSuspendTestNormalSleep,
-  kSuspendTestDeepSleep,
-  kSuspendTestAONWakeup,
-  kSuspendTestWaitResumeTimeout,
+  kSuspendStateActivatedAON,
+  /**
+   * We are expecting to fall into a Normal Sleep.
+   */
+  kSuspendStateNormalSleep,
+  /**
+   * We are expecting to fall into a Deep Sleep.
+   */
+  kSuspendStateDeepSleep,
+  /**
+   * We have just returned from a Normal Sleep.
+   */
+  kSuspendStateNormalWaking,
+  /**
+   * We have just returned from a Deep Sleep.
+   */
+  kSuspendStateDeepWaking,
+  /**
+   * We've instructed the AON/Wakeup module to relinquish its control of the
+   * USB and deactivate.
+   */
+  kSuspendStateAONWakeup,
+  kSuspendStateWaitResumeTimeout,
 
   // TODO: do we still want this?
-  kSuspendTestWaitFinish,
-
-  kSuspendTestNextPhase,
-  kSuspendTestComplete,
-  kSuspendTestFailed,
-
-} usbdev_suspend_test_state_t;
+  kSuspendStateWaitFinish,
+  /**
+   * Transition to next test phase, with the device still connected and
+   * operational, ie. Resume Signaling has occurred.
+   */
+  kSuspendStateNextPhase,
+  /**
+   * Test completed successfully.
+   */
+  kSuspendStateComplete,
+  /**
+   * Test failed.
+   */
+  kSuspendStateFailed,
+} usbdev_suspend_state_t;
 
 /**
  * Retained state; to be held in the Retention SRAM during Deep Sleep
@@ -256,11 +254,19 @@ typedef struct usbdev_suspend_ctx {
   /**
    * Current test state
    */
-  usbdev_suspend_test_state_t test_state;
+  usbdev_suspend_state_t test_state;
   /**
    * Current test phase
    */
   usbdev_suspend_phase_t test_phase;
+  /**
+   * Final test phase (inclusive)
+   */
+  usbdev_suspend_phase_t fin_phase;
+  /**
+   * Streaming traffic throughout test?
+   */
+  bool with_traffic;
   /**
    * Timeout catching any failure of test to advance as expected
    */
@@ -328,35 +334,14 @@ static dif_pwrmgr_t pwrmgr;
  */
 static dif_rv_plic_t rv_plic;
 /**
- * Shall we perform streaming traffic simultaneously?
- */
-static bool with_traffic = true;
-/**
  * Do we expect this host to put the device into suspend?
  */
 static bool host_suspends = true;
-/**
- * Do we expect the device to remember over a deep sleep?
- *
- * TODO: this is JUST for bring up; we rely upon the host to reconfigure the
- * device upon reconnection in this case.
- */
-static const bool device_remembers = true;
 /**
  * Verbose logging? Mostly useful on FPGA; be warned that it can affect
  * timing in simulation, and in particular will likely break Verilator simus.
  */
 static bool verbose = false;
-/**
- * Initial phase of test
- *   (this should be kSuspendPhaseSuspend normally, to run all phases in
- *    sequence, but it can be useful to advance it manually during development).
- */
-
-static const usbdev_suspend_phase_t init_phase = kSuspendPhaseDeepReset;
-// kSuspendPhaseSleepReset;
-// kSuspendPhaseSuspend;
-// kSuspendPhaseDeepDisconnect;
 
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &rv_plic,
                                   .hart_id = kTopEarlgreyPlicTargetIbex0};
@@ -433,37 +418,41 @@ static const char *phase_name(usbdev_suspend_phase_t phase) {
 }
 
 // Return the name of a test state
-static const char *state_name(usbdev_suspend_test_state_t state) {
+static const char *state_name(usbdev_suspend_state_t state) {
   switch (state) {
-    case kSuspendTestReset:
+    case kSuspendStateReset:
       return "Reset";
-    case kSuspendTestWaitSuspend:
+    case kSuspendStateWaitSuspend:
       return "WaitSuspend";
-    case kSuspendTestWaitResume:
+    case kSuspendStateWaitResume:
       return "WaitResume";
-    case kSuspendTestWaitBusReset:
+    case kSuspendStateWaitBusReset:
       return "WaitBusReset";
-    case kSuspendTestWaitLongSuspend:
+    case kSuspendStateWaitLongSuspend:
       return "WaitLongSuspend";
-    case kSuspendTestWaitSuspendTimeout:
+    case kSuspendStateWaitSuspendTimeout:
       return "WaitSuspendTimeout";
-    case kSuspendTestActivatedAON:
+    case kSuspendStateActivatedAON:
       return "ActivatedAON";
-    case kSuspendTestNormalSleep:
+    case kSuspendStateNormalSleep:
       return "NormalSleep";
-    case kSuspendTestDeepSleep:
+    case kSuspendStateDeepSleep:
       return "DeepSleep";
-    case kSuspendTestAONWakeup:
+    case kSuspendStateNormalWaking:
+      return "NormalWaking";
+    case kSuspendStateDeepWaking:
+      return "DeepWaking";
+    case kSuspendStateAONWakeup:
       return "AONWakeup";
-    case kSuspendTestWaitResumeTimeout:
+    case kSuspendStateWaitResumeTimeout:
       return "WaitResumeTimeout";
-    case kSuspendTestWaitFinish:
+    case kSuspendStateWaitFinish:
       return "WaitFinish";
-    case kSuspendTestNextPhase:
+    case kSuspendStateNextPhase:
       return "NextPhase";
-    case kSuspendTestComplete:
+    case kSuspendStateComplete:
       return "Complete";
-    case kSuspendTestFailed:
+    case kSuspendStateFailed:
       return "Failed";
     default:
       return "<Unknown>";
@@ -472,14 +461,14 @@ static const char *state_name(usbdev_suspend_test_state_t state) {
 
 // Transition to a (new) test state
 static void state_enter(usbdev_suspend_ctx_t *ctx,
-                        usbdev_suspend_test_state_t state) {
+                        usbdev_suspend_state_t state) {
   if (verbose) {
     LOG_INFO("entering state %s", state_name(state));
   }
   ctx->test_state = state;
 }
 
-// Set a time out for the current test state
+// Set a time out for the current test state, in microseconds
 static void timeout_set(usbdev_suspend_ctx_t *ctx, uint32_t interval_us) {
   if (verbose) {
     uint64_t now = ibex_mcycle_read();
@@ -505,10 +494,10 @@ void ottf_external_isr(void) {
 
   isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
   if (verbose) {
-    LOG_INFO("Received IRQ in normal sleep");
+    LOG_INFO("Received Wakeup IRQ in sleep");
   }
 
-  // Check that both the peripheral and the irq id is correct
+  // Check that both the peripheral and the irq id are correct.
   CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
         "IRQ peripheral: %d is incorrect", peripheral);
   CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
@@ -620,29 +609,29 @@ static status_t link_callback(void *ctx_v,
   // advances accordingly through the test states.
 
   switch (ctx->test_state) {
-    case kSuspendTestReset:
+    case kSuspendStateReset:
       break;
 
     // We're expecting the host to drop the SOF heartbeat indicating that we
     // should suspend... (STEP_IDLE_)
-    case kSuspendTestWaitSuspend:
+    case kSuspendStateWaitSuspend:
       if (snapshot & (1u << kDifUsbdevIrqLinkSuspend)) {
         timeout_set(ctx, TIMEOUT_RESUME_MISSED);
-        state_enter(ctx, kSuspendTestWaitResume);
+        state_enter(ctx, kSuspendStateWaitResume);
       }
       break;
 
     // After a short delay, the host should resume automatically...
     // (STEP_ACTIVE_)
-    case kSuspendTestWaitResume:
+    case kSuspendStateWaitResume:
       if (snapshot & (1u << kDifUsbdevIrqLinkResume)) {
-        state_enter(ctx, kSuspendTestWaitBusReset);
+        state_enter(ctx, kSuspendStateWaitBusReset);
       }
       break;
 
     // A bus reset is performed by the host before it then sets up the device
     // again
-    case kSuspendTestWaitBusReset:
+    case kSuspendStateWaitBusReset:
       if (snapshot & (1u << kDifUsbdevIrqLinkReset)) {
         // The first test phase (Suspend/Resume without AON/Wakeup involvement)
         // is terminated by a deliberate Bus Reset, advancing us to the next
@@ -653,57 +642,57 @@ static status_t link_callback(void *ctx_v,
           // different test phase...
           phase_start(ctx, kSuspendPhaseSleepReset);
         }
-        state_enter(ctx, kSuspendTestReset);
+        state_enter(ctx, kSuspendStateReset);
       }
       break;
 
     // This time we're expecting a much longer Suspend...
-    case kSuspendTestWaitLongSuspend:
+    case kSuspendStateWaitLongSuspend:
       if (snapshot & (1u << kDifUsbdevIrqLinkSuspend)) {
-        timeout_frames_set(ctx, FRAMES_LONG_SUSPEND);
-        state_enter(ctx, kSuspendTestWaitSuspendTimeout);
+        timeout_frames_set(ctx, FRAMES_WAIT_ENTER_SLEEP);
+        state_enter(ctx, kSuspendStateWaitSuspendTimeout);
       }
       break;
 
     // We're _waiting for a timeout_ to occur, so we're not expecting any
     // events at this point...
-    case kSuspendTestWaitSuspendTimeout:
+    case kSuspendStateWaitSuspendTimeout:
       if (snapshot) {
         // TODO:
-        state_enter(ctx, kSuspendTestFailed);
+        state_enter(ctx, kSuspendStateFailed);
       }
       break;
 
-    case kSuspendTestActivatedAON:
+    case kSuspendStateActivatedAON:
       // TODO: should respond to a resume event, and seize back control!
       break;
-    case kSuspendTestNormalSleep:
-    case kSuspendTestDeepSleep:
+    case kSuspendStateNormalSleep:
+    case kSuspendStateDeepSleep:
       break;
-    case kSuspendTestAONWakeup:
-      break;
-
-    case kSuspendTestWaitResumeTimeout:
+    case kSuspendStateAONWakeup:
       break;
 
-    case kSuspendTestWaitFinish:
+    case kSuspendStateWaitResumeTimeout:
+      break;
+
+    case kSuspendStateWaitFinish:
       // We've resumed, we're just waiting for the host to perform some simple
       // traffic and then disconnect to signal test completion
       if (snapshot & (1u << kDifUsbdevLinkStateDisconnected)) {
-        state_enter(ctx, kSuspendTestComplete);
+        state_enter(ctx, kSuspendStateComplete);
       }
       break;
 
-    case kSuspendTestNextPhase:
+    case kSuspendStateNextPhase:
       break;
 
-    case kSuspendTestFailed:
+    case kSuspendStateFailed:
       break;
 
     default:
       LOG_INFO("Unknown/invalid test state %u (%s)", ctx->test_state,
                state_name(ctx->test_state));
-      state_enter(ctx, kSuspendTestFailed);
+      state_enter(ctx, kSuspendStateFailed);
       break;
   }
 
@@ -734,69 +723,66 @@ static buffer_sink_t base_stdout = {
 // necessary with a physical host (FPGA runs) because the requisite behavior
 // cannot be generated by the host.
 ////////////////////////////////////////////////////////////////////////////////
-static void timeout_handle(usbdev_suspend_ctx_t *ctx) {
+static status_t timeout_handle(usbdev_suspend_ctx_t *ctx) {
   switch (ctx->test_state) {
     // Timeout is required to advance from the longer suspend state
     // because we're not expecting any host activity in this case, but
     // must initiate sleep/powerdown
-    case kSuspendTestWaitSuspendTimeout:
+    case kSuspendStateWaitSuspendTimeout:
       LOG_INFO("set_wake_enable...");
       timeout_frames_set(ctx, 1u);
-      state_enter(ctx, kSuspendTestActivatedAON);
+      state_enter(ctx, kSuspendStateActivatedAON);
 
-      CHECK_DIF_OK(
-          dif_usbdev_set_wake_enable(ctx->usbdev->dev, kDifToggleEnabled));
+      TRY(dif_usbdev_set_wake_enable(ctx->usbdev->dev, kDifToggleEnabled));
       break;
 
     // Timeout
-    case kSuspendTestWaitResumeTimeout:
-      // TODO: force link state resume to active?
-      CHECK_DIF_OK(dif_usbdev_resume_link_to_active(ctx->usbdev->dev));
-
+    case kSuspendStateWaitResumeTimeout:
       // TODO:
       //             timeout_frames_set(ctx, TIMEOUT_FINISH_MISSED);
-      state_enter(ctx, kSuspendTestNextPhase);
+      state_enter(ctx, kSuspendStateNextPhase);
       break;
 
-    case kSuspendTestNormalSleep:
-    case kSuspendTestDeepSleep:
-      // TODO: just sit here for now?!
+    case kSuspendStateNormalSleep:
+    case kSuspendStateDeepSleep:
+      LOG_INFO("Timeout waiting to enter/leave Sleep");
+      state_enter(ctx, kSuspendStateFailed);
       break;
 
     // Timeout may also be required to advance from Wait(Long)Suspend if
     // the host does not attempt to suspend the device, in which case we
     // shall also need to transition from WaitResume automatically...
-    case kSuspendTestWaitBusReset:
-    case kSuspendTestWaitResume:
-    case kSuspendTestWaitSuspend:
-    case kSuspendTestWaitLongSuspend:
+    case kSuspendStateWaitBusReset:
+    case kSuspendStateWaitResume:
+    case kSuspendStateWaitSuspend:
+    case kSuspendStateWaitLongSuspend:
       if (!host_suspends) {
         bool failed = false;
         switch (ctx->test_state) {
-          case kSuspendTestWaitSuspend:
-            LOG_INFO("auto-suspending");
+          case kSuspendStateWaitSuspend:
+            LOG_INFO("auto-suspending (FPGA)");
             timeout_frames_set(ctx, FRAMES_INITIATE_RESUME);
-            state_enter(ctx, kSuspendTestWaitResume);
+            state_enter(ctx, kSuspendStateWaitResume);
             break;
 
-          case kSuspendTestWaitResume:
-            LOG_INFO("auto-resuming");
-            state_enter(ctx, kSuspendTestWaitBusReset);
+          case kSuspendStateWaitResume:
+            LOG_INFO("auto-resuming (FPGA)");
+            state_enter(ctx, kSuspendStateWaitBusReset);
             // TODO: we shalln't get a bus reset without provoking it, but
             // we can do that!
             break;
 
-          case kSuspendTestWaitLongSuspend:
-            LOG_INFO("auto-long-suspending");
-            timeout_frames_set(ctx, FRAMES_LONG_SUSPEND);
-            state_enter(ctx, kSuspendTestWaitSuspendTimeout);
+          case kSuspendStateWaitLongSuspend:
+            LOG_INFO("auto-long-suspending (FPGA)");
+            timeout_frames_set(ctx, FRAMES_WAIT_ENTER_SLEEP);
+            state_enter(ctx, kSuspendStateWaitSuspendTimeout);
             break;
 
-          case kSuspendTestWaitBusReset:
-            LOG_INFO("auto-resetting");
+          case kSuspendStateWaitBusReset:
+            LOG_INFO("auto-resetting (FPGA)");
             // This will disconnect us from the bus.
             CHECK_STATUS_OK(usb_testutils_fin(ctx->usbdev));
-            state_enter(ctx, kSuspendTestReset);
+            state_enter(ctx, kSuspendStateReset);
             break;
 
           default:
@@ -814,9 +800,11 @@ static void timeout_handle(usbdev_suspend_ctx_t *ctx) {
     default:
       LOG_INFO("Timed out in test state %u (%s)", ctx->test_state,
                state_name(ctx->test_state));
-      state_enter(ctx, kSuspendTestFailed);
+      state_enter(ctx, kSuspendStateFailed);
       break;
   }
+
+  return OK_STATUS();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -826,13 +814,168 @@ static void timeout_handle(usbdev_suspend_ctx_t *ctx) {
 // monitored event is neither immediate nor will it trigger a link
 // event.
 ////////////////////////////////////////////////////////////////////////////////
-static void state_service(usbdev_suspend_ctx_t *ctx) {
+static status_t state_service(usbdev_suspend_ctx_t *ctx) {
+  uint32_t timeout = FRAMES_SUSPEND_MISSED;
+
   switch (ctx->test_state) {
-    case kSuspendTestActivatedAON:
+// TODO: this restructured startup code still requires more careful consideration
+// and extensive checking.
+
+    // If we can reuse the existing software state and device configuration for
+    // this phase then we avoid reinitialization...
+    case kSuspendStateDeepSleep:
+    case kSuspendStateReset:
+
+      LOG_INFO("Init testutils layer in state %u (%s)", ctx->test_state,
+               state_name(ctx->test_state));
+
+      // Initialize the usb_testutils layer
+      // Note: when we exit a Deep Sleep via Resume Signaling we are relying
+      // upon being able to set up the state of the endpoints and device
+      // registers again, rather than retaining the full software state in SRAM
+      CHECK_STATUS_OK(usb_testutils_init(ctx->usbdev, /*pinflip=*/false,
+                                         /*en_diff_rcvr=*/true,
+                                         /*tx_use_d_se0=*/false));
+
+      // Register our interest in link events
+      CHECK_STATUS_OK(
+          usb_testutils_link_callback_register(ctx->usbdev, link_callback, ctx));
+
+      // Set up Endpoint Zero for Control Transfers, at which point the
+      // interface becomes enabled and we must be responsive to USB traffic.
+      CHECK_STATUS_OK(usb_testutils_controlep_init(
+          &usbdev_control, ctx->usbdev, 0, config_descriptors,
+          sizeof(config_descriptors), ctx->test_dscr, sizeof(ctx->test_dscr)));
+
+      if (ctx->test_state == kSuspendStateDeepSleep) {
+        // Collect the device address and configuration previously used.
+        const uint8_t dev_address = ctx->retn_state.dev_address;
+        const uint8_t dev_config = ctx->retn_state.dev_config;
+
+        // NOTE: We've run through the usb_testutils/controlep_init sequence as
+        // normal because this sets up our endpoints as they were before, whilst
+        // requiring less information to be stored in the retention RAM, but we
+        // must still reinstate the device address.
+        CHECK_DIF_OK(dif_usbdev_address_set(ctx->usbdev->dev, dev_address));
+
+        // TODO: the controlep state needs to be forced to configured.
+        // TODO: introduce an API call to set/restore the state information for
+        // the control endpoint, to keep things a little cleaner/more contained?
+        usbdev_control.device_state = kUsbTestutilsDeviceConfigured;
+        usbdev_control.usb_config = dev_config;
+        usbdev_control.new_dev = dev_address;
+
+        // At this point we expected the device to be in the Powered state, and
+        // since it won't see a Bus Reset, we nudge it into the ActiveNoSOF state.
+        dif_usbdev_link_state_t link_state;
+        TRY(dif_usbdev_status_get_link_state(ctx->usbdev->dev, &link_state));
+        TRY_CHECK(link_state == kDifUsbdevLinkStatePowered);
+
+        TRY(dif_usbdev_resume_link_to_active(ctx->usbdev->dev));
+      } else {
+        // In this case, since we have no retention RAM, we must wait until the
+        // host has reconfigured us; do not wait indefinitely, in case something
+        // has gone wrong. It should take only a few bus frames even with the
+        // older, slower DPI behavior.
+
+        if (kDeviceType == kDeviceFpgaCw310) {
+          timeout_set(ctx, TIMEOUT_FPGA_CONFIG);
+        } else {
+          timeout_frames_set(ctx, 8u);
+        }
+
+        // TODO: This is some manual test code that drives OT into a normal sleep
+        // and resumes in response to the Bus Reset that the DPI is generating at
+        // this point.
+        if (false) {
+          ctx->test_phase = kSuspendPhaseSleepReset;
+
+          TRY(dif_usbdev_set_wake_enable(ctx->usbdev->dev, kDifToggleEnabled));
+          state_enter(ctx, kSuspendStateActivatedAON);
+
+          // Wait until the aon_wake module has surrendered control
+          while (ctx->test_state != kSuspendStateReset) {
+            state_service(ctx);
+          }
+
+          state_enter(ctx, kSuspendStateComplete);
+        }
+
+        while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured &&
+               !ibex_timeout_check(&ctx->timeout)) {
+          CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
+        }
+
+        // If we're out of step with the DPI model/host, stop the test.
+        TRY_CHECK(usbdev_control.device_state == kUsbTestutilsDeviceConfigured);
+      }
+
+      // TODO: This does not relate directly to the Suspend-Resume testing but
+      // unexplained behavior is observed on FPGA, and so this is still required
+      // until we find out why an apparently spurious Suspend event occurs?!
+      //
+      // #if USBUTILS_FUNCTION_POINTS && USBUTILS_FUNCPT_USE_BUFFER
+      //    usbutils_funcpt_report();
+      // #endif
+
+      // TODO: streaming code has now been integrated, but it would probably be
+      // quite useful to be able to see the device streaming activity too, not
+      // just that of the host side?
+
+      if (ctx->with_traffic) {
+        // Initialise the state of the streams
+        CHECK_STATUS_OK(usb_testutils_streams_init(&usbdev_streams, nstreams,
+                                                   xfr_types, transfer_bytes,
+                                                   test_flags, verbose));
+        if (verbose) {
+          LOG_INFO("Configured; starting streaming...");
+        }
+      } else {
+        if (verbose) {
+          LOG_INFO("Configured; not trying to stream...");
+        }
+      }
+
+      // The DPI model still needs to complete the 'SET_DEVICE_CONFIG' bus frame
+      // and then devote another bus frame to reading the test configuration.
+      // (GET_TEST_CONFIG), so we must expect to wait longer before seeing the
+      // Suspend signaling.
+      timeout += FRAMES_CONFIG_DELAY;
+      // no break
+    case kSuspendStateNextPhase:
+      // Enter the appropriate starting state based upon the test phase
+      switch (ctx->test_phase) {
+        case kSuspendPhaseShutdown:
+          // Nothing more to be done
+          state_enter(ctx, kSuspendStateComplete);
+          break;
+
+        case kSuspendPhaseSuspend:
+          state_enter(ctx, kSuspendStateWaitSuspend);
+          break;
+
+        default:
+          CHECK(ctx->test_phase == kSuspendPhaseDeepDisconnect);
+          // no break
+        case kSuspendPhaseDeepReset:
+        case kSuspendPhaseDeepResume:
+          state_enter(ctx, kSuspendStateDeepWaking);
+          break;
+
+        case kSuspendPhaseSleepDisconnect:
+        case kSuspendPhaseSleepReset:
+        case kSuspendPhaseSleepResume:
+          state_enter(ctx, kSuspendStateWaitLongSuspend);
+          break;
+      }
+      // Initialize timeout to catch any failure of the host to suspend the bus
+      timeout_frames_set(ctx, timeout);
+      break;
+
+    case kSuspendStateActivatedAON:
       // Since the AON/Wakeup operates on a low clock frequency, it may
       // take some time for it to become active....await its signal
-      CHECK_DIF_OK(
-          dif_usbdev_get_wake_status(ctx->usbdev->dev, &ctx->wake_status));
+      TRY(dif_usbdev_get_wake_status(ctx->usbdev->dev, &ctx->wake_status));
 
       LOG_INFO("wake status active %u disconnected %u bus_reset %u\n",
                ctx->wake_status.active, ctx->wake_status.disconnected,
@@ -840,8 +983,8 @@ static void state_service(usbdev_suspend_ctx_t *ctx) {
 
       if (ctx->wake_status.active) {
         // Retain our state information
-        CHECK_DIF_OK(dif_usbdev_address_get(ctx->usbdev->dev,
-                                            &ctx->retn_state.dev_address));
+        TRY(dif_usbdev_address_get(ctx->usbdev->dev,
+                                   &ctx->retn_state.dev_address));
         ctx->retn_state.dev_config = usbdev_control.usb_config;
         ctx->retn_state.test_phase = (uint8_t)ctx->test_phase;
         if (verbose) {
@@ -853,32 +996,38 @@ static void state_service(usbdev_suspend_ctx_t *ctx) {
 
         retention_sram_store(&ctx->retn_state);
 
-        if (ctx->test_phase == kSuspendPhaseDeepReset ||
+        if (ctx->test_phase == kSuspendPhaseDeepResume ||
+            ctx->test_phase == kSuspendPhaseDeepReset ||
             ctx->test_phase == kSuspendPhaseDeepDisconnect) {
           LOG_INFO("Requesting Deep sleep");
 
           // Deep sleep.
-          CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+          //
+          // Note: we must keep the 'Active USB clock enable' bit set, becausse
+          // otherwise when we return to the active state, the usbdev clock will
+          // not be restored.
+          TRY(pwrmgr_testutils_enable_low_power(
               &pwrmgr, kDifPwrmgrWakeupRequestSourceFour,
-              /*domain_config=*/0));
+              /*domain_config=*/kDifPwrmgrDomainOptionUsbClockInActivePower));
 
-          // Record that we've asked to power down
+          // Record that we've asked to power down; timeout should never occur.
           timeout_frames_set(ctx, 2u);
-          state_enter(ctx, kSuspendTestDeepSleep);
+          state_enter(ctx, kSuspendStateDeepSleep);
         } else {
           LOG_INFO("Requesting Normal sleep");
 
           // Normal sleep.
-          CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+          TRY(pwrmgr_testutils_enable_low_power(
               &pwrmgr, /*wakeups=*/kDifPwrmgrWakeupRequestSourceFour,
               /*domain_config=*/
               kDifPwrmgrDomainOptionCoreClockInLowPower |
                   kDifPwrmgrDomainOptionUsbClockInActivePower |
                   kDifPwrmgrDomainOptionMainPowerInLowPower));
 
-          // Record that we've asked to enter lower power mode
+          // Record that we've asked to enter lower power mode; timeout should
+          // never occur.
           timeout_frames_set(ctx, 2u);
-          state_enter(ctx, kSuspendTestNormalSleep);
+          state_enter(ctx, kSuspendStateNormalSleep);
         }
 
         // Enter low power mode.
@@ -891,34 +1040,47 @@ static void state_service(usbdev_suspend_ctx_t *ctx) {
         // pwrmgr tells us otherwise.
         //---------------------------------------------------------------
 
-        // Retrieve it (Q: do we need to?)
-        retention_sram_load(&ctx->retn_state);
+// TODO: check the IRQ source in the event of a Normal Sleep and proceeding
+// past the WFI
 
+        // Check that a DeepSleep request did not somehow run past the WFI...
+        TRY_CHECK(ctx->test_state == kSuspendStateNormalSleep);
+        // ... and we should be in one of these test phases.
+        TRY_CHECK(ctx->retn_state.test_phase == kSuspendPhaseSleepResume ||
+                  ctx->retn_state.test_phase == kSuspendPhaseSleepReset ||
+                  ctx->retn_state.test_phase == kSuspendPhaseSleepDisconnect);
+
+        // Retrieve it (Q: do we need to?)
+        usbdev_retn_state_t stored_state;
+        retention_sram_load(&stored_state);
         if (verbose) {
           LOG_INFO(" - retained address %u config %u phase %u (%s)",
-                   ctx->retn_state.dev_address, ctx->retn_state.dev_config,
-                   ctx->retn_state.test_phase,
-                   phase_name(ctx->retn_state.test_phase));
+                   stored_state.dev_address, stored_state.dev_config, stored_state.test_phase, phase_name(stored_state.test_phase));
         }
 
-        CHECK(ctx->retn_state.test_phase == kSuspendPhaseSleepResume ||
-              ctx->retn_state.test_phase == kSuspendPhaseSleepReset ||
-              ctx->retn_state.test_phase == kSuspendPhaseSleepDisconnect);
+        // Check that the Retention SRAM did its job over Normal Sleep at least;
+        // the SRAM should remain powered and clocked so this should not be
+        // challenging.
+        TRY_CHECK(stored_state.dev_address == ctx->retn_state.dev_address &&
+                  stored_state.dev_config == ctx->retn_state.dev_config &&
+                  stored_state.test_phase == ctx->retn_state.test_phase);
 
         dif_pwrmgr_wakeup_reason_t wakeup_reason;
-        CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
+        TRY(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
 
         LOG_INFO("wakeup types 0x%x sources 0x%x", wakeup_reason.types,
                  wakeup_reason.request_sources);
+
+        timeout_frames_set(ctx, 1u);
+        state_enter(ctx, kSuspendStateNormalWaking);
       }
       break;
 
-    case kSuspendTestNormalSleep:
-    case kSuspendTestDeepSleep:
-      // We've returned from sleeping; enquire of the AON/Wakeup module
+    case kSuspendStateNormalWaking:
+    case kSuspendStateDeepWaking:
+      // We've returned from sleeping; enquire of the USB AON Wake module
       // what happened...
-      CHECK_DIF_OK(
-          dif_usbdev_get_wake_status(ctx->usbdev->dev, &ctx->wake_status));
+      TRY(dif_usbdev_get_wake_status(ctx->usbdev->dev, &ctx->wake_status));
 
       // There are three ways that we may exit from Deep Sleep in which
       // the AON/Wake module has been handling the bus:
@@ -933,10 +1095,10 @@ static void state_service(usbdev_suspend_ctx_t *ctx) {
                ctx->wake_status.active, ctx->wake_status.disconnected,
                ctx->wake_status.bus_reset);
 
-      bool got_signal = false;
-
       // Check the report from the AON/Wakeup module
       if (ctx->wake_status.active) {
+        bool got_signal = false;
+
         switch (ctx->test_phase) {
           case kSuspendPhaseSleepResume:
           case kSuspendPhaseDeepResume:
@@ -950,35 +1112,56 @@ static void state_service(usbdev_suspend_ctx_t *ctx) {
             break;
 
           default:
-            CHECK(ctx->test_phase == kSuspendPhaseDeepDisconnect);
+            TRY_CHECK(ctx->test_phase == kSuspendPhaseDeepDisconnect);
             // no break
           case kSuspendPhaseSleepDisconnect:
             got_signal = (ctx->wake_status.disconnected != 0);
             break;
         }
-      }
 
-      if (got_signal) {
-        // Signal to the AON wakeup module that it should deactivate and
-        // relinquish control of the bus
-        CHECK_DIF_OK(
-            dif_usbdev_set_wake_enable(ctx->usbdev->dev, kDifToggleDisabled));
+        if (got_signal) {
+          // TODO: Issue #18562 VBUS Disconnection leaves pull ups asserted
+          // by the USB AON Wake module, so disconnect them here before
+          // potential confusion results.
+          if (ctx->test_phase == kSuspendPhaseSleepDisconnect) {
+            bool sense;
 
-        state_enter(ctx, kSuspendTestAONWakeup);
+            TRY(dif_usbdev_status_get_sense(ctx->usbdev->dev, &sense));
+            if (verbose) {
+              LOG_INFO("Handling Disconnection when VBUS %sasserted", sense ? "" : "de-");
+            }
+            // If VBUS/SENSE is not asserted, then the pull up will be removed
+            // as soon as the AON Wake module is deactivated, because usbdev
+            // qualifies its own pull up assertions with VBUS/SENSE presence.
+            if (sense) {
+              TRY(dif_usbdev_interface_enable(ctx->usbdev->dev, false));
+            }
+          }
+
+          // Signal to the AON wakeup module that it should deactivate and
+          // relinquish control of the bus
+          TRY(dif_usbdev_set_wake_enable(ctx->usbdev->dev, kDifToggleDisabled));
+
+          // Although it operate at 200kHz, it should't take long
+          timeout_set(ctx, 1000u);
+          state_enter(ctx, kSuspendStateAONWakeup);
+        } else {
+          LOG_INFO("Unexpected report from USB AON Wake module");
+          state_enter(ctx, kSuspendStateFailed);
+        }
       } else {
-        LOG_INFO("Unexpected report from AON/Wakeup");
-        state_enter(ctx, kSuspendTestFailed);
+        LOG_INFO("AON/Wake module not active when expected");
+        state_enter(ctx, kSuspendStateFailed);
       }
       break;
 
-    case kSuspendTestAONWakeup:
+    case kSuspendStateAONWakeup:
       // Since the AON wakeup module operates on a much lower clock
       // frequency it may take some time for it to stop monitoring and to
       // report becoming inactive...
-      CHECK_DIF_OK(
-          dif_usbdev_get_wake_status(ctx->usbdev->dev, &ctx->wake_status));
+      TRY(dif_usbdev_get_wake_status(ctx->usbdev->dev, &ctx->wake_status));
 
-      LOG_INFO("aon waking active %u disconnected %u bus_reset %u\n",
+      LOG_INFO("AON Wake module active %u disconnected %u bus_reset %u\n",
                ctx->wake_status.active, ctx->wake_status.disconnected,
                ctx->wake_status.bus_reset);
 
@@ -994,210 +1177,143 @@ static void state_service(usbdev_suspend_ctx_t *ctx) {
           case kSuspendPhaseDeepDisconnect:
             // TODO: in this case, we just tear down and rebuild the
             // software stack, right?
-            state_enter(ctx, kSuspendTestReset);
+            state_enter(ctx, kSuspendStateReset);
             break;
 
-            // For a Bus Reset, we can keep the software state and endpoint
-            // set up etc. We just need to ensure that the control endpoint
-            // has been returned to the 'Default' state.
-            // TODO: Introduce this!
           case kSuspendPhaseSleepReset:
+            // For a Bus Reset, we can keep the software state and endpoint
+            // set up etc. We just need to be sure that the control endpoint
+            // has been returned to the 'Default' state.
+
+            // TODO: with a physical host we shall awaken whilst the Reset
+            // Signaling is still under way, so the control endpoint will
+            // be notified of the link reset and it will return to the Default
+            // state.
+            // For our much reset
+
+            state_enter(ctx, kSuspendStateNextPhase);
+            break;
+
           case kSuspendPhaseDeepReset:
-            state_enter(ctx, kSuspendTestNextPhase);
+            state_enter(ctx, kSuspendStateReset);
             break;
 
           default:
-            CHECK(ctx->test_phase == kSuspendPhaseDeepResume);
+            TRY_CHECK(ctx->test_phase == kSuspendPhaseDeepResume);
             // no break
           case kSuspendPhaseSleepResume:
             timeout_set(ctx, TIMEOUT_WAKEUP_RESUME);
-            state_enter(ctx, kSuspendTestWaitResumeTimeout);
+            state_enter(ctx, kSuspendStateWaitResumeTimeout);
             break;
         }
+      } else {
+        LOG_INFO("AON Wake module not active when expected");
+        state_enter(ctx, kSuspendStateFailed);
       }
       break;
 
       // TODO: do we still want this state?
-    case kSuspendTestWaitFinish:
+    case kSuspendStateWaitFinish:
       break;
 
     // States in which we sit waiting - with a timeout - for something
     // significant to happen...
     default:
-      CHECK(ctx->test_state == kSuspendTestWaitResumeTimeout);
+      TRY_CHECK(ctx->test_state == kSuspendStateWaitResumeTimeout);
       // no break
-    case kSuspendTestWaitSuspend:
-    case kSuspendTestWaitResume:
-    case kSuspendTestWaitBusReset:
-    case kSuspendTestWaitLongSuspend:
-    case kSuspendTestWaitSuspendTimeout:
-      //          case kSuspendTestWaitResumeTimeout:
+    case kSuspendStateWaitSuspend:
+    case kSuspendStateWaitResume:
+    case kSuspendStateWaitBusReset:
+    case kSuspendStateWaitLongSuspend:
+    case kSuspendStateWaitSuspendTimeout:
+      //          case kSuspendStateWaitResumeTimeout:
       break;
   }
+
+  return OK_STATUS();
 }
 
 /**
  * Run a single test phase to completion
  */
-static void phase_run(usbdev_suspend_ctx_t *ctx) {
-  // If we can reuse the existing software state and device configuration for
-  // this phase then we avoid reinitialization...
-  if (ctx->test_state == kSuspendTestNextPhase) {
-    // TODO: we should return the control endpoint to its Default State,
-    // TODO: what do we do about data streams under these conditions?
-  } else {
-    LOG_INFO("Init testutils layer in state %u (%s)", ctx->test_state,
-             state_name(ctx->test_state));
-
-    // Initialize the usb_testutils layer
-    // Note: when we exit a Deep Sleep via Resume Signaling we are relying
-    // upon being able to set up the state of the endpoints and device
-    // registers again, rather than retaining the full software state in SRAM
-    CHECK_STATUS_OK(usb_testutils_init(ctx->usbdev, /*pinflip=*/false,
-                                       /*en_diff_rcvr=*/true,
-                                       /*tx_use_d_se0=*/false));
-
-    // Register our interest in link events
-    CHECK_STATUS_OK(
-        usb_testutils_link_callback_register(ctx->usbdev, link_callback, ctx));
-
-    // Set up Endpoint Zero for Control Transfers, at which point the
-    // interface becomes enabled and we must be responsive to USB traffic.
-    CHECK_STATUS_OK(usb_testutils_controlep_init(
-        &usbdev_control, ctx->usbdev, 0, config_descriptors,
-        sizeof(config_descriptors), ctx->test_dscr, sizeof(ctx->test_dscr)));
-
-    if (ctx->test_state == kSuspendTestDeepSleep && device_remembers) {
-      // Collect the device address and configuration previously used.
-      const uint8_t dev_address = ctx->retn_state.dev_address;
-      const uint8_t dev_config = ctx->retn_state.dev_config;
-
-      // NOTE: We've run through the usb_testutils/controlep_init sequence as
-      // normal because this sets up our endpoints as they were before, whilst
-      // requiring less information to be stored in the retention RAM, but we
-      // must still reinstate the device address.
-      CHECK_DIF_OK(dif_usbdev_address_set(ctx->usbdev->dev, dev_address));
-
-      // TODO: the controlep state needs to be forced to configured.
-      // TODO: introduce an API call to set/restore the state information for
-      // the control endpoint, to keep things a little cleaner/more contained?
-      usbdev_control.device_state = kUsbTestutilsDeviceConfigured;
-      usbdev_control.usb_config = dev_config;
-      usbdev_control.new_dev = dev_address;
-
-      // TODO: do we need to restore any other information?
-    } else {
-      // In this case, since we have no retention RAM, we must wait until the
-      // host has reconfigured us.
-      while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured) {
-        CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
-      }
-    }
-
-#if USBUTILS_FUNCTION_POINTS && USBUTILS_FUNCPT_USE_BUFFER
-    usbutils_funcpt_report();
-#endif
-
-    // TODO: streaming code has now been integrated, but it would probably be
-    // quite useful to be able to see the device streaming activity too, not
-    // just that of the host side?
-
-    if (with_traffic) {
-      // Initialise the state of the streams
-      CHECK_STATUS_OK(usb_testutils_streams_init(&usbdev_streams, nstreams,
-                                                 xfr_types, transfer_bytes,
-                                                 test_flags, verbose));
-      if (verbose) {
-        LOG_INFO("Configured; starting streaming...");
-      }
-    } else {
-      if (verbose) {
-        LOG_INFO("Configured; not trying to stream...");
-      }
-    }
-  }
-
-  // Enter the appropriate starting state based upon the test phase
-  switch (ctx->test_phase) {
-    case kSuspendPhaseSuspend:
-      state_enter(ctx, kSuspendTestWaitSuspend);
-      break;
-
-    default:
-      CHECK(ctx->test_phase == kSuspendPhaseDeepDisconnect);
-      // no break
-    case kSuspendPhaseDeepReset:
-    case kSuspendPhaseDeepResume:
-    case kSuspendPhaseSleepDisconnect:
-    case kSuspendPhaseSleepReset:
-    case kSuspendPhaseSleepResume:
-      state_enter(ctx, kSuspendTestWaitLongSuspend);
-      break;
-  }
-
-  // Initialize timeout to catch any failure of the host to suspend the bus
-  timeout_frames_set(ctx, FRAMES_INITIATE_SUSPEND);
+static status_t phase_run(usbdev_suspend_ctx_t *ctx) {
 
   // The DPI model and our callback handler for USB link events do most of the
   // work of walking through the test states until completion
-  while (ctx->test_state != kSuspendTestComplete &&
-         ctx->test_state != kSuspendTestFailed &&
-         ctx->test_state != kSuspendTestReset &&
-         ctx->test_state != kSuspendTestNextPhase) {
-    if (with_traffic) {
-      // Servicing streams handles usbdev/testutils events for us.
-      CHECK_STATUS_OK(usb_testutils_streams_service(&usbdev_streams));
+  bool phase_done = false;
+  do {
+    if (ibex_timeout_check(&ctx->timeout)) {
+      TRY(timeout_handle(ctx));
     } else {
-      // No traffic, but we must still poll the usb_testutils layer to handle
-      // hardware events and callbacks.
-      CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
+      TRY(state_service(ctx));
     }
 
-    if (ibex_timeout_check(&ctx->timeout)) {
-      timeout_handle(ctx);
-    } else {
-      state_service(ctx);
+    switch (ctx->test_state) {
+      // These states transition transition to another phase or terminate the
+      // test sequence.
+      case kSuspendStateComplete:
+      case kSuspendStateFailed:
+      case kSuspendStateReset:
+      case kSuspendStateNextPhase:
+        phase_done = true;
+        break;
+
+      // Do not poll the USB device or perform traffic in these states.
+      case kSuspendStateActivatedAON:
+      case kSuspendStateAONWakeup:
+      case kSuspendStateDeepSleep:
+      case kSuspendStateNormalSleep:
+        break;
+
+      default:
+        if (ctx->with_traffic) {
+          // Servicing streams handles usbdev/testutils events for us.
+          CHECK_STATUS_OK(usb_testutils_streams_service(&usbdev_streams));
+        } else {
+          // No traffic, but we must still poll the usb_testutils layer to handle
+          // hardware events and callbacks.
+          CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
+        }
+        break;
     }
-  }
+  } while (!phase_done);
 
   // Bus Reset is how we advance to the next test phase if we had to rely
-  // upon our own state machine to complete the operation, because the host
+  // upon our own state machine to complete the operation because the host
   // is incapable of providing the necessary stimulus.
   // TODO: or Disconnect?
   switch (ctx->test_state) {
-      // Q: do we handle this here, or after or in the AONWakeup code above ^
-      //      case kSuspendTestDisconnect:
-      //        break;
-    case kSuspendTestReset:
+    case kSuspendStateReset:
       // no break
-    case kSuspendTestNextPhase:
-      if (ctx->test_phase == kSuspendPhaseDeepDisconnect) {
-        state_enter(ctx, kSuspendTestComplete);
+    case kSuspendStateNextPhase:
+      // Was this the final phase of the test?
+      if (ctx->test_phase == ctx->fin_phase) {
+        state_enter(ctx, kSuspendStateComplete);
       } else {
         phase_start(ctx, (usbdev_suspend_phase_t)(ctx->test_phase + 1u));
       }
       break;
 
     default:
-      CHECK(ctx->test_state == kSuspendTestComplete ||
-            ctx->test_state == kSuspendTestFailed);
+      TRY_CHECK(ctx->test_state == kSuspendStateComplete ||
+                ctx->test_state == kSuspendStateFailed);
       break;
   }
+
+  return OK_STATUS();
 }
 
-OTTF_DEFINE_TEST_CONFIG();
-
-bool test_main(void) {
+bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
+                         usbdev_suspend_phase_t fin_phase, bool with_traffic) {
   usbdev_suspend_ctx_t *ctx = &suspend_ctx;
 
-  // Ensure that all state we retain is defined
-  memset(&ctx->retn_state, 0, sizeof(ctx->retn_state));
-
-  //  CHECK(kDeviceType == kDeviceSimVerilator || kDeviceType == kDeviceSimDV ||
-  //            kDeviceType == kDeviceFpgaCw310,
-  //        "This test is not expected to run on platforms other than the "
-  //        "Verilator simulation or CW310 FPGA. It needs the USB DPI model "
-  //        "or host application.");
+  // Wipe out any memory from the previous test phase, just to be more confident
+  // that we really are resuming from Deep Sleep and using only the Retention
+  // SRAM contents to resume.
+  //
+  // This also means that the data we subsequently store in the Retention SRAM
+  // has defined values for the unused padding fields.
+  memset(ctx, 0, sizeof(*ctx));
 
   LOG_INFO("Running USBDEV_SUSPEND test");
 
@@ -1205,11 +1321,24 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
+  // Remember the phase in which we are to stop.
+  CHECK(fin_phase >= init_phase);
+  ctx->fin_phase = fin_phase;
+
   switch (kDeviceType) {
     case kDeviceSimVerilator:
       // steal the UART output and send it via a faster mechanism
       base_set_stdout(base_stdout);
-      // no break
+
+      // DPI model performs suspend/resume signaling in response to reading our
+      // test description.
+      host_suspends = true;
+
+      // DPI model can perform traffic and will deliberately avoid performing
+      // traffic during the periods when it stops sending the bus frames
+      // with_traffic = true;
+      break;
+
     // Do NOT steal the UART output in this case because DVsim has a back door
     // for rapid logging.
     case kDeviceSimDV:
@@ -1219,7 +1348,11 @@ bool test_main(void) {
 
       // DPI model can perform traffic and will deliberately avoid performing
       // traffic during the periods when it stops sending the bus frames
-      with_traffic = true;
+      // with_traffic = true;
+
+      // TODO: Verbose reporting is okay with DVsim, and we don't have things
+      // working yet! :)
+      verbose = true;
       break;
 
     // We do NOT rely upon the physical host to suspend our device.
@@ -1233,8 +1366,13 @@ bool test_main(void) {
   }
 
   // TODO: let's learn to walk first
-  with_traffic = false;
+  // ctx->with_traffic = with_traffic;
+  ctx->with_traffic = false;
 
+  LOG_INFO("  (seq: %s to %s with%s traffic)", phase_name(init_phase),
+           phase_name(ctx->fin_phase), ctx->with_traffic ? "" : "out");
+
+  // Initialize pinmux.
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
@@ -1276,7 +1414,7 @@ bool test_main(void) {
   if (rst_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Booting for the first time");
     phase_start(ctx, init_phase);
-    state_enter(ctx, kSuspendTestReset);
+    state_enter(ctx, kSuspendStateReset);
   } else {
     LOG_INFO("Resuming from power down!");
     // Recover state from the retention RAM
@@ -1288,12 +1426,41 @@ bool test_main(void) {
                phase_name(ctx->retn_state.test_phase));
     }
 
+    // To have arrived we should be in one of these test phases.
     CHECK(ctx->retn_state.test_phase == kSuspendPhaseDeepResume ||
           ctx->retn_state.test_phase == kSuspendPhaseDeepReset ||
           ctx->retn_state.test_phase == kSuspendPhaseDeepDisconnect);
 
-    phase_start(ctx, ctx->retn_state.test_phase);
-    state_enter(ctx, kSuspendTestDeepSleep);
+    // We can - presently - check the other parameters.
+    CHECK(ctx->retn_state.dev_config == 1u);
+    if (kDeviceType == kDeviceSimDV || kDeviceType == kDeviceSimVerilator) {
+      // We happen to know that the DPI model supplies a fixed device address
+      // at present.
+      CHECK(ctx->retn_state.dev_address == 2u);
+    }
+
+    // In The Retention SRAM we stored the phase that we had been performing;
+    // Decide upon the next test phase and state
+    usbdev_suspend_state_t next_state;
+    usbdev_suspend_phase_t next_phase;
+
+    switch (ctx->retn_state.test_phase) {
+      case kSuspendPhaseDeepResume:
+        next_state = kSuspendStateDeepSleep;
+        next_phase = kSuspendPhaseDeepReset;
+        break;
+      case kSuspendPhaseDeepReset:
+        next_state = kSuspendStateReset;
+        next_phase = kSuspendPhaseDeepDisconnect;
+        break;
+      default:
+        CHECK(ctx->retn_state.test_phase == kSuspendPhaseDeepDisconnect);
+        next_state = kSuspendStateDeepSleep;
+        next_phase = kSuspendPhaseShutdown;
+        break;
+    }
+    phase_start(ctx, next_phase);
+    state_enter(ctx, next_state);
   }
 
   do {
@@ -1301,14 +1468,18 @@ bool test_main(void) {
       LOG_INFO("PHASE %u (%s)", ctx->test_phase, phase_name(ctx->test_phase));
     }
 
-    phase_run(ctx);
+    // Run this test phase
+    CHECK_STATUS_OK(phase_run(ctx));
 
-  } while (ctx->test_state == kSuspendTestNextPhase ||  // Advance?
-           ctx->test_state == kSuspendTestReset);
+    // Keep going if we're advancing to the next phase.
+    //  (NextPhase means that we advance whilst still active and can thus skip
+    //   device setup and configuratinon)
+  } while (ctx->test_state == kSuspendStateNextPhase ||
+           ctx->test_state == kSuspendStateReset);
 
   if (verbose) {
     LOG_INFO("Test concluding (%s)", state_name(ctx->test_state));
   }
 
-  return (ctx->test_state == kSuspendTestComplete);
+  return (ctx->test_state == kSuspendStateComplete);
 }

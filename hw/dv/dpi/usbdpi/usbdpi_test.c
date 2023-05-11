@@ -8,23 +8,6 @@
 
 #include "usbdpi.h"
 
-#define AML_HACK 1
-
-// Timeout constants for Suspend/Resume test in microseconds
-//   (these may differ depending upon whether the RTL has been modified to
-//    reduce the simulation time!)
-#if AML_HACK
-static const unsigned kSuspendTimeout = 750u;
-static const unsigned kActiveInterval = 375u;
-static const unsigned kSleepTimeout = 1500u;
-static const unsigned kResumeInterval = 300u;
-#else
-static const unsigned kSuspendTimeout = 4000u;
-static const unsigned kActiveInterval = 2000u;
-static const unsigned kSleepTimeout = 8000u;
-static const unsigned kResumeInterval = 3000u;
-#endif
-
 // Go Faster Stripes; drop the descriptor reading steps in order to reduce
 // simulation time.
 static const bool stripes = true;
@@ -247,7 +230,7 @@ usbdpi_test_step_t usbdpi_test_seq_next(usbdpi_ctx_t *ctx,
               break;
 
             case STEP_RESUME:
-              if (++ctx->substep >= test_frames(kResumeInterval)) {
+              if (true) {  //(++ctx->substep >= test_frames(kResumeInterval)) {
                 // Advance the test phase
                 switch (ctx->test_phase) {
                   case kSuspendPhaseSleepResume:
@@ -258,7 +241,8 @@ usbdpi_test_step_t usbdpi_test_seq_next(usbdpi_ctx_t *ctx,
                     ctx->test_phase = kSuspendPhaseDeepReset;
                     break;
                 }
-                // Disconnect the device to signal successful test completion
+                // The next phase starts with a long period without SOF
+                // signaling, causing the device/sw to enter another sleep.
                 next_step = STEP_SUSPEND_LONG;
               }
               break;

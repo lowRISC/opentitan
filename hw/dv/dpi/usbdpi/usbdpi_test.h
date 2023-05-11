@@ -75,6 +75,27 @@ typedef enum {
   STEP_BUS_DISCONNECT = 0x7fu
 } usbdpi_test_step_t;
 
+#define AML_HACK 1
+
+// Timeout constants for Suspend/Resume test in microseconds
+//   (these may differ depending upon whether the RTL has been modified to
+//    reduce the simulation time!)
+#if AML_HACK
+static const unsigned kSuspendTimeout = 750u;
+static const unsigned kActiveInterval = 375u;
+static const unsigned kSleepTimeout = 1500u;
+
+// It takes the chip/sw about 2ms to reach the point of awakening the USB
+// device; in reality the host is obligated to perform Resume Signaling for at
+// least 20ms.
+static const unsigned kResumeInterval = 2000u;
+#else
+static const unsigned kSuspendTimeout = 4000u;
+static const unsigned kActiveInterval = 2000u;
+static const unsigned kSleepTimeout = 8000u;
+// static const unsigned kResumeInterval = 3000u;
+#endif
+
 // Test-specific initialization
 void usbdpi_test_init(usbdpi_ctx_t *ctx);
 

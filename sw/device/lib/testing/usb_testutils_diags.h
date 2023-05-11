@@ -6,9 +6,14 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_DIAGS_H_
 #include "sw/device/lib/dif/dif_usbdev.h"
 
-// TODO:
+// TODO: development/bringup of suspend test only!
+#if 1
+#define USB_DVSIM 0
+#define USB_FPGA 1
+#else
 #define USB_DVSIM 1
-//#define USB_FPGA  0
+#define USB_FPGA 0
+#endif
 
 // Diagnostic, testing and performance measurements utilities for verification
 // of usbdev and development of the usb_testutils support software; the
@@ -29,7 +34,7 @@
 
 // Record the function points to a memory buffer instead, for use where test
 //   hardware is unavailable, eg. FPGA builds.
-#define USBUTILS_FUNCPT_USE_BUFFER 0
+#define USBUTILS_FUNCPT_USE_BUFFER USB_FPGA
 
 #if USBUTILS_FUNCTION_POINTS
 // For access to ibex_mcycle_read()
@@ -84,6 +89,7 @@ extern volatile unsigned usbutils_fpt_next;
 extern uint32_t usbutils_fpt_log[];
 
 // Record function points to RAM buffer for deferred reporting, eg. FPGA
+// void USBUTILS_FUNCPT(uint32_t, uintptr_t);
 #define USBUTILS_FUNCPT(pt, d)                                    \
   {                                                               \
     unsigned idx = usbutils_fpt_next;                             \
@@ -111,9 +117,9 @@ extern uint32_t usbutils_fpt_log[];
 #if USB_DVSIM
 // Note: we have faster logging in dvsim; hopefully fast enough to keep up with
 // DPI still
-#define USBUTILS_TRACE(pt, s) LOG_INFO("%u,%s", s);
+#define USBUTILS_TRACE(pt, s) LOG_INFO("%u:%s", pt, s);
 #else
-#define USBUTILS_TRACE(pt, s) USBUTILS_FUNCPT((1U << 31) | (pt), s)
+#define USBUTILS_TRACE(pt, s) USBUTILS_FUNCPT((1U << 31) | (pt), (uintptr_t)s)
 #endif
 
 /**

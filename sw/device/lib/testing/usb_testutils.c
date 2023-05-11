@@ -258,26 +258,6 @@ for (unsigned i = 0U; i < 100U; i++) {
     USBUTILS_FUNCPT(0x50f, ctx->frame);
   }
 
-#if 0
-  if (istate & (1u << kDifUsbdevIrqPowered)) {
-    LOG_INFO("USB: Powered");
-  }
-  if (istate & (1u << kDifUsbdevIrqDisconnected)) {
-    LOG_INFO("USB: Disconnected");
-  }
-  if (istate & (1u << kDifUsbdevIrqHostLost)) {
-    LOG_INFO("USB: Host Lost");
-  }
-  if (istate & (1u << kDifUsbdevIrqLinkReset)) {
-    LOG_INFO("USB: Link Reset");
-  }
-  if (istate & (1u << kDifUsbdevIrqLinkSuspend)) {
-    LOG_INFO("USB: Link Suspend");
-  }
-  if (istate & (1u << kDifUsbdevIrqLinkResume)) {
-    LOG_INFO("USB: Link Resume");
-  }
-#else
   if (istate & (1u << kDifUsbdevIrqPowered)) {
     USBUTILS_TRACE(0x90e5, "USB: Powered");
   }
@@ -296,7 +276,6 @@ for (unsigned i = 0U; i < 100U; i++) {
   if (istate & (1u << kDifUsbdevIrqLinkResume)) {
     USBUTILS_TRACE(0x5e56, "USB:Link Resume");
   }
-#endif
 
   // Report all link events to the registered callback handler, if any
   if (ctx->link_callback) {

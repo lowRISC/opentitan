@@ -192,11 +192,27 @@ module tb;
   bit en_sim_sram = 1'b1;
   wire sel_sim_sram = !dut.chip_if.stub_cpu & en_sim_sram;
 
+  // TODO: Introduce our local 48MHz clock and reset, because otherwise they will disappear!
+  localparam real USBDPI_CLK_PERIOD = (1000000.0 / 48) / 1000.0;
+  logic usbdpi_clk;
+  logic usbdpi_rst_n;
+  initial
+  begin
+    usbdpi_clk = 1'b1;
+    usbdpi_rst_n = 1'b0;
+    # 1000000
+    usbdpi_rst_n = 1'b1;
+  end
+  always begin
+    #(USBDPI_CLK_PERIOD/2) usbdpi_clk = ~usbdpi_clk;
+  end
   // Interface presently just permits the DPI model to be easily connected and
   // disconnected as required, since SENSE pin is a MIO with other uses.
   usb20_if u_usb20_if (
-    .clk_i            (dut.chip_if.usb_clk),
-    .rst_ni           (dut.chip_if.usb_rst_n),
+//    .clk_i            (dut.chip_if.usb_clk),
+//    .rst_ni           (dut.chip_if.usb_rst_n),
+    .clk_i            (usbdpi_clk),
+    .rst_ni           (usbdpi_rst_n),
 
     .usb_vbus         (dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc7]),
     .usb_p            (dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbP]),
@@ -205,8 +221,10 @@ module tb;
 
   // Instantiate & connect the USB DPI model for top-level testing.
   usb20_usbdpi u_usb20_usbdpi (
-    .clk_i            (dut.chip_if.usb_clk),
-    .rst_ni           (dut.chip_if.usb_rst_n),
+//    .clk_i            (dut.chip_if.usb_clk),
+//    .rst_ni           (dut.chip_if.usb_rst_n),
+    .clk_i            (usbdpi_clk),
+    .rst_ni           (usbdpi_rst_n),
 
     .enable           (u_usb20_if.connected),
 
