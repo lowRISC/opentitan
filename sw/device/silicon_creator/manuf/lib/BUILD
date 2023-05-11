@@ -50,6 +50,11 @@ _MISSION_MODE_LC_ITEMS = get_lc_items(
     CONST.LCV.RMA,
 )
 
+_PROD_LC_ITEMS = get_lc_items(
+    CONST.LCV.PROD,
+    CONST.LCV.PROD_END,
+)
+
 _ALL_LC_ITEMS = (
     _TEST_LOCKED_LC_ITEMS +
     _TEST_UNLOCKED_LC_ITEMS +
@@ -487,16 +492,20 @@ opentitan_ram_binary(
 
 [
     opentitan_functest(
-        name = "manuf_cp_device_info_flash_wr_{}_functest".format(lc_state.lower()),
+        name = "manuf_cp_device_info_flash_wr_{}_to_{}_functest".format(
+            init_lc_state.lower(),
+            target_lc_state.lower(),
+        ),
         srcs = ["flash_device_info_flash_wr_functest.c"],
         cw310 = cw310_params(
-            bitstream = "bitstream_rom_exec_disabled_{}".format(lc_state.lower()),
+            bitstream = "bitstream_rom_exec_disabled_{}".format(init_lc_state.lower()),
             tags = ["cw310_rom"],
             test_cmds = [
                 "--clear-bitstream",
                 "--rom-kind=rom",
                 "--bitstream=\"$(rootpath {bitstream})\"",
                 "--bootstrap=\"$(location {flash})\"",
+                "--target-lc-state=\"{}\"".format(target_lc_state),
                 "--vmem=\"$(rootpath :sram_device_info_flash_wr_functest_fpga_cw310_vmem)\"",
                 # the following values come from the sram linker script
                 "--load-addr=0x10001fc4",
@@ -524,14 +533,19 @@ opentitan_ram_binary(
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
-    for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
+    for init_lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
+    for target_lc_state, _ in _PROD_LC_ITEMS
 ]
 
 test_suite(
     name = "manuf_cp_device_info_flash_wr_functest",
     tags = ["manual"],
     tests = [
-        ":manuf_cp_device_info_flash_wr_{}_functest".format(lc_state.lower())
-        for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
+        ":manuf_cp_device_info_flash_wr_{}_to_{}_functest".format(
+            init_lc_state.lower(),
+            target_lc_state.lower(),
+        )
+        for init_lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
+        for target_lc_state, _ in _PROD_LC_ITEMS
     ],
 )

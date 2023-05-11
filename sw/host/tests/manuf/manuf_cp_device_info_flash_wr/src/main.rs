@@ -32,6 +32,13 @@ struct Opts {
     sram_program: SramProgramParams,
 
     #[structopt(
+        long, parse(try_from_str = DifLcCtrlState::parse_lc_state_str),
+        default_value = "prod",
+        help = "LC state to transition to from TEST_UNLOCKED*."
+    )]
+    target_lc_state: DifLcCtrlState,
+
+    #[structopt(
         long, parse(try_from_str=humantime::parse_duration),
         default_value = "600s",
         help = "Console receive timeout",
@@ -84,7 +91,7 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     trigger_lc_transition(
         transport,
         jtag.clone(),
-        DifLcCtrlState::Prod,
+        opts.target_lc_state,
         Some(TEST_EXIT_TOKEN),
         /*use_external_clk=*/ true,
         opts.init.bootstrap.options.reset_delay,
