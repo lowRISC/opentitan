@@ -64,7 +64,8 @@ static rom_error_t key_is_valid_in_lc_state_rma(sigverify_key_type_t key_type,
       HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeDev);
       return kErrorSigverifyBadKey;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
   }
 }
 
@@ -92,7 +93,8 @@ static rom_error_t key_is_valid_in_lc_state_dev(sigverify_key_type_t key_type,
       HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeDev);
       return key_is_valid_in_otp(otp_offset, key_index);
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
   }
 }
 
@@ -120,7 +122,8 @@ static rom_error_t key_is_valid_in_lc_state_prod(sigverify_key_type_t key_type,
       HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeDev);
       return kErrorSigverifyBadKey;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
   }
 }
 
@@ -146,7 +149,8 @@ static rom_error_t key_is_valid_in_lc_state_test(
       HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeDev);
       return kErrorSigverifyBadKey;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
   }
 }
 
@@ -178,7 +182,8 @@ static rom_error_t key_is_valid(sigverify_key_type_t key_type,
       HARDENED_CHECK_EQ(lc_state, kLcStateRma);
       return key_is_valid_in_lc_state_rma(key_type, otp_offset, key_index);
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
   }
 }
 

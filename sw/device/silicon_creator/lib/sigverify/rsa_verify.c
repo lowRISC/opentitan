@@ -189,7 +189,8 @@ static hardened_bool_t sigverify_use_sw_rsa_verify(lifecycle_state_t lc_state) {
       return otp_read32(
           OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET);
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
   }
 }
 
@@ -209,7 +210,7 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
       error = sigverify_mod_exp_otbn(key, signature, &enc_msg);
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
   if (launder32(error) != kErrorOk) {
     *flash_exec ^= UINT32_MAX;

@@ -145,7 +145,7 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolFalse);
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
 
   // Unlock execution of owner stage executable code (text) sections.

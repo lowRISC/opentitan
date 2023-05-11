@@ -35,7 +35,7 @@ static size_t keyblob_share_num_bytes(const crypto_key_config_t config) {
       // Symmetric key shares are simply the same size as the unmasked key.
       return config.key_length;
   }
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
 }
 
 size_t keyblob_share_num_words(const crypto_key_config_t config) {

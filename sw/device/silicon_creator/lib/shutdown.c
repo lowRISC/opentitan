@@ -117,7 +117,7 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
       lc_shift_masked = launder32(kLcShiftRma) ^ kLcStateRma;
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
 
   // Get the enable and escalation settings for all four alert classes.

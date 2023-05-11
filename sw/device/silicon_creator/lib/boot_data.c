@@ -521,7 +521,7 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
       res ^= kLcStateRma ^ kErrorBootDataNotFound ^ kErrorOk;
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
 
   HARDENED_RETURN_IF_ERROR(res);
@@ -551,7 +551,8 @@ rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
       HARDENED_CHECK_EQ(active_page.has_valid_entry, kHardenedBoolFalse);
       return boot_data_default_get(lc_state, boot_data);
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
   }
 }
 

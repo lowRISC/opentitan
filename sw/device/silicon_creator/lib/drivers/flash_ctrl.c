@@ -101,7 +101,7 @@ static void transaction_start(transaction_params_t params) {
       bank_erase = false;
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
   uint32_t reg = bitfield_bit32_write(0, FLASH_CTRL_CONTROL_START_BIT, true);
   reg =
@@ -227,7 +227,8 @@ static uint32_t info_page_addr(flash_ctrl_info_page_t info_page) {
   switch (launder32(info_page)) {
     FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_ADDR_CASE_)
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
   }
 
 #undef INFO_PAGE_ADDR_CASE_
@@ -272,7 +273,8 @@ static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
   switch (launder32(info_page)) {
     FLASH_CTRL_INFO_PAGES_DEFINE(INFO_CFG_REGS_CASE_)
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
   }
 
 #undef INFO_CFG_REGS_CASE_
@@ -441,7 +443,7 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
       error = kErrorOk ^ (byte_count - 1);
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
 
   // Truncate to the closest lower bank/page aligned address.
@@ -563,7 +565,7 @@ void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
       reg = 0;
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
   sec_mmio_write32_shadowed(kBase + FLASH_CTRL_MP_BANK_CFG_SHADOWED_REG_OFFSET,
                             reg);

@@ -49,7 +49,7 @@ void watchdog_init(lifecycle_state_t lc_state) {
       enable = kHardenedBoolFalse;
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
 
   uint32_t threshold = otp_read32(
@@ -99,7 +99,7 @@ void watchdog_configure(watchdog_config_t config) {
       ctrl = kCtrlDisable;
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
   sec_mmio_write32(kBase + AON_TIMER_WDOG_CTRL_REG_OFFSET, ctrl);
 
