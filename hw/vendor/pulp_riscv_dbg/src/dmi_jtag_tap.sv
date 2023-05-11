@@ -189,8 +189,7 @@ module dmi_jtag_tap #(
   logic tck_n;
 
   prim_clock_inv #(
-    .HasScanMode(1'b1),
-    .NoFpgaBufG(1'b1)
+    .HasScanMode(1'b1)
   ) i_tck_inv (
     .clk_i      ( tck_i      ),
     .clk_no     ( tck_n      ),
@@ -201,12 +200,13 @@ module dmi_jtag_tap #(
   always_ff @(posedge tck_n, negedge trst_ni) begin : p_tdo_regs
     if (!trst_ni) begin
       td_o     <= 1'b0;
-      tdo_oe_o <= 1'b0;
+      //tdo_oe_o <= 1'b0;
     end else begin
       td_o     <= tdo_mux;
-      tdo_oe_o <= ~jtag_idle;
+      //tdo_oe_o <= ~jtag_idle;
     end
   end
+  assign tdo_oe_o = 1'b1;
   // ----------------
   // TAP FSM
   // ----------------
