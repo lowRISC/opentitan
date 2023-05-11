@@ -64,6 +64,11 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
     apply_reset();
     reset_jtag_tap();
 
+    // Wait for `rom_ctrl` to complete the ROM check. This will give the dut
+    // enough time to configure the TAP interface before any JTAG agents send
+    // any commands.
+    wait_rom_check_done();
+
     // Second VOLATILE_RAW_UNLOCK does not change the TAP interface to rv_dm
     // so that we can check the completion status through that interface.
     // After this, the rest of the test should proceed.
