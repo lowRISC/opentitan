@@ -313,7 +313,7 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
     case kSpiDeviceOpcodeReset:
       rstmgr_reset();
 #ifdef OT_PLATFORM_RV32
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
 #else
       // If this is an off-target test, return `kErrorUnknown` to be able to
       // test without requiring EXPECT_DEATH.
@@ -384,5 +384,5 @@ rom_error_t bootstrap(void) {
     }
     HARDENED_RETURN_IF_ERROR(error);
   }
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
 }

@@ -34,7 +34,8 @@ uint32_t sigverify_spx_verify_enabled(lifecycle_state_t lc_state) {
       HARDENED_CHECK_EQ(lc_state, kLcStateRma);
       return otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_SPX_EN_OFFSET);
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
   }
 }
 

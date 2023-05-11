@@ -60,7 +60,8 @@ lifecycle_state_t lifecycle_state_get(void) {
       HARDENED_CHECK_EQ(raw_state, LC_CTRL_LC_STATE_STATE_VALUE_RMA);
       return kLcStateRma;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
   }
 }
 

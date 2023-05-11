@@ -170,7 +170,7 @@ static status_t key_config_check(const ecc_curve_t *elliptic_curve,
   }
 
   // Should never get here.
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -207,7 +207,7 @@ crypto_status_t otcrypto_ecdsa_keygen_async_start(
   }
 
   // Should never get here.
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
   return kCryptoStatusFatalError;
 }
 
@@ -369,7 +369,7 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
   }
 
   // Should never get here.
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
   return kCryptoStatusFatalError;
 }
 
@@ -450,7 +450,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_start(
   }
 
   // Should never get here.
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
   return kCryptoStatusFatalError;
 }
 
@@ -511,7 +511,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(
   }
 
   // Should never get here.
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
   return kCryptoStatusFatalError;
 }
 
@@ -602,7 +602,7 @@ crypto_status_t otcrypto_ecdsa_verify_async_start(
   }
 
   // Should never get here.
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
   return kCryptoStatusFatalError;
 }
 
@@ -657,7 +657,7 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
   }
 
   // Should never get here.
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
   return kCryptoStatusFatalError;
 }
 
@@ -694,7 +694,7 @@ crypto_status_t otcrypto_ecdh_keygen_async_start(
   }
 
   // Should never get here.
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
   return kCryptoStatusFatalError;
 }
 
@@ -775,7 +775,7 @@ crypto_status_t otcrypto_ecdh_keygen_async_finalize(
   }
 
   // Should never get here.
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
   return kCryptoStatusFatalError;
 }
 
@@ -859,7 +859,7 @@ crypto_status_t otcrypto_ecdh_async_start(
   }
 
   // Should never get here.
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
   return kCryptoStatusFatalError;
 }
 
@@ -932,7 +932,7 @@ crypto_status_t otcrypto_ecdh_async_finalize(
   }
 
   // Should never get here.
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
   return kCryptoStatusFatalError;
 }
 

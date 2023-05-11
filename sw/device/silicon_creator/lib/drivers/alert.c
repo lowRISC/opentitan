@@ -331,7 +331,7 @@ rom_error_t alert_config_check(lifecycle_state_t lc_state) {
           otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA_OFFSET);
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
   if (launder32(res) != kErrorOk) {
     return kErrorAlertBadCrc32;

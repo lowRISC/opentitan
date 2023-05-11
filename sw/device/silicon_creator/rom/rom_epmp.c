@@ -78,7 +78,7 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
       debug_rom_access = kEpmpPermLockedReadWriteExecute;
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
 
   // Initialize in-memory copy of ePMP register state.
@@ -181,7 +181,7 @@ void rom_epmp_config_debug_rom(lifecycle_state_t lc_state) {
       pmpcfg = (kEpmpModeNapot | kEpmpPermLockedReadWriteExecute) << 8;
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
   CSR_SET_BITS(CSR_REG_PMPCFG3, pmpcfg);
 }

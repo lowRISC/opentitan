@@ -44,7 +44,7 @@ rom_error_t ast_check(lifecycle_state_t lc_state) {
       HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
       break;
     default:
-      HARDENED_UNREACHABLE();
+      HARDENED_TRAP();
   }
 
   // OTP can be configured to skip AST initialization. In this situation we do

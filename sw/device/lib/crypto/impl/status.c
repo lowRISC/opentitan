@@ -60,6 +60,6 @@ crypto_status_t crypto_status_interpret(status_t status) {
       return kCryptoStatusFatalError;
   }
 
-  HARDENED_UNREACHABLE();
+  HARDENED_TRAP();
   return kCryptoStatusFatalError;
 }

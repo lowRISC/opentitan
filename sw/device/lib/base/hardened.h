@@ -546,12 +546,6 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
       ::"r"(a_), "r"(b_))
 // clang-format on
 
-#define HARDENED_UNREACHABLE_()               \
-  do {                                        \
-    asm volatile(HARDENED_UNIMP_SEQUENCE_()); \
-    __builtin_unreachable();                  \
-  } while (false)
-
 #define HARDENED_TRAP_()                      \
   do {                                        \
     asm volatile(HARDENED_UNIMP_SEQUENCE_()); \
@@ -568,18 +562,8 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
 
 #define HARDENED_CHECK_(op_, a_, b_) assert((uint64_t)(a_)op_(uint64_t)(b_))
 
-#define HARDENED_UNREACHABLE_() assert(false)
-
 #define HARDENED_TRAP_() __builtin_trap()
 #endif  // OT_PLATFORM_RV32
-
-/**
- * Indicates that the following code is unreachable; it should never be
- * reached at runtime.
- *
- * If it is reached anyways, an illegal instruction will be executed.
- */
-#define HARDENED_UNREACHABLE() HARDENED_UNREACHABLE_()
 
 /**
  * If the following code is (unexpectedly) reached a trap instruction will be
