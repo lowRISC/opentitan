@@ -306,8 +306,8 @@ module rv_dm
   jtag_pkg::jtag_req_t jtag_in_int;
   jtag_pkg::jtag_rsp_t jtag_out_int;
 
-  assign jtag_in_int = (lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnJtagIn]))  ? jtag_i : '0;
-  assign jtag_o = (lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnJtagOut])) ? jtag_out_int : '0;
+  assign jtag_in_int = jtag_i;
+  assign jtag_o = jtag_out_int;
 
   // Bound-in DPI module replaces the TAP
 `ifndef DMIDirectTAP
