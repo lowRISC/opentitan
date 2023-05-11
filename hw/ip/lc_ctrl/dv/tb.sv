@@ -31,7 +31,7 @@ module tb;
   // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
   // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
   // ---------------------------------------------------------------
-  // TODO(#18250): The SecVolatileRawUnlockEn configuration should be tested separately for PROD.
+  // ICEBOX(#18250): The SecVolatileRawUnlockEn configuration should be tested separately for PROD.
   parameter bit SecVolatileRawUnlockEn = 1;
   // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
 

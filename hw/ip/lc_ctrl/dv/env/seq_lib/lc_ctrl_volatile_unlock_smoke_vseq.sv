@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // set volatile unlock to 1 and check if raw -> unlock0 transition is successful.
-// TODO: csr checkings: include lc_cnt, and lc_state.
 class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
 
   rand dec_lc_state_e next_state;
@@ -19,21 +18,24 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
 
   // Drive OTP input `lc_state` and `lc_cnt`.
   virtual task drive_otp_i(bit rand_otp_i = 1);
+    `DV_CHECK_STD_RANDOMIZE_FATAL(lc_cnt)
     lc_state = LcStRaw;
-    lc_cnt   = LcCnt0;
     cfg.lc_ctrl_vif.init(.lc_state(lc_state), .lc_cnt(lc_cnt), .otp_device_id(cfg.otp_device_id),
                          .otp_manuf_state(cfg.otp_manuf_state),
                          .otp_vendor_test_status(cfg.otp_vendor_test_status));
   endtask
 
   task body();
+    int lc_cnt_int;
     fork
       run_clk_byp_rsp(clk_byp_error_rsp);
       run_flash_rma_rsp(flash_rma_error_rsp);
     join_none
 
     `DV_CHECK_RANDOMIZE_FATAL(this)
+    lc_cnt_int = dec_lc_cnt(lc_cnt);
     if (lc_cnt != LcCnt24) begin
+      int exp_lc_cnt = lc_cnt_int == 0 ? 1 : lc_cnt_int;
       lc_ctrl_state_pkg::lc_token_t token_val = lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed;
       csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
       csr_wr(ral.transition_ctrl.volatile_raw_unlock, 1);
@@ -48,6 +50,9 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
         csr_spinwait(.ptr(ral.status.transition_successful), .exp_data(1), .timeout_ns(100_000));
         cfg.clk_rst_vif.wait_clks(10);
         `DV_CHECK_EQ(cfg.lc_ctrl_vif.strap_en_override_o, 1);
+        csr_rd_check(.ptr(ral.lc_transition_cnt), .compare_value(exp_lc_cnt));
+        csr_rd_check(.ptr(ral.lc_state),
+                     .compare_value({DecLcStateNumRep{next_state[DecLcStateWidth-1:0]}}));
         if (cfg.en_cov) cov.volatile_raw_unlock_cg.sample(1);
         transition_to_next_valid_state(1);
       end else begin
