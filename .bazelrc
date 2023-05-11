@@ -73,6 +73,20 @@ test:local_test_jobs_per_cpus --local_test_jobs=HOST_CPUS*0.22
 # We have verilator tests that take more than an hour to complete
 test --test_timeout=60,300,1500,7200
 
+# Configuration to run clang-tidy alongside build actions. This is a strict
+# analysis, which will fail the build when any of its checks fail. Enable with
+# `--config=clang_tidy_check`.
+build:clang_tidy_check --aspects rules/quality.bzl%clang_tidy_check_aspect
+build:clang_tidy_check --output_groups=clang_tidy
+
+# Configuration to run clang-tidy alongside build actions. In this mode, fixes
+# will be applied automatically when possible. This is not a strict analysis;
+# clang-tidy errors will not fail the build. Enable with
+# `--config=clang_tidy_check`.
+build:clang_tidy_fix --aspects rules/quality.bzl%clang_tidy_fix_aspect
+build:clang_tidy_fix --output_groups=clang_tidy
+build:clang_tidy_fix --spawn_strategy=local
+
 # AddressSanitizer (ASan) catches runtime out-of-bounds accesses to globals, the
 # stack, and (less importantly for OpenTitan) the heap. ASan instruments
 # programs at compile time and also requires a runtime library.
