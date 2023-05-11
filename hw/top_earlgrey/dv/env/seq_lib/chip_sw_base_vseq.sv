@@ -771,11 +771,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `DV_CHECK_FATAL(transition_ctrl & (1 << 1), {"VOLATILE_RAW_UNLOCK is not supported by this ",
                     "top level. Check the SecVolatileRawUnlockEn parameter configuration."})
 
-    // The status bit propagated from the clkmgr does not seem to toggle when
-    // checked with `wait_lc_ext_clk_switched()`, so we only check that the ext_clk
-    // bit in the `transition_ctrl` register is sticky.
-    // Check expected external clock value.
-    `DV_CHECK(transition_ctrl & 1'b1 == use_ext_clk);
+    if (use_ext_clk) begin
+      wait_lc_ext_clk_switched();
+    end
 
     begin
       bit [TL_DW-1:0] token_csr_vals[4] = {<< 32 {{>> 8 {RndCnstRawUnlockTokenHashed}}}};
