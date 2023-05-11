@@ -307,39 +307,11 @@ module pinmux_strap_sampling
   assign tap_strap = tap_strap_t'(tap_strap_q);
   `ASSERT_KNOWN(TapStrapKnown_A, tap_strap)
 
-  always_comb begin : p_tap_mux
-    jtag_rsp     = '0;
-    // Note that this holds the JTAGs in reset
-    // when they are not selected.
-    lc_jtag_req  = '0;
-    rv_jtag_req  = '0;
-    dft_jtag_req = '0;
-    // This activates the TDO override further below.
-    jtag_en      = 1'b0;
-
-    unique case (tap_strap)
-      LcTapSel: begin
-        lc_jtag_req = jtag_req;
-        jtag_rsp    = lc_jtag_rsp;
-        jtag_en     = 1'b1;
-      end
-      RvTapSel: begin
-        if (lc_tx_test_true_strict(pinmux_hw_debug_en[HwDebugEnTapSel])) begin
-          rv_jtag_req = jtag_req;
-          jtag_rsp    = rv_jtag_rsp;
-          jtag_en     = 1'b1;
-        end
-      end
-      DftTapSel: begin
-        if (lc_tx_test_true_strict(lc_dft_en[DftEnTapSel])) begin
-          dft_jtag_req = jtag_req;
-          jtag_rsp     = dft_jtag_rsp;
-          jtag_en      = 1'b1;
-        end
-      end
-      default: ;
-    endcase // tap_strap_t'(tap_strap_q)
-  end
+  assign rv_jtag_req = jtag_req;
+  assign jtag_rsp = rv_jtag_rsp;
+  assign jtag_en = 1'b1;
+  assign lc_jtag_req = '0;
+  assign dft_jtag_req = '0;
 
   // Insert hand instantiated buffers for
   // these signals to prevent further optimization.
@@ -374,14 +346,10 @@ module pinmux_strap_sampling
   // Note that this resets the selected TAP controller in
   // scanmode. If the TAP controller needs to be active during
   // reset, this reset bypass needs to be adapted accordingly.
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_rst_por_aon_n_mux (
-    .clk0_i(in_padring_i[TargetCfg.trst_idx]),
-    .clk1_i(rst_ni),
-    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[0])),
-    .clk_o(jtag_req.trst_n)
-  );
+  assign jtag_req.trst_n = in_padring_i[TargetCfg.trst_idx];
+
+  assign out_padring_o[TargetCfg.tdo_idx] = jtag_rsp.tdo;
+  assign oe_padring_o[TargetCfg.tdo_idx] = jtag_rsp.tdo_oe;
 
   // Input tie-off muxes and output overrides
   for (genvar k = 0; k < NumIOs; k++) begin : gen_input_tie_off
@@ -395,9 +363,6 @@ module pinmux_strap_sampling
       assign in_core_o[k] = (jtag_en) ? 1'b0 : in_padring_i[k];
 
       if (k == TargetCfg.tdo_idx) begin : gen_output_mux
-        // Override TDO output.
-        assign out_padring_o[k] = (jtag_en) ? jtag_rsp.tdo    : out_core_i[k];
-        assign oe_padring_o[k]  = (jtag_en) ? jtag_rsp.tdo_oe : oe_core_i[k];
       end else begin : gen_output_tie_off
         // Make sure these pads are set to high-z.
         assign out_padring_o[k] = (jtag_en) ? 1'b0 : out_core_i[k];
