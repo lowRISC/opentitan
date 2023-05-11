@@ -120,10 +120,10 @@ static dif_pinmux_index_t leds[] = {
 };
 
 static dif_pinmux_index_t switches[] = {
-    kTopEarlgreyPinmuxInselIob6,
-    kTopEarlgreyPinmuxInselIob7,
-    kTopEarlgreyPinmuxInselIob8,
-    kTopEarlgreyPinmuxInselIob9,
+    kTopEarlgreyPinmuxInselIob10,
+    kTopEarlgreyPinmuxInselIob11,
+    kTopEarlgreyPinmuxInselIob12,
+    kTopEarlgreyPinmuxInselIor5,
 };
 
 void configure_pinmux(void) {

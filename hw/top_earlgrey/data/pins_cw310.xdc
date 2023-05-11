@@ -35,13 +35,13 @@ set_property -dict { PACKAGE_PIN  U22  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [ge
 set_property -dict { PACKAGE_PIN AA24 IOSTANDARD LVCMOS33 } [get_ports { IOA0 }]; # SAM_TXD0 - OpenTitan UART2 RX
 set_property -dict { PACKAGE_PIN AB22 IOSTANDARD LVCMOS33 } [get_ports { IOA1 }]; # SAM_RXD0 - OpenTitan UART2 TX
 # GPIOs (PMOD1)
-set_property -dict { PACKAGE_PIN N17  IOSTANDARD LVCMOS33 } [get_ports { IOA2 }]; # PMOD1_IO1 (OT CTS)
-set_property -dict { PACKAGE_PIN T22  IOSTANDARD LVCMOS33 } [get_ports { IOA3 }]; # PMOD1_IO4 (OT RTS)
+set_property -dict { PACKAGE_PIN N17  IOSTANDARD LVCMOS33 } [get_ports { IOA2 }]; # PMOD1_IO1 BoB:PMOD2_CSB0
+set_property -dict { PACKAGE_PIN T22  IOSTANDARD LVCMOS33 } [get_ports { IOA3 }]; # PMOD1_IO4 BoB:PMOD2_SCLK
 # UART (PMOD1)
-set_property -dict { PACKAGE_PIN R23  IOSTANDARD LVCMOS33 } [get_ports { IOA4 }]; # PMOD1_IO3 (OT RXD)
-set_property -dict { PACKAGE_PIN R26  IOSTANDARD LVCMOS33 } [get_ports { IOA5 }]; # PMOD1_IO2 (OT TXD)
+set_property -dict { PACKAGE_PIN R23  IOSTANDARD LVCMOS33 } [get_ports { IOA4 }]; # PMOD1_IO3 BoB:PMOD2_SIO1
+set_property -dict { PACKAGE_PIN R26  IOSTANDARD LVCMOS33 } [get_ports { IOA5 }]; # PMOD1_IO2 BoB:PMOD2_SIO0
 # GPIO (PMOD1)
-set_property -dict { PACKAGE_PIN R25  IOSTANDARD LVCMOS33 } [get_ports { IOA6 }]; # PMOD1_IO5 (INT)
+set_property -dict { PACKAGE_PIN R25  IOSTANDARD LVCMOS33 } [get_ports { IOA6 }]; # PMOD1_IO5 BoB:PMOD2_CSB1
 # I2C (PMOD1)
 set_property -dict { PACKAGE_PIN T23  IOSTANDARD LVCMOS33 } [get_ports { IOA7 }]; # PMOD1_IO8 (SDA)
 set_property -dict { PACKAGE_PIN P23  IOSTANDARD LVCMOS33 } [get_ports { IOA8 }]; # PMOD1_IO7 (SCL)
@@ -56,10 +56,10 @@ set_property -dict { PACKAGE_PIN F14  IOSTANDARD LVCMOS33 } [get_ports { IOB3 }]
 set_property -dict { PACKAGE_PIN AE25 IOSTANDARD LVCMOS33 } [get_ports { IOB4 }]; #J14 PIN 10 CWIO_IO1 - OpenTitan UART1 RX
 set_property -dict { PACKAGE_PIN AF25 IOSTANDARD LVCMOS33 } [get_ports { IOB5 }]; #J14 PIN 12 CWIO_IO2 - OpenTitan UART1 TX
 # GPIOs (DIP switches)
-set_property -dict { PACKAGE_PIN U9  IOSTANDARD LVCMOS18 } [get_ports { IOB6  }]; # USRDIP0
-set_property -dict { PACKAGE_PIN V7  IOSTANDARD LVCMOS18 } [get_ports { IOB7  }]; # USRDIP1
-set_property -dict { PACKAGE_PIN V8  IOSTANDARD LVCMOS18 } [get_ports { IOB8  }]; # USRDIP2
-set_property -dict { PACKAGE_PIN W9  IOSTANDARD LVCMOS18 } [get_ports { IOB9  }]; # USRDIP3
+set_property -dict { PACKAGE_PIN N23 IOSTANDARD LVCMOS33 } [get_ports { IOB6  }]; # PMOD2_IO5 BoB:PMOD1_CSB7
+set_property -dict { PACKAGE_PIN N26 IOSTANDARD LVCMOS33 } [get_ports { IOB7  }]; # PMOD2_IO6 BoB:PMOD1_RST
+set_property -dict { PACKAGE_PIN M20 IOSTANDARD LVCMOS33 } [get_ports { IOB8  }]; # PMOD2_IO7 BoB:PMOD1_SCL
+set_property -dict { PACKAGE_PIN P25 IOSTANDARD LVCMOS33 } [get_ports { IOB9  }]; # PMOD2_IO8 BoB:PMOD1_SDA
 set_property -dict { PACKAGE_PIN V9  IOSTANDARD LVCMOS18 } [get_ports { IOB10 }]; # USRDIP4
 set_property -dict { PACKAGE_PIN W8  IOSTANDARD LVCMOS18 } [get_ports { IOB11 }]; # USRDIP5
 set_property -dict { PACKAGE_PIN W10 IOSTANDARD LVCMOS18 } [get_ports { IOB12 }]; # USRDIP6
@@ -76,17 +76,17 @@ set_property -dict { PACKAGE_PIN AA22 IOSTANDARD LVCMOS33 } [get_ports { IOC4 }]
 # TAP Strap 1
 set_property -dict { PACKAGE_PIN W20  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC5 }]; #USB_A19 (SAM3X)
 # PWM (PMOD2)
-set_property -dict { PACKAGE_PIN M21  IOSTANDARD LVCMOS33 } [get_ports { IOC6 }]; # PMOD2_IO2 (PWM)
+set_property -dict { PACKAGE_PIN M21  IOSTANDARD LVCMOS33 } [get_ports { IOC6 }]; # PMOD2_IO2 BoB:PMOD1_CSB4
 # USB VBUS Detection
 set_property -dict { PACKAGE_PIN P18  IOSTANDARD LVCMOS33 } [get_ports { IOC7 }]; # USRUSB_VBUS_DETECT
 # TAP Strap 0
 set_property -dict { PACKAGE_PIN W21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC8 }]; #USB_A18 (SAM3X)
 # GPIOs (PMOD2)
-set_property -dict { PACKAGE_PIN M22 IOSTANDARD LVCMOS33 } [get_ports { IOC9  }]; # PMOD2_IO1 (GPIO)
-set_property -dict { PACKAGE_PIN N19 IOSTANDARD LVCMOS33 } [get_ports { IOC10 }]; # PMOD2_IO3 (GPIO)
-set_property -dict { PACKAGE_PIN P26 IOSTANDARD LVCMOS33 } [get_ports { IOC11 }]; # PMOD2_IO4 (GPIO)
+set_property -dict { PACKAGE_PIN M22 IOSTANDARD LVCMOS33 } [get_ports { IOC9  }]; # PMOD2_IO1 BoB:PMOD1_CSB3
+set_property -dict { PACKAGE_PIN N19 IOSTANDARD LVCMOS33 } [get_ports { IOC10 }]; # PMOD2_IO3 BoB:PMOD1_CSB5
+set_property -dict { PACKAGE_PIN P26 IOSTANDARD LVCMOS33 } [get_ports { IOC11 }]; # PMOD2_IO4 BoB:PMOD1_CSB6
 # GPIO (PMOD1)
-set_property -dict { PACKAGE_PIN P24 IOSTANDARD LVCMOS33 } [get_ports { IOC12 }]; # PMOD1_IO6 (RESET)
+set_property -dict { PACKAGE_PIN P24 IOSTANDARD LVCMOS33 } [get_ports { IOC12 }]; # PMOD1_IO6 BoB:PMOD2_CSB2
 
 ## IOR bank
 # JTAG
