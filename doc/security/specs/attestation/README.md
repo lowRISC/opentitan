@@ -564,9 +564,10 @@ Note: There are no identifiers available for SHA3-{256|512}.
   <tr>
     <td>Issuer</td>
     <td>
-X520SerialNumber: id
-
-Where id is set to the creator public key identifier in hex encoded format.
+This is implementation dependent, and could be the Silicon Creator or the
+Silicon Owner intermediate CA.
+Attributes in this field should reference the intermediate CA Subject field
+ones in order to facilitate the certificate chain validation.
     </td>
   </tr>
   <tr>
