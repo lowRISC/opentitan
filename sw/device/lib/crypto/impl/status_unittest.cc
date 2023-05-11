@@ -28,7 +28,8 @@ int HammingDistance(int32_t a, int32_t b) {
 constexpr int kMinimumHammingDistance = 5;
 TEST(Status, TopLevelStatusHammingDistance) {
   std::array<crypto_status_t, 5> error_codes = {
-    OTCRYPTO_BAD_ARGS, OTCRYPTO_RECOV_ERR, OTCRYPTO_FATAL_ERR, OTCRYPTO_ASYNC_INCOMPLETE, OTCRYPTO_NOT_IMPLEMENTED};
+      OTCRYPTO_BAD_ARGS, OTCRYPTO_RECOV_ERR, OTCRYPTO_FATAL_ERR,
+      OTCRYPTO_ASYNC_INCOMPLETE, OTCRYPTO_NOT_IMPLEMENTED};
 
   // Expect the "OK" code to have a significant Hamming distance from 0.
   EXPECT_GE(HammingDistance(kCryptoStatusOK, 0), kMinimumHammingDistance)
@@ -47,7 +48,8 @@ TEST(Status, TopLevelStatusHammingDistance) {
     // Expect a significant Hamming distance from all other error codes.
     for (const crypto_status_t status2 : error_codes) {
       if (status1.value != status2.value) {
-        EXPECT_GE(HammingDistance(status1.value, status2.value), kMinimumHammingDistance)
+        EXPECT_GE(HammingDistance(status1.value, status2.value),
+                  kMinimumHammingDistance)
             << "Error codes " << status1.value << " and " << status2.value
             << " are too close to each other.";
       }

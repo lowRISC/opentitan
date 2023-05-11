@@ -46,18 +46,18 @@ extern "C" {
 typedef status_t crypto_status_t;
 typedef enum crypto_status_value {
   // Status is OK; no errors.
-  kCryptoStatusOK = (int32_t) 0x739,
+  kCryptoStatusOK = (int32_t)0x739,
   // Invalid input arguments; wrong length or invalid type.
-  kCryptoStatusBadArgs = (int32_t) 0x8000fea3,
+  kCryptoStatusBadArgs = (int32_t)0x8000fea3,
   // Error after which it is OK to retry (e.g. timeout).
-  kCryptoStatusInternalError = (int32_t) 0x8000534a,
+  kCryptoStatusInternalError = (int32_t)0x8000534a,
   // Error after which it is not OK to retry (e.g. integrity check).
-  kCryptoStatusFatalError = (int32_t) 0x80006d89,
+  kCryptoStatusFatalError = (int32_t)0x80006d89,
   // An asynchronous operation is still in progress.
-  kCryptoStatusAsyncIncomplete = (int32_t) 0x8000ea4e,
+  kCryptoStatusAsyncIncomplete = (int32_t)0x8000ea4e,
   // TODO: remove all instances of this error before release; it is to track
   // implementations that are not yet complete.
-  kCryptoStatusNotImplemented = (int32_t) 0x80008d2c,
+  kCryptoStatusNotImplemented = (int32_t)0x80008d2c,
 } crypto_status_value_t;
 
 /**

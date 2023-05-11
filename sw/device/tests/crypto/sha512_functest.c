@@ -46,7 +46,7 @@ status_t sha512_test(const unsigned char *msg, const size_t msg_len,
                      const uint8_t *expected_digest) {
   // Construct a buffer for the message.
   crypto_const_uint8_buf_t input_message = {
-      .data = NULL, // msg,
+      .data = NULL,  // msg,
       .len = msg_len,
   };
 
