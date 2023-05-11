@@ -108,9 +108,11 @@ static void bus_reset(usbdpi_ctx_t *ctx) {
   // assert this bus state for a minimum of 10ms but simulation time
   // is expensive...
   //
-  // A Bus Reset may be detected after 2.5us
+  // A Bus Reset may be detected after 2.5us; usbdev responds after 3us of
+  // continuous assertion, sampled asynchronously on its own usec timer, so we
+  // need at least to exceed 4us.
   const unsigned usec = 12u;
-  ctx->reset_time = ctx->tick_bits + 3 * usec;
+  ctx->reset_time = ctx->tick_bits + 5 * usec;
 
   // This Reset Recovery interval combined with the delay in frame_start()
   // means that we'll allow a bus frame to elapse between removing the Bus Reset

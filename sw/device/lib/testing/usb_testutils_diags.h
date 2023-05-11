@@ -6,6 +6,10 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_DIAGS_H_
 #include "sw/device/lib/dif/dif_usbdev.h"
 
+// TODO:
+#define USB_DVSIM 1
+//#define USB_FPGA  0
+
 // Diagnostic, testing and performance measurements utilities for verification
 // of usbdev and development of the usb_testutils support software; the
 // requirements of this software are peculiar in that the USBDPI model used in
@@ -25,7 +29,7 @@
 
 // Record the function points to a memory buffer instead, for use where test
 //   hardware is unavailable, eg. FPGA builds.
-#define USBUTILS_FUNCPT_USE_BUFFER 1
+#define USBUTILS_FUNCPT_USE_BUFFER 0
 
 #if USBUTILS_FUNCTION_POINTS
 // For access to ibex_mcycle_read()
@@ -39,6 +43,7 @@
 #define USBUTILS_FUNCPT_FILE_USB_SIMPLESER 0x04U
 #define USBUTILS_FUNCPT_FILE_USBDEV_TEST 0x05U
 #define USBUTILS_FUNCPT_FILE_USBDEV_STRM_TEST 0x06U
+#define USBUTILS_FUNCPT_FILE_USBDEV_SUSP_TEST 0x07U
 
 // Number of entrys in the function point buffer.
 #define USBUTILS_FUNCPT_LOG_ENTRIES 0x1000U
@@ -88,7 +93,7 @@ extern uint32_t usbutils_fpt_log[];
     e->sig = USBUTILS_FUNCPT_ENTRY_SIGNATURE;                     \
     e->time = (uint32_t)ibex_mcycle_read();                       \
     e->file_point = (USBUTILS_FUNCPT_FILE << 16) | pt;            \
-    e->data = (d);                                                \
+    e->data = (uint32_t)(d);                                      \
   }
 #else
 // Emit function points to special address for waveform viewing in simulation
@@ -99,8 +104,16 @@ extern uint32_t usbutils_fpt_log[];
     *log_hw = USBUTILS_FUNCPT_ENTRY_SIGNATURE;           \
     *log_hw = time;                                      \
     *log_hw = (USBUTILS_FUNCPT_FILE << 16) | (pt);       \
-    *log_hw = (d);                                       \
+    *log_hw = (uint32_t)(d);                             \
   }
+#endif
+
+#if USB_DVSIM
+// Note: we have faster logging in dvsim; hopefully fast enough to keep up with
+// DPI still
+#define USBUTILS_TRACE(pt, s) LOG_INFO("%u,%s", s);
+#else
+#define USBUTILS_TRACE(pt, s) USBUTILS_FUNCPT((1U << 31) | (pt), s)
 #endif
 
 /**
@@ -110,19 +123,25 @@ void usbutils_funcpt_report(void);
 #else
 // Omit function point tracing
 #define USBUTILS_FUNCPT(pt, d)
+#define USBUTILS_TRACE(pt, d) ;
 #endif
 
 // Used for tracing what is going on. This may impact timing which is critical
 // when simulating with the USB DPI module.
-#define USBUTILS_ENABLE_TRC 0
+#define USBUTILS_ENABLE_TRC 1
 
 #if USBUTILS_ENABLE_TRC
-#if 1
+#if USE_FPGA || USB_DVSIM
 // May be useful on FPGA CW310
 #include "sw/device/lib/runtime/log.h"
 #define TRC_S(s) LOG_INFO("%s", s)
 #define TRC_I(i, b) LOG_INFO("0x%x", i)
 #define TRC_C(c) LOG_INFO("%c", c)
+#elif USBUTILS_FUNCPT_USE_BUFFER
+// On FPGA also, but record the output to the function point buffer
+#define TRC_S(s) USBUTILS_TRACE(__LINE__, s);
+#define TRC_I(i, b) USBUTILS_FUNCPT(__LINE__, i);
+#define TRC_C(c) USBUTILS_FUNCPT(__LINE__, c);
 #else
 // Very low impact, for use in Verilator top-level simulation; this address is
 // unused in Verilator top-level sims and is easily monitored via the TL-UL
