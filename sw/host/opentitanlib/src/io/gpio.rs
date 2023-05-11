@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
-use structopt::clap::arg_enum;
+use std::fmt::{self, Display, Formatter};
 use thiserror::Error;
 
 use crate::impl_serializable_error;
@@ -40,26 +41,47 @@ pub enum GpioError {
 }
 impl_serializable_error!(GpioError);
 
-arg_enum! {
-    /// Mode of I/O pins.
-    #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
-    pub enum PinMode {
-        Input,
-        PushPull,
-        OpenDrain,
-        AnalogInput,
-        AnalogOutput,
-        Alternate, // Pin used for UART/SPI/I2C or something else
+/// Mode of I/O pins.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, ValueEnum)]
+#[value(rename_all = "verbatim")]
+pub enum PinMode {
+    Input,
+    PushPull,
+    OpenDrain,
+    AnalogInput,
+    AnalogOutput,
+    Alternate, // Pin used for UART/SPI/I2C or something else
+}
+
+impl Display for PinMode {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        match self {
+            Self::Input => f.write_str("Input"),
+            Self::PushPull => f.write_str("PushPull"),
+            Self::OpenDrain => f.write_str("OpenDrain"),
+            Self::AnalogInput => f.write_str("AnalogInput"),
+            Self::AnalogOutput => f.write_str("AnalogOutput"),
+            Self::Alternate => f.write_str("Alternate"),
+        }
     }
 }
 
-arg_enum! {
-    /// Mode of weak pull (relevant in Input and OpenDrain modes).
-    #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
-    pub enum PullMode {
-        None,
-        PullUp,
-        PullDown,
+/// Mode of weak pull (relevant in Input and OpenDrain modes).
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, ValueEnum)]
+#[value(rename_all = "verbatim")]
+pub enum PullMode {
+    None,
+    PullUp,
+    PullDown,
+}
+
+impl Display for PullMode {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        match self {
+            Self::None => f.write_str("None"),
+            Self::PullUp => f.write_str("PullUp"),
+            Self::PullDown => f.write_str("PullDown"),
+        }
     }
 }
 

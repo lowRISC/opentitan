@@ -10,8 +10,8 @@ use crate::spiflash::sfdp::{
 };
 use crate::transport::ProgressIndicator;
 use anyhow::{ensure, Result};
+use clap::ValueEnum;
 use std::convert::TryFrom;
-use structopt::clap::arg_enum;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -37,14 +37,12 @@ impl From<SupportedAddressModes> for AddressMode {
     }
 }
 
-arg_enum! {
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, ValueEnum)]
 pub enum ReadMode {
     Standard,
     Fast,
     Dual,
     Quad,
-}
 }
 
 // Conflict between deriving Default and the `arg_enum!` macro.
@@ -117,12 +115,10 @@ impl ReadTypes {
     }
 }
 
-arg_enum! {
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum EraseMode {
     Standard,
     Block,
-}
 }
 
 // Conflict between deriving Default and the `arg_enum!` macro.

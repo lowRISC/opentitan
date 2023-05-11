@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use structopt::StructOpt;
+use clap::Subcommand;
 
 use opentitanlib::app::command::CommandDispatch;
 
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 /// Commands for interacting with an FPGA instance.
 pub enum FpgaCommand {
     LoadBitstream(crate::command::load_bitstream::LoadBitstream),

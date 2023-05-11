@@ -8,10 +8,9 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use anyhow::Result;
+use clap::{Args, Subcommand};
 
 use serde_annotate::{serialize, Annotate, Base};
-
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
@@ -20,16 +19,16 @@ use opentitanlib::otp::lc_state::LcStateVal;
 use opentitanlib::otp::otp_img::{OtpImg, OtpImgItem, OtpImgPartition, OtpImgValue};
 
 /// Generate CRC magic value for alert_handler configuration.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct AlertDigest {
-    #[structopt(help = "OTP memory map file containing alert_handler config in HJSON format")]
+    #[arg(help = "OTP memory map file containing alert_handler config in HJSON format")]
     alert_cfg: PathBuf,
-    #[structopt(
+    #[arg(
         long,
         help = "Output file to write the new OTP overlay to instead of printing"
     )]
     output: Option<PathBuf>,
-    #[structopt(
+    #[arg(
         long,
         default_value = "OWNER_SW_CFG",
         help = "Override switch to specify a custom partition"
@@ -103,7 +102,7 @@ impl CommandDispatch for AlertDigest {
     }
 }
 
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 /// OTP related commands.
 pub enum Otp {
     AlertDigest(AlertDigest),

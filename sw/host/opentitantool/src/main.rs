@@ -5,6 +5,7 @@
 #![feature(min_specialization)]
 use anyhow::Result;
 use atty::Stream;
+use clap::{Parser, ValueEnum};
 use directories::ProjectDirs;
 use log::LevelFilter;
 use serde_annotate::Annotate;
@@ -13,9 +14,6 @@ use std::env::{args_os, ArgsOs};
 use std::ffi::OsString;
 use std::io::ErrorKind;
 use std::iter::{IntoIterator, Iterator};
-use std::path::PathBuf;
-use structopt::clap::arg_enum;
-use structopt::StructOpt;
 
 mod command;
 use opentitanlib::app::command::CommandDispatch;
@@ -23,84 +21,91 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::backend;
 
 #[allow(clippy::large_enum_variant)]
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Parser, CommandDispatch)]
 enum RootCommandHierarchy {
     // Not flattened because `Bootstrap` is a leaf command.
     Bootstrap(command::bootstrap::BootstrapCommand),
     // Not flattened because `Console` is a leaf command.
     Console(command::console::Console),
 
+    #[command(subcommand)]
     Gpio(command::gpio::GpioCommand),
+    #[command(subcommand)]
     Emulator(command::emulator::EmuCommand),
 
+    #[command(subcommand)]
     Fpga(command::fpga::FpgaCommand),
     I2c(command::i2c::I2cCommand),
+    #[command(subcommand)]
     Image(command::image::Image),
     NoOp(command::NoOp),
+    #[command(subcommand)]
     Otp(command::otp::Otp),
+    #[command(subcommand)]
     Rsa(command::rsa::Rsa),
     Spi(command::spi::SpiCommand),
+    #[command(subcommand)]
     Spx(command::spx::Spx),
+    #[command(subcommand)]
     Transport(command::transport::TransportCommand),
     Version(command::version::Version),
+    #[command(subcommand)]
     Status(command::status_cmd::StatusCommand),
 
     // Flattened because `Greetings` is a subcommand hierarchy.
     #[cfg(feature = "demo_commands")]
-    #[structopt(flatten)]
+    #[command(flatten)]
     Greetings(command::hello::Greetings),
 }
 
-arg_enum! {
-    #[derive(Clone, Copy, Debug)]
-    enum Format {
-        Json,
-        Json5,
-        HJson,
-        Yaml,
-    }
+#[derive(Clone, Copy, Debug, ValueEnum)]
+#[value(rename_all = "lower")]
+enum Format {
+    Json,
+    Json5,
+    HJson,
+    Yaml,
 }
 
-#[derive(Debug, StructOpt)]
-#[structopt(
+#[derive(Debug, Parser)]
+#[command(
     name = "opentitantool",
     about = "A tool for interacting with OpenTitan chips."
 )]
 struct Opts {
-    #[structopt(
+    #[arg(
         long,
         default_value = "config",
         help = "Filename of a default flagsfile.  Relative to $XDG_CONFIG_HOME/opentitantool."
     )]
-    rcfile: PathBuf,
+    rcfile: OsString,
 
-    #[structopt(long, default_value = "warn")]
+    #[arg(long, default_value = "warn")]
     logging: LevelFilter,
 
-    #[structopt(
+    #[arg(
         short,
         long,
-        possible_values = &Format::variants(),
-        case_insensitive = true,
+        ignore_case(true),
         default_value = "hjson",
         help = "Preferred output format"
     )]
     format: Format,
 
-    #[structopt(short, long, parse(try_from_str), help = "Use color in the output")]
+    #[arg(short, long, help = "Use color in the output")]
     color: Option<bool>,
 
-    #[structopt(
+    #[arg(
         long,
         number_of_values(1),
         help = "Parse and execute the argument as a command"
     )]
     exec: Vec<String>,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     backend_opts: backend::BackendOpts,
 
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     command: RootCommandHierarchy,
 }
 
@@ -116,7 +121,7 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
             .filter(None, opts.logging)
             .init();
     }
-    if opts.rcfile.as_os_str().is_empty() {
+    if opts.rcfile.is_empty() {
         // No rcfile to parse.
         return Ok(opts);
     }
@@ -126,7 +131,7 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
     let rcfile = if let Some(base) = ProjectDirs::from("org", "opentitan", "opentitantool") {
         base.config_dir().join(&opts.rcfile)
     } else {
-        opts.rcfile
+        opts.rcfile.into()
     };
 
     // argument[0] is the executable name.
@@ -151,7 +156,7 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
 
     // Extend the argument list with all remaining command line arguments.
     arguments.extend(args);
-    let opts = Opts::from_iter(&arguments);
+    let opts = Opts::parse_from(&arguments);
     if opts.logging != logging {
         // Try re-initializing the logger.  Ignore errors.
         let _ = env_logger::Builder::from_default_env()
@@ -201,7 +206,7 @@ fn execute<I>(args: I, opts: &Opts, transport: &TransportWrapper) -> Result<()>
 where
     I: IntoIterator<Item = OsString>,
 {
-    let command = RootCommandHierarchy::from_iter(
+    let command = RootCommandHierarchy::parse_from(
         std::iter::once(OsString::from("opentitantool")).chain(args),
     );
     print_command_result(opts, command.run(opts, transport))?;
@@ -209,7 +214,7 @@ where
 }
 
 fn main() -> Result<()> {
-    let opts = parse_command_line(Opts::from_args(), args_os())?;
+    let opts = parse_command_line(Opts::parse(), args_os())?;
 
     let transport = backend::create(&opts.backend_opts)?;
 

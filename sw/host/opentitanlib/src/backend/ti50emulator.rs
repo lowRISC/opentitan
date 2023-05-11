@@ -5,24 +5,27 @@
 use crate::transport::ti50emulator::Ti50Emulator;
 use crate::transport::Transport;
 use anyhow::Result;
-use std::path::PathBuf;
-use structopt::StructOpt;
+use clap::Args;
+use std::path::{Path, PathBuf};
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct Ti50EmulatorOpts {
-    #[structopt(long, default_value = "ti50")]
+    #[arg(long, default_value = "ti50")]
     instance_prefix: String,
 
-    #[structopt(long, parse(from_os_str), default_value = "")]
-    executable_directory: PathBuf,
+    #[arg(long)]
+    executable_directory: Option<PathBuf>,
 
-    #[structopt(long, default_value = "")]
+    #[arg(long, default_value = "")]
     executable: String,
 }
 
 pub fn create(args: &Ti50EmulatorOpts) -> Result<Box<dyn Transport>> {
     Ok(Box::new(Ti50Emulator::open(
-        &args.executable_directory,
+        match args.executable_directory {
+            None => Path::new(""),
+            Some(ref path) => path,
+        },
         &args.executable,
         &args.instance_prefix,
     )?))

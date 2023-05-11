@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::Args;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use std::time::Duration;
-use structopt::StructOpt;
 use thiserror::Error;
 
 use super::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
@@ -14,15 +14,15 @@ use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::io::console::ConsoleDevice;
 
-#[derive(Clone, Debug, StructOpt, Serialize, Deserialize)]
+#[derive(Clone, Debug, Args, Serialize, Deserialize)]
 pub struct UartParams {
-    #[structopt(long, help = "UART instance", default_value = "CONSOLE")]
+    #[arg(long, help = "UART instance", default_value = "CONSOLE")]
     uart: String,
 
-    #[structopt(long, help = "UART baudrate")]
+    #[arg(long, help = "UART baudrate")]
     baudrate: Option<u32>,
 
-    #[structopt(long, help = "Enable software flow control")]
+    #[arg(long, help = "Enable software flow control")]
     flow_control: bool,
 }
 

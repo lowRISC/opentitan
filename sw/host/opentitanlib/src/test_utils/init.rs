@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::Args;
 use directories::ProjectDirs;
 use log::LevelFilter;
 use serde_annotate::Annotate;
@@ -10,8 +11,6 @@ use std::env::ArgsOs;
 use std::ffi::OsString;
 use std::io::ErrorKind;
 use std::iter::Iterator;
-use std::path::PathBuf;
-use structopt::StructOpt;
 
 use super::bootstrap::Bootstrap;
 use super::load_bitstream::LoadBitstream;
@@ -20,32 +19,32 @@ use crate::backend;
 use crate::io::jtag::JtagParams;
 // use opentitanlib::io::uart::UartParams;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct InitializeTest {
-    #[structopt(
+    #[arg(
         long,
         default_value = "config",
         help = "Filename of a default flagsfile.  Relative to $XDG_CONFIG_HOME/opentitantool."
     )]
-    pub rcfile: PathBuf,
+    pub rcfile: OsString,
 
-    #[structopt(long, default_value = "off")]
+    #[arg(long, default_value = "off")]
     pub logging: LevelFilter,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub backend_opts: backend::BackendOpts,
 
     // TODO: Bootstrap::options already has a uart_params (and a spi_params).
     // This probably needs some refactoring.
-    //#[structopt(flatten)]
+    //#[command(flatten)]
     //pub uart_params: UartParams,
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub load_bitstream: LoadBitstream,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub bootstrap: Bootstrap,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub jtag_params: JtagParams,
 }
 
@@ -68,7 +67,7 @@ impl InitializeTest {
     pub fn parse_command_line(&self, mut args: ArgsOs) -> Result<Vec<OsString>> {
         // Initialize the logger if the user requested the non-defualt option.
         self.init_logging();
-        if self.rcfile.as_os_str().is_empty() {
+        if self.rcfile.is_empty() {
             // No rcfile to parse.
             return Ok(Vec::new());
         }
@@ -78,7 +77,7 @@ impl InitializeTest {
         let rcfile = if let Some(base) = ProjectDirs::from("org", "opentitan", "opentitantool") {
             base.config_dir().join(&self.rcfile)
         } else {
-            self.rcfile.clone()
+            self.rcfile.clone().into()
         };
 
         // argument[0] is the executable name.

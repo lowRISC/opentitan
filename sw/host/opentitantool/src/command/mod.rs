@@ -25,22 +25,22 @@ pub mod update_usr_access;
 pub mod version;
 
 use anyhow::Result;
+use clap::Args;
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// No Operation.
 pub struct NoOp {
-    #[structopt(
-        short = "d",
+    #[arg(
+        short = 'd',
         long,
         help = "Delay execution",
-        parse(try_from_str = humantime::parse_duration)
+        value_parser = humantime::parse_duration
     )]
     delay: Option<Duration>,
 }

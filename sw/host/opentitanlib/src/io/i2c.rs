@@ -3,20 +3,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::Args;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
-use structopt::StructOpt;
 use thiserror::Error;
 
 use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct I2cParams {
-    #[structopt(long, help = "I2C instance", default_value = "0")]
+    #[arg(long, help = "I2C instance", default_value = "0")]
     pub bus: String,
 
-    #[structopt(long, help = "I2C bus speed (typically: 100000, 400000, 1000000)")]
+    #[arg(long, help = "I2C bus speed (typically: 100000, 400000, 1000000)")]
     pub speed: Option<u32>,
 }
 
