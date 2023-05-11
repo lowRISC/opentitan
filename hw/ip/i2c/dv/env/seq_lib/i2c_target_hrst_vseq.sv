@@ -22,7 +22,8 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
   // Used to track which call to fetch_txn should avoid appending Start
   bit skip_start;
   constraint rw_bit_c {
-    rw_bit dist {ReadOnly := 1, WriteOnly := 1};
+    // Read state glitches covered in i2c_glitch_vseq
+    rw_bit dist {ReadOnly := 0, WriteOnly := 1};
   }
   // Randomize type of glitch based on rw_bit with equal probability
   constraint glitch_c {
@@ -113,9 +114,9 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
             begin : main_thread
               m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
             end : main_thread
-            begin : agent_reset
+            begin : monitor_reset
               if (i == reset_txn_num) begin
-                // Wait until just before glitch is introduced and then issue agent reset
+                // Wait until just before glitch is introduced and then issue monitor reset
                 // Wait_cycles variable indicates at which point monitor on TB has to be reset.
                 // During data transmission, glitch is introduced on a random bit using
                 //   <i2c_item>.wait_cycles
@@ -125,14 +126,14 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
                 // To prevent TB side races, +1 is added to these limits.
                 int wait_cycles = glitch inside {AddressByteStart, AddressByteStop} ? 2 : 10;
                 repeat(wait_cycles) @(posedge cfg.m_i2c_agent_cfg.vif.scl_i);
-                `uvm_info(`gfn, "Issue agent_rst", UVM_MEDIUM)
-                // Reset agent
-                cfg.m_i2c_agent_cfg.agent_rst = 1;
+                `uvm_info(`gfn, "Issue monitor_rst", UVM_MEDIUM)
+                // Reset monitor
+                cfg.m_i2c_agent_cfg.monitor_rst = 1;
                 cfg.clk_rst_vif.wait_clks(2);
-                cfg.m_i2c_agent_cfg.agent_rst = 0;
-                `uvm_info(`gfn, "Clear agent_rst", UVM_MEDIUM)
+                cfg.m_i2c_agent_cfg.monitor_rst = 0;
+                `uvm_info(`gfn, "Clear monitor_rst", UVM_MEDIUM)
               end
-            end : agent_reset
+            end : monitor_reset
           join
           // reset skip_start after reset_txn_num+1 iteration
           if (i > reset_txn_num) begin

@@ -53,8 +53,10 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   bit       valid_addr;
   bit       is_read;
 
-  // reset agent only without resetting dut
-  bit       agent_rst = 0;
+  // reset driver only without resetting dut
+  bit       driver_rst = 0;
+  // reset monitor only without resetting dut
+  bit       monitor_rst = 0;
 
   `uvm_object_utils_begin(i2c_agent_cfg)
     `uvm_field_int(en_monitor,                                UVM_DEFAULT)

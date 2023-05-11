@@ -52,6 +52,7 @@ filesets:
       - seq_lib/i2c_target_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_hrst_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_host_mode_toggle_vseq.sv: {is_include_file: true}
+      - seq_lib/i2c_glitch_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
