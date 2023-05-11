@@ -814,10 +814,6 @@ def opentitan_binary(
     side_targets = []
 
     native_binary_name = "{}.elf".format(name)
-    if 'status' in name:
-      print('\n\n\n\n\n\n')
-      print(kwargs)
-      print('\n\n\n\n\n\n')
     native.cc_binary(
         name = native_binary_name,
         deps = deps,

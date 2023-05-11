@@ -50,7 +50,6 @@ cc_library(
     hdrs = [
         "//sw/device/lib/crypto/include:hash.h",
     ],
-    defines = ["OTCRYPTO_STATUS_DEBUG"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":status",

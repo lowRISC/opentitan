@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "opentitan_flash_binary")
 load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
 load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load("@ot_python_deps//:requirements.bzl", "requirement")

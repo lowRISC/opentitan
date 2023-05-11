@@ -60,22 +60,6 @@ typedef enum crypto_status_value {
   kCryptoStatusNotImplemented = (int32_t) 0x80008d2c,
 } crypto_status_value_t;
 
-/*
-// Status is OK; no errors.
-const crypto_status_t kCryptoStatusOK = { .value = 0x739};
-// Invalid input arguments; wrong length or invalid type.
-const crypto_status_t kCryptoStatusBadArgs = { .value = 0x8000b073};
-// Error after which it is OK to retry (e.g. timeout).
-const crypto_status_t kCryptoStatusInternalError = { .value = 0x80005c3a};
-// Error after which it is not OK to retry (e.g. integrity check).
-const crypto_status_t kCryptoStatusFatalError = { .value = 0x8000f5c9};
-// An asynchronous operation is still in progress.
-const crypto_status_t kCryptoStatusAsyncIncomplete = { .value = 0x8000ae1e};
-// TODO: remove all instances of this error before release; it is to track
-// implementations that are not yet complete.
-const crypto_status_t kCryptoStatusNotImplemented = { .value = 0x80001fec};
-*/
-
 /**
  * Struct to handle crypto data buffer with pointer and length.
  * Note: If the crypto_uint8_buf_t is used for output data, it is
