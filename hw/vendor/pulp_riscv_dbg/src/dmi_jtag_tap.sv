@@ -74,6 +74,7 @@ module dmi_jtag_tap #(
   // IR register -> this gets captured from shift register upon update_ir
   ir_reg_e              jtag_ir_d, jtag_ir_q;
   logic capture_ir, shift_ir, update_ir, test_logic_reset; // pause_ir
+  logic jtag_idle;
 
   always_comb begin : p_jtag
     jtag_ir_shift_d = jtag_ir_shift_q;
@@ -203,7 +204,7 @@ module dmi_jtag_tap #(
       tdo_oe_o <= 1'b0;
     end else begin
       td_o     <= tdo_mux;
-      tdo_oe_o <= (shift_ir | shift_dr);
+      tdo_oe_o <= ~jtag_idle;
     end
   end
   // ----------------
@@ -223,13 +224,17 @@ module dmi_jtag_tap #(
     // pause_ir           = 1'b0; unused
     update_ir          = 1'b0;
 
+    jtag_idle          = 1'b0;
+
     unique case (tap_state_q)
       TestLogicReset: begin
         tap_state_d = (tms_i) ? TestLogicReset : RunTestIdle;
         test_logic_reset = 1'b1;
+        jtag_idle = 1'b1;
       end
       RunTestIdle: begin
         tap_state_d = (tms_i) ? SelectDrScan : RunTestIdle;
+        jtag_idle = 1'b1;
       end
       // DR Path
       SelectDrScan: begin
