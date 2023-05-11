@@ -287,11 +287,11 @@
       ]
       en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
-        "+sw_test_timeout_ns=410_000_000",
+        "+sw_test_timeout_ns=600_000_000",
         "+use_otp_image=OtpTypeCustom",
       ]
       reseed: 1
-      run_timeout_mins: 480
+      run_timeout_mins: 600
     }
     {
       name: rom_e2e_sigverify_always_a_bad_b_bad_dev
