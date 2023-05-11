@@ -33,6 +33,26 @@ module usbdev_linkstate (
   output logic [2:0] link_state_o
 );
 
+// TODO: TODO: TODO:
+// NOTE: This is a development/simulation aid; in order to reduce the simulation
+// time we make the device enter suspend much sooner..
+`define AML_HACK
+
+
+// TODO: This should NOT go anywhere near the repo!
+
+`ifdef AML_HACK
+  // Suspend signaling is 3ms of J by spec.
+  localparam logic [11:0] SUSPEND_TIMEOUT = 12'd750;
+  // Reset is 2.5us - 10ms of SE0 by spec, though care should be taken to not
+  // confuse the 2 *low-speed* bit times (1.33us) of SE0 that terminate resume
+  // signaling. Use 3us here.
+  localparam logic [2:0]  RESET_TIMEOUT   = 3'd3;
+  // Consider an SOF lost after 1.005 ms. The extra 5 us helps accommodate
+  // the worst case frequency difference between the host and device, due to a
+  // +/- 2500 ppm range around 12 MHz.
+  localparam logic [9:0]  SOF_TIMEOUT     = 10'd1005;
+`else
   // Suspend signaling is 3ms of J by spec.
   localparam logic [11:0] SUSPEND_TIMEOUT = 12'd3000;
   // Reset is 2.5us - 10ms of SE0 by spec, though care should be taken to not
@@ -43,6 +63,7 @@ module usbdev_linkstate (
   // the worst case frequency difference between the host and device, due to a
   // +/- 2500 ppm range around 12 MHz.
   localparam logic [9:0]  SOF_TIMEOUT     = 10'd1005;
+`endif
 
   typedef enum logic [2:0] {
     // No power and/or no pull-up connected state

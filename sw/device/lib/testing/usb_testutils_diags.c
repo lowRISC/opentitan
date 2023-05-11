@@ -18,7 +18,8 @@ static const char *funcpt_file[] = {"<nil>",
                                     "usb_testutils_controlep.c",
                                     "usb_tesutils_simpleserial.c",
                                     "usbdev_test.c",
-                                    "usbdev_stream_test.c"};
+                                    "usbdev_stream_test.c",
+                                    "usbdev_suspend_test.c"};
 /**
  * Current index into function point circular buffer.
  */
@@ -39,7 +40,7 @@ void usbutils_funcpt_report(void) {
   while (idx < USBUTILS_FUNCPT_LOG_SIZE) {
     if (usbutils_fpt_log[idx] == USBUTILS_FUNCPT_ENTRY_SIGNATURE) {
       uint32_t time = usbutils_fpt_log[idx + 1U];
-      // Note: this is for diagnostic use onl; bear in mind that we're retaining
+      // Note: this is for diagnostic use onl; bear in mind that we're recording
       // only the bottom 32 bits of the cycle counter.
       if (time < oldest_time) {
         oldest_time = time;
@@ -65,7 +66,8 @@ void usbutils_funcpt_report(void) {
 
         // Determine the name of the file and the function point number within
         // that file.
-        unsigned file_idx = usbutils_fpt_log[idx + 2U] >> 16;
+        uint32_t datum = usbutils_fpt_log[idx + 2U];
+        unsigned file_idx = (datum >> 16) & 0x7fffU;
         const char *file =
             (file_idx < num_files) ? funcpt_file[file_idx] : "<Unknown>";
         uint16_t pt = (uint16_t)usbutils_fpt_log[idx + 2U];
@@ -73,8 +75,11 @@ void usbutils_funcpt_report(void) {
         // Datum value recorded with the function point.
         uint32_t d = usbutils_fpt_log[idx + 3U];
 
-        LOG_INFO("%u.%uus : %s : %04x datum 0x%08x", elapsed_us, fract_us, file,
-                 pt, d);
+        //        LOG_INFO("%u.%uus : %s : %04x datum 0x%08x", elapsed_us,
+        //        fract_us, file, pt, d);
+        const char *s = (datum >> 31) ? (char *)d : ".";
+        LOG_INFO("%u.%uus : %s : 0x%04x (%u) datum 0x%08x (%s)", elapsed_us,
+                 fract_us, file, pt, pt, d, s);
       }
       idx = (idx >= USBUTILS_FUNCPT_LOG_SIZE - 4U) ? 0U : (idx + 4U);
     } while (idx != oldest_idx);

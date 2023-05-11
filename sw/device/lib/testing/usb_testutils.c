@@ -11,7 +11,10 @@
 
 #define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
 
+// Set up the recording of function points for this module
 #define USBUTILS_FUNCPT_FILE USBUTILS_FUNCPT_FILE_USB_TESTUTILS
+
+#define USB_EVENT_REPORT(s) USBUTILS_TRACE(__LINE__, (s))
 
 static dif_usbdev_t usbdev;
 static dif_usbdev_buffer_pool_t buffer_pool;
@@ -96,6 +99,47 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
 
   if (!istate) {
     return OK_STATUS();
+  }
+
+  USBUTILS_FUNCPT(0x9011, istate);
+
+  if (true) {
+    dif_usbdev_link_state_t link_state;
+    TRY(dif_usbdev_status_get_link_state(ctx->dev, &link_state));
+    switch (link_state) {
+      case kDifUsbdevLinkStateDisconnected:
+        USB_EVENT_REPORT("LinkState: Disconnected");
+        break;
+      case kDifUsbdevLinkStatePowered:
+        USB_EVENT_REPORT("LinkState: Powered");
+        break;
+      case kDifUsbdevLinkStatePoweredSuspended:
+        USB_EVENT_REPORT("LinkState: PoweredSuspended");
+        break;
+      case kDifUsbdevLinkStateActive:
+        USB_EVENT_REPORT("LinkState: Active (Resumed)");
+        break;
+      case kDifUsbdevLinkStateSuspended:
+        USB_EVENT_REPORT("LinkState: Suspended");
+        break;
+      case kDifUsbdevLinkStateActiveNoSof:
+        USB_EVENT_REPORT("LinkState: ActiveNoSof (Resuming no SOF)");
+        break;
+      case kDifUsbdevLinkStateResuming:
+        USB_EVENT_REPORT("LinkState: Resuming");
+        break;
+      default:
+        USB_EVENT_REPORT("LinkState: ***OTHER***");
+        break;
+    }
+  }
+  if (true) {
+    dif_usbdev_phy_pins_sense_t sense;
+    TRY(dif_usbdev_get_phy_pins_status(ctx->dev, &sense));
+    uint32_t data = (sense.rx_dp ? 1U : 0) | (sense.rx_dn ? 2U : 0) |
+                    (sense.rx_d ? 4U : 0) | (sense.output_enable ? 8U : 0) |
+                    (sense.vbus_sense ? 0x100U : 0);
+    USBUTILS_FUNCPT(0x515, data);
   }
 
   // Process IN completions first so we get the fact that send completed
@@ -210,6 +254,8 @@ for (unsigned i = 0U; i < 100U; i++) {
     // The first bus frame is 1
     TRY(dif_usbdev_status_get_frame(ctx->dev, &ctx->frame));
     ctx->got_frame = true;
+
+    USBUTILS_FUNCPT(0x50f, ctx->frame);
   }
 
 #if 0
@@ -233,22 +279,22 @@ for (unsigned i = 0U; i < 100U; i++) {
   }
 #else
   if (istate & (1u << kDifUsbdevIrqPowered)) {
-    USBUTILS_FUNCPT(0x90e5, 0);
+    USBUTILS_TRACE(0x90e5, "USB: Powered");
   }
   if (istate & (1u << kDifUsbdevIrqDisconnected)) {
-    USBUTILS_FUNCPT(0xd15c, 0);
+    USBUTILS_TRACE(0xd15c, "USB: Disconnected");
   }
   if (istate & (1u << kDifUsbdevIrqHostLost)) {
-    USBUTILS_FUNCPT(0x7057, 0);
+    USBUTILS_TRACE(0x7057, "USB: Host Lost");
   }
   if (istate & (1u << kDifUsbdevIrqLinkReset)) {
-    USBUTILS_FUNCPT(0x5e5e, 0);
+    USBUTILS_TRACE(0x5e5e, "USB:Link Reset");
   }
   if (istate & (1u << kDifUsbdevIrqLinkSuspend)) {
-    USBUTILS_FUNCPT(0x559e, 0);
+    USBUTILS_TRACE(0x559e, "USB:Link Suspend");
   }
   if (istate & (1u << kDifUsbdevIrqLinkResume)) {
-    USBUTILS_FUNCPT(0x5e56, 0);
+    USBUTILS_TRACE(0x5e56, "USB:Link Resume");
   }
 #endif
 

@@ -15,8 +15,8 @@
 //    reduce the simulation time!)
 #if AML_HACK
 static const unsigned kSuspendTimeout = 750u;
-static const unsigned kActiveInterval = 150u;
-static const unsigned kSleepTimeout = 1000u;
+static const unsigned kActiveInterval = 375u;
+static const unsigned kSleepTimeout = 1500u;
 static const unsigned kResumeInterval = 300u;
 #else
 static const unsigned kSuspendTimeout = 4000u;
@@ -24,6 +24,10 @@ static const unsigned kActiveInterval = 2000u;
 static const unsigned kSleepTimeout = 8000u;
 static const unsigned kResumeInterval = 3000u;
 #endif
+
+// Go Faster Stripes; drop the descriptor reading steps in order to reduce
+// simulation time.
+static const bool stripes = true;
 
 // Return the number of test frames required to exceed the given delay in
 // microseconds; this is required to ensure that the timers in the DUT reach
@@ -127,7 +131,11 @@ usbdpi_test_step_t usbdpi_test_seq_next(usbdpi_ctx_t *ctx,
       break;
     // Standard device set up sequence
     case STEP_SET_DEVICE_ADDRESS:
-      next_step = STEP_GET_DEVICE_DESCRIPTOR;
+      if (stripes) {
+        next_step = STEP_SET_DEVICE_CONFIG;
+      } else {
+        next_step = STEP_GET_DEVICE_DESCRIPTOR;
+      }
       break;
     case STEP_GET_DEVICE_DESCRIPTOR:
       next_step = STEP_GET_CONFIG_DESCRIPTOR;

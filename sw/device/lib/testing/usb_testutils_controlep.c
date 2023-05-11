@@ -8,6 +8,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/usb_testutils.h"
 
+// Set up the recording of function points for this module
+#define USBUTILS_FUNCPT_FILE USBUTILS_FUNCPT_FILE_USB_CONTROLEP
+
 // Device descriptor
 static uint8_t dev_dscr[] = {
     18,    // bLength
