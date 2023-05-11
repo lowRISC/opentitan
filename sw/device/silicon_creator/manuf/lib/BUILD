@@ -499,7 +499,7 @@ opentitan_ram_binary(
         srcs = ["flash_device_info_flash_wr_functest.c"],
         cw310 = cw310_params(
             bitstream = "bitstream_rom_exec_disabled_{}".format(init_lc_state.lower()),
-            tags = ["cw310_rom"],
+            tags = ["jtag"],
             test_cmds = [
                 "--clear-bitstream",
                 "--rom-kind=rom",

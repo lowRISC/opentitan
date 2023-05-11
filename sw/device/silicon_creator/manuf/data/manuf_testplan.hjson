@@ -110,7 +110,7 @@
             In pre-silicon, they can be part of the same program.
 
             - Switch to LC TAP at runtime.
-            - Request transition to DEV or PROD state (test both cases).
+            - Request transition to PROD or PROD_END state (test both cases).
             - Perform reset by toggling POR pin.
             - Verify isolated flash info partition expected data.
             '''
