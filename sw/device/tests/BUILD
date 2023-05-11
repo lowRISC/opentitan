@@ -1714,6 +1714,9 @@ opentitan_functest(
 opentitan_functest(
     name = "spi_host_smoketest",
     srcs = ["spi_host_smoketest.c"],
+    cw310 = cw310_params(
+        timeout = "moderate",
+    ),
     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
