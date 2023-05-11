@@ -779,6 +779,7 @@ impl Target for HyperdebugSpiTarget {
             // perform operation using basic SPI read/write.
             return eeprom::default_run_eeprom_transactions(self, transactions);
         }
+        self.select_my_spi_bus()?;
         let mut stream_state = StreamState::NoPending;
         loop {
             match transactions {
