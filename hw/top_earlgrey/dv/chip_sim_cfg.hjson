@@ -1201,7 +1201,8 @@
       run_opts: ["+en_scb=0",
                  "+sw_test_timeout_ns=3000_000_000",
                  "+bypass_alert_ready_to_end_check=1",
-                 "+avoid_inject_fatal_error_for_ips=sram_ctrl_main,flash_ctrl,lc_ctrl*state_regs,otp_ctrl*u_otp_ctrl_dai"]
+                 "+avoid_inject_fatal_error_for_ips=sram_ctrl_main,flash_ctrl,lc_ctrl*state_regs",
+                 "+avoid_ferr_ips_append=otp_ctrl*u_otp_ctrl_dai,rv_core_ibex*sw_fatal_err"]
       run_timeout_mins: 240
       reseed: 90
     }

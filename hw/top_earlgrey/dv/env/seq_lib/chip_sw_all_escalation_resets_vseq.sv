@@ -108,9 +108,14 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     if ($value$plusargs("inject_fatal_error_for_ip=%s", actual_ip)) begin
       ip_index = get_ip_index_from_name(actual_ip, sec_cm);
     end else begin
-      string excluded_ips[$];
+      string excluded_ips[$], excluded_ips_append[$];
       int excluded_ip_idxs[$];
       `DV_GET_QUEUE_PLUSARG(excluded_ips, avoid_inject_fatal_error_for_ips)
+      `DV_GET_QUEUE_PLUSARG(excluded_ips_append, avoid_ferr_ips_append)
+      if (excluded_ips_append.size() > 0) begin
+        while(excluded_ips_append.size() > 0)
+          excluded_ips.push_back(excluded_ips_append.pop_front());
+      end
       foreach (excluded_ips[i]) begin
         int sep_idx = find_separator(excluded_ips[i]);
         if (sep_idx >= 0) begin
