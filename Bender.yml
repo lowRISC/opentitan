@@ -12,6 +12,7 @@ export_include_dirs:
        - hw/ip/rv_core_ibex/rtl
        - hw/dv/sv/dv_utils
        - hw/ip/tlul2axi/test
+       - hw/ip/lowrisc_ibex/rtl
  
 sources:      
       
