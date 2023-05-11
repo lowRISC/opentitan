@@ -4,7 +4,7 @@
 
 load("@ot_hack_bazelbuild_buildtools//buildifier:def.bzl", "buildifier", "buildifier_test")
 load("@lowrisc_lint//rules:rules.bzl", "licence_test")
-load("//rules:quality.bzl", "clang_format_check", "clang_format_test", "html_coverage_report")
+load("//rules:quality.bzl", "clang_format_check", "clang_format_test", "clang_tidy_check", "clang_tidy_check_rv", "html_coverage_report")
 load("@rules_rust//rust:defs.bzl", "rustfmt_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -101,6 +101,45 @@ clang_format_check(
     name = "clang_format_fix",
     exclude_patterns = clang_format_exclude,
     mode = "fix",
+)
+
+# TODO(dmcardle) Add more targets that should be automatically checked with
+# clang-tidy. Find a way to automate this.
+clang_tidy_check_rv(
+    name = "clang_tidy_check_rv",
+    testonly = True,
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:memory_perftest",
+        "//sw/device/silicon_creator/rom:boot_policy",
+        "//sw/device/silicon_creator/rom:bootstrap",
+        "//sw/device/silicon_creator/rom:rom_common",
+        "//sw/device/silicon_creator/rom:rom_epmp",
+        "//sw/device/silicon_creator/rom:rom_start",
+        "//sw/device/silicon_creator/rom:sigverify_keys",
+        "//sw/device/silicon_creator/rom:sigverify_keys_rsa",
+        "//sw/device/silicon_creator/rom:sigverify_keys_spx",
+        "//sw/device/silicon_creator/rom/keys/fake",
+        "//sw/device/silicon_creator/rom/keys/fake/spx:fake",
+    ],
+)
+
+clang_tidy_check(
+    name = "clang_tidy_check_host",
+    testonly = True,
+    deps = [
+        "//sw/device/silicon_creator/rom:boot_policy_unittest",
+        "//sw/device/silicon_creator/rom:bootstrap_unittest",
+    ],
+)
+
+filegroup(
+    name = "clang_tidy_check",
+    testonly = True,
+    srcs = [
+        ":clang_tidy_check_host",
+        ":clang_tidy_check_rv",
+    ],
 )
 
 buildifier_exclude = [
