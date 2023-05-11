@@ -13,6 +13,7 @@ module pinmux_strap_sampling
   parameter target_cfg_t TargetCfg = DefaultTargetCfg
 ) (
   input                            clk_i,
+  input                            clk_main_i,
   input                            rst_ni,
   input prim_mubi_pkg::mubi4_t     scanmode_i,
   // To padring side
@@ -450,9 +451,15 @@ module pinmux_strap_sampling
       // Otherwise hold.
       tdo_ones_count_q;
 
-  localparam int unsigned SyncWidth = OnesCountWidth + OnesCountWidth + 6;
-  logic [SyncWidth-1:0] ila_jtag_domain, ila_pinmux_domain;
-  assign ila_jtag_domain = {
+  localparam int unsigned SyncWidth = NTapStraps + NDFTStraps + 4 + OnesCountWidth + OnesCountWidth + 6;
+  logic [SyncWidth-1:0] probe_data_origclkdom, probe_data_ilaclkdom;
+  assign probe_data_origclkdom = {
+    tap_strap_q[NTapStraps-1:0],
+    dft_strap_q[NDFTStraps-1:0],
+    dft_strap_valid_q,
+    strap_en_q,
+    tap_sampling_en,
+    jtag_en,
     tdi_ones_count_q[OnesCountWidth-1:0],
     tdo_ones_count_q[OnesCountWidth-1:0],
     out_padring_o[TargetCfg.tdo_idx],
@@ -465,22 +472,16 @@ module pinmux_strap_sampling
   prim_flop_2sync #(
     .Width (SyncWidth)
   ) u_prim_flop_2sync (
-    .clk_i,
+    .clk_i (clk_main_i),
     .rst_ni,
-    .d_i  (ila_jtag_domain),
-    .q_o  (ila_pinmux_domain)
+    .d_i  (probe_data_origclkdom),
+    .q_o  (probe_data_ilaclkdom)
   );
 
   ila_1 u_ila_1 (
-    .clk    (clk_i),
+    .clk    (clk_main_i),
     .probe0 ({
-      tap_strap_q[NTapStraps-1:0],
-      dft_strap_q[NDFTStraps-1:0],
-      dft_strap_valid_q,
-      strap_en_q,
-      tap_sampling_en,
-      jtag_en,
-      ila_pinmux_domain[SyncWidth-1:0]
+      probe_data_ilaclkdom[SyncWidth-1:0]
     })
   );
 

@@ -19,6 +19,7 @@ module pinmux
   parameter bit SecVolatileRawUnlockEn = 0
 ) (
   input                            clk_i,
+  input                            clk_main_i,
   input                            rst_ni,
   input                            rst_sys_ni,
   // Scan enable
@@ -320,6 +321,7 @@ module pinmux
     .TargetCfg (TargetCfg)
   ) u_pinmux_strap_sampling (
     .clk_i,
+    .clk_main_i,
     // Inside the pinmux, the strap sampling module is the only module using SYS_RST. The reason for
     // that is that SYS_RST reset will not be asserted during a NDM reset from the RV_DM and hence
     // it retains some of the TAP selection state during an active debug session where NDM reset
