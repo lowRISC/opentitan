@@ -16,7 +16,9 @@
 // check is performed.
 
 class chip_rv_dm_connect_stress_vseq extends chip_stub_cpu_base_vseq;
-  `uvm_object_utils(chip_rv_dm_lc_disabled_vseq)
+  `uvm_object_utils(chip_rv_dm_connect_stress_vseq)
+
+  parameter uint RV_DM_JTAG_IDCODE = 32'h10001cdf;
 
   `uvm_object_new
   jtag_dmi_reg_block jtag_dmi_ral;
@@ -30,7 +32,7 @@ class chip_rv_dm_connect_stress_vseq extends chip_stub_cpu_base_vseq;
   // Add constraint to avoid lc_escalate_en being broadcasted and causes fatal alerts.
   constraint lc_state_c {
     lc_state inside {LcStTestUnlocked0, LcStTestUnlocked1, LcStTestUnlocked2, LcStTestUnlocked3,
-        LcStTestUnlocked4, LcStTestUnlocked5, LcStTestUnlocked6, LcStTestUnlocked7}
+        LcStTestUnlocked4, LcStTestUnlocked5, LcStTestUnlocked6, LcStTestUnlocked7};
   }
 
   virtual function void set_handles();

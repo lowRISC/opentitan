@@ -361,6 +361,8 @@ assign clk_sys_pd_n  = scan_mode || !deep_sleep;
 
 logic sys_io_osc_cal;
 
+assign sys_io_osc_cal = 1'b1;
+
 assign clk_sys_en = clk_src_sys_en_i;
 
 `ifdef AST_BYPASS_CLK
@@ -874,13 +876,13 @@ always_ff @( posedge clk_ast_tlul_i, negedge regal_rst_n ) begin
   end
 end
 
-always_ff @( posedge clk_ast_tlul_i, negedge rst_ast_tlul_ni ) begin
-  if ( !rst_ast_tlul_ni ) begin
-    sys_io_osc_cal <= 1'b0;
-  end else if ( regal_we ) begin
-    sys_io_osc_cal <= 1'b1;
-  end
-end
+//always_ff @( posedge clk_ast_tlul_i, negedge rst_ast_tlul_ni ) begin
+//  if ( !rst_ast_tlul_ni ) begin
+//    sys_io_osc_cal <= 1'b0;
+//  end else if ( regal_we ) begin
+//    sys_io_osc_cal <= 1'b1;
+//  end
+//end
 
 always_ff @( posedge clk_ast_tlul_i, negedge vcaon_pok_por ) begin
   if ( !vcaon_pok_por ) begin

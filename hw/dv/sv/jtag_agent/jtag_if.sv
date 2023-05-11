@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // jtag interface with default 50MHz tck
-interface jtag_if #(parameter int unsigned JtagDefaultTckPeriodPs = 20_000) ();
+interface jtag_if #(parameter int unsigned JtagDefaultTckPeriodPs = 100_000) ();
 
   // interface pins
   // TODO; make these wires and add `_oe` versions to internally control the driving of these
