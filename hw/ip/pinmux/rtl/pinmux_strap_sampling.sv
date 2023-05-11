@@ -307,8 +307,8 @@ module pinmux_strap_sampling
   assign tap_strap = tap_strap_t'(tap_strap_q);
   `ASSERT_KNOWN(TapStrapKnown_A, tap_strap)
 
-  assign rv_jtag_req = jtag_req;
-  assign jtag_rsp = rv_jtag_rsp;
+  assign rv_jtag_o = jtag_req;
+  assign jtag_rsp = rv_jtag_i;
   assign jtag_en = 1'b1;
   assign lc_jtag_req = '0;
   assign dft_jtag_req = '0;
@@ -320,12 +320,6 @@ module pinmux_strap_sampling
     .req_o(lc_jtag_o),
     .rsp_i(lc_jtag_i),
     .rsp_o(lc_jtag_rsp)
-  );
-  pinmux_jtag_buf u_pinmux_jtag_buf_rv (
-    .req_i(rv_jtag_req),
-    .req_o(rv_jtag_o),
-    .rsp_i(rv_jtag_i),
-    .rsp_o(rv_jtag_rsp)
   );
   pinmux_jtag_buf u_pinmux_jtag_buf_dft (
     .req_i(dft_jtag_req),
