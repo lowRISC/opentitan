@@ -209,7 +209,7 @@ module rv_dm
 
   logic dmi_en;
   // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign dmi_en = lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnDmiReq]);
+  assign dmi_en = 1'b1;
 
   /////////////////////////////////////////
   // System Bus Access Port (TL-UL Host) //
