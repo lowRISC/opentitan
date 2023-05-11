@@ -70,6 +70,22 @@ lcv_hw_to_sw_test = unittest.make(_lcv_hw_to_sw_test)
 def _hex_digits_test(ctx):
     env = unittest.begin(ctx)
 
+    # 4-bit tests
+    asserts.equals(env, "0", hex_digits(0x0, width = 4))
+    asserts.equals(env, "2", hex_digits(0x2, width = 4))
+    asserts.equals(env, "f", hex_digits(0xf, width = 4))
+
+    # 8-bit tests
+    asserts.equals(env, "00", hex_digits(0x0, width = 8))
+    asserts.equals(env, "c4", hex_digits(0xc4, width = 8))
+    asserts.equals(env, "ff", hex_digits(0xff, width = 8))
+
+    # 32-bit tests
+    asserts.equals(env, "00000123", hex_digits(0x123, width = 32))
+    asserts.equals(env, "00000000", hex_digits(0x0, width = 32))
+    asserts.equals(env, "ffffffff", hex_digits(0xffffffff, width = 32))
+
+    # default width tests
     asserts.equals(env, "00000123", hex_digits(0x123))
     asserts.equals(env, "00000000", hex_digits(0x0))
     asserts.equals(env, "ffffffff", hex_digits(0xffffffff))
