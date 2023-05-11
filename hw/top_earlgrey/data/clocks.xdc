@@ -30,7 +30,7 @@ create_generated_clock -name clk_io_div4 -divide_by 4 -source [get_pins ${u_div4
 set_clock_sense -positive \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_*/u_clkmgr_aon/u_no_scan_io_div2_div/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I] \
+      [get_pins top_*/u_clkmgr_aon/u_no_scan_io_div2_div/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.bufg_i/I] \
     ] \
   ]
 
