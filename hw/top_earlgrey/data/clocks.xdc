@@ -52,6 +52,13 @@ set_clock_sense -positive \
     ] \
   ]
 
+## Muxed I/Os
+set ioa_muxed_ports [get_ports IOA*]
+set iob_muxed_ports [get_ports IOB*]
+set ioc_muxed_ports [get_ports IOC*]
+set ior_muxed_ports [get_ports -filter {NAME != IOR8 && NAME != IOR9} IOR*]
+set all_muxed_ports "${ioa_muxed_ports} ${iob_muxed_ports} ${ioc_muxed_ports} ${ior_muxed_ports}"
+
 ## JTAG clocks and I/O delays
 # Create clocks for the various TAPs.
 create_clock -add -name jtag_tck -period 100.00 -waveform {0 50} [get_ports IOR3]
@@ -116,7 +123,7 @@ set_clock_latency -source -min ${spi_dev_in_delay_min} [get_ports SPI_DEV_CS_L]
 set_clock_latency -source -max ${spi_dev_in_delay_max} [get_ports SPI_DEV_CS_L]
 
 set spi_dev_data [get_ports {SPI_DEV_D0 SPI_DEV_D1 SPI_DEV_D2 SPI_DEV_D3}]
-set_input_delay -clock clk_spi -clock_fall -min ${spi_dev_in_delay_min} ${spi_dev_data}
+set_input_delay -clock clk_spi -clock_fall -min ${spi_dev_in_delay_min} ${spi_dev_data} -add_delay
 set_input_delay -clock clk_spi -clock_fall -max ${spi_dev_in_delay_max} ${spi_dev_data} -add_delay
 
 ## For half-cycle
@@ -153,8 +160,50 @@ set_clock_sense -positive \
   ] \
   -clocks clk_spi
 
-create_generated_clock -name clk_spi_in  -divide_by 1 -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/O]
-create_generated_clock -name clk_spi_out -divide_by 1 -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/O] -invert
+create_generated_clock -name clk_spi_in  -divide_by 1 \
+    -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/O]
+create_generated_clock -name clk_spi_out -divide_by 1 \
+    -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/O] -invert
+
+## SPI TPM constraints
+set spi_tpm_period 125.00
+create_clock -add -name clk_spi_tpm -period ${spi_tpm_period} [get_ports SPI_DEV_CLK]
+
+set_clock_sense -negative \
+  [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
+    [get_nets -segments -of_objects \
+      [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
+    ] \
+  ] \
+  -clocks clk_spi_tpm
+
+set_clock_sense -positive \
+  [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
+    [get_nets -segments -of_objects \
+      [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/I] \
+    ] \
+  ] \
+  -clocks clk_spi_tpm
+
+set_input_delay -clock clk_spi_tpm -clock_fall -min ${spi_dev_in_delay_min} \
+    ${spi_dev_data} -add_delay
+set_input_delay -clock clk_spi_tpm -clock_fall -max ${spi_dev_in_delay_max} \
+    ${spi_dev_data} -add_delay
+
+# TPM CSB
+set_input_delay -clock clk_spi_tpm -clock_fall -min ${spi_dev_in_delay_min} \
+    [get_ports ${all_muxed_ports}] -add_delay
+set_input_delay -clock clk_spi_tpm -clock_fall -max ${spi_dev_in_delay_max} \
+    [get_ports ${all_muxed_ports}] -add_delay
+
+# Use half-cycle sampling to comply with TPM spec.
+set_output_delay -clock clk_spi_tpm -min ${spi_dev_out_hold}  ${spi_dev_data} -add_delay
+set_output_delay -clock clk_spi_tpm -max ${spi_dev_out_setup} ${spi_dev_data} -add_delay
+
+create_generated_clock -name clk_spi_tpm_in -divide_by 1 -add -master_clock clk_spi_tpm \
+    -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/O]
+create_generated_clock -name clk_spi_tpm_out -divide_by 1 -add -master_clock clk_spi_tpm \
+    -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/O] -invert
 
 ## SPI Passthrough constraints
 create_generated_clock -name clk_spi_pt -divide_by 1 -source [get_ports SPI_DEV_CLK] [get_ports SPI_HOST_CLK]
@@ -219,22 +268,28 @@ set_clock_groups -asynchronous \
     -group clk_io_div2 \
     -group clk_io_div4 \
     -group [get_clocks -include_generated_clocks jtag_tck] \
-    -group {clk_spi clk_spi_in clk_spi_out clk_spi_pt clk_spid_csb} \
+    -group {clk_spi clk_spi_in clk_spi_out clk_spi_pt clk_spid_csb clk_spi_tpm clk_spi_tpm_in clk_spi_tpm_out} \
     -group sys_clk_pin
+
+# TPM and non-TPM modes can't be active simultaneously
+set_clock_groups -physically_exclusive \
+    -group {clk_spi clk_spi_in clk_spi_out clk_spi_pt clk_spid_csb} \
+    -group {clk_spi_tpm clk_spi_tpm_in clk_spi_tpm_out}
 
 # CSB to SPI_DEV output enables. Primarily affects generic mode with CPHA=0
 # and the first bit.
 # Because SPI_DEV_CS_L is a clock pin, various constraint styles will not take.
 # Use output delay to constrain the allowed CSB-to-Q outputs.
 set spi_dev_csb_clk_q_min -5.0
-set spi_dev_csb_clk_q_max 25.0
+set spi_dev_csb_clk_q_max 30.0
 set spi_dev_csb_out_delay_min [expr 0 - ${spi_dev_csb_clk_q_min}]
 set spi_dev_csb_out_delay_max [expr ${spi_dev_period} - ${spi_dev_csb_clk_q_max}]
 set_output_delay -clock clk_spid_csb -add_delay -min ${spi_dev_csb_out_delay_min} \
+    ${spi_dev_data}
 set_output_delay -clock clk_spid_csb -add_delay -max ${spi_dev_csb_out_delay_max} \
     ${spi_dev_data}
 
-# Then mark the paths using other clocks as false paths. CSB does notactually
+# Then mark the paths using other clocks as false paths. CSB does not actually
 # sample these clocks.
 set_clock_groups -logically_exclusive -group clk_spi -group clk_spid_csb
 set_false_path -from [get_clocks {clk_spi_in clk_spi_out clk_spi_pt}] -through ${spi_dev_data} \
@@ -252,6 +307,9 @@ set_max_delay -datapath_only -from [get_clocks clk_spid_csb] -to [get_clocks clk
 # edge as clk_spi_out, but clk_spi_out isn't actually toggling.
 set_multicycle_path -hold -end -from [get_clocks clk_spid_csb] \
     -to [get_clocks clk_spi_out] 1
+set_multicycle_path -hold -end -from [get_clocks clk_spi_tpm] \
+    -through [get_ports ${all_muxed_ports}] \
+    -to [get_clocks clk_spi_tpm_out] 1
 
 
 ## The usb calibration handling inside ast is assumed to be async to the outside world
