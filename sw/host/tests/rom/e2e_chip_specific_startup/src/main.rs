@@ -219,7 +219,7 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
         EpmpEntry {
             cfg: EPMP_CFG_LRX,
             kind: EpmpRegionKind::Tor,
-            range: EpmpAddressRange(0x2000_2300, _)
+            range: EpmpAddressRange(0x2000_0400, _)
         }
     ));
     assert!(matches!(

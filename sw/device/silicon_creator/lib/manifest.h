@@ -149,12 +149,6 @@ typedef struct manifest_ext_table {
  */
 typedef struct manifest {
   /**
-   * SPHINCS+ signature of the image.
-   *
-   * TODO(#17824): Make this optional.
-   */
-  sigverify_spx_signature_t spx_signature;
-  /**
    * RSA signature of the image.
    *
    * RSASSA-PKCS1-v1_5 signature of the image generated using a 3072-bit RSA
@@ -178,10 +172,6 @@ typedef struct manifest {
    * Usage constraints.
    */
   manifest_usage_constraints_t usage_constraints;
-  /**
-   * SPHINCS+ public key of the signer.
-   */
-  sigverify_spx_key_t spx_key;
   /**
    * Modulus of the signer's 3072-bit RSA public key.
    */
@@ -258,25 +248,23 @@ typedef struct manifest {
   manifest_ext_table_t extensions;
 } manifest_t;
 
-OT_ASSERT_MEMBER_OFFSET(manifest_t, spx_signature, 0);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_signature, 7856);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 8240);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, spx_key, 8288);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_modulus, 8320);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 8704);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 8708);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, signed_region_end, 8712);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 8716);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 8720);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, version_minor, 8724);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, security_version, 8728);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, timestamp, 8732);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 8740);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 8772);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 8776);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 8780);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 8784);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, extensions, 8788);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_signature, 0);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 384);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_modulus, 432);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 816);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 820);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, signed_region_end, 824);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 828);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 832);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_minor, 836);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, security_version, 840);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, timestamp, 844);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 852);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 884);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 888);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 892);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 896);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, extensions, 900);
 OT_ASSERT_SIZE(manifest_t, CHIP_MANIFEST_SIZE);
 
 /**
