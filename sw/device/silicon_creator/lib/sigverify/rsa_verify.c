@@ -141,9 +141,7 @@ static rom_error_t sigverify_encoded_message_check(
 
   // Note: `kSigverifyRsaSuccess` is defined such that the following operation
   // produces `kErrorOk`.
-  rom_error_t result = ((flash_exec_rsa << 24) ^ (flash_exec_rsa << 5) >> 5 ^
-                        flash_exec_rsa >> 8) >>
-                       21;
+  rom_error_t result = sigverify_rsa_success_to_ok(flash_exec_rsa);
   *flash_exec ^= flash_exec_rsa;
   if (launder32(result) == kErrorOk) {
     HARDENED_CHECK_EQ(result, kErrorOk);
@@ -219,3 +217,6 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
   HARDENED_CHECK_EQ(error, kErrorOk);
   return sigverify_encoded_message_check(&enc_msg, act_digest, flash_exec);
 }
+
+// Extern declarations for the inline functions in the header.
+extern uint32_t sigverify_rsa_success_to_ok(uint32_t v);

@@ -114,4 +114,4 @@ rom_error_t sigverify_spx_verify(
 }
 
 // Extern declarations for the inline functions in the header.
-extern uint32_t sigverify_spx_success_to_ok(uint32_t result);
+extern uint32_t sigverify_spx_success_to_ok(uint32_t v);

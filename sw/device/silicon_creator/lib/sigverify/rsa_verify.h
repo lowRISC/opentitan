@@ -41,6 +41,19 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
                                  lifecycle_state_t lc_state,
                                  uint32_t *flash_exec);
 
+/**
+ * Transforms `kSigverifyRsaSuccess` into `kErrorOk`.
+ *
+ * Callers should transform the result to a suitable error value if it is not
+ * `kErrorOk` for ease of debugging.
+ *
+ * @param v A value.
+ * @return `kErrorOk` if `v` is `kSigverifyRsaSuccess`.
+ */
+inline uint32_t sigverify_rsa_success_to_ok(uint32_t v) {
+  return (v << 22 ^ v << 19 ^ v << 3) >> 21;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
