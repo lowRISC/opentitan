@@ -20,7 +20,7 @@
   version:            "1.0",
   life_stage:         "L1",
   design_stage:       "D3",
-  verification_stage: "V2",
+  verification_stage: "V2S",
   dif_stage:          "S2",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
