@@ -898,6 +898,7 @@
       sw_images: ["//sw/device/tests/sim_dv:lc_walkthrough_testunlocks_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_otp_image=OtpTypeLcStRaw", "+dest_dec_state=DecLcStTestUnlock7"]
+      run_timeout_mins: 120
     }
     {
       name: chip_sw_rstmgr_sw_req
