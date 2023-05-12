@@ -245,11 +245,11 @@ opentitan_flash_binary(
 rom_e2e_keymgr_init_configs = [
     {
         "name": "rom_ext_meas",
-        "value": CONST.TRUE,
+        "value": CONST.HARDENED_TRUE,
     },
     {
         "name": "rom_ext_no_meas",
-        "value": CONST.FALSE,
+        "value": CONST.HARDENED_FALSE,
     },
     {
         "name": "rom_ext_invalid_meas",
@@ -427,7 +427,7 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_RMA_SPIN_EN": hex(CONST.TRUE),
+                "CREATOR_SW_CFG_RMA_SPIN_EN": hex(CONST.HARDENED_TRUE),
                 "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0x2000000",
             },
         ),
@@ -748,7 +748,7 @@ opentitan_functest(
 
 manifest({
     "name": "manifest_bad_identifier",
-    "address_translation": hex(CONST.FALSE),
+    "address_translation": hex(CONST.HARDENED_FALSE),
     "identifier": "0",
 })
 
@@ -791,7 +791,7 @@ SEC_VERS = [
 
 [manifest({
     "name": "manifest_sec_ver_{}".format(sec_ver),
-    "address_translation": hex(CONST.FALSE),
+    "address_translation": hex(CONST.HARDENED_FALSE),
     "identifier": hex(CONST.ROM_EXT),
     "security_version": hex(sec_ver),
 }) for sec_ver in SEC_VERS]
@@ -1235,7 +1235,7 @@ otp_json(
             name = "OWNER_SW_CFG",
             items = {
                 # Enable bootstrap.
-                "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": hex(CONST.FALSE),
+                "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": hex(CONST.HARDENED_FALSE),
                 # Report errors without any redaction.
                 "OWNER_SW_CFG_ROM_ERROR_REPORTING": hex(CONST.SHUTDOWN.REDACT.NONE),
                 # Enable class A alerts.
@@ -1358,12 +1358,12 @@ test_suite(
 SIGVERIFY_MOD_EXP_CASES = [
     {
         "name": "sw",
-        "use_sw_rsa_verify": CONST.TRUE,
+        "use_sw_rsa_verify": CONST.HARDENED_TRUE,
         "exit_success": {lc_state: "use_sw_rsa_verify=0x00000739" for lc_state, _ in get_lc_items()},
     },
     {
         "name": "otbn",
-        "use_sw_rsa_verify": CONST.FALSE,
+        "use_sw_rsa_verify": CONST.HARDENED_FALSE,
         "exit_success": {lc_state: "use_sw_rsa_verify=0x000001d4" for lc_state, _ in get_lc_items()},
     },
     {
@@ -1819,7 +1819,7 @@ BOOT_DATA_RECOVERY_CASES = [
                 "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": hex(case["min_sec_ver"]),
                 # Set allowing use of default boot data in PROD LC state.
                 "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": hex(
-                    CONST.TRUE if case["default_boot_data"] == "default" else CONST.FALSE,
+                    CONST.HARDENED_TRUE if case["default_boot_data"] == "default" else CONST.HARDENED_FALSE,
                 ),
             },
         ),
@@ -1872,7 +1872,7 @@ BOOT_DATA_RECOVERY_CASES = [
                 case["lc_state"],
                 case["default_boot_data"],
             ),
-            address_translation = hex(CONST.FALSE),
+            address_translation = hex(CONST.HARDENED_FALSE),
             identifier = hex(CONST.ROM_EXT),
             security_version = hex(2),
         ),
@@ -3484,7 +3484,7 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
         dict(
             t["manifest"],
             name = "sigverify_usage_constraint_manifest_{}".format(t["name"]),
-            address_translation = hex(CONST.FALSE),
+            address_translation = hex(CONST.HARDENED_FALSE),
             identifier = hex(CONST.ROM_EXT),
         ),
     ),
@@ -3769,7 +3769,7 @@ opentitan_functest(
 
 manifest({
     "name": "manifest_rom_ext_upgrade_interrupt",
-    "address_translation": hex(CONST.FALSE),
+    "address_translation": hex(CONST.HARDENED_FALSE),
     "identifier": hex(CONST.ROM_EXT),
     "security_version": hex(10),
 })
@@ -3780,7 +3780,7 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": hex(CONST.TRUE),
+                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": hex(CONST.HARDENED_TRUE),
             },
         ),
     ],
@@ -3887,7 +3887,7 @@ SIGVERIFY_SPX_CASES = [
     },
     {
         "name": "enabled_true",
-        "spx_en": CONST.TRUE,
+        "spx_en": CONST.HARDENED_TRUE,
         "exit_success": dicts.add(
             {
                 lc_state: "spx_en=0x00000739, spx_en_otp=0x00000739, spx_key_en=0x4ba5a5a5a5a5a5a5"

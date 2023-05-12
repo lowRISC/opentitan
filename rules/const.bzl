@@ -6,10 +6,10 @@ load("@bazel_skylib//lib:structs.bzl", "structs")
 
 CONST = struct(
     # Must match the definitions in hardened.h.
-    TRUE = 0x739,
-    FALSE = 0x1d4,
-    BYTE_TRUE = 0xa5,
-    BYTE_FALSE = 0x4b,
+    HARDENED_TRUE = 0x739,
+    HARDENED_FALSE = 0x1d4,
+    HARDENED_BYTE_TRUE = 0xa5,
+    HARDENED_BYTE_FALSE = 0x4b,
     # Must match the definitions in sw/device/lib/base/multibits.h
     MUBI4_TRUE = 0x6,
     MUBI4_FALSE = 0x9,

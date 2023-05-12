@@ -175,14 +175,14 @@ cc_library(
 
 manifest({
     "name": "manifest_standard",
-    "address_translation": hex(CONST.FALSE),
+    "address_translation": hex(CONST.HARDENED_FALSE),
     "identifier": hex(CONST.ROM_EXT),
     "visibility": ["//visibility:public"],
 })
 
 manifest({
     "name": "manifest_virtual",
-    "address_translation": hex(CONST.TRUE),
+    "address_translation": hex(CONST.HARDENED_TRUE),
     "identifier": hex(CONST.ROM_EXT),
 })
 

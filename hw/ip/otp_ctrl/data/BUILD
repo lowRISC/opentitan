@@ -80,19 +80,19 @@ otp_json(
                 # Use software mod_exp implementation for signature
                 # verification. See the definition of `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN": otp_hex(CONST.TRUE),
+                "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN": otp_hex(CONST.HARDENED_TRUE),
                 # Mark the first three keys as valid and remaining as invalid
                 # since we currently have only three keys. See the definition of
                 # `hardened_byte_bool_t` in sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": otp_bytestring([
-                    CONST.BYTE_TRUE,  # key0
-                    CONST.BYTE_TRUE,  # key1
-                    CONST.BYTE_TRUE,  # key2
-                    CONST.BYTE_FALSE,  # key3
-                    CONST.BYTE_FALSE,  # key4
-                    CONST.BYTE_FALSE,  # key5
-                    CONST.BYTE_FALSE,  # key6
-                    CONST.BYTE_FALSE,  # key7
+                    CONST.HARDENED_BYTE_TRUE,  # key0
+                    CONST.HARDENED_BYTE_TRUE,  # key1
+                    CONST.HARDENED_BYTE_TRUE,  # key2
+                    CONST.HARDENED_BYTE_FALSE,  # key3
+                    CONST.HARDENED_BYTE_FALSE,  # key4
+                    CONST.HARDENED_BYTE_FALSE,  # key5
+                    CONST.HARDENED_BYTE_FALSE,  # key6
+                    CONST.HARDENED_BYTE_FALSE,  # key7
                 ]),
                 # Disable SPX+ signature verification. See the definitions of
                 # `kSigverifySpxDisabledOtp` and `kSigverifySpxEnabledOtp` in
@@ -100,7 +100,7 @@ otp_json(
                 "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x8d6c8c17),
                 # Enable use of entropy for countermeasures. See the definition
                 # of `hardened_bool_t` in sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_RNG_EN": otp_hex(CONST.TRUE),
+                "CREATOR_SW_CFG_RNG_EN": otp_hex(CONST.HARDENED_TRUE),
                 # ROM execution is enabled if this item is set to a non-zero
                 # value.
                 "CREATOR_SW_CFG_ROM_EXEC_EN": otp_hex(0xffffffff),
@@ -118,7 +118,7 @@ otp_json(
                 # Enable the default boot data in PROD and PROD_END life cycle
                 # states. See the definition of `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(CONST.TRUE),
+                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(CONST.HARDENED_TRUE),
                 # Enable AST initialization.
                 "CREATOR_SW_CFG_AST_INIT_EN": otp_hex(CONST.MUBI4_TRUE),
                 # TODO: This enables a busyloop in the ROM to give time to
@@ -126,7 +126,7 @@ otp_json(
                 # value of 10 cycles is useful for test code which verifies
                 # the path through the ROM.  This value is not useful for a
                 # real chip.
-                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.TRUE),
+                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
                 "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "10",
                 # Entropy source health check default values. This needs to be
                 # populated when `CREATOR_SW_CFG_RNG_EN` is set to true.
@@ -171,7 +171,7 @@ otp_json(
             items = {
                 # Enable bootstrap. See `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
-                "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.FALSE),
+                "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.HARDENED_FALSE),
                 # Set to 0x739 to use the ROM_EXT hash measurement as the key
                 # manager attestation binding value.
                 "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": otp_hex(0x0),
@@ -527,7 +527,7 @@ otp_json(
     partitions = [
         otp_partition(
             name = "OWNER_SW_CFG",
-            items = {"OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.TRUE)},
+            items = {"OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.HARDENED_TRUE)},
         ),
     ],
 )
