@@ -8,7 +8,7 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
   `uvm_object_utils(pwrmgr_disable_rom_integrity_check_vseq)
   `uvm_object_new
 
-  rand bit held_by_done;
+  rand bit release_by_good;
 
   constraint wakeups_c {wakeups == 0;}
   constraint wakeups_en_c {wakeups_en == 0;}
@@ -17,6 +17,17 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
     sw_rst_from_rstmgr = get_rand_mubi4_val(.t_weight(8), .f_weight(4), .other_weight(4));
     super.post_randomize();
   endfunction
+
+  local task detect_block(output bit blocked);
+    blocked = 1;
+    repeat (20) begin
+      @cfg.slow_clk_rst_vif.cb;
+      if (cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateActive) begin
+        blocked = 0;
+        break;
+      end
+    end
+  endtask
 
   task body();
     resets_t enabled_resets;
@@ -30,17 +41,18 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
 
       // set lc ctrl input to random value
       cfg.pwrmgr_vif.lc_hw_debug_en = get_rand_lc_tx_val(
-          .t_weight(0), .f_weight(2), .other_weight(2)
+          .t_weight(1), .f_weight(3), .other_weight(1)
       );
-      cfg.pwrmgr_vif.lc_dft_en = get_rand_lc_tx_val(.t_weight(0), .f_weight(2), .other_weight(2));
+      cfg.pwrmgr_vif.lc_dft_en = get_rand_lc_tx_val(.t_weight(1), .f_weight(3), .other_weight(1));
       cfg.pwrmgr_vif.rom_ctrl.done = get_rand_mubi4_val(
-          .t_weight(held_by_done ? 0 : 2), .f_weight(2), .other_weight(2));
+          .t_weight(1), .f_weight(3), .other_weight(1));
       cfg.pwrmgr_vif.rom_ctrl.good = get_rand_mubi4_val(
-          .t_weight(held_by_done ? 2 : 0), .f_weight(2), .other_weight(2));
+          .t_weight(1), .f_weight(3), .other_weight(1));
 
       `uvm_info(`gfn, $sformatf(
                 "Set done 0x%x, good 0x%x", cfg.pwrmgr_vif.rom_ctrl.done,
                 cfg.pwrmgr_vif.rom_ctrl.good), UVM_MEDIUM)
+
       enabled_resets = resets_en & resets;
       `uvm_info(`gfn, $sformatf(
                 "Enabled resets=0x%x, power_reset=%b, escalation=%b, sw_reset=%b, ndm_reset=%b",
@@ -70,21 +82,35 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
       `uvm_info(`gfn, "Wait for Fast State NE FastPwrStateActive", UVM_MEDIUM)
       `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
 
-      // Check fast state is not FastPwrStateActive for a while
-      repeat (20) begin
-        @cfg.slow_clk_rst_vif.cb;
-        `DV_CHECK_NE(cfg.pwrmgr_vif.fast_state, pwrmgr_pkg::FastPwrStateActive)
+      if (cfg.pwrmgr_vif.rom_ctrl.done != prim_mubi_pkg::MuBi4True) begin
+        // Check fast state is not FastPwrStateActive for a while
+        repeat (20) begin
+          @cfg.slow_clk_rst_vif.cb;
+          `DV_CHECK_NE(cfg.pwrmgr_vif.fast_state, pwrmgr_pkg::FastPwrStateActive)
+        end
+
+        // Set done to True.
+        `uvm_info(`gfn, "Set rom_ctrl.done input True", UVM_MEDIUM)
+        cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
+        cfg.slow_clk_rst_vif.wait_clks(2);
       end
 
-      // Set done to True.
-      `uvm_info(`gfn, "Set rom_ctrl.done input True", UVM_MEDIUM)
-      cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
-      cfg.slow_clk_rst_vif.wait_clks(2);
-
-      `uvm_info(`gfn, "Set lc ctrl inputs On", UVM_MEDIUM)
-      cfg.pwrmgr_vif.lc_hw_debug_en = lc_ctrl_pkg::On;
-      cfg.pwrmgr_vif.lc_dft_en = lc_ctrl_pkg::On;
-
+      if (cfg.pwrmgr_vif.rom_ctrl.good != prim_mubi_pkg::MuBi4True) begin
+        bit blocked = 0;
+        detect_block(blocked);
+        if (blocked) begin
+          if (release_by_good) begin
+            // Set to good.
+            cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
+          end else begin
+            // Disable rom checks.
+            `uvm_info(`gfn, "Set lc ctrl inputs On", UVM_MEDIUM)
+            cfg.pwrmgr_vif.lc_hw_debug_en = lc_ctrl_pkg::On;
+            cfg.pwrmgr_vif.lc_dft_en = lc_ctrl_pkg::On;
+          end
+        end // if (blocked)
+        cfg.slow_clk_rst_vif.wait_clks(2);
+      end
       wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
 
       wait_for_fast_fsm_active();
