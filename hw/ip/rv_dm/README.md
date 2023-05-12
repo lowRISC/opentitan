@@ -59,10 +59,18 @@ All hardware interfaces of the debug system are documented in the [PULP RISC-V D
 ### Life Cycle Control
 
 Debug system functionality is controlled by the [HW_DEBUG_EN](../lc_ctrl/README.md#hw_debug_en) function of the life cycle controller.
+Note that in order to support the non-debug module (NDM) reset functionality, there are two HW_DEBUG_EN signal inputs in the `rv_dm` module:
 
 ```verilog
-input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i, // Debug module lifecycle enable/disable
-```
+
+  input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
+  input  lc_ctrl_pkg::lc_tx_t pinmux_hw_debug_en_i,
+  ```
+
+The first one comes directly from the life cycle controller and is a "live" value, decoded from the current life cycle state.
+The second one is a latched version coming from the [strap sampling and TAP selection logic inside the pinmux](../pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation).
+In addition to the power, reset and clock managers, the `rv_dm` and the TAP selection logic in the pinmux are the only parts of the system that do not get reset when an NDM reset is triggered (see also [reset manager documentation](../rstmgr/doc/theory_of_operation.md#system-reset-tree)).
+The latched variant of the signal allows to keep the JTAG side of the debug module operational while the rest of the system (including the life cycle controller) undergoes a reset cycle.
 
 ### JTAG
 

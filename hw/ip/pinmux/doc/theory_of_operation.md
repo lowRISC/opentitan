@@ -177,6 +177,21 @@ This is to ensure that any functional attributes like inversion or pull-ups / pu
 
 For more information about the life cycle states, see [Life Cycle Controller Specification](../../lc_ctrl/README.md) and the [Life Cycle Definition Table](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
 
+### Non-debug Module Reset
+
+The only parts of the system that are not reset as part of a non-debug module (NDM) reset are in this strap sampling and TAP selection module, and in the `rv_dm`, power, reset and clock managers.
+Hence, in order to keep a `rv_dm` JTAG debug session alive during an NDM reset, the `lc_hw_debug_en` state needs to be memorized.
+
+To that end, the TAP isolation logic in the pinmux samples the `lc_hw_debug_en` state when the strap sampling pulse is asserted by the power manager.
+This pulse is asserted once during boot (and not after an NDM reset).
+
+Note that DFT TAP selection is not affected by this since the TAP selection logic always consumes the live value for `lc_dft_en`.
+The TAP selection logic also invalidates the sampled `lc_hw_debug_en` whenever a life cycle transition is initiated or an escalation is triggered via `lc_escalate_en`.
+This ensures that the sampled `lc_hw_debug_en` value does not survive a life cycle transition.
+
+Finally, note that there is secondary gating on the `rv_dm` and DFT TAPs that is always consuming live `lc_hw_debug_en` and `lc_dft_en` signals for added protection.
+
+See also [rv_dm documentation](../../rv_dm/README.md).
 
 ## Generic Pad Wrapper
 
