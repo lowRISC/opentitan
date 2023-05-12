@@ -72,8 +72,8 @@ status_t test_read_sfdp(void) {
   return OK_STATUS();
 }
 
-status_t test_chip_erase(void) {
-  TRY(spi_flash_testutils_erase_chip(&spi_host));
+status_t test_erase(void) {
+  TRY(spi_flash_testutils_erase_sector(&spi_host, 0, false));
 
   // Check that the first page of flash actually got erased.
   uint8_t buf[256] = {0};
@@ -165,6 +165,7 @@ status_t test_4bytes_address(void) {
                 "Should be at the beginning of the sector.");
 
   TRY(spi_flash_testutils_enter_4byte_address_mode(&spi_host));
+  TRY(spi_flash_testutils_erase_sector(&spi_host, kAddress, true));
 
   TRY(spi_flash_testutils_program_page(&spi_host, kGettysburgPrelude,
                                        sizeof(kGettysburgPrelude), kAddress,
@@ -196,7 +197,7 @@ bool test_main(void) {
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, test_software_reset);
   EXECUTE_TEST(result, test_read_sfdp);
-  EXECUTE_TEST(result, test_chip_erase);
+  EXECUTE_TEST(result, test_erase);
   EXECUTE_TEST(result, test_enable_quad_mode);
   EXECUTE_TEST(result, test_page_program);
   if (is_4_bytes_address_mode_supported()) {
