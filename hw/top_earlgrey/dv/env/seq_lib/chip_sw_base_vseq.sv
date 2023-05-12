@@ -952,9 +952,13 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // Bypass IO clock with the external clock
   // using LC_CTRL.CTRL_TRANSITION.EXT_CLOCK_EN
   task switch_to_external_clock();
-    `uvm_info(`gfn, $sformatf("Setting external clock to %d MHz...", cfg.chip_clock_source),
+    chip_clock_source_e ext_clk_source = cfg.chip_clock_source;
+    if (cfg.chip_clock_source == ChipClockSourceInternal) begin
+      ext_clk_source = ChipClockSourceExternal48Mhz;
+    end
+    `uvm_info(`gfn, $sformatf("Setting external clock to %d MHz...", ext_clk_source),
               UVM_MEDIUM)
-    cfg.chip_vif.ext_clk_if.set_freq_mhz(cfg.chip_clock_source);
+    cfg.chip_vif.ext_clk_if.set_freq_mhz(ext_clk_source);
     cfg.chip_vif.ext_clk_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
 
     // Switch OTP to use external clock instead of internal clock.
