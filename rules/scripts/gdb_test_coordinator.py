@@ -216,7 +216,7 @@ def main(rom_kind: str = typer.Option(...),
     background.run(console_command, "CONSOLE", COLOR_RED, capture_stdout = True)
     time.sleep(1)
 
-    openocd = background.run(openocd_command, "OPENOCD", COLOR_PURPLE, capture_stdout=True)
+    openocd = background.run(openocd_command, "OPENOCD", COLOR_PURPLE, capture_stdout=False)
     # For some reason, we don't reliably see the "starting gdb server" line when
     # OpenOCD's GDB server is ready. It could be a buffering issue internal to
     # OpenOCD or perhaps this script.
