@@ -161,7 +161,9 @@ def main(rom_kind: str = typer.Option(...),
         "; ".join([
             "adapter speed 200",
             "transport select jtag",
-            "reset_config trst_and_srst",
+            # do not use srst as this will reset the entire chip on the FPGA
+            # while the real chip does not have a srst line
+            "reset_config trst_only",
             "adapter srst delay 10",
         ]),
         "-f",
