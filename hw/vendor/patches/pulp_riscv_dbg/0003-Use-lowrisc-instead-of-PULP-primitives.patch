@@ -1,4 +1,4 @@
-From 1d6023dbb9b96929d7503bb8541eae8d12a56b41 Mon Sep 17 00:00:00 2001
+From 51db2dfa1d52ea995f244fba457a101215381382 Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 25 Oct 2022 18:27:27 -0700
 Subject: [PATCH 3/3] Use lowrisc instead of PULP primitives
@@ -6,7 +6,7 @@ Subject: [PATCH 3/3] Use lowrisc instead of PULP primitives
 Signed-off-by: Michael Schaffner <msf@google.com>
 
 diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
-index 56091fa..2a907fa 100644
+index 59d1c90..259f3fc 100644
 --- a/src/dm_csrs.sv
 +++ b/src/dm_csrs.sv
 @@ -79,6 +79,7 @@ module dm_csrs #(
@@ -87,7 +87,7 @@ index 56091fa..2a907fa 100644
  
    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
 diff --git a/src/dmi_cdc.sv b/src/dmi_cdc.sv
-index f9d66fd..ec7a755 100644
+index f9d66fd..ef9e57c 100644
 --- a/src/dmi_cdc.sv
 +++ b/src/dmi_cdc.sv
 @@ -17,6 +17,10 @@
@@ -101,7 +101,7 @@ index f9d66fd..ec7a755 100644
    // JTAG side (master side)
    input  logic             tck_i,
    input  logic             trst_ni,
-@@ -45,70 +49,76 @@ module dmi_cdc (
+@@ -45,70 +49,75 @@ module dmi_cdc (
    input  logic             core_dmi_valid_i
  );
  
@@ -115,7 +115,6 @@ index f9d66fd..ec7a755 100644
 -    .src_data_i  ( jtag_dmi_req_i       ),
 -    .src_valid_i ( jtag_dmi_valid_i     ),
 -    .src_ready_o ( jtag_dmi_ready_o     ),
-+  // TODO: Make it clean for synthesis.
 +  logic jtag_combined_rstn;
 +  always_ff @(posedge tck_i or negedge trst_ni) begin
 +    if (!trst_ni) begin
