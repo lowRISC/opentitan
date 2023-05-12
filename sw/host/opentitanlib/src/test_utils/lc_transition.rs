@@ -197,8 +197,8 @@ pub fn wait_for_status(jtag: &Rc<dyn Jtag>, timeout: Duration, status: LcCtrlSta
             LcCtrlStatus::from_bits(polled_status).context("status has invalid bits set")?;
 
         // Check for any error bits set.
-        if polled_status.contains(LcCtrlStatus::ERRORS) {
-            bail!("status has error bits set: {status:#b}");
+        if polled_status.intersects(LcCtrlStatus::ERRORS) {
+            bail!("status {polled_status:#b} has error bits set");
         }
 
         Ok(polled_status.contains(status))
