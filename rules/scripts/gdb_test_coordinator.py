@@ -211,7 +211,12 @@ def main(rom_kind: str = typer.Option(...),
     # until OpenOCD has fired up its GDB server before launching the GDB client
     # to avoid a subtle race condition.
     background = BackgroundProcessGroup()
-    openocd = background.run(openocd_command, "OPENOCD", COLOR_PURPLE, capture_stdout=False)
+    # Start the console now. This will mess with the reset and straps pins so make sure
+    # we give it time to settle
+    background.run(console_command, "CONSOLE", COLOR_RED, capture_stdout = True)
+    time.sleep(1)
+
+    openocd = background.run(openocd_command, "OPENOCD", COLOR_PURPLE, capture_stdout=True)
     # For some reason, we don't reliably see the "starting gdb server" line when
     # OpenOCD's GDB server is ready. It could be a buffering issue internal to
     # OpenOCD or perhaps this script.
@@ -230,7 +235,6 @@ def main(rom_kind: str = typer.Option(...),
                          COLOR_GREEN,
                          callback=gdb_maybe_consume_expected_line,
                          capture_stdout=True)
-    background.run(console_command, "CONSOLE", COLOR_RED, capture_stdout = True)
 
     while not background.empty():
         background.maybe_print_output(timeout_seconds=1)

@@ -62,6 +62,7 @@ impl CW310 {
         usb_serial: Option<&str>,
         uart_override: &[&str],
     ) -> anyhow::Result<Self> {
+        log::info!("CW310::new");
         let board = CW310 {
             device: Rc::new(RefCell::new(usb::Backend::new(
                 usb_vid, usb_pid, usb_serial,
@@ -76,6 +77,7 @@ impl CW310 {
 
     // Initialize the IO direction of some basic pins on the board.
     fn init_pin_directions(&self) -> anyhow::Result<()> {
+        log::info!("init_pin_directions");
         let device = self.device.borrow();
         device.pin_set_output(Self::PIN_TRST, true)?;
         device.pin_set_output(Self::PIN_SRST, true)?;
@@ -89,6 +91,7 @@ impl CW310 {
 
     // Initialize the values of the output pins on the board.
     fn init_pin_values(&self) -> anyhow::Result<()> {
+        log::info!("init_pin_values");
         let device = self.device.borrow();
         device.pin_set_state(Self::PIN_TRST, true)?;
         device.pin_set_state(Self::PIN_SRST, true)?;

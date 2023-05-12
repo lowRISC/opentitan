@@ -3994,6 +3994,16 @@ test_suite(
         timeout = "short",
         gdb_script = """
             target extended-remote :3333
+            echo :::: Send OpenOCD the 'reset_config' command.\\n
+            monitor reset_config
+            echo :::: Wait one second.\\n
+            monitor sleep 1000
+            echo :::: Send OpenOCD the 'reset halt' command.\\n
+            monitor reset halt
+            echo :::: Wait one second.\\n
+            monitor sleep 1000
+            echo :::: Send OpenOCD the 'reset halt' command.\\n
+            monitor reset halt
             echo :::: Done.\\n
         """,
         gdb_script_symlinks = {
