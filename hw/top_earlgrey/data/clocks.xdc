@@ -106,6 +106,9 @@ set spi_dev_out_setup     [expr  5.0 + 2 * ${spi_dev_board_delay}]
 create_clock -add -name clk_spi  -period ${spi_dev_period} \
     -waveform "0 ${spi_dev_half_period}" [get_ports SPI_DEV_CLK]
 # CSB must act as a clock, in addition to data and a reset.
+# The waveform is semi-arbitrary: This choice shows that both edges happen near
+# the falling edge of clk_spi. The source clock latency constraints then
+# function like set_input_delay where SPI_DEV_CS_L acts as data.
 create_clock -name clk_spid_csb -period ${spi_dev_period} \
     -waveform "${spi_dev_half_period} [expr ${spi_dev_half_period} + 1]" \
     [get_ports SPI_DEV_CS_L]
