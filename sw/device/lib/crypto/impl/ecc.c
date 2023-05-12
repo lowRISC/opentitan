@@ -18,14 +18,7 @@ crypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
                                       crypto_blinded_key_t *private_key,
                                       ecc_public_key_t *public_key) {
   const crypto_key_config_t config = private_key->config;
-  crypto_status_t err =
-      otcrypto_ecdsa_keygen_async_start(elliptic_curve, &config);
-  // TODO(#17803): replace this error check with HARDENED_TRY if cryptolib and
-  // status_t errors become more compatible.
-  if (launder32(err) != OTCRYPTO_OK) {
-    return err;
-  }
-  HARDENED_CHECK_EQ(err, OTCRYPTO_OK);
+  HARDENED_TRY(otcrypto_ecdsa_keygen_async_start(elliptic_curve, &config));
   return otcrypto_ecdsa_keygen_async_finalize(elliptic_curve, private_key,
                                               public_key);
 }
@@ -34,14 +27,8 @@ crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
                                     crypto_const_uint8_buf_t input_message,
                                     const ecc_curve_t *elliptic_curve,
                                     const ecc_signature_t *signature) {
-  crypto_status_t err = otcrypto_ecdsa_sign_async_start(
-      private_key, input_message, elliptic_curve);
-  // TODO(#17803): replace this error check with HARDENED_TRY if cryptolib and
-  // status_t errors become more compatible.
-  if (launder32(err) != OTCRYPTO_OK) {
-    return err;
-  }
-  HARDENED_CHECK_EQ(err, OTCRYPTO_OK);
+  HARDENED_TRY(otcrypto_ecdsa_sign_async_start(private_key, input_message,
+                                               elliptic_curve));
   return otcrypto_ecdsa_sign_async_finalize(elliptic_curve, signature);
 }
 
@@ -50,14 +37,8 @@ crypto_status_t otcrypto_ecdsa_verify(const ecc_public_key_t *public_key,
                                       const ecc_signature_t *signature,
                                       const ecc_curve_t *elliptic_curve,
                                       hardened_bool_t *verification_result) {
-  crypto_status_t err = otcrypto_ecdsa_verify_async_start(
-      public_key, input_message, signature, elliptic_curve);
-  // TODO(#17803): replace this error check with HARDENED_TRY if cryptolib and
-  // status_t errors become more compatible.
-  if (launder32(err) != OTCRYPTO_OK) {
-    return err;
-  }
-  HARDENED_CHECK_EQ(err, OTCRYPTO_OK);
+  HARDENED_TRY(otcrypto_ecdsa_verify_async_start(public_key, input_message,
+                                                 signature, elliptic_curve));
   return otcrypto_ecdsa_verify_async_finalize(elliptic_curve, signature,
                                               verification_result);
 }
@@ -65,14 +46,8 @@ crypto_status_t otcrypto_ecdsa_verify(const ecc_public_key_t *public_key,
 crypto_status_t otcrypto_ecdh_keygen(const ecc_curve_t *elliptic_curve,
                                      crypto_blinded_key_t *private_key,
                                      ecc_public_key_t *public_key) {
-  crypto_status_t err =
-      otcrypto_ecdh_keygen_async_start(elliptic_curve, &private_key->config);
-  // TODO(#17803): replace this error check with HARDENED_TRY if cryptolib and
-  // status_t errors become more compatible.
-  if (launder32(err) != OTCRYPTO_OK) {
-    return err;
-  }
-  HARDENED_CHECK_EQ(err, OTCRYPTO_OK);
+  HARDENED_TRY(
+      otcrypto_ecdh_keygen_async_start(elliptic_curve, &private_key->config));
   return otcrypto_ecdh_keygen_async_finalize(elliptic_curve, private_key,
                                              public_key);
 }
@@ -81,14 +56,8 @@ crypto_status_t otcrypto_ecdh(const crypto_blinded_key_t *private_key,
                               const ecc_public_key_t *public_key,
                               const ecc_curve_t *elliptic_curve,
                               crypto_blinded_key_t *shared_secret) {
-  crypto_status_t err =
-      otcrypto_ecdh_async_start(private_key, public_key, elliptic_curve);
-  // TODO(#17803): replace this error check with HARDENED_TRY if cryptolib and
-  // status_t errors become more compatible.
-  if (launder32(err) != OTCRYPTO_OK) {
-    return err;
-  }
-  HARDENED_CHECK_EQ(err, OTCRYPTO_OK);
+  HARDENED_TRY(
+      otcrypto_ecdh_async_start(private_key, public_key, elliptic_curve));
   return otcrypto_ecdh_async_finalize(elliptic_curve, shared_secret);
 }
 

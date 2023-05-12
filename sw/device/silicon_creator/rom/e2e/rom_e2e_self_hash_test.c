@@ -65,7 +65,7 @@ status_t hash_rom(void) {
       .len = kSha256HashSizeInBytes,
   };
 
-  TRY_CHECK(otcrypto_hash(input, kHashModeSha256, &output) == kCryptoStatusOK);
+  TRY(otcrypto_hash(input, kHashModeSha256, &output));
   LOG_INFO("ROM Hash: 0x%!x", kSha256HashSizeInBytes, rom_hash);
   if (kDeviceType == kDeviceSimDV) {
     TRY_CHECK_ARRAYS_EQ((uint8_t *)output.data, (uint8_t *)kSimDvGoldenRomHash,

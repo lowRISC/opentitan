@@ -104,13 +104,11 @@ status_t key_exchange_test(void) {
 
   // Generate a keypair.
   LOG_INFO("Generating keypair A...");
-  CHECK(otcrypto_ecdh_keygen(&kCurveP256, &private_keyA, &public_keyA) ==
-        kCryptoStatusOK);
+  TRY(otcrypto_ecdh_keygen(&kCurveP256, &private_keyA, &public_keyA));
 
   // Generate a second keypair.
   LOG_INFO("Generating keypair B...");
-  CHECK(otcrypto_ecdh_keygen(&kCurveP256, &private_keyB, &public_keyB) ==
-        kCryptoStatusOK);
+  TRY(otcrypto_ecdh_keygen(&kCurveP256, &private_keyB, &public_keyB));
 
   // Sanity check; public keys should be different from each other.
   CHECK_ARRAYS_NE(xA, xB, ARRAYSIZE(xA));
@@ -135,14 +133,12 @@ status_t key_exchange_test(void) {
   // Compute the shared secret from A's side of the computation (using A's
   // private key and B's public key).
   LOG_INFO("Generating shared secret (A)...");
-  CHECK(otcrypto_ecdh(&private_keyA, &public_keyB, &kCurveP256, &shared_keyA) ==
-        kCryptoStatusOK);
+  TRY(otcrypto_ecdh(&private_keyA, &public_keyB, &kCurveP256, &shared_keyA));
 
   // Compute the shared secret from B's side of the computation (using B's
   // private key and A's public key).
   LOG_INFO("Generating shared secret (B)...");
-  CHECK(otcrypto_ecdh(&private_keyB, &public_keyA, &kCurveP256, &shared_keyB) ==
-        kCryptoStatusOK);
+  TRY(otcrypto_ecdh(&private_keyB, &public_keyA, &kCurveP256, &shared_keyB));
 
   // Get pointers to individual shares of both shared keys.
   uint32_t *keyA0;

@@ -87,9 +87,8 @@ static void encrypt_decrypt_test(const aes_test_t *test) {
 
   // Calculate the size of the padded plaintext.
   size_t padded_len_bytes;
-  CHECK(otcrypto_aes_padded_plaintext_length(test->plaintext_len, test->padding,
-                                             &padded_len_bytes) ==
-        kCryptoStatusOK);
+  CHECK_STATUS_OK(otcrypto_aes_padded_plaintext_length(
+      test->plaintext_len, test->padding, &padded_len_bytes));
   CHECK(padded_len_bytes % sizeof(uint32_t) == 0);
 
   // Create buffer for ciphertext.
@@ -100,8 +99,8 @@ static void encrypt_decrypt_test(const aes_test_t *test) {
   };
 
   // Run encryption and check the result.
-  CHECK(otcrypto_aes(&key, iv, test->mode, kAesOperationEncrypt, plaintext,
-                     test->padding, ciphertext) == kCryptoStatusOK);
+  CHECK_STATUS_OK(otcrypto_aes(&key, iv, test->mode, kAesOperationEncrypt,
+                               plaintext, test->padding, ciphertext));
 
   CHECK_ARRAYS_EQ(ciphertext_data, test->exp_ciphertext,
                   ARRAYSIZE(ciphertext_data));
@@ -120,9 +119,9 @@ static void encrypt_decrypt_test(const aes_test_t *test) {
   };
 
   // Run decryption and check the result (not including padding).
-  CHECK(otcrypto_aes(&key, iv, test->mode, kAesOperationDecrypt,
-                     const_ciphertext, test->padding,
-                     recovered_plaintext) == kCryptoStatusOK);
+  CHECK_STATUS_OK(otcrypto_aes(&key, iv, test->mode, kAesOperationDecrypt,
+                               const_ciphertext, test->padding,
+                               recovered_plaintext));
 
   CHECK_ARRAYS_EQ((unsigned char *)recovered_plaintext_data,
                   (unsigned char *)test->plaintext, test->plaintext_len);
