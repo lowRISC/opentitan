@@ -4,10 +4,12 @@
 
 //! This test performs a lifecycle transition from `RAW` to `TEST_UNLOCKED0`.
 
-use anyhow::Context;
+use anyhow::{Context, Result};
 use structopt::StructOpt;
 
+use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, DifLcCtrlToken, LcCtrlReg};
+use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition;
@@ -23,10 +25,7 @@ struct Opts {
     jtag: JtagParams,
 }
 
-fn main() -> anyhow::Result<()> {
-    let opts = Opts::from_args();
-    let transport = opts.init.init_target()?;
-
+fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Set the TAP straps for the lifecycle controller and reset.
     transport
         .pin_strapping("PINMUX_TAP_LC")?
@@ -46,7 +45,7 @@ fn main() -> anyhow::Result<()> {
     let token_words = token.into_register_values();
 
     lc_transition::trigger_lc_transition(
-        &transport,
+        transport,
         jtag.clone(),
         DifLcCtrlState::TestUnlocked0,
         Some(token_words),
@@ -56,8 +55,18 @@ fn main() -> anyhow::Result<()> {
     .context("failed to transition to TEST_UNLOCKED0")?;
 
     // Check that LC state is `TEST_UNLOCKED0`.
-    let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::TransitionTarget)?;
+    let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
     assert_eq!(state, DifLcCtrlState::TestUnlocked0.redundant_encoding());
+
+    Ok(())
+}
+
+fn main() -> Result<()> {
+    let opts = Opts::from_args();
+    opts.init.init_logging();
+    let transport = opts.init.init_target()?;
+
+    execute_test!(manuf_cp_unlock_raw, &opts, &transport);
 
     Ok(())
 }
