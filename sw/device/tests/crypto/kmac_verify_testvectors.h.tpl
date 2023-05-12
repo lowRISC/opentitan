@@ -31,7 +31,7 @@ typedef struct kmac_test_vector {
   kmac_test_operation_t test_operation;
   xof_mode_t xof_mode;
   hash_mode_t hash_mode;
-  mac_mode_t mac_mode;
+  kmac_mode_t mac_mode;
   crypto_blinded_key_t key;
   crypto_const_uint8_buf_t input_msg;
   crypto_const_uint8_buf_t func_name;

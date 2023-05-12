@@ -69,12 +69,46 @@ static status_t hmac_sha256(const crypto_blinded_key_t *key,
 }
 
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
-                             crypto_const_uint8_buf_t input_message,
-                             mac_mode_t mac_mode,
-                             crypto_const_uint8_buf_t customization_string,
-                             size_t required_output_len,
-                             crypto_uint8_buf_t *tag) {
+crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
+                              crypto_const_uint8_buf_t input_message,
+                              crypto_uint8_buf_t *tag) {
+  // Check for null pointers.
+  if (key == NULL || key->keyblob == NULL || tag == NULL || tag->data == NULL) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // Check for null input message with nonzero length.
+  if (input_message.data == NULL && input_message.len != 0) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // Check the integrity of the blinded key.
+  if (integrity_blinded_key_check(key) != kHardenedBoolTrue) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // TODO (#16410, #15590): Add sideload support.
+  if (key->config.hw_backed == kHardenedBoolTrue) {
+    return kCryptoStatusNotImplemented;
+  }
+
+  // Check tag length.
+  if (tag->len != kHmacDigestNumBytes) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // Call hardware HMAC driver.
+  OTCRYPTO_TRY_INTERPRET(hmac_sha256(key, input_message, tag));
+  return kCryptoStatusOK;
+}
+
+OT_WARN_UNUSED_RESULT
+crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
+                              crypto_const_uint8_buf_t input_message,
+                              kmac_mode_t kmac_mode,
+                              crypto_const_uint8_buf_t customization_string,
+                              size_t required_output_len,
+                              crypto_uint8_buf_t *tag) {
   // TODO (#16410) Revisit/complete error checks
 
   // Check for null pointers.
@@ -112,7 +146,7 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
       keyblob_to_shares(key, &kmac_key.share0, &kmac_key.share1));
   kmac_key.len = key_len;
 
-  switch (mac_mode) {
+  switch (kmac_mode) {
     case kMacModeKmac128:
       // Check `key_mode` matches `mac_mode`
       if (key->config.key_mode != kKeyModeKmac128) {
@@ -130,18 +164,6 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
       OTCRYPTO_TRY_INTERPRET(
           kmac_kmac_256(&kmac_key, input_message, customization_string, tag));
       break;
-    case kMacModeHmacSha256:
-      // Check `key_mode` matches `mac_mode`
-      if (key->config.key_mode != kKeyModeHmacSha256) {
-        return kCryptoStatusBadArgs;
-      }
-      // Check tag length.
-      if (tag->len != kHmacDigestNumBytes) {
-        return kCryptoStatusBadArgs;
-      }
-      // Call hardware HMAC driver.
-      OTCRYPTO_TRY_INTERPRET(hmac_sha256(key, input_message, tag));
-      break;
     default:
       return kCryptoStatusBadArgs;
   }
@@ -150,8 +172,7 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
 }
 
 crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
-                                   const crypto_blinded_key_t *key,
-                                   mac_mode_t hmac_mode) {
+                                   const crypto_blinded_key_t *key) {
   // TODO: Implement streaming HMAC API once we have streaming SHA256.
   return kCryptoStatusNotImplemented;
 }

@@ -47,7 +47,7 @@ bool test_main(void) {
                                    current_test_vector->hash_mode, &digest_buf);
         break;
       case kKmacTestOperationMAC:
-        err_status = otcrypto_mac(
+        err_status = otcrypto_kmac(
             &current_test_vector->key, current_test_vector->input_msg,
             current_test_vector->mac_mode, current_test_vector->cust_str,
             current_test_vector->digest.len, &digest_buf);

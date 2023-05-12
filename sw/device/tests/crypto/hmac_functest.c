@@ -62,16 +62,13 @@ static void run_test(crypto_const_uint8_buf_t msg, const uint32_t *exp_tag) {
   };
   blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
 
-  crypto_const_uint8_buf_t customization_string = {.data = NULL, .len = 0};
-
   uint32_t act_tag[kHmacDigestNumWords];
   crypto_uint8_buf_t tag_buf = {
       .data = (unsigned char *)act_tag,
       .len = sizeof(act_tag),
   };
 
-  crypto_status_t status = otcrypto_mac(&blinded_key, msg, kMacModeHmacSha256,
-                                        customization_string, 0, &tag_buf);
+  crypto_status_t status = otcrypto_hmac(&blinded_key, msg, &tag_buf);
   CHECK(status == kCryptoStatusOK, "Error during hmac operation: 0x%08x.",
         status);
   CHECK_ARRAYS_EQ(act_tag, exp_tag, kHmacDigestNumWords);
