@@ -156,8 +156,13 @@ def main(rom_kind: str = typer.Option(...),
         "; ".join([
             "adapter speed 200",
             "transport select jtag",
-            "reset_config trst_and_srst",
-            "adapter srst delay 10",
+            # Do not use SRST as this will reset the entire chip on the FPGA,
+            # including the JTAG tap. Also the real chip does not have a SRST line
+            # so we do not want to FPGA tests to differ from the real ones. The
+            # chip does not have TRST line. The default setting of OpenOCD is
+            #   reset_config none
+            # but we still put explicitely here.
+            "reset_config none",
         ]),
         "-f",
         openocd_earlgrey_config,
