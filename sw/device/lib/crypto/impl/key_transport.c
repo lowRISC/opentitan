@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/include/key_transport.h"
 
+#include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
 // Module ID for status codes.
@@ -13,25 +14,25 @@ crypto_status_t otcrypto_build_unblinded_key(
     crypto_const_uint8_buf_t plain_key, key_mode_t key_mode,
     crypto_unblinded_key_t unblinded_key) {
   // TODO: implement key transport functions.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_build_blinded_key(crypto_const_uint8_buf_t plain_key,
                                            crypto_blinded_key_t blinded_key) {
   // TODO: implement key transport functions.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_blinded_to_unblinded_key(
     const crypto_blinded_key_t blinded_key,
     crypto_unblinded_key_t unblinded_key) {
   // TODO: implement key transport functions.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_unblinded_to_blinded_key(
     const crypto_unblinded_key_t unblinded_key,
     crypto_blinded_key_t blinded_key) {
   // TODO: implement key transport functions.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }

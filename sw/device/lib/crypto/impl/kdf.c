@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/include/kdf.h"
 
+#include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
 // Module ID for status codes.
@@ -14,5 +15,5 @@ crypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t key_derivation_key,
                                  size_t required_bit_len,
                                  crypto_blinded_key_t keying_material) {
   // TODO: Implement HMAC-KDF and KMAC-KDF.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }

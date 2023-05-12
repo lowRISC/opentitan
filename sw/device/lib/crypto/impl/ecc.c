@@ -22,10 +22,10 @@ crypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
       otcrypto_ecdsa_keygen_async_start(elliptic_curve, &config);
   // TODO(#17803): replace this error check with HARDENED_TRY if cryptolib and
   // status_t errors become more compatible.
-  if (launder32(err) != kCryptoStatusOK) {
+  if (launder32(err) != OTCRYPTO_OK) {
     return err;
   }
-  HARDENED_CHECK_EQ(err, kCryptoStatusOK);
+  HARDENED_CHECK_EQ(err, OTCRYPTO_OK);
   return otcrypto_ecdsa_keygen_async_finalize(elliptic_curve, private_key,
                                               public_key);
 }
@@ -38,10 +38,10 @@ crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
       private_key, input_message, elliptic_curve);
   // TODO(#17803): replace this error check with HARDENED_TRY if cryptolib and
   // status_t errors become more compatible.
-  if (launder32(err) != kCryptoStatusOK) {
+  if (launder32(err) != OTCRYPTO_OK) {
     return err;
   }
-  HARDENED_CHECK_EQ(err, kCryptoStatusOK);
+  HARDENED_CHECK_EQ(err, OTCRYPTO_OK);
   return otcrypto_ecdsa_sign_async_finalize(elliptic_curve, signature);
 }
 
@@ -54,10 +54,10 @@ crypto_status_t otcrypto_ecdsa_verify(const ecc_public_key_t *public_key,
       public_key, input_message, signature, elliptic_curve);
   // TODO(#17803): replace this error check with HARDENED_TRY if cryptolib and
   // status_t errors become more compatible.
-  if (launder32(err) != kCryptoStatusOK) {
+  if (launder32(err) != OTCRYPTO_OK) {
     return err;
   }
-  HARDENED_CHECK_EQ(err, kCryptoStatusOK);
+  HARDENED_CHECK_EQ(err, OTCRYPTO_OK);
   return otcrypto_ecdsa_verify_async_finalize(elliptic_curve, signature,
                                               verification_result);
 }
@@ -69,10 +69,10 @@ crypto_status_t otcrypto_ecdh_keygen(const ecc_curve_t *elliptic_curve,
       otcrypto_ecdh_keygen_async_start(elliptic_curve, &private_key->config);
   // TODO(#17803): replace this error check with HARDENED_TRY if cryptolib and
   // status_t errors become more compatible.
-  if (launder32(err) != kCryptoStatusOK) {
+  if (launder32(err) != OTCRYPTO_OK) {
     return err;
   }
-  HARDENED_CHECK_EQ(err, kCryptoStatusOK);
+  HARDENED_CHECK_EQ(err, OTCRYPTO_OK);
   return otcrypto_ecdh_keygen_async_finalize(elliptic_curve, private_key,
                                              public_key);
 }
@@ -85,17 +85,17 @@ crypto_status_t otcrypto_ecdh(const crypto_blinded_key_t *private_key,
       otcrypto_ecdh_async_start(private_key, public_key, elliptic_curve);
   // TODO(#17803): replace this error check with HARDENED_TRY if cryptolib and
   // status_t errors become more compatible.
-  if (launder32(err) != kCryptoStatusOK) {
+  if (launder32(err) != OTCRYPTO_OK) {
     return err;
   }
-  HARDENED_CHECK_EQ(err, kCryptoStatusOK);
+  HARDENED_CHECK_EQ(err, OTCRYPTO_OK);
   return otcrypto_ecdh_async_finalize(elliptic_curve, shared_secret);
 }
 
 crypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
                                         crypto_unblinded_key_t *public_key) {
   // TODO: Ed25519 is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
@@ -103,7 +103,7 @@ crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
                                       eddsa_sign_mode_t sign_mode,
                                       const ecc_signature_t *signature) {
   // TODO: Ed25519 is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_ed25519_verify(
@@ -111,20 +111,20 @@ crypto_status_t otcrypto_ed25519_verify(
     crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
     const ecc_signature_t *signature, hardened_bool_t *verification_result) {
   // TODO: Ed25519 is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_x25519_keygen(crypto_blinded_key_t *private_key,
                                        crypto_unblinded_key_t *public_key) {
   // TODO: Connect X25519 operations to API.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
                                 const crypto_unblinded_key_t *public_key,
                                 crypto_blinded_key_t *shared_secret) {
   // TODO: Connect X25519 operations to API.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 /**
@@ -177,38 +177,37 @@ static status_t key_config_check(const ecc_curve_t *elliptic_curve,
 crypto_status_t otcrypto_ecdsa_keygen_async_start(
     const ecc_curve_t *elliptic_curve, const crypto_key_config_t *config) {
   if (elliptic_curve == NULL || config == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   if (config->hw_backed != kHardenedBoolFalse) {
     // TODO: Implement support for sideloaded keys.
-    return kCryptoStatusNotImplemented;
+    return OTCRYPTO_NOT_IMPLEMENTED;
   }
 
   // Check the key configuration.
-  OTCRYPTO_TRY_INTERPRET(
-      key_config_check(elliptic_curve, config, kKeyModeEcdsa));
+  HARDENED_TRY(key_config_check(elliptic_curve, config, kKeyModeEcdsa));
 
   // Select the correct keygen operation and start it.
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      OTCRYPTO_TRY_INTERPRET(ecdsa_p256_keygen_start());
-      return kCryptoStatusOK;
+      HARDENED_TRY(ecdsa_p256_keygen_start());
+      return OTCRYPTO_OK;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeCustom:
       // TODO: Implement support for other curves.
-      return kCryptoStatusNotImplemented;
+      return OTCRYPTO_NOT_IMPLEMENTED;
     default:
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
   // Should never get here.
   HARDENED_TRAP();
-  return kCryptoStatusFatalError;
+  return OTCRYPTO_FATAL_ERR;
 }
 
 /**
@@ -340,37 +339,37 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
     ecc_public_key_t *public_key) {
   // Check for any NULL pointers.
   if (elliptic_curve == NULL || private_key == NULL || public_key == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Consistency check for the public key.
-  OTCRYPTO_TRY_INTERPRET(ecc_public_key_check(public_key, kKeyModeEcdsa));
+  HARDENED_TRY(ecc_public_key_check(public_key, kKeyModeEcdsa));
 
   // Consistency check for the private key configuration.
-  OTCRYPTO_TRY_INTERPRET(
+  HARDENED_TRY(
       key_config_check(elliptic_curve, &private_key->config, kKeyModeEcdsa));
 
   // Select the correct keygen operation and finalize it.
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      OTCRYPTO_TRY_INTERPRET(
+      HARDENED_TRY(
           internal_ecdsa_p256_keygen_finalize(private_key, public_key));
-      return kCryptoStatusOK;
+      return OTCRYPTO_OK;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeCustom:
       // TODO: Implement support for other curves.
-      return kCryptoStatusNotImplemented;
+      return OTCRYPTO_NOT_IMPLEMENTED;
     default:
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
   // Should never get here.
   HARDENED_TRAP();
-  return kCryptoStatusFatalError;
+  return OTCRYPTO_FATAL_ERR;
 }
 
 /**
@@ -415,43 +414,42 @@ crypto_status_t otcrypto_ecdsa_sign_async_start(
     const crypto_blinded_key_t *private_key,
     crypto_const_uint8_buf_t input_message, const ecc_curve_t *elliptic_curve) {
   if (private_key == NULL || elliptic_curve == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   if (input_message.data == NULL && input_message.len != 0) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Check the integrity of the private key.
   if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Check the private key configuration.
-  OTCRYPTO_TRY_INTERPRET(
+  HARDENED_TRY(
       key_config_check(elliptic_curve, &private_key->config, kKeyModeEcdsa));
 
   // Select the correct signing operation and start it.
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      OTCRYPTO_TRY_INTERPRET(
-          internal_ecdsa_p256_sign_start(private_key, input_message));
-      return kCryptoStatusOK;
+      HARDENED_TRY(internal_ecdsa_p256_sign_start(private_key, input_message));
+      return OTCRYPTO_OK;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeCustom:
       // TODO: Implement support for other curves.
-      return kCryptoStatusNotImplemented;
+      return OTCRYPTO_NOT_IMPLEMENTED;
     default:
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
   // Should never get here.
   HARDENED_TRAP();
-  return kCryptoStatusFatalError;
+  return OTCRYPTO_FATAL_ERR;
 }
 
 /**
@@ -490,29 +488,29 @@ static status_t internal_ecdsa_p256_sign_finalize(
 crypto_status_t otcrypto_ecdsa_sign_async_finalize(
     const ecc_curve_t *elliptic_curve, const ecc_signature_t *signature) {
   if (elliptic_curve == NULL || signature == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Select the correct signing operation and finalize it.
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      OTCRYPTO_TRY_INTERPRET(internal_ecdsa_p256_sign_finalize(signature));
-      return kCryptoStatusOK;
+      HARDENED_TRY(internal_ecdsa_p256_sign_finalize(signature));
+      return OTCRYPTO_OK;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeCustom:
       // TODO: Implement support for other curves.
-      return kCryptoStatusNotImplemented;
+      return OTCRYPTO_NOT_IMPLEMENTED;
     default:
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
   // Should never get here.
   HARDENED_TRAP();
-  return kCryptoStatusFatalError;
+  return OTCRYPTO_FATAL_ERR;
 }
 
 /**
@@ -561,22 +559,22 @@ crypto_status_t otcrypto_ecdsa_verify_async_start(
     const ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
     const ecc_signature_t *signature, const ecc_curve_t *elliptic_curve) {
   if (public_key == NULL || elliptic_curve == NULL || signature == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   if (input_message.data == NULL && input_message.len != 0) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Consistency check for the public key.
-  OTCRYPTO_TRY_INTERPRET(ecc_public_key_check(public_key, kKeyModeEcdsa));
+  HARDENED_TRY(ecc_public_key_check(public_key, kKeyModeEcdsa));
 
   // Check the integrity of the public key.
   if (launder32(integrity_unblinded_key_check(&public_key->x)) !=
           kHardenedBoolTrue ||
       launder32(integrity_unblinded_key_check(&public_key->y)) !=
           kHardenedBoolTrue) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(integrity_unblinded_key_check(&public_key->x),
                     kHardenedBoolTrue);
@@ -587,23 +585,23 @@ crypto_status_t otcrypto_ecdsa_verify_async_start(
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      OTCRYPTO_TRY_INTERPRET(internal_ecdsa_p256_verify_start(
-          public_key, input_message, signature));
-      return kCryptoStatusOK;
+      HARDENED_TRY(internal_ecdsa_p256_verify_start(public_key, input_message,
+                                                    signature));
+      return OTCRYPTO_OK;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeCustom:
       // TODO: Implement support for other curves.
-      return kCryptoStatusNotImplemented;
+      return OTCRYPTO_NOT_IMPLEMENTED;
     default:
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
   // Should never get here.
   HARDENED_TRAP();
-  return kCryptoStatusFatalError;
+  return OTCRYPTO_FATAL_ERR;
 }
 
 /**
@@ -635,67 +633,66 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
     const ecc_curve_t *elliptic_curve, const ecc_signature_t *signature,
     hardened_bool_t *verification_result) {
   if (elliptic_curve == NULL || verification_result == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Select the correct verification operation and finalize it.
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      OTCRYPTO_TRY_INTERPRET(
+      HARDENED_TRY(
           internal_ecdsa_p256_verify_finalize(signature, verification_result));
-      return kCryptoStatusOK;
+      return OTCRYPTO_OK;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeCustom:
       // TODO: Implement support for other curves.
-      return kCryptoStatusNotImplemented;
+      return OTCRYPTO_NOT_IMPLEMENTED;
     default:
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
   // Should never get here.
   HARDENED_TRAP();
-  return kCryptoStatusFatalError;
+  return OTCRYPTO_FATAL_ERR;
 }
 
 crypto_status_t otcrypto_ecdh_keygen_async_start(
     const ecc_curve_t *elliptic_curve, const crypto_key_config_t *config) {
   if (elliptic_curve == NULL || config == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   if (config->hw_backed != kHardenedBoolFalse) {
     // TODO: Implement support for sideloaded keys.
-    return kCryptoStatusNotImplemented;
+    return OTCRYPTO_NOT_IMPLEMENTED;
   }
 
   // Check the key configuration.
-  OTCRYPTO_TRY_INTERPRET(
-      key_config_check(elliptic_curve, config, kKeyModeEcdh));
+  HARDENED_TRY(key_config_check(elliptic_curve, config, kKeyModeEcdh));
 
   // Select the correct keygen operation and start it.
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      OTCRYPTO_TRY_INTERPRET(ecdh_p256_keypair_start());
-      return kCryptoStatusOK;
+      HARDENED_TRY(ecdh_p256_keypair_start());
+      return OTCRYPTO_OK;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeCustom:
       // TODO: Implement support for other curves.
-      return kCryptoStatusNotImplemented;
+      return OTCRYPTO_NOT_IMPLEMENTED;
     default:
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
   // Should never get here.
   HARDENED_TRAP();
-  return kCryptoStatusFatalError;
+  return OTCRYPTO_FATAL_ERR;
 }
 
 /**
@@ -746,37 +743,36 @@ crypto_status_t otcrypto_ecdh_keygen_async_finalize(
     ecc_public_key_t *public_key) {
   // Check for any NULL pointers.
   if (elliptic_curve == NULL || private_key == NULL || public_key == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Consistency check for the public key.
-  OTCRYPTO_TRY_INTERPRET(ecc_public_key_check(public_key, kKeyModeEcdh));
+  HARDENED_TRY(ecc_public_key_check(public_key, kKeyModeEcdh));
 
   // Consistency check for the private key configuration.
-  OTCRYPTO_TRY_INTERPRET(
+  HARDENED_TRY(
       key_config_check(elliptic_curve, &private_key->config, kKeyModeEcdh));
 
   // Select the correct keygen operation and finalize it.
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      OTCRYPTO_TRY_INTERPRET(
-          internal_ecdh_p256_keygen_finalize(private_key, public_key));
-      return kCryptoStatusOK;
+      HARDENED_TRY(internal_ecdh_p256_keygen_finalize(private_key, public_key));
+      return OTCRYPTO_OK;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeCustom:
       // TODO: Implement support for other curves.
-      return kCryptoStatusNotImplemented;
+      return OTCRYPTO_NOT_IMPLEMENTED;
     default:
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
   // Should never get here.
   HARDENED_TRAP();
-  return kCryptoStatusFatalError;
+  return OTCRYPTO_FATAL_ERR;
 }
 
 /**
@@ -829,38 +825,38 @@ crypto_status_t otcrypto_ecdh_async_start(
     const crypto_blinded_key_t *private_key, const ecc_public_key_t *public_key,
     const ecc_curve_t *elliptic_curve) {
   if (private_key == NULL || public_key == NULL || elliptic_curve == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Check the integrity of the private key.
   if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Check the private key configuration.
-  OTCRYPTO_TRY_INTERPRET(
+  HARDENED_TRY(
       key_config_check(elliptic_curve, &private_key->config, kKeyModeEcdh));
 
   // Select the correct ECDH operation and start it.
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      OTCRYPTO_TRY_INTERPRET(internal_ecdh_p256_start(private_key, public_key));
-      return kCryptoStatusOK;
+      HARDENED_TRY(internal_ecdh_p256_start(private_key, public_key));
+      return OTCRYPTO_OK;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeCustom:
       // TODO: Implement support for other curves.
-      return kCryptoStatusNotImplemented;
+      return OTCRYPTO_NOT_IMPLEMENTED;
     default:
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
   // Should never get here.
   HARDENED_TRAP();
-  return kCryptoStatusFatalError;
+  return OTCRYPTO_FATAL_ERR;
 }
 
 /**
@@ -911,41 +907,41 @@ static status_t internal_ecdh_p256_finalize(
 crypto_status_t otcrypto_ecdh_async_finalize(
     const ecc_curve_t *elliptic_curve, crypto_blinded_key_t *shared_secret) {
   if (shared_secret == NULL || elliptic_curve == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Select the correct ECDH operation and finalize it.
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      OTCRYPTO_TRY_INTERPRET(internal_ecdh_p256_finalize(shared_secret));
-      return kCryptoStatusOK;
+      HARDENED_TRY(internal_ecdh_p256_finalize(shared_secret));
+      return OTCRYPTO_OK;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeCustom:
       // TODO: Implement support for other curves.
-      return kCryptoStatusNotImplemented;
+      return OTCRYPTO_NOT_IMPLEMENTED;
     default:
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
   // Should never get here.
   HARDENED_TRAP();
-  return kCryptoStatusFatalError;
+  return OTCRYPTO_FATAL_ERR;
 }
 
 crypto_status_t otcrypto_ed25519_keygen_async_start(
     const crypto_key_config_t *config) {
   // TODO: Ed25519 is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_ed25519_keygen_async_finalize(
     crypto_blinded_key_t *private_key, crypto_unblinded_key_t *public_key) {
   // TODO: Ed25519 is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_ed25519_sign_async_start(
@@ -953,13 +949,13 @@ crypto_status_t otcrypto_ed25519_sign_async_start(
     crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
     const ecc_signature_t *signature) {
   // TODO: Ed25519 is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_ed25519_sign_async_finalize(
     const ecc_signature_t *signature) {
   // TODO: Ed25519 is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_ed25519_verify_async_start(
@@ -967,36 +963,36 @@ crypto_status_t otcrypto_ed25519_verify_async_start(
     crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
     const ecc_signature_t *signature) {
   // TODO: Ed25519 is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_ed25519_verify_async_finalize(
     hardened_bool_t *verification_result) {
   // TODO: Ed25519 is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_x25519_keygen_async_start(
     const crypto_key_config_t *config) {
   // TODO: X25519 is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_x25519_keygen_async_finalize(
     crypto_blinded_key_t *private_key, crypto_unblinded_key_t *public_key) {
   // TODO: X25519 is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_x25519_async_start(
     const crypto_blinded_key_t *private_key,
     const crypto_unblinded_key_t *public_key) {
   // TODO: X25519 is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_x25519_async_finalize(
     crypto_blinded_key_t *shared_secret) {
   // TODO: X25519 is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }

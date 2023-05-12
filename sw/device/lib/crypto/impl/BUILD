@@ -9,7 +9,7 @@ load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 config_setting(
     name = "crypto_status_debug",
     define_values = {
-        "crypto_status_debug": "true"
+        "crypto_status_debug": "true",
     },
 )
 
@@ -33,6 +33,7 @@ cc_library(
     srcs = ["drbg.c"],
     hdrs = ["//sw/device/lib/crypto/include:drbg.h"],
     deps = [
+        ":status",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -84,6 +85,7 @@ cc_library(
     srcs = ["kdf.c"],
     hdrs = ["//sw/device/lib/crypto/include:kdf.h"],
     deps = [
+        ":status",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -114,6 +116,7 @@ cc_library(
     srcs = ["key_transport.c"],
     hdrs = ["//sw/device/lib/crypto/include:key_transport.h"],
     deps = [
+        ":status",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -123,6 +126,7 @@ cc_library(
     srcs = ["rsa.c"],
     hdrs = ["//sw/device/lib/crypto/include:rsa.h"],
     deps = [
+        ":status",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
