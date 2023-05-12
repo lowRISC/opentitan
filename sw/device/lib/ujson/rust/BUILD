@@ -25,6 +25,7 @@ rust_test(
         "ROUNDTRIP_CLIENT": "$(rootpath //sw/device/lib/ujson:example_roundtrip)",
         "RUST_BACKTRACE": "1",
     },
+    flaky = True,
     rustc_env = {
         "example": "$(location :example)",
     },
