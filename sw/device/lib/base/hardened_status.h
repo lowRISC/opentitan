@@ -28,17 +28,23 @@ extern "C" {
 /**
  * Hardened version of the `TRY` macro from `status.h`.
  *
+ * Returns the error unmodified if `status_ok` fails, and throws an
+ * `INTERNAL()` errror if the OK code does not match the hardened value.
+ *
  * @param expr_ An expression that evaluates to a `status_t`.
  * @return The enclosed OK value.
  */
-#define HARDENED_TRY(expr_)                                 \
-  ({                                                        \
-    status_t status_ = expr_;                               \
-    if (hardened_status_ok(status_) != kHardenedBoolTrue) { \
-      return status_;                                       \
-    }                                                       \
-    HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue);    \
-    status_.value;                                          \
+#define HARDENED_TRY(expr_)                              \
+  ({                                                     \
+    status_t status_ = expr_;                            \
+    if (!status_ok(status_)) {                           \
+      return status_;                                    \
+    }                                                    \
+    if (launder32(status_.value) != kHardenedBoolTrue) { \
+      return INTERNAL();                                 \
+    }                                                    \
+    HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue); \
+    status_.value;                                       \
   })
 
 /**

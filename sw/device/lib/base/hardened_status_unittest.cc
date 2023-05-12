@@ -36,5 +36,32 @@ TEST(HardenedStatus, NormalOkIsNotHardenedOk) {
   EXPECT_EQ(hardened_status_ok(OK_STATUS()), kHardenedBoolFalse);
 }
 
+/**
+ * Run `HARDENED_TRY` and return a non-hardened `OK` if it passes.
+ *
+ * @param status status code to try.
+ */
+__attribute__((noinline)) status_t do_hardened_try(status_t status) {
+  HARDENED_TRY(status);
+  return OK_STATUS();
+}
+
+TEST(HardenedStatus, HardenedTryOfNonHardenedOkIsError) {
+  EXPECT_EQ(status_err(do_hardened_try(OK_STATUS())), kInternal);
+}
+
+TEST(HardenedStatus, HardenedTryOfHardenedOkIsOk) {
+  EXPECT_EQ(status_ok(do_hardened_try(HARDENED_OK_STATUS)), true);
+}
+
+TEST(HardenedStatus, HardenedTryOfErrorIsError) {
+  EXPECT_EQ(status_ok(do_hardened_try(INVALID_ARGUMENT())), false);
+}
+
+TEST(HardenedStatus, HardenedTryOfErrorWithTruthyArgIsError) {
+  EXPECT_EQ(status_ok(do_hardened_try(INVALID_ARGUMENT(kHardenedBoolTrue))),
+            false);
+}
+
 }  // namespace
 }  // namespace hardened_status_unittest
