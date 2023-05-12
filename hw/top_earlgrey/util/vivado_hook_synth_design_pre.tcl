@@ -58,7 +58,7 @@ set ila_xci_path [ \
 
 # Configure ILA.
 set_property -dict [list \
-  CONFIG.C_PROBE0_WIDTH {28} \
+  CONFIG.C_PROBE0_WIDTH {20} \
   CONFIG.C_DATA_DEPTH {4096} \
   CONFIG.C_EN_STRG_QUAL {1} \
   CONFIG.C_PROBE0_MU_CNT {2} \

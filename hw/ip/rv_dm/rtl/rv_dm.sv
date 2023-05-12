@@ -309,6 +309,31 @@ module rv_dm
   assign jtag_in_int = (lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnJtagIn]))  ? jtag_i : '0;
   assign jtag_o = (lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnJtagOut])) ? jtag_out_int : '0;
 
+  localparam int SyncWidth = 2 * (6 + 4);
+  logic [SyncWidth-1:0] ila_presync, ila_sync;
+  assign ila_presync = {
+    jtag_in_int,
+    pinmux_hw_debug_en[PmEnJtagIn],
+    jtag_i,
+    jtag_o,
+    pinmux_hw_debug_en[PmEnJtagOut],
+    jtag_out_int
+  };
+
+  prim_flop_2sync #(
+    .Width (SyncWidth)
+  ) u_prim_flop_2sync (
+    .clk_i,
+    .rst_ni,
+    .d_i    (ila_presync),
+    .q_o    (ila_sync)
+  );
+
+  ila_1 u_ila_1 (
+    .clk    (clk_i),
+    .probe0 (ila_sync)
+  );
+
   // Bound-in DPI module replaces the TAP
 `ifndef DMIDirectTAP
 
