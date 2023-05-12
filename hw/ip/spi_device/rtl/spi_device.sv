@@ -250,8 +250,9 @@ module spi_device
   // SPI S2P signals
   // io_mode: Determine s2p/p2s behavior.
   // io_mode is changed at the negedge of SPI_CLK (based on the SPI protocol).
-  // sub_iomode is changed based on the input of SPI, and latched by clk_spi_out.
-  // TODO(#18359): Add this path (sub_iomode) to CDC constraint
+  // sub_iomode originates from the clk_spi_in domain, with flop values that
+  // may have changed based on the input of SPI. The sub_iomode is selected
+  // and sampled on the clk_spi_out domain.
   io_mode_e           io_mode, io_mode_outclk;
   io_mode_e           sub_iomode[IoModeEnd];
   logic               s2p_data_valid;
