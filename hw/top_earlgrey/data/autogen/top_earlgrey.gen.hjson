@@ -12842,14 +12842,6 @@
             port_type: inout
           }
           {
-            name: JTAG_SRST_N
-            type: InputStd
-            bank: VCC
-            connection: manual
-            desc: JTAG header SRST, triggers POR
-            port_type: inout
-          }
-          {
             name: IO_USB_CONNECT
             type: BidirStd
             bank: VCC

@@ -342,7 +342,7 @@ To connect the ChipWhisperer CW310 FPGA board with OpenOCD, run the following co
 ```console
 cd $REPO_TOP
 openocd -f <adapter-config.cfg> \
-        -c "adapter speed 500; transport select jtag; reset_config trst_and_srst" \
+        -c "adapter speed 500; transport select jtag; reset_config trst_only" \
         -f util/openocd/target/lowrisc-earlgrey.cfg
 ```
 
@@ -352,7 +352,7 @@ So for that particular case, the command would be the following:
 ```console
 cd $REPO_TOP
 openocd -f /usr/share/openocd/scripts/interface/ftdi/olimex-arm-usb-tiny-h.cfg \
-        -c "adapter speed 500; transport select jtag; reset_config trst_and_srst" \
+        -c "adapter speed 500; transport select jtag; reset_config trst_only" \
         -f util/openocd/target/lowrisc-earlgrey.cfg
 ```
 
@@ -362,7 +362,7 @@ Open On-Chip Debugger 0.11.0
 Licensed under GNU GPL v2
 For bug reports, read
 	http://openocd.org/doc/doxygen/bugs.html
-trst_and_srst separate srst_gates_jtag trst_push_pull srst_open_drain connect_deassert_srst
+trst_only separate trst_push_pull
 
 Info : Hardware thread awareness created
 force hard breakpoints
@@ -379,7 +379,6 @@ Info : Listening on port 3333 for gdb connections
 
 Note that the `reset_config` command may need to be adjusted for the particular JTAG adapter in use.
 TRSTn is available on the 20-pin ARM JTAG header only.
-Use `srst_only` if the adapter only supports SRSTn.
 
 See the [install instructions](./install_openocd.md) for guidance on installing OpenOCD.
 

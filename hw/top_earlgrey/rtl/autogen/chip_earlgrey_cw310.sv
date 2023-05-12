@@ -36,7 +36,6 @@ module chip_earlgrey_cw310 #(
   inout IOR9, // Dedicated Pad for sysrst_ctrl_aon_flash_wp_l
   inout IO_CLK, // Manual Pad
   inout POR_BUTTON_N, // Manual Pad
-  inout JTAG_SRST_N, // Manual Pad
   inout IO_USB_CONNECT, // Manual Pad
   inout IO_USB_DP_TX, // Manual Pad
   inout IO_USB_DN_TX, // Manual Pad
@@ -226,7 +225,6 @@ module chip_earlgrey_cw310 #(
   logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
   logic manual_in_io_clk, manual_out_io_clk, manual_oe_io_clk;
   logic manual_in_por_button_n, manual_out_por_button_n, manual_oe_por_button_n;
-  logic manual_in_jtag_srst_n, manual_out_jtag_srst_n, manual_oe_jtag_srst_n;
   logic manual_in_io_usb_connect, manual_out_io_usb_connect, manual_oe_io_usb_connect;
   logic manual_in_io_usb_dp_tx, manual_out_io_usb_dp_tx, manual_oe_io_usb_dp_tx;
   logic manual_in_io_usb_dn_tx, manual_out_io_usb_dn_tx, manual_oe_io_usb_dn_tx;
@@ -242,7 +240,6 @@ module chip_earlgrey_cw310 #(
   pad_attr_t manual_attr_por_n;
   pad_attr_t manual_attr_io_clk;
   pad_attr_t manual_attr_por_button_n;
-  pad_attr_t manual_attr_jtag_srst_n;
   pad_attr_t manual_attr_io_usb_connect;
   pad_attr_t manual_attr_io_usb_dp_tx;
   pad_attr_t manual_attr_io_usb_dn_tx;
@@ -272,7 +269,7 @@ module chip_earlgrey_cw310 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(29),
+    .NDioPads(28),
     .NMioPads(47),
     .DioPadType ({
       BidirStd, // IO_TRIGGER
@@ -286,7 +283,6 @@ module chip_earlgrey_cw310 #(
       BidirStd, // IO_USB_DN_TX
       BidirStd, // IO_USB_DP_TX
       BidirStd, // IO_USB_CONNECT
-      InputStd, // JTAG_SRST_N
       InputStd, // POR_BUTTON_N
       InputStd, // IO_CLK
       BidirOd, // IOR9
@@ -372,7 +368,6 @@ module chip_earlgrey_cw310 #(
       IO_USB_DN_TX,
       IO_USB_DP_TX,
       IO_USB_CONNECT,
-      JTAG_SRST_N,
       POR_BUTTON_N,
       IO_CLK,
       IOR9,
@@ -463,7 +458,6 @@ module chip_earlgrey_cw310 #(
         manual_in_io_usb_dn_tx,
         manual_in_io_usb_dp_tx,
         manual_in_io_usb_connect,
-        manual_in_jtag_srst_n,
         manual_in_por_button_n,
         manual_in_io_clk,
         dio_in[DioSysrstCtrlAonFlashWpL],
@@ -494,7 +488,6 @@ module chip_earlgrey_cw310 #(
         manual_out_io_usb_dn_tx,
         manual_out_io_usb_dp_tx,
         manual_out_io_usb_connect,
-        manual_out_jtag_srst_n,
         manual_out_por_button_n,
         manual_out_io_clk,
         dio_out[DioSysrstCtrlAonFlashWpL],
@@ -525,7 +518,6 @@ module chip_earlgrey_cw310 #(
         manual_oe_io_usb_dn_tx,
         manual_oe_io_usb_dp_tx,
         manual_oe_io_usb_connect,
-        manual_oe_jtag_srst_n,
         manual_oe_por_button_n,
         manual_oe_io_clk,
         dio_oe[DioSysrstCtrlAonFlashWpL],
@@ -556,7 +548,6 @@ module chip_earlgrey_cw310 #(
         manual_attr_io_usb_dn_tx,
         manual_attr_io_usb_dp_tx,
         manual_attr_io_usb_connect,
-        manual_attr_jtag_srst_n,
         manual_attr_por_button_n,
         manual_attr_io_clk,
         dio_attr[DioSysrstCtrlAonFlashWpL],
@@ -982,10 +973,7 @@ module chip_earlgrey_cw310 #(
   assign manual_out_por_button_n = 1'b0;
   assign manual_oe_por_button_n = 1'b0;
 
-  assign srst_n = manual_in_por_button_n & manual_in_jtag_srst_n;
-  assign manual_attr_jtag_srst_n = '0;
-  assign manual_out_jtag_srst_n = 1'b0;
-  assign manual_oe_jtag_srst_n = 1'b0;
+  assign srst_n = manual_in_por_button_n;
 
 
   //////////////////////
