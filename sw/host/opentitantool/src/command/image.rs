@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, ensure, Result};
+use anyhow::{anyhow, bail, ensure, Result};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::convert::TryInto;
@@ -16,7 +16,7 @@ use opentitanlib::app::TransportWrapper;
 
 use opentitanlib::crypto::rsa::{Modulus, RsaPrivateKey, RsaPublicKey, Signature as RsaSignature};
 use opentitanlib::crypto::sha256::Sha256Digest;
-use opentitanlib::crypto::spx::{self, SpxKey, SpxPublicKey, SpxPublicKeyPart, SpxSignature};
+use opentitanlib::crypto::spx::{self, SpxKey, SpxSignature};
 use opentitanlib::image::image::{self, ImageAssembler};
 use opentitanlib::image::manifest_def::ManifestSpec;
 use opentitanlib::util::file::{FromReader, ToWriter};
@@ -165,7 +165,6 @@ impl CommandDispatch for ManifestUpdateCommand {
         let mut spx_private_key: Option<SpxKey> = None;
         if let Some(key) = &self.spx_key {
             let key = spx::load_spx_key(key)?;
-            image.update_spx_key(&key)?;
             if let SpxKey::Private(private) = key {
                 spx_private_key = Some(SpxKey::Private(private));
             }
@@ -179,7 +178,6 @@ impl CommandDispatch for ManifestUpdateCommand {
             image.update_rsa_signature(key.sign(&image.compute_digest())?)?;
         }
         if let Some(SpxKey::Private(key)) = spx_private_key {
-            image.update_spx_signature(image.map_signed_region(|buf| key.sign(buf)).0)?;
         }
 
         if let Some(rsa_signature) = &self.rsa_signature {
@@ -189,7 +187,6 @@ impl CommandDispatch for ManifestUpdateCommand {
 
         if let Some(spx_signature) = &self.spx_signature {
             let signature = SpxSignature::read_from_file(spx_signature)?;
-            image.update_spx_signature(signature.0)?;
         }
 
         image.write_to_file(self.output.as_ref().unwrap_or(&self.image))?;
@@ -228,16 +225,8 @@ impl CommandDispatch for ManifestVerifyCommand {
         rsa_key.verify(&digest, &rsa_sig)?;
 
         if self.spx {
-            let spx_key = manifest
-                .spx_key()
-                .ok_or_else(|| anyhow!("Invalid SPHINCS+ key"))?;
-            let spx_sig = manifest
-                .spx_signature()
-                .ok_or_else(|| anyhow!("Invalid SPHINCS+ signature"))?;
-
-            let spx_sig = SpxSignature(spx::Signature::from_le_bytes(spx_sig.to_le_bytes())?);
-            let spx_key = SpxPublicKey::from_bytes(&spx_key.to_be_bytes())?;
-            image.map_signed_region(|m| spx_key.verify(m, &spx_sig))?;
+            // TODO(#18496)
+            bail!("SPHINCS+ verification not supported yet, see lowRISC/opentitan#18496.");
         }
 
         Ok(None)

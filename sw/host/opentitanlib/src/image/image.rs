@@ -16,12 +16,8 @@ use zerocopy::LayoutVerified;
 use crate::crypto::rsa::Modulus;
 use crate::crypto::rsa::Signature as RsaSignature;
 use crate::crypto::sha256;
-use crate::crypto::spx::Signature as SpxSignature;
-use crate::crypto::spx::SpxPublicKeyPart;
-use crate::image::manifest::Manifest;
-use crate::image::manifest_def::{
-    ManifestRsaBuffer, ManifestSpec, ManifestSpxKey, ManifestSpxSignature,
-};
+use crate::image::manifest::{Manifest, ManifestExtTableEntry};
+use crate::image::manifest_def::{ManifestRsaBuffer, ManifestSpec};
 use crate::util::file::{FromReader, ToWriter};
 use crate::util::parse_int::ParseInt;
 
@@ -116,30 +112,6 @@ impl Image {
         // Convert to a `ManifestSpec` so we can supply the rsa_modulus as a `BigInt`.
         let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
         manifest_def.update_modulus(ManifestRsaBuffer::from_le_bytes(rsa_modulus.to_le_bytes())?);
-        *manifest = manifest_def.try_into()?;
-        Ok(())
-    }
-
-    /// Updates the spx_signature field in the `Manifest`.
-    pub fn update_spx_signature(&mut self, signature: SpxSignature) -> Result<()> {
-        let manifest = self.borrow_manifest_mut()?;
-
-        let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
-        manifest_def.update_spx_signature(ManifestSpxSignature::from_le_bytes(
-            signature.to_le_bytes(),
-        )?);
-
-        *manifest = manifest_def.try_into()?;
-        Ok(())
-    }
-
-    /// Updates the spx_key field in the `Manifest`.
-    pub fn update_spx_key(&mut self, key: &impl SpxPublicKeyPart) -> Result<()> {
-        let manifest = self.borrow_manifest_mut()?;
-
-        let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
-        manifest_def.update_spx_key(ManifestSpxKey::from_le_bytes(key.pk_as_bytes())?);
-
         *manifest = manifest_def.try_into()?;
         Ok(())
     }

@@ -13,7 +13,7 @@
 /**
  * Manifest size for boot stages stored in flash (in bytes).
  */
-#define CHIP_MANIFEST_SIZE 8852
+#define CHIP_MANIFEST_SIZE 964
 
 /**
  * Number of entries in the manifest extensions table.
