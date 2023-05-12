@@ -201,10 +201,16 @@ def main(rom_kind: str = typer.Option(...),
     # Wait until we've finished loading the bitstream.
     subprocess.run(load_bitstream_command, check=True)
 
+    # Start printing the console output. Make sure to start before interacting
+    # with the JTAG tap because opentitantool will reconfigure some GPIOs and
+    # this will interfere with the JTAG tap (#17729)
+    background = BackgroundProcessGroup()
+    background.run(console_command, "CONSOLE", COLOR_RED)
+    time.sleep(1)
+
     # Run OpenOCD, GDB, and the OpenTitanTool console in the background. Wait
     # until OpenOCD has fired up its GDB server before launching the GDB client
     # to avoid a subtle race condition.
-    background = BackgroundProcessGroup()
     openocd = background.run(openocd_command, "OPENOCD", COLOR_PURPLE)
     # For some reason, we don't reliably see the "starting gdb server" line when
     # OpenOCD's GDB server is ready. It could be a buffering issue internal to
@@ -222,7 +228,6 @@ def main(rom_kind: str = typer.Option(...),
                          "GDB",
                          COLOR_GREEN,
                          callback=gdb_maybe_consume_expected_line)
-    background.run(console_command, "CONSOLE", COLOR_RED)
 
     while not background.empty():
         background.maybe_print_output(timeout_seconds=1)
