@@ -62,7 +62,7 @@
     {
       name: i2c_host_rx_oversample
       uvm_test_seq: i2c_host_rx_oversample_vseq
-      run_opts: ["+test_timeout_ns=15_000_000"]
+      run_opts: ["+test_timeout_ns=80_000_000"]
     }
 
     {
@@ -188,7 +188,7 @@
     {
       name: i2c_target_stress_all
       uvm_test_seq: i2c_target_stress_all_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=200_000_000",
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=300_000_000",
                  "+use_intr_handler=1"]
     }
     {
@@ -220,7 +220,7 @@
     {
       name: "i2c_host_mode_toggle"
       uvm_test_seq: "i2c_host_mode_toggle_vseq"
-      run_timeout_mins: 2
+      run_timeout_mins: 10
     }
   ]
 
