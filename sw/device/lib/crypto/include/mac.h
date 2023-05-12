@@ -19,18 +19,16 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Enum to define MAC mode.
+ * Enum to define KMAC mode.
  *
  * Values are hardened.
  */
-typedef enum mac_mode {
-  // HMAC-SHA2-256 mode.
-  kMacModeHmacSha256 = 0x953c,
+typedef enum kmac_mode {
   // KMAC128 mode.
   kMacModeKmac128 = 0x69b6,
   // KMAC256 mode.
   kMacModeKmac256 = 0xee62,
-} mac_mode_t;
+} kmac_mode_t;
 
 /**
  * Generic hmac context.
@@ -58,37 +56,51 @@ typedef struct hmac_context hmac_context_t;
 crypto_status_t otcrypto_mac_keygen(crypto_blinded_key_t *key);
 
 /**
- * Performs the HMAC / KMAC function on the input data.
+ * Performs the HMAC-SHA256 function on the input data.
  *
- * HMAC: This function computes the required MAC function on the
- * `input_message` using the `key` and returns a `tag`.
+ * This function computes the required MAC function on the `input_message`
+ * using the `key` and returns a `tag`.
  *
- * KMAC: This function computes the KMAC on the `input_message` using the `key`
- * and returns a `tag` of `required_output_len`. The customization string is
- * passed through `customization_string` parameter. If no customization is
- * desired it can be empty. The `customization_string` and
- * `required_output_len` is only used for KMAC modes and is ignored for the
- * HMAC mode.
- *
- * The caller should allocate space for the `tag` buffer, (expected length is
- * 32 bytes for HMAC and `required_output_len`for KMAC), and set the length of
- * expected output in the `len` field of `tag`.  If the user-set length and the
- * output length does not match, an error message will be returned.
+ * The caller should allocate 32 bytes of space for the `tag` buffer and set
+ * its `len` field to 32.
  *
  * @param key Pointer to the blinded key struct with key shares.
  * @param input_message Input message to be hashed.
- * @param mac_mode Required operation to be performed (HMAC/KMAC).
- * @param customization_string Customization string for KMAC.
- * @param required_output_len Required output length from KMAC, in bytes.
  * @param[out] tag Output authentication tag.
- * @return The result of the MAC operation.
+ * @return The result of the HMAC operation.
  */
-crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
-                             crypto_const_uint8_buf_t input_message,
-                             mac_mode_t mac_mode,
-                             crypto_const_uint8_buf_t customization_string,
-                             size_t required_output_len,
-                             crypto_uint8_buf_t *tag);
+crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
+                              crypto_const_uint8_buf_t input_message,
+                              crypto_uint8_buf_t *tag);
+
+/**
+ * Performs the KMAC function on the input data.
+ *
+ * This function computes the KMAC on the `input_message` using the `key` and
+ * returns a `tag` of `required_output_len`. The customization string is passed
+ * through `customization_string` parameter. If no customization is desired it
+ * can be empty. The `customization_string` and `required_output_len` is only
+ * used for KMAC modes and is ignored for the HMAC mode.
+ *
+ * The caller should allocate `required_output_len` bytes for the `tag` buffer
+ * and set the `len` field of `tag` to `required_output_len`. If the user-set
+ * length and the output length does not match, an error message will be
+ * returned.
+ *
+ * @param key Pointer to the blinded key struct with key shares.
+ * @param input_message Input message to be hashed.
+ * @param mac_mode Required operation to be performed.
+ * @param customization_string Customization string.
+ * @param required_output_len Required output length, in bytes.
+ * @param[out] tag Output authentication tag.
+ * @return The result of the KMAC operation.
+ */
+crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
+                              crypto_const_uint8_buf_t input_message,
+                              kmac_mode_t kmac_mode,
+                              crypto_const_uint8_buf_t customization_string,
+                              size_t required_output_len,
+                              crypto_uint8_buf_t *tag);
 
 /**
  * Performs the INIT operation for HMAC.
@@ -104,12 +116,10 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
  *
  * @param ctx Pointer to the generic HMAC context struct.
  * @param key Pointer to the blinded HMAC key struct.
- * @param hmac_mode Required HMAC mode.
  * @return Result of the HMAC init operation.
  */
 crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
-                                   const crypto_blinded_key_t *key,
-                                   mac_mode_t hmac_mode);
+                                   const crypto_blinded_key_t *key);
 
 /**
  * Performs the UPDATE operation for HMAC.
