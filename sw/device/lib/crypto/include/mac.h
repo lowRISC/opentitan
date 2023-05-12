@@ -36,7 +36,9 @@ typedef enum kmac_mode {
  * Representation is internal to the hmac implementation; initialize
  * with #otcrypto_hmac_init.
  */
-typedef struct hmac_context hmac_context_t;
+typedef struct hmac_context {
+  uint32_t data[42];
+} hmac_context_t;
 
 /**
  * Generates a new HMAC or KMAC key.

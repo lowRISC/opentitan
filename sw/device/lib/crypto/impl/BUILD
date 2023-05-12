@@ -151,7 +151,7 @@ cc_library(
         ":integrity",
         ":keyblob",
         "//sw/device/lib/base:hardened",
-        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl/sha2:sha256",
     ],
 )
