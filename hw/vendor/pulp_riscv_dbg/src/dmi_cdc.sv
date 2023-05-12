@@ -50,7 +50,6 @@ module dmi_cdc (
 );
 
 
-  // TODO: Make it clean for synthesis.
   logic jtag_combined_rstn;
   always_ff @(posedge tck_i or negedge trst_ni) begin
     if (!trst_ni) begin
