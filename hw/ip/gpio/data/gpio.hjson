@@ -28,9 +28,8 @@
       version:            "1.1",
       life_stage:         "L1",
       design_stage:       "D3",
-      verification_stage: "V2",
+      verification_stage: "V2S",
       dif_stage:          "S2",
-      commit_id:          "9a2fd04f5e1f36128c858d6a1a7b06c34681337c"
       notes:              ""
     }
   ]
