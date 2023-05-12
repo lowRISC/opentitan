@@ -6,6 +6,7 @@
 
 load(
     "//rules:otp.bzl",
+    "otp_alert_classification",
     "otp_bytestring",
     "otp_hex",
     "otp_per_class_bytes",
@@ -50,6 +51,82 @@ def _otp_bytestring_test(ctx):
     return unittest.end(env)
 
 otp_bytestring_test = unittest.make(_otp_bytestring_test)
+
+def _otp_alert_classification_test(ctx):
+    env = unittest.begin(ctx)
+
+    TEST_ALERT_LIST = [
+        "alert0",
+        "alert1",
+        "alert2",
+        "alert3",
+        "alert4",
+    ]
+
+    # All default test
+    asserts.equals(
+        env,
+        ["0x3294ee94"] * 5,
+        otp_alert_classification(
+            alert_list = TEST_ALERT_LIST,
+            default = "X, A, X, D",
+        ),
+    )
+
+    # String spacing test
+    asserts.equals(
+        env,
+        ["0x3294ee94"] * 5,
+        otp_alert_classification(
+            alert_list = TEST_ALERT_LIST,
+            default = "  X   , A,X, D   ",
+        ),
+    )
+
+    # Some alerts specified test
+    asserts.equals(
+        env,
+        ["0x3294ee94", "0x64646464", "0x94a794a7", "0x32a764ee", "0x3294ee94"],
+        otp_alert_classification(
+            alert_list = TEST_ALERT_LIST,
+            default = "X, A, X, D",
+            alert3 = " A, B, C, D",
+            alert1 = " B, B, B, B",
+            alert2 = " C, X, C, X",
+        ),
+    )
+
+    # All alerts specified (with and without defaults) tests
+    asserts.equals(
+        env,
+        ["0x94949494", "0x64646464", "0x94a794a7", "0x32a764ee", "0xee64a732"],
+        otp_alert_classification(
+            alert_list = TEST_ALERT_LIST,
+            default = "X, A, X, D",
+            alert0 = " X, X, X, X",
+            alert3 = " A, B, C, D",
+            alert1 = " B, B, B, B",
+            alert2 = " C, X, C, X",
+            alert4 = " D, C, B, A",
+        ),
+    )
+
+    asserts.equals(
+        env,
+        ["0x94949494", "0x64646464", "0x94a794a7", "0x32a764ee", "0xee64a732"],
+        otp_alert_classification(
+            alert_list = TEST_ALERT_LIST,
+            alert0 = "X, X, X, X",
+            alert3 = "A, B, C, D",
+            alert1 = "B, B, B, B",
+            alert2 = "C, X, C, X",
+            alert4 = "D, C, B, A",
+        ),
+    )
+
+    return unittest.end(env)
+
+otp_alert_classification_test = unittest.make(_otp_alert_classification_test)
 
 def _otp_per_class_bytes_test(ctx):
     env = unittest.begin(ctx)
@@ -158,6 +235,7 @@ def otp_test_suite():
         "otp_tests",
         otp_hex_test,
         otp_bytestring_test,
+        otp_alert_classification_test,
         otp_per_class_bytes_test,
         otp_per_class_ints_test,
         otp_per_class_lists_test,

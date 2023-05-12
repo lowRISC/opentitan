@@ -401,7 +401,7 @@ def otp_alert_classification(alert_list, default = None, **kwargs):
     Example usage:
         otp_alert_classification(
             alert_list = EARLGREY_ALERTS,
-            # The ordering is alert("prod, prod_end, dev, rma)
+            # The ordering is "prod, prod_end, dev, rma"
             default = "                   X, X, X, X",
             gpio_fatal_fault = "          X, X, X, X",
             i2c0_fatal_fault = "          X, X, X, X",
@@ -433,8 +433,10 @@ def otp_alert_classification(alert_list, default = None, **kwargs):
         extra_alerts = sets.difference(alert_set, provided_alert_set)
         if sets.length(extra_alerts) > 0:
             fail("Some alerts were not specified and no default was provided: {}".format(extra_alerts))
+    else:
+        default = _parse_alert_class_string(default)
 
-    return [provided_alerts.get(alert, default = _parse_alert_class_string(default)) for alert in alert_list]
+    return [provided_alerts.get(alert, default = default) for alert in alert_list]
 
 def otp_per_class_bytes(A, B, C, D):
     """Create a bytestring of per-alert-class byte values."""
