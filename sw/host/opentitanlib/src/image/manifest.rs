@@ -11,9 +11,6 @@
 #![deny(unused)]
 #![deny(unsafe_code)]
 
-use std::mem::size_of;
-
-use memoffset::offset_of;
 use zerocopy::AsBytes;
 use zerocopy::FromBytes;
 
@@ -181,30 +178,37 @@ pub struct ManifestExtTable {
     pub entries: [ManifestExtTableEntry; CHIP_MANIFEST_EXT_TABLE_COUNT as usize],
 }
 
-/// Checks the layout of the manifest struct.
-///
-/// Implemented as a function because using `offset_of!` at compile-time
-/// requires a nightly compiler.
-/// TODO(#6915): Convert this to a unit test after we start running rust tests during our builds.
-pub fn check_manifest_layout() {
-    assert_eq!(offset_of!(Manifest, spx_signature), 0);
-    assert_eq!(offset_of!(Manifest, rsa_signature), 7856);
-    assert_eq!(offset_of!(Manifest, usage_constraints), 8240);
-    assert_eq!(offset_of!(Manifest, spx_key), 8288);
-    assert_eq!(offset_of!(Manifest, rsa_modulus), 8320);
-    assert_eq!(offset_of!(Manifest, address_translation), 8704);
-    assert_eq!(offset_of!(Manifest, identifier), 8708);
-    assert_eq!(offset_of!(Manifest, signed_region_end), 8712);
-    assert_eq!(offset_of!(Manifest, length), 8716);
-    assert_eq!(offset_of!(Manifest, version_major), 8720);
-    assert_eq!(offset_of!(Manifest, version_minor), 8724);
-    assert_eq!(offset_of!(Manifest, security_version), 8728);
-    assert_eq!(offset_of!(Manifest, timestamp), 8732);
-    assert_eq!(offset_of!(Manifest, binding_value), 8740);
-    assert_eq!(offset_of!(Manifest, max_key_version), 8772);
-    assert_eq!(offset_of!(Manifest, code_start), 8776);
-    assert_eq!(offset_of!(Manifest, code_end), 8780);
-    assert_eq!(offset_of!(Manifest, entry_point), 8784);
-    assert_eq!(offset_of!(Manifest, extensions), 8788);
-    assert_eq!(size_of::<Manifest>(), CHIP_MANIFEST_SIZE as usize);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use memoffset::offset_of;
+    use std::mem::size_of;
+
+    /// Checks the layout of the manifest struct.
+    ///
+    /// Implemented as a function because using `offset_of!` at compile-time
+    /// requires a nightly compiler.
+    #[test]
+    pub fn test_manifest_layout() {
+        assert_eq!(offset_of!(Manifest, spx_signature), 0);
+        assert_eq!(offset_of!(Manifest, rsa_signature), 7856);
+        assert_eq!(offset_of!(Manifest, usage_constraints), 8240);
+        assert_eq!(offset_of!(Manifest, spx_key), 8288);
+        assert_eq!(offset_of!(Manifest, rsa_modulus), 8320);
+        assert_eq!(offset_of!(Manifest, address_translation), 8704);
+        assert_eq!(offset_of!(Manifest, identifier), 8708);
+        assert_eq!(offset_of!(Manifest, signed_region_end), 8712);
+        assert_eq!(offset_of!(Manifest, length), 8716);
+        assert_eq!(offset_of!(Manifest, version_major), 8720);
+        assert_eq!(offset_of!(Manifest, version_minor), 8724);
+        assert_eq!(offset_of!(Manifest, security_version), 8728);
+        assert_eq!(offset_of!(Manifest, timestamp), 8732);
+        assert_eq!(offset_of!(Manifest, binding_value), 8740);
+        assert_eq!(offset_of!(Manifest, max_key_version), 8772);
+        assert_eq!(offset_of!(Manifest, code_start), 8776);
+        assert_eq!(offset_of!(Manifest, code_end), 8780);
+        assert_eq!(offset_of!(Manifest, entry_point), 8784);
+        assert_eq!(offset_of!(Manifest, extensions), 8788);
+        assert_eq!(size_of::<Manifest>(), CHIP_MANIFEST_SIZE as usize);
+    }
 }
