@@ -141,7 +141,7 @@ def main(rom_kind: str = typer.Option(...),
     opentitantool_prefix = [
         opentitantool_path,
         "--rcfile=",
-        "--logging=info",
+        "--logging=debug",
         "--interface=cw310",
     ]
     if cw310_uarts is not None:
