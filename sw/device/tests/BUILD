@@ -1805,9 +1805,6 @@ opentitan_functest(
 opentitan_functest(
     name = "sensor_ctrl_alert_test",
     srcs = ["sensor_ctrl_alerts.c"],
-    verilator = verilator_params(
-        timeout = "eternal",
-    ),
     deps = [
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
