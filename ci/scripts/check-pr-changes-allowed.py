@@ -157,6 +157,17 @@ def main() -> int:
         help='Name of the repository on github to read PR comments from',
         default='lowrisc/opentitan')
 
+    arg_parser.add_argument(
+        '--plain-block-msg',
+        help='''Just outputs the path of each blocked file with no further
+                information''',
+        action='store_true')
+
+    arg_parser.add_argument(
+        '--report-unused-patterns',
+        help='Produces a list of block patterns that did not block anything',
+        action='store_true')
+
     args = arg_parser.parse_args()
 
     blocklist = load_blockfile(args.block_file)
@@ -184,16 +195,37 @@ def main() -> int:
                 authorizers = ', '.join(
                     [f'{committers[handle]} ({handle})' for handle in
                         authorized_changes[change]])
-                print(f'{change} change is authorized by {authorizers}')
+
+                if not args.plain_block_msg:
+                    print(f'{change} change is authorized by {authorizers}')
+
+    if args.report_unused_patterns:
+        unused_patterns = set(blocklist)
+
+        used_patterns = set(sum(blocked_changes.values(), []))
+        unused_patterns = set(blocklist) - used_patterns
+
+        if unused_patterns:
+            print('WARNING: Unused patterns have been found:')
+
+            for pattern in unused_patterns:
+                print(pattern)
+
+            print('')
 
     if blocked_changes:
         # If there are blocked changes present print out what's been blocked and
         # the pattern(s) that blocked it and return error code 1
         for change, block_patterns in blocked_changes.items():
             patterns_str = ' '.join(block_patterns)
-            print(f'{change} blocked by pattern(s): {patterns_str}')
+            if args.plain_block_msg:
+                print(change)
+            else:
+                print(f'{change} blocked by pattern(s): {patterns_str}')
 
-        print('UNAUTHORIZED CHANGES PRESENT, PR cannot be merged!')
+        if not args.plain_block_msg:
+            print('UNAUTHORIZED CHANGES PRESENT, PR cannot be merged!')
+
         return 1
 
     print('No unauthorized changes, clear to merge')
