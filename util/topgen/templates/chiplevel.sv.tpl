@@ -1046,13 +1046,8 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_out_por_button_n = 1'b0;
   assign manual_oe_por_button_n = 1'b0;
 
-  % if target["name"] == "cw305":
+  % if target["name"] in ["cw305", "cw310"]:
   assign srst_n = manual_in_por_button_n;
-  % elif target["name"] == "cw310":
-  assign srst_n = manual_in_por_button_n & manual_in_jtag_srst_n;
-  assign manual_attr_jtag_srst_n = '0;
-  assign manual_out_jtag_srst_n = 1'b0;
-  assign manual_oe_jtag_srst_n = 1'b0;
   % endif
 
   % if target["name"] == "cw305":
