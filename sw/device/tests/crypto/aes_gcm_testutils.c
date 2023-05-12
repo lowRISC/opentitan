@@ -110,7 +110,7 @@ uint32_t call_aes_gcm_encrypt(aes_gcm_test_t test) {
   uint32_t cycles = profile_end_and_print(t_start, "aes_gcm_encrypt");
 
   // Check for errors and that the tag and plaintext match expected values.
-  CHECK(err == kCryptoStatusOK);
+  CHECK_STATUS_OK(err);
   CHECK_ARRAYS_EQ(actual_tag_data, test.tag, test.tag_len);
   if (test.plaintext_len > 0) {
     int cmp =
@@ -182,7 +182,7 @@ uint32_t call_aes_gcm_decrypt(aes_gcm_test_t test, bool tag_valid) {
   uint32_t cycles = profile_end_and_print(t_start, "aes_gcm_decrypt");
 
   // Check the results.
-  CHECK(err == kCryptoStatusOK);
+  CHECK_STATUS_OK(err);
   if (tag_valid) {
     CHECK(success == kHardenedBoolTrue,
           "AES-GCM decryption failed on valid input");

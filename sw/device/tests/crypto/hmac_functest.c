@@ -84,9 +84,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
       .len = sizeof(act_tag),
   };
 
-  crypto_status_t status = otcrypto_hmac(&blinded_key, msg, &tag_buf);
-  TRY_CHECK(status == kCryptoStatusOK, "Error during hmac operation: 0x%08x.",
-            status);
+  TRY(otcrypto_hmac(&blinded_key, msg, &tag_buf));
   TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
   return OK_STATUS();
 }

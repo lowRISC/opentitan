@@ -57,7 +57,7 @@ bool test_main(void) {
         return false;
     }
 
-    CHECK(err_status == kCryptoStatusOK);
+    CHECK_STATUS_OK(err_status);
     CHECK_ARRAYS_EQ(digest_buf.data, current_test_vector->digest.data,
                     current_test_vector->digest.len);
   }

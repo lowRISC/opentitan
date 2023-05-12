@@ -168,15 +168,10 @@ OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
           },
   };
 
-  // TODO(#17393): switch this `CHECK()` with a `TRY()` when #17803 is resolved.
-  CHECK(otcrypto_ecdh_keygen(&kCurveP256, &sk_device, &pk_device) ==
-        kCryptoStatusOK);
+  TRY(otcrypto_ecdh_keygen(&kCurveP256, &sk_device, &pk_device));
 
-  // TODO(#17393): switch this `CHECK()` with a `TRY()` when #17803 is resolved.
-  CHECK(otcrypto_ecdh(&sk_device, &kRmaUnlockTokenExportKeyPkHsm, &kCurveP256,
-                      aes_key) == kCryptoStatusOK);
-
-  return OK_STATUS();
+  return otcrypto_ecdh(&sk_device, &kRmaUnlockTokenExportKeyPkHsm, &kCurveP256,
+                       aes_key);
 }
 
 OT_WARN_UNUSED_RESULT
@@ -203,10 +198,8 @@ static status_t encrypt_rma_unlock_token(
   };
 
   // Run encryption and check the result.
-  // TODO(#17393): switch this `CHECK()` with a `TRY()` when #17803 is resolved.
-  CHECK(otcrypto_aes(aes_key, iv, kBlockCipherModeEcb, kAesOperationEncrypt,
-                     plaintext, kAesPaddingNull,
-                     ciphertext) == kCryptoStatusOK);
+  TRY(otcrypto_aes(aes_key, iv, kBlockCipherModeEcb, kAesOperationEncrypt,
+                   plaintext, kAesPaddingNull, ciphertext));
 
   // Copy encrypted RMA unlock token to the output buffer.
   memcpy(wrapped_token->data, ciphertext.data, kRmaUnlockTokenSizeInBytes);
@@ -373,10 +366,8 @@ static status_t hash_lc_transition_token(uint32_t *raw_token, size_t token_size,
       .len = token_size,
   };
 
-  // TODO(#17393): switch this `CHECK()` with a `TRY()` when #17803 is resolved.
-  CHECK(otcrypto_xof(input, kXofModeSha3Cshake128, function_name_string,
-                     customization_string, token_size,
-                     &output) == kCryptoStatusOK);
+  TRY(otcrypto_xof(input, kXofModeSha3Cshake128, function_name_string,
+                   customization_string, token_size, &output));
 
   return OK_STATUS();
 }

@@ -71,8 +71,8 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
 
   // Generate a keypair.
   LOG_INFO("Generating keypair...");
-  CHECK(otcrypto_ecdsa_keygen(&kCurveP256, &private_key, &public_key) ==
-        kCryptoStatusOK);
+  CHECK_STATUS_OK(
+      otcrypto_ecdsa_keygen(&kCurveP256, &private_key, &public_key));
 
   // Package message in a cryptolib-style struct.
   crypto_const_uint8_buf_t message = {
@@ -92,13 +92,13 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
 
   // Generate a signature for the message.
   LOG_INFO("Signing...");
-  CHECK(otcrypto_ecdsa_sign(&private_key, message, &kCurveP256, &signature) ==
-        kCryptoStatusOK);
+  CHECK_STATUS_OK(
+      otcrypto_ecdsa_sign(&private_key, message, &kCurveP256, &signature));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
-  CHECK(otcrypto_ecdsa_verify(&public_key, message, &signature, &kCurveP256,
-                              verification_result) == kCryptoStatusOK);
+  CHECK_STATUS_OK(otcrypto_ecdsa_verify(&public_key, message, &signature,
+                                        &kCurveP256, verification_result));
 
   return OTCRYPTO_OK;
 }
