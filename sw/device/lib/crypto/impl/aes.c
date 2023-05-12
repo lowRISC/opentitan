@@ -35,7 +35,7 @@ crypto_status_t otcrypto_aes_keygen(crypto_blinded_key_t *key) {
   // TODO: Implement AES sideloaded key generation once we have a keymgr
   // driver. In the meantime, non-sideloaded AES keys can simply be generated
   // using the DRBG and key-import functions.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 /**
@@ -237,10 +237,10 @@ crypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
                                                      aes_padding_t aes_padding,
                                                      size_t *padded_len) {
   size_t padded_nblocks;
-  OTCRYPTO_TRY_INTERPRET(
+  HARDENED_TRY(
       num_padded_blocks_get(plaintext_len, aes_padding, &padded_nblocks));
   *padded_len = padded_nblocks * kAesBlockNumBytes;
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
@@ -253,20 +253,20 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
   // Check for NULL pointers in input pointers and data buffers.
   if (key == NULL || (aes_mode != kBlockCipherModeEcb && iv.data == NULL) ||
       cipher_input.data == NULL || cipher_output.data == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Calculate the number of blocks for the input, including the padding for
   // encryption.
   size_t input_nblocks;
   if (aes_operation == kAesOperationEncrypt) {
-    OTCRYPTO_TRY_INTERPRET(
+    HARDENED_TRY(
         num_padded_blocks_get(cipher_input.len, aes_padding, &input_nblocks));
   } else if (aes_operation == kAesOperationDecrypt) {
     // If the operation is decryption, the input length must be divisible by
     // the block size.
     if (launder32(cipher_input.len) % kAesBlockNumBytes != 0) {
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_CHECK_EQ(cipher_input.len % kAesBlockNumBytes, 0);
     input_nblocks = cipher_input.len / kAesBlockNumBytes;
@@ -279,13 +279,13 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
   if (aes_mode != launder32(kAesCipherModeEcb)) {
     HARDENED_CHECK_NE(aes_mode, kAesCipherModeEcb);
     if (launder32(iv.len) != kAesBlockNumBytes) {
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_CHECK_EQ(iv.len, kAesBlockNumBytes);
   }
   if (cipher_input.len == 0 ||
       launder32(cipher_output.len) != input_nblocks * kAesBlockNumBytes) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(cipher_output.len, input_nblocks * kAesBlockNumBytes);
 
@@ -296,18 +296,18 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
 
   // Parse the AES key.
   aes_key_t aes_key;
-  OTCRYPTO_TRY_INTERPRET(aes_key_construct(key, aes_mode, &aes_key));
+  HARDENED_TRY(aes_key_construct(key, aes_mode, &aes_key));
 
   // Start the operation (encryption or decryption).
   switch (aes_operation) {
     case kAesOperationEncrypt:
-      OTCRYPTO_TRY_INTERPRET(aes_encrypt_begin(aes_key, &aes_iv));
+      HARDENED_TRY(aes_encrypt_begin(aes_key, &aes_iv));
       break;
     case kAesOperationDecrypt:
-      OTCRYPTO_TRY_INTERPRET(aes_decrypt_begin(aes_key, &aes_iv));
+      HARDENED_TRY(aes_decrypt_begin(aes_key, &aes_iv));
       break;
     default:
-      return kCryptoStatusBadArgs;
+      return OTCRYPTO_BAD_ARGS;
   }
 
   // Perform the cipher operation for all full blocks (excluding last block).
@@ -322,14 +322,14 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
   aes_block_t block_out;
   size_t i;
   for (i = 0; launder32(i) < input_nblocks; i++) {
-    OTCRYPTO_TRY_INTERPRET(get_block(cipher_input, aes_padding, i, &block_in));
+    HARDENED_TRY(get_block(cipher_input, aes_padding, i, &block_in));
 
     // Call the AES cipher and copy data to output buffer if needed.
     if (launder32(i) == 0) {
       HARDENED_CHECK_EQ(i, 0);
-      OTCRYPTO_TRY_INTERPRET(aes_update(/*dest=*/NULL, &block_in));
+      HARDENED_TRY(aes_update(/*dest=*/NULL, &block_in));
     } else {
-      OTCRYPTO_TRY_INTERPRET(aes_update(&block_out, &block_in));
+      HARDENED_TRY(aes_update(&block_out, &block_in));
       // TODO(#17711) Change to `hardened_memcpy`.
       memcpy(&cipher_output.data[(i - 1) * kAesBlockNumBytes], block_out.data,
              kAesBlockNumBytes);
@@ -340,15 +340,15 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
   HARDENED_CHECK_EQ(i, input_nblocks);
 
   // Retrieve the output from the final block (providing no input).
-  OTCRYPTO_TRY_INTERPRET(aes_update(&block_out, /*src=*/NULL));
+  HARDENED_TRY(aes_update(&block_out, /*src=*/NULL));
   // TODO(#17711) Change to `hardened_memcpy`.
   memcpy(&cipher_output.data[(input_nblocks - 1) * kAesBlockNumBytes],
          block_out.data, kAesBlockNumBytes);
 
   // Deinitialize the AES block.
-  OTCRYPTO_TRY_INTERPRET(aes_end());
+  HARDENED_TRY(aes_end());
 
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -474,7 +474,7 @@ crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
   // buffers.
   if (key == NULL || iv.data == NULL || ciphertext == NULL ||
       auth_tag == NULL || auth_tag->data == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Conditionally check for null pointers in data buffers that may be
@@ -482,28 +482,28 @@ crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
   if ((aad.len != 0 && aad.data == NULL) ||
       (ciphertext->len != 0 && ciphertext->data == NULL) ||
       (plaintext.len != 0 && plaintext.data == NULL)) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Ensure the plaintext and ciphertext lengths match.
   if (launder32(ciphertext->len) != plaintext.len) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ciphertext->len, plaintext.len);
 
   // Check the tag length.
-  OTCRYPTO_TRY_INTERPRET(aes_gcm_check_tag_length(auth_tag->len, tag_len));
+  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
 
   // Construct the AES key.
   aes_key_t aes_key;
-  OTCRYPTO_TRY_INTERPRET(aes_gcm_key_construct(key, &aes_key));
+  HARDENED_TRY(aes_gcm_key_construct(key, &aes_key));
 
   // Call the core encryption operation.
-  OTCRYPTO_TRY_INTERPRET(aes_gcm_encrypt(
-      aes_key, iv.len, iv.data, plaintext.len, plaintext.data, aad.len,
-      aad.data, auth_tag->len, auth_tag->data, ciphertext->data));
+  HARDENED_TRY(aes_gcm_encrypt(aes_key, iv.len, iv.data, plaintext.len,
+                               plaintext.data, aad.len, aad.data, auth_tag->len,
+                               auth_tag->data, ciphertext->data));
 
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 crypto_status_t otcrypto_aes_decrypt_gcm(
@@ -515,7 +515,7 @@ crypto_status_t otcrypto_aes_decrypt_gcm(
   // buffers.
   if (key == NULL || iv.data == NULL || plaintext == NULL ||
       auth_tag.data == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Conditionally check for null pointers in data buffers that may be
@@ -523,60 +523,60 @@ crypto_status_t otcrypto_aes_decrypt_gcm(
   if ((aad.len != 0 && aad.data == NULL) ||
       (ciphertext.len != 0 && ciphertext.data == NULL) ||
       (plaintext->len != 0 && plaintext->data == NULL)) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Construct the AES key.
   aes_key_t aes_key;
-  OTCRYPTO_TRY_INTERPRET(aes_gcm_key_construct(key, &aes_key));
+  HARDENED_TRY(aes_gcm_key_construct(key, &aes_key));
 
   // Ensure the plaintext and ciphertext lengths match.
   if (launder32(ciphertext.len) != plaintext->len) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ciphertext.len, plaintext->len);
 
   // Check the tag length.
-  OTCRYPTO_TRY_INTERPRET(aes_gcm_check_tag_length(auth_tag.len, tag_len));
+  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
 
   // Call the core decryption operation.
-  OTCRYPTO_TRY_INTERPRET(aes_gcm_decrypt(
-      aes_key, iv.len, iv.data, ciphertext.len, ciphertext.data, aad.len,
-      aad.data, auth_tag.len, auth_tag.data, plaintext->data, success));
+  HARDENED_TRY(aes_gcm_decrypt(aes_key, iv.len, iv.data, ciphertext.len,
+                               ciphertext.data, aad.len, aad.data, auth_tag.len,
+                               auth_tag.data, plaintext->data, success));
 
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
                                         gcm_ghash_context_t *ctx) {
   if (hash_subkey == NULL || ctx == NULL || hash_subkey->keyblob == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Key integrity check.
   if (launder32(integrity_blinded_key_check(hash_subkey)) !=
       kHardenedBoolTrue) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(integrity_blinded_key_check(hash_subkey),
                     kHardenedBoolTrue);
 
   // Check the key mode.
   if (launder32((uint32_t)hash_subkey->config.key_mode) != kKeyModeAesGcm) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(hash_subkey->config.key_mode, kKeyModeAesGcm);
 
   // The hash subkey cannot be sideloaded, since GHASH is implemented in
   // software.
   if (hash_subkey->config.hw_backed != kHardenedBoolFalse) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Get pointers to the individual shares of the blinded key.
   uint32_t *share0;
   uint32_t *share1;
-  OTCRYPTO_TRY_INTERPRET(keyblob_to_shares(hash_subkey, &share0, &share1));
+  HARDENED_TRY(keyblob_to_shares(hash_subkey, &share0, &share1));
 
   // Combine the shares; the underlying GHASH operation is not yet hardened, so
   // we need to unmask the key.
@@ -590,33 +590,33 @@ crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
   ghash_init_subkey(unmasked_key, gctx);
   ghash_init(gctx);
 
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
                                           crypto_const_uint8_buf_t input) {
   if (ctx == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   if (input.len != 0 && input.data == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   ghash_context_t *gctx = (ghash_context_t *)ctx->ctx;
   ghash_update(gctx, input.len, input.data);
 
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
                                          crypto_uint8_buf_t digest) {
   if (ctx == NULL || digest.data == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   if (launder32(digest.len) != kGhashBlockNumBytes) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(digest.len, kGhashBlockNumBytes);
 
@@ -627,7 +627,7 @@ crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
   // TODO(#17711) Change to `hardened_memcpy`.
   memcpy(digest.data, result, sizeof(result));
 
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
@@ -635,49 +635,49 @@ crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
                                       crypto_const_uint8_buf_t input,
                                       crypto_uint8_buf_t output) {
   if (key == NULL || icb.data == NULL) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   if ((input.len != 0 && input.data == NULL) ||
       (output.len != 0 && output.data == NULL)) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   if (launder32(icb.len) != kAesBlockNumBytes) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(icb.len, kAesBlockNumBytes);
 
   if (launder32(input.len) != output.len) {
-    return kCryptoStatusBadArgs;
+    return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(input.len, output.len);
 
   // Construct the AES key.
   aes_key_t aes_key;
-  OTCRYPTO_TRY_INTERPRET(aes_gcm_key_construct(key, &aes_key));
+  HARDENED_TRY(aes_gcm_key_construct(key, &aes_key));
 
   // Construct the initial counter block.
   aes_block_t aes_icb;
   // TODO(#17711) Change to `hardened_memcpy`.
   memcpy(aes_icb.data, icb.data, kAesBlockNumBytes);
 
-  OTCRYPTO_TRY_INTERPRET(
+  HARDENED_TRY(
       aes_gcm_gctr(aes_key, &aes_icb, input.len, input.data, output.data));
 
-  return kCryptoStatusOK;
+  return OTCRYPTO_OK;
 }
 
 crypto_status_t otcrypto_aes_kwp_encrypt(
     const crypto_blinded_key_t *key_to_wrap,
     const crypto_blinded_key_t *key_kek, crypto_uint8_buf_t *wrapped_key) {
   // TODO: AES-KWP is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
 crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_uint8_buf_t wrapped_key,
                                          const crypto_blinded_key_t *key_kek,
                                          crypto_blinded_key_t *unwrapped_key) {
   // TODO: AES-KWP is not yet implemented.
-  return kCryptoStatusNotImplemented;
+  return OTCRYPTO_NOT_IMPLEMENTED;
 }

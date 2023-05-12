@@ -13,5 +13,8 @@ exports_files(glob(["*.h"]))
 cc_library(
     name = "datatypes",
     hdrs = ["datatypes.h"],
-    deps = ["//sw/device/lib/base:hardened"],
+    deps = [
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:status",
+    ],
 )
