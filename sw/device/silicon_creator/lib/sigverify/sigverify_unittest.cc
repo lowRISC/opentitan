@@ -375,5 +375,13 @@ TEST_P(SigverifyUsageConstraints, Read) {
 INSTANTIATE_TEST_SUITE_P(UsageConstraintsTestCases, SigverifyUsageConstraints,
                          testing::ValuesIn(kUsageConstraintsTestCases));
 
+TEST(SigverifyRsaSuccessToOk, Result) {
+  EXPECT_EQ(sigverify_rsa_success_to_ok(kSigverifyRsaSuccess), kErrorOk);
+  EXPECT_NE(sigverify_rsa_success_to_ok(kErrorOk), kErrorOk);
+  EXPECT_NE(sigverify_rsa_success_to_ok(std::numeric_limits<uint32_t>::max()),
+            kErrorOk);
+  EXPECT_NE(sigverify_rsa_success_to_ok(0), kErrorOk);
+}
+
 }  // namespace
 }  // namespace sigverify_unittest
