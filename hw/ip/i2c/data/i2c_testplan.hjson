@@ -231,20 +231,6 @@
       tests: ["i2c_host_rx_oversample"]
     }
     {
-      name: host_nak
-      desc: '''
-            Host mode: test response to not receiving an ack
-
-            Stimulus:
-              - Host sends an address or a data write but receives no ack
-
-            Checking:
-              - Interrupt nak is raised
-            '''
-      stage: V2
-      tests: [""]
-    }
-    {
       name: i2c_host_mode_toggle
       desc: '''
             Host mode: disable host mode during host mode sequence
@@ -256,6 +242,7 @@
             Checking:
               - Check if DUT goes to Idle state after Host mode is disabled
               - Check that transactions process normally after recovery by running a smoketest vseq.
+              - Interrupt nak is raised
             '''
       stage: V2
       tests: ["i2c_host_mode_toggle"]
