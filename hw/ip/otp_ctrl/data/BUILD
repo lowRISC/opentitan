@@ -291,13 +291,6 @@ otp_json(
     name = "otp_json_raw",
     partitions = [
         otp_partition(
-            name = "SECRET1",
-            items = {
-                "FLASH_DATA_KEY_SEED": "<random>",
-            },
-            lock = False,
-        ),
-        otp_partition(
             name = "LIFE_CYCLE",
             count = 0,
             state = "RAW",
