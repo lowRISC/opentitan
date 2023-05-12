@@ -8,7 +8,9 @@ interface ast_ext_clk_if ();
   import uvm_pkg::*;
 
   // A timeout in case something holds the expected change.
-  localparam int WaitForExctClkSelChangeInNs = 10_000_000;
+  // Depends on partner's IP, it parameter can be 100ms.
+  // Do not reduce this value.
+  localparam int WaitForExctClkSelChangeInNs = 100_000_000;
 
   // This task returns once the external clock has gone through an active cycle.
   // Notice it will fail if the active cycle has already started.
