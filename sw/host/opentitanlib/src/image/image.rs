@@ -27,6 +27,10 @@ pub enum ImageError {
     IncompleteRead(usize, usize),
     #[error("Failed to parse image manifest.")]
     Parse,
+    #[error("Extension data overflows flash image.")]
+    ExtensionOverflow,
+    #[error("Extension table index is out of bounds.")]
+    BadExtensionTableIndex,
 }
 
 /// A buffer with the same alignment as `Manifest` for storing image data.
@@ -49,7 +53,7 @@ impl Default for ImageData {
 #[derive(Debug, Default)]
 pub struct Image {
     data: Box<ImageData>,
-    size: usize,
+    pub size: usize,
 }
 
 #[derive(Debug)]
@@ -83,13 +87,49 @@ impl ToWriter for Image {
 }
 
 impl Image {
-    const MAX_SIZE: usize = 512 * 1024;
+    pub const MAX_SIZE: usize = 512 * 1024;
     /// Overwrites all fields in the image's manifest that are defined in `other`.
     pub fn overwrite_manifest(&mut self, other: ManifestSpec) -> Result<()> {
         let manifest = self.borrow_manifest_mut()?;
         let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
         manifest_def.overwrite_fields(other);
         *manifest = manifest_def.try_into()?;
+        Ok(())
+    }
+
+    /// Adds a new extension at the end of the image and updates size.
+    /// Note that this method does NOT update the `signed_region_end` or `length` fields of the
+    /// manifest.
+    /// New extensions are ALWAYS added at the end of the image by design.
+    pub fn add_extension_data(&mut self, bytes: &[u8]) -> Result<()> {
+        let end_index = self
+            .size
+            .checked_add(bytes.len())
+            .ok_or(ImageError::ExtensionOverflow)?;
+        let extension_slice = self
+            .data
+            .bytes
+            .get_mut(self.size..end_index)
+            .ok_or(ImageError::ExtensionOverflow)?;
+        extension_slice.copy_from_slice(bytes);
+        self.size += bytes.len();
+        Ok(())
+    }
+
+    /// Sets the extension entry at the given index.
+    pub fn set_extension_entry(
+        &mut self,
+        index: usize,
+        identifier: u32,
+        offset: u32,
+    ) -> Result<()> {
+        let manifest = self.borrow_manifest_mut()?;
+        *manifest
+            .extensions
+            .entries
+            .get_mut(index)
+            .ok_or(ImageError::BadExtensionTableIndex)? =
+            ManifestExtTableEntry { identifier, offset };
         Ok(())
     }
 
@@ -132,33 +172,36 @@ impl Image {
         Ok(manifest)
     }
 
-    /// Updates the length field in the `Manifest` to the length of the image.
-    pub fn update_length(&mut self) -> Result<usize> {
-        let length = self.size as u32;
+    /// Updates the length field in the `Manifest`.
+    /// This method requires `unsigned_ext_size` since the `length` field must be updated before
+    /// the image is signed and unsigned fields are typically signature fields.
+    pub fn update_length(&mut self, unsigned_ext_size: usize) -> Result<usize> {
+        let length = (self.size + unsigned_ext_size) as u32;
         let m = self.borrow_manifest_mut()?;
         m.length = length;
         Ok(self.size)
     }
 
-    /// Updates the `signed_reion_end` field
-    pub fn update_signed_region(&mut self) -> Result<usize> {
-        // TODO(#18496): Should depend on extensions.
-        let signed_region_end = self.size as u32;
-        let m = self.borrow_manifest_mut()?;
-        m.signed_region_end = signed_region_end;
-        Ok(self.size)
+    /// Sets the `signed_reion_end` field to `self.size`.
+    /// Note that this method must be called AFTER all signed extensions are added but BEFORE
+    /// adding any unsigned extensions.
+    pub fn update_signed_region_end(&mut self) -> Result<usize> {
+        let signed_region_end = self.size;
+        self.borrow_manifest_mut()?.signed_region_end = signed_region_end as u32;
+        Ok(signed_region_end)
     }
 
     /// Operates on the signed region of the image.
-    pub fn map_signed_region<F, R>(&self, f: F) -> R
+    pub fn map_signed_region<F, R>(&self, f: F) -> Result<R>
     where
         F: FnOnce(&[u8]) -> R,
     {
-        f(&self.data.bytes[offset_of!(Manifest, usage_constraints)..self.size])
+        Ok(f(&self.data.bytes[offset_of!(Manifest, usage_constraints)
+            ..self.borrow_manifest()?.signed_region_end as usize]))
     }
 
     /// Compute the SHA256 digest for the signed portion of the `Image`.
-    pub fn compute_digest(&self) -> sha256::Sha256Digest {
+    pub fn compute_digest(&self) -> Result<sha256::Sha256Digest> {
         self.map_signed_region(|v| sha256::sha256(v))
     }
 }
