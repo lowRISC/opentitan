@@ -175,12 +175,12 @@ interface csrng_cov_if (
     cp_sw_app_read:    coverpoint otp_en_cs_sw_app_read {
       bins mubi_true  = { MuBi8True };
       bins mubi_false = { MuBi8False };
-      bins mubi_inval = {[0:$]} with (!(item inside {MuBi8True, MuBi8False}));
+      bins mubi_inval = { [0:$] } with (!(item inside { MuBi8True, MuBi8False }));
     }
     cp_lc_hw_debug_en: coverpoint lc_hw_debug_en {
       bins lc_on    = { lc_ctrl_pkg::On };
       bins lc_off   = { lc_ctrl_pkg::Off };
-      bins lc_inval = {[0:$]} with (!(item inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off}));
+      bins lc_inval = { [0:$] } with (!(item inside { lc_ctrl_pkg::On, lc_ctrl_pkg::Off }));
     }
     cp_sw_app_enable:  coverpoint sw_app_enable;
     cp_read_int_state: coverpoint read_int_state;
@@ -219,7 +219,7 @@ interface csrng_cov_if (
 
     cp_err_codes: coverpoint err_code_bit{
       // This is covered separately as it's about reporting the type of SFIFO failure
-      ignore_bins fifo_type = {FIFO_WRITE_ERR, FIFO_READ_ERR, FIFO_STATE_ERR};
+      ignore_bins fifo_type = { FIFO_WRITE_ERR, FIFO_READ_ERR, FIFO_STATE_ERR };
     }
 
     cp_fifo_err_type: coverpoint fifo_err_type{
@@ -232,16 +232,16 @@ interface csrng_cov_if (
     fifo_err_type_cross: cross cp_err_codes, cp_fifo_err_type{
       // If ERR_CODE register has SFIFO related field set, it also needs to set at least one
       // FIFO_*_ERR field.
-      illegal_bins illegal = !binsof(cp_err_codes) intersect {CMD_STAGE_SM_ERR, MAIN_SM_ERR,
-                                                              DRBG_GEN_SM_ERR, DRBG_UPDBE_SM_ERR,
-                                                              DRBG_UPDOB_SM_ERR, AES_CIPHER_SM_ERR,
-                                                              CMD_GEN_CNT_ERR} &&
-                             binsof(cp_fifo_err_type) intersect {0};
+      illegal_bins illegal = !binsof(cp_err_codes) intersect { CMD_STAGE_SM_ERR, MAIN_SM_ERR,
+                                                               DRBG_GEN_SM_ERR, DRBG_UPDBE_SM_ERR,
+                                                               DRBG_UPDOB_SM_ERR, AES_CIPHER_SM_ERR,
+                                                               CMD_GEN_CNT_ERR } &&
+                             binsof(cp_fifo_err_type) intersect { 0 };
 
-      ignore_bins ignore = binsof(cp_err_codes) intersect {CMD_STAGE_SM_ERR, MAIN_SM_ERR,
-                                                           DRBG_GEN_SM_ERR, DRBG_UPDBE_SM_ERR,
-                                                           DRBG_UPDOB_SM_ERR, AES_CIPHER_SM_ERR,
-                                                           CMD_GEN_CNT_ERR};
+      ignore_bins ignore = binsof(cp_err_codes) intersect { CMD_STAGE_SM_ERR, MAIN_SM_ERR,
+                                                            DRBG_GEN_SM_ERR, DRBG_UPDBE_SM_ERR,
+                                                            DRBG_UPDOB_SM_ERR, AES_CIPHER_SM_ERR,
+                                                            CMD_GEN_CNT_ERR };
     }
 
     cp_csrng_aes_fsm_err: coverpoint
@@ -270,11 +270,11 @@ interface csrng_cov_if (
     recov_alert_sts_cp: coverpoint recov_alert;
   endgroup : csrng_recov_alert_sts_cg
 
-  covergroup csrng_cmds_cg with function sample(bit[NUM_HW_APPS-1:0]   app,
-                                                acmd_e                 acmd,
-                                                bit[3:0]               clen,
-                                                bit[3:0]               flags,
-                                                bit[11:0]              glen
+  covergroup csrng_cmds_cg with function sample(bit [NUM_HW_APPS-1:0] app,
+                                                acmd_e                acmd,
+                                                bit [3:0]             clen,
+                                                bit [3:0]             flags,
+                                                bit [11:0]            glen
                                                );
     option.name         = "csrng_cmds_cg";
     option.per_instance = 1;
@@ -329,35 +329,35 @@ interface csrng_cov_if (
     acmd_glen_cross:  cross cp_acmd, cp_glen;
     flags_clen_acmd_cross:  cross cp_acmd, cp_flags, cp_clen {
       // Use only Entropy Source seed
-      bins ins_only_entropy_src_seed = binsof(cp_flags) intersect {MuBi4False} &&
-                                       binsof(cp_clen) intersect {0} &&
-                                       binsof(cp_acmd) intersect {INS};
-      bins res_only_entropy_src_seed = binsof(cp_flags) intersect {MuBi4False} &&
-                                       binsof(cp_clen) intersect {0} &&
-                                       binsof(cp_acmd) intersect {RES};
+      bins ins_only_entropy_src_seed = binsof(cp_flags) intersect { MuBi4False } &&
+                                       binsof(cp_clen)  intersect { 0 } &&
+                                       binsof(cp_acmd)  intersect { INS };
+      bins res_only_entropy_src_seed = binsof(cp_flags) intersect { MuBi4False } &&
+                                       binsof(cp_clen)  intersect { 0 } &&
+                                       binsof(cp_acmd)  intersect { RES };
       // Use Entropy Source Seed ^ Additional Data (clen)
-      bins ins_xored_entropy_src_seed = binsof(cp_flags) intersect {MuBi4False} &&
-                                        binsof(cp_clen) intersect {[1:$]} &&
-                                        binsof(cp_acmd) intersect {INS};
-      bins res_xored_entropy_src_seed = binsof(cp_flags) intersect {MuBi4False} &&
-                                        binsof(cp_clen) intersect {[1:$]} &&
-                                        binsof(cp_acmd) intersect {RES};
+      bins ins_xored_entropy_src_seed = binsof(cp_flags) intersect { MuBi4False } &&
+                                        binsof(cp_clen)  intersect { [1:$] } &&
+                                        binsof(cp_acmd)  intersect { INS };
+      bins res_xored_entropy_src_seed = binsof(cp_flags) intersect { MuBi4False } &&
+                                        binsof(cp_clen)  intersect { [1:$] } &&
+                                        binsof(cp_acmd)  intersect { RES };
       // Use zero as seed
-      bins ins_zero_seed = binsof(cp_flags) intersect {MuBi4True} &&
-                           binsof(cp_clen) intersect {0} &&
-                           binsof(cp_acmd) intersect {INS};
-      bins res_zero_seed = binsof(cp_flags) intersect {MuBi4True} &&
-                           binsof(cp_clen) intersect {0} &&
-                           binsof(cp_acmd) intersect {RES};
+      bins ins_zero_seed = binsof(cp_flags) intersect { MuBi4True } &&
+                           binsof(cp_clen)  intersect { 0 } &&
+                           binsof(cp_acmd)  intersect { INS };
+      bins res_zero_seed = binsof(cp_flags) intersect { MuBi4True } &&
+                           binsof(cp_clen)  intersect { 0 } &&
+                           binsof(cp_acmd)  intersect { RES };
       // Use Additional Data (clen) as seed
-      bins ins_add_data_seed = binsof(cp_flags) intersect {MuBi4True} &&
-                               binsof(cp_clen) intersect {[1:$]} &&
-                               binsof(cp_acmd) intersect {INS};
-      bins res_add_data_seed = binsof(cp_flags) intersect {MuBi4True} &&
-                               binsof(cp_clen) intersect {[1:$]} &&
-                               binsof(cp_acmd) intersect {RES};
+      bins ins_add_data_seed = binsof(cp_flags) intersect { MuBi4True } &&
+                               binsof(cp_clen)  intersect { [1:$] } &&
+                               binsof(cp_acmd)  intersect { INS };
+      bins res_add_data_seed = binsof(cp_flags) intersect { MuBi4True } &&
+                               binsof(cp_clen)  intersect { [1:$] } &&
+                               binsof(cp_acmd)  intersect { RES };
       // Since other modes are not related with flag0, ignore them in this cross.
-      ignore_bins ignore = binsof(cp_acmd) intersect {UPD, UNI, GEN};
+      ignore_bins ignore = binsof(cp_acmd) intersect { UPD, UNI, GEN };
     }
   endgroup : csrng_cmds_cg
 
@@ -372,14 +372,14 @@ interface csrng_cov_if (
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(csrng_env_cfg cfg);
     csrng_cfg_cg_inst.sample(cfg.otp_en_cs_sw_app_read,
-                              cfg.lc_hw_debug_en,
-                              cfg.sw_app_enable,
-                              cfg.read_int_state,
-                              cfg.regwen
-                             );
+                             cfg.lc_hw_debug_en,
+                             cfg.sw_app_enable,
+                             cfg.read_int_state,
+                             cfg.regwen
+                            );
   endfunction
 
-  function automatic void cg_cmds_sample(bit[NUM_HW_APPS-1:0] hwapp, csrng_item cs_item);
+  function automatic void cg_cmds_sample(bit [NUM_HW_APPS-1:0] hwapp, csrng_item cs_item);
     csrng_cmds_cg_inst.sample(hwapp,
                               cs_item.acmd,
                               cs_item.clen,
