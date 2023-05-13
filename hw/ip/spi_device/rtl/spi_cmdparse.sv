@@ -203,7 +203,7 @@ module spi_cmdparse
   end
 
   // cmd_info latch
-  // TODO(#18354): This can be further optimized as follows:
+  // ICEBOX(#18354): This can be further optimized as follows:
   // At 7th beat, check the opcode[7:1] with cmd_info[NumCmdInfo-1:0].opcode[7:1].
   // Unless SW configures more than one cmd_info slots with same opcode,
   // at most two slots match with the opcode[7:1].

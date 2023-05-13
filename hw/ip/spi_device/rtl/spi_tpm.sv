@@ -1120,7 +1120,7 @@ module spi_tpm
       end // StInvalid
 
       StEnd: begin // TERMINAL_STATE
-        // TODO(##18355): Check if open pull-up cancel the transaction?
+        // TODO(#18355): Check if open pull-up cancel the transaction?
         // If yes, then drive 0x00 for the read command
         if (cmd_type == Read) begin
           sck_p2s_valid = 1'b 1;
