@@ -65,6 +65,7 @@ rust_binary(
         "@crate_index//:shellwords",
         "@crate_index//:structopt",
         "@crate_index//:thiserror",
+        "@crate_index//:zerocopy",
         "@lowrisc_serde_annotate//:serde_annotate",
     ],
 )

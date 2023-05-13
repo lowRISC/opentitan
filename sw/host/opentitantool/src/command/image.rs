@@ -10,14 +10,20 @@ use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
+use zerocopy::{AsBytes, LayoutVerified};
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 
 use opentitanlib::crypto::rsa::{Modulus, RsaPrivateKey, RsaPublicKey, Signature as RsaSignature};
 use opentitanlib::crypto::sha256::Sha256Digest;
-use opentitanlib::crypto::spx::{self, SpxKey, SpxSignature};
+use opentitanlib::crypto::spx::{self, SpxKey, SpxKeypair, SpxPublicKeyPart, SpxSignature};
 use opentitanlib::image::image::{self, ImageAssembler};
+use opentitanlib::image::manifest::{
+    ManifestExtHeader, ManifestExtSpxKey, ManifestExtSpxSignature, SigverifySpxKey,
+    SigverifySpxSignature, MANIFEST_EXT_ID_SPX_KEY, MANIFEST_EXT_ID_SPX_SIGNATURE,
+    MANIFEST_EXT_NAME_SPX_KEY, MANIFEST_EXT_NAME_SPX_SIGNATURE,
+};
 use opentitanlib::image::manifest_def::ManifestSpec;
 use opentitanlib::util::file::{FromReader, ToWriter};
 use opentitanlib::util::parse_int::ParseInt;
@@ -143,15 +149,6 @@ impl CommandDispatch for ManifestUpdateCommand {
     ) -> Result<Option<Box<dyn Annotate>>> {
         let mut image = image::Image::read_from_file(&self.image)?;
 
-        // Update the size field in the manifest to reflect the actual size of the image.
-        image.update_length()?;
-
-        // Apply the manifest values to the image.
-        if let Some(manifest) = &self.manifest {
-            let def = ManifestSpec::read_from_file(manifest)?;
-            image.overwrite_manifest(def)?;
-        }
-
         // Update the public key fields of the manifest before signing the image. Otherwise we have
         // to repeat the first signing operation.
         let mut rsa_private_key: Option<RsaPrivateKey> = None;
@@ -162,31 +159,96 @@ impl CommandDispatch for ManifestUpdateCommand {
                 rsa_private_key = Some(private);
             }
         }
-        let mut spx_private_key: Option<SpxKey> = None;
+
+        // A u8 buffer with u32 alignment to be able to deserialize bytes for extensions.
+        // Note: This should ideally be based on the alignment requirements of the extensions but
+        // just using `u32` works since all extensions we have are u32-aligned. We can't miss If
+        // this doesn't hold since `LayoutVerified::new()` errors out.
+        #[repr(C)]
+        pub struct Buffer32 {
+            pub bytes: [u8; image::Image::MAX_SIZE],
+            _align: [u32; 0],
+        }
+        let mut buf = Buffer32 {
+            bytes: [0; image::Image::MAX_SIZE],
+            _align: [],
+        };
+
+        let mut spx_private_key: Option<SpxKeypair> = None;
         if let Some(key) = &self.spx_key {
             let key = spx::load_spx_key(key)?;
+            // Add the SPX key extension
+            let key_bytes = key.pk_as_bytes();
+            buf.bytes[0..key_bytes.len()].copy_from_slice(key_bytes);
+            image.set_extension_entry(0, MANIFEST_EXT_ID_SPX_KEY, image.size as u32)?;
+            image.add_extension_data(
+                ManifestExtSpxKey {
+                    header: ManifestExtHeader {
+                        identifier: MANIFEST_EXT_ID_SPX_KEY,
+                        name: MANIFEST_EXT_NAME_SPX_KEY,
+                    },
+                    key: *LayoutVerified::<_, SigverifySpxKey>::new(&buf.bytes[0..key_bytes.len()])
+                        .unwrap()
+                        .into_ref(),
+                }
+                .as_bytes(),
+            )?;
             if let SpxKey::Private(private) = key {
-                spx_private_key = Some(SpxKey::Private(private));
+                spx_private_key = Some(private);
             }
         }
 
-        // Update `signed_area_end` after adding all the signed extensions.
-        image.update_signed_region()?;
+        // Update `signed_region_end` after adding all signed extensions.
+        image.update_signed_region_end()?;
+
+        // Update `length` to be able to generate signatures.
+        let mut unsigned_ext_size: usize = 0;
+        if self.spx_signature.is_some() || spx_private_key.is_some() {
+            image.set_extension_entry(1, MANIFEST_EXT_ID_SPX_SIGNATURE, image.size as u32)?;
+            unsigned_ext_size += std::mem::size_of::<ManifestExtSpxSignature>();
+        }
+        image.update_length(unsigned_ext_size)?;
+
+        // Apply the manifest values to the image.
+        if let Some(manifest) = &self.manifest {
+            let def = ManifestSpec::read_from_file(manifest)?;
+            image.overwrite_manifest(def)?;
+        }
 
         // Sign the image
         if let Some(key) = rsa_private_key {
-            image.update_rsa_signature(key.sign(&image.compute_digest())?)?;
+            image.update_rsa_signature(key.sign(&image.compute_digest()?)?)?;
         }
-        if let Some(SpxKey::Private(key)) = spx_private_key {
+
+        let spx_signature = if let Some(spx_sig_file) = &self.spx_signature {
+            Some(SpxSignature::read_from_file(spx_sig_file)?)
+        } else if let Some(key) = spx_private_key {
+            Some(image.map_signed_region(|buf| key.sign(buf))?)
+        } else {
+            None
+        };
+        if let Some(spx_signature) = spx_signature {
+            let sig_bytes = spx_signature.0.to_le_bytes();
+            buf.bytes[0..sig_bytes.len()].copy_from_slice(&sig_bytes);
+            image.add_extension_data(
+                ManifestExtSpxSignature {
+                    header: ManifestExtHeader {
+                        identifier: MANIFEST_EXT_ID_SPX_SIGNATURE,
+                        name: MANIFEST_EXT_NAME_SPX_SIGNATURE,
+                    },
+                    signature: *LayoutVerified::<_, SigverifySpxSignature>::new(
+                        &buf.bytes[0..sig_bytes.len()],
+                    )
+                    .unwrap()
+                    .into_ref(),
+                }
+                .as_bytes(),
+            )?;
         }
 
         if let Some(rsa_signature) = &self.rsa_signature {
             let signature = RsaSignature::read_from_file(rsa_signature)?;
             image.update_rsa_signature(signature)?;
-        }
-
-        if let Some(spx_signature) = &self.spx_signature {
-            let signature = SpxSignature::read_from_file(spx_signature)?;
         }
 
         image.write_to_file(self.output.as_ref().unwrap_or(&self.image))?;
@@ -219,7 +281,7 @@ impl CommandDispatch for ManifestVerifyCommand {
         let rsa_sig = manifest
             .rsa_signature()
             .ok_or_else(|| anyhow!("Invalid RSA signature"))?;
-        let digest = Sha256Digest::from_le_bytes(image.compute_digest().to_le_bytes())?;
+        let digest = Sha256Digest::from_le_bytes(image.compute_digest()?.to_le_bytes())?;
         let rsa_key = RsaPublicKey::new(Modulus::from_le_bytes(rsa_modulus.to_le_bytes())?)?;
         let rsa_sig = RsaSignature::from_le_bytes(rsa_sig.to_le_bytes())?;
         rsa_key.verify(&digest, &rsa_sig)?;
@@ -260,7 +322,7 @@ impl CommandDispatch for DigestCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let image = image::Image::read_from_file(&self.image)?;
-        let digest = image.compute_digest();
+        let digest = image.compute_digest()?;
         if let Some(bin) = &self.bin {
             let mut file = File::create(bin)?;
             file.write_all(&digest.to_le_bytes())?;

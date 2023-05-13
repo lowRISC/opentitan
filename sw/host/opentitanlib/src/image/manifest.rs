@@ -29,6 +29,10 @@ use zerocopy::FromBytes;
 pub const CHIP_MANIFEST_SIZE: u32 = 964;
 pub const CHIP_MANIFEST_EXT_TABLE_COUNT: u32 = 8;
 pub const MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL: u32 = 0xa5a5a5a5;
+pub const MANIFEST_EXT_ID_SPX_KEY: u32 = 0x94ac01ec;
+pub const MANIFEST_EXT_ID_SPX_SIGNATURE: u32 = 0xad77f84a;
+pub const MANIFEST_EXT_NAME_SPX_KEY: u32 = 0x30545845;
+pub const MANIFEST_EXT_NAME_SPX_SIGNATURE: u32 = 0x31545845;
 pub const CHIP_ROM_EXT_IDENTIFIER: u32 = 0x4552544f;
 pub const CHIP_BL0_IDENTIFIER: u32 = 0x3042544f;
 pub const CHIP_ROM_EXT_SIZE_MIN: u32 = 8788;
@@ -61,7 +65,7 @@ pub struct Manifest {
 
 /// A type that holds 1964 32-bit words for SPHINCS+ signtures.
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug)]
+#[derive(FromBytes, AsBytes, Debug, Copy, Clone)]
 pub struct SigverifySpxSignature {
     pub data: [u32; 1964usize],
 }
@@ -92,7 +96,7 @@ pub struct ManifestExtSpxSignature {
 
 /// A type that holds 8 32-bit words for SPHINCS+ public keys.
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug, Default)]
+#[derive(FromBytes, AsBytes, Debug, Default, Copy, Clone)]
 pub struct SigverifySpxKey {
     pub data: [u32; 8usize],
 }
