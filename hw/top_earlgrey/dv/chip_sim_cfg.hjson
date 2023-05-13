@@ -1038,6 +1038,7 @@
       uvm_test_seq: chip_sw_sysrst_ctrl_ec_rst_l_vseq
       sw_images: ["//sw/device/tests/sim_dv:sysrst_ctrl_ec_rst_l_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
+      run_timeout_mins: 180
     }
     {
       name: chip_sw_aon_timer_irq
