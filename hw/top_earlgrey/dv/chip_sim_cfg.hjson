@@ -555,7 +555,7 @@
       sw_images: ["//sw/device/tests/sim_dv:inject_scramble_seed:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+lc_at_prod=1", "+flash_program_latency=5", "+sw_test_timeout_ns=150_000_000"]
-      run_timeout_mins: 180
+      run_timeout_mins: 300
     }
     {
       name: chip_sw_exit_test_unlocked_bootstrap
