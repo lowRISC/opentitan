@@ -64,6 +64,10 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
       // continuously issue LC JTAG read until it returns valid value.
       // In the meantime, TAP selection could happen in between a transaction and might return an
       // error. This error is permitted and can be ignored.
+
+      // This is for a temporary tb patch.
+      // Before using jtag, wait for lc_ctrl is ready.
+      wait_rom_check_done();
       wait_lc_ready(.allow_err(1));
 
       fork
