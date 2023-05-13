@@ -378,11 +378,11 @@ inline rom_error_t manifest_check(const manifest_t *manifest) {
     return kErrorManifestBadSignedRegion;
   }
 
-  // Executable region must be empty, inside the image, located after the
-  // manifest, and word aligned.
+  // Executable region must be non-empty, inside the signed region, located
+  // after the manifest, and word aligned.
   if (manifest->code_start >= manifest->code_end ||
       manifest->code_start < sizeof(manifest_t) ||
-      manifest->code_end > manifest->length ||
+      manifest->code_end > manifest->signed_region_end ||
       (manifest->code_start & 0x3) != 0 || (manifest->code_end & 0x3) != 0) {
     return kErrorManifestBadCodeRegion;
   }
