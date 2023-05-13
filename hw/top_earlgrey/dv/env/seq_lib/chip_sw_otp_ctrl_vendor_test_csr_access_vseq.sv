@@ -44,6 +44,9 @@ class chip_sw_otp_ctrl_vendor_test_csr_access_vseq extends chip_sw_base_vseq;
   virtual task body();
     super.body();
 
+    // Before issuing jtag access (from wait_lc_ready),
+    // make sure lc_ctrl readya by polling csr.
+    wait_rom_check_done();
     wait_lc_ready(.allow_err(1));
 
     // Claim the mux interface via JTAG.
