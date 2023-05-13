@@ -215,9 +215,22 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   HARDENED_RETURN_IF_ERROR(sigverify_rsa_key_get(
       sigverify_rsa_key_id_get(&manifest->rsa_modulus), lc_state, &rsa_key));
 
-  // const sigverify_spx_key_t *spx_key;
-  // HARDENED_RETURN_IF_ERROR(sigverify_spx_key_get(
-  //     sigverify_spx_key_id_get(&manifest->spx_key), lc_state, &spx_key));
+  const sigverify_spx_key_t *spx_key;
+  const sigverify_spx_signature_t *spx_signature;
+  uint32_t sigverify_spx_en = sigverify_spx_verify_enabled(lc_state);
+  if (launder32(sigverify_spx_en) != kSigverifySpxDisabledOtp) {
+    const manifest_ext_spx_key_t *ext_spx_key;
+    HARDENED_RETURN_IF_ERROR(manifest_ext_get_spx_key(manifest, &ext_spx_key));
+    HARDENED_RETURN_IF_ERROR(sigverify_spx_key_get(
+        sigverify_spx_key_id_get(&ext_spx_key->key), lc_state, &spx_key));
+
+    const manifest_ext_spx_signature_t *ext_spx_signature;
+    HARDENED_RETURN_IF_ERROR(
+        manifest_ext_get_spx_signature(manifest, &ext_spx_signature));
+    spx_signature = &ext_spx_signature->signature;
+  } else {
+    HARDENED_CHECK_EQ(sigverify_spx_en, kSigverifySpxDisabledOtp);
+  }
 
   uint32_t clobber_value = rnd_uint32();
   for (size_t i = 0; i < ARRAYSIZE(boot_measurements.rom_ext.data); ++i) {
@@ -251,24 +264,21 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 2);
   // Swap the order of signature verifications randomly.
   *flash_exec = 0;
-  // if (rnd_uint32() < 0x80000000) {
-  //   HARDENED_RETURN_IF_ERROR(sigverify_rsa_verify(
-  //       &manifest->rsa_signature, rsa_key, &act_digest, lc_state,
-  //       flash_exec));
-  //   return sigverify_spx_verify(
-  //       &manifest->spx_signature, spx_key, lc_state,
-  //       &usage_constraints_from_hw, sizeof(usage_constraints_from_hw),
-  //       anti_rollback, anti_rollback_len, digest_region.start,
-  //       digest_region.length, flash_exec);
-  // } else {
-  //   HARDENED_RETURN_IF_ERROR(sigverify_spx_verify(
-  //       &manifest->spx_signature, spx_key, lc_state,
-  //       &usage_constraints_from_hw, sizeof(usage_constraints_from_hw),
-  //       anti_rollback, anti_rollback_len, digest_region.start,
-  //       digest_region.length, flash_exec));
-  return sigverify_rsa_verify(&manifest->rsa_signature, rsa_key, &act_digest,
-                              lc_state, flash_exec);
-  // }
+  if (rnd_uint32() < 0x80000000) {
+    HARDENED_RETURN_IF_ERROR(sigverify_rsa_verify(
+        &manifest->rsa_signature, rsa_key, &act_digest, lc_state, flash_exec));
+    return sigverify_spx_verify(
+        spx_signature, spx_key, lc_state, &usage_constraints_from_hw,
+        sizeof(usage_constraints_from_hw), anti_rollback, anti_rollback_len,
+        digest_region.start, digest_region.length, flash_exec);
+  } else {
+    HARDENED_RETURN_IF_ERROR(sigverify_spx_verify(
+        spx_signature, spx_key, lc_state, &usage_constraints_from_hw,
+        sizeof(usage_constraints_from_hw), anti_rollback, anti_rollback_len,
+        digest_region.start, digest_region.length, flash_exec));
+    return sigverify_rsa_verify(&manifest->rsa_signature, rsa_key, &act_digest,
+                                lc_state, flash_exec);
+  }
 }
 
 /* These symbols are defined in

@@ -346,7 +346,7 @@ typedef struct manifest_ext_spx_signature {
   /**
    * SPHINCS+ signature of the image.
    */
-  sigverify_spx_key_t signature;
+  sigverify_spx_signature_t signature;
 } manifest_ext_spx_signature_t;
 
 /**
@@ -449,7 +449,7 @@ inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
 }
 
 #define DEFINE_GETTER(index_, type_, name_, id_, _)                            \
-  inline rom_error_t manifest_get_ext_##name_(const manifest_t *manifest,      \
+  inline rom_error_t manifest_ext_get_##name_(const manifest_t *manifest,      \
                                               const type_ **name_) {           \
     enum {                                                                     \
       kMinSize = CHIP_MANIFEST_SIZE,                                           \
@@ -470,6 +470,7 @@ inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
         if (launder32(header_id) == id_) {                                     \
           HARDENED_CHECK_EQ(header_id, id_);                                   \
           *name_ = (const type_ *)ext_address;                                 \
+          return kErrorOk;                                                     \
         }                                                                      \
       }                                                                        \
     }                                                                          \
