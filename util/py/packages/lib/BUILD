@@ -50,6 +50,9 @@ py_library(
     srcs = [
         "run.py",
     ],
+    deps = [
+        ":ot_logging",
+    ],
 )
 
 py_test(
@@ -58,6 +61,7 @@ py_test(
         "run_test.py",
     ],
     deps = [
+        ":ot_logging",
         ":run",
-    ]
+    ],
 )
