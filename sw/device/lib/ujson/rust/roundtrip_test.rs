@@ -30,9 +30,9 @@ fn roundtrip(name: &str, data: &str) -> Result<String> {
         .spawn()?;
 
     let mut stdin = child.stdin.take().unwrap();
-    eprintln!("sent: {}", data);
-    stdin.write_all(data.as_bytes())?;
-    stdin.write_all(b"\n")?;
+    let msg = format!("{}\n", data);
+    eprintln!("sending: {}", msg);
+    stdin.write_all(msg.as_bytes())?;
 
     let mut s = String::new();
     let mut stdout = child.stdout.take().unwrap();
