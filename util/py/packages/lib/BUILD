@@ -1,0 +1,42 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("@ot_python_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(
+    name = "wrapper",
+    srcs = [
+        "wrapper.py",
+    ],
+)
+
+py_test(
+    name = "wrapper_test",
+    srcs = [
+        "wrapper_test.py",
+    ],
+    deps = [
+        ":wrapper",
+    ],
+)
+
+py_library(
+    name = "run",
+    srcs = [
+        "run.py",
+    ],
+)
+
+py_test(
+    name = "run_test",
+    srcs = [
+        "run_test.py",
+    ],
+    deps = [
+        ":run",
+    ]
+)
