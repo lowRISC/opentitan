@@ -25,6 +25,27 @@ py_test(
 )
 
 py_library(
+    name = "ot_logging",
+    srcs = [
+        "ot_logging.py",
+    ],
+    deps = [
+        requirement("rich"),
+        ":wrapper",
+    ],
+)
+
+py_test(
+    name = "ot_logging_test",
+    srcs = [
+        "ot_logging_test.py",
+    ],
+    deps = [
+        ":ot_logging",
+    ],
+)
+
+py_library(
     name = "run",
     srcs = [
         "run.py",
