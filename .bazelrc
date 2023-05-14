@@ -20,6 +20,9 @@ build --features=-pedantic_warnings
 # `guards` adds `unimp` guard instructions after unconditional jumps.
 build --features=guards
 
+# Use LLD for linking
+build --features=use_lld
+
 # Enable toolchain resolution with cc
 build --incompatible_enable_cc_toolchain_resolution
 
