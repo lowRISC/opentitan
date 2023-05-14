@@ -89,7 +89,9 @@ module secure_subsystem_synth_wrap
    output logic                          ibex_uart_tx_o,
    // SPI Host
    output logic                          spi_host_SCK_o,
+   output logic                          spi_host_SCK_en_o,
    output logic                          spi_host_CSB_o,
+   output logic                          spi_host_CSB_en_o,
    output logic [3:0]                    spi_host_SD_o,
    input  logic [3:0]                    spi_host_SD_i,
    output logic [3:0]                    spi_host_SD_en_o
@@ -126,8 +128,11 @@ module secure_subsystem_synth_wrap
    assign mio_in_i[25:0]  = '0;
    assign mio_in_i[46:27] = '0;
 
-   assign spi_host_SCK_o  = mio_out_o[DioSpiHost0Sck];
-   assign spi_host_CSB_o  = mio_out_o[DioSpiHost0Csb];
+   assign spi_host_SCK_o  = dio_out_o[DioSpiHost0Sck];
+   assign spi_host_CSB_o  = dio_out_o[DioSpiHost0Csb];
+   
+   assign spi_host_SCK_en_o = dio_oe_o[DioSpiHost0Sck];
+   assign spi_host_CSB_en_o = dio_oe_o[DioSpiHost0Csb];
    
    assign spi_host_SD_o[0] = dio_out_o[DioSpiHost0Sd0];
    assign spi_host_SD_o[1] = dio_out_o[DioSpiHost0Sd1];
@@ -138,7 +143,7 @@ module secure_subsystem_synth_wrap
    assign spi_host_SD_en_o[1] = dio_oe_o[DioSpiHost0Sd1];
    assign spi_host_SD_en_o[2] = dio_oe_o[DioSpiHost0Sd2];
    assign spi_host_SD_en_o[3] = dio_oe_o[DioSpiHost0Sd3];
-   
+                             
    assign dio_in_i[DioSpiHost0Sd0]  = spi_host_SD_i[0];
    assign dio_in_i[DioSpiHost0Sd1]  = spi_host_SD_i[1];
    assign dio_in_i[DioSpiHost0Sd2]  = spi_host_SD_i[2];
