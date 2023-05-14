@@ -39,6 +39,9 @@ build --features=no_gnu_statement_expression_from_macro_expansion
 # `guards` adds `unimp` guard instructions after unconditional jumps.
 build --features=guards
 
+# Use LLD for linking
+build --features=use_lld
+
 # Enable toolchain resolution with cc
 build --incompatible_enable_cc_toolchain_resolution
 
