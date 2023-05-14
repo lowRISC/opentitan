@@ -832,7 +832,7 @@ class flash_ctrl_scoreboard #(
   virtual function bit get_flash_instr_type_err(tl_seq_item item, tl_channels_e channel);
     bit is_exec_key = `gmv(ral.exec) == CODE_EXEC_KEY;
     // Local Variable
-    tlul_pkg::tl_a_user_t a_user = item.a_user;
+    tlul_ot_pkg::tl_a_user_t a_user = item.a_user;
     if (cfg.en_cov) begin
       if (channel == AddrChannel) begin
         cov.fetch_code_cg.sample(is_exec_key, a_user.instr_type);
@@ -840,7 +840,7 @@ class flash_ctrl_scoreboard #(
     end
 
     // If Data Access, or a Write, or the CODE_EXEC_KEY Matches
-    if (((a_user.instr_type == MuBi4False) || (item.a_opcode != tlul_pkg::Get)) ||
+    if (((a_user.instr_type == MuBi4False) || (item.a_opcode != tlul_ot_pkg::Get)) ||
          (`gmv(ral.exec) == CODE_EXEC_KEY)) return(0);  // No Error Predicted
 
     // Error is Predicted,  Expect an Error if Channel==DataChannel

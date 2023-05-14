@@ -33,8 +33,8 @@ module lc_ctrl
   input                                              clk_kmac_i,
   input                                              rst_kmac_ni,
   // Bus Interface (device)
-  input  tlul_pkg::tl_h2d_t                          tl_i,
-  output tlul_pkg::tl_d2h_t                          tl_o,
+  input  tlul_ot_pkg::tl_h2d_t                          tl_i,
+  output tlul_ot_pkg::tl_d2h_t                          tl_o,
   // JTAG TAP.
   input  jtag_ot_pkg::jtag_req_t                        jtag_i,
   output jtag_ot_pkg::jtag_rsp_t                        jtag_o,
@@ -147,8 +147,8 @@ module lc_ctrl
   // Life Cycle TAP //
   ////////////////////
 
-  tlul_pkg::tl_h2d_t tap_tl_h2d;
-  tlul_pkg::tl_d2h_t tap_tl_d2h;
+  tlul_ot_pkg::tl_h2d_t tap_tl_h2d;
+  tlul_ot_pkg::tl_d2h_t tap_tl_d2h;
   lc_ctrl_reg_pkg::lc_ctrl_reg2hw_t tap_reg2hw;
   lc_ctrl_reg_pkg::lc_ctrl_hw2reg_t tap_hw2reg;
 

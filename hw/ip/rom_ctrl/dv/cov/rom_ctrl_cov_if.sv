@@ -9,9 +9,9 @@ interface rom_ctrl_cov_if (
     input kmac_pkg::app_rsp_t         kmac_data_i,
     input kmac_pkg::app_req_t         kmac_data_o,
     input logic                       exp_digest_de,
-    input tlul_pkg::tl_h2d_t          rom_tl_i,
-    input tlul_pkg::tl_d2h_t          rom_tl_o,
-    input tlul_pkg::tl_h2d_t          regs_tl_i,
+    input tlul_ot_pkg::tl_h2d_t          rom_tl_i,
+    input tlul_ot_pkg::tl_d2h_t          rom_tl_o,
+    input tlul_ot_pkg::tl_h2d_t          regs_tl_i,
     input rom_ctrl_pkg::pwrmgr_data_t pwrmgr_data_o
 );
 

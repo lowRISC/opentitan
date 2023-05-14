@@ -26,8 +26,8 @@ module otbn
   input clk_i,
   input rst_ni,
 
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+  input  tlul_ot_pkg::tl_h2d_t tl_i,
+  output tlul_ot_pkg::tl_d2h_t tl_o,
 
   // Inter-module signals
   output prim_mubi_pkg::mubi4_t idle_o,
@@ -129,8 +129,8 @@ module otbn
     TlWinDmem = 1'b1
   } tl_win_e;
 
-  tlul_pkg::tl_h2d_t tl_win_h2d[2];
-  tlul_pkg::tl_d2h_t tl_win_d2h[2];
+  tlul_ot_pkg::tl_h2d_t tl_win_h2d[2];
+  tlul_ot_pkg::tl_d2h_t tl_win_d2h[2];
 
   // The clock can be gated and some registers can be updated as long as OTBN isn't currently
   // running. Other registers can only be updated when OTBN is in the Idle state (which also implies

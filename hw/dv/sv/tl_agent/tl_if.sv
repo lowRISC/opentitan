@@ -7,11 +7,11 @@
 // ---------------------------------------------
 interface tl_if(input clk, input rst_n);
 
-  wire tlul_pkg::tl_h2d_t h2d; // req
-  wire tlul_pkg::tl_d2h_t d2h; // rsp
+  wire tlul_ot_pkg::tl_h2d_t h2d; // req
+  wire tlul_ot_pkg::tl_d2h_t d2h; // rsp
 
-  tlul_pkg::tl_h2d_t h2d_int; // req (internal)
-  tlul_pkg::tl_d2h_t d2h_int; // rsp (internal)
+  tlul_ot_pkg::tl_h2d_t h2d_int; // req (internal)
+  tlul_ot_pkg::tl_d2h_t d2h_int; // rsp (internal)
 
   dv_utils_pkg::if_mode_e if_mode; // interface mode - Host or Device
 

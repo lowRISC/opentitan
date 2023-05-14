@@ -17,7 +17,7 @@
  */
 
 module tlul_adapter_reg
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
   parameter  bit CmdIntgCheck      = 0,  // 1: Enable command integrity check
@@ -150,7 +150,7 @@ module tlul_adapter_reg
     assign error = error_q;
   end
 
-  tlul_pkg::tl_d2h_t tl_o_pre;
+  tlul_ot_pkg::tl_d2h_t tl_o_pre;
   assign tl_o_pre = '{
     // busy is selected based on address
     // thus if there is no valid transaction, we should ignore busy

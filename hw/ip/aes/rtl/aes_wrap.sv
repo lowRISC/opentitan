@@ -34,7 +34,7 @@ module aes_wrap
 
   import aes_pkg::*;
   import aes_reg_pkg::*;
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
 
   logic unused_idle;
   logic [31:0] unused_wdata;

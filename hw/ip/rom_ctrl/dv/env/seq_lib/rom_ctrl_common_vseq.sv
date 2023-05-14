@@ -16,8 +16,8 @@ class rom_ctrl_common_vseq extends rom_ctrl_base_vseq;
 
   virtual function void inject_intg_fault_in_passthru_mem(dv_base_mem mem,
                                                           bit [bus_params_pkg::BUS_AW-1:0] addr);
-    bit[tlul_pkg::DataIntgWidth+bus_params_pkg::BUS_DW-1:0] rdata;
-    bit[tlul_pkg::DataIntgWidth+bus_params_pkg::BUS_DW-1:0] flip_bits;
+    bit[tlul_ot_pkg::DataIntgWidth+bus_params_pkg::BUS_DW-1:0] rdata;
+    bit[tlul_ot_pkg::DataIntgWidth+bus_params_pkg::BUS_DW-1:0] flip_bits;
 
     rdata = cfg.mem_bkdr_util_h.rom_encrypt_read32(addr, RND_CNST_SCR_KEY,
                                                    RND_CNST_SCR_NONCE, 1'b1);

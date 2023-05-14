@@ -66,7 +66,7 @@ virtual task tl_write_less_than_csr_width(string ral_name);
     addr    = csr.get_address();
     `create_tl_access_error_case(
         tl_write_less_than_csr_width,
-        opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
+        opcode inside {tlul_ot_pkg::PutFullData, tlul_ot_pkg::PutPartialData};
         addr == local::addr;
         // constrain enabled bytes less than reg width
         if (msb_pos >= 24) {
@@ -107,7 +107,7 @@ virtual task tl_write_mem_less_than_word(string ral_name);
 
     `create_tl_access_error_case(
         tl_write_mem_less_than_word,
-        opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
+        opcode inside {tlul_ot_pkg::PutFullData, tlul_ot_pkg::PutPartialData};
         addr[1:0] == 0; // word aligned
         (addr & csr_addr_mask[ral_name]) inside
             {[loc_mem_ranges[mem_idx].start_addr : loc_mem_ranges[mem_idx].end_addr]};
@@ -128,7 +128,7 @@ virtual task tl_read_wo_mem_err(string ral_name);
         cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr) != "WO") continue;
     `create_tl_access_error_case(
         tl_read_wo_mem_err,
-        opcode == tlul_pkg::Get;
+        opcode == tlul_ot_pkg::Get;
         (addr & csr_addr_mask[ral_name]) inside
             {[loc_mem_ranges[mem_idx].start_addr :
               loc_mem_ranges[mem_idx].end_addr]};, ,
@@ -148,7 +148,7 @@ virtual task tl_write_ro_mem_err(string ral_name);
         cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr) != "RO") continue;
     `create_tl_access_error_case(
         tl_write_ro_mem_err,
-        opcode != tlul_pkg::Get;
+        opcode != tlul_ot_pkg::Get;
         (addr & csr_addr_mask[ral_name]) inside
             {[loc_mem_ranges[mem_idx].start_addr :
               loc_mem_ranges[mem_idx].end_addr]};, ,

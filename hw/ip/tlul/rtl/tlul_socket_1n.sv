@@ -60,10 +60,10 @@ module tlul_socket_1n #(
 ) (
   input                     clk_i,
   input                     rst_ni,
-  input  tlul_pkg::tl_h2d_t tl_h_i,
-  output tlul_pkg::tl_d2h_t tl_h_o,
-  output tlul_pkg::tl_h2d_t tl_d_o    [N],
-  input  tlul_pkg::tl_d2h_t tl_d_i    [N],
+  input  tlul_ot_pkg::tl_h2d_t tl_h_i,
+  output tlul_ot_pkg::tl_d2h_t tl_h_o,
+  output tlul_ot_pkg::tl_h2d_t tl_d_o    [N],
+  input  tlul_ot_pkg::tl_d2h_t tl_d_i    [N],
   input  [NWD-1:0]          dev_select_i
 );
 
@@ -77,8 +77,8 @@ module tlul_socket_1n #(
   // FIFO'd version of device select
   logic [NWD-1:0] dev_select_t;
 
-  tlul_pkg::tl_h2d_t   tl_t_o;
-  tlul_pkg::tl_d2h_t   tl_t_i;
+  tlul_ot_pkg::tl_h2d_t   tl_t_o;
+  tlul_ot_pkg::tl_d2h_t   tl_t_i;
 
   tlul_fifo_sync #(
     .ReqPass(HReqPass),
@@ -134,17 +134,17 @@ module tlul_socket_1n #(
   // Make N copies of 't' request side with modified reqvalid, call
   // them 'u[0]' .. 'u[n-1]'.
 
-  tlul_pkg::tl_h2d_t   tl_u_o [N+1];
-  tlul_pkg::tl_d2h_t   tl_u_i [N+1];
+  tlul_ot_pkg::tl_h2d_t   tl_u_o [N+1];
+  tlul_ot_pkg::tl_d2h_t   tl_u_i [N+1];
 
   // ensure that when a device is not selected, both command
   // data integrity can never match
-  tlul_pkg::tl_a_user_t blanked_auser;
+  tlul_ot_pkg::tl_a_user_t blanked_auser;
   assign blanked_auser = '{
     rsvd: tl_t_o.a_user.rsvd,
     instr_type: tl_t_o.a_user.instr_type,
-    cmd_intg: tlul_pkg::get_bad_cmd_intg(tl_t_o),
-    data_intg: tlul_pkg::get_bad_data_intg(tlul_pkg::BlankedAData)
+    cmd_intg: tlul_ot_pkg::get_bad_cmd_intg(tl_t_o),
+    data_intg: tlul_ot_pkg::get_bad_data_intg(tlul_ot_pkg::BlankedAData)
   };
 
   // if a host is not selected, or if requests are held off, blank the bus
@@ -161,7 +161,7 @@ module tlul_socket_1n #(
     assign tl_u_o[i].a_mask    = tl_t_o.a_mask;
     assign tl_u_o[i].a_data    = dev_select ?
                                  tl_t_o.a_data :
-                                 tlul_pkg::BlankedAData;
+                                 tlul_ot_pkg::BlankedAData;
     assign tl_u_o[i].a_user    = dev_select ?
                                  tl_t_o.a_user :
                                  blanked_auser;
@@ -170,7 +170,7 @@ module tlul_socket_1n #(
   end
 
 
-  tlul_pkg::tl_d2h_t tl_t_p ;
+  tlul_ot_pkg::tl_d2h_t tl_t_p ;
 
   // for the returning reqready, only look at the device we're addressing
   logic hfifo_reqready;

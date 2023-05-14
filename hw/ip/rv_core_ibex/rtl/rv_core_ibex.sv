@@ -63,12 +63,12 @@ module rv_core_ibex
   input  logic [31:0] boot_addr_i,
 
   // Instruction memory interface
-  output tlul_pkg::tl_h2d_t     corei_tl_h_o,
-  input  tlul_pkg::tl_d2h_t     corei_tl_h_i,
+  output tlul_ot_pkg::tl_h2d_t     corei_tl_h_o,
+  input  tlul_ot_pkg::tl_d2h_t     corei_tl_h_i,
 
   // Data memory interface
-  output tlul_pkg::tl_h2d_t     cored_tl_h_o,
-  input  tlul_pkg::tl_d2h_t     cored_tl_h_i,
+  output tlul_ot_pkg::tl_h2d_t     cored_tl_h_o,
+  input  tlul_ot_pkg::tl_d2h_t     cored_tl_h_i,
 
   // Interrupt inputs
   input  logic        irq_software_i,
@@ -98,8 +98,8 @@ module rv_core_ibex
   input prim_mubi_pkg::mubi4_t scanmode_i,
 
   // peripheral interface access
-  input  tlul_pkg::tl_h2d_t cfg_tl_d_i,
-  output tlul_pkg::tl_d2h_t cfg_tl_d_o,
+  input  tlul_ot_pkg::tl_h2d_t cfg_tl_d_i,
+  output tlul_ot_pkg::tl_d2h_t cfg_tl_d_o,
 
   // connection to edn
   output edn_pkg::edn_req_t edn_o,
@@ -121,7 +121,7 @@ module rv_core_ibex
 );
 
   import top_pkg::*;
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
 
   // Register module
   rv_core_ibex_cfg_reg2hw_t reg2hw;
@@ -706,8 +706,8 @@ module rv_core_ibex
   //////////////////////////////////
 
   logic intg_err;
-  tlul_pkg::tl_h2d_t tl_win_h2d;
-  tlul_pkg::tl_d2h_t tl_win_d2h;
+  tlul_ot_pkg::tl_h2d_t tl_win_h2d;
+  tlul_ot_pkg::tl_d2h_t tl_win_d2h;
   rv_core_ibex_cfg_reg_top u_reg_cfg (
     .clk_i,
     .rst_ni,
@@ -877,8 +877,8 @@ module rv_core_ibex
   // The carved out space is for DV emulation purposes only
   /////////////////////////////////////
 
-  import tlul_pkg::tl_h2d_t;
-  import tlul_pkg::tl_d2h_t;
+  import tlul_ot_pkg::tl_h2d_t;
+  import tlul_ot_pkg::tl_d2h_t;
   localparam int TlH2DWidth = $bits(tl_h2d_t);
   localparam int TlD2HWidth = $bits(tl_d2h_t);
 

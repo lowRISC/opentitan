@@ -9,8 +9,8 @@ interface sim_sram_if #(
 ) (
   input logic clk_i,
   input logic rst_ni,
-  input tlul_pkg::tl_h2d_t tl_h2d,
-  input tlul_pkg::tl_d2h_t tl_d2h
+  input tlul_ot_pkg::tl_h2d_t tl_h2d,
+  input tlul_ot_pkg::tl_d2h_t tl_d2h
 );
 
   // SRAM start addr - set by the testbench.
@@ -19,6 +19,6 @@ interface sim_sram_if #(
   // Qualify writes to the sim SRAM.
   logic wr_valid;
   assign wr_valid = tl_h2d.a_mask == '1 && tl_h2d.a_valid && tl_d2h.a_ready &&
-                    tl_h2d.a_opcode == tlul_pkg::PutFullData;
+                    tl_h2d.a_opcode == tlul_ot_pkg::PutFullData;
 
 endinterface

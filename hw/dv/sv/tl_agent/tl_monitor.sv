@@ -151,7 +151,7 @@ class tl_monitor extends dv_base_monitor#(
     if (a_valid && a_ready) begin
       tl_seq_item req = tl_seq_item::type_id::create("req");
       tl_seq_item cloned_req;
-      tlul_pkg::tl_h2d_t h2d = immediate ? cfg.vif.h2d : cfg.vif.mon_cb.h2d;
+      tlul_ot_pkg::tl_h2d_t h2d = immediate ? cfg.vif.h2d : cfg.vif.mon_cb.h2d;
 
       // Create a sequence item. Note: this is a field in the class, which ad_channels_thread() uses
       // to pass the transaction to the relevant analysis port/ports.

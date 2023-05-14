@@ -111,8 +111,8 @@ The memory needs to be accessible from the core instruction *and* data interface
 A full memory map is part of the [PULP RISC-V Debug System Documentation](https://github.com/lowRISC/opentitan/blob/master/hw/vendor/pulp_riscv_dbg/doc/debug-system.md).
 
 ```verilog
-input  tlul_pkg::tl_h2d_t tl_d_i,
-output tlul_pkg::tl_d2h_t tl_d_o,
+input  tlul_ot_pkg::tl_h2d_t tl_d_i,
+output tlul_ot_pkg::tl_d2h_t tl_d_o,
 ```
 
 ### TL-UL host for System Bus Access (SBA)
@@ -123,8 +123,8 @@ The debug system wrapper provides a TL-UL host bus interface for SBA.
 
 ```verilog
 // bus host, for system bus accesses
-output tlul_pkg::tl_h2d_t  tl_h_o,
-input  tlul_pkg::tl_d2h_t  tl_h_i,
+output tlul_ot_pkg::tl_h2d_t  tl_h_o,
+input  tlul_ot_pkg::tl_d2h_t  tl_h_i,
 ```
 
 ## Register Table

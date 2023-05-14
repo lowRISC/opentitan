@@ -552,7 +552,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -599,7 +599,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -646,7 +646,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -693,7 +693,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -754,7 +754,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -851,7 +851,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -898,7 +898,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -945,7 +945,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -992,7 +992,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -1039,7 +1039,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -1086,7 +1086,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -1484,7 +1484,7 @@
         {
           name: core_tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -1497,7 +1497,7 @@
         {
           name: prim_tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -2024,7 +2024,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -2156,7 +2156,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -2215,7 +2215,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -2272,7 +2272,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -2561,7 +2561,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -2886,7 +2886,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -3084,7 +3084,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -3415,7 +3415,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -3493,7 +3493,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -3573,7 +3573,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -3627,7 +3627,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -4023,7 +4023,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -4139,7 +4139,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -4247,7 +4247,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -4367,7 +4367,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -4456,7 +4456,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -4653,7 +4653,7 @@
         {
           name: regs_tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -4666,7 +4666,7 @@
         {
           name: ram_tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -5083,7 +5083,7 @@
         {
           name: core_tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -5096,7 +5096,7 @@
         {
           name: prim_tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -5109,7 +5109,7 @@
         {
           name: mem_tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -5281,7 +5281,7 @@
         {
           name: sba_tl_h
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -5293,7 +5293,7 @@
         {
           name: regs_tl_d
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -5306,7 +5306,7 @@
         {
           name: mem_tl_d
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -5387,7 +5387,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -5612,7 +5612,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -5671,7 +5671,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -5882,7 +5882,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -6114,7 +6114,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -6469,7 +6469,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -6611,7 +6611,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -6755,7 +6755,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -6837,7 +6837,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -6919,7 +6919,7 @@
         {
           name: tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -7118,7 +7118,7 @@
         {
           name: regs_tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -7131,7 +7131,7 @@
         {
           name: ram_tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -7290,7 +7290,7 @@
         {
           name: regs_tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -7303,7 +7303,7 @@
         {
           name: rom_tl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -7828,7 +7828,7 @@
         {
           name: corei_tl_h
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -7840,7 +7840,7 @@
         {
           name: cored_tl_h
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -7852,7 +7852,7 @@
         {
           name: cfg_tl_d
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -9260,7 +9260,7 @@
         {
           name: tl_rv_core_ibex__corei
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -9273,7 +9273,7 @@
         {
           name: tl_rv_core_ibex__cored
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -9286,7 +9286,7 @@
         {
           name: tl_rv_dm__sba
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -9299,7 +9299,7 @@
         {
           name: tl_rv_dm__regs
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9311,7 +9311,7 @@
         {
           name: tl_rv_dm__mem
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9323,7 +9323,7 @@
         {
           name: tl_rom_ctrl__rom
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9335,7 +9335,7 @@
         {
           name: tl_rom_ctrl__regs
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9347,7 +9347,7 @@
         {
           name: tl_peri
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9360,7 +9360,7 @@
         {
           name: tl_spi_host0
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9372,7 +9372,7 @@
         {
           name: tl_spi_host1
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9384,7 +9384,7 @@
         {
           name: tl_usbdev
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9396,7 +9396,7 @@
         {
           name: tl_flash_ctrl__core
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9408,7 +9408,7 @@
         {
           name: tl_flash_ctrl__prim
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9420,7 +9420,7 @@
         {
           name: tl_flash_ctrl__mem
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9432,7 +9432,7 @@
         {
           name: tl_hmac
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9444,7 +9444,7 @@
         {
           name: tl_kmac
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9456,7 +9456,7 @@
         {
           name: tl_aes
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9468,7 +9468,7 @@
         {
           name: tl_entropy_src
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9480,7 +9480,7 @@
         {
           name: tl_csrng
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9492,7 +9492,7 @@
         {
           name: tl_edn0
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9504,7 +9504,7 @@
         {
           name: tl_edn1
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9516,7 +9516,7 @@
         {
           name: tl_rv_plic
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9528,7 +9528,7 @@
         {
           name: tl_otbn
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9540,7 +9540,7 @@
         {
           name: tl_keymgr
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9552,7 +9552,7 @@
         {
           name: tl_rv_core_ibex__cfg
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9564,7 +9564,7 @@
         {
           name: tl_sram_ctrl_main__regs
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9576,7 +9576,7 @@
         {
           name: tl_sram_ctrl_main__ram
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9588,7 +9588,7 @@
         {
           name: tl_tlul2axi
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10164,7 +10164,7 @@
         {
           name: tl_main
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: rsp
           width: 1
@@ -10176,7 +10176,7 @@
         {
           name: tl_uart0
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10188,7 +10188,7 @@
         {
           name: tl_uart1
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10200,7 +10200,7 @@
         {
           name: tl_uart2
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10212,7 +10212,7 @@
         {
           name: tl_uart3
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10224,7 +10224,7 @@
         {
           name: tl_i2c0
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10236,7 +10236,7 @@
         {
           name: tl_i2c1
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10248,7 +10248,7 @@
         {
           name: tl_i2c2
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10260,7 +10260,7 @@
         {
           name: tl_pattgen
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10272,7 +10272,7 @@
         {
           name: tl_pwm_aon
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10284,7 +10284,7 @@
         {
           name: tl_gpio
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10296,7 +10296,7 @@
         {
           name: tl_spi_device
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10308,7 +10308,7 @@
         {
           name: tl_rv_timer
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10320,7 +10320,7 @@
         {
           name: tl_pwrmgr_aon
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10332,7 +10332,7 @@
         {
           name: tl_rstmgr_aon
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10344,7 +10344,7 @@
         {
           name: tl_clkmgr_aon
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10356,7 +10356,7 @@
         {
           name: tl_pinmux_aon
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10368,7 +10368,7 @@
         {
           name: tl_otp_ctrl__core
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10380,7 +10380,7 @@
         {
           name: tl_otp_ctrl__prim
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10392,7 +10392,7 @@
         {
           name: tl_lc_ctrl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10404,7 +10404,7 @@
         {
           name: tl_sensor_ctrl
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10416,7 +10416,7 @@
         {
           name: tl_alert_handler
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10428,7 +10428,7 @@
         {
           name: tl_sram_ctrl_ret_aon__regs
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10440,7 +10440,7 @@
         {
           name: tl_sram_ctrl_ret_aon__ram
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10452,7 +10452,7 @@
         {
           name: tl_aon_timer_aon
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10464,7 +10464,7 @@
         {
           name: tl_sysrst_ctrl_aon
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10476,7 +10476,7 @@
         {
           name: tl_adc_ctrl_aon
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -10488,7 +10488,7 @@
         {
           name: tl_ast
           struct: tl
-          package: tlul_pkg
+          package: tlul_ot_pkg
           type: req_rsp
           act: req
           width: 1
@@ -15120,7 +15120,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -15133,7 +15133,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -15146,7 +15146,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -15159,7 +15159,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -15172,7 +15172,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -15233,7 +15233,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -15246,7 +15246,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -15259,7 +15259,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -15272,7 +15272,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -15285,7 +15285,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -15298,7 +15298,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -15609,7 +15609,7 @@
       {
         name: core_tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -15622,7 +15622,7 @@
       {
         name: prim_tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -16040,7 +16040,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -16107,7 +16107,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -16132,7 +16132,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -16155,7 +16155,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -16381,7 +16381,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -16640,7 +16640,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -16756,7 +16756,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -16968,7 +16968,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17005,7 +17005,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17044,7 +17044,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17057,7 +17057,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17395,7 +17395,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17470,7 +17470,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17483,7 +17483,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17561,7 +17561,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17616,7 +17616,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17687,7 +17687,7 @@
       {
         name: regs_tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17700,7 +17700,7 @@
       {
         name: ram_tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17972,7 +17972,7 @@
       {
         name: core_tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17985,7 +17985,7 @@
       {
         name: prim_tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -17998,7 +17998,7 @@
       {
         name: mem_tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -18121,7 +18121,7 @@
       {
         name: sba_tl_h
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -18133,7 +18133,7 @@
       {
         name: regs_tl_d
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -18146,7 +18146,7 @@
       {
         name: mem_tl_d
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -18196,7 +18196,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -18257,7 +18257,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -18282,7 +18282,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -18371,7 +18371,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -18494,7 +18494,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -18657,7 +18657,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -18734,7 +18734,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -18833,7 +18833,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -18881,7 +18881,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -18929,7 +18929,7 @@
       {
         name: tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -19002,7 +19002,7 @@
       {
         name: regs_tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -19015,7 +19015,7 @@
       {
         name: ram_tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -19080,7 +19080,7 @@
       {
         name: regs_tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -19093,7 +19093,7 @@
       {
         name: rom_tl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -19325,7 +19325,7 @@
       {
         name: corei_tl_h
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19337,7 +19337,7 @@
       {
         name: cored_tl_h
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19349,7 +19349,7 @@
       {
         name: cfg_tl_d
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -19362,7 +19362,7 @@
       {
         name: tl_rv_core_ibex__corei
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -19375,7 +19375,7 @@
       {
         name: tl_rv_core_ibex__cored
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -19388,7 +19388,7 @@
       {
         name: tl_rv_dm__sba
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -19401,7 +19401,7 @@
       {
         name: tl_rv_dm__regs
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19413,7 +19413,7 @@
       {
         name: tl_rv_dm__mem
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19425,7 +19425,7 @@
       {
         name: tl_rom_ctrl__rom
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19437,7 +19437,7 @@
       {
         name: tl_rom_ctrl__regs
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19449,7 +19449,7 @@
       {
         name: tl_peri
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19462,7 +19462,7 @@
       {
         name: tl_spi_host0
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19474,7 +19474,7 @@
       {
         name: tl_spi_host1
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19486,7 +19486,7 @@
       {
         name: tl_usbdev
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19498,7 +19498,7 @@
       {
         name: tl_flash_ctrl__core
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19510,7 +19510,7 @@
       {
         name: tl_flash_ctrl__prim
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19522,7 +19522,7 @@
       {
         name: tl_flash_ctrl__mem
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19534,7 +19534,7 @@
       {
         name: tl_hmac
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19546,7 +19546,7 @@
       {
         name: tl_kmac
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19558,7 +19558,7 @@
       {
         name: tl_aes
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19570,7 +19570,7 @@
       {
         name: tl_entropy_src
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19582,7 +19582,7 @@
       {
         name: tl_csrng
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19594,7 +19594,7 @@
       {
         name: tl_edn0
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19606,7 +19606,7 @@
       {
         name: tl_edn1
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19618,7 +19618,7 @@
       {
         name: tl_rv_plic
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19630,7 +19630,7 @@
       {
         name: tl_otbn
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19642,7 +19642,7 @@
       {
         name: tl_keymgr
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19654,7 +19654,7 @@
       {
         name: tl_rv_core_ibex__cfg
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19666,7 +19666,7 @@
       {
         name: tl_sram_ctrl_main__regs
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19678,7 +19678,7 @@
       {
         name: tl_sram_ctrl_main__ram
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19690,7 +19690,7 @@
       {
         name: tl_tlul2axi
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19702,7 +19702,7 @@
       {
         name: tl_main
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: rsp
         width: 1
@@ -19714,7 +19714,7 @@
       {
         name: tl_uart0
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19726,7 +19726,7 @@
       {
         name: tl_uart1
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19738,7 +19738,7 @@
       {
         name: tl_uart2
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19750,7 +19750,7 @@
       {
         name: tl_uart3
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19762,7 +19762,7 @@
       {
         name: tl_i2c0
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19774,7 +19774,7 @@
       {
         name: tl_i2c1
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19786,7 +19786,7 @@
       {
         name: tl_i2c2
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19798,7 +19798,7 @@
       {
         name: tl_pattgen
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19810,7 +19810,7 @@
       {
         name: tl_pwm_aon
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19822,7 +19822,7 @@
       {
         name: tl_gpio
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19834,7 +19834,7 @@
       {
         name: tl_spi_device
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19846,7 +19846,7 @@
       {
         name: tl_rv_timer
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19858,7 +19858,7 @@
       {
         name: tl_pwrmgr_aon
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19870,7 +19870,7 @@
       {
         name: tl_rstmgr_aon
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19882,7 +19882,7 @@
       {
         name: tl_clkmgr_aon
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19894,7 +19894,7 @@
       {
         name: tl_pinmux_aon
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19906,7 +19906,7 @@
       {
         name: tl_otp_ctrl__core
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19918,7 +19918,7 @@
       {
         name: tl_otp_ctrl__prim
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19930,7 +19930,7 @@
       {
         name: tl_lc_ctrl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19942,7 +19942,7 @@
       {
         name: tl_sensor_ctrl
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19954,7 +19954,7 @@
       {
         name: tl_alert_handler
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19966,7 +19966,7 @@
       {
         name: tl_sram_ctrl_ret_aon__regs
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19978,7 +19978,7 @@
       {
         name: tl_sram_ctrl_ret_aon__ram
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -19990,7 +19990,7 @@
       {
         name: tl_aon_timer_aon
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -20002,7 +20002,7 @@
       {
         name: tl_sysrst_ctrl_aon
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -20014,7 +20014,7 @@
       {
         name: tl_adc_ctrl_aon
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -20026,7 +20026,7 @@
       {
         name: tl_ast
         struct: tl
-        package: tlul_pkg
+        package: tlul_ot_pkg
         type: req_rsp
         act: req
         width: 1
@@ -20505,7 +20505,7 @@
         netname: es_rng_fips
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: ast_tl_req_o
         width: 1
@@ -20517,7 +20517,7 @@
         netname: ast_tl_h2d
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: ast_tl_rsp_i
         width: 1
@@ -21844,7 +21844,7 @@
         default: "'0"
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: main_tl_rv_core_ibex__corei_req
         width: 1
@@ -21852,10 +21852,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: main_tl_rv_core_ibex__corei_rsp
         width: 1
@@ -21866,7 +21866,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: main_tl_rv_core_ibex__cored_req
         width: 1
@@ -21874,10 +21874,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: main_tl_rv_core_ibex__cored_rsp
         width: 1
@@ -21888,7 +21888,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: main_tl_rv_dm__sba_req
         width: 1
@@ -21896,10 +21896,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: main_tl_rv_dm__sba_rsp
         width: 1
@@ -21910,7 +21910,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: rv_dm_regs_tl_d_req
         width: 1
@@ -21918,10 +21918,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: rv_dm_regs_tl_d_rsp
         width: 1
@@ -21932,7 +21932,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: rv_dm_mem_tl_d_req
         width: 1
@@ -21940,10 +21940,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: rv_dm_mem_tl_d_rsp
         width: 1
@@ -21954,7 +21954,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: rom_ctrl_rom_tl_req
         width: 1
@@ -21962,10 +21962,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: rom_ctrl_rom_tl_rsp
         width: 1
@@ -21976,7 +21976,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: rom_ctrl_regs_tl_req
         width: 1
@@ -21984,10 +21984,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: rom_ctrl_regs_tl_rsp
         width: 1
@@ -21998,7 +21998,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: main_tl_peri_req
         width: 1
@@ -22009,7 +22009,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: main_tl_peri_rsp
         width: 1
@@ -22017,10 +22017,10 @@
         end_idx: -1
         act: req
         suffix: rsp
-        default: tlul_pkg::TL_D2H_DEFAULT
+        default: tlul_ot_pkg::TL_D2H_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: spi_host0_tl_req
         width: 1
@@ -22028,10 +22028,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: spi_host0_tl_rsp
         width: 1
@@ -22042,7 +22042,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: spi_host1_tl_req
         width: 1
@@ -22050,10 +22050,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: spi_host1_tl_rsp
         width: 1
@@ -22064,7 +22064,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: usbdev_tl_req
         width: 1
@@ -22072,10 +22072,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: usbdev_tl_rsp
         width: 1
@@ -22086,7 +22086,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: flash_ctrl_core_tl_req
         width: 1
@@ -22094,10 +22094,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: flash_ctrl_core_tl_rsp
         width: 1
@@ -22108,7 +22108,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: flash_ctrl_prim_tl_req
         width: 1
@@ -22116,10 +22116,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: flash_ctrl_prim_tl_rsp
         width: 1
@@ -22130,7 +22130,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: flash_ctrl_mem_tl_req
         width: 1
@@ -22138,10 +22138,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: flash_ctrl_mem_tl_rsp
         width: 1
@@ -22152,7 +22152,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: hmac_tl_req
         width: 1
@@ -22160,10 +22160,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: hmac_tl_rsp
         width: 1
@@ -22174,7 +22174,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: kmac_tl_req
         width: 1
@@ -22182,10 +22182,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: kmac_tl_rsp
         width: 1
@@ -22196,7 +22196,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: aes_tl_req
         width: 1
@@ -22204,10 +22204,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: aes_tl_rsp
         width: 1
@@ -22218,7 +22218,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: entropy_src_tl_req
         width: 1
@@ -22226,10 +22226,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: entropy_src_tl_rsp
         width: 1
@@ -22240,7 +22240,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: csrng_tl_req
         width: 1
@@ -22248,10 +22248,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: csrng_tl_rsp
         width: 1
@@ -22262,7 +22262,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: edn0_tl_req
         width: 1
@@ -22270,10 +22270,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: edn0_tl_rsp
         width: 1
@@ -22284,7 +22284,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: edn1_tl_req
         width: 1
@@ -22292,10 +22292,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: edn1_tl_rsp
         width: 1
@@ -22306,7 +22306,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: rv_plic_tl_req
         width: 1
@@ -22314,10 +22314,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: rv_plic_tl_rsp
         width: 1
@@ -22328,7 +22328,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: otbn_tl_req
         width: 1
@@ -22336,10 +22336,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: otbn_tl_rsp
         width: 1
@@ -22350,7 +22350,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: keymgr_tl_req
         width: 1
@@ -22358,10 +22358,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: keymgr_tl_rsp
         width: 1
@@ -22372,7 +22372,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: rv_core_ibex_cfg_tl_d_req
         width: 1
@@ -22380,10 +22380,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: rv_core_ibex_cfg_tl_d_rsp
         width: 1
@@ -22394,7 +22394,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: sram_ctrl_main_regs_tl_req
         width: 1
@@ -22402,10 +22402,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: sram_ctrl_main_regs_tl_rsp
         width: 1
@@ -22416,7 +22416,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: sram_ctrl_main_ram_tl_req
         width: 1
@@ -22424,10 +22424,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: sram_ctrl_main_ram_tl_rsp
         width: 1
@@ -22438,7 +22438,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: tlul2axi_tl_req
         width: 1
@@ -22446,10 +22446,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: tlul2axi_tl_rsp
         width: 1
@@ -22460,7 +22460,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: uart0_tl_req
         width: 1
@@ -22468,10 +22468,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: uart0_tl_rsp
         width: 1
@@ -22482,7 +22482,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: uart1_tl_req
         width: 1
@@ -22490,10 +22490,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: uart1_tl_rsp
         width: 1
@@ -22504,7 +22504,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: uart2_tl_req
         width: 1
@@ -22512,10 +22512,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: uart2_tl_rsp
         width: 1
@@ -22526,7 +22526,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: uart3_tl_req
         width: 1
@@ -22534,10 +22534,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: uart3_tl_rsp
         width: 1
@@ -22548,7 +22548,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: i2c0_tl_req
         width: 1
@@ -22556,10 +22556,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: i2c0_tl_rsp
         width: 1
@@ -22570,7 +22570,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: i2c1_tl_req
         width: 1
@@ -22578,10 +22578,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: i2c1_tl_rsp
         width: 1
@@ -22592,7 +22592,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: i2c2_tl_req
         width: 1
@@ -22600,10 +22600,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: i2c2_tl_rsp
         width: 1
@@ -22614,7 +22614,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: pattgen_tl_req
         width: 1
@@ -22622,10 +22622,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: pattgen_tl_rsp
         width: 1
@@ -22636,7 +22636,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: pwm_aon_tl_req
         width: 1
@@ -22644,10 +22644,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: pwm_aon_tl_rsp
         width: 1
@@ -22658,7 +22658,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: gpio_tl_req
         width: 1
@@ -22666,10 +22666,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: gpio_tl_rsp
         width: 1
@@ -22680,7 +22680,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: spi_device_tl_req
         width: 1
@@ -22688,10 +22688,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: spi_device_tl_rsp
         width: 1
@@ -22702,7 +22702,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: rv_timer_tl_req
         width: 1
@@ -22710,10 +22710,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: rv_timer_tl_rsp
         width: 1
@@ -22724,7 +22724,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: pwrmgr_aon_tl_req
         width: 1
@@ -22732,10 +22732,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: pwrmgr_aon_tl_rsp
         width: 1
@@ -22746,7 +22746,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: rstmgr_aon_tl_req
         width: 1
@@ -22754,10 +22754,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: rstmgr_aon_tl_rsp
         width: 1
@@ -22768,7 +22768,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: clkmgr_aon_tl_req
         width: 1
@@ -22776,10 +22776,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: clkmgr_aon_tl_rsp
         width: 1
@@ -22790,7 +22790,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: pinmux_aon_tl_req
         width: 1
@@ -22798,10 +22798,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: pinmux_aon_tl_rsp
         width: 1
@@ -22812,7 +22812,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: otp_ctrl_core_tl_req
         width: 1
@@ -22820,10 +22820,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: otp_ctrl_core_tl_rsp
         width: 1
@@ -22834,7 +22834,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: otp_ctrl_prim_tl_req
         width: 1
@@ -22842,10 +22842,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: otp_ctrl_prim_tl_rsp
         width: 1
@@ -22856,7 +22856,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: lc_ctrl_tl_req
         width: 1
@@ -22864,10 +22864,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: lc_ctrl_tl_rsp
         width: 1
@@ -22878,7 +22878,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: sensor_ctrl_tl_req
         width: 1
@@ -22886,10 +22886,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: sensor_ctrl_tl_rsp
         width: 1
@@ -22900,7 +22900,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: alert_handler_tl_req
         width: 1
@@ -22908,10 +22908,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: alert_handler_tl_rsp
         width: 1
@@ -22922,7 +22922,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: sram_ctrl_ret_aon_regs_tl_req
         width: 1
@@ -22930,10 +22930,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: sram_ctrl_ret_aon_regs_tl_rsp
         width: 1
@@ -22944,7 +22944,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: sram_ctrl_ret_aon_ram_tl_req
         width: 1
@@ -22952,10 +22952,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: sram_ctrl_ret_aon_ram_tl_rsp
         width: 1
@@ -22966,7 +22966,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: aon_timer_aon_tl_req
         width: 1
@@ -22974,10 +22974,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: aon_timer_aon_tl_rsp
         width: 1
@@ -22988,7 +22988,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: sysrst_ctrl_aon_tl_req
         width: 1
@@ -22996,10 +22996,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: sysrst_ctrl_aon_tl_rsp
         width: 1
@@ -23010,7 +23010,7 @@
         default: ""
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_h2d
         signame: adc_ctrl_aon_tl_req
         width: 1
@@ -23018,10 +23018,10 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
+        default: tlul_ot_pkg::TL_H2D_DEFAULT
       }
       {
-        package: tlul_pkg
+        package: tlul_ot_pkg
         struct: tl_d2h
         signame: adc_ctrl_aon_tl_rsp
         width: 1

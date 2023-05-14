@@ -10,7 +10,7 @@
 
 module entropy_src_tb;
 
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
   import entropy_src_reg_pkg::*;
 
   // tests
@@ -35,8 +35,8 @@ module entropy_src_tb;
   logic      es_entropy_fifo_err_o;
 
   // tlul signals
-  tlul_pkg::tl_h2d_t tl_i;
-  tlul_pkg::tl_d2h_t tl_o;
+  tlul_ot_pkg::tl_h2d_t tl_i;
+  tlul_ot_pkg::tl_d2h_t tl_o;
 
 
   // imported register parameters (for reference)

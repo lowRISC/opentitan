@@ -320,7 +320,7 @@ module chip_englishbreakfast_verilator (
   sim_sram u_sim_sram (
     .clk_i    (`RV_CORE_IBEX.clk_i),
     .rst_ni   (`RV_CORE_IBEX.rst_ni),
-    .tl_in_i  (tlul_pkg::tl_h2d_t'(`RV_CORE_IBEX.u_tlul_req_buf.out_o)),
+    .tl_in_i  (tlul_ot_pkg::tl_h2d_t'(`RV_CORE_IBEX.u_tlul_req_buf.out_o)),
     .tl_in_o  (),
     .tl_out_o (),
     .tl_out_i ()

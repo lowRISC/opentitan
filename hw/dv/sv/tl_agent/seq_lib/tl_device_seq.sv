@@ -129,10 +129,10 @@ class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
     if (d_error_pct > 0) rsp.no_d_error_c.constraint_mode(0);
     if (!(rsp.randomize() with
            {rsp.d_valid_delay inside {[min_rsp_delay : max_rsp_delay]};
-            if (rsp.a_opcode == tlul_pkg::Get) {
-              rsp.d_opcode == tlul_pkg::AccessAckData;
+            if (rsp.a_opcode == tlul_ot_pkg::Get) {
+              rsp.d_opcode == tlul_ot_pkg::AccessAckData;
             } else {
-              rsp.d_opcode == tlul_pkg::AccessAck;
+              rsp.d_opcode == tlul_ot_pkg::AccessAck;
             }
             rsp.d_size == rsp.a_size;
             rsp.d_source == rsp.a_source;

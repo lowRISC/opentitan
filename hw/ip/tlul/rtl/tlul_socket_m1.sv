@@ -36,11 +36,11 @@ module tlul_socket_m1 #(
   input                     clk_i,
   input                     rst_ni,
 
-  input  tlul_pkg::tl_h2d_t tl_h_i [M],
-  output tlul_pkg::tl_d2h_t tl_h_o [M],
+  input  tlul_ot_pkg::tl_h2d_t tl_h_i [M],
+  output tlul_ot_pkg::tl_d2h_t tl_h_o [M],
 
-  output tlul_pkg::tl_h2d_t tl_d_o,
-  input  tlul_pkg::tl_d2h_t tl_d_i
+  output tlul_ot_pkg::tl_h2d_t tl_d_o,
+  input  tlul_ot_pkg::tl_d2h_t tl_d_i
 );
 
   `ASSERT_INIT(maxM, M < 16)
@@ -72,22 +72,22 @@ module tlul_socket_m1 #(
   localparam int unsigned IDW   = top_pkg::TL_AIW;
   localparam int unsigned STIDW = $clog2(M);
 
-  tlul_pkg::tl_h2d_t hreq_fifo_o [M];
-  tlul_pkg::tl_d2h_t hrsp_fifo_i [M];
+  tlul_ot_pkg::tl_h2d_t hreq_fifo_o [M];
+  tlul_ot_pkg::tl_d2h_t hrsp_fifo_i [M];
 
   logic [M-1:0] hrequest;
   logic [M-1:0] hgrant;
 
-  tlul_pkg::tl_h2d_t dreq_fifo_i;
-  tlul_pkg::tl_d2h_t drsp_fifo_o;
+  tlul_ot_pkg::tl_h2d_t dreq_fifo_i;
+  tlul_ot_pkg::tl_d2h_t drsp_fifo_o;
 
   logic arb_valid;
   logic arb_ready;
-  tlul_pkg::tl_h2d_t arb_data;
+  tlul_ot_pkg::tl_h2d_t arb_data;
 
   // Host Req/Rsp FIFO
   for (genvar i = 0 ; i < M ; i++) begin : gen_host_fifo
-    tlul_pkg::tl_h2d_t hreq_fifo_i;
+    tlul_ot_pkg::tl_h2d_t hreq_fifo_i;
 
     // ID Shifting
     logic [STIDW-1:0] reqid_sub;
@@ -165,10 +165,10 @@ module tlul_socket_m1 #(
 
   assign arb_ready = drsp_fifo_o.a_ready;
 
-  if (tlul_pkg::ArbiterImpl == "PPC") begin : gen_arb_ppc
+  if (tlul_ot_pkg::ArbiterImpl == "PPC") begin : gen_arb_ppc
     prim_arbiter_ppc #(
       .N          (M),
-      .DW         ($bits(tlul_pkg::tl_h2d_t))
+      .DW         ($bits(tlul_ot_pkg::tl_h2d_t))
     ) u_reqarb (
       .clk_i,
       .rst_ni,
@@ -181,10 +181,10 @@ module tlul_socket_m1 #(
       .data_o    ( arb_data    ),
       .ready_i   ( arb_ready   )
     );
-  end else if (tlul_pkg::ArbiterImpl == "BINTREE") begin : gen_tree_arb
+  end else if (tlul_ot_pkg::ArbiterImpl == "BINTREE") begin : gen_tree_arb
     prim_arbiter_tree #(
       .N          (M),
-      .DW         ($bits(tlul_pkg::tl_h2d_t))
+      .DW         ($bits(tlul_ot_pkg::tl_h2d_t))
     ) u_reqarb (
       .clk_i,
       .rst_ni,

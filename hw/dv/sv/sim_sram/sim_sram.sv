@@ -14,12 +14,12 @@ module sim_sram #(
   input logic rst_ni,
 
   // Incoming TL access.
-  input  tlul_pkg::tl_h2d_t tl_in_i,
-  output tlul_pkg::tl_d2h_t tl_in_o,
+  input  tlul_ot_pkg::tl_h2d_t tl_in_i,
+  output tlul_ot_pkg::tl_d2h_t tl_in_o,
 
   // Outgoing TL access.
-  output tlul_pkg::tl_h2d_t tl_out_o,
-  input  tlul_pkg::tl_d2h_t tl_out_i
+  output tlul_ot_pkg::tl_h2d_t tl_out_o,
+  input  tlul_ot_pkg::tl_d2h_t tl_out_i
 );
 
 `ifdef SYNTHESIS

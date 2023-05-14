@@ -125,7 +125,7 @@ widths based upon the other parameter sizes.
 
 All widths are expected to be fixed for an entire project and referred
 to in (what is currently called) `top_pkg`. The contents of `top_pkg`
-(to define the widths) and `tlul_pkg` (to define the bus structs) are
+(to define the widths) and `tlul_ot_pkg` (to define the bus structs) are
 given below.
 
 ### Reset Timing
@@ -156,7 +156,7 @@ endpackage
 ```
 
 ```systemverilog
-package tlul_pkg;
+package tlul_ot_pkg;
   typedef enum logic [2:0] {
     PutFullData    = 3'h 0,
     PutPartialData = 3'h 1,

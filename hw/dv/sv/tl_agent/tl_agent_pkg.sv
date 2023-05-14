@@ -7,7 +7,7 @@ package tl_agent_pkg;
   // dep packages
   import uvm_pkg::*;
   import bus_params_pkg::*;
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
   import mem_model_pkg::*;
   import dv_lib_pkg::*;
   import dv_base_reg_pkg::*;

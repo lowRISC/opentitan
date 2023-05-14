@@ -24,8 +24,8 @@ module rstmgr
   input clk_usb_i,
 
   // Bus Interface
-  input tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+  input tlul_ot_pkg::tl_h2d_t tl_i,
+  output tlul_ot_pkg::tl_d2h_t tl_o,
 
   // pwrmgr interface
   input pwrmgr_pkg::pwr_rst_req_t pwr_i,

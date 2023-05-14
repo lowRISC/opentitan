@@ -22,7 +22,7 @@
 `include "prim_assert.sv"
 
 module tlul_adapter_host
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
   parameter int unsigned MAX_REQS = 2,

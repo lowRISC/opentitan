@@ -37,13 +37,13 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
     if (rw.kind == UVM_READ) begin
       if (rw.byte_en == '1 && item.element_kind == UVM_REG) begin // csr full read
         `DV_CHECK_RANDOMIZE_WITH_FATAL(bus_req,
-            a_opcode              == tlul_pkg::Get;
+            a_opcode              == tlul_ot_pkg::Get;
             a_addr[AddrWidth-1:2] == rw.addr[AddrWidth-1:2];
             $countones(a_mask)  dist {MaskWidth       :/ 1,
                                       [0:MaskWidth-1] :/ 1};)
       end else begin // csr field read
         `DV_CHECK_RANDOMIZE_WITH_FATAL(bus_req,
-            a_opcode              == tlul_pkg::Get;
+            a_opcode              == tlul_ot_pkg::Get;
             a_addr[AddrWidth-1:2] == rw.addr[AddrWidth-1:2];
             a_mask                == rw.byte_en[MaskWidth-1:0];)
       end

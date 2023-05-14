@@ -15,7 +15,7 @@
  * tlul read transaction is generated out first.  If not required, the
  * incoming tlul transaction is directly muxed out.
  */
-module tlul_sram_byte import tlul_pkg::*; #(
+module tlul_sram_byte import tlul_ot_pkg::*; #(
   parameter bit EnableIntg  = 0,  // Enable integrity handling at byte level
   parameter int Outstanding = 1
 ) (
@@ -196,7 +196,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
     // Compute updated integrity bits for the data.
     // Note that the CMD integrity does not have to be correct, since it is not consumed nor
     // checked further downstream.
-    logic [tlul_pkg::DataIntgWidth-1:0] data_intg;
+    logic [tlul_ot_pkg::DataIntgWidth-1:0] data_intg;
 
     tlul_data_integ_enc u_tlul_data_integ_enc (
       .data_i(combined_data),

@@ -23,20 +23,20 @@ module xbar_${xbar.name} (
 
   // Host interfaces
 % for node in xbar.hosts:
-  input  tlul_pkg::tl_h2d_t tl_${node.name.replace('.', '__')}_i,
-  output tlul_pkg::tl_d2h_t tl_${node.name.replace('.', '__')}_o,
+  input  tlul_ot_pkg::tl_h2d_t tl_${node.name.replace('.', '__')}_i,
+  output tlul_ot_pkg::tl_d2h_t tl_${node.name.replace('.', '__')}_o,
 % endfor
 
   // Device interfaces
 % for node in xbar.devices:
-  output tlul_pkg::tl_h2d_t tl_${node.name.replace('.', '__')}_o,
-  input  tlul_pkg::tl_d2h_t tl_${node.name.replace('.', '__')}_i,
+  output tlul_ot_pkg::tl_h2d_t tl_${node.name.replace('.', '__')}_o,
+  input  tlul_ot_pkg::tl_d2h_t tl_${node.name.replace('.', '__')}_i,
 % endfor
 
   input prim_mubi_pkg::mubi4_t scanmode_i
 );
 
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
   import tl_${xbar.name}_pkg::*;
 
   // scanmode_i is currently not used, but provisioned for future use

@@ -31,8 +31,8 @@ module rv_plic_ot import rv_plic_ot_reg_pkg::*; #(
   input     rst_ni,
 
   // Bus Interface (device)
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+  input  tlul_ot_pkg::tl_h2d_t tl_i,
+  output tlul_ot_pkg::tl_d2h_t tl_o,
 
   // Interrupt Sources
   input  [NumSrc-1:0] intr_src_i,

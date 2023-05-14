@@ -14,8 +14,8 @@ module tlul_assert #(
   input rst_ni,
 
   // tile link ports
-  input tlul_pkg::tl_h2d_t h2d,
-  input tlul_pkg::tl_d2h_t d2h
+  input tlul_ot_pkg::tl_h2d_t h2d,
+  input tlul_ot_pkg::tl_d2h_t d2h
 );
 
 `ifndef VERILATOR
@@ -24,7 +24,7 @@ module tlul_assert #(
 `ifdef UVM
   import uvm_pkg::*;
 `endif
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
   import top_pkg::*;
 
   //////////////////////////////////

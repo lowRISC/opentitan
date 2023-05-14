@@ -19,8 +19,8 @@ module edn
   input logic rst_ni,
 
   // Tilelink Bus registers
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+  input  tlul_ot_pkg::tl_h2d_t tl_i,
+  output tlul_ot_pkg::tl_d2h_t tl_o,
 
   // EDN interfaces
   input  edn_req_t [NumEndPoints-1:0] edn_i,

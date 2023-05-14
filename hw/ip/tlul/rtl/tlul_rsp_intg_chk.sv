@@ -8,7 +8,7 @@
  * Tile-Link UL response integrity check
  */
 
-module tlul_rsp_intg_chk import tlul_pkg::*; #(
+module tlul_rsp_intg_chk import tlul_ot_pkg::*; #(
   parameter bit EnableRspDataIntgCheck = 0
 ) (
   // TL-UL interface

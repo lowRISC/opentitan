@@ -53,8 +53,8 @@ module tb;
   assign sck_en = ~sif.csb;
 
   // Signals
-  tlul_pkg::tl_h2d_t tl_h2d, tl_h2d_intg; // into DUT
-  tlul_pkg::tl_d2h_t tl_d2h, tl_d2h_intg; // from DUT
+  tlul_ot_pkg::tl_h2d_t tl_h2d, tl_h2d_intg; // into DUT
+  tlul_ot_pkg::tl_d2h_t tl_d2h, tl_d2h_intg; // from DUT
   logic tlul_error;
 
   prim_alert_pkg::alert_rx_t [spi_device_reg_pkg::NumAlerts-1:0] alert_rx;

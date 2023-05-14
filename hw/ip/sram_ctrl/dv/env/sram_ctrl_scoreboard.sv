@@ -117,7 +117,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   virtual function bit get_sram_predict_tl_err(tl_seq_item item, tl_channels_e channel);
     bit is_tl_err;
     bit allow_ifetch;
-    tlul_pkg::tl_a_user_t a_user       = tlul_pkg::tl_a_user_t'(item.a_user);
+    tlul_ot_pkg::tl_a_user_t a_user       = tlul_ot_pkg::tl_a_user_t'(item.a_user);
     prim_mubi_pkg::mubi8_t sram_ifetch = cfg.exec_vif.otp_en_sram_ifetch;
     lc_ctrl_pkg::lc_tx_t hw_debug_en   = cfg.exec_vif.lc_hw_debug_en;
     prim_mubi_pkg::mubi4_t  csr_exec   = prim_mubi_pkg::mubi4_t'(`gmv(ral.exec));
@@ -140,7 +140,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // 2 error cases if an InstrType transaction is seen:
       // - if it is a write transaction
       // - if the SRAM is not configured in executable mode
-      is_tl_err = (allow_ifetch) ? (item.a_opcode != tlul_pkg::Get) : 1'b1;
+      is_tl_err = (allow_ifetch) ? (item.a_opcode != tlul_ot_pkg::Get) : 1'b1;
     end
 
     if (status_lc_esc) is_tl_err |= 1;
@@ -164,7 +164,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
   virtual function void check_tl_read_value_after_error(tl_seq_item item, string ral_name);
     bit [TL_DW-1:0] exp_data;
-    tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(item.a_user);
+    tlul_ot_pkg::tl_a_user_t a_user = tlul_ot_pkg::tl_a_user_t'(item.a_user);
 
     // if error occurs when it's an instrution, return all 0 since it's an illegal instruction
     if (a_user.instr_type == prim_mubi_pkg::MuBi4True) exp_data = 0;

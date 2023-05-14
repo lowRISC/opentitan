@@ -430,7 +430,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         if (tl_intg_err_mem_subword_cgs_wrap.exists(ral_name)) begin
           tl_intg_err_mem_subword_cgs_wrap[ral_name].sample(
               .tl_intg_err_type(tl_intg_err_type),
-              .write(item.a_opcode != tlul_pkg::Get),
+              .write(item.a_opcode != tlul_ot_pkg::Get),
               .num_enable_bytes($countones(item.a_mask)));
         end
       end
@@ -447,7 +447,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                     cfg.tl_mem_access_gated, ecc_err))
 
       // In data read phase, check d_data when d_error = 1.
-      if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
+      if (item.d_error && (item.d_opcode == tlul_ot_pkg::AccessAckData)) begin
         check_tl_read_value_after_error(item, ral_name);
       end
 
@@ -499,19 +499,19 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       // Check if write isn't full word for mem that doesn't allow byte access.
       if (!mem.get_mem_partial_write_support() &&
           (item.a_size != 2 || item.a_mask != '1) &&
-          item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData}) begin
+          item.a_opcode inside {tlul_ot_pkg::PutFullData, tlul_ot_pkg::PutPartialData}) begin
         invalid_access = 1;
         mem_byte_access_err = 1;
       end
 
       // check if mem read happens while mem doesn't allow read (WO)
-      if ((mem_access == "WO") && (item.a_opcode == tlul_pkg::Get)) begin
+      if ((mem_access == "WO") && (item.a_opcode == tlul_ot_pkg::Get)) begin
         invalid_access = 1;
         mem_wo_err = !mem.get_read_to_wo_mem_ok();
       end
 
       // check if mem write happens while mem is RO
-      if ((mem_access == "RO") && (item.a_opcode != tlul_pkg::Get)) begin
+      if ((mem_access == "RO") && (item.a_opcode != tlul_ot_pkg::Get)) begin
         invalid_access = 1;
         mem_ro_err = !mem.get_write_to_ro_mem_ok();
       end
@@ -543,7 +543,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     // which map to pick - we only know the ral_name of the interface. For now,
     // dv_base_reg_block::supports_byte_enable serves this need.
     return !cfg.ral_models[ral_name].get_supports_byte_enable() &&
-        item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData} &&
+        item.a_opcode inside {tlul_ot_pkg::PutFullData, tlul_ot_pkg::PutPartialData} &&
         (item.a_size != 2 || item.a_mask != '1);
   endfunction
 

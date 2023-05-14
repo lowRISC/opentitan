@@ -37,9 +37,9 @@ class tl_host_single_seq #(type REQ_T = tl_seq_item) extends tl_host_seq #(REQ_T
           a_opcode == opcode;
         } else {
           if (write) {
-            a_opcode inside {tlul_pkg::PutPartialData, tlul_pkg::PutFullData};
+            a_opcode inside {tlul_ot_pkg::PutPartialData, tlul_ot_pkg::PutFullData};
           } else {
-            a_opcode  == tlul_pkg::Get;
+            a_opcode  == tlul_ot_pkg::Get;
           }
         }
         })) begin

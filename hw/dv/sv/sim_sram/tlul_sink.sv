@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Provides termination for a TL interface.
-module tlul_sink import tlul_pkg::*; (
+module tlul_sink import tlul_ot_pkg::*; (
   input logic clk_i,
   input logic rst_ni,
 
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o
+  input  tlul_ot_pkg::tl_h2d_t tl_i,
+  output tlul_ot_pkg::tl_d2h_t tl_o
 );
   logic a_ack, d_ack;
   logic rd_req, wr_req;
@@ -75,7 +75,7 @@ module tlul_sink import tlul_pkg::*; (
   //////////////////
   // Final Output //
   //////////////////
-  tlul_pkg::tl_d2h_t tl_o_pre;
+  tlul_ot_pkg::tl_d2h_t tl_o_pre;
   assign tl_o_pre = '{
     a_ready:  ~pending,
     d_valid:  pending,

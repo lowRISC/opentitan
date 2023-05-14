@@ -8,7 +8,7 @@
  * Tile-Link UL response integrity generator
  */
 
-module tlul_rsp_intg_gen import tlul_pkg::*; #(
+module tlul_rsp_intg_gen import tlul_ot_pkg::*; #(
   parameter bit EnableRspIntgGen = 1'b1,
   parameter bit EnableDataIntgGen = 1'b1
 ) (

@@ -12,8 +12,8 @@ module tlul_assert_multiple #(
   input rst_ni,
 
   // tile link ports
-  input tlul_pkg::tl_h2d_t h2d [N],
-  input tlul_pkg::tl_d2h_t d2h [N]
+  input tlul_ot_pkg::tl_h2d_t h2d [N],
+  input tlul_ot_pkg::tl_d2h_t d2h [N]
 );
 
   // instantiate N tlul_assert modules

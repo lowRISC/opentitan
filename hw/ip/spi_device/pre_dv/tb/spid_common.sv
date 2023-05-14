@@ -1077,8 +1077,8 @@ package spid_common;
   task automatic tlul_write(
     const ref logic clk,
 
-    ref tlul_pkg::tl_h2d_t       h2d,
-    const ref tlul_pkg::tl_d2h_t d2h,
+    ref tlul_ot_pkg::tl_h2d_t       h2d,
+    const ref tlul_ot_pkg::tl_d2h_t d2h,
 
     input logic [31:0] address,
     input logic [31:0] wdata,
@@ -1088,7 +1088,7 @@ package spid_common;
     // Assume always called this task @(posedge clk);
     h2d.a_valid   = 1'b 1;
     h2d.a_address = address;
-    h2d.a_opcode  = tlul_pkg::PutFullData;
+    h2d.a_opcode  = tlul_ot_pkg::PutFullData;
     h2d.a_data    = wdata;
     h2d.a_mask    = wstrb;
     h2d.a_param   = '0;
@@ -1113,8 +1113,8 @@ package spid_common;
   task automatic tlul_read(
     const ref logic clk,
 
-    ref tlul_pkg::tl_h2d_t       h2d,
-    const ref tlul_pkg::tl_d2h_t d2h,
+    ref tlul_ot_pkg::tl_h2d_t       h2d,
+    const ref tlul_ot_pkg::tl_d2h_t d2h,
 
     input  logic [31:0] address,
     output logic [31:0] rdata
@@ -1123,7 +1123,7 @@ package spid_common;
     // Assume always called this task @(posedge clk);
     h2d.a_valid   = 1'b 1;
     h2d.a_address = address;
-    h2d.a_opcode  = tlul_pkg::Get;
+    h2d.a_opcode  = tlul_ot_pkg::Get;
     h2d.a_data    = '0;
     h2d.a_mask    = '1;
     h2d.a_param   = '0;
@@ -1146,8 +1146,8 @@ package spid_common;
   task automatic tlul_rmw(
     const ref logic clk,
 
-    ref tlul_pkg::tl_h2d_t       h2d,
-    const ref tlul_pkg::tl_d2h_t d2h,
+    ref tlul_ot_pkg::tl_h2d_t       h2d,
+    const ref tlul_ot_pkg::tl_d2h_t d2h,
 
     input logic [31:0] address,
     input logic [31:0] data,

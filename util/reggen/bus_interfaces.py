@@ -173,7 +173,7 @@ class BusInterfaces:
                          name: Optional[str]) -> InterSignal:
         act = 'req' if is_host else 'rsp'
         return InterSignal(self.get_port_name(is_host, name),
-                           None, 'tl', 'tlul_pkg', 'req_rsp', act, 1, None)
+                           None, 'tl', 'tlul_ot_pkg', 'req_rsp', act, 1, None)
 
     def inter_signals(self) -> List[InterSignal]:
         return [self._if_inter_signal(is_host, name)

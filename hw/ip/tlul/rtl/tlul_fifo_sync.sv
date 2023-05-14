@@ -16,10 +16,10 @@ module tlul_fifo_sync #(
 ) (
   input                     clk_i,
   input                     rst_ni,
-  input  tlul_pkg::tl_h2d_t tl_h_i,
-  output tlul_pkg::tl_d2h_t tl_h_o,
-  output tlul_pkg::tl_h2d_t tl_d_o,
-  input  tlul_pkg::tl_d2h_t tl_d_i,
+  input  tlul_ot_pkg::tl_h2d_t tl_h_i,
+  output tlul_ot_pkg::tl_d2h_t tl_h_o,
+  output tlul_ot_pkg::tl_h2d_t tl_d_o,
+  input  tlul_ot_pkg::tl_d2h_t tl_d_i,
   input  [SpareReqW-1:0]    spare_req_i,
   output [SpareReqW-1:0]    spare_req_o,
   input  [SpareRspW-1:0]    spare_rsp_i,
@@ -27,7 +27,7 @@ module tlul_fifo_sync #(
 );
 
   // Put everything on the request side into one FIFO
-  localparam int unsigned REQFIFO_WIDTH = $bits(tlul_pkg::tl_h2d_t) -2 + SpareReqW;
+  localparam int unsigned REQFIFO_WIDTH = $bits(tlul_ot_pkg::tl_h2d_t) -2 + SpareReqW;
 
   prim_ot_fifo_sync #(.Width(REQFIFO_WIDTH), .Pass(ReqPass), .Depth(ReqDepth)) reqfifo (
     .clk_i,
@@ -61,7 +61,7 @@ module tlul_fifo_sync #(
 
   // Put everything on the response side into the other FIFO
 
-  localparam int unsigned RSPFIFO_WIDTH = $bits(tlul_pkg::tl_d2h_t) -2 + SpareRspW;
+  localparam int unsigned RSPFIFO_WIDTH = $bits(tlul_ot_pkg::tl_d2h_t) -2 + SpareRspW;
 
   prim_ot_fifo_sync #(.Width(RSPFIFO_WIDTH), .Pass(RspPass), .Depth(RspDepth)) rspfifo (
     .clk_i,
@@ -74,7 +74,7 @@ module tlul_fifo_sync #(
                      tl_d_i.d_size  ,
                      tl_d_i.d_source,
                      tl_d_i.d_sink  ,
-                     (tl_d_i.d_opcode == tlul_pkg::AccessAckData) ? tl_d_i.d_data :
+                     (tl_d_i.d_opcode == tlul_ot_pkg::AccessAckData) ? tl_d_i.d_data :
                                                                     {top_pkg::TL_DW{1'b0}} ,
                      tl_d_i.d_user  ,
                      tl_d_i.d_error ,

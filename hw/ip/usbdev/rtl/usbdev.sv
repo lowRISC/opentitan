@@ -26,8 +26,8 @@ module usbdev
   input  logic       rst_aon_ni,
 
   // Register interface
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+  input  tlul_ot_pkg::tl_h2d_t tl_i,
+  output tlul_ot_pkg::tl_d2h_t tl_o,
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -118,8 +118,8 @@ module usbdev
     assign rst_n = rst_ni;
   end
 
-  tlul_pkg::tl_h2d_t tl_sram_h2d;
-  tlul_pkg::tl_d2h_t tl_sram_d2h;
+  tlul_ot_pkg::tl_h2d_t tl_sram_h2d;
+  tlul_ot_pkg::tl_d2h_t tl_sram_d2h;
 
   // Dual-port SRAM Interface: Refer prim_ram_2p_adv.sv
   logic              sw_mem_a_req;

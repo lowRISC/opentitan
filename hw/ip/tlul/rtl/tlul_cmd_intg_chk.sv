@@ -8,7 +8,7 @@
  * Tile-Link UL command integrity check
  */
 
-module tlul_cmd_intg_chk import tlul_pkg::*; (
+module tlul_cmd_intg_chk import tlul_ot_pkg::*; (
   // TL-UL interface
   input  tl_h2d_t tl_i,
 

@@ -38,8 +38,8 @@ module prim_flash #(
   // Alert indication (to be connected to alert sender in the instantiating IP)
   output logic fatal_alert_o,
   output logic recov_alert_o,
-  input tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+  input tlul_ot_pkg::tl_h2d_t tl_i,
+  output tlul_ot_pkg::tl_d2h_t tl_o,
   // Observability
   input ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
   // Debug Mode Interface

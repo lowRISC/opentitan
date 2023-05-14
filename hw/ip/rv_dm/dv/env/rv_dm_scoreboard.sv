@@ -233,7 +233,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK_EQ(sba_tl_item.a_size, $clog2(bus_params_pkg::BUS_DBW), msg)
 
     if (sba_item.bus_op == BusOpRead) begin
-      `DV_CHECK_EQ(sba_tl_item.a_opcode, tlul_pkg::Get, msg)
+      `DV_CHECK_EQ(sba_tl_item.a_opcode, tlul_ot_pkg::Get, msg)
       // SBA system shifts the read data based on transfer size. The higher order bits that are
       // don't care are left alone. The RISCV debug spec does not mandate that they be masked.
       data = sba_tl_item.d_data >> shift;
@@ -247,9 +247,9 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
 
       // Anything less than word access should be PutPartialData.
       if (sba_item.size < SbaAccessSize32b) begin
-        `DV_CHECK_EQ(sba_tl_item.a_opcode, tlul_pkg::PutPartialData, msg)
+        `DV_CHECK_EQ(sba_tl_item.a_opcode, tlul_ot_pkg::PutPartialData, msg)
       end else begin
-        `DV_CHECK_EQ(sba_tl_item.a_opcode, tlul_pkg::PutFullData, msg)
+        `DV_CHECK_EQ(sba_tl_item.a_opcode, tlul_ot_pkg::PutFullData, msg)
       end
 
       // SBA system shifts the write data based on transfer size. TLUL adapter further masks the

@@ -24,7 +24,7 @@ module tlul2axi_testbench #();
 
    semaphore lock;
    
-   import tlul_pkg::*;
+   import tlul_ot_pkg::*;
    import tlul_functions::*;
    
 
@@ -100,8 +100,8 @@ module tlul2axi_testbench #();
    axi_ran_slave axi_rand_slave = new(axi);
    `AXI_ASSIGN (axi, axi_slave)
 
-   tlul_pkg::tl_h2d_t tl_req;
-   tlul_pkg::tl_d2h_t tl_rsp;
+   tlul_ot_pkg::tl_h2d_t tl_req;
+   tlul_ot_pkg::tl_d2h_t tl_rsp;
       
    tlul_bus tl_bus();
    tlul_driver_t tlul_master = new(tl_bus);
@@ -158,10 +158,10 @@ module tlul2axi_testbench #();
        
       tlul_master.run(RESP_MIN_WAIT_CYCLES, RESP_MAX_WAIT_CYCLES);
        
-      if(tl_bus.tl_req.a_opcode == tlul_pkg::Get) begin
+      if(tl_bus.tl_req.a_opcode == tlul_ot_pkg::Get) begin
         assert(tl_bus.tl_rsp.d_data == axi_rand_slave.drv.axi.r_data) else
           $fatal("Data mismatch - Read:  %0h expected: %0h", tl_bus.tl_rsp.d_data, axi_rand_slave.drv.axi.r_data);
-      end else begin // if (tl_bus.tl_req.a_opcode == tlul_pkg::PutFullData) 
+      end else begin // if (tl_bus.tl_req.a_opcode == tlul_ot_pkg::PutFullData) 
         assert(tl_bus.tl_req.a_data == axi_rand_slave.drv.axi.w_data) else
           $fatal("Data mismatch - Wrote: %0h expected: %0h", tl_bus.tl_req.a_data, axi_rand_slave.drv.axi.w_data);
       end

@@ -43,7 +43,7 @@ module tb;
   wire intr_otp_operation_done, intr_otp_error;
 
   wire otp_ctrl_pkg::otp_ast_req_t ast_req;
-  tlul_pkg::tl_d2h_t prim_tl_o;
+  tlul_ot_pkg::tl_d2h_t prim_tl_o;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));

@@ -424,7 +424,7 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
   virtual function void inject_intg_fault_in_passthru_mem(dv_base_mem mem,
                                                           bit [bus_params_pkg::BUS_AW-1:0] addr);
     bit[bus_params_pkg::BUS_DW-1:0] rdata;
-    bit[tlul_pkg::DataIntgWidth+bus_params_pkg::BUS_DW-1:0] flip_bits;
+    bit[tlul_ot_pkg::DataIntgWidth+bus_params_pkg::BUS_DW-1:0] flip_bits;
 
     rdata = cfg.mem_bkdr_util_h.sram_encrypt_read32_integ(addr, cfg.scb.key, cfg.scb.nonce);
 

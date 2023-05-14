@@ -8,7 +8,7 @@
 %>
 module xbar_${xbar.name}_tb;
 
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
 
   // Clock generator
 % for clock in xbar.clocks:

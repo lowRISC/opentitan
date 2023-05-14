@@ -16,14 +16,14 @@ module tlul_fifo_async #(
   input                      rst_h_ni,
   input                      clk_d_i,
   input                      rst_d_ni,
-  input  tlul_pkg::tl_h2d_t  tl_h_i,
-  output tlul_pkg::tl_d2h_t  tl_h_o,
-  output tlul_pkg::tl_h2d_t  tl_d_o,
-  input  tlul_pkg::tl_d2h_t  tl_d_i
+  input  tlul_ot_pkg::tl_h2d_t  tl_h_i,
+  output tlul_ot_pkg::tl_d2h_t  tl_h_o,
+  output tlul_ot_pkg::tl_h2d_t  tl_d_o,
+  input  tlul_ot_pkg::tl_d2h_t  tl_d_i
 );
 
   // Put everything on the request side into one FIFO
-  localparam int unsigned REQFIFO_WIDTH = $bits(tlul_pkg::tl_h2d_t)-2;
+  localparam int unsigned REQFIFO_WIDTH = $bits(tlul_ot_pkg::tl_h2d_t)-2;
 
   prim_ot_fifo_async #(
     .Width(REQFIFO_WIDTH),
@@ -60,7 +60,7 @@ module tlul_fifo_async #(
 
   // Put everything on the response side into the other FIFO
 
-  localparam int unsigned RSPFIFO_WIDTH = $bits(tlul_pkg::tl_d2h_t) -2;
+  localparam int unsigned RSPFIFO_WIDTH = $bits(tlul_ot_pkg::tl_d2h_t) -2;
 
   prim_ot_fifo_async #(
     .Width(RSPFIFO_WIDTH),

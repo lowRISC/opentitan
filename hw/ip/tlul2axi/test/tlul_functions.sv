@@ -12,7 +12,7 @@
 `include "tlul_assign.svh"
 
 package tlul_functions;
-  import tlul_pkg::*; 
+  import tlul_ot_pkg::*; 
   class tlul_driver#(
     parameter time         TA         = 0ns,    // application time
     parameter time         TT         = 0ns     // test time
@@ -32,7 +32,7 @@ package tlul_functions;
     function void reset_master();
       
       tl_bus.tl_req.a_valid     <= '0;
-      tl_bus.tl_req.a_opcode    <= tlul_pkg::Get;
+      tl_bus.tl_req.a_opcode    <= tlul_ot_pkg::Get;
       tl_bus.tl_req.a_param     <= '0;
       tl_bus.tl_req.a_size      <= '0;
       tl_bus.tl_req.a_source    <= '0;
@@ -67,7 +67,7 @@ package tlul_functions;
           
       @(posedge tl_bus.tl_rsp.d_valid)
         
-      if(tl_bus.tl_req.a_opcode == tlul_pkg::Get)
+      if(tl_bus.tl_req.a_opcode == tlul_ot_pkg::Get)
         $display("Read:  %0h at Addr: %0h", tl_bus.tl_rsp.d_data, tl_bus.tl_req.a_address);
       else 
         $display("Wrote: %0h at Addr: %0h", tl_bus.tl_req.a_data, tl_bus.tl_req.a_address);
@@ -96,15 +96,15 @@ package tlul_functions;
     endtask 
      
     // set random opcode (not all the comb of 3 bit are allowed)
-    function tlul_pkg::tl_a_op_e new_rand_opcode();
-      automatic tlul_pkg::tl_a_op_e opcode;
+    function tlul_ot_pkg::tl_a_op_e new_rand_opcode();
+      automatic tlul_ot_pkg::tl_a_op_e opcode;
       int index;
       index = $urandom_range(0,2);
       case(index)
-        3'd0:    opcode = tlul_pkg::PutFullData;
-        3'd1:    opcode = tlul_pkg::PutPartialData;
-        3'd2:    opcode = tlul_pkg::Get; 
-        default: opcode = tlul_pkg::Get;
+        3'd0:    opcode = tlul_ot_pkg::PutFullData;
+        3'd1:    opcode = tlul_ot_pkg::PutPartialData;
+        3'd2:    opcode = tlul_ot_pkg::Get; 
+        default: opcode = tlul_ot_pkg::Get;
       endcase
       return opcode; 
     endfunction 
@@ -119,10 +119,10 @@ package tlul_functions;
     endfunction
 
     // set random mask if PutPartialData or fix it to '1 otherwise
-    function logic [3:0] new_rand_mask(input tlul_pkg::tl_a_op_e opcode);
+    function logic [3:0] new_rand_mask(input tlul_ot_pkg::tl_a_op_e opcode);
       logic [3:0] rand_mask;
       logic rand_success;
-      if(opcode == tlul_pkg::PutPartialData) begin
+      if(opcode == tlul_ot_pkg::PutPartialData) begin
          rand_success = std::randomize(rand_mask); 
          assert(rand_success);
       end else
@@ -140,10 +140,10 @@ package tlul_functions;
     endfunction 
    
     // set random write data
-    function logic [31:0] new_rand_data(input tlul_pkg::tl_a_op_e opcode);
+    function logic [31:0] new_rand_data(input tlul_ot_pkg::tl_a_op_e opcode);
       logic [31:0] data;
       logic rand_success;
-      if(opcode != tlul_pkg::Get) begin
+      if(opcode != tlul_ot_pkg::Get) begin
         rand_success = std::randomize(data); 
         assert(rand_success);
       end else
@@ -161,7 +161,7 @@ package tlul_functions;
     endfunction
 
     task run (input int unsigned min_wait, input int unsigned max_wait);
-      tlul_pkg::tl_h2d_t tl_req;
+      tlul_ot_pkg::tl_h2d_t tl_req;
       logic [31:0] in_addr  = 32'h1A000000;
       logic [31:0] end_addr = 32'h1A11FFFF;
        

@@ -13,12 +13,12 @@
 // the phy address to the registers before starting the transaction
 // on the Physical Emulated FLash.
 
-module debug_mode_preload import tlul_pkg::*; (
+module debug_mode_preload import tlul_ot_pkg::*; (
    input               clk_i,
    input               rst_ni,                                                      
    // Ibex Direct Interface
-   input               tlul_pkg::tl_h2d_t dbg_tl_i,
-   output              tlul_pkg::tl_d2h_t dbg_tl_o,
+   input               tlul_ot_pkg::tl_h2d_t dbg_tl_i,
+   output              tlul_ot_pkg::tl_d2h_t dbg_tl_o,
    // Physical Emulated Flash Interface
    output logic        flash_write_o,
    output logic        flash_req_o,

@@ -125,13 +125,13 @@ module ${mod_name} (
   input ${clock.clock},
   input ${clock.reset},
 % endfor
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+  input  tlul_ot_pkg::tl_h2d_t tl_i,
+  output tlul_ot_pkg::tl_d2h_t tl_o,
 % if num_wins != 0:
 
   // Output port for window
-  output tlul_pkg::tl_h2d_t tl_win_o${win_array_decl},
-  input  tlul_pkg::tl_d2h_t tl_win_i${win_array_decl},
+  output tlul_ot_pkg::tl_h2d_t tl_win_o${win_array_decl},
+  input  tlul_ot_pkg::tl_d2h_t tl_win_i${win_array_decl},
 
 % endif
   // To HW
@@ -177,8 +177,8 @@ module ${mod_name} (
   logic [DW-1:0] reg_rdata_next;
   logic reg_busy;
 
-  tlul_pkg::tl_h2d_t tl_reg_h2d;
-  tlul_pkg::tl_d2h_t tl_reg_d2h;
+  tlul_ot_pkg::tl_h2d_t tl_reg_h2d;
+  tlul_ot_pkg::tl_d2h_t tl_reg_d2h;
 % endif
 
 ## The clock and reset inputs aren't used if this device interface has no
@@ -200,8 +200,8 @@ module ${mod_name} (
 
 % endif
 % if rb.async_if:
-  tlul_pkg::tl_h2d_t tl_async_h2d;
-  tlul_pkg::tl_d2h_t tl_async_d2h;
+  tlul_ot_pkg::tl_h2d_t tl_async_h2d;
+  tlul_ot_pkg::tl_d2h_t tl_async_d2h;
   tlul_fifo_async #(
     .ReqDepth(2),
     .RspDepth(2)
@@ -272,7 +272,7 @@ module ${mod_name} (
 % endif
 
   // outgoing integrity generation
-  tlul_pkg::tl_d2h_t tl_o_pre;
+  tlul_ot_pkg::tl_d2h_t tl_o_pre;
   tlul_rsp_intg_gen #(
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(${common_data_intg_gen})
@@ -292,8 +292,8 @@ module ${mod_name} (
   assign tl_o_pre = tl_win_i;
   % endif
 % else:
-  tlul_pkg::tl_h2d_t tl_socket_h2d [${num_dsp}];
-  tlul_pkg::tl_d2h_t tl_socket_d2h [${num_dsp}];
+  tlul_ot_pkg::tl_h2d_t tl_socket_h2d [${num_dsp}];
+  tlul_ot_pkg::tl_d2h_t tl_socket_d2h [${num_dsp}];
 
   logic [${steer_msb}:0] reg_steer;
 
@@ -831,7 +831,7 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
 
   // this is formulated as an assumption such that the FPV testbenches do disprove this
   // property by mistake
-  //`ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.chk_en == tlul_pkg::CheckDis)
+  //`ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.chk_en == tlul_ot_pkg::CheckDis)
 
 % endif
 endmodule

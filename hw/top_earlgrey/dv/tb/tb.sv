@@ -156,7 +156,7 @@ module tb;
   sim_sram u_sim_sram (
     .clk_i    (sel_sim_sram ? `CPU_HIER.clk_i : 0),
     .rst_ni   (`CPU_HIER.rst_ni),
-    .tl_in_i  (tlul_pkg::tl_h2d_t'(`CPU_HIER.u_tlul_req_buf.out_o)),
+    .tl_in_i  (tlul_ot_pkg::tl_h2d_t'(`CPU_HIER.u_tlul_req_buf.out_o)),
     .tl_in_o  (),
     .tl_out_o (),
     .tl_out_i ()

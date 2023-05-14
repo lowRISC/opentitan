@@ -43,8 +43,8 @@ module prim_otp
   input        [TestCtrlWidth-1:0]   test_ctrl_i,
   output logic [TestStatusWidth-1:0] test_status_o,
   output logic [TestVectWidth-1:0]   test_vect_o,
-  input  tlul_pkg::tl_h2d_t          test_tl_i,
-  output tlul_pkg::tl_d2h_t          test_tl_o,
+  input  tlul_ot_pkg::tl_h2d_t          test_tl_i,
+  output tlul_ot_pkg::tl_d2h_t          test_tl_o,
   // Other DFT signals
   input prim_mubi_pkg::mubi4_t   scanmode_i,  // Scan Mode input
   input                          scan_en_i,   // Scan Shift

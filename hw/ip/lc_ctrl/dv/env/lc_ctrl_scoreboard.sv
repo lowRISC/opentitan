@@ -215,10 +215,10 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         `uvm_create_obj(tl_seq_item, tl_item)
         tl_item.a_addr   = base_address_masked | (jt_item.addr << 2);
         tl_item.a_data   = jt_item.data;
-        tl_item.a_opcode = (jt_item.op === DmiRead) ? tlul_pkg::Get : tlul_pkg::PutFullData;
+        tl_item.a_opcode = (jt_item.op === DmiRead) ? tlul_ot_pkg::Get : tlul_ot_pkg::PutFullData;
         tl_item.a_mask   = '1;
         tl_item.d_data   = jt_item.data;
-        tl_item.d_opcode = (jt_item.op === DmiRead) ? tlul_pkg::Get : tlul_pkg::PutFullData;
+        tl_item.d_opcode = (jt_item.op === DmiRead) ? tlul_ot_pkg::Get : tlul_ot_pkg::PutFullData;
 
 
         process_tl_access(tl_item, AddrChannel, "lc_ctrl_reg_block");

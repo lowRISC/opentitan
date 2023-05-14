@@ -12,7 +12,7 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:prim:mubi
     files:
-      - rtl/tlul_pkg.sv
+      - rtl/tlul_ot_pkg.sv
     file_type: systemVerilogSource
 
 targets:

@@ -532,7 +532,7 @@ To test Xprop more effectively, the address / data / control signals are require
 For example, when a_valid is 0 in the TLUL interface, we drive data, address and control signals to unknown values.
 ```systemverilog
   function void invalidate_a_channel();
-    vif.host_cb.h2d.a_opcode  <= tlul_pkg::tl_a_op_e'('x);
+    vif.host_cb.h2d.a_opcode  <= tlul_ot_pkg::tl_a_op_e'('x);
     vif.host_cb.h2d.a_param   <= '{default:'x};
     vif.host_cb.h2d.a_size    <= '{default:'x};
     vif.host_cb.h2d.a_source  <= '{default:'x};

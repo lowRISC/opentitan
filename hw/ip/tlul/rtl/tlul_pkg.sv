@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-package tlul_pkg;
+package tlul_ot_pkg;
 
   // this can be either PPC or BINTREE
   // there is no functional difference, but timing and area behavior is different

@@ -10,7 +10,7 @@ package sram_ctrl_pkg;
   ////////////////
 
   // The width of this RAM is currently restricted to 39 (32bit data + 7bit integrity).
-  parameter int DataWidth = 32 + tlul_pkg::DataIntgWidth;
+  parameter int DataWidth = 32 + tlul_ot_pkg::DataIntgWidth;
   parameter int NonceWidth = 64;
 
   /////////////

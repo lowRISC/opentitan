@@ -1342,7 +1342,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             ral_name, item.sprint(uvm_default_line_printer)))
 
         // In data read phase, check d_data when d_error = 1.
-        if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
+        if (item.d_error && (item.d_opcode == tlul_ot_pkg::AccessAckData)) begin
           check_tl_read_value_after_error(item, ral_name);
         end
       end

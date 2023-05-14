@@ -33,7 +33,7 @@ package flash_ctrl_pkg;
   });
   parameter int WordsPerPage    = ${cfg.words_per_page}; // Number of flash words per page
   parameter int BusWidth        = top_pkg::TL_DW;
-  parameter int BusIntgWidth    = tlul_pkg::DataIntgWidth;
+  parameter int BusIntgWidth    = tlul_ot_pkg::DataIntgWidth;
   parameter int BusFullWidth    = BusWidth + BusIntgWidth;
   parameter int MpRegions       = 8;  // flash controller protection regions
   //parameter int FifoDepth       = 16; // rd / prog fifos

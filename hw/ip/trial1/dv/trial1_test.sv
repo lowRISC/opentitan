@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-import tlul_pkg::*;
+import tlul_ot_pkg::*;
 import trial1_reg_pkg::*;
 
 module trial1_test (

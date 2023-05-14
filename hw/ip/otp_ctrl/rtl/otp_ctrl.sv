@@ -31,10 +31,10 @@ module otp_ctrl
   output edn_pkg::edn_req_t                          edn_o,
   input  edn_pkg::edn_rsp_t                          edn_i,
   // Bus Interface
-  input  tlul_pkg::tl_h2d_t                          core_tl_i,
-  output tlul_pkg::tl_d2h_t                          core_tl_o,
-  input  tlul_pkg::tl_h2d_t                          prim_tl_i,
-  output tlul_pkg::tl_d2h_t                          prim_tl_o,
+  input  tlul_ot_pkg::tl_h2d_t                          core_tl_i,
+  output tlul_ot_pkg::tl_d2h_t                          core_tl_o,
+  input  tlul_ot_pkg::tl_h2d_t                          prim_tl_i,
+  output tlul_ot_pkg::tl_d2h_t                          prim_tl_o,
   // Interrupt Requests
   output logic                                       intr_otp_operation_done_o,
   output logic                                       intr_otp_error_o,
@@ -114,8 +114,8 @@ module otp_ctrl
   // We have one CSR node, one functional TL-UL window and a gate module for that window
   logic [2:0] intg_error;
 
-  tlul_pkg::tl_h2d_t tl_win_h2d;
-  tlul_pkg::tl_d2h_t tl_win_d2h;
+  tlul_ot_pkg::tl_h2d_t tl_win_h2d;
+  tlul_ot_pkg::tl_d2h_t tl_win_d2h;
 
   otp_ctrl_reg_pkg::otp_ctrl_core_reg2hw_t reg2hw;
   otp_ctrl_reg_pkg::otp_ctrl_core_hw2reg_t hw2reg;
@@ -734,8 +734,8 @@ module otp_ctrl
   prim_otp_pkg::err_e          part_otp_err;
   logic [OtpIfWidth-1:0]       part_otp_rdata;
   logic                        otp_rvalid;
-  tlul_pkg::tl_h2d_t           prim_tl_h2d_gated;
-  tlul_pkg::tl_d2h_t           prim_tl_d2h_gated;
+  tlul_ot_pkg::tl_h2d_t           prim_tl_h2d_gated;
+  tlul_ot_pkg::tl_d2h_t           prim_tl_d2h_gated;
 
   // Life cycle qualification of TL-UL test interface.
   // SEC_CM: TEST.BUS.LC_GATED

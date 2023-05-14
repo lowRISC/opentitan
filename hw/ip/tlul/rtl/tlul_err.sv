@@ -5,7 +5,7 @@
 
 `include "prim_assert.sv"
 
-module tlul_err import tlul_pkg::*; (
+module tlul_err import tlul_ot_pkg::*; (
   input clk_i,
   input rst_ni,
 

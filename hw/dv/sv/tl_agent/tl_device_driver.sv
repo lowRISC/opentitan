@@ -113,7 +113,7 @@ class tl_device_driver extends tl_base_driver;
   endtask : d_channel_thread
 
   function void invalidate_d_channel();
-    cfg.vif.d2h_int.d_opcode <= tlul_pkg::tl_d_op_e'('x);
+    cfg.vif.d2h_int.d_opcode <= tlul_ot_pkg::tl_d_op_e'('x);
     cfg.vif.d2h_int.d_param <= '{default:'x};
     cfg.vif.d2h_int.d_size <= '{default:'x};
     cfg.vif.d2h_int.d_source <= '{default:'x};

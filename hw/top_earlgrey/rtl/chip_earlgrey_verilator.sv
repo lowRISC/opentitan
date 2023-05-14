@@ -265,8 +265,8 @@ module chip_earlgrey_verilator (
                     cnt < 4'hc ? 1'b0 : 1'b1;
 
   // TLUL interface
-  tlul_pkg::tl_h2d_t base_ast_bus;
-  tlul_pkg::tl_d2h_t ast_base_bus;
+  tlul_ot_pkg::tl_h2d_t base_ast_bus;
+  tlul_ot_pkg::tl_d2h_t ast_base_bus;
 
   assign ast_base_pwr.main_pok = ast_pwst.main_pok;
 

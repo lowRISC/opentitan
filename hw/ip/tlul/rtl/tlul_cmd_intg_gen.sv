@@ -8,7 +8,7 @@
  * Tile-Link UL command integrity generator
  */
 
-module tlul_cmd_intg_gen import tlul_pkg::*; #(
+module tlul_cmd_intg_gen import tlul_ot_pkg::*; #(
   // TODO: default generation of data integrity is on until host native
   // generation is ready
   parameter bit EnableDataIntgGen = 1'b1

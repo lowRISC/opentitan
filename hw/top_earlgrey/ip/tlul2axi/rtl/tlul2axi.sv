@@ -10,7 +10,7 @@
 //
 
 module tlul2axi
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
   #(
     parameter int unsigned AXI_ID_WIDTH      = 8,
     parameter int unsigned AXI_ADDR_WIDTH    = 64,
@@ -37,7 +37,7 @@ module tlul2axi
 
    assign intr_mbox_irq_o = intr_mbox_irq_i;
    
-   tlul_pkg::tl_d2h_t tl_o_int;
+   tlul_ot_pkg::tl_d2h_t tl_o_int;
    
    tlul_rsp_intg_gen #(
      .EnableRspIntgGen(1),
@@ -146,7 +146,7 @@ module tlul2axi
     axi_req_o.w.user    = '0;
 
     tl_o_int.d_valid     = 1'b0;
-    tl_o_int.d_opcode    = tlul_pkg::AccessAck;
+    tl_o_int.d_opcode    = tlul_ot_pkg::AccessAck;
     tl_o_int.d_param     = '0;
     tl_o_int.d_size      = tl_i.a_size;
     tl_o_int.d_source    = '0;
@@ -170,11 +170,11 @@ module tlul2axi
 
       IDLE: begin
         if(tl_i.a_valid) begin        // request   
-          if(tl_i.a_opcode == tlul_pkg::Get) begin // get
+          if(tl_i.a_opcode == tlul_ot_pkg::Get) begin // get
             axi_req_o.ar_valid = 1'b1;
             if(axi_rsp_i.ar_ready)
               tl_o_int.a_ready = 1'b1; 
-          end else if (tl_i.a_opcode == tlul_pkg::PutFullData || tl_i.a_opcode == tlul_pkg::PutPartialData) begin                                     
+          end else if (tl_i.a_opcode == tlul_ot_pkg::PutFullData || tl_i.a_opcode == tlul_ot_pkg::PutPartialData) begin                                     
             axi_req_o.w.last   = 1'b1;
             axi_req_o.aw_valid = 1'b1;
             axi_req_o.w_valid  = 1'b1;
@@ -210,7 +210,7 @@ module tlul2axi
       WAIT_B_VALID: begin
         if(axi_rsp_i.b_valid) begin
           tl_o_int.d_source = axi_rsp_i.b.id;
-          tl_o_int.d_opcode = tlul_pkg::AccessAck;
+          tl_o_int.d_opcode = tlul_ot_pkg::AccessAck;
           tl_o_int.d_error  = axi_rsp_i.b.resp[1];
           tl_o_int.d_valid  = 1'b1;
           axi_req_o.b_ready = 1'b1;
@@ -220,7 +220,7 @@ module tlul2axi
       WAIT_R_VALID: begin
         if(axi_rsp_i.r_valid) begin
           tl_o_int.d_source = axi_rsp_i.r.id;
-          tl_o_int.d_opcode = tlul_pkg::AccessAckData;
+          tl_o_int.d_opcode = tlul_ot_pkg::AccessAckData;
           tl_o_int.d_error  = axi_rsp_i.r.resp[1];
           tl_o_int.d_data   = axi_rsp_i.r.data;
           tl_o_int.d_valid  = 1'b1;

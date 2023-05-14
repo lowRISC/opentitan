@@ -9,10 +9,10 @@
 module tlul_err_resp (
   input                     clk_i,
   input                     rst_ni,
-  input  tlul_pkg::tl_h2d_t tl_h_i,
-  output tlul_pkg::tl_d2h_t tl_h_o
+  input  tlul_ot_pkg::tl_h2d_t tl_h_i,
+  output tlul_ot_pkg::tl_d2h_t tl_h_o
 );
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
   import prim_mubi_pkg::*;
 
   tl_a_op_e                          err_opcode;
@@ -20,7 +20,7 @@ module tlul_err_resp (
   logic [$bits(tl_h_i.a_size)-1:0]   err_size;
   logic                              err_req_pending, err_rsp_pending;
   mubi4_t                            err_instr_type;
-  tlul_pkg::tl_d2h_t                 tl_h_o_int;
+  tlul_ot_pkg::tl_d2h_t                 tl_h_o_int;
 
   tlul_rsp_intg_gen #(
     .EnableRspIntgGen(1),

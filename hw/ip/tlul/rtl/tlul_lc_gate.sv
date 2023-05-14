@@ -14,7 +14,7 @@
 
 
 module tlul_lc_gate
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
   import lc_ctrl_pkg::*;
 #(
   // Number of LC gating muxes in each direction.

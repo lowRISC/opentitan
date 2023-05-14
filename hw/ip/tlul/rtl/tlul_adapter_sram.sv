@@ -18,7 +18,7 @@
  *   There is however no case where EnableDataIntgGen and EnableDataIntgPt are both true.
  */
 module tlul_adapter_sram
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
   parameter int SramAw            = 12,
@@ -35,7 +35,7 @@ module tlul_adapter_sram
   parameter bit EnableDataIntgPt  = 0,  // 1: Passthrough command/response data integrity
   parameter bit SecFifoPtr        = 0,  // 1: Duplicated fifo pointers
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
-  localparam int IntgWidth        = tlul_pkg::DataIntgWidth * WidthMult,
+  localparam int IntgWidth        = tlul_ot_pkg::DataIntgWidth * WidthMult,
   localparam int DataOutW         = EnableDataIntgPt ? SramDw + IntgWidth : SramDw
 ) (
   input   clk_i,

@@ -234,7 +234,7 @@ class tl_host_driver extends tl_base_driver;
   endfunction
 
   function void invalidate_a_channel();
-    cfg.vif.h2d_int.a_opcode <= tlul_pkg::tl_a_op_e'('x);
+    cfg.vif.h2d_int.a_opcode <= tlul_ot_pkg::tl_a_op_e'('x);
     cfg.vif.h2d_int.a_param <= '{default:'x};
     cfg.vif.h2d_int.a_size <= '{default:'x};
     cfg.vif.h2d_int.a_source <= '{default:'x};

@@ -17,8 +17,8 @@ module sram2tlul #(
   input clk_i,
   input rst_ni,
 
-  output tlul_pkg::tl_h2d_t tl_o,
-  input  tlul_pkg::tl_d2h_t tl_i,
+  output tlul_ot_pkg::tl_h2d_t tl_o,
+  input  tlul_ot_pkg::tl_d2h_t tl_i,
 
   // SRAM
   input                     mem_req_i,
@@ -30,7 +30,7 @@ module sram2tlul #(
   output logic        [1:0] mem_error_o
 );
 
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
 
   `ASSERT_INIT(wrongSramDw, SramDw == top_pkg::TL_DW)
 

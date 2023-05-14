@@ -24,11 +24,11 @@ module rom_ctrl
   // ROM configuration parameters
   input  rom_cfg_t rom_cfg_i,
 
-  input  tlul_pkg::tl_h2d_t rom_tl_i,
-  output tlul_pkg::tl_d2h_t rom_tl_o,
+  input  tlul_ot_pkg::tl_h2d_t rom_tl_i,
+  output tlul_ot_pkg::tl_d2h_t rom_tl_o,
 
-  input  tlul_pkg::tl_h2d_t regs_tl_i,
-  output tlul_pkg::tl_d2h_t regs_tl_o,
+  input  tlul_ot_pkg::tl_h2d_t regs_tl_i,
+  output tlul_ot_pkg::tl_d2h_t regs_tl_o,
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -151,8 +151,8 @@ module rom_ctrl
 
   // TL interface ==============================================================
 
-  tlul_pkg::tl_h2d_t tl_rom_h2d_upstream, tl_rom_h2d_downstream;
-  tlul_pkg::tl_d2h_t tl_rom_d2h;
+  tlul_ot_pkg::tl_h2d_t tl_rom_h2d_upstream, tl_rom_h2d_downstream;
+  tlul_ot_pkg::tl_d2h_t tl_rom_d2h;
 
   logic  rom_reg_integrity_error;
 
@@ -178,7 +178,7 @@ module rom_ctrl
   //
   // SEC_CM: CTRL.REDUN
   prim_buf #(
-    .Width($bits(tlul_pkg::tl_h2d_t))
+    .Width($bits(tlul_ot_pkg::tl_h2d_t))
   ) u_tl_rom_h2d_buf (
     .in_i (tl_rom_h2d_upstream),
     .out_o (tl_rom_h2d_downstream)

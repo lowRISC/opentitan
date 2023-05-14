@@ -29,7 +29,7 @@
 `endif
 
 // Block: ${lblock}
-module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
+module ${mod_base}_csr_assert_fpv import tlul_ot_pkg::*;
     import top_pkg::*;(
   input clk_i,
   input rst_ni,

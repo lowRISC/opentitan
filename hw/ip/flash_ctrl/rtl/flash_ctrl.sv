@@ -41,14 +41,14 @@ module flash_ctrl
   input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
 
   // Bus Interface
-  input        tlul_pkg::tl_h2d_t core_tl_i,
-  output       tlul_pkg::tl_d2h_t core_tl_o,
-  input        tlul_pkg::tl_h2d_t prim_tl_i,
-  output       tlul_pkg::tl_d2h_t prim_tl_o,
-  input        tlul_pkg::tl_h2d_t mem_tl_i,
-  output       tlul_pkg::tl_d2h_t mem_tl_o,
-  input        tlul_pkg::tl_h2d_t dbg_tl_i,
-  output       tlul_pkg::tl_d2h_t dbg_tl_o,
+  input        tlul_ot_pkg::tl_h2d_t core_tl_i,
+  output       tlul_ot_pkg::tl_d2h_t core_tl_o,
+  input        tlul_ot_pkg::tl_h2d_t prim_tl_i,
+  output       tlul_ot_pkg::tl_d2h_t prim_tl_o,
+  input        tlul_ot_pkg::tl_h2d_t mem_tl_i,
+  output       tlul_ot_pkg::tl_d2h_t mem_tl_o,
+  input        tlul_ot_pkg::tl_h2d_t dbg_tl_i,
+  output       tlul_ot_pkg::tl_d2h_t dbg_tl_o,
 
   output logic dbg_mode,
   // otp/lc/pwrmgr/keymgr Interface
@@ -108,8 +108,8 @@ module flash_ctrl
   flash_ctrl_core_reg2hw_t reg2hw;
   flash_ctrl_core_hw2reg_t hw2reg;
 
-  tlul_pkg::tl_h2d_t tl_win_h2d [2];
-  tlul_pkg::tl_d2h_t tl_win_d2h [2];
+  tlul_ot_pkg::tl_h2d_t tl_win_h2d [2];
+  tlul_ot_pkg::tl_d2h_t tl_win_d2h [2];
 
   // Register module
   logic storage_err;
@@ -515,8 +515,8 @@ module flash_ctrl
   // strategy has been identified
   assign prog_op_valid = op_start & prog_op;
 
-  tlul_pkg::tl_h2d_t prog_tl_h2d;
-  tlul_pkg::tl_d2h_t prog_tl_d2h;
+  tlul_ot_pkg::tl_h2d_t prog_tl_h2d;
+  tlul_ot_pkg::tl_d2h_t prog_tl_d2h;
 
   // the program path also needs an lc gate to error back when flash is disabled.
   // This is because tlul_adapter_sram does not actually have a way of signaling
@@ -1300,8 +1300,8 @@ module flash_ctrl
   // if flash disable is activated, error back from the adapter interface immediately
   assign host_enable = lc_ctrl_pkg::mubi4_to_lc_inv(flash_disable[HostDisableIdx]);
 
-  tlul_pkg::tl_h2d_t gate_tl_h2d;
-  tlul_pkg::tl_d2h_t gate_tl_d2h;
+  tlul_ot_pkg::tl_h2d_t gate_tl_h2d;
+  tlul_ot_pkg::tl_d2h_t gate_tl_d2h;
 
   tlul_lc_gate u_tl_gate (
     .clk_i,

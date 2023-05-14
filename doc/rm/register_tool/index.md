@@ -250,15 +250,15 @@ module name_reg_top (
   input rst_ni,
 
   // Below Regster interface can be changed
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+  input  tlul_ot_pkg::tl_h2d_t tl_i,
+  output tlul_ot_pkg::tl_d2h_t tl_o,
 
   // This section is only provided if the definition includes
   // 1 or more "window" definitions and contains an array of
   // secondary TL-UL bus connectors for each window
   // Output port for window
-  output tlul_pkg::tl_h2d_t tl_win_o  [1],
-  input  tlul_pkg::tl_d2h_t tl_win_i  [1],
+  output tlul_ot_pkg::tl_h2d_t tl_win_o  [1],
+  input  tlul_ot_pkg::tl_d2h_t tl_win_i  [1],
 
   // To HW
   output uart_reg_pkg::uart_reg2hw_t reg2hw, // Write

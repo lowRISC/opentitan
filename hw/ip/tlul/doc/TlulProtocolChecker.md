@@ -20,7 +20,7 @@ transactions rather than physical agents. A single agent can use multiple
 source IDs to track multiple outstanding transactions. See spec section 5.4
 "Source and Sink Identifiers" for more details.
 *   The source fields are `TL_AIW` bits wide (defined in
-[tlul_pkg.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_pkg.sv)).
+[tlul_ot_pkg.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_ot_pkg.sv)).
 Therefore, there can be up to 2<sup>TL_AIW</sup> outstanding
 requests at the same time. To keep track of these outstanding requests, the
 protocol checker stores pending requests in the array `pend_req` of depth
@@ -29,7 +29,7 @@ protocol checker stores pending requests in the array `pend_req` of depth
 accepted. Therefore, in each clock cycle, the protocol checker first processes
 requests and thereafter responses.
 *   The package
-[tlul_pkg.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_pkg.sv)
+[tlul_ot_pkg.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_ot_pkg.sv)
 defines the structs for channels A and D.
 *   In below tables, "known" means that a signal should have a value other
 than X.

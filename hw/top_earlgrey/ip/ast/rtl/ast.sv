@@ -21,8 +21,8 @@ module ast #(
   parameter int unsigned Pad2AstInWidth  = 9
 ) (
   // tlul if
-  input tlul_pkg::tl_h2d_t tl_i,              // TLUL H2D
-  output tlul_pkg::tl_d2h_t tl_o,             // TLUL D2H
+  input tlul_ot_pkg::tl_h2d_t tl_i,              // TLUL H2D
+  output tlul_ot_pkg::tl_d2h_t tl_o,             // TLUL D2H
   output prim_mubi_pkg::mubi4_t ast_init_done_o,  // AST (registers) Init Done
 
   // clocks / resets

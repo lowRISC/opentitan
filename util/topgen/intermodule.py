@@ -65,7 +65,7 @@ def get_suffixes(ims: OrderedDict) -> Tuple[str, str]:
 
     TL-UL struct uses `h2d`, `d2h` suffixes for req, rsp pair.
     """
-    if ims["package"] == "tlul_pkg" and ims["struct"] == "tl":
+    if ims["package"] == "tlul_ot_pkg" and ims["struct"] == "tl":
         return ("_h2d", "_d2h")
 
     return ("_req", "_rsp")
@@ -209,7 +209,7 @@ def autoconnect_xbar(topcfg: OrderedDict,
             act = 'req' if is_host else 'rsp'
             matches = [
                 x for x in inter_signal_list
-                if (x.get('package') == 'tlul_pkg' and
+                if (x.get('package') == 'tlul_ot_pkg' and
                     x['struct'] == 'tl' and
                     x['act'] == act)
             ]
@@ -923,7 +923,7 @@ def im_netname(sig: OrderedDict,
             # custom default has been specified
             if obj["default"]:
                 return obj["default"]
-            if obj["package"] == "tlul_pkg" and obj["struct"] == "tl":
+            if obj["package"] == "tlul_ot_pkg" and obj["struct"] == "tl":
                 return "{package}::{struct}_D2H_DEFAULT".format(
                     package=obj["package"], struct=obj["struct"].upper())
             return "{package}::{struct}_RSP_DEFAULT".format(
@@ -932,7 +932,7 @@ def im_netname(sig: OrderedDict,
             # custom default has been specified
             if obj["default"]:
                 return obj["default"]
-            if obj.get("package") == "tlul_pkg" and obj["struct"] == "tl":
+            if obj.get("package") == "tlul_ot_pkg" and obj["struct"] == "tl":
                 return "{package}::{struct}_H2D_DEFAULT".format(
                     package=obj["package"], struct=obj["struct"].upper())
             # default is used for dangling ports in definitions.

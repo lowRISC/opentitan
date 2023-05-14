@@ -33,10 +33,10 @@ class sram_ctrl_env_cov #(parameter int AddrWidth = 10)
   endgroup
 
   // cover that SRAM handles mem accesses during key requests, both reads and writes
-  covergroup access_during_key_req_cg with function sample(tlul_pkg::tl_a_op_e opcode);
+  covergroup access_during_key_req_cg with function sample(tlul_ot_pkg::tl_a_op_e opcode);
     access_during_key_req_cp: coverpoint opcode {
-      bins write            = {tlul_pkg::PutFullData, tlul_pkg::PutPartialData};
-      bins read             = {tlul_pkg::Get};
+      bins write            = {tlul_ot_pkg::PutFullData, tlul_ot_pkg::PutPartialData};
+      bins read             = {tlul_ot_pkg::Get};
     }
   endgroup
 

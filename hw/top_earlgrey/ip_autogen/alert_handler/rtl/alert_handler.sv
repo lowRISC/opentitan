@@ -21,8 +21,8 @@ module alert_handler
   input                                    clk_edn_i,
   input                                    rst_edn_ni,
   // Bus Interface (device)
-  input  tlul_pkg::tl_h2d_t                tl_i,
-  output tlul_pkg::tl_d2h_t                tl_o,
+  input  tlul_ot_pkg::tl_h2d_t                tl_i,
+  output tlul_ot_pkg::tl_d2h_t                tl_o,
   // Interrupt Requests
   output logic                             intr_classa_o,
   output logic                             intr_classb_o,

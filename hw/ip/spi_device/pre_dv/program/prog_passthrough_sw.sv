@@ -11,8 +11,8 @@ program prog_passthrough_sw
   input logic clk,
   input logic rst_n,
 
-  output tlul_pkg::tl_h2d_t h2d,
-  input  tlul_pkg::tl_d2h_t d2h,
+  output tlul_ot_pkg::tl_h2d_t h2d,
+  input  tlul_ot_pkg::tl_d2h_t d2h,
 
   input interrupt_t intr
 );
@@ -20,7 +20,7 @@ program prog_passthrough_sw
   initial begin
     automatic string testname;
 
-    h2d = tlul_pkg::TL_H2D_DEFAULT;
+    h2d = tlul_ot_pkg::TL_H2D_DEFAULT;
 
     // Wait reset relase
     @(posedge rst_n);

@@ -4,7 +4,7 @@
 
 module tb;
 
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
   import trial1_reg_pkg::*;
 
   // Clock gen

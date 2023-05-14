@@ -687,8 +687,8 @@ module chip_earlgrey_asic #(
   ast_pkg::ast_pwst_t ast_pwst_h;
 
   // TLUL interface
-  tlul_pkg::tl_h2d_t base_ast_bus;
-  tlul_pkg::tl_d2h_t ast_base_bus;
+  tlul_ot_pkg::tl_h2d_t base_ast_bus;
+  tlul_ot_pkg::tl_d2h_t ast_base_bus;
 
   // synchronization clocks / rests
   clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;

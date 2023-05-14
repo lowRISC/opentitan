@@ -291,7 +291,7 @@ class tl_seq_item extends uvm_sequence_item;
   // response packet has been appended with the corresponding request.
   virtual function bit check_opcodes(bit throw_error = 1'b1);
     // for read, return AccessAckData; for write or error opcode, return AccessAck
-    tl_d_op_e exp_d_opcode = a_opcode == Get ? tlul_pkg::AccessAckData : tlul_pkg::AccessAck;
+    tl_d_op_e exp_d_opcode = a_opcode == Get ? tlul_ot_pkg::AccessAckData : tlul_ot_pkg::AccessAck;
     check_opcodes = (d_opcode == int'(exp_d_opcode));
     if (!check_opcodes && throw_error) begin
       `uvm_error(`gfn, $sformatf("d_opcode: %0d & exp_d_opcode: %0d mismatch",

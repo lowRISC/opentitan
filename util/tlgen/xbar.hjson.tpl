@@ -17,7 +17,7 @@
       type:   "req_rsp"
       name:   "tl_${node.name.replace('.', '__')}"
       act:    "rsp"
-      package: "tlul_pkg"
+      package: "tlul_ot_pkg"
     }
 % endfor
     // device
@@ -26,7 +26,7 @@
       type:   "req_rsp"
       name:   "tl_${node.name.replace('.', '__')}"
       act:    "req"
-      package: "tlul_pkg"
+      package: "tlul_ot_pkg"
     }
 % endfor
   ]

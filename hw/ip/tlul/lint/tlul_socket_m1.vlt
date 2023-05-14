@@ -6,7 +6,7 @@
 `verilator_config
 
 // tlul_socket_m1 uses an arbiter to route the h2d TL packets. We represent
-// them by a tlul_pkg::tl_h2d_t object, but ignore the a_valid and d_ready
+// them by a tlul_ot_pkg::tl_h2d_t object, but ignore the a_valid and d_ready
 // fields. Rather than explicitly pull out the other bits of the structure,
 // just waive the warning (and assume the synthesis tool will chuck them away).
 lint_off -rule UNUSED -file "*/rtl/tlul_socket_m1.sv" -match "Bits of signal are not used: 'arb_data'[*,0]"

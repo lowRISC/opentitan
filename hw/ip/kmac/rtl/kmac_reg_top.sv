@@ -10,12 +10,12 @@ module kmac_reg_top (
   input clk_i,
   input rst_ni,
   input rst_shadowed_ni,
-  input  tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+  input  tlul_ot_pkg::tl_h2d_t tl_i,
+  output tlul_ot_pkg::tl_d2h_t tl_o,
 
   // Output port for window
-  output tlul_pkg::tl_h2d_t tl_win_o  [2],
-  input  tlul_pkg::tl_d2h_t tl_win_i  [2],
+  output tlul_ot_pkg::tl_h2d_t tl_win_o  [2],
+  input  tlul_ot_pkg::tl_d2h_t tl_win_i  [2],
 
   // To HW
   output kmac_reg_pkg::kmac_reg2hw_t reg2hw, // Write
@@ -51,8 +51,8 @@ module kmac_reg_top (
   logic [DW-1:0] reg_rdata_next;
   logic reg_busy;
 
-  tlul_pkg::tl_h2d_t tl_reg_h2d;
-  tlul_pkg::tl_d2h_t tl_reg_d2h;
+  tlul_ot_pkg::tl_h2d_t tl_reg_h2d;
+  tlul_ot_pkg::tl_d2h_t tl_reg_d2h;
 
 
   // incoming payload check
@@ -89,7 +89,7 @@ module kmac_reg_top (
   assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
-  tlul_pkg::tl_d2h_t tl_o_pre;
+  tlul_ot_pkg::tl_d2h_t tl_o_pre;
   tlul_rsp_intg_gen #(
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(1)
@@ -98,8 +98,8 @@ module kmac_reg_top (
     .tl_o(tl_o)
   );
 
-  tlul_pkg::tl_h2d_t tl_socket_h2d [3];
-  tlul_pkg::tl_d2h_t tl_socket_d2h [3];
+  tlul_ot_pkg::tl_h2d_t tl_socket_h2d [3];
+  tlul_ot_pkg::tl_d2h_t tl_socket_d2h [3];
 
   logic [1:0] reg_steer;
 
@@ -3460,6 +3460,6 @@ module kmac_reg_top (
 
   // this is formulated as an assumption such that the FPV testbenches do disprove this
   // property by mistake
-  //`ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.chk_en == tlul_pkg::CheckDis)
+  //`ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.chk_en == tlul_ot_pkg::CheckDis)
 
 endmodule

@@ -19,8 +19,8 @@ module sensor_ctrl
   input rst_aon_ni,
 
   // Bus Interface
-  input tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
+  input tlul_ot_pkg::tl_h2d_t tl_i,
+  output tlul_ot_pkg::tl_d2h_t tl_o,
 
   // Interface from AST
   input ast_pkg::ast_alert_req_t ast_alert_i,
