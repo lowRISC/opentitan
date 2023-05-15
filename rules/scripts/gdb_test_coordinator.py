@@ -205,11 +205,17 @@ def main(rom_kind: str = typer.Option(...),
     # with the JTAG tap because opentitantool will reconfigure some GPIOs and
     # this will interfere with the JTAG tap (#17729)
     background = BackgroundProcessGroup()
-    background.run(console_command, "CONSOLE", COLOR_RED)
-    time.sleep(1)
+    # Run OpenOCD, GDB, and the OpenTitanTool console in the background.
+    console = background.run(console_command, "CONSOLE", COLOR_RED)
+    # Wait until the console is ready to display message (at this point we know
+    # it won't touch the GPIOs anymore)
+    console_ready = background.block_until_line_contains(
+        console, "Starting interactive console", num_seconds=5)
+    if not console_ready:
+        print("Error: opentitantool failed to start printing the console output.", flush=True)
+        sys.exit(1)
 
-    # Run OpenOCD, GDB, and the OpenTitanTool console in the background. Wait
-    # until OpenOCD has fired up its GDB server before launching the GDB client
+    # Wait until OpenOCD has fired up its GDB server before launching the GDB client
     # to avoid a subtle race condition.
     openocd = background.run(openocd_command, "OPENOCD", COLOR_PURPLE)
     # For some reason, we don't reliably see the "starting gdb server" line when
