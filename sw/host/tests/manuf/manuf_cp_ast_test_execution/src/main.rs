@@ -10,12 +10,14 @@ use anyhow::{anyhow, bail, Context, Result};
 use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::dif::otp_ctrl::DaiParam;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{Jtag, JtagParams, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::{
     ExecutionMode, ExecutionResult, SramProgramParams,
 };
+use opentitanlib::test_utils::otp_ctrl::OtpParam;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 
 #[derive(Debug, StructOpt)]
@@ -33,6 +35,11 @@ struct Opts {
     )]
     timeout: Duration,
 }
+
+/// This value is expected to be programmed into the OTP by the SRAM program.
+const EXPECTED_DEVICE_ID: [u32; 8] = [
+    0xdeadbeef, 0x12345678, 0xabcdef12, 0xcafebeef, 0x87654321, 0x21fedcba, 0xa1b2c3d4, 0xacdc4321,
+];
 
 fn connect_riscv_jtag(opts: &Opts, transport: &TransportWrapper) -> Result<Rc<dyn Jtag>> {
     // Set straps for the CPU TAP and reset.
@@ -122,7 +129,14 @@ fn manuf_cp_ast_text_execution_read_otp(opts: &Opts, transport: &TransportWrappe
     let uart = transport.uart("console")?;
     uart.clear_rx_buffer()?;
 
-    // TODO(#17388): read Device ID in HW_CFG OTP partition.
+    // Verify that the DEVICE_ID parameter in the OTP was correctly programmed. Although the SRAM
+    // program is supposed to verify that, this adds redundancy to the test and avoids trusting
+    // the SRAM program.
+    let mut device_id =
+        [0xffffffffu32; DaiParam::DEVICE_ID.size as usize / std::mem::size_of::<u32>()];
+    OtpParam::read_param(&*jtag, DaiParam::DeviceId, &mut device_id)
+        .context("failed to read back DEVICE_ID from OTP")?;
+    assert_eq!(device_id, EXPECTED_DEVICE_ID);
 
     // Disconnect JTAG.
     transport
