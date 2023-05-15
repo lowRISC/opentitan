@@ -81,8 +81,11 @@ class chip_sw_otp_ctrl_vendor_test_csr_access_vseq extends chip_sw_base_vseq;
   endtask
 
   task post_start();
+    // If cpu is enabled, sw_test_status continues transitioning to the end.
+    // SwTestStatusBooted->SwTestStatusInBootRom->SwTestStatusInTest->SwTestStatusPassed
     // Some LC state does not enable CPU so sw cannot return a pass status.
-    override_test_status_and_finish(.passed(1));
+    // Therefore, we need to force status to passed state.
+    if (!is_cpu_enabled_lc_state(lc_state)) override_test_status_and_finish(.passed(1));
 
     super.post_start();
   endtask : post_start

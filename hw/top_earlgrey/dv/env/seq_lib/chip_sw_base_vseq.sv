@@ -676,6 +676,27 @@ class chip_sw_base_vseq extends chip_base_vseq;
     return (digest_bits[TokenWidthBit-1:0]);
   endfunction
 
+  virtual function bit is_test_locked_lc_state(lc_state_e state);
+    return (state inside {LcStTestLocked0, LcStTestLocked1,
+                          LcStTestLocked2, LcStTestLocked3,
+                          LcStTestLocked4, LcStTestLocked5,
+                          LcStTestLocked6});
+  endfunction // is_locked_lc_state
+  virtual function bit is_test_unlocked_lc_state(lc_state_e state);
+    return (state inside {LcStTestUnlocked0, LcStTestUnlocked1,
+                          LcStTestUnlocked2, LcStTestUnlocked3,
+                          LcStTestUnlocked4, LcStTestUnlocked5,
+                          LcStTestUnlocked6, LcStTestUnlocked7
+                          });
+  endfunction
+  // Indicate LC state where cpu_en == 1
+  // This has to follow Manufacturing State description
+  // https://opentitan.org/book/doc/security/specs/device_life_cycle/#manufacturing-states
+  virtual function bit is_cpu_enabled_lc_state(lc_state_e state);
+    return ((state inside {LcStDev, LcStProd, LcStProdEnd, LcStRma}) ||
+            (is_test_unlocked_lc_state(state) == 1));
+  endfunction
+
 
   // LC_CTRL JTAG tasks
   virtual task wait_lc_status(lc_ctrl_status_e expect_status, int max_attempt = 5000);
