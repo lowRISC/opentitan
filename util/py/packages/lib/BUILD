@@ -65,3 +65,23 @@ py_test(
         ":run",
     ],
 )
+
+py_library(
+    name = "bazel",
+    srcs = [
+        "bazel.py",
+    ],
+    deps = [
+        ":run",
+    ],
+)
+
+py_test(
+    name = "bazel_test",
+    srcs = [
+        "bazel_test.py",
+    ],
+    deps = [
+        ":bazel",
+    ],
+)
