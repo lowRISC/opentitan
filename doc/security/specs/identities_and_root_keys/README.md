@@ -408,7 +408,7 @@ secure boot. See
     <td>KeyID</td>
     <td>SW Register Input</td>
     <td>
-Key identifier. Used to derive a VersionedKey from VersionedRootKey. Processing
+Key identifier. Used to derive a VersionedKey from OwnerRootKey. Processing
 of this field should provide countermeasures against key recovery attacks.
     </td>
   </tr>
@@ -432,7 +432,7 @@ Visibility: Hidden from software.
     <td>VersionedKey</td>
     <td>SW Register Output</td>
     <td>
-Output key derived from VersionedRootKey and KeyID. Support for sideloading may
+Output key derived from OwnerRootKey and KeyID. Support for sideloading may
 require additional support in the key manager, otherwise the software will be in
 charge of enforcing isolation.
     </td>
