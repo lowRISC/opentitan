@@ -200,7 +200,7 @@ otp_json(
                 # sw/device/silicon_creator/lib/drivers/alert.h
                 "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": otp_alert_classification(
                     alert_list = EARLGREY_ALERTS,
-                    # The ordering is alert("prod, prod_end, dev, rma)
+                    # The ordering is "prod, prod_end, dev, rma"
                     default = "X, X, X, X",
                 ),
 
@@ -208,7 +208,7 @@ otp_json(
                 # sw/device/silicon_creator/lib/drivers/alert.h
                 "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": otp_alert_classification(
                     alert_list = EARLGREY_LOC_ALERTS,
-                    # The ordering is alert(prod, prod_end, dev, rma)
+                    # The ordering is "prod, prod_end, dev, rma"
                     default = "X, X, X, X",
                 ),
                 # Set the alert accumulation thresholds to 0 per class.
