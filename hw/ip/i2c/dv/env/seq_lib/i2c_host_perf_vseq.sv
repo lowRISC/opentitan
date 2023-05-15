@@ -28,11 +28,11 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
   constraint scl_frequency_c {
     solve speed_mode before scl_frequency;
     if(speed_mode == Standard){
-      scl_frequency == 100;
+      scl_frequency inside {100, 50};
     }else if(speed_mode == Fast) {
-      scl_frequency == 400;
+      scl_frequency inside {400, 200};
     }else if(speed_mode == FastPlus) {
-      scl_frequency == 1000;
+      scl_frequency inside {1000, 500};
     }
   }
 
