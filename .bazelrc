@@ -14,6 +14,7 @@ build --strip='never'
 # Bazel embedded enables the following feature which along with -std=c11 and
 # our codebase generates a lot of warnings by setting the -Wpedantic flag
 build --features=-all_warnings
+build --features=-pedantic_warnings
 
 # Enable toolchain hardening features.
 # `guards` adds `unimp` guard instructions after unconditional jumps.
