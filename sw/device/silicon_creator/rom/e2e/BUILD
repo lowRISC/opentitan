@@ -13,7 +13,17 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
-load("//rules:const.bzl", "CONST", "error_redact", "get_lc_items", "hex", "hex_digits", "lcv_hw_to_sw")
+load(
+    "//rules:const.bzl",
+    "CONST",
+    "EARLGREY_ALERTS",
+    "EARLGREY_LOC_ALERTS",
+    "error_redact",
+    "get_lc_items",
+    "hex",
+    "hex_digits",
+    "lcv_hw_to_sw",
+)
 load(
     "//rules:opentitan.bzl",
     "RSA_ONLY_KEY_STRUCTS",
@@ -29,7 +39,20 @@ load(
 )
 load("//rules:manifest.bzl", "manifest")
 load("//rules:opentitan_gdb_test.bzl", "IBEX_GPRS", "gdb_commands_copy_registers", "gdb_commands_restore_registers", "gdb_commands_set_registers", "get_gdb_readable_csr_names", "get_gdb_settable_csr_names", "opentitan_gdb_fpga_cw310_test")
-load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_alert_digest", "otp_image", "otp_json", "otp_partition")
+load(
+    "//rules:otp.bzl",
+    "STD_OTP_OVERLAYS",
+    "otp_alert_classification",
+    "otp_alert_digest",
+    "otp_bytestring",
+    "otp_hex",
+    "otp_image",
+    "otp_json",
+    "otp_partition",
+    "otp_per_class_bytes",
+    "otp_per_class_ints",
+    "otp_per_class_lists",
+)
 load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
 load("//rules:splice.bzl", "bitstream_splice")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
@@ -264,7 +287,7 @@ rom_e2e_keymgr_init_configs = [
             otp_partition(
                 name = "OWNER_SW_CFG",
                 items = {
-                    "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": "0x{}".format(hex_digits(config["value"])),
+                    "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": otp_hex(config["value"]),
                 },
             ),
         ],
@@ -427,7 +450,7 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_RMA_SPIN_EN": hex(CONST.HARDENED_TRUE),
+                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
                 "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0x2000000",
             },
         ),
@@ -1235,52 +1258,56 @@ otp_json(
             name = "OWNER_SW_CFG",
             items = {
                 # Enable bootstrap.
-                "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": hex(CONST.HARDENED_FALSE),
+                "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.HARDENED_FALSE),
                 # Report errors without any redaction.
-                "OWNER_SW_CFG_ROM_ERROR_REPORTING": hex(CONST.SHUTDOWN.REDACT.NONE),
+                "OWNER_SW_CFG_ROM_ERROR_REPORTING": otp_hex(CONST.SHUTDOWN.REDACT.NONE),
                 # Enable class A alerts.
-                "OWNER_SW_CFG_ROM_ALERT_CLASS_EN": hex(
-                    CONST.ALERT.NONE << 24 |
-                    CONST.ALERT.NONE << 16 |
-                    CONST.ALERT.NONE << 8 |
-                    CONST.ALERT.ENABLE,
+                "OWNER_SW_CFG_ROM_ALERT_CLASS_EN": otp_per_class_bytes(
+                    A = CONST.ALERT.ENABLE,
+                    B = CONST.ALERT.NONE,
+                    C = CONST.ALERT.NONE,
+                    D = CONST.ALERT.NONE,
                 ),
                 # Configure class A to escalate until phase 3 and disable other classes.
-                "OWNER_SW_CFG_ROM_ALERT_ESCALATION": hex(
-                    CONST.ALERT.ESC_NONE << 24 |
-                    CONST.ALERT.ESC_NONE << 16 |
-                    CONST.ALERT.ESC_NONE << 8 |
-                    CONST.ALERT.ESC_PHASE_3,
+                "OWNER_SW_CFG_ROM_ALERT_ESCALATION": otp_per_class_bytes(
+                    A = CONST.ALERT.ESC_PHASE_3,
+                    B = CONST.ALERT.ESC_NONE,
+                    C = CONST.ALERT.ESC_NONE,
+                    D = CONST.ALERT.ESC_NONE,
                 ),
                 # Classify UART0 alerts (alert source 0) as class A and leave others as unconfigured.
-                "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": [
-                    hex(
-                        CONST.ALERT.CLASS_A << 24 |
-                        CONST.ALERT.CLASS_A << 16 |
-                        CONST.ALERT.CLASS_A << 8 |
-                        CONST.ALERT.CLASS_A,
-                    ),
-                ] + [
-                    hex(
-                        CONST.ALERT.CLASS_X << 24 |
-                        CONST.ALERT.CLASS_X << 16 |
-                        CONST.ALERT.CLASS_X << 8 |
-                        CONST.ALERT.CLASS_X,
-                    ),
-                ] * 79,
+                "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": otp_alert_classification(
+                    alert_list = EARLGREY_ALERTS,
+                    # The ordering is "prod, prod_end, dev, rma"
+                    default = "          X, X, X, X",
+                    uart0_fatal_fault = "A, A, A, A",
+                ),
                 # Leave local alert classification as unconfigured.
-                "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": [hex(
-                    CONST.ALERT.CLASS_X << 24 |
-                    CONST.ALERT.CLASS_X << 16 |
-                    CONST.ALERT.CLASS_X << 8 |
-                    CONST.ALERT.CLASS_X,
-                )] * 16,
+                "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": otp_alert_classification(
+                    alert_list = EARLGREY_LOC_ALERTS,
+                    default = "X, X, X, X",
+                ),
                 # Set the alert accumulation thresholds to 0.
-                "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH": ["0x00000000"] * 4,
+                "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH": otp_per_class_ints(
+                    A = 0,
+                    B = 0,
+                    C = 0,
+                    D = 0,
+                ),
                 # Set the alert timeout cycles to 0.
-                "OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES": ["0x00000000"] * 4,
+                "OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES": otp_per_class_ints(
+                    A = 0,
+                    B = 0,
+                    C = 0,
+                    D = 0,
+                ),
                 # Set the alert phase cycles to 0.
-                "OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES": ["0x00000000"] * 16,
+                "OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES": otp_per_class_lists(
+                    A = "0, 0, 0, 0",
+                    B = "0, 0, 0, 0",
+                    C = "0, 0, 0, 0",
+                    D = "0, 0, 0, 0",
+                ),
             },
         ),
     ],
@@ -1404,7 +1431,7 @@ opentitan_flash_binary(
         partitions = [
             otp_partition(
                 name = "CREATOR_SW_CFG",
-                items = {"CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN": hex(t["use_sw_rsa_verify"])},
+                items = {"CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN": otp_hex(t["use_sw_rsa_verify"])},
             ),
         ],
     )
@@ -1816,9 +1843,9 @@ BOOT_DATA_RECOVERY_CASES = [
             name = "CREATOR_SW_CFG",
             items = {
                 # Set the min_sec version.
-                "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": hex(case["min_sec_ver"]),
+                "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": otp_hex(case["min_sec_ver"]),
                 # Set allowing use of default boot data in PROD LC state.
-                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": hex(
+                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(
                     CONST.HARDENED_TRUE if case["default_boot_data"] == "default" else CONST.HARDENED_FALSE,
                 ),
             },
@@ -1968,7 +1995,7 @@ SHUTDOWN_WATCHDOG_CASES = [
         partitions = [
             otp_partition(
                 name = "OWNER_SW_CFG",
-                items = {"OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES": hex(t["bite_threshold"])},
+                items = {"OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES": otp_hex(t["bite_threshold"])},
             ),
         ],
     )
@@ -2818,7 +2845,7 @@ REDACT.update({"INVALID": 0x0})
             otp_partition(
                 name = "OWNER_SW_CFG",
                 items = {
-                    "OWNER_SW_CFG_ROM_ERROR_REPORTING": hex(v),
+                    "OWNER_SW_CFG_ROM_ERROR_REPORTING": otp_hex(v),
                 },
             ),
         ],
@@ -3162,7 +3189,16 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": "0x4b4b4b4b4bff004b",
+                "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": otp_bytestring([
+                    CONST.HARDENED_BYTE_FALSE,  # key0
+                    0x00,  # key1
+                    0xff,  # key2
+                    CONST.HARDENED_BYTE_FALSE,  # key3
+                    CONST.HARDENED_BYTE_FALSE,  # key4
+                    CONST.HARDENED_BYTE_FALSE,  # key5
+                    CONST.HARDENED_BYTE_FALSE,  # key6
+                    CONST.HARDENED_BYTE_FALSE,  # key7
+                ]),
             },
         ),
     ],
@@ -3698,7 +3734,7 @@ otp_json(
             name = "CREATOR_SW_CFG",
             # Set the mask to 1 << kRstmgrReasonSoftwareRequest to trigger a
             # retention RAM reset after a SW-requested reset
-            items = {"CREATOR_SW_CFG_RET_RAM_RESET_MASK": "0x4"},
+            items = {"CREATOR_SW_CFG_RET_RAM_RESET_MASK": otp_hex(0x4)},
         ),
     ],
 )
@@ -3780,7 +3816,7 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": hex(CONST.HARDENED_TRUE),
+                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(CONST.HARDENED_TRUE),
             },
         ),
     ],
@@ -3943,8 +3979,17 @@ opentitan_flash_binary(
             otp_partition(
                 name = "CREATOR_SW_CFG",
                 items = {
-                    "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": hex(t["spx_en"]),
-                    "CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN": "0x4ba5a5a5a5a5a5a5",
+                    "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(t["spx_en"]),
+                    "CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN": otp_bytestring([
+                        CONST.HARDENED_BYTE_TRUE,  # key0
+                        CONST.HARDENED_BYTE_TRUE,  # key1
+                        CONST.HARDENED_BYTE_TRUE,  # key2
+                        CONST.HARDENED_BYTE_TRUE,  # key3
+                        CONST.HARDENED_BYTE_TRUE,  # key4
+                        CONST.HARDENED_BYTE_TRUE,  # key5
+                        CONST.HARDENED_BYTE_TRUE,  # key6
+                        CONST.HARDENED_BYTE_FALSE,  # key7
+                    ]),
                 },
             ),
         ],
