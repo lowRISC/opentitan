@@ -355,9 +355,6 @@ module i2c_protocol_cov(
     RStart_during_read_data_cp : coverpoint bus_state_q iff (!host_mode_en) {
       bins Start_during_read_data = (ReadData => RStart);
     }
-    RStart_before_Write_data_ACK_cp : coverpoint bus_state_q iff (!host_mode_en) {
-      bins Start_before_Write_data_ACK_Nack = (WriteDataACK, WriteDataNACK => RStart);
-    }
     RStart_before_read_data_ACK_cp : coverpoint bus_state_q iff (!host_mode_en) {
       bins Start_before_read_data_ACK_Nack = (ReadDataACK, ReadDataNACK => RStart);
     }

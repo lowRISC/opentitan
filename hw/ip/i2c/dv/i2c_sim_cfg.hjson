@@ -56,7 +56,6 @@
     {
       name: i2c_host_override
       uvm_test_seq: i2c_host_override_vseq
-      run_opts: ["+en_scb=0"]
     }
 
     {
