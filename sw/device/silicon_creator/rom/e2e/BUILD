@@ -3920,3 +3920,13 @@ test_suite(
         for t in SIGVERIFY_SPX_CASES
     ],
 )
+
+opentitan_functest(
+    name = "presigned_fpga_binary",
+    cw310 = cw310_params(
+        bitstream = ":bitstream_sigverify_spx_prod_enabled_zero",
+    ),
+    ot_flash_binary = "//sw/device/silicon_creator/rom/e2e/presigned_images:presigned",
+    signed = False,
+    targets = ["cw310_rom_with_real_keys"],
+)
