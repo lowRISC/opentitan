@@ -1,0 +1,27 @@
+{
+  "includes": [
+    "/__builtin__/h1dx_devboard.json"
+  ],
+  "interface": "c2d2",
+  "pins": [
+    {
+      "name": "RESET",
+      "level": true,
+      "alias_of": "SPIVREF_RSVD_H1VREF_H1_RST_ODL"
+    }
+  ],
+  "strappings": [
+    {
+      "name": "RESET"
+    },
+    {
+      "name": "ROM_BOOTSTRAP"
+    }
+  ],
+  "uarts": [
+    {
+      "name": "console",
+      "alias_of": "CR50"
+    }
+  ]
+}
