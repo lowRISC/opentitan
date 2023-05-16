@@ -222,17 +222,16 @@ with function sample(bit[7:0] fbyte, bit start, bit stop, bit read, bit rcont, b
     bins stop_byte = binsof(stop) intersect {1};
     bins stop_after_start = binsof(stop) intersect {1} &&
                             binsof(start) intersect {1};
-    //TODO(#18033) add these back in once it is possible to sample the ack in the scoreboard.
-    // bins write_address_byte_nak = binsof(start) intersect {1} &&
-    //                               binsof(cp_ack) intersect {0};
-    // bins data_byte_nack = binsof(cp_ack) intersect {0};
-    // bins stop_byte_nack = binsof(stop) intersect {1} &&
-    //                       binsof(cp_ack) intersect {0};
-    // bins nakok_byte_nack = binsof(nakok) intersect {1} &&
-    //                        binsof(cp_ack) intersect {0};
-    // bins nakok_addr_byte_nack = binsof(start) intersect {1} &&
-    //                             binsof(nakok) intersect {1} &&
-    //                             binsof(cp_ack) intersect {0};
+    bins write_address_byte_nak = binsof(start) intersect {1} &&
+                                  binsof(cp_ack) intersect {0};
+    bins data_byte_nack = binsof(cp_ack) intersect {0};
+    bins stop_byte_nack = binsof(stop) intersect {1} &&
+                          binsof(cp_ack) intersect {0};
+    bins nakok_byte_nack = binsof(nakok) intersect {1} &&
+                           binsof(cp_ack) intersect {0};
+    bins nakok_addr_byte_nack = binsof(start) intersect {1} &&
+                                binsof(nakok) intersect {1} &&
+                                binsof(cp_ack) intersect {0};
   }
 
 endgroup : i2c_fmt_fifo_cg
