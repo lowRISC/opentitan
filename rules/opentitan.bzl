@@ -1182,7 +1182,8 @@ def opentitan_flash_binary(
             for key_struct in signing_key_structs:
                 if key_struct.spx:
                     # Sign the binary using RSA and SPX+.
-                    signed_bin_name = "{}_bin_signed_{}_{}".format(devname, key_struct.rsa.name, key_struct.spx.name)
+                    key_name = "{}_{}".format(key_struct.rsa.name, key_struct.spx.name)
+                    signed_bin_name = "{}_bin_signed_{}".format(devname, key_name)
                     dev_targets.append(":" + signed_bin_name)
                     sign_bin(
                         name = signed_bin_name,
@@ -1196,7 +1197,8 @@ def opentitan_flash_binary(
                     )
                 else:
                     # Sign the binary using RSA only.
-                    signed_bin_name = "{}_bin_signed_{}".format(devname, key_struct.rsa.name)
+                    key_name = "{}".format(key_struct.rsa.name)
+                    signed_bin_name = "{}_bin_signed_{}".format(devname, key_name)
                     dev_targets.append(":" + signed_bin_name)
                     sign_bin(
                         name = signed_bin_name,
@@ -1212,7 +1214,7 @@ def opentitan_flash_binary(
                     # Generate a VMEM64 from the signed binary.
                     signed_vmem_name = "{}_vmem64_signed_{}".format(
                         devname,
-                        key_struct.rsa.name,
+                        key_name,
                     )
                     dev_targets.append(":" + signed_vmem_name)
                     bin_to_vmem(
@@ -1226,7 +1228,7 @@ def opentitan_flash_binary(
                     # Scramble / compute ECC for signed VMEM64.
                     scr_signed_vmem_name = "{}_scr_vmem64_signed_{}".format(
                         devname,
-                        key_struct.rsa.name,
+                        key_name,
                     )
                     dev_targets.append(":" + scr_signed_vmem_name)
                     scramble_flash_vmem(
