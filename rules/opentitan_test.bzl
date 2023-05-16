@@ -198,14 +198,13 @@ def cw310_params(
         tags = _BASE_PARAMS["tags"],
         test_runner = _BASE_PARAMS["test_runner"],
         test_cmds = [
-            "--exec=\"fpga load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
+            "--exec=\"fpga load-bitstream $(location {bitstream})\"",
             "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
             "--exec=\"console --exit-success={exit_success} --exit-failure={exit_failure}\"",
             "{clear_bitstream}",
         ],
         # CW310-specific Parameters
         bitstream = None,  # A bitstream value of None will cause the default bitstream values to be used
-        rom_kind = None,
         clear_bitstream = False,
         # None
         timeout = "short",
@@ -230,8 +229,6 @@ def cw310_params(
         @param bitstream: The bitstream to load into the FPGA (this specifies
                           the ROM image that is also used, since the ROM is
                           baked into the bitstream).
-        @param rom_kind: The ROM type ('testrom' or 'rom') that is baked into the
-                         bitstream that is loaded into the FPGA.
         @param clear_bitstream: Clear FPGA bitstream at the end of the test.
     """
     if interface not in ("cw310", "hyper310"):
@@ -261,7 +258,6 @@ def cw310_params(
         test_cmds = required_test_cmds + test_cmds,
         timeout = timeout,
         bitstream = bitstream,
-        rom_kind = rom_kind,
         clear_bitstream = clear_bitstream,
     )
     return kwargs
@@ -522,14 +518,6 @@ def opentitan_functest(
 
         # Set Bitstream (for FPGA targets).
         bitstream = params.pop("bitstream", None)
-        rom_kind = params.pop("rom_kind", None)
-        if bitstream and not rom_kind:
-            if "test_rom" in bitstream:
-                rom_kind = "testrom"
-            elif "rom" in bitstream:
-                rom_kind = "rom"
-            else:
-                fail("Unknown bitstream type. Expected the bitstream label to contain the string 'test_rom' or 'rom'.")
         clear_bitstream = "no-op"
         if params.pop("clear_bitstream", False):
             clear_bitstream = "fpga clear-bitstream"
@@ -564,7 +552,6 @@ def opentitan_functest(
             "dvsim_config": dvsim_config,
             "clear_bitstream": clear_bitstream,
             "bitstream": bitstream,
-            "rom_kind": rom_kind,
             "logging": params.pop("logging", logging),
         }
         format_dict.update(exit_strings_kwargs)

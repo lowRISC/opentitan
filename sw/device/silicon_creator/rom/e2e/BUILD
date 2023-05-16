@@ -418,7 +418,6 @@ opentitan_functest(
             bitstream = ":bitstream_e2e_bootstrap_entry_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
             test_cmds = [
-                "--rom-kind=rom",
                 "--bitstream=\"$(location {bitstream})\"",
                 "--bootstrap=\"$(location {flash})\"",
             ],
@@ -503,7 +502,6 @@ opentitan_functest(
             # We need to clear the bitstream between consecutive runs of this
             # test since it modifies OTP state (i.e., the LC state).
             "--clear-bitstream",
-            "--rom-kind=rom",
             "--bitstream=\"$(rootpath {bitstream})\"",
             "--bootstrap=\"$(rootpath {flash})\"",
         ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
@@ -563,7 +561,6 @@ opentitan_functest(
             otp = ":otp_img_e2e_bootstrap_entry_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
             test_cmds = [
-                "--rom-kind=rom",
                 "--bitstream=\"$(location //sw/device/silicon_creator/rom/e2e:bitstream_chip_specific_startup_{})\"".format(lc_state),
                 "--bootstrap=\"$(location {flash})\"",
                 "--otp-unprogrammed",
@@ -2282,7 +2279,6 @@ test_suite(
             logging = "debug",
             tags = ["cw310_rom_with_fake_keys"],
             test_cmds = [
-                "--rom-kind=rom",
                 "--bitstream=\"$(rootpath {bitstream})\"",
                 "--vmem=\"$(rootpath //sw/device/examples/sram_program:sram_program_fpga_cw310_vmem)\"",
                 # the following values come from the sram linker script
@@ -2393,7 +2389,6 @@ test_suite(
             "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
         rom_bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
-        rom_kind = "Rom",
         tags = [
             "cw310_rom_with_fake_keys",
         ] + maybe_skip_in_ci(lc_state_val),
@@ -2451,7 +2446,6 @@ test_suite(
             "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
         rom_bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
-        rom_kind = "Rom",
         tags = [
             "cw310_rom_with_fake_keys",
         ] + maybe_skip_in_ci(lc_state_val),
@@ -2514,7 +2508,6 @@ test_suite(
             "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
         rom_bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
-        rom_kind = "Rom",
         tags = [
             "cw310_rom_with_fake_keys",
         ] + maybe_skip_in_ci(lc_state_val),
@@ -2604,7 +2597,6 @@ test_suite(
             "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
         rom_bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
-        rom_kind = "Rom",
         tags = [
             "cw310_rom_with_fake_keys",
         ] + maybe_skip_in_ci(lc_state_val),
@@ -2671,7 +2663,6 @@ test_suite(
             "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
         rom_bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
-        rom_kind = "Rom",
         tags = [
             "cw310_rom_with_fake_keys",
         ] + maybe_skip_in_ci(lc_state_val),
@@ -3529,7 +3520,6 @@ test_suite(
             "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
         rom_bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
-        rom_kind = "Rom",
         tags = [
             "cw310_rom_with_fake_keys",
         ] + maybe_skip_in_ci(lc_state_val),
@@ -3579,7 +3569,7 @@ opentitan_functest(
         exit_failure = "(min_security_version_rom_ext:[^01])|(FAIL)|((min_security_version_rom_ext:0(?s:.*)){2,})|(PASS)",
         exit_success = "min_security_version_rom_ext:0(?s:.*)min_security_version_rom_ext:1(?s:.*)" + MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
         test_cmds = [
-            "--exec=\"fpga load-bitstream --rom-kind=rom $(rootpath {bitstream})\"",
+            "--exec=\"fpga load-bitstream $(rootpath {bitstream})\"",
             "--exec=\"bootstrap --clear-uart=true $(rootpath {flash})\"",
             "--exec=\"console --exit-success={exit_success} --exit-failure={exit_failure}\"",
             "fpga",

@@ -126,7 +126,6 @@ def _opentitan_gdb_fpga_cw310_test_impl(ctx):
         set -ex
         {} """.format(shell.quote(ctx.executable._coordinator.short_path))
     args = [
-        ("--rom-kind", ctx.attr.rom_kind),
         ("--openocd-path", ctx.file._openocd.short_path),
         ("--openocd-earlgrey-config", ctx.file._openocd_earlgrey_config.path),
         ("--openocd-jtag-adapter-config", ctx.file._openocd_jtag_adapter_config.path),
@@ -192,7 +191,6 @@ _opentitan_gdb_fpga_cw310_test = rv_rule(
             mandatory = True,
             allow_single_file = True,
         ),
-        "rom_kind": attr.string(mandatory = True, values = ["Rom", "TestRom"]),
         "gdb_expect_output_sequence": attr.string_list(),
         "expect_debug_disallowed": attr.bool(default = False),
         "opentitantool_cw310_uarts": attr.string(),
