@@ -742,6 +742,17 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "sha512_compact_test",
+    srcs = [
+        "sha512_compact_test.s",
+    ],
+    exp = "sha512_compact_test.exp",
+    deps = [
+        "//sw/otbn/crypto:sha512_compact",
+    ],
+)
+
+otbn_sim_test(
     name = "sha384_test",
     srcs = [
         "sha384_test.s",
