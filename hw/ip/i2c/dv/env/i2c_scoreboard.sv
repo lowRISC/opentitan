@@ -404,6 +404,36 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             mirrored_txdata.push_back(item.a_data[7:0]);
           end
         end
+        "timing0": begin
+          if (cfg.en_cov) begin
+            cov.thigh_cg.sample(`gmv(ral.timing0.thigh));
+            cov.tlow_cg.sample(`gmv(ral.timing0.thigh));
+          end
+        end
+        "timing1": begin
+          if (cfg.en_cov) begin
+            cov.t_r_cg.sample(`gmv(ral.timing1.t_r));
+            cov.t_f_cg.sample(`gmv(ral.timing1.t_f));
+          end
+        end
+        "timing2": begin
+          if (cfg.en_cov) begin
+            cov.tsu_sta_cg.sample(`gmv(ral.timing2.tsu_sta));
+            cov.thd_sta_cg.sample(`gmv(ral.timing2.thd_sta));
+          end
+        end
+        "timing3": begin
+          if (cfg.en_cov) begin
+            cov.tsu_dat_cg.sample(`gmv(ral.timing3.tsu_dat));
+            cov.thd_dat_cg.sample(`gmv(ral.timing3.thd_dat));
+          end
+        end
+        "timing4": begin
+          if (cfg.en_cov) begin
+            cov.t_buf_cg.sample(`gmv(ral.timing4.t_buf));
+            cov.tsu_sto_cg.sample(`gmv(ral.timing4.tsu_sto));
+          end
+        end
       endcase
 
       if (cfg.under_reset || !host_init) return;

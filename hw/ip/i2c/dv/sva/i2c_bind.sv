@@ -24,7 +24,9 @@ module i2c_bind;
     .clk (clk_i),
     .rst_n (rst_ni),
     .scl (cio_scl_i),
-    .sda (cio_sda_i)
+    .sda (cio_sda_i),
+    .intr_cmd_complete (intr_cmd_complete_o),
+    .intr_tx_stretch   (intr_tx_stretch_o)
   );
 
 endmodule
