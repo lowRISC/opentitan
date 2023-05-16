@@ -1084,6 +1084,10 @@ opentitan_functest(
 opentitan_functest(
     name = "gpio_smoketest",
     srcs = ["gpio_smoketest.c"],
+    cw310 = cw310_params(
+        # FIXME #18623 Flaky test gpio_smoketest_fpga_cw310_test_rom
+        tags = ["broken"],
+    ),
     targets = [
         #not compatible with the verilated top level
         "cw310_test_rom",
