@@ -147,7 +147,7 @@ opentitan_functest(
         spx = None,
     )[0],
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
         "cw310_test_rom",
         "dv",
     ],
@@ -185,7 +185,7 @@ opentitan_functest(
         spx = None,
     )[0],
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
         "cw310_test_rom",
         "dv",
     ],

@@ -327,8 +327,13 @@
       en_run_modes: ["sw_test_mode_common"]
     }
     {
-      name: sw_test_mode_rom
+      name: sw_test_mode_rom_with_fake_keys
       sw_images: ["//sw/device/silicon_creator/rom:rom_with_fake_keys:0"]
+      en_run_modes: ["sw_test_mode_common"]
+    }
+    {
+      name: sw_test_mode_rom_with_real_keys
+      sw_images: ["//sw/device/silicon_creator/rom:rom_with_real_keys:0"]
       en_run_modes: ["sw_test_mode_common"]
     }
     {

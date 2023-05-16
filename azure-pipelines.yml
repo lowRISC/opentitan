@@ -255,13 +255,16 @@ jobs:
       set -x -e
       . util/build_consts.sh
       # copy the rom to a specific location
-      ROM_TARGET=${BIN_DIR}/sw/device/silicon_creator/rom
-      mkdir -p ${ROM_TARGET}
-      ROM=$(ci/scripts/target-location.sh //sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_scr_vmem)
-      cp $ROM $ROM_TARGET/rom_with_fake_keys_fpga_cw310.scr.39.vmem
-      ROM_DIR=$(dirname $ROM)
-      cp $ROM_DIR/rom_with_fake_keys_fpga_cw310.elf $ROM_TARGET/rom_with_fake_keys_fpga_cw310.elf
-      cp $ROM_DIR/rom_with_fake_keys_fpga_cw310.bin $ROM_TARGET/rom_with_fake_keys_fpga_cw310.bin
+      ROM_TARGET="${BIN_DIR}/sw/device/silicon_creator/rom"
+      mkdir -p "${ROM_TARGET}"
+      AUTHENTICITY=(fake real)
+      for authenticity in "${AUTHENTICITY[@]}"; do
+        ROM=$(ci/scripts/target-location.sh "//sw/device/silicon_creator/rom:rom_with_${authenticity}_keys_fpga_cw310_scr_vmem")
+        cp $ROM "${ROM_TARGET}/$(basename "${ROM}")"
+        ROM_DIR=$(dirname $ROM)
+        cp "${ROM_DIR}/rom_with_${authenticity}_keys_fpga_cw310.elf" "${ROM_TARGET}/"
+        cp "${ROM_DIR}/rom_with_${authenticity}_keys_fpga_cw310.bin" "${ROM_TARGET}/"
+      done
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
@@ -592,7 +595,7 @@ jobs:
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-cw310-tests.sh cw310_rom,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/guides/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-cw310-tests.sh cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/guides/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
 
 - job: execute_fpga_manuf_tests_cw310

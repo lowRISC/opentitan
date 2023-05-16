@@ -113,12 +113,12 @@ opentitan_functest(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_otp_dev_initial",
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev_initial",
         tags = ["manuf"],
     ),
     key_struct = RSA_ONLY_KEY_STRUCTS[1],
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
     ],
     deps = [
         ":individualize",
@@ -156,11 +156,11 @@ opentitan_functest(
     name = "individualize_preop_functest",
     srcs = ["individualize_preop_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_otp_test_unlocked0",
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked0",
         tags = ["manuf"],
     ),
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
     ],
     deps = [
         ":individualize_preop",
@@ -202,7 +202,7 @@ opentitan_functest(
     name = "provisioning_functest",
     srcs = ["provisioning_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_otp_dev_individualized",
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev_individualized",
         tags = ["manuf"],
         test_cmds = [
             "--clear-bitstream",
@@ -217,7 +217,7 @@ opentitan_functest(
     ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
     key_struct = RSA_ONLY_KEY_STRUCTS[1],
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
     ],
     test_harness = "//sw/host/tests/manuf/provisioning",
     deps = [
@@ -252,7 +252,7 @@ lc_raw_unlock_token(
         name = "manuf_scrap_functest_{}".format(lc_state.lower()),
         srcs = ["empty_functest.c"],
         cw310 = cw310_params(
-            bitstream = "//hw/bitstream:rom_otp_{}".format(lc_state.lower()),
+            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
             tags = ["manuf"],
             test_cmds = (
                 _MANUF_LC_TRANSITION_TEST_CMDS if (
@@ -264,7 +264,7 @@ lc_raw_unlock_token(
         ),
         data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
         key_struct = RSA_ONLY_KEY_STRUCTS[0] if (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS else filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_val)[0],
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_scrap",
         deps = [
             "//sw/device/lib/runtime:log",
@@ -287,12 +287,12 @@ opentitan_functest(
     name = "manuf_cp_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_otp_raw",
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
         tags = ["manuf"],
         test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
     test_harness = "//sw/host/tests/manuf/manuf_cp_unlock_raw",
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
@@ -323,7 +323,7 @@ otp_json(
     visibility = ["//visibility:private"],
 )
 
-# This is the same as rom_otp_test_unlocked* but with ROM execution disabled.
+# This is the same as rom_with_fake_keys_otp_test_unlocked* but with ROM execution disabled.
 [
     otp_image(
         name = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
@@ -342,7 +342,7 @@ otp_json(
 [
     bitstream_splice(
         name = "bitstream_rom_exec_disabled_test_unlocked{}".format(i),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
         meminfo = "//hw/bitstream:otp_mmi",
         update_usr_access = True,
@@ -363,7 +363,7 @@ otp_json(
             ],
         ),
         data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_yield_test",
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
@@ -464,7 +464,7 @@ opentitan_ram_binary(
             RSA_ONLY_KEY_STRUCTS,
             CONST.LCV.PROD,
         )[0],
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_device_info_flash_wr",
         deps = [
             ":isolated_flash_partition",
@@ -538,7 +538,7 @@ opentitan_ram_binary(
         data = [
             ":sram_exec_test_fpga_cw310_vmem",
         ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_ast_test_execution",
         deps = [
             "//sw/device/lib/runtime:log",
@@ -567,7 +567,7 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_otp_ctrl_functest",
-    src = "//hw/bitstream:rom",
+    src = "//hw/bitstream:rom_with_fake_keys",
     data = "otp_img_otp_ctrl_functest",
     meminfo = "//hw/bitstream:otp_mmi",
     update_usr_access = True,
@@ -583,7 +583,7 @@ opentitan_functest(
         test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
     test_harness = "//sw/host/tests/manuf/otp_ctrl:otp_ctrl",
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
@@ -603,7 +603,7 @@ opentitan_functest(
         test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
     test_harness = "//sw/host/tests/manuf/manuf_cp_test_lock",
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",

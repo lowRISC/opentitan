@@ -2038,7 +2038,7 @@ opentitan_functest(
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
         "verilator",
         "dv",
     ],
@@ -2430,7 +2430,7 @@ opentitan_functest(
     name = "openocd_test",
     srcs = ["example_test_from_flash.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_otp_test_unlocked0",
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked0",
         test_cmds = [
             "--rom-kind=rom",
             "--bitstream=\"$(rootpath {bitstream})\"",
@@ -2438,7 +2438,7 @@ opentitan_functest(
         ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
     test_harness = "//sw/host/tests/chip/jtag:openocd_test",
     deps = [
         "//sw/device/lib/runtime:log",
