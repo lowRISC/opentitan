@@ -9,5 +9,4 @@
 //
 // This is placed at a fixed location in memory within the .static_critical
 // section. It will be populated by the ROM before the jump to ROM_EXT.
-OT_SECTION(".static_critical.epmp_state")
-epmp_state_t epmp_state;
+OT_SET_BSS_SECTION(".static_critical.epmp_state", epmp_state_t epmp_state;)

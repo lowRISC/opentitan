@@ -65,7 +65,7 @@ typedef struct {
 // this is preserved across resets. Flash default value is all 1s,
 // can be written to 0 without an erase, so name this `non` scramble.
 // flash doesn't support byte write, hence define it to a 32 bit int.
-OT_SECTION(".non_volatile_scratch") uint32_t ret_non_scrambled;
+OT_SET_BSS_SECTION(".non_volatile_scratch", uint32_t ret_non_scrambled;)
 
 static void retention_sram_check(check_config_t config) {
   if (config.do_write) {

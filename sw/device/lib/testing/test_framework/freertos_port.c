@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
@@ -26,8 +27,7 @@
 // NOLOAD section. Otherwise, it will end up in the `.bss` section, which gets
 // zeroed during boot initializations which wastes simulation cycles.
 // ----------------------------------------------------------------------------
-__attribute__((section(".freertos.heap")))
-uint8_t ucHeap[configTOTAL_HEAP_SIZE];
+OT_SET_BSS_SECTION(".freertos.heap", uint8_t ucHeap[configTOTAL_HEAP_SIZE];)
 
 // ----------------------------------------------------------------------------
 // Timer Setup (for use when preemptive scheduling is enabled)

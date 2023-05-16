@@ -84,7 +84,7 @@ typedef struct fault_checker {
 } fault_checker_t;
 
 // This preserves the fault checker across multiple resets.
-OT_SECTION(".non_volatile_scratch") uint64_t nv_fault_checker[3];
+OT_SET_BSS_SECTION(".non_volatile_scratch", uint64_t nv_fault_checker[3];)
 
 // This is the fault checker to be used. It is saved and retrieved from flash
 // to preserve it across resets.

@@ -44,8 +44,8 @@ enum {
 };
 
 // Store CSRNG output in flash to compare results across life cycle stages.
-OT_SECTION(".non_volatile_scratch")
-uint32_t nv_csrng_output[kEntropyFifoBufferSize];
+OT_SET_BSS_SECTION(".non_volatile_scratch",
+                   uint32_t nv_csrng_output[kEntropyFifoBufferSize];)
 
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;

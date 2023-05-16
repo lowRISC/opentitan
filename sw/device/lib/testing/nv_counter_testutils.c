@@ -26,14 +26,14 @@ static_assert(
     "Elements of the counter array must be the same size as a flash word");
 extern char _non_volatile_counter_flash_words[];
 
-OT_SECTION(".non_volatile_counter_0")
-uint64_t nv_counter_0[kNonVolatileCounterFlashWords];
-OT_SECTION(".non_volatile_counter_1")
-uint64_t nv_counter_1[kNonVolatileCounterFlashWords];
-OT_SECTION(".non_volatile_counter_2")
-uint64_t nv_counter_2[kNonVolatileCounterFlashWords];
-OT_SECTION(".non_volatile_counter_3")
-uint64_t nv_counter_3[kNonVolatileCounterFlashWords];
+OT_SET_BSS_SECTION(".non_volatile_counter_0",
+                   uint64_t nv_counter_0[kNonVolatileCounterFlashWords];)
+OT_SET_BSS_SECTION(".non_volatile_counter_1",
+                   uint64_t nv_counter_1[kNonVolatileCounterFlashWords];)
+OT_SET_BSS_SECTION(".non_volatile_counter_2",
+                   uint64_t nv_counter_2[kNonVolatileCounterFlashWords];)
+OT_SET_BSS_SECTION(".non_volatile_counter_3",
+                   uint64_t nv_counter_3[kNonVolatileCounterFlashWords];)
 
 static uint64_t *const kNvCounters[] = {
     nv_counter_0,

@@ -40,7 +40,7 @@ OTTF_DEFINE_TEST_CONFIG();
 // test environment.  The data has to be backdoor loaded because the
 // life cycle state used in this test does not permit the isolated
 // partition to be written.
-OT_SECTION(".non_volatile_scratch") uint32_t kIsoPartExpData[16];
+OT_SET_BSS_SECTION(".non_volatile_scratch", uint32_t kIsoPartExpData[16];)
 
 static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
   // Disable scramble on expected data page
