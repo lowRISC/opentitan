@@ -147,19 +147,19 @@ impl Deref for DeferredValue {
 }
 
 /// Wrapper type to force deserialization assuming octal encoding.
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug, PartialEq)]
 pub struct OctEncoded<T>(#[serde(deserialize_with = "deserialize")] pub T)
 where
     T: ParseInt + fmt::Octal;
 
 /// Wrapper type to force deserialization assuming decimal encoding.
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug, PartialEq)]
 pub struct DecEncoded<T>(#[serde(deserialize_with = "deserialize")] pub T)
 where
     T: ParseInt + fmt::Display;
 
 /// Wrapper type to force deserialization assuming hexadecimal encoding.
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug, PartialEq)]
 pub struct HexEncoded<T>(#[serde(deserialize_with = "deserialize")] pub T)
 where
     T: ParseInt + fmt::LowerHex;

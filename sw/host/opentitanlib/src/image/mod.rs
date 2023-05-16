@@ -7,3 +7,4 @@
 pub mod image;
 pub mod manifest;
 pub mod manifest_def;
+pub mod manifest_ext;

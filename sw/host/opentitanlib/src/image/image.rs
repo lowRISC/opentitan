@@ -7,7 +7,7 @@ use memoffset::offset_of;
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::{Read, Write};
-use std::mem::size_of;
+use std::mem::{align_of, size_of};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
@@ -18,6 +18,7 @@ use crate::crypto::rsa::Signature as RsaSignature;
 use crate::crypto::sha256;
 use crate::image::manifest::{Manifest, ManifestExtTableEntry};
 use crate::image::manifest_def::{ManifestRsaBuffer, ManifestSpec};
+use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtEntrySpec, ManifestExtSpec};
 use crate::util::file::{FromReader, ToWriter};
 use crate::util::parse_int::ParseInt;
 
@@ -31,6 +32,10 @@ pub enum ImageError {
     ExtensionOverflow,
     #[error("Extension table index is out of bounds.")]
     BadExtensionTableIndex,
+    #[error("Extension ID 0x{0:x} not in manifest table.")]
+    NoExtensionTableEntry(u32),
+    #[error("Extension 0x{0:x} is not aligned to word boundary.")]
+    BadExtensionAlignment(u32),
 }
 
 /// A buffer with the same alignment as `Manifest` for storing image data.
@@ -130,6 +135,69 @@ impl Image {
             .get_mut(index)
             .ok_or(ImageError::BadExtensionTableIndex)? =
             ManifestExtTableEntry { identifier, offset };
+        Ok(())
+    }
+
+    /// Adds an extension to the signed region of this `Image`.
+    pub fn add_signed_manifest_extensions(&mut self, spec: ManifestExtSpec) -> Result<()> {
+        self.add_manifest_extensions(&spec.signed_region, spec.source_path())
+    }
+
+    /// Adds an extension to the unsigned region of this `Image`.
+    pub fn add_unsigned_manifest_extensions(&mut self, spec: ManifestExtSpec) -> Result<()> {
+        self.add_manifest_extensions(&spec.unsigned_region, spec.source_path())
+    }
+
+    fn add_manifest_extensions(
+        &mut self,
+        entries: &[ManifestExtEntrySpec],
+        relative_path: Option<&Path>,
+    ) -> Result<()> {
+        let manifest = self.borrow_manifest()?;
+
+        // A copy of the extension table since we can't borrow as mutable.
+        let mut ext_table = manifest.extensions.entries;
+
+        for spec in entries {
+            let entry = ManifestExtEntry::from_spec(spec, relative_path)?;
+            let entry_id = entry.header().identifier;
+
+            // Update the offset in the extension table.
+            let ext_table_entry = ext_table
+                .iter_mut()
+                .find(|e| e.identifier == entry_id)
+                .ok_or(ImageError::NoExtensionTableEntry(entry_id))?;
+
+            // If the extension already exists, overwrite it, else append it to the end of the
+            // image.
+            let offset = if ext_table_entry.offset != 0 {
+                ext_table_entry.offset as usize
+            } else {
+                ensure!(
+                    self.size % align_of::<u32>() == 0,
+                    ImageError::BadExtensionAlignment(entry_id)
+                );
+                self.size
+            };
+            ext_table_entry.offset = offset as u32;
+
+            // Write the extension to the end of the image.
+            let ext_bytes = entry.to_vec();
+            let end_index = offset
+                .checked_add(ext_bytes.len())
+                .ok_or(ImageError::ExtensionOverflow)?;
+            let extension_slice = self
+                .data
+                .bytes
+                .get_mut(offset..end_index)
+                .ok_or(ImageError::ExtensionOverflow)?;
+            extension_slice.copy_from_slice(ext_bytes.as_slice());
+            self.size = std::cmp::max(end_index, self.size);
+        }
+
+        let mut manifest = self.borrow_manifest_mut()?;
+        manifest.extensions.entries = ext_table;
+
         Ok(())
     }
 

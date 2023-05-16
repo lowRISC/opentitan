@@ -79,6 +79,7 @@ rust_library(
         "src/image/image.rs",
         "src/image/manifest.rs",
         "src/image/manifest_def.rs",
+        "src/image/manifest_ext.rs",
         "src/image/mod.rs",
         "src/io/console.rs",
         "src/io/eeprom.rs",
@@ -285,6 +286,7 @@ rust_test(
     data = [
         "src/image/testdata/hello.txt",
         "src/image/testdata/manifest.hjson",
+        "src/image/testdata/manifest_ext.hjson",
         "src/image/testdata/manifest_missing.hjson",
         "src/image/testdata/test_image.bin",
         "src/image/testdata/world.txt",

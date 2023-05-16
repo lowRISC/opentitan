@@ -168,13 +168,16 @@
    */
   entry_point: "0x00000000"
   extensions: [
-    {identifier: "0x00000000", offset: "0x00000000"},
-    {identifier: "0x00000000", offset: "0x00000000"},
-    {identifier: "0x00000000", offset: "0x00000000"},
-    {identifier: "0x00000000", offset: "0x00000000"},
-    {identifier: "0x00000000", offset: "0x00000000"},
-    {identifier: "0x00000000", offset: "0x00000000"},
-    {identifier: "0x00000000", offset: "0x00000000"},
-    {identifier: "0x00000000", offset: "0x00000000"},
+    "spx_key",
+    "spx_signature",
+    43981, // Raw extension with ID = 0xabcd.
+    {
+      identifier: 61185, // Raw extension with ID = 0xef01.
+      offset: 1024,
+    },
+    null,
+    null,
+    null,
+    null,
   ]
 }
