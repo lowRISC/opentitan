@@ -25,7 +25,9 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#if !OT_IS_ENGLISH_BREAKFAST
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#endif
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 
@@ -158,6 +160,7 @@ bool rom_test_main(void) {
   dif_rstmgr_reset_info_bitfield_t reset_reasons;
   CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &reset_reasons));
 
+#if !OT_IS_ENGLISH_BREAKFAST
   // Store the reset reason in retention RAM and clear the register.
   volatile retention_sram_t *ret_ram = retention_sram_get();
   ret_ram->reset_reasons = reset_reasons;
@@ -168,6 +171,7 @@ bool rom_test_main(void) {
   volatile uint32_t *creator_last_word =
       &ret_ram->reserved_creator[ARRAYSIZE(ret_ram->reserved_creator) - 1];
   *creator_last_word = TEST_ROM_IDENTIFIER;
+#endif
 
   // Print the FPGA version-id.
   // This is guaranteed to be zero on all non-FPGA implementations.

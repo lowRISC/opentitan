@@ -58,6 +58,7 @@ cc_library(
     deps = [
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/rom:bootstrap",
     ],
 )
@@ -152,7 +153,6 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
         "//sw/device/silicon_creator/lib/base:static_critical_epmp_state",
         "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
 

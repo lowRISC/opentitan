@@ -346,28 +346,6 @@
       base_addr: "0x40480000",
       attr: "reggen_only",
     },
-    { name: "sram_ctrl_ret_aon",
-      type: "sram_ctrl",
-      clock_srcs: {clk_i: "io_div4", clk_otp_i: "io_div4"},
-      clock_group: "infra",
-      reset_connections: {rst_ni: "sys_io_div4", rst_otp_ni: "lc_io_div4"},
-      domain: ["Aon"],
-      param_decl: {
-        InstrExec: "0",
-      }
-      base_addrs: {regs: "0x40500000", ram: "0x40600000"},
-      // Memory regions must be associated with a dedicated
-      // TL-UL device interface.
-      memory: {
-        ram: {
-          label:    "ram_ret_aon",
-          swaccess:   "rw",
-          exec:       "True",
-          byte_write: "True",
-          size:     "0x1000"
-        }
-      }
-    },
     { name: "flash_ctrl",
       type: "flash_ctrl",
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
@@ -636,8 +614,7 @@
         // OTP HW_CFG Broadcast signals.
         // TODO(#6713): The actual struct breakout and mapping currently needs to
         // be performed by hand in the toplevel template.
-        'sram_ctrl_main.otp_en_sram_ifetch',
-        'sram_ctrl_ret_aon.otp_en_sram_ifetch'
+        'sram_ctrl_main.otp_en_sram_ifetch'
     ],
 
     // ext is to create port in the top.
