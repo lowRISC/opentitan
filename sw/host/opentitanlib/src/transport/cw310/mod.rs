@@ -49,7 +49,7 @@ impl CW310 {
     const PIN_CS: &'static str = "USB_SPI_CS";
     // Pins needed for reset & bootstrap on the CW310 board.
     const PIN_TRST: &'static str = "USB_A13";
-    const PIN_SRST: &'static str = "USB_A14";
+    const PIN_POR_N: &'static str = "USB_A14";
     const PIN_SW_STRAP0: &'static str = "USB_A15";
     const PIN_SW_STRAP1: &'static str = "USB_A16";
     const PIN_SW_STRAP2: &'static str = "USB_A17";
@@ -78,7 +78,7 @@ impl CW310 {
     fn init_pin_directions(&self) -> anyhow::Result<()> {
         let device = self.device.borrow();
         device.pin_set_output(Self::PIN_TRST, true)?;
-        device.pin_set_output(Self::PIN_SRST, true)?;
+        device.pin_set_output(Self::PIN_POR_N, true)?;
         device.pin_set_output(Self::PIN_TAP_STRAP0, true)?;
         device.pin_set_output(Self::PIN_TAP_STRAP1, true)?;
         device.pin_set_output(Self::PIN_SW_STRAP0, true)?;
@@ -91,7 +91,7 @@ impl CW310 {
     fn init_pin_values(&self) -> anyhow::Result<()> {
         let device = self.device.borrow();
         device.pin_set_state(Self::PIN_TRST, true)?;
-        device.pin_set_state(Self::PIN_SRST, true)?;
+        device.pin_set_state(Self::PIN_POR_N, true)?;
         device.pin_set_state(Self::PIN_TAP_STRAP0, false)?;
         device.pin_set_state(Self::PIN_TAP_STRAP1, true)?;
         device.pin_set_state(Self::PIN_SW_STRAP0, false)?;
@@ -187,7 +187,7 @@ impl Transport for CW310 {
             // Open the console UART.  We do this first so we get the receiver
             // started and the uart buffering data for us.
             let uart = self.uart("0")?;
-            let reset_pin = self.gpio_pin(Self::PIN_SRST)?;
+            let reset_pin = self.gpio_pin(Self::PIN_POR_N)?;
             if fpga_program.skip() {
                 log::info!("Skip loading the __skip__ bitstream.");
                 return Ok(None);
