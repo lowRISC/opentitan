@@ -167,6 +167,17 @@ opentitan_rom_binary(
     ],
 )
 
+opentitan_rom_binary(
+    name = "rom_with_real_keys",
+    # FIXME: remove testonly after adding the real keys
+    testonly = True,
+    deps = [
+        ":rom_without_keys",
+        "//sw/device/silicon_creator/rom/keys/fake",
+        "//sw/device/silicon_creator/rom/keys/fake/spx:fake",
+    ],
+)
+
 cc_library(
     name = "rom_epmp",
     srcs = [
