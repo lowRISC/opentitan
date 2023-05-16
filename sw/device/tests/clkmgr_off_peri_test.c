@@ -48,7 +48,7 @@ static dif_spi_host_t spi_host1;
 static dif_usbdev_t usbdev;
 static dif_uart_t uart0;
 
-OT_SECTION(".non_volatile_scratch") uint64_t hung_data_addr[4];
+OT_SET_BSS_SECTION(".non_volatile_scratch", uint64_t hung_data_addr[4];)
 
 static void set_hung_address(dif_clkmgr_gateable_clock_t clock,
                              uint32_t value) {

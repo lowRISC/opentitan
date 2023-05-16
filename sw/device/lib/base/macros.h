@@ -291,6 +291,26 @@
 #define OT_SECTION(name) __attribute__((section(name)))
 
 /**
+ * Pragma meant to place symbols into a NOBITS section with a specified name.
+ *
+ * This should only be used for zero-initialized globals (including
+ * implicitly zero-initialized ones, when the initializer is missing). The
+ * pragma won't affect variables that do not go into the bss section.
+ *
+ * Example:
+ *
+ * OT_SET_BSS_SECTION(".foo",
+ *   uint32_t x;      // emitted in section .foo instead of .bss
+ *   uint32_t y = 42; // emitted in regular .data section (but don't do this)
+ * )
+ */
+#define OT_SET_BSS_SECTION(name, ...)           \
+  OT_SET_BSS_SECTION_(clang section bss = name) \
+  __VA_ARGS__                                   \
+  _Pragma("clang section bss = \"\"")
+#define OT_SET_BSS_SECTION_(section) _Pragma(#section)
+
+/**
  * Attribute to suppress the inlining of a function at its call sites.
  *
  * See https://clang.llvm.org/docs/AttributeReference.html#noinline.
