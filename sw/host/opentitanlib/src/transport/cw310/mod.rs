@@ -115,6 +115,19 @@ impl CW310 {
                 }
                 false
             });
+
+            // Some systems will erroneously enumerate the CW310's UARTs as PCI devices.
+            // See <https://github.com/lowRISC/opentitan/issues/18491>.
+            if ports.is_empty() {
+                log::warn!("Detected zero CW310 USB devices. Guessing device names.");
+                ports = serialport::available_ports()?;
+                ports.retain(|port| {
+                    const UART0_NAME_GUESS: &str = "/dev/ttyACM0";
+                    const UART1_NAME_GUESS: &str = "/dev/ttyACM1";
+                    port.port_name == UART0_NAME_GUESS || port.port_name == UART1_NAME_GUESS
+                });
+            }
+
             // The CW board seems to have the last port connected as OpenTitan UART 0.
             // Reverse the sort order so the last port will be instance 0.
             ports.sort_by(|a, b| b.port_name.cmp(&a.port_name));
