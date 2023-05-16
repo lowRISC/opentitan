@@ -178,23 +178,6 @@ covergroup i2c_scl_sda_override_cg
   cp_txorvden_x_sdaval : cross cp_txorvden, cp_sdaval;
 endgroup : i2c_scl_sda_override_cg
 
-covergroup i2c_cmd_complete_cg
-  with function sample(
-    bit cmd_complete,
-    bit host_mode_read,
-    bit host_mode_write,
-    bit target_mode_read,
-    bit target_mode_write
-  );
-  option.per_instance = 1;
-
-  cp_cmd_complete : coverpoint cmd_complete;
-  cp_host_mode_read_complete    : cross cp_cmd_complete, host_mode_read;
-  cp_host_mode_write_complete   : cross cp_cmd_complete, host_mode_write;
-  cp_target_mode_read_complete  : cross cp_cmd_complete, target_mode_read;
-  cp_target_mode_write_complete : cross cp_cmd_complete, target_mode_write;
-endgroup : i2c_cmd_complete_cg
-
 // The 'format FIFO' controls the HWIP state-machine in HOST-mode, where the
 // transaction to be enacted is specified by a series of 1-byte+5-bit
 // packets in the FIFO. Each entry in the 'format FIFO' may part of a larger
@@ -319,6 +302,19 @@ covergroup i2c_b2b_txn_cg with function sample(bit[7:0] past_addr, bit[7:0] addr
      }
 endgroup
 
+// Cover timing parameters of I2C transactions
+covergroup i2c_timing_param_cg(string name="i2c_timing_param_cg") with
+  function sample(bit[15:0] param);
+  option.per_instance = 1;
+  option.name = name;
+  cp_timing_param : coverpoint param {
+    bins zero = {0};
+    bins low = {[1: 100]};
+    bins med = {[101: 1000]};
+    bins high = {[1001: 65535]};
+  }
+endgroup : i2c_timing_param_cg
+
 class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
   `uvm_component_utils(i2c_env_cov)
 
@@ -333,6 +329,17 @@ class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
   i2c_acq_fifo_cg acq_fifo_cg;
   i2c_b2b_txn_cg    b2b_txn_host_cg;
   i2c_b2b_txn_cg    b2b_txn_target_cg;
+
+  i2c_timing_param_cg     tlow_cg;
+  i2c_timing_param_cg     thigh_cg;
+  i2c_timing_param_cg     t_r_cg;
+  i2c_timing_param_cg     t_f_cg;
+  i2c_timing_param_cg     thd_sta_cg;
+  i2c_timing_param_cg     tsu_sta_cg;
+  i2c_timing_param_cg     tsu_dat_cg;
+  i2c_timing_param_cg     thd_dat_cg;
+  i2c_timing_param_cg     t_buf_cg;
+  i2c_timing_param_cg     tsu_sto_cg;
   bit got_first_addr;
   bit [7:0] past_addr;
 
@@ -349,6 +356,16 @@ class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
     acq_fifo_cg = new();
     b2b_txn_host_cg = new();
     b2b_txn_target_cg = new();
+    tlow_cg = new("tlow_cg");
+    thigh_cg = new("thigh_cg");
+    t_r_cg = new("t_r_cg");
+    t_f_cg = new("t_f_cg");
+    thd_sta_cg = new("thd_sta_cg");
+    tsu_sta_cg = new("tsu_sta_cg");
+    tsu_dat_cg = new("tsu_dat_cg");
+    thd_dat_cg = new("thd_dat_cg");
+    t_buf_cg = new("t_buf_cg");
+    tsu_sto_cg = new("tsu_sto_cg");
     got_first_addr = 0;
   endfunction : new
 

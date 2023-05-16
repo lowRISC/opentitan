@@ -537,14 +537,8 @@
     {
       name: i2c_rd_wr_cg
       desc: '''
-            Cover the number of bytes read from Target
-            Cover the number of bytes written to Target
-            * Cross the number of bytes read in Target and Host mode of DUT
-            * Cross the number of bytes written in Target and Host mode of DUT
             Cover the address match feature of IP
-            * Cross the address sent or received with Host and Target mode of DUT
-            * Cross write address with address match
-            * Cross read address with address match
+            * Cross the address match with Host and Target mode of DUT
             Cover values in Read bytes
             * Cross with operating mode of I2C
             Cover values in Write bytes
@@ -634,10 +628,12 @@
             Cover protocol transitions supported by I2C with single host
             * Cross protocol transitions with mode of operation of DUT (Host or Target)
             Cover host mode and target mode enable bits
-            Cover number of bytes transferred in write and read operation
-            * Cover number of bytes as buckets instead of covering every value of number of bytes
-            Cross number of bytes transferred and mode of operation
             Cover mistimed Start or Stop glitches in target mode
+            Cover the number of bytes read from Target
+            Cover the number of bytes written to Target
+            * Cover number of bytes as buckets instead of covering every value of number of bytes
+            * Cross the number of bytes read in Target and Host mode of DUT
+            * Cross the number of bytes written in Target and Host mode of DUT
             '''
     }
     {

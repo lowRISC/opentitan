@@ -8,7 +8,9 @@ module i2c_protocol_cov(
   input                    rst_n,
   // I2C IO
   input wire               scl,
-  input wire               sda
+  input wire               sda,
+  input wire               intr_cmd_complete,
+  input wire               intr_tx_stretch
 );
   localparam int NUM_I2C_ADDR_BITS = 7;
 
@@ -53,7 +55,9 @@ module i2c_protocol_cov(
   bit [NUM_I2C_ADDR_BITS-1:0] address_0_val;
   bit [NUM_I2C_ADDR_BITS-1:0] address_1_val;
   wire address_match;
-
+  bit write_txn;
+  bit read_txn;
+  bit [7:0] fbyte;
 
   `ifndef I2C_HIER
     `define I2C_HIER $root.tb.dut.i2c_core
@@ -158,6 +162,8 @@ module i2c_protocol_cov(
       num_wr_bytes = 0;
       address = {NUM_I2C_ADDR_BITS{1'b0}};
       current_txn_start = Start;
+      write_txn = 0;
+      read_txn = 0;
     end else if (start()) begin // Start
       bus_state_d = stop_detected ? Start : RStart;
       num_addr_bits_seen = 0;
@@ -198,8 +204,12 @@ module i2c_protocol_cov(
             if (address_match) begin
               // We've received a read/write bit and are now waiting for an ack/nack
               bus_state_d = sda ? Read : Write;
+              read_txn = sda ? 1 : 0;
+              write_txn = sda ? 0 : 1;
             end else begin
               bus_state_d = Idle;
+              write_txn = 0;
+              read_txn = 0;
             end
             num_addr_bits_seen = 0;
           end
@@ -230,6 +240,7 @@ module i2c_protocol_cov(
         // We've already received 1 data bit and now waiting for the next 7 and the ack/nack.
         ReadData: begin
           if (num_data_bits_seen < 8) begin
+            fbyte[num_data_bits_seen] = sda;
             num_data_bits_seen++;
           end else begin
             // Receiving ack/nack.
@@ -240,6 +251,7 @@ module i2c_protocol_cov(
         end
         WriteData: begin
           if (num_data_bits_seen < 8) begin
+            fbyte[num_data_bits_seen] = sda;
             num_data_bits_seen++;
           end else begin
             bus_state_d = !sda ? WriteDataACK : WriteDataNACK;
@@ -395,17 +407,87 @@ module i2c_protocol_cov(
     Start_followed_by_Rstart_cp_x_ip_mode_cp : cross Start_followed_by_Rstart_cp, ip_mode_cp;
   endgroup
 
+  // Cover read write bytes in host and target modes
+  covergroup i2c_rd_wr_cg;
+    option.per_instance = 1;
+    // option.auto_bin_max = 64;
+    option.name         = "i2c_rd_wr_cg";
+    // Mode of operation
+    ip_mode_cp : coverpoint host_mode_en {
+      bins host = {1};
+      bins device = {0};
+    }
+    // Cover address match
+    cp_address_match : coverpoint {write_txn, read_txn, address_match} {
+      bins write_addr_match    = {3'b101};
+      bins write_addr_no_match = {3'b100};
+      bins read_addr_match     = {3'b011};
+      bins read_addr_no_match  = {3'b010};
+      wildcard illegal_bins illegal = {3'b11?};
+      wildcard ignore_bins  ignore  = {3'b00?};
+    }
+    // Write byte values
+    cp_write_byte : coverpoint fbyte iff (write_txn){
+      bins all_zero = {0};
+      bins low = {[1: 100]};
+      bins med = {[101: 200]};
+      bins high = {[201: 254]};
+      bins all_one  = {255};
+    }
+    // Read byte values
+    cp_read_byte : coverpoint fbyte iff (read_txn){
+      bins all_zero = {0};
+      bins low = {[1: 100]};
+      bins med = {[101: 200]};
+      bins high = {[201: 254]};
+      bins all_one  = {255};
+    }
+    // Cover address match with mode of operation
+    cross_address_match_x_ip_mode: cross address_match, ip_mode_cp;
+    // Cover write byte values in host mode and target mode
+    cross_write_byte_x_ip_mode: cross cp_write_byte, ip_mode_cp;
+    // Cover read byte values in host mode and target mode
+    cross_read_byte_x_ip_mode: cross cp_write_byte, ip_mode_cp;
+  endgroup: i2c_rd_wr_cg
+
+  // Cover cmd_complete interrupt
+  covergroup i2c_cmd_complete_cg;
+    option.per_instance = 1;
+
+    cp_cmd_complete : coverpoint intr_cmd_complete{
+      bins complete = {1};
+    }
+    // Mode of operation
+    cp_ip_mode : coverpoint host_mode_en {
+      bins host = {1};
+      bins device = {0};
+    }
+    cp_read_x_complete    : cross cp_cmd_complete, cp_ip_mode iff (read_txn);
+    cp_write_x_complete   : cross cp_cmd_complete, cp_ip_mode iff (write_txn);
+  endgroup : i2c_cmd_complete_cg
+
   initial begin
     bit en_cov;
     void'($value$plusargs("en_cov=%b", en_cov));
     if (en_cov) begin
-      i2c_protocol_cov_cg i2c_protocol_cov = new();
-      forever begin
-        @(sda or scl);
-        if(rst_n) begin
-          i2c_protocol_cov.sample();
+      i2c_protocol_cov_cg   i2c_protocol_cov = new();
+      i2c_rd_wr_cg          i2c_rd_wr_cov = new();
+      i2c_cmd_complete_cg   cmd_complete_cg = new();
+      fork
+        begin
+            forever begin
+            @(sda or scl);
+            if(rst_n) begin
+              i2c_protocol_cov.sample();
+              i2c_rd_wr_cov.sample();
+            end
+          end
         end
-      end
+        begin
+          wait(intr_cmd_complete);
+          cmd_complete_cg.sample();
+        end
+      join
     end
   end
 
