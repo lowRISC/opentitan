@@ -78,6 +78,9 @@ pub trait Flavor {
     fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
         Err(TransportError::UnsupportedOperation.into())
     }
+    fn perform_initial_fw_check() -> bool {
+        true
+    }
 }
 
 pub const VID_GOOGLE: u16 = 0x18d1;
@@ -124,7 +127,9 @@ impl<T: Flavor> Hyperdebug<T> {
         let current_firmware_version = if let Some(idx) = config_desc.description_string_index() {
             if let Ok(current_firmware_version) = device.read_string_descriptor_ascii(idx) {
                 if let Some(released_firmware_version) = dfu::official_firmware_version()? {
-                    if current_firmware_version != released_firmware_version {
+                    if T::perform_initial_fw_check()
+                        && current_firmware_version != released_firmware_version
+                    {
                         log::warn!(
                             "Current HyperDebug firmware version is {}, newest release is {}, Consider running `opentitantool transport update-firmware`",
                             current_firmware_version,
