@@ -45,6 +45,10 @@ impl Flavor for C2d2Flavor {
     fn get_default_usb_pid() -> u16 {
         Self::PID_C2D2
     }
+    fn perform_initial_fw_check() -> bool {
+        // The c2d2 firmware and hyperdebug firmware are different, so do not check.
+        false
+    }
 }
 
 pub struct C2d2ResetPin {
