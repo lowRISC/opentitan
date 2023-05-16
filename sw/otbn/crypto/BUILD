@@ -285,6 +285,13 @@ otbn_binary(
 )
 
 otbn_library(
+    name = "sha512_compact",
+    srcs = [
+        "sha512_compact.s",
+    ],
+)
+
+otbn_library(
     name = "x25519",
     srcs = [
         "x25519.s",
