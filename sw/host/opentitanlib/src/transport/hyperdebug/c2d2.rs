@@ -74,7 +74,7 @@ impl GpioPin for C2d2ResetPin {
     /// Sets the value of the GPIO reset pin by means of the special h1_reset command.
     fn write(&self, value: bool) -> Result<()> {
         self.inner
-            .cmd_no_output(&format!("h1_reset {}", if value { 0 } else { 1 }))?;
+            .cmd_one_line_output(&format!("h1_reset {}", if value { 0 } else { 1 }))?;
         Ok(())
     }
 
