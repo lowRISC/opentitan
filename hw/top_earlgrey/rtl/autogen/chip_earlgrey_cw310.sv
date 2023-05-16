@@ -1004,11 +1004,11 @@ module chip_earlgrey_cw310 #(
     .SecOtbnSkipUrndReseedAtStart(1'b1),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RvCoreIbexPipeLine(1),
+    .SramCtrlRetAonInstrExec(0),
     .UsbdevRcvrWakeTimeUs(10000),
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .RvCoreIbexSecureIbex(0),
-    .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (

@@ -165,7 +165,6 @@ module chip_englishbreakfast_verilator (
     .SecAesSkipPRNGReseeding(1'b1),
     .UsbdevStub(1'b1),
     .RvCoreIbexICache(0),
-    .SramCtrlRetAonInstrExec(0),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_englishbreakfast (
