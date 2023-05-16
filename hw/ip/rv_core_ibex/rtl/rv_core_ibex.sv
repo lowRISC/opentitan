@@ -92,6 +92,7 @@ module rv_core_ibex
   input lc_ctrl_pkg::lc_tx_t lc_cpu_en_i,
   input lc_ctrl_pkg::lc_tx_t pwrmgr_cpu_en_i,
   output pwrmgr_pkg::pwr_cpu_t pwrmgr_o,
+  input logic ext_cpu_en_i,
 
   // dft bypass
   input scan_rst_ni,
@@ -374,6 +375,8 @@ module rv_core_ibex
   // Multibit AND computation for fetch enable. Fetch is only enabled when local fetch enable,
   // lifecycle CPU enable and power manager CPU enable are all enabled.
   lc_ctrl_pkg::lc_tx_t fetch_enable;
+  lc_ctrl_pkg::lc_tx_t ext_fetch_enable;
+  assign ext_fetch_enable = ext_cpu_en_i ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off; // to be connected!
   assign fetch_enable = lc_ctrl_pkg::lc_tx_and_hi(local_fetch_enable_q,
                                                   lc_ctrl_pkg::lc_tx_and_hi(lc_cpu_en[0],
                                                                             pwrmgr_cpu_en[0]));

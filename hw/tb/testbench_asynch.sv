@@ -260,6 +260,7 @@ module testbench_asynch ();
       .clk_i            ( clk_sys       ),
       .clk_ref_i        ( clk_sys       ),
       .rst_ni           ( rst_sys_n     ),
+      .pwr_on_rst_ni    ( rst_sys_n     ),
       .fetch_en_i       ( '0            ),
       .bootmode_i       ( '0            ),
       .test_enable_i    ( '0            ),

@@ -51,13 +51,15 @@ module secure_subsystem_synth_wrap
    parameter type         axi_ot_out_req_t      = synth_ot_axi_out_req_t,
    parameter type         axi_ot_out_resp_t     = synth_ot_axi_out_resp_t,
    
-   parameter int unsigned LogDepth              = SynthLogDepth
+   parameter int unsigned LogDepth              = SynthLogDepth,
+   parameter int unsigned SyncStages            = 3
 )  (  
    input logic                           clk_i,
    input logic                           clk_ref_i,
    input logic                           rst_ni,
+   input logic                           pwr_on_rst_ni,
    input logic                           test_enable_i,
-   input logic  [1:0]                    bootmode_i,
+   input logic [1:0]                     bootmode_i,
    input logic                           fetch_en_i,
    // JTAG port
    input logic                           jtag_tck_i,
@@ -69,18 +71,18 @@ module secure_subsystem_synth_wrap
    // Asynch AXI port
    output logic [AsyncAxiOutAwWidth-1:0] async_axi_out_aw_data_o,
    output logic [LogDepth:0]             async_axi_out_aw_wptr_o,
-   input logic  [LogDepth:0]             async_axi_out_aw_rptr_i, 
+   input logic [LogDepth:0]              async_axi_out_aw_rptr_i, 
    output logic [AsyncAxiOutWWidth-1:0]  async_axi_out_w_data_o,
    output logic [LogDepth:0]             async_axi_out_w_wptr_o,
-   input logic  [LogDepth:0]             async_axi_out_w_rptr_i, 
-   input logic  [AsyncAxiOutBWidth-1:0]  async_axi_out_b_data_i,
-   input logic  [LogDepth:0]             async_axi_out_b_wptr_i,
+   input logic [LogDepth:0]              async_axi_out_w_rptr_i, 
+   input logic [AsyncAxiOutBWidth-1:0]   async_axi_out_b_data_i,
+   input logic [LogDepth:0]              async_axi_out_b_wptr_i,
    output logic [LogDepth:0]             async_axi_out_b_rptr_o, 
    output logic [AsyncAxiOutArWidth-1:0] async_axi_out_ar_data_o,
    output logic [LogDepth:0]             async_axi_out_ar_wptr_o,
-   input logic  [LogDepth:0]             async_axi_out_ar_rptr_i,
-   input logic  [AsyncAxiOutRWidth-1:0]  async_axi_out_r_data_i,
-   input logic  [LogDepth:0]             async_axi_out_r_wptr_i,
+   input logic [LogDepth:0]              async_axi_out_ar_rptr_i,
+   input logic [AsyncAxiOutRWidth-1:0]   async_axi_out_r_data_i,
+   input logic [LogDepth:0]              async_axi_out_r_wptr_i,
    output logic [LogDepth:0]             async_axi_out_r_rptr_o,
    // Interrupt signal
    input logic                           irq_ibex_i,
@@ -93,7 +95,7 @@ module secure_subsystem_synth_wrap
    output logic                          spi_host_CSB_o,
    output logic                          spi_host_CSB_en_o,
    output logic [3:0]                    spi_host_SD_o,
-   input  logic [3:0]                    spi_host_SD_i,
+   input logic [3:0]                     spi_host_SD_i,
    output logic [3:0]                    spi_host_SD_en_o
 
 );
@@ -121,6 +123,9 @@ module secure_subsystem_synth_wrap
    logic es_rng_fips;
 
    logic s_rst_n, s_init_n;
+   
+   logic fetch_en_sync;
+   logic irq_ibex_sync;
 
    assign dio_in_i[1:0]   = '0;
    assign dio_in_i[15:6]  = '0;
@@ -171,6 +176,28 @@ module secure_subsystem_synth_wrap
      .init_no    ( s_init_n    )
    );
 
+   sync #(
+     .STAGES     ( SyncStages ),
+     .ResetValue ( 1'b0       )
+   ) i_fetch_en_sync (
+     .clk_i,
+     .rst_ni   ( pwr_on_rst_ni ),
+     .serial_i ( fetch_en_i    ),
+     .serial_o ( fetch_en_sync )
+   );
+
+   sync #(
+     .STAGES     ( SyncStages ),
+     .ResetValue ( 1'b0       )
+   ) i_irq_sync (
+     .clk_i,
+     .rst_ni   ( pwr_on_rst_ni ),
+     .serial_i ( irq_ibex_i    ),
+     .serial_o ( irq_ibex_sync )
+   );
+
+
+
    axi_dw_converter #(
       .AxiMaxReads        ( 8                   ),
       .AxiSlvPortDataWidth( AxiOtDataWidth      ),
@@ -212,9 +239,9 @@ module secure_subsystem_synth_wrap
       .axi_resp_t ( axi_out_resp_t    )
    ) i_cdc_out (
       .src_clk_i                  ( clk_i                   ),
-      .src_rst_ni                 ( s_rst_n                 ),
-      .src_req_i                  ( axi_req              ),
-      .src_resp_o                 ( axi_rsp              ),
+      .src_rst_ni                 ( pwr_on_rst_ni           ),
+      .src_req_i                  ( axi_req                 ),
+      .src_resp_o                 ( axi_rsp                 ),
       .async_data_master_aw_data_o( async_axi_out_aw_data_o ),
       .async_data_master_aw_wptr_o( async_axi_out_aw_wptr_o ),
       .async_data_master_aw_rptr_i( async_axi_out_aw_rptr_i ),
@@ -311,9 +338,10 @@ module secure_subsystem_synth_wrap
       .clk_usb_i(clk_i),
       .axi_req_o(ot_axi_req),
       .axi_rsp_i(ot_axi_rsp),
-      .irq_ibex_i,
+      .irq_ibex_i(irq_ibex_sync),
       .jtag_req_i(jtag_i),
-      .jtag_rsp_o(jtag_o)
+      .jtag_rsp_o(jtag_o),
+      .fetch_en(fetch_en_sync)
    );
 
    rng #(

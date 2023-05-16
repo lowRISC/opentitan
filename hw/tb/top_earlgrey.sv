@@ -201,6 +201,8 @@ module top_earlgrey #(
   input clk_usb_i,
   input clk_aon_i,
 
+  input logic fetch_en,
+
   // All clocks forwarded to ast
   output clkmgr_pkg::clkmgr_out_t clks_ast_o,
   output rstmgr_pkg::rstmgr_out_t rsts_ast_o,
@@ -2618,6 +2620,7 @@ module top_earlgrey #(
       .debug_req_i(rv_dm_debug_req),
       .crash_dump_o(rv_core_ibex_crash_dump),
       .lc_cpu_en_i(lc_ctrl_lc_cpu_en),
+      .ext_cpu_en_i(fetch_en),
       .pwrmgr_cpu_en_i(pwrmgr_aon_fetch_en),
       .pwrmgr_o(rv_core_ibex_pwrmgr),
       .nmi_wdog_i(aon_timer_aon_nmi_wdog_timer_bark),
