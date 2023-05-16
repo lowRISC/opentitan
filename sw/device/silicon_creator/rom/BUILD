@@ -74,12 +74,13 @@ ld_library(
 )
 
 cc_library(
-    name = "rom_start",
+    name = "rom_without_keys",
     srcs = [
         "rom_start.S",
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":linker_script",
         ":rom_common",
         ":rom_epmp",
         "//hw/ip/aon_timer/data:aon_timer_regs",
@@ -160,9 +161,7 @@ opentitan_rom_binary(
     name = "rom_with_fake_keys",
     testonly = True,
     deps = [
-        ":linker_script",
-        ":rom_common",
-        ":rom_start",
+        ":rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/fake",
         "//sw/device/silicon_creator/rom/keys/fake/spx:fake",
     ],
@@ -203,9 +202,7 @@ opentitan_functest(
     # Verilator or CW310 params).
     test_in_rom = True,
     deps = [
-        ":linker_script",
-        ":rom_epmp",
-        ":rom_start",
+        ":rom_without_keys",
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
