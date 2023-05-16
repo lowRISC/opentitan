@@ -17,6 +17,8 @@ class chip_sw_rv_dm_access_after_wakeup_vseq extends chip_sw_base_vseq;
     // Set up JTAG RV_DM TAP.
     cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
+    // Wait a few clocks for the strap change to take effect before driving the JTAG interface
+    cfg.clk_rst_vif.wait_clks(5);
 
     // Attempt to activate RV_DM via JTAG.
     csr_wr(.ptr(cfg.jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
