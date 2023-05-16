@@ -1,0 +1,21 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  signed_region: [
+    {
+      spx_key: "test_spx.pem",
+    },
+    {
+      name: "0xbeef",
+      identifier: "0xabcd",
+      value: ["0x01", "0x23", "0x45", "0x67"],
+    }
+  ],
+  unsigned_region: [
+    {
+      spx_signature: "test_signature.bin",
+    },
+  ],
+}

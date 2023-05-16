@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::image::manifest::*;
+use crate::image::manifest_ext::ManifestExtId;
 use crate::util::bigint::fixed_size_bigint;
 use crate::util::num_de::HexEncoded;
 use crate::util::parse_int::ParseInt;
@@ -149,19 +150,26 @@ impl ManifestPacked<ManifestRsaBuffer> for ManifestRsaBigInt {
 
 impl ManifestPacked<[ManifestExtTableEntry; 8]> for [ManifestExtTableEntryDef; 8] {
     fn unpack(self, _name: &'static str) -> Result<[ManifestExtTableEntry; 8]> {
-        Ok(self.map(|v| ManifestExtTableEntry {
-            identifier: *v.identifier.0.unwrap(),
-            offset: *v.offset.0.unwrap(),
+        Ok(self.map(|v| match v.0 {
+            ManifestExtEntryVar::Name(name) => ManifestExtTableEntry {
+                identifier: name.into(),
+                offset: 0,
+            },
+            ManifestExtEntryVar::IdOffset { identifier, offset } => ManifestExtTableEntry {
+                identifier: identifier.into(),
+                offset,
+            },
+            _ => ManifestExtTableEntry {
+                identifier: 0,
+                offset: 0,
+            },
         }))
     }
 
     fn overwrite(&mut self, o: Self) {
         for i in 0..self.len() {
-            if o[i].identifier.0.is_some() {
-                self[i].identifier = o[i].identifier.clone()
-            }
-            if o[i].offset.0.is_some() {
-                self[i].offset = o[i].offset.clone()
+            if !matches!(o[i].0, ManifestExtEntryVar::None) {
+                self[i].0 = o[i].0.clone();
             }
         }
     }
@@ -236,10 +244,19 @@ manifest_def! {
 }
 
 #[derive(Clone, Default, Deserialize, Serialize, Debug)]
-pub struct ManifestExtTableEntryDef {
-    identifier: ManifestSmallInt<u32>,
-    offset: ManifestSmallInt<u32>,
+#[serde(untagged)]
+enum ManifestExtEntryVar {
+    #[default]
+    None,
+    Name(ManifestExtId),
+    IdOffset {
+        identifier: ManifestExtId,
+        offset: u32,
+    },
 }
+
+#[derive(Clone, Default, Deserialize, Serialize, Debug)]
+pub struct ManifestExtTableEntryDef(ManifestExtEntryVar);
 
 impl TryFrom<ManifestRsaBuffer> for SigverifyRsaBuffer {
     type Error = anyhow::Error;
@@ -254,16 +271,20 @@ impl TryFrom<ManifestRsaBuffer> for SigverifyRsaBuffer {
         } else {
             // Convert between the BigInt byte representation and the manifest word representation.
             Ok(SigverifyRsaBuffer {
-                data: le_slice_to_arr(
-                    rsa.to_le_bytes()
-                        .chunks(4)
-                        .map(|v| Ok(u32::from_le_bytes(le_slice_to_arr(v))))
-                        .collect::<Result<Vec<u32>>>()?
-                        .as_slice(),
-                ),
+                data: le_bytes_to_word_arr(&rsa.to_le_bytes())?,
             })
         }
     }
+}
+
+pub(crate) fn le_bytes_to_word_arr<const N: usize>(bytes: &[u8]) -> Result<[u32; N]> {
+    Ok(le_slice_to_arr(
+        bytes
+            .chunks(4)
+            .map(|v| Ok(u32::from_le_bytes(le_slice_to_arr(v))))
+            .collect::<Result<Vec<u32>>>()?
+            .as_slice(),
+    ))
 }
 
 /// Takes a slice with LE element ordering and pads the MSBs with 0 to produce a fixed length array
@@ -359,10 +380,10 @@ impl From<&LifecycleDeviceId> for [ManifestSmallInt<u32>; 8] {
 
 impl From<&ManifestExtTableEntry> for ManifestExtTableEntryDef {
     fn from(o: &ManifestExtTableEntry) -> ManifestExtTableEntryDef {
-        ManifestExtTableEntryDef {
-            identifier: ManifestSmallInt(Some(HexEncoded(o.identifier))),
-            offset: ManifestSmallInt(Some(HexEncoded(o.offset))),
-        }
+        ManifestExtTableEntryDef(ManifestExtEntryVar::IdOffset {
+            identifier: ManifestExtId(o.identifier),
+            offset: o.offset,
+        })
     }
 }
 
