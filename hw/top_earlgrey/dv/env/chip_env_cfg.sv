@@ -106,6 +106,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // The JTAG RV debugger model.
   jtag_rv_debugger debugger;
 
+  // Run small page rma
+  bit   en_small_rma = 0;
+
   // NOTE: The clk_freq_mhz variable created in the base class was meant to be used by clk_rst_vif
   // interface that is passed by default by the testbench (retrieved by dv_base_env class). It was
   // meant for a CIP-compliant testbench to drive the clock and reset to the DUT. The chip level

@@ -63,6 +63,9 @@ class chip_base_test extends cip_base_test #(
     // Knob to perform the AST configuration.
     void'($value$plusargs("do_creator_sw_cfg_ast_cfg=%0b", cfg.do_creator_sw_cfg_ast_cfg));
 
+    // Knob to use small page rma
+    void'($value$plusargs("en_small_rma=%0b", cfg.en_small_rma));
+
     // Override the initial AST configuration data at runtime via plusarg.
     foreach (cfg.creator_sw_cfg_ast_cfg_data[i]) begin
       void'($value$plusargs({$sformatf("creator_sw_cfg_ast_cfg_data[%0d]", i), "=%0h"},

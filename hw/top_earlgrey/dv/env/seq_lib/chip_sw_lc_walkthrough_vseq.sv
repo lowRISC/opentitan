@@ -77,6 +77,13 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
     // The following states will transfer twice to make sure LC_EXIT and RMA tokens are used.
     if (dest_dec_state inside {DecLcStProd, DecLcStDev}) begin
       `DV_WAIT(cfg.sw_logger_vif.printed_log == "Waiting for LC RMA transition done and reboot.")
+
+      // If small_rma enabled
+      if (cfg.en_small_rma) begin
+        `uvm_info(`gfn, "small_rma mode is enabled", UVM_LOW)
+        enable_small_rma();
+      end
+
       // Wait for a large number of cycles to transit to RMA state.
       wait_lc_status(LcTransitionSuccessful, 50_000);
       apply_reset();
