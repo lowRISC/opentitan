@@ -6,7 +6,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::rc::Rc;
 use std::str::FromStr;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -98,6 +98,7 @@ impl_serializable_error!(LoadSramProgramError);
 
 /// Load a program into SRAM using JTAG.
 pub fn load_sram_program(jtag: &Rc<dyn Jtag>, vmem: &Vmem, addr: u32) -> Result<()> {
+    let now = Instant::now();
     for section in vmem.sections() {
         log::info!(
             "Load {} words at address {:x}",
@@ -106,6 +107,21 @@ pub fn load_sram_program(jtag: &Rc<dyn Jtag>, vmem: &Vmem, addr: u32) -> Result<
         );
         jtag.write_memory32(addr + section.addr, &section.data)?;
     }
+    log::info!("Loading done in {}ms", now.elapsed().as_millis());
+    // Verify data.
+    let now = Instant::now();
+    for section in vmem.sections() {
+        log::info!(
+            "Verify {} words at address {:x}",
+            section.data.len(),
+            addr + section.addr
+        );
+        let mut data = vec![0u32; section.data.len()];
+        jtag.read_memory32(addr + section.addr, &mut data)?;
+        assert_eq!(data, section.data);
+    }
+    log::info!("Verification done in {}ms", now.elapsed().as_millis());
+    // Verify data.
     Ok(())
 }
 
