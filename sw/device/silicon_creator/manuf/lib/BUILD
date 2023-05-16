@@ -62,7 +62,6 @@ _ALL_LC_ITEMS = (
 )
 
 _MANUF_LC_TRANSITION_TEST_CMDS = [
-    "--rom-kind=rom",
     "--bitstream=\"$(rootpath {bitstream})\"",
     "--openocd=\"$(rootpath //third_party/openocd:openocd_bin)\"",
     "--openocd-adapter-config=\"$(rootpath //third_party/openocd:jtag_adapter_cfg)\"",
@@ -206,7 +205,6 @@ opentitan_functest(
         tags = ["manuf"],
         test_cmds = [
             "--clear-bitstream",
-            "--rom-kind=rom",
             "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
             "--hsm-ecdh-sk=\"$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)\"",
@@ -444,7 +442,6 @@ opentitan_ram_binary(
             tags = ["manuf"],
             test_cmds = [
                 "--clear-bitstream",
-                "--rom-kind=rom",
                 "--bitstream=\"$(rootpath {bitstream})\"",
                 "--bootstrap=\"$(location {flash})\"",
                 "--target-lc-state=\"{}\"".format(target_lc_state),
@@ -525,7 +522,6 @@ opentitan_ram_binary(
             tags = ["manuf"],
             test_cmds = [
                 "--clear-bitstream",
-                "--rom-kind=rom",
                 "--bitstream=\"$(rootpath {bitstream})\"",
                 "--vmem=\"$(rootpath :sram_exec_test_fpga_cw310_vmem)\"",
                 # the following values come from the sram linker script

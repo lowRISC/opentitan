@@ -287,7 +287,7 @@ opentitan_functest(
     srcs = ["ottf_flow_control_functest.c"],
     cw310 = cw310_params(
         test_cmds = [
-            "--exec=\"fpga load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
+            "--exec=\"fpga load-bitstream $(location {bitstream})\"",
             "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
             "--exec=\"console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control\"",
             "console",

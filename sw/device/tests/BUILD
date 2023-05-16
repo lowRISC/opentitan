@@ -1108,7 +1108,6 @@ opentitan_functest(
         interface = "hyper310",
         tags = ["manual"],
         test_cmds = [
-            "--rom-kind=testrom",
             "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
         ],
@@ -2294,7 +2293,6 @@ opentitan_functest(
     cw310 = cw310_params(
         bitstream = ":power_virus_systemtest_bitstream",
         test_cmds = [
-            "--rom-kind={rom_kind}",
             "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
         ],
@@ -2370,7 +2368,6 @@ opentitan_functest(
         #interface = "hyper310",
         #tags = ["manual"],
         test_cmds = [
-            "--rom-kind=testrom",
             "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
         ],
@@ -2432,7 +2429,6 @@ opentitan_functest(
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked0",
         test_cmds = [
-            "--rom-kind=rom",
             "--bitstream=\"$(rootpath {bitstream})\"",
             "--bootstrap=\"$(rootpath {flash})\"",
         ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
@@ -2453,7 +2449,6 @@ opentitan_functest(
         interface = "hyper310",
         tags = ["manual"],
         test_cmds = [
-            "--rom-kind=testrom",
             "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
         ],
@@ -2481,7 +2476,6 @@ opentitan_functest(
         interface = "hyper310",
         tags = ["manual"],
         test_cmds = [
-            "--rom-kind=testrom",
             "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
         ],

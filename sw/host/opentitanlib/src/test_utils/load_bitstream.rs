@@ -10,7 +10,6 @@ use structopt::StructOpt;
 
 use crate::app::{StagedProgressBar, TransportWrapper};
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
-use crate::util::rom_detect::RomKind;
 
 /// Load a bitstream into the FPGA.
 #[derive(Debug, StructOpt)]
@@ -20,14 +19,6 @@ pub struct LoadBitstream {
 
     #[structopt(long, help = "The bitstream to load for the test")]
     pub bitstream: Option<PathBuf>,
-
-    #[structopt(
-        long,
-        possible_values = &RomKind::variants(),
-        case_insensitive = true,
-        help = "OpenTitan ROM type"
-    )]
-    pub rom_kind: Option<RomKind>,
 
     #[structopt(long, parse(try_from_str=humantime::parse_duration), default_value="50ms", help = "Duration of the reset pulse.")]
     pub rom_reset_pulse: Duration,
@@ -61,7 +52,6 @@ impl LoadBitstream {
         let progress = StagedProgressBar::new();
         let operation = FpgaProgram {
             bitstream: payload,
-            rom_kind: self.rom_kind,
             rom_reset_pulse: self.rom_reset_pulse,
             rom_timeout: self.rom_timeout,
             progress: Box::new(progress),

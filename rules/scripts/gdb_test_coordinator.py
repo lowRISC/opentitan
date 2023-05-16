@@ -120,8 +120,7 @@ app = typer.Typer(pretty_exceptions_enable=False)
 
 
 @app.command()
-def main(rom_kind: str = typer.Option(...),
-         openocd_path: str = typer.Option(...),
+def main(openocd_path: str = typer.Option(...),
          openocd_earlgrey_config: str = typer.Option(...),
          openocd_jtag_adapter_config: str = typer.Option(...),
          expect_debug_disallowed: bool = typer.Option(None),
@@ -145,7 +144,6 @@ def main(rom_kind: str = typer.Option(...),
     load_bitstream_command = opentitantool_prefix + [
         "fpga",
         "load-bitstream",
-        "--rom-kind=" + rom_kind,
         bitstream_path,
     ]
     openocd_command = [
