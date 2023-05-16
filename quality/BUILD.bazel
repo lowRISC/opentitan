@@ -114,7 +114,7 @@ clang_tidy_rv_test(
         "//sw/device/silicon_creator/rom:bootstrap",
         "//sw/device/silicon_creator/rom:rom_common",
         "//sw/device/silicon_creator/rom:rom_epmp",
-        "//sw/device/silicon_creator/rom:rom_start",
+        "//sw/device/silicon_creator/rom:rom_without_keys",
         "//sw/device/silicon_creator/rom:sigverify_keys",
         "//sw/device/silicon_creator/rom:sigverify_keys_rsa",
         "//sw/device/silicon_creator/rom:sigverify_keys_spx",
