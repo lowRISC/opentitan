@@ -114,7 +114,7 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_default_otp",
-    src = "//hw/bitstream:rom",
+    src = "//hw/bitstream:rom_with_fake_keys",
     data = ":otp_img_default",
     meminfo = "//hw/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(CONST.LCV.RMA),
@@ -131,7 +131,7 @@ opentitan_functest(
     ),
     signed = True,
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
     ],
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -165,7 +165,7 @@ opentitan_functest(
     srcs = ["rom_e2e_flash_ctrl_init_test.c"],
     signed = True,
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
     ],
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -189,7 +189,7 @@ opentitan_functest(
     signed = True,
     targets = [
         "dv",
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
         "verilator",
     ],
     verilator = verilator_params(
@@ -210,7 +210,7 @@ opentitan_functest(
 opentitan_functest(
     name = "rom_e2e_smoke",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom",
+        bitstream = "//hw/bitstream:rom_with_fake_keys",
     ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
@@ -218,7 +218,7 @@ opentitan_functest(
     key_struct = RSA_ONLY_KEY_STRUCTS[0],
     ot_flash_binary = ":empty_test_slot_a",
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
         "verilator",
         "dv",
     ],
@@ -237,7 +237,7 @@ opentitan_functest(
     signed = True,
     targets = [
         "dv",
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
         "verilator",
     ],
     verilator = verilator_params(
@@ -308,7 +308,7 @@ rom_e2e_keymgr_init_configs = [
 [
     bitstream_splice(
         name = "bitstream_keymgr_{}".format(config["name"]),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_keymgr_{}".format(config["name"]),
         meminfo = "//hw/bitstream:otp_mmi",
         visibility = ["//visibility:private"],
@@ -328,7 +328,7 @@ rom_e2e_keymgr_init_configs = [
         ),
         ot_flash_binary = ":rom_e2e_keymgr_init_test",
         targets = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
             "dv",
             "verilator",
         ],
@@ -358,7 +358,7 @@ opentitan_functest(
     ),
     signed = True,
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
     ],
     deps = [
         "//hw/ip/uart/data:uart_regs",
@@ -382,14 +382,14 @@ opentitan_functest(
 opentitan_functest(
     name = "e2e_bootup_success_otp_dev",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_otp_dev",
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev",
         # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
     ),
     key_struct = RSA_ONLY_KEY_STRUCTS[0],
     ot_flash_binary = ":empty_test_slot_a",
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
 )
 
 [otp_image(
@@ -402,7 +402,7 @@ opentitan_functest(
 [
     bitstream_splice(
         name = "bitstream_e2e_bootstrap_entry_{}".format(lc_state),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_e2e_bootstrap_entry_{}".format(lc_state),
         meminfo = "//hw/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
@@ -428,7 +428,7 @@ opentitan_functest(
         # leftover flash image from a previous test to run.  So, bootstrap an
         # unsigned image to force a boot failure.
         signed = False,
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/rom/e2e_bootstrap_entry",
         deps = [":bitstream_e2e_bootstrap_entry_{}".format(lc_state)],
     )
@@ -487,7 +487,7 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_bootstrap_rma",
-    src = "//hw/bitstream:rom",
+    src = "//hw/bitstream:rom_with_fake_keys",
     data = ":otp_img_bootstrap_rma",
     meminfo = "//hw/bitstream:otp_mmi",
     update_usr_access = True,
@@ -513,7 +513,7 @@ opentitan_functest(
         CONST.LCV.PROD,
         spx = None,
     )[0],
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
     test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -527,7 +527,7 @@ opentitan_functest(
 opentitan_functest(
     name = "e2e_bootstrap_disabled",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_otp_bootstrap_disabled",
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_bootstrap_disabled",
         test_cmds = [
             "--bitstream=\"$(location {bitstream})\"",
         ],
@@ -537,14 +537,14 @@ opentitan_functest(
     # binary target.  We'll build an unsigned do-nothing binary.
     ot_flash_binary = ":empty_test_slot_a",
     signed = False,
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
     test_harness = "//sw/host/tests/rom/e2e_bootstrap_disabled",
 )
 
 [
     bitstream_splice(
         name = "bitstream_chip_specific_startup_{}".format(lc_state),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_e2e_bootstrap_entry_{}".format(lc_state),
         meminfo = "//hw/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
@@ -574,7 +574,7 @@ opentitan_functest(
             spx = None,
         )[0],
         signed = True,
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/rom/e2e_chip_specific_startup",
         deps = [
             "//hw/ip/csrng/data:csrng_regs",
@@ -615,7 +615,7 @@ opentitan_functest(
         exit_success = MSG_STARTING_ROM_EXT,
     ),
     ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
 )
 
 opentitan_multislot_flash_binary(
@@ -637,7 +637,7 @@ opentitan_functest(
     ),
     key_struct = "multislot",
     ot_flash_binary = ":rom_ext_b_flash_b_image",
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
 )
 
 opentitan_multislot_flash_binary(
@@ -659,7 +659,7 @@ opentitan_functest(
     ),
     key_struct = "multislot",
     ot_flash_binary = ":rom_ext_a_flash_b_image",
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
 )
 
 opentitan_multislot_flash_binary(
@@ -681,7 +681,7 @@ opentitan_functest(
     ),
     key_struct = "multislot",
     ot_flash_binary = ":rom_ext_b_flash_a_image",
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
 )
 
 opentitan_functest(
@@ -691,7 +691,7 @@ opentitan_functest(
         exit_success = MSG_STARTING_ROM_EXT,
     ),
     ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual",
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
 )
 
 opentitan_multislot_flash_binary(
@@ -713,7 +713,7 @@ opentitan_functest(
     ),
     key_struct = "multislot",
     ot_flash_binary = ":rom_ext_v_flash_b_image",
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
 )
 
 opentitan_functest(
@@ -723,7 +723,7 @@ opentitan_functest(
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
     ),
     ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a_bad_address_translation",
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
 )
 
 test_suite(
@@ -748,7 +748,7 @@ opentitan_functest(
     ),
     key_struct = "rsa_unauthorized_0",
     ot_flash_binary = ":empty_test_slot_a",
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
 )
 
 [otp_image(
@@ -761,7 +761,7 @@ opentitan_functest(
 [
     bitstream_splice(
         name = "bitstream_shutdown_output_{}".format(lc_state),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_shutdown_output_{}".format(lc_state),
         meminfo = "//hw/bitstream:otp_mmi",
         update_usr_access = True,
@@ -795,7 +795,7 @@ manifest({
     ot_flash_binary = ":empty_test_slot_a",
     signed = False,
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
         "dv",
     ],
 ) for lc_state, lc_state_val in get_lc_items()]
@@ -888,7 +888,7 @@ BOOT_POLICY_NEWER_CASES = [
 [
     bitstream_splice(
         name = "bitstream_boot_policy_newer_{}".format(lc_state),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_boot_policy_newer_{}".format(lc_state),
         meminfo = "//hw/bitstream:otp_mmi",
         update_usr_access = True,
@@ -913,7 +913,7 @@ BOOT_POLICY_NEWER_CASES = [
             t["a"],
             t["b"],
         ),
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
     )
     for lc_state, lc_state_val in get_lc_items()
     for t in BOOT_POLICY_NEWER_CASES
@@ -979,7 +979,7 @@ otp_json(
     name = "bitstream_boot_policy_rollback_{}".format(
         lc_state,
     ),
-    src = "//hw/bitstream:rom",
+    src = "//hw/bitstream:rom_with_fake_keys",
     data = ":otp_img_boot_policy_rollback_{}".format(
         lc_state,
     ),
@@ -1005,7 +1005,7 @@ otp_json(
             t["a"],
             t["b"],
         ),
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
     )
     for lc_state, lc_state_val in get_lc_items()
     for t in BOOT_POLICY_ROLLBACK_CASES
@@ -1057,7 +1057,7 @@ otp_json(
 # Bitstreams with the watchdog-enable OTP images spliced in.
 [bitstream_splice(
     name = "bitstream_watchdog_enable_{}".format(lc_state),
-    src = "//hw/bitstream:rom",
+    src = "//hw/bitstream:rom_with_fake_keys",
     data = ":otp_img_watchdog_enable_{}".format(lc_state),
     meminfo = "//hw/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
@@ -1111,7 +1111,7 @@ WATCHDOG_TEST_CASES = {
 # tests. The format argument should be replaced with the desired life cycle
 # state.
 WATCHDOG_BITSTREAM = {
-    "disable": "//hw/bitstream:rom_otp_{}",
+    "disable": "//hw/bitstream:rom_with_fake_keys_otp_{}",
     "enable": ":bitstream_watchdog_enable_{}",
 }
 
@@ -1137,7 +1137,7 @@ WATCHDOG_OTP = {
         ot_flash_binary = ":test_watchdog_{}".format(WATCHDOG_TEST_CASES[otp_config][lc_state]),
         signed = True,
         targets = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
             "verilator",
         ],
         verilator = verilator_params(
@@ -1193,7 +1193,7 @@ ALERT_LC_STATES = get_lc_items(
 
 [bitstream_splice(
     name = "bitstream_alert_{}".format(lc_state),
-    src = "//hw/bitstream:rom",
+    src = "//hw/bitstream:rom_with_fake_keys",
     data = ":otp_img_alert_{}".format(lc_state),
     meminfo = "//hw/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
@@ -1236,7 +1236,7 @@ ALERT_LC_STATES = get_lc_items(
         ot_flash_binary = ":rom_e2e_alert_config_test_{}".format(lc_state),
         signed = True,
         targets = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
         ],
     )
     for lc_state, lc_state_val in ALERT_LC_STATES
@@ -1329,7 +1329,7 @@ otp_alert_digest(
 
 [bitstream_splice(
     name = "bitstream_shutdown_alert_{}".format(lc_state),
-    src = "//hw/bitstream:rom",
+    src = "//hw/bitstream:rom_with_fake_keys",
     data = ":otp_img_shutdown_alert_{}".format(lc_state),
     meminfo = "//hw/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
@@ -1367,7 +1367,7 @@ otp_alert_digest(
         ot_flash_binary = ":rom_e2e_shutdown_alert_config_test_{}".format(lc_state),
         signed = True,
         targets = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
         ],
     )
     for lc_state, lc_state_val in ALERT_LC_STATES
@@ -1458,7 +1458,7 @@ opentitan_flash_binary(
             lc_state,
             t["name"],
         ),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_mod_exp_{}_{}".format(
             lc_state,
             t["name"],
@@ -1491,7 +1491,7 @@ opentitan_flash_binary(
         )[0],
         ot_flash_binary = ":empty_test_sigverify_mod_exp",
         signed = True,
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
     )
     for lc_state, lc_state_val in get_lc_items()
     for t in SIGVERIFY_MOD_EXP_CASES
@@ -1721,7 +1721,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             lc_state,
             sec_ver,
         ),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_boot_policy_bad_manifest_{}_sec_ver_{}".format(
             lc_state,
             sec_ver,
@@ -1758,7 +1758,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             slot,
         ),
         targets = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
             "verilator",
         ],
         verilator = verilator_params(
@@ -1870,7 +1870,7 @@ BOOT_DATA_RECOVERY_CASES = [
         case["lc_state"],
         case["default_boot_data"],
     ),
-    src = "//hw/bitstream:rom",
+    src = "//hw/bitstream:rom_with_fake_keys",
     data = ":otp_img_boot_data_recovery_{}_{}".format(
         case["lc_state"],
         case["default_boot_data"],
@@ -1936,7 +1936,7 @@ BOOT_DATA_RECOVERY_CASES = [
         ),
         signed = True,
         targets = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
         ],
     )
     for case in BOOT_DATA_RECOVERY_CASES
@@ -2025,7 +2025,7 @@ SHUTDOWN_WATCHDOG_CASES = [
             t["lc_state"],
             t["bite_threshold"],
         ),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_shutdown_watchdog_{}_{}".format(
             t["lc_state"],
             t["bite_threshold"],
@@ -2062,7 +2062,7 @@ SHUTDOWN_WATCHDOG_CASES = [
         local_defines = [
             "HANG_SECS=1",
         ],
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
@@ -2194,7 +2194,7 @@ BOOT_POLICY_VALID_CASES = [
 [
     bitstream_splice(
         name = "bitstream_boot_policy_valid_{}".format(lc_state),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_boot_policy_valid_{}".format(lc_state),
         meminfo = "//hw/bitstream:otp_mmi",
         update_usr_access = True,
@@ -2220,7 +2220,7 @@ BOOT_POLICY_VALID_CASES = [
             a["desc"],
             b["desc"],
         ),
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
     )
     for lc_state, lc_state_val in get_lc_items()
     for a in BOOT_POLICY_VALID_CASES
@@ -2256,8 +2256,8 @@ test_suite(
 # Splice each execution-disabled OTP image into the ROM bitstream.
 [
     bitstream_splice(
-        name = "rom_otp_{}_exec_disabled".format(lc_state),
-        src = "//hw/bitstream:rom",
+        name = "rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = "img_{}_exec_disabled".format(lc_state),
         meminfo = "//hw/bitstream:otp_mmi",
         tags = [
@@ -2278,9 +2278,9 @@ test_suite(
         name = "sram_program_fpga_cw310_test_otp_{}".format(lc_state),
         srcs = ["empty_test.c"],
         cw310 = cw310_params(
-            bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
+            bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
             logging = "debug",
-            tags = ["cw310_rom"],
+            tags = ["cw310_rom_with_fake_keys"],
             test_cmds = [
                 "--rom-kind=rom",
                 "--bitstream=\"$(rootpath {bitstream})\"",
@@ -2295,7 +2295,7 @@ test_suite(
         data = [
             "//sw/device/examples/sram_program:sram_program_fpga_cw310_vmem",
         ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/chip/jtag:sram_load",
         deps = [
             "//sw/device/lib/runtime:log",
@@ -2329,7 +2329,7 @@ test_suite(
         name = "epmp_init_otp_" + lc_state,
         srcs = ["epmp_init_test.c"],
         cw310 = cw310_params(
-            bitstream = "//hw/bitstream:rom_otp_" + lc_state,
+            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_" + lc_state,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         key_struct = filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_state_val)[0],
@@ -2341,7 +2341,7 @@ test_suite(
             ] else 0),
         ],
         targets = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
             "verilator",
         ],
         verilator = verilator_params(
@@ -2392,10 +2392,10 @@ test_suite(
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
-        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
+        rom_bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
         tags = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
         ] + maybe_skip_in_ci(lc_state_val),
     )
     for lc_state, lc_state_val in get_lc_items(
@@ -2450,10 +2450,10 @@ test_suite(
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
-        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
+        rom_bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
         tags = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
         ] + maybe_skip_in_ci(lc_state_val),
     )
     for lc_state, lc_state_val in get_lc_items(
@@ -2513,10 +2513,10 @@ test_suite(
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
-        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
+        rom_bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
         tags = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
         ] + maybe_skip_in_ci(lc_state_val),
     )
     for lc_state, lc_state_val in get_lc_items(
@@ -2603,10 +2603,10 @@ test_suite(
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
-        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
+        rom_bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
         tags = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
         ] + maybe_skip_in_ci(lc_state_val),
     )
     for lc_state, lc_state_val in get_lc_items(
@@ -2670,10 +2670,10 @@ test_suite(
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
-        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
+        rom_bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
         tags = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
         ] + maybe_skip_in_ci(lc_state_val),
     )
     for lc_state, lc_state_val in get_lc_items(
@@ -2739,7 +2739,7 @@ REDACT.update({"INVALID": 0x0})
             lc_state,
             redact.lower(),
         ),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":img_{}_{}".format(
             lc_state,
             redact.lower(),
@@ -2773,7 +2773,7 @@ REDACT.update({"INVALID": 0x0})
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         signed = False,
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -2894,7 +2894,7 @@ test_suite(
 [
     bitstream_splice(
         name = "bitstream_sigverify_always_{}".format(lc_state),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_always_{}".format(lc_state),
         meminfo = "//hw/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
@@ -2955,7 +2955,7 @@ SIGVERIFY_BAD_CASES = [
         ),
         targets = [
             "dv",
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
         ],
     )
     for case in SIGVERIFY_BAD_CASES
@@ -2990,7 +2990,7 @@ test_suite(
         name = "bitstream_sigverify_key_type_{}".format(
             lc_state,
         ),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_key_type_{}".format(
             lc_state,
         ),
@@ -3029,7 +3029,7 @@ test_suite(
         key_struct = key,
         ot_flash_binary = "empty_test_slot_a",
         targets = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
@@ -3084,7 +3084,7 @@ otp_json(
         name = "bitstream_sigverify_key_validity_{}".format(
             lc_state,
         ),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_key_validity_{}".format(
             lc_state,
         ),
@@ -3117,7 +3117,7 @@ otp_json(
         key_struct = key,
         ot_flash_binary = "empty_test_slot_a",
         targets = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
@@ -3186,7 +3186,7 @@ otp_json(
 
 [bitstream_splice(
     name = "bitstream_sigverify_usage_constraints_{}".format(lc_state),
-    src = "//hw/bitstream:rom",
+    src = "//hw/bitstream:rom_with_fake_keys",
     data = ":otp_img_sigverify_usage_constraints_{}".format(lc_state),
     meminfo = "//hw/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
@@ -3391,7 +3391,7 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
         ),
     ),
     signed = True,
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_with_fake_keys"],
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -3528,10 +3528,10 @@ test_suite(
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
-        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
+        rom_bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
         tags = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
         ] + maybe_skip_in_ci(lc_state_val),
     )
     for lc_state, lc_state_val in get_lc_items(
@@ -3589,7 +3589,7 @@ opentitan_functest(
     ),
     ot_flash_binary = "rom_ext_upgrade_test",
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
     ],
 )
 
@@ -3614,7 +3614,7 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_reset_ret_ram",
-    src = "//hw/bitstream:rom",
+    src = "//hw/bitstream:rom_with_fake_keys",
     data = ":otp_img_reset_ret_ram",
     meminfo = "//hw/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(CONST.LCV.RMA),
@@ -3631,7 +3631,7 @@ opentitan_functest(
     ),
     signed = True,
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
     ],
     deps = [
         "//sw/device/lib/base:memory",
@@ -3647,12 +3647,12 @@ opentitan_functest(
     name = "rom_e2e_ret_ram_keep",
     srcs = ["rom_e2e_ret_ram_keep_test.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom",
+        bitstream = "//hw/bitstream:rom_with_fake_keys",
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
     ),
     signed = True,
     targets = [
-        "cw310_rom",
+        "cw310_rom_with_fake_keys",
     ],
     deps = [
         "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
@@ -3703,7 +3703,7 @@ otp_json(
         name = "bitstream_rom_ext_upgrade_interrupt_{}".format(
             lc_state,
         ),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_rom_ext_upgrade_interrupt_{}".format(
             lc_state,
         ),
@@ -3730,7 +3730,7 @@ otp_json(
         )[0],
         manifest = ":manifest_rom_ext_upgrade_interrupt",
         targets = [
-            "cw310_rom",
+            "cw310_rom_with_fake_keys",
         ],
         deps = [
             "//sw/device/lib/testing:flash_ctrl_testutils",
@@ -3883,7 +3883,7 @@ opentitan_flash_binary(
             lc_state,
             t["name"],
         ),
-        src = "//hw/bitstream:rom",
+        src = "//hw/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_spx_{}_{}".format(
             lc_state,
             t["name"],
@@ -3912,7 +3912,7 @@ opentitan_flash_binary(
         ),
         key_struct = get_key_structs_for_lc_state(lc_state_val)[0],
         ot_flash_binary = ":empty_test_sigverify_spx",
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_with_fake_keys"],
     )
     for lc_state, lc_state_val in get_lc_items()
     for t in SIGVERIFY_SPX_CASES

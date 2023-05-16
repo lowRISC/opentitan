@@ -3,9 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
+load("//rules:const.bzl", "KEY_AUTHENTICITY")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 load("//rules:otp.bzl", "get_otp_images")
 load("//rules:splice.bzl", "bitstream_splice")
+load("//rules:const.bzl", "KEY_AUTHENTICITY")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -77,26 +79,30 @@ filegroup(
     tags = ["manual"],
 )
 
-bitstream_splice(
-    name = "fpga_cw310_rom",
-    testonly = True,
-    src = ":fpga_cw310_test_rom",
-    data = "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_scr_vmem",
-    meminfo = ":rom_mmi",
-    tags = ["manual"],
-)
+[
+    bitstream_splice(
+        name = "fpga_cw310_rom_with_{}_keys".format(authenticity),
+        testonly = True,
+        src = "@bitstreams//:chip_earlgrey_cw310_bitstream",
+        data = "//sw/device/silicon_creator/rom:rom_with_{}_keys_fpga_cw310_scr_vmem".format(authenticity),
+        meminfo = ":rom_mmi",
+        tags = ["manual"],
+    )
+    for authenticity in KEY_AUTHENTICITY
+]
 
 # Splice OTP images into the ROM bitstream.
 [
     bitstream_splice(
-        name = "fpga_cw310_rom_otp_" + otp_name,
+        name = "fpga_cw310_rom_with_{}_keys_otp_{}".format(authenticity, otp_name),
         testonly = True,
-        src = ":fpga_cw310_rom",
+        src = ":fpga_cw310_rom_with_{}_keys".format(authenticity),
         data = img_target,
         meminfo = ":otp_mmi",
         tags = ["manual"],
     )
     for (otp_name, img_target) in get_otp_images()
+    for authenticity in KEY_AUTHENTICITY
 ]
 
 # Standalone CW310 image for use with hyperdebug.
@@ -153,13 +159,15 @@ pkg_files(
     name = "standard",
     testonly = True,
     srcs = [
-        ":fpga_cw310_rom",
+        ":fpga_cw310_rom_with_fake_keys",
+        ":fpga_cw310_rom_with_real_keys",
         ":fpga_cw310_test_rom",
         ":otp_mmi",
         ":rom_mmi",
     ] + [
-        ":fpga_cw310_rom_otp_" + otp_name
+        ":fpga_cw310_rom_with_{}_keys_otp_{}".format(authenticity, otp_name)
         for (otp_name, _) in get_otp_images()
+        for authenticity in KEY_AUTHENTICITY
     ],
     prefix = "earlgrey/fpga_cw310/standard",
     tags = ["manual"],

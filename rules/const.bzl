@@ -285,3 +285,8 @@ EARLGREY_LOC_ALERTS = [
     "loc_dummy14",
     "loc_dummy15",
 ]
+
+KEY_AUTHENTICITY = [
+    "fake",
+    "real",
+]

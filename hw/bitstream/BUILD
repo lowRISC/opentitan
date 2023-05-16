@@ -4,6 +4,7 @@
 
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:otp.bzl", "get_otp_images")
+load("//rules:const.bzl", "KEY_AUTHENTICITY")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -65,17 +66,20 @@ filegroup(
     tags = ["manual"],
 )
 
-filegroup(
-    name = "rom",
-    testonly = True,
-    srcs = select({
-        "bitstream_skip": ["skip.bit"],
-        "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_rom"],
-        "bitstream_gcp_splice": [":gcp_spliced_rom"],
-        "//conditions:default": [":gcp_spliced_rom"],
-    }),
-    tags = ["manual"],
-)
+[
+    filegroup(
+        name = "rom_with_{}_keys".format(authenticity),
+        testonly = True,
+        srcs = select({
+            "bitstream_skip": ["skip.bit"],
+            "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_rom_with_{}_keys".format(authenticity)],
+            "bitstream_gcp_splice": [":gcp_spliced_rom_with_{}_keys".format(authenticity)],
+            "//conditions:default": [":gcp_spliced_rom_with_{}_keys".format(authenticity)],
+        }),
+        tags = ["manual"],
+    )
+    for authenticity in KEY_AUTHENTICITY
+]
 
 filegroup(
     name = "rom_mmi",
@@ -101,17 +105,18 @@ filegroup(
 
 [
     filegroup(
-        name = "rom_otp_" + otp_name,
+        name = "rom_with_{}_keys_otp_{}".format(authenticity, otp_name),
         testonly = True,
         srcs = select({
             "bitstream_skip": ["skip.bit"],
-            "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_rom_otp_" + otp_name],
-            "bitstream_gcp_splice": [":gcp_spliced_rom_otp_" + otp_name],
-            "//conditions:default": [":gcp_spliced_rom_otp_" + otp_name],
+            "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_rom_with_{}_keys_otp_{}".format(authenticity, otp_name)],
+            "bitstream_gcp_splice": [":gcp_spliced_rom_with_{}_keys_otp_{}".format(authenticity, otp_name)],
+            "//conditions:default": [":gcp_spliced_rom_with_{}_keys_otp_{}".format(authenticity, otp_name)],
         }),
         tags = ["manual"],
     )
     for (otp_name, _) in get_otp_images()
+    for authenticity in KEY_AUTHENTICITY
 ]
 
 # Build the Test ROM and splice it into a cached bitstream.
@@ -127,23 +132,26 @@ bitstream_splice(
 )
 
 # Build the ROM and splice it into a cached bitstream.
-bitstream_splice(
-    name = "gcp_spliced_rom",
-    testonly = True,
-    src = "@bitstreams//:chip_earlgrey_cw310_bitstream",
-    data = "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_scr_vmem",
-    meminfo = ":rom_mmi",
-    tags = ["manual"],
-    update_usr_access = True,
-    visibility = ["//visibility:private"],
-)
+[
+    bitstream_splice(
+        name = "gcp_spliced_rom_with_{}_keys".format(authenticity),
+        testonly = True,
+        src = "@bitstreams//:chip_earlgrey_cw310_bitstream",
+        data = "//sw/device/silicon_creator/rom:rom_with_{}_keys_fpga_cw310_scr_vmem".format(authenticity),
+        meminfo = ":rom_mmi",
+        tags = ["manual"],
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+    )
+    for authenticity in KEY_AUTHENTICITY
+]
 
 # Splice OTP images into the locally-spliced ROM bitstream.
 [
     bitstream_splice(
-        name = "gcp_spliced_rom_otp_" + otp_name,
+        name = "gcp_spliced_rom_with_{}_keys_otp_{}".format(authenticity, otp_name),
         testonly = True,
-        src = ":gcp_spliced_rom",
+        src = ":gcp_spliced_rom_with_{}_keys".format(authenticity),
         data = img_target,
         meminfo = ":otp_mmi",
         tags = ["manual"],
@@ -151,4 +159,5 @@ bitstream_splice(
         visibility = ["//visibility:private"],
     )
     for (otp_name, img_target) in get_otp_images()
+    for authenticity in KEY_AUTHENTICITY
 ]

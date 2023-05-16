@@ -357,23 +357,31 @@ cc_test(
     ],
 )
 
-exclude_files(
-    name = "pre_package",
-    testonly = True,
-    srcs = [":rom_with_fake_keys"],
+[exclude_files(
+    name = "pre_package_{}".format(authenticity),
+    testonly = testonly,
+    srcs = [":rom_with_{}_keys".format(authenticity)],
     exclude_suffix = [
         ".ll",
         ".i",
         ".s",
     ],
-)
+) for authenticity, testonly in (
+    ("fake", True),
+    # FIXME: remove testonly after adding the real keys
+    ("real", True),
+)]
 
-pkg_files(
-    name = "package",
-    testonly = True,
-    srcs = [":pre_package"],
+[pkg_files(
+    name = "package_{}".format(authenticity),
+    testonly = testonly,
+    srcs = [":pre_package_{}".format(authenticity)],
     prefix = "earlgrey/rom",
-)
+) for authenticity, testonly in (
+    ("fake", True),
+    # FIXME: remove testonly after adding the real keys
+    ("real", True),
+)]
 
 manual_test(
     name = "manual_test",
