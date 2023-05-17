@@ -293,3 +293,24 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "status_report_unittest_c",
+    srcs = ["status_report_unittest_c.c"],
+    hdrs = ["status_report_unittest_c.h"],
+    deps = [
+        ":status",
+    ],
+)
+
+cc_test(
+    name = "status_report_unittest",
+    srcs = [
+        "status_report_unittest.cc",
+    ],
+    deps = [
+        ":status",
+        ":status_report_unittest_c",
+        "@googletest//:gtest_main",
+    ],
+)

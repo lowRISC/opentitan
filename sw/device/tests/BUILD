@@ -2463,3 +2463,27 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
     ],
 )
+
+_STATUS_REPORT_TEST_MSG = "\r\n".join([
+    "I00002 ottf_main.c:.*] Status reported by the test:",
+    "I00003 ottf_main.c:.*] - PermissionDenied\\(21\\) in PSY",
+    "I00004 ottf_main.c:.*] - Aborted\\(36\\) in UNT",
+    "I00005 ottf_main.c:.*] - Aborted\\(29\\) in THK",
+    "I00006 status.c:.*] FAIL!",
+])
+
+opentitan_functest(
+    name = "status_report_test",
+    srcs = ["status_report_test.c"],
+    cw310 = cw310_params(
+        exit_failure = "PASS!",
+        exit_success = _STATUS_REPORT_TEST_MSG,
+    ),
+    targets = [
+        "cw310_test_rom",
+    ],
+    deps = [
+        "//sw/device/lib/base:status_report_unittest_c",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
