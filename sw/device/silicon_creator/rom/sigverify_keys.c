@@ -207,8 +207,10 @@ rom_error_t sigverify_key_get(sigverify_key_get_in_params_t in_params,
   size_t cand_key_index = UINT32_MAX;
   // Random start index that is less than `in_params.key_cnt`.
   size_t i = ((uint64_t)rnd_uint32() * (uint64_t)in_params.key_cnt) >> 32;
-  size_t iter_cnt = 0;
-  for (; launder32(iter_cnt) < in_params.key_cnt; ++iter_cnt) {
+  size_t iter_cnt = 0, r_iter_cnt = in_params.key_cnt - 1;
+  for (; launder32(iter_cnt) < in_params.key_cnt &&
+         launder32(r_iter_cnt) < in_params.key_cnt;
+       ++iter_cnt, --r_iter_cnt) {
     const sigverify_rom_key_header_t *k =
         array_get_generic(in_params.key_array, in_params.key_size, i);
     if (launder32(sigverify_rom_key_id_get(k)) == in_params.key_id) {
@@ -227,6 +229,7 @@ rom_error_t sigverify_key_get(sigverify_key_get_in_params_t in_params,
     HARDENED_CHECK_LT(i, in_params.key_cnt);
   }
   HARDENED_CHECK_EQ(iter_cnt, in_params.key_cnt);
+  HARDENED_CHECK_EQ((uint32_t)r_iter_cnt, UINT32_MAX);
 
   if (launder32(cand_key_index) < in_params.key_cnt) {
     HARDENED_CHECK_LT(cand_key_index, in_params.key_cnt);
