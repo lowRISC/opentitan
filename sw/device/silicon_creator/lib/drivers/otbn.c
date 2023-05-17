@@ -79,8 +79,9 @@ static void otbn_write(uint32_t dest_addr, const uint32_t *src,
   // Start from a random index less than `num_words`.
   size_t i = ((uint64_t)rnd_uint32() * (uint64_t)num_words) >> 32;
   enum { kStep = 1 };
-  size_t iter_cnt = 0;
-  for (; launder32(iter_cnt) < num_words; ++iter_cnt) {
+  size_t iter_cnt = 0, r_iter_cnt = num_words - 1;
+  for (; launder32(iter_cnt) < num_words && launder32(r_iter_cnt) < num_words;
+       ++iter_cnt, --r_iter_cnt) {
     abs_mmio_write32(dest_addr + i * sizeof(uint32_t), src[i]);
     i += kStep;
     if (launder32(i) >= num_words) {
@@ -89,6 +90,7 @@ static void otbn_write(uint32_t dest_addr, const uint32_t *src,
     HARDENED_CHECK_LT(i, num_words);
   }
   HARDENED_CHECK_EQ(iter_cnt, num_words);
+  HARDENED_CHECK_EQ((uint32_t)r_iter_cnt, UINT32_MAX);
 }
 
 static rom_error_t otbn_imem_write(size_t num_words, const uint32_t *src,
@@ -110,12 +112,13 @@ rom_error_t otbn_dmem_write(size_t num_words, const uint32_t *src,
 rom_error_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(src, num_words, OTBN_DMEM_SIZE_BYTES));
-  size_t i = 0;
-  for (; launder32(i) < num_words; ++i) {
+  size_t i = 0, r = num_words - 1;
+  for (; launder32(i) < num_words && launder32(r) < num_words; ++i, --r) {
     dest[i] = abs_mmio_read32(kBase + OTBN_DMEM_REG_OFFSET + src +
                               i * sizeof(uint32_t));
   }
   HARDENED_CHECK_EQ(i, num_words);
+  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
   return kErrorOk;
 }
 
