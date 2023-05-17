@@ -59,10 +59,9 @@ class Address(Item):
     def __str__(self) -> str:
         """Returns the string representation of the address of this item.
         """
-        return (
-            f"VMA: {hex(self.vma)}, LMA: "
-            f"{hex(self.lma) if isinstance(self.lma, int) else 'N/A (' + self.lma + ')'}"
-        )
+        lma_str = f"{self.lma:08x}" if isinstance(self.lma,
+                                                  int) else f"N/A ({self.lma})"
+        return f"VMA: {self.vma:08x}, LMA: {lma_str}"
 
 
 @dataclass(frozen=True)
