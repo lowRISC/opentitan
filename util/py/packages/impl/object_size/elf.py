@@ -46,26 +46,29 @@ def parse_section(section: elf.sections.Section,
                    flags=hex(section['sh_flags']))
 
 
-def parse_symbol(sym, elf):
+def parse_symbol(sym, elf, sections):
     si = sym['st_shndx']
     if isinstance(si, str):
         log.info(f"Skipping symbol with string section index: {si}")
         return None
-    section = elf.get_section(si)
-    if section['sh_type'] not in ["SHT_PROGBITS", "SHT_NOBITS"
-                                  ] or (section['sh_flags'] & 0x7 == 0):
-        log.info(f"Skipping section '{section.name}', "
-                 f"type: '{section['sh_type']}', "
-                 f"flags: {section['sh_flags']}")
+    section_name = elf.get_section(si).name
+    section = sections.get(section_name, None)
+    if not section:
+        log.info(
+            f"Skipping symbol {sym.name} from skipped section {section_name}")
         return None
     size = sym['st_size']
     if size == 0:
         log.info(f"Skipping empty symbol {sym.name}")
         return None
+    if section.lma == "NOBITS":
+        lma = "NOBITS"
+    else:
+        lma = sym['st_value'] - (section.vma - section.lma)
     symbol = Symbol(name=sym.name,
                     section=section.name,
                     vma=sym['st_value'],
-                    lma=0,
+                    lma=lma,
                     size=sym['st_size'],
                     type_=sym['st_info']['type'],
                     binding=sym['st_info']['bind'],
@@ -95,7 +98,7 @@ def parse_elf_file(path: Path, memories: dict[str,
 
         symbol_table = elf.get_section_by_name('.symtab')
         for symbol in symbol_table.iter_symbols():
-            sym = parse_symbol(symbol, elf)
+            sym = parse_symbol(symbol, elf, sections)
             if sym:
                 section = sections[sym.section]
                 section.symbols.append(sym)
