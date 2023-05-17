@@ -331,7 +331,7 @@ void ottf_instr_access_fault_handler(void) {
       flash_ctrl_testutils_counter_get(kCounterException, &exception_count));
   if (exception_count > kMaxInterrupts) {
     LOG_INFO("Saturating exception counter at %d", exception_count);
-  } else {
+  } else if (exception_count == 0) {
     CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
         &flash_ctrl_state, kCounterException, exception_count + 1));
   }
@@ -633,13 +633,8 @@ bool test_main(void) {
     // The NMI handler may execute multiple times during the corresponding
     // escalation phase since we do not clear/stop the escalation.
     CHECK(nmi_count > 0, "Expected at least one nmi");
-    if (kFaultTarget == kFaultTargetMainSramInstr) {
-      // The instruction access fault keeps on triggering the ISR, hence
-      // the count can be greater thn 1 (similar to the NMI above).
-      CHECK(exception_count > 0, "Expected at least one exception");
-    } else {
-      CHECK(exception_count == 1, "Expected exactly one exception");
-    }
+    CHECK(exception_count == 1, "Expected exactly one exception");
+
     // Check the alert handler cause is cleared.
     bool is_cause = true;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
