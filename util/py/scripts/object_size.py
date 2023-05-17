@@ -15,9 +15,10 @@ Example:
 import itertools
 
 import typer
-
 from util.py.packages.impl.object_size.report import print_report
-from util.py.packages.lib import bazel, ot_logging
+from util.py.packages.lib import bazel
+from util.py.packages.lib import ot_logging
+
 
 app = typer.Typer(pretty_exceptions_enable=False, add_completion=False)
 
@@ -30,6 +31,8 @@ def main(target: str,
          log_level: ot_logging.LogLevel = ot_logging.LogLevel.WARNING,
          force_color: bool = False) -> None:
     ot_logging.init(log_level)
+
+    bazel.try_escape_sandbox()
 
     # We use a `cc_binary` rule to produce ELF files and a `obj_transform` rule to
     # produce bin files.
