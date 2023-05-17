@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Bootstrap RMA e2e test.
-//!
 //! This test harness:
 //!
 //! 1. Checks that the ROM times out and resets under the `RMA_BOOTSTRAP` strapping.
@@ -25,7 +24,7 @@ use opentitanlib::dif::lc_ctrl::{
 };
 use opentitanlib::dif::rstmgr::DifRstmgrResetInfo;
 use opentitanlib::execute_test;
-use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
@@ -38,9 +37,6 @@ const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
 struct Opts {
     #[structopt(flatten)]
     init: InitializeTest,
-
-    #[structopt(flatten)]
-    jtag: JtagParams,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -135,7 +131,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
 
     log::info!("Connecting to JTAG interface");
 
-    let jtag = transport.jtag(&opts.jtag).context("failed to get JTAG")?;
+    let jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)
         .context("failed to connect to JTAG")?;
 

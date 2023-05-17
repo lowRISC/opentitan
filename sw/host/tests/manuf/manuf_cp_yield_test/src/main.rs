@@ -16,7 +16,7 @@ use structopt::StructOpt;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
 use opentitanlib::execute_test;
-use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::extclk::{ClockSpeed, ExternalClock};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::wait_for_status;
@@ -26,9 +26,6 @@ use top_earlgrey::top_earlgrey_memory;
 struct Opts {
     #[structopt(flatten)]
     init: InitializeTest,
-
-    #[structopt(flatten)]
-    jtag: JtagParams,
 
     #[structopt(
         long, parse(try_from_str = DifLcCtrlState::parse_lc_state_str),
@@ -45,7 +42,7 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         .apply()
         .context("failed to apply RISCV TAP strapping")?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let jtag = transport.jtag(&opts.jtag)?;
+    let jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::RiscvTap)
         .context("failed to connect to RISCV TAP over JTAG")?;
 

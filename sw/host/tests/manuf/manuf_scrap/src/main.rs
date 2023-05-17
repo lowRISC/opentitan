@@ -8,7 +8,7 @@ use structopt::StructOpt;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::execute_test;
-use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 
@@ -16,9 +16,6 @@ use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 struct Opts {
     #[structopt(flatten)]
     init: InitializeTest,
-
-    #[structopt(flatten)]
-    jtag_params: JtagParams,
 
     #[structopt(
         long, parse(try_from_str = DifLcCtrlState::parse_lc_state_str),
@@ -32,7 +29,7 @@ fn manuf_scrap(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Reset the chip, select the LC TAP, and connect to it.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let jtag = transport.jtag(&opts.jtag_params)?;
+    let jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)?;
 
     // Check the initial LC state.

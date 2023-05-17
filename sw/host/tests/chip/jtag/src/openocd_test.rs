@@ -12,7 +12,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boolean::MultiBitBool8;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::execute_test;
-use opentitanlib::io::jtag::{JtagParams, JtagTap, RiscvCsr, RiscvGpr, RiscvReg};
+use opentitanlib::io::jtag::{JtagTap, RiscvCsr, RiscvGpr, RiscvReg};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
@@ -22,8 +22,6 @@ use top_earlgrey::top_earlgrey_memory;
 struct Opts {
     #[structopt(flatten)]
     init: InitializeTest,
-    #[structopt(flatten)]
-    jtag: JtagParams,
 }
 
 fn reset(transport: &TransportWrapper, strappings: &[&str], reset_delay: Duration) -> Result<()> {
@@ -61,7 +59,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         opts.init.bootstrap.options.reset_delay,
     )?;
 
-    let jtag = transport.jtag(&opts.jtag)?;
+    let jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::RiscvTap)?;
     jtag.halt()?;
     // Definitions for hardware registers
@@ -195,7 +193,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         opts.init.bootstrap.options.reset_delay,
     )?;
 
-    let jtag = transport.jtag(&opts.jtag)?;
+    let jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)?;
 
     // Test reads by checking the LC_STATE register
