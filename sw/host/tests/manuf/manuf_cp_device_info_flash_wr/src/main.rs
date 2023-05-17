@@ -12,7 +12,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::backend;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
 use opentitanlib::execute_test;
-use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::{trigger_lc_transition, wait_for_status};
 use opentitanlib::test_utils::load_sram_program::{
@@ -24,9 +24,6 @@ use opentitanlib::uart::console::{ExitStatus, UartConsole};
 struct Opts {
     #[structopt(flatten)]
     init: InitializeTest,
-
-    #[structopt(flatten)]
-    jtag: JtagParams,
 
     #[structopt(flatten)]
     sram_program: SramProgramParams,
@@ -50,7 +47,7 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let jtag = transport.jtag(&opts.jtag)?;
+    let jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::RiscvTap)?;
 
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages

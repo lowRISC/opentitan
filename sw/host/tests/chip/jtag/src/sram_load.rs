@@ -10,7 +10,7 @@ use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
-use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::{ExecutionMode, SramProgramParams};
 use opentitanlib::uart::console::UartConsole;
@@ -21,8 +21,7 @@ use opentitanlib::uart::console::UartConsole;
 struct Opts {
     #[structopt(flatten)]
     init: InitializeTest,
-    #[structopt(flatten)]
-    jtag: JtagParams,
+
     #[structopt(flatten)]
     sram_program: SramProgramParams,
 }
@@ -35,7 +34,7 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
-    let jtag = transport.jtag(&opts.jtag)?;
+    let jtag = opts.init.jtag_params.create(transport)?;
     log::info!("Connecting to RISC-V TAP");
     jtag.connect(JtagTap::RiscvTap)?;
     log::info!("Halting core");

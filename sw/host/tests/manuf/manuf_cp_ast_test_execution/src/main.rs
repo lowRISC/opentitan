@@ -12,7 +12,7 @@ use structopt::StructOpt;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::otp_ctrl::DaiParam;
 use opentitanlib::execute_test;
-use opentitanlib::io::jtag::{Jtag, JtagParams, JtagTap};
+use opentitanlib::io::jtag::{Jtag, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::{
     ExecutionMode, ExecutionResult, SramProgramParams,
@@ -24,10 +24,10 @@ use opentitanlib::uart::console::{ExitStatus, UartConsole};
 struct Opts {
     #[structopt(flatten)]
     init: InitializeTest,
-    #[structopt(flatten)]
-    jtag: JtagParams,
+
     #[structopt(flatten)]
     sram_program: SramProgramParams,
+
     #[structopt(
         long, parse(try_from_str=humantime::parse_duration),
         default_value = "600s",
@@ -51,7 +51,7 @@ fn connect_riscv_jtag(opts: &Opts, transport: &TransportWrapper) -> Result<Rc<dy
         .reset_target(opts.init.bootstrap.options.reset_delay, true)
         .context("failed to reset")?;
 
-    let jtag = transport.jtag(&opts.jtag)?;
+    let jtag = opts.init.jtag_params.create(transport)?;
     log::info!("Connecting to RISC-V TAP");
     jtag.connect(JtagTap::RiscvTap)?;
 

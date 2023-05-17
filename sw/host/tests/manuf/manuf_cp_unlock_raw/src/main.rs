@@ -10,7 +10,7 @@ use structopt::StructOpt;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, DifLcCtrlToken, LcCtrlReg};
 use opentitanlib::execute_test;
-use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition;
 
@@ -21,8 +21,6 @@ mod lc_raw_unlock_token;
 struct Opts {
     #[structopt(flatten)]
     init: InitializeTest,
-    #[structopt(flatten)]
-    jtag: JtagParams,
 }
 
 fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
@@ -36,7 +34,7 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         .context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
-    let jtag = transport.jtag(&opts.jtag)?;
+    let jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 

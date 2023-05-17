@@ -16,7 +16,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::dif::otp_ctrl::{DaiParam, Partition};
 use opentitanlib::execute_test;
-use opentitanlib::io::jtag::{Jtag, JtagParams, JtagTap};
+use opentitanlib::io::jtag::{Jtag, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition;
 use opentitanlib::test_utils::otp_ctrl::{OtpParam, OtpPartition};
@@ -25,8 +25,6 @@ use opentitanlib::test_utils::otp_ctrl::{OtpParam, OtpPartition};
 struct Opts {
     #[structopt(flatten)]
     init: InitializeTest,
-    #[structopt(flatten)]
-    jtag: JtagParams,
 }
 
 /// Pre-image of the TEST_UNLOCK token that will be written to OTP.
@@ -164,7 +162,7 @@ fn reset_to_tap(
         .reset_target(opts.init.bootstrap.options.reset_delay, true)
         .context("failed to reset")?;
 
-    let jtag = transport.jtag(&opts.jtag)?;
+    let jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(tap)
         .with_context(|| format!("failed to connect to {tap:?} over JTAG"))?;
 

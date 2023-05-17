@@ -18,7 +18,7 @@ use structopt::StructOpt;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
 use opentitanlib::execute_test;
-use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::{trigger_lc_transition, wait_for_status};
 use opentitanlib::test_utils::rpc::UartRecv;
@@ -38,9 +38,6 @@ struct Opts {
         help = "Console receive timeout",
     )]
     timeout: Duration,
-
-    #[structopt(flatten)]
-    jtag_params: JtagParams,
 
     #[structopt(long, help = "HSM generated ECDH private key DER file.")]
     hsm_ecdh_sk: PathBuf,
@@ -97,7 +94,7 @@ fn provisioning(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     }
 
     // Connect to JTAG LC TAP.
-    let jtag = transport.jtag(&opts.jtag_params)?;
+    let jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)?;
 
     // Check the current LC state is Dev or Prod.

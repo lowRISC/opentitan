@@ -17,6 +17,7 @@ use super::bootstrap::Bootstrap;
 use super::load_bitstream::LoadBitstream;
 use crate::app::TransportWrapper;
 use crate::backend;
+use crate::io::jtag::JtagParams;
 // use opentitanlib::io::uart::UartParams;
 
 #[derive(Debug, StructOpt)]
@@ -43,6 +44,9 @@ pub struct InitializeTest {
 
     #[structopt(flatten)]
     pub bootstrap: Bootstrap,
+
+    #[structopt(flatten)]
+    pub jtag_params: JtagParams,
 }
 
 impl InitializeTest {
