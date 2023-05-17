@@ -3,14 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Context, Result};
-use lazy_static::lazy_static;
 use std::cmp;
-use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::convert::TryInto;
 use std::time::Duration;
 
-use crate::collection;
 use crate::io::gpio::GpioError;
 use crate::io::spi::SpiError;
 use crate::transport::{ProgressIndicator, TransportError, TransportInterfaceType};
@@ -396,26 +393,23 @@ impl Backend {
     }
 
     /// Given a CW310 pin name, return its pin number.
-    pub fn pin_name_to_number(pinname: &str) -> Result<u8> {
+    pub fn pin_name_to_number(pin_name: &str) -> Result<u8> {
         // If the pinname is an integer, use it; otherwise try to see if it
         // is a symbolic name of a pin.
-        if let Ok(pinnum) = u8::from_str(pinname) {
+        if let Ok(pin_num) = u8::from_str(pin_name) {
             ensure!(
-                pinnum <= Backend::LAST_PIN_NUMBER,
-                GpioError::InvalidPinNumber(pinnum)
+                pin_num <= Backend::LAST_PIN_NUMBER,
+                GpioError::InvalidPinNumber(pin_num)
             );
-            return Ok(pinnum);
+            return Ok(pin_num);
         }
-        let pinname = pinname.to_uppercase();
-        let pn = pinname.as_str();
 
-        if SCHEMATIC_PIN_NAMES.contains_key(pn) {
-            Ok(SAM3X_PIN_NAMES[SCHEMATIC_PIN_NAMES[pn]])
-        } else if SAM3X_PIN_NAMES.contains_key(pn) {
-            Ok(SAM3X_PIN_NAMES[pn])
-        } else {
-            Err(GpioError::InvalidPinName(pinname).into())
-        }
+        let pin_name = pin_name.to_uppercase();
+
+        // First try convert from a schematic pin name, then get pin number from name.
+        let pn = pin_name.as_str();
+        let pn = pin_name_from_schematic(pn).unwrap_or(pn);
+        sam3x_pin_from_name(pn).ok_or_else(|| GpioError::InvalidPinName(pin_name).into())
     }
 
     /// Write a byte to the CDCE906 PLL chip.
@@ -608,19 +602,18 @@ impl Backend {
     }
 }
 
-lazy_static! {
-    // Mapping of SAM3 pin names to pin numbers.
-    static ref SAM3X_PIN_NAMES: HashMap<&'static str, u8> = collection! {
-        "PA0" =>  0,
-        "PA1" =>  1,
-        "PA2" =>  2,
-        "PA3" =>  3,
-        "PA4" =>  4,
-        "PA5" =>  5,
-        "PA6" =>  6,
-        "PA7" =>  7,
-        "PA8" =>  8,
-        "PA9" =>  9,
+fn sam3x_pin_from_name(name: &str) -> Option<u8> {
+    let pin = match name {
+        "PA0" => 0,
+        "PA1" => 1,
+        "PA2" => 2,
+        "PA3" => 3,
+        "PA4" => 4,
+        "PA5" => 5,
+        "PA6" => 6,
+        "PA7" => 7,
+        "PA8" => 8,
+        "PA9" => 9,
         "PA10" => 10,
         "PA11" => 11,
         "PA12" => 12,
@@ -641,16 +634,16 @@ lazy_static! {
         "PA27" => 27,
         "PA28" => 28,
         "PA29" => 29,
-        "PB0" =>  32,
-        "PB1" =>  33,
-        "PB2" =>  34,
-        "PB3" =>  35,
-        "PB4" =>  36,
-        "PB5" =>  37,
-        "PB6" =>  38,
-        "PB7" =>  39,
-        "PB8" =>  40,
-        "PB9" =>  41,
+        "PB0" => 32,
+        "PB1" => 33,
+        "PB2" => 34,
+        "PB3" => 35,
+        "PB4" => 36,
+        "PB5" => 37,
+        "PB6" => 38,
+        "PB7" => 39,
+        "PB8" => 40,
+        "PB9" => 41,
         "PB10" => 42,
         "PB11" => 43,
         "PB12" => 44,
@@ -673,16 +666,16 @@ lazy_static! {
         "PB29" => 61,
         "PB30" => 62,
         "PB31" => 63,
-        "PC0" =>  64,
-        "PC1" =>  65,
-        "PC2" =>  66,
-        "PC3" =>  67,
-        "PC4" =>  68,
-        "PC5" =>  69,
-        "PC6" =>  70,
-        "PC7" =>  71,
-        "PC8" =>  72,
-        "PC9" =>  73,
+        "PC0" => 64,
+        "PC1" => 65,
+        "PC2" => 66,
+        "PC3" => 67,
+        "PC4" => 68,
+        "PC5" => 69,
+        "PC6" => 70,
+        "PC7" => 71,
+        "PC8" => 72,
+        "PC9" => 73,
         "PC10" => 74,
         "PC11" => 75,
         "PC12" => 76,
@@ -704,20 +697,25 @@ lazy_static! {
         "PC28" => 92,
         "PC29" => 93,
         "PC30" => 94,
-        "PD0" =>  96,
-        "PD1" =>  97,
-        "PD2" =>  98,
-        "PD3" =>  99,
-        "PD4" =>  100,
-        "PD5" =>  101,
-        "PD6" =>  102,
-        "PD7" =>  103,
-        "PD8" =>  104,
-        "PD9" =>  105,
-        "PD10" => 106
+        "PD0" => 96,
+        "PD1" => 97,
+        "PD2" => 98,
+        "PD3" => 99,
+        "PD4" => 100,
+        "PD5" => 101,
+        "PD6" => 102,
+        "PD7" => 103,
+        "PD8" => 104,
+        "PD9" => 105,
+        "PD10" => 106,
+        _ => return None,
     };
-    // Mapping of schematic pin names to SAM3 pin names.
-    static ref SCHEMATIC_PIN_NAMES: HashMap<&'static str, &'static str> = collection! {
+
+    Some(pin)
+}
+
+fn pin_name_from_schematic(schem: &str) -> Option<&str> {
+    let name = match schem {
         "USBSPARE0" => "PC10",
         "USBSPARE1" => "PC11",
         "USBSPARE2" => "PC12",
@@ -770,6 +768,9 @@ lazy_static! {
         "USB_SPI_CIPO" => "PA25",
         "USB_SPI_COPI" => "PA26",
         "USB_SPI_SCK" => "PA27",
-        "USB_SPI_CS" => "PA28"
+        "USB_SPI_CS" => "PA28",
+        _ => return None,
     };
+
+    Some(name)
 }

@@ -3,13 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Context, Result};
-use lazy_static::lazy_static;
 use safe_ftdi as ftdi;
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::collection;
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use crate::transport::ultradebug::mpsse;
 use crate::transport::ultradebug::Ultradebug;
@@ -58,10 +55,7 @@ impl UltradebugGpio {
         }
         let pinname = pinname.to_uppercase();
         let pn = pinname.as_str();
-        PIN_NAMES
-            .get(pn)
-            .copied()
-            .ok_or_else(|| GpioError::InvalidPinName(pinname).into())
+        pin_from_name(pn).ok_or_else(|| GpioError::InvalidPinName(pinname).into())
     }
 }
 
@@ -105,11 +99,14 @@ impl GpioPin for UltradebugGpioPin {
     }
 }
 
-lazy_static! {
-    static ref PIN_NAMES: HashMap<&'static str, u8> = collection! {
+fn pin_from_name(name: &str) -> Option<u8> {
+    let pin = match name {
         "SPI_ZB" => 4,
         "RESET_B" => 5,
         "BOOTSTRAP" => 6,
         "TGT_RESET" => 7,
+        _ => return None,
     };
+
+    Some(pin)
 }

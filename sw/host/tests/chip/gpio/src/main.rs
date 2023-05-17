@@ -2,20 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
-use lazy_static::lazy_static;
 use std::collections::HashMap;
 use std::time::Duration;
+
+use anyhow::Result;
 use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::execute_test;
 use opentitanlib::io::gpio::PinMode;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::gpio::{GpioGet, GpioSet};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::pinmux_config::PinmuxConfig;
 use opentitanlib::uart::console::UartConsole;
-use opentitanlib::{collection, execute_test};
 
 use opentitanlib::chip::autogen::earlgrey::{
     PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn,
@@ -39,119 +39,128 @@ struct Config {
     output: HashMap<PinmuxMioOut, PinmuxOutsel>,
 }
 
-lazy_static! {
-static ref CONFIG: HashMap<&'static str, Config> = collection! {
-    "verilator" => Config {
-        input: collection! {
-            PinmuxPeripheralIn::GpioGpio0 => PinmuxInsel::Iob6,
-            PinmuxPeripheralIn::GpioGpio1 => PinmuxInsel::Iob7,
-            PinmuxPeripheralIn::GpioGpio2 => PinmuxInsel::Iob8,
-            PinmuxPeripheralIn::GpioGpio3 => PinmuxInsel::Iob9,
-            PinmuxPeripheralIn::GpioGpio4 => PinmuxInsel::Iob10,
-            PinmuxPeripheralIn::GpioGpio5 => PinmuxInsel::Iob11,
-            PinmuxPeripheralIn::GpioGpio6 => PinmuxInsel::Iob12,
-            PinmuxPeripheralIn::GpioGpio7 => PinmuxInsel::Ior5,
-            PinmuxPeripheralIn::GpioGpio8 => PinmuxInsel::Ior6,
-            PinmuxPeripheralIn::GpioGpio9 => PinmuxInsel::Ior7,
+impl Config {
+    fn from_name(name: &str) -> Option<Self> {
+        let config = match name {
+            "verilator" => Self::verilator(),
+            "hyper310" => Self::hyper310(),
+            _ => return None,
+        };
+
+        Some(config)
+    }
+
+    fn verilator() -> Config {
+        let input = HashMap::from([
+            (PinmuxPeripheralIn::GpioGpio0, PinmuxInsel::Iob6),
+            (PinmuxPeripheralIn::GpioGpio1, PinmuxInsel::Iob7),
+            (PinmuxPeripheralIn::GpioGpio2, PinmuxInsel::Iob8),
+            (PinmuxPeripheralIn::GpioGpio3, PinmuxInsel::Iob9),
+            (PinmuxPeripheralIn::GpioGpio4, PinmuxInsel::Iob10),
+            (PinmuxPeripheralIn::GpioGpio5, PinmuxInsel::Iob11),
+            (PinmuxPeripheralIn::GpioGpio6, PinmuxInsel::Iob12),
+            (PinmuxPeripheralIn::GpioGpio7, PinmuxInsel::Ior5),
+            (PinmuxPeripheralIn::GpioGpio8, PinmuxInsel::Ior6),
+            (PinmuxPeripheralIn::GpioGpio9, PinmuxInsel::Ior7),
             // IOR8-9 aren't MIOs.
-            PinmuxPeripheralIn::GpioGpio10 => PinmuxInsel::Ior10,
-            PinmuxPeripheralIn::GpioGpio11 => PinmuxInsel::Ior11,
-            PinmuxPeripheralIn::GpioGpio12 => PinmuxInsel::Ior12,
-            PinmuxPeripheralIn::GpioGpio13 => PinmuxInsel::Ior13,
-        },
-        output: collection! {
-            PinmuxMioOut::Iob6 => PinmuxOutsel::GpioGpio0,
-            PinmuxMioOut::Iob7 => PinmuxOutsel::GpioGpio1,
-            PinmuxMioOut::Iob8 => PinmuxOutsel::GpioGpio2,
-            PinmuxMioOut::Iob9 => PinmuxOutsel::GpioGpio3,
-            PinmuxMioOut::Iob10 => PinmuxOutsel::GpioGpio4,
-            PinmuxMioOut::Iob11 => PinmuxOutsel::GpioGpio5,
-            PinmuxMioOut::Iob12 => PinmuxOutsel::GpioGpio6,
-            PinmuxMioOut::Ior5 => PinmuxOutsel::GpioGpio7,
-            PinmuxMioOut::Ior6 => PinmuxOutsel::GpioGpio8,
-            PinmuxMioOut::Ior7 => PinmuxOutsel::GpioGpio9,
+            (PinmuxPeripheralIn::GpioGpio10, PinmuxInsel::Ior10),
+            (PinmuxPeripheralIn::GpioGpio11, PinmuxInsel::Ior11),
+            (PinmuxPeripheralIn::GpioGpio12, PinmuxInsel::Ior12),
+            (PinmuxPeripheralIn::GpioGpio13, PinmuxInsel::Ior13),
+        ]);
+        let output = HashMap::from([
+            (PinmuxMioOut::Iob6, PinmuxOutsel::GpioGpio0),
+            (PinmuxMioOut::Iob7, PinmuxOutsel::GpioGpio1),
+            (PinmuxMioOut::Iob8, PinmuxOutsel::GpioGpio2),
+            (PinmuxMioOut::Iob9, PinmuxOutsel::GpioGpio3),
+            (PinmuxMioOut::Iob10, PinmuxOutsel::GpioGpio4),
+            (PinmuxMioOut::Iob11, PinmuxOutsel::GpioGpio5),
+            (PinmuxMioOut::Iob12, PinmuxOutsel::GpioGpio6),
+            (PinmuxMioOut::Ior5, PinmuxOutsel::GpioGpio7),
+            (PinmuxMioOut::Ior6, PinmuxOutsel::GpioGpio8),
+            (PinmuxMioOut::Ior7, PinmuxOutsel::GpioGpio9),
             // IOR8-9 aren't MIOs.
-            PinmuxMioOut::Ior10 => PinmuxOutsel::GpioGpio10,
-            PinmuxMioOut::Ior11 => PinmuxOutsel::GpioGpio11,
-            PinmuxMioOut::Ior12 => PinmuxOutsel::GpioGpio12,
-            PinmuxMioOut::Ior13 => PinmuxOutsel::GpioGpio13,
-        },
-    },
-    "hyper310" => Config {
-        input: collection! {
+            (PinmuxMioOut::Ior10, PinmuxOutsel::GpioGpio10),
+            (PinmuxMioOut::Ior11, PinmuxOutsel::GpioGpio11),
+            (PinmuxMioOut::Ior12, PinmuxOutsel::GpioGpio12),
+            (PinmuxMioOut::Ior13, PinmuxOutsel::GpioGpio13),
+        ]);
+
+        Config { input, output }
+    }
+
+    fn hyper310() -> Self {
+        let input = HashMap::from([
             // The commented lines represent multi-fuction pins.  These will
             // be added back in when the hyperdebug firmware can set these
             // multifunction pins into GPIO mode.
 
-            //PinmuxPeripheralIn::GpioGpio0 => PinmuxInsel::Ioa0,   // UART4
-            //PinmuxPeripheralIn::GpioGpio1 => PinmuxInsel::Ioa1,   // UART4
-            PinmuxPeripheralIn::GpioGpio2 => PinmuxInsel::Ioa2,
-            PinmuxPeripheralIn::GpioGpio3 => PinmuxInsel::Ioa3,
-            //PinmuxPeripheralIn::GpioGpio4 => PinmuxInsel::Ioa4,   // UART5
-            //PinmuxPeripheralIn::GpioGpio5 => PinmuxInsel::Ioa5,   // UART5
-            PinmuxPeripheralIn::GpioGpio6 => PinmuxInsel::Ioa6,
-            //PinmuxPeripheralIn::GpioGpio7 => PinmuxInsel::Ioa7,   // I2C1
-            //PinmuxPeripheralIn::GpioGpio8 => PinmuxInsel::Ioa8,   // I2C1
-            //PinmuxPeripheralIn::GpioGpio9 => PinmuxInsel::Iob4,   // UART3
-            //PinmuxPeripheralIn::GpioGpio10 => PinmuxInsel::Iob5,  // UART3
-            PinmuxPeripheralIn::GpioGpio11 => PinmuxInsel::Iob6,
-
-            PinmuxPeripheralIn::GpioGpio12 => PinmuxInsel::Ioc0,
-            PinmuxPeripheralIn::GpioGpio13 => PinmuxInsel::Ioc1,
-            PinmuxPeripheralIn::GpioGpio14 => PinmuxInsel::Ioc2,
-
-            PinmuxPeripheralIn::GpioGpio15 => PinmuxInsel::Ioc5,
-            PinmuxPeripheralIn::GpioGpio16 => PinmuxInsel::Ioc6,
-            PinmuxPeripheralIn::GpioGpio17 => PinmuxInsel::Ioc10,
-            PinmuxPeripheralIn::GpioGpio18 => PinmuxInsel::Ioc11,
-            PinmuxPeripheralIn::GpioGpio19 => PinmuxInsel::Ioc12,
-
-            PinmuxPeripheralIn::GpioGpio20 => PinmuxInsel::Ior5,
-            PinmuxPeripheralIn::GpioGpio21 => PinmuxInsel::Ior6,
-            PinmuxPeripheralIn::GpioGpio22 => PinmuxInsel::Ior7,
+            //(PinmuxPeripheralIn::GpioGpio0, PinmuxInsel::Ioa0),   // UART4
+            //(PinmuxPeripheralIn::GpioGpio1, PinmuxInsel::Ioa1),   // UART4
+            (PinmuxPeripheralIn::GpioGpio2, PinmuxInsel::Ioa2),
+            (PinmuxPeripheralIn::GpioGpio3, PinmuxInsel::Ioa3),
+            //(PinmuxPeripheralIn::GpioGpio4, PinmuxInsel::Ioa4),   // UART5
+            //(PinmuxPeripheralIn::GpioGpio5, PinmuxInsel::Ioa5),   // UART5
+            (PinmuxPeripheralIn::GpioGpio6, PinmuxInsel::Ioa6),
+            //(PinmuxPeripheralIn::GpioGpio7, PinmuxInsel::Ioa7),   // I2C1
+            //(PinmuxPeripheralIn::GpioGpio8, PinmuxInsel::Ioa8),   // I2C1
+            //(PinmuxPeripheralIn::GpioGpio9, PinmuxInsel::Iob4),   // UART3
+            //(PinmuxPeripheralIn::GpioGpio10, PinmuxInsel::Iob5),  // UART3
+            (PinmuxPeripheralIn::GpioGpio11, PinmuxInsel::Iob6),
+            (PinmuxPeripheralIn::GpioGpio12, PinmuxInsel::Ioc0),
+            (PinmuxPeripheralIn::GpioGpio13, PinmuxInsel::Ioc1),
+            (PinmuxPeripheralIn::GpioGpio14, PinmuxInsel::Ioc2),
+            (PinmuxPeripheralIn::GpioGpio15, PinmuxInsel::Ioc5),
+            (PinmuxPeripheralIn::GpioGpio16, PinmuxInsel::Ioc6),
+            (PinmuxPeripheralIn::GpioGpio17, PinmuxInsel::Ioc10),
+            (PinmuxPeripheralIn::GpioGpio18, PinmuxInsel::Ioc11),
+            (PinmuxPeripheralIn::GpioGpio19, PinmuxInsel::Ioc12),
+            (PinmuxPeripheralIn::GpioGpio20, PinmuxInsel::Ior5),
+            (PinmuxPeripheralIn::GpioGpio21, PinmuxInsel::Ior6),
+            (PinmuxPeripheralIn::GpioGpio22, PinmuxInsel::Ior7),
             // IOR8-9 aren't MIOs.
-            PinmuxPeripheralIn::GpioGpio25 => PinmuxInsel::Ior10,
-            PinmuxPeripheralIn::GpioGpio26 => PinmuxInsel::Ior11,
-            PinmuxPeripheralIn::GpioGpio27 => PinmuxInsel::Ior12,
-            PinmuxPeripheralIn::GpioGpio28 => PinmuxInsel::Ior13,
-
-        },
-        output: collection! {
+            (PinmuxPeripheralIn::GpioGpio25, PinmuxInsel::Ior10),
+            (PinmuxPeripheralIn::GpioGpio26, PinmuxInsel::Ior11),
+            (PinmuxPeripheralIn::GpioGpio27, PinmuxInsel::Ior12),
+            (PinmuxPeripheralIn::GpioGpio28, PinmuxInsel::Ior13),
+        ]);
+        let output = HashMap::from([
             // The commented lines represent multi-fuction pins.  These will
             // be added back in when the hyperdebug firmware can set these
             // multifunction pins into GPIO mode.
 
-            //PinmuxMioOut::Ioa0 => PinmuxOutsel::GpioGpio0,   // UART4
-            //PinmuxMioOut::Ioa1 => PinmuxOutsel::GpioGpio1,   // UART4
-            PinmuxMioOut::Ioa2 => PinmuxOutsel::GpioGpio2,
-            PinmuxMioOut::Ioa3 => PinmuxOutsel::GpioGpio3,
-            //PinmuxMioOut::Ioa4 => PinmuxOutsel::GpioGpio4,   // UART5
-            //PinmuxMioOut::Ioa5 => PinmuxOutsel::GpioGpio5,   // UART5
-            PinmuxMioOut::Ioa6 => PinmuxOutsel::GpioGpio6,
-            //PinmuxMioOut::Ioa7 => PinmuxOutsel::GpioGpio7,   // I2C1
-            //PinmuxMioOut::Ioa8 => PinmuxOutsel::GpioGpio8,   // I2C1
-            //PinmuxMioOut::Iob4 => PinmuxOutsel::GpioGpio9,   // UART3
-            //PinmuxMioOut::Iob5 => PinmuxOutsel::GpioGpio10,  // UART3
-            PinmuxMioOut::Iob6 => PinmuxOutsel::GpioGpio11,
-            PinmuxMioOut::Ioc0 => PinmuxOutsel::GpioGpio12,
-            PinmuxMioOut::Ioc1 => PinmuxOutsel::GpioGpio13,
-            PinmuxMioOut::Ioc2 => PinmuxOutsel::GpioGpio14,
-            PinmuxMioOut::Ioc5 => PinmuxOutsel::GpioGpio15,
-            PinmuxMioOut::Ioc6 => PinmuxOutsel::GpioGpio16,
-            PinmuxMioOut::Ioc10 => PinmuxOutsel::GpioGpio17,
-            PinmuxMioOut::Ioc11 => PinmuxOutsel::GpioGpio18,
-            PinmuxMioOut::Ioc12 => PinmuxOutsel::GpioGpio19,
-            PinmuxMioOut::Ior5 => PinmuxOutsel::GpioGpio20,
-            PinmuxMioOut::Ior6 => PinmuxOutsel::GpioGpio21,
-            PinmuxMioOut::Ior7 => PinmuxOutsel::GpioGpio22,
+            //(PinmuxMioOut::Ioa0, PinmuxOutsel::GpioGpio0),   // UART4
+            //(PinmuxMioOut::Ioa1, PinmuxOutsel::GpioGpio1),   // UART4
+            (PinmuxMioOut::Ioa2, PinmuxOutsel::GpioGpio2),
+            (PinmuxMioOut::Ioa3, PinmuxOutsel::GpioGpio3),
+            //(PinmuxMioOut::Ioa4, PinmuxOutsel::GpioGpio4),   // UART5
+            //(PinmuxMioOut::Ioa5, PinmuxOutsel::GpioGpio5),   // UART5
+            (PinmuxMioOut::Ioa6, PinmuxOutsel::GpioGpio6),
+            //(PinmuxMioOut::Ioa7, PinmuxOutsel::GpioGpio7),   // I2C1
+            //(PinmuxMioOut::Ioa8, PinmuxOutsel::GpioGpio8),   // I2C1
+            //(PinmuxMioOut::Iob4, PinmuxOutsel::GpioGpio9),   // UART3
+            //(PinmuxMioOut::Iob5, PinmuxOutsel::GpioGpio10),  // UART3
+            (PinmuxMioOut::Iob6, PinmuxOutsel::GpioGpio11),
+            (PinmuxMioOut::Ioc0, PinmuxOutsel::GpioGpio12),
+            (PinmuxMioOut::Ioc1, PinmuxOutsel::GpioGpio13),
+            (PinmuxMioOut::Ioc2, PinmuxOutsel::GpioGpio14),
+            (PinmuxMioOut::Ioc5, PinmuxOutsel::GpioGpio15),
+            (PinmuxMioOut::Ioc6, PinmuxOutsel::GpioGpio16),
+            (PinmuxMioOut::Ioc10, PinmuxOutsel::GpioGpio17),
+            (PinmuxMioOut::Ioc11, PinmuxOutsel::GpioGpio18),
+            (PinmuxMioOut::Ioc12, PinmuxOutsel::GpioGpio19),
+            (PinmuxMioOut::Ior5, PinmuxOutsel::GpioGpio20),
+            (PinmuxMioOut::Ior6, PinmuxOutsel::GpioGpio21),
+            (PinmuxMioOut::Ior7, PinmuxOutsel::GpioGpio22),
             // IOR8-9 aren't MIOs.
-            PinmuxMioOut::Ior10 => PinmuxOutsel::GpioGpio25,
-            PinmuxMioOut::Ior11 => PinmuxOutsel::GpioGpio26,
-            PinmuxMioOut::Ior12 => PinmuxOutsel::GpioGpio27,
-            PinmuxMioOut::Ior13 => PinmuxOutsel::GpioGpio28,
-        },
-    },
-};
+            (PinmuxMioOut::Ior10, PinmuxOutsel::GpioGpio25),
+            (PinmuxMioOut::Ior11, PinmuxOutsel::GpioGpio26),
+            (PinmuxMioOut::Ior12, PinmuxOutsel::GpioGpio27),
+            (PinmuxMioOut::Ior13, PinmuxOutsel::GpioGpio28),
+        ]);
+
+        Config { input, output }
+    }
 }
 
 fn write_all_verify(
@@ -232,9 +241,7 @@ fn test_gpio_outputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         "Configuring pinmux for {:?}",
         opts.init.backend_opts.interface
     );
-    let config = CONFIG
-        .get(opts.init.backend_opts.interface.as_str())
-        .expect("interface");
+    let config = Config::from_name(opts.init.backend_opts.interface.as_str()).expect("interface");
     PinmuxConfig::configure(&*uart, None, Some(&config.output))?;
 
     log::info!("Configuring debugger GPIOs as inputs");
@@ -262,9 +269,7 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         "Configuring pinmux for {:?}",
         opts.init.backend_opts.interface
     );
-    let config = CONFIG
-        .get(opts.init.backend_opts.interface.as_str())
-        .expect("interface");
+    let config = Config::from_name(opts.init.backend_opts.interface.as_str()).expect("interface");
     PinmuxConfig::configure(&*uart, Some(&config.input), None)?;
 
     log::info!("Configuring debugger GPIOs as outputs");

@@ -3,12 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Result};
-use lazy_static::lazy_static;
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::collection;
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use crate::transport::dediprog::Inner;
 use crate::util::parse_int::ParseInt;
@@ -41,10 +38,7 @@ impl DediprogPin {
         }
         let pinname = pinname.to_uppercase();
         let pn = pinname.as_str();
-        PIN_NAMES
-            .get(pn)
-            .copied()
-            .ok_or_else(|| GpioError::InvalidPinName(pinname).into())
+        pin_from_name(pn).ok_or_else(|| GpioError::InvalidPinName(pinname).into())
     }
 }
 
@@ -78,8 +72,8 @@ impl GpioPin for DediprogPin {
     }
 }
 
-lazy_static! {
-    static ref PIN_NAMES: HashMap<&'static str, u8> = collection! {
+fn pin_from_name(name: &str) -> Option<u8> {
+    let pin = match name {
         "IO2" => 0,
         "IO1" => 1,
         "IO3" => 2,
@@ -87,5 +81,8 @@ lazy_static! {
         "PASS_LED" => 8,
         "BUSY_LED" => 9,
         "ERROR_LED" => 10,
+        _ => return None,
     };
+
+    Some(pin)
 }

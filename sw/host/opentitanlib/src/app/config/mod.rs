@@ -3,15 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use lazy_static::lazy_static;
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 use crate::app::TransportWrapperBuilder;
-use crate::collection;
 
 mod structs;
 pub use structs::*;
@@ -39,9 +36,7 @@ pub fn process_config_file(env: &mut TransportWrapperBuilder, conf_file: &Path) 
         let s = conf_file
             .to_str()
             .ok_or_else(|| Error::ConfigNotFound(conf_file.to_path_buf()))?;
-        BUILTINS
-            .get(s)
-            .ok_or_else(|| Error::ConfigNotFound(conf_file.to_path_buf()))?
+        builtin(s).ok_or_else(|| Error::ConfigNotFound(conf_file.to_path_buf()))?
     } else {
         read_into_string(conf_file, &mut string)
             .map_err(|e| Error::ConfigReadError(conf_file.to_path_buf(), e))?
@@ -57,16 +52,21 @@ pub fn process_config_file(env: &mut TransportWrapperBuilder, conf_file: &Path) 
     env.add_configuration_file(res)
 }
 
-lazy_static! {
-    static ref BUILTINS: HashMap<&'static str, &'static str> = collection! {
+fn builtin(filename: &str) -> Option<&str> {
+    let file = match filename {
         "/__builtin__/dediprog.json" => include_str!("dediprog.json"),
         "/__builtin__/h1dx_devboard.json" => include_str!("h1dx_devboard.json"),
-        "/__builtin__/h1dx_devboard_ultradebug.json" => include_str!("h1dx_devboard_ultradebug.json"),
+        "/__builtin__/h1dx_devboard_ultradebug.json" => {
+            include_str!("h1dx_devboard_ultradebug.json")
+        }
         "/__builtin__/ti50emulator.json" => include_str!("ti50emulator.json"),
         "/__builtin__/opentitan_cw310.json" => include_str!("opentitan_cw310.json"),
         "/__builtin__/opentitan.json" => include_str!("opentitan.json"),
         "/__builtin__/hyperdebug_cw310.json" => include_str!("hyperdebug_cw310.json"),
         "/__builtin__/opentitan_ultradebug.json" => include_str!("opentitan_ultradebug.json"),
         "/__builtin__/opentitan_verilator.json" => include_str!("opentitan_verilator.json"),
+        _ => return None,
     };
+
+    Some(file)
 }
