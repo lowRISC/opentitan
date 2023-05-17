@@ -763,3 +763,15 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "pwrmgr",
+    srcs = ["pwrmgr.c"],
+    hdrs = ["pwrmgr.h"],
+    deps = [
+        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
