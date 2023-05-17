@@ -201,6 +201,36 @@ set JTAG_TCK_PERIOD [expr $JTAG_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 create_clock -name JTAG_TCK -period $JTAG_TCK_PERIOD [get_ports $JTAG_CLK_PIN]
 #set_ideal_network [get_ports $JTAG_CLK_PIN]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks JTAG_TCK]
+set_propagated_clock JTAG_TCK
+
+create_generated_clock -name lc_jtag_tck -source [get_ports IOR3] -divide_by 1 \
+    [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/clk_o]
+create_generated_clock -name rv_jtag_tck -source [get_ports IOR3] -divide_by 1 \
+    [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/clk_o]
+
+set lc_jtag_tck_inv_pin \
+  [get_pins -filter {@pin_direction == out} -of_objects \
+    [get_nets -segments -of_objects \
+      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/clk_i] \
+    ] \
+  ]
+
+set rv_jtag_tck_inv_pin \
+  [get_pins -filter {@pin_direction == out} -of_objects \
+    [get_nets -segments -of_objects \
+      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/clk_i] \
+    ] \
+  ]
+
+set_clock_sense -negative ${lc_jtag_tck_inv_pin}
+set_clock_sense -negative ${rv_jtag_tck_inv_pin}
+
+set_output_delay -add_delay             -clock JTAG_TCK -max  7.0 [get_ports IOR1]
+set_output_delay -add_delay             -clock JTAG_TCK -min -5.0 [get_ports IOR1]
+set_input_delay  -add_delay -clock_fall -clock JTAG_TCK -min  0.0 [get_ports {IOR0 IOR2}]
+set_input_delay  -add_delay -clock_fall -clock JTAG_TCK -max  8.0 [get_ports {IOR0 IOR2}]
+
+
 #####################
 # AST clock        #
 #####################
