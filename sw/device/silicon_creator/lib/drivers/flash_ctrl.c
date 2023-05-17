@@ -125,10 +125,13 @@ static void transaction_start(transaction_params_t params) {
  * @param[out] data Output buffer.
  */
 static void fifo_read(size_t word_count, void *data) {
-  for (size_t i = 0; i < word_count; ++i) {
+  size_t i = 0, r = word_count - 1;
+  for (; launder32(i) < word_count && launder32(r) < word_count; ++i, --r) {
     write_32(abs_mmio_read32(kBase + FLASH_CTRL_RD_FIFO_REG_OFFSET), data);
     data = (char *)data + sizeof(uint32_t);
   }
+  HARDENED_CHECK_EQ(i, word_count);
+  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
 }
 
 /**
@@ -140,10 +143,13 @@ static void fifo_read(size_t word_count, void *data) {
  * @param data Input buffer.
  */
 static void fifo_write(size_t word_count, const void *data) {
-  for (size_t i = 0; i < word_count; ++i) {
+  size_t i = 0, r = word_count - 1;
+  for (; launder32(i) < word_count && launder32(r) < word_count; ++i, --r) {
     abs_mmio_write32(kBase + FLASH_CTRL_PROG_FIFO_REG_OFFSET, read_32(data));
     data = (const char *)data + sizeof(uint32_t);
   }
+  HARDENED_CHECK_EQ(i, word_count);
+  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
 }
 
 /**
@@ -449,14 +455,16 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
   // Truncate to the closest lower bank/page aligned address.
   addr &= ~byte_count + 1;
   uint32_t mask = kFlashCtrlErasedWord;
-  size_t i = 0;
-  for (; launder32(i) < byte_count; i += sizeof(uint32_t)) {
+  size_t i = 0, r = byte_count - 1;
+  for (; launder32(i) < byte_count && launder32(r) < byte_count;
+       i += sizeof(uint32_t), r -= sizeof(uint32_t)) {
     uint32_t word =
         abs_mmio_read32(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + addr + i);
     mask &= word;
     error &= word;
   }
   HARDENED_CHECK_EQ(i, byte_count);
+  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
 
   if (launder32(mask) == kFlashCtrlErasedWord) {
     HARDENED_CHECK_EQ(mask, kFlashCtrlErasedWord);
@@ -583,10 +591,19 @@ static const flash_ctrl_info_page_t kInfoPagesNoOwnerAccess[] = {
     kFlashCtrlInfoPageOwnerSlot1,
 };
 
+enum {
+  kInfoPagesNoOwnerAccessCount = ARRAYSIZE(kInfoPagesNoOwnerAccess),
+};
+
 void flash_ctrl_creator_info_pages_lockdown(void) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown,
-                                  2 * ARRAYSIZE(kInfoPagesNoOwnerAccess));
-  for (size_t i = 0; i < ARRAYSIZE(kInfoPagesNoOwnerAccess); ++i) {
+                                  2 * kInfoPagesNoOwnerAccessCount);
+  size_t i = 0, r = kInfoPagesNoOwnerAccessCount - 1;
+  for (; launder32(i) < kInfoPagesNoOwnerAccessCount &&
+         launder32(r) < kInfoPagesNoOwnerAccessCount;
+       ++i, --r) {
     page_lockdown(kInfoPagesNoOwnerAccess[i]);
   }
+  HARDENED_CHECK_EQ(i, kInfoPagesNoOwnerAccessCount);
+  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
 }
