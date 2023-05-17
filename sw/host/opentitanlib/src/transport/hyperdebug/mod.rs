@@ -13,7 +13,6 @@ use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::fs;
-use std::io::ErrorKind;
 use std::io::Read;
 use std::io::Write;
 use std::marker::PhantomData;
@@ -390,31 +389,11 @@ impl Inner {
             .ok_or(TransportError::UnicodePathError)?;
         let _lock = SerialPortExclusiveLock::lock(port_name)?;
         let mut port = TTYPort::open(
-            &serialport::new(port_name, 115_200).timeout(std::time::Duration::from_millis(10)),
+            &serialport::new(port_name, 115_200).timeout(std::time::Duration::from_millis(100)),
         )
-        .expect("Failed to open port");
+        .context("Failed to open HyperDebug console")?;
         flock_serial(&port, port_name)?;
 
-        // Ideally, we would invoke Linux flock() on the serial
-        // device, to detect minicom or another instance of
-        // opentitantool having the same serial port open.  Incoming
-        // serial data could go silenly missing, in such cases.
-        let mut buf = [0u8; 128];
-        loop {
-            match port.read(&mut buf) {
-                Ok(rc) => {
-                    log::info!(
-                        "Discarded {} characters: {:?}",
-                        rc,
-                        &std::str::from_utf8(&buf[0..rc])
-                    );
-                }
-                Err(error) if error.kind() == ErrorKind::TimedOut => {
-                    break;
-                }
-                Err(error) => return Err(error).context("communication error"),
-            }
-        }
         // Send Ctrl-C, followed by the command, then newline.  This will discard any previous
         // partial input, before executing our command.
         port.write(format!("\x03{}\n", cmd).as_bytes())
@@ -424,14 +403,13 @@ impl Inner {
         // we just "typed". Then zero, one or more lines of useful output, which we want to pass
         // to the callback, and then a prompt characters, indicating that the output is
         // complete.
+        let mut buf = [0u8; 128];
         let mut seen_echo = false;
         let mut len: usize = 0;
-        let mut repeated_timeouts: u8 = 0;
         loop {
             // Read more data, appending to existing buffer.
-            match port.read(&mut buf[len..128]) {
+            match port.read(&mut buf[len..]) {
                 Ok(rc) => {
-                    repeated_timeouts = 0;
                     len += rc;
                     // See if we have one or more lines terminated with endline, if so, process
                     // those and remove from the buffer by shifting the remaning data to the
@@ -448,10 +426,17 @@ impl Inner {
                                 .context("communication error")?;
                             if seen_echo {
                                 callback(line);
+                            } else if line.len() >= 2 && line[line.len() - 2..] == *"^C" {
+                                // Expected output from our sending of control character.
                             } else if line.len() >= cmd.len()
                                 && line[line.len() - cmd.len()..] == *cmd
                             {
+                                // A line ending with the command we sent, assume this is echo,
+                                // and that the actual command output will now follow.
                                 seen_echo = true;
+                            } else if !line.is_empty() {
+                                // Unexpected output before or instead of the echo of our command.
+                                log::info!("Unexpected output: {:?}", line)
                             }
                             line_start = i + 1;
                         }
@@ -461,23 +446,11 @@ impl Inner {
                         buf.rotate_left(line_start);
                         len -= line_start;
                     }
-                }
-                Err(error) if error.kind() == ErrorKind::TimedOut => {
-                    if std::str::from_utf8(&buf[0..len]).context("communication error")? == "> " {
-                        // No data arrived for a while, and the last we got was a command
-                        // prompt, this is what we expect when the command has finished
+                    if seen_echo && buf[0..len] == [b'>', b' '] {
+                        // We have seen echo of the command we sent, and now the last we got was a
+                        // command prompt, this is what we expect when the command has finished
                         // successfully.
                         return Ok(());
-                    } else {
-                        // No data arrived for a while, but the last was no a command prompt,
-                        // this could be the command taking a little time to produce its output,
-                        // wait a longer while for additional data.  (Implemented by repeated
-                        // calls, alternatively could have been done by fiddling with timeout
-                        // setting of the underlying serial port object.)
-                        repeated_timeouts += 1;
-                        if repeated_timeouts == 10 {
-                            return Err(error).context("communication error");
-                        }
                     }
                 }
                 Err(error) => return Err(error).context("communication error"),
