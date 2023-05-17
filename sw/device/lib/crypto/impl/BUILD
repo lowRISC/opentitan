@@ -127,7 +127,7 @@ cc_library(
         "status.h",
     ],
     deps = [
-        "//sw/device/lib/base:hardened_status",
+        "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )

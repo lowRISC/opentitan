@@ -142,27 +142,6 @@ cc_test(
 )
 
 cc_library(
-    name = "hardened_status",
-    srcs = ["hardened_status.c"],
-    hdrs = ["hardened_status.h"],
-    deps = [
-        ":bitfield",
-        ":hardened",
-        ":macros",
-        ":status",
-    ],
-)
-
-cc_test(
-    name = "hardened_status_unittest",
-    srcs = ["hardened_status_unittest.cc"],
-    deps = [
-        ":hardened_status",
-        "@googletest//:gtest_main",
-    ],
-)
-
-cc_library(
     name = "random_order",
     srcs = ["random_order.c"],
     hdrs = ["random_order.h"],

@@ -5,8 +5,8 @@
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_AES_H_
 
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/base/hardened_status.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/status.h"
 
 #ifdef __cplusplus
 extern "C" {

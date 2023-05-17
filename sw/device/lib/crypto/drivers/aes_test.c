@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/crypto/drivers/aes.h"
 
-#include "sw/device/lib/base/hardened_status.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/runtime/log.h"

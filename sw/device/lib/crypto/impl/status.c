@@ -4,18 +4,15 @@
 
 #include "sw/device/lib/crypto/impl/status.h"
 
-#include "sw/device/lib/base/hardened_status.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
 crypto_status_t crypto_status_interpret(status_t status) {
   // First, check for a hardened-ok status.
-  hardened_bool_t is_ok = hardened_status_ok(status);
-  if (launder32(is_ok) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(is_ok, kHardenedBoolTrue);
+  if (launder32(status.value) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(status.value, kHardenedBoolTrue);
     return launder32((crypto_status_t)status.value);
   }
-  HARDENED_CHECK_NE(is_ok, kHardenedBoolTrue);
 
   switch (status_err(status)) {
     case kOk:

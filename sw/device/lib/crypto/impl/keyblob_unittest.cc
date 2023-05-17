@@ -8,13 +8,14 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/hardened_status.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
 namespace keyblob_unittest {
 namespace {
 using ::testing::ElementsAreArray;
+
+#define EXPECT_OK(status_) EXPECT_EQ(status_.value, OTCRYPTO_OK.value)
 
 // Key configuration for testing (128-bit AES-CTR software key).
 constexpr crypto_key_config_t kConfigCtr128 = {
@@ -134,8 +135,7 @@ TEST(Keyblob, FromToSharesNoop) {
   // Retrieve pointers to each share.
   uint32_t *share0;
   uint32_t *share1;
-  EXPECT_EQ(hardened_status_ok(keyblob_to_shares(&key, &share0, &share1)),
-            kHardenedBoolTrue);
+  EXPECT_OK(keyblob_to_shares(&key, &share0, &share1));
 
   // Check share values match original data.
   for (size_t i = 0; i < test_share0.size(); i++) {
@@ -159,9 +159,8 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
   // Convert key/mask to keyblob array.
   size_t keyblob_words = keyblob_num_words(kConfigCtr128);
   uint32_t keyblob[keyblob_words] = {0};
-  EXPECT_EQ(hardened_status_ok(keyblob_from_key_and_mask(
-                test_key.data(), test_mask.data(), kConfigCtr128, keyblob)),
-            kHardenedBoolTrue);
+  EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask.data(),
+                                      kConfigCtr128, keyblob));
 
   // Construct blinded key.
   crypto_blinded_key_t key = {
@@ -174,8 +173,7 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
   // Retrieve pointers to each share.
   uint32_t *share0;
   uint32_t *share1;
-  EXPECT_EQ(hardened_status_ok(keyblob_to_shares(&key, &share0, &share1)),
-            kHardenedBoolTrue);
+  EXPECT_OK(keyblob_to_shares(&key, &share0, &share1));
 
   // Unmask the key and check that it matches the original.
   for (size_t i = 0; i < test_key.size(); i++) {
@@ -202,9 +200,8 @@ TEST(Keyblob, RemaskDoesNotChangKey) {
   // Convert key and first mask to keyblob array.
   size_t keyblob_words = keyblob_num_words(kConfigCtr128);
   uint32_t keyblob[keyblob_words] = {0};
-  EXPECT_EQ(hardened_status_ok(keyblob_from_key_and_mask(
-                test_key.data(), test_mask0.data(), kConfigCtr128, keyblob)),
-            kHardenedBoolTrue);
+  EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask0.data(),
+                                      kConfigCtr128, keyblob));
 
   // Construct blinded key.
   crypto_blinded_key_t key = {
@@ -215,14 +212,12 @@ TEST(Keyblob, RemaskDoesNotChangKey) {
   };
 
   // Remask the key using the second mask.
-  EXPECT_EQ(hardened_status_ok(keyblob_remask(&key, test_mask1.data())),
-            kHardenedBoolTrue);
+  EXPECT_OK(keyblob_remask(&key, test_mask1.data()));
 
   // Retrieve pointers to each share.
   uint32_t *share0;
   uint32_t *share1;
-  EXPECT_EQ(hardened_status_ok(keyblob_to_shares(&key, &share0, &share1)),
-            kHardenedBoolTrue);
+  EXPECT_OK(keyblob_to_shares(&key, &share0, &share1));
 
   // Unmask the key and check that it matches the original.
   for (size_t i = 0; i < test_key.size(); i++) {
@@ -249,9 +244,8 @@ TEST(Keyblob, RemaskWithZero) {
   // Convert key and first mask to keyblob array.
   size_t keyblob_words = keyblob_num_words(kConfigCtr128);
   uint32_t keyblob[keyblob_words] = {0};
-  EXPECT_EQ(hardened_status_ok(keyblob_from_key_and_mask(
-                test_key.data(), test_mask0.data(), kConfigCtr128, keyblob)),
-            kHardenedBoolTrue);
+  EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask0.data(),
+                                      kConfigCtr128, keyblob));
 
   // Construct blinded key.
   crypto_blinded_key_t key = {
@@ -262,14 +256,12 @@ TEST(Keyblob, RemaskWithZero) {
   };
 
   // Remask the key using the second mask.
-  EXPECT_EQ(hardened_status_ok(keyblob_remask(&key, test_mask1.data())),
-            kHardenedBoolTrue);
+  EXPECT_OK(keyblob_remask(&key, test_mask1.data()));
 
   // Retrieve pointers to each share.
   uint32_t *share0;
   uint32_t *share1;
-  EXPECT_EQ(hardened_status_ok(keyblob_to_shares(&key, &share0, &share1)),
-            kHardenedBoolTrue);
+  EXPECT_OK(keyblob_to_shares(&key, &share0, &share1));
 
   // Unmask the key and check that it matches the original.
   for (size_t i = 0; i < test_key.size(); i++) {
