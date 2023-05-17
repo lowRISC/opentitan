@@ -107,6 +107,37 @@ def print_symbols_report(memories: list[Memory],
         print_symbol_table(s, vma, "vma", False)
 
 
+def print_alignment_overhead_report(memories: list[Memory]) -> None:
+    for m in memories.values():
+        if not m.symbols:
+            log.info(f"Skipping memory {m.name}: no symbols")
+            continue
+        total = 0
+        expected_start = m.vma
+        symbols = sorted(m.symbols, key=lambda s: s.vma)
+        rows = []
+        for s in symbols:
+            if s.vma > expected_start:
+                overhead = s.vma - expected_start
+                total += overhead
+                rows.append((s, expected_start, overhead))
+            expected_start = s.vma + s.size
+        table = my_table(
+            Column("Symbol", justify="right"),
+            Column("Overhead", justify="right"),
+            Column("Expected VMA", justify="center"),
+            Column("Actual VMA", justify="center"),
+            title=f"[bold][white]{m.name.upper()}[/white] "
+            "Alignment Overhead (Includes False Positives)[/bold]")
+        for (s, expected_start, overhead) in sorted(rows,
+                                                    key=lambda r: r[2],
+                                                    reverse=True):
+            table.add_row(f"{s.name}", f"{Size(overhead)}",
+                          f"0x{expected_start:08x}", f"0x{s.vma:08x}")
+        rprint(Padding(table, (2, 0, 0, 2)))
+        rprint(Padding(f"[bold white]TOTAL:[/] {Size(total)}", (0, 0, 0, 6)))
+
+
 def print_report(path: Path, force_color: bool = False) -> None:
     global rprint
     rprint = Console(force_terminal=force_color).print
@@ -121,4 +152,6 @@ def print_report(path: Path, force_color: bool = False) -> None:
         print_utilization_report(memories)
         print_section_report(sections)
         print_symbols_report(memories, sections)
+        print_alignment_overhead_report(memories)
+
     rprint(Padding("", (2, 0, 0, 0)))
