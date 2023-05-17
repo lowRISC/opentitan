@@ -40,10 +40,7 @@ enum {
   kManufacturerId = 0x54,
   kProductId = 0x7b,
 };
-/**
- * Declared volatile because it is referenced in the main program flow as well
- * as the ISR.
- */
+
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_pinmux_t pinmux;
 static dif_i2c_t i2c;
@@ -68,13 +65,13 @@ static status_t read_write_1byte(void) {
   uint8_t reg = kAccumConfigReg, read_data = 0;
 
   // Write config=1.
-  uint8_t write_data[2] = {kAccumConfigReg, 0x01};
+  uint8_t write_data[2] = {reg, 0x01};
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(write_data), write_data,
                           true));
 
   // Check the write worked.
   read_data = 0;
-  TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(read_data), &reg, true));
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(reg), &reg, true));
   TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), &read_data));
   TRY_CHECK(read_data == 0x01, "Unexpected value %x", read_data);
 
@@ -96,7 +93,7 @@ static status_t read_write_2bytes(void) {
   uint8_t reg = kOcLimitNReg, read_data[2] = {0};
 
   // Write new value.
-  uint8_t write_data[3] = {kOcLimitNReg, 0xCA, 0xFE};
+  uint8_t write_data[3] = {reg, 0xCA, 0xFE};
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(write_data), write_data,
                           true));
 
