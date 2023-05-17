@@ -2,11 +2,24 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 from pathlib import Path
 
 from util.py.packages.lib.run import run
 
+
 BAZEL_CMD = "./bazelisk.sh"
+
+
+def try_escape_sandbox():
+    """Escape the Bazel sandbox if necessary.
+
+    Without this step, other functions in this package will be unable to find
+    "bazelisk.sh" when invoked via Bazel.
+    """
+    workspace_dir = os.environ.get('BUILD_WORKSPACE_DIRECTORY')
+    if workspace_dir:
+        os.chdir(workspace_dir)
 
 
 def build_target(target: str, configs: list[str]) -> None:
