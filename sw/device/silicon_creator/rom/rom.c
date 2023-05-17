@@ -26,6 +26,7 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
+#include "sw/device/silicon_creator/lib/drivers/pwrmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
@@ -144,6 +145,10 @@ static rom_error_t rom_init(void) {
 
   // Update epmp config for debug rom according to lifecycle state.
   rom_epmp_config_debug_rom(lc_state);
+
+  // Enable all resets.
+  pwrmgr_all_resets_enable();
+  SEC_MMIO_WRITE_INCREMENT(kPwrmgrSecMmioAllResetsEnable);
 
   // Re-initialize the watchdog timer.
   watchdog_init(lc_state);
