@@ -4,6 +4,7 @@
 
 import functools
 from pathlib import Path
+from typing import Callable, Union
 
 from rich.console import Console
 from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn
@@ -14,6 +15,7 @@ from util.py.packages.impl.object_size.elf import parse_elf_file
 from util.py.packages.impl.object_size.memory import parse_memory_file
 from util.py.packages.impl.object_size.types import (Address, Alignment,
                                                      Memory, Section, Size)
+from util.py.packages.lib.ot_logging import log
 
 
 def print_utilization_report(memories) -> None:
@@ -55,6 +57,56 @@ def print_section_report(sections: list[Section]) -> None:
                       Address.__str__(s), Alignment.__str__(s), s.type_,
                       s.flags)
     rprint(Padding(table, (2, 0, 0, 2)))
+
+
+def print_symbol_table(container: Union[Memory, Section], key_fn: Callable,
+                       key_name: str, reverse: bool) -> None:
+    symbols = container.symbols
+    if not symbols:
+        log.info(f"{container.name} has no symbols")
+    total = 0
+    table = my_table(
+        Column("Name", justify="right"),
+        Column("Size", justify="right"),
+        Column("Section"),
+        Column("Address", justify="center"),
+        Column("Type", justify="center"),
+        Column("Binding", justify="center"),
+        Column("Visibility", justify="center"),
+        title=f"[bold]Symbols in [white]{container.name}[/white] "
+        f"{'DESCENDING' if reverse else 'ASCENDING'} by {key_name.upper()}:[/bold]"
+    )
+    symbols = sorted(symbols, key=key_fn, reverse=reverse)
+    for s in symbols:
+        table.add_row(s.name, f"{Size.__str__(s)}", s.section,
+                      f"{Address.__str__(s)}", s.type_, s.binding,
+                      s.visibility)
+        total += s.size
+    rprint(Padding(table, (2, 0, 0, 2)))
+    rprint(Padding(f"[bold white]TOTAL: {Size(total)}[/]", (0, 0, 0, 6)))
+
+
+def print_symbols_report(memories: list[Memory],
+                         sections: list[Section]) -> None:
+
+    def size(s):
+        return s.size
+
+    def vma(s):
+        return s.vma
+
+    rprint(
+        Padding(Rule("[bold]Symbols Grouped by Memory[/bold]"), (1, 0, 0, 2)))
+    for m in memories.values():
+        print_symbol_table(m, size, "size", True)
+        print_symbol_table(m, vma, "vma", False)
+    rprint(
+        Padding(Rule("[bold]Symbols Grouped by Section[/bold]"), (1, 0, 0, 2)))
+    for s in sections.values():
+        print_symbol_table(s, size, "size", True)
+        print_symbol_table(s, vma, "vma", False)
+
+
 def print_report(path: Path, force_color: bool = False) -> None:
     global rprint
     rprint = Console(force_terminal=force_color).print
@@ -68,4 +120,5 @@ def print_report(path: Path, force_color: bool = False) -> None:
         sections = parse_elf_file(path, memories)
         print_utilization_report(memories)
         print_section_report(sections)
+        print_symbols_report(memories, sections)
     rprint(Padding("", (2, 0, 0, 0)))
