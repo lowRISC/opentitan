@@ -35,10 +35,16 @@ static_assert(offsetof(boot_data_t, is_valid) %
                   0,
               "`is_valid` must be flash word aligned.");
 
+enum {
+  /**
+   * Number of boot data flash info pages.
+   */
+  kPageCount = 2,
+};
 /**
  * Boot data flash info pages.
  */
-static const flash_ctrl_info_page_t kPages[2] = {
+static const flash_ctrl_info_page_t kPages[kPageCount] = {
     kFlashCtrlInfoPageBootData0,
     kFlashCtrlInfoPageBootData1,
 };
@@ -77,15 +83,17 @@ static void boot_data_digest_compute(const void *boot_data,
 static hardened_bool_t boot_data_is_empty(const void *boot_data) {
   static_assert(kFlashCtrlErasedWord == UINT32_MAX,
                 "kFlashCtrlErasedWord must be UINT32_MAX");
-  size_t i = 0;
+  size_t i = 0, r = kBootDataNumWords - 1;
   hardened_bool_t is_empty = kHardenedBoolTrue;
   uint32_t res = kFlashCtrlErasedWord;
-  for (; launder32(i) < kBootDataNumWords; ++i) {
+  for (; launder32(i) < kBootDataNumWords && launder32(r) < kBootDataNumWords;
+       ++i, --r) {
     res &= read_32(boot_data);
     is_empty &= read_32(boot_data);
     boot_data = (char *)boot_data + sizeof(uint32_t);
   }
   HARDENED_CHECK_EQ(i, kBootDataNumWords);
+  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
   if (launder32(res) == kFlashCtrlErasedWord) {
     HARDENED_CHECK_EQ(res, kFlashCtrlErasedWord);
     return is_empty;
@@ -326,8 +334,10 @@ static rom_error_t boot_data_page_info_update_impl(
 
   // Perform a forward search to find the first empty entry.
   hardened_bool_t has_empty_entry = kHardenedBoolFalse;
-  size_t i = 0;
-  for (; launder32(i) < kBootDataEntriesPerPage; ++i) {
+  size_t i = 0, r = kBootDataEntriesPerPage - 1;
+  for (; launder32(i) < kBootDataEntriesPerPage &&
+         launder32(r) < kBootDataEntriesPerPage;
+       ++i, --r) {
     // Read and cache the identifier to quickly determine if an entry can be
     // empty or valid.
     HARDENED_RETURN_IF_ERROR(boot_data_sniff(page, i, &sniff_results[i]));
@@ -346,13 +356,13 @@ static rom_error_t boot_data_page_info_update_impl(
   // and `kBootDataEntriesPerPage` otherwise.
   HARDENED_CHECK_LE(i, kBootDataEntriesPerPage);
   size_t first_empty_index = i;
+  HARDENED_CHECK_EQ(i + r, kBootDataEntriesPerPage - 1);
 
   // Perform a backward search to find the last valid entry.
   hardened_bool_t has_valid_entry = kHardenedBoolFalse;
-  i = first_empty_index - 1;
-  size_t j = 0;
-  for (; launder32(i) < first_empty_index && launder32(j) < first_empty_index;
-       --i, ++j) {
+  for (--i, ++r; launder32(i) < kBootDataEntriesPerPage &&
+                 launder32(r) < kBootDataEntriesPerPage;
+       --i, ++r) {
     // Check the digest only if this entry can be valid.
     if (sniff_results[i] == kBootDataIdentifier) {
       HARDENED_RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
@@ -368,9 +378,9 @@ static rom_error_t boot_data_page_info_update_impl(
     }
   }
   // At the end of this loop, `i` is the index of the last valid entry if any
-  // and `UINT32_MAX`, otherwise. `j` must be less than or equal to
+  // and `UINT32_MAX`, otherwise. `r` must be less than or equal to
   // `first_empty_index`.
-  HARDENED_CHECK_LE(j, first_empty_index);
+  HARDENED_CHECK_EQ(i + r, kBootDataEntriesPerPage - 1);
 
   if (launder32(has_valid_entry) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(has_valid_entry, kHardenedBoolTrue);
@@ -463,12 +473,12 @@ static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
       .last_valid_index = kBootDataEntriesPerPage,
   };
 
-  size_t i = 0;
-  for (; launder32(i) < ARRAYSIZE(kPages); ++i) {
-    HARDENED_RETURN_IF_ERROR(
-        boot_data_page_info_update(kPages[i], page_info, boot_data));
-  }
-  HARDENED_CHECK_EQ(i, ARRAYSIZE(kPages));
+  static_assert(kPageCount == 2,
+                "Number of pages changed, unrolled loop must be updated");
+  HARDENED_RETURN_IF_ERROR(
+      boot_data_page_info_update(kPages[0], page_info, boot_data));
+  HARDENED_RETURN_IF_ERROR(
+      boot_data_page_info_update(kPages[1], page_info, boot_data));
 
   return kErrorOk;
 }
