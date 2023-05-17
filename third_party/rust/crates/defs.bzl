@@ -3082,6 +3082,12 @@ def crate_repositories():
     maybe(
         http_archive,
         name = "crate_index__serialport-4.2.0",
+        patch_args = [
+            "-p1",
+        ],
+        patches = [
+            "@//third_party/rust/patches:serialport-pci-workaround.patch",
+        ],
         sha256 = "aab92efb5cf60ad310548bc3f16fa6b0d950019cb7ed8ff41968c3d03721cf12",
         type = "tar.gz",
         urls = ["https://crates.io/api/v1/crates/serialport/4.2.0/download"],
