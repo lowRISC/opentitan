@@ -237,10 +237,8 @@ static rom_error_t rom_verify(const manifest_t *manifest,
     HARDENED_CHECK_EQ(sigverify_spx_en, kSigverifySpxDisabledOtp);
   }
 
-  uint32_t clobber_value = rnd_uint32();
-  for (size_t i = 0; i < ARRAYSIZE(boot_measurements.rom_ext.data); ++i) {
-    boot_measurements.rom_ext.data[i] = clobber_value;
-  }
+  memset(boot_measurements.rom_ext.data, rnd_uint32(),
+         sizeof(boot_measurements.rom_ext.data));
 
   hmac_sha256_init();
   hmac_sha256_update(anti_rollback, anti_rollback_len);
