@@ -5,3 +5,4 @@ Field programmable gate arrays (FPGAs) provide exactly this sort of platform wit
 To learn more about how to develop OpenTitan using an FPGA, consult the following links:
 - [Get a Board](./get_a_board.md)
 - [FPGA Reference Manual](./ref_manual_fpga.md)
+- [Debugging on an FPGA with an Integrated Logic Analyzer (ILA)](./debugging_with_ila.md)

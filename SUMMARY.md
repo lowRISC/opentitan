@@ -469,6 +469,7 @@
 - [Developing on an FPGA](./doc/contributing/fpga/README.md)
   - [Get a Board](./doc/contributing/fpga/get_a_board.md)
   - [FPGA Reference Manual](./doc/contributing/fpga/ref_manual_fpga.md)
+  - [Debugging with an ILA](./doc/contributing/fpga/debugging_with_ila.md)
 
 # Project Governance
 
