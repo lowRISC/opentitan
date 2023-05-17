@@ -201,7 +201,6 @@ opentitan_functest(
     srcs = ["provisioning_functest.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_dev_individualized",
-        tags = ["jtag"],
         test_cmds = [
             "--clear-bitstream",
             "--rom-kind=rom",
@@ -251,7 +250,6 @@ lc_raw_unlock_token(
         srcs = ["empty_functest.c"],
         cw310 = cw310_params(
             bitstream = "//hw/bitstream:rom_otp_{}".format(lc_state.lower()),
-            tags = ["jtag"],
             test_cmds = (
                 _MANUF_LC_TRANSITION_TEST_CMDS if (
                     (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS
@@ -286,7 +284,6 @@ opentitan_functest(
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_raw",
-        tags = ["jtag"],
         test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
@@ -355,7 +352,6 @@ otp_json(
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
         cw310 = cw310_params(
             bitstream = ":bitstream_rom_exec_disabled_{}".format(lc_state.lower()),
-            tags = ["jtag"],
             test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS + [
                 "--initial-lc-state=\"{}\"".format(lc_state),
             ],
@@ -439,7 +435,6 @@ opentitan_ram_binary(
         srcs = ["flash_device_info_flash_wr_functest.c"],
         cw310 = cw310_params(
             bitstream = "bitstream_rom_exec_disabled_{}".format(init_lc_state.lower()),
-            tags = ["jtag"],
             test_cmds = [
                 "--clear-bitstream",
                 "--rom-kind=rom",
@@ -520,7 +515,6 @@ opentitan_ram_binary(
         srcs = ["idle_functest.c"],
         cw310 = cw310_params(
             bitstream = ":bitstream_rom_exec_disabled_test_unlocked0",
-            tags = ["jtag"],
             test_cmds = [
                 "--clear-bitstream",
                 "--rom-kind=rom",
@@ -577,7 +571,6 @@ opentitan_functest(
     srcs = ["//sw/device/silicon_creator/manuf/lib:empty_functest.c"],
     cw310 = cw310_params(
         bitstream = ":bitstream_otp_ctrl_functest",
-        tags = ["jtag"],
         test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
@@ -597,7 +590,6 @@ opentitan_functest(
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_params(
         bitstream = ":bitstream_otp_ctrl_functest",
-        tags = ["jtag"],
         test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
     ),
     data = OPENTITANTOOL_OPENOCD_DATA_DEPS,

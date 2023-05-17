@@ -499,10 +499,10 @@ opentitan_functest(
     srcs = ["rom_e2e_bootstrap_rma_test.c"],
     cw310 = cw310_params(
         bitstream = ":bitstream_bootstrap_rma",
-        tags = [
-            "jtag",
-        ],
         test_cmds = [
+            # We need to clear the bitstream between consecutive runs of this
+            # test since it modifies OTP state (i.e., the LC state).
+            "--clear-bitstream",
             "--rom-kind=rom",
             "--bitstream=\"$(rootpath {bitstream})\"",
             "--bootstrap=\"$(rootpath {flash})\"",
