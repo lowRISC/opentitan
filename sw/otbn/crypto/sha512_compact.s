@@ -1,12 +1,13 @@
-/* Copyright lowRISC contributors.
- * Copyright 2016 The Chromium OS Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE.dcrypto file.
- */
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 /**
  * This library implements hash computation as specified in FIPS PUB 180-4
  * "Secure Hash Standard (SHS)" for the SHA-512 and SHA-384 variants.
+ *
+ * This implementation is a code size and memory optimized
+ * variant at the cost of additional computation time.
  *
  * Terminology within the comments in this library is based (as much as
  * possible) on the terminology of FIPS 180-4.
@@ -62,9 +63,6 @@
  * The upper 192 bits of each cell are clobbered during the execution of the
  * algorithm but their contents are irrelevant.
  *
- * The routine makes use of a 640 byte sized scratchpad in dmem for the message
- * schedule.
- *
  * This routine runs in constant time.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
@@ -74,7 +72,7 @@
  * @param[in]  dmem[dptr_msg]: Pointer to memory location containing the pre-
  *                               formatted message chunks.
  *
- * clobbered registers: w0 to w7, w10, w11, w15 to w26, w30, w31
+ * clobbered registers: w0 to w7, w10, w11, w15 to w27, w30, w31
  *                      x1, x2, x10, x11 to x17, x20
  * clobbered flag groups: FG0
  */
@@ -100,220 +98,13 @@ sha512_compact:
   /* init reg pointers */
   li x10, 10
   li x11, 11
-  li x19, 22
-
-  /* init pointer to scratchpad for message schedule */
-  la x13, W
+  li x19, 27
 
   /* init pointer to round constants */
   la x16, K
 
   /* one iteration per chunk */
-  loop x20, 369
-
-    /* reset pointer to message schedule */
-    addi x12, x13, 0
-
-    /* Expand 1024 bit data chunk to full message schedule (W_0 ... W_79)
-       The 80 64-bit words of the message schedule are kept in dmem
-       scatchpad (20 256-bit cells). */
-
-    /* The message schedule's 16 lower words (W_0 to W_15) are set equal to the
-       16 words of the message chunk (M_0 to M_15).
-
-       The WDRs w19 to w22 are used as a sliding window over 16 words of the
-       message schedule and are initialized as follows:
-       w19 <=  W_3  | W_2  | W_1  | W_0
-       w20 <=  W_7  | W_6  | W_5  | W_4
-       w21 <=  W_11 | W_10 | W_9  | W_8
-       w22 <=  W_15 | W_14 | W_13 | W_12 */
-    addi    x2, x0, 19
-    loopi   4, 3
-      bn.lid  x2, 0(x14++)
-      bn.sid  x2, 0(x12++)
-      addi    x2, x2, 1
-
-    /* The remaining 74 words are constructed from the lower 16 ones:
-       W_t = s1(W_(t-2)) + W_(t-7) + s0(W_(t-15)) + W_(t-16)
-       with:
-       s0(x) = (x RROT 1) xor (x RROT 8) xor (x SHR 7)
-       s1(x) = (x RROT 19) xor (x RROT 61) xor (x SHR 6) */
-
-    /* In the loop body below, i denotes to the i-th cycle of this loop,
-       t refers to the index t as used in the FIPS document. Each loop
-       cycle computes 4 new words of the message schedule. Hence, i runs from
-       0 to 15, and t runs from 16 to 79.
-       Note that the assignments in comments only show the relevant 64 bit for
-       each operation. The remaining bits are (usually) clobbered as well but
-       are irrelevant for further processing. */
-    loopi   16, 74
-
-      /* t <= i*4 + 16 */
-
-      /* Window register contents (w19 to w22) at start of cycle:
-         w19 = W_(i*4+3)  | W_(i*4+2)  | W_(i*4+1)  | W_(i*4)
-             = W_(t-13)   | W_(t-14)   | W_(t-15)   | W_(t-16)
-         w20 = W_(i*4+7)  | W_(i*4+6)  | W_(i*4+5)  | W_(i*4+4)
-             = W_(t-9)    | W_(t-10)   | W_(t-11)   | W_(t-12)
-         w21 = W_(i*4+11) | W_(i*4+10) | W_(i*4+9)  | W_(i*4+8)
-             = W_(t-5)    | W_(t-6)    | W_(t-7)    | W_(t-8)
-         w22 = W_(i*4+15) | W_(i*4+14) | W_(i*4+13) | W_(i*4+12)
-             = W_(t-1)    | W_(t-2)    | W_(t-3)    | W_(t-4) */
-
-      /* w15[255:192] <= s0( W_(t-15) )
-           = (W_(t-15) ROTR 1) XOR (W_(t-15) ROTR 8) XOR (W_(t-15) SHR 8) */
-      bn.rshi  w18, w19, w30 >> 128
-      bn.rshi  w17, w30, w19 >> 64
-      bn.rshi  w15, w17, w18 >> 1
-      bn.rshi  w16, w17, w18 >> 8
-      bn.xor   w15, w15, w16
-      bn.rshi  w16, w31, w18 >> 7
-      bn.xor   w15, w15, w16
-
-      /* w23[63:0] <= W_(t-16) + W_(t-7) + s0( W_(t-15) ) */
-      bn.add   w23, w19, w15 >> 192
-      bn.add   w23, w23, w21 >> 64
-
-      /* w15[255:192] <= s1( W_(t-2) )
-           = (W_(t-2) ROTR 19) XOR (W_(t-2) ROTR 61) XOR (W_(t-2) SHR 6) */
-      bn.rshi  w18, w22, w30  >> 192
-      bn.rshi  w17, w30, w22  >> 128
-      bn.rshi  w15, w17, w18  >> 19
-      bn.rshi  w16, w17, w18  >> 61
-      bn.xor   w15, w15, w16
-      bn.rshi  w16, w31, w18  >> 6
-      bn.xor   w15, w15, w16
-
-      /* w23[63:0] = w_t
-                   <= W_(t-16) + W_(t-7) + s0( W_(t-15) ) + s1( W_(t-2) ) */
-      bn.add   w23, w23, w15 >> 192
-
-
-      /* t <= i*4 + 17
-         w19       = W_(t-14) | W_(t-15) | W_(t-16) | W_(t-17)
-         w20       = W_(t-10) | W_(t-11) | W_(t-12) | W_(t-13)
-         w21       = W_(t-6)  | W_(t-7) |  W_(t-8)  | W_(t-9)
-         w22       = W_(t-2)  | W_(t-3)  | W_(t-4)  | W_(t-5)
-         w23[63:0] = W_(t-1) */
-
-      /* w15[255:192] <= s0( W_(t-15) )
-           = (W_(t-15) ROTR 1) XOR (W_(t-15) ROTR 8) XOR (W_(t-15) SHR 8) */
-      bn.rshi  w18, w19, w30  >> 192
-      bn.rshi  w17, w30, w19  >> 128
-      bn.rshi  w15, w17, w18  >> 1
-      bn.rshi  w16, w17, w18  >> 8
-      bn.xor   w15, w15, w16
-      bn.rshi  w16, w31, w18  >> 7
-      bn.xor   w15, w15, w16
-
-      /* w24[63:0] <= W_(t-16) + W_(t-7) + s0( W_(t-15) ) */
-      bn.add   w24, w31, w19 >> 64
-      bn.add   w24, w24, w15 >> 192
-      bn.add   w24, w24, w21 >> 128
-
-      /* w15[255:192] <= s1( W_(t-2) )
-           = (W_(t-2) ROTR 19) XOR (W_(t-2) ROTR 61) XOR (W_(t-2) SHR 6) */
-      bn.rshi  w17, w30, w22  >> 192
-      bn.rshi  w15, w17, w22  >> 19
-      bn.rshi  w16, w17, w22  >> 61
-      bn.xor   w15, w15, w16
-      bn.rshi  w16, w31, w22  >> 6
-      bn.xor   w15, w15, w16
-
-      /* w24[63:0] = w_t
-                   <= W_(t-16) + W_(t-7) + s0( W_(t-15) ) + s1( W_(t-2) ) */
-      bn.add   w24, w24, w15 >> 192
-
-
-      /* t = i*4 + 18
-         w19       = W_(t-15) | W_(t-16) | W_(t-17) | W_(t-18)
-         w20       = W_(t-11) | W_(t-12) | W_(t-13) | W_(t-14)
-         w21       = W_(t-7)  | W_(t-8) |  W_(t-9)  | W_(t-10)
-         w22       = W_(t-3)  | W_(t-4)  | W_(t-5)  | W_(t-6)
-         w23[63:0] = W_(t-2)
-         w24[63:0] = W_(t-1) */
-
-      /* w15[255:192] <= s0( W_(t-15) )
-           = (W_(t-15) ROTR 1) XOR (W_(t-15) ROTR 8) XOR (W_(t-15) SHR 8) */
-      bn.rshi  w17, w30, w19  >> 192
-      bn.rshi  w15, w17, w19  >> 1
-      bn.rshi  w16, w17, w19  >> 8
-      bn.xor   w15, w15, w16
-      bn.rshi  w16, w31, w19  >> 7
-      bn.xor   w15, w15, w16
-
-      /* w25[63:0] <= W_(t-16) + W_(t-7) + s0( W_(t-15) ) */
-      bn.add   w25, w31, w19 >> 128
-      bn.add   w25, w25, w15 >> 192
-      bn.add   w25, w25, w21 >> 192
-
-      /* w15[255:192] <= s1( W_(t-2) )
-           = (W_(t-2) ROTR 19) XOR (W_(t-2) ROTR 61) XOR (W_(t-2) SHR 6) */
-      bn.rshi  w18, w23, w30  >> 64
-      bn.rshi  w15, w23, w18  >> 19
-      bn.rshi  w16, w23, w18  >> 61
-      bn.xor   w15, w15, w16
-      bn.rshi  w16, w31, w18  >> 6
-      bn.xor   w15, w15, w16
-
-      /* w25[63:0] = w_t
-                   <= W_(t-16) + W_(t-7) + s0( W_(t-15) ) + s1( W_(t-2) ) */
-      bn.add   w25, w25, w15 >> 192
-
-
-      /* t = i*4 + 19
-         w19       = W_(t-16) | W_(t-17) | W_(t-18) | W_(t-19)
-         w20       = W_(t-12) | W_(t-13) | W_(t-14) | W_(t-15)
-         w21       = W_(t-8)  | W_(t-9) |  W_(t-10) | W_(t-11)
-         w22       = W_(t-4)  | W_(t-5)  | W_(t-6)  | W_(t-7)
-         w23[63:0] = W_(t-3)
-         w24[63:0] = W_(t-2)
-         w25[63:0] = W_(t-1) */
-
-      /* w15[255:192] <= s0( W_(t-15) )
-           = (W_(t-15) ROTR 1) XOR (W_(t-15) ROTR 8) XOR (W_(t-15) SHR 8) */
-      bn.rshi  w18, w20, w30  >> 64
-      bn.rshi  w15, w20, w18  >> 1
-      bn.rshi  w16, w20, w18  >> 8
-      bn.xor   w15, w15, w16
-      bn.rshi  w16, w31, w18  >> 7
-      bn.xor   w15, w15, w16
-
-      /* w26[63:0] <= W_(t-16) + W_(t-7) + s0( W_(t-15) ) */
-      bn.add   w26, w31, w19 >> 192
-      bn.add   w26, w26, w15 >> 192
-      bn.add   w26, w26, w22
-
-      /* w15[255:192] <= s1( W_(t-2) )
-           = (W_(t-2) ROTR 19) XOR (W_(t-2) ROTR 61) XOR (W_(t-2) SHR 6) */
-      bn.rshi  w18, w24, w30  >> 64
-      bn.rshi  w15, w24, w18  >> 19
-      bn.rshi  w16, w24, w18  >> 61
-      bn.xor   w15, w15, w16
-      bn.rshi  w16, w31, w18  >> 6
-      bn.xor   w15, w15, w16
-
-      /* w26[63:0] = w_t
-                   <= W_(t-16) + W_(t-7) + s0( W_(t-15) ) + s1( W_(t-2) ) */
-      bn.add   w26, w26, w15 >> 192
-
-      /* Forward window */
-      bn.mov   w19, w20
-      bn.mov   w20, w21
-      bn.mov   w21, w22
-
-      /* Assemble 256-bit cell from the 4 words computed above */
-      /* w22 = w26[63:0] | w25[63:0] | w24[63:0] | w23[64:0]
-             = W[i*4+19] | W[i*4+18] | W[i*4+17] | W[i*4+16] */
-      bn.rshi  w22, w23, w22  >> 64
-      bn.rshi  w22, w24, w22  >> 64
-      bn.rshi  w22, w25, w22  >> 64
-      bn.rshi  w22, w26, w22  >> 64
-
-
-      /* Store the 4 words in dmem scratchpad */
-      bn.sid   x19, 0(x12++)
-
+  loop x20, 105
 
     /* load state variables from dmem */
     addi     x2, x0, 0
@@ -334,488 +125,160 @@ sha512_compact:
     /* w7[63:0] = h <= H_7 */
     bn.lid   x2++, 224(x17)
 
-    /* reset pointer to start of message schedule scratchpad in dmem */
-    addi x12, x13, 0
-
     /* reset pointer to beginning of dmem section containing round constants */
     addi x15, x16, 0
 
-    /* Main loop for SHA compression function. Processes 8 words of message
-       schedule in one cycle.
-       This saves copying the SHA working variables (a,b,...,h) after each
-       word. If code size becomes an issue, the size of the loop body can
-       be significantly reduced for the penalty 6 additional instructions after
-       each word.
-       Below,
-         i denotes the current loop cycle, and
-         t denotes the current word (hence t=i*8+(0,1,...,7) ). */
-    loopi 10, 253
+    /* read pointer to message buffer from dmem */
+    la x14, dptr_msg
+    lw x14, 0(x14)
+    /* The message schedule's 16 lower words (W_0 to W_15) are set equal to the
+       16 words of the message chunk (M_0 to M_15). */
+    addi    x2, x0, 24
+    bn.lid  x2++, 0(x14)
+    bn.lid  x2++, 32(x14)
+    bn.lid  x2++, 64(x14)
+    bn.lid  x2++, 96(x14)
 
-      /* Load four round constants from dmem */
-      /* w10 <= [K_(i*8+3),K_(i*8+2),K_(i*8+1),K_(i*8)] = dmem[K + 2*i] */
+   /* Main loop for SHA-512 compression function (80 rounds),
+      split into an inner and outer loop here (80=20*4 cycles), since
+      every 4 rounds a new set of round constants has to be loaded
+      from dmem.
+      Below, the index i denotes the current round.
+      The 8 SHA working variables are kept in a wide reg each (lower
+      64 bits:
+      w6[63:0] = h
+      w6[63:0] = g
+      w5[63:0] = f
+      w4[63:0] = e
+      w3[63:0] = d
+      w2[63:0] = c
+      w1[63:0] = b
+      w0[63:0] = a */
+
+    loopi 20, 62
+
+      /* Load four round constants from dmem
+         w10 <= [K_(i+3),K_(i+2),K_(i+1),K_(i)] = dmem[K + i/4] */
       bn.lid   x10, 0(x15++)
 
-      /* Load four message schedule words from dmem scratchpad */
-      /* w11 <= [W_(i*8+3),W_(i*8+2),W_(i*8+1),W_(i*8)] = dmem[W + 2*i] */
-      bn.lid   x11, 0(x12++)
-
-      /* w6[63:0] = g */
-      /* w5[63:0] = f */
-      /* w4[63:0] = e */
-      /* w3[63:0] = d */
-      /* w2[63:0] = c */
-      /* w1[63:0] = b */
-      /* w0[63:0] = a */
-
-
-      /* Process word 0 of loop cycle: t <= i*8. */
-
-      /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w0, w30  >> 64
-      bn.rshi  w15,  w0, w22  >> 28
-      bn.rshi  w21,  w0, w22  >> 34
-      bn.xor   w15, w15, w21
-      bn.rshi  w21,  w0, w22  >> 39
-      bn.xor   w15, w15, w21
-
-      /* w16[63:0] = Maj(a,b,c) = (a AND b) XOR (a AND c) XOR (b AND c) */
-      bn.and   w16,  w0,  w1
-      bn.and   w21,  w0,  w2
-      bn.xor   w16, w16, w21
-      bn.and   w21,  w1,  w2
-      bn.xor   w16, w16, w21
-
-      /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
-      bn.add   w17, w17, w16
-
-      /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w4, w30  >> 64
-      bn.rshi  w18,  w4, w22  >> 14
-      bn.rshi  w21,  w4, w22  >> 18
-      bn.xor   w18, w18, w21
-      bn.rshi  w19,  w4, w22  >> 41
-      bn.xor   w18, w18, w19
-
-      /* w19[63:0] <= Ch(e,f,g) = (e AND f) XOR ((NOT e) AND g) */
-      bn.and   w19,  w4,  w5
-      bn.not   w21,  w4
-      bn.and   w21, w21,  w6
-      bn.xor   w19, w19, w21
-
-      /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
-      bn.add   w20, w20, w7
-      bn.add   w20, w20, w10
-      bn.add   w21, w11, w19
-      bn.add   w20, w20, w21
-
-      /* w6[63:0] = h <= g */
-      /* w5[63:0] = g <= f */
-      /* w4[63:0] = f <= e */
-      /* w3[63:0] = e <= d + T1 = w3[63:0] + w20[63:0] */
-      bn.add    w3,  w3, w20
-      /* w2[63:0] = d <= c */
-      /* w1[63:0] = c <= b */
-      /* w0[63:0] = b <= a */
-      /* w7[63:0] = a = T_1 + T_2 = w20[63:0] + w17[63:0] */
-      bn.add    w7, w20, w17
-
-
-      /* Process word 1 of loop cycle: t <= i*8 + 1. */
-
-      /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w7, w30  >> 64
-      bn.rshi  w15,  w7, w22  >> 28
-      bn.rshi  w21,  w7, w22  >> 34
-      bn.xor   w15, w15, w21
-      bn.rshi  w21,  w7, w22  >> 39
-      bn.xor   w15, w15, w21
-
-      /* w16[63:0] = Maj(a,b,c) = (a AND b) XOR (a AND c) XOR (b AND c) */
-      bn.and   w16,  w7,  w0
-      bn.and   w21,  w7,  w1
-      bn.xor   w16, w16, w21
-      bn.and   w21,  w0,  w1
-      bn.xor   w16, w16, w21
-
-      /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
-      bn.add   w17, w17, w16
-
-      /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w3, w30  >> 64
-      bn.rshi  w18,  w3, w22  >> 14
-      bn.rshi  w21,  w3, w22  >> 18
-      bn.xor   w18, w18, w21
-      bn.rshi  w19,  w3, w22  >> 41
-      bn.xor   w18, w18, w19
-
-      /* w19[63:0] <= Ch(e,f,g) = (e AND f) XOR ((NOT e) AND g) */
-      bn.and   w19,  w3,  w4
-      bn.not   w21,  w3
-      bn.and   w21, w21,  w5
-      bn.xor   w19, w19, w21
-
-      /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
-      bn.add   w20, w20,  w6
-      bn.add   w20, w20, w10  >> 64
-      bn.rshi  w21, w30, w11  >> 64
-      bn.add   w21, w21, w19
-      bn.add   w20, w20, w21
-
-      /* w5[63:0] = h <= g */
-      /* w4[63:0] = g <= f */
-      /* w3[63:0] = f <= e */
-      /* w2[63:0] = e <= d + T1 = w2[63:0] + w20[63:0] */
-      bn.add w2, w2, w20
-      /* w1[63:0] = d <= c */
-      /* w0[63:0] = c <= b */
-      /* w7[63:0] = b <= a */
-      /* w6[63:0] = a = T_1 + T_2 = w20[63:0] + w17[63:0] */
-      bn.add w6, w20, w17
-
-
-      /* Process word 2 of loop cycle: t <= i*8 + 2. */
-
-      /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w6, w30  >> 64
-      bn.rshi  w15,  w6, w22  >> 28
-      bn.rshi  w21,  w6, w22  >> 34
-      bn.xor   w15, w15, w21
-      bn.rshi  w21,  w6, w22  >> 39
-      bn.xor   w15, w15, w21
-
-      /* w16[63:0] = Maj(a,b,c) = (a AND b) XOR (a AND c) XOR (b AND c) */
-      bn.and   w16,  w6, w7
-      bn.and   w21,  w6, w0
-      bn.xor   w16, w16, w21
-      bn.and   w21,  w7, w0
-      bn.xor   w16, w16, w21
-
-      /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
-      bn.add   w17, w17, w16
-
-      /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w2, w30  >> 64
-      bn.rshi  w18,  w2, w22  >> 14
-      bn.rshi  w21,  w2, w22  >> 18
-      bn.xor   w18, w18, w21
-      bn.rshi  w19,  w2, w22  >> 41
-      bn.xor   w18, w18, w19
-
-      /* w19[63:0] <= Ch(e,f,g) = (e AND f) XOR ((NOT e) AND g) */
-      bn.and   w19,  w2,  w3
-      bn.not   w21,  w2
-      bn.and   w21, w21,  w4
-      bn.xor   w19, w19, w21
-
-      /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
-      bn.add   w20, w20,  w5
-      bn.add   w20, w20, w10  >> 128
-      bn.rshi  w21, w30, w11  >> 128
-      bn.add   w21, w21, w19
-      bn.add   w20, w20, w21
-
-      /* w4[63:0] = h <= g */
-      /* w3[63:0] = g <= f */
-      /* w2[63:0] = f <= e */
-      /* w1[63:0] = e <= d + T1 = w2[63:0] + w20[63:0] */
-      bn.add   w1,  w1, w20
-      /* w0[63:0] = d <= c */
-      /* w7[63:0] = c <= b */
-      /* w6[63:0] = b <= a */
-      /* w5[63:0] = a = T_1 + T_2 = w20[63:0] + w17[63:0] */
-      bn.add   w5, w20, w17
-
-
-      /* Process word 3 of loop cycle: t <= i*8 + 3. */
-
-      /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w5, w30  >> 64
-      bn.rshi  w15,  w5, w22  >> 28
-      bn.rshi  w21,  w5, w22  >> 34
-      bn.xor   w15, w15, w21
-      bn.rshi  w21,  w5, w22  >> 39
-      bn.xor   w15, w15, w21
-
-      /* w16[63:0] = Maj(a,b,c) = (a AND b) XOR (a AND c) XOR (b AND c) */
-      bn.and   w16,  w5,  w6
-      bn.and   w21,  w5,  w7
-      bn.xor   w16, w16, w21
-      bn.and   w21,  w6,  w7
-      bn.xor   w16, w16, w21
-
-      /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
-      bn.add   w17, w17, w16
-
-      /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w1, w30  >> 64
-      bn.rshi  w18,  w1, w22  >> 14
-      bn.rshi  w21,  w1, w22  >> 18
-      bn.xor   w18, w18, w21
-      bn.rshi  w19,  w1, w22  >> 41
-      bn.xor   w18, w18, w19
-
-      /* w19[63:0] <= Ch(e,f,g) = (e AND f) XOR ((NOT e) AND g) */
-      bn.and   w19,  w1,  w2
-      bn.not   w21,  w1
-      bn.and   w21, w21,  w3
-      bn.xor   w19, w19, w21
-
-      /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
-      bn.add   w20, w20,  w4
-      bn.add   w20, w20, w10  >> 192
-      bn.rshi  w21, w30, w11  >> 192
-      bn.add   w21, w21, w19
-      bn.add   w20, w20, w21
-
-      /* w3[63:0] = h <= g */
-      /* w2[63:0] = g <= f */
-      /* w1[63:0] = f <= e */
-      /* w0[63:0] = e <= d + T1 = w2[63:0] + w20[63:0] */
-      bn.add    w0,  w0, w20
-      /* w7[63:0] = d <= c */
-      /* w6[63:0] = c <= b */
-      /* w5[63:0] = b <= a */
-      /* w4[63:0] = a = T_1 + T_2 = w20[63:0] + w17[63:0] */
-      bn.add    w4, w20, w17
-
-
-      /* Load another four round constants from dmem */
-      /* w10 <= [K_(i*8+7),K_(i*8+6),K_(i*8+5),K_(i*8+4)] = dmem[K + 2*i+1] */
-      bn.lid x10, 0(x15++)
-
-      /* Load another four message schedule words from dmem scratchpad */
-      /* w11 <= [W_(i*8+7),W_(i*8+6),W_(i*8+5),W_(i*8+4)] = dmem[W + 2*i+1] */
-      bn.lid x11, 0(x12++)
-
-
-      /* Process word 4 of loop cycle: t <= i*8 + 3. */
-
-      /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w4, w30  >> 64
-      bn.rshi  w15,  w4, w22  >> 28
-      bn.rshi  w21,  w4, w22  >> 34
-      bn.xor   w15, w15, w21
-      bn.rshi  w21,  w4, w22  >> 39
-      bn.xor   w15, w15, w21
-
-      /* w16[63:0] = Maj(a,b,c) = (a AND b) XOR (a AND c) XOR (b AND c) */
-      bn.and   w16,  w4,  w5
-      bn.and   w21,  w4,  w6
-      bn.xor   w16, w16, w21
-      bn.and   w21,  w5,  w6
-      bn.xor   w16, w16, w21
-
-      /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
-      bn.add   w17, w17, w16
-
-      /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w0, w30  >> 64
-      bn.rshi  w18,  w0, w22  >> 14
-      bn.rshi  w21,  w0, w22  >> 18
-      bn.xor   w18, w18, w21
-      bn.rshi  w19,  w0, w22  >> 41
-      bn.xor   w18, w18, w19
-
-      /* w19[63:0] <= Ch(e,f,g) = (e AND f) XOR ((NOT e) AND g) */
-      bn.and   w19,  w0,  w1
-      bn.not   w21,  w0
-      bn.and   w21, w21,  w2
-      bn.xor   w19, w19, w21
-
-      /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
-      bn.add   w20, w20,  w3
-      bn.add   w20, w20, w10  >> 0
-      bn.rshi  w21, w30, w11  >> 0
-      bn.add   w21, w21, w19
-      bn.add   w20, w20, w21
-
-      /* w2[63:0] = h <= g */
-      /* w1[63:0] = g <= f */
-      /* w0[63:0] = f <= e */
-      /* w7[63:0] = e <= d + T1 = w2[63:0] + w20[63:0] */
-      bn.add    w7,  w7, w20
-      /* w6[63:0] = d <= c */
-      /* w5[63:0] = c <= b */
-      /* w4[63:0] = b <= a */
-      /* w3[63:0] = a = T_1 + T_2 = w20[63:0] + w17[63:0] */
-      bn.add    w3, w20, w17
-
-
-      /* Process word 5 of loop cycle: t <= i*8 + 3. */
-
-      /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w3, w30  >> 64
-      bn.rshi  w15,  w3, w22  >> 28
-      bn.rshi  w21,  w3, w22  >> 34
-      bn.xor   w15, w15, w21
-      bn.rshi  w21,  w3, w22  >> 39
-      bn.xor   w15, w15, w21
-
-      /* w16[63:0] = Maj(a,b,c) = (a AND b) XOR (a AND c) XOR (b AND c) */
-      bn.and   w16,  w3,  w4
-      bn.and   w21,  w3,  w5
-      bn.xor   w16, w16, w21
-      bn.and   w21,  w4,  w5
-      bn.xor   w16, w16, w21
-
-      /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
-      bn.add   w17, w17, w16
-
-
-      /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w7, w30  >> 64
-      bn.rshi  w18,  w7, w22  >> 14
-      bn.rshi  w21,  w7, w22  >> 18
-      bn.xor   w18, w18, w21
-      bn.rshi  w19,  w7, w22  >> 41
-      bn.xor   w18, w18, w19
-
-
-      /* w19[63:0] <= Ch(e,f,g) = (e AND f) XOR ((NOT e) AND g) */
-      bn.and   w19,  w7,  w0
-      bn.not   w21,  w7
-      bn.and   w21, w21,  w1
-      bn.xor   w19, w19, w21
-
-      /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
-      bn.add   w20, w20,  w2
-      bn.add   w20, w20, w10  >> 64
-      bn.rshi  w21, w30, w11  >> 64
-      bn.add   w21, w21, w19
-      bn.add   w20, w20, w21
-
-      /* w1[63:0] = h <= g */
-      /* w0[63:0] = g <= f */
-      /* w7[63:0] = f <= e */
-      /* w6[63:0] = e <= d + T1 = w2[63:0] + w20[63:0] */
-      bn.add    w6,  w6, w20
-      /* w5[63:0] = d <= c */
-      /* w4[63:0] = c <= b */
-      /* w3[63:0] = b <= a */
-      /* w2[63:0] = a = T_1 + T_2 = w20[63:0] + w17[63:0] */
-      bn.add    w2, w20, w17
-
-      /* Process word 6 of loop cycle: t <= i*8 + 3. */
-
-      /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w2, w30  >> 64
-      bn.rshi  w15,  w2, w22  >> 28
-      bn.rshi  w21,  w2, w22  >> 34
-      bn.xor   w15, w15, w21
-      bn.rshi  w21,  w2, w22  >> 39
-      bn.xor   w15, w15, w21
-
-      /* w16[63:0] = Maj(a,b,c) = (a AND b) XOR (a AND c) XOR (b AND c) */
-      bn.and   w16,  w2,  w3
-      bn.and   w21,  w2,  w4
-      bn.xor   w16, w16, w21
-      bn.and   w21,  w3,  w4
-      bn.xor   w16, w16, w21
-
-      /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
-      bn.add   w17, w17, w16
-
-      /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w6, w30  >> 64
-      bn.rshi  w18,  w6, w22  >> 14
-      bn.rshi  w21,  w6, w22  >> 18
-      bn.xor   w18, w18, w21
-      bn.rshi  w19,  w6, w22  >> 41
-      bn.xor   w18, w18, w19
-
-      /* w19[63:0] <= Ch(e,f,g) = (e AND f) XOR ((NOT e) AND g) */
-      bn.and   w19,  w6,  w7
-      bn.not   w21,  w6
-      bn.and   w21, w21,  w0
-      bn.xor   w19, w19, w21
-
-      /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
-      bn.add   w20, w20,  w1
-      bn.add   w20, w20, w10  >> 128
-      bn.rshi  w21, w30, w11  >> 128
-      bn.add   w21, w21, w19
-      bn.add   w20, w20, w21
-
-      /* w0[63:0] = h <= g */
-      /* w7[63:0] = g <= f */
-      /* w6[63:0] = f <= e */
-      /* w5[63:0] = e <= d + T1 = w2[63:0] + w20[63:0] */
-      bn.add    w5,  w5, w20
-      /* w4[63:0] = d <= c */
-      /* w3[63:0] = c <= b */
-      /* w2[63:0] = b <= a */
-      /* w1[63:0] = a = T_1 + T_2 = w20[63:0] + w17[63:0] */
-      bn.add    w1, w20, w17
-
-
-      /* Process word 7 of loop cycle: t <= i*8 + 3. */
-
-      /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w1, w30  >> 64
-      bn.rshi  w15,  w1, w22  >> 28
-      bn.rshi  w21,  w1, w22  >> 34
-      bn.xor   w15, w15, w21
-      bn.rshi  w21,  w1, w22  >> 39
-      bn.xor   w15, w15, w21
-
-      /* w16[63:0] = Maj(a,b,c) = (a AND b) XOR (a AND c) XOR (b AND c) */
-      bn.and   w16,  w1,  w2
-      bn.and   w21,  w1,  w3
-      bn.xor   w16, w16, w21
-      bn.and   w21,  w2,  w3
-      bn.xor   w16, w16, w21
-
-      /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
-      bn.add   w17, w17, w16
-
-      /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w5, w30  >> 64
-      bn.rshi  w18,  w5, w22  >> 14
-      bn.rshi  w21,  w5, w22  >> 18
-      bn.xor   w18, w18, w21
-      bn.rshi  w19,  w5, w22  >> 41
-      bn.xor   w18, w18, w19
-
-      /* w19[63:0] <= Ch(e,f,g) = (e AND f) XOR ((NOT e) AND g) */
-      bn.and   w19,  w5,  w6
-      bn.not   w21,  w5
-      bn.and   w21, w21,  w7
-      bn.xor   w19, w19, w21
-
-      /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
-      bn.add   w20, w20,  w0
-      bn.add   w20, w20, w10  >> 192
-      bn.rshi  w21, w30, w11  >> 192
-      bn.add   w21, w21, w19
-      bn.add   w20, w20, w21
-
-      /* w7[63:0] = h <= g */
-      /* w6[63:0] = g <= f */
-      /* w5[63:0] = f <= e */
-      /* w4[63:0] = e <= d + T1 = w2[63:0] + w20[63:0] */
-      bn.add w4, w4, w20
-      /* w3[63:0] = d <= c */
-      /* w2[63:0] = c <= b */
-      /* w1[63:0] = b <= a */
-      /* w0[63:0] = a = T_1 + T_2 = w20[63:0] + w17[63:0] */
-      bn.add w0, w20, w17
-
+      loopi 4, 59
+
+        /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
+        bn.rshi  w22,  w0, w30  >> 64
+        bn.rshi  w15,  w0, w22  >> 28
+        bn.rshi  w21,  w0, w22  >> 34
+        bn.xor   w15, w15, w21
+        bn.rshi  w21,  w0, w22  >> 39
+        bn.xor   w15, w15, w21
+
+        /* w16[63:0] = Maj(a,b,c) = (a AND b) XOR (a AND c) XOR (b AND c) */
+        bn.and   w16,  w0,  w1
+        bn.and   w21,  w0,  w2
+        bn.xor   w16, w16, w21
+        bn.and   w21,  w1,  w2
+        bn.xor   w16, w16, w21
+
+        /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
+        bn.rshi  w17, w30, w15  >> 192
+        bn.add   w17, w17, w16
+
+        /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41)*/
+        bn.rshi  w22,  w4, w30  >> 64
+        bn.rshi  w18,  w4, w22  >> 14
+        bn.rshi  w21,  w4, w22  >> 18
+        bn.xor   w18, w18, w21
+        bn.rshi  w19,  w4, w22  >> 41
+        bn.xor   w18, w18, w19
+
+        /* w19[63:0] <= Ch(e,f,g) = (e AND f) XOR ((NOT e) AND g) */
+        bn.and   w19,  w4,  w5
+        bn.not   w21,  w4
+        bn.and   w21, w21,  w6
+        bn.xor   w19, w19, w21
+
+        /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
+        bn.rshi  w20, w30, w18  >> 192
+        bn.add   w20, w20, w7
+        bn.add   w20, w20, w10
+        bn.add   w21, w24, w19
+        bn.add   w20, w20, w21
+
+        /* rearrange working variables */
+        /* w7[63:0] = h <= g */
+        bn.mov    w7, w6
+        /* w6[63:0] = g <= f */
+        bn.mov    w6, w5
+        /* w5[63:0] = f <= e */
+        bn.mov    w5, w4
+        /* w4[63:0] = e <= d + T1 = w3[63:0] + w20[63:0] */
+        bn.add    w4, w3, w20
+        /* w3[63:0] = d <= c */
+        bn.mov    w3, w2
+        /* w2[63:0] = c <= b */
+        bn.mov    w2, w1
+        /* w1[63:0] = b <= a */
+        bn.mov    w1, w0
+        /* w0[63:0] = a = T_1 + T_2 = w20[63:0] + w17[63:0] */
+        bn.add    w0, w20, w17
+
+        /* switch to next round constant for the next cycle */
+        bn.rshi   w10, w31, w10 >> 64
+
+        /* Now, a new word W of the message schedule is computed. This word
+           is 16 cycles ahead. (The first 16 Ws are identical to the message
+           chunk and a history of 16 Ws is needed to compute the current one.)
+           This means that we "overshoot" at the end. For the last 16 cycles
+           computing a new W is actually not neccessary. However, this
+           allows interleaving this computation with the compression rounds
+           omitting usage of scratchpad memory and having a simple control flow.
+           The alternative is to precompute the full message schedule and place
+           it in scratchpad or have a special treatment for the last 16 loop
+           cycles.
+           The index t below is assumed to run from 16 to 96, hence t = i+16.
+
+           The Ws are kept in 4 wide regs and form a queue which is advanced
+           after the computation of the new W (new W is placed in w27[255:192]).
+           w24 <=  W_(t-13) | W_(t-14) | W_(t-15) | W_(t-16)
+           w25 <=  W_(t-9)  | W_(t-10) | W_(t-11) | W_(t-12)
+           w26 <=  W_(t-5)  | W_(t-6)  | W_(t-7)  | W_(t-8)
+           w27 <=  W_(t-1)  | W_(t-2)  | W_(t-3)  | W_(t-4) */
+
+        /* w15[255:192] <= s0( W_(t-15) )
+             = (W_(t-15) ROTR 1) XOR (W_(t-15) ROTR 8) XOR (W_(t-15) SHR 8) */
+        bn.rshi  w18, w24, w30 >> 128
+        bn.rshi  w17, w30, w24 >> 64
+        bn.rshi  w15, w17, w18 >> 1
+        bn.rshi  w16, w17, w18 >> 8
+        bn.xor   w15, w15, w16
+        bn.rshi  w16, w31, w18 >> 7
+        bn.xor   w15, w15, w16
+
+        /* w23[63:0] <= W_(t-16) + W_(t-7) + s0( W_(t-15) ) */
+        bn.add   w23, w24, w15 >> 192
+        bn.add   w23, w23, w26 >> 64
+
+        /* w15[255:192] <= s1( W_(t-2) )
+             = (W_(t-2) ROTR 19) XOR (W_(t-2) ROTR 61) XOR (W_(t-2) SHR 6) */
+        bn.rshi  w18, w27, w30  >> 192
+        bn.rshi  w17, w30, w27  >> 128
+        bn.rshi  w15, w17, w18  >> 19
+        bn.rshi  w16, w17, w18  >> 61
+        bn.xor   w15, w15, w16
+        bn.rshi  w16, w31, w18  >> 6
+        bn.xor   w15, w15, w16
+
+        /* w23[63:0] = w_t
+                     <= W_(t-16) + W_(t-7) + s0( W_(t-15) ) + s1( W_(t-2) ) */
+        bn.add   w23, w23, w15 >> 192
+
+        /* At the newly computed W to the queue */
+        bn.rshi  w24, w25, w24 >> 64
+        bn.rshi  w25, w26, w25 >> 64
+        bn.rshi  w26, w27, w26 >> 64
+        bn.rshi  w27, w23, w27 >> 64
+
+        /* nop to prevent same final instruction in both loop bodies */
+        nop
 
 
     /* Add compressed chunk to current hash value */
@@ -884,12 +347,6 @@ dptr_state:
 dptr_msg:
   .zero 4
 
-
-/* 80*8=640 bytes scratchpad for message schedule */
-.section .scratchpad
- .balign 32
-W:
- .zero 640
 
  .data
 
