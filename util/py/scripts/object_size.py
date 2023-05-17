@@ -27,7 +27,8 @@ log = ot_logging.log
 @app.command()
 def main(target: str,
          configs: list[str] = [],
-         log_level: ot_logging.LogLevel = ot_logging.LogLevel.WARNING) -> None:
+         log_level: ot_logging.LogLevel = ot_logging.LogLevel.WARNING,
+         force_color: bool = False) -> None:
     ot_logging.init(log_level)
 
     # We use a `cc_binary` rule to produce ELF files and a `obj_transform` rule to
@@ -42,7 +43,7 @@ def main(target: str,
         for ext in ["elf", "bin"]:
             paths += bazel.get_target_files_with_ext(dep, configs, ext)
     for path in paths:
-        print_report(path)
+        print_report(path, force_color)
 
 
 if __name__ == "__main__":

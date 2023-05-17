@@ -5,7 +5,7 @@
 import functools
 from pathlib import Path
 
-from rich import print as rprint
+from rich.console import Console
 from rich.padding import Padding
 from rich.progress import BarColumn, Progress, TaskProgressColumn, TextColumn
 
@@ -27,11 +27,9 @@ def print_utilization_report(memories) -> None:
         rprint(Padding(bar.get_renderable(), (0, 0, 0, 4)))
 
 
-def print_report(path: Path) -> None:
-    rprint(
-        Padding(
-            f"[bold underline white on gray15]{path.name}:[/bold underline white on gray15]",
-            (1, 0, 0, 0)))
+def print_report(path: Path, force_color: bool = False) -> None:
+    global rprint
+    rprint = Console(force_terminal=force_color).print
     rprint(Padding("[bold]Full path:[/bold]", (1, 0, 0, 2)))
     rprint(Padding(f"{path}", (0, 0, 0, 4)))
     rprint(Padding("[bold]File size:[/bold]", (1, 0, 0, 2)))
