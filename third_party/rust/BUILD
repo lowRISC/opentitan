@@ -43,6 +43,10 @@ crates_vendor(
                 "DEP_PQCRYPTO_INTERNALS_INCLUDEPATH": "../crate_index__pqcrypto-internals-0.2.4/include",
             },
         )],
+        "serialport": [crate.annotation(
+            patch_args = ["-p1"],
+            patches = ["@//third_party/rust/patches:serialport-pci-workaround.patch"],
+        )],
     },
     cargo_lockfile = "//third_party/rust:Cargo.lock",
     manifests = ["//third_party/rust:Cargo.toml"],
