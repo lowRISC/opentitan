@@ -30,9 +30,12 @@ uint64_t otp_read64(uint32_t address) {
 
 void otp_read(uint32_t address, uint32_t *data, size_t num_words) {
   uint32_t reg_offset = OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + address;
-  for (size_t i = 0; i < num_words; ++i) {
+  size_t i = 0, r = num_words - 1;
+  for (; launder32(i) < num_words && launder32(r) < num_words; ++i, --r) {
     data[i] = sec_mmio_read32(kBase + reg_offset + i * sizeof(uint32_t));
   }
+  HARDENED_CHECK_EQ(i, num_words);
+  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
 }
 
 void otp_creator_sw_cfg_lockdown(void) {
