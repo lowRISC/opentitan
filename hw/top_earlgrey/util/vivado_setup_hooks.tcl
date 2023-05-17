@@ -11,6 +11,9 @@ set workroot [pwd]
 # Pre synthesize design hook
 set_property STEPS.SYNTH_DESIGN.TCL.PRE "${workroot}/vivado_hook_synth_design_pre.tcl" [get_runs synth_1]
 
+# Pre implementation (init design) post hook
+set_property STEPS.INIT_DESIGN.TCL.POST "${workroot}/vivado_hook_init_design_post.tcl" [get_runs impl_1]
+
 # Post opt design hook
 set_property STEPS.OPT_DESIGN.TCL.POST "${workroot}/vivado_hook_opt_design_post.tcl" [get_runs impl_1]
 
