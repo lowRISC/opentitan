@@ -347,14 +347,25 @@ static void shutdown_print(shutdown_log_prefix_t prefix, uint32_t val) {
   abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, prefix >> 24);
 
   // Print the hex representation of `val`.
+  static_assert(kHexStrLen == 8,
+                "Hex representation must be 8 characters long");
   const char kHexTable[16] = "0123456789abcdef";
-  // `kHexStrLen` is laundered so that it is loaded to a register at every
-  // iteration.
-  for (size_t i = 0; i < launder32(kHexStrLen); ++i) {
-    uint8_t nibble = (uint8_t)bitfield_field32_read(
-        val, (bitfield_field32_t){.mask = 0xf, .index = (7 - i) * 4});
-    abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, kHexTable[nibble]);
-  }
+  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET,
+                   kHexTable[val >> 28 & 0xf]);
+  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET,
+                   kHexTable[val >> 24 & 0xf]);
+  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET,
+                   kHexTable[val >> 20 & 0xf]);
+  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET,
+                   kHexTable[val >> 16 & 0xf]);
+  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET,
+                   kHexTable[val >> 12 & 0xf]);
+  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET,
+                   kHexTable[val >> 8 & 0xf]);
+  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET,
+                   kHexTable[val >> 4 & 0xf]);
+  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, kHexTable[val & 0xf]);
+
   abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, '\r');
   abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, '\n');
 }
