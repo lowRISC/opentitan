@@ -77,10 +77,15 @@ void lifecycle_device_id_get(lifecycle_device_id_t *device_id) {
       kLifecycleDeviceIdNumWords == LC_CTRL_PARAM_NUM_DEVICE_ID_WORDS,
       "length of the device_id array does not match the length in hardware");
 
-  for (size_t i = 0; i < kLifecycleDeviceIdNumWords; ++i) {
+  size_t i = 0, r = kLifecycleDeviceIdNumWords - 1;
+  for (; launder32(i) < kLifecycleDeviceIdNumWords &&
+         launder32(r) < kLifecycleDeviceIdNumWords;
+       ++i, --r) {
     device_id->device_id[i] = sec_mmio_read32(
         kBase + LC_CTRL_DEVICE_ID_0_REG_OFFSET + i * sizeof(uint32_t));
   }
+  HARDENED_CHECK_EQ(i, kLifecycleDeviceIdNumWords);
+  HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
 }
 
 void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
