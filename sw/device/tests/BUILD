@@ -2343,7 +2343,6 @@ opentitan_functest(
     srcs = ["example_test_from_flash.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_test_unlocked0",
-        tags = ["jtag"],
         test_cmds = [
             "--rom-kind=rom",
             "--bitstream=\"$(rootpath {bitstream})\"",
