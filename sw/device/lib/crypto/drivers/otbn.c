@@ -102,8 +102,8 @@ static status_t otbn_assert_idle(void) {
       .value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value ^ status)};
   status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
   res.value ^= ~status;
-  if (launder32(hardened_status_ok(res)) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(hardened_status_ok(res), kHardenedBoolTrue);
+  if (launder32(res.value) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(res.value, kHardenedBoolTrue);
     HARDENED_CHECK_EQ(abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET),
                       kOtbnStatusIdle);
     return res;
@@ -188,7 +188,7 @@ status_t otbn_execute(void) {
 status_t otbn_busy_wait_for_done(void) {
   uint32_t status = launder32(UINT32_MAX);
   status_t res = (status_t){
-      .value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value ^ status)};
+      .value = (int32_t)launder32((uint32_t)kHardenedBoolTrue ^ status)};
   do {
     status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
   } while (launder32(status) != kOtbnStatusIdle &&
@@ -197,9 +197,9 @@ status_t otbn_busy_wait_for_done(void) {
 
   uint32_t err_bits = otbn_err_bits_get();
 
-  if (launder32(hardened_status_ok(res)) == kHardenedBoolTrue &&
+  if (launder32(res.value) == kHardenedBoolTrue &&
       launder32(err_bits) == kOtbnErrBitsNoError) {
-    HARDENED_CHECK_EQ(hardened_status_ok(res), kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(res.value, kHardenedBoolTrue);
     err_bits = otbn_err_bits_get();
     HARDENED_CHECK_EQ(err_bits, kOtbnErrBitsNoError);
     HARDENED_CHECK_EQ(abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET),

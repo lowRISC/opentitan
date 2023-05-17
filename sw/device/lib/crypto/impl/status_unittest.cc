@@ -56,10 +56,6 @@ TEST(Status, TopLevelStatusHammingDistance) {
   }
 }
 
-TEST(Status, OkIsHardenedOk) {
-  EXPECT_EQ(hardened_status_ok(OTCRYPTO_OK), kHardenedBoolTrue);
-}
-
 TEST(Status, OkIsNonHardenedOk) { EXPECT_EQ(status_ok(OTCRYPTO_OK), true); }
 
 TEST(Status, ErrorMacrosNotOk) {
@@ -68,14 +64,6 @@ TEST(Status, ErrorMacrosNotOk) {
   EXPECT_EQ(status_ok(OTCRYPTO_RECOV_ERR), false);
   EXPECT_EQ(status_ok(OTCRYPTO_FATAL_ERR), false);
   EXPECT_EQ(status_ok(OTCRYPTO_ASYNC_INCOMPLETE), false);
-}
-
-TEST(Status, ErrorMacrosNotHardenedOk) {
-  // Error macros should evaluate to non-OK statuses.
-  EXPECT_EQ(hardened_status_ok(OTCRYPTO_BAD_ARGS), kHardenedBoolFalse);
-  EXPECT_EQ(hardened_status_ok(OTCRYPTO_RECOV_ERR), kHardenedBoolFalse);
-  EXPECT_EQ(hardened_status_ok(OTCRYPTO_FATAL_ERR), kHardenedBoolFalse);
-  EXPECT_EQ(hardened_status_ok(OTCRYPTO_ASYNC_INCOMPLETE), kHardenedBoolFalse);
 }
 
 TEST(Status, InterpretErrorMacros) {
@@ -88,6 +76,28 @@ TEST(Status, InterpretErrorMacros) {
             kCryptoStatusFatalError);
   EXPECT_EQ(crypto_status_interpret(OTCRYPTO_ASYNC_INCOMPLETE),
             kCryptoStatusAsyncIncomplete);
+}
+
+__attribute__((noinline)) status_t do_hardened_try(status_t status) {
+  HARDENED_TRY(status);
+  return OTCRYPTO_OK;
+}
+
+TEST(Status, HardenedTryOfNonHardenedOkIsError) {
+  EXPECT_EQ(status_err(do_hardened_try(OK_STATUS())), kFailedPrecondition);
+}
+
+TEST(Status, HardenedTryOfHardenedOkIsOk) {
+  EXPECT_EQ(status_ok(do_hardened_try(OTCRYPTO_OK)), true);
+}
+
+TEST(Status, HardenedTryOfErrorIsError) {
+  EXPECT_EQ(status_ok(do_hardened_try(INVALID_ARGUMENT())), false);
+}
+
+TEST(Status, HardenedTryOfErrorWithTruthyArgIsError) {
+  EXPECT_EQ(status_ok(do_hardened_try(INVALID_ARGUMENT(kHardenedBoolTrue))),
+            false);
 }
 
 __attribute__((noinline)) crypto_status_t try_interpret(status_t status) {
