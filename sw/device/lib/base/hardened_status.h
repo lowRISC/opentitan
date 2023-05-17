@@ -29,7 +29,7 @@ extern "C" {
  * Hardened version of the `TRY` macro from `status.h`.
  *
  * Returns the error unmodified if `status_ok` fails, and throws an
- * `INTERNAL()` errror if the OK code does not match the hardened value.
+ * `INTERNAL()` error if the OK code does not match the hardened value.
  *
  * @param expr_ An expression that evaluates to a `status_t`.
  * @return The enclosed OK value.
