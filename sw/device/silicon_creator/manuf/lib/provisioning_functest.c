@@ -23,11 +23,6 @@
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
-static_assert(
-    (sizeof(wrapped_rma_unlock_token_t) % sizeof(uint32_t)) == 0,
-    "Size of the wrapped_rma_unlock_token_t struct must the an even multiple "
-    "of 32-bit words since it is written to the non-volatile flash region.");
-
 /**
  * DIF Handles.
  *
