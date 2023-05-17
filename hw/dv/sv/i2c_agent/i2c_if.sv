@@ -173,18 +173,40 @@ interface i2c_if(
     join
   endtask: wait_for_host_ack_or_nack
 
-  task automatic wait_for_device_ack(ref timing_cfg_t tc);
+  task automatic wait_for_device_ack(ref timing_cfg_t tc, input bit ack_bit = 1'b1);
     @(negedge sda_o && scl_o);
     wait_for_dly(tc.tSetupBit);
     forever begin
       @(posedge scl_i);
-      if (!sda_o) begin
+      if (sda_o == ack_bit) begin
         wait_for_dly(tc.tClockPulse);
         break;
       end
     end
     wait_for_dly(tc.tHoldBit);
   endtask: wait_for_device_ack
+
+  task automatic wait_for_device_ack_or_nack(timing_cfg_t tc,
+                                           output bit   ack_r);
+    bit ack = 1'b0;
+    bit nack = 1'b0;
+    fork
+      begin : iso_fork
+        fork
+          begin
+            wait_for_device_ack(tc, .ack_bit(1'b0));
+            ack = 1'b1;
+          end
+          begin
+            wait_for_device_ack(tc, .ack_bit(1'b1));
+            nack = 1'b1;
+          end
+        join_any
+        disable fork;
+      end : iso_fork
+    join
+    ack_r = ack && !nack;
+  endtask: wait_for_device_ack_or_nack
 
   // the `sda_unstable` interrupt is asserted if, when receiving data or ,
   // ack pulse (device_send_ack) the value of the target sda signal does not

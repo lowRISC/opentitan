@@ -74,6 +74,10 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   bit                        skip_target_txn_comp = 0;
   bit                        skip_target_rd_comp = 0;
 
+  // Variable to sample fmt fifo data
+  i2c_item                   fmt_fifo_data_q[$];
+  i2c_item                   fmt_fifo_data;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -89,6 +93,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     target_mode_rd_exp_fifo = new("target_mode_rd_exp_fifo", this);
     target_mode_rd_obs_fifo = new("target_mode_rd_obs_fifo", this);
     target_mode_wr_obs_port = new("target_mode_wr_obs_port", this);
+    `uvm_create_obj(i2c_item, fmt_fifo_data)
   endfunction : build_phase
 
   function void connect_phase(uvm_phase phase);
@@ -230,7 +235,6 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         "fdata": begin
           bit [7:0] fbyte;
           bit start, stop, read, rcont, nakok;
-
           if (!cfg.under_reset && host_init) begin
             fbyte = get_field_val(ral.fdata.fbyte, item.a_data);
             start = bit'(get_field_val(ral.fdata.start, item.a_data));
@@ -238,21 +242,17 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             read  = bit'(get_field_val(ral.fdata.read, item.a_data));
             rcont = bit'(get_field_val(ral.fdata.rcont, item.a_data));
             nakok = bit'(get_field_val(ral.fdata.nakok, item.a_data));
-
             if (cfg.en_cov) begin
-              cov.fmt_fifo_cg.sample(
-                .fbyte(fbyte),
-                .start(start),
-                .stop(stop),
-                .read(read),
-                .rcont(rcont),
-                .nakok(nakok),
-                //TODO(#18033) at this point we do not yet know whether we receive an acknowledgement or not.
-                // We should cover this for V3.
-                .ack_int_recv(1'b0)
-              );
+              i2c_item fmt_data;
+              fmt_fifo_data.fbyte = fbyte;
+              fmt_fifo_data.start = start;
+              fmt_fifo_data.stop  = stop;
+              fmt_fifo_data.read  = read;
+              fmt_fifo_data.rcont = rcont;
+              fmt_fifo_data.nakok = nakok;
+              `downcast(fmt_data, fmt_fifo_data.clone());
+              fmt_fifo_data_q.push_back(fmt_data); // push data to fmt_fifo_data_q
             end
-
             // target address is begin programmed to begin a transaction
             if (start) begin
               tran_id++;
@@ -351,16 +351,15 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             exp_rd_item.clear_all();
           end
           if (cfg.en_cov) begin
+            if (fmtrst_val) begin
+              fmt_fifo_data_q.delete();
+            end
             cov.fmt_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[FmtThreshold]),
                                          .fifolvl(`gmv(ral.fifo_status.fmtlvl)),
                                          .rst(fmtrst_val));
-          end
-          if (cfg.en_cov) begin
             cov.rx_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[RxThreshold]),
                                         .fifolvl(`gmv(ral.fifo_status.rxlvl)),
                                         .rst(rxrst_val));
-          end
-          if (cfg.en_cov) begin
             cov.fifo_reset_cg.sample(.fmtrst(fmtrst_val),
                                      .rxrst (rxrst_val),
                                      .acqrst(acqrst_val),
@@ -583,6 +582,50 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     end // data_phase_read
   endtask : process_tl_access
 
+  // Task to sample FMT FIFO data along with ACK/NACK status
+  // For Read transactions, one entry of FMT FIFO data is sampled
+  //     since read data is captured in RXDAT FIFO
+  // For Write transactions, multiple entries of FMT FIFO data are sampled
+  //     since write data is encoded in to multiple fbyte values
+  task sample_fmt_fifo_data(ref i2c_item dut_trn);
+    if (cfg.en_cov) begin
+      i2c_item fmt_data;
+      `uvm_info(`gfn, $sformatf("exp_txn.addr_ack = %0b", dut_trn.addr_ack), UVM_DEBUG)
+      fmt_data = fmt_fifo_data_q.pop_front();
+      `uvm_info(`gfn, dut_trn.sprint(), UVM_DEBUG)
+      `uvm_info(`gfn, fmt_data.sprint(), UVM_DEBUG)
+      cov.fmt_fifo_cg.sample(
+        .fbyte(fmt_data.fbyte),
+        .start(fmt_data.start),
+        .stop(fmt_data.stop),
+        .read(fmt_data.read),
+        .rcont(fmt_data.rcont),
+        .nakok(fmt_data.nakok),
+        .ack_int_recv(dut_trn.read ? dut_trn.ack : dut_trn.addr_ack)
+        );
+        `uvm_info(`gfn,
+          $sformatf("fmt_data.size = %0d ; dut_trn.size = %0d",
+            fmt_fifo_data_q.size(),
+            dut_trn.data_q.size()),
+          UVM_MEDIUM)
+      if (dut_trn.bus_op != BusOpRead) begin
+        foreach(dut_trn.data_q[i]) begin
+          fmt_data = fmt_fifo_data_q.pop_front();
+          cov.fmt_fifo_cg.sample(
+            .start(fmt_data.start),
+            .stop(fmt_data.stop),
+            .read(fmt_data.read),
+            .rcont(fmt_data.rcont),
+            .nakok(fmt_data.nakok),
+            .fbyte(fmt_data.fbyte),
+            .ack_int_recv(fmt_data.data_ack_q[i])
+          );
+        end
+      end
+    end
+
+  endtask
+
   task compare_trans(bus_op_e dir = BusOpWrite);
     i2c_item   exp_trn;
     i2c_item   dut_trn;
@@ -605,6 +648,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         wait(exp_rd_q.size() > 0);
         exp_trn = exp_rd_q.pop_front();
       end
+      sample_fmt_fifo_data(dut_trn);
       if (!cfg.en_scb) begin // Skip comparison
         `uvm_info(`gfn, "Scoreboard disabled", UVM_LOW)
         continue;
@@ -664,6 +708,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     target_mode_rd_exp_fifo.flush();
     target_mode_rd_obs_fifo.flush();
     mirrored_txdata.delete();
+    fmt_fifo_data_q.delete();
   endfunction : reset
 
   function void report_phase(uvm_phase phase);

@@ -11,6 +11,8 @@ class i2c_item extends uvm_sequence_item;
   int                      num_data;  // valid data
   bus_op_e                 bus_op;
   drv_type_e               drv_type;
+  bit                      addr_ack;
+  bit                      data_ack_q[$];
   // transaction control part
   bit                      nack;
   bit                      ack;
@@ -68,6 +70,8 @@ class i2c_item extends uvm_sequence_item;
     `uvm_field_int(nakok,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
     `uvm_field_enum(drv_type_e,  drv_type,  UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_field_int(wait_cycles,             UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_int(addr_ack,                UVM_DEFAULT | UVM_NOCOMPARE | UVM_NOPRINT)
+    `uvm_field_queue_int(data_ack_q,        UVM_DEFAULT | UVM_NOCOMPARE | UVM_NOPRINT)
   `uvm_object_utils_end
 
   `uvm_object_new
@@ -80,6 +84,8 @@ class i2c_item extends uvm_sequence_item;
     fmt_ovf_data_q.delete();
     wdata = 0;
     rdata = 0;
+    addr_ack = 0;
+    data_ack_q.delete();
   endfunction : clear_data
 
   function void clear_flag();

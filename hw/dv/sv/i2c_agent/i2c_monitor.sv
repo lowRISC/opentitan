@@ -141,7 +141,10 @@ class i2c_monitor extends dv_base_monitor #(
     `downcast(clone_item, mon_dut_item.clone());
     `uvm_info(`gfn, $sformatf("Req analysis port: address thread"), UVM_HIGH)
     req_analysis_port.write(clone_item);
-    cfg.vif.wait_for_device_ack(cfg.timing_cfg);
+    cfg.vif.wait_for_device_ack_or_nack(cfg.timing_cfg, mon_dut_item.addr_ack);
+    `uvm_info(`gfn,
+      $sformatf("\nmonitor, address : %s", mon_dut_item.addr_ack ? "ACK": "NACK"),
+      UVM_DEBUG)
     `uvm_info(`gfn, "\nmonitor, address, detect TARGET ACK", UVM_HIGH)
   endtask : address_thread
 
@@ -170,6 +173,7 @@ class i2c_monitor extends dv_base_monitor #(
           mon_dut_item.tran_id, mon_dut_item.num_data, mon_data), UVM_HIGH)
       // sample host ack/nack (in the last byte, nack can be issue if rcont is set)
       cfg.vif.wait_for_host_ack_or_nack(cfg.timing_cfg, mon_dut_item.ack, mon_dut_item.nack);
+      mon_dut_item.data_ack_q.push_back(mon_dut_item.ack && !mon_dut_item.nack);
       `DV_CHECK_NE_FATAL({mon_dut_item.ack, mon_dut_item.nack}, 2'b11)
       `uvm_info(`gfn, $sformatf("\nmonitor, detect HOST %s",
           (mon_dut_item.ack) ? "ACK" : "NO_ACK"), UVM_HIGH)
@@ -198,6 +202,7 @@ class i2c_monitor extends dv_base_monitor #(
         begin : iso_fork_write
           fork
             begin
+              bit ack_nack;
                `uvm_info(`gfn, "Req analysis port: write thread data", UVM_HIGH)
               // ask driver's response a write request
               mon_dut_item.drv_type = WrData;
@@ -217,7 +222,9 @@ class i2c_monitor extends dv_base_monitor #(
               `downcast(clone_item, mon_dut_item.clone());
               `uvm_info(`gfn, $sformatf("Req analysis port: write thread ack"), UVM_HIGH)
               req_analysis_port.write(clone_item);
-              cfg.vif.wait_for_device_ack(cfg.timing_cfg);
+              // sample ack/nack
+              cfg.vif.wait_for_device_ack_or_nack(cfg.timing_cfg, ack_nack);
+              mon_dut_item.data_ack_q.push_back(ack_nack);
             end
             begin
               cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
