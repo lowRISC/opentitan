@@ -7,7 +7,7 @@
 // Default is 0.
 // If this variable is set to 1, c test takes lc_ctrl_mutex and
 // do lc state transition.
-class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
+class chip_sw_lc_ctrl_transition_vseq extends chip_sw_lc_base_vseq;
   `uvm_object_utils(chip_sw_lc_ctrl_transition_vseq)
 
   `uvm_object_new
@@ -16,11 +16,6 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
   rand bit [7:0] lc_unlock_token[TokenWidthByte];
 
   constraint num_trans_c {num_trans inside {[1 : 2]};}
-
-  virtual task pre_start();
-    cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
-    super.pre_start();
-  endtask
 
   virtual function void backdoor_override_otp();
     // Override the LC partition to TestLocked1 state.
@@ -31,11 +26,6 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
         .unlock_token(dec_otp_token_from_lc_csrs(lc_unlock_token)),
         .exit_token(dec_otp_token_from_lc_csrs(lc_exit_token)));
   endfunction
-
-  virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init(reset_kind);
-    backdoor_override_otp();
-  endtask
 
   virtual task body();
     bit [7:0] ext_clock_en_array[1];

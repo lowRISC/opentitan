@@ -1,7 +1,7 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_base_vseq;
+class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_lc_base_vseq;
   `uvm_object_utils(chip_sw_lc_ctrl_scrap_vseq)
   `uvm_object_new
 
@@ -49,21 +49,11 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_base_vseq;
     `DV_CHECK_FATAL(src_state != DecLcStScrap)
   endfunction : post_randomize
 
-  virtual task pre_start();
-    cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
-    super.pre_start();
-  endtask : pre_start
-
   virtual function void backdoor_override_otp();
     // Override the LC partition to TestLocked1 state.
     cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(
         lc_ctrl_dv_utils_pkg::encode_lc_state(src_state));
   endfunction : backdoor_override_otp
-
-  virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init(reset_kind);
-    backdoor_override_otp();
-  endtask : dut_init
 
   protected task sync_with_sw();
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusBooted)
