@@ -63,11 +63,12 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
     selected_dest_state = {dest_dec_state};
     sw_symbol_backdoor_overwrite("kDestState", selected_dest_state);
 
-    wait_lc_ready(1);
+    switch_to_external_clock();
     jtag_lc_state_transition(DecLcStRaw, DecLcStTestUnlocked0);
     apply_reset();
 
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Waiting for LC transition done and reboot.")
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Waiting for LC transition done and reboot.",,
+             50_000_000)
     // Wait for a large number of cycles to transit to RMA state.
     wait_lc_status(LcTransitionSuccessful, 50_000);
     apply_reset();
@@ -76,7 +77,8 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
 
     // The following states will transfer twice to make sure LC_EXIT and RMA tokens are used.
     if (dest_dec_state inside {DecLcStProd, DecLcStDev}) begin
-      `DV_WAIT(cfg.sw_logger_vif.printed_log == "Waiting for LC RMA transition done and reboot.")
+      `DV_WAIT(cfg.sw_logger_vif.printed_log == "Waiting for LC RMA transition done and reboot.",,
+               50_000_000)
 
       // If small_rma enabled
       if (cfg.en_small_rma) begin
@@ -85,7 +87,7 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
       end
 
       // Wait for a large number of cycles to transit to RMA state.
-      wait_lc_status(LcTransitionSuccessful, 50_000);
+      wait_lc_status(LcTransitionSuccessful, 1_500_000);
       apply_reset();
       reload_flash_after_rma_transfer();
     end
