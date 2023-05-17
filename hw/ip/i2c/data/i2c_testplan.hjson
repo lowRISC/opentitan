@@ -421,7 +421,7 @@
               - Whether acq_full interrupt raised
             '''
       stage: V2
-      tests: ["i2c_target_stress_wr", "i2c_target_stress_rd"]
+      tests: ["i2c_target_stress_wr", "i2c_target_stress_rd", "i2c_target_intr_stress_wr"]
     }
     {
       name: target_timeout
