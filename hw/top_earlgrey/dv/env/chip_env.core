@@ -54,6 +54,7 @@ filesets:
       - seq_lib/chip_prim_tl_access_vseq.sv: {is_include_file: true}
       - seq_lib/chip_tap_straps_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_base_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/chip_jtag_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_alert_handler_entropy_vseq.sv: {is_include_file: true}
