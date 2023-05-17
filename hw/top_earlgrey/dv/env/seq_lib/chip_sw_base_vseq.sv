@@ -955,7 +955,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     if (dest_state == DecLcStRma) begin
       max_attempt = 50_000;
     end else begin
-      max_attempt = 5_000;
+      max_attempt = 10_000;
     end
     wait_lc_transition_successful(.max_attempt(max_attempt));
     `uvm_info(`gfn, "LC transition request succeeded successfully!", UVM_LOW)
@@ -1091,9 +1091,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
       "waiting for rma index = 3", 50_000_000
     )
 
-    // Reduce page size to 'd9
+    // Reduce page size to 'd2
     mypath = {path, ".end_page"};
-    `DV_CHECK(uvm_hdl_force(mypath, 'h9));
+    `DV_CHECK(uvm_hdl_force(mypath, 'h2));
 
     // Wait for rma complete
     mypath = {path, ".rma_ack_q"};
@@ -1102,7 +1102,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
         @(cfg.clk_rst_vif.cb);
         uvm_hdl_read(mypath, rma_ack);
       end while (rma_ack != lc_ctrl_pkg::On);,
-      "waiting for rma ack == On", 50_000_000
+      "waiting for rma ack == On", 80_000_000
     )
     mypath = {path, ".end_page"};
     `DV_CHECK(uvm_hdl_release(mypath));

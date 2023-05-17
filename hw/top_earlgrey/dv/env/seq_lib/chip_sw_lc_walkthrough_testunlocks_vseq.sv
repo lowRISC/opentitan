@@ -65,13 +65,14 @@ class chip_sw_lc_walkthrough_testunlocks_vseq extends chip_sw_base_vseq;
       apply_reset();
 
       `uvm_info(`gfn, $sformatf("Current state %0s", curr_state.name), UVM_LOW)
-      wait_lc_ready(.allow_err(1));
       if (curr_state inside {DecLcStTestLocked0, DecLcStTestLocked1, DecLcStTestLocked2,
                              DecLcStTestLocked3, DecLcStTestLocked4, DecLcStTestLocked5,
                              DecLcStTestLocked6}) begin
         switch_to_external_clock();
+      end else begin
+        wait_lc_ready();
       end
-      switch_to_external_clock();
+
       jtag_lc_state_transition(curr_state, dec_lc_state_e'(curr_state + 1), {<<8{lc_unlock_token}});
       apply_reset();
       curr_state = dec_lc_state_e'(curr_state + 2);

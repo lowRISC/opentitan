@@ -74,8 +74,9 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_base_vseq;
     // perform transition through JTAG if we're not using SW transition
     // or if SW transition isn't allowed (RAW/TEST_LOCKED*)
     if (!perform_transition_via_sw) begin : jtag_transition
+      // Change to the external clock and
       // acquire the LC controller access to registers
-      wait_lc_ready(.allow_err(1));
+      switch_to_external_clock();
 
       // perform a LC state transition
       jtag_lc_state_transition(src_state, DecLcStScrap);
