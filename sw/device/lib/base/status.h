@@ -96,11 +96,36 @@ typedef struct status {
 // clang-format on
 
 /**
+ * Report an error status.
+ *
+ * This header does not specify how the error is
+ * reported, or if it reported at all. Since status_t encodes the location
+ * of an error, this provides the infrastructure for a lightweight
+ * "stack trace".
+ */
+void status_report(status_t value);
+
+/**
+ * Report an error status at the calling site.
+ *
+ * Given a status_t representing an error, report a status that records
+ * this error and the location of the caller of this macro. Note that
+ * this overwrites the module ID and argument of the status passed.
+ */
+#define STATUS_REPORT_HERE(status)                                       \
+  ({                                                                     \
+    absl_status_t err = status_err(status);                              \
+    status_t report = status_create(err, MODULE_ID, __FILE__, __LINE__); \
+    status_report(report);                                               \
+  })
+
+/**
  * Evaluates a status_t for Ok or Error status, returning the Ok value.
  *
  * This macro is like the `try!` macro (or now `?` operator) in Rust:
  * It evaluates to the contained OK value or it immediately returns from
  * the enclosing function with the error value.
+ * In case of error, it will add an entry to the stack trace.
  *
  * @param expr_ An expression that can be converted to a `status_t`.
  * @return The enclosed OK value.
@@ -109,6 +134,7 @@ typedef struct status {
   ({                                       \
     status_t status_ = INTO_STATUS(expr_); \
     if (status_.value < 0) {               \
+      STATUS_REPORT_HERE(status_);         \
       return status_;                      \
     }                                      \
     status_.value;                         \
