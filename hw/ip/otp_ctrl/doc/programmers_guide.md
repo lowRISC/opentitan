@@ -224,7 +224,7 @@ This is however rare and should not happen after fabrication testing.
 
 ## Register Table
 
-* [Register Tabel](../data/otp_ctrl.hjson#registers)
+* [Register Table](../data/otp_ctrl.hjson#registers)
 
 # Additional Notes
 
