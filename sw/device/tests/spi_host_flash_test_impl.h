@@ -33,6 +33,17 @@ status_t test_read_sfdp(dif_spi_host_t *spi);
 status_t test_sector_erase(dif_spi_host_t *spi);
 
 /**
+ * Read jedec and check the device_id and manufacturer_id.
+ *
+ * @param spi A spi host handler.
+ * @param device_id The expected device_id.
+ * @param manufacture_id The expected manufacture_id.
+ * @return status_t containing either OK or an error.
+ */
+status_t test_read_jedec(dif_spi_host_t *spi, uint16_t device_id,
+                         uint16_t manufacture_id);
+
+/**
  * Send the enable quad mode command.
  *
  * @param spi A spi host handler.
