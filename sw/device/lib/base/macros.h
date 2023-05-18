@@ -11,6 +11,14 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#ifdef __cplusplus
+// The <type_traits> header is required for the C++-only `SignConverter` class.
+// See `SignConverter` for an explanation of this `extern "C++"` block.
+extern "C++" {
+#include <type_traits>
+}
+#endif
 #endif
 
 /**
@@ -448,5 +456,58 @@
  *  This macro is used to align an offset to point to a 32b value.
  */
 #define OT_ALIGN_MEM(x) (uint32_t)(4 + (((uintptr_t)(x)-1) & ~3))
+
+#ifndef RUST_PREPROCESSOR_EMIT
+#ifndef __cplusplus
+struct OtSignConversionUnsupportedType {
+  char err;
+};
+
+/**
+ * This macro converts a given unsigned integer value to its signed counterpart.
+ */
+#define OT_SIGNED(value)          \
+  _Generic((value),               \
+      uint8_t: (int8_t)(value),   \
+      uint16_t: (int16_t)(value), \
+      uint32_t: (int32_t)(value), \
+      uint64_t: (int64_t)(value), \
+      default: (struct OtSignConversionUnsupportedType){.err = 1})
+
+/**
+ * This macro converts a given signed integer value to its unsigned counterpart.
+ */
+#define OT_UNSIGNED(value)        \
+  _Generic((value),               \
+      int8_t: (uint8_t)(value),   \
+      int16_t: (uint16_t)(value), \
+      int32_t: (uint32_t)(value), \
+      int64_t: (uint64_t)(value), \
+      default: (struct OtSignConversionUnsupportedType){.err = 1})
+#else  // __cplusplus
+// Templates require "C++" linkage. Even though this block is only reachable
+// when __cplusplus is defined, it's possible that we are in the middle of an
+// `extern "C"` block. In case that is true, we explicitly set the linkage to
+// "C++" for the coming C++ templates.
+extern "C++" {
+namespace {
+template <typename T>
+class SignConverter {
+ public:
+  using SignedT = typename std::make_signed<T>::type;
+  using UnsignedT = typename std::make_unsigned<T>::type;
+  static constexpr SignedT as_signed(T value) {
+    return static_cast<SignedT>(value);
+  }
+  static constexpr UnsignedT as_unsigned(T value) {
+    return static_cast<UnsignedT>(value);
+  }
+};
+}  // namespace
+}
+#define OT_SIGNED(value) (SignConverter<typeof(value)>::as_signed((value)))
+#define OT_UNSIGNED(value) (SignConverter<typeof(value)>::as_unsigned((value)))
+#endif  // __cplusplus
+#endif  // RUST_PREPROCESSOR_EMIT
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
