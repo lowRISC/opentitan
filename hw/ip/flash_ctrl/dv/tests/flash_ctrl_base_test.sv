@@ -52,6 +52,8 @@ class flash_ctrl_base_test #(
   // Add flash_ctrl only plusarg
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+     // Knob to use small page rma
+    void'($value$plusargs("en_small_rma=%0b", cfg.en_small_rma));
     void'($value$plusargs("scb_otf_en=%0b", cfg.scb_otf_en));
     void'($value$plusargs("multi_alert=%0b", cfg.multi_alert_en));
     void'($value$plusargs("ecc_mode=%0d", cfg.ecc_mode));
