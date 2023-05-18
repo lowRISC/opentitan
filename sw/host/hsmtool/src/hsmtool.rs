@@ -7,7 +7,7 @@ use clap::Parser;
 use cryptoki::session::UserType;
 use log::LevelFilter;
 
-use hsmtool::commands::{print_result, Commands, Dispatch, Format};
+use hsmtool::commands::{print_command, print_result, Commands, Dispatch, Format};
 use hsmtool::module;
 use hsmtool::util::attribute::AttributeMap;
 
@@ -46,6 +46,13 @@ struct Args {
     #[arg(short, long, env = "HSMTOOL_PIN", help = "Pin")]
     pin: Option<String>,
 
+    #[arg(
+        long,
+        default_value = "false",
+        help = "Show JSON encode of the command"
+    )]
+    show_json: bool,
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -64,6 +71,10 @@ fn main() -> Result<()> {
     log::set_max_level(LevelFilter::Off);
     let _ = AttributeMap::all();
     log::set_max_level(args.logging);
+
+    if args.show_json {
+        return print_command(args.format, args.color, args.command.leaf());
+    }
 
     let session = if let Some(token) = &args.token {
         Some(module::connect(

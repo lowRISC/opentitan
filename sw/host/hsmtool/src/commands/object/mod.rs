@@ -39,4 +39,15 @@ impl Dispatch for Object {
             Object::Update(x) => x.run(context, pkcs11, session),
         }
     }
+    fn leaf(&self) -> &dyn Dispatch
+    where
+        Self: Sized,
+    {
+        match self {
+            Object::Destroy(x) => x.leaf(),
+            Object::List(x) => x.leaf(),
+            Object::Show(x) => x.leaf(),
+            Object::Update(x) => x.leaf(),
+        }
+    }
 }

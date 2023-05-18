@@ -48,4 +48,18 @@ impl Dispatch for Rsa {
             Rsa::Verify(x) => x.run(context, pkcs11, session),
         }
     }
+    fn leaf(&self) -> &dyn Dispatch
+    where
+        Self: Sized,
+    {
+        match self {
+            Rsa::Decrypt(x) => x.leaf(),
+            Rsa::Encrypt(x) => x.leaf(),
+            Rsa::Generate(x) => x.leaf(),
+            Rsa::Export(x) => x.leaf(),
+            Rsa::Import(x) => x.leaf(),
+            Rsa::Sign(x) => x.leaf(),
+            Rsa::Verify(x) => x.leaf(),
+        }
+    }
 }
