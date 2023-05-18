@@ -314,6 +314,48 @@ covergroup i2c_timing_param_cg(string name="i2c_timing_param_cg") with
   }
 endgroup : i2c_timing_param_cg
 
+// Cover SCL stretch functionality in Host and Target modes
+covergroup i2c_scl_stretch_cg(bit[15:0] FIFO_SIZE) with function sample(
+  bit host_mode,
+  bit intr_stretch_timeout,
+  bit host_timeout_ctrl_en,
+  bit intr_tx_stretch,
+  bit intr_acq_full,
+  uint acq_fifo_size,
+  uint tx_fifo_size
+);
+  // Stretch detected if cio_scl_en_o is not asserted but still cio_scl_i low which indicates
+  // target device is stretching the clock, if the number of cycles SCL is stretched exceeds
+  // a timeout value intr_stretch_timeout is raised
+  cp_host_mode_stretch : coverpoint intr_stretch_timeout iff (
+      host_mode && host_timeout_ctrl_en){
+    bins stretch = {1};
+    ignore_bins unused = {0};
+  }
+
+  // Target mode SCL stretch due to three scenarios
+  // 1. ACQ full, can be an Address or Write data byte, both indicated by intr_acq_full
+  // 2. During Read transaction, if TX FIFO is empty and ACQ FIFO has read transaction, indicated
+  //    by intr_tx_stretch
+  // 3. For a Read transaction, if ACQ FIFO has more than one entry, indicated by intr_tx_stretch
+  cp_acq_fifo_size : coverpoint acq_fifo_size {
+    bins empty = {0};
+    bins not_empty = {[1:FIFO_SIZE-1]};
+  }
+  cp_tx_fifo_size : coverpoint tx_fifo_size {
+    bins empty = {0};
+    bins not_empty = {[1:FIFO_SIZE-1]};
+  }
+  cp_target_scl_stretch_addr_write: coverpoint acq_fifo_size iff (intr_acq_full && !host_mode) {
+    bins addr_write_byte_stretch = {FIFO_SIZE-1};
+  }
+  cp_target_scl_stretch_read : cross cp_acq_fifo_size, cp_tx_fifo_size
+    iff (intr_tx_stretch && !host_mode) {
+    bins read_byte_stretch = binsof(cp_acq_fifo_size.not_empty) && binsof(cp_tx_fifo_size.empty);
+    bins scl_stretch_read_request = binsof(cp_acq_fifo_size.not_empty);
+  }
+endgroup : i2c_scl_stretch_cg
+
 class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
   `uvm_component_utils(i2c_env_cov)
 
@@ -339,6 +381,7 @@ class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
   i2c_timing_param_cg     thd_dat_cg;
   i2c_timing_param_cg     t_buf_cg;
   i2c_timing_param_cg     tsu_sto_cg;
+  i2c_scl_stretch_cg      scl_stretch_cg;
   bit got_first_addr;
   bit [7:0] past_addr;
 
@@ -365,6 +408,7 @@ class i2c_env_cov extends cip_base_env_cov #(.CFG_T(i2c_env_cfg));
     thd_dat_cg = new("thd_dat_cg");
     t_buf_cg = new("t_buf_cg");
     tsu_sto_cg = new("tsu_sto_cg");
+    scl_stretch_cg = new(I2C_ACQ_FIFO_DEPTH);
     got_first_addr = 0;
   endfunction : new
 

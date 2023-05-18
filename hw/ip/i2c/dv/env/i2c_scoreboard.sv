@@ -77,6 +77,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   // Variable to sample fmt fifo data
   i2c_item                   fmt_fifo_data_q[$];
   i2c_item                   fmt_fifo_data;
+  // Host mode stretch timeout control enable
+  bit                        host_timeout_ctrl_en;
 
   `uvm_component_new
 
@@ -105,6 +107,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     string str;
     super.run_phase(phase);
+    sample_scl_stretch_cg();
     //-----------------------------------------------
     // Checks for I2C DUT in TARGET/DEVICE mode
     // - (agent in HOST mode)
@@ -184,6 +187,35 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     end
   endtask : run_phase
 
+  // Task to sample the i2c_scl_stretch_cg based on the interrupts and FIFO status
+  task sample_scl_stretch_cg();
+    if (cfg.en_cov) begin
+      fork
+        forever begin
+          uint acqlvl, txlvl;
+          bit timeout_ctrl_en;
+          fork
+            wait(cfg.intr_vif.pins[StretchTimeout]);
+            wait(cfg.intr_vif.pins[TxStretch]);
+            wait(cfg.intr_vif.pins[AcqFull]);
+          join_any
+          csr_rd(.ptr(ral.fifo_status.acqlvl), .value(acqlvl), .backdoor(UVM_BACKDOOR));
+          csr_rd(.ptr(ral.fifo_status.txlvl), .value(txlvl), .backdoor(UVM_BACKDOOR));
+          cov.scl_stretch_cg.sample(
+            .host_mode(host_init),
+            .intr_stretch_timeout(cfg.intr_vif.pins[StretchTimeout]),
+            .host_timeout_ctrl_en(host_timeout_ctrl_en),
+            .intr_tx_stretch(cfg.intr_vif.pins[TxStretch]),
+            .intr_acq_full(cfg.intr_vif.pins[AcqFull]),
+            .acq_fifo_size(acqlvl),
+            .tx_fifo_size(txlvl)
+            );
+        cfg.clk_rst_vif.wait_clks(1);
+        end
+      join_none
+    end
+  endtask
+
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg   csr;
     i2c_item  sb_exp_wr_item; // tmpvar : Push into 'exp_wr_q' once a full txn is assembled
@@ -225,6 +257,9 @@ class i2c_scoreboard extends cip_base_scoreboard #(
                                         .tb_mode(!host_init),
                                         .scl_frequency(cfg.scl_frequency));
           end
+        end
+        "timeout_ctrl": begin
+          host_timeout_ctrl_en = ral.timeout_ctrl.en.get_mirrored_value();
         end
 
         "target_id": begin
