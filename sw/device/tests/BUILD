@@ -1759,6 +1759,27 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "spi_host_winbond_flash_test",
+    srcs = ["spi_host_winbond_flash_test.c"],
+    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    deps = [
+        ":spi_host_flash_test_impl",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing:spi_host_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "spi_host_irq_test",
     srcs = ["spi_host_irq_test.c"],
     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
