@@ -18,7 +18,8 @@ build --features=-pedantic_warnings
 
 # Enable toolchain hardening features.
 # `guards` adds `unimp` guard instructions after unconditional jumps.
-build --features=guards
+# TODO: currently disabled until issue #18680 is fixed.
+# build --features=guards
 
 # Enable toolchain resolution with cc
 build --incompatible_enable_cc_toolchain_resolution
