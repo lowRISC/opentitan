@@ -8,13 +8,11 @@ use cryptoki::session::Session;
 use indexmap::IndexMap;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
-use std::fs::File;
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 
-use super::AttributeError;
-
 use super::AttrData;
+use super::AttributeError;
 use super::AttributeType;
 use super::CertificateType;
 use super::Date;
@@ -314,11 +312,10 @@ impl FromStr for AttributeMap {
     /// Parses an `AttributeMap` from a string or file.
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         if let Some(path) = s.strip_prefix('@') {
-            Ok(serde_json::from_reader::<_, AttributeMap>(File::open(
-                path,
-            )?)?)
+            let data = std::fs::read_to_string(path)?;
+            Ok(serde_annotate::from_str(&data)?)
         } else {
-            Ok(serde_json::from_str::<AttributeMap>(s)?)
+            Ok(serde_annotate::from_str(s)?)
         }
     }
 }
