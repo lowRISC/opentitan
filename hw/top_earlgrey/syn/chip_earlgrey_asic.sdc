@@ -50,34 +50,70 @@ set USB_CLK_PIN u_ast/clk_src_usb_o
 # target is 48MHz, overconstrain by 5%
 set USB_TCK_TARGET_PERIOD 20.8
 set USB_TCK_PERIOD [expr $USB_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
-#set_ideal_network [get_pins ${USB_CLK_PIN}]
-
+# USB clock uncertainty needs to be within 2500ppm
+set USB_CLOCK_UNCERTAINTY [expr $USB_TCK_PERIOD * .0025]
 create_clock -name USB_CLK -period ${USB_TCK_PERIOD} [get_pins ${USB_CLK_PIN}]
-set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks USB_CLK]
+set_clock_uncertainty ${USB_CLOCK_UNCERTAINTY} [get_clocks USB_CLK]
 
-set USBDEV_IOMUX_PATH top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/u_sync_1/gen_*u_impl*
-set USBDEV_OUTREG_PATH top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx
-# This requires knowledge of actual pin names, which are different depending on
-# whether we run this with tech lizbs or not.
+# This requires knowledge of actual pin names, hence we only run this if we're compiling against
+# real libs (i.e., not GTECH mode).
 if {$FOUNDRY_ROOT != ""} {
-    set USB_N_PIN  gen_flops[2]*.u_size_only_reg/D
-    set USB_P_PIN  gen_flops[3]*.u_size_only_reg/D
-    set USB_PIN    gen_flops[1]*.u_size_only_reg/D
-    set USB_D_PIN  u_usb_d_flop/gen_*u_impl*/gen_flops[0]*.u_size_only_reg/Q
-    set USB_OE_PIN u_oe_flop/gen_*u_impl*/gen_flops[0]*.u_size_only_reg/Q
-} else {
-    set USB_N_PIN  d_i[2]
-    set USB_P_PIN  d_i[3]
-    set USB_PIN    d_i[1]
-    set USB_D_PIN  u_usb_d_flop/gen_*u_impl*/q_o[0]
-    set USB_OE_PIN u_oe_flop/gen_*u_impl*/q_o[0]
-}
+  # generic constraints to make sure all reg <-> pad paths have a constraint.
+  # specific constraints to minimize skew are further below.
+  set FLOP_PATH gen_*u_impl*/gen_flops?0?*?u_size_only_reg
+  set_max_delay 5 -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_*_flop/${FLOP_PATH}/Q] \
+                  -to   [get_ports USB_*]
+  set_max_delay 5 -from [get_ports USB_*] \
+                  -to   [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/u_sync_1/${FLOP_PATH}/D]
 
-set_max_delay 5 -from [get_ports USB_N] -to [get_pins ${USBDEV_IOMUX_PATH}/${USB_N_PIN}]
-set_max_delay 5 -from [get_ports USB_P] -to [get_pins ${USBDEV_IOMUX_PATH}/${USB_P_PIN}]
-set_max_delay 5 -from [get_ports USB_*] -to [get_pins ${USBDEV_IOMUX_PATH}/${USB_PIN}]
-set_max_delay 5 -from [get_pins ${USBDEV_OUTREG_PATH}/${USB_D_PIN}] -to [get_ports USB_*]
-set_max_delay 5 -from [get_pins ${USBDEV_OUTREG_PATH}/${USB_OE_PIN}] -to [get_ports USB_*]
+  # The USB 2.0 spec specifies that full-speed driver rise/fall times can be 4ns to 20ns, and that
+  # differential edges should be within +-10% to minimize skew. Assuming the fastest rise/fall time
+  # of 4ns, we end up with a maximum skew tolerance of 400ps. In order to make the constraints
+  # straightforward, we use set_max_delay between output flop and pad driver, and constrain to 350ps to
+  # retain some margin.
+  set MAX_USB_DELAY 0.35
+
+  # output enable timing
+  set_max_delay ${MAX_USB_DELAY} -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_oe_flop/${FLOP_PATH}/Q*] \
+                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/OE"]
+  # dp output timing
+  # note that there is a path to the OE as well due to virtual open drain emulation in the pad wrapper (although it is likely not being used for USB).
+  set_max_delay ${MAX_USB_DELAY} -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_usb_dp_o_flop/${FLOP_PATH}/Q*] \
+                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/OE"]
+  set_max_delay ${MAX_USB_DELAY} -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_usb_dp_o_flop/${FLOP_PATH}/Q*] \
+                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/A"]
+
+  # dn output timing
+  # note that there is a path to the OE as well due to virtual open drain emulation in the pad wrapper (although it is likely not being used for USB).
+  set_max_delay ${MAX_USB_DELAY} -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_usb_dn_o_flop/${FLOP_PATH}/Q*] \
+                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/OE"]
+  set_max_delay ${MAX_USB_DELAY} -from [get_pins top_earlgrey/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_usb_dn_o_flop/${FLOP_PATH}/Q*] \
+                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/A"]
+
+  # We reuse the same set_max_delay constraints as for the driver paths to stay on the safe side
+  # (there is more skew budget on the receiver side according to the spec, but we shouldn't be using that
+  # up since there would otherwise be no margin for cable and PCB skew).
+  #
+  # The USBDEV has both a regular and a differential amplifier input mode.
+  # For the former, the skew only matters up to the differential amplifier inputs.
+  # For the latter, we need to constrain the skew up to the flop inputs.
+
+  # dp input timing to differential receiver
+  set_max_delay ${MAX_USB_DELAY} -from [get_ports USB_P]                                        \
+                                 -to [get_pins -leaf -filter {@pin_direction == in} -of_objects \
+                                        [get_nets -segments -of_objects                         \
+                                          [get_pins u_prim_usb_diff_rx/input_pi]]]
+
+  # dn input timing to differential receiver
+  set_max_delay ${MAX_USB_DELAY} -from [get_ports USB_N]                                        \
+                                 -to [get_pins -leaf -filter {@pin_direction == in} -of_objects \
+                                        [get_nets -segments -of_objects                         \
+                                          [get_pins u_prim_usb_diff_rx/input_ni]]]
+
+  # dp/dn input timing to regular regs
+  set_max_delay ${MAX_USB_DELAY} -from [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/Y"] \
+                                 -to   [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/u_sync_1/${FLOP_PATH}/D]
+}
 
 #####################
 # IO clk            #
