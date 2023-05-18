@@ -1038,6 +1038,7 @@ def crate_repositories():
             "-p2",
         ],
         patches = [
+            "@//third_party/rust/patches:cryptoki-pr-116.patch",
             "@//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
         ],
         sha256 = "7da58729f419780655e9b82f5c5e0c3eba3aab46ea48f610cc615b10d5baad53",

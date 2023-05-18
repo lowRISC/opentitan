@@ -17,7 +17,10 @@ crates_vendor(
         )],
         "cryptoki": [crate.annotation(
             patch_args = ["-p2"],
-            patches = ["@//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch"],
+            patches = [
+                "@//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
+                "@//third_party/rust/patches:cryptoki-pr-116.patch",
+            ],
         )],
         "cryptoki-sys": [crate.annotation(
             additive_build_file_content = """
