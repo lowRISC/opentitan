@@ -102,6 +102,10 @@ set CLK_PATH top_earlgrey/u_clkmgr_aon/u_no_scan_io_div4_div
 create_generated_clock -name IO_DIV4_CLK  \
     -source [get_pins ${IO_CLK_PIN}] -divide_by 4 [get_pins ${CLK_PATH}/${CLK_DST_NAME}]
 
+# Define these variables for later use
+set IO_DIV2_TCK_PERIOD [expr $IO_TCK_PERIOD * 2]
+set IO_DIV4_TCK_PERIOD [expr $IO_TCK_PERIOD * 4]
+
 # TODO: these are dummy constraints and likely incorrect, need to properly constrain min/max
 # note that due to the muxing, additional timing views with set_case_analysis may be needed.
 
@@ -413,6 +417,9 @@ set_output_delay ${SPI_DEV_PASSTHRU_STORAGE_OUT_DEL} [get_ports SPI_HOST_CS_L] -
 #####################
 
 # this may need some refinement (and max delay / skew needs to be constrained)
+# note that internal CDCs that are not timed as a result of this set_clock_groups
+# directive are being checked post-route to make sure they are within spec.
+# see chip_earlgrey_asic_check_only.sdc.
 set_clock_groups -name group1 -async                                  \
     -group [get_clocks MAIN_CLK                                     ] \
     -group [get_clocks USB_CLK                                      ] \
@@ -433,10 +440,6 @@ set_false_path -through [get_pins *padring/*pad/*/out_i] -through [get_pins *pad
 
 # break path through jtag mux
 set_false_path -from [get_ports IOC7] -to [get_ports IOR*]
-
-# pass through is not fully supported yet by SPI host
-# TODO: revise this
-# set_false_path -through [get_pins top_earlgrey/u_spi_host1/u_sck_passthrough/gen_*/u_size_only_mux2/${DRIVING_CELL_PIN}]
 
 #####################
 # I/O drive/load    #
@@ -467,4 +470,4 @@ puts "Done applying constraints for top level"
 ##########################################
 
 # assume a value of 0 for the open drain pad attribute
-set_case_analysis 0 [get_pins u_padring/*_pad/attr_i\[od_en\]]
+set_case_analysis 0 [get_pins u_padring/*_pad/attr_i?od_en*]
