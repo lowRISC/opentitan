@@ -55,6 +55,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   data_model_t scb_flash_info1 = '{default: 1};
   data_model_t scb_flash_info2 = '{default: 1};
 
+  // Run small page rma
+  bit en_small_rma = 0;
+
   // Knob to enable on the fly scoreboard.
   bit scb_otf_en = 0;
 
