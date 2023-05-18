@@ -47,5 +47,11 @@ bool test_main(void) {
   EXECUTE_TEST(result, test_sector_erase, &spi_host);
   EXECUTE_TEST(result, test_enable_quad_mode, &spi_host);
   EXECUTE_TEST(result, test_page_program, &spi_host);
+  if (is_4_bytes_address_mode_supported()) {
+    EXECUTE_TEST(result, test_4bytes_address, &spi_host);
+  }
+  EXECUTE_TEST(result, test_fast_read, &spi_host);
+  EXECUTE_TEST(result, test_dual_read, &spi_host);
+  EXECUTE_TEST(result, test_quad_read, &spi_host);
   return status_ok(result);
 }
