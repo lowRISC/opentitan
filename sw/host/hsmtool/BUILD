@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_library(
     name = "hsmlib",
     srcs = [
+        "src/commands/exec.rs",
         "src/commands/mod.rs",
         "src/commands/object/destroy.rs",
         "src/commands/object/list.rs",

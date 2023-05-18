@@ -12,6 +12,7 @@ use std::any::Any;
 
 use crate::util::attribute::AttrData;
 
+mod exec;
 mod object;
 mod rsa;
 mod token;
@@ -28,6 +29,7 @@ pub trait Dispatch {
 
 #[derive(clap::Subcommand, Debug, Serialize, Deserialize)]
 pub enum Commands {
+    Exec(exec::Exec),
     #[command(subcommand)]
     Object(object::Object),
     #[command(subcommand)]
@@ -45,6 +47,7 @@ impl Dispatch for Commands {
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         match self {
+            Commands::Exec(x) => x.run(context, pkcs11, session),
             Commands::Object(x) => x.run(context, pkcs11, session),
             Commands::Rsa(x) => x.run(context, pkcs11, session),
             Commands::Token(x) => x.run(context, pkcs11, session),
@@ -98,12 +101,22 @@ pub fn print_result(
     color: Option<bool>,
     result: Result<Box<dyn Annotate>>,
 ) -> Result<()> {
-    let (value, result) = match result {
-        Ok(value) => (value, Ok(())),
-        Err(e) => (BasicResult::from_error(&e), Err(e)),
+    let (doc, result) = match result {
+        Ok(value) => {
+            let doc = serde_annotate::serialize(value.as_ref())?;
+            (doc, Ok(()))
+        }
+        Err(e) => {
+            let doc = if let Some(exerr) = e.downcast_ref::<exec::ExecError>() {
+                exerr.result.clone()
+            } else {
+                let value = BasicResult::from_error(&e);
+                serde_annotate::serialize(value.as_ref())?
+            };
+            (doc, Err(e))
+        }
     };
 
-    let doc = serde_annotate::serialize(value.as_ref())?;
     let profile = if atty::is(Stream::Stdout) && color.unwrap_or(true) {
         ColorProfile::basic()
     } else {
