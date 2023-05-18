@@ -41,10 +41,13 @@ bool test_main(void) {
                "SPI_HOST config failed!");
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host, true));
 
+  enum { kDeviceId = 0x2180, kManufactureId = 0xef };
+
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, test_software_reset, &spi_host);
   EXECUTE_TEST(result, test_read_sfdp, &spi_host);
   EXECUTE_TEST(result, test_sector_erase, &spi_host);
+  EXECUTE_TEST(result, test_read_jedec, &spi_host, kDeviceId, kManufactureId);
   EXECUTE_TEST(result, test_enable_quad_mode, &spi_host);
   EXECUTE_TEST(result, test_page_program, &spi_host);
   if (is_4_bytes_address_mode_supported()) {

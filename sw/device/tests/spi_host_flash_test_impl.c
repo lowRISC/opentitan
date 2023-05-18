@@ -64,6 +64,17 @@ status_t test_read_sfdp(dif_spi_host_t *spi) {
   return OK_STATUS();
 }
 
+status_t test_read_jedec(dif_spi_host_t *spi, uint16_t device_id,
+                         uint8_t manufacture_id) {
+  spi_flash_testutils_jedec_id_t jdec;
+  TRY(spi_flash_testutils_read_id(spi, &jdec));
+  TRY_CHECK(jdec.device_id == device_id, "Expected %x, got %x!", device_id,
+            jdec.device_id);
+  TRY_CHECK(jdec.manufacturer_id == manufacture_id, "Expected %x, got %x!",
+            manufacture_id, jdec.manufacturer_id);
+  return OK_STATUS();
+}
+
 status_t test_sector_erase(dif_spi_host_t *spi) {
   TRY(spi_flash_testutils_erase_sector(spi, 0, false));
 
