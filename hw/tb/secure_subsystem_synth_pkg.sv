@@ -77,5 +77,8 @@ package secure_subsystem_synth_pkg;
   localparam SynthAsyncAxiOutBWidth  = (2**SynthLogDepth)*$bits(synth_axi_out_b_chan_t);
   localparam SynthAsyncAxiOutArWidth = (2**SynthLogDepth)*$bits(synth_axi_out_ar_chan_t);
   localparam SynthAsyncAxiOutRWidth  = (2**SynthLogDepth)*$bits(synth_axi_out_r_chan_t);
+
+  localparam AxiMaxOutTrans = 2;
+   
 //`endif
 endpackage

@@ -84,6 +84,9 @@ module secure_subsystem_synth_wrap
    input logic [AsyncAxiOutRWidth-1:0]   async_axi_out_r_data_i,
    input logic [LogDepth:0]              async_axi_out_r_wptr_i,
    output logic [LogDepth:0]             async_axi_out_r_rptr_o,
+   // Axi Isolate
+   input  logic                          axi_isolate_i,
+   output logic                          axi_isolated_o,
    // Interrupt signal
    input logic                           irq_ibex_i,
    // OT peripherals
@@ -112,6 +115,9 @@ module secure_subsystem_synth_wrap
    entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
    entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
 
+   axi_out_req_t axi_out_req;
+   axi_out_resp_t axi_out_resp;
+
    logic [15:0] dio_in_i;
    logic [15:0] dio_out_o;
    logic [15:0] dio_oe_o;
@@ -126,6 +132,8 @@ module secure_subsystem_synth_wrap
    
    logic fetch_en_sync;
    logic irq_ibex_sync;
+   
+   logic axi_isolate_sync;
 
    assign dio_in_i[1:0]   = '0;
    assign dio_in_i[15:6]  = '0;
@@ -195,8 +203,37 @@ module secure_subsystem_synth_wrap
      .serial_i ( irq_ibex_i    ),
      .serial_o ( irq_ibex_sync )
    );
-
-
+ 
+   sync #(
+     .STAGES     ( SyncStages ),
+     .ResetValue ( 1'b1       )
+   ) i_isolate_sync (
+     .clk_i,
+     .rst_ni   ( pwr_on_rst_ni    ),
+     .serial_i ( axi_isolate_i    ),
+     .serial_o ( axi_isolate_sync )
+   );
+   
+   axi_isolate            #(
+     .NumPending           ( secure_subsystem_synth_pkg::AxiMaxOutTrans ),
+     .TerminateTransaction ( 1              ),
+     .AtopSupport          ( 1              ),
+     .AxiAddrWidth         ( AxiAddrWidth   ),
+     .AxiDataWidth         ( AxiDataWidth   ),
+     .AxiIdWidth           ( AxiOutIdWidth  ),
+     .AxiUserWidth         ( AxiUserWidth   ),
+     .axi_req_t            ( axi_out_req_t  ),
+     .axi_resp_t           ( axi_out_resp_t )
+   ) i_axi_out_isolate     (
+     .clk_i                ( clk_i            ),
+     .rst_ni               ( rst_ni           ),
+     .slv_req_i            ( axi_req          ),
+     .slv_resp_o           ( axi_rsp          ),
+     .mst_req_o            ( axi_out_req      ),
+     .mst_resp_i           ( axi_out_resp     ),
+     .isolate_i            ( axi_isolate_sync ),
+     .isolated_o           ( axi_isolated_o   )
+   );
 
    axi_dw_converter #(
       .AxiMaxReads        ( 8                   ),
@@ -240,8 +277,8 @@ module secure_subsystem_synth_wrap
    ) i_cdc_out (
       .src_clk_i                  ( clk_i                   ),
       .src_rst_ni                 ( pwr_on_rst_ni           ),
-      .src_req_i                  ( axi_req                 ),
-      .src_resp_o                 ( axi_rsp                 ),
+      .src_req_i                  ( axi_out_req             ),
+      .src_resp_o                 ( axi_out_rsp             ),
       .async_data_master_aw_data_o( async_axi_out_aw_data_o ),
       .async_data_master_aw_wptr_o( async_axi_out_aw_wptr_o ),
       .async_data_master_aw_rptr_i( async_axi_out_aw_rptr_i ),
