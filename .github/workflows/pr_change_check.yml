@@ -17,17 +17,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Determine changed files
         run: |
-          pr_ref="refs/pull/${{ github.event.number }}/merge"
-          echo $pr_ref
-          git fetch origin "$pr_ref"
-          git diff --name-only \
-            "origin/${{ github.base_ref }}" \
-            FETCH_HEAD > $HOME/changed_files
+          pr_url="https://github.com/${{ github.repository }}/pull/${{ github.event.number }}"
+          echo $pr_url
+          gh pr diff $pr_url --name-only > $HOME/changed_files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Show files changed
         run: cat $HOME/changed_files
