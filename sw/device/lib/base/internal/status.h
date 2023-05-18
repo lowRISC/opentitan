@@ -55,9 +55,9 @@ extern "C" {
 
 // clang-format off
 #define ASCII_5BIT(v) ( \
-    /*uppercase characters*/  (v) >= '@' && (v) <= '_' ? (v) - '@' \
-    /*lower cvt upper*/     : (v) >= '`' && (v) <= 'z' ? (v) - '`' \
-    /*else cvt underscore*/ : '_' - '@'                            \
+    /*uppercase characters*/  (v) >= '@' && (v) <= '_' ? OT_UNSIGNED((v) - '@') \
+    /*lower cvt upper*/     : (v) >= '`' && (v) <= 'z' ? OT_UNSIGNED((v) - '`') \
+    /*else cvt underscore*/ : OT_UNSIGNED('_' - '@')                            \
   )
 // clang-format on
 

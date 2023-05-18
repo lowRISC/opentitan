@@ -19,8 +19,8 @@ static size_t compute_num_leading_bytes(const void *left, const void *right,
   if (len < alignof(uint32_t)) {
     return len;
   }
-  const size_t left_ahead = misalignment32_of((uintptr_t)left);
-  const size_t right_ahead = misalignment32_of((uintptr_t)right);
+  const size_t left_ahead = OT_UNSIGNED(misalignment32_of((uintptr_t)left));
+  const size_t right_ahead = OT_UNSIGNED(misalignment32_of((uintptr_t)right));
   if (right == NULL || left_ahead == right_ahead) {
     return (4 - left_ahead) & 0x3;
   }
@@ -53,7 +53,8 @@ static void compute_alignment(const void *left, const void *right, size_t len,
 }
 
 static uint32_t repeat_byte_to_u32(uint8_t byte) {
-  return byte << 24 | byte << 16 | byte << 8 | byte;
+  const uint32_t word = byte;
+  return word << 24 | word << 16 | word << 8 | word;
 }
 
 void *OT_PREFIX_IF_NOT_RV32(memcpy)(void *restrict dest,
