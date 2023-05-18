@@ -1714,6 +1714,26 @@ opentitan_functest(
     ],
 )
 
+cc_library(
+    name = "spi_host_flash_test_impl",
+    srcs = ["spi_host_flash_test_impl.c"],
+    hdrs = ["spi_host_flash_test_impl.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing:spi_host_testutils",
+    ],
+)
+
 opentitan_functest(
     name = "spi_host_smoketest",
     srcs = ["spi_host_smoketest.c"],
@@ -1722,6 +1742,7 @@ opentitan_functest(
     ),
     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
     deps = [
+        ":spi_host_flash_test_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
