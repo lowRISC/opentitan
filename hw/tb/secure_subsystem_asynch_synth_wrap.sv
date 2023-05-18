@@ -116,7 +116,7 @@ module secure_subsystem_synth_wrap
    entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
 
    axi_out_req_t axi_out_req;
-   axi_out_resp_t axi_out_resp;
+   axi_out_resp_t axi_out_rsp;
 
    logic [15:0] dio_in_i;
    logic [15:0] dio_out_o;
@@ -230,7 +230,7 @@ module secure_subsystem_synth_wrap
      .slv_req_i            ( axi_req          ),
      .slv_resp_o           ( axi_rsp          ),
      .mst_req_o            ( axi_out_req      ),
-     .mst_resp_i           ( axi_out_resp     ),
+     .mst_resp_i           ( axi_out_rsp      ),
      .isolate_i            ( axi_isolate_sync ),
      .isolated_o           ( axi_isolated_o   )
    );
