@@ -110,11 +110,11 @@ char *ottf_task_get_self_name(void);
  * Execute a test function, profile the execution and log the test result.
  * Update the result value if there is a failure code.
  */
-#define EXECUTE_TEST(result_, test_function_)                            \
+#define EXECUTE_TEST(result_, test_function_, ...)                       \
   do {                                                                   \
     LOG_INFO("Starting test " #test_function_ "...");                    \
     uint64_t t_start_ = ibex_mcycle_read();                              \
-    status_t local_status = INTO_STATUS(test_function_());               \
+    status_t local_status = INTO_STATUS(test_function_(__VA_ARGS__));    \
     uint64_t cycles_ = ibex_mcycle_read() - t_start_;                    \
     CHECK(cycles_ <= UINT32_MAX);                                        \
     CHECK(kClockFreqCpuHz <= UINT32_MAX, "");                            \
