@@ -390,7 +390,7 @@ inline ct_bool32_t ct_sltz32(int32_t a) {
   // Proof. `a` is negative iff its MSB is set;
   // arithmetic-right-shifting by bits(a)-1 smears the sign bit across all
   // of `a`.
-  return (uint32_t)(a >> (sizeof(a) * 8 - 1));
+  return OT_UNSIGNED(a >> (sizeof(a) * 8 - 1));
 }
 
 /**
@@ -402,7 +402,7 @@ inline ct_bool32_t ct_sltz32(int32_t a) {
  */
 inline ct_bool32_t ct_sltu32(uint32_t a, uint32_t b) {
   // Proof. See Hacker's Delight page 23.
-  return ct_sltz32((a & ~b) | ((a ^ ~b) & (a - b)));
+  return ct_sltz32(OT_SIGNED(((a & ~b) | ((a ^ ~b) & (a - b)))));
 }
 
 /**
@@ -421,7 +421,7 @@ inline ct_bool32_t ct_seqz32(uint32_t a) {
   // via identities on page 16.
   //
   // This forumula is also given on page 11 for a different purpose.
-  return ct_sltz32(~a & (a - 1));
+  return ct_sltz32(OT_SIGNED(~a & (a - 1)));
 }
 
 /**
@@ -475,7 +475,7 @@ typedef uintptr_t ct_boolw_t;
  * @return `a < 0`.
  */
 inline ct_boolw_t ct_sltzw(intptr_t a) {
-  return (uintptr_t)(a >> (sizeof(a) * 8 - 1));
+  return OT_UNSIGNED(a >> (sizeof(a) * 8 - 1));
 }
 
 /**
@@ -486,7 +486,7 @@ inline ct_boolw_t ct_sltzw(intptr_t a) {
  * @return `a < b`.
  */
 inline ct_boolw_t ct_sltuw(uintptr_t a, uintptr_t b) {
-  return ct_sltzw((a & ~b) | ((a ^ ~b) & (a - b)));
+  return ct_sltzw(OT_SIGNED((a & ~b) | ((a ^ ~b) & (a - b))));
 }
 
 /**
@@ -496,7 +496,9 @@ inline ct_boolw_t ct_sltuw(uintptr_t a, uintptr_t b) {
  *
  * @return `a == 0`.
  */
-inline ct_boolw_t ct_seqzw(uintptr_t a) { return ct_sltzw(~a & (a - 1)); }
+inline ct_boolw_t ct_seqzw(uintptr_t a) {
+  return ct_sltzw(OT_SIGNED(~a & (a - 1)));
+}
 
 /**
  * Performs constant-time equality.

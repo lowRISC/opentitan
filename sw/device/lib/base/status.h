@@ -72,7 +72,7 @@ typedef struct status {
     absl_status_t code =                                                      \
         val == kErrorOk ? 0                                                   \
                         : bitfield_field32_read(val, ROM_ERROR_FIELD_STATUS); \
-    int32_t arg = bitfield_field32_read(val, ROM_ERROR_FIELD_ERROR);          \
+    int32_t arg = (int32_t)bitfield_field32_read(val, ROM_ERROR_FIELD_ERROR); \
     uint32_t mod = bitfield_field32_read(val, ROM_ERROR_FIELD_MODULE);        \
     uint32_t module = (mod & 0x1F) << 16 | (mod & 0x1F00) << (21 - 8);        \
     status_create(code, module, __FILE__, code == kOk ? kErrorOk : arg);      \
@@ -186,9 +186,9 @@ OT_ALWAYS_INLINE bool status_ok(status_t s) { return s.value >= 0; }
  * @return `absl_status_t` contained within the status_t.
  */
 OT_ALWAYS_INLINE absl_status_t status_err(status_t s) {
-  return s.value < 0
-             ? (absl_status_t)bitfield_field32_read(s.value, STATUS_FIELD_CODE)
-             : kOk;
+  return s.value < 0 ? (absl_status_t)bitfield_field32_read(
+                           OT_UNSIGNED(s.value), STATUS_FIELD_CODE)
+                     : kOk;
 }
 
 // Create a status with an optional argument.

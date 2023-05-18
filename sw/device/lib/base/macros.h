@@ -455,9 +455,10 @@ extern "C++" {
 /**
  *  This macro is used to align an offset to point to a 32b value.
  */
-#define OT_ALIGN_MEM(x) (uint32_t)(4 + (((uintptr_t)(x)-1) & ~3))
+#define OT_ALIGN_MEM(x) (uint32_t)(4 + (((uintptr_t)(x)-1) & ~3u))
 
-#ifndef RUST_PREPROCESSOR_EMIT
+#if !defined(__ASSEMBLER__) && !defined(NOSTDINC) && \
+    !defined(RUST_PREPROCESSOR_EMIT)
 #ifndef __cplusplus
 struct OtSignConversionUnsupportedType {
   char err;
@@ -508,6 +509,7 @@ class SignConverter {
 #define OT_SIGNED(value) (SignConverter<typeof(value)>::as_signed((value)))
 #define OT_UNSIGNED(value) (SignConverter<typeof(value)>::as_unsigned((value)))
 #endif  // __cplusplus
-#endif  // RUST_PREPROCESSOR_EMIT
+#endif  // !defined(__ASSEMBLER__) && !defined(NOSTDINC) &&
+        // !defined(RUST_PREPROCESSOR_EMIT)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_

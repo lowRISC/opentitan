@@ -35,7 +35,7 @@ static void mmio_region_memcpy32(mmio_region_t base, uint32_t offset,
   if (misalignment != 0) {
     // The number of bytes missing to bring `offset` back into alignment.
     // For example, 0x3 has misalignment of 3 and realignment of 1.
-    ptrdiff_t realignment = sizeof(uint32_t) - misalignment;
+    size_t realignment = sizeof(uint32_t) - OT_UNSIGNED(misalignment);
     // Note that we might be doing less I/O than the misalignment requires; we
     // might be off by a single byte, but not have the full three bytes for full
     // realignment.
@@ -45,7 +45,7 @@ static void mmio_region_memcpy32(mmio_region_t base, uint32_t offset,
 
     // Converts `offset`, which points to a subword boundary, to point to the
     // start of the current word it points into.
-    ptrdiff_t current_word_offset = offset - misalignment;
+    ptrdiff_t current_word_offset = OT_SIGNED(offset) - misalignment;
     uint32_t current_word = mmio_region_read32(base, current_word_offset);
 
     // Act on only to a suffix of `current_word`, corresponding to the necessary
@@ -81,7 +81,7 @@ static void mmio_region_memcpy32(mmio_region_t base, uint32_t offset,
       // If writing to MMIO, we only need to write a prefix when writing a
       // subword. In that case, we need to avoid clobbering the word at
       // `offset`.
-      current_word = mmio_region_read32(base, offset);
+      current_word = mmio_region_read32(base, OT_SIGNED(offset));
     }
 
     // Copy a prefix; most of the time, this will be the whole word.
@@ -90,7 +90,7 @@ static void mmio_region_memcpy32(mmio_region_t base, uint32_t offset,
     } else {
       // When writing to MMIO, we need to write the modified word.
       memcpy(&current_word, buf, bytes_to_copy);
-      mmio_region_write32(base, offset, current_word);
+      mmio_region_write32(base, OT_SIGNED(offset), current_word);
     }
 
     offset += bytes_to_copy;
