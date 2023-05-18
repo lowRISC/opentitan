@@ -25,6 +25,13 @@ pub trait Dispatch {
         pkcs11: &Pkcs11,
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>>;
+
+    fn leaf(&self) -> &dyn Dispatch
+    where
+        Self: Sized,
+    {
+        self
+    }
 }
 
 #[derive(clap::Subcommand, Debug, Serialize, Deserialize)]
@@ -51,6 +58,18 @@ impl Dispatch for Commands {
             Commands::Object(x) => x.run(context, pkcs11, session),
             Commands::Rsa(x) => x.run(context, pkcs11, session),
             Commands::Token(x) => x.run(context, pkcs11, session),
+        }
+    }
+
+    fn leaf(&self) -> &dyn Dispatch
+    where
+        Self: Sized,
+    {
+        match self {
+            Commands::Exec(x) => x.leaf(),
+            Commands::Object(x) => x.leaf(),
+            Commands::Rsa(x) => x.leaf(),
+            Commands::Token(x) => x.leaf(),
         }
     }
 }
@@ -130,4 +149,21 @@ pub fn print_result(
     };
     println!("{}", string);
     result
+}
+
+pub fn print_command(format: Format, color: Option<bool>, command: &dyn Dispatch) -> Result<()> {
+    let doc = serde_annotate::serialize(command)?;
+    let profile = if atty::is(Stream::Stdout) && color.unwrap_or(true) {
+        ColorProfile::basic()
+    } else {
+        ColorProfile::default()
+    };
+    let string = match format {
+        Format::Json => doc.to_json().color(profile).to_string(),
+        Format::Json5 => doc.to_json5().color(profile).to_string(),
+        Format::HJson => doc.to_hjson().color(profile).to_string(),
+        Format::Yaml => doc.to_yaml().color(profile).to_string(),
+    };
+    println!("{}", string);
+    Ok(())
 }
