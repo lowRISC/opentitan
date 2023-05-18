@@ -109,12 +109,13 @@ module aes_sbox_tb #(
   );
 
   // Instantiate DOM SBox Implementation
-  logic        dom_done;
+  logic        dom_done, pre_we;
   logic [19:0] unused_out_prd, out_prd;
   aes_sbox_dom aes_sbox_dom (
     .clk_i     ( clk_i                    ),
     .rst_ni    ( rst_ni                   ),
     .en_i      ( 1'b1                     ),
+    .prd_we_i  ( pre_we                   ),
     .out_req_o ( dom_done                 ),
     .out_ack_i ( 1'b1                     ),
     .op_i      ( op                       ),
@@ -126,6 +127,13 @@ module aes_sbox_tb #(
     .prd_o     ( out_prd                  )
   );
   assign unused_out_prd = out_prd;
+
+  // Update internally buffered PRD in sync with the actual input.
+  // Note that this testbench is really just about functional verification. It doesn't drive the
+  // single DOM S-Box in an ideal way from an SCA perspective. Ideally, the different prd_i input
+  // bits would update in sync with the evaluation of the corresponding multiplier stages as in the
+  // actual cipher core.
+  assign pre_we = dom_done;
 
   // Unmask responses
   always_comb begin : unmask_resp
