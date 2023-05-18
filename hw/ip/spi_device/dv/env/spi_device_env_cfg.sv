@@ -30,6 +30,9 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   // TODO(#15543) SW can only configure addr_4b after reset
   bit                 do_addr_4b_cfg;
 
+  // when asserted this will reinitialise the scoreboard's memory models
+  bit                 scb_clear_mems = 0;
+
   // in some sequence, both SW and HW may want to update this interrupt at the same time,
   // which is hard to handle in scb. In this case, disable the checker.
   // as long as all TPM requests can be read out and compared correctly, it's sufficient.
@@ -40,6 +43,10 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   `uvm_object_utils_end
 
   `uvm_object_new
+
+  function void scoreboard_clear_mems();
+    scb_clear_mems = 1;
+  endfunction
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     list_of_alerts = spi_device_env_pkg::LIST_OF_ALERTS;

@@ -90,8 +90,18 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       process_downstream_spi_fifo();
       process_read_buffer_cmd();
       forever_latch_flash_status();
+      process_clear_mems();
     join_none
   endtask
+
+  // reinitialises memory models when cfg.scb_clear_mems is asserted.
+  task process_clear_mems();
+    forever begin
+      wait(cfg.scb_clear_mems);
+      clear_mems();
+      cfg.scb_clear_mems = 0;
+    end
+  endtask : process_clear_mems
 
   // extract spi items sent from host
   virtual task process_upstream_spi_host_fifo();
@@ -1338,6 +1348,13 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     return space_bytes;
   endfunction
 
+  // reinitialises the scoreboard's memory models
+  function void clear_mems();
+    spi_mem.init();
+    tx_mem.init();
+    rx_mem.init();
+  endfunction : clear_mems
+
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     tx_rptr_exp = ral.txf_ptr.rptr.get_reset();
@@ -1360,6 +1377,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     cfg.read_buffer_ptr  = 0;
 
     read_buffer_watermark_triggered = 0;
+
+    clear_mems();
   endfunction
 
   function void check_phase(uvm_phase phase);
