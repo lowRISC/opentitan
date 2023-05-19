@@ -119,6 +119,28 @@ status_t test_page_program(dif_spi_host_t *spi) {
   return OK_STATUS();
 }
 
+status_t test_page_program_quad(dif_spi_host_t *spi, uint8_t opcode) {
+  enum {
+
+    kPageSize = 256,
+    kAddress = kPageSize * 10
+  };
+  TRY(spi_flash_testutils_erase_sector(spi, kAddress, false));
+
+  TRY(spi_flash_testutils_program_page_quad(
+      spi, opcode, kGettysburgPrelude, sizeof(kGettysburgPrelude),
+      /*address=*/kAddress, /*addr_is_4b=*/false));
+
+  uint8_t buf[256];
+  TRY(spi_flash_testutils_read_op(spi, kSpiDeviceFlashOpReadNormal, buf,
+                                  sizeof(buf), kAddress,
+                                  /*addr_is_4b=*/false,
+                                  /*width=*/1,
+                                  /*dummy=*/0));
+  TRY_CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
+  return OK_STATUS();
+}
+
 // Read the flash device using the "fast read" opcode.
 status_t test_fast_read(dif_spi_host_t *spi) {
   uint8_t buf[256];

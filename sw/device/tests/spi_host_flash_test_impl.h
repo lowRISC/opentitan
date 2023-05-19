@@ -100,4 +100,13 @@ bool is_4_bytes_address_mode_supported(void);
  */
 status_t test_4bytes_address(dif_spi_host_t *spi);
 
+/**
+ * Write and read in order to compare a page using quad mode.
+ *
+ * @param spi A spi host handler.
+ * @param opcode The opcode used by the part-number for quad page program.
+ * @return status_t containing either OK or an error.
+ */
+status_t test_page_program_quad(dif_spi_host_t *spi, uint8_t opcode);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_SPI_HOST_FLASH_TEST_IMPL_H_

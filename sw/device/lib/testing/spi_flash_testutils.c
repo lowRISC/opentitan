@@ -263,12 +263,12 @@ status_t spi_flash_testutils_program_page(dif_spi_host_t *spih,
 }
 
 status_t spi_flash_testutils_program_page_quad(dif_spi_host_t *spih,
+                                               uint8_t opcode,
                                                const void *payload,
                                                size_t length, uint32_t address,
                                                bool addr_is_4b) {
-  return spi_flash_testutils_program_op(spih, kSpiDeviceFlashOpPageQuadProgram,
-                                        payload, length, address, addr_is_4b,
-                                        kDifSpiHostWidthQuad);
+  return spi_flash_testutils_program_op(spih, opcode, payload, length, address,
+                                        addr_is_4b, kDifSpiHostWidthQuad);
 }
 
 status_t spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
