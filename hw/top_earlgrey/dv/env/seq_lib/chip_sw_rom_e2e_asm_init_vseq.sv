@@ -13,7 +13,7 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
   localparam bit [2:0] EPMP_ACCESS_RWX  = 3'b111; // Read-write-execute access.
 
   localparam bit [31:0] RAM_STACK_GUARD_ADDRESS  = 32'h1001C000;
-  localparam bit [31:0] FLASH_TEXT_START_ADDRESS = 32'h20002300;
+  localparam bit [31:0] FLASH_TEXT_START_ADDRESS = 32'h20000400;
   localparam bit [31:0] MMIO_START_ADDRESS       = 32'h40000000;
   localparam bit [31:0] MMIO_END_ADDRESS         = 32'h50000000;
 
