@@ -206,3 +206,34 @@ status_t test_4bytes_address(dif_spi_host_t *spi) {
   TRY_CHECK_ARRAYS_EQ(buf, kGettysburgPrelude, ARRAYSIZE(kGettysburgPrelude));
   return spi_flash_testutils_exit_4byte_address_mode(spi);
 }
+
+status_t test_erase_32k_block(dif_spi_host_t *spi) {
+  enum { kPageSize = 256, kBlockSize = 32 * 1024, kAddress = kBlockSize * 3 };
+  TRY(spi_flash_testutils_erase_block32k(spi, kAddress, false));
+
+  uint8_t expected[256];
+  memset(expected, 0xFF, sizeof(expected));
+  uint8_t dummy[256];
+  memset(dummy, 0x5A, sizeof(dummy));
+
+  for (size_t addr = kAddress; addr < kAddress + kBlockSize;
+       addr += kPageSize) {
+    uint8_t buf[256] = {0};
+    // Check that all the pages in the block actually got erased.
+    TRY(spi_flash_testutils_read_op(spi, kSpiDeviceFlashOpReadNormal, buf,
+                                    sizeof(buf),
+                                    /*address=*/addr,
+                                    /*addr_is_4b=*/false,
+                                    /*width=*/1,
+                                    /*dummy=*/0));
+    TRY_CHECK_ARRAYS_EQ(buf, expected, ARRAYSIZE(expected));
+
+    // Write dummy data to make sure that the next time the block will really be
+    // erased.
+    TRY(spi_flash_testutils_program_page(spi, dummy, sizeof(dummy),
+                                         /*address=*/addr,
+                                         /*addr_is_4b=*/false));
+  }
+
+  return OK_STATUS();
+}
