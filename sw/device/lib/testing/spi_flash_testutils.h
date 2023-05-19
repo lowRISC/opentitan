@@ -172,6 +172,35 @@ status_t spi_flash_testutils_erase_sector(dif_spi_host_t *spih,
                                           uint32_t address, bool addr_is_4b);
 
 /**
+ * Perform full 32 kB block erase.
+ * The sequence includes the Write Enable and Block Erase commands,
+ * and then polls the status registers in a loop until the WIP
+ * bit clears.
+ * Does not return until the erase completes.
+ *
+ * @param spih A SPI host handle.
+ * @param address An address contained within the desired block.
+ * @param addr_is_4b True if `address` is 4 bytes long, else 3 bytes.
+ * @return status_t containing either OK or an error.
+ */
+status_t spi_flash_testutils_erase_block32k(dif_spi_host_t *spih,
+                                            uint32_t address, bool addr_is_4b);
+
+/**
+ * Perform full 64 kB block erase.
+ * The sequence includes the Write Enable and Block Erase commands,
+ * and then polls the status registers in a loop until the WIP
+ * bit clears.
+ * Does not return until the erase completes.
+ *
+ * @param spih A SPI host handle.
+ * @param address An address contained within the desired block.
+ * @param addr_is_4b True if `address` is 4 bytes long, else 3 bytes.
+ * @return status_t containing either OK or an error.
+ */
+status_t spi_flash_testutils_erase_block64k(dif_spi_host_t *spih,
+                                            uint32_t address, bool addr_is_4b);
+/**
  * Perform full Page Program sequence via the requested opcode.
  * The sequence includes the Write Enable and Page Program commands,
  * and then polls the status registers in a loop until the WIP bit
