@@ -72,16 +72,15 @@
  * @param[in]  dmem[dptr_msg]: Pointer to memory location containing the pre-
  *                               formatted message chunks.
  *
- * clobbered registers: w0 to w7, w10, w11, w15 to w27, w30, w31
+ * clobbered registers: w0 to w7, w10, w11, w15 to w27, w31
  *                      x1, x2, x10, x11 to x17, x20
  * clobbered flag groups: FG0
  */
 .globl sha512_compact
 sha512_compact:
 
-  /* w31 = 0; w30 = 1111...1111 */
+  /* w31 = 0 */
   bn.xor  w31, w31, w31
-  bn.subi w30, w31, 1
 
   /* read number of 1024-bit chunks from dmem */
   la x20, n_chunks
@@ -164,7 +163,7 @@ sha512_compact:
       loopi 4, 59
 
         /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-        bn.rshi  w22,  w0, w30  >> 64
+        bn.rshi  w22,  w0, w31  >> 64
         bn.rshi  w15,  w0, w22  >> 28
         bn.rshi  w21,  w0, w22  >> 34
         bn.xor   w15, w15, w21
@@ -179,11 +178,11 @@ sha512_compact:
         bn.xor   w16, w16, w21
 
         /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-        bn.rshi  w17, w30, w15  >> 192
+        bn.rshi  w17, w31, w15  >> 192
         bn.add   w17, w17, w16
 
         /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41)*/
-        bn.rshi  w22,  w4, w30  >> 64
+        bn.rshi  w22,  w4, w31  >> 64
         bn.rshi  w18,  w4, w22  >> 14
         bn.rshi  w21,  w4, w22  >> 18
         bn.xor   w18, w18, w21
@@ -197,7 +196,7 @@ sha512_compact:
         bn.xor   w19, w19, w21
 
         /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-        bn.rshi  w20, w30, w18  >> 192
+        bn.rshi  w20, w31, w18  >> 192
         bn.add   w20, w20, w7
         bn.add   w20, w20, w10
         bn.add   w21, w24, w19
@@ -245,8 +244,8 @@ sha512_compact:
 
         /* w15[255:192] <= s0( W_(t-15) )
              = (W_(t-15) ROTR 1) XOR (W_(t-15) ROTR 8) XOR (W_(t-15) SHR 8) */
-        bn.rshi  w18, w24, w30 >> 128
-        bn.rshi  w17, w30, w24 >> 64
+        bn.rshi  w18, w24, w31 >> 128
+        bn.rshi  w17, w31, w24 >> 64
         bn.rshi  w15, w17, w18 >> 1
         bn.rshi  w16, w17, w18 >> 8
         bn.xor   w15, w15, w16
@@ -259,8 +258,8 @@ sha512_compact:
 
         /* w15[255:192] <= s1( W_(t-2) )
              = (W_(t-2) ROTR 19) XOR (W_(t-2) ROTR 61) XOR (W_(t-2) SHR 6) */
-        bn.rshi  w18, w27, w30  >> 192
-        bn.rshi  w17, w30, w27  >> 128
+        bn.rshi  w18, w27, w31  >> 192
+        bn.rshi  w17, w31, w27  >> 128
         bn.rshi  w15, w17, w18  >> 19
         bn.rshi  w16, w17, w18  >> 61
         bn.xor   w15, w15, w16

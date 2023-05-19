@@ -74,16 +74,15 @@
  * @param[in]  dmem[dptr_msg]: Pointer to memory location containing the pre-
  *                               formatted message chunks.
  *
- * clobbered registers: w0 to w7, w10, w11, w15 to w26, w30, w31
+ * clobbered registers: w0 to w7, w10, w11, w15 to w26, w31
  *                      x1, x2, x10, x11 to x17, x20
  * clobbered flag groups: FG0
  */
 .globl sha512
 sha512:
 
-  /* w31 = 0; w30 = 1111...1111 */
+  /* w31 = 0 */
   bn.xor  w31, w31, w31
-  bn.subi w30, w31, 1
 
   /* read number of 1024-bit chunks from dmem */
   la x20, n_chunks
@@ -162,8 +161,8 @@ sha512:
 
       /* w15[255:192] <= s0( W_(t-15) )
            = (W_(t-15) ROTR 1) XOR (W_(t-15) ROTR 8) XOR (W_(t-15) SHR 8) */
-      bn.rshi  w18, w19, w30 >> 128
-      bn.rshi  w17, w30, w19 >> 64
+      bn.rshi  w18, w19, w31 >> 128
+      bn.rshi  w17, w31, w19 >> 64
       bn.rshi  w15, w17, w18 >> 1
       bn.rshi  w16, w17, w18 >> 8
       bn.xor   w15, w15, w16
@@ -176,8 +175,8 @@ sha512:
 
       /* w15[255:192] <= s1( W_(t-2) )
            = (W_(t-2) ROTR 19) XOR (W_(t-2) ROTR 61) XOR (W_(t-2) SHR 6) */
-      bn.rshi  w18, w22, w30  >> 192
-      bn.rshi  w17, w30, w22  >> 128
+      bn.rshi  w18, w22, w31  >> 192
+      bn.rshi  w17, w31, w22  >> 128
       bn.rshi  w15, w17, w18  >> 19
       bn.rshi  w16, w17, w18  >> 61
       bn.xor   w15, w15, w16
@@ -198,8 +197,8 @@ sha512:
 
       /* w15[255:192] <= s0( W_(t-15) )
            = (W_(t-15) ROTR 1) XOR (W_(t-15) ROTR 8) XOR (W_(t-15) SHR 8) */
-      bn.rshi  w18, w19, w30  >> 192
-      bn.rshi  w17, w30, w19  >> 128
+      bn.rshi  w18, w19, w31  >> 192
+      bn.rshi  w17, w31, w19  >> 128
       bn.rshi  w15, w17, w18  >> 1
       bn.rshi  w16, w17, w18  >> 8
       bn.xor   w15, w15, w16
@@ -213,7 +212,7 @@ sha512:
 
       /* w15[255:192] <= s1( W_(t-2) )
            = (W_(t-2) ROTR 19) XOR (W_(t-2) ROTR 61) XOR (W_(t-2) SHR 6) */
-      bn.rshi  w17, w30, w22  >> 192
+      bn.rshi  w17, w31, w22  >> 192
       bn.rshi  w15, w17, w22  >> 19
       bn.rshi  w16, w17, w22  >> 61
       bn.xor   w15, w15, w16
@@ -235,7 +234,7 @@ sha512:
 
       /* w15[255:192] <= s0( W_(t-15) )
            = (W_(t-15) ROTR 1) XOR (W_(t-15) ROTR 8) XOR (W_(t-15) SHR 8) */
-      bn.rshi  w17, w30, w19  >> 192
+      bn.rshi  w17, w31, w19  >> 192
       bn.rshi  w15, w17, w19  >> 1
       bn.rshi  w16, w17, w19  >> 8
       bn.xor   w15, w15, w16
@@ -249,7 +248,7 @@ sha512:
 
       /* w15[255:192] <= s1( W_(t-2) )
            = (W_(t-2) ROTR 19) XOR (W_(t-2) ROTR 61) XOR (W_(t-2) SHR 6) */
-      bn.rshi  w18, w23, w30  >> 64
+      bn.rshi  w18, w23, w31  >> 64
       bn.rshi  w15, w23, w18  >> 19
       bn.rshi  w16, w23, w18  >> 61
       bn.xor   w15, w15, w16
@@ -272,7 +271,7 @@ sha512:
 
       /* w15[255:192] <= s0( W_(t-15) )
            = (W_(t-15) ROTR 1) XOR (W_(t-15) ROTR 8) XOR (W_(t-15) SHR 8) */
-      bn.rshi  w18, w20, w30  >> 64
+      bn.rshi  w18, w20, w31  >> 64
       bn.rshi  w15, w20, w18  >> 1
       bn.rshi  w16, w20, w18  >> 8
       bn.xor   w15, w15, w16
@@ -286,7 +285,7 @@ sha512:
 
       /* w15[255:192] <= s1( W_(t-2) )
            = (W_(t-2) ROTR 19) XOR (W_(t-2) ROTR 61) XOR (W_(t-2) SHR 6) */
-      bn.rshi  w18, w24, w30  >> 64
+      bn.rshi  w18, w24, w31  >> 64
       bn.rshi  w15, w24, w18  >> 19
       bn.rshi  w16, w24, w18  >> 61
       bn.xor   w15, w15, w16
@@ -371,7 +370,7 @@ sha512:
       /* Process word 0 of loop cycle: t <= i*8. */
 
       /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w0, w30  >> 64
+      bn.rshi  w22,  w0, w31  >> 64
       bn.rshi  w15,  w0, w22  >> 28
       bn.rshi  w21,  w0, w22  >> 34
       bn.xor   w15, w15, w21
@@ -386,11 +385,11 @@ sha512:
       bn.xor   w16, w16, w21
 
       /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
+      bn.rshi  w17, w31, w15  >> 192
       bn.add   w17, w17, w16
 
       /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w4, w30  >> 64
+      bn.rshi  w22,  w4, w31  >> 64
       bn.rshi  w18,  w4, w22  >> 14
       bn.rshi  w21,  w4, w22  >> 18
       bn.xor   w18, w18, w21
@@ -404,7 +403,7 @@ sha512:
       bn.xor   w19, w19, w21
 
       /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
+      bn.rshi  w20, w31, w18  >> 192
       bn.add   w20, w20, w7
       bn.add   w20, w20, w10
       bn.add   w21, w11, w19
@@ -425,7 +424,7 @@ sha512:
       /* Process word 1 of loop cycle: t <= i*8 + 1. */
 
       /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w7, w30  >> 64
+      bn.rshi  w22,  w7, w31  >> 64
       bn.rshi  w15,  w7, w22  >> 28
       bn.rshi  w21,  w7, w22  >> 34
       bn.xor   w15, w15, w21
@@ -440,11 +439,11 @@ sha512:
       bn.xor   w16, w16, w21
 
       /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
+      bn.rshi  w17, w31, w15  >> 192
       bn.add   w17, w17, w16
 
       /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w3, w30  >> 64
+      bn.rshi  w22,  w3, w31  >> 64
       bn.rshi  w18,  w3, w22  >> 14
       bn.rshi  w21,  w3, w22  >> 18
       bn.xor   w18, w18, w21
@@ -458,10 +457,10 @@ sha512:
       bn.xor   w19, w19, w21
 
       /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
+      bn.rshi  w20, w31, w18  >> 192
       bn.add   w20, w20,  w6
       bn.add   w20, w20, w10  >> 64
-      bn.rshi  w21, w30, w11  >> 64
+      bn.rshi  w21, w31, w11  >> 64
       bn.add   w21, w21, w19
       bn.add   w20, w20, w21
 
@@ -480,7 +479,7 @@ sha512:
       /* Process word 2 of loop cycle: t <= i*8 + 2. */
 
       /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w6, w30  >> 64
+      bn.rshi  w22,  w6, w31  >> 64
       bn.rshi  w15,  w6, w22  >> 28
       bn.rshi  w21,  w6, w22  >> 34
       bn.xor   w15, w15, w21
@@ -495,11 +494,11 @@ sha512:
       bn.xor   w16, w16, w21
 
       /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
+      bn.rshi  w17, w31, w15  >> 192
       bn.add   w17, w17, w16
 
       /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w2, w30  >> 64
+      bn.rshi  w22,  w2, w31  >> 64
       bn.rshi  w18,  w2, w22  >> 14
       bn.rshi  w21,  w2, w22  >> 18
       bn.xor   w18, w18, w21
@@ -513,10 +512,10 @@ sha512:
       bn.xor   w19, w19, w21
 
       /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
+      bn.rshi  w20, w31, w18  >> 192
       bn.add   w20, w20,  w5
       bn.add   w20, w20, w10  >> 128
-      bn.rshi  w21, w30, w11  >> 128
+      bn.rshi  w21, w31, w11  >> 128
       bn.add   w21, w21, w19
       bn.add   w20, w20, w21
 
@@ -535,7 +534,7 @@ sha512:
       /* Process word 3 of loop cycle: t <= i*8 + 3. */
 
       /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w5, w30  >> 64
+      bn.rshi  w22,  w5, w31  >> 64
       bn.rshi  w15,  w5, w22  >> 28
       bn.rshi  w21,  w5, w22  >> 34
       bn.xor   w15, w15, w21
@@ -550,11 +549,11 @@ sha512:
       bn.xor   w16, w16, w21
 
       /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
+      bn.rshi  w17, w31, w15  >> 192
       bn.add   w17, w17, w16
 
       /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w1, w30  >> 64
+      bn.rshi  w22,  w1, w31  >> 64
       bn.rshi  w18,  w1, w22  >> 14
       bn.rshi  w21,  w1, w22  >> 18
       bn.xor   w18, w18, w21
@@ -568,10 +567,10 @@ sha512:
       bn.xor   w19, w19, w21
 
       /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
+      bn.rshi  w20, w31, w18  >> 192
       bn.add   w20, w20,  w4
       bn.add   w20, w20, w10  >> 192
-      bn.rshi  w21, w30, w11  >> 192
+      bn.rshi  w21, w31, w11  >> 192
       bn.add   w21, w21, w19
       bn.add   w20, w20, w21
 
@@ -599,7 +598,7 @@ sha512:
       /* Process word 4 of loop cycle: t <= i*8 + 3. */
 
       /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w4, w30  >> 64
+      bn.rshi  w22,  w4, w31  >> 64
       bn.rshi  w15,  w4, w22  >> 28
       bn.rshi  w21,  w4, w22  >> 34
       bn.xor   w15, w15, w21
@@ -614,11 +613,11 @@ sha512:
       bn.xor   w16, w16, w21
 
       /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
+      bn.rshi  w17, w31, w15  >> 192
       bn.add   w17, w17, w16
 
       /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w0, w30  >> 64
+      bn.rshi  w22,  w0, w31  >> 64
       bn.rshi  w18,  w0, w22  >> 14
       bn.rshi  w21,  w0, w22  >> 18
       bn.xor   w18, w18, w21
@@ -632,10 +631,10 @@ sha512:
       bn.xor   w19, w19, w21
 
       /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
+      bn.rshi  w20, w31, w18  >> 192
       bn.add   w20, w20,  w3
       bn.add   w20, w20, w10  >> 0
-      bn.rshi  w21, w30, w11  >> 0
+      bn.rshi  w21, w31, w11  >> 0
       bn.add   w21, w21, w19
       bn.add   w20, w20, w21
 
@@ -654,7 +653,7 @@ sha512:
       /* Process word 5 of loop cycle: t <= i*8 + 3. */
 
       /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w3, w30  >> 64
+      bn.rshi  w22,  w3, w31  >> 64
       bn.rshi  w15,  w3, w22  >> 28
       bn.rshi  w21,  w3, w22  >> 34
       bn.xor   w15, w15, w21
@@ -669,12 +668,12 @@ sha512:
       bn.xor   w16, w16, w21
 
       /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
+      bn.rshi  w17, w31, w15  >> 192
       bn.add   w17, w17, w16
 
 
       /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w7, w30  >> 64
+      bn.rshi  w22,  w7, w31  >> 64
       bn.rshi  w18,  w7, w22  >> 14
       bn.rshi  w21,  w7, w22  >> 18
       bn.xor   w18, w18, w21
@@ -689,10 +688,10 @@ sha512:
       bn.xor   w19, w19, w21
 
       /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
+      bn.rshi  w20, w31, w18  >> 192
       bn.add   w20, w20,  w2
       bn.add   w20, w20, w10  >> 64
-      bn.rshi  w21, w30, w11  >> 64
+      bn.rshi  w21, w31, w11  >> 64
       bn.add   w21, w21, w19
       bn.add   w20, w20, w21
 
@@ -710,7 +709,7 @@ sha512:
       /* Process word 6 of loop cycle: t <= i*8 + 3. */
 
       /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w2, w30  >> 64
+      bn.rshi  w22,  w2, w31  >> 64
       bn.rshi  w15,  w2, w22  >> 28
       bn.rshi  w21,  w2, w22  >> 34
       bn.xor   w15, w15, w21
@@ -725,11 +724,11 @@ sha512:
       bn.xor   w16, w16, w21
 
       /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
+      bn.rshi  w17, w31, w15  >> 192
       bn.add   w17, w17, w16
 
       /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w6, w30  >> 64
+      bn.rshi  w22,  w6, w31  >> 64
       bn.rshi  w18,  w6, w22  >> 14
       bn.rshi  w21,  w6, w22  >> 18
       bn.xor   w18, w18, w21
@@ -743,10 +742,10 @@ sha512:
       bn.xor   w19, w19, w21
 
       /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
+      bn.rshi  w20, w31, w18  >> 192
       bn.add   w20, w20,  w1
       bn.add   w20, w20, w10  >> 128
-      bn.rshi  w21, w30, w11  >> 128
+      bn.rshi  w21, w31, w11  >> 128
       bn.add   w21, w21, w19
       bn.add   w20, w20, w21
 
@@ -765,7 +764,7 @@ sha512:
       /* Process word 7 of loop cycle: t <= i*8 + 3. */
 
       /* w15[255:192] = S0(a) = (a ROTR 28) XOR (a ROTR 34) XOR (a ROTR 39) */
-      bn.rshi  w22,  w1, w30  >> 64
+      bn.rshi  w22,  w1, w31  >> 64
       bn.rshi  w15,  w1, w22  >> 28
       bn.rshi  w21,  w1, w22  >> 34
       bn.xor   w15, w15, w21
@@ -780,11 +779,11 @@ sha512:
       bn.xor   w16, w16, w21
 
       /* w17[63:0] <= T2 = S0(a) + Maj(a,b,c) = w15[255:192] + w16[63:0] */
-      bn.rshi  w17, w30, w15  >> 192
+      bn.rshi  w17, w31, w15  >> 192
       bn.add   w17, w17, w16
 
       /* w18[255:192] <= S1(e) = (e ROTR 14) XOR (e ROTR 18) XOR (e ROTR 41) */
-      bn.rshi  w22,  w5, w30  >> 64
+      bn.rshi  w22,  w5, w31  >> 64
       bn.rshi  w18,  w5, w22  >> 14
       bn.rshi  w21,  w5, w22  >> 18
       bn.xor   w18, w18, w21
@@ -798,10 +797,10 @@ sha512:
       bn.xor   w19, w19, w21
 
       /* w20[63:0] <= T1 = h + S1(e) + Ch(e,f,g) + K_t + W_t */
-      bn.rshi  w20, w30, w18  >> 192
+      bn.rshi  w20, w31, w18  >> 192
       bn.add   w20, w20,  w0
       bn.add   w20, w20, w10  >> 192
-      bn.rshi  w21, w30, w11  >> 192
+      bn.rshi  w21, w31, w11  >> 192
       bn.add   w21, w21, w19
       bn.add   w20, w20, w21
 
