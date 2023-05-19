@@ -228,6 +228,7 @@ status_t spi_flash_testutils_program_page(dif_spi_host_t *spih,
  * Does not return until the programming operation completes.
  *
  * @param spih A SPI host handle.
+ * @param opcode The program page quad opcode as it varies across parts.
  * @param payload A pointer to the payload to be written to the page.
  * @param length Number of bytes in the payload. Must be less than or equal to
  *               256 bytes.
@@ -239,6 +240,7 @@ status_t spi_flash_testutils_program_page(dif_spi_host_t *spih,
  */
 OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_program_page_quad(dif_spi_host_t *spih,
+                                               uint8_t opcode,
                                                const void *payload,
                                                size_t length, uint32_t address,
                                                bool addr_is_4b);

@@ -41,7 +41,11 @@ bool test_main(void) {
                "SPI_HOST config failed!");
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host, true));
 
-  enum { kDeviceId = 0x2180, kManufactureId = 0xef };
+  enum {
+    kDeviceId = 0x2180,
+    kManufactureId = 0xef,
+    kWinbondPageQuadProgramOpcode = 0x32,
+  };
 
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, test_software_reset, &spi_host);
@@ -56,5 +60,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, test_fast_read, &spi_host);
   EXECUTE_TEST(result, test_dual_read, &spi_host);
   EXECUTE_TEST(result, test_quad_read, &spi_host);
+  EXECUTE_TEST(result, test_page_program_quad, &spi_host,
+               kWinbondPageQuadProgramOpcode);
   return status_ok(result);
 }
