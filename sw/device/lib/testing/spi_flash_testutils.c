@@ -212,6 +212,18 @@ status_t spi_flash_testutils_erase_sector(dif_spi_host_t *spih,
                                       address, addr_is_4b);
 }
 
+status_t spi_flash_testutils_erase_block32k(dif_spi_host_t *spih,
+                                            uint32_t address, bool addr_is_4b) {
+  return spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase32k,
+                                      address, addr_is_4b);
+}
+
+status_t spi_flash_testutils_erase_block64k(dif_spi_host_t *spih,
+                                            uint32_t address, bool addr_is_4b) {
+  return spi_flash_testutils_erase_op(spih, kSpiDeviceFlashOpBlockErase64k,
+                                      address, addr_is_4b);
+}
+
 status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
                                         const void *payload, size_t length,
                                         uint32_t address, bool addr_is_4b,
