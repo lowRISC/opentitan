@@ -77,8 +77,8 @@ module aes_sbox_tb #(
   localparam int unsigned WidthPRDSBoxCanrightMaskedNoreuse = 18;
   localparam int unsigned WidthPRDSBoxDOM                   = 28;
 
-  logic                                   [31:0] prd;
-  logic [31-WidthPRDSBoxCanrightMaskedNoreuse:0] unused_prd;
+  logic [31:0] prd;
+  logic        unused_prd;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_prd
     if (!rst_ni) begin
@@ -87,7 +87,7 @@ module aes_sbox_tb #(
       prd <= {$random};
     end
   end
-  assign unused_prd = prd[31:WidthPRDSBoxDOM];
+  assign unused_prd = ^prd[31:WidthPRDSBoxDOM];
 
   // Instantiate Masked SBox Implementations
   aes_sbox_canright_masked_noreuse aes_sbox_canright_masked_noreuse (
