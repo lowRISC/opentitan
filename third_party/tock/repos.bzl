@@ -2,10 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@//rules:repo.bzl", "bare_repository")
+load("@//rules:repo.bzl", "bare_repository", "http_archive_or_local")
 load("@//rules:rust.bzl", "crate_build")
 
-def tock_repos(tock = None, libtock = None):
+def tock_repos(tock = None, libtock = None, elf2tab = None):
     bare_repository(
         name = "tock",
         local = tock,
@@ -254,4 +254,16 @@ def tock_repos(tock = None, libtock = None):
                 ],
             ),
         },
+    )
+
+    # TODO(cfrantz): Currently, elf2tab miscomputes the apps entry point by the
+    # size of the TBF header.  My private fork of elf2tab adjusts the start
+    # address to the correct entry point.
+    http_archive_or_local(
+        name = "elf2tab",
+        local = elf2tab,
+        url = "https://github.com/cfrantz/elf2tab/archive/d1bf5e392cae54aa021070319a0eb0488d745efb.tar.gz",
+        sha256 = "e2da2e32f81f6d45c827e65092069431e153a6661fe2d07beab3f37fe2e7c2cd",
+        strip_prefix = "elf2tab-d1bf5e392cae54aa021070319a0eb0488d745efb",
+        build_file = Label("//third_party/tock:BUILD.elf2tab.bazel"),
     )
