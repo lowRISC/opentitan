@@ -1,0 +1,32 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "cargo_tock_deps"
+version = "0.0.0"
+publish = false
+
+[lib]
+path = "empty_file_to_appease_cargo.rs"
+
+# Keep sorted.
+# Please avoid version numbers that only have one component.
+[dependencies]
+# TODO(cfrantz): We don't want to use `git` references in our codebase because they
+# prevent offline builds.  Currently, it doesn't seem like rules_rust/crate_universe
+# supports specifying a https URL as a replacement for a git repo reference.  Investigate.
+earlgrey-cw310 = { git = "https://github.com/cfrantz/tock", branch="ot-master-rework", default-features=false }
+kernel = { git = "https://github.com/cfrantz/tock", branch="ot-master-rework" }
+
+# TODO(cfrantz): libtock-rs has a git submodule dependency on tock, but it isn't
+# necessary to compile libtock-rs (it's only used for tests).  crate_universe
+# initializes submodules, which causes the fetching of libtock-rs and all of its
+# sub-crates take a long time.
+libtock = { git = "https://github.com/tock/libtock-rs" }
+
+# TODO(cfrantz): Currently, elf2tab miscomputes the apps entry point by the
+# size of the TBF header.  My private fork of elf2tab adjusts the start
+# address to the correct entry point.
+#elf2tab = "0.10"
+elf2tab = { git = "https://github.com/cfrantz/elf2tab", branch="libify" }
