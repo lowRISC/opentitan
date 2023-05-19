@@ -2773,9 +2773,16 @@
 
             - Initiate an illegal program request from LC ctrl to OTP ctrl by forcing the
               `lc_otp_program_i`.
-            - Verify that the LC ctrl triggers an alert when the OTP ctrl responds back with a
-              program error.
+            - Verify that the LC ctrl triggers an alert and escalation when the OTP ctrl responds back with the correct
+              fatal program error as expected.
+            - Allow escalation to go through reset.
+            - Use the rstmgr alert info and the fault CSRs to check the alert cause is right.
+            - Keep state across resets in flash to check that no NMI or regular ISR interrupt run
+              for kTopEarlgreyAlertIdLcCtrlFatalProgError.
+	    - Verify that, after escalation reset, the alert handler cause and the fault register are cleared.
+            - Verify after the escalation reset that the alert info captured the correct alert.
             '''
+
       stage: V2
       tests: ["chip_sw_lc_ctrl_program_error"]
     }
