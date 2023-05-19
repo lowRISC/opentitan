@@ -5,6 +5,7 @@
 NONHERMETIC_ENV_VARS = [
     "HOME",
     "PATH",
+    "PYTHONUSERBASE",  # Path to installed python modules.
     "XILINX_VIVADO",
     "XILINX_HLS",
     "XILINXD_LICENSE_FILE",
