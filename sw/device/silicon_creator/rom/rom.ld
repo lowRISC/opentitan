@@ -90,7 +90,10 @@ SECTIONS {
     ASSERT(
         SIZEOF(.vectors) + SIZEOF(.crt) <= _epmp_reset_rx_size,
         "Error: .crt overflows reset ePMP region");
-    . = MAX(., _epmp_reset_rx_size - SIZEOF(.vectors));
+    /**
+     * FIXME: Renable after diagnosing the overflow caused by #18671 and #18665.
+     * . = MAX(., _epmp_reset_rx_size - SIZEOF(.vectors));
+     */
   } > rom
 
   /**
