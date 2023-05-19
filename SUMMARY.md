@@ -45,7 +45,8 @@
     - [Interface and Registers](./hw/ip/rv_core_ibex/data/rv_core_ibex.hjson)
     - [Checklist](./hw/ip/rv_core_ibex/doc/checklist.md)
   - [OTBN](./hw/ip/otbn/README.md)
-    - [Developer Guide](./hw/ip/otbn/doc/developer-guide.md)
+    - [Theory of Operation](./hw/ip/otbn/doc/theory_of_operation.md)
+    - [Developing OTBN](./hw/ip/otbn/doc/developing_otbn.md)
     - [ISA Guide](./hw/ip/otbn/doc/isa.md)
     - [Design Verification](./hw/ip/otbn/dv/README.md)
       - [Random Instruction Generator](./hw/ip/otbn/dv/rig/README.md)
@@ -56,6 +57,7 @@
       - [Tracer](./hw/ip/otbn/dv/tracer/README.md)
       - [Formal Masking Verification Using Alma](./hw/ip/otbn/pre_sca/alma/README.md)
     - [Functional Coverage](./hw/ip/otbn/dv/doc/fcov.md)
+    - [Programmer's Guide](./hw/ip/otbn/doc/programmers_guide.md)
     - [Interface and Registers](./hw/ip/otbn/data/otbn.hjson)
     - [Checklist](./hw/ip/otbn/doc/checklist.md)
 
