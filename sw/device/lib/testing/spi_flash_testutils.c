@@ -214,7 +214,8 @@ status_t spi_flash_testutils_erase_sector(dif_spi_host_t *spih,
 
 status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
                                         const void *payload, size_t length,
-                                        uint32_t address, bool addr_is_4b) {
+                                        uint32_t address, bool addr_is_4b,
+                                        dif_spi_host_width_t write_width) {
   TRY_CHECK(spih != NULL);
   TRY_CHECK(payload != NULL);
   TRY_CHECK(length <= 256);  // Length must be less than a page size.
@@ -241,7 +242,7 @@ status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
           .type = kDifSpiHostSegmentTypeTx,
           .tx =
               {
-                  .width = kDifSpiHostWidthStandard,
+                  .width = write_width,
                   .buf = payload,
                   .length = length,
               },
@@ -257,7 +258,17 @@ status_t spi_flash_testutils_program_page(dif_spi_host_t *spih,
                                           const void *payload, size_t length,
                                           uint32_t address, bool addr_is_4b) {
   return spi_flash_testutils_program_op(spih, kSpiDeviceFlashOpPageProgram,
-                                        payload, length, address, addr_is_4b);
+                                        payload, length, address, addr_is_4b,
+                                        kDifSpiHostWidthStandard);
+}
+
+status_t spi_flash_testutils_program_page_quad(dif_spi_host_t *spih,
+                                               const void *payload,
+                                               size_t length, uint32_t address,
+                                               bool addr_is_4b) {
+  return spi_flash_testutils_program_op(spih, kSpiDeviceFlashOpPageQuadProgram,
+                                        payload, length, address, addr_is_4b,
+                                        kDifSpiHostWidthQuad);
 }
 
 status_t spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
