@@ -204,7 +204,7 @@ static status_t tx_wm_event_irq(void) {
   // Issue a command and check that the `STATUS.txwm` goes low.
   TRY(dif_spi_host_fifo_write(&spi_host, data, sizeof(data)));
   TRY(dif_spi_host_get_status(&spi_host, &status));
-  TRY_CHECK(status.tx_queue_depth > kTxWatermark, "%d", status.tx_queue_depth);
+  TRY_CHECK(status.tx_queue_depth >= kTxWatermark, "%d", status.tx_queue_depth);
   TRY_CHECK(!status.tx_water_mark);
 
   TRY(dif_spi_host_write_command(&spi_host, sizeof(data),
@@ -312,7 +312,7 @@ static status_t test_init(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   TRY(dif_rv_plic_init(base_addr, &plic));
 
-  rv_plic_testutils_irq_range_enable(&plic, kHart, kDifSpiHostIrqSpiEvent,
+  rv_plic_testutils_irq_range_enable(&plic, kHart, kTopEarlgreyPlicIrqIdSpiHost0SpiEvent,
                                      kTopEarlgreyPlicIrqIdSpiHost0SpiEvent);
 
   dif_spi_host_irq_state_snapshot_t spi_host_irqs =
