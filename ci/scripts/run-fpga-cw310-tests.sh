@@ -57,5 +57,4 @@ for tag in "${cw310_tags[@]}"; do
         --build_tests_only \
         --define cw310=lowrisc \
         --flaky_test_attempts=2
-
 done

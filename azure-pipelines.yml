@@ -566,33 +566,8 @@ jobs:
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-cw310-tests.sh cw310_test_rom,-jtag || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-cw310-tests.sh cw310_test_rom,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
-
-- job: execute_rom_fpga_jtag_tests_cw310
-  displayName: Experimental CW310 ROM JTAG Tests
-  pool: FPGA
-  timeoutInMinutes: 60
-  dependsOn:
-    - chip_earlgrey_cw310
-    - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310
-        - sw_build
-  - bash: |
-      set -e
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-cw310-tests.sh jtag || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
-    displayName: Execute tests
-    # TODO(lowRISC/opentitan#16067) Fail CI when JTAG tests fail.
-    continueOnError: True
 
 - job: execute_rom_fpga_tests_cw310
   displayName: CW310 ROM Tests
@@ -614,8 +589,32 @@ jobs:
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-cw310-tests.sh cw310_rom,-jtag || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-cw310-tests.sh cw310_rom,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
+
+- job: execute_fpga_manuf_tests_cw310
+  displayName: CW310 Manufacturing Tests
+  pool: FPGA
+  timeoutInMinutes: 60
+  dependsOn:
+    - chip_earlgrey_cw310
+    - sw_build
+  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - chip_earlgrey_cw310
+        - sw_build
+  - bash: |
+      set -e
+      . util/build_consts.sh
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      ci/scripts/run-fpga-cw310-tests.sh manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+    displayName: Execute tests
+
 
 - job: deploy_release_artifacts
   displayName: Package & deploy release
