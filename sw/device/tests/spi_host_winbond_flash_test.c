@@ -62,5 +62,6 @@ bool test_main(void) {
   EXECUTE_TEST(result, test_quad_read, &spi_host);
   EXECUTE_TEST(result, test_page_program_quad, &spi_host,
                kWinbondPageQuadProgramOpcode);
+  EXECUTE_TEST(result, test_erase_32k_block, &spi_host);
   return status_ok(result);
 }

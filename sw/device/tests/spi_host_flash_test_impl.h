@@ -109,4 +109,12 @@ status_t test_4bytes_address(dif_spi_host_t *spi);
  */
 status_t test_page_program_quad(dif_spi_host_t *spi, uint8_t opcode);
 
+/**
+ * Erase a 32kB block and read it back to check if was erased.
+ *
+ * @param spi A spi host handler.
+ * @return status_t containing either OK or an error.
+ */
+status_t test_erase_32k_block(dif_spi_host_t *spi);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_SPI_HOST_FLASH_TEST_IMPL_H_
