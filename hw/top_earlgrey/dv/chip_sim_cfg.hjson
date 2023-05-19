@@ -2019,7 +2019,8 @@
               // "chip_sw_pwrmgr_sleep_power_glitch_reset",
               "chip_sw_pwrmgr_sleep_disabled",
               "chip_sw_csrng_kat_test",
-              "chip_sw_sysrst_ctrl_inputs"]
+              "chip_sw_sysrst_ctrl_inputs",
+              "rom_e2e_smoke"]
     }
   ]
 }
