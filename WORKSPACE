@@ -65,6 +65,10 @@ crate_universe_dependencies(bootstrap = True)
 load("//third_party/rust/crates:crates.bzl", "crate_repositories")
 crate_repositories()
 
+# Tock dependencies.
+load("//third_party/tock/crates:crates.bzl", tock_repositories="crate_repositories")
+tock_repositories()
+
 # OpenOCD
 load("//third_party/openocd:repos.bzl", "openocd_repos")
 openocd_repos()
