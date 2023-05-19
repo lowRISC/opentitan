@@ -146,10 +146,6 @@ static rom_error_t rom_init(void) {
   // Update epmp config for debug rom according to lifecycle state.
   rom_epmp_config_debug_rom(lc_state);
 
-  // Enable all resets.
-  pwrmgr_all_resets_enable();
-  SEC_MMIO_WRITE_INCREMENT(kPwrmgrSecMmioAllResetsEnable);
-
   // Re-initialize the watchdog timer.
   watchdog_init(lc_state);
   SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioInit);
