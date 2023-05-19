@@ -70,6 +70,7 @@ py_binary(
         "//util/reggen:gen_selfdoc",
         "//util/reggen:ip_block",
         "//util/reggen:version",
+        requirement("tabulate"),
     ],
 )
 
