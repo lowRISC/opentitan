@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// USB streaming data test
+// USB Isochronous streaming data test
 //
 // This test requires interaction with the USB DPI model or a test application
 // on the USB host. The test initializes the USB device and configures a set of
@@ -43,9 +43,6 @@
 // This is appropriate for a Verilator chip simulation with 15 min timeout
 #define TRANSFER_BYTES_VERILATOR 0x2400U
 
-// For top-level DV simulation (regression runs, deterministic behavior)
-#define TRANSFER_BYTES_DVSIM 0x800U
-
 // This is about the amount that we can transfer within a 1 hour 'eternal' test
 // #define TRANSFER_BYTES_LONG (0xD0U << 20)
 
@@ -60,48 +57,48 @@ static const uint8_t config_descriptors[] = {
     // Up to 11 interfaces and NUM_STREAMS in the descriptor head specifies how
     // many of the interfaces will be declared to the host
     VEND_INTERFACE_DSCR(0, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 1U, USBDEV_MAX_PACKET_SIZE, 0),
-    USB_BULK_EP_DSCR(1, 1U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(0, 1U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(1, 1U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
 
     VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 2U, USBDEV_MAX_PACKET_SIZE, 0),
-    USB_BULK_EP_DSCR(1, 2U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(0, 2U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(1, 2U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
 
     VEND_INTERFACE_DSCR(2, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 3U, USBDEV_MAX_PACKET_SIZE, 0),
-    USB_BULK_EP_DSCR(1, 3U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(0, 3U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(1, 3U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
 
     VEND_INTERFACE_DSCR(3, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 4U, USBDEV_MAX_PACKET_SIZE, 0),
-    USB_BULK_EP_DSCR(1, 4U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(0, 4U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(1, 4U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
 
     VEND_INTERFACE_DSCR(4, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 5U, USBDEV_MAX_PACKET_SIZE, 0),
-    USB_BULK_EP_DSCR(1, 5U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(0, 5U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(1, 5U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
 
     VEND_INTERFACE_DSCR(5, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 6U, USBDEV_MAX_PACKET_SIZE, 0),
-    USB_BULK_EP_DSCR(1, 6U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(0, 6U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(1, 6U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
 
     VEND_INTERFACE_DSCR(6, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 7U, USBDEV_MAX_PACKET_SIZE, 0),
-    USB_BULK_EP_DSCR(1, 7U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(0, 7U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(1, 7U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
 
     VEND_INTERFACE_DSCR(7, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 8U, USBDEV_MAX_PACKET_SIZE, 0),
-    USB_BULK_EP_DSCR(1, 8U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(0, 8U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(1, 8U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
 
     VEND_INTERFACE_DSCR(8, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 9U, USBDEV_MAX_PACKET_SIZE, 0),
-    USB_BULK_EP_DSCR(1, 9U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(0, 9U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(1, 9U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
 
     VEND_INTERFACE_DSCR(9, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 10U, USBDEV_MAX_PACKET_SIZE, 0),
-    USB_BULK_EP_DSCR(1, 10U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(0, 10U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(1, 10U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
 
     VEND_INTERFACE_DSCR(10, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 11U, USBDEV_MAX_PACKET_SIZE, 0),
-    USB_BULK_EP_DSCR(1, 11U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(0, 11U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_EP_DSCR(1, 11U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 0),
 };
 
 /**
@@ -151,10 +148,9 @@ static bool sending = true;
 static bool generating = true;
 
 /**
- * Do we want the host to retry transmissions? (DPI model only; we cannot
- * instruct a physical host to fake delivery failure/packet corruption etc)
+ * Retrying is meaningless for this test since we have only Isochronous streams.
  */
-static bool retrying = true;
+static bool retrying = false;
 
 /**
  * Are we expecting to receive data?
@@ -185,23 +181,15 @@ bool test_main(void) {
         "Verilator simulation or CW310 FPGA. It needs logic on the host side "
         "to retrieve, scramble and return the generated byte stream");
 
-  LOG_INFO("Running USBDEV Stream Test");
+  LOG_INFO("Running USBDEV ISO Test");
 
   // Check we can support the requested number of streams
   CHECK(nstreams && nstreams < USBDEV_NUM_ENDPOINTS);
 
   // Decide upon the number of bytes to be transferred for the entire test
   uint32_t transfer_bytes = TRANSFER_BYTES_FPGA;
-  switch (kDeviceType) {
-    case kDeviceSimVerilator:
-      transfer_bytes = TRANSFER_BYTES_VERILATOR;
-      break;
-    case kDeviceSimDV:
-      transfer_bytes = TRANSFER_BYTES_DVSIM;
-      break;
-    default:
-      CHECK(kDeviceType == kDeviceFpgaCw310);
-      break;
+  if (kDeviceType == kDeviceSimVerilator) {
+    transfer_bytes = TRANSFER_BYTES_VERILATOR;
   }
   transfer_bytes = (transfer_bytes + nstreams - 1) / nstreams;
   LOG_INFO(" - %u stream(s), 0x%x bytes each", nstreams, transfer_bytes);
@@ -223,8 +211,8 @@ bool test_main(void) {
 
   // Initialize the test descriptor
   // Note: the 'max packets' test flag is not required by the DPI model
-  const uint8_t desc[] = {
-      USB_TESTUTILS_TEST_DSCR(1, NUM_STREAMS | (uint8_t)test_flags, 0, 0, 0)};
+  const uint8_t desc[] = {USB_TESTUTILS_TEST_DSCR(
+      kUsbTestNumberIso, NUM_STREAMS | (uint8_t)test_flags, 0, 0, 0)};
   memcpy(test_descriptor, desc, sizeof(test_descriptor));
 
   // Remember context state for usb_testutils context
@@ -234,7 +222,7 @@ bool test_main(void) {
   // simulation has finished all of the printing, which takes a while
   // if `--trace` was passed in.
   CHECK_STATUS_OK(usb_testutils_init(ctx->usbdev, /*pinflip=*/false,
-                                     /*en_diff_rcvr=*/true,
+                                     /*en_diff_rcvr=*/false,
                                      /*tx_use_d_se0=*/false));
   CHECK_STATUS_OK(usb_testutils_controlep_init(
       &usbdev_control, ctx->usbdev, 0, config_descriptors,
@@ -245,11 +233,11 @@ bool test_main(void) {
   }
 
   // Describe the transfer type of each stream;
-  // Note: for now we support only Bulk Transfer streams but this should change
-  // in future, eg. in response to test configuration.
+  // Note: make all of the streams Isochronous streams for now, but later we
+  // shall want to test a mix of different transfer types concurrently.
   usb_testutils_transfer_type_t xfr_types[USBUTILS_STREAMS_MAX];
   for (unsigned s = 0U; s < nstreams; s++) {
-    xfr_types[s] = kUsbTransferTypeBulk;
+    xfr_types[s] = kUsbTransferTypeIsochronous;
   }
 
   // Initialise the state of the streams
@@ -281,12 +269,14 @@ bool test_main(void) {
   LOG_INFO("USB sent 0x%x byte(s), received and checked 0x%x byte(s)", tx_bytes,
            rx_bytes);
 
+  // Note: since Isochronous streams are susceptible to packet loss we can only
+  // perform a lower bounds check on the transmitted and received byte counts.
   if (sending) {
-    CHECK(tx_bytes == nstreams * transfer_bytes,
+    CHECK(tx_bytes >= nstreams * transfer_bytes,
           "Unexpected count of byte(s) sent to USB host");
   }
   if (recving) {
-    CHECK(rx_bytes == nstreams * transfer_bytes,
+    CHECK(rx_bytes >= nstreams * transfer_bytes,
           "Unexpected count of byte(s) received from USB host");
   }
 

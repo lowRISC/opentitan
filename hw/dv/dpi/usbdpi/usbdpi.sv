@@ -49,7 +49,7 @@ module usbdpi #(
     byte usbdpi_host_to_device(input chandle ctx, input bit [10:0] d2p);
 
   import "DPI-C" function
-    void usbdpi_diags(input chandle ctx, output bit [95:0] diags);
+    void usbdpi_diags(input chandle ctx, output bit [127:0] diags);
 
   chandle ctx;
 
@@ -95,7 +95,8 @@ module usbdpi #(
     HS_WAITACK2 = 13,
     HS_STREAMOUT = 14,
     HS_STREAMIN = 15,
-    HS_NEXTFRAME = 16
+    HS_NEXTFRAME = 16,
+    HS_ERROR = 17
   } usbdpi_host_state_t;
 
   // Bus state
@@ -115,19 +116,28 @@ module usbdpi #(
     kUsbControlDataInAck,
     kUsbControlStatusOut,
     kUsbControlStatusOutAck,  // 0xc
-    kUsbIsoToken,
-    kUsbIsoDataIn,
-    kUsbIsoDataOut,
 
+    // Isochronous Transfers
+    kUsbIsoOut,
+    kUsbIsoInToken,
+    kUsbIsoInData,
+
+    // Bulk Transfers
     kUsbBulkOut,  // 0x10
     kUsbBulkOutAck,
     kUsbBulkInToken,
     kUsbBulkInData,
-    kUsbBulkInAck
+
+    // Interrupt transfers
+    kUsbInterruptOut,  // 0x14
+    kUsbInterruptOutAck,
+    kUsbInterruptInToken,
+    kUsbInterruptInData
   } usbdpi_bus_state_t;
 
   // USB monitor state
   // Note: MUST be kept consistent with usbdpi_monitor_state_t in usb_monitor.c
+  // to aid in reading waveform traces.
   typedef enum bit [1:0] {
     MS_IDLE = 0,
     MS_GET_PID,
@@ -135,17 +145,23 @@ module usbdpi #(
   } usb_monitor_state_t;
 
   // USB driver state
-  // Note: MUST be kept consistent with usbdpi_drv_state_t in usbdpi.h
+  // Note: MUST be kept consistent with usbdpi_drv_state_t in usbdpi.h to
+  // aid in reading waveform traces.
   typedef enum bit [3:0] {
-    ST_IDLE = 0,
-    ST_SEND = 1,
-    ST_GET = 2,
-    ST_SYNC = 3,
-    ST_EOP = 4,
-    ST_EOP0 = 5
+    ST_DISCONNECT = 0,
+    ST_RESET,
+    ST_IDLE,
+    ST_SEND,
+    ST_GET,
+    ST_SYNC,
+    ST_EOP,
+    ST_EOP0,
+    ST_RESUME
   } usbdpi_drv_state_t;
 
   // Test steps
+  // Note: MUST be kept consistent with usbdpi_test_step_t in usbdpi_test.h to
+  // aid in reading waveform traces.
   typedef enum bit [6:0] {
 
     STEP_BUS_RESET = 7'h0,
@@ -170,11 +186,19 @@ module usbdpi #(
     STEP_ENDPT_UNIMPL_OUT,
     STEP_ENDPT_UNIMPL_IN,
     STEP_DEVICE_UK_SETUP,
-    STEP_IDLE_START,
-    STEP_IDLE_END = STEP_IDLE_START + 7'h4,
+    STEP_UK_SETUP_REQ,
+
+    // Suspend/Resume test
+    STEP_SUSPEND,
+    STEP_ACTIVE,
+    STEP_SUSPEND_LONG,
+    STEP_RESUME,
 
     // usbdev_stream_test
-    STEP_STREAM_SERVICE = 7'h20,
+    STEP_STREAM_SERVICE = 7'h77,
+
+    // Idle state; no traffic beyond SOF
+    STEP_IDLE = 7'h7e,
 
     // Disconnect the device and stop
     STEP_BUS_DISCONNECT = 7'h7f
@@ -186,6 +210,8 @@ module usbdpi #(
   bit [3:0] c_mon_bits;
   bit [7:0] c_mon_byte;
   usb_pid_t c_mon_pid;
+  bit [27:0] c_spare2;
+  bit [3:0] c_substep;
   // Make usbdpi diagnostic information viewable in waveforms
   usbdpi_test_step_t c_step;
   usbdpi_bus_state_t c_bus_state;
@@ -195,6 +221,7 @@ module usbdpi #(
   usbdpi_drv_state_t c_state;
   always @(posedge clk_48MHz_i)
     usbdpi_diags(ctx, {c_spare1, c_mon_state, c_mon_bits, c_mon_byte, c_mon_pid,
+                       c_spare2, c_substep,
                        c_step, c_bus_state, c_tickbits, c_frame, c_hostSt,
                        c_state});
 

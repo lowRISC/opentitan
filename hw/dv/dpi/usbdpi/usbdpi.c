@@ -20,8 +20,9 @@
 #include "usbdpi_test.h"
 
 // Indexed directly by ctx->state (ST_)
-static const char *st_states[] = {"ST_IDLE 0", "ST_SEND 1", "ST_GET 2",
-                                  "ST_SYNC 3", "ST_EOP 4",  "ST_EOP0 5"};
+static const char *st_states[] = {
+    "ST_DISCONNECT 0", "ST_RESET 1", "ST_IDLE 2", "ST_SEND 3",  "ST_GET 4",
+    "ST_SYNC 5",       "ST_EOP 6",   "ST_EOP0 7", "ST_RESUME 8"};
 
 // Indexed directly by ct-x>hostSt (HS_)
 static const char *hs_states[] = {
@@ -29,7 +30,7 @@ static const char *hs_states[] = {
     "HS_DS_SENDACK 4", "HS_DONEDADR 5",  "HS_REQDATA 6",       "HS_WAITDATA 7",
     "HS_SENDACK 8",    "HS_WAIT_PKT 9",  "HS_ACKIFDATA 10",    "HS_SENDHI 11",
     "HS_EMPTYDATA 12", "HS_WAITACK2 13", "HS_STREAMOUT 14",    "HS_STREAMIN 15",
-    "HS_NEXTFRAME 16"};
+    "HS_NEXTFRAME 16", "HS_ERROR 17"};
 
 static const char *decode_usb[] = {"SE0", "0-K", "1-J", "SE1"};
 
@@ -77,6 +78,89 @@ static void tryTX(usbdpi_ctx_t *ctx, uint8_t endpoint, bool expect_status);
 static void usbdpi_data_callback(void *ctx_v, usbmon_data_type_t type,
                                  uint8_t d);
 
+// Disconnect VBUS/power and prepare to (re)connect.
+static void bus_disconnect(usbdpi_ctx_t *ctx, uint32_t delay) {
+  // Determine the time at which VBUS/SENSE should be (re)applied.
+  ctx->sense_time = ctx->tick_bits + delay;
+
+  // Disconnect the VBUS signal/power
+  ctx->driving &= ~P2D_SENSE;
+
+  ctx->state = ST_DISCONNECT;
+}
+
+// Initialize the state of the DPI model appropriately for when the device
+// connects to the bus; we issue only a short reset at PoR to reduce the
+// simulation time. When performing a Bus Reset whilst the device is in Deep
+// Sleep, the bus reset should be long enough to be visible to the repowered
+// usbdev too (not just aon_wake), as it would be with a physical host.
+static void bus_reset(usbdpi_ctx_t *ctx, bool long_reset) {
+  // Initialize state for each endpoint and direction
+  for (unsigned ep = 0U; ep < USBDPI_MAX_ENDPOINTS; ep++) {
+    // First DATAx received shall be DATA0
+    ctx->ep_in[ep].next_data = USB_PID_DATA0;
+
+    // First DATAx transmitted shall be DATA0 because it must follow a SETUP
+    // transaction
+    ctx->ep_out[ep].next_data = USB_PID_DATA0;
+  }
+
+  ctx->baudrate_set_successfully = 0;
+
+  ctx->hostSt = HS_NEXTFRAME;
+
+  // Hold the bus in reset by driving to SE0; Reset Signaling should
+  // assert this bus state for a minimum of 10ms but simulation time
+  // is expensive...
+
+  if (long_reset) {
+    // It takes the chip/sw about 2ms to resume from Deep Sleep
+    ctx->reset_time = ctx->tick_bits + 4 * FRAME_INTERVAL;
+  } else {
+    // A Bus Reset may be detected after 2.5us; usbdev responds after 3us of
+    // continuous assertion, sampled asynchronously on its own usec timer, so we
+    // need at least to exceed 4us.
+    const unsigned usec = 12u;
+    ctx->reset_time = ctx->tick_bits + 5 * usec;
+
+    // TODO: for now we want to be sure that the AON/Wakeup module can see the
+    // reset
+    ctx->reset_time = ctx->tick_bits + 1000u;
+  }
+
+  // This Reset Recovery interval combined with the delay in frame_start()
+  // means that we'll allow a bus frame to elapse between removing the Bus Reset
+  // and attempting to send SOF and the first SETUP packet
+  ctx->recovery_time = ctx->reset_time + FRAME_INTERVAL / 2;
+  ctx->state = ST_RESET;
+
+  // TODO: perhaps we want to differentiate between Idle and Disconnected?
+  ctx->bus_state = kUsbIdle;
+}
+
+// Resume Signaling
+static void bus_resume(usbdpi_ctx_t *ctx) {
+  ctx->hostSt = HS_NEXTFRAME;
+
+  // It appears that resume signaling is non-specific; 'non-Idle bus state for
+  // at least 20ms' is the specified requirement, so we choose the simple option
+  // of driving K constantly before the required Low Speed SE0,SE0,J sequence.
+  //
+  // We do not, however, signal for anywhere near that long. Our chip must be
+  // able to resume execution and the software be ready once again to
+  // communicate, but simulations are slow.
+
+  ctx->resume_end_time = ctx->tick_bits + 4 * FRAME_INTERVAL;
+  ctx->resume_SE0_end_time =
+      ctx->resume_end_time + 16;  // 2 Low Speed bit times
+  ctx->resume_J_end_time = ctx->resume_SE0_end_time + 8;  // 1 LS bit
+
+  ctx->state = ST_RESUME;
+
+  // TODO: perhaps we want to differentiate between Idle and Disconnected?
+  ctx->bus_state = kUsbIdle;
+}
+
 /**
  * Create a USB DPI instance, returning a 'chandle' for later use
  */
@@ -89,27 +173,15 @@ void *usbdpi_create(const char *name, int loglevel) {
   // ctx->tick = 0;
   // ctx->tick_bits = 0;
   // ctx->frame = 0;
-  // ctx->framepend = 0;
+  // ctx->framepend = false;
   // ctx->frame_start = 0;
   // ctx->last_pu = 0;
   // ctx->driving = 0;
   // ctx->baudrate_set_successfully = 0;
 
-  // Initialize state for each endpoint and direction
-  for (unsigned ep = 0U; ep < USBDPI_MAX_ENDPOINTS; ep++) {
-    // First DATAx received shall be DATA0
-    ctx->ep_in[ep].next_data = USB_PID_DATA0;
-
-    // First DATAx transmitted shall be DATA0 because it must follow a SETUP
-    // transaction
-    ctx->ep_out[ep].next_data = USB_PID_DATA0;
-  }
-
-  ctx->state = ST_IDLE;
-  ctx->hostSt = HS_NEXTFRAME;
   ctx->loglevel = loglevel;
 
-  ctx->step = STEP_BUS_RESET;
+  bus_disconnect(ctx, SENSE_AT);
 
   char cwd[FILENAME_MAX];
   char *cwd_rv;
@@ -166,7 +238,7 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
     }
   }
 
-  // TODO - check the timing of the device responses to ensure compliance with
+  // TODO: check the timing of the device responses to ensure compliance with
   // the specification; the response time of acknowledgements, for example, has
   // a hard real time requirement that is specified in terms of bit intervals
   if (d2p & (D2P_DP_EN | D2P_DN_EN | D2P_D_EN)) {
@@ -179,22 +251,29 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
         printf(
             "[usbdpi] frame 0x%x tick_bits 0x%x error state %s hs %s and "
             "device "
-            "drives\n",
+            "drives 0x%x\n",
             ctx->frame, ctx->tick_bits, st_states[ctx->state],
-            hs_states[ctx->hostSt]);
+            hs_states[ctx->hostSt], d2p);
         // TODO: stop the test
         break;
 
       // Device to host transmission; collect the bits
       case ST_GET:
-        // TODO - perform bit-level decoding and packet construction here rather
+        // TODO: perform bit-level decoding and packet construction here rather
         // than relying upon usb_monitor to do that
-        // TODO - synchronize with the device transmission and check that the
+        // TODO: synchronize with the device transmission and check that the
         // signals remain stable across all 4 cycles of the bit interval
         break;
 
+      case ST_RESUME:
+        printf(
+            "[usbdpi] Device traffic during resume signaling; tick_bits 0x%x "
+            "error state %s hs %s and device drives 0x%x\n",
+            ctx->tick_bits, st_states[ctx->state], hs_states[ctx->hostSt], d2p);
+        break;
+
       case ST_IDLE:
-        // Nothing to do
+        // Device is trying to transmit
         ctx->state = ST_GET;
         break;
 
@@ -222,7 +301,7 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
     ctx->last_pu = d2p & D2P_PU;
   }
 
-  // TODO - prime candidate for a function
+  // TODO: prime candidate for a function
   if (ctx->loglevel & LOG_BIT) {
     char raw_str[D2P_BITS + 1];
     {
@@ -260,6 +339,11 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
         ctx->bus_state = kUsbControlStatusOutAck;
         break;
 
+      // Isochronous Transfers
+      case kUsbIsoInToken:
+        ctx->bus_state = kUsbIsoInData;
+        break;
+
       // Bulk Transfers
       case kUsbBulkOut:
         ctx->bus_state = kUsbBulkOutAck;
@@ -268,6 +352,16 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
         ctx->bus_state = kUsbBulkInData;
         break;
 
+      // Interrupt Transfers
+      case kUsbInterruptOut:
+        ctx->bus_state = kUsbInterruptOutAck;
+        break;
+      case kUsbInterruptInToken:
+        ctx->bus_state = kUsbInterruptInData;
+        break;
+
+      // TODO - this shall become an error condition; we're not expecting
+      //        a transmission from the device, and thus no EOP either
       default:
         break;
     }
@@ -284,13 +378,15 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
 void usbdpi_data_callback(void *ctx_v, usbmon_data_type_t type, uint8_t d) {
   usbdpi_ctx_t *ctx = (usbdpi_ctx_t *)ctx_v;
   assert(ctx);
-  if (!ctx->recving) {
-    ctx->recving = transfer_alloc(ctx);
-  }
 
   // We are interested only in the packets from device to host
   if (ctx->state != ST_GET) {
     return;
+  }
+
+  // Ensure that we have a buffer available for packet reception
+  if (!ctx->recving) {
+    ctx->recving = transfer_alloc(ctx);
   }
 
   usbdpi_transfer_t *tr = ctx->recving;
@@ -552,6 +648,7 @@ void getDescriptor(usbdpi_ctx_t *ctx, uint8_t desc_type, uint8_t desc_idx,
             ctx->ep_out[ENDPOINT_ZERO].next_data =
                 DATA_TOGGLE_ADVANCE(ctx->ep_out[ENDPOINT_ZERO].next_data);
             ctx->hostSt = HS_NEXTFRAME;
+            printf("[usbdpi] getDescriptor done\n");
             break;
 
           case USB_PID_NAK:
@@ -560,6 +657,8 @@ void getDescriptor(usbdpi_ctx_t *ctx, uint8_t desc_type, uint8_t desc_idx,
             ctx->wait = ctx->tick_bits + 200;  // HACK
             break;
 
+          // For DEVICE_QUALIFIER reads we expect a STALL response, being
+          // a Full Speed-only device
           // TODO - commute these other responses into test failures
           case USB_PID_STALL:
             printf("[usbdpi] Device stalled\n");
@@ -573,7 +672,7 @@ void getDescriptor(usbdpi_ctx_t *ctx, uint8_t desc_type, uint8_t desc_idx,
         }
       } else if (ctx->tick_bits >= ctx->wait) {
         printf(
-            "[usbdpi] Time out waiting for device response in Status Stage\n");
+            "[usbdpi] Timed out waiting for device response in Status Stage\n");
         ctx->hostSt = HS_NEXTFRAME;
       }
       break;
@@ -598,7 +697,7 @@ void getTestConfig(usbdpi_ctx_t *ctx, uint16_t desc_len) {
       ctx->hostSt = HS_REQDATA;
       break;
     case HS_REQDATA:
-      // TODO - we must wait before trying the IN because we currently
+      // TODO: we must wait before trying the IN because we currently
       // do not retry after a NAK response, but the CPU software can be tardy
       if (ctx->tick_bits >= ctx->wait &&
           ctx->bus_state == kUsbControlSetupAck) {
@@ -619,20 +718,17 @@ void getTestConfig(usbdpi_ctx_t *ctx, uint16_t desc_len) {
           case USB_PID_DATA1: {
             usbdpi_transfer_t *rx = ctx->recving;
             assert(rx);
-            // TODO - check the length of the received data field!
+            // TODO: check the length of the received data field!
             uint8_t *dp = transfer_data_field(rx);
             assert(dp);
             // Validate the first part of the test descriptor
             printf("[usbdpi] Test descriptor 0x%.8X\n", get_le32(dp));
-
-            transfer_dump(rx, stdout);
-
             // Check the header signature
             const uint8_t test_sig_head[] = {0x7eu, 0x57u, 0xc0u, 0xf1u};
             const uint8_t test_sig_tail[] = {0x1fu, 0x0cu, 0x75u, 0xe7u};
             if (!memcmp(dp, test_sig_head, 4) && 0x10 == get_le16(&dp[4]) &&
                 !memcmp(&dp[12], test_sig_tail, 4)) {
-              ctx->test_number = get_le16(&dp[6]);
+              ctx->test_number = (usb_testutils_test_number_t)get_le16(&dp[6]);
               ctx->test_arg[0] = dp[8];
               ctx->test_arg[1] = dp[9];
               ctx->test_arg[2] = dp[10];
@@ -651,7 +747,7 @@ void getTestConfig(usbdpi_ctx_t *ctx, uint16_t desc_len) {
           } break;
 
           case USB_PID_NAK:
-            // TODO - we should retry the request in this case
+            // TODO: we should retry the request in this case
             printf("[usbdpi] Unable to retrieve test config\n");
             assert(!"DPI is unable to retrieve test config");
             ctx->hostSt = HS_NEXTFRAME;
@@ -1080,6 +1176,26 @@ uint32_t inv_driving(usbdpi_ctx_t *ctx, uint32_t d2p) {
   return ctx->driving ^ (P2D_DP | P2D_DN | P2D_D);
 }
 
+// Change state to commence a new bus frame, after half a frame interval; this
+// is a compromise between simulating a full Reset Recovery Time and starting
+// the DPI traffic too early for the sw to be ready.
+static void frame_start(usbdpi_ctx_t *ctx) {
+  // uint32_t gives us 396s of simulation time when counting FS bit intervals
+  // which should be more than enough.
+  if (ctx->tick_bits >= FRAME_INTERVAL / 2) {
+    ctx->frame_start = ctx->tick_bits - FRAME_INTERVAL / 2;
+  } else {
+    // Wind the clock forwards such that half a frame interval has elapsed.
+    ctx->tick_bits = ctx->frame_start + FRAME_INTERVAL / 2;
+    ctx->tick = ctx->tick_bits << 2;
+  }
+
+  // We are ready for the next frame to start
+  ctx->hostSt = HS_NEXTFRAME;
+  ctx->state = ST_IDLE;
+  ctx->framepend = true;
+}
+
 uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   usbdpi_ctx_t *ctx = (usbdpi_ctx_t *)ctx_void;
   assert(ctx);
@@ -1104,68 +1220,97 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
               (ctx->state != ST_IDLE) && (ctx->state != ST_GET), ctx->driving,
               d2p, &(ctx->lastrxpid));
 
-  if (ctx->tick_bits == SENSE_AT) {
-    ctx->driving |= P2D_SENSE;
-  }
-
-  if ((d2p & D2P_PU) == 0) {
-    ctx->recovery_time = ctx->tick + 4 * 48;
-    return ctx->driving;
-  }
-
-  // Are allowed to start transmitting yet; device recovery time elapsed?
-  if (ctx->tick < ctx->recovery_time) {
-    ctx->frame_start = ctx->tick_bits;
-    return ctx->driving;
+  if (ctx->state == ST_DISCONNECT) {
+    // Is it time to assert the VBUS/SENSE?
+    if (ctx->tick_bits == ctx->sense_time) {
+      ctx->driving |= P2D_SENSE;
+      // Remain in DISCONNECT until we detect the presence of the device
+    }
+    // Device presence indicated by pull up?
+    if (d2p & D2P_PU) {
+      bus_reset(ctx, false);
+    }
+  } else {
+    if ((d2p & D2P_PU) == 0) {
+      // Device not present; by ready for (re)connection...
+      bus_disconnect(ctx, FRAME_INTERVAL / 2);
+    }
   }
 
   // Time to commence a new bus frame?
   if ((ctx->tick_bits - ctx->frame_start) >= FRAME_INTERVAL) {
-    if (ctx->state != ST_IDLE) {
-      if (ctx->framepend == 0) {
-        printf(
-            "[usbdpi] frame 0x%x tick_bits 0x%x error state %d at frame 0x%x "
-            "time\n",
-            ctx->frame, ctx->tick, ctx->state, ctx->frame + 1);
-      }
-      ctx->framepend = 1;
-    } else {
-      if (ctx->framepend == 1) {
-        printf("[usbdpi] frame 0x%x tick_bits 0x%x can send frame 0x%x SOF\n",
-               ctx->frame, ctx->tick, ctx->frame + 1);
-      }
-      ctx->framepend = 0;
-      ctx->frame++;
-      ctx->frame_start = ctx->tick_bits;
-
-      if (ctx->step >= STEP_IDLE_START && ctx->step < STEP_IDLE_END) {
-        // Test suspend behavior by dropping the SOF signalling
-        ctx->state = ST_IDLE;
-        printf("[usbdpi] idle frame 0x%x\n", ctx->frame);
-      } else {
-        // Ensure that a buffer is available for constructing a transfer
-        usbdpi_transfer_t *tr = ctx->sending;
-        if (!tr) {
-          tr = transfer_alloc(ctx);
-          assert(tr);
-
-          ctx->sending = tr;
+    switch (ctx->state) {
+      case ST_IDLE:
+        if (ctx->framepend) {
+          printf("[usbdpi] frame 0x%x tick_bits 0x%x can send frame 0x%x SOF\n",
+                 ctx->frame, ctx->tick, ctx->frame + 1);
         }
+        ctx->framepend = false;
+        ctx->frame++;
+        ctx->frame_start = ctx->tick_bits;
 
-        transfer_frame_start(ctx, tr, ctx->frame);
-        ctx->state = ST_SYNC;
-      }
-      printf("[usbdpi] frame 0x%x tick_bits 0x%x CRC5 0x%x\n", ctx->frame,
-             ctx->tick, CRC5(ctx->frame, 11));
+        printf("[usbdpi] frame 0x%x tick_bits 0x%x CRC5 0x%x\n", ctx->frame,
+               ctx->tick, CRC5(ctx->frame, 11));
 
-      if (ctx->hostSt == HS_NEXTFRAME) {
-        ctx->step = usbdpi_test_seq_next(ctx, ctx->step);
-        ctx->hostSt = HS_STARTFRAME;
-      } else {
-        // TODO - this surely means that something went wrong;
-        // but what shall we do at this point?!
-        assert(!"DPI Host not ready to start new frame");
-      }
+        if (ctx->step == STEP_SUSPEND || ctx->step == STEP_SUSPEND_LONG) {
+          // Test suspend behavior by dropping the SOF signaling
+          ctx->state = ST_IDLE;
+          printf("[usbdpi] idle frame 0x%x\n", ctx->frame);
+
+          ctx->step = usbdpi_test_seq_next(ctx, ctx->step);
+          ctx->hostSt = HS_STARTFRAME;
+        } else {
+          // Ensure that a buffer is available for constructing a transfer
+          usbdpi_transfer_t *tr = ctx->sending;
+          if (!tr) {
+            tr = transfer_alloc(ctx);
+            assert(tr);
+
+            ctx->sending = tr;
+          }
+
+          transfer_frame_start(ctx, tr, ctx->frame);
+          ctx->state = ST_SYNC;
+
+          if (ctx->hostSt == HS_NEXTFRAME) {
+            ctx->step = usbdpi_test_seq_next(ctx, ctx->step);
+            ctx->num_tries = 0U;
+            ctx->hostSt = HS_STARTFRAME;
+          } else {
+            // This normally means that we did not get the expected response to
+            // a Control Transfer stage (Data/Status), so retry if we haven't
+            // already exhausted our retry attempts.
+            if (ctx->num_tries++ >= USBDPI_MAX_RETRIES) {
+              ctx->num_tries = 0U;
+              assert(!"USBDPI: no response to Control Transfer");
+            } else {
+              printf(
+                  "[usbdpi] Warning: DPI Host not ready to start new frame\n");
+              // For now we'll just start the Control Transfer again, because
+              // this means sending a SETUP packet which should reset the device
+              // behavior; later we may want to mimic more accurately a real
+              // host.
+              ctx->hostSt = HS_STARTFRAME;
+            }
+          }
+        }
+        break;
+
+      // Bus frames are not honored during Reset Signaling or Resume Signaling
+      case ST_DISCONNECT:
+      case ST_RESET:
+      case ST_RESUME:
+        break;
+
+      default:
+        if (!ctx->framepend) {
+          printf(
+              "[usbdpi] frame 0x%x tick_bits 0x%x error state %d at frame 0x%x "
+              "time\n",
+              ctx->frame, ctx->tick, ctx->state, ctx->frame + 1);
+        }
+        ctx->framepend = true;
+        break;
     }
   }
 
@@ -1173,14 +1318,24 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     // Host state machine advances when the bit-level activity is idle
     case ST_IDLE: {
       // Ensure that a buffer is available for constructing a transfer
-      usbdpi_transfer_t *tr = ctx->sending;
-      if (!tr) {
-        tr = transfer_alloc(ctx);
-        assert(tr);
-        ctx->sending = tr;
+      if (!ctx->sending) {
+        ctx->sending = transfer_alloc(ctx);
+        assert(ctx->sending);
       }
 
       switch (ctx->step) {
+        case STEP_BUS_DISCONNECT:
+          bus_disconnect(ctx, FRAME_INTERVAL / 2);
+          break;
+
+        case STEP_BUS_RESET:
+          if (ctx->hostSt == HS_STARTFRAME) {
+            bus_reset(ctx, true);
+            // After Reset Signaling below and then a Reset Recovery interval,
+            // we'll start with a new bus frame.
+          }
+          break;
+
         case STEP_SET_DEVICE_ADDRESS:
           setDeviceAddress(ctx, USBDEV_ADDRESS);
           break;
@@ -1270,8 +1425,20 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
           testUnimplEp(ctx, USB_PID_IN, ctx->dev_address,
                        ENDPOINT_UNIMPLEMENTED);
           break;
+
+        // Test SETUP to a different device address
         case STEP_DEVICE_UK_SETUP:
           testUnimplEp(ctx, USB_PID_SETUP, UKDEV_ADDRESS, 1u);
+          break;
+
+        // Test unknown Setup Request (software-defined behavior, but it should
+        // request STALLing)
+        case STEP_UK_SETUP_REQ:
+          // Test behavior in response to an unknown Setup Request
+          // (GET_DESCRIPTOR control transfer for the DEVICE_QUALIFIER); this is
+          // issued by real host controllers to a Full Speed Device and should
+          // produce a 'Request Error' (STALL in response to IN Data Stage)
+          getDescriptor(ctx, USB_DESC_TYPE_DEVICE_QUALIFIER, 0u, 10u);
           break;
 
         case STEP_STREAM_SERVICE:
@@ -1282,10 +1449,24 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
           streams_service(ctx);
           break;
 
-        default:
-          if (ctx->step < STEP_IDLE_START || ctx->step >= STEP_IDLE_END) {
-            pollRX(ctx, ENDPOINT_SERIAL0, false, false);
+        // Suspending or Suspended; nothing to do.
+        case STEP_SUSPEND:
+        case STEP_SUSPEND_LONG:
+          break;
+
+        // Resume Signaling
+        case STEP_RESUME:
+          if (ctx->hostSt == HS_STARTFRAME) {
+            bus_resume(ctx);
           }
+          break;
+
+        case STEP_IDLE:
+          // Do nothing; we're still sending SOF but no other traffic.
+          break;
+
+        default:
+          pollRX(ctx, ENDPOINT_SERIAL0, false, false);
           break;
       }
     } break;
@@ -1303,7 +1484,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
       break;
 
     case ST_SEND: {
-      usbdpi_transfer_t *sending = ctx->sending;
+      const usbdpi_transfer_t *sending = ctx->sending;
       assert(sending);
       if ((ctx->linebits & 0x3f) == 0x3f &&
           !INSERT_ERR_BITSTUFF) {  // sent 6 ones
@@ -1344,7 +1525,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
         ctx->driving = set_driving(ctx, d2p, P2D_DP, true);  // J
       }
       if (ctx->bit == 8) {
-        usbdpi_transfer_t *sending = ctx->sending;
+        const usbdpi_transfer_t *sending = ctx->sending;
         assert(sending);
         // Stop driving: host pulldown to SE0 unless there is a pullup on DP
         ctx->driving =
@@ -1359,8 +1540,42 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
       ctx->bit <<= 1;
       break;
 
+    case ST_RESET:
+      // Reset signaling requires at least 10ms of SE0
+      if (ctx->tick_bits < ctx->reset_time) {
+        ctx->driving = set_driving(ctx, d2p, 0, true);  // SE0
+      } else if (ctx->tick_bits < ctx->recovery_time) {
+        // Reset Recovery time should be a further 10ms according to the spec.
+        ctx->driving = set_driving(ctx, d2p, P2D_DP, true);  // J
+      } else {
+        frame_start(ctx);
+      }
+      break;
+
+    case ST_RESUME:
+      // Resume signaling requires at least 20ms of K
+      if (ctx->tick_bits < ctx->resume_end_time) {
+        ctx->driving = set_driving(ctx, d2p, P2D_DN, true);  // K
+      } else {
+        // Resume signaling terminates with two LS bit intervals
+        //   (equivalent to 16 HS bit intervals) of SE0, followed by one LS bit
+        //   interval of J
+        if (ctx->tick_bits < ctx->resume_SE0_end_time) {
+          ctx->driving = set_driving(ctx, d2p, 0, true);  // SE0
+        } else if (ctx->tick_bits < ctx->resume_J_end_time) {
+          ctx->driving = set_driving(ctx, d2p, P2D_DP, true);  // J
+        } else {
+          frame_start(ctx);
+        }
+      }
+      break;
+
     case ST_GET:
       // Device is driving the bus; nothing to do here
+      break;
+
+    case ST_DISCONNECT:
+      // Nothing to be done...just waiting.
       break;
 
     default:
@@ -1383,19 +1598,26 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
 void usbdpi_diags(void *ctx_void, svBitVecVal *diags) {
   usbdpi_ctx_t *ctx = (usbdpi_ctx_t *)ctx_void;
 
-  // Check for overflow, which would cause confusion in waveform interpretation;
-  // if an assertion fires, the mapping from fields to svBitVecVal will need
-  // to be changed, both here and in usbdpi.sv
+  // Check for overflow, which would cause confusion in waveform interpretation.
   assert(ctx->state <= 0xfU);
   assert(ctx->hostSt <= 0x1fU);
   assert(ctx->bus_state <= 0x3fU);
   assert(ctx->step <= 0x7fU);
 
+#if 1
+  diags[3] = usb_monitor_diags(ctx->mon);
+  diags[2] = (ctx->substep & 0xfU);
+  diags[1] =
+      (ctx->step << 25) | (ctx->bus_state << 20) | (ctx->tick_bits >> 12);
+  diags[0] = (ctx->tick_bits << 20) | ((ctx->frame & 0x7ffU) << 9) |
+             ((ctx->hostSt & 0x1fU) << 4) | (ctx->state & 0xfU);
+#else
   diags[2] = usb_monitor_diags(ctx->mon);
   diags[1] =
       (ctx->step << 25) | (ctx->bus_state << 20) | (ctx->tick_bits >> 12);
   diags[0] = (ctx->tick_bits << 20) | ((ctx->frame & 0x7ffU) << 9) |
              ((ctx->hostSt & 0x1fU) << 4) | (ctx->state & 0xfU);
+#endif
 }
 
 // Close the USBDPI model and release resources

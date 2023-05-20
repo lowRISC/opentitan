@@ -2010,6 +2010,56 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "usbdev_mixed_test",
+    srcs = ["usbdev_mixed_test.c"],
+    cw310 = cw310_params(
+        timeout = "eternal",
+    ),
+    targets = [
+        "verilator",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:usb_testutils",
+        "//sw/device/lib/testing:usb_testutils_streams",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "usbdev_iso_test",
+    srcs = ["usbdev_iso_test.c"],
+    cw310 = cw310_params(
+        timeout = "eternal",
+    ),
+    targets = [
+        "verilator",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:usb_testutils",
+        "//sw/device/lib/testing:usb_testutils_streams",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "usbdev_stream_test",
     srcs = ["usbdev_stream_test.c"],
     cw310 = cw310_params(
@@ -2032,6 +2082,194 @@ opentitan_functest(
         "//sw/device/lib/testing:usb_testutils",
         "//sw/device/lib/testing:usb_testutils_streams",
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
+    name = "usbdev_suspend",
+    srcs = ["usbdev_suspend_test.c"],
+    hdrs = ["usbdev_suspend_test.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing:sram_ctrl_testutils",
+        "//sw/device/lib/testing:usb_testutils",
+        "//sw/device/lib/testing:usb_testutils_streams",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+opentitan_functest(
+    name = "usbdev_suspend_resume",
+    srcs = [
+        "usbdev_suspend_resume.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["skip_in_ci"],  # Requires DPI model
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_functest(
+    name = "usbdev_sleep_resume",
+    srcs = [
+        "usbdev_sleep_resume.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["skip_in_ci"],  # Requires DPI model
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_functest(
+    name = "usbdev_deep_resume",
+    srcs = [
+        "usbdev_deep_resume.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["skip_in_ci"],  # Requires DPI model
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_functest(
+    name = "usbdev_sleep_reset",
+    srcs = [
+        "usbdev_sleep_reset.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["skip_in_ci"],  # Requires DPI model
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_functest(
+    name = "usbdev_sleep_disconnect",
+    srcs = [
+        "usbdev_sleep_disconnect.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["skip_in_ci"],  # Requires DPI model
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_functest(
+    name = "usbdev_deep_reset",
+    srcs = [
+        "usbdev_deep_reset.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["skip_in_ci"],  # Requires DPI model
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_functest(
+    name = "usbdev_deep_disconnect",
+    srcs = [
+        "usbdev_deep_disconnect.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["skip_in_ci"],  # Requires DPI model
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
     ],
 )
 

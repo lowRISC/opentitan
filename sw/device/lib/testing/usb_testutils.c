@@ -11,6 +11,11 @@
 
 #define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
 
+// Set up the recording of function points for this module
+#define USBUTILS_FUNCPT_FILE USBUTILS_FUNCPT_FILE_USB_TESTUTILS
+
+#define USB_EVENT_REPORT(s) USBUTILS_TRACE(__LINE__, (s))
+
 static dif_usbdev_t usbdev;
 static dif_usbdev_buffer_pool_t buffer_pool;
 
@@ -96,6 +101,47 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
     return OK_STATUS();
   }
 
+  USBUTILS_FUNCPT(0x9011, istate);
+
+  if (true) {
+    dif_usbdev_link_state_t link_state;
+    TRY(dif_usbdev_status_get_link_state(ctx->dev, &link_state));
+    switch (link_state) {
+      case kDifUsbdevLinkStateDisconnected:
+        USB_EVENT_REPORT("LinkState: Disconnected");
+        break;
+      case kDifUsbdevLinkStatePowered:
+        USB_EVENT_REPORT("LinkState: Powered");
+        break;
+      case kDifUsbdevLinkStatePoweredSuspended:
+        USB_EVENT_REPORT("LinkState: PoweredSuspended");
+        break;
+      case kDifUsbdevLinkStateActive:
+        USB_EVENT_REPORT("LinkState: Active (Resumed)");
+        break;
+      case kDifUsbdevLinkStateSuspended:
+        USB_EVENT_REPORT("LinkState: Suspended");
+        break;
+      case kDifUsbdevLinkStateActiveNoSof:
+        USB_EVENT_REPORT("LinkState: ActiveNoSof (Resuming no SOF)");
+        break;
+      case kDifUsbdevLinkStateResuming:
+        USB_EVENT_REPORT("LinkState: Resuming");
+        break;
+      default:
+        USB_EVENT_REPORT("LinkState: ***OTHER***");
+        break;
+    }
+  }
+  if (true) {
+    dif_usbdev_phy_pins_sense_t sense;
+    TRY(dif_usbdev_get_phy_pins_status(ctx->dev, &sense));
+    uint32_t data = (sense.rx_dp ? 1U : 0) | (sense.rx_dn ? 2U : 0) |
+                    (sense.rx_d ? 4U : 0) | (sense.output_enable ? 8U : 0) |
+                    (sense.vbus_sense ? 0x100U : 0);
+    USBUTILS_FUNCPT(0x515, data);
+  }
+
   // Process IN completions first so we get the fact that send completed
   // before processing a response to that transmission
   // This is also important for device IN performance
@@ -166,6 +212,25 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
     }
   }
   if (istate & (1u << kDifUsbdevIrqLinkReset)) {
+    static int cnt = 0;
+    USBUTILS_FUNCPT(0x5e57, cnt);
+// LOG_INFO("LR");
+#if 0
+if (++cnt == 3)
+  usbutils_funcpt_report();
+
+for (unsigned i = 0U; i < 100U; i++) {
+  dif_usbdev_phy_pins_sense_t sense;
+  CHECK_DIF_OK(dif_usbdev_get_phy_pins_status(ctx->dev, &sense));
+  USBUTILS_FUNCPT(0x5e00, (sense.rx_dp ? 1 : 0) |
+                          (sense.rx_dn ? 2 : 0) |
+                          (sense.rx_d  ? 4 : 0) |
+                          (sense.output_enable ? 8 : 0));
+  busy_spin_micros(10U);
+}
+#endif
+
+    // LOG_INFO("usb_testutils: bus reset");
     TRC_S("USB: Bus reset");
     // Link reset
     for (int ep = 0; ep < USBDEV_NUM_ENDPOINTS; ep++) {
@@ -189,6 +254,46 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
     // The first bus frame is 1
     TRY(dif_usbdev_status_get_frame(ctx->dev, &ctx->frame));
     ctx->got_frame = true;
+
+    USBUTILS_FUNCPT(0x50f, ctx->frame);
+  }
+
+  if (istate & (1u << kDifUsbdevIrqPowered)) {
+    USBUTILS_TRACE(0x90e5, "USB: Powered");
+  }
+  if (istate & (1u << kDifUsbdevIrqDisconnected)) {
+    USBUTILS_TRACE(0xd15c, "USB: Disconnected");
+  }
+  if (istate & (1u << kDifUsbdevIrqHostLost)) {
+    USBUTILS_TRACE(0x7057, "USB: Host Lost");
+  }
+  if (istate & (1u << kDifUsbdevIrqLinkReset)) {
+    USBUTILS_TRACE(0x5e5e, "USB:Link Reset");
+  }
+  if (istate & (1u << kDifUsbdevIrqLinkSuspend)) {
+    USBUTILS_TRACE(0x559e, "USB:Link Suspend");
+  }
+  if (istate & (1u << kDifUsbdevIrqLinkResume)) {
+    USBUTILS_TRACE(0x5e56, "USB:Link Resume");
+  }
+
+  // Report all link events to the registered callback handler, if any
+  if (ctx->link_callback) {
+    const dif_usbdev_irq_state_snapshot_t irqs_link =
+        (1u << kDifUsbdevIrqPowered) | (1u << kDifUsbdevIrqDisconnected) |
+        (1u << kDifUsbdevIrqHostLost) | (1u << kDifUsbdevIrqLinkReset) |
+        (1u << kDifUsbdevIrqLinkSuspend) | (1u << kDifUsbdevIrqLinkResume) |
+        (1u << kDifUsbdevIrqFrame);
+    if (istate & irqs_link) {
+      // Retrieve and report the current link state, since this should help
+      // resolve any confusion could by delayed reporting of earlier link events
+      // (eg. disconnect/powered, suspend/resume)
+      dif_usbdev_link_state_t link_state;
+
+      TRY(dif_usbdev_status_get_link_state(ctx->dev, &link_state));
+
+      TRY(ctx->link_callback(ctx->ctx_link, istate, link_state));
+    }
   }
 
   // Note: LinkInErr will be raised in response to a packet being NAKed by the
@@ -246,6 +351,20 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   return OK_STATUS();
 }
 
+status_t usb_testutils_link_callback_register(usb_testutils_ctx_t *ctx,
+                                              usb_testutils_link_handler_t link,
+                                              void *ctx_link) {
+  CHECK(ctx != NULL);
+
+  // Retain the new link callback handler and its context pointer; either of
+  // these may be NULL, respectively to deregister a handler or because no
+  // context is required.
+  ctx->link_callback = link;
+  ctx->ctx_link = ctx_link;
+
+  return OK_STATUS();
+}
+
 status_t usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,
                                      const uint8_t *data, uint32_t length,
                                      usb_testutils_xfr_flags_t flags) {
@@ -275,10 +394,12 @@ status_t usb_testutils_transfer_send(usb_testutils_ctx_t *ctx, uint8_t ep,
 }
 
 status_t usb_testutils_in_endpoint_setup(
-    usb_testutils_ctx_t *ctx, uint8_t ep, void *ep_ctx,
-    usb_testutils_tx_done_handler_t tx_done,
+    usb_testutils_ctx_t *ctx, uint8_t ep, usb_testutils_transfer_type_t ep_type,
+    void *ep_ctx, usb_testutils_tx_done_handler_t tx_done,
     usb_testutils_tx_flush_handler_t flush,
     usb_testutils_reset_handler_t reset) {
+  // Store callback handler information before we enable the endpoint
+  ctx->in[ep].ep_type = ep_type;
   ctx->in[ep].ep_ctx = ep_ctx;
   ctx->in[ep].tx_done_callback = tx_done;
   ctx->in[ep].flush = flush;
@@ -291,15 +412,24 @@ status_t usb_testutils_in_endpoint_setup(
 
   TRY(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleDisabled));
 
+  // Specify whether this is an Isochronous endpoint (no acknowledgement/retry)
+  dif_toggle_t iso = kDifToggleDisabled;
+  if (ep_type == kUsbTransferTypeIsochronous) {
+    iso = kDifToggleEnabled;
+  }
+  CHECK_DIF_OK(dif_usbdev_endpoint_iso_enable(ctx->dev, endpoint, iso));
+
   // Enable IN traffic from device to host
   TRY(dif_usbdev_endpoint_enable(ctx->dev, endpoint, kDifToggleEnabled));
   return OK_STATUS();
 }
 
 status_t usb_testutils_out_endpoint_setup(
-    usb_testutils_ctx_t *ctx, uint8_t ep,
+    usb_testutils_ctx_t *ctx, uint8_t ep, usb_testutils_transfer_type_t ep_type,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
     usb_testutils_rx_handler_t rx, usb_testutils_reset_handler_t reset) {
+  // Store callback handler information before we enable the endpoint
+  ctx->out[ep].ep_type = ep_type;
   ctx->out[ep].ep_ctx = ep_ctx;
   ctx->out[ep].rx_callback = rx;
   ctx->out[ep].reset = reset;
@@ -310,6 +440,13 @@ status_t usb_testutils_out_endpoint_setup(
   };
 
   TRY(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleDisabled));
+
+  // Specify whether this is an Isochronous endpoint (no acknowledgement/retry)
+  dif_toggle_t iso = kDifToggleDisabled;
+  if (ep_type == kUsbTransferTypeIsochronous) {
+    iso = kDifToggleEnabled;
+  }
+  CHECK_DIF_OK(dif_usbdev_endpoint_iso_enable(ctx->dev, endpoint, iso));
 
   // Enable/disable the endpoint and reception of OUT packets?
   dif_toggle_t enabled = kDifToggleEnabled;
@@ -323,23 +460,27 @@ status_t usb_testutils_out_endpoint_setup(
     nak = kDifToggleEnabled;
   }
 
-  TRY(dif_usbdev_endpoint_enable(ctx->dev, endpoint, enabled));
   TRY(dif_usbdev_endpoint_out_enable(ctx->dev, ep, enabled));
   TRY(dif_usbdev_endpoint_set_nak_out_enable(ctx->dev, ep, nak));
+  // Now we may enable the OUT endpoint
+  TRY(dif_usbdev_endpoint_enable(ctx->dev, endpoint, enabled));
   return OK_STATUS();
 }
 
 status_t usb_testutils_endpoint_setup(
-    usb_testutils_ctx_t *ctx, uint8_t ep,
+    usb_testutils_ctx_t *ctx, uint8_t ep, usb_testutils_transfer_type_t in_type,
+    usb_testutils_transfer_type_t out_type,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
     usb_testutils_tx_done_handler_t tx_done, usb_testutils_rx_handler_t rx,
     usb_testutils_tx_flush_handler_t flush,
     usb_testutils_reset_handler_t reset) {
-  TRY(usb_testutils_in_endpoint_setup(ctx, ep, ep_ctx, tx_done, flush, reset));
+  TRY(usb_testutils_in_endpoint_setup(ctx, ep, in_type, ep_ctx, tx_done, flush,
+                                      reset));
 
   // Note: register the link reset handler only on the IN endpoint so that it
   // does not get invoked twice
-  return usb_testutils_out_endpoint_setup(ctx, ep, out_mode, ep_ctx, rx, NULL);
+  return usb_testutils_out_endpoint_setup(ctx, ep, out_type, out_mode, ep_ctx,
+                                          rx, NULL);
 }
 
 status_t usb_testutils_in_endpoint_remove(usb_testutils_ctx_t *ctx,
@@ -397,6 +538,9 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   ctx->got_frame = false;
   ctx->frame = 0u;
 
+  // No callback handler for link events
+  ctx->link_callback = NULL;
+
   TRY(dif_usbdev_init(mmio_region_from_addr(USBDEV_BASE_ADDR), ctx->dev));
 
   dif_usbdev_config_t config = {
@@ -410,12 +554,17 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
 
   // Set up context
   for (int i = 0; i < USBDEV_NUM_ENDPOINTS; i++) {
-    TRY(usb_testutils_endpoint_setup(ctx, i, kUsbdevOutDisabled, NULL, NULL,
-                                     NULL, NULL, NULL));
+    TRY(usb_testutils_endpoint_setup(
+        ctx, i, kUsbTransferTypeControl, kUsbTransferTypeControl,
+        kUsbdevOutDisabled, NULL, NULL, NULL, NULL, NULL));
   }
 
   // All about polling...
   TRY(dif_usbdev_irq_disable_all(ctx->dev, NULL));
+
+  // Clear any outstanding interrupts such as Powered/Disconnected interrupts
+  // from when the usbdev came out of reset
+  TRY(dif_usbdev_irq_acknowledge_all(ctx->dev));
 
   // Provide buffers for any packet reception
   TRY(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));

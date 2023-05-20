@@ -56,17 +56,40 @@ typedef enum {
   kUsbTestutilsXfrEmployZLP = 0x400u,
 } usb_testutils_xfr_flags_t;
 
-/* Called once send has been Acked */
+// Transfer Type (also describes Endpoints)
+typedef enum usb_testutils_transfer_type {
+  /**
+   * Control Transfer (Endpoint)
+   */
+  kUsbTransferTypeControl = 0,
+  /**
+   * Isochronous Transfer (Endpoint)
+   */
+  kUsbTransferTypeIsochronous,
+  /**
+   * Bulk Transfer (Endpoint)
+   */
+  kUsbTransferTypeBulk,
+  /**
+   * Interrupt Transfer (Endpoint)
+   */
+  kUsbTransferTypeInterrupt
+} usb_testutils_transfer_type_t;
+
+/* Called once a packet send has completed (success or failure) */
 typedef status_t (*usb_testutils_tx_done_handler_t)(void *,
                                                     usb_testutils_xfr_result_t);
-/* Called when a packet is received*/
+/* Called when a packet is received */
 typedef status_t (*usb_testutils_rx_handler_t)(void *,
                                                dif_usbdev_rx_packet_info_t,
                                                dif_usbdev_buffer_t);
-/* Called every 16ms based USB host timebase*/
+/* Called periodically to permit flushing of buffered data */
 typedef status_t (*usb_testutils_tx_flush_handler_t)(void *);
-/*Called when an USB link reset is detected*/
+/* Called when a USB link reset is detected */
 typedef status_t (*usb_testutils_reset_handler_t)(void *);
+/* Called when a link event has been detected */
+typedef status_t (*usb_testutils_link_handler_t)(
+    void *, dif_usbdev_irq_state_snapshot_t, dif_usbdev_link_state_t);
 
 // In-progress larger buffer transfer to/from host
 typedef struct usb_testutils_transfer {
@@ -120,11 +143,23 @@ struct usb_testutils_ctx {
    * Most recent bus frame number received from host
    */
   uint16_t frame;
+  /**
+   * Link event callback
+   */
+  usb_testutils_link_handler_t link_callback;
+  /**
+   * Context pointer for link event callkback
+   */
+  void *ctx_link;
 
   /**
    * IN endpoints
    */
   struct {
+    /**
+     * Endpoint Transfer Type
+     */
+    usb_testutils_transfer_type_t ep_type;
     /**
      * Opaque context handle for callback functions
      */
@@ -151,6 +186,10 @@ struct usb_testutils_ctx {
    * OUT endpoints
    */
   struct {
+    /**
+     * Endpoint Transfer Type
+     */
+    usb_testutils_transfer_type_t ep_type;
     /**
      * Opaque context handle for callback functions
      */
@@ -190,6 +229,7 @@ typedef enum usb_testutils_out_transfer_mode {
  *
  * @param ctx usb test utils context pointer
  * @param ep endpoint number
+ * @param ep_type endpoint transfer type
  * @param ep_ctx context pointer for callee
  * @param tx_done callback once send has been Acked
  * @param flush called every 16ms based USB host timebase
@@ -198,8 +238,8 @@ typedef enum usb_testutils_out_transfer_mode {
  */
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_in_endpoint_setup(
-    usb_testutils_ctx_t *ctx, uint8_t ep, void *ep_ctx,
-    usb_testutils_tx_done_handler_t tx_done,
+    usb_testutils_ctx_t *ctx, uint8_t ep, usb_testutils_transfer_type_t ep_type,
+    void *ep_ctx, usb_testutils_tx_done_handler_t tx_done,
     usb_testutils_tx_flush_handler_t flush,
     usb_testutils_reset_handler_t reset);
 
@@ -208,6 +248,7 @@ status_t usb_testutils_in_endpoint_setup(
  *
  * @param ctx usb test utils context pointer
  * @param ep endpoint number
+ * @param ep_type endpoint transfer type
  * @param out_mode the transfer mode for OUT transactions
  * @param ep_ctx context pointer for callee
  * @param rx called when a packet is received
@@ -216,7 +257,7 @@ status_t usb_testutils_in_endpoint_setup(
  */
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_out_endpoint_setup(
-    usb_testutils_ctx_t *ctx, uint8_t ep,
+    usb_testutils_ctx_t *ctx, uint8_t ep, usb_testutils_transfer_type_t ep_type,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
     usb_testutils_rx_handler_t rx, usb_testutils_reset_handler_t reset);
 
@@ -225,6 +266,8 @@ status_t usb_testutils_out_endpoint_setup(
  *
  * @param ctx usb test utils context pointer
  * @param ep endpoint number
+ * @param in_type transfer type for IN endpoint
+ * @param out_type transfer type for OUT endpoint
  * @param out_mode the transfer mode for OUT transactions
  * @param ep_ctx context pointer for callee
  * @param tx_done callback once send has been Acked
@@ -235,7 +278,8 @@ status_t usb_testutils_out_endpoint_setup(
  */
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_endpoint_setup(
-    usb_testutils_ctx_t *ctx, uint8_t ep,
+    usb_testutils_ctx_t *ctx, uint8_t ep, usb_testutils_transfer_type_t in_type,
+    usb_testutils_transfer_type_t out_type,
     usb_testutils_out_transfer_mode_t out_mode, void *ep_ctx,
     usb_testutils_tx_done_handler_t tx_done, usb_testutils_rx_handler_t rx,
     usb_testutils_tx_flush_handler_t flush,
@@ -290,6 +334,18 @@ status_t usb_testutils_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep);
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
                             bool en_diff_rcvr, bool tx_use_d_se0);
+
+/**
+ * Register a callback function to be notified of link events
+ *
+ * @param ctx initialized usb test utils context pointer
+ * @param link link event callback handler
+ * @param ctx_link context pointer for link event callback
+ */
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_link_callback_register(usb_testutils_ctx_t *ctx,
+                                              usb_testutils_link_handler_t link,
+                                              void *ctx_link);
 
 /**
  * Send a larger data transfer from the given endpoint

@@ -8,6 +8,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/usb_testutils.h"
 
+// Set up the recording of function points for this module
+#define USBUTILS_FUNCPT_FILE USBUTILS_FUNCPT_FILE_USB_CONTROLEP
+
 // Device descriptor
 static uint8_t dev_dscr[] = {
     18,    // bLength
@@ -401,16 +404,20 @@ status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
                                       const uint8_t *test_dscr,
                                       size_t test_dscr_len) {
   ctctx->ctx = ctx;
-  TRY(usb_testutils_endpoint_setup(ctx, ep, kUsbdevOutMessage, ctctx,
-                                   ctrl_tx_done, ctrl_rx, NULL, ctrl_reset));
+  TRY(usb_testutils_endpoint_setup(
+      ctx, ep, kUsbTransferTypeControl, kUsbTransferTypeControl,
+      kUsbdevOutMessage, ctctx, ctrl_tx_done, ctrl_rx, NULL, ctrl_reset));
   ctctx->ep = ep;
   ctctx->ctrlstate = kUsbTestutilsCtIdle;
   ctctx->cfg_dscr = cfg_dscr;
   ctctx->cfg_dscr_len = cfg_dscr_len;
   ctctx->test_dscr = test_dscr;
   ctctx->test_dscr_len = test_dscr_len;
-  TRY(dif_usbdev_interface_enable(ctx->dev, kDifToggleEnabled));
   ctctx->device_state = kUsbTestutilsDeviceDefault;
+
+  // Indicate the device presence, at which point we can expect to start
+  // receiving control transfers from the host
+  TRY(dif_usbdev_interface_enable(ctx->dev, kDifToggleEnabled));
 
   return OK_STATUS();
 }
