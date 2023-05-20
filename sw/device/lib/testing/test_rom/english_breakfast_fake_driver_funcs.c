@@ -23,7 +23,7 @@ void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
   };
 }
 
-uint32_t otp_read32(uint32_t address) { return kHardenedBoolTrue; }
+uint32_t otp_read32(uint32_t address) { return kHardenedBoolFalse; }
 
 dif_result_t dif_rstmgr_init(mmio_region_t base_addr, dif_rstmgr_t *rstmgr) {
   return kDifOk;
