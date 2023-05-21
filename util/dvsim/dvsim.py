@@ -576,6 +576,12 @@ def parse_args():
                              'includes both tests scheduled for run and those '
                              'that are automatically rerun.'))
 
+    waveg.add_argument("--dump-script",
+                       "-ds",
+                       help=('Use user define custom dump script file'
+                             'The custom file should be located in {proj_root}'
+                             'Default file is {proj_root}/hw/dv/tools/sim.tcl'))
+
     covg = parser.add_argument_group('Generating simulation coverage')
 
     covg.add_argument("--cov",
