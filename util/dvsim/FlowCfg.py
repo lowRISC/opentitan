@@ -178,6 +178,10 @@ class FlowCfg():
         # manage to expand everything.
         partial = self.is_primary_cfg
 
+        # If custom dump script is exist, replace with run_script attribute.
+        if self.args.dump_script is not None:
+            self.run_script = '{proj_root}/' + self.args.dump_script
+
         self.__dict__ = find_and_substitute_wildcards(self.__dict__,
                                                       self.__dict__,
                                                       self.ignored_wildcards,
