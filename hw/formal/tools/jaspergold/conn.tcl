@@ -54,6 +54,12 @@ if {$env(DUT_TOP) == "chip_earlgrey_asic"} {
   assume -env {top_earlgrey.u_pinmux_aon.reg2hw.mio_pad_sleep_status == '1}
   # Add this assumption to avoid signal inversion in the pad wrappers.
   assume -env {top_earlgrey.u_pinmux_aon.dio_pad_attr_q == '0}
+
+  # run additional assume commands for foundry implementation if needed
+  if {[info exists ::env(PARTNER_TCL)]} {
+    source $env(PARTNER_TCL)
+  }
+
 }
 
 #-------------------------------------------------------------------------
