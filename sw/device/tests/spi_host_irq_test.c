@@ -107,7 +107,7 @@ static status_t ready_event_irq(void) {
   TRY_CHECK(status.ready);
   TRY_CHECK(!status.active);
 
-  // Overwhelm the cmd fifo to make the `STATUS.ready` goes low.
+  // Overwhelm the cmd fifo to make the `STATUS.ready` go low.
   TRY(dif_spi_host_fifo_write(&spi_host, data, kDataSize));
   for (size_t i = 0; i < kCommands; ++i) {
     TRY(dif_spi_host_write_command(&spi_host, kDataSize / kCommands,
@@ -141,7 +141,7 @@ static status_t active_event_irq(void) {
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(!status.active);
 
-  // Issue a command and check that the `STATUS.active` goes low.
+  // Issue a command and check that the `STATUS.active` go low.
   TRY(dif_spi_host_fifo_write(&spi_host, data, sizeof(data)));
   TRY(dif_spi_host_write_command(&spi_host, sizeof(data),
                                  kDifSpiHostWidthStandard,
@@ -171,7 +171,7 @@ static status_t tx_empty_event_irq(void) {
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(status.tx_empty);
 
-  // Issue a command and check that the `STATUS.tx_empty` goes low.
+  // Issue a command and check that the `STATUS.tx_empty` go low.
   TRY(dif_spi_host_fifo_write(&spi_host, data, sizeof(data)));
   TRY(dif_spi_host_write_command(&spi_host, sizeof(data),
                                  kDifSpiHostWidthStandard,
@@ -201,7 +201,7 @@ static status_t tx_wm_event_irq(void) {
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(status.tx_water_mark);
 
-  // Issue a command and check that the `STATUS.txwm` goes low.
+  // Issue a command and check that the `STATUS.txwm` go low.
   TRY(dif_spi_host_fifo_write(&spi_host, data, sizeof(data)));
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(status.tx_queue_depth >= kTxWatermark, "%d", status.tx_queue_depth);
@@ -228,7 +228,7 @@ static status_t dummy_read_from_flash(uint32_t address, uint16_t len) {
     kDummyBytes = 8,
   };
 
-  // Issue a command and check that the `STATUS.rx_full` goes low.
+  // Issue a command and check that the `STATUS.rx_full` go low.
   uint8_t opcode = kSpiDeviceFlashOpReadNormal;
   TRY(dif_spi_host_fifo_write(&spi_host, &opcode, sizeof(opcode)));
   TRY(dif_spi_host_write_command(&spi_host, sizeof(opcode),
@@ -291,6 +291,49 @@ static status_t rx_wm_event_irq(void) {
   return OK_STATUS();
 }
 
+static status_t cmd_busy_error_irq(void) {
+  enum {
+    kDataSize = 252,
+    kCommands = 6,
+  };
+  static_assert(kDataSize % kCommands == 0, "Must be multiple.");
+
+  uint8_t data[kDataSize];
+  memset(data, 0xA5, kDataSize);
+  dif_spi_host_status_t status;
+
+  irq_fired = UINT32_MAX;
+  TRY(dif_spi_host_error_set_enabled(&spi_host, kDifSpiHostErrorCmdBusy, true));
+
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(status.ready);
+  TRY_CHECK(!status.active);
+
+  // Overwhelm the cmd fifo to make the `STATUS.ready` go low.
+  TRY(dif_spi_host_fifo_write(&spi_host, data, kDataSize));
+  for (size_t i = 0; i < kCommands; ++i) {
+    TRY(dif_spi_host_write_command(&spi_host, kDataSize / kCommands,
+                                   kDifSpiHostWidthStandard,
+                                   kDifSpiHostDirectionTx, true));
+  }
+
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(!status.ready);
+  TRY_CHECK(status.active);
+
+  // Wait for the error irq and check that it was triggered by
+  // command busy.
+  TRY(check_irq_eq(kDifSpiHostIrqError));
+  dif_spi_host_errors_t errors;
+  TRY(dif_spi_host_get_error(&spi_host, &errors));
+  TRY_CHECK(errors & kDifSpiHostErrorCmdBusy, "Expect 0x%x, got 0x%x",
+            kDifSpiHostErrorCmdBusy, errors);
+
+  TRY(dif_spi_host_error_set_enabled(&spi_host, kDifSpiHostErrorCmdBusy,
+                                     false));
+  return OK_STATUS();
+}
+
 static status_t test_init(void) {
   mmio_region_t base_addr;
 
@@ -312,7 +355,8 @@ static status_t test_init(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   TRY(dif_rv_plic_init(base_addr, &plic));
 
-  rv_plic_testutils_irq_range_enable(&plic, kHart, kTopEarlgreyPlicIrqIdSpiHost0SpiEvent,
+  rv_plic_testutils_irq_range_enable(&plic, kHart,
+                                     kTopEarlgreyPlicIrqIdSpiHost0Error,
                                      kTopEarlgreyPlicIrqIdSpiHost0SpiEvent);
 
   dif_spi_host_irq_state_snapshot_t spi_host_irqs =
@@ -333,5 +377,6 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, tx_wm_event_irq);
   EXECUTE_TEST(test_result, rx_full_event_irq);
   EXECUTE_TEST(test_result, rx_wm_event_irq);
+  EXECUTE_TEST(test_result, cmd_busy_error_irq);
   return status_ok(test_result);
 }
