@@ -370,6 +370,64 @@ dif_result_t dif_spi_host_write_command(const dif_spi_host_t *spi_host,
                                         dif_spi_host_direction_t direction,
                                         bool last_segment);
 
+typedef enum dif_spi_host_error_code {
+  /**
+   * Indicates a write to `COMMAND` when `STATUS.READY = 0`.
+   */
+  kDifSpiHostErrorCmdBusy = 1 << 0,
+  /**
+   * Indicates that firmware has overflowed the `TX FIFO`.
+   */
+  kDifSpiHostErrorOverflow = 1 << 1,
+  /**
+   * Indicates that firmware has attempted to read from `RXDATA` when the `RX
+   * FIFO` is empty.
+   */
+  kDifSpiHostErrorUnderflow = 1 << 2,
+  /**
+   * Indicates an invalid command segment, meaning either an invalid value of
+   * `COMMAND.SPEED` or a request for bidirectional data transfer at dual or
+   * quad speed.
+   */
+  kDifSpiHostErrorCmdInval = 1 << 3,
+  /**
+   * Indicates a command was attempted with an invalid value for `CSID`.
+   */
+  kDifSpiHostErrorCsIdIval = 1 << 4,
+  /**
+   * Indicates that TL-UL attempted to write to `TXDATA` with no bytes enabled.
+   * Such ‘zero byte’ writes are not supported. Note: This error does not
+   * generate IRQ.
+   */
+  kDifSpiHostErrorAccessIval = 1 << 5,
+  /**
+   * All the errors that can generate an IRQ.
+   */
+  kDifSpiHostIrqErrorAll = (1 << 5) - 1,
+  /**
+   * All the errors above together.
+   */
+  kDifSpiHostErrorAll = (1 << 6) - 1,
+} dif_spi_host_error_code_t;
+
+/**
+ * Bitmask with the `dif_spi_host_error_code_t` values.
+ */
+typedef uint32_t dif_spi_host_errors_t;
+
+/**
+ * Set the enable state of the spi host errors.
+ *
+ * @param spi_host A SPI Host handle.
+ * @param errors A bitmask with the errors to be enabled or disabled.
+ * @param enable True to enable the `events` or false to disable.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_host_error_set_enabled(const dif_spi_host_t *spi_host,
+                                            dif_spi_host_errors_t errors,
+                                            bool enable);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
