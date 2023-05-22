@@ -39,3 +39,8 @@ py_test(
         ":bitstreams_workspace",
     ],
 )
+
+sh_binary(
+    name = "run_test",
+    srcs = ["run_test.sh"],
+)
