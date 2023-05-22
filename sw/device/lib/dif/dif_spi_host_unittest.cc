@@ -799,5 +799,35 @@ TEST_F(ErrorEnableRegTest, GetEnableNullArgs) {
   EXPECT_DIF_BADARG(dif_spi_host_error_get_enabled(&spi_host_, nullptr));
 }
 
+class ErrorStatusTest : public SpiHostTest {};
+
+TEST_F(ErrorStatusTest, Read) {
+  static constexpr std::array<std::pair<uint32_t, dif_spi_host_errors_t>, 6>
+      kMap = {{
+          {kDifSpiHostErrorCmdBusy, 1 << SPI_HOST_ERROR_STATUS_CMDBUSY_BIT},
+          {kDifSpiHostErrorOverflow, 1 << SPI_HOST_ERROR_STATUS_OVERFLOW_BIT},
+          {kDifSpiHostErrorUnderflow, 1 << SPI_HOST_ERROR_STATUS_UNDERFLOW_BIT},
+          {kDifSpiHostErrorCmdInval, 1 << SPI_HOST_ERROR_STATUS_CMDINVAL_BIT},
+          {kDifSpiHostErrorCsIdIval, 1 << SPI_HOST_ERROR_STATUS_CSIDINVAL_BIT},
+          {kDifSpiHostErrorAccessIval,
+           1 << SPI_HOST_ERROR_STATUS_ACCESSINVAL_BIT},
+      }};
+
+  for (auto pair : kMap) {
+    EXPECT_READ32(SPI_HOST_ERROR_STATUS_REG_OFFSET, pair.second);
+
+    dif_spi_host_errors_t error;
+    EXPECT_DIF_OK(dif_spi_host_get_error(&spi_host_, &error));
+    EXPECT_EQ(error, pair.first);
+  }
+}
+
+// Checks that arguments are validated.
+TEST_F(ErrorStatusTest, NullArgs) {
+  dif_spi_host_errors_t error;
+  EXPECT_DIF_BADARG(dif_spi_host_get_error(nullptr, &error));
+  EXPECT_DIF_BADARG(dif_spi_host_get_error(&spi_host_, nullptr));
+}
+
 }  // namespace
 }  // namespace dif_spi_host_unittest
