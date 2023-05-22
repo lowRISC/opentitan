@@ -440,6 +440,16 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_host_error_get_enabled(const dif_spi_host_t *spi_host,
                                             dif_spi_host_errors_t *errors);
 
+/**
+ * Read the current error status of the spi host.
+ *
+ * @param spi_host A SPI Host handle.
+ * @param[out] errors The error status of the spi.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_host_get_error(const dif_spi_host_t *spi_host,
+                                    dif_spi_host_errors_t *errors);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
