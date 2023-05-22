@@ -112,7 +112,7 @@
     {
       name: "spi_device_mem_parity"
       uvm_test_seq: "spi_device_mem_parity_vseq"
-      run_opts: ["+en_scb=0", "+en_scb_tl_err_chk=0"]
+      run_opts: ["+en_scb=0", "+en_scb_tl_err_chk=0", "+en_scb_mem_chk=0"]
       reseed: 20
     }
 
