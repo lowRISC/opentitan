@@ -707,5 +707,70 @@ TEST_F(WriteCommandTest, ValidArgs) {
                                  kDifSpiHostDirectionBidirectional, false));
 }
 
+// Test the SPI HOST error enable register.
+class ErrorEnableRegTest : public SpiHostTest {
+ protected:
+  static constexpr std::array<std::array<uint32_t, 2>, 5> kErrorsMap{{
+      {kDifSpiHostErrorCmdBusy, SPI_HOST_ERROR_ENABLE_CMDBUSY_BIT},
+      {kDifSpiHostErrorOverflow, SPI_HOST_ERROR_ENABLE_OVERFLOW_BIT},
+      {kDifSpiHostErrorUnderflow, SPI_HOST_ERROR_ENABLE_UNDERFLOW_BIT},
+      {kDifSpiHostErrorCmdInval, SPI_HOST_ERROR_ENABLE_CMDINVAL_BIT},
+      {kDifSpiHostErrorCsIdIval, SPI_HOST_ERROR_ENABLE_CSIDINVAL_BIT},
+  }};
+};
+// C++ 14 requires this.
+constexpr std::array<std::array<uint32_t, 2>, 5> ErrorEnableRegTest::kErrorsMap;
+TEST_F(ErrorEnableRegTest, WriteEnable) {
+  // Check individual events.
+  for (auto pair : kErrorsMap) {
+    dif_spi_host_errors_t error = pair[0];
+    uint32_t reg_offset = pair[1];
+    EXPECT_READ32(SPI_HOST_ERROR_ENABLE_REG_OFFSET, 0x00);
+    EXPECT_WRITE32(SPI_HOST_ERROR_ENABLE_REG_OFFSET, 1 << reg_offset);
+    EXPECT_DIF_OK(dif_spi_host_error_set_enabled(&spi_host_, error, true));
+  }
+
+  // Check all the events.
+  uint32_t all_errors = 0;
+  for (auto pair : kErrorsMap) {
+    all_errors |= 1 << pair[1];
+  }
+  EXPECT_READ32(SPI_HOST_ERROR_ENABLE_REG_OFFSET, 0x00);
+  EXPECT_WRITE32(SPI_HOST_ERROR_ENABLE_REG_OFFSET, all_errors);
+  EXPECT_DIF_OK(
+      dif_spi_host_error_set_enabled(&spi_host_, kDifSpiHostIrqErrorAll, true));
+}
+
+TEST_F(ErrorEnableRegTest, WriteDisable) {
+  uint32_t all_errors = 0;
+  for (auto pair : kErrorsMap) {
+    all_errors |= 1 << pair[1];
+  }
+
+  // Check individual events.
+  for (auto pair : kErrorsMap) {
+    dif_spi_host_errors_t error = pair[0];
+    uint32_t reg_offset = pair[1];
+    EXPECT_READ32(SPI_HOST_ERROR_ENABLE_REG_OFFSET, all_errors);
+    EXPECT_WRITE32(SPI_HOST_ERROR_ENABLE_REG_OFFSET,
+                   all_errors & ~(1 << reg_offset));
+    EXPECT_DIF_OK(dif_spi_host_error_set_enabled(&spi_host_, error, false));
+  }
+
+  // Check all the events.
+  EXPECT_READ32(SPI_HOST_ERROR_ENABLE_REG_OFFSET, all_errors);
+  EXPECT_WRITE32(SPI_HOST_ERROR_ENABLE_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_spi_host_error_set_enabled(&spi_host_,
+                                               kDifSpiHostIrqErrorAll, false));
+}
+
+// Checks that arguments are validated.
+TEST_F(ErrorEnableRegTest, SetEnableNullArgs) {
+  EXPECT_DIF_BADARG(
+      dif_spi_host_error_set_enabled(nullptr, kDifSpiHostIrqErrorAll, true));
+  EXPECT_DIF_BADARG(dif_spi_host_error_set_enabled(
+      &spi_host_, static_cast<dif_spi_host_events_code_t>(0xFF), true));
+}
+
 }  // namespace
 }  // namespace dif_spi_host_unittest
