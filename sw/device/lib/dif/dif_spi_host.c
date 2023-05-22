@@ -522,3 +522,14 @@ dif_result_t dif_spi_host_error_set_enabled(const dif_spi_host_t *spi_host,
                       reg);
   return kDifOk;
 }
+
+dif_result_t dif_spi_host_error_get_enabled(const dif_spi_host_t *spi_host,
+                                            dif_spi_host_errors_t *errors) {
+  if (spi_host == NULL || errors == NULL) {
+    return kDifBadArg;
+  }
+
+  *errors =
+      mmio_region_read32(spi_host->base_addr, SPI_HOST_ERROR_ENABLE_REG_OFFSET);
+  return kDifOk;
+}
