@@ -61,6 +61,8 @@ jobs:
       set -x
       module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/bazelisk.sh test \
+        --test_env=OT_RUN_TEST_OUR_DIR=$(Pipeline.Workspace)/run_logs//$(Build.BuildNumber)/ \
+        --run_under=//rules/scripts:run_test \
         --define DISABLE_VERILATOR_BUILD=true \
         --define bitstream=gcp_splice \
         --test_tag_filters=-verilator,-dv,-broken \
@@ -71,3 +73,11 @@ jobs:
         //sw/device/silicon_creator/manuf/lib:manuf_cp_device_info_flash_wr_test_unlocked0_to_prod_end_functest_fpga_cw310_rom_with_fake_keys \
         //sw/device/silicon_creator/manuf/lib:manuf_cp_device_info_flash_wr_test_unlocked2_to_prod_functest_fpga_cw310_rom_with_fake_keys
     displayName: "Run all manufacturing tests"
+  - bash: |
+      tar -C $(Pipeline.Workspace)/run_logs -czf $(Pipeline.Workspace)/$(Build.BuildNumber).tar.gz .
+    displayName: "Pack up logs"
+    condition: succeededOrFailed()
+  - publish: $(Pipeline.Workspace)/$(Build.BuildNumber).tar.gz
+    artifact: test_logs
+    displayName: "Upload logs"
+    condition: succeededOrFailed()
