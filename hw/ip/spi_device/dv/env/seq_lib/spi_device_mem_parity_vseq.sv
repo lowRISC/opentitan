@@ -33,10 +33,14 @@ class spi_device_mem_parity_vseq extends spi_device_common_vseq;
       `DV_CHECK(uvm_hdl_read(path, mem_data));
       `DV_CHECK(uvm_hdl_deposit(path, mem_data ^ flip_bits));
       // frontdoor read to check it returns d_error
-      tl_access(.addr(offset << 2), .write(0), .data(data), .mask(get_rand_contiguous_mask()),
+      tl_access(.addr(ral.buffer.get_offset() + (offset << 2)),
+                .write(0),
+                .data(data),
+                .mask(get_rand_contiguous_mask()),
                 .exp_err_rsp(1),
                 // returned data is all 1s when it detects an error
-                .check_exp_data(1), .exp_data('1));
+                .check_exp_data(1),
+                .exp_data({TL_DW{1'b1}}));
     end
   endtask
 endclass : spi_device_mem_parity_vseq
