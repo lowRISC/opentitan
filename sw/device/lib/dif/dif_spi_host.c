@@ -503,3 +503,22 @@ dif_result_t dif_spi_host_write_command(const dif_spi_host_t *spi_host,
   write_command_reg(spi_host, length, speed, direction, last_segment);
   return kDifOk;
 }
+
+dif_result_t dif_spi_host_error_set_enabled(const dif_spi_host_t *spi_host,
+                                            dif_spi_host_errors_t error,
+                                            bool enable) {
+  if (spi_host == NULL || (error & ~(uint32_t)kDifSpiHostIrqErrorAll) != 0) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg =
+      mmio_region_read32(spi_host->base_addr, SPI_HOST_ERROR_ENABLE_REG_OFFSET);
+  if (enable) {
+    reg |= error;
+  } else {
+    reg &= ~error;
+  }
+  mmio_region_write32(spi_host->base_addr, SPI_HOST_ERROR_ENABLE_REG_OFFSET,
+                      reg);
+  return kDifOk;
+}
