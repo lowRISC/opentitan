@@ -20,6 +20,7 @@ ci/bazelisk.sh clean
 # Build some other dependencies.
 ci/bazelisk.sh build  \
     --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_ \
+    --features=-rv32_bitmanip \
     //sw/host/opentitantool //hw/ip/otp_ctrl/data:img_rma
 
 # Run the one test.

@@ -180,6 +180,7 @@ def main():
     shell_out([
         REPO_TOP / 'bazelisk.sh',
         'build',
+        '--features=-rv32_bitmanip',
         '--copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_',
     ] + BAZEL_BINARIES)
 
