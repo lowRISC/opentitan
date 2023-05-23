@@ -229,10 +229,7 @@ def _clang_tidy_run_action(ctx, cc_toolchain, cc_compile_ctx, generated_file, co
     args.add("--use-color")
 
     for arg in command_line:
-        # Skip the src file argument. We give that to clang-tidy separately.
-        if arg == src.path:
-            continue
-        elif arg == "-fno-canonical-system-headers":
+        if arg in [src.path, "-fno-canonical-system-headers"]:
             continue
         args.add("--extra-arg=" + arg)
 
@@ -284,6 +281,51 @@ def _make_clang_tidy_aspect(enable_fix):
 
 clang_tidy_fix_aspect = _make_clang_tidy_aspect(True)
 clang_tidy_check_aspect = _make_clang_tidy_aspect(False)
+
+def _audit_sec_mmio_calls_run_action(ctx, cc_toolchain, cc_compile_ctx, generated_file, command_line, src):
+    """Generates an action that runs the sec_mmio audit script on one source."""
+
+    args = ctx.actions.args()
+    args.add(generated_file)
+    args.add(src)
+
+    for arg in command_line:
+        if arg in [src.path, "-fno-canonical-system-headers", "-c"]:
+            continue
+        elif arg.startswith("-march=rv32imc"):
+            continue
+        args.add(arg)
+
+    ctx.actions.run(
+        executable = ctx.attr._audit_tool.files_to_run,
+        arguments = [args],
+        inputs = depset(
+            direct = [src],
+            transitive = [
+                cc_toolchain.all_files,
+                cc_compile_ctx.headers,
+            ],
+        ),
+        outputs = [generated_file],
+    )
+
+audit_sec_mmio_calls_aspect = aspect(
+    implementation = lambda target, ctx: _cc_aspect_impl(target, ctx, _audit_sec_mmio_calls_run_action),
+    attr_aspects = ["deps"],
+    attrs = {
+        "_audit_tool": attr.label(
+            default = "//util/py/scripts:bazel_aspect_tool_audit_sec_mmio_calls",
+            cfg = "host",
+            executable = True,
+        ),
+        "_output_group_name": attr.string(default = "audit_sec_mmio"),
+        "_output_file_suffix": attr.string(default = "clang-audit.out"),
+    },
+    incompatible_use_toolchain_transition = True,
+    fragments = ["cpp"],
+    host_fragments = ["cpp"],
+    toolchains = ["@rules_cc//cc:toolchain_type"],
+)
 
 def _clang_tidy_test_impl(ctx):
     # Test rules must produce an exectuable, so create a dummy script. If the
