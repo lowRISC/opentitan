@@ -6,6 +6,7 @@ r"""Top Module Generator
 """
 import argparse
 import logging as log
+import os
 import random
 import shutil
 import sys
@@ -1174,9 +1175,12 @@ def main():
             if topcfg.setdefault("rnd_cnst_seed", new_seed) == new_seed:
                 log.warning(
                     "No rnd_cnst_seed specified, setting to {}.".format(new_seed))
-        strong_random.unsecure_generate_from_seed(
-            ENTROPY_BUFFER_SIZE_BYTES,
-            topcfg["rnd_cnst_seed"])
+        if (os.getenv('USE_BUFFER')):
+            strong_random.load(SRCTREE_TOP / './util/topgen_entropy_buffer.txt')
+        else:
+            strong_random.unsecure_generate_from_seed(
+                ENTROPY_BUFFER_SIZE_BYTES,
+                topcfg["rnd_cnst_seed"])
 
     # TODO, long term, the levels of dependency should be automatically determined instead
     # of hardcoded.  The following are a few examples:

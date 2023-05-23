@@ -8,6 +8,7 @@ map definition file (hjson).
 import argparse
 import datetime
 import logging as log
+import os
 import random
 from pathlib import Path
 
@@ -25,6 +26,10 @@ IMAGE_DEFINITION_FILE = 'hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson'
 # Default output path (can be overridden on the command line). Note that
 # "BITWIDTH" will be replaced with the architecture's bitness.
 MEMORY_MEM_FILE = 'otp-img.BITWIDTH.vmem'
+# Default entropy buffer file for life cycle script.
+LC_ENTROPY_BUFFER_FILE = 'util/design/lc_entropy_buffer.txt'
+# Default entropy buffer file for OtpMemMap.
+MMAP_ENTROPY_BUFFER_FILE = 'util/design/otp_mmap_entropy_buffer.txt'
 
 
 def _override_seed(args, seed_name, entropy_buffer_name, config):
@@ -81,6 +86,8 @@ def main():
     lc_state_def_file = Path(proj_root).joinpath(LC_STATE_DEFINITION_FILE)
     mmap_def_file = Path(proj_root).joinpath(MMAP_DEFINITION_FILE)
     img_def_file = Path(proj_root).joinpath(IMAGE_DEFINITION_FILE)
+    lc_entropy_file = Path(proj_root).joinpath(LC_ENTROPY_BUFFER_FILE)
+    otp_entropy_file = Path(proj_root).joinpath(MMAP_ENTROPY_BUFFER_FILE)
 
     parser = argparse.ArgumentParser(
         prog="gen-otp-img",
@@ -245,6 +252,12 @@ def main():
     _override_seed(args, 'lc_seed', 'lc_entropy_buffer', lc_state_cfg)
     _override_seed(args, 'otp_seed', 'otp_entropy_buffer', otp_mmap_cfg)
     _override_seed(args, 'img_seed', None, img_cfg)
+
+    # Enable running toplevel tests in case when the netlist constants are
+    # generated using entropy buffers
+    if (os.getenv('USE_BUFFER')):
+        lc_state_cfg['entropy_buffer'] = lc_entropy_file
+        otp_mmap_cfg['entropy_buffer'] = otp_entropy_file
 
     try:
         otp_mem_img = OtpMemImg(lc_state_cfg, otp_mmap_cfg, img_cfg,
