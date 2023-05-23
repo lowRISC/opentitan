@@ -56,6 +56,53 @@ typedef struct status {
   int32_t value;
 } status_t;
 
+/**
+ * Record the creation of a status_t in a special section of the executable.
+ * This can be used by tools to more easily decode status_t values.
+ */
+#define RECORD_STATUS_CREATE(code, mod_id, file) \
+  _RECORD_STATUS_CREATE(code, mod_id, file)
+
+/* Multiple instances of this structure will go to the .ot.status_create_record
+ * section and will be read by tools. Therefore it is important that the layout
+ * of this structure remains stable. */
+typedef struct ot_status_create_record {
+  // Set to OT_SCR_UNKNOWN_MOD_ID if not fixed at compile time
+  uint32_t module_id;
+  char filename[124];
+} ot_status_create_record_t;
+
+enum ot_status_create_record_magic {
+  OT_SCR_UNKNOWN_MOD_ID = 0xffffffff,
+};
+
+#ifdef __cplusplus
+/* Recording statuses in C++ is not really useful since that means the code
+ * will not run on the target. It also creates problems with g++ because
+ * some statuses are created in classes and putting symbols in sections from
+ * both global functions and classes creates in conflict in section types. */
+#define _RECORD_STATUS_CREATE(...)
+#else /* __cplusplus */
+#define _RECORD_STATUS_CREATE(code_val, mod_id, file)                      \
+  /* We are only interested in non-Ok statuses so we try to avoid them. */ \
+  /* Assume that the code is a constant value so that the compiler will */ \
+  /* remove the code when the condition is false. */                       \
+  __builtin_choose_expr(code_val != kOk,                                   \
+                        __RECORD_STATUS_CREATE(code_val, mod_id, file), ({}))
+
+#define __RECORD_STATUS_CREATE(code_val, mod_id, file)           \
+  ({                                                             \
+    OT_SECTION(".ot.status_create_record")                       \
+    OT_USED                                                      \
+    static const ot_status_create_record_t kOtStatusRecord = { \
+      /* mod_id is either an external pointer, or a value produced by MAKE_MODULE_ID */ \
+      /* in which case it is already shifted by 16 bits so it can be OR'ed. */ \
+      .module_id = __builtin_constant_p(mod_id) ? mod_id : OT_SCR_UNKNOWN_MOD_ID, \
+      .filename = file, \
+    }; \
+  })
+#endif /* __cplusplus */
+
 #define DIF_RESULT_INTO_STATUS(expr_)                                     \
   ({                                                                      \
     typeof(expr_) _val = (expr_);                                         \
@@ -202,6 +249,7 @@ OT_ALWAYS_INLINE absl_status_t status_err(status_t s) {
   ({                                                                      \
     static_assert(OT_VA_ARGS_COUNT(_, __VA_ARGS__) <= 2,                  \
                   "status macros take 0 or 1 arguments");                 \
+    RECORD_STATUS_CREATE(s_, MODULE_ID, __FILE__);                        \
     status_create(s_, MODULE_ID, __FILE__, OT_GET_LAST_ARG(__VA_ARGS__)); \
   })
 
