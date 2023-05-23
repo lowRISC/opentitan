@@ -6,17 +6,18 @@
 beautifulsoup4==4.12.2
 hjson==3.1.0
 jsonschema==4.17.3; python_version >= "3.7"
+libclang==16.0.0
 libcst==0.4.1
 lxml==4.9.2
 mako==1.1.6
 pluralizer==1.2.0
 pycryptodome==3.15.0
 pyelftools==0.29
-pytest==7.0.1
 pytest-timeout==2.1.0
+pytest==7.0.1
+pyyaml==6.0
 rich==13.3.5
 semantic_version==2.10.0
-pyyaml==6.0
 tabulate==0.8.10
 typer==0.6.1
 
