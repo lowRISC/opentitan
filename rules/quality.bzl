@@ -98,18 +98,16 @@ def clang_format_test(**kwargs):
     kwargs["tags"] = _ensure_tag(tags, "no-sandbox", "no-cache", "external")
     _clang_format_test(**kwargs)
 
-# To see which checks clang-tidy knows about, run this command:
-#
-#  ./bazelisk.sh run @lowrisc_rv32imcb_files//:bin/clang-tidy -- --checks='*' --list-checks
-_CLANG_TIDY_CHECKS = [
-    "clang-analyzer-core.*",
-]
+def _cc_aspect_impl(target, ctx, action_callback):
+    """Aspect implementation for C/C++ targets with configurable callback."""
 
-def _clang_tidy_aspect_impl(target, ctx):
-    """Aspect implementation that runs clang-tidy on C/C++."""
+    def make_output_group_info(files = []):
+        """Create an OutputGroupInfo with a name defined by `ctx`."""
+        args = {ctx.attr._output_group_name: files}
+        return OutputGroupInfo(**args)
 
     if ctx.rule.kind not in ["cc_library", "cc_binary", "cc_test"]:
-        return [OutputGroupInfo(clang_tidy = [])]
+        return [make_output_group_info()]
 
     if CcInfo in target:
         cc_info = target[CcInfo]
@@ -120,7 +118,7 @@ def _clang_tidy_aspect_impl(target, ctx):
             direct_cc_infos = [dep[CcInfo] for dep in ctx.rule.attr.deps if CcInfo in dep],
         )
     else:
-        return [OutputGroupInfo(clang_tidy = [])]
+        return [make_output_group_info()]
     cc_compile_ctx = cc_info.compilation_context
 
     cc_toolchain = find_cc_toolchain(ctx).cc
@@ -132,7 +130,7 @@ def _clang_tidy_aspect_impl(target, ctx):
     )
 
     if not hasattr(ctx.rule.attr, "srcs"):
-        return [OutputGroupInfo(clang_tidy = [])]
+        return [make_output_group_info()]
     all_srcs = []
     for src in ctx.rule.attr.srcs:
         all_srcs += [src for src in src.files.to_list() if src.is_source]
@@ -144,7 +142,9 @@ def _clang_tidy_aspect_impl(target, ctx):
         if not src.extension in ["c", "cc", "h"]:
             continue
 
-        generated_file = ctx.actions.declare_file("{}.{}.clang-tidy.out".format(src.basename, target.label.name))
+        generated_file = ctx.actions.declare_file(
+            "{}.{}.{}".format(src.basename, target.label.name, ctx.attr._output_file_suffix),
+        )
         outputs.append(generated_file)
 
         opts = ctx.fragments.cpp.copts
@@ -184,71 +184,79 @@ def _clang_tidy_aspect_impl(target, ctx):
             variables = c_compile_variables,
         )
 
-        args = ctx.actions.args()
-
-        # Add args that are consumed by the wrapper script.
-        if ctx.attr._enable_fix:
-            args.add("--ignore-clang-tidy-error")
-        args.add(".clang-tidy.lock")
-        args.add(generated_file)
-        args.add_all(ctx.attr._clang_tidy.files)
-
-        # Add args for clang-tidy.
-        if len(_CLANG_TIDY_CHECKS) > 0:
-            checks_pattern = ",".join(_CLANG_TIDY_CHECKS)
-            args.add("--checks=" + checks_pattern)
-
-            # TODO(#12553) Once C compiler warnings are generally treated as
-            # errors, start interpreting clang-tidy warnings as errors.
-            #args.add("--warnings-as-errors=" + checks_pattern)
-
-        if ctx.attr._enable_fix:
-            args.add("--fix")
-            args.add("--fix-errors")
-
-            # Use the nearest .clang_format file to format code adjacent to fixes.
-            args.add("--format-style=file")
-
-        # Specify a regex header filter. Without this, clang-tidy will not
-        # report or fix errors in header files.
-        args.add("--header-filter=.*\\.h$")
-        args.add("--use-color")
-
-        for arg in command_line:
-            # Skip the src file argument. We give that to clang-tidy separately.
-            if arg == src.path:
-                continue
-            elif arg == "-fno-canonical-system-headers":
-                continue
-            args.add("--extra-arg=" + arg)
-
-        # Tell clang-tidy which source file to analyze.
-        args.add(src)
-
-        ctx.actions.run(
-            executable = ctx.attr._clang_tidy_wrapper.files_to_run,
-            arguments = [args],
-            inputs = depset(
-                direct = [src],
-                transitive = [
-                    cc_toolchain.all_files,
-                    cc_compile_ctx.headers,
-                ],
-            ),
-            tools = [ctx.attr._clang_tidy.files_to_run],
-            outputs = [generated_file],
-            progress_message = "Running clang tidy on {}".format(src.path),
-        )
+        action_callback(ctx, cc_toolchain, cc_compile_ctx, generated_file, command_line, src)
 
     return [
-        OutputGroupInfo(
-            clang_tidy = depset(direct = outputs),
-        ),
+        make_output_group_info(depset(direct = outputs)),
     ]
+
+# To see which checks clang-tidy knows about, run this command:
+#
+#  ./bazelisk.sh run @lowrisc_rv32imcb_files//:bin/clang-tidy -- --checks='*' --list-checks
+_CLANG_TIDY_CHECKS = [
+    "clang-analyzer-core.*",
+]
+
+def _clang_tidy_run_action(ctx, cc_toolchain, cc_compile_ctx, generated_file, command_line, src):
+    """Generates an action to run clang-tidy."""
+
+    args = ctx.actions.args()
+
+    # Add args that are consumed by the wrapper script.
+    if ctx.attr._enable_fix:
+        args.add("--ignore-clang-tidy-error")
+    args.add(".clang-tidy.lock")
+    args.add(generated_file)
+    args.add_all(ctx.attr._clang_tidy.files)
+
+    # Add args for clang-tidy.
+    if len(_CLANG_TIDY_CHECKS) > 0:
+        checks_pattern = ",".join(_CLANG_TIDY_CHECKS)
+        args.add("--checks=" + checks_pattern)
+
+        # Treat warnings from every enabled check as errors.
+        args.add("--warnings-as-errors=" + checks_pattern)
+    if ctx.attr._enable_fix:
+        args.add("--fix")
+        args.add("--fix-errors")
+
+        # Use the nearest .clang_format file to format code adjacent to fixes.
+        args.add("--format-style=file")
+
+    # Specify a regex header filter. Without this, clang-tidy will not
+    # report or fix errors in header files.
+    args.add("--header-filter=.*\\.h$")
+    args.add("--use-color")
+
+    for arg in command_line:
+        # Skip the src file argument. We give that to clang-tidy separately.
+        if arg == src.path:
+            continue
+        elif arg == "-fno-canonical-system-headers":
+            continue
+        args.add("--extra-arg=" + arg)
+
+    # Tell clang-tidy which source file to analyze.
+    args.add(src)
+
+    ctx.actions.run(
+        executable = ctx.attr._clang_tidy_wrapper.files_to_run,
+        arguments = [args],
+        inputs = depset(
+            direct = [src],
+            transitive = [
+                cc_toolchain.all_files,
+                cc_compile_ctx.headers,
+            ],
+        ),
+        tools = [ctx.attr._clang_tidy.files_to_run],
+        outputs = [generated_file],
+        progress_message = "Running clang tidy on {}".format(src.path),
+    )
 
 def _make_clang_tidy_aspect(enable_fix):
     return aspect(
-        implementation = _clang_tidy_aspect_impl,
+        implementation = lambda target, ctx: _cc_aspect_impl(target, ctx, _clang_tidy_run_action),
         attr_aspects = ["deps"],
         attrs = {
             "_clang_tidy_wrapper": attr.label(
@@ -265,6 +273,8 @@ def _make_clang_tidy_aspect(enable_fix):
                 doc = "The clang-tidy executable",
             ),
             "_enable_fix": attr.bool(default = enable_fix),
+            "_output_group_name": attr.string(default = "clang_tidy"),
+            "_output_file_suffix": attr.string(default = "clang-tidy.out"),
         },
         incompatible_use_toolchain_transition = True,
         fragments = ["cpp"],
