@@ -85,3 +85,36 @@ py_test(
         ":bazel",
     ],
 )
+
+py_library(
+    name = "register_usage_report",
+    srcs = [
+        "register_usage_report.py",
+    ],
+    imports = [
+        # Workaround for ModuleNotFoundError when attempting to import clang. It
+        # seems that libclang puts the "clang" module a bit deeper in the
+        # package than other pip packages, such as "rich".
+        #
+        # Depending on `requirement("libclang")` adds the following directory:
+        #   ${runfiles}/ot_python_deps/pypi__libclang
+        #
+        # However, that import path is not sufficient to `import clang` because
+        # the clang module is actually two levels deeper.
+        "../../../../../ot_python_deps/pypi__libclang/libclang-16.0.0.data/platlib/",
+    ],
+    deps = [
+        requirement("libclang"),
+        ":ot_logging",
+    ],
+)
+
+py_test(
+    name = "register_usage_report_test",
+    srcs = [
+        "register_usage_report_test.py",
+    ],
+    deps = [
+        ":register_usage_report",
+    ],
+)
