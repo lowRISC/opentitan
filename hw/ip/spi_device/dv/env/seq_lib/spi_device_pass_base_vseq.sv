@@ -630,6 +630,10 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     if (intr_cmdfifo) intr_state_val[CmdFifoNotEmpty] = 1;
     if (intr_payload) intr_state_val[PayloadNotEmpty] = 1;
     if (intr_overflow) intr_state_val[PayloadOverflow] = 1;
+    // Wait for register access to complete
+    while(ral.intr_state.is_busy()) begin
+      cfg.clk_rst_vif.wait_clks(1);
+    end
     csr_wr(ral.intr_state, intr_state_val);
 
     if (intr_cmdfifo) `DV_CHECK_GT(cmdfifo_depth_val, 0)
@@ -747,6 +751,10 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
           if (is_watermark) intr_state_val[ReadbufWatermark] = 1;
 
           if (!is_flip && !is_watermark) continue;
+          // Wait for register access to complete
+          while(ral.intr_state.is_busy()) begin
+            cfg.clk_rst_vif.wait_clks(1);
+          end
           csr_wr(ral.intr_state, intr_state_val);
 
           if (is_flip) begin
