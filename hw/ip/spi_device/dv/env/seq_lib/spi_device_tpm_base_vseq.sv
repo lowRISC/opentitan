@@ -111,6 +111,10 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     // only clear TPM interrupt, don't clear flash related interrupt,
     // as the other thread processes that one
     intr_state_val[TpmHeaderNotEmpty] = 1;
+    // Wait for register access to complete
+    while(ral.intr_state.is_busy()) begin
+      cfg.clk_rst_vif.wait_clks(1);
+    end
     csr_wr(ral.intr_state, intr_state_val);
   endtask : clear_tpm_interrupt
 
