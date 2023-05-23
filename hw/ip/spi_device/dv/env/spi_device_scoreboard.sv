@@ -719,7 +719,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     bit [31:0] payload_start_addr = get_converted_addr(PAYLOAD_FIFO_START_ADDR);
     int payload_depth_exp;
     upload_cmd_q.push_back(item.opcode);
-    update_pending_intr_w_delay(CmdFifoNotEmpty);
+    update_pending_intr_w_delay(.intr(CmdFifoNotEmpty), .delay_cyc(4));
 
     if (item.address_q.size > 0) begin
       bit[31:0] addr = convert_addr_from_byte_queue(item.address_q);
@@ -941,7 +941,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // must match.
   virtual function void update_pending_intr_w_delay(spi_device_intr_e intr, int delay_cyc = 3);
     fork begin
+      `uvm_info(`gfn,
+        $sformatf("Wait %0d cycles to enable compare of %s interrupt",delay_cyc, intr.name()),
+        UVM_MEDIUM)
       cfg.clk_rst_vif.wait_n_clks(delay_cyc);
+      `uvm_info(`gfn,$sformatf("Wait done; Enable compare of %s", intr.name()), UVM_MEDIUM)
       intr_trigger_pending[intr] = 1;
     end join_none
   endfunction
