@@ -152,7 +152,7 @@ typedef struct otbn_app {
   OTBN_DECLARE_SYMBOL_PTR(app_name, _imem_end);        \
   OTBN_DECLARE_SYMBOL_PTR(app_name, _dmem_data_start); \
   OTBN_DECLARE_SYMBOL_PTR(app_name, _dmem_data_end);   \
-  OTBN_DECLARE_SYMBOL_ADDR(app_name, _dmem_data_start);
+  OTBN_DECLARE_SYMBOL_ADDR(app_name, _dmem_data_start)
 
 /**
  * Initializes the OTBN application information structure.

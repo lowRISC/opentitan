@@ -376,8 +376,7 @@ void set_peripheral_clock(const test_t *peripheral,
           "intended_clk_state = %d, received_clk_state = %d", new_clk_state,
           clk_state);
   }
-};
-
+}
 /**
  * A utility function to wait enough until the alert handler pings a peripheral
  * alert

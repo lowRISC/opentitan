@@ -232,4 +232,4 @@ bool test_main(void) {
   }
 
   return true;
-};
+}

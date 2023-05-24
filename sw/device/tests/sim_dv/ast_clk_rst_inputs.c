@@ -127,7 +127,7 @@ static void check_alert_state(dif_toggle_t fatal) {
       &alert_handler, kTopEarlgreyAlertIdSensorCtrlRecovAlert));
   CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
       &alert_handler, kTopEarlgreyAlertIdSensorCtrlFatalAlert));
-};
+}
 
 /**
  *  First configure fatality of the desired event.
@@ -163,7 +163,7 @@ static void test_event(uint32_t idx, dif_toggle_t fatal, bool set_event) {
     // check whether alert handler captured the event
     check_alert_state(fatal);
   }
-};
+}
 
 void init_units(void) {
   CHECK_DIF_OK(dif_pwrmgr_init(
