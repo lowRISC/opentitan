@@ -58,6 +58,11 @@ All the outputs of the IP have `ASSERT_KNOWN` assertions.
 A lint flow is set up which compiles and runs.
 It is acceptable to have lint warnings at this stage.
 
+### SEC_CM_SCOPED
+
+The security countermeasures for the IP have been scoped.
+Taking OpenTitan’s [Secure Hardware Design Guidelines](../../security/implementation_guidelines/hardware/README.md) and the specification of the IP into account, the designers have compiled a list of assets and their security properties as well as a high-level list of proposed countermeasures and reviewed both with the Security WG.
+
 ## D2
 
 ### NEW_FEATURES

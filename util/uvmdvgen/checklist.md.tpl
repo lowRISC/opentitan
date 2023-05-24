@@ -25,6 +25,7 @@ RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Not Started |
 RTL           | [FUNC_IMPLEMENTED][]           | Not Started |
 RTL           | [ASSERT_KNOWN_ADDED][]         | Not Started |
 Code Quality  | [LINT_SETUP][]                 | Not Started |
+Security      | [SEC_CM_SCOPED][]              | Not Started |
 
 [SPEC_COMPLETE]:              {{<relref "/doc/project/checklist.md#spec_complete" >}}
 [CSR_DEFINED]:                {{<relref "/doc/project/checklist.md#csr_defined" >}}
@@ -35,6 +36,7 @@ Code Quality  | [LINT_SETUP][]                 | Not Started |
 [FUNC_IMPLEMENTED]:           {{<relref "/doc/project/checklist.md#func_implemented" >}}
 [ASSERT_KNOWN_ADDED]:         {{<relref "/doc/project/checklist.md#assert_known_added" >}}
 [LINT_SETUP]:                 {{<relref "/doc/project/checklist.md#lint_setup" >}}
+[SEC_CM_SCOPED]:              {{<relref "/doc/project/checklist.md#sec_cm_scoped" >}}
 
 <%text>### D2</%text>
 
