@@ -51,7 +51,7 @@ class chip_sw_lc_walkthrough_testunlocks_vseq extends chip_sw_base_vseq;
     sw_symbol_backdoor_overwrite("kOtpExitToken", otp_exit_token);
     sw_symbol_backdoor_overwrite("kOtpUnlockToken", otp_unlock_token);
 
-    wait_lc_ready(.allow_err(1));
+    switch_to_external_clock();
     jtag_lc_state_transition(DecLcStRaw, DecLcStTestUnlocked0);
     apply_reset();
 
