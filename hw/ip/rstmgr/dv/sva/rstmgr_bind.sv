@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module rstmgr_bind;
-
+`ifndef GATE_LEVEL
   bind rstmgr tlul_assert #(
     .EndpointType("Device")
   ) tlul_assert_device (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
@@ -69,5 +69,5 @@ module rstmgr_bind;
       resets_o.rst_spi_device_n[1]
     })
   );
-
+`endif
 endmodule

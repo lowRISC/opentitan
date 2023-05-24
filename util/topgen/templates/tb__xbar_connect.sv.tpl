@@ -96,6 +96,7 @@ initial begin
   % endfor
 % endfor
 
+`ifndef GATE_LEVEL
 % for xbar in top["xbar"]:
   % for node in xbar["nodes"]:
 <%
@@ -114,7 +115,7 @@ sig_name = inst_sig_list[0][2]
     % endif
   % endfor
 % endfor
-
+`endif
 
     // And this can consume time, so they go at the end of this block.
 

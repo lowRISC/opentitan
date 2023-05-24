@@ -48,18 +48,22 @@ interface ast_supply_if (
 
   // Wait some clock cycles due to various flops in the logic.
   task automatic reenable_vcmain_assertion();
+`ifndef GATE_LEVEL
     repeat (CyclesBeforeReenablingAssert) @(posedge clk);
     `uvm_info("ast_supply_if", "re-enabling vcmain_supp_i related SVA", UVM_MEDIUM)
     $asserton(1, top_earlgrey.u_pwrmgr_aon.u_slow_fsm.IntRstReq_A);
+`endif
   endtask
 
   task static force_vcmain_pok(bit value);
+`ifndef GATE_LEVEL
     `uvm_info("ast_supply_if", $sformatf("forcing vcmain_pok_h_o to %b", value), UVM_MEDIUM)
     if (!value) begin
       `uvm_info("ast_supply_if", "disabling vcmain_supp_i related SVA", UVM_MEDIUM)
       $assertoff(1, top_earlgrey.u_pwrmgr_aon.u_slow_fsm.IntRstReq_A);
     end
     force u_ast.u_rglts_pdm_3p3v.vcmain_pok_h_o = value;
+`endif
   endtask
 
 `define GLITCH_VCMAIN_POK                 \

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module clkmgr_bind;
-
+`ifndef GATE_LEVEL
   bind clkmgr tlul_assert #(
     .EndpointType("Device")
   ) tlul_assert_device (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
@@ -369,4 +369,5 @@ module clkmgr_bind;
     .step_down_acks_sync(u_clkmgr_byp.step_down_acks_sync),
     .extclk_ctrl_sel
   );
+`endif
 endmodule : clkmgr_bind

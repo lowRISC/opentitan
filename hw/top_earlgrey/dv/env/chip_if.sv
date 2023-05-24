@@ -138,6 +138,7 @@ interface chip_if;
   // Chip IOs must always either be undriven or driven to a known value. Xs indicate multiple
   // drivers, which is an issue likely caused by multiple functions simultaneously attempting to
   // control the shared (muxed) pads.
+  bit disable_mios_x_check = 0;
   for (genvar i = top_earlgrey_pkg::MioPadIoa0; i < top_earlgrey_pkg::MioPadCount; i++)
   begin : gen_mios_x_check
     wire glitch_free_io;
@@ -145,7 +146,7 @@ interface chip_if;
 
     top_earlgrey_pkg::mio_pad_e named_io = top_earlgrey_pkg::mio_pad_e'(i);
     always (* xprop_off *) @(glitch_free_io) begin
-      if (glitch_free_io === 1'bx) begin
+      if (glitch_free_io === 1'bx && disable_mios_x_check == 0) begin
         `uvm_error(MsgId, $sformatf("Detected an X on %0s", named_io.name()))
       end
     end
@@ -325,11 +326,19 @@ interface chip_if;
   // same issue, except that it is sampled only once during power up.
   //
   // The pinmux version of lc_dft_en is used below because it goes through synchronizers.
+`ifdef GATE_LEVEL
+  wire pinmux_lc_dft_en = (`PINMUX_HIER.u_pinmux_strap_sampling.lc_dft_en[3:0] == lc_ctrl_pkg::On);
+`else
   wire pinmux_lc_dft_en = (`PINMUX_HIER.u_pinmux_strap_sampling.lc_dft_en[0] == lc_ctrl_pkg::On);
+`endif
   wire pinmux_lc_hw_debug_en = `PINMUX_HIER.u_pinmux_strap_sampling.pinmux_hw_debug_en_o ==
                                lc_ctrl_pkg::On;
 
+`ifdef GATE_LEVEL
+  wire pwrmgr_fast_pwr_state_strap_en = 0;
+`else
   wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.u_pinmux_strap_sampling.strap_en_q;
+`endif
   initial begin
     fork
       forever @(pwrmgr_fast_pwr_state_strap_en or pinmux_lc_dft_en) begin
@@ -566,8 +575,14 @@ interface chip_if;
   };
 
   for (genvar i = 0; i < NUM_PWM_CHANNELS; i++) begin : gen_pwm_if_conn
-    pwm_if pwm_if(.clk  (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
+    pwm_if pwm_if(
+`ifdef GATE_LEVEL
+                  .clk (0),
+                  .rst_n (1),
+`else
+                  .clk  (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
                   .rst_n(`RSTMGR_HIER.resets_o.rst_lc_aon_n[0]),
+`endif
                   .pwm  (mios[AssignedPwmIos[i]]));
 
     initial begin
@@ -607,34 +622,64 @@ interface chip_if;
   );
 
   // Internal probes / monitors.
-
+`ifdef GATE_LEVEL
+  wire sys_clk = 1'b0;
+  wire sys_rst_n = 1'b1;
+`else
   wire sys_clk = `CLKMGR_HIER.clocks_o.clk_main_powerup;
   wire sys_rst_n = `RSTMGR_HIER.resets_o.rst_sys_n[0];
+`endif
   clk_rst_if sys_clk_rst_if(.clk(sys_clk), .rst_n(sys_rst_n));
 
   wire cpu_clk = `CPU_HIER.clk_i;
   wire cpu_rst_n = `CPU_HIER.rst_ni;
   clk_rst_if cpu_clk_rst_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
 
+`ifdef GATE_LEVEL
+  wire aon_clk = 1'b0;
+  wire aon_rst_n = 1'b1;
+`else
   wire aon_clk = `CLKMGR_HIER.clocks_o.clk_aon_powerup;
   wire aon_rst_n = `RSTMGR_HIER.resets_o.rst_por_aon_n[0];
+`endif
   clk_rst_if aon_clk_por_rst_if(.clk(aon_clk), .rst_n(aon_rst_n));
 
   wire usb_clk = `USBDEV_HIER.clk_i;
   wire usb_rst_n = `USBDEV_HIER.rst_ni;
   clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
 
+`ifdef GATE_LEVEL
+  wire io_div4_clk = 1'b0;
+  wire io_div4_rst_n = 1'b1;
+`else
   wire io_div4_clk = `CLKMGR_HIER.clocks_o.clk_io_div4_powerup;
   wire io_div4_rst_n = `RSTMGR_HIER.resets_o.rst_por_io_div4_n[0];
+`endif
   clk_rst_if io_div4_clk_rst_if(.clk(io_div4_clk), .rst_n(io_div4_rst_n));
 
+`ifdef GATE_LEVEL
+  wire lc_ready = 1'b0;
+`else
   wire lc_ready = `LC_CTRL_HIER.u_reg.u_status_ready.qs;
+`endif
 
   wire pwrmgr_low_power = `PWRMGR_HIER.low_power_o;
   wire pwrmgr_cpu_fetch_en = `PWRMGR_HIER.fetch_en_o == lc_ctrl_pkg::On;
   wire pwrmgr_fast_pwr_state_active = `PWRMGR_HIER.u_fsm.state_q
       == pwrmgr_pkg::FastPwrStateActive;
 
+`ifdef GATE_LEVEL
+  wire rom_ctrl_done = 0;
+  wire rom_ctrl_good = 0;
+
+  wire rv_core_ibex_icache_otp_key_req = 0;
+  wire rv_core_ibex_icache_otp_key_ack = 0;
+
+  wire sram_main_init_done = 0;
+  wire sram_ret_init_done = 0;
+
+  wire flash_core1_host_req = 0;
+`else
   wire rom_ctrl_done = `PWRMGR_HIER.rom_ctrl_i.done == prim_mubi_pkg::MuBi4True;
   wire rom_ctrl_good = `PWRMGR_HIER.rom_ctrl_i.good == prim_mubi_pkg::MuBi4True;
 
@@ -645,7 +690,7 @@ interface chip_if;
   wire sram_ret_init_done = `SRAM_CTRL_RET_HIER.u_reg_regs.status_init_done_qs;
 
   wire flash_core1_host_req = `FLASH_CTRL_HIER.u_eflash.gen_flash_cores[1].u_core.host_req_i;
-
+`endif
   wire adc_data_valid = `AST_HIER.u_adc.adc_d_val_o;
 
   // alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
@@ -658,16 +703,38 @@ interface chip_if;
                       .alerts(`ALERT_HANDLER_HIER.alert_trig));
 
   // TODO: use pwrmgr_low_power, internal aon clk / rst monitor instead.
-  pwrmgr_low_power_if pwrmgr_low_power_if(.clk     (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
+  pwrmgr_low_power_if pwrmgr_low_power_if(
+`ifdef GATE_LEVEL
+                                          .clk     (0),
+                                          .fast_clk(0),
+                                          .rst_n   (1)
+`else
+                                          .clk     (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
                                           .fast_clk(`CLKMGR_HIER.clocks_o.clk_io_div4_powerup),
-                                          .rst_n   (`RSTMGR_HIER.resets_o.rst_por_io_div4_n[0]));
+                                          .rst_n   (`RSTMGR_HIER.resets_o.rst_por_io_div4_n[0])
+`endif
+                                          );
   assign pwrmgr_low_power_if.low_power      = `PWRMGR_HIER.low_power_o;
   assign pwrmgr_low_power_if.in_sleep       = `PWRMGR_HIER.u_fsm.state_q
                                             == pwrmgr_pkg::FastPwrStateLowPower;
+`ifdef GATE_LEVEL
+  assign pwrmgr_low_power_if.deep_powerdown = 0;
+`else
   assign pwrmgr_low_power_if.deep_powerdown = ~`PWRMGR_HIER.pwr_ast_i.main_pok;
-
+`endif
   // clkmgr related: SW controlled clock gating contol signals reflecting the actual status
   // of these clocks.
+`ifdef GATE_LEVEL
+  wire aes_clk_is_enabled = 0;
+  wire hmac_clk_is_enabled = 0;
+  wire kmac_clk_is_enabled = 0;
+  wire otbn_clk_is_enabled = 0;
+
+  wire usbdev_clk_is_enabled = 0;
+  wire io_clk_is_enabled = 0;
+  wire io_div2_clk_is_enabled = 0;
+  wire io_div4_clk_is_enabled = 0;
+`else
   wire aes_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_aes_val.d;
   wire hmac_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_hmac_val.d;
   wire kmac_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_kmac_val.d;
@@ -677,12 +744,21 @@ interface chip_if;
   wire io_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_peri_en.q;
   wire io_div2_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div2_peri_en.q;
   wire io_div4_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div4_peri_en.q;
-
+`endif
   // Ibex monitors.
   ibex_pkg::pmp_mseccfg_t pmp_mseccfg;
   ibex_pkg::pmp_cfg_t pmp_cfg[16];
   wire [31:0] pmp_addr[16];
   // TODO: merge with probed_cpu_csrs_t below.
+`ifdef GATE_LEVEL
+  assign pmp_mseccfg = 0;
+  for(genvar i = 0; i < 16; i++) begin : gen_ibex_pmp_cfg_conn
+    assign pmp_cfg[i] = 0;
+    assign pmp_addr[i] = 0;
+  end : gen_ibex_pmp_cfg_conn
+
+  wire mstatus_mie = 0;
+`else
   assign pmp_mseccfg = `IBEX_CSRS_HIER.g_pmp_registers.pmp_mseccfg_q;
   for(genvar i = 0; i < 16; i++) begin : gen_ibex_pmp_cfg_conn
     assign pmp_cfg[i] = `IBEX_CSRS_HIER.g_pmp_registers.pmp_cfg[i];
@@ -690,7 +766,7 @@ interface chip_if;
   end : gen_ibex_pmp_cfg_conn
 
   wire mstatus_mie = `IBEX_CSRS_HIER.mstatus_q.mie;
-
+`endif
   // Probed Ibex CSRs.
   typedef struct packed {
     logic [31:0][31:0] gprs;
@@ -706,7 +782,11 @@ interface chip_if;
   } probed_cpu_csrs_t;
   wire probed_cpu_csrs_t probed_cpu_csrs;
   for (genvar i = 0; i < 32; i++) begin : gen_probed_cpu_csrs_conn
+`ifdef GATE_LEVEL
+    assign probed_cpu_csrs.gprs[i] = 0;
+`else
     assign probed_cpu_csrs.gprs[i] = `CPU_CORE_HIER.gen_regfile_ff.register_file_i.rf_reg[i][31:0];
+`endif
   end
   assign probed_cpu_csrs.dcsr = jtag_rv_debugger_pkg::rv_core_csr_dcsr_t'(
       `CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_dcsr_csr.rd_data_o);
@@ -758,6 +838,7 @@ interface chip_if;
         force `CPU_CORE_HIER.clk_i = 1'b0;
         force `CPU_HIER.u_ibus_trans.rst_ni = 1'b0;
         force `CPU_HIER.u_dbus_trans.rst_ni = 1'b0;
+`ifndef GATE_LEVEL
         force `CPU_TL_ADAPT_D_HIER.tl_out = cpu_d_tl_if.h2d;
         force cpu_d_tl_if.d2h = `CPU_TL_ADAPT_D_HIER.tl_i;
 
@@ -773,13 +854,15 @@ interface chip_if;
             end
           end
         join_none
-
+`endif
       end else begin
+`ifndef GATE_LEVEL
         // when en_sim_sram == 1, need to make sure the access to sim_sram doesn't appear on
         // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't regnize addresses of
         // sim_sram. `CPU_HIER.tl_d_* is the right place to avoid seeing sim_sram accesses
         force cpu_d_tl_if.h2d = `CPU_HIER.cored_tl_h_o;
         force cpu_d_tl_if.d2h = `CPU_HIER.cored_tl_h_i;
+`endif
       end
       @stub_cpu;
       disable stub_cpu_cmd_intg_thread;
@@ -843,18 +926,22 @@ interface chip_if;
   function automatic void check_lc_ctrl_enable_signal(lc_ctrl_signal_e signal, bit expected_value);
     lc_ctrl_pkg::lc_tx_t value;
     case (signal)
-      LcCtrlSignalDftEn:        value = `LC_CTRL_HIER.lc_dft_en_o;
-      LcCtrlSignalNvmDebugEn:   value = `LC_CTRL_HIER.lc_nvm_debug_en_o;
-      LcCtrlSignalHwDebugEn:    value = `LC_CTRL_HIER.lc_hw_debug_en_o;
-      LcCtrlSignalCpuEn:        value = `LC_CTRL_HIER.lc_cpu_en_o;
-      LcCtrlSignalCreatorSeedEn:value = `LC_CTRL_HIER.lc_creator_seed_sw_rw_en_o;
-      LcCtrlSignalOwnerSeedEn:  value = `LC_CTRL_HIER.lc_owner_seed_sw_rw_en_o;
-      LcCtrlSignalIsoRdEn:      value = `LC_CTRL_HIER.lc_iso_part_sw_rd_en_o;
-      LcCtrlSignalIsoWrEn:      value = `LC_CTRL_HIER.lc_iso_part_sw_wr_en_o;
-      LcCtrlSignalSeedRdEn:     value = `LC_CTRL_HIER.lc_seed_hw_rd_en_o;
-      LcCtrlSignalKeyMgrEn:     value = `LC_CTRL_HIER.lc_keymgr_en_o;
-      LcCtrlSignalEscEn:        value = `LC_CTRL_HIER.lc_escalate_en_o;
-      LcCtrlSignalCheckBypEn:   value = `LC_CTRL_HIER.lc_check_byp_en_o;
+      LcCtrlSignalDftEn:        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_dft_en_o);
+      LcCtrlSignalNvmDebugEn:   value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_nvm_debug_en_o);
+      LcCtrlSignalHwDebugEn:    value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_hw_debug_en_o);
+      LcCtrlSignalCpuEn:        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_cpu_en_o);
+      LcCtrlSignalCreatorSeedEn: begin
+        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_creator_seed_sw_rw_en_o);
+      end
+      LcCtrlSignalOwnerSeedEn: begin
+        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_owner_seed_sw_rw_en_o);
+      end
+      LcCtrlSignalIsoRdEn:      value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_rd_en_o);
+      LcCtrlSignalIsoWrEn:      value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_wr_en_o);
+      LcCtrlSignalSeedRdEn:     value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_seed_hw_rd_en_o);
+      LcCtrlSignalKeyMgrEn:     value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_keymgr_en_o);
+      LcCtrlSignalEscEn:        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_escalate_en_o);
+      LcCtrlSignalCheckBypEn:   value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_check_byp_en_o);
       default:                  `uvm_fatal(MsgId, $sformatf("Bad choice: %0s", signal.name()))
     endcase
     if (expected_value ~^ (value == lc_ctrl_pkg::On)) begin
@@ -947,9 +1034,14 @@ interface chip_if;
       `ALERT_HANDLER_HIER.u_ping_timer.wait_cyc_mask_i)
 
   // Signal probe function for keymgr key state.
+`ifdef GATE_LEVEL
+  bit dummy_signal_probe_keymgr_key_state;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
+      dummy_signal_probe_keymgr_key_state)
+`else
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
       `KEYMGR_HIER.u_ctrl.key_state_q)
-
+`endif
   // Signal probe function for RX idle detection in usbdev.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_usbdev_rx_idle_det_o,
       `USBDEV_HIER.usbdev_impl.u_usb_fs_nb_pe.u_usb_fs_rx.rx_idle_det_o)
@@ -989,9 +1081,15 @@ interface chip_if;
       `PINMUX_HIER.periph_to_dio_oe_i)
 
   // Signal probe function for `vendor_test_ctrl` request from LC_CTRL to OTP_CTRL.
+`ifdef GATE_LEVEL
+  import otp_ctrl_pkg::*;
+  dummy_signal_probe_keymgr_key_state;
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
+      dummy_signal_probe_keymgr_key_state)
+`else
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
       `OTP_CTRL_HIER.lc_otp_vendor_test_i)
-
+`endif
   /*
    * Signal probe functions for sampling the FSM states of the IPs
    * during the max power epoch of the power_virus test.
@@ -1023,14 +1121,21 @@ interface chip_if;
 
   // Signal probe function for `state_q` of CSRNG main FSM
   wire [csrng_pkg::MainSmStateWidth-1:0] csrng_main_state;
+`ifdef GATE_LEVEL
+  assign csrng_main_state = 0;
+`else
   assign csrng_main_state = `CSRNG_HIER.u_csrng_core.u_csrng_main_sm.state_q;
+`endif
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_csrng_main_fsm_state,
       csrng_main_state, csrng_pkg::MainSmStateWidth)
-
   // Signal probe function for `aes_ctrl_cs` of AES_CTRL_FSM
   wire [5:0] aes_ctrl_fsm_state;
   assign aes_ctrl_fsm_state =
+`ifdef GATE_LEVEL
+                             0;
+`else
       `AES_CONTROL_HIER.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.u_aes_control_fsm.aes_ctrl_cs;
+`endif
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_aes_ctrl_fsm_state,
       aes_ctrl_fsm_state, 6)
 
@@ -1054,32 +1159,52 @@ interface chip_if;
 
   // Signal probe function for `state_q` of EDN_0_MAIN_SM
   wire [8:0] edn_0_fsm_state;
+`ifdef GATE_LEVEL
+  assign edn_0_fsm_state = 0;
+`else
   assign edn_0_fsm_state = `EDN_HIER(0).u_edn_core.u_edn_main_sm.state_q;
+`endif
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_edn_0_fsm_state,
       edn_0_fsm_state, 9)
 
   // Signal probe function for `state_q` of EDN_1_MAIN_SM
   wire [8:0] edn_1_fsm_state;
+`ifdef GATE_LEVEL
+  assign edn_1_fsm_state = 0;
+`else
   assign edn_1_fsm_state = `EDN_HIER(1).u_edn_core.u_edn_main_sm.state_q;
+`endif
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_edn_1_fsm_state,
       edn_1_fsm_state, 9)
 
   // Signal probe function for `state_q` of ENTROPY_SOURCE_MAIN_SM
   wire [8:0] entropy_src_fsm_state;
+`ifdef GATE_LEVEL
+  assign entropy_src_fsm_state = 0;
+`else
   assign entropy_src_fsm_state = `ENTROPY_SRC_HIER.u_entropy_src_core.u_entropy_src_main_sm.state_q;
+`endif
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_entropy_src_fsm_state,
       entropy_src_fsm_state, 9)
 
   // Signal probe function for `chan0.enable` and `chan1.enable`of PATTGEN
   wire [1:0] pattgen_chan_1_0_enable;
+`ifdef GATE_LEVEL
+  assign pattgen_chan_1_0_enable = 0;
+`else
   assign pattgen_chan_1_0_enable = {`PATTGEN_HIER.u_pattgen_core.chan1.enable,
                                     `PATTGEN_HIER.u_pattgen_core.chan0.enable};
+`endif
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pattgen_chan_1_0_enable,
       pattgen_chan_1_0_enable, 2)
 
   // tb.dut.top_earlgrey.u_pwm_aon.u_pwm_core.cntr_en
   wire pwm_core_cntr_en;
+`ifdef GATE_LEVEL
+  assign pwm_core_cntr_en = 0;
+`else
   assign pwm_core_cntr_en = `PWM_HIER.u_pwm_core.cntr_en;
+`endif
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pwm_core_cntr_en,
       pwm_core_cntr_en, 1)
 

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module pwrmgr_bind;
-
+`ifndef GATE_LEVEL
   bind pwrmgr tlul_assert #(
     .EndpointType("Device")
   ) tlul_assert_device (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
@@ -81,4 +81,5 @@ module pwrmgr_bind;
     .rom_ctrl_done_i(u_fsm.rom_ctrl_done_i),
     .rom_ctrl_good_i(u_fsm.rom_ctrl_good_i)
   );
+`endif
 endmodule
