@@ -500,7 +500,11 @@ module i2c_fsm import i2c_pkg::*;
       end
       ClockLow : begin
         host_idle_o = 1'b0;
-        sda_d = fmt_byte_i[bit_index];
+        if (pend_restart) begin
+          sda_d = 1'b1;
+        end else begin
+          sda_d = fmt_byte_i[bit_index];
+        end
         scl_d = 1'b0;
       end
       // ClockPulse: SCL is released, SDA keeps the indexed bit value
