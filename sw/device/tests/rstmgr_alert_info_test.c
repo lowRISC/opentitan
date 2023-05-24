@@ -693,8 +693,7 @@ static void init_expected_cause(void) {
       .alert_info.alert_cause[kTopEarlgreyAlertIdI2c0FatalFault] = 1;
   kExpectedInfo[kRound3]
       .alert_info.alert_cause[kTopEarlgreyAlertIdSpiHost0FatalFault] = 1;
-};
-
+}
 bool test_main(void) {
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
