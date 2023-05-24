@@ -7,10 +7,13 @@ description: "Earlgrey chip DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:systems:top_earlgrey
+      - "!gatelevel ? (lowrisc:systems:top_earlgrey)"
       - lowrisc:systems:top_earlgrey_pkg
-      - lowrisc:systems:chip_earlgrey_asic
+      - "!gatelevel ? (lowrisc:systems:chip_earlgrey_asic)"
       - lowrisc:ibex:ibex_tracer
+    files:
+      - "gatelevel ? (../../../../mapped.v)"
+    file_type: systemVerilogSource
 
   files_dv:
     depend:

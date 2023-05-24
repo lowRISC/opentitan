@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module top_earlgrey_bind;
-
+`ifndef GATE_LEVEL
   bind top_earlgrey clk_ctrl_and_main_pd_sva_if clk_ctrl_and_main_pd_sva_if (
     .clk_slow_i(u_pwrmgr_aon.clk_slow_i),
     .rst_slow_ni(u_pwrmgr_aon.rst_slow_ni),
@@ -20,5 +20,5 @@ module top_earlgrey_bind;
     .main_pd_n(u_pwrmgr_aon.pwr_ast_o.main_pd_n),
     .main_pok(u_pwrmgr_aon.pwr_ast_i.main_pok)
   );
-
+`endif
 endmodule

@@ -119,6 +119,7 @@ initial begin
     force tb.dut.top_earlgrey.u_xbar_main.rst_spi_host1_ni = rst_n;
     force tb.dut.top_earlgrey.u_xbar_peri.rst_peri_ni = rst_n;
 
+`ifndef GATE_LEVEL
     `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h)
     `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__cored, rv_core_ibex, cored_tl_h)
     `DRIVE_CHIP_TL_HOST_IF(rv_dm__sba, rv_dm, sba_tl_h)
@@ -172,7 +173,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(sysrst_ctrl_aon, sysrst_ctrl_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(adc_ctrl_aon, adc_ctrl_aon, tl)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast, tl)
-
+`endif
 
     // And this can consume time, so they go at the end of this block.
 

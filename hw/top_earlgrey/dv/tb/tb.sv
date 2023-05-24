@@ -78,8 +78,13 @@ module tb;
   // TODO: Absorb this functionality into chip_if.
   bind dut ast_supply_if ast_supply_if (
     .clk(top_earlgrey.clk_aon_i),
+`ifdef GATE_LEVEL
+    .core_sleeping_trigger(0),
+    .low_power_trigger(0)
+`else
     .core_sleeping_trigger(top_earlgrey.rv_core_ibex_pwrmgr.core_sleeping),
     .low_power_trigger(`PWRMGR_HIER.pwr_rst_o.reset_cause == pwrmgr_pkg::LowPwrEntry)
+`endif
   );
 
   // TODO: Absorb this functionality into chip_if.
@@ -533,4 +538,28 @@ module tb;
   `include "../autogen/tb__xbar_connect.sv"
   `include "../autogen/tb__alert_handler_connect.sv"
 
+  // Gatesim initial
+  `ifdef GATE_LEVEL
+     initial begin
+       // unconnected ports
+       force tb.dut.u_ast.u_entropy.dev1_entropy_o = 'h0;
+       tb.dut.chip_if.disable_mios_x_check = 1'b1;
+
+       // Ignore 0 time x
+       $assertoff();
+       #5ns;
+       $asserton();
+     end
+// TODO review this flow with real SDF
+`define GSIM_FF_D(FF_) \
+     initial begin \
+       force FF_.D = 0; \
+       @(posedge FF_.CK);\
+       release FF_.D;\
+     end
+  `GSIM_FF_D(tb.dut.top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.dft_strap_q_reg_0_)
+  `GSIM_FF_D(tb.dut.top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.dft_strap_q_reg_1_)
+
+`undef GSIM_FF_D
+  `endif
 endmodule
