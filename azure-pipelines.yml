@@ -566,7 +566,7 @@ jobs:
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-cw310-tests.sh cw310_test_rom,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-cw310-tests.sh cw310_test_rom,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/guides/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
 
 - job: execute_rom_fpga_tests_cw310
@@ -589,7 +589,7 @@ jobs:
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-cw310-tests.sh cw310_rom,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-cw310-tests.sh cw310_rom,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/guides/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
 
 - job: execute_fpga_manuf_tests_cw310
@@ -612,7 +612,7 @@ jobs:
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-cw310-tests.sh manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-cw310-tests.sh manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/guides/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
 
 
