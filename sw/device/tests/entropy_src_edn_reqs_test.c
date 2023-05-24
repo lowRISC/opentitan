@@ -242,7 +242,7 @@ status_t execute_test(void) {
  * TODO: Run the test entropy src end reqs in continuous mode
  * (https://github.com/lowRISC/opentitan/issues/13393)
  */
-bool test_main() {
+bool test_main(void) {
   test_initialize();
 
   alert_handler_configure(&alert_handler);

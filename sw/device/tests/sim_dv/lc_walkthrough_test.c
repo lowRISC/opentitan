@@ -106,7 +106,7 @@ static void lock_otp_secret0_partition(void) {
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 }
 
-static void lock_otp_secret2_partition() {
+static void lock_otp_secret2_partition(void) {
   // Write LC RMA tokens to OTP secret2 partition.
   uint64_t otp_rma_token_0 = 0;
   uint64_t otp_rma_token_1 = 0;

@@ -493,7 +493,7 @@ static void alert_handler_config(void) {
       &alert_handler, kDifAlertHandlerIrqClassd, kDifToggleEnabled));
 }
 
-static void set_aon_timers() {
+static void set_aon_timers(void) {
   uint32_t bark_cycles = 0;
   CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(kWdogBarkMicros,
                                                              &bark_cycles));
@@ -518,7 +518,7 @@ static void set_aon_timers() {
  * The aon timers should never trigger actions because escalation should take
  * precedence.
  */
-static void execute_test() {
+static void execute_test(void) {
   alert_handler_config();
 
   // Make sure we can receive both the watchdog and alert NMIs.

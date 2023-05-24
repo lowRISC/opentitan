@@ -28,7 +28,7 @@ static uint32_t read_fifo_depth(dif_entropy_src_t *entropy) {
   return fifo_depth;
 }
 
-bool test_main() {
+bool test_main(void) {
   dif_entropy_src_t entropy_src;
   CHECK_DIF_OK(dif_entropy_src_init(
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));

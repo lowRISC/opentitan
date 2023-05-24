@@ -77,7 +77,7 @@ static void fault(void) {
  * and then reading back, because the pad attribute registers have
  * write-any-read-legal behavior.
  */
-static uint32_t pad_attr_mask_get() {
+static uint32_t pad_attr_mask_get(void) {
   CHECK_EQ(kDeviceType, kDeviceFpgaCw310,
            "This test is only supported for CW310");
 

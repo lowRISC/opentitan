@@ -47,7 +47,7 @@ static dif_pinmux_t pinmux;
  * . set sysrst_ctrl.KEY_INTR_CTL.pwrb_in_H2L to 1
  * . use IOR13 as pwrb_in
  */
-static void prgm_push_button_wakeup() {
+static void prgm_push_button_wakeup(void) {
   dif_sysrst_ctrl_input_change_config_t config = {
       .input_changes = kDifSysrstCtrlInputPowerButtonH2L,
       .debounce_time_threshold = 1,  // 5us

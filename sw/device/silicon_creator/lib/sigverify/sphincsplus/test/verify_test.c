@@ -97,7 +97,7 @@ static rom_error_t spx_verify_negative_test(void) {
   return kErrorOk;
 }
 
-bool test_main() {
+bool test_main(void) {
   status_t result = OK_STATUS();
 
   CHECK(kNumNegativeTests <= kSpxVerifyNumTests,

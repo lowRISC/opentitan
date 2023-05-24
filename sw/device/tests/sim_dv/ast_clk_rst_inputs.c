@@ -165,7 +165,7 @@ static void test_event(uint32_t idx, dif_toggle_t fatal, bool set_event) {
   }
 };
 
-void init_units() {
+void init_units(void) {
   CHECK_DIF_OK(dif_pwrmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rstmgr_init(
@@ -410,7 +410,7 @@ void ast_enter_sleep_states_and_check_functionality(
 /**
  *  set edn auto mode
  */
-void set_edn_auto_mode() {
+void set_edn_auto_mode(void) {
   const dif_edn_t edn0 = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
   const dif_edn_t edn1 = {
@@ -510,7 +510,7 @@ void ottf_external_isr(void) {
   interrupt_serviced = true;
 }
 
-bool test_main() {
+bool test_main(void) {
   dif_pwrmgr_domain_config_t pwrmgr_config;
 
   const dif_entropy_src_config_t entropy_src_config = {

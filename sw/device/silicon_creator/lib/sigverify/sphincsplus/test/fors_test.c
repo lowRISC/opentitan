@@ -50,7 +50,7 @@ static rom_error_t pk_from_sig_test(void) {
   return kErrorOk;
 }
 
-bool test_main() {
+bool test_main(void) {
   status_t result = OK_STATUS();
   LOG_INFO("Starting FORS test...");
 

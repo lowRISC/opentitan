@@ -152,7 +152,7 @@ static void setup_data_pointer(const otbn_addr_t dptr,
  * This function makes the data pointers refer to the pre-allocated DMEM
  * regions to store the actual values.
  */
-static void setup_data_pointers() {
+static void setup_data_pointers(void) {
   setup_data_pointer(kOtbnVarDptrMsg, kOtbnVarMsg);
   setup_data_pointer(kOtbnVarDptrR, kOtbnVarR);
   setup_data_pointer(kOtbnVarDptrS, kOtbnVarS);

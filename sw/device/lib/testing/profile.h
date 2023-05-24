@@ -25,7 +25,7 @@ extern "C" {
  *
  * @return Ibex cycle count at start time.
  */
-uint64_t profile_start();
+uint64_t profile_start(void);
 
 /**
  * End a cycle-count timing profile.

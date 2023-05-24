@@ -138,7 +138,7 @@ void test_ret_sram_in_normal_sleep(void) {
 // test these 2 cases:
 // deep sleep, no scrambling -> data preserved
 // deep sleep, with scrambling -> data preserved
-void enter_deep_sleep() {
+void enter_deep_sleep(void) {
   // Prepare rstmgr for a reset.
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
   // set up wakeup timer

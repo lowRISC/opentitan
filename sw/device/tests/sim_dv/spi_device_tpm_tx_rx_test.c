@@ -137,7 +137,7 @@ static void ack_spi_tpm_header_irq(dif_spi_device_handle_t *spi_device) {
 // This routine is needed to make sure that an interrupt does not sneak in
 // and jump excution away between the boolean check and the actual invocation
 // of wait_for_interrupt.
-static void atomic_wait_for_interrupt() {
+static void atomic_wait_for_interrupt(void) {
   irq_global_ctrl(false);
   if (!header_interrupt_received) {
     wait_for_interrupt();

@@ -231,7 +231,7 @@ static void p256_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
  * Triggers OTBN_P256_sign operation.
  *
  */
-static void ecc256_ecdsa() {
+static void ecc256_ecdsa(const uint8_t *arg, size_t len) {
   LOG_INFO("SSECDSA starting...");
   SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP256Ecdsa));
   LOG_INFO("otbn_status: 0x%08x", abs_mmio_read32(TOP_EARLGREY_OTBN_BASE_ADDR +

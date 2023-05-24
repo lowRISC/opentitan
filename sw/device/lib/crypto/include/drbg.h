@@ -94,7 +94,7 @@ crypto_status_t otcrypto_drbg_generate(crypto_uint8_buf_t additional_input,
  *
  * @return Result of the DRBG uninstantiate operation.
  */
-crypto_status_t otcrypto_drbg_uninstantiate();
+crypto_status_t otcrypto_drbg_uninstantiate(void);
 
 #ifdef __cplusplus
 }  // extern "C"

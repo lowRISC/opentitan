@@ -266,7 +266,7 @@ static size_t test_step_cnt;
  * Helper function to keep the test body clean
  * Initializes the flash_ctrl and test counters.
  */
-void init_test_components() {
+void init_test_components(void) {
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);

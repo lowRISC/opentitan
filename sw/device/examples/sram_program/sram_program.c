@@ -24,7 +24,7 @@ enum {
              TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
 };
 
-void sram_main() {
+void sram_main(void) {
   if (kDeviceType != kDeviceSimDV) {
     // Configure the pinmux.
     CHECK_DIF_OK(dif_pinmux_init(
@@ -62,4 +62,4 @@ void sram_main() {
 // Reference functions that the debugger may wish to call. This prevents the
 // compiler from dropping them as unused functions and has the side benefit of
 // preventing their includes from appearing unused.
-void debugger_support_functions() { (void)icache_invalidate; }
+void debugger_support_functions(void) { (void)icache_invalidate; }

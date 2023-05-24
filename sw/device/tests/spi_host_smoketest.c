@@ -152,7 +152,7 @@ status_t test_quad_read(void) {
   return OK_STATUS();
 }
 
-static bool is_4_bytes_address_mode_supported() {
+static bool is_4_bytes_address_mode_supported(void) {
   enum { kSupportOnly3Bytes, kSupport3and4Bytes, kSupportOnly4Bytes };
   uint8_t address_mode =
       bitfield_field32_read(sfdp.bfpt[0], SPI_FLASH_ADDRESS_MODE);

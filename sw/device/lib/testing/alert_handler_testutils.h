@@ -103,6 +103,6 @@ status_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds,
  *  cycles = udiv64_slow(micros * clockFreqHz, 1000000, NULL) *
  *           cycle_rescaling_factor();
  */
-uint32_t alert_handler_testutils_cycle_rescaling_factor();
+uint32_t alert_handler_testutils_cycle_rescaling_factor(void);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_ALERT_HANDLER_TESTUTILS_H_
