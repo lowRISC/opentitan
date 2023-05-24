@@ -57,6 +57,8 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     // Enable print_topology
     void'($value$plusargs("print_topology=%0b", print_topology));
     uvm_top.enable_print_topology = print_topology;
+
+    void'($value$plusargs("cdc_instrumentation_enabled=%d", cfg.en_dv_cdc));
   endfunction : build_phase
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);

@@ -15,7 +15,8 @@ class otp_ctrl_test_access_vseq extends otp_ctrl_dai_lock_vseq;
 
     // Once turn on lc_dft_en regiser, will need some time to update the state register
     // two clock cycles for lc_async mode, one clock cycle for driving dft_en.
-    cfg.clk_rst_vif.wait_clks(3);
+    if (cfg.en_dv_cdc) cfg.clk_rst_vif.wait_clks(4);
+    else               cfg.clk_rst_vif.wait_clks(3);
   endtask
 
   virtual task rand_drive_dft_en();
@@ -26,7 +27,8 @@ class otp_ctrl_test_access_vseq extends otp_ctrl_dai_lock_vseq;
                                        .t_weight(1), .f_weight(1), .other_weight(1)));
       // Once turn on lc_dft_en regiser, will need some time to update the state register
       // two clock cycles for lc_async mode, one clock cycle for driving dft_en.
-      cfg.clk_rst_vif.wait_clks(3);
+      if (cfg.en_dv_cdc) cfg.clk_rst_vif.wait_clks(4);
+      else               cfg.clk_rst_vif.wait_clks(3);
     end
   endtask
 endclass
