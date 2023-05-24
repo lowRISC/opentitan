@@ -51,7 +51,7 @@ static dif_uart_t ottf_console_uart;
 static volatile ottf_console_flow_control_t flow_control_state;
 static volatile uint32_t flow_control_irqs;
 
-void *ottf_console_get() {
+void *ottf_console_get(void) {
   switch (kOttfTestConfig.console.type) {
     case kOttfConsoleSpiDevice:
       return &ottf_console_spi_device;
@@ -123,7 +123,7 @@ void ottf_console_init(void) {
   }
 }
 
-static uint32_t get_flow_control_watermark_plic_id() {
+static uint32_t get_flow_control_watermark_plic_id(void) {
   switch (kOttfTestConfig.console.base_addr) {
 #if !OT_IS_ENGLISH_BREAKFAST
     case TOP_EARLGREY_UART1_BASE_ADDR:

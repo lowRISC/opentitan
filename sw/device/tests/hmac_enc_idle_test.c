@@ -67,7 +67,7 @@ static status_t handle_end_of_process(dif_clkmgr_hintable_clock_t clock) {
   return OK_STATUS();
 }
 
-static status_t execute_test() {
+static status_t execute_test(void) {
   // With the HMAC unit idle, write the HMAC clk hint to 0 within clkmgr to
   // indicate HMAC clk can be gated and verify that the HMAC clk hint status
   // within clkmgr reads 0 (HMAC is disabled).

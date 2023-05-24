@@ -20,8 +20,8 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 // Declare two assembly functions defined in `rv_core_ibex_rnd_test.S`.
-extern uint32_t rv_core_ibex_rnd_read_and_immediately_check_status();
-extern uint32_t rv_core_ibex_check_rnd_read_possible_while_status_invalid();
+extern uint32_t rv_core_ibex_rnd_read_and_immediately_check_status(void);
+extern uint32_t rv_core_ibex_check_rnd_read_possible_while_status_invalid(void);
 
 enum {
   kRandomDataReads = 32,

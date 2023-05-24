@@ -666,7 +666,7 @@ static node_t test_node[kTopEarlgreyAlertPeripheralLast] = {
         },
 };
 
-static void init_expected_cause() {
+static void init_expected_cause(void) {
   kExpectedInfo[kRound1]
       .alert_info.alert_cause[kTopEarlgreyAlertIdI2c0FatalFault] = 1;
   kExpectedInfo[kRound1]

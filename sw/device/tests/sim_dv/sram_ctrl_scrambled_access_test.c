@@ -229,7 +229,7 @@ static void prepare_sram_for_scrambling(void) {
                   kTestBufferSizeWords);
 }
 
-static void execute_main_sram_test() {
+static void execute_main_sram_test(void) {
   LOG_INFO("ut_backdoor: %x,ut_patternt: %x,ut_ecc_error_counter: %x",
            scrambling_frame->backdoor, scrambling_frame->pattern,
            &scrambling_frame->ecc_error_counter);

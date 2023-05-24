@@ -7,7 +7,7 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-uint64_t profile_start() { return ibex_mcycle_read(); }
+uint64_t profile_start(void) { return ibex_mcycle_read(); }
 
 uint32_t profile_end(uint64_t t_start) {
   uint64_t t_end = ibex_mcycle_read();

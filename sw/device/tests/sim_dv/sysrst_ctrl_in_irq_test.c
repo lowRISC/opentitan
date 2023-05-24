@@ -53,7 +53,7 @@ static const dif_pinmux_index_t kInputPads[] = {
     kTopEarlgreyPinmuxInselIoc7, kTopEarlgreyPinmuxInselIoc9,
 };
 
-void test_phase_sync() {
+void test_phase_sync(void) {
   test_status_set(kTestStatusInTest);
   test_status_set(kTestStatusInWfi);
 }

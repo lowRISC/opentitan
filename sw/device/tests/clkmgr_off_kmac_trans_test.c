@@ -8,6 +8,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-bool test_main() {
+bool test_main(void) {
   return execute_off_trans_test(kTopEarlgreyHintableClocksMainKmac);
 }

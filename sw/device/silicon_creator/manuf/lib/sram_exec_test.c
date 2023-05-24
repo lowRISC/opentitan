@@ -64,7 +64,7 @@ static status_t otp_ctrl_read_hw_cfg_device_id(uint32_t *device_id) {
  *
  * The HW_CFG partition should be unlocked and the device ID should be all zero.
  */
-static status_t check_device_id_is_unprovisioned() {
+static status_t check_device_id_is_unprovisioned(void) {
   // Check HW_CFG is unlocked.
   bool is_locked;
   TRY(dif_otp_ctrl_is_digest_computed(&otp, kDifOtpCtrlPartitionHwCfg,
@@ -83,7 +83,7 @@ static status_t check_device_id_is_unprovisioned() {
 /**
  * Check the Device ID has been provisioned in OTP, but not locked.
  */
-static status_t check_device_id_is_provisioned() {
+static status_t check_device_id_is_provisioned(void) {
   // Check HW_CFG is still unlocked.
   bool is_locked;
   TRY(dif_otp_ctrl_is_digest_computed(&otp, kDifOtpCtrlPartitionHwCfg,
@@ -100,7 +100,7 @@ static status_t check_device_id_is_provisioned() {
 /**
  * Provisions a Device ID into the HW_CFG OTP partition.
  */
-static status_t provisioning_device_id_start() {
+static status_t provisioning_device_id_start(void) {
   LOG_INFO("Provisioning Device ID in OTP.");
   check_device_id_is_unprovisioned();
   TRY(otp_ctrl_testutils_dai_write32(&otp, kDifOtpCtrlPartitionHwCfg,
@@ -112,13 +112,13 @@ static status_t provisioning_device_id_start() {
 /**
  * Provisions a Device ID into the HW_CFG OTP partition.
  */
-static status_t provisioning_device_id_end() {
+static status_t provisioning_device_id_end(void) {
   LOG_INFO("Provisioning complete.");
   check_device_id_is_provisioned();
   return OK_STATUS();
 }
 
-void sram_main() {
+void sram_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   // Initialize UART console.
   pinmux_testutils_init(&pinmux);

@@ -152,6 +152,6 @@ status_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds,
   return OK_STATUS();
 }
 
-uint32_t alert_handler_testutils_cycle_rescaling_factor() {
+uint32_t alert_handler_testutils_cycle_rescaling_factor(void) {
   return kDeviceType == kDeviceSimDV ? 1 : 10;
 }

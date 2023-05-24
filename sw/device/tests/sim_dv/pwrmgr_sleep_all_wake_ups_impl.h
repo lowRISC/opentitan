@@ -56,7 +56,7 @@ extern dif_sensor_ctrl_t sensor_ctrl;
 extern dif_sysrst_ctrl_t sysrst_ctrl;
 extern dif_usbdev_t usbdev;
 
-void init_units();
+void init_units(void);
 
 void check_wakeup_reason(uint32_t wakeup_source);
 

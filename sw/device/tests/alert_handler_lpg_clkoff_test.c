@@ -382,7 +382,7 @@ void set_peripheral_clock(const test_t *peripheral,
  * A utility function to wait enough until the alert handler pings a peripheral
  * alert
  */
-void wait_enough_for_alert_ping() {
+void wait_enough_for_alert_ping(void) {
   // wait enough
   if (kDeviceType == kDeviceFpgaCw310) {
     // NUM_ALERTS*2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)

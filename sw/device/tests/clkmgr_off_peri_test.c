@@ -37,8 +37,8 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 typedef struct peri_context {
-  void (*csr_access)();  // The function causing a timeout.
-  uint32_t address;      // The address causing a timeout.
+  void (*csr_access)(void);  // The function causing a timeout.
+  uint32_t address;          // The address causing a timeout.
 } peri_context_t;
 
 static dif_aon_timer_t aon_timer;
@@ -62,7 +62,7 @@ static void set_hung_address(dif_clkmgr_gateable_clock_t clock,
            value, addr);
 }
 
-static void uart0_csr_access() {
+static void uart0_csr_access(void) {
   dif_toggle_t state;
   CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart0, kDifUartIrqTxWatermark,
                                         kDifToggleEnabled));
@@ -71,7 +71,7 @@ static void uart0_csr_access() {
   CHECK(state == kDifToggleEnabled);
 }
 
-static void spi_host0_csr_access() {
+static void spi_host0_csr_access(void) {
   dif_toggle_t state;
   CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host0, kDifSpiHostIrqSpiEvent,
                                             kDifToggleEnabled));
@@ -80,7 +80,7 @@ static void spi_host0_csr_access() {
   CHECK(state == kDifToggleEnabled);
 }
 
-static void spi_host1_csr_access() {
+static void spi_host1_csr_access(void) {
   dif_toggle_t state;
   CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host1, kDifSpiHostIrqSpiEvent,
                                             kDifToggleEnabled));
@@ -89,7 +89,7 @@ static void spi_host1_csr_access() {
   CHECK(state == kDifToggleEnabled);
 }
 
-static void usbdev_csr_access() {
+static void usbdev_csr_access(void) {
   CHECK_DIF_OK(dif_usbdev_irq_set_enabled(&usbdev, kDifUsbdevIrqPowered,
                                           kDifToggleEnabled));
   dif_toggle_t state;

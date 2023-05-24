@@ -131,7 +131,7 @@ status_t initialize_clkmgr(void) {
                                            kDifToggleEnabled);
 }
 
-status_t execute_test() {
+status_t execute_test(void) {
   // Write the OTBN clk hint to 0 within clkmgr to indicate OTBN clk can be
   // gated and verify that the OTBN clk hint status within clkmgr reads 0 (OTBN
   // is idle).

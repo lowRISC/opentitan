@@ -1091,7 +1091,7 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
   CHECK(false, "This should not be reached");
 }
 
-void check_alert_dump() {
+void check_alert_dump(void) {
   dif_rstmgr_alert_info_dump_segment_t dump[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
   size_t seg_size;
   alert_handler_testutils_info_t actual_info;
