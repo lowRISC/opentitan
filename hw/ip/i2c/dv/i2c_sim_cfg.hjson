@@ -36,6 +36,9 @@
   // Add additional tops for simulation.
   sim_tops: ["i2c_bind", "sec_cm_prim_onehot_check_bind"]
 
+  // Add coverage exclusion file
+  vcs_cov_excl_files: ["{proj_root}/hw/ip/i2c/dv/cov/i2c_cov_excl.el"]
+
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
@@ -45,6 +48,14 @@
 
   // Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]
+
+  // override VCS config file to disable coverage on testbench module i2c_protocol_cov
+  overrides: [
+    {
+      name: default_vcs_cov_cfg_file
+      value: "-cm_hier {proj_root}/hw/dv/tools/vcs/cover.cfg+{proj_root}/hw/dv/tools/vcs/common_cov_excl.cfg+{proj_root}/hw/ip/i2c/dv/cov/cov_excl.cfg"
+    }
+  ]
 
   // List of test specifications.
   tests: [
