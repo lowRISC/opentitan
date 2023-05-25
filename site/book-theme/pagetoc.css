@@ -37,6 +37,12 @@
         text-align: left;
         text-decoration: none;
     }
+    .pagetoc #pagetoc-title {
+        font-weight: bold;
+        font-size: 130%;
+        border-bottom: 7px solid var(--pagetoc-bg);
+        margin-bottom: 10px;
+    }
     .pagetoc a:hover,
     .pagetoc a.active {
         background: var(--sidebar-bg);

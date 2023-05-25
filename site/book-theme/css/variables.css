@@ -16,7 +16,7 @@
     --content-max-width: 750px;
     --menu-bar-height: 50px;
     --mono-font: "Source Code Pro", Consolas, "Ubuntu Mono", Menlo, "DejaVu Sans Mono", monospace, monospace;
-    --code-font-size: 0.875em /* please adjust the ace font size accordingly in editor.js */
+    --code-font-size: 0.875em; /* please adjust the ace font size accordingly in editor.js */
 }
 
 /* Themes */
@@ -30,6 +30,8 @@
     --sidebar-non-existant: #aaaaaa;
     --sidebar-active: #1f1fff;
     --sidebar-spacer: #f4f4f4;
+
+    --pagetoc-bg: #e3e3e3;
 
     --scrollbar: #8F8F8F;
 
