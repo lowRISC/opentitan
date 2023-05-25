@@ -512,7 +512,7 @@ The DV document and testplan are complete and have been reviewed by key stakehol
 - Security architect
 
 This review will focus on the design deltas captured in the testplan since the last review.
-In addition, the fully implemented functional coverage plan, the observed coverage and the coverage exclusions are expected to be scrutinized to ensure there are no verification holes or any gaps in achieving the required stimulus quality, before the work towards progressing to V3 can commence.
+In addition, the fully implemented functional coverage plan, the observed coverage and the coverage exclusions are expected to be scrutinized to ensure there are no verification holes or any gaps in achieving the required verification quality, before the work towards progressing to V3 can commence.
 
 ### V3_CHECKLIST_SCOPED
 
@@ -551,7 +551,7 @@ Security countermeasure blocks may have been excluded in order to satisfy the V2
 If so, these exclusions should be removed.
 
 If UNR exclusion has been generated, it needs to be re-generated and reviewed after all security countermeasure tests have been implemented, as fault injection can exercise countermeasures which are deemed as unreachable code.
-The V2S coverage requirement is the same as V2 (90% code coverage and 70% functional coverage).
+The V2S coverage requirement is the same as V2.
 
 ### SEC_CM_DV_REVIEWED
 
