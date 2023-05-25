@@ -43,6 +43,20 @@ var updateFunction = function() {
 var create_pagetoc_structure = function(el_pagetoc) {
     // Search the page for all <H*> elements
     let headerElements = Array.from(document.getElementsByClassName("header"));
+    // Don't show the pagetoc if there are not enough heading elements.
+    if (headerElements.length <= 1) {
+        document.getElementsByClassName("sidetoc")[0].classList.add("hidden");
+        return;
+    }
+    // Filter-out heading elements we don't want to show.
+    // The default list hides some headings used within the register map, which
+    // greatly reduces noise and keeps the list a manageable length.
+    // TODO add configurable filter, or design a standard id across the project docs.
+    //      e.g in-page metadata could be picked up to specify an exclude list.
+    const id_keywords = ['field', 'fields', "instances"];
+    headerElements = headerElements.filter(h =>
+        (id_keywords.filter(i => h.parentElement.id.includes(i))).length === 0
+    );
 
     // Add title div to ToC
     let title = document.createElement("div");
