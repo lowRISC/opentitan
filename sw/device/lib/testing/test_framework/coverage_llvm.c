@@ -37,6 +37,7 @@ void coverage_send_buffer(void) {
   if (buf_size_u64 > sizeof(buf)) {
     LOG_ERROR("ERROR: LLVM profile buffer is too large: %u bytes.",
               (uint32_t)buf_size_u64);
+    OT_UNREACHABLE();
   } else {
     size_t buf_size = (size_t)buf_size_u64;
     __llvm_profile_write_buffer(buf);
