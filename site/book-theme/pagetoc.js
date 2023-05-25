@@ -92,8 +92,48 @@ window.addEventListener("resize", set_pagetoc_height);
 
 /* create_pagetoc_structure()
  * Dynamically create a tree of <a> elements for each heading in
- * the content body.
- * Add the created structure within the 'pagetoc' element. */
+ * the content body, with wrapper divs for each level of heirarchy.
+ * This will allow formatting/styling which better illustrates the
+ * structure of the page.
+ * Add the created structure within the 'pagetoc' element.
+ *
+ *    //  /-> headerElements[idx] // In-order array of section headings down the page
+ *    //  |
+ *    //  |
+ *    //    // ----
+ *    //  0 // H1 |
+ *    //  1 // H1 |
+ *    //  2 // H1 |
+ *    //  - // W1---------
+ *    //  3 // |      H2 |
+ *    //  4 // |      H2 |
+ *    //  - // |      W2---------
+ *    //  5 // |      |      H3 |
+ *    //  6 // |      |      H3 |
+ *    //    // |      -----------
+ *    //  7 // |      H2 |
+ *    //  - // |      W2---------
+ *    //  8 // |      |      H3 |
+ *    //    // ------------------
+ *    //  9 // H1 |
+ *    // 10 // H1 |
+ *    // -  // W1---------
+ *    // 11 // |      H2 |
+ *    // 12 // |      H2 |
+ *    // -  // |      W2---------
+ *    // 13 // |      |      H3 |
+ *    // 14 // |      |      H3 |
+ *    //    // |      -----------
+ *    // 15 // |      H2 |
+ *    // -  // |      W2---------
+ *    // 16 // |      |      H3 |
+ *    //    // ------------------
+ *    // 17 // H1 |
+ *    //    // ----
+ *
+ *    LeafNode -> createAnchorElement(idx)
+ */
+
 var create_pagetoc_structure = function(el_pagetoc) {
     // Search the page for all <H*> elements
     let headerElements = Array.from(document.getElementsByClassName("header"));
@@ -118,13 +158,83 @@ var create_pagetoc_structure = function(el_pagetoc) {
     title.setAttribute("id", "pagetoc-title");
     el_pagetoc.appendChild(title);
 
-    Array.prototype.forEach.call(headerElements, function (el) {
-        var link = document.createElement("a");
-        link.appendChild(document.createTextNode(el.text));
-        link.href = el.href;
-        link.classList.add("pagetoc-" + el.parentElement.tagName);
-        el_pagetoc.appendChild(link);
-      });
+    //////////////////////////////////
+    // Define some helper functions //
+    //////////////////////////////////
+
+    // Create an <a> element for a clickable link
+    function createAnchorElement(idx) {
+        let el = headerElements[idx];
+        // Some headings may have different structures, or may be malformed.
+        // Deal with this, somewhat gracefully. At least try not to crash.
+        try {
+            let link = document.createElement("a");
+            // A heading which is also a link is generated with a slightly different structure
+            // The heading text is in an adjacent <a> tag, but we use the href from the first <a> elem.
+            let el_with_text;
+            if (el.text.length === 0) {
+                el_with_text = el.nextElementSibling;
+            } else {
+                el_with_text = el;
+            }
+            link.appendChild(document.createTextNode(el_with_text.text));
+            link.href = el.href;
+            link.classList.add("leaf-" + el.parentElement.tagName);
+            return link;
+        }
+        catch(err) {
+            console.log(err);
+            return document.createElement("a");
+        }
+    }
+    function getHnum(idx) {
+        return parseInt(headerElements[idx].parentElement.nodeName[1]);
+    }
+    // Return idx of the next element with a larger Hnum.
+    function getNextHigherH (idxCur) {
+        let hCur = getHnum(idxCur);
+        for (let i = idxCur + 1; i < headerElements.length; i++) {
+            if (hCur > getHnum(i)) {return i;}
+        }
+        return headerElements.length;
+    }
+    // Create a wrapper element encompassing headings from
+    // startIdx to stopIdx, recursively adding more wrappers if
+    // headings in the range are lower Hnum.
+    // Strictly, 'startIdx <= stopIdx'
+    // This allows the heirarchy of the headings to be mirrored
+    // within the pagetoc structure, allowing for some context-aware
+    // formatting options.
+    function wrapAllDescendingElems(
+        wLevel, // wrapperLevel (the H* index)
+        startIdx, stopIdx)
+    {
+        console.assert(startIdx <= stopIdx, "Strictly, 'stopIdx <= startIdx' is required.");
+        let wrap = document.createElement("div");
+        wrap.classList.add(`wrap-W${wLevel-1}`);
+
+        // Loop over the range given, descending recursively where needed.
+        let i = startIdx;
+        while (i <= stopIdx) {
+            let h = getHnum(i);
+
+            if (h === wLevel) {
+                wrap.appendChild(createAnchorElement(i));
+                i++;
+            } else if (h > wLevel) {
+                wrap.appendChild(wrapAllDescendingElems(h, // wrapperLevel
+                    i, getNextHigherH(i) - 1 // startIdx, stopIdx
+                ));
+                i = getNextHigherH(i);
+            } else if (h < wLevel) { console.log(`Break_H_LessThan_W(${i})`); break; }
+        }
+        return wrap;
+    }
+
+    // Invoke the above helper-functions to create the tree
+    // - Start-at-1 so we don't add the title H1 element.
+    let tree = wrapAllDescendingElems(getHnum(1), 1, headerElements.length - 1);
+    el_pagetoc.appendChild(tree);
 };
 
 

@@ -48,6 +48,7 @@
         padding-left: 2rem;
         text-align: left;
         text-decoration: none;
+        pointer-events: auto;
     }
     .pagetoc #pagetoc-title {
         font-weight: bold;
@@ -64,19 +65,27 @@
         background: var(--pagetoc-bg);
         color: var(--pagetoc-fg);
     }
-    .pagetoc .pagetoc-H2 {
-        padding-left: 20px;
+    [class^="wrap-W"] {
+        pointer-events: none;
+        margin-left: 19px;
+        border-left: 1px solid #c0c0c060;
     }
-    .pagetoc .pagetoc-H3 {
-        padding-left: 40px;
+    [class^="wrap-W"]:hover {
+        margin-left: 19px;
+        border-left: 1px solid #00000080;
     }
-    .pagetoc .pagetoc-H4 {
-        padding-left: 60px;
+    .pagetoc .wrap-W0,
+    .pagetoc .wrap-W1 {
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
     }
-    .pagetoc .pagetoc-H5 {
-        display: none;
+    .pagetoc .leaf-H3,
+    .pagetoc .leaf-H4{
+        font-size: 90%;
     }
-    .pagetoc .pagetoc-H6 {
-        display: none;
+    .pagetoc .leaf-H5,
+    .pagetoc .leaf-H6 {
+        font-size: 80%;
     }
 }
