@@ -1355,4 +1355,7 @@ module i2c_fsm import i2c_pkg::*;
   `ASSERT(AcqDepthRdCheck_A, ((state_q == TransmitSetup) && (acq_fifo_depth_i > '0)) |->
           (acq_fifo_depth_i == 1) && acq_fifo_rdata_i[0])
 
+  // Check that we don't change SCL and SDA in the same clock cycle in host mode.
+  `ASSERT(SclSdaChangeNotSimultaneous_A, !(host_enable_i && (scl_d != scl_q) && (sda_d != sda_q)))
+
 endmodule
