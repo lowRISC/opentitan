@@ -200,10 +200,15 @@
                     });
                 </script>
 
-                <div id="content" class="content">
-                    <main>
-                        {{{ content }}}
-                    </main>
+                <div>
+                    <div class="content-wrapper">
+                        <div id="content" class="content">
+                            <main> {{{ content }}} </main>
+                        </div>
+                        <div class="sidetoc">
+                            <nav class="pagetoc"></nav>
+                        </div>
+                    </div>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->

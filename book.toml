@@ -24,11 +24,13 @@ additional-js = [
     "./util/site-dashboard/dashboard.js",
     "./util/site-dashboard/ot-nightly-results.js",
     "./util/site-dashboard/install-dashboards.js",
+    "./site/book-theme/pagetoc.js",
 ]
 
 additional-css = [
     "./util/mdbook/wavejson/wavejson.css",
     "./util/site-dashboard/dashboard-mdbook-block.css",
+    "./site/book-theme/pagetoc.css",
 ]
 
 [preprocessor.readme2index]
