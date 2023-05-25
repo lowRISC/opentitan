@@ -93,7 +93,7 @@ status_t spi_flash_testutils_read_status(dif_spi_host_t *spih, uint8_t opcode,
                                          size_t length) {
   TRY_CHECK(spih != NULL);
   TRY_CHECK(length <= 3);
-  uint32_t status;
+  uint32_t status = 0;
   dif_spi_host_segment_t transaction[] = {
       {
           .type = kDifSpiHostSegmentTypeOpcode,
@@ -141,7 +141,7 @@ status_t spi_flash_testutils_write_status(dif_spi_host_t *spih, uint8_t opcode,
 
 status_t spi_flash_testutils_wait_until_not_busy(dif_spi_host_t *spih) {
   TRY_CHECK(spih != NULL);
-  int32_t status;
+  int32_t status = 0;
 
   do {
     status = TRY(
@@ -314,7 +314,7 @@ status_t spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
 
 status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
                                          bool enabled) {
-  uint32_t status;
+  uint32_t status = 0;
   switch (method) {
     case 0:
       // Device does not have a QE bit.
