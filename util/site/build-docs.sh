@@ -101,15 +101,6 @@ doxygen_env+=" SRCTREE_TOP=${proj_root}"
 doxygen_env+=" DOXYGEN_OUT=${build_dir}/gen"
 doxygen_args="${proj_root}/util/doxygen/Doxyfile"
 
-# Build up mdbook arguments
-mdbook_args="build"
-mdbook_args+=" --dest-dir ${build_dir}/book/"
-mdbook_args+=" ${proj_root}"
-
-mdbook_guides_args="build"
-mdbook_guides_args+=" --dest-dir ${build_dir}/guides/getting_started"
-mdbook_guides_args+=" ${proj_root}/doc/guides/getting_started"
-
 # Register the pre-processors
 # Each book should only be passed the preprocessors it specifies inside the book.toml
 # ./book.toml
@@ -122,20 +113,22 @@ book_env+=" MDBOOK_PREPROCESSOR__WAVEJSON__COMMAND=${proj_root}/util/mdbook_wave
 book_env+=" MDBOOK_PREPROCESSOR__README2INDEX__COMMAND=${proj_root}/util/mdbook_readme2index.py"
 book_env+=" MDBOOK_PREPROCESSOR__DASHBOARD__COMMAND=${proj_root}/util/mdbook_dashboard.py"
 book_env+=" MDBOOK_PREPROCESSOR__BLOCK_DASHBOARD__COMMAND=${proj_root}/util/mdbook-block-dashboard.py"
-# ./doc/guides/getting_started/book.toml
-book_guides_env="env"
-book_guides_env+=" MDBOOK_PREPROCESSOR__TOOLVERSION__COMMAND=${proj_root}/util/mdbook_toolversion.py"
-book_guides_env+=" MDBOOK_PREPROCESSOR__README2INDEX__COMMAND=${proj_root}/util/mdbook_readme2index.py"
-
-# Add theme to both books
 book_env+=" MDBOOK_OUTPUT__HTML__THEME=$proj_root/site/book-theme/"
-book_guides_env+=" MDBOOK_OUTPUT__HTML__THEME=$proj_root/site/book-theme/"
-# Set default themes
 book_env+=" MDBOOK_OUTPUT__HTML__DEFAULT_THEME=unicorn-vomit-light"
-book_guides_env+=" MDBOOK_OUTPUT__HTML__DEFAULT_THEME=unicorn-vomit-light"
-# TODO: update once we have an opentitan-dark theme
 book_env+=" MDBOOK_OUTPUT__HTML__PREFERRED_DARK_THEME=unicorn-vomit-light"
-book_guides_env+=" MDBOOK_OUTPUT__HTML__PREFERRED_DARK_THEME=unicorn-vomit-light"
+book_args="build"
+book_args+=" --dest-dir ${build_dir}/book/"
+book_args+=" ${proj_root}"
+# ./doc/guides/getting_started/book.toml
+gettingstarted_book_env="env"
+gettingstarted_book_env+=" MDBOOK_PREPROCESSOR__TOOLVERSION__COMMAND=${proj_root}/util/mdbook_toolversion.py"
+gettingstarted_book_env+=" MDBOOK_PREPROCESSOR__README2INDEX__COMMAND=${proj_root}/util/mdbook_readme2index.py"
+gettingstarted_book_env+=" MDBOOK_OUTPUT__HTML__THEME=$proj_root/site/book-theme/"
+gettingstarted_book_env+=" MDBOOK_OUTPUT__HTML__DEFAULT_THEME=unicorn-vomit-light"
+gettingstarted_book_env+=" MDBOOK_OUTPUT__HTML__PREFERRED_DARK_THEME=unicorn-vomit-light"
+gettingstarted_book_args="build"
+gettingstarted_book_args+=" --dest-dir ${build_dir}/guides/getting_started"
+gettingstarted_book_args+=" ${proj_root}/doc/guides/getting_started"
 
 # Build up Hugo arguments
 hugo_args=""
@@ -160,9 +153,9 @@ buildSite () {
     echo "Doxygen build complete."
 
     # shellcheck disable=SC2086
-    ${book_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @crate_index//:mdbook__mdbook -- ${mdbook_args}
+    ${book_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @crate_index//:mdbook__mdbook -- ${book_args}
     # shellcheck disable=SC2086
-    ${book_guides_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @crate_index//:mdbook__mdbook -- ${mdbook_guides_args}
+    ${gettingstarted_book_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @crate_index//:mdbook__mdbook -- ${gettingstarted_book_args}
     # shellcheck disable=SC2086
     hugo ${hugo_args}
 
