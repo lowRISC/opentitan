@@ -140,27 +140,29 @@ class BitstreamCache(object):
         response = urllib.request.urlopen(url)
         return response.read()
 
-    def GetBitstreamsAvailable(self, refresh):
+    def GetBitstreamsAvailable(self, refresh, load_latest_update=True):
         """Inventory which bitstreams are available.
 
         Args:
             refresh: bool; whether to refresh from the network.
+            load_latest_update: bool; whether to load the latest_update file
         """
         if not refresh:
             for (_, dirnames, _) in os.walk('cache'):
                 for d in dirnames:
                     self.available[d] = 'local'
-            try:
-                with open(self.latest_update, 'rt') as f:
-                    self.available['latest'] = f.read().strip()
-            except FileNotFoundError:
-                if self.offline:
-                    logging.error(
-                        'Must pre-initialize bitstream cache in offline mode.')
-                else:
-                    logging.error(
-                        f'Bitstream cache missing {self.latest_update}.')
-                sys.exit(1)
+            if load_latest_update:
+                try:
+                    with open(self.latest_update, 'rt') as f:
+                        self.available['latest'] = f.read().strip()
+                except FileNotFoundError:
+                    if self.offline:
+                        logging.error(
+                            'Must pre-initialize bitstream cache in offline mode.')
+                    else:
+                        logging.error(
+                            f'Bitstream cache missing {self.latest_update}.')
+                    sys.exit(1)
             return
 
         # Fetching the list of all entries in the cache may require multiple
@@ -484,7 +486,10 @@ def main(argv):
     # Do we need a refresh?
     need_refresh = (args.refresh or desired_bitstream != 'latest' or
                     cache.NeedRefresh(args.refresh_time))
-    cache.GetBitstreamsAvailable(need_refresh and not args.offline)
+    # Do we need to load the latest_update file?
+    load_latest_update = (desired_bitstream == 'latest')
+    cache.GetBitstreamsAvailable(need_refresh and not args.offline,
+                                 load_latest_update)
 
     # If commanded to print bitstream availability, do so.
     if args.list:
