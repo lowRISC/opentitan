@@ -72,10 +72,14 @@ h3:target::before,
 h4:target::before,
 h5:target::before,
 h6:target::before {
-    display: inline-block;
-    content: "»";
-    margin-left: -30px;
-    width: 30px;
+    content: '';
+    width: 100%;
+    left: 0%;
+    margin-top: -1rem;
+    height: var(--target-height);
+    background-color: #d0966f4a;
+    z-index: -10;
+    position: absolute;
 }
 
 /* This is broken on Safari as of version 14, but is fixed
@@ -83,7 +87,7 @@ h6:target::before {
    https://bugs.webkit.org/show_bug.cgi?id=218076
 */
 :target {
-    scroll-margin-top: calc(var(--menu-bar-height) + 0.5em);
+    scroll-margin-top: calc(var(--menu-bar-height) + 8rem);
 }
 
 .page {

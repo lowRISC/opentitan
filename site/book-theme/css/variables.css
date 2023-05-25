@@ -17,6 +17,7 @@
     --menu-bar-height: 50px;
     --mono-font: "Source Code Pro", Consolas, "Ubuntu Mono", Menlo, "DejaVu Sans Mono", monospace, monospace;
     --code-font-size: 0.875em; /* please adjust the ace font size accordingly in editor.js */
+    --target-height: 0; /* Dummy var for styling :target, set dynamically by the js event. */
 }
 
 /* Themes */
