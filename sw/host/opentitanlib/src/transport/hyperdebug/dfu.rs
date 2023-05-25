@@ -24,6 +24,7 @@ const PID_DFU_BOOTLOADER: u16 = 0xdf11;
 /// Google's).
 pub struct HyperdebugDfu {
     usb_backend: RefCell<UsbBackend>,
+    current_firmware_version: Option<String>,
 }
 
 impl HyperdebugDfu {
@@ -40,20 +41,41 @@ impl HyperdebugDfu {
         // will put the desired firmware on the HyperDebug, both in the case of previous
         // interrupted update, as well as the ordinary case of outdated or current HyperDebug
         // firmware already running.
-        let usb_backend = UsbBackend::new(
+        if let Ok(usb_backend) = UsbBackend::new(
             usb_vid.unwrap_or(VID_ST_MICROELECTRONICS),
             usb_pid.unwrap_or(PID_DFU_BOOTLOADER),
             usb_serial,
-        )
-        .or_else(|_| {
-            UsbBackend::new(
-                usb_vid.unwrap_or(super::VID_GOOGLE),
-                usb_pid.unwrap_or(super::PID_HYPERDEBUG),
-                usb_serial,
-            )
-        })?;
+        ) {
+            // HyperDebug device is already in DFU mode, we cannot query firmware version through
+            // USB strings.  (And the fact that it was left in DFU mode, probably as a result of a
+            // previous incomplete update attempt, should mean that we would not want to trust the
+            // version, even if we could extract it through the DFU firmware.)
+            return Ok(Self {
+                usb_backend: RefCell::new(usb_backend),
+                current_firmware_version: None,
+            });
+        }
+
+        let usb_backend = UsbBackend::new(
+            usb_vid.unwrap_or(super::VID_GOOGLE),
+            usb_pid.unwrap_or(super::PID_HYPERDEBUG),
+            usb_serial,
+        )?;
+        // HyperDebug device in operational mode, look at the USB strings for the running firmware
+        // version.
+        let config_desc = usb_backend.active_config_descriptor()?;
+        let current_firmware_version = if let Some(idx) = config_desc.description_string_index() {
+            if let Ok(current_firmware_version) = usb_backend.read_string_descriptor_ascii(idx) {
+                Some(current_firmware_version)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
         Ok(Self {
             usb_backend: RefCell::new(usb_backend),
+            current_firmware_version,
         })
     }
 }
@@ -68,7 +90,7 @@ impl Transport for HyperdebugDfu {
         if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
             update_firmware(
                 &mut self.usb_backend.borrow_mut(),
-                None, /* current_firmware_version */
+                self.current_firmware_version.as_deref(),
                 &update_firmware_action.firmware,
                 update_firmware_action.progress.as_ref(),
                 update_firmware_action.force,
