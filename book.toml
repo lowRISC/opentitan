@@ -33,6 +33,9 @@ additional-css = [
     "./site/book-theme/pagetoc.css",
 ]
 
+[output.html.print]
+enable = false
+
 [preprocessor.readme2index]
 command = "./util/mdbook_readme2index.py"
 
