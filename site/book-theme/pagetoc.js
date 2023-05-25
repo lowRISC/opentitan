@@ -43,6 +43,31 @@ var updateDynamicHighlight = function() {
 window.addEventListener("load", updateDynamicHighlight);
 window.addEventListener("scroll", updateDynamicHighlight);
 
+/* Style the heading that matches the URL fragment (i.e. when you click a hyperlink).
+ * - Find the element with the ":target" psuedoclass applied
+ * - Measure it's rendered height, and set the '--target-height' variable to this value.
+ * - The CSS selected by ":target" will style the horizontal highlighting bar to match this height. */
+var set_target_highlight = function(event) {
+    let newurl = '';
+    if (typeof(event.newURL) === 'undefined') {
+        // probably a "load" event
+        newurl = window.location.href;
+    } else {
+        // "hashchange" event
+        newurl = event.newURL;
+    }
+    Array.prototype.forEach.call(document.getElementsByClassName("header"), function(el) {
+        if (new URL(el.href).hash == new URL(newurl).hash) {
+            document.documentElement.style.setProperty(
+                '--target-height',
+                el.getBoundingClientRect().height + 20 + "px"
+            );
+        }
+    });
+};
+window.addEventListener("hashchange", set_target_highlight);
+window.addEventListener("load", set_target_highlight);
+
 /* create_pagetoc_structure()
  * Dynamically create a tree of <a> elements for each heading in
  * the content body.
