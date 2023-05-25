@@ -76,7 +76,6 @@ def handle_test_targets(test_targets: List[str]) -> List[str]:
     res = test_targets + [
         "//sw/device/lib/base:hardened_memory_unittest",
         "//sw/device/lib/base:math_unittest",
-        "//sw/device/lib/base:math_builtins_unittest",
         "//sw/device/lib/base:memory_unittest",
     ]
     logging.info(f"test targets: {pformat(res)}")
