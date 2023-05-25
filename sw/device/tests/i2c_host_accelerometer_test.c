@@ -61,7 +61,7 @@ static status_t read_write_thresh_tap(void) {
   // Write some value to the THRESH_TAP register.
   uint8_t write_data[2] = {reg, 0xAB};
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(write_data), write_data,
-                          true));
+                          false));
 
   // Read the value back to confirm the write.
   uint8_t read_data = 0;
@@ -76,7 +76,7 @@ static status_t take_measurement(void) {
   // Set the power mode to enable measurements.
   uint8_t write_data[2] = {kPowerCtrlReg, kMeasure};
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(write_data), write_data,
-                          true));
+                          false));
 
   // Read all six data measurements starting from DATAX0.
   uint8_t data_x_reg = kDataX0Reg;
