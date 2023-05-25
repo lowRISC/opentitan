@@ -12,28 +12,40 @@
 }
 
 @media only screen and (min-width:1440px) {
-    main {
-        position: relative;
-    }
     .sidetoc {
-        margin-left: auto;
-        margin-right: auto;
-        left: calc(100% + (var(--content-max-width))/4 - 140px);
-        position: absolute;
+        position: sticky;
+        margin: 0 calc(var(--page-padding) + 15px);
+        width: calc(40% - 15vw + 50px);
+        max-width: 400px;
+        top: calc(var(--menu-bar-height) + 8rem);
+        scroll-behavior: smooth;
     }
     .pagetoc {
-        position: fixed;
-        width: 200px;
-        height: calc(100vh - var(--menu-bar-height) - 0.67em * 4);
-        overflow: auto;
+        font-size: 95%;
+        padding-right: 10px;
+        overflow-x: hidden;
+        background: white;
+        box-shadow: #4BC0C8C0 -5px -5px,
+                    #C779D090 -10px -10px,
+                    #FEAC5E60 -15px -15px;
     }
-    .pagetoc a {
-        border-left: 1px solid var(--sidebar-bg);
+    .pagetoc::-webkit-scrollbar {
+        width: 1rem;
+    }
+    .pagetoc::-webkit-scrollbar-track {
+        margin-top: 4rem;
+    }
+    .pagetoc::-webkit-scrollbar-thumb {
+        background-image: linear-gradient(180deg, #4BC0C8 0%, #C779D0 50%, #FEAC5E 100%);
+        border-radius: 5px;
+    }
+    .pagetoc a,
+    .pagetoc #pagetoc-title {
         color: var(--fg) !important;
         display: block;
         padding-bottom: 5px;
         padding-top: 5px;
-        padding-left: 10px;
+        padding-left: 2rem;
         text-align: left;
         text-decoration: none;
     }
@@ -45,12 +57,12 @@
     }
     .pagetoc a:hover,
     .pagetoc a.active {
-        background: var(--sidebar-bg);
-        color: var(--sidebar-fg) !important;
+        background: var(--pagetoc-bg);
+        color: var(--pagetoc-fg) !important;
     }
     .pagetoc .active {
-        background: var(--sidebar-bg);
-        color: var(--sidebar-fg);
+        background: var(--pagetoc-bg);
+        color: var(--pagetoc-fg);
     }
     .pagetoc .pagetoc-H2 {
         padding-left: 20px;
