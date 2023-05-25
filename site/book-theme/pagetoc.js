@@ -15,26 +15,33 @@ Array.prototype.forEach.call(document.getElementsByClassName("pagetoc")[0].child
     });
 });
 
-var updateFunction = function() {
-
+/* The following functionality highlights the pagetoc entry of the highest visible heading on the page.
+ * This gives the pagetoc the dynamic highlighting behaviour as you scroll the page. */
+var updateDynamicHighlight = function() {
     var id;
-    var elements = document.getElementsByClassName("header");
+    let elements = document.getElementsByClassName("header");
+    // Set id == the highest "header" element visible in the window.
     Array.prototype.forEach.call(elements, function(el) {
-        if (window.pageYOffset >= el.offsetTop) {
+        if ((window.pageYOffset + 150) >= el.offsetTop) {
             id = el;
         }
     });
-
-    Array.prototype.forEach.call(document.getElementsByClassName("pagetoc")[0].children, function(el) {
-        el.classList.remove("active");
-    });
     if (!id) return;
-    Array.prototype.forEach.call(document.getElementsByClassName("pagetoc")[0].children, function(el) {
+    // Add the matching <a> pagetoc element to the "active" class (i.e. highlighted).
+    let pagetoc = document.getElementsByClassName("pagetoc")[0];
+    Array.prototype.forEach.call(pagetoc.getElementsByTagName("a"), function(el) {
         if (id.href.localeCompare(el.href) == 0) {
+            // Set all <a> elements in the pagetoc inactive.
+            Array.prototype.forEach.call(pagetoc.getElementsByTagName("a"), function(el) {
+                el.classList.remove("active");
+            });
+            // Set the matched <a> element as 'active'
             el.classList.add("active");
         }
     });
 };
+window.addEventListener("load", updateDynamicHighlight);
+window.addEventListener("scroll", updateDynamicHighlight);
 
 /* create_pagetoc_structure()
  * Dynamically create a tree of <a> elements for each heading in
@@ -71,13 +78,9 @@ var create_pagetoc_structure = function(el_pagetoc) {
         link.classList.add("pagetoc-" + el.parentElement.tagName);
         el_pagetoc.appendChild(link);
       });
-    updateFunction.call();
 };
 
 
-
-// Handle active elements on scroll
-window.addEventListener("scroll", updateFunction);
 
 /* Populate the pagetoc sidebar on load
  * - Create a tree structure of elements within the pagetoc nav item
