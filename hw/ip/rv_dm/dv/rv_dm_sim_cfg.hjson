@@ -40,6 +40,9 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  // Enable cdc instrumentation.
+  run_opts: ["+cdc_instrumentation_enabled=1"]
+
   overrides: [
     {
       // This sets the width of UVM data (UVM_REG_DATA_WIDTH) to sufficiently large value. RV_DM DV
@@ -73,6 +76,14 @@
 
   // List of test specifications.
   tests: [
+    {
+      name: "rv_dm_csr_aliasing"
+      build_mode: "cover_reg_top"
+      run_opts: ["+csr_aliasing"]
+      en_run_modes: ["csr_tests_mode"]
+      reseed: 5
+      run_opts: ["+test_timeout_ns=100_000_000"]
+    }
     {
       name: rv_dm_smoke
       uvm_test_seq: rv_dm_smoke_vseq
