@@ -15,6 +15,7 @@ def llvm_compiler_rt_repos():
         ],
         patches = [
             Label("//third_party/llvm_compiler_rt:0001-Headers.patch"),
+            Label("//third_party/llvm_compiler_rt:0002-invalid-data.patch"),
         ],
         patch_args = ["-p1"],
     )

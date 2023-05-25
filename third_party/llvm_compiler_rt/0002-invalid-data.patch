@@ -1,0 +1,16 @@
+diff --git a/lib/profile/InstrProfilingPlatformOther.c b/lib/profile/InstrProfilingPlatformOther.c
+index c7b6e842c9fa..38a3551de715 100644
+--- a/lib/profile/InstrProfilingPlatformOther.c
++++ b/lib/profile/InstrProfilingPlatformOther.c
+@@ -42,6 +42,11 @@ static const void *getMaxAddr(const void *A1, const void *A2) {
+ COMPILER_RT_VISIBILITY
+ void __llvm_profile_register_function(void *Data_) {
+   /* TODO: Only emit this function if we can't use linker magic. */
++
++  if ((uintptr_t)Data_ == (uintptr_t)&__llvm_profile_runtime) {
++    return;
++  }
++
+   const __llvm_profile_data *Data = (__llvm_profile_data *)Data_;
+   if (!DataFirst) {
+     DataFirst = Data;
