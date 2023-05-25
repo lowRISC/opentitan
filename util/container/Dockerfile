@@ -16,7 +16,7 @@ ARG BAZELISK_VERSION=v1.11.0
 # This should match the version in ci/install-package-dependencies.sh
 ARG GCC_VERSION=9
 # This should match the version of the lowRISC RISC-V toolchain.
-ARG CLANG_VERSION=13
+ARG CLANG_VERSION=16
 
 # Main container image.
 FROM ubuntu:20.04 AS opentitan
