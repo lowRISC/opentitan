@@ -28,6 +28,7 @@ var updateDynamicHighlight = function() {
     });
     if (!id) return;
     // Add the matching <a> pagetoc element to the "active" class (i.e. highlighted).
+    // Also scroll the ToC so this element is in-view.
     let pagetoc = document.getElementsByClassName("pagetoc")[0];
     Array.prototype.forEach.call(pagetoc.getElementsByTagName("a"), function(el) {
         if (id.href.localeCompare(el.href) == 0) {
@@ -37,6 +38,11 @@ var updateDynamicHighlight = function() {
             });
             // Set the matched <a> element as 'active'
             el.classList.add("active");
+
+            // Scroll "active" element into view (the middle of the scrollable pagetoc hopefully)
+            document.getElementsByClassName("pagetoc")[0]
+                .scrollTo({ top: el.offsetTop - (pagetoc.getBoundingClientRect().height / 2 ) ,
+                            behavior: 'smooth' });
         }
     });
 };
