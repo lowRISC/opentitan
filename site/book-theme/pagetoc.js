@@ -68,6 +68,22 @@ var set_target_highlight = function(event) {
 window.addEventListener("hashchange", set_target_highlight);
 window.addEventListener("load", set_target_highlight);
 
+/* Set the "height" style of pagetoc conditionally.
+ * - auto    -> for short lists that don't overflow, limit the height of the pagetoc, disables scrollbar.
+ * - limited -> content overflows the element, and therefore scrolling is enabled */
+var set_pagetoc_height = function() {
+    let el = document.getElementsByClassName("pagetoc")[0];
+    el.style.height = "auto";
+    let pagetoc_height = el.getBoundingClientRect().height;
+    let window_height = window.innerHeight - document.documentElement.style.getPropertyValue('--menu-bar-height') - 200;
+    if (pagetoc_height < window_height) {
+        el.style.height = "auto";
+    } else {
+        el.style.height = "calc(90vh - var(--menu-bar-height))"; // limited_height
+    }
+};
+window.addEventListener("resize", set_pagetoc_height);
+
 /* create_pagetoc_structure()
  * Dynamically create a tree of <a> elements for each heading in
  * the content body.
@@ -113,4 +129,10 @@ var create_pagetoc_structure = function(el_pagetoc) {
 window.addEventListener('load', function() {
     let pagetoc = document.getElementsByClassName("pagetoc")[0];
     create_pagetoc_structure(pagetoc);
+
+    setTimeout(function(){
+        // Allow the pagetoc to complete drawing, so we can measure it's final height.
+        // TODO find a better way to do this.
+        set_pagetoc_height.call();
+    }, 1000);
 });
