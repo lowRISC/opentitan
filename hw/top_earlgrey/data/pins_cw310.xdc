@@ -59,13 +59,13 @@ set_property -dict { PACKAGE_PIN A15  IOSTANDARD LVCMOS33 } [get_ports { IOB2  }
 set_property -dict { PACKAGE_PIN F14  IOSTANDARD LVCMOS33 } [get_ports { IOB3  }]; #  F14:USR_SPI1CS
 set_property -dict { PACKAGE_PIN AE25 IOSTANDARD LVCMOS33 } [get_ports { IOB4  }]; # AE25:CWIO_IO1     EarlGrey:UART1_RX   ChipWhisperer_ConnectorJ14_PIN10
 set_property -dict { PACKAGE_PIN AF25 IOSTANDARD LVCMOS33 } [get_ports { IOB5  }]; # AF25:CWIO_IO2     EarlGrey:UART1_TX   ChipWhisperer_ConnectorJ14_PIN12
-set_property -dict { PACKAGE_PIN N23  IOSTANDARD LVCMOS33 } [get_ports { IOB6  }]; #  N23:PMOD2_IO5    EarlGrey:GPIO       (BoB):PMOD1_CSB7
-set_property -dict { PACKAGE_PIN N26  IOSTANDARD LVCMOS33 } [get_ports { IOB7  }]; #  N26:PMOD2_IO6    EarlGrey:GPIO       (BoB):PMOD1_RST
-set_property -dict { PACKAGE_PIN M20  IOSTANDARD LVCMOS33 } [get_ports { IOB8  }]; #  M20:PMOD2_IO7    EarlGrey:I2C0_SCL   (BoB):PMOD1_I2C_SCL
-set_property -dict { PACKAGE_PIN P25  IOSTANDARD LVCMOS33 } [get_ports { IOB9  }]; #  P25:PMOD2_IO8    EarlGrey:I2C0_SDA   (BoB):PMOD1_I2C_SDA
-set_property -dict { PACKAGE_PIN V9   IOSTANDARD LVCMOS18 } [get_ports { IOB10 }]; #   V9:USRDIP4                          DIP switches
-set_property -dict { PACKAGE_PIN W8   IOSTANDARD LVCMOS18 } [get_ports { IOB11 }]; #   W8:USRDIP5                          DIP switches
-set_property -dict { PACKAGE_PIN W10  IOSTANDARD LVCMOS18 } [get_ports { IOB12 }]; #  W10:USRDIP6                          DIP switches
+set_property -dict { PACKAGE_PIN U9   IOSTANDARD LVCMOS18 } [get_ports { IOB6  }]; #   U9:USRDIP0                          DIP switches
+set_property -dict { PACKAGE_PIN N23  IOSTANDARD LVCMOS33 } [get_ports { IOB7  }]; #  N23:PMOD2_IO5    EarlGrey:GPIO       (BoB):PMOD1_CSB7
+set_property -dict { PACKAGE_PIN N26  IOSTANDARD LVCMOS33 } [get_ports { IOB8  }]; #  N26:PMOD2_IO6    EarlGrey:GPIO       (BoB):PMOD1_RST
+set_property -dict { PACKAGE_PIN V7   IOSTANDARD LVCMOS18 } [get_ports { IOB9  }]; #   V7:USRDIP1                          DIP switches
+set_property -dict { PACKAGE_PIN V8   IOSTANDARD LVCMOS18 } [get_ports { IOB10 }]; #   V8:USRDIP2                          DIP switches
+set_property -dict { PACKAGE_PIN M20  IOSTANDARD LVCMOS33 } [get_ports { IOB11 }]; #  M20:PMOD2_IO7    EarlGrey:I2C0_SCL   (BoB):PMOD1_I2C_SCL
+set_property -dict { PACKAGE_PIN P25  IOSTANDARD LVCMOS33 } [get_ports { IOB12 }]; #  P25:PMOD2_IO8    EarlGrey:I2C0_SDA   (BoB):PMOD1_I2C_SDA
 #############
 ## IOC bank #
 #############
@@ -90,7 +90,7 @@ set_property -dict { PACKAGE_PIN P16         IOSTANDARD LVCMOS33 PULLTYPE PULLUP
 set_property -dict { PACKAGE_PIN R16         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR2  }]; # R16:USR_DBG_TDI           JTAG
 set_property -dict { PACKAGE_PIN N18         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR3  }]; # N18:USR_DBG_TCK           JTAG
 set_property -dict { PACKAGE_PIN U19         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR4  }]; # U19:USR_DBG_TDAT1(nTRST)  JTAG
-set_property -dict { PACKAGE_PIN V11         IOSTANDARD LVCMOS18                 } [get_ports { IOR5  }]; # V11:USRDIP7
+set_property -dict { PACKAGE_PIN W9          IOSTANDARD LVCMOS18                 } [get_ports { IOR5  }]; #  W9:USRDIP3
 set_property -dict { PACKAGE_PIN M26 DRIVE 8 IOSTANDARD LVCMOS33                 } [get_ports { IOR6  }]; # M26:USRLED0               EarlGrey:GPIO
 set_property -dict { PACKAGE_PIN M25 DRIVE 8 IOSTANDARD LVCMOS33                 } [get_ports { IOR7  }]; # M25:USRLED1               EarlGrey:GPIO
 set_property -dict { PACKAGE_PIN M24 DRIVE 8 IOSTANDARD LVCMOS33                 } [get_ports { IOR8  }]; # M24:USRLED2               EarlGrey:GPIO

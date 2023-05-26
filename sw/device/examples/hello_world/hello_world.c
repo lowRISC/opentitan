@@ -32,9 +32,9 @@ static dif_pinmux_index_t leds[] = {
 };
 
 static dif_pinmux_index_t switches[] = {
+    kTopEarlgreyPinmuxInselIob6,
+    kTopEarlgreyPinmuxInselIob9,
     kTopEarlgreyPinmuxInselIob10,
-    kTopEarlgreyPinmuxInselIob11,
-    kTopEarlgreyPinmuxInselIob12,
     kTopEarlgreyPinmuxInselIor5,
 };
 
@@ -108,7 +108,7 @@ void _ottf_main(void) {
   // Now have UART <-> Buttons/LEDs demo
   // all LEDs off
   CHECK_DIF_OK(dif_gpio_write_all(&gpio, 0x0000));
-  LOG_INFO("Try out USERDIP switches 4-thru-7 on the board");
+  LOG_INFO("Try out USERDIP switches 0-thru-3 on the board");
   LOG_INFO("or type anything into the console window.");
   LOG_INFO(
       "The LEDs show the lower nibble of the ASCII code of the last "
