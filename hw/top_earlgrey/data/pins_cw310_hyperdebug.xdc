@@ -55,12 +55,12 @@ set_property -dict { PACKAGE_PIN J16 IOSTANDARD LVCMOS33 }  [get_ports { IOB3  }
 set_property -dict { PACKAGE_PIN H16 IOSTANDARD LVCMOS33 }  [get_ports { IOB4  }]; # J4.9 USERIOA-9, UART RX
 set_property -dict { PACKAGE_PIN H17 IOSTANDARD LVCMOS33 }  [get_ports { IOB5  }]; # J4.11 USERIOA-11, UART TX
 set_property -dict { PACKAGE_PIN G16 IOSTANDARD LVCMOS33 }  [get_ports { IOB6  }]; # J4.13 USERIOA-13
-set_property -dict { PACKAGE_PIN R25 IOSTANDARD LVCMOS33 }  [get_ports { IOB7  }]; # PMOD2_IO5
-set_property -dict { PACKAGE_PIN P24 IOSTANDARD LVCMOS33 }  [get_ports { IOB8  }]; # PMOD2_IO6
+set_property -dict { PACKAGE_PIN N23 IOSTANDARD LVCMOS33 }  [get_ports { IOB7  }]; # PMOD2_IO5
+set_property -dict { PACKAGE_PIN N26 IOSTANDARD LVCMOS33 }  [get_ports { IOB8  }]; # PMOD2_IO6
 set_property -dict { PACKAGE_PIN K20 IOSTANDARD LVCMOS33 }  [get_ports { IOB9  }]; # J4.15 USERIOA-15, I2C HOST SDA
 set_property -dict { PACKAGE_PIN E16 IOSTANDARD LVCMOS33 }  [get_ports { IOB10 }]; # J4.17 USERIOA-17, I2C HOST SCL
-set_property -dict { PACKAGE_PIN P23 IOSTANDARD LVCMOS33 }  [get_ports { IOB11 }]; # PMOD2_IO7, I2C SCL
-set_property -dict { PACKAGE_PIN T23 IOSTANDARD LVCMOS33 }  [get_ports { IOB12 }]; # PMOD2_IO8, I2C SDA
+set_property -dict { PACKAGE_PIN M20 IOSTANDARD LVCMOS33 }  [get_ports { IOB11 }]; # PMOD2_IO7, I2C SCL
+set_property -dict { PACKAGE_PIN P25 IOSTANDARD LVCMOS33 }  [get_ports { IOB12 }]; # PMOD2_IO8, I2C SDA
 
 ## IOC bank
 # Most pins are on USERIO* headers, but IOC7 is used for VBUS detection for USB.
