@@ -2,20 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// usbreset application
+// usb_suspend_test
 //
-// Simple application that permits discovery and resetting of connected
-// OpenTitan USB device
+// Simple application that permits discovery, suspending, resuming and resetting
+// of OpenTitan USB device.
 //
-// Based upon a suggested implementation at:
-// https://askubuntu.com/questions/645/how-do-you-reset-a-usb-device-from-the-command-line
-//
-// Requires sudo permissions.
-
-// lsusb lists devices as Bus abc Device xyz: ID ...
-// sudo [...]usbreset /dev/bus/usb/abc/xyz
-//
-// Bus 003 Device 126: ID 18d1:503a Google Inc. V1003
+// Note: Requires sudo permissions in order to use sysfs for autosuspend and
+// resume behavior.
 
 #include <cctype>
 #include <cerrno>
@@ -91,16 +84,22 @@ typedef enum usb_testutils_test_number {
 
 class USBDevice {
 public:
+  USBDevice() : _verbose(false), _manual(false), _devh(nullptr) { }
 
   /**
    * Run test to completion.
    */
   bool RunTest();
   /**
-   *
+   * (Re)open the device. If the device is already open, this function just
+   * returns immediately.
    */
-  bool Init();
-
+  bool Open();
+  /**
+   * Close the device, if open. If the device is already closed, this function
+   * just returns immediately.
+   */
+  bool Close();
   /**
    * Parse command line arguments and retain settings.
    *
@@ -176,6 +175,12 @@ public:
   // Device handle
   libusb_device_handle *_devh;
 
+  // Device descriptor
+  libusb_device_descriptor _devDesc;
+
+  // Device path (bus number - ports numbers)
+  std::string _devPath;
+
   // Current phase within the Suspend-Sleep-Wakeup-Resume testing sequence.
   usbdev_suspend_phase_t _testPhase;  
 
@@ -201,20 +206,84 @@ public:
   static const unsigned kFramesUntilNextPhase = 4u;
 };
 
-bool USBDevice::Init() {
-	int rc = libusb_init_context(NULL, NULL, 0);
-	if (rc < 0) {
-		std::cerr << "Error initializing libusb: " << libusb_error_name(rc)
-		          << std::endl;
-		return false;
-	}
+// Context information for libusb
+static libusb_context *ctx = NULL;
+
+// Open the device, if not already open.
+bool USBDevice::Open() {
+  // Check whether we have already opened the device.
+  if (_devh) {
+    return true;
+  }
 
   // Locate our USB device
   std::cout << "Locating USB device" << std::endl;
   unsigned numTries = 30u;
   bool found = false;
   do {
-	  _devh = libusb_open_device_with_vid_pid(NULL, kVendorID, kProductID);
+    // TODO: sadly this does not work for our requirements?
+    if (false) {
+  	  _devh = libusb_open_device_with_vid_pid(ctx, kVendorID, kProductID);
+    } else {
+      // No device handle at present
+      _devh = nullptr;
+
+      // We need to traverse a list of all devices before opening it; since
+      // we require the port numbers leading to our device, we cannot take the
+      // easier approach of using _open_device_with_vid_pid()
+      libusb_device **dev_list;
+      ssize_t num_devs = libusb_get_device_list(ctx, &dev_list);
+      int idx;
+      for (idx = 0; idx < num_devs; idx++) {
+        int rc = libusb_get_device_descriptor(dev_list[idx], &_devDesc);
+        if (rc >= 0) {
+          if (_verbose) {
+            std::cout << "Device: " << "VendorID: " << std::hex << _devDesc.idVendor << " ProductID: " << _devDesc.idProduct << std::dec << std::endl;
+          }
+          if (_devDesc.idVendor == kVendorID && _devDesc.idProduct == kProductID) {
+            break;
+          }
+        }
+      }
+      if (idx < num_devs) {
+        // We have found the device in which we're interested; obtain the list
+        // of port numbers
+        libusb_device *dev = dev_list[idx];
+        uint8_t bus = libusb_get_bus_number(dev);
+        if (_verbose) {
+          std::cout << "Device path: " << (unsigned)bus << "-";
+        }
+        _devPath = std::to_string(bus) + '-';
+        uint8_t ports[8];
+        int rc = libusb_get_port_numbers(dev, ports, sizeof(ports));
+        if (rc >= 0) {
+          unsigned num_ports = (unsigned)rc;
+          for (unsigned idx = 0u; idx < num_ports; idx++) {
+            std::cout << (unsigned)ports[idx];
+            _devPath += std::to_string(ports[idx]);
+            if (idx + 1 < num_ports) {
+              std::cout << '.';
+              _devPath += '.';
+            }
+          }
+          std::cout << std::endl;
+        } else {
+          std::cerr << "Error getting port list: " << libusb_error_name(rc)
+                    << std::endl;
+          return false;
+        }
+
+        // Open a handle to our device
+        rc = libusb_open(dev, &_devh);
+        if (rc < 0) {
+          std::cerr << "Error opening device: " << libusb_error_name(rc) << std::endl;
+          return false;
+        }
+      }
+      // Unreference all devices and release device list
+      libusb_free_device_list(dev_list, 1u);
+    }
+
 	  if (_devh) {
 	    found = true;
 	  } else if (numTries-- > 0u) {
@@ -227,19 +296,28 @@ bool USBDevice::Init() {
 	  }
   } while (!found);
 
+  // Report that we have at least found the device.
+  std::cout << "Device found" << std::endl;
+  if (_verbose) {
+    std::cout << " - Path: " << _devPath << std::endl;
+  }
+
   // We need to detach the kernel driver and claim the interface to have maximal
   // control
-  rc = libusb_detach_kernel_driver(_devh, kInterface);
-  if (rc >= 0) {
-	  rc = libusb_claim_interface(_devh, kInterface);
+  int rc = libusb_set_auto_detach_kernel_driver(_devh, 1u);
+  if (rc < 0) {
+    std::cerr << "Error detaching kernel driver: " << libusb_error_name(rc) << std::endl;
+    return false;
   }
+  rc = libusb_claim_interface(_devh, kInterface);
 	if (rc < 0) {
     std::cerr << "Error claiming interface: " << libusb_error_name(rc) << std::endl;
     // TODO: shutdown
     return false;
 	}
 
-  // Read and check the currently active configuration
+  // Read and check the currently active configuration; this should just be 1
+  // since our test software sets up only a single configuration.
   int config;
   rc = libusb_get_configuration(_devh, &config);
   if (rc < 0) {
@@ -248,6 +326,15 @@ bool USBDevice::Init() {
   }
 
   std::cout << "Configuration: " << config << std::endl;
+  return true;
+}
+
+// Close the device, if open.
+bool USBDevice::Close() {
+  if (_devh) {
+    libusb_close(_devh);
+    _devh = nullptr;
+  }
   return true;
 }
 
@@ -282,6 +369,10 @@ uint16_t get_le16(const uint8_t *p) {
 
 bool USBDevice::ReadTestDesc() {
   std::cout << "Reading Test Descriptor" << std::endl;
+
+  if (!Open()) {
+    return false;
+  }
 
   // Send a Vendor-Specific command to read the test descriptor
   uint8_t testDesc[0x10u];
@@ -347,6 +438,10 @@ bool USBDevice::Delay(uint32_t time_us, bool with_traffic) {
 bool USBDevice::Reset() {
   std::cout << "Resetting Device" << std::endl;
 
+  if (!Open()) {
+    return false;
+  }
+
   int rc = libusb_reset_device(_devh);
   if (rc < 0) {
     return false;
@@ -355,18 +450,66 @@ bool USBDevice::Reset() {
 }
 
 bool USBDevice::Suspend() {
+  std::cout << "Suspending Device" << std::endl;
+
+  // We need to relinquish our access to the device otherwise the kernel
+  // will refuse to autosuspend the device!
+  Close();
+
+  std::string powerPath = "/sys/bus/usb/devices/" + _devPath + "/power/";
+  std::string filename = powerPath + "autosuspend_delay_ms";
+  // TODO: tidy this...probably move to a utility function
+  int fd = open(filename.c_str(), O_WRONLY);
+  if (fd < 0) {
+    std::cerr << "Failed to open '" << filename << "'" << std::endl;
+    return false;
+  }
+  (void)write(fd, "0", 1);
+  close(fd);
+
   //
+  filename = powerPath + "control";
+  fd = open(filename.c_str(), O_WRONLY);
+  if (fd < 0) {
+    std::cerr << "Failed to open '" << filename << "'" << std::endl;
+    std::cerr << "  (Note: this requires sudo permissions)" << std::endl;
+    return false;
+  }
+  (void)write(fd, "auto", 4);
+  close(fd);
+
   return false;
 }
 
 bool USBDevice::Resume() {
-  //
+  std::cout << "Resuming Device" << std::endl;
+
+  if (!Open()) {
+    return false;
+  }
+
+  std::string powerPath = "/sys/bus/usb/devices/" + _devPath + "/power/";
+  std::string filename = powerPath + "control";
+
+  int fd = open(filename.c_str(), O_WRONLY);
+  if (fd < 0) {
+    std::cerr << "Failed to open '" << filename << "'" << std::endl;
+    return false;
+  }
+  (void)write(fd, "on", 2);
+  close(fd);
+
   return false;
 }
 
 bool USBDevice::Disconnect() {
+  // TODO: Are we able to implement a Disconnect/Reconnect function here?
+  //       Most hubs do not have the capacity to power cycle an individual
+  //       port.
+  //
   // Power Off
   // Power On
+
   return false;
 }
 
@@ -376,6 +519,9 @@ bool USBDevice::ParseArgs(int argc, char *argv[]) {
       switch (tolower(argv[i][1])) {
         case 'm':
           _manual = true;
+          break;
+        case 'v':
+          _verbose = true;
           break;
         default:
           ReportSyntax();
@@ -396,14 +542,10 @@ bool USBDevice::RunTest() {
   bool passed = false;
   bool quit = false;
   while (!quit) {
-    // Read test descriptor to collect the current test phase.
-    if (!ReadTestDesc()) {
-      return 3;
-    }
     // Wait for a little while...
     if (ManualControl()) {
       // Await keypress
-      std::cout << "Press (D)isconnect, (R)esume, (S)uspend, X to reset\n"
+      std::cout << "Press (D)isconnect, (R)esume, (S)uspend, read (T)est descriptor, X to reset\n"
                    "Press Q to quit\n"
                 << std::endl;
       int ch = getchar();
@@ -424,6 +566,12 @@ bool USBDevice::RunTest() {
         case 'S':
           Suspend();
           break;
+        case 'T':
+          // Read test descriptor to collect the current test phase.
+          if (!ReadTestDesc()) {
+            return false;
+          }
+          break;
         case 'X':
           Reset();
           break;
@@ -431,6 +579,10 @@ bool USBDevice::RunTest() {
           break;
       }
     } else {
+      // Read test descriptor to collect the current test phase.
+      if (!ReadTestDesc()) {
+        return false;
+      }
       // Wait a little and then Suspend the device.
       // The device will respond to the absence of traffic (including SOF) by
       // entering a suspend state; for those test phases in which the Suspended
@@ -489,13 +641,25 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  if (!dev.Init()) {
+  // Initialize libusb
+  int rc = libusb_init_context(&ctx, NULL, 0);
+  if (rc < 0) {
+  	std::cerr << "Error initializing libusb: " << libusb_error_name(rc)
+		          << std::endl;
+    return 3;
+  }
+
+  if (!dev.Open()) {
     return 2;
   }
 
   bool passed = dev.RunTest();
 
   std::cout << "Test " << (passed ? "passed" : "failed") << std::endl;
+
+  dev.Close();
+
+  libusb_exit(ctx);
 
   return 0;
 }

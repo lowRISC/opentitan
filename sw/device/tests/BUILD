@@ -2439,8 +2439,8 @@ opentitan_functest(
 
 cc_library(
     name = "usbdev_suspend",
-    srcs = ["usbdev_suspend_test.c"],
-    hdrs = ["usbdev_suspend_test.h"],
+    srcs = ["usbdev_suspend.c"],
+    hdrs = ["usbdev_suspend.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2606,6 +2606,29 @@ opentitan_functest(
     name = "usbdev_deep_disconnect",
     srcs = [
         "usbdev_deep_disconnect.c",
+    ],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["skip_in_ci"],  # Requires DPI model
+    ),
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:usbdev_suspend",
+    ],
+)
+
+opentitan_functest(
+    name = "usbdev_suspend_full",
+    srcs = [
+        "usbdev_suspend_full.c",
     ],
     cw310 = cw310_params(
         timeout = "eternal",

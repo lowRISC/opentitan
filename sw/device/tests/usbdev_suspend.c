@@ -953,6 +953,10 @@ static status_t phase_start_resume(usbdev_suspend_ctx_t *ctx) {
              !ibex_timeout_check(&ctx->timeout)) {
         CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
       }
+while (true)
+{
+        CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
+}
 
       // If we're out of step with the DPI model/host, stop the test.
       TRY_CHECK(usbdev_control.device_state == kUsbTestutilsDeviceConfigured);

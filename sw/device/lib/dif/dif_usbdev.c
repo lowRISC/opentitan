@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/memory.h"
 
 #include "usbdev_regs.h"  // Generated.
 
@@ -929,5 +930,108 @@ dif_result_t dif_usbdev_set_phy_pins_state(
   }
   mmio_region_write32(usbdev->base_addr, USBDEV_PHY_PINS_DRIVE_REG_OFFSET,
                       reg_val);
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_buffer_raw_write(const dif_usbdev_t *usbdev, uint8_t id,
+                                         const uint8_t *src, size_t src_len) {
+  if (usbdev == NULL || src == NULL || misalignment32_of((uintptr_t)src) ||
+      src_len > USBDEV_BUFFER_ENTRY_SIZE_BYTES) {
+    return kDifBadArg;
+  }
+
+  // We're writing to the start of the buffer.
+  const uint32_t buffer_addr = get_buffer_addr(id, 0U);
+  volatile uint32_t *restrict wd =
+      &((volatile uint32_t *)
+            usbdev->base_addr.base)[buffer_addr / sizeof(uint32_t)];
+  volatile uint32_t *ewd = wd + 4 * (src_len >> 4);
+  const uint32_t *restrict ws = (uint32_t *)src;
+
+  // Transfer blocks of 4 x 32-bit words at a time.
+  while (wd < ewd) {
+    wd[0] = ws[0];
+    wd[1] = ws[1];
+    wd[2] = ws[2];
+    wd[3] = ws[3];
+    wd += 4;
+    ws += 4;
+  }
+  src_len &= 15u;
+
+  if (src_len) {
+    // Remaining whole words
+    ewd = wd + (src_len >> 2);
+    while (wd < ewd) {
+      *wd++ = *ws++;
+    }
+    src_len &= 3u;
+    if (src_len) {
+      // Remaining individual bytes
+      const uint8_t *restrict bs = (uint8_t *)ws;
+      uint32_t d = bs[0];
+      if (src_len > 1) {
+        d |= (bs[1] << 8);
+        if (src_len > 2) {
+          d |= (bs[2] << 16);
+        }
+      }
+      // Note: we can only perform full 32-bit writes to the packet buffer but
+      // any additional byte(s) will be ignored.
+      *wd = d;
+    }
+  }
+
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_buffer_raw_read(const dif_usbdev_t *usbdev, uint8_t id,
+                                        uint8_t *dst, size_t dst_len) {
+  if (usbdev == NULL || dst == NULL || misalignment32_of((uintptr_t)dst) ||
+      dst_len > USBDEV_BUFFER_ENTRY_SIZE_BYTES) {
+    return kDifBadArg;
+  }
+
+  // We're reading from the start of the packet buffer.
+  const uint32_t buffer_addr = get_buffer_addr(id, 0U);
+  volatile uint32_t *restrict ws =
+      &((volatile uint32_t *)
+            usbdev->base_addr.base)[buffer_addr / sizeof(uint32_t)];
+  uint32_t *restrict wd = (uint32_t *)dst;
+  const uint32_t *ewd = wd + 4 * (dst_len >> 4);
+
+  // Transfer blocks of 4 x 32-bit words at a time
+  while (wd < ewd) {
+    wd[0] = ws[0];
+    wd[1] = ws[1];
+    wd[2] = ws[2];
+    wd[3] = ws[3];
+    wd += 4;
+    ws += 4;
+  }
+  dst_len &= 15u;
+
+  if (dst_len) {
+    // Remaining whole words
+    ewd = wd + (dst_len >> 2);
+    while (wd < ewd) {
+      *wd++ = *ws++;
+    }
+    dst_len &= 3u;
+    if (dst_len) {
+      // Remaining individual bytes
+      // Note: we can only perform full 32-bit reads from the packet buffer.
+      uint8_t *restrict bd = (uint8_t *)wd;
+      uint32_t d = *ws;
+      bd[0] = (uint8_t)d;
+      if (dst_len > 1) {
+        bd[1] = (uint8_t)(d >> 8);
+        if (dst_len > 2) {
+          bd[2] = (uint8_t)(d >> 16);
+        }
+      }
+    }
+  }
+
   return kDifOk;
 }

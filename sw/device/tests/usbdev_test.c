@@ -37,12 +37,21 @@ static const uint8_t config_descriptors[] = {
     USB_CFG_DSCR_HEAD(
         USB_CFG_DSCR_LEN + 2 * (USB_INTERFACE_DSCR_LEN + 2 * USB_EP_DSCR_LEN),
         2),
+#if 0
     VEND_INTERFACE_DSCR(0, 2, 0x50, 1),
     USB_BULK_EP_DSCR(0, 1, 32, 0),
     USB_BULK_EP_DSCR(1, 1, 32, 4),
     VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
     USB_BULK_EP_DSCR(0, 2, 32, 0),
     USB_BULK_EP_DSCR(1, 2, 32, 4),
+#else
+    VEND_INTERFACE_DSCR(0, 2, 0x50, 1),
+    USB_EP_DSCR(0, 1U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+    USB_EP_DSCR(1, 1U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+    VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
+    USB_EP_DSCR(0, 2U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+    USB_EP_DSCR(1, 2U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+#endif
 };
 
 /**
@@ -137,6 +146,40 @@ bool test_main(void) {
   // command to form the host side because of character echo.
   while (usb_chars_recved_total < kExpectedUsbCharsRecved) {
     CHECK_STATUS_OK(usb_testutils_poll(&usbdev));
+
+#define USB_EVENT_REPORT LOG_INFO
+if (false) {
+    LOG_INFO("dev addr 0x%x", usbdev_control.new_dev);
+    dif_usbdev_link_state_t link_state;
+    CHECK_DIF_OK(dif_usbdev_status_get_link_state(usbdev.dev, &link_state));
+    switch (link_state) {
+      case kDifUsbdevLinkStateDisconnected:
+        USB_EVENT_REPORT("LinkState: Disconnected");
+        break;
+      case kDifUsbdevLinkStatePowered:
+        USB_EVENT_REPORT("LinkState: Powered");
+        break;
+      case kDifUsbdevLinkStatePoweredSuspended:
+        USB_EVENT_REPORT("LinkState: PoweredSuspended");
+        break;
+      case kDifUsbdevLinkStateActive:
+        USB_EVENT_REPORT("LinkState: Active");
+        break;
+      case kDifUsbdevLinkStateSuspended:
+        USB_EVENT_REPORT("LinkState: Suspended");
+        break;
+      case kDifUsbdevLinkStateActiveNoSof:
+        USB_EVENT_REPORT("LinkState: ActiveNoSof (Resuming no SOF)");
+        break;
+      case kDifUsbdevLinkStateResuming:
+        USB_EVENT_REPORT("LinkState: Resuming");
+        break;
+      default:
+        USB_EVENT_REPORT("LinkState: ***OTHER***");
+        break;
+    }
+}
+
   }
 
   base_printf("\r\n");

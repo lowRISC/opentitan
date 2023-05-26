@@ -23,10 +23,14 @@ static const uint8_t dev_dscr[] = {
     0x00,  // bDeviceProtocol
     64,    // bMaxPacketSize0
 
+#if 1
     0xd1,  // idVendor[0] 0x18d1 Google Inc.
     0x18,  // idVendor[1]
     0x3a,  // idProduct[0] lowRISC generic FS USB
     0x50,  // idProduct[1] (allocated by Google)
+#else
+1,2,3,4,
+#endif
 
     0,    // bcdDevice[0]
     0x1,  // bcdDevice[1]
@@ -211,8 +215,10 @@ USBUTILS_FUNCPT(0xdede, (wLength << 16) | len);
                                                       kDifToggleDisabled));
         // send zero length packet for status phase
         CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+        return kUsbTestutilsCtStatIn;
       }
-      return kUsbTestutilsCtStatIn;
+      // We must return a Request Error (STALL in response to Status stage)
+      return kUsbTestutilsCtError;  // unknown
 
     case kUsbSetupReqGetStatus:
       len = 2;

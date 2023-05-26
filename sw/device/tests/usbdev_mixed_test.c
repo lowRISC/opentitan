@@ -225,7 +225,7 @@ bool test_main(void) {
     uint8_t ep_in = (uint8_t)(s + 1U);
     uint8_t ep_out = (uint8_t)(s + 1U);
 
-    // Isochronous endpoints require a bInterval value of 1.
+    // Isochronous and Interrupt endpoints require a bInterval value of 1.
     uint8_t bInterval = (xfr_type == kUsbTransferTypeIsochronous ||
                          xfr_type == kUsbTransferTypeInterrupt);
 
