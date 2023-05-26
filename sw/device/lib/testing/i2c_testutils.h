@@ -161,4 +161,13 @@ status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed);
+
+/**
+ * Busy spin until the i2c host get idle.
+ *
+ * @param i2c An I2C DIF handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t i2c_testutils_wait_host_idle(const dif_i2c_t *i2c);
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_I2C_TESTUTILS_H_
