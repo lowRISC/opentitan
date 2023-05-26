@@ -46,6 +46,9 @@ enum {
 
   // Register masks
   kDataStatus = 1 << 2,
+
+  // Other
+  kDefaultTimeoutMicros = 1000,
 };
 
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -55,7 +58,7 @@ static dif_i2c_t i2c;
 static status_t read_part_id(void) {
   uint8_t reg = kPartIdReg, data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data, kDefaultTimeoutMicros));
   TRY_CHECK(data == kPartId, "Unexpected value %x", data);
   return OK_STATUS();
 }
@@ -63,7 +66,7 @@ static status_t read_part_id(void) {
 static status_t read_manufacturer_id(void) {
   uint8_t reg = kManufacturerIdReg, data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data, kDefaultTimeoutMicros));
   TRY_CHECK(data == kManufacturerId, "Unexpected value %x", data);
   return OK_STATUS();
 }
@@ -76,7 +79,8 @@ static status_t write_read_measure_rate(void) {
   // Read back to confirm the write.
   uint8_t rate_data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &meas_reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &rate_data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &rate_data,
+                         kDefaultTimeoutMicros));
   TRY_CHECK(rate_data == kMeasRate, "Unexpected value %x", rate_data);
 
   return OK_STATUS();
@@ -90,7 +94,8 @@ static status_t take_measurement(void) {
   // Read back the ctrl register to confirm active measurement mode was set.
   uint8_t ctrl_data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &ctrl_reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &ctrl_data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &ctrl_data,
+                         kDefaultTimeoutMicros));
   TRY_CHECK(ctrl_data == kCtrlActive, "Unexpected value %x", ctrl_data);
 
   // Poll until the status register sets the "data status" bit.
@@ -98,14 +103,16 @@ static status_t take_measurement(void) {
   uint8_t status = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &status_reg, true));
   do {
-    TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(status), &status));
+    TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(status), &status,
+                           kDefaultTimeoutMicros));
   } while ((status & kDataStatus) == 0);
 
   // Read data in the order it's laid out in memory: 10, 11, 00, 01.
   uint8_t data_start = kAlsDataCh10Reg;
   uint8_t data[4] = {0x00, 0x00, 0x00, 0x00};
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &data_start, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(data), data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(data), data,
+                         kDefaultTimeoutMicros));
 
   // Check data isn't all 0x00 or all 0xFF, which are more likely to be errors
   // than real values.

@@ -42,6 +42,9 @@ enum {
   // Registers values
   kManufacturerId = 0xA1,
   kProductId = 0xA2,
+
+  // Others
+  kDefaultTimeoutMicros = 10000,
 };
 
 /**
@@ -112,7 +115,7 @@ void ottf_external_isr(void) {
 static status_t read_manufacture_id(void) {
   uint8_t reg = kManufacturerIdReg, data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data, kDefaultTimeoutMicros));
   TRY_CHECK(data == kManufacturerId, "Unexpected value %x", data);
   return OK_STATUS();
 }
@@ -120,7 +123,7 @@ static status_t read_manufacture_id(void) {
 static status_t read_product_id(void) {
   uint8_t reg = kProductIdReg, data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data, kDefaultTimeoutMicros));
   TRY_CHECK(data == kProductId, "Unexpected value %x", data);
   return OK_STATUS();
 }
@@ -190,12 +193,14 @@ static status_t tx_stretch(void) {
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(write_buffer), write_buffer,
                           false));
   // The transmission may take a long time due to the clock stretching.
-  busy_spin_micros((kTimeoutMillis * kTxSize) * 1000);
+  const size_t timeout = (kTimeoutMillis * kTxSize) * 1000;
+  busy_spin_micros(timeout);
 
   uint8_t reg = kCache63BitsReg;
   uint8_t read_data[kTxSize] = {0};
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(reg), &reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), read_data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), read_data,
+                         timeout));
   TRY_CHECK_ARRAYS_EQ(read_data, rnd_data, sizeof(read_data));
 
   // Reset the delay to disable clock stretching.

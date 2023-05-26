@@ -41,6 +41,9 @@ enum {
   // Registers values
   kDeviceId = 0xE5,
   kMeasure = 0x08,
+
+  // Other
+  kDefaultTimeoutMicros = 5000,
 };
 
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -50,7 +53,7 @@ static dif_i2c_t i2c;
 static status_t read_device_id(void) {
   uint8_t reg = kDeviceIdReg, data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data, kDefaultTimeoutMicros));
   TRY_CHECK(data == kDeviceId, "Unexpected value %x", data);
   return OK_STATUS();
 }
@@ -66,7 +69,8 @@ static status_t read_write_thresh_tap(void) {
   // Read the value back to confirm the write.
   uint8_t read_data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &read_data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &read_data,
+                         kDefaultTimeoutMicros));
   TRY_CHECK(read_data == 0xAB, "Unexpected value %x", read_data);
 
   return OK_STATUS();
@@ -82,7 +86,8 @@ static status_t take_measurement(void) {
   uint8_t data_x_reg = kDataX0Reg;
   uint8_t read_data[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &data_x_reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), read_data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), read_data,
+                         kDefaultTimeoutMicros));
 
   // Check the registers didn't all read as 0x00, which could be legitimate
   // measurements, but are more likely to show a read failure.
