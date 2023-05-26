@@ -292,3 +292,11 @@ status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed) {
 
   return OK_STATUS();
 }
+
+status_t i2c_testutils_wait_host_idle(const dif_i2c_t *i2c) {
+  dif_i2c_status_t status;
+  do {
+    TRY(dif_i2c_get_status(i2c, &status));
+  } while (!status.host_idle);
+  return OK_STATUS();
+}
