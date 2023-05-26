@@ -141,8 +141,8 @@ const dif_pinmux_index_t kPinmuxTestutilsGpioMioOutPins[kDifGpioNumPins] = {
 
 uint32_t pinmux_testutils_get_testable_gpios_mask(void) {
   if (kDeviceType == kDeviceFpgaCw310) {
-    // Only IOA2 to IOA8 are available for use as GPIOs.
-    return 0x1fc;
+    // Only IOR6, IOR7, and IOR10 to IOR13 are available for use as GPIOs.
+    return 0xfc000000;
   } else {
     return 0xffffffff;
   }
