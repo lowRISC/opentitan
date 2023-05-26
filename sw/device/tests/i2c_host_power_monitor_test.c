@@ -36,9 +36,13 @@ enum {
   kVSensenAvgReg = 0x13,
   kVPowerNReg = 0x17,
   kOcLimitNReg = 0x30,
+
   // Registers values
   kManufacturerId = 0x54,
   kProductId = 0x7b,
+
+  // Other
+  kDefaultTimeoutMicros = 5000,
 };
 
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -48,7 +52,7 @@ static dif_i2c_t i2c;
 static status_t read_manufacture_id(void) {
   uint8_t reg = kManufacturerIdReg, data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data, kDefaultTimeoutMicros));
   TRY_CHECK(data == kManufacturerId, "Unexpected value %x", data);
   return OK_STATUS();
 }
@@ -56,7 +60,7 @@ static status_t read_manufacture_id(void) {
 static status_t read_product_id(void) {
   uint8_t reg = kProductIdReg, data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data, kDefaultTimeoutMicros));
   TRY_CHECK(data == kProductId, "Unexpected value %x", data);
   return OK_STATUS();
 }
@@ -72,8 +76,10 @@ static status_t read_write_1byte(void) {
   // Check the write worked.
   read_data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(reg), &reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), &read_data));
-  TRY_CHECK(read_data == 0x01, "Unexpected value %x", read_data);
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), &read_data,
+                         kDefaultTimeoutMicros));
+  TRY_CHECK(read_data == 0x01, "Unexpected value %x", read_data,
+            kDefaultTimeoutMicros);
 
   // Write config=0.
   write_data[1] = 0x00;
@@ -83,7 +89,8 @@ static status_t read_write_1byte(void) {
   // Check the write worked.
   read_data = 0x01;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(reg), &reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), &read_data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), &read_data,
+                         kDefaultTimeoutMicros));
   TRY_CHECK(read_data == 0x00, "Unexpected value %x", read_data);
 
   return OK_STATUS();
@@ -99,7 +106,8 @@ static status_t read_write_2bytes(void) {
 
   // Check the new value.
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(reg), &reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), read_data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), read_data,
+                         kDefaultTimeoutMicros));
   TRY_CHECK(read_data[1] == 0xFE && read_data[0] == 0xCA,
             "Unexpected value %02x%02x", read_data[1], read_data[0]);
 
@@ -125,7 +133,8 @@ static status_t read_write_block(void) {
 
   // Check the new value.
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(reg), &reg, true));
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), read_data));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(read_data), read_data,
+                         kDefaultTimeoutMicros));
   TRY_CHECK_ARRAYS_EQ(read_data, rnd_data, sizeof(read_data));
 
   return OK_STATUS();

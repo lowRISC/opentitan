@@ -133,11 +133,28 @@ status_t i2c_testutils_fifo_empty(const dif_i2c_t *i2c) {
 }
 
 status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
-                            uint8_t byte_count, uint8_t *data) {
-  TRY(i2c_testutils_issue_read(i2c, addr, byte_count));
+                            uint8_t byte_count, uint8_t *data, size_t timeout) {
+  ibex_timeout_t timer = ibex_timeout_init(timeout);
+  bool nak = false;
+
+  // Make sure to start from a clean state.
+  TRY(dif_i2c_irq_acknowledge(i2c, kDifI2cIrqNak));
+  TRY(dif_i2c_reset_rx_fifo(i2c));
+  // Loop until we get an ACK from the device or a timeout.
+  do {
+    TRY(i2c_testutils_issue_read(i2c, addr, byte_count));
+    TRY(i2c_testutils_wait_host_idle(i2c));
+
+    TRY(dif_i2c_irq_is_pending(i2c, kDifI2cIrqNak, &nak));
+    if (nak) {
+      TRY(dif_i2c_irq_acknowledge(i2c, kDifI2cIrqNak));
+      TRY(dif_i2c_reset_rx_fifo(i2c));
+    } else if (ibex_timeout_check(&timer)) {
+      return DEADLINE_EXCEEDED();
+    }
+  } while (nak);
 
   while (byte_count-- != 0) {
-    IBEX_TRY_SPIN_FOR(TRY(i2c_testutils_fifo_empty(i2c)) == false, 5000);
     TRY(dif_i2c_read_byte(i2c, data++));
   }
 
