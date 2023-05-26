@@ -30,69 +30,72 @@ set_property -dict { PACKAGE_PIN  E18  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [ge
 
 #set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets IO_SDCK_IBUF]; # SDCK clock to be ignored
 
+## For the MIOs, peripheral assignments for the default test configuration are
+## noted in comments. However, not all of those functions are realizable on the
+## FPGA design.
 
 ## IOA bank
-set_property -dict { PACKAGE_PIN B10 IOSTANDARD LVCMOS33 } [get_ports { IOA0 }]; # J5.17 USERIOB-17
-set_property -dict { PACKAGE_PIN A10 IOSTANDARD LVCMOS33 } [get_ports { IOA1 }]; # J5.19 USERIOB-19
+set_property -dict { PACKAGE_PIN B10 IOSTANDARD LVCMOS33 } [get_ports { IOA0 }]; # J5.17 USERIOB-17, UART RX
+set_property -dict { PACKAGE_PIN A10 IOSTANDARD LVCMOS33 } [get_ports { IOA1 }]; # J5.19 USERIOB-19, UART TX
 set_property -dict { PACKAGE_PIN B11 IOSTANDARD LVCMOS33 } [get_ports { IOA2 }]; # J5.21 USERIOB-21
 set_property -dict { PACKAGE_PIN B12 IOSTANDARD LVCMOS33 } [get_ports { IOA3 }]; # J5.23 USERIOB-23
-set_property -dict { PACKAGE_PIN A12 IOSTANDARD LVCMOS33 } [get_ports { IOA4 }]; # J5.25 USERIOB-25
-set_property -dict { PACKAGE_PIN A13 IOSTANDARD LVCMOS33 } [get_ports { IOA5 }]; # J5.27 USERIOB-27
-set_property -dict { PACKAGE_PIN C14 IOSTANDARD LVCMOS33 } [get_ports { IOA6 }]; # J5.29 USERIOB-29
-set_property -dict { PACKAGE_PIN A14 IOSTANDARD LVCMOS33 } [get_ports { IOA7 }]; # J5.31 USERIOB-31
-set_property -dict { PACKAGE_PIN B14 IOSTANDARD LVCMOS33 } [get_ports { IOA8 }]; # J5.33 USERIOB-33
+set_property -dict { PACKAGE_PIN A12 IOSTANDARD LVCMOS33 } [get_ports { IOA4 }]; # J5.25 USERIOB-25, UART RX
+set_property -dict { PACKAGE_PIN A13 IOSTANDARD LVCMOS33 } [get_ports { IOA5 }]; # J5.27 USERIOB-27, UART TX
+set_property -dict { PACKAGE_PIN C14 IOSTANDARD LVCMOS33 } [get_ports { IOA6 }]; # J5.29 USERIOB-29, OPEN-DRAIN GPIO
+set_property -dict { PACKAGE_PIN A14 IOSTANDARD LVCMOS33 } [get_ports { IOA7 }]; # J5.31 USERIOB-31, I2C TARGET SDA, SPI TPM CSB
+set_property -dict { PACKAGE_PIN B14 IOSTANDARD LVCMOS33 } [get_ports { IOA8 }]; # J5.33 USERIOB-33, I2C TARGET SCL
 
 ## IOB bank
 # All pins except IOB7, IOB8, IOB11, and IOB12 are on the USERIOA header.
 # Those four could not be fit onto the USERIOA header, so they have been routed to PMOD2 instead.
-set_property -dict { PACKAGE_PIN K15 IOSTANDARD LVCMOS33 }  [get_ports { IOB0  }]; # J4.1 USERIOA-1
-set_property -dict { PACKAGE_PIN J15 IOSTANDARD LVCMOS33 }  [get_ports { IOB1  }]; # J4.3 USERIOA-3
-set_property -dict { PACKAGE_PIN K16 IOSTANDARD LVCMOS33 }  [get_ports { IOB2  }]; # J4.5 USERIOA-5
-set_property -dict { PACKAGE_PIN J16 IOSTANDARD LVCMOS33 }  [get_ports { IOB3  }]; # J4.7 USERIOA-7
-set_property -dict { PACKAGE_PIN H16 IOSTANDARD LVCMOS33 }  [get_ports { IOB4  }]; # J4.9 USERIOA-9
-set_property -dict { PACKAGE_PIN H17 IOSTANDARD LVCMOS33 }  [get_ports { IOB5  }]; # J4.11 USERIOA-11
+set_property -dict { PACKAGE_PIN K15 IOSTANDARD LVCMOS33 }  [get_ports { IOB0  }]; # J4.1 USERIOA-1, SPI HOST CSB
+set_property -dict { PACKAGE_PIN J15 IOSTANDARD LVCMOS33 }  [get_ports { IOB1  }]; # J4.3 USERIOA-3, SPI HOST IO0
+set_property -dict { PACKAGE_PIN K16 IOSTANDARD LVCMOS33 }  [get_ports { IOB2  }]; # J4.5 USERIOA-5, SPI HOST IO1
+set_property -dict { PACKAGE_PIN J16 IOSTANDARD LVCMOS33 }  [get_ports { IOB3  }]; # J4.7 USERIOA-7, SPI HOST SCK
+set_property -dict { PACKAGE_PIN H16 IOSTANDARD LVCMOS33 }  [get_ports { IOB4  }]; # J4.9 USERIOA-9, UART RX
+set_property -dict { PACKAGE_PIN H17 IOSTANDARD LVCMOS33 }  [get_ports { IOB5  }]; # J4.11 USERIOA-11, UART TX
 set_property -dict { PACKAGE_PIN G16 IOSTANDARD LVCMOS33 }  [get_ports { IOB6  }]; # J4.13 USERIOA-13
 set_property -dict { PACKAGE_PIN R25 IOSTANDARD LVCMOS33 }  [get_ports { IOB7  }]; # PMOD2_IO5
 set_property -dict { PACKAGE_PIN P24 IOSTANDARD LVCMOS33 }  [get_ports { IOB8  }]; # PMOD2_IO6
-set_property -dict { PACKAGE_PIN K20 IOSTANDARD LVCMOS33 }  [get_ports { IOB9  }]; # J4.15 USERIOA-15
-set_property -dict { PACKAGE_PIN E16 IOSTANDARD LVCMOS33 }  [get_ports { IOB10 }]; # J4.17 USERIOA-17
-set_property -dict { PACKAGE_PIN P23 IOSTANDARD LVCMOS33 }  [get_ports { IOB11 }]; # PMOD2_IO7
-set_property -dict { PACKAGE_PIN T23 IOSTANDARD LVCMOS33 }  [get_ports { IOB12 }]; # PMOD2_IO8
+set_property -dict { PACKAGE_PIN K20 IOSTANDARD LVCMOS33 }  [get_ports { IOB9  }]; # J4.15 USERIOA-15, I2C HOST SDA
+set_property -dict { PACKAGE_PIN E16 IOSTANDARD LVCMOS33 }  [get_ports { IOB10 }]; # J4.17 USERIOA-17, I2C HOST SCL
+set_property -dict { PACKAGE_PIN P23 IOSTANDARD LVCMOS33 }  [get_ports { IOB11 }]; # PMOD2_IO7, I2C SCL
+set_property -dict { PACKAGE_PIN T23 IOSTANDARD LVCMOS33 }  [get_ports { IOB12 }]; # PMOD2_IO8, I2C SDA
 
 ## IOC bank
 # Most pins are on USERIO* headers, but IOC7 is used for VBUS detection for USB.
 # In addition, IOC9 is placed on PMOD2, as it didn't make the cut for the USERIO headers.
-set_property -dict { PACKAGE_PIN E10 IOSTANDARD LVCMOS33 }  [get_ports { IOC0  }]; # J5.14 USERIOB-14
-set_property -dict { PACKAGE_PIN A9  IOSTANDARD LVCMOS33 }  [get_ports { IOC1  }]; # J5.15 USERIOB-15
-set_property -dict { PACKAGE_PIN D8  IOSTANDARD LVCMOS33 }  [get_ports { IOC2  }]; # J5.16 USERIOB-16
-set_property -dict { PACKAGE_PIN G15 IOSTANDARD LVCMOS33 }  [get_ports { IOC3  }]; # J4.12 USERIOA-12
-set_property -dict { PACKAGE_PIN F15 IOSTANDARD LVCMOS33 }  [get_ports { IOC4  }]; # J4.14 USERIOA-14
-set_property -dict { PACKAGE_PIN D15 IOSTANDARD LVCMOS33 }  [get_ports { IOC5  }]; # J4.16 USERIOA-16
-set_property -dict { PACKAGE_PIN D16 IOSTANDARD LVCMOS33 }  [get_ports { IOC6  }]; # J4.18 USERIOA-18
+set_property -dict { PACKAGE_PIN E10 IOSTANDARD LVCMOS33 }  [get_ports { IOC0  }]; # J5.14 USERIOB-14, SW STRAP 0
+set_property -dict { PACKAGE_PIN A9  IOSTANDARD LVCMOS33 }  [get_ports { IOC1  }]; # J5.15 USERIOB-15, SW STRAP 1
+set_property -dict { PACKAGE_PIN D8  IOSTANDARD LVCMOS33 }  [get_ports { IOC2  }]; # J5.16 USERIOB-16, SW STRAP 2
+set_property -dict { PACKAGE_PIN G15 IOSTANDARD LVCMOS33 }  [get_ports { IOC3  }]; # J4.12 USERIOA-12, UART RX (CONSOLE), DFT STRAP 0
+set_property -dict { PACKAGE_PIN F15 IOSTANDARD LVCMOS33 }  [get_ports { IOC4  }]; # J4.14 USERIOA-14, UART TX (CONSOLE), DFT STRAP 1
+set_property -dict { PACKAGE_PIN D15 IOSTANDARD LVCMOS33 }  [get_ports { IOC5  }]; # J4.16 USERIOA-16, TAP STRAP 1
+set_property -dict { PACKAGE_PIN D16 IOSTANDARD LVCMOS33 }  [get_ports { IOC6  }]; # J4.18 USERIOA-18, PWM, EXT_CLK
 set_property -dict { PACKAGE_PIN P18 IOSTANDARD LVCMOS33 }  [get_ports { IOC7  }]; # USRUSB_VBUS_DETECT
-set_property -dict { PACKAGE_PIN D9  IOSTANDARD LVCMOS33 }  [get_ports { IOC8  }]; # J5.18 USERIOB-18
+set_property -dict { PACKAGE_PIN D9  IOSTANDARD LVCMOS33 }  [get_ports { IOC8  }]; # J5.18 USERIOB-18, TAP STRAP 0
 set_property -dict { PACKAGE_PIN N19 IOSTANDARD LVCMOS33 }  [get_ports { IOC9  }]; # PMOD2_IO1 (GPIO)
-set_property -dict { PACKAGE_PIN F19 IOSTANDARD LVCMOS33 }  [get_ports { IOC10 }]; # J4.36 USERIOA-36
-set_property -dict { PACKAGE_PIN G20 IOSTANDARD LVCMOS33 }  [get_ports { IOC11 }]; # J4.38 USERIOA-38
-set_property -dict { PACKAGE_PIN B19 IOSTANDARD LVCMOS33 }  [get_ports { IOC12 }]; # J4.40 USERIOA-40
+set_property -dict { PACKAGE_PIN F19 IOSTANDARD LVCMOS33 }  [get_ports { IOC10 }]; # J4.36 USERIOA-36, OPEN-DRAIN ALERT
+set_property -dict { PACKAGE_PIN G20 IOSTANDARD LVCMOS33 }  [get_ports { IOC11 }]; # J4.38 USERIOA-38, OPEN-DRAIN ALERT
+set_property -dict { PACKAGE_PIN B19 IOSTANDARD LVCMOS33 }  [get_ports { IOC12 }]; # J4.40 USERIOA-40, OPEN-DRAIN ALERT
 
 
 
 ## IOR bank
-set_property -dict { PACKAGE_PIN  E20  IOSTANDARD LVCMOS33 } [get_ports { IOR0  }]; # J4.24 USERIOA-24
-set_property -dict { PACKAGE_PIN  C18  IOSTANDARD LVCMOS33 } [get_ports { IOR1  }]; # J4.26 USERIOA-26
-set_property -dict { PACKAGE_PIN  D20  IOSTANDARD LVCMOS33 } [get_ports { IOR2  }]; # J4.28 USERIOA-28
-set_property -dict { PACKAGE_PIN  F20  IOSTANDARD LVCMOS33 } [get_ports { IOR3  }]; # J4.21 USERIOA-21
-set_property -dict { PACKAGE_PIN  D19  IOSTANDARD LVCMOS33 } [get_ports { IOR4  }]; # J4.23 USERIOA-23
+set_property -dict { PACKAGE_PIN  E20  IOSTANDARD LVCMOS33 } [get_ports { IOR0  }]; # J4.24 USERIOA-24, JTAG TMS
+set_property -dict { PACKAGE_PIN  C18  IOSTANDARD LVCMOS33 } [get_ports { IOR1  }]; # J4.26 USERIOA-26, JTAG TDO
+set_property -dict { PACKAGE_PIN  D20  IOSTANDARD LVCMOS33 } [get_ports { IOR2  }]; # J4.28 USERIOA-28, JTAG TDI
+set_property -dict { PACKAGE_PIN  F20  IOSTANDARD LVCMOS33 } [get_ports { IOR3  }]; # J4.21 USERIOA-21, JTAG TCK
+set_property -dict { PACKAGE_PIN  D19  IOSTANDARD LVCMOS33 } [get_ports { IOR4  }]; # J4.23 USERIOA-23, JTAG TRSTn
 set_property -dict { PACKAGE_PIN  C19  IOSTANDARD LVCMOS33 } [get_ports { IOR5  }]; # J4.25 USERIOA-25
 set_property -dict { PACKAGE_PIN  K17  IOSTANDARD LVCMOS33 } [get_ports { IOR6  }]; # J4.27 USERIOA-27
 set_property -dict { PACKAGE_PIN  K18  IOSTANDARD LVCMOS33 } [get_ports { IOR7  }]; # J4.29 USERIOA-29
-set_property -dict { PACKAGE_PIN  G17  IOSTANDARD LVCMOS33 } [get_ports { IOR8  }]; # J4.31 USERIOA-31
-set_property -dict { PACKAGE_PIN  H18  IOSTANDARD LVCMOS33 } [get_ports { IOR9  }]; # J4.33 USERIOA-33
-set_property -dict { PACKAGE_PIN  F17  IOSTANDARD LVCMOS33 } [get_ports { IOR10 }]; # J4.35 USERIOA-35
-set_property -dict { PACKAGE_PIN  G19  IOSTANDARD LVCMOS33 } [get_ports { IOR11 }]; # J4.30 USERIOA-30
-set_property -dict { PACKAGE_PIN  F18  IOSTANDARD LVCMOS33 } [get_ports { IOR12 }]; # J4.37 USERIOA-37
-set_property -dict { PACKAGE_PIN  E15  IOSTANDARD LVCMOS33 } [get_ports { IOR13 }]; # J4.39 USERIOA-39
+set_property -dict { PACKAGE_PIN  G17  IOSTANDARD LVCMOS33 } [get_ports { IOR8  }]; # J4.31 USERIOA-31, DIO EC_RST_L
+set_property -dict { PACKAGE_PIN  H18  IOSTANDARD LVCMOS33 } [get_ports { IOR9  }]; # J4.33 USERIOA-33, DIO FLASH_WP_L
+set_property -dict { PACKAGE_PIN  F17  IOSTANDARD LVCMOS33 } [get_ports { IOR10 }]; # J4.35 USERIOA-35, OPEN-DRAIN GPIO
+set_property -dict { PACKAGE_PIN  G19  IOSTANDARD LVCMOS33 } [get_ports { IOR11 }]; # J4.30 USERIOA-30, OPEN-DRAIN GPIO
+set_property -dict { PACKAGE_PIN  F18  IOSTANDARD LVCMOS33 } [get_ports { IOR12 }]; # J4.37 USERIOA-37, OPEN-DRAIN GPIO
+set_property -dict { PACKAGE_PIN  E15  IOSTANDARD LVCMOS33 } [get_ports { IOR13 }]; # J4.39 USERIOA-39, OPEN-DRAIN GPIO
 
 ## SPI device
 set_property -dict { PACKAGE_PIN C12 IOSTANDARD LVCMOS33 } [get_ports { SPI_DEV_CLK  }]; # J5.1 USERIOB-1
