@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # shellcheck shell=bash
 
-function log() {
+log() {
     local msg="$1"
     local stack_offset=${2:-0}
     local timestamp
