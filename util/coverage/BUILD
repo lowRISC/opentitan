@@ -43,6 +43,7 @@ py_test(
         "coverage_test.py",
     ],
     deps = [
+        requirement("beautifulsoup4"),
         requirement("typer"),
     ],
 )

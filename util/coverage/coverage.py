@@ -15,8 +15,9 @@ from pathlib import Path, PurePath
 from typing import Dict
 
 import typer
-
-from common import CoverageParams, CoverageType, LogLevel, artifacts_relpath, measure_coverage
+from combined_report import combined_report
+from common import (CoverageParams, CoverageType, LogLevel, artifacts_relpath,
+                    measure_coverage)
 from functest_coverage import PARAMS as FUNCTEST_PARAMS
 from unittest_coverage import PARAMS as UNITTEST_PARAMS
 
@@ -26,6 +27,16 @@ PARAMS: Dict[str, CoverageParams] = {
     CoverageType.UNITTEST: UNITTEST_PARAMS,
     CoverageType.FUNCTEST: FUNCTEST_PARAMS,
 }
+
+
+@app.command()
+def combine_reports(out_root_dir: Path = Path("coverage"),
+                    log_level: LogLevel = LogLevel.NONE,
+                    print_text_report: bool = False) -> None:
+    """Generates a combined coverage report from functional and unit test coverage
+    reports.
+    """
+    return combined_report(out_root_dir, log_level, print_text_report)
 
 
 @app.command("artifacts-relpath")
