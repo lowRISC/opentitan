@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Keep sorted.
+beautifulsoup4==4.12.2
 hjson==3.1.0
 jsonschema==4.17.3; python_version >= "3.7"
 libcst==0.4.1

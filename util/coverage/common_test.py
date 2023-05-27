@@ -4,18 +4,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import unittest
 import subprocess
+import unittest
 from collections import namedtuple
-from pathlib import (
-    Path,
-    PurePath,
-)
-from unittest.mock import (
-    Mock,
-    mock_open,
-    patch,
-)
+from pathlib import Path, PurePath
+from unittest.mock import Mock, mock_open, patch
 
 import common
 
@@ -70,40 +63,21 @@ class TestCommon(unittest.TestCase):
         common.run("ls", "-la", "./")
         mock_run.assert_called_once_with(("ls", "-la", "./"), **self.RUN_ARGS)
 
-    # Use `autospec=True` to mock the unbounded `Path.mkdir` and `Path.__truediv__`
-    # methods so that we can assert the values of both the `self` and the `other`
-    # arguments of calls.
-    @patch("pathlib.Path.mkdir", autospec=True)
-    @patch("pathlib.Path.__truediv__", autospec=True)
     @patch("common.run")
-    def test_create_out_dir(self, mock_run, mock_path_div, mock_path_mkdir):
-        out_root_dir = Path("foo")
-        head_hash = ["123abc"]
+    def test_artifacts_relpath(self, mock_run):
+        head_hash = ["abcdef"]
         head_timestamp = ["123456"]
-        out_sub_dir = PurePath("unittest")
-        dir_1 = Path(f"{out_root_dir}/{head_timestamp[0]}-{head_hash[0]}/")
-        dir_2 = Path(f"{dir_1}/{out_sub_dir}/")
+        expected_relpath = PurePath(f"{head_timestamp[0]}-{head_hash[0]}")
 
         mock_run.side_effect = (head_hash, head_timestamp)
-        mock_path_div.side_effect = (dir_1, dir_2)
 
-        self.assertEqual(common.create_out_dir(out_root_dir, out_sub_dir),
-                         dir_2)
+        self.assertEqual(common.artifacts_relpath(), expected_relpath)
 
         calls_run = mock_run.call_args_list
         self.assertEqual(len(calls_run), 2)
         self.assertEqual(calls_run[0][0], ("git", "rev-parse", "HEAD"))
         self.assertEqual(calls_run[1][0],
                          ("git", "show", "-s", "--format=%ct", "HEAD"))
-
-        calls_path_div = mock_path_div.call_args_list
-        self.assertEqual(len(calls_path_div), 2)
-        self.assertEqual(calls_path_div[0][0], (out_root_dir, "123456-123abc"))
-        self.assertEqual(calls_path_div[1][0], (Path(dir_1), out_sub_dir))
-
-        mock_path_mkdir.assert_called_once_with(dir_2,
-                                                parents=True,
-                                                exist_ok=True)
 
     @patch("common.run")
     def test_instrument_device_libs(self, mock_run):
@@ -200,13 +174,15 @@ class TestCommon(unittest.TestCase):
     @patch("common.generate_report")
     @patch("common.get_test_log_dirs")
     @patch("common.instrument_device_libs")
+    # Use `autospec=True` to mock the unbounded `Path.mkdir` and `Path.__truediv__`
+    # methods so that we can assert the values of both the `self` and the `other`
+    # arguments of calls.
+    @patch("pathlib.Path.mkdir", autospec=True)
+    @patch("pathlib.Path.__truediv__", autospec=True)
     @patch("common.run")
-    @patch("common.create_out_dir")
-    def test_measure_coverage(self, mock_create_out_dir, mock_run,
+    def test_measure_coverage(self, mock_run, mock_path_div, mock_path_mkdir,
                               mock_instrument_device_libs,
                               mock_get_test_logs_dir, mock_generate_report):
-        out_root_dir = Path("foo")
-        out_sub_dir = PurePath("bar")
         out_dir = Path("{out_root_dir}/123456-cafecafe/{out_sub_dir}")
         device_libs_all = ["//foo:bar1", "//foo:bar2", "//foo:bar3"]
         device_libs = ["//for:bar2", "//foo:bar3"]
@@ -230,7 +206,6 @@ class TestCommon(unittest.TestCase):
         mock_test_targets_fn = Mock(side_effect=(test_targets, ))
         mock_test_log_dirs_fn = Mock(side_effect=(profile_files, ))
 
-        mock_create_out_dir.side_effect = (out_dir, )
         mock_run.side_effect = (
             device_libs_all,
             test_targets_all,
@@ -246,15 +221,16 @@ class TestCommon(unittest.TestCase):
             libs_fn=mock_libs_fn,
             log_level=common.LogLevel.NONE,
             objs_fn=mock_objs_fn,
-            out_root_dir=out_root_dir,
-            out_sub_dir=out_sub_dir,
+            out_dir=out_dir,
             print_text_report=print_text_report,
             report_title=report_title,
             test_log_dirs_fn=mock_test_log_dirs_fn,
             test_targets_fn=mock_test_targets_fn,
         )
 
-        mock_create_out_dir.assert_called_once_with(out_root_dir, out_sub_dir)
+        mock_path_mkdir.assert_called_once_with(out_dir,
+                                                parents=True,
+                                                exist_ok=True)
         calls_run = mock_run.call_args_list
         self.assertEqual(len(calls_run), 4)
         self.assertEqual(calls_run[0][0],
