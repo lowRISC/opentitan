@@ -3,17 +3,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from collections import namedtuple
-from enum import Enum
-from typing import (
-    Callable,
-    List,
-)
 import logging as log
 import os
+import subprocess
+from collections import namedtuple
+from enum import Enum
 from pathlib import Path, PurePath
 from pprint import pformat
-import subprocess
+from typing import Callable, List
 
 # Commands used by the coverage scripts.
 BAZEL: str = "./bazelisk.sh"
@@ -87,26 +84,6 @@ def run(*args) -> List[str]:
     log.debug(f"stdout: {res.stdout if res.stdout else '(empty)'}")
     log.debug(f"stderr: {res.stderr if res.stderr else '(empty)'}")
     return [line for line in res.stdout.splitlines() if line]
-
-
-def create_out_dir(out_root_dir: Path, out_sub_dir: PurePath) -> Path:
-    """Create the directory for coverage artifacts.
-
-    Coverage artifacts will be saved in `out_root_dir`/<HEAD_TIMESTAMP>-<HEAD_HASH>/`out_sub_dir`/.
-
-    Args:
-        out_root_dir: Root of the output directory.
-        out_sub_dir: Directory to create under <HEAD_TIMESTAMP>-<HEAD_HASH>.
-
-    Returns:
-        Path where to save the coverage artifacts.
-    """
-    [head_hash] = run("git", "rev-parse", "HEAD")
-    [head_timestamp] = run("git", "show", "-s", "--format=%ct", "HEAD")
-    # Put timestamp first to be able to sort chronologically.
-    out_dir = out_root_dir / f"{head_timestamp}-{head_hash}" / out_sub_dir
-    out_dir.mkdir(parents=True, exist_ok=True)
-    return out_dir
 
 
 def instrument_device_libs(device_libs: List[str], config: str) -> List[str]:
@@ -212,8 +189,7 @@ CoverageParams = namedtuple("CoverageParams", [
 ])
 
 
-def measure_coverage(*, log_level: LogLevel, out_root_dir: Path,
-                     out_sub_dir: PurePath, config: str,
+def measure_coverage(*, log_level: LogLevel, out_dir: Path, config: str,
                      libs_fn: Callable[[List[str]], List[str]],
                      objs_fn: Callable[[Path, List[str]], None],
                      test_targets_fn: Callable[[List[str]], List[str]],
@@ -224,8 +200,7 @@ def measure_coverage(*, log_level: LogLevel, out_root_dir: Path,
 
     Args:
         log_level: Log level.
-        out_root_dir: Root of the output directory.
-        out_sub_dir: Directory to create under <HEAD_TIMESTAMP>-<HEAD_HASH>.
+        out_dir: Coverage artifacts directory.
         config: Bazel configuration to use.
         libs_fn: A callable for modifying the set of device libraries if needed.
         objs_fn: A callable for modifying the set of object files if needed.
@@ -237,7 +212,7 @@ def measure_coverage(*, log_level: LogLevel, out_root_dir: Path,
     """
     if log_level != LogLevel.NONE:
         log.basicConfig(level=log.getLevelName(log_level.upper()))
-    out_dir = create_out_dir(out_root_dir, out_sub_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
     # Create a merged library to avoid potential issues due to inline functions or
     # duplicate definitions.
     merged_library = out_dir / "merged.so"
@@ -284,3 +259,15 @@ def measure_coverage(*, log_level: LogLevel, out_root_dir: Path,
     # Generate a report from the merged profile data and the merged library.
     generate_report(out_dir, merged_profile, merged_library, report_title,
                     print_text_report)
+
+
+def artifacts_relpath() -> PurePath:
+    """Relative path for coverage artifacts.
+
+    Returns:
+        "<HEAD_TIMESTAMP>-<HEAD_HASH>"
+    """
+    [head_hash] = run("git", "rev-parse", "HEAD")
+    [head_timestamp] = run("git", "show", "-s", "--format=%ct", "HEAD")
+    path = PurePath(f"{head_timestamp}-{head_hash}")
+    return path
