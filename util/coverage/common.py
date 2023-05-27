@@ -21,21 +21,22 @@ LLD_TARGET: str = "/tools/riscv/bin/riscv32-unknown-elf-ld"
 
 # Query for device libraries to be instrumented.
 DEVICE_LIBS_INC: List[str] = [
-    "//sw/device/silicon_creator/...",
     "//sw/device/lib/...",
+    "//sw/device/silicon_creator/...",
 ]
 DEVICE_LIBS_EXC: List[str] = [
-    "//sw/device/lib/dif/...",
-    "//sw/device/lib/testing/... ",
-    "//sw/device/lib/runtime/...",
-    "//sw/device/lib/crypto/...",
     "//sw/device/lib/arch/...",
-    "//sw/device/lib/ujson/...",
-    "//sw/device/lib/base:status",
     "//sw/device/lib/base:mmio_on_device_do_not_use_directly",
     "//sw/device/lib/base:mmio_on_host_do_not_use_directly",
-    "//sw/device/silicon_creator/rom_ext/...",
+    "//sw/device/lib/base:status",
+    "//sw/device/lib/crypto/...",
+    "//sw/device/lib/dif/...",
+    "//sw/device/lib/runtime/...",
+    "//sw/device/lib/testing/... ",
+    "//sw/device/lib/ujson/...",
+    "//sw/device/silicon_creator/manuf/...",
     "//sw/device/silicon_creator/rom/keys/real:real",
+    "//sw/device/silicon_creator/rom_ext/...",
 ]
 DEVICE_LIBS_QUERY: str = (
     f"kind('^cc_library rule$', ({' + '.join(DEVICE_LIBS_INC)}) "
