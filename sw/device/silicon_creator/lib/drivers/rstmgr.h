@@ -5,9 +5,12 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_RSTMGR_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_RSTMGR_H_
 
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdnoreturn.h>
+
+#include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -103,6 +106,26 @@ noreturn
 #endif
     void
     rstmgr_reset(void);
+
+/**
+ * Verifies that info collection is initialized properly.
+ *
+ * In order not to interfere with the operation of other software on the chip,
+ * this check is not enforced if `reasons` includes low power exit.
+ *
+ * @param reset_reasons Reset reasons.
+ */
+rom_error_t rstmgr_info_en_check(uint32_t reset_reasons);
+
+/**
+ * Bitfields for `OWNER_SW_CFG_ROM_RSTMGR_INFO_EN" OTP item.
+ *
+ * Defined here to be able to use in tests.
+ */
+#define RSTMGR_OTP_FIELD_ALERT_INFO_EN \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 0 }
+#define RSTMGR_OTP_FIELD_CPU_INFO_EN \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 1 }
 
 #ifdef __cplusplus
 }

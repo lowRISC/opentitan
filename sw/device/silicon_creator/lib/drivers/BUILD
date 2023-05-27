@@ -597,12 +597,14 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:multibits",
             "//sw/device/lib/runtime:hart",
             "//sw/device/silicon_creator/lib:error",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
+            "//sw/device/silicon_creator/lib/drivers:otp",
         ],
     ),
 )
