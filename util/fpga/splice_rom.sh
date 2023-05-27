@@ -20,7 +20,7 @@ set -e
 
 . util/build_consts.sh
 
-function usage() {
+usage() {
   cat << USAGE
 Utility script to load ROM contents into the FPGA bitstream.
 

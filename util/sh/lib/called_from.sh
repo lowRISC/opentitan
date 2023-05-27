@@ -5,7 +5,7 @@
 
 source util/sh/lib/log.sh
 
-function called_from() {
+called_from() {
     local file=${BASH_SOURCE[2]##*/}
     local line=${BASH_LINENO[1]}
     log "Called from: ${file}:${line}" 1

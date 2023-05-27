@@ -23,7 +23,7 @@ LINE_SEP="====================================================================="
 ################################################################################
 # Process cmd line args.
 ################################################################################
-function usage() {
+usage() {
   cat << USAGE
 Utility script to prepare a directory with all bazel dependencies needed to
 build project artifacts with bazel in an airgapped environment.
