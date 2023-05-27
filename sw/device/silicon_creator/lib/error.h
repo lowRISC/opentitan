@@ -42,6 +42,7 @@ enum module_ {
   kModuleBootData =     MODULE_CODE('B', 'D'),
   kModuleSpiDevice =    MODULE_CODE('S', 'P'),
   kModuleAst =          MODULE_CODE('A', 'S'),
+  kModuleRstmgr =       MODULE_CODE('R', 'S'),
   KModuleRnd =          MODULE_CODE('R', 'N'),
   // clang-format on
 };
@@ -136,6 +137,8 @@ enum module_ {
   X(kErrorSpiDevicePayloadOverflow,   ERROR_(1, kModuleSpiDevice, kInternal)), \
   \
   X(kErrorAstInitNotDone,             ERROR_(1, kModuleAst, kInternal)), \
+  \
+  X(kErrorRstmgrBadInit,              ERROR_(1, kModuleRstmgr, kInternal)), \
   \
   X(kErrorRndBadCrc32,                ERROR_(1, KModuleRnd, kInvalidArgument))
 // clang-format on
