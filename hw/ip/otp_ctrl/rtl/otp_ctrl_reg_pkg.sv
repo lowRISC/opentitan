@@ -122,6 +122,8 @@ package otp_ctrl_reg_pkg;
   parameter int OwnerSwCfgRomKeymgrRomExtMeasEnSize = 4;
   parameter int OwnerSwCfgManufStateOffset = 1384;
   parameter int OwnerSwCfgManufStateSize = 4;
+  parameter int OwnerSwCfgRomRstmgrInfoEnOffset = 1388;
+  parameter int OwnerSwCfgRomRstmgrInfoEnSize = 4;
   parameter int OwnerSwCfgDigestOffset = 1656;
   parameter int OwnerSwCfgDigestSize = 8;
   parameter int HwCfgOffset = 1664;

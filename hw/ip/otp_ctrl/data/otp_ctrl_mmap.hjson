@@ -324,6 +324,10 @@
                     name: "OWNER_SW_CFG_MANUF_STATE",
                     size: "4"
                 }
+                {
+                    name: "OWNER_SW_CFG_ROM_RSTMGR_INFO_EN",
+                    size: "4"
+                }
             ],
             desc: '''Software configuration partition for
             data that changes software behavior, specifically
