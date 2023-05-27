@@ -17,6 +17,7 @@
 #include "otp_ctrl_regs.h"
 #include "pinmux_regs.h"
 #include "pwrmgr_regs.h"
+#include "rstmgr_regs.h"
 #include "rv_core_ibex_regs.h"
 #include "sensor_ctrl_regs.h"
 #include "sram_ctrl_regs.h"
@@ -184,6 +185,26 @@ LABEL_FOR_TEST(kRomStartStoreT1ToBiteThold)
   // Enable the watchdog timer.
   li t1, (1 << AON_TIMER_WDOG_CTRL_ENABLE_BIT)
   sw t1, AON_TIMER_WDOG_CTRL_REG_OFFSET(t0)
+
+  // Configure rstmgr alert and cpu info collection.
+  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+  lw   t0, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_RSTMGR_INFO_EN_OFFSET(a0)
+  li   t1, HARDENED_BYTE_BOOL_TRUE
+  li   a0, TOP_EARLGREY_RSTMGR_AON_BASE_ADDR
+  // Enable alert info collection if enabled in OTP.
+  andi t2, t0, 0xff
+  bne  t2, t1, .L_skip_rstmgr_alert_info_en
+  li   t2, (1 << RSTMGR_ALERT_INFO_CTRL_EN_BIT)
+  sw   t2,  RSTMGR_ALERT_INFO_CTRL_REG_OFFSET(a0)
+.L_skip_rstmgr_alert_info_en:
+  // Enable cpu info collection if enabled in OTP.
+  srli t0, t0, 8
+  andi t2, t0, 0xff
+  bne  t2, t1, .L_skip_rstmgr_cpu_info_en
+  li   t2, (1 << RSTMGR_CPU_INFO_CTRL_EN_BIT)
+  sw   t2,  RSTMGR_ALERT_INFO_CTRL_REG_OFFSET(a0)
+.L_skip_rstmgr_cpu_info_en:
 
 LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // Clear all the machine-defined interrupts, `MEIE`, `MTIE`, and `MSIE` fields
