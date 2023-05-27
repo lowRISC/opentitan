@@ -341,6 +341,8 @@ static void rom_pre_boot_check(void) {
     HARDENED_TRAP();
   }
   HARDENED_CHECK_EQ(cpuctrl_csr, cpuctrl_otp);
+  // Check rstmgr alert and cpu info collection configuration.
+  SHUTDOWN_IF_ERROR(rstmgr_info_en_check(retention_sram_get()->reset_reasons));
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 5);
 
   sec_mmio_check_counters(/*expected_check_count=*/3);
