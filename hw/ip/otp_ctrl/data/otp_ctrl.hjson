@@ -814,6 +814,18 @@
       default: "4",
       local: "true"
     },
+    { name: "OwnerSwCfgRomRstmgrInfoEnOffset",
+      desc: "Offset of OWNER_SW_CFG_ROM_RSTMGR_INFO_EN",
+      type: "int",
+      default: "1388",
+      local: "true"
+    },
+    { name: "OwnerSwCfgRomRstmgrInfoEnSize",
+      desc: "Size of OWNER_SW_CFG_ROM_RSTMGR_INFO_EN",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "OwnerSwCfgDigestOffset",
       desc: "Offset of OWNER_SW_CFG_DIGEST",
       type: "int",
