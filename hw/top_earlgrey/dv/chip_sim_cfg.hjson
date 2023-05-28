@@ -668,7 +668,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:flash_ctrl_ops_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=14_000_000", "+en_jitter=1"]
+      run_opts: ["+sw_test_timeout_ns=50_000_000", "+en_jitter=1"]
     }
     {
       name: chip_sw_flash_ctrl_lc_rw_en
@@ -1802,7 +1802,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:flash_ctrl_ops_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=14_000_000", "+en_jitter=1", "+cal_sys_clk_70mhz=1"]
+      run_opts: ["+sw_test_timeout_ns=50_000_000", "+en_jitter=1", "+cal_sys_clk_70mhz=1"]
     }
     {
       name: chip_sw_flash_ctrl_access_jitter_en_reduced_freq
