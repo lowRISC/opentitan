@@ -22,8 +22,7 @@ extern char _manifest_entry_point[];
  * `entry_point`. The remaining fields will be updated in the binary by
  * `opentitantool` (overriding the implicitly specified initial value of zero).
  */
-OT_SECTION(".manifest")
-static manifest_t kManifest_ = {
+OT_USED OT_SECTION(".manifest") static manifest_t kManifest_ = {
     .code_start = (uint32_t)_manifest_code_start,
     .code_end = (uint32_t)_manifest_code_end,
     .entry_point = (uint32_t)_manifest_entry_point,
