@@ -439,6 +439,12 @@
   }
 
 /**
+ * An attribute used for static variables indicating that they should be
+ * retained in the object file, even if they are seemingly unreferenced.
+ */
+#define OT_USED __attribute__((used))
+
+/**
  *  This macro is used to align an offset to point to a 32b value.
  */
 #define OT_ALIGN_MEM(x) (uint32_t)(4 + (((uintptr_t)(x)-1) & ~3))
