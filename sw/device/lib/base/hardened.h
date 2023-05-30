@@ -242,7 +242,8 @@ inline uint32_t launder32(uint32_t val) {
   // The +r constraint tells the compiler that this is an "inout" parameter: it
   // means that not only does the black box depend on `val`, but it also mutates
   // it in an unspecified way.
-  asm volatile("" : "+r"(val));
+  // WIP: temporarily remove this, to make space in the ROM.
+  // asm volatile("" : "+r"(val));
   return val;
 }
 
