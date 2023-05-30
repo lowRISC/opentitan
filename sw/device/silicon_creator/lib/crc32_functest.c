@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
@@ -91,7 +92,7 @@ static rom_error_t crc32_add32_test(void) {
   const uint32_t kExpCrc = 0x9508ac14;
 
   crc32_add32(&ctx, 0xcafecafe);
-  crc32_finish(&ctx);
+  OT_DISCARD(crc32_finish(&ctx));
   crc32_add32(&ctx, 0x1badb002);
 
   CHECK(crc32_finish(&ctx) == kExpCrc);

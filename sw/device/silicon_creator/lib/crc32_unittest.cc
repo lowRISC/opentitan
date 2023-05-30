@@ -81,7 +81,7 @@ TEST_F(CrcTest, Crc32Add32) {
   constexpr uint32_t kExpCrc = 0x9508ac14;
 
   crc32_add32(&ctx, 0xcafecafe);
-  crc32_finish(&ctx);
+  OT_DISCARD(crc32_finish(&ctx));
   crc32_add32(&ctx, 0x1badb002);
 
   EXPECT_EQ(crc32_finish(&ctx), kExpCrc);

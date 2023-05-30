@@ -61,6 +61,7 @@ static_assert(
 // Convert the alert class to an index.
 // This is required because I expect to change the constant definitions in
 // alert_class_t to have reasonable hamming distances.
+OT_WARN_UNUSED_RESULT
 static size_t clsindex(alert_class_t cls) {
   switch (cls) {
     case kAlertClassA:
@@ -233,6 +234,7 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
  * This function must be inlined because it is called from `shutdown_finalize`.
  */
 OT_ALWAYS_INLINE
+OT_WARN_UNUSED_RESULT
 static uint32_t shutdown_redact_inline(rom_error_t reason,
                                        shutdown_error_redact_t severity) {
   uint32_t redacted = (uint32_t)reason;
@@ -266,6 +268,7 @@ uint32_t shutdown_redact(rom_error_t reason, shutdown_error_redact_t severity) {
  * This function must be inlined because it is called from `shutdown_finalize`.
  */
 OT_ALWAYS_INLINE
+OT_WARN_UNUSED_RESULT
 static shutdown_error_redact_t shutdown_redact_policy_inline(
     uint32_t raw_state) {
   switch (raw_state) {

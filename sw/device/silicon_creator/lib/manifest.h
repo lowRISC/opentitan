@@ -372,6 +372,7 @@ typedef struct manifest_ext_spx_signature {
  * @param manfiest A manifest.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 inline rom_error_t manifest_check(const manifest_t *manifest) {
   // Signed region must be inside the image.
   if (manifest->signed_region_end > manifest->length) {
@@ -408,6 +409,7 @@ inline rom_error_t manifest_check(const manifest_t *manifest) {
  * return digest_region Region of the image that should be included in the
  * digest computation.
  */
+OT_WARN_UNUSED_RESULT
 inline manifest_digest_region_t manifest_digest_region_get(
     const manifest_t *manifest) {
   enum {
@@ -426,6 +428,7 @@ inline manifest_digest_region_t manifest_digest_region_get(
  * @param manifest A manifest.
  * return Executable region of the image.
  */
+OT_WARN_UNUSED_RESULT
 inline epmp_region_t manifest_code_region_get(const manifest_t *manifest) {
   return (epmp_region_t){
       .start = (uintptr_t)manifest + manifest->code_start,
@@ -444,11 +447,14 @@ inline epmp_region_t manifest_code_region_get(const manifest_t *manifest) {
  * @param manfiest A manifest.
  * return Entry point address.
  */
+OT_WARN_UNUSED_RESULT
 inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
   return (uintptr_t)manifest + manifest->entry_point;
 }
 
 #define DEFINE_GETTER(index_, type_, name_, id_, _)                            \
+  OT_WARN_UNUSED_RESULT                                                        \
+                                                                               \
   inline rom_error_t manifest_ext_get_##name_(const manifest_t *manifest,      \
                                               const type_ **name_) {           \
     enum {                                                                     \

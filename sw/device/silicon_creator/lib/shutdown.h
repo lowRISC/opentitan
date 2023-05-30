@@ -42,6 +42,7 @@ extern "C" {
  * state and OTP configuration.
  * @return: Any error encountered during initialization.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t shutdown_init(lifecycle_state_t lc_state);
 
 /**
@@ -106,6 +107,7 @@ shutdown_error_redact_t shutdown_redact_policy(void);
  * @param severity: The redaction severity.
  * @return: The redacted error code.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t shutdown_redact(rom_error_t reason, shutdown_error_redact_t severity);
 
 /**

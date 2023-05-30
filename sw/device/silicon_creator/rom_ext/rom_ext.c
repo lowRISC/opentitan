@@ -180,7 +180,7 @@ static rom_error_t rom_ext_try_boot(void) {
 
 void rom_ext_main(void) {
   rom_ext_init();
-  rom_printf("Starting ROM_EXT\r\n");
+  OT_DISCARD(rom_printf("Starting ROM_EXT\r\n"));
   shutdown_finalize(rom_ext_try_boot());
 }
 
