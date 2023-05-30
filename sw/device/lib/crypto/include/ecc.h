@@ -129,6 +129,7 @@ typedef struct ecc_curve {
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
  * @return Result of the ECDSA key generation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
                                       crypto_blinded_key_t *private_key,
                                       ecc_public_key_t *public_key);
@@ -146,6 +147,7 @@ crypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
  * @param[out] signature Pointer to the signature struct with (r,s) values.
  * @return Result of the ECDSA signature generation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
                                     crypto_const_uint8_buf_t input_message,
                                     const ecc_curve_t *elliptic_curve,
@@ -166,6 +168,7 @@ crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
  * (Pass/Fail).
  * @return Result of the ECDSA verification operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_verify(const ecc_public_key_t *public_key,
                                       crypto_const_uint8_buf_t input_message,
                                       const ecc_signature_t *signature,
@@ -195,6 +198,7 @@ crypto_status_t otcrypto_ecdsa_verify(const ecc_public_key_t *public_key,
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
  * @return Result of the ECDH key generation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdh_keygen(const ecc_curve_t *elliptic_curve,
                                      crypto_blinded_key_t *private_key,
                                      ecc_public_key_t *public_key);
@@ -212,6 +216,7 @@ crypto_status_t otcrypto_ecdh_keygen(const ecc_curve_t *elliptic_curve,
  * @param[out] shared_secret Pointer to generated blinded shared key struct.
  * @return Result of ECDH shared secret generation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdh(const crypto_blinded_key_t *private_key,
                               const ecc_public_key_t *public_key,
                               const ecc_curve_t *elliptic_curve,
@@ -238,6 +243,7 @@ crypto_status_t otcrypto_ecdh(const crypto_blinded_key_t *private_key,
  * @param[out] public_key Pointer to the unblinded public key struct.
  * @return Result of the Ed25519 key generation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
                                         crypto_unblinded_key_t *public_key);
 
@@ -250,6 +256,7 @@ crypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
  * @param[out] signature Pointer to the EdDSA signature with (r,s) values.
  * @return Result of the EdDSA signature generation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
                                       crypto_const_uint8_buf_t input_message,
                                       eddsa_sign_mode_t sign_mode,
@@ -266,6 +273,7 @@ crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
  * (Pass/Fail).
  * @return Result of the EdDSA verification operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_verify(
     const crypto_unblinded_key_t *public_key,
     crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
@@ -292,6 +300,7 @@ crypto_status_t otcrypto_ed25519_verify(
  * @param[out] public_key Pointer to the unblinded public key struct.
  * @return Result of the X25519 key generation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_x25519_keygen(crypto_blinded_key_t *private_key,
                                        crypto_unblinded_key_t *public_key);
 
@@ -303,6 +312,7 @@ crypto_status_t otcrypto_x25519_keygen(crypto_blinded_key_t *private_key,
  * @param[out] shared_secret Pointer to shared secret key (u-coordinate).
  * @return Result of the X25519 operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
                                 const crypto_unblinded_key_t *public_key,
                                 crypto_blinded_key_t *shared_secret);
@@ -325,6 +335,7 @@ crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
  * @param config Private key configuration.
  * @return Result of asynchronous ECDSA keygen start operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_keygen_async_start(
     const ecc_curve_t *elliptic_curve, const crypto_key_config_t *config);
 
@@ -346,6 +357,7 @@ crypto_status_t otcrypto_ecdsa_keygen_async_start(
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
  * @return Result of asynchronous ECDSA keygen finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
     const ecc_curve_t *elliptic_curve, crypto_blinded_key_t *private_key,
     ecc_public_key_t *public_key);
@@ -363,6 +375,7 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
  * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @return Result of async ECDSA start operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_sign_async_start(
     const crypto_blinded_key_t *private_key,
     crypto_const_uint8_buf_t input_message, const ecc_curve_t *elliptic_curve);
@@ -382,6 +395,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_start(
  * @param[out] signature Pointer to the signature struct with (r,s) values.
  * @return Result of async ECDSA finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_sign_async_finalize(
     const ecc_curve_t *elliptic_curve, const ecc_signature_t *signature);
 
@@ -399,6 +413,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(
  * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @return Result of async ECDSA verify start function.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_verify_async_start(
     const ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
     const ecc_signature_t *signature, const ecc_curve_t *elliptic_curve);
@@ -421,6 +436,7 @@ crypto_status_t otcrypto_ecdsa_verify_async_start(
  * (Pass/Fail).
  * @return Result of async ECDSA verify finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_verify_async_finalize(
     const ecc_curve_t *elliptic_curve, const ecc_signature_t *signature,
     hardened_bool_t *verification_result);
@@ -443,6 +459,7 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
  * @param config Private key configuration.
  * @return Result of asynchronous ECDH keygen start operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdh_keygen_async_start(
     const ecc_curve_t *elliptic_curve, const crypto_key_config_t *config);
 
@@ -464,6 +481,7 @@ crypto_status_t otcrypto_ecdh_keygen_async_start(
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
  * @return Result of asynchronous ECDH keygen finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdh_keygen_async_finalize(
     const ecc_curve_t *elliptic_curve, crypto_blinded_key_t *private_key,
     ecc_public_key_t *public_key);
@@ -481,6 +499,7 @@ crypto_status_t otcrypto_ecdh_keygen_async_finalize(
  * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @return Result of async ECDH start operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdh_async_start(
     const crypto_blinded_key_t *private_key, const ecc_public_key_t *public_key,
     const ecc_curve_t *elliptic_curve);
@@ -501,6 +520,7 @@ crypto_status_t otcrypto_ecdh_async_start(
  * @param[out] shared_secret Pointer to generated blinded shared key struct.
  * @return Result of async ECDH finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdh_async_finalize(
     const ecc_curve_t *elliptic_curve, crypto_blinded_key_t *shared_secret);
 
@@ -515,6 +535,7 @@ crypto_status_t otcrypto_ecdh_async_finalize(
  * @param config Private key configuration.
  * @return Result of asynchronous ed25519 keygen start operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_keygen_async_start(
     const crypto_key_config_t *config);
 
@@ -533,6 +554,7 @@ crypto_status_t otcrypto_ed25519_keygen_async_start(
  * @param[out] public_key Pointer to the unblinded public key struct.
  * @return Result of asynchronous ed25519 keygen finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_keygen_async_finalize(
     crypto_blinded_key_t *private_key, crypto_unblinded_key_t *public_key);
 
@@ -549,6 +571,7 @@ crypto_status_t otcrypto_ed25519_keygen_async_finalize(
  * @param[out] signature Pointer to the EdDSA signature to get (r) value.
  * @return Result of async Ed25519 start operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_sign_async_start(
     const crypto_blinded_key_t *private_key,
     crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
@@ -564,6 +587,7 @@ crypto_status_t otcrypto_ed25519_sign_async_start(
  * @param[out] signature Pointer to the EdDSA signature to get (s) value.
  * @return Result of async Ed25519 finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_sign_async_finalize(
     const ecc_signature_t *signature);
 
@@ -579,6 +603,7 @@ crypto_status_t otcrypto_ed25519_sign_async_finalize(
  * @param signature Pointer to the signature to be verified.
  * @return Result of async Ed25519 verification start operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_verify_async_start(
     const crypto_unblinded_key_t *public_key,
     crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
@@ -596,6 +621,7 @@ crypto_status_t otcrypto_ed25519_verify_async_start(
  * (Pass/Fail).
  * @return Result of async Ed25519 verification finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_verify_async_finalize(
     hardened_bool_t *verification_result);
 
@@ -610,6 +636,7 @@ crypto_status_t otcrypto_ed25519_verify_async_finalize(
  * @param config Private key configuration.
  * @return Result of asynchronous X25519 keygen start operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_x25519_keygen_async_start(
     const crypto_key_config_t *config);
 
@@ -628,6 +655,7 @@ crypto_status_t otcrypto_x25519_keygen_async_start(
  * @param[out] public_key Pointer to the unblinded public key struct.
  * @return Result of asynchronous X25519 keygen finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_x25519_keygen_async_finalize(
     crypto_blinded_key_t *private_key, crypto_unblinded_key_t *public_key);
 
@@ -643,6 +671,7 @@ crypto_status_t otcrypto_x25519_keygen_async_finalize(
  * @param public_key Pointer to the public scalar from the sender.
  * @return Result of the async X25519 start operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_x25519_async_start(
     const crypto_blinded_key_t *private_key,
     const crypto_unblinded_key_t *public_key);
@@ -658,6 +687,7 @@ crypto_status_t otcrypto_x25519_async_start(
  * @param[out] shared_secret Pointer to shared secret key (u-coordinate).
  * @return Result of async X25519 finalize operation.
  */
+OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_x25519_async_finalize(
     crypto_blinded_key_t *shared_secret);
 
