@@ -85,6 +85,7 @@ void sec_mmio_next_stage_init(void) {
   HARDENED_CHECK_EQ(sec_mmio_ctx.check_count, 0);
 }
 
+OT_WARN_UNUSED_RESULT
 uint32_t sec_mmio_read32(uint32_t addr) {
   uint32_t value = abs_mmio_read32(addr);
   uint32_t masked_value = value ^ kSecMmioMaskVal;
