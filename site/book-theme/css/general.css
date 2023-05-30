@@ -75,7 +75,7 @@ h6:target::before {
     content: '';
     width: 100%;
     left: 0%;
-    margin-top: -1rem;
+    margin-top: -10px;
     height: var(--target-height);
     background-color: #d0966f4a;
     z-index: -10;
