@@ -55,10 +55,16 @@ ifeq ($(VERBOSE),1)
   toolflags      += -v
 endif
 
-ifeq ($(USE_BUFFER),1)
-  ENTROPY_BUFFER := --entropy-buffer ./util/topgen_entropy_buffer.txt
-  LC_BUFFER      := --entropy-buffer ./util/design/lc_entropy_buffer.txt
-  OTP_MMAP_BUFER := --entropy-buffer ./util/design/otp_mmap_entropy_buffer.txt
+
+# Entropy buffer files.
+TOPGEN_ENTROPY_BUFFER       := ${PRJ_DIR}/hw/top_earlgrey/data/autogen/entropy_buffer.txt
+LC_STATE_ENC_ENTROPY_BUFFER := ${PRJ_DIR}/hw/ip/lc_ctrl/data/lc_state_enc_entropy_buffer.txt
+OTP_MMAP_ENTROPY_BUFFER     := ${PRJ_DIR}/hw/ip/otp_ctrl/data/otp_mmap_entropy_buffer.txt
+# If the TOPGEN_USE_BUFFER envar is set, then we use get entropy from an entropy
+# buffer file to generate random netlist constants, rather then generating the
+# entropy on the fly from a seed (i.e., the `rnd_cnst_seed`).
+ifeq ($(TOPGEN_USE_BUFFER),1)
+	TOPGEN_USE_BUFFER_OPTS := --entropy-buffer $(TOPGEN_ENTROPY_BUFFER)
 endif
 
 dir_hjson = data
@@ -109,17 +115,28 @@ $(ips_reg): %_reg: | $(REG_OUTPUT_DV_DIR)
 	${PRJ_DIR}/util/regtool.py --sec-cm-testplan $(blk-hjson)
 	${PRJ_DIR}/util/regtool.py -s -t $(REG_OUTPUT_DV_DIR) $(blk-hjson)
 
+# Unsecure, entropy buffer file generation for use by `topgen.py`,
+# `gen-otp-mmap.py` and `gen-lc-state-enc.py` scripts.
+#
+# BEFORE FINAL TAPEOUT: replace this rule with one that generates secure entropy
+# buffer files in the same directory locations.
+.PHONY: entropy-buffer-files-unsecure
+entropy-buffer-files-unsecure:
+	${PRJ_DIR}/util/topgen/entropy_buffer_generator.py -n 20000 --seed 4881560218908238235 -o $(TOPGEN_ENTROPY_BUFFER) && \
+	${PRJ_DIR}/util/topgen/entropy_buffer_generator.py -n 20000 --seed 10167336684108184581 -o $(LC_STATE_ENC_ENTROPY_BUFFER) && \
+	${PRJ_DIR}/util/topgen/entropy_buffer_generator.py -n 20000 --seed 10556718629619452145 -o $(OTP_MMAP_ENTROPY_BUFFER)
+
 # Register generation for otp_ctrl also depends on running gen-otp-mmap.py
 .PHONY: otp-mmap
 $(filter otp_ctrl_reg,$(ips_reg)): otp-mmap
-otp-mmap:
-	cd ${PRJ_DIR} && ./util/design/gen-otp-mmap.py ${OTP_MMAP_BUFER}
+otp-mmap: entropy-buffer-files-unsecure
+	cd ${PRJ_DIR} && ./util/design/gen-otp-mmap.py --entropy-buffer ${OTP_MMAP_ENTROPY_BUFFER}
 
 # Register generation for lc_ctrl also depends on running gen-lc-state-enc.py
 .PHONY: lc-state-enc
 $(filter lc_ctrl_reg,$(ips_reg)): lc-state-enc
-lc-state-enc:
-	cd ${PRJ_DIR} && ./util/design/gen-lc-state-enc.py ${LC_BUFFER}
+lc-state-enc: entropy-buffer-files-unsecure
+	cd ${PRJ_DIR} && ./util/design/gen-lc-state-enc.py --entropy-buffer ${LC_STATE_ENC_ENTROPY_BUFFER}
 
 regs-header: $(ips_reg_header)
 
@@ -157,11 +174,11 @@ topgen_rust_pkg: topgen_rust
 
 top: $(tops_gen) $(tops_reg)
 $(tops_gen): %_gen:
-	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags} ${ENTROPY_BUFFER}
+	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags} ${TOPGEN_USE_BUFFER_OPTS}
 
 $(tops_reg): %_reg:
 	mkdir -p ${REG_OUTPUT_DV_DIR}/$*
-	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -r -o ${REG_OUTPUT_DV_DIR}/$* ${toolflags} ${ENTROPY_BUFFER}
+	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -r -o ${REG_OUTPUT_DV_DIR}/$* ${toolflags} ${TOPGEN_USE_BUFFER_OPTS}
 
 
 .PHONY: all
