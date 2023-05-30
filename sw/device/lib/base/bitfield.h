@@ -301,6 +301,7 @@ inline uint32_t bitfield_byteswap32(uint32_t bitfield) {
  * @param bitfield Value to be verified.
  * @return True if bitfield is power of two, otherwise false.
  */
+OT_WARN_UNUSED_RESULT
 inline bool bitfield_is_power_of_two32(uint32_t bitfield) {
   return bitfield != 0 && (bitfield & (bitfield - 1)) == 0;
 }

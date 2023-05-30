@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -42,6 +44,7 @@ extern "C" {
  * @param[out] rem_out An optional out-parameter for the remainder.
  * @return The quotient.
  */
+OT_WARN_UNUSED_RESULT
 uint64_t udiv64_slow(uint64_t a, uint64_t b, uint64_t *rem_out);
 
 #ifdef __cplusplus
