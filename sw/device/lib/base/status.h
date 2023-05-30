@@ -156,6 +156,7 @@ extern const uint32_t MODULE_ID;
  * @param arg The argument associated with the status.
  * @return `status_t`.
  */
+OT_WARN_UNUSED_RESULT
 status_t status_create(absl_status_t code, uint32_t mod_id, const char *file,
                        int32_t arg);
 
@@ -169,6 +170,7 @@ status_t status_create(absl_status_t code, uint32_t mod_id, const char *file,
  * @return True if the status represents and error, False if the status
  * represents Ok.
  */
+OT_WARN_UNUSED_RESULT
 bool status_extract(status_t s, const char **code, int32_t *arg, char *mod_id);
 
 /**
@@ -177,6 +179,7 @@ bool status_extract(status_t s, const char **code, int32_t *arg, char *mod_id);
  * @param s The status code.
  * @return True if the status represents Ok.
  */
+OT_WARN_UNUSED_RESULT
 OT_ALWAYS_INLINE bool status_ok(status_t s) { return s.value >= 0; }
 
 /**
@@ -185,6 +188,7 @@ OT_ALWAYS_INLINE bool status_ok(status_t s) { return s.value >= 0; }
  * @param s The status code.
  * @return `absl_status_t` contained within the status_t.
  */
+OT_WARN_UNUSED_RESULT
 OT_ALWAYS_INLINE absl_status_t status_err(status_t s) {
   return s.value < 0 ? (absl_status_t)bitfield_field32_read(
                            OT_UNSIGNED(s.value), STATUS_FIELD_CODE)

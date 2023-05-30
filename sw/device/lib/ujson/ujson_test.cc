@@ -234,7 +234,7 @@ TEST(UJson, DeerializeStatus) {
 
   // Parse an Ok value with an argument.
   EXPECT_TRUE(status_ok(ujson_deserialize_status_t(&uj, &val)));
-  status_extract(val, &code, &arg, mod_id);
+  OT_DISCARD(status_extract(val, &code, &arg, mod_id));
   EXPECT_EQ(status_err(val), kOk);
   EXPECT_EQ(arg, 1234);
 
@@ -242,7 +242,7 @@ TEST(UJson, DeerializeStatus) {
   // The module_id should get truncated to 3 characters.
   ss.Reset(R"json({"InvalidArgument": ["foobar", 77]})json");
   EXPECT_TRUE(status_ok(ujson_deserialize_status_t(&uj, &val)));
-  status_extract(val, &code, &arg, mod_id);
+  OT_DISCARD(status_extract(val, &code, &arg, mod_id));
   EXPECT_EQ(status_err(val), kInvalidArgument);
   EXPECT_EQ(std::string(mod_id), "FOO");
   EXPECT_EQ(arg, 77);

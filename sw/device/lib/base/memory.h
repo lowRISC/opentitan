@@ -53,6 +53,7 @@ extern "C" {
  * Computes how many bytes `addr` is ahead of the previous 32-bit word alignment
  * boundary.
  */
+OT_WARN_UNUSED_RESULT
 inline ptrdiff_t misalignment32_of(uintptr_t addr) {
   return addr % alignof(uint32_t);
 }
@@ -75,6 +76,7 @@ inline ptrdiff_t misalignment32_of(uintptr_t addr) {
  * @param ptr a word-aligned pointer pointed to at least four bytes of memory.
  * @return the word `ptr` points to.
  */
+OT_WARN_UNUSED_RESULT
 inline uint32_t read_32(const void *ptr) {
   // Both GCC and Clang optimize the code below into a single word-load on most
   // platforms. It is necessary and sufficient to indicate to the compiler that
@@ -107,6 +109,7 @@ inline uint32_t read_32(const void *ptr) {
  * @param ptr a word-aligned pointer pointed to at least four bytes of memory.
  * @return the word `ptr` points to.
  */
+OT_WARN_UNUSED_RESULT
 inline uint64_t read_64(const void *ptr) {
   // Both GCC and Clang optimize the code below into a single word-load on most
   // platforms. It is necessary and sufficient to indicate to the compiler that
