@@ -6,7 +6,6 @@ r"""Top Module Generator
 """
 import argparse
 import logging as log
-import random
 import shutil
 import sys
 import tempfile
@@ -1166,14 +1165,10 @@ def main():
             log.warning("Commandline override of rnd_cnst_seed with {}.".format(
                 args.rnd_cnst_seed))
             topcfg["rnd_cnst_seed"] = args.rnd_cnst_seed
-        # Otherwise, we either take it from the top_{topname}.hjson if present, or
-        # randomly generate a new seed if not.
-        else:
-            random.seed()
-            new_seed = random.getrandbits(64)
-            if topcfg.setdefault("rnd_cnst_seed", new_seed) == new_seed:
-                log.warning(
-                    "No rnd_cnst_seed specified, setting to {}.".format(new_seed))
+        # Otherwise we make sure a seed exists in the HJSON config file.
+        elif "rnd_cnst_seed" not in topcfg:
+            log.error('Seed "rnd_cnst_seed" not found in configuration HJSON.')
+            exit(1)
         strong_random.unsecure_generate_from_seed(
             ENTROPY_BUFFER_SIZE_BYTES,
             topcfg["rnd_cnst_seed"])
