@@ -77,6 +77,7 @@ typedef struct dif_flash_ctrl_device_info {
  * @return A `dif_flash_ctrl_device_info_t` representing the feature sizes for
  * various components of the flash.
  */
+OT_WARN_UNUSED_RESULT
 dif_flash_ctrl_device_info_t dif_flash_ctrl_get_device_info(void);
 
 /**

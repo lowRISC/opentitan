@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/math.h"
 
 #include "rv_timer_regs.h"  // Generated.
@@ -43,7 +44,7 @@ static ptrdiff_t reg_for_hart(uint32_t hart, ptrdiff_t reg_offset) {
 static uint64_t euclidean_gcd(uint64_t a, uint64_t b) {
   while (b != 0) {
     uint64_t old_b = b;
-    udiv64_slow(a, b, &b);
+    OT_DISCARD(udiv64_slow(a, b, &b));
     a = old_b;
   }
 
