@@ -127,6 +127,32 @@ rust_bindgen_library(
     ],
 )
 
+rust_bindgen_library(
+    name = "status",
+    bindgen_flags = [
+        "--allowlist-type=ot_status_create_record_t",
+        "--allowlist-type=ot_status_create_record_magic",
+        "--allowlist-type=status",
+        "--allowlist-type=status_t",
+        "--allowlist-type=absl_status_t",
+        "--allowlist-function=status_create",
+        "--allowlist-function=status_extract",
+        # status_err and status_ok are marked as always inline but are also
+        # declared as extern in status.c which means that will actually end up
+        # in the object file.
+        "--allowlist-function=status_err",
+        "--allowlist-function=status_ok",
+        "--generate-inline-functions",
+    ],
+    cc_lib = "//sw/device/lib/base:status",
+    header = "//sw/device/lib/base:status.h",
+    rustc_flags = [
+        "--allow=non_snake_case",
+        "--allow=non_upper_case_globals",
+        "--allow=non_camel_case_types",
+    ],
+)
+
 rust_library(
     name = "bindgen",
     srcs = ["lib.rs"],
@@ -137,5 +163,6 @@ rust_library(
         ":hardened",
         ":multibits",
         ":sram_program",
+        ":status",
     ],
 )
