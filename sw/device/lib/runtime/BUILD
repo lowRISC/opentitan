@@ -42,6 +42,7 @@ cc_library(
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:stdasm",
     ],

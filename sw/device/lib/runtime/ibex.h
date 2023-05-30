@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/stdasm.h"
 
@@ -73,6 +74,7 @@ typedef struct ibex_timeout {
  * Adapted from: The RISC-V Instruction Set Manual, Volume I: Unprivileged ISA
  * V20191213, pp. 61.
  */
+OT_WARN_UNUSED_RESULT
 inline uint64_t ibex_mcycle_read(void) {
   uint32_t cycle_low = 0;
   uint32_t cycle_high = 0;
@@ -99,6 +101,7 @@ inline uint64_t ibex_mcycle_read(void) {
  * https://ibex-core.readthedocs.io/en/latest/03_reference/
  * exception_interrupts.html#exceptions
  */
+OT_WARN_UNUSED_RESULT
 uint32_t ibex_mcause_read(void);
 
 /**
@@ -121,6 +124,7 @@ uint32_t ibex_mcause_read(void);
  *
  * - For all other exceptions, mtval is 0.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t ibex_mtval_read(void);
 
 /**
@@ -140,6 +144,7 @@ uint32_t ibex_mtval_read(void);
  *
  * @return The mepc register value.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t ibex_mepc_read(void);
 
 /**
@@ -167,6 +172,7 @@ void ibex_mepc_write(uint32_t mepc);
  * @param timeout_usec Timeout in microseconds.
  * @return The initialized timeout value.
  */
+OT_WARN_UNUSED_RESULT
 inline ibex_timeout_t ibex_timeout_init(uint32_t timeout_usec) {
   return (ibex_timeout_t){
       .cycles = udiv64_slow(kClockFreqCpuHz * timeout_usec, 1000000, NULL),
@@ -180,6 +186,7 @@ inline ibex_timeout_t ibex_timeout_init(uint32_t timeout_usec) {
  * @param timeout Holds the counter start value.
  * @return True if the timeout has expired and false otherwise.
  */
+OT_WARN_UNUSED_RESULT
 inline bool ibex_timeout_check(const ibex_timeout_t *timeout) {
   return ibex_mcycle_read() - timeout->start > timeout->cycles;
 }
@@ -191,6 +198,7 @@ inline bool ibex_timeout_check(const ibex_timeout_t *timeout) {
  * @param timeout Holds the counter start value..
  * @return Time elapsed in microseconds.
  */
+OT_WARN_UNUSED_RESULT
 inline uint64_t ibex_timeout_elapsed(const ibex_timeout_t *timeout) {
   return udiv64_slow((ibex_mcycle_read() - timeout->start) * 1000000,
                      kClockFreqCpuHz, NULL);
