@@ -36,6 +36,7 @@
         "+sw_test_timeout_ns=20000000",
         "+use_otp_image=OtpTypeCustom",
       ]
+      run_timeout_mins: 120
     }
     {
       name: rom_e2e_boot_policy_valid_a_good_b_good_test_unlocked0
