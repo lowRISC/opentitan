@@ -69,6 +69,7 @@ typedef enum bootstrap_state {
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_chip_erase(void) {
   flash_ctrl_bank_erase_perms_set(kHardenedBoolTrue);
   rom_error_t err_0 = flash_ctrl_data_erase(0, kFlashCtrlEraseTypeBank);
@@ -90,6 +91,7 @@ static rom_error_t bootstrap_chip_erase(void) {
  * @param addr Address that falls within the 4 KiB region being deleted.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_sector_erase(uint32_t addr) {
   static_assert(FLASH_CTRL_PARAM_BYTES_PER_PAGE == 2048,
                 "Page size must be 2 KiB");
@@ -138,6 +140,7 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
  * flash word.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
                                           uint8_t *data) {
   static_assert(__builtin_popcount(FLASH_CTRL_PARAM_BYTES_PER_WORD) == 1,
@@ -221,6 +224,7 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
  * @param state Bootstrap state.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_handle_erase(bootstrap_state_t *state) {
   HARDENED_CHECK_EQ(*state, kBootstrapStateErase);
 
@@ -259,6 +263,7 @@ static rom_error_t bootstrap_handle_erase(bootstrap_state_t *state) {
  * @param state Bootstrap state.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_handle_erase_verify(bootstrap_state_t *state) {
   HARDENED_CHECK_EQ(*state, kBootstrapStateEraseVerify);
 
@@ -279,6 +284,7 @@ static rom_error_t bootstrap_handle_erase_verify(bootstrap_state_t *state) {
  * @param state Bootstrap state.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
   static_assert(alignof(spi_device_cmd_t) >= sizeof(uint32_t) &&
                     offsetof(spi_device_cmd_t, payload) >= sizeof(uint32_t),

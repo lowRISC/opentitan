@@ -44,6 +44,7 @@ typedef struct boot_policy_manifests {
  * @return Manifests of ROM_EXTs in descending order according to their
  * security versions.
  */
+OT_WARN_UNUSED_RESULT
 boot_policy_manifests_t boot_policy_manifests_get(void);
 
 /**
@@ -57,6 +58,7 @@ boot_policy_manifests_t boot_policy_manifests_get(void);
  * @param boot_data Boot data.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t boot_policy_manifest_check(const manifest_t *manifest,
                                        const boot_data_t *boot_data);
 

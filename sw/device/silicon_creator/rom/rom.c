@@ -81,6 +81,7 @@ lifecycle_state_t lc_state = (lifecycle_state_t)0;
 boot_data_t boot_data = {0};
 
 OT_ALWAYS_INLINE
+OT_WARN_UNUSED_RESULT
 static rom_error_t rom_irq_error(void) {
   uint32_t mcause;
   CSR_READ(CSR_REG_MCAUSE, &mcause);
@@ -120,6 +121,7 @@ static void rom_bootstrap_message(void) {
 /**
  * Performs once-per-boot initialization of ROM modules and peripherals.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t rom_init(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomInit, 1);
   sec_mmio_init();
@@ -195,6 +197,7 @@ static rom_error_t rom_init(void) {
  * @param[out] flash_exec Value to write to the flash_ctrl EXEC register.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t rom_verify(const manifest_t *manifest,
                               uint32_t *flash_exec) {
   // Used for invalidating signatures if the security version of the manifest is
@@ -293,6 +296,7 @@ extern char _rom_ext_virtual_size[];
  * @param lma_addr Load address or physical address.
  * @return the computed virtual address.
  */
+OT_WARN_UNUSED_RESULT
 static inline uintptr_t rom_ext_vma_get(const manifest_t *manifest,
                                         uintptr_t lma_addr) {
   return (lma_addr - (uintptr_t)manifest +
@@ -359,6 +363,7 @@ static void rom_pre_boot_check(void) {
  * @param flash_exec Value to write to the flash_ctrl EXEC register.
  * @return rom_error_t Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 1);
   HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateReset));
@@ -443,6 +448,7 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
  *
  * @return Result of the last attempt.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t rom_try_boot(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 1);
 

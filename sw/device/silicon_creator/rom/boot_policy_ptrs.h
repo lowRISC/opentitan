@@ -23,6 +23,7 @@ static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
  *
  * @return Pointer to the manifest of the ROM_EXT image in slot A.
  */
+OT_WARN_UNUSED_RESULT
 inline const manifest_t *boot_policy_manifest_a_get(void) {
   return (const manifest_t *)TOP_EARLGREY_EFLASH_BASE_ADDR;
 }
@@ -33,6 +34,7 @@ inline const manifest_t *boot_policy_manifest_a_get(void) {
  *
  * @return Pointer to the manifest of the ROM_EXT image in slot B.
  */
+OT_WARN_UNUSED_RESULT
 inline const manifest_t *boot_policy_manifest_b_get(void) {
   return (const manifest_t *)(TOP_EARLGREY_EFLASH_BASE_ADDR +
                               (TOP_EARLGREY_EFLASH_SIZE_BYTES / 2));
