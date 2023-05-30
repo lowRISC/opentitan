@@ -130,6 +130,7 @@ typedef enum dif_irq_type {
  * @param val A potential dif_toggle_t value.
  * @return Bool indicating validity of toggle value.
  */
+OT_WARN_UNUSED_RESULT
 inline bool dif_is_valid_toggle(dif_toggle_t val) {
   switch (val) {
     case kDifToggleEnabled:
@@ -147,6 +148,7 @@ inline bool dif_is_valid_toggle(dif_toggle_t val) {
  * @param val A dif_toggle_t value.
  * @return Corresponding bool value.
  */
+OT_WARN_UNUSED_RESULT
 inline bool dif_toggle_to_bool(dif_toggle_t val) {
   switch (val) {
     case kDifToggleEnabled:
@@ -164,6 +166,7 @@ inline bool dif_toggle_to_bool(dif_toggle_t val) {
  * @param val A bool value.
  * @return Corresponding dif_toggle_t value.
  */
+OT_WARN_UNUSED_RESULT
 inline dif_toggle_t dif_bool_to_toggle(bool val) {
   return val ? kDifToggleEnabled : kDifToggleDisabled;
 }
@@ -174,6 +177,7 @@ inline dif_toggle_t dif_bool_to_toggle(bool val) {
  * @param val A multi-bit bool value.
  * @return Corresponding dif_toggle_t value.
  */
+OT_WARN_UNUSED_RESULT
 inline dif_toggle_t dif_multi_bit_bool_to_toggle(multi_bit_bool_t val) {
   switch (val) {
     case kMultiBitBool4True:
@@ -193,6 +197,7 @@ inline dif_toggle_t dif_multi_bit_bool_to_toggle(multi_bit_bool_t val) {
  * @return Corresponding `multi_bit_bool_t` value. Invalid values resolve to
  * "false".
  */
+OT_WARN_UNUSED_RESULT
 inline multi_bit_bool_t dif_toggle_to_multi_bit_bool4(dif_toggle_t val) {
   if (val == kDifToggleEnabled) {
     return kMultiBitBool4True;
@@ -208,6 +213,7 @@ inline multi_bit_bool_t dif_toggle_to_multi_bit_bool4(dif_toggle_t val) {
  * @return Corresponding `multi_bit_bool_t` value. Invalid values resolve to
  * "false".
  */
+OT_WARN_UNUSED_RESULT
 inline multi_bit_bool_t dif_toggle_to_multi_bit_bool8(dif_toggle_t val) {
   if (val == kDifToggleEnabled) {
     return kMultiBitBool8True;
@@ -223,6 +229,7 @@ inline multi_bit_bool_t dif_toggle_to_multi_bit_bool8(dif_toggle_t val) {
  * @return Corresponding `multi_bit_bool_t` value. Invalid values resolve to
  * "false".
  */
+OT_WARN_UNUSED_RESULT
 inline multi_bit_bool_t dif_toggle_to_multi_bit_bool12(dif_toggle_t val) {
   if (val == kDifToggleEnabled) {
     return kMultiBitBool12True;
@@ -238,6 +245,7 @@ inline multi_bit_bool_t dif_toggle_to_multi_bit_bool12(dif_toggle_t val) {
  * @return Corresponding `multi_bit_bool_t` value. Invalid values resolve to
  * "false".
  */
+OT_WARN_UNUSED_RESULT
 inline multi_bit_bool_t dif_toggle_to_multi_bit_bool16(dif_toggle_t val) {
   if (val == kDifToggleEnabled) {
     return kMultiBitBool16True;
