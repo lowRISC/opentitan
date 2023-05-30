@@ -218,6 +218,7 @@ typedef struct otbn_app {
  * @param app The application to load into OTBN.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t otbn_load_app(const otbn_app_t app);
 
 /**
@@ -228,6 +229,7 @@ rom_error_t otbn_load_app(const otbn_app_t app);
  * @param src Source of the data to copy.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t otbn_dmem_write(size_t num_words, const uint32_t *src,
                             otbn_addr_t dest);
 
@@ -240,6 +242,7 @@ rom_error_t otbn_dmem_write(size_t num_words, const uint32_t *src,
  *                  (preallocated).
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t otbn_dmem_read(size_t num_words, const otbn_addr_t src,
                            uint32_t *dest);
 
@@ -250,6 +253,7 @@ rom_error_t otbn_dmem_read(size_t num_words, const otbn_addr_t src,
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t otbn_execute(void);
 
 /**
@@ -259,6 +263,7 @@ rom_error_t otbn_execute(void);
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t otbn_busy_wait_for_done(void);
 
 /**
@@ -275,6 +280,7 @@ rom_error_t otbn_busy_wait_for_done(void);
  *
  * @return count the value from the instruction count register
  */
+OT_WARN_UNUSED_RESULT
 uint32_t otbn_instruction_count_get(void);
 
 /**
@@ -284,6 +290,7 @@ uint32_t otbn_instruction_count_get(void);
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t otbn_imem_sec_wipe(void);
 
 /**
@@ -293,6 +300,7 @@ rom_error_t otbn_imem_sec_wipe(void);
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t otbn_dmem_sec_wipe(void);
 
 #ifdef __cplusplus

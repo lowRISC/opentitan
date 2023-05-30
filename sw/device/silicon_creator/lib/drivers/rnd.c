@@ -64,7 +64,7 @@ ASSERT_REG_OFFSET(OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS_OFFSET,
 /**
  * Calculates CRC32 over the entropy_src health test and alert thresholds.
  */
-uint32_t health_config_crc32(void) {
+static uint32_t health_config_crc32(void) {
   uint32_t ctx;
   crc32_init(&ctx);
 

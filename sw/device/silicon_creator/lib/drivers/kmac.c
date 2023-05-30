@@ -64,6 +64,7 @@ static_assert(kShake256KeccakRateWords <= kStateShareSize,
  * @param bit_index Bit within the status register to poll.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t poll_state(bitfield_bit32_index_t bit_index) {
   // The success condition of this function is:
   //   - The specified bit in the status register is 1, and

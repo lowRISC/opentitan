@@ -34,7 +34,7 @@ static void uart_reset(void) {
                    UINT32_MAX);
 }
 
-rom_error_t uart_init(uint32_t precalculated_nco) {
+void uart_init(uint32_t precalculated_nco) {
   // Must be called before the first write to any of the UART registers.
   uart_reset();
 
@@ -48,15 +48,16 @@ rom_error_t uart_init(uint32_t precalculated_nco) {
   // Disable interrupts.
   abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_INTR_ENABLE_REG_OFFSET,
                    0u);
-  return kErrorOk;
 }
 
+OT_WARN_UNUSED_RESULT
 static bool uart_tx_full(void) {
   uint32_t reg =
       abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_STATUS_REG_OFFSET);
   return bitfield_bit32_read(reg, UART_STATUS_TXFULL_BIT);
 }
 
+OT_WARN_UNUSED_RESULT
 static bool uart_tx_idle(void) {
   uint32_t reg =
       abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_STATUS_REG_OFFSET);
@@ -75,9 +76,6 @@ void uart_putchar(uint8_t byte) {
   }
 }
 
-/**
- * Write `len` bytes to the UART TX FIFO.
- */
 size_t uart_write(const uint8_t *data, size_t len) {
   size_t total = len;
   while (len) {

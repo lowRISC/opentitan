@@ -152,7 +152,7 @@ TEST_P(LifecycleDeathTest, InvalidState) {
   EXPECT_DEATH(
       {
         EXPECT_SEC_READ32(base_ + LC_CTRL_LC_STATE_REG_OFFSET, GetParam());
-        lifecycle_state_get();
+        OT_DISCARD(lifecycle_state_get());
       },
       "");
 }

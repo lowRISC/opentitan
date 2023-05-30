@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -87,6 +89,7 @@ typedef struct lifecycle_hw_rev {
  *
  * @return Life cycle state.
  */
+OT_WARN_UNUSED_RESULT
 lifecycle_state_t lifecycle_state_get(void);
 
 /**
@@ -96,6 +99,7 @@ lifecycle_state_t lifecycle_state_get(void);
  *
  * @return Life cycle state.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t lifecycle_raw_state_get(void);
 
 /**
