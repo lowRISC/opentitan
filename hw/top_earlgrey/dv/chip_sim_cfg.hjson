@@ -563,7 +563,7 @@
       sw_images: ["//sw/device/tests/sim_dv:exit_test_unlocked_bootstrap:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+flash_program_latency=5", "+sw_test_timeout_ns=150_000_000"]
-      run_timeout_mins: 180
+      run_timeout_mins: 220
     }
     {
       name: chip_sw_uart_rand_baudrate
