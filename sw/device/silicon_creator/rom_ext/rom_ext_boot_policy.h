@@ -43,6 +43,7 @@ typedef struct rom_ext_boot_policy_manifests {
  * @return Manifests of first owner boot stages in descending order according to
  * their security versions.
  */
+OT_WARN_UNUSED_RESULT
 rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(void);
 
 /**
@@ -55,6 +56,7 @@ rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(void);
  * @param manifest A first boot owner boot stage manifest.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t rom_ext_boot_policy_manifest_check(const manifest_t *manifest);
 
 #ifdef __cplusplus
