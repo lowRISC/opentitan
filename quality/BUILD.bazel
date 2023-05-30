@@ -4,7 +4,7 @@
 
 load("@ot_hack_bazelbuild_buildtools//buildifier:def.bzl", "buildifier", "buildifier_test")
 load("@lowrisc_lint//rules:rules.bzl", "licence_test")
-load("//rules:quality.bzl", "clang_format_check", "clang_format_test", "clang_tidy_check", "clang_tidy_check_rv", "html_coverage_report")
+load("//rules:quality.bzl", "clang_format_check", "clang_format_test", "clang_tidy_rv_test", "clang_tidy_test", "html_coverage_report")
 load("@rules_rust//rust:defs.bzl", "rustfmt_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -105,9 +105,8 @@ clang_format_check(
 
 # TODO(dmcardle) Add more targets that should be automatically checked with
 # clang-tidy. Find a way to automate this.
-clang_tidy_check_rv(
+clang_tidy_rv_test(
     name = "clang_tidy_check_rv",
-    testonly = True,
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:memory_perftest",
@@ -124,19 +123,17 @@ clang_tidy_check_rv(
     ],
 )
 
-clang_tidy_check(
+clang_tidy_test(
     name = "clang_tidy_check_host",
-    testonly = True,
     deps = [
         "//sw/device/silicon_creator/rom:boot_policy_unittest",
         "//sw/device/silicon_creator/rom:bootstrap_unittest",
     ],
 )
 
-filegroup(
+test_suite(
     name = "clang_tidy_check",
-    testonly = True,
-    srcs = [
+    tests = [
         ":clang_tidy_check_host",
         ":clang_tidy_check_rv",
     ],

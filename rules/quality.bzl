@@ -273,31 +273,40 @@ def _make_clang_tidy_aspect(enable_fix):
 clang_tidy_fix_aspect = _make_clang_tidy_aspect(True)
 clang_tidy_check_aspect = _make_clang_tidy_aspect(False)
 
-def _clang_tidy_check_impl(ctx):
+def _clang_tidy_test_impl(ctx):
+    # Test rules must produce an exectuable, so create a dummy script. If the
+    # clang-tidy rules were not test rules, the targets they instantiate could
+    # not depend on test targets. For context, see issue #18726.
+    out_file = ctx.actions.declare_file(ctx.label.name + ".dummy.bash")
+    ctx.actions.write(out_file, "", is_executable = True)
+
     return [
         DefaultInfo(
             files = depset(
                 transitive = [dep[OutputGroupInfo].clang_tidy for dep in ctx.attr.deps],
             ),
+            executable = out_file,
         ),
     ]
 
-clang_tidy_check_rv = rv_rule(
-    implementation = _clang_tidy_check_impl,
+clang_tidy_rv_test = rv_rule(
+    implementation = _clang_tidy_test_impl,
     attrs = {
         "deps": attr.label_list(
             aspects = [clang_tidy_check_aspect],
         ),
     },
+    test = True,
 )
 
-clang_tidy_check = rule(
-    implementation = _clang_tidy_check_impl,
+clang_tidy_test = rule(
+    implementation = _clang_tidy_test_impl,
     attrs = {
         "deps": attr.label_list(
             aspects = [clang_tidy_check_aspect],
         ),
     },
+    test = True,
 )
 
 def _html_coverage_report_impl(ctx):
