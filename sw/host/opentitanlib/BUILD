@@ -183,6 +183,7 @@ rust_library(
         "src/util/present.rs",
         "src/util/printer.rs",
         "src/util/rom_detect.rs",
+        "src/util/status.rs",
         "src/util/unknown.rs",
         "src/util/usb.rs",
         "src/util/usr_access.rs",
