@@ -43,6 +43,7 @@ enum RootCommandHierarchy {
     Spx(command::spx::Spx),
     Transport(command::transport::TransportCommand),
     Version(command::version::Version),
+    Status(command::status_cmd::StatusCommand),
 
     // Flattened because `Greetings` is a subcommand hierarchy.
     #[cfg(feature = "demo_commands")]

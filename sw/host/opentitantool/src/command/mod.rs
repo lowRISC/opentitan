@@ -18,6 +18,7 @@ pub mod rsa;
 pub mod set_pll;
 pub mod spi;
 pub mod spx;
+pub mod status_cmd;
 pub mod tpm;
 pub mod transport;
 pub mod update_usr_access;

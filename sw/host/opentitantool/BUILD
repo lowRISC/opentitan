@@ -27,6 +27,7 @@ rust_binary(
         "src/command/set_pll.rs",
         "src/command/spi.rs",
         "src/command/spx.rs",
+        "src/command/status_cmd.rs",
         "src/command/tpm.rs",
         "src/command/transport.rs",
         "src/command/update_usr_access.rs",
