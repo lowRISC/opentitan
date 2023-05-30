@@ -12,6 +12,7 @@ pub mod parse_int;
 pub mod present;
 pub mod printer;
 pub mod rom_detect;
+pub mod status;
 pub mod unknown;
 pub mod usb;
 pub mod usr_access;
