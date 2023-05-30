@@ -19,6 +19,7 @@ extern "C" {
  *
  * @return Whether bootstrap is requested.
  */
+OT_WARN_UNUSED_RESULT
 hardened_bool_t bootstrap_requested(void);
 
 /**
@@ -37,6 +38,7 @@ hardened_bool_t bootstrap_requested(void);
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t bootstrap(void);
 
 #ifdef __cplusplus

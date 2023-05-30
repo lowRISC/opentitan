@@ -99,6 +99,7 @@ OT_ASSERT_SIZE(sigverify_rom_key_header_t, 8);
  * @param key A public key.
  * @return ID of the key.
  */
+OT_WARN_UNUSED_RESULT
 inline uint32_t sigverify_rom_key_id_get(
     const sigverify_rom_key_header_t *key) {
   return key->key_id;
@@ -152,6 +153,7 @@ typedef struct sigverify_key_get_in_params {
  * @param key Key with the given ID, valid only if it exists.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t sigverify_key_get(sigverify_key_get_in_params_t in_params,
                               const sigverify_rom_key_header_t **key);
 

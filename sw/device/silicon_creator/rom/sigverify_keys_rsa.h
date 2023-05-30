@@ -87,6 +87,7 @@ extern const sigverify_rom_rsa_key_t kSigverifyRsaKeys[];
  * @param key Key with the given ID, valid only if it exists.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
                                   const sigverify_rsa_key_t **key);
 
