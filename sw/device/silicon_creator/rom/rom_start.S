@@ -209,7 +209,7 @@ LABEL_FOR_TEST(kRomStartStoreT1ToBiteThold)
 LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // Clear all the machine-defined interrupts, `MEIE`, `MTIE`, and `MSIE` fields
   // of `mie`.
-  li   t0, 0xFFFF0888
+  li   t0, 0x00000888
   csrc mie, t0
 
   // Check if AST initialization should be skipped.
