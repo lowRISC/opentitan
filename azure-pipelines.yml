@@ -217,6 +217,9 @@ jobs:
     # Set the remote cache GCP key path
   - bash: |
       set -x -e
+      # Check the entire build graph for conflicts in loading or analysis
+      # phases. For context, see issue #18726.
+      ci/bazelisk.sh build --nobuild //...
       # This command builds all software and runs all unit tests that run on the
       # host, with a few exceptions:
       # * It excludes //quality because that's the purview of `slow_lints`.
