@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -183,6 +185,7 @@ extern const bool kJitterEnabled;
  * This is primarily used for spin waits that use the cpu cycle counters.
  * For platforms with clock periods slower than 1 us this will round up.
  */
+OT_WARN_UNUSED_RESULT
 uint64_t to_cpu_cycles(uint64_t usec);
 
 /**

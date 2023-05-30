@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/rom_print.h"
 
@@ -51,5 +52,5 @@ void device_fpga_version_print(void) {
   uint32_t fpga = ibex_fpga_version();
   // The cast to unsigned int stops GCC from complaining about uint32_t
   // being a `long unsigned int` while the %x specifier takes `unsigned int`.
-  rom_printf("ROM:%x\r\n", (unsigned int)fpga);
+  OT_DISCARD(rom_printf("ROM:%x\r\n", (unsigned int)fpga));
 }

@@ -7,6 +7,9 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "device",
     hdrs = ["device.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+    ],
 )
 
 cc_library(
@@ -14,6 +17,7 @@ cc_library(
     srcs = ["device_fpga_cw305.c"],
     deps = [
         ":device",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib/drivers:ibex",
     ],
@@ -24,6 +28,7 @@ cc_library(
     srcs = ["device_fpga_cw310.c"],
     deps = [
         ":device",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib/drivers:ibex",
     ],
