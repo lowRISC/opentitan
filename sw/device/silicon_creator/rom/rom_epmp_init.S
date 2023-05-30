@@ -15,7 +15,7 @@
  *   li   t0, CFG_INDEX(5 % 4, v)
  *   csrw pmpcfg1, t0
  */
-#define CFG_INDEX(i, v) ((v) << (i*8))
+#define CFG_INDEX(i, v) ((v) << ((i)*8))
 
 /**
  * Encode address for Top-Of-Range addressing mode.
