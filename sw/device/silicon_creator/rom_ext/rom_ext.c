@@ -33,6 +33,7 @@
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = kLcStateProd;
 
+OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_irq_error(void) {
   uint32_t mcause;
   CSR_READ(CSR_REG_MCAUSE, &mcause);
@@ -62,6 +63,7 @@ void rom_ext_init(void) {
   uart_init(kUartNCOValue);
 }
 
+OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_verify(const manifest_t *manifest) {
   RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest));
   const sigverify_rsa_key_t *key;
@@ -99,11 +101,13 @@ extern char _owner_virtual_size[];
  * @param lma_addr Load address or physical address.
  * @return the computed virtual address.
  */
+OT_WARN_UNUSED_RESULT
 static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
   return (lma_addr - (uintptr_t)manifest +
           (uintptr_t)_owner_virtual_start_address + CHIP_ROM_EXT_SIZE_MAX);
 }
 
+OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   // Disable access to silicon creator info pages and OTP partitions until next
   // reset.
@@ -154,12 +158,13 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Jump to OWNER entry point.
-  rom_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
+  OT_DISCARD(rom_printf("entry: 0x%x\r\n", (unsigned int)entry_point));
   ((owner_stage_entry_point *)entry_point)();
 
   return kErrorRomBootFailed;
 }
 
+OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_try_boot(void) {
   rom_ext_boot_policy_manifests_t manifests =
       rom_ext_boot_policy_manifests_get();

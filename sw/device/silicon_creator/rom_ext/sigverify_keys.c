@@ -20,6 +20,7 @@
  * @param key_index Index of the key.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t key_is_valid_in_lc_state_rma(sigverify_key_type_t key_type,
                                                 size_t key_index) {
   switch (launder32(key_type)) {
@@ -48,6 +49,7 @@ static rom_error_t key_is_valid_in_lc_state_rma(sigverify_key_type_t key_type,
  * @param key_index Index of the key.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t key_is_valid_in_lc_state_dev(sigverify_key_type_t key_type,
                                                 size_t key_index) {
   switch (launder32(key_type)) {
@@ -76,6 +78,7 @@ static rom_error_t key_is_valid_in_lc_state_dev(sigverify_key_type_t key_type,
  * @param key_index Index of the key.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t key_is_valid_in_lc_state_prod(sigverify_key_type_t key_type,
                                                  size_t key_index) {
   switch (launder32(key_type)) {
@@ -102,6 +105,7 @@ static rom_error_t key_is_valid_in_lc_state_prod(sigverify_key_type_t key_type,
  * @param key_type Type of the key.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t key_is_valid_in_lc_state_test(
     sigverify_key_type_t key_type) {
   switch (launder32(key_type)) {
@@ -128,6 +132,7 @@ static rom_error_t key_is_valid_in_lc_state_test(
  * @param key_index Index of the key.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t key_is_valid(sigverify_key_type_t key_type,
                                 lifecycle_state_t lc_state, size_t key_index) {
   switch (launder32(lc_state)) {
