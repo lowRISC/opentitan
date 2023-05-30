@@ -475,4 +475,8 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
    * Jump to C Code
    */
   tail rom_main
+  unimp
+  unimp
+  unimp
+  unimp
   .size _rom_start_boot, .-_rom_start_boot
