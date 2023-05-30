@@ -23,6 +23,9 @@ build --features=guards
 # Use LLD for linking
 build --features=use_lld
 
+# Use LTO (link-time optimization)
+build --features=lto
+
 # Enable toolchain resolution with cc
 build --incompatible_enable_cc_toolchain_resolution
 
