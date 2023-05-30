@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -63,6 +65,7 @@ typedef struct sigverify_rsa_key {
  * @param key An RSA public key.
  * @return ID of the key.
  */
+OT_WARN_UNUSED_RESULT
 inline uint32_t sigverify_rsa_key_id_get(
     const sigverify_rsa_buffer_t *modulus) {
   return modulus->data[0];

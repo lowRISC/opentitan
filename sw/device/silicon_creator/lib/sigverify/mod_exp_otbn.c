@@ -42,6 +42,7 @@ static const otbn_addr_t kOtbnVarRsaM0Inv =
  * @param dst Address of the destination in OTBN's data memory.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t write_rsa_3072_int_to_otbn(const sigverify_rsa_buffer_t *src,
                                               otbn_addr_t dst) {
   return otbn_dmem_write(kSigVerifyRsaNumWords, src->data, dst);
@@ -54,12 +55,14 @@ static rom_error_t write_rsa_3072_int_to_otbn(const sigverify_rsa_buffer_t *src,
  * @param dst The destination of the copied data in main memory (preallocated).
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t read_rsa_3072_int_from_otbn(const otbn_addr_t src,
                                                sigverify_rsa_buffer_t *dst) {
   return otbn_dmem_read(kSigVerifyRsaNumWords, src, dst->data);
 }
 
-rom_error_t run_otbn_rsa_3072_modexp(
+OT_WARN_UNUSED_RESULT
+static rom_error_t run_otbn_rsa_3072_modexp(
     const sigverify_rsa_key_t *public_key,
     const sigverify_rsa_buffer_t *signature,
     sigverify_rsa_buffer_t *recovered_message) {

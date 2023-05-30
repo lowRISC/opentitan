@@ -40,6 +40,7 @@ enum {
  * @param[out] root Output buffer for root node computed from signature.
  * @param[out] pub_root Output buffer for root node computed from public key.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t run_verify(const spx_verify_test_vector_t *test,
                               uint32_t *root, uint32_t *pub_root) {
   // Calculate the public-key root to compare against.
@@ -60,6 +61,7 @@ static rom_error_t run_verify(const spx_verify_test_vector_t *test,
  *
  * The verification is expected to succeed.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t spx_verify_test(void) {
   spx_verify_test_vector_t test = spx_verify_tests[test_index];
 
@@ -77,6 +79,7 @@ static rom_error_t spx_verify_test(void) {
  *
  * The verification is expected to fail.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t spx_verify_negative_test(void) {
   spx_verify_test_vector_t test = spx_verify_tests[test_index];
 

@@ -36,6 +36,7 @@ static spx_addr_t kTestAddr = {.addr = {0}};
 static uint32_t kExpectedPk[kSpxNWords] = {0xd2c5c792, 0x80d096bd, 0xdb6d692e,
                                            0xf75f2fe8};
 
+OT_WARN_UNUSED_RESULT
 static rom_error_t pk_from_sig_test(void) {
   // Initialize the KMAC block.
   RETURN_IF_ERROR(spx_hash_initialize(&kTestCtx));

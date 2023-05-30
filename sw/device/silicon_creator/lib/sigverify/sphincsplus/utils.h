@@ -30,6 +30,7 @@ extern "C" {
  * @param in Input buffer
  * @param inlen Size of input buffer (in bytes).
  */
+OT_WARN_UNUSED_RESULT
 uint64_t spx_utils_bytes_to_u64(const uint8_t *in, size_t inlen);
 
 /**

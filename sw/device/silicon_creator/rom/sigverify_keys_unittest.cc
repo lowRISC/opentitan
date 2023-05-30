@@ -10,6 +10,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
@@ -178,7 +179,7 @@ TEST_P(BadKeyIdTypeDeathTest, BadKeyType) {
   EXPECT_DEATH(
       {
         ExpectKeysGet();
-        sigverify_rsa_key_get(0xff, GetParam(), &key);
+        OT_DISCARD(sigverify_rsa_key_get(0xff, GetParam(), &key));
       },
       "");
 }
@@ -204,9 +205,9 @@ TEST_P(NonOperationalStateDeathTest, BadKey) {
   EXPECT_DEATH(
       {
         ExpectKeysGet();
-        sigverify_rsa_key_get(
+        OT_DISCARD(sigverify_rsa_key_get(
             sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].entry.key.n),
-            lc_state, &key);
+            lc_state, &key));
       },
       "");
 }

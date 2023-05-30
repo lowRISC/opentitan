@@ -66,6 +66,7 @@ static const uint32_t kExpectedPk[kSpxWotsPkWords] = {
     0x460bec28, 0x3724f477, 0x46f9003f, 0x6357d6ec, 0x7a39121d, 0x511b498f,
     0x2bca40d1, 0x24b829a1};
 
+OT_WARN_UNUSED_RESULT
 static rom_error_t pk_from_sig_test(void) {
   // Initialize the KMAC block.
   RETURN_IF_ERROR(spx_hash_initialize(&kTestCtx));

@@ -18,13 +18,19 @@ cc_library(
     name = "rsa_key",
     srcs = ["rsa_key.c"],
     hdrs = ["rsa_key.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+    ],
 )
 
 cc_library(
     name = "spx_key",
     srcs = ["spx_key.c"],
     hdrs = ["spx_key.h"],
-    deps = ["//sw/device/silicon_creator/lib/sigverify/sphincsplus:params"],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:params",
+    ],
 )
 
 dual_cc_library(
