@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -52,6 +54,7 @@ void crc32_add(uint32_t *ctx, const void *buf, size_t len);
  * @param ctx Context variable.
  * @return Result of the computation.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t crc32_finish(const uint32_t *ctx);
 
 /**
@@ -62,6 +65,7 @@ uint32_t crc32_finish(const uint32_t *ctx);
  * @param len Size of the buffer.
  * @return CRC32 of the buffer.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t crc32(const void *buf, size_t len);
 
 #ifdef __cplusplus

@@ -566,7 +566,7 @@ TEST_F(ShutdownDeathTest, InitializeInvalid) {
   EXPECT_DEATH(
       {
         SetupOtpReads();
-        shutdown_init(static_cast<lifecycle_state_t>(0));
+        OT_DISCARD(shutdown_init(static_cast<lifecycle_state_t>(0)));
       },
       "");
 }

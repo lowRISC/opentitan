@@ -13,6 +13,7 @@
 /**
  * Gets the manifest of the current boot stage.
  */
+OT_WARN_UNUSED_RESULT
 const manifest_t *manifest_def_get(void);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MANIFEST_DEF_H_

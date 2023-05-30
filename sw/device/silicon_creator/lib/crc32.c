@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/memory.h"
 
 #ifdef OT_PLATFORM_RV32
+OT_WARN_UNUSED_RESULT
 static uint32_t crc32_internal_add8(uint32_t ctx, uint8_t byte) {
   ctx ^= byte;
   asm(".option push;"
@@ -20,6 +21,7 @@ static uint32_t crc32_internal_add8(uint32_t ctx, uint8_t byte) {
   return ctx;
 }
 
+OT_WARN_UNUSED_RESULT
 static uint32_t crc32_internal_add32(uint32_t ctx, uint32_t word) {
   ctx ^= word;
   asm(".option push;"
@@ -45,6 +47,7 @@ enum {
  * https://github.com/madler/zlib/blob/2fa463bacfff79181df1a5270fb67cc679a53e71/crc32.c,
  * lines 111-112 and 276-279.
  */
+OT_WARN_UNUSED_RESULT
 static uint32_t crc32_internal_add8(uint32_t ctx, uint8_t byte) {
   ctx ^= byte;
   for (size_t i = 0; i < 8; ++i) {
@@ -57,6 +60,7 @@ static uint32_t crc32_internal_add8(uint32_t ctx, uint8_t byte) {
   return ctx;
 }
 
+OT_WARN_UNUSED_RESULT
 static uint32_t crc32_internal_add32(uint32_t ctx, uint32_t word) {
   char *bytes = (char *)&word;
   for (size_t i = 0; i < sizeof(uint32_t); ++i) {

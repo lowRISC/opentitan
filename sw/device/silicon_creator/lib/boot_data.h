@@ -142,6 +142,7 @@ static_assert(kBootDataValidEntry ==
  * @param boot_data[out] Boot data.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data);
 
 /**
@@ -153,6 +154,7 @@ rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data);
  * @param boot_data[out] Boot data.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t boot_data_write(const boot_data_t *boot_data);
 
 /**
@@ -164,6 +166,7 @@ rom_error_t boot_data_write(const boot_data_t *boot_data);
  * @param boot_data A buffer that holds a boot data entry.
  * @return Whether the digest of the entry is valid.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t boot_data_check(const boot_data_t *boot_data);
 
 #ifdef __cplusplus

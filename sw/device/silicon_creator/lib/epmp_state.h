@@ -215,6 +215,7 @@ inline void epmp_state_configure_napot(uint32_t entry, epmp_region_t region,
  * @param state Expected values of the ePMP CSRs.
  * @return Whether the check succeeded.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t epmp_state_check(void);
 
 #ifdef __cplusplus

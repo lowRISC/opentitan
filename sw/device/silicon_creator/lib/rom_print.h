@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ROM_PRINT_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ROM_PRINT_H_
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
@@ -33,6 +34,7 @@ extern "C" {
  * @param ... The values to interpolate in the format.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t rom_printf(const char *format, ...)
     __attribute__((format(printf, 1, 2)));
 

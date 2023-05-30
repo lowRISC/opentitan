@@ -80,6 +80,7 @@ static void boot_data_digest_compute(const void *boot_data,
  * @param boot_data A buffer that holds a boot data entry. Must be word aligned.
  * @return Whether the entry is empty.
  */
+OT_WARN_UNUSED_RESULT
 static hardened_bool_t boot_data_is_empty(const void *boot_data) {
   static_assert(kFlashCtrlErasedWord == UINT32_MAX,
                 "kFlashCtrlErasedWord must be UINT32_MAX");
@@ -116,6 +117,7 @@ static hardened_bool_t boot_data_is_empty(const void *boot_data) {
  * @param[out] masked_identifier Identifier masked with the words of `is_valid`.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_sniff(flash_ctrl_info_page_t page, size_t index,
                                    uint32_t *masked_identifier) {
   static_assert(kBootDataValidEntry == UINT64_MAX,
@@ -147,6 +149,7 @@ static rom_error_t boot_data_sniff(flash_ctrl_info_page_t page, size_t index,
  * @param[out] boot_data A buffer that will hold the entry.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_entry_read(flash_ctrl_info_page_t page,
                                         size_t index, boot_data_t *boot_data) {
   const uint32_t offset = index * sizeof(boot_data_t);
@@ -170,6 +173,7 @@ static rom_error_t boot_data_entry_read(flash_ctrl_info_page_t page,
  * @param erase Whether to erase the page before writing the entry.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_entry_write_impl(flash_ctrl_info_page_t page,
                                               size_t index,
                                               const boot_data_t *boot_data,
@@ -221,6 +225,7 @@ static rom_error_t boot_data_entry_write_impl(flash_ctrl_info_page_t page,
  * @param erase Whether to erase the page before writing the entry.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_entry_write(flash_ctrl_info_page_t page,
                                          size_t index,
                                          const boot_data_t *boot_data,
@@ -256,6 +261,7 @@ static rom_error_t boot_data_entry_write(flash_ctrl_info_page_t page,
  * @param index Index of the entry to invalidate in the given page.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_entry_invalidate(flash_ctrl_info_page_t page,
                                               size_t index) {
   // Assertions for the assumptions below.
@@ -325,6 +331,7 @@ typedef struct active_page_info {
  * the given page has a newer entry.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_page_info_update_impl(
     flash_ctrl_info_page_t page, active_page_info_t *page_info,
     boot_data_t *boot_data) {
@@ -433,6 +440,7 @@ static rom_error_t boot_data_page_info_update_impl(
  * the given page has a newer entry.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_page_info_update(flash_ctrl_info_page_t page,
                                               active_page_info_t *page_info,
                                               boot_data_t *boot_data) {
@@ -463,6 +471,7 @@ static rom_error_t boot_data_page_info_update(flash_ctrl_info_page_t page,
  * @param[out] boot_data Last valid boot data entry.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
                                               boot_data_t *boot_data) {
   *page_info = (active_page_info_t){
@@ -495,6 +504,7 @@ static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
  * @param[out] boot_data Default boot data.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
                                          boot_data_t *boot_data) {
   uint32_t allowed_in_prod = otp_read32(
