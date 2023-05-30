@@ -21,8 +21,11 @@ var updateDynamicHighlight = function() {
     var id;
     let elements = document.getElementsByClassName("header");
     // Set id == the highest "header" element visible in the window.
+    // Define an offset to account for the menubar, and bump the decision-point a
+    // bit further down the page, which makes the behaviour feel more natural.
+    const highestVisibleHeaderOffset = 150; // px
     Array.prototype.forEach.call(elements, function(el) {
-        if ((window.pageYOffset + 150) >= el.offsetTop) {
+        if ((window.pageYOffset + highestVisibleHeaderOffset) >= el.offsetTop) {
             id = el;
         }
     });
@@ -62,11 +65,13 @@ var set_target_highlight = function(event) {
         // "hashchange" event
         newurl = event.newURL;
     }
+    // Along with "margin-top: -10px;" applied to the :target selector style, this gives the
+    // highlight a top and bottom margin of 10px around the heading.
+    const targetMarginTopBottom = 20; // px
     Array.prototype.forEach.call(document.getElementsByClassName("header"), function(el) {
         if (new URL(el.href).hash == new URL(newurl).hash) {
             document.documentElement.style.setProperty(
-                '--target-height',
-                el.getBoundingClientRect().height + 20 + "px"
+                '--target-height', (el.getBoundingClientRect().height + targetMarginTopBottom) + "px"
             );
         }
     });
@@ -80,8 +85,10 @@ window.addEventListener("load", set_target_highlight);
 var set_pagetoc_height = function() {
     let el = document.getElementsByClassName("pagetoc")[0];
     el.style.height = "auto";
-    let pagetoc_height = el.getBoundingClientRect().height;
-    let window_height = window.innerHeight - document.documentElement.style.getPropertyValue('--menu-bar-height') - 200;
+    // Add some extra margin-bottom to the pagetoc, to keep away from the bottom of the page.
+    const pagetocMarginBottom = 200; // px
+    let pagetoc_height = el.getBoundingClientRect().height + pagetocMarginBottom;
+    let window_height = window.innerHeight - document.documentElement.style.getPropertyValue('--menu-bar-height');
     if (pagetoc_height < window_height) {
         el.style.height = "auto";
     } else {
