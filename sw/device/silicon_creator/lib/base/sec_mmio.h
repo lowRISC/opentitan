@@ -157,6 +157,7 @@ void sec_mmio_next_stage_init(void);
  * @param addr The address to read from.
  * @return the read value.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t sec_mmio_read32(uint32_t addr);
 
 /**

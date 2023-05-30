@@ -183,7 +183,7 @@ TEST_F(SecMmioDeathTest, Read32OrDieSimulatedFault) {
       {
         EXPECT_ABS_READ32(0, 0x12345678);
         EXPECT_ABS_READ32(0, 0);
-        sec_mmio_read32(0);
+        OT_DISCARD(sec_mmio_read32(0));
       },
       "");
 }
