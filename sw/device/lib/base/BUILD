@@ -30,30 +30,9 @@ cc_library(
 )
 
 cc_library(
-    name = "math_polyfills",
-    srcs = ["math_builtins.c"],
-
-    # This library defines polyfills, so we need to ensure LLVM doesn't make
-    # the polyfills call themselves.
-    copts = ["-fno-builtin"],
-    visibility = ["//visibility:private"],
-    deps = [":macros"],
-)
-
-alias(
-    name = "math_builtins",
-    actual = select({
-        "//sw/device:measure_coverage_on_target": "//sw/device:nothing",
-        "//conditions:default": ":math_polyfills",
-    }),
-    visibility = ["//visibility:private"],
-)
-
-cc_library(
     name = "math",
     srcs = ["math.c"],
     hdrs = ["math.h"],
-    deps = [":math_builtins"],
 )
 
 cc_test(
