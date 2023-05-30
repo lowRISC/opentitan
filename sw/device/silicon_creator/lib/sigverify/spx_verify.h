@@ -40,6 +40,7 @@ enum {
  * @param lc_state Life cycle state of the device.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t sigverify_spx_verify_enabled(lifecycle_state_t lc_state);
 
 /**
@@ -57,6 +58,7 @@ uint32_t sigverify_spx_verify_enabled(lifecycle_state_t lc_state);
  * @param[out] flash_exec Value to write to the flash_ctrl EXEC register.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t sigverify_spx_verify(
     const sigverify_spx_signature_t *signature, const sigverify_spx_key_t *key,
     lifecycle_state_t lc_state, const void *msg_prefix_1,
@@ -72,6 +74,7 @@ rom_error_t sigverify_spx_verify(
  * @param v A value.
  * @return `kErrorOk` if `v` is `kSigverifySpxSuccess`.
  */
+OT_WARN_UNUSED_RESULT
 inline uint32_t sigverify_spx_success_to_ok(uint32_t v) {
   return (v << 22 ^ v << 8 ^ v << 1) >> 20;
 }

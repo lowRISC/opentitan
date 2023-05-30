@@ -68,6 +68,7 @@ static const uint32_t kSigverifyShares[kSigVerifyRsaNumWords] = {
  * @param[out] flash_exec Value to write to the flash_ctrl EXEC register.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t sigverify_encoded_message_check(
     sigverify_rsa_buffer_t *enc_msg, const hmac_digest_t *act_digest,
     uint32_t *flash_exec) {
@@ -163,6 +164,7 @@ static rom_error_t sigverify_encoded_message_check(
  * @param lc_state Life cycle state of the device.
  * @return Whether to use software implementation for signature verification.
  */
+OT_WARN_UNUSED_RESULT
 static hardened_bool_t sigverify_use_sw_rsa_verify(lifecycle_state_t lc_state) {
   switch (launder32(lc_state)) {
     case kLcStateTest:

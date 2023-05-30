@@ -11,6 +11,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/sigverify/mock_mod_exp_ibex.h"
@@ -181,8 +182,8 @@ TEST_P(SigverifyInNonTestStatesDeathTest, BadOtpValue) {
             .WillOnce(Return(0xA5A5A5A5));
 
         uint32_t flash_exec = 0;
-        sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
-                             &flash_exec);
+        OT_DISCARD(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest,
+                                        GetParam(), &flash_exec));
       },
       "");
 }
@@ -228,8 +229,9 @@ TEST_F(SigverifyBadLcStateDeathTest, BadLcState) {
   EXPECT_DEATH(
       {
         uint32_t flash_exec = 0;
-        sigverify_rsa_verify(&kSignature, &key_, &kTestDigest,
-                             static_cast<lifecycle_state_t>(0), &flash_exec);
+        OT_DISCARD(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest,
+                                        static_cast<lifecycle_state_t>(0),
+                                        &flash_exec));
       },
       "");
 }

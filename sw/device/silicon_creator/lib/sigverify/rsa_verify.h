@@ -35,6 +35,7 @@ enum {
  * @param[out] flash_exec Value to write to the flash_ctrl EXEC register.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
                                  const sigverify_rsa_key_t *key,
                                  const hmac_digest_t *act_digest,
@@ -50,6 +51,7 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
  * @param v A value.
  * @return `kErrorOk` if `v` is `kSigverifyRsaSuccess`.
  */
+OT_WARN_UNUSED_RESULT
 inline uint32_t sigverify_rsa_success_to_ok(uint32_t v) {
   return (v << 22 ^ v << 19 ^ v << 3) >> 21;
 }

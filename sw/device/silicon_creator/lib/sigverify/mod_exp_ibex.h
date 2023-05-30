@@ -30,6 +30,7 @@ extern "C" {
  * @param result Buffer to write the result to, little-endian.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t sigverify_mod_exp_ibex(const sigverify_rsa_key_t *key,
                                    const sigverify_rsa_buffer_t *sig,
                                    sigverify_rsa_buffer_t *result);

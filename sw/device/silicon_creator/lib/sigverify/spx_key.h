@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/params.h"
 
 #ifdef __cplusplus
@@ -91,6 +92,7 @@ typedef struct sigverify_spx_root {
  * @param key An SPX public key.
  * @return ID of the key.
  */
+OT_WARN_UNUSED_RESULT
 inline uint32_t sigverify_spx_key_id_get(const sigverify_spx_key_t *key) {
   return key->data[0];
 }
