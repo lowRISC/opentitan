@@ -53,7 +53,7 @@ TEST_F(InitTest, Initialize) {
                      });
   EXPECT_ABS_WRITE32(base_ + UART_INTR_ENABLE_REG_OFFSET, 0);
 
-  EXPECT_EQ(uart_init(1), kErrorOk);
+  uart_init(1);
 }
 
 class BytesSendTest : public UartTest {

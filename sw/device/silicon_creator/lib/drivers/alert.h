@@ -115,6 +115,7 @@ typedef struct AlertClassConfig {
  * @param cls: Class of the alert.
  * @param enabled: Whether or not to enable and/or lock the alert.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t alert_configure(size_t index, alert_class_t cls,
                             alert_enable_t enabled);
 
@@ -127,6 +128,7 @@ rom_error_t alert_configure(size_t index, alert_class_t cls,
  * @param cls: Class of the alert.
  * @param enabled: Whether or not to enable and/or lock the alert.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t alert_local_configure(size_t index, alert_class_t cls,
                                   alert_enable_t enabled);
 /**
@@ -137,12 +139,14 @@ rom_error_t alert_local_configure(size_t index, alert_class_t cls,
  * @param cls: Class of the alert (alert class X is not permitted here).
  * @param config: The alert class' configuration.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t alert_class_configure(alert_class_t cls,
                                   const alert_class_config_t *config);
 
 /**
  * Enable the ping timer mechanism.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t alert_ping_enable(void);
 
 /**
@@ -150,6 +154,7 @@ rom_error_t alert_ping_enable(void);
  *
  * @return CRC32 of the configuration registers.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t alert_config_crc32(void);
 
 /**
@@ -162,6 +167,7 @@ uint32_t alert_config_crc32(void);
  * @param lc_state Life cycle state of the device.
  * @return result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t alert_config_check(lifecycle_state_t lc_state);
 
 #ifdef __cplusplus

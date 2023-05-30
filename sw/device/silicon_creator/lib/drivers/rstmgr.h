@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <stdnoreturn.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
@@ -80,6 +81,7 @@ typedef enum rstmgr_reason {
  *
  * This function also captures alert information into `rstmgr_alert_info`.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t rstmgr_reason_get(void);
 
 /**

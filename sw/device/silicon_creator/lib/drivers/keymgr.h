@@ -122,6 +122,7 @@ void keymgr_owner_int_max_ver_set(uint32_t max_key_ver);
  * entropy is reseeded.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t keymgr_init(uint16_t entropy_reseed_interval);
 
 /**
@@ -147,6 +148,7 @@ void keymgr_advance_state(void);
  * @return `kErrorOk` if the key manager is in `expected_state` and the status
  * is idle or success; otherwise returns `kErrorKeymgrInternal`.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t keymgr_state_check(keymgr_state_t expected_state);
 
 #ifdef __cplusplus

@@ -233,6 +233,7 @@ void flash_ctrl_status_get(flash_ctrl_status_t *status);
  * @param[out] data Buffer to store the read data. Must be word aligned.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
                                  void *data);
 
@@ -249,6 +250,7 @@ rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
  * @param[out] data Buffer to store the read data. Must be word aligned.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t flash_ctrl_info_read(flash_ctrl_info_page_t info_page,
                                  uint32_t offset, uint32_t word_count,
                                  void *data);
@@ -265,6 +267,7 @@ rom_error_t flash_ctrl_info_read(flash_ctrl_info_page_t info_page,
  * @param data Data to write. Must be word aligned.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t flash_ctrl_data_write(uint32_t addr, uint32_t word_count,
                                   const void *data);
 
@@ -281,6 +284,7 @@ rom_error_t flash_ctrl_data_write(uint32_t addr, uint32_t word_count,
  * @param data Data to write. Must be word aligned.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t flash_ctrl_info_write(flash_ctrl_info_page_t info_page,
                                   uint32_t offset, uint32_t word_count,
                                   const void *data);
@@ -318,6 +322,7 @@ typedef enum flash_ctrl_erase_type {
  * @param erase_type Whether to erase a page or a bank.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t flash_ctrl_data_erase(uint32_t addr,
                                   flash_ctrl_erase_type_t erase_type);
 
@@ -328,6 +333,7 @@ rom_error_t flash_ctrl_data_erase(uint32_t addr,
  * @param erase_type Whether to verify a page or a bank.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
                                          flash_ctrl_erase_type_t erase_type);
 
@@ -339,6 +345,7 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
  * @param erase_type Whether to erase a page or a bank.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
                                   flash_ctrl_erase_type_t erase_type);
 

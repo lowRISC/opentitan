@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -17,6 +19,7 @@ extern "C" {
  *
  * @return FPGA version.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t ibex_fpga_version(void);
 
 /**

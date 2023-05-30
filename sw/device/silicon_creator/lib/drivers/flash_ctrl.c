@@ -158,6 +158,7 @@ static void fifo_write(size_t word_count, const void *data) {
  * @param error Error code to return in case of a flash controller error.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t wait_for_done(rom_error_t error) {
   uint32_t op_status;
   do {
@@ -181,6 +182,7 @@ static rom_error_t wait_for_done(rom_error_t error) {
  * @param error Error code to return in case of a flash controller error.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
                          uint32_t word_count, const void *data,
                          rom_error_t error) {
@@ -223,6 +225,7 @@ static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
  * @param info_page An information page.
  * @return Base address of the given page.
  */
+OT_WARN_UNUSED_RESULT
 static uint32_t info_page_addr(flash_ctrl_info_page_t info_page) {
 #define INFO_PAGE_ADDR_CASE_(name_, value_, bank_, page_) \
   case (name_):                                           \
@@ -263,6 +266,7 @@ typedef struct info_cfg_regs {
  * @param info_page An info page.
  * @return Config and config write-enable register addresses of the info page.
  */
+OT_WARN_UNUSED_RESULT
 static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
 #define INFO_CFG_REGS_CASE_(name_, value_, bank_, page_)                  \
   case (name_):                                                           \

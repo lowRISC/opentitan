@@ -31,6 +31,7 @@ enum {
 /**
  * Ensures that `offset_bytes` and `len` are valid for a given `mem_size`.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t check_offset_len(uint32_t offset_bytes, size_t num_words,
                                     size_t mem_size) {
   if (num_words > UINT32_MAX / sizeof(uint32_t)) {
@@ -93,6 +94,7 @@ static void otbn_write(uint32_t dest_addr, const uint32_t *src,
   HARDENED_CHECK_EQ((uint32_t)r_iter_cnt, UINT32_MAX);
 }
 
+OT_WARN_UNUSED_RESULT
 static rom_error_t otbn_imem_write(size_t num_words, const uint32_t *src,
                                    otbn_addr_t dest) {
   HARDENED_RETURN_IF_ERROR(
@@ -131,6 +133,7 @@ rom_error_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest) {
  * @param error Error to return if operation fails.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t otbn_cmd_run(otbn_cmd_t cmd, rom_error_t error) {
   enum {
     kIntrStateDone = (1 << OTBN_INTR_COMMON_DONE_BIT),
@@ -208,6 +211,7 @@ rom_error_t otbn_dmem_sec_wipe(void) {
  * @param app the OTBN application to check
  * @return OK if the addresses are valid, otherwise `kErrorOtbnInvalidArgument`.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t check_app_address_ranges(const otbn_app_t app) {
   if (app.imem_end > app.imem_start &&
       app.dmem_data_end >= app.dmem_data_start) {

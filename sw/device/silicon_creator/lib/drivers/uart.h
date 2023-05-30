@@ -20,7 +20,7 @@ extern "C" {
  * @param precalculated_nco NCO value used to set the speed of the UART.
  * @return kErrorOk if successful, else an error code.
  */
-rom_error_t uart_init(uint32_t precalculated_nco);
+void uart_init(uint32_t precalculated_nco);
 
 /**
  * Write a single byte to the UART.
@@ -38,6 +38,7 @@ void uart_putchar(uint8_t byte);
  * @param len Length of the buffer to write.
  * @return Number of bytes written.
  */
+OT_WARN_UNUSED_RESULT
 size_t uart_write(const uint8_t *data, size_t len);
 
 /**
@@ -51,6 +52,7 @@ size_t uart_write(const uint8_t *data, size_t len);
  * @param len Length of the buffer to write.
  * @return Number of bytes written.
  */
+OT_WARN_UNUSED_RESULT
 size_t uart_sink(void *uart, const char *data, size_t len);
 
 #ifdef __cplusplus

@@ -340,6 +340,7 @@ typedef struct spi_device_cmd {
  *
  * @param[out] cmd SPI flash command.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd);
 
 /**
@@ -353,6 +354,7 @@ void spi_device_flash_status_clear(void);
 /**
  * Gets the SPI flash status register.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t spi_device_flash_status_get(void);
 
 #ifdef __cplusplus

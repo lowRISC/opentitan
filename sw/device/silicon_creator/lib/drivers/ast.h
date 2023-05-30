@@ -18,6 +18,7 @@ extern "C" {
  *
  * @return an error if the AST is not in the expected state.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t ast_check(lifecycle_state_t lc_state);
 
 /**
@@ -26,6 +27,7 @@ rom_error_t ast_check(lifecycle_state_t lc_state);
  *
  * @return a hardened bool representing the state of `AST_INIT_DONE`.
  */
+OT_WARN_UNUSED_RESULT
 hardened_bool_t ast_init_done(void);
 
 #ifdef __cplusplus

@@ -23,6 +23,7 @@ extern "C" {
  * @param lc_state Life cycle state of the device.
  * @return result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t rnd_health_config_check(lifecycle_state_t lc_state);
 
 /**
@@ -34,6 +35,7 @@ rom_error_t rnd_health_config_check(lifecycle_state_t lc_state);
  *
  * @returns MCYCLE CSR + entropy value.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t rnd_uint32(void);
 
 #ifdef __cplusplus

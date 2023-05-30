@@ -93,6 +93,7 @@ void watchdog_pet(void);
  *
  * @return current watchdog value.
  */
+OT_WARN_UNUSED_RESULT
 uint32_t watchdog_get(void);
 
 #ifdef __cplusplus

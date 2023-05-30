@@ -51,6 +51,7 @@ OT_ASSERT_SIZE(retention_sram_t, 4096);
  *
  * @return A pointer to the retention SRAM.
  */
+OT_WARN_UNUSED_RESULT
 retention_sram_t *retention_sram_get(void);
 
 /**

@@ -36,6 +36,7 @@ enum {
  * @return `kErrorOk` if the key manager is at the `expected_state` and the
  * status is idle or success.
  */
+OT_WARN_UNUSED_RESULT
 static rom_error_t expected_state_check(uint32_t expected_state) {
   // Read and clear the status register by writing back the read value,
   // polling until the status is non-WIP.
@@ -96,7 +97,9 @@ void keymgr_sw_binding_set(
 void keymgr_sw_binding_unlock_wait(void) {
   while (!abs_mmio_read32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET)) {
   }
-  sec_mmio_read32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET);
+  // Ignore the return value since this read is performed to check and update
+  // the expected value.
+  OT_DISCARD(sec_mmio_read32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET));
 }
 
 void keymgr_creator_max_ver_set(uint32_t max_key_ver) {
