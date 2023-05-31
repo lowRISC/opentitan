@@ -5,21 +5,22 @@
 """Entropy Buffer Generator
 
 Creates an array of random bytes and stores it in a file.
+
 Typical usage:
 
 ./entropy_buffer_generator.py -n 100
 
-This will create a file 'entropy_buffer.npy' consisting of 100 bytes.
+This will create a file 'entropy_buffer.txt' consisting of 100 bytes.
 """
-import argparse
 
+import argparse
 import logging as log
 import random
 import secrets
 import sys
 
 
-def parse_args():
+def _parse_args():
     """Parses command-line arguments."""
     parser = argparse.ArgumentParser(
         description="""The Entropy Buffer file-generator.
@@ -50,10 +51,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def gen_buffer(k: int,
-               out,
-               sec: bool,
-               seed: int):
+def gen_buffer(k: int, out, sec: bool, seed: int):
 
     if (sec and seed):
         log.error("Options --sec and --seed cannot be used together")
@@ -78,8 +76,7 @@ def gen_buffer(k: int,
 
 
 def main():
-
-    args = parse_args()
+    args = _parse_args()
     k = args.num_bytes
     out = args.output_file
     sec = args.sec

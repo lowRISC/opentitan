@@ -7,11 +7,15 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
+py_binary(
+    name = "entropy_buffer_generator",
+    srcs = ["entropy_buffer_generator.py"],
+)
+
 py_library(
     name = "topgen",
     srcs = [
         "__init__.py",
-        "entropy_buffer_generator.py",
         "gen_top_docs.py",
         "strong_random.py",
         "validate.py",
