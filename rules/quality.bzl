@@ -198,8 +198,10 @@ def _clang_tidy_aspect_impl(target, ctx):
             checks_pattern = ",".join(_CLANG_TIDY_CHECKS)
             args.add("--checks=" + checks_pattern)
 
-            # Treat warnings from every enabled check as errors.
-            args.add("--warnings-as-errors=" + checks_pattern)
+            # TODO(#12553) Once C compiler warnings are generally treated as
+            # errors, start interpreting clang-tidy warnings as errors.
+            #args.add("--warnings-as-errors=" + checks_pattern)
+
         if ctx.attr._enable_fix:
             args.add("--fix")
             args.add("--fix-errors")
