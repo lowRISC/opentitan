@@ -11,6 +11,7 @@ py_library(
     name = "topgen",
     srcs = [
         "__init__.py",
+        "drg3.py",
         "entropy_buffer_generator.py",
         "gen_top_docs.py",
         "strong_random.py",
@@ -19,6 +20,7 @@ py_library(
     deps = [
         ":merge",
         requirement("tabulate"),
+        requirement("pycryptodome"),
     ],
 )
 
