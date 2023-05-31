@@ -65,17 +65,17 @@ extern "C" {
  * @param expr_ An expression that evaluates to a `status_t`.
  * @return The enclosed OK value.
  */
-#define HARDENED_TRY(expr_)                              \
-  ({                                                     \
-    status_t status_ = expr_;                            \
-    if (!status_ok(status_)) {                           \
-      return status_;                                    \
-    }                                                    \
-    if (launder32(status_.value) != kHardenedBoolTrue) { \
-      return OTCRYPTO_FATAL_ERR;                         \
-    }                                                    \
-    HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue); \
-    status_.value;                                       \
+#define HARDENED_TRY(expr_)                                           \
+  ({                                                                  \
+    status_t status_ = expr_;                                         \
+    if (!status_ok(status_)) {                                        \
+      return status_;                                                 \
+    }                                                                 \
+    if (launder32(OT_UNSIGNED(status_.value)) != kHardenedBoolTrue) { \
+      return OTCRYPTO_FATAL_ERR;                                      \
+    }                                                                 \
+    HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue);              \
+    status_.value;                                                    \
   })
 
 #ifdef __cplusplus
