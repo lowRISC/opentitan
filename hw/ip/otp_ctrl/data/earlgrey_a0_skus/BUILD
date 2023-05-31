@@ -9,7 +9,7 @@ package(default_visibility = ["//visibility:public"])
 # Dummy partition used in `otp_image_header` targets.
 otp_json(
     name = "otp_json_baseline",
-    seed = "94259314771464387",
+    seed = "85452983286950371191603618368782861611109037138182535346147818831008789508651",
 )
 
 # OTP SW Configuration for Test SKU.

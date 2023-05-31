@@ -7,7 +7,8 @@
 //
 // util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson \
 //                -o hw/top_earlgrey/ \
-//                --rnd_cnst_seed 4881560218908238235
+//                --rnd_cnst_seed \
+//                1017106219537032642877583828875051302543807092889754935647094601236425074047
 
 
 module chip_earlgrey_cw340 #(

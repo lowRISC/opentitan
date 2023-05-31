@@ -30,7 +30,7 @@ from reggen.lib import check_list
 from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
-from topgen import merge_top, search_ips, strong_random, validate_top
+from topgen import secure_prng, merge_top, search_ips, strong_random, validate_top
 from topgen.c_test import TopGenCTest
 from topgen.rust import TopGenRust
 from topgen.clocks import Clocks
@@ -1172,9 +1172,7 @@ def main():
         elif "rnd_cnst_seed" not in topcfg:
             log.error('Seed "rnd_cnst_seed" not found in configuration HJSON.')
             exit(1)
-        strong_random.unsecure_generate_from_seed(
-            ENTROPY_BUFFER_SIZE_BYTES,
-            topcfg["rnd_cnst_seed"])
+        secure_prng.reseed(topcfg["rnd_cnst_seed"])
 
     # TODO, long term, the levels of dependency should be automatically determined instead
     # of hardcoded.  The following are a few examples:
@@ -1300,7 +1298,8 @@ def main():
             gencmd = warnhdr + """//
 // util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
 //                -o hw/top_{topname}/ \\
-//                --rnd_cnst_seed {seed}
+//                --rnd_cnst_seed \\
+//                {seed}
 """.format(topname=topname, seed=completecfg["rnd_cnst_seed"])
 
         # SystemVerilog Top:
