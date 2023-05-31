@@ -697,9 +697,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
             (is_test_unlocked_lc_state(state) == 1));
   endfunction
 
-
   // LC_CTRL JTAG tasks
-  virtual task wait_lc_status(lc_ctrl_status_e expect_status, int max_attempt = 5000);
+  virtual task wait_lc_status(lc_ctrl_status_e expect_status, int max_attempt = 5000,
+                              bit skip_err_chk = 0);
     int i;
     for (i = 0; i < max_attempt; i++) begin
       bit [TL_DW-1:0] status_val;
@@ -713,9 +713,12 @@ class chip_sw_base_vseq extends chip_base_vseq;
       // idicative of the jtag agent trying to access the TAP interface while
       // the dut is exiting reset. Try monitoring the reset, or inserting
       // a delay before calling this function.
-      `DV_CHECK_EQ((status_val) >> dummy.num(), 0,
-                   $sformatf("Unexpected status error %0h", status_val))
+      if (skip_err_chk == 0) begin
+        `DV_CHECK_EQ((status_val) >> dummy.num(), 0,
+            $sformatf("Unexpected status error %0h dummp.num:%0d", status_val, dummy.num()))
+      end
       if (status_val[expect_status]) begin
+        `OTDBG(("assa:status: %x", status_val))
         `uvm_info(`gfn, $sformatf("LC status %0s.", expect_status.name), UVM_LOW)
         break;
       end
@@ -732,9 +735,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
   endtask
 
-  virtual task wait_lc_ready(bit allow_err = 1, int max_attempt = 5000);
+  virtual task wait_lc_ready(bit allow_err = 1, int max_attempt = 5000, bit skip_err_chk = 0);
     cfg.m_jtag_riscv_agent_cfg.allow_errors = allow_err;
-    wait_lc_status(LcReady, max_attempt);
+    wait_lc_status(LcReady, max_attempt, skip_err_chk);
     cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
   endtask
 
@@ -985,7 +988,15 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // Switch OTP to use external clock instead of internal clock.
     // Wait for LC to be ready, acquire the transition interface mutex and
     // enable external clock.
-    wait_lc_ready();
+    //
+    // In this task, because jtag is controlled by external clock,
+    // there can be out of sync between jtag stream and
+    // tb.dut.top_earlgrey.u_lc_ctrl.u_dmi_jtag.i_dmi_jtag_tap.jtag_ir_q[4:0]
+    // at the beginning of strap sampling.
+    // Therefore, error status check should be ignored
+    // while keeping lc status check as is.
+    // After the initial out of sync, jtag is supposed to work as normal.
+    wait_lc_ready(.skip_err_chk(1'b1));
     claim_transition_interface();
 
     // Switch to external clock via LC controller.
