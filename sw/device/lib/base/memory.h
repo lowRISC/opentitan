@@ -68,7 +68,8 @@ inline ptrdiff_t misalignment32_of(uintptr_t addr) {
  *
  * Of course, `ptr` must point to word-aligned memory that is at least one word
  * wide. To do otherwise is Undefined Behavior. It goes without saying that the
- * memory this function intents to read must be initialized.
+ * memory this function intends to read must be initialized and the value of
+ * `ptr` must be non-NULL.
  *
  * This function has reordering properties as weak as a normal, non-atomic,
  * non-volatile load.
@@ -78,6 +79,9 @@ inline ptrdiff_t misalignment32_of(uintptr_t addr) {
  */
 OT_WARN_UNUSED_RESULT
 inline uint32_t read_32(const void *ptr) {
+  if (ptr == NULL) {
+    OT_UNREACHABLE();
+  }
   // Both GCC and Clang optimize the code below into a single word-load on most
   // platforms. It is necessary and sufficient to indicate to the compiler that
   // the pointer points to four bytes of four-byte-aligned memory.

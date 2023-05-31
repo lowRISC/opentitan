@@ -98,7 +98,7 @@ static status_t aes_key_construct(const crypto_blinded_key_t *blinded_key,
   if (memcmp(&aes_key->mode, &aes_mode, sizeof(aes_key->mode)) != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(aes_key->mode, aes_mode);
+  HARDENED_CHECK_EQ((int)aes_key->mode, (int)aes_mode);
 
   // Set the AES key length (in words).
   aes_key->key_len = keyblob_share_num_words(blinded_key->config);

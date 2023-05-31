@@ -103,6 +103,8 @@ def clang_format_test(**kwargs):
 #  ./bazelisk.sh run @lowrisc_rv32imcb_files//:bin/clang-tidy -- --checks='*' --list-checks
 _CLANG_TIDY_CHECKS = [
     "clang-analyzer-core.*",
+    # Do not warn about replacing memset with memset_s.
+    "-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling",
 ]
 
 def _clang_tidy_aspect_impl(target, ctx):
@@ -197,10 +199,7 @@ def _clang_tidy_aspect_impl(target, ctx):
         if len(_CLANG_TIDY_CHECKS) > 0:
             checks_pattern = ",".join(_CLANG_TIDY_CHECKS)
             args.add("--checks=" + checks_pattern)
-
-            # TODO(#12553) Once C compiler warnings are generally treated as
-            # errors, start interpreting clang-tidy warnings as errors.
-            #args.add("--warnings-as-errors=" + checks_pattern)
+            args.add("--warnings-as-errors=" + checks_pattern)
 
         if ctx.attr._enable_fix:
             args.add("--fix")

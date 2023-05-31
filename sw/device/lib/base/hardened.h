@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_BASE_HARDENED_H_
 #define OPENTITAN_SW_DEVICE_LIB_BASE_HARDENED_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "sw/device/lib/base/hardened_asm.h"
@@ -538,7 +539,13 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
   return (launderw(c) & a) | (launderw(~c) & b);
 }
 
-// Implementation details shared across shutdown macros.
+#define HARDENED_CHECK_C_OP_EQ_ ==
+#define HARDENED_CHECK_C_OP_NE_ !=
+#define HARDENED_CHECK_C_OP_LT_ <
+#define HARDENED_CHECK_C_OP_GT_ >
+#define HARDENED_CHECK_C_OP_LE_ <=
+#define HARDENED_CHECK_C_OP_GE_ >=
+
 #ifdef OT_PLATFORM_RV32
 // This string can be tuned to be longer or shorter as desired, for
 // fault-hardening purposes.
@@ -552,12 +559,19 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
 #define HARDENED_CHECK_OP_GE_ "bgeu"
 
 // clang-format off
-#define HARDENED_CHECK_(op_, a_, b_) \
-  asm volatile(                      \
-      op_ " %0, %1, .L_HARDENED_%=;" \
-      HARDENED_UNIMP_SEQUENCE_()     \
-      ".L_HARDENED_%=:;"             \
-      ::"r"(a_), "r"(b_))
+#define HARDENED_CHECK_(c_op_, op_, a_, b_)       \
+  do {                                            \
+    asm volatile(                                 \
+      op_ " %0, %1, .L_HARDENED_%=;"              \
+      HARDENED_UNIMP_SEQUENCE_()                  \
+      ".L_HARDENED_%=:;"                          \
+      ::"r"(a_), "r"(b_));                        \
+    /* Demonstrate that code after the  unimp     \
+     * sequence is unreachable. */                \
+    if (! ((a_) c_op_ (b_))) {                    \
+      OT_UNREACHABLE();                           \
+    }                                             \
+  } while(false)
 // clang-format on
 
 #define HARDENED_TRAP_()                      \
@@ -567,14 +581,15 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
 #else  // OT_PLATFORM_RV32
 #include <assert.h>
 
-#define HARDENED_CHECK_OP_EQ_ ==
-#define HARDENED_CHECK_OP_NE_ !=
-#define HARDENED_CHECK_OP_LT_ <
-#define HARDENED_CHECK_OP_GT_ >
-#define HARDENED_CHECK_OP_LE_ <=
-#define HARDENED_CHECK_OP_GE_ >=
+#define HARDENED_CHECK_OP_EQ_ HARDENED_CHECK_C_OP_EQ_
+#define HARDENED_CHECK_OP_NE_ HARDENED_CHECK_C_OP_NE_
+#define HARDENED_CHECK_OP_LT_ HARDENED_CHECK_C_OP_LT_
+#define HARDENED_CHECK_OP_GT_ HARDENED_CHECK_C_OP_GT_
+#define HARDENED_CHECK_OP_LE_ HARDENED_CHECK_C_OP_LE_
+#define HARDENED_CHECK_OP_GE_ HARDENED_CHECK_C_OP_GE_
 
-#define HARDENED_CHECK_(op_, a_, b_) assert((uint64_t)(a_)op_(uint64_t)(b_))
+#define HARDENED_CHECK_(c_op_, op_, a_, b_) \
+  assert((uint64_t)(a_)c_op_(uint64_t)(b_))
 
 #define HARDENED_TRAP_() __builtin_trap()
 #endif  // OT_PLATFORM_RV32
@@ -609,12 +624,18 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
  * ```
  * See `launder32()` for more details.
  */
-#define HARDENED_CHECK_EQ(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_EQ_, a_, b_)
-#define HARDENED_CHECK_NE(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_NE_, a_, b_)
-#define HARDENED_CHECK_LT(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_LT_, a_, b_)
-#define HARDENED_CHECK_GT(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_GT_, a_, b_)
-#define HARDENED_CHECK_LE(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_LE_, a_, b_)
-#define HARDENED_CHECK_GE(a_, b_) HARDENED_CHECK_(HARDENED_CHECK_OP_GE_, a_, b_)
+#define HARDENED_CHECK_EQ(a_, b_) \
+  HARDENED_CHECK_(HARDENED_CHECK_C_OP_EQ_, HARDENED_CHECK_OP_EQ_, a_, b_)
+#define HARDENED_CHECK_NE(a_, b_) \
+  HARDENED_CHECK_(HARDENED_CHECK_C_OP_NE_, HARDENED_CHECK_OP_NE_, a_, b_)
+#define HARDENED_CHECK_LT(a_, b_) \
+  HARDENED_CHECK_(HARDENED_CHECK_C_OP_LT_, HARDENED_CHECK_OP_LT_, a_, b_)
+#define HARDENED_CHECK_GT(a_, b_) \
+  HARDENED_CHECK_(HARDENED_CHECK_C_OP_GT_, HARDENED_CHECK_OP_GT_, a_, b_)
+#define HARDENED_CHECK_LE(a_, b_) \
+  HARDENED_CHECK_(HARDENED_CHECK_C_OP_LE_, HARDENED_CHECK_OP_LE_, a_, b_)
+#define HARDENED_CHECK_GE(a_, b_) \
+  HARDENED_CHECK_(HARDENED_CHECK_C_OP_GE_, HARDENED_CHECK_OP_GE_, a_, b_)
 
 #ifdef __cplusplus
 }
