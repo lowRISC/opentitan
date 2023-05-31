@@ -19,8 +19,9 @@
   run_dir:            "{scratch_path}/{run_dir_name}/latest"
   sw_root_dir:        "{proj_root}/sw"
 
-  // Default file to store build_seed value
-  build_seed_file_path: "{build_dir}/build_seed.log"
+  // Default entropy buffer file paths.
+  lc_state_enc_entropy_file_path: "{proj_root}/hw/ip/lc_ctrl/data/lc_state_enc_entropy_buffer.txt"
+  otp_mmap_entropy_file_path: "{proj_root}/hw/ip/otp_ctrl/data/otp_mmap_entropy_buffer.txt"
 
   run_pass_patterns:   ["^TEST PASSED (UVM_)?CHECKS$"]
   run_fail_patterns:   ["^UVM_ERROR\\s[^:].*$",

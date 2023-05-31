@@ -143,6 +143,10 @@
   uvm_test_seq: chip_sw_base_vseq
   sw_build_device: sim_dv
 
+  // Setup for generating entropy buffer files.
+  gen_entropy_buffer_cmd: "{proj_root}/util/topgen/entropy_buffer_generator.py"
+  gen_entropy_buffer_cmd_opts: ["-n 20000"]
+
   // Add a default build option to indicate it is a top-level DV testbench.
   build_opts: ["+define+TOP_LEVEL_DV"]
 
@@ -162,16 +166,18 @@
         // '''cd {proj_root} && ./util/topgen.py -t {ral_spec} \
         //        -o hw/top_earlgrey --rnd_cnst_seed {seed}
         // ''',
+        // Regenerate entropy buffer files (from a seed) used by the
+        // `gen-lc-state-enc.py`, `gen-otp-mmap.py`, and `gen-otp-img.py` scripts.
+	      '''{gen_entropy_buffer_cmd} {gen_entropy_buffer_cmd_opts} \
+               --seed {seed} -o {lc_state_enc_entropy_file_path}
+        ''',
+	      '''{gen_entropy_buffer_cmd} {gen_entropy_buffer_cmd_opts} \
+               --seed {seed} -o {otp_mmap_entropy_file_path}
+        ''',
         // Generate LC encoding
-        "cd {proj_root} && ./util/design/gen-lc-state-enc.py --seed {seed}",
+        "cd {proj_root} && ./util/design/gen-lc-state-enc.py --entropy-buffer {lc_state_enc_entropy_file_path}",
         // Generate OTP memory map and scrambling constants keys.
-        "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed}",
-        // Use eval_cmd to save build_seed in a file and reuse that file during run phase.
-        // Create the build directory first because eval_cmd runs before actual build phase command
-        // execution.
-        '''{eval_cmd} mkdir -p {build_dir}; echo {seed} > {build_seed_file_path}; \
-           echo "echo create file {build_seed_file_path}"
-        '''
+        "cd {proj_root} && ./util/design/gen-otp-mmap.py --entropy-buffer {otp_mmap_entropy_file_path}",
       ]
       is_sim_mode: 1
     }
@@ -215,15 +221,8 @@
   gen_otp_images_cmd: "{proj_root}/util/design/gen-otp-img.py"
   gen_otp_images_cmd_opts: ["--quiet",
                             "--img-seed {seed}",
-                            // Only provide `--otp-seed` argument if the file to store build_seed
-                            // is found. Set this option at the end of the list to avoid `eval_cmd`
-                            // take other options as eval_cmd.
-                            '''{eval_cmd} file=`echo {build_seed_file_path}`; \
-                               if [ -f $file ]; then \
-                                 while read line; do \
-                                   echo "--otp-seed $line --lc-seed $line"; \
-                                 done < $file; \
-                               fi ''']
+                            "--lc-entropy-buffer {lc_state_enc_entropy_file_path}",
+                            "--otp-entropy-buffer {otp_mmap_entropy_file_path}"]
 
   // TODO(lowrisc/opentitan#16689): Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=0"]
