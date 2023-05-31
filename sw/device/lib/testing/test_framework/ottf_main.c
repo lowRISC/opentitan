@@ -90,20 +90,6 @@ void status_report(status_t status) {
     status_report_list[status_report_list_size++] = status;
 }
 
-void log_status(const char *prefix, status_t status) {
-  int32_t arg;
-  const char *message;
-  char mod_id[4];
-  if (status_ok(status)) {
-    LOG_INFO("%skOk(%u)", prefix, status.value);
-  } else if (status_extract(status, &message, &arg, mod_id)) {
-    mod_id[3] = 0;
-    LOG_INFO("%s%s(%u) in %s", prefix, message, arg, mod_id);
-  } else {
-    LOG_INFO("%s<error> (status=0x%x)", prefix, status.value);
-  }
-}
-
 static void report_test_status(bool result) {
   // Reinitialize UART before print any debug output if the test clobbered it.
   if (kDeviceType != kDeviceSimDV) {
@@ -116,7 +102,7 @@ static void report_test_status(bool result) {
   if (!result) {
     LOG_INFO("Status reported by the test:");
     for (size_t i = 0; i < status_report_list_size; i++)
-      log_status("- ", status_report_list[i]);
+      LOG_INFO("- %r", status_report_list[i]);
   }
 
   coverage_send_buffer();

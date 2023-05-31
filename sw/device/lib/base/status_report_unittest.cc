@@ -19,7 +19,11 @@ std::vector<status_t> StatusList;
 extern "C" void status_report(status_t code) { StatusList.push_back(code); }
 
 const status_t kExpectedList[] = {
-    // The first entry of the list should correspond to the TRY() at line 19:
+    // The first entry of the list should correspond to the entry pushed by
+    //   status_report(OK_STATUS(300));
+    // at line 38 to make sure that the report can handle OK statuses as well.
+    status_create(absl_status_t::kOk, 0, "", 654321),
+    // The next entry of the list should correspond to the TRY() at line 19:
     //   TRY(sudo_god());
     // where the module ID is "psy" and the error is PERMISSION_DENIED().
     status_create(absl_status_t::kPermissionDenied,
@@ -30,7 +34,7 @@ const status_t kExpectedList[] = {
     //   TRY(think());
     // where the module ID is "unt" and the error is ABORTED().
     status_create(absl_status_t::kAborted, MAKE_MODULE_ID('u', 'n', 't'), "",
-                  36),
+                  41),
     // The last entry is the one we push in the test: this is the error
     // returned by status_report_unittest_c() that comes from think()
     // at line 27 with error code ABORTED() and module ID "thk".
@@ -43,13 +47,11 @@ std::string status_to_string(status_t status) {
   const char *message;
   char mod_id[4];
   std::stringstream oss;
-  if (status_ok(status)) {
-    oss << "kOk(" << status.value << ")";
-  } else if (status_extract(status, &message, &arg, mod_id)) {
+  if (status_extract(status, &message, &arg, mod_id)) {
     mod_id[3] = 0;
     oss << message << "(" << arg << ") in " << mod_id;
   } else {
-    oss << "<error> (status=" << std::hex << status.value << ")";
+    oss << "Ok(" << arg << ")";
   }
   return oss.str();
 }
