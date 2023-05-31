@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
@@ -366,7 +367,7 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
   static_assert(__builtin_popcount(FLASH_CTRL_PARAM_BYTES_PER_PAGE) == 1,
                 "Bytes per page must be a power of two.");
 
-  size_t byte_count;
+  size_t byte_count = 0;
   rom_error_t error = kErrorFlashCtrlDataEraseVerify;
   switch (launder32(erase_type)) {
     case kFlashCtrlEraseTypeBank:
@@ -489,7 +490,7 @@ void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,
 }
 
 void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
-  uint32_t reg;
+  uint32_t reg = 0;
   switch (launder32(enable)) {
     case kHardenedBoolTrue:
       HARDENED_CHECK_EQ(enable, kHardenedBoolTrue);

@@ -454,7 +454,7 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
      */
     kCfiRomTryBootManifest1Val = 10 * kCfiIncrement + kCfiRomTryBootVal0,
   };
-  const manifest_t *manifest_check;
+  const manifest_t *manifest_check = NULL;
   switch (launder32(rom_counters[kCfiRomTryBoot])) {
     case kCfiRomTryBootManifest0Val:
       HARDENED_CHECK_EQ(rom_counters[kCfiRomTryBoot],
