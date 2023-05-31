@@ -9,7 +9,7 @@
 {
     // Seed to be used for generation of partition randomized values.
     // Can be overridden on the command line with the --seed switch.
-    seed: 01931961561863975174
+    seed: 52408960416235844780753299194502148156786072650816676092165912261205302331741
 
     // The partition and item names must correspond with the OTP memory map.
     partitions: [

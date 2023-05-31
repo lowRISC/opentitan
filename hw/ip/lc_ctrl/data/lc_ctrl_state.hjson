@@ -7,9 +7,10 @@
 // $ ./util/design/gen-lc-state-enc.py
 
 {
-    // Seed to be used for generation of partition item default values.
+    // 256 bit seed to be used for generation of partition item default values.
     // Can be overridden on the command line with the --seed switch.
-    seed: 10167336684108184581
+    // The default seed was generated using secrets.py module.
+    seed: 40182201019264397688411770949626922549663256047001778394918990008320537410392
 
     // Secded used in prim_generic_otp.sv
     // SECDED matrix used for ECC in OTP
