@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:autogen.bzl", "autogen_hjson_header")
+load("//rules:entropy.bzl", "entropy_buffer")
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
@@ -70,6 +71,18 @@ autogen_hjson_header(
 )
 
 exports_files(["otp_ctrl_mmap.hjson"])
+
+# Default entropy buffer files needed to run generate the LC state encodings and
+# OTP memory map, which are required during the OTP image generation process.
+entropy_buffer(
+    name = "lc_state_enc_entropy_buffer",
+    seed = ":lc_seed",
+)
+
+entropy_buffer(
+    name = "otp_mmap_entropy_buffer",
+    seed = ":otp_seed",
+)
 
 otp_json(
     name = "otp_json_creator_sw_cfg",

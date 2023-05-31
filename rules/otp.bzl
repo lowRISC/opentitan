@@ -39,7 +39,7 @@ format expected by the image generation tool.
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("//rules:host.bzl", "host_tools_transition")
-load("//rules:const.bzl", "CONST", "hex", "hex_digits")
+load("//rules:const.bzl", "CONST", "hex")
 
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
@@ -176,10 +176,10 @@ def _otp_image(ctx):
     args.add("--mmap-def", ctx.file.mmap_def)
     if ctx.attr.img_seed:
         args.add("--img-seed", ctx.attr.img_seed[BuildSettingInfo].value)
-    if ctx.attr.lc_seed:
-        args.add("--lc-seed", ctx.attr.lc_seed[BuildSettingInfo].value)
-    if ctx.attr.otp_seed:
-        args.add("--otp-seed", ctx.attr.otp_seed[BuildSettingInfo].value)
+    if ctx.attr.lc_state_enc_entropy_buffer:
+        args.add("--lc-entropy-buffer", ctx.file.lc_state_enc_entropy_buffer)
+    if ctx.attr.otp_mmap_entropy_buffer:
+        args.add("--otp-entropy-buffer", ctx.file.otp_mmap_entropy_buffer)
     if ctx.attr.data_perm:
         args.add("--data-perm", ctx.attr.data_perm[BuildSettingInfo].value)
     args.add("--img-cfg", ctx.file.src)
@@ -191,6 +191,8 @@ def _otp_image(ctx):
             ctx.file.src,
             ctx.file.lc_state_def,
             ctx.file.mmap_def,
+            ctx.file.lc_state_enc_entropy_buffer,
+            ctx.file.otp_mmap_entropy_buffer,
         ] + ctx.files.overlays,
         arguments = [args],
         executable = ctx.executable._tool,
@@ -222,13 +224,15 @@ otp_image = rule(
             default = "//hw/ip/otp_ctrl/data:img_seed",
             doc = "Configuration override seed used to randomize field values in an OTP image.",
         ),
-        "lc_seed": attr.label(
-            default = "//hw/ip/otp_ctrl/data:lc_seed",
-            doc = "Configuration override seed used to randomize LC netlist constants.",
+        "lc_state_enc_entropy_buffer": attr.label(
+            allow_single_file = [".txt"],
+            default = "//hw/ip/otp_ctrl/data:lc_state_enc_entropy_buffer",
+            doc = "Entropy buffer file used when generating the LC state encodings.",
         ),
-        "otp_seed": attr.label(
-            default = "//hw/ip/otp_ctrl/data:otp_seed",
-            doc = "Configuration override seed used to randomize OTP netlist constants.",
+        "otp_mmap_entropy_buffer": attr.label(
+            allow_single_file = [".txt"],
+            default = "//hw/ip/otp_ctrl/data:otp_mmap_entropy_buffer",
+            doc = "Entropy buffer file used when generating the OTP memory map.",
         ),
         "data_perm": attr.label(
             default = "//hw/ip/otp_ctrl/data:data_perm",
@@ -254,8 +258,8 @@ def _otp_image_header(ctx):
     args.add("--lc-state-def", ctx.file.lc_state_def)
     args.add("--mmap-def", ctx.file.mmap_def)
     args.add("--img-seed", ctx.attr.img_seed[BuildSettingInfo].value)
-    args.add("--lc-seed", ctx.attr.lc_seed[BuildSettingInfo].value)
-    args.add("--otp-seed", ctx.attr.otp_seed[BuildSettingInfo].value)
+    args.add("--lc-entropy-buffer", ctx.file.lc_state_enc_entropy_buffer)
+    args.add("--otp-entropy-buffer", ctx.file.otp_mmap_entropy_buffer)
     args.add("--img-cfg", ctx.file.src)
     args.add("--header-template", ctx.file.header_template)
     args.add("--header-out", "{}/{}.h".format(output.dirname, ctx.attr.name))
@@ -308,13 +312,15 @@ otp_image_header = rule(
             default = "//hw/ip/otp_ctrl/data:img_seed",
             doc = "Configuration override seed used to randomize field values in an OTP image.",
         ),
-        "lc_seed": attr.label(
-            default = "//hw/ip/otp_ctrl/data:lc_seed",
-            doc = "Configuration override seed used to randomize LC netlist constants.",
+        "lc_state_enc_entropy_buffer": attr.label(
+            allow_single_file = [".txt"],
+            default = "//hw/ip/otp_ctrl/data:lc_state_enc_entropy_buffer",
+            doc = "Entropy buffer file used when generating the LC state encodings.",
         ),
-        "otp_seed": attr.label(
-            default = "//hw/ip/otp_ctrl/data:otp_seed",
-            doc = "Configuration override seed used to randomize OTP netlist constants.",
+        "otp_mmap_entropy_buffer": attr.label(
+            allow_single_file = [".txt"],
+            default = "//hw/ip/otp_ctrl/data:otp_mmap_entropy_buffer",
+            doc = "Entropy buffer file used when generating the OTP memory map.",
         ),
         "header_template": attr.label(
             allow_single_file = True,

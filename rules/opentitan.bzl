@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:const.bzl", "CONST", "lcv_hw_to_sw")
+load("//rules:const.bzl", "CONST")
 load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
@@ -615,6 +615,7 @@ def _scramble_flash_vmem_impl(ctx):
     ]
     inputs = [
         ctx.file.vmem,
+        ctx.file.otp_mmap_entropy_buffer,
         ctx.executable._tool,
     ]
     if ctx.file.otp:
@@ -629,8 +630,8 @@ def _scramble_flash_vmem_impl(ctx):
             ctx.file.otp_mmap,
         ])
         arguments.extend([
-            "--otp-seed",
-            str(ctx.attr.otp_seed[BuildSettingInfo].value),
+            "--otp-entropy-buffer",
+            ctx.file.otp_mmap_entropy_buffer.path,
         ])
         if ctx.attr.otp_data_perm:
             arguments.extend([
@@ -659,9 +660,10 @@ scramble_flash_vmem = rv_rule(
             default = "//hw/ip/otp_ctrl/data:otp_ctrl_mmap.hjson",
             doc = "OTP memory map configuration HJSON file.",
         ),
-        "otp_seed": attr.label(
-            default = "//hw/ip/otp_ctrl/data:otp_seed",
-            doc = "Configuration override seed used to randomize OTP netlist constants.",
+        "otp_mmap_entropy_buffer": attr.label(
+            allow_single_file = True,
+            default = "//hw/ip/otp_ctrl/data:otp_mmap_entropy_buffer",
+            doc = "Entropy buffer file used when generating the OTP memory map.",
         ),
         "vmem": attr.label(allow_single_file = True),
         "otp_data_perm": attr.label(

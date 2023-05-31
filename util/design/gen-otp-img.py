@@ -8,7 +8,6 @@ map definition file (hjson).
 import argparse
 import datetime
 import logging as log
-import random
 from pathlib import Path
 
 import hjson
@@ -27,35 +26,20 @@ IMAGE_DEFINITION_FILE = 'hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson'
 MEMORY_MEM_FILE = 'otp-img.BITWIDTH.vmem'
 
 
-def _override_seed(args, seed_name, entropy_buffer_name, config):
+def _override_seed(args, seed_name, config):
     '''Override the seed key in config with value specified in args'''
     arg_seed = getattr(args, seed_name)
-    arg_entropy_buffer = None
-    if entropy_buffer_name:
-        arg_entropy_buffer = getattr(args, entropy_buffer_name)
 
-    if arg_entropy_buffer:
-        if arg_seed:
-            log.error(
-                "{} 'entropy_buffer' option cannot be used with {} 'seed' option"
-                .format(entropy_buffer_name, seed_name))
-            exit(1)
-        else:
-            config['entropy_buffer'] = arg_entropy_buffer
-    else:
-        # An override seed of 0 will not trigger the override, which is intended, as
-        # the OTP-generation Bazel rule sets the default seed values to 0.
-        if arg_seed:
-            log.warning('Commandline override of {} with {}.'.format(
-                seed_name, arg_seed))
-            config['seed'] = arg_seed
-        # Otherwise, we either take it from the .hjson if present, or
-        # randomly generate a new seed if not.
-        else:
-            new_seed = random.getrandbits(64)
-            if config.setdefault('seed', new_seed) == new_seed:
-                log.warning('No {} specified, setting to {}.'.format(
-                    seed_name, new_seed))
+    # An override seed of 0 will not trigger the override, which is intended, as
+    # the OTP-generation Bazel rule sets the default seed values to 0.
+    if arg_seed:
+        log.warning('Commandline override of {} with {}.'.format(
+            seed_name, arg_seed))
+        config['seed'] = arg_seed
+    # If no override, we make sure a seed exists in the HJSON config file.
+    elif 'seed' not in config:
+        log.error('Seed ({}) not found in configuration HJSON.'.format(seed_name))
+        exit(1)
 
 
 # TODO: this can be removed when we have moved to Python 3.8
@@ -104,39 +88,17 @@ def main():
                         Can be used to override the seed value specified in the image
                         config Hjson.
                         ''')
-    parser.add_argument('--lc-seed',
-                        type=int,
-                        metavar='<seed>',
-                        help='''
-                        Custom seed for RNG to compute randomized life cycle netlist constants.
-
-                        Note that this seed must coincide with the seed used for generating
-                        the LC state encoding (gen-lc-state-enc.py).
-
-                        This value typically does not need to be specified as it is taken from
-                        the LC state encoding definition Hjson.
-                        ''')
     parser.add_argument("--lc-entropy-buffer",
                         type=str,
+                        required=True,
                         metavar="<entropy buffer file path>",
                         help="""
                         A file with entropy used to fill the RNG when the
                         gen-lc-state-enc.py script was invoked.
                         """)
-    parser.add_argument('--otp-seed',
-                        type=int,
-                        metavar='<seed>',
-                        help='''
-                        Custom seed for RNG to compute randomized OTP netlist constants.
-
-                        Note that this seed must coincide with the seed used for generating
-                        the OTP memory map (gen-otp-mmap.py).
-
-                        This value typically does not need to be specified as it is taken from
-                        the OTP memory map definition Hjson.
-                        ''')
     parser.add_argument("--otp-entropy-buffer",
                         type=str,
+                        required=True,
                         metavar="<entropy buffer file path>",
                         help="""
                         A file with entropy used to fill the RNG when the
@@ -237,14 +199,10 @@ def main():
     with open(args.img_cfg, 'r') as infile:
         img_cfg = hjson.load(infile)
 
-    # Set the initial random seed so that the generated image is
-    # deterministically randomized.
-    random.seed(args.seed)
-
     # If specified, override the seeds.
-    _override_seed(args, 'lc_seed', 'lc_entropy_buffer', lc_state_cfg)
-    _override_seed(args, 'otp_seed', 'otp_entropy_buffer', otp_mmap_cfg)
-    _override_seed(args, 'img_seed', None, img_cfg)
+    lc_state_cfg['entropy_buffer'] = args.lc_entropy_buffer
+    otp_mmap_cfg['entropy_buffer'] = args.otp_entropy_buffer
+    _override_seed(args, 'img_seed', img_cfg)
 
     try:
         otp_mem_img = OtpMemImg(lc_state_cfg, otp_mmap_cfg, img_cfg,

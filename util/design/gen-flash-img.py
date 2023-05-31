@@ -141,20 +141,12 @@ def _convert_array_2_int(data_array: List[int],
     return reformatted_data
 
 
-def _get_otp_ctrl_netlist_consts(otp_mmap_file: str, otp_seed: int,
+def _get_otp_ctrl_netlist_consts(otp_mmap_file: str, otp_entropy_buffer: str,
                                  scrambling_configs: FlashScramblingConfigs):
     # Read in the OTP memory map file to a dictionary.
     with open(otp_mmap_file, 'r') as infile:
         otp_mmap_config = hjson.load(infile)
-        # If a OTP memory map seed is provided, we use it.
-        if otp_seed is not None:
-            otp_mmap_config["seed"] = otp_seed
-        # Otherwise, we either take it from the .hjson if present, else we
-        # error out. If we did not provide a seed via a cmd line arg, and there
-        # is not one present in the .hjson, then it won't be in sync with what
-        # `gen-otp-mmap.py` generated on the RTL side.
-        elif "seed" not in otp_mmap_config:
-            log.error("No OTP seed provided.")
+        otp_mmap_config["entropy_buffer"] = otp_entropy_buffer
         try:
             otp_mmap = OtpMemMap(otp_mmap_config)
         except RuntimeError as err:
@@ -354,10 +346,11 @@ def main(argv: List[str]):
                         type=str,
                         help="Input OTP (VMEM) file to retrieve data from.")
     parser.add_argument(
-        "--otp-seed",
-        type=int,
+        "--otp-entropy-buffer",
+        required=True,
+        type=str,
         help=
-        "Configuration override seed used to randomize OTP netlist constants.")
+        "Entropy buffer file used to generate random OTP netlist constants.")
     parser.add_argument("--out-flash-vmem", type=str, help="Output VMEM file.")
     parser.add_argument("--otp-data-perm",
                         type=vmem_permutation_string,
@@ -386,7 +379,7 @@ def main(argv: List[str]):
     # Read flash scrambling configurations (including: enablement, otp_ctrl
     # netlist consts, address and data key seeds) directly from OTP VMEM file.
     if args.in_otp_vmem:
-        _get_otp_ctrl_netlist_consts(args.in_otp_mmap, args.otp_seed,
+        _get_otp_ctrl_netlist_consts(args.in_otp_mmap, args.otp_entropy_buffer,
                                      scrambling_configs)
         _get_flash_scrambling_configs(args.in_otp_vmem, args.otp_data_perm,
                                       scrambling_configs)
