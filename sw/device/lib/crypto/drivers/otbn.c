@@ -102,7 +102,7 @@ static status_t otbn_assert_idle(void) {
       .value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value ^ status)};
   status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
   res.value ^= ~status;
-  if (launder32(res.value) == kHardenedBoolTrue) {
+  if (launder32(OT_UNSIGNED(res.value)) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(res.value, kHardenedBoolTrue);
     HARDENED_CHECK_EQ(abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET),
                       kOtbnStatusIdle);
@@ -197,7 +197,7 @@ status_t otbn_busy_wait_for_done(void) {
 
   uint32_t err_bits = otbn_err_bits_get();
 
-  if (launder32(res.value) == kHardenedBoolTrue &&
+  if (launder32(OT_UNSIGNED(res.value)) == kHardenedBoolTrue &&
       launder32(err_bits) == kOtbnErrBitsNoError) {
     HARDENED_CHECK_EQ(res.value, kHardenedBoolTrue);
     err_bits = otbn_err_bits_get();
