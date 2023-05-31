@@ -158,7 +158,7 @@ void rom_epmp_config_debug_rom(lifecycle_state_t lc_state) {
   //             +------------+------------+------------+------------+
   CSR_WRITE(CSR_REG_PMPADDR13, pmpaddr);
   CSR_CLEAR_BITS(CSR_REG_PMPCFG3, 0xff00);
-  uint32_t pmpcfg;
+  uint32_t pmpcfg = 0;
   switch (launder32(lc_state)) {
     case kLcStateTest:
       HARDENED_CHECK_EQ(lc_state, kLcStateTest);
