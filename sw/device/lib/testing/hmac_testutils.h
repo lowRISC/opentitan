@@ -38,7 +38,7 @@ static inline status_t compute_hmac_testutils_fifo_empty_usec(
     uint32_t *out_usec) {
   uint64_t result = udiv64_slow((80 + 10) * 1000000, kClockFreqCpuHz, NULL) + 1;
   TRY_CHECK(result <= UINT32_MAX, "timeout must fit in uint32_t");
-  *out_usec = result;
+  *out_usec = (uint32_t)result;
   return OK_STATUS();
 }
 
@@ -53,7 +53,7 @@ static inline status_t compute_hmac_testutils_finish_timeout_usec(
   uint64_t result =
       udiv64_slow((360 + 10) * 1000000, kClockFreqCpuHz, NULL) + 1;
   TRY_CHECK(result <= UINT32_MAX, "timeout must fit in uint32_t");
-  *out_usec = result;
+  *out_usec = (uint32_t)result;
   return OK_STATUS();
 }
 
