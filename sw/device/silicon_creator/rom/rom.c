@@ -237,7 +237,7 @@ static rom_error_t rom_verify(const manifest_t *manifest,
     HARDENED_CHECK_EQ(sigverify_spx_en, kSigverifySpxDisabledOtp);
   }
 
-  memset(boot_measurements.rom_ext.data, rnd_uint32(),
+  memset(boot_measurements.rom_ext.data, (int)rnd_uint32(),
          sizeof(boot_measurements.rom_ext.data));
 
   hmac_sha256_init();
