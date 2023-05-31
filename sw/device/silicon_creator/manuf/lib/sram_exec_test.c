@@ -122,15 +122,18 @@ void sram_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   // Initialize UART console.
   pinmux_testutils_init(&pinmux);
-  CHECK_DIF_OK(
-      dif_uart_configure(&uart0, (dif_uart_config_t){
-                                     .baudrate = kUartBaudrate,
-                                     .clk_freq_hz = kClockFreqPeripheralHz,
-                                     .parity_enable = kDifToggleDisabled,
-                                     .parity = kDifUartParityEven,
-                                     .tx_enable = kDifToggleEnabled,
-                                     .rx_enable = kDifToggleEnabled,
-                                 }));
+  CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
+  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
+        "kClockFreqPeripheralHz must fit in uint32_t");
+  CHECK_DIF_OK(dif_uart_configure(
+      &uart0, (dif_uart_config_t){
+                  .baudrate = (uint32_t)kUartBaudrate,
+                  .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                  .parity_enable = kDifToggleDisabled,
+                  .parity = kDifUartParityEven,
+                  .tx_enable = kDifToggleEnabled,
+                  .rx_enable = kDifToggleEnabled,
+              }));
   base_uart_stdout(&uart0);
 
   CHECK_STATUS_OK(provisioning_device_id_start());
