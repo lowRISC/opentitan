@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{ensure, Result};
 use serde::{self, Deserialize, Serialize};
 use std::path::{Path, PathBuf};
+use thiserror::Error;
 use zerocopy::AsBytes;
 
 use crate::crypto::spx::{self, SpxPublicKeyPart};
@@ -13,6 +14,12 @@ use crate::image::manifest_def::le_bytes_to_word_arr;
 use crate::util::file::FromReader;
 use crate::util::num_de::HexEncoded;
 use crate::with_unknown;
+
+#[derive(Debug, Error)]
+pub enum ManifestExtError {
+    #[error("Extension ID 0x{0:x} has duplicate extension data.")]
+    DuplicateEntry(u32),
+}
 
 with_unknown! {
     /// Known manifest extension variant IDs.
@@ -24,10 +31,10 @@ with_unknown! {
 }
 
 /// Top level spec for manifest extension HJSON files.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Default, Debug, Deserialize, Serialize)]
 pub struct ManifestExtSpec {
-    pub(crate) signed_region: Vec<ManifestExtEntrySpec>,
-    pub(crate) unsigned_region: Vec<ManifestExtEntrySpec>,
+    pub signed_region: Vec<ManifestExtEntrySpec>,
+    pub unsigned_region: Vec<ManifestExtEntrySpec>,
     #[serde(skip)]
     relative_path: Option<PathBuf>,
 }
@@ -86,11 +93,39 @@ impl ManifestExtSpec {
     pub fn source_path(&self) -> Option<&Path> {
         self.relative_path.as_deref()
     }
+
+    pub fn check_for_duplicates(&self, id: ManifestExtId) -> Result<()> {
+        ensure!(
+            !self
+                .signed_region
+                .iter()
+                .chain(self.unsigned_region.iter())
+                .any(|e| e.id() == u32::from(ManifestExtId::spx_key)),
+            ManifestExtError::DuplicateEntry(id.into())
+        );
+        Ok(())
+    }
+}
+
+impl ManifestExtEntrySpec {
+    pub fn id(&self) -> u32 {
+        match self {
+            ManifestExtEntrySpec::SpxKey { spx_key: _ } => MANIFEST_EXT_ID_SPX_KEY,
+            ManifestExtEntrySpec::SpxSignature { spx_signature: _ } => {
+                MANIFEST_EXT_ID_SPX_SIGNATURE
+            }
+            ManifestExtEntrySpec::Raw {
+                name: _,
+                identifier,
+                value: _,
+            } => **identifier,
+        }
+    }
 }
 
 impl ManifestExtEntry {
     /// Creates a new manifest extension from a given SPHINCS+ `key`.
-    pub fn new_spx_key_entry(key: spx::SpxKey) -> Result<Self> {
+    pub fn new_spx_key_entry(key: &spx::SpxKey) -> Result<Self> {
         Ok(ManifestExtEntry::SpxKey(ManifestExtSpxKey {
             header: ManifestExtHeader {
                 identifier: MANIFEST_EXT_ID_SPX_KEY,
@@ -103,7 +138,7 @@ impl ManifestExtEntry {
     }
 
     /// Creates a new manifest extension from a given SPHINCS+ `signature`.
-    pub fn new_spx_signature_entry(signature: spx::SpxSignature) -> Result<Self> {
+    pub fn new_spx_signature_entry(signature: &spx::SpxSignature) -> Result<Self> {
         Ok(ManifestExtEntry::SpxSignature(Box::new(
             ManifestExtSpxSignature {
                 header: ManifestExtHeader {
@@ -125,10 +160,10 @@ impl ManifestExtEntry {
         let relative_path = relative_path.unwrap_or(Path::new(""));
         Ok(match spec {
             ManifestExtEntrySpec::SpxKey { spx_key } => ManifestExtEntry::new_spx_key_entry(
-                spx::load_spx_key(&relative_path.join(spx_key))?,
+                &spx::load_spx_key(&relative_path.join(spx_key))?,
             )?,
             ManifestExtEntrySpec::SpxSignature { spx_signature } => {
-                ManifestExtEntry::new_spx_signature_entry(spx::SpxSignature::read_from_file(
+                ManifestExtEntry::new_spx_signature_entry(&spx::SpxSignature::read_from_file(
                     &relative_path.join(spx_signature),
                 )?)?
             }
