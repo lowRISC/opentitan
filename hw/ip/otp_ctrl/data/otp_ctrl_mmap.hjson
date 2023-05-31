@@ -14,9 +14,9 @@
 //
 
 {
-    // Seed to be used for generation of partition item default values.
+    // 256 bit seed to be used for generation of partition item default values.
     // Can be overridden on the command line with the --seed switch.
-    seed: "10556718629619452145"
+    seed: "36021179872380457113239299468132194022238108125576166239904535336103582949069"
 
     otp: {
         width: "2", // bytes

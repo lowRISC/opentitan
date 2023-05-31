@@ -11,6 +11,7 @@ from math import ceil, log2
 from mubi.prim_mubi import is_width_valid, mubi_value_as_int
 from tabulate import tabulate
 from topgen import strong_random
+from topgen import secure_prng as sp
 
 from lib.common import check_bool, check_int, random_or_hexvalue
 
@@ -358,9 +359,7 @@ class OtpMemMap():
             strong_random.load(config['entropy_buffer'])
         else:
             # Generate entropy buffer from the seed.
-            strong_random.unsecure_generate_from_seed(
-                ENTROPY_BUFFER_SIZE_BYTES,
-                OTP_SEED_DIVERSIFIER + int(config['seed']))
+            sp.reseed(OTP_SEED_DIVERSIFIER + int(config['seed']))
             log.info('Seed: {0:x}'.format(config['seed']))
             log.info('')
 

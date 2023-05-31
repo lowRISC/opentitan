@@ -9,6 +9,7 @@ from collections import OrderedDict
 
 from Crypto.Hash import cSHAKE128
 from topgen import strong_random
+from topgen import secure_prng as sp
 
 from lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
                         is_valid_codeword, random_or_hexvalue, scatter_bits)
@@ -82,7 +83,7 @@ def _get_new_state_word_pair(config, existing_words):
         # the Hamming weight is in range.
         width = config['secded']['data_width']
         ecc_width = config['secded']['ecc_width']
-        base = strong_random.getrandbits(width)
+        base = sp.getrandbits(width)
         base = format(base, '0' + str(width) + 'b')
         base_cand_ecc = ecc_encode(config, base)
         # disallow all-zero and all-one states
@@ -100,7 +101,7 @@ def _get_new_state_word_pair(config, existing_words):
                 # there are valid candidates, draw one at random.
                 # otherwise we just start over.
                 if incr_cands_ecc:
-                    incr_cand_ecc = strong_random.choice(incr_cands_ecc)
+                    incr_cand_ecc = sp.choice(incr_cands_ecc)
                     log.info('word {}: {}|{} -> {}|{}'.format(
                         int(len(existing_words) / 2),
                         base_cand_ecc[ecc_width:], base_cand_ecc[0:ecc_width],
@@ -292,9 +293,7 @@ class LcStEnc():
             strong_random.load(config['entropy_buffer'])
         else:
             # Re-initialize with seed to make results reproducible.
-            strong_random.unsecure_generate_from_seed(
-                ENTROPY_BUFFER_SIZE_BYTES,
-                LC_SEED_DIVERSIFIER + int(config['seed']))
+            sp.reseed(LC_SEED_DIVERSIFIER + int(config['seed']))
 
         log.info('Checking SECDED.')
         _validate_secded(config)
