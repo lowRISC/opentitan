@@ -73,6 +73,9 @@ var set_target_highlight = function(event) {
             document.documentElement.style.setProperty(
                 '--target-height', (el.getBoundingClientRect().height + targetMarginTopBottom) + "px"
             );
+            // scroll-margin-top does not seem to work for the first header on a page, so manually
+            // force into view if we nav to it.
+            if (el === document.getElementsByClassName("header")[0]) { el.scrollIntoView(false); }
         }
     });
 };
@@ -218,7 +221,7 @@ var create_pagetoc_structure = function(el_pagetoc) {
     {
         console.assert(startIdx <= stopIdx, "Strictly, 'stopIdx <= startIdx' is required.");
         let wrap = document.createElement("div");
-        wrap.classList.add(`wrap-W${wLevel-1}`);
+        wrap.classList.add(`wrap-W${wLevel}`);
 
         // Loop over the range given, descending recursively where needed.
         let i = startIdx;
@@ -239,8 +242,7 @@ var create_pagetoc_structure = function(el_pagetoc) {
     }
 
     // Invoke the above helper-functions to create the tree
-    // - Start-at-1 so we don't add the title H1 element.
-    let tree = wrapAllDescendingElems(getHnum(1), 1, headerElements.length - 1);
+    let tree = wrapAllDescendingElems(0, 0, headerElements.length - 1);
     el_pagetoc.appendChild(tree);
 };
 
