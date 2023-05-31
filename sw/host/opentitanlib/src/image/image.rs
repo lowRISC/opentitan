@@ -18,7 +18,7 @@ use crate::crypto::rsa::Signature as RsaSignature;
 use crate::crypto::sha256;
 use crate::image::manifest::{Manifest, ManifestExtHeader, ManifestExtTableEntry};
 use crate::image::manifest_def::{ManifestRsaBuffer, ManifestSpec};
-use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtEntrySpec, ManifestExtSpec};
+use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtSpec};
 use crate::util::file::{FromReader, ToWriter};
 use crate::util::parse_int::ParseInt;
 
@@ -36,6 +36,8 @@ pub enum ImageError {
     NoExtensionTableEntry(u32),
     #[error("Extension 0x{0:x} is not aligned to word boundary.")]
     BadExtensionAlignment(u32),
+    #[error("Invalid placement of signed extension 0x{0:x}.")]
+    MisplacedSignedExtension(u32),
 }
 
 /// A buffer with the same alignment as `Manifest` for storing image data.
@@ -102,120 +104,110 @@ impl Image {
         Ok(())
     }
 
-    /// Updates the data in a pre-existing extension. Does not update the image size.
-    pub fn update_extension_data(&mut self, id: u32, bytes: &[u8]) -> Result<()> {
-        let entry = self
-            .borrow_manifest()?
-            .extensions
-            .entries
-            .iter()
-            .find(|x| x.identifier == id)
-            .ok_or(ImageError::NoExtensionTableEntry(id))?;
-        let offset = entry.offset as usize + std::mem::size_of::<ManifestExtHeader>();
-        let extension_slice = self
-            .data
-            .bytes
-            .get_mut(offset..offset + bytes.len())
-            .ok_or(ImageError::ExtensionOverflow)?;
-        extension_slice.copy_from_slice(bytes);
-        Ok(())
-    }
-
-    /// Adds a new extension at the end of the image and updates size.
-    /// Note that this method does NOT update the `signed_region_end` or `length` fields of the
-    /// manifest.
-    /// New extensions are ALWAYS added at the end of the image by design.
-    pub fn add_extension_data(&mut self, bytes: &[u8]) -> Result<()> {
-        let end_index = self
-            .size
-            .checked_add(bytes.len())
-            .ok_or(ImageError::ExtensionOverflow)?;
-        let extension_slice = self
-            .data
-            .bytes
-            .get_mut(self.size..end_index)
-            .ok_or(ImageError::ExtensionOverflow)?;
-        extension_slice.copy_from_slice(bytes);
-        self.size += bytes.len();
-        Ok(())
-    }
-
-    /// Sets the extension entry at the given index.
-    pub fn set_extension_entry(
-        &mut self,
-        index: usize,
-        identifier: u32,
-        offset: u32,
-    ) -> Result<()> {
-        let manifest = self.borrow_manifest_mut()?;
-        *manifest
-            .extensions
-            .entries
-            .get_mut(index)
-            .ok_or(ImageError::BadExtensionTableIndex)? =
-            ManifestExtTableEntry { identifier, offset };
-        Ok(())
-    }
-
     /// Adds an extension to the signed region of this `Image`.
-    pub fn add_signed_manifest_extensions(&mut self, spec: ManifestExtSpec) -> Result<()> {
-        self.add_manifest_extensions(&spec.signed_region, spec.source_path())
+    pub fn add_signed_manifest_extensions(&mut self, spec: &ManifestExtSpec) -> Result<()> {
+        for entry_spec in &spec.signed_region {
+            self.add_manifest_extension(ManifestExtEntry::from_spec(
+                entry_spec,
+                spec.source_path(),
+            )?)?;
+        }
+        Ok(())
     }
 
     /// Adds an extension to the unsigned region of this `Image`.
-    pub fn add_unsigned_manifest_extensions(&mut self, spec: ManifestExtSpec) -> Result<()> {
-        self.add_manifest_extensions(&spec.unsigned_region, spec.source_path())
+    pub fn add_unsigned_manifest_extensions(&mut self, spec: &ManifestExtSpec) -> Result<()> {
+        for entry_spec in &spec.unsigned_region {
+            self.add_manifest_extension(ManifestExtEntry::from_spec(
+                entry_spec,
+                spec.source_path(),
+            )?)?;
+        }
+        Ok(())
     }
 
-    fn add_manifest_extensions(
-        &mut self,
-        entries: &[ManifestExtEntrySpec],
-        relative_path: Option<&Path>,
-    ) -> Result<()> {
+    /// Adds an extension to the end of this `Image`.
+    pub fn add_manifest_extension(&mut self, entry: ManifestExtEntry) -> Result<()> {
         let manifest = self.borrow_manifest()?;
 
         // A copy of the extension table since we can't borrow as mutable.
         let mut ext_table = manifest.extensions.entries;
 
-        for spec in entries {
-            let entry = ManifestExtEntry::from_spec(spec, relative_path)?;
-            let entry_id = entry.header().identifier;
+        let entry_id = entry.header().identifier;
 
-            // Update the offset in the extension table.
-            let ext_table_entry = ext_table
-                .iter_mut()
-                .find(|e| e.identifier == entry_id)
-                .ok_or(ImageError::NoExtensionTableEntry(entry_id))?;
+        // Update the offset in the extension table.
+        let ext_table_entry = ext_table
+            .iter_mut()
+            .find(|e| e.identifier == entry_id)
+            .ok_or(ImageError::NoExtensionTableEntry(entry_id))?;
 
-            // If the extension already exists, overwrite it, else append it to the end of the
-            // image.
-            let offset = if ext_table_entry.offset != 0 {
-                ext_table_entry.offset as usize
-            } else {
-                ensure!(
-                    self.size % align_of::<u32>() == 0,
-                    ImageError::BadExtensionAlignment(entry_id)
-                );
-                self.size
-            };
-            ext_table_entry.offset = offset as u32;
+        // If the extension already exists, overwrite it, else append it to the end of the
+        // image.
+        let offset = if ext_table_entry.offset != 0 {
+            ext_table_entry.offset as usize
+        } else {
+            ensure!(
+                self.size % align_of::<u32>() == 0,
+                ImageError::BadExtensionAlignment(entry_id)
+            );
+            self.size
+        };
+        ext_table_entry.offset = offset as u32;
 
-            // Write the extension to the end of the image.
-            let ext_bytes = entry.to_vec();
-            let end_index = offset
-                .checked_add(ext_bytes.len())
-                .ok_or(ImageError::ExtensionOverflow)?;
-            let extension_slice = self
-                .data
-                .bytes
-                .get_mut(offset..end_index)
-                .ok_or(ImageError::ExtensionOverflow)?;
-            extension_slice.copy_from_slice(ext_bytes.as_slice());
-            self.size = std::cmp::max(end_index, self.size);
-        }
+        // Write the extension to the end of the image.
+        let ext_bytes = entry.to_vec();
+        let end_index = offset
+            .checked_add(ext_bytes.len())
+            .ok_or(ImageError::ExtensionOverflow)?;
+        let extension_slice = self
+            .data
+            .bytes
+            .get_mut(offset..end_index)
+            .ok_or(ImageError::ExtensionOverflow)?;
+        extension_slice.copy_from_slice(ext_bytes.as_slice());
+        self.size = std::cmp::max(end_index, self.size);
 
         let mut manifest = self.borrow_manifest_mut()?;
         manifest.extensions.entries = ext_table;
+
+        Ok(())
+    }
+
+    /// Allocates space for a manifest extension and sets the offset in the extension table.
+    ///
+    /// This function is similar to `add_manifest_extension`, but doesn't populate any data for the
+    /// extension. This is necessary to properly set the `length` field of the manifest and the
+    /// `offset` field of the manifest extension entry for signing.
+    pub fn allocate_manifest_extension(&mut self, id: u32, len: usize) -> Result<()> {
+        let offset = self.size as u32;
+        self.borrow_manifest_mut()?
+            .extensions
+            .entries
+            .iter_mut()
+            .find(|e| e.identifier == id)
+            .ok_or(ImageError::NoExtensionTableEntry(id))?
+            .offset = offset;
+
+        self.size = self
+            .size
+            .checked_add(len)
+            .ok_or(ImageError::ExtensionOverflow)?;
+
+        Ok(())
+    }
+
+    /// Clears any entry in the manifest extension table that doesn't have an offset.
+    ///
+    /// This allows a manifest definition with a populated extension table to be used even when
+    /// extensions aren't provided.
+    pub fn drop_null_extensions(&mut self) -> Result<()> {
+        let manifest = self.borrow_manifest()?;
+
+        manifest.extensions.entries.map(|mut e| {
+            if e.offset == 0 {
+                e.identifier = 0;
+            }
+        });
 
         Ok(())
     }
@@ -265,12 +257,41 @@ impl Image {
         Ok(self.size)
     }
 
-    /// Sets the `signed_reion_end` field to `self.size`.
-    /// Note that this method must be called AFTER all signed extensions are added but BEFORE
-    /// adding any unsigned extensions.
-    pub fn update_signed_region_end(&mut self) -> Result<usize> {
-        self.borrow_manifest_mut()?.signed_region_end = self.size as u32;
-        Ok(self.size)
+    /// Sets the `signed_region_end` field to the end of the last signed extension.
+    ///
+    /// The end of the signed region is computed as the offset of the first extension that is not
+    /// in `signed_ids` or the size of the image if there is no such extension.
+    pub fn update_signed_region(&mut self, signed_ids: &[u32]) -> Result<()> {
+        let image_size = self.size as u32;
+        let mut first_unsigned_ext = 0u32;
+        let manifest = self.borrow_manifest_mut()?;
+
+        let mut ext_table = manifest.extensions.entries.clone();
+        ext_table.sort_by(|a, b| a.offset.cmp(&b.offset));
+        for e in ext_table {
+            // Ignore any extensions that haven't been added to the image.
+            if e.offset == 0 {
+                continue;
+            }
+            if signed_ids.contains(&e.identifier) {
+                // Since extensions are sorted by offset, if we've already seen an unsigned
+                // extension then the signed region is discontinuous.
+                ensure!(
+                    first_unsigned_ext == 0,
+                    ImageError::MisplacedSignedExtension(e.identifier)
+                );
+            } else if first_unsigned_ext == 0 {
+                first_unsigned_ext = e.offset;
+            }
+        }
+
+        manifest.signed_region_end = if first_unsigned_ext == 0 {
+            image_size
+        } else {
+            first_unsigned_ext
+        };
+
+        Ok(())
     }
 
     /// Operates on the signed region of the image.
