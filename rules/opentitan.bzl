@@ -94,50 +94,49 @@ def create_key_struct(rsa_key, spx_key):
 
 # Keys available in the repo
 SILICON_CREATOR_KEYS = struct(
-    RSA = struct(
-        FAKE = struct(
+    FAKE = struct(
+        RSA = struct(
             TEST = [
-                create_test_key("rsa_fake_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake:test_private_key_0"),
+                create_test_key("fake_rsa_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0"),
             ],
             DEV = [
-                create_dev_key("rsa_fake_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake:dev_private_key_0"),
+                create_dev_key("fake_rsa_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0"),
             ],
             PROD = [
-                create_prod_key("rsa_fake_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake:prod_private_key_0"),
+                create_prod_key("fake_rsa_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0"),
             ],
         ),
-        REAL = None,
-        UNAUTHORIZED = [
-            create_key_("rsa_unauthorized_0", "@//sw/device/silicon_creator/rom/keys:unauthorized_private_key_0", []),
-        ],
+        SPX = struct(
+            TEST = [
+                create_test_key("fake_spx_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:test_key_0_spx"),
+            ],
+            DEV = [
+                create_dev_key("fake_spx_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:dev_key_0_spx"),
+            ],
+            PROD = [
+                create_prod_key("fake_spx_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx"),
+            ],
+        ),
     ),
-    SPX = struct(
-        FAKE = struct(
-            TEST = [
-                create_test_key("spx_fake_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:test_key_0_spx"),
-            ],
-            DEV = [
-                create_dev_key("spx_fake_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:dev_key_0_spx"),
-            ],
-            PROD = [
-                create_prod_key("spx_fake_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx"),
-            ],
-        ),
-        REAL = None,
-        UNAUTHORIZED = [
-            create_key_("spx_unauthorized_0", "@//sw/device/silicon_creator/rom/keys/spx:unauthorized_0_spx", []),
+    REAL = None,
+    UNAUTHORIZED = struct(
+        RSA = [
+            create_key_("rsa_unauthorized_0", "@//sw/device/silicon_creator/rom/keys/unauthorized/rsa:unauthorized_private_key_0", []),
+        ],
+        SPX = [
+            create_key_("spx_unauthorized_0", "@//sw/device/silicon_creator/rom/keys/unauthorized/spx:unauthorized_0_spx", []),
         ],
     ),
 )
 
 SILICON_OWNER_KEYS = struct(
-    RSA = struct(
-        FAKE = struct(
+    FAKE = struct(
+        RSA = struct(
             TEST = [
-                create_test_key("rsa_fake_rom_ext_test_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0"),
+                create_test_key("fake_rsa_rom_ext_test_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0"),
             ],
             DEV = [
-                create_dev_key("rsa_fake_rom_ext_dev_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_dev_private_key_0"),
+                create_dev_key("fake_rsa_rom_ext_dev_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_dev_private_key_0"),
             ],
             PROD = None,
         ),
@@ -155,7 +154,7 @@ def key_allowed_in_lc_state(key, hw_lc_state_val):
         fail("Wrong life cycle state value: '{}', must be one of {}. Did you pass a string instead of the integer value?".format(hw_lc_state_val, all_hw_lc_state_vals))
     return hw_lc_state_val in key.hw_lc_states
 
-def get_key_structs_for_lc_state(hw_lc_state, rsa = SILICON_CREATOR_KEYS.RSA.FAKE, spx = SILICON_CREATOR_KEYS.SPX.FAKE):
+def get_key_structs_for_lc_state(hw_lc_state, rsa = SILICON_CREATOR_KEYS.FAKE.RSA, spx = SILICON_CREATOR_KEYS.FAKE.SPX):
     # [(rsa_key, spx_key), ...]
     if rsa and spx:
         rsa = flatten(structs.to_dict(s = rsa).values())
@@ -183,22 +182,22 @@ def filter_key_structs_for_lc_state(key_structs, hw_lc_state):
     return [k for k in key_structs if (not k.rsa or key_allowed_in_lc_state(k.rsa, hw_lc_state)) and (not k.spx or key_allowed_in_lc_state(k.spx, hw_lc_state))]
 
 RSA_ONLY_KEY_STRUCTS = [
-    create_key_struct(SILICON_CREATOR_KEYS.RSA.FAKE.TEST[0], None),
-    create_key_struct(SILICON_CREATOR_KEYS.RSA.FAKE.DEV[0], None),
-    create_key_struct(SILICON_CREATOR_KEYS.RSA.FAKE.PROD[0], None),
-    create_key_struct(SILICON_CREATOR_KEYS.RSA.UNAUTHORIZED[0], None),
+    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0], None),
+    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0], None),
+    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0], None),
+    create_key_struct(SILICON_CREATOR_KEYS.UNAUTHORIZED.RSA[0], None),
 ]
 
 RSA_SPX_KEY_STRUCTS = [
-    create_key_struct(SILICON_CREATOR_KEYS.RSA.FAKE.TEST[0], SILICON_CREATOR_KEYS.SPX.FAKE.TEST[0]),
-    create_key_struct(SILICON_CREATOR_KEYS.RSA.FAKE.DEV[0], SILICON_CREATOR_KEYS.SPX.FAKE.DEV[0]),
-    create_key_struct(SILICON_CREATOR_KEYS.RSA.FAKE.PROD[0], SILICON_CREATOR_KEYS.SPX.FAKE.PROD[0]),
-    create_key_struct(SILICON_CREATOR_KEYS.RSA.UNAUTHORIZED[0], SILICON_CREATOR_KEYS.SPX.UNAUTHORIZED[0]),
+    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0], SILICON_CREATOR_KEYS.FAKE.SPX.TEST[0]),
+    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0], SILICON_CREATOR_KEYS.FAKE.SPX.DEV[0]),
+    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0], SILICON_CREATOR_KEYS.FAKE.SPX.PROD[0]),
+    create_key_struct(SILICON_CREATOR_KEYS.UNAUTHORIZED.RSA[0], SILICON_CREATOR_KEYS.UNAUTHORIZED.SPX[0]),
 ]
 
 RSA_ONLY_ROM_EXT_KEY_STRUCTS = [
-    create_key_struct(SILICON_OWNER_KEYS.RSA.FAKE.TEST[0], None),
-    create_key_struct(SILICON_OWNER_KEYS.RSA.FAKE.DEV[0], None),
+    create_key_struct(SILICON_OWNER_KEYS.FAKE.RSA.TEST[0], None),
+    create_key_struct(SILICON_OWNER_KEYS.FAKE.RSA.DEV[0], None),
 ]
 
 def _obj_transform_impl(ctx):

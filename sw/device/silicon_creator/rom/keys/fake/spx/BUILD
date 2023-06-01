@@ -5,7 +5,7 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "fake",
+    name = "spx",
     srcs = [
         "sigverify_spx_keys_fake.c",
         "//sw/device/silicon_creator/rom:sigverify_keys.h",
@@ -27,13 +27,13 @@ cc_library(
 )
 
 cc_test(
-    name = "fake_unittest",
+    name = "spx_unittest",
     srcs = ["sigverify_spx_keys_fake_unittest.cc"],
     deps = [
-        ":fake",
+        ":spx",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/rom:sigverify_keys",
-        "//sw/device/silicon_creator/rom/keys/fake",
+        "//sw/device/silicon_creator/rom/keys/fake/rsa",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],

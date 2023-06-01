@@ -1926,7 +1926,7 @@ BOOT_DATA_RECOVERY_CASES = [
                 case["lc_state"].upper(),
             )),
         ),
-        key_struct = "rsa_fake_prod_key_0",
+        key_struct = "fake_rsa_prod_key_0",
         ot_flash_binary = ":rom_e2e_boot_data_recovery_{}_{}".format(
             case["lc_state"],
             case["default_boot_data"],
@@ -2083,9 +2083,9 @@ test_suite(
 # it must contain at least one key of each type and contains all
 # the keys used in SIGVERIFY_LCS_2_VALID_KEY
 SIGVERIFY_LC_KEYS = [
-    SILICON_CREATOR_KEYS.RSA.FAKE.TEST[0].name,
-    SILICON_CREATOR_KEYS.RSA.FAKE.DEV[0].name,
-    SILICON_CREATOR_KEYS.RSA.FAKE.PROD[0].name,
+    SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0].name,
+    SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0].name,
+    SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0].name,
 ]
 
 [
