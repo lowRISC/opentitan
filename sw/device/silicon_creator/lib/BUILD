@@ -184,6 +184,7 @@ cc_library(
     hdrs = ["rom_print.h"],
     deps = [
         ":error",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/drivers:uart",
     ],
 )
