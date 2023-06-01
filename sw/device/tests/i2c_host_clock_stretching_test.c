@@ -144,7 +144,6 @@ static status_t rx_stretch_timeout(void) {
   TRY(dif_i2c_enable_clock_stretching_timeout(&i2c, kDifToggleEnabled, cycles));
 
   uint8_t reg = kProductIdReg;
-  uint8_t data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
 
   irq_global_ctrl(false);
