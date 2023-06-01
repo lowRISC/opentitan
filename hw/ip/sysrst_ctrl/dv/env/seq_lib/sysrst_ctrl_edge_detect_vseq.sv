@@ -51,8 +51,9 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
      fork
        if (edge_detect_l2h.en_l2h) begin
          forever begin
-           @(posedge cfg.vif.sysrst_ctrl_inputs[index]);
+           @(posedge cfg.vif.sysrst_ctrl_inputs_int[index]);
              if (!edge_detect_l2h.l2h_triggered) begin
+               `uvm_info(`gfn, $sformatf("L2H detected for %s", index.name()), UVM_NONE)
                `DV_CHECK_EQ(l2h_detected, 0)
                l2h_detected = 1;
              end
@@ -60,8 +61,9 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
        end
        if (edge_detect_h2l.en_h2l) begin
          forever begin
-           @(negedge cfg.vif.sysrst_ctrl_inputs[index]);
+           @(negedge cfg.vif.sysrst_ctrl_inputs_int[index]);
              if (!edge_detect_h2l.h2l_triggered) begin
+               `uvm_info(`gfn, $sformatf("H2L detected for %s", index.name()), UVM_NONE)
                `DV_CHECK_EQ(h2l_detected, 0)
                h2l_detected = 1;
              end
@@ -73,18 +75,22 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
          wait (h2l_detected && !edge_detect_h2l.h2l_triggered);
          fork
            begin
-             cfg.clk_aon_rst_vif.wait_clks(set_timer+2);
-             `uvm_info(`gfn, "H2L timer reached", UVM_NONE)
+             cfg.clk_aon_rst_vif.wait_clks(set_timer + 2);
+             `uvm_info(`gfn, $sformatf("H2L timer reached for %s", index.name()), UVM_NONE)
              h2l_timer_reached = 1;
            end
            begin
              // If edge change occurs again before the timer reaches the defined value, the interrupt
              // won't happen
-             @(cfg.vif.sysrst_ctrl_inputs[index]);
+             @(cfg.vif.sysrst_ctrl_inputs_int[index]);
            end
          join_any
          disable fork;
-         if (h2l_timer_reached) edge_detect_h2l.h2l_triggered = 1;
+         if (h2l_timer_reached) begin
+           edge_detect_h2l.h2l_triggered = 1;
+         end else begin
+           `uvm_info(`gfn, $sformatf("%s changed before H2L timer", index.name()), UVM_NONE)
+         end
          h2l_detected = 0;
        end
 
@@ -93,17 +99,21 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
          wait (l2h_detected && !edge_detect_l2h.l2h_triggered);
          fork
            begin
-             cfg.clk_aon_rst_vif.wait_clks(set_timer+2);
+             cfg.clk_aon_rst_vif.wait_clks(set_timer + 2);
              l2h_timer_reached = 1;
            end
            begin
              // If edge change occurs again before the timer reaches the defined value, the interrupt
              // won't happen
-             @(cfg.vif.sysrst_ctrl_inputs[index]);
+             @(cfg.vif.sysrst_ctrl_inputs_int[index]);
            end
          join_any
          disable fork;
-         if (l2h_timer_reached) edge_detect_l2h.l2h_triggered = 1;
+         if (l2h_timer_reached) begin
+           edge_detect_l2h.l2h_triggered = 1;
+         end else begin
+           `uvm_info(`gfn, $sformatf("%s changed before L2H timer", index.name()), UVM_NONE)
+         end
          l2h_detected = 0;
        end
      join
@@ -137,7 +147,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
      csr_wr(ral.key_intr_debounce_ctl, set_timer);
 
      // It takes 2-3 clock cycles to sync register values
-     cfg.clk_aon_rst_vif.wait_clks(3);
+     cfg.clk_aon_rst_vif.wait_clks(5);
 
      csr_rd(ral.key_intr_ctl, get_input);
 
@@ -169,7 +179,11 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
          if (is_core_clk_stop) cfg.clk_rst_vif.start_clk();
 
          cfg.clk_aon_rst_vif.wait_clks(5);
-
+         // Issue register read after clock start to sync the interrupt status value
+         if(is_core_clk_stop) begin
+           csr_rd(ral.key_intr_status, rdata);
+           cfg.clk_aon_rst_vif.wait_clks(3);
+         end
          csr_rd(ral.key_intr_status, rdata);
          foreach (edge_detect_h2l_array[i]) begin
            check_h2l_edge_intr(sysrst_input_idx_e'(i), edge_detect_h2l[i], rdata);

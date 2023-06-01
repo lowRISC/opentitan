@@ -29,13 +29,14 @@ package sysrst_ctrl_env_pkg;
   } sysrst_ctrl_intr_e;
 
   typedef enum {
-    PwrbIdx,
-    Key0Idx,
-    Key1Idx,
-    Key2Idx,
-    AcPresentIdx,
-    EcRstIdx,
-    FlashWpIdx
+    PwrbIdx = 0,
+    Key0Idx = 1,
+    Key1Idx = 2,
+    Key2Idx = 3,
+    AcPresentIdx = 4,
+    EcRstIdx = 5,
+    FlashWpIdx = 6,
+    LidOpenIdx = 7
   } sysrst_input_idx_e;
 
 
