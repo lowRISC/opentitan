@@ -31,8 +31,7 @@ def gen_kv(outfile: TextIO, key: str, value: str) -> None:
 def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
     rnames = cfgs.get_rnames()
 
-    ot_server = 'https://docs.opentitan.org'
-    comport_url = ot_server + '/doc/rm/comportability_specification'
+    comport_url = "https://opentitan.org/book/doc/contributing/hw/comportability"
     genout(outfile,
            '<p>Referring to the <a href="{url}">Comportable guideline for '
            'peripheral device functionality</a>, the module '
