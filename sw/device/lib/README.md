@@ -25,7 +25,3 @@ These are organised into the `sw/device/lib` directory.
     that is a layer of above the DIFs. In other words, this code may make use
     of the DIFs to actuate the hardware, and chip-level test code may make use
     of this code to actuate the DIFs.
-
-## Documentation Index
-
-{{% sectionContent %}}
