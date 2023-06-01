@@ -7,7 +7,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                                                           .COV_T (spi_device_env_cov));
   `uvm_component_utils(spi_device_scoreboard)
 
-  localparam int FLASH_STATUS_UPDATE_DLY_AFTER_CSB_DEASSERT = 3;
+  localparam int FLASH_STATUS_UPDATE_DLY_AFTER_CSB_DEASSERT = 4;
   typedef enum int {
     NoInternalProcess,
     InternalProcessStatus,
@@ -939,7 +939,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // read with no delay, the 2nd one may also doesn't match.
   // add some cycle delays to make it close to design behavior, so that the 2nd interrupt read
   // must match.
-  virtual function void update_pending_intr_w_delay(spi_device_intr_e intr, int delay_cyc = 3);
+  virtual function void update_pending_intr_w_delay(spi_device_intr_e intr, int delay_cyc = 4);
     fork begin
       `uvm_info(`gfn,
         $sformatf("Wait %0d cycles to enable compare of %s interrupt",delay_cyc, intr.name()),
